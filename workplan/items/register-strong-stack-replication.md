@@ -35,7 +35,7 @@ tags:
 
 Every August negative-register run stores `codex.gpt-5.5` and none of them
 called it on the tutor side. The fix is in ([[register-manner-learner-turn]],
-paper v3.0.280), no count moved, and the counts are now claims about
+paper v3.0.282 --- renumbered from v3.0.280 in the 2026-08-09 merge), no count moved, and the counts are now claims about
 nemotron/kimi. This buys one arm back on a strong writer before buying the
 whole grid.
 
@@ -81,7 +81,7 @@ cannot be pinned on the ego or the id alone.
 
 Run `eval-2026-08-08-6021754f`, 2026-08-09. 15/15 rows, 15/15 tutor scores,
 27/27 register slices, 15/15 read for manner with none unread. The report came
-back COMPLETE on all four measures. Paper v3.0.281.
+back COMPLETE on all four measures. Paper v3.0.283 (renumbered from v3.0.281).
 
 | measure | this run, codex on both seats | parent, nemotron ego / kimi id | Fisher |
 |---|---|---|---|

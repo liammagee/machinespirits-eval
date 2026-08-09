@@ -6,6 +6,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { renderTutorStubCliHelp } from '../services/tutorStubCliHelp.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -32,6 +33,7 @@ const HELP_FIXTURE = Object.freeze({
     autoTurns: 13,
     autoSafetyTurns: 21,
     traceDir: 'fixture-traces',
+    artifactArchive: 'fixture-archive-policy',
     settingsFile: 'fixture-settings.json',
     cliTheme: 'fixture-theme',
     motion: 'fixture-motion',
@@ -63,11 +65,12 @@ test('launch help projection is byte-stable and uses every supplied runtime defa
 
   assert.equal(
     createHash('sha256').update(help).digest('hex'),
-    '8e439df2581363e53beeafbbc3c828aba47bc9257def38f0dbccc8f26f878937',
+    '06d62dc8ee4dca82cbd5d2646db1666739a31d19933e21b3409a616cbb6f543e',
   );
   assert.match(help, /^Usage:\n {2}npm run tutor:stub -- \[options\]/u);
   assert.match(help, /fixture-tutor@v9/u);
   assert.match(help, /fixture-mini-model/u);
+  assert.match(help, /fixture-archive-policy/u);
   assert.match(help, /--committee-span-interface <v1\|v2>/u);
   assert.match(help, /--committee-fallback-policy <v1\|v2\|cue_blind>/u);
   assert.match(help, /--point-of-action-opportunity-protocol <off\|first_admissible_warrant_v1>/u);
@@ -80,7 +83,7 @@ test('launch help projection is byte-stable and uses every supplied runtime defa
 });
 
 test('the CLI delegates launch help effects to the public presentation runtime', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCliHelp.js'), 'utf8');
   const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubPublicPresentationRuntime.js'), 'utf8');
 

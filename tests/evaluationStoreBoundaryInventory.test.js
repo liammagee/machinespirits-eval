@@ -30,6 +30,7 @@ function isolatedStoreContract() {
 
     const direct = await import('@machinespirits/eval/services/evaluationStore');
     const root = await import('@machinespirits/eval');
+    const explicitFactory = await import('@machinespirits/eval/services/evaluationStore/createEvaluationStore');
     const fileFacade = await import('./services/evaluationStore.js');
     await import('./routes/evalRoutes.js');
     await import('./services/evaluationRunner.js');
@@ -57,6 +58,7 @@ function isolatedStoreContract() {
       defaultMembers: Object.keys(direct.default).sort(),
       rootMatchesDirect: root.evaluationStore.createRun === direct.createRun,
       directMatchesFile: direct.createRun === fileFacade.createRun,
+      explicitFactoryAvailable: typeof explicitFactory.createEvaluationStore === 'function',
     }));
   `;
   const output = execFileSync(process.execPath, ['--input-type=module', '-e', script], {
@@ -83,10 +85,17 @@ describe('evaluationStore boundary inventory', () => {
       counts[consumer.classification] = (counts[consumer.classification] ?? 0) + 1;
     }
     assert.deepEqual(counts, {
-      'package-entrypoint': 1,
-      'operational-script': 8,
+      'retained-package-compatibility': 1,
       'archived-oneoff': 4,
       test: 14,
+    });
+    assert.equal(inventory.characterization.migrationTargetConsumerCount, 0);
+    assert.equal(inventory.characterization.retainedCompatibilityConsumerCount, 1);
+    assert.deepEqual(inventory.packageSurface.compatibility, {
+      status: 'retained',
+      publishedPackage: '@machinespirits/eval',
+      preferredNewConsumer: '@machinespirits/eval/services/evaluationStore/createEvaluationStore',
+      removalPolicy: 'major-version-only',
     });
   });
 
@@ -103,6 +112,7 @@ describe('evaluationStore boundary inventory', () => {
     assert.deepEqual(contract.defaultMembers, inventory.exports.defaultMembers);
     assert.equal(contract.rootMatchesDirect, true);
     assert.equal(contract.directMatchesFile, true);
+    assert.equal(contract.explicitFactoryAvailable, true);
   });
 
   it('records the three named-only compatibility exports explicitly', () => {

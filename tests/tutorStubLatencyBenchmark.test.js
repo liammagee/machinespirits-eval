@@ -61,6 +61,11 @@ test('latency benchmark expands a frozen object/meta/mixed one-factor matrix', (
   assert.equal(plan.jobs.filter((job) => job.factor === 'baseline').length, 3);
   assert.ok(plan.jobs.every((job) => job.args.includes('--learner-analysis-prompt-profile')));
   assert.ok(plan.jobs.every((job) => job.args.includes('--mixed-tutor-prefetch-policy')));
+  assert.ok(
+    plan.jobs.every((job) =>
+      job.args.some((value, index) => value === '--artifact-archive' && job.args[index + 1] === 'required'),
+    ),
+  );
 });
 
 test('v2 screening plan repeats only the viable latency candidates', () => {

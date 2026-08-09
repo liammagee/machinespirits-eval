@@ -5,6 +5,7 @@ import {
   projectTutorStubLightweightFieldLines,
 } from '../services/tutorStubFieldPresentation.js';
 import { assert, fs, os, path, ROOT, runInteractive, test } from './helpers/tutorStubInteractiveHarness.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const COLORS = { cyan: '<cyan>', dim: '<dim>', reset: '</>' };
 const LIVE_FIELD_REPORT_HASH = 'c6184f8be4613395862fc73defc9e0f26b6edc6749ac0995ba22c80f0a08b780';
@@ -107,7 +108,7 @@ test('field and visualization reports preserve no-turn, path, newline, fallback,
 });
 
 test('the debug-report runtime retains field calculation, visualization effects, and trace ownership while live reports stay byte-identical', async () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubFieldPresentation.js'), 'utf8');
   const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubDebugReportRuntime.js'), 'utf8');
   const fieldSlice = runtimeSource.slice(

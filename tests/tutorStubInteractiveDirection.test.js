@@ -7,6 +7,7 @@ import {
   FIRST_TURN_CLUE_ARGS,
   readTutorStubTraceEvents,
   runInteractive,
+  removeTempDir,
 } from './helpers/tutorStubInteractiveHarness.js';
 
 test('coach mode keeps guidance private and incorporates it into the next tutor prompt', async () => {
@@ -50,7 +51,7 @@ test('coach mode keeps guidance private and incorporates it into the next tutor 
     assert.ok(!completed.turnRecord.learner.includes(guidance));
     assert.ok(trace.some((event) => event.type === 'coach_guidance_applied'));
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -160,7 +161,7 @@ test('/meta directs a persistent tutor change without creating a public learner 
     assert.equal(resumedEvents[0].publicTranscriptChanged, true);
     assert.equal(resumedEvents[0].proofStateChanged, false);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -228,7 +229,7 @@ test('/director ask answers from application context and returns without creatin
     assert.ok(!events.some((event) => event.type === 'director_guidance_set'));
     assert.ok(!events.some((event) => event.type === 'turn_complete'));
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -271,7 +272,7 @@ test('/meta ask is an application-help alias rather than persistent tutor direct
     assert.ok(!events.some((event) => event.type === 'director_guidance_set'));
     assert.ok(!events.some((event) => event.type === 'learner_input_routed'));
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -311,7 +312,7 @@ test('/director request survives reset while /notes remains view-only', async ()
     assert.equal(reset.directorGuidance.active.text, direction);
     assert.ok(reset.preserved.includes('director_guidance'));
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -369,7 +370,7 @@ test('unsafe coach guidance is sanitized and the tutor continues from a public-o
       false,
     );
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -418,7 +419,7 @@ test('unsafe director guidance cannot place future evidence in the tutor prompt'
       false,
     );
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -448,7 +449,7 @@ test('auto mode plays both roles from the current transcript and returns after a
     assert.match(result.plain, /automation paused > auto turn cap/u);
     assert.match(result.plain, /session status > LEARNER · turn 2/u);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -516,7 +517,7 @@ test('mid-turn /auto queues a handoff and /mode auto replaces it before automati
       false,
     );
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -591,6 +592,6 @@ test('other mid-turn slash commands execute or reject explicitly without enterin
       );
     }
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });

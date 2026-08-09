@@ -10,7 +10,7 @@ import fs from 'fs';
 import path from 'path';
 import { pathToFileURL } from 'url';
 import yaml from 'yaml';
-import { runScenario } from '../services/adaptiveTutor/runner.js';
+import { runScenarioFinal } from '../services/adaptiveTutor/runner.js';
 import {
   CHARACTER_AXES,
   characterMaturityScore,
@@ -1136,7 +1136,7 @@ async function runArm({
         transfer: scene.transfer,
         requires_peripeteia: scene.dramatic_contract.requires_peripeteia,
       });
-      const result = await runScenario(scenario, graphOptionsForArm({ fixture, armConfig, scene }));
+      const result = await runScenarioFinal(scenario, graphOptionsForArm({ fixture, armConfig, scene }));
       const closed = firstClosedRecord(result);
       const stagedFollowup = (closed?.evidence || []).length > 1;
       const resultLearnerTexts = learnerTexts(result);

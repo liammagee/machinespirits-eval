@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import test from 'node:test';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 import { normalizeTutorStubDagMode } from '../services/tutorStubDagFeatures.js';
 
@@ -20,7 +20,7 @@ test('unknown DAG modes retain the exact actionable error', () => {
 });
 
 test('the CLI imports rather than redeclares DAG-mode normalization', () => {
-  const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
+  const source = readTutorStubApplicationSource();
   assert.match(source, /normalizeTutorStubDagMode/u);
   assert.doesNotMatch(source, /function normalizeDagMode\(/u);
 });

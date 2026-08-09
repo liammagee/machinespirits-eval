@@ -27,6 +27,7 @@ export function createTutorStubCharacterControlController(dependencies) {
     pickLiveCharacterTargetWithKeyboard,
     pickLiveTutorCharacterWithKeyboard,
     printTutorFeedbackRequest,
+    publicFactsAtTurn,
     publicWorldSummary,
     publishAcceptedTutorToVoice,
     sessionRuntime,
@@ -91,6 +92,8 @@ export function createTutorStubCharacterControlController(dependencies) {
     const tutorTurn = lastTurn?.tutor === previousText ? Number(lastTurn.turn) || state.turns.length : 0;
     const learnerText = lastTurn?.tutor === previousText ? lastTurn.learner || '' : '';
     const permittedText = (state.history || []).map((message) => message.content).join('\n');
+    const permittedFacts =
+      state.world && typeof publicFactsAtTurn === 'function' ? publicFactsAtTurn(state.world, tutorTurn, state) : [];
     const prompt = buildTutorStubCharacterRestatementPrompt({
       previousText,
       characterId,
@@ -136,6 +139,7 @@ export function createTutorStubCharacterControlController(dependencies) {
       text: candidate,
       characterId,
       permittedText,
+      permittedFacts,
     });
     let leakAudit =
       candidate && state.dag && state.world
@@ -156,6 +160,7 @@ export function createTutorStubCharacterControlController(dependencies) {
         text: candidate,
         characterId,
         permittedText,
+        permittedFacts,
       });
       leakAudit =
         state.dag && state.world

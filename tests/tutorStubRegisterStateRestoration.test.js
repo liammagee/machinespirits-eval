@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import test from 'node:test';
 
 import { restoreTutorStubRegisterStateFromTurns } from '../services/tutorStubRegisterStateRestoration.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 test('disabled register restoration remains a no-op', () => {
   const state = { register: { enabled: false, history: ['keep'], current: 'keep' } };
@@ -45,7 +45,7 @@ test('enabled register restoration clears stale history when no valid selections
 });
 
 test('the CLI imports rather than redeclares register-state restoration', () => {
-  const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
-  assert.match(source, /from '\.\.\/services\/tutorStubRegisterStateRestoration\.js'/u);
+  const source = readTutorStubApplicationSource();
+  assert.match(source, /from '\.\/tutorStubRegisterStateRestoration\.js'/u);
   assert.doesNotMatch(source, /function restoreRegisterStateFromTurns\(/u);
 });

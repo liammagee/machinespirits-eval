@@ -5,7 +5,7 @@ dry-run SHA, explicit operator authorization bound to that SHA.
 
 ## Where this comes from
 
-The strong-writer run (`eval-2026-08-08-6021754f`, paper v3.0.281) put the
+The strong-writer run (`eval-2026-08-08-6021754f`, paper v3.0.281 as numbered at freeze time, v3.0.283 after the merge renumber) put the
 sarcastic arm at 15/15 cue-compliant and 11/15 read as edged. The post-hoc
 look at the four flat turns found one device carrying the split: 10 of the 11
 edged turns grant the learner's move a compliment and take it back in the same

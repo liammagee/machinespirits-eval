@@ -16,6 +16,7 @@ import {
   tutorStubFieldTurnMarkers,
   tutorStubSignedFieldDelta,
 } from '../services/tutorStubFieldPresentation.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -160,7 +161,7 @@ test('field SVG serialization is byte-stable and keeps its accessibility and esc
 });
 
 test('the debug-report runtime retains field I/O while the auto-eval renderer stays distinct', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubFieldPresentation.js'), 'utf8');
   const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubDebugReportRuntime.js'), 'utf8');
   const autoEvalSource = fs.readFileSync(path.join(ROOT, 'scripts', 'run-tutor-stub-auto-eval.js'), 'utf8');

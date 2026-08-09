@@ -279,6 +279,14 @@ test('parity residue strips valued tutor flags and normalises the trace director
   assert.deepEqual(residue, ['--world', 'world_029_riverside_clinic', '--trace-dir', '<trace-dir>']);
 });
 
+test('showcase dialogue children require a durable artifact archive', () => {
+  for (const job of plan('smoke').jobs) {
+    const index = job.childArgs.indexOf('--artifact-archive');
+    assert.notEqual(index, -1);
+    assert.equal(job.childArgs[index + 1], 'required');
+  }
+});
+
 test('the public plan carries the child commands so a run can be inspected before it is paid for', () => {
   const printable = publicTutorStubShowcasePlan(plan('smoke'));
   assert.equal(printable.jobs.length, 2);

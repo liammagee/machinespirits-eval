@@ -177,7 +177,7 @@ for; `services/__tests__/stackDefaultWarning.test.js` and
 **§6.7 and §8.9 are corrected in place, not re-run.** No count moves: the turns
 were generated, stored and scored as reported. What changes is the stack they are
 bounded to. §6.7 gains a paragraph naming the models actually called and the seat
-map; §8.9 gains a seventh scope condition. Paper v3.0.280.
+map; §8.9 gains a seventh scope condition. Paper v3.0.282 (renumbered from v3.0.280).
 
 **The corrected grid is not being paid for yet.** A 15-row single-register check
 on a strong writer goes first, to see whether the edge survives before the full

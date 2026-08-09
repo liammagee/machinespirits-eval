@@ -34,7 +34,7 @@ tags:
 ---
 
 The strong-writer run ([[register-strong-stack-replication]],
-`eval-2026-08-08-6021754f`, paper v3.0.281) went 15/15 on the cue and 11/15 on
+`eval-2026-08-08-6021754f`, paper v3.0.283) went 15/15 on the cue and 11/15 on
 the reading. Read afterwards, the four flat turns share one shape: they used
 one of the register's two non-praise cues and taught straight, while ten of
 the eleven edged turns grant the learner's move a compliment and take it back
@@ -99,7 +99,7 @@ better; the tutor score is carried alongside for exactly that reason.
 Run `eval-2026-08-09-bb402d97`, 2026-08-09, operator-authorized on clean
 commit `6e79d4e5`. 30/30 rows, 30/30 tutor scores, 50/50 register slices,
 30/30 read with none unread; 270/270 tutor-seat calls on `codex/gpt-5.5`.
-Report COMPLETE. Paper v3.0.282.
+Report COMPLETE. Paper v3.0.284 (renumbered from v3.0.282 in the merge with main).
 
 | measure | plain (control) | asks (treatment) |
 |---|---|---|

@@ -1,22 +1,20 @@
 ---
 id: guard-delivery-prefer-model-over-canned
 title: When every draft fails, ship the closest model draft instead of the template
-status: triaged
+status: dropped
 type: infra
 priority: P1
-owner: claude
+owner: codex
 source: manual
 created: 2026-08-06
-updated: 2026-08-06
+updated: 2026-08-08
 verification: >-
-  DONE (2026-08-06, scripts/replay-guard-fallback-delivery.js): a replay over
-  the fallible-phaseB traces that, for each of the 717 fallback
-  turns, picks the least-vetoed model draft and reports what would have shipped
-  and which findings would have ridden along. Then a paired live run on one
-  cell under both delivery rules, comparing fallback rate, closure rate and
-  turns to closure. The safety families must show zero deliveries carrying a
-  leak, clue-bookkeeping or closure finding under either rule.
-claim_status: planned
+  DROPPED 2026-08-08 after reconciliation with merged PRs #546 and #557:
+  shadow-advisory delivery already ships the model's words by default, and the
+  principal residual source-anchoring tail was separately repaired, judged,
+  and demoted. PR #585 closed unmerged because its pre-#557 residual was stale
+  and its category exclusion could override intentionally hard conversational
+  findings without a current-catalog replay.
 links:
   code:
     - services/tutorStubFirstDraftOuterLoop.js
@@ -25,7 +23,12 @@ links:
   items:
     - guard-regime-fallback-census-at-scale
     - guard-validity-study
+    - guard-policy-default-flip
     - tutor-stub-terminal-fallback-delivery-boundary
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/546
+    - https://github.com/liammagee/machinespirits-eval/pull/557
+    - https://github.com/liammagee/machinespirits-eval/pull/585
 tags:
   - tutor-stub
   - guards
@@ -164,6 +167,23 @@ comparison is not draft against a good turn; it is draft against boilerplate.
 That is precisely what `guard-validity-study` has to settle, and this replay
 does not. The replay says what would ship. It cannot say whether it is better.
 
+## Closeout
+
+Dropped on 2026-08-08 as substantially superseded. PR #546 made the
+shadow-advisory column the live default after the 108-pair validity study, and
+PR #557 then moved the principal remaining source-anchoring repair population
+off veto after a separate 33-turn recheck. Together they implement and validate
+the practical effect that motivated this card without adding a second terminal
+override mechanism.
+
+PR #585 attempted the residual selector as an opt-in path, but its population
+estimate came from the pre-#557 replay. Its allow-by-category rule also reached
+beyond source alignment to hard conversational findings such as a missing
+direct response, an unanswerable question, or a misread learner move. It was
+therefore closed unmerged. If a fresh replay under the current catalog finds a
+material residual, capture a new, narrower card whose allowlist names only the
+specific independently validated findings; do not reactivate this broad rule.
+
 ## Log
 
 - 2026-08-06 — proposed after the Phase-B census. Not implemented.
@@ -176,3 +196,6 @@ does not. The replay says what would ship. It cannot say whether it is better.
   findings order them and the least-marked ships — guards choosing among the
   model's own versions, never between the model and a script. Gated with the
   rest on the full validity-study readout.
+- 2026-08-08 — dropped after reconciling the card with merged PRs #546 and
+  #557. PR #585 closed unmerged; any future residual work starts from a fresh
+  current-catalog replay and a new, narrower card.

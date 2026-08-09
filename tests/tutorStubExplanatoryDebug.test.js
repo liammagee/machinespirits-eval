@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 import {
   buildTutorStubExplanatoryDebugFrame,
@@ -225,9 +226,9 @@ test('explanatory debug fallback distinguishes initial, held, and changed stance
 });
 
 test('the debug-report runtime imports the shared explanatory-debug helpers and retains no local copies', () => {
-  const cliSource = fs.readFileSync('scripts/tutor-stub.js', 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const runtimeSource = fs.readFileSync('services/tutorStubDebugReportRuntime.js', 'utf8');
-  assert.match(cliSource, /services\/tutorStubDebugReportRuntime\.js/u);
+  assert.match(cliSource, /\.\/tutorStubDebugReportRuntime\.js/u);
   assert.match(runtimeSource, /\.\/tutorStubExplanatoryDebug\.js/u);
   assert.doesNotMatch(runtimeSource, /function explanatoryDebugFrame\s*\(/u);
   assert.doesNotMatch(runtimeSource, /function explanatoryDebugPrompt\s*\(/u);

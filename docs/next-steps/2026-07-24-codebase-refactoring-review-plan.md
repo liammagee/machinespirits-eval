@@ -6,6 +6,7 @@
 - Structural-audit snapshot: `2a5d898178cbb4c3544caad4d655b433b6e40c87`
 - Reconciled current main: `0f04094c` (includes merged PR #177 test/coverage foundation)
 - Branch: `codex/codebase-refactoring-review`
+- Current reconciliation: `docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md`
 - Scope: tracked application, test, configuration, packaging, and build surfaces
 - Excluded from complexity ranking: generated artifacts, frozen empirical outputs,
   fixtures, vendored code, lockfiles, and generated workplan views

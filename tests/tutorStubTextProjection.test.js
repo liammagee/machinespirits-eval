@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import test from 'node:test';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 import { compactTutorStubOneLine } from '../services/tutorStubTextProjection.js';
 
 test('one-line projection collapses whitespace and trims edges', () => {
@@ -22,7 +22,7 @@ test('one-line projection preserves the nullish fallback', () => {
 });
 
 test('the CLI imports rather than redeclares its shared one-line projection', () => {
-  const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
+  const source = readTutorStubApplicationSource();
   assert.match(source, /compactTutorStubOneLine as oneLine/u);
   assert.doesNotMatch(source, /function oneLine\(/u);
 });

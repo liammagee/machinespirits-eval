@@ -381,6 +381,62 @@ pool runs across the `boundaryPolicy` stamp. `scripts/census-guard-template-rate
 reads the stamp off any run's traces, so this is a check, not a memory
 exercise.
 
+## The nulls measured before the flip, one row each (2026-08-09)
+
+The Phase-B reversal narrowed a rule: an outcome result is safe from the guard
+only when the treatment is not carried in the prose the guard replaces.
+Checking the endpoint in code does not save you, because the guard deletes the
+treatment rather than the measurement. Applied backwards, that rule asks one
+question of every tutor-stub null the paper cites: did the treatment live in
+the tutor's wording?
+
+The window is 2026-07-10 (first delivery-guard audit) to 2026-08-07 (the flip).
+The stub itself was created 2026-07-06 and dispositions were centralised
+2026-07-16, so only work inside that window could have had a draft discarded.
+
+| Result | Where the treatment sat | Template rate | Verdict |
+| --- | --- | --- | --- |
+| §6.16 green room, Gate 1 fails 3/17 against a 60% bar (2026-07-12) | a coach's prompt book injected into the tutor's system prompt | 6% of 314 turns, 89% model as written (`greenroom-gate1-2026-07-12`) | safe |
+| §6.17 register selection, the Sonnet null (2026-07-13/14) | the tutor's speaking stance — three register policies | 5.8%, 91 of 1,582 turns; bland 34/535, field 37/502, negative 20/545 | safe |
+| §6.18 addendum, the point-of-action coaching gate (2026-07-18) | a coaching line inside the tutor's turn | nothing survives to count | unrecoverable |
+| §6.21 Program-2 Phase 5 live, +0.040 CI95 [−0.054, +0.133] (2026-07-20/22) | a trained warrant move in the tutor's words | nothing survives to count | unrecoverable |
+| §6.19 sensor program | zero-call, synthetic kernels — the guard was never in the loop | — | safe on its face |
+| §6.20 and §6.22, Program-2 offline | training and grading over archived moments, no live delivery | — | safe on its face |
+
+§6.17 is the row worth explaining, because it was the strongest candidate on
+the list and its traces are gone with the `machinespirits-eval-preconscious`
+worktree. Each auto-eval report under `exports/register-confirmatory-evidence/`
+embeds its own per-turn records, and those carry the `deterministic_fallback`
+event, which is where the 5.8% comes from. The rate is near-even across the
+three registers, and the widest gap inside a single profile is six points
+(`proof_skipper`: field 8%, negative 2%) against Phase B's 21–28% versus 0–1%.
+Limits: three of the four profiles (`diligent`, `false_memory`,
+`proof_skipper`; `affective_resistant` left no report), and the Sonnet block
+only — the Terra block left nothing, and failed its own manipulation gate
+anyway. Counting from one array is the whole trick: the same record is
+duplicated across `trainingExamples.examples`, `animatedViz.frames` and
+`transcript.turns`, so a grep over the file inflates the count threefold.
+
+The two unrecoverable rows get no guessed rate. §6.18's addendum leaves only
+`config/adaptive-tutor-evidence/point-of-action-gate-grade.json`; §6.21 ran on
+the pinned runtime `../ms-phase5-pinned`, which is gone, and `exports/` holds a
+5b dry run and nothing else. §6.21's section already locates its loss to a
+question-discipline leak rather than to a missing cue, which argues against a
+guard explanation — but that is a reading, not a rate. Phase 5f is a different
+case again: "not estimable, insufficient opportunities" is an absent
+denominator, not a null.
+
+Out of scope: §6.18's main series V17–V53, where the repair-and-fallback ladder
+is the subject rather than a confound inside it; §6.13, whose stage is the
+derivation harness and not the stub, with results starting 2026-06-09 and no
+discard-the-draft-and-speak-a-template path; §6.23 and §6.24, which read their
+own template rates and stamp their policy.
+
+So of the four candidates carrying the treatment in the tutor's prose, two are
+cleared by a measured rate and two cannot be measured at all. Nothing is marked
+diluted, no null is owed a caveat, and no re-run follows. Card:
+`workplan/items/strict-policy-null-sweep.md`.
+
 ## The regime this licenses (recorded 2026-08-06, in force from 2026-08-07)
 
 Three measurements now sit behind the design rule. The replay

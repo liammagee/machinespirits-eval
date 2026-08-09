@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -119,7 +120,7 @@ test('interim controller owns disabled-terminal lifecycle and tutor context proj
 });
 
 test('entrypoint binds bounded learner-analysis and interim owners', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const owners = [
     ['services/tutorStubLearnerAnalysisRuntime.js', 1_000],
     ['services/tutorStubInterimController.js', 320],

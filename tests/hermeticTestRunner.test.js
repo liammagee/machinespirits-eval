@@ -44,6 +44,8 @@ test('default hermetic run selects root and in-housed core suites', () => {
     printEnv: false,
     quiet: false,
     shard: null,
+    reportDir: null,
+    testConcurrency: null,
     forwarded: [],
   });
   const projectRoot = path.resolve('.');
@@ -74,6 +76,8 @@ test('explicit historical test paths remain scoped to the root suite', () => {
     printEnv: false,
     quiet: false,
     shard: null,
+    reportDir: null,
+    testConcurrency: null,
     forwarded: ['tests/workplan.test.js'],
   });
 });
@@ -85,6 +89,8 @@ test('suite and force-exit controls are parsed without leaking into child args',
     printEnv: false,
     quiet: false,
     shard: null,
+    reportDir: null,
+    testConcurrency: null,
     forwarded: [],
   });
   // The forced exit is now opt-in, and the flag that used to disable it stays
@@ -94,6 +100,46 @@ test('suite and force-exit controls are parsed without leaking into child args',
   assert.throws(() => parseRunnerArgs(['--suite', 'unknown']), /Invalid test suite/);
   assert.throws(() => parseRunnerArgs(['--test-reporter=spec']), /reserve --test-reporter/);
   assert.throws(() => parseRunnerArgs(['--suite', 'core', '--reporter=dot']), /reserve --reporter/);
+});
+
+test('an explicit report directory is retained by the parent instead of forwarded to a child runner', () => {
+  assert.deepEqual(parseRunnerArgs(['--report-dir', '.test-tmp/hermetic-profile', '--quiet']), {
+    suite: 'all',
+    forceExit: false,
+    printEnv: false,
+    quiet: true,
+    shard: null,
+    reportDir: '.test-tmp/hermetic-profile',
+    testConcurrency: null,
+    forwarded: [],
+  });
+  assert.equal(parseRunnerArgs(['--report-dir=.test-tmp/other-profile']).reportDir, '.test-tmp/other-profile');
+  assert.throws(() => parseRunnerArgs(['--report-dir']), /requires a path/u);
+  assert.throws(() => parseRunnerArgs(['--report-dir=']), /requires a path/u);
+});
+
+test('bounded root concurrency is parsed and passed to Node without replacing explicit test selection', () => {
+  const options = parseRunnerArgs(['--suite', 'root', '--test-concurrency=8', 'tests/workplan.test.js']);
+  assert.equal(options.testConcurrency, 8);
+  assert.deepEqual(options.forwarded, ['tests/workplan.test.js']);
+
+  const phase = buildTestPhases(options, path.resolve('.'), '/tmp/hermetic-reports')[0];
+  assert.deepEqual(phase.selectedFiles, ['tests/workplan.test.js']);
+  assert.ok(phase.args.includes('--test-concurrency=8'));
+  assert.equal(phase.args.at(-1), 'tests/workplan.test.js');
+
+  const fullPhase = buildTestPhases(
+    parseRunnerArgs(['--suite', 'root', '--test-concurrency=8']),
+    path.resolve('.'),
+    '/tmp/hermetic-reports',
+  )[0];
+  assert.deepEqual(fullPhase.selectedFiles, discoverRootTestFiles());
+  assert.deepEqual(fullPhase.args.slice(-fullPhase.selectedFiles.length), fullPhase.selectedFiles);
+
+  assert.equal(parseRunnerArgs(['--test-concurrency', '4']).testConcurrency, 4);
+  assert.throws(() => parseRunnerArgs(['--test-concurrency=0']), /Invalid test concurrency/u);
+  assert.throws(() => parseRunnerArgs(['--test-concurrency=1.5']), /Invalid test concurrency/u);
+  assert.throws(() => parseRunnerArgs(['--suite', 'core', '--test-concurrency=8']), /only for the root suite/u);
 });
 
 test('root sharding is deterministic, exhaustive, and isolated from forwarded runner arguments', () => {
@@ -126,6 +172,8 @@ test('root sharding is deterministic, exhaustive, and isolated from forwarded ru
     printEnv: false,
     quiet: true,
     shard: { index: 1, total: 2 },
+    reportDir: null,
+    testConcurrency: null,
     forwarded: [],
   });
   const phase = buildTestPhases(options, path.resolve('.'), '/tmp/hermetic-reports')[0];
@@ -309,6 +357,7 @@ test('root discovery stays explicit while the core phase targets all in-housed V
     '/repo/node_modules/vitest/vitest.mjs',
     'run',
     'tutor-core/services/__tests__/example.test.js',
+    '--exclude=.claude/worktrees/**',
     '--reporter=default',
     '--reporter=json',
     '--outputFile.json=/tmp/core.json',
@@ -353,6 +402,7 @@ test('the core phase borrows the main checkout install when a worktree has none'
 test('isolated environment covers root and tutor-core writable stores', () => {
   const paths = createIsolatedPaths('/tmp/hermetic');
   assert.equal(paths.EVAL_DB_PATH, '/tmp/hermetic/evaluations.db');
+  assert.equal(paths.EVAL_ARCHIVE_DIR, '/tmp/hermetic/artifact-archive');
   assert.equal(paths.TUTOR_CORE_LOG_DIR, '/tmp/hermetic/tutor-core-logs');
   assert.equal(paths.TUTOR_STUB_TRACE_DIR, '/tmp/hermetic/tutor-stub-traces');
 });
@@ -1097,9 +1147,9 @@ test('the timing reporter emits a line per file as that file finishes', async ()
   async function* events() {
     yield event('test:pass', 'alpha.test.js', { details: { duration_ms: 4 } });
     yield event('test:pass', 'alpha.test.js', { details: { duration_ms: 6 } });
-    yield event('test:summary', 'alpha.test.js');
+    yield event('test:summary', 'alpha.test.js', { duration_ms: 12 });
     yield event('test:fail', 'beta.test.js', { details: { duration_ms: 3 } });
-    yield event('test:summary', 'beta.test.js');
+    yield event('test:summary', 'beta.test.js', { duration_ms: 5 });
     // The whole-run summary carries no file and must not add a line.
     yield { type: 'test:summary', data: { file: null } };
   }
@@ -1107,8 +1157,22 @@ test('the timing reporter emits a line per file as that file finishes', async ()
   const lines = [];
   for await (const line of hermeticTimingReporter(events())) lines.push(JSON.parse(line));
   assert.deepEqual(lines, [
-    { file: 'alpha.test.js', durationMs: 10, tests: 2, failures: 0 },
-    { file: 'beta.test.js', durationMs: 3, tests: 1, failures: 1 },
+    {
+      file: 'alpha.test.js',
+      durationMs: 12,
+      durationSource: 'file_summary',
+      testDurationMs: 10,
+      tests: 2,
+      failures: 0,
+    },
+    {
+      file: 'beta.test.js',
+      durationMs: 5,
+      durationSource: 'file_summary',
+      testDurationMs: 3,
+      tests: 1,
+      failures: 1,
+    },
   ]);
 });
 
@@ -1128,8 +1192,22 @@ test('the timing reporter still accounts for every file where Node emits no per-
   const lines = [];
   for await (const line of hermeticTimingReporter(node20Events())) lines.push(JSON.parse(line));
   assert.deepEqual(lines, [
-    { file: 'alpha.test.js', durationMs: 10, tests: 2, failures: 0 },
-    { file: 'beta.test.js', durationMs: 3, tests: 1, failures: 1 },
+    {
+      file: 'alpha.test.js',
+      durationMs: 10,
+      durationSource: 'test_sum',
+      testDurationMs: 10,
+      tests: 2,
+      failures: 0,
+    },
+    {
+      file: 'beta.test.js',
+      durationMs: 3,
+      durationSource: 'test_sum',
+      testDurationMs: 3,
+      tests: 1,
+      failures: 1,
+    },
   ]);
 });
 

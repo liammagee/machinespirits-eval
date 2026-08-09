@@ -3,7 +3,9 @@
   "facade": "services/evaluationStore.js",
   "characterization": {
     "sourceLineCount": 103,
-    "liveAndPackageConsumerCount": 9,
+    "liveAndPackageConsumerCount": 1,
+    "migrationTargetConsumerCount": 0,
+    "retainedCompatibilityConsumerCount": 1,
     "archivedConsumerCount": 4,
     "testConsumerCount": 14
   },
@@ -24,7 +26,7 @@
   "consumers": [
     {
       "path": "index.js",
-      "classification": "package-entrypoint",
+      "classification": "retained-package-compatibility",
       "modes": ["namespace-reexport"]
     },
     {
@@ -45,46 +47,6 @@
     {
       "path": "scripts/archive/oneoff/inspect-judge-prompt.js",
       "classification": "archived-oneoff",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/ingest-pilot-sessions.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/prompt-lab.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/run-adaptive-cell-smoke.js",
-      "classification": "operational-script",
-      "modes": ["dynamic"]
-    },
-    {
-      "path": "scripts/run-adaptive-persistence-smoke.js",
-      "classification": "operational-script",
-      "modes": ["dynamic"]
-    },
-    {
-      "path": "scripts/run-dialogue-engine-trap-baseline.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/run-id-director-trap-pilot.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/seed-db.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/test-token-budget.js",
-      "classification": "operational-script",
       "modes": ["namespace"]
     },
     {
@@ -252,6 +214,12 @@
   "packageSurface": {
     "root": "./index.js",
     "servicesPattern": "./services/*.js",
-    "rootNamespaceReexport": true
+    "rootNamespaceReexport": true,
+    "compatibility": {
+      "status": "retained",
+      "publishedPackage": "@machinespirits/eval",
+      "preferredNewConsumer": "@machinespirits/eval/services/evaluationStore/createEvaluationStore",
+      "removalPolicy": "major-version-only"
+    }
   }
 }

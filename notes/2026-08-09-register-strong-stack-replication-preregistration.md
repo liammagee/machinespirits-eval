@@ -15,7 +15,7 @@ and three reviewer calls on `moonshotai/kimi-k2.5`, with `codex.gpt-5.5` only
 on the learner seats. The weak-stack warning stayed silent because it read the
 ask too.
 
-Both defects are fixed (paper v3.0.280, commits `484e335a` and `d161ab46`):
+Both defects are fixed (paper v3.0.280 as numbered at freeze time --- renumbered to v3.0.282 when this branch merged main, which had claimed v3.0.280--281 for other work; commits `484e335a` and `d161ab46`):
 the id-director applies a per-seat override before either call is built, and
 the warning fires on the models a run will call.
 

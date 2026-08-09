@@ -9,6 +9,7 @@ import {
   buildTutorStubFailedClassification,
   floorTutorStubClassifierScore,
 } from '../services/tutorStubLearnerClassification.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -62,7 +63,7 @@ test('failed classification preserves null route metadata and fresh zero-usage d
 });
 
 test('the CLI imports rather than redeclares failed-classification construction', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLearnerClassification.js'), 'utf8');
 
   assert.match(cliSource, /buildTutorStubFailedClassification as failedClassification/u);

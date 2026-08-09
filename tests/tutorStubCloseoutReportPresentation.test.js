@@ -12,6 +12,7 @@ import {
   spawnSync,
   test,
 } from './helpers/tutorStubInteractiveHarness.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const COLORS = { cyan: '<cyan>', dim: '<dim>', reset: '</>' };
 const LIVE_CLOSEOUT_HASH = '49908aa1e7d7838f8db19a2c2fdf891f689fca926e04cb866dc6f535c51088b1';
@@ -148,7 +149,7 @@ test('closeout report projection preserves no-turn and sparse omission contracts
 });
 
 test('the debug-report runtime retains report assembly and effects while live closeout output stays byte-identical', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCloseoutReportPresentation.js'), 'utf8');
   const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubDebugReportRuntime.js'), 'utf8');
   const closeoutSlice = runtimeSource.slice(

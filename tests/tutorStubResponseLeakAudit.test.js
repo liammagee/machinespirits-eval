@@ -1,8 +1,13 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
+import path from 'node:path';
 import test from 'node:test';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
+import { fileURLToPath } from 'node:url';
+import { loadWorld } from '../services/dramaticDerivation/world.js';
 import { createTutorStubPublicEvidenceModel } from '../services/tutorStubPublicEvidence.js';
 import { createTutorStubResponseLeakAudit } from '../services/tutorStubResponseLeakAudit.js';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function fixtureWorld() {
   const premises = [
@@ -119,8 +124,23 @@ test('the private conclusion is still caught when the tutor states it in its own
   );
 });
 
+test('Rowan Flat correspondence clears only after its structured dye-path fact is released', () => {
+  const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-030-rowan-flat.yaml'));
+  const text = 'The dye traces a path from the hose split to the ceiling mark.';
+  const audit = auditModel();
+
+  const beforeRelease = audit.auditTutorResponseLeak({ text, world, tutorTurn: 6, learnerText: '' });
+  assert.ok(beforeRelease.leaks.some((row) => row.type === 'unsupported_evidence_correspondence'));
+
+  const afterRelease = audit.auditTutorResponseLeak({ text, world, tutorTurn: 7, learnerText: '' });
+  assert.equal(
+    afterRelease.leaks.some((row) => row.type === 'unsupported_evidence_correspondence'),
+    false,
+  );
+});
+
 test('the CLI binds rather than redeclares the response-leak audit', () => {
-  const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
+  const source = readTutorStubApplicationSource();
   assert.match(source, /createTutorStubResponseLeakAudit/u);
   assert.doesNotMatch(source, /function (?:unreleasedPremiseLeakRows|auditTutorResponseLeak)\(/u);
   assert.doesNotMatch(source, /const PRIVATE_TOKEN_STOPWORDS/u);

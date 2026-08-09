@@ -21,6 +21,7 @@ import {
   tutorStubExactRelaunchCommand,
   writeTutorStubSessionRecipe,
 } from '../services/tutorStubSessionRecipe.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 function modelIdentity(ref, overrides = {}) {
   const [provider] = ref.split('.', 1);
@@ -138,7 +139,7 @@ test('recipe model identity resolver uses a supplied visible route or resolves o
 });
 
 test('the CLI binds rather than redeclares recipe model identity helpers', () => {
-  const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
+  const source = readTutorStubApplicationSource();
   assert.match(source, /createTutorStubRecipeModelIdentityResolver/u);
   assert.doesNotMatch(source, /function (?:safeTutorStubRecipeBaseUrl|tutorStubRecipeModelIdentity)\(/u);
 });

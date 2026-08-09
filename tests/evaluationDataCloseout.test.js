@@ -22,6 +22,7 @@ test('ordinary npm tests receive isolated evaluation data paths', () => {
   const env = JSON.parse(output);
   assert.deepEqual(Object.keys(env).sort(), [
     'AUTH_DB_PATH',
+    'EVAL_ARCHIVE_DIR',
     'EVAL_DB_PATH',
     'EVAL_EXPORTS_DIR',
     'EVAL_LOGS_DIR',

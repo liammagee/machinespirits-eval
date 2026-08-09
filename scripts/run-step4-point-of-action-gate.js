@@ -15,6 +15,7 @@ import {
   TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
   tutorStubPointOfActionPlaceboAudit,
 } from '../services/tutorStubPointOfActionCoaching.js';
+import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
 import { learnerProfilePrompt } from './tutor-stub-learner-profile-contracts.js';
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
@@ -144,6 +145,7 @@ function commandForJob(job, outputRoot) {
     job.id,
     '--trace-dir',
     traceDir,
+    ...requiredTutorStubArtifactArchiveArgs(),
     '--max-tokens',
     String(STEP4_POINT_OF_ACTION_SPEC.maxTokens),
     '--history-turns',

@@ -11,6 +11,7 @@ import {
   installFakeCodex,
   runInteractive,
   runInteractiveModelSwitchSequence,
+  removeTempDir,
 } from './helpers/tutorStubInteractiveHarness.js';
 
 test('ordinary tutor turns replay the full public user/assistant history without a model change', async () => {
@@ -28,7 +29,7 @@ test('ordinary tutor turns replay the full public user/assistant history without
     );
     assert.match(calls[1], /Latest message:\nSecond learner message\./u);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -103,7 +104,7 @@ test('ordinary invalid tutor drafts recover through a progression-safe determini
     assert.equal(sealedFailure.record.training.trainingLicensed, false);
     assert.ok(sealedFailure.failureModes.some((mode) => mode.startsWith('guard.live_turn_progression_v1.')));
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -167,7 +168,7 @@ test('a tutor that says it nearly went the wrong way publishes its own turn inst
     assert.equal(delivered.audits.liveTurnProgressionAudit.ok, true);
     assert.deepEqual(delivered.audits.liveTurnProgressionAudit.issues, []);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -200,7 +201,7 @@ test('consecutive ordinary deterministic recoveries vary without weakening progr
       assert.equal(accounting.finalDelivery.audits.repetitionAudit.ok, true);
     }
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -222,11 +223,16 @@ test('learner messages sent before the tutor replies form one restart-safe compo
         'none',
       ],
       initialInput: 'The first clue is unclear.\n',
-      followupInputs: [{ delayMs: 200, text: 'I mean the residue comparison specifically.\n' }],
+      followupInputs: [
+        {
+          afterStartLogIncludes: 'The first clue is unclear.',
+          text: 'I mean the residue comparison specifically.\n',
+        },
+      ],
       stopWhen: (plain) => plain.includes('safe fallback used'),
       timeoutMs: 30_000,
       env: {
-        FAKE_CODEX_DELAY_MS: '800',
+        FAKE_CODEX_DELAY_MS: '500',
         TUTOR_STUB_SUMMARY_OPEN: '0',
         TUTOR_STUB_REMEMBER_SETTINGS: '0',
       },
@@ -291,7 +297,7 @@ test('learner messages sent before the tutor replies form one restart-safe compo
       ),
     );
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -342,7 +348,7 @@ test('/use records an unchanged mixed learner suggestion as AI-authored with hum
       ),
     );
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -445,7 +451,7 @@ test(
       assert.equal(turn.learnerResponseProvenance.aiGenerated, true);
       assert.ok(events.some((event) => event.type === 'mixed_learner_suggestion_inserted'));
     } finally {
-      fs.rmSync(tmp, { recursive: true, force: true });
+      removeTempDir(tmp);
     }
   },
 );
@@ -515,7 +521,7 @@ test('optional thumbs feedback is attached to the next human learner message and
     assert.match(calls.at(-1), /This contract expires after this tutor response/u);
     assert.match(calls.at(-1), /Do not mention the rating/u);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -609,7 +615,7 @@ test(
       assert.equal(secondTurn.learner, 'Second learner message.');
       assert.equal(secondTurn.learnerInput.tutorFeedback.rating, 'up');
     } finally {
-      fs.rmSync(tmp, { recursive: true, force: true });
+      removeTempDir(tmp);
     }
   },
 );
@@ -711,7 +717,7 @@ test(
         ),
       );
     } finally {
-      fs.rmSync(tmp, { recursive: true, force: true });
+      removeTempDir(tmp);
     }
   },
 );
@@ -789,7 +795,7 @@ test('/reset cancels an in-flight tutor turn and reopens the same scenario witho
       false,
     );
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -836,7 +842,7 @@ test('/reset escapes an in-flight automated sequence and returns control to lear
     assert.equal(events.filter((event) => event.type === 'turn_complete').length, 0);
     assert.ok(events.some((event) => event.type === 'interactive_auto_discarded' && event.reason === 'dialogue_reset'));
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -898,7 +904,7 @@ test('/demo runs a bounded live tour, writes inspectable evidence, and returns c
     assert.match(completed?.transcript || '', /-transcript\.html$/u);
     assert.equal(completed?.publicTranscriptChanged, false);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -932,7 +938,7 @@ test('a late learner fragment discards already-computed analysis state before re
       env: {
         FAKE_CODEX_VALID_ANALYSIS: '1',
         FAKE_CODEX_ANALYSIS_DELAY_MS: '50',
-        FAKE_CODEX_DELAY_MS: '2200',
+        FAKE_CODEX_DELAY_MS: '500',
         TUTOR_STUB_SUMMARY_OPEN: '0',
         TUTOR_STUB_REMEMBER_SETTINGS: '0',
       },
@@ -978,7 +984,7 @@ test('a late learner fragment discards already-computed analysis state before re
       ),
     );
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -1032,7 +1038,7 @@ test('/quit writes a learner-centred HTML summary after a completed turn', async
       ),
     );
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -1072,6 +1078,6 @@ test('a live tutor-model change replays the full public user/assistant history o
     assert.equal(laterTutorCall.request.config.replayedUserMessageCount, 1);
     assert.equal(laterTutorCall.request.config.replayedAssistantMessageCount, 1);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });

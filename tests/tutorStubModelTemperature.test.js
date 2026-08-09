@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import test from 'node:test';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 import {
   effectiveTutorStubModelTemperature,
@@ -28,7 +28,7 @@ test('other providers and model families preserve the requested temperature', ()
 });
 
 test('the CLI imports rather than redeclares the model-temperature policy', () => {
-  const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
+  const source = readTutorStubApplicationSource();
   assert.match(source, /effectiveTutorStubModelTemperature as effectiveTemperatureForModel/u);
   assert.doesNotMatch(source, /function (?:usesFixedOpenAITemperature|effectiveTemperatureForModel)\(/u);
 });

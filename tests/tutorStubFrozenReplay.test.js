@@ -706,6 +706,32 @@ test('Rowan Flat due evidence may use public answer components while the conceal
   assert.equal(dueSurface.toLowerCase().includes(nameLeak.matches[0]), false);
 });
 
+test('Rowan Flat frozen audit uses the released dye-path fact instead of requiring assay diction', () => {
+  const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-030-rowan-flat.yaml'));
+  const text = 'The dye traces a path from the hose split to the ceiling mark.';
+  const releasedAt = (turn) =>
+    world.releaseSchedule.filter((row) => Number(row.turn) <= turn).map((row) => row.premise);
+
+  const beforeRelease = auditTutorStubFrozenLeak({
+    text,
+    world,
+    tutorTurn: 6,
+    publicPremiseIds: releasedAt(6),
+  });
+  assert.ok(beforeRelease.leaks.some((leak) => leak.type === 'unsupported_evidence_correspondence'));
+
+  const afterRelease = auditTutorStubFrozenLeak({
+    text,
+    world,
+    tutorTurn: 7,
+    publicPremiseIds: releasedAt(7),
+  });
+  assert.equal(
+    afterRelease.leaks.some((leak) => leak.type === 'unsupported_evidence_correspondence'),
+    false,
+  );
+});
+
 test('V19 provenance replay distinguishes a due strain match from the same match before release', () => {
   const fixture = readFixture(FIXTURE_PATHS[0]);
   const testCase = fixture.cases.find((row) => row.turn === 7);

@@ -28,7 +28,10 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
+import { archiveRun, resolveArchiveDir } from './archive-run-artifacts.js';
+
 import { loadWorld } from '../services/dramaticDerivation/world.js';
+import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
 import { tutorStubOutcomeRowKind } from '../services/tutorStubOutcomeRows.js';
 import { parseTutorStubShowcaseTrace, readTutorStubShowcaseTrace } from '../services/tutorStubShowcase.js';
 
@@ -163,6 +166,7 @@ function childCommand({ args, world, traceDir, turnCap, budget }) {
     '--no-remember-settings',
     '--trace-dir',
     traceDir,
+    ...requiredTutorStubArtifactArchiveArgs(),
   ];
 }
 
@@ -416,6 +420,30 @@ async function main() {
     .map((line) => JSON.parse(line));
   writeReport({ outDir, args, rows });
   process.stdout.write(`report written to ${path.relative(ROOT, outDir)}\n`);
+  archiveLightLayer(outDir);
+}
+
+/**
+ * Copy this run's reports and results.jsonl into the private archive as soon
+ * as the run ends. `exports/` is untracked, so a run that is never copied out
+ * lives on one machine only — the first Phase-B run's transcripts were lost
+ * that way. Only the light layer goes automatically; traces are hundreds of
+ * megabytes and wait for an explicit `npm run archive:runs`. Failure here
+ * never costs a finished run, so everything is caught and reported.
+ */
+function archiveLightLayer(outDir) {
+  try {
+    const dest = resolveArchiveDir();
+    if (!dest) return;
+    const summary = archiveRun(outDir, { dest, lightOnly: true });
+    if (summary.copied) {
+      process.stdout.write(
+        `archived ${summary.copied} file(s) to ${dest} — traces stay here until \`npm run archive:runs\`\n`,
+      );
+    }
+  } catch (error) {
+    process.stderr.write(`archive skipped: ${error?.message || error}\n`);
+  }
 }
 
 main().catch((error) => {

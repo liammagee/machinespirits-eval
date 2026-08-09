@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import test from 'node:test';
 
 import {
@@ -15,6 +14,7 @@ import {
   tutorStubResponseCheckTriggerAreas,
   tutorStubResponseMetadataLine,
 } from '../services/tutorStubResponseDetails.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 test('diagnostic labels and plain lists preserve the CLI human-readable text contract', () => {
   assert.equal(tutorStubDisplayDiagnosticLabel('  clarify_distinction--now  '), 'clarify distinction now');
@@ -264,8 +264,8 @@ test('response metadata preserves the complete response-details ordering and wor
 });
 
 test('tutor-stub imports the shared response-detail helpers and retains no local copies', () => {
-  const source = fs.readFileSync('scripts/tutor-stub.js', 'utf8');
-  assert.match(source, /services\/tutorStubResponseDetails\.js/u);
+  const source = readTutorStubApplicationSource();
+  assert.match(source, /\.\/tutorStubResponseDetails\.js/u);
   assert.doesNotMatch(source, /function displayDiagnosticLabel\s*\(/u);
   assert.doesNotMatch(source, /function plainList\s*\(/u);
   assert.doesNotMatch(source, /function plainResponseCheckArea\s*\(/u);

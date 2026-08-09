@@ -113,6 +113,7 @@ export function createTutorStubApplicationTraceContext({
   const trace = createTraceState({
     enabled: traceEnabled,
     traceDir: args['trace-dir'],
+    artifactArchivePolicy: args['artifact-archive'],
     metadata: {
       modelRef: args.model,
       resolved: visibleModel,

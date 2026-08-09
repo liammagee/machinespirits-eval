@@ -7,7 +7,8 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-24
-updated: 2026-08-07
+updated: 2026-08-09
+branch: codex/refactor-post-adapter-reconciliation
 verification: >-
   Every accepted refactoring slice has a linked child card and parity gate;
   root plus in-housed tutor-core tests run from one clean-install contract;
@@ -20,6 +21,7 @@ depends_on: []
 links:
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
+    - docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md
   items:
     - refactor-required-run-manifest
     - refactor-v-series-fixtures
@@ -134,6 +136,14 @@ links:
     - refactor-operational-log-reader-injection
     - refactor-longitudinal-report-store-ownership
     - refactor-operational-score-store-ownership
+    - refactor-operational-run-store-ownership
+    - refactor-operational-ingest-seed-store-ownership
+    - refactor-token-budget-store-ownership
+    - refactor-prompt-lab-store-ownership
+    - refactor-evaluation-store-package-compatibility-boundary
+    - refactor-tutor-stub-adapter-tail
+    - refactor-eval-routes-read-side-domains
+    - refactor-evaluation-run-coordinator-runtime
 tags:
   - refactoring
   - testing
@@ -1683,3 +1693,101 @@ Log:
   is down to 13 live/package consumers with complete hermetic and risk parity
   green; the remaining 12 operational scripts should now be grouped by their
   mutation and orchestration responsibilities rather than migrated en masse.
+- 2026-08-08 — PR #575 merged the operational scoring cohort and reduced the
+  direct facade inventory to nine live/package consumers. Closed that child
+  and activated `refactor-operational-run-store-ownership` from refreshed main
+  `adb85c32` for the two adaptive smokes and two trap/pilot launchers; ingestion,
+  seed, prompt-lab, token-budget, package compatibility, archive, and test
+  consumers remain later bounded cohorts.
+- 2026-08-08 — The operational run-launcher cohort reached review with the two
+  adaptive smokes and two trap/pilot adapters explicitly owning and closing one
+  injected store per invocation. Deterministic smokes and the complete local
+  contract are green; the direct facade inventory is down to five live/package
+  consumers. Pilot ingestion plus seed data is the next coherent write-bearing
+  cohort, while prompt-lab remains a separate macro migration.
+- 2026-08-08 — Started `refactor-operational-ingest-seed-store-ownership` from
+  post-PR-#581 main `7562e0a3`; PR #580 independently repairs the out-of-order
+  review closeout. This slice removes the two small write-bearing utilities
+  before the separate prompt-lab macro migration.
+- 2026-08-08 — The pilot-ingestion and seed-data cohort reached review with
+  bounded disposal, isolated persistence parity, and the full local contract
+  green. Direct facade ownership is down to three live/package consumers:
+  prompt-lab, token-budget probing, and the package compatibility entrypoint.
+- 2026-08-08 — PR #583 merged the pilot-ingestion and seed-data cohort. Closed
+  that child and activated `refactor-token-budget-store-ownership` from
+  refreshed main `8742fdd3`; token-budget reporting is the final small
+  operational script before the separate prompt-lab macro migration.
+- 2026-08-08 — The token-budget ownership slice reached review with import-safe
+  orchestration, one bounded report store, deterministic mixed-shape report
+  coverage, and the full local contract green. Only prompt-lab and the public
+  package compatibility entrypoint still consume the legacy facade directly.
+- 2026-08-09 — PR #588 merged the token-budget ownership slice. Closed that
+  child and activated `refactor-prompt-lab-store-ownership` from refreshed main
+  `87dba4dc`; prompt-lab is the final operational facade consumer and the last
+  macro migration before deciding the public package compatibility boundary.
+- 2026-08-09 — Completed `refactor-prompt-lab-store-ownership` to review:
+  prompt-lab now owns one bounded store per session command, has database-free
+  admission and injectable filesystem/child-run seams, and all local contracts
+  pass. The legacy facade now has no operational consumers; only the public
+  package compatibility entrypoint remains for an explicit retain-or-retire
+  decision after this slice merges.
+- 2026-08-09 — Activated
+  `refactor-evaluation-store-package-compatibility-boundary` from reviewed PR
+  #591 head while GitHub still reports that dependency open. Npm publication,
+  the published root namespace, and the private host installation justify
+  retaining the lazy facade as a semver-governed public boundary while the
+  inventory ratchets all internal migration targets at zero.
+- 2026-08-09 — Completed the package-compatibility decision to review. The
+  103-line lazy facade remains as one intentional published boundary; all
+  application-runtime and operational migration targets are zero, new hosts
+  are directed to explicit store ownership, and complete local contracts pass.
+  This closes the evaluation-store refactoring arm once PR #591 and this child
+  merge.
+- 2026-08-09 — PR #591 merged as `dead5be9` and the generated workplan refresh
+  as `614fd1c4`, closing Prompt Lab ownership. The reviewed package-boundary
+  child can now rebase onto current main and publish as the final
+  evaluation-store refactoring slice.
+- 2026-08-09 — Reconciled the full programme after PR #593 merged as
+  `f72dbc17`, then refreshed the snapshot through PR #595 and generated-view
+  commit `3ed950d9`. The 118 previously linked children are now all done. Fresh
+  metrics record 4,953 repository files, 2,476 source files, 868,019 source code
+  lines, zero import cycles, zero evaluation-store migration targets, and a
+  synchronized 638-root/11-core required-file manifest with no allowed skips.
+  The parent remains active: tutor-stub is 2,699 lines and its roughly 705-line
+  `main()` misses the two R3 exit ceilings, while later R4-R8 phases remain
+  partial or uninstantiated. Triaged `refactor-tutor-stub-adapter-tail` as the
+  sole next slice; require a new evidence refresh before activating any
+  subsequent macro phase.
+- 2026-08-09 — Reconciled again from post-PR-#602 main `6396f219`. The
+  tutor-stub executable is now a 136-line adapter and the R3 exit criteria are
+  complete. The 119 previously linked children are all done. Fresh metrics
+  record 4,971 repository files, 2,487 source files, 869,926 source code lines,
+  zero import cycles across 556 files, a synchronized 641-root/11-core required
+  manifest with four explicit governed skip contracts, and the intentional
+  103-line evaluation-store package boundary as the only live/package facade
+  consumer. The parent remains active because R4-R8 are still partial or
+  uninstantiated. Added `refactor-eval-routes-read-side-domains` as the sole
+  triaged continuation: it moves the 30 non-metered GET routes behind bounded
+  domain registrars while leaving paid work, mutation, SSE, and Codex-session
+  behavior frozen in the compatibility router.
+- 2026-08-09 — Completed the accepted read-side router child on rebased main
+  `b4091496`: all 120 linked children are now done. The shared evaluation
+  facade is 2,773 lines, its 30 non-metered GET endpoints have bounded domain
+  owners, and exact route order plus the complete parity contract is green.
+  Keep the parent active because R4 runner/rubric residuals and R5-R8 remain
+  partial or uninstantiated; require a fresh hotspot and workplan
+  reconciliation before selecting the next implementation child.
+- 2026-08-09 — Reconciled from merged PR-#612 main `e5ea93df`. All 120 prior
+  children are done; repository metrics record 4,986 files, 2,500 source files,
+  870,784 source-code lines, zero cycles across 557 files, and a synchronized
+  hermetic manifest. Activated `refactor-evaluation-run-coordinator-runtime` as
+  child 121: the runner's 572-line, complexity-93 coordinator has stronger
+  characterization than the larger dramatic, rubric, browser, and auto-eval
+  hotspots, so it is the next bounded R4 macro rather than another small or
+  mutation-heavy route slice.
+- 2026-08-09 — Completed child 121 locally: `runEvaluation()` now delegates to
+  a 534-line, complexity-17 injected coordinator and the facade is 1,744 lines.
+  Direct coverage is ratcheted as a sixth risk group; the focused and complete
+  parity contracts pass. The parent remains active because R4 rubric residuals
+  and R5-R8 remain partial or uninstantiated; select another child only after
+  this branch merges and the hotspot evidence is refreshed again.

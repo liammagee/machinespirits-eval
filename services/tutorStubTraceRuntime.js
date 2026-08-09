@@ -1,3 +1,8 @@
+import {
+  createTutorStubArtifactArchiveMirror as createArtifactArchiveMirror,
+  normalizeTutorStubArtifactArchivePolicy,
+} from './tutorStubArtifactArchive.js';
+
 export function createTutorStubTraceRuntime(dependencies = {}) {
   const {
     ROOT,
@@ -9,6 +14,7 @@ export function createTutorStubTraceRuntime(dependencies = {}) {
     buildTutorStubTurnFailureTraceEvents,
     captureGitProvenanceSummary,
     captureTutorStubRunProvenance,
+    createTutorStubArtifactArchiveMirror = createArtifactArchiveMirror,
     formatTurnDebugId,
     fs,
     getSelectedLabModelCallBudget,
@@ -40,8 +46,14 @@ export function createTutorStubTraceRuntime(dependencies = {}) {
     return captureTutorStubRunProvenance(metadata, { hashCanonicalJson, captureGitProvenanceSummary, repoRoot: ROOT });
   }
 
-  function createTraceState({ enabled, traceDir, metadata }) {
-    if (!enabled) return { enabled: false };
+  function createTraceState({ enabled, traceDir, metadata, artifactArchivePolicy = 'off' }) {
+    const normalizedArchivePolicy = normalizeTutorStubArtifactArchivePolicy(artifactArchivePolicy);
+    if (!enabled) {
+      if (normalizedArchivePolicy === 'required') {
+        throw new Error('required tutor-stub artifact archival cannot be used with tracing disabled');
+      }
+      return { enabled: false };
+    }
     const dir = resolveWorkspacePath(traceDir);
     const runId = safeTimestampForFile();
     const assetId = `tutor-stub-trace:${runId}`;
@@ -61,6 +73,13 @@ export function createTutorStubTraceRuntime(dependencies = {}) {
       seq: 0,
       metadata: enrichedMetadata,
     };
+    trace.artifactArchive = createTutorStubArtifactArchiveMirror({
+      policy: normalizedArchivePolicy,
+      sourceTracePath: filePath,
+      repoRoot: ROOT || process.cwd(),
+      metadata: enrichedMetadata,
+    });
+    trace.metadata.artifactArchive = trace.artifactArchive.snapshot();
     appendTraceEvent(trace, {
       type: 'run_start',
       metadata: enrichedMetadata,
@@ -81,7 +100,15 @@ export function createTutorStubTraceRuntime(dependencies = {}) {
     } else if (!entry.turnId && entry.type === 'tutor_opening') {
       entry.turnId = openingDebugId(trace.runId);
     }
-    fs.appendFileSync(trace.filePath, `${JSON.stringify(redactTraceSecrets(entry))}\n`);
+    const line = `${JSON.stringify(redactTraceSecrets(entry))}\n`;
+    try {
+      trace.artifactArchive?.append(line, entry);
+    } catch (error) {
+      // Keep the local recovery copy even when required durable storage fails.
+      fs.appendFileSync(trace.filePath, line);
+      throw error;
+    }
+    fs.appendFileSync(trace.filePath, line);
   }
 
   function appendTutorStubTurnFailureTraceRecords(state, { sealed = false } = {}) {

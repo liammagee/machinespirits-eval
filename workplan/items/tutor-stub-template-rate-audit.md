@@ -1,7 +1,7 @@
 ---
 id: tutor-stub-template-rate-audit
 title: Stamp every cited tutor-stub run with its measured template rate
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
@@ -27,6 +27,8 @@ links:
   items:
     - guard-regime-fallback-census-at-scale
     - guard-validity-study
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/576
 tags:
   - tutor-stub
   - guards
@@ -36,12 +38,25 @@ tags:
 ## Why
 
 The guard ladder exists only in the tutor-stub apparatus, so most of the paper
-is untouched. Within that apparatus, outcome-channel results are insensitive
-to who wrote the prose; but any § that reads tutor prose — the
+is untouched. Within that apparatus, outcome-channel results were taken to be
+insensitive to who wrote the prose; but any § that reads tutor prose — the
 instrumentation showcase, the move-library transfer deltas, the derivation-arc
 adaptation readings — was reading a mix of model text and template, in
 unknown proportion per run. The proportion is measurable after the fact from
 each run's traces, for free.
+
+**That insensitivity claim is now too broad, and the counter-example is
+recorded.** The Phase-B contract contrast reads its outcome in code against
+the proof-DAG, with no judge model anywhere, and it still moved by 33 points
+when the guard stopped writing the tutor's turns — level under the strict
+policy (p = 1.000), contract 12/36 against bare 24/36 under the shadow one
+(p = 0.0091). Checking the endpoint in code protects it from a judge reading
+templated prose; it does not protect it when the *treatment itself* lives in
+the tutor's wording, because the guard then deletes the treatment rather than
+the measurement. Narrow the rule to that: an outcome result is guard-safe when
+the treatment is not carried in the prose the guard replaces. Any null in this
+apparatus where the treatment was a prompt and the policy was strict wants a
+look before it is cited as a null. See `phase-b-rerun-under-flipped-policy`.
 
 Positive effects found through dilution are more likely understated than
 false; the stamp turns that from an argument into a number per run.
@@ -190,3 +205,6 @@ first-draft reader result is unchanged.
   tests 69/69, source-only workplan validation 460/460, and formatting/diff
   checks pass. The broad discourse audit retains three pre-existing
   evaluation-store source-fingerprint failures also present on `main`.
+- 2026-08-08 — Closed after PR #576 merged as `42627134`; the corrected paper
+  qualification, catalog stamps, and independent re-audit are present on
+  `main`.

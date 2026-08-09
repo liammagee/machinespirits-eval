@@ -145,11 +145,13 @@ describe('cliProviderBridge', () => {
       PATH: '/safe/bin',
       NODE_TEST_CONTEXT: 'child-v8',
       FAKE_CODEX_LOG: '/tmp/fake.log',
+      FAKE_CODEX_START_LOG: '/tmp/fake-start.log',
       FAKE_CODEX_DELAY_MS: '10',
       FAKE_CODEX_FIXTURE_MODE: 'repair',
       FAKE_CODEX_UNREVIEWED_SECRET: 'must-not-pass',
     });
     assert.equal(env.FAKE_CODEX_LOG, '/tmp/fake.log');
+    assert.equal(env.FAKE_CODEX_START_LOG, '/tmp/fake-start.log');
     assert.equal(env.FAKE_CODEX_DELAY_MS, '10');
     assert.equal(env.FAKE_CODEX_FIXTURE_MODE, 'repair');
     assert.equal(env.FAKE_CODEX_UNREVIEWED_SECRET, undefined);

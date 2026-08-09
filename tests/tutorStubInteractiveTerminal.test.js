@@ -12,6 +12,7 @@ import {
   CONCURRENT_PTY_TEST_TIMEOUT_MS,
   plainTerminalText,
   installFakeCodex,
+  removeTempDir,
 } from './helpers/tutorStubInteractiveHarness.js';
 
 test(
@@ -105,7 +106,7 @@ test(
       assert.ok(plain.indexOf('auto > /sta') < plain.indexOf('A Diligent Learner (auto) >'), plain);
       assert.ok(plain.indexOf('A Diligent Learner (auto) >') < plain.indexOf('session status > AUTO'), plain);
     } finally {
-      fs.rmSync(tmp, { recursive: true, force: true });
+      removeTempDir(tmp);
     }
   },
 );
@@ -194,7 +195,7 @@ test(
       assert.match(plain, /session status > LEARNER/u);
       assert.doesNotMatch(plain, /unknown command/u);
     } finally {
-      fs.rmSync(tmp, { recursive: true, force: true });
+      removeTempDir(tmp);
     }
   },
 );
@@ -419,7 +420,7 @@ test(
       assert.doesNotMatch(plain, /coach queued > alpha beta deltagamma/u);
       assert.doesNotMatch(plain, /coach queued > replacementdiscard this/u);
     } finally {
-      fs.rmSync(tmp, { recursive: true, force: true });
+      removeTempDir(tmp);
     }
   },
 );
@@ -463,6 +464,6 @@ test('a non-interactive single run also writes its learning summary', () => {
     assert.match(html, /I would compare the metal residues first/u);
     assert.match(html, /The requested single turn is complete/u);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });

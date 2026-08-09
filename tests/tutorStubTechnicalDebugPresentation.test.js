@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 import { fileURLToPath } from 'node:url';
 
 import { projectTutorStubTechnicalDebugLines } from '../services/tutorStubTechnicalDebugPresentation.js';
@@ -187,7 +188,7 @@ test('technical-debug projection preserves no-turn and sparse fallback contracts
 });
 
 test('the debug-report runtime retains gating, live preparation, trace persistence, and terminal ownership', async () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTechnicalDebugPresentation.js'), 'utf8');
   const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubDebugReportRuntime.js'), 'utf8');
   const printSlice = runtimeSource.slice(

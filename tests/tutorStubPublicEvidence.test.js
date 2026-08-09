@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import test from 'node:test';
 import {
   createTutorStubPublicEvidenceModel,
   projectTutorStubLearnerPublicEvidenceState,
   projectTutorStubPublicReleaseLedger,
+  tutorStubPublicEvidenceTextForAssertion,
 } from '../services/tutorStubPublicEvidence.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 function fixtureWorld() {
   const premises = [
@@ -102,6 +103,19 @@ test('guard-visible prose includes released surfaces and public dialogue only', 
   }
 });
 
+test('the assertion projection excludes generic rule glosses that do not release a specific correspondence', () => {
+  const world = fixtureWorld();
+  world.rules[0].gloss = 'A visible object traces to its available record.';
+  const text = tutorStubPublicEvidenceTextForAssertion({
+    world,
+    publicPremiseIds: ['p1'],
+    priorTurns: [],
+  });
+
+  assert.doesNotMatch(text, /traces to its available record/u);
+  assert.match(text, /The coin was seen\./u);
+});
+
 test('missing worlds fail closed to empty public projections', () => {
   const model = createTutorStubPublicEvidenceModel();
   assert.deepEqual([...model.candidatePublicPremiseIds()], []);
@@ -112,7 +126,7 @@ test('missing worlds fail closed to empty public projections', () => {
 });
 
 test('the CLI binds rather than redeclares the public-evidence model', () => {
-  const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
+  const source = readTutorStubApplicationSource();
   assert.match(source, /createTutorStubPublicEvidenceModel/u);
   assert.doesNotMatch(
     source,

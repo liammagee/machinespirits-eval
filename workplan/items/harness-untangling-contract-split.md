@@ -1,13 +1,13 @@
 ---
 id: harness-untangling-contract-split
 title: "Untangling 2: split the standing text into a safety contract and a teaching charter"
-status: active
+status: done
 type: infra
 priority: P2
 owner: claude
 source: manual
 created: 2026-08-02
-updated: 2026-08-04
+updated: 2026-08-08
 verification: "Gate registered before any change: stage 1 — the two documents
   concatenated reproduce the current speaker prompt BYTE-EXACTLY (unit test
   pins it); no behavior change is permitted at this stage. Stage 2 (later,
@@ -70,3 +70,20 @@ text itself steering the tutor wrong, that edit runs here under the
 stage-2 gates (charter edits with the leak probe at zero, safety
 edits with the scorecard unchanged). Until an edit is actually
 wanted, this card carries no runnable work.
+
+## Closure (2026-08-08)
+
+Stage 1 remains landed and pinned: the safety contract and teaching
+charter are separately exported, their historical assembly is exact,
+and the licence slot plus rule ownership are covered by tests. The
+focused contract-split and world-prompt suites pass 7/7 on the merged
+tree, and the relevant implementation and tests have not changed since
+the Stage 1 commit (`5691f01d`, merged in PR #444).
+
+The shared post-fix run did not surface a concrete standing-text edit,
+so the conditional Stage 2 gate never opened. Later guard findings were
+transferred to `guard-delivery-prefer-model-over-canned` and
+`guard-validity-study`; they do not leave runnable work on this split.
+Any future safety-contract or teaching-charter divergence should be a
+new concrete card with the corresponding leak or repertoire gate,
+rather than keeping this completed architecture boundary active.
