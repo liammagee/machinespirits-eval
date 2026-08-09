@@ -1718,6 +1718,385 @@ profiles:
       rapid_nav_window_ms: 30000
       retry_frustration_count: 3
 
+
+  # ------------------------------------------------------------------
+  # Course-479 Tutor Lab frozen profile set (2026-08-09).
+  # 4 prompt stances x 3 critic settings, one profile per combination so
+  # the lab's switches are pure profile selection. Stance picks the ego
+  # prompt (the same variants as the eval factorial); critic picks the
+  # superego character: off = no critic, advisory = supportive advocate,
+  # adversarial = suspicious adversary. Model names are aliases resolved
+  # through providers.yaml so a deploy overlay controls concrete versions.
+  # Do not edit casually: transcripts made for the course cite these.
+  # ------------------------------------------------------------------
+
+  course479_recognition_off:
+    description: "Course 479 Tutor Lab: recognition stance, critic off"
+    dialogue:
+      enabled: false
+      max_rounds: 0
+      convergence_threshold: 0.85
+
+    ego:
+      provider: anthropic
+      model: sonnet
+      staging: front
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1200
+
+    superego: null
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+
+  course479_recognition_advisory:
+    description: "Course 479 Tutor Lab: recognition stance, critic advisory"
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.85
+
+    ego:
+      provider: anthropic
+      model: sonnet
+      staging: front
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1200
+
+    superego:
+      provider: anthropic
+      model: sonnet
+      staging: back
+      prompt_file: tutor-superego-advocate.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 800
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+
+  course479_recognition_adversarial:
+    description: "Course 479 Tutor Lab: recognition stance, critic adversarial"
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.85
+
+    ego:
+      provider: anthropic
+      model: sonnet
+      staging: front
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1200
+
+    superego:
+      provider: anthropic
+      model: sonnet
+      staging: back
+      prompt_file: tutor-superego-adversary.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 800
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+
+  course479_placebo_off:
+    description: "Course 479 Tutor Lab: placebo stance, critic off"
+    dialogue:
+      enabled: false
+      max_rounds: 0
+      convergence_threshold: 0.85
+
+    ego:
+      provider: anthropic
+      model: sonnet
+      staging: front
+      prompt_file: tutor-ego-placebo.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1200
+
+    superego: null
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+
+  course479_placebo_advisory:
+    description: "Course 479 Tutor Lab: placebo stance, critic advisory"
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.85
+
+    ego:
+      provider: anthropic
+      model: sonnet
+      staging: front
+      prompt_file: tutor-ego-placebo.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1200
+
+    superego:
+      provider: anthropic
+      model: sonnet
+      staging: back
+      prompt_file: tutor-superego-advocate.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 800
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+
+  course479_placebo_adversarial:
+    description: "Course 479 Tutor Lab: placebo stance, critic adversarial"
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.85
+
+    ego:
+      provider: anthropic
+      model: sonnet
+      staging: front
+      prompt_file: tutor-ego-placebo.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1200
+
+    superego:
+      provider: anthropic
+      model: sonnet
+      staging: back
+      prompt_file: tutor-superego-adversary.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 800
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+
+  course479_enhanced_off:
+    description: "Course 479 Tutor Lab: enhanced stance, critic off"
+    dialogue:
+      enabled: false
+      max_rounds: 0
+      convergence_threshold: 0.85
+
+    ego:
+      provider: anthropic
+      model: sonnet
+      staging: front
+      prompt_file: tutor-ego-enhanced.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1200
+
+    superego: null
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+
+  course479_enhanced_advisory:
+    description: "Course 479 Tutor Lab: enhanced stance, critic advisory"
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.85
+
+    ego:
+      provider: anthropic
+      model: sonnet
+      staging: front
+      prompt_file: tutor-ego-enhanced.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1200
+
+    superego:
+      provider: anthropic
+      model: sonnet
+      staging: back
+      prompt_file: tutor-superego-advocate.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 800
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+
+  course479_enhanced_adversarial:
+    description: "Course 479 Tutor Lab: enhanced stance, critic adversarial"
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.85
+
+    ego:
+      provider: anthropic
+      model: sonnet
+      staging: front
+      prompt_file: tutor-ego-enhanced.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1200
+
+    superego:
+      provider: anthropic
+      model: sonnet
+      staging: back
+      prompt_file: tutor-superego-adversary.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 800
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+
+  course479_naive_off:
+    description: "Course 479 Tutor Lab: naive stance, critic off"
+    dialogue:
+      enabled: false
+      max_rounds: 0
+      convergence_threshold: 0.85
+
+    ego:
+      provider: anthropic
+      model: sonnet
+      staging: front
+      prompt_file: tutor-ego-naive.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1200
+
+    superego: null
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+
+  course479_naive_advisory:
+    description: "Course 479 Tutor Lab: naive stance, critic advisory"
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.85
+
+    ego:
+      provider: anthropic
+      model: sonnet
+      staging: front
+      prompt_file: tutor-ego-naive.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1200
+
+    superego:
+      provider: anthropic
+      model: sonnet
+      staging: back
+      prompt_file: tutor-superego-advocate.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 800
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
+
+  course479_naive_adversarial:
+    description: "Course 479 Tutor Lab: naive stance, critic adversarial"
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.85
+
+    ego:
+      provider: anthropic
+      model: sonnet
+      staging: front
+      prompt_file: tutor-ego-naive.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1200
+
+    superego:
+      provider: anthropic
+      model: sonnet
+      staging: back
+      prompt_file: tutor-superego-adversary.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 800
+
+    intervention_thresholds:
+      low_intensity_skip_dialogue: false
+      high_intensity_extra_rounds: false
+      struggle_signal_threshold: 2
+      rapid_nav_window_ms: 30000
+      retry_frustration_count: 3
+
 # Logging settings
 logging:
   # Log all API calls (prompts and responses)
