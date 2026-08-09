@@ -1,25 +1,25 @@
 ---
 id: guard-findings-feed-forward
 title: Feed guard findings into the next turn's request instead of redrafting this one
-status: active
+status: dropped
 type: research
 priority: P3
 owner: codex
 source: manual
 created: 2026-08-06
-updated: 2026-08-09
-verification: "UNGATED but demoted — the flip landed and already delivered the
-  subtractive half, so only the additive half is left to test. Run when there is
-  spare quota and no better claim in the queue: an instrumented run where each
-  tutor request carries the previous turn's findings as one line each, against a
-  control without the lines. Readout: finding recurrence turn over turn, and the
-  quality instruments per condition. The retry ladder stays for contract
-  findings only."
-claim_status: planned
+updated: 2026-08-10
+verification: "Tested but not adopted: the sealed 12-dialogue paired A1 screen
+  completed without technical failure, but feed-forward recurrence was 40.4%
+  against 39.4% for control and the quality guardrails did not improve. Keep the
+  mechanism opt-in and off by default; do not rerun without a new prospective
+  hypothesis."
+claim_status: killed
 links:
   code:
     - services/tutorStubTutorTurnPipeline.js
     - services/tutorStubFirstDraftContract.js
+  exports:
+    - exports/tutor-stub-guard-feed-forward/pilot-a1/report.md
   items:
     - guard-policy-default-flip
     - guard-validity-study
@@ -52,6 +52,24 @@ one instrumented pair; no new machinery beyond assembling lines the traces
 already carry.
 
 ## Log
+
+- 2026-08-10 — A1 completed at source
+  `d1bd21913112c224eec5f3ee82d095475b45e525`: 12/12 dialogues sealed, all
+  420 model calls used `codex.gpt-5.6-luna` through Codex, no other provider or
+  committee ran, and all 12 required private-archive manifests sealed with
+  source-line parity. The additive hypothesis failed its descriptive
+  feasibility screen. Same-key recurrence was 40.4% with feed-forward versus
+  39.4% for control (a +1.0 percentage-point difference, where negative would
+  favor treatment). Feed-forward also produced more new findings per turn
+  (1.39 versus 1.27), shipped fewer original candidates (92.9% versus 94.0%),
+  used one deterministic fallback (1.4% versus 0%), grounded fewer dialogues
+  (1/6 versus 2/6), and took slightly more turns on average (11.67 versus
+  11.17). The profile split was unstable: recurrence improved for
+  `false_memory` but worsened for `low_agency`, with three of six seed-pairs
+  better and three worse. This small cohort does not establish a treatment
+  effect, but it is enough to reject the mechanism as a general default. The
+  implementation remains available only as an explicit research opt-in; the
+  card closes tested-not-adopted with no rerun planned.
 
 - 2026-08-09 — implementation and prospective pilot frozen on
   `codex/guard-findings-feed-forward`. The opt-in treatment now projects only
