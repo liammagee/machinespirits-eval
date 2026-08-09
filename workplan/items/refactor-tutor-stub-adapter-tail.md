@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-adapter-tail
 title: Finish the tutor-stub adapter boundary
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -29,6 +29,8 @@ links:
     - tests/helpers/tutorStubSourceContract.js
   items:
     - codebase-refactoring-program
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/602
 tags:
   - refactoring
   - tutor-stub
@@ -96,3 +98,10 @@ Log:
   trace labels, learner/tutor controls, scoring, or data structures moved, so
   the conditional symmetry review was not triggered; no provider calls,
   production-data writes, or generated workplan views occurred.
+- 2026-08-09 — Merged through PR #602 as `9f38ff32`. All eleven required
+  checks are green, including both root shards on Node 20 and 22, hermetic,
+  risk-coverage, lint, workplan, PTY/loopback, and the shared web plus packaged
+  Electron acceptance. The packaged-surface job's first attempt dropped one
+  synthetic Ctrl+Enter event after reload; its captured process and provider
+  evidence were healthy, and an unchanged failed-job rerun passed the complete
+  packaged scenario. The child is closed at the verified 136-line entrypoint.

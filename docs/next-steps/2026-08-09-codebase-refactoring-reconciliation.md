@@ -3,10 +3,11 @@
 ## Status
 
 - Reconciliation date: 2026-08-09
-- Base: `3ed950d963` (post-PR-#595 generated workplan refresh)
+- Base: `6396f21960` (post-PR-#602, PR-#604, and PR-#605 main)
+- Trigger: PR #602 closed the remaining tutor-stub adapter exit criteria
 - Original audit: `docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md`
-- Scope: repository metrics, original hotspot deltas, programme exit criteria,
-  and live workplan state
+- Scope: repository metrics, hotspot deltas, structural contracts, programme
+  exit criteria, and live workplan state
 - Model/API spend: none
 - Production data writes: none
 
@@ -16,28 +17,30 @@ this note decides what that plan means after the merged implementation series.
 
 ## Executive decision
 
-The programme has delivered its safety foundation and three large structural
-outcomes:
+PR #602 completes R3's measurable adapter boundary. `scripts/tutor-stub.js` is
+now a 136-line executable bootstrap, down from 25,813 lines in the original
+audit and 2,699 lines at the preceding reconciliation. Its only local callable
+reported by ESLint complexity analysis is the complexity-1 fatal callback. The
+extracted 2,589-line application host still contains substantive composition
+work, but it no longer violates the entrypoint's explicit 2,000-line and
+300-line application-function ceilings.
 
-1. required root and tutor-core suites are explicit, hermetic, and cannot
-   silently disappear;
-2. static import cycles are at zero and the early duplicate/registry work is
-   complete; and
-3. the tutor-stub, evaluation CLI, and evaluation-store facades are radically
-   smaller, with all internal evaluation-store migration targets eliminated.
+The parent programme should remain active. R0-R3 are complete as scoped, while
+R4-R8 remain partial or uninstantiated. A fresh comparison ranks dramatic
+derivation as the largest complexity risk, but that is not the safest next
+move: its complexity-544 transition function and complexity-502 tutor role have
+not yet received the characterization needed for behavior-preserving movement.
+The rubric evaluator is similarly scoring-sensitive, and the evaluation runner
+still owns central orchestration.
 
-It is not honest to close the parent yet. The tutor-stub adapter is 2,699 lines
-against an explicit target of at most 2,000, and its approximately 705-line
-`main()` still exceeds the 300-line application-function ceiling. The original
-R4–R8 programme also contains substantial uninstantiated work. Those later
-phases should not be represented as completed merely because every currently
-linked child has landed.
-
-The immediate next slice is therefore one bounded macro extraction:
-`refactor-tutor-stub-adapter-tail`. It closes the remaining measurable R3 gap.
-After that merges, refresh the hotspot evidence again before choosing among the
-evaluation runner, dramatic derivation, route/rubric, or presentation surfaces.
-File size alone is not authority to start any of those higher-risk migrations.
+The next bounded macro slice is therefore
+`refactor-eval-routes-read-side-domains`. The 3,802-line evaluation router has
+50 endpoints and a maximum handler complexity of 55. Unlike the higher-risk
+surfaces, it already has explicit model-work admission, stream lifecycle,
+request-local store and runner ownership, host isolation, authentication, and
+API regression contracts. Moving its 30 non-metered GET endpoints into domain
+registrars is a substantial reduction with a narrow behavioral boundary. Paid,
+state-changing, SSE, recognition A/B, and Codex-session routes remain frozen.
 
 ## Fresh repository snapshot
 
@@ -45,98 +48,104 @@ File size alone is not authority to start any of those higher-risk migrations.
 
 | Measure | Current value |
 |---|---:|
-| Repository files in metric scope | 4,953 |
-| Source files | 2,476 |
-| Source code lines | 868,019 |
-| Source comment lines | 49,927 |
-| Source blank lines | 56,102 |
-| Source total lines | 974,048 |
-| JavaScript source files | 1,826 |
-| JavaScript code lines | 588,133 |
-| Repository commits | 4,129 |
-| GitHub pull requests | 595 total / 573 merged / 1 open |
+| Repository files in metric scope | 4,971 |
+| Source files | 2,487 |
+| Source code lines | 869,926 |
+| Source comment lines | 50,063 |
+| Source blank lines | 56,240 |
+| Source total lines | 976,229 |
+| JavaScript source files | 1,835 |
+| JavaScript code lines | 589,583 |
+| Repository commits | 4,161 |
+| GitHub pull requests | 605 total / 583 merged / 1 open |
 
-The repository-wide totals are a new baseline, not a direct delta from the July
-24 table: the maintained metrics command excludes generated, data, dependency,
+Repository-wide totals are a new baseline, not a direct delta from the July 24
+table: the maintained metrics command excludes generated, data, dependency,
 and vendor directories, while the original audit used several narrower custom
 scopes. Named-file deltas below are directly comparable because both sides use
 physical line counts from Git.
 
 Current structural contracts:
 
-- `npm run test:manifest`: synchronized; 638 required root files and 11
-  required tutor-core files, with zero allowed skips;
-- `npm run lint:cycles`: zero static cycles across 554 files; and
+- `npm run test:manifest`: synchronized; 641 required root files and 11
+  required tutor-core files. Four explicit skip contracts remain governed for
+  a private archive, local model-CLI fingerprints, the dedicated CI PTY lane,
+  and unsupported Windows PTY cases; the manifest prevents silent omission.
+- `npm run lint:cycles`: zero static cycles across 556 files.
 - `npm run eval-store:boundary-check`: 19 tracked consumers resolve to zero
   migration targets, one retained package-compatibility boundary, four
-  archived one-offs, and 14 tests. The retained facade is 103 lines.
+  archived one-offs, and 14 tests. The retained facade is 103 lines with 44
+  named exports and 41 default members.
+- `routes/evalRoutes.js`: 50 registered endpoints — 38 GET, 11 POST, and one
+  DELETE. Twelve current test files reference the router or `/api/eval`; the
+  completed host-injection card additionally records 90 route/host integration
+  tests and a 22-test API regression at its review gate.
 
 ## Comparable hotspot deltas
 
-| Surface | 2026-07-24 | 2026-08-09 | Reconciliation |
+| Surface | 2026-07-24 | 2026-08-09 post-#602 | Reconciliation |
 |---|---:|---:|---|
-| `scripts/tutor-stub.js` | 25,813 | 2,699 | 23,114 lines removed; R3 is near-complete, not complete. |
-| `scripts/eval-cli.js` | 6,642 | 292 | Command-family extraction achieved; keep as a bounded adapter. |
+| `scripts/tutor-stub.js` | 25,813 | 136 | 25,677 lines removed; R3 adapter exit criteria complete. |
+| `services/tutorStubCliApplicationHost.js` | n/a | 2,589 | Explicit application composition owner; maximum complexity 40, with `main()` at 32. |
+| `scripts/eval-cli.js` | 6,642 | 292 | Command-family extraction achieved; retain as a bounded adapter. |
 | `services/evaluationStore.js` | 3,410 | 103 | Explicit repositories/lifecycle achieved; retained public package facade is intentional. |
-| `services/evaluationRunner.js` | 6,832 | 2,261 | Major execution extraction landed; residual orchestration remains. |
-| `routes/evalRoutes.js` | 3,870 | 3,802 | Store injection landed, but router decomposition did not. |
-| `services/rubricEvaluator.js` | 3,404 | 3,290 | Parser characterization landed; evaluator-family separation remains. |
-| `services/dramaticDerivation/engine.js` | 2,885 | 2,885 | Original R5 transition extraction remains unstarted. |
-| `services/dramaticDerivation/llmRoles.js` | 5,528 | 5,532 | Original R5 role/provider split remains unstarted. |
-| `scripts/browse-poetics-scripts.js` | 13,237 | 13,292 | Original R6 router/presentation split remains unstarted. |
-| `scripts/run-tutor-stub-auto-eval.js` | 11,447 | 11,349 | Original R6 generation/report split remains unstarted. |
+| `services/evaluationRunner.js` | 6,832 | 2,261 | Major execution extraction landed; `runEvaluation` remains complexity 93. |
+| `routes/evalRoutes.js` | 3,870 | 3,802 | Store/admission/lifecycle boundaries landed; 50-endpoint router decomposition remains. |
+| `services/rubricEvaluator.js` | 3,404 | 3,290 | Parser characterization landed; full-transcript projection remains complexity 126. |
+| `services/dramaticDerivation/engine.js` | 2,885 | 2,885 | Transition extraction unstarted; `runDrama` remains complexity 544. |
+| `services/dramaticDerivation/llmRoles.js` | 5,528 | 5,532 | Role/provider split unstarted; returned tutor role remains complexity 502. |
+| `scripts/browse-poetics-scripts.js` | 13,237 | 13,292 | Router/presentation split unstarted; maximum measured complexity 66. |
+| `scripts/run-tutor-stub-auto-eval.js` | 11,447 | 11,349 | Generation/report split unstarted; maximum measured complexity 114. |
 
-The largest current complexities reinforce the same prioritization. Tutor-stub
-has fallen from a complexity-529, 10,225-line `main()` to complexity 32 and
-approximately 705 lines, but it still fails the programme's function-size exit
-criterion. The untouched dramatic-derivation functions remain much riskier:
-`runDrama` is complexity 544 and the returned tutor role reaches complexity
-502. `evaluationRunner.runEvaluation` is complexity 93. These are ranking
-signals, not permission to move behavior without characterization.
+Cyclomatic values come from ESLint v9's complexity calculation with a zero
+reporting threshold. They rank work; they do not imply that every branch is
+equally difficult or authorize behavior movement without characterization.
 
 ## Workplan reconciliation
 
-Before this update, the parent linked 118 child items: 117 were `done` and the
-only `review` item was the already merged package-boundary PR #593. This update:
+Before this update, the parent linked 119 children: 118 were `done` and
+`refactor-tutor-stub-adapter-tail` was in `review`. This update:
 
-- marks `refactor-evaluation-store-package-compatibility-boundary` done and
-  links PR #593;
-- adds this current snapshot to the parent;
-- adds one triaged child, `refactor-tutor-stub-adapter-tail`; and
+- marks `refactor-tutor-stub-adapter-tail` done and links merged PR #602;
+- records the current metrics and structural contracts on the parent;
+- adds one triaged child, `refactor-eval-routes-read-side-domains`; and
 - leaves `codebase-refactoring-program` active.
 
-The resulting parent has 119 linked children: 118 done and one triaged. That is
+The resulting parent has 120 linked children: 119 done and one triaged. This is
 the accurate distinction between the delivered execution history and remaining
 accepted work.
 
 | Phase | Current disposition | Evidence boundary |
 |---|---|---|
-| R0 safety nets | Complete | Required-run manifest, zero allowed skips, hermetic fixtures, lifecycle and risk gates landed. |
+| R0 safety nets | Complete | Required-run manifest, governed skips, hermetic fixtures, lifecycle and risk gates landed. |
 | R1 cycles/duplication/registries | Complete | Cycles are zero; linked consolidation and registry cards are done. |
-| R2 correctness boundaries | Complete as scoped | All six pre-existing integrity/decision cards named by the plan are done. |
-| R3 tutor-stub separation | Near-complete | Entry point fell 89.5%, but misses both explicit size ceilings. |
-| R4 evaluation separation | Partial | CLI/store ownership completed; runner, route, and rubric residuals remain. |
-| R5 dramatic derivation | Not instantiated | Original hotspots and complexities are materially unchanged. |
+| R2 correctness boundaries | Complete as scoped | All six integrity/decision cards named by the original plan are done. |
+| R3 tutor-stub separation | Complete as scoped | The executable is a 136-line adapter and meets both explicit exit ceilings. |
+| R4 evaluation separation | Partial; next slice triaged | CLI/store ownership completed; read-side route decomposition is next; runner and rubric residuals remain. |
+| R5 dramatic derivation | Not instantiated | Original hotspots and complexities are materially unchanged and need characterization first. |
 | R6 presentation separation | Not instantiated | Browser and auto-eval applications remain large integrated surfaces. |
 | R7 surface governance | Partial | Package/store boundary is explicit; broader live/historical candidate governance remains. |
-| R8 configuration sprawl | Not instantiated | No current child slice or refreshed inventory. |
+| R8 configuration sprawl | Not instantiated | No current child slice or refreshed ownership inventory. |
 
 ## Next bounded slice
 
-`refactor-tutor-stub-adapter-tail` should move the remaining policy/context
-bindings and interactive host assembly behind explicit application seams while
-preserving CLI argument parsing, terminal wiring, and process bootstrap in the
-entry point. Its non-negotiable gates are:
+`refactor-eval-routes-read-side-domains` should move the 30 non-metered GET
+endpoints for configuration, run/result reads, dialogue logs, prompt reads,
+trajectories, documentation, monitoring, resume status, and interaction
+projections into bounded domain registrars. Its non-negotiable gates are:
 
-- `scripts/tutor-stub.js` at or below 2,000 lines;
-- no application function in the entry point above 300 lines;
-- unchanged command/help/completion, fake-provider trace, learner/tutor
-  symmetry, browser/Electron, reset/finalize, and disposal contracts; and
-- no new import cycle, ambient database ownership, provider call, production
-  data write, or empirical-output change.
+- exact route paths, methods, mount and middleware order, authentication,
+  status codes, response payloads, and error behavior;
+- unchanged lazy tutor-core loading and request-local store/runner identity;
+- an endpoint-inventory ratchet preventing route loss, duplication, or method
+  drift;
+- `routes/evalRoutes.js` below 3,000 physical lines, with each extracted owner
+  below 450 lines and static import cycles remaining at zero; and
+- focused API/auth/log-root/dependency/import/admission/lifecycle coverage plus
+  complete hermetic, tutor-core, risk, source, formatting, lint, manifest, and
+  cycle gates without provider calls or production data writes.
 
-After that child lands, the parent should be reconciled again. Do not
-automatically start R4–R8 in file-size order. Choose a vertical seam whose
-characterization already exists and whose maintenance cost is visible; if none
-has a concrete consumer or failure burden, formally defer it rather than
-manufacturing refactoring work.
+Codex sessions, metered model work, state-changing handlers, SSE, and the
+recognition A/B endpoint stay in the compatibility router. Evaluation-runner,
+rubric, dramatic-derivation, browser, and auto-eval decomposition remain later
+decisions requiring their own refreshed characterization.

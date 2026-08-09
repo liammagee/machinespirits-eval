@@ -8,6 +8,7 @@ owner: codex
 source: review
 created: 2026-07-24
 updated: 2026-08-09
+branch: codex/refactor-post-adapter-reconciliation
 verification: >-
   Every accepted refactoring slice has a linked child card and parity gate;
   root plus in-housed tutor-core tests run from one clean-install contract;
@@ -141,6 +142,7 @@ links:
     - refactor-prompt-lab-store-ownership
     - refactor-evaluation-store-package-compatibility-boundary
     - refactor-tutor-stub-adapter-tail
+    - refactor-eval-routes-read-side-domains
 tags:
   - refactoring
   - testing
@@ -1755,3 +1757,15 @@ Log:
   partial or uninstantiated. Triaged `refactor-tutor-stub-adapter-tail` as the
   sole next slice; require a new evidence refresh before activating any
   subsequent macro phase.
+- 2026-08-09 — Reconciled again from post-PR-#602 main `6396f219`. The
+  tutor-stub executable is now a 136-line adapter and the R3 exit criteria are
+  complete. The 119 previously linked children are all done. Fresh metrics
+  record 4,971 repository files, 2,487 source files, 869,926 source code lines,
+  zero import cycles across 556 files, a synchronized 641-root/11-core required
+  manifest with four explicit governed skip contracts, and the intentional
+  103-line evaluation-store package boundary as the only live/package facade
+  consumer. The parent remains active because R4-R8 are still partial or
+  uninstantiated. Added `refactor-eval-routes-read-side-domains` as the sole
+  triaged continuation: it moves the 30 non-metered GET routes behind bounded
+  domain registrars while leaving paid work, mutation, SSE, and Codex-session
+  behavior frozen in the compatibility router.
