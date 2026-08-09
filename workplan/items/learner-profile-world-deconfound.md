@@ -8,12 +8,13 @@ owner: codex
 source: manual
 created: 2026-08-06
 updated: 2026-08-09
-branch: codex/learner-profile-world-deconfound-qd-v1-replay
-verification: "The approved persona transplants and exact qd-v1 are frozen and
-  hash-pinned. The replacement is one prospective balanced 2-persona x 2-world
-  x 5 cohort with no historical pooling; zero-model tutor-stub dry-runs verify
-  delivery for all four cells. Merge before clean-main certification; twenty
-  paid dialogues remain separately unauthorized."
+branch: codex/learner-profile-world-deconfound-paid-launch
+verification: "PR #605's green clean-main certificate pins the approved design,
+  exact qd-v1, and frozen 20-job plan. Paid launch remains separately gated on
+  an explicit authorization flip and attended checkpoints. Completion then
+  requires all 20 new dialogues with no historical pooling, a committed private
+  archive before outcome reading, and identical leave-one-out persona and world
+  readings against the frozen 80% bar."
 claim_status: methods
 links:
   config:
@@ -33,6 +34,10 @@ links:
     - docs/research/paper-full-2.0.md#624-the-four-locks-why-nothing-beat-the-bare-tutor-and-what-opened-when-each-was-removed-post-hoc-except-the-claim-gate-development-tier
   items:
     - adaptive-causality-crossed-effects
+    - enforce-tutor-stub-artifact-lifecycle
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/603
+    - https://github.com/liammagee/machinespirits-eval/pull/605
 tags:
   - tutor-stub
   - learner-profiles
@@ -185,3 +190,19 @@ publication closeout's crossed holdout design, not a routing policy.
   qd-v1 artifact, replay manifest, design file, and the four approved
   brief/voice hashes. The one remaining gate is the user's separate
   authorization of the 20 paid dialogues.
+- 2026-08-09 — Confirmed PR #605 merged with every reported check green, then
+  started the paid-launch slice in a fresh `origin/main` worktree (the older
+  dirty worktree was not reused). Added a fail-closed `--run-paid` mode: it
+  accepts only the one-line `paid_authorization: authorized` flip, reads the
+  certificate from tracked HEAD bytes, rechecks the certified design, qd-v1,
+  replay-manifest, approved brief/voice hashes, exact `7fbb5fe9…` frozen-plan
+  identity, 20-job balance, and Sonnet/Terra/Sol seats, then repeats all four
+  delivery dry-runs before any paid call. Jobs run serially under a mandatory
+  `--checkpoint-every` bound with durable pre/post-job state; an interrupted or
+  failed in-flight job refuses automatic retry, and every resume is bound to
+  one committed runner-source SHA with no tracked dirt permitted beyond the
+  authorization file. The current mandatory live
+  redacted-trace mirror is retained as a post-certificate safety transport,
+  while the manifest separately records the certified and materialized hashes.
+  Authorization remains `not_authorized`; no paid dialogue or outcome reading
+  occurred in this slice.

@@ -88,7 +88,7 @@ test('learner-profile world deconfound rejects source-world surface leakage', ()
   );
 });
 
-test('learner-profile world deconfound rejects changed cost or premature authorization', () => {
+test('learner-profile world deconfound rejects changed cost or invalid authorization', () => {
   const changedCost = structuredClone(readLearnerProfileWorldDeconfoundDesign());
   changedCost.paid_design.cells[0].repeats = 6;
   assert.throws(
@@ -98,9 +98,18 @@ test('learner-profile world deconfound rejects changed cost or premature authori
 
   const authorized = structuredClone(readLearnerProfileWorldDeconfoundDesign());
   authorized.freeze.paid_authorization = 'authorized';
+  const authorizedReport = validateLearnerProfileWorldDeconfoundDesign(authorized);
+  assert.equal(authorizedReport.paidAuthorization, 'authorized');
+  assert.match(
+    renderLearnerProfileWorldDeconfoundReview(authorized, authorizedReport),
+    /separate operator authorization is present/u,
+  );
+
+  const invalidAuthorization = structuredClone(readLearnerProfileWorldDeconfoundDesign());
+  invalidAuthorization.freeze.paid_authorization = 'pending';
   assert.throws(
-    () => validateLearnerProfileWorldDeconfoundDesign(authorized),
-    /paid calls must remain not_authorized/u,
+    () => validateLearnerProfileWorldDeconfoundDesign(invalidAuthorization),
+    /paid_authorization must be not_authorized or authorized/u,
   );
 
   const changedInstrument = structuredClone(readLearnerProfileWorldDeconfoundDesign());
