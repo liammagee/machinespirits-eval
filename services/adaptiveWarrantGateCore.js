@@ -11,7 +11,7 @@
 
 import { recommendRepairPolicy } from './adaptiveWarrantPolicy.js';
 
-export const ADAPTIVE_WARRANT_CORE_SCHEMA = 'machinespirits.adaptation-refinement.warrant-core.v1';
+export const ADAPTIVE_WARRANT_CORE_SCHEMA = 'machinespirits.adaptation-refinement.warrant-core.v2';
 
 export const REPETITION_DEFEATER_THRESHOLD = 0.35;
 export const ACCUMULATED_TROUBLE_THRESHOLD = 2;
@@ -80,6 +80,7 @@ export function classifyLearnerSignal(text) {
  *  - deferenceSustained: last three decision-time signals all permission-framed
  *  - divergence: typed divergence rows (for the policy choice)
  *  - strategyInForce: action family held through the prior turn
+ *  - actionContract: expected-uptake lifecycle outcome for strategyInForce
  */
 export function evaluateWarrant({
   signal,
@@ -89,24 +90,40 @@ export function evaluateWarrant({
   deferenceSustained = false,
   divergence = [],
   strategyInForce = null,
+  actionContract = null,
 } = {}) {
   const masked = signal?.primary === 'engaged_analytic';
+  const contractRevision = actionContract?.transition?.revision_warranted === true;
+  const priorityContractRevision =
+    contractRevision && ['success', 'defeat'].includes(actionContract?.status);
+  const contractSuccess = actionContract?.status === 'success';
   const immediate = !signalConsumed && (signal?.primary === 'repair_request' || signal?.primary === 'stall');
   const registerEscalation = complaintTurns.length >= REGISTER_ESCALATION_THRESHOLD;
-  const accumulated = !masked && troubleTurns.length >= ACCUMULATED_TROUBLE_THRESHOLD;
-  const revisionWarranted = immediate || registerEscalation || accumulated;
+  const accumulated = !contractSuccess && !masked && troubleTurns.length >= ACCUMULATED_TROUBLE_THRESHOLD;
+  const revisionWarranted = immediate || priorityContractRevision || registerEscalation || accumulated || contractRevision;
   const registerRevisionWarranted = complaintTurns.length >= 1;
   const warrantBasis = immediate
     ? `immediate:${signal.primary}`
-    : registerEscalation
-      ? `register_escalation:${complaintTurns.length}_complaints`
-      : accumulated
-        ? `accumulated:${troubleTurns.length}_trouble_turns`
-        : masked && troubleTurns.length >= ACCUMULATED_TROUBLE_THRESHOLD
-          ? 'masked_by_engaged_analytic'
-          : 'none';
+    : priorityContractRevision
+      ? `contract_${actionContract.status}:${strategyInForce}:${actionContract.reason}`
+      : registerEscalation
+        ? `register_escalation:${complaintTurns.length}_complaints`
+        : accumulated
+          ? `accumulated:${troubleTurns.length}_trouble_turns`
+          : contractRevision
+            ? `contract_${actionContract.status}:${strategyInForce}:${actionContract.reason}`
+          : masked && troubleTurns.length >= ACCUMULATED_TROUBLE_THRESHOLD
+            ? 'masked_by_engaged_analytic'
+            : 'none';
   const policy = revisionWarranted
-    ? recommendRepairPolicy({ signal, warrantBasis, divergence, strategyInForce, deferenceSustained })
+    ? recommendRepairPolicy({
+        signal,
+        warrantBasis,
+        divergence,
+        strategyInForce,
+        deferenceSustained,
+        actionContract,
+      })
     : null;
   return {
     schema: ADAPTIVE_WARRANT_CORE_SCHEMA,
@@ -114,9 +131,11 @@ export function evaluateWarrant({
     immediate,
     accumulated,
     register_escalation: registerEscalation,
+    contract_revision: contractRevision,
     revision_warranted: revisionWarranted,
     register_revision_warranted: registerRevisionWarranted,
     warrant_basis: warrantBasis,
+    action_contract: actionContract,
     policy,
   };
 }

@@ -15,7 +15,16 @@
  * layer owns that).
  */
 
-export const ADAPTIVE_WARRANT_POLICY_SCHEMA = 'machinespirits.adaptation-refinement.repair-policy.v0';
+export const ADAPTIVE_WARRANT_POLICY_SCHEMA = 'machinespirits.adaptation-refinement.repair-policy.v1';
+
+const CONTRACT_SUCCESSOR_STANCES = Object.freeze({
+  answer_accountably: 'plain',
+  clarify_distinction: 'precise',
+  clarify_term: 'plain',
+  ground_in_material: 'precise',
+  receive_vulnerability: 'warm',
+  stage_next_step: 'precise',
+});
 
 /**
  * Recommend a repair policy for a warranted decision point.
@@ -26,6 +35,7 @@ export const ADAPTIVE_WARRANT_POLICY_SCHEMA = 'machinespirits.adaptation-refinem
  *  - divergence: typed divergence rows [{dimension, interpretation}]
  *  - strategyInForce: the action family currently held
  *  - deferenceSustained: true when the learner's recent turns are permission-framed deferrals
+ *  - actionContract: typed expected-uptake outcome, including its licensed successor
  *
  * Returns {family, rationale, registerAdvice} or null when no revision is
  * warranted (callers should not ask for a policy without a warrant).
@@ -36,10 +46,24 @@ export function recommendRepairPolicy({
   divergence = [],
   strategyInForce = null,
   deferenceSustained = false,
+  actionContract = null,
 } = {}) {
   if (warrantBasis === 'none' || warrantBasis === 'masked_by_engaged_analytic') return null;
   const primary = signal?.primary || 'neutral';
   const conceptualStall = divergence.some((row) => row.dimension === 'conceptual' && row.interpretation === 'stalled');
+
+  const contractSuccessor = actionContract?.transition?.recommended_action_family || null;
+  if (
+    warrantBasis.startsWith('contract_') &&
+    actionContract?.transition?.revision_warranted &&
+    contractSuccessor
+  ) {
+    return policy(
+      contractSuccessor,
+      `action-family contract ${actionContract.status}: ${actionContract.reason}`,
+      { stanceHint: CONTRACT_SUCCESSOR_STANCES[contractSuccessor] || 'precise' },
+    );
+  }
 
   // Explicit repair request: the learner asked for the explanation itself to
   // be fixed. Catalogue: repair_explanation — "Restate the current tutor

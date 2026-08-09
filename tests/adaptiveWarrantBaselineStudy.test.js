@@ -10,6 +10,7 @@ import {
   aggregateAdaptiveWarrantStudy,
   buildAdaptiveWarrantBaselineJobs,
   buildBlindedAnnotationCorpus,
+  evaluateAdaptiveWarrantDecisionGate,
   isUnhedgedOwnVoiceClaim,
   resolveAdaptiveWarrantStudyStatus,
   scoreBlindedAnnotations,
@@ -221,6 +222,79 @@ test('offline shadow aligns DAG growth with the next decision-time learner recor
   }
 });
 
+test('live and offline gates agree on repeated unresolved evidence-request defeat', async () => {
+  const { createTutorStubWarrantGate } = await import('../services/tutorStubWarrantGate.js');
+  const traceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'warrant-contract-parity-'));
+  const tracePath = path.join(traceDir, 'trace.jsonl');
+  const learnerTurns = [
+    'What public mark on the coin or dies would establish the link?',
+    'What public mark on the coin or dies would establish the link?',
+    'No visible flaw is recorded; please record a distinctive cut or die-mark before comparison.',
+  ];
+  const classification = {
+    request_type: 'stepwise_support_request',
+    discourse_move: 'question',
+    evidence_use: 'cites_public_evidence',
+    epistemic_stance: 'reflective',
+    agency: 'steering',
+  };
+  const events = [];
+  const live = createTutorStubWarrantGate({ mode: 'observe' });
+  const liveDecisions = [];
+  for (const turn of [1, 2, 3]) {
+    const learnerText = learnerTurns[turn - 1];
+    const turnClassification = turn === 1 ? null : { turn: classification };
+    liveDecisions.push(
+      live.assess({
+        turn,
+        learnerText,
+        classification: turnClassification,
+        dagModel: { learnerRecord: { grounded: Array.from({ length: 5 }, (_, index) => `f${index}`) } },
+        priorActionFamily: 'stage_next_step',
+      }),
+    );
+    live.recordTurnOutcome({ turn, actionFamily: 'stage_next_step' });
+    events.push({
+      type: 'tutor_first_draft_contract',
+      turn,
+      contract: {
+        development: { action_family: 'stage_next_step' },
+        performance: { engagement_stance: 'precise', actorial_part: 'examiner', tactic: 'evidentiary_boundary' },
+      },
+    });
+    events.push({ type: 'auto_learner_turn', turn, text: learnerText });
+    events.push({
+      type: 'turn_complete',
+      turn,
+      turnRecord: {
+        classification: turnClassification,
+        stateObservation: { dag: { grounded_count: 5, voiced_derived_count: 0 } },
+      },
+    });
+  }
+  fs.writeFileSync(tracePath, `${events.map((event) => JSON.stringify(event)).join('\n')}\n`);
+  try {
+    const offline = deriveAdaptiveWarrantShadow(tracePath).sessions[0].decisions;
+    assert.equal(offline.length, 2);
+    for (const [index, decision] of offline.entries()) {
+      const liveDecision = liveDecisions[index + 1];
+      assert.equal(decision.revision_warranted, liveDecision.revision_warranted);
+      assert.equal(decision.warrant_basis, liveDecision.warrant_basis);
+      assert.equal(decision.action_contract.status, liveDecision.action_contract.status);
+      assert.equal(
+        decision.action_contract.transition?.recommended_action_family || null,
+        liveDecision.action_contract.transition?.recommended_action_family || null,
+      );
+    }
+    assert.equal(offline[0].revision_warranted, true);
+    assert.equal(offline[0].policy.family, 'answer_accountably');
+    assert.equal(offline[1].revision_warranted, true);
+    assert.equal(offline[1].policy.family, 'answer_accountably');
+  } finally {
+    fs.rmSync(traceDir, { recursive: true, force: true });
+  }
+});
+
 test('annotation corpus hides condition and keeps the arm mapping in a separate key', () => {
   const rows = [
     resultRow({ profile: 'low_agency', condition: 'baseline', seed: 101 }),
@@ -325,4 +399,50 @@ test('blind annotation validation fails closed before the private key is needed'
     () => validateBlindedAnnotationResponse({ response: valid, corpus, expectedCorpusSha256: 'changed' }),
     /corpus_sha256/u,
   );
+});
+
+test('v2 annotations validate successor families and the scorer gates decision plus transition quality', () => {
+  const corpus = {
+    study_id: 'contract-validation',
+    blinded: true,
+    cases: Array.from({ length: 12 }, (_, index) => ({ sample_id: `c${index + 1}` })),
+  };
+  const labels = [
+    ['yes', 'stage_next_step'],
+    ['yes', 'answer_accountably'],
+    ...Array.from({ length: 10 }, () => ['no', 'hold']),
+  ];
+  const response = {
+    schema: 'machinespirits.adaptation-refinement.warrant-annotation-response.v2',
+    study_id: corpus.study_id,
+    corpus_sha256: 'frozen-v2',
+    cases: corpus.cases.map((row, index) => ({
+      sample_id: row.sample_id,
+      revision_warranted: labels[index][0],
+      recommended_action_family: labels[index][1],
+      note: 'Decision-time evidence supports this transition.',
+    })),
+  };
+  assert.equal(
+    validateBlindedAnnotationResponse({ response, corpus, expectedCorpusSha256: 'frozen-v2' }).ok,
+    true,
+  );
+  const key = {
+    cases: corpus.cases.map((row, index) => ({
+      sample_id: row.sample_id,
+      profile: index >= 8 ? 'diligent' : 'low_agency',
+      shadow: {
+        revision_warranted: labels[index][0] === 'yes',
+        policy: labels[index][0] === 'yes' ? { family: labels[index][1] } : null,
+      },
+    })),
+  };
+  const score = scoreBlindedAnnotations({ annotatorA: response, annotatorB: response, key });
+  assert.equal(score.metrics.precision, 1);
+  assert.equal(score.metrics.recall, 1);
+  assert.equal(score.metrics.transitionAccuracy, 1);
+  assert.equal(score.metrics.diligentFalsePositiveRate, 0);
+  const gate = evaluateAdaptiveWarrantDecisionGate(score, { liveShadowAgreement: 1 });
+  assert.equal(gate.passed, true);
+  assert.ok(gate.checks.every((row) => row.passed));
 });

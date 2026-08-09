@@ -161,3 +161,43 @@ estimate model variance, rather than scaling the current paired-seed design.
 These results are internal automated-learner calibration evidence. They do not
 establish a learning effect, an optimal repair policy, or a human-learner
 claim.
+
+## Successor design: expected-uptake contracts and fresh gate
+
+The successor study replaces generic commitment persistence with typed
+action-family contracts. Every catalogue family declares an expected learner
+response, deadline, success transition, defeat transition, and expiry
+transition. The first executable boundary covers the two fresh-holdout misses:
+successful agency restoration terminates `challenge_resistance`, while a
+repeated request for the same missing evidence or comparison defeats
+`stage_next_step`. The registry is shared by live selection and offline replay.
+
+Before new dialogue generation, the 18-case decision gate is frozen in
+`remaining-next-steps.md`: agreement >=0.80; at least 12 consensus decisions
+with 2 positives and 6 negatives; precision and recall >=0.70; accuracy >=0.75;
+at least 2 consensus-positive successor decisions with exact transition
+accuracy >=0.70; diligent false-positive rate <=0.25; and live/offline parity
+1.00. A failed component stops the downstream sequence.
+
+## Successor gate execution result
+
+The contract-validation matrix completed all nine planned dialogues and 72
+turns with complete learner-analysis coverage and zero fallback. The frozen
+18-case corpus (`8ad4e43d8619894cba5793d0e09406dd60ab332d43c38310badbae8454938117`)
+had zero overlap with both prior annotation corpora. Two new blind readers
+completed all cases before scoring.
+
+The gate failed: raw agreement 0.778; 14 scored consensuses (7 positive, 7
+negative); TP=2, TN=5, FP=2, FN=5; precision 0.500; recall 0.286; accuracy
+0.500. Four positive cases had exact successor consensus, with transition
+accuracy 0/4. Diligent false positives were 1/4 = 0.250. Live/offline agreement
+was 41/42 = 0.976; the sole mismatch was a turn-1 offline tracker
+initialization defect, fixed after freeze without changing this score.
+
+The stop rule therefore applies. No frozen-prefix or replicated-draw outcome
+comparison was launched. The next design iteration must first add a persistent
+public-obligation ledger, distinguish a learner proposing a test from asking
+the tutor to supply its result, and add an inquiry-completion predicate that
+can license `close_inquiry`. Those additions require another zero-overlap blind
+decision gate; the present diagnostic corpus is burned and is not suitable for
+post-hoc validation.

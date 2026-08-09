@@ -318,3 +318,56 @@ then use frozen-prefix counterfactual replay or explicit replicated draws.
 The evidence boundary remains strict: this is internal automated-learner
 calibration, not a validated repair policy, a paper result, or evidence of
 human learning.
+
+## Progress Update — 10 August 2026, typed-contract validation gate
+
+The successor implementation now gives all 13 catalogue action families a
+typed contract: expected learner response, deadline, success transition,
+defeat transition, expiry transition, and (where appropriate) a required exit.
+The same contract registry runs in the live gate and offline replayer. The
+study harness and scorer were extended before new data were generated, with a
+frozen gate covering decision accuracy, successor choice, diligent-control
+false positives, and live/offline parity.
+
+The fresh validation run completed nine dialogues (off/observe/active across
+three automated learner profiles), 72/72 turns, and 72/72 learner-analysis
+calls with zero fallbacks. The frozen 18-case corpus has SHA-256
+`8ad4e43d8619894cba5793d0e09406dd60ab332d43c38310badbae8454938117`
+and verified zero overlap with both earlier 18-case corpora. Two new isolated
+readers labelled it before the private key was opened.
+
+The predeclared gate failed. Raw agreement was 0.778; 14 hard-consensus cases
+split evenly between seven positives and seven negatives, with four uncertain.
+The gate recorded TP=2, TN=5, FP=2, FN=5: precision 0.500, recall 0.286, and
+accuracy 0.500. Four successor-family consensuses were available and none
+matched the policy (transition accuracy 0). The diligent false-positive rate
+was 1/4 = 0.250. Live/offline agreement was 41/42 = 0.976 rather than the
+required 1.00.
+
+The new corpus identifies three architectural defects:
+
+1. **Planning is not obligation debt.** Selecting or restating the first
+   appropriate public test was sometimes treated as a repeated unanswered
+   request, producing both false positives.
+2. **Public obligations outlive an action-family instance.** The two clearest
+   `answer_accountably` consensuses concerned a requested result that remained
+   unanswered across an intervening tutor move; the per-family tracker forgot
+   or misread that obligation.
+3. **Inquiry completion is a typed outcome.** Several late positive decisions
+   said the evidence-bounded conclusion was complete and the tutor should
+   `close_inquiry`; the current contracts continued staging instead.
+
+The parity miss was separately traced to offline replay not priming its request
+lifecycle with learner turn 1, while the live runtime already had an initial
+family in force. That mechanical defect has a regression-tested fix, but the
+frozen score remains 0.976; it is not retroactively rewritten.
+
+The downstream comparison therefore remains stopped. The next normative
+object is a public-obligation ledger with speech-act typing (proposal versus
+request), satisfaction and carry-forward rules independent of family changes,
+plus an inquiry-completion contract grounded in exhausted public evidence.
+Those objects need another newly generated blind decision study before frozen-
+prefix replay or replicated-draw outcome work is licensed.
+
+This remains internal automated-learner calibration, not a validated repair
+policy, a paper result, or evidence of human learning.

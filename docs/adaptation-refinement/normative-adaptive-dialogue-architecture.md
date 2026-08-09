@@ -502,10 +502,10 @@ Evaluate decision quality and downstream dialogue effects separately.
 |---|---|---|
 | 0 — semantic audit | complete | The existing world/DAG, learner board, action-family, stance, and audit surfaces have a grounded reuse/extend/new map. |
 | 1 — trace-only prototype | complete | The offline replayer emits commitments, typed divergence, warrant evidence, hold/revise verdicts, policy recommendations, realization, and available outcomes from existing traces. |
-| 2 — warrant evaluation | primary and fresh holdout complete; gate failed | The primary 18-case sample produced precision/recall 0/0. A bounded repair fit the burned corpus but again produced 0/0 on a zero-overlap 18-case holdout, so the repair was rejected and reverted. |
-| 3 — figure policy | implemented but not decision-valid | A typed repair-policy map selects an existing action family and stance, but the holdout shows that action-family success/termination and unresolved evidence requests are not represented. It is not a validated policy. |
+| 2 — warrant evaluation | third fresh gate complete; failed | Typed contracts were tested on a newly generated zero-overlap 18-case corpus. Fourteen hard consensuses yielded precision 0.500, recall 0.286, accuracy 0.500, below the frozen gate. |
+| 3 — figure policy | typed contracts implemented; successor choice invalid | All 13 families now declare expected uptake and lifecycle transitions, but exact successor accuracy was 0/4. Public obligations and inquiry completion are still absent. It is not a validated policy. |
 | 4 — register realization | runtime bridge complete; separate evaluation open | Active mode can override family and stance while the frontier model realizes the turn. Figure appropriateness and realization fidelity have not yet been independently scored in this study. |
-| 5 — baseline experiments | n=5 complete; n=10 stopped | Off/observe/active execution is valid, but decision quality failed and the inert observe arm moved on downstream channels. Scaling the paired-seed design is not licensed. |
+| 5 — baseline experiments | n=5 complete; contract validation failed; downstream stopped | Off/observe/active execution is valid, but both decision and successor quality failed. Frozen-prefix or replicated-draw comparison remains unlicensed. |
 
 The architecture is therefore implemented far enough to test the design's
 central separation—diagnosis, warrant, repair policy, realization, and outcome—
@@ -530,6 +530,31 @@ licensed successor families`. This is the concrete form of the earlier
 expected-uptake proposal, not a new prompt heuristic. Only after that object
 passes new decision-level annotation should Phase 5 resume with a variance-
 controlled downstream design.
+
+### Typed-contract gate result
+
+That action-family contract now exists and was evaluated on a third fresh
+18-case corpus. Execution validity held, but the predeclared decision gate did
+not: precision 0.500, recall 0.286, accuracy 0.500, transition accuracy 0/4,
+and live/offline agreement 41/42. The design therefore stops before Phase 5.
+
+The failed cases refine the object boundary again. An action-family-local
+contract cannot by itself represent a public obligation created when the
+learner asks the tutor to supply a named result. That obligation must persist
+across family changes until it is answered, explicitly deferred, defeated, or
+made unavailable. Conversely, a learner proposing to perform a public test is
+not creating the same debt. The state therefore needs a speech-act-typed public
+obligation ledger separate from both the learner DAG and the active family.
+
+The action catalogue also needs an authored inquiry-completion predicate.
+When the learner has integrated the available evidence, preserved the proof
+limit, and no licensed exhibit remains, continuing `stage_next_step` is not a
+neutral hold; `close_inquiry` becomes the warranted successor. Completion is a
+normative state transition, not merely a late-turn heuristic.
+
+The next decision-level validation must test these two objects on newly
+generated cases. The current corpus is burned, and its post-hoc error analysis
+cannot count as confirmation.
 
 ## 19. First Coding Task
 

@@ -278,6 +278,7 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
       warrantGateDecision = warrantGate.assess({
         turn: tutorLearnerDag?.model?.turn ?? state.turns.length + 1,
         learnerText,
+        classification,
         dagModel: tutorLearnerDag?.model || null,
         priorActionFamily: state.register?.current?.action_family || null,
       });

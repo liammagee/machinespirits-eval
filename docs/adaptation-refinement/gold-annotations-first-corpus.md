@@ -165,3 +165,49 @@ decisions:
   - {trace: 2026-07-24T23-19-21-031Z, session: 1, turn: 7, revision_warranted: no, taken: no, note: productive divergence — learner testing the claim}
   - {trace: 2026-07-24T23-19-21-031Z, session: 1, turn: 8, revision_warranted: no, taken: no, note: same plateau, session cut off}
 ```
+
+## Typed-contract validation corpus (2026-08-10)
+
+**Implementation under test:** all 13 action families received typed expected
+uptake, deadline, success, defeat, expiry, and successor semantics in a registry
+shared by the live gate and offline replayer. The validation gate and scorer
+were fixed before generation. No prior decision labels were used to select
+cases.
+
+**Execution:** nine newly generated dialogues, seed 301, one run per
+off/observe/active condition and low-agency/diligent/affective-resistant
+profile; 72/72 turns and learner-analysis calls completed with zero fallback.
+The 18-case prediction-balanced diagnostic sample has SHA-256
+`8ad4e43d8619894cba5793d0e09406dd60ab332d43c38310badbae8454938117`.
+Transcript, current-turn, record, and strategy fingerprints verified zero
+overlap with both earlier 18-case corpora. Prediction balancing makes this a
+diagnostic decision sample, not a prevalence estimate.
+
+**Blind protocol:** two new context-isolated readers saw only the frozen
+decision-time corpus and action-family catalogue. Both completed all 18 cases
+before the private key was read. A response-schema metadata error was rejected
+by the scorer before unblinding; changing only `warrant-annotation-corpus.v2`
+to `warrant-annotation-response.v2` made the already-frozen labels valid.
+
+**Decision result:** raw agreement 0.778; 14 hard consensuses, four uncertain;
+seven positive and seven negative consensuses. Confusion matrix TP=2, TN=5,
+FP=2, FN=5; precision 0.500, recall 0.286, accuracy 0.500. The diligent false-
+positive rate was 1/4 = 0.250.
+
+**Successor result:** four positives had exact successor-family consensus;
+0/4 matched the policy. The missed consensuses were two `close_inquiry` and two
+`answer_accountably` decisions. Other positive decisions frequently named
+closure or direct answer even when the readers disagreed on the exact family.
+
+**Parity result:** 41/42 live/offline decisions agreed (0.976). The single miss
+was a first-turn request-lifecycle initialization difference in the diligent
+observe dialogue. Offline replay now primes the shared tracker with turn-1
+public evidence and has a regression test, but this post-freeze mechanical fix
+does not alter the reported gate.
+
+**Disposition:** the predeclared gate failed agreement, precision, recall,
+accuracy, successor accuracy, and parity. No downstream comparison was run.
+This corpus is burned. The error pattern requires a persistent public-
+obligation ledger that distinguishes proposing a test from asking the tutor to
+supply its result, and an authored inquiry-completion outcome. Threshold tuning
+on this corpus is not licensed.

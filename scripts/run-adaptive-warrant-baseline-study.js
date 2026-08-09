@@ -23,12 +23,30 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import { deriveAdaptiveWarrantShadow } from './derive-adaptive-warrant-shadow.js';
+import { ADAPTIVE_WARRANT_ACTION_FAMILY_CONTRACTS } from '../services/adaptiveWarrantActionContracts.js';
 
 export const ADAPTIVE_WARRANT_BASELINE_STUDY_SCHEMA = 'machinespirits.adaptation-refinement.baseline-study.v1';
 export const ADAPTIVE_WARRANT_BASELINE_RESULT_SCHEMA = 'machinespirits.adaptation-refinement.baseline-study-results.v1';
-export const ADAPTIVE_WARRANT_ANNOTATION_SCHEMA = 'machinespirits.adaptation-refinement.warrant-annotation-corpus.v1';
+export const ADAPTIVE_WARRANT_ANNOTATION_SCHEMA = 'machinespirits.adaptation-refinement.warrant-annotation-corpus.v2';
 export const ADAPTIVE_WARRANT_ANNOTATION_SCORE_SCHEMA =
-  'machinespirits.adaptation-refinement.warrant-annotation-scores.v1';
+  'machinespirits.adaptation-refinement.warrant-annotation-scores.v2';
+
+export const ADAPTIVE_WARRANT_DECISION_GATE = Object.freeze({
+  schema: 'machinespirits.adaptation-refinement.warrant-decision-gate.v1',
+  minimum_raw_annotator_agreement: 0.8,
+  minimum_scored_consensus_cases: 12,
+  minimum_consensus_positive_cases: 2,
+  minimum_consensus_negative_cases: 6,
+  minimum_precision: 0.7,
+  minimum_recall: 0.7,
+  minimum_accuracy: 0.75,
+  minimum_transition_consensus_cases: 2,
+  minimum_transition_accuracy: 0.7,
+  maximum_diligent_false_positive_rate: 0.25,
+  required_live_shadow_agreement: 1,
+});
+
+const ANNOTATION_ACTION_FAMILIES = Object.freeze(Object.keys(ADAPTIVE_WARRANT_ACTION_FAMILY_CONTRACTS));
 
 export const STUDY_CONDITIONS = Object.freeze([
   { id: 'baseline', warrantGateMode: 'off' },
@@ -52,6 +70,7 @@ const SOURCE_FILES = Object.freeze([
   'scripts/run-tutor-stub-auto-eval.js',
   'scripts/tutor-stub-learner-profile-contracts.js',
   'services/adaptiveWarrantGateCore.js',
+  'services/adaptiveWarrantActionContracts.js',
   'services/adaptiveWarrantPolicy.js',
   'services/tutorStubPromptAudit.js',
   'services/tutorStubPublicLearnerAnalysis.js',
@@ -505,13 +524,20 @@ export function resolveAdaptiveWarrantStudyStatus(rows, jobs, { dryRun = false }
 
 export function buildBlindedAnnotationCorpus(
   rows,
-  { perCell = 2, studyId = 'study', samplingSeed = studyId, offsetPerCell = 0, sampleIdPrefix = 'case' } = {},
+  {
+    perCell = 2,
+    studyId = 'study',
+    samplingSeed = studyId,
+    offsetPerCell = 0,
+    sampleIdPrefix = 'case',
+    predictionBalanced = false,
+  } = {},
 ) {
   const cases = [];
   const key = [];
   for (const profile of STUDY_PROFILES) {
     for (const condition of STUDY_CONDITIONS) {
-      const candidates = rows
+      const sortedCandidates = rows
         .filter((row) => row.profile === profile && row.condition === condition.id && row.childStatus === 'ok')
         .flatMap((row) =>
           row.decisions.map((decision) => ({ row, decision })).filter(({ decision }) => decision.turn >= 2),
@@ -520,8 +546,11 @@ export function buildBlindedAnnotationCorpus(
           sha256(`${samplingSeed}|${left.row.jobId}|${left.decision.turn}`).localeCompare(
             sha256(`${samplingSeed}|${right.row.jobId}|${right.decision.turn}`),
           ),
-        )
-        .slice(offsetPerCell, offsetPerCell + perCell);
+        );
+      const available = sortedCandidates.slice(offsetPerCell);
+      const candidates = predictionBalanced
+        ? predictionBalancedCases(available, perCell)
+        : available.slice(0, perCell);
       for (const { row, decision } of candidates) {
         const sampleId = `${sampleIdPrefix}-${String(cases.length + 1).padStart(3, '0')}`;
         const priorTurns = row.publicTurns.filter((turn) => turn.turn < decision.turn);
@@ -539,6 +568,7 @@ export function buildBlindedAnnotationCorpus(
             : null,
           strategy_in_force: decision.strategy_in_force,
           revision_warranted: null,
+          recommended_action_family: null,
           note: null,
         });
         key.push({
@@ -563,7 +593,13 @@ export function buildBlindedAnnotationCorpus(
       study_id: studyId,
       blinded: true,
       instructions:
-        'Independently label revision_warranted as yes, no, or uncertain using only evidence available when the current learner turn arrived. Uncertain rows are reported but not scored.',
+        'Independently label revision_warranted as yes, no, or uncertain using only decision-time evidence. If yes, select one recommended_action_family from the catalogue or uncertain; if no use hold; if uncertain use uncertain. Uncertain rows are reported but not scored.',
+      allowed_recommended_action_families: [...ANNOTATION_ACTION_FAMILIES, 'hold', 'uncertain'],
+      sampling: {
+        cases_per_profile_condition_cell: perCell,
+        prediction_balanced_within_cell: predictionBalanced,
+        prediction_balance_is_diagnostic_not_prevalence_weighted: predictionBalanced,
+      },
       cases,
     },
     key: {
@@ -573,6 +609,32 @@ export function buildBlindedAnnotationCorpus(
       cases: key,
     },
   };
+
+  function predictionBalancedCases(candidates, count) {
+    const predicted = (entry) =>
+      entry.decision?.gate?.revision_warranted ?? entry.decision?.shadow?.revision_warranted ?? null;
+    const selected = [];
+    const positive = candidates.find((entry) => predicted(entry) === true);
+    const negative = candidates.find((entry) => predicted(entry) === false);
+    if (positive) selected.push(positive);
+    if (negative && negative !== positive) selected.push(negative);
+    for (const entry of candidates) {
+      if (selected.length >= count) break;
+      if (!selected.includes(entry)) selected.push(entry);
+    }
+    return selected.slice(0, count);
+  }
+}
+
+function annotationCaseFingerprint(row) {
+  return sha256(
+    JSON.stringify({
+      transcript_before_decision: row.transcript_before_decision,
+      current_learner_turn: row.current_learner_turn,
+      learner_record_at_decision: row.learner_record_at_decision,
+      strategy_in_force: row.strategy_in_force,
+    }),
+  );
 }
 
 function annotationLabel(value) {
@@ -580,8 +642,18 @@ function annotationLabel(value) {
   return ['yes', 'no', 'uncertain'].includes(label) ? label : null;
 }
 
+function annotationActionFamily(value) {
+  const family = String(value || '').trim();
+  return [...ANNOTATION_ACTION_FAMILIES, 'hold', 'uncertain'].includes(family) ? family : null;
+}
+
 export function validateBlindedAnnotationResponse({ response, corpus, expectedCorpusSha256 = null } = {}) {
-  if (response?.schema !== 'machinespirits.adaptation-refinement.warrant-annotation-response.v1') {
+  if (
+    ![
+      'machinespirits.adaptation-refinement.warrant-annotation-response.v1',
+      'machinespirits.adaptation-refinement.warrant-annotation-response.v2',
+    ].includes(response?.schema)
+  ) {
     throw new Error('annotation response has an unsupported schema');
   }
   if (!corpus?.blinded || !Array.isArray(corpus.cases)) throw new Error('annotation corpus is not a blinded corpus');
@@ -598,6 +670,22 @@ export function validateBlindedAnnotationResponse({ response, corpus, expectedCo
   for (const row of response.cases) {
     if (!annotationLabel(row.revision_warranted)) {
       throw new Error(`annotation response ${row.sample_id} has an invalid revision_warranted label`);
+    }
+    if (response.schema.endsWith('.v2')) {
+      const family = annotationActionFamily(row.recommended_action_family);
+      if (!family) {
+        throw new Error(`annotation response ${row.sample_id} has an invalid recommended_action_family`);
+      }
+      const label = annotationLabel(row.revision_warranted);
+      if (label === 'no' && family !== 'hold') {
+        throw new Error(`annotation response ${row.sample_id} must use hold when revision_warranted is no`);
+      }
+      if (label === 'uncertain' && family !== 'uncertain') {
+        throw new Error(`annotation response ${row.sample_id} must use uncertain when revision_warranted is uncertain`);
+      }
+      if (label === 'yes' && ['hold', 'uncertain'].includes(family)) {
+        throw new Error(`annotation response ${row.sample_id} requires an action family when revision_warranted is yes`);
+      }
     }
     if (!oneLine(row.note)) throw new Error(`annotation response ${row.sample_id} requires a decision-time evidence note`);
   }
@@ -625,16 +713,33 @@ export function scoreBlindedAnnotations({ annotatorA, annotatorB, key } = {}) {
   const cases = sampleIds.map((sampleId) => {
     const labelA = annotationLabel(first.get(sampleId)?.revision_warranted);
     const labelB = annotationLabel(second.get(sampleId)?.revision_warranted);
+    const familyA = annotationActionFamily(first.get(sampleId)?.recommended_action_family);
+    const familyB = annotationActionFamily(second.get(sampleId)?.recommended_action_family);
     const consensus = labelA === labelB && ['yes', 'no'].includes(labelA) ? labelA : 'uncertain';
     const keyRow = keyed.get(sampleId) || null;
     const rawPrediction = keyRow?.gate?.revision_warranted ?? keyRow?.shadow?.revision_warranted;
     const predicted = typeof rawPrediction === 'boolean' ? (rawPrediction ? 'yes' : 'no') : null;
+    const rawPredictedFamily = keyRow?.gate?.policy?.family ?? keyRow?.shadow?.policy?.family ?? null;
+    const predictedFamily = predicted === 'no' ? 'hold' : annotationActionFamily(rawPredictedFamily);
+    const transitionConsensus =
+      consensus === 'yes' && familyA === familyB && ANNOTATION_ACTION_FAMILIES.includes(familyA)
+        ? familyA
+        : 'uncertain';
     return {
       sample_id: sampleId,
       annotator_a: labelA,
       annotator_b: labelB,
+      annotator_a_action_family: familyA,
+      annotator_b_action_family: familyB,
       consensus,
       predicted,
+      transition_consensus: transitionConsensus,
+      predicted_action_family: predictedFamily,
+      transition_scored: transitionConsensus !== 'uncertain' && predictedFamily !== null,
+      transition_match:
+        transitionConsensus !== 'uncertain' && predictedFamily !== null
+          ? transitionConsensus === predictedFamily
+          : null,
       scored: consensus !== 'uncertain' && predicted !== null,
       match: consensus !== 'uncertain' && predicted !== null ? consensus === predicted : null,
       profile: keyRow?.profile || null,
@@ -652,6 +757,11 @@ export function scoreBlindedAnnotations({ annotatorA, annotatorB, key } = {}) {
     (row) => row.annotator_a !== null && row.annotator_b !== null && row.annotator_a === row.annotator_b,
   ).length;
   const jointlyLabeled = cases.filter((row) => row.annotator_a !== null && row.annotator_b !== null).length;
+  const transitionScored = cases.filter((row) => row.transition_scored);
+  const consensusPositive = scored.filter((row) => row.consensus === 'yes').length;
+  const consensusNegative = scored.filter((row) => row.consensus === 'no').length;
+  const diligentNegatives = scored.filter((row) => row.profile === 'diligent' && row.consensus === 'no');
+  const diligentFalsePositives = diligentNegatives.filter((row) => row.predicted === 'yes').length;
   return {
     schema: ADAPTIVE_WARRANT_ANNOTATION_SCORE_SCHEMA,
     cases,
@@ -660,6 +770,8 @@ export function scoreBlindedAnnotations({ annotatorA, annotatorB, key } = {}) {
       jointlyLabeled,
       rawAnnotatorAgreement: ratio(rawAgreement, jointlyLabeled),
       scoredConsensusCases: scored.length,
+      consensusPositiveCases: consensusPositive,
+      consensusNegativeCases: consensusNegative,
       uncertainCases: cases.length - scored.length,
       truePositive,
       trueNegative,
@@ -668,8 +780,60 @@ export function scoreBlindedAnnotations({ annotatorA, annotatorB, key } = {}) {
       precision: ratio(truePositive, truePositive + falsePositive),
       recall: ratio(truePositive, truePositive + falseNegative),
       accuracy: ratio(truePositive + trueNegative, scored.length),
+      transitionConsensusCases: transitionScored.length,
+      transitionCorrect: transitionScored.filter((row) => row.transition_match).length,
+      transitionAccuracy: ratio(
+        transitionScored.filter((row) => row.transition_match).length,
+        transitionScored.length,
+      ),
+      diligentConsensusNegativeCases: diligentNegatives.length,
+      diligentFalsePositives,
+      diligentFalsePositiveRate: ratio(diligentFalsePositives, diligentNegatives.length),
     },
   };
+}
+
+export function evaluateAdaptiveWarrantDecisionGate(
+  score,
+  { liveShadowAgreement = null, gate = ADAPTIVE_WARRANT_DECISION_GATE } = {},
+) {
+  const metrics = score?.metrics || {};
+  const checks = [
+    check('raw_annotator_agreement', metrics.rawAnnotatorAgreement, gate.minimum_raw_annotator_agreement, 'min'),
+    check('scored_consensus_cases', metrics.scoredConsensusCases, gate.minimum_scored_consensus_cases, 'min'),
+    check('consensus_positive_cases', metrics.consensusPositiveCases, gate.minimum_consensus_positive_cases, 'min'),
+    check('consensus_negative_cases', metrics.consensusNegativeCases, gate.minimum_consensus_negative_cases, 'min'),
+    check('precision', metrics.precision, gate.minimum_precision, 'min'),
+    check('recall', metrics.recall, gate.minimum_recall, 'min'),
+    check('accuracy', metrics.accuracy, gate.minimum_accuracy, 'min'),
+    check(
+      'transition_consensus_cases',
+      metrics.transitionConsensusCases,
+      gate.minimum_transition_consensus_cases,
+      'min',
+    ),
+    check('transition_accuracy', metrics.transitionAccuracy, gate.minimum_transition_accuracy, 'min'),
+    check(
+      'diligent_false_positive_rate',
+      metrics.diligentFalsePositiveRate,
+      gate.maximum_diligent_false_positive_rate,
+      'max',
+    ),
+    check('live_shadow_agreement', liveShadowAgreement, gate.required_live_shadow_agreement, 'min'),
+  ];
+  return {
+    schema: gate.schema,
+    gate,
+    passed: checks.every((row) => row.passed),
+    checks,
+  };
+
+  function check(id, actual, threshold, direction) {
+    const measured = Number(actual);
+    const passed =
+      Number.isFinite(measured) && (direction === 'max' ? measured <= threshold : measured >= threshold);
+    return { id, actual: Number.isFinite(measured) ? measured : null, direction, threshold, passed };
+  }
 }
 
 function markdownReport(study) {
@@ -849,6 +1013,7 @@ function writeStudyArtifacts({ rootDir, plan, rows, status }) {
   const annotation = buildBlindedAnnotationCorpus(rows, {
     perCell: plan.config.annotationPerCell,
     studyId: plan.studyId,
+    predictionBalanced: plan.config.contractValidation === true,
   });
   const annotationScorePath = path.join(rootDir, 'annotation-consensus-and-scores.json');
   const validationScorePath = path.join(rootDir, 'validation-consensus-and-scores.json');
@@ -880,8 +1045,47 @@ function writeStudyArtifacts({ rootDir, plan, rows, status }) {
   writeJson(existingStudyPath, study);
   fs.writeFileSync(path.join(rootDir, 'study-results.md'), markdownReport(study));
   if (!preserveFrozenAnnotation) {
+    if (status === 'complete' && plan.config.contractValidation === true) {
+      const currentFingerprints = new Set(annotation.corpus.cases.map(annotationCaseFingerprint));
+      const overlapRows = [];
+      for (const excludedPath of plan.config.excludedAnnotationCorpora || []) {
+        const excluded = readJson(excludedPath);
+        for (const row of excluded.cases || []) {
+          const fingerprint = annotationCaseFingerprint(row);
+          if (currentFingerprints.has(fingerprint)) overlapRows.push({ excludedPath, fingerprint });
+        }
+      }
+      if (overlapRows.length) {
+        throw new Error(`contract-validation annotation freeze overlaps ${overlapRows.length} excluded cases`);
+      }
+    }
     writeJson(study.annotation.blindedCorpus, annotation.corpus);
     writeJson(study.annotation.privateKey, annotation.key);
+    if (status === 'complete' && plan.config.contractValidation === true) {
+      writeJson(path.join(rootDir, 'annotation-freeze-manifest.json'), {
+        schema: 'machinespirits.adaptation-refinement.warrant-contract-validation-freeze.v1',
+        study_id: plan.studyId,
+        status: 'frozen',
+        frozen_at: new Date().toISOString(),
+        newly_generated_dialogues: true,
+        prediction_balanced_diagnostic_sample: true,
+        zero_overlap: {
+          excluded_corpora: (plan.config.excludedAnnotationCorpora || []).map((excludedPath) => ({
+            path: excludedPath,
+            sha256: fileSha256(excludedPath),
+          })),
+          verified_overlap_count: 0,
+        },
+        decision_gate: ADAPTIVE_WARRANT_DECISION_GATE,
+        corpus: {
+          path: study.annotation.blindedCorpus,
+          sha256: fileSha256(study.annotation.blindedCorpus),
+          cases: annotation.corpus.cases.length,
+        },
+        key: { path: study.annotation.privateKey, sha256: fileSha256(study.annotation.privateKey) },
+        provenance: sourceFingerprint(),
+      });
+    }
   }
   return study;
 }
@@ -916,8 +1120,13 @@ function scoreAnnotationArtifacts({
   // Read the private condition/decision key only after both blind files have
   // passed completeness, vocabulary, study-id, and frozen-corpus validation.
   const key = readJson(keyPath);
+  const studyPath = path.join(rootDir, 'study-results.json');
+  const study = fs.existsSync(studyPath) ? readJson(studyPath) : null;
+  const liveShadowRows = (study?.rows || []).filter((row) => Number.isFinite(row.liveShadowAgreement));
+  const liveShadowAgreement = mean(liveShadowRows.map((row) => row.liveShadowAgreement));
+  const scored = scoreBlindedAnnotations({ annotatorA, annotatorB, key });
   const score = {
-    ...scoreBlindedAnnotations({ annotatorA, annotatorB, key }),
+    ...scored,
     studyId: corpus.study_id,
     scoredAt: new Date().toISOString(),
     evaluationBoundary,
@@ -928,6 +1137,7 @@ function scoreAnnotationArtifacts({
       corpus: { path: corpusPath, sha256: corpusSha256 },
       key: { path: keyPath, sha256: fileSha256(keyPath) },
     },
+    decisionGate: evaluateAdaptiveWarrantDecisionGate(scored, { liveShadowAgreement }),
   };
   const outputPath = path.join(rootDir, outputFilename);
   writeJson(outputPath, score);
@@ -1002,8 +1212,8 @@ function printHelp() {
   node scripts/run-adaptive-warrant-baseline-study.js --score-validation <study-root> --annotation-a <file> --annotation-b <file>
 
 Options:
-  --runs <5|10>             n per condition x learner cell (default: 5 pilot)
-  --master-seed <n>         first paired session seed (default: 101)
+  --runs <1|5|10>           n per cell (1 only with --contract-validation)
+  --master-seed <n>         first paired seed (default: 301 contract validation; otherwise 101)
   --parallelism <n>         concurrent dialogues (default: 6)
   --root <path>             output root (default: ignored timestamped directory)
   --model <ref>             speaking tutor model (default: codex.gpt-5.6-luna)
@@ -1011,6 +1221,8 @@ Options:
   --learner-model <ref>     automated learner model (default: same)
   --dry-run                 execute every child auto-eval in dry-run mode
   --launch-approved         required for model-backed execution
+  --contract-validation     fresh 9-dialogue decision-validation stage; no downstream claim
+  --exclude-corpus <path>   prior blinded corpus to exclude by content hash (repeatable)
   --resume                  skip already successful job-result files
   --analyze <root>          rebuild results from existing job artifacts only
   --refresh-report <root>   recompute aggregates/report without replaying traces
@@ -1025,8 +1237,8 @@ Options:
 async function main() {
   const { values } = parseArgs({
     options: {
-      runs: { type: 'string', default: '5' },
-      'master-seed': { type: 'string', default: '101' },
+      runs: { type: 'string' },
+      'master-seed': { type: 'string' },
       parallelism: { type: 'string', default: '6' },
       root: { type: 'string' },
       model: { type: 'string', default: DEFAULT_MODEL },
@@ -1037,6 +1249,8 @@ async function main() {
       'annotation-per-cell': { type: 'string', default: '2' },
       'dry-run': { type: 'boolean', default: false },
       'launch-approved': { type: 'boolean', default: false },
+      'contract-validation': { type: 'boolean', default: false },
+      'exclude-corpus': { type: 'string', multiple: true, default: [] },
       resume: { type: 'boolean', default: false },
       analyze: { type: 'string' },
       'refresh-report': { type: 'string' },
@@ -1098,6 +1312,7 @@ async function main() {
     const rootDir = path.resolve(ROOT, values['score-annotations']);
     const annotationAPath = path.resolve(ROOT, values['annotation-a']);
     const annotationBPath = path.resolve(ROOT, values['annotation-b']);
+    const plan = readJson(path.join(rootDir, 'study-plan.json'));
     const { outputPath, score } = scoreAnnotationArtifacts({
       rootDir,
       annotationAPath,
@@ -1105,7 +1320,9 @@ async function main() {
       corpusFilename: 'annotation-sample.blinded.json',
       keyFilename: 'annotation-key.private.json',
       outputFilename: 'annotation-consensus-and-scores.json',
-      evaluationBoundary: 'pre_repair_primary_calibration_sample',
+      evaluationBoundary: plan.config.contractValidation
+        ? 'fresh_dialogue_zero_overlap_action_contract_validation'
+        : 'pre_repair_primary_calibration_sample',
     });
     const study = readJson(path.join(rootDir, 'study-results.json'));
     study.decisionQuality = score;
@@ -1129,19 +1346,34 @@ async function main() {
     return;
   }
 
-  const runs = positiveInt(values.runs, '--runs');
-  if (![5, 10].includes(runs)) throw new Error('--runs must be 5 (pilot) or 10 (full study)');
+  const contractValidation = values['contract-validation'];
+  const runs = positiveInt(values.runs || (contractValidation ? '1' : '5'), '--runs');
+  if (contractValidation ? runs !== 1 : ![5, 10].includes(runs)) {
+    throw new Error(
+      contractValidation
+        ? '--contract-validation requires --runs 1'
+        : '--runs must be 5 (pilot) or 10 (full study)',
+    );
+  }
   if (!values['dry-run'] && !values['launch-approved']) {
     throw new Error('Model-backed execution requires --launch-approved; run the same matrix with --dry-run first');
   }
-  const masterSeed = positiveInt(values['master-seed'], '--master-seed');
+  const masterSeed = positiveInt(values['master-seed'] || (contractValidation ? '301' : '101'), '--master-seed');
   const parallelism = positiveInt(values.parallelism, '--parallelism');
+  const excludedAnnotationCorpora = (values['exclude-corpus'] || []).map((corpusPath) =>
+    path.resolve(ROOT, corpusPath),
+  );
+  for (const corpusPath of excludedAnnotationCorpora) {
+    if (!fs.existsSync(corpusPath)) throw new Error(`excluded annotation corpus not found: ${corpusPath}`);
+  }
   const rootDir = values.root
     ? path.resolve(ROOT, values.root)
     : path.join(
-        ROOT,
-        '.tutor-stub-auto-eval',
-        `adaptive-warrant-baseline-${runs === 5 ? 'pilot' : 'full'}-${safeTimestamp()}`,
+      ROOT,
+      '.tutor-stub-auto-eval',
+      contractValidation
+        ? `adaptive-warrant-contract-validation-${safeTimestamp()}`
+        : `adaptive-warrant-baseline-${runs === 5 ? 'pilot' : 'full'}-${safeTimestamp()}`,
       );
   if (fs.existsSync(rootDir) && !values.resume) {
     throw new Error(`study root already exists; choose a new --root or pass --resume: ${rootDir}`);
@@ -1180,6 +1412,8 @@ async function main() {
       maxTokens: positiveInt(values['max-tokens'], '--max-tokens'),
       historyTurns: positiveInt(values['history-turns'], '--history-turns'),
       annotationPerCell: positiveInt(values['annotation-per-cell'], '--annotation-per-cell'),
+      contractValidation,
+      excludedAnnotationCorpora,
       learnerAnalysisPromptProfile: LEARNER_ANALYSIS_PROMPT_PROFILE,
       dryRun: values['dry-run'],
       fixedSeams: [

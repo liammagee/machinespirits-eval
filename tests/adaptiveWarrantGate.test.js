@@ -2,6 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { classifyLearnerSignal, evaluateWarrant } from '../services/adaptiveWarrantGateCore.js';
+import {
+  ADAPTIVE_WARRANT_ACTION_FAMILY_CONTRACTS,
+  classifyAdaptiveWarrantEvidenceRequest,
+  createAdaptiveWarrantActionContractTracker,
+} from '../services/adaptiveWarrantActionContracts.js';
 import { recommendRepairPolicy } from '../services/adaptiveWarrantPolicy.js';
 import {
   createTutorStubWarrantGate,
@@ -13,6 +18,105 @@ import {
 function dagModel(groundedCount) {
   return { learnerRecord: { grounded: Array.from({ length: groundedCount }, (_, i) => [`f${i}`]), voicedDerived: [] } };
 }
+
+const CATALOGUE_ACTION_FAMILIES = [
+  'clarify_term',
+  'repair_explanation',
+  'clarify_distinction',
+  'stage_next_step',
+  'answer_accountably',
+  'compress_sayback',
+  'reanchor_lived_stake',
+  'reanchor_public_evidence',
+  'ground_in_material',
+  'challenge_resistance',
+  'receive_vulnerability',
+  'close_inquiry',
+  'baseline_plain_response',
+];
+
+test('action contracts cover every catalogue family with typed lifecycle transitions', () => {
+  assert.deepEqual(Object.keys(ADAPTIVE_WARRANT_ACTION_FAMILY_CONTRACTS).sort(), CATALOGUE_ACTION_FAMILIES.sort());
+  for (const definition of Object.values(ADAPTIVE_WARRANT_ACTION_FAMILY_CONTRACTS)) {
+    assert.ok(definition.expected_learner_responses.length >= 1);
+    assert.ok(definition.deadline_turns >= 1);
+    assert.ok(definition.success_transition);
+    assert.ok(definition.defeat_transition);
+    assert.ok(definition.expiry_transition);
+  }
+});
+
+test('evidence request classifier gives repeated die-mark requests a stable typed signature', () => {
+  const first = classifyAdaptiveWarrantEvidenceRequest({
+    learnerText: 'What public mark on the coin or dies would establish the link?',
+    classification: { turn: { request_type: 'stepwise_support_request', discourse_move: 'question' } },
+  });
+  const second = classifyAdaptiveWarrantEvidenceRequest({
+    learnerText: 'No flaw is recorded; please record a distinctive cut or die-mark before comparison.',
+    classification: { turn: { request_type: 'stepwise_support_request', discourse_move: 'question' } },
+  });
+  assert.equal(first.signature, 'comparison_evidence:mark_or_tool_match');
+  assert.equal(second.signature, first.signature);
+  assert.equal(second.explicitly_unresolved, true);
+});
+
+test('action contract: successful challenge requires exit to stage_next_step without DAG growth', () => {
+  const tracker = createAdaptiveWarrantActionContractTracker();
+  const result = tracker.assess({
+    turn: 2,
+    actionFamily: 'challenge_resistance',
+    learnerText: 'I record poor dross without naming who struck the coins.',
+    signal: classifyLearnerSignal('I record poor dross without naming who struck the coins.'),
+    classification: {
+      turn: {
+        request_type: 'stepwise_support_request',
+        discourse_move: 'evidence_adoption',
+        evidence_use: 'cites_public_evidence',
+        epistemic_stance: 'grounded',
+        agency: 'steering',
+      },
+    },
+    dagGrowth: 0,
+  });
+  assert.equal(result.status, 'success');
+  assert.equal(result.transition.revision_warranted, true);
+  assert.equal(result.transition.recommended_action_family, 'stage_next_step');
+});
+
+test('action contract: a repeated specific evidence request defeats stage_next_step', () => {
+  const tracker = createAdaptiveWarrantActionContractTracker();
+  const classification = {
+    turn: {
+      request_type: 'stepwise_support_request',
+      discourse_move: 'question',
+      evidence_use: 'cites_public_evidence',
+      epistemic_stance: 'reflective',
+      agency: 'steering',
+    },
+  };
+  const firstText = 'What public mark on the coin or dies would establish the link?';
+  const first = tracker.assess({
+    turn: 2,
+    actionFamily: 'stage_next_step',
+    learnerText: firstText,
+    classification,
+    signal: classifyLearnerSignal(firstText),
+    dagGrowth: 0,
+  });
+  assert.equal(first.status, 'success', 'one new bounded evidence question does not yet defeat the family');
+  const secondText = 'No flaw is recorded; please record a distinctive cut or die-mark before comparison.';
+  const second = tracker.assess({
+    turn: 3,
+    actionFamily: 'stage_next_step',
+    learnerText: secondText,
+    classification,
+    signal: classifyLearnerSignal(secondText),
+    dagGrowth: 0,
+  });
+  assert.equal(second.status, 'defeat');
+  assert.equal(second.transition.revision_warranted, true);
+  assert.equal(second.transition.recommended_action_family, 'answer_accountably');
+});
 
 test('classifier: permission frame leading the utterance is deference', () => {
   const signal = classifyLearnerSignal('May I keep the entry that the shillings were struck false coin?');
@@ -172,6 +276,72 @@ test('gate: a delivered family revision resets old trouble before consuming its 
   });
   assert.deepEqual(afterRevision.trouble_turns, [3]);
   assert.equal(afterRevision.revision_warranted, false);
+});
+
+test('gate: successful challenge exits to stage_next_step even when the strict DAG stays flat', () => {
+  const gate = createTutorStubWarrantGate({ mode: 'active' });
+  gate.assess({ turn: 1, learnerText: 'May I enter it?', dagModel: dagModel(4), priorActionFamily: null });
+  gate.recordTurnOutcome({ turn: 1, actionFamily: 'challenge_resistance' });
+  const learnerText = 'I record that the shillings were struck from poor dross, without naming who struck them.';
+  const decision = gate.assess({
+    turn: 2,
+    learnerText,
+    classification: {
+      turn: {
+        request_type: 'stepwise_support_request',
+        discourse_move: 'evidence_adoption',
+        evidence_use: 'cites_public_evidence',
+        epistemic_stance: 'grounded',
+        agency: 'steering',
+      },
+    },
+    dagModel: dagModel(4),
+    priorActionFamily: 'challenge_resistance',
+  });
+  assert.equal(decision.action_contract.status, 'success');
+  assert.equal(decision.revision_warranted, true);
+  assert.match(decision.warrant_basis, /^contract_success:challenge_resistance:/u);
+  assert.equal(decision.policy.family, 'stage_next_step');
+  assert.equal(decision.override.action_family, 'stage_next_step');
+  assert.deepEqual(decision.trouble_turns, []);
+});
+
+test('gate: a repeated unresolved mark request defeats an analytic mask in live mode', () => {
+  const gate = createTutorStubWarrantGate({ mode: 'active' });
+  gate.assess({ turn: 1, learnerText: 'Start with the public coin.', dagModel: dagModel(5), priorActionFamily: null });
+  gate.recordTurnOutcome({ turn: 1, actionFamily: 'stage_next_step' });
+  const classification = {
+    turn: {
+      request_type: 'stepwise_support_request',
+      discourse_move: 'question',
+      evidence_use: 'cites_public_evidence',
+      epistemic_stance: 'reflective',
+      agency: 'steering',
+    },
+  };
+  const firstText = 'What public mark on the coin or dies would establish the link?';
+  const first = gate.assess({
+    turn: 2,
+    learnerText: firstText,
+    classification,
+    dagModel: dagModel(5),
+    priorActionFamily: 'stage_next_step',
+  });
+  assert.equal(first.revision_warranted, false);
+  gate.recordTurnOutcome({ turn: 2, actionFamily: 'stage_next_step' });
+  const secondText = 'No visible flaw is recorded; please record a distinctive cut or die-mark before comparison.';
+  const second = gate.assess({
+    turn: 3,
+    learnerText: secondText,
+    classification,
+    dagModel: dagModel(5),
+    priorActionFamily: 'stage_next_step',
+  });
+  assert.equal(second.action_contract.status, 'defeat');
+  assert.equal(second.revision_warranted, true);
+  assert.match(second.warrant_basis, /^contract_defeat:stage_next_step:/u);
+  assert.equal(second.policy.family, 'answer_accountably');
+  assert.equal(second.override.action_family, 'answer_accountably');
 });
 
 test('completed-turn helper is a no-op without a gate and delegates when attached', () => {

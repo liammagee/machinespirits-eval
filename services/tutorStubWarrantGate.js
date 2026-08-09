@@ -27,9 +27,13 @@ import {
   CONCEPTUAL_STALL_TURNS,
   REPETITION_DEFEATER_THRESHOLD,
 } from './adaptiveWarrantGateCore.js';
+import {
+  createAdaptiveWarrantActionContractTracker,
+  getAdaptiveWarrantActionContract,
+} from './adaptiveWarrantActionContracts.js';
 
-export const TUTOR_STUB_WARRANT_GATE_SCHEMA = 'machinespirits.tutor-stub.warrant-gate.v2';
-export const TUTOR_STUB_WARRANT_GATE_OUTCOME_SCHEMA = 'machinespirits.tutor-stub.warrant-gate-outcome.v1';
+export const TUTOR_STUB_WARRANT_GATE_SCHEMA = 'machinespirits.tutor-stub.warrant-gate.v3';
+export const TUTOR_STUB_WARRANT_GATE_OUTCOME_SCHEMA = 'machinespirits.tutor-stub.warrant-gate-outcome.v2';
 export const TUTOR_STUB_WARRANT_GATE_MODES = Object.freeze(['off', 'observe', 'active']);
 
 export function resolveTutorStubWarrantGateMode(value = process.env.TUTOR_STUB_WARRANT_GATE) {
@@ -59,6 +63,7 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
   let previousDagTotal = null;
   let turnsSinceDagGrowth = 0;
   const pendingOutcomes = new Map();
+  const actionContracts = createAdaptiveWarrantActionContractTracker();
 
   return {
     schema: TUTOR_STUB_WARRANT_GATE_SCHEMA,
@@ -103,6 +108,7 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         schema: TUTOR_STUB_WARRANT_GATE_OUTCOME_SCHEMA,
         turn: normalizedTurn,
         action_family: actionFamily || null,
+        action_contract: getAdaptiveWarrantActionContract(actionFamily),
         uptake_ok: uptakeOk,
         repetition_max_similarity: Number.isFinite(maxSimilarity) ? maxSimilarity : null,
         deterministic_fallback: Boolean(deterministicFallback),
@@ -119,7 +125,7 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
      * Assess the decision point at tutor turn N. priorActionFamily is the
      * family of the PREVIOUS turn's delivered selection (null on turn 1).
      */
-    assess({ turn, learnerText = '', dagModel = null, priorActionFamily = null } = {}) {
+    assess({ turn, learnerText = '', classification = null, dagModel = null, priorActionFamily = null } = {}) {
       // Strategy streak bookkeeping: a family change (by whatever mechanism)
       // resets the trouble and complaint pools.
       if (priorActionFamily && priorActionFamily !== strategyInForce) {
@@ -163,6 +169,15 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
           repair_warranted: !masked,
         });
       }
+      const actionContract = actionContracts.assess({
+        turn,
+        actionFamily: strategyInForce,
+        learnerText,
+        classification,
+        signal,
+        dagGrowth,
+      });
+      if (actionContract?.transition?.discharge_prior_trouble) troubleTurns = [];
       const warrant = evaluateWarrant({
         signal,
         signalConsumed: false,
@@ -171,6 +186,7 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         deferenceSustained,
         divergence,
         strategyInForce,
+        actionContract,
       });
 
       const override =
@@ -196,6 +212,7 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         trouble_turns: troubleTurns.map((row) => row.turn),
         complaint_turns: [...complaintTurns],
         deference_sustained: deferenceSustained,
+        action_contract: actionContract,
         divergence,
         revision_warranted: warrant.revision_warranted,
         register_revision_warranted: warrant.register_revision_warranted,

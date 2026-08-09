@@ -47,8 +47,9 @@ import {
   CONCEPTUAL_STALL_TURNS,
   REPETITION_DEFEATER_THRESHOLD,
 } from '../services/adaptiveWarrantGateCore.js';
+import { createAdaptiveWarrantActionContractTracker } from '../services/adaptiveWarrantActionContracts.js';
 
-export const ADAPTIVE_WARRANT_SHADOW_SCHEMA = 'machinespirits.tutor-stub.adaptive-warrant-shadow.v0.1';
+export const ADAPTIVE_WARRANT_SHADOW_SCHEMA = 'machinespirits.tutor-stub.adaptive-warrant-shadow.v0.2';
 
 function readTraceLines(tracePath) {
   const raw = fs.readFileSync(tracePath, 'utf8');
@@ -189,6 +190,11 @@ function collectTurnFacts(events) {
     const uptakeOk = uptake ? uptake.ok !== false && (uptake.issues || []).length === 0 : null;
     const maxSimilarity = Number(repetitionAudits.get(turn)?.maxSimilarity);
     const pace = pacing.get(turn);
+    const learnerText = learnerTurns.get(turn)?.combinedText || '';
+    const classification =
+      completedTurns.get(turn)?.turnRecord?.classification?.turn ||
+      completedTurns.get(turn)?.turnRecord?.stateObservation?.classifier ||
+      null;
 
     const defeaters = [];
     if (dagGrowth !== null && dagGrowth <= 0) defeaters.push('no_dag_growth');
@@ -208,7 +214,9 @@ function collectTurnFacts(events) {
       uptakeOk,
       maxSimilarity: Number.isFinite(maxSimilarity) ? maxSimilarity : null,
       defeaters,
-      learnerSignal: classifyLearnerSignal(learnerTurns.get(turn)?.combinedText),
+      learnerText,
+      learnerSignal: classifyLearnerSignal(learnerText),
+      classification,
       pacingSignal: pace?.signal || null,
     });
   }
@@ -219,6 +227,26 @@ function deriveSessionShadow(session, sessionIndex) {
   const { turns, facts } = collectTurnFacts(session.events);
   const decisions = [];
   let turnsSinceDagGrowth = 0;
+  let troubleFloorTurn = 0;
+  const actionContracts = createAdaptiveWarrantActionContractTracker();
+
+  // The live gate observes the first learner turn against the action family
+  // already selected in the runtime state. Prime the shared contract tracker
+  // with that same public evidence even though the first scored decision is
+  // turn 2. Without this step, a request first made at turn 1 appears new to
+  // offline replay at turn 2 and request-lifecycle parity breaks.
+  const firstTurn = turns[0];
+  const firstFact = firstTurn === undefined ? null : facts.get(firstTurn);
+  if (firstFact?.selection?.action_family) {
+    actionContracts.assess({
+      turn: firstTurn,
+      actionFamily: firstFact.selection.action_family,
+      learnerText: firstFact.learnerText,
+      classification: firstFact.classification,
+      signal: firstFact.learnerSignal,
+      dagGrowth: null,
+    });
+  }
 
   for (let i = 1; i < turns.length; i += 1) {
     const turn = turns[i];
@@ -240,10 +268,14 @@ function deriveSessionShadow(session, sessionIndex) {
     // Decision-time learner signal: learner turn N, else the latest committed
     // learner turn (session tails often leave the last learner turn uncommitted).
     let signal = current.learnerSignal;
+    let learnerText = current.learnerText;
+    let classification = current.classification;
     let signalCarried = false;
     let signalTurn = turn;
     for (let back = i; back >= 0 && signal.primary === 'absent'; back -= 1) {
       signal = facts.get(turns[back]).learnerSignal;
+      learnerText = facts.get(turns[back]).learnerText;
+      classification = facts.get(turns[back]).classification;
       signalCarried = back !== i;
       signalTurn = turns[back];
     }
@@ -256,7 +288,17 @@ function deriveSessionShadow(session, sessionIndex) {
 
     // Evidence inside the streak: tutor-turn trouble through N-1, learner
     // register complaints through N.
+    const actionContract = actionContracts.assess({
+      turn,
+      actionFamily: prior.selection.action_family,
+      learnerText,
+      classification,
+      signal,
+      dagGrowth: prior.dagGrowth,
+    });
+    if (actionContract?.transition?.discharge_prior_trouble) troubleFloorTurn = turn;
     const troubleTurns = streakTurns
+      .filter((t) => t >= troubleFloorTurn)
       .map((t) => facts.get(t))
       .filter((fact) => fact.defeaters.length > 0)
       .map((fact) => ({ turn: fact.turn, defeaters: fact.defeaters }));
@@ -323,6 +365,7 @@ function deriveSessionShadow(session, sessionIndex) {
       deferenceSustained,
       divergence,
       strategyInForce: prior.selection.action_family,
+      actionContract,
     });
     const policy = warrant.policy;
 
@@ -333,6 +376,7 @@ function deriveSessionShadow(session, sessionIndex) {
       decided: revised ? `revise:${current.selection.action_family}` : 'hold',
       realization_changed: realizationChanged,
       learner_signal: { ...signal, carried: signalCarried },
+      action_contract: actionContract,
       trouble_turns: troubleTurns,
       complaint_turns: complaintTurns,
       divergence,

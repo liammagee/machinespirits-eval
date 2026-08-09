@@ -133,3 +133,72 @@ existing `off|observe|active` gate remains experimental and off by default.
 
 These are internal automated-learner calibration results, not a paper claim or
 evidence of human learning.
+
+## Successor contract-validation gate (predeclared 2026-08-10)
+
+The successor implementation treats each catalogue action family as a typed
+contract: expected learner response, response deadline, success transition,
+defeat transition, and expiry transition. A successful
+`challenge_resistance` move requires an exit to ordinary evidence development;
+a repeated request for the same missing exhibit, test, or comparison defeats
+`stage_next_step` even when the learner remains analytically engaged. Live and
+offline paths must consume the same public classifier, learner-record, and
+request-lifecycle evidence.
+
+Validation uses 18 newly generated decision points with zero source overlap
+against both earlier 18-case samples. Two readers receive only the blinded
+decision-time context. Each supplies `yes`, `no`, or `uncertain`; a `yes` also
+names the recommended successor action family. Hard decision and transition
+agreements score; disagreements and either uncertain label are reported but
+excluded.
+
+The contract design passes only if all of the following hold:
+
+- raw reader agreement is at least 0.80;
+- at least 12 hard-consensus decisions include at least 2 positives and 6
+  negatives;
+- decision precision and recall are each at least 0.70, with accuracy at least
+  0.75;
+- at least 2 positive transition consensuses are available and exact successor
+  accuracy is at least 0.70;
+- the diligent-profile false-positive rate is at most 0.25;
+- live/offline decision agreement is 1.00.
+
+Failure stops the sequence before downstream outcome comparison. Passage
+licenses only a variance-controlled dry run; it does not itself establish an
+outcome benefit.
+
+## Contract-validation outcome and revised next sequence (2026-08-10)
+
+The typed-contract implementation and fresh blind gate are complete. The gate
+failed with agreement 0.778, precision 0.500, recall 0.286, accuracy 0.500,
+successor accuracy 0/4, and live/offline agreement 41/42. The diligent false-
+positive control was exactly at its ceiling (1/4). The downstream comparison
+is therefore stopped; do not launch frozen-prefix or replicated-draw outcome
+runs from this implementation.
+
+The remaining work is now:
+
+1. **Represent public obligation debt.** Add a ledger keyed by the requested
+   public result/comparison, with creator speech act, created turn, deadline,
+   satisfaction evidence, explicit deferral/defeat, and persistence across
+   action-family changes.
+2. **Separate requests from proposed tests.** Classify `please give/show the
+   result` separately from `I would test/examine X`; only the former creates a
+   tutor obligation. Add live/offline parity tests for both directions.
+3. **Represent inquiry completion.** Author an evidence-exhaustion and proof-
+   limit predicate that can license `close_inquiry` after a complete bounded
+   conclusion, without relying on absolute turn number.
+4. **Preserve typed-family exits.** Keep the already implemented success,
+   defeat, expiry, and challenge-exit contracts; integrate them with the new
+   ledger rather than replacing them with another threshold.
+5. **Run a new decision gate.** Generate a genuinely fresh zero-overlap corpus,
+   obtain two new blind annotations, and apply the same decision/successor/
+   parity thresholds. Treat the current corpus as burned.
+6. **Resume outcomes only after passage.** If and only if that gate passes,
+   design the frozen-prefix counterfactual or replicated-draw comparison. Keep
+   manipulation checks separate from learning/quality outcomes.
+
+The offline turn-1 initialization mismatch discovered here has already been
+fixed and regression-tested. That closes a mechanical parity defect, not the
+substantive decision-quality failure.
