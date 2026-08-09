@@ -83,7 +83,7 @@ import {
 const AUTO_EVAL_SCRIPT = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(AUTO_EVAL_SCRIPT), '..');
 const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'codex.gpt-5-mini']);
-const DEFAULT_CODEX_MODEL_REF = 'codex.gpt-5.5';
+const DEFAULT_CODEX_MODEL_REF = 'codex.gpt-5.6-luna';
 const argvHasOption = (name) => process.argv.slice(2).some((arg) => arg === name || arg.startsWith(`${name}=`));
 const MODEL_OVERRIDE = Boolean(process.env.TUTOR_STUB_EVAL_MODEL || argvHasOption('--model'));
 const ANALYSIS_MODEL_OVERRIDE = Boolean(
@@ -239,9 +239,9 @@ Options:
                               known: dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,continuous_dynamical_system,continuous_empirical_dynamical_system,bland,random,negative
   --point-of-action-arm <standing_book|triggered_placebo|side_coach|compiled_constraint>
                               frozen final-stretch Step 4 arm; forwarded unchanged to every dialogue
-  --model <ref>              tutor model (default: codex.gpt-5.5)
-  --analysis-model <ref>     classifier + learner-DAG model (default: codex.gpt-5.5)
-  --auto-learner-model <ref> automated learner model (default: codex.gpt-5.5)
+  --model <ref>              tutor model (default: codex.gpt-5.6-luna)
+  --analysis-model <ref>     classifier + learner-DAG model (default: codex.gpt-5.6-luna)
+  --auto-learner-model <ref> automated learner model (default: codex.gpt-5.6-luna)
   --auto-learner-profile <text>
   --auto-learner-profile-id <id>
                               built-in profile when no custom text is supplied
@@ -336,7 +336,7 @@ function assertSupportedModelRefs(refs) {
     if (UNSUPPORTED_CODEX_MINI_REFS.has(normalized)) {
       throw new Error(
         `${label}=${ref} is not supported by the local Codex CLI ChatGPT-account route. ` +
-          'Use codex.gpt-5.5 for CLI-backed Codex, or openai.mini/openrouter.gpt-mini for GPT mini.',
+          'Use codex.gpt-5.6-luna for CLI-backed Codex, or openai.mini/openrouter.gpt-mini for GPT mini.',
       );
     }
   }

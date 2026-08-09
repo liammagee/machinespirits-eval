@@ -3,7 +3,7 @@
  *
  * Standing directive (repository owner, 2026-07-07): nemotron/kimi must
  * never be the DEFAULT pairing for new runs — the strong stack
- * (codex.gpt-5.5 or claude-code Sonnet 5 via the CLI bridge) is the
+ * (codex.gpt-5.6-luna or claude-code Sonnet 5 via the CLI bridge) is the
  * default unless the user explicitly specifies otherwise. Nulls generated
  * on nemotron/kimi are stack-bounded until replicated on a strong model
  * (the A4 false-negative concern).
@@ -81,7 +81,7 @@ export function formatWeakStackWarning(flagged, totalConfigs = 0) {
     `[stack-default] WARNING: ${flagged.length} of ${totalConfigs} selected cell(s) resolve to the weak`,
     `nemotron/kimi OpenRouter pairing with no explicit model override (e.g. ${example.profileName}: ${exampleBits}).`,
     `Per CLAUDE.md "Model stack default", nemotron/kimi must never be the default pairing for new runs —`,
-    `default to the CLI bridge instead: --ego-model codex.gpt-5.5 --superego-model codex.gpt-5.5`,
+    `default to the CLI bridge instead: --ego-model codex.gpt-5.6-luna --superego-model codex.gpt-5.6-luna`,
     `(or claude-code.sonnet-5), unless the weak stack is an explicit design choice for this run.`,
     `Nulls generated on nemotron/kimi are stack-bounded until replicated on a strong model.`,
     `Proceeding unchanged (non-blocking warning).`,

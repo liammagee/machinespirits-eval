@@ -80,10 +80,10 @@ Do NOT use asymmetric names. When in doubt, check the other side's labels and mi
 
 ### Model stack default
 
-**nemotron/kimi must never be the default pairing for new runs** (standing user directive, 2026-07-07 — the A4 run on nemotron/kimi is suspected of producing false negatives). By default, use `codex.gpt-5.5` or claude-code Sonnet 5 via the CLI bridge unless the user specifies otherwise:
+**nemotron/kimi must never be the default pairing for new runs** (standing user directive, 2026-07-07 — the A4 run on nemotron/kimi is suspected of producing false negatives). By default, use `codex.gpt-5.6-luna` or claude-code Sonnet 5 via the CLI bridge unless the user specifies otherwise. Frozen experiments retain their explicitly pinned historical models:
 
 ```bash
-node scripts/eval-cli.js run --profiles <cells> --ego-model codex.gpt-5.5 --superego-model codex.gpt-5.5 --runs N
+node scripts/eval-cli.js run --profiles <cells> --ego-model codex.gpt-5.6-luna --superego-model codex.gpt-5.6-luna --runs N
 ```
 
 - The CLI bridge now reaches **tutor-core's dialogue engine** (standard-runner cells like 40/93), not just id-director/learner/adaptive/judge seams — via the external-AI-provider hook (`tutor-core/services/externalAIProvider.js`, registered by `evaluationRunner.js`). `--ego-model` / `--superego-model` CLI overrides therefore work for ALL cells.

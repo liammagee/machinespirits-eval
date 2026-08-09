@@ -110,6 +110,9 @@ test('auto-eval dry run is a sealed canonical transaction with ordered job event
     assert.deepEqual(verification.plan.metadata.randomDrawContract.requiredJobIds, []);
     assert.equal(verification.plan.jobs[0].arguments.includes('{run_dir}'), true);
     assert.deepEqual(verification.plan.requiredObservedModelRoles, []);
+    assert.equal(verification.plan.models.tutor.requested, 'codex.gpt-5.6-luna');
+    assert.equal(verification.plan.models.analyzer.requested, 'codex.gpt-5.6-luna');
+    assert.equal(verification.plan.models.learner.requested, 'codex.gpt-5.6-luna');
 
     const eventTypes = fs
       .readFileSync(path.join(runDir, 'run-events.jsonl'), 'utf8')

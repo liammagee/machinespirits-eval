@@ -940,10 +940,10 @@ test('auto-eval forwards its declared default models to every child dialogue', (
     const command = summary.results[0].command;
     const commandValue = (flag) => command[command.indexOf(flag) + 1];
 
-    assert.equal(commandValue('--model'), 'codex.gpt-5.5');
-    assert.equal(commandValue('--classifier-model'), 'codex.gpt-5.5');
-    assert.equal(commandValue('--learner-record-model'), 'codex.gpt-5.5');
-    assert.equal(commandValue('--auto-learner-model'), 'codex.gpt-5.5');
+    assert.equal(commandValue('--model'), 'codex.gpt-5.6-luna');
+    assert.equal(commandValue('--classifier-model'), 'codex.gpt-5.6-luna');
+    assert.equal(commandValue('--learner-record-model'), 'codex.gpt-5.6-luna');
+    assert.equal(commandValue('--auto-learner-model'), 'codex.gpt-5.6-luna');
     assert.equal(commandValue('--run-seed'), '1');
     assert.equal(commandValue('--eval-repeat'), '1');
     assert.equal(commandValue('--eval-job-id'), 'dynamic-r1');

@@ -52,7 +52,7 @@ test('formatWeakStackWarning names the pairing, the rule, and the strong-stack a
   assert.ok(message.includes('1 of 3'));
   assert.ok(message.includes(WEAK_CELL));
   assert.match(message, /nemotron\/kimi/);
-  assert.match(message, /codex\.gpt-5\.5/);
+  assert.match(message, /codex\.gpt-5\.6-luna/);
   assert.match(message, /stack-bounded/);
   assert.match(message, /non-blocking/);
 });
@@ -70,6 +70,7 @@ test('warnIfWeakStackDefault prints to stderr and returns true only when flagged
     assert.equal(warned, true);
     assert.equal(captured.length, 1);
     assert.match(captured[0], /\[stack-default\] WARNING/);
+    assert.match(captured[0], /codex\.gpt-5\.6-luna/);
 
     const notWarned = warnIfWeakStackDefault([{ profileName: WEAK_CELL, egoModelOverride: 'codex.gpt-5.5' }]);
     assert.equal(notWarned, false);
