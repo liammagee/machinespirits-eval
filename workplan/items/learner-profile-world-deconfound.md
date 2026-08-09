@@ -8,12 +8,15 @@ owner: codex
 source: manual
 created: 2026-08-06
 updated: 2026-08-09
-branch: codex/learner-profile-world-deconfound-qd-v1-replay
-verification: "The approved persona transplants and exact qd-v1 are frozen and
-  hash-pinned. The replacement is one prospective balanced 2-persona x 2-world
-  x 5 cohort with no historical pooling; zero-model tutor-stub dry-runs verify
-  delivery for all four cells. Merge before clean-main certification; twenty
-  paid dialogues remain separately unauthorized."
+branch: codex/learner-profile-world-deconfound-cohort
+verification: >-
+  The approved persona transplants and exact qd-v1 stay hash-pinned; one
+  authorization certificate binds the exact clean-main plan, named external
+  payload boundary, twenty jobs, and one attempt per job; all planned traces
+  either seal or are reported as technical attrition; the zero-model analyzer
+  reports persona recovery, the matched world diagnostic, and all four cell
+  profiles without historical pooling; and both live mirrors and the completed
+  cohort bundle are verified in the private archive before closeout.
 claim_status: methods
 links:
   config:
@@ -23,6 +26,8 @@ links:
     - scripts/review-learner-profile-world-deconfound.js
     - scripts/replay-learner-profile-recovery-l1.js
     - scripts/prepare-learner-profile-world-deconfound.js
+    - scripts/run-learner-profile-world-deconfound.js
+    - scripts/analyze-learner-profile-world-deconfound.js
     - services/tutorStubQuietDetectorV1.js
     - tests/learnerProfileWorldDeconfound.test.js
     - tests/learnerProfileRecoveryL1.test.js
@@ -105,6 +110,15 @@ publication closeout's crossed holdout design, not a routing policy.
 
 ## Log
 
+- 2026-08-09 — Resumed after PR #606 made live trace preservation mandatory.
+  A clean-main audit found that the merged apparatus stopped deliberately at a
+  non-authorizing plan: it had neither a paid executor nor a prospective
+  persona-versus-world analyzer. Added a bounded one-attempt cohort runner,
+  authorization certificate tied to the exact source/plan/payload boundary,
+  fail-closed clean-main and no-restart checks, durable launch state, and a
+  zero-model analyzer that reuses the frozen pressure + qd-v1 vectorizer and
+  leave-one-out classifier for both PERSONA and WORLD. Paid calls remain gated
+  on merge and an exact operator authorization statement.
 - 2026-08-09 — Activated in an isolated worktree from post-PR-#588 main. The
   first slice is free design work only: locate the two ratified source persona
   briefs, author surface-only cross-world transplants, and expose the exact

@@ -45,6 +45,8 @@
     "tutor:stub:profile-world-deconfound:review": "node scripts/review-learner-profile-world-deconfound.js",
     "tutor:stub:profile-world-deconfound:replay-l1": "node scripts/replay-learner-profile-recovery-l1.js",
     "tutor:stub:profile-world-deconfound:prepare": "node scripts/prepare-learner-profile-world-deconfound.js",
+    "tutor:stub:profile-world-deconfound:run": "node scripts/run-learner-profile-world-deconfound.js",
+    "tutor:stub:profile-world-deconfound:analyze": "node scripts/analyze-learner-profile-world-deconfound.js",
     "tutor:stub:character-loop": "node scripts/run-tutor-stub-character-adaptation-loop.js",
     "tutor:stub:first-draft-replay": "node scripts/replay-tutor-stub-frozen-turns.js",
     "tutor:stub:ab": "node scripts/run-tutor-stub-ab.js",
