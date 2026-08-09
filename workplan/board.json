@@ -1,27 +1,71 @@
 {
-  "generated": "2026-08-09T01:11:01.593Z",
+  "generated": "2026-08-09T01:15:01.398Z",
   "counts": {
-    "total": 477,
+    "total": 478,
     "byStatus": {
-      "done": 447,
+      "done": 448,
       "blocked": 6,
       "dropped": 9,
-      "review": 7,
+      "review": 6,
       "active": 2,
       "archived": 4,
-      "triaged": 2
+      "triaged": 3
     },
     "byType": {
       "research": 75,
       "experiment": 77,
       "infra": 104,
-      "maintenance": 200,
+      "maintenance": 201,
       "content": 3,
       "ops": 10,
       "paper": 8
     }
   },
   "items": [
+    {
+      "id": "refactor-eval-routes-read-side-domains",
+      "title": "Extract read-only evaluation domain routers",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "verification": "Thirty non-metered GET endpoints move from evalRoutes into bounded domain registrars while exact paths, mount order, auth, request-local dependencies, status codes, payloads, errors, and shutdown behavior remain unchanged; focused route/import/admission/lifecycle tests, complete hermetic and risk coverage, source, lint, formatting, manifest, and zero-cycle gates pass.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-adapter-tail"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
+          "docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md"
+        ],
+        "code": [
+          "routes/evalRoutes.js",
+          "tests/api-routes.test.js",
+          "tests/evalLogRoutesDataRoot.test.js",
+          "tests/evalRoutesDependencyInjection.test.js",
+          "tests/evalRoutesImport.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-eval-routes-store-injection",
+          "refactor-sse-lifecycle",
+          "bound-remaining-metered-eval-api-surfaces"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "routes",
+        "read-model",
+        "dependency-injection",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
     {
       "id": "guard-findings-feed-forward",
       "title": "Feed guard findings into the next turn's request instead of redrafting this one",
@@ -83,6 +127,7 @@
       "source": "review",
       "created": "2026-07-24",
       "updated": "2026-08-09",
+      "branch": "codex/refactor-post-adapter-reconciliation",
       "verification": "Every accepted refactoring slice has a linked child card and parity gate; root plus in-housed tutor-core tests run from one clean-install contract; required suites cannot silently skip; import cycles fall from two to zero; hotspot, coverage, registry, duplication, and package metrics ratchet without trace, schema, route, CLI, or empirical-output drift; every deletion passes its consumer, database, paper, and artifact audit.",
       "claim_status": "planned",
       "depends_on": [],
@@ -210,7 +255,8 @@
           "refactor-token-budget-store-ownership",
           "refactor-prompt-lab-store-ownership",
           "refactor-evaluation-store-package-compatibility-boundary",
-          "refactor-tutor-stub-adapter-tail"
+          "refactor-tutor-stub-adapter-tail",
+          "refactor-eval-routes-read-side-domains"
         ]
       },
       "tags": [
@@ -491,48 +537,6 @@
         "provenance",
         "archive"
       ]
-    },
-    {
-      "id": "refactor-tutor-stub-adapter-tail",
-      "title": "Finish the tutor-stub adapter boundary",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-08-09",
-      "updated": "2026-08-09",
-      "branch": "codex/refactor-tutor-stub-adapter-tail",
-      "verification": "The tutor-stub entrypoint is at most 2,000 lines and contains no application function above 300 lines; focused command, policy, host, terminal, process, browser/Electron, hermetic, risk-coverage, source, lint, formatting, manifest, and cycle gates preserve exact public behavior and lifecycle.",
-      "claim_status": "planned",
-      "depends_on": [],
-      "links": {
-        "notes": [
-          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
-          "docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md"
-        ],
-        "code": [
-          "scripts/tutor-stub.js",
-          "services/tutorStubCliApplicationHost.js",
-          "services/tutorStubSessionRuntime.js",
-          "services/tutorStubSessionHost.js",
-          "services/tutorStubProcessSessionFactory.js",
-          "tests/helpers/tutorStubSourceContract.js"
-        ],
-        "items": [
-          "codebase-refactoring-program"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "tutor-stub",
-        "cli",
-        "application-context",
-        "terminal",
-        "lifecycle",
-        "maintainability"
-      ],
-      "milestone": "tutor-super-app"
     },
     {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
@@ -4309,6 +4313,51 @@
         "contracts"
       ],
       "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-adapter-tail",
+      "title": "Finish the tutor-stub adapter boundary",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/refactor-tutor-stub-adapter-tail",
+      "verification": "The tutor-stub entrypoint is at most 2,000 lines and contains no application function above 300 lines; focused command, policy, host, terminal, process, browser/Electron, hermetic, risk-coverage, source, lint, formatting, manifest, and cycle gates preserve exact public behavior and lifecycle.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
+          "docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md"
+        ],
+        "code": [
+          "scripts/tutor-stub.js",
+          "services/tutorStubCliApplicationHost.js",
+          "services/tutorStubSessionRuntime.js",
+          "services/tutorStubSessionHost.js",
+          "services/tutorStubProcessSessionFactory.js",
+          "tests/helpers/tutorStubSourceContract.js"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/602"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "cli",
+        "application-context",
+        "terminal",
+        "lifecycle",
+        "maintainability"
+      ],
+      "milestone": "tutor-super-app"
     },
     {
       "id": "refactor-tutor-stub-analysis-vocabulary",
