@@ -175,3 +175,13 @@ publication closeout's crossed holdout design, not a routing policy.
   stands; only the recorded pins move, in the design YAML and the replay
   manifest. Tests 11/11 and the replay's fail-closed corpus report were
   re-run after the transfer.
+- 2026-08-09 — Apparatus merged as PR #603; clean-main certificate generated
+  at `50ccfcd0` and tracked as
+  `config/learner-profile-world-deconfound-certificate.json`. On that SHA
+  with a clean tree: the three suites 11/11, design review exits 0, the L1
+  replay fails closed on the 18 absent corpus locations as designed, and the
+  delivery dry-run prepares all 20 jobs and verifies delivery in all four
+  cells with no model call (plan hash `7fbb5fe9…`). The certificate pins the
+  qd-v1 artifact, replay manifest, design file, and the four approved
+  brief/voice hashes. The one remaining gate is the user's separate
+  authorization of the 20 paid dialogues.
