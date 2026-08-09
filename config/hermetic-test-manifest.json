@@ -271,6 +271,7 @@
         "tests/dramaticDerivationTaskLoopHeldoutGate.test.js",
         "tests/dramaticDerivationTaskMastery.test.js",
         "tests/dramaticDerivationTutorReleaseArbitration.test.js",
+        "tests/dramaticDerivationTutorPrompt.test.js",
         "tests/dramaticDerivationTutorStrategyLedgerPrompt.test.js",
         "tests/dramaticDerivationUptakeNegotiation.test.js",
         "tests/dramaticDerivationVisiblePacing.test.js",

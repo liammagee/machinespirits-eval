@@ -1,7 +1,7 @@
 ---
 id: refactor-dramatic-derivation-strategy-ledger-prompt
 title: Extract dramatic-derivation strategy-ledger tutor prompt
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -77,3 +77,5 @@ Log:
   617 focused assertions, 8,357 root tests, 137 tutor-core tests, all eleven
   risk groups, and structural gates pass. The first all-risk run hit only the
   expected sandbox loopback `EPERM`; the permissioned rerun was fully green.
+- 2026-08-10 — PR #627 merged as `7d2e379d`; the post-merge hotspot
+  reconciliation closes this child on refreshed main `d5759f63`.

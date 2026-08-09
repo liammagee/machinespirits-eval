@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-24
 updated: 2026-08-10
-branch: codex/refactor-post-adapter-reconciliation
+branch: codex/refactor-post-strategy-ledger-reconciliation
 verification: >-
   Every accepted refactoring slice has a linked child card and parity gate;
   root plus in-housed tutor-core tests run from one clean-install contract;
@@ -23,6 +23,7 @@ links:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
     - docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md
     - docs/next-steps/2026-08-09-codebase-refactoring-post-run-coordinator-reconciliation.md
+    - docs/next-steps/2026-08-10-codebase-refactoring-post-strategy-ledger-reconciliation.md
   items:
     - refactor-required-run-manifest
     - refactor-v-series-fixtures
@@ -151,6 +152,7 @@ links:
     - refactor-dramatic-derivation-post-turn-lifecycle
     - refactor-dramatic-derivation-release-arbitration
     - refactor-dramatic-derivation-strategy-ledger-prompt
+    - refactor-dramatic-derivation-tutor-prompt-construction
 tags:
   - refactoring
   - testing
@@ -1893,3 +1895,19 @@ Log:
   structural gates pass. After merge, refresh hotspot evidence before choosing
   the broader tutor-turn prompt-construction owner; keep the final engine view
   seam deferred unless it again becomes a leading hotspot.
+- 2026-08-10 — PR #627 merged child 127 as `7d2e379d`; refreshed main
+  `d5759f63` now has all 127 prior children done, a synchronized hermetic
+  manifest, and zero cycles across 573 files. `llmRoles.js` remains the leading
+  R5 hotspot at 5,085 lines: `tutorFn` is complexity 502 and `tutorSystem` is
+  complexity 64, versus the 1,217-line engine whose outer loop is complexity
+  14. Added child 128, `refactor-dramatic-derivation-tutor-prompt-construction`,
+  as the sole triaged continuation. It owns the 462-line static system prompt
+  and 99-line acts/non-acts turn-prompt projection while leaving audits, model
+  calls, release arbitration, response parsing, and state mutation in place.
+- 2026-08-10 — Completed child 128 locally. The new 617-line tutor-prompt owner
+  has maximum complexity 11 and reduces `llmRoles.js` from 5,085 to 4,566 lines;
+  exact system/turn prompt projections are directly characterized at 100%
+  line, 98.58% branch, and 100% function coverage. Focused dramatic, complete
+  hermetic shards, tutor-core, twelve risk groups, and structural gates pass.
+  After merge, refresh the hotspot evidence before selecting another R5 seam;
+  otherwise advance to the R6 auto-eval or browser-presentation macro.

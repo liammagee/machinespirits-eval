@@ -127,6 +127,20 @@
       "floors": { "lines": 90, "branches": 80, "functions": 90 }
     },
     {
+      "id": "dramatic-derivation-tutor-prompt",
+      "label": "Dramatic derivation tutor prompt construction",
+      "runner": "node",
+      "sources": ["services/dramaticDerivation/tutorPrompt.js"],
+      "tests": [
+        "tests/dramaticDerivationTutorPrompt.test.js",
+        "tests/dramaticDerivationConfront.test.js",
+        "tests/dramaticDerivationCorruption.test.js",
+        "tests/dramaticDerivationPlot.test.js",
+        "tests/dramaticDerivationStrategyLedger.test.js"
+      ],
+      "floors": { "lines": 90, "branches": 80, "functions": 90 }
+    },
+    {
       "id": "admin-auth",
       "label": "Admin routes and authentication",
       "runner": "node",
