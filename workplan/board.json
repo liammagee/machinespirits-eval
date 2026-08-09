@@ -1,19 +1,19 @@
 {
-  "generated": "2026-08-09T03:57:11.597Z",
+  "generated": "2026-08-09T04:23:14.316Z",
   "counts": {
-    "total": 482,
+    "total": 487,
     "byStatus": {
-      "done": 457,
+      "done": 458,
       "blocked": 6,
       "dropped": 9,
+      "active": 7,
       "review": 2,
-      "active": 3,
       "archived": 4,
       "triaged": 1
     },
     "byType": {
       "research": 75,
-      "experiment": 77,
+      "experiment": 82,
       "infra": 105,
       "maintenance": 203,
       "content": 4,
@@ -268,6 +268,129 @@
         "learner-profiles",
         "deconfound",
         "prereg"
+      ]
+    },
+    {
+      "id": "register-manner-learner-turn",
+      "title": "Does the learner's own message pull the tutor out of the register?",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "verification": "The set is fixed and its plan hash printed by --dry-run before the first paid call. Every reply is read by the same pinned reader on the same versioned question over the same learner turn as both earlier readings. The verdict is the count of replies the reader calls edged, reported whichever way it falls.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "register-manner-prompt-isolation"
+      ],
+      "links": {
+        "scripts": [
+          "scripts/probe-register-learner-turn.js",
+          "scripts/dump-turn-prompts.js"
+        ],
+        "exports": [
+          "exports/register-prompt-isolation/full-35.json"
+        ]
+      },
+      "tags": [
+        "register",
+        "manner",
+        "id-director"
+      ]
+    },
+    {
+      "id": "register-manner-prompt-isolation",
+      "title": "Where the edge is lost — send the flat turn's own prompt to the writer alone",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "verification": "The set is fixed and its plan hash printed by --dry-run before the first paid call. Both sides are read by the same pinned reader on the same versioned question over the same learner turn. The verdict is the count of isolated replies the reader calls edged, reported whichever way it falls.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "register-presence-hand-marked-set"
+      ],
+      "links": {
+        "scripts": [
+          "scripts/probe-register-prompt-isolation.js"
+        ],
+        "exports": [
+          "exports/negative-register-manner-presence/eval-2026-08-05-87fe3664_eval-2026-08-06-4de45d05_eval-2026-08-07-45154bac_eval-2026-08-07-e3dffab2.json"
+        ]
+      },
+      "tags": [
+        "register",
+        "manner",
+        "id-director"
+      ]
+    },
+    {
+      "id": "register-strong-stack-replication",
+      "title": "Does the sarcastic edge survive a strong writer?",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "verification": "The plan is frozen and its SHA printed by --dry-run before the first paid call. The report is zero-call and fails closed on four registered measures, one of which reads the tutor stack off the dialogue traces rather than off the model columns. The comparison against the parent sarcastic arm is fixed in the plan before the run exists.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "register-manner-learner-turn",
+        "register-presence-hand-marked-set"
+      ],
+      "links": {
+        "notes": [
+          "notes/2026-08-09-register-strong-stack-replication-preregistration.md"
+        ],
+        "services": [
+          "services/registerStrongStackReplication.js"
+        ],
+        "scripts": [
+          "scripts/run-register-strong-stack-replication.js"
+        ],
+        "tests": [
+          "tests/registerStrongStackReplication.test.js"
+        ]
+      },
+      "tags": [
+        "register",
+        "manner",
+        "id-director",
+        "provenance"
+      ]
+    },
+    {
+      "id": "adaptive-register-switching",
+      "title": "Does switching into an edged register at the right moment help?",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "verification": "Design is a DRAFT pre-registration only — no apparatus, no plan hash, nothing bought. Freeze requires the exact power table, the cell-scoped router-menu change built and tested, and operator sign-off on the row count.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "register-mock-praise-probe"
+      ],
+      "links": {
+        "notes": [
+          "notes/2026-08-09-adaptive-register-switching-prereg-draft.md"
+        ]
+      },
+      "tags": [
+        "register",
+        "manner",
+        "router",
+        "adaptivity"
       ]
     },
     {
@@ -14082,6 +14205,42 @@
         "derivation",
         "strategy-refusal",
         "superego"
+      ]
+    },
+    {
+      "id": "register-mock-praise-probe",
+      "title": "Does asking for the mock-compliment directly raise the manner reading?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "verification": "The plan is frozen and its SHA printed by --dry-run before the first paid call. The report is zero-call and fails closed on the registered measures, one of which reads the tutor stack off the dialogue traces rather than off the model columns. The manipulation check is answered before any verdict, and the plan states before the run that the primary cannot separate at this size.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "register-strong-stack-replication"
+      ],
+      "links": {
+        "notes": [
+          "notes/2026-08-09-register-mock-praise-preregistration.md"
+        ],
+        "services": [
+          "services/registerMockPraiseProbe.js"
+        ],
+        "scripts": [
+          "scripts/run-register-mock-praise-probe.js"
+        ],
+        "tests": [
+          "tests/registerMockPraiseProbe.test.js"
+        ]
+      },
+      "tags": [
+        "register",
+        "manner",
+        "id-director",
+        "provenance"
       ]
     },
     {
