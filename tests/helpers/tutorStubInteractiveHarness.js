@@ -67,6 +67,9 @@ let input = '';
 process.stdin.setEncoding('utf8');
 process.stdin.on('data', (chunk) => { input += chunk; });
 process.stdin.on('end', () => {
+  if (process.env.FAKE_CODEX_START_LOG) {
+    fs.appendFileSync(process.env.FAKE_CODEX_START_LOG, input + '\\n---CALL---\\n');
+  }
   const finish = () => {
     if (process.env.FAKE_CODEX_LOG) fs.appendFileSync(process.env.FAKE_CODEX_LOG, input + '\\n---CALL---\\n');
     const response = process.env.FAKE_CODEX_FIXTURE_MODE === 'self_correction' && input.includes('SELF-CORRECTION PASS.')
@@ -134,6 +137,7 @@ process.stdin.on('end', () => {
 function runInteractive({ tmp, args, initialInput, followupInputs = [], stopWhen, timeoutMs = 10_000, env = {} }) {
   installFakeCodex(tmp);
   const logPath = path.join(tmp, 'fake-codex-input.log');
+  const startLogPath = path.join(tmp, 'fake-codex-started.log');
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, ['scripts/tutor-stub.js', ...args], {
       cwd: ROOT,
@@ -141,6 +145,7 @@ function runInteractive({ tmp, args, initialInput, followupInputs = [], stopWhen
         ...process.env,
         PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
         FAKE_CODEX_LOG: logPath,
+        FAKE_CODEX_START_LOG: startLogPath,
         CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
         TUTOR_STUB_OPENING_REALIZER: 'deterministic',
         // These fixtures describe the strict ladder: a quality finding vetoes
@@ -157,10 +162,13 @@ function runInteractive({ tmp, args, initialInput, followupInputs = [], stopWhen
     let stderr = '';
     let stopping = false;
     const followupTimers = followupInputs.map(
-      ({ delayMs, afterLogIncludes = null, afterPlainIncludes = null, text }) => {
-        if (afterLogIncludes) {
+      ({ delayMs, afterLogIncludes = null, afterStartLogIncludes = null, afterPlainIncludes = null, text }) => {
+        const watchedLogPath = afterStartLogIncludes ? startLogPath : logPath;
+        const watchedText = afterStartLogIncludes || afterLogIncludes;
+        if (watchedText) {
           const interval = setInterval(() => {
-            if (!fs.existsSync(logPath) || !fs.readFileSync(logPath, 'utf8').includes(afterLogIncludes)) return;
+            if (!fs.existsSync(watchedLogPath) || !fs.readFileSync(watchedLogPath, 'utf8').includes(watchedText))
+              return;
             clearInterval(interval);
             if (!child.killed && child.stdin.writable) child.stdin.write(text);
           }, 25);
@@ -207,7 +215,7 @@ function runInteractive({ tmp, args, initialInput, followupInputs = [], stopWhen
         reject(new Error(`interactive mode test exited ${code}\nstdout:\n${stdout}\nstderr:\n${stderr}`));
         return;
       }
-      resolve({ stdout, stderr, plain: plainTerminalText(stdout), logPath });
+      resolve({ stdout, stderr, plain: plainTerminalText(stdout), logPath, startLogPath });
     });
     child.stdin.write(initialInput);
   });

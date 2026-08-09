@@ -72,6 +72,7 @@ export const CLI_PROVIDER_ENV_KEYS = Object.freeze({
 // below. Never accept a FAKE_* wildcard or caller-controlled production list.
 const CLI_PROVIDER_TEST_ENV_KEYS = Object.freeze([
   'FAKE_CODEX_LOG',
+  'FAKE_CODEX_START_LOG',
   'FAKE_CODEX_DELAY_MS',
   'FAKE_CODEX_VALID_ANALYSIS',
   'FAKE_CODEX_ANALYSIS_DELAY_MS',

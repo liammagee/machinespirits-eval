@@ -223,11 +223,16 @@ test('learner messages sent before the tutor replies form one restart-safe compo
         'none',
       ],
       initialInput: 'The first clue is unclear.\n',
-      followupInputs: [{ delayMs: 200, text: 'I mean the residue comparison specifically.\n' }],
+      followupInputs: [
+        {
+          afterStartLogIncludes: 'The first clue is unclear.',
+          text: 'I mean the residue comparison specifically.\n',
+        },
+      ],
       stopWhen: (plain) => plain.includes('safe fallback used'),
       timeoutMs: 30_000,
       env: {
-        FAKE_CODEX_DELAY_MS: '800',
+        FAKE_CODEX_DELAY_MS: '500',
         TUTOR_STUB_SUMMARY_OPEN: '0',
         TUTOR_STUB_REMEMBER_SETTINGS: '0',
       },
@@ -933,7 +938,7 @@ test('a late learner fragment discards already-computed analysis state before re
       env: {
         FAKE_CODEX_VALID_ANALYSIS: '1',
         FAKE_CODEX_ANALYSIS_DELAY_MS: '50',
-        FAKE_CODEX_DELAY_MS: '2200',
+        FAKE_CODEX_DELAY_MS: '500',
         TUTOR_STUB_SUMMARY_OPEN: '0',
         TUTOR_STUB_REMEMBER_SETTINGS: '0',
       },
