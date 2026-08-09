@@ -147,6 +147,7 @@ links:
     - refactor-evaluation-run-coordinator-runtime
     - refactor-rubric-transcript-projection-runtime
     - refactor-dramatic-derivation-run-state
+    - refactor-dramatic-derivation-role-transitions
 tags:
   - refactoring
   - testing
@@ -1833,3 +1834,17 @@ Log:
   macro should extract the director/tutor/learner turn-transition coordinators
   against the now-explicit state contract, starting with the director action,
   release, pacing, and role-view seam rather than changing role policy.
+- 2026-08-09 — Opened child 123 as PR #619 at `4d05590a`; initial CI is queued
+  or running and GitHub reports the PR mergeable. Activated stacked child 124,
+  `refactor-dramatic-derivation-role-transitions`, from that exact head so the
+  new state contract remains an explicit dependency. Its target is the three
+  role response-application paths, leaving post-learner lifecycle policy in
+  the engine for a later R5 slice.
+- 2026-08-10 — Completed stacked child 124 locally. Named director, tutor, and
+  learner transition owners reduce the dramatic engine from 2,425 to 1,622
+  lines and `runDrama()` complexity from 454 to 123 while 364 direct tests,
+  8,285 hermetic root tests, 137 tutor-core tests, eight risk groups, and all
+  structural gates pass. Keep the parent active. After PR #619 and this child
+  merge, the next R5 macro should extract the post-learner scene-close, stall,
+  decay, and live-monitor lifecycle against the same explicit run state; view
+  construction can then be assessed as the remaining engine responsibility.

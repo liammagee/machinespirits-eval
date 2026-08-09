@@ -64,6 +64,28 @@
       "floors": { "lines": 75, "branches": 60, "functions": 72 }
     },
     {
+      "id": "dramatic-derivation-role-transitions",
+      "label": "Dramatic derivation role transitions",
+      "runner": "node",
+      "sources": [
+        "services/dramaticDerivation/directorTransition.js",
+        "services/dramaticDerivation/tutorTransition.js",
+        "services/dramaticDerivation/learnerTransition.js"
+      ],
+      "tests": [
+        "tests/dramaticDerivationRoleTransitions.test.js",
+        "tests/dramaticDerivationActs.test.js",
+        "tests/dramaticDerivationCorruption.test.js",
+        "tests/dramaticDerivationDidacticMode.test.js",
+        "tests/dramaticDerivationFieldPlanner.test.js",
+        "tests/dramaticDerivationLearnerTransformation.test.js",
+        "tests/dramaticDerivationPlot.test.js",
+        "tests/dramaticDerivationScenes.test.js",
+        "tests/dramaticDerivationStrategyLedger.test.js"
+      ],
+      "floors": { "lines": 85, "branches": 64, "functions": 85 }
+    },
+    {
       "id": "admin-auth",
       "label": "Admin routes and authentication",
       "runner": "node",
