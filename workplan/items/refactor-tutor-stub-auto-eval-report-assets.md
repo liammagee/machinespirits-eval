@@ -1,19 +1,20 @@
 ---
 id: refactor-tutor-stub-auto-eval-report-assets
 title: Extract tutor-stub auto-eval report assets
-status: triaged
+status: review
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-08-10
 updated: 2026-08-10
+branch: codex/refactor-tutor-stub-auto-eval-report-assets
 verification: >-
   Emitted tutor-stub report CSS and index-client JavaScript remain byte-identical
-  and syntax-valid from index and report regeneration paths; focused reporting,
-  complete hermetic root/core, coverage-risk, lint, formatting, manifest,
-  workplan-source, diff, and zero-cycle gates pass without model calls or
-  production artifact writes.
+  and syntax-valid; 3/3 direct asset assertions, 96/96 focused reporting tests,
+  8,366/8,366 hermetic root tests, 137/137 tutor-core tests, all thirteen risk
+  groups, lint, formatting, manifest, workplan-source, diff, and zero-cycle
+  gates pass without model calls or production artifact writes.
 claim_status: planned
 depends_on:
   - refactor-dramatic-derivation-tutor-prompt-construction
@@ -23,6 +24,8 @@ links:
     - docs/next-steps/2026-08-10-codebase-refactoring-post-tutor-prompt-reconciliation.md
   code:
     - scripts/run-tutor-stub-auto-eval.js
+    - services/tutorStubAutoEvalReportAssets.js
+    - tests/tutorStubAutoEvalReportAssets.test.js
     - tests/tutorStubReportingUx.test.js
     - tests/tutorStubAutoEvalEvidence.test.js
     - config/coverage-risk-floors.json
@@ -71,3 +74,16 @@ Log:
   exercises the `--index` path in an isolated temporary root, inspects both
   emitted assets, and syntax-checks the generated client, providing a strong
   parity boundary before extraction.
+- 2026-08-10 — Activated on
+  `codex/refactor-tutor-stub-auto-eval-report-assets`, stacked from the exact
+  reconciliation commit `14fa509b` opened as PR #630. Implementation remains
+  source-only and does not write production report roots.
+- 2026-08-10 — Completed the extraction. The dependency-free 3,094-line asset
+  owner has maximum complexity 1 and reduces the auto-eval executable from
+  11,351 to 8,257 lines. A real pre/post `--index` comparison proves identical
+  84,221-byte CSS (`c29c27a7…e6b5bd`) and 82,509-byte client JavaScript
+  (`bf91f143…49661`). Three direct asset assertions, 96 focused reporting
+  assertions, 8,366 hermetic root tests, 137 tutor-core tests, all thirteen risk
+  groups, and every structural gate pass. The first simultaneous shard run
+  reproduced unrelated concurrency-sensitive tutor-stub failures; isolated
+  reruns passed 4,662/4,662 and 3,704/3,704 with zero skips.

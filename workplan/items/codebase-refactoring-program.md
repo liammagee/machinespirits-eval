@@ -1924,3 +1924,11 @@ Log:
   continuation. Its R6 boundary moves the 2,151-line report CSS owner and
   944-line index client owner out of the 11,351-line auto-eval executable while
   freezing emitted asset bytes, CLI behavior, report data, and write paths.
+- 2026-08-10 — Opened the reconciliation as PR #630 at `14fa509b`, then
+  completed stacked child 129 locally. The new dependency-free report-asset
+  owner preserves the exact emitted CSS and index-client bytes and reduces
+  `scripts/run-tutor-stub-auto-eval.js` from 11,351 to 8,257 lines; its two
+  exported functions each have complexity 1. Direct asset, focused reporting,
+  complete isolated hermetic shards, tutor-core, all thirteen risk groups, and
+  structural gates pass. After merge, refresh the R6 hotspot evidence before
+  choosing the report/index projection boundary or the poetics browser split.
