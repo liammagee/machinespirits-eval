@@ -33,7 +33,7 @@ const ANALYTIC_MARKER_PATTERN =
 // write that…") made a claim first and stays analytic. Deference neither masks
 // accumulated trouble nor immediately warrants.
 const DEFERENCE_PATTERN =
-  /^(?:may|might|should|shall|could|can|would) (?:i|we)\b|^would you (?:have|like|choose)\b|^do you want (?:me|us) to\b|^is it (?:all right|ok(?:ay)?) if (?:i|we)\b/iu;
+  /^(?:may|might|should|shall|could|can|would) (?:i|we)\b|^(?:would|could|will|can) you (?:have|like|choose|pick|decide)\b|^do you want (?:me|us) to\b|^is it (?:all right|ok(?:ay)?) if (?:i|we)\b/iu;
 
 /**
  * Classify a learner turn as a decision-time signal. Multi-label where it

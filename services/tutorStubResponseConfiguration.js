@@ -686,6 +686,7 @@ export function buildTutorStubResponseConfiguration({
   dueEvidence = [],
   recentActorialParts = [],
   actorialPartOverride = null,
+  actionFamilyOverride = null,
   discoursePlane = null,
 } = {}) {
   const instructionalMetaRepair = discoursePlane?.plane === 'instructional_meta';
@@ -702,14 +703,20 @@ export function buildTutorStubResponseConfiguration({
         },
       ]
     : stanceDistribution;
-  const action = selectTutorStubActionFamily({
-    classification,
-    tutorLearnerDag,
-    comprehension,
-    releasePacing,
-    discoursePlane,
-    world,
-  });
+  // The adaptive warrant gate (docs/adaptation-refinement) may override the
+  // action family with a warranted repair policy; instructional repair keeps
+  // structural priority over the gate.
+  const action =
+    actionFamilyOverride?.family && !instructionalMetaRepair
+      ? { actionFamily: actionFamilyOverride.family, reason: actionFamilyOverride.reason || 'adaptive warrant gate' }
+      : selectTutorStubActionFamily({
+          classification,
+          tutorLearnerDag,
+          comprehension,
+          releasePacing,
+          discoursePlane,
+          world,
+        });
   const learnerIntegrationTarget = buildTutorStubLearnerIntegrationTarget({
     tutorLearnerDag,
     world,

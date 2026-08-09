@@ -282,18 +282,14 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
         priorActionFamily: state.register?.current?.action_family || null,
       });
       if (warrantGateDecision?.override) {
-        source = applyEngagementStanceOverride(
-          { ...source, action_family: warrantGateDecision.override.action_family },
-          warrantGateDecision.override.engagement_stance,
-          {
-            register_reason: warrantGateDecision.override.reason,
-            engagement_stance_reason: warrantGateDecision.override.reason,
-            reviewer_signal: 'adaptive warrant gate: revision of pedagogical commitment',
-            expected_dag_move: 'Repair the diagnosed divergence before the next proof move.',
-            expected_field_move: warrantGateDecision.policy?.rationale || 'apply the recommended repair policy',
-            source: 'adaptive_warrant_gate',
-          },
-        );
+        source = applyEngagementStanceOverride(source, warrantGateDecision.override.engagement_stance, {
+          register_reason: warrantGateDecision.override.reason,
+          engagement_stance_reason: warrantGateDecision.override.reason,
+          reviewer_signal: 'adaptive warrant gate: revision of pedagogical commitment',
+          expected_dag_move: 'Repair the diagnosed divergence before the next proof move.',
+          expected_field_move: warrantGateDecision.policy?.rationale || 'apply the recommended repair policy',
+          source: 'adaptive_warrant_gate',
+        });
       }
     }
     const selectedRaw = String(source.engagement_stance || source.selected_register || source.register || '').trim();
@@ -332,6 +328,12 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
       }),
       world: state.world,
       proposedActionFamily: proposedActionFamily || null,
+      actionFamilyOverride: warrantGateDecision?.override
+        ? {
+            family: warrantGateDecision.override.action_family,
+            reason: warrantGateDecision.override.reason,
+          }
+        : null,
       releasePacing: tutorStubReleasePacingSnapshot(state.releasePacing, state.world),
       dueEvidence: discoursePlane.freeze_clue_release
         ? []

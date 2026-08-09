@@ -105,6 +105,24 @@ test('gate: off mode attaches nothing to state', () => {
   assert.equal(state.warrantGate, undefined);
 });
 
+test('classifier: tutor-directed choice requests are deference', () => {
+  assert.equal(
+    classifyLearnerSignal('Could you choose the next exhibit for us to examine?').primary,
+    'low_agency_deferral',
+  );
+  assert.equal(classifyLearnerSignal('Would you choose what we should mark first?').primary, 'low_agency_deferral');
+});
+
+test('response configuration honors the gate family override', async () => {
+  const { buildTutorStubResponseConfiguration } = await import('../services/tutorStubResponseConfiguration.js');
+  const configuration = buildTutorStubResponseConfiguration({
+    engagementStance: 'precise',
+    learnerText: 'May I enter that the striking remains unproved?',
+    actionFamilyOverride: { family: 'challenge_resistance', reason: 'adaptive warrant gate test' },
+  });
+  assert.equal(configuration.action_family, 'challenge_resistance');
+});
+
 test('gate mode resolution rejects unknown values', () => {
   assert.equal(resolveTutorStubWarrantGateMode('observe'), 'observe');
   assert.equal(resolveTutorStubWarrantGateMode(''), 'off');
