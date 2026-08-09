@@ -148,7 +148,10 @@ export function validateLearnerProfileWorldDeconfoundDesign(design, { root = ROO
   );
   requireValue(design.freeze?.user_adjudication === 'approved', 'user adjudication must remain approved');
   requireValue(/^\d{4}-\d{2}-\d{2}$/u.test(design.freeze?.adjudicated_on), 'adjudicated_on must be a date');
-  requireValue(design.freeze?.paid_authorization === 'not_authorized', 'paid calls must remain not_authorized');
+  requireValue(
+    ['not_authorized', 'authorized'].includes(design.freeze?.paid_authorization),
+    'paid_authorization must be not_authorized or authorized',
+  );
   requireValue(design.freeze?.third_persona === 'omit', 'third-persona choice must remain omit');
   requireValue(
     design.freeze?.scope_amendment?.status === 'approved_for_design' &&
@@ -180,7 +183,7 @@ export function validateLearnerProfileWorldDeconfoundDesign(design, { root = ROO
     'qd-v1 must retain both exact source commits',
   );
   requireValue(design.runtime?.venue === 'attended_local', 'venue must be attended_local');
-  requireValue(design.runtime?.attempts_per_job === 1, 'attempts_per_job must be exactly 1 before authorization');
+  requireValue(design.runtime?.attempts_per_job === 1, 'attempts_per_job must remain exactly 1');
 
   const personaReports = Object.keys(EXPECTED_CELLS).map((personaId) => validatePersona(design, personaId, root));
   for (const personaReport of personaReports) {
@@ -324,11 +327,23 @@ export function renderLearnerProfileWorldDeconfoundReview(design, report) {
     `- Frozen replay manifest: ${report.recoveryInstrument.replayManifest}.`,
     '- The original ignored 64-dialogue corpus and vector artifact are absent. The saved 56/64 result is provenance-attested historical motivation only, not an independent rerun or an input to this cohort.',
     '',
-    '## Remaining gates before paid launch',
-    '',
-    '1. Merge this source-only apparatus and generate a certificate pinned to the resulting clean main SHA.',
-    '2. Separately authorize the twenty paid dialogues and their named external payloads.',
   );
+  if (report.paidAuthorization === 'authorized') {
+    blocks.push(
+      '',
+      '## Paid-launch state',
+      '',
+      'The separate operator authorization is present. The paid runner must still verify the tracked clean-main certificate, the frozen plan hash, exact qd-v1 bytes, four-cell delivery, named model seats, and an attended checkpoint bound before making a call.',
+    );
+  } else {
+    blocks.push(
+      '',
+      '## Remaining gates before paid launch',
+      '',
+      '1. Merge this source-only apparatus and generate a certificate pinned to the resulting clean main SHA.',
+      '2. Separately authorize the twenty paid dialogues and their named external payloads.',
+    );
+  }
   return `${blocks.join('\n')}\n`;
 }
 
@@ -351,7 +366,7 @@ export function main(argv = process.argv.slice(2)) {
   if (args.json) process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
   else if (args.check) {
     process.stdout.write(
-      `learner-profile world deconfound: prospective balanced design ready for clean-main certification; ${report.dialogues} paid dialogues remain unauthorized; delivery verified 4/4; exact qd-v1 restored; no historical corpus dependency\n`,
+      `learner-profile world deconfound: prospective balanced design valid; ${report.dialogues} paid dialogues ${report.paidAuthorization}; delivery verified 4/4; exact qd-v1 restored; no historical corpus dependency\n`,
     );
   } else process.stdout.write(renderLearnerProfileWorldDeconfoundReview(design, report));
   return report;

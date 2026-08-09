@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
 /**
- * Build and verify the zero-model launch plan for the prospective balanced
- * learner-profile/world deconfound. This command can write derived world
- * overlays and execute tutor-stub --dry-run; it cannot launch paid dialogues.
+ * Build and verify the launch plan for the prospective balanced
+ * learner-profile/world deconfound. The default modes are zero-model. The
+ * separate --run-paid mode is fail-closed on the tracked clean-main
+ * certificate, the one-field authorization flip, and an attended checkpoint.
  */
 
 import crypto from 'node:crypto';
@@ -18,10 +19,27 @@ import {
   readLearnerProfileWorldDeconfoundDesign,
   validateLearnerProfileWorldDeconfoundDesign,
 } from './review-learner-profile-world-deconfound.js';
-import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
+import {
+  requiredTutorStubArtifactArchiveArgs,
+  resolveTutorStubArtifactArchiveDirectory,
+} from '../services/tutorStubArtifactArchive.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_OUTPUT_DIR = path.join(ROOT, 'exports', 'learner-profile-world-deconfound', 'prospective-plan');
+const DESIGN_RELATIVE_PATH = 'config/learner-profile-world-deconfound.yaml';
+const CERTIFICATE_RELATIVE_PATH = 'config/learner-profile-world-deconfound-certificate.json';
+export const FROZEN_PLAN_HASH = '7fbb5fe9ac53386c2116695279bca9080daa3972ac59035038fe5c7af92bbd9e';
+const EXPECTED_MODELS = Object.freeze({
+  tutor: 'claude-code.claude-sonnet-5',
+  learner: 'codex.gpt-5.6-terra',
+  analysis: 'codex.gpt-5.6-sol',
+});
+const CERTIFICATE_SCHEMA = 'machinespirits.tutor-stub.learner-profile-world-deconfound.certificate.v1';
+const RUN_MANIFEST_SCHEMA = 'machinespirits.tutor-stub.learner-profile-world-deconfound-run-manifest.v1';
+const RUN_STATE_SCHEMA = 'machinespirits.tutor-stub.learner-profile-world-deconfound-run-state.v1';
+const RUN_MANIFEST_FILE = 'run-manifest.json';
+const RUN_STATE_FILE = 'paid-run-state.json';
+const RUN_EVENTS_FILE = 'paid-run-events.jsonl';
 const WORLD_FILES = Object.freeze({
   world_030_rowan_flat: 'config/drama-derivation/world-030-rowan-flat.yaml',
   world_033_alder_row_redoubt: 'config/drama-derivation/world-033-alder-row-redoubt.yaml',
@@ -215,7 +233,7 @@ export function buildLearnerProfileWorldDeconfoundPlan(
 
   const plan = {
     schema: PLAN_SCHEMA,
-    status: 'prepared_not_authorized',
+    status: design.freeze.paid_authorization === 'authorized' ? 'prepared_authorized' : 'prepared_not_authorized',
     sourceSha,
     designSchema: design.schema,
     designHash: hashObject(design),
@@ -248,12 +266,20 @@ export function buildLearnerProfileWorldDeconfoundPlan(
   return plan;
 }
 
-export function writeLearnerProfileWorldDeconfoundPlan(plan, { root = ROOT } = {}) {
+function writePlanFile(target, content, { immutable, label }) {
+  if (immutable && fs.existsSync(target)) {
+    if (fs.readFileSync(target, 'utf8') !== content) fail(`refusing to overwrite drifted frozen ${label}`);
+    return;
+  }
+  fs.writeFileSync(target, content);
+}
+
+export function writeLearnerProfileWorldDeconfoundPlan(plan, { root = ROOT, immutable = false } = {}) {
   const outputDir = path.resolve(root, plan.outputDir);
   fs.mkdirSync(path.join(outputDir, 'worlds'), { recursive: true });
   for (const world of Object.values(plan.worlds)) {
     const target = path.resolve(root, world.path);
-    fs.writeFileSync(target, world.yaml);
+    writePlanFile(target, world.yaml, { immutable, label: `world ${world.cell}` });
     if (sha256(fs.readFileSync(target)) !== world.sha256) fail(`derived world write changed ${world.cell}`);
   }
   const serializable = {
@@ -261,7 +287,7 @@ export function writeLearnerProfileWorldDeconfoundPlan(plan, { root = ROOT } = {
     worlds: Object.fromEntries(Object.entries(plan.worlds).map(([id, world]) => [id, { ...world, yaml: undefined }])),
   };
   const planPath = path.join(outputDir, 'launch-plan.json');
-  fs.writeFileSync(planPath, `${JSON.stringify(serializable, null, 2)}\n`);
+  writePlanFile(planPath, `${JSON.stringify(serializable, null, 2)}\n`, { immutable, label: 'launch plan' });
   return planPath;
 }
 
@@ -303,13 +329,424 @@ export function verifyLearnerProfileWorldDeconfoundDelivery(plan, { root = ROOT 
   return verified;
 }
 
+function readTrackedFile(root, relativePath) {
+  const tracked = spawnSync('git', ['show', `HEAD:${relativePath}`], {
+    cwd: root,
+    encoding: 'utf8',
+    maxBuffer: 16 * 1024 * 1024,
+  });
+  if (tracked.status !== 0) fail(`${relativePath} is not tracked at HEAD`);
+  const workingPath = path.join(root, relativePath);
+  if (!fs.existsSync(workingPath)) fail(`${relativePath} is missing from the working tree`);
+  const working = fs.readFileSync(workingPath, 'utf8');
+  if (working !== tracked.stdout) fail(`${relativePath} must match the tracked HEAD bytes`);
+  return tracked.stdout;
+}
+
+function paidLaunchSourceSha(root, certificate) {
+  const head = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' });
+  if (head.status !== 0 || !/^[0-9a-f]{40}$/u.test(head.stdout.trim()))
+    fail('paid launch cannot resolve one source SHA');
+  const sourceSha = head.stdout.trim();
+  const ancestor = spawnSync('git', ['merge-base', '--is-ancestor', certificate.certified_main_sha, sourceSha], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  if (ancestor.status !== 0) fail('paid launch source does not descend from the certified clean main');
+
+  const status = spawnSync('git', ['status', '--porcelain', '--untracked-files=no'], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  if (status.status !== 0) fail('paid launch cannot inspect the tracked working tree');
+  const changed = status.stdout
+    .split(/\r?\n/u)
+    .map((line) => line.trimEnd())
+    .filter(Boolean);
+  const unexpected = changed.filter((line) => line.slice(3) !== DESIGN_RELATIVE_PATH);
+  if (unexpected.length) {
+    fail(`paid launch requires committed runner sources; unexpected tracked changes: ${unexpected.join(', ')}`);
+  }
+  return sourceSha;
+}
+
+function normalizeAuthorizedDesignRaw(designRaw) {
+  const authorizationLine = /^(\s*paid_authorization:\s*)authorized(\s*(?:#.*)?)$/gmu;
+  const matches = [...designRaw.matchAll(authorizationLine)];
+  if (matches.length !== 1)
+    fail('authorized design must contain exactly one plain paid_authorization: authorized line');
+  return designRaw.replace(authorizationLine, '$1not_authorized$2');
+}
+
+function hashFile(root, relativePath) {
+  const absolutePath = path.resolve(root, relativePath);
+  if (!absolutePath.startsWith(`${path.resolve(root)}${path.sep}`))
+    fail(`artifact path leaves repository: ${relativePath}`);
+  if (!fs.existsSync(absolutePath)) fail(`certified artifact is missing: ${relativePath}`);
+  return sha256(fs.readFileSync(absolutePath));
+}
+
+function requireCertificateHash(root, artifact, expectedPath, label) {
+  if (artifact?.path !== expectedPath) fail(`${label} certificate path drifted`);
+  const actual = hashFile(root, artifact.path);
+  if (actual !== artifact.sha256) fail(`${label} hash no longer matches the tracked certificate`);
+}
+
+export function validateLearnerProfileWorldDeconfoundPaidGate({
+  design,
+  designRaw,
+  certificate,
+  certificateRaw,
+  certificateTracked = false,
+  root = ROOT,
+} = {}) {
+  const report = validateLearnerProfileWorldDeconfoundDesign(design, { root });
+  if (report.paidAuthorization !== 'authorized') {
+    fail(`${DESIGN_RELATIVE_PATH} must carry paid_authorization: authorized`);
+  }
+  if (!certificateTracked) fail('paid launch requires the certificate bytes tracked at HEAD');
+  if (certificate?.schema !== CERTIFICATE_SCHEMA) fail(`certificate schema must be ${CERTIFICATE_SCHEMA}`);
+  if (certificate.paid_authorization !== 'not_authorized') {
+    fail('the clean-main certificate must remain separate from paid authorization');
+  }
+  if (!certificate.working_tree_clean) fail('certificate does not attest a clean working tree');
+  if (!/^[0-9a-f]{40}$/u.test(certificate.certified_main_sha || '')) fail('certificate has no full clean-main SHA');
+
+  const frozenDesign = normalizeAuthorizedDesignRaw(designRaw);
+  requireCertificateHash(
+    root,
+    certificate.frozen_artifacts?.quiet_detector_v1,
+    'services/tutorStubQuietDetectorV1.js',
+    'qd-v1',
+  );
+  requireCertificateHash(
+    root,
+    certificate.frozen_artifacts?.replay_manifest,
+    'config/learner-profile-recovery-l1.json',
+    'replay manifest',
+  );
+  if (certificate.frozen_artifacts?.design?.path !== DESIGN_RELATIVE_PATH) fail('certificate design path drifted');
+  if (sha256(frozenDesign) !== certificate.frozen_artifacts.design.sha256) {
+    fail('authorized design differs from the certified frozen design by more than the authorization line');
+  }
+  if (certificate.checks?.delivery_dry_run?.plan_hash !== FROZEN_PLAN_HASH) {
+    fail(`tracked certificate does not carry frozen plan ${FROZEN_PLAN_HASH}`);
+  }
+  if (
+    certificate.checks.delivery_dry_run.jobs !== 20 ||
+    certificate.checks.delivery_dry_run.cells_verified !== 4 ||
+    certificate.checks.delivery_dry_run.no_model_calls !== true
+  ) {
+    fail('certificate does not attest the frozen twenty-job four-cell dry-run');
+  }
+  if (
+    report.models.tutor !== EXPECTED_MODELS.tutor ||
+    report.models.learner !== EXPECTED_MODELS.learner ||
+    report.models.analysis !== EXPECTED_MODELS.analysis
+  ) {
+    fail('authorized design model seats drifted from Sonnet tutor / Terra learner / Sol analysis');
+  }
+  for (const [persona, hashes] of Object.entries(certificate.frozen_artifacts?.approved_briefs || {})) {
+    const approved = design.freeze?.approved_artifacts?.[persona];
+    if (!approved || JSON.stringify(approved) !== JSON.stringify(hashes)) {
+      fail(`${persona} approved brief or voice hashes drifted from the certificate`);
+    }
+  }
+
+  return {
+    report,
+    frozenDesignRaw: frozenDesign,
+    certificateSha256: sha256(certificateRaw),
+    frozenPlanHash: FROZEN_PLAN_HASH,
+  };
+}
+
+export function loadLearnerProfileWorldDeconfoundPaidGate({ root = ROOT } = {}) {
+  const designRaw = fs.readFileSync(path.join(root, DESIGN_RELATIVE_PATH), 'utf8');
+  const design = yaml.parse(designRaw);
+  const certificateRaw = readTrackedFile(root, CERTIFICATE_RELATIVE_PATH);
+  const certificate = JSON.parse(certificateRaw);
+  const validated = validateLearnerProfileWorldDeconfoundPaidGate({
+    design,
+    designRaw,
+    certificate,
+    certificateRaw,
+    certificateTracked: true,
+    root,
+  });
+  return {
+    design,
+    designRaw,
+    certificate,
+    certificateRaw,
+    ...validated,
+    launchSourceSha: paidLaunchSourceSha(root, certificate),
+  };
+}
+
+function optionValue(job, flag) {
+  const index = job.argv.indexOf(flag);
+  return index === -1 ? null : job.argv[index + 1];
+}
+
+function assertPaidPlanContract(plan) {
+  if (plan.jobs.length !== 20 || Object.keys(plan.worlds).length !== 4)
+    fail('paid materialization is not the frozen 20-job 2x2');
+  if (plan.attemptsPerJob !== 1) fail('paid materialization must retain exactly one attempt per job');
+  if (new Set(plan.jobs.map(({ id }) => id)).size !== 20) fail('paid materialization contains duplicate job ids');
+  for (const job of plan.jobs) {
+    if (optionValue(job, '--model') !== EXPECTED_MODELS.tutor) fail(`${job.id} tutor seat drifted`);
+    if (optionValue(job, '--auto-learner-model') !== EXPECTED_MODELS.learner) fail(`${job.id} learner seat drifted`);
+    if (
+      optionValue(job, '--classifier-model') !== EXPECTED_MODELS.analysis ||
+      optionValue(job, '--learner-record-model') !== EXPECTED_MODELS.analysis
+    ) {
+      fail(`${job.id} analysis seat drifted`);
+    }
+    if (optionValue(job, '--artifact-archive') !== 'required')
+      fail(`${job.id} durable artifact archive is not required`);
+    if (optionValue(job, '--model-call-budget') !== '220')
+      fail(`${job.id} model-call admission bound drifted from 220`);
+  }
+}
+
+export function prepareLearnerProfileWorldDeconfoundPaidPlan({ root = ROOT, outputDir = DEFAULT_OUTPUT_DIR } = {}) {
+  const gate = loadLearnerProfileWorldDeconfoundPaidGate({ root });
+  const frozenDesign = structuredClone(gate.design);
+  frozenDesign.freeze.paid_authorization = 'not_authorized';
+  const plan = buildLearnerProfileWorldDeconfoundPlan(frozenDesign, {
+    root,
+    outputDir,
+    sourceSha: gate.certificate.certified_main_sha,
+  });
+  assertPaidPlanContract(plan);
+  const liveArchiveDir = resolveTutorStubArtifactArchiveDirectory(null, { cwd: root, repoRoot: root });
+  if (!liveArchiveDir) fail('durable tutor-stub artifact archive is unavailable before paid launch');
+  gate.liveArchiveDir = liveArchiveDir;
+  return { gate, plan };
+}
+
+function writeJsonAtomic(filePath, value) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  const temporary = `${filePath}.tmp-${process.pid}`;
+  fs.writeFileSync(temporary, `${JSON.stringify(value, null, 2)}\n`);
+  fs.renameSync(temporary, filePath);
+}
+
+function appendRunEvent(filePath, event) {
+  fs.appendFileSync(filePath, `${JSON.stringify({ at: new Date().toISOString(), ...event })}\n`);
+}
+
+function readJson(filePath, label) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (error) {
+    fail(`${label} is unreadable: ${error.message}`);
+  }
+}
+
+function collectFiles(directory, predicate) {
+  if (!fs.existsSync(directory)) return [];
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const item = path.join(directory, entry.name);
+    return entry.isDirectory() ? collectFiles(item, predicate) : predicate(item) ? [item] : [];
+  });
+}
+
+function validateCompletedJobTrace(job, { root = ROOT } = {}) {
+  const repositoryRoot = path.resolve(root);
+  const traceDir = path.resolve(root, job.traceDir);
+  if (traceDir !== repositoryRoot && !traceDir.startsWith(`${repositoryRoot}${path.sep}`)) {
+    fail(`${job.id} trace directory leaves the repository`);
+  }
+  const traces = collectFiles(traceDir, (item) => item.endsWith('.jsonl'));
+  if (traces.length !== 1) fail(`${job.id} must seal exactly one JSONL trace, found ${traces.length}`);
+  let events;
+  try {
+    const text = fs.readFileSync(traces[0], 'utf8').trim();
+    events = text ? text.split('\n').map((line) => JSON.parse(line)) : [];
+  } catch (error) {
+    fail(`${job.id} trace is not valid JSONL: ${error.message}`);
+  }
+  const runEnds = events.filter((event) => event?.type === 'run_end');
+  if (runEnds.length !== 1) fail(`${job.id} trace must contain exactly one run_end event, found ${runEnds.length}`);
+  return traces[0];
+}
+
+export function writeLearnerProfileWorldDeconfoundRunManifest(plan, gate, { root = ROOT } = {}) {
+  const outputDir = path.resolve(root, plan.outputDir);
+  const manifestPath = path.join(outputDir, RUN_MANIFEST_FILE);
+  const manifest = {
+    schema: RUN_MANIFEST_SCHEMA,
+    status: 'authorized_attended_checkpointed',
+    createdAt: new Date().toISOString(),
+    frozenPlanHash: gate.frozenPlanHash,
+    materializedPlanHash: plan.planHash,
+    certificatePath: CERTIFICATE_RELATIVE_PATH,
+    certificateSha256: gate.certificateSha256,
+    certifiedMainSha: gate.certificate.certified_main_sha,
+    launchSourceSha: gate.launchSourceSha,
+    authorization: gate.design.freeze.paid_authorization,
+    venue: gate.design.runtime.venue,
+    models: { ...EXPECTED_MODELS },
+    jobs: plan.jobs.map(({ id, cell, persona, world, repeat, traceDir }) => ({
+      id,
+      cell,
+      persona,
+      world,
+      repeat,
+      traceDir,
+    })),
+    historicalDialoguesPooled: false,
+    archiveBeforeOutcomeRead: true,
+    liveArchivePolicy: 'required',
+    liveArchiveDirectory: gate.liveArchiveDir,
+    archiveCommand: `npm run archive:runs -- ${plan.outputDir}`,
+  };
+  if (fs.existsSync(manifestPath)) {
+    const existing = readJson(manifestPath, 'paid run manifest');
+    for (const field of ['schema', 'frozenPlanHash', 'materializedPlanHash', 'certificateSha256', 'launchSourceSha']) {
+      if (existing[field] !== manifest[field]) fail(`existing paid run manifest ${field} does not match this launch`);
+    }
+    return { manifest: existing, manifestPath };
+  }
+  writeJsonAtomic(manifestPath, manifest);
+  return { manifest, manifestPath };
+}
+
+function validateRunState(state, plan, gate, { root = ROOT } = {}) {
+  if (state.schema !== RUN_STATE_SCHEMA) fail('paid run state schema drifted');
+  if (state.frozenPlanHash !== gate.frozenPlanHash || state.materializedPlanHash !== plan.planHash) {
+    fail('paid run state belongs to a different frozen plan');
+  }
+  if (state.certificateSha256 !== gate.certificateSha256) fail('paid run state certificate changed');
+  if (state.launchSourceSha !== gate.launchSourceSha) fail('paid run state runner source changed');
+  const jobIds = new Set(plan.jobs.map(({ id }) => id));
+  if (!Array.isArray(state.completedJobs) || state.completedJobs.some((id) => !jobIds.has(id))) {
+    fail('paid run state contains an unknown completed job');
+  }
+  if (new Set(state.completedJobs).size !== state.completedJobs.length) fail('paid run state repeats a completed job');
+  const jobs = new Map(plan.jobs.map((job) => [job.id, job]));
+  for (const id of state.completedJobs) validateCompletedJobTrace(jobs.get(id), { root });
+  if (state.activeJob) fail(`paid run stopped with ${state.activeJob} in flight; refusing an automatic retry`);
+  if (state.failedJob) fail(`paid run has failed job ${state.failedJob.id}; refusing an automatic retry`);
+}
+
+function defaultSpawnPaidJob(job, { root }) {
+  return spawnSync(process.execPath, job.argv, {
+    cwd: root,
+    env: { ...process.env, ...job.environment },
+    stdio: 'inherit',
+  });
+}
+
+export function runLearnerProfileWorldDeconfoundPaidPlan(
+  plan,
+  gate,
+  { root = ROOT, checkpointEvery, spawnJob = defaultSpawnPaidJob } = {},
+) {
+  if (!Number.isInteger(checkpointEvery) || checkpointEvery < 1 || checkpointEvery > plan.jobs.length) {
+    fail(`--checkpoint-every must be an integer from 1 to ${plan.jobs.length}`);
+  }
+  if (!/^[0-9a-f]{40}$/u.test(gate.launchSourceSha || '')) fail('paid runner requires one committed launch source SHA');
+  const outputDir = path.resolve(root, plan.outputDir);
+  const statePath = path.join(outputDir, RUN_STATE_FILE);
+  const eventsPath = path.join(outputDir, RUN_EVENTS_FILE);
+  let state;
+  if (fs.existsSync(statePath)) {
+    state = readJson(statePath, 'paid run state');
+    validateRunState(state, plan, gate, { root });
+  } else {
+    state = {
+      schema: RUN_STATE_SCHEMA,
+      status: 'ready',
+      frozenPlanHash: gate.frozenPlanHash,
+      materializedPlanHash: plan.planHash,
+      certificateSha256: gate.certificateSha256,
+      launchSourceSha: gate.launchSourceSha,
+      expectedJobs: plan.jobs.length,
+      completedJobs: [],
+      activeJob: null,
+      failedJob: null,
+      outcomeReadAllowed: false,
+      archiveRequired: true,
+      updatedAt: new Date().toISOString(),
+    };
+    writeJsonAtomic(statePath, state);
+  }
+
+  const completed = new Set(state.completedJobs);
+  const pending = plan.jobs.filter(({ id }) => !completed.has(id));
+  if (!pending.length) {
+    state.status = 'completed_pending_archive';
+    state.updatedAt = new Date().toISOString();
+    writeJsonAtomic(statePath, state);
+    return { state, statePath, eventsPath, attempted: 0 };
+  }
+
+  let attempted = 0;
+  for (const job of pending.slice(0, checkpointEvery)) {
+    state.status = 'running';
+    state.activeJob = job.id;
+    state.updatedAt = new Date().toISOString();
+    writeJsonAtomic(statePath, state);
+    appendRunEvent(eventsPath, { type: 'job_start', job: job.id, completed: state.completedJobs.length });
+
+    let result;
+    try {
+      result = spawnJob(job, { root });
+    } catch (error) {
+      result = { status: null, signal: null, error };
+    }
+    attempted += 1;
+    let traceError = null;
+    if (result?.status === 0) {
+      try {
+        validateCompletedJobTrace(job, { root });
+      } catch (error) {
+        traceError = error;
+      }
+    }
+    if (result?.status !== 0 || traceError) {
+      state.status = 'failed';
+      state.activeJob = null;
+      state.failedJob = {
+        id: job.id,
+        exitCode: result?.status ?? null,
+        signal: result?.signal ?? null,
+        error: traceError?.message ?? result?.error?.message ?? null,
+      };
+      state.updatedAt = new Date().toISOString();
+      writeJsonAtomic(statePath, state);
+      appendRunEvent(eventsPath, { type: 'job_failed', job: job.id, ...state.failedJob });
+      const detail = state.failedJob.error ? `: ${state.failedJob.error}` : '';
+      fail(`${job.id} failed; checkpoint sealed and automatic retry refused${detail}`);
+    }
+
+    state.completedJobs.push(job.id);
+    state.activeJob = null;
+    state.status = state.completedJobs.length === plan.jobs.length ? 'completed_pending_archive' : 'checkpointed';
+    state.updatedAt = new Date().toISOString();
+    writeJsonAtomic(statePath, state);
+    appendRunEvent(eventsPath, { type: 'job_complete', job: job.id, completed: state.completedJobs.length });
+  }
+  return { state, statePath, eventsPath, attempted };
+}
+
 function gitHead(root) {
   const result = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' });
   return result.status === 0 ? result.stdout.trim() : 'unresolved';
 }
 
 function parseArgs(argv) {
-  const args = { outputDir: DEFAULT_OUTPUT_DIR, prepare: false, verify: false, json: false };
+  const args = {
+    outputDir: DEFAULT_OUTPUT_DIR,
+    prepare: false,
+    verify: false,
+    json: false,
+    runPaid: false,
+    checkpointEvery: null,
+  };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === '--output-dir') args.outputDir = path.resolve(argv[++index]);
@@ -317,6 +754,12 @@ function parseArgs(argv) {
     else if (arg === '--verify-delivery') {
       args.prepare = true;
       args.verify = true;
+    } else if (arg === '--run-paid') {
+      args.runPaid = true;
+      args.prepare = true;
+      args.verify = true;
+    } else if (arg === '--checkpoint-every') {
+      args.checkpointEvery = Number(argv[++index]);
     } else if (arg === '--json') args.json = true;
     else if (arg === '--check') continue;
     else fail(`unknown argument: ${arg}`);
@@ -326,6 +769,36 @@ function parseArgs(argv) {
 
 export function main(argv = process.argv.slice(2)) {
   const args = parseArgs(argv);
+  if (args.runPaid) {
+    if (args.json) fail('--json cannot be combined with the attended --run-paid mode');
+    if (!process.stdin.isTTY || !process.stdout.isTTY) fail('--run-paid requires an attended local TTY');
+    if (!Number.isInteger(args.checkpointEvery) || args.checkpointEvery < 1 || args.checkpointEvery > 20) {
+      fail('--run-paid requires --checkpoint-every with an integer from 1 to 20');
+    }
+    if (path.resolve(args.outputDir) !== path.resolve(DEFAULT_OUTPUT_DIR)) {
+      fail('--run-paid must consume the frozen default output plan; --output-dir is not permitted');
+    }
+    const { gate, plan } = prepareLearnerProfileWorldDeconfoundPaidPlan({ root: ROOT, outputDir: args.outputDir });
+    const planPath = writeLearnerProfileWorldDeconfoundPlan(plan, { immutable: true });
+    const delivery = verifyLearnerProfileWorldDeconfoundDelivery(plan);
+    const { manifestPath } = writeLearnerProfileWorldDeconfoundRunManifest(plan, gate);
+    const run = runLearnerProfileWorldDeconfoundPaidPlan(plan, gate, {
+      root: ROOT,
+      checkpointEvery: args.checkpointEvery,
+    });
+    process.stdout.write(
+      `learner-profile world deconfound paid checkpoint: ${run.state.completedJobs.length}/${plan.jobs.length} complete; status ${run.state.status}; frozen plan ${gate.frozenPlanHash}\n`,
+    );
+    process.stdout.write(`plan: ${path.relative(ROOT, planPath)}\n`);
+    process.stdout.write(`manifest: ${path.relative(ROOT, manifestPath)}\n`);
+    process.stdout.write(
+      run.state.status === 'completed_pending_archive'
+        ? `OUTCOMES REMAIN SEALED: archive light artifacts and traces and commit the archive repo before any reading.\n`
+        : `Resume attended with the same --run-paid --checkpoint-every value or another explicit bound.\n`,
+    );
+    return { plan, planPath, delivery, gate, run };
+  }
+  if (args.checkpointEvery !== null) fail('--checkpoint-every is only valid with --run-paid');
   const design = readLearnerProfileWorldDeconfoundDesign();
   const plan = buildLearnerProfileWorldDeconfoundPlan(design, {
     root: ROOT,

@@ -187,7 +187,7 @@ function stateFrequency(labels, states) {
   );
 }
 
-export function replayLearnerProfileRecoveryCorpus(manifest, sources, triggerPatterns) {
+export function replayLearnerProfileStateVectors({ sources, states, minimumLearnerTurns, triggerPatterns }) {
   const vectors = [];
   const tooShort = [];
 
@@ -205,25 +205,34 @@ export function replayLearnerProfileRecoveryCorpus(manifest, sources, triggerPat
       }
       perTurn.push(label);
     }
-    if (perTurn.length < manifest.minimum_learner_turns) {
+    if (perTurn.length < minimumLearnerTurns) {
       tooShort.push({ ...source, learnerTurns: perTurn.length });
       continue;
     }
     vectors.push({
-      persona: source.persona,
-      arm: source.arm,
-      d: source.dialogue,
+      ...Object.fromEntries(Object.entries(source).filter(([key]) => key !== 'events')),
       n: perTurn.length,
-      vec: stateFrequency(perTurn, manifest.states),
+      vec: stateFrequency(perTurn, states),
       perTurn,
     });
   }
 
   if (tooShort.length) {
-    fail(`${tooShort.length} source dialogues have fewer than ${manifest.minimum_learner_turns} learner turns`, {
+    fail(`${tooShort.length} source dialogues have fewer than ${minimumLearnerTurns} learner turns`, {
       tooShort: tooShort.map(({ trace, learnerTurns }) => ({ trace, learnerTurns })),
     });
   }
+
+  return vectors;
+}
+
+export function replayLearnerProfileRecoveryCorpus(manifest, sources, triggerPatterns) {
+  const vectors = replayLearnerProfileStateVectors({
+    sources,
+    states: manifest.states,
+    minimumLearnerTurns: manifest.minimum_learner_turns,
+    triggerPatterns,
+  });
 
   for (const [persona, spec] of Object.entries(manifest.corpus)) {
     const observed = vectors.filter((vector) => vector.persona === persona).length;
@@ -248,58 +257,86 @@ function distance(a, b, states) {
   return Math.sqrt(states.reduce((sum, state) => sum + (a[state] - b[state]) ** 2, 0));
 }
 
-function classify(vector, vectors, states, omittedVector = vector) {
-  const personas = [...new Set(vectors.map((candidate) => candidate.persona))];
-  if (personas.length !== 2) fail(`classifier requires two personas, found ${personas.length}`);
+function classify(vector, vectors, states, labelKey, labels, omittedVector = vector) {
   const centroids = Object.fromEntries(
-    personas.map((persona) => [
-      persona,
+    labels.map((label) => [
+      label,
       centroid(
-        vectors.filter((candidate) => candidate.persona === persona && candidate !== omittedVector),
+        vectors.filter((candidate) => candidate[labelKey] === label && candidate !== omittedVector),
         states,
       ),
     ]),
   );
   // This preserves the scratch replay's strict-less-than tie behavior: a tie
-  // falls to the second persona in the manifest, historically `tenant`.
-  return distance(vector.vec, centroids[personas[0]], states) < distance(vector.vec, centroids[personas[1]], states)
-    ? personas[0]
-    : personas[1];
+  // falls to the second label, historically the `tenant` persona.
+  return distance(vector.vec, centroids[labels[0]], states) < distance(vector.vec, centroids[labels[1]], states)
+    ? labels[0]
+    : labels[1];
 }
 
-export function analyzeLearnerProfileRecoveryVectors(manifest, vectors) {
-  const states = manifest.states;
-  const personas = Object.keys(manifest.corpus);
+export function analyzeLeaveOneOutNearestCentroid({
+  vectors,
+  states,
+  labelKey,
+  labels = [...new Set(vectors.map((vector) => vector[labelKey]))],
+  openingTurns = [],
+}) {
+  if (labels.length !== 2) fail(`classifier requires two ${labelKey} labels, found ${labels.length}`);
+  if (vectors.some((vector) => !labels.includes(vector[labelKey]))) {
+    fail(`classifier found a ${labelKey} value outside the frozen label order`);
+  }
   const meanProfiles = Object.fromEntries(
-    personas.map((persona) => {
-      const set = vectors.filter((vector) => vector.persona === persona);
-      return [persona, centroid(set, states)];
+    labels.map((label) => {
+      const set = vectors.filter((vector) => vector[labelKey] === label);
+      return [label, centroid(set, states)];
     }),
   );
 
-  const correct = vectors.filter((vector) => classify(vector, vectors, states) === vector.persona).length;
-  const openingTurns = {};
-  for (const turnCount of manifest.classifier.opening_turns) {
+  const predictions = vectors.map((vector) => ({
+    id: vector.id || vector.trace,
+    expected: vector[labelKey],
+    predicted: classify(vector, vectors, states, labelKey, labels),
+  }));
+  const correct = predictions.filter((reading) => reading.predicted === reading.expected).length;
+  const openingTurnResults = {};
+  for (const turnCount of openingTurns) {
     let eligible = 0;
     let openingCorrect = 0;
     for (const vector of vectors) {
       if (vector.perTurn.length < turnCount) continue;
       const opening = vector.perTurn.slice(0, turnCount);
       const openingVector = { ...vector, vec: stateFrequency(opening, states) };
-      const prediction = classify(openingVector, vectors, states, vector);
+      const prediction = classify(openingVector, vectors, states, labelKey, labels, vector);
       eligible += 1;
-      if (prediction === vector.persona) openingCorrect += 1;
+      if (prediction === vector[labelKey]) openingCorrect += 1;
     }
-    openingTurns[String(turnCount)] = { eligible, correct: openingCorrect, accuracy: openingCorrect / eligible };
+    openingTurnResults[String(turnCount)] = {
+      eligible,
+      correct: openingCorrect,
+      accuracy: eligible ? openingCorrect / eligible : null,
+    };
   }
 
   return {
     dialogues: vectors.length,
     correct,
     accuracy: correct / vectors.length,
+    labelKey,
+    labels,
     meanProfiles,
-    openingTurns,
+    predictions,
+    openingTurns: openingTurnResults,
   };
+}
+
+export function analyzeLearnerProfileRecoveryVectors(manifest, vectors) {
+  return analyzeLeaveOneOutNearestCentroid({
+    vectors,
+    states: manifest.states,
+    labelKey: 'persona',
+    labels: Object.keys(manifest.corpus),
+    openingTurns: manifest.classifier.opening_turns,
+  });
 }
 
 export function verifyLearnerProfileRecoveryResult(manifest, result) {
