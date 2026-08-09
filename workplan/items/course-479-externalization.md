@@ -74,3 +74,16 @@ dialogue engine with a stub model. USER DECISION: codex/claude CLIs will run
 on the fly.io machine and drive the tutor through the provider hook
 (subscription quota); `services/cliProviderBridge.js` is the adapter to port;
 API-key providers stay as fallback. Plan + seam-check docs updated.
+
+2026-08-09 Claude: Reference transcripts GENERATED on the real serving path —
+`scripts/generate-course-transcripts.js` ran the frozen profiles over the
+claude CLI bridge (Sonnet 5 via the CLI's sonnet alias), scripted learner held
+constant within each pair. Five transcripts, three turns each, full
+deliberation per turn (every turn shows at least one rejection and revision):
+the week-2 recognition/placebo pair, the week-3 advisory/adversarial critic
+pair, and the week-4 trap (tutor names the misconception on turn 1). JSON in
+`exports/course-479/transcripts/` (gitignored), archived to the private repo
+at `artifacts/course-479/` (commit d15490ae). Eval-repo side of the card is
+now done: seam check, frozen profiles, presets, transcripts. Remaining work
+moves to the website (Tutor Lab surface, bridge port, deploy) and content
+repo (479-fall-2026 page + techne renders of these transcripts).
