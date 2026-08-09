@@ -1,14 +1,14 @@
 {
-  "generated": "2026-08-09T02:27:07.714Z",
+  "generated": "2026-08-09T03:23:55.113Z",
   "counts": {
     "total": 479,
     "byStatus": {
-      "done": 455,
+      "done": 456,
       "blocked": 6,
       "dropped": 9,
       "active": 2,
       "archived": 4,
-      "triaged": 2,
+      "triaged": 1,
       "review": 1
     },
     "byType": {
@@ -47,30 +47,6 @@
       "tags": [
         "tutor-stub",
         "guards"
-      ]
-    },
-    {
-      "id": "sarcasm-worktree-shadow-db-disposal",
-      "title": "Dispose of the shadow database the sarcasm worktree wrote",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P3",
-      "owner": "human",
-      "source": "manual",
-      "created": "2026-08-08",
-      "updated": "2026-08-08",
-      "verification": "The worktree's `data/evaluations.db` is gone, after the owner confirms the archive holds everything it held.",
-      "claim_status": "methods",
-      "links": {
-        "items": [
-          "eval-db-writer-reader-path-split",
-          "sarcasm-precondition-claim-bearing-mood"
-        ]
-      },
-      "tags": [
-        "maintenance",
-        "data-integrity",
-        "worktrees"
       ]
     },
     {
@@ -15836,6 +15812,31 @@
         "negative-registers",
         "stance-fidelity",
         "determinate-negation"
+      ]
+    },
+    {
+      "id": "sarcasm-worktree-shadow-db-disposal",
+      "title": "Dispose of the shadow database the sarcasm worktree wrote",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P3",
+      "owner": "human",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-09",
+      "branch": "codex/close-sarcasm-shadow-db-disposal",
+      "verification": "The worktree's `data/evaluations.db` is gone, after the owner confirms the archive holds everything it held.",
+      "claim_status": "methods",
+      "links": {
+        "items": [
+          "eval-db-writer-reader-path-split",
+          "sarcasm-precondition-claim-bearing-mood"
+        ]
+      },
+      "tags": [
+        "maintenance",
+        "data-integrity",
+        "worktrees"
       ]
     },
     {
