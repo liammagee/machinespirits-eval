@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-09T00:44:48.480Z",
+  "generated": "2026-08-09T00:55:38.112Z",
   "counts": {
     "total": 475,
     "byStatus": {
@@ -232,16 +232,22 @@
       "source": "manual",
       "created": "2026-08-06",
       "updated": "2026-08-09",
-      "branch": "codex/learner-profile-world-deconfound-adjudication",
-      "verification": "Design-stage card. Before any paid dialogue: the transplanted persona briefs are user-adjudicated, the crossed cells and readings below are frozen unchanged, and the operator has explicitly authorized the paid run. The run is attended; delivery is verified per the golden contract before any reading.",
+      "branch": "codex/learner-profile-world-deconfound-qd-v1-replay",
+      "verification": "The approved persona transplants and exact qd-v1 are frozen and hash-pinned. The replacement is one prospective balanced 2-persona x 2-world x 5 cohort with no historical pooling; zero-model tutor-stub dry-runs verify delivery for all four cells. Merge before clean-main certification; twenty paid dialogues remain separately unauthorized.",
       "claim_status": "methods",
       "links": {
         "config": [
-          "config/learner-profile-world-deconfound.yaml"
+          "config/learner-profile-world-deconfound.yaml",
+          "config/learner-profile-recovery-l1.json"
         ],
         "code": [
           "scripts/review-learner-profile-world-deconfound.js",
-          "tests/learnerProfileWorldDeconfound.test.js"
+          "scripts/replay-learner-profile-recovery-l1.js",
+          "scripts/prepare-learner-profile-world-deconfound.js",
+          "services/tutorStubQuietDetectorV1.js",
+          "tests/learnerProfileWorldDeconfound.test.js",
+          "tests/learnerProfileRecoveryL1.test.js",
+          "tests/learnerProfileWorldDeconfoundPlan.test.js"
         ],
         "notes": [
           "notes/2026-08-03-adaptive-causality-living-log.md"
