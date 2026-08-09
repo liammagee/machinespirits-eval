@@ -149,6 +149,7 @@ links:
     - refactor-dramatic-derivation-run-state
     - refactor-dramatic-derivation-role-transitions
     - refactor-dramatic-derivation-post-turn-lifecycle
+    - refactor-dramatic-derivation-release-arbitration
 tags:
   - refactoring
   - testing
@@ -1863,3 +1864,18 @@ Log:
   Keep the parent active: after PR #620 and this child merge, refresh hotspot
   evidence before choosing between a final engine view-construction seam and
   the substantially larger `llmRoles.js` R5 owner.
+- 2026-08-10 — PR #622 merged child 125. Fresh hotspot evidence records the
+  1,217-line engine with complexity-14 `runDrama()` versus the 5,532-line
+  `llmRoles.js` with complexity-502 `tutorFn` and complexity-213 nested release
+  arbitration. Activated child 126,
+  `refactor-dramatic-derivation-release-arbitration`, as the safer first
+  `llmRoles.js` boundary; the final engine view-construction seam is deferred
+  while the engine is no longer a leading size or orchestration hotspot.
+- 2026-08-10 — Completed child 126 locally. The immutable tutor release
+  calendar now has a 579-line, complexity-27 owner and `llmRoles.js` fell from
+  5,532 to 5,221 lines without prompt, model-call, revision, conduct, trace, or
+  public-shape changes. Direct, complete dramatic, hermetic root, tutor-core,
+  ten risk groups, and structural gates pass. After merge, reassess the next
+  `llmRoles.js` macro between the complexity-68 strategy-ledger prompt section
+  and a broader tutor-turn prompt-construction owner; keep the final engine
+  view seam deferred unless new hotspot evidence raises it again.
