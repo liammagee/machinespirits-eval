@@ -1,5 +1,5 @@
-schema: machinespirits.tutor-stub.learner-profile-world-deconfound.v1
-status: adjudicated
+schema: machinespirits.tutor-stub.learner-profile-world-deconfound.v2
+status: prospective_balanced_delivery_verified
 created: 2026-08-09
 
 claim_boundary: >-
@@ -12,16 +12,34 @@ freeze:
   adjudicated_on: 2026-08-09
   approved_artifacts:
     record_keeper:
+      source_prompt_sha256: 41d7dad5b079d023e7e9e0394b55fc5dcee9f119b550130799133726428d26a1
+      source_public_learner_voice_sha256: f7958474c16eb6c034e2dd2614e7df6712e65d6b51cfdcbd7f965bfc55edbbea
       transplant_prompt_sha256: c3df7ed04d779a7168aa19c6a5ce4c0a3aa9d17b57a192c997ea3e4851e924a6
       public_learner_voice_sha256: 819331a334d6b616a0a582447f99886697cea029f572862a90bfb4bac5581a02
     tenant:
+      source_prompt_sha256: a6fdbe713b339ee46b8a81d8e763bb364e17f6512ffa5bc60032611338ffbdb7
+      source_public_learner_voice_sha256: 29fff6dc9830f802603862c19c4f9379af76a64daae208e14269f923ab808105
       transplant_prompt_sha256: f7dbe74d7d0539bd2233da6f41b70a1eae6d3655f2d2e33c929ceeb0e4414115
       public_learner_voice_sha256: d7504cd63d9c9d7d7294d0d152dddb866160ef86d08ed94785d566e0bd0ce4f5
   third_persona: omit
   third_persona_reason: >-
     The complete two-persona by two-world crossing already breaks the original
-    one-persona-per-world confound. Omitting a third persona keeps the first
-    test to ten new dialogues and reserves a third persona for replication.
+    one-persona-per-world confound. Omitting a third persona keeps the test to
+    the smallest balanced 2x2 and reserves a third persona for replication.
+  scope_amendment:
+    status: approved_for_design
+    approved_on: 2026-08-09
+    source: user_directed_unblock
+    change: >-
+      Replace the irrecoverable historical-plus-crossed analysis with one
+      prospective balanced 2x2 cohort: both personas in both worlds, five
+      dialogues per cell. This changes the prospective paid scope from ten to
+      twenty dialogues but does not authorize any call.
+  delivery_verification:
+    status: verified
+    mode: tutor_stub_dry_run
+    cells_verified: 4
+    no_model_calls: true
   paid_authorization: not_authorized
 
 runtime:
@@ -32,23 +50,47 @@ runtime:
   recovery_instrument:
     pressure: config/manner-trigger/v4.json
     quiet_version: qd-v1
+    replay_manifest: config/learner-profile-recovery-l1.json
+    quiet_artifact: services/tutorStubQuietDetectorV1.js
     quiet_source_commits:
-      - 0ee6b9c2a8cca13fd8343fc22c647a146d3310ec
-      - e86a2d66dcb304a9552fe1e1d61378d0335b6281
-    status: restore_exact_before_certificate
+      - 146a7b21a43305569ffc461bdaef714ad1cce472
+      - 8e2addab9875b38799d58b9243c6c3a6d201827b
+    quiet_source_commits_note: >-
+      146a7b21 created qd-v1 (2026-08-01); 8e2addab is the last commit whose
+      services/tutorStubQuietDetector.js still carries the qd-v1 bytes before
+      the qd-v2 flip at a98d9c56 (2026-08-04). The restored artifact is
+      byte-identical to the file at both commits. An earlier draft pinned two
+      2026-08-03 commits that do not contain the detector file; corrected
+      2026-08-09 before certification.
+    status: restored_exact_prospective_rebaseline
     reason: >-
-      The original 88 percent L1 reading used qd-v1. The current source tree
-      contains qd-v2, so the exact historical detector must be restored as a
-      frozen replay artifact and shown to reproduce 56/64 before certification.
+      The exact historical qd-v1 bytes and replay algorithm are restored and
+      hash-pinned. The historical vector artifact and its ignored 64-dialogue
+      source corpus did not survive local, archive-ref, or GitHub-artifact
+      searches. The saved 56/64 console result remains historical evidence,
+      not an independent reproduction. It motivates the frozen 80 percent bar
+      but is not pooled into or required by the prospective balanced cohort.
   original_recovery_artifact: exports/learner-profile-recovery-l1.json
+  original_recovery_artifact_status: missing_untracked_historical_output
   venue: attended_local
   attempts_per_job: 1
 
 paid_design:
-  new_dialogues: 10
+  cohort_basis: prospective_balanced_2x2
+  new_dialogues: 20
   cells:
+    - id: record_keeper_in_alder
+      persona: record_keeper
+      world: world_033_alder_row_redoubt
+      stress_schedule: config/drama-derivation/stress/world-033-stress-schedule.yaml
+      repeats: 5
     - id: record_keeper_in_rowan
       persona: record_keeper
+      world: world_030_rowan_flat
+      stress_schedule: config/drama-derivation/stress/world-030-stress-schedule.yaml
+      repeats: 5
+    - id: tenant_in_rowan
+      persona: tenant
       world: world_030_rowan_flat
       stress_schedule: config/drama-derivation/stress/world-030-stress-schedule.yaml
       repeats: 5
@@ -61,7 +103,9 @@ paid_design:
 readings:
   unit: dialogue
   features: per-dialogue state-frequency estimates from the frozen pressure and quiet instruments
-  classifier: leave-one-out nearest-centroid persona classification across all four persona-world cells
+  cohort: prospective 2 personas x 2 worlds x 5 dialogues, analyzed without historical pooling
+  classifier: leave-one-out nearest-centroid persona classification across all four balanced persona-world cells
+  world_diagnostic: run the same leave-one-out nearest-centroid procedure with world as the label
   pass_bar: 0.8
   pass: persona signal travels across worlds within the two-persona, two-world, simulated-learner scope
   world_result: the earlier 88 percent result is bounded as a world artifact

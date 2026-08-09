@@ -1,0 +1,108 @@
+{
+  "schema": "machinespirits.tutor-stub.learner-profile-recovery-l1.v1",
+  "purpose": "Frozen zero-model replay of the original Phase L1 persona-recovery reading.",
+  "provenance": {
+    "result_commit": "b86ab7f3614a6bedbd1a7bc89ed85ebb731f9569",
+    "quiet_detector": {
+      "version": "qd-v1",
+      "path": "services/tutorStubQuietDetectorV1.js",
+      "sha256": "318da00fff7fc8049fc21640f2978cc119ff3a45a53a5dd126e3df66656ec6c4",
+      "source_commits": [
+        "146a7b21a43305569ffc461bdaef714ad1cce472",
+        "8e2addab9875b38799d58b9243c6c3a6d201827b"
+      ],
+      "source_commits_note": "146a7b21 created qd-v1 (2026-08-01); 8e2addab is the last commit carrying the qd-v1 bytes before the qd-v2 flip at a98d9c56 (2026-08-04). The frozen artifact is byte-identical to services/tutorStubQuietDetector.js at both commits. An earlier draft pinned two 2026-08-03 commits that do not contain the detector file; corrected 2026-08-09."
+    },
+    "pressure_trigger": {
+      "version": "v4",
+      "path": "config/manner-trigger/v4.json",
+      "sha256": "3353b7525a04d80fb41e9356d8deb94f7676ef070edff83146b8a3e3714f76c1"
+    },
+    "historical_vector_artifact": "exports/learner-profile-recovery-l1.json",
+    "artifact_was_untracked": true
+  },
+  "historical_execution_attestation": {
+    "source": "local Claude tool transcript for the deleted instrumentation-benchmark worktree",
+    "transcript_sha256": "22e98b079876175672ed0bf3b59975780466879e8daa231aa6ec6738fe5110ba",
+    "tool_use_id": "toolu_013CoHarHhyqBqFmquzMeaBp",
+    "command_sha256": "40f7874e6e747e750e711d04b4019a3484aed7e60b9aa7381e7d1d8c031b12fd",
+    "output_sha256": "475ee84d0f4c78aee92737e52858b4329941166a2d45e8d00ced140b94823a7c",
+    "observed_output": [
+      "dialogues: 64 (28 record-keeper, 36 tenant)",
+      "leave-one-out nearest-centroid: 56/64 = 88%",
+      "first 2 turns only: 50/64 = 78%",
+      "first 4 turns only: 49/64 = 77%",
+      "first 6 turns only: 51/64 = 80%",
+      "first 8 turns only: 54/64 = 84%",
+      "first 10 turns only: 53/64 = 83%"
+    ],
+    "raw_corpus_status": "unavailable_after_local_remote_archive_and_actions_artifact_search",
+    "evidence_boundary": "Historical execution evidence only. This is not an independent reproduction and is not pooled into the prospective balanced cohort."
+  },
+  "corpus_root": "exports/tutor-stub-outcome",
+  "minimum_learner_turns": 6,
+  "states": [
+    "mockery",
+    "demand",
+    "grievance",
+    "settled_claim",
+    "stake",
+    "defiance",
+    "concession",
+    "confused",
+    "flat",
+    "quiet_defiance",
+    "broken",
+    "neutral"
+  ],
+  "corpus": {
+    "record-keeper": {
+      "world": "world_033_alder_row_redoubt",
+      "expected_dialogues": 28,
+      "arms": [
+        "stage5-butler",
+        "stage5-switch",
+        "stage5v3-switch",
+        "r2-butler",
+        "r2-switch",
+        "r4-butler",
+        "r4-switch",
+        "q2-w033"
+      ]
+    },
+    "tenant": {
+      "world": "world_030_rowan_flat",
+      "expected_dialogues": 36,
+      "arms": [
+        "r1-bare",
+        "r2-butler",
+        "r2-switch",
+        "q1-k3",
+        "q2-k3",
+        "v4live",
+        "h1",
+        "s2",
+        "s2cc",
+        "s2d"
+      ]
+    }
+  },
+  "classifier": {
+    "name": "leave-one-out nearest-centroid",
+    "distance": "euclidean",
+    "tie_break": "tenant",
+    "opening_turns": [2, 4, 6, 8, 10]
+  },
+  "expected_result": {
+    "dialogues": 64,
+    "correct": 56,
+    "accuracy": 0.875,
+    "opening_turns": {
+      "2": { "eligible": 64, "correct": 50 },
+      "4": { "eligible": 64, "correct": 49 },
+      "6": { "eligible": 64, "correct": 51 },
+      "8": { "eligible": 64, "correct": 54 },
+      "10": { "eligible": 64, "correct": 53 }
+    }
+  }
+}

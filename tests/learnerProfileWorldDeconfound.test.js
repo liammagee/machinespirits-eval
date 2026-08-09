@@ -7,21 +7,42 @@ import {
   validateLearnerProfileWorldDeconfoundDesign,
 } from '../scripts/review-learner-profile-world-deconfound.js';
 
-test('learner-profile world deconfound freezes two adjudicated crossed cells without authorizing calls', () => {
+test('learner-profile world deconfound freezes one prospective balanced 2x2 without authorizing calls', () => {
   const design = readLearnerProfileWorldDeconfoundDesign();
   const report = validateLearnerProfileWorldDeconfoundDesign(design);
 
-  assert.equal(report.dialogues, 10);
-  assert.equal(report.status, 'adjudicated');
+  assert.equal(report.dialogues, 20);
+  assert.equal(report.status, 'prospective_balanced_delivery_verified');
   assert.equal(report.userAdjudication, 'approved');
   assert.equal(report.adjudicatedOn, '2026-08-09');
   assert.equal(report.thirdPersona, 'omit');
+  assert.equal(report.scopeAmendment, 'approved_for_design');
+  assert.equal(report.deliveryVerification, 'verified');
   assert.equal(report.paidAuthorization, 'not_authorized');
   assert.deepEqual(report.recoveryInstrument, {
     pressure: 'config/manner-trigger/v4.json',
     quietVersion: 'qd-v1',
-    status: 'restore_exact_before_certificate',
+    replayManifest: 'config/learner-profile-recovery-l1.json',
+    quietArtifact: 'services/tutorStubQuietDetectorV1.js',
+    status: 'restored_exact_prospective_rebaseline',
   });
+  assert.deepEqual(
+    report.cells.map(({ id, persona, world }) => ({ id, persona, world })),
+    [
+      {
+        id: 'record_keeper_in_alder',
+        persona: 'record_keeper',
+        world: 'world_033_alder_row_redoubt',
+      },
+      {
+        id: 'record_keeper_in_rowan',
+        persona: 'record_keeper',
+        world: 'world_030_rowan_flat',
+      },
+      { id: 'tenant_in_rowan', persona: 'tenant', world: 'world_030_rowan_flat' },
+      { id: 'tenant_in_alder', persona: 'tenant', world: 'world_033_alder_row_redoubt' },
+    ],
+  );
   assert.deepEqual(
     report.personas.map(({ id, sourceWorld, targetWorld }) => ({ id, sourceWorld, targetWorld })),
     [
@@ -48,8 +69,11 @@ test('learner-profile world deconfound review exposes the approved design and re
   assert.match(markdown, /tenant: world_030_rowan_flat → world_033_alder_row_redoubt/u);
   assert.match(markdown, /Adjudicated: \*\*approved\*\* on 2026-08-09/u);
   assert.match(markdown, /Third persona: \*\*omit\*\*/u);
-  assert.match(markdown, /reproduce the original 56\/64 reading before certification/u);
-  assert.match(markdown, /Separately authorize the ten paid dialogues/u);
+  assert.match(markdown, /20 new dialogues/u);
+  assert.match(markdown, /no historical dialogue is pooled/u);
+  assert.match(markdown, /historical motivation only/u);
+  assert.match(markdown, /clean main SHA/u);
+  assert.match(markdown, /separately authorize the twenty paid dialogues/iu);
   assert.doesNotMatch(markdown, /Accept or revise/u);
   assert.doesNotMatch(markdown, /paid authorization: \*\*authorized\*\*/iu);
 });
@@ -69,7 +93,7 @@ test('learner-profile world deconfound rejects changed cost or premature authori
   changedCost.paid_design.cells[0].repeats = 6;
   assert.throws(
     () => validateLearnerProfileWorldDeconfoundDesign(changedCost),
-    /record_keeper_in_rowan must remain at five dialogues/u,
+    /record_keeper_in_alder must remain at five dialogues/u,
   );
 
   const authorized = structuredClone(readLearnerProfileWorldDeconfoundDesign());
