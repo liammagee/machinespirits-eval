@@ -26,6 +26,7 @@ export const TUTOR_STUB_FIRST_DRAFT_CAMPAIGN_SCHEMA = 'machinespirits.tutor-stub
 const CAMPAIGN_REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const V_SERIES_FIXTURE_SCHEMA = 'machinespirits.tutor-stub.v-series-source-fixtures.v1';
 const DEFAULT_V_SERIES_FIXTURE_ROOT = path.join(CAMPAIGN_REPO_ROOT, 'tests', 'fixtures', 'tutor-stub-first-draft');
+const worldFileCache = new Map();
 
 export function aggregateTutorStubFirstDraftCampaignTokenUsage(cells = []) {
   const completed = (Array.isArray(cells) ? cells : [])
@@ -163,6 +164,20 @@ function sha256File(filePath) {
   return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
 }
 
+function fileSignature(filePath) {
+  const stats = fs.statSync(filePath, { bigint: true });
+  return [stats.dev, stats.ino, stats.size, stats.mtimeNs, stats.ctimeNs].join(':');
+}
+
+function cachedWorld(filePath) {
+  const signature = fileSignature(filePath);
+  const cached = worldFileCache.get(filePath);
+  if (cached?.signature === signature) return cached.world;
+  const world = loadWorld(filePath);
+  worldFileCache.set(filePath, { signature, world });
+  return world;
+}
+
 function vSeriesFixtureRoot() {
   const configured = String(process.env.TUTOR_STUB_V_SERIES_FIXTURE_ROOT || '').trim();
   return configured ? path.resolve(configured) : DEFAULT_V_SERIES_FIXTURE_ROOT;
@@ -273,11 +288,11 @@ function worldForFrozenBundle(root, worldId) {
     .readdirSync(worldDir)
     .filter((name) => /^world-.*\.yaml$/u.test(name))
     .map((name) => path.join(worldDir, name));
-  const matches = candidates.filter((file) => loadWorld(file).id === worldId);
+  const matches = candidates.map((file) => cachedWorld(file)).filter((world) => world.id === worldId);
   if (matches.length !== 1) {
     throw new Error(`expected exactly one world file for ${worldId}, found ${matches.length}`);
   }
-  return loadWorld(matches[0]);
+  return structuredClone(matches[0]);
 }
 
 function refreshedCampaignBundle({ root, trace, bundle = null, turn, sourceAccessibilityPolicy = 'direct_only' }) {
