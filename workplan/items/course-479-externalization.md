@@ -53,3 +53,13 @@ and per-stage streaming come free. Added `tests/tutorCoreSeamGuard.test.js`
 so the one-way rule now fails a build instead of a code review. Next: freeze
 the course-479 stance profiles so tutor-core loads them without the eval
 repo's prompt loader.
+
+2026-08-09 Claude: Profile set FROZEN. 12 profiles (`course479_<stance>_<critic>`,
+4 stances x off/advisory/adversarial) added to tutor-core's bundled config;
+the one drifted prompt (placebo ego — hardcoded lecture IDs vs placeholders)
+synced from the authoritative `prompts/`. Standalone sweep in the scratch copy
+passed 12/12: right stance text reaches the model, critic runs only when
+configured, advocate/advisory and adversary/adversarial prompts land as
+claimed. Pinned by `tests/course479ProfileSet.test.js` (wiring + anti-drift
+vs `prompts/`). Model names are aliases; the deploy overlay must pin Sonnet 5
+(bundled alias still says 4.5). Next: concept presets + reference transcripts.
