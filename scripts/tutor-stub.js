@@ -110,6 +110,7 @@ const STUB = {
   autoLearnerProfile: process.env.TUTOR_STUB_AUTO_LEARNER_PROFILE || 'diligent',
   mixedLearner: process.env.TUTOR_STUB_MIXED_LEARNER === '1',
   turnFeedback: process.env.TUTOR_STUB_TURN_FEEDBACK !== '0',
+  guardFindingsFeedForward: process.env.TUTOR_STUB_GUARD_FINDINGS_FEED_FORWARD === '1',
   responseDetails: process.env.TUTOR_STUB_RESPONSE_DETAILS !== '0',
   voiceModel: process.env.TUTOR_STUB_VOICE_MODEL || DEFAULT_TUTOR_STUB_VOICE_MODEL,
   voiceName: process.env.TUTOR_STUB_VOICE_NAME || DEFAULT_TUTOR_STUB_VOICE_NAME,

@@ -1,21 +1,20 @@
 ---
 id: guard-findings-feed-forward
 title: Feed guard findings into the next turn's request instead of redrafting this one
-status: triaged
+status: active
 type: research
 priority: P3
-owner: claude
+owner: codex
 source: manual
 created: 2026-08-06
-updated: 2026-08-07
-verification: >-
-  UNGATED but demoted — the flip landed and already delivered the subtractive
-  half, so only the additive half is left to test. Run when there is spare
-  quota and no better claim in the queue: an instrumented run where each tutor
-  request carries the previous turn's findings as one line each, against a
-  control without the lines. Readout: finding recurrence turn over turn, and
-  the quality instruments per condition. The retry ladder stays for contract
-  findings only.
+updated: 2026-08-09
+verification: "UNGATED but demoted — the flip landed and already delivered the
+  subtractive half, so only the additive half is left to test. Run when there is
+  spare quota and no better claim in the queue: an instrumented run where each
+  tutor request carries the previous turn's findings as one line each, against a
+  control without the lines. Readout: finding recurrence turn over turn, and the
+  quality instruments per condition. The retry ladder stays for contract
+  findings only."
 claim_status: planned
 links:
   code:
@@ -27,6 +26,7 @@ links:
 tags:
   - tutor-stub
   - guards
+branch: codex/guard-findings-feed-forward
 ---
 
 ## The idea
@@ -52,6 +52,30 @@ one instrumented pair; no new machinery beyond assembling lines the traces
 already carry.
 
 ## Log
+
+- 2026-08-09 — implementation and prospective pilot frozen on
+  `codex/guard-findings-feed-forward`. The opt-in treatment now projects only
+  the previous delivered turn's *effective advisory* findings into short,
+  public-safe behavioral lines on the next tutor request. Hard findings,
+  report-only findings, raw audit reasons, premise ids, and hidden evidence are
+  excluded. The prompt says explicitly that current public evidence and the
+  current turn contract outrank stale observations; the same-turn contract
+  repair ladder is unchanged. Every turn records whether the treatment was
+  enabled, applied, and which normalized findings it carried.
+
+  The bounded A1 feasibility screen is frozen before spend: Rowan Flat only;
+  `false_memory` and `low_agency`; feed-forward against an explicit off
+  control; three seed-paired repeats per profile/arm (12 dialogues); 12 turns
+  and one attempt per job; `codex.gpt-5.6-luna` for every model-backed role;
+  Qwen committee and light adaptation off; `shadow_advisory` guard policy.
+  Primary readout is same-key finding recurrence on the immediately following
+  delivered tutor turn. New findings, findings per turn, original-draft and
+  deterministic-fallback shares, grounded closure, and mean turns are
+  guardrails. This is descriptive feasibility evidence, not a treatment-effect
+  claim or a default flip. The hard ceiling is 720 model calls (12 jobs × the
+  per-job 60-call admission budget), with no reruns. A clean-source certificate
+  and four-cell zero-model delivery check must pass before launch, and the paid
+  external payload boundary still requires explicit user authorization.
 
 - 2026-08-06 — filed from the retry analysis. Waits for the default flip; no
   code changed.

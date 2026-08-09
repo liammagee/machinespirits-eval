@@ -62,6 +62,7 @@ const STUB = {
   temperature: 0.35,
   maxTokens: 2000,
   historyTurns: 4,
+  guardFindingsFeedForward: false,
 };
 
 test('CLI argument facade preserves explicit values, positionals, and semantic defaults', () => {
@@ -76,7 +77,18 @@ test('CLI argument facade preserves explicit values, positionals, and semantic d
   assert.equal(parsed.values.committee, true);
   assert.equal(parsed.values.model, 'codex.tutor');
   assert.equal(parsed.values['auto-turns'], 'until-grounded');
+  assert.equal(parsed.values['guard-findings-feed-forward'], false);
   assert.deepEqual(parsed.positionals, ['hello']);
+});
+
+test('CLI argument facade exposes an explicit guard-findings treatment switch', () => {
+  const enabled = parseTutorStubCliArguments({
+    argv: ['--guard-findings-feed-forward'],
+    env: {},
+    stub: STUB,
+    committeeDefaults: { miniModel: 'ollama.mini', ollamaUrl: 'http://localhost:11434' },
+  });
+  assert.equal(enabled.values['guard-findings-feed-forward'], true);
 });
 
 test('launch facade applies a default lab without overriding an explicit CLI option', () => {

@@ -20,6 +20,8 @@ export function parseTutorStubCliArguments({
       passthrough: { type: 'boolean', default: false },
       // Record the two contract-free audits without enforcing them.
       'observe-audits': { type: 'boolean', default: false },
+      'guard-findings-feed-forward': { type: 'boolean', default: stub.guardFindingsFeedForward },
+      'no-guard-findings-feed-forward': { type: 'boolean', default: false },
       'tutor-learner-dag': { type: 'boolean', default: false },
       'learner-record-model': { type: 'string', default: stub.learnerRecordModel },
       'learner-analysis-prompt-profile': { type: 'string', default: stub.learnerAnalysisPromptProfile },

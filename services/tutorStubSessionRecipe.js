@@ -79,6 +79,7 @@ export const TUTOR_STUB_RECIPE_OPTION_KEYS = Object.freeze([
   'opening-realizer',
   'no-closeout-report',
   'no-turn-feedback',
+  'guard-findings-feed-forward',
   'voice',
   'voice-model',
   'voice-name',

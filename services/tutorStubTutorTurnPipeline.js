@@ -10,6 +10,7 @@ import { TUTOR_STUB_AB_GENERIC_PLAN } from './tutorStubAbArms.js';
 export { TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS } from './tutorStubTutorTurnPreparation.js';
 
 export function createTutorStubTutorTurnPipeline(dependencies = {}) {
+  const guardFindingsFeedForward = dependencies.guardFindingsFeedForward === true;
   // Opt-in experiment (2026-07-30): style guards fail open. When true,
   // actorial part/tactic misses are advisory for every draft, so the model's
   // own reply ships unless a content or safety guard rejects it. Leak,
@@ -58,6 +59,7 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
     buildTutorGuardAccounting,
     buildTutorStubDramaticReleaseFrame,
     buildTutorStubFirstDraftContract,
+    buildTutorStubGuardFindingsFeedForward,
     buildTutorStubResponseCompositionFrame,
     buildTutorStubSimplifiedRecoveryConfiguration,
     callAI,
@@ -249,6 +251,7 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
     auditTutorStubSpeakerPrivilege,
     buildTutorStubDramaticReleaseFrame,
     buildTutorStubFirstDraftContract,
+    buildTutorStubGuardFindingsFeedForward,
     buildTutorStubResponseCompositionFrame,
     classifierTutorContext,
     committedReleaseRows,
@@ -328,6 +331,7 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
       effectiveSpeakerUserPrompt,
       firstDraftHumanDiscourseAdvisory,
       firstDraftContract,
+      guardFindingsFeedForwardEnvelope,
       instructionalMetaRepair,
       instructionalMetaRestatementAdvisory,
       learnerPrompt,
@@ -348,6 +352,7 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
       dag,
       dialogueClosureFrame,
       feedbackAdaptationPlan,
+      guardFindingsFeedForward,
       history,
       humanDiscourseFrame,
       learnerMessages,
@@ -362,6 +367,12 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
       tutorLearnerDagModel,
       world,
     });
+    const withGuardFindingsFeedForward = (response) => {
+      if (response && typeof response === 'object') {
+        response.guardFindingsFeedForward = jsonClone(guardFindingsFeedForwardEnvelope);
+      }
+      return response;
+    };
     const leakGuardEnabled = Boolean(!passthrough && dag && world);
     const scaffoldGuardEnabled = Boolean(!passthrough && humanDiscourseFrame?.generousInference?.applied);
     const questionSupportGuardEnabled = Boolean(!passthrough && humanDiscourseFrame?.questionSupport?.guardRequired);
@@ -516,22 +527,24 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
 
       if (passthrough) {
         response.passthrough = true;
-        return response;
+        return withGuardFindingsFeedForward(response);
       }
       if (!responseGuardEnabled) {
         attempts.push(tutorGuardAttemptEnvelope({ kind: 'original_candidate', attempt: 0, response }));
-        return attachTutorGuardAccounting({
-          response,
-          state,
-          trace,
-          tutorTurn,
-          role: roleBase,
-          guards,
-          attempts,
-          repairsApplied,
-          finalSource: 'original_candidate',
-          outcome: 'unguarded_original',
-        });
+        return withGuardFindingsFeedForward(
+          attachTutorGuardAccounting({
+            response,
+            state,
+            trace,
+            tutorTurn,
+            role: roleBase,
+            guards,
+            attempts,
+            repairsApplied,
+            finalSource: 'original_candidate',
+            outcome: 'unguarded_original',
+          }),
+        );
       }
 
       const learnerRequestedPlainStyle = tutorStubLearnerRequestedPlainStyle(learnerText, classification);
@@ -558,19 +571,21 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
         if (response.bufferedStream) {
           response.guardedStreamReplay = true;
         }
-        return attachTutorGuardAccounting({
-          response,
-          state,
-          trace,
-          tutorTurn,
-          role: roleBase,
-          guards,
-          attempts,
-          repairsApplied,
-          finalSource: 'original_candidate',
-          finalAudits: audits,
-          outcome: audits.ok ? 'guarded_original_accepted' : 'guarded_original_accepted_with_advisory',
-        });
+        return withGuardFindingsFeedForward(
+          attachTutorGuardAccounting({
+            response,
+            state,
+            trace,
+            tutorTurn,
+            role: roleBase,
+            guards,
+            attempts,
+            repairsApplied,
+            finalSource: 'original_candidate',
+            finalAudits: audits,
+            outcome: audits.ok ? 'guarded_original_accepted' : 'guarded_original_accepted_with_advisory',
+          }),
+        );
       }
 
       const repairResult = await runTutorRepairLadder({
@@ -613,48 +628,50 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
         dramaticReleaseFrame,
       });
       if (repairResult.accepted) {
-        return repairResult.response;
+        return withGuardFindingsFeedForward(repairResult.response);
       }
       response = repairResult.response;
       audits = repairResult.audits;
       const { firstRepairUptake, simplifiedRecoveryConfiguration } = repairResult;
 
-      return runTutorTerminalDelivery({
-        response,
-        audits,
-        attempts,
-        repairsApplied,
-        firstRepairUptake,
-        simplifiedRecoveryConfiguration,
-        auditTutorDraft,
-        attachTutorDraftAudits,
-        withTutorDeliveryDecision,
-        preservableTutorUptake,
-        ensureFallbackComposition,
-        roleBase,
-        state,
-        trace,
-        tutorTurn,
-        guards,
-        canStreamTutor,
-        dramaticReleaseFrame,
-        closureGuardEnabled,
-        dialogueClosureFrame,
-        humanDiscourseFrame,
-        world,
-        learnerText,
-        recentTutorTexts,
-        firstDraftContract,
-        classification,
-        responseCompositionFrame,
-        questionSupportGuardEnabled,
-        actorialRealizationGuardEnabled,
-        instructionalMetaRepair,
-        dramaticReleaseGuardEnabled,
-        scaffoldGuardEnabled,
-        resolved,
-        cliEffort,
-      });
+      return withGuardFindingsFeedForward(
+        await runTutorTerminalDelivery({
+          response,
+          audits,
+          attempts,
+          repairsApplied,
+          firstRepairUptake,
+          simplifiedRecoveryConfiguration,
+          auditTutorDraft,
+          attachTutorDraftAudits,
+          withTutorDeliveryDecision,
+          preservableTutorUptake,
+          ensureFallbackComposition,
+          roleBase,
+          state,
+          trace,
+          tutorTurn,
+          guards,
+          canStreamTutor,
+          dramaticReleaseFrame,
+          closureGuardEnabled,
+          dialogueClosureFrame,
+          humanDiscourseFrame,
+          world,
+          learnerText,
+          recentTutorTexts,
+          firstDraftContract,
+          classification,
+          responseCompositionFrame,
+          questionSupportGuardEnabled,
+          actorialRealizationGuardEnabled,
+          instructionalMetaRepair,
+          dramaticReleaseGuardEnabled,
+          scaffoldGuardEnabled,
+          resolved,
+          cliEffort,
+        }),
+      );
     } catch (err) {
       appendTraceEvent(trace, {
         type: err?.name === 'AbortError' ? 'model_call_aborted' : 'model_call_error',
