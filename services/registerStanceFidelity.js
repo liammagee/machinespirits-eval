@@ -1,7 +1,13 @@
 import { getEngagementRegisterDefinition, resolveEngagementRegister } from './engagementRegisterRegistry.js';
 import { normalizeMannerPresenceReading } from './registerMannerPresence.js';
 
-const NEGATIVE_REGISTER_NAMES = new Set(['ironic', 'sarcastic', 'face_threat', 'sarcastic_determinate']);
+const NEGATIVE_REGISTER_NAMES = new Set([
+  'ironic',
+  'sarcastic',
+  'face_threat',
+  'sarcastic_determinate',
+  'sarcastic_mock_praise',
+]);
 
 // Identifies the scoring function that produced a stance verdict. Every verdict
 // carries it, because the component weights and the label rule differ BY
@@ -75,6 +81,16 @@ const STANCE_GATE_COMPONENTS = Object.freeze({
   sarcastic: PLAIN_GATE_COMPONENTS,
   face_threat: PLAIN_GATE_COMPONENTS,
   sarcastic_determinate: DETERMINATE_GATE_COMPONENTS,
+  // The mock-praise variant reuses the plain parts unchanged. Its whole
+  // manipulation is in the registry — a contract that asks for the withdrawn
+  // compliment, and a cue family with the two non-praise entries removed — so
+  // `cue_compliance` here reads a shorter list and nothing else moves. That
+  // makes the part mean something different from the plain gate's, which is
+  // why a pass count must not be differenced across the two registers; the
+  // comparable measure is `mannerPresence`, which a reader answers off the turn
+  // and not off any list. Adding this key changes no weight, no cut-point and
+  // no label rule for any existing register, so STANCE_GATE_VERSION stands.
+  sarcastic_mock_praise: PLAIN_GATE_COMPONENTS,
 });
 
 /** The parts a gate scores, in report order. Empty for non-negative registers. */

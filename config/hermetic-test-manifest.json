@@ -399,6 +399,7 @@
         "tests/registerLearnerTurnProbe.test.js",
         "tests/registerMannerPresence.test.js",
         "tests/registerMannerPresenceReader.test.js",
+        "tests/registerMockPraiseProbe.test.js",
         "tests/registerRouter.test.js",
         "tests/registerStanceFidelity.test.js",
         "tests/registerStrongStackReplication.test.js",

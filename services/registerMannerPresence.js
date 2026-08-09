@@ -40,7 +40,24 @@ export const MANNER_PRESENCE_PROMPT_VERSION = 'manner-presence/1.0';
 
 // The registers the merged question covers. `face_threat` is deliberately
 // absent; see the note at the top of this file.
-export const EDGED_MANNER_REGISTERS = Object.freeze(['ironic', 'sarcastic', 'sarcastic_determinate']);
+//
+// `sarcastic_mock_praise` is covered, and adding it does not bump the prompt
+// version: the question, the gloss and the answer contract are the same
+// strings, so a reading taken on that arm may be pooled with one taken on the
+// plain sarcastic arm. That pooling is the point — the whole comparison is one
+// reader answering one question about two arms.
+//
+// Worth saying plainly, because it bounds what that arm can show. The gloss's
+// first named example is a reply that "praises what it is faulting", and the
+// mock-praise register asks the tutor for exactly that move. So a rise on that
+// arm says the reader can be satisfied on request; it does not say the turn
+// taught better. The tutor rubric is carried alongside for that reason.
+export const EDGED_MANNER_REGISTERS = Object.freeze([
+  'ironic',
+  'sarcastic',
+  'sarcastic_determinate',
+  'sarcastic_mock_praise',
+]);
 
 const EDGED_SET = new Set(EDGED_MANNER_REGISTERS);
 

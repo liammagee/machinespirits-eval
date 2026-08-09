@@ -20,10 +20,18 @@ test('asks about the merged edged manner and covers exactly the registers the re
   // Both blind readers put the same ten ironic-or-sarcastic turns inside the
   // merged category, 10/10 with no false alarm, and neither could split it
   // (§6.7). Face threat is the one they diverged on, so it is not asked.
-  assert.deepEqual([...EDGED_MANNER_REGISTERS].sort(), ['ironic', 'sarcastic', 'sarcastic_determinate']);
+  // sarcastic_mock_praise is a sarcastic variant asked for the same merged
+  // manner; it joins the list without a question bump so readings pool.
+  assert.deepEqual([...EDGED_MANNER_REGISTERS].sort(), [
+    'ironic',
+    'sarcastic',
+    'sarcastic_determinate',
+    'sarcastic_mock_praise',
+  ]);
   assert.equal(mannerPresenceApplies('ironic'), true);
   assert.equal(mannerPresenceApplies('sarcastic_challenge'), true);
   assert.equal(mannerPresenceApplies('sarcastic_determinate'), true);
+  assert.equal(mannerPresenceApplies('sarcastic_mock_praise_challenge'), true);
   assert.equal(mannerPresenceApplies('face_threat_challenge'), false);
   assert.equal(mannerPresenceApplies('warm'), false);
 });
