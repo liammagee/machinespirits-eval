@@ -298,6 +298,19 @@ function runInteractiveModelSwitchSequence({ tmp, timeoutMs = 12_000, changeMode
   });
 }
 
+// An interactive run can still be flushing a trace file for a moment after the
+// child closes, so a bare rmSync races it and throws ENOTEMPTY. Retry first. If
+// the directory still will not go, warn and carry on rather than throw: this is
+// called from `finally`, where a cleanup error replaces the test's own failure
+// with a misleading one, and a leftover temp dir is the lesser problem.
+function removeTempDir(dir) {
+  try {
+    fs.rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 });
+  } catch (error) {
+    process.emitWarning(`left ${dir} behind: ${error.code || error.message}`);
+  }
+}
+
 export {
   assert,
   spawn,
@@ -313,6 +326,7 @@ export {
   CONCURRENT_PTY_TIMEOUT_MS,
   CONCURRENT_PTY_TEST_TIMEOUT_MS,
   plainTerminalText,
+  removeTempDir,
   readTutorStubTraceEvents,
   installFakeCodex,
   runInteractive,
