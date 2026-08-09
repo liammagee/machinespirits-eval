@@ -429,6 +429,46 @@ describe('runIdDirectedTurn', () => {
     assert.match(idCall.arguments[2][0].content, /<recognition_desire>\s*true/);
   });
 
+  test('cell-scoped router menu reaches the router trace and the id prompt', async () => {
+    fakeProfile.factors = {
+      engagement_mode_router: true,
+      router_register_menu: ['ironic', 'sarcastic'],
+    };
+    queuedResponses.push(
+      {
+        content: JSON.stringify({
+          generated_prompt: 'Use one dry reversal on the weak formula, then hand back one concrete repair. ' + 'A '.repeat(60),
+          persona_delta: 'from warm challenge to dry resistance interruption',
+        }),
+        usage: { inputTokens: 0, outputTokens: 0 },
+      },
+      { content: 'Wonderful formula. Now test the premise it conveniently skips.', usage: { inputTokens: 0, outputTokens: 0 } },
+    );
+
+    const result = await runIdDirectedTurn({
+      learnerId: 'l',
+      sessionId: 's',
+      learnerMessage: 'This is boring. I can repeat the formula, but none of it feels alive.',
+      history: [{ role: 'tutor', content: 'Here is the sequence step by step.' }],
+      tutorProfileName: 'cell_204_test',
+      topic: 'Lecture 3 on recognition',
+      llmCall: llmCallSpy,
+      trace,
+    });
+
+    const routerEntry = result.internalDeliberation[0];
+    assert.equal(routerEntry.role, 'engagement_router');
+    assert.equal(routerEntry.state.selected_register, 'sarcastic');
+    assert.equal(routerEntry.state.router_selected_register, 'sarcastic');
+    assert.ok(routerEntry.state.router_register_menu.includes('ironic'));
+    assert.ok(routerEntry.state.router_register_menu.includes('sarcastic'));
+    assert.ok(!routerEntry.state.router_register_menu.includes('face_threat'));
+
+    const idCall = llmCallSpy.mock.calls[0];
+    assert.match(idCall.arguments[2][0].content, /"router_register_menu"/u);
+    assert.match(idCall.arguments[2][0].content, /"selected_register": "sarcastic"/u);
+  });
+
   test('agency_return factor flows from profile into id user message', async () => {
     fakeProfile.factors = { recognition_desire: true, agency_return: true };
     queuedResponses.push(

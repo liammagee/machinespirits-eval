@@ -1083,6 +1083,8 @@ export async function runIdDirectedTurn({
   const engagementRegisterArm = normalizeEngagementRegisterArm(
     profile?.factors?.engagement_register_arm || profile?.engagement_register_arm,
   );
+  const routerRegisterMenu =
+    profile?.factors?.router_register_menu || profile?.router_register_menu || [];
   const idOutputContract = normalizeIdOutputContract(
     profile?.factors?.id_output_contract || profile?.id_output_contract,
   );
@@ -1140,6 +1142,7 @@ export async function runIdDirectedTurn({
         recentHistory: conversationContext,
         curriculumContext: topic,
         modeHistory: extractEngagementModeHistory(trace),
+        routerRegisterMenu,
       })
     : null;
   const engagementState = applyEngagementRegisterArm(routedEngagementState, engagementRegisterArm);
@@ -1829,6 +1832,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   const engagementModeRouter = evalCellProfile.factors?.engagement_mode_router === true;
   const actionContracts = evalCellProfile.factors?.action_contracts === true;
   const engagementRegisterArm = normalizeEngagementRegisterArm(evalCellProfile.factors?.engagement_register_arm);
+  const routerRegisterMenu = evalCellProfile.factors?.router_register_menu || [];
   const agencyReturnCharismaFloorMode = normalizeAgencyReturnCharismaFloorMode(
     evalCellProfile.factors?.agency_return_charisma_floor_mode,
   );
@@ -1869,6 +1873,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
         recentHistory: historyExcerpt,
         curriculumContext,
         modeHistory: engagementModeHistory || extractEngagementModeHistory(consolidatedTrace),
+        routerRegisterMenu,
       })
     : null;
   const engagementState = applyEngagementRegisterArm(routedEngagementState, engagementRegisterArm);
@@ -2304,6 +2309,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       agencyReturnVerification: agencyVerification,
       engagementModeRouter,
       engagementRegisterArm,
+      routerRegisterMenu,
       engagementState,
       // `generated_prompt` here is what the tutor actually received, manner
       // block and all — not the id-director's raw output. Every reader of the

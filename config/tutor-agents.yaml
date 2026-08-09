@@ -7228,6 +7228,115 @@ profiles:
         temperature: 0.5
         max_tokens: 16000
 
+  # Cell 197's resistance-router block without a register pin. The normal
+  # router menu is widened for this cell only: ironic and sarcastic may be
+  # selected on the registered resistance signals, while every other cell still
+  # obeys router_selectable in engagement-registers.yaml. The strong stack is
+  # also the cell default, so an omitted override cannot silently buy a weak run.
+  cell_204_id_director_adaptive_edged_register_switching:
+    description: "Id-Director (cell 204): cell 197's resistance-router block with no register pin and a cell-scoped menu admitting ironic and sarcastic. Stage-1 adaptive register-switching arm; the router chooses edge only on registered resistance signals and records its menu and choice per turn."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      router_register_menu:
+        - ironic
+        - sarcastic
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      engagement_router_resistance_generation_repair: true
+      engagement_router_resistance_commitment_probe: true
+      engagement_router_resistance_boredom_stake: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: codex
+      model: gpt-5.5
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: codex
+      model: gpt-5.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  # The never-edged control for cell 204. It is the same resistance-router
+  # block and strong stack, but carries no router_register_menu widening and no
+  # register pin, so the ordinary positive/warm router menu remains in force.
+  cell_205_id_director_router_warm_register_control:
+    description: "Id-Director (cell 205): cell 204's no-pin resistance-router control with the ordinary router menu. Edged registers remain excluded by router_selectable, providing the never-edged policy comparator."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      recognition_desire: true
+      agency_return: true
+      agency_return_verifier: true
+      agency_return_verifier_mode: warmth_preserving
+      agency_return_charisma_floor: true
+      agency_return_charisma_floor_mode: accountable_bid_clean
+      engagement_mode_router: true
+      id_output_contract: strict_compact_json
+      engagement_router_charisma_repair: true
+      engagement_router_split_repair: true
+      engagement_router_transfer_compression_repair: true
+      engagement_router_resistance_tuning: true
+      engagement_router_resistance_owned_test: true
+      engagement_router_resistance_generation_repair: true
+      engagement_router_resistance_commitment_probe: true
+      engagement_router_resistance_boredom_stake: true
+      agency_return_premature_certainty_guard: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: codex
+      model: gpt-5.5
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: codex
+      model: gpt-5.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
   cell_201_adaptive_strategy_refusal:
     description: "Exploration 5 cross-stack transfer: cell_110 state-policy adaptive tutor plus one bounded defend-or-switch refusal when a delivered policy repeats immediately after a recorded learner trap signal. The gate reads runtime trigger/action history only, never expected_strategy_shift."
     runner: adaptive
