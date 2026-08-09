@@ -10,6 +10,7 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
     currentReleaseRows,
     getEngagementStanceDefinition,
     getRegisterOntologyVersion,
+    finalizeTutorStubEdgeTimingDecision,
     preferredLegacyRegister,
     registerTemperatureApplies,
     resolveEngagementStance,
@@ -138,6 +139,7 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
         state,
         classification,
         tutorLearnerDag,
+        learnerText,
       });
     }
     const comprehensionPressure = Number(
@@ -574,6 +576,10 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
       trajectory_policy: source.trajectory_policy || null,
       dynamical_system_policy: source.dynamical_system_policy || null,
       continuous_register_policy: source.continuous_register_policy || null,
+      edge_timing: finalizeTutorStubEdgeTimingDecision(source.edge_timing, {
+        finalRegister: selected,
+        finalSource: source.source,
+      }),
       response_configuration: responseConfiguration,
       light_adaptation: responseConfiguration.light_adaptation,
       state_policy: source.state_policy || null,

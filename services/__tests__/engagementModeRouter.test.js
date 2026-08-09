@@ -6,6 +6,7 @@ import {
   extractEngagementModeHistory,
   extractEngagementRegisterHistory,
   routeEngagementMode,
+  selectResistanceRegister,
 } from '../engagementModeRouter.js';
 import { getEngagementRegisterDefinition, getEngagementRegisterNames } from '../engagementRegisterRegistry.js';
 
@@ -31,6 +32,50 @@ describe('routeEngagementMode', () => {
     });
     assert.equal(routed.selected_register, 'charismatic');
     assert.equal(routed.legacy_selected_register, 'charismatic_challenge');
+  });
+
+  test('a cell-scoped menu admits named edged registers without changing the global default', () => {
+    const defaultMenu = getEngagementRegisterNames({ includeArmAssigned: false });
+    const widenedMenu = getEngagementRegisterNames({
+      includeArmAssigned: false,
+      routerRegisterMenu: ['ironic_challenge', 'sarcastic'],
+    });
+
+    assert.ok(!defaultMenu.includes('ironic'));
+    assert.ok(!defaultMenu.includes('sarcastic'));
+    assert.ok(widenedMenu.includes('ironic'));
+    assert.ok(widenedMenu.includes('sarcastic'));
+    assert.throws(
+      () => getEngagementRegisterNames({ includeArmAssigned: false, routerRegisterMenu: ['not-a-register'] }),
+      /unknown engagement register/u,
+    );
+  });
+
+  test('the widened menu selects edged registers only for their registered resistance signals', () => {
+    const menu = getEngagementRegisterNames({
+      includeArmAssigned: false,
+      routerRegisterMenu: ['ironic', 'sarcastic'],
+    });
+    assert.equal(selectResistanceRegister('boredom', menu), 'sarcastic');
+    assert.equal(selectResistanceRegister('rote_parroting', menu), 'sarcastic');
+    assert.equal(selectResistanceRegister('irrelevance', menu), 'ironic');
+    assert.equal(selectResistanceRegister('question_flood', menu), 'ironic');
+    assert.equal(selectResistanceRegister('frustration', menu), 'charismatic');
+  });
+
+  test('router output records the complete per-turn menu and the register chosen from it', () => {
+    const routed = routeEngagementMode({
+      learnerMessage: 'This is boring. I can repeat the formula, but none of it feels alive.',
+      registerHistory: ['scaffolding'],
+      routerRegisterMenu: ['ironic', 'sarcastic'],
+    });
+
+    assert.equal(routed.selected_register, 'sarcastic');
+    assert.equal(routed.router_selected_register, 'sarcastic');
+    assert.ok(routed.router_register_menu.includes('charismatic'));
+    assert.ok(routed.router_register_menu.includes('ironic'));
+    assert.ok(routed.router_register_menu.includes('sarcastic'));
+    assert.ok(!routed.router_register_menu.includes('face_threat'));
   });
 
   test('negative registers declare visible stance-fidelity cues', () => {

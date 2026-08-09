@@ -35,7 +35,10 @@ import {
   buildTutorStubLearningSummary as buildDialogueLearningSummary,
   tutorStubDialogueCaseStatus as dialogueCaseStatus,
 } from './tutorStubLearningSummary.js';
-import { tutorStubResponseMetadataLine as metadataLine } from './tutorStubResponseDetails.js';
+import {
+  tutorStubResponseMetadataLine as metadataLine,
+  tutorStubResponseStyleTransitionLine as styleTransitionLine,
+} from './tutorStubResponseDetails.js';
 
 export function createTutorStubDebugReportRuntime({
   C,
@@ -57,6 +60,8 @@ export function createTutorStubDebugReportRuntime({
   function printResponseDetails(meta, state, { suffix = '' } = {}) {
     if (!state?.responseDetails?.enabled) return false;
     writeLine(`${C.dim}${metadataLine(meta)}${suffix}${C.reset}`);
+    const transitionLine = styleTransitionLine(meta);
+    if (transitionLine) writeLine(`${C.dim}${transitionLine}${C.reset}`);
     const timingLine = formatTutorStubTurnTiming(meta?.turnTiming);
     if (timingLine) writeLine(`${C.dim}${timingLine}${C.reset}`);
     writeLine('');

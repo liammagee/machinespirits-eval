@@ -12,11 +12,11 @@ import {
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-test('register-policy stack parses a primary plus ordered state/field overlays', () => {
-  assert.deepEqual(parseTutorStubRegisterPolicyStack('dynamical-system+state+field+state'), {
+test('register-policy stack parses a primary plus ordered state/field/edge-timing overlays', () => {
+  assert.deepEqual(parseTutorStubRegisterPolicyStack('dynamical-system+state+edge-timing+field+state'), {
     primary: 'dynamical_system',
-    overlays: ['state', 'field'],
-    id: 'dynamical_system+state+field',
+    overlays: ['state', 'edge_timing', 'field'],
+    id: 'dynamical_system+state+edge_timing+field',
   });
   assert.throws(() => parseTutorStubRegisterPolicyStack('negative+state'), /control negative cannot have overlays/u);
   assert.throws(
@@ -178,6 +178,29 @@ test('tutor-stub dry run exposes the composed policy and threshold', () => {
   assert.equal(config.registerSelection.overlayThreshold, 0.75);
 });
 
+test('tutor-stub dry run accepts the opt-in edge-timing policy overlay', () => {
+  const config = JSON.parse(
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--dry-run',
+        '--no-trace',
+        '--world',
+        'world_005_marrick',
+        '--dag',
+        '--tutor-learner-dag',
+        '--register-policy',
+        'field+edge-timing',
+      ],
+      { cwd: ROOT, encoding: 'utf8' },
+    ),
+  );
+
+  assert.equal(config.registerSelection.policy, 'field+edge_timing');
+  assert.deepEqual(config.registerSelection.overlayPolicies, ['edge_timing']);
+});
+
 test('interactive settings can add, remove, clear, and retune register overlays', () => {
   const result = spawnSync(
     process.execPath,
@@ -197,14 +220,15 @@ test('interactive settings can add, remove, clear, and retune register overlays'
       cwd: ROOT,
       encoding: 'utf8',
       input:
-        '/settings policy add state\n/settings policy add field\n/settings policy threshold 0.8\n/clear\n/settings\n/settings policy remove state\n/settings policy clear\n/quit\n',
+        '/settings policy add state\n/settings policy add field\n/settings policy add edge_timing\n/settings policy threshold 0.8\n/clear\n/settings\n/settings policy remove state\n/settings policy clear\n/quit\n',
     },
   );
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.match(result.stdout, /teaching approach dynamical_system\+state/u);
   assert.match(result.stdout, /teaching approach dynamical_system\+state\+field/u);
+  assert.match(result.stdout, /teaching approach dynamical_system\+state\+field\+edge_timing/u);
   assert.match(result.stdout, /override sensitivity 0\.8/u);
-  assert.match(result.stdout, /teaching approach dynamical_system\+field/u);
+  assert.match(result.stdout, /teaching approach dynamical_system\+field\+edge_timing/u);
   assert.match(result.stdout, /teaching approach dynamical_system; override sensitivity 0\.8/u);
 });

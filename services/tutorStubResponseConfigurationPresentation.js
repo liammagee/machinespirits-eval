@@ -94,6 +94,29 @@ export function projectTutorStubResponseConfigurationLines(presentation = {}, { 
     );
   }
   if (selection.register_reason) lines.push(`${C.dim}  reason: ${selection.register_reason}${C.reset}`);
+  if (selection.edge_timing?.phase && selection.edge_timing.phase !== 'other') {
+    const timing = selection.edge_timing;
+    lines.push(
+      `${C.dim}  edge timing: ${timing.previous_register || 'initial'} → ${
+        timing.final_selected_register ||
+        timing.selected_register ||
+        selection.engagement_stance ||
+        selection.selected_register
+      }; phase ${timing.phase}; signal ${timing.resistance_signal || 'none'}; ${
+        timing.edge_eligible
+          ? timing.activated === false
+            ? `edge candidate not applied (${timing.composition_winner || 'primary policy'} stayed in control)`
+            : 'edge eligible'
+          : `edge closed (${timing.edge_suppressed_reason || 'non-edged'})`
+      }${C.reset}`,
+    );
+    lines.push(`${C.dim}  edge timing menu: ${timing.router_register_menu?.join(', ') || 'none'}${C.reset}`);
+    if (timing.post_timing_override) {
+      lines.push(
+        `${C.dim}  post-timing guard: ${timing.post_timing_override.source} selected ${timing.post_timing_override.selected_register}${C.reset}`,
+      );
+    }
+  }
   if (selection.expected_dag_move) {
     lines.push(`${C.dim}  expected DAG move: ${selection.expected_dag_move}${C.reset}`);
   }
