@@ -78,12 +78,11 @@
  * success channel.
  */
 
-import { closure, entails, factKey, matchPattern, proofTree } from './chainer.js';
-import { normalizeDecayConfig, mulberry32 } from './corruption.js';
+import { closure, entails, factKey, matchPattern } from './chainer.js';
 import { DIDACTIC_ACT_FALLBACK_SCHEMA } from './didacticMode.js';
 import { buildLearnerCharacterArcView } from './characterDesire.js';
-import { buildWorldIR, projectWorldIRLogic } from './guardCompiler.js';
-import { deriveLearnerTransformationState, summarizeLearnerTransformationDurability } from './learnerTransformation.js';
+import { projectWorldIRLogic } from './guardCompiler.js';
+import { deriveLearnerTransformationState } from './learnerTransformation.js';
 import { buildLearnerDag, buildLearnerDagSnapshot } from './learnerDag.js';
 import { buildDynamicLearnerField } from './learnerField.js';
 import { proofDebtReport, tutorProofDebtView } from './proofDebt.js';
@@ -95,36 +94,36 @@ import {
   applyRecognitionNeedPolicy,
   detectPhaticRecognition,
   estimateRecognitionNeed,
-  normalizeSceneConfig,
   openScene,
   recommendSceneTempoBeat,
   sceneMeta,
   sceneView,
   updateScene,
 } from './rhetoricalMovePolicy.js';
-import { createRuntimeMonitor } from './runtimeMonitor.js';
 import { derivationDistance, detectStall } from './slope.js';
 import { deriveOpportunityCostBudget, nextOpportunityCostBudget, auditOpportunityCost } from './opportunityCost.js';
 import {
   blockTypeForExchange,
   buildMechanismHistoryEntry,
   ledgerRow,
-  normalizeStrategyLedgerConfig,
   openBlock,
   sceneStanceFidelity,
   updateBlockLedger,
 } from './strategyLedger.js';
 import {
-  buildLemmaDag,
   classifyRelease as classifyLemmaRelease,
   computeLemmaState,
-  normalizeLemmaConfig,
   renderLearnerLemmaLines,
   renderTutorLemmaLines,
   supportRemaining as lemmaSupportRemaining,
 } from './lemmaLayer.js';
-import { buildChainMap, buildRegionLexicons, classifyMessage } from './messageClassifier.js';
-import { decideRegister, normalizeRegisterRouterConfig, REGISTER_BLOCKS } from './registerRouter.js';
+import { classifyMessage } from './messageClassifier.js';
+import { decideRegister, REGISTER_BLOCKS } from './registerRouter.js';
+import { createDramaRunState, isPublicRegister } from './runState.js';
+import { createDramaStagePrologue, finalizeDramaRunLifecycle, resolveDramaTurnLimit } from './runLifecycle.js';
+import { buildDramaRunResult } from './runResult.js';
+
+export { normalizeActsConfig, normalizeDirectorCadence } from './runState.js';
 
 function renderFact(fact) {
   return fact.join(' ');
@@ -155,339 +154,85 @@ function learnerTransformationRow(state, turn, act, phase, extra = {}) {
   };
 }
 
-const ACTS_DEFAULTS = Object.freeze({
-  minActTurns: 3,
-  maxActTurns: 8,
-});
-
-const DIRECTOR_CADENCES = new Set(['turn', 'scene', 'release']);
-const PUBLIC_REGISTERS = new Set(['default', 'modern', 'period']);
-
-export function normalizeDirectorCadence(raw, { sceneMode = false } = {}) {
-  if (raw == null || raw === '') return sceneMode ? 'scene' : 'turn';
-  if (typeof raw !== 'string') {
-    throw new Error(`director cadence must be one of turn, scene, release (got ${JSON.stringify(raw)})`);
-  }
-  const cadence = raw.trim().toLowerCase();
-  if (!DIRECTOR_CADENCES.has(cadence)) {
-    throw new Error(`director cadence must be one of turn, scene, release (got ${JSON.stringify(raw)})`);
-  }
-  return cadence;
-}
-
-function isDynamicPublicRegisterPlan(plan) {
-  return Boolean(plan && typeof plan === 'object' && plan.mode === 'sample');
-}
-
-function staticPublicRegister(plan) {
-  return PUBLIC_REGISTERS.has(plan)
-    ? plan
-    : isDynamicPublicRegisterPlan(plan)
-      ? plan.base || plan.palette?.[0] || 'modern'
-      : 'default';
-}
-
-function hashUnit(text) {
-  let h = 2166136261;
-  for (const ch of String(text)) {
-    h ^= ch.charCodeAt(0);
-    h = Math.imul(h, 16777619);
-  }
-  return (h >>> 0) / 4294967296;
-}
-
-function weightedRegisterPick(plan, key, previous = null) {
-  const entries = plan.palette.map((register, i) => ({ register, weight: Number(plan.weights[i]) || 1 }));
-  const pick = (choices, unit) => {
-    const total = choices.reduce((sum, entry) => sum + entry.weight, 0);
-    let cursor = unit * total;
-    for (const entry of choices) {
-      cursor -= entry.weight;
-      if (cursor <= 0) return entry.register;
-    }
-    return choices[choices.length - 1].register;
-  };
-  let selected = pick(entries, hashUnit(key));
-  if (previous && selected === previous && entries.length > 1) {
-    selected = pick(
-      entries.filter((entry) => entry.register !== previous),
-      hashUnit(`${key}:alternate`),
-    );
-  }
-  return selected;
-}
-
-function normalizeStagePrologue(raw, world) {
-  const field = (...names) => {
-    for (const name of names) {
-      if (typeof raw?.[name] === 'string' && raw[name].trim()) return raw[name].trim();
-    }
-    return '';
-  };
-  return {
-    stageNotes:
-      field('stageNotes', 'stage_notes') ||
-      `[Before the first exchange, ${world.title} is set as a public inquiry: ${world.question}]`,
-    tutorCharacter:
-      field('tutorCharacter', 'tutor_character') ||
-      'The tutor enters as a careful guide who must let the learner make the decisive step.',
-    learnerCharacter:
-      field('learnerCharacter', 'learner_character') ||
-      'The learner enters as curious, fallible, and entitled to test each claim before keeping it.',
-    registerNote:
-      field('registerNote', 'register_note') ||
-      'Register should follow these characters and this world, never a generic period costume.',
-  };
-}
-
-/**
- * Validate and default an acts config (stage v2). Accepts an object or a
- * JSON string (the CLI's `--acts '<json>'`). Unknown keys are rejected — a
- * typo'd guard must fail loudly, not silently run at its default.
- */
-export function normalizeActsConfig(raw) {
-  let cfg = raw;
-  if (typeof cfg === 'string') {
-    try {
-      cfg = JSON.parse(cfg);
-    } catch (err) {
-      throw new Error(`acts config is not valid JSON: ${err.message}`);
-    }
-  }
-  if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) {
-    throw new Error('acts config must be a JSON object, e.g. {"minActTurns":3,"maxActTurns":8}');
-  }
-  for (const key of Object.keys(cfg)) {
-    if (!(key in ACTS_DEFAULTS)) {
-      throw new Error(`acts config: unknown key "${key}" (known: ${Object.keys(ACTS_DEFAULTS).join(', ')})`);
-    }
-  }
-  const out = { ...ACTS_DEFAULTS, ...cfg };
-  for (const name of ['minActTurns', 'maxActTurns']) {
-    if (!Number.isInteger(out[name]) || out[name] < 1) {
-      throw new Error(`acts config: ${name} must be an integer >= 1 (got ${JSON.stringify(out[name])})`);
-    }
-  }
-  if (out.minActTurns > out.maxActTurns) {
-    throw new Error(`acts config: minActTurns (${out.minActTurns}) must not exceed maxActTurns (${out.maxActTurns})`);
-  }
-  return out;
-}
-
 export async function runDrama({ world, roles, options = {} }) {
-  const opts = {
-    stopOnStall: true,
-    stopOnLeak: true,
-    learnerProxyDag: false,
-    proxyDagPacing: false,
-    tutorLearnerDag: false,
-    recognitionGrace: 3,
-    maxTurns: Infinity, // episode replay (replay.js) stops the loop early; world.turnCap still bounds it
-    ...options,
-  };
-  // The unreliable-learner condition (corruption.js header): seeded decay of
-  // the learner's grounded board, a RUN-LEVEL condition — worlds stay frozen.
-  // null = condition absent, and absent means absent: no entry ever gains a
-  // `decayed` flag, no new event types appear, and the result object is
-  // field-for-field what the engine returned before the condition existed
-  // (the decay-off invariance the tests pin).
-  const decay = options.decay ? normalizeDecayConfig(options.decay) : null;
-  const corruption = decay ? { config: decay, rng: mulberry32(decay.seed), ledger: [] } : null;
-  // Stage v2 (header): acts mode is opt-in and, like decay, absent means
-  // absent — no act state, no view bounding, no redaction, no new fields.
-  const acts = options.acts ? normalizeActsConfig(options.acts) : null;
-  const sceneConfig = options.sceneMode ? normalizeSceneConfig(options.sceneMode) : null;
-  const fieldPlannerActive = Boolean(options.fieldPlanner || options.fieldPlannerEnforce);
-  const fieldPlannerEnforceActive = Boolean(options.fieldPlannerEnforce);
-  if (fieldPlannerActive && acts) {
-    throw new Error(
-      'field planner currently requires non-acts mode; acts mode redacts learner-store state from the tutor view',
-    );
-  }
-  // Instrumentation placebo (Phase 6 `field_report_only` arm): the coupled
-  // field summary enters the tutor context with no planner authority. Shares
-  // the planner's non-acts constraint because it reads the same learner-store
-  // channel.
-  const fieldReportContextActive = Boolean(options.fieldReportContext);
-  if (fieldReportContextActive && acts) {
-    throw new Error(
-      'field report context currently requires non-acts mode; acts mode redacts learner-store state from the tutor view',
-    );
-  }
-  // Strategy ledger (LAYERED-DECISION-LOOPS-PLAN.md Phases 0-2): opt-in and,
-  // like decay/acts, absent means absent — no block state, no commitment or
-  // audit rows, no new result fields. Both dials need the scene/exchange
-  // overlay: blocks segment its exchange types, commitments bind at its
-  // boundaries. Conduct-only by construction: nothing here may name, gate,
-  // or reorder a release/repair — the register is the one surface the
-  // engine applies, and it is a prompt surface.
-  const strategyLedgerConfig = options.strategyLedger ? normalizeStrategyLedgerConfig(options.strategyLedger) : null;
-  const learnerLedgerActive = Boolean(options.learnerLedger);
-  if (strategyLedgerConfig && !sceneConfig) {
-    throw new Error(
-      'strategy ledger requires scene mode (blocks segment scene exchanges; commitments bind at scene boundaries)',
-    );
-  }
-  if (learnerLedgerActive && !sceneConfig) {
-    throw new Error('learner ledger requires scene mode (scene intents bind at scene boundaries)');
-  }
-  // Lemma layer (opt-in; LEMMA-LAYER-PREREGISTRATION.md): a maintained proof
-  // structure one level above the premise grain. display = the map as prompt
-  // signal only; bind = the map also gates the tutor's VOLUNTARY proof
-  // releases and takes a formal frontier choice at scene openings. Harness
-  // forcings (hold limits, guard rescues) and director releases pass through
-  // binding and are logged, never blocked.
-  const lemmaConfig = options.lemmaLayer ? normalizeLemmaConfig(options.lemmaLayer) : null;
-  if (lemmaConfig && !sceneConfig) {
-    throw new Error('lemma layer requires scene mode (the frontier choice is a scene-opening decision)');
-  }
-  const lemmaDag = lemmaConfig ? buildLemmaDag(world) : null;
-  if (lemmaConfig && !lemmaDag) {
-    throw new Error('lemma layer: the authored proof path does not entail S (plot lint should have caught this)');
-  }
-  // Learner mirror refusal (exploration 6, refusal-learner-mirror.md): the
-  // learner's mirror-fixation treated as an incumbent strategy. Fires at most
-  // once per run; the payload is computed HERE so concealment lives engine-
-  // side (grounds = the learner's OWN grounded base facts only).
-  const learnerMirrorRefusalConfig = options.learnerMirrorRefusal
-    ? options.learnerMirrorRefusal === true
-      ? {}
-      : options.learnerMirrorRefusal
-    : null;
-  const mirrorRefusalState = { fired: false, record: null };
-  // Register router (classifier-dag-register Phase B): per tutor turn, the
-  // learner's last message is classified by the Phase-A-audited lexical
-  // sensor (chain grain, deterministic) and a stance register is routed
-  // from the classifier × DAG interaction. Prompt-side only.
-  const registerRouterConfig = options.registerRouter ? normalizeRegisterRouterConfig(options.registerRouter) : null;
-  const registerRouterState = registerRouterConfig
-    ? (() => {
-        const dag = buildLemmaDag(world);
-        if (!dag) throw new Error('register router: the authored proof path does not entail S');
-        const varIndex = world.questionPattern.findIndex((tok) => typeof tok === 'string' && tok.startsWith('?'));
-        return {
-          dag,
-          lexicons: buildRegionLexicons(world, dag),
-          chainOf: buildChainMap(dag),
-          mirrorTerm: world.mirror ? String(world.mirror.fact[varIndex] ?? '').toLowerCase() : null,
-          clearedAt: new Map(), // lemma key -> first turn grounded
-          decisions: [],
-          cache: new Map(), // turn -> decision
-        };
-      })()
-    : null;
+  const runState = createDramaRunState({ world, options });
+  const {
+    opts,
+    corruption,
+    acts,
+    sceneConfig,
+    fieldPlannerActive,
+    fieldPlannerEnforceActive,
+    fieldReportContextActive,
+    learnerLedgerActive,
+    lemmaConfig,
+    lemmaDag,
+    learnerMirrorRefusalConfig,
+    mirrorRefusalState,
+    registerRouterConfig,
+    registerRouterState,
+    directorCadence,
+    initialPublicRegisterForTurn,
+    baseRegisterForRun,
+    registerRows,
+    stagePrologueEnabled,
+    runtimeMonitor,
+    proofDebtGuardActive,
+    conductPolicyActive,
+    conductPolicyEnforceActive,
+    conductTriggerOverrides,
+    proofDebtViewActive,
+    logicProjectionActive,
+    worldIR,
+    actState,
+    ledgerState,
+    learnerLedgerRows,
+    reconstructionRows,
+    plotRows,
+    plotAuditRows,
+    throughlineRows,
+    proofDebtRows,
+    logicSnapshots,
+    sceneRows,
+    didacticModeRows,
+    castLayerRows,
+    learnerTransformationRows,
+    learnerTransformationPostRows,
+    proxyDagPacingRows,
+    tutorLearnerDagRows,
+    fieldPlannerRows,
+    fieldReportRows,
+    ledger,
+    releasedKeys,
+    releasedFacts,
+    releasedAtByKey,
+    backgroundKeys,
+    grounded,
+    hypotheses,
+    transcript,
+    trajectory,
+    learnerDagSnapshots,
+    events,
+    staging,
+    lemmaRun,
+    voicedLedger,
+    voicedKeys,
+    firstAvailable,
+    overreaches,
+    mischanneled,
+    premiseIdByKey,
+    releasedIdByKey,
+    mutationPoolByPredPos,
+  } = runState;
   let sceneTempoThisTurn = null;
   let sceneRecognitionNeedThisTurn = null;
-  const directorCadence = normalizeDirectorCadence(options.directorCadence, { sceneMode: Boolean(sceneConfig) });
-  const publicRegisterPlan = options.publicRegister || 'default';
-  const dynamicPublicRegisterPlan = isDynamicPublicRegisterPlan(publicRegisterPlan) ? publicRegisterPlan : null;
-  const registerRows = [];
-  let publicRegisterForTurn = staticPublicRegister(publicRegisterPlan);
-  if (dynamicPublicRegisterPlan) {
-    publicRegisterForTurn = weightedRegisterPick(
-      dynamicPublicRegisterPlan,
-      `${dynamicPublicRegisterPlan.seed}:${world.id}:run`,
-    );
-    registerRows.push({ turn: 0, register: publicRegisterForTurn, scope: 'run', scene: null });
-  }
-  // The run's baseline register — what scene-scoped commitments revert to.
-  const baseRegisterForRun = publicRegisterForTurn;
-  const stagePrologueEnabled = Boolean(options.stagePrologue);
+  let publicRegisterForTurn = initialPublicRegisterForTurn;
   let stagePrologue = null;
-  const runtimeMonitor = options.guardSpec ? createRuntimeMonitor(world, options.guardSpec) : null;
-  const proofDebtGuardActive = Boolean(options.proofDebtGuard);
-  const conductPolicyActive = Boolean(options.conductPolicy || options.conductProgressPolicy);
-  const conductPolicyEnforceActive = Boolean(options.conductPolicyEnforce);
-  const conductTriggerOverrides = Array.isArray(options.conductTriggerOverrides)
-    ? options.conductTriggerOverrides
-    : options.conductTriggerOverride
-      ? [options.conductTriggerOverride]
-      : [];
-  const proofDebtViewActive = proofDebtGuardActive || conductPolicyActive || conductPolicyEnforceActive;
-  const logicProjectionActive = Boolean(options.logicProjection);
-  const worldIR = logicProjectionActive ? buildWorldIR(world) : null;
-  const actState = acts ? { index: 1, startTurn: 1, brief: '', history: [] } : null;
-  // Strategy-ledger runtime state (opt-in; guard above). Blocks, counters,
-  // and the applied scene commitment live here; the COMMITMENT DECISIONS live
-  // in the role bridges (the plot pattern) — the engine records and applies.
-  const ledgerState = strategyLedgerConfig
-    ? {
-        config: strategyLedgerConfig,
-        block: null,
-        blockIndex: 0,
-        blockRows: [],
-        blockedModes: [],
-        budget: deriveOpportunityCostBudget({ scope: 'dialogue_block' }),
-        appliedCommitment: null,
-        rows: [],
-        stocktakes: [], // plan-mode stock-take records (planMode dial only)
-        // v2 (trialling): the mechanism history table + this scene's declared
-        // departures. History is PUBLIC-ONLY by construction — it renders
-        // into prompts, so no D, no proof state, ever.
-        history: [],
-        departuresThisScene: 0,
-      }
-    : null;
-  const learnerLedgerRows = []; // learner-authored rows (learnerLedger dial)
-  let lastClosedSceneSummary = null; // public-only sealed-scene record; both boundary audits read it
-  const reconstructionRows = []; // {turn, believed, truth} — reconstructing-tutor dial (roles-layer)
-  const plotRows = []; // {act, turn, holdByEnd, withhold, friction, fallback} — C1 act-plot dial (roles-layer)
-  const plotAuditRows = []; // {turn, [final,] act, clauses, summary[, arc][, throughlineAudit]} — C1 act-close audits
-  const throughlineRows = []; // {act, turn, trigger[, reason], arc, holdToEnd, risk, salvage} — two-layer planning
-  const proofDebtRows = []; // guard audit rows — proof-critical decayed exhibits offered to the tutor
-  const logicSnapshots = []; // harness-only per-turn board closure over the canonical logic IR
-  const sceneRows = []; // opt-in scene/exchange overlay — does not replace the formal turn loop
-  const didacticModeRows = []; // public-only tutor advisory states, if the roles layer emits them
-  const castLayerRows = []; // public-only cast/reinvention advisory states, if the roles layer emits them
-  const learnerTransformationRows = []; // public-only ownership proof states, if the roles layer emits them
-  const learnerTransformationPostRows = []; // post-learner public ownership proof snapshots
-  const proxyDagPacingRows = []; // harness-only advisory assessment rows, if enabled
-  const tutorLearnerDagRows = []; // redacted tutor-side model of learner DAG state, if enabled
-  const fieldPlannerRows = []; // coupled-field runtime policy choices and post-turn outcomes
-  const fieldReportRows = []; // report-only field context injections (instrumentation placebo arm)
+  let lastClosedSceneSummary = null;
   let sceneState = null;
-  const ledger = []; // {turn, premiseId, via}
-  const releasedKeys = new Set();
-  const releasedFacts = [];
-  const releasedAtByKey = new Map(); // factKey -> release turn (act-bounding needs WHEN, not just whether)
-  const backgroundKeys = new Set(world.background.map(factKey));
-
-  const grounded = new Map(); // key -> {fact, turn, valid}
-  for (const fact of world.background) {
-    grounded.set(factKey(fact), { fact, turn: 0, valid: true });
-  }
-  const hypotheses = []; // {turn, text}
-
-  const transcript = [];
-  const trajectory = []; // {turn, D, forced, groundedCount}
-  const learnerDagSnapshots = []; // learner-owned proof sketches, derived from learner-visible board actions
-  const events = []; // {turn, type, detail}
-  // Director-declared staging: the current movement persists until replaced.
-  // The learner never sees it; since 2026-06-10 the tutor doesn't either —
-  // movements are diagnostic dramaturgy, read only by the instruments.
-  const staging = { phase: null };
   let firstForcedTurn = null;
   let assertedGroundedTurn = null;
   let endedBy = null;
-
-  // Lemma-layer runtime state: clearance recomputed each turn from the valid
-  // grounded board; the active lemma persists within a scene.
-  const lemmaRun = lemmaDag
-    ? {
-        grounded: new Set(),
-        frontier: [],
-        active: null, // {key, label, by, sceneIndex, turn}
-        clearedAt: new Map(), // label -> first turn grounded
-        choices: [],
-        departures: [],
-        blocks: [],
-        passthroughs: [],
-        regressions: [],
-        openings: 0,
-        multiFrontierOpenings: 0,
-        tutorChoices: 0,
-      }
-    : null;
 
   const validGroundedFacts = () =>
     [...grounded.values()].filter((entry) => entry.valid && !entry.decayed).map((entry) => entry.fact);
@@ -521,12 +266,6 @@ export async function runDrama({ world, roles, options = {} }) {
   };
 
   // --- derive channel + inference frontier state (stall-watcher instrument) ---
-  const voicedLedger = []; // {fact, turn} — canonical closure facts the learner voiced via derive
-  const voicedKeys = new Set();
-  const firstAvailable = new Map(); // key -> {fact, turn} — first turn the fact was derivable from the valid board
-  const overreaches = []; // {turn, fact} — derive claims NOT in the closure (false inferences)
-  const mischanneled = []; // {turn, fact, kind: 'base'|'pattern'} — adopt/assert material sent down derive
-  const premiseIdByKey = new Map([...world.premiseById.values()].map((p) => [factKey(p.fact), p.id]));
   // Twin-fact premises stage the SAME fact under different ids (alternative
   // evidentiary routes — lantern's p_residue/p_glimpse; only one twin is ever
   // scheduled). premiseIdByKey is last-writer-wins over that many-to-one map,
@@ -534,7 +273,6 @@ export async function runDrama({ world, roles, options = {} }) {
   // the id whose release actually put the fact on the board: repairs BY id
   // are immune (they collapse to the fact key), but id-COMPARING consumers
   // (corruptionReport pairing, repair guards) silently mismatch otherwise.
-  const releasedIdByKey = new Map(); // factKey -> premise id whose release staged it
   const premiseIdForKey = (key) => releasedIdByKey.get(key) ?? premiseIdByKey.get(key) ?? null;
 
   // Token-normalized matching for learner-composed derive claims: case and
@@ -569,7 +307,6 @@ export async function runDrama({ world, roles, options = {} }) {
   // RELEASED SO FAR — a misremembering can only confuse entities already met
   // on stage. The pool then grows with the release ledger, so the cache is
   // keyed by released-count (monotone within a run).
-  const mutationPoolByPredPos = new Map(); // "pred|pos|epoch" -> sorted constants
   const mutationPool = (pred, pos) => {
     const staged = corruption?.config.pool === 'staged';
     const poolKey = `${pred}|${pos}|${staged ? releasedKeys.size : 'w'}`;
@@ -1414,36 +1151,19 @@ export async function runDrama({ world, roles, options = {} }) {
   };
 
   recordAvailability(0); // background-only board may already yield derivations
-  if (stagePrologueEnabled) {
-    const prologueView = {
-      turn: 0,
-      role: 'director',
-      world,
-      ledger: [],
-      releasedFacts: [],
-      transcript: [],
-      staging: { phase: null },
-      trajectory: [],
-      learnerAbox: { grounded: validGroundedFacts(), hypotheses: [] },
-      inference: { frontier: computeFrontier(0), voiced: [], overreachCount: 0 },
-      publicRegister: publicRegisterForTurn,
-    };
-    const rawPrologue =
-      typeof roles.director.prologue === 'function'
-        ? await roles.director.prologue(prologueView)
-        : normalizeStagePrologue(null, world);
-    stagePrologue = normalizeStagePrologue(rawPrologue, world);
-    transcript.push({
-      turn: 0,
-      role: 'director',
-      text: stagePrologue.stageNotes,
-      meta: {
-        prologue: stagePrologue,
-        publicRegister: publicRegisterForTurn,
-      },
-    });
+  const prologue = await createDramaStagePrologue({
+    enabled: stagePrologueEnabled,
+    director: roles.director,
+    world,
+    publicRegister: publicRegisterForTurn,
+    groundedFacts: validGroundedFacts(),
+    inferenceFrontier: computeFrontier(0),
+  });
+  if (prologue) {
+    stagePrologue = prologue.prologue;
+    transcript.push(prologue.transcriptLine);
   }
-  const turnLimit = Math.min(world.turnCap, Number.isFinite(opts.maxTurns) ? opts.maxTurns : Infinity);
+  const turnLimit = resolveDramaTurnLimit(world, opts);
   let turn = 0;
   while (turn < turnLimit && !endedBy) {
     turn += 1;
@@ -1804,7 +1524,7 @@ export async function runDrama({ world, roles, options = {} }) {
       });
       if (
         commitment.register &&
-        PUBLIC_REGISTERS.has(commitment.register) &&
+        isPublicRegister(commitment.register) &&
         commitment.register !== publicRegisterForTurn
       ) {
         publicRegisterForTurn = commitment.register;
@@ -2662,199 +2382,31 @@ export async function runDrama({ world, roles, options = {} }) {
     });
   }
 
-  // Close any open scene after the formal loop stops. A scene can remain open
-  // when the turn cap, a leak, or an external maxTurns replay boundary cuts
-  // through the exchange budget.
-  if (sceneState) {
-    sceneState.endTurn = turn;
-    sceneState.dEnd = trajectory[trajectory.length - 1]?.D ?? sceneState.dStart;
-    sceneState.status = endedBy ? 'failed' : 'run_end';
-    sceneState.closeReason = endedBy ? `run ended: ${endedBy}` : 'run ended before the scene budget closed';
-    sceneRows.push({ ...sceneState, exchanges: sceneState.exchanges.map((e) => ({ ...e })) });
-    sceneState = null;
-  }
+  await finalizeDramaRunLifecycle({
+    runState,
+    sceneState,
+    turn,
+    endedBy,
+    tutor: roles.tutor,
+    didacticFallbackForAct,
+    plotAuditDetail,
+  });
 
-  // Seal an open strategy block at run end (the mirror of the scene seal).
-  if (ledgerState?.block) {
-    const open = ledgerState.block;
-    open.endTurn = turn;
-    open.status = 'run_end';
-    open.closeReason = endedBy ? `run ended: ${endedBy}` : 'run ended before the block cleared';
-    ledgerState.blockRows.push({ ...open, clearance: open.clearance.map((c) => ({ ...c })) });
-    ledgerState.block = null;
-  }
-
-  // Close the final open act at the last turn played (stage v2).
-  if (actState) {
-    const didacticFallback = didacticFallbackForAct(actState.index, actState.startTurn, turn);
-    actState.history.push({
-      act: actState.index,
-      turns: [actState.startTurn, turn],
-      endedBy: 'run_end',
-      brief: actState.brief,
-      ...(didacticFallback ? { didacticFallback } : {}),
-    });
-  }
-
-  // C1: the run-end act close has no following opening turn, so the final
-  // act's plot is audited here — the engine hands the tutor bridge the sealed
-  // record and stores the verdict like any boundary audit. Plot-off arms
-  // (and non-plot tutors) have no finalAudit and skip this entirely.
-  if (actState && typeof roles.tutor.finalAudit === 'function') {
-    const fin = await roles.tutor.finalAudit({
-      transcript: [...transcript],
-      ledger: [...ledger],
-      acts: actState.history.map((a) => ({ ...a })),
-    });
-    if (fin) {
-      plotAuditRows.push({ turn, final: true, ...fin });
-      events.push({ turn, type: 'plot_audit', detail: plotAuditDetail(fin, ' at run end') });
-    }
-  }
-
-  const verdict = resolveVerdict({ endedBy, events, firstForcedTurn, assertedGroundedTurn });
-  const proof = assertedGroundedTurn !== null ? proofTree(validGroundedFacts(), world.rules, world.secret.fact) : null;
-
-  const availability = [...firstAvailable.values()]
-    .map(({ fact, turn: avail }) => {
-      const voicedEntry = voicedLedger.find((entry) => factKey(entry.fact) === factKey(fact));
-      return { fact, firstAvailable: avail, firstVoiced: voicedEntry ? voicedEntry.turn : null };
-    })
-    .sort((a, b) => a.firstAvailable - b.firstAvailable || factKey(a.fact).localeCompare(factKey(b.fact)));
-
-  const learnerTransformationDurability = learnerTransformationPostRows.length
-    ? summarizeLearnerTransformationDurability({
-        rows: learnerTransformationPostRows,
-        releaseTurns: ledger.map((entry) => entry.turn),
-        finalTurn: assertedGroundedTurn ?? turn,
-      })
-    : null;
-  const learnerDag = buildLearnerDag(learnerDagSnapshots, world);
   // Final lemma refresh: clearances that land on the closing turn (the goal
   // itself, most of all) happen after that turn's start-of-turn refresh.
   if (lemmaRun) refreshLemmaState(turn);
-
-  return {
-    worldId: world.id,
-    verdict,
-    events,
-    trajectory,
-    transcript,
-    ledger,
-    ...(stagePrologue ? { stagePrologue } : {}),
+  return buildDramaRunResult({
+    runState,
+    world,
+    turn,
+    endedBy,
     firstForcedTurn,
     assertedGroundedTurn,
-    turnsPlayed: turn,
-    proof,
-    learnerDag,
-    inference: {
-      voiced: voicedLedger,
-      overreaches,
-      mischanneled,
-      availability,
-      frontierFinal: computeFrontier(turn),
-    },
-    ...(sceneRows.length ? { scenes: sceneRows } : {}),
-    ...(lemmaRun
-      ? {
-          lemmaLayer: {
-            config: { ...lemmaConfig },
-            nodes: lemmaDag.nodes.map((n) => ({ label: n.label, isGoal: n.isGoal, support: [...n.support] })),
-            clearedAt: Object.fromEntries(lemmaRun.clearedAt),
-            groundedFinal: lemmaDag.nodes.filter((n) => lemmaRun.grounded.has(n.key)).map((n) => n.label),
-            choices: lemmaRun.choices,
-            departures: lemmaRun.departures,
-            blocks: lemmaRun.blocks,
-            passthroughs: lemmaRun.passthroughs,
-            regressions: lemmaRun.regressions,
-            frontierCoverage: {
-              openings: lemmaRun.openings,
-              multiFrontierOpenings: lemmaRun.multiFrontierOpenings,
-              tutorChoices: lemmaRun.tutorChoices,
-            },
-          },
-        }
-      : {}),
-    ...(mirrorRefusalState.record ? { mirrorRefusal: mirrorRefusalState.record } : {}),
-    ...(registerRouterState
-      ? {
-          registerRouter: {
-            decisions: registerRouterState.decisions,
-            shifts: registerRouterState.decisions.filter((d) => d.register !== 'didactic').length,
-          },
-        }
-      : {}),
-    ...(sceneConfig ? { directorCadence } : {}),
-    ...(publicRegisterPlan !== 'default' ? { publicRegister: publicRegisterPlan } : {}),
-    ...(registerRows.length ? { publicRegisters: registerRows } : {}),
-    ...(actState ? { acts: actState.history } : {}),
-    ...(ledgerState || learnerLedgerActive
-      ? {
-          strategyLedger: {
-            ...(ledgerState
-              ? {
-                  config: {
-                    maxBlockTurns: ledgerState.config.maxBlockTurns,
-                    registerPalette: ledgerState.config.registerPalette,
-                    ...(ledgerState.config.trialling
-                      ? {
-                          trialling: true,
-                          stancePalette: ledgerState.config.stancePalette,
-                          releaseIntent: ledgerState.config.releaseIntent,
-                        }
-                      : {}),
-                  },
-                  blocks: ledgerState.blockRows,
-                  budgetFinal: {
-                    context: ledgerState.budget.context,
-                    currentProofNeutralTutorTurns: ledgerState.budget.currentProofNeutralTutorTurns,
-                    currentProofNeutralLearnerTurns: ledgerState.budget.currentProofNeutralLearnerTurns,
-                  },
-                  ...(ledgerState.config.trialling ? { history: ledgerState.history } : {}),
-                  ...(ledgerState.config.planMode ? { stocktakes: ledgerState.stocktakes } : {}),
-                }
-              : {}),
-            rows: [...(ledgerState?.rows || []), ...learnerLedgerRows],
-          },
-        }
-      : {}),
-    ...(reconstructionRows.length ? { reconstruction: reconstructionRows } : {}),
-    ...(plotRows.length || plotAuditRows.length || throughlineRows.length
-      ? {
-          plot: {
-            plots: plotRows,
-            audits: plotAuditRows,
-            ...(throughlineRows.length ? { throughlines: throughlineRows } : {}),
-          },
-        }
-      : {}),
-    ...(proofDebtRows.length ? { proofDebt: proofDebtRows } : {}),
-    ...(didacticModeRows.length ? { didacticMode: didacticModeRows } : {}),
-    ...(castLayerRows.length ? { castLayer: castLayerRows } : {}),
-    ...(learnerTransformationRows.length ? { learnerTransformation: learnerTransformationRows } : {}),
-    ...(learnerTransformationPostRows.length ? { learnerTransformationPost: learnerTransformationPostRows } : {}),
-    ...(learnerTransformationDurability ? { learnerTransformationDurability } : {}),
-    ...(tutorLearnerDagRows.length ? { tutorLearnerDagModel: tutorLearnerDagRows } : {}),
-    ...(proxyDagPacingRows.length ? { proxyDagPacing: proxyDagPacingRows } : {}),
-    ...(fieldPlannerRows.length ? { fieldPlanner: fieldPlannerRows } : {}),
-    ...(fieldReportRows.length ? { fieldReportContext: fieldReportRows } : {}),
-    ...(logicSnapshots.length ? { logicSnapshots } : {}),
-    ...(corruption
-      ? {
-          corruption: {
-            config: corruption.config,
-            ledger: corruption.ledger,
-            decayedAtEnd: [...grounded.entries()]
-              .filter(([, entry]) => entry.decayed)
-              .map(([key, entry]) => ({
-                premiseId: premiseIdForKey(key),
-                fact: entry.fact,
-                sinceTurn: entry.decayTurn,
-              })),
-          },
-        }
-      : {}),
-  };
+    stagePrologue,
+    validGroundedFacts: validGroundedFacts(),
+    frontierFinal: computeFrontier(turn),
+    premiseIdForKey,
+  });
 }
 
 // One-line tally for plot_audit events: a verdict outside the contract
@@ -2870,16 +2422,4 @@ function plotAuditDetail(audit, suffix = '') {
     (audit.arc ? `; arc ${audit.arc.verdict}` : '') +
     (audit.throughlineAudit?.length ? `; throughline reckoned (${audit.throughlineAudit.length} clauses)` : '')
   );
-}
-
-function resolveVerdict({ endedBy, events, firstForcedTurn, assertedGroundedTurn }) {
-  if (endedBy === 'grounded_anagnorisis') return 'grounded_anagnorisis';
-  if (endedBy === 'leak') return 'leak';
-  if (firstForcedTurn !== null && assertedGroundedTurn === null) return 'unstaged_recognition';
-  if (events.some((e) => e.type === 'mirror')) return 'mirror';
-  if (endedBy === 'aporia' || endedBy === 'disengagement') return endedBy;
-  if (events.some((e) => e.type === 'aporia')) return 'aporia';
-  if (events.some((e) => e.type === 'disengagement')) return 'disengagement';
-  if (events.some((e) => e.type === 'lucky_leap')) return 'lucky_leap_only';
-  return 'cap_reached';
 }
