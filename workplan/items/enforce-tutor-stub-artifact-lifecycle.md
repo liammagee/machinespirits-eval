@@ -1,7 +1,7 @@
 ---
 id: enforce-tutor-stub-artifact-lifecycle
 title: "Make tutor-stub empirical traces durable by construction"
-status: review
+status: done
 type: infra
 priority: P0
 owner: codex
@@ -17,6 +17,8 @@ verification: >-
   an unwired new caller, and focused tests plus lint and workplan source checks
   pass without model calls.
 links:
+  prs:
+    - 606
   items:
     - run-artifact-archiving
     - consolidate-logs-db-private-archive
@@ -59,6 +61,11 @@ and makes no empirical or pedagogical claim.
 
 ## Log
 
+- 2026-08-09 — PR #606 merged as `16ee8aa4`. GitHub CI passed after the
+  hermetic closeout contract was updated for `EVAL_ARCHIVE_DIR`; the merged
+  branch tip is contained in `origin/main`. The common live mirror, fail-closed
+  admission, caller inventory, and archive-isolation verification are now the
+  repository default, so the card is closed.
 - 2026-08-09 — Opened after a second missing historical tutor-stub corpus
   blocked a deconfounding experiment. The previous archive card explicitly
   left full traces manual and other runners unwired; this follow-up moves
