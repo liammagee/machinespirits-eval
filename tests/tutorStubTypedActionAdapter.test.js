@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -57,7 +58,7 @@ test('typed-action planning runtime preserves the disabled boundary without muta
 });
 
 test('entrypoint delegates typed-action planning rather than retaining local implementations', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTypedActionPlanningRuntime.js'), 'utf8');
 
   assert.match(cliSource, /createTutorStubTypedActionPlanningRuntime/u);

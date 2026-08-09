@@ -11,6 +11,7 @@ import {
   projectTutorStubDagSnapshotLines,
 } from '../services/tutorStubDagSnapshotPresentation.js';
 import { runInteractive } from './helpers/tutorStubInteractiveHarness.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const COLORS = Object.freeze({ cyan: '<cyan>', dim: '<dim>', reset: '<reset>' });
@@ -254,7 +255,7 @@ test('a live technical session preserves the exact Marrick tutor-DAG terminal bl
 });
 
 test('the public presentation runtime retains snapshot state access, terminal writes, and every runtime caller', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubDagSnapshotPresentation.js'), 'utf8');
   const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubPublicPresentationRuntime.js'), 'utf8');
   const technicalAnalysisSource = fs.readFileSync(

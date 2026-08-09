@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import test from 'node:test';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 import {
   createTutorStubCurrentDebugReporter,
   createTutorStubDebugLinePrinters,
@@ -248,8 +248,8 @@ test('debug-ID line printing preserves missing IDs, first-print formatting, de-d
 });
 
 test('the CLI imports rather than redeclares the debug identity model', () => {
-  const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
-  assert.match(source, /from '\.\.\/services\/tutorStubDebugIdentity\.js'/u);
+  const source = readTutorStubApplicationSource();
+  assert.match(source, /from '\.\/tutorStubDebugIdentity\.js'/u);
   assert.doesNotMatch(
     source,
     /function (?:safeTimestampForFile|formatTurnDebugId|openingDebugId|stateRunDebugId|turnDebugId|automaticTechnicalDetailsEnabled|printDebugIdLine)\(/u,

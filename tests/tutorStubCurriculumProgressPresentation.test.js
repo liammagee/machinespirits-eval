@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 
 import { projectTutorStubCurriculumProgressLines } from '../services/curriculum/tutorStubCurriculumProgressPresentation.js';
 import { assert, fs, path, plainTerminalText, ROOT, spawnSync, test } from './helpers/tutorStubInteractiveHarness.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const COLORS = { brightCyan: '<cyan>', bold: '<bold>', dim: '<dim>', reset: '</>' };
 const LIVE_PROGRESS_HASH = '5256a00d8ff9926ab9f94234ba8db7ed09579ef4627d330bab205e005396d894';
@@ -79,7 +80,7 @@ test('curriculum progress projection preserves unavailable and session-authority
 });
 
 test('the CLI retains public projection, return values, and terminal ownership while live /progress stays byte-identical', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const serviceSource = fs.readFileSync(
     path.join(ROOT, 'services', 'curriculum', 'tutorStubCurriculumProgressPresentation.js'),
     'utf8',

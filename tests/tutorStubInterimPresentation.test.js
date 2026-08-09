@@ -26,6 +26,7 @@ import {
   tutorStubInterimLevel,
   tutorStubPlainInterimBottleneck,
 } from '../services/tutorStubInterimPresentation.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -670,12 +671,12 @@ test('interim frame rendering preserves phase compaction and terminal width boun
 });
 
 test('the interim controller and learning summary share pure copy while retaining runtime and report ownership', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const learningSummarySource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLearningSummary.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubInterimPresentation.js'), 'utf8');
   const controllerSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubInterimController.js'), 'utf8');
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubInterimController\.js';/u);
+  assert.match(cliSource, /from '\.\/tutorStubInterimController\.js';/u);
   assert.match(controllerSource, /from '\.\/tutorStubInterimPresentation\.js';/u);
   assert.match(learningSummarySource, /from '\.\/tutorStubInterimPresentation\.js';/u);
   assert.doesNotMatch(

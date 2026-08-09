@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import test from 'node:test';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 import {
   parseTutorStubAutoTurns,
@@ -47,7 +47,7 @@ test('auto-turn parsing preserves every unbounded alias and positive fallback', 
 });
 
 test('the CLI imports rather than redeclares parsing helpers', () => {
-  const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
+  const source = readTutorStubApplicationSource();
   assert.match(source, /parseTutorStubAutoTurns as parseAutoTurns/u);
   assert.doesNotMatch(
     source,

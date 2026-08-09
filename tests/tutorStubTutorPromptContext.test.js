@@ -10,6 +10,7 @@ import {
   projectTutorStubHumanDiscourseContext,
   projectTutorStubLearnerDagModelContext,
 } from '../services/tutorStubTutorPromptContext.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -315,7 +316,7 @@ test('dialogue-closure context pins final check-in, mandatory, and available bra
 });
 
 test('the entrypoint binds learner evidence and prompt-context owners without local wrapper copies', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTutorPromptContext.js'), 'utf8');
   const pipelineSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTutorTurnPipeline.js'), 'utf8');
   const evidenceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLearnerEvidenceRuntime.js'), 'utf8');
@@ -328,7 +329,7 @@ test('the entrypoint binds learner evidence and prompt-context owners without lo
     'utf8',
   );
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubTutorPromptContext\.js';/u);
+  assert.match(cliSource, /from '\.\/tutorStubTutorPromptContext\.js';/u);
   assert.match(cliSource, /projectTutorStubLearnerDagModelContext as tutorLearnerDagModelContext/u);
   assert.match(cliSource, /projectTutorStubHumanDiscourseContext as humanDiscourseTutorContext/u);
   assert.match(compositionSource, /projectTutorStubDialogueClosureContext as dialogueClosureTutorContext/u);

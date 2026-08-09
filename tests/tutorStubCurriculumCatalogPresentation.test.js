@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 
 import { projectTutorStubCurriculumCatalogLines } from '../services/curriculum/tutorStubCurriculumCatalogPresentation.js';
 import { assert, fs, path, ROOT, spawnSync, test } from './helpers/tutorStubInteractiveHarness.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const LIVE_CATALOG_HASH = 'ded71f142f94e2960d289b988b0930bf5356c332b9fc831303be25e1b1aaacf7';
 
@@ -43,7 +44,7 @@ test('curriculum catalogue projection preserves headers, optional state, orderin
 });
 
 test('the scenario controller owns catalogue loading and terminal output while canonical output stays byte-identical', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const controllerSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubScenarioController.js'), 'utf8');
   const presentationSource = fs.readFileSync(
     path.join(ROOT, 'services', 'curriculum', 'tutorStubCurriculumCatalogPresentation.js'),

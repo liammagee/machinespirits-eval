@@ -7,6 +7,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { projectTutorStubDialogueSettingsLines } from '../services/tutorStubDialogueSettingsPresentation.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const COLORS = Object.freeze({ cyan: '<cyan>', dim: '<dim>', reset: '<reset>' });
@@ -242,7 +243,7 @@ test('real default and configured /settings commands preserve exact no-model ter
 });
 
 test('the CLI retains settings state derivation, helper calls, command ownership, and terminal writes', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const serviceSource = fs.readFileSync(
     path.join(ROOT, 'services', 'tutorStubDialogueSettingsPresentation.js'),
     'utf8',

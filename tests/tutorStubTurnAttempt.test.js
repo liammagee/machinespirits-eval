@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import test from 'node:test';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 import { abortTutorStubTurnAttempt, assertTutorStubTurnAttemptCurrent } from '../services/tutorStubTurnAttempt.js';
 
@@ -46,7 +46,7 @@ test('turn-attempt currentness preserves signal and callback short-circuit behav
 });
 
 test('the CLI imports rather than redeclares turn-attempt guards', () => {
-  const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
-  assert.match(source, /from '\.\.\/services\/tutorStubTurnAttempt\.js'/u);
+  const source = readTutorStubApplicationSource();
+  assert.match(source, /from '\.\/tutorStubTurnAttempt\.js'/u);
   assert.doesNotMatch(source, /function (?:abortTutorStubTurnAttempt|assertTutorStubTurnAttemptCurrent)\(/u);
 });

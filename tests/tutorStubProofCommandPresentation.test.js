@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -154,7 +155,7 @@ test('real /proof paths and learner inspection commands preserve exact no-model 
 });
 
 test('the CLI retains command execution, formal checks, trace writes, and terminal ownership', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubProofCommandPresentation.js'), 'utf8');
   const compositionSource = fs.readFileSync(
     path.join(ROOT, 'services', 'tutorStubInteractiveApplicationComposition.js'),

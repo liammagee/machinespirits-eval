@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 import { fileURLToPath } from 'node:url';
 
 import { projectTutorStubSessionStatusLines } from '../services/tutorStubSessionStatusPresentation.js';
@@ -190,7 +191,7 @@ test('real normal and passthrough /status commands preserve exact no-model termi
 });
 
 test('the CLI retains status state derivation, helper calls, slash dispatch, and terminal ownership', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const compositionSource = fs.readFileSync(
     path.join(ROOT, 'services', 'tutorStubInteractiveApplicationComposition.js'),
     'utf8',

@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 import { fileURLToPath } from 'node:url';
 
 import { createTutorStubAutomatedLearnerGenerationRuntime } from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
@@ -38,7 +39,7 @@ test('automated-learner generation runtime owns profile resolution and corruptio
 });
 
 test('entrypoint delegates automated learner generation rather than retaining local implementations', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const runtimeSource = fs.readFileSync(
     path.join(ROOT, 'services', 'tutorStubAutomatedLearnerGenerationRuntime.js'),
     'utf8',

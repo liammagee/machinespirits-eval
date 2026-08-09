@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -291,7 +292,7 @@ test('real tutor and classifier model-choice commands preserve exact no-model te
 });
 
 test('the CLI retains role and entry resolution, slash dispatch, picker behavior, and terminal ownership', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubModelChoicePresentation.js'), 'utf8');
   const commandSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCommandRuntime.js'), 'utf8');
   const compositionSource = fs.readFileSync(
@@ -304,7 +305,7 @@ test('the CLI retains role and entry resolution, slash dispatch, picker behavior
     controllerSource.indexOf('function pickLiveNumericSettingValue'),
   );
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubModelChoicePresentation\.js';/u);
+  assert.match(cliSource, /from '\.\/tutorStubModelChoicePresentation\.js';/u);
   assert.match(cliSource, /createTutorStubModelSelection/u);
   assert.match(cliSource, /createTutorStubInteractiveCommandComposition/u);
   assert.match(compositionSource, /from '\.\/tutorStubCommandRuntime\.js';/u);

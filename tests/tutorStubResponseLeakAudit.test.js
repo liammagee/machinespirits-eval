@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 import { fileURLToPath } from 'node:url';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 import { createTutorStubPublicEvidenceModel } from '../services/tutorStubPublicEvidence.js';
@@ -140,7 +140,7 @@ test('Rowan Flat correspondence clears only after its structured dye-path fact i
 });
 
 test('the CLI binds rather than redeclares the response-leak audit', () => {
-  const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
+  const source = readTutorStubApplicationSource();
   assert.match(source, /createTutorStubResponseLeakAudit/u);
   assert.doesNotMatch(source, /function (?:unreleasedPremiseLeakRows|auditTutorResponseLeak)\(/u);
   assert.doesNotMatch(source, /const PRIVATE_TOKEN_STOPWORDS/u);

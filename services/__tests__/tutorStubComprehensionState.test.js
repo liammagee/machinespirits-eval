@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import test from 'node:test';
 
 import {
@@ -12,6 +11,7 @@ import {
   tutorStubComprehensionPrompt,
   tutorStubComprehensionSnapshot,
 } from '../tutorStubComprehensionState.js';
+import { readTutorStubApplicationSource } from '../../tests/helpers/tutorStubSourceContract.js';
 
 test('comprehension restoration preserves event precedence, schema filtering, turn fallback, and cloning', () => {
   const turnSnapshot = { terms: [{ key: 'turn', term: 'turn' }] };
@@ -57,7 +57,7 @@ test('comprehension restoration creates a clean empty state without snapshots', 
 });
 
 test('the CLI imports rather than redeclares comprehension restoration', () => {
-  const source = fs.readFileSync(new URL('../../scripts/tutor-stub.js', import.meta.url), 'utf8');
+  const source = readTutorStubApplicationSource();
   assert.match(source, /restoreTutorStubComprehensionState as restoreComprehensionState/u);
   assert.doesNotMatch(source, /function restoreComprehensionState\(/u);
 });

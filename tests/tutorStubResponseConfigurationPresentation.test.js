@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 import { projectTutorStubResponseConfigurationLines } from '../services/tutorStubResponseConfigurationPresentation.js';
 import { runInteractive } from './helpers/tutorStubInteractiveHarness.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const COLORS = Object.freeze({
@@ -166,7 +167,7 @@ test('real technical-debug process preserves exact response-configuration termin
 });
 
 test('the learner-analysis runtime owns response-policy presentation and delegates terminal output', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLearnerAnalysisRuntime.js'), 'utf8');
   const serviceSource = fs.readFileSync(
     path.join(ROOT, 'services', 'tutorStubResponseConfigurationPresentation.js'),
@@ -177,7 +178,7 @@ test('the learner-analysis runtime owns response-policy presentation and delegat
     runtimeSource.indexOf('async function analyzeLearnerTurnCombined'),
   );
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubResponseConfigurationPresentation\.js';/u);
+  assert.match(cliSource, /from '\.\/tutorStubResponseConfigurationPresentation\.js';/u);
   assert.match(runtimeSource, /printAutomaticTechnicalDetails\(state, \(\) =>\s*printResponseConfigurationSelection/u);
   assert.match(normalizationSlice, /formatSignedInterimNumber/u);
   assert.match(normalizationSlice, /formatEngagementStanceDistribution/u);

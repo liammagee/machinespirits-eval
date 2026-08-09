@@ -7,6 +7,7 @@ import {
   buildTutorStubLightweightDialogueField,
   projectTutorStubLightweightFieldTurn,
 } from '../services/tutorStubFieldTurnProjection.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const FROZEN_TURNS = [
   {
@@ -250,9 +251,9 @@ test('projection rejects unknown compatibility modes', () => {
 });
 
 test('both script surfaces import the shared projection and retain no local implementation', () => {
-  for (const file of ['scripts/tutor-stub.js', 'scripts/run-tutor-stub-auto-eval.js']) {
-    const source = fs.readFileSync(file, 'utf8');
-    assert.match(source, /services\/tutorStubFieldTurnProjection\.js/u);
+  const sources = [readTutorStubApplicationSource(), fs.readFileSync('scripts/run-tutor-stub-auto-eval.js', 'utf8')];
+  for (const source of sources) {
+    assert.match(source, /tutorStubFieldTurnProjection\.js/u);
     assert.doesNotMatch(source, /function lightweightFieldTurn\s*\(/u);
     assert.doesNotMatch(source, /function buildLightweightDialogueField\s*\(/u);
   }

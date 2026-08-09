@@ -10,6 +10,7 @@ import {
   tutorStubWorldPresentation,
 } from '../services/tutorStubWorldPresentation.js';
 import { assert, fs, path, ROOT, spawnSync, test } from './helpers/tutorStubInteractiveHarness.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const LIVE_WORLD_CATALOG_HASH = '3a310d8c7ea27094b2013fff02e0b25c9bec38c11a16117ca1181516777196d5';
 
@@ -108,7 +109,7 @@ test('world family grouping preserves family order, base selection, identity, an
 });
 
 test('the scenario controller owns world loading, grouping, and terminal output while the catalogue stays byte-identical', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const controllerSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubScenarioController.js'), 'utf8');
   const presentationSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubWorldPresentation.js'), 'utf8');
   const printSlice = controllerSource.slice(
