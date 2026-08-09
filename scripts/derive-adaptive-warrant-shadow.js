@@ -187,7 +187,13 @@ function collectTurnFacts(events) {
   const pacing = lastPerTurn(events, 'release_pacing_update');
   const uptakeAudits = lastPerTurn(events, 'tutor_live_turn_progression_audit');
   const repetitionAudits = lastPerTurn(events, 'tutor_repetition_audit');
+  // Interactive sessions commit learner turns as compound events; automated
+  // learner sessions log them as auto_learner_turn instead. Same text, second
+  // source — without it the signal classifier goes blind on auto-mode traces.
   const learnerTurns = lastPerTurn(events, 'learner_turn_compound_committed');
+  for (const [turn, event] of lastPerTurn(events, 'auto_learner_turn')) {
+    if (!learnerTurns.has(turn)) learnerTurns.set(turn, { combinedText: event.text });
+  }
   const trouble = allPerTurn(
     events,
     new Set(['tutor_response_fallback', 'tutor_response_guard_exhausted', 'tutor_response_mechanical_repair']),
@@ -373,8 +379,10 @@ export function deriveAdaptiveWarrantShadow(tracePath) {
 
 /**
  * Compare shadow decisions with gold labels (gold-decisions JSON). Gold
- * `revision_warranted` is yes | no | register_only; register_only expects the
- * strategy warrant absent and the register warrant present.
+ * `revision_warranted` is yes | no | register_only | uncertain; register_only
+ * expects the strategy warrant absent and the register warrant present;
+ * uncertain rows are reported but excluded from the agreement score (a
+ * borderline point has no right answer to score against).
  */
 export function compareWithGold(shadow, goldEntries) {
   const stem = path.basename(shadow.trace).replace(/\.jsonl$/u, '');
@@ -388,11 +396,13 @@ export function compareWithGold(shadow, goldEntries) {
       continue;
     }
     const agree =
-      gold.revision_warranted === 'yes'
-        ? decision.revision_warranted
-        : gold.revision_warranted === 'no'
-          ? !decision.revision_warranted
-          : !decision.revision_warranted && decision.register_revision_warranted;
+      gold.revision_warranted === 'uncertain'
+        ? null
+        : gold.revision_warranted === 'yes'
+          ? decision.revision_warranted
+          : gold.revision_warranted === 'no'
+            ? !decision.revision_warranted
+            : !decision.revision_warranted && decision.register_revision_warranted;
     rows.push({
       gold,
       shadow: {
@@ -455,9 +465,13 @@ function main() {
     const goldEntries = JSON.parse(fs.readFileSync(values.gold, 'utf8')).decisions;
     const rows = compareWithGold(shadow, goldEntries);
     let agreeCount = 0;
+    let scoredCount = 0;
     for (const row of rows) {
-      if (row.agree) agreeCount += 1;
-      const label = row.agree ? 'AGREE   ' : 'DISAGREE';
+      if (row.agree !== null) {
+        scoredCount += 1;
+        if (row.agree) agreeCount += 1;
+      }
+      const label = row.agree === null ? 'UNCERTAIN' : row.agree ? 'AGREE    ' : 'DISAGREE ';
       const shadowSide = row.shadow
         ? `shadow: warranted=${row.shadow.revision_warranted} register=${row.shadow.register_revision_warranted} (${row.shadow.warrant_basis})`
         : 'shadow: (missing)';
@@ -465,7 +479,9 @@ function main() {
         `${label} s${row.gold.session} D@t${row.gold.turn} gold=${row.gold.revision_warranted} | ${shadowSide}`,
       );
     }
-    console.log(`gold agreement: ${agreeCount}/${rows.length}`);
+    console.log(
+      `gold agreement: ${agreeCount}/${scoredCount} scored (${rows.length - scoredCount} uncertain reported)`,
+    );
   }
   if (values.json) {
     fs.writeFileSync(values.json, `${JSON.stringify(shadow, null, 2)}\n`);

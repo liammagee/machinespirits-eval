@@ -68,6 +68,28 @@ Two caveats:
 1. **The rules were tuned on these eleven decisions.** Agreement shows the representation can express the gold judgments, not that the rules generalize. The next test must be held-out: the missing borderline dialogue (§17 item 3), or fresh sessions annotated before the shadow runs.
 2. **Carried signals should expire on revision.** When a session tail leaves the last learner turn uncommitted, the shadow carries the latest committed signal forward; in trace 1 session 2 a carried repair request still warrants revision one turn after the tutor already revised to answer it. Not scored by gold; fix before the held-out run.
 
+## Held-out test (2026-08-10)
+
+**Corpus:** a fresh session generated for this test — automated permission-seeking learner (the stub's `low_agency` profile), marrick world, strict DAG, 8 turns. Trace: `.tutor-stub-traces/heldout-borderline/2026-08-09T14-32-40-999Z.jsonl` (copied to the private archive repo). Every learner turn defers: "May I enter that Verrell's access is shown, but his striking the shillings is not?" — deferential in form, correct in content. Turn 6 merely re-asks to keep an entry it already had; turn 8 is the learner's first unhedged claim.
+
+**Protocol:** gold (`gold-decisions-heldout.v0.json`) was annotated from the transcript before the shadow ran on this trace. Borderline points carry an `uncertain` label — reported, not scored. No warrant rules or thresholds were changed after seeing results; the one post-hoc change was input plumbing (automated sessions log learner text under a different trace event than interactive ones, and the classifier was blind until that second source was added). Both passes are reported.
+
+**Result:** 3/4 scored decisions agree; 3 uncertain reported. Original-gold regression intact (11/11).
+
+| Decision | Gold | Shadow (pass 2) | |
+|---|---|---|---|
+| D@t2 | no | not warranted | agree |
+| D@t3 | no | masked, not warranted | agree |
+| D@t4, t5, t7 | uncertain | masked, not warranted | reported |
+| D@t6 | yes | **masked, not warranted** | **disagree** |
+| D@t8 | no | masked, not warranted | agree |
+
+**The held-out finding: deference is invisible to the signal vocabulary.** Every learner turn — including the idle turn 6 — classified as engaged-analytic (long, carries "not"/"shown"-type analytic tokens), so the mask fired seven times out of seven. The two passes bracket the blind spot: with no learner text, the trouble accumulator called six of seven decisions warranted; with text, the mask suppressed all seven. The truth per gold (one yes, three genuinely uncertain, three no) sits between, and the feature that discriminates — the permission frame "May I…", first-person deferral of the claim to the tutor's authority — is exactly what the classifier cannot see.
+
+**Supporting record-level evidence the gold missed.** The learner's fact record never grew: 4 grounded facts at turn 1, 4 at turn 8. Asking to enter is not entering — the deference pattern has a real conceptual cost that the transcript's surface (correct-sounding entries, confirmed by the tutor) hides. My transcript-level gold called turn 3 "no revision warranted" partly on apparent progress the record does not show; the frozen label stands, but the record supports the shadow's stall reading more than the gold's at that point.
+
+**What follows (not yet implemented):** the signal classifier needs a deference label — interrogative permission frames ("May I / Would you have me / Should I") that defeat the engaged-analytic mask, letting accumulated no-growth trouble surface. The stub's own learner-profile catalogue already names the pattern (permission seeking); the ontology's request types likely carry a matching label to reuse.
+
 ## Machine-readable gold
 
 ```yaml
