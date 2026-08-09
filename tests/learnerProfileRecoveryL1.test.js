@@ -7,6 +7,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import {
+  analyzeLeaveOneOutNearestCentroid,
   analyzeLearnerProfileRecoveryVectors,
   LearnerProfileRecoveryReplayError,
   loadLearnerProfileRecoveryCorpus,
@@ -88,6 +89,59 @@ test('recovery analyzer uses leave-one-out full centroids for full and opening-t
   assert.equal(result.correct, 4);
   assert.deepEqual(result.openingTurns['1'], { eligible: 4, correct: 4, accuracy: 1 });
   assert.equal(verifyLearnerProfileRecoveryResult(manifest, result), true);
+});
+
+test('persona and world readings use the identical generic classifier', () => {
+  const states = ['signal', 'neutral'];
+  const vectors = [
+    {
+      id: 'first-a',
+      persona: 'first',
+      world: 'a',
+      vec: { signal: 1, neutral: 0 },
+      perTurn: ['signal', 'signal'],
+    },
+    {
+      id: 'first-b',
+      persona: 'first',
+      world: 'b',
+      vec: { signal: 1, neutral: 0 },
+      perTurn: ['signal', 'signal'],
+    },
+    {
+      id: 'second-a',
+      persona: 'second',
+      world: 'a',
+      vec: { signal: 0, neutral: 1 },
+      perTurn: ['neutral', 'neutral'],
+    },
+    {
+      id: 'second-b',
+      persona: 'second',
+      world: 'b',
+      vec: { signal: 0, neutral: 1 },
+      perTurn: ['neutral', 'neutral'],
+    },
+  ];
+
+  const persona = analyzeLeaveOneOutNearestCentroid({
+    vectors,
+    states,
+    labelKey: 'persona',
+    labels: ['first', 'second'],
+    openingTurns: [1],
+  });
+  const world = analyzeLeaveOneOutNearestCentroid({
+    vectors,
+    states,
+    labelKey: 'world',
+    labels: ['a', 'b'],
+    openingTurns: [1],
+  });
+
+  assert.equal(persona.correct, 4);
+  assert.equal(world.correct, 0);
+  assert.deepEqual(Object.keys(persona), Object.keys(world));
 });
 
 test('frozen recovery manifest is tracked inside the repository', () => {

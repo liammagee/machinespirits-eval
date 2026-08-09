@@ -1,21 +1,22 @@
 ---
 id: learner-profile-world-deconfound
 title: "Deconfound the learner-profile recovery: cross personas and worlds"
-status: active
+status: done
 type: experiment
 priority: P1
 owner: codex
 source: manual
 created: 2026-08-06
-updated: 2026-08-09
+updated: 2026-08-10
 branch: codex/learner-profile-world-deconfound-paid-launch
-verification: "PR #605's green clean-main certificate pins the approved design,
-  exact qd-v1, and frozen 20-job plan. Paid launch remains separately gated on
-  an explicit authorization flip and attended checkpoints. Completion then
-  requires all 20 new dialogues with no historical pooling, a committed private
-  archive before outcome reading, and identical leave-one-out persona and world
-  readings against the frozen 80% bar."
-claim_status: methods
+verification: "The certified 20-job prospective cohort completed under attended
+  checkpoints. Private archive commit b4175ccd preserved all light artifacts,
+  20 valid traces, and two excluded technical failures before outcome reading;
+  b36f25a2 preserved the result artifacts. Frozen qd-v1 plus pressure v4 gave
+  persona 13/20 (65%) and world 15/20 (75%) under the identical leave-one-out
+  classifier. Neither reached the preregistered 80% bar; no historical dialogue
+  was pooled."
+claim_status: scope-bound
 links:
   config:
     - config/learner-profile-world-deconfound.yaml
@@ -23,6 +24,7 @@ links:
   code:
     - scripts/review-learner-profile-world-deconfound.js
     - scripts/replay-learner-profile-recovery-l1.js
+    - scripts/analyze-learner-profile-world-deconfound.js
     - scripts/prepare-learner-profile-world-deconfound.js
     - services/tutorStubQuietDetectorV1.js
     - tests/learnerProfileWorldDeconfound.test.js
@@ -206,3 +208,26 @@ publication closeout's crossed holdout design, not a routing policy.
   while the manifest separately records the certified and materialized hashes.
   Authorization remains `not_authorized`; no paid dialogue or outcome reading
   occurred in this slice.
+- 2026-08-10 — Completed the authorized paid cohort under attended checkpoint
+  bounds: 20 valid dialogues from the frozen balanced 2x2, materialized plan
+  hash `6617baccec1bdce053ad2960713b1f6bd59b743e1788d8e30616852f6e2ae3b3`,
+  and no historical pooling. Two in-flight technical failures were preserved
+  but excluded: the first attempt at `record_keeper_in_rowan-d4` timed out on
+  the Terra learner at turn 43, and the first attempt at
+  `tenant_in_rowan-d4` failed the tutor private-planner boundary at turn 6.
+  Each retry ran only after a fresh explicit user authorization. The private
+  archive commits `9bef1bde` and `64034eee` sealed the failed attempts;
+  `b4175ccd` then committed the final light artifacts, all 22 live mirrors and
+  receipts (20 valid plus 2 failures), and the two excluded failure traces
+  before any outcome was read.
+- 2026-08-10 — Ran the frozen pressure-v4 plus exact qd-v1 state-frequency
+  instrument over only the 20 valid prospective traces. One shared
+  leave-one-out nearest-centroid implementation classified persona at 13/20
+  (65%) and, with only the label changed, world at 15/20 (75%). Both are below
+  the frozen 80% bar. The preregistered branch is therefore
+  `neither_label_recovered_at_bar`: this cohort does not support persona
+  transportability, while the stronger world reading remains below the bar and
+  does not license a world-artifact verdict. Opening-turn persona/world readings
+  were respectively 45%/75%, 40%/50%, 35%/55%, 45%/55%, and 45%/60% at
+  2/4/6/8/10 turns. Per-cell profiles and all predictions are preserved in
+  private archive commit `b36f25a2`.
