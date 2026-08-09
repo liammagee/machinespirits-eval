@@ -28,6 +28,7 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
     auditTutorStubSpeakerPrivilege,
     buildTutorStubDramaticReleaseFrame,
     buildTutorStubFirstDraftContract,
+    buildTutorStubGuardFindingsFeedForward,
     buildTutorStubResponseCompositionFrame,
     classifierTutorContext,
     committedReleaseRows,
@@ -59,6 +60,7 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
     dag,
     dialogueClosureFrame,
     feedbackAdaptationPlan,
+    guardFindingsFeedForward = false,
     history,
     humanDiscourseFrame,
     learnerMessages,
@@ -235,6 +237,11 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
     const tutorFeedbackAdvisory = passthrough
       ? null
       : tutorStubTurnFeedbackPrompt(tutorFeedback, { adaptationPlan: feedbackAdaptationPlan });
+    const guardFindingsFeedForwardEnvelope = buildTutorStubGuardFindingsFeedForward({
+      enabled: Boolean(!passthrough && guardFindingsFeedForward),
+      previousTurn: state?.turns?.at?.(-1) || null,
+    });
+    const guardFindingsFeedForwardAdvisory = guardFindingsFeedForwardEnvelope.prompt;
     // The original speaking attempt receives one compiled performance contract.
     // Keep the detailed configuration/composition/release surfaces for audited
     // recovery, where a failed axis must be named precisely, instead of making
@@ -267,6 +274,7 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
       pointOfActionAdvisory,
       tuningAdvisory,
       tutorFeedbackAdvisory,
+      guardFindingsFeedForwardAdvisory,
       // The manner switch's per-turn conduct card (tutorStubMannerSwitch.js):
       // present only while the CLI-owned switch holds the schoolmaster manner.
       // Permission-shaped; no guard anywhere checks that the manner was worn.
@@ -308,6 +316,14 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
         omitted: TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS.filter((id) => !speakerAdvisoryBlocks.has(id)),
       });
     }
+    if (!passthrough) {
+      appendTraceEvent(trace, {
+        type: 'tutor_guard_findings_feed_forward',
+        turn: tutorTurn,
+        envelope: guardFindingsFeedForwardEnvelope,
+        publicTranscriptChanged: false,
+      });
+    }
     let effectiveSpeakerSystemPrompt = effectiveSystemPrompt;
     let effectiveSpeakerUserPrompt = userPrompt;
     let effectiveSpeakerInstructionTexts = [systemPrompt, ...machineAdvisoryParts].filter(Boolean);
@@ -343,6 +359,7 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
           dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
         ),
         firstDraftContractPrompt: withSpeakerBlock('first_draft_contract', firstDraftContractAdvisory),
+        prospectiveGuidancePrompt: guardFindingsFeedForwardAdvisory,
         learnerPrompt,
         messageHistory: context,
       });
@@ -387,6 +404,8 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
       effectiveSpeakerUserPrompt,
       firstDraftHumanDiscourseAdvisory,
       firstDraftContract,
+      guardFindingsFeedForwardAdvisory,
+      guardFindingsFeedForwardEnvelope,
       instructionalMetaRepair,
       instructionalMetaRestatementAdvisory,
       learnerPrompt,

@@ -856,6 +856,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         tutor: response.promptSnapshot || null,
       },
       tutorGuardAccounting: response.guardAccounting || null,
+      guardFindingsFeedForward: response.guardFindingsFeedForward || null,
       provider: response.provider,
       model: response.model,
       latencyMs: response.latencyMs,

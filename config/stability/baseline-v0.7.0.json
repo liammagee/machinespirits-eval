@@ -42,12 +42,12 @@
     {
       "file": "services/tutorStubTutorTurnPipeline.js",
       "claim": "tutor-turn coordination and extracted runtime delegation",
-      "sha256": "d43648c357b212c4db1cdbaad085476485e9d497dd1b74299bb2f5342e346960"
+      "sha256": "ed148aa862d8da86dca1b56fc5cb461ec508530f0c569c91ac9af077264b2821"
     },
     {
       "file": "services/tutorStubTutorTurnPreparation.js",
       "claim": "speaking prompt assembly; conduct-card and contract-licence slots; speaker-privilege recovery",
-      "sha256": "f95491278814ee497eaa1a023a38098ded7654e217447d514a8c3208dbd11e39"
+      "sha256": "124e3c075eab369306801192e88c7137a8b894e5dcece17a626bbdeba078696e"
     },
     {
       "file": "services/tutorStubTutorAttemptRuntime.js",

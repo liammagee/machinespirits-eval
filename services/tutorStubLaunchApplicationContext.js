@@ -70,6 +70,10 @@ export async function createTutorStubLaunchApplicationContext({
   if (args['no-committee']) args['point-of-action-arm'] = '';
 
   const passthroughEnabled = Boolean(args.passthrough);
+  if (args['guard-findings-feed-forward'] && args['no-guard-findings-feed-forward']) {
+    throw new Error('--guard-findings-feed-forward cannot be combined with --no-guard-findings-feed-forward');
+  }
+  if (args['no-guard-findings-feed-forward']) args['guard-findings-feed-forward'] = false;
   const observedAuditsEnabled = Boolean(args['observe-audits']);
   if (observedAuditsEnabled && !passthroughEnabled) {
     throw new Error(
@@ -91,6 +95,7 @@ export async function createTutorStubLaunchApplicationContext({
     args['no-opening'] = true;
     args['no-closeout-report'] = true;
     args['no-turn-feedback'] = true;
+    args['guard-findings-feed-forward'] = false;
     args['no-interim-animation'] = true;
     args['field-viz'] = false;
     args.tuning = 'off';

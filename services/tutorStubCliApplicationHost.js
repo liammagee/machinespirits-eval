@@ -231,6 +231,7 @@ import { compileTutorStubPerformanceObligationContract } from './tutorStubPerfor
 import { projectTutorStubSpeakerPublicPremise } from './tutorStubSpeakerPublicPremise.js';
 import { resolveTutorStubPublicCounterpressure } from './tutorStubCounterpressure.js';
 import { tutorStubGuardIssueRows, tutorStubTerminalFallbackFailureMessage } from './tutorStubGuardDisposition.js';
+import { buildTutorStubGuardFindingsFeedForward } from './tutorStubGuardFindingsFeedForward.js';
 import {
   auditTutorStubSelfCorrectionDisclosure,
   detectTutorStubSelfCorrectionDisclosure,
@@ -1705,6 +1706,7 @@ export async function runTutorStubCliApplicationHost({
     buildTutorGuardAccounting,
     buildTutorStubDramaticReleaseFrame,
     buildTutorStubFirstDraftContract,
+    buildTutorStubGuardFindingsFeedForward,
     buildTutorStubResponseCompositionFrame,
     buildTutorStubSimplifiedRecoveryConfiguration,
     callAI,
@@ -1759,6 +1761,7 @@ export async function runTutorStubCliApplicationHost({
     // Default flipped to shadow_advisory on 2026-08-07 (guard-policy-default-flip).
     // TUTOR_STUB_GUARD_POLICY=strict restores the old vetoing regime.
     guardBoundaryPolicy: process.env.TUTOR_STUB_GUARD_POLICY === 'strict' ? 'strict' : 'shadow_advisory',
+    guardFindingsFeedForward: Boolean(args['guard-findings-feed-forward']),
     // Q3: TUTOR_STUB_CORRUPT_RELIEF=1 demotes ALL hard guard issues to
     // advisory at deliberately-corrupted turns so the model's repair ships.
     corruptReliefTurn: (turn) =>

@@ -525,6 +525,7 @@
         "tests/tutorStubGuardAccounting.test.js",
         "tests/tutorStubGuardAttemptProjection.test.js",
         "tests/tutorStubGuardDisposition.test.js",
+        "tests/tutorStubGuardFindingsFeedForward.test.js",
         "tests/tutorStubGuardSpanProjection.test.js",
         "tests/tutorStubHumanDiscourseConfig.test.js",
         "tests/tutorStubHumanDiscourseLayer.test.js",

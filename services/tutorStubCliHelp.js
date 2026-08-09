@@ -36,6 +36,11 @@ Options:
   --passthrough          pure speaker baseline: system setup + full public
                          history + latest learner message; exactly one model
                          call per turn, with analysis and harness policy off
+  --guard-findings-feed-forward
+                         give the next tutor turn public-safe, prospective
+                         guidance for advisories recorded on the prior turn
+  --no-guard-findings-feed-forward
+                         disable prior-turn guard guidance explicitly
   --all-models <ref>     use one provider alias for tutor, classifier,
                          learner-DAG analysis, and automated/mixed learner;
                          overrides all four role-specific model flags
