@@ -106,6 +106,7 @@
         "tests/adaptationAboxBridge.test.js",
         "tests/adaptationOntology.test.js",
         "tests/adaptive-mock-learner.test.js",
+        "tests/adaptiveRegisterSwitching.test.js",
         "tests/adaptiveRunEvidencePackage.test.js",
         "tests/adaptiveStateBenchmarkIntegrity.test.js",
         "tests/adaptiveStateBenchmarkV2.test.js",

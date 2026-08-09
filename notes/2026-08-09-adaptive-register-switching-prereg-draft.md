@@ -1,8 +1,9 @@
-# Does switching into an edged register at the right moment help? — Pre-Registration DRAFT
+# Does switching into an edged register at the right moment help? — Frozen Pre-Registration
 
-Status: **DRAFT — not frozen, no plan hash, nothing bought.** Numbers marked
-"at freeze" are computed and pinned when the design freezes. This note exists
-so the design argument is on record before any apparatus is built.
+Status: **FROZEN — no model calls made.** Frozen plan SHA-256:
+`da2723e47de143305e88a9a7b26688f6f58e4958e0b310ed4d7e147cd9734845`.
+The apparatus and zero-call plan are built; Stage 1 remains locked pending the
+operator's explicit approval of that hash. Stage 2 is not authorized.
 
 ## Where this comes from
 
@@ -34,24 +35,28 @@ and always-edged tie, the edge (not the timing) is doing the work.
 Three tutors, one batch, one stack (`codex.gpt-5.5` both tutor seats — never
 nemotron/kimi), the same five controlled resistance targets.
 
-- **Adaptive**: a new cell whose engagement router may select the edged
+- **Adaptive (cell 204)**: a new cell whose engagement router may select the edged
   registers. Today the router (`services/engagementModeRouter.js`) picks a
   register per turn from the learner signal but the edged registers carry
   `router_selectable: false` in `config/engagement-registers.yaml`; the one
-  build item is a cell-scoped menu widening (a cell flag that admits named
-  edged registers to the router's menu), NOT a global registry flip. No
-  register pin.
-- **Pinned warm**: the same cell block with the router menu unchanged (edged
-  excluded). The never-switch control.
+  build item is a cell-scoped menu widening (`router_register_menu: [ironic,
+  sarcastic]`) that admits named edged registers to the router's menu, NOT a
+  global registry flip. No register pin.
+- **Router-warm control (cell 205)**: the same cell block with no register pin
+  and the router menu unchanged (edged excluded). The never-edged control.
 - **Pinned sarcastic**: cell 197 unchanged. The always-edged control; also
   anchors continuity with the stored batches.
 
-Repeats per arm-scenario: at freeze, from the power section. Scoring: tutor
-v2.2 by `claude-code/claude-sonnet-5` (cross-family from the codex writer),
-learner rubric by the same judge, register rubric `claude-code.sonnet-5` on
-edged turns. Manner reading: the pinned reader on the unchanged question
+Stage 1 uses two repeats per scenario in the adaptive arm: 10 rows. Stage 2,
+if separately approved after Stage 1, uses seven repeats per arm-scenario: 35
+rows per arm, 105 rows total. Scoring: tutor v2.2 by
+`claude-code/claude-sonnet-5` (cross-family from the codex writer), learner
+rubric by the same judge, register rubric `claude-code.sonnet-5` on edged
+turns. Manner reading: the pinned reader on the unchanged question
 `manner-presence/1.0` — no version bump, so readings pool with the stored
-strong-stack batches.
+strong-stack batches. Each edged turn is scored under the gate for the
+register actually selected. Cue-compliance counts stay within register and are
+never differenced across registers.
 
 ## Registered measures (all fail closed)
 
@@ -69,7 +74,7 @@ strong-stack batches.
    choice whose turn reads flat is a delivery failure, counted separately
    from a routing failure.
 5. **Primary: conversion** — positive local outcome at the post-resistance
-   fold, adaptive vs pinned-warm. Verdict keyed to this contrast only.
+   fold, adaptive vs router-warm. Verdict keyed to this contrast only.
 6. **Secondary: timing vs edge** — adaptive vs pinned-sarcastic, same
    measure.
 7. **Continuous secondary** — learner-rubric change across the dialogue
@@ -77,20 +82,34 @@ strong-stack batches.
    lacks.
 8. **Cost** — tutor v2.2 means per arm.
 
-## Power, to be pinned at freeze
+## Frozen power table
 
 Known going in: on 15-row draws of one cell, the between-draw spread of a
 binary count is about 3 in 15 (the plain sarcastic arm read 11/15 then 14/15
-on consecutive days). So 15 per arm cannot answer the primary and will not be
-proposed. Sketch, to be exactly computed at freeze: detecting 50% vs 85%
-conversion at two-sided α = .05 with power ≈ .8 needs roughly 30 rows per
-arm; three arms ≈ 90 rows ≈ 7–8 h generation at the measured 5 min/row. If
-the minimum detectable effect at an affordable size is implausibly large, the
-design says so and does not run — that is what the freeze step is for.
+on consecutive days). So 15 per arm cannot answer the primary and is not
+proposed.
+
+Exact unconditional power for a two-sided Fisher test at α = .05, with
+independent Binomial(n, .50) warm-control and Binomial(n, p) adaptive counts:
+
+| Warm | Adaptive | Difference | First n/arm with power ≥ .80 | Balanced n/arm | Exact power at balanced n |
+|---:|---:|---:|---:|---:|---:|
+| .50 | .65 | .15 | 183 | 185 | .8102 |
+| .50 | .70 | .20 | 102 | 105 | .8153 |
+| .50 | .75 | .25 | 64 | 65 | .8090 |
+| .50 | .80 | .30 | 44 | 45 | .8154 |
+| .50 | .85 | .35 | 32 | 35 | .8522 |
+| .50 | .90 | .40 | 23 | 25 | .8326 |
+
+The frozen Stage-2 proposal is the .50-versus-.85 row, rounded from the exact
+minimum 32 to 35 per arm so each of the five resistance targets receives seven
+repeats. That is 105 rows, about 8.75 hours at the measured five minutes per
+row. This is a large minimum detectable policy effect; the table is part of
+the operator's later Stage-2 decision, not authorization to run it.
 
 ## Staging
 
-- **Stage 1, cheap kill (~10 rows, adaptive arm only):** does the router,
+- **Stage 1, cheap kill (10 rows, adaptive arm only):** does the router,
   given the widened menu, ever choose an edged register, and at plausible
   moments? Measures 1–4 only; no outcome claim. If it never switches or
   switches indiscriminately, stop and fix routing before buying outcomes.
@@ -108,8 +127,24 @@ design says so and does not run — that is what the freeze step is for.
 2. **Synthetic learner.** The learner is the repo's LLM learner; a
    conversion gain here says the *simulated* learner takes content better
    under timed edge. No human claim.
-4. **One writer, one reader**, as throughout the arc.
+3. **One writer, one reader**, as throughout the arc.
+
+## Frozen apparatus
+
+- Plan and fail-closed measures: `services/adaptiveRegisterSwitching.js`.
+- Stage-1-only runner: `scripts/run-adaptive-register-switching.js`.
+- Adaptive arm: `cell_204_id_director_adaptive_edged_register_switching`.
+- Router-warm control: `cell_205_id_director_router_warm_register_control`.
+- Always-edged comparator: existing
+  `cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified`.
+- The runner has no Stage-2 launch mode. Every paid Stage-1 mode requires
+  `--launch-approved --expected-sha <clean-commit>`; `--report-run` is a
+  zero-call read-only report.
 
 ## Deviations
 
-Recorded, not patched around, in the workplan card and the paper.
+The draft called the never-edged arm "pinned warm" while specifying an
+unchanged, unpinned router menu. The frozen design names it **router-warm
+control** to match the actual policy; its architecture is unchanged from the
+draft description. Further deviations are recorded, not patched around, in
+the workplan card and the paper.

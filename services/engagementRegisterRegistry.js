@@ -47,13 +47,48 @@ export function getLegacyEngagementRegisterAliases() {
   return loadEngagementRegisterRegistry().legacy_register_aliases || {};
 }
 
-export function getEngagementStanceNames({ includeArmAssigned = true } = {}) {
-  return Object.entries(getEngagementStanceDefinitions())
-    .filter(([, definition]) => includeArmAssigned || definition.router_selectable !== false)
+function normalizeRouterRegisterMenu(routerRegisterMenu, definitions) {
+  if (routerRegisterMenu == null) return [];
+  if (!Array.isArray(routerRegisterMenu)) {
+    throw new TypeError('router_register_menu must be an array of engagement-register names');
+  }
+
+  const normalized = [];
+  for (const value of routerRegisterMenu) {
+    const raw = typeof value === 'string' ? value.trim() : '';
+    const resolved = raw ? resolveEngagementStance(raw) : null;
+    const registerName = resolved?.register || null;
+    if (!registerName || !definitions[registerName]) {
+      throw new Error(`router_register_menu names unknown engagement register ${JSON.stringify(value)}`);
+    }
+    if (!normalized.includes(registerName)) normalized.push(registerName);
+  }
+  return normalized;
+}
+
+export function getEngagementStanceNames({ includeArmAssigned = true, routerRegisterMenu = [] } = {}) {
+  const definitions = getEngagementStanceDefinitions();
+  const cellScopedMenu = new Set(normalizeRouterRegisterMenu(routerRegisterMenu, definitions));
+  return Object.entries(definitions)
+    .filter(
+      ([name, definition]) =>
+        includeArmAssigned || definition.router_selectable !== false || cellScopedMenu.has(name),
+    )
     .map(([name]) => name);
 }
 
 export const getEngagementRegisterNames = getEngagementStanceNames;
+
+/**
+ * The menu available to the deterministic engagement router on one turn.
+ *
+ * `router_selectable` remains the global default. A cell may explicitly admit
+ * named arm-assigned registers without changing the registry for every other
+ * cell. Unknown names fail closed instead of silently shrinking the menu.
+ */
+export function getRouterSelectableEngagementRegisterNames(routerRegisterMenu = []) {
+  return getEngagementStanceNames({ includeArmAssigned: false, routerRegisterMenu });
+}
 
 export function getLegacyEngagementRegisterNames() {
   return Object.keys(getLegacyEngagementRegisterAliases());
