@@ -1,20 +1,20 @@
 {
-  "generated": "2026-08-08T23:52:22.655Z",
+  "generated": "2026-08-09T00:24:28.285Z",
   "counts": {
-    "total": 473,
+    "total": 474,
     "byStatus": {
-      "done": 445,
+      "done": 447,
       "blocked": 6,
       "dropped": 9,
       "review": 3,
       "active": 2,
       "archived": 4,
-      "triaged": 4
+      "triaged": 3
     },
     "byType": {
       "research": 75,
       "experiment": 77,
-      "infra": 100,
+      "infra": 101,
       "maintenance": 200,
       "content": 3,
       "ops": 10,
@@ -61,36 +61,6 @@
         "maintainability"
       ],
       "milestone": "tutor-super-app"
-    },
-    {
-      "id": "strict-policy-null-sweep",
-      "title": "Re-read the nulls that were measured while the guard wrote the tutor's turns",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-09",
-      "updated": "2026-08-09",
-      "verification": "A table in the guard catalog listing every tutor-stub null cited in paper-full-2.0.md whose run predates the 2026-08-07 delivery flip, each marked with where its treatment lived (the tutor's prose, or somewhere the guard never touched), a template rate where traces survive, and one of three verdicts: safe, diluted, or unrecoverable. Every null marked diluted carries a caveat in place in the paper. No re-run is part of this card.",
-      "claim_status": "planned",
-      "links": {
-        "code": [
-          "scripts/census-guard-template-rate.js",
-          "services/tutorStubGuardDisposition.js",
-          "docs/tutor-stub-guard-catalog.md"
-        ],
-        "items": [
-          "tutor-stub-template-rate-audit",
-          "phase-b-rerun-under-flipped-policy",
-          "guard-policy-default-flip"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "guards",
-        "paper"
-      ]
     },
     {
       "id": "guard-findings-feed-forward",
@@ -9701,6 +9671,36 @@
       ]
     },
     {
+      "id": "strict-policy-null-sweep",
+      "title": "Re-read the nulls that were measured while the guard wrote the tutor's turns",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "verification": "A table in the guard catalog listing every tutor-stub null cited in paper-full-2.0.md whose run predates the 2026-08-07 delivery flip, each marked with where its treatment lived (the tutor's prose, or somewhere the guard never touched), a template rate where traces survive, and one of three verdicts: safe, diluted, or unrecoverable. Every null marked diluted carries a caveat in place in the paper. No re-run is part of this card.",
+      "claim_status": "settled",
+      "links": {
+        "code": [
+          "scripts/census-guard-template-rate.js",
+          "services/tutorStubGuardDisposition.js",
+          "docs/tutor-stub-guard-catalog.md"
+        ],
+        "items": [
+          "tutor-stub-template-rate-audit",
+          "phase-b-rerun-under-flipped-policy",
+          "guard-policy-default-flip"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards",
+        "paper"
+      ]
+    },
+    {
       "id": "test-canonical-posthoc-analysis-pipeline",
       "title": "Add fixture-to-report tests for the canonical post-hoc analysis pipeline",
       "status": "done",
@@ -13665,6 +13665,30 @@
         "outer-loop",
         "proof-structure",
         "lemma-layer"
+      ]
+    },
+    {
+      "id": "pty-lane-tempdir-teardown-race",
+      "title": "Stop the interactive test lane failing on its own temp-dir cleanup",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "verification": "npm run test:pty:ci passes with the five interactive test files removing their temp directories through one retrying helper, and a cleanup that cannot be completed warns instead of throwing out of a finally block.",
+      "claim_status": "settled",
+      "links": {
+        "code": [
+          "tests/helpers/tutorStubInteractiveHarness.js",
+          "tests/tutorStubInteractivePerformance.test.js"
+        ]
+      },
+      "tags": [
+        "infra",
+        "tests",
+        "tutor-stub"
       ]
     },
     {
