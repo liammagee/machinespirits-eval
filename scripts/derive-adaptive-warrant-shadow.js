@@ -1,44 +1,93 @@
 #!/usr/bin/env node
 
 /**
- * Phase-1 trace-only prototype for the normative/descriptive adaptation design
- * (docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md §18).
+ * Phase-1/2 trace-only prototype for the normative/descriptive adaptation
+ * design (docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md).
  *
  * Replays an existing tutor-stub trace (.tutor-stub-traces/*.jsonl) WITHOUT
- * changing tutor behaviour and derives, per learner turn:
+ * changing tutor behaviour and derives one record per DECISION POINT — the
+ * strategy selection at tutor turn N (hold the action family in force, or
+ * revise it), for N >= 2.
  *
- *   expected   — the normative side already in the trace: clue-release
- *                schedule (release_pacing_update) and the compiled turn
- *                contract (tutor_first_draft_contract);
- *   observed   — the descriptive side: learner-DAG growth
- *                (learner_dag_preflight), uptake and repetition audits,
- *                guard/fallback events;
- *   commitment — a derived cross-turn pedagogical commitment: the streak of
- *                turns holding the same action family + stance + part +
- *                tactic, with warrant evidence and defeater evidence
- *                accumulated over the streak;
- *   divergence — candidate divergence rows (conceptual / interactional /
- *                pacing) with magnitude and persistence;
- *   verdict    — whether a revision was warranted under a simple threshold
- *                rule, and whether the stub ACTUALLY revised its performance
- *                selection at the next turn.
+ * v0.1 changes after the first gold comparison
+ * (docs/adaptation-refinement/gold-annotations-first-corpus.md):
  *
- * The verdict comparison (warranted+held, unwarranted+revised, ...) is the
- * point: it tests whether this representation explains adaptation decisions
- * already present in real sessions. Pure computation; no model calls.
+ *  - Evidence window: the warrant is computed at DECISION TIME. The decision
+ *    at turn N sees learner turn N (the utterance the tutor is answering),
+ *    all prior learner turns, and audits of tutor turns through N-1. The
+ *    previous version stopped one learner turn short and mis-called every
+ *    decision whose warrant arrived with the learner's own words.
+ *  - Immediate warrants: an explicit repair request ("what are you talking
+ *    about?", "making no sense") or a stall ("no idea") from the learner
+ *    warrants revision on its own — these are performative requests, not
+ *    mood signals, and do not need accumulation.
+ *  - Register track: a register complaint ("you sound like a lawyer")
+ *    warrants a REGISTER revision under the held strategy; two complaints
+ *    inside one strategy streak escalate to a strategy warrant.
+ *  - Stall masking: an engaged-analytic learner turn (long, substantive,
+ *    no trouble markers) masks the accumulated-trouble warrant and marks
+ *    conceptual divergence as productive (§9.3) — a flat fact record while
+ *    the learner is testing the tutor's claim is not a stall.
+ *
+ * CAVEAT: these rules were tuned on the same eleven gold decisions they are
+ * scored against. Agreement here shows the representation can express the
+ * gold judgments, not that the rules generalize. Held-out dialogues needed.
  *
  * Usage:
- *   node scripts/derive-adaptive-warrant-shadow.js --trace <path/to/trace.jsonl> [--json <out.json>]
+ *   node scripts/derive-adaptive-warrant-shadow.js --trace <trace.jsonl> [--json <out.json>] [--gold <gold.json>]
  */
 
 import fs from 'node:fs';
+import path from 'node:path';
 import { parseArgs } from 'node:util';
 
-export const ADAPTIVE_WARRANT_SHADOW_SCHEMA = 'machinespirits.tutor-stub.adaptive-warrant-shadow.v0';
+export const ADAPTIVE_WARRANT_SHADOW_SCHEMA = 'machinespirits.tutor-stub.adaptive-warrant-shadow.v0.1';
 
 const REPETITION_DEFEATER_THRESHOLD = 0.35;
+const ACCUMULATED_TROUBLE_THRESHOLD = 2;
+const REGISTER_ESCALATION_THRESHOLD = 2;
 const CONCEPTUAL_STALL_TURNS = 2;
-const WARRANT_DEFEATER_THRESHOLD = 2;
+
+const REPAIR_REQUEST_PATTERN =
+  /\bwhat are you talking about\b|\bwhat do you mean\b|\bdon'?t understand\b|\bno sense\b|\bmakes? no sense\b|\bmaking no sense\b|\bhow am i supposed to (?:learn|understand)\b|\bexplain (?:it |this )?(?:more )?simpl[iy]\b|\bsimpler\b/iu;
+const STALL_PATTERN = /^(?:i have )?no idea\.?$|^idk\b.?$|^dunno\b.?$|^not sure\.?$|^i don'?t know\.?$/iu;
+const REGISTER_COMPLAINT_PATTERN =
+  /\bsound(?:ing)? like a lawyer\b|\bthis is (?:really )?(?:annoying|boring)\b|\bannoying\b|\bstop (?:talking|sounding) like\b/iu;
+const REPETITION_COMPLAINT_PATTERN = /\b(?:you'?re? |you are )?repeat(?:ing|ed)\b/iu;
+const ANALYTIC_MARKER_PATTERN =
+  /\b(?:but|still|not|need|support|evidence|criteri|establish|baseline|because|unless|until|justify|require)\b/iu;
+
+/**
+ * Classify a learner turn as a decision-time signal. Multi-label where it
+ * matters (a repetition complaint can also be a repair request); `primary`
+ * carries the strongest label for the warrant rule.
+ */
+export function classifyLearnerSignal(text) {
+  const surface = String(text || '')
+    .replace(/\s+/gu, ' ')
+    .trim();
+  if (!surface) return { primary: 'absent', labels: [], surface };
+  const labels = [];
+  if (REPAIR_REQUEST_PATTERN.test(surface)) labels.push('repair_request');
+  if (STALL_PATTERN.test(surface)) labels.push('stall');
+  if (REGISTER_COMPLAINT_PATTERN.test(surface)) labels.push('register_complaint');
+  if (REPETITION_COMPLAINT_PATTERN.test(surface)) labels.push('repetition_complaint');
+  const tokenCount = surface.split(/\s+/u).length;
+  if (!labels.length && tokenCount >= 10 && ANALYTIC_MARKER_PATTERN.test(surface)) {
+    labels.push('engaged_analytic');
+  }
+  if (!labels.length) labels.push('neutral');
+  const priority = [
+    'repair_request',
+    'stall',
+    'register_complaint',
+    'repetition_complaint',
+    'engaged_analytic',
+    'neutral',
+  ];
+  const primary = priority.find((label) => labels.includes(label));
+  return { primary, labels, surface };
+}
 
 function readTraceLines(tracePath) {
   const raw = fs.readFileSync(tracePath, 'utf8');
@@ -117,10 +166,6 @@ function performanceSelection(contractEvent) {
   };
 }
 
-function selectionKey(selection) {
-  return [selection.action_family, selection.stance, selection.part, selection.tactic].join('|');
-}
-
 function dagCounts(preflightEvent) {
   const record = preflightEvent?.preflight?.priorRecord || {};
   return {
@@ -135,168 +180,177 @@ function dagTotal(counts) {
   return counts.grounded + counts.voiced;
 }
 
-function deriveSessionShadow(session, sessionIndex) {
-  const events = session.events;
+/** Per-tutor-turn descriptive facts, shared by trouble accounting below. */
+function collectTurnFacts(events) {
   const contracts = lastPerTurn(events, 'tutor_first_draft_contract');
   const preflights = lastPerTurn(events, 'learner_dag_preflight');
   const pacing = lastPerTurn(events, 'release_pacing_update');
   const uptakeAudits = lastPerTurn(events, 'tutor_live_turn_progression_audit');
   const repetitionAudits = lastPerTurn(events, 'tutor_repetition_audit');
+  const learnerTurns = lastPerTurn(events, 'learner_turn_compound_committed');
   const trouble = allPerTurn(
     events,
     new Set(['tutor_response_fallback', 'tutor_response_guard_exhausted', 'tutor_response_mechanical_repair']),
   );
 
   const turns = [...contracts.keys()].sort((a, b) => a - b);
-  const rows = [];
-  let commitment = null;
-  let turnsSinceDagGrowth = 0;
-
+  const facts = new Map();
   for (const turn of turns) {
-    const contract = contracts.get(turn);
-    const selection = performanceSelection(contract);
-    // The commitment is the pedagogical STRATEGY (action family). Stance, part
-    // and tactic are its per-turn realization: they jitter turn to turn in real
-    // traces, so treating them as the commitment makes every turn a revision.
-    const key = selection.action_family || 'unknown';
-
-    // Descriptive side. The preflight for turn N describes the learner record
-    // BEFORE the tutor's turn-N response, so growth attributable to turn N is
-    // read from the next turn's preflight.
+    const selection = performanceSelection(contracts.get(turn));
     const before = preflights.get(turn) ? dagCounts(preflights.get(turn)) : null;
     const after = preflights.get(turn + 1) ? dagCounts(preflights.get(turn + 1)) : null;
     const dagGrowth = before && after ? dagTotal(after) - dagTotal(before) : null;
-
     const uptake = uptakeAudits.get(turn);
     const uptakeOk = uptake ? uptake.ok !== false && (uptake.issues || []).length === 0 : null;
-    const repetition = repetitionAudits.get(turn);
-    const maxSimilarity = Number(repetition?.maxSimilarity);
+    const maxSimilarity = Number(repetitionAudits.get(turn)?.maxSimilarity);
     const pace = pacing.get(turn);
-    const lateReleases = (pace?.releasePacing?.counts?.late ?? 0) + (pace?.dueNow?.length ?? 0);
-    const troubleEvents = (trouble.get(turn) || []).map((event) => event.type);
 
-    if (dagGrowth !== null) turnsSinceDagGrowth = dagGrowth > 0 ? 0 : turnsSinceDagGrowth + 1;
-
-    // Commitment: streak of turns holding the same performance selection.
-    if (!commitment || commitment.key !== key) {
-      commitment = {
-        key,
-        selection,
-        sinceTurn: turn,
-        streak: 0,
-        warrantEvidence: [],
-        defeaterEvidence: [],
-      };
-    }
-    commitment.streak += 1;
-
-    const warrantEvidence = [];
-    const defeaterEvidence = [];
-    if (dagGrowth !== null && dagGrowth > 0) warrantEvidence.push(`dag_growth:+${dagGrowth}`);
-    if (uptakeOk === true) warrantEvidence.push('uptake_audit_clean');
-    if (Number.isFinite(maxSimilarity) && maxSimilarity < REPETITION_DEFEATER_THRESHOLD) {
-      warrantEvidence.push('low_repetition');
-    }
-    if (dagGrowth !== null && dagGrowth <= 0) defeaterEvidence.push('no_dag_growth');
-    if (uptakeOk === false) defeaterEvidence.push('uptake_audit_issues');
+    const defeaters = [];
+    if (dagGrowth !== null && dagGrowth <= 0) defeaters.push('no_dag_growth');
+    if (uptakeOk === false) defeaters.push('uptake_audit_issues');
     if (Number.isFinite(maxSimilarity) && maxSimilarity >= REPETITION_DEFEATER_THRESHOLD) {
-      defeaterEvidence.push(`repetition:${maxSimilarity.toFixed(2)}`);
+      defeaters.push(`repetition:${maxSimilarity.toFixed(2)}`);
     }
-    for (const type of troubleEvents) defeaterEvidence.push(type);
+    for (const event of trouble.get(turn) || []) defeaters.push(event.type);
     if (pace?.signal?.direction && pace.signal.direction !== 'steady') {
-      defeaterEvidence.push(`pacing_signal:${pace.signal.direction}`);
+      defeaters.push(`pacing_signal:${pace.signal.direction}`);
     }
-    commitment.warrantEvidence.push({ turn, evidence: warrantEvidence });
-    commitment.defeaterEvidence.push({ turn, evidence: defeaterEvidence });
 
-    // Divergence rows. Conceptual stalling is session-wide (the learner record
-    // does not care which strategy failed to grow it).
+    facts.set(turn, {
+      turn,
+      selection,
+      dagGrowth,
+      uptakeOk,
+      maxSimilarity: Number.isFinite(maxSimilarity) ? maxSimilarity : null,
+      defeaters,
+      learnerSignal: classifyLearnerSignal(learnerTurns.get(turn)?.combinedText),
+      pacingSignal: pace?.signal || null,
+    });
+  }
+  return { turns, facts };
+}
+
+function deriveSessionShadow(session, sessionIndex) {
+  const { turns, facts } = collectTurnFacts(session.events);
+  const decisions = [];
+  let turnsSinceDagGrowth = 0;
+
+  for (let i = 1; i < turns.length; i += 1) {
+    const turn = turns[i];
+    const prior = facts.get(turns[i - 1]);
+    const current = facts.get(turn);
+
+    // Strategy in force = the family held through turn N-1; streak counts how
+    // long it has been held.
+    let sinceIndex = i - 1;
+    while (
+      sinceIndex > 0 &&
+      facts.get(turns[sinceIndex - 1]).selection.action_family === prior.selection.action_family
+    ) {
+      sinceIndex -= 1;
+    }
+    const streakTurns = turns.slice(sinceIndex, i);
+    const streak = streakTurns.length;
+
+    // Decision-time learner signal: learner turn N, else the latest committed
+    // learner turn (session tails often leave the last learner turn uncommitted).
+    let signal = current.learnerSignal;
+    let signalCarried = false;
+    for (let back = i; back >= 0 && signal.primary === 'absent'; back -= 1) {
+      signal = facts.get(turns[back]).learnerSignal;
+      signalCarried = back !== i;
+    }
+
+    // Evidence inside the streak: tutor-turn trouble through N-1, learner
+    // register complaints through N.
+    const troubleTurns = streakTurns
+      .map((t) => facts.get(t))
+      .filter((fact) => fact.defeaters.length > 0)
+      .map((fact) => ({ turn: fact.turn, defeaters: fact.defeaters }));
+    const complaintTurns = [...streakTurns, turn].filter((t) =>
+      facts.get(t).learnerSignal.labels.includes('register_complaint'),
+    );
+
+    for (const t of streakTurns.slice(-1)) {
+      const growth = facts.get(t).dagGrowth;
+      if (growth !== null) turnsSinceDagGrowth = growth > 0 ? 0 : turnsSinceDagGrowth + 1;
+    }
+
+    const masked = signal.primary === 'engaged_analytic';
+    const immediate = signal.primary === 'repair_request' || signal.primary === 'stall';
+    const registerEscalation = complaintTurns.length >= REGISTER_ESCALATION_THRESHOLD;
+    const accumulated = !masked && troubleTurns.length >= ACCUMULATED_TROUBLE_THRESHOLD;
+
+    const revisionWarranted = immediate || registerEscalation || accumulated;
+    const registerRevisionWarranted = complaintTurns.length >= 1;
+    const warrantBasis = immediate
+      ? `immediate:${signal.primary}`
+      : registerEscalation
+        ? `register_escalation:${complaintTurns.length}_complaints`
+        : accumulated
+          ? `accumulated:${troubleTurns.length}_trouble_turns`
+          : masked && troubleTurns.length >= ACCUMULATED_TROUBLE_THRESHOLD
+            ? 'masked_by_engaged_analytic'
+            : 'none';
+
+    // Divergence rows, with the productive interpretation when masked (§9.3).
     const divergence = [];
     if (turnsSinceDagGrowth >= CONCEPTUAL_STALL_TURNS) {
       divergence.push({
         dimension: 'conceptual',
         magnitude: turnsSinceDagGrowth >= 4 ? 'high' : 'moderate',
         persistence: turnsSinceDagGrowth,
-        note: 'learner DAG record not growing',
+        interpretation: masked ? 'productive' : 'stalled',
+        repair_warranted: !masked,
+        note: masked
+          ? 'fact record flat while the learner tests the claim — no repair'
+          : 'learner DAG record not growing',
       });
     }
-    const interactionalTurns = commitment.defeaterEvidence.filter((row) =>
-      row.evidence.some((item) => item === 'uptake_audit_issues' || item.startsWith('repetition:')),
+    const interactionalTurns = troubleTurns.filter((row) =>
+      row.defeaters.some((item) => item === 'uptake_audit_issues' || item.startsWith('repetition:')),
     ).length;
     if (interactionalTurns >= 1) {
       divergence.push({
         dimension: 'interactional',
         magnitude: interactionalTurns >= 3 ? 'high' : 'moderate',
         persistence: interactionalTurns,
-        note: 'uptake or repetition trouble inside the current commitment',
-      });
-    }
-    if (lateReleases > 0) {
-      divergence.push({
-        dimension: 'pacing',
-        magnitude: lateReleases >= 2 ? 'high' : 'moderate',
-        persistence: lateReleases,
-        note: 'clue releases behind the authored schedule',
+        interpretation: 'trouble',
+        repair_warranted: true,
+        note: 'uptake or repetition trouble inside the current strategy streak',
       });
     }
 
-    // Warrant threshold: enough defeater-bearing turns inside this commitment,
-    // and the most recent turn contributed a defeater.
-    const defeaterTurns = commitment.defeaterEvidence.filter((row) => row.evidence.length > 0).length;
-    const latestDefeated = defeaterEvidence.length > 0;
-    const revisionWarranted = defeaterTurns >= WARRANT_DEFEATER_THRESHOLD && latestDefeated;
+    const revised = current.selection.action_family !== prior.selection.action_family;
+    const realizationChanged =
+      current.selection.stance !== prior.selection.stance ||
+      current.selection.part !== prior.selection.part ||
+      current.selection.tactic !== prior.selection.tactic;
 
-    rows.push({
+    decisions.push({
       turn,
-      commitment: {
-        strategy: selection.action_family,
-        realization: { stance: selection.stance, part: selection.part, tactic: selection.tactic },
-        since_turn: commitment.sinceTurn,
-        streak: commitment.streak,
-      },
-      expected: {
-        next_release: pace?.nextRelease || null,
-      },
-      observed: {
-        dag_before: before,
-        dag_growth: dagGrowth,
-        uptake_ok: uptakeOk,
-        repetition_max_similarity: Number.isFinite(maxSimilarity) ? Number(maxSimilarity.toFixed(3)) : null,
-        trouble: troubleEvents,
-        pacing_signal: pace?.signal || null,
-      },
-      warrant_evidence: warrantEvidence,
-      defeater_evidence: defeaterEvidence,
+      strategy_in_force: prior.selection.action_family,
+      held_for_turns: streak,
+      decided: revised ? `revise:${current.selection.action_family}` : 'hold',
+      realization_changed: realizationChanged,
+      learner_signal: { ...signal, carried: signalCarried },
+      trouble_turns: troubleTurns,
+      complaint_turns: complaintTurns,
       divergence,
       revision_warranted: revisionWarranted,
+      register_revision_warranted: registerRevisionWarranted,
+      warrant_basis: warrantBasis,
+      verdict: revisionWarranted
+        ? revised
+          ? 'warranted_and_revised'
+          : 'warranted_but_held'
+        : revised
+          ? 'revised_without_warrant'
+          : 'aligned_hold',
     });
   }
 
-  // Actual revisions: a strategy revision is an action-family change at the
-  // next turn. Realization churn (stance/part/tactic changing under the same
-  // strategy) is reported separately — it is a finding, not a revision.
-  for (let i = 0; i < rows.length; i += 1) {
-    const next = rows[i + 1];
-    const revised = next ? next.commitment.strategy !== rows[i].commitment.strategy : null;
-    const realizationChanged = next
-      ? selectionKey({ action_family: null, ...next.commitment.realization }) !==
-        selectionKey({ action_family: null, ...rows[i].commitment.realization })
-      : null;
-    rows[i].revised_next_turn = revised;
-    rows[i].realization_churn_next_turn = realizationChanged;
-    rows[i].verdict =
-      revised === null
-        ? 'last_turn'
-        : rows[i].revision_warranted && revised
-          ? 'warranted_and_revised'
-          : rows[i].revision_warranted && !revised
-            ? 'warranted_but_held'
-            : !rows[i].revision_warranted && revised
-              ? 'revised_without_warrant'
-              : 'aligned_hold';
-  }
-
-  return { session: sessionIndex + 1, turns: rows };
+  return { session: sessionIndex + 1, decisions };
 }
 
 export function deriveAdaptiveWarrantShadow(tracePath) {
@@ -309,25 +363,59 @@ export function deriveAdaptiveWarrantShadow(tracePath) {
   };
 }
 
-function formatRow(row) {
-  const real = row.commitment.realization;
-  const commitmentLabel = `${row.commitment.strategy} [${real.stance}/${real.part}/${real.tactic}]`;
-  const streak = row.commitment.streak > 1 ? ` (held ${row.commitment.streak})` : '';
-  const growth =
-    row.observed.dag_growth === null
-      ? 'dag ?'
-      : `dag ${row.observed.dag_growth >= 0 ? '+' : ''}${row.observed.dag_growth}`;
-  const uptake = row.observed.uptake_ok === null ? 'uptake ?' : row.observed.uptake_ok ? 'uptake ok' : 'uptake ISSUES';
-  const div = row.divergence.map((d) => `${d.dimension}:${d.magnitude}(p${d.persistence})`).join(' ') || '—';
-  const defeaters = row.defeater_evidence.join(',') || '—';
+/**
+ * Compare shadow decisions with gold labels (gold-decisions JSON). Gold
+ * `revision_warranted` is yes | no | register_only; register_only expects the
+ * strategy warrant absent and the register warrant present.
+ */
+export function compareWithGold(shadow, goldEntries) {
+  const stem = path.basename(shadow.trace).replace(/\.jsonl$/u, '');
+  const rows = [];
+  for (const gold of goldEntries) {
+    if (gold.trace !== stem) continue;
+    const session = shadow.sessions.find((candidate) => candidate.session === gold.session);
+    const decision = session?.decisions.find((candidate) => candidate.turn === gold.turn);
+    if (!decision) {
+      rows.push({ gold, shadow: null, agree: false, note: 'no shadow decision at this point' });
+      continue;
+    }
+    const agree =
+      gold.revision_warranted === 'yes'
+        ? decision.revision_warranted
+        : gold.revision_warranted === 'no'
+          ? !decision.revision_warranted
+          : !decision.revision_warranted && decision.register_revision_warranted;
+    rows.push({
+      gold,
+      shadow: {
+        turn: decision.turn,
+        revision_warranted: decision.revision_warranted,
+        register_revision_warranted: decision.register_revision_warranted,
+        warrant_basis: decision.warrant_basis,
+        verdict: decision.verdict,
+      },
+      agree,
+    });
+  }
+  return rows;
+}
+
+function formatDecision(decision) {
+  const signal = decision.learner_signal;
+  const signalLabel = `${signal.primary}${signal.carried ? ' (carried)' : ''}`;
+  const snippet = signal.surface ? `"${signal.surface.slice(0, 60)}${signal.surface.length > 60 ? '…' : ''}"` : '—';
+  const trouble = decision.trouble_turns.map((row) => `t${row.turn}(${row.defeaters.join(',')})`).join(' ') || '—';
+  const div =
+    decision.divergence.map((d) => `${d.dimension}:${d.magnitude}(p${d.persistence},${d.interpretation})`).join(' ') ||
+    '—';
   return [
-    `  t${String(row.turn).padStart(2)}`,
-    commitmentLabel + streak,
-    `${growth}, ${uptake}`,
+    `  D@t${String(decision.turn).padStart(2)}  ${decision.strategy_in_force} (held ${decision.held_for_turns}) → ${decision.decided}`,
+    `learner: ${snippet} [${signalLabel}]`,
+    `trouble: ${trouble} | complaints: ${decision.complaint_turns.length}`,
     `div: ${div}`,
-    `defeaters: ${defeaters}`,
-    `→ ${row.verdict}${row.revision_warranted ? ' [REVISION WARRANTED]' : ''}`,
-  ].join('\n      ');
+    `warrant: ${decision.warrant_basis}${decision.register_revision_warranted ? ' + register_warrant' : ''}`,
+    `→ ${decision.verdict}`,
+  ].join('\n        ');
 }
 
 function main() {
@@ -335,22 +423,41 @@ function main() {
     options: {
       trace: { type: 'string' },
       json: { type: 'string' },
+      gold: { type: 'string' },
     },
   });
   if (!values.trace) {
-    console.error('Usage: node scripts/derive-adaptive-warrant-shadow.js --trace <trace.jsonl> [--json <out.json>]');
+    console.error(
+      'Usage: node scripts/derive-adaptive-warrant-shadow.js --trace <trace.jsonl> [--json <out.json>] [--gold <gold.json>]',
+    );
     process.exit(1);
   }
   const shadow = deriveAdaptiveWarrantShadow(values.trace);
   for (const session of shadow.sessions) {
-    console.log(`Session ${session.session} — ${session.turns.length} tutor turns`);
-    for (const row of session.turns) console.log(formatRow(row));
-    const verdicts = session.turns.reduce((acc, row) => {
-      acc[row.verdict] = (acc[row.verdict] || 0) + 1;
+    console.log(`Session ${session.session} — ${session.decisions.length} decision points`);
+    for (const decision of session.decisions) console.log(formatDecision(decision));
+    const verdicts = session.decisions.reduce((acc, decision) => {
+      acc[decision.verdict] = (acc[decision.verdict] || 0) + 1;
       return acc;
     }, {});
     console.log(`  summary: ${JSON.stringify(verdicts)}`);
     console.log('');
+  }
+  if (values.gold) {
+    const goldEntries = JSON.parse(fs.readFileSync(values.gold, 'utf8')).decisions;
+    const rows = compareWithGold(shadow, goldEntries);
+    let agreeCount = 0;
+    for (const row of rows) {
+      if (row.agree) agreeCount += 1;
+      const label = row.agree ? 'AGREE   ' : 'DISAGREE';
+      const shadowSide = row.shadow
+        ? `shadow: warranted=${row.shadow.revision_warranted} register=${row.shadow.register_revision_warranted} (${row.shadow.warrant_basis})`
+        : 'shadow: (missing)';
+      console.log(
+        `${label} s${row.gold.session} D@t${row.gold.turn} gold=${row.gold.revision_warranted} | ${shadowSide}`,
+      );
+    }
+    console.log(`gold agreement: ${agreeCount}/${rows.length}`);
   }
   if (values.json) {
     fs.writeFileSync(values.json, `${JSON.stringify(shadow, null, 2)}\n`);

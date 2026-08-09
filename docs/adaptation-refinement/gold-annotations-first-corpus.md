@@ -57,6 +57,17 @@ Two more instrument notes from the exercise:
 - **Tutor delivery failures pollute the defeater pool.** Deterministic fallbacks are the tutor failing to realize its own contract, not the strategy failing the learner. They belong in a separate "realization failure" ledger; trace 2's t2 warrant rested almost entirely on them.
 - **Operator actions must be excluded.** Character-switch commands are in the trace; the shadow should mark selections that follow them as operator-driven, not tutor revisions.
 
+## v0.1 re-run (2026-08-10)
+
+The shadow was restructured after this comparison: warrants are now computed at decision time (the decision at turn N sees learner turn N), explicit repair requests and stalls warrant immediately, register complaints warrant a register change at one and escalate to a strategy warrant at two, and an engaged-analytic learner turn masks the accumulated-trouble warrant, reading a flat fact record as productive divergence.
+
+Result: **11/11 agreement with gold** (`--gold docs/adaptation-refinement/gold-decisions.v0.json`). Both disagreement classes closed: the "what are you talking about?" decision is now warranted-and-revised (the learner's own words are the warrant), and the trace-2 plateau turns are aligned holds with their conceptual divergence marked productive.
+
+Two caveats:
+
+1. **The rules were tuned on these eleven decisions.** Agreement shows the representation can express the gold judgments, not that the rules generalize. The next test must be held-out: the missing borderline dialogue (§17 item 3), or fresh sessions annotated before the shadow runs.
+2. **Carried signals should expire on revision.** When a session tail leaves the last learner turn uncommitted, the shadow carries the latest committed signal forward; in trace 1 session 2 a carried repair request still warrants revision one turn after the tutor already revised to answer it. Not scored by gold; fix before the held-out run.
+
 ## Machine-readable gold
 
 ```yaml
