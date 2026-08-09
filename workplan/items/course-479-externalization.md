@@ -63,3 +63,14 @@ configured, advocate/advisory and adversary/adversarial prompts land as
 claimed. Pinned by `tests/course479ProfileSet.test.js` (wiring + anti-drift
 vs `prompts/`). Model names are aliases; the deploy overlay must pin Sonnet 5
 (bundled alias still says 4.5). Next: concept presets + reference transcripts.
+
+2026-08-09 Claude: Concept presets FROZEN — `config/course-479-presets.yaml`,
+six presets (two kinds of learning; experience and error; mutual recognition;
+the internal critic; adaptation and the trap; Hegel's revenge), each with a
+learner picture, curriculum menu keyed to the standing 479 lectures, opening
+message, default frozen profile, and a "try this" switch experiment. Guarded
+by `tests/course479Presets.test.js`, which also runs every preset through the
+dialogue engine with a stub model. USER DECISION: codex/claude CLIs will run
+on the fly.io machine and drive the tutor through the provider hook
+(subscription quota); `services/cliProviderBridge.js` is the adapter to port;
+API-key providers stay as fallback. Plan + seam-check docs updated.

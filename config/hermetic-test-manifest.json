@@ -164,6 +164,7 @@
         "tests/configOverrideBoundary.test.js",
         "tests/consolidateRuns.test.js",
         "tests/contentResolver.test.js",
+        "tests/course479Presets.test.js",
         "tests/course479ProfileSet.test.js",
         "tests/createPr.test.js",
         "tests/criticPoeticsOmniscient.test.js",

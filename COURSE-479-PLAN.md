@@ -29,10 +29,18 @@ Plus: concept presets that drop a session into the middle of an idea
 takes to adapt), and a transcript download so seminar discussion can work on
 the students' own conversations.
 
-Cost and access: a class key (the website already has auth), a per-session
-token budget, and an API-key provider — fly.io cannot use the CLI bridges we
-run locally, so this runs on Anthropic or OpenRouter keys. Never
-nemotron/kimi as the default stack.
+Cost and access: a class key (the website already has auth) and a
+per-session budget. **Model serving: the codex and claude CLIs run ON the
+fly.io machine and drive the tutor through tutor-core's provider hook**
+(user decision 2026-08-09) — subscription quota rather than per-token API
+billing. The eval repo's bridge (`services/cliProviderBridge.js`) is the
+adapter to carry over: it is nearly self-contained, with strict environment
+allowlists per CLI, and already authenticates Claude by OAuth token env var
+and codex by config-home env var — both deployable as fly.io secrets. An
+API-key provider (Anthropic/OpenRouter) stays configured as the fallback
+when quota runs dry mid-seminar. Never nemotron/kimi as the default stack.
+One caveat either way: the hook returns whole replies, so the deliberation
+pane streams stage by stage, not token by token — fine for its purpose.
 
 ## Engine choice (the one big decision)
 

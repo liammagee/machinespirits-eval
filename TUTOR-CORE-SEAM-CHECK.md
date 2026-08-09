@@ -41,10 +41,16 @@ needed).
 
 ## Notes for the website mount
 
-1. **Use the built-in HTTP providers on fly.io, not the hook.** The external
-   hook exists for local CLI bridges and returns whole text — no token
-   streaming. tutor-core's own Anthropic/OpenRouter paths stream tokens over
-   HTTP with just an API key in env. The hook stays available for local dev.
+1. **The hook is the production path.** (Revised 2026-08-09: the user wants
+   the codex and claude CLIs running on the fly.io machine to drive the
+   tutor.) The eval repo's bridge (`services/cliProviderBridge.js`) is the
+   adapter to carry: ~1,200 lines, only two small same-repo imports (payload
+   capture, token-usage normalization), strict per-CLI environment
+   allowlists, Claude authenticated by OAuth token env var and codex by
+   config-home env var — both fly.io secrets. The hook returns whole
+   replies, so the pane streams per stage rather than per token; tutor-core's
+   built-in Anthropic/OpenRouter HTTP paths (API key in env, true token
+   streaming) stay as the fallback provider when quota runs dry.
 2. **Set the writable paths.** A bare run mints `data/lms.sqlite` under
    tutor-core's own directory and writes logs beside it. Set `AUTH_DB_PATH`
    (or call `initDb` with a path) and `setLogDir()` to writable locations —

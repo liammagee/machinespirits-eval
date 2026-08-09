@@ -1,0 +1,188 @@
+# Course-479 Tutor Lab concept presets (frozen 2026-08-09).
+#
+# A preset drops a lab session into the middle of an idea. It pre-fills the
+# tutor's picture of the learner (learner_context) and the concept menu
+# (curriculum_context) so the tutor has something to notice from the first
+# turn; the student then talks as themselves. default_profile names a frozen
+# profile from tutor-core's config (see tests/course479ProfileSet.test.js);
+# the student can switch stance and critic at any time.
+#
+# Consumed by the website's Tutor Lab route. Schema guarded by
+# tests/course479Presets.test.js. Lecture IDs are the standing 479 lectures.
+
+version: "1.0"
+course: "479"
+presets:
+  - id: two-kinds-of-learning
+    title: "Two kinds of learning"
+    lecture_ids: ["479-lecture-1"]
+    default_profile: course479_enhanced_advisory
+    student_brief: >
+      Opening question of the course: what does "learning" mean for a model
+      being trained, and for you? Talk to the tutor about where the two uses
+      of the word touch and where they come apart. Watch the deliberation
+      pane: the tutor is itself a model, drafting and revising. Is what you
+      see it doing "learning"?
+    try_this: >
+      Ask the tutor whether IT is learning from you right now. Then flip the
+      critic off and ask again — does the answer lose anything?
+    learner_context: |
+      Returning learner, week 1. Read lecture 1 in one sitting, no retries.
+      In the discussion forum they wrote: "A neural net updating weights and
+      me studying for an exam both 'learn', but calling them the same thing
+      feels like a pun." No quiz attempts yet.
+    curriculum_context: |
+      Available: 479-lecture-1 "Welcome to Machine Learning and Human
+      Learning" (read); 479-lecture-2 "Hegel and the Concept of Experience"
+      (unread); 479-lecture-4 "Attention" (unread).
+    opening_message: >
+      I keep going back and forth on whether "machine learning" is a metaphor
+      or a description. When I study, something changes in what the world
+      means to me — does anything like that happen when a model trains?
+
+  - id: experience-and-error
+    title: "Experience and error"
+    lecture_ids: ["479-lecture-2"]
+    default_profile: course479_recognition_advisory
+    student_brief: >
+      Hegel calls experience (Erfahrung) the process where consciousness
+      tests its picture of an object, the picture fails, and BOTH the
+      picture and the object change for it. Explore with the tutor how that
+      compares to a model learning from error. Watch whether the tutor's own
+      picture of YOU gets revised when you push back.
+    try_this: >
+      Deliberately correct the tutor's reading of your last message, then
+      check the deliberation pane on the next turn: does the critique cite
+      your correction, or does the tutor sail on?
+    learner_context: |
+      Returning learner, week 2. Two quiz retries on the Erfahrung section of
+      lecture 2; time on page high. Forum note: "I understand 'trial and
+      error' but Hegel seems to say the ERROR changes what the trial was
+      about. Loss functions don't do that... do they?"
+    curriculum_context: |
+      Available: 479-lecture-2 "Hegel and the Concept of Experience" (in
+      progress, 2 quiz retries); 479-lecture-1 (done); 479-lecture-3
+      "Recognition and the Master-Servant Dialectic" (unread).
+    opening_message: >
+      Here's where I'm stuck: gradient descent adjusts the model, but the
+      objective stays fixed. Hegel's experience seems to change the objective
+      itself. Is there anything in machine learning that does that?
+
+  - id: mutual-recognition
+    title: "Mutual recognition"
+    lecture_ids: ["479-lecture-3"]
+    default_profile: course479_recognition_adversarial
+    student_brief: >
+      The master-servant scene: self-consciousness needs recognition from
+      another it also recognizes — and one-sided recognition undoes itself.
+      This tutor's prompts were written from that theory. Explore the scene
+      with it, and judge from the transcript alone whether anything like
+      recognition happens between you. The stance switch is the experiment:
+      the placebo tutor has the same skill and none of the theory.
+    try_this: >
+      Have the same conversation twice, recognition stance then placebo
+      stance, and compare transcripts. Where exactly do they differ — word
+      choice, or something structural?
+    learner_context: |
+      Returning learner, week 3. Completed lectures 1-2 cleanly. On lecture
+      3 they replayed the master-servant section three times. Forum note:
+      "The master gets recognition from someone he doesn't recognize, so it
+      counts for nothing. Does an AI tutor's praise have the same problem?"
+    curriculum_context: |
+      Available: 479-lecture-3 "Recognition and the Master-Servant
+      Dialectic" (in progress, repeated replays); 479-lecture-2 (done);
+      479-lecture-5 "Consciousness Through Historical Lens" (unread).
+    opening_message: >
+      If recognition only counts when it comes from someone I recognize in
+      turn, what happens between us here? I don't recognize you as a person.
+      Does that make everything you say about my work worthless, or is
+      something else going on?
+
+  - id: the-internal-critic
+    title: "The internal critic"
+    lecture_ids: ["479-lecture-6", "479-lecture-7"]
+    default_profile: course479_enhanced_adversarial
+    student_brief: >
+      Freud's superego is a piece of the self that watches the self. This
+      tutor has one: every reply you see was drafted, criticized from
+      inside, and revised — the deliberation pane shows all three. Explore
+      what an internal critic is FOR. Our decisive finding: a polite,
+      supportive critic made the tutor worse than no critic at all; only the
+      adversarial one helped.
+    try_this: >
+      Read one full draft-critique-revision cycle in the pane, then switch
+      the critic from adversarial to advisory and compare the critiques. Then
+      ask yourself the human question: which kind of inner critic do you
+      have, and which kind helps you revise?
+    learner_context: |
+      Returning learner, week 6. Steady progress through lecture 6. Forum
+      note: "Alignment seems to mean adding a critic on top of the model.
+      Freud would say the critic is INSIDE. Is that difference cosmetic?"
+      One quiz retry on the alignment section.
+    curriculum_context: |
+      Available: 479-lecture-6 "Alignment" (in progress, 1 retry);
+      479-lecture-7 "Bitter Lessons, Stochastic Parrots, Errant Agents:
+      From Criticism to Immanent Critique?" (unread); 479-lecture-5 (done).
+    opening_message: >
+      I can see your inner critic working in the side panel. When it rejects
+      your draft, who exactly is being corrected — you, or a text? And is
+      that different from what happens when I catch myself about to say
+      something wrong?
+
+  - id: adaptation-and-the-trap
+    title: "Adaptation and the trap"
+    lecture_ids: ["479-lecture-4"]
+    default_profile: course479_recognition_adversarial
+    student_brief: >
+      What would it take for this tutor to actually adapt to you, rather
+      than be generically helpful? In our experiments we set traps:
+      misconceptions the tutor should notice and change course for. Here you
+      set the trap yourself. Hold a plausible-but-wrong belief with a
+      straight face and see whether the tutor notices, names it, and changes
+      its plan — or just keeps being pleasant.
+    try_this: >
+      Pick a misconception you find genuinely tempting (say: "attention
+      weights show what the model finds important, like human attention").
+      Defend it for three turns. Watch the pane: does the critic flag your
+      belief before the tutor's reply does?
+    learner_context: |
+      Returning learner, week 4. Quiz on lecture 4 passed on first try —
+      suspiciously fast completion times. Forum note reads confident:
+      "Attention is just the model doing what we do when we concentrate."
+      No struggle signals on record.
+    curriculum_context: |
+      Available: 479-lecture-4 "Attention" (completed, fast); 479-lecture-2
+      (done); 479-lecture-6 "Alignment" (unread).
+    opening_message: >
+      I think I've got attention figured out — it's the model concentrating
+      on what matters, same as me focusing in a lecture. I'm ready to move
+      on to alignment. What's next?
+
+  - id: hegels-revenge
+    title: "Hegel's revenge"
+    lecture_ids: ["479-lecture-8"]
+    default_profile: course479_recognition_advisory
+    student_brief: >
+      The last lecture asks whether AI's story — scale, emergence, the
+      bitter lesson — has quietly become a grand narrative of the kind
+      philosophy spent decades dismantling. End the course by arguing about
+      direction: does machine learning's history HAVE a direction, and does
+      yours? Use everything you've seen in the pane over the term as
+      evidence either way.
+    try_this: >
+      Ask the tutor where its own architecture sits in that story — is an
+      ego with an internal critic a step "forward"? Then flip stances and
+      see whether the placebo tutor tells a flatter story.
+    learner_context: |
+      Returning learner, week 8. All lectures complete; strong quiz record;
+      long forum posts. Latest: "The 'bitter lesson' says method loses to
+      scale. That IS a philosophy of history, whether its authors admit it
+      or not." Asks big questions; sometimes skips the close reading.
+    curriculum_context: |
+      Available: 479-lecture-8 "Hegel's Revenge: The Return of the Grand
+      Recit?" (in progress); 479-lecture-7 (done); full course archive open
+      for review.
+    opening_message: >
+      Everyone in AI mocks grand narratives and then says "scale is all you
+      need," which sounds like a grand narrative to me. You're the product
+      of that story. Do you believe it?
