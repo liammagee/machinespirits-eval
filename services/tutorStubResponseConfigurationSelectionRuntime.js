@@ -1,3 +1,5 @@
+import { ensureTutorStubWarrantGate } from './tutorStubWarrantGate.js';
+
 export function createTutorStubResponseConfigurationSelectionRuntime(
   dependencies = {},
   selectionRuntime = {},
@@ -267,6 +269,33 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
         source: 'instructional_meta_repair',
       });
     }
+    // Adaptive warrant gate (docs/adaptation-refinement): decision-time
+    // divergence/warrant assessment. Observe mode only records; active mode
+    // overrides the action family + stance when a revision is warranted.
+    const warrantGate = ensureTutorStubWarrantGate(state);
+    let warrantGateDecision = null;
+    if (warrantGate) {
+      warrantGateDecision = warrantGate.assess({
+        turn: tutorLearnerDag?.model?.turn ?? state.turns.length + 1,
+        learnerText,
+        dagModel: tutorLearnerDag?.model || null,
+        priorActionFamily: state.register?.current?.action_family || null,
+      });
+      if (warrantGateDecision?.override) {
+        source = applyEngagementStanceOverride(
+          { ...source, action_family: warrantGateDecision.override.action_family },
+          warrantGateDecision.override.engagement_stance,
+          {
+            register_reason: warrantGateDecision.override.reason,
+            engagement_stance_reason: warrantGateDecision.override.reason,
+            reviewer_signal: 'adaptive warrant gate: revision of pedagogical commitment',
+            expected_dag_move: 'Repair the diagnosed divergence before the next proof move.',
+            expected_field_move: warrantGateDecision.policy?.rationale || 'apply the recommended repair policy',
+            source: 'adaptive_warrant_gate',
+          },
+        );
+      }
+    }
     const selectedRaw = String(source.engagement_stance || source.selected_register || source.register || '').trim();
     const selectedResolution = resolveEngagementStance(selectedRaw, { fallback: 'precise' });
     const selected = selectedResolution?.register || selectedRaw;
@@ -514,6 +543,7 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
         selectedResolution?.legacy_selected_register ||
         preferredLegacyRegister({ register: selected, requestType, actionFamily }),
       action_family: actionFamily || null,
+      warrant_gate: warrantGateDecision || null,
       discourse_plane: structuredClone(discoursePlane),
       addressee_profile: responseConfiguration.addressee_profile,
       audience_register: responseConfiguration.audience_register,
