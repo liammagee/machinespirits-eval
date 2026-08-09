@@ -6,6 +6,7 @@ import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContrac
 import { fileURLToPath } from 'node:url';
 
 import { createTutorStubTutorTurnPipeline } from '../services/tutorStubTutorTurnPipeline.js';
+import { buildTutorStubGuardFindingsFeedForward } from '../services/tutorStubGuardFindingsFeedForward.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -47,11 +48,13 @@ function pipelineDependencies(overrides = {}) {
       effort: 'medium',
       tokenUsageAvailable: true,
     }),
+    buildTutorStubGuardFindingsFeedForward,
     createConsoleTokenSink: () => ({
       write() {},
       finish: () => true,
     }),
     isCliProvider: () => false,
+    jsonClone: (value) => structuredClone(value),
     providerSupportsStreaming: () => false,
     reconcileTutorStubPointOfActionHandoffEligibility: () => null,
     reserveProgram2ProviderBudget() {},

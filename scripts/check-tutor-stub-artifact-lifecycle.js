@@ -10,6 +10,7 @@ export const REQUIRED_ARCHIVE_BUILDERS = Object.freeze([
   'scripts/prepare-learner-profile-world-deconfound.js',
   'scripts/run-contract-outcome-pilot.js',
   'scripts/run-figure-clean-test.js',
+  'scripts/run-guard-findings-feed-forward.js',
   'scripts/run-program2-live-pilot.js',
   'scripts/run-step4-point-of-action-gate.js',
   'scripts/run-tutor-stub-abm-panel.js',
