@@ -92,6 +92,12 @@ const PROMPTS_DIR = path.resolve(__engineDir, '..', 'prompts');
 const _deps = {
   tutorConfig: defaultTutorConfig,
   tutorWritingPad: defaultTutorWritingPad,
+  // Every model call in this file goes through here, so a test can stub it and
+  // read back which provider and model each seat actually asked for. That is
+  // the only way to check the id and ego seats from outside — the run's own
+  // record of the models is written by the runner, not by this engine, and the
+  // two drifted apart unnoticed for the whole of the August 2026 register work.
+  callAI: callAIWithCliBridge,
 };
 
 function normalizeEngagementRegisterArm(value) {
@@ -160,14 +166,73 @@ function buildRegisterStanceContract(engagementState) {
   };
 }
 
+/**
+ * The manner, in plain words, for the tutor itself.
+ *
+ * The registry's stance contract is handed to the id-director, and whatever the
+ * id-director writes becomes the tutor's whole system prompt. So the manner
+ * reaches the performer only if the author chose to carry it through.
+ *
+ * The 2026-08-08 isolation probe measured what that costs. It took the 35
+ * stored turns a pinned reader had called flat, sent each one's own shipped
+ * prompt to the same writer alone, and re-read the replies. Of 14 flat ironic
+ * turns only 5 could produce an edge from their shipped prompt even with
+ * everything else stripped away, against 18 of 21 across the two sarcastic
+ * registers. Irony is the manner an author can absorb into the instruction and
+ * never pass on: on row 34065 the id-director wrote "The small irony is that
+ * the steps you asked for remain dead", then handed the tutor a scene and two
+ * questions. The tutor got an ironic sentence and a task, and did the task.
+ *
+ * So the contract is appended rather than trusted to survive the rewrite. It
+ * goes last, after the written persona, which keeps the id-director's voice
+ * work intact and leaves the manner as the final thing read.
+ *
+ * The text is the registry's own, unedited. Its irony contract tells the tutor
+ * to use one cue from a named family, so the family is listed too — a contract
+ * that points at a list the reader cannot see is worse than no contract. That
+ * does invite pasting a cue instead of writing the manner, which is why the
+ * two halves of the stance gate stay separate: cue compliance and manner are
+ * counted by different parts, so pasting cannot raise the manner count.
+ *
+ * @returns {string|null} the block, or null when the register has no contract,
+ *   in which case the tutor's prompt is left exactly as it was.
+ */
+export function buildTutorMannerBlock(engagementState) {
+  const contract = buildRegisterStanceContract(engagementState);
+  const stance = String(contract?.stance_contract || '').trim();
+  if (!stance) return null;
+
+  const lines = [`How to write this turn (${contract.selected_register}):`, '', stance];
+  if (contract.stance_fidelity_cues?.length) {
+    lines.push('', `Cues that count as legible: ${contract.stance_fidelity_cues.map((c) => `"${c}"`).join(', ')}.`);
+  }
+  if (contract.forbidden_phrases?.length) {
+    lines.push('', `Never write: ${contract.forbidden_phrases.map((p) => `"${p}"`).join(', ')}.`);
+  }
+  if (contract.recognition_guardrail) {
+    lines.push('', String(contract.recognition_guardrail).trim());
+  }
+  return lines.join('\n');
+}
+
+/** The tutor's system prompt with the manner appended, or unchanged when the
+ * register has no contract to append. */
+export function appendTutorMannerBlock(generatedPrompt, engagementState) {
+  const block = buildTutorMannerBlock(engagementState);
+  if (!block) return generatedPrompt;
+  return `${generatedPrompt}\n\n${block}`;
+}
+
 export function __setDeps(overrides = {}) {
   if (overrides.tutorConfig) _deps.tutorConfig = overrides.tutorConfig;
   if (overrides.tutorWritingPad) _deps.tutorWritingPad = overrides.tutorWritingPad;
+  if (overrides.callAI) _deps.callAI = overrides.callAI;
 }
 
 export function __resetDeps() {
   _deps.tutorConfig = defaultTutorConfig;
   _deps.tutorWritingPad = defaultTutorWritingPad;
+  _deps.callAI = callAIWithCliBridge;
 }
 
 const FALLBACK_GENERATED_PROMPT =
@@ -694,7 +759,7 @@ export async function classifyLearnerRegister({ learnerMessage, recentHistory, c
     '</current_learner_message>',
   ].join('\n');
 
-  const response = await callAIWithCliBridge(
+  const response = await _deps.callAI(
     classifierConfig,
     classifierConfig.prompt,
     userMessage,
@@ -1145,7 +1210,7 @@ export async function runIdDirectedTurn({
   }
   internalDeliberation.push(buildIdDeliberationEntry(idResponse, idConfig, construction));
 
-  const egoSystemPrompt = construction.generated_prompt;
+  const egoSystemPrompt = appendTutorMannerBlock(construction.generated_prompt, engagementState);
   const egoModel = egoConfig?.model || _deps.tutorConfig.getProviderConfig?.('openrouter')?.default_model;
   let egoResponse = await llmCall(egoModel, egoSystemPrompt, [{ role: 'user', content: learnerMessage }], {
     temperature: getRequiredTemperature(egoConfig, 'tutor_ego'),
@@ -1680,6 +1745,28 @@ function buildIdRunnerUserMessage({
 }
 
 /**
+ * Put a run's requested model in place of the one the cell YAML names.
+ *
+ * The id and ego calls below read their provider and model from the cell block
+ * in config/tutor-agents.yaml. A run launched with --ego-model, --tutor-model,
+ * --superego-model or --model asks for something else, and until 2026-08-08
+ * that ask never arrived here: the run stored the requested model in
+ * ego_model while calling the YAML's. The runner now hands the request over
+ * (resolvedConfig.tutorModelOverrides) and this puts it in place.
+ *
+ * Everything else about the cell — the prompt file, the staging, the
+ * temperature and token ceiling — stays as the YAML has it.
+ *
+ * @param {Object|null} cell - ego or superego block from the cell profile
+ * @param {{provider: string, model: string}|null} [override]
+ * @returns {Object|null}
+ */
+function applyModelOverride(cell, override) {
+  if (!cell || !override?.provider || !override?.model) return cell;
+  return { ...cell, provider: override.provider, model: override.model, resolvedModel: override.model };
+}
+
+/**
  * Generate a single id-directed tutor suggestion.
  *
  * Returns a result object matching the shape of tutorApi.generateSuggestions:
@@ -1705,8 +1792,8 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     );
   }
 
-  const idCell = evalCellProfile.superego;
-  const egoCell = evalCellProfile.ego;
+  const idCell = applyModelOverride(evalCellProfile.superego, resolvedConfig?.tutorModelOverrides?.superego);
+  const egoCell = applyModelOverride(evalCellProfile.ego, resolvedConfig?.tutorModelOverrides?.ego);
   if (!idCell?.prompt_file || !idCell?.model) {
     return {
       success: false,
@@ -1901,7 +1988,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     prompt: idStaticPrompt,
     isConfigured: idProviderConfig.isConfigured,
   };
-  const idResponse = await callAIWithCliBridge(idAgentConfig, idStaticPrompt, idUserMessage, 'tutor_id', {});
+  const idResponse = await _deps.callAI(idAgentConfig, idStaticPrompt, idUserMessage, 'tutor_id', {});
   // tutorDialogueEngine.callAI returns { text, model, provider, latencyMs,
   // inputTokens, outputTokens, ... } — fields are flat, not nested under
   // a `usage` object as some other LLM SDKs use.
@@ -1924,7 +2011,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   }
 
   // ── Step 2: ego executes against the constructed prompt ──
-  const egoSystemPrompt = construction.generated_prompt;
+  const egoSystemPrompt = appendTutorMannerBlock(construction.generated_prompt, engagementState);
   const egoProviderConfig = cliAwareProviderConfig(
     egoCell.provider,
     _deps.tutorConfig.getProviderConfig(egoCell.provider),
@@ -1949,7 +2036,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   // For multi-turn cells, pass messageHistory so the ego sees the conversation
   // context. The ego's *system prompt* is the id's authored prompt; the user
   // turn is the most recent learner message.
-  let egoResponse = await callAIWithCliBridge(egoAgentConfig, egoSystemPrompt, learnerMessage, 'tutor_ego', {
+  let egoResponse = await _deps.callAI(egoAgentConfig, egoSystemPrompt, learnerMessage, 'tutor_ego', {
     messageHistory: messageHistory.length > 0 ? messageHistory : null,
   });
   totalInputTokens += egoResponse?.inputTokens || 0;
@@ -1962,7 +2049,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   if (!externalMessage) {
     console.warn('[idDirectorEngine.runnerAdapter] Empty ego output, retrying with learner-facing output reminder.');
     egoRetried = true;
-    egoResponse = await callAIWithCliBridge(
+    egoResponse = await _deps.callAI(
       egoAgentConfig,
       egoSystemPrompt,
       buildEgoRetryPrompt(learnerMessage),
@@ -2005,7 +2092,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       curriculumContext,
       tutorResponse: externalMessage,
     });
-    let verifierResponse = await callAIWithCliBridge(
+    let verifierResponse = await _deps.callAI(
       verifierAgentConfig,
       agencyReturnVerifierPrompt,
       verifierUserMessage,
@@ -2019,7 +2106,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     let verifierRetried = false;
     if (!(verifierResponse?.text || '').trim()) {
       verifierRetried = true;
-      verifierResponse = await callAIWithCliBridge(
+      verifierResponse = await _deps.callAI(
         verifierAgentConfig,
         agencyReturnVerifierPrompt,
         buildAgencyReturnVerifierRetryUserMessage(verifierUserMessage),
@@ -2218,7 +2305,17 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       engagementModeRouter,
       engagementRegisterArm,
       engagementState,
-      idConstruction: construction, // bonus: surface for trace logging downstream
+      // `generated_prompt` here is what the tutor actually received, manner
+      // block and all — not the id-director's raw output. Every reader of the
+      // stored trace means "the shipped prompt" by it, and before the manner
+      // block existed the two were the same string, so old rows still read
+      // straight. The raw output is kept alongside it.
+      idConstruction: {
+        ...construction,
+        generated_prompt: egoSystemPrompt,
+        id_written_prompt: construction.generated_prompt,
+        manner_block_appended: egoSystemPrompt !== construction.generated_prompt,
+      },
     },
     dialogueTrace: trace,
   };

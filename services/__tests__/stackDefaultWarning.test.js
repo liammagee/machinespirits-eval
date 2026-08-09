@@ -1,9 +1,12 @@
 /**
  * Model-stack default warning (CLAUDE.md "Model stack default") — unit tests.
  *
- * The warning is detection-only: it must flag cells resolving to the weak
- * nemotron/kimi pairing when run without explicit overrides, stay silent
- * when overrides are present or the stack is strong, and never block.
+ * The warning is detection-only: it must flag cells that will CALL the weak
+ * nemotron/kimi pairing, stay silent when the models actually called are
+ * strong, and never block. An override only silences the warning for the seat
+ * it replaces — the August 2026 register runs passed --tutor-model
+ * codex.gpt-5.5, went on calling the YAML's nemotron on the id-director path,
+ * and saw no warning, because the old check read the ask instead of the call.
  */
 
 import { test } from 'node:test';
@@ -25,14 +28,26 @@ test('flags a weak-stack cell run with no overrides', () => {
   assert.match(String(flagged[0].superego), /kimi/i);
 });
 
-test('stays silent when an explicit ego-model override is present', () => {
-  assert.deepEqual(collectWeakStackConfigs([{ profileName: WEAK_CELL, egoModelOverride: 'codex.gpt-5.5' }]), []);
+test('stays silent when an override replaces both tutor seats', () => {
   assert.deepEqual(collectWeakStackConfigs([{ profileName: WEAK_CELL, modelOverride: 'codex.gpt-5.5' }]), []);
   assert.deepEqual(
     collectWeakStackConfigs([{ profileName: WEAK_CELL, tutorModelOverride: 'claude-code.sonnet-5' }]),
     [],
   );
-  assert.deepEqual(collectWeakStackConfigs([{ profileName: WEAK_CELL, superegoModelOverride: 'codex.gpt-5.5' }]), []);
+});
+
+test('still flags the seat an override leaves on the weak stack', () => {
+  // --ego-model replaces the ego only, so the kimi superego still gets called.
+  const egoOnly = collectWeakStackConfigs([{ profileName: WEAK_CELL, egoModelOverride: 'codex.gpt-5.5' }]);
+  assert.equal(egoOnly.length, 1);
+  assert.equal(egoOnly[0].ego, 'codex.gpt-5.5');
+  assert.match(String(egoOnly[0].superego), /kimi/i);
+
+  // --superego-model leaves the nemotron ego in place.
+  const superegoOnly = collectWeakStackConfigs([{ profileName: WEAK_CELL, superegoModelOverride: 'codex.gpt-5.5' }]);
+  assert.equal(superegoOnly.length, 1);
+  assert.match(String(superegoOnly[0].ego), /nemotron/i);
+  assert.equal(superegoOnly[0].superego, 'codex.gpt-5.5');
 });
 
 test('ignores unknown profiles and non-profile configs without throwing', () => {
@@ -72,7 +87,7 @@ test('warnIfWeakStackDefault prints to stderr and returns true only when flagged
     assert.match(captured[0], /\[stack-default\] WARNING/);
     assert.match(captured[0], /codex\.gpt-5\.6-luna/);
 
-    const notWarned = warnIfWeakStackDefault([{ profileName: WEAK_CELL, egoModelOverride: 'codex.gpt-5.5' }]);
+    const notWarned = warnIfWeakStackDefault([{ profileName: WEAK_CELL, tutorModelOverride: 'codex.gpt-5.5' }]);
     assert.equal(notWarned, false);
     assert.equal(captured.length, 1);
   } finally {

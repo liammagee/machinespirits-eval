@@ -516,6 +516,13 @@ function resolveConfigModels(config) {
     resolved.hyperparameters = { ...resolved.hyperparameters, max_tokens: config.maxTokensOverride };
   }
 
+  // The id-director engine builds its ego and id calls from the cell YAML, not
+  // from this resolved config, so the four overrides below are also recorded
+  // on their own. Without that record a run could ask for codex.gpt-5.5, call
+  // the YAML's nemotron, and store codex.gpt-5.5 in ego_model — which is what
+  // happened to the August 2026 register runs.
+  const askedFor = { ego: null, superego: null };
+
   // Apply CLI --model override (replaces ego and superego models, preserves factorial metadata)
   if (config.modelOverride) {
     try {
@@ -523,6 +530,8 @@ function resolveConfigModels(config) {
       resolved.provider = r.provider;
       resolved.model = r.model;
       resolved.egoModel = { provider: r.provider, model: r.model };
+      askedFor.ego = { provider: r.provider, model: r.model };
+      askedFor.superego = { provider: r.provider, model: r.model };
       if (resolved.superegoModel) {
         resolved.superegoModel = { provider: r.provider, model: r.model };
       }
@@ -538,6 +547,8 @@ function resolveConfigModels(config) {
       resolved.provider = r.provider;
       resolved.model = r.model;
       resolved.egoModel = { provider: r.provider, model: r.model };
+      askedFor.ego = { provider: r.provider, model: r.model };
+      askedFor.superego = { provider: r.provider, model: r.model };
       if (resolved.superegoModel) {
         resolved.superegoModel = { provider: r.provider, model: r.model };
       }
@@ -551,6 +562,7 @@ function resolveConfigModels(config) {
     try {
       const r = evalConfigLoader.resolveModel(config.egoModelOverride);
       resolved.egoModel = { provider: r.provider, model: r.model };
+      askedFor.ego = { provider: r.provider, model: r.model };
       // Also update top-level provider/model for compatibility
       resolved.provider = r.provider;
       resolved.model = r.model;
@@ -560,13 +572,20 @@ function resolveConfigModels(config) {
   }
 
   // Apply CLI --superego-model override (replaces only superego model)
-  if (config.superegoModelOverride && resolved.superegoModel) {
+  if (config.superegoModelOverride) {
     try {
       const r = evalConfigLoader.resolveModel(config.superegoModelOverride);
-      resolved.superegoModel = { provider: r.provider, model: r.model };
+      askedFor.superego = { provider: r.provider, model: r.model };
+      if (resolved.superegoModel) {
+        resolved.superegoModel = { provider: r.provider, model: r.model };
+      }
     } catch (e) {
       throw new Error(`Invalid --superego-model override "${config.superegoModelOverride}": ${e.message}`);
     }
+  }
+
+  if (askedFor.ego || askedFor.superego) {
+    resolved.tutorModelOverrides = askedFor;
   }
 
   return resolved;

@@ -362,3 +362,38 @@ describe('resolveConfigModels — hyperparameters extraction', () => {
     );
   });
 });
+
+// The id-director builds its calls from the cell YAML, not from this resolved
+// config, so the overrides are also recorded on their own for it to read. See
+// services/__tests__/idDirectorModelOverride.test.js for the other half.
+describe('resolveConfigModels — tutorModelOverrides record', () => {
+  const CELL = 'cell_3_base_multi_unified';
+
+  it('--tutor-model records both seats', () => {
+    const resolved = resolveConfigModels({ profileName: CELL, tutorModelOverride: 'codex.gpt-5.5' });
+    assert.deepEqual(resolved.tutorModelOverrides, {
+      ego: { provider: 'codex', model: 'gpt-5.5' },
+      superego: { provider: 'codex', model: 'gpt-5.5' },
+    });
+  });
+
+  it('--ego-model records the ego seat only', () => {
+    const resolved = resolveConfigModels({ profileName: CELL, egoModelOverride: 'codex.gpt-5.5' });
+    assert.deepEqual(resolved.tutorModelOverrides.ego, { provider: 'codex', model: 'gpt-5.5' });
+    assert.strictEqual(resolved.tutorModelOverrides.superego, null);
+  });
+
+  it('--superego-model records the superego seat even on a single-agent cell', () => {
+    // cell_1 has no superego, so resolved.superegoModel stays null — but what
+    // the run asked for still has to reach the id-director.
+    const resolved = resolveConfigModels({
+      profileName: 'cell_1_base_single_unified',
+      superegoModelOverride: 'codex.gpt-5.5',
+    });
+    assert.deepEqual(resolved.tutorModelOverrides.superego, { provider: 'codex', model: 'gpt-5.5' });
+  });
+
+  it('no override leaves no record', () => {
+    assert.strictEqual(resolveConfigModels({ profileName: CELL }).tutorModelOverrides, undefined);
+  });
+});
