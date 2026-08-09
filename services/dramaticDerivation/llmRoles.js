@@ -37,7 +37,7 @@ import { deriveCastState, projectCastStateForRole } from './castLayer.js';
 import { deriveLearnerDriftState, learnerDriftLines } from './learnerDrift.js';
 import { deriveLearnerTransformationState, learnerTransformationLines } from './learnerTransformation.js';
 import { deriveDiscursiveCalibrationState } from './discursiveCalibration.js';
-import { deriveDidacticModeState, DIDACTIC_MODE_FAMILIES } from './didacticMode.js';
+import { deriveDidacticModeState } from './didacticMode.js';
 import { dramaticAudiencePromptLines } from '../tutorStubRegisterPragmatics.js';
 import {
   auditLearnerSceneIntent,
@@ -49,7 +49,6 @@ import {
   normalizeSceneCommitmentV2,
   normalizeStrategyReview,
 } from './strategyLedger.js';
-import { getEngagementRegisterDefinition } from '../engagementRegisterRegistry.js';
 import { deriveEntitlementState, entitlementNeedsConduct } from './learnerEntitlement.js';
 import { createRuntimeMonitor } from './runtimeMonitor.js';
 // The Step-1 V arm. Imported here, NOT in pacing.js — visiblePacing.js's own audit
@@ -57,6 +56,7 @@ import { createRuntimeMonitor } from './runtimeMonitor.js';
 // stays one-directional and the no-hidden-state property is mechanically checkable.
 import { visibleSurfaceFeatures, isStalling } from './visiblePacing.js';
 import { matchFrontierClaim, resolveTutorRelease } from './tutorReleaseArbitration.js';
+import { tutorStrategyLedgerPromptLines } from './tutorStrategyLedgerPrompt.js';
 
 const TUTOR_FIGURES = [...RHETORICAL_FIGURES];
 const TUTOR_INTENTS = ['orient', 'release', 'consolidate', 'test', 'counter_mirror', 'stage_recognition'];
@@ -3308,156 +3308,20 @@ export function makeLlmTutor(
     // Strategy-ledger prompt block (the plot section one scope down): the
     // audit of the sealed scene binds at the opening, the standing commitment
     // reads back mid-scene, and hold/escalation/budget notes ride along.
-    const strategyLedgerSection = (() => {
-      if (!strategyLedger) return [];
-      const lines = [];
-      if (sceneCommitmentAudit) {
-        lines.push(
-          '',
-          `THE AUDIT of your scene ${sceneCommitmentAudit.sceneIndex} commitment (deterministic, clause by clause):`,
-          ...sceneCommitmentAudit.clauses.map(
-            (c) => `- [${c.verdict}] ${c.clause}${c.evidence ? ` — ${c.evidence}` : ''}`,
-          ),
-          `Summary: ${sceneCommitmentAudit.summary}.`,
-          'THE AUDIT BINDS: the commitment you now make must answer every drifted clause — carry it forward, revise it, or change course with a stated reason.',
-        );
-      }
-      // v2: the mechanism history table renders before the fresh demand —
-      // the review decision must answer the record, not intuition.
-      if (trialling && sceneOpening && ledgerInfo?.history?.length) {
-        lines.push('', 'YOUR MECHANISM HISTORY (what you tried, whether it was really tried, how it landed):');
-        for (const h of ledgerInfo.history) {
-          const strat = [
-            h.strategy.stance ? `stance ${h.strategy.stance}` : null,
-            h.strategy.didacticDefault ? `didactic ${h.strategy.didacticDefault}` : null,
-            h.strategy.releasePosture ? `releases ${h.strategy.releasePosture}` : null,
-            h.strategy.releaseIntent ? `intended ${h.strategy.releaseIntent.join('+')}` : null,
-          ]
-            .filter(Boolean)
-            .join(', ');
-          const outcome = [
-            h.fidelity ? `fidelity ${h.fidelity.label}` : null,
-            h.outcome.exitConditionCleared === null
-              ? null
-              : `exit ${h.outcome.exitConditionCleared ? 'cleared' : 'NOT cleared'}`,
-            h.outcome.pressingExchanges ? `${h.outcome.pressingExchanges} pressing exchange(s)` : null,
-            h.outcome.intendedPlayed !== null
-              ? `${h.outcome.intendedPlayed}/${h.strategy.releaseIntent?.length ?? 0} intended played`
-              : null,
-            h.audit ? h.audit.summary : null,
-            h.review ? `you chose: ${h.review.decision}` : null,
-          ]
-            .filter(Boolean)
-            .join('; ');
-          lines.push(`- scene ${h.sceneIndex} [${strat || 'no strategy'}] -> ${outcome || 'no outcome recorded'}`);
-        }
-        lines.push(
-          'REVIEW THE RECORD and decide in "strategy_review": persist (same strategy), adjust (same mechanism, new settings), or switch (a different mechanism) — with a one-line reason.',
-          'Outcomes only count for a mechanism that was actually deployed (fidelity: faithful); warm-in-costume trials teach you nothing.',
-        );
-      }
-      if (planMode) {
-        if (stocktakeNote) {
-          lines.push(
-            '',
-            `STOCK-TAKE on scene ${stocktakeNote.sceneIndex} (your own second voice, between scenes — course, not conformance):`,
-            ...(stocktakeNote.assessment ? [`- assessment: ${stocktakeNote.assessment}`] : []),
-            stocktakeNote.correction
-              ? `- CORRECTION DEMANDED: ${stocktakeNote.correction}`
-              : '- no correction demanded — the course holds.',
-            'Answer it in "reorientation": your revised WORKING ORIENTATION (2-4 sentences) when a correction is demanded or you yourself judge the course has failed; null keeps your current orientation.',
-          );
-        }
-        if (ledgerBridgeState?.orientation) {
-          lines.push(
-            '',
-            'YOUR WORKING ORIENTATION (yours alone; revised at your last stock-take — no one grades you against it):',
-            ledgerBridgeState.orientation,
-          );
-        }
-      } else if (sceneOpening && view.scene) {
-        const palette = ledgerInfo?.config?.registerPalette?.length
-          ? ledgerInfo.config.registerPalette
-          : [activeRegisterName];
-        lines.push(
-          '',
-          `THIS TURN OPENS SCENE ${view.scene.index} — COMMIT YOUR SCENE STRATEGY in "scene_commitment", alongside your dialogue:`,
-          `- register: choose from [${palette.join(', ')}] — the harness holds your choice for the whole scene.`,
-          `- didactic_default: your explanatory mode of first resort this scene (${DIDACTIC_MODE_FAMILIES.join(', ')}).`,
-          '- release_posture: eager (play exhibits on their cue), hold (never ahead of schedule), consolidate (at most one release this scene).',
-          '- recognition_budget: how many phatic/uptake exchanges this scene can afford (0-4).',
-          '- exit_condition: what the learner will visibly do when this scene has worked.',
-          'Conduct only: the release calendar and proof-control obligations outrank this everywhere they speak.',
-        );
-        if (trialling && ledgerInfo?.config?.stancePalette?.length) {
-          const stanceLines = ledgerInfo.config.stancePalette.map((name) => {
-            const def = getEngagementRegisterDefinition(name) || {};
-            const cues = Array.isArray(def.stance_fidelity_cues) ? def.stance_fidelity_cues.slice(0, 4) : [];
-            return `  · ${name} (${def.valence || 'unknown'} valence)${
-              cues.length ? ` — cues that MUST be visible in your lines: ${cues.map((c) => `"${c}"`).join(', ')}` : ''
-            }`;
-          });
-          lines.push(
-            '- stance: choose your interpersonal stance for this scene from the palette (or null to stay plain):',
-            ...stanceLines,
-            '  A stance counts only when its cues are visible — an assigned stance without visible cues is treatment noncompliance, not style.',
-          );
-        }
-        if (trialling && releaseAuthority && ledgerInfo?.config?.releaseIntent) {
-          lines.push(
-            '- release_intent: name the exhibit ids (up to 4, from your window) you INTEND to play this scene. Advisory to each turn; the pacing guard and hold limits rule as ever.',
-          );
-        }
-      } else if (ledgerBridgeState?.commitment) {
-        const c = ledgerBridgeState.commitment;
-        lines.push(
-          '',
-          `YOUR SCENE COMMITMENT (scene ${ledgerBridgeState.sceneIndex}, standing since its opening):`,
-          ...(c.register ? [`- register: ${c.register} (held by the harness)`] : []),
-          ...(c.stance
-            ? (() => {
-                const def = getEngagementRegisterDefinition(c.stance) || {};
-                const cues = Array.isArray(def.stance_fidelity_cues) ? def.stance_fidelity_cues.slice(0, 4) : [];
-                return [
-                  `- stance: ${c.stance}${cues.length ? ` — keep its cues visible: ${cues.map((x) => `"${x}"`).join(', ')}` : ''}`,
-                ];
-              })()
-            : []),
-          ...(c.didacticDefault ? [`- didactic default: ${c.didacticDefault}`] : []),
-          ...(c.releasePosture ? [`- release posture: ${c.releasePosture}`] : []),
-          ...(c.releaseIntent ? [`- release intent: ${c.releaseIntent.join(', ')} (guards rule)`] : []),
-          ...(c.recognitionBudget !== null && c.recognitionBudget !== undefined
-            ? [`- recognition budget: ${c.recognitionBudget}`]
-            : []),
-          ...(c.exitCondition ? [`- exit: ${c.exitCondition}`] : []),
-          trialling
-            ? 'It GUIDES rather than binds: depart when the learner warrants it and declare it in "departure" — declared departures adjudicate as justified deviation, undeclared drift as drift.'
-            : 'Play under it; the audit at the scene close distinguishes kept from drift.',
-        );
-      }
-      if (view.lemmaLayer?.tutorLines) {
-        lines.push('', ...view.lemmaLayer.tutorLines);
-        const lemmaOpening = Boolean(view.lemmaLayer.config?.bind && view.scene && view.scene.startTurn === view.turn);
-        if (lemmaOpening && view.lemmaLayer.frontier.length) {
-          lines.push(
-            '',
-            'FRONTIER CHOICE (this turn opens a scene): pick the scene\'s ACTIVE lemma in "active_lemma" — the predicate name alone suffices (e.g. "blankFrom"). One of:',
-            ...view.lemmaLayer.frontier.map(
-              (f) =>
-                `- "${f.label}" (unplayed support: ${f.supportRemaining.join(', ') || 'none — grounds from the played board'})`,
-            ),
-          );
-        }
-      }
-      if (heldDidacticNote) lines.push('', heldDidacticNote);
-      if (ledgerInfo?.budget?.exhausted) {
-        lines.push(
-          '',
-          'OPPORTUNITY BUDGET EXHAUSTED: proof-neutral turns have run past the block budget — return to the proof obligation this turn (advisory; hard obligations already outrank).',
-        );
-      }
-      return lines;
-    })();
+    const strategyLedgerSection = tutorStrategyLedgerPromptLines({
+      strategyLedger,
+      sceneCommitmentAudit,
+      trialling,
+      sceneOpening,
+      ledgerInfo,
+      planMode,
+      stocktakeNote,
+      ledgerBridgeState,
+      view,
+      activeRegisterName,
+      releaseAuthority,
+      heldDidacticNote,
+    });
     // The tutor sees no staging state (movements are the director's diagnostic
     // dramaturgy, 2026-06-10): any rhythm-watching happens inside this bridge.
     let user;
