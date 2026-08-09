@@ -285,6 +285,7 @@
         "tests/evaluationDbPathAgreement.test.js",
         "tests/evaluationLogsPathAgreement.test.js",
         "tests/evaluationResumeRejudgeRuntime.test.js",
+        "tests/evaluationRunRuntime.test.js",
         "tests/evaluationRunner.test.js",
         "tests/evaluationRunnerDependencyInjection.test.js",
         "tests/evaluationScoring.test.js",

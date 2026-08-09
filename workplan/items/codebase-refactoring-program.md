@@ -143,6 +143,7 @@ links:
     - refactor-evaluation-store-package-compatibility-boundary
     - refactor-tutor-stub-adapter-tail
     - refactor-eval-routes-read-side-domains
+    - refactor-evaluation-run-coordinator-runtime
 tags:
   - refactoring
   - testing
@@ -1776,3 +1777,17 @@ Log:
   Keep the parent active because R4 runner/rubric residuals and R5-R8 remain
   partial or uninstantiated; require a fresh hotspot and workplan
   reconciliation before selecting the next implementation child.
+- 2026-08-09 — Reconciled from merged PR-#612 main `e5ea93df`. All 120 prior
+  children are done; repository metrics record 4,986 files, 2,500 source files,
+  870,784 source-code lines, zero cycles across 557 files, and a synchronized
+  hermetic manifest. Activated `refactor-evaluation-run-coordinator-runtime` as
+  child 121: the runner's 572-line, complexity-93 coordinator has stronger
+  characterization than the larger dramatic, rubric, browser, and auto-eval
+  hotspots, so it is the next bounded R4 macro rather than another small or
+  mutation-heavy route slice.
+- 2026-08-09 — Completed child 121 locally: `runEvaluation()` now delegates to
+  a 534-line, complexity-17 injected coordinator and the facade is 1,744 lines.
+  Direct coverage is ratcheted as a sixth risk group; the focused and complete
+  parity contracts pass. The parent remains active because R4 rubric residuals
+  and R5-R8 remain partial or uninstantiated; select another child only after
+  this branch merges and the hotspot evidence is refreshed again.
