@@ -6,6 +6,7 @@ import { recommendRepairPolicy } from '../services/adaptiveWarrantPolicy.js';
 import {
   createTutorStubWarrantGate,
   ensureTutorStubWarrantGate,
+  recordTutorStubWarrantGateOutcome,
   resolveTutorStubWarrantGateMode,
 } from '../services/tutorStubWarrantGate.js';
 
@@ -103,6 +104,82 @@ test('gate: off mode attaches nothing to state', () => {
   const state = {};
   assert.equal(ensureTutorStubWarrantGate(state, { mode: 'off' }), null);
   assert.equal(state.warrantGate, undefined);
+});
+
+test('gate: completed-turn audits join record growth in the next decision-time evidence row', () => {
+  const gate = createTutorStubWarrantGate({ mode: 'observe' });
+  gate.assess({
+    turn: 1,
+    learnerText: 'May I enter the first public fact?',
+    dagModel: dagModel(4),
+    priorActionFamily: 'stage_next_step',
+  });
+  gate.recordTurnOutcome({
+    turn: 1,
+    actionFamily: 'stage_next_step',
+    uptakeAudit: { ok: false, issues: [{ type: 'missing_learner_uptake' }] },
+    repetitionAudit: { maxSimilarity: 0.51 },
+    deterministicFallback: true,
+    pacingSignal: { direction: 'decelerate', source: 'learner_request' },
+  });
+  const second = gate.assess({
+    turn: 2,
+    learnerText: 'May I keep the same entry?',
+    dagModel: dagModel(4),
+    priorActionFamily: 'stage_next_step',
+  });
+  assert.deepEqual(second.trouble_turns, [1]);
+  assert.deepEqual(second.prior_turn_outcome.defeaters, [
+    'uptake_audit_issues',
+    'repetition:0.51',
+    'tutor_response_fallback',
+    'pacing_signal:decelerate',
+  ]);
+  assert.equal(second.revision_warranted, false, 'one defeater-bearing turn stays below the threshold');
+
+  gate.recordTurnOutcome({ turn: 2, actionFamily: 'stage_next_step', mechanicalRepair: true });
+  const third = gate.assess({
+    turn: 3,
+    learnerText: 'May I keep the same entry again?',
+    dagModel: dagModel(4),
+    priorActionFamily: 'stage_next_step',
+  });
+  assert.deepEqual(third.trouble_turns, [1, 2]);
+  assert.equal(third.revision_warranted, true);
+  assert.equal(third.warrant_basis, 'accumulated:2_trouble_turns');
+});
+
+test('gate: a delivered family revision resets old trouble before consuming its own outcome', () => {
+  const gate = createTutorStubWarrantGate({ mode: 'active' });
+  gate.assess({ turn: 1, learnerText: 'May I enter it?', dagModel: dagModel(4), priorActionFamily: 'stage_next_step' });
+  gate.recordTurnOutcome({ turn: 1, actionFamily: 'stage_next_step', deterministicFallback: true });
+  gate.assess({ turn: 2, learnerText: 'May I enter it?', dagModel: dagModel(4), priorActionFamily: 'stage_next_step' });
+  gate.recordTurnOutcome({ turn: 2, actionFamily: 'stage_next_step', deterministicFallback: true });
+  const revision = gate.assess({
+    turn: 3,
+    learnerText: 'May I enter it?',
+    dagModel: dagModel(4),
+    priorActionFamily: 'stage_next_step',
+  });
+  assert.equal(revision.override.action_family, 'challenge_resistance');
+
+  gate.recordTurnOutcome({ turn: 3, actionFamily: 'challenge_resistance', deterministicFallback: true });
+  const afterRevision = gate.assess({
+    turn: 4,
+    learnerText: 'May I enter it?',
+    dagModel: dagModel(4),
+    priorActionFamily: 'challenge_resistance',
+  });
+  assert.deepEqual(afterRevision.trouble_turns, [3]);
+  assert.equal(afterRevision.revision_warranted, false);
+});
+
+test('completed-turn helper is a no-op without a gate and delegates when attached', () => {
+  assert.equal(recordTutorStubWarrantGateOutcome({}, { turn: 1 }), null);
+  const state = { warrantGate: createTutorStubWarrantGate({ mode: 'observe' }) };
+  const outcome = recordTutorStubWarrantGateOutcome(state, { turn: 1, deterministicFallback: true });
+  assert.equal(outcome.turn, 1);
+  assert.deepEqual(outcome.defeaters, ['tutor_response_fallback']);
 });
 
 test('classifier: tutor-directed choice requests are deference', () => {

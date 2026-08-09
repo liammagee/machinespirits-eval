@@ -5,7 +5,13 @@ export const TUTOR_STUB_PROMPT_ARCHITECTURE_SCHEMA = 'machinespirits.tutor-stub.
 export const TUTOR_STUB_PROMPT_BUDGETS = Object.freeze({
   tutor_system: Object.freeze({ maxChars: 16_000, maxApproxTokens: 4_000 }),
   tutor_turn: Object.freeze({ maxChars: 42_000, maxApproxTokens: 10_500 }),
-  learner_analysis: Object.freeze({ maxChars: 30_000, maxApproxTokens: 7_500 }),
+  // Combined classification + learner-record prompts carry the public world,
+  // deterministic DAG preflight, and a bounded transcript window. The former
+  // 30k ceiling rejected Marrick's baseline prompt before the first model call
+  // and every later turn. Keep the surface bounded, but align its ceiling with
+  // the already-audited tutor-turn envelope so an eight-turn compact prompt can
+  // execute instead of silently degrading to failed classifications.
+  learner_analysis: Object.freeze({ maxChars: 42_000, maxApproxTokens: 10_500 }),
   automated_learner: Object.freeze({ maxChars: 24_000, maxApproxTokens: 6_000 }),
   mixed_learner: Object.freeze({ maxChars: 28_000, maxApproxTokens: 7_000 }),
   clarifier: Object.freeze({ maxChars: 16_000, maxApproxTokens: 4_000 }),

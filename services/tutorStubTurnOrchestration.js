@@ -4,6 +4,7 @@
 // silently — the reply features would just stop appearing. This service is
 // pure and stateless, so a direct import costs nothing.
 import { describeTutorStubReplyFeatures } from './tutorStubReplyFeatures.js';
+import { recordTutorStubWarrantGateOutcome } from './tutorStubWarrantGate.js';
 
 export function createTutorStubTurnOrchestration(dependencies = {}) {
   const {
@@ -837,6 +838,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       tutorHumanScaffoldAudit: response.scaffoldAudit || null,
       tutorQuestionSupportAudit: response.questionSupportAudit || null,
       tutorDramaticReleaseAudit: response.dramaticReleaseAudit || null,
+      tutorLiveTurnProgressionAudit: response.liveTurnProgressionAudit || null,
       tutorLiveSourceActionAlignmentAudit: response.liveSourceActionAlignmentAudit || null,
       tutorSourceAccessibility: response.liveSourceActionAlignmentAudit
         ? {
@@ -863,6 +865,18 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       tokenUsageAvailable: response.tokenUsageAvailable,
       turnTiming,
     };
+    const warrantGateOutcome = recordTutorStubWarrantGateOutcome(state, {
+      turn: tutorTurn,
+      actionFamily:
+        registerSelection?.action_family || registerSelection?.response_configuration?.action_family || null,
+      uptakeAudit: response.liveTurnProgressionAudit || null,
+      repetitionAudit: response.repetitionAudit || null,
+      deterministicFallback: Boolean(response.deterministicFallback),
+      mechanicalRepair: Boolean(response.mechanicalRepair),
+      guardAccounting: response.guardAccounting || null,
+      pacingSignal: releasePacing?.signal || null,
+    });
+    if (warrantGateOutcome) turnRecord.warrantGateOutcome = warrantGateOutcome;
     state.turns.push(turnRecord);
     appendTraceEvent(state.trace, {
       type: 'learner_response_provenance_recorded',
@@ -877,6 +891,15 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         turnId,
         turn: tutorTurn,
         observation: feedbackObservation,
+        publicTranscriptChanged: false,
+      });
+    }
+    if (warrantGateOutcome) {
+      appendTraceEvent(state.trace, {
+        type: 'tutor_warrant_gate_outcome',
+        turnId,
+        turn: tutorTurn,
+        outcome: warrantGateOutcome,
         publicTranscriptChanged: false,
       });
     }

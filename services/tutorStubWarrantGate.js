@@ -15,17 +15,21 @@
  *             recommends a different action family, the gate overrides the
  *             proposed family and stance for that turn
  *
- * v1 evidence limits (recorded here so results are read correctly): the live
- * gate sees record growth, learner signals, and complaint/deference streaks.
- * Uptake, repetition, and guard audits land after the response and are NOT in
- * the decision-time pool yet — the offline shadow sees more than the live
- * gate. Fold post-turn audits in via recordTurnOutcome when that asymmetry
- * starts to matter.
+ * Post-turn outcomes are recorded after tutor turn N commits and consumed at
+ * decision point N+1. This gives the live gate the same evidence window as the
+ * offline shadow: learner turn N+1, learner-record growth through N+1, and
+ * final uptake/repetition/repair/pacing outcomes through tutor turn N.
  */
 
-import { classifyLearnerSignal, evaluateWarrant, CONCEPTUAL_STALL_TURNS } from './adaptiveWarrantGateCore.js';
+import {
+  classifyLearnerSignal,
+  evaluateWarrant,
+  CONCEPTUAL_STALL_TURNS,
+  REPETITION_DEFEATER_THRESHOLD,
+} from './adaptiveWarrantGateCore.js';
 
-export const TUTOR_STUB_WARRANT_GATE_SCHEMA = 'machinespirits.tutor-stub.warrant-gate.v1';
+export const TUTOR_STUB_WARRANT_GATE_SCHEMA = 'machinespirits.tutor-stub.warrant-gate.v2';
+export const TUTOR_STUB_WARRANT_GATE_OUTCOME_SCHEMA = 'machinespirits.tutor-stub.warrant-gate-outcome.v1';
 export const TUTOR_STUB_WARRANT_GATE_MODES = Object.freeze(['off', 'observe', 'active']);
 
 export function resolveTutorStubWarrantGateMode(value = process.env.TUTOR_STUB_WARRANT_GATE) {
@@ -54,10 +58,62 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
   let complaintTurns = [];
   let previousDagTotal = null;
   let turnsSinceDagGrowth = 0;
+  const pendingOutcomes = new Map();
 
   return {
     schema: TUTOR_STUB_WARRANT_GATE_SCHEMA,
     mode,
+
+    /**
+     * Freeze the final, delivered outcome of tutor turn N. It remains pending
+     * until decision N+1, because only then can it be combined with the next
+     * learner-record observation without leaking post-decision information
+     * backward into turn N.
+     */
+    recordTurnOutcome({
+      turn,
+      actionFamily = null,
+      uptakeAudit = null,
+      repetitionAudit = null,
+      deterministicFallback = false,
+      mechanicalRepair = false,
+      guardAccounting = null,
+      pacingSignal = null,
+    } = {}) {
+      const normalizedTurn = Number(turn);
+      if (!Number.isFinite(normalizedTurn) || normalizedTurn < 1) {
+        throw new Error('warrant-gate turn outcome requires a positive turn number');
+      }
+      const uptakeOk = uptakeAudit ? uptakeAudit.ok !== false && (uptakeAudit.issues || []).length === 0 : null;
+      const maxSimilarity = Number(repetitionAudit?.maxSimilarity);
+      const defeaters = [];
+      if (uptakeOk === false) defeaters.push('uptake_audit_issues');
+      if (Number.isFinite(maxSimilarity) && maxSimilarity >= REPETITION_DEFEATER_THRESHOLD) {
+        defeaters.push(`repetition:${maxSimilarity.toFixed(2)}`);
+      }
+      if (deterministicFallback) defeaters.push('tutor_response_fallback');
+      if (mechanicalRepair) defeaters.push('tutor_response_mechanical_repair');
+      if (guardAccounting?.outcome === 'guard_exhausted_without_public_delivery') {
+        defeaters.push('tutor_response_guard_exhausted');
+      }
+      if (pacingSignal?.direction && pacingSignal.direction !== 'steady') {
+        defeaters.push(`pacing_signal:${pacingSignal.direction}`);
+      }
+      const outcome = {
+        schema: TUTOR_STUB_WARRANT_GATE_OUTCOME_SCHEMA,
+        turn: normalizedTurn,
+        action_family: actionFamily || null,
+        uptake_ok: uptakeOk,
+        repetition_max_similarity: Number.isFinite(maxSimilarity) ? maxSimilarity : null,
+        deterministic_fallback: Boolean(deterministicFallback),
+        mechanical_repair: Boolean(mechanicalRepair),
+        guard_outcome: guardAccounting?.outcome || null,
+        pacing_signal: pacingSignal || null,
+        defeaters: [...new Set(defeaters)],
+      };
+      pendingOutcomes.set(normalizedTurn, outcome);
+      return outcome;
+    },
 
     /**
      * Assess the decision point at tutor turn N. priorActionFamily is the
@@ -78,10 +134,18 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
       const dagGrowth = previousDagTotal === null ? null : total - previousDagTotal;
       previousDagTotal = total;
       if (dagGrowth !== null) turnsSinceDagGrowth = dagGrowth > 0 ? 0 : turnsSinceDagGrowth + 1;
-      // The prior turn contributed trouble when it produced no record growth.
-      if (dagGrowth !== null && dagGrowth <= 0) {
-        troubleTurns.push({ turn: turn - 1, defeaters: ['no_dag_growth'] });
+      // Final audits for tutor turn N-1 and learner-record growth observed at
+      // decision N describe one outcome row. Add it only after a possible
+      // family-change reset: the outcome belongs to the family actually
+      // delivered on N-1, not to the older family that preceded it.
+      const priorTurn = turn - 1;
+      const priorTurnOutcome = pendingOutcomes.get(priorTurn) || null;
+      const priorTurnDefeaters = [...(priorTurnOutcome?.defeaters || [])];
+      if (dagGrowth !== null && dagGrowth <= 0) priorTurnDefeaters.push('no_dag_growth');
+      if (priorTurn >= 1 && priorTurnDefeaters.length) {
+        troubleTurns.push({ turn: priorTurn, defeaters: [...new Set(priorTurnDefeaters)] });
       }
+      pendingOutcomes.delete(priorTurn);
       if (signal.labels.includes('register_complaint')) complaintTurns.push(turn);
 
       const recentSignals = [...history.slice(-2).map((row) => row.signal), signal];
@@ -99,7 +163,6 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
           repair_warranted: !masked,
         });
       }
-
       const warrant = evaluateWarrant({
         signal,
         signalConsumed: false,
@@ -128,6 +191,7 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         learner_signal: signal,
         dag_total: total,
         dag_growth: dagGrowth,
+        prior_turn_outcome: priorTurnOutcome,
         turns_since_dag_growth: turnsSinceDagGrowth,
         trouble_turns: troubleTurns.map((row) => row.turn),
         complaint_turns: [...complaintTurns],
@@ -157,4 +221,10 @@ export function ensureTutorStubWarrantGate(state, { mode = resolveTutorStubWarra
   if (mode === 'off') return null;
   if (!state.warrantGate) state.warrantGate = createTutorStubWarrantGate({ mode });
   return state.warrantGate;
+}
+
+/** Record a completed tutor-turn outcome only when a live gate is attached. */
+export function recordTutorStubWarrantGateOutcome(state, outcome = {}) {
+  if (!state?.warrantGate?.recordTurnOutcome) return null;
+  return state.warrantGate.recordTurnOutcome(outcome);
 }

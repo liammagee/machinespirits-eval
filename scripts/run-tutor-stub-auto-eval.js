@@ -62,6 +62,7 @@ import {
 } from '../services/tutorStubDiagnosticCollection.js';
 import { normalizeTutorStubPointOfActionArm } from '../services/tutorStubPointOfActionCoaching.js';
 import { tutorStubStrictOriginalCandidateAccepted } from '../services/tutorStubFirstDraftCampaign.js';
+import { resolveTutorStubWarrantGateMode } from '../services/tutorStubWarrantGate.js';
 import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
   normalizeTutorStubReleaseSpeed,
@@ -88,6 +89,9 @@ const argvHasOption = (name) => process.argv.slice(2).some((arg) => arg === name
 const MODEL_OVERRIDE = Boolean(process.env.TUTOR_STUB_EVAL_MODEL || argvHasOption('--model'));
 const ANALYSIS_MODEL_OVERRIDE = Boolean(
   process.env.TUTOR_STUB_EVAL_ANALYSIS_MODEL || argvHasOption('--analysis-model'),
+);
+const LEARNER_ANALYSIS_PROMPT_PROFILE_OVERRIDE = Boolean(
+  process.env.TUTOR_STUB_EVAL_LEARNER_ANALYSIS_PROMPT_PROFILE || argvHasOption('--learner-analysis-prompt-profile'),
 );
 const AUTO_LEARNER_MODEL_OVERRIDE = Boolean(
   process.env.TUTOR_STUB_EVAL_AUTO_LEARNER_MODEL ||
@@ -118,6 +122,9 @@ const RELEASE_SPEED_OVERRIDE = Boolean(
   process.env.TUTOR_STUB_EVAL_RELEASE_SPEED || process.env.TUTOR_STUB_RELEASE_SPEED || argvHasOption('--release-speed'),
 );
 const RUN_SEED_OVERRIDE = Boolean(process.env.TUTOR_STUB_EVAL_RUN_SEED || argvHasOption('--run-seed'));
+const WARRANT_GATE_OVERRIDE = Boolean(
+  process.env.TUTOR_STUB_EVAL_WARRANT_GATE || process.env.TUTOR_STUB_WARRANT_GATE || argvHasOption('--warrant-gate'),
+);
 let activeReadOnlySourceDir = null;
 
 const { values: args } = parseArgs({
@@ -126,6 +133,10 @@ const { values: args } = parseArgs({
     'run-seed': { type: 'string', default: process.env.TUTOR_STUB_EVAL_RUN_SEED || '1' },
     turns: { type: 'string', default: 'until-grounded' },
     policies: { type: 'string', default: 'negative,dynamic,random' },
+    'warrant-gate': {
+      type: 'string',
+      default: process.env.TUTOR_STUB_EVAL_WARRANT_GATE || process.env.TUTOR_STUB_WARRANT_GATE || 'off',
+    },
     'point-of-action-arm': {
       type: 'string',
       default: process.env.TUTOR_STUB_EVAL_POINT_OF_ACTION_ARM || '',
@@ -134,6 +145,10 @@ const { values: args } = parseArgs({
     'analysis-model': {
       type: 'string',
       default: process.env.TUTOR_STUB_EVAL_ANALYSIS_MODEL || DEFAULT_CODEX_MODEL_REF,
+    },
+    'learner-analysis-prompt-profile': {
+      type: 'string',
+      default: process.env.TUTOR_STUB_EVAL_LEARNER_ANALYSIS_PROMPT_PROFILE || '',
     },
     'auto-learner-model': {
       type: 'string',
@@ -237,10 +252,13 @@ Options:
   --turns <n|until-grounded> max automated learner turns per dialogue (default: until-grounded)
   --policies <csv>           register policies to compare (default: negative,dynamic,random)
                               known: dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,continuous_dynamical_system,continuous_empirical_dynamical_system,bland,random,negative
+  --warrant-gate <mode>      adaptive warrant gate: off, observe, or active (default: off)
   --point-of-action-arm <standing_book|triggered_placebo|side_coach|compiled_constraint>
                               frozen final-stretch Step 4 arm; forwarded unchanged to every dialogue
   --model <ref>              tutor model (default: codex.gpt-5.6-luna)
   --analysis-model <ref>     classifier + learner-DAG model (default: codex.gpt-5.6-luna)
+  --learner-analysis-prompt-profile <baseline|compact_v1>
+                              forwarded learner-analysis prompt profile
   --auto-learner-model <ref> automated learner model (default: codex.gpt-5.6-luna)
   --auto-learner-profile <text>
   --auto-learner-profile-id <id>
@@ -10265,6 +10283,9 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
   if (args['max-tokens']) command.push('--max-tokens', String(positiveInt(args['max-tokens'], '--max-tokens')));
   if (args['history-turns'])
     command.push('--history-turns', String(positiveInt(args['history-turns'], '--history-turns')));
+  if (args['learner-analysis-prompt-profile']) {
+    command.push('--learner-analysis-prompt-profile', args['learner-analysis-prompt-profile']);
+  }
   if (args['no-memory-summary']) command.push('--no-memory-summary');
   command.push('--learner', `Automated learner run ${runIndex}/${totalRuns} for policy ${policy}.`);
   return command;
@@ -10299,6 +10320,7 @@ function buildJobs({ policies, runs, traceDir, parallelism, interleavePolicies =
       key,
       traceDir: childTraceDir,
       logPath,
+      warrantGateMode: resolveTutorStubWarrantGateMode(args['warrant-gate']),
       childArgs: tutorStubArgs({ policy, runIndex, totalRuns: runs, traceDir: childTraceDir }),
     });
   }
@@ -10335,6 +10357,9 @@ function buildResumePlan(summaryPath) {
   const runSeed = normalizeTutorStubDagFactDropoutSeed(
     RUN_SEED_OVERRIDE ? args['run-seed'] : (source.config?.runSeed ?? args['run-seed']),
     { label: '--run-seed' },
+  );
+  const warrantGateMode = resolveTutorStubWarrantGateMode(
+    WARRANT_GATE_OVERRIDE ? args['warrant-gate'] : source.config?.warrantGateMode || args['warrant-gate'],
   );
   const retainedResults = [];
   const jobs = [];
@@ -10386,6 +10411,11 @@ function buildResumePlan(summaryPath) {
       adjustedChildArgs,
       '--history-turns',
       args['history-turns'] ? positiveInt(args['history-turns'], '--history-turns') : '',
+    );
+    adjustedChildArgs = withFlagValue(
+      adjustedChildArgs,
+      '--learner-analysis-prompt-profile',
+      LEARNER_ANALYSIS_PROMPT_PROFILE_OVERRIDE ? args['learner-analysis-prompt-profile'] : '',
     );
     adjustedChildArgs = withFlagValue(
       adjustedChildArgs,
@@ -10446,6 +10476,7 @@ function buildResumePlan(summaryPath) {
       key,
       traceDir: childTraceDir,
       logPath: path.join(traceDir, 'logs', `${key}.log`),
+      warrantGateMode,
       childArgs: adjustedChildArgs,
       resumedFrom: {
         summary: path.relative(ROOT, resolvedSummaryPath),
@@ -10483,6 +10514,7 @@ function buildResumePlan(summaryPath) {
       ...(source.config || {}),
       traceDir,
       runSeed,
+      warrantGateMode,
       dryRun: Boolean(args['dry-run']),
       model: MODEL_OVERRIDE ? args.model : source.config?.model || args.model,
       analysisModel: ANALYSIS_MODEL_OVERRIDE
@@ -10584,6 +10616,13 @@ function buildAutoEvalEvidencePlan({ traceDir, startedAt, jobs, config, resumePl
     path.join(ROOT, 'services', 'tutorStubPointOfActionCoaching.js'),
     path.join(ROOT, 'services', 'engagementRegisterRegistry.js'),
     path.join(ROOT, 'services', 'dramaticDerivation', 'fieldPlanner.js'),
+    path.join(ROOT, 'services', 'adaptiveWarrantGateCore.js'),
+    path.join(ROOT, 'services', 'adaptiveWarrantPolicy.js'),
+    path.join(ROOT, 'services', 'tutorStubPromptAudit.js'),
+    path.join(ROOT, 'services', 'tutorStubPublicLearnerAnalysis.js'),
+    path.join(ROOT, 'services', 'tutorStubWarrantGate.js'),
+    path.join(ROOT, 'services', 'tutorStubResponseConfigurationSelectionRuntime.js'),
+    path.join(ROOT, 'services', 'tutorStubTurnOrchestration.js'),
   ];
   const worldPath = worldSourcePath(config.world);
   const plannedJobs = jobs.length
@@ -10820,6 +10859,7 @@ function autoEvalConfigForState({ traceDir, configOverride = null }) {
       policies: policyCsv(args.policies),
       model: args.model,
       analysisModel: args['analysis-model'],
+      learnerAnalysisPromptProfile: args['learner-analysis-prompt-profile'] || null,
       autoLearnerModel: args['auto-learner-model'],
       autoLearnerProfileId: autoLearnerProfileLabel(),
       parentRunId: String(args['parent-run-id'] || '').trim() || null,
@@ -10848,6 +10888,7 @@ function autoEvalConfigForState({ traceDir, configOverride = null }) {
       releaseSpeed: normalizeTutorStubReleaseSpeed(args['release-speed'], { label: '--release-speed' }),
       loopMode: normalizeTutorStubLoopMode(args['loop-mode'], { label: '--loop-mode' }),
       runSeed: normalizeTutorStubDagFactDropoutSeed(args['run-seed'], { label: '--run-seed' }),
+      warrantGateMode: resolveTutorStubWarrantGateMode(args['warrant-gate']),
       dagFactDropoutSemantics: {
         eligibleFacts: 'adopted_public_premises_only',
         backgroundFactsImmune: true,
@@ -10970,6 +11011,7 @@ function runChildJob(job, { primaryHorizon = positiveInt(args['primary-horizon']
         ...process.env,
         TUTOR_STUB_EVAL_POLICY: job.policy,
         TUTOR_STUB_EVAL_RUN_INDEX: String(job.runIndex),
+        TUTOR_STUB_WARRANT_GATE: job.warrantGateMode,
       },
     });
     child.stdout.pipe(log, { end: false });

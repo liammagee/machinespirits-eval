@@ -496,6 +496,41 @@ Compare:
 
 Evaluate decision quality and downstream dialogue effects separately.
 
+### Implementation status — 10 August 2026
+
+| Phase | Current state | Boundary |
+|---|---|---|
+| 0 — semantic audit | complete | The existing world/DAG, learner board, action-family, stance, and audit surfaces have a grounded reuse/extend/new map. |
+| 1 — trace-only prototype | complete | The offline replayer emits commitments, typed divergence, warrant evidence, hold/revise verdicts, policy recommendations, realization, and available outcomes from existing traces. |
+| 2 — warrant evaluation | primary and fresh holdout complete; gate failed | The primary 18-case sample produced precision/recall 0/0. A bounded repair fit the burned corpus but again produced 0/0 on a zero-overlap 18-case holdout, so the repair was rejected and reverted. |
+| 3 — figure policy | implemented but not decision-valid | A typed repair-policy map selects an existing action family and stance, but the holdout shows that action-family success/termination and unresolved evidence requests are not represented. It is not a validated policy. |
+| 4 — register realization | runtime bridge complete; separate evaluation open | Active mode can override family and stance while the frontier model realizes the turn. Figure appropriateness and realization fidelity have not yet been independently scored in this study. |
+| 5 — baseline experiments | n=5 complete; n=10 stopped | Off/observe/active execution is valid, but decision quality failed and the inert observe arm moved on downstream channels. Scaling the paired-seed design is not licensed. |
+
+The architecture is therefore implemented far enough to test the design's
+central separation—diagnosis, warrant, repair policy, realization, and outcome—
+but not far enough to claim that the provisional policy improves learning.
+Authored expected-uptake events, a synchronized theory-level replay UI, and
+human-learner validation remain prospective.
+
+### Phase-5 stop result
+
+The annotation study sharpens the next architectural boundary. A commitment
+cannot be represented only as an action family plus accumulated failure
+evidence. It also needs an expected learner response and an exit condition.
+The fresh holdout contained both directions of error: a successful
+`challenge_resistance` move should have released the tutor from that family,
+while repeated requests for a specific missing comparison should have defeated
+an otherwise analytic-looking hold. Generic no-growth, uptake, and repetition
+counters cannot distinguish those cases.
+
+The next normative object is therefore an action-family contract of the form
+`commitment -> expected uptake within k turns -> success/defeat/expiry ->
+licensed successor families`. This is the concrete form of the earlier
+expected-uptake proposal, not a new prompt heuristic. Only after that object
+passes new decision-level annotation should Phase 5 resume with a variance-
+controlled downstream design.
+
 ## 19. First Coding Task
 
 Before adding new runtime logic, create a semantic audit document answering:

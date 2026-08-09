@@ -106,6 +106,46 @@ Re-run on this corpus: **4/4 scored agree** (t2, t3, t6, t8), 3 uncertain report
 
 **Policy convergence:** at every warranted point the Phase-3 policy layer recommends challenge-the-resistance with a precise stance ("hand agency back"); codex's free-text remedies — "requiring the learner to enter a warranted fact in their own voice", "participation-focused repair" — independently describe the same catalogue family.
 
+## Baseline-study calibration and rejected repair (2026-08-10)
+
+**Primary corpus:** 18 condition-blinded decision points from the valid n=5
+off/observe/active pilot, SHA-256
+`c8f470ba6fd199c62564ac4ead5973d492c0efc7b5e81b6e184aa01459d42ea3`.
+Two context-isolated Codex readers saw only the transcript prefix, current
+learner turn, current learner-record counts, and strategy in force. They are
+independent blind runs of one model family, not cross-model validation.
+
+**Primary result:** raw agreement 0.833; 15 hard-consensus cases and 3
+uncertain. Gate confusion matrix TP=0, TN=9, FP=4, FN=2; precision 0, recall 0,
+accuracy 0.600. This corpus is burned.
+
+**Candidate repair:** the error audit motivated three rule changes: discharge
+old flat-record trouble after positive record growth, require sustained
+deference before challenge, and let repeated interactional trouble defeat the
+analytic mask only after prior progress and a fresh plateau. Earlier held-out
+hard decisions remained 4/4 and 1/1; retrospective primary agreement became
+15/15. No generalization claim was made from that fit.
+
+**Fresh decision holdout:** a second 18-case sample was drawn from different
+decision points in the same valid pilot. The first freeze was rejected before
+labels were accepted when a hard overlap check found three primary cases. The
+corrected zero-overlap corpus has SHA-256
+`e8d2df91d3ab6c73191f7f8417f53b99645bab340af272379411671f4409ad9e`.
+Two replacement blind readers reached raw agreement 0.889; 16 hard-consensus
+cases scored and 2 were uncertain.
+
+**Fresh result:** candidate TP=0, TN=13, FP=1, FN=2; precision 0, recall 0,
+accuracy 0.813. The pre-repair rule on the same labels had TP=1, TN=12, FP=2,
+FN=1; precision 0.333, recall 0.500, accuracy 0.813. The candidate did not
+generalize and was reverted.
+
+The new false negatives reveal a representation gap rather than another safe
+threshold tweak. One successful challenge should have terminated
+`challenge_resistance`; another learner repeatedly requested a specific
+missing comparison while remaining analytically competent. The next rule must
+be grounded in typed expected uptake and policy termination/expiry, then tested
+on newly generated decisions. The full n=10 study is stopped.
+
 ## Machine-readable gold
 
 ```yaml

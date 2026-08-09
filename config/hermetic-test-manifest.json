@@ -127,6 +127,7 @@
         "tests/adaptiveTraceProjection.test.js",
         "tests/adaptiveTutorStoreInjection.test.js",
         "tests/adaptiveWarrantGate.test.js",
+        "tests/adaptiveWarrantBaselineStudy.test.js",
         "tests/aggregatePoeticsPairedIncrement.test.js",
         "tests/agonEpisode.test.js",
         "tests/agonReferee.test.js",

@@ -137,6 +137,14 @@ function dagCounts(preflightEvent) {
   };
 }
 
+function committedDagCounts(turnCompleteEvent) {
+  const dag = turnCompleteEvent?.turnRecord?.stateObservation?.dag || {};
+  const grounded = Number(dag.grounded_count);
+  const voiced = Number(dag.voiced_derived_count);
+  if (!Number.isFinite(grounded) || !Number.isFinite(voiced)) return null;
+  return { grounded, derivable: 0, voiced, hypotheses: 0 };
+}
+
 function dagTotal(counts) {
   return counts.grounded + counts.voiced;
 }
@@ -145,6 +153,7 @@ function dagTotal(counts) {
 function collectTurnFacts(events) {
   const contracts = lastPerTurn(events, 'tutor_first_draft_contract');
   const preflights = lastPerTurn(events, 'learner_dag_preflight');
+  const completedTurns = lastPerTurn(events, 'turn_complete');
   const pacing = lastPerTurn(events, 'release_pacing_update');
   const uptakeAudits = lastPerTurn(events, 'tutor_live_turn_progression_audit');
   const repetitionAudits = lastPerTurn(events, 'tutor_repetition_audit');
@@ -164,8 +173,17 @@ function collectTurnFacts(events) {
   const facts = new Map();
   for (const turn of turns) {
     const selection = performanceSelection(contracts.get(turn));
-    const before = preflights.get(turn) ? dagCounts(preflights.get(turn)) : null;
-    const after = preflights.get(turn + 1) ? dagCounts(preflights.get(turn + 1)) : null;
+    // Live decision N combines tutor outcome N-1 with learner-record growth
+    // from learner N. A completed turn already contains the record after its
+    // learner was processed, so tutor-turn t uses committed records t -> t+1.
+    // Historical traces without committed DAG counts fall back to preflights
+    // t+1 -> t+2: a preflight is captured before its current learner update.
+    const before =
+      committedDagCounts(completedTurns.get(turn)) ||
+      (preflights.get(turn + 1) ? dagCounts(preflights.get(turn + 1)) : null);
+    const after =
+      committedDagCounts(completedTurns.get(turn + 1)) ||
+      (preflights.get(turn + 2) ? dagCounts(preflights.get(turn + 2)) : null);
     const dagGrowth = before && after ? dagTotal(after) - dagTotal(before) : null;
     const uptake = uptakeAudits.get(turn);
     const uptakeOk = uptake ? uptake.ok !== false && (uptake.issues || []).length === 0 : null;

@@ -58,3 +58,32 @@ Caveats: v0 thresholds are guesses; commitment = action family is an interpretiv
 2. **Expected-uptake events as the first normative extension:** attach to each release an authored expectation (`voiced target fact within k turns`) — the world YAML already names the fact each premise supports; the chainer can compute which derivation a release unlocks. This turns "no_dag_growth" from a global stall counter into a per-release defeated expectation.
 3. **Record hold decisions.** The engine skips them; the shadow cannot see "considered and rejected" revisions. One trace event fixes it.
 4. **Only then** consider wiring a warrant threshold into a live decision (the manner-switch accumulator pattern, applied at the action-family level) — as a cell against the uninstrumented stub, per §15.7.
+
+## 6. Implementation progress (2026-08-10)
+
+The sequence above has now advanced through the pilot form of Phase 5:
+
+- the original, held-out, and second-annotator corpora exercise the trace-only
+  warrant representation, including productive divergence and low-agency
+  deferral;
+- shared offline/live warrant rules and a typed repair-policy map keep diagnosis
+  separate from action-family and stance realization;
+- observe and active runtime modes record every gated hold/revise decision, and
+  completed-turn outcomes feed the next decision without leaking future
+  evidence;
+- the paired off/observe/active baseline harness has completed a valid n=5
+  generation and downstream-analysis pass.
+
+The independent annotation sequence is now complete and it triggered the stop
+rule. The primary sample scored precision/recall 0/0. A bounded repair reached
+15/15 retrospectively but again scored 0/0 on a fresh zero-overlap holdout, so
+it was rejected and reverted. The misses show why authored expected uptake is
+not optional: the state must represent both successful repair termination and
+an unresolved request for a particular public comparison. Accumulated generic
+trouble cannot tell those apart.
+
+Two design obligations remain open. First, action-family commitments need
+typed uptake, deadline, success, defeat, and expiry semantics in runtime state.
+Second, any downstream comparison must control frontier-model draw variance;
+the inert observe arm moved as much as or more than active on learner-record
+growth. The n=10 paired-seed comparison is stopped rather than merely pending.

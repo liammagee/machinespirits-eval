@@ -258,3 +258,63 @@ The audit should determine:
 ## Session Anchor
 
 > **Do not ask only what the tutor should say next. Ask what the conversation should be becoming next, what evidence shows that it is or is not becoming that, and what revision is warranted when the trajectories diverge.**
+
+## Progress Update — 10 August 2026
+
+The immediate semantic-audit step is complete. The existing world/DAG remains
+the normative conceptual spine; the learner board and turn audits supply the
+descriptive trace; `action_family` is the operational commitment/figure level;
+and `engagement_stance` remains the downstream register level. The missing
+layer was not another learner model but an explicit, evidence-bearing warrant
+decision between those existing objects.
+
+That layer now exists in shadow and live forms. Shared rules classify
+decision-time divergence, a repair-policy map recommends family and stance, and
+the live gate can be disabled, observed without behaviour change, or activated.
+Completed-turn outcomes are carried forward to the next decision so the trace
+can answer why a change was or was not warranted without using future evidence.
+
+The Phase-5 n=5 paired pilot has completed valid execution and downstream
+analysis. It establishes that explicit instrumentation can execute, record its
+evidence, and produce attributable override events. It does not yet isolate a
+downstream quality or learning effect: the behaviourally inert observe arm also
+moved against baseline, exposing residual frontier-model draw variance despite
+paired session seeds. The fresh blinded decision corpus awaits two independent
+annotations, false-positive behaviour needs review, and the pilot's downstream
+signals are not yet a basis for n=10 scale-up or human-learning inference.
+
+Still open from the original log are richer authored expected-uptake semantics,
+independent evaluation of figure choice and linguistic realization, a theory-
+level replay UI, and validation beyond automated learner profiles.
+
+## Progress Update — 10 August 2026, annotation and stop decision
+
+The 18-case decision sample now has two independent blind reads. Fifteen hard-
+consensus cases yielded precision 0, recall 0, and accuracy 0.600 for the live
+gate's decision rule. Four false positives treated defensible evidence staging
+as accumulated failure; two false negatives let the engaged-analytic mask hide
+a strategy that had exhausted its usefulness.
+
+A small rule repair fit all 15 hard primary cases, but that corpus was already
+burned. A corrected zero-overlap 18-case holdout was therefore frozen and read
+by two replacement annotators. On 16 hard-consensus cases the candidate again
+had precision 0 and recall 0 (accuracy 0.813). Its changes were reverted. The
+failed generalization matters more than the retrospective fit.
+
+The holdout changes the architectural diagnosis. The missing object is not
+only a warrant threshold; it is an action-family contract that says what uptake
+the move expects and when the family has succeeded, failed, or expired. A
+challenge can succeed without immediate DAG growth and should then terminate.
+Conversely, a learner can remain analytically competent while a specific
+request for missing evidence goes unanswered and should then force repair.
+
+The n=10 comparison was not launched. Paired observe-minus-off learner-record
+growth (+0.6 low-agency, +0.4 diligent, +0.8 affective-resistant) was as large
+as or larger than active-minus-off (0.0, -0.2, +0.2), so the present paired-
+seed design does not isolate an intervention effect from model-draw variance.
+The next empirical loop must validate typed uptake/termination contracts first,
+then use frozen-prefix counterfactual replay or explicit replicated draws.
+
+The evidence boundary remains strict: this is internal automated-learner
+calibration, not a validated repair policy, a paper result, or evidence of
+human learning.

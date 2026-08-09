@@ -51,6 +51,23 @@ test('semantic performance adjudication has its own bounded non-speaking prompt 
   assert.equal(audit.budget.maxApproxTokens, 3000);
 });
 
+test('combined learner analysis admits the bounded eight-turn envelope and still fails above it', () => {
+  const withinBudget = auditTutorStubPrompt({
+    surface: 'learner_analysis',
+    userPrompt: 'x'.repeat(41_500),
+  });
+  const aboveBudget = auditTutorStubPrompt({
+    surface: 'learner_analysis',
+    userPrompt: 'x'.repeat(42_001),
+  });
+
+  assert.equal(withinBudget.ok, true);
+  assert.equal(withinBudget.budget.maxChars, 42_000);
+  assert.equal(withinBudget.budget.maxApproxTokens, 10_500);
+  assert.equal(aboveBudget.ok, false);
+  assert.ok(aboveBudget.violations.some((violation) => violation.code === 'character_budget_exceeded'));
+});
+
 test('curriculum translation uses the bounded clarification prompt surface', () => {
   assert.equal(tutorStubPromptSurfaceForRole('tutor_stub_curriculum_translator'), 'clarifier');
   assert.equal(tutorStubPromptSurfaceForRole('tutor_stub_turn_translator'), 'clarifier');
