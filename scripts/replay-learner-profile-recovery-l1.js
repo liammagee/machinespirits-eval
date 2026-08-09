@@ -182,7 +182,9 @@ export function loadLearnerProfileRecoveryCorpus(manifest, { root = ROOT } = {})
 }
 
 function stateFrequency(labels, states) {
-  return Object.fromEntries(states.map((state) => [state, labels.filter((label) => label === state).length / labels.length]));
+  return Object.fromEntries(
+    states.map((state) => [state, labels.filter((label) => label === state).length / labels.length]),
+  );
 }
 
 export function replayLearnerProfileRecoveryCorpus(manifest, sources, triggerPatterns) {
@@ -252,7 +254,10 @@ function classify(vector, vectors, states, omittedVector = vector) {
   const centroids = Object.fromEntries(
     personas.map((persona) => [
       persona,
-      centroid(vectors.filter((candidate) => candidate.persona === persona && candidate !== omittedVector), states),
+      centroid(
+        vectors.filter((candidate) => candidate.persona === persona && candidate !== omittedVector),
+        states,
+      ),
     ]),
   );
   // This preserves the scratch replay's strict-less-than tie behavior: a tie

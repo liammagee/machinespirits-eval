@@ -31,7 +31,10 @@ test('learner-profile recovery restores the exact historical qd-v1 bytes and pin
   const bytes = fs.readFileSync(report.quietPath);
 
   assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), manifest.provenance.quiet_detector.sha256);
-  assert.equal(manifest.provenance.quiet_detector.sha256, '318da00fff7fc8049fc21640f2978cc119ff3a45a53a5dd126e3df66656ec6c4');
+  assert.equal(
+    manifest.provenance.quiet_detector.sha256,
+    '318da00fff7fc8049fc21640f2978cc119ff3a45a53a5dd126e3df66656ec6c4',
+  );
   assert.equal(report.expectedTotal, 64);
 });
 

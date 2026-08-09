@@ -38,7 +38,11 @@ function sha256(value) {
 function canonicalize(value) {
   if (Array.isArray(value)) return value.map(canonicalize);
   if (!value || typeof value !== 'object') return value;
-  return Object.fromEntries(Object.keys(value).sort().map((key) => [key, canonicalize(value[key])]));
+  return Object.fromEntries(
+    Object.keys(value)
+      .sort()
+      .map((key) => [key, canonicalize(value[key])]),
+  );
 }
 
 function hashObject(value) {
@@ -180,7 +184,8 @@ export function buildLearnerProfileWorldDeconfoundPlan(
 ) {
   const report = validateLearnerProfileWorldDeconfoundDesign(design, { root });
   const outputDirRelative = path.relative(root, path.resolve(outputDir)).split(path.sep).join('/');
-  if (!outputDirRelative || outputDirRelative.startsWith('../')) fail('output directory must stay inside the repository');
+  if (!outputDirRelative || outputDirRelative.startsWith('../'))
+    fail('output directory must stay inside the repository');
 
   const worlds = {};
   const jobs = [];
@@ -232,7 +237,10 @@ export function buildLearnerProfileWorldDeconfoundPlan(
       reason: 'The prospective traces are primary evidence and must not remain only under ignored exports/.',
     },
   };
-  plan.planHash = hashObject({ ...plan, worlds: Object.fromEntries(Object.entries(worlds).map(([id, world]) => [id, { ...world, yaml: undefined }])) });
+  plan.planHash = hashObject({
+    ...plan,
+    worlds: Object.fromEntries(Object.entries(worlds).map(([id, world]) => [id, { ...world, yaml: undefined }])),
+  });
   return plan;
 }
 
@@ -279,7 +287,8 @@ export function verifyLearnerProfileWorldDeconfoundDelivery(plan, { root = ROOT 
     const expectedVoice = yaml.parse(fs.readFileSync(path.resolve(root, world.path), 'utf8')).learner_voice;
     if (dryRun.world?.id !== job.world) fail(`${job.id} dry-run resolved ${dryRun.world?.id}, expected ${job.world}`);
     if (options['auto-learner-profile'] !== privateBrief) fail(`${job.id} did not deliver the frozen private brief`);
-    if (!String(dryRun.systemPrompt || '').includes(expectedVoice)) fail(`${job.id} did not deliver the frozen public learner voice`);
+    if (!String(dryRun.systemPrompt || '').includes(expectedVoice))
+      fail(`${job.id} did not deliver the frozen public learner voice`);
     if (dryRun.modelRef !== plan.jobs[0].argv[plan.jobs[0].argv.indexOf('--model') + 1]) {
       fail(`${job.id} tutor model drifted`);
     }

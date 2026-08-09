@@ -7,10 +7,7 @@
       "version": "qd-v1",
       "path": "services/tutorStubQuietDetectorV1.js",
       "sha256": "318da00fff7fc8049fc21640f2978cc119ff3a45a53a5dd126e3df66656ec6c4",
-      "source_commits": [
-        "146a7b21a43305569ffc461bdaef714ad1cce472",
-        "8e2addab9875b38799d58b9243c6c3a6d201827b"
-      ],
+      "source_commits": ["146a7b21a43305569ffc461bdaef714ad1cce472", "8e2addab9875b38799d58b9243c6c3a6d201827b"],
       "source_commits_note": "146a7b21 created qd-v1 (2026-08-01); 8e2addab is the last commit carrying the qd-v1 bytes before the qd-v2 flip at a98d9c56 (2026-08-04). The frozen artifact is byte-identical to services/tutorStubQuietDetector.js at both commits. An earlier draft pinned two 2026-08-03 commits that do not contain the detector file; corrected 2026-08-09."
     },
     "pressure_trigger": {
@@ -73,18 +70,7 @@
     "tenant": {
       "world": "world_030_rowan_flat",
       "expected_dialogues": 36,
-      "arms": [
-        "r1-bare",
-        "r2-butler",
-        "r2-switch",
-        "q1-k3",
-        "q2-k3",
-        "v4live",
-        "h1",
-        "s2",
-        "s2cc",
-        "s2d"
-      ]
+      "arms": ["r1-bare", "r2-butler", "r2-switch", "q1-k3", "q2-k3", "v4live", "h1", "s2", "s2cc", "s2d"]
     }
   },
   "classifier": {
