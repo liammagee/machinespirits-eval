@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-24
-updated: 2026-08-09
+updated: 2026-08-10
 branch: codex/refactor-post-adapter-reconciliation
 verification: >-
   Every accepted refactoring slice has a linked child card and parity gate;
@@ -148,6 +148,7 @@ links:
     - refactor-rubric-transcript-projection-runtime
     - refactor-dramatic-derivation-run-state
     - refactor-dramatic-derivation-role-transitions
+    - refactor-dramatic-derivation-post-turn-lifecycle
 tags:
   - refactoring
   - testing
@@ -1848,3 +1849,17 @@ Log:
   merge, the next R5 macro should extract the post-learner scene-close, stall,
   decay, and live-monitor lifecycle against the same explicit run state; view
   construction can then be assessed as the remaining engine responsibility.
+- 2026-08-10 — Opened child 124 as PR #620 at `0d537aa6`; GitHub reports the
+  PR mergeable and its initial CI is running. Activated stacked child 125,
+  `refactor-dramatic-derivation-post-turn-lifecycle`, from that exact head.
+  This R5 boundary owns scene closure, stall/decay bookkeeping, the logic
+  snapshot, and the live-turn projection while preserving the engine's turn
+  order and leaving role-view construction in the facade.
+- 2026-08-10 — Completed stacked child 125 locally. The post-turn lifecycle
+  owner reduces the dramatic engine from 1,622 to 1,217 lines and `runDrama()`
+  complexity from 123 to 14 while preserving scene, stall, corruption, logic,
+  and live-monitor parity. All 590 dramatic assertions, 8,289 hermetic root
+  tests, 137 tutor-core tests, nine risk groups, and structural gates pass.
+  Keep the parent active: after PR #620 and this child merge, refresh hotspot
+  evidence before choosing between a final engine view-construction seam and
+  the substantially larger `llmRoles.js` R5 owner.
