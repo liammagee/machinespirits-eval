@@ -1,7 +1,7 @@
 ---
 id: register-mock-praise-probe
 title: Does asking for the mock-compliment directly raise the manner reading?
-status: active
+status: done
 type: experiment
 priority: P2
 owner: claude
@@ -94,9 +94,40 @@ shows the reader can be satisfied on request, locating the 11/15 shortfall in
 the ask rather than the writer's capacity. It is not evidence the turns teach
 better; the tutor score is carried alongside for exactly that reason.
 
-## Status
+## Outcome
 
-Apparatus built and tested (19/19; register suites 60/60). Plan hash printed
-by the dry run, fixed before any call:
-`83b9ebe28642e583fc35474c46c68edb076c39ad152d07e929e5713c1ad84a00`.
-Not launched — 30 paid rows, awaiting the operator's go-ahead.
+Run `eval-2026-08-09-bb402d97`, 2026-08-09, operator-authorized on clean
+commit `6e79d4e5`. 30/30 rows, 30/30 tutor scores, 50/50 register slices,
+30/30 read with none unread; 270/270 tutor-seat calls on `codex/gpt-5.5`.
+Report COMPLETE. Paper v3.0.282.
+
+| measure | plain (control) | asks (treatment) |
+|---|---|---|
+| cue compliance (own gate; not comparable across arms) | 15/15 | 15/15 |
+| mock-praise in the adopting turn | 14/15 | 15/15 |
+| read as edged | 14/15 | 15/15 |
+| tutor v2.2 mean | 66.7 | 66.3 |
+
+**The question dissolved: the control moved.** The plain arm, re-drawn one
+day after the stored run, reads 14/15 edged and grants praise 14/15
+unprompted — against its own 11/15 and 11/15 the day before. So the stored
+shortfall was between-draw noise, not a floor. Within-batch primary 15/15 vs
+14/15 (p = 1.0): registered verdict **no separation at this size**. Cross-run
+secondary 15/15 vs 11/15: p = 0.0996, exactly as computed before the run. The
+manipulation check "held" (15 > 14) with no headroom to mean anything.
+
+**The device test is the measure that moved.** Pooled over both arms, 29/29
+turns granting praise in words read edged; the single bare turn read flat
+(p = 0.033) — reproducing the stored table prospectively, but on one bare
+turn where the design hoped the unasked control would supply several. Across
+both strong-stack batches: 39/40 with the device read edged, 1/5 without.
+
+**No cost**: tutor v2.2 delta −0.4 on a ~67 mean.
+
+## Limits
+
+One writer, one reader, and the reader's gloss names the device, so no causal
+claim — the compliment and the edge travel together; which drives which is
+not measurable here. The plain register delivers the device near ceiling
+unprompted on this writer, so the asking register is redundant on this stack.
+This closes the generation line for negative registers on the strong stack.

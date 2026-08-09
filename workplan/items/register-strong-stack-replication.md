@@ -126,6 +126,11 @@ evidence it quotes for an edge, in a turn where the pressure keeps up.
 So the next question for a design is whether the mock-compliment can be asked
 for directly, and whether asking costs anything. Nothing here tests that.
 
+*Follow-up ([[register-mock-praise-probe]], run `eval-2026-08-09-bb402d97`):
+the question dissolved. This same arm re-drawn one day later read 14/15 —
+the 11/15 was a draw, not a rate. The device pattern held prospectively
+(29/29 with praise edged, the one bare turn flat).*
+
 ## Limits
 
 One arm, one writer, one reader, one draw per cell, fifteen rows against
