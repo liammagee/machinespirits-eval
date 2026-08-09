@@ -40,6 +40,9 @@ links:
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/603
     - https://github.com/liammagee/machinespirits-eval/pull/605
+    - https://github.com/liammagee/machinespirits-eval/pull/610
+    - https://github.com/liammagee/machinespirits-eval/pull/621
+    - https://github.com/liammagee/machinespirits-eval/pull/623
 tags:
   - tutor-stub
   - learner-profiles
@@ -240,4 +243,7 @@ publication closeout's crossed holdout design, not a routing policy.
   the frozen 220-call admission bound, while both launch and analysis refuse a
   nominally successful job unless exactly one JSONL trace contains exactly one
   `run_end`. The temporary paid authorization remains returned to
-  `not_authorized`; no further model call is licensed.
+  `not_authorized`; no further model call is licensed. Opened the reconciled
+  implementation as PR #623 and closed PR #610 with a supersession note that
+  names the retained safeguards and rejected duplicate paths. Paper PR #621 is
+  already merged separately.
