@@ -1,7 +1,7 @@
 ---
 id: refactor-dramatic-derivation-tutor-prompt-construction
 title: Extract dramatic-derivation tutor prompt construction
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -19,6 +19,8 @@ claim_status: planned
 depends_on:
   - refactor-dramatic-derivation-strategy-ledger-prompt
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/629
   notes:
     - docs/next-steps/2026-08-09-codebase-refactoring-post-run-coordinator-reconciliation.md
     - docs/next-steps/2026-08-10-codebase-refactoring-post-strategy-ledger-reconciliation.md
@@ -87,3 +89,6 @@ Log:
   structural gates pass. The first monolithic root run exposed concurrent test
   interference; clean shards passed 4,659/4,659 and 3,704/3,704 after the known
   `tutorStubPassthrough` recurrence passed 7/7 alone.
+- 2026-08-10 — PR #629 merged as `f6c148d5`; the serialized workplan refresh
+  advanced `main` to `db5b5958`. The post-merge reconciliation confirms the
+  prompt owner and closes this child.
