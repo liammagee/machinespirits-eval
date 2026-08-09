@@ -31,6 +31,7 @@ import { fileURLToPath } from 'node:url';
 import { archiveRun, resolveArchiveDir } from './archive-run-artifacts.js';
 
 import { loadWorld } from '../services/dramaticDerivation/world.js';
+import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
 import { tutorStubOutcomeRowKind } from '../services/tutorStubOutcomeRows.js';
 import { parseTutorStubShowcaseTrace, readTutorStubShowcaseTrace } from '../services/tutorStubShowcase.js';
 
@@ -165,6 +166,7 @@ function childCommand({ args, world, traceDir, turnCap, budget }) {
     '--no-remember-settings',
     '--trace-dir',
     traceDir,
+    ...requiredTutorStubArtifactArchiveArgs(),
   ];
 }
 

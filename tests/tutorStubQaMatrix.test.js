@@ -554,7 +554,9 @@ test('live-like QA matrix seals matching tutor, analyzer, and learner observatio
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-qa-live-provenance-'));
   const qaDir = path.join(root, 'qa');
   const binDir = path.join(root, 'bin');
+  const archiveDir = path.join(root, 'archive');
   fs.mkdirSync(binDir, { recursive: true });
+  fs.mkdirSync(archiveDir, { recursive: true });
   writeFakeCodex(binDir);
   try {
     execFileSync(
@@ -592,6 +594,7 @@ test('live-like QA matrix seals matching tutor, analyzer, and learner observatio
           ...process.env,
           PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
           CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+          EVAL_ARCHIVE_DIR: archiveDir,
         },
       },
     );
@@ -632,7 +635,9 @@ test('a failed child under --keep-going still seals the matrix root with forward
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-qa-failed-child-'));
   const qaDir = path.join(root, 'qa');
   const binDir = path.join(root, 'bin');
+  const archiveDir = path.join(root, 'archive');
   fs.mkdirSync(binDir, { recursive: true });
+  fs.mkdirSync(archiveDir, { recursive: true });
   writeFakeCodex(binDir, {
     failWhenInputIncludes: 'Recurring behavior: omits the warrant between clue and conclusion.',
   });
@@ -640,6 +645,7 @@ test('a failed child under --keep-going still seals the matrix root with forward
     ...process.env,
     PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
     CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+    EVAL_ARCHIVE_DIR: archiveDir,
   };
   try {
     const matrixError = (() => {

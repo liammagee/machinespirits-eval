@@ -18,6 +18,7 @@ import {
   readLearnerProfileWorldDeconfoundDesign,
   validateLearnerProfileWorldDeconfoundDesign,
 } from './review-learner-profile-world-deconfound.js';
+import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_OUTPUT_DIR = path.join(ROOT, 'exports', 'learner-profile-world-deconfound', 'prospective-plan');
@@ -174,6 +175,7 @@ function jobArguments({ design, cell, materials, repeat, outputDirRelative }) {
       '--no-interim-animation',
       '--trace-dir',
       traceDir,
+      ...requiredTutorStubArtifactArchiveArgs(),
     ],
   };
 }
@@ -230,6 +232,8 @@ export function buildLearnerProfileWorldDeconfoundPlan(
     historicalBoundary:
       'The historical 56/64 result motivates the 80 percent bar but is not independently reproduced or pooled into this cohort.',
     postRunArchive: {
+      liveTracePolicy: 'required',
+      liveTraceBoundary: 'redacted events mirrored outside the worktree before continuation',
       requiredBeforeCloseout: true,
       script: 'scripts/archive-run-artifacts.js',
       command: 'node scripts/archive-run-artifacts.js <completed-cohort-output-dir>',

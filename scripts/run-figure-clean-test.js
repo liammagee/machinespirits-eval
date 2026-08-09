@@ -52,6 +52,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 // The five cards that name a tutor tactic. Order fixed here so the rotation is
@@ -178,6 +180,7 @@ function main() {
       '--acknowledge-drift',
       '--trace-dir',
       path.relative(ROOT, traceDir),
+      ...requiredTutorStubArtifactArchiveArgs(),
     ];
     console.log(`\n${step.dialogue} (rotation ${step.rotation}): ${step.schedule}`);
     if (args.dryRun) {

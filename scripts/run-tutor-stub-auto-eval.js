@@ -18,6 +18,7 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { resolveModel } from '../services/evalConfigLoader.js';
+import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
 import {
   appendRunEvent,
   assertExperimentRun,
@@ -10247,6 +10248,7 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
     `${safeSlug(policy)}-r${runIndex}`,
     '--trace-dir',
     traceDir,
+    ...requiredTutorStubArtifactArchiveArgs(),
     '--loop-mode',
     normalizeTutorStubLoopMode(args['loop-mode'], { label: '--loop-mode' }),
     '--no-stream',

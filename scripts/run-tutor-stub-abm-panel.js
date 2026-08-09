@@ -21,6 +21,7 @@ import { loadPersona } from '../services/abmLearnerPopulation.js';
 import { buildInteriorCharacterSheet } from '../services/learnerInteriorGate.js';
 import { resolveEngagementRegister } from '../services/engagementRegisterRegistry.js';
 import { parseTutorStubRegisterPolicyStack } from '../services/tutorStubRegisterPolicyComposition.js';
+import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -519,6 +520,7 @@ function tutorStubArgs({ draw, args, savePath, tracesDir }) {
     args['register-palette'],
     '--trace-dir',
     tracesDir,
+    ...requiredTutorStubArtifactArchiveArgs(),
     '--save',
     savePath,
     '--no-stream',
