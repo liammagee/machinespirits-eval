@@ -1,12 +1,12 @@
 {
-  "generated": "2026-08-09T01:02:33.203Z",
+  "generated": "2026-08-09T01:11:01.593Z",
   "counts": {
-    "total": 476,
+    "total": 477,
     "byStatus": {
       "done": 447,
       "blocked": 6,
       "dropped": 9,
-      "review": 6,
+      "review": 7,
       "active": 2,
       "archived": 4,
       "triaged": 2
@@ -14,7 +14,7 @@
     "byType": {
       "research": 75,
       "experiment": 77,
-      "infra": 103,
+      "infra": 104,
       "maintenance": 200,
       "content": 3,
       "ops": 10,
@@ -466,6 +466,31 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
+    },
+    {
+      "id": "enforce-tutor-stub-artifact-lifecycle",
+      "title": "Make tutor-stub empirical traces durable by construction",
+      "status": "review",
+      "type": "infra",
+      "priority": "P0",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/tutor-stub-artifact-lifecycle",
+      "verification": "Every direct tutor-stub empirical child-command builder opts into required archival; the common trace writer mirrors every redacted event outside the worktree with a rolling integrity manifest, required mode fails before model calls when no archive is available, the direct-runner inventory fails CI on an unwired new caller, and focused tests plus lint and workplan source checks pass without model calls.",
+      "links": {
+        "items": [
+          "run-artifact-archiving",
+          "consolidate-logs-db-private-archive"
+        ]
+      },
+      "tags": [
+        "infra",
+        "tutor-stub",
+        "provenance",
+        "archive"
+      ]
     },
     {
       "id": "refactor-tutor-stub-adapter-tail",
