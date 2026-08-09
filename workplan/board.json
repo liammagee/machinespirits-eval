@@ -1,12 +1,12 @@
 {
-  "generated": "2026-08-09T16:22:27.268Z",
+  "generated": "2026-08-09T16:30:01.554Z",
   "counts": {
     "total": 493,
     "byStatus": {
-      "done": 464,
+      "done": 465,
       "blocked": 6,
       "dropped": 10,
-      "review": 4,
+      "review": 3,
       "active": 5,
       "archived": 4
     },
@@ -584,33 +584,6 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
-      "id": "bump-codex-default-to-gpt-5-6-luna",
-      "title": "Make GPT-5.6 Luna the default Codex ChatGPT-account model",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-09",
-      "updated": "2026-08-09",
-      "branch": "codex/bump-codex-default-luna",
-      "verification": "Reading the Codex provider configuration and dry-running the generic tutor-stub auto-eval, QA-matrix, and ABM-panel launchers selects codex.gpt-5.6-luna for every otherwise-unpinned Codex role; explicit model overrides still win; frozen experiment pins and historical artifacts remain unchanged; focused config, launcher, workplan, lint, and format checks pass.",
-      "links": {
-        "code": [
-          "config/providers.yaml",
-          "scripts/run-tutor-stub-auto-eval.js",
-          "scripts/run-tutor-stub-qa-matrix.js",
-          "scripts/run-tutor-stub-abm-panel.js",
-          ".codex/skills/ms-tutor-stub-eval/SKILL.md"
-        ]
-      },
-      "tags": [
-        "models",
-        "codex",
-        "tutor-stub"
-      ]
     },
     {
       "id": "adaptive-register-switching",
@@ -11853,6 +11826,36 @@
         "workplan",
         "governance",
         "skill"
+      ]
+    },
+    {
+      "id": "bump-codex-default-to-gpt-5-6-luna",
+      "title": "Make GPT-5.6 Luna the default Codex ChatGPT-account model",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-10",
+      "branch": "codex/bump-codex-default-luna",
+      "verification": "Reading the Codex provider configuration and dry-running the generic tutor-stub auto-eval, QA-matrix, and ABM-panel launchers selects codex.gpt-5.6-luna for every otherwise-unpinned Codex role; explicit model overrides still win; frozen experiment pins and historical artifacts remain unchanged; focused config, launcher, workplan, lint, and format checks pass.",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/616"
+        ],
+        "code": [
+          "config/providers.yaml",
+          "scripts/run-tutor-stub-auto-eval.js",
+          "scripts/run-tutor-stub-qa-matrix.js",
+          "scripts/run-tutor-stub-abm-panel.js",
+          ".codex/skills/ms-tutor-stub-eval/SKILL.md"
+        ]
+      },
+      "tags": [
+        "models",
+        "codex",
+        "tutor-stub"
       ]
     },
     {
