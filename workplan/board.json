@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-09T13:09:00.692Z",
+  "generated": "2026-08-09T14:20:03.230Z",
   "counts": {
-    "total": 488,
+    "total": 489,
     "byStatus": {
-      "done": 459,
+      "done": 460,
       "blocked": 6,
       "dropped": 9,
       "active": 7,
@@ -15,7 +15,7 @@
       "research": 75,
       "experiment": 82,
       "infra": 105,
-      "maintenance": 204,
+      "maintenance": 205,
       "content": 4,
       "ops": 10,
       "paper": 8
@@ -191,7 +191,8 @@
           "refactor-tutor-stub-adapter-tail",
           "refactor-eval-routes-read-side-domains",
           "refactor-evaluation-run-coordinator-runtime",
-          "refactor-rubric-transcript-projection-runtime"
+          "refactor-rubric-transcript-projection-runtime",
+          "refactor-dramatic-derivation-run-state"
         ]
       },
       "tags": [
@@ -2590,6 +2591,48 @@
         "dialogue-logs",
         "hermetic",
         "refactoring"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-dramatic-derivation-run-state",
+      "title": "Extract the dramatic-derivation run-state and lifecycle boundary",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/refactor-dramatic-derivation-run-state",
+      "verification": "360/360 direct runDrama assertions, 8,281/8,281 hermetic root tests, 137/137 tutor-core tests, and all seven risk groups pass. The new owners reach 79.12% line/64.48% branch/78.33% function coverage with maximum function complexity 12; source, formatting, lint, manifest, and zero-cycle gates pass.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-rubric-transcript-projection-runtime"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
+          "docs/next-steps/2026-08-09-codebase-refactoring-post-run-coordinator-reconciliation.md"
+        ],
+        "code": [
+          "services/dramaticDerivation/engine.js",
+          "services/dramaticDerivation/runState.js",
+          "services/dramaticDerivation/runLifecycle.js",
+          "services/dramaticDerivation/runResult.js",
+          "tests/dramaticDerivationRunStateBoundary.test.js",
+          "config/coverage-risk-floors.json",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "dramatic-derivation",
+        "runtime-state",
+        "lifecycle"
       ],
       "milestone": "evaluation-infrastructure"
     },
