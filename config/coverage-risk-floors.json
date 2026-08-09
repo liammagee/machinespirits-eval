@@ -52,6 +52,18 @@
       "floors": { "lines": 90, "branches": 75, "functions": 90 }
     },
     {
+      "id": "dramatic-derivation-run-state",
+      "label": "Dramatic derivation run-state and lifecycle",
+      "runner": "node",
+      "sources": [
+        "services/dramaticDerivation/runState.js",
+        "services/dramaticDerivation/runLifecycle.js",
+        "services/dramaticDerivation/runResult.js"
+      ],
+      "tests": ["tests/dramaticDerivationRunStateBoundary.test.js"],
+      "floors": { "lines": 75, "branches": 60, "functions": 72 }
+    },
+    {
       "id": "admin-auth",
       "label": "Admin routes and authentication",
       "runner": "node",

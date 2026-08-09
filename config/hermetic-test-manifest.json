@@ -259,6 +259,7 @@
         "tests/dramaticDerivationQualityPairs.test.js",
         "tests/dramaticDerivationRepair.test.js",
         "tests/dramaticDerivationReplay.test.js",
+        "tests/dramaticDerivationRunStateBoundary.test.js",
         "tests/dramaticDerivationRuntimeMonitor.test.js",
         "tests/dramaticDerivationScenes.test.js",
         "tests/dramaticDerivationSelfRegulation.test.js",

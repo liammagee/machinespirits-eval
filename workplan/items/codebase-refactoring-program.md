@@ -146,6 +146,7 @@ links:
     - refactor-eval-routes-read-side-domains
     - refactor-evaluation-run-coordinator-runtime
     - refactor-rubric-transcript-projection-runtime
+    - refactor-dramatic-derivation-run-state
 tags:
   - refactoring
   - testing
@@ -1818,3 +1819,17 @@ Log:
 - 2026-08-09 — Rebased child 122 over independent register/paper PR #617 and
   its generated-view refresh at `2b26e4e8`. The transcript boundary remains
   conflict-free; 166 focused assertions and all structural gates pass.
+- 2026-08-09 — PR #618 merged child 122 and the generated workplan refresh
+  advanced main to `5527016a`. Fresh R5 evidence records the 2,885-line
+  dramatic engine and complexity-544 `runDrama()`, with 19 direct test files
+  and a green 71/71 canonical derivation baseline. Activated child 123,
+  `refactor-dramatic-derivation-run-state`, to establish the explicit state and
+  lifecycle/result boundary before extracting role transitions.
+- 2026-08-09 — Completed child 123 locally. Explicit run-state, outer
+  lifecycle, and result-projection owners reduce the dramatic engine to 2,425
+  lines and `runDrama()` complexity to 454; all 360 direct assertions, 8,281
+  hermetic root tests, 137 tutor-core tests, seven risk groups, and structural
+  gates pass. Keep the parent active: after this child merges, the next R5
+  macro should extract the director/tutor/learner turn-transition coordinators
+  against the now-explicit state contract, starting with the director action,
+  release, pacing, and role-view seam rather than changing role policy.
