@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 import { fileURLToPath } from 'node:url';
 
 import { projectTutorStubRegisterHistoryPrompt } from '../services/tutorStubRegisterHistoryProjection.js';
@@ -48,7 +49,7 @@ test('register history prompt preserves empty-state fallback and legacy normaliz
 });
 
 test('the CLI binds rather than redeclares register-history projection', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubRegisterHistoryProjection.js'), 'utf8');
 
   assert.match(cliSource, /projectTutorStubRegisterHistoryPrompt/u);

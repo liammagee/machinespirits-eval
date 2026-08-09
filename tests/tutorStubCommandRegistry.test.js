@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import test from 'node:test';
 
 import {
@@ -27,6 +26,7 @@ import {
   tutorStubStaticCommandCompletions,
 } from '../services/tutorStubCommandRegistry.js';
 import { resolveTutorStubCapabilities } from '../services/tutorStubCapabilities.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 import {
   clearTutorStubDirectorGuidance,
   createTutorStubDirectorGuidanceState,
@@ -273,7 +273,7 @@ test('director-guidance restoration preserves clear boundaries, latest precedenc
 });
 
 test('the CLI imports rather than redeclares director-guidance restoration', () => {
-  const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
+  const source = readTutorStubApplicationSource();
   assert.match(source, /restoreTutorStubDirectorGuidanceState as restoreDirectorGuidanceState/u);
   assert.doesNotMatch(source, /function restoreDirectorGuidanceState\(/u);
 });

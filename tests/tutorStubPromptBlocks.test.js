@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import test from 'node:test';
 import {
   TUTOR_STUB_CONDITIONAL_HANDOFF_RULE,
@@ -10,6 +9,7 @@ import {
   refreshTutorStubStandingQuestionRules,
   replaceDelimitedTutorStubPrompt,
 } from '../services/tutorStubPromptBlocks.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 test('prompt delimiters preserve order and omit empty fields', () => {
   assert.equal(delimitTutorStubPrompt('[Start]', 'body', '[End]'), '[Start]\nbody\n[End]');
@@ -71,7 +71,7 @@ test('frozen standing rules migrate exact legacy question instructions idempoten
 });
 
 test('the CLI binds rather than redeclares the prompt-block model', () => {
-  const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
+  const source = readTutorStubApplicationSource();
   assert.match(source, /createTutorStubPromptBlockModel/u);
   assert.doesNotMatch(source, /function (?:responseChoiceModeRules|delimitedPrompt|replaceDelimitedPrompt)\(/u);
 });

@@ -7,6 +7,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { projectTutorStubTrainingReuseStatusLines } from '../services/tutorStubTrainingReusePresentation.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const COLORS = Object.freeze({ dim: '<dim>', reset: '<reset>' });
@@ -154,7 +155,7 @@ test('real candidate, opt-out, and fail-closed status commands preserve exact no
 });
 
 test('the CLI retains reuse resolution, state, persistence, trace, and terminal ownership', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTrainingReusePresentation.js'), 'utf8');
   const compositionSource = fs.readFileSync(
     path.join(ROOT, 'services', 'tutorStubInteractiveCommandComposition.js'),

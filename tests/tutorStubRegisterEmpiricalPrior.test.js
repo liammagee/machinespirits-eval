@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import test from 'node:test';
 
 import { createTutorStubRegisterEmpiricalPriorModel } from '../services/tutorStubRegisterEmpiricalPrior.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 function model(files = {}) {
   return createTutorStubRegisterEmpiricalPriorModel({
@@ -61,7 +61,7 @@ test('invalid register prior schemas retain exact path and schema diagnostics', 
 });
 
 test('the CLI binds rather than redeclares register-prior loading', () => {
-  const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
+  const source = readTutorStubApplicationSource();
   assert.match(source, /createTutorStubRegisterEmpiricalPriorModel/u);
   assert.doesNotMatch(
     source,

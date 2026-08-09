@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import test from 'node:test';
 
 import { replayTutorStubLearnerDagFromTurns } from '../services/tutorStubLearnerDagRestoration.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 test('learner-DAG replay remains disabled without the feature or world', () => {
   let calls = 0;
@@ -108,7 +108,7 @@ test('learner-DAG replay clones stored models, counts skips, and ignores empty t
 });
 
 test('the CLI imports rather than redeclares learner-DAG replay', () => {
-  const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
+  const source = readTutorStubApplicationSource();
   assert.match(source, /replayTutorStubLearnerDagFromTurns/u);
   assert.doesNotMatch(source, /function replayLearnerDagFromTurns\(/u);
 });

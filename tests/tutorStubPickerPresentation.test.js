@@ -10,6 +10,7 @@ import {
   projectTutorStubScenarioPickerEntries,
   projectTutorStubScenarioPickerLines,
 } from '../services/tutorStubPickerPresentation.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const colors = Object.freeze({
@@ -214,7 +215,7 @@ test('curriculum picker projection preserves state and optional verification det
 });
 
 test('the scenario controller owns picker state, key handling, and terminal writes behind the CLI boundary', () => {
-  const source = fs.readFileSync(path.join(ROOT, 'scripts/tutor-stub.js'), 'utf8');
+  const source = readTutorStubApplicationSource();
   const controller = fs.readFileSync(path.join(ROOT, 'services/tutorStubScenarioController.js'), 'utf8');
   const presentation = fs.readFileSync(path.join(ROOT, 'services/tutorStubPickerPresentation.js'), 'utf8');
 

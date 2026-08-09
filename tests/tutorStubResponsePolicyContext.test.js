@@ -6,6 +6,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { projectTutorStubResponsePolicyContext } from '../services/tutorStubResponsePolicyContext.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -168,7 +169,7 @@ test('an explicit response configuration remains authoritative over selection fa
 });
 
 test('the CLI retains authorial ledger resolution, runtime call sites, and prompt ownership', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubResponsePolicyContext.js'), 'utf8');
   const learnerRuntimeSource = fs.readFileSync(
     path.join(ROOT, 'services', 'tutorStubInteractiveLearnerRuntime.js'),
@@ -183,7 +184,7 @@ test('the CLI retains authorial ledger resolution, runtime call sites, and promp
     cliSource.indexOf('function registerTemperatureApplies'),
   );
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubResponsePolicyContext\.js';/u);
+  assert.match(cliSource, /from '\.\/tutorStubResponsePolicyContext\.js';/u);
   assert.match(wrapper, /projectTutorStubResponsePolicyContext/u);
   assert.match(wrapper, /ledgerTerm: worldLedgerTerm\(world\)/u);
   assert.match(cliSource, /createTutorStubInteractiveApplicationComposition/u);

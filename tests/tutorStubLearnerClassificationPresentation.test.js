@@ -11,6 +11,7 @@ import {
   projectTutorStubLearnerClassificationLines,
 } from '../services/tutorStubLearnerClassificationPresentation.js';
 import { runInteractive } from './helpers/tutorStubInteractiveHarness.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const COLORS = Object.freeze({
@@ -155,7 +156,7 @@ test('real technical-debug process preserves exact learner-classifier terminal b
 });
 
 test('the learner-analysis runtime owns classification semantics and delegates terminal output', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLearnerAnalysisRuntime.js'), 'utf8');
   const serviceSource = fs.readFileSync(
     path.join(ROOT, 'services', 'tutorStubLearnerClassificationPresentation.js'),
@@ -166,7 +167,7 @@ test('the learner-analysis runtime owns classification semantics and delegates t
     runtimeSource.indexOf('const applyLearnerAdvanceAssessment'),
   );
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubLearnerClassificationPresentation\.js';/u);
+  assert.match(cliSource, /from '\.\/tutorStubLearnerClassificationPresentation\.js';/u);
   assert.match(cliSource, /createTutorStubLearnerAnalysisRuntime/u);
   assert.doesNotMatch(cliSource, /async function classifyLearnerInput/u);
   assert.match(runtimeSource, /async function classifyLearnerInput/u);

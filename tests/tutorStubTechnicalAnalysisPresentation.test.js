@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 import { projectTutorStubTechnicalAnalysisLines } from '../services/tutorStubTechnicalAnalysisPresentation.js';
 import { runInteractive } from './helpers/tutorStubInteractiveHarness.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const COLORS = Object.freeze({ cyan: '<cyan>', dim: '<dim>', reset: '<reset>' });
@@ -309,7 +310,7 @@ test('technical-analysis projection preserves empty and sparse fallback contract
 });
 
 test('the debug-report runtime retains live preparation and terminal ownership around the technical projector', async () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const serviceSource = fs.readFileSync(
     path.join(ROOT, 'services', 'tutorStubTechnicalAnalysisPresentation.js'),
     'utf8',

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 import { fileURLToPath } from 'node:url';
 
 import { createTutorStubTutorTurnPipeline } from '../services/tutorStubTutorTurnPipeline.js';
@@ -117,7 +118,7 @@ test('the live guard policy defaults to shadow_advisory, with strict as the opt-
   const pipeline = serviceSource('tutorStubTutorTurnPipeline.js');
   assert.match(pipeline, /dependencies\.guardBoundaryPolicy === 'strict' \? 'strict' : 'shadow_advisory'/u);
 
-  const cli = readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cli = readTutorStubApplicationSource();
   assert.match(cli, /TUTOR_STUB_GUARD_POLICY === 'strict' \? 'strict' : 'shadow_advisory'/u);
 });
 

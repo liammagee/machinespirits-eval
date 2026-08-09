@@ -11,6 +11,7 @@ import {
   projectTutorStubLearnerDagPromptSummary,
 } from '../services/tutorStubLearnerDagPresentation.js';
 import { runInteractive } from './helpers/tutorStubInteractiveHarness.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const COLORS = Object.freeze({
@@ -154,7 +155,7 @@ test('real technical-debug process preserves exact learner-DAG terminal bytes', 
 });
 
 test('the learner-analysis runtime owns learner-DAG construction and delegates terminal output', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLearnerAnalysisRuntime.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLearnerDagPresentation.js'), 'utf8');
   const printSlice = runtimeSource.slice(
@@ -162,7 +163,7 @@ test('the learner-analysis runtime owns learner-DAG construction and delegates t
     runtimeSource.indexOf('async function buildTutorLearnerDagForTurn'),
   );
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubLearnerDagPresentation\.js';/u);
+  assert.match(cliSource, /from '\.\/tutorStubLearnerDagPresentation\.js';/u);
   assert.doesNotMatch(cliSource, /function buildTutorLearnerDagForTurn/u);
   assert.match(runtimeSource, /function buildTutorLearnerDagForTurn/u);
   assert.match(runtimeSource, /buildTutorLearnerDagModel/u);

@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -176,7 +177,7 @@ test('real director context and reprise retain their exact no-model terminal byt
 });
 
 test('the CLI retains director-state derivation, withholding, traces, terminal writes, and command ownership', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubDirectorPresentation.js'), 'utf8');
   const openingSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubOpeningRuntime.js'), 'utf8');
   const commandSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCommandRuntime.js'), 'utf8');
@@ -189,8 +190,8 @@ test('the CLI retains director-state derivation, withholding, traces, terminal w
     openingSource.indexOf('function worldSpeakerDagPrompt'),
   );
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubDirectorPresentation\.js';/u);
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubOpeningRuntime\.js';/u);
+  assert.match(cliSource, /from '\.\/tutorStubDirectorPresentation\.js';/u);
+  assert.match(cliSource, /from '\.\/tutorStubOpeningRuntime\.js';/u);
   assert.match(preludeSlice, /state\.directorOpeningPresented = true/u);
   assert.match(preludeSlice, /appendTraceEvent/u);
   assert.match(notesSlice, /createTutorStubDirectorNotesModel/u);

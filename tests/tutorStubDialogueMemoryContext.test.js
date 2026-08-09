@@ -12,6 +12,7 @@ import {
   renderTutorStubRawPublicTurnTranscript,
 } from '../services/tutorStubPublicHistory.js';
 import { projectTutorStubLearnerClassifierContext } from '../services/tutorStubTutorPromptContext.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -202,14 +203,14 @@ test('tutor-only learner classifier context pins full and fallback projections',
 });
 
 test('the CLI keeps state defaults and call sites while services own pure projections', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const cliSource = readTutorStubApplicationSource();
   const publicSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubPublicHistory.js'), 'utf8');
   const tutorOnlySource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTutorPromptContext.js'), 'utf8');
   const pipelineSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTutorTurnPipeline.js'), 'utf8');
   const preparationSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTutorTurnPreparation.js'), 'utf8');
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubPublicHistory\.js';/u);
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubTutorPromptContext\.js';/u);
+  assert.match(cliSource, /from '\.\/tutorStubPublicHistory\.js';/u);
+  assert.match(cliSource, /from '\.\/tutorStubTutorPromptContext\.js';/u);
   assert.match(publicSource, /function tutorStubTutorMessageContext/u);
   assert.match(publicSource, /state\?\.modelRef \|\| null/u);
   assert.match(publicSource, /state\?\.tutorContext\?\.activatedBy \|\| 'session_start'/u);

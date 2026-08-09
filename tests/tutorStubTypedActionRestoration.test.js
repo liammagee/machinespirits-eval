@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import test from 'node:test';
 
 import { advanceScaffoldLifecycle, createScaffoldLifecycle } from '../services/adaptiveTutor/scaffoldLifecycle.js';
@@ -7,6 +6,7 @@ import {
   restoreTutorStubTypedActionState,
   tutorStubTypedActionDecisionFromTurn,
 } from '../services/tutorStubTypedActionRestoration.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 function decision(contractId, actionType = 'diagnostic_probe') {
   return {
@@ -184,7 +184,7 @@ test('typed-action restoration fails closed on ambiguous or unproven pending led
 });
 
 test('the CLI imports rather than redeclares typed-action decision lookup', () => {
-  const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
+  const source = readTutorStubApplicationSource();
   assert.match(source, /restoreTutorStubTypedActionState as restoreTypedActionState/u);
   assert.doesNotMatch(source, /function typedActionDecisionFromTurn\(/u);
   assert.doesNotMatch(source, /function restoreTypedActionState\(/u);

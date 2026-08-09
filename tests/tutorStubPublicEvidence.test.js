@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import test from 'node:test';
 import {
   createTutorStubPublicEvidenceModel,
@@ -7,6 +6,7 @@ import {
   projectTutorStubPublicReleaseLedger,
   tutorStubPublicEvidenceTextForAssertion,
 } from '../services/tutorStubPublicEvidence.js';
+import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 function fixtureWorld() {
   const premises = [
@@ -126,7 +126,7 @@ test('missing worlds fail closed to empty public projections', () => {
 });
 
 test('the CLI binds rather than redeclares the public-evidence model', () => {
-  const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
+  const source = readTutorStubApplicationSource();
   assert.match(source, /createTutorStubPublicEvidenceModel/u);
   assert.doesNotMatch(
     source,

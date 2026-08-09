@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-adapter-tail
 title: Finish the tutor-stub adapter boundary
-status: triaged
+status: review
 type: maintenance
 priority: P1
 owner: codex
@@ -22,9 +22,11 @@ links:
     - docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md
   code:
     - scripts/tutor-stub.js
+    - services/tutorStubCliApplicationHost.js
     - services/tutorStubSessionRuntime.js
     - services/tutorStubSessionHost.js
     - services/tutorStubProcessSessionFactory.js
+    - tests/helpers/tutorStubSourceContract.js
   items:
     - codebase-refactoring-program
 tags:
@@ -73,3 +75,24 @@ Log:
   32 and spans approximately 705 lines; the largest remaining local policy
   helpers have complexities 40 and 26. This is the sole queued continuation;
   later R4–R8 candidates require another evidence refresh before activation.
+- 2026-08-09 — Activated from post-PR-#597 main `91f2e886` on
+  `codex/refactor-tutor-stub-adapter-tail`. Preserve the merged reconciliation
+  ceilings and begin with a dependency/characterization map before moving the
+  remaining policy or host assembly.
+- 2026-08-09 — Rebased onto current main `b831ea8d` and completed the adapter
+  boundary. `scripts/tutor-stub.js` is now a 136-line executable bootstrap
+  (down from 2,699 lines) that owns defaults, argument admission, process I/O,
+  top-level invocation, and fatal reporting; the explicit
+  `tutorStubCliApplicationHost` owns the already-extracted application/runtime
+  composition. Fifty-seven source-ownership tests now inspect the entrypoint
+  plus host through one shared contract, while the entrypoint ratchet verifies
+  the 2,000-line ceiling directly. Root shards pass 4,538/4,538 and
+  3,625/3,625 with zero skips, the bounded-concurrency unsharded root run
+  passes 8,163/8,163, tutor-core passes 137/137, the deterministic
+  web/process/packaged-Electron contract slice passes 21/21, and risk coverage,
+  lint, formatting, manifest, source-only workplan, and zero-cycle gates pass.
+  The live desktop acceptance launcher was not run because this worktree has
+  neither the Electron development runtime nor a packaged application. No
+  trace labels, learner/tutor controls, scoring, or data structures moved, so
+  the conditional symmetry review was not triggered; no provider calls,
+  production-data writes, or generated workplan views occurred.
