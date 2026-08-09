@@ -16,6 +16,8 @@ import { initialLearnerProfile, initialTutorInternal } from './stateSchema.js';
 const compileWithCheckpointer = (graphOptions = {}) =>
   buildGraph(graphOptions).compile({ checkpointer: new MemorySaver() });
 
+const compileWithoutCheckpointer = (graphOptions = {}) => buildGraph(graphOptions).compile();
+
 // Counterfactual replay forks at a checkpoint *before* learnerProfileUpdate
 // fires, so the perturbed hidden state flows through profile inference and
 // downstream policy selection. The recognition_only, recognition_named_patterns,
@@ -81,6 +83,17 @@ export async function runScenario(scenario, graphOptions = {}) {
   const history = [];
   for await (const snap of graph.getStateHistory(config)) history.push(snap);
   return { final, history, graph, config };
+}
+
+// Some deterministic batch consumers need only the terminal graph state and
+// maintain their own checkpoint/artifact contract. Keep that boundary explicit
+// so they do not pay to serialize and immediately discard every LangGraph
+// checkpoint; callers that inspect history continue to use runScenario().
+export async function runScenarioFinal(scenario, graphOptions = {}) {
+  const graph = compileWithoutCheckpointer(graphOptions);
+  const config = { recursionLimit: RECURSION_LIMIT_PER_INVOKE };
+  const final = await graph.invoke(baseInitialState(scenario, graphOptions), config);
+  return { final };
 }
 
 // Strategy 5: replay from a checkpoint with a perturbed hidden learner state

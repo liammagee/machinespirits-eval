@@ -1,7 +1,30 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { runScenario } from '../services/adaptiveTutor/runner.js';
+import { runScenario, runScenarioFinal } from '../services/adaptiveTutor/runner.js';
 import { WORLD_SPEC } from './fixtures/world-adaptation-spec.js';
+
+test('final-state runner preserves deterministic terminal state without materializing history', async () => {
+  process.env.ADAPTIVE_TUTOR_LLM = 'mock';
+  const scenario = {
+    id: 'closed-loop-final-state-test',
+    openingTurns: [{ role: 'learner', content: "I don't get why that works." }],
+    hidden: { triggerTurn: 1, triggerSignal: 'confusion' },
+    maxTurns: 1,
+  };
+  const graphOptions = {
+    architecture: 'state_policy_closed_loop',
+    adaptationPolicyMode: 'closed_loop',
+    adaptivePolicy: { mode: 'closed_loop', max_hypotheses: 3 },
+  };
+
+  const checkpointed = await runScenario(scenario, graphOptions);
+  const finalOnly = await runScenarioFinal(scenario, graphOptions);
+
+  assert.deepEqual(finalOnly.final.dialogue, checkpointed.final.dialogue);
+  assert.deepEqual(finalOnly.final.interventionLedger, checkpointed.final.interventionLedger);
+  assert.deepEqual(finalOnly.final.adaptationTrace, checkpointed.final.adaptationTrace);
+  assert.equal(finalOnly.history, undefined);
+});
 
 test('state_policy_closed_loop emits contracts and closes non-final interventions', async () => {
   process.env.ADAPTIVE_TUTOR_LLM = 'mock';
