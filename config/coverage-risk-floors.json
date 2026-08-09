@@ -141,6 +141,14 @@
       "floors": { "lines": 90, "branches": 80, "functions": 90 }
     },
     {
+      "id": "tutor-stub-auto-eval-report-assets",
+      "label": "Tutor-stub auto-eval report assets",
+      "runner": "node",
+      "sources": ["services/tutorStubAutoEvalReportAssets.js"],
+      "tests": ["tests/tutorStubAutoEvalReportAssets.test.js", "tests/tutorStubReportingUx.test.js"],
+      "floors": { "lines": 100, "branches": 100, "functions": 100 }
+    },
+    {
       "id": "admin-auth",
       "label": "Admin routes and authentication",
       "runner": "node",

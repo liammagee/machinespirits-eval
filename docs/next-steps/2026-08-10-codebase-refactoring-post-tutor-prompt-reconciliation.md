@@ -107,3 +107,33 @@ large R6 application once auto-eval presentation has a stable module boundary.
 Do not resume `llmRoles.js` by merely moving its 493-complexity tutor closure to
 a new file. Resume R5 only when a child can name and characterize an explicit
 tutor-runtime state transition that actually reduces the decision knot.
+
+## Accepted-macro outcome
+
+Child 129 is complete locally. The two embedded presentation generators now
+live in the dependency-free
+`services/tutorStubAutoEvalReportAssets.js`. Its two exports each have
+complexity 1. `scripts/run-tutor-stub-auto-eval.js` fell from 11,351 to 8,257
+lines while retaining report/index models, HTML shells, filesystem writes,
+placeholder pages, CLI routing, generation, resume, evidence seals, and summary
+persistence.
+
+Pre/post generation through the real `--index` path is byte-identical:
+
+- `tutor-stub-report.css`: 84,221 bytes,
+  `c29c27a714e8164a0262f858229346f433ea7962d8dd8f2b5decd7afa5e6b5bd`;
+- `tutor-stub-index.js`: 82,509 bytes,
+  `bf91f143a6db56f87eed215b3741c887bb0ab7b2e2cfb2e8a659d463f5499661`.
+
+Verification passes:
+
+- 3/3 direct asset assertions and 96/96 focused reporting assertions;
+- 100% line, branch, and function coverage for the new owner;
+- clean isolated root shards at 4,662/4,662 and 3,704/3,704, zero skips;
+- 137/137 tutor-core tests and all thirteen risk-coverage groups;
+- source-only workplan, formatting, lint, synchronized manifest, diff, and
+  zero cycles across 575 files.
+
+The first simultaneous root-shard run reproduced unrelated concurrency-sensitive
+tutor-stub failures. Both shards passed when rerun in isolation. No model calls,
+production artifact writes, or generated workplan-view changes occurred.
