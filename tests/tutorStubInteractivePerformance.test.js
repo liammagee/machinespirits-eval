@@ -11,6 +11,7 @@ import {
   readTutorStubTraceEvents,
   installFakeCodex,
   runInteractive,
+  removeTempDir,
 } from './helpers/tutorStubInteractiveHarness.js';
 
 test('technical explanatory debug mode prints exact field calculations and the register consequence', async () => {
@@ -65,7 +66,7 @@ test('technical explanatory debug mode prints exact field calculations and the r
       ),
     );
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -146,7 +147,7 @@ test('/random samples the full non-simulated style and host-character range inde
       'response_safety',
     ]);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -218,7 +219,7 @@ test('light adaptation forces a replayable style and character shift after conti
     assert.notEqual(stanceMatches.at(-1)[1], first.engagement_stance);
     assert.notEqual(partMatches.at(-1)[1].trim(), first.actorial_part_label);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
+    removeTempDir(tmp);
   }
 });
 
@@ -292,7 +293,7 @@ test('/register and /character explicitly direct their own performance axes and 
       'response_safety',
     ]);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -380,7 +381,7 @@ test('the satirist character defaults to irony while an explicit register remain
     assert.equal(selection?.actorial_part, 'satirist');
     assert.equal(selection?.actorial_part_selection.selection_method, 'explicit_character_directive');
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -449,7 +450,7 @@ test('changing the tutor character publicly restates the latest intent and repla
     assert.match(modelInput, /Current character id: adversarial_teacher/u);
     assert.match(modelInput, /Previous tutor utterance/u);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -555,7 +556,7 @@ test(
       assert.match(plain, /learner profile > switched to [a-z_]+:/u);
     } finally {
       terminal.kill();
-      fs.rmSync(tmp, { recursive: true, force: true });
+      removeTempDir(tmp);
     }
   },
 );
@@ -737,7 +738,7 @@ test('/register leaves the undirected character axis available to /random', asyn
     assert.deepEqual(selection?.random_performance.active_axes, ['actorial_part']);
     assert.deepEqual(selection?.random_performance.explicitly_directed_axes, ['engagement_stance']);
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -788,7 +789,7 @@ test('/register auto and /character auto clear only their session locks', async 
       ],
     );
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -846,7 +847,7 @@ test('debug off keeps compact response details before tutor speech', async () =>
       'machinespirits.tutor-stub.turn-timing.v1',
     );
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -890,7 +891,7 @@ test('/details off hides compact response details without changing tutor speech'
       ),
     );
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -943,6 +944,6 @@ test('explanatory debug defaults to concise LLM-written prose', async () => {
       ),
     );
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });

@@ -9,6 +9,7 @@ import {
   plainTerminalText,
   installFakeCodex,
   runInteractive,
+  removeTempDir,
 } from './helpers/tutorStubInteractiveHarness.js';
 
 test('/voice starts a local companion without calling a tutor model and reports the separate voice role', async () => {
@@ -57,7 +58,7 @@ test('/voice starts a local companion without calling a tutor model and reports 
     );
     assert.ok(traces.every((event) => !JSON.stringify(event).includes('test-key-not-sent-without-webrtc')));
   } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
 
@@ -170,6 +171,6 @@ test('two voice transcripts before the tutor reply become one compound learner t
   } finally {
     clearTimeout(timer);
     if (!child.killed && child.exitCode === null) child.kill('SIGKILL');
-    fs.rmSync(tmp, { recursive: true, force: true });
+    removeTempDir(tmp);
   }
 });
