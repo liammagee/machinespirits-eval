@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-24
-updated: 2026-08-09
+updated: 2026-08-10
 branch: codex/refactor-post-adapter-reconciliation
 verification: >-
   Every accepted refactoring slice has a linked child card and parity gate;
@@ -146,6 +146,9 @@ links:
     - refactor-eval-routes-read-side-domains
     - refactor-evaluation-run-coordinator-runtime
     - refactor-rubric-transcript-projection-runtime
+    - refactor-dramatic-derivation-run-state
+    - refactor-dramatic-derivation-role-transitions
+    - refactor-dramatic-derivation-post-turn-lifecycle
 tags:
   - refactoring
   - testing
@@ -1818,3 +1821,45 @@ Log:
 - 2026-08-09 — Rebased child 122 over independent register/paper PR #617 and
   its generated-view refresh at `2b26e4e8`. The transcript boundary remains
   conflict-free; 166 focused assertions and all structural gates pass.
+- 2026-08-09 — PR #618 merged child 122 and the generated workplan refresh
+  advanced main to `5527016a`. Fresh R5 evidence records the 2,885-line
+  dramatic engine and complexity-544 `runDrama()`, with 19 direct test files
+  and a green 71/71 canonical derivation baseline. Activated child 123,
+  `refactor-dramatic-derivation-run-state`, to establish the explicit state and
+  lifecycle/result boundary before extracting role transitions.
+- 2026-08-09 — Completed child 123 locally. Explicit run-state, outer
+  lifecycle, and result-projection owners reduce the dramatic engine to 2,425
+  lines and `runDrama()` complexity to 454; all 360 direct assertions, 8,281
+  hermetic root tests, 137 tutor-core tests, seven risk groups, and structural
+  gates pass. Keep the parent active: after this child merges, the next R5
+  macro should extract the director/tutor/learner turn-transition coordinators
+  against the now-explicit state contract, starting with the director action,
+  release, pacing, and role-view seam rather than changing role policy.
+- 2026-08-09 — Opened child 123 as PR #619 at `4d05590a`; initial CI is queued
+  or running and GitHub reports the PR mergeable. Activated stacked child 124,
+  `refactor-dramatic-derivation-role-transitions`, from that exact head so the
+  new state contract remains an explicit dependency. Its target is the three
+  role response-application paths, leaving post-learner lifecycle policy in
+  the engine for a later R5 slice.
+- 2026-08-10 — Completed stacked child 124 locally. Named director, tutor, and
+  learner transition owners reduce the dramatic engine from 2,425 to 1,622
+  lines and `runDrama()` complexity from 454 to 123 while 364 direct tests,
+  8,285 hermetic root tests, 137 tutor-core tests, eight risk groups, and all
+  structural gates pass. Keep the parent active. After PR #619 and this child
+  merge, the next R5 macro should extract the post-learner scene-close, stall,
+  decay, and live-monitor lifecycle against the same explicit run state; view
+  construction can then be assessed as the remaining engine responsibility.
+- 2026-08-10 — Opened child 124 as PR #620 at `0d537aa6`; GitHub reports the
+  PR mergeable and its initial CI is running. Activated stacked child 125,
+  `refactor-dramatic-derivation-post-turn-lifecycle`, from that exact head.
+  This R5 boundary owns scene closure, stall/decay bookkeeping, the logic
+  snapshot, and the live-turn projection while preserving the engine's turn
+  order and leaving role-view construction in the facade.
+- 2026-08-10 — Completed stacked child 125 locally. The post-turn lifecycle
+  owner reduces the dramatic engine from 1,622 to 1,217 lines and `runDrama()`
+  complexity from 123 to 14 while preserving scene, stall, corruption, logic,
+  and live-monitor parity. All 590 dramatic assertions, 8,289 hermetic root
+  tests, 137 tutor-core tests, nine risk groups, and structural gates pass.
+  Keep the parent active: after PR #620 and this child merge, refresh hotspot
+  evidence before choosing between a final engine view-construction seam and
+  the substantially larger `llmRoles.js` R5 owner.

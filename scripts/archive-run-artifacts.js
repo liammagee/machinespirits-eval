@@ -29,6 +29,8 @@
  * side and nothing is written outside the destination root.
  *
  * Usage:
+ *   npm run archive:runs
+ *   npm run archive:runs -- exports/learner-profile-world-deconfound/prospective-plan
  *   node scripts/archive-run-artifacts.js exports/tutor-stub-outcome/<run>
  *   node scripts/archive-run-artifacts.js --all exports/tutor-stub-outcome
  *   node scripts/archive-run-artifacts.js --check --all exports/tutor-stub-outcome
@@ -178,8 +180,8 @@ function parseArgs(argv) {
 function main() {
   const opts = parseArgs(process.argv.slice(2));
   if (!opts.paths.length) {
-    console.error('usage: node scripts/archive-run-artifacts.js [--all] [--check] [--light-only] <dir>');
-    process.exit(2);
+    opts.paths.push('exports/tutor-stub-outcome');
+    opts.all = true;
   }
   const dest = resolveArchiveDir(opts.dest);
   if (!dest) {

@@ -1,20 +1,22 @@
 ---
 id: learner-profile-world-deconfound
 title: "Deconfound the learner-profile recovery: cross personas and worlds"
-status: active
+status: done
 type: experiment
 priority: P1
 owner: codex
 source: manual
 created: 2026-08-06
-updated: 2026-08-09
-branch: codex/learner-profile-world-deconfound-qd-v1-replay
-verification: "The approved persona transplants and exact qd-v1 are frozen and
-  hash-pinned. The replacement is one prospective balanced 2-persona x 2-world
-  x 5 cohort with no historical pooling; zero-model tutor-stub dry-runs verify
-  delivery for all four cells. Merge before clean-main certification; twenty
-  paid dialogues remain separately unauthorized."
-claim_status: methods
+updated: 2026-08-10
+branch: codex/learner-profile-world-deconfound-paid-launch
+verification: "The certified 20-job prospective cohort completed under attended
+  checkpoints. Private archive commit b4175ccd preserved all light artifacts,
+  20 valid traces, and two excluded technical failures before outcome reading;
+  b36f25a2 preserved the result artifacts. Frozen qd-v1 plus pressure v4 gave
+  persona 13/20 (65%) and world 15/20 (75%) under the identical leave-one-out
+  classifier. Neither reached the preregistered 80% bar; no historical dialogue
+  was pooled."
+claim_status: scope-bound
 links:
   config:
     - config/learner-profile-world-deconfound.yaml
@@ -22,6 +24,7 @@ links:
   code:
     - scripts/review-learner-profile-world-deconfound.js
     - scripts/replay-learner-profile-recovery-l1.js
+    - scripts/analyze-learner-profile-world-deconfound.js
     - scripts/prepare-learner-profile-world-deconfound.js
     - services/tutorStubQuietDetectorV1.js
     - tests/learnerProfileWorldDeconfound.test.js
@@ -33,6 +36,13 @@ links:
     - docs/research/paper-full-2.0.md#624-the-four-locks-why-nothing-beat-the-bare-tutor-and-what-opened-when-each-was-removed-post-hoc-except-the-claim-gate-development-tier
   items:
     - adaptive-causality-crossed-effects
+    - enforce-tutor-stub-artifact-lifecycle
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/603
+    - https://github.com/liammagee/machinespirits-eval/pull/605
+    - https://github.com/liammagee/machinespirits-eval/pull/610
+    - https://github.com/liammagee/machinespirits-eval/pull/621
+    - https://github.com/liammagee/machinespirits-eval/pull/623
 tags:
   - tutor-stub
   - learner-profiles
@@ -185,3 +195,55 @@ publication closeout's crossed holdout design, not a routing policy.
   qd-v1 artifact, replay manifest, design file, and the four approved
   brief/voice hashes. The one remaining gate is the user's separate
   authorization of the 20 paid dialogues.
+- 2026-08-09 — Confirmed PR #605 merged with every reported check green, then
+  started the paid-launch slice in a fresh `origin/main` worktree (the older
+  dirty worktree was not reused). Added a fail-closed `--run-paid` mode: it
+  accepts only the one-line `paid_authorization: authorized` flip, reads the
+  certificate from tracked HEAD bytes, rechecks the certified design, qd-v1,
+  replay-manifest, approved brief/voice hashes, exact `7fbb5fe9…` frozen-plan
+  identity, 20-job balance, and Sonnet/Terra/Sol seats, then repeats all four
+  delivery dry-runs before any paid call. Jobs run serially under a mandatory
+  `--checkpoint-every` bound with durable pre/post-job state; an interrupted or
+  failed in-flight job refuses automatic retry, and every resume is bound to
+  one committed runner-source SHA with no tracked dirt permitted beyond the
+  authorization file. The current mandatory live
+  redacted-trace mirror is retained as a post-certificate safety transport,
+  while the manifest separately records the certified and materialized hashes.
+  Authorization remains `not_authorized`; no paid dialogue or outcome reading
+  occurred in this slice.
+- 2026-08-10 — Completed the authorized paid cohort under attended checkpoint
+  bounds: 20 valid dialogues from the frozen balanced 2x2, materialized plan
+  hash `6617baccec1bdce053ad2960713b1f6bd59b743e1788d8e30616852f6e2ae3b3`,
+  and no historical pooling. Two in-flight technical failures were preserved
+  but excluded: the first attempt at `record_keeper_in_rowan-d4` timed out on
+  the Terra learner at turn 43, and the first attempt at
+  `tenant_in_rowan-d4` failed the tutor private-planner boundary at turn 6.
+  Each retry ran only after a fresh explicit user authorization. The private
+  archive commits `9bef1bde` and `64034eee` sealed the failed attempts;
+  `b4175ccd` then committed the final light artifacts, all 22 live mirrors and
+  receipts (20 valid plus 2 failures), and the two excluded failure traces
+  before any outcome was read.
+- 2026-08-10 — Ran the frozen pressure-v4 plus exact qd-v1 state-frequency
+  instrument over only the 20 valid prospective traces. One shared
+  leave-one-out nearest-centroid implementation classified persona at 13/20
+  (65%) and, with only the label changed, world at 15/20 (75%). Both are below
+  the frozen 80% bar. The preregistered branch is therefore
+  `neither_label_recovered_at_bar`: this cohort does not support persona
+  transportability, while the stronger world reading remains below the bar and
+  does not license a world-artifact verdict. Opening-turn persona/world readings
+  were respectively 45%/75%, 40%/50%, 35%/55%, 45%/55%, and 45%/60% at
+  2/4/6/8/10 turns. Per-cell profiles and all predictions are preserved in
+  private archive commit `b36f25a2`.
+- 2026-08-10 — Reviewed the held alternative implementation in PR #610 against
+  the selected paid-launch branch. The selected path remains authoritative: it
+  alone preserves attended checkpoints and resume, binds every continuation to
+  the certified plan and runner source, and blocks outcome reading until a
+  named private-archive commit is verified. Ported PR #610's useful additional
+  defenses: the paid contract now explicitly reasserts one attempt per job and
+  the frozen 220-call admission bound, while both launch and analysis refuse a
+  nominally successful job unless exactly one JSONL trace contains exactly one
+  `run_end`. The temporary paid authorization remains returned to
+  `not_authorized`; no further model call is licensed. Opened the reconciled
+  implementation as PR #623 and closed PR #610 with a supersession note that
+  names the retained safeguards and rejected duplicate paths. Paper PR #621 is
+  already merged separately.
