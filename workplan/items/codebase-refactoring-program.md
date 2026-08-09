@@ -1769,3 +1769,10 @@ Log:
   triaged continuation: it moves the 30 non-metered GET routes behind bounded
   domain registrars while leaving paid work, mutation, SSE, and Codex-session
   behavior frozen in the compatibility router.
+- 2026-08-09 — Completed the accepted read-side router child on rebased main
+  `b4091496`: all 120 linked children are now done. The shared evaluation
+  facade is 2,773 lines, its 30 non-metered GET endpoints have bounded domain
+  owners, and exact route order plus the complete parity contract is green.
+  Keep the parent active because R4 runner/rubric residuals and R5-R8 remain
+  partial or uninstantiated; require a fresh hotspot and workplan
+  reconciliation before selecting the next implementation child.

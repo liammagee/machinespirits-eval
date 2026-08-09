@@ -27,6 +27,21 @@ import {
   resolveHttpMaxModelCalls,
 } from '../services/httpModelWorkAdmission.js';
 import { evaluationStreamRegistry } from '../services/evaluationStreamRegistry.js';
+import { registerEvalAnalysisReadRoutes } from './evalAnalysisReadRoutes.js';
+import { registerEvalConfigurationReadRoutes } from './evalConfigurationReadRoutes.js';
+import {
+  registerEvalDocumentationReadRoutes,
+  registerEvalPromptReadRoutes,
+  registerEvalTrajectoryReadRoutes,
+} from './evalFileReadRoutes.js';
+import { registerEvalInteractionReadRoutes } from './evalInteractionReadRoutes.js';
+import { registerEvalLogReadRoutes } from './evalLogReadRoutes.js';
+import { registerEvalMonitoringReadRoutes } from './evalMonitoringReadRoutes.js';
+import {
+  registerEvalRunDetailReadRoutes,
+  registerEvalRunListReadRoutes,
+  registerEvalRunResumeStatusReadRoute,
+} from './evalRunReadRoutes.js';
 // Lazy-loaded tutor-core services — resolved on first request so this module
 // can be imported without tutor-core installed at parse time.
 // Module-scoped vars are populated by the middleware below; existing handler
@@ -278,10 +293,6 @@ export function createPromptRecommendationAdmissionMiddleware({
   };
 }
 
-function isRunNotFound(error) {
-  return /Run not found/i.test(error?.message || '');
-}
-
 // Resolve tutor-core on first request
 router.use(async (req, res, next) => {
   if (req.path.startsWith('/codex')) {
@@ -312,9 +323,6 @@ function unregisterStream(streamId) {
   return evaluationStreamRegistry.unregisterStream(streamId);
 }
 
-// Path to prompts directory
-const PROMPTS_DIR = path.join(process.cwd(), 'prompts');
-
 function resolveApiCwd(cwd) {
   const resolved = cwd ? path.resolve(cwd) : process.cwd();
   if (!fs.existsSync(resolved)) {
@@ -332,11 +340,6 @@ function parseJsonSafe(value) {
   } catch {
     return null;
   }
-}
-
-function isSafeRouteFileName(value) {
-  if (typeof value !== 'string' || !value || value.includes('\0')) return false;
-  return value === path.basename(value) && value === path.win32.basename(value) && value !== '.' && value !== '..';
 }
 
 function runPaperBugAudit({ cwd, claimReportPath, includeAllRuns = false, strict = false, skipCommandChecks = true }) {
@@ -603,78 +606,10 @@ router.post('/codex/paper-bug-audit-session', (req, res) => {
 // Configuration Endpoints
 // ============================================================================
 
-/**
- * List available scenarios
- * GET /api/eval/scenarios
- */
-router.get('/scenarios', (req, res) => {
-  try {
-    const scenarios = evalConfigLoader.listScenarios();
-    res.json({ success: true, scenarios });
-  } catch (error) {
-    console.error('[EvalRoutes] List scenarios error:', error);
-    res.status(500).json({ error: 'Failed to list scenarios' });
-  }
-});
-
-/**
- * Get scenario details
- * GET /api/eval/scenarios/:id
- */
-router.get('/scenarios/:id', (req, res) => {
-  try {
-    const scenario = evalConfigLoader.getScenario(req.params.id);
-    if (!scenario) {
-      return res.status(404).json({ error: 'Scenario not found' });
-    }
-    res.json({ success: true, scenario });
-  } catch (error) {
-    console.error('[EvalRoutes] Get scenario error:', error);
-    res.status(500).json({ error: 'Failed to get scenario' });
-  }
-});
-
-/**
- * List available tutor profiles
- * GET /api/eval/profiles
- */
-router.get('/profiles', (req, res) => {
-  try {
-    const profiles = tutorConfigLoader.listProfiles();
-    res.json({ success: true, profiles });
-  } catch (error) {
-    console.error('[EvalRoutes] List profiles error:', error);
-    res.status(500).json({ error: 'Failed to list profiles' });
-  }
-});
-
-/**
- * List available learner profiles (for interaction evaluations)
- * GET /api/eval/learner-profiles
- */
-router.get('/learner-profiles', (req, res) => {
-  try {
-    const profiles = learnerConfigLoader.listProfiles();
-    const personas = learnerConfigLoader.listPersonas();
-    res.json({ success: true, profiles, personas });
-  } catch (error) {
-    console.error('[EvalRoutes] List learner profiles error:', error);
-    res.status(500).json({ error: 'Failed to list learner profiles' });
-  }
-});
-
-/**
- * List model configurations
- * GET /api/eval/configurations
- */
-router.get('/configurations', (req, res) => {
-  try {
-    const configurations = evalConfigLoader.listConfigurations();
-    res.json({ success: true, configurations });
-  } catch (error) {
-    console.error('[EvalRoutes] List configurations error:', error);
-    res.status(500).json({ error: 'Failed to list configurations' });
-  }
+registerEvalConfigurationReadRoutes(router, {
+  evalConfigLoader,
+  learnerConfigLoader,
+  getTutorConfigLoader: () => tutorConfigLoader,
 });
 
 // ============================================================================
@@ -2053,62 +1988,7 @@ router.get(
 // Results Endpoints
 // ============================================================================
 
-/**
- * List previous evaluation runs
- * GET /api/eval/runs
- * Query params: limit (default 20)
- */
-router.get('/runs', (req, res) => {
-  try {
-    const limit = parseInt(req.query.limit) || 20;
-    const runs = evaluationStoreFor(req).listRuns({ limit });
-
-    // Also include interaction evals in the runs list
-    const interactionEvals = evaluationStoreFor(req).listInteractionEvals({ limit });
-    const interactionRuns = interactionEvals.map((e) => ({
-      id: e.evalId,
-      description: e.scenarioName || 'Interaction Evaluation',
-      status: 'completed',
-      createdAt: e.createdAt,
-      totalScenarios: 1,
-      totalTests: e.turnCount || 1,
-      type: 'interaction',
-      metadata: JSON.stringify({
-        runType: 'interaction',
-        profiles: [e.tutorProfile || 'default'],
-        scenarioNames: [e.scenarioName],
-        learnerProfile: e.learnerProfile,
-        personaId: e.personaId,
-      }),
-    }));
-
-    // Merge and sort by createdAt descending
-    const allRuns = [...runs, ...interactionRuns]
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .slice(0, limit);
-
-    res.json({ success: true, runs: allRuns });
-  } catch (error) {
-    console.error('[EvalRoutes] List runs error:', error);
-    res.status(500).json({ error: 'Failed to list runs' });
-  }
-});
-
-/**
- * Find incomplete (stuck) evaluation runs
- * GET /api/eval/runs-incomplete
- * Query params: olderThanMinutes (default 30)
- */
-router.get('/runs-incomplete', (req, res) => {
-  try {
-    const olderThanMinutes = parseInt(req.query.olderThanMinutes) || 30;
-    const runs = evaluationStoreFor(req).findIncompleteRuns({ olderThanMinutes });
-    res.json({ success: true, runs, found: runs.length });
-  } catch (error) {
-    console.error('[EvalRoutes] Find incomplete runs error:', error);
-    res.status(500).json({ error: 'Failed to find incomplete runs' });
-  }
-});
+registerEvalRunListReadRoutes(router, { storeFor: evaluationStoreFor });
 
 /**
  * Auto-complete all stale runs
@@ -2126,431 +2006,25 @@ router.post('/runs-auto-complete', (req, res) => {
   }
 });
 
-/**
- * Get results for a specific run
- * GET /api/eval/runs/:runId
- */
-router.get('/runs/:runId', (req, res) => {
-  try {
-    const { runId } = req.params;
-
-    // Check if this is an interaction eval
-    if (runId.startsWith('short-') || runId.startsWith('long-')) {
-      const evalData = evaluationStoreFor(req).getInteractionEval(runId);
-      if (!evalData) {
-        return res.status(404).json({ error: 'Interaction evaluation not found' });
-      }
-
-      // Format as a run with results for the existing frontend
-      return res.json({
-        success: true,
-        type: 'interaction',
-        run: {
-          id: evalData.evalId,
-          description: evalData.scenarioName || 'Interaction Evaluation',
-          status: 'completed',
-          createdAt: evalData.createdAt,
-        },
-        stats: {
-          totalTests: 1,
-          avgScore: evalData.judgeOverallScore,
-        },
-        results: [
-          {
-            scenarioId: evalData.scenarioId,
-            scenarioName: evalData.scenarioName,
-            profileName: evalData.tutorProfile || 'default',
-            tutorProfile: evalData.tutorProfile || 'default',
-            model: `${evalData.turnCount} turns`,
-            passed: evalData.judgeOverallScore >= 3,
-            tutorFirstTurnScore: evalData.judgeOverallScore,
-            tutor_first_turn_score: evalData.judgeOverallScore,
-            inputTokens: evalData.learnerTokens || 0,
-            outputTokens: evalData.tutorTokens || 0,
-            latencyMs: evalData.latencyMs || 0,
-            latency_ms: evalData.latencyMs || 0,
-            isInteraction: true,
-            interactionEvalId: evalData.evalId,
-            // dialogueId links to the dialogue log viewer
-            dialogueId: evalData.evalId,
-            // Include judgeEvaluation for dimension score extraction in History tab
-            judgeEvaluation: evalData.judgeEvaluation,
-          },
-        ],
-        // Include full interaction data for display
-        interaction: {
-          evalId: evalData.evalId,
-          scenarioName: evalData.scenarioName,
-          turnCount: evalData.turnCount,
-          turns: evalData.turns,
-          sequenceDiagram: evalData.sequenceDiagram,
-          formattedTranscript: evalData.formattedTranscript,
-          totalTokens: evalData.totalTokens,
-          learnerTokens: evalData.learnerTokens,
-          tutorTokens: evalData.tutorTokens,
-          latencyMs: evalData.latencyMs,
-          judgeOverallScore: evalData.judgeOverallScore,
-          judgeEvaluation: evalData.judgeEvaluation,
-        },
-        status: 'completed',
-        description: evalData.scenarioName,
-        scenarioNames: [evalData.scenarioName],
-      });
-    }
-
-    // Regular run
-    const result = evaluationRunnerFor(req).getRunResults(runId);
-
-    // Check if this is an interaction run (created from Interact tab)
-    const runMetadata = result.run?.metadata
-      ? typeof result.run.metadata === 'string'
-        ? JSON.parse(result.run.metadata)
-        : result.run.metadata
-      : {};
-
-    if (runMetadata.runType === 'interaction') {
-      // Look up the interaction eval data by runId
-      const interactionEval = evaluationStoreFor(req).getInteractionEvalByRunId(runId);
-      if (interactionEval) {
-        return res.json({
-          success: true,
-          type: 'interaction',
-          run: result.run,
-          stats: {
-            totalTests: 1,
-            avgScore: interactionEval.judgeOverallScore,
-          },
-          results: [
-            {
-              scenarioId: interactionEval.scenarioId,
-              scenarioName: interactionEval.scenarioName,
-              profileName: interactionEval.tutorProfile || 'default',
-              tutorProfile: interactionEval.tutorProfile || 'default',
-              model: `${interactionEval.turnCount} turns`,
-              passed: interactionEval.judgeOverallScore >= 3,
-              tutorFirstTurnScore: interactionEval.judgeOverallScore,
-              tutor_first_turn_score: interactionEval.judgeOverallScore,
-              inputTokens: interactionEval.learnerTokens || 0,
-              outputTokens: interactionEval.tutorTokens || 0,
-              latencyMs: interactionEval.latencyMs || 0,
-              latency_ms: interactionEval.latencyMs || 0,
-              isInteraction: true,
-              interactionEvalId: interactionEval.evalId,
-              dialogueId: interactionEval.evalId,
-              judgeEvaluation: interactionEval.judgeEvaluation,
-            },
-          ],
-          interaction: {
-            evalId: interactionEval.evalId,
-            scenarioName: interactionEval.scenarioName,
-            turnCount: interactionEval.turnCount,
-            turns: interactionEval.turns,
-            sequenceDiagram: interactionEval.sequenceDiagram,
-            formattedTranscript: interactionEval.formattedTranscript,
-            totalTokens: interactionEval.totalTokens,
-            learnerTokens: interactionEval.learnerTokens,
-            tutorTokens: interactionEval.tutorTokens,
-            latencyMs: interactionEval.latencyMs,
-            judgeOverallScore: interactionEval.judgeOverallScore,
-            judgeEvaluation: interactionEval.judgeEvaluation,
-          },
-          status: 'completed',
-          description: result.run?.description || interactionEval.scenarioName,
-          scenarioNames: [interactionEval.scenarioName],
-          metadata: runMetadata,
-        });
-      }
-    }
-
-    // Extract scenario names from results for display
-    const scenarioNames = [...new Set((result.results || []).map((r) => r.scenarioName).filter(Boolean))].sort();
-
-    // Include key run properties at top level for easier frontend access
-    res.json({
-      success: true,
-      ...result,
-      // Flatten these for easier access in UI
-      status: result.run?.status,
-      description: result.run?.description,
-      scenarioNames,
-    });
-  } catch (error) {
-    if (isRunNotFound(error)) {
-      return res.status(404).json({ error: 'Run not found', code: 'run_not_found', details: error.message });
-    }
-    console.error('[EvalRoutes] Get run error:', error);
-    res.status(500).json({ error: 'Failed to get run results', details: error.message });
-  }
-});
-
-/**
- * Get report for a run
- * GET /api/eval/runs/:runId/report
- */
-router.get('/runs/:runId/report', (req, res) => {
-  try {
-    const report = evaluationRunnerFor(req).generateReport(req.params.runId);
-
-    // Check if client wants plain text
-    if (req.accepts('text/plain')) {
-      res.type('text/plain').send(report);
-    } else {
-      res.json({ success: true, report });
-    }
-  } catch (error) {
-    if (isRunNotFound(error)) {
-      return res.status(404).json({ error: 'Run not found', code: 'run_not_found', details: error.message });
-    }
-    console.error('[EvalRoutes] Get report error:', error);
-    res.status(500).json({ error: 'Failed to generate report', details: error.message });
-  }
+registerEvalRunDetailReadRoutes(router, {
+  storeFor: evaluationStoreFor,
+  runnerFor: evaluationRunnerFor,
 });
 
 // ============================================================================
 // Dialogue Log Endpoints
 // ============================================================================
 
-/**
- * List available log dates
- * GET /api/eval/logs/dates
- */
-router.get('/logs/dates', (req, res) => {
-  try {
-    const dates = dialogueLogService.listLogDates();
-    res.json({ success: true, dates });
-  } catch (error) {
-    console.error('[EvalRoutes] List log dates error:', error);
-    res.status(500).json({ error: 'Failed to list log dates' });
-  }
-});
-
-/**
- * Get dialogues for a specific date
- * GET /api/eval/logs/:date
- * Query params: limit (default 10), offset (default 0)
- */
-router.get('/logs/:date', (req, res) => {
-  try {
-    const { date } = req.params;
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = parseInt(req.query.offset) || 0;
-
-    const result = dialogueLogService.getDialogues({ date, limit, offset });
-    res.json({ success: true, ...result });
-  } catch (error) {
-    console.error('[EvalRoutes] Get dialogues error:', error);
-    res.status(500).json({ error: 'Failed to get dialogues' });
-  }
-});
-
-/**
- * Get a specific dialogue by dialogueId
- * GET /api/eval/logs/dialogue/:dialogueId
- */
-router.get('/logs/dialogue/:dialogueId', (req, res) => {
-  try {
-    const { dialogueId } = req.params;
-
-    // Check if this is an interaction eval dialogue (starts with short- or long-)
-    if (dialogueId.startsWith('short-') || dialogueId.startsWith('long-')) {
-      const interactionEval = evaluationStoreFor(req).getInteractionEval(dialogueId);
-      if (interactionEval) {
-        // Format interaction eval as entries for DialogueFlowDiagram
-        // Expand each turn into action-based entries the diagram expects
-        const entries = [];
-        let entryIndex = 0;
-
-        for (const turn of interactionEval.turns || []) {
-          const isLearner = turn.phase === 'learner';
-
-          // Add internal deliberation steps if present
-          if (turn.internalDeliberation && turn.internalDeliberation.length > 0) {
-            for (const delib of turn.internalDeliberation) {
-              if (delib.role === 'ego') {
-                entries.push({
-                  index: entryIndex++,
-                  action: isLearner ? 'learner_ego_thought' : 'tutor_ego_thought',
-                  agent: isLearner ? 'ego' : 'tutor_ego',
-                  phase: turn.phase,
-                  message: delib.content,
-                  timestamp: turn.timestamp,
-                });
-              } else if (delib.role === 'superego') {
-                entries.push({
-                  index: entryIndex++,
-                  action: isLearner ? 'learner_superego_critique' : 'tutor_superego_critique',
-                  agent: isLearner ? 'superego' : 'tutor_superego',
-                  phase: turn.phase,
-                  message: delib.content,
-                  timestamp: turn.timestamp,
-                });
-              }
-            }
-          }
-
-          // Add the external message entry
-          entries.push({
-            index: entryIndex++,
-            action: isLearner ? 'learner_input' : 'tutor_response',
-            agent: isLearner ? 'ego' : 'tutor_ego',
-            phase: turn.phase,
-            message: turn.externalMessage,
-            timestamp: turn.timestamp,
-            turnNumber: turn.turnNumber,
-          });
-        }
-
-        // Calculate summary stats
-        const learnerTurns = (interactionEval.turns || []).filter((t) => t.phase === 'learner').length;
-
-        return res.json({
-          success: true,
-          dialogueId,
-          dialogue: {
-            dialogueId,
-            entries,
-            startTime: interactionEval.createdAt,
-            isInteractionEval: true,
-            scenarioName: interactionEval.scenarioName,
-            personaId: interactionEval.personaId,
-            judgeEvaluation: interactionEval.judgeEvaluation,
-            summary: {
-              totalTurns: interactionEval.turnCount,
-              egoCount: learnerTurns,
-              userCount: interactionEval.turnCount,
-              superegoCount: 0,
-              totalLatencyMs: interactionEval.latencyMs || 0,
-              totalInputTokens: Math.floor((interactionEval.totalTokens || 0) / 2),
-              totalOutputTokens: Math.ceil((interactionEval.totalTokens || 0) / 2),
-              totalCost: 0,
-            },
-            sequenceDiagram: interactionEval.sequenceDiagram,
-            formattedTranscript: interactionEval.formattedTranscript,
-            isInteraction: true,
-          },
-        });
-      }
-    }
-
-    // Regular dialogue lookup
-    const dialogue = dialogueLogService.getDialogueById(dialogueId);
-
-    if (!dialogue) {
-      return res.status(404).json({ error: 'Dialogue not found' });
-    }
-
-    res.json({ success: true, dialogue, dialogueId });
-  } catch (error) {
-    console.error('[EvalRoutes] Get dialogue by ID error:', error);
-    res.status(500).json({ error: 'Failed to get dialogue' });
-  }
-});
-
-/**
- * Get a specific dialogue by index
- * GET /api/eval/logs/:date/:index
- */
-router.get('/logs/:date/:index', (req, res) => {
-  try {
-    const { date, index } = req.params;
-    const dialogue = dialogueLogService.getDialogueByIndex(date, parseInt(index));
-
-    if (!dialogue) {
-      return res.status(404).json({ error: 'Dialogue not found' });
-    }
-
-    res.json({ success: true, dialogue });
-  } catch (error) {
-    console.error('[EvalRoutes] Get dialogue error:', error);
-    res.status(500).json({ error: 'Failed to get dialogue' });
-  }
-});
-
-/**
- * Get log statistics
- * GET /api/eval/logs/stats
- * Query params: startDate, endDate
- */
-router.get('/logs-stats', (req, res) => {
-  try {
-    const { startDate, endDate } = req.query;
-    const stats = dialogueLogService.getLogStatistics({ startDate, endDate });
-    res.json({ success: true, ...stats });
-  } catch (error) {
-    console.error('[EvalRoutes] Get log stats error:', error);
-    res.status(500).json({ error: 'Failed to get log statistics' });
-  }
+registerEvalLogReadRoutes(router, {
+  storeFor: evaluationStoreFor,
+  getDialogueLogService: () => dialogueLogService,
 });
 
 // ============================================================================
 // Prompt Endpoints (Read-Only)
 // ============================================================================
 
-/**
- * List available prompts
- * GET /api/eval/prompts
- */
-router.get('/prompts', (req, res) => {
-  try {
-    if (!fs.existsSync(PROMPTS_DIR)) {
-      return res.json({ success: true, prompts: [] });
-    }
-
-    const files = fs
-      .readdirSync(PROMPTS_DIR)
-      .filter((f) => f.endsWith('.md'))
-      .map((f) => {
-        const filePath = path.join(PROMPTS_DIR, f);
-        const stats = fs.statSync(filePath);
-        return {
-          name: f.replace('.md', ''),
-          filename: f,
-          size: stats.size,
-          modified: stats.mtime.toISOString(),
-        };
-      });
-
-    res.json({ success: true, prompts: files });
-  } catch (error) {
-    console.error('[EvalRoutes] List prompts error:', error);
-    res.status(500).json({ error: 'Failed to list prompts' });
-  }
-});
-
-/**
- * Get prompt content (read-only)
- * GET /api/eval/prompts/:name
- */
-router.get('/prompts/:name', (req, res) => {
-  try {
-    if (!isSafeRouteFileName(req.params.name)) {
-      return res.status(400).json({ error: 'Invalid prompt name' });
-    }
-    const filename = req.params.name.endsWith('.md') ? req.params.name : `${req.params.name}.md`;
-    const filePath = path.join(PROMPTS_DIR, filename);
-
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: 'Prompt not found' });
-    }
-
-    const content = fs.readFileSync(filePath, 'utf8');
-    const stats = fs.statSync(filePath);
-
-    res.json({
-      success: true,
-      prompt: {
-        name: req.params.name,
-        filename,
-        content,
-        size: stats.size,
-        modified: stats.mtime.toISOString(),
-      },
-    });
-  } catch (error) {
-    console.error('[EvalRoutes] Get prompt error:', error);
-    res.status(500).json({ error: 'Failed to get prompt' });
-  }
-});
+registerEvalPromptReadRoutes(router);
 
 /**
  * Generate prompt improvement recommendations (read-only)
@@ -2820,396 +2294,20 @@ router.get(
 // Trajectory and Improvement Cycle Endpoints
 // ============================================================================
 
-/**
- * Get improvement trajectory for a profile
- * GET /api/eval/trajectory/:profile
- * Query params: last (number of cycles), all (boolean)
- */
-router.get('/trajectory/:profile', (req, res) => {
-  try {
-    const { profile } = req.params;
-    if (!isSafeRouteFileName(profile)) {
-      return res.status(400).json({ error: 'Invalid profile name' });
-    }
-    const last = parseInt(req.query.last) || 5;
-    const all = req.query.all === 'true';
-
-    const trajectoryDir = path.join(process.cwd(), 'data', 'improvement-trajectories');
-    const trajectoryFile = path.join(trajectoryDir, `${profile}.json`);
-
-    if (!fs.existsSync(trajectoryFile)) {
-      return res.json({
-        success: true,
-        profile,
-        cycles: [],
-        message: 'No improvement history found for this profile',
-      });
-    }
-
-    const data = JSON.parse(fs.readFileSync(trajectoryFile, 'utf8'));
-    const cycles = all ? data.cycles : data.cycles.slice(-last);
-
-    res.json({
-      success: true,
-      profile,
-      startedAt: data.startedAt,
-      lastUpdated: data.lastUpdated,
-      totalCycles: data.cycles.length,
-      cycles,
-    });
-  } catch (error) {
-    console.error('[EvalRoutes] Get trajectory error:', error);
-    res.status(500).json({ error: 'Failed to get trajectory', details: error.message });
-  }
-});
-
-/**
- * Compare two evaluation runs
- * GET /api/eval/compare-runs/:runId1/:runId2
- */
-router.get('/compare-runs/:runId1/:runId2', (req, res) => {
-  try {
-    const { runId1, runId2 } = req.params;
-
-    const results1 = evaluationStoreFor(req).getResults(runId1);
-    const results2 = evaluationStoreFor(req).getResults(runId2);
-
-    if (!results1 || results1.length === 0) {
-      return res.status(404).json({ error: `Run ${runId1} not found` });
-    }
-    if (!results2 || results2.length === 0) {
-      return res.status(404).json({ error: `Run ${runId2} not found` });
-    }
-
-    // Calculate averages for each run
-    const calcAverages = (results) => {
-      const dims = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
-      const dimScores = {};
-      dims.forEach((d) => {
-        dimScores[d] = [];
-      });
-
-      let totalScore = 0;
-      let scoreCount = 0;
-
-      results.forEach((r) => {
-        if (r.tutor_first_turn_score != null) {
-          totalScore += r.tutor_first_turn_score;
-          scoreCount++;
-        }
-        dims.forEach((d) => {
-          const score = r[`score_${d}`];
-          if (score != null) {
-            dimScores[d].push(score);
-          }
-        });
-      });
-
-      const dimAverages = {};
-      dims.forEach((d) => {
-        const scores = dimScores[d];
-        dimAverages[d] = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
-      });
-
-      return {
-        tutorFirstTurnScore: scoreCount > 0 ? totalScore / scoreCount : null,
-        dimensions: dimAverages,
-        testCount: results.length,
-        successCount: results.filter((r) => r.success).length,
-      };
-    };
-
-    const avg1 = calcAverages(results1);
-    const avg2 = calcAverages(results2);
-
-    // Calculate deltas
-    const deltas = {
-      tutorFirstTurnScore:
-        avg2.tutorFirstTurnScore != null && avg1.tutorFirstTurnScore != null
-          ? avg2.tutorFirstTurnScore - avg1.tutorFirstTurnScore
-          : null,
-      dimensions: {},
-    };
-
-    Object.keys(avg1.dimensions).forEach((dim) => {
-      if (avg1.dimensions[dim] != null && avg2.dimensions[dim] != null) {
-        deltas.dimensions[dim] = avg2.dimensions[dim] - avg1.dimensions[dim];
-      } else {
-        deltas.dimensions[dim] = null;
-      }
-    });
-
-    res.json({
-      success: true,
-      run1: { id: runId1, ...avg1 },
-      run2: { id: runId2, ...avg2 },
-      deltas,
-      improved: deltas.tutorFirstTurnScore != null && deltas.tutorFirstTurnScore > 0,
-    });
-  } catch (error) {
-    console.error('[EvalRoutes] Compare runs error:', error);
-    res.status(500).json({ error: 'Failed to compare runs', details: error.message });
-  }
-});
-
-/**
- * Get dimension statistics across all runs for trend analysis
- * GET /api/eval/trends
- * Query params: profile, limit (default 50 individual results)
- *
- * Returns individual test results (not aggregated per run) for accurate trend visualization.
- * Each point represents a single evaluation, not an averaged run.
- */
-router.get('/trends', (req, res) => {
-  try {
-    const { profile } = req.query;
-    const limit = parseInt(req.query.limit) || 50;
-
-    // Get recent runs (fetch 3x the limit to account for fast-mode runs being filtered)
-    // Many runs may be --fast (no AI scoring), so we need to fetch more to get enough scored results
-    const runs = evaluationStoreFor(req).listRuns({ limit: limit * 3 });
-
-    // Helper to extract numeric score from potentially complex score objects
-    const extractNumericScore = (scoreVal) => {
-      if (scoreVal == null) return null;
-      if (typeof scoreVal === 'number') return isNaN(scoreVal) ? null : scoreVal;
-      if (typeof scoreVal === 'object' && scoreVal.score != null) {
-        const s = scoreVal.score;
-        return typeof s === 'number' && !isNaN(s) ? s : null;
-      }
-      return null;
-    };
-
-    // Collect individual results from all runs
-    const allResults = [];
-    const dims = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
-
-    for (const run of runs) {
-      const results = evaluationStoreFor(req).getResults(run.id);
-
-      // Use metadata.runType if available, fallback to parsing description
-      const metadata = run.metadata || {};
-      let runType = metadata.runType || 'eval';
-      if (runType === 'eval' && run.description) {
-        const desc = run.description.toLowerCase();
-        if (desc.includes('matrix')) runType = 'matrix';
-        else if (desc.includes('auto-improve')) runType = 'auto';
-        else if (desc.includes('compare')) runType = 'compare';
-        else if (desc.includes('quick')) runType = 'quick';
-      }
-
-      for (const r of results) {
-        // Filter by profile if specified
-        if (profile && r.profileName !== profile) continue;
-
-        // Extract dimension scores
-        const dimScores = {};
-        dims.forEach((d) => {
-          dimScores[d] = extractNumericScore(r.scores?.[d]);
-        });
-
-        allResults.push({
-          runId: run.id,
-          resultId: r.id,
-          createdAt: r.createdAt || run.createdAt,
-          description: run.description,
-          runType,
-          profileName: r.profileName,
-          scenarioName: r.scenarioName,
-          tutorFirstTurnScore: extractNumericScore(r.tutorFirstTurnScore),
-          dimensions: dimScores,
-          // Include testCount for the table display (how many tests in this run)
-          testCount: results.length,
-          // Include profiles array for compatibility with table display
-          profiles: [r.profileName].filter(Boolean),
-        });
-      }
-    }
-
-    // Sort by createdAt (oldest first for charting) and limit
-    allResults.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-    const trends = allResults.slice(-limit);
-
-    res.json({
-      success: true,
-      profile: profile || 'all',
-      trends,
-      totalResults: allResults.length,
-    });
-  } catch (error) {
-    console.error('[EvalRoutes] Get trends error:', error);
-    res.status(500).json({ error: 'Failed to get trends', details: error.message });
-  }
-});
+registerEvalTrajectoryReadRoutes(router);
+registerEvalAnalysisReadRoutes(router, { storeFor: evaluationStoreFor });
 
 // ============================================================================
 // Documentation Endpoints
 // ============================================================================
 
-// Path to evaluation documentation directory
-const EVAL_DOCS_DIR = path.join(process.cwd(), 'markdown', 'eval');
-// Path to research documentation directory
-const RESEARCH_DOCS_DIR = path.join(process.cwd(), 'docs', 'research');
-
-/**
- * List available evaluation documentation files
- * GET /api/eval/docs
- */
-router.get('/docs', (req, res) => {
-  try {
-    if (!fs.existsSync(EVAL_DOCS_DIR)) {
-      return res.json({ success: true, docs: [] });
-    }
-
-    const files = fs
-      .readdirSync(EVAL_DOCS_DIR)
-      .filter((f) => f.endsWith('.md'))
-      .map((f) => {
-        const filePath = path.join(EVAL_DOCS_DIR, f);
-        const stats = fs.statSync(filePath);
-        // Extract a friendly title from filename
-        const name = f.replace('.md', '');
-        const title = name.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
-        return {
-          name,
-          filename: f,
-          title,
-          size: stats.size,
-          modified: stats.mtime.toISOString(),
-        };
-      })
-      .sort((a, b) => a.title.localeCompare(b.title));
-
-    res.json({ success: true, docs: files });
-  } catch (error) {
-    console.error('[EvalRoutes] List docs error:', error);
-    res.status(500).json({ error: 'Failed to list docs' });
-  }
-});
-
-/**
- * Get documentation file content
- * GET /api/eval/docs/:name
- *
- * Supports "research:" prefix to load from docs/research/ directory
- * e.g., /api/eval/docs/research:PAPER-DRAFT-RECOGNITION-TUTORING
- */
-router.get('/docs/:name', (req, res) => {
-  try {
-    let docName = req.params.name;
-    let docsDir = EVAL_DOCS_DIR;
-
-    // Check for research: prefix to load from docs/research/
-    if (docName.startsWith('research:')) {
-      docName = docName.substring('research:'.length);
-      docsDir = RESEARCH_DOCS_DIR;
-    }
-
-    if (!isSafeRouteFileName(docName)) {
-      return res.status(400).json({ error: 'Invalid documentation name' });
-    }
-
-    const filename = docName.endsWith('.md') ? docName : `${docName}.md`;
-    const filePath = path.join(docsDir, filename);
-
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: 'Documentation not found' });
-    }
-
-    const content = fs.readFileSync(filePath, 'utf8');
-    const stats = fs.statSync(filePath);
-
-    // Extract title from first heading or filename
-    const titleMatch = content.match(/^#\s+(.+)$/m);
-    const title = titleMatch ? titleMatch[1] : docName.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
-
-    res.json({
-      success: true,
-      doc: {
-        name: req.params.name,
-        filename,
-        title,
-        content,
-        size: stats.size,
-        modified: stats.mtime.toISOString(),
-      },
-    });
-  } catch (error) {
-    console.error('[EvalRoutes] Get doc error:', error);
-    res.status(500).json({ error: 'Failed to get documentation' });
-  }
-});
+registerEvalDocumentationReadRoutes(router);
 
 // ============================================================================
 // Monitoring Endpoints
 // ============================================================================
 
-/**
- * Get monitoring summary
- * GET /api/eval/monitor/summary
- */
-router.get('/monitor/summary', (req, res) => {
-  try {
-    const summary = monitoringService.getMonitoringSummary();
-    res.json({ success: true, ...summary });
-  } catch (error) {
-    console.error('[EvalRoutes] Monitor summary error:', error);
-    res.status(500).json({ error: 'Failed to get monitoring summary' });
-  }
-});
-
-/**
- * Get active sessions
- * GET /api/eval/monitor/sessions
- */
-router.get('/monitor/sessions', (req, res) => {
-  try {
-    const sessions = monitoringService.getActiveSessions();
-    const aggregate = monitoringService.getAggregateMetrics();
-    res.json({ success: true, sessions, aggregate });
-  } catch (error) {
-    console.error('[EvalRoutes] Monitor sessions error:', error);
-    res.status(500).json({ error: 'Failed to get active sessions' });
-  }
-});
-
-/**
- * Get specific session details
- * GET /api/eval/monitor/sessions/:id
- */
-router.get('/monitor/sessions/:id', (req, res) => {
-  try {
-    const session = monitoringService.getSession(req.params.id);
-    if (!session) {
-      return res.status(404).json({ error: 'Session not found' });
-    }
-    res.json({ success: true, session });
-  } catch (error) {
-    console.error('[EvalRoutes] Get session error:', error);
-    res.status(500).json({ error: 'Failed to get session' });
-  }
-});
-
-/**
- * Get alerts
- * GET /api/eval/monitor/alerts
- * Query params: severity, acknowledged, limit
- */
-router.get('/monitor/alerts', (req, res) => {
-  try {
-    const { severity, acknowledged, limit } = req.query;
-    const options = {};
-    if (severity) options.severity = severity;
-    if (acknowledged !== undefined) options.acknowledged = acknowledged === 'true';
-    if (limit) options.limit = parseInt(limit, 10);
-
-    const alerts = monitoringService.getAlerts(options);
-    res.json({ success: true, alerts });
-  } catch (error) {
-    console.error('[EvalRoutes] Get alerts error:', error);
-    res.status(500).json({ error: 'Failed to get alerts' });
-  }
-});
+registerEvalMonitoringReadRoutes(router, { getMonitoringService: () => monitoringService });
 
 /**
  * Acknowledge an alert
@@ -3248,143 +2346,16 @@ router.post('/runs/:runId/complete', (req, res) => {
   }
 });
 
-/**
- * Get resumption status for an incomplete run
- * GET /api/eval/runs/:runId/resume-status
- *
- * Returns which tests have been completed and which remain,
- * enabling resumption of interrupted evaluations.
- *
- * Query params: profiles (comma-separated), scenarios (comma-separated or "all")
- */
-router.get('/runs/:runId/resume-status', (req, res) => {
-  try {
-    const { runId } = req.params;
-    const run = evaluationStoreFor(req).getRun(runId);
-
-    if (!run) {
-      return res.status(404).json({ error: 'Run not found' });
-    }
-
-    // Get profiles and scenarios from query or run metadata
-    const metadata = run.metadata || {};
-    const profiles = req.query.profiles
-      ? req.query.profiles.split(',')
-      : metadata.profileNames || metadata.profiles || [];
-    const scenariosParam = req.query.scenarios || metadata.scenarioIds || metadata.scenarios || 'all';
-
-    if (profiles.length === 0) {
-      return res.status(400).json({
-        error: 'Profiles not specified',
-        hint: 'Provide profiles as query param or ensure run metadata contains profiles',
-      });
-    }
-
-    // Get scenarios
-    const allScenarios = evalConfigLoader.listScenarios();
-    const scenarios =
-      scenariosParam === 'all' ? allScenarios : allScenarios.filter((s) => scenariosParam.includes(s.id));
-
-    // Get incomplete tests
-    const status = evaluationStoreFor(req).getIncompleteTests(runId, profiles, scenarios);
-
-    res.json({
-      success: true,
-      ...status,
-      runMetadata: {
-        description: run.description,
-        createdAt: run.createdAt,
-        totalScenarios: run.totalScenarios,
-        totalConfigurations: run.totalConfigurations,
-      },
-    });
-  } catch (error) {
-    console.error('[EvalRoutes] Resume status error:', error);
-    res.status(500).json({ error: 'Failed to get resume status', details: error.message });
-  }
+registerEvalRunResumeStatusReadRoute(router, {
+  storeFor: evaluationStoreFor,
+  evalConfigLoader,
 });
 
 // ============================================================================
 // Interaction Evaluation Endpoints (Learner-Tutor Dialogues)
 // ============================================================================
 
-/**
- * List interaction evaluations
- * GET /api/eval/interactions
- * Query params: limit (default 50), scenarioId
- */
-router.get('/interactions', (req, res) => {
-  try {
-    const limit = parseInt(req.query.limit) || 50;
-    const scenarioId = req.query.scenarioId || null;
-
-    const evals = evaluationStoreFor(req).listInteractionEvals({ limit, scenarioId });
-    res.json({ success: true, evals, count: evals.length });
-  } catch (error) {
-    console.error('[EvalRoutes] List interactions error:', error);
-    res.status(500).json({ error: 'Failed to list interaction evaluations' });
-  }
-});
-
-/**
- * Get a specific interaction evaluation
- * GET /api/eval/interactions/:evalId
- */
-router.get('/interactions/:evalId', (req, res) => {
-  try {
-    const { evalId } = req.params;
-    const evalData = evaluationStoreFor(req).getInteractionEval(evalId);
-
-    if (!evalData) {
-      return res.status(404).json({ error: 'Interaction evaluation not found' });
-    }
-
-    res.json({ success: true, ...evalData });
-  } catch (error) {
-    console.error('[EvalRoutes] Get interaction error:', error);
-    res.status(500).json({ error: 'Failed to get interaction evaluation' });
-  }
-});
-
-/**
- * Get mermaid sequence diagram for an interaction evaluation
- * GET /api/eval/interactions/:evalId/diagram
- */
-router.get('/interactions/:evalId/diagram', (req, res) => {
-  try {
-    const { evalId } = req.params;
-    const evalData = evaluationStoreFor(req).getInteractionEval(evalId);
-
-    if (!evalData) {
-      return res.status(404).json({ error: 'Interaction evaluation not found' });
-    }
-
-    res.type('text/plain').send(evalData.sequenceDiagram || 'No diagram available');
-  } catch (error) {
-    console.error('[EvalRoutes] Get diagram error:', error);
-    res.status(500).json({ error: 'Failed to get diagram' });
-  }
-});
-
-/**
- * Get formatted transcript for an interaction evaluation
- * GET /api/eval/interactions/:evalId/transcript
- */
-router.get('/interactions/:evalId/transcript', (req, res) => {
-  try {
-    const { evalId } = req.params;
-    const evalData = evaluationStoreFor(req).getInteractionEval(evalId);
-
-    if (!evalData) {
-      return res.status(404).json({ error: 'Interaction evaluation not found' });
-    }
-
-    res.type('text/plain').send(evalData.formattedTranscript || 'No transcript available');
-  } catch (error) {
-    console.error('[EvalRoutes] Get transcript error:', error);
-    res.status(500).json({ error: 'Failed to get transcript' });
-  }
-});
+registerEvalInteractionReadRoutes(router, { storeFor: evaluationStoreFor });
 
 // ============================================================================
 // Recognition A/B Comparison Endpoint
