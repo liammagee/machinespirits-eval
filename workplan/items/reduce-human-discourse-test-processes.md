@@ -1,7 +1,7 @@
 ---
 id: reduce-human-discourse-test-processes
 title: Reduce redundant human-discourse test process launches
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
@@ -18,6 +18,8 @@ claim_status: planned
 depends_on:
   - optimize-local-node-execution
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/599
   items:
     - optimize-local-node-execution
     - calibrate-local-node-test-concurrency
@@ -72,3 +74,6 @@ Log:
 - 2026-08-09 — Review checks pass: cached ESLint, cached Prettier, 471/471
   workplan sources, and `git diff --check`. No production tutor code, generated
   board views, evaluation data, or model-backed workflow changed.
+- 2026-08-09 — PR #599 merged as `cd8b3161`. The retained isolated comparison
+  and complete correctness gate satisfy the card's acceptance criteria, so the
+  redundant-process slice is done.

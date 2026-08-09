@@ -1,7 +1,7 @@
 ---
 id: reduce-character-dag-test-latency
 title: Reduce Character-DAG framework test latency
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
@@ -18,6 +18,8 @@ claim_status: planned
 depends_on:
   - optimize-local-node-execution
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/609
   items:
     - optimize-local-node-execution
     - calibrate-local-node-test-concurrency
@@ -79,3 +81,6 @@ Log:
   dropped out of the eight slowest files; the remaining leaders are previously
   measured subprocess/PTY-heavy cohorts, so this series stops here rather than
   widening into speculative or coverage-weakening changes.
+- 2026-08-09 — PR #609 merged as `1b92467c` with all ten hosted checks green.
+  The terminal-state equivalence proof and repeated 73.4% improvement satisfy
+  the card's acceptance criteria, completing the local Node speedup series.

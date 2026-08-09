@@ -1,7 +1,7 @@
 ---
 id: reduce-interactive-turn-test-latency
 title: Reduce interactive tutor-turn test latency
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
@@ -18,6 +18,8 @@ claim_status: planned
 depends_on:
   - optimize-local-node-execution
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/604
   items:
     - optimize-local-node-execution
     - calibrate-local-node-test-concurrency
@@ -81,3 +83,6 @@ Log:
   interactive-turn file took 31.84s under contemporaneous full-suite load, so
   that run is retained as correctness evidence only; the performance estimate
   remains the repeated same-file isolated comparison.
+- 2026-08-09 — PR #604 merged as `70ea18fe`. The isolated improvement and full
+  provider/PTY regression coverage satisfy the acceptance criteria, so the
+  interactive-turn latency slice is done.
