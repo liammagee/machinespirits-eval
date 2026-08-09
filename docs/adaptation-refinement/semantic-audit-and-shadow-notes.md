@@ -54,7 +54,7 @@ Caveats: v0 thresholds are guesses; commitment = action family is an interpretiv
 
 ## 5. Proposed next steps
 
-1. **Gold-annotate the two replayed sessions** (§17 corpus, items 1–2): mark each turn revision-warranted / not / uncertain, and compare with the shadow's verdicts. Borderline and productive-divergence dialogues still need to be found or generated.
+1. **Gold-annotate the two replayed sessions** (§17 corpus, items 1–2): DONE — see `gold-annotations-first-corpus.md`. 7 of 11 decision points agree with the shadow; the three disagreements are an evidence-window timing artifact and two productive-divergence over-calls. The corpus turned out to cover §17 items 1, 2 AND 4 (trace 2 turns 6–8 are a productive plateau). Borderline dialogues (item 3) still needed.
 2. **Expected-uptake events as the first normative extension:** attach to each release an authored expectation (`voiced target fact within k turns`) — the world YAML already names the fact each premise supports; the chainer can compute which derivation a release unlocks. This turns "no_dag_growth" from a global stall counter into a per-release defeated expectation.
 3. **Record hold decisions.** The engine skips them; the shadow cannot see "considered and rejected" revisions. One trace event fixes it.
 4. **Only then** consider wiring a warrant threshold into a live decision (the manner-switch accumulator pattern, applied at the action-family level) — as a cell against the uninstrumented stub, per §15.7.

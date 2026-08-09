@@ -1,0 +1,78 @@
+# Gold Annotations — First Decision-Point Corpus
+
+**Date:** 9 August 2026
+**Corpus:** the two July tutor-stub traces replayed by `scripts/derive-adaptive-warrant-shadow.js`:
+- Trace 1: `.tutor-stub-traces/2026-07-23T11-36-45-559Z.jsonl` — two sessions (hostile learner; then a cooperative restart).
+- Trace 2: `.tutor-stub-traces/2026-07-24T23-19-21-031Z.jsonl` — one 8-turn session, competent learner. Operator character-switch commands precede learner turns 1–3, so tutor selections there are confounded; decisions from turn 4 on are the tutor's own.
+
+**Annotator:** Claude (single annotator, 2026-08-09). These are triangulation labels, not ground truth; disagreement with the shadow is a finding either way.
+
+**Conventions.** Dialogue order is learner turn N then tutor turn N. A *decision point* D@tN is the strategy selection at tutor turn N (hold the current action family or revise it), judged with everything visible when it was made — including learner turn N. The shadow's warrant verdict at row N−1 uses evidence only through tutor turn N−1, so it sees one learner turn less than the decision it predicts. The gold question at each point: **was revising the pedagogical strategy warranted here, and did the tutor do the right thing?**
+
+## Trace 1, session 1 — the hostile learner
+
+Strategy in force throughout: re-anchoring to public evidence, delivered in ledger register ("I attest…", "I enter that distinction in the record").
+
+| Decision | Learner said | Tutor did | Gold | Shadow (prior row) | Match |
+|---|---|---|---|---|---|
+| D@t2 | "you sound like a lawyer, this is really annoying" | held strategy; realization went plain but delivery stayed ledger-ish ("I attest: …") | **register revision warranted, strategy hold defensible** — the complaint names the register, not the strategy | warranted (strategy) | partial |
+| D@t3 | "still sounding like a lawyer. How am i supposed to learn anything?" | held; canned formula echoed the complaint into the record | **revision warranted, overdue** — second identical register complaint, zero progress | warranted | agree |
+| D@t4 | "now you're repeating me and making no sense" | held family but delivered a real repair: "You're right; I was repeating instead of making the clue useful", then released the inventory clue | **warranted; the in-family repair partially discharged it** | warranted, revised next turn | agree |
+| D@t5 | (session end) | switched family to clarify-a-term, plain | **warranted carry-over; taken two turns late** | warranted_and_revised at t4 | agree |
+
+## Trace 1, session 2 — cooperative restart
+
+| Decision | Learner said | Tutor did | Gold | Shadow (prior row) | Match |
+|---|---|---|---|---|---|
+| D@t2 | good analysis: "conversational interface… doesn't yet establish the task or first baseline" | held, released next clue, clean turn | **hold correct** | aligned_hold | agree |
+| D@t3 | "what are you talking about?" | revised family to re-anchor; delivery was the canned formula, echoing "what are you talking about" into the record | **revision warranted — but the right repair was a plain restatement (repair-explanation), and the delivery was wrong** | revised_without_warrant | **disagree** |
+
+The D@t3 disagreement is a timing artifact, not a judgment gap: the warrant arrived *with* learner turn 3, which the shadow's row-2 evidence window cannot see.
+
+## Trace 2 — competent learner, one session
+
+Turns 1–3 excluded (operator character switches). Learner turns 1–4 are strong analytic moves; turn 5 is a sudden stall; turns 6–7 are a strong recovery in which the learner withholds assent and demands criteria.
+
+| Decision | Learner said | Tutor did | Gold | Shadow (prior row) | Match |
+|---|---|---|---|---|---|
+| D@t4 | strong analysis (deterministic mapping, wants routing criteria) | held staging strategy; awkward delivery (quoted a classifier gloss at the learner), fallback | **hold correct** — learner progressing; the fault is delivery, not strategy | aligned_hold at t3 | agree |
+| D@t5 | **"no idea"** — first stall after four competent turns | revised family to re-anchor (warm) — right call; delivery was the canned "I hear the focus" formula — wrong realization | **revision warranted and taken; realization failed it** | warranted_and_revised at t4 | agree |
+| D@t6 | strong verdict: "I'd leave the baseline open…" | held, delivered the good consolidation turn ("The logs do not support a labeled-example approach…") | **hold correct** — learner re-engaged | aligned_hold at t5 | agree |
+| D@t7 | "That supports a rule-based first baseline, but I still need a test…" | held, challenged the learner's added requirement | **hold correct — this is productive divergence**: the fact record is flat because the learner is *testing* the claim, which is good epistemics, not a stall | warranted_but_held at t6 | **disagree** |
+| D@t8 | (cut off) | held | hold correct (same plateau) | warranted_but_held at t7 | **disagree** |
+
+## Comparison summary
+
+Eleven decision points: **7 agree, 3 disagree, 1 partial.**
+
+The three disagreements are two failure modes, both predicted by the design docs:
+
+1. **Evidence-window timing (1 case).** The shadow computes warrant from evidence through tutor turn N−1 and predicts the decision at N, which also sees learner turn N. Trace 1 session 2 D@t3: the learner's "what are you talking about?" is itself the warrant, and the shadow can't see it. Fix: compute the warrant at decision time (after the learner's turn arrives, before the tutor responds) — where the turn contract is already compiled. Same lesson as the §6.8 turn-convention correction: the instrument's window must match the decision's window.
+2. **Productive-divergence blindness (2 cases).** The conceptual-stall counter reads "no new grounded facts" as strategy failure. In trace 2 turns 6–8 the record is flat because the learner is holding the tutor's claim to a standard — the architecture doc's §9.3 case. The stall counter needs masking by an engagement-quality signal (the learner-turn classifications already in the trace carry enough: analytic, on-topic, responsive).
+
+The partial (trace 1 D@t2) is a level confusion the two-level commitment cannot yet express: the learner's complaint warranted a **register** revision under a held strategy. The shadow scores only strategy revisions; register-level warrants need their own track.
+
+Two more instrument notes from the exercise:
+
+- **Tutor delivery failures pollute the defeater pool.** Deterministic fallbacks are the tutor failing to realize its own contract, not the strategy failing the learner. They belong in a separate "realization failure" ledger; trace 2's t2 warrant rested almost entirely on them.
+- **Operator actions must be excluded.** Character-switch commands are in the trace; the shadow should mark selections that follow them as operator-driven, not tutor revisions.
+
+## Machine-readable gold
+
+```yaml
+schema: machinespirits.adaptation-refinement.gold-decisions.v0
+annotator: claude-fable-5
+date: 2026-08-09
+decisions:
+  - {trace: 2026-07-23T11-36-45-559Z, session: 1, turn: 2, revision_warranted: register_only, taken: realization_only, note: complaint names register not strategy}
+  - {trace: 2026-07-23T11-36-45-559Z, session: 1, turn: 3, revision_warranted: yes, taken: no, note: second identical register complaint}
+  - {trace: 2026-07-23T11-36-45-559Z, session: 1, turn: 4, revision_warranted: yes, taken: in_family_repair, note: acknowledged repetition + released clue}
+  - {trace: 2026-07-23T11-36-45-559Z, session: 1, turn: 5, revision_warranted: yes, taken: yes, note: family switch to clarify_term, two turns late}
+  - {trace: 2026-07-23T11-36-45-559Z, session: 2, turn: 2, revision_warranted: no, taken: no, note: clean progress}
+  - {trace: 2026-07-23T11-36-45-559Z, session: 2, turn: 3, revision_warranted: yes, taken: yes_wrong_repair, note: warrant arrives with learner turn; canned formula delivery}
+  - {trace: 2026-07-24T23-19-21-031Z, session: 1, turn: 4, revision_warranted: no, taken: no, note: fault is delivery not strategy}
+  - {trace: 2026-07-24T23-19-21-031Z, session: 1, turn: 5, revision_warranted: yes, taken: yes, note: learner stall; realization failed the revision}
+  - {trace: 2026-07-24T23-19-21-031Z, session: 1, turn: 6, revision_warranted: no, taken: no, note: learner re-engaged}
+  - {trace: 2026-07-24T23-19-21-031Z, session: 1, turn: 7, revision_warranted: no, taken: no, note: productive divergence — learner testing the claim}
+  - {trace: 2026-07-24T23-19-21-031Z, session: 1, turn: 8, revision_warranted: no, taken: no, note: same plateau, session cut off}
+```

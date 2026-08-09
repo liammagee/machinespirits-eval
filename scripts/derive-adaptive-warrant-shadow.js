@@ -56,9 +56,12 @@ function readTraceLines(tracePath) {
 
 /**
  * A trace file can hold several sessions (settings restarts re-open the
- * dialogue and turn numbering restarts). Segment on tutor_opening events and
- * on turn-number regression as a guard.
+ * dialogue and turn numbering restarts). Segment on tutor_opening events, plus
+ * a regression guard restricted to genuine turn-start events — opening audits
+ * re-emit turn-1 records late in a session and must not split it.
  */
+const TURN_START_EVENT_TYPES = new Set(['learner_turn_attempt_started', 'tutor_first_draft_contract']);
+
 function segmentSessions(lines) {
   const sessions = [];
   let current = null;
@@ -72,7 +75,7 @@ function segmentSessions(lines) {
     if (event.type === 'tutor_opening') open();
     const turn = Number(event.turn);
     if (Number.isFinite(turn) && turn >= 1) {
-      if (current && turn < maxTurn && turn === 1) open();
+      if (current && turn === 1 && turn < maxTurn && TURN_START_EVENT_TYPES.has(event.type)) open();
       if (!current) open();
       maxTurn = Math.max(maxTurn, turn);
     }
