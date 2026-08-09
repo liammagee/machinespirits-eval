@@ -87,3 +87,13 @@ at `artifacts/course-479/` (commit d15490ae). Eval-repo side of the card is
 now done: seam check, frozen profiles, presets, transcripts. Remaining work
 moves to the website (Tutor Lab surface, bridge port, deploy) and content
 repo (479-fall-2026 page + techne renders of these transcripts).
+
+2026-08-09 Claude: WEBSITE SIDE BUILT — worktree `../ms-website-tutor-lab`,
+branch `tutor-lab`, commit 9afeb87. Vendored tutor-core (VENDORED.md carries
+the one-way rule + re-sync procedure), ported the CLI bridge with its two
+helpers, added `/api/tutor-lab` (presets + turn, class-key gate, per-session
+and concurrency budgets, mock mode) and the two-pane `/tutor-lab` page.
+Verified end to end: mock loop in the browser; one real claude-CLI turn
+through the route (rounds=2, rejection then approved revision). Remaining for
+deploy is on the website card `course-479-tutor-lab`: Dockerfile CLI install
++ secrets, Sonnet-5 provider overlay, API-key fallback, seminar load check.
