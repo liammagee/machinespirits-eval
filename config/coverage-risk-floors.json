@@ -86,6 +86,21 @@
       "floors": { "lines": 85, "branches": 64, "functions": 85 }
     },
     {
+      "id": "dramatic-derivation-post-turn-lifecycle",
+      "label": "Dramatic derivation post-turn lifecycle",
+      "runner": "node",
+      "sources": ["services/dramaticDerivation/postTurnLifecycle.js"],
+      "tests": [
+        "tests/dramaticDerivationPostTurnLifecycle.test.js",
+        "tests/dramaticDerivationCorruption.test.js",
+        "tests/dramaticDerivationRuntimeMonitor.test.js",
+        "tests/dramaticDerivationScenes.test.js",
+        "tests/dramaticDerivationStallWatch.test.js",
+        "tests/dramaticDerivationStrategyLedger.test.js"
+      ],
+      "floors": { "lines": 80, "branches": 64, "functions": 82 }
+    },
+    {
       "id": "admin-auth",
       "label": "Admin routes and authentication",
       "runner": "node",
