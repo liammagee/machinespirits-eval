@@ -40,6 +40,15 @@ Downstream (architecture-independent channels only — the gate's own signals mu
 - A null on 3–5 with clean 1–2 means the instrumentation is measurable but not yet consequential — report as such, do not re-frame.
 - Diligent-learner firings are the false-positive denominator; report them with every headline number.
 
+## Live smoke results (2026-08-10, pre-study)
+
+Two active-mode sessions, permission-seeking learner, 6 turns each.
+
+- Seed 3 exposed a wiring bug: the configuration builder recorded the proposed family but ran its own selector, so overrides changed stance only. Fixed (family override honored; instructional repair keeps priority).
+- Seed 4, post-fix: the gate warranted at turns 3 and 6 (two trouble turns each time) and the delivered family flipped to challenge-the-resistance at both, stance precise; the tutor's realized turn told the learner to make the entry themselves. The trouble pool correctly reset after each revision, and the intervening turns fell back to the builder's own selection — the gate is per-turn, not sticky; a commitment that persists across turns is future work.
+- Suggestive, n=1: two turns after the first challenge, the learner produced the session's first unhedged own-voice claim ("It rules out clipping; these shillings were newly struck.") — the deference break that never happened in either baseline session. The trial-book record still did not grow. Both observations are exactly measures 3–4 of this design; nothing stronger is claimed from a smoke.
+- Classifier note: mid-sentence deferring clauses ("What public matter would you have me examine first?") still read neutral; the pattern is utterance-initial only. Left as-is pending the study — widening it mid-arc would re-burn the corpora.
+
 ## Known asymmetry to close first
 
 The live gate's decision-time pool lacks post-turn audits (uptake, repetition, guards) that the offline shadow uses. Either fold them in via a post-turn outcome hook before the study, or state that the live gate runs on the signal + record-growth subset and size expectations accordingly.
