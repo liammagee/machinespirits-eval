@@ -1,12 +1,12 @@
 {
-  "generated": "2026-08-09T03:38:10.462Z",
+  "generated": "2026-08-09T03:44:44.226Z",
   "counts": {
-    "total": 480,
+    "total": 481,
     "byStatus": {
       "done": 457,
       "blocked": 6,
       "dropped": 9,
-      "active": 2,
+      "active": 3,
       "archived": 4,
       "triaged": 1,
       "review": 1
@@ -16,7 +16,7 @@
       "experiment": 77,
       "infra": 105,
       "maintenance": 202,
-      "content": 3,
+      "content": 4,
       "ops": 10,
       "paper": 8
     }
@@ -200,6 +200,31 @@
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "course-479-externalization",
+      "title": "Tutor Lab instrument for course 479 (Fall 2026)",
+      "status": "active",
+      "type": "content",
+      "priority": "P1",
+      "owner": "human",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "verification": "A Tutor Lab chat is live on machinespirits.org before day 1: tutor-core runs behind a website route, each turn shows draft/critique/revision, students can switch critic setting (off/advisory/adversarial) and prompt stance (recognition/placebo/enhanced/naive), access is class-keyed with a per-session budget; courses/479-fall-2026 has a course page pointing at it; students need no access to this repo.",
+      "claim_status": "methods",
+      "depends_on": [],
+      "links": {
+        "notes": [
+          "COURSE-479-PLAN.md"
+        ]
+      },
+      "tags": [
+        "course",
+        "teaching",
+        "externalization",
+        "content-philosophy"
+      ]
     },
     {
       "id": "learner-profile-world-deconfound",
