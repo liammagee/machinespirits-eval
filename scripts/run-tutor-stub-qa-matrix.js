@@ -56,12 +56,17 @@ const { values: args } = parseArgs({
     'run-seed': { type: 'string', default: '20260711' },
     turns: { type: 'string', default: 'until-grounded' },
     'safety-turns': { type: 'string', default: '120' },
-    model: { type: 'string', default: process.env.TUTOR_STUB_EVAL_MODEL || 'codex.gpt-5.5' },
-    'analysis-model': { type: 'string', default: process.env.TUTOR_STUB_EVAL_ANALYSIS_MODEL || 'codex.gpt-5.5' },
+    model: { type: 'string', default: process.env.TUTOR_STUB_EVAL_MODEL || 'codex.gpt-5.6-luna' },
+    'analysis-model': {
+      type: 'string',
+      default: process.env.TUTOR_STUB_EVAL_ANALYSIS_MODEL || 'codex.gpt-5.6-luna',
+    },
     'auto-learner-model': {
       type: 'string',
       default:
-        process.env.TUTOR_STUB_EVAL_AUTO_LEARNER_MODEL || process.env.TUTOR_STUB_AUTO_LEARNER_MODEL || 'codex.gpt-5.5',
+        process.env.TUTOR_STUB_EVAL_AUTO_LEARNER_MODEL ||
+        process.env.TUTOR_STUB_AUTO_LEARNER_MODEL ||
+        'codex.gpt-5.6-luna',
     },
     world: { type: 'string', default: process.env.TUTOR_STUB_EVAL_WORLD || 'world_005_marrick' },
     'trace-dir': { type: 'string', default: '' },

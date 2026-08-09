@@ -40,13 +40,13 @@ providers:
   # login. No OpenRouter/OpenAI API key is required. Intended for high-powered
   # eval slices where local CLI routing is part of the experimental condition.
   codex:
-    default_model: gpt-5.5
+    default_model: gpt-5.6-luna
     models:
       # The local Codex ChatGPT-account route rejects gpt-5-mini/mini and
       # gpt-5.2-codex (probed 2026-07-12: "not supported when using Codex with
       # a ChatGPT account"). GPT-5.6 needs a current Codex CLI (verified on
-      # 0.144.1); keep 5.5 as the default until the tutor/learner role
-      # comparison establishes a measured upgrade.
+      # 0.144.1). Luna is the standing default for new unpinned Codex work;
+      # frozen experiments continue to name their historical models explicitly.
       gpt-5.6-sol: gpt-5.6-sol
       gpt-5.6-terra: gpt-5.6-terra
       gpt-5.6-luna: gpt-5.6-luna

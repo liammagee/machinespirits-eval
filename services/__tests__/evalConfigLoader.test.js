@@ -362,6 +362,13 @@ describe('resolveModel (string format)', () => {
     assert.strictEqual(r.isConfigured, true);
   });
 
+  it('configures GPT-5.6 Luna as the Codex provider default', () => {
+    const config = getProviderConfig('codex');
+    assert.strictEqual(config.default_model, 'gpt-5.6-luna');
+    assert.strictEqual(config.models['gpt-5.6-luna'], 'gpt-5.6-luna');
+    assert.strictEqual(config.isConfigured, true);
+  });
+
   for (const model of ['gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna']) {
     it(`resolves "codex.${model}"`, () => {
       const r = resolveModel(`codex.${model}`);
