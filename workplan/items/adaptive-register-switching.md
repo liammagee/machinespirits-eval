@@ -9,11 +9,13 @@ source: manual
 created: 2026-08-09
 updated: 2026-08-10
 branch: codex/adaptive-register-switching-stage2
-verification: Stage 1 is COMPLETE / PASS_STAGE1. Stage 2 stored 103/105 rows
-  before two network-classified fixed timeouts. The operator has now
-  authorized one bounded serial recovery of exactly missing attempt indices 5
-  and 6 in the cell-197 rote-parroting slice; no scoring starts until a
-  read-only check proves 105/105.
+verification: Stage 1 is COMPLETE / PASS_STAGE1. The authorized bounded
+  recovery restored Stage 2 to 105/105 rows and tutor v2.2 scoring completed
+  105/105. Learner scoring made zero model calls and failed closed because the
+  CLI looked in a worktree-local log path; all 105 canonical logs are intact.
+  The shared-resolver fix is tested, but paid learner scoring awaits explicit
+  approval of the corrected clean-commit SHA. Register and manner scoring have
+  not started.
 claim_status: exploratory
 depends_on:
   - register-mock-praise-probe
@@ -122,3 +124,15 @@ Generation-critical paths are unchanged from launch commit
 attempt-aware resume of those two jobs only, without `--force`, deletion, a
 new run, model change, or widened grid. Scoring remains gated on a read-only
 105/105 verification; Stage 3 remains unavailable.
+
+2026-08-10 Codex: the single authorized resume completed both missing attempts,
+restoring the frozen grid to 105/105 successful rows (35 per arm). Tutor v2.2
+scoring then completed 105/105 under `claude-code/claude-sonnet-5`. Learner
+scoring made no model call and failed all 105 rows closed because the active
+CLI scorer constructed a nonexistent worktree-local dialogue-log path; a
+read-only audit found every referenced log intact under the canonical shared
+data home. Corrected the CLI dependency and standalone scorer to use the shared
+`resolveTutorDialoguesDir` rule and added a regression test. Per the attended
+failure rule, register and manner scoring did not start. Stage 2 remains
+incomplete and paid learner scoring is paused pending explicit approval of the
+corrected clean-commit SHA; Stage 3 remains unavailable.

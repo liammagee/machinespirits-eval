@@ -213,6 +213,37 @@ fails, the attended process reports the failure and stops without another
 automatic retry. Frozen scoring begins only after a read-only check proves the
 grid is 105/105. Stage 3 remains unavailable.
 
+## Stage 2 recovery and learner-scoring path amendment — 2026-08-10
+
+The one authorized attempt-aware recovery completed both missing jobs without
+another retry: run `eval-2026-08-09-53421919` now contains 105/105 successful
+rows, 35 per arm, with the pinned-sarcastic rote-parroting attempt indices
+complete at 0 through 6. A read-only post-recovery gate found no empty rows and
+no pre-existing scores.
+
+Frozen tutor scoring then completed 105/105 rows with zero failures under tutor
+rubric v2.2 and `claude-code/claude-sonnet-5`. The next serial command, learner
+scoring, failed closed before making any model call: all 105 rows were skipped
+as missing dialogue logs. Read-only diagnosis found all 105 logs intact in the
+canonical shared data home. The active CLI scorer had instead constructed a
+worktree-local `logs/tutor-dialogues` path, which does not exist in the clean
+temporary launch worktree.
+
+This is an operational data-path defect, not missing experimental data and not
+a change to the frozen estimand. The scorer and its standalone counterpart are
+corrected to use `resolveTutorDialoguesDir`, the same shared resolver used by
+the writer and the rest of the evaluation stack. The regression test injects a
+logs root and proves that scoring resolves its tutor-dialogue directory through
+that rule. No transcript, score, model, prompt, rubric, register gate, manner
+question, arm, scenario, repetition, or plan hash is changed.
+
+Per the attended-run failure rule, register-rubric and manner-presence scoring
+were not launched. Stage 2 remains incomplete, its decision remains withheld,
+and Stage 3 remains unavailable. Restarting the paid learner scorer requires
+separate operator approval of the corrected clean-commit SHA; it must use the
+normal no-`--force`, serial command and score only the still-null learner
+measures on the existing 105 rows.
+
 ## Registered limits, stated now
 
 1. **Policy-level estimand only.** Adaptive and pinned dialogues diverge in

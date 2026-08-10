@@ -13,11 +13,12 @@ import { fileURLToPath } from 'node:url';
 import { withEvaluationScriptStore } from '../services/evaluationStore/scriptContext.js';
 import { buildLearnerEvaluationPrompt, calculateLearnerOverallScore } from '../services/learnerRubricEvaluator.js';
 import { callModelCliText } from '../services/cliProviderBridge.js';
+import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-async function evaluateLearners(store, { runId, force, verbose, rootDir }) {
-  const LOGS_DIR = path.resolve(rootDir, 'logs/tutor-dialogues');
+async function evaluateLearners(store, { runId, force, verbose, rootDir, env }) {
+  const LOGS_DIR = resolveTutorDialoguesDir(rootDir, null, { env });
 
   // Load results
   const allResults = store.getResults(runId);
@@ -258,7 +259,7 @@ export async function main(
 
   const force = args.includes('--force');
   const verbose = args.includes('--verbose');
-  return withEvaluationScriptStore((store) => evaluateLearners(store, { runId, force, verbose, rootDir }), {
+  return withEvaluationScriptStore((store) => evaluateLearners(store, { runId, force, verbose, rootDir, env }), {
     rootDir,
     env,
     evaluationStore,

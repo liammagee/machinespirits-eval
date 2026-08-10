@@ -9,6 +9,7 @@ import {
   isAdaptiveTraceLog,
 } from '../../services/adaptiveTraceProjection.js';
 import { callModelCliText } from '../../services/cliProviderBridge.js';
+import { resolveTutorDialoguesDir } from '../../services/evaluationDataPaths.js';
 import * as evalConfigLoader from '../../services/evalConfigLoader.js';
 import { clearRubricPathOverride, setRubricPathOverride } from '../../services/evalConfigLoader.js';
 import {
@@ -46,7 +47,7 @@ import {
 } from '../../services/rubricEvaluator.js';
 
 const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
-const LOGS_DIR = path.resolve(moduleDirectory, '..', '..', 'logs', 'tutor-dialogues');
+const ROOT_DIR = path.resolve(moduleDirectory, '..', '..');
 const RUBRICS_DIR = path.resolve(moduleDirectory, '..', '..', 'config', 'rubrics');
 
 function positiveIntEnv(name, fallback) {
@@ -132,10 +133,17 @@ export const generationRubricDependencies = Object.freeze({
   setAllRubricOverrides,
 });
 
-export function createScoringCommandDependencies({ evaluationRunner, evaluationStore } = {}) {
+export function createScoringCommandDependencies({
+  evaluationRunner,
+  evaluationStore,
+  rootDir = ROOT_DIR,
+  env = process.env,
+} = {}) {
   if (!evaluationRunner || !evaluationStore) {
     throw new TypeError('evaluationRunner and evaluationStore dependencies are required');
   }
+
+  const LOGS_DIR = resolveTutorDialoguesDir(rootDir, null, { env });
 
   return Object.freeze({
     LOGS_DIR,
