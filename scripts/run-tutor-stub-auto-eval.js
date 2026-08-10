@@ -64,6 +64,7 @@ import { normalizeTutorStubPointOfActionArm } from '../services/tutorStubPointOf
 import { tutorStubStrictOriginalCandidateAccepted } from '../services/tutorStubFirstDraftCampaign.js';
 import { collectTutorPrBenchmarkReachablePaths } from '../services/tutorStubPrBenchmarkHook.js';
 import { resolveTutorStubWarrantGateMode } from '../services/tutorStubWarrantGate.js';
+import { readSelectedJsonlEventsSync } from '../services/jsonlEventReader.js';
 import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
   normalizeTutorStubReleaseSpeed,
@@ -1615,17 +1616,11 @@ function printTurnProgress({ completed, total, activeJobs, results }) {
   );
 }
 
-function parseJsonLine(line) {
-  try {
-    return JSON.parse(line);
-  } catch {
-    return null;
-  }
-}
-
 function readTraceEvents(tracePath) {
-  if (!tracePath || !fs.existsSync(tracePath)) return [];
-  return fs.readFileSync(tracePath, 'utf8').split('\n').filter(Boolean).map(parseJsonLine).filter(Boolean);
+  return readSelectedJsonlEventsSync(tracePath, {
+    retainTypes: ['turn_complete', 'run_end', 'auto_learner_run_end', 'field_visualization_write'],
+    retainErrorTypes: true,
+  });
 }
 
 function latestTraceFile(traceDir) {
@@ -1643,7 +1638,8 @@ function summarizeJobProgress(job) {
       lastType: 'starting',
     };
   }
-  const events = readTraceEvents(tracePath);
+  const trace = readTraceEvents(tracePath);
+  const events = trace.events;
   const turns = events.filter((event) => event.type === 'turn_complete');
   const lastTurn = turns.at(-1)?.turnRecord || {};
   const assessment = lastTurn.tutorLearnerDagModel?.assessment || {};
@@ -1652,7 +1648,7 @@ function summarizeJobProgress(job) {
     turns: turns.length,
     coverage: assessment.bestPathCoverage ?? null,
     bottleneck: assessment.bottleneck || '',
-    lastType: events.at(-1)?.type || '',
+    lastType: trace.lastType || '',
   };
 }
 
@@ -1672,7 +1668,8 @@ function summarizeTrace(
   traceDir,
   { primaryHorizon = positiveInt(args['primary-horizon'], '--primary-horizon') } = {},
 ) {
-  const events = readTraceEvents(tracePath);
+  const trace = readTraceEvents(tracePath);
+  const events = trace.events;
   const turns = events.filter((event) => event.type === 'turn_complete');
   const turnRecords = turns.map((event) => event.turnRecord).filter(Boolean);
   const runEnds = events.filter((event) => event.type === 'run_end' || event.type === 'auto_learner_run_end');
@@ -1805,7 +1802,7 @@ function summarizeTrace(
   return {
     trace: path.relative(ROOT, tracePath),
     traceRelative: path.relative(traceDir, tracePath),
-    events: events.length,
+    events: trace.eventCount,
     turnCount: turns.length,
     lastTurn: turns.at(-1)?.turn ?? null,
     stopReason: runEnds.at(-1)?.reason || null,

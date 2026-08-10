@@ -2,8 +2,10 @@
 
 **Date:** 10 August 2026
 **Status:** original sequence complete through its stop rule; n=10 not
-launched. Ledger/completion implementation is complete; the fresh all-turn
-mechanism-validation sequence below is ready but not yet run.
+launched. The first authorized all-turn mechanism execution ran from commit
+`21f3497666b393840e8aca3e4128d8ac1861cfc0` but was incomplete and is burned.
+Its execution defects have a corrective implementation; a new clean checkpoint,
+dry authorization, full rerun, and fresh annotations remain required.
 **Workplan item:** `adaptive-warrant-public-obligation-ledger-and-inquiry-termin`
 
 ## Frozen evidence boundary
@@ -474,3 +476,30 @@ variance. Keep decision/manipulation measures separate from downstream quality
 and learner-record outcomes. Passage would validate this automated mechanism
 within two worlds and six simulated profiles; it would not establish an
 optimal policy, a learning effect, or a human-learner claim.
+
+## Current restart boundary after the first authorized run
+
+The first authorized 24-dialogue execution completed its launch matrix but did
+not produce a valid mechanism study: 20 children were valid, four were sealed
+`evidence_invalid`, and delivery application failed even though structured
+live/replay parity was 160/160. The historical artifacts remain failed and are
+not eligible for annotation-based passage.
+
+The corrective implementation now:
+
+1. binds selector digests after all persisted compatibility metadata is final;
+2. attributes public family realization to the gate only for active warranted
+   revisions, while continuing to prove exact observe/active-hold inertia;
+3. recognizes the two bounded delivery forms missed in the run;
+4. prevents embedded declarative auxiliaries and `can` criterion questions
+   from creating false tutor result obligations; and
+5. projects recursive final-authority evidence out of prior-turn state with a
+   SHA-256 provenance record, while scanning large JSONL traces incrementally.
+
+The next ordered steps are therefore: finish the full no-model regression
+suite; create and push a clean commit; generate a new dry-run authorization
+request from that exact commit; approve that new digest; rerun all 24 dialogues;
+freeze a new 96-case packet; obtain two fresh independent blind annotations;
+then run the already frozen consensus/precision/recall and mechanism scorer.
+No outcome comparison is licensed unless every execution and mechanism gate
+passes.

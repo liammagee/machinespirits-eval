@@ -66,6 +66,10 @@ function decisionPriorOutcome(outcome) {
     released_evidence: outcome.released_evidence || outcome.releasedEvidence || [],
     delivered_response_configuration:
       outcome.delivered_response_configuration || outcome.deliveredResponseConfiguration || null,
+    delivered_response_configuration_provenance:
+      outcome.delivered_response_configuration_provenance ||
+      outcome.deliveredResponseConfigurationProvenance ||
+      null,
     defeaters: Array.isArray(outcome.defeaters) ? [...outcome.defeaters] : [],
   };
 }

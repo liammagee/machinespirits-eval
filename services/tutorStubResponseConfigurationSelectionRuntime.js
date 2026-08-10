@@ -582,6 +582,18 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
     });
     responseConfiguration.temperature_scope = temperatureSelection.scope;
     const actionFamily = responseConfiguration.action_family;
+    const legacySelectedRegister =
+      source.legacy_selected_register ||
+      selectedResolution?.legacy_selected_register ||
+      preferredLegacyRegister({ register: selected, requestType, actionFamily });
+    // The selector-application audit binds the configuration that is actually
+    // persisted. Compatibility metadata therefore has to be finalized before
+    // the digest is computed; adding it afterwards makes every otherwise
+    // correct live selection look tampered with to the study verifier.
+    responseConfiguration.compatibility = {
+      ...(responseConfiguration.compatibility || {}),
+      legacy_selected_register: legacySelectedRegister,
+    };
     const reviewerSignal = String(
       source.reviewer_signal ||
         source.register_signal ||
@@ -616,10 +628,7 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
       engagement_stance: selected,
       selected_register: selected,
       selected_mode: selected,
-      legacy_selected_register:
-        source.legacy_selected_register ||
-        selectedResolution?.legacy_selected_register ||
-        preferredLegacyRegister({ register: selected, requestType, actionFamily }),
+      legacy_selected_register: legacySelectedRegister,
       action_family: actionFamily || null,
       warrant_gate: warrantGateDecision || null,
       warrant_gate_application: warrantGateApplication,
@@ -770,7 +779,6 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
       selection.warning = 'dynamic_policy_brisk_demoted';
       selection.original_register = requested;
     }
-    selection.response_configuration.compatibility.legacy_selected_register = selection.legacy_selected_register;
     state.register.history.push(selection);
     state.register.current = selection;
     return selection;

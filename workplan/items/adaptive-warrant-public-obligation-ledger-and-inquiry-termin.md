@@ -111,7 +111,18 @@ probe fingerprints both Codex wrapper and delegated native executable. Each
 dialogue has a 64-call cap (1,536 maximum across the matrix), each row is
 recollected from a verified child seal, and resume accepts only immutable exact
 complete/dry evidence. A captured fake-provider run checks the declared tutor,
-analyzer, learner, and recovery transport boundary. The future 96-case freeze
-uses a global deterministic hash shuffle, opaque IDs, and strict response field
-allowlists. These checks are green, but no model-backed mechanism run or policy
-validation has occurred.
+analyzer, learner, and recovery transport boundary. The 96-case freeze uses a
+global deterministic hash shuffle, opaque IDs, and strict response field
+allowlists. These checks were green before execution; the subsequent authorized
+run recorded below did not validate the policy.
+
+The first authorized 24-dialogue execution from clean commit
+`21f3497666b393840e8aca3e4128d8ac1861cfc0` is complete but invalid: 20 sealed
+children were usable, four were `evidence_invalid`, and 160/160 structured
+live/replay comparisons agreed while delivery application failed. The audit
+identified and corrected selector digest ordering, gate ownership in the
+delivery scorer, two bounded surface-recognition gaps, three false public-
+obligation classifications, and recursive final-authority trace growth. The
+historical run remains burned. This item stays active until the corrected code
+is committed, a new digest is authorized, all 24 cells rerun, and the fresh
+96-case two-reader mechanism gate passes.

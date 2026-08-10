@@ -463,3 +463,31 @@ Missing support is a failed/inconclusive gate, never a pass by vacuity. Failure
 stops the sequence before any outcome comparison. Passage would license only a
 separately frozen, variance-controlled outcome design; it would not itself
 establish better dialogue quality, learning, or a human-learner effect.
+
+## First authorized mechanism execution — failed and burned (10 August 2026)
+
+The 24-dialogue matrix was executed from clean detached commit
+`21f3497666b393840e8aca3e4128d8ac1861cfc0`. It did not satisfy this protocol:
+20 dialogues were valid and four were sealed `evidence_invalid`. The valid
+evidence established exact structured live/replay parity for 160/160 decisions,
+but delivery application reported 152 mismatched decisions and 173 issues.
+Accordingly, no annotation result from this execution can pass the mechanism
+gate and no outcome comparison is licensed.
+
+The post-run audit found instrumentation defects rather than evidence for or
+against downstream effectiveness: a selector digest was computed before its
+persisted compatibility metadata was complete; family realization was
+incorrectly attributed to the gate during observe and active-hold decisions;
+two bounded realization phrases were missing from deterministic recognition;
+three declarative/criterion learner moves created false public-result debt;
+and recursively nested final-authority proofs grew one trace beyond the
+auto-eval reader's whole-file string limit. These defects now have direct
+regressions and bounded implementation corrections. Automated-only training
+reuse remains intentionally `not_applicable`, because the setting governs
+human/hybrid authorship and does not apply to a no-human-input study.
+
+This is a corrective checkpoint, not a reinterpretation of the failed run. Any
+successor execution must start from a new clean commit, dry rehearsal, and
+explicit authorization for the new digest. It must rerun all 24 cells, freeze a
+new 96-case packet, and obtain two fresh independent annotations before the
+same scorer and gates are applied.

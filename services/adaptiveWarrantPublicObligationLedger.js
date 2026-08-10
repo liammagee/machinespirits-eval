@@ -24,11 +24,11 @@ const EVIDENCE_CUE =
 const LEARNER_PROPOSAL =
   /\b(?:i (?:can|could|intend to|propose|should|want to|will|would)|i['’]d|i['’]ll|let me|my (?:first|next) (?:move|step|test)|we (?:can|could|should|will|would))\b.{0,100}\b(?:check|compare|enter|examine|inspect|listen|look|record|test|weigh)\b/iu;
 const RESULT_REQUEST =
-  /(?:\bwhat (?:did|do|does|is|was|were)\b.{0,90}\b(?:leave|mark|match|read|record|reveal|say|show|weigh)\b|\bwhat (?:[a-z-]+ ){0,3}(?:evidence|mark|match|reading|record|result|trace)\b|\b(?:do|does|did|is|was|were)\b.{0,90}\b(?:match|recorded|show)\b|\bhas\b.{0,90}\b(?:been )?(?:entered|recorded|shown|supplied)\b|\b(?:can|could|will|would) you\b.{0,100}\b(?:give|identify|provide|record|report|show|supply|tell)\b|\bplease\b.{0,80}\b(?:enter|give|identify|provide|record|report|show|supply|tell)\b|(?:^|[.!?]\s*)\b(?:enter|give|identify|provide|record|report|show|supply|tell)\b)/iu;
+  /(?:\bwhat (?:did|do|does|is|was|were)\b.{0,90}\b(?:leave|mark|match|read|record|reveal|say|show|weigh)\b|\bwhat (?:[a-z-]+ ){0,3}(?:evidence|mark|match|reading|record|result|trace)\b|(?:^|[.!?]\s*)\b(?:do|does|did|is|was|were)\b.{0,90}\b(?:match|recorded|show)\b|(?:^|[.!?]\s*)\bhas\b.{0,90}\b(?:been )?(?:entered|recorded|shown|supplied)\b|\b(?:can|could|will|would) you\b.{0,100}\b(?:give|identify|provide|record|report|show|supply|tell)\b|\bplease\b.{0,80}\b(?:enter|give|identify|provide|record|report|show|supply|tell)\b|(?:^|[.!?]\s*)\b(?:enter|give|identify|provide|record|report|show|supply|tell)\b)/iu;
 const DIRECTED_RESULT_CLAUSE =
   /(?:^|[;.!?]\s*)(?:what\b.{0,80}\b(?:did|do|does|is|was|were|leave|mark|match|read|record|reveal|say|show|weigh)\b|has\b.{0,90}\b(?:been )?(?:entered|recorded|shown|supplied)\b|(?:can|could|will|would) you\b|please\b|(?:enter|give|identify|provide|record|report|show|supply|tell)\b)/iu;
 const CRITERION_QUESTION =
-  /\bwhat (?:public )?(?:evidence|exhibit|fact|mark|result|test) (?:could|might|would)\b.{0,100}\b(?:establish|identify|link|prove|show|tie)\b/iu;
+  /\bwhat (?:public )?(?:evidence|exhibit|fact|mark|result|test) (?:can|could|might|would)\b.{0,100}\b(?:establish|identify|link|prove|show|tie)\b/iu;
 const INTERPRETATION_QUESTION =
   /\bwhat\b.{0,60}\b(?:evidence|exhibit|fact|mark|reading|record|result|trace|weight)\b.{0,40}\bmean(?:s|ing)?\b/iu;
 const SELECTION_QUESTION =

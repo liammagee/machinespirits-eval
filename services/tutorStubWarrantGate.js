@@ -30,6 +30,7 @@ import {
   CONCEPTUAL_STALL_TURNS,
   REPETITION_DEFEATER_THRESHOLD,
 } from './adaptiveWarrantGateCore.js';
+import { hashAdaptiveWarrantJson } from './adaptiveWarrantDeliveryContract.js';
 import {
   createAdaptiveWarrantActionContractTracker,
   getAdaptiveWarrantActionContract,
@@ -45,6 +46,8 @@ export const TUTOR_STUB_WARRANT_GATE_SCHEMA = 'machinespirits.tutor-stub.warrant
 export const TUTOR_STUB_WARRANT_GATE_OUTCOME_SCHEMA = 'machinespirits.tutor-stub.warrant-gate-outcome.v3';
 export const TUTOR_STUB_WARRANT_GATE_FINAL_AUTHORITY_AUDIT_SCHEMA =
   'machinespirits.tutor-stub.warrant-gate-final-authority-audit.v1';
+export const TUTOR_STUB_WARRANT_GATE_OUTCOME_CONFIGURATION_PROJECTION_SCHEMA =
+  'machinespirits.tutor-stub.warrant-gate-outcome-configuration-projection.v1';
 export const TUTOR_STUB_WARRANT_GATE_MODES = Object.freeze(['off', 'observe', 'active']);
 
 export function resolveTutorStubWarrantGateMode(value = process.env.TUTOR_STUB_WARRANT_GATE) {
@@ -71,6 +74,32 @@ function changedTopLevelFields(current = {}, frozen = {}, excluded = []) {
     .filter((field) => !excludedFields.has(field))
     .filter((field) => !isDeepStrictEqual(current?.[field], frozen?.[field]))
     .sort();
+}
+
+/**
+ * A delivered configuration may contain the current final-authority proof,
+ * whose two selection snapshots in turn contain the current decision input.
+ * Carrying that complete proof into the next reducer outcome recursively nests
+ * every earlier proof and makes trace size grow exponentially. The next
+ * decision needs the delivered configuration, not a copy of its evidence
+ * envelope, so retain a digest-bound projection of that envelope instead.
+ */
+export function projectTutorStubWarrantGateOutcomeConfiguration(configuration = null) {
+  if (!configuration) return { configuration: null, provenance: null };
+  const projected = structuredClone(configuration);
+  const enforcement = projected.adaptive_warrant_enforcement || null;
+  const finalAuthorityAudit = enforcement?.final_authority_audit || null;
+  if (!finalAuthorityAudit) return { configuration: projected, provenance: null };
+  delete enforcement.final_authority_audit;
+  return {
+    configuration: projected,
+    provenance: {
+      schema: TUTOR_STUB_WARRANT_GATE_OUTCOME_CONFIGURATION_PROJECTION_SCHEMA,
+      omitted_field: 'adaptive_warrant_enforcement.final_authority_audit',
+      omitted_schema: finalAuthorityAudit.schema || null,
+      omitted_sha256: hashAdaptiveWarrantJson(finalAuthorityAudit),
+    },
+  };
 }
 
 export function enforceTutorStubWarrantGateFinalAuthority(
@@ -241,6 +270,9 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
       if (pacingSignal?.direction && pacingSignal.direction !== 'steady') {
         defeaters.push(`pacing_signal:${pacingSignal.direction}`);
       }
+      const deliveredConfigurationProjection = projectTutorStubWarrantGateOutcomeConfiguration(
+        deliveredResponseConfiguration,
+      );
       const outcome = {
         schema: TUTOR_STUB_WARRANT_GATE_OUTCOME_SCHEMA,
         turn: normalizedTurn,
@@ -254,9 +286,8 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         pacing_signal: pacingSignal || null,
         tutor_text: String(tutorText || ''),
         released_evidence: structuredClone(Array.isArray(releasedEvidence) ? releasedEvidence : []),
-        delivered_response_configuration: deliveredResponseConfiguration
-          ? structuredClone(deliveredResponseConfiguration)
-          : null,
+        delivered_response_configuration: deliveredConfigurationProjection.configuration,
+        delivered_response_configuration_provenance: deliveredConfigurationProjection.provenance,
         defeaters: [...new Set(defeaters)],
       };
       pendingOutcomes.set(normalizedTurn, outcome);

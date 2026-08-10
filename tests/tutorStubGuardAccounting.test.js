@@ -7,6 +7,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { assessAdaptiveWarrantDeliveryApplication } from '../scripts/run-adaptive-warrant-baseline-study.js';
+import { hashAdaptiveWarrantResponseConfiguration } from '../services/adaptiveWarrantDeliveryContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UNSAFE_DRAFT = 'Edony struck the false shillings, so write her name in the trial-book.';
@@ -171,6 +172,10 @@ test('observe gate records an inert selector application beside explicit final d
   assert.deepEqual(
     turn?.tutorGuardAccounting?.finalDelivery?.deliveryConfiguration,
     turn?.deliveredResponseConfiguration,
+  );
+  assert.equal(
+    application?.selected_response_configuration_sha256,
+    hashAdaptiveWarrantResponseConfiguration(turn?.registerSelection?.response_configuration),
   );
   const assessment = assessAdaptiveWarrantDeliveryApplication({
     decision: turn?.warrantGateDecision,

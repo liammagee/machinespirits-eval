@@ -28,11 +28,13 @@ import {
 } from '../services/tutorStubResponseConfigurationSelectionRuntime.js';
 import { invalidateTutorStubWarrantGateAfterPublicTutorRewrite } from '../services/tutorStubCharacterControlController.js';
 import { buildTutorStubFirstDraftContract } from '../services/tutorStubFirstDraftContract.js';
+import { auditTutorStubResponseConfiguration } from '../services/tutorStubResponseConfiguration.js';
 import { reconcileTutorStubTypedActionWithWarrant } from '../services/tutorStubTurnOrchestration.js';
 import {
   createTutorStubWarrantGate,
   enforceTutorStubWarrantGateFinalAuthority,
   ensureTutorStubWarrantGate,
+  projectTutorStubWarrantGateOutcomeConfiguration,
   recordTutorStubWarrantGateOutcome,
   restoreTutorStubWarrantGateFromTurns,
   resolveTutorStubWarrantGateMode,
@@ -144,6 +146,37 @@ test('public speech acts separate proposed tests, criteria, and tutor-directed r
     null,
     'the action-contract compatibility classifier must not turn a learner proposal into tutor debt',
   );
+});
+
+test('public speech-act classifier does not invent tutor result debt from the failed study turns', () => {
+  const criterion = classifyAdaptiveWarrantPublicSpeechAct({
+    learnerText:
+      'The record shows Hessa and Moth had access. What public evidence can we examine next that might link someone to the wiping?',
+  });
+  assert.equal(criterion.kind, 'criterion_question');
+  assert.equal(criterion.creates_obligation, false);
+
+  for (const learnerText of [
+    'It confirms Dario was in the kitchen, but it does not show who handled the food. I’d need camera footage or an access trace.',
+    'It makes the outside crew’s presence plausible, but the contents log or lost-property record would be worth checking.',
+  ]) {
+    const speechAct = classifyAdaptiveWarrantPublicSpeechAct({ learnerText });
+    assert.equal(speechAct.creates_obligation, false, learnerText);
+  }
+});
+
+test('delivery recognizers cover the bounded closure and precise contrast used by the study', () => {
+  const closure = auditTutorStubResponseConfiguration({
+    text: 'I close the incident record on the supported finding.',
+    configuration: { action_family: 'close_inquiry', engagement_stance: 'plain' },
+  });
+  assert.equal(closure.axes.action_family.visible, true);
+
+  const precise = auditTutorStubResponseConfiguration({
+    text: 'The ledger supports Wrenfold’s responsibility, not a named crew member.',
+    configuration: { action_family: 'answer_accountably', engagement_stance: 'precise' },
+  });
+  assert.equal(precise.axes.engagement_stance.visible, true);
 });
 
 test('action contract: successful challenge requires exit to stage_next_step without DAG growth', () => {
@@ -1419,6 +1452,63 @@ test('final authority restores the complete frozen gate bundle before first-draf
   assert.equal(firstDraft.development.support_level, null);
   assert.equal(firstDraft.performance.actorial_part, 'advocate');
   assert.equal(firstDraft.performance.tactic, 'unadorned_report');
+});
+
+test('gate outcomes carry a digest-bound projection instead of recursively nesting final-authority proofs', () => {
+  const finalAuthorityAudit = {
+    schema: 'machinespirits.tutor-stub.warrant-gate-final-authority-audit.v1',
+    pre_final_selection: { response_configuration: { large_prior_proof: 'x'.repeat(10_000) } },
+    frozen_pre_optional_selection: { response_configuration: { large_prior_proof: 'y'.repeat(10_000) } },
+  };
+  const delivered = {
+    action_family: 'answer_accountably',
+    engagement_stance: 'precise',
+    adaptive_warrant_enforcement: {
+      schema: 'machinespirits.tutor-stub.warrant-gate-final-authority.v1',
+      final_authority_audit: finalAuthorityAudit,
+    },
+  };
+  const directProjection = projectTutorStubWarrantGateOutcomeConfiguration(delivered);
+  assert.equal(
+    directProjection.configuration.adaptive_warrant_enforcement.final_authority_audit,
+    undefined,
+  );
+  assert.equal(directProjection.provenance.omitted_schema, finalAuthorityAudit.schema);
+  assert.match(directProjection.provenance.omitted_sha256, /^[a-f0-9]{64}$/u);
+  assert.deepEqual(delivered.adaptive_warrant_enforcement.final_authority_audit, finalAuthorityAudit);
+
+  const gate = createTutorStubWarrantGate({ mode: 'active' });
+  gate.assess({
+    turn: 1,
+    learnerText: 'The record supports only a bounded finding.',
+    dagModel: dagModel(1),
+    proposedActionFamily: 'answer_accountably',
+  });
+  const outcome = gate.recordTurnOutcome({
+    turn: 1,
+    actionFamily: 'answer_accountably',
+    tutorText: 'The record supports access, not authorship.',
+    deliveredResponseConfiguration: delivered,
+  });
+  assert.equal(outcome.delivered_response_configuration.adaptive_warrant_enforcement.final_authority_audit, undefined);
+  assert.equal(
+    outcome.delivered_response_configuration_provenance.omitted_sha256,
+    directProjection.provenance.omitted_sha256,
+  );
+
+  const next = gate.assess({
+    turn: 2,
+    learnerText: 'That limit is clear.',
+    dagModel: dagModel(1),
+    priorActionFamily: 'answer_accountably',
+    proposedActionFamily: 'stage_next_step',
+  });
+  const prior = next.input_snapshot.prior_turn_outcome;
+  assert.equal(prior.delivered_response_configuration.adaptive_warrant_enforcement.final_authority_audit, undefined);
+  assert.equal(
+    prior.delivered_response_configuration_provenance.omitted_sha256,
+    directProjection.provenance.omitted_sha256,
+  );
 });
 
 test('a typed action displaced before delivery is cancelled rather than scored next turn', () => {

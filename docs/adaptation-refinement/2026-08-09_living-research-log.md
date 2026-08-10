@@ -678,3 +678,57 @@ any earlier dry-run digest. No model-backed mechanism dialogue was launched in
 this update; the next external step remains a new clean-commit dry rehearsal,
 explicit approval of that exact digest/payload/destination, and only then the
 24-dialogue run.
+
+## Progress Update — 10 August 2026, first authorized mechanism run and corrective checkpoint
+
+The digest-authorized study ran all 24 planned dialogues from clean detached
+commit `21f3497666b393840e8aca3e4128d8ac1861cfc0`. Its historical result is
+`incomplete` and the mechanism gate did not pass. Twenty children supplied
+valid evidence; four were sealed `evidence_invalid`. Across the valid children,
+all 160 tutor decisions had combined learner analysis and exact structured
+live/replay parity (160/160, zero mismatches). Delivery application nevertheless
+reported 152 mismatched decisions and 173 issues. The run and its 96-case
+annotation freeze are burned for calibration; they cannot be repaired or
+retroactively promoted into passing evidence.
+
+The audit separated those failures into four mechanisms:
+
+- 150 selector-configuration digest mismatches, plus three active frozen-bundle
+  digest mismatches, came from adding legacy compatibility metadata after the
+  selector audit had hashed the configuration. Selection now finalizes that
+  metadata before constructing its application proof.
+- Nineteen action-family visibility failures mixed two real active-delivery
+  recognizer misses with 17 checks on observe or active-hold decisions. The
+  latter decisions own structural inertia, not the baseline selector's public
+  realization. The scorer now requires family visibility only when an active
+  warranted revision owns the family. The two owned misses are covered by
+  bounded recognizer additions for `close the incident record` and the precise
+  contrast `supports X, not Y`. The one associated stance miss is covered by
+  the same precise-contrast rule.
+- Three active children exhausted their public-response guard because
+  declarative learner reasoning containing embedded `does not show`, and one
+  criterion question using `can`, were misclassified as tutor-directed result
+  requests. Auxiliary result questions are now sentence-anchored and `can` is
+  admitted in the criterion-question form. Regression cases use the exact
+  failed learner utterances.
+- One otherwise eight-turn child could not produce its auto-eval summary or
+  valid seal because recursive final-authority evidence made its JSONL trace
+  886,077,425 bytes and the reader tried to materialize the whole file as one
+  JavaScript string. Prior-turn outcomes now retain a digest-bound projection
+  of the delivered configuration with the nested final-authority audit omitted;
+  the complete current-turn proof remains in the committed turn. The auto-eval
+  reader now scans JSONL incrementally and discards unneeded event bodies once
+  their type is known.
+
+The automated-only run's training-reuse status of `not_applicable`, despite a
+requested setting of `on`, is intentional governance rather than a study
+failure. That control applies only to human or hybrid authorship; automated
+model dialogue has `humanInputExpected: false` and is outside its scope.
+
+Focused mechanism/delivery regression tests pass 109/109. The derivation-world
+quality audit passes all 35 worlds, and the prompt/world boundary suite passes
+22/22. These checks establish implementation consistency only. Before another
+model-backed study, the corrections require a new clean committed checkpoint,
+new dry rehearsal and authorization digest, and a fresh 24-dialogue run. Only
+that new run may generate a new 96-case blind packet for two independent
+annotations and the frozen scorer.

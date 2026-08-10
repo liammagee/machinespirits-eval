@@ -683,6 +683,31 @@ test('delivery application proves observe inertia and active final-authority del
   const observe = assessAdaptiveWarrantDeliveryApplication({ decision: observeDecision, record: observeRecord });
   assert.equal(observe.ok, true);
 
+  const invisibleObserveRecord = structuredClone(observeRecord);
+  invisibleObserveRecord.responseConfigurationAudit.axes.action_family.visible = false;
+  invisibleObserveRecord.tutorGuardAccounting.finalDelivery.audits.responseConfigurationAudit.axes.action_family.visible =
+    false;
+  assert.equal(
+    assessAdaptiveWarrantDeliveryApplication({ decision: observeDecision, record: invisibleObserveRecord }).ok,
+    true,
+    'observe mode owns selector inertia, not the baseline family realization',
+  );
+
+  const activeHoldDecision = { ...structuredClone(observeDecision), mode: 'active' };
+  const activeHoldRecord = structuredClone(invisibleObserveRecord);
+  activeHoldRecord.registerSelection.warrant_gate = structuredClone(activeHoldDecision);
+  activeHoldRecord.registerSelection.warrant_gate_application = buildAdaptiveWarrantSelectorApplicationAudit({
+    decision: activeHoldDecision,
+    preGateSource: observeSource,
+    postGateSource: observeSource,
+    responseConfiguration: observeConfiguration,
+  });
+  assert.equal(
+    assessAdaptiveWarrantDeliveryApplication({ decision: activeHoldDecision, record: activeHoldRecord }).ok,
+    true,
+    'an active hold is also gate-inert and does not own family realization',
+  );
+
   const mutatedObserveRecord = structuredClone(observeRecord);
   for (const configuration of [
     mutatedObserveRecord.responseConfiguration,
@@ -824,6 +849,16 @@ test('delivery application proves observe inertia and active final-authority del
     selectorApplication.selected_response_configuration_sha256,
   );
   assert.equal(assessAdaptiveWarrantDeliveryApplication({ decision: activeDecision, record: activeRecord }).ok, true);
+  const invisibleActiveRecord = structuredClone(activeRecord);
+  invisibleActiveRecord.responseConfigurationAudit.axes.action_family.visible = false;
+  invisibleActiveRecord.tutorGuardAccounting.finalDelivery.audits.responseConfigurationAudit.axes.action_family.visible =
+    false;
+  const invisibleActiveAssessment = assessAdaptiveWarrantDeliveryApplication({
+    decision: activeDecision,
+    record: invisibleActiveRecord,
+  });
+  assert.equal(invisibleActiveAssessment.ok, false);
+  assert.ok(invisibleActiveAssessment.mismatches.includes('delivered_action_family_not_visible'));
   const forgedSelectorRecord = structuredClone(activeRecord);
   forgedSelectorRecord.registerSelection.warrant_gate_application = buildAdaptiveWarrantSelectorApplicationAudit({
     decision: activeDecision,

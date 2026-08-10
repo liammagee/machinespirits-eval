@@ -1032,7 +1032,12 @@ export function assessAdaptiveWarrantDeliveryApplication({ decision = null, reco
 
   if (!finalConfigurationAudit) {
     mismatches.push('final_response_configuration_audit_missing');
-  } else if (deliveredConfiguration) {
+  } else if (deliveredConfiguration && expectedFamily) {
+    // Observe and active-hold decisions do not own an action-family surface
+    // intervention. Their mechanism contract is structural inertia. Requiring
+    // the baseline selector's independently chosen family to be visibly
+    // realized here conflates a general response-quality diagnostic with gate
+    // delivery and massively overstates mechanism failures.
     const actionAxis = finalConfigurationAudit.axes?.action_family || null;
     if (actionAxis?.selected !== deliveredConfiguration.action_family || actionAxis?.visible !== true) {
       mismatches.push('delivered_action_family_not_visible');

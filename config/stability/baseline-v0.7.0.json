@@ -97,7 +97,7 @@
     {
       "file": "services/tutorStubResponseConfigurationSelectionRuntime.js",
       "claim": "final response-configuration composition, precedence, and selection trace envelope",
-      "sha256": "f069eda8d5c3ac3d863a5835ccd2ddd599a408d2105bab14cc545d551bc29c92"
+      "sha256": "0d1986b1ac573cdf5780779a6405ba10af183695e648cedf40f7edba157d3ee5"
     },
     {
       "file": "services/tutorStubWorldPromptContext.js",

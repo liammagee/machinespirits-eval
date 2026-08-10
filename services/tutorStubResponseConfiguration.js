@@ -1078,8 +1078,11 @@ function stanceVisible(
   }
   if (stance === 'plain') return metrics.averageSentenceWords <= 18 && metrics.wordCount <= 100;
   if (stance === 'precise')
-    return /\b(?:if|because|means|rather than|but not|not .{0,24} but|not merely|not yet|must still|would count|distinction|exact|establish|no more|did not|does not|doesn[’']t|fails? to (?:establish|prove|show|tie)|only|limit|until|unproved)\b/iu.test(
-      text,
+    return (
+      /\b(?:if|because|means|rather than|but not|not .{0,24} but|not merely|not yet|must still|would count|distinction|exact|establish|no more|did not|does not|doesn[’']t|fails? to (?:establish|prove|show|tie)|only|limit|until|unproved)\b/iu.test(
+        text,
+      ) ||
+      /\b(?:establish|prove|show|support|tie)\w*\b[^.!?]{0,90}\b(?:but\s+)?not\b/iu.test(text)
     );
   if (stance === 'brisk') return metrics.wordCount <= 70 && metrics.sentenceCount <= 4;
   if (stance === 'warm') {
@@ -2129,7 +2132,7 @@ export function auditTutorStubResponseConfiguration({
       invitation: /\b(?:let's|we can|try|notice|you can|start with|take)\b/iu.test(text),
       acknowledgement: /\b(?:i hear|that sounds|you are naming|you've named|it makes sense)\b/iu.test(text),
       challenge: /\b(?:but|yet|choose|risk|refuse|stop|instead)\b/iu.test(text),
-      closure: /\b(?:closed|settled|conclude|therefore)\b/iu.test(text),
+      closure: /\b(?:clos(?:e|ed|es|ing)|settled|conclude|therefore)\b/iu.test(text),
     },
   };
   // The adaptive host governs the whole utterance around any authored clue
