@@ -1,15 +1,14 @@
 {
-  "generated": "2026-08-10T00:01:23.229Z",
+  "generated": "2026-08-10T00:21:57.661Z",
   "counts": {
     "total": 496,
     "byStatus": {
       "done": 468,
       "blocked": 6,
       "dropped": 10,
-      "review": 2,
+      "review": 3,
       "active": 5,
-      "archived": 4,
-      "triaged": 1
+      "archived": 4
     },
     "byType": {
       "research": 75,
@@ -22,50 +21,6 @@
     }
   },
   "items": [
-    {
-      "id": "refactor-tutor-stub-auto-eval-visualization-renderer",
-      "title": "Extract tutor-stub auto-eval visualization renderer",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-08-10",
-      "updated": "2026-08-10",
-      "verification": "Empty and populated animated-visualization report sections remain byte-identical and syntax-valid; saved report HTML, replay behavior, accessibility, focused reporting, complete hermetic root/core, risk coverage, lint, formatting, manifest, workplan-source, diff, and zero-cycle gates pass without model calls or production artifact writes.",
-      "claim_status": "planned",
-      "depends_on": [
-        "refactor-tutor-stub-auto-eval-report-assets"
-      ],
-      "links": {
-        "notes": [
-          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
-          "docs/next-steps/2026-08-10-codebase-refactoring-post-auto-eval-assets-reconciliation.md"
-        ],
-        "code": [
-          "scripts/run-tutor-stub-auto-eval.js",
-          "services/tutorStubAutoEvalVisualizationReport.js",
-          "tests/tutorStubAutoEvalVisualizationReport.test.js",
-          "tests/tutorStubReportingUx.test.js",
-          "tests/tutorStubAutoEvalEvidence.test.js",
-          "config/coverage-risk-floors.json",
-          "config/hermetic-test-manifest.json"
-        ],
-        "items": [
-          "codebase-refactoring-program",
-          "refactor-tutor-stub-auto-eval-report-assets"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "tutor-stub",
-        "auto-eval",
-        "reporting",
-        "visualization",
-        "presentation"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
     {
       "id": "codebase-refactoring-program",
       "title": "Execute the evidence-led codebase refactoring programme",
@@ -552,6 +507,51 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
+    },
+    {
+      "id": "refactor-tutor-stub-auto-eval-visualization-renderer",
+      "title": "Extract tutor-stub auto-eval visualization renderer",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-10",
+      "updated": "2026-08-10",
+      "branch": "codex/refactor-tutor-stub-auto-eval-visualization-renderer",
+      "verification": "Empty and populated animated-visualization report sections remain byte-identical and syntax-valid; 4/4 direct assertions, 100/100 focused reporting tests, 8,370/8,370 hermetic root tests, 137/137 tutor-core tests, all fourteen risk groups, lint, formatting, manifest, workplan-source, diff, and zero-cycle gates pass without model calls or production artifact writes.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-auto-eval-report-assets"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
+          "docs/next-steps/2026-08-10-codebase-refactoring-post-auto-eval-assets-reconciliation.md"
+        ],
+        "code": [
+          "scripts/run-tutor-stub-auto-eval.js",
+          "services/tutorStubAutoEvalVisualizationReport.js",
+          "tests/tutorStubAutoEvalVisualizationReport.test.js",
+          "tests/tutorStubReportingUx.test.js",
+          "tests/tutorStubAutoEvalEvidence.test.js",
+          "config/coverage-risk-floors.json",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-auto-eval-report-assets"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "auto-eval",
+        "reporting",
+        "visualization",
+        "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
