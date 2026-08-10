@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Plan — review of the 27 Jul – 10 Aug 2026 roundups</title>
+  <style>
+    body { font-family: Georgia, "Times New Roman", serif; max-width: 900px; margin: 2rem auto;
+           padding: 0 1.5rem; line-height: 1.65; color: #1a1a1a; background: #fafaf8; }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; color: #444; text-transform: uppercase; letter-spacing: .06em; }
+    .item { border-left: 3px solid #aaa; padding: .5rem 1rem; margin: 1rem 0; background: #fff; }
+    .item.p1 { border-left-color: #c0392b; } .item.p2 { border-left-color: #1a5276; } .item.p3 { border-left-color: #1e8449; }
+    .item h3 { margin: 0 0 .35rem; font-size: 1.02rem; }
+    .item .row { font-size: .9rem; margin: .25rem 0; }
+    .k { font-weight: bold; color: #555; }
+    .cost { display:inline-block; font-size:.74rem; font-weight:bold; padding:.1rem .45rem; border-radius:3px; background:#1e8449; color:#fff; }
+    .cost.amber { background: #d4a017; }
+    .intro-note { font-size: .9rem; color: #555; background: #f0f0ea; border: 1px solid #ddd;
+                  padding: .6rem 1rem; border-radius: 3px; margin-bottom: 1rem; }
+    .alert { font-size: .9rem; color: #7a2e00; background: #fff4e5; border: 1px solid #e6b26a;
+             padding: .6rem 1rem; border-radius: 3px; margin-bottom: 1rem; }
+    .brake { background: #fbeee6; border: 1px solid #e0c0a0; padding: .6rem 1rem; border-radius: 3px; }
+    a { color: #1a5276; } footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+    code { font-size: .88em; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-08-10 reviews=2026-07-27,2026-08-03,2026-08-10 generator=ms-research-review -->
+
+<h1>Research Plan <small style="font-weight:normal;font-size:.85em">review of the 27 Jul – 10 Aug 2026 roundups</small></h1>
+
+<div class="alert">
+  <strong>Note on source:</strong> the 2026-08-10 roundup is not yet on <code>main</code> — it sits in
+  open PR <a href="https://github.com/liammagee/machinespirits-eval/pull/636">#636</a>
+  ("Add research roundup for 2026-08-10"), which also carries its four
+  <code>workplan/inbox/</code> capture files on the same branch. This plan reads that PR directly. Once
+  it merges, the four captures below land in the inbox as shown; nothing needs re-triaging.
+</div>
+
+<div class="intro-note">
+  <strong>Review → plan.</strong> The 2026-07-27 and 2026-08-03 roundups (18 papers total across both)
+  were already fully triaged by an agent consolidation pass on 2026-08-04/05
+  (<code>consolidate-daily-research-inbox</code>, 66 captures reviewed): one paper shipped as a real
+  change — AISPA (2607.28617) became the eight-axis tutor-prompt agency audit, PR
+  <a href="https://github.com/liammagee/machinespirits-eval/pull/485">#485</a>, merged — and every other
+  paper from those two windows closed with a recorded decision and no open task. So there is nothing
+  left to carry forward from the last plan. The only new, untriaged material is the four papers in the
+  2026-08-10 roundup (PR #636). Two of them are strong fits to live machinery and form the plan below;
+  the other two are background and move to the backlog. <strong>Implement and evaluate stay
+  human-gated</strong> (see the brake).
+</div>
+
+<h2>The plan</h2>
+
+<div class="item p1">
+  <h3>P1 · Does the Writing Pad accumulate like an immune memory, or overwrite? —
+    "AgentAntibody: An Adaptive Immune System for Defending LLM Agents against Prompt Injection" (2608.04053)</h3>
+  <div class="row"><span class="k">Why:</span> AgentAntibody's core move is a persistent, cross-turn
+    library that adds a new record on a novel case and reuses a matching one otherwise, instead of
+    starting cold each turn. Cell 21 (<code>cell_21_recog_multi_unified_rewrite</code> in
+    <code>config/tutor-agents.yaml</code>) runs on exactly this kind of persistent artifact — the Writing
+    Pad (<code>services/memory/tutorWritingPad.js</code>, <code>services/memory/learnerWritingPad.js</code>)
+    — but nothing in the project currently checks whether it behaves like AgentAntibody's library
+    (grows, keeps distinct records, compacts) or like a single overwritten snapshot.</div>
+  <div class="row"><span class="k">Do:</span> read-only check, no new runs. Read
+    <code>updateTutorWritingPad</code> / <code>updateConsciousState</code> and
+    <code>updateConsciousLayer</code> / <code>recordBreakthrough</code> / <code>recordTrauma</code> /
+    <code>recordLesson</code> in <code>services/learnerTutorInteractionEngine.js</code> against the
+    <code>writingPadSnapshots.before</code> / <code>.after</code> pairs already captured in existing cell
+    21 interaction traces. Track snapshot size and distinct-record count turn over turn across an
+    existing multi-turn cell 21 run: does the pad grow and keep prior records legible (antibody-library
+    behaviour) or does each turn's write replace the last one's content (stateless overwrite)?</div>
+  <div class="row"><span class="k">Evaluate:</span> existing dialogue logs / interaction traces for any
+    already-run cell 21 session — a small script or manual read over the recorded
+    <code>writingPadSnapshots</code> sequence. No new generation, no model calls.
+    <span class="cost">existing data</span></div>
+  <div class="row"><span class="k">Note:</span> the roundup also flags cells 110-125 (trap-scenario
+    suite) as lacking any persistent memory of which traps a given learner has already tried across
+    turns — a real gap, but adding that memory is new code plus a new eval, not a read-only check. Leave
+    it as a named backlog candidate rather than folding it into P1.</div>
+</div>
+
+<div class="item p2">
+  <h3>P2 · Is "human takes one role, AI plays the rest" generic, or hardwired to tutor/learner? —
+    "AgentForge: An Immersive Role-Playing Platform for Learning Agentic Software Engineering" (2608.04148)</h3>
+  <div class="row"><span class="k">Why:</span> AgentForge lets a novice pick any one of four roles in a
+    multi-agent workflow while AI plays the other three. This project already has the same shape for one
+    fixed pair — a human plays the learner while the tutor is AI-played, via <code>/ms-play-tutor</code>
+    and <code>/ms-tutor-remote</code>, and the pilot infrastructure
+    (<code>services/pilotStore.js</code>, <code>public/pilot/index.html</code>). AgentForge's four-role
+    rotation asks whether that swap is generic — could a human instead take the superego's seat, or a
+    cast member's role in an id-director drama — or whether it only works because tutor/learner is the
+    one pairing that got built.</div>
+  <div class="row"><span class="k">Do:</span> design audit, no new code. Read the
+    <code>/ms-play-tutor</code> and <code>/ms-tutor-remote</code> skill implementations plus
+    <code>services/idDirectorEngine.js</code>'s cast construction to find out which role a human can
+    stand in for today, and where the coupling to "human = learner" is a config value versus baked into
+    the control flow. Produce a short list: which roles are swappable now (config change), which would
+    need new plumbing (structural change).</div>
+  <div class="row"><span class="k">Evaluate:</span> no eval run — this is a design-fit report, not a
+    scored comparison. If the audit finds a role is already swappable, a follow-up item could try it on
+    an existing drama transcript; that is a separate, later decision.
+    <span class="cost">existing code / design audit</span></div>
+</div>
+
+<h2>Backlog (named, not started)</h2>
+<ul style="font-size:.92rem;">
+  <li><strong>From the 08-10 roundup, not carried into P1-P2 (both WATCH, both background by the
+    roundup's own read):</strong> "Architectural Implications of Agentic AI Workflows" (2608.04458) —
+    a datacenter-scale finding that orchestration, not model inference, is the bottleneck; relevant
+    background next time cost/latency tuning for a large multi-cell run comes up
+    (<code>scripts/test-latency.js</code>, <code>services/adaptiveTutor/budgetTracker.js</code>), but
+    not pedagogy-level and not actionable now. "Agent Against Agent" / PIMiner (2608.05108) — an
+    adversarial red-teaming agent that distills a transferable strategy library from repeated probing;
+    structurally close to the divergent-superego cells (22-33) but the project has no present need for a
+    cross-run superego-strategy model, so it stays background.</li>
+  <li><strong>Carried from 07-27/08-03 (closed, listed for continuity only):</strong> GAMUT two-level
+    meta-rubrics (2607.19322), scaffolding-collapse representation alignment (2607.19371), and
+    structured resistance/compliance (2607.21558) were all triaged closed on 2026-08-04 with recorded
+    decisions — see <code>workplan/items/meta-rubric-completeness-literature-triage.md</code>,
+    <code>scaffolding-collapse-literature-triage.md</code>,
+    <code>structured-resistance-literature-triage.md</code>. AISPA (2607.28617) is no longer backlog —
+    it shipped as PR #485. Nothing from these two windows is open.</li>
+</ul>
+
+<h2>The brake</h2>
+<div class="brake">
+  Both items above are read-only — code/trace reads and a design audit against already-built machinery.
+  No paid eval runs, no new drama generation, no rejudge spend, and nothing lands in the paper without
+  sign-off. The backlog items stay the user's to authorize, given the pre-registration / single-paper
+  discipline (<code>CLAUDE.md</code> → "Paper Authoring Discipline").
+</div>
+
+<footer>Generated by <code>ms-research-review</code> · reviewed the 27 Jul – 10 Aug 2026 daily roundups
+(07-27 and 08-03 already fully triaged by a prior consolidation; 08-10 read from open PR #636) ·
+reviewed by a human before any implementation.</footer>
+</body>
+</html>
