@@ -1,19 +1,20 @@
 ---
 id: refactor-tutor-stub-auto-eval-visualization-renderer
 title: Extract tutor-stub auto-eval visualization renderer
-status: triaged
+status: review
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-08-10
 updated: 2026-08-10
+branch: codex/refactor-tutor-stub-auto-eval-visualization-renderer
 verification: >-
   Empty and populated animated-visualization report sections remain
-  byte-identical and syntax-valid; saved report HTML, replay behavior,
-  accessibility, focused reporting, complete hermetic root/core, risk coverage,
-  lint, formatting, manifest, workplan-source, diff, and zero-cycle gates pass
-  without model calls or production artifact writes.
+  byte-identical and syntax-valid; 4/4 direct assertions, 100/100 focused
+  reporting tests, 8,370/8,370 hermetic root tests, 137/137 tutor-core tests,
+  all fourteen risk groups, lint, formatting, manifest, workplan-source, diff,
+  and zero-cycle gates pass without model calls or production artifact writes.
 claim_status: planned
 depends_on:
   - refactor-tutor-stub-auto-eval-report-assets
@@ -85,3 +86,13 @@ Log:
   saved HTML surface, but the renderer itself is not directly exported or
   byte-characterized; the new child must establish that boundary before moving
   it.
+- 2026-08-10 — Activated from reconciliation commit `fba90e27`, opened as PR
+  #632. Baseline characterization freezes the empty fragment at 83 bytes
+  (`742b174e…baf0`) and a two-policy, three-frame fragment at 51,443 bytes
+  (`ca2e986a…da37`) before extraction.
+- 2026-08-10 — Completed the extraction. The 1,130-line visualization owner
+  has maximum complexity 5 and reduces the auto-eval executable from 8,257 to
+  7,136 lines. Both baseline hashes remain exact; the populated inline runtime
+  syntax-checks cleanly. Four direct assertions, 100 focused reporting
+  assertions, 8,370 hermetic root tests, 137 tutor-core tests, all fourteen
+  risk groups, and every structural gate pass.
