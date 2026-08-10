@@ -1,10 +1,13 @@
 # Does switching into an edged register at the right moment help? — Frozen Pre-Registration
 
-Status: **FROZEN — Stage 1 complete; Stage 2 not authorized.** Frozen plan SHA-256:
+Status: **FROZEN — Stage 2 complete; no primary evidence; stopped before Stage 3.** Frozen plan SHA-256:
 `da2723e47de143305e88a9a7b26688f6f58e4958e0b310ed4d7e147cd9734845`.
 The operator approved exactly that hash. The attended Stage 1 pilot and its
-fail-closed report completed without restart or widening. Stage 2 remains
-locked behind a separate operator decision.
+fail-closed report completed without restart or widening. On 2026-08-10 the
+operator separately authorized the frozen 105-row Stage 2 batch; this changed
+authorization only, not the design, measures, power table, or plan hash. The
+attended run, bounded network recovery, scoring-path correction, and completed
+Stage 2 result are recorded below. Stage 3 remains unauthorized.
 
 ## Where this comes from
 
@@ -145,6 +148,145 @@ Its normal trace records the active menu, timing choice, final applied style,
 and any later hard-guard override. This is an inspectable research seam, not a
 validated default policy.
 
+## Stage 2 attempt — 2026-08-10
+
+Run `eval-2026-08-09-53421919` launched from clean commit
+`cd9f0d675dc0d726606627cc5eb280a52cffc18d` against the unchanged frozen plan
+SHA. The attended serial generation attempt ran for 595m39s and finished with
+103 successful rows and two fixed-timeout failures out of the planned 105:
+
+- adaptive: 35/35 stored;
+- router-warm: 35/35 stored;
+- pinned-sarcastic: 33/35 stored;
+- both failures were pinned-sarcastic rote-parroting rows, one at
+  `learner_ego` and one at `tutor_id`, each after the fixed 300,000ms Codex CLI
+  timeout.
+
+The run was not restarted, resumed, replaced, or widened. No paid tutor,
+learner, register, or manner scoring was launched after the incomplete
+generation grid. The zero-call report at
+`exports/adaptive-register-switching/stage2/eval-2026-08-09-53421919.json`
+returned `INCOMPLETE`, withheld the decision, and left registered measures
+5–8 incomplete. The corrected zero-call artifact has SHA-256
+`cd68ea71983d82b1c148f5804a8fff29a0c937c7bec989448d7de4c0cdafead5`.
+Any partial classifier counts in that artifact are diagnostic
+only and are not a Stage 2 result. Stage 3 was not started. Work pauses here.
+
+A post-run, zero-call trace audit also found that the initial Stage-2 report
+validator had interpreted the frozen note's "always-edged" shorthand too
+literally. Existing cell 197 does not apply sarcasm on every turn: unchanged
+engine semantics replace a charismatic router choice with the assigned
+sarcastic register only under the resistance gate, while ordinary turns retain
+the normal router choice. The validator was corrected after the run to require
+`assigned_register_arm: sarcastic`, `register_assignment_source:
+experiment_arm`, and the replaced charismatic router choice on assigned
+resistance turns, while accepting normal-menu selections on unassigned turns.
+No dialogue, score, registered measure, primary contrast, or frozen plan hash
+changed. This correction narrows the secondary adaptive-versus-pinned
+description; the sole decision-bearing adaptive-versus-router-warm contrast is
+unaffected.
+
+## Stage 2 network-recovery amendment — 2026-08-10
+
+After returning online, the operator classified the two fixed CLI timeouts as
+network failures and explicitly revoked the no-restart constraint. This is an
+operational amendment only; it does not change the frozen design, plan hash,
+arms, scenarios, repetitions, models, measures, gates, readers, tests, or
+Stage-3 boundary.
+
+The authorized recovery is one attended, serial invocation of the repository's
+attempt-aware resume path against the existing run
+`eval-2026-08-09-53421919`. Its preflight must prove all of the following:
+
+- exactly 103 successful rows and zero empty rows are stored;
+- adaptive and router-warm are 35/35, while cell 197 is 33/35;
+- the only missing jobs are cell 197 × rote-parroting attempt indices 5 and 6;
+- no tutor, learner, or register score has been written;
+- stored overrides remain `codex.gpt-5.5` for tutor and learner;
+- generation-critical code is unchanged from original launch commit
+  `cd9f0d675dc0d726606627cc5eb280a52cffc18d`.
+
+The resume may add only those two already-planned rows, at parallelism 1 and
+with rubric scoring still skipped. It may not use `--force`, delete a row,
+create a new run, add a repetition, or alter a model. If either recovery job
+fails, the attended process reports the failure and stops without another
+automatic retry. Frozen scoring begins only after a read-only check proves the
+grid is 105/105. Stage 3 remains unavailable.
+
+## Stage 2 recovery and learner-scoring path amendment — 2026-08-10
+
+The one authorized attempt-aware recovery completed both missing jobs without
+another retry: run `eval-2026-08-09-53421919` now contains 105/105 successful
+rows, 35 per arm, with the pinned-sarcastic rote-parroting attempt indices
+complete at 0 through 6. A read-only post-recovery gate found no empty rows and
+no pre-existing scores.
+
+Frozen tutor scoring then completed 105/105 rows with zero failures under tutor
+rubric v2.2 and `claude-code/claude-sonnet-5`. The next serial command, learner
+scoring, failed closed before making any model call: all 105 rows were skipped
+as missing dialogue logs. Read-only diagnosis found all 105 logs intact in the
+canonical shared data home. The active CLI scorer had instead constructed a
+worktree-local `logs/tutor-dialogues` path, which does not exist in the clean
+temporary launch worktree.
+
+This is an operational data-path defect, not missing experimental data and not
+a change to the frozen estimand. The scorer and its standalone counterpart are
+corrected to use `resolveTutorDialoguesDir`, the same shared resolver used by
+the writer and the rest of the evaluation stack. The regression test injects a
+logs root and proves that scoring resolves its tutor-dialogue directory through
+that rule. No transcript, score, model, prompt, rubric, register gate, manner
+question, arm, scenario, repetition, or plan hash is changed.
+
+Per the attended-run failure rule, register-rubric and manner-presence scoring
+were not launched. Stage 2 remains incomplete, its decision remains withheld,
+and Stage 3 remains unavailable. Restarting the paid learner scorer requires
+separate operator approval of the corrected clean-commit SHA; it must use the
+normal no-`--force`, serial command and score only the still-null learner
+measures on the existing 105 rows.
+
+## Stage 2 result — 2026-08-10
+
+The operator approved corrected clean commit
+`e8c6e401c93c4fe2e33243de13480c0f59c6fab0` for the remaining frozen scoring.
+The attended continuation made no restart, deletion, new run, model change, or
+grid change. Learner scoring completed 105/105; the register scorers completed
+15/15 ironic turns and 86/86 sarcastic turns under their respective gates; and
+the unchanged `manner-presence/1.0` reader completed 101/101 edged turns. Tutor
+and learner rubrics used `claude-code/claude-sonnet-5`. All 945 tutor-seat
+calls retained the frozen `codex/gpt-5.5` provenance. No nemotron or kimi model
+was used.
+
+The zero-call report for run `eval-2026-08-09-53421919` returned
+`COMPLETE / NO_PRIMARY_EVIDENCE`, with 105/105 rows, all registered measures
+1–8 present, no report errors, and `stage3Authorized: false`.
+
+| Registered result | Adaptive | Router-warm | Pinned-sarcastic | Contrast |
+|---|---:|---:|---:|---|
+| Positive local conversion | 29/35 (.829) | 33/35 (.943) | 30/35 (.857) | primary adaptive − warm = −.114; Fisher two-sided p = .2595 |
+| Timing-vs-edge conversion | 29/35 (.829) | — | 30/35 (.857) | secondary adaptive − pinned = −.029; Fisher two-sided p = 1.000 |
+| Learner-rubric change | 20.893 | 20.357 | 20.107 | descriptive only; no preregistered continuous test |
+| Tutor v2.2 mean | 75.274 | 74.083 | 72.893 | descriptive cost measure |
+
+The primary does not support the registered claim that adaptive switching
+improves conversion over the router-warm control. It does not establish harm:
+the observed difference is imprecise and non-significant. All three arms
+converted at high rates, including a .943 router-warm rate rather than the .50
+design anchor used in the frozen power table. The policy therefore remains an
+inspectable, opt-in research seam in tutor-stub and is not promoted to a
+validated default.
+
+Fidelity is reported within register only. Ironic turns were 15/15
+cue-compliant, 12/15 manner-present, with register-rubric mean 91.167 under
+`ironic@stance-gate/2.0`. Sarcastic turns were 86/86 cue-compliant, 72/86
+manner-present, with register-rubric mean 82.564 under
+`sarcastic@stance-gate/2.0`. These cue counts are not differenced across
+registers.
+
+Canonical zero-call artifact:
+`exports/adaptive-register-switching/stage2/eval-2026-08-09-53421919.json`,
+SHA-256 `86294c623ffbb71eaed217c86e2205da19101655f6a0e03f4fceb24b2a87af56`.
+Stage 2 stops here. Stage 3 was not started.
+
 ## Registered limits, stated now
 
 1. **Policy-level estimand only.** Adaptive and pinned dialogues diverge in
@@ -161,14 +303,20 @@ validated default policy.
 ## Frozen apparatus
 
 - Plan and fail-closed measures: `services/adaptiveRegisterSwitching.js`.
-- Stage-1-only runner: `scripts/run-adaptive-register-switching.js`.
+- Frozen Stage-1-only runner: `scripts/run-adaptive-register-switching.js`.
+- Separately gated Stage-2 runner and report:
+  `scripts/run-adaptive-register-switching-stage2.js` and
+  `services/adaptiveRegisterSwitchingStage2.js`.
 - Adaptive arm: `cell_204_id_director_adaptive_edged_register_switching`.
 - Router-warm control: `cell_205_id_director_router_warm_register_control`.
 - Always-edged comparator: existing
   `cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified`.
-- The runner has no Stage-2 launch mode. Every paid Stage-1 mode requires
+- The Stage-1 runner has no Stage-2 launch mode. Every paid Stage-1 mode requires
   `--launch-approved --expected-sha <clean-commit>`; `--report-run` is a
   zero-call read-only report.
+- The Stage-2-only runner requires the approved plan SHA, the completed
+  Stage-1 report, and its own clean-commit SHA before every paid mode. It
+  carries no Stage-3 launch mode.
 
 ## Deviations
 
@@ -177,3 +325,11 @@ unchanged, unpinned router menu. The frozen design names it **router-warm
 control** to match the actual policy; its architecture is unchanged from the
 draft description. Further deviations are recorded, not patched around, in
 the workplan card and the paper.
+
+The Stage-2 runner was added only after the separate 2026-08-10 authorization.
+It reuses the frozen 105 jobs and registered measures unchanged, requires the
+stored `COMPLETE / PASS_STAGE1` artifact as launch evidence, and makes the
+adaptive-versus-router-warm Fisher contrast the sole decision-bearing test.
+The adaptive-versus-pinned contrast remains secondary; learner change remains
+descriptive because no continuous inferential test was preregistered. This is
+an execution seam, not a design deviation.

@@ -89,6 +89,21 @@ describe('evaluation runner and CLI dependency injection', () => {
     assert.deepEqual(calls, [['loadDialogueLog', 'dialogue-injected']]);
   });
 
+  it('resolves scorer dialogue logs through the shared data-path rule', () => {
+    const { store } = fakeStore();
+    const runner = createEvaluationRunner({ evaluationStore: store });
+    const rootDir = path.join(os.tmpdir(), 'scoring-path-root');
+    const logsRoot = path.join(os.tmpdir(), 'scoring-path-logs');
+    const dependencies = createScoringCommandDependencies({
+      evaluationRunner: runner,
+      evaluationStore: store,
+      rootDir,
+      env: { EVAL_LOGS_DIR: logsRoot },
+    });
+
+    assert.equal(dependencies.LOGS_DIR, path.join(logsRoot, 'tutor-dialogues'));
+  });
+
   it('fails closed when either host dependency is absent', () => {
     assert.throws(() => createEvaluationRunner(), /evaluationStore dependency is required/u);
     assert.throws(() => createScoringCommandDependencies(), /dependencies are required/u);
