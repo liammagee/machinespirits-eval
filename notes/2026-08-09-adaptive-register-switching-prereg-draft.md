@@ -1,11 +1,13 @@
 # Does switching into an edged register at the right moment help? — Frozen Pre-Registration
 
-Status: **FROZEN — Stage 1 complete; Stage 2 separately authorized, launch pending.** Frozen plan SHA-256:
+Status: **FROZEN — Stage 1 complete; Stage 2 attempted, incomplete, and paused.** Frozen plan SHA-256:
 `da2723e47de143305e88a9a7b26688f6f58e4958e0b310ed4d7e147cd9734845`.
 The operator approved exactly that hash. The attended Stage 1 pilot and its
 fail-closed report completed without restart or widening. On 2026-08-10 the
-operator separately authorized the frozen 105-row Stage 2 batch; this changes
-authorization only, not the design, measures, power table, or plan hash.
+operator separately authorized the frozen 105-row Stage 2 batch; this changed
+authorization only, not the design, measures, power table, or plan hash. The
+attended attempt is recorded below and failed closed without restart or
+widening.
 
 ## Where this comes from
 
@@ -145,6 +147,28 @@ The deterministic timing map is now exposed as an opt-in tutor-stub overlay,
 Its normal trace records the active menu, timing choice, final applied style,
 and any later hard-guard override. This is an inspectable research seam, not a
 validated default policy.
+
+## Stage 2 attempt — 2026-08-10
+
+Run `eval-2026-08-09-53421919` launched from clean commit
+`cd9f0d675dc0d726606627cc5eb280a52cffc18d` against the unchanged frozen plan
+SHA. The attended serial generation attempt ran for 595m39s and finished with
+103 successful rows and two fixed-timeout failures out of the planned 105:
+
+- adaptive: 35/35 stored;
+- router-warm: 35/35 stored;
+- pinned-sarcastic: 33/35 stored;
+- both failures were pinned-sarcastic rote-parroting rows, one at
+  `learner_ego` and one at `tutor_id`, each after the fixed 300,000ms Codex CLI
+  timeout.
+
+The run was not restarted, resumed, replaced, or widened. No paid tutor,
+learner, register, or manner scoring was launched after the incomplete
+generation grid. The zero-call report at
+`exports/adaptive-register-switching/stage2/eval-2026-08-09-53421919.json`
+returned `INCOMPLETE`, withheld the decision, and left registered measures
+5–8 incomplete. Any partial classifier counts in that artifact are diagnostic
+only and are not a Stage 2 result. Stage 3 was not started. Work pauses here.
 
 ## Registered limits, stated now
 

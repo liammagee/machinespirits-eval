@@ -1,7 +1,7 @@
 ---
 id: adaptive-register-switching
 title: Does switching into an edged register at the right moment help?
-status: active
+status: blocked
 type: experiment
 priority: P3
 owner: codex
@@ -9,11 +9,13 @@ source: manual
 created: 2026-08-09
 updated: 2026-08-10
 branch: codex/adaptive-register-switching-stage2
-verification: Frozen plan, router seam, cells, runners, and fail-closed reports
-  validate; the approved 10-row Stage 1 pilot completed measures 1-4 with a
-  PASS_STAGE1 decision; the opt-in tutor-stub edge-timing overlay, trace,
-  settings, help, and analysis projections pass focused tests; Stage 2 is
-  separately authorized and its exact 105-row launch is pending a clean SHA.
+blocked_by: The attended Stage 2 grid ended at 103/105 after two fixed Codex
+  CLI timeouts in the pinned-sarcastic rote-parroting slice; the no-restart
+  rule forbids repairing those rows without a new operator decision.
+verification: Stage 1 is COMPLETE / PASS_STAGE1. The attended Stage 2 attempt
+  stored 103/105 rows, then failed closed after two fixed-timeout failures in
+  the pinned-sarcastic rote-parroting slice. No restart or paid scoring was
+  launched; measures 5-8 and the Stage 2 decision remain withheld.
 claim_status: exploratory
 depends_on:
   - register-mock-praise-probe
@@ -22,6 +24,7 @@ links:
     - notes/2026-08-09-adaptive-register-switching-prereg-draft.md
   exports:
     - exports/adaptive-register-switching/plan.json
+    - exports/adaptive-register-switching/stage2/eval-2026-08-09-53421919.json
   code:
     - services/tutorStubEdgeTimingPolicy.js
     - docs/tutor-stub-cli.md
@@ -29,6 +32,7 @@ links:
     - scripts/run-adaptive-register-switching-stage2.js
   runs:
     - eval-2026-08-09-b09e5a10
+    - eval-2026-08-09-53421919
 tags:
   - register
   - manner
@@ -88,3 +92,12 @@ judge; each edged register retains its own rubric and manner gate; the final
 report fails closed on any missing measure, keys its decision only to
 adaptive-versus-router-warm, and has no Stage-3 mode. No paid Stage-2 call was
 made while adding this gate.
+
+2026-08-10 Codex: attended Stage 2 generation from clean launch commit
+`cd9f0d675dc0d726606627cc5eb280a52cffc18d` completed 103/105 rows in 595m39s.
+Adaptive and router-warm stored 35/35 each; pinned-sarcastic stored 33/35. The
+final two pinned-sarcastic rote-parroting attempts hit the fixed 300,000ms
+Codex CLI timeout at `learner_ego` and `tutor_id`. Per the attended-run rule,
+neither row was restarted, replaced, or widened. No paid scoring followed.
+The zero-call report is `INCOMPLETE`, decision withheld, and registered
+measures 5-8 remain incomplete. Stage 3 was not started; work is paused.
