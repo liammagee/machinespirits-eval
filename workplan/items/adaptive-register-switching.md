@@ -1,7 +1,7 @@
 ---
 id: adaptive-register-switching
 title: Does switching into an edged register at the right moment help?
-status: blocked
+status: active
 type: experiment
 priority: P3
 owner: codex
@@ -9,13 +9,11 @@ source: manual
 created: 2026-08-09
 updated: 2026-08-10
 branch: codex/adaptive-register-switching-stage2
-blocked_by: The attended Stage 2 grid ended at 103/105 after two fixed Codex
-  CLI timeouts in the pinned-sarcastic rote-parroting slice; the no-restart
-  rule forbids repairing those rows without a new operator decision.
-verification: Stage 1 is COMPLETE / PASS_STAGE1. The attended Stage 2 attempt
-  stored 103/105 rows, then failed closed after two fixed-timeout failures in
-  the pinned-sarcastic rote-parroting slice. No restart or paid scoring was
-  launched; measures 5-8 and the Stage 2 decision remain withheld.
+verification: Stage 1 is COMPLETE / PASS_STAGE1. Stage 2 stored 103/105 rows
+  before two network-classified fixed timeouts. The operator has now
+  authorized one bounded serial recovery of exactly missing attempt indices 5
+  and 6 in the cell-197 rote-parroting slice; no scoring starts until a
+  read-only check proves 105/105.
 claim_status: exploratory
 depends_on:
   - register-mock-praise-probe
@@ -113,3 +111,14 @@ adaptive-versus-pinned description; the primary adaptive-versus-router-warm
 contrast and frozen plan hash are unchanged. The regenerated fail-closed
 artifact SHA-256 is
 `cd68ea71983d82b1c148f5804a8fff29a0c937c7bec989448d7de4c0cdafead5`.
+
+2026-08-10 Codex: the operator returned online, classified the two fixed CLI
+timeouts as network failures, and explicitly revoked the no-restart
+constraint. Recovery preflight found 103 successful rows, zero empty rows,
+zero paid scores, and exactly cell 197 × rote-parroting attempt indices 5 and
+6 missing. Stored tutor and learner overrides remain `codex.gpt-5.5`.
+Generation-critical paths are unchanged from launch commit
+`cd9f0d675dc0d726606627cc5eb280a52cffc18d`. Authorized one attended serial
+attempt-aware resume of those two jobs only, without `--force`, deletion, a
+new run, model change, or widened grid. Scoring remains gated on a read-only
+105/105 verification; Stage 3 remains unavailable.

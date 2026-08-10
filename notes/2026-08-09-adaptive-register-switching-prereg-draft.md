@@ -1,6 +1,6 @@
 # Does switching into an edged register at the right moment help? — Frozen Pre-Registration
 
-Status: **FROZEN — Stage 1 complete; Stage 2 attempted, incomplete, and paused.** Frozen plan SHA-256:
+Status: **FROZEN — Stage 1 complete; bounded Stage 2 network recovery authorized.** Frozen plan SHA-256:
 `da2723e47de143305e88a9a7b26688f6f58e4958e0b310ed4d7e147cd9734845`.
 The operator approved exactly that hash. The attended Stage 1 pilot and its
 fail-closed report completed without restart or widening. On 2026-08-10 the
@@ -185,6 +185,33 @@ No dialogue, score, registered measure, primary contrast, or frozen plan hash
 changed. This correction narrows the secondary adaptive-versus-pinned
 description; the sole decision-bearing adaptive-versus-router-warm contrast is
 unaffected.
+
+## Stage 2 network-recovery amendment — 2026-08-10
+
+After returning online, the operator classified the two fixed CLI timeouts as
+network failures and explicitly revoked the no-restart constraint. This is an
+operational amendment only; it does not change the frozen design, plan hash,
+arms, scenarios, repetitions, models, measures, gates, readers, tests, or
+Stage-3 boundary.
+
+The authorized recovery is one attended, serial invocation of the repository's
+attempt-aware resume path against the existing run
+`eval-2026-08-09-53421919`. Its preflight must prove all of the following:
+
+- exactly 103 successful rows and zero empty rows are stored;
+- adaptive and router-warm are 35/35, while cell 197 is 33/35;
+- the only missing jobs are cell 197 × rote-parroting attempt indices 5 and 6;
+- no tutor, learner, or register score has been written;
+- stored overrides remain `codex.gpt-5.5` for tutor and learner;
+- generation-critical code is unchanged from original launch commit
+  `cd9f0d675dc0d726606627cc5eb280a52cffc18d`.
+
+The resume may add only those two already-planned rows, at parallelism 1 and
+with rubric scoring still skipped. It may not use `--force`, delete a row,
+create a new run, add a repetition, or alter a model. If either recovery job
+fails, the attended process reports the failure and stops without another
+automatic retry. Frozen scoring begins only after a read-only check proves the
+grid is 105/105. Stage 3 remains unavailable.
 
 ## Registered limits, stated now
 
