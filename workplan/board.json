@@ -1,26 +1,71 @@
 {
-  "generated": "2026-08-09T22:14:01.312Z",
+  "generated": "2026-08-10T00:01:23.229Z",
   "counts": {
-    "total": 495,
+    "total": 496,
     "byStatus": {
-      "done": 467,
+      "done": 468,
       "blocked": 6,
       "dropped": 10,
-      "review": 3,
+      "review": 2,
       "active": 5,
-      "archived": 4
+      "archived": 4,
+      "triaged": 1
     },
     "byType": {
       "research": 75,
       "experiment": 82,
       "infra": 105,
-      "maintenance": 211,
+      "maintenance": 212,
       "content": 4,
       "ops": 10,
       "paper": 8
     }
   },
   "items": [
+    {
+      "id": "refactor-tutor-stub-auto-eval-visualization-renderer",
+      "title": "Extract tutor-stub auto-eval visualization renderer",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-10",
+      "updated": "2026-08-10",
+      "verification": "Empty and populated animated-visualization report sections remain byte-identical and syntax-valid; saved report HTML, replay behavior, accessibility, focused reporting, complete hermetic root/core, risk coverage, lint, formatting, manifest, workplan-source, diff, and zero-cycle gates pass without model calls or production artifact writes.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-auto-eval-report-assets"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
+          "docs/next-steps/2026-08-10-codebase-refactoring-post-auto-eval-assets-reconciliation.md"
+        ],
+        "code": [
+          "scripts/run-tutor-stub-auto-eval.js",
+          "services/tutorStubAutoEvalVisualizationReport.js",
+          "tests/tutorStubAutoEvalVisualizationReport.test.js",
+          "tests/tutorStubReportingUx.test.js",
+          "tests/tutorStubAutoEvalEvidence.test.js",
+          "config/coverage-risk-floors.json",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-auto-eval-report-assets"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "auto-eval",
+        "reporting",
+        "visualization",
+        "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
     {
       "id": "codebase-refactoring-program",
       "title": "Execute the evidence-led codebase refactoring programme",
@@ -31,7 +76,7 @@
       "source": "review",
       "created": "2026-07-24",
       "updated": "2026-08-10",
-      "branch": "codex/refactor-post-tutor-prompt-reconciliation",
+      "branch": "codex/refactor-post-auto-eval-assets-reconciliation",
       "verification": "Every accepted refactoring slice has a linked child card and parity gate; root plus in-housed tutor-core tests run from one clean-install contract; required suites cannot silently skip; import cycles fall from two to zero; hotspot, coverage, registry, duplication, and package metrics ratchet without trace, schema, route, CLI, or empirical-output drift; every deletion passes its consumer, database, paper, and artifact audit.",
       "claim_status": "planned",
       "depends_on": [],
@@ -41,7 +86,8 @@
           "docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md",
           "docs/next-steps/2026-08-09-codebase-refactoring-post-run-coordinator-reconciliation.md",
           "docs/next-steps/2026-08-10-codebase-refactoring-post-strategy-ledger-reconciliation.md",
-          "docs/next-steps/2026-08-10-codebase-refactoring-post-tutor-prompt-reconciliation.md"
+          "docs/next-steps/2026-08-10-codebase-refactoring-post-tutor-prompt-reconciliation.md",
+          "docs/next-steps/2026-08-10-codebase-refactoring-post-auto-eval-assets-reconciliation.md"
         ],
         "items": [
           "refactor-required-run-manifest",
@@ -172,7 +218,8 @@
           "refactor-dramatic-derivation-release-arbitration",
           "refactor-dramatic-derivation-strategy-ledger-prompt",
           "refactor-dramatic-derivation-tutor-prompt-construction",
-          "refactor-tutor-stub-auto-eval-report-assets"
+          "refactor-tutor-stub-auto-eval-report-assets",
+          "refactor-tutor-stub-auto-eval-visualization-renderer"
         ]
       },
       "tags": [
@@ -505,50 +552,6 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
-    },
-    {
-      "id": "refactor-tutor-stub-auto-eval-report-assets",
-      "title": "Extract tutor-stub auto-eval report assets",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-08-10",
-      "updated": "2026-08-10",
-      "branch": "codex/refactor-tutor-stub-auto-eval-report-assets",
-      "verification": "Emitted tutor-stub report CSS and index-client JavaScript remain byte-identical and syntax-valid; 3/3 direct asset assertions, 96/96 focused reporting tests, 8,366/8,366 hermetic root tests, 137/137 tutor-core tests, all thirteen risk groups, lint, formatting, manifest, workplan-source, diff, and zero-cycle gates pass without model calls or production artifact writes.",
-      "claim_status": "planned",
-      "depends_on": [
-        "refactor-dramatic-derivation-tutor-prompt-construction"
-      ],
-      "links": {
-        "notes": [
-          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
-          "docs/next-steps/2026-08-10-codebase-refactoring-post-tutor-prompt-reconciliation.md"
-        ],
-        "code": [
-          "scripts/run-tutor-stub-auto-eval.js",
-          "services/tutorStubAutoEvalReportAssets.js",
-          "tests/tutorStubAutoEvalReportAssets.test.js",
-          "tests/tutorStubReportingUx.test.js",
-          "tests/tutorStubAutoEvalEvidence.test.js",
-          "config/coverage-risk-floors.json",
-          "config/hermetic-test-manifest.json"
-        ],
-        "items": [
-          "codebase-refactoring-program",
-          "refactor-dramatic-derivation-tutor-prompt-construction"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "tutor-stub",
-        "auto-eval",
-        "reporting",
-        "presentation"
-      ],
-      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
@@ -4810,6 +4813,54 @@
         "analysis",
         "vocabulary",
         "register-policy"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-auto-eval-report-assets",
+      "title": "Extract tutor-stub auto-eval report assets",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-10",
+      "updated": "2026-08-10",
+      "branch": "codex/refactor-tutor-stub-auto-eval-report-assets",
+      "verification": "Emitted tutor-stub report CSS and index-client JavaScript remain byte-identical and syntax-valid; 3/3 direct asset assertions, 96/96 focused reporting tests, 8,366/8,366 hermetic root tests, 137/137 tutor-core tests, all thirteen risk groups, lint, formatting, manifest, workplan-source, diff, and zero-cycle gates pass without model calls or production artifact writes.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-dramatic-derivation-tutor-prompt-construction"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/631"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
+          "docs/next-steps/2026-08-10-codebase-refactoring-post-tutor-prompt-reconciliation.md",
+          "docs/next-steps/2026-08-10-codebase-refactoring-post-auto-eval-assets-reconciliation.md"
+        ],
+        "code": [
+          "scripts/run-tutor-stub-auto-eval.js",
+          "services/tutorStubAutoEvalReportAssets.js",
+          "tests/tutorStubAutoEvalReportAssets.test.js",
+          "tests/tutorStubReportingUx.test.js",
+          "tests/tutorStubAutoEvalEvidence.test.js",
+          "config/coverage-risk-floors.json",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-dramatic-derivation-tutor-prompt-construction"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "auto-eval",
+        "reporting",
+        "presentation"
       ],
       "milestone": "evaluation-infrastructure"
     },
