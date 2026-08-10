@@ -1,13 +1,13 @@
 # Does switching into an edged register at the right moment help? — Frozen Pre-Registration
 
-Status: **FROZEN — Stage 1 complete; bounded Stage 2 network recovery authorized.** Frozen plan SHA-256:
+Status: **FROZEN — Stage 2 complete; no primary evidence; stopped before Stage 3.** Frozen plan SHA-256:
 `da2723e47de143305e88a9a7b26688f6f58e4958e0b310ed4d7e147cd9734845`.
 The operator approved exactly that hash. The attended Stage 1 pilot and its
 fail-closed report completed without restart or widening. On 2026-08-10 the
 operator separately authorized the frozen 105-row Stage 2 batch; this changed
 authorization only, not the design, measures, power table, or plan hash. The
-attended attempt is recorded below and failed closed without restart or
-widening.
+attended run, bounded network recovery, scoring-path correction, and completed
+Stage 2 result are recorded below. Stage 3 remains unauthorized.
 
 ## Where this comes from
 
@@ -243,6 +243,49 @@ and Stage 3 remains unavailable. Restarting the paid learner scorer requires
 separate operator approval of the corrected clean-commit SHA; it must use the
 normal no-`--force`, serial command and score only the still-null learner
 measures on the existing 105 rows.
+
+## Stage 2 result — 2026-08-10
+
+The operator approved corrected clean commit
+`e8c6e401c93c4fe2e33243de13480c0f59c6fab0` for the remaining frozen scoring.
+The attended continuation made no restart, deletion, new run, model change, or
+grid change. Learner scoring completed 105/105; the register scorers completed
+15/15 ironic turns and 86/86 sarcastic turns under their respective gates; and
+the unchanged `manner-presence/1.0` reader completed 101/101 edged turns. Tutor
+and learner rubrics used `claude-code/claude-sonnet-5`. All 945 tutor-seat
+calls retained the frozen `codex/gpt-5.5` provenance. No nemotron or kimi model
+was used.
+
+The zero-call report for run `eval-2026-08-09-53421919` returned
+`COMPLETE / NO_PRIMARY_EVIDENCE`, with 105/105 rows, all registered measures
+1–8 present, no report errors, and `stage3Authorized: false`.
+
+| Registered result | Adaptive | Router-warm | Pinned-sarcastic | Contrast |
+|---|---:|---:|---:|---|
+| Positive local conversion | 29/35 (.829) | 33/35 (.943) | 30/35 (.857) | primary adaptive − warm = −.114; Fisher two-sided p = .2595 |
+| Timing-vs-edge conversion | 29/35 (.829) | — | 30/35 (.857) | secondary adaptive − pinned = −.029; Fisher two-sided p = 1.000 |
+| Learner-rubric change | 20.893 | 20.357 | 20.107 | descriptive only; no preregistered continuous test |
+| Tutor v2.2 mean | 75.274 | 74.083 | 72.893 | descriptive cost measure |
+
+The primary does not support the registered claim that adaptive switching
+improves conversion over the router-warm control. It does not establish harm:
+the observed difference is imprecise and non-significant. All three arms
+converted at high rates, including a .943 router-warm rate rather than the .50
+design anchor used in the frozen power table. The policy therefore remains an
+inspectable, opt-in research seam in tutor-stub and is not promoted to a
+validated default.
+
+Fidelity is reported within register only. Ironic turns were 15/15
+cue-compliant, 12/15 manner-present, with register-rubric mean 91.167 under
+`ironic@stance-gate/2.0`. Sarcastic turns were 86/86 cue-compliant, 72/86
+manner-present, with register-rubric mean 82.564 under
+`sarcastic@stance-gate/2.0`. These cue counts are not differenced across
+registers.
+
+Canonical zero-call artifact:
+`exports/adaptive-register-switching/stage2/eval-2026-08-09-53421919.json`,
+SHA-256 `86294c623ffbb71eaed217c86e2205da19101655f6a0e03f4fceb24b2a87af56`.
+Stage 2 stops here. Stage 3 was not started.
 
 ## Registered limits, stated now
 

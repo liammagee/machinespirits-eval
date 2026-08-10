@@ -1,7 +1,7 @@
 ---
 id: adaptive-register-switching
 title: Does switching into an edged register at the right moment help?
-status: active
+status: done
 type: experiment
 priority: P3
 owner: codex
@@ -9,13 +9,12 @@ source: manual
 created: 2026-08-09
 updated: 2026-08-10
 branch: codex/adaptive-register-switching-stage2
-verification: Stage 1 is COMPLETE / PASS_STAGE1. The authorized bounded
-  recovery restored Stage 2 to 105/105 rows and tutor v2.2 scoring completed
-  105/105. Learner scoring made zero model calls and failed closed because the
-  CLI looked in a worktree-local log path; all 105 canonical logs are intact.
-  The shared-resolver fix is tested, but paid learner scoring awaits explicit
-  approval of the corrected clean-commit SHA. Register and manner scoring have
-  not started.
+verification: Stage 2 run eval-2026-08-09-53421919 is COMPLETE at 105/105.
+  Registered measures 1-8 are present with no report errors. The primary
+  adaptive-vs-router-warm contrast found no evidence (29/35 vs 33/35, Fisher
+  p=.2595); report SHA-256 is
+  86294c623ffbb71eaed217c86e2205da19101655f6a0e03f4fceb24b2a87af56.
+  Stage 3 is unauthorized and was not started.
 claim_status: exploratory
 depends_on:
   - register-mock-praise-probe
@@ -136,3 +135,18 @@ data home. Corrected the CLI dependency and standalone scorer to use the shared
 failure rule, register and manner scoring did not start. Stage 2 remains
 incomplete and paid learner scoring is paused pending explicit approval of the
 corrected clean-commit SHA; Stage 3 remains unavailable.
+
+2026-08-10 Codex: the operator approved clean commit
+`e8c6e401c93c4fe2e33243de13480c0f59c6fab0` for the remaining frozen scoring.
+Learner scoring completed 105/105 under rubric v2.2; register scoring completed
+15/15 ironic and 86/86 sarcastic turns under their own gates; and the unchanged
+`manner-presence/1.0` reader completed 101/101 edged turns. The fail-closed
+report returned `COMPLETE / NO_PRIMARY_EVIDENCE` with no errors. Conversion was
+29/35 adaptive, 33/35 router-warm, and 30/35 pinned-sarcastic. The sole
+decision-bearing adaptive-minus-router-warm difference was −.1143 (two-sided
+Fisher p=.2595); adaptive-minus-pinned was −.0286 (p=1.000, secondary).
+Learner change and tutor v2.2 means remain descriptive. The opt-in tutor-stub
+overlay remains visible for research but is not promoted to a validated
+default. Artifact SHA-256:
+`86294c623ffbb71eaed217c86e2205da19101655f6a0e03f4fceb24b2a87af56`.
+Stage 2 is complete; Stage 3 is unauthorized and was not started.
