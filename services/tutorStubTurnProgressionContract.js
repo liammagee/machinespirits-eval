@@ -1137,7 +1137,7 @@ export function deterministicTutorStubTurnProgressionHandoff({
         tutorOutcome: { tutor_text: priorPublicText },
       });
       if (priorDelivery?.status === 'deferred') {
-        return 'That named public-record release is the condition for answering it.';
+        return 'That named public-record release is next.';
       }
       if (priorDelivery?.status === 'satisfied') {
         return 'That bounded answer is the public result I will carry forward.';

@@ -827,3 +827,52 @@ a clean committed checkpoint, a new dry request, and explicit approval of its
 new digest before a fourth run. Annotation begins only after 24/24 valid
 children, 192/192 analysis calls, exact structured parity, and zero delivery-
 application mismatch.
+
+## Progress Update — 10 August 2026, fourth authorized run and terminal-delivery repair
+
+The fourth authorized matrix ran from clean detached commit
+`f0d67e02bea393cf1b28e74bef4036ffdc88c5f3` under approval digest
+`3eaac28e565b5bdcd5db48d1d2a078fffc7395051e52091322e69b3aa8d2dea3`.
+For the first time, all 24 children supplied valid sealed eight-turn evidence:
+192/192 combined learner-analysis calls completed without prompt/audit failure,
+and structured live/replay parity was exact for 192/192 decisions with zero
+mismatches. The study nevertheless stopped as `invalid_delivery_application`:
+six decisions had eight delivery issues. Its generated packet is burned and
+must not be annotated for passage.
+
+Five of the six mismatched decisions were audit-boundary false negatives. Two
+licensed Larkspur closures said `incident log can now close` or `incident
+record is now closed`, outside the closure recognizer's previous grammar. Two
+Foxtrot obligation recoveries delivered the exact public-only deferral but the
+family recognizer did not admit that wording; their three-sentence host surface
+also exceeded the plain-stance average by a fraction. One Foxtrot next-step
+turn included a long authored source quotation in the development segment, so
+the fixed source was incorrectly charged against the host action's 110-word
+budget.
+
+The remaining decision was a real lifecycle inconsistency. A fast Foxtrot
+learner reached strict grounded-and-asserted closure after all licensed
+evidence was exhausted, while one historical obligation remained `deferred`
+and nonblocking. The completion projector nevertheless used the ledger's
+inclusive `open_count`, vetoed the selector's `close_inquiry`, and required
+`stage_next_step`; the delivered tutor correctly closed. The correction now
+counts only actionable `open`, `overdue`, or `reactivated` obligation rows for
+closure while retaining deferred rows for reminder/release bookkeeping.
+
+Delivery audits now measure action-family visibility on the action-owned
+uptake or development segment and apply the existing authored-source exclusion
+before computing that segment's metrics. The recognizers admit the two saved
+closure forms and the exact accountable-deferral construction. The repeated
+deterministic deferral handoff is shortened to a declarative next-release line,
+while the first sentence continues to name the concrete availability
+condition.
+
+Exact regressions cover the six saved public surfaces and the deferred-ledger
+terminal transition. No-model verification passes 164/164 mechanism tests,
+35/35 derivation worlds, 22/22 prompt/world checks, and the full hermetic suite
+of 8,435/8,435 root plus 137/137 tutor-core tests. These corrections do not
+retroactively validate the fourth run or establish mechanism decision quality.
+A fifth execution requires a new clean committed checkpoint, dry rehearsal,
+and explicit approval of its new digest. Only a fresh 24/24 run with exact
+192/192 parity and zero delivery mismatch may release its 96 observe decisions
+to the two independent annotators and frozen scorer.

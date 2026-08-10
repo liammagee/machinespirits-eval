@@ -257,3 +257,31 @@ host sentence before that source. The terminal fallback now restores this
 ordering after every semantic composition path, and the live audit checks the
 actual public boundary rather than trusting an inferred uptake segment. These
 are prospective mechanism corrections; the failed execution remains burned.
+
+### 7.8 Deferred history, terminal entitlement, and owned delivery surfaces
+
+The fourth mechanism execution separated ledger persistence from closure
+entitlement more sharply. `open_count` intentionally includes `deferred`
+obligations because they remain available for a matching release or explicit
+reminder. That inclusive bookkeeping count is not a terminal blocker count.
+Inquiry completion now derives its blocker only from actionable rows in state
+`open`, `overdue`, or `reactivated`; a retained `deferred` row therefore does
+not veto otherwise strict grounded-and-asserted closure. Historical snapshots
+without obligation rows retain the conservative legacy fallback.
+
+The same execution exposed an ownership error in semantic auditing. The
+action-family axis owns uptake for accountable answering and the development
+segment for next-step/closure work; it does not own a fixed authored source
+quoted inside that segment. Visibility now uses the owned segment and computes
+fresh metrics after applying the same authored-host projection already used by
+stance and character audits. This prevents fixed source length or wording from
+defeating the adaptive host, while also preventing source language from
+impersonating the selected action.
+
+Finite recognizers remain intentional, but their prospective vocabulary now
+includes the observed target-specific public-only deferral and licensed
+`incident log can now close` / `incident record is now closed` forms. The
+deterministic deferral continuation is shorter, making the plain realization
+visible without removing the first sentence's named availability condition.
+These changes are covered by exact saved public surfaces. The fourth run itself
+remains delivery-invalid and cannot be rescored into evidence.

@@ -710,6 +710,23 @@ test('inquiry completion projects strict grounded closure and is blocked by a pu
   assert.equal(complete.transition.recommended_action_family, 'close_inquiry');
 });
 
+test('an accountably deferred obligation remains recorded without blocking grounded closure', () => {
+  const result = assessAdaptiveWarrantInquiryCompletion({
+    dagModel: { assessment: { finalSecretEntailed: true, assertedSecret: true } },
+    publicObligation: {
+      open_count: 1,
+      blocking_obligation: null,
+      obligations: [{ id: 'public-obligation-001', status: 'deferred' }],
+    },
+    evidenceAvailability: { known: true, release_scope_exhausted: true },
+  });
+
+  assert.equal(result.status, 'complete');
+  assert.equal(result.checks.open_public_obligation_count, 0);
+  assert.deepEqual(result.blockers, []);
+  assert.equal(result.transition.recommended_action_family, 'close_inquiry');
+});
+
 test('exhaustion or a fixed horizon alone never licenses whole-inquiry closure', () => {
   const result = assessAdaptiveWarrantInquiryCompletion({
     dagModel: { assessment: { finalSecretEntailed: false, assertedSecret: false } },

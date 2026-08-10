@@ -302,6 +302,22 @@ describe('tutor-stub dialogue closure', () => {
     assert.equal(open.verdict.explicitClosure, false);
   });
 
+  it('recognizes the two incident-record closure surfaces saved by the mechanism study', () => {
+    const frame = buildTutorStubDialogueClosureFrame({
+      lifecycle: createTutorStubDialogueClosureLifecycle({ enabled: true }),
+      learnerDagModel: { assessment: { bottleneck: 'grounded_asserted_secret' } },
+    });
+
+    for (const text of [
+      'The incident log can now close: the public finding is complete.',
+      'The incident record is now closed: the evidence establishes the finding.',
+    ]) {
+      const audit = auditTutorStubDialogueClosureResponse({ frame, text });
+      assert.equal(audit.ok, true, text);
+      assert.equal(audit.closesDialogue, true, text);
+    }
+  });
+
   it('realizes a closure-compatible selected performance without reopening the case', () => {
     const response = deterministicTutorStubClosureResponse(
       { phase: 'grounded_closing_invitation', allowCheckIn: false },

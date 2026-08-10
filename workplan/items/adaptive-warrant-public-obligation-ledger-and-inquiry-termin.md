@@ -163,3 +163,23 @@ tests plus 137/137 tutor-core tests; workplan checks pass 490/490 items. The ite
 remains active pending a new pushed clean checkpoint and dry authorization
 request, a 24/24 valid zero-delivery-mismatch rerun, two independent annotations
 of its fresh 96-case packet, and passage of the unchanged scorer.
+
+The fourth authorized execution from clean commit
+`f0d67e02bea393cf1b28e74bef4036ffdc88c5f3` reached the complete execution
+boundary for the first time: 24/24 valid sealed children, 192/192 learner-
+analysis calls, and 192/192 exact structured live/replay comparisons. It still
+failed delivery application on six decisions with eight issues and is burned.
+Five decisions exposed bounded visibility/metric misses for two closure forms,
+two exact accountable deferrals, and one next-step turn containing a fixed
+authored source. One exposed a real completion defect: inclusive ledger
+`open_count` let a nonblocking `deferred` row veto strict terminal closure.
+
+The prospective correction counts only actionable obligation rows for closure,
+audits the action-owned host segment with source-excluded metrics, admits the
+saved closure and deferral forms, and shortens the redundant deferral handoff.
+Exact regressions cover all six public surfaces. The preflight passes 164/164
+mechanism tests, 35/35 worlds, and 22/22 prompt/world checks; the full hermetic
+suite passes 8,435/8,435 root plus 137/137 tutor-core tests. The item remains
+active pending a new pushed clean checkpoint and digest, a fresh fifth run with
+zero delivery mismatch, two independent annotations of its new 96-case packet,
+and passage of the unchanged scorer.

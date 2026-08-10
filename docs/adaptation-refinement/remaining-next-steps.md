@@ -579,3 +579,46 @@ analysis calls are present, structured parity is exact, and delivery mismatch
 is zero. Then—and only then—freeze the 96 observe cases, obtain two fresh
 independent annotations, and run the existing consensus/precision/recall and
 mechanism scorer. Any failure burns that packet and stops before outcome work.
+
+## Current restart boundary after the fourth authorized run
+
+The clean `f0d67e02bea393cf1b28e74bef4036ffdc88c5f3` execution under digest
+`3eaac28e565b5bdcd5db48d1d2a078fffc7395051e52091322e69b3aa8d2dea3`
+reached 24/24 valid sealed children, 192/192 learner-analysis calls, and 192/192
+exact structured live/replay comparisons. It still stopped before annotation:
+six delivery decisions had eight issues and the study status was
+`invalid_delivery_application`. This fourth packet is burned.
+
+Five decision failures were bounded audit misses: two incident-record closure
+phrases, two exact accountable deferrals whose host sentence average was just
+over the plain threshold, and one next-step action whose owned development was
+lengthened by a fixed authored clue quotation. One failure was architectural:
+a historical `deferred` obligation was correctly nonblocking in the ledger but
+was incorrectly included in the inquiry-completion open count, causing a
+grounded terminal close to be vetoed as `stage_next_step`.
+
+The next no-model sequence is:
+
+1. count only `open`, `overdue`, and `reactivated` obligation rows as closure
+   blockers, retaining `deferred` for event-based bookkeeping;
+2. evaluate family realization on its owned response segment and exclude fixed
+   authored-source speech before measuring that segment;
+3. recognize the exact public-only deferral and the two licensed closure
+   surfaces, and shorten the redundant deterministic handoff;
+4. run exact saved-surface, lifecycle, study preflight, derivation,
+   prompt/world, workplan, and full hermetic checks;
+5. commit and push the clean correction, generate a fresh dry authorization
+   request from that exact SHA, and stop for the new digest's approval; and
+6. run a fresh fifth matrix only after that approval.
+
+Steps 1–4 are complete. The study preflight passes 164/164 mechanism tests,
+35/35 derivation worlds, and 22/22 prompt/world checks. The full hermetic suite
+passes 8,435/8,435 root tests and 137/137 tutor-core tests. Step 5 is the current
+boundary.
+
+After the fifth run, proceed to annotation only if all 24 children are valid,
+all 192 analysis calls are present, structured parity remains exact, and
+delivery mismatch is zero. Freeze the new 96 observe cases, obtain two fresh
+independent annotations, and run the unchanged consensus/precision/recall and
+mechanism scorer. Any failed support or mechanism gate burns that corpus and
+continues to prohibit outcome comparison.

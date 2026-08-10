@@ -1171,11 +1171,15 @@ function actionVisible(actionFamily, text, metrics, unresolvedTerms) {
       /\b(?:because|before|if|unless|until|would count|could show|test|check|wrong|revise)\b|\bnot\b[^.!?]{0,28}\b(?:convict|proof|prove|verdict)\b/iu.test(
         text,
       );
+    const accountableDeferral =
+      /\b(?:answer|comparison|entry|match|reading|record|result|test)\b[^.!?]{0,70}\bnot (?:available|public|recorded|shown)(?: yet)?\b[^.!?]{0,25}\b(?:once|until|when)\b[^.!?]{0,80}\b(?:answer|available|public|record|release)\b/iu.test(
+        text,
+      );
     const directCorrectiveAnswer =
       /\b(?:establishes?|identif(?:y|ies)|means|puts?|says?|shows?|supports?|ties?)\b[^.!?]{0,110}\b(?:but\s+)?not\b|\bnot\b[^.!?]{0,90}\b(?:establish|identify|mean|place|prove|show|support|tie)\w*\b/iu.test(
         text,
       );
-    return explicitAccount || directCorrectiveAnswer;
+    return explicitAccount || accountableDeferral || directCorrectiveAnswer;
   }
   if (actionFamily === 'compress_sayback') return metrics.wordCount <= 85 && metrics.questionCount > 0;
   if (actionFamily === 'reanchor_lived_stake') return metrics.secondPerson && metrics.concreteSceneTermCount > 0;
@@ -2246,6 +2250,14 @@ export function auditTutorStubResponseConfiguration({
     performanceEntry: performanceAuditContext?.auditedSpanTexts?.[0] || '',
     performanceResponse: performanceAuditContext?.auditedSpanTexts?.[1] || '',
   });
+  const actionSegment =
+    ['answer_accountably', 'receive_vulnerability', 'challenge_resistance', 'repair_explanation'].includes(
+      configuration.action_family,
+    ) && composition?.uptake
+      ? composition.uptake
+      : composition?.development || text;
+  const actionText = tutorStubActorialHostSurface(configuration, actionSegment);
+  const actionMetrics = realizationMetrics(actionText, world);
   const axes = {
     engagement_stance: {
       selected: configuration.engagement_stance,
@@ -2263,16 +2275,7 @@ export function auditTutorStubResponseConfiguration({
     },
     action_family: {
       selected: configuration.action_family,
-      visible: actionVisible(
-        configuration.action_family,
-        ['answer_accountably', 'receive_vulnerability', 'challenge_resistance', 'repair_explanation'].includes(
-          configuration.action_family,
-        ) && composition?.uptake
-          ? composition.uptake
-          : composition?.development || text,
-        metrics,
-        unresolvedTerms,
-      ),
+      visible: actionVisible(configuration.action_family, actionText, actionMetrics, unresolvedTerms),
       evaluated_segment:
         ['answer_accountably', 'receive_vulnerability', 'challenge_resistance', 'repair_explanation'].includes(
           configuration.action_family,

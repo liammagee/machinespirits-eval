@@ -580,3 +580,42 @@ still requires a new clean commit, dry request, and exact approval. Only 24/24
 valid children, zero delivery-application mismatch, and exact structured
 parity may release a fresh 96-case observe packet to the two independent
 annotators and frozen scorer.
+
+## Fourth authorized mechanism execution — delivery-invalid and burned (10 August 2026)
+
+The fourth matrix ran from clean detached commit
+`f0d67e02bea393cf1b28e74bef4036ffdc88c5f3` under exact authorization digest
+`3eaac28e565b5bdcd5db48d1d2a078fffc7395051e52091322e69b3aa8d2dea3`.
+All 24 dialogues supplied valid sealed evidence, all 192 learner-analysis calls
+completed, and all 192 structured live/replay comparisons agreed. This closes
+the prior child-evidence and reducer-parity failure classes. The execution
+still failed the preregistered delivery requirement: six decisions produced
+eight issues, so status was `invalid_delivery_application`. The packet is
+burned and no annotation or outcome comparison is licensed from it.
+
+Five decisions exposed measurement boundaries rather than missing delivery:
+two licensed closure variants were outside the finite closure grammar, two
+exact public-only deferrals were outside accountable-answer recognition and
+slightly exceeded the plain host sentence budget, and one valid next-step
+development was length-penalized by its fixed authored-source quotation. The
+sixth exposed a mechanism defect: inquiry completion treated a retained
+nonblocking `deferred` obligation as open debt and vetoed a strict grounded
+closure after the release scope was exhausted.
+
+The prospective correction counts only actionable obligation states (`open`,
+`overdue`, `reactivated`) as completion blockers. It measures action-family
+realization on the action-owned segment, excluding a separately authored
+source before computing segment metrics; admits the exact accountable deferral
+and saved incident-record closure forms; and shortens the redundant deferral
+handoff without weakening its named availability condition. Exact saved-
+surface and lifecycle regressions pass. The launch preflight now passes
+164/164 mechanism tests, 35/35 worlds, and 22/22 prompt/world checks; the full
+hermetic suite passes 8,435/8,435 root and 137/137 tutor-core tests.
+
+The same stop rule remains unchanged. A fifth execution needs a new clean
+commit, dry request, and exact approval. Its blind corpus becomes eligible for
+two independent annotations only after 24 valid children, 192 learner-analysis
+calls, exact non-zero observe/active structured parity, and zero delivery-
+application mismatch. Those annotations must then pass the frozen support,
+decision, lifecycle, completion, closure-safety, and successor gates before
+any outcome study begins.

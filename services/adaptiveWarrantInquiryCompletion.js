@@ -106,7 +106,17 @@ export function assessAdaptiveWarrantInquiryCompletion({
 } = {}) {
   const turn = classificationTurn(classification);
   const blockingObligation = publicObligation?.blocking_obligation || null;
-  const openObligationCount = Math.max(Number(publicObligation?.open_count || 0), blockingObligation ? 1 : 0);
+  const obligationRows = Array.isArray(publicObligation?.obligations) ? publicObligation.obligations : null;
+  // A valid accountable deferral remains unresolved for later matching
+  // release/reminder bookkeeping, but it is deliberately nonblocking. Closure
+  // must therefore count only currently actionable tutor debt, not every row
+  // retained by the persistent ledger.
+  const actionableObligationCount = obligationRows
+    ? obligationRows.filter((row) => ['open', 'overdue', 'reactivated'].includes(row?.status)).length
+    : 0;
+  const openObligationCount = obligationRows
+    ? Math.max(actionableObligationCount, blockingObligation ? 1 : 0)
+    : Math.max(Number(publicObligation?.open_count || 0), blockingObligation ? 1 : 0);
   const strictComplete = strictGroundedAsserted(dagModel, closureFrame);
   const entailedUnasserted = answerEntailedUnasserted(dagModel);
   const scope = boundedScopeContract(boundedScope);

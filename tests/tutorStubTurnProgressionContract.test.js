@@ -332,6 +332,7 @@ test('deterministic obligation handoff does not repeat a deferral already delive
   assert.match(uptake, /not public yet/iu);
   assert.doesNotMatch(handoff, /not public yet/iu);
   assert.match(handoff, /named public-record release/iu);
+  assert.match(handoff, /is next/iu);
   assert.equal(audit.ok, true, JSON.stringify(audit.issues));
   assert.equal(audit.public_obligation.outcome, 'named_unavailability_with_concrete_next_step');
 });
