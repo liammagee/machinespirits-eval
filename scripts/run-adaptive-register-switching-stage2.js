@@ -349,6 +349,8 @@ export function stage2Dialogues(runId, options = {}) {
           phase,
           selectedRegister,
           routerSelectedRegister,
+          assignedRegisterArm: canonicalRegister(state.assigned_register_arm),
+          registerAssignmentSource: state.register_assignment_source || null,
           routerMenu: Array.isArray(state.router_register_menu) ? [...state.router_register_menu] : null,
           learnerMessage,
           tutorMessage,

@@ -136,6 +136,7 @@ export function summarizeAdaptiveRegisterSwitchingStage2(dialogues, { stage1Gate
     if (row.dialogueLogMissing) errors.push(`${label}: dialogue log missing`);
     const turns = Array.isArray(row.turns) ? row.turns : [];
     if (!turns.length) errors.push(`${label}: no router turns found`);
+    let pinnedAssignmentTurns = 0;
     for (const turn of turns) {
       const turnLabel = `${label}:turn_${turn.turn}`;
       const expectedMenu = arm === 'adaptive' ? expectedAdaptiveMenu : expectedWarmMenu;
@@ -147,10 +148,30 @@ export function summarizeAdaptiveRegisterSwitchingStage2(dialogues, { stage1Gate
       if (arm === 'routerWarm' && GRID.edgedRegisters.includes(turn.selectedRegister)) {
         errors.push(`${turnLabel}: router-warm selected edged register ${turn.selectedRegister}`);
       }
-      if (arm === 'pinnedSarcastic' && turn.selectedRegister !== GRID.arms.pinnedSarcastic.registerPin) {
-        errors.push(`${turnLabel}: pinned-sarcastic selected ${turn.selectedRegister || 'nothing'}`);
-      }
-      if (arm !== 'pinnedSarcastic' && !turn.routerMenu?.includes(turn.selectedRegister)) {
+      if (arm === 'pinnedSarcastic') {
+        if (turn.assignedRegisterArm) {
+          pinnedAssignmentTurns += 1;
+          if (turn.assignedRegisterArm !== GRID.arms.pinnedSarcastic.registerPin) {
+            errors.push(`${turnLabel}: pinned-sarcastic assignment is ${turn.assignedRegisterArm}`);
+          }
+          if (turn.selectedRegister !== GRID.arms.pinnedSarcastic.registerPin) {
+            errors.push(`${turnLabel}: pinned-sarcastic assignment selected ${turn.selectedRegister || 'nothing'}`);
+          }
+          if (turn.routerSelectedRegister !== 'charismatic') {
+            errors.push(`${turnLabel}: pinned-sarcastic assignment did not replace the charismatic router choice`);
+          }
+          if (turn.registerAssignmentSource !== 'experiment_arm') {
+            errors.push(`${turnLabel}: pinned-sarcastic assignment source is not experiment_arm`);
+          }
+          if (turn.phase !== 'resistance') {
+            errors.push(`${turnLabel}: pinned-sarcastic assignment occurred outside the resistance phase`);
+          }
+        } else if (GRID.edgedRegisters.includes(turn.selectedRegister)) {
+          errors.push(`${turnLabel}: unassigned pinned-control turn selected edged register ${turn.selectedRegister}`);
+        } else if (!turn.routerMenu?.includes(turn.selectedRegister)) {
+          errors.push(`${turnLabel}: unassigned pinned-control selection is outside the recorded menu`);
+        }
+      } else if (!turn.routerMenu?.includes(turn.selectedRegister)) {
         errors.push(`${turnLabel}: selected register is outside the recorded menu`);
       }
 
@@ -187,6 +208,9 @@ export function summarizeAdaptiveRegisterSwitchingStage2(dialogues, { stage1Gate
       if (turn.registerJudgeModel !== GRID.scoring.registerJudge) {
         errors.push(`${turnLabel}: register judge is ${turn.registerJudgeModel || 'missing'}, not ${GRID.scoring.registerJudge}`);
       }
+    }
+    if (arm === 'pinnedSarcastic' && pinnedAssignmentTurns === 0) {
+      errors.push(`${label}: pinned-sarcastic dialogue has no resistance-gated experiment-arm assignment`);
     }
 
     if (typeof row.positiveOutcome !== 'boolean' || !row.outcomeVerdict) {

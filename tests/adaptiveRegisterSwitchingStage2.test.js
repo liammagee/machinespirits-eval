@@ -66,7 +66,9 @@ function syntheticStage2Dialogues() {
         ordinal += 1;
         const menu = arm === 'adaptive' ? plan.adaptiveRouterMenu : plan.normalRouterMenu;
         const selected =
-          arm === 'pinnedSarcastic' ? ['sarcastic', 'sarcastic', 'sarcastic'] : ['brisk', arm === 'adaptive' ? 'ironic' : 'precise', 'precise'];
+          arm === 'pinnedSarcastic'
+            ? ['brisk', 'sarcastic', 'precise']
+            : ['brisk', arm === 'adaptive' ? 'ironic' : 'precise', 'precise'];
         rows.push({
           rowId: `${arm}:${scenarioId}:${repeat}`,
           dialogueId: `dialogue:${arm}:${scenarioId}:${repeat}`,
@@ -95,7 +97,10 @@ function syntheticStage2Dialogues() {
               turn,
               phase: turn === 1 ? 'resistance' : turn === 2 ? 'uptake' : 'other',
               selectedRegister: registerName,
-              routerSelectedRegister: arm === 'pinnedSarcastic' ? 'brisk' : registerName,
+              routerSelectedRegister:
+                arm === 'pinnedSarcastic' && turn === 1 ? 'charismatic' : registerName,
+              assignedRegisterArm: arm === 'pinnedSarcastic' && turn === 1 ? 'sarcastic' : null,
+              registerAssignmentSource: arm === 'pinnedSarcastic' && turn === 1 ? 'experiment_arm' : null,
               routerMenu: menu,
               registerRubricScore: edged ? 90 : null,
               registerJudgeModel: edged ? GRID.scoring.registerJudge : null,
@@ -161,6 +166,22 @@ test('Stage-2 report fails closed on any missing registered measure', () => {
   assert.equal(report.decision, null);
   assert.ok(report.errors.some((error) => /learner first-to-last/u.test(error)));
   assert.ok(report.errors.some((error) => /manner presence unread/u.test(error)));
+});
+
+test('Stage-2 report validates the sarcastic arm only at resistance-gated experiment assignments', () => {
+  const rows = syntheticStage2Dialogues();
+  const pinned = rows.find((row) => row.profileName === GRID.arms.pinnedSarcastic.profile);
+  const assigned = pinned.turns.find((turn) => turn.assignedRegisterArm);
+  assigned.assignedRegisterArm = null;
+  assigned.registerAssignmentSource = null;
+
+  const gate = validateAdaptiveRegisterSwitchingStage1Gate(stage1Artifact(), PLAN_SHA);
+  const report = summarizeAdaptiveRegisterSwitchingStage2(rows, { stage1Gate: gate });
+
+  assert.equal(report.status, 'INCOMPLETE');
+  assert.equal(report.decision, null);
+  assert.ok(report.errors.some((error) => /unassigned pinned-control turn selected edged register/u.test(error)));
+  assert.ok(!report.errors.some((error) => /turn_0: pinned-sarcastic selected brisk/u.test(error)));
 });
 
 test('Stage-2 runner freezes 105 serial rows and SHA-gated attended follow-ups', () => {

@@ -167,8 +167,24 @@ learner, register, or manner scoring was launched after the incomplete
 generation grid. The zero-call report at
 `exports/adaptive-register-switching/stage2/eval-2026-08-09-53421919.json`
 returned `INCOMPLETE`, withheld the decision, and left registered measures
-5–8 incomplete. Any partial classifier counts in that artifact are diagnostic
+5–8 incomplete. The corrected zero-call artifact has SHA-256
+`cd68ea71983d82b1c148f5804a8fff29a0c937c7bec989448d7de4c0cdafead5`.
+Any partial classifier counts in that artifact are diagnostic
 only and are not a Stage 2 result. Stage 3 was not started. Work pauses here.
+
+A post-run, zero-call trace audit also found that the initial Stage-2 report
+validator had interpreted the frozen note's "always-edged" shorthand too
+literally. Existing cell 197 does not apply sarcasm on every turn: unchanged
+engine semantics replace a charismatic router choice with the assigned
+sarcastic register only under the resistance gate, while ordinary turns retain
+the normal router choice. The validator was corrected after the run to require
+`assigned_register_arm: sarcastic`, `register_assignment_source:
+experiment_arm`, and the replaced charismatic router choice on assigned
+resistance turns, while accepting normal-menu selections on unassigned turns.
+No dialogue, score, registered measure, primary contrast, or frozen plan hash
+changed. This correction narrows the secondary adaptive-versus-pinned
+description; the sole decision-bearing adaptive-versus-router-warm contrast is
+unaffected.
 
 ## Registered limits, stated now
 

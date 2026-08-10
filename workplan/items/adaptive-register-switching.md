@@ -101,3 +101,15 @@ Codex CLI timeout at `learner_ego` and `tutor_id`. Per the attended-run rule,
 neither row was restarted, replaced, or widened. No paid scoring followed.
 The zero-call report is `INCOMPLETE`, decision withheld, and registered
 measures 5-8 remain incomplete. Stage 3 was not started; work is paused.
+
+2026-08-10 Codex: after the pause, a zero-call persisted-trace audit found one
+reporter-only defect: the validator treated cell 197 as sarcastic on every
+turn. The unchanged engine actually applies the experiment arm only when the
+normal router selects charismatic under the resistance gate; ordinary turns
+keep their normal-menu selection. Corrected the report seam to validate the
+persisted assignment, source, replaced router choice, and resistance phase,
+without changing or re-running any dialogue. This narrows only the secondary
+adaptive-versus-pinned description; the primary adaptive-versus-router-warm
+contrast and frozen plan hash are unchanged. The regenerated fail-closed
+artifact SHA-256 is
+`cd68ea71983d82b1c148f5804a8fff29a0c937c7bec989448d7de4c0cdafead5`.
