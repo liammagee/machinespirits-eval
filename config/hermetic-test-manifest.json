@@ -127,6 +127,7 @@
         "tests/adaptiveStateValidityV2.test.js",
         "tests/adaptiveTraceProjection.test.js",
         "tests/adaptiveTutorStoreInjection.test.js",
+        "tests/adaptiveWarrantAnnotationCollection.test.js",
         "tests/adaptiveWarrantBaselineStudy.test.js",
         "tests/adaptiveWarrantGate.test.js",
         "tests/adaptiveWarrantStudyIntegrity.test.js",

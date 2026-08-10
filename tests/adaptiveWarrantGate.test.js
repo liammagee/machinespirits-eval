@@ -202,6 +202,62 @@ test('public speech-act classifier does not invent tutor result debt from the fa
   assert.equal(missingRecordResult.creates_obligation, true);
 });
 
+test('public speech-act classifier covers the bounded seventh-corpus misses without widening nearby acts', () => {
+  for (const learnerText of [
+    'WF-11 adds another noon-window access route, so Dario isn’t singled out; what’s the next clue?',
+    'The ledger still does not identify the crew member; give me the next clue.',
+    'Yes—read it aloud; could that “first” line be a missing earlier entry?',
+    'The camera evidence has not been reported; please check whether it shows anyone handling shelf two.',
+  ]) {
+    const request = classifyAdaptiveWarrantPublicSpeechAct({ learnerText });
+    assert.equal(request.kind, 'tutor_directed_public_result_request', learnerText);
+    assert.equal(request.creates_obligation, true, learnerText);
+  }
+
+  for (const learnerText of [
+    "Let's examine the jukebox's boot log for the last access before the wipe.",
+    'Can we inspect the console access history or tamper record?',
+    'May I examine the inquiry log for the first evidence entry?',
+    'Before naming anyone, I want the fridge access record checked first.',
+  ]) {
+    const proposal = classifyAdaptiveWarrantPublicSpeechAct({ learnerText });
+    assert.equal(proposal.kind, 'learner_proposed_test', learnerText);
+    assert.equal(proposal.creates_obligation, false, learnerText);
+  }
+
+  for (const learnerText of [
+    'Could you choose which public record would show whether Moth had the service-panel override key?',
+    'Could you choose which connection you want me to record?',
+  ]) {
+    const selection = classifyAdaptiveWarrantPublicSpeechAct({ learnerText });
+    assert.equal(selection.kind, 'tutor_selection_request', learnerText);
+    assert.equal(selection.creates_obligation, false, learnerText);
+  }
+
+  for (const learnerText of [
+    'I’ll record only that WF-11’s crew was present, without assigning responsibility.',
+    'I can record that authorization, if that’s what you want.',
+    'Let me record this distinction before we continue.',
+  ]) {
+    const recordEntry = classifyAdaptiveWarrantPublicSpeechAct({ learnerText });
+    assert.equal(recordEntry.kind, 'learner_record_entry_request', learnerText);
+    assert.equal(recordEntry.creates_obligation, false, learnerText);
+  }
+
+  assert.equal(
+    classifyAdaptiveWarrantPublicSpeechAct({ learnerText: 'Could another machine have reached the jukebox?' }).kind,
+    'other',
+  );
+  assert.equal(
+    classifyAdaptiveWarrantPublicSpeechAct({ learnerText: 'What would the next clue need to establish?' }).kind,
+    'criterion_question',
+  );
+  assert.equal(
+    classifyAdaptiveWarrantPublicSpeechAct({ learnerText: 'Could you record what the boot log reveals?' }).kind,
+    'tutor_directed_public_result_request',
+  );
+});
+
 test('public target terms normalize alphanumeric identifiers without empty or trailing-hyphen tokens', () => {
   const request = classifyAdaptiveWarrantPublicSpeechAct({
     learnerText: 'Show me what the WF-11 record entry reveals.',

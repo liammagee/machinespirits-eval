@@ -12,14 +12,15 @@ verification: A public-obligation ledger persists named tutor-directed requests
   across family changes and distinguishes them from learner-proposed tests;
   inquiry completion can license close_inquiry from public evidence rather than
   turn number; live/offline parity tests cover creation, satisfaction, expiry,
-  and closure; and a new zero-overlap two-reader decision corpus passes the
-  existing predeclared decision, successor, diligent-control, and parity gate
-  before any outcome comparison resumes. Live mechanism execution additionally
+  and closure; and separately frozen natural-prevalence and targeted-challenge
+  two-reader corpora pass their predeclared decision, support, divergence,
+  successor, diligent-control, and parity responsibilities before any outcome
+  comparison resumes. Live mechanism execution additionally
   requires a digest-bound authorization for a clean committed 40-character
   HEAD, the recursive source closure, the named destination, and the declared
   private prompt-payload scope; sealed children, a 64-call dialogue cap,
-  wrapper/native CLI fingerprints, opaque blind IDs, and strict V3 responses
-  must validate before scoring.
+  wrapper/native CLI fingerprints, opaque blind IDs, strict V4 responses, and
+  deterministic keyed reader-batch assembly must validate before scoring.
 claim_status: exploratory
 links:
   notes:
@@ -228,3 +229,37 @@ tests, 8,444/8,444 hermetic root tests, 137/137 tutor-core tests, and 490/490
 source workplan validation. The item remains active pending a pushed clean
 seventh checkpoint and digest-bound execution, two independent 96-case V4
 annotations, and passage of every mechanism and six-dimension gate.
+
+The seventh execution from clean commit
+`22142b7b897365695c929dfa1a0e47cb71f27512` closed the runtime boundary:
+24/24 valid dialogues, 192/192 learner-analysis calls, 192/192 exact
+structured parity, zero delivery mismatch, and 599 model calls. Two isolated
+Luna readers completed the frozen 96-case V4 corpus within the separately
+authorized 24-call ceiling. The measurement gate nevertheless failed: raw
+agreement 0.698, recall 0.567, accuracy 0.731, transition accuracy 0.545,
+mechanism exact-consensus rate 0.323, and request/proposal macro-F1 0.143.
+Only pacing passed every per-axis gate; several lifecycle, completion,
+conceptual, and epistemic targets lacked natural support. No outcome comparison
+was run.
+
+The annotation run also exposed wrong-ID/blank-note and undeclared-
+normalization confounds. Prospective collection now prepares exact sample-ID-
+keyed packets and assembles them fail-closed, requires substantive notes, and
+audits only the predeclared `none/hold` and `uncertain/uncertain` family
+canonicalizations. Bounded speech-act, conceptual-flatness, and same-turn
+interactional corrections have exact tests; the burned-corpus replay remains
+diagnostic rather than passage evidence.
+
+The remaining validation is explicitly two-surface. A fresh all-turn
+`natural_prevalence` corpus owns prevalence and false-positive inference. A
+separate `targeted_challenge` corpus must meet a private hash-bound support plan
+for result requests, proposed tests, obligation persistence/resolution,
+inquiry completion/incompletion, and at least two non-aligned cases per
+divergence axis. Pair validation requires the same frozen handbook, distinct
+study/corpus hashes, and zero public-case overlap, and prohibits challenge rows
+from entering natural-rate estimates. The item remains active pending authored
+challenge cases, a clean pushed checkpoint, new payload-specific authorization,
+independent reads of both fresh corpora, and passage of their conjunctive gate.
+Current no-model verification is green: lint, 35/35 worlds, 22/22 prompt/world
+boundary tests, the 171-test exact launch preflight, 8,448/8,448 hermetic root
+tests, 137/137 tutor-core tests, and 490/490 source workplan items.

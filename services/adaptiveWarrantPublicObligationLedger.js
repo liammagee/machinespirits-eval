@@ -20,23 +20,25 @@ export const ADAPTIVE_WARRANT_PUBLIC_OBLIGATION_DELIVERY_SCHEMA =
   'machinespirits.adaptation-refinement.public-obligation-delivery.v1';
 
 const EVIDENCE_CUE =
-  /\b(?:assay|balance|comparison|dies?|entry|evidence|exhibit|fact|flaw|graver|line|link|log|mark|match|metal|reading|record|result|ring|sample|shilling|test|tool|touchstone|trace|weight|witness)\b/iu;
+  /\b(?:assay|balance|clue|comparison|dies?|entry|evidence|exhibit|fact|flaw|graver|line|link|log|mark|match|metal|reading|record|result|ring|sample|shilling|test|tool|touchstone|trace|weight|witness)\b/iu;
 const LEARNER_PROPOSAL =
-  /\b(?:i (?:can|could|intend to|propose|should|want to|will|would)|i['’]d|i['’]ll|let me|my (?:first|next) (?:move|step|test)|we (?:can|could|should|will|would))\b.{0,100}\b(?:check|compare|enter|examine|inspect|listen|look|record|test|weigh)\b/iu;
+  /(?:\b(?:i (?:can|could|intend to|propose|should|want to|will|would)|i['’]d|i['’]ll|let me|my (?:first|next) (?:move|step|test)|we (?:can|could|should|will|would))\b.{0,100}\b(?:check|compare|enter|examine|inspect|listen|look|record|test|weigh)\b|\b(?:let['’]?s|let us|(?:can|could|may|might|should|would) (?:i|we))\s+(?:first\s+)?(?:check|compare|enter|examine|inspect|listen|look|record|test|weigh)\b|\bi want\b.{0,80}\b(?:checked|compared|entered|examined|inspected|recorded|tested|weighed)\b)/iu;
 const RESULT_REQUEST =
-  /(?:\bwhat (?:did|do|does|is|was|were)\b.{0,90}\b(?:leave|mark|match|read|record|reveal|say|show|weigh)\b|\bwhat (?:is|was) (?:the )?[^.!?]{0,70}\b(?:entry|line|log|reading|record|trace)\b|\bwhat (?:[a-z-]+ ){0,3}(?:evidence|mark|match|reading|record|result|trace)\b|(?:^|[.!?]\s*)\b(?:do|does|did|is|was|were)\b.{0,90}\b(?:match|recorded|show)\b|(?:^|[.!?]\s*)\bhas\b.{0,90}\b(?:been )?(?:entered|recorded|shown|supplied)\b|\b(?:can|could|will|would) you\b.{0,100}\b(?:give|identify|provide|record|report|show|supply|tell)\b|\bplease\b.{0,80}\b(?:enter|give|identify|provide|record|report|show|supply|tell)\b|(?:^|[.!?]\s*)\b(?:enter|give|identify|provide|record|report|show|supply|tell)\b)/iu;
+  /(?:\bread (?:it|that|this) aloud\b|\bwhat(?:['’]s| is) (?:the )?(?:next )?(?:clue|evidence|exhibit|result)\b|\bwhat (?:did|do|does|is|was|were)\b.{0,90}\b(?:leave|mark|match|read|record|reveal|say|show|weigh)\b|\bwhat (?:is|was) (?:the )?[^.!?]{0,70}\b(?:entry|line|log|reading|record|trace)\b|\bwhat (?:[a-z-]+ ){0,3}(?:evidence|mark|match|reading|record|result|trace)\b|(?:^|[.!?]\s*)\b(?:do|does|did|is|was|were)\b.{0,90}\b(?:match|recorded|show)\b|(?:^|[.!?]\s*)\bhas\b.{0,90}\b(?:been )?(?:entered|recorded|shown|supplied)\b|\b(?:can|could|will|would) you\b.{0,100}\b(?:check|give|identify|provide|read|record|report|show|supply|tell)\b|\bplease\b.{0,80}\b(?:check|enter|give|identify|provide|read|record|report|show|supply|tell)\b|(?:^|[.!?]\s*)\b(?:check|enter|give|identify|provide|read|record|report|show|supply|tell)\b)/iu;
 const DIRECTED_RESULT_CLAUSE =
-  /(?:^|[;.!?]\s*)(?:what\b.{0,80}\b(?:did|do|does|is|was|were|leave|mark|match|read|record|reveal|say|show|weigh)\b|has\b.{0,90}\b(?:been )?(?:entered|recorded|shown|supplied)\b|(?:can|could|will|would) you\b|please\b|(?:enter|give|identify|provide|record|report|show|supply|tell)\b)/iu;
+  /(?:^|[;.!?]\s*)(?:what(?:['’]s| is) (?:the )?(?:next )?(?:clue|evidence|exhibit|result)\b|what\b.{0,80}\b(?:did|do|does|is|was|were|leave|mark|match|read|record|reveal|say|show|weigh)\b|has\b.{0,90}\b(?:been )?(?:entered|recorded|shown|supplied)\b|(?:can|could|will|would) you\b|please\b|(?:check|enter|give|identify|provide|read|record|report|show|supply|tell)\b)/iu;
 const CRITERION_QUESTION =
-  /\bwhat (?:public )?(?:evidence|exhibit|fact|mark|result|test) (?:can|could|might|would)\b.{0,100}\b(?:establish|identify|link|place|prove|put|show|tie)\b/iu;
+  /(?:\bwhat (?:public )?(?:evidence|exhibit|fact|mark|result|test) (?:can|could|might|would)\b.{0,100}\b(?:establish|identify|link|place|prove|put|show|tie)\b|\bwhat (?:could|might|should|would) (?:the )?(?:next )?(?:clue|evidence|exhibit|result|test) need to\b.{0,60}\b(?:establish|identify|link|place|prove|put|show|tie)\b)/iu;
 const INTERPRETATION_QUESTION =
   /\bwhat\b.{0,60}\b(?:evidence|exhibit|fact|mark|reading|record|result|trace|weight)\b.{0,40}\bmean(?:s|ing)?\b/iu;
 const SELECTION_QUESTION =
-  /(?:\b(?:what|which)\b.{0,80}\b(?:(?:should|would|could|can|do) (?:i|we)|(?:i|we) (?:should|would|could|can)|(?:first|next))|\b(?:(?:can|could|will|would) you\s+|please\s+)?(?:choose|tell) me\b.{0,70}(?:\bwhat to\s+(?:check|compare|examine|inspect|test|weigh)\s+(?:first|next)\b|\bthe\s+(?:first|next)\s+(?:check|comparison|exhibit|test)\b))\s*[.?!]*$/iu;
+  /(?:\b(?:what|which)\b.{0,80}\b(?:(?:should|would|could|can|do) (?:i|we)|(?:i|we) (?:should|would|could|can)|(?:first|next))|\b(?:can|could|will|would) you\s+choose\s+which\b|\b(?:(?:can|could|will|would) you\s+|please\s+)?(?:choose|tell) me\b.{0,70}(?:\bwhat to\s+(?:check|compare|examine|inspect|test|weigh)\s+(?:first|next)\b|\bthe\s+(?:first|next)\s+(?:check|comparison|exhibit|test)\b))\s*[.?!]*$/iu;
+const TUTOR_SELECTION_DIRECTIVE =
+  /\b(?:can|could|will|would) you\s+(?:please\s+)?choose\s+(?:which|what)\b/iu;
 const WORDING_REQUEST =
   /(?:\b(?:can|could|will|would) you\b.{0,70}\b(?:give|provide|show|tell) me\b.{0,30}\b(?:exact|first|next|opening)?\s*(?:line|phrase|sentence|wording)\b|\b(?:give|provide|show|tell) me\b.{0,30}\b(?:exact|first|next|opening)?\s*(?:line|phrase|sentence|wording)\b|\bhow (?:can|could|should|would) i\b.{0,55}\b(?:phrase|say|state|word|write)\b)/iu;
 const LEARNER_RECORD_ENTRY_REQUEST =
-  /\b(?:(?:can|could|will|would) you\s+(?:please\s+)?|do you want me to\s+|(?:can|could|may|should|would) i\s+)(?:add|enter|include|note|put|record|write)\s+(?:that|this)\b/iu;
+  /\b(?:(?:can|could|will|would) you\s+(?:please\s+)?|do you want me to\s+|(?:can|could|may|should|would) i\s+|i['’]ll\s+|i will\s+|i can\s+|let me\s+)(?:add|enter|include|note|put|record|write)\s+(?:only\s+)?(?:that|this)\b/iu;
 const WITHDRAWAL = /\b(?:disregard that|forget that|never mind(?: that)?|withdraw (?:that|the request))\b/iu;
 const TRANSFER =
   /\b(?:i(?:['’]ll| will) (?:check|compare|inspect|test) .{0,60}? myself|leave .{0,60}?(?:comparison|test) to me)\b/iu;
@@ -233,24 +235,32 @@ export function classifyAdaptiveWarrantPublicSpeechAct({ learnerText = '', class
   }
 
   const directedResultSurface = directedResultRequestSurface(operativeSurface);
+  const recordEntryMatch = operativeSurface.match(LEARNER_RECORD_ENTRY_REQUEST);
+  const directedResultStart = directedResultSurface ? operativeSurface.lastIndexOf(directedResultSurface) : -1;
+  const recordEntryEnd = recordEntryMatch
+    ? Number(recordEntryMatch.index || 0) + recordEntryMatch[0].length
+    : -1;
+  const laterDirectedResultClause = directedResultStart >= 0 && directedResultStart > recordEntryEnd;
 
   // A criterion question asks what kind of evidence would establish a link;
   // it is not yet asking the tutor to supply a completed test result.
   if (
-    !directedResultSurface &&
     EVIDENCE_CUE.test(operativeSurface) &&
     (CRITERION_QUESTION.test(operativeSurface) || INTERPRETATION_QUESTION.test(operativeSurface))
   ) {
     return { ...base, kind: 'criterion_question', target: publicTarget(operativeSurface) };
   }
-  if (!directedResultSurface && EVIDENCE_CUE.test(operativeSurface) && SELECTION_QUESTION.test(operativeSurface)) {
+  if (
+    EVIDENCE_CUE.test(operativeSurface) &&
+    (TUTOR_SELECTION_DIRECTIVE.test(operativeSurface) || SELECTION_QUESTION.test(operativeSurface))
+  ) {
     return { ...base, kind: 'tutor_selection_request', target: publicTarget(operativeSurface) };
   }
   // A request to enter the learner's explicit proposition in the shared
   // record is a writable public act, not a request that the tutor discover or
   // reveal an unknown result. Keep this before RESULT_REQUEST, whose general
   // "could you record" branch intentionally covers requests for missing data.
-  if (LEARNER_RECORD_ENTRY_REQUEST.test(operativeSurface)) {
+  if (recordEntryMatch && !laterDirectedResultClause) {
     return { ...base, kind: 'learner_record_entry_request', target: null };
   }
   // Requests for copyable wording about an already-public statement are not

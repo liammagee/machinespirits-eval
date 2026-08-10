@@ -737,3 +737,93 @@ The prospective checkpoint passes lint, all 35 derivation worlds, the focused
 mechanism/integrity and response/progression suites, 34 prompt/world boundary
 tests, 8,444/8,444 hermetic root tests, 137/137 tutor-core tests, and 490/490
 source workplan validations.
+
+## Seventh execution and V4 annotation result — execution valid, measurement gate failed (11 August 2026)
+
+The seventh matrix ran from clean detached commit
+`22142b7b897365695c929dfa1a0e47cb71f27512`. It crossed every execution
+boundary for the first time: 24/24 sealed eight-turn dialogues were valid,
+192/192 learner-analysis calls completed, structured live/replay parity was
+192/192 with zero mismatches, and all 192 delivery-application checks matched.
+The study used 599 model calls. Its 96-case all-observe corpus had SHA-256
+`1526079a0bb32ea493c37f7c58e6a1595a8c52b688bdc07e8b40dbe1ee4a392d`.
+
+Two isolated Luna readers then completed all 96 cases within the separately
+authorized 24-call ceiling. Reader A labelled 33 transition-positive and 63
+negative cases; reader B labelled 34 positive and 62 negative; neither used
+`uncertain`. The collection process nevertheless exposed an annotation
+instrument defect. Array-shaped batches allowed one wrong-ID response per
+reader and one zero-output call; the complete intended IDs were recovered by
+repartitioning within the fixed call cap. Validation also required declared
+mechanical normalization: reader A had 84 field edits and reader B 86. Most
+were `primary_warrant_basis=none` paired with a non-`hold` family or blank
+dimension notes copied from that reader's case note. One row per reader needed
+an explicit reader-intent correction from an internally contradictory `none`
+basis to the positive basis described by the rest of that reader's labels.
+These transformations are disclosed; they are not a reusable annotation
+procedure.
+
+The frozen scorer failed. Raw agreement was 0.698, with 67 scored hard
+consensuses and 29 disagreements. Decision quality was TP=17, TN=32, FP=5,
+FN=13: precision 0.773 passed, but recall 0.567, accuracy 0.731, and successor
+transition accuracy 0.545 failed. Mechanism-wide exact consensus was 0.323.
+Request/proposal macro-F1 was 0.143, obligation lifecycle accuracy 0.750, and
+commitment-transition, candidate-override, and primary-basis accuracies were
+0.704, 0.662, and 0.709. Closure safety had zero violations.
+
+Only pacing passed every six-axis gate (consensus 0.969, ten non-aligned cases,
+interpretation macro-F1 0.973, magnitude 0.901, persistence 0.967, joint
+accuracy 0.911). Conceptual and epistemic each had only one non-aligned
+consensus case. Interactional consensus was 0.698 and interpretation macro-F1
+0.589. Engagement interpretation macro-F1 was 0.628. Strategy-exhaustion
+interpretation macro-F1 was 0.621. The natural corpus contained no hard-
+consensus obligation-persistence or obligation-resolution cases and only two
+complete-inquiry cases, so those targets also failed for insufficient support.
+
+This result separates three claims. Runtime integration, replay parity, and
+delivery application are now demonstrated for this automated two-world matrix.
+Pacing classification is validated only inside the same matrix. The overall
+warrant mechanism and the other five divergence detectors are not validated.
+No downstream outcome or learning comparison is licensed.
+
+## Prospective post-V4 correction and two-corpus validation
+
+The failed V4 corpus is burned. Its labels may diagnose bounded errors but may
+not be rescored as a pass. That audit found three prospective corrections:
+
+1. Extend the finite public-speech grammar to the observed disjoint forms:
+   next-clue result requests; `let's`/`can we`/`may I` test proposals; exact
+   tutor-selection requests; criterion questions; and declarative learner
+   record-entry acts. Clause precedence prevents a selection or record entry
+   from creating false tutor-owned result debt.
+2. Treat explicit analytic work as conceptually aligned unless a public stall
+   or low-agency deferral actually occurs. Treat a newly opened same-turn
+   obligation as current uptake, not persistent interactional failure; older,
+   overdue, or reactivated debt remains divergent.
+3. Replace ad hoc annotation repair with deterministic reader packets keyed by
+   exact opaque sample ID. The assembler rejects missing/extra IDs, requires
+   substantive case and dimension notes, and records only two predeclared
+   canonicalizations (`none -> hold`, `uncertain -> uncertain`). Any other
+   inconsistency fails closed.
+
+Natural sampling cannot guarantee the support needed to validate rare
+lifecycle and divergence states. The next protocol therefore freezes and
+scores two corpora separately. The unchanged all-turn dialogue corpus is the
+`natural_prevalence` corpus and alone estimates prevalence and false-positive
+rates. A separately authored, prospectively frozen `targeted_challenge` corpus
+must contain at least eight result requests, eight proposed tests, eight
+persistence cases, six resolution cases, eight complete inquiries, twelve
+incomplete inquiries, and two designed non-aligned cases per divergence axis.
+Its private support plan is hash-bound but not sent to readers. It tests
+classification and lifecycle accuracy only; its enriched prevalence must
+never enter natural-rate estimates. Both corpora use the same frozen handbook
+and independent readers, have no public-case overlap, and must pass their
+separate responsibilities before the combined mechanism gate can pass.
+
+The burned-corpus replay after the bounded code correction is diagnostic only:
+request/proposal macro-F1 rises from 0.143 to 0.656 and conceptual
+interpretation macro-F1 from 0.405 to 0.743, while interactional remains weak
+at 0.566. Those values motivate the fresh validation; they are not evidence of
+passage. The next model-backed act is therefore a newly frozen natural corpus
+plus a separately frozen support challenge corpus under a new exact
+authorization, not another read or rescore of the seventh packet.

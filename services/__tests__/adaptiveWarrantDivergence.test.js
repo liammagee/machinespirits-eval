@@ -20,19 +20,28 @@ test('divergence projection emits one ordered, typed row for all six architectur
   assert.ok(rows.every((row) => row.interpretation === 'aligned'));
 });
 
-test('conceptual flatness distinguishes productive analytic work from a stalled record', () => {
-  const productive = projectAdaptiveWarrantDivergence({
+test('conceptual flatness accepts explicit analytic work and requires a public stall signal', () => {
+  const analytic = projectAdaptiveWarrantDivergence({
     dagGrowth: 0,
     turnsSinceDagGrowth: 3,
     signal: { primary: 'engaged_analytic', labels: ['engaged_analytic'] },
   });
-  assert.equal(byDimension(productive, 'conceptual').interpretation, 'productive');
-  assert.equal(byDimension(productive, 'conceptual').repair_warranted, false);
+  assert.equal(byDimension(analytic, 'conceptual').interpretation, 'aligned');
+  assert.equal(byDimension(analytic, 'conceptual').magnitude, 'none');
+  assert.equal(byDimension(analytic, 'conceptual').repair_warranted, false);
+
+  const neutral = projectAdaptiveWarrantDivergence({
+    dagGrowth: 0,
+    turnsSinceDagGrowth: 3,
+    signal: { primary: 'neutral', labels: ['neutral'] },
+  });
+  assert.equal(byDimension(neutral, 'conceptual').interpretation, 'aligned');
+  assert.equal(byDimension(neutral, 'conceptual').repair_warranted, false);
 
   const stalled = projectAdaptiveWarrantDivergence({
     dagGrowth: 0,
     turnsSinceDagGrowth: 3,
-    signal: { primary: 'neutral', labels: ['neutral'] },
+    signal: { primary: 'stall', labels: ['stall'] },
   });
   assert.equal(byDimension(stalled, 'conceptual').interpretation, 'stalled');
   assert.equal(byDimension(stalled, 'conceptual').magnitude, 'moderate');
@@ -52,6 +61,15 @@ test('interactional projection measures persistent public debt independently of 
   assert.equal(byDimension(rows, 'interactional').persistence, 4);
   assert.equal(byDimension(rows, 'interactional').magnitude, 'high');
   assert.equal(byDimension(rows, 'interactional').repair_warranted, true);
+
+  const currentRequest = projectAdaptiveWarrantDivergence({
+    turn: 5,
+    publicObligation: {
+      blocking_obligation: { id: 'obligation-3', status: 'open', created_turn: 5 },
+    },
+  });
+  assert.equal(byDimension(currentRequest, 'interactional').interpretation, 'aligned');
+  assert.equal(byDimension(currentRequest, 'interactional').repair_warranted, false);
 });
 
 test('engagement projection requires sustained low-agency deferral before recommending repair', () => {

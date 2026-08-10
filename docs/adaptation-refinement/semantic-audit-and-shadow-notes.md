@@ -344,3 +344,41 @@ divergence rule and do not alter the V4 predictions after seeing gold labels.
 The sixth packet remains burned. A fresh packet must establish execution and
 delivery validity before human readers can test interpretation, magnitude,
 and persistence on each of the six normative/descriptive axes.
+
+### 7.11 Seventh-packet semantic result: projection validity is axis-specific
+
+The seventh execution closed the transport and realization layers: all 24
+children, 192 decision inputs, 192 live/replay projections, and 192 delivered
+applications were valid. The independent V4 read then failed the semantic
+gate. This is the first result that can distinguish a faulty projection from a
+faulty harness.
+
+The error audit found that the descriptive speech-act layer was too narrow.
+It mapped most public acts to `other`, missing ordinary next-clue result
+requests and bounded learner test proposals, while some tutor-selection and
+learner-record constructions created false result debt. Those errors propagate
+upward: a false obligation changes interactional divergence, warrant basis,
+candidate override, and successor family together. The repair expands only
+observed disjoint forms and assigns clause precedence before the ledger sees
+them.
+
+The conceptual norm was also over-strict. The implementation treated a flat
+learner record as conceptual failure even while the learner was explicitly
+testing, contrasting, or analyzing the claim. Under the authored norm, that
+work is aligned unless public evidence also shows a stall or low-agency
+deferral. Interactional divergence had the opposite timing error: a public
+obligation newly created by the current learner turn is an uptake demand, not
+already persistent failure. It becomes divergent only when older, overdue, or
+reactivated debt remains unresolved. These are prospective semantic
+corrections, not post-hoc score substitutions.
+
+Pacing is the one six-axis projection that passed the complete frozen gate.
+The other axes separate into two groups. Interactional, engagement, and
+strategy exhaustion had adequate non-aligned support but insufficient
+interpretation accuracy or consensus. Conceptual and epistemic had too little
+non-aligned support to adjudicate the detector despite high raw accuracy.
+Accordingly the architecture must carry two validation surfaces: natural
+dialogue turns for prevalence and false-positive behavior, and a separately
+authored challenge surface for rare lifecycle, completion, and divergence
+states. Combining their case pools would destroy the descriptive prevalence
+claim, so their scores and inferential roles remain separate.

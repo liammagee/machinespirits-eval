@@ -87,14 +87,29 @@ function conceptualRow({ dagGrowth, turnsSinceDagGrowth, signal }) {
       descriptiveState: 'no_comparable_prior_record',
     });
   }
-  const productive = signal?.primary === 'engaged_analytic';
+  const analytic = signal?.primary === 'engaged_analytic';
+  if (analytic) {
+    return row('conceptual', {
+      normativeState: 'learner_record_progress_or_explicit_analytic_work',
+      descriptiveState: 'explicit_analytic_work_without_new_record_entry',
+      evidence: [`turns_since_dag_growth:${flatTurns}`, 'learner_signal:engaged_analytic'],
+    });
+  }
+  const stalled = ['stall', 'low_agency_deferral'].includes(signal?.primary);
+  if (!stalled) {
+    return row('conceptual', {
+      normativeState: 'learner_record_progress_or_explicit_analytic_work',
+      descriptiveState: 'flat_record_without_public_conceptual_failure',
+      evidence: [`turns_since_dag_growth:${flatTurns}`, `learner_signal:${signal?.primary || 'absent'}`],
+    });
+  }
   return row('conceptual', {
     normativeState: 'learner_record_progress_or_explicit_analytic_work',
-    descriptiveState: productive ? 'flat_record_with_explicit_analytic_work' : 'flat_learner_record',
+    descriptiveState: 'flat_learner_record_with_public_stall_signal',
     magnitude: magnitudeForCount(flatTurns),
     persistence: flatTurns,
-    interpretation: productive ? 'productive' : 'stalled',
-    repairWarranted: !productive && flatTurns >= 2,
+    interpretation: 'stalled',
+    repairWarranted: flatTurns >= 2,
     evidence: [`turns_since_dag_growth:${flatTurns}`, `learner_signal:${signal?.primary || 'absent'}`],
   });
 }
@@ -110,8 +125,16 @@ function interactionalRow({ troubleTurns, complaintTurns, publicObligation, turn
         item === 'tutor_response_guard_exhausted',
     ),
   );
-  const blocking = publicObligation?.blocking_obligation || null;
-  const age = obligationAge(publicObligation, turn);
+  const blockingCandidate = publicObligation?.blocking_obligation || null;
+  const blockingCreatedTurn = Number(blockingCandidate?.created_turn);
+  const currentTurn = Number(turn);
+  const blocking =
+    blockingCandidate &&
+    (['overdue', 'reactivated'].includes(blockingCandidate.status) ||
+      (Number.isFinite(blockingCreatedTurn) && Number.isFinite(currentTurn) && blockingCreatedTurn < currentTurn))
+      ? blockingCandidate
+      : null;
+  const age = blocking ? obligationAge({ blocking_obligation: blocking }, turn) : 0;
   const persistence = Math.max(interactionalTrouble.length, Number(complaintTurns?.length || 0), age);
   if (!persistence) {
     return row('interactional', {

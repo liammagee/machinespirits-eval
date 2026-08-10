@@ -954,3 +954,45 @@ progression suites; 34/34 prompt/world boundary tests; 8,444/8,444 hermetic
 root tests; 137/137 tutor-core tests; and 490/490 source workplan validation.
 The next evidential act is the clean commit, digest-bound rehearsal, and fresh
 execution.
+
+## Progress Update — 11 August 2026, seventh run, first complete V4 read, and instrument split
+
+The seventh matrix from clean commit
+`22142b7b897365695c929dfa1a0e47cb71f27512` is the first fully valid mechanism
+execution: 24/24 sealed dialogues, 192/192 learner-analysis calls, exact
+192/192 structured parity, zero delivery mismatch, and 599 model calls. Two
+independent Luna readers then annotated all 96 frozen observe decisions within
+the 24-call authorization.
+
+The semantic result failed. Raw agreement was 0.698 and only 67 cases had hard
+decision consensus. Precision 0.773 passed, but recall 0.567, accuracy 0.731,
+transition accuracy 0.545, and mechanism exact-consensus rate 0.323 failed.
+Request/proposal macro-F1 was 0.143. Pacing alone passed all of its divergence
+support and accuracy gates. Conceptual and epistemic lacked non-aligned
+support; interactional, engagement, and strategy exhaustion had support but
+failed one or more consensus or interpretation gates. The packet contained no
+hard-consensus obligation persistence or resolution and only two complete
+inquiries.
+
+The result changes the programme diagnosis. Runtime integration, replay, and
+delivery are no longer the immediate blockers. The live question is now the
+semantic validity and support of the normative/descriptive detectors. The
+burned-corpus audit found bounded speech-act misses, an over-strict conceptual
+flatness rule, and an interactional rule that counted newly opened current-
+turn debt as already persistent. Prospective exact tests cover those changes;
+retrospective improvements remain diagnostic only.
+
+The annotation process itself also became evidence. Wrong-ID batch responses,
+blank dimension notes, and internally inconsistent basis/family pairs required
+repartitioning and disclosed normalization. Future collection now uses exact
+sample-ID maps, minimum evidence-note length, and a fail-closed assembler that
+permits only two predeclared family canonicalizations and audits each edit.
+
+Finally, natural prevalence and rare-state support are now separated by
+design. A fresh all-turn natural corpus will estimate ordinary prevalence and
+false-positive behavior. A distinct authored challenge corpus, bound to a
+private support plan, will guarantee speech-act, lifecycle, completion, and
+non-aligned examples for all six axes. They share a calibration handbook but
+are never pooled. The next evidential boundary is to author and freeze that
+pair, verify it without model calls, and request new payload-specific reader
+authorization. No outcome or learning comparison is yet licensed.

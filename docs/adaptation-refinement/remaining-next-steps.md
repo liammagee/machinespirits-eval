@@ -695,3 +695,44 @@ The prospective repair checkpoint passes lint, 35/35 derivation worlds, the
 focused mechanism/integrity and response/progression suites, 34/34 prompt/world
 boundary tests, 8,444/8,444 hermetic root tests, 137/137 tutor-core tests, and
 490/490 source workplan validation. The clean commit is the active boundary.
+
+## Current restart boundary after the seventh V4 scorer
+
+The clean `22142b7b897365695c929dfa1a0e47cb71f27512` execution is fully valid at
+the runtime boundary: 24/24 dialogues, 192/192 learner-analysis calls,
+192/192 structured live/replay parity, and 192/192 delivery application. The
+two authorized independent readers completed the 96-case corpus, but the
+frozen semantic gate failed: agreement 0.698, recall 0.567, accuracy 0.731,
+transition accuracy 0.545, mechanism exact-consensus rate 0.323, and request/
+proposal macro-F1 0.143. Only pacing passed every divergence gate. Missing
+obligation-persistence, obligation-resolution, completion, conceptual, and
+epistemic support also made a natural-corpus-only validation impossible.
+
+The remaining sequence is now:
+
+1. retain the bounded speech-act and divergence corrections derived from the
+   burned-corpus audit, but never report its retrospective replay as passage;
+2. use the deterministic keyed batch preparer/assembler for both readers, with
+   minimum evidence-note length and auditable canonicalization only;
+3. author and locally validate a separate targeted challenge corpus plus
+   private support plan covering the predeclared speech-act, obligation-
+   lifecycle, inquiry-completion, and six-axis non-aligned minima;
+4. freeze a fresh natural all-turn corpus and the challenge corpus under the
+   same calibrated handbook, prove no case overlap, and keep their inferential
+   roles separate;
+5. obtain two independent annotations for each newly frozen corpus under a new
+   exact payload authorization, assemble them without human repair, then score
+   natural prevalence/false positives separately from challenge support and
+   accuracy; and
+6. advance to a variance-controlled active-versus-observe outcome study only
+   if the combined gate passes. Human learning and causal benefit remain a
+   later study.
+
+Steps 1–2 and the pair/support validation machinery for steps 3–4 are now
+implemented. The next construction task is the actual prospectively authored
+challenge cases and their private support mapping, followed by a clean commit
+and new authorization request. Current no-model verification passes lint,
+35/35 worlds, 22/22 prompt/world checks, the 171-test exact preflight,
+8,448/8,448 hermetic root tests, 137/137 tutor-core tests, and 490/490 source
+workplan items. The prior 24-call annotation authorization is exhausted and
+does not cover those new payloads.

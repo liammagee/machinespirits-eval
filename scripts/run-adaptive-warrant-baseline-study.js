@@ -58,8 +58,9 @@ export const ADAPTIVE_WARRANT_ANNOTATION_SCORE_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-annotation-scores.v4';
 const ADAPTIVE_WARRANT_ANNOTATION_RESPONSE_V3_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-annotation-response.v3';
-const ADAPTIVE_WARRANT_ANNOTATION_RESPONSE_V4_SCHEMA =
+export const ADAPTIVE_WARRANT_ANNOTATION_RESPONSE_V4_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-annotation-response.v4';
+export const ADAPTIVE_WARRANT_ANNOTATION_MIN_NOTE_CHARACTERS = 24;
 export const ADAPTIVE_WARRANT_LAUNCH_AUTHORIZATION_REQUEST_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-study-launch-authorization-request.v1';
 export const ADAPTIVE_WARRANT_LAUNCH_AUTHORIZATION_SCHEMA =
@@ -262,6 +263,7 @@ const SOURCE_FILES = Object.freeze([
   'config/drama-derivation/world-028-larkspur-fridge.yaml',
   'config/engagement-registers.yaml',
   'config/stability/baseline-v0.7.0.json',
+  'scripts/prepare-adaptive-warrant-annotation-batches.js',
   'scripts/run-adaptive-warrant-baseline-study.js',
   'scripts/derive-adaptive-warrant-shadow.js',
   'scripts/run-tutor-stub-auto-eval.js',
@@ -285,6 +287,7 @@ const SOURCE_FILES = Object.freeze([
   'services/tutorStubWarrantGate.js',
   'services/tutorStubResponseConfigurationSelectionRuntime.js',
   'services/tutorStubTurnOrchestration.js',
+  'tests/adaptiveWarrantAnnotationCollection.test.js',
   'tests/adaptiveWarrantBaselineStudy.test.js',
   'tests/adaptiveWarrantStudyIntegrity.test.js',
   'tests/adaptiveStateBenchmarkIntegrity.test.js',
@@ -2274,8 +2277,10 @@ export function validateBlindedAnnotationResponse({ response, corpus, expectedCo
               `annotation response ${row.sample_id} non-aligned ${dimension} divergence requires non-none magnitude`,
             );
           }
-          if (!oneLine(divergence.note)) {
-            throw new Error(`annotation response ${row.sample_id} ${dimension} divergence requires an evidence note`);
+          if (oneLine(divergence.note).length < ADAPTIVE_WARRANT_ANNOTATION_MIN_NOTE_CHARACTERS) {
+            throw new Error(
+              `annotation response ${row.sample_id} ${dimension} divergence requires an evidence note of at least ${ADAPTIVE_WARRANT_ANNOTATION_MIN_NOTE_CHARACTERS} characters`,
+            );
           }
         }
       }
@@ -2297,8 +2302,17 @@ export function validateBlindedAnnotationResponse({ response, corpus, expectedCo
         );
       }
     }
-    if (!oneLine(row.note))
+    if (
+      response.schema.endsWith('.v4') &&
+      oneLine(row.note).length < ADAPTIVE_WARRANT_ANNOTATION_MIN_NOTE_CHARACTERS
+    ) {
+      throw new Error(
+        `annotation response ${row.sample_id} requires a decision-time evidence note of at least ${ADAPTIVE_WARRANT_ANNOTATION_MIN_NOTE_CHARACTERS} characters`,
+      );
+    }
+    if (!response.schema.endsWith('.v4') && !oneLine(row.note)) {
       throw new Error(`annotation response ${row.sample_id} requires a decision-time evidence note`);
+    }
   }
   return {
     ok: true,
@@ -3277,6 +3291,7 @@ export function adaptiveWarrantStudyPreflightChecks() {
       [
         '--test',
         'tests/adaptiveWarrantGate.test.js',
+        'tests/adaptiveWarrantAnnotationCollection.test.js',
         'tests/adaptiveWarrantBaselineStudy.test.js',
         'tests/adaptiveWarrantStudyIntegrity.test.js',
         'tests/tutorStubAutoEvalEvidence.test.js',
@@ -3360,6 +3375,20 @@ Each response envelope must use \`${ADAPTIVE_WARRANT_ANNOTATION_RESPONSE_V4_SCHE
 - Divergence persistence: \`${ANNOTATION_DIVERGENCE_PERSISTENCE.join('` | `')}\`. Use \`single_turn\` for one current or prior event and \`sustained\` for two or more linked turns/events.
 
 Magnitude is semantic distance, not sentiment intensity: \`low\` is one bounded non-safety departure, \`moderate\` is repeated/sustained departure or one epistemic-safety conflict, and \`high\` is four or more linked turns/events, sustained deference, a required strategy exit not taken, or multiple epistemic-safety conflicts. \`aligned\` must pair with \`none/none\`; \`uncertain\` must be uncertain on all three labels.
+
+Every case-level and per-dimension note must contain at least ${ADAPTIVE_WARRANT_ANNOTATION_MIN_NOTE_CHARACTERS} characters of public decision-time evidence. Do not leave a dimension note blank or substitute the case-level conclusion for dimension-specific evidence. The collection assembler applies only two declared mechanical canonicalizations: \`primary_warrant_basis=none\` forces \`recommended_action_family=hold\`, and \`primary_warrant_basis=uncertain\` forces \`recommended_action_family=uncertain\`. It records every such edit in a normalization audit; it never infers a positive basis or family.
+
+## Disjoint calibration examples
+
+- Result request: “What does the next public clue show?” asks the tutor to supply an available result and can create tutor-owned debt.
+- Proposed test: “Can we inspect the next clue?” proposes an investigation; it does not yet ask the tutor to report a known result.
+- Criterion: “What would the next clue need to establish?” asks for a standard of proof, not a result.
+- Selection: “Could you choose which public record we should inspect?” delegates a choice, not result production.
+- Record entry: “I can record that finding now” offers to write an already-public claim; it is neither a test proposal nor tutor-owned result debt.
+- Commitment transition and candidate override are independent. A prior family may warrant transition while the current candidate already realizes the correct successor, or a prior family may remain valid while this particular candidate still needs correction.
+- Apply warrant-basis precedence exactly: immediate repair, actionable public obligation, strict inquiry completion, action-contract result, then register or accumulated trouble. Use \`none/hold\` only when none applies.
+- Explicit analytic work can be conceptually aligned even when the learner record stays flat. Conceptual stalling needs a public failure signal such as an explicit stall or low-agency deferral; productive testing is not conceptual failure.
+- Strategy exhaustion follows the supplied typed expected-uptake contract. If the contract says the learner adopted or used the staged evidence, do not mark the family exhausted only because the learner's surface wording still sounds dependent. Mark exhaustion when that contract is defeated, expired, or repeatedly failed.
 
 ## Precedence and safety
 

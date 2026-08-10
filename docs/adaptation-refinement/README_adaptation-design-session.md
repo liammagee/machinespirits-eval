@@ -78,3 +78,27 @@ context; active runs remain outside the gold corpus and supply matched
 execution plus exact typed parity. No downstream causal comparison is licensed
 unless every delivery, support, divergence, accuracy, closure-safety, and
 parity gate passes. The live gate remains experimental and off by default.
+
+## Current checkpoint — 11 August 2026, after the seventh V4 read
+
+The seventh execution finally passed the complete runtime boundary: 24/24
+valid dialogues, 192/192 learner-analysis calls, exact 192/192 live/replay
+parity, and zero delivery-application mismatch. Its two independent Luna
+readers completed all 96 observe decisions, but the frozen measurement gate
+failed. Agreement was 0.698, recall 0.567, overall accuracy 0.731, and request/
+proposal macro-F1 0.143. Only pacing passed every six-dimensional gate; rare
+obligation, completion, conceptual, and epistemic states lacked support.
+
+The architecture is therefore integrated but not generally validated. Bounded
+prospective repairs now cover the observed speech-act misses, conceptual
+flatness overreach, and same-turn interactional timing error. Annotation
+collection is deterministic and keyed by exact opaque IDs, with substantive
+note validation and auditable canonicalization.
+
+The next validation uses two separately frozen surfaces: a fresh all-turn
+natural corpus for prevalence and false positives, and an authored challenge
+corpus for guaranteed lifecycle, completion, and non-aligned support. The
+challenge rows may test accuracy but may never be pooled into natural-rate
+estimates. Both must pass before an active-versus-observe outcome study is
+licensed. The seventh corpus remains a disclosed failed calibration artifact,
+not a dataset to tune and rescore into passage.

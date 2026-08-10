@@ -765,6 +765,43 @@ support fails inconclusively. Even a full pass would
 validate only the automated mechanism and would merely license a separately
 frozen variance-controlled outcome study.
 
+### Two-surface semantic validation after the first V4 result
+
+The first fully valid execution showed that the six-axis projection cannot be
+validated from one naturally sampled corpus alone. Natural dialogue turns are
+the correct denominator for descriptive prevalence, false positives, and
+ordinary interaction. They do not guarantee persistence, resolution,
+completion, or non-aligned support on each rare DAG layer. A prediction-
+balanced sample would supply support only by contaminating prevalence.
+
+The validation architecture therefore has two non-interchangeable surfaces:
+
+| Surface | Construction | Licensed inference |
+|---|---|---|
+| `natural_prevalence` | every observe decision from a fresh matched dialogue matrix | natural state prevalence, false-positive behavior, and supported accuracy cells |
+| `targeted_challenge` | separately authored public decision-time cases with a private hash-bound support plan | classification, lifecycle, completion, and per-axis accuracy at the predeclared rare-state minima |
+
+The two corpora must be independently frozen, share one calibrated handbook,
+have no public-case overlap, and be scored separately. Challenge enrichment is
+never pooled into natural rates. Passage is conjunctive at the gate level, not
+by concatenating rows.
+
+Reader collection is part of the architecture rather than an informal outer
+loop. Prepared batches use exact opaque sample IDs as object keys. Assembly
+rejects missing or extra keys and notes shorter than the declared evidence
+minimum. It may canonicalize only `none/hold` and `uncertain/uncertain` family
+pairs and writes every edit to an audit. It cannot manufacture a missing note,
+positive basis, or successor family. This removes annotation plumbing as a
+latent seventh source of divergence.
+
+The first V4 result also narrows two normative definitions. Conceptual
+alignment permits explicit analytic testing while the record is flat; a public
+stall or low-agency deferral is required for conceptual failure. Interactional
+failure requires persistent, overdue, or reactivated public debt; an
+obligation first opened by the current learner turn is current demand, not
+already failed uptake. These boundaries now apply identically in live and
+offline projection and must be tested on fresh cases.
+
 ## 19. First Coding Task (completed historical instruction)
 
 Before adding new runtime logic, create a semantic audit document answering:

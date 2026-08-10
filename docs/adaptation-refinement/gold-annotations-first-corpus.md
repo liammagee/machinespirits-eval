@@ -314,3 +314,65 @@ field—and type/schema violations fail before the key is read. The short
 free-text evidence note is structurally type-checked only; its content is not
 semantically adjudicated for private/source contamination. This is a blindness
 and integrity refinement, not another calibration result.
+
+## V4 all-turn corpus — complete two-reader calibration history (11 August 2026)
+
+The first execution-valid V4 corpus came from clean commit
+`22142b7b897365695c929dfa1a0e47cb71f27512`. The 96 blinded observe cases had
+SHA-256 `1526079a0bb32ea493c37f7c58e6a1595a8c52b688bdc07e8b40dbe1ee4a392d`;
+the private key had SHA-256
+`b0efe0d6d8d7d0b9242287a5a1ced5baa87b0dac760ed94b6ec701438cc18e42`.
+Both hashes were frozen before either reader began. The public handbook and
+decision-time cases were the only research payload sent to two isolated Luna
+readers. The key, detector predictions, technical traces, and the other
+reader's response remained local.
+
+The authorized ceiling was 24 annotation calls, twelve per reader. Reader A
+returned one batch containing a wrong ID; seven correct unique labels were
+retained and the remaining 73 cases were repartitioned across the nine calls
+left. Reader B had one stalled zero-output call that was terminated and later
+one wrong-ID batch; 32 and then eight correct unique labels were retained, and
+the remaining cases were repartitioned within its twelve-call allowance. Both
+readers ultimately supplied exactly 96 unique intended IDs. Their event logs
+showed no tool use and distinct run identities.
+
+The raw responses did not satisfy the V4 consistency validator without
+normalization. Reader A required 84 field edits: 49 `none`-basis families were
+forced to `hold`, 34 blank dimension notes were copied from that reader's own
+case note, and one internally contradictory `none` basis was adjudicated to
+the positive basis described by the same row. Reader B required 86 edits: 48
+family canonicalizations, 37 note copies, and one analogous basis
+adjudication. Reader A then had 33 positive and 63 negative transition labels;
+reader B had 34 positive and 62 negative; neither used `uncertain`.
+
+These repairs preserved reader-authored content, but the two basis
+adjudications were not predeclared and blank-note copying erased the intended
+dimension-specific evidence check. The normalized responses are therefore
+valid inputs to the historical frozen scorer but not a satisfactory future
+collection protocol. Their normalization audits remain part of the result.
+
+The frozen result was raw agreement 0.698, 67 scored consensuses, and 29
+uncertain-by-disagreement rows. Precision was 0.773, recall 0.567, accuracy
+0.731, and transition accuracy 0.545. Request/proposal macro-F1 was 0.143.
+Only pacing passed every dimension-specific gate. The corpus had no consensus
+obligation-persistence or resolution cases and only two complete-inquiry
+cases. The overall mechanism gate failed and no downstream outcome comparison
+was run.
+
+## Prospective collection correction
+
+Future readers receive deterministic batches whose cases and responses are
+objects keyed by the exact opaque sample IDs. Missing, extra, or misplaced IDs
+fail at batch assembly. Case and per-dimension evidence notes must each contain
+at least 24 characters. Only two mechanical transformations are permitted and
+audited: `primary_warrant_basis=none` forces `hold`, and `uncertain` forces an
+`uncertain` family. The assembler cannot copy notes or infer a positive basis
+or action family.
+
+The frozen handbook now includes disjoint examples for result requests,
+learner-proposed tests, criteria, tutor selection, and learner record entry;
+separates commitment transition from candidate override; declares warrant-
+basis precedence; treats explicit analytic work as conceptually aligned under
+the current norm; and anchors strategy exhaustion to the supplied typed
+expected-uptake contract. These changes are prospective. The V4 corpus remains
+burned and is not rescored under them.
