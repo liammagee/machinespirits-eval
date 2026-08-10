@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-auto-eval-report-assets
 title: Extract tutor-stub auto-eval report assets
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -19,9 +19,12 @@ claim_status: planned
 depends_on:
   - refactor-dramatic-derivation-tutor-prompt-construction
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/631
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
     - docs/next-steps/2026-08-10-codebase-refactoring-post-tutor-prompt-reconciliation.md
+    - docs/next-steps/2026-08-10-codebase-refactoring-post-auto-eval-assets-reconciliation.md
   code:
     - scripts/run-tutor-stub-auto-eval.js
     - services/tutorStubAutoEvalReportAssets.js
@@ -87,3 +90,7 @@ Log:
   groups, and every structural gate pass. The first simultaneous shard run
   reproduced unrelated concurrency-sensitive tutor-stub failures; isolated
   reruns passed 4,662/4,662 and 3,704/3,704 with zero skips.
+- 2026-08-10 — PR #631 merged as `1e04d292`; the serialized generated-view
+  refresh advanced `main` to `5e2238a5`. Fresh post-merge measurement confirms
+  the emitted asset hashes, the 8,257-line auto-eval executable, and the green
+  source/manifest/cycle contracts, closing this child.

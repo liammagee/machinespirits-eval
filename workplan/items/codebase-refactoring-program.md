@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-24
 updated: 2026-08-10
-branch: codex/refactor-post-tutor-prompt-reconciliation
+branch: codex/refactor-post-auto-eval-assets-reconciliation
 verification: >-
   Every accepted refactoring slice has a linked child card and parity gate;
   root plus in-housed tutor-core tests run from one clean-install contract;
@@ -25,6 +25,7 @@ links:
     - docs/next-steps/2026-08-09-codebase-refactoring-post-run-coordinator-reconciliation.md
     - docs/next-steps/2026-08-10-codebase-refactoring-post-strategy-ledger-reconciliation.md
     - docs/next-steps/2026-08-10-codebase-refactoring-post-tutor-prompt-reconciliation.md
+    - docs/next-steps/2026-08-10-codebase-refactoring-post-auto-eval-assets-reconciliation.md
   items:
     - refactor-required-run-manifest
     - refactor-v-series-fixtures
@@ -155,6 +156,7 @@ links:
     - refactor-dramatic-derivation-strategy-ledger-prompt
     - refactor-dramatic-derivation-tutor-prompt-construction
     - refactor-tutor-stub-auto-eval-report-assets
+    - refactor-tutor-stub-auto-eval-visualization-renderer
 tags:
   - refactoring
   - testing
@@ -1932,3 +1934,12 @@ Log:
   complete isolated hermetic shards, tutor-core, all thirteen risk groups, and
   structural gates pass. After merge, refresh the R6 hotspot evidence before
   choosing the report/index projection boundary or the poetics browser split.
+- 2026-08-10 — PR #631 merged child 129 as `1e04d292`; the serialized
+  generated-view refresh advanced `main` to `5e2238a5`. Fresh metrics record
+  5,060 repository files, 2,548 source files, 882,752 source-code lines, a
+  synchronized 664-root/11-core hermetic manifest, and zero cycles across 575
+  files. The auto-eval executable is 8,257 lines. Triaged child
+  130, `refactor-tutor-stub-auto-eval-visualization-renderer`: its existing
+  roughly 1,004-line, complexity-2 renderer is the remaining R6 presentation
+  boundary named by the programme plan and is safer than moving the
+  complexity-114 training-data projector before a direct data-shape contract.
