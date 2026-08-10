@@ -21,8 +21,11 @@
  * final uptake/repetition/repair/pacing outcomes through tutor turn N.
  */
 
+import { isDeepStrictEqual } from 'node:util';
+
 import {
   classifyLearnerSignal,
+  buildAdaptiveWarrantDecisionInputSnapshot,
   evaluateWarrant,
   CONCEPTUAL_STALL_TURNS,
   REPETITION_DEFEATER_THRESHOLD,
@@ -31,9 +34,17 @@ import {
   createAdaptiveWarrantActionContractTracker,
   getAdaptiveWarrantActionContract,
 } from './adaptiveWarrantActionContracts.js';
+import {
+  assessAdaptiveWarrantInquiryCompletion,
+  projectAdaptiveWarrantEvidenceAvailability,
+} from './adaptiveWarrantInquiryCompletion.js';
+import { buildAdaptiveWarrantObligationDirective } from './adaptiveWarrantPolicy.js';
+import { createAdaptiveWarrantPublicObligationLedger } from './adaptiveWarrantPublicObligationLedger.js';
 
-export const TUTOR_STUB_WARRANT_GATE_SCHEMA = 'machinespirits.tutor-stub.warrant-gate.v3';
-export const TUTOR_STUB_WARRANT_GATE_OUTCOME_SCHEMA = 'machinespirits.tutor-stub.warrant-gate-outcome.v2';
+export const TUTOR_STUB_WARRANT_GATE_SCHEMA = 'machinespirits.tutor-stub.warrant-gate.v4';
+export const TUTOR_STUB_WARRANT_GATE_OUTCOME_SCHEMA = 'machinespirits.tutor-stub.warrant-gate-outcome.v3';
+export const TUTOR_STUB_WARRANT_GATE_FINAL_AUTHORITY_AUDIT_SCHEMA =
+  'machinespirits.tutor-stub.warrant-gate-final-authority-audit.v1';
 export const TUTOR_STUB_WARRANT_GATE_MODES = Object.freeze(['off', 'observe', 'active']);
 
 export function resolveTutorStubWarrantGateMode(value = process.env.TUTOR_STUB_WARRANT_GATE) {
@@ -45,6 +56,127 @@ export function resolveTutorStubWarrantGateMode(value = process.env.TUTOR_STUB_W
     throw new Error(`TUTOR_STUB_WARRANT_GATE must be one of ${TUTOR_STUB_WARRANT_GATE_MODES.join('|')}, got "${mode}"`);
   }
   return mode;
+}
+
+/**
+ * Reassert an active normative gate decision after optional policy layers have
+ * run. Point-of-action, typed-action, and conversational-completion policies
+ * may propose candidates, but they cannot silently displace a warranted
+ * commitment. Evidence, closure, and response guards still audit the realized
+ * turn after this boundary.
+ */
+function changedTopLevelFields(current = {}, frozen = {}, excluded = []) {
+  const excludedFields = new Set(excluded);
+  return [...new Set([...Object.keys(current || {}), ...Object.keys(frozen || {})])]
+    .filter((field) => !excludedFields.has(field))
+    .filter((field) => !isDeepStrictEqual(current?.[field], frozen?.[field]))
+    .sort();
+}
+
+export function enforceTutorStubWarrantGateFinalAuthority(
+  selection,
+  decision = selection?.warrant_gate || null,
+  { frozenPreOptionalSelection = null } = {},
+) {
+  const desiredActionFamily =
+    decision?.mode === 'active' && decision?.revision_warranted === true ? decision?.policy?.family || null : null;
+  if (!selection || !desiredActionFamily) return selection;
+  const responseConfiguration = selection.response_configuration || null;
+  const frozenSelection = frozenPreOptionalSelection ? structuredClone(frozenPreOptionalSelection) : null;
+  const frozenResponseConfiguration = frozenSelection?.response_configuration || null;
+  if (frozenResponseConfiguration && frozenResponseConfiguration.action_family !== desiredActionFamily) {
+    throw new Error(
+      `Adaptive warrant final authority expected frozen action family ${desiredActionFamily}, got ${
+        frozenResponseConfiguration.action_family || 'none'
+      }`,
+    );
+  }
+  const displacedActionFamily = responseConfiguration?.action_family || selection.action_family || null;
+  const obligationDirective =
+    decision.obligation_directive ||
+    frozenResponseConfiguration?.public_obligation_directive ||
+    responseConfiguration?.public_obligation_directive ||
+    null;
+  const reason = `Active adaptive warrant final authority: ${decision.warrant_basis || 'typed warrant'}.`;
+  const displacedResponseConfigurationFields = frozenResponseConfiguration
+    ? changedTopLevelFields(responseConfiguration, frozenResponseConfiguration, ['adaptive_warrant_enforcement'])
+    : [];
+  const displacedSelectionFields = frozenSelection
+    ? changedTopLevelFields(selection, frozenSelection, [
+        'adaptive_warrant_enforcement',
+        'response_configuration',
+        'warrant_gate',
+      ])
+    : [];
+  const finalAuthorityAudit = frozenSelection
+    ? {
+        schema: TUTOR_STUB_WARRANT_GATE_FINAL_AUTHORITY_AUDIT_SCHEMA,
+        pre_final_selection: structuredClone(selection),
+        frozen_pre_optional_selection: structuredClone(frozenSelection),
+      }
+    : null;
+  const enforcement = {
+    schema: 'machinespirits.tutor-stub.warrant-gate-final-authority.v2',
+    applied: true,
+    desired_action_family: desiredActionFamily,
+    displaced_action_family:
+      displacedActionFamily && displacedActionFamily !== desiredActionFamily ? displacedActionFamily : null,
+    warrant_basis: decision.warrant_basis || null,
+    decision_kind: decision.decision_kind || null,
+    configuration_source: frozenResponseConfiguration
+      ? 'frozen_pre_optional_gate_configuration'
+      : 'legacy_action_family_patch',
+    configuration_restored: Boolean(frozenResponseConfiguration),
+    optional_configuration_displaced: Boolean(
+      displacedResponseConfigurationFields.length || displacedSelectionFields.length,
+    ),
+    displaced_response_configuration_fields: displacedResponseConfigurationFields,
+    displaced_selection_fields: displacedSelectionFields,
+    final_authority_audit: finalAuthorityAudit,
+  };
+  if (frozenResponseConfiguration) {
+    const restoredResponseConfiguration = {
+      ...structuredClone(frozenResponseConfiguration),
+      action_family: desiredActionFamily,
+      public_obligation_directive: obligationDirective ? structuredClone(obligationDirective) : null,
+      adaptive_warrant_enforcement: enforcement,
+      compatibility: {
+        ...(frozenResponseConfiguration.compatibility || {}),
+        pre_final_warrant_action_family: displacedActionFamily,
+        final_authority_configuration_source: enforcement.configuration_source,
+      },
+    };
+    return {
+      ...frozenSelection,
+      warrant_gate: decision,
+      action_family: desiredActionFamily,
+      adaptive_warrant_enforcement: enforcement,
+      response_configuration: restoredResponseConfiguration,
+    };
+  }
+  return {
+    ...selection,
+    action_family: desiredActionFamily,
+    adaptive_warrant_enforcement: enforcement,
+    response_configuration: responseConfiguration
+      ? {
+          ...responseConfiguration,
+          action_family: desiredActionFamily,
+          public_obligation_directive: obligationDirective
+            ? structuredClone(obligationDirective)
+            : responseConfiguration.public_obligation_directive || null,
+          adaptive_warrant_enforcement: enforcement,
+          selection_reasons: {
+            ...(responseConfiguration.selection_reasons || {}),
+            action_family: reason,
+          },
+          compatibility: {
+            ...(responseConfiguration.compatibility || {}),
+            pre_final_warrant_action_family: displacedActionFamily,
+          },
+        }
+      : responseConfiguration,
+  };
 }
 
 function dagTotal(dagModel) {
@@ -62,8 +194,10 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
   let complaintTurns = [];
   let previousDagTotal = null;
   let turnsSinceDagGrowth = 0;
+  let boundedInquiryScopeAtDecision = null;
   const pendingOutcomes = new Map();
   const actionContracts = createAdaptiveWarrantActionContractTracker();
+  const publicObligations = createAdaptiveWarrantPublicObligationLedger();
 
   return {
     schema: TUTOR_STUB_WARRANT_GATE_SCHEMA,
@@ -84,6 +218,9 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
       mechanicalRepair = false,
       guardAccounting = null,
       pacingSignal = null,
+      tutorText = '',
+      releasedEvidence = [],
+      deliveredResponseConfiguration = null,
     } = {}) {
       const normalizedTurn = Number(turn);
       if (!Number.isFinite(normalizedTurn) || normalizedTurn < 1) {
@@ -115,6 +252,11 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         mechanical_repair: Boolean(mechanicalRepair),
         guard_outcome: guardAccounting?.outcome || null,
         pacing_signal: pacingSignal || null,
+        tutor_text: String(tutorText || ''),
+        released_evidence: structuredClone(Array.isArray(releasedEvidence) ? releasedEvidence : []),
+        delivered_response_configuration: deliveredResponseConfiguration
+          ? structuredClone(deliveredResponseConfiguration)
+          : null,
         defeaters: [...new Set(defeaters)],
       };
       pendingOutcomes.set(normalizedTurn, outcome);
@@ -125,7 +267,37 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
      * Assess the decision point at tutor turn N. priorActionFamily is the
      * family of the PREVIOUS turn's delivered selection (null on turn 1).
      */
-    assess({ turn, learnerText = '', classification = null, dagModel = null, priorActionFamily = null } = {}) {
+    assess({
+      turn,
+      learnerText = '',
+      classification = null,
+      dagModel = null,
+      priorActionFamily = null,
+      proposedActionFamily = null,
+      dialogueClosureFrame = null,
+      evidenceAvailability = null,
+      boundedInquiryScope = null,
+      unsupportedAssertionCount = 0,
+      activeDroppedFactCount = 0,
+      releasedEvidenceIntegrated = true,
+    } = {}) {
+      const priorTurn = turn - 1;
+      boundedInquiryScopeAtDecision = boundedInquiryScope ? structuredClone(boundedInquiryScope) : null;
+      const priorTurnOutcome = pendingOutcomes.get(priorTurn) || null;
+      const publicObligationBefore = publicObligations.snapshot();
+      const reducerStateBefore = {
+        strategy_in_force: strategyInForce,
+        strategy_since_turn: strategySince,
+        previous_dag_total: previousDagTotal,
+        turns_since_dag_growth: turnsSinceDagGrowth,
+        trouble_turns: structuredClone(troubleTurns),
+        complaint_turns: [...complaintTurns],
+        recent_signals: history.slice(-2).map((row) => structuredClone(row.signal)),
+        action_contract_state: actionContracts.snapshot(),
+        pending_prior_turn_outcome: priorTurnOutcome,
+        public_obligation_ledger: publicObligationBefore,
+      };
+
       // Strategy streak bookkeeping: a family change (by whatever mechanism)
       // resets the trouble and complaint pools.
       if (priorActionFamily && priorActionFamily !== strategyInForce) {
@@ -144,8 +316,6 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
       // decision N describe one outcome row. Add it only after a possible
       // family-change reset: the outcome belongs to the family actually
       // delivered on N-1, not to the older family that preceded it.
-      const priorTurn = turn - 1;
-      const priorTurnOutcome = pendingOutcomes.get(priorTurn) || null;
       const priorTurnDefeaters = [...(priorTurnOutcome?.defeaters || [])];
       if (dagGrowth !== null && dagGrowth <= 0) priorTurnDefeaters.push('no_dag_growth');
       if (priorTurn >= 1 && priorTurnDefeaters.length) {
@@ -154,6 +324,23 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
       pendingOutcomes.delete(priorTurn);
       if (signal.labels.includes('register_complaint')) complaintTurns.push(turn);
 
+      const publicObligation = publicObligations.assess({
+        turn,
+        learnerText,
+        classification,
+        priorTutorOutcome: priorTurnOutcome,
+      });
+      const inquiryCompletion = assessAdaptiveWarrantInquiryCompletion({
+        dagModel,
+        classification,
+        closureFrame: dialogueClosureFrame,
+        evidenceAvailability,
+        publicObligation,
+        boundedScope: boundedInquiryScopeAtDecision,
+        unsupportedAssertionCount,
+        activeDroppedFactCount,
+        releasedEvidenceIntegrated,
+      });
       const recentSignals = [...history.slice(-2).map((row) => row.signal), signal];
       const deferenceSustained =
         recentSignals.length === 3 && recentSignals.every((s) => s.labels.includes('low_agency_deferral'));
@@ -178,6 +365,39 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         dagGrowth,
       });
       if (actionContract?.transition?.discharge_prior_trouble) troubleTurns = [];
+      const decisionInput = buildAdaptiveWarrantDecisionInputSnapshot({
+        turn,
+        learnerText,
+        classification,
+        dagModel,
+        priorActionFamily: strategyInForce,
+        proposedActionFamily,
+        dialogueClosureFrame,
+        evidenceAvailability,
+        publicObligationBefore,
+        priorTurnOutcome,
+        boundedInquiryScope: boundedInquiryScopeAtDecision,
+        unsupportedAssertionCount,
+        activeDroppedFactCount,
+        releasedEvidenceIntegrated,
+        reducerStateBefore,
+        currentReducerInputs: {
+          strategy_in_force: strategyInForce,
+          strategy_since_turn: strategySince,
+          learner_signal: signal,
+          dag_total: total,
+          dag_growth: dagGrowth,
+          turns_since_dag_growth: turnsSinceDagGrowth,
+          trouble_turns: structuredClone(troubleTurns),
+          complaint_turns: [...complaintTurns],
+          recent_signals: recentSignals.map((row) => structuredClone(row)),
+          deference_sustained: deferenceSustained,
+          divergence,
+          action_contract: actionContract,
+          public_obligation: publicObligation,
+          inquiry_completion: inquiryCompletion,
+        },
+      });
       const warrant = evaluateWarrant({
         signal,
         signalConsumed: false,
@@ -187,22 +407,38 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         divergence,
         strategyInForce,
         actionContract,
+        publicObligation,
+        inquiryCompletion,
+        proposedActionFamily,
       });
 
+      const recommendedActionFamily = warrant.policy?.family || null;
+      const commitmentTransitionWarranted = Boolean(
+        warrant.revision_warranted &&
+        strategyInForce &&
+        recommendedActionFamily &&
+        recommendedActionFamily !== strategyInForce,
+      );
+      const candidateOverrideRequired = Boolean(
+        warrant.revision_warranted && recommendedActionFamily && recommendedActionFamily !== proposedActionFamily,
+      );
       const override =
-        mode === 'active' && warrant.revision_warranted && warrant.policy && warrant.policy.family !== strategyInForce
+        mode === 'active' && candidateOverrideRequired
           ? {
-              action_family: warrant.policy.family,
+              action_family: recommendedActionFamily,
               engagement_stance: warrant.policy.stance_hint || 'plain',
               reason: `Adaptive warrant gate: ${warrant.warrant_basis} — ${warrant.policy.rationale}`,
             }
           : null;
+      const obligationDirective = mode === 'active' ? buildAdaptiveWarrantObligationDirective(publicObligation) : null;
 
       const decision = {
         schema: TUTOR_STUB_WARRANT_GATE_SCHEMA,
         mode,
         turn,
         strategy_in_force: strategyInForce,
+        prior_delivered_action_family: strategyInForce,
+        pre_gate_proposed_action_family: proposedActionFamily || null,
         strategy_since_turn: strategySince,
         learner_signal: signal,
         dag_total: total,
@@ -213,11 +449,21 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         complaint_turns: [...complaintTurns],
         deference_sustained: deferenceSustained,
         action_contract: actionContract,
+        public_obligation: publicObligation,
+        public_obligation_before: publicObligationBefore,
+        inquiry_completion: inquiryCompletion,
+        bounded_inquiry_scope: boundedInquiryScopeAtDecision,
+        input_snapshot: decisionInput.snapshot,
+        input_digest: decisionInput.sha256,
         divergence,
+        decision_kind: warrant.decision_kind,
         revision_warranted: warrant.revision_warranted,
+        commitment_transition_warranted: commitmentTransitionWarranted,
+        current_candidate_override_required: candidateOverrideRequired,
         register_revision_warranted: warrant.register_revision_warranted,
         warrant_basis: warrant.warrant_basis,
         policy: warrant.policy,
+        obligation_directive: obligationDirective,
         override,
       };
       history.push({ turn, signal, decision });
@@ -227,7 +473,90 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
     decisions() {
       return history.map((row) => row.decision);
     },
+
+    snapshot() {
+      return {
+        schema: TUTOR_STUB_WARRANT_GATE_SCHEMA,
+        mode,
+        strategy_in_force: strategyInForce,
+        strategy_since_turn: strategySince,
+        previous_dag_total: previousDagTotal,
+        turns_since_dag_growth: turnsSinceDagGrowth,
+        trouble_turns: structuredClone(troubleTurns),
+        complaint_turns: [...complaintTurns],
+        bounded_inquiry_scope: boundedInquiryScopeAtDecision ? structuredClone(boundedInquiryScopeAtDecision) : null,
+        public_obligation_ledger: publicObligations.snapshot(),
+        decisions: history.map((row) => structuredClone(row.decision)),
+      };
+    },
   };
+}
+
+/** Rebuild all reducer state from committed public turn records. */
+export function restoreTutorStubWarrantGateFromTurns(gate, turns = []) {
+  if (!gate || !Array.isArray(turns) || !turns.length) return gate;
+  let priorDeliveredActionFamily = null;
+  for (const record of turns) {
+    const turn = Number(record?.turn);
+    if (!Number.isFinite(turn) || turn < 1) continue;
+    const delivered = record.deliveredResponseConfiguration || record.responseConfiguration || null;
+    const deliveredActionFamily =
+      delivered?.action_family ||
+      record.registerSelection?.action_family ||
+      record.responseConfiguration?.action_family ||
+      null;
+    const storedDecision = record.warrantGateDecision || record.registerSelection?.warrant_gate || null;
+    const storedInput = storedDecision?.input_snapshot || null;
+    const storedCompletionChecks = storedDecision?.inquiry_completion?.checks || {};
+    gate.assess({
+      turn,
+      learnerText: storedInput?.learner_text ?? record.learner ?? '',
+      classification: storedInput?.classification || record.classification || null,
+      dagModel: storedInput?.learner_dag_model || record.tutorLearnerDagModel || null,
+      priorActionFamily: priorDeliveredActionFamily,
+      proposedActionFamily: storedDecision?.pre_gate_proposed_action_family || deliveredActionFamily,
+      dialogueClosureFrame: storedInput?.dialogue_closure_frame || record.dialogueClosure?.frame || null,
+      evidenceAvailability:
+        storedInput?.evidence_availability ||
+        projectAdaptiveWarrantEvidenceAvailability(record.releasePacing, { turn }),
+      boundedInquiryScope: Object.hasOwn(storedInput || {}, 'bounded_inquiry_scope')
+        ? storedInput.bounded_inquiry_scope
+        : storedDecision?.bounded_inquiry_scope || null,
+      unsupportedAssertionCount: Number(
+        storedInput?.unsupported_assertion_count ||
+          record.tutorLearnerDagModel?.assessment?.unsupportedAssertionCount ||
+          storedCompletionChecks.unsupported_assertion_count ||
+          0,
+      ),
+      activeDroppedFactCount: Number(
+        storedInput?.active_dropped_fact_count ||
+          record.tutorLearnerDagModel?.memoryReliability?.activeDroppedCount ||
+          record.dagFactDropout?.activeCount ||
+          0,
+      ),
+      releasedEvidenceIntegrated:
+        storedInput?.released_evidence_integrated !== undefined
+          ? storedInput.released_evidence_integrated === true
+          : storedCompletionChecks.released_evidence_integrated !== undefined
+            ? storedCompletionChecks.released_evidence_integrated === true
+            : record.tutorLearnerDagModel?.assessment?.bottleneck !== 'learner_integration_gap',
+    });
+    gate.recordTurnOutcome({
+      turn,
+      actionFamily: deliveredActionFamily,
+      uptakeAudit: record.tutorLiveTurnProgressionAudit || null,
+      repetitionAudit: record.tutorRepetitionAudit || null,
+      deterministicFallback: Boolean(record.tutorDeterministicFallback),
+      mechanicalRepair: Boolean(record.tutorMechanicalRepair),
+      guardAccounting: record.tutorGuardAccounting || null,
+      pacingSignal: record.releasePacing?.signal || null,
+      tutorText: record.tutor || '',
+      releasedEvidence: record.dramaticRelease?.frame?.entries || [],
+      deliveredResponseConfiguration: delivered,
+    });
+    priorDeliveredActionFamily = deliveredActionFamily;
+  }
+  return gate;
 }
 
 /**
@@ -236,7 +565,10 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
  */
 export function ensureTutorStubWarrantGate(state, { mode = resolveTutorStubWarrantGateMode() } = {}) {
   if (mode === 'off') return null;
-  if (!state.warrantGate) state.warrantGate = createTutorStubWarrantGate({ mode });
+  if (!state.warrantGate) {
+    state.warrantGate = createTutorStubWarrantGate({ mode });
+    restoreTutorStubWarrantGateFromTurns(state.warrantGate, state.turns || []);
+  }
   return state.warrantGate;
 }
 

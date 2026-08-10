@@ -1,3 +1,10 @@
+export function resetTutorStubWarrantGateAfterLearnerAnalysisFailure(state) {
+  if (!state) return false;
+  const hadGate = Boolean(state.warrantGate);
+  state.warrantGate = null;
+  return hadGate;
+}
+
 export function createTutorStubLearnerAnalysisRuntime({
   CLASSIFIER_SYSTEM_PROMPT,
   LEARNER_RECORD_SYSTEM_PROMPT,
@@ -728,6 +735,11 @@ export function createTutorStubLearnerAnalysisRuntime({
       return { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy };
     } catch (err) {
       if (err?.name === 'AbortError') throw err;
+      // Combined analysis can fail after response selection has already
+      // advanced the closure-backed warrant reducer. The fallback selection
+      // is a second attempt at the same decision turn, so rebuild from the
+      // committed prefix instead of consuming that turn twice.
+      resetTutorStubWarrantGateAfterLearnerAnalysisFailure(state);
       const classification = failedClassification({
         message: err.message,
         resolved: state.learnerDag.resolved,

@@ -136,6 +136,46 @@ test('typed-action restoration keeps closed records closed and clears pending de
   assert.equal(state.typedActions.currentDecision, null);
 });
 
+test('typed-action restoration keeps warrant-displaced decisions cancelled across resume', () => {
+  const current = {
+    ...decision('displaced'),
+    delivery: {
+      delivered: false,
+      disposition: 'displaced_before_tutor_output',
+      delivered_action_family: 'answer_accountably',
+    },
+  };
+  const pending = { contract_id: 'displaced', status: 'pending', action_type: 'diagnostic_probe' };
+  const cancelled = {
+    ...pending,
+    status: 'cancelled_before_delivery',
+    cancellation: {
+      reason: 'adaptive_warrant_gate_final_authority',
+      delivered_action_family: 'answer_accountably',
+    },
+  };
+  const restoredLifecycle = createScaffoldLifecycle();
+  const state = { typedActions: { enabled: true } };
+  const result = restoreTutorStubTypedActionState(
+    state,
+    [{ typedActionDecision: current, scaffoldLifecycle: restoredLifecycle }],
+    [
+      { type: 'tutor_typed_action_decision', decision: current, pendingIntervention: pending },
+      {
+        type: 'tutor_typed_action_decision_displaced',
+        contractId: 'displaced',
+        cancelledIntervention: cancelled,
+        restoredScaffoldLifecycle: restoredLifecycle,
+      },
+    ],
+  );
+  assert.equal(result.pendingContractId, null);
+  assert.equal(result.currentActionType, null);
+  assert.equal(state.typedActions.ledger[0].status, 'cancelled_before_delivery');
+  assert.equal(state.typedActions.currentDecision, null);
+  assert.equal(state.typedActions.scaffoldLifecycle.pending_contract_id, null);
+});
+
 test('typed-action restoration fails closed on ambiguous or unproven pending ledgers', () => {
   const enabled = () => ({ typedActions: { enabled: true } });
   assert.throws(

@@ -79,6 +79,7 @@ test('diagnostic transaction rollback restores all mutable teaching state but le
     typedActions: { ledger: [] },
     pointOfAction: { current: null, history: [] },
     coach: { pending: [], history: [] },
+    warrantGate: { mutatedByFailedAttempt: false },
     trace: { filePath: 'preserved.jsonl' },
     diagnosticCollection: { quarantinedTurns: [] },
   };
@@ -88,12 +89,14 @@ test('diagnostic transaction rollback restores all mutable teaching state but le
   state.learnerDag.grounded.push('p2');
   state.releasePacing.released.push('p2');
   state.register.current = 'charismatic';
+  state.warrantGate.mutatedByFailedAttempt = true;
   restoreTutorStubDiagnosticTransaction(state, snapshot);
   assert.deepEqual(state.history, [{ role: 'assistant', content: 'opening' }]);
   assert.deepEqual(state.turns, [{ turn: 1 }]);
   assert.deepEqual(state.learnerDag.grounded, ['p1']);
   assert.deepEqual(state.releasePacing.released, ['p1']);
   assert.equal(state.register.current, 'precise');
+  assert.equal(state.warrantGate, null);
   assert.equal(state.trace.filePath, 'preserved.jsonl');
   assert.deepEqual(state.diagnosticCollection.quarantinedTurns, []);
 });

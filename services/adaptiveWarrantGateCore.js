@@ -9,9 +9,12 @@
  * docs/adaptation-refinement/gold-annotations-first-corpus.md.
  */
 
+import { createHash } from 'node:crypto';
+
 import { recommendRepairPolicy } from './adaptiveWarrantPolicy.js';
 
-export const ADAPTIVE_WARRANT_CORE_SCHEMA = 'machinespirits.adaptation-refinement.warrant-core.v2';
+export const ADAPTIVE_WARRANT_CORE_SCHEMA = 'machinespirits.adaptation-refinement.warrant-core.v3';
+export const ADAPTIVE_WARRANT_DECISION_INPUT_SCHEMA = 'machinespirits.adaptation-refinement.warrant-decision-input.v1';
 
 export const REPETITION_DEFEATER_THRESHOLD = 0.35;
 export const ACCUMULATED_TROUBLE_THRESHOLD = 2;
@@ -34,6 +37,85 @@ const ANALYTIC_MARKER_PATTERN =
 // accumulated trouble nor immediately warrants.
 const DEFERENCE_PATTERN =
   /^(?:may|might|should|shall|could|can|would) (?:i|we)\b|^(?:would|could|will|can) you (?:have|like|choose|pick|decide)\b|^do you want (?:me|us) to\b|^is it (?:all right|ok(?:ay)?) if (?:i|we)\b/iu;
+
+function canonicalJson(value) {
+  if (Array.isArray(value)) return value.map(canonicalJson);
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(
+    Object.keys(value)
+      .sort()
+      .filter((key) => value[key] !== undefined)
+      .map((key) => [key, canonicalJson(value[key])]),
+  );
+}
+
+function decisionPriorOutcome(outcome) {
+  if (!outcome) return null;
+  return {
+    schema: outcome.schema || null,
+    turn: Number(outcome.turn) || null,
+    action_family: outcome.action_family || outcome.actionFamily || null,
+    action_contract: outcome.action_contract || outcome.actionContract || null,
+    uptake_ok: outcome.uptake_ok ?? outcome.uptakeOk ?? null,
+    repetition_max_similarity: outcome.repetition_max_similarity ?? outcome.repetitionMaxSimilarity ?? null,
+    deterministic_fallback: Boolean(outcome.deterministic_fallback ?? outcome.deterministicFallback),
+    mechanical_repair: Boolean(outcome.mechanical_repair ?? outcome.mechanicalRepair),
+    guard_outcome: outcome.guard_outcome || outcome.guardOutcome || null,
+    pacing_signal: outcome.pacing_signal || outcome.pacingSignal || null,
+    tutor_text: String(outcome.tutor_text || outcome.tutorText || ''),
+    released_evidence: outcome.released_evidence || outcome.releasedEvidence || [],
+    delivered_response_configuration:
+      outcome.delivered_response_configuration || outcome.deliveredResponseConfiguration || null,
+    defeaters: Array.isArray(outcome.defeaters) ? [...outcome.defeaters] : [],
+  };
+}
+
+/**
+ * Serializable pre-gate boundary for exact replay and future frozen-prefix
+ * branching. It contains only decision-time inputs; outputs live beside it.
+ */
+export function buildAdaptiveWarrantDecisionInputSnapshot({
+  turn,
+  learnerText = '',
+  classification = null,
+  dagModel = null,
+  priorActionFamily = null,
+  proposedActionFamily = null,
+  dialogueClosureFrame = null,
+  evidenceAvailability = null,
+  publicObligationBefore = null,
+  priorTurnOutcome = null,
+  boundedInquiryScope = null,
+  unsupportedAssertionCount = 0,
+  activeDroppedFactCount = 0,
+  releasedEvidenceIntegrated = true,
+  reducerStateBefore = null,
+  currentReducerInputs = null,
+} = {}) {
+  const snapshot = canonicalJson({
+    schema: ADAPTIVE_WARRANT_DECISION_INPUT_SCHEMA,
+    turn: Number(turn),
+    learner_text: String(learnerText || ''),
+    classification,
+    learner_dag_model: dagModel,
+    prior_delivered_action_family: priorActionFamily || null,
+    pre_gate_proposed_action_family: proposedActionFamily || null,
+    dialogue_closure_frame: dialogueClosureFrame,
+    evidence_availability: evidenceAvailability,
+    public_obligation_before: publicObligationBefore,
+    prior_turn_outcome: decisionPriorOutcome(priorTurnOutcome),
+    bounded_inquiry_scope: boundedInquiryScope,
+    unsupported_assertion_count: Number(unsupportedAssertionCount || 0),
+    active_dropped_fact_count: Number(activeDroppedFactCount || 0),
+    released_evidence_integrated: releasedEvidenceIntegrated === true,
+    reducer_state_before: reducerStateBefore,
+    current_reducer_inputs: currentReducerInputs,
+  });
+  return {
+    snapshot,
+    sha256: createHash('sha256').update(JSON.stringify(snapshot)).digest('hex'),
+  };
+}
 
 /**
  * Classify a learner turn as a decision-time signal. Multi-label where it
@@ -81,6 +163,9 @@ export function classifyLearnerSignal(text) {
  *  - divergence: typed divergence rows (for the policy choice)
  *  - strategyInForce: action family held through the prior turn
  *  - actionContract: expected-uptake lifecycle outcome for strategyInForce
+ *  - publicObligation: persistent learner-to-tutor public-result debt
+ *  - inquiryCompletion: structural whole-inquiry terminal assessment
+ *  - proposedActionFamily: builder candidate, used only for hard safety vetoes
  */
 export function evaluateWarrant({
   signal,
@@ -91,30 +176,52 @@ export function evaluateWarrant({
   divergence = [],
   strategyInForce = null,
   actionContract = null,
+  publicObligation = null,
+  inquiryCompletion = null,
+  proposedActionFamily = null,
 } = {}) {
   const masked = signal?.primary === 'engaged_analytic';
+  const blockingObligation = publicObligation?.blocking_obligation || null;
+  const obligationRevision = Boolean(blockingObligation);
+  const terminalTransition = inquiryCompletion?.transition?.kind === 'terminal_transition';
+  const unsafeClosureCandidate = Boolean(
+    proposedActionFamily === 'close_inquiry' && inquiryCompletion?.status !== 'complete',
+  );
   const contractRevision = actionContract?.transition?.revision_warranted === true;
-  const priorityContractRevision =
-    contractRevision && ['success', 'defeat'].includes(actionContract?.status);
+  const priorityContractRevision = contractRevision && ['success', 'defeat'].includes(actionContract?.status);
   const contractSuccess = actionContract?.status === 'success';
   const immediate = !signalConsumed && (signal?.primary === 'repair_request' || signal?.primary === 'stall');
   const registerEscalation = complaintTurns.length >= REGISTER_ESCALATION_THRESHOLD;
   const accumulated = !contractSuccess && !masked && troubleTurns.length >= ACCUMULATED_TROUBLE_THRESHOLD;
-  const revisionWarranted = immediate || priorityContractRevision || registerEscalation || accumulated || contractRevision;
+  const revisionWarranted =
+    immediate ||
+    obligationRevision ||
+    terminalTransition ||
+    unsafeClosureCandidate ||
+    priorityContractRevision ||
+    registerEscalation ||
+    accumulated ||
+    contractRevision;
   const registerRevisionWarranted = complaintTurns.length >= 1;
   const warrantBasis = immediate
     ? `immediate:${signal.primary}`
-    : priorityContractRevision
-      ? `contract_${actionContract.status}:${strategyInForce}:${actionContract.reason}`
-      : registerEscalation
-        ? `register_escalation:${complaintTurns.length}_complaints`
-        : accumulated
-          ? `accumulated:${troubleTurns.length}_trouble_turns`
-          : contractRevision
+    : obligationRevision
+      ? `public_obligation_${blockingObligation.status}:${blockingObligation.id}`
+      : terminalTransition
+        ? `inquiry_complete:${inquiryCompletion.basis}`
+        : unsafeClosureCandidate
+          ? `inquiry_incomplete_candidate:${inquiryCompletion?.blockers?.[0] || inquiryCompletion?.status || 'unknown'}`
+          : priorityContractRevision
             ? `contract_${actionContract.status}:${strategyInForce}:${actionContract.reason}`
-          : masked && troubleTurns.length >= ACCUMULATED_TROUBLE_THRESHOLD
-            ? 'masked_by_engaged_analytic'
-            : 'none';
+            : registerEscalation
+              ? `register_escalation:${complaintTurns.length}_complaints`
+              : accumulated
+                ? `accumulated:${troubleTurns.length}_trouble_turns`
+                : contractRevision
+                  ? `contract_${actionContract.status}:${strategyInForce}:${actionContract.reason}`
+                  : masked && troubleTurns.length >= ACCUMULATED_TROUBLE_THRESHOLD
+                    ? 'masked_by_engaged_analytic'
+                    : 'none';
   const policy = revisionWarranted
     ? recommendRepairPolicy({
         signal,
@@ -123,6 +230,9 @@ export function evaluateWarrant({
         strategyInForce,
         deferenceSustained,
         actionContract,
+        publicObligation,
+        inquiryCompletion,
+        proposedActionFamily,
       })
     : null;
   return {
@@ -130,12 +240,26 @@ export function evaluateWarrant({
     masked,
     immediate,
     accumulated,
+    decision_kind: terminalTransition
+      ? 'terminal_transition'
+      : obligationRevision
+        ? 'public_obligation_fulfilment'
+        : unsafeClosureCandidate
+          ? 'candidate_safety_override'
+          : revisionWarranted
+            ? 'pedagogical_commitment_transition'
+            : 'hold',
     register_escalation: registerEscalation,
+    public_obligation_revision: obligationRevision,
+    terminal_transition: terminalTransition,
+    unsafe_closure_candidate: unsafeClosureCandidate,
     contract_revision: contractRevision,
     revision_warranted: revisionWarranted,
     register_revision_warranted: registerRevisionWarranted,
     warrant_basis: warrantBasis,
     action_contract: actionContract,
+    public_obligation: publicObligation,
+    inquiry_completion: inquiryCompletion,
     policy,
   };
 }

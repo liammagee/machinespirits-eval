@@ -371,3 +371,310 @@ prefix replay or replicated-draw outcome work is licensed.
 
 This remains internal automated-learner calibration, not a validated repair
 policy, a paper result, or evidence of human learning.
+
+## Progress Update — 10 August 2026, context correction and successor mechanism
+
+A source-trace audit changed one part of the typed-contract interpretation.
+The two readers who selected `close_inquiry` for cases 007 and 011 were not
+shown the authored release schedule. The blind packet ended at an eight-turn
+sample and exposed no due/future-evidence counts, so both readers inferred that
+the available sequence was complete.
+
+It was not. At case 007's turn-8 decision, `p_crucible` was due and only three
+of nine releases had committed before the decision. At case 011's turn-7
+decision, nothing was due that instant, but `p_crucible` was licensed for turn
+8 and six releases remained. Both learner-DAG assessments were unentailed and
+unasserted, with best-path coverage 0.167 and a
+`release_or_pacing_gap`. Those frozen rows remain in the historical 0/4
+successor score, but they are not valid inquiry-completion or
+`close_inquiry` gold. No terminal rule may be tuned to reproduce them, and the
+end of an evaluation sample must never be treated as the end of an inquiry.
+
+The public-obligation diagnosis survives. One consensus-positive row directly
+asked what result the touchstone showed. Another asked for the balance and ring
+result, received an unrelated verdict question, answered it, and still had not
+received the requested result one turn later. This is a cross-family public
+debt, not merely failed expected uptake inside one action contract.
+
+That distinction is now implemented. A precision-first public speech-act layer
+separates a tutor-directed result request from a learner proposing a test,
+asking what criterion would count, or asking the tutor to choose the next step.
+Only the result request creates a tutor-owned obligation. The persistent ledger
+records its public target, creation and reminder turns, response deadline,
+delivery audit, and lifecycle through open, overdue/reactivated, accountable
+deferral, satisfaction, withdrawal, or transfer. It survives action-family
+changes. A generic question does not discharge it; a valid deferral must name
+the unavailable target and a concrete public next condition.
+
+In active mode this becomes an executable response contract, not a hint. The
+answer or accountable deferral owns the uptake, precedes an unrelated due
+source, and cannot be replaced by another question. Both structured and live-
+text progression audits check the target and delivery outcome; a due clue may
+follow only after the obligation has been handled.
+
+Inquiry completion is now a separate typed object that projects existing
+learner-DAG, dialogue-closure, and authored-release semantics. Normal closure
+requires the learner to have grounded and asserted the final answer and the
+authored release scope to be known and exhausted. An
+explicitly authored bounded scope may license a supported proof-limit outcome,
+but release exhaustion alone, `dueNow=[]`, sample position, or safety cap never
+does. Unresolved obligations, unsupported assertions, active dropped facts, and
+unintegrated released evidence block closure. A successful completion emits a
+`terminal_transition` to `close_inquiry`; it is not redescribed as repair
+failure.
+
+The bounded proof-limit branch is an explicit decision-time planner seam, not
+an inference from the present world schema. It is now carried through live
+selection, the canonical decision snapshot, and resume replay, but no current
+dramatic world or world scaffold authors such a terminal contract. Production
+worlds therefore supply `null` and use ordinary strict grounded-and-asserted
+closure. World-level bounded-scope authorship and its deterministic projector
+remain prospective.
+
+In active mode the typed object is also a hard safety boundary over the older
+DAG-only closure machinery. A premature `close_inquiry` candidate is replaced
+with a safe nonterminal family, and a legacy mandatory/available closure frame
+is constrained back to open while typed blockers remain. Observe mode logs the
+same counterfactual assessment but changes neither selection nor lifecycle.
+
+The decision surface now distinguishes two comparisons. A
+`commitment_transition_warranted` means the licensed family differs from the
+prior delivered family. A `current_candidate_override_required` means it also
+differs from what the base selector has already proposed for the present turn.
+Active mode overrides only the latter. This lets the ordinary selector satisfy
+a normative transition without creating a fake intervention and lets an
+already-held `answer_accountably` family receive a concrete obligation
+directive without a fake family switch.
+
+Live, resumed, and offline paths now share the same reducers. The live gate
+assesses after learner turn N and before tutor turn N, so evidence delivered on
+N is still due at that decision. Completed turns persist the actual delivered
+family, tutor text, released public evidence, ledger, completion state, and
+turn outcome. Resume rebuilds state from those public committed records; the
+offline shadow uses the same speech-act, ledger, completion, contract, and
+warrant functions. Current v4 traces compare the complete typed decision rather
+than only the warrant boolean.
+
+Each v4 decision also freezes its canonical pre-gate input and SHA-256 digest.
+This joins the learner text/classification, learner DAG, prior delivered and
+current proposed families, release availability, closure frame, ledger state
+before the learner act, prior outcome, and closure-blocker inputs at one
+inspectable boundary for resume and replay.
+
+The active gate-selected response configuration is also frozen before optional
+point-of-action, typed-action, and conversational-completion policies run.
+Final authority restores that complete bundle—not only its family name—so a
+displaced policy cannot leave stale actorial part, performance, support, task,
+or selection-reason fields in the realized draft. A displaced typed action is
+cancelled before delivery, its scaffold lifecycle is rolled back, and that
+disposition survives resume. A displaced point-of-action intervention is
+cancelled before tutor output and ignored by prompt, release, handoff,
+committee, and compliance consumers; benchmark export records the response
+configuration actually delivered while retaining cancellation provenance.
+Speculative learner branches, failed analysis,
+diagnostic rollback, session reset, and public tutor-text rewrites likewise do
+not commit or reuse a stale warrant reducer.
+
+## Progress Update — 10 August 2026, all-turn mechanism-validation preregistration
+
+The next study is deliberately not a larger baseline/outcome comparison. It is
+a context-complete mechanism test across two transfer worlds:
+`world_022_foxtrot_jukebox` and `world_028_larkspur_fridge`. It crosses those
+with six simulated learner profiles—`diligent`, `low_agency`,
+`answer_seeking`, `counterexample_hunter`, `goalpost_shifter`, and
+`fast_learner`—and two conditions, observe and active. One fresh seed per cell
+from master seed 401 and a fixed eight-turn horizon produce 24 dialogues and
+192 decisions.
+
+All eight decisions from every observe dialogue enter the blind corpus: 96
+cases, with no prediction balancing or sample selection. The packet now
+freezes the public opening text, situation/question, opening evidence, and
+requirements in every case. It also includes public-safe counts for authored
+releases, releases committed before the decision, evidence due now, future and
+remaining licensed evidence, and scope exhaustion. It never exposes the secret
+or future evidence identities/content.
+Two isolated readers label speech act, obligation source/lifecycle, inquiry
+state, prior-commitment transition, current-candidate override, warrant basis,
+and successor family. Active decisions stay outside annotation and provide
+matched intervention execution plus a second exact structured-parity
+denominator.
+
+The freeze binds the protocol, all relevant source and handbook hashes, all 96
+cases, the private key, thresholds, complete cell/turn coverage, and zero
+fingerprint overlap with earlier corpora. Source coverage includes the
+recursive static local-import closure of the study, replay, auto-eval, and
+actual tutor-stub child entrypoints; child run seals bind the tutor-stub
+closure too. This replaces the earlier hand-maintained policy-source shortlist,
+which could omit a newly active integration module. Any post-freeze code,
+handbook, projection, protocol, or threshold change burns the study.
+
+Execution validity now extends beyond reducer parity. The study summarizes a
+delivery-application audit for every decision. Persisted raw pre/post selector
+snapshots let the verifier recompute hashes and field deltas, bind selected
+family/stance/digest, and require deep equality with the shared pure gate patch;
+observe and active-hold are structurally inert. Persisted pre-final and frozen
+pre-optional selections let it recompute displacement fields, bind enforcement
+schema/decision/source/compatibility, and verify both frozen and restored
+digests.
+
+The selected configuration then passes through the shared deterministic
+speaking builder, including any tactic fallback. Final delivery is either that
+exact speaking configuration or the exact shared simplified-recovery output
+from an enumerated ladder source. Transition objects and nested structures are
+compared exactly, with speaking and recovery counts separate. The action family,
+obligation directive, and enforcement provenance cannot change. Obligation
+compilation preserves the complete target and acceptable outcomes; final public
+text must answer every required component or name the target as unavailable,
+give a concrete next condition, and end without a question. A selector,
+recovery, compilation, or delivery wiring failure therefore cannot be hidden
+by perfect live/replay agreement.
+
+The old aggregate gates remain, and the new mechanism gate additionally
+requires at least 75% complete typed consensus; sufficient positive, negative,
+successor, request/proposal, obligation-persistence/resolution, and
+complete/incomplete inquiry cases; request/proposal macro-F1 >= 0.80;
+obligation-lifecycle accuracy >= 0.80; proposed-test false-obligation rate <=
+0.10; inquiry-completion precision >= 0.90 and recall >= 0.75; zero unsafe
+closures; and zero typed live/replay mismatches with non-zero observe and active
+denominators. Missing support fails inconclusively rather than passing by
+vacuity.
+
+Only a full pass can license a separately frozen, variance-controlled outcome
+study. It would still be automated two-world/six-profile mechanism evidence,
+not proof of improved learning, an optimal repair policy, or a human-learner
+effect.
+
+## Progress Update — 10 August 2026, end-to-end delivery proof hardening
+
+The mechanism boundary is now independently replayable from selector input to
+public tutor text. Selector evidence includes raw pre/post source snapshots as
+well as hashes. Live selection and the study scorer use the same pure gate
+patch, so observe and active-hold require exact inertia and active application
+cannot carry undeclared source mutations.
+
+Final authority now records both the pre-final selection and the frozen
+pre-optional selection. The scorer recomputes the displaced response and
+selection fields, binds the decision and enforcement records at both levels,
+rejects the legacy family-only patch, and verifies the frozen digest plus
+compatibility provenance. A restoration boolean alone no longer passes.
+
+The delivery chain now distinguishes three explicit states: selected response
+configuration, deterministic speaking configuration, and final delivered
+configuration. The shared performance-obligation builder owns any speaking
+tactic fallback. The shared simplified-recovery builder owns every accepted
+plain/composition/question/source/self-correction/deterministic recovery
+configuration. Exact nested equality rejects forged role, evidence, budget, or
+performance payloads; speaking transitions and recoveries are reported
+separately.
+
+Public-obligation compilation also preserves the ledger target's signature,
+subject terms, and required components without aliasing. The shared live audit
+now rejects a composite result response that answers one component while merely
+naming another, while retaining target-specific accountable deferral as a
+separate valid outcome.
+
+These changes strengthen execution validity; they do not validate the policy.
+The next empirical step remains the predeclared 24-dialogue mechanism run,
+followed by two independent annotations of all 96 observe decisions and the
+frozen scorer. No model-backed run was launched in this update.
+
+## Progress Update — 10 August 2026, digest-bound live authorization
+
+The mechanism-study launch boundary no longer relies on the boolean
+`--launch-approved` flag alone. Every dry run now writes a
+`launch-authorization-request.json` whose canonical approval digest binds the
+two-world/six-profile/two-condition matrix, seeds and horizon, all three model
+roles and their named destinations, the declared unpublished private prompt
+payload scope, all excluded-corpus hashes, and the complete recursive source-
+provenance hash.
+
+A live mechanism invocation must supply both the boolean acknowledgement and a
+completed authorization artifact. Before it creates a live plan or starts any
+model subprocess, the runner recomputes the contract and requires exact digest,
+destination-list, and payload-scope-hash equality plus a named approver and
+valid approval time. Output-root identity and the dry/live flag are the only
+differences intentionally excluded from the digest, so a matching dry plan can
+be promoted without allowing a reroute or source mutation. An accepted copy
+and its validation audit are persisted beside the live plan.
+
+The acceptance boundary is now commit-exact as well as content-exact. An
+approvable request must come from a clean committed worktree and bind the exact
+40-character `HEAD` SHA plus the recursive source-closure hash. Live validation
+recomputes both before plan creation and fails closed on dirt, an invalid or
+different commit, or closure drift. A commit or amend after dry-run inspection
+therefore burns that authorization and requires a replacement dry run and
+digest.
+
+The predeclared route is `codex.gpt-5.6-luna` for the speaking tutor, combined
+learner analysis, and automated learner, with **OpenAI Codex CLI
+(ChatGPT-account route)** as the sole external destination. The authorized
+unpublished payload comprises repository-authored role prompts, the fictional
+public world/question/rules/staged evidence and dialogue, current public
+candidate text, bounded response-configuration instructions, public-only
+learner-DAG/record state, behavior-only simulated-learner briefs, and bounded
+candidate or repair text used by response auditing. It excludes concealed
+answers, future evidence identities/content, private proof paths or planner-
+only identifiers, annotation keys/responses, simulated-learner measurement
+targets, repository source and Git state, credentials as prompt content,
+complete technical traces, scoring artifacts, and human-subject data. The
+excluded artifacts remain local; no OpenRouter, Anthropic, or direct OpenAI API
+route is licensed by this approval.
+
+This is execution governance, not mechanism evidence. Static preflight remains
+green, and no model-backed dialogue was launched in this update.
+
+## Progress Update — 10 August 2026, launch-integrity and blind-measurement hardening
+
+The launch boundary is now finite and supply-chain specific. Every mechanism
+dialogue runs under the automated-eval lab with a 64-call admission cap; retries
+consume the same budget, so the full 24-dialogue matrix cannot reserve more
+than 1,536 calls. Budget exhaustion emits an explicit trace and seals an
+incomplete child rather than allowing another reservation.
+
+The child environment is reconstructed from a narrow contract. Inherited
+tutor seams, Node preload/search-path hooks, dotenv overrides, and OpenAI/Codex
+API-route variables are removed, while the committed assignment-free
+`config/adaptive-warrant-study.env` prevents a checkout `.env` from restoring
+them. Local, zero-model probes now fingerprint both the invoked Codex wrapper
+and its delegated native executable before and after checking the version and
+ChatGPT-account login. An API/custom-base route or wrapper/native mutation
+fails before any research prompt is submitted.
+
+Authorization is strict rather than JSON-shaped-by-convention. The artifact
+has an exact field set and typed lowercase Git/SHA-256 values, binds source and
+child-policy closures separately, names the exact study execution digest, and
+uses canonical UTC time. Validation recomputes the request contract and the
+live job array; job order and every critical world/profile/gate/seed/horizon/
+effort/token/history/budget/temperature flag remain digest-bound. Each result
+is recollected from a sealed child plan/event/artifact chain. Resume rechecks
+the immutable plan and authorization and can reuse only exact complete/dry
+children. The later annotation freeze binds this execution-evidence manifest.
+
+The outgoing-payload declaration and its executable check are now aligned.
+Repository-authored role prompts and output schemas, public world/fact/premise
+surfaces, bounded configuration instructions, public learner state, behavior-
+only learner briefs, and recovery issue classes/public packets are declared.
+Secrets, future evidence, private proof sources, rejected drafts, annotation
+material, measurement targets, credentials, repository/Git contents, human-
+subject data, traces, and scores are excluded. A fake-provider capture across
+tutor, analyzer, simulated-learner, and recovery calls checks representative
+canaries. It found a real boundary defect: the generic learner-analysis rubric
+still contained a Marrick-specific example naming Edony and the weir-forge
+crucible. That example is now domain-neutral, and the capture regression is
+green.
+
+The 96-case blind packet is also harder to infer or contaminate. Paired corpus
+and key rows receive a deterministic global hash shuffle and opaque 96-bit IDs
+instead of sequential cell-ordered case numbers. V3 reader envelopes reject
+unknown fields and wrong scalar/array types before unblinding. The scorer now
+requires exact unresolved-obligation source turns, gold-safe closure and
+successor denominators, and separate 0.75 accuracy gates for commitment
+transition, current-candidate override, and primary warrant basis. A single
+prompt-audit recovery invalidates execution rather than disappearing into an
+aggregate.
+
+These are integrity and measurement changes, not mechanism results. They burn
+any earlier dry-run digest. No model-backed mechanism dialogue was launched in
+this update; the next external step remains a new clean-commit dry rehearsal,
+explicit approval of that exact digest/payload/destination, and only then the
+24-dialogue run.

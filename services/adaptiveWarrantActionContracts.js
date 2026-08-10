@@ -8,10 +8,13 @@
  * replay.
  */
 
-export const ADAPTIVE_WARRANT_ACTION_CONTRACT_SCHEMA =
-  'machinespirits.adaptation-refinement.action-family-contract.v1';
+import { classifyAdaptiveWarrantPublicSpeechAct } from './adaptiveWarrantPublicObligationLedger.js';
+
+export const ADAPTIVE_WARRANT_ACTION_CONTRACT_SCHEMA = 'machinespirits.adaptation-refinement.action-family-contract.v1';
 export const ADAPTIVE_WARRANT_ACTION_CONTRACT_OUTCOME_SCHEMA =
   'machinespirits.adaptation-refinement.action-family-contract-outcome.v1';
+export const ADAPTIVE_WARRANT_ACTION_CONTRACT_TRACKER_SCHEMA =
+  'machinespirits.adaptation-refinement.action-family-contract-tracker.v1';
 export const ADAPTIVE_WARRANT_EVIDENCE_REQUEST_SCHEMA =
   'machinespirits.adaptation-refinement.unresolved-evidence-request.v1';
 
@@ -121,15 +124,7 @@ const CONTRACTS = {
 
 export const ADAPTIVE_WARRANT_ACTION_FAMILY_CONTRACTS = Object.freeze(CONTRACTS);
 
-function contract({
-  expected,
-  deadline,
-  success,
-  defeat,
-  expiry,
-  exitOnSuccess = false,
-  terminal = false,
-}) {
+function contract({ expected, deadline, success, defeat, expiry, exitOnSuccess = false, terminal = false }) {
   return Object.freeze({
     schema: ADAPTIVE_WARRANT_ACTION_CONTRACT_SCHEMA,
     expected_learner_responses: Object.freeze([...expected]),
@@ -157,46 +152,19 @@ function classificationTurn(classification) {
   return classification?.turn || classification?.classifier || classification || {};
 }
 
-const EVIDENCE_REQUEST_CUE =
-  /\b(?:evidence|exhibit|fact|clue|result|assay|test|comparison|compare|match|link|mark|flaw|cut|die|tool|source|witness|sample|object|trace)\b/iu;
-const REQUEST_FORM =
-  /\?|\b(?:please|what|which|how|where|show|supply|provide|give|bring|record|enter|identify|name|need|would|could|can)\b/iu;
 const UNRESOLVED_FORM = /\b(?:no|not|none|missing|without|unrecorded|unshown|unproved|yet|still|before)\b/iu;
 
 /** Extract only a concrete, learner-visible request for missing evidence. */
 export function classifyAdaptiveWarrantEvidenceRequest({ learnerText = '', classification = null } = {}) {
-  const surface = oneLine(learnerText);
-  const turn = classificationTurn(classification);
-  const requestLike =
-    REQUEST_FORM.test(surface) ||
-    ['question', 'repair_request'].includes(turn.discourse_move) ||
-    ['conceptual_clarity_request', 'stepwise_support_request'].includes(turn.request_type);
-  if (!surface || !requestLike || !EVIDENCE_REQUEST_CUE.test(surface)) return null;
-
-  const lower = surface.toLowerCase();
-  let requestKind = 'specific_public_evidence';
-  let targetKind = 'generic_evidence';
-  if (/\b(?:mark|flaw|cut|die|graver|tool)\b/u.test(lower)) {
-    requestKind = 'comparison_evidence';
-    targetKind = 'mark_or_tool_match';
-  } else if (/\b(?:metal|alloy|crucible|cupel|touchstone|assay|weight|fineness)\b/u.test(lower)) {
-    requestKind = 'comparison_evidence';
-    targetKind = 'material_match';
-  } else if (/\b(?:compare|comparison|match|link)\b/u.test(lower)) {
-    requestKind = 'comparison_evidence';
-    targetKind = 'cross_exhibit_link';
-  } else if (/\b(?:witness|record|entry|log|minutes)\b/u.test(lower)) {
-    targetKind = 'record_or_witness';
-  } else if (/\b(?:test|check|examine|procedure|how)\b/u.test(lower)) {
-    targetKind = 'test_or_procedure';
-  }
+  const act = classifyAdaptiveWarrantPublicSpeechAct({ learnerText, classification });
+  if (!act.creates_obligation) return null;
   return {
     schema: ADAPTIVE_WARRANT_EVIDENCE_REQUEST_SCHEMA,
-    request_kind: requestKind,
-    target_kind: targetKind,
-    signature: `${requestKind}:${targetKind}`,
-    explicitly_unresolved: UNRESOLVED_FORM.test(surface),
-    surface,
+    request_kind: 'specific_public_result',
+    target_kind: act.target.kind,
+    signature: act.target.signature,
+    explicitly_unresolved: UNRESOLVED_FORM.test(act.surface),
+    surface: act.surface,
   };
 }
 
@@ -233,7 +201,7 @@ function isResistanceSignal(signal, turn) {
   );
 }
 
-function classifyContractResponse({ family, signal, turn, dagGrowth, repeatedEvidenceRequest }) {
+function classifyContractResponse({ family, signal, turn, dagGrowth }) {
   if (family === 'challenge_resistance') {
     if (isAgentiveEvidenceMove(turn)) return { status: 'success', reason: 'agentive_bounded_evidence_move' };
     if (isResistanceSignal(signal, turn)) return { status: 'pending', reason: 'resistance_or_low_agency_persists' };
@@ -244,9 +212,6 @@ function classifyContractResponse({ family, signal, turn, dagGrowth, repeatedEvi
       return { status: 'success', reason: 'learner_resumed_after_repair' };
     }
   }
-  if (family === 'stage_next_step' && repeatedEvidenceRequest) {
-    return { status: 'defeat', reason: 'specific_evidence_request_repeated_after_tutor_turn' };
-  }
   if (['stage_next_step', 'reanchor_public_evidence', 'ground_in_material'].includes(family)) {
     if ((Number.isFinite(dagGrowth) && dagGrowth > 0) || isEvidenceMove(turn)) {
       return { status: 'success', reason: dagGrowth > 0 ? 'learner_record_grew' : 'learner_used_public_evidence' };
@@ -255,7 +220,11 @@ function classifyContractResponse({ family, signal, turn, dagGrowth, repeatedEvi
   if (family === 'clarify_distinction' && isEvidenceMove(turn)) {
     return { status: 'success', reason: 'learner_tested_or_stated_distinction' };
   }
-  if (family === 'answer_accountably' && !isRepairSignal(signal, turn) && (isEvidenceMove(turn) || oneLine(signal?.surface))) {
+  if (
+    family === 'answer_accountably' &&
+    !isRepairSignal(signal, turn) &&
+    (isEvidenceMove(turn) || oneLine(signal?.surface))
+  ) {
     return { status: 'success', reason: 'learner_received_or_contested_bounded_answer' };
   }
   if (family === 'compress_sayback' && isEvidenceMove(turn)) {
@@ -296,9 +265,15 @@ function successorFor(definition, status, fromFamily) {
  */
 export function createAdaptiveWarrantActionContractTracker() {
   let active = null;
-  let openEvidenceRequest = null;
 
   return {
+    snapshot() {
+      return {
+        schema: ADAPTIVE_WARRANT_ACTION_CONTRACT_TRACKER_SCHEMA,
+        active: active ? structuredClone(active) : null,
+      };
+    },
+
     assess({
       turn,
       actionFamily = null,
@@ -309,19 +284,6 @@ export function createAdaptiveWarrantActionContractTracker() {
     } = {}) {
       const normalizedTurn = Number(turn);
       const request = classifyAdaptiveWarrantEvidenceRequest({ learnerText, classification });
-      if (request) {
-        const repeated =
-          openEvidenceRequest?.signature === request.signature &&
-          openEvidenceRequest.last_seen_turn === normalizedTurn - 1;
-        openEvidenceRequest = {
-          ...request,
-          first_seen_turn: repeated ? openEvidenceRequest.first_seen_turn : normalizedTurn,
-          last_seen_turn: normalizedTurn,
-          occurrences: repeated ? openEvidenceRequest.occurrences + 1 : 1,
-        };
-      } else {
-        openEvidenceRequest = null;
-      }
 
       const definition = getAdaptiveWarrantActionContract(actionFamily);
       if (!definition || !Number.isFinite(normalizedTurn) || normalizedTurn < 2) {
@@ -331,7 +293,7 @@ export function createAdaptiveWarrantActionContractTracker() {
           action_family: actionFamily,
           contract: definition,
           status: 'not_applicable',
-          observation: { evidence_request: openEvidenceRequest ? structuredClone(openEvidenceRequest) : null },
+          observation: { evidence_request: request ? structuredClone(request) : null },
           transition: null,
         };
       }
@@ -364,7 +326,7 @@ export function createAdaptiveWarrantActionContractTracker() {
           active,
           status: active.terminal_status,
           reason: 'required_contract_exit_not_taken',
-          request: openEvidenceRequest,
+          request,
         });
       }
 
@@ -373,11 +335,13 @@ export function createAdaptiveWarrantActionContractTracker() {
         signal,
         turn: classificationTurn(classification),
         dagGrowth,
-        repeatedEvidenceRequest: openEvidenceRequest?.occurrences >= 2,
       });
       const status =
-        response.status === 'pending' && active.response_count >= definition.deadline_turns ? 'expired' : response.status;
-      const reason = status === 'expired' ? `expected_uptake_absent_by_${definition.deadline_turns}_turn_deadline` : response.reason;
+        response.status === 'pending' && active.response_count >= definition.deadline_turns
+          ? 'expired'
+          : response.status;
+      const reason =
+        status === 'expired' ? `expected_uptake_absent_by_${definition.deadline_turns}_turn_deadline` : response.reason;
       const result = outcome({
         turn: normalizedTurn,
         actionFamily,
@@ -385,7 +349,7 @@ export function createAdaptiveWarrantActionContractTracker() {
         active,
         status,
         reason,
-        request: openEvidenceRequest,
+        request,
       });
       if (['success', 'defeat', 'expired'].includes(status)) {
         active.terminal_status = status;

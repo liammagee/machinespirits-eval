@@ -16,7 +16,7 @@
 | What does PR 617 add? | Manner block appended to the tutor ego prompt after the persona (`buildTutorMannerBlock`), fixing prompt-isolation loss (irony died pre-ship); `dump-turn-prompts.js`; first switching-prereg draft. | Delivery path fixed; decision path untouched. | reuse |
 | Which decisions are already logged? | Release ledger rows (turn, premise, via, optional declared reason), pacing updates with typed signal + reason string, register/policy composition changes, first-draft contracts, all audits. | Two holes: **hold decisions leave no artifact** (engine explicitly skips them), and no decision records *warrant* — reason strings are canned regex output, not evidence. | new |
 
-## 2. What is genuinely absent (the layer to build)
+## 2. What was genuinely absent at the initial audit (the layer then built)
 
 Confirmed by grep and by both sweeps:
 
@@ -52,7 +52,7 @@ First results on two real July sessions (18- and 17-turn traces):
 
 Caveats: v0 thresholds are guesses; commitment = action family is an interpretive choice; the `dag −1` observed once (turn 5, trace 2) needs explanation before the growth signal is trusted; one trace file can hold several sessions (settings restarts) and segmentation is heuristic.
 
-## 5. Proposed next steps
+## 5. Proposed next steps at the initial audit
 
 1. **Gold-annotate the two replayed sessions** (§17 corpus, items 1–2): DONE — see `gold-annotations-first-corpus.md`. 7 of 11 decision points agree with the shadow; the three disagreements are an evidence-window timing artifact and two productive-divergence over-calls. The corpus turned out to cover §17 items 1, 2 AND 4 (trace 2 turns 6–8 are a productive plateau). Borderline dialogues (item 3) still needed.
 2. **Expected-uptake events as the first normative extension:** attach to each release an authored expectation (`voiced target fact within k turns`) — the world YAML already names the fact each premise supports; the chainer can compute which derivation a release unlocks. This turns "no_dag_growth" from a global stall counter into a per-release defeated expectation.
@@ -82,8 +82,155 @@ not optional: the state must represent both successful repair termination and
 an unresolved request for a particular public comparison. Accumulated generic
 trouble cannot tell those apart.
 
-Two design obligations remain open. First, action-family commitments need
-typed uptake, deadline, success, defeat, and expiry semantics in runtime state.
-Second, any downstream comparison must control frontier-model draw variance;
+The action-family obligation described here was subsequently implemented and
+tested. The fresh gate then exposed a second, cross-family normative object:
+public result debt created by a learner request. The current implementation and
+the correction to that gate's closure interpretation are recorded below.
+
+Any downstream comparison must still control frontier-model draw variance;
 the inert observe arm moved as much as or more than active on learner-record
-growth. The n=10 paired-seed comparison is stopped rather than merely pending.
+growth. The n=10 paired-seed comparison remains stopped rather than merely
+pending.
+
+## 7. Successor semantic audit and implementation (2026-08-10)
+
+### 7.1 Correction to the burned typed-contract corpus
+
+The typed-contract study's two consensus `close_inquiry` labels were produced
+without the release-availability facts required to judge whole-inquiry
+completion. Case 007 had a clue due at that decision and five later releases;
+case 011 had no clue due on that turn but six future releases, the next at turn
+8. Both learner-DAG assessments were unentailed and unasserted with a
+`release_or_pacing_gap`. The labels remain part of the historical score but are
+not terminal-closure gold.
+
+This narrows the finding. The corpus does not demonstrate that the normal
+Marrick inquiry should have closed. It does demonstrate public obligation debt:
+one learner directly requested a touchstone result, and another result request
+survived an intervening tutor move. The implementation therefore preserves the
+ledger work and refuses to tune closure to a fixed eight-turn horizon.
+
+### 7.2 Persistent public-obligation ledger
+
+`services/adaptiveWarrantPublicObligationLedger.js` now provides a deterministic
+public-surface reducer shared by live selection and replay. It distinguishes:
+
+- `tutor_directed_public_result_request`, which creates tutor-owned debt;
+- `learner_proposed_test`, which does not;
+- criterion and tutor-selection questions, which also do not create result
+  debt;
+- withdrawal and transfer-to-learner acts, which may close one matching or
+  oldest blocking obligation.
+
+Each obligation records a public target signature, creation turn, response due
+turn, reminders, occurrences, status, last delivery audit, satisfaction turn,
+and event history. Open debt persists across action-family changes. A matching
+public answer satisfies it. A deferral is accepted only when the tutor names
+the target's present unavailability, gives a concrete public next condition,
+and contains no question; otherwise the debt becomes overdue or
+reactivates. Target identity comes from public learner text; delivery is checked
+only against public tutor text and delivered public evidence.
+
+In active mode the resulting directive is not prompt advice alone. It compiles
+into the first-draft and turn-progression contracts: the target-specific answer
+or deferral owns the uptake, must precede any unrelated due source, forbids a
+question handoff, and is checked by both structured-composition and live-text
+audits. A due clue may still be delivered after the obligation is handled; it
+may not replace or redirect the answer.
+
+### 7.3 Inquiry completion as a terminal transition
+
+`services/adaptiveWarrantInquiryCompletion.js` projects the existing DAG,
+closure, and release semantics into
+`machinespirits.adaptation-refinement.inquiry-completion.v1`. Its public-safe
+availability object uses counts rather than future clue identities and applies
+one decision-time rule consistently: a clue delivered on tutor turn N is still
+due, not already available, at decision N.
+
+Normal whole-inquiry completion requires strict grounded-and-asserted learner-
+DAG closure plus a known, exhausted authored release scope. An explicitly
+authored bounded-scope contract may license a supported proof-limit conclusion,
+but only when its scope is exhausted, its terminal outcome is asserted,
+released evidence is integrated, and the proof limit is preserved. Release
+exhaustion alone, `dueNow=[]`, sample position,
+safety cap, or local conversational completion never licenses closure. Any
+unresolved public obligation, unsupported assertion, active dropped fact, or
+unintegrated released evidence are blockers.
+
+A successful assessment emits `decision_kind=terminal_transition` and licenses
+`close_inquiry`. It is a lifecycle transition, not evidence that the current
+repair family failed. Entailed-but-unasserted state remains distinct and does
+not close.
+
+Active mode enforces the typed object at both selection and lifecycle levels.
+If the legacy DAG-only selector proposes `close_inquiry` while the typed object
+is open, the gate emits a `candidate_safety_override` to a safe nonterminal
+family. The older dialogue-closure frame is also constrained from
+mandatory/available back to open, so it cannot reintroduce the premature close
+downstream. Observe mode only records this counterfactual and does not alter
+the family or closure frame.
+
+### 7.4 Transition entitlement versus intervention need
+
+The live gate now records three deliberately separate values:
+
+- `revision_warranted`: compatibility summary that some normative change or
+  fulfilment is required;
+- `commitment_transition_warranted`: the recommended family differs from the
+  prior delivered family;
+- `current_candidate_override_required`: the recommended family differs from
+  the base response configuration already proposed for this decision.
+
+Only the third licenses an active family/stance override. A result request can
+therefore warrant leaving `stage_next_step` while requiring no override when
+the ordinary selector has already proposed `answer_accountably`. If
+`answer_accountably` was already in force, the tutor may persist with an
+obligation directive without manufacturing a strategy switch. The same split
+also prevents a terminal transition that the base selector already selected
+from being counted as a forced override.
+
+### 7.5 Trace, resume, and replay parity
+
+The typed decision and obligation directive enter response-configuration
+selection before tutor generation. Completed turns persist the actual delivered
+family, public tutor text, delivered releases, public-obligation projection,
+inquiry-completion projection, and final turn outcome. Resume rebuilds the gate,
+action-contract tracker, and obligation ledger by replaying committed public
+turn records. The offline shadow consumes those same delivered configurations
+and shared reducers, using the decision-time release projection rather than a
+post-delivery future leak.
+
+Every v4 decision also stores a canonical
+`warrant-decision-input.v1` snapshot and SHA-256 digest: learner text and
+classification, learner DAG, prior delivered and current proposed families,
+closure frame, evidence availability, ledger state before the learner act,
+prior tutor outcome, bounded scope, and each closure-blocker input. Resume and
+replay prefer that frozen boundary, with historical turn-record reconstruction
+only as compatibility fallback.
+
+Parity is now structural rather than only boolean: speech act, obligation rows
+and blocker, completion checks, action-contract transition, decision kind,
+warrant basis, policy, prior family, proposed candidate, commitment transition,
+and override requirement must match. Legacy v1-v3 traces retain their old
+boolean comparison and cannot be promoted to structured-parity evidence.
+
+### 7.6 Fresh mechanism-validation boundary
+
+The next evidence stage uses every observe decision from a fresh two-world,
+six-profile, eight-turn matrix: 96 blinded decisions. Active runs provide
+matched intervention execution and their own non-zero exact-parity denominator;
+they do not enter the gold corpus. This is deliberately a mechanism test,
+separate from downstream causal comparison. Every case freezes the public
+opening text, situation/question, opening evidence, and requirements before the
+transcript prefix and public-safe evidence counts; neither the secret nor future
+evidence identity/content is revealed. Full protocol and gates are in
+`baseline-comparison-design.md` and `remaining-next-steps.md`.
+
+The execution and annotation boundaries are now machine-checked as well:
+finite 64-call child admission, strict clean-commit authorization, sanitized
+dotenv/Node/API environment, Codex wrapper/native fingerprints, sealed immutable
+child recollection, globally shuffled opaque case IDs, and exact V3 response
+field/type allowlists. A fake-provider capture across tutor, analyzer, learner,
+and recovery roles removed one concealed Marrick example from the otherwise
+generic learner-analysis rubric. These checks establish transport and evidence
+integrity, not decision quality.

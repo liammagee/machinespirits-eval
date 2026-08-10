@@ -7,6 +7,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { verifyExperimentRun } from '../services/experimentRunArtifacts.js';
+import { buildAdaptiveWarrantStudyEnvironment } from '../services/adaptiveWarrantStudyIntegrity.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const AUTO_EVAL = 'scripts/run-tutor-stub-auto-eval.js';
@@ -80,15 +81,74 @@ let input = '';
 process.stdin.setEncoding('utf8');
 process.stdin.on('data', (chunk) => { input += chunk; });
 process.stdin.on('end', () => {
+  const role = input.includes('[Tutor-only repair instruction]')
+    ? 'recovery'
+    : input.includes('You are an automated learner')
+      ? 'learner'
+      : input.includes('# Current learner turn') || input.includes('compact up-front reviewer')
+        ? 'analyzer'
+        : 'tutor';
   if (failMarker && input.includes(failMarker)) {
     process.stderr.write('fake codex: induced failure for test marker\\n');
     process.exit(1);
   }
-  const response = input.includes('You are an automated learner')
+  const response = role === 'learner'
     ? 'I would test the newest public mark before deciding.'
-    : input.includes('compact up-front reviewer')
-      ? '{}'
-      : 'Which public mark would you test next, and what would it show?';
+    : role === 'analyzer'
+      ? process.env.FAKE_CODEX_FORCE_RECOVERY === '1'
+        ? JSON.stringify({
+            classification: {
+              turn: {
+                summary: 'The learner explicitly asks to test public evidence before deciding.',
+                request_type: 'stepwise_support_request',
+                discourse_move: 'claim',
+                evidence_use: 'none',
+                epistemic_stance: 'exploratory',
+                affect: 'calm',
+                agency: 'steering',
+                scores: {
+                  conceptual_engagement: { score: 3, reason: 'Requests an evidence test.' },
+                  epistemic_readiness: { score: 4, reason: 'Withholds judgment pending evidence.' },
+                },
+                pedagogical_need: 'Offer one public evidence test.',
+              },
+              overall: {
+                summary: 'The learner is evidence-oriented.',
+                trajectory: 'initial evidence seeking',
+                recurring_pattern: 'none',
+                current_state: 'ready to inspect a public mark',
+                next_best_tutor_move: 'Name one public check without supplying its result.',
+              },
+            },
+            learner_record: { adopt: [], derive: [], notes: 'No public evidence has been adopted yet.' },
+            register_selection: {
+              engagement_stance: 'precise',
+              reviewer_signal: 'The learner asks for an evidence-bound next move.',
+              request_type: 'stepwise_support_request',
+              engagement_stance_reason: 'Precision keeps the next check bounded.',
+              expected_dag_move: 'identify one eligible public evidence edge',
+              expected_field_move: 'sustain evidence-aware agency',
+              expected_progress_marker: 'the learner names what one public mark would establish',
+              confidence: 0.9,
+            },
+          })
+        : '{}'
+      : process.env.FAKE_CODEX_FORCE_RECOVERY === '1' && role === 'recovery'
+        ? 'Your suspicion outruns the public record. I set the trial-book beside the balance and keep the verdict open. Which public mark should we test first?'
+        : process.env.FAKE_CODEX_FORCE_RECOVERY === '1' && input.includes('Learner says')
+          ? 'Edony struck the false shillings with the worn burin.'
+          : 'Which public mark would you test next, and what would it show?';
+  if (process.env.FAKE_CODEX_LOG) {
+    fs.appendFileSync(process.env.FAKE_CODEX_LOG, JSON.stringify({
+      role,
+      input,
+      forbiddenEnvironment: {
+        credential: process.env.OPENAI_API_KEY || null,
+        annotationKey: process.env.TUTOR_STUB_ANNOTATION_PRIVATE_KEY_CANARY || null,
+        privateSource: process.env.TUTOR_STUB_PRIVATE_SOURCE_CANARY || null,
+      },
+    }) + '\\n');
+  }
   if (outputPath) fs.writeFileSync(outputPath, response);
   process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');
 });
@@ -98,11 +158,20 @@ process.stdin.on('end', () => {
   fs.chmodSync(executable, 0o755);
 }
 
+test('auto-eval help documents the enforced per-child model-call cap', () => {
+  const help = execFileSync(process.execPath, [AUTO_EVAL, '--help'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
+  assert.match(help, /--model-call-budget <n>/u);
+  assert.match(help, /--lab automated_eval/u);
+});
+
 test('auto-eval dry run is a sealed canonical transaction with ordered job events', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-auto-evidence-'));
   const runDir = path.join(root, 'source');
   try {
-    dryRun(runDir, path.join(root, 'index'));
+    dryRun(runDir, path.join(root, 'index'), ['--model-call-budget', '7']);
 
     const verification = verifyExperimentRun(runDir);
     assert.equal(verification.ok, true, verification.errors.join('\n'));
@@ -113,6 +182,11 @@ test('auto-eval dry run is a sealed canonical transaction with ordered job event
     assert.equal(verification.plan.models.tutor.requested, 'codex.gpt-5.6-luna');
     assert.equal(verification.plan.models.analyzer.requested, 'codex.gpt-5.6-luna');
     assert.equal(verification.plan.models.learner.requested, 'codex.gpt-5.6-luna');
+    assert.equal(verification.plan.intent.design.config.lab, 'automated_eval');
+    assert.equal(verification.plan.intent.design.config.modelCallBudget, 7);
+    const plannedArgs = verification.plan.jobs[0].arguments;
+    assert.equal(plannedArgs[plannedArgs.indexOf('--lab') + 1], 'automated_eval');
+    assert.equal(plannedArgs[plannedArgs.indexOf('--model-call-budget') + 1], '7');
 
     const eventTypes = fs
       .readFileSync(path.join(runDir, 'run-events.jsonl'), 'utf8')
@@ -130,7 +204,12 @@ test('auto-eval dry run is a sealed canonical transaction with ordered job event
 
     const summary = JSON.parse(fs.readFileSync(summaryPath(runDir), 'utf8'));
     assert.equal(summary.config.runSeed, 1);
+    assert.equal(summary.config.lab, 'automated_eval');
+    assert.equal(summary.config.modelCallBudget, 7);
     assert.equal(summary.results[0].status, 'dry_run');
+    const childCommand = summary.results[0].command;
+    assert.equal(childCommand[childCommand.indexOf('--lab') + 1], 'automated_eval');
+    assert.equal(childCommand[childCommand.indexOf('--model-call-budget') + 1], '7');
     assert.equal(summary.evidence.runSeal, path.join(runDir, 'run-seal.json'));
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
@@ -232,6 +311,222 @@ test('live-like auto-eval seals tutor, analyzer, and learner observations under 
   }
 });
 
+test(
+  'study environment keeps private canaries out of captured tutor, analyzer, learner, and recovery prompts',
+  { timeout: 35_000 },
+  () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-auto-transport-boundary-'));
+    const runDir = path.join(root, 'source');
+    const binDir = path.join(root, 'bin');
+    const archiveDir = path.join(root, 'archive');
+    const promptLog = path.join(root, 'provider-prompts.jsonl');
+    const canaries = {
+      concealedAnswer: 'Edony',
+      futureEvidence: 'weir-forge crucible',
+      privateSource: 'p_holder',
+      credential: 'sk-study-credential-canary-91f7a2',
+      annotationKey: 'annotation-private-key-canary-71d50c',
+      measurementTarget: 'mustRecurMinRate',
+      profileIdentity: 'proof_skipper',
+    };
+    fs.mkdirSync(binDir, { recursive: true });
+    fs.mkdirSync(archiveDir, { recursive: true });
+    writeFakeCodex(binDir);
+    try {
+      const environment = buildAdaptiveWarrantStudyEnvironment({
+        ...process.env,
+        PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
+        CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+        EVAL_ARCHIVE_DIR: archiveDir,
+        FAKE_CODEX_FORCE_RECOVERY: '1',
+        FAKE_CODEX_LOG: promptLog,
+        OPENAI_API_KEY: canaries.credential,
+        TUTOR_STUB_ANNOTATION_PRIVATE_KEY_CANARY: canaries.annotationKey,
+        TUTOR_STUB_PRIVATE_SOURCE_CANARY: canaries.privateSource,
+      });
+      execFileSync(
+        process.execPath,
+        [
+          AUTO_EVAL,
+          '--runs',
+          '1',
+          '--policies',
+          'dynamic',
+          '--turns',
+          '1',
+          '--primary-horizon',
+          '1',
+          '--world',
+          'world_005_marrick',
+          '--warrant-gate',
+          'observe',
+          '--model',
+          'codex.gpt-5.6-luna',
+          '--analysis-model',
+          'codex.gpt-5.6-luna',
+          '--learner-analysis-prompt-profile',
+          'compact_v1',
+          '--auto-learner-model',
+          'codex.gpt-5.6-luna',
+          '--auto-learner-profile-id',
+          canaries.profileIdentity,
+          '--model-call-budget',
+          '16',
+          '--trace-dir',
+          runDir,
+          '--index-root',
+          path.join(root, 'index'),
+          '--no-progress',
+          '--no-html-report',
+          '--no-ledger',
+          '--no-memory-summary',
+        ],
+        {
+          cwd: ROOT,
+          encoding: 'utf8',
+          timeout: 30_000,
+          maxBuffer: 8 * 1024 * 1024,
+          env: environment,
+        },
+      );
+
+      const calls = fs
+        .readFileSync(promptLog, 'utf8')
+        .trim()
+        .split(/\r?\n/u)
+        .filter(Boolean)
+        .map((line) => JSON.parse(line));
+      const roles = new Set(calls.map((call) => call.role));
+      assert.deepEqual([...roles].sort(), ['analyzer', 'learner', 'recovery', 'tutor']);
+      const forbiddenPromptValues = Object.values(canaries);
+      for (const call of calls) {
+        for (const value of forbiddenPromptValues) {
+          const position = call.input.indexOf(value);
+          assert.equal(
+            position >= 0,
+            false,
+            `${call.role} prompt exposed ${value}: ${call.input.slice(Math.max(0, position - 120), position + value.length + 120)}`,
+          );
+        }
+        assert.deepEqual(call.forbiddenEnvironment, {
+          credential: null,
+          annotationKey: null,
+          privateSource: null,
+        });
+      }
+      const tutor = calls.find((call) => call.role === 'tutor');
+      const analyzer = calls.find((call) => call.role === 'analyzer');
+      const learner = calls.find((call) => call.role === 'learner');
+      const recovery = calls.find((call) => call.role === 'recovery');
+      assert.match(tutor?.input || '', /speaking tutor opening|Speaking-tutor evidence contract/iu);
+      assert.match(analyzer?.input || '', /Return (?:exactly )?one JSON object|# JSON schema/iu);
+      assert.match(learner?.input || '', /private behavior brief/u);
+      assert.match(recovery?.input || '', /\[Response-check failures\][\s\S]*\d+\. [a-z_]+:/u);
+      assert.doesNotMatch(recovery?.input || '', /Edony struck the false shillings with the worn burin/u);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  },
+);
+
+test('auto-eval model-call exhaustion never reserves beyond the cap and seals incomplete evidence', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-auto-budget-exhaustion-'));
+  const runDir = path.join(root, 'source');
+  const binDir = path.join(root, 'bin');
+  const archiveDir = path.join(root, 'archive');
+  fs.mkdirSync(binDir, { recursive: true });
+  fs.mkdirSync(archiveDir, { recursive: true });
+  writeFakeCodex(binDir);
+  try {
+    const failure = (() => {
+      try {
+        execFileSync(
+          process.execPath,
+          [
+            AUTO_EVAL,
+            '--runs',
+            '1',
+            '--policies',
+            'dynamic',
+            '--turns',
+            '1',
+            '--primary-horizon',
+            '1',
+            '--model',
+            'codex.gpt-5.6-terra',
+            '--analysis-model',
+            'codex.gpt-5.6-terra',
+            '--auto-learner-model',
+            'codex.gpt-5.6-terra',
+            '--model-call-budget',
+            '1',
+            '--trace-dir',
+            runDir,
+            '--index-root',
+            path.join(root, 'index'),
+            '--no-progress',
+            '--no-html-report',
+            '--no-ledger',
+            '--no-memory-summary',
+          ],
+          {
+            cwd: ROOT,
+            encoding: 'utf8',
+            timeout: 20_000,
+            maxBuffer: 8 * 1024 * 1024,
+            stdio: 'pipe',
+            env: {
+              ...process.env,
+              PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
+              CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+              EVAL_ARCHIVE_DIR: archiveDir,
+            },
+          },
+        );
+        return null;
+      } catch (error) {
+        return error;
+      }
+    })();
+    assert.ok(failure, 'the one-call cap must terminate the child dialogue');
+    assert.equal(failure.status, 1);
+
+    const summary = JSON.parse(fs.readFileSync(summaryPath(runDir), 'utf8'));
+    assert.equal(summary.config.lab, 'automated_eval');
+    assert.equal(summary.config.modelCallBudget, 1);
+    assert.equal(summary.results[0].status, 'failed');
+    assert.equal(summary.results[0].traces.length, 1);
+
+    const traceEvents = fs
+      .readFileSync(summary.results[0].traces[0], 'utf8')
+      .trim()
+      .split('\n')
+      .map((line) => JSON.parse(line));
+    const reservations = traceEvents.filter((event) => event.type === 'model_call_budget_reserved');
+    const exhausted = traceEvents.filter((event) => event.type === 'model_call_budget_exhausted');
+    assert.equal(reservations.length, 1);
+    assert.deepEqual(
+      reservations.map((event) => event.admission.call),
+      [1],
+    );
+    assert.ok(reservations.every((event) => event.admission.limit === 1));
+    assert.ok(exhausted.length >= 1);
+    assert.deepEqual(exhausted.at(-1).admission, {
+      labId: 'automated_eval',
+      used: 1,
+      limit: 1,
+      remaining: 0,
+    });
+
+    const seal = JSON.parse(fs.readFileSync(path.join(runDir, 'run-seal.json'), 'utf8'));
+    assert.equal(seal.status, 'incomplete');
+    const integrity = verifyExperimentRun(runDir, { completeness: false });
+    assert.equal(integrity.ok, true, integrity.errors.join('\n'));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('report-from verifies a sealed source and writes a byte-preserving derived sibling', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-auto-report-derived-'));
   const runDir = path.join(root, 'source');
@@ -268,7 +563,7 @@ test('resume creates a sealed sibling transaction with source hashes and no sour
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-auto-resume-lineage-'));
   const runDir = path.join(root, 'source');
   try {
-    dryRun(runDir, path.join(root, 'index'));
+    dryRun(runDir, path.join(root, 'index'), ['--model-call-budget', '9']);
     const sourceSummary = summaryPath(runDir);
     const before = treeSnapshot(runDir);
 
@@ -309,6 +604,12 @@ test('resume creates a sealed sibling transaction with source hashes and no sour
     assert.equal(verification.plan.intent.sourceLineage.sourceVerified, true);
 
     const resumedSummary = JSON.parse(fs.readFileSync(summaryPath(resumeDir), 'utf8'));
+    assert.equal(resumedSummary.config.lab, 'automated_eval');
+    assert.equal(resumedSummary.config.modelCallBudget, 9);
+    const labFlag = resumedSummary.results[0].command.indexOf('--lab');
+    assert.equal(resumedSummary.results[0].command[labFlag + 1], 'automated_eval');
+    const budgetFlag = resumedSummary.results[0].command.indexOf('--model-call-budget');
+    assert.equal(resumedSummary.results[0].command[budgetFlag + 1], '9');
     const traceFlag = resumedSummary.results[0].command.indexOf('--trace-dir');
     assert.equal(resumedSummary.results[0].command[traceFlag + 1], resumeDir);
     assert.notEqual(resumedSummary.results[0].command[traceFlag + 1], runDir);

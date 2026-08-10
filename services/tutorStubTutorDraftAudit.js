@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 /**
  * Owns the complete tutor-draft audit battery and its trace events. The caller
  * retains delivery policy, repair sequencing, and fallback selection.
@@ -158,6 +160,7 @@ export function createTutorStubTutorDraftAudit(dependencies = {}) {
         issues: [],
         active: false,
       };
+      response.selectedSpeakingResponseConfiguration = jsonClone(speakingResponseConfiguration || null);
       response.deliveryResponseConfiguration = jsonClone(auditConfiguration || null);
       response.responseConfigurationTransition = jsonClone(
         auditConfiguration?.recovery_transition || auditConfiguration?.speaking_transition || null,
@@ -310,7 +313,15 @@ export function createTutorStubTutorDraftAudit(dependencies = {}) {
           frame: dialogueClosureFrame,
         });
       }
+      const normalizedAuditedText = String(response.text || '')
+        .replace(/\s+/gu, ' ')
+        .trim();
       return {
+        auditedText: {
+          schema: 'machinespirits.tutor-stub.audited-public-text.v1',
+          normalization: 'one_line_whitespace',
+          sha256: createHash('sha256').update(normalizedAuditedText).digest('hex'),
+        },
         ok:
           leakAudit.ok &&
           scaffoldAudit.ok &&

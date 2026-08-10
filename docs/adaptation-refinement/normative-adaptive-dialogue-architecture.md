@@ -1,6 +1,8 @@
 # Normative Adaptive Dialogue Architecture
 
-**Status:** Draft design specification  
+**Status:** Draft design specification with live/offline implementation through
+typed public obligations and inquiry completion; fresh mechanism validation
+pending
 **Origin:** Research discussion, 9 August 2026  
 **Scope:** Proposed refinement of the Machine Spirits Eval adaptive tutoring architecture
 
@@ -502,10 +504,10 @@ Evaluate decision quality and downstream dialogue effects separately.
 |---|---|---|
 | 0 — semantic audit | complete | The existing world/DAG, learner board, action-family, stance, and audit surfaces have a grounded reuse/extend/new map. |
 | 1 — trace-only prototype | complete | The offline replayer emits commitments, typed divergence, warrant evidence, hold/revise verdicts, policy recommendations, realization, and available outcomes from existing traces. |
-| 2 — warrant evaluation | third fresh gate complete; failed | Typed contracts were tested on a newly generated zero-overlap 18-case corpus. Fourteen hard consensuses yielded precision 0.500, recall 0.286, accuracy 0.500, below the frozen gate. |
-| 3 — figure policy | typed contracts implemented; successor choice invalid | All 13 families now declare expected uptake and lifecycle transitions, but exact successor accuracy was 0/4. Public obligations and inquiry completion are still absent. It is not a validated policy. |
+| 2 — warrant evaluation | three calibration gates complete; successor mechanism gate ready | Typed contracts were tested on a newly generated zero-overlap 18-case corpus. Fourteen hard consensuses yielded precision 0.500, recall 0.286, accuracy 0.500, below the frozen gate. A later context audit invalidated its two `close_inquiry` rows as terminal gold; a context-complete all-turn v3 protocol with opaque blind IDs and strict response envelopes is now predeclared. |
+| 3 — figure policy | typed contracts, persistent public obligations, and terminal transitions implemented; validation open | All 13 families declare expected uptake and lifecycle transitions. A separate cross-family public-obligation ledger, typed speech acts, target-specific answer directive, and inquiry-completion object now feed the shared policy. Launch, child-seal, replay, payload, and finite-budget integrity are implemented, but this is still not a validated policy. |
 | 4 — register realization | runtime bridge complete; separate evaluation open | Active mode can override family and stance while the frontier model realizes the turn. Figure appropriateness and realization fidelity have not yet been independently scored in this study. |
-| 5 — baseline experiments | n=5 complete; contract validation failed; downstream stopped | Off/observe/active execution is valid, but both decision and successor quality failed. Frozen-prefix or replicated-draw comparison remains unlicensed. |
+| 5 — baseline experiments | n=5 complete; causal scale-up stopped; mechanism validation next | Off/observe/active execution is valid, but the original decision study failed and the observe arm exposed model-draw variance. The next stage is a clean-commit, explicitly authorized 24-dialogue observe/active mechanism test, not a downstream outcome comparison. |
 
 The architecture is therefore implemented far enough to test the design's
 central separation—diagnosis, warrant, repair policy, realization, and outcome—
@@ -546,17 +548,216 @@ made unavailable. Conversely, a learner proposing to perform a public test is
 not creating the same debt. The state therefore needs a speech-act-typed public
 obligation ledger separate from both the learner DAG and the active family.
 
-The action catalogue also needs an authored inquiry-completion predicate.
-When the learner has integrated the available evidence, preserved the proof
-limit, and no licensed exhibit remains, continuing `stage_next_step` is not a
-neutral hold; `close_inquiry` becomes the warranted successor. Completion is a
-normative state transition, not merely a late-turn heuristic.
+The initial audit also appeared to say that the action catalogue needed an
+authored inquiry-completion predicate. A later check of the source traces
+qualified that diagnosis: the two readers who selected `close_inquiry` had not
+been shown that a clue was due or imminent and that most of the authored
+schedule remained. Those labels are not valid terminal-closure gold. The
+architectural need is narrower: expose the existing closure semantics as a
+typed adaptive-trace object and give future annotators the public-safe
+availability context required to judge it. Completion remains a normative
+state transition, never a late-turn heuristic.
 
 The next decision-level validation must test these two objects on newly
 generated cases. The current corpus is burned, and its post-hoc error analysis
 cannot count as confirmation.
 
-## 19. First Coding Task
+### Implemented public-obligation and completion layer
+
+The successor layer now has four explicit boundaries.
+
+#### Public speech act and obligation debt
+
+A deterministic, precision-first public-surface classifier distinguishes a
+learner asking the tutor to supply a concrete public result from a learner
+proposing to perform a test. Criterion questions and requests that the tutor
+choose the next step are separate again. Only a tutor-directed result request
+creates tutor-owned debt.
+
+The debt is stored in a ledger independent of the active action-family
+instance. Each row has a public target signature, creation and reminder turns,
+response deadline, lifecycle status, delivery audit, satisfaction turn, and
+event history. It persists through family changes. A matching public answer
+satisfies it; a target-naming unavailability statement with a concrete next
+public condition may defer it; otherwise it becomes overdue or reactivates.
+Withdrawal or transfer can close one matching obligation. Controlled
+classifier labels may corroborate the act but cannot invent the debt.
+
+When active mode carries a blocking obligation, the target-specific directive
+is compiled through response configuration into the first-draft and turn-
+progression contracts. It owns the uptake before any unrelated due source,
+turns the handoff declarative, and rejects a response that substitutes another
+question. Structured-composition and live-text audits share the same target-
+coverage and delivery check; the deterministic recovery remains inside the
+public evidence boundary. Target identity is preserved without aliasing from
+the ledger directive into the first-draft contract: kind, signature, subject
+terms, and every required result component survive compilation. A composite
+request such as a balance reading plus a ring result is satisfied only when
+both components carry an answer-bearing relation; merely naming the second
+component does not discharge it. A target-specific unavailable claim with a
+concrete public next condition remains the separate accountable-deferral path.
+
+#### Whole-inquiry terminal state
+
+The completion projection reuses the learner DAG, dialogue closure, and
+authored release schedule. For an ordinary production world, closure requires
+strict grounded-and-asserted learner-DAG closure plus a known, exhausted
+authored release scope. An optional explicit authored
+bounded scope can license a bounded proof-limit conclusion only when that
+scope's releases are exhausted, its terminal outcome is asserted, released
+evidence is integrated, and the proof limit is preserved.
+
+This optional branch is wired as an explicit decision-time planner input and
+is frozen in live, resume, and offline decision state. It is not inferred from
+turn cap, `dueNow=[]`, conclusion readiness, or release exhaustion. The current
+dramatic-world and world-scaffold schemas author no bounded terminal contract,
+so current production worlds project `null` here and remain on strict answer
+closure. A future world-level scope schema must validate its premise set and
+terminal fact and derive the four completion checks deterministically before
+any world may activate this branch.
+
+The object also records public-safe release counts and blockers. Any unresolved
+obligation, unsupported assertion, active dropped fact, or unintegrated public
+evidence blocks closure. `dueNow=[]`, the final sampled turn, a safety cap,
+release exhaustion by itself, or local conversational completion does not
+license it. A successful completion emits
+`decision_kind=terminal_transition` and recommends `close_inquiry`; it is not
+classified as a repair-family failure.
+
+Active mode makes this object authoritative over the older DAG-only closure
+surface. A `close_inquiry` candidate while typed completion is open becomes a
+`candidate_safety_override`: use `compress_sayback` if the exhausted proof is
+entailed but not asserted, re-anchor already-public evidence when integration
+or memory is the blocker, otherwise continue with `stage_next_step`. The
+legacy closure frame is simultaneously constrained from mandatory/available
+back to open so a downstream closure contract cannot undo the veto. Observe
+mode records the counterfactual decision but changes neither selection nor
+lifecycle.
+
+#### Commitment transition versus candidate override
+
+The decision record separates the prior delivered commitment from the current
+candidate:
+
+```text
+recommended family != prior delivered family
+    -> commitment_transition_warranted
+
+recommended family != current pre-gate candidate
+    -> current_candidate_override_required
+```
+
+Active mode intervenes only on the second comparison. This lets the base
+selector satisfy a norm without being falsely counted as overridden, and lets
+an already-active `answer_accountably` family receive a concrete obligation
+directive without inventing a family switch. `revision_warranted` remains a
+compatibility summary for decision scoring, not the sole intervention field.
+
+#### One reducer history live, resumed, and offline
+
+The live decision is made after learner turn N and before tutor turn N is
+generated. A release delivered on N is therefore still due at that decision.
+Completed turns persist the actual delivered configuration, tutor text,
+released evidence, public obligation, inquiry completion, and final outcome.
+Resume reconstructs state by replaying those committed public turns. The
+offline shadow shares the speech-act, ledger, completion, action-contract, and
+warrant reducers and consumes delivered rather than merely proposed families.
+
+Each current decision freezes the canonical pre-gate input as
+`warrant-decision-input.v1` plus a SHA-256 digest. This makes the evidence
+boundary itself inspectable and gives resume, replay, and a future frozen-prefix
+branch a stable input rather than forcing reconstruction from post-delivery
+state.
+
+Active final authority applies to the complete response-configuration bundle.
+The gate-selected bundle is frozen before optional point-of-action,
+typed-action, and conversational-completion policies. If one of those policies
+displaces it, the frozen actorial part, performance, support, task, and
+selection metadata are restored together; any displaced typed action is
+cancelled before delivery and its lifecycle rollback is replayable on resume.
+A displaced point-of-action intervention is likewise marked
+`cancelled_before_tutor_output`; prompt, release, handoff, committee, and
+compliance consumers ignore it while retaining its original assignment as
+provenance. Benchmark export reports the configuration actually delivered and
+keeps each cancellation only as counterfactual metadata.
+
+Study execution verifies this boundary separately from reducer parity. The
+selector persists raw pre/post source snapshots and their hashes, concrete gate
+inputs, and the frozen configuration digest. Live selection and verification
+share one pure gate-patch function: observe and active-hold must replay to exact
+inertia, while an active post-source must equal that function's complete output
+with no extra field changes. Final authority persists the pre-final and frozen
+pre-optional selection snapshots; the study recomputes every displaced field,
+the restoration digest, compatibility markers, and enforcement provenance
+instead of trusting a restoration boolean.
+
+Final guard accounting explicitly binds the audited configuration and exact
+public text delivered. The selected bundle first passes through the shared,
+deterministic speaking-configuration transform when a requested performance
+tactic is inapplicable. It is then either delivered exactly or transformed by
+the shared simplified-recovery constructor used by the enumerated recovery
+ladder; nested role, evidence, budget, or performance mutations therefore fail
+equality rather than hiding inside a top-level allowlist. Speaking transitions
+and guard recoveries are reported separately. Family, obligation directive,
+and final-authority provenance remain fixed. An obligation is counted as
+applied only when its unmutated target compiles into the first-draft progression
+contract and the final live public-text audit proves either every required
+answer component or a target-specific accountable deferral.
+
+Speculative or failed turns never commit the reducer, and reset, diagnostic
+rollback, or a public tutor-response rewrite invalidates the stale gate state.
+
+For current v4 traces, parity compares the typed structure—speech act,
+obligations, completion checks, lifecycle transition, decision kind, basis,
+policy, prior family, current candidate, and both transition booleans—not only
+the legacy warrant bit.
+
+### Fresh all-turn mechanism validation
+
+The next experiment is predeclared as a mechanism study:
+
+- two transfer worlds: `world_022_foxtrot_jukebox` and
+  `world_028_larkspur_fridge`;
+- six learner profiles: `diligent`, `low_agency`, `answer_seeking`,
+  `counterexample_hunter`, `goalpost_shifter`, `fast_learner`;
+- observe and active conditions only, one fresh seed per cell from master seed
+  401, fixed at eight turns;
+- 24 dialogues total;
+- all 96 decisions from the 12 observe dialogues independently annotated;
+  active decisions reserved for matched execution and exact structured parity.
+
+The packet freezes the public opening text, situation/question, opening
+evidence, and requirements in every case, then exposes public-safe release
+counts so annotators can distinguish “nothing due now” from “nothing else
+licensed.” It never exposes the secret or future evidence identity/content. It
+contains every observe turn, not a prediction-balanced sample. Its freeze binds
+protocol, source and handbook hashes, thresholds, and zero overlap with prior
+corpora; any post-freeze change burns it. Paired corpus/key rows are globally
+hash-shuffled and receive opaque identifiers. Reader responses have exact V3
+field/type allowlists before either response can be compared with the private
+key.
+
+The execution packet is likewise evidence, not a directory convention. A
+digest-bound authorization fixes the clean Git commit, recursive source and
+child-policy closures, exact job commands/order, three Codex CLI roles, declared
+payload scope, and maximum 64 calls per dialogue. The sanitized child
+environment pins an empty committed dotenv source and removes alternate API,
+Node-injection, and tutor-seam routes. A no-model probe binds both the Codex
+wrapper and delegated native binary to ChatGPT-account login. Rows and resumes
+are accepted only from verified child plans, event chains, seals, and artifact
+hashes; the freeze binds that execution-evidence manifest.
+
+Passage requires the original agreement/precision/recall/accuracy/successor and
+diligent-control gates plus typed support and accuracy for request versus
+proposal, commitment transition, current-candidate override, primary warrant
+basis, obligation persistence/resolution, inquiry completion, zero unsafe
+closures, and exact structured parity with non-zero observe and active
+denominators. Each of the three typed decision accuracies must reach 0.75.
+Insufficient support fails inconclusively. Even a full pass would
+validate only the automated mechanism and would merely license a separately
+frozen variance-controlled outcome study.
+
+## 19. First Coding Task (completed historical instruction)
 
 Before adding new runtime logic, create a semantic audit document answering:
 
@@ -570,7 +771,9 @@ Before adding new runtime logic, create a semantic audit document answering:
 | What does PR 617 add? | TBD | TBD | audit |
 | Which decisions are already logged? | TBD | TBD | audit |
 
-Only after this table is grounded in the codebase should the architecture be revised into an implementation spec.
+The table is grounded in `semantic-audit-and-shadow-notes.md`; the runtime and
+replay implementation above followed that audit. This section is retained to
+preserve the design sequence.
 
 ## 20. Design Anchor
 

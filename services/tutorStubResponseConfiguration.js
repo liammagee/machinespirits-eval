@@ -21,6 +21,7 @@ import {
 } from './tutorStubSurfaceAccessibility.js';
 import { TUTOR_STUB_PERFORMANCE_OBLIGATION_CONTRACT_SCHEMA } from './tutorStubPerformanceObligationContract.js';
 import { auditTutorStubEngagementOperation } from './tutorStubEngagementOperation.js';
+import { detectTutorStubVerdictDeclaration } from './tutorStubDialogueClosure.js';
 
 export { measureTutorStubSurfaceSentenceAccessibility } from './tutorStubSurfaceAccessibility.js';
 
@@ -687,6 +688,7 @@ export function buildTutorStubResponseConfiguration({
   recentActorialParts = [],
   actorialPartOverride = null,
   actionFamilyOverride = null,
+  publicObligationDirective = null,
   discoursePlane = null,
 } = {}) {
   const instructionalMetaRepair = discoursePlane?.plane === 'instructional_meta';
@@ -762,6 +764,7 @@ export function buildTutorStubResponseConfiguration({
     policy,
     engagement_stance: effectiveEngagementStance,
     action_family: action.actionFamily,
+    public_obligation_directive: publicObligationDirective ? structuredClone(publicObligationDirective) : null,
     discourse_plane: discoursePlane ? structuredClone(discoursePlane) : null,
     addressee_profile: audience.audienceRegister,
     audience_register: audience.audienceRegister,
@@ -842,6 +845,7 @@ export function tutorStubResponseConfigurationPrompt(configuration, { stanceCont
   const stanceContract = oneLine(stanceContractOverride || stanceDefinition.stance_contract);
   const stanceSignature = oneLine(stanceDefinition.public_signature);
   const unresolved = configuration.unresolved_terms?.length ? configuration.unresolved_terms.join(', ') : 'none';
+  const obligation = configuration.public_obligation_directive || null;
   return [
     '[Tutor-only response configuration]',
     `Engagement stance: ${stance}. ${stanceContract}`,
@@ -851,6 +855,13 @@ export function tutorStubResponseConfigurationPrompt(configuration, { stanceCont
       configuration.action_family,
       'description',
     )}`,
+    ...(obligation
+      ? [
+          `Public learner request: answer "${oneLine(
+            obligation.target?.source_surface,
+          )}" from public evidence. If the result is not public, name that exact limit and one concrete public condition for answering it. Do not substitute an unrelated clue or question.`,
+        ]
+      : []),
     `Addressee profile: ${configuration.addressee_profile}. ${definitionContract(
       audienceDefinitions,
       configuration.addressee_profile,
@@ -1179,7 +1190,7 @@ function actionVisible(actionFamily, text, metrics, unresolvedTerms) {
     return /\b(?:i hear|that sounds|you are naming|you've named|it makes sense|you can)\b/iu.test(text);
   }
   if (actionFamily === 'close_inquiry')
-    return metrics.questionCount === 0 && /\b(?:closed|settled|conclude|therefore)\b/iu.test(text);
+    return metrics.questionCount === 0 && detectTutorStubVerdictDeclaration(text).declared;
   return metrics.wordCount <= 110;
 }
 

@@ -7,7 +7,9 @@
  * Replays an existing tutor-stub trace (.tutor-stub-traces/*.jsonl) WITHOUT
  * changing tutor behaviour and derives one record per DECISION POINT — the
  * strategy selection at tutor turn N (hold the action family in force, or
- * revise it), for N >= 2.
+ * revise it), for N >= 2 by default. `--include-turn-one` replays the full
+ * persisted pre-gate input boundary through the live deterministic reducer so
+ * mechanism-validation can compare all decisions, including N = 1.
  *
  * v0.1 changes after the first gold comparison
  * (docs/adaptation-refinement/gold-annotations-first-corpus.md):
@@ -34,7 +36,7 @@
  * gold judgments, not that the rules generalize. Held-out dialogues needed.
  *
  * Usage:
- *   node scripts/derive-adaptive-warrant-shadow.js --trace <trace.jsonl> [--json <out.json>] [--gold <gold.json>]
+ *   node scripts/derive-adaptive-warrant-shadow.js --trace <trace.jsonl> [--include-turn-one] [--json <out.json>] [--gold <gold.json>]
  */
 
 import fs from 'node:fs';
@@ -48,6 +50,12 @@ import {
   REPETITION_DEFEATER_THRESHOLD,
 } from '../services/adaptiveWarrantGateCore.js';
 import { createAdaptiveWarrantActionContractTracker } from '../services/adaptiveWarrantActionContracts.js';
+import {
+  assessAdaptiveWarrantInquiryCompletion,
+  projectAdaptiveWarrantEvidenceAvailability,
+} from '../services/adaptiveWarrantInquiryCompletion.js';
+import { createAdaptiveWarrantPublicObligationLedger } from '../services/adaptiveWarrantPublicObligationLedger.js';
+import { createTutorStubWarrantGate } from '../services/tutorStubWarrantGate.js';
 
 export const ADAPTIVE_WARRANT_SHADOW_SCHEMA = 'machinespirits.tutor-stub.adaptive-warrant-shadow.v0.2';
 
@@ -128,6 +136,18 @@ function performanceSelection(contractEvent) {
   };
 }
 
+function deliveredPerformanceSelection(turnCompleteEvent, fallback) {
+  const record = turnCompleteEvent?.turnRecord || {};
+  const configuration = record.deliveredResponseConfiguration || record.responseConfiguration || null;
+  if (!configuration) return fallback;
+  return {
+    action_family: configuration.action_family || fallback?.action_family || null,
+    stance: configuration.engagement_stance || fallback?.stance || null,
+    part: configuration.actorial_part || fallback?.part || null,
+    tactic: configuration.actorial_performance?.id || fallback?.tactic || null,
+  };
+}
+
 function dagCounts(preflightEvent) {
   const record = preflightEvent?.preflight?.priorRecord || {};
   return {
@@ -148,6 +168,18 @@ function committedDagCounts(turnCompleteEvent) {
 
 function dagTotal(counts) {
   return counts.grounded + counts.voiced;
+}
+
+function completedTutorOutcome(fact) {
+  if (!fact) return null;
+  return {
+    turn: fact.turn,
+    action_family: fact.selection?.action_family || null,
+    tutor_text: fact.tutorText || '',
+    released_evidence: fact.releasedEvidence || [],
+    delivered_response_configuration: fact.deliveredResponseConfiguration || null,
+    defeaters: fact.defeaters || [],
+  };
 }
 
 /** Per-tutor-turn descriptive facts, shared by trouble accounting below. */
@@ -173,7 +205,16 @@ function collectTurnFacts(events) {
   const turns = [...contracts.keys()].sort((a, b) => a - b);
   const facts = new Map();
   for (const turn of turns) {
-    const selection = performanceSelection(contracts.get(turn));
+    const turnComplete = completedTurns.get(turn);
+    const turnRecord = turnComplete?.turnRecord || {};
+    const dagModel = turnRecord.tutorLearnerDagModel || null;
+    const dagAssessment = dagModel?.assessment || {};
+    const storedCompletionChecks =
+      (turnRecord.warrantGateDecision || turnRecord.registerSelection?.warrant_gate)?.inquiry_completion?.checks || {};
+    const missingReleasedEvidence = Array.isArray(dagAssessment.missingPremises)
+      ? dagAssessment.missingPremises.some((row) => row?.bucket === 'released_but_not_held')
+      : null;
+    const selection = deliveredPerformanceSelection(turnComplete, performanceSelection(contracts.get(turn)));
     // Live decision N combines tutor outcome N-1 with learner-record growth
     // from learner N. A completed turn already contains the record after its
     // learner was processed, so tutor-turn t uses committed records t -> t+1.
@@ -192,9 +233,7 @@ function collectTurnFacts(events) {
     const pace = pacing.get(turn);
     const learnerText = learnerTurns.get(turn)?.combinedText || '';
     const classification =
-      completedTurns.get(turn)?.turnRecord?.classification?.turn ||
-      completedTurns.get(turn)?.turnRecord?.stateObservation?.classifier ||
-      null;
+      turnComplete?.turnRecord?.classification?.turn || turnComplete?.turnRecord?.stateObservation?.classifier || null;
 
     const defeaters = [];
     if (dagGrowth !== null && dagGrowth <= 0) defeaters.push('no_dag_growth');
@@ -217,18 +256,130 @@ function collectTurnFacts(events) {
       learnerText,
       learnerSignal: classifyLearnerSignal(learnerText),
       classification,
+      classificationEnvelope: turnRecord.classification || classification,
       pacingSignal: pace?.signal || null,
+      tutorText: turnRecord.tutor || '',
+      releasedEvidence: turnRecord.dramaticRelease?.frame?.entries || [],
+      deliveredResponseConfiguration: turnRecord.deliveredResponseConfiguration || null,
+      dialogueClosureFrame: turnRecord.dialogueClosure?.frame || null,
+      evidenceAvailability: projectAdaptiveWarrantEvidenceAvailability(turnRecord.releasePacing, {
+        turn,
+      }),
+      dagModel,
+      unsupportedAssertionCount: Number(
+        dagAssessment.unsupportedAssertionCount || storedCompletionChecks.unsupported_assertion_count || 0,
+      ),
+      activeDroppedFactCount: Number(
+        dagModel?.memoryReliability?.activeDroppedCount || turnRecord.dagFactDropout?.activeCount || 0,
+      ),
+      releasedEvidenceIntegrated:
+        missingReleasedEvidence !== null
+          ? !missingReleasedEvidence
+          : storedCompletionChecks.released_evidence_integrated !== undefined
+            ? storedCompletionChecks.released_evidence_integrated === true
+            : dagAssessment.bottleneck !== 'learner_integration_gap',
+      liveWarrantDecision: turnRecord.warrantGateDecision || turnRecord.registerSelection?.warrant_gate || null,
     });
   }
   return { turns, facts };
 }
 
-function deriveSessionShadow(session, sessionIndex) {
+function deriveStructuredSessionShadow(session, sessionIndex) {
+  const completedTurns = lastPerTurn(session.events, 'turn_complete');
+  const { turns, facts } = collectTurnFacts(session.events);
+  const firstLiveDecision = turns.map((turn) => facts.get(turn)?.liveWarrantDecision).find(Boolean);
+  const gate = createTutorStubWarrantGate({ mode: firstLiveDecision?.mode || 'observe' });
+  const decisions = [];
+  let priorDeliveredActionFamily = null;
+
+  for (const [index, turn] of turns.entries()) {
+    const record = completedTurns.get(turn)?.turnRecord || {};
+    const fact = facts.get(turn);
+    const deliveredActionFamily = fact?.selection?.action_family || null;
+    const liveDecision = fact?.liveWarrantDecision || null;
+    const input = liveDecision?.input_snapshot || null;
+    const decision = gate.assess({
+      turn,
+      learnerText: input?.learner_text ?? record.learner ?? fact?.learnerText ?? '',
+      classification: input?.classification ?? fact?.classificationEnvelope ?? null,
+      dagModel: input?.learner_dag_model ?? record.tutorLearnerDagModel ?? fact?.dagModel ?? null,
+      priorActionFamily: priorDeliveredActionFamily,
+      proposedActionFamily:
+        input?.pre_gate_proposed_action_family ??
+        liveDecision?.pre_gate_proposed_action_family ??
+        deliveredActionFamily,
+      dialogueClosureFrame:
+        input?.dialogue_closure_frame ?? record.dialogueClosure?.frame ?? fact?.dialogueClosureFrame ?? null,
+      evidenceAvailability:
+        input?.evidence_availability ?? projectAdaptiveWarrantEvidenceAvailability(record.releasePacing, { turn }),
+      boundedInquiryScope: input?.bounded_inquiry_scope ?? null,
+      unsupportedAssertionCount: input?.unsupported_assertion_count ?? fact?.unsupportedAssertionCount ?? 0,
+      activeDroppedFactCount: Number(
+        input?.active_dropped_fact_count ??
+          record.tutorLearnerDagModel?.memoryReliability?.activeDroppedCount ??
+          record.dagFactDropout?.activeCount ??
+          fact?.activeDroppedFactCount ??
+          0,
+      ),
+      releasedEvidenceIntegrated: input?.released_evidence_integrated ?? fact?.releasedEvidenceIntegrated !== false,
+    });
+    gate.recordTurnOutcome({
+      turn,
+      actionFamily: deliveredActionFamily,
+      uptakeAudit: record.tutorLiveTurnProgressionAudit || null,
+      repetitionAudit: record.tutorRepetitionAudit || null,
+      deterministicFallback: Boolean(record.tutorDeterministicFallback),
+      mechanicalRepair: Boolean(record.tutorMechanicalRepair),
+      guardAccounting: record.tutorGuardAccounting || null,
+      pacingSignal: record.releasePacing?.signal || fact?.pacingSignal || null,
+      tutorText: record.tutor || fact?.tutorText || '',
+      releasedEvidence: record.dramaticRelease?.frame?.entries || fact?.releasedEvidence || [],
+      deliveredResponseConfiguration:
+        record.deliveredResponseConfiguration || fact?.deliveredResponseConfiguration || null,
+    });
+
+    const priorFact = index > 0 ? facts.get(turns[index - 1]) : null;
+    const revised = Boolean(
+      priorDeliveredActionFamily && deliveredActionFamily && deliveredActionFamily !== priorDeliveredActionFamily,
+    );
+    const realizationChanged = Boolean(
+      priorFact &&
+      fact &&
+      (fact.selection.stance !== priorFact.selection.stance ||
+        fact.selection.part !== priorFact.selection.part ||
+        fact.selection.tactic !== priorFact.selection.tactic),
+    );
+    decisions.push({
+      ...decision,
+      held_for_turns: decision.strategy_since_turn === null ? 0 : turn - decision.strategy_since_turn + 1,
+      decided: revised ? `revise:${deliveredActionFamily}` : 'hold',
+      realization_changed: realizationChanged,
+      actual_selection: fact?.selection || null,
+      policy_matches_actual: decision.policy ? decision.policy.family === deliveredActionFamily : null,
+      stance_hint_matches_actual:
+        decision.policy?.stance_hint && fact?.selection ? decision.policy.stance_hint === fact.selection.stance : null,
+      verdict: decision.revision_warranted
+        ? revised
+          ? 'warranted_and_revised'
+          : 'warranted_but_held'
+        : revised
+          ? 'revised_without_warrant'
+          : 'aligned_hold',
+    });
+    priorDeliveredActionFamily = deliveredActionFamily;
+  }
+
+  return { session: sessionIndex + 1, decisions };
+}
+
+function deriveSessionShadow(session, sessionIndex, { includeTurnOne = false } = {}) {
+  if (includeTurnOne) return deriveStructuredSessionShadow(session, sessionIndex);
   const { turns, facts } = collectTurnFacts(session.events);
   const decisions = [];
   let turnsSinceDagGrowth = 0;
   let troubleFloorTurn = 0;
   const actionContracts = createAdaptiveWarrantActionContractTracker();
+  const publicObligations = createAdaptiveWarrantPublicObligationLedger();
 
   // The live gate observes the first learner turn against the action family
   // already selected in the runtime state. Prime the shared contract tracker
@@ -245,6 +396,14 @@ function deriveSessionShadow(session, sessionIndex) {
       classification: firstFact.classification,
       signal: firstFact.learnerSignal,
       dagGrowth: null,
+    });
+  }
+  if (firstFact) {
+    publicObligations.assess({
+      turn: firstTurn,
+      learnerText: firstFact.learnerText,
+      classification: firstFact.classification,
+      priorTutorOutcome: null,
     });
   }
 
@@ -295,6 +454,22 @@ function deriveSessionShadow(session, sessionIndex) {
       classification,
       signal,
       dagGrowth: prior.dagGrowth,
+    });
+    const publicObligation = publicObligations.assess({
+      turn,
+      learnerText,
+      classification,
+      priorTutorOutcome: completedTutorOutcome(prior),
+    });
+    const inquiryCompletion = assessAdaptiveWarrantInquiryCompletion({
+      dagModel: current.dagModel,
+      classification,
+      closureFrame: current.dialogueClosureFrame,
+      evidenceAvailability: current.evidenceAvailability,
+      publicObligation,
+      unsupportedAssertionCount: current.unsupportedAssertionCount,
+      activeDroppedFactCount: current.activeDroppedFactCount,
+      releasedEvidenceIntegrated: current.releasedEvidenceIntegrated,
     });
     if (actionContract?.transition?.discharge_prior_trouble) troubleFloorTurn = turn;
     const troubleTurns = streakTurns
@@ -357,6 +532,8 @@ function deriveSessionShadow(session, sessionIndex) {
 
     // Warrant + Phase-3 policy from the shared core (same implementation the
     // live gate uses).
+    const proposedActionFamily =
+      current.liveWarrantDecision?.pre_gate_proposed_action_family || current.selection.action_family;
     const warrant = evaluateWarrant({
       signal,
       signalConsumed,
@@ -366,8 +543,20 @@ function deriveSessionShadow(session, sessionIndex) {
       divergence,
       strategyInForce: prior.selection.action_family,
       actionContract,
+      publicObligation,
+      inquiryCompletion,
+      proposedActionFamily,
     });
     const policy = warrant.policy;
+    const commitmentTransitionWarranted = Boolean(
+      warrant.revision_warranted &&
+      prior.selection.action_family &&
+      policy?.family &&
+      policy.family !== prior.selection.action_family,
+    );
+    const candidateOverrideRequired = Boolean(
+      warrant.revision_warranted && policy?.family && policy.family !== proposedActionFamily,
+    );
 
     decisions.push({
       turn,
@@ -377,10 +566,17 @@ function deriveSessionShadow(session, sessionIndex) {
       realization_changed: realizationChanged,
       learner_signal: { ...signal, carried: signalCarried },
       action_contract: actionContract,
+      public_obligation: publicObligation,
+      inquiry_completion: inquiryCompletion,
       trouble_turns: troubleTurns,
       complaint_turns: complaintTurns,
       divergence,
+      decision_kind: warrant.decision_kind,
       revision_warranted: warrant.revision_warranted,
+      commitment_transition_warranted: commitmentTransitionWarranted,
+      current_candidate_override_required: candidateOverrideRequired,
+      prior_delivered_action_family: prior.selection.action_family,
+      pre_gate_proposed_action_family: proposedActionFamily,
       register_revision_warranted: warrant.register_revision_warranted,
       warrant_basis: warrant.warrant_basis,
       policy,
@@ -400,13 +596,13 @@ function deriveSessionShadow(session, sessionIndex) {
   return { session: sessionIndex + 1, decisions };
 }
 
-export function deriveAdaptiveWarrantShadow(tracePath) {
+export function deriveAdaptiveWarrantShadow(tracePath, { includeTurnOne = false } = {}) {
   const lines = readTraceLines(tracePath);
   const sessions = segmentSessions(lines);
   return {
     schema: ADAPTIVE_WARRANT_SHADOW_SCHEMA,
     trace: tracePath,
-    sessions: sessions.map((session, index) => deriveSessionShadow(session, index)),
+    sessions: sessions.map((session, index) => deriveSessionShadow(session, index, { includeTurnOne })),
   };
 }
 
@@ -481,15 +677,16 @@ function main() {
       trace: { type: 'string' },
       json: { type: 'string' },
       gold: { type: 'string' },
+      'include-turn-one': { type: 'boolean', default: false },
     },
   });
   if (!values.trace) {
     console.error(
-      'Usage: node scripts/derive-adaptive-warrant-shadow.js --trace <trace.jsonl> [--json <out.json>] [--gold <gold.json>]',
+      'Usage: node scripts/derive-adaptive-warrant-shadow.js --trace <trace.jsonl> [--include-turn-one] [--json <out.json>] [--gold <gold.json>]',
     );
     process.exit(1);
   }
-  const shadow = deriveAdaptiveWarrantShadow(values.trace);
+  const shadow = deriveAdaptiveWarrantShadow(values.trace, { includeTurnOne: values['include-turn-one'] });
   for (const session of shadow.sessions) {
     console.log(`Session ${session.session} — ${session.decisions.length} decision points`);
     for (const decision of session.decisions) console.log(formatDecision(decision));

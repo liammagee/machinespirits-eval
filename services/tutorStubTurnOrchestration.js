@@ -4,7 +4,85 @@
 // silently — the reply features would just stop appearing. This service is
 // pure and stateless, so a direct import costs nothing.
 import { describeTutorStubReplyFeatures } from './tutorStubReplyFeatures.js';
-import { recordTutorStubWarrantGateOutcome } from './tutorStubWarrantGate.js';
+import {
+  enforceTutorStubWarrantGateFinalAuthority,
+  recordTutorStubWarrantGateOutcome,
+} from './tutorStubWarrantGate.js';
+import { constrainTutorStubDialogueClosureFrameForAdaptiveWarrant } from './tutorStubDialogueClosure.js';
+import { displaceTutorStubPointOfAction } from './tutorStubPointOfActionCoaching.js';
+
+export function reconcileTutorStubTypedActionWithWarrant({
+  state,
+  typedAction,
+  warrantFinalAuthority,
+  finalRegisterSelection = null,
+  turn = null,
+  turnId = null,
+  clone = structuredClone,
+  appendTrace = () => {},
+} = {}) {
+  const typedActionFamily =
+    typedAction?.registerSelection?.response_configuration?.action_family ||
+    typedAction?.registerSelection?.action_family ||
+    null;
+  const configurationDisplaced = warrantFinalAuthority?.optional_configuration_displaced === true;
+  if (
+    !typedAction?.decision ||
+    !warrantFinalAuthority?.desired_action_family ||
+    (!configurationDisplaced &&
+      (!typedActionFamily || typedActionFamily === warrantFinalAuthority.desired_action_family))
+  ) {
+    if (typedAction && finalRegisterSelection) typedAction.registerSelection = clone(finalRegisterSelection);
+    return { displaced: false, typedActionFamily };
+  }
+  const displacedDecision = typedAction.decision;
+  const contractId = displacedDecision.contract_id || null;
+  typedAction.decision = clone({
+    ...displacedDecision,
+    delivery: {
+      delivered: false,
+      disposition: 'displaced_before_tutor_output',
+      displaced_by: 'adaptive_warrant_gate_final_authority',
+      selected_action_family: typedActionFamily,
+      delivered_action_family: warrantFinalAuthority.desired_action_family,
+      displaced_configuration_fields: [
+        ...(warrantFinalAuthority.displaced_response_configuration_fields || []),
+        ...(warrantFinalAuthority.displaced_selection_fields || []).map((field) => `selection.${field}`),
+      ],
+    },
+  });
+  let cancelledIntervention = null;
+  state.typedActions.ledger = (state.typedActions.ledger || []).map((record) => {
+    if (record?.contract_id !== contractId || record?.status !== 'pending') return record;
+    cancelledIntervention = {
+      ...record,
+      status: 'cancelled_before_delivery',
+      cancellation: {
+        reason: 'adaptive_warrant_gate_final_authority',
+        delivered_action_family: warrantFinalAuthority.desired_action_family,
+      },
+    };
+    return cancelledIntervention;
+  });
+  if (displacedDecision.scaffold_lifecycle?.before) {
+    state.typedActions.scaffoldLifecycle = clone(displacedDecision.scaffold_lifecycle.before);
+  }
+  state.typedActions.currentDecision = null;
+  if (finalRegisterSelection) typedAction.registerSelection = clone(finalRegisterSelection);
+  appendTrace(state.trace, {
+    type: 'tutor_typed_action_decision_displaced',
+    turn,
+    turnId,
+    contractId,
+    selectedActionFamily: typedActionFamily,
+    deliveredActionFamily: warrantFinalAuthority.desired_action_family,
+    displacedConfigurationFields: typedAction.decision.delivery.displaced_configuration_fields,
+    cancelledIntervention: clone(cancelledIntervention),
+    restoredScaffoldLifecycle: clone(state.typedActions.scaffoldLifecycle),
+    reason: 'adaptive_warrant_gate_final_authority',
+  });
+  return { displaced: true, typedActionFamily, contractId };
+}
 
 export function createTutorStubTurnOrchestration(dependencies = {}) {
   const {
@@ -297,6 +375,10 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
     assertTutorStubTurnAttemptCurrent(runtimeOptions);
     const tutorTurn = state.turns.length + 1;
     const turnId = turnDebugId(state, tutorTurn);
+    const frozenPreOptionalWarrantSelection =
+      registerSelection?.warrant_gate?.mode === 'active' && registerSelection?.warrant_gate?.revision_warranted === true
+        ? jsonClone(registerSelection)
+        : null;
     const humanDiscourseFrame =
       buildHumanDiscourseFrame({
         state,
@@ -306,11 +388,24 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         learnerText,
       }) || {};
     const instructionalMetaRepair = humanDiscourseFrame?.discoursePlane?.plane === 'instructional_meta';
-    const { tutorDagSnapshot: dagSnapshot, frame: dialogueClosureFrame } = tutorDialogueClosureFrameForTurn({
+    const closureAtTurn = tutorDialogueClosureFrameForTurn({
       state,
       tutorTurn,
       tutorLearnerDag,
     });
+    const dagSnapshot = closureAtTurn.tutorDagSnapshot;
+    const dialogueClosureFrame = constrainTutorStubDialogueClosureFrameForAdaptiveWarrant(
+      closureAtTurn.frame,
+      registerSelection?.warrant_gate || null,
+    );
+    if (registerSelection?.warrant_gate) {
+      appendTraceEvent(state.trace, {
+        type: 'tutor_warrant_gate_decision',
+        turn: tutorTurn,
+        turnId,
+        decision: jsonClone(registerSelection.warrant_gate),
+      });
+    }
     const comprehensionBeforeTutor = tutorStubComprehensionSnapshot(state.comprehension, { turn: tutorTurn });
     const dagFactDropout = tutorLearnerDag?.dagFactDropout || null;
     const directorGuidance = tutorStubDirectorGuidanceEntry(state.directorGuidance, tutorTurn);
@@ -435,6 +530,55 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         actionFamilyChanged: completionSelection.changed,
       });
     }
+    const preFinalWarrantSelection = jsonClone(registerSelection || null);
+    const preFinalWarrantActionFamily =
+      registerSelection?.response_configuration?.action_family || registerSelection?.action_family || null;
+    registerSelection = enforceTutorStubWarrantGateFinalAuthority(
+      registerSelection,
+      registerSelection?.warrant_gate || null,
+      { frozenPreOptionalSelection: frozenPreOptionalWarrantSelection },
+    );
+    const warrantFinalAuthority = registerSelection?.adaptive_warrant_enforcement || null;
+    if (warrantFinalAuthority?.applied) {
+      reconcileTutorStubTypedActionWithWarrant({
+        state,
+        typedAction,
+        warrantFinalAuthority,
+        finalRegisterSelection: registerSelection,
+        turn: tutorTurn,
+        turnId,
+        clone: jsonClone,
+        appendTrace: appendTraceEvent,
+      });
+      if (
+        pointOfAction &&
+        (pointOfAction.assigned_trigger || pointOfAction.interruption?.text || pointOfAction.compiled_constraint)
+      ) {
+        pointOfAction = displaceTutorStubPointOfAction(pointOfAction, {
+          displacedActionFamily: preFinalWarrantActionFamily,
+          desiredActionFamily: warrantFinalAuthority.desired_action_family,
+        });
+        if (state.pointOfAction) state.pointOfAction.current = pointOfAction;
+        appendTraceEvent(state.trace, {
+          type: 'tutor_point_of_action_displaced',
+          turn: tutorTurn,
+          turnId,
+          displacement: pointOfAction.displacement,
+        });
+      }
+      if (state.register?.enabled && registerSelection) {
+        if (state.register.history.at(-1)?.turn === registerSelection.turn) {
+          state.register.history[state.register.history.length - 1] = registerSelection;
+        }
+        state.register.current = registerSelection;
+      }
+      appendTraceEvent(state.trace, {
+        type: 'tutor_warrant_gate_final_authority',
+        turn: tutorTurn,
+        turnId,
+        enforcement: warrantFinalAuthority,
+      });
+    }
     const tutorFeedback = learnerInput?.tutorFeedback || null;
     const feedbackTargetTurn = findTutorStubFeedbackTargetTurn({
       feedback: tutorFeedback,
@@ -452,6 +596,18 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       nextSelection: registerSelection,
     });
     assertTutorStubTurnAttemptCurrent(runtimeOptions);
+    if (precomputedResponse?.speculativeCacheHit && registerSelection?.warrant_gate?.mode === 'active') {
+      // The active gate can change both the final action commitment and the
+      // closure frame after optional policy layers run. A response generated
+      // against a speculative pre-gate frame cannot be re-labelled safely;
+      // realize and audit it afresh against the committed constraints.
+      appendTraceEvent(state.trace, {
+        type: 'mixed_learner_tutor_prefetch_bypassed',
+        turn: tutorTurn,
+        reason: 'active_warrant_gate_requires_fresh_constrained_realization',
+      });
+      precomputedResponse = null;
+    }
     if (
       precomputedResponse?.speculativeCacheHit &&
       pointOfAction?.assigned_trigger &&
@@ -799,7 +955,12 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       closureCheckIn: dialogueClosureFrame.phase === 'final_checkin_response',
       pointOfAction: state.pointOfAction?.current || null,
       registerSelection,
+      preFinalWarrantSelection,
+      warrantGateDecision: jsonClone(registerSelection?.warrant_gate || null),
+      inquiryCompletion: jsonClone(registerSelection?.warrant_gate?.inquiry_completion || null),
+      publicObligation: jsonClone(registerSelection?.warrant_gate?.public_obligation || null),
       responseConfiguration: jsonClone(registerSelection?.response_configuration || null),
+      speakingResponseConfiguration: jsonClone(response.selectedSpeakingResponseConfiguration || null),
       deliveredResponseConfiguration: jsonClone(
         response.deliveryResponseConfiguration || registerSelection?.response_configuration || null,
       ),
@@ -852,6 +1013,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       tutorRepetitionAudit: response.repetitionAudit || null,
       tutorDialogueClosureAudit: response.closureAudit || null,
       tutorResponseRepaired: Boolean(response.repaired),
+      tutorMechanicalRepair: Boolean(response.mechanicalRepair),
       tutorDeterministicFallback: Boolean(response.deterministicFallback),
       tutorDeterministicClosure: Boolean(response.deterministicClosure),
       prompts: {
@@ -875,6 +1037,9 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       mechanicalRepair: Boolean(response.mechanicalRepair),
       guardAccounting: response.guardAccounting || null,
       pacingSignal: releasePacing?.signal || null,
+      tutorText: response.text,
+      releasedEvidence: dramaticReleaseFrame?.entries || [],
+      deliveredResponseConfiguration,
     });
     if (warrantGateOutcome) turnRecord.warrantGateOutcome = warrantGateOutcome;
     state.turns.push(turnRecord);

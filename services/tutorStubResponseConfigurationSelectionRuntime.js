@@ -1,4 +1,42 @@
 import { ensureTutorStubWarrantGate } from './tutorStubWarrantGate.js';
+import { buildTutorStubDialogueClosureFrame } from './tutorStubDialogueClosure.js';
+import { projectAdaptiveWarrantEvidenceAvailability } from './adaptiveWarrantInquiryCompletion.js';
+import {
+  applyAdaptiveWarrantSourcePatch,
+  buildAdaptiveWarrantSelectorApplicationAudit,
+} from './adaptiveWarrantDeliveryContract.js';
+import {
+  buildTutorStubLearnerIntegrationTarget,
+  selectTutorStubActionFamily,
+} from './tutorStubResponseConfiguration.js';
+
+/**
+ * Return only a planner-authored decision-time bounded-scope contract. The
+ * current dramatic-world and world-scaffold schemas do not author a bounded
+ * proof-limit terminal, so this seam deliberately does not infer one from a
+ * turn cap, an empty due-evidence list, or ordinary conclusion readiness.
+ */
+export function projectTutorStubBoundedInquiryScopeAtDecision(state) {
+  const scope = state?.boundedInquiryScopeAtDecision || null;
+  if (!scope || scope.enabled !== true) return null;
+  const id = String(scope.id || '').trim();
+  const requiredBooleanFields = [
+    'release_scope_exhausted',
+    'terminal_outcome_asserted',
+    'evidence_integrated',
+    'proof_limit_preserved',
+  ];
+  if (!id || requiredBooleanFields.some((field) => typeof scope[field] !== 'boolean')) return null;
+  return structuredClone(scope);
+}
+
+/** Narrow, testable boundary between response selection and the live reducer. */
+export function assessTutorStubWarrantGateAtResponseSelection(warrantGate, state, decisionInput = {}) {
+  return warrantGate.assess({
+    ...decisionInput,
+    boundedInquiryScope: projectTutorStubBoundedInquiryScopeAtDecision(state),
+  });
+}
 
 export function createTutorStubResponseConfigurationSelectionRuntime(
   dependencies = {},
@@ -274,24 +312,52 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
     // overrides the action family + stance when a revision is warranted.
     const warrantGate = ensureTutorStubWarrantGate(state);
     let warrantGateDecision = null;
+    let warrantGatePreSource = null;
+    let warrantGatePostSource = null;
     if (warrantGate) {
-      warrantGateDecision = warrantGate.assess({
-        turn: tutorLearnerDag?.model?.turn ?? state.turns.length + 1,
+      warrantGatePreSource = structuredClone(source);
+      const gateTurn = tutorLearnerDag?.model?.turn ?? state.turns.length + 1;
+      const releasePacingAtDecision = tutorStubReleasePacingSnapshot(state.releasePacing, state.world);
+      const preGateAction = selectTutorStubActionFamily({
+        classification,
+        tutorLearnerDag,
+        comprehension: tutorStubComprehensionFeatures(state.comprehension, { turn: gateTurn }),
+        releasePacing: releasePacingAtDecision,
+        discoursePlane,
+        world: state.world,
+      });
+      const dialogueClosureAtDecision = buildTutorStubDialogueClosureFrame({
+        lifecycle: state.dialogueClosure,
+        learnerDagModel: tutorLearnerDag?.model || null,
+        tutorDagSnapshot: state.turns.at(-1)?.tutorDag || null,
+      });
+      const learnerDagAtDecision = tutorLearnerDag?.model || tutorLearnerDag || null;
+      const integrationTargetAtDecision = buildTutorStubLearnerIntegrationTarget({
+        tutorLearnerDag: learnerDagAtDecision,
+        world: state.world,
+      });
+      const learnerDagAssessment = learnerDagAtDecision?.assessment || {};
+      warrantGateDecision = assessTutorStubWarrantGateAtResponseSelection(warrantGate, state, {
+        turn: gateTurn,
         learnerText,
         classification,
         dagModel: tutorLearnerDag?.model || null,
         priorActionFamily: state.register?.current?.action_family || null,
+        proposedActionFamily: preGateAction.actionFamily || null,
+        dialogueClosureFrame: dialogueClosureAtDecision,
+        evidenceAvailability: projectAdaptiveWarrantEvidenceAvailability(releasePacingAtDecision, {
+          turn: gateTurn,
+        }),
+        unsupportedAssertionCount: Number(learnerDagAssessment.unsupportedAssertionCount || 0),
+        activeDroppedFactCount: Number(
+          tutorLearnerDag?.model?.memoryReliability?.activeDroppedCount ||
+            tutorLearnerDag?.dagFactDropout?.activeCount ||
+            0,
+        ),
+        releasedEvidenceIntegrated: integrationTargetAtDecision?.active !== true,
       });
-      if (warrantGateDecision?.override) {
-        source = applyEngagementStanceOverride(source, warrantGateDecision.override.engagement_stance, {
-          register_reason: warrantGateDecision.override.reason,
-          engagement_stance_reason: warrantGateDecision.override.reason,
-          reviewer_signal: 'adaptive warrant gate: revision of pedagogical commitment',
-          expected_dag_move: 'Repair the diagnosed divergence before the next proof move.',
-          expected_field_move: warrantGateDecision.policy?.rationale || 'apply the recommended repair policy',
-          source: 'adaptive_warrant_gate',
-        });
-      }
+      source = applyAdaptiveWarrantSourcePatch(source, warrantGateDecision);
+      warrantGatePostSource = structuredClone(source);
     }
     const selectedRaw = String(source.engagement_stance || source.selected_register || source.register || '').trim();
     const selectedResolution = resolveEngagementStance(selectedRaw, { fallback: 'precise' });
@@ -335,6 +401,7 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
             reason: warrantGateDecision.override.reason,
           }
         : null,
+      publicObligationDirective: source.public_obligation_directive || null,
       releasePacing: tutorStubReleasePacingSnapshot(state.releasePacing, state.world),
       dueEvidence: discoursePlane.freeze_clue_release
         ? []
@@ -523,6 +590,14 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
         classification?.turn?.pedagogical_need ||
         requestType,
     );
+    const warrantGateApplication = buildAdaptiveWarrantSelectorApplicationAudit({
+      decision: warrantGateDecision,
+      preGateSource: warrantGatePreSource,
+      postGateSource: warrantGatePostSource,
+      actionFamilyOverrideInput: configurationInputs.actionFamilyOverride,
+      publicObligationDirectiveInput: configurationInputs.publicObligationDirective,
+      responseConfiguration,
+    });
     const selection = {
       schema: 'machinespirits.tutor-stub.response-configuration-selection.v5',
       register_ontology_version: getRegisterOntologyVersion(),
@@ -547,6 +622,7 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
         preferredLegacyRegister({ register: selected, requestType, actionFamily }),
       action_family: actionFamily || null,
       warrant_gate: warrantGateDecision || null,
+      warrant_gate_application: warrantGateApplication,
       discourse_plane: structuredClone(discoursePlane),
       addressee_profile: responseConfiguration.addressee_profile,
       audience_register: responseConfiguration.audience_register,

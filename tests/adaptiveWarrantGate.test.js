@@ -1,17 +1,40 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { classifyLearnerSignal, evaluateWarrant } from '../services/adaptiveWarrantGateCore.js';
+import {
+  buildAdaptiveWarrantDecisionInputSnapshot,
+  classifyLearnerSignal,
+  evaluateWarrant,
+} from '../services/adaptiveWarrantGateCore.js';
 import {
   ADAPTIVE_WARRANT_ACTION_FAMILY_CONTRACTS,
   classifyAdaptiveWarrantEvidenceRequest,
   createAdaptiveWarrantActionContractTracker,
 } from '../services/adaptiveWarrantActionContracts.js';
+import {
+  assessAdaptiveWarrantInquiryCompletion,
+  projectAdaptiveWarrantEvidenceAvailability,
+} from '../services/adaptiveWarrantInquiryCompletion.js';
+import {
+  auditAdaptiveWarrantPublicObligationDelivery,
+  classifyAdaptiveWarrantPublicSpeechAct,
+  createAdaptiveWarrantPublicObligationLedger,
+} from '../services/adaptiveWarrantPublicObligationLedger.js';
 import { recommendRepairPolicy } from '../services/adaptiveWarrantPolicy.js';
+import { createTutorStubInteractiveLearnerRuntime } from '../services/tutorStubInteractiveLearnerRuntime.js';
+import {
+  assessTutorStubWarrantGateAtResponseSelection,
+  projectTutorStubBoundedInquiryScopeAtDecision,
+} from '../services/tutorStubResponseConfigurationSelectionRuntime.js';
+import { invalidateTutorStubWarrantGateAfterPublicTutorRewrite } from '../services/tutorStubCharacterControlController.js';
+import { buildTutorStubFirstDraftContract } from '../services/tutorStubFirstDraftContract.js';
+import { reconcileTutorStubTypedActionWithWarrant } from '../services/tutorStubTurnOrchestration.js';
 import {
   createTutorStubWarrantGate,
+  enforceTutorStubWarrantGateFinalAuthority,
   ensureTutorStubWarrantGate,
   recordTutorStubWarrantGateOutcome,
+  restoreTutorStubWarrantGateFromTurns,
   resolveTutorStubWarrantGateMode,
 } from '../services/tutorStubWarrantGate.js';
 
@@ -46,18 +69,81 @@ test('action contracts cover every catalogue family with typed lifecycle transit
   }
 });
 
-test('evidence request classifier gives repeated die-mark requests a stable typed signature', () => {
-  const first = classifyAdaptiveWarrantEvidenceRequest({
-    learnerText: 'What public mark on the coin or dies would establish the link?',
-    classification: { turn: { request_type: 'stepwise_support_request', discourse_move: 'question' } },
+test('decision-input digest is canonical across object key order', () => {
+  const first = buildAdaptiveWarrantDecisionInputSnapshot({
+    turn: 3,
+    classification: { turn: { agency: 'steering', discourse_move: 'claim' } },
+    reducerStateBefore: {
+      strategy_in_force: 'stage_next_step',
+      trouble_turns: [{ turn: 1, defeaters: ['no_dag_growth'] }],
+    },
   });
-  const second = classifyAdaptiveWarrantEvidenceRequest({
-    learnerText: 'No flaw is recorded; please record a distinctive cut or die-mark before comparison.',
-    classification: { turn: { request_type: 'stepwise_support_request', discourse_move: 'question' } },
+  const reordered = buildAdaptiveWarrantDecisionInputSnapshot({
+    turn: 3,
+    classification: { turn: { discourse_move: 'claim', agency: 'steering' } },
+    reducerStateBefore: {
+      trouble_turns: [{ defeaters: ['no_dag_growth'], turn: 1 }],
+      strategy_in_force: 'stage_next_step',
+    },
   });
-  assert.equal(first.signature, 'comparison_evidence:mark_or_tool_match');
-  assert.equal(second.signature, first.signature);
-  assert.equal(second.explicitly_unresolved, true);
+  assert.deepEqual(first.snapshot, reordered.snapshot);
+  assert.equal(first.sha256, reordered.sha256);
+});
+
+test('public speech acts separate proposed tests, criteria, and tutor-directed result requests', () => {
+  const proposal = classifyAdaptiveWarrantPublicSpeechAct({
+    learnerText: 'I would examine the assay-book entries on weight and metal first.',
+  });
+  const criterion = classifyAdaptiveWarrantPublicSpeechAct({
+    learnerText: 'What public evidence would tie this metal to one crucible?',
+  });
+  const request = classifyAdaptiveWarrantPublicSpeechAct({
+    learnerText: 'What mark did the touchstone leave—does it match silver, or show cheaper metal?',
+  });
+  assert.equal(proposal.kind, 'learner_proposed_test');
+  assert.equal(proposal.creates_obligation, false);
+  assert.equal(criterion.kind, 'criterion_question');
+  assert.equal(criterion.creates_obligation, false);
+  assert.equal(
+    classifyAdaptiveWarrantPublicSpeechAct({ learnerText: 'What evidence would tie the coin to this bench?' }).kind,
+    'criterion_question',
+  );
+  assert.equal(request.kind, 'tutor_directed_public_result_request');
+  assert.equal(request.creates_obligation, true);
+  assert.equal(request.target.kind, 'material_or_assay_result');
+  for (const selectionText of [
+    'Tell me what to test next.',
+    'Tell me what to test next?',
+    'Please tell me the next test.',
+  ]) {
+    const selection = classifyAdaptiveWarrantPublicSpeechAct({ learnerText: selectionText });
+    assert.equal(selection.kind, 'tutor_selection_request', selectionText);
+    assert.equal(selection.creates_obligation, false, selectionText);
+  }
+  const interpretation = classifyAdaptiveWarrantPublicSpeechAct({
+    learnerText: 'What does this evidence mean?',
+  });
+  assert.equal(interpretation.kind, 'criterion_question');
+  assert.equal(interpretation.creates_obligation, false);
+  for (const proposalText of [
+    'We should inspect what the die mark reveals.',
+    'I will compare the dies before making a claim.',
+  ]) {
+    const embedded = classifyAdaptiveWarrantPublicSpeechAct({ learnerText: proposalText });
+    assert.equal(embedded.kind, 'learner_proposed_test', proposalText);
+    assert.equal(embedded.creates_obligation, false, proposalText);
+  }
+  assert.equal(
+    classifyAdaptiveWarrantPublicSpeechAct({
+      learnerText: 'Would you show me what the next assay result is?',
+    }).kind,
+    'tutor_directed_public_result_request',
+  );
+  assert.equal(
+    classifyAdaptiveWarrantEvidenceRequest({ learnerText: proposal.surface }),
+    null,
+    'the action-contract compatibility classifier must not turn a learner proposal into tutor debt',
+  );
 });
 
 test('action contract: successful challenge requires exit to stage_next_step without DAG growth', () => {
@@ -83,7 +169,7 @@ test('action contract: successful challenge requires exit to stage_next_step wit
   assert.equal(result.transition.recommended_action_family, 'stage_next_step');
 });
 
-test('action contract: a repeated specific evidence request defeats stage_next_step', () => {
+test('action contract: public-result debt is not smuggled into expected-uptake status', () => {
   const tracker = createAdaptiveWarrantActionContractTracker();
   const classification = {
     turn: {
@@ -94,7 +180,7 @@ test('action contract: a repeated specific evidence request defeats stage_next_s
       agency: 'steering',
     },
   };
-  const firstText = 'What public mark on the coin or dies would establish the link?';
+  const firstText = 'I would examine the public die-mark before attributing the coins.';
   const first = tracker.assess({
     turn: 2,
     actionFamily: 'stage_next_step',
@@ -103,8 +189,8 @@ test('action contract: a repeated specific evidence request defeats stage_next_s
     signal: classifyLearnerSignal(firstText),
     dagGrowth: 0,
   });
-  assert.equal(first.status, 'success', 'one new bounded evidence question does not yet defeat the family');
-  const secondText = 'No flaw is recorded; please record a distinctive cut or die-mark before comparison.';
+  assert.equal(first.status, 'success');
+  const secondText = 'What distinctive die-mark did the comparison reveal?';
   const second = tracker.assess({
     turn: 3,
     actionFamily: 'stage_next_step',
@@ -113,9 +199,564 @@ test('action contract: a repeated specific evidence request defeats stage_next_s
     signal: classifyLearnerSignal(secondText),
     dagGrowth: 0,
   });
-  assert.equal(second.status, 'defeat');
-  assert.equal(second.transition.revision_warranted, true);
-  assert.equal(second.transition.recommended_action_family, 'answer_accountably');
+  assert.notEqual(second.status, 'defeat');
+  assert.notEqual(second.reason, 'specific_evidence_request_repeated_after_tutor_turn');
+});
+
+test('public-obligation ledger creates, persists, and satisfies tutor-owned result debt', () => {
+  const ledger = createAdaptiveWarrantPublicObligationLedger();
+  const created = ledger.assess({
+    turn: 1,
+    learnerText: 'What do the balance and ring show?',
+  });
+  assert.equal(created.open_count, 1);
+  assert.equal(created.blocking_obligation.status, 'open');
+  assert.equal(created.blocking_obligation.owner, 'tutor');
+
+  const overdue = ledger.assess({
+    turn: 2,
+    learnerText: 'The town verdict concerns access, not the coin itself.',
+    priorTutorOutcome: {
+      turn: 1,
+      tutor_text: 'The result is not yet recorded. What does the town verdict establish?',
+      released_evidence: [],
+    },
+  });
+  assert.equal(overdue.blocking_obligation.id, created.blocking_obligation.id);
+  assert.equal(overdue.blocking_obligation.status, 'overdue');
+
+  const satisfied = ledger.assess({
+    turn: 3,
+    learnerText: 'I can now use that result.',
+    priorTutorOutcome: {
+      turn: 2,
+      tutor_text: 'The balance shows the shilling is light, and its ring sounds dull.',
+      released_evidence: [],
+    },
+  });
+  assert.equal(satisfied.blocking_obligation, null);
+  assert.equal(satisfied.obligations[0].status, 'satisfied');
+  assert.equal(satisfied.obligations[0].satisfied_turn, 2);
+});
+
+test('public-obligation ledger accepts only a named, concrete accountable deferral', () => {
+  const ledger = createAdaptiveWarrantPublicObligationLedger();
+  ledger.assess({ turn: 1, learnerText: 'What do the balance and ring show?' });
+  const deferred = ledger.assess({
+    turn: 2,
+    learnerText: 'I will hold that request open.',
+    priorTutorOutcome: {
+      turn: 1,
+      tutor_text: 'The balance and ring result is not public yet; when the assay entry is released, I will report it.',
+    },
+  });
+  assert.equal(deferred.blocking_obligation, null);
+  assert.equal(deferred.obligations[0].status, 'deferred');
+  assert.equal(deferred.obligations[0].deferral.deadline_turn, 2);
+});
+
+test('delivery audit ignores questions inside exact released evidence when checking a deferral', () => {
+  const authoredSource = '“Can I enter this die mark?” asks the public register.';
+  const audit = auditAdaptiveWarrantPublicObligationDelivery({
+    obligation: {
+      obligation_id: 'public-obligation-001',
+      target: classifyAdaptiveWarrantPublicSpeechAct({
+        learnerText: 'What do the balance and ring show?',
+      }).target,
+    },
+    tutorOutcome: {
+      tutor_text: `${authoredSource} The balance and ring result is not public yet; when the assay entry is released, I will report it.`,
+      released_evidence: [{ premise: 'register_question', surface: authoredSource }],
+    },
+  });
+
+  assert.equal(audit.status, 'deferred');
+  assert.equal(audit.terminal_question_count, 0);
+});
+
+test('public-obligation reminders coalesce across synonymous test wording', () => {
+  const ledger = createAdaptiveWarrantPublicObligationLedger();
+  ledger.assess({ turn: 1, learnerText: 'What do the balance and ring show?' });
+  const reminded = ledger.assess({
+    turn: 2,
+    learnerText: 'Can you tell me the weight reading from that test?',
+    priorTutorOutcome: { turn: 1, tutor_text: 'That result is not yet recorded. What comes next?' },
+  });
+  assert.equal(reminded.obligations.length, 1);
+  assert.equal(reminded.obligations[0].occurrences, 2);
+  assert.equal(reminded.obligations[0].last_reminded_turn, 2);
+});
+
+test('die-comparison paraphrases coalesce without rhetorical words becoming target identity', () => {
+  const ledger = createAdaptiveWarrantPublicObligationLedger();
+  ledger.assess({ turn: 1, learnerText: 'What distinctive die mark did the comparison reveal?' });
+  const reminded = ledger.assess({
+    turn: 2,
+    learnerText: 'Can you tell me what the die match shows?',
+    priorTutorOutcome: {
+      turn: 1,
+      tutor_text: 'That comparison is not public yet; after the next exhibit I will report it.',
+    },
+  });
+  assert.equal(reminded.obligations.length, 1);
+  assert.equal(reminded.obligations[0].occurrences, 2);
+  assert.equal(reminded.obligations[0].target.kind, 'comparison_result');
+});
+
+test('one named comparison answer cannot discharge another same-kind obligation', () => {
+  const foxtrotObligation = {
+    obligation_id: 'public-obligation-001',
+    target: classifyAdaptiveWarrantPublicSpeechAct({
+      learnerText: 'Please show what the Foxtrot die comparison revealed.',
+    }).target,
+  };
+  for (const adjacentWrongAnswer of [
+    'We set the Foxtrot comparison aside. The Larkspur comparison shows a match with the northern tool.',
+    'Foxtrot remains our target. There is no public comparison match for Larkspur.',
+  ]) {
+    assert.equal(
+      auditAdaptiveWarrantPublicObligationDelivery({
+        obligation: foxtrotObligation,
+        tutorOutcome: { tutor_text: adjacentWrongAnswer },
+      }).status,
+      'unfulfilled',
+      adjacentWrongAnswer,
+    );
+  }
+
+  const ledger = createAdaptiveWarrantPublicObligationLedger();
+  ledger.assess({ turn: 1, learnerText: 'Please show what the Foxtrot die comparison revealed.' });
+  const second = ledger.assess({
+    turn: 2,
+    learnerText: 'Please show what the Larkspur die comparison revealed.',
+    priorTutorOutcome: { turn: 1, tutor_text: 'The Foxtrot result is not yet public.' },
+  });
+  assert.equal(second.obligations.length, 2);
+
+  const resolved = ledger.assess({
+    turn: 3,
+    learnerText: 'I will keep both comparisons separate.',
+    priorTutorOutcome: {
+      turn: 2,
+      tutor_text: 'The Foxtrot die comparison shows a match with the northern tool.',
+    },
+  });
+  assert.equal(resolved.obligations[0].status, 'satisfied');
+  assert.equal(resolved.obligations[1].status, 'overdue');
+});
+
+test('obligation identity preserves discriminating subject terms within one named comparison', () => {
+  const ledger = createAdaptiveWarrantPublicObligationLedger();
+  ledger.assess({ turn: 1, learnerText: 'What did the Foxtrot outer die comparison show?' });
+  const second = ledger.assess({
+    turn: 2,
+    learnerText: 'What did the Foxtrot inner die comparison show?',
+    priorTutorOutcome: { turn: 1, tutor_text: 'Both comparison results remain pending.' },
+  });
+  assert.equal(second.obligations.length, 2);
+  assert.equal(second.obligations[0].target.signature, 'comparison_result:foxtrot|outer');
+  assert.equal(second.obligations[1].target.signature, 'comparison_result:foxtrot|inner');
+
+  const innerOnly = ledger.assess({
+    turn: 3,
+    learnerText: 'I will keep the inner and outer comparisons separate.',
+    priorTutorOutcome: {
+      turn: 2,
+      tutor_text: 'The Foxtrot inner die comparison shows a match with the northern tool.',
+    },
+  });
+  assert.equal(innerOnly.obligations[0].status, 'overdue');
+  assert.equal(innerOnly.obligations[1].status, 'satisfied');
+});
+
+test('an accountable deferral ties its next condition to the named obligation', () => {
+  const obligation = {
+    obligation_id: 'public-obligation-001',
+    target: classifyAdaptiveWarrantPublicSpeechAct({
+      learnerText: 'What did the Foxtrot die comparison show?',
+    }).target,
+  };
+  const unrelated = auditAdaptiveWarrantPublicObligationDelivery({
+    obligation,
+    tutorOutcome: {
+      tutor_text:
+        'The Foxtrot comparison result is not public yet. When the Larkspur record is released, I can answer the Larkspur question.',
+    },
+  });
+  assert.equal(unrelated.status, 'unfulfilled');
+  assert.equal(unrelated.concrete_next_step, false);
+
+  const linked = auditAdaptiveWarrantPublicObligationDelivery({
+    obligation,
+    tutorOutcome: {
+      tutor_text:
+        'The Foxtrot comparison result is not public yet. When its comparison record is released, I can answer it.',
+    },
+  });
+  assert.equal(linked.status, 'deferred');
+  assert.equal(linked.concrete_next_step, true);
+});
+
+test('multiple public obligations resolve independently and withdrawal closes only one', () => {
+  const ledger = createAdaptiveWarrantPublicObligationLedger();
+  ledger.assess({ turn: 1, learnerText: 'What do the balance and ring show?' });
+  const second = ledger.assess({
+    turn: 2,
+    learnerText: 'What distinctive die mark did the comparison reveal?',
+    priorTutorOutcome: { turn: 1, tutor_text: 'That result is not yet recorded. What comes next?' },
+  });
+  assert.equal(second.obligations.length, 2);
+  const partlyResolved = ledger.assess({
+    turn: 3,
+    learnerText: 'I still need the die comparison.',
+    priorTutorOutcome: {
+      turn: 2,
+      tutor_text: 'The balance shows the shilling is light, and its ring sounds dull.',
+    },
+  });
+  assert.equal(partlyResolved.obligations[0].status, 'satisfied');
+  assert.equal(partlyResolved.obligations[1].status, 'overdue');
+  const withdrawn = ledger.assess({
+    turn: 4,
+    learnerText: 'Never mind; withdraw that request.',
+    priorTutorOutcome: { turn: 3, tutor_text: 'The comparison remains unavailable.' },
+  });
+  assert.equal(withdrawn.obligations[0].status, 'satisfied');
+  assert.equal(withdrawn.obligations[1].status, 'withdrawn');
+  assert.equal(withdrawn.blocking_obligation, null);
+});
+
+test('withdrawal or transfer can close one debt and create a replacement request in the same turn', () => {
+  for (const learnerText of [
+    'Never mind that; what did the die show?',
+    'I will check it myself; what did the die show?',
+  ]) {
+    const ledger = createAdaptiveWarrantPublicObligationLedger();
+    ledger.assess({ turn: 1, learnerText: 'What do the balance and ring show?' });
+    const replaced = ledger.assess({
+      turn: 2,
+      learnerText,
+      priorTutorOutcome: { turn: 1, tutor_text: 'We should continue with the public record.' },
+    });
+    assert.equal(replaced.obligations.length, 2, learnerText);
+    assert.ok(['withdrawn', 'transferred_to_learner'].includes(replaced.obligations[0].status), learnerText);
+    assert.equal(replaced.obligations[1].status, 'open', learnerText);
+    assert.equal(replaced.obligations[1].target.kind, 'mark_or_tool_result', learnerText);
+    assert.equal(replaced.blocking_obligation.id, replaced.obligations[1].id, learnerText);
+  }
+});
+
+test('a named withdrawal closes the matching obligation instead of the oldest one', () => {
+  const ledger = createAdaptiveWarrantPublicObligationLedger();
+  ledger.assess({ turn: 1, learnerText: 'Please show what the Foxtrot die comparison revealed.' });
+  ledger.assess({
+    turn: 2,
+    learnerText: 'Please show what the Larkspur die comparison revealed.',
+    priorTutorOutcome: { turn: 1, tutor_text: 'Neither named comparison is public yet.' },
+  });
+  const withdrawn = ledger.assess({
+    turn: 3,
+    learnerText: 'Never mind the Larkspur comparison.',
+    priorTutorOutcome: { turn: 2, tutor_text: 'Both named comparisons remain unavailable.' },
+  });
+  assert.equal(withdrawn.obligations[0].status, 'overdue');
+  assert.equal(withdrawn.obligations[1].status, 'withdrawn');
+  assert.equal(withdrawn.blocking_obligation.id, withdrawn.obligations[0].id);
+});
+
+test('same-turn delivery audit accepts the active directive shape without an internal id leak', () => {
+  const audit = auditAdaptiveWarrantPublicObligationDelivery({
+    obligation: {
+      obligation_id: 'public-obligation-001',
+      target: {
+        kind: 'weight_or_ring_result',
+        public_terms: ['balance', 'ring'],
+        source_surface: 'What do the balance and ring show?',
+      },
+    },
+    tutorOutcome: { tutor_text: 'The balance shows the coin is light, and the ring sounds dull.' },
+  });
+  assert.equal(audit.obligation_id, 'public-obligation-001');
+  assert.equal(audit.status, 'satisfied');
+});
+
+test('delivery audit requires an answer-bearing target relation, not target nouns alone', () => {
+  const obligation = {
+    obligation_id: 'public-obligation-001',
+    target: classifyAdaptiveWarrantPublicSpeechAct({
+      learnerText: 'What do the balance and ring show?',
+    }).target,
+  };
+  for (const tutorText of [
+    'The ring was dull.',
+    'The balance and ring are worth checking.',
+    'The balance and ring result is the question before us.',
+  ]) {
+    assert.equal(
+      auditAdaptiveWarrantPublicObligationDelivery({
+        obligation,
+        tutorOutcome: { turn: 1, tutor_text: tutorText },
+      }).status,
+      'unfulfilled',
+      tutorText,
+    );
+  }
+  assert.equal(
+    auditAdaptiveWarrantPublicObligationDelivery({
+      obligation,
+      tutorOutcome: { turn: 1, tutor_text: 'The balance shows the shilling is light, and the ring sounds dull.' },
+    }).status,
+    'satisfied',
+  );
+  for (const partial of [
+    'The ring sounds dull.',
+    'The balance shows the shilling is light.',
+    'The balance shows the shilling is light, and the ring is worth checking.',
+  ]) {
+    assert.equal(
+      auditAdaptiveWarrantPublicObligationDelivery({
+        obligation,
+        tutorOutcome: { turn: 1, tutor_text: partial },
+      }).status,
+      'unfulfilled',
+      partial,
+    );
+  }
+});
+
+test('evidence availability uses the pre-delivery boundary for both live and committed snapshots', () => {
+  const schedule = [
+    { premise: 'p1', effectiveTurn: 1, releasedTurn: 1 },
+    { premise: 'p2', effectiveTurn: 2, releasedTurn: 2 },
+    { premise: 'p3', effectiveTurn: 4, releasedTurn: null },
+  ];
+  const atTwo = projectAdaptiveWarrantEvidenceAvailability({ schedule }, { turn: 2 });
+  assert.equal(atTwo.released_before_decision_count, 1);
+  assert.equal(atTwo.due_now_count, 1, 'a turn-2 delivery is still due at decision 2');
+  assert.equal(atTwo.future_licensed_count, 1);
+  assert.equal(atTwo.release_scope_exhausted, false);
+
+  const exhausted = projectAdaptiveWarrantEvidenceAvailability(
+    { schedule: schedule.map((row) => ({ ...row, releasedTurn: row.effectiveTurn })) },
+    { turn: 5 },
+  );
+  assert.equal(exhausted.release_scope_exhausted, true);
+});
+
+test('an explicitly empty authored schedule is known and can license grounded closure', () => {
+  const evidenceAvailability = projectAdaptiveWarrantEvidenceAvailability({ turn: 1, schedule: [] }, { turn: 1 });
+  assert.equal(evidenceAvailability.known, true);
+  assert.equal(evidenceAvailability.release_scope_exhausted, true);
+
+  const gate = createTutorStubWarrantGate({ mode: 'active' });
+  const decision = gate.assess({
+    turn: 1,
+    learnerText: 'The public proof is complete.',
+    dagModel: {
+      learnerRecord: { grounded: [], voicedDerived: [] },
+      assessment: { finalSecretEntailed: true, assertedSecret: true },
+    },
+    proposedActionFamily: 'close_inquiry',
+    dialogueClosureFrame: { strictGrounded: true, mandatory: true, available: true },
+    evidenceAvailability,
+  });
+  assert.equal(decision.inquiry_completion.status, 'complete');
+  assert.equal(decision.decision_kind, 'terminal_transition');
+  assert.equal(decision.policy.family, 'close_inquiry');
+  assert.equal(decision.override, null);
+});
+
+test('inquiry completion projects strict grounded closure and is blocked by a public obligation', () => {
+  const completeDag = { assessment: { finalSecretEntailed: true, assertedSecret: true } };
+  const openLedger = {
+    open_count: 1,
+    blocking_obligation: { id: 'public-obligation-001', status: 'open' },
+  };
+  const blocked = assessAdaptiveWarrantInquiryCompletion({
+    dagModel: completeDag,
+    publicObligation: openLedger,
+    evidenceAvailability: { known: true, release_scope_exhausted: true },
+  });
+  assert.equal(blocked.status, 'open');
+  assert.deepEqual(blocked.blockers, ['open_public_obligation']);
+
+  const complete = assessAdaptiveWarrantInquiryCompletion({
+    dagModel: completeDag,
+    publicObligation: { open_count: 0, blocking_obligation: null },
+    evidenceAvailability: { known: true, release_scope_exhausted: true },
+  });
+  assert.equal(complete.status, 'complete');
+  assert.equal(complete.decision_kind, 'terminal_transition');
+  assert.equal(complete.transition.recommended_action_family, 'close_inquiry');
+});
+
+test('exhaustion or a fixed horizon alone never licenses whole-inquiry closure', () => {
+  const result = assessAdaptiveWarrantInquiryCompletion({
+    dagModel: { assessment: { finalSecretEntailed: false, assertedSecret: false } },
+    evidenceAvailability: { known: true, release_scope_exhausted: true },
+  });
+  assert.equal(result.status, 'open');
+  assert.equal(result.transition, null);
+});
+
+test('a grounded assertion remains nonterminal while authored evidence is still licensed', () => {
+  const result = assessAdaptiveWarrantInquiryCompletion({
+    dagModel: { assessment: { finalSecretEntailed: true, assertedSecret: true } },
+    publicObligation: { open_count: 0, blocking_obligation: null },
+    evidenceAvailability: {
+      known: true,
+      release_scope_exhausted: false,
+      remaining_licensed_count: 2,
+      future_licensed_count: 2,
+    },
+  });
+  assert.equal(result.status, 'open');
+  assert.ok(result.blockers.includes('licensed_evidence_remains'));
+  assert.equal(result.transition, null);
+});
+
+test('bounded-scope completion requires an identified contract and every safety predicate explicitly true', () => {
+  for (const boundedScope of [
+    {
+      enabled: true,
+      release_scope_exhausted: true,
+      terminal_outcome_asserted: true,
+      evidence_integrated: true,
+      proof_limit_preserved: true,
+    },
+    {
+      enabled: true,
+      id: 'missing-explicit-safety-predicates',
+      release_scope_exhausted: true,
+      terminal_outcome_asserted: true,
+    },
+  ]) {
+    const result = assessAdaptiveWarrantInquiryCompletion({
+      boundedScope,
+      evidenceAvailability: { known: false, release_scope_exhausted: false },
+    });
+    assert.equal(result.status, 'open');
+    assert.equal(result.transition, null);
+  }
+});
+
+test('live gate consumes only an explicit decision-time bounded-scope projection and snapshots it', () => {
+  const authoredScope = {
+    enabled: true,
+    id: 'authored-proof-limit-1',
+    release_scope_exhausted: true,
+    terminal_outcome_asserted: true,
+    evidence_integrated: true,
+    proof_limit_preserved: true,
+  };
+  const state = { boundedInquiryScopeAtDecision: authoredScope };
+  const projected = projectTutorStubBoundedInquiryScopeAtDecision(state);
+  assert.deepEqual(projected, authoredScope);
+  assert.notEqual(projected, authoredScope, 'the live planner boundary must freeze its own copy');
+  assert.equal(projectTutorStubBoundedInquiryScopeAtDecision({}), null);
+  assert.equal(
+    projectTutorStubBoundedInquiryScopeAtDecision({
+      boundedInquiryScopeAtDecision: { ...authoredScope, enabled: false },
+    }),
+    null,
+  );
+  assert.equal(
+    projectTutorStubBoundedInquiryScopeAtDecision({
+      boundedInquiryScopeAtDecision: {
+        enabled: true,
+        id: 'incomplete-contract',
+        release_scope_exhausted: true,
+        terminal_outcome_asserted: true,
+      },
+    }),
+    null,
+    'live projection must not inherit permissive defaults for omitted safety predicates',
+  );
+
+  let selectionBoundaryInput = null;
+  assessTutorStubWarrantGateAtResponseSelection(
+    {
+      assess(input) {
+        selectionBoundaryInput = input;
+        return { accepted: true };
+      },
+    },
+    state,
+    { turn: 1, learnerText: 'bounded finding' },
+  );
+  assert.deepEqual(selectionBoundaryInput.boundedInquiryScope, authoredScope);
+
+  const gate = createTutorStubWarrantGate({ mode: 'active' });
+  const decision = gate.assess({
+    turn: 1,
+    learnerText: 'The public evidence reaches its stated limit, so no stronger answer is warranted.',
+    classification: { turn: { discourse_move: 'claim', epistemic_stance: 'grounded' } },
+    dagModel: { learnerRecord: { grounded: [], voicedDerived: [] }, assessment: {} },
+    proposedActionFamily: 'stage_next_step',
+    evidenceAvailability: { known: false, release_scope_exhausted: false },
+    boundedInquiryScope: projected,
+  });
+
+  assert.equal(decision.inquiry_completion.status, 'complete');
+  assert.equal(decision.inquiry_completion.basis, 'authored_bounded_scope');
+  assert.equal(decision.policy.family, 'close_inquiry');
+  assert.deepEqual(decision.bounded_inquiry_scope, authoredScope);
+  assert.deepEqual(decision.input_snapshot.bounded_inquiry_scope, authoredScope);
+  assert.deepEqual(gate.snapshot().bounded_inquiry_scope, authoredScope);
+
+  authoredScope.id = 'mutated-after-assess';
+  assert.equal(gate.snapshot().bounded_inquiry_scope.id, 'authored-proof-limit-1');
+});
+
+test('resume replays the frozen bounded-scope input with live decision and snapshot parity', () => {
+  const boundedInquiryScope = {
+    enabled: true,
+    id: 'authored-proof-limit-resume',
+    release_scope_exhausted: true,
+    terminal_outcome_asserted: true,
+    evidence_integrated: true,
+    proof_limit_preserved: true,
+  };
+  const learnerText = 'The available record supports only this bounded finding.';
+  const classification = { turn: { discourse_move: 'claim', epistemic_stance: 'grounded' } };
+  const dag = { learnerRecord: { grounded: [], voicedDerived: [] }, assessment: {} };
+  const evidenceAvailability = { known: false, release_scope_exhausted: false };
+  const uninterrupted = createTutorStubWarrantGate({ mode: 'active' });
+  const liveDecision = uninterrupted.assess({
+    turn: 1,
+    learnerText,
+    classification,
+    dagModel: dag,
+    proposedActionFamily: 'stage_next_step',
+    evidenceAvailability,
+    boundedInquiryScope,
+  });
+  uninterrupted.recordTurnOutcome({
+    turn: 1,
+    actionFamily: 'close_inquiry',
+    tutorText: 'That is the supported limit of this inquiry; I close it here.',
+    deliveredResponseConfiguration: { action_family: 'close_inquiry' },
+  });
+
+  const restored = createTutorStubWarrantGate({ mode: 'active' });
+  restoreTutorStubWarrantGateFromTurns(restored, [
+    {
+      turn: 1,
+      learner: learnerText,
+      classification,
+      tutorLearnerDagModel: dag,
+      warrantGateDecision: liveDecision,
+      deliveredResponseConfiguration: { action_family: 'close_inquiry' },
+      tutor: 'That is the supported limit of this inquiry; I close it here.',
+    },
+  ]);
+
+  const replayedDecision = restored.decisions()[0];
+  assert.equal(replayedDecision.input_digest, liveDecision.input_digest);
+  assert.deepEqual(replayedDecision.bounded_inquiry_scope, boundedInquiryScope);
+  assert.deepEqual(replayedDecision.input_snapshot.bounded_inquiry_scope, boundedInquiryScope);
+  assert.deepEqual(replayedDecision.inquiry_completion, liveDecision.inquiry_completion);
+  assert.deepEqual(restored.snapshot().bounded_inquiry_scope, boundedInquiryScope);
 });
 
 test('classifier: permission frame leading the utterance is deference', () => {
@@ -204,10 +845,147 @@ test('gate: observe mode records but never overrides; active mode overrides afte
   }
 });
 
+test('gate separates a warranted commitment transition from a candidate that already satisfies it', () => {
+  const gate = createTutorStubWarrantGate({ mode: 'active' });
+  const decision = gate.assess({
+    turn: 1,
+    learnerText: 'What do the balance and ring show?',
+    dagModel: dagModel(3),
+    priorActionFamily: 'stage_next_step',
+    proposedActionFamily: 'answer_accountably',
+  });
+  assert.equal(decision.revision_warranted, true);
+  assert.equal(decision.commitment_transition_warranted, true);
+  assert.equal(decision.current_candidate_override_required, false);
+  assert.equal(decision.override, null);
+  assert.equal(decision.obligation_directive.obligation_id, 'public-obligation-001');
+});
+
+test('same-family accountable answering receives a directive without a false strategy switch', () => {
+  const gate = createTutorStubWarrantGate({ mode: 'active' });
+  const decision = gate.assess({
+    turn: 1,
+    learnerText: 'What do the balance and ring show?',
+    dagModel: dagModel(3),
+    priorActionFamily: 'answer_accountably',
+    proposedActionFamily: 'answer_accountably',
+  });
+  assert.equal(decision.revision_warranted, true);
+  assert.equal(decision.commitment_transition_warranted, false);
+  assert.equal(decision.current_candidate_override_required, false);
+  assert.equal(decision.override, null);
+  assert.equal(decision.policy.review, 'persist_with_adjustment');
+  assert.ok(decision.obligation_directive);
+});
+
+test('compound repair and result request keeps the repair family plus an orthogonal obligation directive', () => {
+  const gate = createTutorStubWarrantGate({ mode: 'active' });
+  const decision = gate.assess({
+    turn: 1,
+    learnerText: "I don't understand. What do the balance and ring show?",
+    dagModel: dagModel(3),
+    priorActionFamily: 'stage_next_step',
+    proposedActionFamily: 'stage_next_step',
+  });
+  assert.equal(decision.warrant_basis, 'immediate:repair_request');
+  assert.equal(decision.policy.family, 'repair_explanation');
+  assert.equal(decision.override.action_family, 'repair_explanation');
+  assert.equal(decision.public_obligation.blocking_obligation.status, 'open');
+  assert.equal(decision.obligation_directive.obligation_id, 'public-obligation-001');
+  assert.equal(decision.obligation_directive.target.kind, 'weight_or_ring_result');
+});
+
+test('strict whole-inquiry completion is carried as a terminal transition', () => {
+  const gate = createTutorStubWarrantGate({ mode: 'active' });
+  const decision = gate.assess({
+    turn: 4,
+    learnerText: 'The public proof establishes Edony as the striker.',
+    classification: { turn: { discourse_move: 'claim', epistemic_stance: 'grounded' } },
+    dagModel: { assessment: { finalSecretEntailed: true, assertedSecret: true }, learnerRecord: {} },
+    priorActionFamily: 'compress_sayback',
+    proposedActionFamily: 'stage_next_step',
+    evidenceAvailability: { known: true, release_scope_exhausted: true },
+  });
+  assert.equal(decision.decision_kind, 'terminal_transition');
+  assert.equal(decision.inquiry_completion.status, 'complete');
+  assert.equal(decision.policy.family, 'close_inquiry');
+  assert.equal(decision.override.action_family, 'close_inquiry');
+});
+
+test('active gate vetoes a premature close candidate without inventing a prior commitment transition', () => {
+  const gate = createTutorStubWarrantGate({ mode: 'active' });
+  const decision = gate.assess({
+    turn: 1,
+    learnerText: 'The currently public chain points to Edony.',
+    dagModel: { assessment: { finalSecretEntailed: true, assertedSecret: true }, learnerRecord: {} },
+    priorActionFamily: null,
+    proposedActionFamily: 'close_inquiry',
+    evidenceAvailability: {
+      known: true,
+      release_scope_exhausted: false,
+      remaining_licensed_count: 1,
+      future_licensed_count: 1,
+    },
+  });
+  assert.equal(decision.decision_kind, 'candidate_safety_override');
+  assert.equal(decision.commitment_transition_warranted, false);
+  assert.equal(decision.current_candidate_override_required, true);
+  assert.equal(decision.policy.family, 'stage_next_step');
+  assert.equal(decision.override.action_family, 'stage_next_step');
+});
+
 test('gate: off mode attaches nothing to state', () => {
   const state = {};
   assert.equal(ensureTutorStubWarrantGate(state, { mode: 'off' }), null);
   assert.equal(state.warrantGate, undefined);
+});
+
+test('gate resume rebuilds the obligation ledger from committed turn records', () => {
+  const firstLearner = 'What do the balance and ring show?';
+  const firstTutor = 'The result is not yet recorded. What does the town verdict establish?';
+  const uninterrupted = createTutorStubWarrantGate({ mode: 'active' });
+  uninterrupted.assess({
+    turn: 1,
+    learnerText: firstLearner,
+    dagModel: dagModel(4),
+    priorActionFamily: null,
+    proposedActionFamily: 'clarify_distinction',
+  });
+  uninterrupted.recordTurnOutcome({
+    turn: 1,
+    actionFamily: 'clarify_distinction',
+    tutorText: firstTutor,
+  });
+  const expected = uninterrupted.assess({
+    turn: 2,
+    learnerText: 'The verdict establishes access, not authorship.',
+    dagModel: dagModel(4),
+    priorActionFamily: 'clarify_distinction',
+    proposedActionFamily: 'clarify_distinction',
+  });
+
+  const state = {
+    turns: [
+      {
+        turn: 1,
+        learner: firstLearner,
+        tutor: firstTutor,
+        tutorLearnerDagModel: dagModel(4),
+        deliveredResponseConfiguration: { action_family: 'clarify_distinction' },
+        dramaticRelease: { frame: { entries: [] } },
+      },
+    ],
+  };
+  const resumed = ensureTutorStubWarrantGate(state, { mode: 'active' }).assess({
+    turn: 2,
+    learnerText: 'The verdict establishes access, not authorship.',
+    dagModel: dagModel(4),
+    priorActionFamily: 'clarify_distinction',
+    proposedActionFamily: 'clarify_distinction',
+  });
+  assert.equal(resumed.warrant_basis, expected.warrant_basis);
+  assert.deepEqual(resumed.public_obligation, expected.public_obligation);
+  assert.equal(resumed.policy.family, expected.policy.family);
 });
 
 test('gate: completed-turn audits join record growth in the next decision-time evidence row', () => {
@@ -251,6 +1029,65 @@ test('gate: completed-turn audits join record growth in the next decision-time e
   assert.deepEqual(third.trouble_turns, [1, 2]);
   assert.equal(third.revision_warranted, true);
   assert.equal(third.warrant_basis, 'accumulated:2_trouble_turns');
+});
+
+test('gate input digest binds complete reducer history, not only the current observation', () => {
+  function assessAfterHistory({ firstTurnFallback }) {
+    const gate = createTutorStubWarrantGate({ mode: 'observe' });
+    gate.assess({
+      turn: 1,
+      learnerText: 'May I keep the first entry?',
+      dagModel: dagModel(4),
+      priorActionFamily: 'challenge_resistance',
+      proposedActionFamily: 'challenge_resistance',
+    });
+    gate.recordTurnOutcome({
+      turn: 1,
+      actionFamily: 'challenge_resistance',
+      deterministicFallback: firstTurnFallback,
+    });
+    gate.assess({
+      turn: 2,
+      learnerText: 'Could I keep it even though this is annoying?',
+      dagModel: dagModel(5),
+      priorActionFamily: 'challenge_resistance',
+      proposedActionFamily: 'challenge_resistance',
+    });
+    gate.recordTurnOutcome({ turn: 2, actionFamily: 'challenge_resistance' });
+    return gate.assess({
+      turn: 3,
+      learnerText: 'May I keep the same entry again?',
+      dagModel: dagModel(6),
+      priorActionFamily: 'challenge_resistance',
+      proposedActionFamily: 'challenge_resistance',
+    });
+  }
+
+  const withEarlierTrouble = assessAfterHistory({ firstTurnFallback: true });
+  const withoutEarlierTrouble = assessAfterHistory({ firstTurnFallback: false });
+  const snapshot = withEarlierTrouble.input_snapshot;
+  const stateBefore = snapshot.reducer_state_before;
+  const currentInputs = snapshot.current_reducer_inputs;
+
+  assert.equal(stateBefore.strategy_in_force, 'challenge_resistance');
+  assert.equal(stateBefore.strategy_since_turn, 1);
+  assert.equal(stateBefore.previous_dag_total, 5);
+  assert.equal(stateBefore.turns_since_dag_growth, 0);
+  assert.deepEqual(stateBefore.complaint_turns, [2]);
+  assert.equal(stateBefore.recent_signals.length, 2);
+  assert.equal(stateBefore.action_contract_state.active.action_family, 'challenge_resistance');
+  assert.equal(stateBefore.action_contract_state.active.response_count, 1);
+  assert.equal(stateBefore.pending_prior_turn_outcome.turn, 2);
+  assert.deepEqual(stateBefore.public_obligation_ledger.obligations, []);
+  assert.equal(currentInputs.deference_sustained, true);
+  assert.equal(currentInputs.recent_signals.length, 3);
+  assert.deepEqual(stateBefore.trouble_turns, [{ turn: 1, defeaters: ['tutor_response_fallback'] }]);
+  assert.deepEqual(withoutEarlierTrouble.input_snapshot.reducer_state_before.trouble_turns, []);
+
+  assert.equal(snapshot.learner_text, withoutEarlierTrouble.input_snapshot.learner_text);
+  assert.deepEqual(snapshot.learner_dag_model, withoutEarlierTrouble.input_snapshot.learner_dag_model);
+  assert.deepEqual(snapshot.prior_turn_outcome, withoutEarlierTrouble.input_snapshot.prior_turn_outcome);
+  assert.notEqual(withEarlierTrouble.input_digest, withoutEarlierTrouble.input_digest);
 });
 
 test('gate: a delivered family revision resets old trouble before consuming its own outcome', () => {
@@ -306,9 +1143,15 @@ test('gate: successful challenge exits to stage_next_step even when the strict D
   assert.deepEqual(decision.trouble_turns, []);
 });
 
-test('gate: a repeated unresolved mark request defeats an analytic mask in live mode', () => {
+test('gate: an unanswered public-result obligation survives a family change and defeats an analytic mask', () => {
   const gate = createTutorStubWarrantGate({ mode: 'active' });
-  gate.assess({ turn: 1, learnerText: 'Start with the public coin.', dagModel: dagModel(5), priorActionFamily: null });
+  gate.assess({
+    turn: 1,
+    learnerText: 'I would examine the public coin first.',
+    dagModel: dagModel(5),
+    priorActionFamily: null,
+    proposedActionFamily: 'stage_next_step',
+  });
   gate.recordTurnOutcome({ turn: 1, actionFamily: 'stage_next_step' });
   const classification = {
     turn: {
@@ -319,27 +1162,35 @@ test('gate: a repeated unresolved mark request defeats an analytic mask in live 
       agency: 'steering',
     },
   };
-  const firstText = 'What public mark on the coin or dies would establish the link?';
+  const firstText = 'What mark did the touchstone leave—does it show silver or cheaper metal?';
   const first = gate.assess({
     turn: 2,
     learnerText: firstText,
     classification,
     dagModel: dagModel(5),
     priorActionFamily: 'stage_next_step',
+    proposedActionFamily: 'stage_next_step',
   });
-  assert.equal(first.revision_warranted, false);
-  gate.recordTurnOutcome({ turn: 2, actionFamily: 'stage_next_step' });
-  const secondText = 'No visible flaw is recorded; please record a distinctive cut or die-mark before comparison.';
+  assert.equal(first.revision_warranted, true);
+  assert.equal(first.public_obligation.blocking_obligation.status, 'open');
+  assert.equal(first.policy.family, 'answer_accountably');
+  gate.recordTurnOutcome({
+    turn: 2,
+    actionFamily: 'clarify_distinction',
+    tutorText: 'The touchstone result is not yet recorded. What does the town verdict establish?',
+  });
+  const secondText = 'The verdict supports access, but it still does not establish who struck these coins.';
   const second = gate.assess({
     turn: 3,
     learnerText: secondText,
     classification,
     dagModel: dagModel(5),
-    priorActionFamily: 'stage_next_step',
+    priorActionFamily: 'clarify_distinction',
+    proposedActionFamily: 'clarify_distinction',
   });
-  assert.equal(second.action_contract.status, 'defeat');
+  assert.equal(second.public_obligation.blocking_obligation.status, 'overdue');
   assert.equal(second.revision_warranted, true);
-  assert.match(second.warrant_basis, /^contract_defeat:stage_next_step:/u);
+  assert.match(second.warrant_basis, /^public_obligation_overdue:/u);
   assert.equal(second.policy.family, 'answer_accountably');
   assert.equal(second.override.action_family, 'answer_accountably');
 });
@@ -352,6 +1203,55 @@ test('completed-turn helper is a no-op without a gate and delegates when attache
   assert.deepEqual(outcome.defeaters, ['tutor_response_fallback']);
 });
 
+test('speculative and retryable learner branches isolate the warrant reducer until commit', () => {
+  const liveGate = { identity: 'live' };
+  const state = {
+    warrantGate: liveGate,
+    history: [],
+    turns: [],
+    world: {},
+    learnerDag: {},
+    comprehension: { history: [] },
+    releasePacing: {},
+    register: {},
+    randomPerformance: {},
+    lightAdaptation: {},
+    performanceDirectives: {},
+    dialogueClosure: {},
+    typedActions: {},
+    directorGuidance: {},
+    coach: { pending: [], history: [] },
+    stream: { enabled: true, interim: null },
+  };
+  const runtime = createTutorStubInteractiveLearnerRuntime({
+    state,
+    mergeConcurrentTutorStubDirectorGuidance: (attempt) => attempt,
+  });
+
+  const speculative = runtime.cloneStateForMixedLearnerSpeculation();
+  const attempt = runtime.cloneStateForInteractiveLearnerAttempt();
+  assert.equal(speculative.warrantGate, null);
+  assert.equal(attempt.warrantGate, null);
+  assert.equal(state.warrantGate, liveGate);
+
+  const committedGate = { identity: 'committed-attempt' };
+  attempt.warrantGate = committedGate;
+  runtime.commitInteractiveLearnerAttempt(attempt, {
+    comprehension: structuredClone(state.comprehension),
+    directorGuidance: structuredClone(state.directorGuidance),
+    coach: structuredClone(state.coach),
+  });
+  assert.equal(state.warrantGate, committedGate);
+});
+
+test('rewriting a committed tutor response invalidates its pending gate outcome', () => {
+  const state = { warrantGate: { pendingTutorText: 'old public answer' } };
+  assert.equal(invalidateTutorStubWarrantGateAfterPublicTutorRewrite(state, 'opening'), false);
+  assert.notEqual(state.warrantGate, null);
+  assert.equal(invalidateTutorStubWarrantGateAfterPublicTutorRewrite(state, 'tutor_response'), true);
+  assert.equal(state.warrantGate, null);
+});
+
 test('classifier: tutor-directed choice requests are deference', () => {
   assert.equal(
     classifyLearnerSignal('Could you choose the next exhibit for us to examine?').primary,
@@ -361,13 +1261,252 @@ test('classifier: tutor-directed choice requests are deference', () => {
 });
 
 test('response configuration honors the gate family override', async () => {
-  const { buildTutorStubResponseConfiguration } = await import('../services/tutorStubResponseConfiguration.js');
+  const { buildTutorStubResponseConfiguration, tutorStubResponseConfigurationPrompt } =
+    await import('../services/tutorStubResponseConfiguration.js');
   const configuration = buildTutorStubResponseConfiguration({
     engagementStance: 'precise',
     learnerText: 'May I enter that the striking remains unproved?',
     actionFamilyOverride: { family: 'challenge_resistance', reason: 'adaptive warrant gate test' },
+    publicObligationDirective: {
+      obligation_id: 'public-obligation-001',
+      target: { source_surface: 'What do the balance and ring show?' },
+    },
   });
   assert.equal(configuration.action_family, 'challenge_resistance');
+  const prompt = tutorStubResponseConfigurationPrompt(configuration);
+  assert.match(prompt, /Public learner request: answer "What do the balance and ring show\?"/u);
+  assert.doesNotMatch(prompt, /public-obligation-001/u);
+});
+
+test('active warrant final authority survives later optional action-policy rewrites', () => {
+  const decision = {
+    mode: 'active',
+    revision_warranted: true,
+    decision_kind: 'public_obligation_fulfilment',
+    warrant_basis: 'public_obligation_open:public-obligation-001',
+    policy: { family: 'answer_accountably' },
+    obligation_directive: {
+      obligation_id: 'public-obligation-001',
+      target: { source_surface: 'What did the die comparison show?' },
+    },
+  };
+  const rewritten = {
+    action_family: 'stage_next_step',
+    warrant_gate: decision,
+    response_configuration: {
+      action_family: 'stage_next_step',
+      selection_reasons: { action_family: 'conversational completion' },
+      compatibility: {},
+    },
+  };
+  const finalSelection = enforceTutorStubWarrantGateFinalAuthority(rewritten, decision);
+  assert.equal(finalSelection.action_family, 'answer_accountably');
+  assert.equal(finalSelection.response_configuration.action_family, 'answer_accountably');
+  assert.equal(
+    finalSelection.response_configuration.public_obligation_directive.obligation_id,
+    'public-obligation-001',
+  );
+  assert.equal(finalSelection.adaptive_warrant_enforcement.displaced_action_family, 'stage_next_step');
+
+  const observe = enforceTutorStubWarrantGateFinalAuthority(rewritten, { ...decision, mode: 'observe' });
+  assert.equal(observe, rewritten);
+});
+
+test('final authority restores the complete frozen gate bundle before first-draft compilation', () => {
+  const decision = {
+    mode: 'active',
+    revision_warranted: true,
+    decision_kind: 'pedagogical_commitment_transition',
+    warrant_basis: 'contract_success:clarify_distinction:learner_tested_distinction',
+    policy: { family: 'answer_accountably' },
+  };
+  const frozenResponseConfiguration = {
+    schema: 'machinespirits.tutor-stub.response-configuration.v1',
+    engagement_stance: 'plain',
+    action_family: 'answer_accountably',
+    addressee_profile: 'adult_novice',
+    audience_register: 'adult_novice',
+    lexical_accessibility: 'plain',
+    scene_immersion: 'grounded',
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate',
+    actorial_part_selection: { id: 'advocate', reason: 'gate-coherent accountable answer' },
+    actorial_performance: {
+      id: 'unadorned_report',
+      label: 'unadorned report',
+      contract: 'Use one direct public answer.',
+    },
+    surface_budgets: { max_average_sentence_words: 18 },
+    selection_reasons: {
+      action_family: 'Adaptive warrant gate selected an accountable answer.',
+      actorial_part: 'The advocate owns the accountable public answer.',
+    },
+    compatibility: {},
+  };
+  const frozen = {
+    schema: 'machinespirits.tutor-stub.response-configuration-selection.v5',
+    turn: 3,
+    warrant_gate: decision,
+    engagement_stance: 'plain',
+    action_family: 'answer_accountably',
+    actorial_part: 'advocate',
+    actorial_part_selection: frozenResponseConfiguration.actorial_part_selection,
+    actorial_performance: frozenResponseConfiguration.actorial_performance,
+    response_configuration: frozenResponseConfiguration,
+  };
+  const typedRewrite = {
+    ...structuredClone(frozen),
+    support_level: 3,
+    task_id: 'typed-task-stale',
+    knowledge_component: 'typed knowledge component',
+    typed_action_decision: { contract_id: 'typed-t3', chosen_action: { action_type: 'request_evidence' } },
+    actorial_part: 'skeptic',
+    actorial_part_selection: { id: 'skeptic', reason: 'typed action reselection' },
+    actorial_performance: { id: 'adversarial_pressure', label: 'adversarial pressure' },
+    response_configuration: {
+      ...structuredClone(frozenResponseConfiguration),
+      actorial_part: 'skeptic',
+      actorial_part_label: 'skeptic',
+      actorial_part_selection: { id: 'skeptic', reason: 'typed action reselection' },
+      actorial_performance: {
+        id: 'adversarial_pressure',
+        label: 'adversarial pressure',
+        contract: 'Press the learner through an adversarial test.',
+      },
+      support_level: 3,
+      task_id: 'typed-task-stale',
+      knowledge_component: 'typed knowledge component',
+      typed_action_schema: 'machinespirits.tutor-stub.typed-action-decision.v1',
+      selection_reasons: {
+        action_family: 'Typed action selected the move.',
+        actorial_part: 'Typed action selected the skeptic.',
+        support_level: 'Typed action selected strong support.',
+      },
+    },
+  };
+
+  const restored = enforceTutorStubWarrantGateFinalAuthority(typedRewrite, decision, {
+    frozenPreOptionalSelection: frozen,
+  });
+  assert.equal(restored.adaptive_warrant_enforcement.configuration_restored, true);
+  assert.equal(restored.adaptive_warrant_enforcement.optional_configuration_displaced, true);
+  assert.equal(restored.adaptive_warrant_enforcement.displaced_action_family, null);
+  assert.ok(restored.adaptive_warrant_enforcement.displaced_response_configuration_fields.includes('support_level'));
+  assert.ok(restored.adaptive_warrant_enforcement.displaced_selection_fields.includes('typed_action_decision'));
+  assert.equal(
+    restored.adaptive_warrant_enforcement.final_authority_audit.schema,
+    'machinespirits.tutor-stub.warrant-gate-final-authority-audit.v1',
+  );
+  assert.deepEqual(restored.adaptive_warrant_enforcement.final_authority_audit.pre_final_selection, typedRewrite);
+  assert.deepEqual(restored.adaptive_warrant_enforcement.final_authority_audit.frozen_pre_optional_selection, frozen);
+  assert.equal(restored.response_configuration.actorial_part, 'advocate');
+  assert.equal(restored.response_configuration.actorial_performance.id, 'unadorned_report');
+  assert.equal(restored.response_configuration.support_level, undefined);
+  assert.equal(restored.response_configuration.task_id, undefined);
+  assert.equal(restored.response_configuration.typed_action_schema, undefined);
+  assert.equal(restored.typed_action_decision, undefined);
+
+  const firstDraft = buildTutorStubFirstDraftContract({
+    learnerText: 'I still need the answer and its public limit.',
+    responseConfiguration: restored.response_configuration,
+    responseCompositionFrame: {
+      learner_move: { summary: 'The learner asks for the bounded public answer.' },
+      scene_action_budget: { saturated: false },
+    },
+    dramaticReleaseFrame: { active: false, entries: [] },
+  });
+  assert.equal(firstDraft.development.action_family, 'answer_accountably');
+  assert.equal(firstDraft.development.support_level, null);
+  assert.equal(firstDraft.performance.actorial_part, 'advocate');
+  assert.equal(firstDraft.performance.tactic, 'unadorned_report');
+});
+
+test('a typed action displaced before delivery is cancelled rather than scored next turn', () => {
+  const lifecycleBefore = { phase: 'diagnose', pending_contract_id: null };
+  const state = {
+    trace: [],
+    typedActions: {
+      ledger: [{ contract_id: 'typed-t2', status: 'pending', action_type: 'request_evidence' }],
+      currentDecision: { contract_id: 'typed-t2' },
+      scaffoldLifecycle: { phase: 'observe_uptake', pending_contract_id: 'typed-t2' },
+    },
+  };
+  const typedAction = {
+    registerSelection: { action_family: 'stage_next_step' },
+    decision: {
+      contract_id: 'typed-t2',
+      scaffold_lifecycle: { before: lifecycleBefore },
+    },
+  };
+  const trace = [];
+  const result = reconcileTutorStubTypedActionWithWarrant({
+    state,
+    typedAction,
+    warrantFinalAuthority: { desired_action_family: 'repair_explanation' },
+    turn: 2,
+    turnId: 'turn-2',
+    appendTrace: (_target, event) => trace.push(event),
+  });
+  assert.equal(result.displaced, true);
+  assert.equal(typedAction.decision.delivery.delivered, false);
+  assert.equal(state.typedActions.ledger[0].status, 'cancelled_before_delivery');
+  assert.equal(state.typedActions.currentDecision, null);
+  assert.deepEqual(state.typedActions.scaffoldLifecycle, lifecycleBefore);
+  assert.equal(trace[0].type, 'tutor_typed_action_decision_displaced');
+});
+
+test('same-family typed metadata is cancelled when final authority restores the frozen bundle', () => {
+  const lifecycleBefore = { phase: 'diagnose', pending_contract_id: null };
+  const finalRegisterSelection = {
+    action_family: 'answer_accountably',
+    actorial_part: 'advocate',
+    response_configuration: { action_family: 'answer_accountably', actorial_part: 'advocate' },
+  };
+  const state = {
+    trace: [],
+    typedActions: {
+      ledger: [{ contract_id: 'typed-same-family', status: 'pending', action_type: 'explain_concept' }],
+      currentDecision: { contract_id: 'typed-same-family' },
+      scaffoldLifecycle: { phase: 'observe_uptake', pending_contract_id: 'typed-same-family' },
+    },
+  };
+  const typedAction = {
+    registerSelection: {
+      action_family: 'answer_accountably',
+      support_level: 3,
+      response_configuration: {
+        action_family: 'answer_accountably',
+        actorial_part: 'skeptic',
+        support_level: 3,
+      },
+    },
+    decision: {
+      contract_id: 'typed-same-family',
+      scaffold_lifecycle: { before: lifecycleBefore },
+    },
+  };
+  const result = reconcileTutorStubTypedActionWithWarrant({
+    state,
+    typedAction,
+    warrantFinalAuthority: {
+      desired_action_family: 'answer_accountably',
+      optional_configuration_displaced: true,
+      displaced_response_configuration_fields: ['actorial_part', 'support_level'],
+      displaced_selection_fields: ['support_level', 'typed_action_decision'],
+    },
+    finalRegisterSelection,
+  });
+  assert.equal(result.displaced, true);
+  assert.equal(state.typedActions.ledger[0].status, 'cancelled_before_delivery');
+  assert.equal(state.typedActions.currentDecision, null);
+  assert.deepEqual(state.typedActions.scaffoldLifecycle, lifecycleBefore);
+  assert.deepEqual(typedAction.registerSelection, finalRegisterSelection);
+  assert.deepEqual(typedAction.decision.delivery.displaced_configuration_fields, [
+    'actorial_part',
+    'support_level',
+    'selection.support_level',
+    'selection.typed_action_decision',
+  ]);
 });
 
 test('gate mode resolution rejects unknown values', () => {

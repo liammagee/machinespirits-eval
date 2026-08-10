@@ -107,6 +107,35 @@ export function buildTutorStubDialogueClosureFrame({
   return base;
 }
 
+/**
+ * In active warrant mode, make the typed completion object a hard constraint
+ * on the older DAG-only closure frame. Observe mode remains strictly inert.
+ */
+export function constrainTutorStubDialogueClosureFrameForAdaptiveWarrant(frame, decision = null) {
+  if (!frame || decision?.mode !== 'active' || !decision.inquiry_completion) return frame;
+  const completion = decision.inquiry_completion;
+  // A genuinely closed lifecycle is terminal. A final check-in is not: the
+  // learner may use it to create a new public obligation, which must be
+  // answered and reconciled before closure can become available again.
+  if (frame.phase === 'closed') return frame;
+  const constrained = {
+    ...frame,
+    adaptiveWarrantCompletion: structuredClone(completion),
+  };
+  if (completion.status === 'complete') return constrained;
+  if (frame.basis === 'strict_learner_dag_grounded_and_asserted' || frame.basis === 'authored_dag_fully_public') {
+    return {
+      ...constrained,
+      phase: 'open',
+      mandatory: false,
+      available: false,
+      basis: null,
+      constrainedBy: 'adaptive_warrant_inquiry_completion',
+    };
+  }
+  return constrained;
+}
+
 export function detectTutorStubVerdictDeclaration(text, { answerTerm = '' } = {}) {
   const source = String(text || '');
   const closureMatch = NEGATED_CLOSURE_PATTERN.test(source) ? null : source.match(EXPLICIT_CLOSURE_PATTERN);

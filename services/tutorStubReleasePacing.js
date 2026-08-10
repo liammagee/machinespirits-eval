@@ -1,3 +1,5 @@
+import { isTutorStubPointOfActionDisplaced } from './tutorStubPointOfActionCoaching.js';
+
 export const TUTOR_STUB_RELEASE_PACING_SCHEMA = 'machinespirits.tutor-stub.release-pacing.v1';
 export const DEFAULT_TUTOR_STUB_RELEASE_SPEED = 1;
 export const MIN_TUTOR_STUB_RELEASE_SPEED = 0.5;
@@ -477,6 +479,7 @@ export function projectTutorStubCurrentReleaseRows(
 ) {
   if (!world || !Number.isFinite(Number(tutorTurn))) return [];
   if (
+    !isTutorStubPointOfActionDisplaced(pointOfAction) &&
     Number(pointOfAction?.turn) === Number(tutorTurn) &&
     pointOfAction?.compiled_constraint?.suppress_new_premise === true
   ) {

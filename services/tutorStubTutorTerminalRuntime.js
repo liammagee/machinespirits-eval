@@ -287,6 +287,7 @@ export function createTutorStubTutorTerminalRuntime(dependencies = {}) {
       deterministicClosure: closureFallbackSelected,
       tokenUsageAvailable: response.tokenUsageAvailable,
       promptSnapshot: response.promptSnapshot || null,
+      firstDraftContract: structuredClone(firstDraftContract || null),
     };
     if (canStreamTutor) fallback.guardedStreamReplay = true;
     const fallbackAttempt = attempts.length;

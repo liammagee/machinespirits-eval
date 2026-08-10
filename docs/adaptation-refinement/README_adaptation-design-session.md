@@ -28,10 +28,35 @@ live/offline warrant logic, a repair-policy map, an `off|observe|active` live
 gate, typed lifecycle contracts for all action families, a frozen study
 harness, and deterministic blind scorer are implemented.
 
-Three successive fresh annotation exercises have prevented premature scale-
-up. The latest newly generated 18-case contract-validation corpus failed its
-predeclared decision and successor gate (precision 0.500, recall 0.286,
-accuracy 0.500, successor accuracy 0/4). No downstream causal comparison is
-licensed. The next architecture step is the public-obligation ledger and
-inquiry-completion predicate recorded in `remaining-next-steps.md`; the live
-gate remains experimental and off by default.
+Three successive fresh annotation exercises prevented premature scale-up. The
+latest 18-case contract-validation corpus failed its predeclared decision and
+successor gate (precision 0.500, recall 0.286, accuracy 0.500, historical
+successor score 0/4). A later source-trace audit found that its two
+`close_inquiry` labels lacked release-availability context and are not valid
+terminal-closure gold. The two persistent `answer_accountably` consensuses
+remain valid evidence of a public-obligation defect.
+
+The successor architecture is now implemented: precision-first public speech
+acts, a persistent tutor-owned public-obligation ledger, a typed inquiry-
+completion/terminal-transition object, separate prior-commitment and current-
+candidate comparisons, target-specific response directives, and shared live,
+resume, and offline replay reducers. In active mode typed completion also
+vetoes a premature `close_inquiry` candidate and constrains the legacy closure
+frame; observe remains inert. This is implementation evidence, not a validated
+policy.
+
+The mechanism runner is now launch-hardened before that validation: strict
+digest-bound approval, clean-SHA/source/child-policy closure, sanitized pinned
+environment, wrapper-plus-native Codex CLI fingerprint, a 64-call child cap,
+sealed immutable resume/evidence collection, captured prompt-boundary canaries,
+opaque globally shuffled blind IDs, and strict V3 reader envelopes. These are
+integrity properties only; no model-backed mechanism run has yet been made.
+
+The next stage is the all-turn mechanism-validation protocol in
+`baseline-comparison-design.md`: two worlds, six learner profiles, observe and
+active, one fresh seed per cell, and eight turns (24 dialogues). All 96 observe
+decisions will receive two blind annotations with public-safe release-
+availability context; active runs remain outside the gold corpus and supply
+matched execution plus exact typed parity. No downstream causal comparison is
+licensed unless every support, accuracy, closure-safety, and parity gate
+passes. The live gate remains experimental and off by default.

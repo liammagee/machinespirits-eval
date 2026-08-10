@@ -211,3 +211,106 @@ This corpus is burned. The error pattern requires a persistent public-
 obligation ledger that distinguishes proposing a test from asking the tutor to
 supply its result, and an authored inquiry-completion outcome. Threshold tuning
 on this corpus is not licensed.
+
+## Post-freeze semantic correction: the closure rows lacked required context
+
+The result immediately above is preserved as the historical scorer output. A
+subsequent audit of the source traces, however, found an annotation-instrument
+defect in the two rows on which both readers selected `close_inquiry`.
+
+The v2 blind packet supplied only the transcript prefix, current learner turn,
+learner-record counts, and strategy in force. It did **not** supply the
+decision-time authored-release state: evidence due now, the next licensed
+release, future licensed release count, or release-scope exhaustion. That
+omission mattered:
+
+| Case | Decision-time state omitted from the blind packet | Learner-DAG state | Consequence |
+|---|---|---|---|
+| 007, turn 8 | `p_crucible` was due at turn 8; 3/9 releases had committed before the decision and 5 later releases remained licensed | `finalSecretEntailed=false`, `assertedSecret=false`, coverage 0.167, `release_or_pacing_gap` | Not valid terminal-closure gold |
+| 011, turn 7 | `dueNow=[]`, but `p_crucible` was next at turn 8; 3/9 releases had committed and 6 remained | `finalSecretEntailed=false`, `assertedSecret=false`, coverage 0.167, `release_or_pacing_gap` | Not valid terminal-closure gold |
+
+The annotator notes expose the resulting inference: “no further supplied
+comparison remains,” “after the available sequence,” and “final available
+access evidence.” Those statements were not warranted by the packet. An empty
+current due list is not an exhausted release schedule, and the end of the
+frozen eight-turn sample is not the end of the authored inquiry.
+
+Accordingly:
+
+- cases 007 and 011 remain frozen historical annotations, but they must not be
+  reused as positive `inquiry_state=complete` examples or as gold successors
+  for `close_inquiry`;
+- the recorded 0/4 successor score is not retroactively recomputed, but only
+  two of those four successor consensuses remain semantically interpretable;
+- no post-hoc replacement family is assigned to either row. Their broader
+  “leave the current strategy” labels may still be defensible, but the corpus
+  cannot now adjudicate why or where to transition;
+- the failure of this corpus does not establish that production closure lacked
+  a completion mechanism. The existing runtime already required strict
+  grounded-and-asserted closure; what was absent from the adaptive trace was a
+  typed projection of that state.
+
+The two `answer_accountably` consensuses remain informative. Case 014 directly
+asks for the touchstone result. In case 016 the learner asks for the balance
+and ring result on turn 2, the tutor diverts to a different question, and the
+debt remains on turn 3. Those rows demonstrate a public obligation that
+persists across a tutor move. Release availability governs whether the correct
+response is a bounded answer or a named, concrete deferral; it does not erase
+the obligation.
+
+This correction changes the architectural inference, not the calibration
+history: the public-obligation defect remains evidenced, while terminal
+completion requires a new context-complete corpus.
+
+## v3 mechanism annotation contract (predeclared 2026-08-10)
+
+The successor corpus fixes the context defect and changes the unit of judgment
+from a sampled generic revision label to an all-turn typed mechanism record.
+Every case carries the same frozen public inquiry brief: opening text, public
+situation and question, opening evidence, and public requirements. It also
+carries public-safe decision-time availability counts—authored, released before
+the decision, due now, future licensed, remaining licensed, and whether the
+scope is exhausted—without revealing the secret or future evidence identity or
+content.
+
+Two blind readers independently label:
+
+- public speech act: tutor-directed result request, learner-proposed test,
+  criterion question, tutor-selection request, withdrawal, transfer to the
+  learner, other, or uncertain;
+- open obligation source turns and lifecycle state;
+- whole-inquiry state: complete, incomplete, or uncertain;
+- whether the prior delivered commitment should transition;
+- whether the already proposed current candidate needs override;
+- the primary warrant basis and recommended action family.
+
+For this corpus, ordinary `complete` requires a supported terminal learner
+assertion, a known exhausted release scope, and no unresolved public
+obligation. `due_now_count=0`, fixed-horizon position, or a proof-limit
+statement while future evidence remains is `incomplete`, not closure.
+
+The live matrix is two worlds (`world_022_foxtrot_jukebox`,
+`world_028_larkspur_fridge`) by six learner profiles (`diligent`, `low_agency`,
+`answer_seeking`, `counterexample_hunter`, `goalpost_shifter`, `fast_learner`)
+by observe/active, one fresh seed per cell from master seed 401, eight fixed
+turns: 24 dialogues. The primary blind freeze contains all 96 decision points
+from the 12 observe dialogues—no prediction balancing and no sample selection.
+The 12 active dialogues are annotation-external matched execution and
+structured-parity evidence.
+
+The freeze must prove zero fingerprint overlap with every earlier corpus and
+bind the exact source hashes, protocol, handbook, projection schema, and gate.
+Any change after freeze burns the corpus. The thresholds and stop rule are
+recorded in `baseline-comparison-design.md`; insufficient positive, negative,
+request/proposal, obligation-lifecycle, or completion support is an
+inconclusive failure rather than a vacuous pass.
+
+Before either reader receives the packet, paired corpus/private-key rows are
+globally hash-shuffled and assigned opaque 96-bit identifiers; sequential
+cell-ordered case numbers are no longer permitted. V3 responses have exact
+envelope/case field allowlists and strict scalar/array types. Unknown or extra
+fields—including private/source material supplied through an undeclared
+field—and type/schema violations fail before the key is read. The short
+free-text evidence note is structurally type-checked only; its content is not
+semantically adjudicated for private/source contamination. This is a blindness
+and integrity refinement, not another calibration result.

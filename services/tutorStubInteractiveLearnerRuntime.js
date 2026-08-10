@@ -149,6 +149,11 @@ export function createTutorStubInteractiveLearnerRuntime(dependencies) {
   function cloneStateForMixedLearnerSpeculation() {
     return {
       ...state,
+      // The warrant gate is a closure-backed reducer and cannot be shared by
+      // a speculative branch.  A null gate is rebuilt from the cloned,
+      // committed turn prefix on first use, so an abandoned prefetch cannot
+      // create phantom obligations or consume a decision in the live state.
+      warrantGate: null,
       history: structuredClone(state.history),
       turns: structuredClone(state.turns),
       world: structuredClone(state.world),
@@ -169,6 +174,10 @@ export function createTutorStubInteractiveLearnerRuntime(dependencies) {
   function cloneStateForInteractiveLearnerAttempt() {
     return {
       ...state,
+      // Turn attempts are transactional.  Give the attempt an isolated gate
+      // rebuilt from its cloned turn prefix; only a successful commit adopts
+      // that reducer below.
+      warrantGate: null,
       history: structuredClone(state.history),
       turns: structuredClone(state.turns),
       learnerDag: structuredClone(state.learnerDag),
@@ -246,6 +255,11 @@ export function createTutorStubInteractiveLearnerRuntime(dependencies) {
     state.register = attemptState.register;
     state.dialogueClosure = attemptState.dialogueClosure;
     state.typedActions = attemptState.typedActions;
+    // The attempt's gate includes the newly committed decision and tutor
+    // outcome.  Adopt it atomically with the turn record.  Failed or aborted
+    // attempts never reach this function and therefore cannot mutate the live
+    // reducer.
+    state.warrantGate = attemptState.warrantGate || null;
     state.comprehension = replayConcurrentComprehensionChanges(
       attemptState.comprehension,
       baseline.comprehension,

@@ -19,6 +19,23 @@ test('conversational-integrity findings are hard on ordinary attempts', () => {
   assert.equal(decision.hardIssues.length, 1);
 });
 
+test('active public-obligation failures stay hard under shadow and terminal fallback', () => {
+  for (const type of ['public_obligation_unresolved', 'public_obligation_replaced_by_question']) {
+    const issue = { guard: 'live_turn_progression_v1', type };
+    for (const options of [
+      { boundaryPolicy: 'shadow_advisory' },
+      { boundaryPolicy: 'shadow_advisory', terminalFallback: true },
+    ]) {
+      const decision = decideTutorStubGuardDelivery([issue], options);
+      assert.equal(decision.ok, false, `${type}: ${JSON.stringify(options)}`);
+      assert.deepEqual(decision.hardIssues, [issue]);
+      assert.deepEqual(decision.advisoryIssues, []);
+      assert.equal(decision.dispositions[0].category, 'public_obligation_integrity');
+      assert.equal(decision.dispositions[0].match, 'exact');
+    }
+  }
+});
+
 test('terminal fallback delivers conversational-integrity findings as advisories', () => {
   const decision = decideTutorStubGuardDelivery([progressionIssue], { terminalFallback: true });
   assert.equal(decision.ok, true);

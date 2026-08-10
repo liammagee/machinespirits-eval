@@ -147,8 +147,10 @@ test('real technical-debug process preserves exact learner-DAG terminal bytes', 
     });
     const block = result.plain.match(/tutor learner-DAG model >[\s\S]*?(?=engagement stance >)/u)?.[0] || '';
 
-    assert.equal(Buffer.byteLength(block), 336);
-    assert.equal(sha256(block), 'ecb8c2bf55b237cb4b4de52f002e71daf742a46c8a9ff020b964452b48cc9603');
+    assert.equal(Buffer.byteLength(block), 151);
+    assert.equal(sha256(block), '08f1012175e3712d5593606661bd4efe037a85761b59899e328ece64da17566c');
+    assert.match(block, /grounded 4, voiced 0, hypotheses 0, answer candidates 0/u);
+    assert.doesNotMatch(block, /learner-DAG model warning/u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

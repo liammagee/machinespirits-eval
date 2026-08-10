@@ -42,12 +42,12 @@
     {
       "file": "services/tutorStubTutorTurnPipeline.js",
       "claim": "tutor-turn coordination and extracted runtime delegation",
-      "sha256": "d43648c357b212c4db1cdbaad085476485e9d497dd1b74299bb2f5342e346960"
+      "sha256": "1133bda2a00cf04828ef1b750014075f576e00a698c14b39485a1769263972ff"
     },
     {
       "file": "services/tutorStubTutorTurnPreparation.js",
       "claim": "speaking prompt assembly; conduct-card and contract-licence slots; speaker-privilege recovery",
-      "sha256": "f95491278814ee497eaa1a023a38098ded7654e217447d514a8c3208dbd11e39"
+      "sha256": "8350ac43d4483081d9a581cdfacb29780812c783ea1b3219726ed9683f54e453"
     },
     {
       "file": "services/tutorStubTutorAttemptRuntime.js",
@@ -72,12 +72,12 @@
     {
       "file": "services/tutorStubTutorTerminalRuntime.js",
       "claim": "clue-span insertion, deterministic safety fallback, terminal audit, and rejection accounting",
-      "sha256": "5ff6bd845c7b3d40127fa62f3051e5bbeac944fab0f55f9bb9cdc58cb5c98612"
+      "sha256": "7abd21c44004f7ff147dfcab88844528f537a1192bfa107c9649c1db20a72aef"
     },
     {
       "file": "services/tutorStubTutorDraftAudit.js",
       "claim": "delivery guard battery, dispositions, and audit trace shape",
-      "sha256": "db3f89c71bf04163fdd1e1c3398e770317cff154bffa069e5e8fe88e9e016e79"
+      "sha256": "f15453508b3ed53b4768f24bb7790330bde47ed05dd1a15761b80e4379355c22"
     },
     {
       "file": "services/tutorStubResponsePolicy.js",
@@ -97,7 +97,7 @@
     {
       "file": "services/tutorStubResponseConfigurationSelectionRuntime.js",
       "claim": "final response-configuration composition, precedence, and selection trace envelope",
-      "sha256": "c5132b80268275abcf4e09374ec92a63192abdb40f8c44e87cd3763bc21662e6"
+      "sha256": "f069eda8d5c3ac3d863a5835ccd2ddd599a408d2105bab14cc545d551bc29c92"
     },
     {
       "file": "services/tutorStubWorldPromptContext.js",

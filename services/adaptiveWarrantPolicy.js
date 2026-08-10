@@ -15,7 +15,7 @@
  * layer owns that).
  */
 
-export const ADAPTIVE_WARRANT_POLICY_SCHEMA = 'machinespirits.adaptation-refinement.repair-policy.v1';
+export const ADAPTIVE_WARRANT_POLICY_SCHEMA = 'machinespirits.adaptation-refinement.repair-policy.v2';
 
 const CONTRACT_SUCCESSOR_STANCES = Object.freeze({
   answer_accountably: 'plain',
@@ -25,6 +25,16 @@ const CONTRACT_SUCCESSOR_STANCES = Object.freeze({
   receive_vulnerability: 'warm',
   stage_next_step: 'precise',
 });
+
+export function buildAdaptiveWarrantObligationDirective(publicObligation = null) {
+  const blockingObligation = publicObligation?.blocking_obligation || null;
+  if (!blockingObligation) return null;
+  return {
+    obligation_id: blockingObligation.id,
+    target: structuredClone(blockingObligation.target),
+    acceptable_outcomes: ['bounded_public_answer', 'named_unavailability_with_concrete_next_step'],
+  };
+}
 
 /**
  * Recommend a repair policy for a warranted decision point.
@@ -47,22 +57,64 @@ export function recommendRepairPolicy({
   strategyInForce = null,
   deferenceSustained = false,
   actionContract = null,
+  publicObligation = null,
+  inquiryCompletion = null,
+  proposedActionFamily = null,
 } = {}) {
   if (warrantBasis === 'none' || warrantBasis === 'masked_by_engaged_analytic') return null;
   const primary = signal?.primary || 'neutral';
   const conceptualStall = divergence.some((row) => row.dimension === 'conceptual' && row.interpretation === 'stalled');
 
-  const contractSuccessor = actionContract?.transition?.recommended_action_family || null;
-  if (
-    warrantBasis.startsWith('contract_') &&
-    actionContract?.transition?.revision_warranted &&
-    contractSuccessor
-  ) {
+  const blockingObligation = publicObligation?.blocking_obligation || null;
+  if (warrantBasis.startsWith('public_obligation_') && blockingObligation) {
     return policy(
-      contractSuccessor,
-      `action-family contract ${actionContract.status}: ${actionContract.reason}`,
-      { stanceHint: CONTRACT_SUCCESSOR_STANCES[contractSuccessor] || 'precise' },
+      'answer_accountably',
+      `supply or validly defer ${blockingObligation.id}: ${blockingObligation.target.kind}`,
+      {
+        stanceHint: 'precise',
+        obligationDirective: buildAdaptiveWarrantObligationDirective(publicObligation),
+      },
     );
+  }
+
+  if (warrantBasis.startsWith('inquiry_complete:') && inquiryCompletion?.status === 'complete') {
+    return policy('close_inquiry', `whole-inquiry terminal condition: ${inquiryCompletion.basis}`, {
+      stanceHint: 'precise',
+      decisionKind: 'terminal_transition',
+    });
+  }
+
+  if (warrantBasis.startsWith('inquiry_incomplete_candidate:') && proposedActionFamily === 'close_inquiry') {
+    const checks = inquiryCompletion?.checks || {};
+    if (
+      checks.answer_entailed_unasserted === true &&
+      checks.release_scope_exhausted === true &&
+      Number(checks.open_public_obligation_count || 0) === 0
+    ) {
+      return policy(
+        'compress_sayback',
+        'closure is premature until the learner makes the grounded terminal assertion',
+        {
+          stanceHint: 'precise',
+          decisionKind: 'candidate_safety_override',
+        },
+      );
+    }
+    const reanchor = checks.released_evidence_integrated === false || Number(checks.active_dropped_fact_count || 0) > 0;
+    return policy(
+      reanchor ? 'reanchor_public_evidence' : 'stage_next_step',
+      reanchor
+        ? 'closure is unsafe while already-public evidence is unintegrated or has dropped from the active record'
+        : 'closure is unsafe while the authored release scope is unknown or still contains licensed evidence',
+      { stanceHint: reanchor ? 'warm' : 'precise', decisionKind: 'candidate_safety_override' },
+    );
+  }
+
+  const contractSuccessor = actionContract?.transition?.recommended_action_family || null;
+  if (warrantBasis.startsWith('contract_') && actionContract?.transition?.revision_warranted && contractSuccessor) {
+    return policy(contractSuccessor, `action-family contract ${actionContract.status}: ${actionContract.reason}`, {
+      stanceHint: CONTRACT_SUCCESSOR_STANCES[contractSuccessor] || 'precise',
+    });
   }
 
   // Explicit repair request: the learner asked for the explanation itself to
@@ -118,15 +170,26 @@ export function recommendRepairPolicy({
     stanceHint: 'precise',
   });
 
-  function policy(family, rationale, { stanceHint = null, registerRevision = false } = {}) {
+  function policy(
+    family,
+    rationale,
+    {
+      stanceHint = null,
+      registerRevision = false,
+      obligationDirective = null,
+      decisionKind = 'pedagogical_commitment_transition',
+    } = {},
+  ) {
     return {
       schema: ADAPTIVE_WARRANT_POLICY_SCHEMA,
       family,
+      decision_kind: decisionKind,
       review: strategyInForce === family ? 'persist_with_adjustment' : 'switch',
       from_family: strategyInForce,
       rationale,
       stance_hint: stanceHint,
       register_revision: registerRevision,
+      obligation_directive: obligationDirective,
     };
   }
 }

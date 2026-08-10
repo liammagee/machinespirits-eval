@@ -51,19 +51,46 @@ export function restoreTutorStubTypedActionState(state, turns, events = []) {
       rememberRecord(createPendingIntervention(decision.adaptation_contract));
     }
   };
+  const rememberDisplacement = ({ decision = null, contractId = null, cancelledIntervention = null } = {}) => {
+    const resolvedContractId = contractId || decision?.contract_id || cancelledIntervention?.contract_id || null;
+    if (!resolvedContractId) return;
+    const existing = cancelledIntervention || records.get(resolvedContractId) || null;
+    if (!existing) return;
+    rememberRecord({
+      ...existing,
+      status: 'cancelled_before_delivery',
+      cancellation: {
+        ...(existing.cancellation || {}),
+        reason: existing.cancellation?.reason || 'adaptive_warrant_gate_final_authority',
+        delivered_action_family:
+          existing.cancellation?.delivered_action_family || decision?.delivery?.delivered_action_family || null,
+      },
+    });
+  };
 
   for (const event of activeEvents) {
     if (event?.type === 'tutor_typed_action_decision') {
       rememberDecision(event.decision, event.pendingIntervention);
     } else if (event?.type === 'tutor_typed_action_outcome_closed') {
       rememberRecord(event.outcome?.closed_record);
+    } else if (event?.type === 'tutor_typed_action_decision_displaced') {
+      rememberDisplacement({
+        contractId: event.contractId,
+        cancelledIntervention: event.cancelledIntervention,
+      });
+      if (event.restoredScaffoldLifecycle) lifecycle = jsonClone(event.restoredScaffoldLifecycle);
     } else if (event?.type === 'tutor_scaffold_lifecycle_transition' && event.lifecycle) {
       lifecycle = jsonClone(event.lifecycle);
     }
   }
   for (const turn of turns) {
     const decision = tutorStubTypedActionDecisionFromTurn(turn);
-    if (decision) rememberDecision(decision);
+    if (decision) {
+      rememberDecision(decision);
+      if (decision.delivery?.disposition === 'displaced_before_tutor_output') {
+        rememberDisplacement({ decision });
+      }
+    }
     const closedRecord =
       turn?.typedActionOutcomeAfterNextLearner?.closed_record || turn?.typedActionPriorOutcome?.closed_record || null;
     if (closedRecord) rememberRecord(closedRecord);

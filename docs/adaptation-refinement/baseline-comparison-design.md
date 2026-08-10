@@ -1,6 +1,11 @@
 # Baseline Comparison Design (§15.7 / Phase 5)
 
-**Status:** valid n=5 pilot and two-stage decision audit complete; decision gate failed, candidate repair failed fresh holdout validation, and n=10 is stopped.
+**Status:** valid n=5 pilot and two-stage decision audit complete; the typed-contract
+gate failed and n=10 remains stopped. A post-freeze context audit invalidated the
+two `close_inquiry` successor labels as terminal-closure gold, while preserving
+the public-obligation diagnosis. The successor ledger/completion architecture is
+implemented; a fresh two-world all-turn mechanism-validation study is
+predeclared but not yet evidence.
 **Question:** does the explicit warrant gate produce behaviour materially different from the uninstrumented stub, and is the difference an improvement at the decision level and downstream?
 
 ## Conditions
@@ -9,7 +14,7 @@
 |---|---|---|
 | baseline | off | the frontier model's implicit adaptation, unchanged pipeline |
 | instrumented | observe | decision-quality measurement with zero behaviour change — how often would the gate have fired, and would gold agree |
-| intervening | active | the full loop: warranted revisions override family + stance |
+| intervening | active | the full loop: apply required family/stance overrides, preserve warranted same-family commitments under final authority, and carry orthogonal public-obligation directives |
 
 ## Learners (automated profiles)
 
@@ -201,3 +206,260 @@ the tutor to supply its result, and add an inquiry-completion predicate that
 can license `close_inquiry`. Those additions require another zero-overlap blind
 decision gate; the present diagnostic corpus is burned and is not suitable for
 post-hoc validation.
+
+## Post-freeze correction to the terminal-closure interpretation
+
+The reported gate result above remains the exact historical scorer output, but
+the later semantic audit found that the two hard-consensus `close_inquiry`
+successors were not valid terminal-closure gold. The blinded v2 corpus exposed
+the transcript, learner-record counts, and strategy in force, but not the
+authored release schedule or decision-time due/future-evidence counts. Both
+readers therefore inferred an exhausted evidence sequence that the runtime did
+not have:
+
+- case 007 was decision turn 8, when `p_crucible` was due; only three of nine
+  authored releases had committed before the decision and five later releases
+  were still licensed;
+- case 011 was decision turn 7; `dueNow` was empty, but `p_crucible` was the
+  next release at turn 8 and six of nine authored releases remained;
+- in both cases the learner DAG reported `finalSecretEntailed=false`,
+  `assertedSecret=false`, best-path coverage 0.167, and a
+  `release_or_pacing_gap` bottleneck.
+
+The corpus and scores are not rewritten. Those two rows remain part of the
+burned calibration history, but they cannot support an inquiry-completion
+defect, `close_inquiry` successor accuracy, or a rule that treats the end of an
+eight-turn sample as the end of the authored inquiry. Their positive
+strategy-transition labels may have another defensible reading, but that
+cannot be reconstructed after unblinding.
+
+The public-obligation defect survives this correction. Cases 014 and 016 show
+respectively a direct request for a touchstone result and a balance/ring request
+that remained unanswered across an intervening tutor move. Detecting that
+tutor-owned debt does not require pretending that future evidence is absent;
+availability instead determines whether the tutor must answer now or give a
+specific accountable deferral.
+
+## Implemented successor mechanism
+
+The next architecture is now present in the shared live/offline path:
+
+1. A precision-first public speech-act classifier distinguishes
+   `tutor_directed_public_result_request` from `learner_proposed_test`,
+   `criterion_question`, `tutor_selection_request`, withdrawal, transfer, and
+   other speech. Classifier labels may corroborate the public text but cannot
+   create an obligation by themselves.
+2. A persistent public-obligation ledger records tutor-owned, target-typed
+   result debt. It survives action-family changes and moves through open,
+   overdue/reactivated, deferred, satisfied, withdrawn, or transferred states.
+   A deferral is valid only when it names the unavailable target and a concrete
+   public next condition; unrelated questioning does not discharge the debt.
+3. A deterministic inquiry-completion object projects the existing learner DAG,
+   dialogue-closure state, and public-safe release counts. Ordinary completion
+   requires strict grounded-and-asserted closure **and** a known, exhausted
+   authored release scope. An explicitly authored
+   bounded scope may instead license a proof-limit conclusion, but an empty
+   `dueNow`, release exhaustion alone, a fixed run horizon, or local
+   conversational completion never does. Any unresolved public obligation,
+   unsupported assertions, active dropped facts, or unintegrated released
+   evidence block closure.
+4. Completion is emitted as `decision_kind=terminal_transition`, with
+   `close_inquiry` as its licensed family. It is not redescribed as a failed
+   repair strategy. An answerable public obligation blocks completion and
+   routes to `answer_accountably`.
+5. The gate now separates two questions that the earlier scorer conflated:
+   `commitment_transition_warranted` compares the recommended family with the
+   prior delivered family, while `current_candidate_override_required`
+   compares it with the response configuration already proposed for the
+   current turn. Active mode overrides only the latter. Thus a transition may
+   be normatively warranted while no intervention is required because the
+   base selector has already proposed the right move.
+6. Completed turn records persist the typed ledger and completion projections.
+   Each v4 decision also carries a canonical public decision-input snapshot and
+   SHA-256 digest. Resume reconstructs the reducers from committed public turns,
+   and the offline replayer uses the same ledger/completion functions,
+   delivered configuration, and decision-time pre-delivery release boundary.
+7. In active mode the obligation directive compiles into the first-draft and
+   turn-progression contracts. The answer or accountable deferral owns UPTAKE
+   and precedes an unrelated due SOURCE; another question cannot substitute for
+   it. Both structured and live-text progression audits check target coverage
+   and delivery status, with a public-safe deterministic deferral fallback.
+8. Active mode also makes typed completion a hard constraint on the older
+   DAG-only closure frame. If that frame says closure is mandatory/available
+   while typed completion remains open, the frame is reset to open and a
+   premature `close_inquiry` candidate is overridden to `stage_next_step`,
+   `reanchor_public_evidence`, or `compress_sayback` according to the blocker.
+   Observe mode records the disagreement and remains behaviorally inert.
+
+These are implemented mechanisms with regression coverage, not a validated
+policy or outcome claim. The live gate remains experimental and off by
+default.
+
+## Successor mechanism-validation protocol (predeclared 2026-08-10)
+
+The next study is a mechanism-validation stage, not a repeat of the causal
+baseline comparison. It therefore excludes the `off` condition and uses only
+`observe` and `active`:
+
+- worlds: `world_022_foxtrot_jukebox` and
+  `world_028_larkspur_fridge`;
+- learner profiles: `diligent`, `low_agency`, `answer_seeking`,
+  `counterexample_hunter`, `goalpost_shifter`, and `fast_learner`;
+- one fresh seed per world/profile/condition cell, with master seed 401;
+- fixed eight-turn horizon, yielding 24 dialogues and 192 tutor decisions;
+- all eight decision points from the 12 observe dialogues form the primary
+  blind corpus: 96 cases, with no prediction balancing or post-hoc sampling;
+- active dialogues are excluded from gold annotation. They provide matched
+  intervention execution and an independent exact structured live/replay
+  parity denominator.
+
+Each blind case includes the frozen public inquiry brief (opening text, public
+situation and question, opening evidence, and public requirements), public
+transcript prefix, current learner turn, learner-record counts, prior delivered
+family, current pre-gate candidate, and redacted public evidence availability:
+authored/released/due/future/remaining counts plus release-scope exhaustion,
+never the secret or future evidence identities/content. Two isolated readers
+label the speech act, open obligation source turns and lifecycle state, whole-
+inquiry state, prior-commitment transition, current-candidate override, primary
+warrant basis, and successor family. The freeze assigns deterministic opaque
+hash identifiers after a global hash shuffle of paired corpus/key rows; neither
+sequential IDs nor row grouping may reveal world, profile, condition, or turn.
+V3 reader envelopes and case rows use exact allowlists and scalar/array types.
+Unknown or extra fields—including private/source material supplied through an
+undeclared field—and type/schema violations fail before unblinding. The short
+free-text evidence note is structurally type-checked only; its content is not
+semantically adjudicated for private/source contamination.
+
+The freeze manifest must bind the exact protocol, source hashes, thresholds,
+all 96 observe cases, and zero fingerprint overlap with every prior corpus. Any
+post-freeze change to code, the annotation handbook, projection schema,
+sampling rule, or gate burns the freeze and requires fresh dialogues and
+annotations. Mechanism mode therefore requires explicit `--exclude-corpus`
+arguments; the live launch must name all three earlier labeled JSON corpora
+listed in `remaining-next-steps.md`.
+
+The dry run also emits `launch-authorization-request.json`. Its approval digest
+binds the complete study axes, model refs and named destinations, private prompt
+payload scope, prior-corpus hashes, and recursive source-provenance hash while
+deliberately ignoring only the dry/live flag and output-root identity. A live
+mechanism launch requires both `--launch-approved` and a completed
+`--launch-authorization <file>` whose digest, destinations, payload-scope hash,
+source-provenance hash, child-policy hash, exact study-plan execution hash,
+approver, and canonical UTC approval time validate against the newly recomputed
+request. Authorization objects have an exact key set and strict types; the
+validator recomputes the request contract digest rather than trusting the
+stored value. A boolean flag alone cannot launch this study. Any source,
+routing, payload, command, job order, matrix, or exclusion change invalidates
+the authorization before model subprocesses start.
+
+Authorization is valid only for a clean, committed worktree. The request and
+completed authorization must bind the exact 40-character `HEAD` SHA together
+with the recursive source-closure hash; live validation recomputes both and
+must reject a dirty tree, a non-commit SHA, or either mismatch before creating
+the live plan. Committing or amending after the dry run therefore requires a
+new dry run and approval digest even when the scientific matrix is unchanged.
+
+Each dialogue runs under `--lab automated_eval` with an enforced 64-model-call
+budget; every retry consumes that same budget. The complete matrix therefore
+has a hard maximum of 1,536 model calls. Exhaustion seals the child as
+incomplete and cannot reserve call 65.
+
+For this frozen protocol all three roles—speaking tutor, learner analysis, and
+automated learner—request `codex.gpt-5.6-luna`, resolved through the **OpenAI
+Codex CLI (ChatGPT-account route)**. No OpenRouter, Anthropic, or direct OpenAI
+API route is authorized. The unpublished prompt payload may contain repository-
+authored system/role instructions; role-specific output schemas; the fictional
+worlds' public situation, question, rule glosses, staged evidence, public fact
+arrays/premise IDs, and dialogue history; current public learner/candidate text;
+bounded tutor-action and response-configuration instructions; the public-only
+learner-DAG preflight, prior public learner record, and compact public dialogue
+state; behavior-only simulated-learner briefs; and guard issue classes plus the
+compact public recovery packet. It must not contain the concealed answer,
+future evidence identities or content, private proof paths or planner-only
+premise identifiers, the rejected tutor draft in a recovery prompt, annotation
+keys or annotator responses, simulated-learner measurement targets,
+repository/Git contents, credentials as prompt content, human-subject data,
+complete traces, or evaluator/consensus scores. Those artifacts remain local.
+A fake-provider capture test exercises tutor, analyzer, simulated-learner, and
+recovery calls with concealed-answer, future-evidence, private-source,
+credential, annotation-key, and measurement-target canaries. That test exposed
+and removed one Marrick-specific concealed-answer example from the analysis
+rubric.
+
+Source provenance is not a hand-maintained shortlist. The harness hashes the
+explicit design/configuration resources plus the recursive static local-import
+closure of the study runner, offline replayer, auto-eval runner, and actual
+`tutor-stub.js` child entrypoint. Each child auto-eval seal likewise hashes the
+complete local import closure of `tutor-stub.js`. A newly activated delivery,
+rollback, or persistence module therefore changes the frozen fingerprint even
+if no one remembers to add it to a policy-source list.
+
+The child environment deletes inherited tutor seams, Node preload/search-path
+hooks, dotenv overrides, and OpenAI/Codex API-route variables, then pins the
+committed assignment-free `config/adaptive-warrant-study.env`. A no-model CLI
+preflight records the invoked Codex entrypoint and its delegated native binary,
+their hashes before and after local version/login probes, the installed version,
+and ChatGPT-account authentication. Any wrapper/native mutation or API/custom-
+base route fails before prompts are submitted.
+
+Every accepted row is recollected from its verified child plan, event chain,
+seal, exact Git SHA/dirty-state declaration, and child-policy closure. Resume is
+immutable: it revalidates the stored plan and authorization request, recollects
+sealed children, and reuses only exact complete/dry rows. The freeze binds this
+execution-evidence manifest, not merely copied summary JSON.
+
+Reducer parity is necessary but not sufficient for execution validity. Every
+mechanism-study decision also receives a delivery-application audit. A selector
+audit persists the raw pre/post source snapshots, recomputes their hashes and
+field delta, and requires the post-source to equal the same pure gate-patch
+function used live. Observe and active-hold are therefore exactly inert, and an
+active patch cannot carry an undeclared extra field. In active mode, persisted
+pre-final and frozen pre-optional selection snapshots let the scorer recompute
+every displaced field and prove the enforcement schema, decision binding,
+compatibility provenance, and restored configuration digest.
+
+The first-draft contract must bind its action family, engagement stance,
+actorial part, and tactic to the deterministic speaking configuration,
+including any declared tactic fallback.
+Final guard accounting must name the exact configuration and public text
+actually delivered. Delivery may preserve the speaking configuration or use
+the shared simplified-recovery constructor through a declared recovery-ladder
+source; speaking transitions and recovery are counted separately. Exact nested
+equality replaces the former realization-axis allowlist, while family,
+obligation directive, and final-authority provenance remain invariant. A public
+obligation must retain its complete unmutated target and acceptable outcomes
+through compilation, then resolve in the final live audit by answering every
+required component or by a target-specific accountable deferral. Any miss makes status
+`invalid_delivery_application`, even when live and replay reducers agree.
+
+### Gate and stop rule
+
+The pre-existing aggregate gate remains in force: raw agreement at least 0.80;
+at least 12 scored consensuses with at least 2 positives and 6 negatives;
+precision and recall at least 0.70; accuracy at least 0.75; at least 2 successor
+consensuses with exact transition accuracy at least 0.70; diligent false-
+positive rate at most 0.25; and live/replay agreement 1.00.
+
+The all-turn mechanism gate additionally requires:
+
+- complete hard consensus across all typed fields on at least 75% of cases;
+- at least 12 consensus-positive, 24 consensus-negative, and 10 exact
+  successor-transition cases;
+- at least 8 tutor-directed result requests and 8 learner-proposed tests, with
+  request/proposal macro-F1 at least 0.80;
+- prior-commitment-transition accuracy, current-candidate-override accuracy,
+  and primary-warrant-basis accuracy each at least 0.75;
+- obligation-lifecycle accuracy at least 0.80, with at least 8 persistence and
+  6 resolution cases;
+- proposed-test false-obligation rate at most 0.10;
+- at least 8 complete and 12 incomplete inquiry cases, with completion
+  precision at least 0.90 and recall at least 0.75;
+- zero closure-safety violations, including no close while licensed evidence
+  remains or an unresolved public obligation exists;
+- zero structured live/replay mismatches, with non-zero observe and active
+  denominators.
+
+Missing support is a failed/inconclusive gate, never a pass by vacuity. Failure
+stops the sequence before any outcome comparison. Passage would license only a
+separately frozen, variance-controlled outcome design; it would not itself
+establish better dialogue quality, learning, or a human-learner effect.

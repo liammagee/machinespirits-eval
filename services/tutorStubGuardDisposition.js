@@ -21,7 +21,11 @@ export const TUTOR_STUB_GUARD_DISPOSITION_SCHEMA = 'machinespirits.tutor-stub.gu
 // finding — and the gap is wide, not marginal: on the 44 Phase B turns where
 // this guard was the last objector, the demotion moves 33 of them from
 // "template shipped" to "the model's own repair shipped".
-export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 7;
+// 8 (2026-08-10): two active public-obligation findings stay hard in both
+// columns. The broad live-progression family remains advisory under shadow;
+// only failing to answer/defer an active public request, or replacing it with
+// another question, regains a veto.
+export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 8;
 
 export const TUTOR_STUB_GUARD_BOUNDARY_POLICIES = Object.freeze({
   strict: 'strict',
@@ -66,6 +70,19 @@ const RULES = Object.freeze([
     type: 'missing_due_evidence',
     category: 'clue_transaction_integrity',
     rationale: 'A due clue must be present before its release transaction can commit.',
+  }),
+  rule({
+    guard: 'live_turn_progression_v1',
+    type: 'public_obligation_unresolved',
+    category: 'public_obligation_integrity',
+    rationale:
+      'An active learner-directed request for a public result must be answered or deferred with a named limit and concrete public next condition.',
+  }),
+  rule({
+    guard: 'live_turn_progression_v1',
+    type: 'public_obligation_replaced_by_question',
+    category: 'public_obligation_integrity',
+    rationale: 'A new tutor question cannot discharge or replace an active learner-directed public-result obligation.',
   }),
   rule({
     guard: 'live_turn_progression_v1',

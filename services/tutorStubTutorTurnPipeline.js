@@ -6,6 +6,7 @@ import { createTutorStubTutorRepairRuntime } from './tutorStubTutorRepairRuntime
 import { createTutorStubTutorTerminalRuntime } from './tutorStubTutorTerminalRuntime.js';
 import { createTutorStubTutorTurnPreparation } from './tutorStubTutorTurnPreparation.js';
 import { TUTOR_STUB_AB_GENERIC_PLAN } from './tutorStubAbArms.js';
+import { isTutorStubPointOfActionDisplaced } from './tutorStubPointOfActionCoaching.js';
 
 export { TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS } from './tutorStubTutorTurnPreparation.js';
 
@@ -502,8 +503,12 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
     try {
       const attempts = [];
       const repairsApplied = [];
+      const currentPointOfAction = state?.pointOfAction?.current || null;
       const committeeMomentActive = Boolean(
-        !passthrough && state?.committee?.enabled && state?.pointOfAction?.current?.assigned_trigger === 'warrant_skip',
+        !passthrough &&
+        state?.committee?.enabled &&
+        !isTutorStubPointOfActionDisplaced(currentPointOfAction) &&
+        currentPointOfAction?.assigned_trigger === 'warrant_skip',
       );
       let response = committeeMomentActive
         ? await invokeCommitteeFirstDraft()

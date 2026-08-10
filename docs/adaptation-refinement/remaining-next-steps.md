@@ -1,8 +1,10 @@
 # Adaptive Warrant Baseline — Remaining Next Steps
 
 **Date:** 10 August 2026
-**Status:** sequence complete through its stop rule; n=10 not launched
-**Workplan item:** `adaptive-warrant-baseline-study`
+**Status:** original sequence complete through its stop rule; n=10 not
+launched. Ledger/completion implementation is complete; the fresh all-turn
+mechanism-validation sequence below is ready but not yet run.
+**Workplan item:** `adaptive-warrant-public-obligation-ledger-and-inquiry-termin`
 
 ## Frozen evidence boundary
 
@@ -121,10 +123,11 @@ affective-resistant learners, compared with active-minus-off values of 0.0,
 -0.2, and +0.2. A larger version of the same paired-seed design would not
 separate gate effects from frontier-model draw variance.
 
-## Remaining architecture work
+## Remaining architecture work identified by the first holdout (historical)
 
-The next implementation should add a typed action-family contract with both an
-expected learner response and a termination condition. It must represent
+The next implementation at this checkpoint was to add a typed action-family
+contract with both an expected learner response and a termination condition. It
+must represent
 successful repair exits and unresolved evidence requests directly, then be
 evaluated on newly generated, independently annotated decisions. Only after
 that decision gate passes should downstream effects be tested with frozen-prefix
@@ -177,7 +180,7 @@ positive control was exactly at its ceiling (1/4). The downstream comparison
 is therefore stopped; do not launch frozen-prefix or replicated-draw outcome
 runs from this implementation.
 
-The remaining work is now:
+The remaining work identified at that checkpoint was:
 
 1. **Represent public obligation debt.** Add a ledger keyed by the requested
    public result/comparison, with creator speech act, created turn, deadline,
@@ -202,3 +205,272 @@ The remaining work is now:
 The offline turn-1 initialization mismatch discovered here has already been
 fixed and regression-tested. That closes a mechanical parity defect, not the
 substantive decision-quality failure.
+
+## Post-freeze correction and completed architecture work
+
+The two consensus `close_inquiry` rows in the burned contract-validation
+corpus lacked the release-availability context necessary to judge terminal
+closure. One had a clue due at the decision; the other had a clue due on the
+next turn; both had most of the authored schedule still unreleased and neither
+had an entailed or asserted final answer. Their frozen scores remain in the
+history, but they are not valid inquiry-completion gold. No closure rule has
+been fitted to them.
+
+The public-obligation finding remains valid and the architecture work listed
+above is now implemented:
+
+- public speech acts separate tutor-directed result requests from learner-
+  proposed tests, criterion questions, and tutor-selection requests;
+- a persistent tutor-owned obligation ledger survives action-family changes
+  and records creation, reminder, overdue/reactivated state, accountable
+  deferral, satisfaction, withdrawal, and transfer;
+- a typed inquiry-completion projection uses learner-DAG closure, public-safe
+  release availability, a fail-closed explicit bounded-scope planner seam,
+  evidence integration, proof-limit preservation, and closure blockers rather
+  than turn number; no current world schema authors a bounded terminal, so
+  production worlds project `null` and use strict answer closure;
+- terminal completion is a `terminal_transition`, not repair failure;
+- active mode vetoes a premature `close_inquiry` candidate and constrains the
+  legacy mandatory/available closure frame back to open when typed completion
+  is still blocked; observe mode remains inert;
+- `commitment_transition_warranted` is separate from
+  `current_candidate_override_required`, so active mode intervenes only when
+  the already proposed current family is wrong;
+- the response prompt receives a target-specific obligation directive in
+  active mode, while observe mode records the same decision without changing
+  speech;
+- active directives compile into first-draft and turn-progression ownership:
+  answer/deferral precedes an unrelated due source, another question is
+  forbidden as a substitute, and live plus structured audits enforce it;
+- committed turns preserve the ledger/completion objects, explicit resume
+  reconstructs them from public turn records, and the offline shadow shares the
+  same reducers and decision-time pre-delivery availability convention;
+- every v4 decision stores a canonical decision-input snapshot and SHA-256
+  digest so resume/replay can consume the exact pre-gate boundary rather than
+  reconstructing it from post-delivery fields;
+- active final authority restores the complete pre-optional response bundle,
+  cancels displaced typed actions before delivery, rolls back their lifecycle,
+  and preserves that cancellation across resume;
+- a displaced point-of-action intervention is non-executable for prompt,
+  release, handoff, committee, and compliance consumers, while benchmark
+  export records the response configuration actually delivered and retains
+  cancellation provenance;
+- live/replay comparison now checks the full typed decision object for v4
+  traces rather than only `revision_warranted`.
+
+This closes implementation, not validation. The gate remains experimental and
+off by default.
+
+## Remaining sequence: all-turn mechanism validation
+
+### 1. Freeze the protocol, then dry-run
+
+Use the study harness's `--mechanism-validation` mode. Its immutable matrix is:
+
+- `world_022_foxtrot_jukebox` and `world_028_larkspur_fridge`;
+- `diligent`, `low_agency`, `answer_seeking`, `counterexample_hunter`,
+  `goalpost_shifter`, and `fast_learner`;
+- observe and active only;
+- one fresh seed per world/profile/condition cell, master seed 401;
+- eight fixed learner turns, no early grounded stop.
+
+That is 24 dialogues and 192 decision points. Run the exact command in dry-run
+mode first and inspect the plan, job count, source fingerprint, fixed seams,
+world/profile/condition coverage, and absence of any `off` job. Model-backed
+launch still requires explicit approval. The dry run writes
+`launch-authorization-request.json`; inspect its named destinations, declared
+private prompt-payload scope, source-provenance hash, and approval digest. Live
+mechanism execution requires both `--launch-approved` and
+`--launch-authorization <completed-json>`. The authorization must copy the
+request's template, set `approved: true`, and record a non-empty approver and
+valid timestamp. The runner recomputes the contract before creating the live
+plan and rejects any changed model route, destination, payload scope, source
+closure, matrix, or excluded-corpus hash.
+
+Prepare the approvable dry run only from a clean, committed worktree. Its
+request must bind the exact 40-character `HEAD` SHA and recursive source-
+closure hash; the live invocation must recompute both and reject a dirty tree,
+an invalid or different commit, or closure drift. If the dry-run request records
+uncommitted state, or if `HEAD` changes afterward, do not sign it: commit the
+intended source, rerun the dry matrix, and approve the replacement digest.
+
+The completed authorization must copy the exact template—no additional or
+missing keys—and bind lowercase hashes for the approval contract, payload
+scope, source provenance, child policy, and study-plan execution. `approved_by`
+is a non-empty one-line string and `approved_at` is canonical UTC ISO time. The
+runner recomputes the contract digest, rebuilds the live job array, and rejects
+changed job order or any critical command argument, not merely changed config.
+
+The dry rehearsal also proves the runtime envelope without submitting a model
+prompt. Inherited tutor seams, Node preload/search-path hooks, dotenv overrides,
+and OpenAI/Codex API routes are removed; the committed assignment-free
+`config/adaptive-warrant-study.env` is pinned. Local CLI probes bind both the
+invoked Codex wrapper and delegated native executable, their hashes, installed
+version, and ChatGPT-account login. Each dialogue receives a finite 64-call
+budget, for a matrix maximum of 1,536 calls; retries consume the same cap.
+
+Inspect the payload contract literally. All three roles must name
+`codex.gpt-5.6-luna` and the sole destination must be **OpenAI Codex CLI
+(ChatGPT-account route)**—not OpenRouter, Anthropic, or the direct OpenAI API.
+Permitted transmission is limited to repository-authored role instructions and
+output schemas; the two fictional worlds' public scene, question, rules, staged
+evidence, public fact arrays/premise IDs, and dialogue; current public candidate
+text; bounded action/configuration instructions; public-only learner-DAG and
+learner-record state; behavior-only simulated-learner briefs; and guard issue
+classes plus the compact public recovery packet. The concealed answer, future
+evidence identities/content, private proof paths or planner-only identifiers,
+the rejected tutor draft in a recovery prompt, annotation keys or responses,
+learner measurement targets, source/Git contents, credentials as prompt content,
+complete technical traces/scores, and human-subject data are outside
+authorization. A fake-provider capture regression must remain green across the
+tutor, analyzer, simulated learner, and recovery roles.
+
+The dry run must name every prior labeled corpus explicitly so overlap cannot
+pass against an empty exclusion set:
+
+```bash
+node scripts/run-adaptive-warrant-baseline-study.js \
+  --mechanism-validation \
+  --dry-run \
+  --model codex.gpt-5.6-luna \
+  --analysis-model codex.gpt-5.6-luna \
+  --learner-model codex.gpt-5.6-luna \
+  --exclude-corpus .tutor-stub-auto-eval/adaptive-warrant-baseline-pilot-v2-live-2026-08-10/annotation-sample.blinded.json \
+  --exclude-corpus .tutor-stub-auto-eval/adaptive-warrant-baseline-pilot-v2-live-2026-08-10/validation-sample.blinded.json \
+  --exclude-corpus .tutor-stub-auto-eval/adaptive-warrant-contract-validation-v1-live-2026-08-10/annotation-sample.blinded.json
+```
+
+Use the same three exclusions for the approved live launch. The harness now
+rejects mechanism mode with no exclusions and compares a cross-schema source
+fingerprint, so adding v3-only projection fields cannot hide a reused decision.
+Do not reuse an authorization from an earlier dry run after any source or
+protocol edit; regenerate the dry run and approve its new digest.
+
+### 2. Execute and validate every row
+
+The execution surface must complete all 24 dialogues, all 192 turns, and all
+192 learner-analysis calls with zero analysis fallback, prompt-audit fallback,
+or missing typed decision. Observe must not override. Active must apply the
+recorded current-candidate override or obligation directive when required.
+Neither safety caps nor fixed horizon may create a terminal completion.
+Mechanism-study status now fails as `invalid_delivery_application` unless every
+decision's raw pre/post selector snapshots replay exactly through the shared
+gate-patch function, with recomputed hashes and no additional field changes.
+Observe and active-hold must be structurally inert. For warranted active
+decisions, the final-authority audit must expose the pre-final and frozen
+pre-optional selections so displacement, enforcement provenance, compatibility
+markers, and the selected digest can all be recomputed.
+
+The first draft's action family, engagement stance, actorial part, and tactic
+must match the deterministic speaking configuration, including an explicit
+tactic fallback when one is required. The guard must then record
+the exact public text and either that speaking configuration or the exact output
+of the shared simplified-recovery constructor from a declared recovery-ladder
+source. Speaking transitions and recoveries are reported separately; nested
+role, evidence, budget, and performance fields cannot mutate under a broad
+allowlist. Family and obligation directive remain invariant. An obligation's
+complete target and acceptable outcomes must survive first-draft compilation, and
+the live public-text audit must prove every answer component or a target-
+specific accountable deferral.
+
+Accept rows only by recollecting their exact artifacts from a valid child plan,
+event chain, and seal bound to the expected Git SHA, dirty state, and child-
+policy closure. Resume must compare the immutable plan and authorization
+request, reverify every sealed child, and reuse only exact complete/dry rows.
+The annotation freeze must bind the resulting execution-evidence manifest so a
+copied or edited summary row cannot become study evidence.
+
+### 3. Freeze all observe decisions, with no sampling
+
+The primary blind corpus is all eight decision points from each of the 12
+observe dialogues: exactly 96 cases. Do not prediction-balance, down-sample, or
+select only gate firings. Active contexts stay outside annotation and are used
+for matched execution plus exact structured parity.
+
+After selection, pair corpus and private-key rows, apply one deterministic
+global hash shuffle, and assign opaque 96-bit hash IDs. Do not use sequential
+case numbers or retain a cell-grouped order that could reveal the matrix.
+
+The freeze manifest must include:
+
+- protocol and study-plan hashes;
+- all mechanism source hashes and annotation schema/handbook hash, including
+  the recursive static local-import closure of the study, replay, auto-eval,
+  and tutor-stub child entrypoints;
+- the complete gate thresholds;
+- 96-case corpus and private-key hashes;
+- exact world/profile/condition/turn coverage;
+- zero decision fingerprint overlap with every earlier annotation corpus;
+- non-zero observe and active structured-parity denominators.
+
+Any code, projection, handbook, protocol, threshold, or corpus change after
+freeze burns the study. Generate a fresh matrix rather than repairing the
+frozen packet.
+
+### 4. Obtain two independent full annotations
+
+Each isolated reader labels all 96 cases before either response is validated
+against the private key. They see the frozen public inquiry brief (opening text,
+public situation/question, opening evidence, and public requirements), public
+transcript context, current learner turn, learner-record counts, prior delivered
+family, current pre-gate candidate, and redacted evidence-availability counts.
+They do not see condition, gate decision, the secret, future evidence
+identities/content, the other reader, or later turns.
+
+Required fields are speech act, open-obligation source turns, obligation state,
+inquiry state, prior-commitment transition, current-candidate override, primary
+warrant basis, successor family, and a short evidence note. Completeness,
+schema, vocabulary, study ID, and frozen corpus hash must validate before
+unblinding. V3 responses use exact top-level and per-case field allowlists and
+strict scalar/array types. Unknown or extra fields—including private/source
+material supplied through an undeclared field—and type/schema violations fail
+before either response is compared with the key. The short free-text evidence
+note is structurally type-checked only; its content is not semantically
+adjudicated for private/source contamination.
+
+### 5. Score the frozen gates
+
+Retain the earlier aggregate requirements:
+
+- raw agreement >= 0.80;
+- >= 12 scored consensuses, including >= 2 positives and >= 6 negatives;
+- precision >= 0.70, recall >= 0.70, accuracy >= 0.75;
+- >= 2 successor consensuses and exact successor accuracy >= 0.70;
+- diligent false-positive rate <= 0.25;
+- live/replay agreement = 1.00.
+
+Add the mechanism requirements:
+
+- typed hard-consensus rate >= 0.75;
+- >= 12 positive, >= 24 negative, and >= 10 successor consensuses;
+- >= 8 tutor-directed result requests and >= 8 learner-proposed tests;
+- request/proposal macro-F1 >= 0.80;
+- commitment-transition accuracy >= 0.75;
+- current-candidate-override accuracy >= 0.75;
+- primary-warrant-basis accuracy >= 0.75;
+- obligation-lifecycle accuracy >= 0.80;
+- >= 8 persistence and >= 6 resolution cases;
+- proposed-test false-obligation rate <= 0.10;
+- >= 8 complete and >= 12 incomplete inquiry cases;
+- inquiry-completion precision >= 0.90 and recall >= 0.75;
+- zero closure-safety violations, including no close with licensed evidence or
+  unresolved public debt remaining;
+- zero typed structured-parity mismatches, separately supported by non-zero
+  observe and active denominators.
+
+An absent or undersized denominator fails as insufficient support. It must not
+be converted to zero error or a pass.
+
+### 6. Stop or proceed without changing the claim boundary
+
+If any execution, support, decision, mechanism, closure-safety, or parity gate
+fails, stop. Audit the failure, burn the corpus for calibration, and require a
+fresh zero-overlap study for any repair. Do not run an outcome comparison.
+
+If every gate passes, the only licensed next step is a separately predeclared
+variance-controlled outcome comparison—preferably frozen-prefix
+counterfactual replay, or replicated draws sized to estimate frontier-model
+variance. Keep decision/manipulation measures separate from downstream quality
+and learner-record outcomes. Passage would validate this automated mechanism
+within two worlds and six simulated profiles; it would not establish an
+optimal policy, a learning effect, or a human-learner claim.

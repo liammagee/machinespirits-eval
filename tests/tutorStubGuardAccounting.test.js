@@ -6,6 +6,8 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
+import { assessAdaptiveWarrantDeliveryApplication } from '../scripts/run-adaptive-warrant-baseline-study.js';
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UNSAFE_DRAFT = 'Edony struck the false shillings, so write her name in the trial-book.';
 const EXACT_DUE_SOURCE =
@@ -47,7 +49,7 @@ function readTraceEvents(traceDir) {
 
 // `boundaryPolicy: null` runs whatever the CLI's own default is, which is how
 // the paired test at the end reads the live regime rather than restating it.
-function runGuardFixture(mode, { boundaryPolicy = 'strict' } = {}) {
+function runGuardFixture(mode, { boundaryPolicy = 'strict', warrantGate = null } = {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), `tutor-stub-guard-${mode}-`));
   const fakeCodex = path.join(tmp, 'codex');
   fs.writeFileSync(
@@ -120,7 +122,7 @@ process.stdin.on('end', () => {
     '--trace-dir',
     tmp,
   ];
-  if (['tactic-repair', 'performance-advisory', 'soft-style', 'quality-only'].includes(mode)) {
+  if (['tactic-repair', 'performance-advisory', 'soft-style', 'quality-only', 'registered-fallback'].includes(mode)) {
     cliArgs.splice(cliArgs.indexOf('--no-register-selection'), 1);
     cliArgs.push(
       '--register-policy',
@@ -141,6 +143,7 @@ process.stdin.on('end', () => {
       // Strict is the opt-in from 2026-08-07; these fixtures are written
       // against the ladder it drives.
       ...(boundaryPolicy ? { TUTOR_STUB_GUARD_POLICY: boundaryPolicy } : {}),
+      ...(warrantGate ? { TUTOR_STUB_WARRANT_GATE: warrantGate } : {}),
       FAKE_CODEX_FIXTURE_MODE: mode,
     },
   });
@@ -152,6 +155,55 @@ process.stdin.on('end', () => {
   fs.rmSync(tmp, { recursive: true, force: true });
   return { events, stdout: result.stdout };
 }
+
+test('observe gate records an inert selector application beside explicit final delivery', () => {
+  const { events } = runGuardFixture('quality-only', { boundaryPolicy: null, warrantGate: 'observe' });
+  const turn = events.find((row) => row.type === 'turn_complete')?.turnRecord;
+  const application = turn?.registerSelection?.warrant_gate_application;
+  assert.equal(turn?.warrantGateDecision?.mode, 'observe');
+  assert.equal(application?.mode, 'observe');
+  assert.equal(application?.pre_gate_source_sha256, application?.post_gate_source_sha256);
+  assert.deepEqual(application?.source_changed_fields, []);
+  assert.equal(application?.action_family_override_input, null);
+  assert.equal(application?.public_obligation_directive_input, null);
+  assert.deepEqual(application?.pre_gate_source, application?.post_gate_source);
+  assert.ok(turn?.speakingResponseConfiguration);
+  assert.deepEqual(
+    turn?.tutorGuardAccounting?.finalDelivery?.deliveryConfiguration,
+    turn?.deliveredResponseConfiguration,
+  );
+  const assessment = assessAdaptiveWarrantDeliveryApplication({
+    decision: turn?.warrantGateDecision,
+    record: turn,
+  });
+  assert.equal(assessment.ok, true, JSON.stringify(assessment.mismatches));
+});
+
+test('observe gate proves the exact guard-recovery configuration delivered to public text', () => {
+  const { events } = runGuardFixture('tactic-repair', { warrantGate: 'observe' });
+  const turn = events.find((row) => row.type === 'turn_complete')?.turnRecord;
+  const assessment = assessAdaptiveWarrantDeliveryApplication({
+    decision: turn?.warrantGateDecision,
+    record: turn,
+  });
+  assert.equal(turn?.tutorGuardAccounting?.finalDelivery?.source, 'plain_recovery_candidate');
+  assert.equal(assessment.ok, true, JSON.stringify(assessment.mismatches));
+  assert.match(assessment.configuration_transition.kind, /plain_recovery/u);
+  assert.equal(assessment.configuration_transition.recovery_configuration_exact, true);
+});
+
+test('observe gate retains first-draft provenance through deterministic fallback', () => {
+  const { events } = runGuardFixture('registered-fallback', { warrantGate: 'observe' });
+  const turn = events.find((row) => row.type === 'turn_complete')?.turnRecord;
+  const assessment = assessAdaptiveWarrantDeliveryApplication({
+    decision: turn?.warrantGateDecision,
+    record: turn,
+  });
+  assert.equal(turn?.tutorGuardAccounting?.finalDelivery?.source, 'deterministic_fallback');
+  assert.ok(turn?.firstDraftContract);
+  assert.equal(assessment.ok, true, JSON.stringify(assessment.mismatches));
+  assert.match(assessment.configuration_transition.kind, /plain_recovery/u);
+});
 
 function assertExactRepairSpan(span, original, repaired) {
   assert.equal(original.slice(span.original.start, span.original.end), span.original.text);

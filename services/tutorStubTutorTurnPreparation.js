@@ -3,6 +3,8 @@
  * prompt. Ids match the A/B feature registry; blocks outside this list are
  * never gated.
  */
+import { buildTutorStubSpeakingResponseConfiguration } from './tutorStubPerformanceObligationContract.js';
+
 export const TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS = Object.freeze([
   'context_continuity',
   'evidence_window',
@@ -148,18 +150,10 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
             due_evidence: duePublicEvidence,
           },
         });
-    const speakingResponseConfiguration =
-      performanceObligationContract?.tactic_applicability?.applicable === false
-        ? {
-            ...structuredClone(responseConfiguration || {}),
-            actorial_performance: structuredClone(
-              performanceObligationContract.selection?.actorial_performance ||
-                responseConfiguration?.actorial_performance ||
-                {},
-            ),
-            speaking_transition: structuredClone(performanceObligationContract.selection?.speaking_transition || null),
-          }
-        : responseConfiguration;
+    const speakingResponseConfiguration = buildTutorStubSpeakingResponseConfiguration({
+      responseConfiguration,
+      performanceObligationContract,
+    });
     const firstDraftHumanDiscourseAdvisory = passthrough
       ? null
       : humanDiscourseTutorContext(humanDiscourseFrame, {
@@ -202,6 +196,7 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
           questionSupport: humanDiscourseFrame?.questionSupport || null,
           dialogueClosureFrame,
           performanceObligationContract,
+          publicObligationDirective: speakingResponseConfiguration?.public_obligation_directive || null,
           sourceAccessibilityPolicy: speakingResponseConfiguration?.source_accessibility_policy || 'direct_only',
           sourceAccessibilityOwner: 'post_source_sentence',
         });

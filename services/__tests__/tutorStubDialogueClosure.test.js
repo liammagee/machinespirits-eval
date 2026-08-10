@@ -5,6 +5,7 @@ import {
   advanceTutorStubDialogueClosure,
   auditTutorStubDialogueClosureResponse,
   buildTutorStubDialogueClosureFrame,
+  constrainTutorStubDialogueClosureFrameForAdaptiveWarrant,
   createTutorStubDialogueClosureLifecycle,
   deterministicTutorStubClosureResponse,
   tutorStubClosureAcknowledgement,
@@ -27,6 +28,54 @@ describe('tutor-stub dialogue closure', () => {
     assert.equal(frame.mandatory, true);
     assert.equal(frame.phase, 'grounded_closing_invitation');
     assert.equal(frame.basis, 'strict_learner_dag_grounded_and_asserted');
+  });
+
+  it('active typed completion blocks a DAG-only close while observe remains inert', () => {
+    const frame = buildTutorStubDialogueClosureFrame({
+      lifecycle: createTutorStubDialogueClosureLifecycle({ enabled: true }),
+      learnerDagModel: { assessment: { finalSecretEntailed: true, assertedSecret: true } },
+      tutorDagSnapshot: completeTutorDag(),
+    });
+    const openCompletion = {
+      status: 'open',
+      blockers: ['licensed_evidence_remains'],
+      checks: { remaining_licensed_evidence_count: 1 },
+    };
+    const observe = constrainTutorStubDialogueClosureFrameForAdaptiveWarrant(frame, {
+      mode: 'observe',
+      inquiry_completion: openCompletion,
+    });
+    const active = constrainTutorStubDialogueClosureFrameForAdaptiveWarrant(frame, {
+      mode: 'active',
+      inquiry_completion: openCompletion,
+    });
+    assert.deepEqual(observe, frame);
+    assert.equal(active.phase, 'open');
+    assert.equal(active.mandatory, false);
+    assert.equal(active.available, false);
+    assert.equal(active.constrainedBy, 'adaptive_warrant_inquiry_completion');
+  });
+
+  it('a new public obligation during final check-in reopens closure until it is reconciled', () => {
+    const lifecycle = createTutorStubDialogueClosureLifecycle({ enabled: true, allowCheckIn: true });
+    lifecycle.phase = 'awaiting_checkin';
+    lifecycle.basis = 'strict_learner_dag_grounded_and_asserted';
+    const frame = buildTutorStubDialogueClosureFrame({ lifecycle });
+    assert.equal(frame.phase, 'final_checkin_response');
+    assert.equal(frame.mandatory, true);
+
+    const constrained = constrainTutorStubDialogueClosureFrameForAdaptiveWarrant(frame, {
+      mode: 'active',
+      inquiry_completion: {
+        status: 'open',
+        blockers: ['open_public_obligation'],
+        checks: { open_public_obligation_count: 1 },
+      },
+    });
+    assert.equal(constrained.phase, 'open');
+    assert.equal(constrained.mandatory, false);
+    assert.equal(constrained.available, false);
+    assert.equal(constrained.constrainedBy, 'adaptive_warrant_inquiry_completion');
   });
 
   it('offers conversational closure when the authored DAG is public without changing strict status', () => {

@@ -4,6 +4,7 @@ import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { recordExternalApiCall } from './apiPayloadCapture.js';
+import { verifyAdaptiveWarrantStudyCliInvocation } from './adaptiveWarrantStudyIntegrity.js';
 import { normalizeTokenUsage } from './tokenUsage.js';
 
 // Model CLIs are security boundaries. Do not copy process.env into them: the
@@ -896,6 +897,7 @@ async function callCodexCli({
       if (schemaFile) args.push('--output-schema', schemaFile);
       args.push('-o', outFile, '-');
 
+      verifyAdaptiveWarrantStudyCliInvocation({ environment: process.env, executable: command });
       const child = spawnImpl(command, args, {
         stdio: ['pipe', 'pipe', 'pipe'],
         cwd: tmpDir,

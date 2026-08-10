@@ -62,6 +62,7 @@ import {
 } from '../services/tutorStubDiagnosticCollection.js';
 import { normalizeTutorStubPointOfActionArm } from '../services/tutorStubPointOfActionCoaching.js';
 import { tutorStubStrictOriginalCandidateAccepted } from '../services/tutorStubFirstDraftCampaign.js';
+import { collectTutorPrBenchmarkReachablePaths } from '../services/tutorStubPrBenchmarkHook.js';
 import { resolveTutorStubWarrantGateMode } from '../services/tutorStubWarrantGate.js';
 import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
@@ -85,6 +86,7 @@ const AUTO_EVAL_SCRIPT = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(AUTO_EVAL_SCRIPT), '..');
 const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'codex.gpt-5-mini']);
 const DEFAULT_CODEX_MODEL_REF = 'codex.gpt-5.6-luna';
+const DEFAULT_AUTO_EVAL_MODEL_CALL_BUDGET = 120;
 const argvHasOption = (name) => process.argv.slice(2).some((arg) => arg === name || arg.startsWith(`${name}=`));
 const MODEL_OVERRIDE = Boolean(process.env.TUTOR_STUB_EVAL_MODEL || argvHasOption('--model'));
 const ANALYSIS_MODEL_OVERRIDE = Boolean(
@@ -125,6 +127,9 @@ const RUN_SEED_OVERRIDE = Boolean(process.env.TUTOR_STUB_EVAL_RUN_SEED || argvHa
 const WARRANT_GATE_OVERRIDE = Boolean(
   process.env.TUTOR_STUB_EVAL_WARRANT_GATE || process.env.TUTOR_STUB_WARRANT_GATE || argvHasOption('--warrant-gate'),
 );
+const MODEL_CALL_BUDGET_OVERRIDE = Boolean(
+  process.env.TUTOR_STUB_EVAL_MODEL_CALL_BUDGET || argvHasOption('--model-call-budget'),
+);
 let activeReadOnlySourceDir = null;
 
 const { values: args } = parseArgs({
@@ -156,6 +161,10 @@ const { values: args } = parseArgs({
         process.env.TUTOR_STUB_EVAL_AUTO_LEARNER_MODEL ||
         process.env.TUTOR_STUB_AUTO_LEARNER_MODEL ||
         DEFAULT_CODEX_MODEL_REF,
+    },
+    'model-call-budget': {
+      type: 'string',
+      default: process.env.TUTOR_STUB_EVAL_MODEL_CALL_BUDGET || String(DEFAULT_AUTO_EVAL_MODEL_CALL_BUDGET),
     },
     'auto-learner-profile': {
       type: 'string',
@@ -260,6 +269,8 @@ Options:
   --learner-analysis-prompt-profile <baseline|compact_v1>
                               forwarded learner-analysis prompt profile
   --auto-learner-model <ref> automated learner model (default: codex.gpt-5.6-luna)
+  --model-call-budget <n>   finite model-call cap per child dialogue (default: 120)
+                              children run under --lab automated_eval so the cap is enforced
   --auto-learner-profile <text>
   --auto-learner-profile-id <id>
                               built-in profile when no custom text is supplied
@@ -504,6 +515,10 @@ function assertSupportedChildArgs(childArgs) {
     '--learner-record-model': flagValue(childArgs, '--learner-record-model'),
     '--auto-learner-model': flagValue(childArgs, '--auto-learner-model'),
   });
+  if (flagValue(childArgs, '--lab') !== 'automated_eval') {
+    throw new Error('auto-eval child command must use --lab automated_eval');
+  }
+  positiveInt(flagValue(childArgs, '--model-call-budget'), 'child --model-call-budget');
 }
 
 function listTraceFiles(traceDir) {
@@ -10218,6 +10233,10 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
   const registerPalette = policy === 'negative' ? 'negative' : args['register-palette'];
   const command = [
     'scripts/tutor-stub.js',
+    '--lab',
+    'automated_eval',
+    '--model-call-budget',
+    String(positiveInt(args['model-call-budget'], '--model-call-budget')),
     '--auto-learner',
     '--auto-turns',
     autoTurns,
@@ -10312,6 +10331,8 @@ function buildJobs({ policies, runs, traceDir, parallelism, interleavePolicies =
     const key = `${safeSlug(policy)}-r${runIndex}`;
     const childTraceDir = parallelism > 1 ? path.join(traceDir, 'traces', key) : traceDir;
     const logPath = path.join(traceDir, 'logs', `${key}.log`);
+    const childArgs = tutorStubArgs({ policy, runIndex, totalRuns: runs, traceDir: childTraceDir });
+    assertSupportedChildArgs(childArgs);
     jobs.push({
       ordinal: jobs.length + 1,
       policy,
@@ -10321,7 +10342,7 @@ function buildJobs({ policies, runs, traceDir, parallelism, interleavePolicies =
       traceDir: childTraceDir,
       logPath,
       warrantGateMode: resolveTutorStubWarrantGateMode(args['warrant-gate']),
-      childArgs: tutorStubArgs({ policy, runIndex, totalRuns: runs, traceDir: childTraceDir }),
+      childArgs,
     });
   }
   return jobs;
@@ -10361,6 +10382,19 @@ function buildResumePlan(summaryPath) {
   const warrantGateMode = resolveTutorStubWarrantGateMode(
     WARRANT_GATE_OVERRIDE ? args['warrant-gate'] : source.config?.warrantGateMode || args['warrant-gate'],
   );
+  const savedModelCallBudget = (source.results || [])
+    .map((result) => {
+      const command = Array.isArray(result.command) ? result.command : [];
+      const childArgs = command[0] === 'node' ? command.slice(1) : command;
+      return flagValue(childArgs, '--model-call-budget');
+    })
+    .find(Boolean);
+  const modelCallBudget = positiveInt(
+    MODEL_CALL_BUDGET_OVERRIDE
+      ? args['model-call-budget']
+      : (source.config?.modelCallBudget ?? savedModelCallBudget ?? args['model-call-budget']),
+    '--model-call-budget',
+  );
   const retainedResults = [];
   const jobs = [];
 
@@ -10376,8 +10410,10 @@ function buildResumePlan(summaryPath) {
       );
     }
     const childArgs = command[0] === 'node' ? command.slice(1) : command;
-    let adjustedChildArgs = withFlagValue(
-      childArgs,
+    let adjustedChildArgs = withFlagValue(childArgs, '--lab', 'automated_eval');
+    adjustedChildArgs = withFlagValue(adjustedChildArgs, '--model-call-budget', modelCallBudget);
+    adjustedChildArgs = withFlagValue(
+      adjustedChildArgs,
       '--model',
       MODEL_OVERRIDE ? args.model : flagValue(childArgs, '--model') || source.config?.model || args.model,
     );
@@ -10515,6 +10551,8 @@ function buildResumePlan(summaryPath) {
       traceDir,
       runSeed,
       warrantGateMode,
+      lab: 'automated_eval',
+      modelCallBudget,
       dryRun: Boolean(args['dry-run']),
       model: MODEL_OVERRIDE ? args.model : source.config?.model || args.model,
       analysisModel: ANALYSIS_MODEL_OVERRIDE
@@ -10609,21 +10647,13 @@ function buildAutoEvalEvidencePlan({ traceDir, startedAt, jobs, config, resumePl
   delete git.repoRoot;
   const tutorStub = path.join(ROOT, 'scripts', 'tutor-stub.js');
   const profileContracts = path.join(ROOT, 'scripts', 'tutor-stub-learner-profile-contracts.js');
+  // Bind the complete static local import closure of the actual child
+  // entrypoint. A hand-maintained policy list can silently omit a newly active
+  // delivery, cancellation, or persistence module while still producing a
+  // nominally sealed run.
   const policySources = [
-    tutorStub,
-    path.join(ROOT, 'services', 'tutorStubPolicySampler.js'),
-    path.join(ROOT, 'services', 'tutorStubContinuousRegister.js'),
-    path.join(ROOT, 'services', 'tutorStubPointOfActionCoaching.js'),
-    path.join(ROOT, 'services', 'engagementRegisterRegistry.js'),
-    path.join(ROOT, 'services', 'dramaticDerivation', 'fieldPlanner.js'),
-    path.join(ROOT, 'services', 'adaptiveWarrantGateCore.js'),
-    path.join(ROOT, 'services', 'adaptiveWarrantPolicy.js'),
-    path.join(ROOT, 'services', 'tutorStubPromptAudit.js'),
-    path.join(ROOT, 'services', 'tutorStubPublicLearnerAnalysis.js'),
-    path.join(ROOT, 'services', 'tutorStubWarrantGate.js'),
-    path.join(ROOT, 'services', 'tutorStubResponseConfigurationSelectionRuntime.js'),
-    path.join(ROOT, 'services', 'tutorStubTurnOrchestration.js'),
-  ];
+    ...collectTutorPrBenchmarkReachablePaths({ root: ROOT, entryPaths: ['scripts/tutor-stub.js'] }),
+  ].map((relative) => path.join(ROOT, relative));
   const worldPath = worldSourcePath(config.world);
   const plannedJobs = jobs.length
     ? jobs.map((job) => ({
@@ -10861,6 +10891,8 @@ function autoEvalConfigForState({ traceDir, configOverride = null }) {
       analysisModel: args['analysis-model'],
       learnerAnalysisPromptProfile: args['learner-analysis-prompt-profile'] || null,
       autoLearnerModel: args['auto-learner-model'],
+      lab: 'automated_eval',
+      modelCallBudget: positiveInt(args['model-call-budget'], '--model-call-budget'),
       autoLearnerProfileId: autoLearnerProfileLabel(),
       parentRunId: String(args['parent-run-id'] || '').trim() || null,
       autoLearnerProfileContract:

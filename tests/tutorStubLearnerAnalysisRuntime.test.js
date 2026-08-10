@@ -9,7 +9,10 @@ import {
   createTutorStubInterimController,
   createTutorStubInterimState,
 } from '../services/tutorStubInterimController.js';
-import { createTutorStubLearnerAnalysisRuntime } from '../services/tutorStubLearnerAnalysisRuntime.js';
+import {
+  createTutorStubLearnerAnalysisRuntime,
+  resetTutorStubWarrantGateAfterLearnerAnalysisFailure,
+} from '../services/tutorStubLearnerAnalysisRuntime.js';
 import { createTutorStubLearnerEvidenceRuntime } from '../services/tutorStubLearnerEvidenceRuntime.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -90,6 +93,18 @@ test('learner analysis runtime preserves combined-result aliases and fallback cl
     error: 'Combined learner analysis did not include a classification object.',
     latencyMs: 7,
   });
+});
+
+test('learner-analysis fallback discards an uncommitted warrant reduction before retry', () => {
+  const state = { turns: [{ turn: 1 }], warrantGate: { consumedAttemptTurn: 2 } };
+  assert.equal(resetTutorStubWarrantGateAfterLearnerAnalysisFailure(state), true);
+  assert.equal(state.warrantGate, null);
+
+  const source = fs.readFileSync(path.join(ROOT, 'services/tutorStubLearnerAnalysisRuntime.js'), 'utf8');
+  const catchStart = source.indexOf('} catch (err) {');
+  const reset = source.indexOf('resetTutorStubWarrantGateAfterLearnerAnalysisFailure(state);', catchStart);
+  const fallbackSelection = source.indexOf('normalizeResponseConfigurationSelection(null', catchStart);
+  assert.ok(catchStart >= 0 && reset > catchStart && fallbackSelection > reset);
 });
 
 test('interim controller owns disabled-terminal lifecycle and tutor context projection', () => {

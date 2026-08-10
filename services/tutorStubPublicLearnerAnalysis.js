@@ -142,7 +142,7 @@ export const EVIDENCE_USE_RUBRIC_CLAUSES = Object.freeze({
     '- a bridge is voiced when this turn names the specific public evidence relied on and says what it licenses or rules out; citing a numbered rule is not required.',
     "- judge the bridge from this turn's words alone: support present in the record but not voiced here does not count, so a bare conclusion is omits_warrant even when the record would support it.",
     '- voicing a bridge and also naming what is still unproven is links_evidence_to_rule, not omits_warrant; log the acknowledged gap under missing warrant instead.',
-    '- e.g. "I enter the verdict: Edony struck the false shillings." => omits_warrant. "It shows Edony alone cast the blank at the weir-forge crucible, though it does not show she cut the die." => links_evidence_to_rule.',
+    '- e.g. "I enter the verdict: Candidate A caused the outcome." => omits_warrant. "The public mark shows Candidate A completed stage one, though it does not show who completed stage two." => links_evidence_to_rule.',
   ]),
 });
 
