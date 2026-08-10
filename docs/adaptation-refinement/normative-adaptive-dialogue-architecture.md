@@ -498,16 +498,16 @@ Compare:
 
 Evaluate decision quality and downstream dialogue effects separately.
 
-### Implementation status — 10 August 2026
+### Implementation status — updated 11 August 2026
 
 | Phase | Current state | Boundary |
 |---|---|---|
 | 0 — semantic audit | complete | The existing world/DAG, learner board, action-family, stance, and audit surfaces have a grounded reuse/extend/new map. |
-| 1 — trace-only prototype | complete | The offline replayer emits commitments, typed divergence, warrant evidence, hold/revise verdicts, policy recommendations, realization, and available outcomes from existing traces. |
-| 2 — warrant evaluation | three calibration gates complete; successor mechanism gate ready | Typed contracts were tested on a newly generated zero-overlap 18-case corpus. Fourteen hard consensuses yielded precision 0.500, recall 0.286, accuracy 0.500, below the frozen gate. A later context audit invalidated its two `close_inquiry` rows as terminal gold; a context-complete all-turn v3 protocol with opaque blind IDs and strict response envelopes is now predeclared. |
+| 1 — trace-only prototype | complete; six-axis validation open | One shared live/offline projection emits explicit aligned or divergent conceptual, interactional, engagement, pacing, epistemic, and strategy-exhaustion rows with magnitude, persistence, interpretation, evidence, and repair-warrant state. |
+| 2 — warrant evaluation | three calibration gates complete; V4 successor mechanism gate ready | Typed contracts were tested on a newly generated zero-overlap 18-case corpus. Fourteen hard consensuses yielded precision 0.500, recall 0.286, accuracy 0.500, below the frozen gate. A later context audit invalidated its two `close_inquiry` rows as terminal gold; a context-complete all-turn V4 protocol now adds independent per-dimension divergence judgments and gates to the opaque blind mechanism protocol. |
 | 3 — figure policy | typed contracts, persistent public obligations, and terminal transitions implemented; validation open | All 13 families declare expected uptake and lifecycle transitions. A separate cross-family public-obligation ledger, typed speech acts, target-specific answer directive, and inquiry-completion object now feed the shared policy. Launch, child-seal, replay, payload, and finite-budget integrity are implemented, but this is still not a validated policy. |
 | 4 — register realization | runtime bridge complete; separate evaluation open | Active mode can override family and stance while the frontier model realizes the turn. Figure appropriateness and realization fidelity have not yet been independently scored in this study. |
-| 5 — baseline experiments | n=5 complete; causal scale-up stopped; mechanism validation next | Off/observe/active execution is valid, but the original decision study failed and the observe arm exposed model-draw variance. The next stage is a clean-commit, explicitly authorized 24-dialogue observe/active mechanism test, not a downstream outcome comparison. |
+| 5 — baseline experiments | n=5 pilot complete; five mechanism packets burned; sixth validation next | The fifth 24-dialogue run reached full sealed evidence and 192/192 structured parity but retained two delivery-audit misses. Those finite corrections and the V4 divergence instrument require a new clean packet before independent annotation; no downstream outcome comparison is licensed. |
 
 The architecture is therefore implemented far enough to test the design's
 central separation—diagnosis, warrant, repair policy, realization, and outcome—
@@ -616,9 +616,11 @@ closure. A future world-level scope schema must validate its premise set and
 terminal fact and derive the four completion checks deterministically before
 any world may activate this branch.
 
-The object also records public-safe release counts and blockers. Any unresolved
-obligation, unsupported assertion, active dropped fact, or unintegrated public
-evidence blocks closure. `dueNow=[]`, the final sampled turn, a safety cap,
+The object also records public-safe release counts and blockers. Any actionable
+open, overdue, or reactivated obligation, unsupported assertion, active dropped
+fact, or unintegrated public evidence blocks closure. An accountable deferral
+remains recorded but is nonblocking until its named public condition occurs or
+the obligation is reminded or released. `dueNow=[]`, the final sampled turn, a safety cap,
 release exhaustion by itself, or local conversational completion does not
 license it. A successful completion emits
 `decision_kind=terminal_transition` and recommends `close_inquiry`; it is not
@@ -664,7 +666,7 @@ offline shadow shares the speech-act, ledger, completion, action-contract, and
 warrant reducers and consumes delivered rather than merely proposed families.
 
 Each current decision freezes the canonical pre-gate input as
-`warrant-decision-input.v1` plus a SHA-256 digest. This makes the evidence
+`warrant-decision-input.v2` plus a SHA-256 digest. This makes the evidence
 boundary itself inspectable and gives resume, replay, and a future frozen-prefix
 branch a stable input rather than forcing reconstruction from post-delivery
 state.
@@ -707,10 +709,11 @@ answer component or a target-specific accountable deferral.
 Speculative or failed turns never commit the reducer, and reset, diagnostic
 rollback, or a public tutor-response rewrite invalidates the stale gate state.
 
-For current v4 traces, parity compares the typed structure—speech act,
+For current V5 traces, parity compares the typed structure—speech act,
 obligations, completion checks, lifecycle transition, decision kind, basis,
 policy, prior family, current candidate, and both transition booleans—not only
-the legacy warrant bit.
+the legacy warrant bit. It also compares all six divergence rows and the
+decision-time pacing signal frozen in input V2.
 
 ### Fresh all-turn mechanism validation
 
@@ -733,9 +736,11 @@ licensed.” It never exposes the secret or future evidence identity/content. It
 contains every observe turn, not a prediction-balanced sample. Its freeze binds
 protocol, source and handbook hashes, thresholds, and zero overlap with prior
 corpora; any post-freeze change burns it. Paired corpus/key rows are globally
-hash-shuffled and receive opaque identifiers. Reader responses have exact V3
+hash-shuffled and receive opaque identifiers. Reader responses have exact V4
 field/type allowlists before either response can be compared with the private
-key.
+key. Each response supplies interpretation, magnitude, persistence, and an
+evidence note for every declared divergence dimension; predictions remain
+private until both responses validate.
 
 The execution packet is likewise evidence, not a directory convention. A
 digest-bound authorization fixes the clean Git commit, recursive source and
@@ -753,7 +758,10 @@ proposal, commitment transition, current-candidate override, primary warrant
 basis, obligation persistence/resolution, inquiry completion, zero unsafe
 closures, and exact structured parity with non-zero observe and active
 denominators. Each of the three typed decision accuracies must reach 0.75.
-Insufficient support fails inconclusively. Even a full pass would
+Each divergence dimension additionally requires 0.75 reader consensus, at
+least two non-aligned hard-consensus cases, 0.70 interpretation macro-F1, 0.70
+magnitude and persistence accuracy, and 0.65 joint accuracy. Insufficient
+support fails inconclusively. Even a full pass would
 validate only the automated mechanism and would merely license a separately
 frozen variance-controlled outcome study.
 

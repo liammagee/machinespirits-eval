@@ -1,7 +1,7 @@
 const CLOSURE_SCHEMA = 'machinespirits.tutor-stub.dialogue-closure.v1';
 
 const EXPLICIT_CLOSURE_PATTERN =
-  /\b(?:case (?:is|stands)?\s*(?:closed|settled|resolved)|close(?:d|s)? (?:the |this )?(?:(?:incident|official|final) )?(?:case|book|inquiry|ledger|log|record)|(?:inquiry|ledger|log|record) (?:can now close|(?:is )?(?:now )?(?:complete|closed|settled))|this (?:case|inquiry|ledger|log|record) is (?:now )?(?:complete|closed|settled)|we can (?:end|stop|close)|that (?:completes|settles|closes) (?:the|this) (?:case|inquiry|ledger|log|record)|the verdict stands)\b/iu;
+  /\b(?:case (?:is|stands)?\s*(?:closed|settled|resolved)|close(?:d|s)? (?:the |this )?(?:(?:incident|official|final) )?(?:case|book|inquiry|ledger|log|record)|(?:case|book|inquiry|ledger|log|record)\b[^.!?]{0,80}\band close it\b|(?:inquiry|ledger|log|record) (?:can now close|(?:is )?(?:now )?(?:complete|closed|settled))|this (?:case|inquiry|ledger|log|record) is (?:now )?(?:complete|closed|settled)|we can (?:end|stop|close)|that (?:completes|settles|closes) (?:the|this) (?:case|inquiry|ledger|log|record)|the verdict stands)\b/iu;
 const ANSWER_VERDICT_PATTERN = /\b(?:culprit|guilty|struck|coined|responsible|final conclusion)\b/iu;
 const AFFIRMATIVE_VERDICT_PATTERN = /\b(?:the )?verdict(?:\s+now)?\s+(?:is|stands|has been)|\bverdict\s*:/iu;
 const NEGATED_VERDICT_PATTERN =

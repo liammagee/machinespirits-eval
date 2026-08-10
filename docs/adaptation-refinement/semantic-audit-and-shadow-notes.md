@@ -285,3 +285,40 @@ deterministic deferral continuation is shorter, making the plain realization
 visible without removing the first sentence's named availability condition.
 These changes are covered by exact saved public surfaces. The fourth run itself
 remains delivery-invalid and cannot be rescored into evidence.
+
+### 7.9 Six-dimensional normative/descriptive projection
+
+The fifth execution reached 24/24 valid children and 192/192 exact reducer
+parity, but two delivery-audit false negatives kept it invalid. Exact authored
+source prose was still counted against a direct-source host's plain stance,
+and the finite closure grammar missed a same-sentence `final record ... close
+it` realization. Source spans are now excluded from host-owned metrics whether
+or not compensation was required, and the bounded pronominal closure has an
+exact positive and open-record negative regression. The fifth packet remains
+burned.
+
+More importantly, the audit found that “typed divergence” still overstated the
+implemented object. Live decisions emitted conceptual flatness only; the
+legacy offline path added limited interactional trouble; engagement, pacing,
+epistemic, and strategy-exhaustion inputs existed elsewhere but were not one
+shared normative/descriptive projection. The new pure projection emits all six
+ordered rows on every decision with named normative/descriptive states,
+magnitude, persistence, interpretation, warrant flag, and public evidence.
+Gate V5, decision-input V2, and shadow V0.3 bind current pacing and the complete
+projection into exact live/offline replay.
+
+The corresponding V4 blind corpus exposes raw public evidence and normative
+contracts without exposing the predicted rows. Two independent readers label
+interpretation, magnitude, and persistence per dimension. The scorer reports
+per-dimension consensus, non-aligned support, macro-F1, magnitude/persistence
+accuracy, and joint accuracy. This makes the architecture's central divergence
+claim falsifiable; until a fresh corpus supplies adequate gold support and
+passes those gates, it remains an implemented instrument rather than a
+validated model of conversation.
+
+The final scorer audit also aligns terminal safety with the event-based ledger:
+a `deferred` obligation is still available to the lifecycle scorer but is not
+an unresolved closure blocker by itself. Only `open` or `overdue` gold state
+(with reactivated projected through `overdue`) defeats an otherwise valid
+close. This prevents the human instrument from reintroducing the exact
+inclusive-`open_count` confound already removed from the live projector.

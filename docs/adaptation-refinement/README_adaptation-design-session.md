@@ -45,18 +45,33 @@ vetoes a premature `close_inquiry` candidate and constrains the legacy closure
 frame; observe remains inert. This is implementation evidence, not a validated
 policy.
 
-The mechanism runner is now launch-hardened before that validation: strict
+The mechanism runner is launch-hardened for validation: strict
 digest-bound approval, clean-SHA/source/child-policy closure, sanitized pinned
 environment, wrapper-plus-native Codex CLI fingerprint, a 64-call child cap,
 sealed immutable resume/evidence collection, captured prompt-boundary canaries,
-opaque globally shuffled blind IDs, and strict V3 reader envelopes. These are
-integrity properties only; no model-backed mechanism run has yet been made.
+opaque globally shuffled blind IDs, and strict reader envelopes. These are
+integrity properties only.
+
+Five authorized mechanism packets have now been run and burned without being
+promoted to decision evidence. The fifth reached 24/24 valid sealed children,
+192/192 learner-analysis calls, and 192/192 exact structured parity, but two
+finite delivery-audit misses kept it invalid. Prospective corrections exclude
+immutable authored source text from host-owned realization metrics and accept
+one bounded same-sentence record-pronoun closure form.
+
+The central divergence layer is now explicit rather than implicit in separate
+gate inputs. Gate V5 and shadow V0.3 share a six-dimensional projection across
+conceptual, interactional, engagement, pacing, epistemic, and strategy-
+exhaustion state. The V4 blind protocol independently labels interpretation,
+magnitude, and persistence for every dimension and requires per-dimension
+consensus, support, macro-F1, component accuracy, and joint accuracy.
 
 The next stage is the all-turn mechanism-validation protocol in
 `baseline-comparison-design.md`: two worlds, six learner profiles, observe and
 active, one fresh seed per cell, and eight turns (24 dialogues). All 96 observe
-decisions will receive two blind annotations with public-safe release-
-availability context; active runs remain outside the gold corpus and supply
-matched execution plus exact typed parity. No downstream causal comparison is
-licensed unless every support, accuracy, closure-safety, and parity gate
-passes. The live gate remains experimental and off by default.
+decisions from the next fully valid packet will receive two blind annotations
+with public-safe release, contract, trajectory, audit, pacing, and epistemic
+context; active runs remain outside the gold corpus and supply matched
+execution plus exact typed parity. No downstream causal comparison is licensed
+unless every delivery, support, divergence, accuracy, closure-safety, and
+parity gate passes. The live gate remains experimental and off by default.

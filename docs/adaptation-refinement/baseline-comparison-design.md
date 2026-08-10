@@ -619,3 +619,75 @@ calls, exact non-zero observe/active structured parity, and zero delivery-
 application mismatch. Those annotations must then pass the frozen support,
 decision, lifecycle, completion, closure-safety, and successor gates before
 any outcome study begins.
+
+## Fifth authorized mechanism execution — two audit misses and burned (10 August 2026)
+
+The fifth matrix ran from clean detached commit
+`a1316a07e91dfa3bc3a1fc8438aaf213953188b2` under exact authorization digest
+`fe8ff714aba05d30cc67759abbba78366c7dc76c497981f23ed4d6f1b7cca792`.
+All 24 dialogues supplied valid sealed evidence, all 192 learner-analysis calls
+completed, and all 192 structured live/replay decisions agreed. The complete
+matrix used 611 recorded model calls, below the 1,536-call authorization cap.
+Delivery application improved to two mismatches and two issues but therefore
+still failed closed as `invalid_delivery_application`. Its V3 annotation
+packet is burned.
+
+Both failures were measurement-boundary false negatives. One deterministic
+`answer_accountably` recovery delivered its exact public-obligation target and
+valid named deferral, but an immutable authored source sentence was included
+in the host's plain-stance sentence-length calculation. The other delivered
+the selected `close_inquiry` family as “gather these public supports into the
+final record and close it at the crew level”; the closure recognizer accepted
+an explicit record noun after `close` but not a bounded same-sentence pronoun
+with that record as its antecedent. The prospective audit excludes every exact
+authored source span from host-owned realization metrics and admits only that
+bounded antecedent-plus-pronoun closure form. Exact positive and open-record
+negative controls cover both changes.
+
+## Multidimensional divergence instrument (prospective sixth packet)
+
+The fifth run also made a deeper pre-freeze gap explicit. The live gate emitted
+only conceptual flatness while the legacy offline report added a narrow
+interactional row. The public-obligation, completion, action-contract, and
+pacing objects were typed, but the architecture's normative/descriptive
+comparison itself was not independently measurable across all six declared
+dimensions.
+
+The shared live/offline projection now emits exactly one ordered decision-time
+row for `conceptual`, `interactional`, `engagement`, `pacing`, `epistemic`, and
+`strategy_exhaustion`. Every row states the normative and descriptive state,
+`none|low|moderate|high` magnitude, numeric persistence, an
+`aligned|productive|stalled|unsafe` interpretation, repair-warrant status, and
+bounded public evidence. Aligned rows are explicit, productive divergence is
+kept separate from failure, and the projection does not choose a successor
+family. Current pacing is frozen in decision-input V2; gate V5 and shadow V0.3
+share the same projection and structured parity covers the complete rows.
+
+The fresh blind corpus is therefore V4. It gives readers the transcript,
+learner-record trajectory, normative expected-uptake contract, raw prior audit
+outcomes, public pacing signal, public-safe availability, and epistemic checks,
+but keeps the six predicted rows in the private key. Readers must audit those
+counters against the public transcript and label interpretation, magnitude,
+and persistence independently for every dimension. The scorer reports, per
+dimension, consensus rate, non-aligned support, interpretation macro-F1,
+magnitude accuracy, persistence accuracy, and joint accuracy. Passage requires
+at least 0.75 hard-consensus rate, two non-aligned cases, 0.70 interpretation
+macro-F1, 0.70 magnitude and persistence accuracy, and 0.65 joint accuracy in
+each dimension. Missing support fails inconclusively rather than silently
+collapsing a dimension to “no divergence.” All prior mechanism and delivery
+gates remain in force.
+
+These corrections and the V4 instrument are prospective. They do not rescue
+the fifth execution. A sixth packet must come from a new clean commit and pass
+24/24 sealed children, 192/192 analysis coverage, exact structured parity, and
+zero delivery mismatch before its 96 observe decisions can be independently
+annotated.
+
+The final pre-freeze audit also removed one annotation-only inconsistency.
+Accountable `deferred` debt remains present in the public ledger, but it is not
+a closure blocker until its named condition occurs or it is reminded or
+released; only actionable `open`, `overdue`, or `reactivated` debt blocks
+closure. The handbook, completion description, scorer, and regression fixture
+now agree on that boundary. Current no-model verification passes 167/167 exact
+mechanism tests, 35/35 derivation worlds, 22/22 prompt/world checks, 8,444/8,444
+root tests, 137/137 tutor-core tests, and 490/490 workplan validations.

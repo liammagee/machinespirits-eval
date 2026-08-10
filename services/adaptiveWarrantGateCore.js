@@ -14,7 +14,7 @@ import { createHash } from 'node:crypto';
 import { recommendRepairPolicy } from './adaptiveWarrantPolicy.js';
 
 export const ADAPTIVE_WARRANT_CORE_SCHEMA = 'machinespirits.adaptation-refinement.warrant-core.v3';
-export const ADAPTIVE_WARRANT_DECISION_INPUT_SCHEMA = 'machinespirits.adaptation-refinement.warrant-decision-input.v1';
+export const ADAPTIVE_WARRANT_DECISION_INPUT_SCHEMA = 'machinespirits.adaptation-refinement.warrant-decision-input.v2';
 
 export const REPETITION_DEFEATER_THRESHOLD = 0.35;
 export const ACCUMULATED_TROUBLE_THRESHOLD = 2;
@@ -87,6 +87,7 @@ export function buildAdaptiveWarrantDecisionInputSnapshot({
   proposedActionFamily = null,
   dialogueClosureFrame = null,
   evidenceAvailability = null,
+  pacingSignal = null,
   publicObligationBefore = null,
   priorTurnOutcome = null,
   boundedInquiryScope = null,
@@ -106,6 +107,7 @@ export function buildAdaptiveWarrantDecisionInputSnapshot({
     pre_gate_proposed_action_family: proposedActionFamily || null,
     dialogue_closure_frame: dialogueClosureFrame,
     evidence_availability: evidenceAvailability,
+    pacing_signal: pacingSignal,
     public_obligation_before: publicObligationBefore,
     prior_turn_outcome: decisionPriorOutcome(priorTurnOutcome),
     bounded_inquiry_scope: boundedInquiryScope,

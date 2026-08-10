@@ -46,9 +46,9 @@ import { parseArgs } from 'node:util';
 import {
   classifyLearnerSignal,
   evaluateWarrant,
-  CONCEPTUAL_STALL_TURNS,
   REPETITION_DEFEATER_THRESHOLD,
 } from '../services/adaptiveWarrantGateCore.js';
+import { projectAdaptiveWarrantDivergence } from '../services/adaptiveWarrantDivergence.js';
 import { createAdaptiveWarrantActionContractTracker } from '../services/adaptiveWarrantActionContracts.js';
 import {
   assessAdaptiveWarrantInquiryCompletion,
@@ -57,7 +57,7 @@ import {
 import { createAdaptiveWarrantPublicObligationLedger } from '../services/adaptiveWarrantPublicObligationLedger.js';
 import { createTutorStubWarrantGate } from '../services/tutorStubWarrantGate.js';
 
-export const ADAPTIVE_WARRANT_SHADOW_SCHEMA = 'machinespirits.tutor-stub.adaptive-warrant-shadow.v0.2';
+export const ADAPTIVE_WARRANT_SHADOW_SCHEMA = 'machinespirits.tutor-stub.adaptive-warrant-shadow.v0.3';
 
 function readTraceLines(tracePath) {
   const raw = fs.readFileSync(tracePath, 'utf8');
@@ -312,6 +312,10 @@ function deriveStructuredSessionShadow(session, sessionIndex) {
         input?.dialogue_closure_frame ?? record.dialogueClosure?.frame ?? fact?.dialogueClosureFrame ?? null,
       evidenceAvailability:
         input?.evidence_availability ?? projectAdaptiveWarrantEvidenceAvailability(record.releasePacing, { turn }),
+      pacingSignal:
+        input && Object.prototype.hasOwnProperty.call(input, 'pacing_signal')
+          ? input.pacing_signal
+          : record.releasePacing?.signal ?? fact?.pacingSignal ?? null,
       boundedInquiryScope: input?.bounded_inquiry_scope ?? null,
       unsupportedAssertionCount: input?.unsupported_assertion_count ?? fact?.unsupportedAssertionCount ?? 0,
       activeDroppedFactCount: Number(
@@ -486,36 +490,6 @@ function deriveSessionShadow(session, sessionIndex, { includeTurnOne = false } =
       if (growth !== null) turnsSinceDagGrowth = growth > 0 ? 0 : turnsSinceDagGrowth + 1;
     }
 
-    const masked = signal.primary === 'engaged_analytic';
-
-    // Divergence rows, with the productive interpretation when masked (§9.3).
-    const divergence = [];
-    if (turnsSinceDagGrowth >= CONCEPTUAL_STALL_TURNS) {
-      divergence.push({
-        dimension: 'conceptual',
-        magnitude: turnsSinceDagGrowth >= 4 ? 'high' : 'moderate',
-        persistence: turnsSinceDagGrowth,
-        interpretation: masked ? 'productive' : 'stalled',
-        repair_warranted: !masked,
-        note: masked
-          ? 'fact record flat while the learner tests the claim — no repair'
-          : 'learner DAG record not growing',
-      });
-    }
-    const interactionalTurns = troubleTurns.filter((row) =>
-      row.defeaters.some((item) => item === 'uptake_audit_issues' || item.startsWith('repetition:')),
-    ).length;
-    if (interactionalTurns >= 1) {
-      divergence.push({
-        dimension: 'interactional',
-        magnitude: interactionalTurns >= 3 ? 'high' : 'moderate',
-        persistence: interactionalTurns,
-        interpretation: 'trouble',
-        repair_warranted: true,
-        note: 'uptake or repetition trouble inside the current strategy streak',
-      });
-    }
-
     const revised = current.selection.action_family !== prior.selection.action_family;
     const realizationChanged =
       current.selection.stance !== prior.selection.stance ||
@@ -534,6 +508,22 @@ function deriveSessionShadow(session, sessionIndex, { includeTurnOne = false } =
     // live gate uses).
     const proposedActionFamily =
       current.liveWarrantDecision?.pre_gate_proposed_action_family || current.selection.action_family;
+    const divergence = projectAdaptiveWarrantDivergence({
+      turn,
+      dagGrowth: prior.dagGrowth,
+      turnsSinceDagGrowth,
+      signal,
+      classification,
+      recentSignals,
+      troubleTurns,
+      complaintTurns,
+      deferenceSustained,
+      pacingSignal: current.pacingSignal,
+      actionContract,
+      publicObligation,
+      inquiryCompletion,
+      proposedActionFamily,
+    });
     const warrant = evaluateWarrant({
       signal,
       signalConsumed,

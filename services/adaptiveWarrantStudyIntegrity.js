@@ -690,7 +690,7 @@ export function adaptiveWarrantStudyEnvironmentContract({ cliContract = null } =
 }
 
 /**
- * Project every stable field emitted by tutorStubWarrantGate v4. Derived
+ * Project every stable field emitted by tutorStubWarrantGate v4-v5. Derived
  * replay-only presentation fields (for example `verdict` and
  * `actual_selection`) are intentionally outside this boundary.
  */

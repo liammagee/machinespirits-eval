@@ -622,3 +622,41 @@ delivery mismatch is zero. Freeze the new 96 observe cases, obtain two fresh
 independent annotations, and run the unchanged consensus/precision/recall and
 mechanism scorer. Any failed support or mechanism gate burns that corpus and
 continues to prohibit outcome comparison.
+
+## Current restart boundary after the fifth authorized run
+
+The clean `a1316a07e91dfa3bc3a1fc8438aaf213953188b2` execution under digest
+`fe8ff714aba05d30cc67759abbba78366c7dc76c497981f23ed4d6f1b7cca792`
+reached 24/24 sealed children, 192/192 analysis calls, and 192/192 exact
+structured parity. Two delivery checks still failed, so the run and its
+annotation packet are burned.
+
+The remaining sequence is:
+
+1. retain the two prospective audit corrections: exclude exact authored source
+   spans from host-owned realization metrics and recognize only a bounded same-
+   sentence record-antecedent `close it` form;
+2. freeze the new shared six-dimensional projection in gate V5, input V2, and
+   shadow V0.3, with exact live/offline parity regressions;
+3. use the V4 corpus/response/scorer protocol to measure conceptual,
+   interactional, engagement, pacing, epistemic, and strategy-exhaustion
+   interpretation, magnitude, and persistence independently;
+4. run focused, lint, world/prompt, workplan, and full hermetic verification;
+5. commit and push a clean checkpoint, generate its dry authorization request,
+   and execute a sixth 24-dialogue matrix under the standing in-scope
+   authorization; and
+6. only if execution is fully valid, obtain two isolated annotations of all 96
+   observe decisions and run the frozen scorer. Each divergence dimension must
+   have sufficient non-aligned support and pass its own accuracy gates.
+
+No downstream outcome or learning comparison is licensed until both delivery
+validity and the full typed mechanism gate pass. A zero-support “all aligned”
+dimension is an inconclusive instrument result, not a pass.
+
+Steps 1–4 are complete at the prospective sixth-run checkpoint. The final
+semantic audit also made accountable `deferred` debt nonblocking in the frozen
+handbook and closure-safety scorer, matching the live and replay projectors.
+Verification passes 167/167 exact mechanism tests, 35/35 derivation worlds,
+22/22 prompt/world checks, 8,444/8,444 root tests, 137/137 tutor-core tests,
+and 490/490 workplan validations. Step 5—clean commit, push, dry request, and
+standing-authorized execution—is now the active boundary.

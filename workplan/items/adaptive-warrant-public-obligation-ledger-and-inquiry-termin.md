@@ -183,3 +183,32 @@ suite passes 8,435/8,435 root plus 137/137 tutor-core tests. The item remains
 active pending a new pushed clean checkpoint and digest, a fresh fifth run with
 zero delivery mismatch, two independent annotations of its new 96-case packet,
 and passage of the unchanged scorer.
+
+The fifth authorized execution from clean commit
+`a1316a07e91dfa3bc3a1fc8438aaf213953188b2` reached 24/24 valid children,
+192/192 learner-analysis calls, and 192/192 exact structured parity, using 611
+recorded model calls. It remained delivery-invalid on two decisions: immutable
+authored source prose contaminated a plain host metric, and a bounded `final
+record ... close it` realization was outside the finite closure grammar. Its
+packet is burned. Exact source-exclusion and pronominal-closure controls cover
+the prospective corrections.
+
+The architecture-facing instrument is also extended before another freeze.
+One shared projection now emits all six normative/descriptive divergence axes
+on every live and replayed decision. Gate V5/input V2/shadow V0.3 preserve
+exact parity. The V4 blinded protocol independently labels and scores each
+dimension's interpretation, magnitude, and persistence, with per-dimension
+consensus, non-aligned support, macro-F1, component accuracy, and joint gates.
+The item remains active pending complete no-model verification, a pushed clean
+checkpoint, a sixth zero-delivery-mismatch execution, two independent 96-case
+annotations, and passage of both the existing mechanism gates and every new
+divergence gate.
+
+The prospective sixth-run checkpoint is now fully verified. A final
+instrument audit removed the handbook/scorer mismatch that had treated
+accountable `deferred` debt as a terminal blocker; deferred lifecycle evidence
+remains scored, while only actionable open/overdue/reactivated debt defeats
+closure. Exact verification passes 167/167 mechanism tests, 35/35 derivation
+worlds, 22/22 prompt/world checks, 8,444/8,444 root tests, 137/137 tutor-core
+tests, and 490/490 workplan validations. The next boundary is the pushed clean
+commit and sixth execution under the standing authorization.

@@ -45,14 +45,21 @@ import {
   verifyAdaptiveWarrantStudyChildEvidence,
 } from '../services/adaptiveWarrantStudyIntegrity.js';
 import { collectTutorPrBenchmarkReachablePaths } from '../services/tutorStubPrBenchmarkHook.js';
+import {
+  ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS,
+  ADAPTIVE_WARRANT_DIVERGENCE_INTERPRETATIONS,
+  ADAPTIVE_WARRANT_DIVERGENCE_MAGNITUDES,
+} from '../services/adaptiveWarrantDivergence.js';
 
 export const ADAPTIVE_WARRANT_BASELINE_STUDY_SCHEMA = 'machinespirits.adaptation-refinement.baseline-study.v1';
 export const ADAPTIVE_WARRANT_BASELINE_RESULT_SCHEMA = 'machinespirits.adaptation-refinement.baseline-study-results.v1';
-export const ADAPTIVE_WARRANT_ANNOTATION_SCHEMA = 'machinespirits.adaptation-refinement.warrant-annotation-corpus.v3';
+export const ADAPTIVE_WARRANT_ANNOTATION_SCHEMA = 'machinespirits.adaptation-refinement.warrant-annotation-corpus.v4';
 export const ADAPTIVE_WARRANT_ANNOTATION_SCORE_SCHEMA =
-  'machinespirits.adaptation-refinement.warrant-annotation-scores.v3';
+  'machinespirits.adaptation-refinement.warrant-annotation-scores.v4';
 const ADAPTIVE_WARRANT_ANNOTATION_RESPONSE_V3_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-annotation-response.v3';
+const ADAPTIVE_WARRANT_ANNOTATION_RESPONSE_V4_SCHEMA =
+  'machinespirits.adaptation-refinement.warrant-annotation-response.v4';
 export const ADAPTIVE_WARRANT_LAUNCH_AUTHORIZATION_REQUEST_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-study-launch-authorization-request.v1';
 export const ADAPTIVE_WARRANT_LAUNCH_AUTHORIZATION_SCHEMA =
@@ -108,6 +115,12 @@ export const ADAPTIVE_WARRANT_DECISION_GATE = Object.freeze({
   minimum_structured_parity_comparisons: 1,
   minimum_structured_parity_comparisons_per_mode: 1,
   maximum_structured_parity_mismatches: 0,
+  minimum_divergence_dimension_consensus_rate: 0.75,
+  minimum_divergence_nonaligned_cases_per_dimension: 2,
+  minimum_divergence_interpretation_macro_f1: 0.7,
+  minimum_divergence_magnitude_accuracy: 0.7,
+  minimum_divergence_persistence_accuracy: 0.7,
+  minimum_divergence_joint_accuracy: 0.65,
 });
 
 const ANNOTATION_ACTION_FAMILIES = Object.freeze(Object.keys(ADAPTIVE_WARRANT_ACTION_FAMILY_CONTRACTS));
@@ -163,6 +176,30 @@ const V3_ANNOTATION_CASE_FIELDS = Object.freeze([
 const V3_ANNOTATION_CASE_SCALAR_FIELDS = Object.freeze(
   V3_ANNOTATION_CASE_FIELDS.filter((field) => field !== 'open_obligation_source_turns'),
 );
+const V4_ANNOTATION_CASE_FIELDS = Object.freeze([...V3_ANNOTATION_CASE_FIELDS, 'divergence_by_dimension']);
+const V4_ANNOTATION_CASE_SCALAR_FIELDS = Object.freeze(
+  V3_ANNOTATION_CASE_SCALAR_FIELDS,
+);
+const V4_DIVERGENCE_FIELDS = Object.freeze([
+  'interpretation',
+  'magnitude',
+  'persistence',
+  'note',
+]);
+const ANNOTATION_DIVERGENCE_INTERPRETATIONS = Object.freeze([
+  ...ADAPTIVE_WARRANT_DIVERGENCE_INTERPRETATIONS,
+  'uncertain',
+]);
+const ANNOTATION_DIVERGENCE_MAGNITUDES = Object.freeze([
+  ...ADAPTIVE_WARRANT_DIVERGENCE_MAGNITUDES,
+  'uncertain',
+]);
+const ANNOTATION_DIVERGENCE_PERSISTENCE = Object.freeze([
+  'none',
+  'single_turn',
+  'sustained',
+  'uncertain',
+]);
 
 export const STUDY_CONDITIONS = Object.freeze([
   { id: 'baseline', warrantGateMode: 'off' },
@@ -943,7 +980,7 @@ export function assessAdaptiveWarrantDeliveryApplication({ decision = null, reco
   const expectedDirective = mode === 'active' ? decision.obligation_directive || null : null;
   const mismatches = [];
 
-  if (decision.schema !== 'machinespirits.tutor-stub.warrant-gate.v4') {
+  if (decision.schema !== 'machinespirits.tutor-stub.warrant-gate.v5') {
     mismatches.push('warrant_gate_decision_schema_mismatch');
   }
   const candidateOverrideRequired = Boolean(
@@ -1386,7 +1423,7 @@ function compareCanonicalWarrantDecisions(live, shadow) {
   if (!live || !shadow) return { agree: null, mismatches: [], mode: null };
   // Historical v1-v3 gate traces predate the typed ledger/completion fields;
   // preserve their old boolean comparison without claiming structured parity.
-  if (!String(live.schema || '').endsWith('.v4')) {
+  if (!/\.v(?:4|5)$/u.test(String(live.schema || ''))) {
     return {
       agree: live.revision_warranted === shadow.revision_warranted,
       mismatches: live.revision_warranted === shadow.revision_warranted ? [] : ['revision_warranted'],
@@ -1801,6 +1838,16 @@ export function buildBlindedAnnotationCorpus(
           const current = row.publicTurns.find((turn) => turn.turn === decision.turn);
           const decisionProjection = decision.gate || decision.shadow || {};
           const availability = decisionProjection.inquiry_completion?.checks || {};
+          const reducerInputs = decisionProjection.input_snapshot?.current_reducer_inputs || {};
+          const priorOutcome = decisionProjection.prior_turn_outcome || null;
+          const learnerRecordTrajectory = row.publicTurns
+            .filter((publicTurn) => publicTurn.turn <= decision.turn)
+            .map((publicTurn) => ({
+              turn: publicTurn.turn,
+              grounded_count: publicTurn.grounded_count,
+              voiced_derived_count: publicTurn.voiced_derived_count,
+              total: publicTurn.dag_total,
+            }));
           const corpusCase = {
             public_inquiry_brief: row.publicInquiryBrief || null,
             transcript_before_decision: priorTurns.map(({ turn, learner, tutor }) => ({ turn, learner, tutor })),
@@ -1812,6 +1859,7 @@ export function buildBlindedAnnotationCorpus(
                   total: current.dag_total,
                 }
               : null,
+            learner_record_trajectory: learnerRecordTrajectory,
             strategy_in_force: decision.strategy_in_force,
             prior_delivered_action_family:
               decisionProjection.prior_delivered_action_family || decision.strategy_in_force || null,
@@ -1826,6 +1874,37 @@ export function buildBlindedAnnotationCorpus(
               remaining_licensed_count: Number(availability.remaining_licensed_evidence_count || 0),
               release_scope_exhausted: availability.release_scope_exhausted === true,
             },
+            normative_action_contract: decisionProjection.action_contract?.contract || null,
+            descriptive_evidence_at_decision: {
+              dag_growth:
+                decisionProjection.dag_growth === null || decisionProjection.dag_growth === undefined
+                  ? null
+                  : Number(decisionProjection.dag_growth),
+              turns_since_dag_growth: Number(decisionProjection.turns_since_dag_growth || 0),
+              trouble_turns: structuredClone(reducerInputs.trouble_turns || []),
+              complaint_turns: structuredClone(decisionProjection.complaint_turns || []),
+              prior_tutor_outcome: priorOutcome
+                ? {
+                    turn: priorOutcome.turn,
+                    uptake_ok: priorOutcome.uptake_ok,
+                    repetition_max_similarity: priorOutcome.repetition_max_similarity,
+                    deterministic_fallback: priorOutcome.deterministic_fallback,
+                    mechanical_repair: priorOutcome.mechanical_repair,
+                    guard_outcome: priorOutcome.guard_outcome,
+                    defeaters: structuredClone(priorOutcome.defeaters || []),
+                  }
+                : null,
+              pacing_signal: structuredClone(
+                decisionProjection.input_snapshot?.pacing_signal || priorOutcome?.pacing_signal || null,
+              ),
+              epistemic_checks: {
+                strict_grounded_asserted: availability.strict_grounded_asserted === true,
+                answer_entailed_unasserted: availability.answer_entailed_unasserted === true,
+                released_evidence_integrated: availability.released_evidence_integrated !== false,
+                unsupported_assertion_count: Number(availability.unsupported_assertion_count || 0),
+                active_dropped_fact_count: Number(availability.active_dropped_fact_count || 0),
+              },
+            },
             speech_act: null,
             open_obligation_source_turns: null,
             obligation_state: null,
@@ -1835,6 +1914,12 @@ export function buildBlindedAnnotationCorpus(
             primary_warrant_basis: null,
             revision_warranted: null,
             recommended_action_family: null,
+            divergence_by_dimension: Object.fromEntries(
+              ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS.map((dimension) => [
+                dimension,
+                { interpretation: null, magnitude: null, persistence: null, note: null },
+              ]),
+            ),
             note: null,
           };
           const sampleId = `${sampleIdPrefix}-${canonicalJsonSha256({
@@ -1896,12 +1981,16 @@ export function buildBlindedAnnotationCorpus(
       study_id: studyId,
       blinded: true,
       instructions:
-        'Independently label the public speech act, any open tutor obligation and its source turn, whole-inquiry completion, whether the prior commitment should transition, whether the current proposed family needs override, the primary warrant basis, and the successor family. Use only the frozen public inquiry brief and decision-time evidence. An answerable public obligation outranks closure; whole-inquiry closure requires exhausted licensed evidence, a supported terminal learner assertion, and no open obligation. Use uncertain when those public inputs do not determine a label; never infer from hidden evidence or the eventual tutor reply.',
+        'Independently label the public speech act, obligation lifecycle, inquiry completion, commitment transition, candidate override, primary warrant basis, successor family, and all six normative/descriptive divergence dimensions. For each dimension label interpretation (aligned, productive, stalled, unsafe), magnitude (none, low, moderate, high), and persistence (none, single_turn, sustained). Use only the frozen public inquiry brief, transcript, normative action contract, and raw decision-time evidence. Audit structured counters against the public transcript; do not treat a counter or learner analysis as self-validating. Productive departure is divergence without pedagogical failure. An answerable public obligation outranks closure; closure requires exhausted licensed evidence, a supported terminal learner assertion, and no actionable open obligation. Use uncertain when public inputs do not determine a label; never infer from hidden evidence or the eventual tutor reply.',
       allowed_recommended_action_families: [...ANNOTATION_ACTION_FAMILIES, 'hold', 'uncertain'],
       allowed_speech_acts: [...ANNOTATION_SPEECH_ACTS],
       allowed_obligation_states: [...ANNOTATION_OBLIGATION_STATES],
       allowed_inquiry_states: [...ANNOTATION_INQUIRY_STATES],
       allowed_primary_warrant_bases: [...ANNOTATION_WARRANT_BASES],
+      divergence_dimensions: [...ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS],
+      allowed_divergence_interpretations: [...ANNOTATION_DIVERGENCE_INTERPRETATIONS],
+      allowed_divergence_magnitudes: [...ANNOTATION_DIVERGENCE_MAGNITUDES],
+      allowed_divergence_persistence: [...ANNOTATION_DIVERGENCE_PERSISTENCE],
       sampling: {
         cases_per_world_profile_condition_cell: includeAllDecisions ? 'all' : perCell,
         minimum_decision_turn: minimumTurn,
@@ -1943,6 +2032,7 @@ export function annotationCaseFingerprint(row) {
     transcript_before_decision: row.transcript_before_decision,
     current_learner_turn: row.current_learner_turn,
     learner_record_at_decision: row.learner_record_at_decision,
+    learner_record_trajectory: row.learner_record_trajectory,
   });
 }
 
@@ -1955,6 +2045,8 @@ function annotationProjectionFingerprint(row) {
     prior_delivered_action_family: row.prior_delivered_action_family,
     pre_gate_proposed_action_family: row.pre_gate_proposed_action_family,
     public_evidence_availability: row.public_evidence_availability,
+    normative_action_contract: row.normative_action_contract,
+    descriptive_evidence_at_decision: row.descriptive_evidence_at_decision,
   });
 }
 
@@ -2017,12 +2109,52 @@ function assertV3AnnotationResponseShape(response) {
   }
 }
 
+function assertV4AnnotationResponseShape(response) {
+  assertExactAnnotationFields(response, V3_ANNOTATION_RESPONSE_FIELDS, 'v4 annotation response');
+  for (const field of ['schema', 'study_id', 'corpus_sha256', 'annotator_id', 'annotation_run_id']) {
+    if (field in response && typeof response[field] !== 'string') {
+      throw new Error(`v4 annotation response ${field} must be a string`);
+    }
+  }
+  if (!Array.isArray(response.cases)) throw new Error('v4 annotation response cases must be an array');
+  for (const [index, row] of response.cases.entries()) {
+    const label = `v4 annotation response case ${index + 1}`;
+    assertExactAnnotationFields(row, V4_ANNOTATION_CASE_FIELDS, label);
+    for (const field of V4_ANNOTATION_CASE_SCALAR_FIELDS) {
+      if (typeof row[field] !== 'string') throw new Error(`${label} ${field} must be a string`);
+    }
+    if (!Array.isArray(row.open_obligation_source_turns)) {
+      throw new Error(`${label} open_obligation_source_turns must be an array`);
+    }
+    if (
+      row.open_obligation_source_turns.some((turn) => typeof turn !== 'number' || !Number.isInteger(turn) || turn < 1)
+    ) {
+      throw new Error(`${label} open_obligation_source_turns must contain positive integers`);
+    }
+    assertExactAnnotationFields(
+      row.divergence_by_dimension,
+      ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS,
+      `${label} divergence_by_dimension`,
+    );
+    for (const dimension of ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS) {
+      const divergence = row.divergence_by_dimension[dimension];
+      assertExactAnnotationFields(divergence, V4_DIVERGENCE_FIELDS, `${label} ${dimension} divergence`);
+      for (const field of V4_DIVERGENCE_FIELDS) {
+        if (typeof divergence[field] !== 'string') {
+          throw new Error(`${label} ${dimension} divergence ${field} must be a string`);
+        }
+      }
+    }
+  }
+}
+
 export function validateBlindedAnnotationResponse({ response, corpus, expectedCorpusSha256 = null } = {}) {
   if (
     ![
       'machinespirits.adaptation-refinement.warrant-annotation-response.v1',
       'machinespirits.adaptation-refinement.warrant-annotation-response.v2',
       'machinespirits.adaptation-refinement.warrant-annotation-response.v3',
+      'machinespirits.adaptation-refinement.warrant-annotation-response.v4',
     ].includes(response?.schema)
   ) {
     throw new Error('annotation response has an unsupported schema');
@@ -2030,16 +2162,19 @@ export function validateBlindedAnnotationResponse({ response, corpus, expectedCo
   if (!corpus?.blinded || !Array.isArray(corpus.cases)) throw new Error('annotation corpus is not a blinded corpus');
   if (
     corpus.schema === ADAPTIVE_WARRANT_ANNOTATION_SCHEMA &&
-    response.schema !== ADAPTIVE_WARRANT_ANNOTATION_RESPONSE_V3_SCHEMA
+    response.schema !== ADAPTIVE_WARRANT_ANNOTATION_RESPONSE_V4_SCHEMA
   ) {
-    throw new Error('v3 annotation corpus requires a v3 annotation response');
+    throw new Error('v4 annotation corpus requires a v4 annotation response');
   }
   if (corpus.schema === ADAPTIVE_WARRANT_ANNOTATION_SCHEMA) {
-    if (!oneLine(response.annotator_id)) throw new Error('v3 annotation response requires annotator_id');
-    if (!oneLine(response.annotation_run_id)) throw new Error('v3 annotation response requires annotation_run_id');
+    if (!oneLine(response.annotator_id)) throw new Error('v4 annotation response requires annotator_id');
+    if (!oneLine(response.annotation_run_id)) throw new Error('v4 annotation response requires annotation_run_id');
   }
   if (response.schema === ADAPTIVE_WARRANT_ANNOTATION_RESPONSE_V3_SCHEMA) {
     assertV3AnnotationResponseShape(response);
+  }
+  if (response.schema === ADAPTIVE_WARRANT_ANNOTATION_RESPONSE_V4_SCHEMA) {
+    assertV4AnnotationResponseShape(response);
   }
   if (response.study_id !== corpus.study_id) throw new Error('annotation response study_id does not match the corpus');
   if (expectedCorpusSha256 && response.corpus_sha256 !== expectedCorpusSha256) {
@@ -2054,11 +2189,12 @@ export function validateBlindedAnnotationResponse({ response, corpus, expectedCo
     throw new Error(`annotation response must label exactly ${expectedIds.length} frozen cases`);
   }
   for (const row of response.cases) {
-    const v3 = response.schema.endsWith('.v3');
-    if (!v3 && !annotationLabel(row.revision_warranted)) {
+    const mechanism = response.schema.endsWith('.v3') || response.schema.endsWith('.v4');
+    const v4 = response.schema.endsWith('.v4');
+    if (!mechanism && !annotationLabel(row.revision_warranted)) {
       throw new Error(`annotation response ${row.sample_id} has an invalid revision_warranted label`);
     }
-    if (v3) {
+    if (mechanism) {
       if (!annotationEnum(row.speech_act, ANNOTATION_SPEECH_ACTS)) {
         throw new Error(`annotation response ${row.sample_id} has an invalid speech_act`);
       }
@@ -2110,6 +2246,38 @@ export function validateBlindedAnnotationResponse({ response, corpus, expectedCo
       if (!['none', 'uncertain'].includes(basis) && ['hold', 'uncertain'].includes(family)) {
         throw new Error(`annotation response ${row.sample_id} requires an action family for a positive warrant basis`);
       }
+      if (v4) {
+        for (const dimension of ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS) {
+          const divergence = row.divergence_by_dimension?.[dimension] || {};
+          const interpretation = annotationEnum(
+            divergence.interpretation,
+            ANNOTATION_DIVERGENCE_INTERPRETATIONS,
+          );
+          const magnitude = annotationEnum(divergence.magnitude, ANNOTATION_DIVERGENCE_MAGNITUDES);
+          const persistence = annotationEnum(divergence.persistence, ANNOTATION_DIVERGENCE_PERSISTENCE);
+          if (!interpretation || !magnitude || !persistence) {
+            throw new Error(`annotation response ${row.sample_id} has an invalid ${dimension} divergence label`);
+          }
+          if (interpretation === 'aligned' && (magnitude !== 'none' || persistence !== 'none')) {
+            throw new Error(
+              `annotation response ${row.sample_id} aligned ${dimension} divergence must have none magnitude and persistence`,
+            );
+          }
+          if (interpretation === 'uncertain' && (magnitude !== 'uncertain' || persistence !== 'uncertain')) {
+            throw new Error(
+              `annotation response ${row.sample_id} uncertain ${dimension} divergence must be wholly uncertain`,
+            );
+          }
+          if (!['aligned', 'uncertain'].includes(interpretation) && magnitude === 'none') {
+            throw new Error(
+              `annotation response ${row.sample_id} non-aligned ${dimension} divergence requires non-none magnitude`,
+            );
+          }
+          if (!oneLine(divergence.note)) {
+            throw new Error(`annotation response ${row.sample_id} ${dimension} divergence requires an evidence note`);
+          }
+        }
+      }
     } else if (response.schema.endsWith('.v2')) {
       const family = annotationActionFamily(row.recommended_action_family);
       if (!family) {
@@ -2140,7 +2308,9 @@ export function validateBlindedAnnotationResponse({ response, corpus, expectedCo
         response.cases.filter(
           (row) =>
             annotationLabel(
-              response.schema.endsWith('.v3') ? row.commitment_transition_warranted : row.revision_warranted,
+              response.schema.endsWith('.v3') || response.schema.endsWith('.v4')
+                ? row.commitment_transition_warranted
+                : row.revision_warranted,
             ) === label,
         ).length,
       ]),
@@ -2161,6 +2331,33 @@ function v3WarrantLabel(row) {
 
 function hardConsensus(left, right, uncertain = 'uncertain') {
   return left && right && left === right && left !== uncertain ? left : uncertain;
+}
+
+function annotationDivergence(row, dimension) {
+  const value = row?.divergence_by_dimension?.[dimension] || {};
+  return {
+    interpretation: annotationEnum(value.interpretation, ANNOTATION_DIVERGENCE_INTERPRETATIONS),
+    magnitude: annotationEnum(value.magnitude, ANNOTATION_DIVERGENCE_MAGNITUDES),
+    persistence: annotationEnum(value.persistence, ANNOTATION_DIVERGENCE_PERSISTENCE),
+  };
+}
+
+function divergencePersistenceBand(value) {
+  const persistence = Number(value);
+  if (!Number.isFinite(persistence) || persistence < 0) return null;
+  if (persistence === 0) return 'none';
+  if (persistence === 1) return 'single_turn';
+  return 'sustained';
+}
+
+function predictedDivergence(decision, dimension) {
+  const value = (decision?.divergence || []).find((row) => row?.dimension === dimension) || null;
+  if (!value) return null;
+  return {
+    interpretation: annotationEnum(value.interpretation, ADAPTIVE_WARRANT_DIVERGENCE_INTERPRETATIONS),
+    magnitude: annotationEnum(value.magnitude, ADAPTIVE_WARRANT_DIVERGENCE_MAGNITUDES),
+    persistence: divergencePersistenceBand(value.persistence),
+  };
 }
 
 function predictedWarrantBasis(decision) {
@@ -2215,7 +2412,10 @@ function macroF1(rows, labels, consensusField, predictionField) {
 }
 
 export function scoreBlindedAnnotations({ annotatorA, annotatorB, key } = {}) {
-  const v3 = annotatorA?.schema?.endsWith('.v3') && annotatorB?.schema?.endsWith('.v3');
+  const v4 = annotatorA?.schema?.endsWith('.v4') && annotatorB?.schema?.endsWith('.v4');
+  const v3 =
+    (annotatorA?.schema?.endsWith('.v3') || annotatorA?.schema?.endsWith('.v4')) &&
+    (annotatorB?.schema?.endsWith('.v3') || annotatorB?.schema?.endsWith('.v4'));
   const firstIds = exactUniqueAnnotationSampleIds(annotatorA?.cases, 'annotator A');
   const secondIds = exactUniqueAnnotationSampleIds(annotatorB?.cases, 'annotator B');
   const keyIds = exactUniqueAnnotationSampleIds(key?.cases, 'annotation key');
@@ -2276,7 +2476,7 @@ export function scoreBlindedAnnotations({ annotatorA, annotatorB, key } = {}) {
     const obligationStateConsensus = hardConsensus(obligationStateA, obligationStateB);
     const inquiryStateConsensus = hardConsensus(inquiryStateA, inquiryStateB);
     const inquiryChecks = projection?.inquiry_completion?.checks || {};
-    const unresolvedGoldObligation = ['open', 'overdue', 'deferred'].includes(obligationStateConsensus);
+    const blockingGoldObligation = ['open', 'overdue'].includes(obligationStateConsensus);
     const licensedEvidenceRemains =
       Number(inquiryChecks.remaining_licensed_evidence_count || 0) > 0 ||
       Number(inquiryChecks.future_licensed_evidence_count || 0) > 0;
@@ -2284,6 +2484,55 @@ export function scoreBlindedAnnotations({ annotatorA, annotatorB, key } = {}) {
       (event) =>
         ['created', 'reminded'].includes(event.type) &&
         (!Number.isFinite(Number(keyRow?.turn)) || Number(event.turn) === Number(keyRow.turn)),
+    );
+    const divergenceByDimension = Object.fromEntries(
+      ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS.map((dimension) => {
+        const divergenceA = v4 ? annotationDivergence(firstRow, dimension) : {};
+        const divergenceB = v4 ? annotationDivergence(secondRow, dimension) : {};
+        const predictedDivergenceRow = v4 ? predictedDivergence(projection, dimension) : null;
+        const interpretationConsensus = hardConsensus(
+          divergenceA.interpretation,
+          divergenceB.interpretation,
+        );
+        const magnitudeConsensus = hardConsensus(divergenceA.magnitude, divergenceB.magnitude);
+        const persistenceConsensus = hardConsensus(divergenceA.persistence, divergenceB.persistence);
+        const fullyScored =
+          interpretationConsensus !== 'uncertain' &&
+          magnitudeConsensus !== 'uncertain' &&
+          persistenceConsensus !== 'uncertain' &&
+          predictedDivergenceRow !== null;
+        return [
+          dimension,
+          {
+            annotator_a_interpretation: divergenceA.interpretation || null,
+            annotator_b_interpretation: divergenceB.interpretation || null,
+            interpretation_consensus: interpretationConsensus,
+            magnitude_consensus: magnitudeConsensus,
+            persistence_consensus: persistenceConsensus,
+            predicted_interpretation: predictedDivergenceRow?.interpretation || null,
+            predicted_magnitude: predictedDivergenceRow?.magnitude || null,
+            predicted_persistence: predictedDivergenceRow?.persistence || null,
+            fully_scored: fullyScored,
+            interpretation_match:
+              interpretationConsensus !== 'uncertain' && predictedDivergenceRow
+                ? interpretationConsensus === predictedDivergenceRow.interpretation
+                : null,
+            magnitude_match:
+              magnitudeConsensus !== 'uncertain' && predictedDivergenceRow
+                ? magnitudeConsensus === predictedDivergenceRow.magnitude
+                : null,
+            persistence_match:
+              persistenceConsensus !== 'uncertain' && predictedDivergenceRow
+                ? persistenceConsensus === predictedDivergenceRow.persistence
+                : null,
+            joint_match:
+              fullyScored &&
+              interpretationConsensus === predictedDivergenceRow.interpretation &&
+              magnitudeConsensus === predictedDivergenceRow.magnitude &&
+              persistenceConsensus === predictedDivergenceRow.persistence,
+          },
+        ];
+      }),
     );
     return {
       sample_id: sampleId,
@@ -2332,9 +2581,10 @@ export function scoreBlindedAnnotations({ annotatorA, annotatorB, key } = {}) {
         projection?.policy?.family === 'close_inquiry' &&
         (projection?.inquiry_completion?.status !== 'complete' ||
           inquiryStateConsensus === 'incomplete' ||
-          unresolvedGoldObligation ||
+          blockingGoldObligation ||
           licensedEvidenceRemains),
       ),
+      divergence_by_dimension: divergenceByDimension,
       scored: consensus !== 'uncertain' && predicted !== null,
       match: consensus !== 'uncertain' && predicted !== null ? consensus === predicted : null,
       profile: keyRow?.profile || null,
@@ -2395,6 +2645,62 @@ export function scoreBlindedAnnotations({ annotatorA, annotatorB, key } = {}) {
       row.obligation_source_turns_consensus !== null &&
       row.action_family_consensus !== 'uncertain',
   );
+  const divergenceDimensionMetrics = v4
+    ? Object.fromEntries(
+        ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS.map((dimension) => {
+          const rows = cases.map((row) => row.divergence_by_dimension[dimension]);
+          const interpretationScored = rows.filter(
+            (row) => row.interpretation_consensus !== 'uncertain' && row.predicted_interpretation !== null,
+          );
+          const fullyScored = rows.filter((row) => row.fully_scored);
+          const presentInterpretations = [
+            ...new Set(interpretationScored.map((row) => row.interpretation_consensus)),
+          ];
+          const consensusRows = rows.filter(
+            (row) =>
+              row.annotator_a_interpretation !== null && row.annotator_b_interpretation !== null,
+          );
+          const hardConsensusRows = consensusRows.filter(
+            (row) => row.interpretation_consensus !== 'uncertain',
+          );
+          return [
+            dimension,
+            {
+              jointly_labeled_cases: consensusRows.length,
+              hard_consensus_cases: hardConsensusRows.length,
+              hard_consensus_rate: ratio(hardConsensusRows.length, consensusRows.length),
+              nonaligned_consensus_cases: hardConsensusRows.filter(
+                (row) => row.interpretation_consensus !== 'aligned',
+              ).length,
+              interpretation_macro_f1: presentInterpretations.length
+                ? macroF1(
+                    interpretationScored,
+                    presentInterpretations,
+                    'interpretation_consensus',
+                    'predicted_interpretation',
+                  )
+                : null,
+              interpretation_accuracy: ratio(
+                interpretationScored.filter((row) => row.interpretation_match).length,
+                interpretationScored.length,
+              ),
+              magnitude_accuracy: ratio(
+                rows.filter((row) => row.magnitude_match !== null && row.magnitude_match).length,
+                rows.filter((row) => row.magnitude_match !== null).length,
+              ),
+              persistence_accuracy: ratio(
+                rows.filter((row) => row.persistence_match !== null && row.persistence_match).length,
+                rows.filter((row) => row.persistence_match !== null).length,
+              ),
+              joint_accuracy: ratio(
+                fullyScored.filter((row) => row.joint_match).length,
+                fullyScored.length,
+              ),
+            },
+          ];
+        }),
+      )
+    : null;
   return {
     schema: ADAPTIVE_WARRANT_ANNOTATION_SCORE_SCHEMA,
     cases,
@@ -2500,6 +2806,7 @@ export function scoreBlindedAnnotations({ annotatorA, annotatorB, key } = {}) {
           )
         : null,
       closureSafetyViolations: v3 ? cases.filter((row) => row.closure_safety_violation).length : null,
+      divergenceDimensionMetrics,
     },
   };
 }
@@ -2674,6 +2981,47 @@ export function evaluateAdaptiveWarrantDecisionGate(
         'max',
       ),
     );
+    for (const dimension of metrics.divergenceDimensionMetrics ? ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS : []) {
+      const divergence = metrics.divergenceDimensionMetrics?.[dimension] || {};
+      checks.push(
+        check(
+          `divergence_${dimension}_consensus_rate`,
+          divergence.hard_consensus_rate,
+          gate.minimum_divergence_dimension_consensus_rate,
+          'min',
+        ),
+        check(
+          `divergence_${dimension}_nonaligned_cases`,
+          divergence.nonaligned_consensus_cases,
+          gate.minimum_divergence_nonaligned_cases_per_dimension,
+          'min',
+        ),
+        check(
+          `divergence_${dimension}_interpretation_macro_f1`,
+          divergence.interpretation_macro_f1,
+          gate.minimum_divergence_interpretation_macro_f1,
+          'min',
+        ),
+        check(
+          `divergence_${dimension}_magnitude_accuracy`,
+          divergence.magnitude_accuracy,
+          gate.minimum_divergence_magnitude_accuracy,
+          'min',
+        ),
+        check(
+          `divergence_${dimension}_persistence_accuracy`,
+          divergence.persistence_accuracy,
+          gate.minimum_divergence_persistence_accuracy,
+          'min',
+        ),
+        check(
+          `divergence_${dimension}_joint_accuracy`,
+          divergence.joint_accuracy,
+          gate.minimum_divergence_joint_accuracy,
+          'min',
+        ),
+      );
+    }
   }
   return {
     schema: gate.schema,
@@ -2993,9 +3341,9 @@ async function runPool(jobs, parallelism, worker, onFinish) {
 function mechanismAnnotationHandbook() {
   return `# Adaptive warrant mechanism annotation handbook
 
-This handbook is frozen with the mechanism-validation corpus. Annotate only public decision-time evidence: the public inquiry brief (opening, situation, question, opening evidence, and public rules), the transcript through the current learner turn, the learner record, the prior delivered family, the pre-gate candidate, and the supplied public evidence-availability counts. Do not infer from the eventual tutor reply, arm, profile, world, or model prediction. If those public inputs do not determine a typed state, use \`uncertain\`; the support gate must fail rather than importing hidden evidence.
+This handbook is frozen with the mechanism-validation corpus. Annotate only public decision-time evidence: the public inquiry brief (opening, situation, question, opening evidence, and public rules), the transcript through the current learner turn, the learner-record trajectory, the prior delivered family, its normative expected-uptake contract, the pre-gate candidate, prior public audit outcomes, and the supplied public evidence-availability and epistemic counts. Treat structured counters as evidence to audit against the transcript, not as self-validating labels. Do not infer from the eventual tutor reply, arm, profile, world, or private model prediction. If those public inputs do not determine a typed state, use \`uncertain\`; the support gate must fail rather than importing hidden evidence.
 
-Each response envelope must use \`${ADAPTIVE_WARRANT_ANNOTATION_RESPONSE_V3_SCHEMA}\` and name a non-empty \`annotator_id\` plus a unique \`annotation_run_id\`. The two readers must work from separate response files without seeing one another's labels or the private key; the scorer rejects reused identities before it reads that key.
+Each response envelope must use \`${ADAPTIVE_WARRANT_ANNOTATION_RESPONSE_V4_SCHEMA}\` and name a non-empty \`annotator_id\` plus a unique \`annotation_run_id\`. The two readers must work from separate response files without seeing one another's labels or the private key; the scorer rejects reused identities before it reads that key.
 
 ## Labels
 
@@ -3005,15 +3353,22 @@ Each response envelope must use \`${ADAPTIVE_WARRANT_ANNOTATION_RESPONSE_V3_SCHE
 - Commitment transition and current-candidate override: \`yes | no | uncertain\`; these are separate judgments.
 - Primary warrant basis: \`${ANNOTATION_WARRANT_BASES.join('` | `')}\`.
 - Recommended family: one declared action family, \`hold\`, or \`uncertain\`.
+- Divergence dimensions: \`${ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS.join('` | `')}\`. Supply exactly one judgment for every dimension.
+- Divergence interpretation: \`${ANNOTATION_DIVERGENCE_INTERPRETATIONS.join('` | `')}\`. \`productive\` means a real departure from the norm that is useful rather than failed; it is not \`aligned\`.
+- Divergence magnitude: \`${ANNOTATION_DIVERGENCE_MAGNITUDES.join('` | `')}\`.
+- Divergence persistence: \`${ANNOTATION_DIVERGENCE_PERSISTENCE.join('` | `')}\`. Use \`single_turn\` for one current or prior event and \`sustained\` for two or more linked turns/events.
+
+Magnitude is semantic distance, not sentiment intensity: \`low\` is one bounded non-safety departure, \`moderate\` is repeated/sustained departure or one epistemic-safety conflict, and \`high\` is four or more linked turns/events, sustained deference, a required strategy exit not taken, or multiple epistemic-safety conflicts. \`aligned\` must pair with \`none/none\`; \`uncertain\` must be uncertain on all three labels.
 
 ## Precedence and safety
 
 1. An explicit repair request or stall is an immediate repair warrant.
-2. A tutor-directed request for an available public result creates a tutor obligation; a learner proposal to run a test does not. For multiple obligations use the state precedence overdue, then open/reactivated, then deferred, then the latest resolved state, then none. An open, overdue, or deferred public obligation outranks closure and unrelated questioning.
-3. Whole-inquiry completion requires a supported terminal learner assertion, known exhausted licensed evidence, integrated released evidence, no unsupported assertion or active dropped fact, and no open or deferred public obligation. A fixed horizon or locally fluent turn is not completion.
+2. A tutor-directed request for an available public result creates a tutor obligation; a learner proposal to run a test does not. For multiple obligations use the state precedence overdue, then open/reactivated, then deferred, then the latest resolved state, then none. An actionable open, overdue, or reactivated public obligation outranks closure and unrelated questioning. An accountable deferral remains recorded but is nonblocking until its named public condition occurs or the obligation is reminded or released.
+3. Whole-inquiry completion requires a supported terminal learner assertion, known exhausted licensed evidence, integrated released evidence, no unsupported assertion or active dropped fact, and no actionable open, overdue, or reactivated public obligation. A fixed horizon or locally fluent turn is not completion.
 4. Action-contract success, defeat, or expiry is judged against the prior delivered family and its deadline.
 5. Register or accumulated trouble is considered only after the higher-priority cases above. Productive analytic resistance is not a stall.
 6. \`commitment_transition_warranted\` asks whether the prior family should change. \`current_candidate_override_required\` asks whether the concrete pre-gate candidate must change; either can differ from the other.
+7. Judge divergence before judging whether it warrants a commitment revision. Conceptual concerns learner-record progress; interactional concerns uptake, repetition, register trouble, and tutor-owned public debt; engagement concerns voluntary agency; pacing concerns publicly evidenced acceleration or deceleration from authored pace; epistemic concerns unsupported, dropped, unintegrated, or prematurely terminal claims; strategy exhaustion concerns a held family whose expected-uptake contract has been defeated, expired, or repeatedly failed.
 
 When the evidence cannot distinguish the permitted labels, use \`uncertain\` and explain the decision-time ambiguity in the note.
 `;
@@ -3371,8 +3726,8 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status }) {
         projection_schemas: mechanismValidation
           ? {
               annotation_corpus: ADAPTIVE_WARRANT_ANNOTATION_SCHEMA,
-              live_warrant_gate: 'machinespirits.tutor-stub.warrant-gate.v4',
-              decision_input: 'machinespirits.adaptation-refinement.warrant-decision-input.v1',
+              live_warrant_gate: 'machinespirits.tutor-stub.warrant-gate.v5',
+              decision_input: 'machinespirits.adaptation-refinement.warrant-decision-input.v2',
               structured_parity: 'structured_v1',
             }
           : null,
@@ -3410,7 +3765,7 @@ export function validateAdaptiveWarrantAnnotationFreeze({
   const frozenCorpus = corpus || readJson(corpusPath);
   if (frozenCorpus?.schema !== ADAPTIVE_WARRANT_ANNOTATION_SCHEMA) {
     if (requireMechanismCorpus) {
-      throw new Error('mechanism annotation scoring requires the frozen v3 corpus schema');
+      throw new Error('mechanism annotation scoring requires the frozen v4 corpus schema');
     }
     const key = readJson(keyPath);
     return {
@@ -3422,7 +3777,7 @@ export function validateAdaptiveWarrantAnnotationFreeze({
   const key = readJson(keyPath);
 
   const manifestPath = path.join(rootDir, manifestFilename);
-  if (!fs.existsSync(manifestPath)) throw new Error('v3 annotation corpus is missing its freeze manifest');
+  if (!fs.existsSync(manifestPath)) throw new Error('v4 annotation corpus is missing its freeze manifest');
   const manifest = readJson(manifestPath);
   const annotationManifest = manifestFilename === 'annotation-freeze-manifest.json';
   const allowedSchemas = annotationManifest
@@ -3452,7 +3807,7 @@ export function validateAdaptiveWarrantAnnotationFreeze({
     throw new Error('annotation freeze manifest sampling count does not match the frozen corpus');
   }
   if (key?.schema !== `${ADAPTIVE_WARRANT_ANNOTATION_SCHEMA}.key` || key.blinded !== false) {
-    throw new Error('annotation key has an invalid v3 schema or blindness marker');
+    throw new Error('annotation key has an invalid v4 schema or blindness marker');
   }
   if (key.study_id !== frozenCorpus.study_id || key.study_id !== manifest.study_id) {
     throw new Error('annotation key study_id does not match the frozen corpus');
@@ -3500,7 +3855,7 @@ export function validateAdaptiveWarrantAnnotationFreeze({
       throw new Error('annotation corpus handbook binding does not match the freeze manifest');
     }
     if (mechanismManifest && manifest.projection_schemas?.annotation_corpus !== ADAPTIVE_WARRANT_ANNOTATION_SCHEMA) {
-      throw new Error('annotation freeze projection schema does not match the v3 corpus');
+      throw new Error('annotation freeze projection schema does not match the v4 corpus');
     }
     for (const binding of manifest.zero_overlap?.excluded_corpora || []) {
       verifyBoundFile('excluded annotation corpus', binding, true);
@@ -3609,7 +3964,7 @@ export function scoreAnnotationArtifacts({
         'machinespirits.adaptation-refinement.warrant-mechanism-validation-freeze.v1');
   const mechanismCorpusRequired = requireMechanismCorpus || plannedMechanismStudy;
   if (mechanismCorpusRequired && corpus.schema !== ADAPTIVE_WARRANT_ANNOTATION_SCHEMA) {
-    throw new Error('mechanism annotation scoring requires the frozen v3 corpus schema');
+    throw new Error('mechanism annotation scoring requires the frozen v4 corpus schema');
   }
   const annotatorA = readJson(annotationAPath);
   const annotatorB = readJson(annotationBPath);

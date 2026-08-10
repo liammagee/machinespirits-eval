@@ -348,6 +348,7 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
         evidenceAvailability: projectAdaptiveWarrantEvidenceAvailability(releasePacingAtDecision, {
           turn: gateTurn,
         }),
+        pacingSignal: releasePacingAtDecision?.signal || null,
         unsupportedAssertionCount: Number(learnerDagAssessment.unsupportedAssertionCount || 0),
         activeDroppedFactCount: Number(
           tutorLearnerDag?.model?.memoryReliability?.activeDroppedCount ||

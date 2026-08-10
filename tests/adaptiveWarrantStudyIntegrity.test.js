@@ -113,7 +113,7 @@ function decisionFixture() {
     event_history: [{ type: 'created', turn: 1 }],
   };
   return {
-    schema: 'machinespirits.tutor-stub.warrant-gate.v4',
+    schema: 'machinespirits.tutor-stub.warrant-gate.v5',
     mode: 'active',
     turn: 3,
     strategy_in_force: 'stage_next_step',
@@ -146,7 +146,7 @@ function decisionFixture() {
       transition: null,
     },
     bounded_inquiry_scope: null,
-    input_snapshot: { schema: 'machinespirits.adaptation-refinement.warrant-decision-input.v1', turn: 3 },
+    input_snapshot: { schema: 'machinespirits.adaptation-refinement.warrant-decision-input.v2', turn: 3 },
     input_digest: 'b'.repeat(64),
     divergence: [{ dimension: 'interactional', repair_warranted: true }],
     decision_kind: 'ordinary_adaptation',

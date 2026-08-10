@@ -318,6 +318,27 @@ describe('tutor-stub dialogue closure', () => {
     }
   });
 
+  it('recognizes a bounded pronominal close only when the record antecedent is in the same sentence', () => {
+    const frame = buildTutorStubDialogueClosureFrame({
+      lifecycle: createTutorStubDialogueClosureLifecycle({ enabled: true }),
+      learnerDagModel: { assessment: { bottleneck: 'grounded_asserted_secret' } },
+    });
+    const closed = auditTutorStubDialogueClosureResponse({
+      frame,
+      text: 'I gather these public supports into the final record and close it at the crew level.',
+    });
+    const open = auditTutorStubDialogueClosureResponse({
+      frame,
+      text: 'I keep the final record open until the crew-level finding is supported.',
+    });
+
+    assert.equal(closed.ok, true);
+    assert.equal(closed.closesDialogue, true);
+    assert.equal(closed.verdict.closureMatch, 'record and close it');
+    assert.equal(open.ok, false);
+    assert.equal(open.verdict.explicitClosure, false);
+  });
+
   it('realizes a closure-compatible selected performance without reopening the case', () => {
     const response = deterministicTutorStubClosureResponse(
       { phase: 'grounded_closing_invitation', allowCheckIn: false },

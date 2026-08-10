@@ -28,6 +28,11 @@ import {
 } from '../services/tutorStubResponseConfigurationSelectionRuntime.js';
 import { invalidateTutorStubWarrantGateAfterPublicTutorRewrite } from '../services/tutorStubCharacterControlController.js';
 import { buildTutorStubFirstDraftContract } from '../services/tutorStubFirstDraftContract.js';
+import { renderTutorStubDueSource } from '../services/tutorStubDueSourceRenderer.js';
+import {
+  auditTutorStubLiveSourceActionAlignmentV1,
+  tutorStubLiveResponseConfigurationSurface,
+} from '../services/tutorStubLiveFirstDraftAudit.js';
 import { auditTutorStubResponseConfiguration } from '../services/tutorStubResponseConfiguration.js';
 import { reconcileTutorStubTypedActionWithWarrant } from '../services/tutorStubTurnOrchestration.js';
 import {
@@ -227,17 +232,74 @@ test('public-result debt is scoped to the directed clause instead of incidental 
 });
 
 test('delivery recognizers cover the bounded closure and precise contrast used by the study', () => {
-  const closure = auditTutorStubResponseConfiguration({
-    text: 'I close the incident record on the supported finding.',
+  for (const text of [
+    'I close the incident record on the supported finding.',
+    'I gather these public supports into the final record and close it at the crew level.',
+  ]) {
+    const closure = auditTutorStubResponseConfiguration({
+      text,
+      configuration: { action_family: 'close_inquiry', engagement_stance: 'plain' },
+    });
+    assert.equal(closure.axes.action_family.visible, true, text);
+  }
+
+  const conditional = auditTutorStubResponseConfiguration({
+    text: 'I keep the final record open until the crew-level finding is supported.',
     configuration: { action_family: 'close_inquiry', engagement_stance: 'plain' },
   });
-  assert.equal(closure.axes.action_family.visible, true);
+  assert.equal(conditional.axes.action_family.visible, false);
 
   const precise = auditTutorStubResponseConfiguration({
     text: 'The ledger supports Wrenfold’s responsibility, not a named crew member.',
     configuration: { action_family: 'answer_accountably', engagement_stance: 'precise' },
   });
   assert.equal(precise.axes.engagement_stance.visible, true);
+});
+
+test('live host stance audit excludes immutable direct-source prose without hiding the host action', () => {
+  const source = renderTutorStubDueSource({
+    premise: 'p_noon',
+    mode: 'presented_exhibit',
+    role: 'keeper of the badge log',
+    surface:
+      'The badge log has Dario in the kitchen at 12:02 — mug in hand, by his own cheerful admission, and not one bit sorry about the last two times.',
+  });
+  const text =
+    'The requested entry is not public yet; once a matching record is available, I can answer it. ' +
+    `I write that line into the badge log: ${source.text} That named public-record release is next.`;
+  const sourceAlignment = auditTutorStubLiveSourceActionAlignmentV1({
+    text,
+    firstDraftContract: {
+      evidence: {
+        sources: [source],
+        source_accessibility: { compensation_required: false },
+      },
+    },
+  });
+  assert.equal(sourceAlignment.ok, true, JSON.stringify(sourceAlignment.issues));
+
+  const hostSurface = tutorStubLiveResponseConfigurationSurface({
+    text,
+    liveSourceActionAlignmentAudit: sourceAlignment,
+  });
+  assert.equal(hostSurface.active, true);
+  assert.equal(hostSurface.reason, 'typed_live_host_axes_exclude_exact_source');
+  assert.deepEqual(hostSurface.excluded_spans.map((span) => span.kind), ['exact_source']);
+  assert.doesNotMatch(hostSurface.text, /mug in hand/iu);
+
+  const audit = auditTutorStubResponseConfiguration({
+    text: hostSurface.text,
+    configuration: {
+      engagement_stance: 'plain',
+      action_family: 'answer_accountably',
+      audience_register: 'adult_novice',
+      lexical_accessibility: 'plain',
+      scene_immersion: 'grounded',
+      actorial_part: 'record_keeper',
+    },
+  });
+  assert.equal(audit.axes.engagement_stance.visible, true);
+  assert.equal(audit.axes.action_family.visible, true);
 });
 
 test('action contract: successful challenge requires exit to stage_next_step without DAG growth', () => {

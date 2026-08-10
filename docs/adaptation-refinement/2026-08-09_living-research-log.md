@@ -876,3 +876,42 @@ A fifth execution requires a new clean committed checkpoint, dry rehearsal,
 and explicit approval of its new digest. Only a fresh 24/24 run with exact
 192/192 parity and zero delivery mismatch may release its 96 observe decisions
 to the two independent annotators and frozen scorer.
+
+## Progress Update — 11 August 2026, fifth run and explicit divergence measurement
+
+The fifth authorized matrix ran from clean detached commit
+`a1316a07e91dfa3bc3a1fc8438aaf213953188b2` under digest
+`fe8ff714aba05d30cc67759abbba78366c7dc76c497981f23ed4d6f1b7cca792`.
+All 24 children were valid, all 192 learner-analysis calls completed, and all
+192 structured live/replay comparisons agreed. The run used 611 recorded model
+calls. Two of 192 delivery checks still failed, so status remained
+`invalid_delivery_application` and the packet is burned.
+
+The two failures were finite audit misses, not displaced decisions: exact
+authored source prose was charged against a deterministic host's plain stance,
+and a clearly bounded “final record ... close it” form was outside the closure
+grammar. The prospective corrections exclude exact source spans from all
+host-owned realization measurements and admit the same-sentence record-
+antecedent pronoun form while retaining an open-record negative control.
+
+Before a sixth freeze, the instrument itself has been brought up to the design
+claim. A single deterministic live/offline projection now records conceptual,
+interactional, engagement, pacing, epistemic, and strategy-exhaustion state on
+every decision, including aligned and productive rows, quantitative magnitude
+and persistence, public evidence, and repair-warrant status. The blind V4
+protocol asks two readers to judge all six dimensions separately from the
+private predictions and scores per-dimension interpretation macro-F1,
+magnitude, persistence, joint accuracy, consensus, and non-aligned support.
+This closes a representational confound; it does not yet validate any of the
+six detectors.
+
+The last pre-freeze semantic check found and removed an annotation confound:
+the scorer and handbook still counted an accountable `deferred` obligation as
+closure-blocking even though the live completion projector correctly retained
+it as nonblocking public history. All four surfaces now use the same rule:
+`open`, `overdue`, and `reactivated` block closure; `deferred` remains recorded
+until its condition, reminder, release, satisfaction, withdrawal, or transfer.
+The exact mechanism preflight is 167/167, derivation worlds 35/35,
+prompt/world checks 22/22, root 8,444/8,444, tutor-core 137/137, and workplan
+validation 490/490. The next evidential act is therefore the sixth clean-commit
+execution, not another instrument repair.

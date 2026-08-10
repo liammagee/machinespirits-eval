@@ -27,9 +27,9 @@ import {
   classifyLearnerSignal,
   buildAdaptiveWarrantDecisionInputSnapshot,
   evaluateWarrant,
-  CONCEPTUAL_STALL_TURNS,
   REPETITION_DEFEATER_THRESHOLD,
 } from './adaptiveWarrantGateCore.js';
+import { projectAdaptiveWarrantDivergence } from './adaptiveWarrantDivergence.js';
 import { hashAdaptiveWarrantJson } from './adaptiveWarrantDeliveryContract.js';
 import {
   createAdaptiveWarrantActionContractTracker,
@@ -42,7 +42,7 @@ import {
 import { buildAdaptiveWarrantObligationDirective } from './adaptiveWarrantPolicy.js';
 import { createAdaptiveWarrantPublicObligationLedger } from './adaptiveWarrantPublicObligationLedger.js';
 
-export const TUTOR_STUB_WARRANT_GATE_SCHEMA = 'machinespirits.tutor-stub.warrant-gate.v4';
+export const TUTOR_STUB_WARRANT_GATE_SCHEMA = 'machinespirits.tutor-stub.warrant-gate.v5';
 export const TUTOR_STUB_WARRANT_GATE_OUTCOME_SCHEMA = 'machinespirits.tutor-stub.warrant-gate-outcome.v3';
 export const TUTOR_STUB_WARRANT_GATE_FINAL_AUTHORITY_AUDIT_SCHEMA =
   'machinespirits.tutor-stub.warrant-gate-final-authority-audit.v1';
@@ -307,6 +307,7 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
       proposedActionFamily = null,
       dialogueClosureFrame = null,
       evidenceAvailability = null,
+      pacingSignal = null,
       boundedInquiryScope = null,
       unsupportedAssertionCount = 0,
       activeDroppedFactCount = 0,
@@ -376,17 +377,6 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
       const deferenceSustained =
         recentSignals.length === 3 && recentSignals.every((s) => s.labels.includes('low_agency_deferral'));
 
-      const masked = signal.primary === 'engaged_analytic';
-      const divergence = [];
-      if (turnsSinceDagGrowth >= CONCEPTUAL_STALL_TURNS) {
-        divergence.push({
-          dimension: 'conceptual',
-          magnitude: turnsSinceDagGrowth >= 4 ? 'high' : 'moderate',
-          persistence: turnsSinceDagGrowth,
-          interpretation: masked ? 'productive' : 'stalled',
-          repair_warranted: !masked,
-        });
-      }
       const actionContract = actionContracts.assess({
         turn,
         actionFamily: strategyInForce,
@@ -396,6 +386,22 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         dagGrowth,
       });
       if (actionContract?.transition?.discharge_prior_trouble) troubleTurns = [];
+      const divergence = projectAdaptiveWarrantDivergence({
+        turn,
+        dagGrowth,
+        turnsSinceDagGrowth,
+        signal,
+        classification,
+        recentSignals,
+        troubleTurns,
+        complaintTurns,
+        deferenceSustained,
+        pacingSignal,
+        actionContract,
+        publicObligation,
+        inquiryCompletion,
+        proposedActionFamily,
+      });
       const decisionInput = buildAdaptiveWarrantDecisionInputSnapshot({
         turn,
         learnerText,
@@ -405,6 +411,7 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         proposedActionFamily,
         dialogueClosureFrame,
         evidenceAvailability,
+        pacingSignal,
         publicObligationBefore,
         priorTurnOutcome,
         boundedInquiryScope: boundedInquiryScopeAtDecision,

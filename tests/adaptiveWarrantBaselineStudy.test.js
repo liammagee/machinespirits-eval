@@ -51,6 +51,21 @@ function fileDigest(filePath) {
   return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
 }
 
+function alignedDivergenceLabels(overrides = {}) {
+  return Object.fromEntries(
+    ['conceptual', 'interactional', 'engagement', 'pacing', 'epistemic', 'strategy_exhaustion'].map((dimension) => [
+      dimension,
+      {
+        interpretation: 'aligned',
+        magnitude: 'none',
+        persistence: 'none',
+        note: `The public ${dimension} evidence is aligned at this decision.`,
+        ...(overrides[dimension] || {}),
+      },
+    ]),
+  );
+}
+
 function resultRow({
   profile,
   condition,
@@ -625,7 +640,7 @@ test('delivery application proves observe inertia and active final-authority del
     acceptable_outcomes: ['bounded_public_answer', 'named_unavailability_with_concrete_next_step'],
   };
   const observeDecision = {
-    schema: 'machinespirits.tutor-stub.warrant-gate.v4',
+    schema: 'machinespirits.tutor-stub.warrant-gate.v5',
     mode: 'observe',
     revision_warranted: false,
     current_candidate_override_required: false,
@@ -732,7 +747,7 @@ test('delivery application proves observe inertia and active final-authority del
   assert.ok(observedIntervention.mismatches.includes('selector_selected_action_family_mismatch'));
 
   const activeDecision = {
-    schema: 'machinespirits.tutor-stub.warrant-gate.v4',
+    schema: 'machinespirits.tutor-stub.warrant-gate.v5',
     mode: 'active',
     revision_warranted: true,
     current_candidate_override_required: true,
@@ -1311,6 +1326,7 @@ test('structured offline replay reconstructs turn one and exact input/ledger par
           proposedActionFamily,
           dialogueClosureFrame,
           evidenceAvailability: projectAdaptiveWarrantEvidenceAvailability(releasePacing, { turn }),
+          pacingSignal: releasePacing.signal,
           unsupportedAssertionCount: 0,
           activeDroppedFactCount: 0,
           releasedEvidenceIntegrated: true,
@@ -1383,6 +1399,17 @@ test('structured offline replay reconstructs turn one and exact input/ledger par
       assert.deepEqual(
         offline.map((decision) => decision.public_obligation_before),
         liveDecisions.map((decision) => decision.public_obligation_before),
+      );
+      assert.deepEqual(
+        offline.map((decision) => decision.divergence),
+        liveDecisions.map((decision) => decision.divergence),
+      );
+      assert.ok(
+        offline.every(
+          (decision) =>
+            decision.divergence.length === 6 &&
+            decision.input_snapshot.schema === 'machinespirits.adaptation-refinement.warrant-decision-input.v2',
+        ),
       );
       for (const decisions of [liveDecisions, offline]) {
         assert.equal(decisions[1].public_obligation.blocking_obligation, null);
@@ -1598,7 +1625,7 @@ test('mechanism corpus freezes all 96 observe decisions and excludes active pred
           outputFilename: 'scores.json',
           evaluationBoundary: 'mechanism-schema-downgrade-regression',
         }),
-      /requires the frozen v3 corpus schema/u,
+      /requires the frozen v4 corpus schema/u,
     );
     fs.writeFileSync(corpusPath, frozenCorpusText);
 
@@ -1764,7 +1791,7 @@ test('blind annotation validation fails closed before the private key is needed'
   );
 });
 
-test('v3 corpus rejects schema downgrade and requires independent response identities before key access', () => {
+test('v4 corpus rejects schema downgrade and requires independent response identities before key access', () => {
   const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), 'warrant-independent-annotations-'));
   try {
     const corpusPath = path.join(rootDir, 'annotation-sample.blinded.json');
@@ -1786,10 +1813,11 @@ test('v3 corpus rejects schema downgrade and requires independent response ident
       current_candidate_override_required: 'no',
       primary_warrant_basis: 'none',
       recommended_action_family: 'hold',
+      divergence_by_dimension: alignedDivergenceLabels(),
       note: 'The public record does not warrant a transition.',
     };
     const response = {
-      schema: 'machinespirits.adaptation-refinement.warrant-annotation-response.v3',
+      schema: 'machinespirits.adaptation-refinement.warrant-annotation-response.v4',
       study_id: corpus.study_id,
       corpus_sha256: corpusSha256,
       annotator_id: 'reader-a',
@@ -1811,7 +1839,7 @@ test('v3 corpus rejects schema downgrade and requires independent response ident
     };
     assert.throws(
       () => validateBlindedAnnotationResponse({ response: downgraded, corpus, expectedCorpusSha256: corpusSha256 }),
-      /requires a v3 annotation response/u,
+      /requires a v4 annotation response/u,
     );
     assert.throws(
       () =>
@@ -1874,10 +1902,10 @@ test('v3 corpus rejects schema downgrade and requires independent response ident
   }
 });
 
-test('v3 annotation validation rejects unknown contamination fields and non-typed values', () => {
+test('v4 annotation validation rejects contamination, non-typed values, and inconsistent divergence labels', () => {
   const corpus = {
     schema: ADAPTIVE_WARRANT_ANNOTATION_SCHEMA,
-    study_id: 'strict-v3-shape',
+    study_id: 'strict-v4-shape',
     blinded: true,
     cases: [{ sample_id: 'case-opaque', current_learner_turn: { turn: 2 } }],
   };
@@ -1891,12 +1919,13 @@ test('v3 annotation validation rejects unknown contamination fields and non-type
     current_candidate_override_required: 'no',
     primary_warrant_basis: 'none',
     recommended_action_family: 'hold',
+    divergence_by_dimension: alignedDivergenceLabels(),
     note: 'Only public decision-time evidence was used.',
   };
   const response = {
-    schema: 'machinespirits.adaptation-refinement.warrant-annotation-response.v3',
+    schema: 'machinespirits.adaptation-refinement.warrant-annotation-response.v4',
     study_id: corpus.study_id,
-    corpus_sha256: 'frozen-v3-shape',
+    corpus_sha256: 'frozen-v4-shape',
     annotator_id: 'reader-a',
     annotation_run_id: 'run-a',
     cases: [row],
@@ -1953,6 +1982,25 @@ test('v3 annotation validation rejects unknown contamination fields and non-type
         expectedCorpusSha256: response.corpus_sha256,
       }),
     /open_obligation_source_turns must contain positive integers/u,
+  );
+  assert.throws(
+    () =>
+      validateBlindedAnnotationResponse({
+        response: {
+          ...response,
+          cases: [
+            {
+              ...row,
+              divergence_by_dimension: alignedDivergenceLabels({
+                conceptual: { interpretation: 'stalled', magnitude: 'none', persistence: 'sustained' },
+              }),
+            },
+          ],
+        },
+        corpus,
+        expectedCorpusSha256: response.corpus_sha256,
+      }),
+    /non-aligned conceptual divergence requires non-none magnitude/u,
   );
 });
 
@@ -2153,6 +2201,92 @@ test('v3 mechanism annotations validate typed states and score ledger, closure, 
   assert.equal(score.metrics.candidateOverrideAccuracy, 0.75);
 });
 
+test('v4 scorer measures interpretation, magnitude, persistence, and joint divergence on every DAG layer', () => {
+  const corpus = {
+    schema: ADAPTIVE_WARRANT_ANNOTATION_SCHEMA,
+    study_id: 'multidimensional-divergence',
+    blinded: true,
+    cases: [
+      { sample_id: 'aligned', current_learner_turn: { turn: 2 } },
+      { sample_id: 'divergent', current_learner_turn: { turn: 4 } },
+    ],
+  };
+  const divergent = alignedDivergenceLabels({
+    conceptual: { interpretation: 'productive', magnitude: 'moderate', persistence: 'sustained' },
+    interactional: { interpretation: 'stalled', magnitude: 'moderate', persistence: 'sustained' },
+    engagement: { interpretation: 'stalled', magnitude: 'high', persistence: 'sustained' },
+    pacing: { interpretation: 'productive', magnitude: 'low', persistence: 'single_turn' },
+    epistemic: { interpretation: 'unsafe', magnitude: 'moderate', persistence: 'single_turn' },
+    strategy_exhaustion: { interpretation: 'stalled', magnitude: 'moderate', persistence: 'sustained' },
+  });
+  const mechanismRow = (sampleId, divergence) => ({
+    sample_id: sampleId,
+    speech_act: 'other',
+    open_obligation_source_turns: [],
+    obligation_state: 'none',
+    inquiry_state: 'incomplete',
+    commitment_transition_warranted: 'no',
+    current_candidate_override_required: 'no',
+    primary_warrant_basis: 'none',
+    recommended_action_family: 'hold',
+    divergence_by_dimension: divergence,
+    note: 'The public decision-time evidence supports these typed labels.',
+  });
+  const response = {
+    schema: 'machinespirits.adaptation-refinement.warrant-annotation-response.v4',
+    study_id: corpus.study_id,
+    corpus_sha256: 'frozen-v4',
+    annotator_id: 'reader-a',
+    annotation_run_id: 'run-a',
+    cases: [mechanismRow('aligned', alignedDivergenceLabels()), mechanismRow('divergent', divergent)],
+  };
+  assert.equal(validateBlindedAnnotationResponse({ response, corpus, expectedCorpusSha256: 'frozen-v4' }).ok, true);
+  const numericPersistence = { none: 0, single_turn: 1, sustained: 2 };
+  const projection = (labels) => ({
+    revision_warranted: false,
+    commitment_transition_warranted: false,
+    current_candidate_override_required: false,
+    warrant_basis: 'none',
+    policy: null,
+    public_obligation: { speech_act: { kind: 'other' }, obligations: [], blocking_obligation: null },
+    inquiry_completion: { status: 'open', checks: {} },
+    divergence: Object.entries(labels).map(([dimension, value]) => ({
+      dimension,
+      interpretation: value.interpretation,
+      magnitude: value.magnitude,
+      persistence: numericPersistence[value.persistence],
+    })),
+  });
+  const key = {
+    cases: [
+      { sample_id: 'aligned', shadow: projection(alignedDivergenceLabels()) },
+      { sample_id: 'divergent', shadow: projection(divergent) },
+    ],
+  };
+  const responseB = { ...response, annotator_id: 'reader-b', annotation_run_id: 'run-b' };
+  const score = scoreBlindedAnnotations({ annotatorA: response, annotatorB: responseB, key });
+  for (const dimension of Object.keys(divergent)) {
+    const metrics = score.metrics.divergenceDimensionMetrics[dimension];
+    assert.equal(metrics.hard_consensus_rate, 1);
+    assert.equal(metrics.nonaligned_consensus_cases, 1);
+    assert.equal(metrics.interpretation_macro_f1, 1);
+    assert.equal(metrics.magnitude_accuracy, 1);
+    assert.equal(metrics.persistence_accuracy, 1);
+    assert.equal(metrics.joint_accuracy, 1);
+  }
+  const gate = evaluateAdaptiveWarrantDecisionGate(score, {
+    liveShadowAgreement: 1,
+    structuredParityComparisons: 2,
+    structuredParityComparisonsByMode: { observe: 1, active: 1 },
+    structuredParityMismatches: 0,
+    requireMechanismMetrics: true,
+  });
+  assert.equal(
+    gate.checks.find((row) => row.id === 'divergence_conceptual_nonaligned_cases').passed,
+    false,
+  );
+});
+
 test('obligation lifecycle exactness rejects the wrong unresolved source turn even when state matches', () => {
   const row = {
     sample_id: 'open-source-turn',
@@ -2302,6 +2436,48 @@ test('closure safety uses gold incomplete inquiry and unresolved obligation even
   const score = scoreBlindedAnnotations({ annotatorA: response, annotatorB: response, key });
   assert.equal(score.cases[0].predicted_inquiry_state, 'complete');
   assert.equal(score.metrics.closureSafetyViolations, 1);
+});
+
+test('closure safety keeps an accountable deferred obligation recorded but nonblocking', () => {
+  const row = {
+    sample_id: 'safe-deferred-close',
+    speech_act: 'other',
+    open_obligation_source_turns: [1],
+    obligation_state: 'deferred',
+    inquiry_state: 'complete',
+    commitment_transition_warranted: 'yes',
+    current_candidate_override_required: 'no',
+    primary_warrant_basis: 'inquiry_completion',
+    recommended_action_family: 'close_inquiry',
+    note: 'The unavailable result has a concrete future condition and does not block terminal closure.',
+  };
+  const response = {
+    schema: 'machinespirits.adaptation-refinement.warrant-annotation-response.v3',
+    cases: [row],
+  };
+  const key = {
+    cases: [
+      {
+        sample_id: row.sample_id,
+        turn: 2,
+        shadow: {
+          revision_warranted: true,
+          commitment_transition_warranted: true,
+          current_candidate_override_required: false,
+          warrant_basis: 'inquiry_complete:strict_grounded_asserted',
+          policy: { family: 'close_inquiry' },
+          public_obligation: {
+            speech_act: { kind: 'other' },
+            obligations: [{ id: 'public-obligation-001', status: 'deferred', created_turn: 1 }],
+          },
+          inquiry_completion: { status: 'complete', checks: { remaining_licensed_evidence_count: 0 } },
+        },
+      },
+    ],
+  };
+  const score = scoreBlindedAnnotations({ annotatorA: response, annotatorB: response, key });
+  assert.equal(score.cases[0].predicted_obligation_state, 'deferred');
+  assert.equal(score.metrics.closureSafetyViolations, 0);
 });
 
 test('proposed-test false-obligation denominator survives lifecycle disagreement', () => {
