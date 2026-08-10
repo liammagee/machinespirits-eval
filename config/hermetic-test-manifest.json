@@ -372,6 +372,7 @@
         "tests/poeticsAdminAuth.test.js",
         "tests/poeticsArcImagePrompts.test.js",
         "tests/poeticsConsensus.test.js",
+        "tests/poeticsDerivationPresentation.test.js",
         "tests/poeticsFormDestructionControl.test.js",
         "tests/poeticsIngest.test.js",
         "tests/poeticsJobRunner.test.js",
