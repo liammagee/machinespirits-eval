@@ -1943,3 +1943,11 @@ Log:
   roughly 1,004-line, complexity-2 renderer is the remaining R6 presentation
   boundary named by the programme plan and is safer than moving the
   complexity-114 training-data projector before a direct data-shape contract.
+- 2026-08-10 — Completed stacked child 130 locally. The extracted
+  visualization-report owner preserves the exact empty and populated replay
+  fragments, reduces `scripts/run-tutor-stub-auto-eval.js` from 8,257 to 7,136
+  lines, and has maximum complexity 5. Direct, focused, complete hermetic,
+  tutor-core, fourteen-group risk coverage, and structural gates pass. After
+  PR #632 and this child merge, refresh R6 evidence before choosing between a
+  separately characterized trace/training projection and the poetics-browser
+  domain/presentation split.

@@ -496,6 +496,10 @@ test('report regeneration persists DAG dropout metrics from JSONL-safe nested tu
 
 test('individual tutor-stub reports expose progressive summaries and accessible replay tabs', () => {
   const source = fs.readFileSync(path.join(ROOT, 'scripts', 'run-tutor-stub-auto-eval.js'), 'utf8');
+  const visualizationSource = fs.readFileSync(
+    path.join(ROOT, 'services', 'tutorStubAutoEvalVisualizationReport.js'),
+    'utf8',
+  );
   assert.match(source, /class="read-first-cards"/);
   assert.match(source, /<h2>Adaptation Verdict<\/h2>/);
   assert.match(source, /machinespirits\.tutor-stub\.adaptation-evidence\.v1/);
@@ -509,8 +513,9 @@ test('individual tutor-stub reports expose progressive summaries and accessible 
   assert.doesNotMatch(source, /Full policy ranking and secondary metrics/);
   assert.doesNotMatch(source, /strongest current signal/);
   assert.match(source, /Evidence dimensions and baseline differences/);
-  assert.match(source, /<details class="viz-sidebar"/);
-  assert.match(source, /role="tab" aria-selected="true" aria-controls="tutor-stub-viz-canvas"/);
-  assert.match(source, /button\.setAttribute\('aria-selected'/);
+  assert.match(source, /tutorStubAutoEvalVisualizationReport\.js/);
+  assert.match(visualizationSource, /<details class="viz-sidebar"/);
+  assert.match(visualizationSource, /role="tab" aria-selected="true" aria-controls="tutor-stub-viz-canvas"/);
+  assert.match(visualizationSource, /button\.setAttribute\('aria-selected'/);
   assert.match(source, /\['profile gate', scope\.discriminationMarkdownHref\]/);
 });

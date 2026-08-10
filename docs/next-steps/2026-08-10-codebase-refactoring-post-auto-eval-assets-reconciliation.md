@@ -100,3 +100,35 @@ between a separately characterized trace/training projection and the poetics
 browser's domain-router/presentation split. Keep `llmRoles.js` paused until a
 child can name a state transition rather than merely relocate its
 complexity-493 closure.
+
+## Accepted-macro outcome
+
+Child 130 is complete locally. The animated replay guide, payload projection,
+HTML fragment, shared report-markup helpers, and inline browser runtime now
+live in `services/tutorStubAutoEvalVisualizationReport.js`. The new owner is
+1,130 lines with maximum complexity 5, while
+`scripts/run-tutor-stub-auto-eval.js` fell from 8,257 to 7,136 lines. Trace and
+training projection, report/index shells, filesystem writes, CLI routing,
+generation, resume, evidence transactions, and summary persistence remain in
+the executable.
+
+Pre/post fragment output is byte-identical:
+
+- empty state: 83 bytes,
+  `742b174eb670dba7393b4bb4d66992145e3ed7da0285f1407230cae00ae9baf0`;
+- two-policy, three-frame state: 51,443 bytes,
+  `ca2e986a42d00727464e0c8f7ec9f87a1419475b556afbf028be62970936da37`.
+
+Verification passes:
+
+- 4/4 direct renderer assertions and 100/100 focused reporting assertions;
+- 100% line, branch, and function coverage for the new owner;
+- clean isolated root shards at 4,666/4,666 and 3,704/3,704, zero skips;
+- 137/137 tutor-core tests and all fourteen risk-coverage groups;
+- source-only workplan, formatting, lint, synchronized manifest, diff, and
+  zero cycles across 576 files.
+
+The first sandboxed root-shard run reproduced expected loopback/PTY permission
+failures; both shards passed with the required isolated localhost permissions.
+No model calls, production artifact writes, or generated workplan-view changes
+occurred.
