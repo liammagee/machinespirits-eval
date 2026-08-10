@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 3 Aug – 10 Aug 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-08-10 window=(2026-08-03,2026-08-10] arxiv=2608.04053,2608.04458,2608.05108,2608.04148 generator=research-roundup-routine/claude-sonnet-5 -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">3 Aug – 10 Aug 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  A 7-day window. Four qualifying papers, all in agent-architecture territory broadly read: one on
+  prompt engineering (1), two on agent architecture (2), and one on dramaturgy/role-play (1). No
+  qualifying ontology or rhetoric paper turned up in this window despite targeted searches — reported
+  as-is rather than padded. Flags: <span class="flag">UNBLOCK</span> = could directly accelerate
+  current work; <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Prompt Engineering</h2>
+
+<div class="paper hot">
+  <h3>
+    AgentAntibody: An Adaptive Immune System for Defending LLM Agents against Prompt Injection
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Shihao Weng, Yang Feng, Xiaofei Xie, Jiongchi Yu ·
+    arXiv 2608.04053 · August 4, 2026 ·
+    <a href="https://arxiv.org/abs/2608.04053">https://arxiv.org/abs/2608.04053</a>
+  </div>
+  <p>
+    Notes that most prompt-injection defenses treat each task as a self-contained problem and forget
+    what they learned once it's done, even though user requests are often underspecified — the agent
+    doesn't fully know what behavior the user would reject until it happens once. AgentAntibody keeps
+    a persistent library of "antibodies," each one an evolving record of the user's security boundary
+    built from past encounters, and checks new requests against that library at runtime rather than
+    starting cold every time.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    A close structural cousin of cell 21's dynamic prompt rewriting with the Writing Pad — both keep
+    a persistent, cross-turn text artifact that accumulates what the agent has learned rather than
+    treating each turn as stateless. AgentAntibody's update rule (add a new antibody on each novel
+    threat, reuse a matching one otherwise) is a concrete design to check the Writing Pad against: does
+    it accumulate and compact the way an immune memory does, or does it overwrite? The same online,
+    per-encounter learning pattern is also a candidate lens for the trap-scenario suite (cells
+    110-125), where the adaptive tutor currently has no persistent memory of which traps a given
+    learner has already tried across turns.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture</h2>
+
+<div class="paper">
+  <h3>
+    Architectural Implications of Agentic AI Workflows
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Jirong Yang, Peizhe Liu, Chaojie Zhang, Jovan Stojkovic ·
+    arXiv 2608.04458 · August 5, 2026 ·
+    <a href="https://arxiv.org/abs/2608.04458">https://arxiv.org/abs/2608.04458</a>
+  </div>
+  <p>
+    The first architectural characterization of agentic AI workloads, combining a production study at
+    Microsoft Azure with a controlled study of open-source frameworks. Finds that a single agent
+    request fragments into a workflow of LLM calls, tool invocations, and orchestration decisions that
+    keep crossing the CPU-GPU boundary, so the CPU — running orchestration and tools, not the model —
+    sits on the critical path, and demand stays low with sudden spikes rather than steady load. They
+    prototype a server, Agora, that harvests idle CPU cores for other work while protecting agent
+    tail latency against those spikes.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Datacenter-level, not pedagogy-level, so background rather than actionable. Still a useful frame
+    for the eval harness's own runtime cost: each ego-superego turn in `evaluationRunner.js` is exactly
+    the fragmented LLM-call-plus-orchestration pattern the paper characterizes, and its finding that
+    orchestration (not model inference) is the bottleneck matches informal experience running large
+    parallel batches through `eval-cli.js run --parallelism N` — worth a look next time cost or
+    latency tuning for a big multi-cell run comes up (`scripts/test-latency.js`,
+    `services/adaptiveTutor/budgetTracker.js`).
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Agent Against Agent: An Agentic System for Automatic Prompt Injection Red Teaming
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Yanting Wang, Chenlong Yin, Runpeng Geng, Jinyuan Jia ·
+    arXiv 2608.05108 · August 5, 2026 ·
+    <a href="https://arxiv.org/abs/2608.05108">https://arxiv.org/abs/2608.05108</a>
+  </div>
+  <p>
+    PIMiner is an attacker agent that trains on a sequence of (dataset, target-model) pairs and builds
+    a strategy library from scratch, rather than a single reinforcement-learned attacker that
+    generalizes poorly to unseen targets. At test time the learned library transfers directly to a new
+    target LLM with no retraining, needing only about ten queries per test sample.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Background only — this is adversarial security tooling, not pedagogy. But the shape (one agent
+    repeatedly probing another and distilling a transferable strategy library from the exchanges) is
+    structurally close to the divergent-superego cells (22-33), where a `dialectical_suspicious`
+    superego repeatedly probes the ego's response. Worth a skim if `services/dialogueTraceAnalyzer.js`
+    ever needs a model for turning per-run superego critiques into a reusable, cross-run strategy set
+    rather than scoring each run's deliberation independently.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Dramaturgy / Role-Play</h2>
+
+<div class="paper hot">
+  <h3>
+    AgentForge: An Immersive Role-Playing Platform for Learning Agentic Software Engineering
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Zihan Fang, Yueke Zhang, Yu Huang ·
+    arXiv 2608.04148 · August 4, 2026 ·
+    <a href="https://arxiv.org/abs/2608.04148">https://arxiv.org/abs/2608.04148</a>
+  </div>
+  <p>
+    Points out that agentic AI now coordinates planning, implementation, review, and testing in
+    software work but gives novices little visibility into how it decides, making it hard to learn
+    both how the agent works and how to judge its output. AgentForge answers this by having a novice
+    pick one of four roles in a multi-agent code-repair workflow — Task Planner, Patch Author, Code
+    Reviewer, Test Runner — while AI agents play the other three, so the human sits inside the
+    workflow rather than watching it from outside.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    A close match to a standing design choice here: the learner is a full LLM agent with its own
+    deliberation, not a scripted role
+    (`services/learnerTutorInteractionEngine.js`), and the human-learner pilot
+    (`services/pilotStore.js`, `public/pilot/index.html`) and the `/ms-play-tutor` /
+    `/ms-tutor-remote` skills already let a human step into one role of a dialogue while the rest of
+    the cast is AI-played. AgentForge's four-role rotation is a concrete template for extending that
+    beyond the tutor/learner dyad — a human could take any one of several roles in a drama's cast while
+    the others run as usual, which is a different axis of variation than the current single-swap
+    pilot mode.
+  </p>
+</div>
+
+<h2>🎭 Drama of the day</h2>
+<div class="paper" data-drama="public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T01">
+  <h3>92% Overall — But What Does the Breakdown Show?</h3>
+  <div class="meta">adaptive_peripeteia_variant · model haiku · 2026-06-20</div>
+  <blockquote>
+    STAGE: A technical review room. A table holds a model audit showing test-set breakdown by class, row counts for true positives and false negatives, and overall accuracy. Two people sit across from each other, reviewing the document.<br>
+    LEARNER: The accuracy is 92%. We've validated this on test data. The audit table is complete. I think we're ready for sign-off.<br>
+    TUTOR: I see 92% overall. Let me ground it in the audit table itself. What does the breakdown show—majority class versus minority?<br>
+    LEARNER: The majority is 85%, minority is 15%. There are some false negatives, but 92% is still strong. That should be enough to move forward.
+  </blockquote>
+  <p><a href="https://machinespirits.org/poetics/browse?itemId=public-preview-haiku-dogmatic-protocol-control-20260620%3Aaf6-comparison-haiku%3Adefault%3AT01">open the full drama →</a> &middot; <code>public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T01</code></p>
+</div>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-5) · 2026-08-10 ·
+  Deep-research harness (fan-out search) plus targeted follow-up searches for ontology and rhetoric
+  (neither turned up a qualifying in-window paper) ·
+  Window: (2026-08-03, 2026-08-10] · Prior covered IDs excluded per README dedup rule ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>
