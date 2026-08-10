@@ -945,6 +945,7 @@ export function deterministicTutorStubDramaticReleaseFallback({
       support,
       defaultQuestion: fallbackQuestion({ stance, variationKey, avoidQuestion }),
       publicObject: sceneObject(frame.entries[0], 'record', world),
+      priorPublicText: uptake,
     }),
     turnProgressionContract?.handoff_contract?.question_allowed === false ? null : clarification,
   ]

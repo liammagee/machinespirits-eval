@@ -164,6 +164,7 @@ export function createTutorStubTutorTerminalRuntime(dependencies = {}) {
     };
     const fallbackRequiresSpecificUptake =
       closureFallbackSelected ||
+      firstDraftContract?.progression?.public_obligation_contract?.complete === true ||
       (audits?.responseCompositionAudit?.issues || []).some(
         (issue) => issue.type === 'learner_selected_test_not_acknowledged',
       ) ||

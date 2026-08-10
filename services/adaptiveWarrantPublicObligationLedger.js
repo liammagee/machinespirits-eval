@@ -20,15 +20,15 @@ export const ADAPTIVE_WARRANT_PUBLIC_OBLIGATION_DELIVERY_SCHEMA =
   'machinespirits.adaptation-refinement.public-obligation-delivery.v1';
 
 const EVIDENCE_CUE =
-  /\b(?:assay|balance|comparison|dies?|evidence|exhibit|fact|flaw|graver|link|mark|match|metal|record|result|ring|sample|shilling|test|tool|touchstone|trace|weight|witness)\b/iu;
+  /\b(?:assay|balance|comparison|dies?|entry|evidence|exhibit|fact|flaw|graver|line|link|log|mark|match|metal|reading|record|result|ring|sample|shilling|test|tool|touchstone|trace|weight|witness)\b/iu;
 const LEARNER_PROPOSAL =
   /\b(?:i (?:can|could|intend to|propose|should|want to|will|would)|i['’]d|i['’]ll|let me|my (?:first|next) (?:move|step|test)|we (?:can|could|should|will|would))\b.{0,100}\b(?:check|compare|enter|examine|inspect|listen|look|record|test|weigh)\b/iu;
 const RESULT_REQUEST =
-  /(?:\bwhat (?:did|do|does|is|was|were)\b.{0,90}\b(?:leave|mark|match|read|record|reveal|say|show|weigh)\b|\bwhat (?:[a-z-]+ ){0,3}(?:evidence|mark|match|reading|record|result|trace)\b|(?:^|[.!?]\s*)\b(?:do|does|did|is|was|were)\b.{0,90}\b(?:match|recorded|show)\b|(?:^|[.!?]\s*)\bhas\b.{0,90}\b(?:been )?(?:entered|recorded|shown|supplied)\b|\b(?:can|could|will|would) you\b.{0,100}\b(?:give|identify|provide|record|report|show|supply|tell)\b|\bplease\b.{0,80}\b(?:enter|give|identify|provide|record|report|show|supply|tell)\b|(?:^|[.!?]\s*)\b(?:enter|give|identify|provide|record|report|show|supply|tell)\b)/iu;
+  /(?:\bwhat (?:did|do|does|is|was|were)\b.{0,90}\b(?:leave|mark|match|read|record|reveal|say|show|weigh)\b|\bwhat (?:is|was) (?:the )?[^.!?]{0,70}\b(?:entry|line|log|reading|record|trace)\b|\bwhat (?:[a-z-]+ ){0,3}(?:evidence|mark|match|reading|record|result|trace)\b|(?:^|[.!?]\s*)\b(?:do|does|did|is|was|were)\b.{0,90}\b(?:match|recorded|show)\b|(?:^|[.!?]\s*)\bhas\b.{0,90}\b(?:been )?(?:entered|recorded|shown|supplied)\b|\b(?:can|could|will|would) you\b.{0,100}\b(?:give|identify|provide|record|report|show|supply|tell)\b|\bplease\b.{0,80}\b(?:enter|give|identify|provide|record|report|show|supply|tell)\b|(?:^|[.!?]\s*)\b(?:enter|give|identify|provide|record|report|show|supply|tell)\b)/iu;
 const DIRECTED_RESULT_CLAUSE =
   /(?:^|[;.!?]\s*)(?:what\b.{0,80}\b(?:did|do|does|is|was|were|leave|mark|match|read|record|reveal|say|show|weigh)\b|has\b.{0,90}\b(?:been )?(?:entered|recorded|shown|supplied)\b|(?:can|could|will|would) you\b|please\b|(?:enter|give|identify|provide|record|report|show|supply|tell)\b)/iu;
 const CRITERION_QUESTION =
-  /\bwhat (?:public )?(?:evidence|exhibit|fact|mark|result|test) (?:can|could|might|would)\b.{0,100}\b(?:establish|identify|link|prove|show|tie)\b/iu;
+  /\bwhat (?:public )?(?:evidence|exhibit|fact|mark|result|test) (?:can|could|might|would)\b.{0,100}\b(?:establish|identify|link|place|prove|put|show|tie)\b/iu;
 const INTERPRETATION_QUESTION =
   /\bwhat\b.{0,60}\b(?:evidence|exhibit|fact|mark|reading|record|result|trace|weight)\b.{0,40}\bmean(?:s|ing)?\b/iu;
 const SELECTION_QUESTION =
@@ -57,7 +57,7 @@ const TARGET_METHOD_TERMS = new Set(
 );
 
 const TARGET_STOPWORDS = new Set(
-  'about after and answer any are available been before can condition could current did distinctive does evidence first for from give has have how into its leave may might more need not now only once our please public question record release released report result reveal revealed reveals say says should show showed showing shows some than that the their them then there these they this those through under until was were what when where which while who will with would you your tell tells'.split(
+  'about activity actual after and answer any anyone are available been before can condition could current did distinctive do does evidence establish established establishes first for from give has have how into its last leave line may might more need needed next not now only once our please prove proves public question record release released report result reveal revealed reveals say says should show showed showing shows some somebody someone still than that the their them then there these they this those through under until was were what when where which while who will with would write you your tell tells'.split(
     ' ',
   ),
 );
@@ -80,6 +80,7 @@ const TARGET_TERM_ALIASES = Object.freeze({
   tests: 'test',
   tools: 'tool',
   traces: 'trace',
+  tying: 'tie',
   weighed: 'weigh',
   weighing: 'weigh',
   weights: 'weight',
@@ -155,6 +156,29 @@ function publicTarget(surface) {
   };
 }
 
+function publicSpeechClauses(surface) {
+  return oneLine(surface)
+    .split(/(?<=[.!?;])\s+/u)
+    .map(oneLine)
+    .filter(Boolean);
+}
+
+function directedResultRequestSurface(surface) {
+  const clauses = publicSpeechClauses(surface);
+  return (
+    clauses
+      .filter(
+        (clause) =>
+          EVIDENCE_CUE.test(clause) &&
+          RESULT_REQUEST.test(clause) &&
+          !CRITERION_QUESTION.test(clause) &&
+          !INTERPRETATION_QUESTION.test(clause) &&
+          !SELECTION_QUESTION.test(clause),
+      )
+      .at(-1) || null
+  );
+}
+
 function mergeRequiredComponents(left = [], right = []) {
   const byId = new Map();
   for (const component of [...left, ...right]) {
@@ -204,15 +228,18 @@ export function classifyAdaptiveWarrantPublicSpeechAct({ learnerText = '', class
     return { ...base, kind: priorObligationDisposition, target: dispositionTarget };
   }
 
+  const directedResultSurface = directedResultRequestSurface(operativeSurface);
+
   // A criterion question asks what kind of evidence would establish a link;
   // it is not yet asking the tutor to supply a completed test result.
   if (
+    !directedResultSurface &&
     EVIDENCE_CUE.test(operativeSurface) &&
     (CRITERION_QUESTION.test(operativeSurface) || INTERPRETATION_QUESTION.test(operativeSurface))
   ) {
     return { ...base, kind: 'criterion_question', target: publicTarget(operativeSurface) };
   }
-  if (EVIDENCE_CUE.test(operativeSurface) && SELECTION_QUESTION.test(operativeSurface)) {
+  if (!directedResultSurface && EVIDENCE_CUE.test(operativeSurface) && SELECTION_QUESTION.test(operativeSurface)) {
     return { ...base, kind: 'tutor_selection_request', target: publicTarget(operativeSurface) };
   }
 
@@ -220,13 +247,13 @@ export function classifyAdaptiveWarrantPublicSpeechAct({ learnerText = '', class
   // “I would compare the dies; has a match been recorded?” contains both acts
   // and the second one creates a public tutor obligation.
   const proposal = EVIDENCE_CUE.test(operativeSurface) && LEARNER_PROPOSAL.test(operativeSurface);
-  const resultRequest = EVIDENCE_CUE.test(operativeSurface) && RESULT_REQUEST.test(operativeSurface);
+  const resultRequest = Boolean(directedResultSurface) || (EVIDENCE_CUE.test(operativeSurface) && RESULT_REQUEST.test(operativeSurface));
   if (resultRequest && (!proposal || DIRECTED_RESULT_CLAUSE.test(operativeSurface))) {
     return {
       ...base,
       kind: 'tutor_directed_public_result_request',
       creates_obligation: true,
-      target: publicTarget(operativeSurface),
+      target: publicTarget(directedResultSurface || operativeSurface),
     };
   }
   if (proposal) {

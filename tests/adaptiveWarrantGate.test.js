@@ -163,6 +163,49 @@ test('public speech-act classifier does not invent tutor result debt from the fa
     const speechAct = classifyAdaptiveWarrantPublicSpeechAct({ learnerText });
     assert.equal(speechAct.creates_obligation, false, learnerText);
   }
+
+  const contactCriterion = classifyAdaptiveWarrantPublicSpeechAct({
+    learnerText:
+      'So Hessa\u2019s reach and Moth\u2019s route establish opportunity, not contact; what evidence can put a hand\u2014or chassis\u2014on the music core?',
+  });
+  assert.equal(contactCriterion.kind, 'criterion_question');
+  assert.equal(contactCriterion.creates_obligation, false);
+});
+
+test('public-result debt is scoped to the directed clause instead of incidental earlier claims', () => {
+  const cases = [
+    {
+      learnerText:
+        'Then I can record only that noon access is the next check, not that Dario took it. What record would link someone on that list to Priya\u2019s lunchbox?',
+      expectedSurface: 'What record would link someone on that list to Priya\u2019s lunchbox?',
+      expectedSubjects: ['list', 'priya', 'lunchbox'],
+    },
+    {
+      learnerText:
+        'That makes Moth capable of opening the panel, but could the wipe still have come from Hessa or another operator using it? Can you show a record tying Moth\u2019s override key to the wipe pulse?',
+      expectedSurface: 'Can you show a record tying Moth\u2019s override key to the wipe pulse?',
+      expectedSubjects: ['moth', 'override', 'key', 'wipe', 'pulse'],
+    },
+    {
+      learnerText:
+        'What should I write next about what the badge log establishes and what evidence is still needed?',
+      expectedSurface:
+        'What should I write next about what the badge log establishes and what evidence is still needed?',
+      expectedSubjects: ['badge'],
+    },
+    {
+      learnerText: 'What is the boot log\u2019s last-activity line? I need that entry before I can record what it proves.',
+      expectedSurface: 'What is the boot log\u2019s last-activity line?',
+      expectedSubjects: ['boot', 'last-activity'],
+    },
+  ];
+
+  for (const row of cases) {
+    const speechAct = classifyAdaptiveWarrantPublicSpeechAct({ learnerText: row.learnerText });
+    assert.equal(speechAct.kind, 'tutor_directed_public_result_request', row.learnerText);
+    assert.equal(speechAct.target.source_surface, row.expectedSurface, row.learnerText);
+    assert.deepEqual(speechAct.target.subject_terms, row.expectedSubjects, row.learnerText);
+  }
 });
 
 test('delivery recognizers cover the bounded closure and precise contrast used by the study', () => {

@@ -37,7 +37,7 @@
     {
       "file": "services/tutorStubDramaticRelease.js",
       "claim": "clue span replacement (model-voiced deliveries; t5 wedge case recorded)",
-      "sha256": "22915240bb535ebd9ce85a3734d733d8179c0b79ce0f1def5b5bf247c5b9df50"
+      "sha256": "9a2bc0d894483a1ccbf2f1578a27da393529d73e4dcc68bb0d022b40bc23cd57"
     },
     {
       "file": "services/tutorStubTutorTurnPipeline.js",
@@ -72,7 +72,7 @@
     {
       "file": "services/tutorStubTutorTerminalRuntime.js",
       "claim": "clue-span insertion, deterministic safety fallback, terminal audit, and rejection accounting",
-      "sha256": "7abd21c44004f7ff147dfcab88844528f537a1192bfa107c9649c1db20a72aef"
+      "sha256": "1855c3af5f06f7d6a515ddfcabf3c0c4ae002756775b0fcb93d2e149d250d3c2"
     },
     {
       "file": "services/tutorStubTutorDraftAudit.js",

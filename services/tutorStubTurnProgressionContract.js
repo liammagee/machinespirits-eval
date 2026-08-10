@@ -987,8 +987,29 @@ function declarativeFallbackFocus(
     : selectedSurface;
   const publicObligation = contract?.public_obligation_contract;
   if (publicObligation?.complete === true) {
-    const target = boundedPublicFocus(publicObligation.target?.source_surface, 100) || 'the requested public result';
-    return `The requested result about “${target}” is not public yet; once a matching public record is available, I can answer it.`;
+    const target = publicObligation.target || {};
+    const subjects = (Array.isArray(target.subject_terms) ? target.subject_terms : [])
+      .map(oneLine)
+      .filter(Boolean)
+      .slice(0, 6);
+    const kindLabel =
+      target.kind === 'weight_or_ring_result'
+        ? (target.public_terms || []).includes('ring')
+          ? (target.public_terms || []).includes('balance')
+            ? 'balance-and-ring result'
+            : 'ring result'
+          : 'balance result'
+        : target.kind === 'material_or_assay_result'
+          ? 'assay result'
+          : target.kind === 'comparison_result'
+            ? 'comparison result'
+            : target.kind === 'mark_or_tool_result'
+              ? 'mark-or-tool result'
+              : target.kind === 'record_entry'
+                ? 'record entry'
+                : 'public result';
+    const targetLabel = [...subjects, kindLabel].join('-');
+    return `The ${targetLabel} is not public yet; once a matching public record is available, I can answer it.`;
   }
   if (contract?.discourse_plane?.plane === 'instructional_meta') {
     return 'I will keep the same point and restate it in short, ordinary words before we return to the inquiry.';
@@ -1102,11 +1123,24 @@ export function deterministicTutorStubTurnProgressionHandoff({
   support = null,
   defaultQuestion = '',
   publicObject = '',
+  priorPublicText = '',
 } = {}) {
   if (contract?.schema !== TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA || contract.complete !== true) {
     return oneLine(defaultQuestion);
   }
   if (contract.handoff_contract?.question_allowed === false) {
+    if (contract.public_obligation_contract?.complete === true && oneLine(priorPublicText)) {
+      const priorDelivery = auditAdaptiveWarrantPublicObligationDelivery({
+        obligation: contract.public_obligation_contract,
+        tutorOutcome: { tutor_text: priorPublicText },
+      });
+      if (priorDelivery?.status === 'deferred') {
+        return 'That named public-record release is the condition for answering it.';
+      }
+      if (priorDelivery?.status === 'satisfied') {
+        return 'That bounded answer is the public result I will carry forward.';
+      }
+    }
     return declarativeFallbackFocus(contract, {
       clarificationInvitationRequired: support?.clarificationInvitationRequired === true,
       boundedChoiceRequired: /bounded.*choice/u.test(String(support?.modality || '')),

@@ -732,3 +732,49 @@ model-backed study, the corrections require a new clean committed checkpoint,
 new dry rehearsal and authorization digest, and a fresh 24-dialogue run. Only
 that new run may generate a new 96-case blind packet for two independent
 annotations and the frozen scorer.
+
+## Progress Update — 10 August 2026, second authorized mechanism run and obligation-delivery repair
+
+The second digest-authorized matrix ran all 24 dialogues from clean detached
+commit `cf1336f03a46b92080921c4722e964090193646e`, under approval digest
+`4b1fb03b54ad51206f495909f7b636650dacaa909be4612f54a141f53bb307d4`.
+Its historical result is also `incomplete` and its generated annotation packet
+is burned. Nineteen children supplied valid eight-turn evidence; five active-
+gate children were sealed incomplete and recollected as `evidence_invalid`.
+All 12 observe children were valid. Across the 152 valid turns, combined
+learner analysis covered 152/152 decisions and structured live/replay parity
+was 152/152 with zero mismatches. Delivery application improved from the first
+run's 152 mismatches and 173 issues to five mismatches and ten issues, but a
+mechanism study requires every child and delivery application to validate.
+
+All five child failures were the same fail-closed public-obligation delivery
+path, not a provider, route, quota, prompt-audit, secret-leak, or missing-seal
+failure. Three linked defects were exposed:
+
+- result-request targets were sometimes built from the learner's whole turn,
+  so an earlier bounded claim or later rationale became part of the named debt;
+- the criterion form `what evidence can put ...` was treated as a request that
+  the tutor supply a completed result; and
+- terminal recovery could preserve a non-answering generated uptake, place the
+  deterministic accountable deferral only after an authored source, and then
+  reject it because obligation ownership requires answer or deferral before
+  that source.
+
+The correction now isolates the last directed result-request clause, removes
+incidental request-language from target identity, recognizes `put/place` as a
+criterion construction, and forces an active obligation's deterministic
+deferral into the pre-source uptake slot. The terminal handoff detects a debt
+already resolved in uptake and uses a non-duplicative declarative continuation;
+the deferral names a compact typed public target instead of echoing the
+learner's full question. Exact regressions cover all five observed learner
+forms and an active-gate dramatic fallback with a due authored source. The
+expanded focused preflight passes 160/160. The complete hermetic suite passes
+8,427/8,427 root tests and 137/137 tutor-core tests; derivation quality passes
+35/35 worlds, the prompt/world integrity slice passes 22/22, and workplan
+validation passes 490/490.
+
+These repairs do not retroactively validate either failed run or establish
+decision quality. The next admissible sequence is another clean committed
+checkpoint, dry rehearsal, approval of its new exact digest, a fresh complete
+24-dialogue run, then two independent annotations of that run's newly frozen
+96 observe decisions and the unchanged scorer.

@@ -71,7 +71,7 @@ process.stdin.on('end', () => {
     ? ${JSON.stringify(SINGLE_PLAIN_RECOVERY)}
     : process.env.FAKE_CODEX_FIXTURE_MODE === 'soft-style'
       ? ${JSON.stringify(PLAIN_STYLE_DRAFT)}
-    : process.env.FAKE_CODEX_FIXTURE_MODE === 'preserve-uptake'
+    : ['preserve-uptake', 'obligation-preserve-uptake'].includes(process.env.FAKE_CODEX_FIXTURE_MODE)
     ? ${JSON.stringify(SAFE_UPTAKE_BROKEN_DEVELOPMENT)}
     : process.env.FAKE_CODEX_FIXTURE_MODE === 'terse-uptake'
       ? ${JSON.stringify(TERSE_UPTAKE_BROKEN_DEVELOPMENT)}
@@ -114,6 +114,8 @@ process.stdin.on('end', () => {
     '--once',
     mode === 'terse-uptake'
       ? 'It does not prove Verrell did it; it only confirms the town suspects him.'
+      : mode === 'obligation-preserve-uptake'
+        ? 'What did the public balance record show about the clipped shilling?'
       : mode === 'soft-style'
         ? 'Drop the formality. Talk to me like an equal. Stop the detective novel.'
         : 'What should I write in the trial-book?',
@@ -123,7 +125,16 @@ process.stdin.on('end', () => {
     '--trace-dir',
     tmp,
   ];
-  if (['tactic-repair', 'performance-advisory', 'soft-style', 'quality-only', 'registered-fallback'].includes(mode)) {
+  if (
+    [
+      'tactic-repair',
+      'performance-advisory',
+      'soft-style',
+      'quality-only',
+      'registered-fallback',
+      'obligation-preserve-uptake',
+    ].includes(mode)
+  ) {
     cliArgs.splice(cliArgs.indexOf('--no-register-selection'), 1);
     cliArgs.push(
       '--register-policy',
@@ -365,6 +376,29 @@ test('a dramatic fallback replaces non-answering uptake with a licensed writable
   );
   assert.match(turn.responseComposition.development, /mint-yard crucible/iu);
   assert.equal(turn.responseComposition.frame.uptake.action_family, null);
+});
+
+test('an active public obligation displaces preserved non-answering uptake before the due source', () => {
+  const { events } = runGuardFixture('obligation-preserve-uptake', { warrantGate: 'active' });
+  const turn = events.find((row) => row.type === 'turn_complete')?.turnRecord;
+  const decision = turn?.warrantGateDecision;
+  const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
+  const fallback = accounting?.finalDelivery?.candidate?.text || '';
+  const progression = accounting?.finalDelivery?.audits?.liveTurnProgressionAudit;
+
+  assert.equal(decision?.mode, 'active');
+  assert.equal(decision?.learner_signal?.surface, 'What did the public balance record show about the clipped shilling?');
+  assert.equal(decision?.public_obligation?.speech_act?.creates_obligation, true);
+  assert.ok(decision?.obligation_directive);
+  assert.equal(
+    decision.obligation_directive.target?.source_surface,
+    'What did the public balance record show about the clipped shilling?',
+  );
+  assert.equal(accounting?.outcome, 'guarded_deterministic_fallback');
+  assert.match(fallback, /^The clip-balance result is not public yet/iu);
+  assert.ok(fallback.indexOf('not public yet') < fallback.indexOf(EXACT_DUE_SOURCE));
+  assert.equal(progression?.public_obligation?.resolved, true, JSON.stringify(progression?.issues));
+  assert.equal(progression?.public_obligation?.outcome, 'named_unavailability_with_concrete_next_step');
 });
 
 test('a fallback replaces a terse generic acknowledgement with learner-specific uptake', () => {

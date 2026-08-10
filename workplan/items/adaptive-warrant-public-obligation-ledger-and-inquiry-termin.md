@@ -126,3 +126,18 @@ obligation classifications, and recursive final-authority trace growth. The
 historical run remains burned. This item stays active until the corrected code
 is committed, a new digest is authorized, all 24 cells rerun, and the fresh
 96-case two-reader mechanism gate passes.
+
+The second authorized execution from clean commit
+`cf1336f03a46b92080921c4722e964090193646e` collected all 24 rows but is also
+burned: 19 children were valid, five active-gate children were
+`evidence_invalid`, and 152/152 valid decisions retained exact structured
+parity. Delivery application was reduced to five mismatches and ten issues,
+isolating the remaining defect to active public-obligation realization. The
+bounded repair now scopes debt to the directed request clause, treats the
+observed `what evidence can put ...` form as a criterion question, owns the
+pre-source deterministic uptake, and prevents a duplicate/verbatim deferral in
+the terminal handoff. Focused study/delivery tests pass 160/160, and the
+complete no-model repository suite passes 8,427/8,427 root plus 137/137
+tutor-core tests. The item remains active pending a new committed checkpoint,
+exact dry authorization, 24/24 valid rerun, fresh 96-case independent annotation
+pair, and passage of the frozen scorer.

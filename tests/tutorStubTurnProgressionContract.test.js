@@ -312,6 +312,29 @@ test('deterministic recovery discharges an active obligation with a public-only 
   assert.equal(audit.public_obligation.outcome, 'named_unavailability_with_concrete_next_step');
 });
 
+test('deterministic obligation handoff does not repeat a deferral already delivered in uptake', () => {
+  const contract = obligationProgressionContract({
+    dramaticReleaseFrame: { active: false, entries: [] },
+    responseCompositionFrame: {
+      learner_move: { summary: 'The learner requests the clipped-shilling balance result.' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+  });
+  const uptake = deterministicTutorStubTurnProgressionUptake({ contract });
+  const handoff = deterministicTutorStubTurnProgressionHandoff({ contract, priorPublicText: uptake });
+  const audit = auditTutorStubTurnProgression({
+    contract,
+    composition: composition({ uptake, handoff }),
+  });
+
+  assert.match(uptake, /not public yet/iu);
+  assert.doesNotMatch(handoff, /not public yet/iu);
+  assert.match(handoff, /named public-record release/iu);
+  assert.equal(audit.ok, true, JSON.stringify(audit.issues));
+  assert.equal(audit.public_obligation.outcome, 'named_unavailability_with_concrete_next_step');
+});
+
 test('a writable-entry turn compiles a declarative handoff on the learner requested relation', () => {
   const contract = compileTutorStubTurnProgressionContract({
     learnerText: 'What should I record about the blue seal and its custody chain?',

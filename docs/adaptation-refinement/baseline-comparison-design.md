@@ -491,3 +491,43 @@ successor execution must start from a new clean commit, dry rehearsal, and
 explicit authorization for the new digest. It must rerun all 24 cells, freeze a
 new 96-case packet, and obtain two fresh independent annotations before the
 same scorer and gates are applied.
+
+## Second authorized mechanism execution — failed and burned (10 August 2026)
+
+The successor matrix ran from clean detached commit
+`cf1336f03a46b92080921c4722e964090193646e` under exact authorization digest
+`4b1fb03b54ad51206f495909f7b636650dacaa909be4612f54a141f53bb307d4`.
+It collected all 24 planned rows but remained `incomplete`: 19 children were
+valid eight-turn runs and five active-gate children were sealed incomplete and
+recollected as `evidence_invalid`. Every observe child was valid. The 152 valid
+decisions had 152/152 combined learner-analysis calls and 152/152 structured
+live/replay agreement with zero mismatches. Delivery application recorded five
+mismatches and ten issues. This is a substantial execution improvement over
+the first run, but it still fails the all-children and zero-delivery-mismatch
+requirements. Its 96-case packet must not be annotated for passage.
+
+The five failures share one public-obligation realization mechanism. A learner
+turn containing a bounded claim plus a directed result question could assign
+the whole turn as the target, making incidental words mandatory and sometimes
+truncating the actual subject. The criterion wording `what evidence can put a
+hand ...` also created a false result obligation. When generated candidates
+failed, terminal recovery could preserve their non-answering uptake and append
+the deterministic deferral only after a due authored source, although the
+frozen contract requires resolution in uptake before that source.
+
+The bounded correction scopes target identity to the directed request clause,
+filters request-language from subject identity, treats `put/place` evidence
+questions as criteria, and gives active public debt ownership of deterministic
+uptake. A compact typed label avoids verbatim-question echo, while the handoff
+detects prior uptake resolution and does not repeat the deferral. The launch
+preflight now executes the terminal guard-accounting and turn-progression
+regressions as part of the digest-bound validation suite. Focused tests pass
+160/160. The complete hermetic suite also passes 8,427/8,427 root tests and
+137/137 tutor-core tests; all 35 derivation worlds and 490 workplan items pass
+their repository gates.
+
+This correction burns the second authorization and packet. A third execution
+requires a new clean commit, dry request, and exact approval. Only a fresh run
+with 24 valid children, zero delivery-application mismatch, and complete
+structured parity may freeze the 96 observe decisions for two independent
+annotations and the scorer above.

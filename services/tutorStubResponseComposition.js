@@ -1892,6 +1892,7 @@ export function deterministicTutorStubConfiguredContinuationFallback({
     support,
     defaultQuestion: defaultHandoff,
     publicObject: object,
+    priorPublicText: uptake,
   });
   // The progression contract owns the terminal question. An assertion-gap
   // handoff therefore replaces the configured support question with the

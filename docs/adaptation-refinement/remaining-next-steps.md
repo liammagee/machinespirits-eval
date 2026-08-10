@@ -2,10 +2,13 @@
 
 **Date:** 10 August 2026
 **Status:** original sequence complete through its stop rule; n=10 not
-launched. The first authorized all-turn mechanism execution ran from commit
-`21f3497666b393840e8aca3e4128d8ac1861cfc0` but was incomplete and is burned.
-Its execution defects have a corrective implementation; a new clean checkpoint,
-dry authorization, full rerun, and fresh annotations remain required.
+launched. Two authorized all-turn mechanism executions are complete but
+incomplete and burned. The second ran from
+`cf1336f03a46b92080921c4722e964090193646e`: 19/24 children were valid and all
+152 valid decisions had exact structured replay parity, but five active-gate
+children failed closed on public-obligation delivery. A bounded corrective
+implementation is present; a new clean checkpoint, dry authorization, full
+rerun, and fresh annotations remain required.
 **Workplan item:** `adaptive-warrant-public-obligation-ledger-and-inquiry-termin`
 
 ## Frozen evidence boundary
@@ -477,7 +480,7 @@ and learner-record outcomes. Passage would validate this automated mechanism
 within two worlds and six simulated profiles; it would not establish an
 optimal policy, a learning effect, or a human-learner claim.
 
-## Current restart boundary after the first authorized run
+## Current restart boundary after the second authorized run
 
 The first authorized 24-dialogue execution completed its launch matrix but did
 not produce a valid mechanism study: 20 children were valid, four were sealed
@@ -496,10 +499,35 @@ The corrective implementation now:
 5. projects recursive final-authority evidence out of prior-turn state with a
    SHA-256 provenance record, while scanning large JSONL traces incrementally.
 
-The next ordered steps are therefore: finish the full no-model regression
-suite; create and push a clean commit; generate a new dry-run authorization
-request from that exact commit; approve that new digest; rerun all 24 dialogues;
-freeze a new 96-case packet; obtain two fresh independent blind annotations;
-then run the already frozen consensus/precision/recall and mechanism scorer.
-No outcome comparison is licensed unless every execution and mechanism gate
-passes.
+The second authorized run from
+`cf1336f03a46b92080921c4722e964090193646e` confirmed that those corrections
+worked: selector and delivery instrumentation no longer failed globally, all
+12 observe rows completed, and 152/152 valid decisions had exact structured
+parity. It still failed because five of 12 active rows exhausted response
+recovery on `public_obligation_unresolved`. The active obligation target could
+include incidental text outside the directed request; one criterion form
+(`what evidence can put ...`) created false debt; and terminal recovery could
+preserve a non-answering uptake while placing its valid deferral after the
+authored source, outside the obligation-owned slot.
+
+The new bounded repair:
+
+1. extracts the directed result clause before creating target identity;
+2. removes request/rhetorical terms from that identity and recognizes the
+   observed `put/place` criterion construction;
+3. forces deterministic obligation deferral into uptake before any due source;
+4. uses a compact typed target label rather than a verbatim learner-question
+   echo; and
+5. replaces the duplicate terminal deferral with a declarative continuation
+   once uptake has already resolved the obligation.
+
+The focused study/delivery preflight now includes the terminal fallback and
+turn-progression suites and passes 160/160. The complete hermetic suite passes
+8,427/8,427 root tests and 137/137 tutor-core tests; derivation quality passes
+35/35 worlds, prompt/world integrity passes 22/22, and workplan validation
+passes 490/490. The next ordered steps are therefore: create and push a clean
+commit; generate a new dry-run authorization request from that exact commit;
+approve that new digest; rerun all 24 dialogues; freeze a new 96-case packet;
+obtain two fresh independent blind annotations; then run the already frozen
+consensus/precision/recall and mechanism scorer. No outcome comparison is
+licensed unless every execution and mechanism gate passes.

@@ -253,6 +253,7 @@ const SOURCE_FILES = Object.freeze([
   'tests/adaptiveWarrantGate.test.js',
   'tests/tutorStubFirstDraftContract.test.js',
   'tests/tutorStubAutoEvalEvidence.test.js',
+  'tests/tutorStubGuardAccounting.test.js',
   'tests/tutorStubGuardDisposition.test.js',
   'tests/tutorStubLearnerAnalysisRuntime.test.js',
   'tests/tutorStubPointOfActionCoaching.test.js',
@@ -2930,6 +2931,8 @@ export function adaptiveWarrantStudyPreflightChecks() {
         'tests/adaptiveWarrantBaselineStudy.test.js',
         'tests/adaptiveWarrantStudyIntegrity.test.js',
         'tests/tutorStubAutoEvalEvidence.test.js',
+        'tests/tutorStubGuardAccounting.test.js',
+        'tests/tutorStubTurnProgressionContract.test.js',
       ],
     ],
   ];
