@@ -1,26 +1,70 @@
 {
-  "generated": "2026-08-10T00:21:57.661Z",
+  "generated": "2026-08-10T13:13:50.631Z",
   "counts": {
-    "total": 496,
+    "total": 497,
     "byStatus": {
-      "done": 468,
+      "done": 470,
       "blocked": 6,
       "dropped": 10,
-      "review": 3,
       "active": 5,
-      "archived": 4
+      "archived": 4,
+      "triaged": 1,
+      "review": 1
     },
     "byType": {
       "research": 75,
       "experiment": 82,
       "infra": 105,
-      "maintenance": 212,
+      "maintenance": 213,
       "content": 4,
       "ops": 10,
       "paper": 8
     }
   },
   "items": [
+    {
+      "id": "refactor-poetics-browser-derivation-presentation",
+      "title": "Extract poetics-browser derivation presentation owner",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-10",
+      "updated": "2026-08-10",
+      "verification": "Empty and populated derivation index, live-index, live-run, and completed-run HTML remain byte-identical; direct renderer, route, desktop-parity, auth, complete hermetic root/core, risk coverage, lint, formatting, manifest, workplan-source, diff, and zero-cycle gates pass without model calls or production artifact writes.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-auto-eval-visualization-renderer"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
+          "docs/next-steps/2026-08-10-codebase-refactoring-final-r6-reconciliation.md"
+        ],
+        "code": [
+          "scripts/browse-poetics-scripts.js",
+          "tests/poeticsReportBrowser.test.js",
+          "tests/desktopRouteParity.test.js",
+          "tests/poeticsAdminAuth.test.js",
+          "config/coverage-risk-floors.json",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-auto-eval-visualization-renderer"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "poetics",
+        "browser",
+        "derivation",
+        "reporting",
+        "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
     {
       "id": "codebase-refactoring-program",
       "title": "Execute the evidence-led codebase refactoring programme",
@@ -31,7 +75,7 @@
       "source": "review",
       "created": "2026-07-24",
       "updated": "2026-08-10",
-      "branch": "codex/refactor-post-auto-eval-assets-reconciliation",
+      "branch": "codex/refactor-final-r6-reconciliation",
       "verification": "Every accepted refactoring slice has a linked child card and parity gate; root plus in-housed tutor-core tests run from one clean-install contract; required suites cannot silently skip; import cycles fall from two to zero; hotspot, coverage, registry, duplication, and package metrics ratchet without trace, schema, route, CLI, or empirical-output drift; every deletion passes its consumer, database, paper, and artifact audit.",
       "claim_status": "planned",
       "depends_on": [],
@@ -42,7 +86,8 @@
           "docs/next-steps/2026-08-09-codebase-refactoring-post-run-coordinator-reconciliation.md",
           "docs/next-steps/2026-08-10-codebase-refactoring-post-strategy-ledger-reconciliation.md",
           "docs/next-steps/2026-08-10-codebase-refactoring-post-tutor-prompt-reconciliation.md",
-          "docs/next-steps/2026-08-10-codebase-refactoring-post-auto-eval-assets-reconciliation.md"
+          "docs/next-steps/2026-08-10-codebase-refactoring-post-auto-eval-assets-reconciliation.md",
+          "docs/next-steps/2026-08-10-codebase-refactoring-final-r6-reconciliation.md"
         ],
         "items": [
           "refactor-required-run-manifest",
@@ -174,7 +219,8 @@
           "refactor-dramatic-derivation-strategy-ledger-prompt",
           "refactor-dramatic-derivation-tutor-prompt-construction",
           "refactor-tutor-stub-auto-eval-report-assets",
-          "refactor-tutor-stub-auto-eval-visualization-renderer"
+          "refactor-tutor-stub-auto-eval-visualization-renderer",
+          "refactor-poetics-browser-derivation-presentation"
         ]
       },
       "tags": [
@@ -509,51 +555,6 @@
       "milestone": "paper-2-0"
     },
     {
-      "id": "refactor-tutor-stub-auto-eval-visualization-renderer",
-      "title": "Extract tutor-stub auto-eval visualization renderer",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-08-10",
-      "updated": "2026-08-10",
-      "branch": "codex/refactor-tutor-stub-auto-eval-visualization-renderer",
-      "verification": "Empty and populated animated-visualization report sections remain byte-identical and syntax-valid; 4/4 direct assertions, 100/100 focused reporting tests, 8,370/8,370 hermetic root tests, 137/137 tutor-core tests, all fourteen risk groups, lint, formatting, manifest, workplan-source, diff, and zero-cycle gates pass without model calls or production artifact writes.",
-      "claim_status": "planned",
-      "depends_on": [
-        "refactor-tutor-stub-auto-eval-report-assets"
-      ],
-      "links": {
-        "notes": [
-          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
-          "docs/next-steps/2026-08-10-codebase-refactoring-post-auto-eval-assets-reconciliation.md"
-        ],
-        "code": [
-          "scripts/run-tutor-stub-auto-eval.js",
-          "services/tutorStubAutoEvalVisualizationReport.js",
-          "tests/tutorStubAutoEvalVisualizationReport.test.js",
-          "tests/tutorStubReportingUx.test.js",
-          "tests/tutorStubAutoEvalEvidence.test.js",
-          "config/coverage-risk-floors.json",
-          "config/hermetic-test-manifest.json"
-        ],
-        "items": [
-          "codebase-refactoring-program",
-          "refactor-tutor-stub-auto-eval-report-assets"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "tutor-stub",
-        "auto-eval",
-        "reporting",
-        "visualization",
-        "presentation"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
       "title": "Calibrate rubric v3.0 and run held-out acceptance",
       "status": "review",
@@ -593,44 +594,6 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
-      "id": "adaptive-register-switching",
-      "title": "Does switching into an edged register at the right moment help?",
-      "status": "review",
-      "type": "experiment",
-      "priority": "P3",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-09",
-      "updated": "2026-08-10",
-      "branch": "codex/adaptive-edge-timing-cli",
-      "verification": "Frozen plan, router seam, cells, runner, and fail-closed report validate; the approved 10-row Stage 1 pilot completed measures 1-4 with a PASS_STAGE1 decision; the opt-in tutor-stub edge-timing overlay, trace, settings, help, and analysis projections pass focused tests; Stage 2 remains unauthorized.",
-      "claim_status": "exploratory",
-      "depends_on": [
-        "register-mock-praise-probe"
-      ],
-      "links": {
-        "notes": [
-          "notes/2026-08-09-adaptive-register-switching-prereg-draft.md"
-        ],
-        "exports": [
-          "exports/adaptive-register-switching/plan.json"
-        ],
-        "code": [
-          "services/tutorStubEdgeTimingPolicy.js",
-          "docs/tutor-stub-cli.md"
-        ],
-        "runs": [
-          "eval-2026-08-09-b09e5a10"
-        ]
-      },
-      "tags": [
-        "register",
-        "manner",
-        "router",
-        "adaptivity"
-      ]
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -4860,6 +4823,54 @@
         "tutor-stub",
         "auto-eval",
         "reporting",
+        "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-auto-eval-visualization-renderer",
+      "title": "Extract tutor-stub auto-eval visualization renderer",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-10",
+      "updated": "2026-08-10",
+      "branch": "codex/refactor-tutor-stub-auto-eval-visualization-renderer",
+      "verification": "Empty and populated animated-visualization report sections remain byte-identical and syntax-valid; 4/4 direct assertions, 100/100 focused reporting tests, 8,370/8,370 hermetic root tests, 137/137 tutor-core tests, all fourteen risk groups, lint, formatting, manifest, workplan-source, diff, and zero-cycle gates pass without model calls or production artifact writes.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-auto-eval-report-assets"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/633"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
+          "docs/next-steps/2026-08-10-codebase-refactoring-post-auto-eval-assets-reconciliation.md"
+        ],
+        "code": [
+          "scripts/run-tutor-stub-auto-eval.js",
+          "services/tutorStubAutoEvalVisualizationReport.js",
+          "tests/tutorStubAutoEvalVisualizationReport.test.js",
+          "tests/tutorStubReportingUx.test.js",
+          "tests/tutorStubAutoEvalEvidence.test.js",
+          "config/coverage-risk-floors.json",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-auto-eval-report-assets"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "auto-eval",
+        "reporting",
+        "visualization",
         "presentation"
       ],
       "milestone": "evaluation-infrastructure"
@@ -15816,6 +15827,48 @@
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage",
       "claim_status": "future"
+    },
+    {
+      "id": "adaptive-register-switching",
+      "title": "Does switching into an edged register at the right moment help?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-10",
+      "branch": "codex/adaptive-register-switching-stage2",
+      "verification": "Stage 2 run eval-2026-08-09-53421919 is COMPLETE at 105/105. Registered measures 1-8 are present with no report errors. The primary adaptive-vs-router-warm contrast found no evidence (29/35 vs 33/35, Fisher p=.2595); report SHA-256 is 86294c623ffbb71eaed217c86e2205da19101655f6a0e03f4fceb24b2a87af56. Stage 3 is unauthorized and was not started.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "register-mock-praise-probe"
+      ],
+      "links": {
+        "notes": [
+          "notes/2026-08-09-adaptive-register-switching-prereg-draft.md"
+        ],
+        "exports": [
+          "exports/adaptive-register-switching/plan.json",
+          "exports/adaptive-register-switching/stage2/eval-2026-08-09-53421919.json"
+        ],
+        "code": [
+          "services/tutorStubEdgeTimingPolicy.js",
+          "docs/tutor-stub-cli.md",
+          "services/adaptiveRegisterSwitchingStage2.js",
+          "scripts/run-adaptive-register-switching-stage2.js"
+        ],
+        "runs": [
+          "eval-2026-08-09-b09e5a10",
+          "eval-2026-08-09-53421919"
+        ]
+      },
+      "tags": [
+        "register",
+        "manner",
+        "router",
+        "adaptivity"
+      ]
     },
     {
       "id": "b8-lower-recognitionorigin-js-tutoradaptivemechanism-cut-or",
