@@ -52,12 +52,14 @@ sealed immutable resume/evidence collection, captured prompt-boundary canaries,
 opaque globally shuffled blind IDs, and strict reader envelopes. These are
 integrity properties only.
 
-Five authorized mechanism packets have now been run and burned without being
-promoted to decision evidence. The fifth reached 24/24 valid sealed children,
-192/192 learner-analysis calls, and 192/192 exact structured parity, but two
-finite delivery-audit misses kept it invalid. Prospective corrections exclude
-immutable authored source text from host-owned realization metrics and accept
-one bounded same-sentence record-pronoun closure form.
+Six authorized mechanism packets have now been run and burned without being
+promoted to decision evidence. The sixth reached 22/24 valid sealed children,
+176/176 exact structured parity, and five delivery-audit misses. Two invalid
+children shared a false tutor-owned obligation created from a learner's modal
+request to record a public finding. The five valid-row misses were bounded
+realization-audit false negatives: four declarative `record closes` forms and
+one explicitly named missing evidential link. Prospective exact-surface repairs
+cover both classes without changing the six-axis divergence projector.
 
 The central divergence layer is now explicit rather than implicit in separate
 gate inputs. Gate V5 and shadow V0.3 share a six-dimensional projection across
@@ -69,7 +71,8 @@ consensus, support, macro-F1, component accuracy, and joint accuracy.
 The next stage is the all-turn mechanism-validation protocol in
 `baseline-comparison-design.md`: two worlds, six learner profiles, observe and
 active, one fresh seed per cell, and eight turns (24 dialogues). All 96 observe
-decisions from the next fully valid packet will receive two blind annotations
+decisions from the next fully valid seventh packet will receive two blind
+annotations
 with public-safe release, contract, trajectory, audit, pacing, and epistemic
 context; active runs remain outside the gold corpus and supply matched
 execution plus exact typed parity. No downstream causal comparison is licensed

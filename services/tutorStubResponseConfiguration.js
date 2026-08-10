@@ -1179,7 +1179,11 @@ function actionVisible(actionFamily, text, metrics, unresolvedTerms) {
       /\b(?:establishes?|identif(?:y|ies)|means|puts?|says?|shows?|supports?|ties?)\b[^.!?]{0,110}\b(?:but\s+)?not\b|\bnot\b[^.!?]{0,90}\b(?:establish|identify|mean|place|prove|show|support|tie)\w*\b/iu.test(
         text,
       );
-    return explicitAccount || accountableDeferral || directCorrectiveAnswer;
+    const namedMissingWarrant =
+      /\b(?:distinguish|identify|locate|name|separate|state)\w*\b[^.!?]{0,120}\b(?:missing|needed|required|unestablished|unproved|unsupported)\b[^.!?]{0,70}\b(?:evidence|link|record|result|test|warrant)\b/iu.test(
+        text,
+      );
+    return explicitAccount || accountableDeferral || directCorrectiveAnswer || namedMissingWarrant;
   }
   if (actionFamily === 'compress_sayback') return metrics.wordCount <= 85 && metrics.questionCount > 0;
   if (actionFamily === 'reanchor_lived_stake') return metrics.secondPerson && metrics.concreteSceneTermCount > 0;

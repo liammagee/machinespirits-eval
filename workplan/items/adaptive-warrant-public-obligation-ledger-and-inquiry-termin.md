@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: manual
 created: 2026-08-10
-updated: 2026-08-10
+updated: 2026-08-11
 verification: A public-obligation ledger persists named tutor-directed requests
   across family changes and distinguishes them from learner-proposed tests;
   inquiry completion can license close_inquiry from public evidence rather than
@@ -212,3 +212,19 @@ closure. Exact verification passes 167/167 mechanism tests, 35/35 derivation
 worlds, 22/22 prompt/world checks, 8,444/8,444 root tests, 137/137 tutor-core
 tests, and 490/490 workplan validations. The next boundary is the pushed clean
 commit and sixth execution under the standing authorization.
+
+The sixth authorized execution from clean commit
+`853ad817b224723d69c48c24f58281b79a79f8cb` used 584 recorded model calls.
+Twenty-two of 24 children were valid, with 176/176 exact structured parity;
+two false learner-record obligations and five delivery-recognizer misses kept
+the packet incomplete and burned. Exact prospective regressions now separate
+bounded record-entry requests using `record that` from genuine tutor-result
+requests, share that act with writable-entry progression, recognize declarative `record
+closes` forms without admitting `closes in on`, and recognize an explicitly
+named missing evidential warrant without admitting unrelated missing details.
+The prospective checkpoint passes lint, all 35 derivation worlds, focused
+mechanism/integrity and response/progression suites, 34 prompt/world boundary
+tests, 8,444/8,444 hermetic root tests, 137/137 tutor-core tests, and 490/490
+source workplan validation. The item remains active pending a pushed clean
+seventh checkpoint and digest-bound execution, two independent 96-case V4
+annotations, and passage of every mechanism and six-dimension gate.

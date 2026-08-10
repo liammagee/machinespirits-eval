@@ -1,8 +1,8 @@
 # Normative Adaptive Dialogue Architecture
 
 **Status:** Draft design specification with live/offline implementation through
-typed public obligations and inquiry completion; fresh mechanism validation
-pending
+typed public obligations, inquiry completion, and six-axis divergence;
+instrument-confound-free mechanism validation pending
 **Origin:** Research discussion, 9 August 2026  
 **Scope:** Proposed refinement of the Machine Spirits Eval adaptive tutoring architecture
 
@@ -507,7 +507,7 @@ Evaluate decision quality and downstream dialogue effects separately.
 | 2 — warrant evaluation | three calibration gates complete; V4 successor mechanism gate ready | Typed contracts were tested on a newly generated zero-overlap 18-case corpus. Fourteen hard consensuses yielded precision 0.500, recall 0.286, accuracy 0.500, below the frozen gate. A later context audit invalidated its two `close_inquiry` rows as terminal gold; a context-complete all-turn V4 protocol now adds independent per-dimension divergence judgments and gates to the opaque blind mechanism protocol. |
 | 3 — figure policy | typed contracts, persistent public obligations, and terminal transitions implemented; validation open | All 13 families declare expected uptake and lifecycle transitions. A separate cross-family public-obligation ledger, typed speech acts, target-specific answer directive, and inquiry-completion object now feed the shared policy. Launch, child-seal, replay, payload, and finite-budget integrity are implemented, but this is still not a validated policy. |
 | 4 — register realization | runtime bridge complete; separate evaluation open | Active mode can override family and stance while the frontier model realizes the turn. Figure appropriateness and realization fidelity have not yet been independently scored in this study. |
-| 5 — baseline experiments | n=5 pilot complete; five mechanism packets burned; sixth validation next | The fifth 24-dialogue run reached full sealed evidence and 192/192 structured parity but retained two delivery-audit misses. Those finite corrections and the V4 divergence instrument require a new clean packet before independent annotation; no downstream outcome comparison is licensed. |
+| 5 — baseline experiments | n=5 pilot complete; six mechanism packets burned; seventh validation next | The sixth 24-dialogue run reached 22/24 valid children and 176/176 structured parity. Two false learner-record obligations and five bounded realization-audit false negatives require a prospective clean packet before independent V4 annotation; no downstream outcome comparison is licensed. |
 
 The architecture is therefore implemented far enough to test the design's
 central separation—diagnosis, warrant, repair policy, realization, and outcome—

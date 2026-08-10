@@ -4,8 +4,9 @@
 gate failed and n=10 remains stopped. A post-freeze context audit invalidated the
 two `close_inquiry` successor labels as terminal-closure gold, while preserving
 the public-obligation diagnosis. The successor ledger/completion architecture is
-implemented; a fresh two-world all-turn mechanism-validation study is
-predeclared but not yet evidence.
+implemented; six two-world all-turn mechanism-validation packets have been
+burned, and a prospectively repaired seventh packet is required before blind
+V4 annotation.
 **Question:** does the explicit warrant gate produce behaviour materially different from the uninstrumented stub, and is the difference an improvement at the decision level and downstream?
 
 ## Conditions
@@ -691,3 +692,48 @@ closure. The handbook, completion description, scorer, and regression fixture
 now agree on that boundary. Current no-model verification passes 167/167 exact
 mechanism tests, 35/35 derivation worlds, 22/22 prompt/world checks, 8,444/8,444
 root tests, 137/137 tutor-core tests, and 490/490 workplan validations.
+
+## Sixth authorized mechanism execution — act-classification and realization-audit confounds (11 August 2026)
+
+The sixth matrix ran from clean detached commit
+`853ad817b224723d69c48c24f58281b79a79f8cb` under exact authorization digest
+`bcfdb4383bda20c30a820bbd2ac7c904bb44307cc7e269f1ee71183c71799507`.
+The harness recorded 584 model calls. Twenty-two of 24 children supplied valid
+sealed evidence, giving 176 valid learner-analysis calls and 176/176 exact
+structured live/replay comparisons. Because two children were
+`evidence_invalid` and five of 176 valid delivery checks failed, the study
+remained `incomplete`; its corpus is burned and cannot be promoted to V4 gold.
+
+Both invalid children exposed the same public-speech-act confound. Learner
+questions of the form “Could you record that ...?” and “Do you want me to
+record that ...?” ask for an already public finding to be entered in the
+shared record. The generic modal request grammar instead classified them as
+requests for the tutor to produce a missing result, created a false public obligation,
+and forced a malformed deterministic deferral. The prospective classifier now
+emits the non-obligation act `learner_record_entry_request` for the three finite
+modal inversions `could you`, `do you want me to`, and `should I` when followed
+by `record that`. A negative control preserves “Could you record what ...
+reveals?” as a genuine tutor-directed result request, and the progression
+contract uses the same writable-entry grammar.
+
+The five delivery mismatches were also instrument false negatives rather than
+displaced actions. On every affected decision the expected, selected,
+speaking, and delivered family was identical. Four selected
+`close_inquiry` turns said that “the record closes” here, at, on, or with the
+supported finding; the finite recognizer covered imperative and passive closes
+but not that declarative inflection. One `answer_accountably` uptake correctly
+identified the missing dated evidential link, but the recognizer required a
+different corrective surface. The prospective repair admits those bounded
+forms, rejects evidential “the record closes in on ...”, and recognizes a
+named missing evidence/link/record/result/test/warrant only when an explicit
+identification verb is present.
+
+These changes remove observed measurement confounds; they do not rescue the
+sixth packet or validate the six divergence detectors. A seventh packet must
+come from a new clean commit and again pass 24/24 sealed children, 192/192
+analysis coverage, exact structured parity, and zero delivery mismatch before
+the 96 observe decisions can be frozen for two independent V4 annotations.
+The prospective checkpoint passes lint, all 35 derivation worlds, the focused
+mechanism/integrity and response/progression suites, 34 prompt/world boundary
+tests, 8,444/8,444 hermetic root tests, 137/137 tutor-core tests, and 490/490
+source workplan validations.

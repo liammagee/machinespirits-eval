@@ -183,6 +183,23 @@ test('public speech-act classifier does not invent tutor result debt from the fa
   assert.equal(wording.kind, 'learner_wording_request');
   assert.equal(wording.creates_obligation, false);
   assert.equal(wording.target, null);
+
+  for (const learnerText of [
+    'Could you record that WF-11 shows outside crew access, while leaving who took the lunchbox unproved?',
+    'Do you want me to record that Moth had access, but that this does not show Moth wiped the core?',
+    'Should I record that Hessa had access, without treating access as proof?',
+  ]) {
+    const recordEntry = classifyAdaptiveWarrantPublicSpeechAct({ learnerText });
+    assert.equal(recordEntry.kind, 'learner_record_entry_request', learnerText);
+    assert.equal(recordEntry.creates_obligation, false, learnerText);
+    assert.equal(recordEntry.target, null, learnerText);
+  }
+
+  const missingRecordResult = classifyAdaptiveWarrantPublicSpeechAct({
+    learnerText: 'Could you record what the WF-11 entry reveals?',
+  });
+  assert.equal(missingRecordResult.kind, 'tutor_directed_public_result_request');
+  assert.equal(missingRecordResult.creates_obligation, true);
 });
 
 test('public target terms normalize alphanumeric identifiers without empty or trailing-hyphen tokens', () => {
@@ -235,6 +252,10 @@ test('delivery recognizers cover the bounded closure and precise contrast used b
   for (const text of [
     'I close the incident record on the supported finding.',
     'I gather these public supports into the final record and close it at the crew level.',
+    'The record closes on the Wrenfold crew, not an individual worker.',
+    'The record closes here; no further clue is needed.',
+    'The record closes at crew level; there is no next clue to give.',
+    'The record closes with Wrenfold named, not an individual handler.',
   ]) {
     const closure = auditTutorStubResponseConfiguration({
       text,
@@ -248,6 +269,24 @@ test('delivery recognizers cover the bounded closure and precise contrast used b
     configuration: { action_family: 'close_inquiry', engagement_stance: 'plain' },
   });
   assert.equal(conditional.axes.action_family.visible, false);
+
+  const pursuit = auditTutorStubResponseConfiguration({
+    text: 'The record closes in on Moth as the evidence accumulates.',
+    configuration: { action_family: 'close_inquiry', engagement_stance: 'plain' },
+  });
+  assert.equal(pursuit.axes.action_family.visible, false);
+
+  const accountableUptake = auditTutorStubResponseConfiguration({
+    text: 'You correctly separate Moth\u2019s docking from access to the core and identify the missing dated link to the wipe.',
+    configuration: { action_family: 'answer_accountably', engagement_stance: 'plain' },
+  });
+  assert.equal(accountableUptake.axes.action_family.visible, true);
+
+  const costumeGap = auditTutorStubResponseConfiguration({
+    text: 'You identify the missing costume detail in the scene.',
+    configuration: { action_family: 'answer_accountably', engagement_stance: 'plain' },
+  });
+  assert.equal(costumeGap.axes.action_family.visible, false);
 
   const precise = auditTutorStubResponseConfiguration({
     text: 'The ledger supports Wrenfold’s responsibility, not a named crew member.',

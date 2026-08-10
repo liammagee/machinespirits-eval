@@ -302,7 +302,7 @@ describe('tutor-stub dialogue closure', () => {
     assert.equal(open.verdict.explicitClosure, false);
   });
 
-  it('recognizes the two incident-record closure surfaces saved by the mechanism study', () => {
+  it('recognizes the incident-record closure surfaces saved by the mechanism studies', () => {
     const frame = buildTutorStubDialogueClosureFrame({
       lifecycle: createTutorStubDialogueClosureLifecycle({ enabled: true }),
       learnerDagModel: { assessment: { bottleneck: 'grounded_asserted_secret' } },
@@ -311,10 +311,23 @@ describe('tutor-stub dialogue closure', () => {
     for (const text of [
       'The incident log can now close: the public finding is complete.',
       'The incident record is now closed: the evidence establishes the finding.',
+      'The record closes on the Wrenfold crew, not an individual worker.',
+      'The record closes here; no further clue is needed.',
+      'The record closes at crew level; there is no next clue to give.',
+      'The record closes with Wrenfold named, not an individual handler.',
     ]) {
       const audit = auditTutorStubDialogueClosureResponse({ frame, text });
       assert.equal(audit.ok, true, text);
       assert.equal(audit.closesDialogue, true, text);
+    }
+
+    for (const text of [
+      'The record closes in on Moth as the evidence accumulates.',
+      'The record closes in on Moth, but the inquiry remains open.',
+    ]) {
+      const audit = auditTutorStubDialogueClosureResponse({ frame, text });
+      assert.equal(audit.ok, false, text);
+      assert.equal(audit.verdict.explicitClosure, false, text);
     }
   });
 

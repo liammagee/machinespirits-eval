@@ -129,6 +129,7 @@ const ANNOTATION_SPEECH_ACTS = Object.freeze([
   'learner_proposed_test',
   'criterion_question',
   'tutor_selection_request',
+  'learner_record_entry_request',
   'withdrawal',
   'transfer_to_learner',
   'other',

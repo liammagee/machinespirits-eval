@@ -2,13 +2,13 @@
 
 **Date:** 10 August 2026
 **Status:** original sequence complete through its stop rule; n=10 not
-launched. Two authorized all-turn mechanism executions are complete but
-incomplete and burned. The second ran from
-`cf1336f03a46b92080921c4722e964090193646e`: 19/24 children were valid and all
-152 valid decisions had exact structured replay parity, but five active-gate
-children failed closed on public-obligation delivery. A bounded corrective
-implementation is present; a new clean checkpoint, dry authorization, full
-rerun, and fresh annotations remain required.
+launched. Six authorized all-turn mechanism packets are incomplete and burned.
+The sixth ran from `853ad817b224723d69c48c24f58281b79a79f8cb`:
+22/24 children were valid, all 176 valid decisions had exact structured replay
+parity, and five valid delivery checks exposed bounded realization-audit false
+negatives. Two invalid children exposed one false learner-record obligation.
+A prospective repair is implemented; a new clean seventh checkpoint, dry
+authorization, full rerun, and fresh annotations remain required.
 **Workplan item:** `adaptive-warrant-public-obligation-ledger-and-inquiry-termin`
 
 ## Frozen evidence boundary
@@ -660,3 +660,38 @@ Verification passes 167/167 exact mechanism tests, 35/35 derivation worlds,
 22/22 prompt/world checks, 8,444/8,444 root tests, 137/137 tutor-core tests,
 and 490/490 workplan validations. Step 5—clean commit, push, dry request, and
 standing-authorized execution—is now the active boundary.
+
+## Current restart boundary after the sixth authorized run
+
+The clean `853ad817b224723d69c48c24f58281b79a79f8cb` execution under digest
+`bcfdb4383bda20c30a820bbd2ac7c904bb44307cc7e269f1ee71183c71799507`
+used 584 calls, reached 22/24 valid children, and preserved 176/176 structured
+parity. It failed on two false learner-record obligations and five finite
+delivery recognizer misses. The packet is burned.
+
+The remaining sequence is now:
+
+1. retain the prospective non-obligation `learner_record_entry_request` act
+   and its shared writable-entry grammar, with the genuine result-request
+   negative control;
+2. retain exact delivery controls for declarative `record closes` termination
+   and named-missing-warrant uptake, including pursuit and unrelated-gap
+   negatives;
+3. commit and push the fully verified clean checkpoint, generate its digest-
+   bound dry request, and run a seventh 24-dialogue matrix under the standing
+   in-scope authorization;
+4. only if that execution has 24 valid sealed children, 192/192 analysis
+   coverage, exact parity, and zero delivery mismatch, freeze all 96 observe
+   decisions; and
+5. obtain two isolated V4 annotations, then run the frozen scorer. Every one of
+   the six divergence dimensions must have non-aligned support and pass its
+   interpretation, magnitude, persistence, and joint gates.
+
+The sixth result strengthens only a narrow claim: the shared projector is
+replay-deterministic on valid decisions. It does not establish detector
+validity, mechanism decision quality, or downstream benefit.
+
+The prospective repair checkpoint passes lint, 35/35 derivation worlds, the
+focused mechanism/integrity and response/progression suites, 34/34 prompt/world
+boundary tests, 8,444/8,444 hermetic root tests, 137/137 tutor-core tests, and
+490/490 source workplan validation. The clean commit is the active boundary.

@@ -1064,6 +1064,13 @@ test('rapid handoff cannot take a question owned or forbidden by the handoff con
 test('typed writable requests include adding a fact to a public record without licensing ordinary echoes', () => {
   const learner = 'What should I put in the minutes about the chargers being dark during the stocktake?';
   assert.equal(tutorStubLearnerRequestsWritableEntry(learner), true);
+  for (const directedEntry of [
+    'Could you record that WF-11 shows outside crew access, while leaving who took the lunchbox unproved?',
+    'Do you want me to record that Moth had access, but that this does not show Moth wiped the core?',
+    'Should I record that Hessa had access, without treating access as proof?',
+  ]) {
+    assert.equal(tutorStubLearnerRequestsWritableEntry(directedEntry), true, directedEntry);
+  }
   assert.equal(tutorStubLearnerRequestsWritableEntry('The chargers were dark during the stocktake.'), false);
 
   const contract = compileTutorStubTurnProgressionContract({

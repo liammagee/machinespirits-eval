@@ -322,3 +322,25 @@ an unresolved closure blocker by itself. Only `open` or `overdue` gold state
 (with reactivated projected through `overdue`) defeats an otherwise valid
 close. This prevents the human instrument from reintroducing the exact
 inclusive-`open_count` confound already removed from the live projector.
+
+### 7.10 Sixth-packet measurement audit
+
+The sixth packet from `853ad817b224723d69c48c24f58281b79a79f8cb`
+preserved exact six-axis live/replay parity on every valid decision: 176/176
+with no structured mismatch. It nevertheless failed closed at 22/24 valid
+children and five delivery mismatches. Inspection localized both failure
+classes below the normative/descriptive projector.
+
+First, the speech-act boundary conflated a bounded modal request to record an
+already public finding with a tutor-owned request for an unavailable result.
+The new `learner_record_entry_request` act creates no obligation and shares its finite
+surface grammar with the writable-entry progression contract. Second, the
+realization audit missed four declarative record-closure inflections and one
+explicitly named missing-warrant uptake even though final family authority was
+preserved end to end.
+
+The corrections are deliberately lexical and bounded. They add no new
+divergence rule and do not alter the V4 predictions after seeing gold labels.
+The sixth packet remains burned. A fresh packet must establish execution and
+delivery validity before human readers can test interpretation, magnitude,
+and persistence on each of the six normative/descriptive axes.

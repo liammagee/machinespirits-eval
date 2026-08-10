@@ -915,3 +915,42 @@ The exact mechanism preflight is 167/167, derivation worlds 35/35,
 prompt/world checks 22/22, root 8,444/8,444, tutor-core 137/137, and workplan
 validation 490/490. The next evidential act is therefore the sixth clean-commit
 execution, not another instrument repair.
+
+## Progress Update — 11 August 2026, sixth run and two remaining instrument confounds
+
+The sixth authorized matrix ran from clean detached commit
+`853ad817b224723d69c48c24f58281b79a79f8cb` under digest
+`bcfdb4383bda20c30a820bbd2ac7c904bb44307cc7e269f1ee71183c71799507`.
+It used 584 recorded model calls. Twenty-two of 24 children were valid, with
+176 learner-analysis calls and 176/176 exact structured live/replay parity.
+Two invalid children and five delivery-audit misses kept the status
+`incomplete`, so the packet and its provisional annotation corpus are burned.
+
+The two invalid children share one false-debt mechanism. A learner asking
+“Could you record that ...?” or “Do you want me to record that ...?” was
+requesting an entry for an already public finding, but the public-speech-act
+instrument read the modal question as a request for a missing tutor result.
+That invented an obligation and sent deterministic recovery down an impossible deferral path.
+The prospective correction gives these bounded modal inversions an explicit
+non-obligation learner-record act while preserving questions about what a
+record reveals as tutor-directed result requests.
+
+The five valid-row misses did not reveal action displacement. All four family
+fields agreed. Four terminal turns used the natural declarative form “the
+record closes” here, at, on, or with the finding, outside the finite closure
+grammar. One accountable uptake explicitly identified the missing dated link,
+outside the finite answer recognizer. Exact saved-surface tests now admit these
+forms, reject “the record closes in on ...”, and reject an unrelated missing
+costume detail.
+
+This is another prospective instrument repair, not favorable evidence. A new
+clean seventh execution is required. Only a 24/24, 192/192, zero-mismatch
+packet can be frozen for the independent six-dimensional V4 annotations that
+test the normative/descriptive divergence model itself.
+
+The prospective seventh-run checkpoint is fully green without model calls:
+lint; 35/35 derivation worlds; focused mechanism/integrity and response/
+progression suites; 34/34 prompt/world boundary tests; 8,444/8,444 hermetic
+root tests; 137/137 tutor-core tests; and 490/490 source workplan validation.
+The next evidential act is the clean commit, digest-bound rehearsal, and fresh
+execution.

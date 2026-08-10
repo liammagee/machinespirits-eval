@@ -35,6 +35,8 @@ const SELECTION_QUESTION =
   /(?:\b(?:what|which)\b.{0,80}\b(?:(?:should|would|could|can|do) (?:i|we)|(?:i|we) (?:should|would|could|can)|(?:first|next))|\b(?:(?:can|could|will|would) you\s+|please\s+)?(?:choose|tell) me\b.{0,70}(?:\bwhat to\s+(?:check|compare|examine|inspect|test|weigh)\s+(?:first|next)\b|\bthe\s+(?:first|next)\s+(?:check|comparison|exhibit|test)\b))\s*[.?!]*$/iu;
 const WORDING_REQUEST =
   /(?:\b(?:can|could|will|would) you\b.{0,70}\b(?:give|provide|show|tell) me\b.{0,30}\b(?:exact|first|next|opening)?\s*(?:line|phrase|sentence|wording)\b|\b(?:give|provide|show|tell) me\b.{0,30}\b(?:exact|first|next|opening)?\s*(?:line|phrase|sentence|wording)\b|\bhow (?:can|could|should|would) i\b.{0,55}\b(?:phrase|say|state|word|write)\b)/iu;
+const LEARNER_RECORD_ENTRY_REQUEST =
+  /\b(?:(?:can|could|will|would) you\s+(?:please\s+)?|do you want me to\s+|(?:can|could|may|should|would) i\s+)(?:add|enter|include|note|put|record|write)\s+(?:that|this)\b/iu;
 const WITHDRAWAL = /\b(?:disregard that|forget that|never mind(?: that)?|withdraw (?:that|the request))\b/iu;
 const TRANSFER =
   /\b(?:i(?:['’]ll| will) (?:check|compare|inspect|test) .{0,60}? myself|leave .{0,60}?(?:comparison|test) to me)\b/iu;
@@ -243,6 +245,13 @@ export function classifyAdaptiveWarrantPublicSpeechAct({ learnerText = '', class
   }
   if (!directedResultSurface && EVIDENCE_CUE.test(operativeSurface) && SELECTION_QUESTION.test(operativeSurface)) {
     return { ...base, kind: 'tutor_selection_request', target: publicTarget(operativeSurface) };
+  }
+  // A request to enter the learner's explicit proposition in the shared
+  // record is a writable public act, not a request that the tutor discover or
+  // reveal an unknown result. Keep this before RESULT_REQUEST, whose general
+  // "could you record" branch intentionally covers requests for missing data.
+  if (LEARNER_RECORD_ENTRY_REQUEST.test(operativeSurface)) {
+    return { ...base, kind: 'learner_record_entry_request', target: null };
   }
   // Requests for copyable wording about an already-public statement are not
   // requests that the tutor perform or reveal a new evidence-producing test.
