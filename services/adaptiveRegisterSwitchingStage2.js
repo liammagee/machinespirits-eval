@@ -1,9 +1,6 @@
 import { getRouterSelectableEngagementRegisterNames } from './engagementRegisterRegistry.js';
 import { fisherExactTwoSided } from './fisherExact.js';
-import {
-  ADAPTIVE_REGISTER_SWITCHING as GRID,
-  checkAdaptiveTutorStackProvenance,
-} from './adaptiveRegisterSwitching.js';
+import { ADAPTIVE_REGISTER_SWITCHING as GRID, checkAdaptiveTutorStackProvenance } from './adaptiveRegisterSwitching.js';
 
 const ARM_ORDER = Object.freeze(['adaptive', 'routerWarm', 'pinnedSarcastic']);
 const PROFILE_TO_ARM = new Map(ARM_ORDER.map((arm) => [GRID.arms[arm].profile, arm]));
@@ -57,7 +54,12 @@ function continuousSummary(rows, accessor) {
 
 function binarySummary(rows) {
   const positive = rows.filter((row) => row.positiveOutcome === true).length;
-  return { n: rows.length, positive, negative: rows.length - positive, rate: rows.length ? positive / rows.length : null };
+  return {
+    n: rows.length,
+    positive,
+    negative: rows.length - positive,
+    rate: rows.length ? positive / rows.length : null,
+  };
 }
 
 function contrast(left, right) {
@@ -74,7 +76,8 @@ export function validateAdaptiveRegisterSwitchingStage1Gate(artifact, expectedPl
   if (report?.schema !== 'machinespirits.adaptive-register-switching-stage1-report.v1') {
     errors.push('Stage-1 artifact has the wrong or missing report schema');
   }
-  if (report?.status !== 'COMPLETE') errors.push(`Stage-1 report status is ${report?.status || 'missing'}, not COMPLETE`);
+  if (report?.status !== 'COMPLETE')
+    errors.push(`Stage-1 report status is ${report?.status || 'missing'}, not COMPLETE`);
   if (report?.decision !== 'PASS_STAGE1') {
     errors.push(`Stage-1 decision is ${report?.decision || 'missing'}, not PASS_STAGE1`);
   }
@@ -128,7 +131,8 @@ export function summarizeAdaptiveRegisterSwitchingStage2(dialogues, { stage1Gate
     }
     row.arm = arm;
     byArmRows[arm].push(row);
-    if (!GRID.scenarios.includes(row.scenarioId)) errors.push(`${label}: unexpected scenario ${row.scenarioId || 'missing'}`);
+    if (!GRID.scenarios.includes(row.scenarioId))
+      errors.push(`${label}: unexpected scenario ${row.scenarioId || 'missing'}`);
     else {
       const key = `${arm}::${row.scenarioId}`;
       scenarioArmCounts.set(key, (scenarioArmCounts.get(key) || 0) + 1);
@@ -140,7 +144,8 @@ export function summarizeAdaptiveRegisterSwitchingStage2(dialogues, { stage1Gate
     for (const turn of turns) {
       const turnLabel = `${label}:turn_${turn.turn}`;
       const expectedMenu = arm === 'adaptive' ? expectedAdaptiveMenu : expectedWarmMenu;
-      if (!sameMenu(turn.routerMenu, expectedMenu)) errors.push(`${turnLabel}: recorded router menu does not match ${arm}`);
+      if (!sameMenu(turn.routerMenu, expectedMenu))
+        errors.push(`${turnLabel}: recorded router menu does not match ${arm}`);
       if (!turn.selectedRegister) errors.push(`${turnLabel}: no selected register recorded`);
       if (arm === 'adaptive' && turn.routerSelectedRegister !== turn.selectedRegister) {
         errors.push(`${turnLabel}: adaptive selected register and router choice disagree`);
@@ -206,7 +211,9 @@ export function summarizeAdaptiveRegisterSwitchingStage2(dialogues, { stage1Gate
         bucket.registerScoreCount += 1;
       }
       if (turn.registerJudgeModel !== GRID.scoring.registerJudge) {
-        errors.push(`${turnLabel}: register judge is ${turn.registerJudgeModel || 'missing'}, not ${GRID.scoring.registerJudge}`);
+        errors.push(
+          `${turnLabel}: register judge is ${turn.registerJudgeModel || 'missing'}, not ${GRID.scoring.registerJudge}`,
+        );
       }
     }
     if (arm === 'pinnedSarcastic' && pinnedAssignmentTurns === 0) {
@@ -305,10 +312,7 @@ export function summarizeAdaptiveRegisterSwitchingStage2(dialogues, { stage1Gate
     learnerRubricChange: {
       byArm: learnerChangeByArm,
       adaptiveMinusRouterWarm: contrast(learnerChangeByArm.adaptive.mean, learnerChangeByArm.routerWarm.mean),
-      adaptiveMinusPinnedSarcastic: contrast(
-        learnerChangeByArm.adaptive.mean,
-        learnerChangeByArm.pinnedSarcastic.mean,
-      ),
+      adaptiveMinusPinnedSarcastic: contrast(learnerChangeByArm.adaptive.mean, learnerChangeByArm.pinnedSarcastic.mean),
       inferentialTest: 'not_preregistered_descriptive_only',
     },
     tutorV22Cost: {

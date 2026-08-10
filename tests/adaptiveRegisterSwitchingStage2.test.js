@@ -97,8 +97,7 @@ function syntheticStage2Dialogues() {
               turn,
               phase: turn === 1 ? 'resistance' : turn === 2 ? 'uptake' : 'other',
               selectedRegister: registerName,
-              routerSelectedRegister:
-                arm === 'pinnedSarcastic' && turn === 1 ? 'charismatic' : registerName,
+              routerSelectedRegister: arm === 'pinnedSarcastic' && turn === 1 ? 'charismatic' : registerName,
               assignedRegisterArm: arm === 'pinnedSarcastic' && turn === 1 ? 'sarcastic' : null,
               registerAssignmentSource: arm === 'pinnedSarcastic' && turn === 1 ? 'experiment_arm' : null,
               routerMenu: menu,
@@ -149,9 +148,7 @@ test('Stage-2 report is complete and keys its sole decision to adaptive versus r
   assert.equal(report.tutorV22Cost.byArm.adaptive.mean, 82);
   assert.ok(!Object.hasOwn(report, 'cueCountContrast'));
   assert.deepEqual(report.fidelityByRegister.ironic.gateIdentities, [`ironic@${GRID.measurement.gateVersion}`]);
-  assert.deepEqual(report.fidelityByRegister.sarcastic.gateIdentities, [
-    `sarcastic@${GRID.measurement.gateVersion}`,
-  ]);
+  assert.deepEqual(report.fidelityByRegister.sarcastic.gateIdentities, [`sarcastic@${GRID.measurement.gateVersion}`]);
   assert.ok(report.registeredMeasures.every((measure) => /measured/u.test(measure.status)));
 });
 

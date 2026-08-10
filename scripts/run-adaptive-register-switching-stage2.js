@@ -101,7 +101,9 @@ function getRegisterScore(scores, registerName, turnIndex) {
 function learnerRubricSequence(row) {
   const parsed = parseJson(row.learner_scores, null);
   if (!parsed || typeof parsed !== 'object') return [];
-  const multiAgent = String(row.learner_architecture || '').toLowerCase().includes('ego_superego');
+  const multiAgent = String(row.learner_architecture || '')
+    .toLowerCase()
+    .includes('ego_superego');
   return Object.values(parsed)
     .filter((entry) => entry && typeof entry === 'object')
     .map((entry) => {
@@ -334,7 +336,10 @@ export function stage2Dialogues(runId, options = {}) {
         const state = traceTurn.engagementState || {};
         const selectedRegister = canonicalRegister(state.selected_register || state.selected_mode);
         const routerSelectedRegister = canonicalRegister(
-          state.router_selected_register || state.router_selected_mode || state.selected_register || state.selected_mode,
+          state.router_selected_register ||
+            state.router_selected_mode ||
+            state.selected_register ||
+            state.selected_mode,
         );
         const resistance = Boolean(state.resistance_signal);
         const phase = resistance ? 'resistance' : seenResistance ? 'uptake' : 'other';
@@ -551,11 +556,9 @@ async function main() {
     return;
   }
 
-  const paidSubmodes = [
-    values['score-outcomes-run'],
-    values['score-register-run'],
-    values['read-manner-run'],
-  ].filter(Boolean);
+  const paidSubmodes = [values['score-outcomes-run'], values['score-register-run'], values['read-manner-run']].filter(
+    Boolean,
+  );
   if (paidSubmodes.length > 1) throw new Error('choose one paid Stage-2 submode at a time');
   if (values['report-run'] && (values['launch-approved'] || paidSubmodes.length)) {
     throw new Error('--report-run is a zero-call reporting mode');
