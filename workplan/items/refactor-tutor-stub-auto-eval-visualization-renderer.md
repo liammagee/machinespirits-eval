@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-auto-eval-visualization-renderer
 title: Extract tutor-stub auto-eval visualization renderer
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -19,6 +19,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-auto-eval-report-assets
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/633
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
     - docs/next-steps/2026-08-10-codebase-refactoring-post-auto-eval-assets-reconciliation.md
@@ -96,3 +98,8 @@ Log:
   syntax-checks cleanly. Four direct assertions, 100 focused reporting
   assertions, 8,370 hermetic root tests, 137 tutor-core tests, all fourteen
   risk groups, and every structural gate pass.
+- 2026-08-10 — PR #633 merged as `76a631d6` with every CI job green; the
+  serialized generated-view refresh advanced `main` to `50cfbfee`. Fresh
+  post-merge measurement confirms the 7,136-line executable, 1,130-line
+  presentation owner, exact fragment hashes, and zero-cycle contract, closing
+  this child.

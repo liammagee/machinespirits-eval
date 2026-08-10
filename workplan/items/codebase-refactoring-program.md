@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-24
 updated: 2026-08-10
-branch: codex/refactor-post-auto-eval-assets-reconciliation
+branch: codex/refactor-final-r6-reconciliation
 verification: >-
   Every accepted refactoring slice has a linked child card and parity gate;
   root plus in-housed tutor-core tests run from one clean-install contract;
@@ -26,6 +26,7 @@ links:
     - docs/next-steps/2026-08-10-codebase-refactoring-post-strategy-ledger-reconciliation.md
     - docs/next-steps/2026-08-10-codebase-refactoring-post-tutor-prompt-reconciliation.md
     - docs/next-steps/2026-08-10-codebase-refactoring-post-auto-eval-assets-reconciliation.md
+    - docs/next-steps/2026-08-10-codebase-refactoring-final-r6-reconciliation.md
   items:
     - refactor-required-run-manifest
     - refactor-v-series-fixtures
@@ -157,6 +158,7 @@ links:
     - refactor-dramatic-derivation-tutor-prompt-construction
     - refactor-tutor-stub-auto-eval-report-assets
     - refactor-tutor-stub-auto-eval-visualization-renderer
+    - refactor-poetics-browser-derivation-presentation
 tags:
   - refactoring
   - testing
@@ -1951,3 +1953,13 @@ Log:
   PR #632 and this child merge, refresh R6 evidence before choosing between a
   separately characterized trace/training projection and the poetics-browser
   domain/presentation split.
+- 2026-08-10 — PR #633 merged child 130 as `76a631d6`; generated views advanced
+  `main` to `50cfbfee`. Final R6 reconciliation closes the auto-eval
+  presentation arm at 7,136 executable lines and keeps its complexity-114
+  persisted training projection in place pending an independent data contract.
+  Fresh metrics record 5,064 repository files, 2,550 source files, 882,956
+  source-code lines, a synchronized 665-root/11-core hermetic manifest, and
+  zero cycles across 576 files. Triaged child 131,
+  `refactor-poetics-browser-derivation-presentation`, as the sole continuation:
+  characterize and extract the approximately 1,950-line derivation view family
+  from the 13,292-line poetics browser before any broader router split.
