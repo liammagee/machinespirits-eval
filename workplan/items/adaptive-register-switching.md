@@ -10,12 +10,16 @@ created: 2026-08-09
 updated: 2026-08-10
 branch: codex/adaptive-register-switching-stage2
 verification: Stage 2 run eval-2026-08-09-53421919 is COMPLETE at 105/105.
-  Registered measures 1-8 are present with no report errors. The primary
-  adaptive-vs-router-warm contrast found no evidence (29/35 vs 33/35, Fisher
-  p=.2595); report SHA-256 is
+  Stage 1 demonstrates trace-observable signal-contingent adaptation (18
+  switches; edged on 10/13 resistance turns, 0/7 uptake turns, 0 other turns).
+  Registered measures 1-8 are present with no report errors, but the primary
+  adaptive-vs-router-warm learner-outcome contrast found no evidence of
+  improvement (29/35 vs 33/35, Fisher p=.2595); report SHA-256 is
   86294c623ffbb71eaed217c86e2205da19101655f6a0e03f4fceb24b2a87af56.
+  The sealed private archive inventory is
+  71cd8ddcea09c048bb1db0ed9d834e67d013aad4af4d963bc9b4fcfa734fac54.
   Stage 3 is unauthorized and was not started.
-claim_status: exploratory
+claim_status: scope-bound
 depends_on:
   - register-mock-praise-probe
 links:
@@ -32,6 +36,8 @@ links:
   runs:
     - eval-2026-08-09-b09e5a10
     - eval-2026-08-09-53421919
+  archive:
+    - MS_DATA_HOME/runs/adaptive-register-switching/adaptive-register-switching-stage1-stage2-2026-08-10
 tags:
   - register
   - manner
@@ -73,7 +79,7 @@ edged register on 10/13 resistance turns and 0/7 uptake turns, and leaked no
 edged choice onto other turns. Ironic delivery was cue-compliant and
 manner-present on 4/4 turns; sarcastic delivery was cue-compliant on 6/6 and
 manner-present on 5/6, with the miss retained as a delivery failure. Measures
-Measures 5-8 remained uncollected and Stage 2 remained unauthorized at that
+5-8 remained uncollected and Stage 2 remained unauthorized at that
 checkpoint.
 
 2026-08-10 Codex: folded the frozen timing map into tutor-stub as the opt-in
@@ -150,3 +156,13 @@ overlay remains visible for research but is not promoted to a validated
 default. Artifact SHA-256:
 `86294c623ffbb71eaed217c86e2205da19101655f6a0e03f4fceb24b2a87af56`.
 Stage 2 is complete; Stage 3 is unauthorized and was not started.
+
+2026-08-10 Codex: recorded the final claim boundary explicitly. The positive
+result is mechanism-level adaptation: the router changed register policy in a
+signal-contingent, phase-sensitive, trace-observable way. The evidence gap is
+downstream learner improvement attributable to that adaptation; the Stage 2
+primary did not establish it, and the descriptive learner-change means were
+similar across arms. Sealed and catalogued the complete five-file Stage 1/2
+projection as evaluation-only private asset
+`adaptive-register-switching-stage1-stage2-2026-08-10`, inventory SHA-256
+`71cd8ddcea09c048bb1db0ed9d834e67d013aad4af4d963bc9b4fcfa734fac54`.

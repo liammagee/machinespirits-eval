@@ -1,6 +1,6 @@
 # Does switching into an edged register at the right moment help? — Frozen Pre-Registration
 
-Status: **FROZEN — Stage 2 complete; no primary evidence; stopped before Stage 3.** Frozen plan SHA-256:
+Status: **FROZEN — Stage 2 complete; adaptation demonstrated; learner improvement not demonstrated; stopped before Stage 3.** Frozen plan SHA-256:
 `da2723e47de143305e88a9a7b26688f6f58e4958e0b310ed4d7e147cd9734845`.
 The operator approved exactly that hash. The attended Stage 1 pilot and its
 fail-closed report completed without restart or widening. On 2026-08-10 the
@@ -275,6 +275,21 @@ design anchor used in the frozen power table. The policy therefore remains an
 inspectable, opt-in research seam in tutor-stub and is not promoted to a
 validated default.
 
+The bounded conclusion has two parts which must not be collapsed. First, the
+experiment **does demonstrate adaptation at the mechanism level**: the router
+read registered public learner-state signals, changed its per-turn register
+selection from the menu recorded in the trace, opened edged registers during
+resistance, and closed them on uptake. The Stage 1 manipulation gate quantified
+that behavior directly (18 switches; edged on 10/13 resistance turns, 0/7
+uptake turns, and 0 other turns), with each edged realization scored under its
+own gate. Second, the experiment **does not demonstrate improved learner
+outcomes caused by that adaptation**. The registered primary conversion
+contrast did not favor adaptive switching, and learner-rubric change was a
+descriptive secondary with similar arm means. Thus `NO_PRIMARY_EVIDENCE`
+refers to the learner-outcome advantage, not to the existence of adaptation.
+This is evidence that the mechanism adapts; it is not evidence that the
+adaptation is an effective learning policy.
+
 Fidelity is reported within register only. Ironic turns were 15/15
 cue-compliant, 12/15 manner-present, with register-rubric mean 91.167 under
 `ironic@stance-gate/2.0`. Sarcastic turns were 86/86 cue-compliant, 72/86
@@ -285,6 +300,12 @@ registers.
 Canonical zero-call artifact:
 `exports/adaptive-register-switching/stage2/eval-2026-08-09-53421919.json`,
 SHA-256 `86294c623ffbb71eaed217c86e2205da19101655f6a0e03f4fceb24b2a87af56`.
+The complete Stage 1/2 empirical projection is sealed in the private data
+archive as asset `adaptive-register-switching-stage1-stage2-2026-08-10` at
+`MS_DATA_HOME/runs/adaptive-register-switching/adaptive-register-switching-stage1-stage2-2026-08-10`.
+Its five-file inventory SHA-256 is
+`71cd8ddcea09c048bb1db0ed9d834e67d013aad4af4d963bc9b4fcfa734fac54`;
+the catalog marks it `evaluation_only_not_training_approved`.
 Stage 2 stops here. Stage 3 was not started.
 
 ## Registered limits, stated now
