@@ -170,6 +170,24 @@ test('public speech-act classifier does not invent tutor result debt from the fa
   });
   assert.equal(contactCriterion.kind, 'criterion_question');
   assert.equal(contactCriterion.creates_obligation, false);
+
+  const wording = classifyAdaptiveWarrantPublicSpeechAct({
+    learnerText:
+      'Can you give me the next line for WF-11—“an outside crew’s noon badge, not proof that the crew took the lunchbox”?',
+  });
+  assert.equal(wording.kind, 'learner_wording_request');
+  assert.equal(wording.creates_obligation, false);
+  assert.equal(wording.target, null);
+});
+
+test('public target terms normalize alphanumeric identifiers without empty or trailing-hyphen tokens', () => {
+  const request = classifyAdaptiveWarrantPublicSpeechAct({
+    learnerText: 'Show me what the WF-11 record entry reveals.',
+  });
+  assert.equal(request.kind, 'tutor_directed_public_result_request');
+  assert.ok(request.target.public_terms.includes('wf-11'));
+  assert.equal(request.target.public_terms.some((term) => !term || term.endsWith('-')), false);
+  assert.equal(request.target.subject_terms.some((term) => !term || term.endsWith('-')), false);
 });
 
 test('public-result debt is scoped to the directed clause instead of incidental earlier claims', () => {
@@ -328,7 +346,33 @@ test('public-obligation ledger accepts only a named, concrete accountable deferr
   });
   assert.equal(deferred.blocking_obligation, null);
   assert.equal(deferred.obligations[0].status, 'deferred');
-  assert.equal(deferred.obligations[0].deferral.deadline_turn, 2);
+  assert.equal(deferred.obligations[0].deferral.deadline_turn, null);
+  assert.equal(
+    deferred.obligations[0].deferral.reactivation_policy,
+    'matching_public_release_or_explicit_learner_reminder',
+  );
+
+  const stillDeferred = ledger.assess({
+    turn: 3,
+    learnerText: 'What would you like me to check next?',
+    priorTutorOutcome: {
+      turn: 2,
+      tutor_text: 'The town verdict establishes access, not who handled the coin.',
+    },
+  });
+  assert.equal(stillDeferred.blocking_obligation, null);
+  assert.equal(stillDeferred.obligations[0].status, 'deferred');
+
+  const reminded = ledger.assess({
+    turn: 4,
+    learnerText: 'Can you now tell me what the weight reading showed?',
+    priorTutorOutcome: {
+      turn: 3,
+      tutor_text: 'The witness list gives us the next public check.',
+    },
+  });
+  assert.equal(reminded.blocking_obligation.id, deferred.obligations[0].id);
+  assert.equal(reminded.blocking_obligation.status, 'reactivated');
 });
 
 test('delivery audit ignores questions inside exact released evidence when checking a deferral', () => {

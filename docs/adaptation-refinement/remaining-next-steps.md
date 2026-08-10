@@ -531,3 +531,51 @@ approve that new digest; rerun all 24 dialogues; freeze a new 96-case packet;
 obtain two fresh independent blind annotations; then run the already frozen
 consensus/precision/recall and mechanism scorer. No outcome comparison is
 licensed unless every execution and mechanism gate passes.
+
+## Current restart boundary after the third authorized run
+
+The clean `b3cb1d19a619557752c063feb3669aa1563f59d9` execution under digest
+`eee15ccd11eee4913a24d038c96da86e9e68b79fb458b2aa7b4eb1130239b7a5`
+collected 24/24 rows but did not complete the mechanism study. Twenty-two
+children were valid, two active children were sealed `evidence_invalid`, and
+the 176 valid decisions retained 176/176 exact structured live/replay parity.
+Delivery application still had 11 mismatched decisions and 19 issues. This
+third run and packet are burned and must not be annotated for passage.
+
+The remaining defects were narrower than the prior execution:
+
+1. a request for the next copyable `WF-11` line was misclassified as a request
+   for a newly supplied evidence result, while hyphenated-identifier splitting
+   admitted `wf-` and an empty token;
+2. a valid public-result deferral automatically reactivated on the next turn,
+   even without a learner reminder or target-matching evidence release, so
+   stale debt controlled later unrelated turns; and
+3. one deterministic recovery path let a writable entry displace the active
+   obligation sentence, leaving the deferral after an authored source. The
+   final progression audit correctly failed that child.
+
+The corrective sequence is now implementation-only and uses no model calls:
+
+1. classify copyable wording requests separately and normalize identifier
+   terms without empty or dangling-hyphen values;
+2. keep accountable deferrals nonblocking until a matching public release or
+   explicit reminder, with exact live/offline lifecycle parity coverage;
+3. give active public debt final ownership of the first fallback sentence,
+   ahead of writable-entry substitution and every authored source, and audit
+   that actual public boundary rather than an inferred semantic segment;
+4. run the focused mechanism, terminal guard-accounting, progression,
+   prompt/world, derivation, workplan, and full hermetic suites;
+5. commit and push a new clean checkpoint, then generate a new dry
+   authorization request from its exact SHA; and
+6. stop for approval of the new digest before any fourth model-backed run.
+
+Steps 1–4 are complete at this checkpoint. The exact study preflight passes
+163/163 mechanism tests, 35/35 derivation worlds, and 22/22 prompt/world checks;
+the full hermetic suite passes 8,430/8,430 root tests and 137/137 tutor-core
+tests; both workplan checks pass 490/490 items. Step 5 is the next boundary.
+
+After a fourth run, continue only if all 24 children are valid, all 192 learner-
+analysis calls are present, structured parity is exact, and delivery mismatch
+is zero. Then—and only then—freeze the 96 observe cases, obtain two fresh
+independent annotations, and run the existing consensus/precision/recall and
+mechanism scorer. Any failure burns that packet and stops before outcome work.

@@ -778,3 +778,52 @@ decision quality. The next admissible sequence is another clean committed
 checkpoint, dry rehearsal, approval of its new exact digest, a fresh complete
 24-dialogue run, then two independent annotations of that run's newly frozen
 96 observe decisions and the unchanged scorer.
+
+## Progress Update — 10 August 2026, third authorized run and deferral-lifecycle repair
+
+The third authorized matrix used clean detached commit
+`b3cb1d19a619557752c063feb3669aa1563f59d9` and approval digest
+`eee15ccd11eee4913a24d038c96da86e9e68b79fb458b2aa7b4eb1130239b7a5`.
+It collected every planned row, but remained `incomplete`: 22 children were
+valid and two active children were sealed `evidence_invalid`. Across 176 valid
+turns, learner analysis was complete and structured live/replay parity was
+176/176 with zero mismatches. Delivery application reported 11 mismatched
+decisions and 19 issues. The execution and its annotation packet are burned;
+no annotation or outcome comparison is licensed from them.
+
+The two sealed failures separated cleanly. Larkspur treated a learner's request
+for the next copyable `WF-11` line as a request that the tutor produce a new
+public evidence result; the same path exposed `wf-` and an empty target token.
+Foxtrot constructed the right accountable deferral for a requested log entry,
+but a writable-entry recovery path placed it after an unrelated authored
+source, outside the obligation-owned opening. The guard rejected that public
+ordering rather than releasing invalid evidence.
+
+The 11 delivery mismatches revealed a lifecycle defect behind most later
+public-obligation pressure. A valid deferral was set to expire on the very next
+turn, so unrelated subsequent turns reactivated stale debt even when the
+learner had not renewed it and no matching evidence had become public. The
+ledger now preserves `deferred` as nonblocking until one of those two public
+events occurs: a matching release can satisfy it, and an explicit reminder can
+reactivate it.
+
+The correction also separates copy-editing/wording requests from result
+requests, normalizes alphanumeric target identifiers, prevents writable-entry
+fallback substitution while public debt owns the turn, and applies a final
+composition check that moves the already-audited deferral to the first host
+sentence before any authored source. The live progression audit reads that
+literal boundary rather than depending on semantic uptake segmentation. An
+exact child-process fixture now reproduces the combined log-entry/writable-
+entry collision without a model call, while the structured replay fixture
+checks that deferred debt stays nonblocking with exact live/offline parity.
+
+No-model verification is green: the digest-bound mechanism preflight passes
+163/163 tests, derivation quality passes 35/35 worlds, prompt/world integrity
+passes 22/22, the full hermetic suite passes 8,430/8,430 root plus 137/137
+tutor-core tests, and both workplan checks pass 490/490 items.
+
+These corrections burn the third digest. The next admissible boundary remains
+a clean committed checkpoint, a new dry request, and explicit approval of its
+new digest before a fourth run. Annotation begins only after 24/24 valid
+children, 192/192 analysis calls, exact structured parity, and zero delivery-
+application mismatch.

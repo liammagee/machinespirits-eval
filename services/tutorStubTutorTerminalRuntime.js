@@ -1,3 +1,26 @@
+/**
+ * Public-result debt owns the first fallback sentence. Some recovery
+ * composers legitimately replace ordinary uptake with a writable entry or an
+ * integration qualification; this final boundary restores the already-audited
+ * answer/deferral before any authored source without rewriting source bytes.
+ */
+export function ensureTutorStubPublicObligationFallbackOwnership({
+  text = '',
+  obligationUptake = '',
+  turnProgressionContract = null,
+} = {}) {
+  const fallbackText = String(text || '').trim();
+  const ownedText = String(obligationUptake || '').trim();
+  if (turnProgressionContract?.public_obligation_contract?.complete !== true || !ownedText) return fallbackText;
+  if (fallbackText.startsWith(ownedText)) return fallbackText;
+  const duplicateOffset = fallbackText.indexOf(ownedText);
+  const remainder =
+    duplicateOffset < 0
+      ? fallbackText
+      : `${fallbackText.slice(0, duplicateOffset)}${fallbackText.slice(duplicateOffset + ownedText.length)}`.trim();
+  return [ownedText, remainder].filter(Boolean).join(' ');
+}
+
 export function createTutorStubTutorTerminalRuntime(dependencies = {}) {
   const {
     appendTraceEvent,
@@ -162,9 +185,11 @@ export function createTutorStubTutorTerminalRuntime(dependencies = {}) {
       latestEvidence: humanDiscourseFrame?.scaffoldState?.releaseState?.latestReleased || null,
       recentTutorTexts,
     };
+    const publicObligationOwnsFallback =
+      firstDraftContract?.progression?.public_obligation_contract?.complete === true;
     const fallbackRequiresSpecificUptake =
       closureFallbackSelected ||
-      firstDraftContract?.progression?.public_obligation_contract?.complete === true ||
+      publicObligationOwnsFallback ||
       (audits?.responseCompositionAudit?.issues || []).some(
         (issue) => issue.type === 'learner_selected_test_not_acknowledged',
       ) ||
@@ -188,7 +213,9 @@ export function createTutorStubTutorTerminalRuntime(dependencies = {}) {
       ? deterministicFallbackUptake
       : preservableTutorUptake(audits) || firstRepairUptake || deterministicFallbackUptake;
     const fallbackUptakeCandidate =
-      firstDraftContract?.opening?.writable_entry_requested === true && !/^Write:\s*[“"]/u.test(candidateFallbackUptake)
+      !publicObligationOwnsFallback &&
+      firstDraftContract?.opening?.writable_entry_requested === true &&
+      !/^Write:\s*[“"]/u.test(candidateFallbackUptake)
         ? deterministicTutorStubWritableEntryUptake({ firstDraftContract })
         : candidateFallbackUptake;
     const fallbackUptakePreparation = prepareTutorStubDueClueUptake({
@@ -254,10 +281,15 @@ export function createTutorStubTutorTerminalRuntime(dependencies = {}) {
             : scaffoldGuardEnabled
               ? deterministicGenerousInferenceFallback(fallbackContext)
               : deterministicTutorStubContextualFallback(fallbackContext);
-    const fallbackText =
+    const composedFallbackText =
       dramaticReleaseGuardEnabled || instructionalMetaRepair
         ? baseFallbackText
         : ensureFallbackComposition(baseFallbackText, fallbackUptake);
+    const fallbackText = ensureTutorStubPublicObligationFallbackOwnership({
+      text: composedFallbackText,
+      obligationUptake: publicObligationOwnsFallback ? deterministicFallbackUptake : '',
+      turnProgressionContract: firstDraftContract?.progression || null,
+    });
     const fallbackClosureAudit = closureGuardEnabled
       ? auditTutorStubDialogueClosureResponse({ text: fallbackText, frame: dialogueClosureFrame })
       : audits.closureAudit;

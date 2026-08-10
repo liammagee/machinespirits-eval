@@ -72,7 +72,7 @@
     {
       "file": "services/tutorStubTutorTerminalRuntime.js",
       "claim": "clue-span insertion, deterministic safety fallback, terminal audit, and rejection accounting",
-      "sha256": "1855c3af5f06f7d6a515ddfcabf3c0c4ae002756775b0fcb93d2e149d250d3c2"
+      "sha256": "87cdd0f908d7fe5828c87ab26f7d7d7754d78deb80370c9fe3532002be787381"
     },
     {
       "file": "services/tutorStubTutorDraftAudit.js",

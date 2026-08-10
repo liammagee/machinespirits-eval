@@ -234,3 +234,26 @@ field/type allowlists. A fake-provider capture across tutor, analyzer, learner,
 and recovery roles removed one concealed Marrick example from the otherwise
 generic learner-analysis rubric. These checks establish transport and evidence
 integrity, not decision quality.
+
+### 7.7 Accountable deferral is a public lifecycle state, not a one-turn timer
+
+The third mechanism execution exposed an architectural ambiguity in the first
+ledger implementation. A valid target-specific deferral was nonblocking only
+until an automatic next-turn deadline, after which any unrelated tutor outcome
+reactivated it. That treated elapsed turns as if they were a public speech act
+or evidence event and made stale requests govern later dialogue.
+
+The corrected semantics are event-based. `deferred` remains a live but
+nonblocking public obligation. A target-matching public release may satisfy it;
+an explicit learner reminder of the same target reactivates it; withdrawal or
+transfer closes it under the existing rules. Mere turn passage and unrelated
+tutor speech do not change its status. This keeps the ledger distinct from the
+short-horizon action-family contract tracker and makes live/resume/offline
+replay share the same public transition boundary.
+
+Delivery ownership is likewise literal. When an active obligation and an
+authored source coexist, the answer or accountable deferral must be the first
+host sentence before that source. The terminal fallback now restores this
+ordering after every semantic composition path, and the live audit checks the
+actual public boundary rather than trusting an inferred uptake segment. These
+are prospective mechanism corrections; the failed execution remains burned.

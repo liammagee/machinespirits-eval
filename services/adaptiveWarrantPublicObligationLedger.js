@@ -33,6 +33,8 @@ const INTERPRETATION_QUESTION =
   /\bwhat\b.{0,60}\b(?:evidence|exhibit|fact|mark|reading|record|result|trace|weight)\b.{0,40}\bmean(?:s|ing)?\b/iu;
 const SELECTION_QUESTION =
   /(?:\b(?:what|which)\b.{0,80}\b(?:(?:should|would|could|can|do) (?:i|we)|(?:i|we) (?:should|would|could|can)|(?:first|next))|\b(?:(?:can|could|will|would) you\s+|please\s+)?(?:choose|tell) me\b.{0,70}(?:\bwhat to\s+(?:check|compare|examine|inspect|test|weigh)\s+(?:first|next)\b|\bthe\s+(?:first|next)\s+(?:check|comparison|exhibit|test)\b))\s*[.?!]*$/iu;
+const WORDING_REQUEST =
+  /(?:\b(?:can|could|will|would) you\b.{0,70}\b(?:give|provide|show|tell) me\b.{0,30}\b(?:exact|first|next|opening)?\s*(?:line|phrase|sentence|wording)\b|\b(?:give|provide|show|tell) me\b.{0,30}\b(?:exact|first|next|opening)?\s*(?:line|phrase|sentence|wording)\b|\bhow (?:can|could|should|would) i\b.{0,55}\b(?:phrase|say|state|word|write)\b)/iu;
 const WITHDRAWAL = /\b(?:disregard that|forget that|never mind(?: that)?|withdraw (?:that|the request))\b/iu;
 const TRANSFER =
   /\b(?:i(?:['’]ll| will) (?:check|compare|inspect|test) .{0,60}? myself|leave .{0,60}?(?:comparison|test) to me)\b/iu;
@@ -101,12 +103,12 @@ function contentTerms(value) {
   const rawTerms =
     oneLine(value)
       .toLowerCase()
-      .match(/[a-z][a-z-]{2,}/gu) || [];
+      .match(/\b[a-z](?:[a-z0-9]|-(?=[a-z0-9])){2,}\b/gu) || [];
   return [
     ...new Set(
       rawTerms
-        .flatMap((term) => [term, ...term.split('-')])
-        .filter((term) => !TARGET_STOPWORDS.has(term))
+        .flatMap((term) => [term, ...term.split('-').filter((part) => /^[a-z]{3,}$/u.test(part))])
+        .filter((term) => term && !term.endsWith('-') && !TARGET_STOPWORDS.has(term))
         .map((term) => TARGET_TERM_ALIASES[term] || term),
     ),
   ];
@@ -241,6 +243,13 @@ export function classifyAdaptiveWarrantPublicSpeechAct({ learnerText = '', class
   }
   if (!directedResultSurface && EVIDENCE_CUE.test(operativeSurface) && SELECTION_QUESTION.test(operativeSurface)) {
     return { ...base, kind: 'tutor_selection_request', target: publicTarget(operativeSurface) };
+  }
+  // Requests for copyable wording about an already-public statement are not
+  // requests that the tutor perform or reveal a new evidence-producing test.
+  // Keep them out of the cross-turn result-debt ledger even when the quoted
+  // sentence contains words such as "record", "evidence", or "line".
+  if (WORDING_REQUEST.test(operativeSurface)) {
+    return { ...base, kind: 'learner_wording_request', target: null };
   }
 
   // A direct result clause wins over an earlier proposal in the same turn:
@@ -481,13 +490,14 @@ export function createAdaptiveWarrantPublicObligationLedger({ obligations = [] }
         row.deferral = {
           public_reason: 'target named as currently unavailable',
           next_public_step: 'target-matching public test or release',
-          deadline_turn: Number(tutorOutcome.turn) + 1,
+          deadline_turn: null,
+          reactivation_policy: 'matching_public_release_or_explicit_learner_reminder',
         };
         addHistory(row, { type: 'deferred', turn: Number(tutorOutcome.turn), delivery });
-      } else if (row.status !== 'deferred' || Number(tutorOutcome.turn) >= Number(row.deferral?.deadline_turn || 0)) {
-        row.status = row.status === 'deferred' ? 'reactivated' : 'overdue';
+      } else if (row.status !== 'deferred') {
+        row.status = 'overdue';
         addHistory(row, {
-          type: row.status === 'reactivated' ? 'reactivated' : 'expired',
+          type: 'expired',
           turn: Number(tutorOutcome.turn),
           delivery,
         });

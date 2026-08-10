@@ -1003,10 +1003,12 @@ function declarativeFallbackFocus(
           ? 'assay result'
           : target.kind === 'comparison_result'
             ? 'comparison result'
-            : target.kind === 'mark_or_tool_result'
+          : target.kind === 'mark_or_tool_result'
               ? 'mark-or-tool result'
               : target.kind === 'record_entry'
-                ? 'record entry'
+                ? (target.public_terms || []).includes('log')
+                  ? 'log entry'
+                  : 'record entry'
                 : 'public result';
     const targetLabel = [...subjects, kindLabel].join('-');
     return `The ${targetLabel} is not public yet; once a matching public record is available, I can answer it.`;
@@ -1446,11 +1448,17 @@ export function auditTutorStubLiveTurnProgressionV1({
   const uptakeQuestionCount = hostQuestionPositions(uptake, authoredSourceTexts).length;
   const developmentQuestionCount = hostQuestionPositions(development, authoredSourceTexts).length;
   const preSourceText = textBeforeFirstAuthoredSource(responseText, authoredSourceTexts);
-  const uptakePrecedesSource = preSourceText === null || oneLine(preSourceText).includes(uptake);
+  // Public-result debt is a literal delivery-order constraint, not a semantic
+  // segmentation guess. When an authored source is present, audit the actual
+  // first public host sentence before it. This remains narrower than the whole
+  // pre-source span and therefore cannot let a late pre-source pivot discharge
+  // an obligation that did not own the opening sentence.
+  const firstPreSourceSentence =
+    preSourceText === null ? null : liveSentences(oneLine(preSourceText), []).at(0) || '';
   const publicObligation = auditPublicObligationResolution({
     contract,
     text: responseText,
-    obligationOwnedText: uptakePrecedesSource ? uptake : '',
+    obligationOwnedText: firstPreSourceSentence === null ? uptake : firstPreSourceSentence,
     authoredSourceTexts,
   });
   appendPublicObligationIssues(issues, publicObligation, {

@@ -531,3 +531,52 @@ requires a new clean commit, dry request, and exact approval. Only a fresh run
 with 24 valid children, zero delivery-application mismatch, and complete
 structured parity may freeze the 96 observe decisions for two independent
 annotations and the scorer above.
+
+## Third authorized mechanism execution — failed and burned (10 August 2026)
+
+The third matrix ran from clean detached commit
+`b3cb1d19a619557752c063feb3669aa1563f59d9` under exact authorization digest
+`eee15ccd11eee4913a24d038c96da86e9e68b79fb458b2aa7b4eb1130239b7a5`.
+It collected all 24 planned rows but remained `incomplete`: 22 children were
+valid and two active-gate children were sealed `evidence_invalid`. The 176
+valid tutor decisions had 176/176 learner-analysis calls and 176/176 exact
+structured live/replay agreement. Delivery application was much narrower than
+in either prior run, but still recorded 11 mismatched decisions and 19 issues.
+The run and its annotation packet are burned; they cannot be annotated for
+passage.
+
+One invalid child exposed a precision error: the copy-editing request `give me
+the next line for WF-11` was treated as a request for a newly produced public
+test result. Its identifier also exposed malformed target tokenization: `WF-11`
+could yield `wf-` and an empty split term. The other child exposed a recovery-
+ownership error: the accountable deferral for `Show me the first log entry`
+was placed after a writable entry and an unrelated authored source, so the
+final progression audit correctly rejected it.
+
+Most surviving delivery mismatches exposed the same cross-turn lifecycle
+error. A valid accountable deferral was assigned an automatic next-turn
+deadline and reactivated on the following unrelated tutor turn. That forced
+stale public-result debt into later learner moves that neither renewed the
+request nor received target-matching released evidence.
+
+The bounded correction treats copyable wording requests as non-result speech
+acts, tokenizes alphanumeric identifiers without empty/trailing-hyphen terms,
+and keeps a valid deferral nonblocking until a matching public release or an
+explicit learner reminder. At terminal recovery, active public debt bypasses
+the writable-entry substitution and a final composition boundary restores its
+answer/deferral as the first host sentence before any authored source. The live
+progression auditor now checks that literal first public boundary instead of
+trusting a semantic uptake segmentation, and typed record deferrals retain
+`log` when the requested target is a log entry.
+
+The exact digest-bound no-model preflight passes 163/163 mechanism tests, all
+35 derivation worlds, and 22/22 prompt/world checks. The complete hermetic
+repository suite passes 8,430/8,430 root tests plus 137/137 tutor-core tests;
+the workplan source and schema checks pass 490/490 items. These checks establish
+implementation consistency only.
+
+These are mechanism repairs, not favorable study evidence. A fourth execution
+still requires a new clean commit, dry request, and exact approval. Only 24/24
+valid children, zero delivery-application mismatch, and exact structured
+parity may release a fresh 96-case observe packet to the two independent
+annotators and frozen scorer.

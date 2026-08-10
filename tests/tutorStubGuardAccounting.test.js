@@ -71,7 +71,7 @@ process.stdin.on('end', () => {
     ? ${JSON.stringify(SINGLE_PLAIN_RECOVERY)}
     : process.env.FAKE_CODEX_FIXTURE_MODE === 'soft-style'
       ? ${JSON.stringify(PLAIN_STYLE_DRAFT)}
-    : ['preserve-uptake', 'obligation-preserve-uptake'].includes(process.env.FAKE_CODEX_FIXTURE_MODE)
+    : ['preserve-uptake', 'obligation-preserve-uptake', 'obligation-writable-collision'].includes(process.env.FAKE_CODEX_FIXTURE_MODE)
     ? ${JSON.stringify(SAFE_UPTAKE_BROKEN_DEVELOPMENT)}
     : process.env.FAKE_CODEX_FIXTURE_MODE === 'terse-uptake'
       ? ${JSON.stringify(TERSE_UPTAKE_BROKEN_DEVELOPMENT)}
@@ -116,6 +116,8 @@ process.stdin.on('end', () => {
       ? 'It does not prove Verrell did it; it only confirms the town suspects him.'
       : mode === 'obligation-preserve-uptake'
         ? 'What did the public balance record show about the clipped shilling?'
+      : mode === 'obligation-writable-collision'
+        ? 'We should identify who accessed the core and when; that gives us a lead, not guilt. Show me the first log entry.'
       : mode === 'soft-style'
         ? 'Drop the formality. Talk to me like an equal. Stop the detective novel.'
         : 'What should I write in the trial-book?',
@@ -133,6 +135,7 @@ process.stdin.on('end', () => {
       'quality-only',
       'registered-fallback',
       'obligation-preserve-uptake',
+      'obligation-writable-collision',
     ].includes(mode)
   ) {
     cliArgs.splice(cliArgs.indexOf('--no-register-selection'), 1);
@@ -396,6 +399,22 @@ test('an active public obligation displaces preserved non-answering uptake befor
   );
   assert.equal(accounting?.outcome, 'guarded_deterministic_fallback');
   assert.match(fallback, /^The clip-balance result is not public yet/iu);
+  assert.ok(fallback.indexOf('not public yet') < fallback.indexOf(EXACT_DUE_SOURCE));
+  assert.equal(progression?.public_obligation?.resolved, true, JSON.stringify(progression?.issues));
+  assert.equal(progression?.public_obligation?.outcome, 'named_unavailability_with_concrete_next_step');
+});
+
+test('active obligation ownership survives a simultaneous writable-entry recovery path', () => {
+  const { events } = runGuardFixture('obligation-writable-collision', { warrantGate: 'active' });
+  const turn = events.find((row) => row.type === 'turn_complete')?.turnRecord;
+  const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
+  const fallback = accounting?.finalDelivery?.candidate?.text || '';
+  const progression = accounting?.finalDelivery?.audits?.liveTurnProgressionAudit;
+
+  assert.equal(turn?.warrantGateDecision?.public_obligation?.speech_act?.creates_obligation, true);
+  assert.equal(accounting?.outcome, 'guarded_deterministic_fallback');
+  assert.match(fallback, /^The log entry is not public yet/iu);
+  assert.doesNotMatch(fallback, /^Write:/u);
   assert.ok(fallback.indexOf('not public yet') < fallback.indexOf(EXACT_DUE_SOURCE));
   assert.equal(progression?.public_obligation?.resolved, true, JSON.stringify(progression?.issues));
   assert.equal(progression?.public_obligation?.outcome, 'named_unavailability_with_concrete_next_step');

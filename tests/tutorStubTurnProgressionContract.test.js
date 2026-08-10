@@ -14,6 +14,7 @@ import {
 } from '../services/tutorStubTurnProgressionContract.js';
 import { auditTutorStubQuestionSupportResponse } from '../services/tutorStubQuestionSupport.js';
 import { tutorStubSubstantiveLearnerEcho } from '../services/tutorStubResponseComposition.js';
+import { ensureTutorStubPublicObligationFallbackOwnership } from '../services/tutorStubTutorTerminalRuntime.js';
 import { buildTutorStubWorldScaffold } from '../services/tutorStubWorldScaffold.js';
 
 function composition({
@@ -332,6 +333,38 @@ test('deterministic obligation handoff does not repeat a deferral already delive
   assert.doesNotMatch(handoff, /not public yet/iu);
   assert.match(handoff, /named public-record release/iu);
   assert.equal(audit.ok, true, JSON.stringify(audit.issues));
+  assert.equal(audit.public_obligation.outcome, 'named_unavailability_with_concrete_next_step');
+});
+
+test('terminal recovery restores obligation-owned deferral before writable entry and authored source', () => {
+  const contract = obligationProgressionContract();
+  const obligationUptake = deterministicTutorStubTurnProgressionUptake({ contract });
+  const writableEntry =
+    'Write: “The public evidence does not yet establish who wiped the music core.”';
+  const authoredSource =
+    'I look at the inquiry log: Hessa was at the mess-hall rail all evening.';
+  const lateDeferral = `${writableEntry} ${authoredSource} ${obligationUptake}`;
+  const repaired = ensureTutorStubPublicObligationFallbackOwnership({
+    text: lateDeferral,
+    obligationUptake,
+    turnProgressionContract: contract,
+  });
+  const audit = auditTutorStubLiveTurnProgressionV1({
+    contract,
+    text: repaired,
+    responseComposition: {
+      segments: {
+        uptake: obligationUptake,
+        development: repaired.slice(obligationUptake.length).trim(),
+      },
+    },
+    authoredSourceTexts: [authoredSource],
+  });
+
+  assert.equal(repaired.startsWith(obligationUptake), true);
+  assert.equal(repaired.indexOf(obligationUptake, obligationUptake.length), -1);
+  assert.ok(repaired.indexOf(obligationUptake) < repaired.indexOf(authoredSource));
+  assert.equal(audit.public_obligation.resolved, true, JSON.stringify(audit.issues));
   assert.equal(audit.public_obligation.outcome, 'named_unavailability_with_concrete_next_step');
 });
 

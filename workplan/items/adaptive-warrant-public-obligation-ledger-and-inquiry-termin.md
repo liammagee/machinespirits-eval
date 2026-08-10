@@ -141,3 +141,25 @@ complete no-model repository suite passes 8,427/8,427 root plus 137/137
 tutor-core tests. The item remains active pending a new committed checkpoint,
 exact dry authorization, 24/24 valid rerun, fresh 96-case independent annotation
 pair, and passage of the frozen scorer.
+
+The third authorized execution from clean commit
+`b3cb1d19a619557752c063feb3669aa1563f59d9` collected all 24 rows and improved
+to 22 valid children, 176/176 exact structured live/replay decisions, and 11
+delivery mismatches with 19 issues. It remains failed and burned: two active
+children were sealed `evidence_invalid`, so its packet cannot be annotated for
+passage. The audit isolated a wording-request false obligation, malformed
+hyphenated-identifier terms, next-turn reactivation of valid deferrals, and a
+writable-entry fallback path that placed the required deferral after an
+authored source.
+
+The current correction makes deferral reactivation event-based (matching
+release or explicit learner reminder), keeps wording requests out of result
+debt, normalizes identifier terms, and gives the active obligation the literal
+first fallback sentence before every authored source. Exact unit, child-
+process, and structured live/offline replay regressions cover those failures.
+The exact preflight passes 163/163 mechanism tests, 35/35 derivation worlds,
+and 22/22 prompt/world checks; the full hermetic suite passes 8,430/8,430 root
+tests plus 137/137 tutor-core tests; workplan checks pass 490/490 items. The item
+remains active pending a new pushed clean checkpoint and dry authorization
+request, a 24/24 valid zero-delivery-mismatch rerun, two independent annotations
+of its fresh 96-case packet, and passage of the unchanged scorer.

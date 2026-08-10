@@ -1384,6 +1384,12 @@ test('structured offline replay reconstructs turn one and exact input/ledger par
         offline.map((decision) => decision.public_obligation_before),
         liveDecisions.map((decision) => decision.public_obligation_before),
       );
+      for (const decisions of [liveDecisions, offline]) {
+        assert.equal(decisions[1].public_obligation.blocking_obligation, null);
+        assert.equal(decisions[1].public_obligation.obligations[0].status, 'deferred');
+        assert.equal(decisions[2].public_obligation.blocking_obligation, null);
+        assert.equal(decisions[2].public_obligation.obligations[0].status, 'deferred');
+      }
       const summary = summarizeAdaptiveWarrantTrace({
         tracePath,
         job: {
