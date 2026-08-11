@@ -82,7 +82,6 @@ function semanticEvent({
 }) {
   return {
     event_id: eventId,
-    speaker: 'learner',
     speech_act: speechAct,
     target,
     requested_or_proposed_action: action,
@@ -215,15 +214,14 @@ test('validated semantic events cover the V2 result-request and value-type misse
         },
         action: {
           mode: 'requested',
-          actor: 'tutor',
+          executor: 'tutor',
           action: 'supply_public_result',
           action_object_id: 'target-shelf-two-access-record',
         },
       }),
     ],
     {
-      publicText:
-        'The public case includes target-shelf-two-access-record identified by public-id-shelf-two.',
+      publicText: 'The public case includes target-shelf-two-access-record identified by public-id-shelf-two.',
     },
   );
   assert.equal(extraction.extraction_status, 'accepted');
@@ -260,7 +258,7 @@ test('live semantic extraction is paraphrase-invariant and contrast-sensitive at
   };
   const requestAction = {
     mode: 'requested',
-    actor: 'tutor',
+    executor: 'tutor',
     action: 'supply_public_result',
     action_object_id: 'target-shelf-two-access-record',
   };
@@ -283,11 +281,15 @@ test('live semantic extraction is paraphrase-invariant and contrast-sensitive at
   const ledgers = requests.map((extraction, index) =>
     createAdaptiveWarrantPublicObligationLedger().assess({
       turn: 1,
-      learnerText: index === 0 ? 'Show me the shelf-two access times.' : 'Please report the access times for shelf two.',
+      learnerText:
+        index === 0 ? 'Show me the shelf-two access times.' : 'Please report the access times for shelf two.',
       semanticEventExtraction: extraction,
     }),
   );
-  assert.equal(requests.every((row) => row.extraction_status === 'accepted'), true);
+  assert.equal(
+    requests.every((row) => row.extraction_status === 'accepted'),
+    true,
+  );
   assert.equal(ledgers[0].blocking_obligation.target.signature, ledgers[1].blocking_obligation.target.signature);
   assert.equal(ledgers[0].speech_act.kind, ledgers[1].speech_act.kind);
 
@@ -302,7 +304,7 @@ test('live semantic extraction is paraphrase-invariant and contrast-sensitive at
         target: typedTarget,
         action: {
           mode: 'proposed',
-          actor: 'learner',
+          executor: 'learner',
           action: 'perform_public_test',
           action_object_id: 'target-shelf-two-access-record',
         },
@@ -325,15 +327,16 @@ test('live semantic extraction is paraphrase-invariant and contrast-sensitive at
 });
 
 test('event-to-engagement compilation resolves tutor selection as deference without hiding analytic multiplicity', () => {
-  const learnerText = 'Would you choose the first matter for me to examine?';
+  const learnerText = 'Choose the first public record for me. I think its timing column is decisive.';
   const extraction = semanticExtraction(learnerText, [
     semanticEvent({
       learnerText,
       eventId: 'selection',
       speechAct: 'tutor_selection_request',
+      span: 'Choose the first public record for me',
       action: {
         mode: 'requested',
-        actor: 'tutor',
+        executor: 'tutor',
         action: 'select_next_step',
         action_object_id: 'action-object-first-matter',
       },
@@ -343,6 +346,7 @@ test('event-to-engagement compilation resolves tutor selection as deference with
       eventId: 'analytic',
       speechAct: 'analytic_contribution',
       action: null,
+      span: 'I think its timing column is decisive',
     }),
   ]);
   const signal = compileAdaptiveWarrantSemanticSignal(extraction);
@@ -352,7 +356,7 @@ test('event-to-engagement compilation resolves tutor selection as deference with
   assert.equal(signal.engaged_analytic_present, true);
 });
 
-test('conflicting semantic actors become uncertain and cannot mutate the warrant ledger', () => {
+test('overlapping non-atomic semantic events become uncertain and cannot mutate the warrant ledger', () => {
   const learnerText = 'Check the public log.';
   const shared = {
     learnerText,
@@ -369,22 +373,22 @@ test('conflicting semantic actors become uncertain and cannot mutate the warrant
     [
       semanticEvent({
         ...shared,
-        eventId: 'tutor-actor',
+        eventId: 'tutor-executor',
         speechAct: 'tutor_directed_public_result_request',
         action: {
           mode: 'requested',
-          actor: 'tutor',
+          executor: 'tutor',
           action: 'supply_public_result',
           action_object_id: 'target-public-log',
         },
       }),
       semanticEvent({
         ...shared,
-        eventId: 'learner-actor',
+        eventId: 'learner-executor',
         speechAct: 'learner_proposed_test',
         action: {
           mode: 'proposed',
-          actor: 'learner',
+          executor: 'learner',
           action: 'perform_public_test',
           action_object_id: 'target-public-log',
         },

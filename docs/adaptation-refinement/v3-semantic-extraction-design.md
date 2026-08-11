@@ -1,6 +1,6 @@
 # V3 Semantic Extraction Design and Predeclared Gate
 
-**Status:** prospective design; no V3 implementation or V3 labels exist
+**Status:** V3 contract revision implemented prospectively; no valid V3 diagnostic labels exist
 
 **Declared:** 11 August 2026
 
@@ -50,7 +50,7 @@ not an in-place repair of V2.
 ### 2.1 Envelope and multiplicity
 
 The learner-analysis result must contain one
-`machinespirits.adaptation-refinement.semantic-event-extraction.v2` envelope.
+`machinespirits.adaptation-refinement.semantic-event-extraction.v3` envelope.
 An utterance may contain zero, one, or several ordered events. Compound speech
 is not collapsed to a single primary label: “I would compare the dies; what
 does the comparison show?” contains both a proposed action and a result
@@ -61,13 +61,12 @@ The conceptual envelope is:
 
 ```json
 {
-  "schema": "machinespirits.adaptation-refinement.semantic-event-extraction.v2",
+  "schema": "machinespirits.adaptation-refinement.semantic-event-extraction.v3",
   "source_turn": 4,
   "source_text_sha256": "...",
   "events": [
     {
       "event_id": "turn-004-event-01",
-      "speaker": "learner",
       "speech_act": "tutor_directed_public_result_request",
       "target": {
         "kind": "record_entry",
@@ -78,7 +77,7 @@ The conceptual envelope is:
       },
       "requested_or_proposed_action": {
         "mode": "requested",
-        "actor": "tutor",
+        "executor": "tutor",
         "action": "supply_public_result",
         "action_object_id": "target-shelf-two-access-record"
       },
@@ -101,11 +100,13 @@ verify the exact saved offsets rather than copying them from this document.
 
 ### 2.2 Required event fields
 
-Every candidate event has these required fields:
+Every candidate event has these required fields. `speaker` is deliberately not
+one of them: current-turn authorship already establishes it, so the harness
+adds `speaker=learner` after parsing and before validation, replay, consensus,
+or scoring.
 
 | Field | Contract |
 |---|---|
-| `speaker` | `learner` or `tutor`. V3 runtime extraction is seated on the current learner-analysis call, so current-turn events must say `learner`. The wider enum prevents an implicit speaker assumption in saved artifacts and permits later symmetric use without a schema rewrite. |
 | `speech_act` | One declared act from the closed V3 vocabulary. Unknown acts use `other`; they are never invented as near-synonyms. |
 | `target` | A public target object or `null`. It separates the object under discussion from the values requested about that object. |
 | `requested_or_proposed_action` | A typed action object or `null`, distinguishing who is being asked to act from who proposed the action. |
@@ -166,14 +167,56 @@ answer about a different shelf, person, or record.
 The action object uses three independent fields:
 
 - `mode`: `requested`, `proposed`, or `none`;
-- `actor`: `learner`, `tutor`, `joint`, `unspecified`, or `none`;
+- `executor`: `learner`, `tutor`, `joint`, `unspecified`, or `none`;
 - `action`: one closed operation such as `supply_public_result`,
   `perform_public_test`, `select_next_step`, `record_public_claim`,
   `explain_wording`, `withdraw_request`, or `none`.
 
+`speaker` and `executor` are different types. Speaker is mechanical turn
+authorship and is never submitted to a reader. Executor is the reader judgment
+about who must perform the action. A tutor-directed result, tutor-selection,
+record-entry, wording, or repair request requires `executor != speaker`; in
+this learner-turn instrument that means `tutor`, `joint`, or `unspecified` as
+licensed by the act contract. A learner proposal uses `learner` or `joint`.
+Withdrawal is not a request to the tutor and retains learner execution.
+
 Thus “I will check the shelf-two access record” and “show me the shelf-two
-access times” may share a target while producing different actors, modes,
+access times” may share a target while producing different executors, modes,
 actions, and obligation consequences.
+
+### 2.3.1 Zero-call reader-field tabletop
+
+Before the fourth diagnostic freeze, every reader-returned field was examined
+with the question: can two correct readers follow the written contract and
+still disagree? The resulting allocation is fixed below. The harness must not
+ask a reader for a fact it already knows.
+
+| Field or decision | Owner | Closed rule |
+|---|---|---|
+| Event multiplicity and order | Reader, then mechanical ordering | One event per independent clause-level act that changes a distinct typed state. One clause receives one act under the precedence table. Distinct events require non-overlapping minimal literal spans and are mechanically ordered by span start. |
+| `speaker` | Harness | Current packet authorship supplies `learner`; absent from reader schema. |
+| `speech_act` | Reader | One value from the closed vocabulary under the within-clause precedence table. No synonymous labels. |
+| `target_id` | Reader | The public object or relation under inquiry, chosen from the catalogue; requested values are never targets. |
+| `target.kind` | Harness | Derived exactly from the selected `target_id`; absent from reader schema. |
+| `public_identifier_ids` | Harness | Exact catalogue identifiers for `target_id`; absent from reader schema. |
+| `requested_value_types` | Reader | Exact closed-set values explicitly requested or produced by the clause; may be empty. A value such as `time` or `match_status` is not a subject or target kind. |
+| `component_ids` | Reader | Exact catalogue answer components explicitly requested or produced; may be empty. |
+| `executor` | Reader | The party who must perform the action, not the speaker. Request-type acts cannot use learner execution. |
+| `action_object_id` | Reader | The public action object licensed by the clause, chosen from the catalogue. |
+| action `mode` and operation | Harness | Derived exactly from `action_object_id`; absent from reader schema and checked against the speech act. |
+| `evidence_span.text` | Reader | The shortest complete literal clause, occurring exactly once and not overlapping another event span. |
+| span offsets and event order | Harness | Derived from the unique literal span and audited; absent from reader schema. |
+| `genuinely_ambiguous` | Reader | True only when two complete typed readings remain after every closed rule; then `events=[]`. |
+| `note` | Reader | Public rationale only; excluded from identity, consensus, joins, scores, and gates. |
+
+Multiplicity is closed for the three known boundary families. A record-entry
+request receives a second `analytic_contribution` only when a separate clause
+independently states an inference or evidential limit. A tutor-selection
+request receives a second `low_agency_deferral` only when a separate clause
+explicitly refuses, cannot make, or delegates the choice. A proposal followed
+by a request for its result is two events. One request for several values is
+one event with several value and component IDs. Overlapping events are invalid
+rather than an alternative way to express uncertainty.
 
 ### 2.4 Evidence and public-only validation
 
@@ -184,7 +227,7 @@ event is accepted:
 2. the evidence span text equals the indexed substring;
 3. all public identifiers occur in the current public transcript or the
    public decision-time world frame;
-4. the action actor/mode combination is legal;
+4. the action executor/mode combination is legal;
 5. target subject and requested value types occupy different fields;
 6. no target, identifier, answer, future clue, secret, or technical trace is
    introduced from outside the public decision-time payload;
@@ -199,7 +242,7 @@ proposal, agency state, or analytic state.
 
 The extractor must use an uncertainty reason rather than guess when two
 material readings remain plausible. The initial reasons are
-`ambiguous_speech_act`, `ambiguous_actor`, `ambiguous_target`,
+`ambiguous_speech_act`, `ambiguous_executor`, `ambiguous_target`,
 `ambiguous_value_type`, `referent_not_public`, `span_not_literal`, and
 `insufficient_context`.
 
@@ -241,7 +284,7 @@ Accepted events contribute engagement labels as follows:
 | `register_complaint` | `register_complaint` |
 | `repetition_complaint` | `repetition_complaint` |
 | `low_agency_deferral` | `low_agency_deferral`; set `deference_present=true` |
-| `tutor_selection_request` with `mode=requested`, `actor=tutor`, and `action=select_next_step` | `low_agency_deferral`; set `deference_present=true` |
+| `tutor_selection_request` with `mode=requested`, `executor=tutor`, and `action=select_next_step` | `low_agency_deferral`; set `deference_present=true` |
 | `analytic_contribution` | `engaged_analytic`; set `engaged_analytic_present=true` |
 | `learner_proposed_test` or `criterion_question` | `engaged_analytic`; set `engaged_analytic_present=true` |
 | every other accepted event | no engagement contribution |
@@ -275,11 +318,12 @@ one deduplicated `low_agency_deferral` label and
 the deference primary. A repair request or stall remains primary over both,
 while the deference boolean remains available for sustained history.
 
-Two asserted events that assign incompatible actors or modes to the same
-overlapping evidence span are not resolved by precedence. The validator marks
-both `ambiguous_actor` or `ambiguous_speech_act`, so neither mutates engagement
-state. This prevents the compiler from becoming a replacement semantic
-classifier.
+Two asserted events over the same or overlapping evidence span are not
+resolved by precedence. The validator marks both with
+`ambiguous_multiplicity`, so neither mutates engagement state. Executor and
+speech-act ambiguity are expressed on one uncertain event, never by emitting
+competing overlapping events. This prevents the compiler from becoming a
+replacement semantic classifier.
 
 ## 3. Extraction seat and failure behaviour
 
@@ -388,10 +432,12 @@ Two isolated extraction readers receive, for every case:
 They do not receive the model extraction, validator output, obligation ledger,
 warrant decision, condition identity, active-arm response, private key,
 support-plan tags, later turns, technical trace, or the other reader's output.
-Each reader returns the ordered semantic events, target ID, requested
-value types, action mode/actor/action, literal evidence span, and whether the
-utterance is genuinely ambiguous under the handbook. Reader confidence is not
-used as a substitute for field agreement.
+Each reader returns event multiplicity, speech act, target ID, requested value
+types, component IDs, action executor, action-object ID, literal evidence span,
+and whether the utterance is genuinely ambiguous under the handbook. The
+harness supplies speaker; derives target kind and public identifiers from the
+target ID; and derives action mode and operation from the action-object ID.
+Reader confidence is not used as a substitute for field agreement.
 
 The reader response schema carries only the literal `evidence_span.text`, not
 numeric offsets. The text must be non-empty, no longer than 240 characters,
@@ -429,7 +475,7 @@ blind replication, not cross-model validation.
 ### 4.2 Extraction consensus and metrics
 
 Hard extraction consensus requires both readers to agree on event count and,
-for the relevant event, speech act, action mode, action actor, action,
+for the relevant event, speech act, action mode, action executor, action,
 target-present status, target ID, requested value types, and ambiguity.
 Span differences are scored separately and do not erase otherwise hard field
 consensus. A reader disagreement or either reader marking genuine ambiguity is
@@ -443,7 +489,7 @@ The extractor is scored against hard-consensus fields with:
 - speech-act micro-F1 and macro-F1;
 - result-request precision and recall;
 - request-versus-proposal macro-F1;
-- action mode/actor/action exact accuracy;
+- action mode/executor/action exact accuracy;
 - target-present accuracy and target-kind accuracy;
 - subject/value-type partition accuracy;
 - requested-component exact-set accuracy;
@@ -474,6 +520,28 @@ to end fails, extraction or event-to-reducer compilation is at fault. No layer
 may borrow another layer's score.
 
 ## 5. Predeclared V3 corpus split
+
+### 5.0 Invalid instrument three: actor-contract failure
+
+The third V3 diagnostic at clean commit `7df153d9` is preserved at
+`/private/tmp/adaptive-warrant-v3-semantic-diagnostic-7df153d9` with status
+`evidence_invalid`. It produced hard consensus on only 10/24 cases. The core
+request/proposal support cells were present (4 result requests and 5 proposed
+tests), but both independent readers assigned incompatible meanings to the
+reader field then named `actor`: one treated it as the utterance speaker and
+the other as the requested action performer. Record-entry requests reached
+0/2 hard consensus and tutor-selection requests 1/2. Smaller disagreements
+also exposed under-specified event multiplicity and target-kind selection,
+including the V2 family in which a requested value type could be read as the
+subject.
+
+This is contract death three, not evidence about model capability, V3 semantic
+accuracy, or warrant policy. Its cases, responses, and results are burned and
+must not be copied into another diagnostic or gate corpus. No decision-reader
+or outcome call followed it. The fourth instrument replaces reader-authored
+`actor` with mechanical `speaker` plus reader-judged `executor`, removes every
+other harness-known field from the reader response, and closes multiplicity
+and target/value rules in the tabletop above.
 
 ### 5.1 Targeted rare-state diagnostic
 
@@ -558,7 +626,7 @@ The preflight must establish both representation invariance and semantic
 sensitivity. Equivalent mock responses may vary display prose, notes, JSON key
 order, evidence-span extent, and the order of fields declared as sets without
 changing semantic consensus or the gate verdict. Conversely, changing one
-meaning-bearing speech act, actor, target ID, action ID, requested value type,
+meaning-bearing speech act, executor, target ID, action ID, requested value type,
 or component ID must be detected. The complete prepare, assemble, consensus,
 and score path must also reject unknown catalogue entries, ambiguous identity,
 non-literal evidence, malformed envelopes, and under-supported threshold
@@ -575,12 +643,20 @@ Tests must be strict about semantic behaviour and evidence integrity, but
 invariant to harmless representational variation. No free-text field may
 determine identity, consensus, joins, state mutation, or gate passage.
 
-After the zero-call preflight, at most one separately authorized two-call
-smoke may use synthetic cases that are permanently excluded from every
-diagnostic and gate corpus. It checks that the declared model route can return
-the canonical-ID envelope without truncation, schema repair, arithmetic, or
-hidden normalization. Any preflight or smoke defect is repaired prospectively
-and rechecked before fresh cases are frozen.
+After the zero-call preflight, exactly two reader calls may use three synthetic
+cases that are permanently excluded from every diagnostic and gate corpus.
+Their fresh surface text must separately instantiate the three failure
+patterns: a record-entry request beside an analytic clause, a tutor-selection
+request beside an explicit choice deferral, and a proposal followed by a
+result request. Neither wording nor case identity may reuse a burned case.
+
+The smoke passes only when both calls complete without repair or prohibited
+tools, both responses assemble using declared literal-span derivation and
+ordering only, all 3/3 cases reach hard cross-reader consensus, and each
+consensus identity exactly matches the preregistered typed pattern including
+multiplicity, speech acts, targets, executor, and action object. Merely
+returning schema-valid JSON is insufficient. A failure blocks the diagnostic
+freeze.
 
 ## 6. Predeclared V3 thresholds
 
@@ -616,7 +692,7 @@ All applicable checks must pass:
 | Result-request precision | at least 0.90 |
 | Result-request recall | at least 0.75 |
 | Request/proposal macro-F1 | at least 0.80 |
-| Action mode/actor/action exact accuracy | at least 0.80 |
+| Action mode/executor/action exact accuracy | at least 0.80 |
 | Target-present and target-kind accuracy | each at least 0.80 |
 | Subject/value-type partition accuracy | at least 0.90 |
 | Requested-component exact-set accuracy | at least 0.85 |
@@ -719,6 +795,16 @@ The sequence stops before the representative run if the diagnostic lacks
 reader-backed support, reveals an unresolved semantic or reader-interface
 defect, exceeds its call ceiling, or requires any hand repair. A principled
 change burns that diagnostic and requires a new clean commit and freeze.
+
+The fourth semantic diagnostic is the final contract-refinement attempt in
+this V3 cycle. If it again fails hard consensus for a contract-definition
+reason rather than a model-capability error, there is no fifth refinement and
+no new all-field diagnostic. The failed artifact is preserved, and any later
+outcome study must be prospectively scoped to the semantic fields and derived
+policy cells that already demonstrated hard reader consensus. Fields without
+proven consensus are reported as unvalidated and cannot support a mechanism
+claim. A model-capability failure remains a substantive negative result under
+the declared contract; it is not repaired by rewriting reader instructions.
 
 The representative sequence stops without scoring if any execution
 prerequisite, seal, parity, delivery, prompt, leak, provenance, payload, or

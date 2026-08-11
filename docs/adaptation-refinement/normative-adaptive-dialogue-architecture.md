@@ -115,7 +115,7 @@ The terminology should be tested against Brandomian commitments, entitlements, a
 
 ```yaml
 commitment:
-  actor: tutor
+  executor: tutor
   proposition: persist_with_current_explanatory_strategy
   warrant:
     - learner_has_not_yet_seen_second_example
@@ -1045,3 +1045,28 @@ completion owns an explicit public closure. The visibility matrix is audited
 family by family. Separately, an exact required handoff is a bound public span:
 if the whole question is the terminal response suffix, punctuation inside its
 quoted prior evidence cannot change its identity.
+
+## 31. Semantic observation separates known authorship from judged execution
+
+The semantic boundary must not ask a reader or model seat for facts the
+harness already owns. Current-turn speaker is mechanical authorship. Target
+kind and public identifiers derive from a selected public target ID; action
+mode and operation derive from a selected action-object ID; span offsets and
+event order derive from unique literal spans. Reader judgment is confined to
+event multiplicity, speech act, target ID, requested values/components,
+action executor and object, literal support, and genuine ambiguity.
+
+Speaker and executor are distinct types. A learner can speak a request whose
+executor is the tutor; a learner proposal can instead name the learner as
+executor. Request-type acts reject `executor=speaker`. Separate typed events
+require independent non-overlapping clause spans, and the compiler consumes
+their ordered identities without rereading learner prose. This preserves the
+deterministic DAG while preventing reader-authored metadata from becoming a
+hidden lexical or representational layer.
+
+Instrument validity now has a semantic contract smoke in addition to the
+zero-call pipeline preflight. Two independent readers must agree on the exact
+typed identities of fresh record-entry, tutor-selection, and compound
+proposal/result cases before a diagnostic can freeze. A fourth
+contract-definition failure ends contract refinement for this cycle and
+restricts later outcome claims to fields with demonstrated consensus.

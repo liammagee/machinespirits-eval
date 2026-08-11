@@ -1726,3 +1726,32 @@ synthetic smoke may then check real-model schema usability, but those cases are
 permanently excluded from research corpora. Only after both checks pass may a
 new clean commit freeze fresh diagnostic cases. No downstream outcome run is
 licensed.
+
+## Progress Update — 12 August 2026, V3 contract death three closed prospectively
+
+The third V3 semantic diagnostic frozen from clean commit `7df153d9` is
+`evidence_invalid`, not a mechanism result. Only 10/24 cases reached hard
+semantic consensus. The central defect was that the reader field named
+`actor` admitted two correct readings—utterance speaker or action performer—
+while smaller disagreements exposed unclosed event-multiplicity and
+target-kind choices. Record-entry requests reached 0/2 hard consensus and
+tutor-selection requests 1/2. Binary decision agreement had remained perfect,
+so the failure is localized to the semantic reader contract. No decision or
+outcome run followed.
+
+The prospective fourth instrument makes speaker mechanical from turn
+authorship and asks readers only for the closed-set action `executor`. Target
+kind, public identifiers, action mode and operation, span offsets, and event
+order are also harness-derived. One event is required per independent
+non-overlapping clause-level act; record-entry, tutor-selection, and compound
+proposal/result patterns now have explicit multiplicity rules. A zero-call
+tabletop accounts for every reader field, and a two-call smoke must obtain 3/3
+hard cross-reader consensus on fresh asymmetric cases with exact preregistered
+typed identities before any diagnostic freeze.
+
+This is the final semantic contract-refinement attempt in V3. If the fourth
+diagnostic again fails hard consensus for contract-definition reasons, there
+will be no fifth rewrite: later outcome scope must be restricted to fields
+with proven consensus. All three prior semantic corpora remain burned. The
+next freeze must use wholly fresh cases from a new clean commit and remains a
+diagnostic instrument, not prevalence or gate evidence.

@@ -8,6 +8,10 @@ import { parseArgs } from 'node:util';
 
 import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
 import {
+  adaptiveWarrantSemanticConsensusIdentity,
+  buildAdaptiveWarrantSemanticConsensus,
+} from '../services/adaptiveWarrantSemanticAnnotation.js';
+import {
   assembleAdaptiveWarrantSemanticAnnotationResponse,
   prepareAdaptiveWarrantSemanticAnnotationBatches,
 } from './prepare-adaptive-warrant-semantic-annotations.js';
@@ -47,22 +51,73 @@ function cleanSource() {
 
 export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
   const catalog = {
-    schema: 'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v2',
+    schema: 'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v3',
     targets: [
-      { target_id: 'target-smoke-harbor-log', display_label: 'synthetic harbor log' },
-      { target_id: 'target-smoke-bell-record', display_label: 'synthetic bell record' },
+      {
+        target_id: 'target-smoke-north-vault-note',
+        kind: 'record_entry',
+        public_identifier_ids: ['public-id-smoke-north-vault'],
+        allowed_value_types: ['record_text'],
+        component_ids: ['bounded_finding'],
+        display_label: 'synthetic north-vault note',
+      },
+      {
+        target_id: 'target-smoke-copper-latch-plate-r',
+        kind: 'mark_or_tool_result',
+        public_identifier_ids: ['public-id-smoke-copper-latch', 'public-id-smoke-plate-r'],
+        allowed_value_types: ['match_status'],
+        component_ids: ['match_status'],
+        display_label: 'synthetic copper-latch comparison',
+      },
+      {
+        target_id: 'target-smoke-archive-choice',
+        kind: 'public_exhibit_result',
+        public_identifier_ids: ['public-id-smoke-archive-choice'],
+        allowed_value_types: ['other'],
+        component_ids: ['next_check'],
+        display_label: 'synthetic archive-choice set',
+      },
     ],
     public_identifiers: [
-      { public_identifier_id: 'public-id-smoke-harbor', display_label: 'harbor-seven' },
-      { public_identifier_id: 'public-id-smoke-bell', display_label: 'bell H' },
+      { public_identifier_id: 'public-id-smoke-north-vault', display_label: 'north-vault note' },
+      { public_identifier_id: 'public-id-smoke-copper-latch', display_label: 'copper latch' },
+      { public_identifier_id: 'public-id-smoke-plate-r', display_label: 'plate R' },
+      { public_identifier_id: 'public-id-smoke-archive-choice', display_label: 'archive checks' },
     ],
     components: [
-      { component_id: 'clock_time', display_label: 'clock time' },
-      { component_id: 'recorded_sound', display_label: 'recorded sound' },
+      { component_id: 'bounded_finding', display_label: 'bounded finding' },
+      { component_id: 'match_status', display_label: 'match status' },
+      { component_id: 'next_check', display_label: 'next check' },
     ],
     action_objects: [
-      { action_object_id: 'action-object-smoke-report-log', display_label: 'report the harbor log time' },
-      { action_object_id: 'action-object-smoke-inspect-bell', display_label: 'inspect the bell record' },
+      {
+        action_object_id: 'action-object-smoke-enter-bounded-finding',
+        mode: 'requested',
+        action: 'record_public_claim',
+        target_id: 'target-smoke-north-vault-note',
+        display_label: 'enter the bounded north-vault finding',
+      },
+      {
+        action_object_id: 'action-object-smoke-select-archive-check',
+        mode: 'requested',
+        action: 'select_next_step',
+        target_id: null,
+        display_label: 'select the first archive check',
+      },
+      {
+        action_object_id: 'action-object-smoke-compare-copper-latch',
+        mode: 'proposed',
+        action: 'perform_public_test',
+        target_id: 'target-smoke-copper-latch-plate-r',
+        display_label: 'compare the copper latch with plate R',
+      },
+      {
+        action_object_id: 'action-object-smoke-report-copper-match',
+        mode: 'requested',
+        action: 'supply_public_result',
+        target_id: 'target-smoke-copper-latch-plate-r',
+        display_label: 'report the copper-latch match status',
+      },
     ],
   };
   return {
@@ -74,19 +129,98 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
     semantic_annotation_catalog: catalog,
     cases: [
       {
-        sample_id: 'synthetic-smoke-result-request',
-        current_learner_turn: { turn: 2, learner: 'Please report the harbor-seven log time.' },
-        public_evidence_at_decision: [
-          'target-smoke-harbor-log is identified by public-id-smoke-harbor.',
-        ],
+        sample_id: 'synthetic-smoke-record-entry-request',
+        current_learner_turn: {
+          turn: 2,
+          learner:
+            'The north-vault note establishes receipt, not transfer; please enter that bounded finding in our ledger.',
+        },
+        public_evidence_at_decision: ['target-smoke-north-vault-note is identified by public-id-smoke-north-vault.'],
       },
       {
-        sample_id: 'synthetic-smoke-proposed-test',
-        current_learner_turn: { turn: 2, learner: 'I will inspect the bell H record myself.' },
+        sample_id: 'synthetic-smoke-tutor-selection-request',
+        current_learner_turn: {
+          turn: 2,
+          learner: 'Select the first archive check for me; I cannot choose between them.',
+        },
+        public_evidence_at_decision: ['public-id-smoke-archive-choice names the available archive checks.'],
+      },
+      {
+        sample_id: 'synthetic-smoke-compound-probe',
+        current_learner_turn: {
+          turn: 2,
+          learner: 'I will test the copper latch against plate R; afterward, tell me the recorded match status.',
+        },
         public_evidence_at_decision: [
-          'target-smoke-bell-record is identified by public-id-smoke-bell.',
+          'target-smoke-copper-latch-plate-r is identified by public-id-smoke-copper-latch and public-id-smoke-plate-r.',
         ],
       },
+    ],
+  };
+}
+
+function expectedSmokeIdentities() {
+  const northVault = {
+    kind: 'record_entry',
+    target_id: 'target-smoke-north-vault-note',
+    public_identifier_ids: ['public-id-smoke-north-vault'],
+    requested_value_types: ['record_text'],
+    component_ids: ['bounded_finding'],
+  };
+  const copperLatch = {
+    kind: 'mark_or_tool_result',
+    target_id: 'target-smoke-copper-latch-plate-r',
+    public_identifier_ids: ['public-id-smoke-copper-latch', 'public-id-smoke-plate-r'],
+    requested_value_types: ['match_status'],
+    component_ids: ['match_status'],
+  };
+  const event = (speechAct, target, mode, executor, action, actionObjectId) => ({
+    speaker: 'learner',
+    speech_act: speechAct,
+    target,
+    requested_or_proposed_action:
+      actionObjectId === null ? null : { mode, executor, action, action_object_id: actionObjectId },
+  });
+  return {
+    'synthetic-smoke-record-entry-request': [
+      event('analytic_contribution', northVault, null, null, null, null),
+      event(
+        'learner_record_entry_request',
+        northVault,
+        'requested',
+        'tutor',
+        'record_public_claim',
+        'action-object-smoke-enter-bounded-finding',
+      ),
+    ],
+    'synthetic-smoke-tutor-selection-request': [
+      event(
+        'tutor_selection_request',
+        null,
+        'requested',
+        'tutor',
+        'select_next_step',
+        'action-object-smoke-select-archive-check',
+      ),
+      event('low_agency_deferral', null, null, null, null, null),
+    ],
+    'synthetic-smoke-compound-probe': [
+      event(
+        'learner_proposed_test',
+        copperLatch,
+        'proposed',
+        'learner',
+        'perform_public_test',
+        'action-object-smoke-compare-copper-latch',
+      ),
+      event(
+        'tutor_directed_public_result_request',
+        copperLatch,
+        'requested',
+        'tutor',
+        'supply_public_result',
+        'action-object-smoke-report-copper-match',
+      ),
     ],
   };
 }
@@ -107,14 +241,25 @@ export function prepareAdaptiveWarrantSemanticSchemaSmoke({ outputDir, preflight
   writeJson(corpusPath, corpus);
   fs.writeFileSync(
     handbookPath,
-    '# Synthetic schema smoke\n\nUse only canonical IDs from the catalogue. Return literal evidence text, not offsets. These cases are permanently excluded from research evidence.\n',
+    `# Synthetic semantic-contract smoke
+
+Use one event for each independent clause-level act that changes a distinct typed state. Explanatory wording is not a second event. Separate events require distinct, non-overlapping minimal literal spans.
+
+The current-turn speaker is mechanically learner and must not be returned. Executor means the party who must perform the action, never the speaker. Every request-type act requires executor different from speaker. A tutor-directed result request, tutor-selection request, and record-entry request therefore use executor=tutor when addressed to the tutor; a learner proposal uses executor=learner.
+
+Return only target_id, requested_value_types, and component_ids for a target. The harness derives kind and public identifiers from target_id. Return only executor and action_object_id for an action. The harness derives mode and operation from action_object_id. A requested value such as match_status is not a target kind.
+
+A record-entry request may coexist with an independent analytic clause. A tutor-selection request carries a second low_agency_deferral event only when a separate clause explicitly declines choice. A proposal followed by a request for its result is two events in surface order.
+
+Use exact canonical IDs from the catalogue and literal evidence text without offsets. These cases are permanently excluded from research evidence.
+`,
   );
   const prepared = prepareAdaptiveWarrantSemanticAnnotationBatches({
     corpusPath,
     handbookPath,
     outputDir: path.join(resolvedOutput, 'collection'),
     corpusRole: 'targeted_challenge',
-    batchSize: 2,
+    batchSize: 3,
     maximumCalls: 2,
     preflightPath: resolvedPreflight,
   });
@@ -174,7 +319,13 @@ export async function runAdaptiveWarrantSemanticSchemaSmoke({
   ) {
     throw new Error('semantic schema smoke freeze mismatch');
   }
-  for (const binding of [freeze.corpus, freeze.handbook, freeze.brittleness_preflight, freeze.collection_manifest, freeze.authorization_request]) {
+  for (const binding of [
+    freeze.corpus,
+    freeze.handbook,
+    freeze.brittleness_preflight,
+    freeze.collection_manifest,
+    freeze.authorization_request,
+  ]) {
     if (!binding?.path || fileSha256(binding.path) !== binding.sha256) {
       throw new Error('semantic schema smoke artifact drift');
     }
@@ -219,6 +370,23 @@ export async function runAdaptiveWarrantSemanticSchemaSmoke({
       canonicalization_operations: [...new Set(audit.canonicalizations.map((row) => row.operation))],
     });
   }
+  const corpus = readJson(manifest.corpus.path);
+  const readerResponses = assemblies.map((row) => readJson(row.response_path));
+  const consensus = buildAdaptiveWarrantSemanticConsensus({
+    readerA: readerResponses[0],
+    readerB: readerResponses[1],
+    corpus,
+    corpusSha256: manifest.corpus.sha256,
+  });
+  const expected = expectedSmokeIdentities();
+  const expectedMatches = Object.fromEntries(
+    consensus.cases.map((row) => [
+      row.sample_id,
+      row.hard_consensus &&
+        JSON.stringify(row.events.map(adaptiveWarrantSemanticConsensusIdentity)) ===
+          JSON.stringify(expected[row.sample_id]),
+    ]),
+  );
   const checks = {
     exactly_two_calls: run.run.calls_attempted === 2 && run.run.calls_completed === 2,
     no_prohibited_tool_events: run.run.batches.every((batch) => batch.prohibited_tool_event_count === 0),
@@ -230,6 +398,10 @@ export async function runAdaptiveWarrantSemanticSchemaSmoke({
           ['derive_unique_literal_utf16_offsets', 'order_events_by_literal_span'].includes(operation),
         ),
     ),
+    cross_reader_hard_consensus: consensus.hard_consensus_cases === corpus.cases.length,
+    record_entry_contract_agreement: expectedMatches['synthetic-smoke-record-entry-request'] === true,
+    tutor_selection_contract_agreement: expectedMatches['synthetic-smoke-tutor-selection-request'] === true,
+    compound_probe_contract_agreement: expectedMatches['synthetic-smoke-compound-probe'] === true,
   };
   const passed = Object.values(checks).every(Boolean);
   const result = {
@@ -242,6 +414,13 @@ export async function runAdaptiveWarrantSemanticSchemaSmoke({
     calls: { attempted: run.run.calls_attempted, completed: run.run.calls_completed, maximum: 2 },
     checks,
     model_run: { path: run.runPath, sha256: fileSha256(run.runPath) },
+    consensus: {
+      schema: consensus.schema,
+      hard_consensus_cases: consensus.hard_consensus_cases,
+      total_cases: consensus.cases.length,
+      raw_structure_agreement: consensus.raw_structure_agreement,
+      expected_identity_matches: expectedMatches,
+    },
     assemblies,
   };
   const resultPath = path.join(resolvedOutput, 'semantic-schema-smoke-result.json');

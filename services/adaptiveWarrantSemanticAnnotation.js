@@ -1,5 +1,5 @@
 import {
-  ADAPTIVE_WARRANT_SEMANTIC_ACTION_ACTORS,
+  ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS,
   ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES,
   ADAPTIVE_WARRANT_SEMANTIC_ACTIONS,
   ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS,
@@ -8,14 +8,14 @@ import {
 } from './adaptiveWarrantSemanticEvents.js';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_ANNOTATION_RESPONSE_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-annotation-response.v2';
+  'machinespirits.adaptation-refinement.semantic-event-annotation-response.v3';
 export const ADAPTIVE_WARRANT_SEMANTIC_CONSENSUS_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-consensus.v2';
-export const ADAPTIVE_WARRANT_SEMANTIC_SCORE_SCHEMA = 'machinespirits.adaptation-refinement.semantic-event-score.v2';
+  'machinespirits.adaptation-refinement.semantic-event-consensus.v3';
+export const ADAPTIVE_WARRANT_SEMANTIC_SCORE_SCHEMA = 'machinespirits.adaptation-refinement.semantic-event-score.v3';
 export const ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-annotation-batch-response.v2';
+  'machinespirits.adaptation-refinement.semantic-event-annotation-batch-response.v3';
 export const ADAPTIVE_WARRANT_SEMANTIC_READER_CATALOG_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v2';
+  'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v3';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_GATE = Object.freeze({
   minimum_reader_agreement: 0.8,
@@ -48,7 +48,108 @@ const RESPONSE_FIELDS = Object.freeze([
   'cases',
 ]);
 const CASE_FIELDS = Object.freeze(['sample_id', 'genuinely_ambiguous', 'events', 'note']);
-const EVENT_FIELDS = Object.freeze(['speech_act', 'target', 'requested_or_proposed_action', 'evidence_span']);
+const EVENT_FIELDS = Object.freeze([
+  'speaker',
+  'speech_act',
+  'target',
+  'requested_or_proposed_action',
+  'evidence_span',
+]);
+const READER_EVENT_FIELDS = Object.freeze(['speech_act', 'target', 'requested_or_proposed_action', 'evidence_span']);
+
+export const ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT = Object.freeze({
+  event_multiplicity:
+    'One event per independent clause-level act that would change a distinct typed state; explanatory material is not a second event.',
+  speaker: 'Mechanically supplied from current-turn authorship; never reader-judged.',
+  speech_act: 'Reader chooses one closed act under the handbook precedence table.',
+  target_id: 'Reader chooses the public object or relation, never a requested value.',
+  target_kind: 'Mechanically supplied from the selected target catalogue entry; never reader-judged.',
+  public_identifier_ids: 'Mechanically supplied from the selected target catalogue entry; never reader-judged.',
+  requested_value_types: 'Exact closed-set values explicitly requested or produced by the clause.',
+  component_ids: 'Exact catalogue components explicitly requested or produced by the clause.',
+  action_mode: 'Mechanically supplied from the selected action-object catalogue entry; never reader-judged.',
+  executor: 'Reader chooses who must perform the action; this is not the utterance speaker.',
+  action: 'Mechanically supplied from the selected action-object catalogue entry; never reader-judged.',
+  action_object_id: 'Reader chooses the public action object licensed by the clause.',
+  evidence_span: 'Reader supplies one unique literal minimal clause span; offsets and order are mechanical.',
+  genuinely_ambiguous:
+    'True only when two complete typed readings remain after every closed rule; an ambiguous case returns zero events.',
+  note: 'Auditable rationale only; excluded from identity, consensus, scoring joins, and gates.',
+});
+
+const SPEECH_ACT_CONTRACTS = Object.freeze({
+  tutor_directed_public_result_request: Object.freeze({
+    target: 'required',
+    action: 'required',
+    mode: 'requested',
+    operation: 'supply_public_result',
+    executors: Object.freeze(['tutor', 'joint', 'unspecified']),
+  }),
+  learner_proposed_test: Object.freeze({
+    target: 'required',
+    action: 'required',
+    mode: 'proposed',
+    operation: 'perform_public_test',
+    executors: Object.freeze(['learner', 'joint', 'unspecified']),
+  }),
+  criterion_question: Object.freeze({ target: 'required', action: 'forbidden' }),
+  tutor_selection_request: Object.freeze({
+    target: 'forbidden',
+    action: 'required',
+    mode: 'requested',
+    operation: 'select_next_step',
+    executors: Object.freeze(['tutor']),
+  }),
+  learner_record_entry_request: Object.freeze({
+    target: 'required',
+    action: 'required',
+    mode: 'requested',
+    operation: 'record_public_claim',
+    executors: Object.freeze(['tutor', 'joint', 'unspecified']),
+  }),
+  learner_wording_request: Object.freeze({
+    target: 'forbidden',
+    action: 'required',
+    mode: 'requested',
+    operation: 'explain_wording',
+    executors: Object.freeze(['tutor']),
+  }),
+  repair_request: Object.freeze({
+    target: 'forbidden',
+    action: 'required',
+    mode: 'requested',
+    operation: 'explain_wording',
+    executors: Object.freeze(['tutor']),
+  }),
+  withdrawal: Object.freeze({
+    target: 'optional',
+    action: 'required',
+    mode: 'requested',
+    operation: 'withdraw_request',
+    executors: Object.freeze(['learner']),
+  }),
+  transfer_to_learner: Object.freeze({
+    target: 'optional',
+    action: 'required',
+    mode: 'proposed',
+    operation: 'perform_public_test',
+    executors: Object.freeze(['learner']),
+  }),
+  stall: Object.freeze({ target: 'forbidden', action: 'forbidden' }),
+  register_complaint: Object.freeze({ target: 'forbidden', action: 'forbidden' }),
+  repetition_complaint: Object.freeze({ target: 'forbidden', action: 'forbidden' }),
+  low_agency_deferral: Object.freeze({ target: 'forbidden', action: 'forbidden' }),
+  analytic_contribution: Object.freeze({ target: 'optional', action: 'forbidden' }),
+  other: Object.freeze({ target: 'optional', action: 'forbidden' }),
+});
+
+const REQUEST_SPEECH_ACTS = new Set([
+  'tutor_directed_public_result_request',
+  'tutor_selection_request',
+  'learner_record_entry_request',
+  'learner_wording_request',
+  'repair_request',
+]);
 
 function closedSchema(properties) {
   return { type: 'object', additionalProperties: false, required: Object.keys(properties), properties };
@@ -58,13 +159,7 @@ function semanticReaderEventSchema(semanticCatalog) {
   validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
   const id = { type: 'string', pattern: '^[a-z0-9][a-z0-9_-]{0,95}$' };
   const target = closedSchema({
-    kind: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS] },
     target_id: id,
-    public_identifier_ids: {
-      type: 'array',
-      maxItems: 6,
-      items: id,
-    },
     requested_value_types: {
       type: 'array',
       maxItems: 4,
@@ -77,10 +172,11 @@ function semanticReaderEventSchema(semanticCatalog) {
     },
   });
   const action = closedSchema({
-    mode: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES] },
-    actor: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_ACTORS] },
-    action: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTIONS] },
-    action_object_id: { ...id, type: ['string', 'null'] },
+    executor: {
+      type: 'string',
+      enum: ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS.filter((value) => value !== 'none'),
+    },
+    action_object_id: id,
   });
   return closedSchema({
     speech_act: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS] },
@@ -138,11 +234,11 @@ function normalizedText(value) {
     .toLocaleLowerCase();
 }
 
-function catalogEntryIds(catalog, field, idField) {
+function catalogEntryIds(catalog, field, idField, expectedFields = [idField, 'display_label']) {
   const rows = catalog?.[field];
   if (!Array.isArray(rows) || !rows.length) throw new Error(`semantic reader catalog ${field} must be non-empty`);
   const ids = rows.map((row, index) => {
-    exactFields(row, [idField, 'display_label'], `semantic reader catalog ${field}[${index}]`);
+    exactFields(row, expectedFields, `semantic reader catalog ${field}[${index}]`);
     if (typeof row[idField] !== 'string' || !row[idField].trim()) {
       throw new Error(`semantic reader catalog ${field}[${index}].${idField} is required`);
     }
@@ -164,11 +260,50 @@ export function validateAdaptiveWarrantSemanticReaderCatalog(catalog) {
   if (catalog.schema !== ADAPTIVE_WARRANT_SEMANTIC_READER_CATALOG_SCHEMA) {
     throw new Error('semantic reader catalog schema mismatch');
   }
+  const publicIdentifierIds = catalogEntryIds(catalog, 'public_identifiers', 'public_identifier_id');
+  const componentIds = catalogEntryIds(catalog, 'components', 'component_id');
+  const targetIds = catalogEntryIds(catalog, 'targets', 'target_id', [
+    'target_id',
+    'kind',
+    'public_identifier_ids',
+    'allowed_value_types',
+    'component_ids',
+    'display_label',
+  ]);
+  const targetsById = Object.fromEntries(
+    catalog.targets.map((row, index) => {
+      const label = `semantic reader catalog targets[${index}]`;
+      if (!ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS.includes(row.kind)) throw new Error(`${label}.kind is invalid`);
+      exactStringSet(row.public_identifier_ids, publicIdentifierIds, `${label}.public_identifier_ids`, 6);
+      exactStringSet(row.allowed_value_types, ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES, `${label}.allowed_value_types`, 4);
+      exactStringSet(row.component_ids, componentIds, `${label}.component_ids`, 4);
+      return [row.target_id, row];
+    }),
+  );
+  const actionObjectIds = catalogEntryIds(catalog, 'action_objects', 'action_object_id', [
+    'action_object_id',
+    'mode',
+    'action',
+    'target_id',
+    'display_label',
+  ]);
+  const actionObjectsById = Object.fromEntries(
+    catalog.action_objects.map((row, index) => {
+      const label = `semantic reader catalog action_objects[${index}]`;
+      if (!ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES.includes(row.mode)) throw new Error(`${label}.mode is invalid`);
+      if (!ADAPTIVE_WARRANT_SEMANTIC_ACTIONS.includes(row.action)) throw new Error(`${label}.action is invalid`);
+      if (row.target_id !== null && !targetIds.includes(row.target_id))
+        throw new Error(`${label}.target_id is invalid`);
+      return [row.action_object_id, row];
+    }),
+  );
   return {
-    target_ids: catalogEntryIds(catalog, 'targets', 'target_id'),
-    public_identifier_ids: catalogEntryIds(catalog, 'public_identifiers', 'public_identifier_id'),
-    component_ids: catalogEntryIds(catalog, 'components', 'component_id'),
-    action_object_ids: catalogEntryIds(catalog, 'action_objects', 'action_object_id'),
+    target_ids: targetIds,
+    public_identifier_ids: publicIdentifierIds,
+    component_ids: componentIds,
+    action_object_ids: actionObjectIds,
+    targets_by_id: targetsById,
+    action_objects_by_id: actionObjectsById,
   };
 }
 
@@ -188,23 +323,27 @@ function learnerTextForCase(row) {
 function validateTarget(target, label, catalogIds) {
   if (target === null) return null;
   exactFields(target, ['kind', 'target_id', 'public_identifier_ids', 'requested_value_types', 'component_ids'], label);
-  if (!ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS.includes(target.kind)) throw new Error(`${label}.kind is invalid`);
-  if (!catalogIds.target_ids.includes(target.target_id)) throw new Error(`${label}.target_id is outside the catalog`);
+  const catalogTarget = catalogIds.targets_by_id[target.target_id];
+  if (!catalogTarget) throw new Error(`${label}.target_id is outside the catalog`);
+  if (target.kind !== catalogTarget.kind) throw new Error(`${label}.kind does not match target_id`);
   const publicIdentifiers = exactStringSet(
     target.public_identifier_ids,
-    catalogIds.public_identifier_ids,
+    catalogTarget.public_identifier_ids,
     `${label}.public_identifier_ids`,
     6,
   );
+  if (JSON.stringify(publicIdentifiers.toSorted()) !== JSON.stringify(catalogTarget.public_identifier_ids.toSorted())) {
+    throw new Error(`${label}.public_identifier_ids must exactly match target_id`);
+  }
   const requestedValueTypes = exactStringSet(
     target.requested_value_types,
-    ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES,
+    catalogTarget.allowed_value_types,
     `${label}.requested_value_types`,
     4,
   );
   const requiredComponents = exactStringSet(
     target.component_ids,
-    catalogIds.component_ids,
+    catalogTarget.component_ids,
     `${label}.component_ids`,
     4,
   );
@@ -219,20 +358,118 @@ function validateTarget(target, label, catalogIds) {
 
 function validateAction(action, label, catalogIds) {
   if (action === null) return null;
-  exactFields(action, ['mode', 'actor', 'action', 'action_object_id'], label);
+  exactFields(action, ['mode', 'executor', 'action', 'action_object_id'], label);
   if (!ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES.includes(action.mode)) throw new Error(`${label}.mode is invalid`);
-  if (!ADAPTIVE_WARRANT_SEMANTIC_ACTION_ACTORS.includes(action.actor)) throw new Error(`${label}.actor is invalid`);
+  if (!ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS.includes(action.executor))
+    throw new Error(`${label}.executor is invalid`);
   if (!ADAPTIVE_WARRANT_SEMANTIC_ACTIONS.includes(action.action)) throw new Error(`${label}.action is invalid`);
-  if (action.action_object_id !== null && !catalogIds.action_object_ids.includes(action.action_object_id)) {
+  const catalogAction =
+    action.action_object_id === null ? null : catalogIds.action_objects_by_id[action.action_object_id];
+  if (action.action_object_id !== null && !catalogAction)
     throw new Error(`${label}.action_object_id is outside the catalog`);
+  if (catalogAction && (action.mode !== catalogAction.mode || action.action !== catalogAction.action)) {
+    throw new Error(`${label} mode or action does not match action_object_id`);
   }
-  if (action.mode === 'none' && (action.actor !== 'none' || action.action !== 'none')) {
+  if (action.mode === 'none' && (action.executor !== 'none' || action.action !== 'none')) {
     throw new Error(`${label} has an illegal none combination`);
   }
-  if (action.mode !== 'none' && (action.actor === 'none' || action.action === 'none')) {
+  if (action.mode !== 'none' && (action.executor === 'none' || action.action === 'none')) {
     throw new Error(`${label} has an incomplete action combination`);
   }
   return { ...action };
+}
+
+function validateSpeechActCompatibility(event, label) {
+  const contract = SPEECH_ACT_CONTRACTS[event.speech_act];
+  if (!contract) throw new Error(`${label}.speech_act has no declared contract`);
+  const hasTarget = event.target !== null;
+  const hasAction = event.requested_or_proposed_action !== null;
+  if (contract.target === 'required' && !hasTarget) throw new Error(`${label}.target is required for the speech act`);
+  if (contract.target === 'forbidden' && hasTarget) throw new Error(`${label}.target is forbidden for the speech act`);
+  if (contract.action === 'required' && !hasAction) {
+    throw new Error(`${label}.requested_or_proposed_action is required for the speech act`);
+  }
+  if (contract.action === 'forbidden' && hasAction) {
+    throw new Error(`${label}.requested_or_proposed_action is forbidden for the speech act`);
+  }
+  if (!hasAction) return;
+  const action = event.requested_or_proposed_action;
+  if (
+    action.mode !== contract.mode ||
+    action.action !== contract.operation ||
+    !contract.executors.includes(action.executor)
+  ) {
+    throw new Error(`${label}.requested_or_proposed_action is incompatible with the speech act`);
+  }
+  if (REQUEST_SPEECH_ACTS.has(event.speech_act) && action.executor === event.speaker) {
+    throw new Error(`${label}.requested_or_proposed_action executor must differ from the request speaker`);
+  }
+}
+
+export function materializeAdaptiveWarrantSemanticReaderEvent({ event, semanticCatalog, label = 'reader event' } = {}) {
+  exactFields(event, READER_EVENT_FIELDS, label);
+  if (!ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.includes(event.speech_act)) {
+    throw new Error(`${label}.speech_act is invalid`);
+  }
+  const catalogIds = validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
+  let target = null;
+  if (event.target !== null) {
+    exactFields(event.target, ['target_id', 'requested_value_types', 'component_ids'], `${label}.target`);
+    const catalogTarget = catalogIds.targets_by_id[event.target.target_id];
+    if (!catalogTarget) throw new Error(`${label}.target.target_id is outside the catalog`);
+    const requestedValueTypes = exactStringSet(
+      event.target.requested_value_types,
+      catalogTarget.allowed_value_types,
+      `${label}.target.requested_value_types`,
+      4,
+    );
+    const componentIds = exactStringSet(
+      event.target.component_ids,
+      catalogTarget.component_ids,
+      `${label}.target.component_ids`,
+      4,
+    );
+    target = {
+      kind: catalogTarget.kind,
+      target_id: catalogTarget.target_id,
+      public_identifier_ids: [...catalogTarget.public_identifier_ids].sort(),
+      requested_value_types: requestedValueTypes.sort(),
+      component_ids: componentIds.sort(),
+    };
+  }
+  let action = null;
+  if (event.requested_or_proposed_action !== null) {
+    exactFields(
+      event.requested_or_proposed_action,
+      ['executor', 'action_object_id'],
+      `${label}.requested_or_proposed_action`,
+    );
+    const executor = event.requested_or_proposed_action.executor;
+    if (!ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS.includes(executor) || executor === 'none') {
+      throw new Error(`${label}.requested_or_proposed_action.executor is invalid`);
+    }
+    const catalogAction = catalogIds.action_objects_by_id[event.requested_or_proposed_action.action_object_id];
+    if (!catalogAction)
+      throw new Error(`${label}.requested_or_proposed_action.action_object_id is outside the catalog`);
+    if (catalogAction.target_id !== null && catalogAction.target_id !== target?.target_id) {
+      throw new Error(`${label}.requested_or_proposed_action target does not match its action object`);
+    }
+    action = {
+      mode: catalogAction.mode,
+      executor,
+      action: catalogAction.action,
+      action_object_id: catalogAction.action_object_id,
+    };
+  }
+  const materialized = {
+    speaker: 'learner',
+    speech_act: event.speech_act,
+    target,
+    requested_or_proposed_action: action,
+    evidence_span: event.evidence_span,
+  };
+  validateSpeechActCompatibility(materialized, label);
+  return materialized;
 }
 
 function validateSpan(span, learnerText, label) {
@@ -253,10 +490,12 @@ function validateSpan(span, learnerText, label) {
 
 function validateReaderEvent(event, learnerText, label, catalogIds) {
   exactFields(event, EVENT_FIELDS, label);
+  if (event.speaker !== 'learner') throw new Error(`${label}.speaker must be mechanically supplied as learner`);
   if (!ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.includes(event.speech_act)) {
     throw new Error(`${label}.speech_act is invalid`);
   }
-  return {
+  const validated = {
+    speaker: event.speaker,
     speech_act: event.speech_act,
     target: validateTarget(event.target, `${label}.target`, catalogIds),
     requested_or_proposed_action: validateAction(
@@ -266,6 +505,14 @@ function validateReaderEvent(event, learnerText, label, catalogIds) {
     ),
     evidence_span: validateSpan(event.evidence_span, learnerText, `${label}.evidence_span`),
   };
+  const catalogAction = validated.requested_or_proposed_action
+    ? catalogIds.action_objects_by_id[validated.requested_or_proposed_action.action_object_id]
+    : null;
+  if (catalogAction && catalogAction.target_id !== null && catalogAction.target_id !== validated.target?.target_id) {
+    throw new Error(`${label}.requested_or_proposed_action target does not match action_object_id`);
+  }
+  validateSpeechActCompatibility(validated, label);
+  return validated;
 }
 
 export function validateAdaptiveWarrantSemanticAnnotationResponse({ response, corpus, corpusSha256 } = {}) {
@@ -297,16 +544,29 @@ export function validateAdaptiveWarrantSemanticAnnotationResponse({ response, co
     if (!Array.isArray(row.events) || row.events.length > 4) {
       throw new Error(`semantic annotation case ${row.sample_id} requires zero to four events`);
     }
+    if (row.genuinely_ambiguous && row.events.length) {
+      throw new Error(`semantic annotation case ${row.sample_id} must abstain when genuinely ambiguous`);
+    }
     if (typeof row.note !== 'string' || row.note.trim().length < 8) {
       throw new Error(`semantic annotation case ${row.sample_id} requires a short rationale`);
     }
     const learnerText = learnerTextForCase(corpusById.get(row.sample_id));
+    const events = row.events.map((event, eventIndex) =>
+      validateReaderEvent(event, learnerText, `semantic annotation ${row.sample_id} event ${eventIndex}`, catalogIds),
+    );
+    for (let leftIndex = 0; leftIndex < events.length; leftIndex += 1) {
+      for (let rightIndex = leftIndex + 1; rightIndex < events.length; rightIndex += 1) {
+        const left = events[leftIndex].evidence_span;
+        const right = events[rightIndex].evidence_span;
+        if (left.start < right.end && right.start < left.end) {
+          throw new Error(`semantic annotation case ${row.sample_id} has overlapping non-atomic event spans`);
+        }
+      }
+    }
     return {
       sample_id: row.sample_id,
       genuinely_ambiguous: row.genuinely_ambiguous,
-      events: row.events.map((event, eventIndex) =>
-        validateReaderEvent(event, learnerText, `semantic annotation ${row.sample_id} event ${eventIndex}`, catalogIds),
-      ),
+      events,
       note: row.note.trim(),
     };
   });
@@ -316,6 +576,7 @@ export function validateAdaptiveWarrantSemanticAnnotationResponse({ response, co
 
 export function adaptiveWarrantSemanticConsensusIdentity(event) {
   return {
+    speaker: event.speaker,
     speech_act: event.speech_act,
     target: event.target,
     requested_or_proposed_action: event.requested_or_proposed_action,
@@ -344,8 +605,7 @@ export function buildAdaptiveWarrantSemanticConsensus({ readerA, readerB, corpus
     const hard = !left.genuinely_ambiguous && !right.genuinely_ambiguous && eventFieldsAgree;
     return {
       sample_id: left.sample_id,
-      raw_structure_agreement:
-        left.genuinely_ambiguous === right.genuinely_ambiguous && eventFieldsAgree,
+      raw_structure_agreement: left.genuinely_ambiguous === right.genuinely_ambiguous && eventFieldsAgree,
       event_fields_agreement: eventFieldsAgree,
       span_exact_agreement:
         left.events.length === right.events.length &&
@@ -528,14 +788,14 @@ export function scoreAdaptiveWarrantSemanticExtraction({ consensus, predictionsB
     result_request_precision: request.precision,
     result_request_recall: request.recall,
     request_proposal_macro_f1: average([request.f1, proposal.f1]),
-    action_mode_actor_action_exact_accuracy: divide(
+    action_mode_executor_action_exact_accuracy: divide(
       actionRows.filter((row) => {
         const gold = row.gold.requested_or_proposed_action;
         const predicted = row.predicted?.requested_or_proposed_action;
         return (
           predicted &&
           gold.mode === predicted.mode &&
-          gold.actor === predicted.actor &&
+          gold.executor === predicted.executor &&
           gold.action === predicted.action
         );
       }).length,
@@ -561,8 +821,7 @@ export function scoreAdaptiveWarrantSemanticExtraction({ consensus, predictionsB
     requested_component_exact_set_accuracy: divide(
       componentRows.filter(
         (row) =>
-          JSON.stringify(row.predicted?.target?.component_ids || []) ===
-          JSON.stringify(row.gold.target.component_ids),
+          JSON.stringify(row.predicted?.target?.component_ids || []) === JSON.stringify(row.gold.target.component_ids),
       ).length,
       componentRows.length,
     ),
@@ -659,8 +918,8 @@ export function scoreAdaptiveWarrantSemanticExtraction({ consensus, predictionsB
             ADAPTIVE_WARRANT_SEMANTIC_GATE.minimum_request_proposal_macro_f1,
           )
         : 'inconclusive_support',
-    action_mode_actor_action_exact_accuracy: threshold(
-      metrics.action_mode_actor_action_exact_accuracy,
+    action_mode_executor_action_exact_accuracy: threshold(
+      metrics.action_mode_executor_action_exact_accuracy,
       'minimum',
       ADAPTIVE_WARRANT_SEMANTIC_GATE.minimum_action_exact_accuracy,
     ),

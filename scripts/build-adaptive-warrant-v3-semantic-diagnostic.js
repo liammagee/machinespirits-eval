@@ -42,69 +42,81 @@ export const ADAPTIVE_WARRANT_V3_SEMANTIC_DIAGNOSTIC_MINIMA = Object.freeze({
 });
 
 const TARGETS = Object.freeze({
-  quay: target(
-    'target-quay-nine-visitor-ledger',
+  pier: target(
+    'target-pier-four-dispatch-register',
     'record_entry',
-    'quay-nine visitor ledger',
-    ['quay-nine'],
+    'pier-four dispatch register',
+    ['pier-four'],
     ['name', 'time'],
-    ['visitor_name', 'clock_time'],
+    ['courier_name', 'dispatch_time'],
+    {
+      allowedValueTypes: ['name', 'time', 'record_text'],
+      allowedComponents: ['courier_name', 'dispatch_time', 'bounded_finding'],
+    },
   ),
-  lamp: target(
-    'target-lamp-room-sign-in-book',
+  gallery: target(
+    'target-gallery-b-entry-register',
     'record_entry',
-    'lamp-room sign-in book',
-    ['lamp-room'],
+    'gallery-B entry register',
+    ['gallery-B'],
     ['date', 'name'],
-    ['sign_in_date', 'visitor_name'],
+    ['entry_date', 'attendant_name'],
+    {
+      allowedValueTypes: ['date', 'name', 'record_text'],
+      allowedComponents: ['entry_date', 'attendant_name', 'bounded_finding'],
+    },
   ),
-  token: target(
-    'target-token-k17-scale-record',
+  medallion: target(
+    'target-medallion-m8-balance-note',
     'weight_or_ring_result',
-    'archive scale record for token K-17',
-    ['K-17'],
+    'balance note for medallion M8',
+    ['medallion M8'],
     ['weight'],
-    ['measured_weight'],
+    ['recorded_mass'],
   ),
-  sample: target(
-    'target-sample-c4-public-assay',
+  fibre: target(
+    'target-fibre-v2-public-assay',
     'material_or_assay_result',
-    'public assay for sample C-4',
-    ['C-4'],
+    'public assay for fibre V2',
+    ['fibre V2'],
     ['material'],
-    ['assayed_material'],
+    ['identified_fibre'],
+    {
+      allowedValueTypes: ['material', 'record_text'],
+      allowedComponents: ['identified_fibre', 'bounded_finding'],
+    },
   ),
-  seal: target(
-    'target-imprint-q-mould-three-comparison',
+  stamp: target(
+    'target-stamp-l-die-six-comparison',
     'comparison_result',
-    'seal imprint Q comparison',
-    ['imprint Q', 'mould three'],
+    'stamp L and die six comparison',
+    ['stamp L', 'die six'],
     ['match_status'],
     ['match_status'],
   ),
-  ring: target(
-    'target-ring-h-bell-test-record',
+  chime: target(
+    'target-chime-j-acoustic-log',
     'weight_or_ring_result',
-    'bell-test record for ring H',
-    ['ring H'],
+    'acoustic log for chime J',
+    ['chime J'],
     ['sound'],
-    ['recorded_sound'],
+    ['logged_tone'],
   ),
-  ferry: target(
-    'target-ferry-seven-movement-log',
+  cart: target(
+    'target-cart-three-movement-sheet',
     'record_entry',
-    'ferry-seven movement log',
-    ['ferry-seven'],
+    'cart-three movement sheet',
+    ['cart-three'],
     ['time'],
     ['movement_time'],
   ),
-  latch: target(
-    'target-blue-door-latch-photograph',
+  hinge: target(
+    'target-green-gate-hinge-photograph',
     'mark_or_tool_result',
-    'blue-door latch photograph',
-    ['blue-door'],
+    'green-gate hinge photograph',
+    ['green-gate'],
     ['match_status'],
-    ['scratch_match'],
+    ['groove_match'],
   ),
 });
 
@@ -116,7 +128,15 @@ function stableId(prefix, label) {
     .replace(/^-|-$/gu, '')}`;
 }
 
-function target(targetId, kind, displayLabel, publicIdentifiers, requestedValueTypes, requiredComponents) {
+function target(
+  targetId,
+  kind,
+  displayLabel,
+  publicIdentifiers,
+  requestedValueTypes,
+  requiredComponents,
+  { allowedValueTypes = requestedValueTypes, allowedComponents = requiredComponents } = {},
+) {
   return {
     kind,
     target_id: targetId,
@@ -125,6 +145,8 @@ function target(targetId, kind, displayLabel, publicIdentifiers, requestedValueT
     public_identifier_labels: publicIdentifiers,
     requested_value_types: requestedValueTypes,
     component_ids: requiredComponents,
+    allowed_value_types: allowedValueTypes,
+    allowed_component_ids: allowedComponents,
   };
 }
 
@@ -145,24 +167,24 @@ function writeJson(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
-function action(mode, actor, actionName, object) {
+function action(mode, executor, actionName, object) {
   return {
     mode,
-    actor,
+    executor,
     action: actionName,
     action_object_id: stableId('action-object', object),
     action_object_display_label: object,
   };
 }
 
-function eventTarget(targetValue) {
+function eventTarget(targetValue, { valueTypes = null, componentIds = null } = {}) {
   if (!targetValue) return null;
   return {
     kind: targetValue.kind,
     target_id: targetValue.target_id,
     public_identifier_ids: [...targetValue.public_identifier_ids],
-    requested_value_types: [...targetValue.requested_value_types],
-    component_ids: [...targetValue.component_ids],
+    requested_value_types: [...(valueTypes ?? targetValue.requested_value_types)],
+    component_ids: [...(componentIds ?? targetValue.component_ids)],
   };
 }
 
@@ -172,12 +194,17 @@ function eventAction(actionValue) {
   return { ...typed, action_object_display_label: displayLabel };
 }
 
-function event(speechAct, text, { target: targetValue = null, action: actionValue = null, span = text } = {}) {
+function event(
+  speechAct,
+  text,
+  { target: targetValue = null, action: actionValue = null, span = text, valueTypes = null, componentIds = null } = {},
+) {
   const start = text.indexOf(span);
   if (start < 0) throw new Error(`semantic diagnostic span is not literal: ${span}`);
   return {
+    speaker: 'learner',
     speech_act: speechAct,
-    target: eventTarget(targetValue),
+    target: eventTarget(targetValue, { valueTypes, componentIds }),
     requested_or_proposed_action: eventAction(actionValue),
     evidence_span: { text: span, start, end: start + span.length },
   };
@@ -214,172 +241,205 @@ function proposal(text, eventTarget, object, extra = {}) {
 function diagnosticSpecs() {
   const specs = [
     request(
-      'Please give me the visitor name and clock time listed under quay-nine.',
-      TARGETS.quay,
-      'quay-nine visitor and time',
+      'Read me the courier name and dispatch time in the pier-four register.',
+      TARGETS.pier,
+      'pier-four courier and dispatch time',
       {
         transcript: [
           {
             turn: 1,
-            learner: 'I need the visitor details from the quay-nine public ledger.',
-            tutor: 'Let us first discuss the harbor map instead.',
+            learner: 'I need the dispatch details from the pier-four public register.',
+            tutor: 'Let us first discuss the warehouse sketch instead.',
           },
         ],
         support: ['obligation_persistence', 'divergence_interactional_nonaligned'],
       },
     ),
-    request('Tell me both the date and signer shown in the lamp-room book.', TARGETS.lamp, 'lamp-room sign-in values', {
-      transcript: [
-        {
-          turn: 1,
-          learner: 'What does the lamp-room sign-in book list?',
-          tutor: 'Before that, consider the lighting schedule.',
-        },
-      ],
-      support: ['obligation_persistence', 'divergence_interactional_nonaligned'],
-    }),
-    request('Which weight is recorded for archive token K-17?', TARGETS.token, 'K-17 weight'),
-    request('Name the material the C-4 public assay identifies.', TARGETS.sample, 'C-4 material'),
     request(
-      'Does the public seal comparison mark imprint Q as matching mould three?',
-      TARGETS.seal,
-      'imprint Q match status',
+      'State both the entry date and attendant in the gallery-B register.',
+      TARGETS.gallery,
+      'gallery-B entry values',
+      {
+        transcript: [
+          {
+            turn: 1,
+            learner: 'What does the gallery-B entry register list?',
+            tutor: 'Before that, consider the exhibition timetable.',
+          },
+        ],
+        support: ['obligation_persistence', 'divergence_interactional_nonaligned'],
+      },
     ),
-    request('Read out the recorded tone for ring H from the bell-test sheet.', TARGETS.ring, 'ring H recorded sound'),
-    proposal("I’ll inspect ferry-seven’s logged movement time myself next.", TARGETS.ferry, 'inspect ferry-seven log', {
+    request('What mass is written in the balance note for medallion M8?', TARGETS.medallion, 'medallion M8 mass'),
+    request('Which fibre does the public V2 assay identify?', TARGETS.fibre, 'fibre V2 material'),
+    request('Does the public comparison mark stamp L as matching die six?', TARGETS.stamp, 'stamp L match status'),
+    request('Read out the logged tone for chime J from the acoustic sheet.', TARGETS.chime, 'chime J logged sound'),
+    proposal('I’ll inspect cart-three’s movement time myself next.', TARGETS.cart, 'inspect cart-three sheet', {
       transcript: [
         {
           turn: 1,
-          learner: 'What time does the ferry-seven movement log show?',
-          tutor: 'The public ferry-seven log records 14:20.',
+          learner: 'What time does the cart-three movement sheet show?',
+          tutor: 'The public cart-three sheet records 16:10.',
         },
       ],
       support: ['obligation_resolution'],
     }),
     proposal(
-      'I’ll compare the blue-door latch image with the reference tool scratches.',
-      TARGETS.latch,
-      'compare blue-door latch marks',
+      'I’ll compare the green-gate hinge image with the reference grooves.',
+      TARGETS.hinge,
+      'compare green-gate hinge grooves',
       {
         transcript: [
           {
             turn: 1,
-            learner: 'What does the blue-door latch photograph show?',
-            tutor: 'It publicly shows three diagonal scratches on the latch.',
+            learner: 'What does the green-gate hinge photograph show?',
+            tutor: 'It publicly shows two curved grooves on the hinge.',
           },
         ],
         support: ['obligation_resolution'],
       },
     ),
     proposal(
-      'My next test is to reconstruct the sequence in the quay-nine visitor log.',
-      TARGETS.quay,
-      'inspect quay-nine sequence',
+      'My next test is to reconstruct the sequence in the pier-four dispatch register.',
+      TARGETS.pier,
+      'inspect pier-four sequence',
     ),
-    proposal('I propose weighing token K-17 against the archive reference.', TARGETS.token, 'weigh K-17'),
-    proposal('I’ll set imprint Q alongside mould three and compare them.', TARGETS.seal, 'compare imprint Q'),
-    proposal('I’ll check ring H’s sound against the published bell entry.', TARGETS.ring, 'compare ring H tone'),
+    proposal('I propose weighing medallion M8 against the archive standard.', TARGETS.medallion, 'weigh medallion M8'),
+    proposal('I’ll set stamp L beside die six and compare them.', TARGETS.stamp, 'compare stamp L'),
+    proposal('I’ll check chime J against the published acoustic entry.', TARGETS.chime, 'compare chime J tone'),
   ];
 
-  for (const [text, eventTarget, object] of [
-    ['Record only this limit: quay-nine proves entry, not removal.', TARGETS.quay, 'record access not removal'],
-    ['Let’s enter the sourced C-4 tin result without closing the source question.', TARGETS.sample, 'record bounded assay claim'],
+  for (const [text, analyticSpan, requestSpan, eventTarget, object] of [
+    [
+      'The pier-four register proves dispatch, not receipt; enter only that bounded finding.',
+      'The pier-four register proves dispatch, not receipt',
+      'enter only that bounded finding',
+      TARGETS.pier,
+      'record dispatch not receipt',
+    ],
+    [
+      'The V2 assay names linen but leaves its source open; record that limited result.',
+      'The V2 assay names linen but leaves its source open',
+      'record that limited result',
+      TARGETS.fibre,
+      'record bounded fibre result',
+    ],
   ]) {
     specs.push({
       text,
       events: [
+        event('analytic_contribution', text, {
+          target: eventTarget,
+          valueTypes: [],
+          componentIds: [],
+          span: analyticSpan,
+        }),
         event('learner_record_entry_request', text, {
           target: eventTarget,
           action: action('requested', 'joint', 'record_public_claim', object),
+          valueTypes: ['record_text'],
+          componentIds: ['bounded_finding'],
+          span: requestSpan,
         }),
-        event('analytic_contribution', text),
       ],
       support: ['record_entry_request', 'inquiry_incomplete', 'divergence_epistemic_nonaligned'],
     });
   }
 
-  for (const text of [
-    'Choose which public exhibit I should examine first.',
-    'I’m unable to pick the next test; select one for me.',
-  ]) {
-    specs.push({
-      text,
-      events: [
-        event('tutor_selection_request', text, {
-          action: action('requested', 'tutor', 'select_next_step', 'next public check'),
-        }),
-        event('low_agency_deferral', text),
-      ],
-      support: ['tutor_selection_request', 'inquiry_incomplete', 'divergence_engagement_nonaligned'],
-    });
-  }
+  const selectOne = 'Select which public register I should examine first.';
+  specs.push({
+    text: selectOne,
+    events: [
+      event('tutor_selection_request', selectOne, {
+        action: action('requested', 'tutor', 'select_next_step', 'first public register'),
+      }),
+    ],
+    support: ['tutor_selection_request', 'inquiry_incomplete', 'divergence_engagement_nonaligned'],
+  });
+  const selectTwo = 'I cannot choose between the two assays; select the next test for me.';
+  specs.push({
+    text: selectTwo,
+    events: [
+      event('low_agency_deferral', selectTwo, { span: 'I cannot choose between the two assays' }),
+      event('tutor_selection_request', selectTwo, {
+        action: action('requested', 'tutor', 'select_next_step', 'next assay test'),
+        span: 'select the next test for me',
+      }),
+    ],
+    support: ['tutor_selection_request', 'inquiry_incomplete', 'divergence_engagement_nonaligned'],
+  });
 
-  const compoundA = 'I’ll inspect the ferry-seven log myself; then give me its recorded time.';
+  const compoundA = 'I’ll inspect the cart-three sheet myself; then give me its movement time.';
   specs.push({
     text: compoundA,
     events: [
       event('learner_proposed_test', compoundA, {
-        target: TARGETS.ferry,
-        action: action('proposed', 'learner', 'perform_public_test', 'inspect ferry-seven log'),
-        span: 'I’ll inspect the ferry-seven log myself',
+        target: TARGETS.cart,
+        action: action('proposed', 'learner', 'perform_public_test', 'inspect cart-three sheet'),
+        span: 'I’ll inspect the cart-three sheet myself',
       }),
       event('tutor_directed_public_result_request', compoundA, {
-        target: TARGETS.ferry,
-        action: action('requested', 'tutor', 'supply_public_result', 'ferry-seven recorded time'),
-        span: 'give me its recorded time',
+        target: TARGETS.cart,
+        action: action('requested', 'tutor', 'supply_public_result', 'cart-three movement time'),
+        span: 'give me its movement time',
       }),
     ],
     support: ['result_request', 'proposed_test', 'target_value_partition', 'compound_act', 'inquiry_incomplete'],
   });
-  const compoundB = 'I’ll compare imprint Q myself; afterward, report whether it matches mould three.';
+  const compoundB = 'I’ll compare stamp L myself; afterward, report whether it matches die six.';
   specs.push({
     text: compoundB,
     events: [
       event('learner_proposed_test', compoundB, {
-        target: TARGETS.seal,
-        action: action('proposed', 'learner', 'perform_public_test', 'compare imprint Q'),
-        span: 'I’ll compare imprint Q myself',
+        target: TARGETS.stamp,
+        action: action('proposed', 'learner', 'perform_public_test', 'compare stamp L'),
+        span: 'I’ll compare stamp L myself',
       }),
       event('tutor_directed_public_result_request', compoundB, {
-        target: TARGETS.seal,
-        action: action('requested', 'tutor', 'supply_public_result', 'imprint Q match status'),
-        span: 'report whether it matches mould three',
+        target: TARGETS.stamp,
+        action: action('requested', 'tutor', 'supply_public_result', 'stamp L match status'),
+        span: 'report whether it matches die six',
       }),
     ],
     support: ['result_request', 'proposed_test', 'target_value_partition', 'compound_act', 'inquiry_incomplete'],
   });
 
-  const analytic = 'The sign-in establishes presence but not lamp movement; may we record just that limit?';
+  const analytic = 'The gallery entry establishes attendance but not object handling; please record just that limit.';
   specs.push({
     text: analytic,
     events: [
       event('analytic_contribution', analytic, {
-        span: 'The sign-in establishes presence but not lamp movement',
+        target: TARGETS.gallery,
+        valueTypes: [],
+        componentIds: [],
+        span: 'The gallery entry establishes attendance but not object handling',
       }),
       event('learner_record_entry_request', analytic, {
-        target: TARGETS.lamp,
-        action: action('requested', 'joint', 'record_public_claim', 'record evidential limit'),
-        span: 'may we record just that limit',
+        target: TARGETS.gallery,
+        action: action('requested', 'tutor', 'record_public_claim', 'record gallery evidential limit'),
+        valueTypes: ['record_text'],
+        componentIds: ['bounded_finding'],
+        span: 'please record just that limit',
       }),
     ],
     support: ['record_entry_request', 'analytic_permission_suffix', 'inquiry_incomplete'],
   });
-  const defer = 'Choose the next check for me, please. I don’t want to make the choice.';
+  const defer = 'Choose the next archive check for me. I do not want to decide between them.';
   specs.push({
     text: defer,
     events: [
       event('tutor_selection_request', defer, {
         action: action('requested', 'tutor', 'select_next_step', 'next move'),
-        span: 'Choose the next check for me, please.',
+        span: 'Choose the next archive check for me',
       }),
-      event('low_agency_deferral', defer, { span: 'I don’t want to make the choice' }),
+      event('low_agency_deferral', defer, { span: 'I do not want to decide between them' }),
     ],
     support: ['tutor_selection_request', 'low_agency_deferral', 'divergence_engagement_nonaligned'],
   });
 
   for (const [text, eventTarget] of [
-    ['Which observable difference would distinguish a copied seal from imprint Q?', TARGETS.seal],
-    ['What public record would connect the quay-nine entry to the later removal?', TARGETS.quay],
+    ['Which visible feature would distinguish a copied stamp from stamp L?', TARGETS.stamp],
+    ['What public record would connect the pier-four dispatch to later receipt?', TARGETS.pier],
   ]) {
     specs.push({
       text,
@@ -388,17 +448,17 @@ function diagnosticSpecs() {
     });
   }
 
-  const repairText = 'Explain why a logged visit still falls short of proving removal; I’m missing that step.';
+  const repairText = 'Explain why a dispatch entry still falls short of proving receipt; I am missing that step.';
   specs.push({
     text: repairText,
     events: [
       event('repair_request', repairText, {
-        action: action('requested', 'tutor', 'explain_wording', 'visit versus removal distinction'),
+        action: action('requested', 'tutor', 'explain_wording', 'dispatch versus receipt distinction'),
       }),
     ],
     support: ['repair_request', 'inquiry_incomplete', 'divergence_conceptual_nonaligned'],
   });
-  const stalledText = 'I have run out of approaches and cannot suggest another check.';
+  const stalledText = 'I have exhausted my approaches and cannot propose another public check.';
   specs.push({
     text: stalledText,
     events: [event('stall', stalledText)],
@@ -520,19 +580,39 @@ function publicCase(spec, index) {
 function semanticHandbook() {
   return `# Frozen V3 semantic-event reader handbook
 
-Label only the current public learner utterance in its supplied public context. Preserve ordered multiplicity.
+Label only the current public learner utterance in its supplied public context.
 
-Each event has speech_act, target, requested_or_proposed_action, and an exact literal evidence_span. The closed speech-act vocabulary is tutor_directed_public_result_request, learner_proposed_test, criterion_question, tutor_selection_request, learner_record_entry_request, learner_wording_request, withdrawal, transfer_to_learner, repair_request, stall, register_complaint, repetition_complaint, low_agency_deferral, analytic_contribution, and other.
+## Mechanical fields
+
+The harness knows the current speaker is learner. Do not return speaker. The harness derives target kind and public identifiers from target_id, action mode and operation from action_object_id, and event offsets/order from literal spans. Do not return or infer those mechanical fields.
+
+## Event multiplicity
+
+Return one event per independent clause-level act that would change a distinct typed state. Explanatory or politeness wording inside a clause is not another event. A single clause receives one event under the speech-act precedence below. Separate events must have distinct non-overlapping minimal literal spans and are ordered by their surface position. One request for several values is one event with several value/component IDs.
+
+A record-entry request receives a second analytic_contribution only when another clause independently states an inference or evidential limit. A tutor-selection request receives a second low_agency_deferral only when another clause explicitly refuses, cannot make, or delegates the choice. A proposal followed by a request for its result is two events.
+
+Each reader event has speech_act, target, requested_or_proposed_action, and evidence_span.text. The closed speech-act vocabulary is tutor_directed_public_result_request, learner_proposed_test, criterion_question, tutor_selection_request, learner_record_entry_request, learner_wording_request, withdrawal, transfer_to_learner, repair_request, stall, register_complaint, repetition_complaint, low_agency_deferral, analytic_contribution, and other.
 
 A result request asks the tutor to supply what a named public check, record, or comparison shows. A proposed test commits or proposes that the learner or joint inquiry perform a check; it does not create tutor result debt merely because the sentence says check, inspect, compare, test, listen, or weigh. A criterion question asks what evidence would establish a link. A record-entry request asks to write an already-public bounded claim, not discover a missing result. A tutor-selection request delegates the choice of next step and may coexist with low_agency_deferral. Analytic reasoning may coexist with a polite permission suffix; preserve both acts and do not convert the analytic clause into deference.
 
-target_id identifies the public object or relation under inquiry. requested_value_types contains values sought about it: name, time, date, weight, sound, material, match_status, record_text, or other. Requested values are not targets. public_identifier_ids identify exact public names and component_ids identify answer components.
+Speech-act precedence within one clause is: explicit repair or wording request; explicit complaint or stall; explicit withdrawal/transfer; tutor-selection delegation; result request; record-entry request; proposed test; criterion question; analytic contribution; other. Do not add a lower-precedence event for the same clause.
 
-Action mode is requested, proposed, or none. Actor is learner, tutor, joint, unspecified, or none. Action is supply_public_result, perform_public_test, select_next_step, record_public_claim, explain_wording, withdraw_request, or none. Use null when target or action does not apply.
+## Target fields
 
-Use exact target_id, public_identifier_ids, component_ids, and action_object_id values from the supplied corpus-wide semantic_annotation_catalog. Display labels explain the IDs but never determine identity or agreement. The catalogue standardises public identities across readers; it does not identify which entry applies to any case. Choose only entries supported by the current public text.
+target_id identifies the public object or relation under inquiry. Return target=null when the act has no public object. A target is required for result requests, proposed tests, criterion questions, and record-entry requests; forbidden for tutor-selection, wording/repair, stall, complaint, and low-agency acts; and optional for analytic_contribution and other.
 
-Return only evidence_span.text: a non-empty literal substring that occurs exactly once in current_learner_turn.learner. Do not calculate offsets or order events by a private taxonomy; the assembler derives JavaScript UTF-16 start and exclusive end offsets, orders events by literal span position, and records both operations in its audit. Mark genuinely_ambiguous only when two material readings remain plausible after applying this handbook. Give every case a short case-specific public-evidence rationale. Do not see or infer model predictions, private support tags, downstream decisions, or another reader response.
+requested_value_types contains only values explicitly requested or produced by the clause: name, time, date, weight, sound, material, match_status, record_text, or other. Requested values are never targets or target kinds. component_ids contains only the catalogue answer components explicitly requested or produced. The harness adds target kind and public identifiers from the selected target_id.
+
+## Action fields
+
+Return only executor and action_object_id, or null when no action applies. Executor is the party who must perform the action, never the utterance speaker. Because the speaker is learner, a request-type act must use executor=tutor, joint, or unspecified; it must never use learner. Tutor-directed result, tutor-selection, wording, and repair requests use tutor when directly addressed to the tutor. Learner proposals use learner when the learner commits to act. The harness derives mode and operation from action_object_id and rejects incompatible speech-act/action/executor combinations.
+
+Use exact target_id, component_ids, and action_object_id values from the supplied corpus-wide semantic_annotation_catalog. Display labels explain IDs but never determine identity or agreement. The catalogue standardises public identities across readers; it does not identify which entry applies to any case. Choose only entries supported by current public text.
+
+Return only evidence_span.text: the shortest complete literal clause that supports the event, occurs exactly once in current_learner_turn.learner, and does not overlap another event span. Do not calculate offsets.
+
+Set genuinely_ambiguous=true only when two complete typed readings remain after every rule above; then return events=[]. Ordinary uncertainty about wording strength uses the precedence rules and is not genuine ambiguity. Give every case a short case-specific public-evidence rationale. Do not see or infer model predictions, private support tags, downstream decisions, or another reader response.
 `;
 }
 
@@ -546,7 +626,14 @@ export function buildAdaptiveWarrantV3SemanticDiagnostic({ studyId } = {}) {
     return { row, spec, sampleId };
   });
   paired.sort((left, right) => left.sampleId.localeCompare(right.sampleId));
-  const allEvents = specs.flatMap((spec) => spec.events);
+  const actionCatalogRows = specs.flatMap((spec) =>
+    spec.events
+      .filter((eventRow) => eventRow.requested_or_proposed_action)
+      .map((eventRow) => ({
+        action: eventRow.requested_or_proposed_action,
+        target_id: eventRow.target?.target_id || null,
+      })),
+  );
   const targetRows = Object.values(TARGETS);
   const publicIdentifierRows = targetRows.flatMap((entry) =>
     entry.public_identifier_ids.map((publicIdentifierId, index) => ({
@@ -555,24 +642,35 @@ export function buildAdaptiveWarrantV3SemanticDiagnostic({ studyId } = {}) {
     })),
   );
   const semanticAnnotationCatalog = {
-    schema: 'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v2',
+    schema: 'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v3',
     targets: targetRows
-      .map((entry) => ({ target_id: entry.target_id, display_label: entry.display_label }))
+      .map((entry) => ({
+        target_id: entry.target_id,
+        kind: entry.kind,
+        public_identifier_ids: [...entry.public_identifier_ids],
+        allowed_value_types: [...entry.allowed_value_types],
+        component_ids: [...entry.allowed_component_ids],
+        display_label: entry.display_label,
+      }))
       .toSorted((left, right) => left.target_id.localeCompare(right.target_id)),
-    public_identifiers: [...new Map(publicIdentifierRows.map((entry) => [entry.public_identifier_id, entry])).values()]
-      .toSorted((left, right) => left.public_identifier_id.localeCompare(right.public_identifier_id)),
-    components: [...new Set(targetRows.flatMap((entry) => entry.component_ids))]
+    public_identifiers: [
+      ...new Map(publicIdentifierRows.map((entry) => [entry.public_identifier_id, entry])).values(),
+    ].toSorted((left, right) => left.public_identifier_id.localeCompare(right.public_identifier_id)),
+    components: [...new Set(targetRows.flatMap((entry) => entry.allowed_component_ids))]
       .sort()
       .map((componentId) => ({ component_id: componentId, display_label: componentId.replaceAll('_', ' ') })),
     action_objects: [
       ...new Map(
-        allEvents
-          .map((entry) => entry.requested_or_proposed_action)
-          .filter(Boolean)
-          .map((entry) => [
-            entry.action_object_id,
-            { action_object_id: entry.action_object_id, display_label: entry.action_object_display_label },
-          ]),
+        actionCatalogRows.map(({ action: entry, target_id: targetId }) => [
+          entry.action_object_id,
+          {
+            action_object_id: entry.action_object_id,
+            mode: entry.mode,
+            action: entry.action,
+            target_id: targetId,
+            display_label: entry.action_object_display_label,
+          },
+        ]),
       ).values(),
     ].toSorted((left, right) => left.action_object_id.localeCompare(right.action_object_id)),
   };
@@ -645,11 +743,7 @@ export function buildAdaptiveWarrantV3SemanticDiagnostic({ studyId } = {}) {
   return { corpus, key, supportPlan, handbook: semanticHandbook() };
 }
 
-export function writeAdaptiveWarrantV3SemanticDiagnostic({
-  outputDir,
-  excludedCorpusPaths = [],
-  preflightPath,
-} = {}) {
+export function writeAdaptiveWarrantV3SemanticDiagnostic({ outputDir, excludedCorpusPaths = [], preflightPath } = {}) {
   const resolvedOutput = path.resolve(outputDir);
   if (fs.existsSync(resolvedOutput) && fs.readdirSync(resolvedOutput).length) {
     throw new Error(`V3 semantic diagnostic output is not empty: ${resolvedOutput}`);

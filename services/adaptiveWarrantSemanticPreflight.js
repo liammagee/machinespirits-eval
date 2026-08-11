@@ -2,9 +2,7 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import {
-  ADAPTIVE_WARRANT_SEMANTIC_GATE,
-} from './adaptiveWarrantSemanticAnnotation.js';
+import { ADAPTIVE_WARRANT_SEMANTIC_GATE } from './adaptiveWarrantSemanticAnnotation.js';
 import {
   ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA,
   ADAPTIVE_WARRANT_SEMANTIC_EVENT_LIMITS,
@@ -58,7 +56,7 @@ export function adaptiveWarrantSemanticInstrumentBindings({ sourceCommit } = {})
       }),
     },
     reader_schema_digest: adaptiveWarrantSemanticValueSha256({
-      schema_family: 'machinespirits.adaptation-refinement.semantic-event-reader.v2',
+      schema_family: 'machinespirits.adaptation-refinement.semantic-event-reader.v3',
       reader_and_scorer: files.reader_and_scorer.sha256,
       preparation_and_assembly: files.preparation_and_assembly.sha256,
     }),
@@ -73,10 +71,7 @@ export function adaptiveWarrantSemanticInstrumentBindings({ sourceCommit } = {})
   };
 }
 
-export function validateAdaptiveWarrantSemanticPreflightArtifact({
-  artifact,
-  expectedSourceCommit,
-} = {}) {
+export function validateAdaptiveWarrantSemanticPreflightArtifact({ artifact, expectedSourceCommit } = {}) {
   if (!artifact || artifact.schema !== ADAPTIVE_WARRANT_SEMANTIC_PREFLIGHT_SCHEMA) {
     throw new Error('semantic brittleness preflight schema mismatch');
   }

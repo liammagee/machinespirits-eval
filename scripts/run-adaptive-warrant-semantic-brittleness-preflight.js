@@ -36,27 +36,28 @@ function clone(value) {
 function target(index) {
   const identityIndex = ((index - 1) % 4) + 1;
   return {
-    kind: 'record_entry',
     target_id: `target-preflight-record-${identityIndex}`,
-    public_identifier_ids: [
-      `public-id-preflight-${identityIndex}`,
-      `public-id-preflight-alias-${identityIndex}`,
-    ],
     requested_value_types: ['name', 'time'],
     component_ids: ['visitor_name', 'clock_time'],
   };
 }
 
-function action(speechAct, index) {
-  const identityIndex = ((index - 1) % 4) + 1;
-  const definitions = {
+function actionContract(speechAct) {
+  return {
     tutor_directed_public_result_request: ['requested', 'tutor', 'supply_public_result'],
     learner_proposed_test: ['proposed', 'learner', 'perform_public_test'],
     learner_record_entry_request: ['requested', 'joint', 'record_public_claim'],
     tutor_selection_request: ['requested', 'tutor', 'select_next_step'],
+  }[speechAct];
+}
+
+function action(speechAct, index) {
+  const identityIndex = ((index - 1) % 4) + 1;
+  const [, executor] = actionContract(speechAct);
+  return {
+    executor,
+    action_object_id: `action-object-preflight-${speechAct.replaceAll('_', '-')}-${identityIndex}`,
   };
-  const [mode, actor, actionName] = definitions[speechAct];
-  return { mode, actor, action: actionName, action_object_id: `action-object-preflight-${identityIndex}` };
 }
 
 function syntheticInstrument(sourceCommit) {
@@ -74,7 +75,7 @@ function syntheticInstrument(sourceCommit) {
     expected.set(`preflight-${index}`, [
       {
         speech_act: speechAct,
-        target: target(index),
+        target: speechAct === 'tutor_selection_request' ? null : target(index),
         requested_or_proposed_action: action(speechAct, index),
         evidence_span: { text: phrase },
       },
@@ -93,16 +94,20 @@ function syntheticInstrument(sourceCommit) {
     {
       speech_act: 'tutor_directed_public_result_request',
       target: target(13),
-      requested_or_proposed_action: action('tutor_directed_public_result_request', 14),
+      requested_or_proposed_action: action('tutor_directed_public_result_request', 13),
       evidence_span: { text: 'report record 13 public result' },
     },
   ]);
   cases.push({ sample_id: compoundId, current_learner_turn: { turn: 2, learner: compoundText } });
   const indexes = Array.from({ length: 4 }, (_, index) => index + 1);
   const catalog = {
-    schema: 'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v2',
+    schema: 'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v3',
     targets: indexes.map((index) => ({
       target_id: `target-preflight-record-${index}`,
+      kind: 'record_entry',
+      public_identifier_ids: [`public-id-preflight-${index}`, `public-id-preflight-alias-${index}`],
+      allowed_value_types: ['name', 'time', 'date'],
+      component_ids: ['visitor_name', 'clock_time'],
       display_label: `Synthetic record ${index}`,
     })),
     public_identifiers: indexes.flatMap((index) => [
@@ -113,10 +118,27 @@ function syntheticInstrument(sourceCommit) {
       { component_id: 'visitor_name', display_label: 'visitor name' },
       { component_id: 'clock_time', display_label: 'clock time' },
     ],
-    action_objects: Array.from({ length: 4 }, (_, index) => ({
-      action_object_id: `action-object-preflight-${index + 1}`,
-      display_label: `Synthetic action ${index + 1}`,
-    })),
+    action_objects: [
+      ...new Map(
+        [...expected.values()]
+          .flat()
+          .filter((event) => event.requested_or_proposed_action)
+          .map((event) => {
+            const [mode, , actionName] = actionContract(event.speech_act);
+            const id = event.requested_or_proposed_action.action_object_id;
+            return [
+              id,
+              {
+                action_object_id: id,
+                mode,
+                action: actionName,
+                target_id: event.target?.target_id || null,
+                display_label: `Synthetic ${event.speech_act}`,
+              },
+            ];
+          }),
+      ).values(),
+    ],
   };
   return {
     corpus: {
@@ -137,12 +159,11 @@ function readerBatchResponse({ packet, expected, variant }) {
   for (const sampleId of ids) {
     const events = clone(expected.get(sampleId));
     for (const event of events) {
-      if (variant === 'b') {
-        event.target.public_identifier_ids.reverse();
+      if (variant === 'b' && event.target) {
         event.target.requested_value_types.reverse();
         event.target.component_ids.reverse();
       }
-      if (variant === 'a') {
+      if (variant === 'a' && events.length === 1) {
         const learner = packet.cases_by_sample_id[sampleId].current_learner_turn.learner;
         event.evidence_span.text = learner;
       }
@@ -183,13 +204,17 @@ function meaningMutationDetected({ base, corpus, corpusSha256, mutate }) {
   changed.annotator_id = `${base.annotator_id}-contrast`;
   changed.annotation_run_id = `${base.annotation_run_id}-contrast`;
   mutate(changed.cases[0].events[0]);
-  const consensus = buildAdaptiveWarrantSemanticConsensus({
-    readerA: base,
-    readerB: changed,
-    corpus,
-    corpusSha256,
-  });
-  return consensus.cases[0].hard_consensus === false;
+  try {
+    const consensus = buildAdaptiveWarrantSemanticConsensus({
+      readerA: base,
+      readerB: changed,
+      corpus,
+      corpusSha256,
+    });
+    return consensus.cases[0].hard_consensus === false;
+  } catch {
+    return true;
+  }
 }
 
 function throwsValidation({ response, corpus, corpusSha256 }) {
@@ -275,8 +300,8 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     speech_act: (event) => {
       event.speech_act = 'criterion_question';
     },
-    actor: (event) => {
-      event.requested_or_proposed_action.actor = 'learner';
+    executor: (event) => {
+      event.requested_or_proposed_action.executor = 'joint';
     },
     target_id: (event) => {
       event.target.target_id = firstTarget;
@@ -305,6 +330,7 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
   delete malformed.cases[0].events[0].speech_act;
   const ambiguous = clone(readerB);
   ambiguous.cases[0].genuinely_ambiguous = true;
+  ambiguous.cases[0].events = [];
   const ambiguousConsensus = buildAdaptiveWarrantSemanticConsensus({
     readerA,
     readerB: ambiguous,
@@ -326,8 +352,14 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       'notes_and_display_labels_invariant',
       relabelledConsensus.hard_consensus_cases === consensus.hard_consensus_cases,
     ),
-    check('json_key_order_invariant', consensus.cases.every((row) => row.hard_consensus)),
-    check('declared_set_order_invariant', consensus.cases.every((row) => row.event_fields_agreement)),
+    check(
+      'json_key_order_invariant',
+      consensus.cases.every((row) => row.hard_consensus),
+    ),
+    check(
+      'declared_set_order_invariant',
+      consensus.cases.every((row) => row.event_fields_agreement),
+    ),
     check(
       'event_order_derived_by_public_rule',
       readerB.cases.find((row) => row.sample_id === 'preflight-13').events[0].speech_act === 'learner_proposed_test',
@@ -351,10 +383,7 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     ),
     check('malformed_value_fails_closed', throwsValidation({ response: malformed, corpus, corpusSha256 })),
     check('unknown_value_fails_closed', throwsValidation({ response: unknown, corpus, corpusSha256 })),
-    check(
-      'out_of_catalogue_value_fails_closed',
-      throwsValidation({ response: outOfCatalog, corpus, corpusSha256 }),
-    ),
+    check('out_of_catalogue_value_fails_closed', throwsValidation({ response: outOfCatalog, corpus, corpusSha256 })),
     check('ambiguous_value_fails_closed', ambiguousConsensus.cases[0].hard_consensus === false),
     check('prompt_size_within_42000_bytes', Math.max(...packetSizes) <= 42000, { maximum: Math.max(...packetSizes) }),
     check('response_size_within_10500_bytes', Math.max(...responseSizes) <= 10500, {
@@ -396,7 +425,9 @@ function main() {
     strict: true,
   });
   if (values.help || !values.out) {
-    process.stdout.write('Usage: node scripts/run-adaptive-warrant-semantic-brittleness-preflight.js --out <artifact.json>\n');
+    process.stdout.write(
+      'Usage: node scripts/run-adaptive-warrant-semantic-brittleness-preflight.js --out <artifact.json>\n',
+    );
     if (!values.help) process.exitCode = 1;
     return;
   }

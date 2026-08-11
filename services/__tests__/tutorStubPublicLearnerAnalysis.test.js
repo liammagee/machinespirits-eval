@@ -426,7 +426,6 @@ describe('strict public learner analysis', () => {
       events: [
         {
           event_id: 'turn-003-event-01',
-          speaker: 'learner',
           speech_act: 'tutor_directed_public_result_request',
           target: {
             kind: 'record_entry',
@@ -437,7 +436,7 @@ describe('strict public learner analysis', () => {
           },
           requested_or_proposed_action: {
             mode: 'requested',
-            actor: 'tutor',
+            executor: 'tutor',
             action: 'supply_public_result',
             action_object_id: 'target-shelf-two-access-record',
           },
@@ -454,13 +453,13 @@ describe('strict public learner analysis', () => {
         includeSemanticEvents: true,
         benchmarkLearnerText: learnerText,
         tutorTurn: 3,
-        semanticPublicText:
-          'The public target-shelf-two-access-record with public-id-shelf-two is available.',
+        semanticPublicText: 'The public target-shelf-two-access-record with public-id-shelf-two is available.',
       }),
     );
     const provider = buildTutorStubPublicLearnerAnalysisProviderOutputSchema({ includeSemanticEvents: true });
     assertCodexProviderSchema(provider);
     assert.equal(provider.properties.semantic_events.properties.events.items.properties.evidence_span.type, 'object');
+    assert.equal('speaker' in provider.properties.semantic_events.properties.events.items.properties, false);
     const prompt = buildTutorStubPublicLearnerAnalysisPrompt({
       learnerText,
       topic: 'public record reasoning',

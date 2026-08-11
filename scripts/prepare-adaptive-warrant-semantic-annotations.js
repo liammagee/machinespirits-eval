@@ -11,6 +11,7 @@ import {
   ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA,
   buildAdaptiveWarrantSemanticBatchOutputSchema,
   buildAdaptiveWarrantSemanticConsensus,
+  materializeAdaptiveWarrantSemanticReaderEvent,
   scoreAdaptiveWarrantSemanticExtraction,
   summarizeAdaptiveWarrantSemanticDiagnosticSupport,
   validateAdaptiveWarrantSemanticAnnotationResponse,
@@ -19,11 +20,11 @@ import {
 import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_COLLECTION_MANIFEST_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-annotation-collection.v2';
+  'machinespirits.adaptation-refinement.semantic-event-annotation-collection.v3';
 export const ADAPTIVE_WARRANT_SEMANTIC_READER_PACKET_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-reader-packet.v2';
+  'machinespirits.adaptation-refinement.semantic-event-reader-packet.v3';
 export const ADAPTIVE_WARRANT_SEMANTIC_AUTHORIZATION_REQUEST_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-annotation-authorization-request.v2';
+  'machinespirits.adaptation-refinement.semantic-event-annotation-authorization-request.v3';
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 
 const BATCH_FIELDS = Object.freeze([
@@ -181,9 +182,12 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
           'Do not infer or mention a condition, model prediction, validator result, warrant decision, private key, support stratum, or another reader response.',
           'Return the exact JSON response envelope with every required opaque sample-id key and no prose outside JSON.',
           'Preserve event order. A compound utterance may have several events; do not collapse a proposal and a result request.',
-          'Use genuinely_ambiguous=true only when the public handbook leaves two material readings unresolved.',
+          'Use one event per independent clause-level act. Explanations do not create an extra event. Separate events must use distinct non-overlapping minimal clause spans.',
+          'Use genuinely_ambiguous=true only when two complete typed readings remain after every handbook rule; then return events=[].',
           'Every evidence_span must contain only text: one non-empty literal substring that occurs exactly once in current_learner_turn.learner. Do not return start or end; the assembler derives UTF-16 offsets mechanically and records them in its audit.',
-          'For target.target_id, target.public_identifier_ids, target.component_ids, and action.action_object_id, use only exact IDs from semantic_annotation_catalog. Display labels are explanatory only. The catalog is corpus-wide public vocabulary, not a case label; choose only IDs supported by the current public case.',
+          'The harness supplies speaker=learner mechanically. Do not return a speaker field.',
+          'For target.target_id, target.component_ids, and action.action_object_id, use only exact IDs from semantic_annotation_catalog. The harness derives target kind and public identifiers from target_id, and derives action mode and operation from action_object_id. Display labels are explanatory only.',
+          'Action executor means the party who must perform the action, never the utterance speaker. A request-type act must have executor different from speaker.',
           'Every case note must contain at least eight characters of case-specific public-evidence rationale, including when the case is not ambiguous.',
           'Keep target_id separate from requested_value_types. A requested name, time, date, or weight is not automatically a target.',
         ],
@@ -320,7 +324,7 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
   if (!reader) throw new Error(`unknown semantic reader ${readerId}`);
   const corpus = readJson(manifest.corpus.path);
   const semanticCatalog = corpus.semantic_annotation_catalog;
-  const catalogIds = validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
+  validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
   const order = new Map(corpus.cases.map((row, index) => [row.sample_id, index]));
   const corpusById = new Map(corpus.cases.map((row) => [row.sample_id, row]));
   const cases = [];
@@ -363,26 +367,6 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
       const learnerText = String(corpusById.get(sampleId)?.current_learner_turn?.learner || '');
       const derivedEvents = row.events.map((event, eventIndex) => {
         exactFields(event, EVENT_FIELDS, `${batch.batch_id} ${sampleId} event ${eventIndex}`);
-        if (
-          event.target &&
-          (!catalogIds.target_ids.includes(event.target.target_id) ||
-            (event.target.public_identifier_ids || []).some(
-              (value) => !catalogIds.public_identifier_ids.includes(value),
-            ) ||
-            (event.target.component_ids || []).some(
-              (value) => !catalogIds.component_ids.includes(value),
-            ))
-        ) {
-          throw new Error(`${batch.batch_id} ${sampleId} event ${eventIndex} uses IDs outside the public catalog`);
-        }
-        if (
-          event.requested_or_proposed_action?.action_object_id &&
-          !catalogIds.action_object_ids.includes(event.requested_or_proposed_action.action_object_id)
-        ) {
-          throw new Error(
-            `${batch.batch_id} ${sampleId} event ${eventIndex} action object ID is outside the public catalog`,
-          );
-        }
         exactFields(event.evidence_span, ['text'], `${batch.batch_id} ${sampleId} event ${eventIndex} span`);
         const text = event.evidence_span.text;
         if (typeof text !== 'string' || !text.length || text.length > 240) {
@@ -400,7 +384,12 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
           start,
           end,
         });
-        return { ...event, evidence_span: { text, start, end }, source_event_index: eventIndex };
+        const materialized = materializeAdaptiveWarrantSemanticReaderEvent({
+          event: { ...event, evidence_span: { text, start, end } },
+          semanticCatalog,
+          label: `${batch.batch_id} ${sampleId} event ${eventIndex}`,
+        });
+        return { ...materialized, source_event_index: eventIndex };
       });
       const events = derivedEvents
         .toSorted(

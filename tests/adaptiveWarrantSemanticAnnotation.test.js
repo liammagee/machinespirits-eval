@@ -7,7 +7,9 @@ import test from 'node:test';
 
 import {
   ADAPTIVE_WARRANT_SEMANTIC_ANNOTATION_RESPONSE_SCHEMA,
+  ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT,
   buildAdaptiveWarrantSemanticConsensus,
+  materializeAdaptiveWarrantSemanticReaderEvent,
   scoreAdaptiveWarrantSemanticExtraction,
   summarizeAdaptiveWarrantSemanticDiagnosticSupport,
   validateAdaptiveWarrantSemanticAnnotationResponse,
@@ -38,13 +40,13 @@ function action(kind, index) {
   return kind === 'tutor_directed_public_result_request'
     ? {
         mode: 'requested',
-        actor: 'tutor',
+        executor: 'tutor',
         action: 'supply_public_result',
         action_object_id: `action-object-bay-${index}-access-time`,
       }
     : {
         mode: 'proposed',
-        actor: 'learner',
+        executor: 'learner',
         action: 'perform_public_test',
         action_object_id: `action-object-inspect-bay-${index}-log`,
       };
@@ -52,10 +54,28 @@ function action(kind, index) {
 
 function event(kind, text, index) {
   return {
+    speaker: 'learner',
     speech_act: kind,
     target: target(index),
     requested_or_proposed_action: action(kind, index),
     evidence_span: { text, start: 0, end: text.length },
+  };
+}
+
+function readerEvent(kind, text, index) {
+  const full = event(kind, text, index);
+  return {
+    speech_act: full.speech_act,
+    target: {
+      target_id: full.target.target_id,
+      requested_value_types: full.target.requested_value_types,
+      component_ids: full.target.component_ids,
+    },
+    requested_or_proposed_action: {
+      executor: full.requested_or_proposed_action.executor,
+      action_object_id: full.requested_or_proposed_action.action_object_id,
+    },
+    evidence_span: full.evidence_span,
   };
 }
 
@@ -77,9 +97,13 @@ function fixture(count = 8) {
     study_id: 'semantic-brittleness-preflight-test',
     blinded: true,
     semantic_annotation_catalog: {
-      schema: 'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v2',
+      schema: 'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v3',
       targets: cases.map((row, index) => ({
         target_id: target(index + 1).target_id,
+        kind: target(index + 1).kind,
+        public_identifier_ids: target(index + 1).public_identifier_ids,
+        allowed_value_types: target(index + 1).requested_value_types,
+        component_ids: target(index + 1).component_ids,
         display_label: `bay ${index + 1} access record`,
       })),
       public_identifiers: cases.map((row, index) => ({
@@ -89,6 +113,9 @@ function fixture(count = 8) {
       components: [{ component_id: 'access_time', display_label: 'access time' }],
       action_objects: cases.map((row, index) => ({
         action_object_id: action(row.kind, index + 1).action_object_id,
+        mode: action(row.kind, index + 1).mode,
+        action: action(row.kind, index + 1).action,
+        target_id: target(index + 1).target_id,
         display_label: `${row.kind} bay ${index + 1}`,
       })),
     },
@@ -107,7 +134,7 @@ function reader(corpus, readerId, runId) {
       sample_id: row.sample_id,
       genuinely_ambiguous: false,
       events: [event(row.kind, row.current_learner_turn.learner, index + 1)],
-      note: 'The actor and public action are explicit.',
+      note: 'The executor and public action are explicit.',
     })),
   };
 }
@@ -218,6 +245,16 @@ test('semantic collection freezes exact packets and derives only unique literal 
   assert.deepEqual(Object.keys(firstSampleSchema.properties.events.items.properties.evidence_span.properties), [
     'text',
   ]);
+  assert.equal('speaker' in firstSampleSchema.properties.events.items.properties, false);
+  assert.deepEqual(Object.keys(firstSampleSchema.properties.events.items.properties.target.properties).sort(), [
+    'component_ids',
+    'requested_value_types',
+    'target_id',
+  ]);
+  assert.deepEqual(
+    Object.keys(firstSampleSchema.properties.events.items.properties.requested_or_proposed_action.properties).sort(),
+    ['action_object_id', 'executor'],
+  );
   assert.equal(
     firstSampleSchema.properties.events.items.properties.target.properties.target_id.pattern,
     '^[a-z0-9][a-z0-9_-]{0,95}$',
@@ -230,12 +267,12 @@ test('semantic collection freezes exact packets and derives only unique literal 
     const response = packet.response_template;
     for (const sampleId of batch.required_sample_ids) {
       const row = corpus.cases.find((candidate) => candidate.sample_id === sampleId);
-      const readerEvent = event(row.kind, row.current_learner_turn.learner, Number(sampleId.split('-').at(-1)));
-      readerEvent.evidence_span = { text: readerEvent.evidence_span.text };
+      const packetEvent = readerEvent(row.kind, row.current_learner_turn.learner, Number(sampleId.split('-').at(-1)));
+      packetEvent.evidence_span = { text: packetEvent.evidence_span.text };
       response.cases_by_sample_id[sampleId] = {
         genuinely_ambiguous: false,
-        events: [readerEvent],
-        note: 'The public actor and action are explicit.',
+        events: [packetEvent],
+        note: 'The public executor and action are explicit.',
       };
     }
     fs.writeFileSync(
@@ -261,6 +298,64 @@ test('semantic collection freezes exact packets and derives only unique literal 
   assert.equal(
     audit.canonicalizations.every((row) => row.operation === 'derive_unique_literal_utf16_offsets'),
     true,
+  );
+});
+
+test('reader event materialization derives mechanical fields and enforces request executor asymmetry', () => {
+  const corpus = fixture(1);
+  const source = readerEvent('tutor_directed_public_result_request', corpus.cases[0].current_learner_turn.learner, 1);
+  source.evidence_span = { text: corpus.cases[0].current_learner_turn.learner };
+  const materialized = materializeAdaptiveWarrantSemanticReaderEvent({
+    event: source,
+    semanticCatalog: corpus.semantic_annotation_catalog,
+  });
+  assert.equal(materialized.speaker, 'learner');
+  assert.equal(materialized.target.kind, 'record_entry');
+  assert.deepEqual(materialized.target.public_identifier_ids, ['public-id-bay-1']);
+  assert.equal(materialized.requested_or_proposed_action.mode, 'requested');
+  assert.equal(materialized.requested_or_proposed_action.action, 'supply_public_result');
+
+  source.requested_or_proposed_action.executor = 'learner';
+  assert.throws(
+    () =>
+      materializeAdaptiveWarrantSemanticReaderEvent({
+        event: source,
+        semanticCatalog: corpus.semantic_annotation_catalog,
+      }),
+    /incompatible with the speech act|executor must differ/u,
+  );
+});
+
+test('the tabletop contract accounts for every reader field and every mechanical derivative', () => {
+  assert.deepEqual(
+    Object.keys(ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT).sort(),
+    [
+      'action',
+      'action_mode',
+      'action_object_id',
+      'component_ids',
+      'event_multiplicity',
+      'evidence_span',
+      'executor',
+      'genuinely_ambiguous',
+      'note',
+      'public_identifier_ids',
+      'requested_value_types',
+      'speaker',
+      'speech_act',
+      'target_id',
+      'target_kind',
+    ].sort(),
+  );
+});
+
+test('semantic annotation rejects overlapping reader events as non-atomic multiplicity', () => {
+  const corpus = fixture(1);
+  const response = reader(corpus, 'reader-a', 'run-a');
+  response.cases[0].events.push(structuredClone(response.cases[0].events[0]));
+  assert.throws(
+    () => validateAdaptiveWarrantSemanticAnnotationResponse({ response, corpus, corpusSha256: CORPUS_SHA }),
+    /overlapping non-atomic event spans/u,
   );
 });
 
@@ -291,6 +386,27 @@ test('fresh V3 diagnostic supplies the predeclared semantic and rare-state const
   assert.equal(
     built.corpus.cases.some((row) => JSON.stringify(row).includes('expected_semantic_events')),
     false,
+  );
+  const expectedResponse = {
+    schema: ADAPTIVE_WARRANT_SEMANTIC_ANNOTATION_RESPONSE_SCHEMA,
+    study_id: built.corpus.study_id,
+    corpus_sha256: CORPUS_SHA,
+    annotator_id: 'private-construction-check',
+    annotation_run_id: 'private-construction-check-run',
+    cases: built.key.cases.map((row) => ({
+      sample_id: row.sample_id,
+      genuinely_ambiguous: false,
+      events: row.expected_semantic_events,
+      note: 'Prospective construction-only contract check.',
+    })),
+  };
+  assert.equal(
+    validateAdaptiveWarrantSemanticAnnotationResponse({
+      response: expectedResponse,
+      corpus: built.corpus,
+      corpusSha256: CORPUS_SHA,
+    }).ok,
+    true,
   );
 });
 
@@ -332,7 +448,10 @@ test('zero-call brittleness preflight exercises the complete instrument path and
   assert.equal(result.artifact.zero_model_calls, true);
   assert.equal(result.artifact.status, 'passed');
   assert.equal(result.artifact.verdict, 'instrument_ready');
-  assert.equal(result.artifact.checks.every((row) => row.status === 'pass'), true);
+  assert.equal(
+    result.artifact.checks.every((row) => row.status === 'pass'),
+    true,
+  );
   assert.match(result.artifact.bindings.extraction_schema.digest, /^[0-9a-f]{64}$/u);
   assert.match(result.artifact.bindings.reader_schema_digest, /^[0-9a-f]{64}$/u);
   assert.match(result.artifact.bindings.consensus_scorer_fingerprint, /^[0-9a-f]{64}$/u);
@@ -387,8 +506,8 @@ test('the two-call schema smoke uses synthetic cases that are permanently exclud
   const corpus = buildAdaptiveWarrantSemanticSmokeCorpus('b'.repeat(40));
   assert.equal(corpus.synthetic_smoke_only, true);
   assert.equal(corpus.permanently_excluded_from_research, true);
-  assert.equal(corpus.cases.length, 2);
-  assert.equal(corpus.semantic_annotation_catalog.targets.length, 2);
+  assert.equal(corpus.cases.length, 3);
+  assert.equal(corpus.semantic_annotation_catalog.targets.length, 3);
   assert.equal(JSON.stringify(corpus).includes('construction_support'), false);
   assert.equal(JSON.stringify(corpus).includes('expected_semantic_events'), false);
 });

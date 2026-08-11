@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-extraction.v2';
+  'machinespirits.adaptation-refinement.semantic-event-extraction.v3';
 export const ADAPTIVE_WARRANT_SEMANTIC_VALIDATION_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-validation.v1';
+  'machinespirits.adaptation-refinement.semantic-event-validation.v3';
 export const ADAPTIVE_WARRANT_SEMANTIC_SIGNAL_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-engagement-signal.v1';
 
@@ -59,7 +59,7 @@ export const ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES = Object.freeze([
 ]);
 
 export const ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES = Object.freeze(['requested', 'proposed', 'none']);
-export const ADAPTIVE_WARRANT_SEMANTIC_ACTION_ACTORS = Object.freeze([
+export const ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS = Object.freeze([
   'learner',
   'tutor',
   'joint',
@@ -78,9 +78,10 @@ export const ADAPTIVE_WARRANT_SEMANTIC_ACTIONS = Object.freeze([
 export const ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE = Object.freeze(['high', 'medium', 'low']);
 export const ADAPTIVE_WARRANT_SEMANTIC_UNCERTAINTY_REASONS = Object.freeze([
   'ambiguous_speech_act',
-  'ambiguous_actor',
+  'ambiguous_executor',
   'ambiguous_target',
   'ambiguous_value_type',
+  'ambiguous_multiplicity',
   'referent_not_public',
   'span_not_literal',
   'insufficient_context',
@@ -94,6 +95,14 @@ const ENGAGEMENT_PRECEDENCE = Object.freeze([
   'low_agency_deferral',
   'engaged_analytic',
   'neutral',
+]);
+
+const REQUEST_SPEECH_ACTS = new Set([
+  'tutor_directed_public_result_request',
+  'tutor_selection_request',
+  'learner_record_entry_request',
+  'learner_wording_request',
+  'repair_request',
 ]);
 
 function sha256(value) {
@@ -169,8 +178,12 @@ function normalizedTarget(target, issues, eventIndex) {
   return {
     kind: target.kind,
     target_id: String(target.target_id || '').trim() || null,
-    public_identifier_ids: [...new Set((target.public_identifier_ids || []).map((value) => String(value).trim()))].sort(),
-    requested_value_types: [...new Set((target.requested_value_types || []).map((value) => String(value).trim()))].sort(),
+    public_identifier_ids: [
+      ...new Set((target.public_identifier_ids || []).map((value) => String(value).trim())),
+    ].sort(),
+    requested_value_types: [
+      ...new Set((target.requested_value_types || []).map((value) => String(value).trim())),
+    ].sort(),
     component_ids: [...new Set((target.component_ids || []).map((value) => String(value).trim()))].sort(),
   };
 }
@@ -183,20 +196,23 @@ function normalizedAction(action, issues, eventIndex) {
     return null;
   }
   enumIssue(action.mode, ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES, `${path}.mode`, issues);
-  enumIssue(action.actor, ADAPTIVE_WARRANT_SEMANTIC_ACTION_ACTORS, `${path}.actor`, issues);
+  enumIssue(action.executor, ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS, `${path}.executor`, issues);
   enumIssue(action.action, ADAPTIVE_WARRANT_SEMANTIC_ACTIONS, `${path}.action`, issues);
-  if (action.action_object_id !== null && (typeof action.action_object_id !== 'string' || !action.action_object_id.trim())) {
+  if (
+    action.action_object_id !== null &&
+    (typeof action.action_object_id !== 'string' || !action.action_object_id.trim())
+  ) {
     issues.push(`${path}.action_object_id:invalid`);
   }
-  if (action.mode === 'none' && (action.actor !== 'none' || action.action !== 'none')) {
+  if (action.mode === 'none' && (action.executor !== 'none' || action.action !== 'none')) {
     issues.push(`${path}:illegal_none_combination`);
   }
-  if (action.mode !== 'none' && (action.actor === 'none' || action.action === 'none')) {
+  if (action.mode !== 'none' && (action.executor === 'none' || action.action === 'none')) {
     issues.push(`${path}:incomplete_action_combination`);
   }
   return {
     mode: action.mode,
-    actor: action.actor,
+    executor: action.executor,
     action: action.action,
     action_object_id: action.action_object_id === null ? null : String(action.action_object_id || '').trim(),
   };
@@ -246,8 +262,6 @@ export function validateAdaptiveWarrantSemanticExtraction(
     if (!eventId) issues.push(`events[${eventIndex}].event_id:required`);
     if (seenEventIds.has(eventId)) issues.push(`events[${eventIndex}].event_id:duplicate`);
     seenEventIds.add(eventId);
-    enumIssue(event.speaker, ['learner', 'tutor'], `events[${eventIndex}].speaker`, issues);
-    if (event.speaker !== 'learner') issues.push(`events[${eventIndex}].speaker:not_current_learner`);
     enumIssue(event.speech_act, ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS, `events[${eventIndex}].speech_act`, issues);
     enumIssue(event.confidence, ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE, `events[${eventIndex}].confidence`, issues);
     arrayLimitIssues(
@@ -261,6 +275,9 @@ export function validateAdaptiveWarrantSemanticExtraction(
     }
     const target = normalizedTarget(event.target, issues, eventIndex);
     const action = normalizedAction(event.requested_or_proposed_action, issues, eventIndex);
+    if (REQUEST_SPEECH_ACTS.has(event.speech_act) && action?.executor === 'learner') {
+      issues.push(`events[${eventIndex}].requested_or_proposed_action:executor_matches_request_speaker`);
+    }
     const span = event.evidence_span && typeof event.evidence_span === 'object' ? event.evidence_span : {};
     const start = Number(span.start);
     const end = Number(span.end);
@@ -282,7 +299,7 @@ export function validateAdaptiveWarrantSemanticExtraction(
     const asserted = event.confidence === 'high' && uncertainty.length === 0;
     return {
       event_id: eventId || `invalid-event-${eventIndex + 1}`,
-      speaker: event.speaker || null,
+      speaker: 'learner',
       speech_act: event.speech_act || null,
       target,
       requested_or_proposed_action: action,
@@ -301,14 +318,10 @@ export function validateAdaptiveWarrantSemanticExtraction(
       const left = events[leftIndex];
       const right = events[rightIndex];
       if (!spansOverlap(left.evidence_span, right.evidence_span)) continue;
-      const leftAction = left.requested_or_proposed_action;
-      const rightAction = right.requested_or_proposed_action;
-      if (!leftAction || !rightAction) continue;
-      if (leftAction.actor === rightAction.actor && leftAction.mode === rightAction.mode) continue;
       for (const event of [left, right]) {
         event.validation.status = 'uncertain';
-        event.validation.issues = [...new Set([...event.validation.issues, 'overlapping_events:ambiguous_actor'])];
-        event.uncertainty = [...new Set([...event.uncertainty, 'ambiguous_actor'])];
+        event.validation.issues = [...new Set([...event.validation.issues, 'overlapping_events:non_atomic_span'])];
+        event.uncertainty = [...new Set([...event.uncertainty, 'ambiguous_multiplicity'])];
       }
     }
   }
@@ -349,7 +362,7 @@ function engagementContribution(event) {
       return 'low_agency_deferral';
     case 'tutor_selection_request': {
       const action = event.requested_or_proposed_action;
-      return action?.mode === 'requested' && action?.actor === 'tutor' && action?.action === 'select_next_step'
+      return action?.mode === 'requested' && action?.executor === 'tutor' && action?.action === 'select_next_step'
         ? 'low_agency_deferral'
         : null;
     }

@@ -19,7 +19,7 @@ import { closeTruncatedTutorStubJson, normalizeTutorStubAnalysisEnvelope } from 
 import { buildTutorStubLearnerAdvance } from './tutorStubLearnerAdvance.js';
 import { buildTutorStubStateObservation } from './adaptiveTutor/tutorStubStateAdapter.js';
 import {
-  ADAPTIVE_WARRANT_SEMANTIC_ACTION_ACTORS,
+  ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS,
   ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES,
   ADAPTIVE_WARRANT_SEMANTIC_ACTIONS,
   ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE,
@@ -416,10 +416,10 @@ function semanticEventLocalOutputSchema() {
   const action = {
     type: ['object', 'null'],
     additionalProperties: false,
-    required: ['mode', 'actor', 'action', 'action_object_id'],
+    required: ['mode', 'executor', 'action', 'action_object_id'],
     properties: {
       mode: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES] },
-      actor: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_ACTORS] },
+      executor: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS] },
       action: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTIONS] },
       action_object_id: { type: ['string', 'null'] },
     },
@@ -440,7 +440,6 @@ function semanticEventLocalOutputSchema() {
           additionalProperties: false,
           required: [
             'event_id',
-            'speaker',
             'speech_act',
             'target',
             'requested_or_proposed_action',
@@ -450,7 +449,6 @@ function semanticEventLocalOutputSchema() {
           ],
           properties: {
             event_id: { type: 'string' },
-            speaker: { type: 'string', enum: ['learner', 'tutor'] },
             speech_act: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS] },
             target,
             requested_or_proposed_action: action,
@@ -617,7 +615,7 @@ function semanticEventProviderOutputSchema() {
   });
   const action = providerObjectSchema({
     mode: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES] },
-    actor: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_ACTORS] },
+    executor: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS] },
     action: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTIONS] },
     action_object_id: { type: ['string', 'null'] },
   });
@@ -629,7 +627,6 @@ function semanticEventProviderOutputSchema() {
       type: 'array',
       items: providerObjectSchema({
         event_id: { type: 'string' },
-        speaker: { type: 'string', enum: ['learner', 'tutor'] },
         speech_act: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS] },
         target: { ...target, type: ['object', 'null'] },
         requested_or_proposed_action: { ...action, type: ['object', 'null'] },
@@ -1373,7 +1370,6 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
       events: [
         {
           event_id: 'event-01',
-          speaker: 'learner|tutor',
           speech_act: ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.join('|'),
           target: {
             kind: ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS.join('|'),
@@ -1384,7 +1380,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
           },
           requested_or_proposed_action: {
             mode: ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES.join('|'),
-            actor: ADAPTIVE_WARRANT_SEMANTIC_ACTION_ACTORS.join('|'),
+            executor: ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS.join('|'),
             action: ADAPTIVE_WARRANT_SEMANTIC_ACTIONS.join('|'),
             action_object_id: 'stable public target ID or null',
           },
@@ -1508,7 +1504,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
       ? 'Use only stable public IDs already printed in the public context. Separate target.target_id (the public object or relation) from target.requested_value_types (the fields requested about it). Names, times, dates, weights, sounds, materials, and match status are value types when the learner asks for those values; they are not automatically targets.'
       : null,
     includeSemanticEvents
-      ? 'Use requested mode with actor=tutor for a request that the tutor supply a public result; use proposed mode with actor=learner for a learner-proposed public test. A request that the tutor choose the next step is tutor_selection_request plus select_next_step and may also carry a separate low_agency_deferral event.'
+      ? 'Speaker is supplied mechanically as learner; do not return it. Executor means who must perform the action, not who spoke. Use requested mode with executor=tutor for a request that the tutor supply a public result; use proposed mode with executor=learner for a learner-proposed public test. A request that the tutor choose the next step is tutor_selection_request plus select_next_step and may also carry a separate low_agency_deferral event only when a separate clause explicitly refuses or delegates choice.'
       : null,
     includeSemanticEvents
       ? 'Emit analytic_contribution only for explicit reasoning, testing, comparison, evidence limitation, or criterion work. It may coexist with another act.'
@@ -1517,7 +1513,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
       ? 'evidence_span must be an exact substring of the current learner turn with JavaScript UTF-16 start and exclusive end offsets.'
       : null,
     includeSemanticEvents
-      ? 'Use confidence=high with uncertainty=[] only when the act, actor, target, and span are unambiguous. Otherwise use medium or low and one to three declared uncertainty reasons; do not guess.'
+      ? 'Use confidence=high with uncertainty=[] only when the act, executor, target, and span are unambiguous. Otherwise use medium or low and one to three declared uncertainty reasons; do not guess.'
       : null,
     includeSemanticEvents
       ? 'Use target=null and requested_or_proposed_action=null when those fields do not apply.'
