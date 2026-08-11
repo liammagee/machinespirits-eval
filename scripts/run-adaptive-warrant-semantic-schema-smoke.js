@@ -120,9 +120,11 @@ export function prepareAdaptiveWarrantSemanticSchemaSmoke({ outputDir, preflight
   });
   if (
     prepared.authorizationRequest.call_budget.planned_calls !== 2 ||
-    prepared.authorizationRequest.call_budget.maximum_calls !== 2
+    prepared.authorizationRequest.call_budget.maximum_calls !== 2 ||
+    prepared.manifest.source_commit !== sourceCommit ||
+    prepared.authorizationRequest.bindings.source_commit !== sourceCommit
   ) {
-    throw new Error('semantic schema smoke must prepare exactly two calls');
+    throw new Error('semantic schema smoke must prepare exactly two calls bound to the clean source commit');
   }
   const freeze = {
     schema: ADAPTIVE_WARRANT_SEMANTIC_SMOKE_FREEZE_SCHEMA,

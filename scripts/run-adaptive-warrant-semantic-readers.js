@@ -71,6 +71,7 @@ function validateAuthorization({ request, requestPath, manifest, approvedBy }) {
   if (
     request.status !== 'approval_required' ||
     request.study_id !== manifest.study_id ||
+    request.bindings.source_commit !== manifest.source_commit ||
     request.bindings.manifest_sha256 !== fileSha256(manifest.__path) ||
     request.bindings.corpus_sha256 !== manifest.corpus.sha256 ||
     request.bindings.handbook_sha256 !== manifest.handbook.sha256 ||
@@ -105,6 +106,7 @@ function validateFreeze({ freeze, manifest, repoRoot }) {
   }
   if (
     freeze.study_id !== manifest.study_id ||
+    freeze.source_commit !== manifest.source_commit ||
     freeze.corpus.sha256 !== manifest.corpus.sha256 ||
     freeze.handbook.sha256 !== manifest.handbook.sha256
   ) {

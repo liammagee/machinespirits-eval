@@ -130,6 +130,7 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
   const semanticCatalog = corpus.semantic_annotation_catalog;
   validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
   let preflightBinding = null;
+  let sourceCommit = null;
   if (preflightMode) {
     if (!String(corpus.study_id).startsWith('semantic-brittleness-preflight-')) {
       throw new Error('semantic preflight bypass is restricted to the synthetic brittleness instrument');
@@ -138,7 +139,7 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
     if (!preflightPath) throw new Error('semantic annotation preparation requires a passing preflight artifact');
     const gitStatus = execFileSync('git', ['status', '--porcelain'], { cwd: ROOT, encoding: 'utf8' }).trim();
     if (gitStatus) throw new Error('semantic annotation preparation requires a clean committed worktree');
-    const sourceCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+    sourceCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
     const resolvedPreflight = path.resolve(preflightPath);
     const preflight = readJson(resolvedPreflight);
     validateAdaptiveWarrantSemanticPreflightArtifact({ artifact: preflight, expectedSourceCommit: sourceCommit });
@@ -230,6 +231,7 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
     status: 'prepared',
     task: 'semantic_extraction',
     study_id: corpus.study_id,
+    source_commit: sourceCommit,
     corpus_role: corpusRole,
     gate_eligible: corpusRole === 'natural_prevalence',
     corpus: { path: resolvedCorpus, sha256: corpusSha256, cases: sampleIds.length },
@@ -278,6 +280,7 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
     },
     call_budget: { planned_calls: plannedCalls, maximum_calls: callCeiling, readers: 2 },
     bindings: {
+      source_commit: sourceCommit,
       manifest_sha256: fileSha256(manifestPath),
       corpus_sha256: corpusSha256,
       handbook_sha256: handbookSha256,
