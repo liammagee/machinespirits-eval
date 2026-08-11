@@ -23,6 +23,10 @@ const EVIDENCE_CUE =
   /\b(?:assay|balance|clue|comparison|dies?|entry|evidence|exhibit|fact|flaw|graver|line|link|log|mark|match|metal|reading|record|result|ring|sample|shilling|test|tool|touchstone|trace|weight|witness)\b/iu;
 const LEARNER_PROPOSAL =
   /(?:\b(?:i (?:can|could|intend to|propose|should|want to|will|would)|i['’]d|i['’]ll|let me|my (?:first|next) (?:move|step|test)|we (?:can|could|should|will|would))\b.{0,100}\b(?:check|compare|enter|examine|inspect|listen|look|record|test|weigh)\b|\b(?:let['’]?s|let us|(?:can|could|may|might|should|would) (?:i|we))\s+(?:first\s+)?(?:check|compare|enter|examine|inspect|listen|look|record|test|weigh)\b|\bi want\b.{0,80}\b(?:checked|compared|entered|examined|inspected|recorded|tested|weighed)\b)/iu;
+const DIRECTED_TEST_PROPOSAL =
+  /(?:^|[.!?;]\s*)(?:(?:can|could|will|would) you\s+(?:please\s+)?|please\s+)?(?:check|compare|examine|inspect|test|weigh)\b/iu;
+const DIRECTED_TEST_RESULT_CLAUSE =
+  /\b(?:if|whether)\b.{0,90}\b(?:finds?|found|indicates?|matches?|reads?|records?|reveals?|says?|shows?|weighs?)\b/iu;
 const RESULT_REQUEST =
   /(?:\bread (?:it|that|this) aloud\b|\bwhat(?:['’]s| is) (?:the )?(?:next )?(?:clue|evidence|exhibit|result)\b|\bwhat (?:did|do|does|is|was|were)\b.{0,90}\b(?:leave|mark|match|read|record|reveal|say|show|weigh)\b|\bwhat (?:is|was) (?:the )?[^.!?]{0,70}\b(?:entry|line|log|reading|record|trace)\b|\bwhat (?:[a-z-]+ ){0,3}(?:evidence|mark|match|reading|record|result|trace)\b|(?:^|[.!?]\s*)\b(?:do|does|did|is|was|were)\b.{0,90}\b(?:match|recorded|show)\b|(?:^|[.!?]\s*)\bhas\b.{0,90}\b(?:been )?(?:entered|recorded|shown|supplied)\b|\b(?:can|could|will|would) you\b.{0,100}\b(?:check|give|identify|provide|read|record|report|show|supply|tell)\b|\bplease\b.{0,80}\b(?:check|enter|give|identify|provide|read|record|report|show|supply|tell)\b|(?:^|[.!?]\s*)\b(?:check|enter|give|identify|provide|read|record|report|show|supply|tell)\b)/iu;
 const DIRECTED_RESULT_CLAUSE =
@@ -317,8 +321,12 @@ export function classifyAdaptiveWarrantPublicSpeechAct({ learnerText = '', class
   // “I would compare the dies; has a match been recorded?” contains both acts
   // and the second one creates a public tutor obligation.
   const proposal = EVIDENCE_CUE.test(operativeSurface) && LEARNER_PROPOSAL.test(operativeSurface);
+  const directedTestProposal =
+    EVIDENCE_CUE.test(operativeSurface) &&
+    DIRECTED_TEST_PROPOSAL.test(operativeSurface) &&
+    !DIRECTED_TEST_RESULT_CLAUSE.test(operativeSurface);
   const resultRequest = Boolean(directedResultSurface) || (EVIDENCE_CUE.test(operativeSurface) && RESULT_REQUEST.test(operativeSurface));
-  if (resultRequest && (!proposal || DIRECTED_RESULT_CLAUSE.test(operativeSurface))) {
+  if (resultRequest && !directedTestProposal && (!proposal || DIRECTED_RESULT_CLAUSE.test(operativeSurface))) {
     return {
       ...base,
       kind: 'tutor_directed_public_result_request',
@@ -326,7 +334,7 @@ export function classifyAdaptiveWarrantPublicSpeechAct({ learnerText = '', class
       target: publicTarget(directedResultSurface || operativeSurface),
     };
   }
-  if (proposal) {
+  if (proposal || directedTestProposal) {
     return { ...base, kind: 'learner_proposed_test', target: publicTarget(operativeSurface) };
   }
   return priorObligationDisposition

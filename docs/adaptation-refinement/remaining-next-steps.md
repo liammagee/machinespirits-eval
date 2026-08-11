@@ -1262,3 +1262,45 @@ sequence is:
    response schema;
 4. apply the unchanged representative scorer; and
 5. run no downstream outcome comparison unless the representative gate passes.
+
+## Current restart boundary after the first valid representative V4 score
+
+The clean `5ddf1d28a23f57bb48612314203aaab62c284363` execution is the first
+representative attempt that cleared every runtime and collection boundary. All
+24 eight-turn dialogues sealed valid; all 192 learner-analysis calls completed;
+structured live/replay parity and active delivery application were each
+192/192 with zero mismatches. The frozen natural-prevalence corpus contained
+all 96 observe-arm decisions. Two independent Luna readers returned complete
+96-case responses without normalization or content repair.
+
+The unchanged representative gate failed and remains the historical result.
+Binary decision precision (0.783), accuracy (0.827), diligent-negative false-
+positive rate (0), and live/shadow agreement (1.000) passed. Agreement was
+0.781 against 0.800 and recall was 0.692 against 0.700. Transition accuracy
+was 0.250, hard mechanism consensus was 0.563, request/proposal macro-F1 was
+0.644, and obligation-lifecycle accuracy was 0.762. The natural frame supplied
+only one persistence case, one resolution case, four complete-inquiry cases,
+and no epistemically non-aligned case. Interpretation macro-F1 also failed for
+conceptual (0.682), interactional (0.504), engagement (0.439), and strategy-
+exhaustion (0.506) divergence. No downstream outcome run is licensed.
+
+Localization found two prospective instrument/mechanism corrections. First,
+every public action contract now states that its expected-response list uses
+`expected_response_match: any`, and the blinded case exposes the public
+instance timing needed to judge its deadline. Second, a directive to check,
+inspect, compare, test, or weigh public material is a proposed test unless it
+asks what the check shows, reveals, records, or finds. The failed score and its
+thresholds are not changed or rescored.
+
+The remaining sequence is:
+
+1. verify, commit, and push these prospective contract and speech-act repairs;
+2. use a newly frozen targeted challenge only to diagnose the repairs, never to
+   contribute cases or scores to the representative gate;
+3. before any new reader labels, predeclare how rare lifecycle, inquiry, and
+   divergence support is evaluated without pretending that a natural frame is
+   stratified or pooling challenge cases into prevalence estimates;
+4. after the diagnostic and any bounded repair, freeze a new clean 24-dialogue
+   representative execution and collect two fresh independent readers; and
+5. run no downstream outcome comparison unless that new representative gate
+   passes under the prospectively declared design.

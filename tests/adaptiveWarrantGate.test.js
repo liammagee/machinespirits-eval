@@ -70,6 +70,7 @@ test('action contracts cover every catalogue family with typed lifecycle transit
   assert.deepEqual(Object.keys(ADAPTIVE_WARRANT_ACTION_FAMILY_CONTRACTS).sort(), CATALOGUE_ACTION_FAMILIES.sort());
   for (const definition of Object.values(ADAPTIVE_WARRANT_ACTION_FAMILY_CONTRACTS)) {
     assert.ok(definition.expected_learner_responses.length >= 1);
+    assert.equal(definition.expected_response_match, 'any');
     assert.ok(definition.deadline_turns >= 1);
     assert.ok(definition.success_transition);
     assert.ok(definition.defeat_transition);
@@ -169,6 +170,21 @@ test('public speech-act classifier does not invent tutor result debt from the fa
     const speechAct = classifyAdaptiveWarrantPublicSpeechAct({ learnerText });
     assert.equal(speechAct.creates_obligation, false, learnerText);
   }
+
+  for (const learnerText of [
+    'Check who was near shelf two around noon first; Dario’s history isn’t evidence of taking it.',
+    'Could you check the fridge access timeline first, rather than treating Dario’s history as evidence?',
+  ]) {
+    const proposedCheck = classifyAdaptiveWarrantPublicSpeechAct({ learnerText });
+    assert.equal(proposedCheck.kind, 'learner_proposed_test', learnerText);
+    assert.equal(proposedCheck.creates_obligation, false, learnerText);
+  }
+
+  const directedCheckResult = classifyAdaptiveWarrantPublicSpeechAct({
+    learnerText: 'Please check whether the camera record shows anyone handling shelf two.',
+  });
+  assert.equal(directedCheckResult.kind, 'tutor_directed_public_result_request');
+  assert.equal(directedCheckResult.creates_obligation, true);
 
   const contactCriterion = classifyAdaptiveWarrantPublicSpeechAct({
     learnerText:

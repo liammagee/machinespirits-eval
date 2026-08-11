@@ -1152,3 +1152,44 @@ the complete safely terminable family matrix. Exact terminal questions are
 also matched as whole response suffixes so quoted prior clues cannot be split
 into a false missing-handoff result. The representative thresholds and sample
 remain unchanged.
+
+## First valid representative V4 result and prospective repair — 11 August 2026
+
+The execution from clean commit
+`5ddf1d28a23f57bb48612314203aaab62c284363` passed every prerequisite: 24/24
+valid child seals, 192/192 structured live/replay comparisons, 192/192 delivery
+applications, and a frozen 96-case natural-prevalence corpus containing every
+observe-arm decision. Two independent Luna readers completed all cases without
+normalization or content repair. This is therefore the first interpretable
+representative V4 gate result.
+
+The unchanged gate failed. Raw agreement was 0.781, with 75 hard-consensus
+binary cases; precision was 0.783, recall 0.692, and accuracy 0.827. Transition
+accuracy was 0.250, mechanism hard-consensus rate 0.563, request/proposal
+macro-F1 0.644, and obligation-lifecycle accuracy 0.762. The corpus supplied
+only one persistence case, one resolution case, four complete-inquiry cases,
+and no epistemically non-aligned case. Divergence interpretation macro-F1 was
+0.682 conceptual, 0.504 interactional, 0.439 engagement, 1.000 pacing, 0.984
+epistemic, and 0.506 strategy exhaustion. Its magnitude, persistence, and joint
+scores largely passed. These values are retained as the result at this commit;
+they are not eligible for post-hoc correction or rescoring.
+
+Error localization motivates two prospective changes. Action contracts now
+declare `expected_response_match: any`; the blinded public projection also
+includes the instance `started_turn` and `response_count`, which is necessary
+to apply `deadline_turns` without access to hidden history. The public-speech
+grammar now classifies a directive to check, inspect, compare, test, or weigh
+material as a proposed test unless its clause asks what the test shows,
+reveals, records, or finds. These changes address the alternative-response
+combinator and test-versus-result-request boundary exposed by the failed
+representative corpus.
+
+The separation between instruments remains strict. A newly frozen targeted
+challenge can test these repairs and rare typed states, but its cases cannot be
+pooled into the natural-prevalence score, estimate representative error rates,
+or make the representative gate pass. Before new labels are collected, the
+next protocol revision must prospectively state how representative performance
+and rare-state adequacy jointly license progression without representing the
+challenge as a prevalence sample. After diagnostic verification and any
+bounded repair, a new clean 24-dialogue matrix and fresh independent reader pair
+are required. No downstream outcome comparison is licensed before passage.

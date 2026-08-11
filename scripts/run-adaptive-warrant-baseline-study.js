@@ -1885,6 +1885,7 @@ export function buildBlindedAnnotationCorpus(
               release_scope_exhausted: availability.release_scope_exhausted === true,
             },
             normative_action_contract: decisionProjection.action_contract?.contract || null,
+            normative_action_contract_instance: decisionProjection.action_contract?.instance || null,
             descriptive_evidence_at_decision: {
               dag_growth:
                 decisionProjection.dag_growth === null || decisionProjection.dag_growth === undefined
@@ -2056,6 +2057,7 @@ export function annotationProjectionFingerprint(row) {
     pre_gate_proposed_action_family: row.pre_gate_proposed_action_family,
     public_evidence_availability: row.public_evidence_availability,
     normative_action_contract: row.normative_action_contract,
+    normative_action_contract_instance: row.normative_action_contract_instance,
     descriptive_evidence_at_decision: row.descriptive_evidence_at_decision,
   });
 }
@@ -3394,7 +3396,7 @@ async function runPool(jobs, parallelism, worker, onFinish) {
 export function mechanismAnnotationHandbook() {
   return `# Adaptive warrant mechanism annotation handbook
 
-This handbook is frozen with the mechanism-validation corpus. Annotate only public decision-time evidence: the public inquiry brief (opening, situation, question, opening evidence, and public rules), the transcript through the current learner turn, the learner-record trajectory, the prior delivered family, its normative expected-uptake contract, the pre-gate candidate, prior public audit outcomes, and the supplied public evidence-availability and epistemic counts. Treat structured counters as evidence to audit against the transcript, not as self-validating labels. Do not infer from the eventual tutor reply, arm, profile, world, or private model prediction. If those public inputs do not determine a typed state, use \`uncertain\`; the support gate must fail rather than importing hidden evidence.
+This handbook is frozen with the mechanism-validation corpus. Annotate only public decision-time evidence: the public inquiry brief (opening, situation, question, opening evidence, and public rules), the transcript through the current learner turn, the learner-record trajectory, the prior delivered family, its normative expected-uptake contract and public instance timing, the pre-gate candidate, prior public audit outcomes, and the supplied public evidence-availability and epistemic counts. Treat structured counters as evidence to audit against the transcript, not as self-validating labels. Do not infer from the eventual tutor reply, arm, profile, world, or private model prediction. If those public inputs do not determine a typed state, use \`uncertain\`; the support gate must fail rather than importing hidden evidence.
 
 Each response envelope must use \`${ADAPTIVE_WARRANT_ANNOTATION_RESPONSE_V4_SCHEMA}\` and name a non-empty \`annotator_id\` plus a unique \`annotation_run_id\`. The two readers must work from separate response files without seeing one another's labels or the private key; the scorer rejects reused identities before it reads that key.
 
@@ -3426,9 +3428,9 @@ Every case-level and per-dimension note must contain at least ${ADAPTIVE_WARRANT
 - Commitment transition and candidate override are independent. A prior family may warrant transition while the current candidate already realizes the correct successor, or a prior family may remain valid while this particular candidate still needs correction.
 - A request answered in tutor turn 1 remains \`satisfied\` at learner turn 2 with an empty source-turn array; it is not \`none\`. Use \`none\` only when no request occurred anywhere in the public transcript.
 - An \`open\` request becomes \`overdue\` when a completed tutor turn neither answers it nor accountably defers it. A later reminder preserves \`overdue\`; it does not reset the obligation to \`open\`.
-- Only a direct target-specific result request creates or reminds obligation source turns. A selection or low-agency turn that names no requested result is not a source turn.
+- Only a direct target-specific result request creates or reminds obligation source turns. A proposal to check, inspect, compare, or test something first is a proposed test, including a polite directive such as “could you check the timeline first”; it becomes a result request only when the learner asks what that check shows, reveals, records, or finds. A selection or low-agency turn that names no requested result is not a source turn.
 - Apply warrant-basis precedence exactly: immediate repair, actionable public obligation, strict inquiry completion, candidate safety for an unsafe close while inquiry is incomplete, action-contract result, then register or accumulated trouble. Use \`none/hold\` only when none applies.
-- Judge contract success, defeat, or expiry independently from the raw public contract and public decision-time evidence; no gate transition or prediction is supplied. Use \`action_contract\` only when that judgment requires one of the contract's declared successor families. A successful \`renew\` that retains the held family is not a warrant; if no higher basis applies, label \`none/hold\`.
+- Judge contract success, defeat, or expiry independently from the raw public contract, its public instance timing, and public decision-time evidence; no gate transition or prediction is supplied. \`expected_response_match: any\` means that any one listed expected response is sufficient for success; the list is not a conjunction. The instance's \`response_count\` includes the current learner response and its \`started_turn\` identifies the first turn governed by this contract, so apply \`deadline_turns\` without reconstructing hidden family history. Use \`action_contract\` only when that judgment requires one of the contract's declared successor families. A successful \`renew\` that retains the held family is not a warrant; if no higher basis applies, label \`none/hold\`.
 - Explicit analytic work can be conceptually aligned even when the learner record stays flat. Conceptual stalling needs a public failure signal such as an explicit stall or low-agency deferral; productive testing is not conceptual failure.
 - Strategy exhaustion follows the supplied typed expected-uptake contract. If the contract says the learner adopted or used the staged evidence, do not mark the family exhausted only because the learner's surface wording still sounds dependent. Mark exhaustion when that contract is defeated, expired, or repeatedly failed.
 - \`aligned\` means the descriptive state satisfies that dimension's stated norm, even when the move is valuable. Record growth or explicit analytic work is conceptually aligned; voluntary agentive participation is engagement-aligned. Use \`productive\` only for a useful departure from the stated norm, not as a synonym for good, active, or successful.

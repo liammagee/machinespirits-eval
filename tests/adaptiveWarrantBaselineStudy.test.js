@@ -1488,12 +1488,18 @@ test('annotation corpus hides condition and keeps the arm mapping in a separate 
       contract: {
         schema: 'machinespirits.adaptation-refinement.action-family-contract.v1',
         expected_learner_responses: ['examines_or_uses_named_public_material'],
+        expected_response_match: 'any',
         deadline_turns: 2,
         success_transition: 'stage_next_step',
         defeat_transition: 'clarify_distinction',
         expiry_transition: 'answer_accountably',
         exit_on_success: true,
         terminal: false,
+      },
+      instance: {
+        started_turn: 1,
+        response_count: 1,
+        from_family: null,
       },
       transition: {
         type: 'stage_next_step',
@@ -1523,6 +1529,11 @@ test('annotation corpus hides condition and keeps the arm mapping in a separate 
   const contractCase = corpus.cases.find((row) => row.sample_id === contractKey.sample_id);
   assert.equal('transition' in contractCase.normative_action_contract, false);
   assert.equal(contractCase.normative_action_contract.defeat_transition, 'clarify_distinction');
+  assert.deepEqual(contractCase.normative_action_contract_instance, {
+    started_turn: 1,
+    response_count: 1,
+    from_family: null,
+  });
   assert.equal(contractKey.gate.action_contract.transition.revision_warranted, true);
   assert.equal(corpus.sampling.ordering, 'deterministic_global_sha256_v1');
   assert.equal(corpus.sampling.sample_id_scheme, 'opaque_sha256_96bit_v1');

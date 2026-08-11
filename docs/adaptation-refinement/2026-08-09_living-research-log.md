@@ -1521,3 +1521,43 @@ uptake-and-development composition and bypass the generic terminal composer.
 Unowned scaffold and contextual fragments still receive exactly one external
 uptake. A focused regression freezes both branches. A fresh clean matrix and
 complete delivery gate remain mandatory before annotation resumes.
+
+## Progress Update — 11 August 2026, first valid representative V4 gate scored
+
+Clean commit `5ddf1d28a23f57bb48612314203aaab62c284363` finally cleared the full
+execution and annotation transport chain: 24/24 valid eight-turn dialogues,
+192 learner-analysis calls with zero errors, 192/192 structured live/replay
+comparisons, 192/192 delivery-application comparisons, a frozen 96-case
+observe-arm natural frame, and two complete independent Luna reads with no
+normalization or content repair.
+
+This is a valid failed representative result, not a burned instrument run.
+Binary precision was 0.783 and accuracy 0.827, both above threshold; recall was
+0.692 against 0.700 and raw reader agreement 0.781 against 0.800. Transition
+accuracy was 0.250, hard mechanism consensus 0.563, request/proposal macro-F1
+0.644, and obligation-lifecycle accuracy 0.762. The frame contained only one
+reader-consensus persistence case, one resolution case, four complete-inquiry
+cases, and zero epistemically non-aligned cases. Conceptual, interactional,
+engagement, and strategy-exhaustion interpretation macro-F1 were respectively
+0.682, 0.504, 0.439, and 0.506. Pacing passed throughout; magnitude,
+persistence, and joint divergence scoring were generally strong. No downstream
+outcome run was started.
+
+The 21 binary reader disagreements and 13 detector errors localize two
+prospective boundaries. Public action contracts listed alternative expected
+responses without declaring the combinator or exposing their public instance
+timing, making success and expiry underdetermined for readers. The speech-act
+grammar also treated polite directives to perform a test as tutor-owned result
+debt. Prospectively every contract declares `expected_response_match: any`,
+blinded cases include public `started_turn` and `response_count`, and direct
+check/inspect/compare/test/weigh instructions remain proposals unless they ask
+what the test shows, reveals, records, or finds. The existing score is not
+rewritten or rescored.
+
+The next phase first verifies and ships these repairs. A fresh targeted corpus
+may diagnose them but cannot pass the gate. Before any further reader labels,
+the design must prospectively separate representative natural-prevalence
+performance from rare-state adequacy so sparse natural support cannot be
+silently supplemented with challenge cases. Only then may a new clean
+representative matrix, corpus, and independent annotation pair be frozen. The
+outcome comparison remains blocked until that declared gate passes.

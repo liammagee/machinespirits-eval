@@ -124,10 +124,20 @@ const CONTRACTS = {
 
 export const ADAPTIVE_WARRANT_ACTION_FAMILY_CONTRACTS = Object.freeze(CONTRACTS);
 
-function contract({ expected, deadline, success, defeat, expiry, exitOnSuccess = false, terminal = false }) {
+function contract({
+  expected,
+  expectedMatch = 'any',
+  deadline,
+  success,
+  defeat,
+  expiry,
+  exitOnSuccess = false,
+  terminal = false,
+}) {
   return Object.freeze({
     schema: ADAPTIVE_WARRANT_ACTION_CONTRACT_SCHEMA,
     expected_learner_responses: Object.freeze([...expected]),
+    expected_response_match: expectedMatch,
     deadline_turns: deadline,
     success_transition: success,
     defeat_transition: defeat,
