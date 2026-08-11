@@ -22,14 +22,16 @@ three:
 
 1. **Bare** — the stub with no warrant gate. Control.
 2. **Gated** — the stub with the live warrant gate, as smoked in Phase 5.
-3. **Standing-permission prompt** — the bare stub plus the prompt block
-   from the deference-break note
-   (`2026-08-11_deference-break-note.md` §3): grant pending entries
-   outright with no permission slot, assert the entered/not-entered
-   boundary as a plain claim, end turns on evidence rather than on an
-   inviting question. This is the untested prompt equivalent of the
-   gate's observed break behavior. It separates mechanism from wording:
-   if it matches Gated, the gate machinery is not needed for this effect.
+3. **Standing-permission prompt** — the bare stub plus the gate's
+   verbatim template and hint-menu text pasted as standing instructions.
+   No static prompt can reproduce the gate's per-turn hint selection, so
+   holding the words fixed makes per-turn selection and timing exactly
+   what the contrast isolates. (The paraphrase in
+   `2026-08-11_deference-break-note.md` §3 is superseded for this
+   purpose: a null against Gated under a paraphrase would be ambiguous,
+   since wording differences could hide a machinery effect.) If this
+   condition matches Gated, the gate machinery is not needed for this
+   effect.
 
 ## 3. Materials and sample
 
@@ -37,11 +39,15 @@ three:
   case from any burned diagnostic corpus, and no overlap with the three
   pilot sessions quoted in the deference-break note.
 - Eight-turn dialogues, as in the natural-prevalence corpus.
-- **Pilot block first:** 6 dialogues per condition (18 total). Check
-  assembly, measure variance, and that no measure is saturated. Then the
-  main block: 24 dialogues per condition (72 total) if the pilot supports
-  it. Rough cost: about three representative matrices of learner-analysis
-  calls; attended run with checkpoints per standing practice.
+- **Pilot block first:** 6 dialogues per condition (18 total). The pilot
+  gates go/no-go only: it checks assembly, that no measure is saturated,
+  and that variance is not hopeless. It does not resize the main block.
+- **Main block fixed at 24 dialogues per condition** (72 total). The
+  pilot evidence, thin as it is, suggests a large effect (break at turn
+  5 gated against turn 8 or never bare); large effects do not need
+  adaptive sizing, and a fixed n keeps the preregistration simple. Rough
+  cost: about three representative matrices of learner-analysis calls;
+  attended run with checkpoints per standing practice.
 
 ## 4. Measures
 
@@ -52,9 +58,16 @@ pass; nothing waits on it.
 1. **Decision correctness** — observe-arm decisions against the binary
    consensus reader (the layer with perfect agreement at the last
    diagnostic checkpoint).
-2. **Warranted-challenge rate** — challenges whose warrant basis the gate
-   (or, for Bare, a post-hoc application of the same typed rules)
-   supports.
+2. **Warranted-challenge rate** — challenges whose warrant basis the
+   gate's typed rules support, scored deterministically and identically
+   in all three conditions by post-hoc application over the
+   learner-analysis layer (which runs in every condition; the
+   natural-prevalence corpus was observe-only decisions from a bare
+   stub). No reader. Because the yardstick was designed alongside the
+   gate, a **blind spot audit** is registered with it: sample 20
+   challenges across conditions, condition-blind, judged in plain terms
+   by a human or a second model. The deference measures (3–5), which are
+   mechanical facts, carry the headline claim.
 3. **Sustained deference** — length of consecutive-turn deference
    streaks, from the deterministic compiler's deference boolean. No free
    text.
@@ -93,12 +106,15 @@ pass; nothing waits on it.
   registered; only measure 2's typed warrant basis needs a fallback
   (deterministic rule application, no reader).
 
-## 7. Open questions for discussion
+## 7. Settled questions (12 August 2026)
 
-1. Does measure 2 need a reader at all, or can the gate's own typed rules
-   score Bare and Standing-permission dialogues deterministically?
-2. Is 24 per condition the right main-block size, or should the pilot's
-   observed variance set it?
-3. Should Standing-permission reuse the gate's exact hint text, or the
-   note's three-feature paraphrase? Exact text is the cleaner mechanism
-   contrast.
+The three questions this draft opened with are settled and folded into
+the sections above:
+
+1. Measure 2 uses deterministic typed-rule scoring in all conditions,
+   no reader, with a registered condition-blind spot audit of 20
+   challenges (§4.2).
+2. The main block is fixed at 24 per condition; the pilot gates
+   go/no-go only and does not resize (§3).
+3. Standing-permission uses the gate's verbatim template and hint-menu
+   text, superseding the note's paraphrase (§2.3).
