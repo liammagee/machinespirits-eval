@@ -883,3 +883,16 @@ This rule prevents transport luck from selecting which dialogues become
 measurable while preserving the original safety and 64-call child boundary. It
 does not alter the live/offline reducer, the six divergence projections, or the
 representative gate.
+
+## 23. Obligation identity and obligation speech are distinct projections
+
+An obligation may retain compound terms and their lexical components to make
+public matching robust, but that internal matching set is not itself a
+learner-facing phrase. Deterministic realization collapses a component already
+contained by an authored compound and keeps multiple compounds lexically
+separate. Thus `room-presence` plus `fridge-access` remains two named public
+targets, not one generated compound identifier.
+
+The identity, lifecycle, acceptable outcomes, and delivery audit remain
+unchanged. This is a projection from typed obligation state to speakable public
+language, not a new normative rule or detector threshold.

@@ -972,3 +972,20 @@ declared budget. The no-tools boundary is unchanged for real or unknown tool
 shapes. A new clean commit, dry request, and digest-bound representative
 execution are required; the prior authorization cannot be reused after this
 source change.
+
+The next attempt from clean commit
+`5ddff8d76090968a02a5729fc6fb724646edb3b6` confirmed the transport repair in
+live execution: a failed learner-analysis turn was typed, freshly reserved,
+retried, and accepted without fallback or transcript mutation. The attempt was
+then stopped after one active child exposed a separate deterministic-delivery
+defect. A request for the `room-presence` or `fridge-access` record retained
+both compound targets and their component terms for matching; the fallback
+speaker joined all six terms with hyphens, creating a new repeated token that
+could neither answer nor defer the obligation. The partial packet is burned.
+
+The prospective correction changes display construction only. Redundant
+component terms are omitted when their authored compound is present, and two
+compound targets remain separate public phrases rather than being fused into a
+new identifier. Ledger identity, target matching, warrant selection, and gate
+thresholds do not change. A fresh checkpoint and digest are required before
+the representative matrix restarts.

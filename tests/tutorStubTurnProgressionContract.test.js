@@ -313,6 +313,47 @@ test('deterministic recovery discharges an active obligation with a public-only 
   assert.equal(audit.public_obligation.outcome, 'named_unavailability_with_concrete_next_step');
 });
 
+test('deterministic recovery preserves distinct compound obligation targets', () => {
+  const directive = publicObligationDirective({
+    target: {
+      kind: 'record_entry',
+      signature: 'record_entry:fridge-access|presence|room|room-presence',
+      public_terms: [
+        'room-presence',
+        'room',
+        'presence',
+        'fridge-access',
+        'fridge',
+        'access',
+        'record',
+      ],
+      subject_terms: ['room-presence', 'room', 'presence', 'fridge-access', 'fridge', 'access'],
+      required_components: [],
+      source_surface: 'Please show the room-presence or fridge-access record.',
+    },
+  });
+  const contract = obligationProgressionContract({
+    learnerText: directive.target.source_surface,
+    dramaticReleaseFrame: { active: false, entries: [] },
+    responseCompositionFrame: {
+      learner_move: { summary: 'Requests the room-presence or fridge-access record.' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    publicObligationDirective: directive,
+  });
+  const handoff = deterministicTutorStubTurnProgressionHandoff({ contract });
+  const audit = auditTutorStubTurnProgression({
+    contract,
+    composition: composition({ uptake: handoff, handoff: '' }),
+  });
+
+  assert.match(handoff, /room-presence and fridge-access record entry/iu);
+  assert.doesNotMatch(handoff, /room-presence-room-presence|fridge-access-fridge-access/iu);
+  assert.equal(audit.ok, true, JSON.stringify(audit.issues));
+  assert.equal(audit.public_obligation.outcome, 'named_unavailability_with_concrete_next_step');
+});
+
 test('deterministic obligation handoff does not repeat a deferral already delivered in uptake', () => {
   const contract = obligationProgressionContract({
     dramaticReleaseFrame: { active: false, entries: [] },

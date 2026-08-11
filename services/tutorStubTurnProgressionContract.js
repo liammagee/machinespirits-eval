@@ -991,6 +991,12 @@ function declarativeFallbackFocus(
     const subjects = (Array.isArray(target.subject_terms) ? target.subject_terms : [])
       .map(oneLine)
       .filter(Boolean)
+      .filter(
+        (term, _index, terms) =>
+          !terms.some(
+            (compound) => compound !== term && compound.includes('-') && compound.split('-').includes(term),
+          ),
+      )
       .slice(0, 6);
     const kindLabel =
       target.kind === 'weight_or_ring_result'
@@ -1010,7 +1016,12 @@ function declarativeFallbackFocus(
                   ? 'log entry'
                   : 'record entry'
                 : 'public result';
-    const targetLabel = [...subjects, kindLabel].join('-');
+    // Keep authored compounds as separate lexical targets. Joining
+    // `room-presence` and `fridge-access` with another hyphen creates one new
+    // token that cannot satisfy either original target in the delivery audit.
+    const targetLabel = subjects.some((term) => term.includes('-'))
+      ? `${subjects.join(' and ')} ${kindLabel}`
+      : [...subjects, kindLabel].join('-');
     return `The ${targetLabel} is not public yet; once a matching public record is available, I can answer it.`;
   }
   if (contract?.discourse_plane?.plane === 'instructional_meta') {

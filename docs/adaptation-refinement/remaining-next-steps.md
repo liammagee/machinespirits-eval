@@ -963,3 +963,22 @@ known tool event without retry. The remaining sequence is:
 4. collect two independent blind readers of the new 96-case
    `natural_prevalence` corpus and apply the unchanged representative gate; and
 5. run no downstream outcome comparison unless that gate passes.
+
+## Current restart boundary after compound-target realization repair
+
+The representative attempt from
+`5ddff8d76090968a02a5729fc6fb724646edb3b6` live-verified the failed-turn retry,
+then stopped on one active child. Its compound request for the `room-presence`
+or `fridge-access` record was semantically valid, but deterministic fallback
+speech repeated and fused the target components; the obligation audit therefore
+rejected both answer and deferral. The partial run is burned.
+
+The bounded display repair preserves compound targets as separate phrases and
+omits their redundant component terms. The remaining sequence is:
+
+1. verify, commit, and push the compound-target realization repair;
+2. generate a new clean representative dry request and accepted digest record;
+3. run all 24 dialogues to the unchanged execution/parity/delivery boundary;
+4. if 24/24 are valid, collect two independent readers of the new 96-case
+   natural frame and run the unchanged gate; and
+5. run no downstream outcome comparison unless that representative gate passes.

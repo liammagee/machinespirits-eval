@@ -417,3 +417,18 @@ fatal and are not retried. Focused transport/mechanism verification passes
 remains active pending a clean pushed checkpoint, a new digest-bound 24/24
 representative run, two independent 96-case readers, and passage of the
 unchanged gate. No downstream outcome study is licensed.
+
+The next representative attempt from clean commit
+`5ddff8d76090968a02a5729fc6fb724646edb3b6` live-verified the failed-turn retry:
+one learner-analysis turn was freshly reserved and accepted without fallback.
+The run then stopped on an active compound request whose internal
+`room-presence`/`fridge-access` matching terms were repeated and fused by the
+deterministic fallback speaker, causing the obligation audit to fail closed.
+The partial packet is burned. Prospectively, public rendering removes
+components already contained by authored compounds and keeps multiple compounds
+as separate phrases; obligation identity and gate rules are unchanged. Focused
+gate/progression/guard verification passes 118/118 tests and lint; the complete
+hermetic suite passes 8,462/8,462 root tests and 137/137 tutor-core tests. The item
+remains active pending a clean pushed checkpoint, new digest-bound 24/24 run,
+two independent 96-case readers, and passage of the unchanged gate. No
+downstream outcome study is licensed.

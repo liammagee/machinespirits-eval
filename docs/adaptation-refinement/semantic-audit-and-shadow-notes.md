@@ -400,3 +400,20 @@ than tool use. The shared transport may retry one individual call once, with a
 fresh reservation inside the existing child cap; a repeated failure remains
 fatal. Known tool events still receive no retry. This correction changes no
 warrant, obligation, completion, commitment, or divergence rule.
+
+### 7.13 Compound obligation target realization
+
+The next representative attempt verified the new failed-turn retry in live
+operation, then stopped on a deterministic public-obligation realization
+failure. The ledger target for “room-presence or fridge-access record” correctly
+retained `room-presence`, `fridge-access`, and their component terms. The
+fallback speaker treated that matching representation as display text and
+hyphen-joined every term. The resulting repeated identifier did not name either
+compound under the same delivery audit, so the active child correctly failed
+closed.
+
+The repair preserves the semantic target and changes only its public rendering.
+When a compound already contains a component, the redundant component is not
+spoken; multiple compound targets are separated as phrases. This keeps exact
+matching evidence available internally without exposing normalization
+artifacts in dialogue. The attempt and packet are burned.
