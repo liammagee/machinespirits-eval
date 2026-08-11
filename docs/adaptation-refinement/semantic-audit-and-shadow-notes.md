@@ -556,3 +556,21 @@ failed turn's exact question quoted a two-sentence prior clue; the live audit
 now recognizes the complete terminal suffix rather than the segmenter's final
 quotation fragment. Neither correction changes the gate decision, sampling
 frame, reader task, or thresholds.
+
+### 7.22 V3 reader transport is now an explicit pre-evidence boundary
+
+The first total-field V3 smoke at clean commit `fcd944f0` did not reach either
+reader: two attempts each ended before a model response because the structured-
+output transport rejected a response schema using `oneOf`. This is neither
+semantic accuracy evidence nor a reader-consensus result. The fresh smoke cases
+are nevertheless burned.
+
+The prospective repair keeps one canonical schema and replaces `oneOf` with
+`anyOf` only where a zero-call audit proves the branches pairwise disjoint by
+required singleton `state` constants. The same audit rejects unsupported
+provider keywords, nullable or optional reader fields, open objects, and
+contract/catalog inconsistency. Before any fresh smoke or diagnostic reader,
+one synthetic one-call schema-acceptance ping now traverses the exact provider
+route. Its case and response are permanently excluded from research evidence;
+its sole authority is to establish that the bound provider accepts the frozen
+schema before an evidence-bearing case can be burned.

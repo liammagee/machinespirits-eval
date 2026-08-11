@@ -6,7 +6,10 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 
 import { getAdaptiveWarrantActionContract } from '../services/adaptiveWarrantActionContracts.js';
-import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
+import {
+  validateAdaptiveWarrantSemanticPreflightArtifact,
+  validateAdaptiveWarrantSemanticSchemaAcceptanceResult,
+} from '../services/adaptiveWarrantSemanticPreflight.js';
 import {
   ADAPTIVE_WARRANT_ANNOTATION_SCHEMA,
   adaptiveWarrantStudySourceFingerprint,
@@ -627,13 +630,13 @@ Speech-act precedence within one clause is: explicit repair or wording request; 
 
 ## Target fields
 
-target_id identifies the public object, relation, or enumerated choice set under inquiry. Return the exact string target="none" when the act itself names no catalogue entity; never return null or omit target. A catalogue target is required for result requests, proposed tests, criterion questions, record-entry requests, and tutor-selection requests. For tutor selection, choose the catalogue target naming the publicly enumerated choices, never the requested value or the tutor. Wording/repair, stall, complaint, and low-agency acts use target="none". For analytic_contribution, the target belongs to the analysis itself: choose the catalogue entity the analytic clause is about independently of any accompanying request event, and use target="none" only when the analysis names no catalogue entity. Co-occurring request events keep their own targets. Apply the same catalogue-entity-or-none rule to other.
+target_id identifies the public object, relation, or enumerated choice set under inquiry. Target is always a tagged object: return state="catalog" with target_id, requested_value_types, and component_ids, or return the sole field state="none" when the act itself names no catalogue entity. Never return null or omit target. A catalogue target is required for result requests, proposed tests, criterion questions, record-entry requests, and tutor-selection requests. For tutor selection, choose the catalogue target naming the publicly enumerated choices, never the requested value or the tutor. Wording/repair, stall, complaint, and low-agency acts use target state="none". For analytic_contribution, the target belongs to the analysis itself: choose the catalogue entity the analytic clause is about independently of any accompanying request event, and use state="none" only when the analysis names no catalogue entity. Co-occurring request events keep their own targets. Apply the same catalogue-entity-or-none rule to other.
 
 requested_value_types contains only values explicitly requested or produced by the clause: name, time, date, weight, sound, material, match_status, record_text, or other. Requested values are never targets or target kinds. component_ids contains only the catalogue answer components explicitly requested or produced. The harness adds target kind and public identifiers from the selected target_id.
 
 ## Action fields
 
-Return only executor and action_object_id, or the exact string requested_or_proposed_action="none" when no action applies. Never return null or omit the field. Executor is the party who must perform the action, never the utterance speaker. Because the speaker is learner, a request-type act must use executor=tutor, joint, or unspecified; it must never use learner. Tutor-directed result, tutor-selection, wording, and repair requests use tutor when directly addressed to the tutor. Learner proposals use learner when the learner commits to act. The harness derives mode and operation from action_object_id and rejects incompatible speech-act/action/executor combinations.
+requested_or_proposed_action is always a tagged object: return state="catalog" with executor and action_object_id, or the sole field state="none" when no action applies. Never return null or omit the field. Executor is the party who must perform the action, never the utterance speaker. Because the speaker is learner, a request-type act must use executor=tutor, joint, or unspecified; it must never use learner. Tutor-directed result, tutor-selection, wording, and repair requests use tutor when directly addressed to the tutor. Learner proposals use learner when the learner commits to act. The harness derives mode and operation from action_object_id and rejects incompatible speech-act/action/executor combinations.
 
 Use exact target_id, component_ids, and action_object_id values from the supplied corpus-wide semantic_annotation_catalog. Display labels explain IDs but never determine identity or agreement. The catalogue standardises public identities across readers; it does not identify which entry applies to any case. Choose only entries supported by current public text.
 
@@ -780,7 +783,12 @@ export function buildAdaptiveWarrantV3SemanticDiagnostic({ studyId } = {}) {
   return { corpus, key, supportPlan, handbook: semanticHandbook() };
 }
 
-export function writeAdaptiveWarrantV3SemanticDiagnostic({ outputDir, excludedCorpusPaths = [], preflightPath } = {}) {
+export function writeAdaptiveWarrantV3SemanticDiagnostic({
+  outputDir,
+  excludedCorpusPaths = [],
+  preflightPath,
+  schemaAcceptancePath,
+} = {}) {
   const resolvedOutput = path.resolve(outputDir);
   if (fs.existsSync(resolvedOutput) && fs.readdirSync(resolvedOutput).length) {
     throw new Error(`V3 semantic diagnostic output is not empty: ${resolvedOutput}`);
@@ -796,6 +804,14 @@ export function writeAdaptiveWarrantV3SemanticDiagnostic({ outputDir, excludedCo
   validateAdaptiveWarrantSemanticPreflightArtifact({
     artifact: preflight,
     expectedSourceCommit: provenance.gitCommit,
+  });
+  if (!schemaAcceptancePath) throw new Error('V3 semantic diagnostic requires a passing schema-acceptance ping');
+  const resolvedSchemaAcceptance = path.resolve(schemaAcceptancePath);
+  const schemaAcceptance = readJson(resolvedSchemaAcceptance);
+  validateAdaptiveWarrantSemanticSchemaAcceptanceResult({
+    artifact: schemaAcceptance,
+    expectedSourceCommit: provenance.gitCommit,
+    expectedPreflightSha256: fileSha256(resolvedPreflight),
   });
   fs.mkdirSync(resolvedOutput, { recursive: true });
   const studyId = `adaptive-warrant-v3-semantic-diagnostic-${provenance.gitCommit.slice(0, 12)}`;
@@ -843,6 +859,13 @@ export function writeAdaptiveWarrantV3SemanticDiagnostic({ outputDir, excludedCo
       source_commit: preflight.bindings.source_commit,
       bindings_digest: sha256(JSON.stringify(preflight.bindings)),
     },
+    schema_acceptance_ping: {
+      path: resolvedSchemaAcceptance,
+      sha256: fileSha256(resolvedSchemaAcceptance),
+      status: schemaAcceptance.status,
+      source_commit: provenance.gitCommit,
+      preflight_sha256: fileSha256(resolvedPreflight),
+    },
     provenance,
   };
   const manifestPath = path.join(resolvedOutput, 'diagnostic-freeze-manifest.json');
@@ -860,7 +883,7 @@ export function writeAdaptiveWarrantV3SemanticDiagnostic({ outputDir, excludedCo
 }
 
 function usage() {
-  return 'Usage: node scripts/build-adaptive-warrant-v3-semantic-diagnostic.js --out <empty-dir> --preflight <passing-artifact> --exclude-corpus <prior-corpus> [--exclude-corpus <prior-corpus> ...]\n';
+  return 'Usage: node scripts/build-adaptive-warrant-v3-semantic-diagnostic.js --out <empty-dir> --preflight <passing-artifact> --schema-acceptance <passing-result> --exclude-corpus <prior-corpus> [--exclude-corpus <prior-corpus> ...]\n';
 }
 
 function main() {
@@ -868,6 +891,7 @@ function main() {
     options: {
       out: { type: 'string' },
       preflight: { type: 'string' },
+      'schema-acceptance': { type: 'string' },
       'exclude-corpus': { type: 'string', multiple: true, default: [] },
       help: { type: 'boolean', short: 'h' },
     },
@@ -882,6 +906,7 @@ function main() {
     outputDir: values.out,
     excludedCorpusPaths: values['exclude-corpus'],
     preflightPath: values.preflight,
+    schemaAcceptancePath: values['schema-acceptance'],
   });
   process.stdout.write(`${result.manifestPath}\n`);
 }

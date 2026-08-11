@@ -41,6 +41,7 @@ function clone(value) {
 function target(index) {
   const identityIndex = ((index - 1) % 4) + 1;
   return {
+    state: 'catalog',
     target_id: `target-preflight-record-${identityIndex}`,
     requested_value_types: ['name', 'time'],
     component_ids: ['visitor_name', 'clock_time'],
@@ -60,6 +61,7 @@ function action(speechAct, index) {
   const identityIndex = ((index - 1) % 4) + 1;
   const [, executor] = actionContract(speechAct);
   return {
+    state: 'catalog',
     executor,
     action_object_id: `action-object-preflight-${speechAct.replaceAll('_', '-')}-${identityIndex}`,
   };
@@ -429,6 +431,16 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
           audit.explicit_none_tokens === true &&
           audit.catalogue_domains_closed === true,
       ),
+      readerSchemaTotalityAudits,
+    ),
+    check(
+      'reader_schema_uses_only_supported_provider_keywords',
+      Object.values(readerSchemaTotalityAudits).every((audit) => audit.provider_keywords_supported === true),
+      readerSchemaTotalityAudits,
+    ),
+    check(
+      'reader_anyof_branches_are_pairwise_disjoint',
+      Object.values(readerSchemaTotalityAudits).every((audit) => audit.union_branches_pairwise_disjoint === true),
       readerSchemaTotalityAudits,
     ),
     check('complete_prepare_assemble_consensus_score_path', consensus.hard_consensus_cases === corpus.cases.length),

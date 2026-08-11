@@ -8,7 +8,10 @@ import { parseArgs } from 'node:util';
 
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
 import { ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA } from '../services/adaptiveWarrantSemanticAnnotation.js';
-import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
+import {
+  validateAdaptiveWarrantSemanticPreflightArtifact,
+  validateAdaptiveWarrantSemanticSchemaAcceptanceResult,
+} from '../services/adaptiveWarrantSemanticPreflight.js';
 import {
   ADAPTIVE_WARRANT_SEMANTIC_AUTHORIZATION_REQUEST_SCHEMA,
   ADAPTIVE_WARRANT_SEMANTIC_COLLECTION_MANIFEST_SCHEMA,
@@ -75,8 +78,8 @@ function validateAuthorization({ request, requestPath, manifest, approvedBy }) {
     request.bindings.manifest_sha256 !== fileSha256(manifest.__path) ||
     request.bindings.corpus_sha256 !== manifest.corpus.sha256 ||
     request.bindings.handbook_sha256 !== manifest.handbook.sha256 ||
-    JSON.stringify(request.bindings.brittleness_preflight) !==
-      JSON.stringify(manifest.brittleness_preflight)
+    JSON.stringify(request.bindings.brittleness_preflight) !== JSON.stringify(manifest.brittleness_preflight) ||
+    JSON.stringify(request.bindings.schema_acceptance_ping) !== JSON.stringify(manifest.schema_acceptance_ping)
   ) {
     throw new Error('semantic reader authorization request is not bound to the collection');
   }
@@ -127,6 +130,18 @@ function validateFreeze({ freeze, manifest, repoRoot }) {
   });
   if (manifest.brittleness_preflight?.sha256 !== preflightBinding.sha256) {
     throw new Error('semantic collection or authorization does not bind the frozen brittleness preflight');
+  }
+  const schemaAcceptanceBinding = freeze.schema_acceptance_ping;
+  if (!schemaAcceptanceBinding?.path || fileSha256(schemaAcceptanceBinding.path) !== schemaAcceptanceBinding.sha256) {
+    throw new Error('semantic diagnostic schema-acceptance ping drift');
+  }
+  validateAdaptiveWarrantSemanticSchemaAcceptanceResult({
+    artifact: readJson(schemaAcceptanceBinding.path),
+    expectedSourceCommit: commit,
+    expectedPreflightSha256: preflightBinding.sha256,
+  });
+  if (manifest.schema_acceptance_ping?.sha256 !== schemaAcceptanceBinding.sha256) {
+    throw new Error('semantic collection or authorization does not bind the frozen schema-acceptance ping');
   }
   const artifactBindings = diagnostic
     ? [

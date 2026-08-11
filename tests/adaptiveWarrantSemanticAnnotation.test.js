@@ -24,7 +24,12 @@ import { prepareAdaptiveWarrantAnnotationBatches } from '../scripts/prepare-adap
 import { buildAdaptiveWarrantV3SemanticDiagnostic } from '../scripts/build-adaptive-warrant-v3-semantic-diagnostic.js';
 import { runAdaptiveWarrantSemanticBrittlenessPreflight } from '../scripts/run-adaptive-warrant-semantic-brittleness-preflight.js';
 import { buildAdaptiveWarrantSemanticSmokeCorpus } from '../scripts/run-adaptive-warrant-semantic-schema-smoke.js';
-import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
+import { buildAdaptiveWarrantSemanticSchemaAcceptanceCorpus } from '../scripts/run-adaptive-warrant-semantic-schema-acceptance-ping.js';
+import {
+  ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_RESULT_SCHEMA,
+  validateAdaptiveWarrantSemanticPreflightArtifact,
+  validateAdaptiveWarrantSemanticSchemaAcceptanceResult,
+} from '../services/adaptiveWarrantSemanticPreflight.js';
 
 const CORPUS_SHA = 'frozen-semantic-corpus';
 
@@ -69,11 +74,13 @@ function readerEvent(kind, text, index) {
   return {
     speech_act: full.speech_act,
     target: {
+      state: 'catalog',
       target_id: full.target.target_id,
       requested_value_types: full.target.requested_value_types,
       component_ids: full.target.component_ids,
     },
     requested_or_proposed_action: {
+      state: 'catalog',
       executor: full.requested_or_proposed_action.executor,
       action_object_id: full.requested_or_proposed_action.action_object_id,
     },
@@ -248,18 +255,25 @@ test('semantic collection freezes exact packets and derives only unique literal 
     'text',
   ]);
   assert.equal('speaker' in firstSampleSchema.properties.events.items.properties, false);
-  const targetChoices = firstSampleSchema.properties.events.items.properties.target.oneOf;
+  const targetChoices = firstSampleSchema.properties.events.items.properties.target.anyOf;
   const targetSchema = targetChoices.find((choice) => choice.type === 'object');
-  const actionChoices = firstSampleSchema.properties.events.items.properties.requested_or_proposed_action.oneOf;
-  const actionSchema = actionChoices.find((choice) => choice.type === 'object');
-  assert.deepEqual(targetChoices.find((choice) => choice.type === 'string').enum, ['none']);
-  assert.deepEqual(actionChoices.find((choice) => choice.type === 'string').enum, ['none']);
+  const actionChoices = firstSampleSchema.properties.events.items.properties.requested_or_proposed_action.anyOf;
+  const actionSchema = actionChoices.find((choice) => choice.properties.state.enum[0] === 'catalog');
+  assert.deepEqual(
+    targetChoices.map((choice) => choice.properties.state.enum[0]),
+    ['catalog', 'none'],
+  );
+  assert.deepEqual(
+    actionChoices.map((choice) => choice.properties.state.enum[0]),
+    ['catalog', 'none'],
+  );
   assert.deepEqual(Object.keys(targetSchema.properties).sort(), [
     'component_ids',
     'requested_value_types',
+    'state',
     'target_id',
   ]);
-  assert.deepEqual(Object.keys(actionSchema.properties).sort(), ['action_object_id', 'executor']);
+  assert.deepEqual(Object.keys(actionSchema.properties).sort(), ['action_object_id', 'executor', 'state']);
   assert.deepEqual(
     targetSchema.properties.target_id.enum,
     corpus.semantic_annotation_catalog.targets.map((row) => row.target_id),
@@ -280,8 +294,29 @@ test('semantic collection freezes exact packets and derives only unique literal 
       reader_fields_total: true,
       explicit_none_tokens: true,
       catalogue_domains_closed: true,
+      provider_keywords_supported: true,
+      union_branches_pairwise_disjoint: true,
     },
   );
+  const unsupportedSchema = structuredClone(firstBatchSchema);
+  const unsupportedTarget = unsupportedSchema.$defs.case.properties.events.items.properties.target;
+  unsupportedTarget.oneOf = unsupportedTarget.anyOf;
+  delete unsupportedTarget.anyOf;
+  const unsupportedAudit = auditAdaptiveWarrantSemanticReaderSchemaTotality({
+    schema: unsupportedSchema,
+    semanticCatalog: corpus.semantic_annotation_catalog,
+  });
+  assert.equal(unsupportedAudit.ok, false);
+  assert.equal(unsupportedAudit.provider_keywords_supported, false);
+
+  const overlappingSchema = structuredClone(firstBatchSchema);
+  overlappingSchema.$defs.case.properties.events.items.properties.target.anyOf[1].properties.state.enum = ['catalog'];
+  const overlappingAudit = auditAdaptiveWarrantSemanticReaderSchemaTotality({
+    schema: overlappingSchema,
+    semanticCatalog: corpus.semantic_annotation_catalog,
+  });
+  assert.equal(overlappingAudit.ok, false);
+  assert.equal(overlappingAudit.union_branches_pairwise_disjoint, false);
   const reader = prepared.manifest.readers[0];
   const responseDir = path.join(root, 'responses');
   fs.mkdirSync(responseDir, { recursive: true });
@@ -355,18 +390,19 @@ test('reader events require total non-null target and action fields with explici
   const analytic = {
     speech_act: 'analytic_contribution',
     target: {
-      target_id: 'target-smoke-east-cloister-register',
+      state: 'catalog',
+      target_id: 'target-smoke-north-gallery-register',
       requested_value_types: ['record_text'],
       component_ids: ['bounded_finding'],
     },
-    requested_or_proposed_action: 'none',
+    requested_or_proposed_action: { state: 'none' },
     evidence_span: { text: analyticText },
   };
   const materialized = materializeAdaptiveWarrantSemanticReaderEvent({
     event: analytic,
     semanticCatalog: corpus.semantic_annotation_catalog,
   });
-  assert.equal(materialized.target.target_id, 'target-smoke-east-cloister-register');
+  assert.equal(materialized.target.target_id, 'target-smoke-north-gallery-register');
   assert.equal(materialized.requested_or_proposed_action, null);
 
   assert.throws(
@@ -397,12 +433,12 @@ test('contract/catalog audit validates every speech act through the production a
   assert.equal(audit.worked_example_count, 15);
   assert.equal(
     audit.worked_examples.find((row) => row.speech_act === 'tutor_selection_request').target_id,
-    'target-smoke-river-chart-choice',
+    'target-smoke-harbour-map-choice',
   );
 
   const inconsistent = structuredClone(corpus.semantic_annotation_catalog);
   inconsistent.action_objects.find(
-    (row) => row.action_object_id === 'action-object-smoke-select-river-chart',
+    (row) => row.action_object_id === 'action-object-smoke-select-harbour-map',
   ).target_id = null;
   assert.throws(
     () => auditAdaptiveWarrantSemanticContractCatalog({ semanticCatalog: inconsistent }),
@@ -541,6 +577,8 @@ test('zero-call brittleness preflight exercises the complete instrument path and
     'smoke_catalog_worked_examples_pass_production_validator',
     'diagnostic_catalog_worked_examples_pass_production_validator',
     'all_reader_fields_total_non_nullable_and_catalogue_closed',
+    'reader_schema_uses_only_supported_provider_keywords',
+    'reader_anyof_branches_are_pairwise_disjoint',
   ]) {
     assert.equal(result.artifact.checks.find((row) => row.name === checkName).status, 'pass');
   }
@@ -602,4 +640,41 @@ test('the two-call schema smoke uses synthetic cases that are permanently exclud
   assert.equal(corpus.semantic_annotation_catalog.targets.length, 3);
   assert.equal(JSON.stringify(corpus).includes('construction_support'), false);
   assert.equal(JSON.stringify(corpus).includes('expected_semantic_events'), false);
+});
+
+test('the one-call schema-acceptance ping is synthetic, excluded, and stale results are rejected', () => {
+  const sourceCommit = 'e'.repeat(40);
+  const preflightSha256 = 'f'.repeat(64);
+  const corpus = buildAdaptiveWarrantSemanticSchemaAcceptanceCorpus(sourceCommit);
+  assert.equal(corpus.synthetic_schema_acceptance_only, true);
+  assert.equal(corpus.permanently_excluded_from_research, true);
+  assert.equal(corpus.cases.length, 1);
+  const artifact = {
+    schema: ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_RESULT_SCHEMA,
+    status: 'passed',
+    inferential_role: 'transport_only_permanently_excluded',
+    synthetic_case_permanently_excluded: true,
+    source_commit: sourceCommit,
+    response_received: true,
+    calls: { attempted: 1, completed: 1, maximum: 1 },
+    prohibited_tool_event_count: 0,
+    preflight: { sha256: preflightSha256 },
+  };
+  assert.deepEqual(
+    validateAdaptiveWarrantSemanticSchemaAcceptanceResult({
+      artifact,
+      expectedSourceCommit: sourceCommit,
+      expectedPreflightSha256: preflightSha256,
+    }),
+    { ok: true },
+  );
+  assert.throws(
+    () =>
+      validateAdaptiveWarrantSemanticSchemaAcceptanceResult({
+        artifact,
+        expectedSourceCommit: sourceCommit,
+        expectedPreflightSha256: '0'.repeat(64),
+      }),
+    /did not pass or is stale/u,
+  );
 });

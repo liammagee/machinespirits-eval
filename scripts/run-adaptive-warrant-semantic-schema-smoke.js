@@ -6,7 +6,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 
-import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
+import {
+  validateAdaptiveWarrantSemanticPreflightArtifact,
+  validateAdaptiveWarrantSemanticSchemaAcceptanceResult,
+} from '../services/adaptiveWarrantSemanticPreflight.js';
 import {
   adaptiveWarrantSemanticConsensusIdentity,
   buildAdaptiveWarrantSemanticConsensus,
@@ -54,35 +57,35 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
     schema: 'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v3',
     targets: [
       {
-        target_id: 'target-smoke-east-cloister-register',
+        target_id: 'target-smoke-north-gallery-register',
         kind: 'record_entry',
-        public_identifier_ids: ['public-id-smoke-east-cloister'],
+        public_identifier_ids: ['public-id-smoke-north-gallery'],
         allowed_value_types: ['record_text'],
         component_ids: ['bounded_finding'],
-        display_label: 'synthetic east-cloister register',
+        display_label: 'synthetic north-gallery register',
       },
       {
-        target_id: 'target-smoke-silver-key-cast-m',
+        target_id: 'target-smoke-ivory-button-die-n',
         kind: 'mark_or_tool_result',
-        public_identifier_ids: ['public-id-smoke-silver-key', 'public-id-smoke-cast-m'],
+        public_identifier_ids: ['public-id-smoke-ivory-button', 'public-id-smoke-die-n'],
         allowed_value_types: ['match_status'],
         component_ids: ['match_status'],
-        display_label: 'synthetic silver-key comparison',
+        display_label: 'synthetic ivory-button comparison',
       },
       {
-        target_id: 'target-smoke-river-chart-choice',
+        target_id: 'target-smoke-harbour-map-choice',
         kind: 'public_exhibit_result',
-        public_identifier_ids: ['public-id-smoke-river-charts'],
+        public_identifier_ids: ['public-id-smoke-harbour-maps'],
         allowed_value_types: ['other'],
         component_ids: ['next_check'],
-        display_label: 'synthetic river-chart choice set',
+        display_label: 'synthetic harbour-map choice set',
       },
     ],
     public_identifiers: [
-      { public_identifier_id: 'public-id-smoke-east-cloister', display_label: 'east-cloister register' },
-      { public_identifier_id: 'public-id-smoke-silver-key', display_label: 'silver key' },
-      { public_identifier_id: 'public-id-smoke-cast-m', display_label: 'cast M' },
-      { public_identifier_id: 'public-id-smoke-river-charts', display_label: 'river charts' },
+      { public_identifier_id: 'public-id-smoke-north-gallery', display_label: 'north-gallery register' },
+      { public_identifier_id: 'public-id-smoke-ivory-button', display_label: 'ivory button' },
+      { public_identifier_id: 'public-id-smoke-die-n', display_label: 'die N' },
+      { public_identifier_id: 'public-id-smoke-harbour-maps', display_label: 'harbour maps' },
     ],
     components: [
       { component_id: 'bounded_finding', display_label: 'bounded finding' },
@@ -91,32 +94,32 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
     ],
     action_objects: [
       {
-        action_object_id: 'action-object-smoke-enter-east-cloister-finding',
+        action_object_id: 'action-object-smoke-enter-north-gallery-finding',
         mode: 'requested',
         action: 'record_public_claim',
-        target_id: 'target-smoke-east-cloister-register',
-        display_label: 'enter the bounded east-cloister finding',
+        target_id: 'target-smoke-north-gallery-register',
+        display_label: 'enter the bounded north-gallery finding',
       },
       {
-        action_object_id: 'action-object-smoke-select-river-chart',
+        action_object_id: 'action-object-smoke-select-harbour-map',
         mode: 'requested',
         action: 'select_next_step',
-        target_id: 'target-smoke-river-chart-choice',
-        display_label: 'select the first river chart',
+        target_id: 'target-smoke-harbour-map-choice',
+        display_label: 'select the first harbour map',
       },
       {
-        action_object_id: 'action-object-smoke-compare-silver-key',
+        action_object_id: 'action-object-smoke-compare-ivory-button',
         mode: 'proposed',
         action: 'perform_public_test',
-        target_id: 'target-smoke-silver-key-cast-m',
-        display_label: 'compare the silver key with cast M',
+        target_id: 'target-smoke-ivory-button-die-n',
+        display_label: 'compare the ivory button with die N',
       },
       {
-        action_object_id: 'action-object-smoke-report-silver-key-fit',
+        action_object_id: 'action-object-smoke-report-ivory-button-alignment',
         mode: 'requested',
         action: 'supply_public_result',
-        target_id: 'target-smoke-silver-key-cast-m',
-        display_label: 'report the silver-key fit status',
+        target_id: 'target-smoke-ivory-button-die-n',
+        display_label: 'report the ivory-button alignment status',
       },
       {
         action_object_id: 'action-object-smoke-explain-public-wording',
@@ -143,32 +146,32 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
     semantic_annotation_catalog: catalog,
     cases: [
       {
-        sample_id: 'synthetic-smoke-east-cloister-record',
+        sample_id: 'synthetic-smoke-north-gallery-record',
         current_learner_turn: {
           turn: 2,
           learner:
-            'The east-cloister register establishes arrival, not possession; enter only that bounded conclusion in the inquiry ledger.',
+            'The north-gallery register proves receipt, not ownership; place only that limited finding in the investigation ledger.',
         },
         public_evidence_at_decision: [
-          'target-smoke-east-cloister-register is identified by public-id-smoke-east-cloister.',
+          'target-smoke-north-gallery-register is identified by public-id-smoke-north-gallery.',
         ],
       },
       {
-        sample_id: 'synthetic-smoke-river-chart-selection',
+        sample_id: 'synthetic-smoke-harbour-map-selection',
         current_learner_turn: {
           turn: 2,
-          learner: 'Pick which river chart I should inspect first; I decline to choose between the listed charts.',
+          learner: 'Select which harbour map I should review first; I leave the choice among those maps to you.',
         },
-        public_evidence_at_decision: ['public-id-smoke-river-charts names the available river charts.'],
+        public_evidence_at_decision: ['public-id-smoke-harbour-maps names the available harbour maps.'],
       },
       {
-        sample_id: 'synthetic-smoke-silver-key-compound',
+        sample_id: 'synthetic-smoke-ivory-button-compound',
         current_learner_turn: {
           turn: 2,
-          learner: 'I will compare the silver key with cast M; when that is done, give me the recorded fit status.',
+          learner: 'I will press the ivory button against die N; afterward, tell me the documented alignment result.',
         },
         public_evidence_at_decision: [
-          'target-smoke-silver-key-cast-m is identified by public-id-smoke-silver-key and public-id-smoke-cast-m.',
+          'target-smoke-ivory-button-die-n is identified by public-id-smoke-ivory-button and public-id-smoke-die-n.',
         ],
       },
     ],
@@ -176,24 +179,24 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
 }
 
 function expectedSmokeIdentities() {
-  const eastCloister = {
+  const northGallery = {
     kind: 'record_entry',
-    target_id: 'target-smoke-east-cloister-register',
-    public_identifier_ids: ['public-id-smoke-east-cloister'],
+    target_id: 'target-smoke-north-gallery-register',
+    public_identifier_ids: ['public-id-smoke-north-gallery'],
     requested_value_types: ['record_text'],
     component_ids: ['bounded_finding'],
   };
-  const silverKey = {
+  const ivoryButton = {
     kind: 'mark_or_tool_result',
-    target_id: 'target-smoke-silver-key-cast-m',
-    public_identifier_ids: ['public-id-smoke-silver-key', 'public-id-smoke-cast-m'],
+    target_id: 'target-smoke-ivory-button-die-n',
+    public_identifier_ids: ['public-id-smoke-ivory-button', 'public-id-smoke-die-n'],
     requested_value_types: ['match_status'],
     component_ids: ['match_status'],
   };
-  const riverChoice = {
+  const harbourChoice = {
     kind: 'public_exhibit_result',
-    target_id: 'target-smoke-river-chart-choice',
-    public_identifier_ids: ['public-id-smoke-river-charts'],
+    target_id: 'target-smoke-harbour-map-choice',
+    public_identifier_ids: ['public-id-smoke-harbour-maps'],
     requested_value_types: ['other'],
     component_ids: ['next_check'],
   };
@@ -205,50 +208,50 @@ function expectedSmokeIdentities() {
       actionObjectId === null ? null : { mode, executor, action, action_object_id: actionObjectId },
   });
   return {
-    'synthetic-smoke-east-cloister-record': [
-      event('analytic_contribution', eastCloister, null, null, null, null),
+    'synthetic-smoke-north-gallery-record': [
+      event('analytic_contribution', northGallery, null, null, null, null),
       event(
         'learner_record_entry_request',
-        eastCloister,
+        northGallery,
         'requested',
         'tutor',
         'record_public_claim',
-        'action-object-smoke-enter-east-cloister-finding',
+        'action-object-smoke-enter-north-gallery-finding',
       ),
     ],
-    'synthetic-smoke-river-chart-selection': [
+    'synthetic-smoke-harbour-map-selection': [
       event(
         'tutor_selection_request',
-        riverChoice,
+        harbourChoice,
         'requested',
         'tutor',
         'select_next_step',
-        'action-object-smoke-select-river-chart',
+        'action-object-smoke-select-harbour-map',
       ),
       event('low_agency_deferral', null, null, null, null, null),
     ],
-    'synthetic-smoke-silver-key-compound': [
+    'synthetic-smoke-ivory-button-compound': [
       event(
         'learner_proposed_test',
-        silverKey,
+        ivoryButton,
         'proposed',
         'learner',
         'perform_public_test',
-        'action-object-smoke-compare-silver-key',
+        'action-object-smoke-compare-ivory-button',
       ),
       event(
         'tutor_directed_public_result_request',
-        silverKey,
+        ivoryButton,
         'requested',
         'tutor',
         'supply_public_result',
-        'action-object-smoke-report-silver-key-fit',
+        'action-object-smoke-report-ivory-button-alignment',
       ),
     ],
   };
 }
 
-export function prepareAdaptiveWarrantSemanticSchemaSmoke({ outputDir, preflightPath } = {}) {
+export function prepareAdaptiveWarrantSemanticSchemaSmoke({ outputDir, preflightPath, schemaAcceptancePath } = {}) {
   const sourceCommit = cleanSource();
   const resolvedOutput = path.resolve(outputDir);
   if (fs.existsSync(resolvedOutput) && fs.readdirSync(resolvedOutput).length) {
@@ -258,6 +261,13 @@ export function prepareAdaptiveWarrantSemanticSchemaSmoke({ outputDir, preflight
   const resolvedPreflight = path.resolve(preflightPath);
   const preflight = readJson(resolvedPreflight);
   validateAdaptiveWarrantSemanticPreflightArtifact({ artifact: preflight, expectedSourceCommit: sourceCommit });
+  const resolvedSchemaAcceptance = path.resolve(schemaAcceptancePath);
+  const schemaAcceptance = readJson(resolvedSchemaAcceptance);
+  validateAdaptiveWarrantSemanticSchemaAcceptanceResult({
+    artifact: schemaAcceptance,
+    expectedSourceCommit: sourceCommit,
+    expectedPreflightSha256: fileSha256(resolvedPreflight),
+  });
   const corpus = buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit);
   const corpusPath = path.join(resolvedOutput, 'synthetic-smoke-corpus.json');
   const handbookPath = path.join(resolvedOutput, 'synthetic-smoke-handbook.md');
@@ -270,7 +280,7 @@ Use one event for each independent clause-level act that changes a distinct type
 
 The current-turn speaker is mechanically learner and must not be returned. Executor means the party who must perform the action, never the speaker. Every request-type act requires executor different from speaker. A tutor-directed result request, tutor-selection request, and record-entry request therefore use executor=tutor when addressed to the tutor; a learner proposal uses executor=learner.
 
-Every reader field is required and non-null. Return only target_id, requested_value_types, and component_ids for a catalogue target; use the exact string target="none" when the act itself names no catalogue entity. The harness derives kind and public identifiers from target_id. Tutor-selection requests require the catalogue target that names the publicly enumerated choices. An analytic contribution's target is the catalogue entity the analysis itself is about, independent of an accompanying request; use target="none" only when the analytic clause names no catalogue entity. Co-occurring requests keep their own targets. Return only executor and action_object_id for an action; use the exact string requested_or_proposed_action="none" when no action applies. The harness derives mode and operation from action_object_id. A requested value such as match_status is not a target kind. Never return null or omit a field.
+Every reader field is required and non-null. Each target is a tagged object. Use state="catalog" with target_id, requested_value_types, and component_ids for a catalogue target; use the sole field state="none" when the act itself names no catalogue entity. The harness derives kind and public identifiers from target_id. Tutor-selection requests require the catalogue target that names the publicly enumerated choices. An analytic contribution's target is the catalogue entity the analysis itself is about, independent of an accompanying request; use target state="none" only when the analytic clause names no catalogue entity. Co-occurring requests keep their own targets. Each requested_or_proposed_action is also tagged: use state="catalog" with executor and action_object_id for an action, or the sole field state="none" when no action applies. The harness derives mode and operation from action_object_id. A requested value such as match_status is not a target kind. Never return null or omit a field.
 
 A record-entry request may coexist with an independent analytic clause. A tutor-selection request carries a second low_agency_deferral event only when a separate clause explicitly declines choice. A proposal followed by a request for its result is two events in surface order.
 
@@ -285,6 +295,7 @@ Use exact canonical IDs from the catalogue and literal evidence text without off
     batchSize: 3,
     maximumCalls: 2,
     preflightPath: resolvedPreflight,
+    schemaAcceptancePath: resolvedSchemaAcceptance,
   });
   if (
     prepared.authorizationRequest.call_budget.planned_calls !== 2 ||
@@ -309,6 +320,13 @@ Use exact canonical IDs from the catalogue and literal evidence text without off
       sha256: fileSha256(resolvedPreflight),
       status: preflight.status,
       source_commit: sourceCommit,
+    },
+    schema_acceptance_ping: {
+      path: resolvedSchemaAcceptance,
+      sha256: fileSha256(resolvedSchemaAcceptance),
+      status: schemaAcceptance.status,
+      source_commit: sourceCommit,
+      preflight_sha256: fileSha256(resolvedPreflight),
     },
     collection_manifest: {
       path: prepared.manifestPath,
@@ -346,6 +364,7 @@ export async function runAdaptiveWarrantSemanticSchemaSmoke({
     freeze.corpus,
     freeze.handbook,
     freeze.brittleness_preflight,
+    freeze.schema_acceptance_ping,
     freeze.collection_manifest,
     freeze.authorization_request,
   ]) {
@@ -356,6 +375,11 @@ export async function runAdaptiveWarrantSemanticSchemaSmoke({
   validateAdaptiveWarrantSemanticPreflightArtifact({
     artifact: readJson(freeze.brittleness_preflight.path),
     expectedSourceCommit: sourceCommit,
+  });
+  validateAdaptiveWarrantSemanticSchemaAcceptanceResult({
+    artifact: readJson(freeze.schema_acceptance_ping.path),
+    expectedSourceCommit: sourceCommit,
+    expectedPreflightSha256: freeze.brittleness_preflight.sha256,
   });
   const resolvedOutput = path.resolve(outputDir);
   if (fs.existsSync(resolvedOutput) && fs.readdirSync(resolvedOutput).length) {
@@ -422,9 +446,9 @@ export async function runAdaptiveWarrantSemanticSchemaSmoke({
         ),
     ),
     cross_reader_hard_consensus: consensus.hard_consensus_cases === corpus.cases.length,
-    record_entry_contract_agreement: expectedMatches['synthetic-smoke-east-cloister-record'] === true,
-    tutor_selection_contract_agreement: expectedMatches['synthetic-smoke-river-chart-selection'] === true,
-    compound_probe_contract_agreement: expectedMatches['synthetic-smoke-silver-key-compound'] === true,
+    record_entry_contract_agreement: expectedMatches['synthetic-smoke-north-gallery-record'] === true,
+    tutor_selection_contract_agreement: expectedMatches['synthetic-smoke-harbour-map-selection'] === true,
+    compound_probe_contract_agreement: expectedMatches['synthetic-smoke-ivory-button-compound'] === true,
   };
   const passed = Object.values(checks).every(Boolean);
   const result = {
@@ -459,6 +483,7 @@ async function main() {
     options: {
       out: { type: 'string' },
       preflight: { type: 'string' },
+      'schema-acceptance': { type: 'string' },
       freeze: { type: 'string' },
       'approved-by': { type: 'string' },
       effort: { type: 'string' },
@@ -467,7 +492,7 @@ async function main() {
     strict: true,
   });
   const usage =
-    'Usage:\n  node scripts/run-adaptive-warrant-semantic-schema-smoke.js prepare --out <empty-dir> --preflight <passing-artifact>\n  node scripts/run-adaptive-warrant-semantic-schema-smoke.js run --freeze <freeze.json> --out <empty-dir> --approved-by <standing-authorization> [--effort medium]\n';
+    'Usage:\n  node scripts/run-adaptive-warrant-semantic-schema-smoke.js prepare --out <empty-dir> --preflight <passing-artifact> --schema-acceptance <passing-result>\n  node scripts/run-adaptive-warrant-semantic-schema-smoke.js run --freeze <freeze.json> --out <empty-dir> --approved-by <standing-authorization> [--effort medium]\n';
   if (values.help || !command) {
     process.stdout.write(usage);
     return;
@@ -476,6 +501,7 @@ async function main() {
     const result = prepareAdaptiveWarrantSemanticSchemaSmoke({
       outputDir: values.out,
       preflightPath: values.preflight,
+      schemaAcceptancePath: values['schema-acceptance'],
     });
     process.stdout.write(`${result.freezePath}\n${result.prepared.authorizationRequestPath}\n`);
     return;

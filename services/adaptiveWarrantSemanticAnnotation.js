@@ -13,7 +13,7 @@ export const ADAPTIVE_WARRANT_SEMANTIC_CONSENSUS_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-event-consensus.v3';
 export const ADAPTIVE_WARRANT_SEMANTIC_SCORE_SCHEMA = 'machinespirits.adaptation-refinement.semantic-event-score.v3';
 export const ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-annotation-batch-response.v4';
+  'machinespirits.adaptation-refinement.semantic-event-annotation-batch-response.v5';
 export const ADAPTIVE_WARRANT_SEMANTIC_READER_CATALOG_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v3';
 
@@ -63,7 +63,7 @@ export const ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT = Object.freeze({
   speaker: 'Mechanically supplied from current-turn authorship; never reader-judged.',
   speech_act: 'Reader chooses one closed act under the handbook precedence table.',
   target_id:
-    'Reader chooses the public object, relation, or enumerated choice set that the act itself is about, never a requested value or actor; use the total token none when the act names no catalogue entity.',
+    'Reader chooses the public object, relation, or enumerated choice set that the act itself is about, never a requested value or actor; use the total tagged state=none branch when the act names no catalogue entity.',
   target_kind: 'Mechanically supplied from the selected target catalogue entry; never reader-judged.',
   public_identifier_ids: 'Mechanically supplied from the selected target catalogue entry; never reader-judged.',
   requested_value_types: 'Exact closed-set values explicitly requested or produced by the clause.',
@@ -72,7 +72,7 @@ export const ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT = Object.freeze({
   executor: 'Reader chooses who must perform the action; this is not the utterance speaker.',
   action: 'Mechanically supplied from the selected action-object catalogue entry; never reader-judged.',
   action_object_id:
-    'Reader chooses the public action object licensed by the clause; use the total token none when no action applies.',
+    'Reader chooses the public action object licensed by the clause; use the total tagged state=none branch when no action applies.',
   evidence_span: 'Reader supplies one unique literal minimal clause span; offsets and order are mechanical.',
   genuinely_ambiguous:
     'True only when two complete typed readings remain after every closed rule; an ambiguous case returns zero events.',
@@ -160,6 +160,7 @@ function closedSchema(properties) {
 function semanticReaderEventSchema(semanticCatalog) {
   const catalogIds = validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
   const target = closedSchema({
+    state: { type: 'string', enum: ['catalog'] },
     target_id: { type: 'string', enum: [...catalogIds.target_ids] },
     requested_value_types: {
       type: 'array',
@@ -173,6 +174,7 @@ function semanticReaderEventSchema(semanticCatalog) {
     },
   });
   const action = closedSchema({
+    state: { type: 'string', enum: ['catalog'] },
     executor: {
       type: 'string',
       enum: ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS.filter((value) => value !== 'none'),
@@ -181,8 +183,10 @@ function semanticReaderEventSchema(semanticCatalog) {
   });
   return closedSchema({
     speech_act: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS] },
-    target: { oneOf: [target, { type: 'string', enum: ['none'] }] },
-    requested_or_proposed_action: { oneOf: [action, { type: 'string', enum: ['none'] }] },
+    target: { anyOf: [target, closedSchema({ state: { type: 'string', enum: ['none'] } })] },
+    requested_or_proposed_action: {
+      anyOf: [action, closedSchema({ state: { type: 'string', enum: ['none'] } })],
+    },
     evidence_span: closedSchema({
       text: { type: 'string', minLength: 1, maxLength: 240 },
     }),
@@ -192,8 +196,27 @@ function semanticReaderEventSchema(semanticCatalog) {
 export function auditAdaptiveWarrantSemanticReaderSchemaTotality({ schema, semanticCatalog } = {}) {
   const catalogIds = validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
   const issues = [];
-  const visit = (node, location) => {
+  const supportedKeywords = new Set([
+    '$defs',
+    '$ref',
+    'additionalProperties',
+    'anyOf',
+    'enum',
+    'items',
+    'maxItems',
+    'maxLength',
+    'minLength',
+    'properties',
+    'required',
+    'type',
+  ]);
+  const visit = (node, location, schemaNode = true) => {
     if (!node || typeof node !== 'object' || Array.isArray(node)) return;
+    if (schemaNode) {
+      for (const keyword of Object.keys(node)) {
+        if (!supportedKeywords.has(keyword)) issues.push(`${location} uses unsupported keyword ${keyword}`);
+      }
+    }
     if (node.type === 'null' || (Array.isArray(node.type) && node.type.includes('null'))) {
       issues.push(`${location} admits null`);
     }
@@ -207,20 +230,52 @@ export function auditAdaptiveWarrantSemanticReaderSchemaTotality({ schema, seman
       if (node.additionalProperties !== false) issues.push(`${location} is not closed`);
     }
     for (const [key, value] of Object.entries(node)) {
-      if (Array.isArray(value)) value.forEach((entry, index) => visit(entry, `${location}.${key}[${index}]`));
-      else visit(value, `${location}.${key}`);
+      if (key === 'required' || key === 'enum' || key === 'type') continue;
+      if (key === 'properties' || key === '$defs') {
+        for (const [propertyName, propertySchema] of Object.entries(value || {})) {
+          visit(propertySchema, `${location}.${key}.${propertyName}`);
+        }
+      } else if (Array.isArray(value)) {
+        value.forEach((entry, index) => visit(entry, `${location}.${key}[${index}]`));
+      } else {
+        visit(value, `${location}.${key}`);
+      }
     }
   };
   visit(schema, '$');
   const event = schema?.$defs?.case?.properties?.events?.items;
-  const targetChoices = event?.properties?.target?.oneOf;
-  const actionChoices = event?.properties?.requested_or_proposed_action?.oneOf;
-  const targetObject = targetChoices?.find((choice) => choice.type === 'object');
-  const targetNone = targetChoices?.find((choice) => choice.type === 'string');
-  const actionObject = actionChoices?.find((choice) => choice.type === 'object');
-  const actionNone = actionChoices?.find((choice) => choice.type === 'string');
-  if (JSON.stringify(targetNone?.enum) !== JSON.stringify(['none'])) issues.push('target lacks the closed none token');
-  if (JSON.stringify(actionNone?.enum) !== JSON.stringify(['none'])) issues.push('action lacks the closed none token');
+  const targetChoices = event?.properties?.target?.anyOf;
+  const actionChoices = event?.properties?.requested_or_proposed_action?.anyOf;
+  const branchByState = (choices, label) => {
+    if (!Array.isArray(choices) || choices.length !== 2) {
+      issues.push(`${label} must have exactly two anyOf branches`);
+      return {};
+    }
+    const branches = {};
+    for (const [index, choice] of choices.entries()) {
+      const values = choice?.properties?.state?.enum;
+      if (
+        choice?.type !== 'object' ||
+        !Array.isArray(choice.required) ||
+        !choice.required.includes('state') ||
+        !Array.isArray(values) ||
+        values.length !== 1
+      ) {
+        issues.push(`${label}.anyOf[${index}] lacks a required singleton state discriminator`);
+        continue;
+      }
+      if (branches[values[0]]) issues.push(`${label} union branches share discriminator ${values[0]}`);
+      branches[values[0]] = choice;
+    }
+    if (!branches.catalog || !branches.none || Object.keys(branches).length !== 2) {
+      issues.push(`${label} union is not pairwise disjoint on catalog/none state`);
+    }
+    return branches;
+  };
+  const targetBranches = branchByState(targetChoices, 'target');
+  const actionBranches = branchByState(actionChoices, 'action');
+  const targetObject = targetBranches.catalog;
+  const actionObject = actionBranches.catalog;
   const exactEnum = (actual, expected, label) => {
     if (JSON.stringify([...(actual || [])].sort()) !== JSON.stringify([...expected].sort())) {
       issues.push(`${label} is not closed to the catalogue`);
@@ -234,8 +289,12 @@ export function auditAdaptiveWarrantSemanticReaderSchemaTotality({ schema, seman
     issue_count: issues.length,
     issues,
     reader_fields_total: issues.every((issue) => !issue.includes('optional') && !issue.includes('null')),
-    explicit_none_tokens: targetNone?.enum?.[0] === 'none' && actionNone?.enum?.[0] === 'none',
+    explicit_none_tokens: Boolean(targetBranches.none && actionBranches.none),
     catalogue_domains_closed: issues.every((issue) => !issue.includes('not closed to the catalogue')),
+    provider_keywords_supported: issues.every((issue) => !issue.includes('unsupported keyword')),
+    union_branches_pairwise_disjoint: Boolean(
+      targetBranches.catalog && targetBranches.none && actionBranches.catalog && actionBranches.none,
+    ),
   };
 }
 
@@ -464,8 +523,11 @@ export function materializeAdaptiveWarrantSemanticReaderEvent({ event, semanticC
   }
   const catalogIds = validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
   let target = null;
-  if (event.target !== 'none') {
-    exactFields(event.target, ['target_id', 'requested_value_types', 'component_ids'], `${label}.target`);
+  if (event.target?.state === 'none') {
+    exactFields(event.target, ['state'], `${label}.target`);
+  } else {
+    exactFields(event.target, ['state', 'target_id', 'requested_value_types', 'component_ids'], `${label}.target`);
+    if (event.target.state !== 'catalog') throw new Error(`${label}.target.state is invalid`);
     const catalogTarget = catalogIds.targets_by_id[event.target.target_id];
     if (!catalogTarget) throw new Error(`${label}.target.target_id is outside the catalog`);
     const requestedValueTypes = exactStringSet(
@@ -489,12 +551,17 @@ export function materializeAdaptiveWarrantSemanticReaderEvent({ event, semanticC
     };
   }
   let action = null;
-  if (event.requested_or_proposed_action !== 'none') {
+  if (event.requested_or_proposed_action?.state === 'none') {
+    exactFields(event.requested_or_proposed_action, ['state'], `${label}.requested_or_proposed_action`);
+  } else {
     exactFields(
       event.requested_or_proposed_action,
-      ['executor', 'action_object_id'],
+      ['state', 'executor', 'action_object_id'],
       `${label}.requested_or_proposed_action`,
     );
+    if (event.requested_or_proposed_action.state !== 'catalog') {
+      throw new Error(`${label}.requested_or_proposed_action.state is invalid`);
+    }
     const executor = event.requested_or_proposed_action.executor;
     if (!ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS.includes(executor) || executor === 'none') {
       throw new Error(`${label}.requested_or_proposed_action.executor is invalid`);
@@ -569,12 +636,15 @@ function contractWorkedExample({ speechAct, contract, catalogIds }) {
     speech_act: speechAct,
     target: targetEntry
       ? {
+          state: 'catalog',
           target_id: targetEntry.target_id,
           requested_value_types: [],
           component_ids: [],
         }
-      : 'none',
-    requested_or_proposed_action: actionEntry ? { executor, action_object_id: actionEntry.action_object_id } : 'none',
+      : { state: 'none' },
+    requested_or_proposed_action: actionEntry
+      ? { state: 'catalog', executor, action_object_id: actionEntry.action_object_id }
+      : { state: 'none' },
     evidence_span: { text: `Contract worked example for ${speechAct}.` },
   };
 }

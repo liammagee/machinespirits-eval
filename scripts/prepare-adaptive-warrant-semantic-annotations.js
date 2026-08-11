@@ -17,14 +17,17 @@ import {
   validateAdaptiveWarrantSemanticAnnotationResponse,
   validateAdaptiveWarrantSemanticReaderCatalog,
 } from '../services/adaptiveWarrantSemanticAnnotation.js';
-import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
+import {
+  validateAdaptiveWarrantSemanticPreflightArtifact,
+  validateAdaptiveWarrantSemanticSchemaAcceptanceResult,
+} from '../services/adaptiveWarrantSemanticPreflight.js';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_COLLECTION_MANIFEST_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-annotation-collection.v4';
+  'machinespirits.adaptation-refinement.semantic-event-annotation-collection.v5';
 export const ADAPTIVE_WARRANT_SEMANTIC_READER_PACKET_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-reader-packet.v4';
+  'machinespirits.adaptation-refinement.semantic-event-reader-packet.v5';
 export const ADAPTIVE_WARRANT_SEMANTIC_AUTHORIZATION_REQUEST_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-annotation-authorization-request.v4';
+  'machinespirits.adaptation-refinement.semantic-event-annotation-authorization-request.v5';
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 
 const BATCH_FIELDS = Object.freeze([
@@ -113,6 +116,7 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
   annotationDestination = 'OpenAI Codex CLI (ChatGPT-account route)',
   maximumCalls = null,
   preflightPath = null,
+  schemaAcceptancePath = null,
   preflightMode = false,
 } = {}) {
   if (!['targeted_challenge', 'natural_prevalence'].includes(corpusRole)) {
@@ -131,6 +135,7 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
   const semanticCatalog = corpus.semantic_annotation_catalog;
   validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
   let preflightBinding = null;
+  let schemaAcceptanceBinding = null;
   let sourceCommit = null;
   if (preflightMode) {
     if (!String(corpus.study_id).startsWith('semantic-brittleness-preflight-')) {
@@ -145,6 +150,22 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
     const preflight = readJson(resolvedPreflight);
     validateAdaptiveWarrantSemanticPreflightArtifact({ artifact: preflight, expectedSourceCommit: sourceCommit });
     preflightBinding = { path: resolvedPreflight, sha256: fileSha256(resolvedPreflight), source_commit: sourceCommit };
+    if (!schemaAcceptancePath) {
+      throw new Error('semantic annotation preparation requires a passing schema-acceptance ping');
+    }
+    const resolvedSchemaAcceptance = path.resolve(schemaAcceptancePath);
+    const schemaAcceptance = readJson(resolvedSchemaAcceptance);
+    validateAdaptiveWarrantSemanticSchemaAcceptanceResult({
+      artifact: schemaAcceptance,
+      expectedSourceCommit: sourceCommit,
+      expectedPreflightSha256: preflightBinding.sha256,
+    });
+    schemaAcceptanceBinding = {
+      path: resolvedSchemaAcceptance,
+      sha256: fileSha256(resolvedSchemaAcceptance),
+      source_commit: sourceCommit,
+      preflight_sha256: preflightBinding.sha256,
+    };
   }
   const sampleIds = exactIds(
     corpus.cases.map((row) => row.sample_id),
@@ -186,13 +207,13 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
           'Use genuinely_ambiguous=true only when two complete typed readings remain after every handbook rule; then return events=[].',
           'Every evidence_span must contain only text: one non-empty literal substring that occurs exactly once in current_learner_turn.learner. Do not return start or end; the assembler derives UTF-16 offsets mechanically and records them in its audit.',
           'The harness supplies speaker=learner mechanically. Do not return a speaker field.',
-          'Every returned field is total: never omit a field and never return null. Use the exact string none for target when the act itself names no catalogue entity, and for requested_or_proposed_action when no action applies.',
+          'Every returned field is total: never omit a field and never return null. Each target and requested_or_proposed_action is a tagged object with state=catalog or state=none. The state=none branch contains no other fields.',
           'For target.target_id, target.component_ids, and action.action_object_id, use only exact IDs from semantic_annotation_catalog. The harness derives target kind and public identifiers from target_id, and derives action mode and operation from action_object_id. Display labels are explanatory only.',
           'Action executor means the party who must perform the action, never the utterance speaker. A request-type act must have executor different from speaker.',
           'Every case note must contain at least eight characters of case-specific public-evidence rationale, including when the case is not ambiguous.',
           'Keep target_id separate from requested_value_types. A requested name, time, date, or weight is not automatically a target.',
           'A tutor_selection_request requires the catalogue target naming the publicly enumerated choices; the tutor and the requested next-step value are not targets.',
-          'An analytic_contribution target is the catalogue entity the analysis itself is about, independent of any accompanying request event. Use target=none only when the analytic clause names no catalogue entity; co-occurring requests keep their own targets.',
+          'An analytic_contribution target is the catalogue entity the analysis itself is about, independent of any accompanying request event. Use target.state=none only when the analytic clause names no catalogue entity; co-occurring requests keep their own targets.',
         ],
         handbook_markdown: handbookMarkdown,
         semantic_annotation_catalog: semanticCatalog,
@@ -250,6 +271,7 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
       maximum_response_bytes: MAXIMUM_READER_RESPONSE_BYTES,
     },
     brittleness_preflight: preflightBinding || { mode: 'synthetic_internal_zero_call' },
+    schema_acceptance_ping: schemaAcceptanceBinding || { mode: 'synthetic_internal_zero_call' },
     readers,
   };
   const manifestPath = path.join(resolvedOutput, 'semantic-annotation-collection-manifest.json');
@@ -292,6 +314,7 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
       corpus_sha256: corpusSha256,
       handbook_sha256: handbookSha256,
       brittleness_preflight: preflightBinding,
+      schema_acceptance_ping: schemaAcceptanceBinding,
       packets: readers.flatMap((reader) =>
         reader.batches.map((batch) => ({
           reader_id: reader.reader_id,
@@ -534,7 +557,7 @@ export function scoreAdaptiveWarrantSemanticReaderSupportFiles({
 
 function usage() {
   return `Usage:
-  node scripts/prepare-adaptive-warrant-semantic-annotations.js prepare --corpus <file> --handbook <file> --preflight <passing-artifact> --out <dir> --corpus-role targeted_challenge|natural_prevalence [--batch-size 8] [--max-annotation-calls 8]
+  node scripts/prepare-adaptive-warrant-semantic-annotations.js prepare --corpus <file> --handbook <file> --preflight <passing-artifact> --schema-acceptance <passing-result> --out <dir> --corpus-role targeted_challenge|natural_prevalence [--batch-size 8] [--max-annotation-calls 8]
   node scripts/prepare-adaptive-warrant-semantic-annotations.js assemble --manifest <file> --reader <id> --annotation-run-id <id> --responses <dir> --output <file>
   node scripts/prepare-adaptive-warrant-semantic-annotations.js support --manifest <file> --reader-a <file> --reader-b <file> --output <file>
   node scripts/prepare-adaptive-warrant-semantic-annotations.js score --manifest <file> --reader-a <file> --reader-b <file> --predictions <file> --output <file>
@@ -549,6 +572,7 @@ function main() {
       corpus: { type: 'string' },
       handbook: { type: 'string' },
       preflight: { type: 'string' },
+      'schema-acceptance': { type: 'string' },
       out: { type: 'string' },
       'corpus-role': { type: 'string' },
       'batch-size': { type: 'string' },
@@ -578,6 +602,7 @@ function main() {
       batchSize: values['batch-size'] ? Number(values['batch-size']) : 8,
       maximumCalls: values['max-annotation-calls'] ? Number(values['max-annotation-calls']) : null,
       preflightPath: values.preflight,
+      schemaAcceptancePath: values['schema-acceptance'],
     });
     process.stdout.write(`${result.manifestPath}\n${result.authorizationRequestPath}\n`);
     return;

@@ -108,8 +108,8 @@ or scoring.
 | Field | Contract |
 |---|---|
 | `speech_act` | One declared act from the closed V3 vocabulary. Unknown acts use `other`; they are never invented as near-synonyms. |
-| `target` | A public target object or the explicit semantic absence value. At the reader boundary this field is always present and uses the exact token `"none"`, never JSON `null`; the assembler alone normalizes that token to internal `null`. It separates the object under discussion from values requested about it. |
-| `requested_or_proposed_action` | A typed action object or the explicit semantic absence value. At the reader boundary this field is always present and uses `"none"`, never JSON `null`; the assembler alone normalizes it. |
+| `target` | A public target object or explicit semantic absence. At the reader boundary this field is always a non-null tagged object: `{"state":"catalog", ...}` or exactly `{"state":"none"}`. The assembler alone normalizes the latter to internal `null`. It separates the object under discussion from values requested about it. |
+| `requested_or_proposed_action` | A typed action object or explicit semantic absence. At the reader boundary this field is always a non-null tagged object: `{"state":"catalog", ...}` or exactly `{"state":"none"}`. The assembler alone normalizes the latter. |
 | `evidence_span` | Exact literal text plus verified start/end offsets into the current public utterance. Paraphrases and inferred spans are invalid. |
 | `confidence` | `high`, `medium`, or `low`. This is a bounded self-report, not a calibrated probability. |
 | `uncertainty` | A possibly empty list from the closed reasons below. Any non-empty list prevents asserted state mutation. |
@@ -199,13 +199,13 @@ ask a reader for a fact it already knows.
 | Event multiplicity and order | Reader, then mechanical ordering | One event per independent clause-level act that changes a distinct typed state. One clause receives one act under the precedence table. Distinct events require non-overlapping minimal literal spans and are mechanically ordered by span start. |
 | `speaker` | Harness | Current packet authorship supplies `learner`; absent from reader schema. |
 | `speech_act` | Reader | One value from the closed vocabulary under the within-clause precedence table. No synonymous labels. |
-| `target` / `target_id` | Reader | Total and non-null: the public object, relation, or enumerated choice set the act itself is about, chosen from the catalogue, or the exact token `"none"` when that act names no catalogue entity. Requested values and actors are never targets. Tutor-selection requests require the public choice-set target. For `analytic_contribution`, ownership follows the analysis itself independently of any co-occurring request. |
+| `target` / `target_id` | Reader | Total and non-null: the public object, relation, or enumerated choice set the act itself is about, chosen from the catalogue in the `state="catalog"` branch, or the exact sole-field object `{"state":"none"}` when that act names no catalogue entity. Requested values and actors are never targets. Tutor-selection requests require the public choice-set target. For `analytic_contribution`, ownership follows the analysis itself independently of any co-occurring request. |
 | `target.kind` | Harness | Derived exactly from the selected `target_id`; absent from reader schema. |
 | `public_identifier_ids` | Harness | Exact catalogue identifiers for `target_id`; absent from reader schema. |
 | `requested_value_types` | Reader | Exact closed-set values explicitly requested or produced by the clause; may be empty. A value such as `time` or `match_status` is not a subject or target kind. |
 | `component_ids` | Reader | Exact catalogue answer components explicitly requested or produced; may be empty. |
 | `executor` | Reader | The party who must perform the action, not the speaker. Request-type acts cannot use learner execution. |
-| `requested_or_proposed_action` / `action_object_id` | Reader | Total and non-null: the public action object licensed by the clause, chosen from the catalogue, or the exact token `"none"` when no action applies. |
+| `requested_or_proposed_action` / `action_object_id` | Reader | Total and non-null: the public action object licensed by the clause, chosen from the catalogue in the `state="catalog"` branch, or the exact sole-field object `{"state":"none"}` when no action applies. |
 | action `mode` and operation | Harness | Derived exactly from `action_object_id`; absent from reader schema and checked against the speech act. |
 | `evidence_span.text` | Reader | The shortest complete literal clause, occurring exactly once and not overlapping another event span. |
 | span offsets and event order | Harness | Derived from the unique literal span and audited; absent from reader schema. |
@@ -223,7 +223,7 @@ rather than an alternative way to express uncertainty.
 
 Target ownership is event-local. The target of an `analytic_contribution` is
 the catalogue entity the analysis itself concerns, even when a neighbouring
-record-entry or result request names the same entity. It may use `"none"` only
+record-entry or result request names the same entity. It may use `state="none"` only
 when the analytic clause names no catalogue entity. Each co-occurring request
 retains and is judged on its own target. No reader-returned property anywhere
 in the response envelope is optional or nullable: every object property is
@@ -584,10 +584,28 @@ handbook had permitted both readings.
 This is another instrument-contract result, not evidence about semantic-model
 capability or warrant policy. The burned cases cannot be reused. The
 prospective repair makes every reader property total and non-null, uses an
-explicit `"none"` absence token, and assigns analytic-target ownership to the
+explicit tagged `state="none"` absence branch, and assigns analytic-target ownership to the
 entity the analytic clause itself is about independently of a co-occurring
 request. A schema-totality audit now owns the mechanically detectable part of
 this failure class before a wholly fresh smoke.
+
+### 5.0.3 Invalid pre-diagnostic launches: provider schema rejection
+
+The next wholly fresh smoke at clean commit `fcd944f0` never produced a model
+response. Two launch attempts are preserved at
+`/private/tmp/adaptive-warrant-v3-semantic-smoke-run-fcd944f0` and
+`/private/tmp/adaptive-warrant-v3-semantic-smoke-run-fcd944f0-retry1`; each
+attempted one call, completed zero, and ended in a provider failed-turn event.
+The response schema used JSON Schema `oneOf`, which the selected structured-
+output transport does not accept. These attempts contain no semantic judgment,
+reader agreement, or model-capability evidence, but their cases remain burned.
+
+Prospectively the single canonical response schema uses `anyOf`. The zero-call
+preflight proves this transport change meaning-preserving by requiring every
+union branch to carry a required singleton `state` discriminator and requiring
+the discriminator constants to be pairwise distinct. It also rejects every
+schema keyword outside the declared provider-supported subset. No separate
+strict/provider schema copy exists.
 
 ### 5.1 Targeted rare-state diagnostic
 
@@ -681,10 +699,20 @@ cells without hand repair.
 The generated reader schema is also traversed as data before any live call.
 Every object property must appear in its `required` set, no node may admit
 JSON `null`, target and action absence must each be represented only by the
-literal `"none"`, and target, component, action-object, speech-act, executor,
+sole-field tagged object `{"state":"none"}`, and target, component, action-object, speech-act, executor,
 and value-type identities must be closed to their declared catalogue or
 vocabulary. The assertion runs against the synthetic preflight, smoke, and
 diagnostic catalogues; one failure blocks the freeze.
+
+The same traversal owns provider compatibility. It permits only the declared
+structured-output keyword subset and requires every `anyOf` branch to be
+pairwise disjoint through a distinct required singleton constant field. After
+that static preflight and before either smoke or diagnostic readers, one
+throwaway synthetic case sends the exact canonical response schema through the
+same Luna transport. This schema-acceptance ping is capped at one call,
+permanently excluded from all evidence, and hash-bound to the preflight and
+source commit. A provider rejection before a model response burns no smoke or
+diagnostic case; a passing ping is a required freeze and authorization binding.
 
 It must also audit contract/catalog consistency before any live smoke. Every
 speech act in the closed vocabulary must have a satisfiable catalogue,

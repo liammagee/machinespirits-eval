@@ -10,12 +10,15 @@ import {
 
 export const ADAPTIVE_WARRANT_SEMANTIC_PREFLIGHT_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-brittleness-preflight.v1';
+export const ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_RESULT_SCHEMA =
+  'machinespirits.adaptation-refinement.semantic-schema-acceptance-result.v1';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const FINGERPRINT_FILES = Object.freeze({
   extraction: 'services/adaptiveWarrantSemanticEvents.js',
   reader_and_scorer: 'services/adaptiveWarrantSemanticAnnotation.js',
   preparation_and_assembly: 'scripts/prepare-adaptive-warrant-semantic-annotations.js',
+  schema_acceptance_ping: 'scripts/run-adaptive-warrant-semantic-schema-acceptance-ping.js',
   corpus_builder: 'scripts/build-adaptive-warrant-v3-semantic-diagnostic.js',
 });
 
@@ -59,6 +62,7 @@ export function adaptiveWarrantSemanticInstrumentBindings({ sourceCommit } = {})
       schema_family: 'machinespirits.adaptation-refinement.semantic-event-reader.v3',
       reader_and_scorer: files.reader_and_scorer.sha256,
       preparation_and_assembly: files.preparation_and_assembly.sha256,
+      schema_acceptance_ping: files.schema_acceptance_ping.sha256,
     }),
     consensus_scorer_fingerprint: adaptiveWarrantSemanticValueSha256({
       reader_and_scorer: files.reader_and_scorer.sha256,
@@ -69,6 +73,31 @@ export function adaptiveWarrantSemanticInstrumentBindings({ sourceCommit } = {})
     corpus_builder_fingerprint: files.corpus_builder.sha256,
     source_files: files,
   };
+}
+
+export function validateAdaptiveWarrantSemanticSchemaAcceptanceResult({
+  artifact,
+  expectedSourceCommit,
+  expectedPreflightSha256,
+} = {}) {
+  if (!artifact || artifact.schema !== ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_RESULT_SCHEMA) {
+    throw new Error('semantic schema-acceptance result schema mismatch');
+  }
+  if (
+    artifact.status !== 'passed' ||
+    artifact.inferential_role !== 'transport_only_permanently_excluded' ||
+    artifact.synthetic_case_permanently_excluded !== true ||
+    artifact.source_commit !== expectedSourceCommit ||
+    artifact.response_received !== true ||
+    artifact.calls?.attempted !== 1 ||
+    artifact.calls?.completed !== 1 ||
+    artifact.calls?.maximum !== 1 ||
+    artifact.prohibited_tool_event_count !== 0 ||
+    artifact.preflight?.sha256 !== expectedPreflightSha256
+  ) {
+    throw new Error('semantic schema-acceptance ping did not pass or is stale');
+  }
+  return { ok: true };
 }
 
 export function validateAdaptiveWarrantSemanticPreflightArtifact({ artifact, expectedSourceCommit } = {}) {
