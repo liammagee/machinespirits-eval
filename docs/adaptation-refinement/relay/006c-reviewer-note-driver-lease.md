@@ -10,7 +10,7 @@ must be verifiable from inside the session that needs them.
 **New rule:** the driver seat is held by the session whose OWN PROMPT
 quotes the current lease token. Current token:
 
-    DRIVER-LEASE-2026-08-12-B
+    DRIVER-LEASE-2026-08-12-C
 
 A session whose prompt contains this token is the driver and executes
 the current direction without further identity doubt. A session whose

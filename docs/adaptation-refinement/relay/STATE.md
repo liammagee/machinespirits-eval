@@ -7,10 +7,12 @@
 
 - **Current direction:** `006-reviewer-direction-supplement.md` — one-shot
   record-entry support supplement (8 fresh record-entry-weighted cases,
-  ~2 Luna calls, one-shot rule: pass certifies the cell / fail cuts it,
-  both branches then proceed to decision readers).
+  ~2 Luna calls). One-shot rule: PASS certifies the cell and proceeds
+  directly to the decision readers. FAIL cuts the cell with no retry,
+  the driver drafts restated measure definitions in its report, and
+  decision readers run ONLY AFTER a reviewer reply signs those off.
 - **Driver:** the session whose prompt quotes the lease token in 006c
-  (currently DRIVER-LEASE-2026-08-12-B). Other sessions: read-only.
+  (currently DRIVER-LEASE-2026-08-12-C). Other sessions: read-only.
 - **Instrument commit:** `225a7b07` ("Separate V3 structural and semantic
   gates"). The instrument is CLOSED — it reopens only for a transport,
   schema, provenance, or non-evaluability defect. Never for semantic
