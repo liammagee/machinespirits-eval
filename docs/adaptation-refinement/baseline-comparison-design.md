@@ -840,3 +840,26 @@ frozen diagnostic challenge under a new exact authorization. After any repair
 and a clean checkpoint, a newly generated representative natural corpus gets a
 separate freeze and authorization. It alone can pass the mechanism gate; this
 is not another read or rescore of the seventh packet.
+
+## Targeted-challenge collection instrument correction — 11 August 2026
+
+The first authorized read of the 24-case diagnostic challenge stopped before
+consensus or unblinding. Its digest-bound packets contained both the final V4
+reader-envelope instruction in the handbook and the per-call batch envelope in
+the response template. Reader A used the batch envelope once, then returned
+two responses with V4 identity fields; a structurally constrained retry still
+used the V4 schema literal. The assembler rejected these responses exactly as
+designed. Four model calls were used, Reader B was never run, the key remained
+private, and the diagnostic freeze is burned. API rejections during schema
+validation produced no annotations and are not model calls.
+
+Prospectively, each batch now has one packet-specific output schema. It fixes
+the batch schema literal and every binding field, declares exactly the eight
+opaque sample IDs, and closes every case and dimension object to extra fields.
+That schema is embedded in the transmitted packet, emitted separately for the
+CLI structured-output control, included by hash in the authorization contract,
+and rechecked by the assembler. The final V4 `annotator_id` and
+`annotation_run_id` are introduced only after all batches pass. This is an
+instrument repair, not detector evidence. The next diagnostic must be newly
+frozen from a clean commit and separately authorized; no labels from this
+failed collection may be repaired or scored.

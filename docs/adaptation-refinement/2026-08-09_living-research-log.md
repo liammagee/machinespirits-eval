@@ -1022,3 +1022,47 @@ balancing or post-hoc selection—and apply the unchanged
 `ADAPTIVE_WARRANT_DECISION_GATE` thresholds to that representative corpus
 alone. Missing rare-state support is an inconclusive failure; targeted cases
 cannot fill it. No downstream outcome run is licensed.
+
+## Progress Update — 11 August 2026, diagnostic reader freeze burned at the envelope boundary
+
+The 24-case targeted challenge was frozen from clean commit
+`4b5f321eaaf6343627a760a2d8d329161d1af23f` and authorized under digest
+`04709440caed8cdb871791b57f808adcd0d698652d25b338e70eff4635eb37c0`
+for two Luna readers, six planned calls, and an eight-call ceiling. The
+authorization remained correctly diagnostic-only and excluded the private
+key, support plan, predictions, traces, and either reader's responses from the
+other reader.
+
+Collection stopped before unblinding or scoring. Reader A batch 1 returned the
+declared six-field batch envelope. Batches 2 and 3 instead added final-V4
+identity fields because the embedded handbook described the assembled V4
+artifact while the packet template described the per-call batch artifact. The
+fail-closed assembler rejected the extra fields. A structured-output retry
+removed the extra fields but still selected the handbook's V4 schema literal,
+confirming that this was an instruction/envelope conflict rather than a JSON
+formatting accident. Three exploratory structured-schema submissions were
+rejected by the API before inference and do not count as annotation calls.
+Four genuine Luna calls were used; four authorized calls remain unused. No
+Reader B call was made, the private key was not read, no consensus or accuracy
+score was computed, and the freeze is burned as an annotation instrument.
+
+The prospective repair makes the batch envelope singular and executable.
+Every prepared packet now embeds a packet-specific JSON schema that locks the
+batch schema literal, reader, batch, study, corpus hash, exact opaque sample
+IDs, case fields, and all six dimension fields. The identical schema is emitted
+for the CLI, hash-bound in the collection manifest and authorization request,
+and drift-checked before assembly. Packet instructions state explicitly that
+the handbook's V4 identity belongs only to the assembled reader artifact. No
+reader content is hand-edited and the assembler's two predeclared family
+canonicalizations are unchanged.
+
+No-model verification passes the 42-test focused builder/baseline suite, lint,
+8,452/8,452 hermetic root tests, 137/137 tutor-core tests, and 490/490 workplan
+validation.
+
+The next evidential sequence is a clean commit of this repair, a fresh
+diagnostic freeze and manifest inspection, and a new bounded payload-specific
+authorization. Only after two no-repair reader assemblies may the diagnostic
+key be read. Any resulting detector repair burns that diagnostic relative to
+the repaired code; the later representative 96-case natural frame remains the
+sole pass/fail gate. No downstream outcome run is licensed.

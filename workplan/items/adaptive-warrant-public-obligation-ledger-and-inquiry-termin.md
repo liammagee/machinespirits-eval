@@ -266,3 +266,25 @@ reads, any bounded repair, and passage of the later representative gate.
 Current no-model verification is green: lint, 35/35 worlds, 22/22 prompt/world
 boundary tests, the 171-test exact launch preflight, 8,448/8,448 hermetic root
 tests, 137/137 tutor-core tests, and 490/490 source workplan items.
+
+The first authorized targeted-challenge collection from clean commit
+`4b5f321eaaf6343627a760a2d8d329161d1af23f` stopped at a newly exposed
+envelope conflict. The embedded handbook named the final assembled V4 response,
+while each packet template named the per-call batch response. Reader A returned
+one valid batch, two batches with extra V4 identity fields, and one structured
+retry with the V4 schema literal. The fail-closed assembler rejected them.
+Four genuine Luna calls were used; four authorized calls remain unused. Reader
+B was not run, the private key stayed closed, no score was produced, and the
+freeze is burned.
+
+Prospective collection now emits an exact output schema per batch. It locks the
+batch schema literal, reader/batch/study/corpus bindings, eight opaque IDs, row
+fields, and six dimension objects; it is embedded in the packet, emitted for
+the CLI, bound by hash in the manifest and authorization request, and checked
+again before assembly. Focused builder and baseline tests pass 42/42 and lint
+is clean; full verification passes 8,452/8,452 root tests, 137/137 tutor-core
+tests, and 490/490 workplan items. The item remains active pending a clean
+pushed checkpoint, a newly frozen diagnostic request, two no-repair reader
+assemblies, diagnostic analysis and any prospective repair, then passage of
+the separately frozen representative natural-frame gate. No downstream
+outcome study is licensed.

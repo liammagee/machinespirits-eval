@@ -737,3 +737,32 @@ clean commit and new authorization request. Current no-model verification passes
 8,448/8,448 hermetic root tests, 137/137 tutor-core tests, and 490/490 source
 workplan items. The prior 24-call annotation authorization is exhausted and
 does not cover those new payloads.
+
+## Current restart boundary after the first targeted-challenge reader attempt
+
+The clean `4b5f321eaaf6343627a760a2d8d329161d1af23f` challenge freeze and digest
+`04709440caed8cdb871791b57f808adcd0d698652d25b338e70eff4635eb37c0`
+reached the reader boundary but exposed incompatible per-batch and assembled-
+V4 envelope instructions. Four genuine Luna calls were used, four authorized
+calls were left unused, Reader B was not run, and no private key or score was
+read. The freeze is burned.
+
+The remaining sequence is now:
+
+1. commit and push the packet-specific, hash-bound output-schema repair after
+   focused and full no-model verification (now green: focused 42/42, root
+   8,452/8,452, tutor-core 137/137, lint, and workplan 490/490);
+2. create a detached clean worktree at that commit and rebuild the same
+   diagnostic design as a new freeze with new sample and packet hashes;
+3. inspect the manifest, exact packet schemas, diagnostic-only boundary,
+   overlap proof, and bounded call plan before requesting a new authorization;
+4. obtain two independent Luna reader files and require both to assemble with
+   zero manual edits beyond the two predeclared family canonicalizations;
+5. only then read the private diagnostic key and report disagreement and
+   field/dimension errors as probes, never as gate passage;
+6. apply any bounded detector repair prospectively, which burns that diagnostic
+   relative to the repaired code; and
+7. freeze and annotate the already declared representative 96-case natural
+   frame. Only that frame can own the unchanged pass/fail thresholds.
+
+No downstream outcome run is licensed.

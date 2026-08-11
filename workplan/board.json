@@ -1,19 +1,19 @@
 {
-  "generated": "2026-08-09T04:23:14.316Z",
+  "generated": "2026-08-11T00:50:38.498Z",
   "counts": {
-    "total": 487,
+    "total": 490,
     "byStatus": {
-      "done": 458,
-      "blocked": 6,
+      "done": 459,
+      "blocked": 7,
       "dropped": 9,
-      "active": 7,
+      "active": 8,
       "review": 2,
       "archived": 4,
       "triaged": 1
     },
     "byType": {
-      "research": 75,
-      "experiment": 82,
+      "research": 77,
+      "experiment": 83,
       "infra": 105,
       "maintenance": 203,
       "content": 4,
@@ -48,6 +48,68 @@
         "tutor-stub",
         "guards"
       ]
+    },
+    {
+      "id": "adaptive-warrant-contract-redesign",
+      "title": "Adaptive warrant gate: expected-uptake and policy-termination contracts",
+      "status": "active",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-10",
+      "updated": "2026-08-10",
+      "verification": "Each action family exposes a typed expected learner response, deadline, success, defeat, and expiry/exit transition; successful repair exits and unresolved evidence requests have live/offline parity tests; a newly generated zero-overlap two-reader corpus passes a predeclared decision-quality gate before any downstream scale-up; and the next comparison controls model-draw variance through frozen-prefix replay or explicit replicated draws.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "docs/adaptation-refinement/remaining-next-steps.md",
+          "docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md",
+          "docs/adaptation-refinement/baseline-comparison-design.md"
+        ],
+        "items": [
+          "adaptive-warrant-baseline-study"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "warrant-gate",
+        "expected-uptake",
+        "counterfactual-replay"
+      ],
+      "branch": "adaptation-refinement"
+    },
+    {
+      "id": "adaptive-warrant-public-obligation-ledger-and-inquiry-termin",
+      "title": "Adaptive warrant: public obligation ledger and inquiry termination",
+      "status": "active",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-10",
+      "updated": "2026-08-11",
+      "verification": "A public-obligation ledger persists named tutor-directed requests across family changes and distinguishes them from learner-proposed tests; inquiry completion can license close_inquiry from public evidence rather than turn number; live/offline parity tests cover creation, satisfaction, expiry, and closure; a separately frozen targeted challenge is used only to diagnose and repair typed mechanism failures; and a later representative natural- prevalence two-reader corpus alone passes the predeclared decision, divergence, successor, diligent-control, support, and parity thresholds before any outcome comparison resumes. Live mechanism execution additionally requires a digest-bound authorization for a clean committed 40-character HEAD, the recursive source closure, the named destination, and the declared private prompt-payload scope; sealed children, a 64-call dialogue cap, wrapper/native CLI fingerprints, opaque blind IDs, strict V4 responses, and deterministic keyed reader-batch assembly must validate before scoring.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": [
+          "docs/adaptation-refinement/remaining-next-steps.md",
+          "docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md",
+          "docs/adaptation-refinement/gold-annotations-first-corpus.md"
+        ],
+        "items": [
+          "adaptive-warrant-contract-redesign"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "warrant-gate",
+        "commitment-ledger",
+        "inquiry-completion"
+      ],
+      "branch": "adaptation-refinement"
     },
     {
       "id": "codebase-refactoring-program",
@@ -367,33 +429,6 @@
       ]
     },
     {
-      "id": "adaptive-register-switching",
-      "title": "Does switching into an edged register at the right moment help?",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P3",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-09",
-      "updated": "2026-08-09",
-      "verification": "Design is a DRAFT pre-registration only — no apparatus, no plan hash, nothing bought. Freeze requires the exact power table, the cell-scoped router-menu change built and tested, and operator sign-off on the row count.",
-      "claim_status": "exploratory",
-      "depends_on": [
-        "register-mock-praise-probe"
-      ],
-      "links": {
-        "notes": [
-          "notes/2026-08-09-adaptive-register-switching-prereg-draft.md"
-        ]
-      },
-      "tags": [
-        "register",
-        "manner",
-        "router",
-        "adaptivity"
-      ]
-    },
-    {
       "id": "a1-human-learner-validation",
       "title": "Human-learner validation pilot (real learning gains)",
       "status": "blocked",
@@ -593,6 +628,37 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
+    },
+    {
+      "id": "adaptive-register-switching",
+      "title": "Does switching into an edged register at the right moment help?",
+      "status": "blocked",
+      "type": "experiment",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "verification": "Frozen plan, router seam, cells, runner, and fail-closed report validate; Stage 1 completes only when the approved 10-row adaptive pilot has a complete measures 1-4 report and its pass/kill decision is recorded.",
+      "blocked_by": "Explicit operator approval of frozen Stage-1 plan SHA",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "register-mock-praise-probe"
+      ],
+      "links": {
+        "notes": [
+          "notes/2026-08-09-adaptive-register-switching-prereg-draft.md"
+        ],
+        "exports": [
+          "exports/adaptive-register-switching/plan.json"
+        ]
+      },
+      "tags": [
+        "register",
+        "manner",
+        "router",
+        "adaptivity"
+      ]
     },
     {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
@@ -1025,6 +1091,38 @@
           460
         ]
       }
+    },
+    {
+      "id": "adaptive-warrant-baseline-study",
+      "title": "Adaptive warrant gate: paired baseline comparison",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-10",
+      "updated": "2026-08-10",
+      "verification": "Complete: 45/45 valid n=5 sessions and 360/360 learner-analysis calls; two independent primary annotations plus a zero-overlap fresh holdout are hash-frozen and scored; the candidate repair failed fresh validation and was reverted; inert-observe variance is reported; and the n=10 stop decision is recorded.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": [
+          "docs/adaptation-refinement/remaining-next-steps.md",
+          "docs/adaptation-refinement/baseline-comparison-design.md",
+          "docs/adaptation-refinement/gold-annotations-first-corpus.md",
+          "docs/adaptation-refinement/semantic-audit-and-shadow-notes.md"
+        ],
+        "items": [
+          "adaptive-warrant-contract-redesign"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "warrant-gate",
+        "baseline",
+        "decision-quality"
+      ],
+      "branch": "adaptation-refinement"
     },
     {
       "id": "admin-chat-drama-launcher-simplification",

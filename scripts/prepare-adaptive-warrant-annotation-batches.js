@@ -3,7 +3,7 @@
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { parseArgs } from 'node:util';
+import { isDeepStrictEqual, parseArgs } from 'node:util';
 
 import {
   ADAPTIVE_WARRANT_ANNOTATION_MIN_NOTE_CHARACTERS,
@@ -126,6 +126,115 @@ function responseTemplate() {
   };
 }
 
+function divergenceResponseSchema() {
+  return {
+    type: 'object',
+    additionalProperties: false,
+    required: ['interpretation', 'magnitude', 'persistence', 'note'],
+    properties: {
+      interpretation: { enum: ['aligned', 'productive', 'stalled', 'unsafe', 'uncertain'] },
+      magnitude: { enum: ['none', 'low', 'moderate', 'high', 'uncertain'] },
+      persistence: { enum: ['none', 'single_turn', 'sustained', 'uncertain'] },
+      note: { type: 'string', minLength: ADAPTIVE_WARRANT_ANNOTATION_MIN_NOTE_CHARACTERS },
+    },
+  };
+}
+
+function caseResponseSchema() {
+  return {
+    type: 'object',
+    additionalProperties: false,
+    required: RESPONSE_CASE_FIELDS,
+    properties: {
+      speech_act: {
+        enum: [
+          'tutor_directed_public_result_request',
+          'learner_proposed_test',
+          'criterion_question',
+          'tutor_selection_request',
+          'learner_record_entry_request',
+          'withdrawal',
+          'transfer_to_learner',
+          'other',
+          'uncertain',
+        ],
+      },
+      open_obligation_source_turns: {
+        type: 'array',
+        items: { type: 'integer', minimum: 1 },
+      },
+      obligation_state: {
+        enum: ['none', 'open', 'overdue', 'deferred', 'satisfied', 'withdrawn_or_transferred', 'uncertain'],
+      },
+      inquiry_state: { enum: ['complete', 'incomplete', 'uncertain'] },
+      commitment_transition_warranted: { enum: ['yes', 'no', 'uncertain'] },
+      current_candidate_override_required: { enum: ['yes', 'no', 'uncertain'] },
+      primary_warrant_basis: {
+        enum: [
+          'immediate_repair',
+          'public_obligation',
+          'inquiry_completion',
+          'action_contract',
+          'register_or_accumulated_trouble',
+          'none',
+          'uncertain',
+        ],
+      },
+      recommended_action_family: { type: 'string', minLength: 1 },
+      note: { type: 'string', minLength: ADAPTIVE_WARRANT_ANNOTATION_MIN_NOTE_CHARACTERS },
+      divergence_by_dimension: {
+        type: 'object',
+        additionalProperties: false,
+        required: ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS,
+        properties: Object.fromEntries(
+          ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS.map((dimension) => [
+            dimension,
+            { $ref: '#/$defs/divergence' },
+          ]),
+        ),
+      },
+    },
+  };
+}
+
+export function buildAdaptiveWarrantAnnotationOutputSchema({
+  readerId,
+  batchId,
+  studyId,
+  corpusSha256,
+  requiredSampleIds,
+} = {}) {
+  exactUniqueIds(requiredSampleIds, 'requiredSampleIds');
+  for (const [label, value] of Object.entries({ readerId, batchId, studyId, corpusSha256 })) {
+    if (typeof value !== 'string' || !value.trim()) throw new Error(`${label} must be a non-empty string`);
+  }
+  return {
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    type: 'object',
+    additionalProperties: false,
+    required: BATCH_RESPONSE_FIELDS,
+    properties: {
+      schema: { enum: [ADAPTIVE_WARRANT_ANNOTATION_BATCH_RESPONSE_SCHEMA] },
+      reader_id: { enum: [readerId] },
+      batch_id: { enum: [batchId] },
+      study_id: { enum: [studyId] },
+      corpus_sha256: { enum: [corpusSha256] },
+      cases_by_sample_id: {
+        type: 'object',
+        additionalProperties: false,
+        required: requiredSampleIds,
+        properties: Object.fromEntries(
+          requiredSampleIds.map((sampleId) => [sampleId, { $ref: '#/$defs/case' }]),
+        ),
+      },
+    },
+    $defs: {
+      case: caseResponseSchema(),
+      divergence: divergenceResponseSchema(),
+    },
+  };
+}
+
 function validateChallengeSupportPlan({ plan, corpus, corpusSha256 }) {
   exactFields(plan, ['schema', 'study_id', 'corpus_sha256', 'strata'], 'challenge support plan');
   if (plan.schema !== ADAPTIVE_WARRANT_CHALLENGE_SUPPORT_PLAN_SCHEMA) {
@@ -202,6 +311,13 @@ export function prepareAdaptiveWarrantAnnotationBatches({
       const requiredSampleIds = sampleIds.slice(offset, offset + batchSize);
       const batchNumber = batches.length + 1;
       const batchId = `${readerId}-batch-${String(batchNumber).padStart(2, '0')}`;
+      const outputSchema = buildAdaptiveWarrantAnnotationOutputSchema({
+        readerId,
+        batchId,
+        studyId: corpus.study_id,
+        corpusSha256,
+        requiredSampleIds,
+      });
       const packet = {
         schema: ADAPTIVE_WARRANT_ANNOTATION_READER_PACKET_SCHEMA,
         reader_id: readerId,
@@ -213,6 +329,7 @@ export function prepareAdaptiveWarrantAnnotationBatches({
         instructions: [
           'Work independently and use only this handbook and the supplied public decision-time cases.',
           'Return one JSON object only, using the exact response envelope and every required sample-id key.',
+          `The handbook's V4 envelope describes the assembled reader artifact, not this batch response. For this batch, use schema ${ADAPTIVE_WARRANT_ANNOTATION_BATCH_RESPONSE_SCHEMA} and exactly the six top-level fields in response_template; do not add annotator_id or annotation_run_id.`,
           'Do not use tools, external sources, private predictions, technical traces, or another reader response.',
           `Every case-level and dimension note must contain at least ${ADAPTIVE_WARRANT_ANNOTATION_MIN_NOTE_CHARACTERS} characters of case-specific public evidence.`,
         ],
@@ -227,14 +344,24 @@ export function prepareAdaptiveWarrantAnnotationBatches({
           corpus_sha256: corpusSha256,
           cases_by_sample_id: Object.fromEntries(requiredSampleIds.map((id) => [id, responseTemplate()])),
         },
+        response_json_schema: outputSchema,
       };
       const packetPath = path.join(resolvedOutputDir, 'packets', readerId, `${batchId}.packet.json`);
+      const outputSchemaPath = path.join(
+        resolvedOutputDir,
+        'packets',
+        readerId,
+        `${batchId}.response.schema.json`,
+      );
+      writeJson(outputSchemaPath, outputSchema);
       writeJson(packetPath, packet);
       batches.push({
         batch_id: batchId,
         required_sample_ids: requiredSampleIds,
         packet_path: packetPath,
         packet_sha256: fileSha256(packetPath),
+        output_schema_path: outputSchemaPath,
+        output_schema_sha256: fileSha256(outputSchemaPath),
         expected_response_filename: `${batchId}.response.json`,
       });
     }
@@ -305,6 +432,7 @@ export function prepareAdaptiveWarrantAnnotationBatches({
           reader_id: reader.reader_id,
           batch_id: batch.batch_id,
           sha256: batch.packet_sha256,
+          output_schema_sha256: batch.output_schema_sha256,
         })),
       ),
     },
@@ -367,6 +495,16 @@ export function assembleAdaptiveWarrantAnnotationResponse({
   const inputBatches = [];
 
   for (const batch of reader.batches) {
+    if (fileSha256(batch.packet_path) !== batch.packet_sha256) {
+      throw new Error(`batch reader packet ${batch.batch_id} drift`);
+    }
+    if (fileSha256(batch.output_schema_path) !== batch.output_schema_sha256) {
+      throw new Error(`batch response schema ${batch.batch_id} drift`);
+    }
+    const packet = readJson(batch.packet_path);
+    if (!isDeepStrictEqual(packet.response_json_schema, readJson(batch.output_schema_path))) {
+      throw new Error(`batch response schema ${batch.batch_id} is not bound by its reader packet`);
+    }
     const batchPath = path.join(path.resolve(responseDir), batch.expected_response_filename);
     const response = readJson(batchPath);
     exactFields(response, BATCH_RESPONSE_FIELDS, `batch response ${batch.batch_id}`);
@@ -484,8 +622,23 @@ export function validateAdaptiveWarrantAnnotationAuthorizationRequest({ requestP
       reader_id: reader.reader_id,
       batch_id: batch.batch_id,
       sha256: batch.packet_sha256,
+      output_schema_sha256: batch.output_schema_sha256,
     })),
   );
+  for (const reader of manifest.readers) {
+    for (const batch of reader.batches) {
+      if (fileSha256(batch.packet_path) !== batch.packet_sha256) {
+        throw new Error(`annotation authorization request packet drift: ${batch.batch_id}`);
+      }
+      if (fileSha256(batch.output_schema_path) !== batch.output_schema_sha256) {
+        throw new Error(`annotation authorization request output schema drift: ${batch.batch_id}`);
+      }
+      const packet = readJson(batch.packet_path);
+      if (!isDeepStrictEqual(packet.response_json_schema, readJson(batch.output_schema_path))) {
+        throw new Error(`annotation authorization request unbound output schema: ${batch.batch_id}`);
+      }
+    }
+  }
   if (JSON.stringify(request.bindings.reader_packets) !== JSON.stringify(expectedPackets)) {
     throw new Error('annotation authorization request packet binding mismatch');
   }

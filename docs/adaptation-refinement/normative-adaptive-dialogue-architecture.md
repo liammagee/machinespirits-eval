@@ -507,7 +507,7 @@ Evaluate decision quality and downstream dialogue effects separately.
 | 2 — warrant evaluation | three calibration gates complete; V4 successor mechanism gate ready | Typed contracts were tested on a newly generated zero-overlap 18-case corpus. Fourteen hard consensuses yielded precision 0.500, recall 0.286, accuracy 0.500, below the frozen gate. A later context audit invalidated its two `close_inquiry` rows as terminal gold; a context-complete all-turn V4 protocol now adds independent per-dimension divergence judgments and gates to the opaque blind mechanism protocol. |
 | 3 — figure policy | typed contracts, persistent public obligations, and terminal transitions implemented; validation open | All 13 families declare expected uptake and lifecycle transitions. A separate cross-family public-obligation ledger, typed speech acts, target-specific answer directive, and inquiry-completion object now feed the shared policy. Launch, child-seal, replay, payload, and finite-budget integrity are implemented, but this is still not a validated policy. |
 | 4 — register realization | runtime bridge complete; separate evaluation open | Active mode can override family and stance while the frontier model realizes the turn. Figure appropriateness and realization fidelity have not yet been independently scored in this study. |
-| 5 — baseline experiments | n=5 pilot complete; six mechanism packets burned; seventh validation next | The sixth 24-dialogue run reached 22/24 valid children and 176/176 structured parity. Two false learner-record obligations and five bounded realization-audit false negatives require a prospective clean packet before independent V4 annotation; no downstream outcome comparison is licensed. |
+| 5 — baseline experiments | runtime boundary complete; semantic validation and collection instrument open | The seventh 24-dialogue run reached 24/24 valid children, 192/192 structured parity, and zero delivery mismatch, but its representative V4 semantic gate failed. A separately authored 24-case challenge is diagnostic-only. Its first reader attempt was burned at an incompatible batch/V4 envelope boundary before scoring; no downstream outcome comparison is licensed. |
 
 The architecture is therefore implemented far enough to test the design's
 central separation—diagnosis, warrant, repair policy, realization, and outcome—
@@ -793,6 +793,17 @@ minimum. It may canonicalize only `none/hold` and `uncertain/uncertain` family
 pairs and writes every edit to an audit. It cannot manufacture a missing note,
 positive basis, or successor family. This removes annotation plumbing as a
 latent seventh source of divergence.
+
+The first targeted-challenge collection showed that keyed objects alone are
+not sufficient. The embedded handbook names the final assembled V4 envelope,
+while each bounded model call must return a batch envelope. Luna alternated
+between those two valid-looking structures. Every prepared batch therefore
+now carries one packet-specific JSON schema that fixes the batch schema
+literal, reader, batch, study, corpus hash, exact opaque IDs, row fields, and
+dimension fields. The same schema is emitted as a separate CLI artifact,
+embedded inside the reader packet, hash-bound by the manifest and authorization
+request, and drift-checked again by the assembler. Reader identity and run ID
+are added only when validated batches are assembled into the final V4 file.
 
 The first V4 result also narrows two normative definitions. Conceptual
 alignment permits explicit analytic testing while the record is flat; a public

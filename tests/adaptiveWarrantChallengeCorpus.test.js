@@ -12,6 +12,7 @@ import {
 } from '../scripts/build-adaptive-warrant-challenge-corpus.js';
 import {
   ADAPTIVE_WARRANT_ANNOTATION_AUTHORIZATION_REQUEST_SCHEMA,
+  ADAPTIVE_WARRANT_ANNOTATION_BATCH_RESPONSE_SCHEMA,
   ADAPTIVE_WARRANT_CHALLENGE_DIAGNOSTIC_MINIMA,
   prepareAdaptiveWarrantAnnotationBatches,
   validateAdaptiveWarrantAnnotationAuthorizationRequest,
@@ -101,6 +102,29 @@ test('challenge freeze is gate-ineligible, drift-checked, and produces a digest-
     assert.equal(prepared.authorizationRequest.call_budget.maximum_calls, 8);
     assert.equal(prepared.authorizationRequest.bindings.reader_packets.length, 6);
     assert.match(prepared.authorizationRequest.approval_digest, /^[0-9a-f]{64}$/u);
+    const firstBatch = prepared.manifest.readers[0].batches[0];
+    const firstPacket = JSON.parse(fs.readFileSync(firstBatch.packet_path, 'utf8'));
+    const firstOutputSchema = JSON.parse(fs.readFileSync(firstBatch.output_schema_path, 'utf8'));
+    assert.deepEqual(firstPacket.response_json_schema, firstOutputSchema);
+    assert.deepEqual(firstOutputSchema.properties.schema.enum, [ADAPTIVE_WARRANT_ANNOTATION_BATCH_RESPONSE_SCHEMA]);
+    assert.deepEqual(firstOutputSchema.properties.reader_id.enum, ['reader-a']);
+    assert.deepEqual(firstOutputSchema.properties.batch_id.enum, ['reader-a-batch-01']);
+    assert.deepEqual(firstOutputSchema.properties.cases_by_sample_id.required, firstBatch.required_sample_ids);
+    assert.deepEqual(Object.keys(firstOutputSchema.properties.cases_by_sample_id.properties), firstBatch.required_sample_ids);
+    assert.equal(firstOutputSchema.properties.cases_by_sample_id.additionalProperties, false);
+    assert.doesNotMatch(JSON.stringify(firstOutputSchema.properties), /annotator_id|annotation_run_id/u);
+    assert.ok(
+      firstPacket.instructions.some(
+        (instruction) =>
+          instruction.includes('assembled reader artifact') &&
+          instruction.includes(ADAPTIVE_WARRANT_ANNOTATION_BATCH_RESPONSE_SCHEMA),
+      ),
+    );
+    assert.match(firstBatch.output_schema_sha256, /^[0-9a-f]{64}$/u);
+    assert.equal(
+      prepared.authorizationRequest.bindings.reader_packets[0].output_schema_sha256,
+      firstBatch.output_schema_sha256,
+    );
     assert.deepEqual(
       validateAdaptiveWarrantAnnotationAuthorizationRequest({
         requestPath: prepared.authorizationRequestPath,
@@ -113,6 +137,18 @@ test('challenge freeze is gate-ineligible, drift-checked, and produces a digest-
         maximum_calls: 8,
       },
     );
+
+    const frozenOutputSchema = fs.readFileSync(firstBatch.output_schema_path, 'utf8');
+    fs.appendFileSync(firstBatch.output_schema_path, '\n');
+    assert.throws(
+      () =>
+        validateAdaptiveWarrantAnnotationAuthorizationRequest({
+          requestPath: prepared.authorizationRequestPath,
+          manifestPath: prepared.manifestPath,
+        }),
+      /output schema drift/u,
+    );
+    fs.writeFileSync(firstBatch.output_schema_path, frozenOutputSchema);
 
     fs.appendFileSync(frozen.corpusPath, '\n');
     assert.throws(
