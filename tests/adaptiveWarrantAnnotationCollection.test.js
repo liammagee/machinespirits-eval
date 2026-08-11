@@ -31,6 +31,14 @@ function corpus(studyId, count, marker) {
     cases: Array.from({ length: count }, (_, index) => ({
       sample_id: `${marker}-${String(index + 1).padStart(3, '0')}`,
       current_learner_turn: { turn: 1, text: `${marker} public learner evidence ${index + 1}` },
+      normative_action_contract:
+        index === 0
+          ? {
+              success_transition: 'renew',
+              defeat_transition: 'answer_accountably',
+              expiry_transition: 'ground_in_material',
+            }
+          : null,
     })),
   };
 }
@@ -94,6 +102,25 @@ test('reader packets use exact sample-id maps and assembly applies only declared
     assert.match(
       firstPacket.response_json_schema.$defs.case.properties.primary_warrant_basis.description,
       /Judge the raw public contract independently/u,
+    );
+    assert.deepEqual(firstPacket.cases_by_sample_id['natural-001'].declared_action_contract_successor_families, [
+      'answer_accountably',
+      'ground_in_material',
+    ]);
+    assert.ok(
+      firstPacket.instructions.some((instruction) =>
+        instruction.includes('response schema enforces this pairing'),
+      ),
+    );
+    assert.deepEqual(
+      firstPacket.response_json_schema.$defs.case_action_contract_1.properties.recommended_action_family.enum,
+      ['answer_accountably', 'ground_in_material'],
+    );
+    assert.equal(
+      firstPacket.response_json_schema.$defs.case_non_action_contract.properties.primary_warrant_basis.enum.includes(
+        'action_contract',
+      ),
+      false,
     );
 
     const reader = prepared.manifest.readers[0];

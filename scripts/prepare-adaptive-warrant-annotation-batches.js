@@ -147,7 +147,21 @@ const ADAPTIVE_WARRANT_ANNOTATION_ACTION_FAMILIES = Object.freeze([
   'uncertain',
 ]);
 
-function caseResponseSchema(allowedActionFamilies) {
+const ADAPTIVE_WARRANT_PRIMARY_BASES = Object.freeze([
+  'immediate_repair',
+  'public_obligation',
+  'inquiry_completion',
+  'candidate_safety',
+  'action_contract',
+  'register_or_accumulated_trouble',
+  'none',
+  'uncertain',
+]);
+
+function caseResponseSchema(
+  allowedActionFamilies,
+  { allowedPrimaryWarrantBases = ADAPTIVE_WARRANT_PRIMARY_BASES, recommendedFamilyDescription = null } = {},
+) {
   return {
     type: 'object',
     additionalProperties: false,
@@ -185,22 +199,14 @@ function caseResponseSchema(allowedActionFamilies) {
       },
       current_candidate_override_required: { enum: ['yes', 'no', 'uncertain'] },
       primary_warrant_basis: {
-        enum: [
-          'immediate_repair',
-          'public_obligation',
-          'inquiry_completion',
-          'candidate_safety',
-          'action_contract',
-          'register_or_accumulated_trouble',
-          'none',
-          'uncertain',
-        ],
+        enum: allowedPrimaryWarrantBases,
         description:
           'Judge the raw public contract independently. Use action_contract only when public evidence requires one of its declared successor families; a successful renewal that retains the held family is not a warrant.',
       },
       recommended_action_family: {
         enum: allowedActionFamilies,
         description:
+          recommendedFamilyDescription ||
           'Choose one exact declared action family. Warrant-basis names such as immediate_repair are not action families.',
       },
       note: { type: 'string', minLength: ADAPTIVE_WARRANT_ANNOTATION_MIN_NOTE_CHARACTERS },
@@ -226,12 +232,39 @@ export function buildAdaptiveWarrantAnnotationOutputSchema({
   corpusSha256,
   requiredSampleIds,
   allowedActionFamilies = ADAPTIVE_WARRANT_ANNOTATION_ACTION_FAMILIES,
+  actionContractSuccessorsBySampleId = null,
 } = {}) {
   exactUniqueIds(requiredSampleIds, 'requiredSampleIds');
   exactUniqueIds(allowedActionFamilies, 'allowedActionFamilies');
   for (const [label, value] of Object.entries({ readerId, batchId, studyId, corpusSha256 })) {
     if (typeof value !== 'string' || !value.trim()) throw new Error(`${label} must be a non-empty string`);
   }
+  const contractSuccessors = Object.fromEntries(
+    requiredSampleIds.map((sampleId) => {
+      const successors = actionContractSuccessorsBySampleId?.[sampleId] || [];
+      exactUniqueIds(successors, `action-contract successors for ${sampleId}`);
+      if (successors.some((family) => !allowedActionFamilies.includes(family))) {
+        throw new Error(`action-contract successors for ${sampleId} contain an undeclared family`);
+      }
+      return [sampleId, successors];
+    }),
+  );
+  const nonContractBases = ADAPTIVE_WARRANT_PRIMARY_BASES.filter((basis) => basis !== 'action_contract');
+  const caseDefinitions = Object.fromEntries(
+    requiredSampleIds.flatMap((sampleId, index) => {
+      const successors = contractSuccessors[sampleId];
+      if (!successors.length) return [];
+      return [
+        [
+          `case_action_contract_${index + 1}`,
+          caseResponseSchema(successors, {
+            allowedPrimaryWarrantBases: ['action_contract'],
+            recommendedFamilyDescription: `For ${sampleId}, action_contract permits only the public contract successor families: ${successors.join(', ')}.`,
+          }),
+        ],
+      ];
+    }),
+  );
   return {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
     type: 'object',
@@ -248,15 +281,40 @@ export function buildAdaptiveWarrantAnnotationOutputSchema({
         additionalProperties: false,
         required: requiredSampleIds,
         properties: Object.fromEntries(
-          requiredSampleIds.map((sampleId) => [sampleId, { $ref: '#/$defs/case' }]),
+          requiredSampleIds.map((sampleId, index) => {
+            const successors = contractSuccessors[sampleId];
+            return [
+              sampleId,
+              successors.length
+                ? {
+                    anyOf: [
+                      { $ref: '#/$defs/case_non_action_contract' },
+                      { $ref: `#/$defs/case_action_contract_${index + 1}` },
+                    ],
+                  }
+                : { $ref: '#/$defs/case_non_action_contract' },
+            ];
+          }),
         ),
       },
     },
     $defs: {
       case: caseResponseSchema(allowedActionFamilies),
+      case_non_action_contract: caseResponseSchema(allowedActionFamilies, {
+        allowedPrimaryWarrantBases: nonContractBases,
+      }),
+      ...caseDefinitions,
       divergence: divergenceResponseSchema(),
     },
   };
+}
+
+function declaredActionContractSuccessorFamilies(row, allowedActionFamilies) {
+  const contract = row?.normative_action_contract;
+  if (!contract || typeof contract !== 'object' || Array.isArray(contract)) return [];
+  return [...new Set([contract.success_transition, contract.defeat_transition, contract.expiry_transition])].filter(
+    (family) => allowedActionFamilies.includes(family),
+  );
 }
 
 function validateChallengeSupportPlan({ plan, corpus, corpusSha256 }) {
@@ -335,6 +393,15 @@ export function prepareAdaptiveWarrantAnnotationBatches({
       const requiredSampleIds = sampleIds.slice(offset, offset + batchSize);
       const batchNumber = batches.length + 1;
       const batchId = `${readerId}-batch-${String(batchNumber).padStart(2, '0')}`;
+      const actionContractSuccessorsBySampleId = Object.fromEntries(
+        requiredSampleIds.map((sampleId) => [
+          sampleId,
+          declaredActionContractSuccessorFamilies(
+            corpusById.get(sampleId),
+            corpus.allowed_recommended_action_families || ADAPTIVE_WARRANT_ANNOTATION_ACTION_FAMILIES,
+          ),
+        ]),
+      );
       const outputSchema = buildAdaptiveWarrantAnnotationOutputSchema({
         readerId,
         batchId,
@@ -342,6 +409,7 @@ export function prepareAdaptiveWarrantAnnotationBatches({
         corpusSha256,
         requiredSampleIds,
         allowedActionFamilies: corpus.allowed_recommended_action_families,
+        actionContractSuccessorsBySampleId,
       });
       const packet = {
         schema: ADAPTIVE_WARRANT_ANNOTATION_READER_PACKET_SCHEMA,
@@ -366,6 +434,7 @@ export function prepareAdaptiveWarrantAnnotationBatches({
           'On the epistemic axis, an unsupported assertion or premature whole-inquiry claim is unsafe; reserve stalled for dropped or unintegrated evidence without an unsupported or premature claim.',
           'An immediate repair basis outranks an accompanying public obligation: when repair_explanation replaces the held family, commitment_transition_warranted is yes even though the result obligation also needs a response.',
           'Judge contract success, defeat, or expiry independently from the raw normative_action_contract and public evidence; no gate transition or prediction is supplied. Use action_contract only when the judgment requires one of its declared successor families. A successful renew that retains the held family is not a warrant; use none/hold when no higher basis applies.',
+          'Each case supplies declared_action_contract_successor_families derived only from its raw public contract. If and only if primary_warrant_basis is action_contract, recommended_action_family must be one exact value from that case-specific list; the response schema enforces this pairing.',
           'Use aligned when the dimensional norm is met: record growth or explicit analytic work is conceptual alignment, and voluntary agency is engagement alignment. Productive means a useful departure from the norm, not merely a good move.',
           'For strategy exhaustion, follow the supplied contract result: defeat or expiry with revision_warranted=true is stalled even when the current learner wording sounds active; a live or successful contract is aligned unless separate strategy evidence defeats it.',
           'Public-obligation fulfilment can override the current candidate but does not by itself change the held pedagogical commitment. A differing terminal or pedagogical successor does.',
@@ -376,7 +445,15 @@ export function prepareAdaptiveWarrantAnnotationBatches({
         handbook_markdown: handbookMarkdown,
         allowed_recommended_action_families: corpus.allowed_recommended_action_families,
         required_sample_ids: requiredSampleIds,
-        cases_by_sample_id: Object.fromEntries(requiredSampleIds.map((id) => [id, corpusById.get(id)])),
+        cases_by_sample_id: Object.fromEntries(
+          requiredSampleIds.map((id) => [
+            id,
+            {
+              ...corpusById.get(id),
+              declared_action_contract_successor_families: actionContractSuccessorsBySampleId[id],
+            },
+          ]),
+        ),
         response_template: {
           schema: ADAPTIVE_WARRANT_ANNOTATION_BATCH_RESPONSE_SCHEMA,
           reader_id: readerId,

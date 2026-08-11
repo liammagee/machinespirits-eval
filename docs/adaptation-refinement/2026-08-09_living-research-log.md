@@ -1438,3 +1438,26 @@ family-specific first sentence, every safely terminable active family has a
 deterministic visibility regression, and an exact required question that is the
 full response suffix remains the terminal surface even when it contains quoted
 sentence punctuation. A new clean matrix is required before readers.
+
+## Progress Update — 11 August 2026, representative runtime passed; reader contract-family schema tightened
+
+The clean `2fa92e208d576d144b6036c29add62c8cf4eab34` representative matrix passed
+all execution checks: 24/24 valid eight-turn dialogues, 192 learner-analysis
+calls with zero errors, exact 192/192 structured live/replay parity, and exact
+192/192 delivery application with zero issues. The resulting 96-case natural
+frame froze with zero overlap against all three declared prior corpora.
+
+Reader A then completed all twelve eight-case Luna calls under the bounded
+24-call authorization. Assembly failed closed before private-key access: one of
+eight reader-labelled `action_contract` cases selected `clarify_distinction`,
+outside that case's raw public successor set of `answer_accountably` and
+`ground_in_material`. Seven other contract cases respected their public
+successors. These responses are burned and unscored; reader B was not launched.
+
+The prospective instrument now derives a visible case-specific successor list
+from the raw public contract and binds `action_contract` to that list in the
+structured response schema. Non-contract bases retain the full family
+vocabulary. This removes a response-envelope confound without exposing the
+private gate transition or changing the frozen decision thresholds. A fresh
+clean matrix and two fresh readers remain required before the representative
+gate can be scored.

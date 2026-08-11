@@ -1156,3 +1156,31 @@ The remaining sequence is:
    transition private and exposes only the raw normative contract;
 4. collect two fresh independent readers and apply the unchanged scorer; and
 5. run no downstream outcome comparison unless that representative gate passes.
+
+## Current restart boundary after case-specific contract-family enforcement
+
+The clean `2fa92e208d576d144b6036c29add62c8cf4eab34` matrix passed the complete
+execution boundary: 24/24 valid child seals, 192/192 learner-analysis calls,
+192/192 structured live/replay parity, and 192/192 delivery application with
+zero issues. Its 96-case natural frame froze with zero overlap against every
+declared earlier corpus.
+
+Reader A completed twelve schema-valid batches, but assembly stopped before
+private-key access. One of eight `action_contract` rows selected
+`clarify_distinction` even though that case's raw public contract declared only
+`answer_accountably` and `ground_in_material` as revising successor families.
+The other seven contract rows used declared successors. The entire reader
+packet is burned and unscored; reader B was not launched.
+
+Prospectively each blinded case exposes a mechanically derived
+`declared_action_contract_successor_families` list, and the structured response
+schema separates non-contract bases from an `action_contract` branch whose
+family enum is limited to that exact public list. The remaining sequence is:
+
+1. verify, commit, and push the case-specific schema repair;
+2. freeze a new clean representative matrix and require the same 24/24,
+   192/192 parity, and 192/192 delivery boundary;
+3. collect two fresh independent readers under a new digest-bound 24-call
+   authorization and require both to assemble without content repair;
+4. apply the unchanged representative scorer; and
+5. run no downstream outcome comparison unless the representative gate passes.
