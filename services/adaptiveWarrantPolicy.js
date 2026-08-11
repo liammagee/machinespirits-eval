@@ -15,7 +15,7 @@
  * layer owns that).
  */
 
-export const ADAPTIVE_WARRANT_POLICY_SCHEMA = 'machinespirits.adaptation-refinement.repair-policy.v2';
+export const ADAPTIVE_WARRANT_POLICY_SCHEMA = 'machinespirits.adaptation-refinement.repair-policy.v3';
 
 const CONTRACT_SUCCESSOR_STANCES = Object.freeze({
   answer_accountably: 'plain',
@@ -72,6 +72,8 @@ export function recommendRepairPolicy({
       `supply or validly defer ${blockingObligation.id}: ${blockingObligation.target.kind}`,
       {
         stanceHint: 'precise',
+        decisionKind: 'public_obligation_fulfilment',
+        review: 'response_level_fulfilment',
         obligationDirective: buildAdaptiveWarrantObligationDirective(publicObligation),
       },
     );
@@ -97,6 +99,7 @@ export function recommendRepairPolicy({
         {
           stanceHint: 'precise',
           decisionKind: 'candidate_safety_override',
+          review: 'current_candidate_override',
         },
       );
     }
@@ -106,7 +109,11 @@ export function recommendRepairPolicy({
       reanchor
         ? 'closure is unsafe while already-public evidence is unintegrated or has dropped from the active record'
         : 'closure is unsafe while the authored release scope is unknown or still contains licensed evidence',
-      { stanceHint: reanchor ? 'warm' : 'precise', decisionKind: 'candidate_safety_override' },
+      {
+        stanceHint: reanchor ? 'warm' : 'precise',
+        decisionKind: 'candidate_safety_override',
+        review: 'current_candidate_override',
+      },
     );
   }
 
@@ -178,13 +185,14 @@ export function recommendRepairPolicy({
       registerRevision = false,
       obligationDirective = null,
       decisionKind = 'pedagogical_commitment_transition',
+      review = null,
     } = {},
   ) {
     return {
       schema: ADAPTIVE_WARRANT_POLICY_SCHEMA,
       family,
       decision_kind: decisionKind,
-      review: strategyInForce === family ? 'persist_with_adjustment' : 'switch',
+      review: review || (strategyInForce === family ? 'persist_with_adjustment' : 'switch'),
       from_family: strategyInForce,
       rationale,
       stance_hint: stanceHint,

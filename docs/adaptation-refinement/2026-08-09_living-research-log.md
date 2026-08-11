@@ -1185,3 +1185,47 @@ instrument. One final clean freeze and independent read must verify the
 measurement repair. If it is coherent, the next inferential step is the
 already-declared fresh 96-case natural-prevalence corpus under unchanged gate
 thresholds. No downstream outcome run is licensed.
+
+## Progress Update — 11 August 2026, reader-backed support is now explicit
+
+The next diagnostic from clean commit
+`6a5074df74bb0e7be6f954f6ab988ad21d64655d` used the full eight-call ceiling
+under digest
+`b9e0b60a4121b3233103984b5a6800386a054a06caff1f42077e714eb50d8db9`.
+Reader B assembled directly. Reader A twice selected `action_contract` where
+the public contract declared no transition; both responses were rejected
+without editing. The final higher-effort retry assembled, leaving two complete
+24-case readers and zero normalization edits.
+
+The repaired typed fields were coherent. Raw warrant agreement was 0.958; 23
+hard consensuses yielded TP=19, TN=4, no false positives or negatives, and
+precision/recall/accuracy of 1.000. Request/proposal macro-F1, obligation
+lifecycle and persistence, inquiry completion, candidate override, and primary
+basis were 1.000. Commitment-transition accuracy was 0.957 and exact successor
+accuracy 0.900. Every divergence interpretation was correct on its hard-
+consensus denominator; component/joint accuracies ranged from 0.909 to 1.000.
+The scorer again emitted `pass_fail_gate=not_applicable`.
+
+The run also showed that authored support is not reader-backed support. The
+private design contained six resolved obligations and two non-aligned cases per
+axis, but hard consensus supplied only four resolutions, zero conceptual
+non-aligned cases, and one strategy-exhaustion case. The dedicated scorer had
+reported these counts without declaring the shortfall. Prospectively it now
+emits a separate `diagnostic_support` result against every frozen minimum while
+remaining structurally incapable of producing gate passage.
+
+The challenge is strengthened without changing gate thresholds: all eight
+proposal cases now contain a resolved obligation, three simple cases carry a
+defeated strategy contract, and three persistence cases use an explicit
+comprehension-repair signal rather than an ambiguous low-agency proxy for
+conceptual failure. Explicit comprehension repair now counts as conceptual
+stall when the learner record remains flat. The packet also states directly
+that contract defeat or expiry governs strategy-exhaustion coding. Finally,
+response-level obligation and candidate-safety policies identify themselves as
+such internally rather than carrying contradictory pedagogical-transition
+metadata.
+
+These prospective changes burn the `6a5074df` diagnostic. The next clean read
+must achieve reader-backed diagnostic support; only then should the fresh
+representative 96-case natural frame be generated. No downstream outcome run
+is licensed.

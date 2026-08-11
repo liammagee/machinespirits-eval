@@ -851,3 +851,28 @@ The remaining sequence is:
 5. obtain two independent labels and apply the unchanged mechanism thresholds
    to that representative corpus alone; and
 6. run no downstream outcome comparison unless the representative gate passes.
+
+## Current restart boundary after the reader-backed support audit
+
+The clean `6a5074df74bb0e7be6f954f6ab988ad21d64655d` diagnostic completed at the
+8/8-call ceiling with two 24-case readers and zero final normalization edits.
+Binary warrant, request/proposal, lifecycle, persistence, completion,
+candidate-override, and primary-basis metrics were all 1.000 on their
+hard-consensus denominators. It remained diagnostic-only.
+
+Its authored support plan did not fully survive independent reading: resolution
+support was 4/6, conceptual non-aligned support 0/2, and strategy-exhaustion
+support 1/2. The scorer now exposes this as `diagnostic_support` rather than
+leaving the shortfall implicit. The prospective challenge adds clear redundant
+resolution, conceptual-repair, and defeated-contract cases; packet guidance and
+policy metadata now preserve the same layer boundaries.
+
+The remaining sequence is:
+
+1. verify, commit, and push the support-reporting and challenge-clarity repair;
+2. freeze and independently annotate the strengthened 24-case diagnostic;
+3. require both typed accuracy and every reader-backed diagnostic-support
+   minimum, while still emitting no gate result;
+4. if supported, freeze the already-predeclared fresh 96-case representative
+   natural frame and apply the unchanged gate to it alone; and
+5. run no downstream outcome comparison unless that representative gate passes.

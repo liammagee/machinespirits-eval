@@ -307,6 +307,8 @@ test('dedicated challenge scorer validates blind readers and never emits a pass-
     assert.equal(scored.artifact.schema, ADAPTIVE_WARRANT_TARGETED_CHALLENGE_SCORE_SCHEMA);
     assert.equal(scored.artifact.gate_eligible, false);
     assert.equal(scored.artifact.pass_fail_gate.status, 'not_applicable');
+    assert.equal(scored.artifact.diagnostic_support.status, 'supported');
+    assert.equal(scored.artifact.diagnostic_support.checks.obligation_resolution.passed, true);
     assert.equal(scored.artifact.score.metrics.totalCases, 24);
     assert.equal(scored.artifact.score.metrics.obligationPersistenceAccuracy, 1);
     assert.equal(Object.hasOwn(scored.artifact, 'decisionGate'), false);

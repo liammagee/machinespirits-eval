@@ -817,6 +817,11 @@ complete inquiries, twelve incomplete inquiries, and two designed non-aligned
 cases per divergence axis. Its private support plan is hash-bound but not sent
 to readers.
 
+The diagnostic score separately checks whether independent hard consensus
+actually realizes each frozen support minimum. Authored support tags are
+construction checks only; they cannot substitute for reader-backed support or
+contribute to the representative gate.
+
 The targeted corpus is a **diagnostic instrument, not a gate corpus**. Its
 labels may expose detector failures and motivate a bounded repair, but neither
 its cases nor its scores may satisfy a pass/fail threshold, estimate prevalence

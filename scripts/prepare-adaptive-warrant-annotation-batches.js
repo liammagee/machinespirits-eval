@@ -358,6 +358,7 @@ export function prepareAdaptiveWarrantAnnotationBatches({
           'For unresolved debt, list every public creation or reminder turn. A resolved obligation remains satisfied or withdrawn_or_transferred at the next decision; none means no obligation occurred.',
           'If a request is answered in tutor turn 1, label the lifecycle satisfied at learner turn 2 with no open source turns; do not reset it to none.',
           'Use aligned when the dimensional norm is met: record growth or explicit analytic work is conceptual alignment, and voluntary agency is engagement alignment. Productive means a useful departure from the norm, not merely a good move.',
+          'For strategy exhaustion, follow the supplied contract result: defeat or expiry with revision_warranted=true is stalled even when the current learner wording sounds active; a live or successful contract is aligned unless separate strategy evidence defeats it.',
           'Public-obligation fulfilment can override the current candidate but does not by itself change the held pedagogical commitment. A differing terminal or pedagogical successor does.',
           'Use action_contract only when the supplied public contract requires a transition, inquiry_completion only for a complete inquiry, candidate_safety for an unsafe close while inquiry is incomplete, and public_obligation only for actionable open or overdue debt.',
           'Do not use tools, external sources, private predictions, technical traces, or another reader response.',

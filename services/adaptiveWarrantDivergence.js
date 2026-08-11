@@ -95,7 +95,7 @@ function conceptualRow({ dagGrowth, turnsSinceDagGrowth, signal }) {
       evidence: [`turns_since_dag_growth:${flatTurns}`, 'learner_signal:engaged_analytic'],
     });
   }
-  const stalled = ['stall', 'low_agency_deferral'].includes(signal?.primary);
+  const stalled = ['repair_request', 'stall', 'low_agency_deferral'].includes(signal?.primary);
   if (!stalled) {
     return row('conceptual', {
       normativeState: 'learner_record_progress_or_explicit_analytic_work',

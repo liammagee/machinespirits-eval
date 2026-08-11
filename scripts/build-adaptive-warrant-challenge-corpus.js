@@ -163,11 +163,11 @@ function resultRequest(target) {
 
 function persistenceSpecs() {
   return RESULT_TARGETS.map((target, index) => {
-    const conceptual = index < 2;
+    const conceptual = index < 3;
     const engagement = index === 4 || index === 5;
     const pacing = index >= 6;
     const currentPrefix = conceptual
-      ? 'Would you decide what I should record?'
+      ? "I don't understand how to use this result."
       : engagement
         ? 'Would you decide what I should do again?'
         : pacing
@@ -223,8 +223,8 @@ function persistenceSpecs() {
 function proposalSpecs() {
   return PROPOSAL_TARGETS.map((proposal, index) => {
     const prior = RESULT_TARGETS[index];
-    const resolved = index < 6;
-    const strategy = index < 2;
+    const resolved = true;
+    const strategy = index < 2 || index === 4;
     const epistemic = index === 2 || index === 3;
     return {
       design_id: `proposal-${String(index + 1).padStart(2, '0')}`,

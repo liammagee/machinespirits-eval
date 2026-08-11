@@ -504,7 +504,7 @@ Evaluate decision quality and downstream dialogue effects separately.
 |---|---|---|
 | 0 — semantic audit | complete | The existing world/DAG, learner board, action-family, stance, and audit surfaces have a grounded reuse/extend/new map. |
 | 1 — trace-only prototype | complete; six-axis validation open | One shared live/offline projection emits explicit aligned or divergent conceptual, interactional, engagement, pacing, epistemic, and strategy-exhaustion rows with magnitude, persistence, interpretation, evidence, and repair-warrant state. |
-| 2 — warrant evaluation | three calibration gates complete; final V4 diagnostic repair in progress | A completed 24-case diagnostic reached 1.000 binary precision/recall and exact request/proposal, persistence, completion, and candidate-override performance, but exposed a missing `candidate_safety` reader basis and residual resolved-lifecycle ambiguity. That challenge remains gate-ineligible; the repaired instrument must be checked once more before the representative 96-case gate. |
+| 2 — warrant evaluation | three calibration gates complete; reader-backed diagnostic support repair in progress | The latest 24-case diagnostic reached 1.000 binary precision/recall and exact request/proposal, persistence, lifecycle, completion, candidate-override, and primary-basis performance. Its authored support plan nevertheless yielded only 4/6 resolution, 0/2 conceptual, and 1/2 strategy-exhaustion hard consensuses. The scorer now reports that shortfall explicitly, and the clearer redundant challenge must be checked before the representative gate. |
 | 3 — figure policy | typed contracts, persistent public obligations, and terminal transitions implemented; validation open | All 13 families declare expected uptake and lifecycle transitions. A separate cross-family public-obligation ledger, typed speech acts, target-specific answer directive, and inquiry-completion object now feed the shared policy. Launch, child-seal, replay, payload, and finite-budget integrity are implemented, but this is still not a validated policy. |
 | 4 — register realization | runtime bridge complete; separate evaluation open | Active mode can override family and stance while the frontier model realizes the turn. Figure appropriateness and realization fidelity have not yet been independently scored in this study. |
 | 5 — baseline experiments | runtime boundary complete; representative semantic gate pending | The seventh 24-dialogue run reached 24/24 valid children, 192/192 structured parity, and zero delivery mismatch, but its representative V4 semantic gate failed. The latest separately authored 24-case diagnostic completed both readers and localized its remaining instrument confound; no downstream outcome comparison is licensed until a fresh representative gate passes. |
@@ -785,6 +785,12 @@ The two corpora must be independently frozen, share one calibrated handbook,
 have no public-case overlap, and be scored separately. Challenge enrichment is
 never pooled into natural rates. Passage is conjunctive at the gate level, not
 by concatenating rows.
+
+The challenge scorer must also report whether independent hard consensus
+actually realizes every declared diagnostic minimum. Authored support tags are
+construction checks, not substitutes for reader-backed support. An
+`insufficient_support` diagnostic may motivate clearer prospective cases but
+still cannot pass or fail the representative mechanism gate.
 
 Reader collection is part of the architecture rather than an informal outer
 loop. Prepared batches use exact opaque sample IDs as object keys. Assembly

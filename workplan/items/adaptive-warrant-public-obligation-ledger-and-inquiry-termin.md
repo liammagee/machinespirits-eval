@@ -345,3 +345,19 @@ the diagnostic relative to the repaired instrument. The item remains active
 pending one final clean diagnostic confirmation and passage of the separately
 frozen representative 96-case natural-frame gate. No downstream outcome study
 is licensed.
+
+The `6a5074df74bb0e7be6f954f6ab988ad21d64655d` diagnostic completed both
+readers at the 8/8-call ceiling. Its typed metrics were strong—binary warrant,
+request/proposal, lifecycle, persistence, completion, candidate override, and
+primary basis all scored 1.000—but reader consensus realized only 4/6 declared
+resolution cases, 0/2 conceptual non-aligned cases, and 1/2 strategy-exhaustion
+cases. It remains diagnostic-only.
+
+Prospective scoring now reports reader-backed `diagnostic_support` separately
+from the permanently inapplicable pass/fail gate. The challenge adds redundant
+resolved, explicit comprehension-repair, and defeated-contract cases; explicit
+repair with a flat record is a conceptual stall; and response-level policy
+metadata no longer claims a held-strategy switch. The item remains active
+pending one supported diagnostic read and passage of the separately frozen
+representative 96-case natural-frame gate. No downstream outcome study is
+licensed.

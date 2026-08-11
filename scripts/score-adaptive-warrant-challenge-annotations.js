@@ -13,7 +13,7 @@ import { validateAdaptiveWarrantChallengeFreeze } from './build-adaptive-warrant
 import { validateAdaptiveWarrantAnnotationAuthorizationRequest } from './prepare-adaptive-warrant-annotation-batches.js';
 
 export const ADAPTIVE_WARRANT_TARGETED_CHALLENGE_SCORE_SCHEMA =
-  'machinespirits.adaptation-refinement.warrant-targeted-challenge-diagnostic-score.v1';
+  'machinespirits.adaptation-refinement.warrant-targeted-challenge-diagnostic-score.v2';
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -25,6 +25,33 @@ function writeJson(filePath, value) {
 
 function fileSha256(filePath) {
   return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
+function diagnosticSupport(score, minima) {
+  const observed = {
+    tutor_directed_public_result_request: score.metrics.resultRequestConsensusCases,
+    learner_proposed_test: score.metrics.proposedTestConsensusCases,
+    obligation_persistence: score.metrics.obligationPersistenceCases,
+    obligation_resolution: score.metrics.obligationResolutionCases,
+    inquiry_complete: score.metrics.inquiryCompleteConsensusCases,
+    inquiry_incomplete: score.metrics.inquiryIncompleteConsensusCases,
+    ...Object.fromEntries(
+      Object.entries(score.metrics.divergenceDimensionMetrics).map(([dimension, metrics]) => [
+        `divergence_${dimension}_nonaligned`,
+        metrics.nonaligned_consensus_cases,
+      ]),
+    ),
+  };
+  const checks = Object.fromEntries(
+    Object.entries(minima).map(([name, minimum]) => [
+      name,
+      { minimum, observed: observed[name] ?? 0, passed: (observed[name] ?? 0) >= minimum },
+    ]),
+  );
+  return {
+    status: Object.values(checks).every((check) => check.passed) ? 'supported' : 'insufficient_support',
+    checks,
+  };
 }
 
 /**
@@ -85,6 +112,7 @@ export function scoreAdaptiveWarrantChallengeAnnotations({
   // This validates every freeze binding and is intentionally called only
   // after both blind artifacts and independent identities pass.
   const freezeValidation = validateAdaptiveWarrantChallengeFreeze({ manifestPath: freezeManifestPath });
+  const freezeManifest = readJson(freezeManifestPath);
   const key = readJson(keyPath);
   const score = scoreBlindedAnnotations({ annotatorA, annotatorB, key });
   const artifact = {
@@ -101,6 +129,7 @@ export function scoreAdaptiveWarrantChallengeAnnotations({
     authorization_digest: authorizationValidation?.approval_digest || null,
     freeze_validation: freezeValidation,
     blind_validation: blindValidation,
+    diagnostic_support: diagnosticSupport(score, freezeManifest.diagnostic_coverage_minima),
     sources: {
       freeze_manifest: { path: freezeManifestPath, sha256: fileSha256(freezeManifestPath) },
       corpus: { path: corpusPath, sha256: corpusSha256 },

@@ -15,6 +15,7 @@ import {
   assessAdaptiveWarrantInquiryCompletion,
   projectAdaptiveWarrantEvidenceAvailability,
 } from '../services/adaptiveWarrantInquiryCompletion.js';
+import { projectAdaptiveWarrantDivergence } from '../services/adaptiveWarrantDivergence.js';
 import {
   auditAdaptiveWarrantPublicObligationDelivery,
   classifyAdaptiveWarrantPublicSpeechAct,
@@ -1076,6 +1077,20 @@ test('classifier: explicit repair request and stall', () => {
   assert.equal(classifyLearnerSignal('no idea').primary, 'stall');
 });
 
+test('explicit comprehension repair is a conceptual stall when the public record stays flat', () => {
+  const divergence = projectAdaptiveWarrantDivergence({
+    turn: 3,
+    dagGrowth: 0,
+    turnsSinceDagGrowth: 3,
+    signal: classifyLearnerSignal("I don't understand how to use this result."),
+  });
+  const conceptual = divergence.find((row) => row.dimension === 'conceptual');
+  assert.equal(conceptual.interpretation, 'stalled');
+  assert.equal(conceptual.magnitude, 'moderate');
+  assert.equal(conceptual.persistence, 3);
+  assert.equal(conceptual.repair_warranted, true);
+});
+
 test('warrant: engaged-analytic masks accumulated trouble; deference does not', () => {
   const troubleTurns = [
     { turn: 1, defeaters: ['no_dag_growth'] },
@@ -1174,7 +1189,8 @@ test('same-family accountable answering receives a directive without a false str
   assert.equal(decision.commitment_transition_warranted, false);
   assert.equal(decision.current_candidate_override_required, false);
   assert.equal(decision.override, null);
-  assert.equal(decision.policy.review, 'persist_with_adjustment');
+  assert.equal(decision.policy.decision_kind, 'public_obligation_fulfilment');
+  assert.equal(decision.policy.review, 'response_level_fulfilment');
   assert.ok(decision.obligation_directive);
 });
 
@@ -1188,6 +1204,8 @@ test('response-level obligation fulfilment does not replace the held pedagogical
     proposedActionFamily: 'stage_next_step',
   });
   assert.equal(first.decision_kind, 'public_obligation_fulfilment');
+  assert.equal(first.policy.decision_kind, 'public_obligation_fulfilment');
+  assert.equal(first.policy.review, 'response_level_fulfilment');
   assert.equal(first.commitment_transition_warranted, false);
   assert.equal(first.override.action_family, 'answer_accountably');
   gate.recordTurnOutcome({
@@ -1260,6 +1278,8 @@ test('active gate vetoes a premature close candidate without inventing a prior c
   assert.equal(decision.decision_kind, 'candidate_safety_override');
   assert.equal(decision.commitment_transition_warranted, false);
   assert.equal(decision.current_candidate_override_required, true);
+  assert.equal(decision.policy.decision_kind, 'candidate_safety_override');
+  assert.equal(decision.policy.review, 'current_candidate_override');
   assert.equal(decision.policy.family, 'stage_next_step');
   assert.equal(decision.override.action_family, 'stage_next_step');
 });
