@@ -996,3 +996,29 @@ non-aligned examples for all six axes. They share a calibration handbook but
 are never pooled. The next evidential boundary is to author and freeze that
 pair, verify it without model calls, and request new payload-specific reader
 authorization. No outcome or learning comparison is yet licensed.
+
+## Progress Update — 11 August 2026, reviewer correction to the validation boundary
+
+Review found two stale historical claims and one inferential error. The v0
+corpora no longer regress perfectly under the typed mechanism: the current
+scores are 5/6 on the 23 July trace, 2/5 on the 24 July trace, and 2/4 on the
+held-out-borderline trace. `gold-annotations-first-corpus.md` now records those
+values and dates the typed mechanism's supersession of the v0/v0.1 rules to 11
+August 2026; the earlier 11/11 and 4/4 values remain explicitly historical
+calibration results.
+
+The authored targeted challenge is also now strictly diagnostic. Its 24 cases
+and private coverage map may probe speech acts, obligation lifecycle,
+completion, and all six divergence axes, and its labels may motivate a bounded
+repair. It is explicitly gate-ineligible: its enriched cases cannot supply a
+denominator, accuracy, prevalence, or false-positive result to the mechanism
+gate, and any repair it motivates burns it relative to the repaired code.
+
+The pass/fail sampling frame is predeclared before any diagnostic labels are
+read. After the last repair, generate the existing two-world, six-profile,
+observe/active matrix with one new eight-turn dialogue per cell and master seed
+401. Annotate every decision from all twelve observe dialogues—96 cases with no
+balancing or post-hoc selection—and apply the unchanged
+`ADAPTIVE_WARRANT_DECISION_GATE` thresholds to that representative corpus
+alone. Missing rare-state support is an inconclusive failure; targeted cases
+cannot fill it. No downstream outcome run is licensed.

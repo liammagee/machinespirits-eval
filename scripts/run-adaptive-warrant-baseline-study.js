@@ -388,7 +388,7 @@ export function collectAdaptiveWarrantStudySourceFiles() {
   return [...new Set([...SOURCE_FILES, ...reachable, ...runtimeResources])].sort();
 }
 
-function sourceFingerprint() {
+export function adaptiveWarrantStudySourceFingerprint() {
   const sourceFiles = collectAdaptiveWarrantStudySourceFiles();
   const childPolicyFiles = collectTutorPrBenchmarkReachablePaths({
     root: ROOT,
@@ -755,7 +755,7 @@ export function assertAdaptiveWarrantMechanismModelRefs({ model, analysisModel, 
 }
 
 export function assertAdaptiveWarrantStudyRuntimeBoundary(plan, { checkCli = true } = {}) {
-  const current = sourceFingerprint();
+  const current = adaptiveWarrantStudySourceFingerprint();
   const expected = plan?.provenance || {};
   const failures = [];
   for (const [label, expectedValue, currentValue] of [
@@ -2040,7 +2040,7 @@ export function annotationCaseFingerprint(row) {
   });
 }
 
-function annotationProjectionFingerprint(row) {
+export function annotationProjectionFingerprint(row) {
   return canonicalJsonSha256({
     schema: 'machinespirits.adaptation-refinement.annotation-projection-fingerprint.v1',
     source: annotationCaseFingerprint(row),
@@ -3354,7 +3354,7 @@ async function runPool(jobs, parallelism, worker, onFinish) {
   await Promise.all(runners);
 }
 
-function mechanismAnnotationHandbook() {
+export function mechanismAnnotationHandbook() {
   return `# Adaptive warrant mechanism annotation handbook
 
 This handbook is frozen with the mechanism-validation corpus. Annotate only public decision-time evidence: the public inquiry brief (opening, situation, question, opening evidence, and public rules), the transcript through the current learner turn, the learner-record trajectory, the prior delivered family, its normative expected-uptake contract, the pre-gate candidate, prior public audit outcomes, and the supplied public evidence-availability and epistemic counts. Treat structured counters as evidence to audit against the transcript, not as self-validating labels. Do not infer from the eventual tutor reply, arm, profile, world, or private model prediction. If those public inputs do not determine a typed state, use \`uncertain\`; the support gate must fail rather than importing hidden evidence.
@@ -3576,7 +3576,7 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status }) {
     existingStudy?.status === 'complete' &&
     fs.existsSync(path.join(rootDir, 'annotation-sample.blinded.json')) &&
     fs.existsSync(path.join(rootDir, 'annotation-key.private.json'));
-  const analysisProvenance = sourceFingerprint();
+  const analysisProvenance = adaptiveWarrantStudySourceFingerprint();
   const executionEvidence = buildAdaptiveWarrantStudyExecutionEvidence(rows);
   if (
     status === 'complete' &&
@@ -3862,7 +3862,7 @@ export function validateAdaptiveWarrantAnnotationFreeze({
   if (!manifest.provenance?.combinedSha256) {
     throw new Error('annotation freeze manifest is missing source provenance');
   }
-  const currentProvenance = sourceFingerprint();
+  const currentProvenance = adaptiveWarrantStudySourceFingerprint();
   if (manifest.provenance.combinedSha256 !== currentProvenance.combinedSha256) {
     throw new Error('annotation freeze burned by source provenance drift');
   }
@@ -4149,7 +4149,7 @@ function freezePostRepairValidation({ rootDir, offsetPerCell = 2, perCell = 2 } 
       'Fresh decision-point holdout from the valid n=5 pilot, but not fresh dialogue generation or live-v3 intervention evidence.',
     corpus: { path: corpusPath, sha256: fileSha256(corpusPath) },
     key: { path: keyPath, sha256: fileSha256(keyPath) },
-    provenance: sourceFingerprint(),
+    provenance: adaptiveWarrantStudySourceFingerprint(),
   };
   const manifestPath = path.join(rootDir, 'validation-freeze-manifest.json');
   writeJson(manifestPath, manifest);
@@ -4418,7 +4418,7 @@ async function main() {
     studyId,
     mechanismValidation,
   });
-  const provenance = sourceFingerprint();
+  const provenance = adaptiveWarrantStudySourceFingerprint();
   if (!values['dry-run'] && mechanismValidation) {
     assertAdaptiveWarrantLaunchSource(provenance, values['expected-sha']);
   }

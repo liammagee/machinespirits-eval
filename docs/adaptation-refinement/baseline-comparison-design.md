@@ -1,12 +1,11 @@
 # Baseline Comparison Design (§15.7 / Phase 5)
 
-**Status:** valid n=5 pilot and two-stage decision audit complete; the typed-contract
-gate failed and n=10 remains stopped. A post-freeze context audit invalidated the
-two `close_inquiry` successor labels as terminal-closure gold, while preserving
-the public-obligation diagnosis. The successor ledger/completion architecture is
-implemented; six two-world all-turn mechanism-validation packets have been
-burned, and a prospectively repaired seventh packet is required before blind
-V4 annotation.
+**Status:** valid n=5 pilot and two-stage decision audit complete; n=10 remains
+stopped. Seven two-world mechanism packets are burned. The seventh closed
+runtime validity but failed the V4 semantic gate. The successor ledger,
+completion, divergence, and deterministic collection architecture is
+implemented. A 24-case authored diagnostic challenge is next; after any repair,
+only a fresh representative 96-case natural frame can run the unchanged gate.
 **Question:** does the explicit warrant gate produce behaviour materially different from the uninstrumented stub, and is the difference an improvement at the decision level and downstream?
 
 ## Conditions
@@ -806,24 +805,38 @@ not be rescored as a pass. That audit found three prospective corrections:
    canonicalizations (`none -> hold`, `uncertain -> uncertain`). Any other
    inconsistency fails closed.
 
-Natural sampling cannot guarantee the support needed to validate rare
-lifecycle and divergence states. The next protocol therefore freezes and
-scores two corpora separately. The unchanged all-turn dialogue corpus is the
-`natural_prevalence` corpus and alone estimates prevalence and false-positive
-rates. A separately authored, prospectively frozen `targeted_challenge` corpus
-must contain at least eight result requests, eight proposed tests, eight
-persistence cases, six resolution cases, eight complete inquiries, twelve
-incomplete inquiries, and two designed non-aligned cases per divergence axis.
-Its private support plan is hash-bound but not sent to readers. It tests
-classification and lifecycle accuracy only; its enriched prevalence must
-never enter natural-rate estimates. Both corpora use the same frozen handbook
-and independent readers, have no public-case overlap, and must pass their
-separate responsibilities before the combined mechanism gate can pass.
+Natural sampling cannot guarantee dense support for rare lifecycle and
+divergence states. A separately authored, prospectively frozen
+`targeted_challenge` corpus therefore contains at least eight result requests,
+eight proposed tests, eight persistence cases, six resolution cases, eight
+complete inquiries, twelve incomplete inquiries, and two designed non-aligned
+cases per divergence axis. Its private support plan is hash-bound but not sent
+to readers.
+
+The targeted corpus is a **diagnostic instrument, not a gate corpus**. Its
+labels may expose detector failures and motivate a bounded repair, but neither
+its cases nor its scores may satisfy a pass/fail threshold, estimate prevalence
+or false-positive rates, or establish validation. Any repair it motivates
+burns it relative to the repaired implementation.
+
+The pass/fail gate remains the representative `natural_prevalence` frame:
+after the last diagnostic-driven repair, generate the already-declared two-
+world, six-profile observe/active matrix with one new eight-turn dialogue per
+cell and master seed 401; annotate every decision from all twelve observe
+dialogues, exactly 96 cases, without prediction balancing, down-sampling, or
+post-hoc selection. The active dialogues remain execution/parity evidence and
+do not enter annotation. That representative corpus alone is scored against
+the unchanged thresholds in `ADAPTIVE_WARRANT_DECISION_GATE`. If it lacks a
+required rare-state denominator, the result is inconclusive and fails closed;
+challenge cases may not supplement it. This sampling frame and threshold rule
+are declared here before any targeted-challenge reader labels are accepted.
 
 The burned-corpus replay after the bounded code correction is diagnostic only:
 request/proposal macro-F1 rises from 0.143 to 0.656 and conceptual
 interpretation macro-F1 from 0.405 to 0.743, while interactional remains weak
 at 0.566. Those values motivate the fresh validation; they are not evidence of
-passage. The next model-backed act is therefore a newly frozen natural corpus
-plus a separately frozen support challenge corpus under a new exact
-authorization, not another read or rescore of the seventh packet.
+passage. The next model-backed act is therefore annotation of the separately
+frozen diagnostic challenge under a new exact authorization. After any repair
+and a clean checkpoint, a newly generated representative natural corpus gets a
+separate freeze and authorization. It alone can pass the mechanism gate; this
+is not another read or rescore of the seventh packet.

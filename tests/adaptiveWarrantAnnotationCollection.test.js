@@ -179,7 +179,7 @@ test('V4 response validation rejects placeholder notes before consensus scoring'
   }
 });
 
-test('natural and targeted corpora remain separate and the challenge plan guarantees gate support strata', () => {
+test('natural gate and targeted diagnostic corpora remain separate without pooling scores', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'warrant-annotation-pair-'));
   try {
     const handbookPath = path.join(root, 'handbook.md');
@@ -233,8 +233,9 @@ test('natural and targeted corpora remain separate and the challenge plan guaran
     assert.equal(pair.natural.cases, 4);
     assert.equal(pair.challenge.cases, 12);
     assert.equal(pair.challenge.support_counts.obligation_resolution, 6);
-    assert.match(pair.inference_boundaries.natural_prevalence, /only from the natural/u);
-    assert.match(pair.inference_boundaries.targeted_challenge, /only from the challenge/u);
+    assert.match(pair.inference_boundaries.natural_prevalence, /pass\/fail gate only to a representative natural/u);
+    assert.match(pair.inference_boundaries.targeted_challenge, /Diagnostic only/u);
+    assert.match(pair.inference_boundaries.combined_gate, /Forbidden/u);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

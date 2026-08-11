@@ -26,6 +26,8 @@ export const ADAPTIVE_WARRANT_ANNOTATION_CORPUS_PAIR_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-annotation-corpus-pair.v1';
 export const ADAPTIVE_WARRANT_CHALLENGE_SUPPORT_PLAN_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-annotation-challenge-support-plan.v1';
+export const ADAPTIVE_WARRANT_ANNOTATION_AUTHORIZATION_REQUEST_SCHEMA =
+  'machinespirits.adaptation-refinement.warrant-annotation-authorization-request.v1';
 
 const CORPUS_ROLES = Object.freeze(['natural_prevalence', 'targeted_challenge']);
 const RESPONSE_CASE_FIELDS = Object.freeze([
@@ -48,7 +50,7 @@ const BATCH_RESPONSE_FIELDS = Object.freeze([
   'corpus_sha256',
   'cases_by_sample_id',
 ]);
-const REQUIRED_CHALLENGE_STRATA = Object.freeze({
+export const ADAPTIVE_WARRANT_CHALLENGE_DIAGNOSTIC_MINIMA = Object.freeze({
   tutor_directed_public_result_request: ADAPTIVE_WARRANT_DECISION_GATE.minimum_result_request_cases,
   learner_proposed_test: ADAPTIVE_WARRANT_DECISION_GATE.minimum_proposed_test_cases,
   obligation_persistence: ADAPTIVE_WARRANT_DECISION_GATE.minimum_obligation_persistence_cases,
@@ -132,16 +134,16 @@ function validateChallengeSupportPlan({ plan, corpus, corpusSha256 }) {
   if (plan.study_id !== corpus.study_id || plan.corpus_sha256 !== corpusSha256) {
     throw new Error('challenge support plan does not bind the frozen corpus');
   }
-  exactFields(plan.strata, Object.keys(REQUIRED_CHALLENGE_STRATA), 'challenge support strata');
+  exactFields(plan.strata, Object.keys(ADAPTIVE_WARRANT_CHALLENGE_DIAGNOSTIC_MINIMA), 'challenge diagnostic strata');
   const corpusIds = new Set(corpus.cases.map((row) => row.sample_id));
   const counts = {};
-  for (const [stratum, minimum] of Object.entries(REQUIRED_CHALLENGE_STRATA)) {
-    const ids = exactUniqueIds(plan.strata[stratum], `challenge stratum ${stratum}`);
+  for (const [stratum, minimum] of Object.entries(ADAPTIVE_WARRANT_CHALLENGE_DIAGNOSTIC_MINIMA)) {
+    const ids = exactUniqueIds(plan.strata[stratum], `challenge diagnostic stratum ${stratum}`);
     if (ids.some((id) => !corpusIds.has(id))) {
-      throw new Error(`challenge stratum ${stratum} contains a sample outside the frozen corpus`);
+      throw new Error(`challenge diagnostic stratum ${stratum} contains a sample outside the frozen corpus`);
     }
     if (ids.length < minimum) {
-      throw new Error(`challenge stratum ${stratum} requires at least ${minimum} designed cases`);
+      throw new Error(`challenge diagnostic stratum ${stratum} requires at least ${minimum} designed cases`);
     }
     counts[stratum] = ids.length;
   }
@@ -156,6 +158,9 @@ export function prepareAdaptiveWarrantAnnotationBatches({
   batchSize = 8,
   corpusRole,
   supportPlanPath = null,
+  annotationModel = 'codex.gpt-5.6-luna',
+  annotationDestination = 'OpenAI Codex CLI (ChatGPT-account route)',
+  maxAnnotationCalls = null,
 } = {}) {
   if (!CORPUS_ROLES.includes(corpusRole)) throw new Error(`corpusRole must be one of ${CORPUS_ROLES.join(', ')}`);
   if (!Number.isInteger(batchSize) || batchSize < 1) throw new Error('batchSize must be a positive integer');
@@ -243,8 +248,9 @@ export function prepareAdaptiveWarrantAnnotationBatches({
     corpus_role: corpusRole,
     inference_boundary:
       corpusRole === 'natural_prevalence'
-        ? 'May estimate natural prevalence and false-positive rates; support-limited cells remain inconclusive.'
-        : 'May test supported classification and lifecycle accuracy; must not estimate natural prevalence or false-positive rates.',
+        ? 'May estimate natural prevalence and false-positive rates; gate-eligible only when this is the predeclared representative sampling frame, and support-limited cells remain inconclusive.'
+        : 'Diagnostic only: may probe supported failure modes and guide repair, but cannot contribute to a pass/fail gate, prevalence estimate, false-positive estimate, or validation claim.',
+    gate_eligible: corpusRole === 'natural_prevalence',
     corpus: { path: resolvedCorpusPath, sha256: corpusSha256, cases: sampleIds.length },
     handbook: { path: resolvedHandbookPath, sha256: handbookSha256 },
     support_plan: supportPlan ? { ...supportPlan, counts: supportCounts } : null,
@@ -253,7 +259,63 @@ export function prepareAdaptiveWarrantAnnotationBatches({
   };
   const manifestPath = path.join(resolvedOutputDir, 'annotation-collection-manifest.json');
   writeJson(manifestPath, manifest);
-  return { manifest, manifestPath };
+  const plannedCalls = readers.reduce((sum, reader) => sum + reader.batches.length, 0);
+  const callCeiling = maxAnnotationCalls === null ? plannedCalls : Number(maxAnnotationCalls);
+  if (!Number.isInteger(callCeiling) || callCeiling < plannedCalls) {
+    throw new Error(`maxAnnotationCalls must be an integer at least equal to the ${plannedCalls} planned calls`);
+  }
+  const authorizationContract = {
+    schema: ADAPTIVE_WARRANT_ANNOTATION_AUTHORIZATION_REQUEST_SCHEMA,
+    status: 'approval_required',
+    study_id: corpus.study_id,
+    corpus_role: corpusRole,
+    inferential_role: manifest.inference_boundary,
+    destination: annotationDestination,
+    model: annotationModel,
+    payload_scope: {
+      classification: 'unpublished_private_research_prompt_payload',
+      transmitted: [
+        'the frozen annotation handbook embedded in each reader packet',
+        'blinded public decision-time cases keyed by opaque sample id',
+        'the exact response schema and collection instructions',
+      ],
+      excluded: [
+        'annotation private key',
+        'private challenge design and support plan',
+        'detector predictions and technical traces',
+        'source files and Git metadata',
+        'either reader response supplied to the other reader',
+        'credentials and human-subject data',
+      ],
+    },
+    call_budget: {
+      planned_calls: plannedCalls,
+      maximum_calls: callCeiling,
+      readers: readers.length,
+      calls_per_reader_planned: Object.fromEntries(
+        readers.map((reader) => [reader.reader_id, reader.batches.length]),
+      ),
+    },
+    bindings: {
+      collection_manifest_sha256: fileSha256(manifestPath),
+      corpus_sha256: corpusSha256,
+      handbook_sha256: handbookSha256,
+      reader_packets: readers.flatMap((reader) =>
+        reader.batches.map((batch) => ({
+          reader_id: reader.reader_id,
+          batch_id: batch.batch_id,
+          sha256: batch.packet_sha256,
+        })),
+      ),
+    },
+  };
+  const authorizationRequest = {
+    ...authorizationContract,
+    approval_digest: valueSha256(authorizationContract),
+  };
+  const authorizationRequestPath = path.join(resolvedOutputDir, 'annotation-authorization-request.json');
+  writeJson(authorizationRequestPath, authorizationRequest);
+  return { manifest, manifestPath, authorizationRequest, authorizationRequestPath };
 }
 
 function canonicalizeReaderCase(row, sampleId, edits) {
@@ -370,6 +432,83 @@ export function assembleAdaptiveWarrantAnnotationResponse({
   return { response, validation, audit, outputPath: resolvedOutputPath, auditPath };
 }
 
+export function validateAdaptiveWarrantAnnotationAuthorizationRequest({ requestPath, manifestPath } = {}) {
+  const resolvedRequestPath = path.resolve(requestPath);
+  const resolvedManifestPath = path.resolve(manifestPath);
+  const request = readJson(resolvedRequestPath);
+  const manifest = readJson(resolvedManifestPath);
+  exactFields(
+    request,
+    [
+      'schema',
+      'status',
+      'study_id',
+      'corpus_role',
+      'inferential_role',
+      'destination',
+      'model',
+      'payload_scope',
+      'call_budget',
+      'bindings',
+      'approval_digest',
+    ],
+    'annotation authorization request',
+  );
+  if (
+    request.schema !== ADAPTIVE_WARRANT_ANNOTATION_AUTHORIZATION_REQUEST_SCHEMA ||
+    request.status !== 'approval_required'
+  ) {
+    throw new Error('annotation authorization request has an invalid schema or status');
+  }
+  if (
+    request.study_id !== manifest.study_id ||
+    request.corpus_role !== manifest.corpus_role ||
+    request.inferential_role !== manifest.inference_boundary
+  ) {
+    throw new Error('annotation authorization request does not bind the collection role');
+  }
+  if (!request.destination?.trim() || !request.model?.trim()) {
+    throw new Error('annotation authorization request requires a named destination and model');
+  }
+  if (request.bindings.collection_manifest_sha256 !== fileSha256(resolvedManifestPath)) {
+    throw new Error('annotation authorization request collection manifest drift');
+  }
+  if (
+    request.bindings.corpus_sha256 !== manifest.corpus.sha256 ||
+    request.bindings.handbook_sha256 !== manifest.handbook.sha256
+  ) {
+    throw new Error('annotation authorization request corpus or handbook binding mismatch');
+  }
+  const expectedPackets = manifest.readers.flatMap((reader) =>
+    reader.batches.map((batch) => ({
+      reader_id: reader.reader_id,
+      batch_id: batch.batch_id,
+      sha256: batch.packet_sha256,
+    })),
+  );
+  if (JSON.stringify(request.bindings.reader_packets) !== JSON.stringify(expectedPackets)) {
+    throw new Error('annotation authorization request packet binding mismatch');
+  }
+  const plannedCalls = expectedPackets.length;
+  if (
+    request.call_budget.planned_calls !== plannedCalls ||
+    !Number.isInteger(request.call_budget.maximum_calls) ||
+    request.call_budget.maximum_calls < plannedCalls
+  ) {
+    throw new Error('annotation authorization request call budget mismatch');
+  }
+  const { approval_digest: approvalDigest, ...contract } = request;
+  if (approvalDigest !== valueSha256(contract)) {
+    throw new Error('annotation authorization request approval digest mismatch');
+  }
+  return {
+    ok: true,
+    approval_digest: approvalDigest,
+    planned_calls: plannedCalls,
+    maximum_calls: request.call_budget.maximum_calls,
+  };
+}
+
 export function validateAdaptiveWarrantAnnotationCorpusPair({ naturalManifestPath, challengeManifestPath } = {}) {
   const naturalPath = path.resolve(naturalManifestPath);
   const challengePath = path.resolve(challengeManifestPath);
@@ -390,9 +529,6 @@ export function validateAdaptiveWarrantAnnotationCorpusPair({ naturalManifestPat
   if (natural.corpus.sha256 === challenge.corpus.sha256 || natural.study_id === challenge.study_id) {
     throw new Error('natural and challenge corpora must be independently frozen');
   }
-  if (natural.handbook.sha256 !== challenge.handbook.sha256) {
-    throw new Error('natural and challenge corpora must use the same frozen calibration handbook');
-  }
   const naturalFingerprints = new Set(readJson(natural.corpus.path).cases.map(valueSha256));
   const overlap = readJson(challenge.corpus.path).cases.filter((row) => naturalFingerprints.has(valueSha256(row))).length;
   if (overlap) throw new Error(`natural and challenge corpora overlap on ${overlap} public cases`);
@@ -406,16 +542,18 @@ export function validateAdaptiveWarrantAnnotationCorpusPair({ naturalManifestPat
       support_counts: challenge.support_plan.counts,
     },
     inference_boundaries: {
-      natural_prevalence: 'Estimate prevalence and false-positive rates only from the natural corpus.',
-      targeted_challenge: 'Estimate supported classification and lifecycle accuracy only from the challenge corpus.',
-      combined_gate: 'Pass only when both separately scored corpora satisfy their declared gate responsibilities.',
+      natural_prevalence:
+        'Apply the predeclared pass/fail gate only to a representative natural corpus frozen after any diagnostic-driven repair.',
+      targeted_challenge:
+        'Diagnostic only: probe failure modes and guide repair; never contribute cases or scores to the pass/fail gate.',
+      combined_gate: 'Forbidden: natural and targeted cases or scores must never be pooled into one gate.',
     },
   };
 }
 
 function usage() {
   return `Usage:
-  node scripts/prepare-adaptive-warrant-annotation-batches.js prepare --corpus <file> --handbook <file> --out <dir> --corpus-role natural_prevalence|targeted_challenge [--support-plan <file>] [--batch-size 8]
+  node scripts/prepare-adaptive-warrant-annotation-batches.js prepare --corpus <file> --handbook <file> --out <dir> --corpus-role natural_prevalence|targeted_challenge [--support-plan <file>] [--batch-size 8] [--model <ref>] [--destination <route>] [--max-annotation-calls <n>]
   node scripts/prepare-adaptive-warrant-annotation-batches.js assemble --manifest <file> --reader <id> --annotation-run-id <id> --responses <dir> --output <file>
   node scripts/prepare-adaptive-warrant-annotation-batches.js pair-check --natural-manifest <file> --challenge-manifest <file> [--output <file>]
 `;
@@ -439,6 +577,9 @@ async function main() {
       output: { type: 'string' },
       'natural-manifest': { type: 'string' },
       'challenge-manifest': { type: 'string' },
+      model: { type: 'string' },
+      destination: { type: 'string' },
+      'max-annotation-calls': { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
     strict: true,
@@ -455,8 +596,11 @@ async function main() {
       batchSize: values['batch-size'] ? Number(values['batch-size']) : 8,
       corpusRole: values['corpus-role'],
       supportPlanPath: values['support-plan'] || null,
+      annotationModel: values.model || 'codex.gpt-5.6-luna',
+      annotationDestination: values.destination || 'OpenAI Codex CLI (ChatGPT-account route)',
+      maxAnnotationCalls: values['max-annotation-calls'] ? Number(values['max-annotation-calls']) : null,
     });
-    process.stdout.write(`${result.manifestPath}\n`);
+    process.stdout.write(`${result.manifestPath}\n${result.authorizationRequestPath}\n`);
     return;
   }
   if (command === 'assemble') {

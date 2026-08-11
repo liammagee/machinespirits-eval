@@ -12,10 +12,11 @@ verification: A public-obligation ledger persists named tutor-directed requests
   across family changes and distinguishes them from learner-proposed tests;
   inquiry completion can license close_inquiry from public evidence rather than
   turn number; live/offline parity tests cover creation, satisfaction, expiry,
-  and closure; and separately frozen natural-prevalence and targeted-challenge
-  two-reader corpora pass their predeclared decision, support, divergence,
-  successor, diligent-control, and parity responsibilities before any outcome
-  comparison resumes. Live mechanism execution additionally
+  and closure; a separately frozen targeted challenge is used only to diagnose
+  and repair typed mechanism failures; and a later representative natural-
+  prevalence two-reader corpus alone passes the predeclared decision,
+  divergence, successor, diligent-control, support, and parity thresholds
+  before any outcome comparison resumes. Live mechanism execution additionally
   requires a digest-bound authorization for a clean committed 40-character
   HEAD, the recursive source closure, the named destination, and the declared
   private prompt-payload scope; sealed children, a 64-call dialogue cap,
@@ -250,16 +251,18 @@ canonicalizations. Bounded speech-act, conceptual-flatness, and same-turn
 interactional corrections have exact tests; the burned-corpus replay remains
 diagnostic rather than passage evidence.
 
-The remaining validation is explicitly two-surface. A fresh all-turn
-`natural_prevalence` corpus owns prevalence and false-positive inference. A
-separate `targeted_challenge` corpus must meet a private hash-bound support plan
-for result requests, proposed tests, obligation persistence/resolution,
-inquiry completion/incompletion, and at least two non-aligned cases per
-divergence axis. Pair validation requires the same frozen handbook, distinct
-study/corpus hashes, and zero public-case overlap, and prohibits challenge rows
-from entering natural-rate estimates. The item remains active pending authored
-challenge cases, a clean pushed checkpoint, new payload-specific authorization,
-independent reads of both fresh corpora, and passage of their conjunctive gate.
+The remaining validation is explicitly two-surface. A targeted challenge must
+meet a private hash-bound diagnostic-coverage plan for result requests,
+proposed tests, obligation persistence/resolution, inquiry completion/
+incompletion, and at least two non-aligned cases per divergence axis. It may
+diagnose and motivate repair but is gate-ineligible. After the final repair, a
+fresh representative all-turn `natural_prevalence` corpus—every observe
+decision from the predeclared two-world, six-profile matrix—alone owns the
+pass/fail gate, prevalence, and false-positive inference under the unchanged
+thresholds. Missing natural support fails inconclusively and cannot be filled
+with challenge rows. The item remains active pending authored diagnostic cases,
+a clean pushed checkpoint, new payload-specific authorization, diagnostic
+reads, any bounded repair, and passage of the later representative gate.
 Current no-model verification is green: lint, 35/35 worlds, 22/22 prompt/world
 boundary tests, the 171-test exact launch preflight, 8,448/8,448 hermetic root
 tests, 137/137 tutor-core tests, and 490/490 source workplan items.

@@ -2,13 +2,11 @@
 
 **Date:** 10 August 2026
 **Status:** original sequence complete through its stop rule; n=10 not
-launched. Six authorized all-turn mechanism packets are incomplete and burned.
-The sixth ran from `853ad817b224723d69c48c24f58281b79a79f8cb`:
-22/24 children were valid, all 176 valid decisions had exact structured replay
-parity, and five valid delivery checks exposed bounded realization-audit false
-negatives. Two invalid children exposed one false learner-record obligation.
-A prospective repair is implemented; a new clean seventh checkpoint, dry
-authorization, full rerun, and fresh annotations remain required.
+launched. Seven authorized all-turn mechanism packets are burned. The seventh
+closed runtime validity at 24/24 dialogues and 192/192 parity/delivery, but its
+96-case V4 semantic gate failed. The immediate next instrument is an authored
+24-case diagnostic challenge. It may guide repair but cannot pass the gate;
+only a later fresh representative 96-case natural frame may do that.
 **Workplan item:** `adaptive-warrant-public-obligation-ledger-and-inquiry-termin`
 
 ## Frozen evidence boundary
@@ -715,23 +713,26 @@ The remaining sequence is now:
 2. use the deterministic keyed batch preparer/assembler for both readers, with
    minimum evidence-note length and auditable canonicalization only;
 3. author and locally validate a separate targeted challenge corpus plus
-   private support plan covering the predeclared speech-act, obligation-
-   lifecycle, inquiry-completion, and six-axis non-aligned minima;
-4. freeze a fresh natural all-turn corpus and the challenge corpus under the
-   same calibrated handbook, prove no case overlap, and keep their inferential
-   roles separate;
-5. obtain two independent annotations for each newly frozen corpus under a new
-   exact payload authorization, assemble them without human repair, then score
-   natural prevalence/false positives separately from challenge support and
-   accuracy; and
-6. advance to a variance-controlled active-versus-observe outcome study only
-   if the combined gate passes. Human learning and causal benefit remain a
-   later study.
+   private diagnostic-coverage plan for the predeclared speech-act,
+   obligation-lifecycle, inquiry-completion, and six-axis non-aligned minima;
+4. freeze and independently annotate that diagnostic challenge under a new
+   exact payload authorization; use it only to probe failures and motivate
+   bounded repairs, never to satisfy a gate threshold;
+5. after the last repair, generate and freeze the representative natural frame
+   already declared in `baseline-comparison-design.md`: all 96 observe
+   decisions from a fresh two-world, six-profile, eight-turn matrix, with no
+   prediction balancing or post-hoc selection;
+6. obtain two independent annotations for that natural corpus and apply the
+   unchanged declared thresholds to it alone. Missing rare-state support is an
+   inconclusive failure and cannot be filled with challenge cases; and
+7. advance to a variance-controlled active-versus-observe outcome study only
+   if that representative gate passes. Human learning and causal benefit
+   remain a later study.
 
-Steps 1–2 and the pair/support validation machinery for steps 3–4 are now
-implemented. The next construction task is the actual prospectively authored
-challenge cases and their private support mapping, followed by a clean commit
-and new authorization request. Current no-model verification passes lint,
+Steps 1–2 and the diagnostic support validation machinery for steps 3–4 are
+now implemented. The next construction task is the actual prospectively
+authored challenge cases and their private support mapping, followed by a
+clean commit and new authorization request. Current no-model verification passes lint,
 35/35 worlds, 22/22 prompt/world checks, the 171-test exact preflight,
 8,448/8,448 hermetic root tests, 137/137 tutor-core tests, and 490/490 source
 workplan items. The prior 24-call annotation authorization is exhausted and
