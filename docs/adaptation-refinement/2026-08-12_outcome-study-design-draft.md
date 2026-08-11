@@ -106,7 +106,39 @@ pass; nothing waits on it.
   registered; only measure 2's typed warrant basis needs a fallback
   (deterministic rule application, no reader).
 
-## 7. Settled questions (12 August 2026)
+## 7. Registered follow-on: negative-register realization (prospective)
+
+Written before any data exists, so the design is on record. **No
+follow-on data may be collected before the main contrast reports.**
+
+The closed register-taxonomy arc established sarcasm as a
+withdrawn-compliment device that strong models execute reliably, and its
+frozen Stage-1 cells had the edged register menu but only a one-turn
+regex trigger — the pattern the architecture doc rules out. The warrant
+gate supplies the missing typed trigger. The follow-on realizes a
+warranted challenge in two manners:
+
+- **Design:** within the gated setup only, two register policies —
+  neutral (as in the main study) against the edged menu — with the
+  warrant gate as the shared trigger. Same world families, same
+  instrument, same deference measures as the main study.
+- **Inherited rules from the closed register arc:** sarcasm is the
+  withdrawn-compliment device; manner-only — the edged and neutral
+  policies must issue the same underlying repair actions, and the edge
+  may change nothing but the clothing; stance counts are never
+  differenced across gates or folds.
+- **Trigger discipline:** edge is permitted only on turns carrying a
+  warrant event with a non-none basis. An edged turn without a warrant
+  event is a leak and scores as a violation, whatever its quality.
+- **Manner-fidelity checks (registered with the contrast):** rate of
+  edge-on-warranted-turns-only; same-act check (the repair action
+  distribution must not differ between register policies); withdrawal
+  check (the edge does not persist after the learner repairs the flaw).
+- **Sample size:** set after the main study reports, from its observed
+  warranted-challenge rate — the follow-on needs enough warranted turns
+  per dialogue for the manner contrast to have material.
+
+## 8. Settled questions (12 August 2026)
 
 The three questions this draft opened with are settled and folded into
 the sections above:
