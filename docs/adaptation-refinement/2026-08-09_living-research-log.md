@@ -1777,3 +1777,27 @@ synthetic, smoke, and diagnostic catalogues, derive one catalogue-backed worked
 example for every act, and validate all examples through the production
 annotation validator. A wholly fresh smoke remains necessary for the distinct
 question of whether two live readers interpret that valid contract alike.
+
+## Progress Update — 12 August 2026, record-entry smoke exposes nullable target ownership
+
+The next two-reader smoke ran from clean commit `b37b9faa` and is preserved at
+`/private/tmp/adaptive-warrant-v3-semantic-smoke-run-b37b9faa`. Both calls
+completed without prohibited tools or schema repair. The readers reached the
+exact preregistered identity on the tutor-selection and compound
+proposal/result cases, but only 2/3 hard consensus overall. In the
+record-entry case both agreed on the request; for the separate analytic clause
+one reader selected the public docket target and the other returned a null
+target. The instrument had allowed both values and had not assigned ownership
+of the analytic target explicitly. No diagnostic freeze or downstream reader
+run followed.
+
+The prospective repair makes all reader-returned fields total and non-null.
+Target and action absence use the closed token `"none"`; catalogue and action
+IDs are schema-enumerated; and an analytic contribution owns the catalogue
+entity its analysis is about independently of any co-occurring request.
+`"none"` is permitted only when that analysis names no catalogue entity. A
+new zero-call assertion traverses the synthetic, smoke, and diagnostic reader
+schemas to reject omitted properties, nullable nodes, missing absence tokens,
+or open catalogue identity domains before any model call. All three smoke
+cases from `b37b9faa` are burned; the next smoke uses wholly fresh wording and
+identifiers.

@@ -108,8 +108,8 @@ or scoring.
 | Field | Contract |
 |---|---|
 | `speech_act` | One declared act from the closed V3 vocabulary. Unknown acts use `other`; they are never invented as near-synonyms. |
-| `target` | A public target object or `null`. It separates the object under discussion from the values requested about that object. |
-| `requested_or_proposed_action` | A typed action object or `null`, distinguishing who is being asked to act from who proposed the action. |
+| `target` | A public target object or the explicit semantic absence value. At the reader boundary this field is always present and uses the exact token `"none"`, never JSON `null`; the assembler alone normalizes that token to internal `null`. It separates the object under discussion from values requested about it. |
+| `requested_or_proposed_action` | A typed action object or the explicit semantic absence value. At the reader boundary this field is always present and uses `"none"`, never JSON `null`; the assembler alone normalizes it. |
 | `evidence_span` | Exact literal text plus verified start/end offsets into the current public utterance. Paraphrases and inferred spans are invalid. |
 | `confidence` | `high`, `medium`, or `low`. This is a bounded self-report, not a calibrated probability. |
 | `uncertainty` | A possibly empty list from the closed reasons below. Any non-empty list prevents asserted state mutation. |
@@ -199,13 +199,13 @@ ask a reader for a fact it already knows.
 | Event multiplicity and order | Reader, then mechanical ordering | One event per independent clause-level act that changes a distinct typed state. One clause receives one act under the precedence table. Distinct events require non-overlapping minimal literal spans and are mechanically ordered by span start. |
 | `speaker` | Harness | Current packet authorship supplies `learner`; absent from reader schema. |
 | `speech_act` | Reader | One value from the closed vocabulary under the within-clause precedence table. No synonymous labels. |
-| `target_id` | Reader | The public object, relation, or enumerated choice set under inquiry, chosen from the catalogue; requested values and actors are never targets. Tutor-selection requests require the public choice-set target. |
+| `target` / `target_id` | Reader | Total and non-null: the public object, relation, or enumerated choice set the act itself is about, chosen from the catalogue, or the exact token `"none"` when that act names no catalogue entity. Requested values and actors are never targets. Tutor-selection requests require the public choice-set target. For `analytic_contribution`, ownership follows the analysis itself independently of any co-occurring request. |
 | `target.kind` | Harness | Derived exactly from the selected `target_id`; absent from reader schema. |
 | `public_identifier_ids` | Harness | Exact catalogue identifiers for `target_id`; absent from reader schema. |
 | `requested_value_types` | Reader | Exact closed-set values explicitly requested or produced by the clause; may be empty. A value such as `time` or `match_status` is not a subject or target kind. |
 | `component_ids` | Reader | Exact catalogue answer components explicitly requested or produced; may be empty. |
 | `executor` | Reader | The party who must perform the action, not the speaker. Request-type acts cannot use learner execution. |
-| `action_object_id` | Reader | The public action object licensed by the clause, chosen from the catalogue. |
+| `requested_or_proposed_action` / `action_object_id` | Reader | Total and non-null: the public action object licensed by the clause, chosen from the catalogue, or the exact token `"none"` when no action applies. |
 | action `mode` and operation | Harness | Derived exactly from `action_object_id`; absent from reader schema and checked against the speech act. |
 | `evidence_span.text` | Reader | The shortest complete literal clause, occurring exactly once and not overlapping another event span. |
 | span offsets and event order | Harness | Derived from the unique literal span and audited; absent from reader schema. |
@@ -220,6 +220,15 @@ explicitly refuses, cannot make, or delegates the choice. A proposal followed
 by a request for its result is two events. One request for several values is
 one event with several value and component IDs. Overlapping events are invalid
 rather than an alternative way to express uncertainty.
+
+Target ownership is event-local. The target of an `analytic_contribution` is
+the catalogue entity the analysis itself concerns, even when a neighbouring
+record-entry or result request names the same entity. It may use `"none"` only
+when the analytic clause names no catalogue entity. Each co-occurring request
+retains and is judged on its own target. No reader-returned property anywhere
+in the response envelope is optional or nullable: every object property is
+required, categorical domains are closed, arrays are present even when empty,
+and semantic absence is an explicit closed-domain token.
 
 ### 2.4 Evidence and public-only validation
 
@@ -561,6 +570,25 @@ repair makes the public choice-set target required for
 `tutor_selection_request`; the burned smoke wording and identifiers cannot be
 reused.
 
+### 5.0.2 Invalid pre-diagnostic smoke: nullable analytic target
+
+The next two-reader smoke at clean commit `b37b9faa` is preserved at
+`/private/tmp/adaptive-warrant-v3-semantic-smoke-run-b37b9faa`. It completed
+both calls and reached exact expected agreement on the tutor-selection and
+compound proposal/result cases, but only 2/3 hard consensus overall. On the
+record-entry pattern both readers agreed on the request and its target; one
+reader also attached that catalogue entity to the preceding
+`analytic_contribution`, while the other used a null target. The schema and
+handbook had permitted both readings.
+
+This is another instrument-contract result, not evidence about semantic-model
+capability or warrant policy. The burned cases cannot be reused. The
+prospective repair makes every reader property total and non-null, uses an
+explicit `"none"` absence token, and assigns analytic-target ownership to the
+entity the analytic clause itself is about independently of a co-occurring
+request. A schema-totality audit now owns the mechanically detectable part of
+this failure class before a wholly fresh smoke.
+
 ### 5.1 Targeted rare-state diagnostic
 
 The rare-state surface is a separately authored 24-case public decision-time
@@ -650,9 +678,17 @@ and score path must also reject unknown catalogue entries, ambiguous identity,
 non-literal evidence, malformed envelopes, and under-supported threshold
 cells without hand repair.
 
+The generated reader schema is also traversed as data before any live call.
+Every object property must appear in its `required` set, no node may admit
+JSON `null`, target and action absence must each be represented only by the
+literal `"none"`, and target, component, action-object, speech-act, executor,
+and value-type identities must be closed to their declared catalogue or
+vocabulary. The assertion runs against the synthetic preflight, smoke, and
+diagnostic catalogues; one failure blocks the freeze.
+
 It must also audit contract/catalog consistency before any live smoke. Every
-speech act in the closed vocabulary must have a satisfiable required,
-optional, and forbidden field pattern against each catalogue that can be
+speech act in the closed vocabulary must have a satisfiable catalogue,
+catalogue-or-none, or none-valued field pattern against each catalogue that can be
 frozen. For each act, the audit derives a catalogue-backed worked example,
 materializes its mechanical fields, and sends it through the production
 annotation validator. Missing action families, action objects bound to a

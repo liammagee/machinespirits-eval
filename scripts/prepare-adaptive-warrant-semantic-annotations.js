@@ -20,11 +20,11 @@ import {
 import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_COLLECTION_MANIFEST_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-annotation-collection.v3';
+  'machinespirits.adaptation-refinement.semantic-event-annotation-collection.v4';
 export const ADAPTIVE_WARRANT_SEMANTIC_READER_PACKET_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-reader-packet.v3';
+  'machinespirits.adaptation-refinement.semantic-event-reader-packet.v4';
 export const ADAPTIVE_WARRANT_SEMANTIC_AUTHORIZATION_REQUEST_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-annotation-authorization-request.v3';
+  'machinespirits.adaptation-refinement.semantic-event-annotation-authorization-request.v4';
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 
 const BATCH_FIELDS = Object.freeze([
@@ -186,11 +186,13 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
           'Use genuinely_ambiguous=true only when two complete typed readings remain after every handbook rule; then return events=[].',
           'Every evidence_span must contain only text: one non-empty literal substring that occurs exactly once in current_learner_turn.learner. Do not return start or end; the assembler derives UTF-16 offsets mechanically and records them in its audit.',
           'The harness supplies speaker=learner mechanically. Do not return a speaker field.',
+          'Every returned field is total: never omit a field and never return null. Use the exact string none for target when the act itself names no catalogue entity, and for requested_or_proposed_action when no action applies.',
           'For target.target_id, target.component_ids, and action.action_object_id, use only exact IDs from semantic_annotation_catalog. The harness derives target kind and public identifiers from target_id, and derives action mode and operation from action_object_id. Display labels are explanatory only.',
           'Action executor means the party who must perform the action, never the utterance speaker. A request-type act must have executor different from speaker.',
           'Every case note must contain at least eight characters of case-specific public-evidence rationale, including when the case is not ambiguous.',
           'Keep target_id separate from requested_value_types. A requested name, time, date, or weight is not automatically a target.',
           'A tutor_selection_request requires the catalogue target naming the publicly enumerated choices; the tutor and the requested next-step value are not targets.',
+          'An analytic_contribution target is the catalogue entity the analysis itself is about, independent of any accompanying request event. Use target=none only when the analytic clause names no catalogue entity; co-occurring requests keep their own targets.',
         ],
         handbook_markdown: handbookMarkdown,
         semantic_annotation_catalog: semanticCatalog,

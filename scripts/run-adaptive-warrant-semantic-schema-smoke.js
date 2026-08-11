@@ -54,35 +54,35 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
     schema: 'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v3',
     targets: [
       {
-        target_id: 'target-smoke-west-annex-docket',
+        target_id: 'target-smoke-east-cloister-register',
         kind: 'record_entry',
-        public_identifier_ids: ['public-id-smoke-west-annex'],
+        public_identifier_ids: ['public-id-smoke-east-cloister'],
         allowed_value_types: ['record_text'],
         component_ids: ['bounded_finding'],
-        display_label: 'synthetic west-annex docket',
+        display_label: 'synthetic east-cloister register',
       },
       {
-        target_id: 'target-smoke-brass-seal-mould-q',
+        target_id: 'target-smoke-silver-key-cast-m',
         kind: 'mark_or_tool_result',
-        public_identifier_ids: ['public-id-smoke-brass-seal', 'public-id-smoke-mould-q'],
+        public_identifier_ids: ['public-id-smoke-silver-key', 'public-id-smoke-cast-m'],
         allowed_value_types: ['match_status'],
         component_ids: ['match_status'],
-        display_label: 'synthetic brass-seal comparison',
+        display_label: 'synthetic silver-key comparison',
       },
       {
-        target_id: 'target-smoke-canal-manifest-choice',
+        target_id: 'target-smoke-river-chart-choice',
         kind: 'public_exhibit_result',
-        public_identifier_ids: ['public-id-smoke-canal-manifests'],
+        public_identifier_ids: ['public-id-smoke-river-charts'],
         allowed_value_types: ['other'],
         component_ids: ['next_check'],
-        display_label: 'synthetic canal-manifest choice set',
+        display_label: 'synthetic river-chart choice set',
       },
     ],
     public_identifiers: [
-      { public_identifier_id: 'public-id-smoke-west-annex', display_label: 'west-annex docket' },
-      { public_identifier_id: 'public-id-smoke-brass-seal', display_label: 'brass seal' },
-      { public_identifier_id: 'public-id-smoke-mould-q', display_label: 'mould Q' },
-      { public_identifier_id: 'public-id-smoke-canal-manifests', display_label: 'canal manifests' },
+      { public_identifier_id: 'public-id-smoke-east-cloister', display_label: 'east-cloister register' },
+      { public_identifier_id: 'public-id-smoke-silver-key', display_label: 'silver key' },
+      { public_identifier_id: 'public-id-smoke-cast-m', display_label: 'cast M' },
+      { public_identifier_id: 'public-id-smoke-river-charts', display_label: 'river charts' },
     ],
     components: [
       { component_id: 'bounded_finding', display_label: 'bounded finding' },
@@ -91,32 +91,32 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
     ],
     action_objects: [
       {
-        action_object_id: 'action-object-smoke-add-west-annex-finding',
+        action_object_id: 'action-object-smoke-enter-east-cloister-finding',
         mode: 'requested',
         action: 'record_public_claim',
-        target_id: 'target-smoke-west-annex-docket',
-        display_label: 'add the bounded west-annex finding',
+        target_id: 'target-smoke-east-cloister-register',
+        display_label: 'enter the bounded east-cloister finding',
       },
       {
-        action_object_id: 'action-object-smoke-select-canal-manifest',
+        action_object_id: 'action-object-smoke-select-river-chart',
         mode: 'requested',
         action: 'select_next_step',
-        target_id: 'target-smoke-canal-manifest-choice',
-        display_label: 'select the first canal manifest',
+        target_id: 'target-smoke-river-chart-choice',
+        display_label: 'select the first river chart',
       },
       {
-        action_object_id: 'action-object-smoke-compare-brass-seal',
+        action_object_id: 'action-object-smoke-compare-silver-key',
         mode: 'proposed',
         action: 'perform_public_test',
-        target_id: 'target-smoke-brass-seal-mould-q',
-        display_label: 'compare the brass seal with mould Q',
+        target_id: 'target-smoke-silver-key-cast-m',
+        display_label: 'compare the silver key with cast M',
       },
       {
-        action_object_id: 'action-object-smoke-report-brass-seal-match',
+        action_object_id: 'action-object-smoke-report-silver-key-fit',
         mode: 'requested',
         action: 'supply_public_result',
-        target_id: 'target-smoke-brass-seal-mould-q',
-        display_label: 'report the brass-seal match status',
+        target_id: 'target-smoke-silver-key-cast-m',
+        display_label: 'report the silver-key fit status',
       },
       {
         action_object_id: 'action-object-smoke-explain-public-wording',
@@ -143,30 +143,32 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
     semantic_annotation_catalog: catalog,
     cases: [
       {
-        sample_id: 'synthetic-smoke-west-annex-record',
+        sample_id: 'synthetic-smoke-east-cloister-record',
         current_learner_turn: {
           turn: 2,
           learner:
-            'The west-annex docket establishes delivery, not custody; add only that bounded point to the case ledger.',
-        },
-        public_evidence_at_decision: ['target-smoke-west-annex-docket is identified by public-id-smoke-west-annex.'],
-      },
-      {
-        sample_id: 'synthetic-smoke-canal-selection',
-        current_learner_turn: {
-          turn: 2,
-          learner: 'Choose which canal manifest I should inspect first; I will not make that choice myself.',
-        },
-        public_evidence_at_decision: ['public-id-smoke-canal-manifests names the available canal manifests.'],
-      },
-      {
-        sample_id: 'synthetic-smoke-brass-seal-compound',
-        current_learner_turn: {
-          turn: 2,
-          learner: 'I will compare the brass seal with mould Q; once I have, state the logged correspondence.',
+            'The east-cloister register establishes arrival, not possession; enter only that bounded conclusion in the inquiry ledger.',
         },
         public_evidence_at_decision: [
-          'target-smoke-brass-seal-mould-q is identified by public-id-smoke-brass-seal and public-id-smoke-mould-q.',
+          'target-smoke-east-cloister-register is identified by public-id-smoke-east-cloister.',
+        ],
+      },
+      {
+        sample_id: 'synthetic-smoke-river-chart-selection',
+        current_learner_turn: {
+          turn: 2,
+          learner: 'Pick which river chart I should inspect first; I decline to choose between the listed charts.',
+        },
+        public_evidence_at_decision: ['public-id-smoke-river-charts names the available river charts.'],
+      },
+      {
+        sample_id: 'synthetic-smoke-silver-key-compound',
+        current_learner_turn: {
+          turn: 2,
+          learner: 'I will compare the silver key with cast M; when that is done, give me the recorded fit status.',
+        },
+        public_evidence_at_decision: [
+          'target-smoke-silver-key-cast-m is identified by public-id-smoke-silver-key and public-id-smoke-cast-m.',
         ],
       },
     ],
@@ -174,24 +176,24 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
 }
 
 function expectedSmokeIdentities() {
-  const westAnnex = {
+  const eastCloister = {
     kind: 'record_entry',
-    target_id: 'target-smoke-west-annex-docket',
-    public_identifier_ids: ['public-id-smoke-west-annex'],
+    target_id: 'target-smoke-east-cloister-register',
+    public_identifier_ids: ['public-id-smoke-east-cloister'],
     requested_value_types: ['record_text'],
     component_ids: ['bounded_finding'],
   };
-  const brassSeal = {
+  const silverKey = {
     kind: 'mark_or_tool_result',
-    target_id: 'target-smoke-brass-seal-mould-q',
-    public_identifier_ids: ['public-id-smoke-brass-seal', 'public-id-smoke-mould-q'],
+    target_id: 'target-smoke-silver-key-cast-m',
+    public_identifier_ids: ['public-id-smoke-silver-key', 'public-id-smoke-cast-m'],
     requested_value_types: ['match_status'],
     component_ids: ['match_status'],
   };
-  const canalChoice = {
+  const riverChoice = {
     kind: 'public_exhibit_result',
-    target_id: 'target-smoke-canal-manifest-choice',
-    public_identifier_ids: ['public-id-smoke-canal-manifests'],
+    target_id: 'target-smoke-river-chart-choice',
+    public_identifier_ids: ['public-id-smoke-river-charts'],
     requested_value_types: ['other'],
     component_ids: ['next_check'],
   };
@@ -203,44 +205,44 @@ function expectedSmokeIdentities() {
       actionObjectId === null ? null : { mode, executor, action, action_object_id: actionObjectId },
   });
   return {
-    'synthetic-smoke-west-annex-record': [
-      event('analytic_contribution', westAnnex, null, null, null, null),
+    'synthetic-smoke-east-cloister-record': [
+      event('analytic_contribution', eastCloister, null, null, null, null),
       event(
         'learner_record_entry_request',
-        westAnnex,
+        eastCloister,
         'requested',
         'tutor',
         'record_public_claim',
-        'action-object-smoke-add-west-annex-finding',
+        'action-object-smoke-enter-east-cloister-finding',
       ),
     ],
-    'synthetic-smoke-canal-selection': [
+    'synthetic-smoke-river-chart-selection': [
       event(
         'tutor_selection_request',
-        canalChoice,
+        riverChoice,
         'requested',
         'tutor',
         'select_next_step',
-        'action-object-smoke-select-canal-manifest',
+        'action-object-smoke-select-river-chart',
       ),
       event('low_agency_deferral', null, null, null, null, null),
     ],
-    'synthetic-smoke-brass-seal-compound': [
+    'synthetic-smoke-silver-key-compound': [
       event(
         'learner_proposed_test',
-        brassSeal,
+        silverKey,
         'proposed',
         'learner',
         'perform_public_test',
-        'action-object-smoke-compare-brass-seal',
+        'action-object-smoke-compare-silver-key',
       ),
       event(
         'tutor_directed_public_result_request',
-        brassSeal,
+        silverKey,
         'requested',
         'tutor',
         'supply_public_result',
-        'action-object-smoke-report-brass-seal-match',
+        'action-object-smoke-report-silver-key-fit',
       ),
     ],
   };
@@ -268,7 +270,7 @@ Use one event for each independent clause-level act that changes a distinct type
 
 The current-turn speaker is mechanically learner and must not be returned. Executor means the party who must perform the action, never the speaker. Every request-type act requires executor different from speaker. A tutor-directed result request, tutor-selection request, and record-entry request therefore use executor=tutor when addressed to the tutor; a learner proposal uses executor=learner.
 
-Return only target_id, requested_value_types, and component_ids for a target. The harness derives kind and public identifiers from target_id. Tutor-selection requests require the catalogue target that names the publicly enumerated choices. Return only executor and action_object_id for an action. The harness derives mode and operation from action_object_id. A requested value such as match_status is not a target kind.
+Every reader field is required and non-null. Return only target_id, requested_value_types, and component_ids for a catalogue target; use the exact string target="none" when the act itself names no catalogue entity. The harness derives kind and public identifiers from target_id. Tutor-selection requests require the catalogue target that names the publicly enumerated choices. An analytic contribution's target is the catalogue entity the analysis itself is about, independent of an accompanying request; use target="none" only when the analytic clause names no catalogue entity. Co-occurring requests keep their own targets. Return only executor and action_object_id for an action; use the exact string requested_or_proposed_action="none" when no action applies. The harness derives mode and operation from action_object_id. A requested value such as match_status is not a target kind. Never return null or omit a field.
 
 A record-entry request may coexist with an independent analytic clause. A tutor-selection request carries a second low_agency_deferral event only when a separate clause explicitly declines choice. A proposal followed by a request for its result is two events in surface order.
 
@@ -420,9 +422,9 @@ export async function runAdaptiveWarrantSemanticSchemaSmoke({
         ),
     ),
     cross_reader_hard_consensus: consensus.hard_consensus_cases === corpus.cases.length,
-    record_entry_contract_agreement: expectedMatches['synthetic-smoke-west-annex-record'] === true,
-    tutor_selection_contract_agreement: expectedMatches['synthetic-smoke-canal-selection'] === true,
-    compound_probe_contract_agreement: expectedMatches['synthetic-smoke-brass-seal-compound'] === true,
+    record_entry_contract_agreement: expectedMatches['synthetic-smoke-east-cloister-record'] === true,
+    tutor_selection_contract_agreement: expectedMatches['synthetic-smoke-river-chart-selection'] === true,
+    compound_probe_contract_agreement: expectedMatches['synthetic-smoke-silver-key-compound'] === true,
   };
   const passed = Object.values(checks).every(Boolean);
   const result = {

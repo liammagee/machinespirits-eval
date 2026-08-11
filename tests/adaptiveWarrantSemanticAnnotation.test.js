@@ -9,6 +9,7 @@ import {
   ADAPTIVE_WARRANT_SEMANTIC_ANNOTATION_RESPONSE_SCHEMA,
   ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT,
   auditAdaptiveWarrantSemanticContractCatalog,
+  auditAdaptiveWarrantSemanticReaderSchemaTotality,
   buildAdaptiveWarrantSemanticConsensus,
   materializeAdaptiveWarrantSemanticReaderEvent,
   scoreAdaptiveWarrantSemanticExtraction,
@@ -247,18 +248,39 @@ test('semantic collection freezes exact packets and derives only unique literal 
     'text',
   ]);
   assert.equal('speaker' in firstSampleSchema.properties.events.items.properties, false);
-  assert.deepEqual(Object.keys(firstSampleSchema.properties.events.items.properties.target.properties).sort(), [
+  const targetChoices = firstSampleSchema.properties.events.items.properties.target.oneOf;
+  const targetSchema = targetChoices.find((choice) => choice.type === 'object');
+  const actionChoices = firstSampleSchema.properties.events.items.properties.requested_or_proposed_action.oneOf;
+  const actionSchema = actionChoices.find((choice) => choice.type === 'object');
+  assert.deepEqual(targetChoices.find((choice) => choice.type === 'string').enum, ['none']);
+  assert.deepEqual(actionChoices.find((choice) => choice.type === 'string').enum, ['none']);
+  assert.deepEqual(Object.keys(targetSchema.properties).sort(), [
     'component_ids',
     'requested_value_types',
     'target_id',
   ]);
+  assert.deepEqual(Object.keys(actionSchema.properties).sort(), ['action_object_id', 'executor']);
   assert.deepEqual(
-    Object.keys(firstSampleSchema.properties.events.items.properties.requested_or_proposed_action.properties).sort(),
-    ['action_object_id', 'executor'],
+    targetSchema.properties.target_id.enum,
+    corpus.semantic_annotation_catalog.targets.map((row) => row.target_id),
   );
-  assert.equal(
-    firstSampleSchema.properties.events.items.properties.target.properties.target_id.pattern,
-    '^[a-z0-9][a-z0-9_-]{0,95}$',
+  assert.deepEqual(
+    actionSchema.properties.action_object_id.enum,
+    corpus.semantic_annotation_catalog.action_objects.map((row) => row.action_object_id),
+  );
+  assert.deepEqual(
+    auditAdaptiveWarrantSemanticReaderSchemaTotality({
+      schema: firstBatchSchema,
+      semanticCatalog: corpus.semantic_annotation_catalog,
+    }),
+    {
+      ok: true,
+      issue_count: 0,
+      issues: [],
+      reader_fields_total: true,
+      explicit_none_tokens: true,
+      catalogue_domains_closed: true,
+    },
   );
   const reader = prepared.manifest.readers[0];
   const responseDir = path.join(root, 'responses');
@@ -327,6 +349,44 @@ test('reader event materialization derives mechanical fields and enforces reques
   );
 });
 
+test('reader events require total non-null target and action fields with explicit none tokens', () => {
+  const corpus = buildAdaptiveWarrantSemanticSmokeCorpus('b'.repeat(40));
+  const analyticText = corpus.cases[0].current_learner_turn.learner.split(';')[0];
+  const analytic = {
+    speech_act: 'analytic_contribution',
+    target: {
+      target_id: 'target-smoke-east-cloister-register',
+      requested_value_types: ['record_text'],
+      component_ids: ['bounded_finding'],
+    },
+    requested_or_proposed_action: 'none',
+    evidence_span: { text: analyticText },
+  };
+  const materialized = materializeAdaptiveWarrantSemanticReaderEvent({
+    event: analytic,
+    semanticCatalog: corpus.semantic_annotation_catalog,
+  });
+  assert.equal(materialized.target.target_id, 'target-smoke-east-cloister-register');
+  assert.equal(materialized.requested_or_proposed_action, null);
+
+  assert.throws(
+    () =>
+      materializeAdaptiveWarrantSemanticReaderEvent({
+        event: { ...analytic, target: null },
+        semanticCatalog: corpus.semantic_annotation_catalog,
+      }),
+    /target must be an object/u,
+  );
+  assert.throws(
+    () =>
+      materializeAdaptiveWarrantSemanticReaderEvent({
+        event: { ...analytic, requested_or_proposed_action: null },
+        semanticCatalog: corpus.semantic_annotation_catalog,
+      }),
+    /requested_or_proposed_action must be an object/u,
+  );
+});
+
 test('contract/catalog audit validates every speech act through the production annotation validator', () => {
   const corpus = buildAdaptiveWarrantSemanticSmokeCorpus('b'.repeat(40));
   const audit = auditAdaptiveWarrantSemanticContractCatalog({
@@ -337,12 +397,12 @@ test('contract/catalog audit validates every speech act through the production a
   assert.equal(audit.worked_example_count, 15);
   assert.equal(
     audit.worked_examples.find((row) => row.speech_act === 'tutor_selection_request').target_id,
-    'target-smoke-canal-manifest-choice',
+    'target-smoke-river-chart-choice',
   );
 
   const inconsistent = structuredClone(corpus.semantic_annotation_catalog);
   inconsistent.action_objects.find(
-    (row) => row.action_object_id === 'action-object-smoke-select-canal-manifest',
+    (row) => row.action_object_id === 'action-object-smoke-select-river-chart',
   ).target_id = null;
   assert.throws(
     () => auditAdaptiveWarrantSemanticContractCatalog({ semanticCatalog: inconsistent }),
@@ -480,6 +540,7 @@ test('zero-call brittleness preflight exercises the complete instrument path and
     'all_event_contracts_satisfiable_by_preflight_catalog',
     'smoke_catalog_worked_examples_pass_production_validator',
     'diagnostic_catalog_worked_examples_pass_production_validator',
+    'all_reader_fields_total_non_nullable_and_catalogue_closed',
   ]) {
     assert.equal(result.artifact.checks.find((row) => row.name === checkName).status, 'pass');
   }

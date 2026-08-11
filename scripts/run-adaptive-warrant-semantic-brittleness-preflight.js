@@ -7,7 +7,9 @@ import { parseArgs } from 'node:util';
 
 import {
   auditAdaptiveWarrantSemanticContractCatalog,
+  auditAdaptiveWarrantSemanticReaderSchemaTotality,
   adaptiveWarrantSemanticConsensusIdentity,
+  buildAdaptiveWarrantSemanticBatchOutputSchema,
   buildAdaptiveWarrantSemanticConsensus,
   scoreAdaptiveWarrantSemanticExtraction,
   validateAdaptiveWarrantSemanticAnnotationResponse,
@@ -260,15 +262,13 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
   }
   fs.mkdirSync(workDir, { recursive: true });
   const { corpus, expected } = syntheticInstrument(sourceCommit);
+  const smokeCorpus = buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit);
+  const diagnosticCorpus = buildAdaptiveWarrantV3SemanticDiagnostic({
+    studyId: `semantic-contract-catalog-preflight-${sourceCommit.slice(0, 12)}`,
+  }).corpus;
   const syntheticContractCatalogAudit = captureContractCatalogAudit(corpus.semantic_annotation_catalog);
-  const smokeContractCatalogAudit = captureContractCatalogAudit(
-    buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit).semantic_annotation_catalog,
-  );
-  const diagnosticContractCatalogAudit = captureContractCatalogAudit(
-    buildAdaptiveWarrantV3SemanticDiagnostic({
-      studyId: `semantic-contract-catalog-preflight-${sourceCommit.slice(0, 12)}`,
-    }).corpus.semantic_annotation_catalog,
-  );
+  const smokeContractCatalogAudit = captureContractCatalogAudit(smokeCorpus.semantic_annotation_catalog);
+  const diagnosticContractCatalogAudit = captureContractCatalogAudit(diagnosticCorpus.semantic_annotation_catalog);
   const corpusPath = path.join(workDir, 'synthetic-corpus.json');
   const handbookPath = path.join(workDir, 'synthetic-handbook.md');
   writeJson(corpusPath, corpus);
@@ -377,6 +377,29 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
   const schemas = prepared.manifest.readers.flatMap((reader) =>
     reader.batches.map((batch) => JSON.parse(fs.readFileSync(batch.response_schema_path, 'utf8'))),
   );
+  const totalitySchemaFor = (candidateCorpus, label) =>
+    buildAdaptiveWarrantSemanticBatchOutputSchema({
+      readerId: `zero-call-${label}`,
+      batchId: `zero-call-${label}-batch`,
+      studyId: candidateCorpus.study_id,
+      corpusSha256: `zero-call-${label}-corpus`,
+      requiredSampleIds: [candidateCorpus.cases[0].sample_id],
+      semanticCatalog: candidateCorpus.semantic_annotation_catalog,
+    });
+  const readerSchemaTotalityAudits = {
+    synthetic: auditAdaptiveWarrantSemanticReaderSchemaTotality({
+      schema: schemas[0],
+      semanticCatalog: corpus.semantic_annotation_catalog,
+    }),
+    smoke: auditAdaptiveWarrantSemanticReaderSchemaTotality({
+      schema: totalitySchemaFor(smokeCorpus, 'smoke'),
+      semanticCatalog: smokeCorpus.semantic_annotation_catalog,
+    }),
+    diagnostic: auditAdaptiveWarrantSemanticReaderSchemaTotality({
+      schema: totalitySchemaFor(diagnosticCorpus, 'diagnostic'),
+      semanticCatalog: diagnosticCorpus.semantic_annotation_catalog,
+    }),
+  };
   const schemaText = JSON.stringify(schemas);
   const scoreStates = Object.values(score.checks);
   const checks = [
@@ -396,6 +419,17 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       'diagnostic_catalog_worked_examples_pass_production_validator',
       diagnosticContractCatalogAudit.ok === true && diagnosticContractCatalogAudit.worked_example_count === 15,
       diagnosticContractCatalogAudit,
+    ),
+    check(
+      'all_reader_fields_total_non_nullable_and_catalogue_closed',
+      Object.values(readerSchemaTotalityAudits).every(
+        (audit) =>
+          audit.ok === true &&
+          audit.reader_fields_total === true &&
+          audit.explicit_none_tokens === true &&
+          audit.catalogue_domains_closed === true,
+      ),
+      readerSchemaTotalityAudits,
     ),
     check('complete_prepare_assemble_consensus_score_path', consensus.hard_consensus_cases === corpus.cases.length),
     check('equivalent_descriptions_same_consensus', consensus.hard_consensus_cases === corpus.cases.length),
@@ -465,6 +499,7 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
         smoke: smokeContractCatalogAudit,
         diagnostic: diagnosticContractCatalogAudit,
       },
+      reader_schema_totality_audits: readerSchemaTotalityAudits,
     },
   };
   writeJson(resolvedOutput, artifact);

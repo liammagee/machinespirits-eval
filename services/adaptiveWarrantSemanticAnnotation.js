@@ -13,7 +13,7 @@ export const ADAPTIVE_WARRANT_SEMANTIC_CONSENSUS_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-event-consensus.v3';
 export const ADAPTIVE_WARRANT_SEMANTIC_SCORE_SCHEMA = 'machinespirits.adaptation-refinement.semantic-event-score.v3';
 export const ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-annotation-batch-response.v3';
+  'machinespirits.adaptation-refinement.semantic-event-annotation-batch-response.v4';
 export const ADAPTIVE_WARRANT_SEMANTIC_READER_CATALOG_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v3';
 
@@ -62,7 +62,8 @@ export const ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT = Object.freeze({
     'One event per independent clause-level act that would change a distinct typed state; explanatory material is not a second event.',
   speaker: 'Mechanically supplied from current-turn authorship; never reader-judged.',
   speech_act: 'Reader chooses one closed act under the handbook precedence table.',
-  target_id: 'Reader chooses the public object, relation, or enumerated choice set, never a requested value or actor.',
+  target_id:
+    'Reader chooses the public object, relation, or enumerated choice set that the act itself is about, never a requested value or actor; use the total token none when the act names no catalogue entity.',
   target_kind: 'Mechanically supplied from the selected target catalogue entry; never reader-judged.',
   public_identifier_ids: 'Mechanically supplied from the selected target catalogue entry; never reader-judged.',
   requested_value_types: 'Exact closed-set values explicitly requested or produced by the clause.',
@@ -70,7 +71,8 @@ export const ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT = Object.freeze({
   action_mode: 'Mechanically supplied from the selected action-object catalogue entry; never reader-judged.',
   executor: 'Reader chooses who must perform the action; this is not the utterance speaker.',
   action: 'Mechanically supplied from the selected action-object catalogue entry; never reader-judged.',
-  action_object_id: 'Reader chooses the public action object licensed by the clause.',
+  action_object_id:
+    'Reader chooses the public action object licensed by the clause; use the total token none when no action applies.',
   evidence_span: 'Reader supplies one unique literal minimal clause span; offsets and order are mechanical.',
   genuinely_ambiguous:
     'True only when two complete typed readings remain after every closed rule; an ambiguous case returns zero events.',
@@ -79,68 +81,68 @@ export const ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT = Object.freeze({
 
 export const ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS = Object.freeze({
   tutor_directed_public_result_request: Object.freeze({
-    target: 'required',
-    action: 'required',
+    target: 'catalog',
+    action: 'catalog',
     mode: 'requested',
     operation: 'supply_public_result',
     executors: Object.freeze(['tutor', 'joint', 'unspecified']),
   }),
   learner_proposed_test: Object.freeze({
-    target: 'required',
-    action: 'required',
+    target: 'catalog',
+    action: 'catalog',
     mode: 'proposed',
     operation: 'perform_public_test',
     executors: Object.freeze(['learner', 'joint', 'unspecified']),
   }),
-  criterion_question: Object.freeze({ target: 'required', action: 'forbidden' }),
+  criterion_question: Object.freeze({ target: 'catalog', action: 'none' }),
   tutor_selection_request: Object.freeze({
-    target: 'required',
-    action: 'required',
+    target: 'catalog',
+    action: 'catalog',
     mode: 'requested',
     operation: 'select_next_step',
     executors: Object.freeze(['tutor']),
   }),
   learner_record_entry_request: Object.freeze({
-    target: 'required',
-    action: 'required',
+    target: 'catalog',
+    action: 'catalog',
     mode: 'requested',
     operation: 'record_public_claim',
     executors: Object.freeze(['tutor', 'joint', 'unspecified']),
   }),
   learner_wording_request: Object.freeze({
-    target: 'forbidden',
-    action: 'required',
+    target: 'none',
+    action: 'catalog',
     mode: 'requested',
     operation: 'explain_wording',
     executors: Object.freeze(['tutor']),
   }),
   repair_request: Object.freeze({
-    target: 'forbidden',
-    action: 'required',
+    target: 'none',
+    action: 'catalog',
     mode: 'requested',
     operation: 'explain_wording',
     executors: Object.freeze(['tutor']),
   }),
   withdrawal: Object.freeze({
-    target: 'optional',
-    action: 'required',
+    target: 'catalog_or_none',
+    action: 'catalog',
     mode: 'requested',
     operation: 'withdraw_request',
     executors: Object.freeze(['learner']),
   }),
   transfer_to_learner: Object.freeze({
-    target: 'optional',
-    action: 'required',
+    target: 'catalog_or_none',
+    action: 'catalog',
     mode: 'proposed',
     operation: 'perform_public_test',
     executors: Object.freeze(['learner']),
   }),
-  stall: Object.freeze({ target: 'forbidden', action: 'forbidden' }),
-  register_complaint: Object.freeze({ target: 'forbidden', action: 'forbidden' }),
-  repetition_complaint: Object.freeze({ target: 'forbidden', action: 'forbidden' }),
-  low_agency_deferral: Object.freeze({ target: 'forbidden', action: 'forbidden' }),
-  analytic_contribution: Object.freeze({ target: 'optional', action: 'forbidden' }),
-  other: Object.freeze({ target: 'optional', action: 'forbidden' }),
+  stall: Object.freeze({ target: 'none', action: 'none' }),
+  register_complaint: Object.freeze({ target: 'none', action: 'none' }),
+  repetition_complaint: Object.freeze({ target: 'none', action: 'none' }),
+  low_agency_deferral: Object.freeze({ target: 'none', action: 'none' }),
+  analytic_contribution: Object.freeze({ target: 'catalog_or_none', action: 'none' }),
+  other: Object.freeze({ target: 'catalog_or_none', action: 'none' }),
 });
 
 const REQUEST_SPEECH_ACTS = new Set([
@@ -156,10 +158,9 @@ function closedSchema(properties) {
 }
 
 function semanticReaderEventSchema(semanticCatalog) {
-  validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
-  const id = { type: 'string', pattern: '^[a-z0-9][a-z0-9_-]{0,95}$' };
+  const catalogIds = validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
   const target = closedSchema({
-    target_id: id,
+    target_id: { type: 'string', enum: [...catalogIds.target_ids] },
     requested_value_types: {
       type: 'array',
       maxItems: 4,
@@ -168,7 +169,7 @@ function semanticReaderEventSchema(semanticCatalog) {
     component_ids: {
       type: 'array',
       maxItems: 4,
-      items: id,
+      items: { type: 'string', enum: [...catalogIds.component_ids] },
     },
   });
   const action = closedSchema({
@@ -176,16 +177,66 @@ function semanticReaderEventSchema(semanticCatalog) {
       type: 'string',
       enum: ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS.filter((value) => value !== 'none'),
     },
-    action_object_id: id,
+    action_object_id: { type: 'string', enum: [...catalogIds.action_object_ids] },
   });
   return closedSchema({
     speech_act: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS] },
-    target: { ...target, type: ['object', 'null'] },
-    requested_or_proposed_action: { ...action, type: ['object', 'null'] },
+    target: { oneOf: [target, { type: 'string', enum: ['none'] }] },
+    requested_or_proposed_action: { oneOf: [action, { type: 'string', enum: ['none'] }] },
     evidence_span: closedSchema({
       text: { type: 'string', minLength: 1, maxLength: 240 },
     }),
   });
+}
+
+export function auditAdaptiveWarrantSemanticReaderSchemaTotality({ schema, semanticCatalog } = {}) {
+  const catalogIds = validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
+  const issues = [];
+  const visit = (node, location) => {
+    if (!node || typeof node !== 'object' || Array.isArray(node)) return;
+    if (node.type === 'null' || (Array.isArray(node.type) && node.type.includes('null'))) {
+      issues.push(`${location} admits null`);
+    }
+    if (Array.isArray(node.enum) && node.enum.includes(null)) issues.push(`${location} enum admits null`);
+    if (node.properties) {
+      const propertyNames = Object.keys(node.properties);
+      const required = Array.isArray(node.required) ? node.required : [];
+      for (const propertyName of propertyNames) {
+        if (!required.includes(propertyName)) issues.push(`${location}.${propertyName} is optional`);
+      }
+      if (node.additionalProperties !== false) issues.push(`${location} is not closed`);
+    }
+    for (const [key, value] of Object.entries(node)) {
+      if (Array.isArray(value)) value.forEach((entry, index) => visit(entry, `${location}.${key}[${index}]`));
+      else visit(value, `${location}.${key}`);
+    }
+  };
+  visit(schema, '$');
+  const event = schema?.$defs?.case?.properties?.events?.items;
+  const targetChoices = event?.properties?.target?.oneOf;
+  const actionChoices = event?.properties?.requested_or_proposed_action?.oneOf;
+  const targetObject = targetChoices?.find((choice) => choice.type === 'object');
+  const targetNone = targetChoices?.find((choice) => choice.type === 'string');
+  const actionObject = actionChoices?.find((choice) => choice.type === 'object');
+  const actionNone = actionChoices?.find((choice) => choice.type === 'string');
+  if (JSON.stringify(targetNone?.enum) !== JSON.stringify(['none'])) issues.push('target lacks the closed none token');
+  if (JSON.stringify(actionNone?.enum) !== JSON.stringify(['none'])) issues.push('action lacks the closed none token');
+  const exactEnum = (actual, expected, label) => {
+    if (JSON.stringify([...(actual || [])].sort()) !== JSON.stringify([...expected].sort())) {
+      issues.push(`${label} is not closed to the catalogue`);
+    }
+  };
+  exactEnum(targetObject?.properties?.target_id?.enum, catalogIds.target_ids, 'target_id');
+  exactEnum(targetObject?.properties?.component_ids?.items?.enum, catalogIds.component_ids, 'component_ids');
+  exactEnum(actionObject?.properties?.action_object_id?.enum, catalogIds.action_object_ids, 'action_object_id');
+  return {
+    ok: issues.length === 0,
+    issue_count: issues.length,
+    issues,
+    reader_fields_total: issues.every((issue) => !issue.includes('optional') && !issue.includes('null')),
+    explicit_none_tokens: targetNone?.enum?.[0] === 'none' && actionNone?.enum?.[0] === 'none',
+    catalogue_domains_closed: issues.every((issue) => !issue.includes('not closed to the catalogue')),
+  };
 }
 
 export function buildAdaptiveWarrantSemanticBatchOutputSchema({
@@ -384,13 +435,13 @@ function validateSpeechActCompatibility(event, label) {
   if (!contract) throw new Error(`${label}.speech_act has no declared contract`);
   const hasTarget = event.target !== null;
   const hasAction = event.requested_or_proposed_action !== null;
-  if (contract.target === 'required' && !hasTarget) throw new Error(`${label}.target is required for the speech act`);
-  if (contract.target === 'forbidden' && hasTarget) throw new Error(`${label}.target is forbidden for the speech act`);
-  if (contract.action === 'required' && !hasAction) {
+  if (contract.target === 'catalog' && !hasTarget) throw new Error(`${label}.target is required for the speech act`);
+  if (contract.target === 'none' && hasTarget) throw new Error(`${label}.target must be none for the speech act`);
+  if (contract.action === 'catalog' && !hasAction) {
     throw new Error(`${label}.requested_or_proposed_action is required for the speech act`);
   }
-  if (contract.action === 'forbidden' && hasAction) {
-    throw new Error(`${label}.requested_or_proposed_action is forbidden for the speech act`);
+  if (contract.action === 'none' && hasAction) {
+    throw new Error(`${label}.requested_or_proposed_action must be none for the speech act`);
   }
   if (!hasAction) return;
   const action = event.requested_or_proposed_action;
@@ -413,7 +464,7 @@ export function materializeAdaptiveWarrantSemanticReaderEvent({ event, semanticC
   }
   const catalogIds = validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
   let target = null;
-  if (event.target !== null) {
+  if (event.target !== 'none') {
     exactFields(event.target, ['target_id', 'requested_value_types', 'component_ids'], `${label}.target`);
     const catalogTarget = catalogIds.targets_by_id[event.target.target_id];
     if (!catalogTarget) throw new Error(`${label}.target.target_id is outside the catalog`);
@@ -438,7 +489,7 @@ export function materializeAdaptiveWarrantSemanticReaderEvent({ event, semanticC
     };
   }
   let action = null;
-  if (event.requested_or_proposed_action !== null) {
+  if (event.requested_or_proposed_action !== 'none') {
     exactFields(
       event.requested_or_proposed_action,
       ['executor', 'action_object_id'],
@@ -477,11 +528,11 @@ function contractWorkedExample({ speechAct, contract, catalogIds }) {
     left.action_object_id.localeCompare(right.action_object_id),
   );
   let actionEntry = null;
-  if (contract.action === 'required') {
+  if (contract.action === 'catalog') {
     actionEntry = actionEntries.find((candidate) => {
       if (candidate.mode !== contract.mode || candidate.action !== contract.operation) return false;
-      if (contract.target === 'required') return candidate.target_id !== null;
-      if (contract.target === 'forbidden') return candidate.target_id === null;
+      if (contract.target === 'catalog') return candidate.target_id !== null;
+      if (contract.target === 'none') return candidate.target_id === null;
       return true;
     });
     if (!actionEntry) {
@@ -493,22 +544,22 @@ function contractWorkedExample({ speechAct, contract, catalogIds }) {
 
   let targetEntry = null;
   if (actionEntry?.target_id) targetEntry = catalogIds.targets_by_id[actionEntry.target_id];
-  if (contract.target === 'required' && !targetEntry) {
+  if (contract.target === 'catalog' && !targetEntry) {
     targetEntry = Object.values(catalogIds.targets_by_id).toSorted((left, right) =>
       left.target_id.localeCompare(right.target_id),
     )[0];
   }
-  if (contract.target === 'required' && !targetEntry) {
+  if (contract.target === 'catalog' && !targetEntry) {
     throw new Error(`semantic reader catalog cannot satisfy ${speechAct}: no target is available`);
   }
-  if (contract.target === 'forbidden' && targetEntry) {
+  if (contract.target === 'none' && targetEntry) {
     throw new Error(
-      `semantic reader catalog cannot satisfy ${speechAct}: its action object requires a forbidden target`,
+      `semantic reader catalog cannot satisfy ${speechAct}: its action object requires a target where none is allowed`,
     );
   }
 
-  const executor = contract.action === 'required' ? contract.executors[0] : null;
-  if (contract.action === 'required' && !executor) {
+  const executor = contract.action === 'catalog' ? contract.executors[0] : null;
+  if (contract.action === 'catalog' && !executor) {
     throw new Error(`semantic reader contract ${speechAct} has no permitted executor`);
   }
   if (REQUEST_SPEECH_ACTS.has(speechAct) && executor === 'learner') {
@@ -522,8 +573,8 @@ function contractWorkedExample({ speechAct, contract, catalogIds }) {
           requested_value_types: [],
           component_ids: [],
         }
-      : null,
-    requested_or_proposed_action: actionEntry ? { executor, action_object_id: actionEntry.action_object_id } : null,
+      : 'none',
+    requested_or_proposed_action: actionEntry ? { executor, action_object_id: actionEntry.action_object_id } : 'none',
     evidence_span: { text: `Contract worked example for ${speechAct}.` },
   };
 }
