@@ -13,6 +13,7 @@ import {
   validateBlindedAnnotationResponse,
 } from './run-adaptive-warrant-baseline-study.js';
 import { ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS } from '../services/adaptiveWarrantDivergence.js';
+import { ADAPTIVE_WARRANT_ACTION_FAMILY_CONTRACTS } from '../services/adaptiveWarrantActionContracts.js';
 
 export const ADAPTIVE_WARRANT_ANNOTATION_COLLECTION_MANIFEST_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-annotation-collection-manifest.v1';
@@ -140,7 +141,13 @@ function divergenceResponseSchema() {
   };
 }
 
-function caseResponseSchema() {
+const ADAPTIVE_WARRANT_ANNOTATION_ACTION_FAMILIES = Object.freeze([
+  ...Object.keys(ADAPTIVE_WARRANT_ACTION_FAMILY_CONTRACTS),
+  'hold',
+  'uncertain',
+]);
+
+function caseResponseSchema(allowedActionFamilies) {
   return {
     type: 'object',
     additionalProperties: false,
@@ -162,9 +169,13 @@ function caseResponseSchema() {
       open_obligation_source_turns: {
         type: 'array',
         items: { type: 'integer', minimum: 1 },
+        description:
+          'Unresolved source turns only. This array must be empty for none, satisfied, or withdrawn_or_transferred; use at least one source turn for open, overdue, or deferred.',
       },
       obligation_state: {
         enum: ['none', 'open', 'overdue', 'deferred', 'satisfied', 'withdrawn_or_transferred', 'uncertain'],
+        description:
+          'Resolved states satisfied and withdrawn_or_transferred must not retain open_obligation_source_turns.',
       },
       inquiry_state: { enum: ['complete', 'incomplete', 'uncertain'] },
       commitment_transition_warranted: { enum: ['yes', 'no', 'uncertain'] },
@@ -180,7 +191,11 @@ function caseResponseSchema() {
           'uncertain',
         ],
       },
-      recommended_action_family: { type: 'string', minLength: 1 },
+      recommended_action_family: {
+        enum: allowedActionFamilies,
+        description:
+          'Choose one exact declared action family. Warrant-basis names such as immediate_repair are not action families.',
+      },
       note: { type: 'string', minLength: ADAPTIVE_WARRANT_ANNOTATION_MIN_NOTE_CHARACTERS },
       divergence_by_dimension: {
         type: 'object',
@@ -203,8 +218,10 @@ export function buildAdaptiveWarrantAnnotationOutputSchema({
   studyId,
   corpusSha256,
   requiredSampleIds,
+  allowedActionFamilies = ADAPTIVE_WARRANT_ANNOTATION_ACTION_FAMILIES,
 } = {}) {
   exactUniqueIds(requiredSampleIds, 'requiredSampleIds');
+  exactUniqueIds(allowedActionFamilies, 'allowedActionFamilies');
   for (const [label, value] of Object.entries({ readerId, batchId, studyId, corpusSha256 })) {
     if (typeof value !== 'string' || !value.trim()) throw new Error(`${label} must be a non-empty string`);
   }
@@ -229,7 +246,7 @@ export function buildAdaptiveWarrantAnnotationOutputSchema({
       },
     },
     $defs: {
-      case: caseResponseSchema(),
+      case: caseResponseSchema(allowedActionFamilies),
       divergence: divergenceResponseSchema(),
     },
   };
@@ -317,6 +334,7 @@ export function prepareAdaptiveWarrantAnnotationBatches({
         studyId: corpus.study_id,
         corpusSha256,
         requiredSampleIds,
+        allowedActionFamilies: corpus.allowed_recommended_action_families,
       });
       const packet = {
         schema: ADAPTIVE_WARRANT_ANNOTATION_READER_PACKET_SCHEMA,
@@ -330,10 +348,13 @@ export function prepareAdaptiveWarrantAnnotationBatches({
           'Work independently and use only this handbook and the supplied public decision-time cases.',
           'Return one JSON object only, using the exact response envelope and every required sample-id key.',
           `The handbook's V4 envelope describes the assembled reader artifact, not this batch response. For this batch, use schema ${ADAPTIVE_WARRANT_ANNOTATION_BATCH_RESPONSE_SCHEMA} and exactly the six top-level fields in response_template; do not add annotator_id or annotation_run_id.`,
+          'Use only an exact value from allowed_recommended_action_families; immediate_repair is a warrant basis, not an action family.',
+          'open_obligation_source_turns contains unresolved sources only: it must be empty for none, satisfied, or withdrawn_or_transferred, and non-empty for open, overdue, or deferred.',
           'Do not use tools, external sources, private predictions, technical traces, or another reader response.',
           `Every case-level and dimension note must contain at least ${ADAPTIVE_WARRANT_ANNOTATION_MIN_NOTE_CHARACTERS} characters of case-specific public evidence.`,
         ],
         handbook_markdown: handbookMarkdown,
+        allowed_recommended_action_families: corpus.allowed_recommended_action_families,
         required_sample_ids: requiredSampleIds,
         cases_by_sample_id: Object.fromEntries(requiredSampleIds.map((id) => [id, corpusById.get(id)])),
         response_template: {

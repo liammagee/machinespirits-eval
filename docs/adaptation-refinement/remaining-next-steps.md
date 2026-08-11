@@ -766,3 +766,28 @@ The remaining sequence is now:
    frame. Only that frame can own the unchanged pass/fail thresholds.
 
 No downstream outcome run is licensed.
+
+## Current restart boundary after the second targeted-challenge reader attempt
+
+The clean `a903737693182e815c268675c2e669f23a7159bc` freeze fixed the batch/V4
+envelope conflict, but all three Reader A batches failed semantic validation:
+five resolved obligations retained unresolved source turns, and six positive
+warrants used undeclared action-family names. The run stopped at 3/8 model
+calls because three Reader A retries plus three Reader B calls would exceed the
+ceiling. Reader B was not run, the key stayed closed, and no score was produced.
+
+The next sequence is unchanged in inferential terms but has one additional
+instrument prerequisite:
+
+1. verify, commit, and push the exact action-family enum plus explicit
+   obligation/source lifecycle constraint;
+2. freeze the diagnostic again from that clean commit and inspect the new
+   packet/schema hashes and bounded authorization request;
+3. collect both readers only if every batch assembles without undeclared
+   repair;
+4. use the diagnostic score only to probe detectors and motivate prospective
+   repair; and
+5. reserve pass/fail inference for the later representative 96-case natural
+   frame under the already declared thresholds.
+
+No downstream outcome run is licensed.

@@ -112,12 +112,30 @@ test('challenge freeze is gate-ineligible, drift-checked, and produces a digest-
     assert.deepEqual(firstOutputSchema.properties.cases_by_sample_id.required, firstBatch.required_sample_ids);
     assert.deepEqual(Object.keys(firstOutputSchema.properties.cases_by_sample_id.properties), firstBatch.required_sample_ids);
     assert.equal(firstOutputSchema.properties.cases_by_sample_id.additionalProperties, false);
+    assert.deepEqual(
+      firstOutputSchema.$defs.case.properties.recommended_action_family.enum,
+      frozen.corpus.allowed_recommended_action_families,
+    );
+    assert.deepEqual(
+      firstPacket.allowed_recommended_action_families,
+      frozen.corpus.allowed_recommended_action_families,
+    );
+    assert.match(
+      firstOutputSchema.$defs.case.properties.open_obligation_source_turns.description,
+      /empty for none, satisfied, or withdrawn_or_transferred/u,
+    );
     assert.doesNotMatch(JSON.stringify(firstOutputSchema.properties), /annotator_id|annotation_run_id/u);
     assert.ok(
       firstPacket.instructions.some(
         (instruction) =>
           instruction.includes('assembled reader artifact') &&
           instruction.includes(ADAPTIVE_WARRANT_ANNOTATION_BATCH_RESPONSE_SCHEMA),
+      ),
+    );
+    assert.ok(
+      firstPacket.instructions.some(
+        (instruction) =>
+          instruction.includes('open_obligation_source_turns') && instruction.includes('satisfied'),
       ),
     );
     assert.match(firstBatch.output_schema_sha256, /^[0-9a-f]{64}$/u);

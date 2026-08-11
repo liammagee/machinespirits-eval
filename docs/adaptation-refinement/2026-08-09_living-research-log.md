@@ -1066,3 +1066,34 @@ authorization. Only after two no-repair reader assemblies may the diagnostic
 key be read. Any resulting detector repair burns that diagnostic relative to
 the repaired code; the later representative 96-case natural frame remains the
 sole pass/fail gate. No downstream outcome run is licensed.
+
+## Progress Update — 11 August 2026, second diagnostic freeze exposes semantic response constraints
+
+The next clean challenge freeze from commit
+`a903737693182e815c268675c2e669f23a7159bc` was authorized under digest
+`0a6af90c6ea68a747f4655e6ac9580094055a267d6a7d5e8c60547fbaadf9d11`.
+The packet-specific schemas solved the prior envelope problem: all three Reader
+A calls returned the exact reader, batch, study, corpus, opaque IDs, six-field
+batch envelope, and batch schema literal.
+
+The fail-closed semantic validator then exposed two remaining response-contract
+gaps. Five rows marked an obligation `satisfied` but retained its source turn in
+`open_obligation_source_turns`; that array is reserved for unresolved debt.
+Six positive-warrant rows invented family names such as `immediate_repair` or
+`repair_immediate` even though those are basis descriptions rather than
+declared action families. All three Reader A batches therefore required a
+retry. Retrying three batches and still collecting Reader B's three batches
+would require nine model calls, beyond the eight-call ceiling. Collection
+stopped at 3/8 calls. Reader B was not run, the key was not read, no labels were
+edited, and no diagnostic score was computed. This freeze is burned.
+
+Prospectively, the packet now supplies the corpus's exact declared action-family
+list and the output schema constrains `recommended_action_family` to that enum.
+Both schema descriptions and packet instructions state the obligation/source
+invariant: `none`, `satisfied`, and `withdrawn_or_transferred` require an empty
+source array; `open`, `overdue`, and `deferred` require at least one unresolved
+source. Focused builder/baseline tests pass 42/42 and lint is clean. A new clean
+freeze and payload-specific authorization are required before any further
+reader call. Full verification also passes 8,452/8,452 hermetic root tests,
+137/137 tutor-core tests, and 490/490 workplan items. No downstream outcome run
+is licensed.

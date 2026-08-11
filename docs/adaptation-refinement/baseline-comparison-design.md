@@ -863,3 +863,19 @@ and rechecked by the assembler. The final V4 `annotator_id` and
 instrument repair, not detector evidence. The next diagnostic must be newly
 frozen from a clean commit and separately authorized; no labels from this
 failed collection may be repaired or scored.
+
+The next clean freeze confirmed that the envelope correction worked but exposed
+two narrower semantic-response omissions. Across three Reader A calls, every
+batch binding and opaque ID was exact, yet five resolved obligations retained
+open-source turns and six positive warrants used invented, undeclared action
+family names. All three batches were invalid, so three retries plus Reader B's
+three planned calls would exceed the eight-call ceiling. The run stopped at
+3/8 without Reader B, key access, editing, or scoring; that freeze is burned.
+
+The prospective schema now enumerates the corpus's exact declared action
+families instead of accepting any non-empty string. The transmitted packet and
+schema descriptions also make the lifecycle invariant explicit: source turns
+represent unresolved debt only, so resolved states require an empty array and
+open/overdue/deferred states require a source. This remains collection-
+instrument repair, not detector evidence. It requires another clean freeze and
+authorization before readers resume.

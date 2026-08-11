@@ -805,6 +805,15 @@ embedded inside the reader packet, hash-bound by the manifest and authorization
 request, and drift-checked again by the assembler. Reader identity and run ID
 are added only when validated batches are assembled into the final V4 file.
 
+The next collection attempt narrowed that contract further. A structurally
+valid response can still be semantically unassemblable if it names a warrant
+basis as though it were an action family, or retains resolved obligation turns
+in the unresolved-source array. Packet schemas therefore enumerate the exact
+action-family catalogue, while packet instructions and field descriptions make
+the lifecycle invariant explicit: only `open`, `overdue`, or `deferred` debt
+requires retained source turns; resolved states require none. These are
+measurement-interface constraints, not favorable detector labels.
+
 The first V4 result also narrows two normative definitions. Conceptual
 alignment permits explicit analytic testing while the record is flat; a public
 stall or low-agency deferral is required for conceptual failure. Interactional

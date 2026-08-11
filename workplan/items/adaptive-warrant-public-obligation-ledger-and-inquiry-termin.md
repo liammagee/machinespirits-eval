@@ -288,3 +288,21 @@ pushed checkpoint, a newly frozen diagnostic request, two no-repair reader
 assemblies, diagnostic analysis and any prospective repair, then passage of
 the separately frozen representative natural-frame gate. No downstream
 outcome study is licensed.
+
+The second clean diagnostic freeze from
+`a903737693182e815c268675c2e669f23a7159bc` proved the packet-specific envelope
+repair but failed the next semantic boundary. All three Reader A calls had
+exact envelope/ID bindings; five resolved obligations retained open source
+turns and six positive warrants invented undeclared family names. Retrying all
+three plus collecting Reader B would exceed the eight-call ceiling, so the run
+stopped at 3/8 with no Reader B, key access, edits, or score. The freeze is
+burned.
+
+Prospective packets now expose and schema-enforce the corpus's exact action-
+family enum, and state explicitly that only unresolved obligations retain
+source turns. Focused builder/baseline tests pass 42/42, lint is clean, and
+full verification passes 8,452/8,452 root tests, 137/137 tutor-core tests, and
+490/490 workplan items. The item remains active pending a clean pushed checkpoint, a
+new digest-bound diagnostic freeze, two no-repair assemblies, diagnostic
+analysis and any bounded prospective detector repair, then the independent
+representative natural-frame gate. No downstream outcome run is licensed.
