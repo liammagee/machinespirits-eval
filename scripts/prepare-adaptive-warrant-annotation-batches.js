@@ -14,6 +14,10 @@ import {
 } from './run-adaptive-warrant-baseline-study.js';
 import { ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS } from '../services/adaptiveWarrantDivergence.js';
 import { ADAPTIVE_WARRANT_ACTION_FAMILY_CONTRACTS } from '../services/adaptiveWarrantActionContracts.js';
+import {
+  ADAPTIVE_WARRANT_V3_SEMANTIC_DIAGNOSTIC_MINIMA,
+  ADAPTIVE_WARRANT_V3_SEMANTIC_SUPPORT_PLAN_SCHEMA,
+} from './build-adaptive-warrant-v3-semantic-diagnostic.js';
 
 export const ADAPTIVE_WARRANT_ANNOTATION_COLLECTION_MANIFEST_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-annotation-collection-manifest.v1';
@@ -321,16 +325,22 @@ function declaredActionContractSuccessorFamilies(row, allowedActionFamilies) {
 
 function validateChallengeSupportPlan({ plan, corpus, corpusSha256 }) {
   exactFields(plan, ['schema', 'study_id', 'corpus_sha256', 'strata'], 'challenge support plan');
-  if (plan.schema !== ADAPTIVE_WARRANT_CHALLENGE_SUPPORT_PLAN_SCHEMA) {
+  const minima =
+    plan.schema === ADAPTIVE_WARRANT_CHALLENGE_SUPPORT_PLAN_SCHEMA
+      ? ADAPTIVE_WARRANT_CHALLENGE_DIAGNOSTIC_MINIMA
+      : plan.schema === ADAPTIVE_WARRANT_V3_SEMANTIC_SUPPORT_PLAN_SCHEMA
+        ? ADAPTIVE_WARRANT_V3_SEMANTIC_DIAGNOSTIC_MINIMA
+        : null;
+  if (!minima) {
     throw new Error('challenge support plan has an unsupported schema');
   }
   if (plan.study_id !== corpus.study_id || plan.corpus_sha256 !== corpusSha256) {
     throw new Error('challenge support plan does not bind the frozen corpus');
   }
-  exactFields(plan.strata, Object.keys(ADAPTIVE_WARRANT_CHALLENGE_DIAGNOSTIC_MINIMA), 'challenge diagnostic strata');
+  exactFields(plan.strata, Object.keys(minima), 'challenge diagnostic strata');
   const corpusIds = new Set(corpus.cases.map((row) => row.sample_id));
   const counts = {};
-  for (const [stratum, minimum] of Object.entries(ADAPTIVE_WARRANT_CHALLENGE_DIAGNOSTIC_MINIMA)) {
+  for (const [stratum, minimum] of Object.entries(minima)) {
     const ids = exactUniqueIds(plan.strata[stratum], `challenge diagnostic stratum ${stratum}`);
     if (ids.some((id) => !corpusIds.has(id))) {
       throw new Error(`challenge diagnostic stratum ${stratum} contains a sample outside the frozen corpus`);
