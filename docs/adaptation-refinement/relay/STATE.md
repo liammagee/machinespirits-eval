@@ -5,12 +5,15 @@
 
 ## Now
 
-- **Current direction:** `006-reviewer-direction-supplement.md` — one-shot
-  record-entry support supplement (8 fresh record-entry-weighted cases,
-  ~2 Luna calls). One-shot rule: PASS certifies the cell and proceeds
-  directly to the decision readers. FAIL cuts the cell with no retry,
-  the driver drafts restated measure definitions in its report, and
-  decision readers run ONLY AFTER a reviewer reply signs those off.
+- **Current direction:** `009-reviewer-direction-matrix-authorized.md` —
+  supplement PASSED (5/2 record-entry consensus; five-cell layer
+  certified). Decision readers on the 225a7b07 corpus are running on the
+  pre-authorized path; on their success the representative matrix is
+  ALSO pre-authorized (human, 12 Aug): 24 natural dialogues, ~192 calls,
+  readers, V3 natural-performance gate. Probe quota headroom before the
+  matrix launch; if short, ask in chat (reset available). After the
+  matrix: gate pass = stop before the outcome study (own prereg + human
+  go); gate fail = stop for review (004 scope-cut options).
 - **Driver:** the session whose prompt quotes the lease token in 006c
   (currently DRIVER-LEASE-2026-08-12-D). Other sessions: read-only.
 - **Instrument commit:** `225a7b07` ("Separate V3 structural and semantic
