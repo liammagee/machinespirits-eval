@@ -1683,3 +1683,46 @@ states. This corpus remains a failed V2 result and will not be rescored. Before
 fresh labels, V3 must separate natural performance checks from rare-state
 interpretation support without pooling diagnostic cases into prevalence. No
 downstream outcome run is licensed.
+
+## Progress Update — 11 August 2026, V3 reader instruments expose two preflight failures
+
+The first V3 semantic diagnostic frozen from commit `3ba68de5` completed two
+independent 24-case reader responses but did not produce semantic evidence. Its
+reader schema asked the model to return JavaScript UTF-16 character offsets.
+That requirement measured character-count arithmetic rather than semantic
+interpretation. The responses and authorization artifacts remain preserved,
+but the instrument is `evidence_invalid` and no decision-reader or outcome run
+followed.
+
+Commit `6256f332` removed that arithmetic confound by requiring one unique
+literal evidence string and deriving offsets mechanically in an audited
+assembler. Commit `d2bf37c7` then froze wholly fresh cases because the original
+sample was exposed. Both replacement readers assembled exactly, closing the
+offset defect, but only 2/24 cases reached the declared hard consensus. Error
+localization showed that the disagreement was not principally speech-act
+recognition. Hard consensus compared complete reader-authored target subjects,
+action objects, and component descriptions by exact string equality, so
+semantically equivalent descriptions failed the entire case. This replacement
+instrument is also not evaluable as evidence for or against V3 extraction or
+warrant policy. Decision readers remained stopped.
+
+These two failures establish a programme-level lesson rather than another
+lexical patch. Tests must be strict about semantic behaviour and evidence
+integrity but invariant to harmless representational variation. No free-text
+field may determine identity, consensus, joins, state mutation, or gate
+passage. Canonical public IDs and closed semantic labels carry identity;
+display prose, notes, and literal spans remain evidence that is scored
+separately. Downstream compilation consumes typed events and does not recreate
+speech acts or engagement through regexes.
+
+Before another corpus freeze, V3 now requires a source-bound brittleness
+preflight. With no model calls, it must prove that irrelevant changes in prose,
+JSON order, set order, and evidence extent preserve consensus, while a change
+to a meaning-bearing act, actor, target, action, value type, or component is
+detected. It must exercise the complete reader preparation, assembly,
+consensus, and scoring path; reject under-supported thresholds; and block
+authorization if its instrument fingerprints drift. A maximum two-call
+synthetic smoke may then check real-model schema usability, but those cases are
+permanently excluded from research corpora. Only after both checks pass may a
+new clean commit freeze fresh diagnostic cases. No downstream outcome run is
+licensed.

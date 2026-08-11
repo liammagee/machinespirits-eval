@@ -515,6 +515,41 @@ but not far enough to claim that the provisional policy improves learning.
 Authored expected-uptake events, a synchronized theory-level replay UI, and
 human-learner validation remain prospective.
 
+### Strictness belongs at typed boundaries
+
+The V3 diagnostic exposed a general architecture and evaluation rule. Tests
+must be strict about semantic behaviour and evidence integrity, but invariant
+to harmless representational variation. Exact source commits, schemas,
+provenance, public evidence spans, canonical identities, call budgets, seals,
+and replay transitions should fail closed. Reader-authored wording,
+punctuation, JSON key order, display labels, and other non-semantic form must
+not determine identity, consensus, joins, state mutation, or gate passage.
+
+This boundary rules out two superficially cheap substitutes for semantic
+structure. First, downstream regex or substring rules must not infer speech
+acts, targets, agency, or engagement from learner prose after semantic events
+exist. Regex remains appropriate for exact syntax, identifiers, provenance,
+and conservative fallback detection. Second, exact equality over descriptive
+strings must not stand in for agreement about a referent or action. Typed
+events therefore carry stable public target, action, value-type, and component
+identities separately from display prose and literal evidence.
+
+Every model-backed semantic instrument must pass a prospective brittleness
+preflight before its corpus is frozen. That preflight perturbs irrelevant form
+and requires an unchanged verdict, perturbs one meaning-bearing field and
+requires detection, exercises the complete assembly and scoring path with
+adversarial synthetic responses, and proves that all threshold cells are
+evaluable at their declared support floors. The freeze binds the passing
+preflight report and refuses authorization when its source or instrument
+fingerprints drift. A small synthetic model smoke may test schema usability,
+but its cases never become research evidence.
+
+The economic reason is architectural as well as methodological. A lexical or
+representation-sensitive shortcut is inexpensive once but accumulates repair
+branches, burned corpora, model reruns, and ambiguous evidence. A typed
+semantic boundary plus invariance and sensitivity checks costs more before the
+first run and less across the programme.
+
 ### Phase-5 stop result
 
 The annotation study sharpens the next architectural boundary. A commitment

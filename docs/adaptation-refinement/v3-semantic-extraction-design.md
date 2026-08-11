@@ -533,6 +533,40 @@ dimensions contain at least two naturally occurring non-aligned consensus
 cases. Every naturally supported dimension is still held to the unchanged
 quality thresholds below.
 
+### 5.3 Mandatory brittleness preflight
+
+Before a diagnostic or representative freeze may emit an authorization
+request, a zero-call instrument preflight must pass against the exact reader
+schemas, assembler, consensus builder, scorer, thresholds, and corpus builder
+that the freeze will bind. The preflight is an execution prerequisite, not
+research evidence. Its machine-readable report binds the source commit and
+fingerprints of those surfaces; a missing, failed, stale, or mismatched report
+blocks the freeze.
+
+The preflight must establish both representation invariance and semantic
+sensitivity. Equivalent mock responses may vary display prose, notes, JSON key
+order, evidence-span extent, and the order of fields declared as sets without
+changing semantic consensus or the gate verdict. Conversely, changing one
+meaning-bearing speech act, actor, target ID, action ID, requested value type,
+or component ID must be detected. The complete prepare, assemble, consensus,
+and score path must also reject unknown catalogue entries, ambiguous identity,
+non-literal evidence, malformed envelopes, and under-supported threshold
+cells without hand repair.
+
+Free text may support an evidence or display field, but it may not determine
+identity, equality, joins, state mutation, or gate passage. Reader tasks may
+not ask a model to calculate offsets, hashes, token counts, ordering keys, or
+other deterministic arithmetic. Downstream semantic compilers consume typed
+events rather than learner prose; regex remains limited to exact syntax,
+identifiers, provenance checks, and explicitly conservative fallbacks.
+
+After the zero-call preflight, at most one separately authorized two-call
+smoke may use synthetic cases that are permanently excluded from every
+diagnostic and gate corpus. It checks that the declared model route can return
+the canonical-ID envelope without truncation, schema repair, arithmetic, or
+hidden normalization. Any preflight or smoke defect is repaired prospectively
+and rechecked before fresh cases are frozen.
+
 ## 6. Predeclared V3 thresholds
 
 ### 6.1 Execution prerequisites
