@@ -9,8 +9,8 @@
   record-entry support supplement (8 fresh record-entry-weighted cases,
   ~2 Luna calls, one-shot rule: pass certifies the cell / fail cuts it,
   both branches then proceed to decision readers).
-- **Driver:** the codex background task spawned by the reviewer
-  (see 006b). Other sessions: read-only.
+- **Driver:** the session whose prompt quotes the lease token in 006c
+  (currently DRIVER-LEASE-2026-08-12-B). Other sessions: read-only.
 - **Instrument commit:** `225a7b07` ("Separate V3 structural and semantic
   gates"). The instrument is CLOSED — it reopens only for a transport,
   schema, provenance, or non-evaluability defect. Never for semantic
