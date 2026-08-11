@@ -223,6 +223,64 @@ The fallback is deliberately conservative:
 This fallback protects the DAG from an unsupported semantic mutation while
 making excessive abstention visible through recall and coverage gates.
 
+### 2.6 Deterministic event-to-engagement compilation
+
+The warrant consumes one stable turn signal with an ordered `labels` list,
+one `primary` label, and explicit `deference_present` and
+`engaged_analytic_present` booleans. V3 derives that signal only from accepted
+semantic events. The compiler may inspect event fields and ordering; it may
+not inspect the learner text, run a regex, or infer a new speech act from
+tokens.
+
+Accepted events contribute engagement labels as follows:
+
+| Accepted semantic event | Engagement contribution |
+|---|---|
+| `repair_request` | `repair_request` |
+| `stall` | `stall` |
+| `register_complaint` | `register_complaint` |
+| `repetition_complaint` | `repetition_complaint` |
+| `low_agency_deferral` | `low_agency_deferral`; set `deference_present=true` |
+| `tutor_selection_request` with `mode=requested`, `actor=tutor`, and `action=select_next_step` | `low_agency_deferral`; set `deference_present=true` |
+| `analytic_contribution` | `engaged_analytic`; set `engaged_analytic_present=true` |
+| `learner_proposed_test` or `criterion_question` | `engaged_analytic`; set `engaged_analytic_present=true` |
+| every other accepted event | no engagement contribution |
+
+Repeated contributions deduplicate to one label and do not increase a
+counter. `deference_present` is the input to the existing cross-turn sustained
+deference check even when a higher-priority immediate label becomes primary.
+An uncertain or rejected event contributes no engagement label.
+
+The compiler orders distinct contributed labels by this fixed precedence:
+
+1. `repair_request`;
+2. `stall`;
+3. `register_complaint`;
+4. `repetition_complaint`;
+5. `low_agency_deferral`;
+6. `engaged_analytic`;
+7. `neutral` when no accepted event contributed another label.
+
+`primary` is the first label in that order. Within one label, evidence
+provenance uses the smallest evidence-span start offset; equal offsets use the
+original event-list order and then `event_id`. These ties never change the
+primary category.
+
+Conflicting acts are retained when they occupy distinct literal spans. Thus
+“Would you choose the first matter for me to examine?” may validly emit both a
+`tutor_selection_request` and a `low_agency_deferral`; the compiler produces
+one deduplicated `low_agency_deferral` label and
+`deference_present=true`. If the extractor also emits an
+`analytic_contribution`, analytic remains a secondary label and cannot mask
+the deference primary. A repair request or stall remains primary over both,
+while the deference boolean remains available for sustained history.
+
+Two asserted events that assign incompatible actors or modes to the same
+overlapping evidence span are not resolved by precedence. The validator marks
+both `ambiguous_actor` or `ambiguous_speech_act`, so neither mutates engagement
+state. This prevents the compiler from becoming a replacement semantic
+classifier.
+
 ## 3. Extraction seat and failure behaviour
 
 ### 3.1 Reuse the existing learner-analysis call
@@ -249,7 +307,44 @@ evidence, private support plan, gate prediction, annotation key, or downstream
 decision. Adding semantic extraction must not weaken the existing public-only
 preflight or speaker-privilege audit.
 
-### 3.2 When the existing call fails
+### 3.2 Prompt and response size budget
+
+The semantic-event task stays inside the existing learner-analysis envelope;
+it does not receive an additive budget. The final dispatched prompt, including
+the semantic vocabulary, instructions, public context, output schema, and
+provider wrapper, must remain at or below both existing limits:
+
+- 42,000 UTF-16 characters; and
+- 10,500 approximate tokens under the shared prompt audit.
+
+The build must record total prompt characters, approximate tokens, and the
+semantic-task delta relative to the same fixture without the V3 block. Before
+a model-backed freeze, a worst-case eight-turn fixture for each V3 world and
+prompt profile must pass both limits. During the study, all 192 dispatched
+learner-analysis prompts must pass and preserve their prompt-audit records.
+Compaction may remove duplicate wording or whitespace but may not omit the
+event vocabulary, uncertainty rules, public evidence, or current learner
+utterance.
+
+The combined learner-analysis response retains the existing 2,500-token
+generation ceiling. Within it, V3 additionally limits the semantic envelope
+to:
+
+- at most four ordered events;
+- at most 4,096 UTF-8 bytes after canonical JSON serialization;
+- at most 240 characters in any evidence span;
+- at most six public identifiers, four requested value types, four required
+  components, and three uncertainty reasons per event.
+
+The full raw structured learner-analysis response must be no more than 12,000
+UTF-8 bytes as well as no more than the provider's 2,500 generated-token
+ceiling. Prompt and response sizes, semantic-envelope bytes, event count, and
+configured limits must be persisted per turn. An oversize prompt fails before
+dispatch. An oversize response or semantic envelope fails strict parsing and
+uses only the existing bounded redispatch for the learner-analysis seat; it is
+never truncated into a valid event.
+
+### 3.3 When the existing call fails
 
 The current bounded retry and fail-closed learner-analysis policy remains in
 force. A missing or malformed semantic-event envelope makes that existing
@@ -438,6 +533,11 @@ Scoring is forbidden unless all of these hold:
 - 192 accepted learner-analysis calls and zero learner-analysis failures;
 - zero semantic schema, public-boundary, prompt-audit, leak, provenance, or
   run-seal failures;
+- every dispatched learner-analysis prompt is at most 42,000 characters and
+  10,500 approximate tokens, with a recorded V3 semantic-task size delta;
+- every accepted learner-analysis response is at most 12,000 UTF-8 bytes and
+  2,500 generated tokens, its canonical semantic envelope is at most 4,096
+  UTF-8 bytes, and every declared event/span/cardinality limit passes;
 - 192/192 exact structured live/offline comparisons with zero mismatch;
 - 192/192 delivery-application comparisons with zero issue;
 - exact source, digest, model-route, payload, corpus, key, and reader-artifact
@@ -468,8 +568,8 @@ All applicable checks must pass:
 
 An act-specific metric is `not_evaluable`, not failed, when the natural corpus
 contains no hard-consensus support for that act. Core request/proposal scoring
-requires at least two consensus result requests and two consensus proposed
-tests; if either minimum is absent, the representative extraction result is
+requires at least four consensus result requests and four consensus proposed
+tests; if either minimum is absent, every request/proposal cell is declared
 `inconclusive_support`, not passage. Diagnostic rows cannot fill it.
 
 ### 6.3 Decision-layer gate on the same 96 natural cases
