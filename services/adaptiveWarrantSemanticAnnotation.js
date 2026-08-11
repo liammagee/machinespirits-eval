@@ -2,18 +2,23 @@ import {
   ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS,
   ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES,
   ADAPTIVE_WARRANT_SEMANTIC_ACTIONS,
+  ADAPTIVE_WARRANT_SEMANTIC_REQUEST_SPEECH_ACTS,
+  ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS,
   ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS,
   ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS,
   ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES,
+  adaptiveWarrantSemanticContractIssues,
 } from './adaptiveWarrantSemanticEvents.js';
 
+export { ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS } from './adaptiveWarrantSemanticEvents.js';
+
 export const ADAPTIVE_WARRANT_SEMANTIC_ANNOTATION_RESPONSE_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-annotation-response.v3';
+  'machinespirits.adaptation-refinement.semantic-event-annotation-response.v4';
 export const ADAPTIVE_WARRANT_SEMANTIC_CONSENSUS_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-consensus.v3';
-export const ADAPTIVE_WARRANT_SEMANTIC_SCORE_SCHEMA = 'machinespirits.adaptation-refinement.semantic-event-score.v3';
+  'machinespirits.adaptation-refinement.semantic-event-consensus.v4';
+export const ADAPTIVE_WARRANT_SEMANTIC_SCORE_SCHEMA = 'machinespirits.adaptation-refinement.semantic-event-score.v4';
 export const ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-annotation-batch-response.v5';
+  'machinespirits.adaptation-refinement.semantic-event-annotation-batch-response.v6';
 export const ADAPTIVE_WARRANT_SEMANTIC_READER_CATALOG_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v3';
 
@@ -47,7 +52,14 @@ const RESPONSE_FIELDS = Object.freeze([
   'annotation_run_id',
   'cases',
 ]);
-const CASE_FIELDS = Object.freeze(['sample_id', 'genuinely_ambiguous', 'events', 'note']);
+const CASE_FIELDS = Object.freeze([
+  'sample_id',
+  'genuinely_ambiguous',
+  'ambiguity_reason',
+  'assembly_rejection',
+  'events',
+  'note',
+]);
 const EVENT_FIELDS = Object.freeze([
   'speaker',
   'speech_act',
@@ -66,8 +78,10 @@ export const ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT = Object.freeze({
     'Reader chooses the public object, relation, or enumerated choice set that the act itself is about, never a requested value or actor; use the total tagged state=none branch when the act names no catalogue entity.',
   target_kind: 'Mechanically supplied from the selected target catalogue entry; never reader-judged.',
   public_identifier_ids: 'Mechanically supplied from the selected target catalogue entry; never reader-judged.',
-  requested_value_types: 'Exact closed-set values explicitly requested or produced by the clause.',
-  component_ids: 'Exact catalogue components explicitly requested or produced by the clause.',
+  requested_value_types:
+    'Exact closed-set values literally named by request-mode clauses; empty for proposals, questions, analysis, withdrawal, and transfer.',
+  component_ids:
+    'Exact catalogue components literally named by request-mode clauses; empty for proposals, questions, analysis, withdrawal, and transfer.',
   action_mode: 'Mechanically supplied from the selected action-object catalogue entry; never reader-judged.',
   executor: 'Reader chooses who must perform the action; this is not the utterance speaker.',
   action: 'Mechanically supplied from the selected action-object catalogue entry; never reader-judged.',
@@ -76,90 +90,117 @@ export const ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT = Object.freeze({
   evidence_span: 'Reader supplies one unique literal minimal clause span; offsets and order are mechanical.',
   genuinely_ambiguous:
     'True only when two complete typed readings remain after every closed rule; an ambiguous case returns zero events.',
+  ambiguity_reason:
+    'Reader supplies one closed reason when genuinely_ambiguous is true, otherwise the explicit token none.',
+  assembly_rejection:
+    'Mechanically supplied after reading; records a non-unique literal span that prevents safe offset derivation.',
   note: 'Auditable rationale only; excluded from identity, consensus, scoring joins, and gates.',
 });
 
-export const ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS = Object.freeze({
-  tutor_directed_public_result_request: Object.freeze({
-    target: 'catalog',
-    action: 'catalog',
-    mode: 'requested',
-    operation: 'supply_public_result',
-    executors: Object.freeze(['tutor', 'joint', 'unspecified']),
-  }),
-  learner_proposed_test: Object.freeze({
-    target: 'catalog',
-    action: 'catalog',
-    mode: 'proposed',
-    operation: 'perform_public_test',
-    executors: Object.freeze(['learner', 'joint', 'unspecified']),
-  }),
-  criterion_question: Object.freeze({ target: 'catalog', action: 'none' }),
-  tutor_selection_request: Object.freeze({
-    target: 'catalog',
-    action: 'catalog',
-    mode: 'requested',
-    operation: 'select_next_step',
-    executors: Object.freeze(['tutor']),
-  }),
-  learner_record_entry_request: Object.freeze({
-    target: 'catalog',
-    action: 'catalog',
-    mode: 'requested',
-    operation: 'record_public_claim',
-    executors: Object.freeze(['tutor', 'joint', 'unspecified']),
-  }),
-  learner_wording_request: Object.freeze({
-    target: 'none',
-    action: 'catalog',
-    mode: 'requested',
-    operation: 'explain_wording',
-    executors: Object.freeze(['tutor']),
-  }),
-  repair_request: Object.freeze({
-    target: 'none',
-    action: 'catalog',
-    mode: 'requested',
-    operation: 'explain_wording',
-    executors: Object.freeze(['tutor']),
-  }),
-  withdrawal: Object.freeze({
-    target: 'catalog_or_none',
-    action: 'catalog',
-    mode: 'requested',
-    operation: 'withdraw_request',
-    executors: Object.freeze(['learner']),
-  }),
-  transfer_to_learner: Object.freeze({
-    target: 'catalog_or_none',
-    action: 'catalog',
-    mode: 'proposed',
-    operation: 'perform_public_test',
-    executors: Object.freeze(['learner']),
-  }),
-  stall: Object.freeze({ target: 'none', action: 'none' }),
-  register_complaint: Object.freeze({ target: 'none', action: 'none' }),
-  repetition_complaint: Object.freeze({ target: 'none', action: 'none' }),
-  low_agency_deferral: Object.freeze({ target: 'none', action: 'none' }),
-  analytic_contribution: Object.freeze({ target: 'catalog_or_none', action: 'none' }),
-  other: Object.freeze({ target: 'catalog_or_none', action: 'none' }),
-});
+const REQUEST_SPEECH_ACTS = new Set(ADAPTIVE_WARRANT_SEMANTIC_REQUEST_SPEECH_ACTS);
 
-const REQUEST_SPEECH_ACTS = new Set([
-  'tutor_directed_public_result_request',
-  'tutor_selection_request',
-  'learner_record_entry_request',
-  'learner_wording_request',
-  'repair_request',
+export const ADAPTIVE_WARRANT_SEMANTIC_AMBIGUITY_REASONS = Object.freeze([
+  'none',
+  'speech_act',
+  'executor',
+  'target',
+  'action_object',
+  'multiplicity',
+  'referent',
+  'span',
+  'context',
 ]);
 
 function closedSchema(properties) {
   return { type: 'object', additionalProperties: false, required: Object.keys(properties), properties };
 }
 
+export const ADAPTIVE_WARRANT_PROVIDER_SCHEMA_KEYWORDS = Object.freeze([
+  '$defs',
+  '$ref',
+  'additionalProperties',
+  'anyOf',
+  'description',
+  'enum',
+  'items',
+  'maxItems',
+  'minimum',
+  'properties',
+  'required',
+  'type',
+]);
+
+export function auditAdaptiveWarrantProviderOutputSchema({ schema, maximumDepth = 10 } = {}) {
+  const issues = [];
+  const supportedKeywords = new Set(ADAPTIVE_WARRANT_PROVIDER_SCHEMA_KEYWORDS);
+  const visit = (node, location, schemaNode = true) => {
+    if (!node || typeof node !== 'object' || Array.isArray(node)) return;
+    if (schemaNode) {
+      for (const keyword of Object.keys(node)) {
+        if (!supportedKeywords.has(keyword)) issues.push(`${location} uses unsupported keyword ${keyword}`);
+      }
+    }
+    if (node.type === 'null' || (Array.isArray(node.type) && node.type.includes('null'))) {
+      issues.push(`${location} admits null`);
+    }
+    if (Array.isArray(node.enum) && node.enum.includes(null)) issues.push(`${location} enum admits null`);
+    if (Array.isArray(node.enum) && typeof node.type !== 'string')
+      issues.push(`${location} enum lacks an explicit type`);
+    if (node.properties) {
+      const propertyNames = Object.keys(node.properties);
+      const required = Array.isArray(node.required) ? node.required : [];
+      for (const propertyName of propertyNames) {
+        if (!required.includes(propertyName)) issues.push(`${location}.${propertyName} is optional`);
+      }
+      if (node.additionalProperties !== false) issues.push(`${location} is not closed`);
+    }
+    for (const [key, value] of Object.entries(node)) {
+      if (key === 'required' || key === 'enum' || key === 'type' || key === 'description') continue;
+      if (key === 'properties' || key === '$defs') {
+        for (const [propertyName, propertySchema] of Object.entries(value || {})) {
+          visit(propertySchema, `${location}.${key}.${propertyName}`);
+        }
+      } else if (Array.isArray(value)) {
+        value.forEach((entry, index) => visit(entry, `${location}.${key}[${index}]`));
+      } else {
+        visit(value, `${location}.${key}`);
+      }
+    }
+  };
+  visit(schema, '$');
+  const depthOf = (node, depth = 0, followedRefs = new Set()) => {
+    if (!node || typeof node !== 'object' || Array.isArray(node)) return depth;
+    const current = depth + (node.type === 'object' || node.type === 'array' ? 1 : 0);
+    let maximum = current;
+    if (typeof node.$ref === 'string' && node.$ref.startsWith('#/$defs/')) {
+      const name = node.$ref.slice('#/$defs/'.length);
+      if (!followedRefs.has(name)) {
+        maximum = Math.max(maximum, depthOf(schema?.$defs?.[name], current + 1, new Set([...followedRefs, name])));
+      }
+    }
+    for (const child of Object.values(node.properties || {})) maximum = Math.max(maximum, depthOf(child, current));
+    if (node.items) maximum = Math.max(maximum, depthOf(node.items, current));
+    for (const child of node.anyOf || []) maximum = Math.max(maximum, depthOf(child, current));
+    return maximum;
+  };
+  const nestingDepth = depthOf(schema);
+  if (nestingDepth > maximumDepth) {
+    issues.push(`schema nesting depth ${nestingDepth} exceeds provider maximum ${maximumDepth}`);
+  }
+  return {
+    ok: issues.length === 0,
+    issues,
+    provider_keywords_supported: issues.every((issue) => !issue.includes('unsupported keyword')),
+    reader_fields_total: issues.every((issue) => !issue.includes('optional') && !issue.includes('null')),
+    enum_types_explicit: issues.every((issue) => !issue.includes('enum lacks an explicit type')),
+    maximum_nesting_depth: nestingDepth,
+    nesting_depth_within_limit: nestingDepth <= maximumDepth,
+  };
+}
+
 function semanticReaderEventSchema(semanticCatalog) {
   const catalogIds = validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
-  const target = closedSchema({
+  const catalogTarget = closedSchema({
     state: { type: 'string', enum: ['catalog'] },
     target_id: { type: 'string', enum: [...catalogIds.target_ids] },
     requested_value_types: {
@@ -173,86 +214,66 @@ function semanticReaderEventSchema(semanticCatalog) {
       items: { type: 'string', enum: [...catalogIds.component_ids] },
     },
   });
-  const action = closedSchema({
-    state: { type: 'string', enum: ['catalog'] },
-    executor: {
-      type: 'string',
-      enum: ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS.filter((value) => value !== 'none'),
-    },
-    action_object_id: { type: 'string', enum: [...catalogIds.action_object_ids] },
-  });
-  return closedSchema({
-    speech_act: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS] },
-    target: { anyOf: [target, closedSchema({ state: { type: 'string', enum: ['none'] } })] },
-    requested_or_proposed_action: {
-      anyOf: [action, closedSchema({ state: { type: 'string', enum: ['none'] } })],
-    },
-    evidence_span: closedSchema({
-      text: { type: 'string', minLength: 1, maxLength: 240 },
+  const none = closedSchema({ state: { type: 'string', enum: ['none'] } });
+  const definitions = {
+    t: catalogTarget,
+    n: none,
+  };
+  const reference = (name) => ({ $ref: `#/$defs/${name}` });
+  const targetFor = (contract) => {
+    if (contract.target === 'catalog') return reference('t');
+    if (contract.target === 'none') return reference('n');
+    return { anyOf: [reference('t'), reference('n')] };
+  };
+  const actionFor = (speechAct, contract) => {
+    if (contract.action === 'none') return reference('n');
+    const actionIds = Object.values(catalogIds.action_objects_by_id)
+      .filter((row) => row.mode === contract.mode && row.action === contract.operation)
+      .map((row) => row.action_object_id)
+      .sort();
+    const name = `a${Object.keys(definitions).filter((key) => key.startsWith('a')).length}`;
+    definitions[name] = closedSchema({
+      state: { type: 'string', enum: ['catalog'] },
+      executor: { type: 'string', enum: [...contract.executors] },
+      action_object_id: { type: 'string', enum: actionIds },
+    });
+    return reference(name);
+  };
+  const eventSchema = {
+    anyOf: ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.map((speechAct) => {
+      const contract = ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS[speechAct];
+      return closedSchema({
+        speech_act: { type: 'string', enum: [speechAct] },
+        target: targetFor(contract),
+        requested_or_proposed_action: actionFor(speechAct, contract),
+        evidence_span: { type: 'string' },
+      });
     }),
-  });
+  };
+  return { eventSchema, definitions };
 }
 
 export function auditAdaptiveWarrantSemanticReaderSchemaTotality({ schema, semanticCatalog } = {}) {
   const catalogIds = validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
-  const issues = [];
-  const supportedKeywords = new Set([
-    '$defs',
-    '$ref',
-    'additionalProperties',
-    'anyOf',
-    'enum',
-    'items',
-    'maxItems',
-    'maxLength',
-    'minLength',
-    'properties',
-    'required',
-    'type',
-  ]);
-  const visit = (node, location, schemaNode = true) => {
-    if (!node || typeof node !== 'object' || Array.isArray(node)) return;
-    if (schemaNode) {
-      for (const keyword of Object.keys(node)) {
-        if (!supportedKeywords.has(keyword)) issues.push(`${location} uses unsupported keyword ${keyword}`);
-      }
-    }
-    if (node.type === 'null' || (Array.isArray(node.type) && node.type.includes('null'))) {
-      issues.push(`${location} admits null`);
-    }
-    if (Array.isArray(node.enum) && node.enum.includes(null)) issues.push(`${location} enum admits null`);
-    if (node.properties) {
-      const propertyNames = Object.keys(node.properties);
-      const required = Array.isArray(node.required) ? node.required : [];
-      for (const propertyName of propertyNames) {
-        if (!required.includes(propertyName)) issues.push(`${location}.${propertyName} is optional`);
-      }
-      if (node.additionalProperties !== false) issues.push(`${location} is not closed`);
-    }
-    for (const [key, value] of Object.entries(node)) {
-      if (key === 'required' || key === 'enum' || key === 'type') continue;
-      if (key === 'properties' || key === '$defs') {
-        for (const [propertyName, propertySchema] of Object.entries(value || {})) {
-          visit(propertySchema, `${location}.${key}.${propertyName}`);
-        }
-      } else if (Array.isArray(value)) {
-        value.forEach((entry, index) => visit(entry, `${location}.${key}[${index}]`));
-      } else {
-        visit(value, `${location}.${key}`);
-      }
-    }
+  const providerAudit = auditAdaptiveWarrantProviderOutputSchema({ schema, maximumDepth: 10 });
+  const issues = [...providerAudit.issues];
+  const maximumNestingDepth = providerAudit.maximum_nesting_depth;
+  const eventUnion = schema?.$defs?.case?.properties?.events?.items?.anyOf;
+  if (!Array.isArray(eventUnion) || eventUnion.length !== ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.length) {
+    issues.push('event union must have one branch per speech act');
+  }
+  const resolveSchema = (candidate) => {
+    if (candidate?.$ref?.startsWith('#/$defs/')) return schema?.$defs?.[candidate.$ref.slice('#/$defs/'.length)];
+    return candidate;
   };
-  visit(schema, '$');
-  const event = schema?.$defs?.case?.properties?.events?.items;
-  const targetChoices = event?.properties?.target?.anyOf;
-  const actionChoices = event?.properties?.requested_or_proposed_action?.anyOf;
   const branchByState = (choices, label) => {
     if (!Array.isArray(choices) || choices.length !== 2) {
       issues.push(`${label} must have exactly two anyOf branches`);
       return {};
     }
     const branches = {};
-    for (const [index, choice] of choices.entries()) {
+    for (const [index, unresolvedChoice] of choices.entries()) {
+      const choice = resolveSchema(unresolvedChoice);
       const values = choice?.properties?.state?.enum;
       if (
         choice?.type !== 'object' ||
@@ -272,29 +293,82 @@ export function auditAdaptiveWarrantSemanticReaderSchemaTotality({ schema, seman
     }
     return branches;
   };
-  const targetBranches = branchByState(targetChoices, 'target');
-  const actionBranches = branchByState(actionChoices, 'action');
-  const targetObject = targetBranches.catalog;
-  const actionObject = actionBranches.catalog;
   const exactEnum = (actual, expected, label) => {
     if (JSON.stringify([...(actual || [])].sort()) !== JSON.stringify([...expected].sort())) {
       issues.push(`${label} is not closed to the catalogue`);
     }
   };
-  exactEnum(targetObject?.properties?.target_id?.enum, catalogIds.target_ids, 'target_id');
-  exactEnum(targetObject?.properties?.component_ids?.items?.enum, catalogIds.component_ids, 'component_ids');
-  exactEnum(actionObject?.properties?.action_object_id?.enum, catalogIds.action_object_ids, 'action_object_id');
+  const branchesBySpeechAct = {};
+  let explicitNoneTokens = true;
+  let unionsPairwiseDisjoint = true;
+  for (const [index, branch] of (eventUnion || []).entries()) {
+    const speechActs = branch?.properties?.speech_act?.enum;
+    if (!Array.isArray(speechActs) || speechActs.length !== 1 || branchesBySpeechAct[speechActs[0]]) {
+      issues.push(`event.anyOf[${index}] lacks a unique singleton speech_act discriminator`);
+      unionsPairwiseDisjoint = false;
+      continue;
+    }
+    const speechAct = speechActs[0];
+    branchesBySpeechAct[speechAct] = branch;
+    const contract = ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS[speechAct];
+    if (!contract) {
+      issues.push(`event.anyOf[${index}] has an undeclared speech act`);
+      continue;
+    }
+    const targetSchema = resolveSchema(branch.properties?.target);
+    const actionSchema = resolveSchema(branch.properties?.requested_or_proposed_action);
+    const targetBranches =
+      contract.target === 'catalog_or_none' ? branchByState(targetSchema?.anyOf, `${speechAct}.target`) : {};
+    const targetCatalog = contract.target === 'catalog' ? targetSchema : targetBranches.catalog;
+    const targetNone = contract.target === 'none' ? targetSchema : targetBranches.none;
+    if (targetCatalog) {
+      exactEnum(targetCatalog.properties?.target_id?.enum, catalogIds.target_ids, `${speechAct}.target_id`);
+      exactEnum(
+        targetCatalog.properties?.component_ids?.items?.enum,
+        catalogIds.component_ids,
+        `${speechAct}.component_ids`,
+      );
+    }
+    if (contract.target !== 'catalog' && targetNone?.properties?.state?.enum?.[0] !== 'none') {
+      issues.push(`${speechAct}.target lacks the exact none branch`);
+      explicitNoneTokens = false;
+    }
+    if (contract.action === 'none') {
+      if (actionSchema?.properties?.state?.enum?.[0] !== 'none') {
+        issues.push(`${speechAct}.action lacks the exact none branch`);
+        explicitNoneTokens = false;
+      }
+    } else {
+      const expectedActionIds = Object.values(catalogIds.action_objects_by_id)
+        .filter((row) => row.mode === contract.mode && row.action === contract.operation)
+        .map((row) => row.action_object_id);
+      exactEnum(actionSchema?.properties?.action_object_id?.enum, expectedActionIds, `${speechAct}.action_object_id`);
+      exactEnum(actionSchema?.properties?.executor?.enum, contract.executors, `${speechAct}.executor`);
+    }
+    if (contract.target === 'catalog_or_none' && (!targetBranches.catalog || !targetBranches.none)) {
+      unionsPairwiseDisjoint = false;
+    }
+  }
+  const missingActs = ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.filter((speechAct) => !branchesBySpeechAct[speechAct]);
+  if (missingActs.length) issues.push(`event union omits speech acts: ${missingActs.join(', ')}`);
   return {
     ok: issues.length === 0,
     issue_count: issues.length,
     issues,
     reader_fields_total: issues.every((issue) => !issue.includes('optional') && !issue.includes('null')),
-    explicit_none_tokens: Boolean(targetBranches.none && actionBranches.none),
+    explicit_none_tokens: explicitNoneTokens,
     catalogue_domains_closed: issues.every((issue) => !issue.includes('not closed to the catalogue')),
     provider_keywords_supported: issues.every((issue) => !issue.includes('unsupported keyword')),
-    union_branches_pairwise_disjoint: Boolean(
-      targetBranches.catalog && targetBranches.none && actionBranches.catalog && actionBranches.none,
+    union_branches_pairwise_disjoint: unionsPairwiseDisjoint,
+    act_contract_language_equivalent: issues.every(
+      (issue) =>
+        !issue.includes('speech act') &&
+        !issue.includes('action_object_id') &&
+        !issue.includes('executor') &&
+        !issue.includes('exact none branch'),
     ),
+    maximum_nesting_depth: maximumNestingDepth,
+    nesting_depth_within_limit: maximumNestingDepth <= 10,
   };
 }
 
@@ -307,10 +381,12 @@ export function buildAdaptiveWarrantSemanticBatchOutputSchema({
   semanticCatalog,
 } = {}) {
   validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
+  const { eventSchema, definitions } = semanticReaderEventSchema(semanticCatalog);
   const caseSchema = closedSchema({
     genuinely_ambiguous: { type: 'boolean' },
-    events: { type: 'array', maxItems: 4, items: semanticReaderEventSchema(semanticCatalog) },
-    note: { type: 'string', minLength: 8 },
+    ambiguity_reason: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_AMBIGUITY_REASONS] },
+    events: { type: 'array', maxItems: 4, items: eventSchema },
+    note: { type: 'string' },
   });
   const root = closedSchema({
     schema: { type: 'string', enum: [ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA] },
@@ -325,7 +401,7 @@ export function buildAdaptiveWarrantSemanticBatchOutputSchema({
       properties: Object.fromEntries(requiredSampleIds.map((sampleId) => [sampleId, { $ref: '#/$defs/case' }])),
     },
   });
-  return { ...root, $defs: { case: caseSchema } };
+  return { ...root, $defs: { case: caseSchema, ...definitions } };
 }
 
 function exactFields(value, expected, label) {
@@ -502,6 +578,8 @@ function validateSpeechActCompatibility(event, label) {
   if (contract.action === 'none' && hasAction) {
     throw new Error(`${label}.requested_or_proposed_action must be none for the speech act`);
   }
+  const sharedIssues = adaptiveWarrantSemanticContractIssues(event, { eventIndex: 0 });
+  if (sharedIssues.length) throw new Error(`${label} violates the shared act contract: ${sharedIssues[0]}`);
   if (!hasAction) return;
   const action = event.requested_or_proposed_action;
   if (
@@ -645,7 +723,7 @@ function contractWorkedExample({ speechAct, contract, catalogIds }) {
     requested_or_proposed_action: actionEntry
       ? { state: 'catalog', executor, action_object_id: actionEntry.action_object_id }
       : { state: 'none' },
-    evidence_span: { text: `Contract worked example for ${speechAct}.` },
+    evidence_span: `Contract worked example for ${speechAct}.`,
   };
 }
 
@@ -662,12 +740,15 @@ export function auditAdaptiveWarrantSemanticContractCatalog({ semanticCatalog } 
       contract: ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS[speechAct],
       catalogIds,
     });
+    const learner = readerEvent.evidence_span;
     const fullEvent = materializeAdaptiveWarrantSemanticReaderEvent({
-      event: readerEvent,
+      event: {
+        ...readerEvent,
+        evidence_span: { text: learner, start: 0, end: learner.length },
+      },
       semanticCatalog,
       label: `semantic catalog worked example ${speechAct}`,
     });
-    const learner = readerEvent.evidence_span.text;
     return {
       sample_id: `contract-worked-example-${String(index + 1).padStart(2, '0')}-${speechAct}`,
       learner,
@@ -697,6 +778,8 @@ export function auditAdaptiveWarrantSemanticContractCatalog({ semanticCatalog } 
     cases: workedExamples.map((row) => ({
       sample_id: row.sample_id,
       genuinely_ambiguous: false,
+      ambiguity_reason: 'none',
+      assembly_rejection: null,
       events: [row.event],
       note: 'Catalog-derived worked example validated through the production annotation validator.',
     })),
@@ -785,19 +868,42 @@ export function validateAdaptiveWarrantSemanticAnnotationResponse({ response, co
     if (typeof row.genuinely_ambiguous !== 'boolean') {
       throw new Error(`semantic annotation case ${row.sample_id} genuinely_ambiguous must be boolean`);
     }
+    if (!ADAPTIVE_WARRANT_SEMANTIC_AMBIGUITY_REASONS.includes(row.ambiguity_reason)) {
+      throw new Error(`semantic annotation case ${row.sample_id} ambiguity_reason is invalid`);
+    }
+    if (row.genuinely_ambiguous !== (row.ambiguity_reason !== 'none')) {
+      throw new Error(`semantic annotation case ${row.sample_id} ambiguity flag and reason disagree`);
+    }
+    if (row.assembly_rejection !== null) {
+      exactFields(row.assembly_rejection, ['code', 'detail'], `semantic annotation case ${row.sample_id} rejection`);
+      if (
+        row.assembly_rejection.code !== 'non_unique_literal_span' ||
+        typeof row.assembly_rejection.detail !== 'string'
+      ) {
+        throw new Error(`semantic annotation case ${row.sample_id} assembly rejection is invalid`);
+      }
+    }
     if (!Array.isArray(row.events) || row.events.length > 4) {
       throw new Error(`semantic annotation case ${row.sample_id} requires zero to four events`);
     }
     if (row.genuinely_ambiguous && row.events.length) {
       throw new Error(`semantic annotation case ${row.sample_id} must abstain when genuinely ambiguous`);
     }
+    if (row.assembly_rejection && row.events.length) {
+      throw new Error(`semantic annotation case ${row.sample_id} rejected assembly must contain zero events`);
+    }
     if (typeof row.note !== 'string' || row.note.trim().length < 8) {
       throw new Error(`semantic annotation case ${row.sample_id} requires a short rationale`);
     }
     const learnerText = learnerTextForCase(corpusById.get(row.sample_id));
-    const events = row.events.map((event, eventIndex) =>
-      validateReaderEvent(event, learnerText, `semantic annotation ${row.sample_id} event ${eventIndex}`, catalogIds),
-    );
+    const events = row.events
+      .map((event, eventIndex) =>
+        validateReaderEvent(event, learnerText, `semantic annotation ${row.sample_id} event ${eventIndex}`, catalogIds),
+      )
+      .sort(
+        (left, right) =>
+          left.evidence_span.start - right.evidence_span.start || left.evidence_span.end - right.evidence_span.end,
+      );
     for (let leftIndex = 0; leftIndex < events.length; leftIndex += 1) {
       for (let rightIndex = leftIndex + 1; rightIndex < events.length; rightIndex += 1) {
         const left = events[leftIndex].evidence_span;
@@ -810,6 +916,8 @@ export function validateAdaptiveWarrantSemanticAnnotationResponse({ response, co
     return {
       sample_id: row.sample_id,
       genuinely_ambiguous: row.genuinely_ambiguous,
+      ambiguity_reason: row.ambiguity_reason,
+      assembly_rejection: row.assembly_rejection,
       events,
       note: row.note.trim(),
     };
@@ -846,10 +954,19 @@ export function buildAdaptiveWarrantSemanticConsensus({ readerA, readerB, corpus
     const eventFieldsAgree =
       left.events.length === right.events.length &&
       left.events.every((event, index) => fieldsAgree(event, right.events[index]));
-    const hard = !left.genuinely_ambiguous && !right.genuinely_ambiguous && eventFieldsAgree;
+    const hard =
+      !left.genuinely_ambiguous &&
+      !right.genuinely_ambiguous &&
+      !left.assembly_rejection &&
+      !right.assembly_rejection &&
+      eventFieldsAgree;
     return {
       sample_id: left.sample_id,
-      raw_structure_agreement: left.genuinely_ambiguous === right.genuinely_ambiguous && eventFieldsAgree,
+      raw_structure_agreement:
+        left.genuinely_ambiguous === right.genuinely_ambiguous &&
+        left.ambiguity_reason === right.ambiguity_reason &&
+        JSON.stringify(left.assembly_rejection) === JSON.stringify(right.assembly_rejection) &&
+        eventFieldsAgree,
       event_fields_agreement: eventFieldsAgree,
       span_exact_agreement:
         left.events.length === right.events.length &&
@@ -859,6 +976,8 @@ export function buildAdaptiveWarrantSemanticConsensus({ readerA, readerB, corpus
       hard_consensus: hard,
       consensus_status: hard ? 'hard' : 'uncertain',
       genuinely_ambiguous: left.genuinely_ambiguous || right.genuinely_ambiguous,
+      ambiguity_reasons: [left.ambiguity_reason, right.ambiguity_reason],
+      assembly_rejections: [left.assembly_rejection, right.assembly_rejection],
       events: hard ? left.events : null,
       reader_a: left,
       reader_b: right,
@@ -931,7 +1050,12 @@ function predictionEvents(prediction) {
         ? { ...event.requested_or_proposed_action }
         : null,
       evidence_span: event.evidence_span,
-    }));
+    }))
+    .sort(
+      (left, right) =>
+        Number(left.evidence_span?.start || 0) - Number(right.evidence_span?.start || 0) ||
+        Number(left.evidence_span?.end || 0) - Number(right.evidence_span?.end || 0),
+    );
 }
 
 function divide(numerator, denominator) {

@@ -34,17 +34,25 @@ function writeJson(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
+function atomicWriteJson(filePath, value) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  const temporary = `${filePath}.tmp-${process.pid}`;
+  fs.writeFileSync(temporary, `${JSON.stringify(value, null, 2)}\n`);
+  fs.renameSync(temporary, filePath);
+}
+
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
-function target(index) {
+function target(index, speechAct) {
   const identityIndex = ((index - 1) % 4) + 1;
+  const resultRequest = speechAct === 'tutor_directed_public_result_request';
   return {
     state: 'catalog',
     target_id: `target-preflight-record-${identityIndex}`,
-    requested_value_types: ['name', 'time'],
-    component_ids: ['visitor_name', 'clock_time'],
+    requested_value_types: resultRequest ? ['name', 'time'] : [],
+    component_ids: resultRequest ? ['visitor_name', 'clock_time'] : [],
   };
 }
 
@@ -52,7 +60,7 @@ function actionContract(speechAct) {
   return {
     tutor_directed_public_result_request: ['requested', 'tutor', 'supply_public_result'],
     learner_proposed_test: ['proposed', 'learner', 'perform_public_test'],
-    learner_record_entry_request: ['requested', 'joint', 'record_public_claim'],
+    learner_record_entry_request: ['requested', 'tutor', 'record_public_claim'],
     tutor_selection_request: ['requested', 'tutor', 'select_next_step'],
   }[speechAct];
 }
@@ -77,32 +85,39 @@ function syntheticInstrument(sourceCommit) {
   const expected = new Map();
   const cases = acts.map((speechAct, offset) => {
     const index = offset + 1;
-    const phrase = `record ${index} public result`;
+    const phrase =
+      speechAct === 'tutor_directed_public_result_request'
+        ? `report record ${index} name and time`
+        : speechAct === 'learner_proposed_test'
+          ? `I will inspect record ${index}`
+          : speechAct === 'learner_record_entry_request'
+            ? `enter record ${index}`
+            : `choose record ${index}`;
     const learner = `Please classify ${phrase} now.`;
     expected.set(`preflight-${index}`, [
       {
         speech_act: speechAct,
-        target: target(index),
+        target: target(index, speechAct),
         requested_or_proposed_action: action(speechAct, index),
         evidence_span: { text: phrase },
       },
     ]);
     return { sample_id: `preflight-${index}`, current_learner_turn: { turn: 2, learner } };
   });
-  const compoundText = 'I will inspect record 13; then report record 13 public result.';
+  const compoundText = 'I will inspect record 13; then report record 13 name and time.';
   const compoundId = 'preflight-13';
   expected.set(compoundId, [
     {
       speech_act: 'learner_proposed_test',
-      target: target(13),
+      target: target(13, 'learner_proposed_test'),
       requested_or_proposed_action: action('learner_proposed_test', 13),
       evidence_span: { text: 'I will inspect record 13' },
     },
     {
       speech_act: 'tutor_directed_public_result_request',
-      target: target(13),
+      target: target(13, 'tutor_directed_public_result_request'),
       requested_or_proposed_action: action('tutor_directed_public_result_request', 13),
-      evidence_span: { text: 'report record 13 public result' },
+      evidence_span: { text: 'report record 13 name and time' },
     },
   ]);
   cases.push({ sample_id: compoundId, current_learner_turn: { turn: 2, learner: compoundText } });
@@ -186,7 +201,9 @@ function readerBatchResponse({ packet, expected, variant }) {
       }
       if (variant === 'a' && events.length === 1) {
         const learner = packet.cases_by_sample_id[sampleId].current_learner_turn.learner;
-        event.evidence_span.text = learner;
+        event.evidence_span = learner;
+      } else {
+        event.evidence_span = event.evidence_span.text;
       }
     }
     if (variant === 'b' && events.length > 1) events.reverse();
@@ -194,6 +211,7 @@ function readerBatchResponse({ packet, expected, variant }) {
       note: variant === 'a' ? 'First reader public rationale.' : 'Different harmless explanatory wording.',
       events,
       genuinely_ambiguous: false,
+      ambiguity_reason: 'none',
     };
   }
   return response;
@@ -258,16 +276,16 @@ function captureContractCatalogAudit(semanticCatalog) {
 export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sourceCommit } = {}) {
   if (!/^[0-9a-f]{40}$/u.test(sourceCommit || '')) throw new Error('preflight requires an exact source commit');
   const resolvedOutput = path.resolve(outputPath);
-  const workDir = path.join(path.dirname(resolvedOutput), 'brittleness-preflight-work');
-  if (fs.existsSync(workDir) && fs.readdirSync(workDir).length) {
-    throw new Error(`preflight work directory is not empty: ${workDir}`);
-  }
-  fs.mkdirSync(workDir, { recursive: true });
+  fs.mkdirSync(path.dirname(resolvedOutput), { recursive: true });
+  const workDir = fs.mkdtempSync(
+    path.join(path.dirname(resolvedOutput), `brittleness-preflight-${sourceCommit.slice(0, 12)}-`),
+  );
   const { corpus, expected } = syntheticInstrument(sourceCommit);
   const smokeCorpus = buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit);
-  const diagnosticCorpus = buildAdaptiveWarrantV3SemanticDiagnostic({
-    studyId: `semantic-contract-catalog-preflight-${sourceCommit.slice(0, 12)}`,
-  }).corpus;
+  const diagnosticBuilt = buildAdaptiveWarrantV3SemanticDiagnostic({
+    studyId: `semantic-brittleness-preflight-diagnostic-${sourceCommit.slice(0, 12)}`,
+  });
+  const diagnosticCorpus = diagnosticBuilt.corpus;
   const syntheticContractCatalogAudit = captureContractCatalogAudit(corpus.semantic_annotation_catalog);
   const smokeContractCatalogAudit = captureContractCatalogAudit(smokeCorpus.semantic_annotation_catalog);
   const diagnosticContractCatalogAudit = captureContractCatalogAudit(diagnosticCorpus.semantic_annotation_catalog);
@@ -284,8 +302,21 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     handbookPath,
     outputDir: collectionDir,
     corpusRole: 'targeted_challenge',
-    batchSize: 3,
+    batchSize: 8,
     maximumCalls: 10,
+    preflightMode: true,
+  });
+  const diagnosticCorpusPath = path.join(workDir, 'diagnostic-corpus.json');
+  const diagnosticHandbookPath = path.join(workDir, 'diagnostic-handbook.md');
+  writeJson(diagnosticCorpusPath, diagnosticCorpus);
+  fs.writeFileSync(diagnosticHandbookPath, diagnosticBuilt.handbook);
+  const preparedDiagnostic = prepareAdaptiveWarrantSemanticAnnotationBatches({
+    corpusPath: diagnosticCorpusPath,
+    handbookPath: diagnosticHandbookPath,
+    outputDir: path.join(workDir, 'diagnostic-size-collection'),
+    corpusRole: 'targeted_challenge',
+    batchSize: 8,
+    maximumCalls: 6,
     preflightMode: true,
   });
   const assembled = {};
@@ -366,6 +397,7 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
   delete malformed.cases[0].events[0].speech_act;
   const ambiguous = clone(readerB);
   ambiguous.cases[0].genuinely_ambiguous = true;
+  ambiguous.cases[0].ambiguity_reason = 'speech_act';
   ambiguous.cases[0].events = [];
   const ambiguousConsensus = buildAdaptiveWarrantSemanticConsensus({
     readerA,
@@ -379,29 +411,41 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
   const schemas = prepared.manifest.readers.flatMap((reader) =>
     reader.batches.map((batch) => JSON.parse(fs.readFileSync(batch.response_schema_path, 'utf8'))),
   );
-  const totalitySchemaFor = (candidateCorpus, label) =>
+  const diagnosticSchemas = preparedDiagnostic.manifest.readers.flatMap((reader) =>
+    reader.batches.map((batch) => JSON.parse(fs.readFileSync(batch.response_schema_path, 'utf8'))),
+  );
+  const totalitySchemaFor = (candidateCorpus, label, count) =>
     buildAdaptiveWarrantSemanticBatchOutputSchema({
       readerId: `zero-call-${label}`,
       batchId: `zero-call-${label}-batch`,
       studyId: candidateCorpus.study_id,
       corpusSha256: `zero-call-${label}-corpus`,
-      requiredSampleIds: [candidateCorpus.cases[0].sample_id],
+      requiredSampleIds: candidateCorpus.cases.slice(0, count).map((row) => row.sample_id),
       semanticCatalog: candidateCorpus.semantic_annotation_catalog,
     });
   const readerSchemaTotalityAudits = {
-    synthetic: auditAdaptiveWarrantSemanticReaderSchemaTotality({
-      schema: schemas[0],
-      semanticCatalog: corpus.semantic_annotation_catalog,
-    }),
+    synthetic_shipped_batches: schemas.map((schema) =>
+      auditAdaptiveWarrantSemanticReaderSchemaTotality({
+        schema,
+        semanticCatalog: corpus.semantic_annotation_catalog,
+      }),
+    ),
     smoke: auditAdaptiveWarrantSemanticReaderSchemaTotality({
-      schema: totalitySchemaFor(smokeCorpus, 'smoke'),
+      schema: totalitySchemaFor(smokeCorpus, 'smoke', 3),
       semanticCatalog: smokeCorpus.semantic_annotation_catalog,
     }),
-    diagnostic: auditAdaptiveWarrantSemanticReaderSchemaTotality({
-      schema: totalitySchemaFor(diagnosticCorpus, 'diagnostic'),
-      semanticCatalog: diagnosticCorpus.semantic_annotation_catalog,
-    }),
+    diagnostic_shipped_batches: diagnosticSchemas.map((schema) =>
+      auditAdaptiveWarrantSemanticReaderSchemaTotality({
+        schema,
+        semanticCatalog: diagnosticCorpus.semantic_annotation_catalog,
+      }),
+    ),
   };
+  const allReaderSchemaAudits = [
+    ...readerSchemaTotalityAudits.synthetic_shipped_batches,
+    readerSchemaTotalityAudits.smoke,
+    ...readerSchemaTotalityAudits.diagnostic_shipped_batches,
+  ];
   const schemaText = JSON.stringify(schemas);
   const scoreStates = Object.values(score.checks);
   const checks = [
@@ -424,7 +468,7 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     ),
     check(
       'all_reader_fields_total_non_nullable_and_catalogue_closed',
-      Object.values(readerSchemaTotalityAudits).every(
+      allReaderSchemaAudits.every(
         (audit) =>
           audit.ok === true &&
           audit.reader_fields_total === true &&
@@ -435,13 +479,32 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     ),
     check(
       'reader_schema_uses_only_supported_provider_keywords',
-      Object.values(readerSchemaTotalityAudits).every((audit) => audit.provider_keywords_supported === true),
+      allReaderSchemaAudits.every((audit) => audit.provider_keywords_supported === true),
       readerSchemaTotalityAudits,
     ),
     check(
       'reader_anyof_branches_are_pairwise_disjoint',
-      Object.values(readerSchemaTotalityAudits).every((audit) => audit.union_branches_pairwise_disjoint === true),
+      allReaderSchemaAudits.every((audit) => audit.union_branches_pairwise_disjoint === true),
       readerSchemaTotalityAudits,
+    ),
+    check(
+      'reader_schema_matches_shared_act_contract_language',
+      allReaderSchemaAudits.every((audit) => audit.act_contract_language_equivalent === true),
+      readerSchemaTotalityAudits,
+    ),
+    check(
+      'reader_schema_nesting_depth_at_most_10',
+      allReaderSchemaAudits.every((audit) => audit.nesting_depth_within_limit === true),
+      readerSchemaTotalityAudits,
+    ),
+    check(
+      'diagnostic_prompt_and_response_schema_size_limits',
+      preparedDiagnostic.manifest.size_audit.largest_packet_bytes <=
+        preparedDiagnostic.manifest.size_audit.maximum_packet_bytes &&
+        preparedDiagnostic.manifest.readers.every((reader) =>
+          reader.batches.every((batch) => batch.response_schema_bytes <= batch.maximum_response_bytes),
+        ),
+      preparedDiagnostic.manifest.size_audit,
     ),
     check('complete_prepare_assemble_consensus_score_path', consensus.hard_consensus_cases === corpus.cases.length),
     check('equivalent_descriptions_same_consensus', consensus.hard_consensus_cases === corpus.cases.length),
@@ -514,8 +577,8 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       reader_schema_totality_audits: readerSchemaTotalityAudits,
     },
   };
-  writeJson(resolvedOutput, artifact);
   if (passed) validateAdaptiveWarrantSemanticPreflightArtifact({ artifact, expectedSourceCommit: sourceCommit });
+  atomicWriteJson(resolvedOutput, artifact);
   return { artifact, outputPath: resolvedOutput };
 }
 
@@ -539,6 +602,7 @@ function main() {
   const sourceCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const result = runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath: values.out, sourceCommit });
   process.stdout.write(`${result.outputPath}\n`);
+  if (result.artifact.status !== 'passed') process.exitCode = 1;
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname)) {

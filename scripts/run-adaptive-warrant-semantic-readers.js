@@ -7,7 +7,10 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
-import { ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA } from '../services/adaptiveWarrantSemanticAnnotation.js';
+import {
+  ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA,
+  auditAdaptiveWarrantSemanticReaderSchemaTotality,
+} from '../services/adaptiveWarrantSemanticAnnotation.js';
 import {
   validateAdaptiveWarrantSemanticPreflightArtifact,
   validateAdaptiveWarrantSemanticSchemaAcceptanceResult,
@@ -176,11 +179,19 @@ function validatePreparedArtifacts(request, manifest) {
   if (JSON.stringify(request.bindings.packets) !== JSON.stringify(expected)) {
     throw new Error('semantic reader authorization packet bindings mismatch');
   }
+  const corpus = readJson(manifest.corpus.path);
   for (const reader of manifest.readers) {
     for (const batch of reader.batches) {
       if (fileSha256(batch.packet_path) !== batch.packet_sha256) throw new Error(`${batch.batch_id} packet drift`);
       if (fileSha256(batch.response_schema_path) !== batch.response_schema_sha256) {
         throw new Error(`${batch.batch_id} response schema drift`);
+      }
+      const schemaAudit = auditAdaptiveWarrantSemanticReaderSchemaTotality({
+        schema: readJson(batch.response_schema_path),
+        semanticCatalog: corpus.semantic_annotation_catalog,
+      });
+      if (!schemaAudit.ok) {
+        throw new Error(`${batch.batch_id} response schema failed launch validation: ${schemaAudit.issues.join('; ')}`);
       }
     }
   }

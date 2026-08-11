@@ -574,3 +574,33 @@ one synthetic one-call schema-acceptance ping now traverses the exact provider
 route. Its case and response are permanently excluded from research evidence;
 its sole authority is to establish that the bound provider accepts the frozen
 schema before an evidence-bearing case can be burned.
+
+### 7.23 Tier-A/B instrument audit closed prospectively before the next smoke
+
+The four-lens audit at commit `1e102681` identified transport launch blockers
+and reader-contract ambiguities that could invalidate another smoke or
+diagnostic without measuring model capability. The prospective repair now
+generates one act-discriminated provider schema and enforces the same exported
+15-act contract in the reader materializer, private-gold validator, and live
+semantic validator. Event branches are disjoint on `speech_act`; catalogue
+absence branches are disjoint on `state`. The production-size eight-case
+schema is statically audited against the provider keyword subset, a maximum
+nesting depth of 10, and a serialized size limit of 10,500 bytes.
+
+The reader judgment language is also closed before exposure. Value and
+component sets are populated only for request-mode acts and only from literal
+category surfaces. Tutor execution is the default for a request addressed to
+the only other party; joint and unspecified execution require explicit
+surface licences. Target ownership is event-local for analysis, withdrawal,
+and transfer. The compound licence is general, while a one-clause delegation
+is tutor selection rather than an additional low-agency event. Anaphora,
+need-statements, saybacks, coordinated targets, rhetorical questions,
+conditionals, action specificity, span uniqueness, politeness, and reported
+speech now have prospective deterministic rules.
+
+The prior `efcca5f0` smoke is preserved as an invalid instrument result: its
+act-agnostic schema admitted values rejected by the act-strict validator, and
+its delegation/deferral boundary was unwritten. Its exposed cases remain
+burned. The next smoke and all 24 diagnostic surfaces have been re-authored;
+none becomes evidence until the clean-commit preflight, eight-case provider
+acceptance ping, and two-reader smoke pass.

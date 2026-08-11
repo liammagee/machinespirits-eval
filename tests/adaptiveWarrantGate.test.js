@@ -209,7 +209,7 @@ test('validated semantic events cover the V2 result-request and value-type misse
           kind: 'record_entry',
           target_id: 'target-shelf-two-access-record',
           public_identifier_ids: ['public-id-shelf-two'],
-          requested_value_types: ['name', 'time'],
+          requested_value_types: ['time'],
           component_ids: [],
         },
         action: {
@@ -232,7 +232,7 @@ test('validated semantic events cover the V2 result-request and value-type misse
   assert.deepEqual(decision.blocking_obligation.target.public_identifier_ids, ['public-id-shelf-two']);
   assert.equal(decision.blocking_obligation.target.subject_terms.includes('name'), false);
   assert.equal(decision.blocking_obligation.target.subject_terms.includes('time'), false);
-  assert.deepEqual(decision.blocking_obligation.target.requested_value_types, ['name', 'time']);
+  assert.deepEqual(decision.blocking_obligation.target.requested_value_types, ['time']);
   const delivery = auditAdaptiveWarrantPublicObligationDelivery({
     obligation: decision.blocking_obligation,
     tutorOutcome: {
@@ -241,15 +241,12 @@ test('validated semantic events cover the V2 result-request and value-type misse
     },
   });
   assert.equal(delivery.status, 'satisfied');
-  assert.deepEqual(delivery.component_delivery, [
-    { id: 'requested_name', answered: true },
-    { id: 'requested_time', answered: true },
-  ]);
+  assert.deepEqual(delivery.component_delivery, [{ id: 'requested_time', answered: true }]);
 });
 
 test('live semantic extraction is paraphrase-invariant and contrast-sensitive at the typed boundary', () => {
   const publicText = 'Public target target-shelf-two-access-record has identifier public-id-shelf-two.';
-  const typedTarget = {
+  const requestTarget = {
     kind: 'record_entry',
     target_id: 'target-shelf-two-access-record',
     public_identifier_ids: ['public-id-shelf-two'],
@@ -271,7 +268,7 @@ test('live semantic extraction is paraphrase-invariant and contrast-sensitive at
             learnerText,
             eventId: `request-${index + 1}`,
             speechAct: 'tutor_directed_public_result_request',
-            target: typedTarget,
+            target: requestTarget,
             action: requestAction,
           }),
         ],
@@ -301,7 +298,7 @@ test('live semantic extraction is paraphrase-invariant and contrast-sensitive at
         learnerText: proposalText,
         eventId: 'proposal-1',
         speechAct: 'learner_proposed_test',
-        target: typedTarget,
+        target: { ...requestTarget, requested_value_types: [], component_ids: [] },
         action: {
           mode: 'proposed',
           executor: 'learner',
@@ -328,27 +325,42 @@ test('live semantic extraction is paraphrase-invariant and contrast-sensitive at
 
 test('event-to-engagement compilation resolves tutor selection as deference without hiding analytic multiplicity', () => {
   const learnerText = 'Choose the first public record for me. I think its timing column is decisive.';
-  const extraction = semanticExtraction(learnerText, [
-    semanticEvent({
-      learnerText,
-      eventId: 'selection',
-      speechAct: 'tutor_selection_request',
-      span: 'Choose the first public record for me',
-      action: {
-        mode: 'requested',
-        executor: 'tutor',
-        action: 'select_next_step',
-        action_object_id: 'action-object-first-matter',
-      },
-    }),
-    semanticEvent({
-      learnerText,
-      eventId: 'analytic',
-      speechAct: 'analytic_contribution',
-      action: null,
-      span: 'I think its timing column is decisive',
-    }),
-  ]);
+  const selectionTarget = {
+    kind: 'other',
+    target_id: 'target-first-public-record-choice',
+    public_identifier_ids: ['public-id-first-public-record-choice'],
+    requested_value_types: [],
+    component_ids: [],
+  };
+  const extraction = semanticExtraction(
+    learnerText,
+    [
+      semanticEvent({
+        learnerText,
+        eventId: 'selection',
+        speechAct: 'tutor_selection_request',
+        span: 'Choose the first public record for me',
+        target: selectionTarget,
+        action: {
+          mode: 'requested',
+          executor: 'tutor',
+          action: 'select_next_step',
+          action_object_id: 'action-object-first-matter',
+        },
+      }),
+      semanticEvent({
+        learnerText,
+        eventId: 'analytic',
+        speechAct: 'analytic_contribution',
+        action: null,
+        span: 'I think its timing column is decisive',
+      }),
+    ],
+    {
+      publicText:
+        'The first public record choice is target-first-public-record-choice with public-id-first-public-record-choice.',
+    },
+  );
   const signal = compileAdaptiveWarrantSemanticSignal(extraction);
   assert.equal(signal.primary, 'low_agency_deferral');
   assert.deepEqual(signal.labels, ['low_agency_deferral', 'engaged_analytic']);

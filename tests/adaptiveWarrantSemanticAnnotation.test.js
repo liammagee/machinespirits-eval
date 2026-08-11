@@ -43,6 +43,15 @@ function target(index) {
   };
 }
 
+function readerTarget(kind, index) {
+  const value = target(index);
+  if (kind !== 'tutor_directed_public_result_request') {
+    value.requested_value_types = [];
+    value.component_ids = [];
+  }
+  return value;
+}
+
 function action(kind, index) {
   return kind === 'tutor_directed_public_result_request'
     ? {
@@ -63,7 +72,7 @@ function event(kind, text, index) {
   return {
     speaker: 'learner',
     speech_act: kind,
-    target: target(index),
+    target: readerTarget(kind, index),
     requested_or_proposed_action: action(kind, index),
     evidence_span: { text, start: 0, end: text.length },
   };
@@ -142,6 +151,8 @@ function reader(corpus, readerId, runId) {
     cases: corpus.cases.map((row, index) => ({
       sample_id: row.sample_id,
       genuinely_ambiguous: false,
+      ambiguity_reason: 'none',
+      assembly_rejection: null,
       events: [event(row.kind, row.current_learner_turn.learner, index + 1)],
       note: 'The executor and public action are explicit.',
     })),
@@ -250,22 +261,23 @@ test('semantic collection freezes exact packets and derives only unique literal 
   const firstBatchSchema = JSON.parse(fs.readFileSync(prepared.manifest.readers[0].batches[0].response_schema_path));
   assert.deepEqual(firstBatchSchema.properties.cases_by_sample_id.properties['sample-1'], { $ref: '#/$defs/case' });
   const firstSampleSchema = firstBatchSchema.$defs.case;
-  assert.equal(firstSampleSchema.properties.note.minLength, 8);
-  assert.deepEqual(Object.keys(firstSampleSchema.properties.events.items.properties.evidence_span.properties), [
-    'text',
-  ]);
-  assert.equal('speaker' in firstSampleSchema.properties.events.items.properties, false);
-  const targetChoices = firstSampleSchema.properties.events.items.properties.target.anyOf;
-  const targetSchema = targetChoices.find((choice) => choice.type === 'object');
-  const actionChoices = firstSampleSchema.properties.events.items.properties.requested_or_proposed_action.anyOf;
-  const actionSchema = actionChoices.find((choice) => choice.properties.state.enum[0] === 'catalog');
-  assert.deepEqual(
-    targetChoices.map((choice) => choice.properties.state.enum[0]),
-    ['catalog', 'none'],
+  assert.equal(firstSampleSchema.properties.note.type, 'string');
+  const eventBranches = firstSampleSchema.properties.events.items.anyOf;
+  const requestBranch = eventBranches.find(
+    (branch) => branch.properties.speech_act.enum[0] === 'tutor_directed_public_result_request',
   );
+  const analyticBranch = eventBranches.find(
+    (branch) => branch.properties.speech_act.enum[0] === 'analytic_contribution',
+  );
+  assert.equal(requestBranch.properties.evidence_span.type, 'string');
+  assert.equal('speaker' in requestBranch.properties, false);
+  const targetSchema = firstBatchSchema.$defs[requestBranch.properties.target.$ref.split('/').at(-1)];
+  const actionSchema =
+    firstBatchSchema.$defs[requestBranch.properties.requested_or_proposed_action.$ref.split('/').at(-1)];
+  const targetChoices = analyticBranch.properties.target.anyOf;
   assert.deepEqual(
-    actionChoices.map((choice) => choice.properties.state.enum[0]),
-    ['catalog', 'none'],
+    targetChoices.map((choice) => choice.$ref),
+    ['#/$defs/t', '#/$defs/n'],
   );
   assert.deepEqual(Object.keys(targetSchema.properties).sort(), [
     'component_ids',
@@ -280,7 +292,9 @@ test('semantic collection freezes exact packets and derives only unique literal 
   );
   assert.deepEqual(
     actionSchema.properties.action_object_id.enum,
-    corpus.semantic_annotation_catalog.action_objects.map((row) => row.action_object_id),
+    corpus.semantic_annotation_catalog.action_objects
+      .filter((row) => row.mode === 'requested' && row.action === 'supply_public_result')
+      .map((row) => row.action_object_id),
   );
   assert.deepEqual(
     auditAdaptiveWarrantSemanticReaderSchemaTotality({
@@ -296,12 +310,13 @@ test('semantic collection freezes exact packets and derives only unique literal 
       catalogue_domains_closed: true,
       provider_keywords_supported: true,
       union_branches_pairwise_disjoint: true,
+      act_contract_language_equivalent: true,
+      maximum_nesting_depth: 9,
+      nesting_depth_within_limit: true,
     },
   );
   const unsupportedSchema = structuredClone(firstBatchSchema);
-  const unsupportedTarget = unsupportedSchema.$defs.case.properties.events.items.properties.target;
-  unsupportedTarget.oneOf = unsupportedTarget.anyOf;
-  delete unsupportedTarget.anyOf;
+  unsupportedSchema.$defs.case.properties.note.minLength = 8;
   const unsupportedAudit = auditAdaptiveWarrantSemanticReaderSchemaTotality({
     schema: unsupportedSchema,
     semanticCatalog: corpus.semantic_annotation_catalog,
@@ -310,7 +325,10 @@ test('semantic collection freezes exact packets and derives only unique literal 
   assert.equal(unsupportedAudit.provider_keywords_supported, false);
 
   const overlappingSchema = structuredClone(firstBatchSchema);
-  overlappingSchema.$defs.case.properties.events.items.properties.target.anyOf[1].properties.state.enum = ['catalog'];
+  const overlappingAnalytic = overlappingSchema.$defs.case.properties.events.items.anyOf.find(
+    (branch) => branch.properties.speech_act.enum[0] === 'analytic_contribution',
+  );
+  overlappingAnalytic.properties.target.anyOf[1] = { $ref: '#/$defs/t' };
   const overlappingAudit = auditAdaptiveWarrantSemanticReaderSchemaTotality({
     schema: overlappingSchema,
     semanticCatalog: corpus.semantic_annotation_catalog,
@@ -326,9 +344,10 @@ test('semantic collection freezes exact packets and derives only unique literal 
     for (const sampleId of batch.required_sample_ids) {
       const row = corpus.cases.find((candidate) => candidate.sample_id === sampleId);
       const packetEvent = readerEvent(row.kind, row.current_learner_turn.learner, Number(sampleId.split('-').at(-1)));
-      packetEvent.evidence_span = { text: packetEvent.evidence_span.text };
+      packetEvent.evidence_span = packetEvent.evidence_span.text;
       response.cases_by_sample_id[sampleId] = {
         genuinely_ambiguous: false,
+        ambiguity_reason: 'none',
         events: [packetEvent],
         note: 'The public executor and action are explicit.',
       };
@@ -380,7 +399,7 @@ test('reader event materialization derives mechanical fields and enforces reques
         event: source,
         semanticCatalog: corpus.semantic_annotation_catalog,
       }),
-    /incompatible with the speech act|executor must differ/u,
+    /incompatible with the speech act|executor must differ|incompatible_with_speech_act/u,
   );
 });
 
@@ -391,9 +410,9 @@ test('reader events require total non-null target and action fields with explici
     speech_act: 'analytic_contribution',
     target: {
       state: 'catalog',
-      target_id: 'target-smoke-north-gallery-register',
-      requested_value_types: ['record_text'],
-      component_ids: ['bounded_finding'],
+      target_id: 'target-smoke-west-landing-docket',
+      requested_value_types: [],
+      component_ids: [],
     },
     requested_or_proposed_action: { state: 'none' },
     evidence_span: { text: analyticText },
@@ -402,7 +421,7 @@ test('reader events require total non-null target and action fields with explici
     event: analytic,
     semanticCatalog: corpus.semantic_annotation_catalog,
   });
-  assert.equal(materialized.target.target_id, 'target-smoke-north-gallery-register');
+  assert.equal(materialized.target.target_id, 'target-smoke-west-landing-docket');
   assert.equal(materialized.requested_or_proposed_action, null);
 
   assert.throws(
@@ -433,12 +452,12 @@ test('contract/catalog audit validates every speech act through the production a
   assert.equal(audit.worked_example_count, 15);
   assert.equal(
     audit.worked_examples.find((row) => row.speech_act === 'tutor_selection_request').target_id,
-    'target-smoke-harbour-map-choice',
+    'target-smoke-observatory-chart-choice',
   );
 
   const inconsistent = structuredClone(corpus.semantic_annotation_catalog);
   inconsistent.action_objects.find(
-    (row) => row.action_object_id === 'action-object-smoke-select-harbour-map',
+    (row) => row.action_object_id === 'action-object-smoke-select-observatory-chart',
   ).target_id = null;
   assert.throws(
     () => auditAdaptiveWarrantSemanticContractCatalog({ semanticCatalog: inconsistent }),
@@ -453,6 +472,8 @@ test('the tabletop contract accounts for every reader field and every mechanical
       'action',
       'action_mode',
       'action_object_id',
+      'ambiguity_reason',
+      'assembly_rejection',
       'component_ids',
       'event_multiplicity',
       'evidence_span',
@@ -516,6 +537,8 @@ test('fresh V3 diagnostic supplies the predeclared semantic and rare-state const
     cases: built.key.cases.map((row) => ({
       sample_id: row.sample_id,
       genuinely_ambiguous: false,
+      ambiguity_reason: 'none',
+      assembly_rejection: null,
       events: row.expected_semantic_events,
       note: 'Prospective construction-only contract check.',
     })),
@@ -579,6 +602,9 @@ test('zero-call brittleness preflight exercises the complete instrument path and
     'all_reader_fields_total_non_nullable_and_catalogue_closed',
     'reader_schema_uses_only_supported_provider_keywords',
     'reader_anyof_branches_are_pairwise_disjoint',
+    'reader_schema_matches_shared_act_contract_language',
+    'reader_schema_nesting_depth_at_most_10',
+    'diagnostic_prompt_and_response_schema_size_limits',
   ]) {
     assert.equal(result.artifact.checks.find((row) => row.name === checkName).status, 'pass');
   }
@@ -648,7 +674,7 @@ test('the one-call schema-acceptance ping is synthetic, excluded, and stale resu
   const corpus = buildAdaptiveWarrantSemanticSchemaAcceptanceCorpus(sourceCommit);
   assert.equal(corpus.synthetic_schema_acceptance_only, true);
   assert.equal(corpus.permanently_excluded_from_research, true);
-  assert.equal(corpus.cases.length, 1);
+  assert.equal(corpus.cases.length, 8);
   const artifact = {
     schema: ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_RESULT_SCHEMA,
     status: 'passed',

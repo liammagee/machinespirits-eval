@@ -57,35 +57,35 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
     schema: 'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v3',
     targets: [
       {
-        target_id: 'target-smoke-north-gallery-register',
+        target_id: 'target-smoke-west-landing-docket',
         kind: 'record_entry',
-        public_identifier_ids: ['public-id-smoke-north-gallery'],
+        public_identifier_ids: ['public-id-smoke-west-landing'],
         allowed_value_types: ['record_text'],
         component_ids: ['bounded_finding'],
-        display_label: 'synthetic north-gallery register',
+        display_label: 'synthetic west-landing docket',
       },
       {
-        target_id: 'target-smoke-ivory-button-die-n',
+        target_id: 'target-smoke-copper-seal-mould-q',
         kind: 'mark_or_tool_result',
-        public_identifier_ids: ['public-id-smoke-ivory-button', 'public-id-smoke-die-n'],
+        public_identifier_ids: ['public-id-smoke-copper-seal', 'public-id-smoke-mould-q'],
         allowed_value_types: ['match_status'],
         component_ids: ['match_status'],
-        display_label: 'synthetic ivory-button comparison',
+        display_label: 'synthetic copper-seal comparison',
       },
       {
-        target_id: 'target-smoke-harbour-map-choice',
+        target_id: 'target-smoke-observatory-chart-choice',
         kind: 'public_exhibit_result',
-        public_identifier_ids: ['public-id-smoke-harbour-maps'],
+        public_identifier_ids: ['public-id-smoke-observatory-charts'],
         allowed_value_types: ['other'],
         component_ids: ['next_check'],
-        display_label: 'synthetic harbour-map choice set',
+        display_label: 'synthetic observatory-chart choice set',
       },
     ],
     public_identifiers: [
-      { public_identifier_id: 'public-id-smoke-north-gallery', display_label: 'north-gallery register' },
-      { public_identifier_id: 'public-id-smoke-ivory-button', display_label: 'ivory button' },
-      { public_identifier_id: 'public-id-smoke-die-n', display_label: 'die N' },
-      { public_identifier_id: 'public-id-smoke-harbour-maps', display_label: 'harbour maps' },
+      { public_identifier_id: 'public-id-smoke-west-landing', display_label: 'west-landing docket' },
+      { public_identifier_id: 'public-id-smoke-copper-seal', display_label: 'copper seal' },
+      { public_identifier_id: 'public-id-smoke-mould-q', display_label: 'mould Q' },
+      { public_identifier_id: 'public-id-smoke-observatory-charts', display_label: 'observatory charts' },
     ],
     components: [
       { component_id: 'bounded_finding', display_label: 'bounded finding' },
@@ -94,32 +94,32 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
     ],
     action_objects: [
       {
-        action_object_id: 'action-object-smoke-enter-north-gallery-finding',
+        action_object_id: 'action-object-smoke-enter-west-landing-finding',
         mode: 'requested',
         action: 'record_public_claim',
-        target_id: 'target-smoke-north-gallery-register',
-        display_label: 'enter the bounded north-gallery finding',
+        target_id: 'target-smoke-west-landing-docket',
+        display_label: 'enter the bounded west-landing finding',
       },
       {
-        action_object_id: 'action-object-smoke-select-harbour-map',
+        action_object_id: 'action-object-smoke-select-observatory-chart',
         mode: 'requested',
         action: 'select_next_step',
-        target_id: 'target-smoke-harbour-map-choice',
-        display_label: 'select the first harbour map',
+        target_id: 'target-smoke-observatory-chart-choice',
+        display_label: 'select the first observatory chart',
       },
       {
-        action_object_id: 'action-object-smoke-compare-ivory-button',
+        action_object_id: 'action-object-smoke-compare-copper-seal',
         mode: 'proposed',
         action: 'perform_public_test',
-        target_id: 'target-smoke-ivory-button-die-n',
-        display_label: 'compare the ivory button with die N',
+        target_id: 'target-smoke-copper-seal-mould-q',
+        display_label: 'compare the copper seal with mould Q',
       },
       {
-        action_object_id: 'action-object-smoke-report-ivory-button-alignment',
+        action_object_id: 'action-object-smoke-report-copper-seal-match',
         mode: 'requested',
         action: 'supply_public_result',
-        target_id: 'target-smoke-ivory-button-die-n',
-        display_label: 'report the ivory-button alignment status',
+        target_id: 'target-smoke-copper-seal-mould-q',
+        display_label: 'report the copper-seal matching result',
       },
       {
         action_object_id: 'action-object-smoke-explain-public-wording',
@@ -146,32 +146,33 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
     semantic_annotation_catalog: catalog,
     cases: [
       {
-        sample_id: 'synthetic-smoke-north-gallery-record',
+        sample_id: 'synthetic-smoke-west-landing-record',
         current_learner_turn: {
           turn: 2,
           learner:
-            'The north-gallery register proves receipt, not ownership; place only that limited finding in the investigation ledger.',
+            'The west-landing docket establishes delivery, not custody; enter only that bounded finding in the case book.',
         },
         public_evidence_at_decision: [
-          'target-smoke-north-gallery-register is identified by public-id-smoke-north-gallery.',
+          'target-smoke-west-landing-docket is identified by public-id-smoke-west-landing.',
         ],
       },
       {
-        sample_id: 'synthetic-smoke-harbour-map-selection',
+        sample_id: 'synthetic-smoke-observatory-chart-selection',
         current_learner_turn: {
           turn: 2,
-          learner: 'Select which harbour map I should review first; I leave the choice among those maps to you.',
+          learner:
+            'Choose which observatory chart I should inspect first; I hand that decision among the listed charts to you.',
         },
-        public_evidence_at_decision: ['public-id-smoke-harbour-maps names the available harbour maps.'],
+        public_evidence_at_decision: ['public-id-smoke-observatory-charts names the available observatory charts.'],
       },
       {
-        sample_id: 'synthetic-smoke-ivory-button-compound',
+        sample_id: 'synthetic-smoke-copper-seal-compound',
         current_learner_turn: {
           turn: 2,
-          learner: 'I will press the ivory button against die N; afterward, tell me the documented alignment result.',
+          learner: 'I will align the copper seal with mould Q; once complete, report the recorded matching result.',
         },
         public_evidence_at_decision: [
-          'target-smoke-ivory-button-die-n is identified by public-id-smoke-ivory-button and public-id-smoke-die-n.',
+          'target-smoke-copper-seal-mould-q is identified by public-id-smoke-copper-seal and public-id-smoke-mould-q.',
         ],
       },
     ],
@@ -179,26 +180,25 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
 }
 
 function expectedSmokeIdentities() {
-  const northGallery = {
+  const targetWithSets = (target, requestedValueTypes, componentIds) => ({
+    ...target,
+    requested_value_types: requestedValueTypes,
+    component_ids: componentIds,
+  });
+  const westLandingBase = {
     kind: 'record_entry',
-    target_id: 'target-smoke-north-gallery-register',
-    public_identifier_ids: ['public-id-smoke-north-gallery'],
-    requested_value_types: ['record_text'],
-    component_ids: ['bounded_finding'],
+    target_id: 'target-smoke-west-landing-docket',
+    public_identifier_ids: ['public-id-smoke-west-landing'],
   };
-  const ivoryButton = {
+  const copperSealBase = {
     kind: 'mark_or_tool_result',
-    target_id: 'target-smoke-ivory-button-die-n',
-    public_identifier_ids: ['public-id-smoke-ivory-button', 'public-id-smoke-die-n'],
-    requested_value_types: ['match_status'],
-    component_ids: ['match_status'],
+    target_id: 'target-smoke-copper-seal-mould-q',
+    public_identifier_ids: ['public-id-smoke-copper-seal', 'public-id-smoke-mould-q'],
   };
-  const harbourChoice = {
+  const observatoryChoiceBase = {
     kind: 'public_exhibit_result',
-    target_id: 'target-smoke-harbour-map-choice',
-    public_identifier_ids: ['public-id-smoke-harbour-maps'],
-    requested_value_types: ['other'],
-    component_ids: ['next_check'],
+    target_id: 'target-smoke-observatory-chart-choice',
+    public_identifier_ids: ['public-id-smoke-observatory-charts'],
   };
   const event = (speechAct, target, mode, executor, action, actionObjectId) => ({
     speaker: 'learner',
@@ -208,44 +208,44 @@ function expectedSmokeIdentities() {
       actionObjectId === null ? null : { mode, executor, action, action_object_id: actionObjectId },
   });
   return {
-    'synthetic-smoke-north-gallery-record': [
-      event('analytic_contribution', northGallery, null, null, null, null),
+    'synthetic-smoke-west-landing-record': [
+      event('analytic_contribution', targetWithSets(westLandingBase, [], []), null, null, null, null),
       event(
         'learner_record_entry_request',
-        northGallery,
+        targetWithSets(westLandingBase, ['record_text'], ['bounded_finding']),
         'requested',
         'tutor',
         'record_public_claim',
-        'action-object-smoke-enter-north-gallery-finding',
+        'action-object-smoke-enter-west-landing-finding',
       ),
     ],
-    'synthetic-smoke-harbour-map-selection': [
+    'synthetic-smoke-observatory-chart-selection': [
       event(
         'tutor_selection_request',
-        harbourChoice,
+        targetWithSets(observatoryChoiceBase, ['other'], []),
         'requested',
         'tutor',
         'select_next_step',
-        'action-object-smoke-select-harbour-map',
+        'action-object-smoke-select-observatory-chart',
       ),
       event('low_agency_deferral', null, null, null, null, null),
     ],
-    'synthetic-smoke-ivory-button-compound': [
+    'synthetic-smoke-copper-seal-compound': [
       event(
         'learner_proposed_test',
-        ivoryButton,
+        targetWithSets(copperSealBase, [], []),
         'proposed',
         'learner',
         'perform_public_test',
-        'action-object-smoke-compare-ivory-button',
+        'action-object-smoke-compare-copper-seal',
       ),
       event(
         'tutor_directed_public_result_request',
-        ivoryButton,
+        targetWithSets(copperSealBase, ['match_status'], ['match_status']),
         'requested',
         'tutor',
         'supply_public_result',
-        'action-object-smoke-report-ivory-button-alignment',
+        'action-object-smoke-report-copper-seal-match',
       ),
     ],
   };
@@ -276,13 +276,15 @@ export function prepareAdaptiveWarrantSemanticSchemaSmoke({ outputDir, preflight
     handbookPath,
     `# Synthetic semantic-contract smoke
 
-Use one event for each independent clause-level act that changes a distinct typed state. Explanatory wording is not a second event. Separate events require distinct, non-overlapping minimal literal spans.
+Use one event for each independent clause-level act that changes a distinct typed state. The compound licence is general, not a whitelist. Explanatory wording is not a second event. Separate events require distinct, non-overlapping minimal literal spans.
 
 The current-turn speaker is mechanically learner and must not be returned. Executor means the party who must perform the action, never the speaker. Every request-type act requires executor different from speaker. A tutor-directed result request, tutor-selection request, and record-entry request therefore use executor=tutor when addressed to the tutor; a learner proposal uses executor=learner.
 
-Every reader field is required and non-null. Each target is a tagged object. Use state="catalog" with target_id, requested_value_types, and component_ids for a catalogue target; use the sole field state="none" when the act itself names no catalogue entity. The harness derives kind and public identifiers from target_id. Tutor-selection requests require the catalogue target that names the publicly enumerated choices. An analytic contribution's target is the catalogue entity the analysis itself is about, independent of an accompanying request; use target state="none" only when the analytic clause names no catalogue entity. Co-occurring requests keep their own targets. Each requested_or_proposed_action is also tagged: use state="catalog" with executor and action_object_id for an action, or the sole field state="none" when no action applies. The harness derives mode and operation from action_object_id. A requested value such as match_status is not a target kind. Never return null or omit a field.
+Every reader field is required and non-null. Each target is a tagged object. Use state="catalog" with target_id, requested_value_types, and component_ids for a catalogue target; use the sole field state="none" when the act itself names no catalogue entity. The harness derives kind and public identifiers from target_id. Tutor-selection requests require the catalogue target that names the publicly enumerated choices. An analytic contribution's target is the catalogue entity the analysis itself is about, independent of an accompanying request; use target state="none" only when the analytic clause names no catalogue entity. Co-occurring requests keep their own targets. Value/component sets are non-empty only for request-mode acts and only for category surfaces literally present in that event span; proposal and analytic events use empty sets. Each requested_or_proposed_action is also tagged: use state="catalog" with executor and action_object_id for an action, or the sole field state="none" when no action applies. The harness derives mode and operation from action_object_id. Never return null or omit a field.
 
-A record-entry request may coexist with an independent analytic clause. A tutor-selection request carries a second low_agency_deferral event only when a separate clause explicitly declines choice. A proposal followed by a request for its result is two events in surface order.
+A record-entry request may coexist with an independent analytic clause. A clause asking the tutor to choose is tutor_selection_request. Only a separate declarative clause that says the learner cannot, refuses to, or leaves the choice to the tutor is low_agency_deferral, with target and action both state="none"; when both meanings occur in one clause, tutor_selection_request wins. A proposal followed by a request for its result is two events in surface order.
+
+For a request where the tutor is the only other party, executor is tutor; joint requires explicit we/our/let's, and unspecified requires an explicit impersonal or passive construction. Set ambiguity_reason="none" whenever genuinely_ambiguous=false; otherwise return no events and one typed reason.
 
 Use exact canonical IDs from the catalogue and literal evidence text without offsets. These cases are permanently excluded from research evidence.
 `,
@@ -446,9 +448,9 @@ export async function runAdaptiveWarrantSemanticSchemaSmoke({
         ),
     ),
     cross_reader_hard_consensus: consensus.hard_consensus_cases === corpus.cases.length,
-    record_entry_contract_agreement: expectedMatches['synthetic-smoke-north-gallery-record'] === true,
-    tutor_selection_contract_agreement: expectedMatches['synthetic-smoke-harbour-map-selection'] === true,
-    compound_probe_contract_agreement: expectedMatches['synthetic-smoke-ivory-button-compound'] === true,
+    record_entry_contract_agreement: expectedMatches['synthetic-smoke-west-landing-record'] === true,
+    tutor_selection_contract_agreement: expectedMatches['synthetic-smoke-observatory-chart-selection'] === true,
+    compound_probe_contract_agreement: expectedMatches['synthetic-smoke-copper-seal-compound'] === true,
   };
   const passed = Object.values(checks).every(Boolean);
   const result = {

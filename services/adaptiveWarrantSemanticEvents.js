@@ -75,6 +75,193 @@ export const ADAPTIVE_WARRANT_SEMANTIC_ACTIONS = Object.freeze([
   'withdraw_request',
   'none',
 ]);
+
+export const ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS = Object.freeze({
+  tutor_directed_public_result_request: Object.freeze({
+    target: 'catalog',
+    action: 'catalog',
+    mode: 'requested',
+    operation: 'supply_public_result',
+    executors: Object.freeze(['tutor', 'joint', 'unspecified']),
+  }),
+  learner_proposed_test: Object.freeze({
+    target: 'catalog',
+    action: 'catalog',
+    mode: 'proposed',
+    operation: 'perform_public_test',
+    executors: Object.freeze(['learner', 'joint', 'unspecified']),
+  }),
+  criterion_question: Object.freeze({ target: 'catalog', action: 'none' }),
+  tutor_selection_request: Object.freeze({
+    target: 'catalog',
+    action: 'catalog',
+    mode: 'requested',
+    operation: 'select_next_step',
+    executors: Object.freeze(['tutor']),
+  }),
+  learner_record_entry_request: Object.freeze({
+    target: 'catalog',
+    action: 'catalog',
+    mode: 'requested',
+    operation: 'record_public_claim',
+    executors: Object.freeze(['tutor', 'joint', 'unspecified']),
+  }),
+  learner_wording_request: Object.freeze({
+    target: 'none',
+    action: 'catalog',
+    mode: 'requested',
+    operation: 'explain_wording',
+    executors: Object.freeze(['tutor']),
+  }),
+  repair_request: Object.freeze({
+    target: 'none',
+    action: 'catalog',
+    mode: 'requested',
+    operation: 'explain_wording',
+    executors: Object.freeze(['tutor']),
+  }),
+  withdrawal: Object.freeze({
+    target: 'catalog_or_none',
+    action: 'catalog',
+    mode: 'requested',
+    operation: 'withdraw_request',
+    executors: Object.freeze(['learner']),
+  }),
+  transfer_to_learner: Object.freeze({
+    target: 'catalog_or_none',
+    action: 'catalog',
+    mode: 'proposed',
+    operation: 'perform_public_test',
+    executors: Object.freeze(['learner']),
+  }),
+  stall: Object.freeze({ target: 'none', action: 'none' }),
+  register_complaint: Object.freeze({ target: 'none', action: 'none' }),
+  repetition_complaint: Object.freeze({ target: 'none', action: 'none' }),
+  low_agency_deferral: Object.freeze({ target: 'none', action: 'none' }),
+  analytic_contribution: Object.freeze({ target: 'catalog_or_none', action: 'none' }),
+  other: Object.freeze({ target: 'catalog_or_none', action: 'none' }),
+});
+
+export const ADAPTIVE_WARRANT_SEMANTIC_REQUEST_SPEECH_ACTS = Object.freeze([
+  'tutor_directed_public_result_request',
+  'tutor_selection_request',
+  'learner_record_entry_request',
+  'learner_wording_request',
+  'repair_request',
+]);
+
+const REQUEST_SPEECH_ACTS = new Set(ADAPTIVE_WARRANT_SEMANTIC_REQUEST_SPEECH_ACTS);
+
+const VALUE_TYPE_SURFACES = Object.freeze({
+  name: Object.freeze(['name', 'names', 'named', 'attendant', 'courier']),
+  time: Object.freeze(['time', 'times', 'timed', 'hour', 'hours', 'minute', 'minutes']),
+  date: Object.freeze(['date', 'dates', 'dated', 'day', 'days']),
+  weight: Object.freeze(['weight', 'weights', 'weigh', 'mass']),
+  sound: Object.freeze(['sound', 'sounds', 'tone', 'tones', 'acoustic', 'chime', 'chimes']),
+  material: Object.freeze(['material', 'materials', 'fibre', 'fibres', 'fiber', 'fibers', 'linen']),
+  match_status: Object.freeze(['match', 'matches', 'matching', 'fit', 'fits', 'alignment']),
+  record_text: Object.freeze([
+    'record',
+    'records',
+    'entry',
+    'entries',
+    'finding',
+    'findings',
+    'claim',
+    'claims',
+    'result',
+    'results',
+  ]),
+  other: Object.freeze(['which', 'choice', 'choose', 'select', 'next']),
+});
+
+function surfaceHasWord(text, word) {
+  return new RegExp(`(?:^|[^a-z0-9])${word.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}(?:$|[^a-z0-9])`, 'iu').test(
+    String(text || ''),
+  );
+}
+
+export function adaptiveWarrantSemanticValueTypeIsLiteral(valueType, spanText) {
+  return (VALUE_TYPE_SURFACES[valueType] || []).some((surface) => surfaceHasWord(spanText, surface));
+}
+
+export function adaptiveWarrantSemanticComponentIsLiteral(componentId, spanText) {
+  const terms = String(componentId || '')
+    .split(/[_-]+/u)
+    .filter((term) => term.length > 2 && !['status', 'value'].includes(term));
+  return (
+    terms.length === 0 || terms.some((term) => surfaceHasWord(spanText, term) || surfaceHasWord(spanText, `${term}s`))
+  );
+}
+
+function expectedExecutorForSurface(event) {
+  const text = String(event?.evidence_span?.text || '');
+  const explicitJoint = /\b(?:we|our|ours|let\s+us|let's)\b/iu.test(text);
+  const explicitImpersonal =
+    /\b(?:it\s+(?:should|must|needs?\s+to)\s+be|should\s+be|must\s+be|needs?\s+to\s+be)\b/iu.test(text);
+  if (REQUEST_SPEECH_ACTS.has(event?.speech_act)) {
+    if (event.speech_act === 'tutor_selection_request') return 'tutor';
+    if (explicitJoint) return 'joint';
+    if (explicitImpersonal) return 'unspecified';
+    return 'tutor';
+  }
+  if (event?.speech_act === 'learner_proposed_test') {
+    if (explicitJoint) return 'joint';
+    if (explicitImpersonal) return 'unspecified';
+    return 'learner';
+  }
+  return null;
+}
+
+export function adaptiveWarrantSemanticContractIssues(event, { eventIndex = 0, enforceLiteralSets = true } = {}) {
+  const issues = [];
+  const prefix = `events[${eventIndex}]`;
+  const contract = ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS[event?.speech_act];
+  if (!contract) return [`${prefix}.speech_act:no_declared_contract`];
+  const target = event?.target || null;
+  const action = event?.requested_or_proposed_action || null;
+  const hasTarget = target !== null;
+  const hasAction = action !== null && action.mode !== 'none';
+  if (contract.target === 'catalog' && !hasTarget) issues.push(`${prefix}.target:required_for_speech_act`);
+  if (contract.target === 'none' && hasTarget) issues.push(`${prefix}.target:forbidden_for_speech_act`);
+  if (contract.action === 'catalog' && !hasAction) issues.push(`${prefix}.requested_or_proposed_action:required`);
+  if (contract.action === 'none' && hasAction) issues.push(`${prefix}.requested_or_proposed_action:forbidden`);
+  if (hasAction) {
+    if (
+      action.mode !== contract.mode ||
+      action.action !== contract.operation ||
+      !contract.executors.includes(action.executor)
+    ) {
+      issues.push(`${prefix}.requested_or_proposed_action:incompatible_with_speech_act`);
+    }
+    if (REQUEST_SPEECH_ACTS.has(event.speech_act) && action.executor === 'learner') {
+      issues.push(`${prefix}.requested_or_proposed_action:executor_matches_request_speaker`);
+    }
+    const expectedExecutor = expectedExecutorForSurface(event);
+    if (expectedExecutor && action.executor !== expectedExecutor) {
+      issues.push(`${prefix}.requested_or_proposed_action:executor_surface_rule_requires_${expectedExecutor}`);
+    }
+  }
+  const valueTypes = target?.requested_value_types || [];
+  const componentIds = target?.component_ids || [];
+  const permitsRequestedSets = REQUEST_SPEECH_ACTS.has(event.speech_act);
+  if (!permitsRequestedSets && (valueTypes.length || componentIds.length)) {
+    issues.push(`${prefix}.target:value_component_sets_forbidden_for_non_request`);
+  }
+  if (enforceLiteralSets && permitsRequestedSets) {
+    for (const valueType of valueTypes) {
+      if (!adaptiveWarrantSemanticValueTypeIsLiteral(valueType, event?.evidence_span?.text)) {
+        issues.push(`${prefix}.target.requested_value_types:not_literal_in_span`);
+      }
+    }
+    for (const componentId of componentIds) {
+      if (!adaptiveWarrantSemanticComponentIsLiteral(componentId, event?.evidence_span?.text)) {
+        issues.push(`${prefix}.target.component_ids:not_literal_in_span`);
+      }
+    }
+  }
+  return issues;
+}
 export const ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE = Object.freeze(['high', 'medium', 'low']);
 export const ADAPTIVE_WARRANT_SEMANTIC_UNCERTAINTY_REASONS = Object.freeze([
   'ambiguous_speech_act',
@@ -95,14 +282,6 @@ const ENGAGEMENT_PRECEDENCE = Object.freeze([
   'low_agency_deferral',
   'engaged_analytic',
   'neutral',
-]);
-
-const REQUEST_SPEECH_ACTS = new Set([
-  'tutor_directed_public_result_request',
-  'tutor_selection_request',
-  'learner_record_entry_request',
-  'learner_wording_request',
-  'repair_request',
 ]);
 
 function sha256(value) {
@@ -295,6 +474,18 @@ export function validateAdaptiveWarrantSemanticExtraction(
         issues.push(`events[${eventIndex}].target.identifiers:not_public`);
       }
     }
+    issues.push(
+      ...adaptiveWarrantSemanticContractIssues(
+        {
+          speaker: 'learner',
+          speech_act: event.speech_act,
+          target,
+          requested_or_proposed_action: action,
+          evidence_span: { text, start, end },
+        },
+        { eventIndex },
+      ),
+    );
     const uncertainty = [...new Set((event.uncertainty || []).map(String))];
     const asserted = event.confidence === 'high' && uncertainty.length === 0;
     return {

@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { parseArgs } from 'node:util';
+import { isDeepStrictEqual, parseArgs } from 'node:util';
 
 import {
   ADAPTIVE_WARRANT_SEMANTIC_ANNOTATION_RESPONSE_SCHEMA,
@@ -23,11 +23,11 @@ import {
 } from '../services/adaptiveWarrantSemanticPreflight.js';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_COLLECTION_MANIFEST_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-annotation-collection.v5';
+  'machinespirits.adaptation-refinement.semantic-event-annotation-collection.v6';
 export const ADAPTIVE_WARRANT_SEMANTIC_READER_PACKET_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-reader-packet.v5';
+  'machinespirits.adaptation-refinement.semantic-event-reader-packet.v6';
 export const ADAPTIVE_WARRANT_SEMANTIC_AUTHORIZATION_REQUEST_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-annotation-authorization-request.v5';
+  'machinespirits.adaptation-refinement.semantic-event-annotation-authorization-request.v6';
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 
 const BATCH_FIELDS = Object.freeze([
@@ -38,7 +38,7 @@ const BATCH_FIELDS = Object.freeze([
   'corpus_sha256',
   'cases_by_sample_id',
 ]);
-const CASE_FIELDS = Object.freeze(['genuinely_ambiguous', 'events', 'note']);
+const CASE_FIELDS = Object.freeze(['genuinely_ambiguous', 'ambiguity_reason', 'events', 'note']);
 const EVENT_FIELDS = Object.freeze(['speech_act', 'target', 'requested_or_proposed_action', 'evidence_span']);
 const MAXIMUM_READER_PACKET_BYTES = 42000;
 const MAXIMUM_READER_RESPONSE_BYTES = 10500;
@@ -50,6 +50,11 @@ function readJson(filePath) {
 function writeJson(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function writeCompactJson(filePath, value) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(value)}\n`);
 }
 
 function sha256(value) {
@@ -89,6 +94,7 @@ function assertEmptyDirectory(outputDir) {
 function responseCaseTemplate() {
   return {
     genuinely_ambiguous: false,
+    ambiguity_reason: 'none',
     events: [],
     note: 'REPLACE with case-specific public rationale.',
   };
@@ -199,21 +205,10 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
         handbook_sha256: handbookSha256,
         corpus_role: corpusRole,
         instructions: [
-          'Work independently. Use only the embedded handbook and public case fields in this packet.',
-          'Do not infer or mention a condition, model prediction, validator result, warrant decision, private key, support stratum, or another reader response.',
-          'Return the exact JSON response envelope with every required opaque sample-id key and no prose outside JSON.',
-          'Preserve event order. A compound utterance may have several events; do not collapse a proposal and a result request.',
-          'Use one event per independent clause-level act. Explanations do not create an extra event. Separate events must use distinct non-overlapping minimal clause spans.',
-          'Use genuinely_ambiguous=true only when two complete typed readings remain after every handbook rule; then return events=[].',
-          'Every evidence_span must contain only text: one non-empty literal substring that occurs exactly once in current_learner_turn.learner. Do not return start or end; the assembler derives UTF-16 offsets mechanically and records them in its audit.',
-          'The harness supplies speaker=learner mechanically. Do not return a speaker field.',
-          'Every returned field is total: never omit a field and never return null. Each target and requested_or_proposed_action is a tagged object with state=catalog or state=none. The state=none branch contains no other fields.',
-          'For target.target_id, target.component_ids, and action.action_object_id, use only exact IDs from semantic_annotation_catalog. The harness derives target kind and public identifiers from target_id, and derives action mode and operation from action_object_id. Display labels are explanatory only.',
-          'Action executor means the party who must perform the action, never the utterance speaker. A request-type act must have executor different from speaker.',
-          'Every case note must contain at least eight characters of case-specific public-evidence rationale, including when the case is not ambiguous.',
-          'Keep target_id separate from requested_value_types. A requested name, time, date, or weight is not automatically a target.',
-          'A tutor_selection_request requires the catalogue target naming the publicly enumerated choices; the tutor and the requested next-step value are not targets.',
-          'An analytic_contribution target is the catalogue entity the analysis itself is about, independent of any accompanying request event. Use target.state=none only when the analytic clause names no catalogue entity; co-occurring requests keep their own targets.',
+          'Apply the complete bound handbook independently to only the supplied public decision-time evidence; hidden answers, support tags, predictions, traces, and the other reader are unavailable.',
+          'Return every required sample id exactly once, follow the act-discriminated total schema exactly, use only catalogue IDs, and never return null or a speaker field.',
+          'Return each evidence_span as one unique non-empty literal current-turn substring. The harness derives offsets, ordering, target metadata, action mode, and operation mechanically.',
+          'Every case requires a case-specific public rationale of at least eight characters. The handbook is authoritative for all judgment and typed ambiguity rules.',
         ],
         handbook_markdown: handbookMarkdown,
         semantic_annotation_catalog: semanticCatalog,
@@ -231,12 +226,18 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
       };
       const packetPath = path.join(resolvedOutput, 'packets', readerId, `${batchId}.packet.json`);
       const schemaPath = path.join(resolvedOutput, 'packets', readerId, `${batchId}.response.schema.json`);
-      writeJson(packetPath, packet);
-      writeJson(schemaPath, outputSchema);
+      writeCompactJson(packetPath, packet);
+      writeCompactJson(schemaPath, outputSchema);
       const packetBytes = fs.statSync(packetPath).size;
       const responseSchemaBytes = fs.statSync(schemaPath).size;
+      if (!isDeepStrictEqual(packet.response_json_schema, readJson(schemaPath))) {
+        throw new Error(`${batchId} packet and response-schema file differ`);
+      }
       if (packetBytes > MAXIMUM_READER_PACKET_BYTES) {
         throw new Error(`${batchId} exceeds the ${MAXIMUM_READER_PACKET_BYTES}-byte prompt limit`);
+      }
+      if (responseSchemaBytes > MAXIMUM_READER_RESPONSE_BYTES) {
+        throw new Error(`${batchId} response schema exceeds the ${MAXIMUM_READER_RESPONSE_BYTES}-byte limit`);
       }
       batches.push({
         batch_id: batchId,
@@ -390,18 +391,53 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
       if (!Array.isArray(row.events) || row.events.length > 4) {
         throw new Error(`${batch.batch_id} ${sampleId} events must be a bounded array`);
       }
+      const ambiguityReasons = [
+        'none',
+        'speech_act',
+        'executor',
+        'target',
+        'action_object',
+        'multiplicity',
+        'referent',
+        'span',
+        'context',
+      ];
+      if (
+        !ambiguityReasons.includes(row.ambiguity_reason) ||
+        row.genuinely_ambiguous !== (row.ambiguity_reason !== 'none') ||
+        (row.genuinely_ambiguous && row.events.length)
+      ) {
+        throw new Error(`${batch.batch_id} ${sampleId} ambiguity flag, reason, and events disagree`);
+      }
       const learnerText = String(corpusById.get(sampleId)?.current_learner_turn?.learner || '');
-      const derivedEvents = row.events.map((event, eventIndex) => {
+      let assemblyRejection = null;
+      for (const [eventIndex, event] of row.events.entries()) {
         exactFields(event, EVENT_FIELDS, `${batch.batch_id} ${sampleId} event ${eventIndex}`);
-        exactFields(event.evidence_span, ['text'], `${batch.batch_id} ${sampleId} event ${eventIndex} span`);
-        const text = event.evidence_span.text;
+        const text = event.evidence_span;
         if (typeof text !== 'string' || !text.length || text.length > 240) {
           throw new Error(`${batch.batch_id} ${sampleId} event ${eventIndex} span text is invalid`);
         }
         const start = learnerText.indexOf(text);
-        if (start < 0 || learnerText.lastIndexOf(text) !== start) {
-          throw new Error(`${batch.batch_id} ${sampleId} event ${eventIndex} span must be a unique literal substring`);
+        if (start < 0) throw new Error(`${batch.batch_id} ${sampleId} event ${eventIndex} span is not literal`);
+        if (learnerText.lastIndexOf(text) !== start) {
+          assemblyRejection = {
+            code: 'non_unique_literal_span',
+            detail: `event ${eventIndex} span occurs more than once`,
+          };
+          break;
         }
+      }
+      if (assemblyRejection) {
+        cases.push({ sample_id: sampleId, ...row, assembly_rejection: assemblyRejection, events: [] });
+        continue;
+      }
+      const derivedEvents = row.events.map((event, eventIndex) => {
+        exactFields(event, EVENT_FIELDS, `${batch.batch_id} ${sampleId} event ${eventIndex}`);
+        const text = event.evidence_span;
+        if (typeof text !== 'string' || !text.length || text.length > 240) {
+          throw new Error(`${batch.batch_id} ${sampleId} event ${eventIndex} span text is invalid`);
+        }
+        const start = learnerText.indexOf(text);
         const end = start + text.length;
         canonicalizations.push({
           sample_id: sampleId,
@@ -411,7 +447,10 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
           end,
         });
         const materialized = materializeAdaptiveWarrantSemanticReaderEvent({
-          event: { ...event, evidence_span: { text, start, end } },
+          event: {
+            ...event,
+            evidence_span: { text, start, end },
+          },
           semanticCatalog,
           label: `${batch.batch_id} ${sampleId} event ${eventIndex}`,
         });
@@ -433,7 +472,7 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
           }
           return event;
         });
-      cases.push({ sample_id: sampleId, ...row, events });
+      cases.push({ sample_id: sampleId, ...row, assembly_rejection: null, events });
     }
     inputs.push({
       batch_id: batch.batch_id,

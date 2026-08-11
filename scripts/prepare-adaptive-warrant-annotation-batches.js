@@ -20,6 +20,7 @@ import {
   ADAPTIVE_WARRANT_V3_SEMANTIC_SUPPORT_PLAN_SCHEMA,
 } from './build-adaptive-warrant-v3-semantic-diagnostic.js';
 import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
+import { auditAdaptiveWarrantProviderOutputSchema } from '../services/adaptiveWarrantSemanticAnnotation.js';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 
@@ -118,7 +119,7 @@ function assertEmptyOutputDirectory(outputDir) {
 }
 
 function responseTemplate() {
-  return {
+  const schema = {
     speech_act: '',
     open_obligation_source_turns: [],
     obligation_state: '',
@@ -135,6 +136,7 @@ function responseTemplate() {
       ]),
     ),
   };
+  return schema;
 }
 
 function divergenceResponseSchema() {
@@ -143,10 +145,10 @@ function divergenceResponseSchema() {
     additionalProperties: false,
     required: ['interpretation', 'magnitude', 'persistence', 'note'],
     properties: {
-      interpretation: { enum: ['aligned', 'productive', 'stalled', 'unsafe', 'uncertain'] },
-      magnitude: { enum: ['none', 'low', 'moderate', 'high', 'uncertain'] },
-      persistence: { enum: ['none', 'single_turn', 'sustained', 'uncertain'] },
-      note: { type: 'string', minLength: ADAPTIVE_WARRANT_ANNOTATION_MIN_NOTE_CHARACTERS },
+      interpretation: { type: 'string', enum: ['aligned', 'productive', 'stalled', 'unsafe', 'uncertain'] },
+      magnitude: { type: 'string', enum: ['none', 'low', 'moderate', 'high', 'uncertain'] },
+      persistence: { type: 'string', enum: ['none', 'single_turn', 'sustained', 'uncertain'] },
+      note: { type: 'string' },
     },
   };
 }
@@ -172,12 +174,13 @@ function caseResponseSchema(
   allowedActionFamilies,
   { allowedPrimaryWarrantBases = ADAPTIVE_WARRANT_PRIMARY_BASES, recommendedFamilyDescription = null } = {},
 ) {
-  return {
+  const schema = {
     type: 'object',
     additionalProperties: false,
     required: RESPONSE_CASE_FIELDS,
     properties: {
       speech_act: {
+        type: 'string',
         enum: [
           'tutor_directed_public_result_request',
           'learner_proposed_test',
@@ -197,42 +200,44 @@ function caseResponseSchema(
           'Every creation or reminder turn for unresolved debt. This array must be empty for none, satisfied, or withdrawn_or_transferred; use at least one source turn for open, overdue, or deferred.',
       },
       obligation_state: {
+        type: 'string',
         enum: ['none', 'open', 'overdue', 'deferred', 'satisfied', 'withdrawn_or_transferred', 'uncertain'],
         description:
           'Resolved states satisfied and withdrawn_or_transferred persist as the latest lifecycle state but must not retain open_obligation_source_turns. Use none only when no public obligation occurred.',
       },
-      inquiry_state: { enum: ['complete', 'incomplete', 'uncertain'] },
+      inquiry_state: { type: 'string', enum: ['complete', 'incomplete', 'uncertain'] },
       commitment_transition_warranted: {
+        type: 'string',
         enum: ['yes', 'no', 'uncertain'],
         description:
           'Whether the held pedagogical family should change beyond this response. Public-obligation fulfilment alone is not a commitment transition; a differing terminal or pedagogical successor is.',
       },
-      current_candidate_override_required: { enum: ['yes', 'no', 'uncertain'] },
+      current_candidate_override_required: { type: 'string', enum: ['yes', 'no', 'uncertain'] },
       primary_warrant_basis: {
+        type: 'string',
         enum: allowedPrimaryWarrantBases,
         description:
           'Judge the raw public contract independently. Use action_contract only when public evidence requires one of its declared successor families; a successful renewal that retains the held family is not a warrant.',
       },
       recommended_action_family: {
+        type: 'string',
         enum: allowedActionFamilies,
         description:
           recommendedFamilyDescription ||
           'Choose one exact declared action family. Warrant-basis names such as immediate_repair are not action families.',
       },
-      note: { type: 'string', minLength: ADAPTIVE_WARRANT_ANNOTATION_MIN_NOTE_CHARACTERS },
+      note: { type: 'string' },
       divergence_by_dimension: {
         type: 'object',
         additionalProperties: false,
         required: ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS,
         properties: Object.fromEntries(
-          ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS.map((dimension) => [
-            dimension,
-            { $ref: '#/$defs/divergence' },
-          ]),
+          ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS.map((dimension) => [dimension, { $ref: '#/$defs/divergence' }]),
         ),
       },
     },
   };
+  return schema;
 }
 
 export function buildAdaptiveWarrantAnnotationOutputSchema({
@@ -275,17 +280,16 @@ export function buildAdaptiveWarrantAnnotationOutputSchema({
       ];
     }),
   );
-  return {
-    $schema: 'https://json-schema.org/draft/2020-12/schema',
+  const schema = {
     type: 'object',
     additionalProperties: false,
     required: BATCH_RESPONSE_FIELDS,
     properties: {
-      schema: { enum: [ADAPTIVE_WARRANT_ANNOTATION_BATCH_RESPONSE_SCHEMA] },
-      reader_id: { enum: [readerId] },
-      batch_id: { enum: [batchId] },
-      study_id: { enum: [studyId] },
-      corpus_sha256: { enum: [corpusSha256] },
+      schema: { type: 'string', enum: [ADAPTIVE_WARRANT_ANNOTATION_BATCH_RESPONSE_SCHEMA] },
+      reader_id: { type: 'string', enum: [readerId] },
+      batch_id: { type: 'string', enum: [batchId] },
+      study_id: { type: 'string', enum: [studyId] },
+      corpus_sha256: { type: 'string', enum: [corpusSha256] },
       cases_by_sample_id: {
         type: 'object',
         additionalProperties: false,
@@ -317,6 +321,11 @@ export function buildAdaptiveWarrantAnnotationOutputSchema({
       divergence: divergenceResponseSchema(),
     },
   };
+  const providerAudit = auditAdaptiveWarrantProviderOutputSchema({ schema, maximumDepth: 10 });
+  if (!providerAudit.ok) {
+    throw new Error(`decision-reader output schema is not provider-compatible: ${providerAudit.issues.join('; ')}`);
+  }
+  return schema;
 }
 
 function declaredActionContractSuccessorFamilies(row, allowedActionFamilies) {
@@ -383,7 +392,10 @@ export function prepareAdaptiveWarrantAnnotationBatches({
   if (corpus.schema !== ADAPTIVE_WARRANT_ANNOTATION_SCHEMA || corpus.blinded !== true) {
     throw new Error('annotation collection requires a frozen blinded V4 corpus');
   }
-  const sampleIds = exactUniqueIds(corpus.cases.map((row) => row.sample_id), 'annotation corpus');
+  const sampleIds = exactUniqueIds(
+    corpus.cases.map((row) => row.sample_id),
+    'annotation corpus',
+  );
   const corpusSha256 = fileSha256(resolvedCorpusPath);
   const handbookSha256 = fileSha256(resolvedHandbookPath);
   let supportPlan = null;
@@ -415,7 +427,11 @@ export function prepareAdaptiveWarrantAnnotationBatches({
           artifact: readJson(resolvedPreflight),
           expectedSourceCommit: sourceCommit,
         });
-        semanticPreflight = { path: resolvedPreflight, sha256: fileSha256(resolvedPreflight), source_commit: sourceCommit };
+        semanticPreflight = {
+          path: resolvedPreflight,
+          sha256: fileSha256(resolvedPreflight),
+          source_commit: sourceCommit,
+        };
       }
     }
   } else if (supportPlanPath) {
@@ -505,12 +521,7 @@ export function prepareAdaptiveWarrantAnnotationBatches({
         response_json_schema: outputSchema,
       };
       const packetPath = path.join(resolvedOutputDir, 'packets', readerId, `${batchId}.packet.json`);
-      const outputSchemaPath = path.join(
-        resolvedOutputDir,
-        'packets',
-        readerId,
-        `${batchId}.response.schema.json`,
-      );
+      const outputSchemaPath = path.join(resolvedOutputDir, 'packets', readerId, `${batchId}.response.schema.json`);
       writeJson(outputSchemaPath, outputSchema);
       writeJson(packetPath, packet);
       batches.push({
@@ -578,9 +589,7 @@ export function prepareAdaptiveWarrantAnnotationBatches({
       planned_calls: plannedCalls,
       maximum_calls: callCeiling,
       readers: readers.length,
-      calls_per_reader_planned: Object.fromEntries(
-        readers.map((reader) => [reader.reader_id, reader.batches.length]),
-      ),
+      calls_per_reader_planned: Object.fromEntries(readers.map((reader) => [reader.reader_id, reader.batches.length])),
     },
     bindings: {
       collection_manifest_sha256: fileSha256(manifestPath),
@@ -843,7 +852,9 @@ export function validateAdaptiveWarrantAnnotationCorpusPair({ naturalManifestPat
     throw new Error('natural and challenge corpora must be independently frozen');
   }
   const naturalFingerprints = new Set(readJson(natural.corpus.path).cases.map(valueSha256));
-  const overlap = readJson(challenge.corpus.path).cases.filter((row) => naturalFingerprints.has(valueSha256(row))).length;
+  const overlap = readJson(challenge.corpus.path).cases.filter((row) =>
+    naturalFingerprints.has(valueSha256(row)),
+  ).length;
   if (overlap) throw new Error(`natural and challenge corpora overlap on ${overlap} public cases`);
   return {
     schema: ADAPTIVE_WARRANT_ANNOTATION_CORPUS_PAIR_SCHEMA,

@@ -51,11 +51,13 @@ not an in-place repair of V2.
 
 The learner-analysis result must contain one
 `machinespirits.adaptation-refinement.semantic-event-extraction.v3` envelope.
-An utterance may contain zero, one, or several ordered events. Compound speech
-is not collapsed to a single primary label: “I would compare the dies; what
+An utterance may contain zero, one, or several ordered events. The compound
+licence is general, not a whitelist: each independent clause-level act that
+would change a distinct typed state receives an event, unless it is merely the
+grammatical complement of another event. Thus “I would compare the dies; what
 does the comparison show?” contains both a proposed action and a result
-request. Precedence is applied later by deterministic policy, never by deleting
-one of the events.
+request. Within one clause, the closed speech-act precedence in §2.3.2 selects
+one act; deterministic engagement precedence is applied only after extraction.
 
 The conceptual envelope is:
 
@@ -202,33 +204,87 @@ ask a reader for a fact it already knows.
 | `target` / `target_id` | Reader | Total and non-null: the public object, relation, or enumerated choice set the act itself is about, chosen from the catalogue in the `state="catalog"` branch, or the exact sole-field object `{"state":"none"}` when that act names no catalogue entity. Requested values and actors are never targets. Tutor-selection requests require the public choice-set target. For `analytic_contribution`, ownership follows the analysis itself independently of any co-occurring request. |
 | `target.kind` | Harness | Derived exactly from the selected `target_id`; absent from reader schema. |
 | `public_identifier_ids` | Harness | Exact catalogue identifiers for `target_id`; absent from reader schema. |
-| `requested_value_types` | Reader | Exact closed-set values explicitly requested or produced by the clause; may be empty. A value such as `time` or `match_status` is not a subject or target kind. |
-| `component_ids` | Reader | Exact catalogue answer components explicitly requested or produced; may be empty. |
+| `requested_value_types` | Reader | Non-empty only for request-mode acts and only for closed-set values literally named in the event span. Every proposal, question, analysis, withdrawal, and transfer uses an empty array. A value such as `time` or `match_status` is not a subject or target kind. |
+| `component_ids` | Reader | Non-empty only for request-mode acts and only for catalogue components literally named in the event span. Every proposal, question, analysis, withdrawal, and transfer uses an empty array. |
 | `executor` | Reader | The party who must perform the action, not the speaker. Request-type acts cannot use learner execution. |
 | `requested_or_proposed_action` / `action_object_id` | Reader | Total and non-null: the public action object licensed by the clause, chosen from the catalogue in the `state="catalog"` branch, or the exact sole-field object `{"state":"none"}` when no action applies. |
 | action `mode` and operation | Harness | Derived exactly from `action_object_id`; absent from reader schema and checked against the speech act. |
-| `evidence_span.text` | Reader | The shortest complete literal clause, occurring exactly once and not overlapping another event span. |
+| `evidence_span` | Reader | At the reader transport boundary, one string containing the shortest complete literal clause. It must occur exactly once and not overlap another event span. This scalar representation keeps the canonical act-discriminated provider schema within its byte and depth budgets; it changes no reader judgment. |
 | span offsets and event order | Harness | Derived from the unique literal span and audited; absent from reader schema. |
 | `genuinely_ambiguous` | Reader | True only when two complete typed readings remain after every closed rule; then `events=[]`. |
+| `ambiguity_reason` | Reader | Total closed value: `none` when not ambiguous, otherwise exactly one of `speech_act`, `executor`, `target`, `action_object`, `multiplicity`, `referent`, `span`, or `context`. |
+| `assembly_rejection` | Harness | Added after reading. A non-unique literal span produces a typed case-level rejection rather than a batch crash. |
 | `note` | Reader | Public rationale only; excluded from identity, consensus, joins, scores, and gates. |
 
-Multiplicity is closed for the three known boundary families. A record-entry
-request receives a second `analytic_contribution` only when a separate clause
-independently states an inference or evidential limit. A tutor-selection
-request receives a second `low_agency_deferral` only when a separate clause
-explicitly refuses, cannot make, or delegates the choice. A proposal followed
-by a request for its result is two events. One request for several values is
-one event with several value and component IDs. Overlapping events are invalid
-rather than an alternative way to express uncertainty.
+Multiplicity is not limited to named families. Any separate clause stating an
+inference, evidential limit, request, proposal, complaint, withdrawal,
+transfer, or deferral receives its own event when it changes a distinct typed
+state. A record-entry request receives a second `analytic_contribution` only
+when a separate clause independently states an inference or evidential limit.
+A tutor-selection request receives a second `low_agency_deferral` only when a
+separate declarative clause says the learner cannot, refuses to, or leaves the
+choice to the tutor. A proposal followed by a request for its result is two
+events. One request for several values is one event with several value and
+component IDs. One clause coordinating several catalogue targets receives one
+event per target with the smallest non-overlapping identifier-bearing spans;
+this is the sole waiver of the complete-clause span rule. Other overlapping
+events are invalid rather than another way to express uncertainty.
 
-Target ownership is event-local. The target of an `analytic_contribution` is
-the catalogue entity the analysis itself concerns, even when a neighbouring
-record-entry or result request names the same entity. It may use `state="none"` only
-when the analytic clause names no catalogue entity. Each co-occurring request
-retains and is judged on its own target. No reader-returned property anywhere
-in the response envelope is optional or nullable: every object property is
-required, categorical domains are closed, arrays are present even when empty,
-and semantic absence is an explicit closed-domain token.
+Target ownership is event-local. The target of an `analytic_contribution`,
+`withdrawal`, or `transfer_to_learner` is the catalogue entity that act itself
+concerns, even when a neighbouring request names the same entity. It may use
+`state="none"` only when its own clause names no catalogue entity. Each
+co-occurring request retains and is judged on its own target. No reader-returned
+property anywhere in the response envelope is optional or nullable: every
+object property is required, categorical domains are closed, arrays are
+present even when empty, and semantic absence is an explicit closed-domain
+token.
+
+### 2.3.2 Closed reader judgment rules
+
+The remaining cold-reader boundaries are settled prospectively as follows:
+
+1. A request whose tutor is the only other party uses executor `tutor`.
+   `joint` requires explicit first-person-plural wording such as “we” or
+   “let’s”; `unspecified` requires an explicit passive or impersonal form.
+2. `tutor_selection_request` asks or directs the tutor to choose an enumerated
+   next step. `low_agency_deferral` is a declarative inability, refusal, or
+   handoff of agency. If one clause contains both delegation and inability
+   language, tutor selection wins and no second event is emitted; a separate
+   declarative deferral clause receives its own low-agency event.
+3. `learner_wording_request` asks for restatement or word meaning;
+   `repair_request` asks why an evidential or inferential relation holds or
+   identifies a missing reasoning step.
+4. `transfer_to_learner` relinquishes a previously tutor-owned public action
+   to learner execution. `learner_proposed_test` introduces a new learner
+   action. `withdrawal` cancels a matching prior request without transferring
+   it.
+5. `stall` states inability to continue or propose a check;
+   `register_complaint` criticises tone or style;
+   `repetition_complaint` says content was repeated;
+   `analytic_contribution` states an inference or evidential limit; `other` is
+   reserved for a distinct state-changing act fitting none of those rules.
+6. Cross-turn anaphora resolves through the supplied public transcript to the
+   most recently mentioned catalogue entity; an equal-recency tie uses
+   `genuinely_ambiguous=true` and reason `referent`.
+7. A first-person declarative need whose object is a public record is a result
+   request with tutor execution; without a public-record object it is analytic.
+8. A confirmation sayback is analytic when its content is already public and
+   is a result request only when the content is not yet public.
+9. A rhetorical question answered by the learner in the same turn creates no
+   question event; annotate the answer clause. Conditional antecedents are not
+   events. A negated or deferred request is a withdrawal only when a matching
+   prior request exists; otherwise it creates no event.
+10. Choose the most specific catalogue action object whose label content words
+    all occur in the span; break an exact specificity tie lexicographically.
+    Politeness is only a modifier: a clause with its own imperative or
+    performative verb remains an act. Third-party reported speech is analytic;
+    only a matrix-clause first-person commitment is a proposed test.
+
+For span uniqueness, begin with the shortest complete supporting clause and
+extend leftward by whole tokens until the literal is unique. If no unique span
+exists, return typed ambiguity reason `span`; if a non-unique string still
+reaches assembly, reject that case mechanically without invalidating its batch.
 
 ### 2.4 Evidence and public-only validation
 
@@ -253,10 +309,11 @@ proposal, agency state, or analytic state.
 ### 2.5 Uncertain fallback
 
 The extractor must use an uncertainty reason rather than guess when two
-material readings remain plausible. The initial reasons are
+material readings remain plausible. The live-extraction reasons are
 `ambiguous_speech_act`, `ambiguous_executor`, `ambiguous_target`,
-`ambiguous_value_type`, `referent_not_public`, `span_not_literal`, and
-`insufficient_context`.
+`ambiguous_value_type`, `ambiguous_multiplicity`, `referent_not_public`,
+`span_not_literal`, and `insufficient_context`. The independent-reader task
+uses the corresponding total case-level reasons enumerated in §2.3.1.
 
 An event is uncertain when confidence is `medium` or `low`, uncertainty is
 non-empty, or deterministic validation cannot establish the public referent.
@@ -322,10 +379,12 @@ original event-list order and then `event_id`. These ties never change the
 primary category.
 
 Conflicting acts are retained when they occupy distinct literal spans. Thus
-“Would you choose the first matter for me to examine?” may validly emit both a
-`tutor_selection_request` and a `low_agency_deferral`; the compiler produces
-one deduplicated `low_agency_deferral` label and
-`deference_present=true`. If the extractor also emits an
+“Choose the first public record for me. I cannot decide between the listed
+records.” produces a `tutor_selection_request` for the first clause and a
+`low_agency_deferral` for the second. The compiler produces one deduplicated
+`low_agency_deferral` label and `deference_present=true`. The one-clause form
+“Would you choose the first matter for me to examine?” produces only
+`tutor_selection_request` under §2.3.2. If a separate clause also emits an
 `analytic_contribution`, analytic remains a secondary label and cannot mask
 the deference primary. A repair request or stall remains primary over both,
 while the deference boolean remains available for sustained history.
@@ -602,10 +661,29 @@ reader agreement, or model-capability evidence, but their cases remain burned.
 
 Prospectively the single canonical response schema uses `anyOf`. The zero-call
 preflight proves this transport change meaning-preserving by requiring every
-union branch to carry a required singleton `state` discriminator and requiring
-the discriminator constants to be pairwise distinct. It also rejects every
-schema keyword outside the declared provider-supported subset. No separate
-strict/provider schema copy exists.
+union branch to carry a distinct required singleton discriminator: `speech_act`
+for event branches and `state` for catalogue/none branches. It also rejects
+every schema keyword outside the declared provider-supported subset. No
+separate strict/provider schema copy exists.
+
+### 5.0.4 Invalid pre-diagnostic smoke: act-agnostic representability
+
+The next smoke from clean commit `efcca5f0` completed its live reader calls but
+failed assembly. Its schema allowed a target for every speech act while the
+production validator enforced act-specific target rules. The delegating
+tutor-selection clause also sat on an unwritten boundary with
+`low_agency_deferral`, so a schema-valid response could not be represented
+under the validator's stricter language. This is an instrument-contract result,
+not semantic-model or policy evidence; all exposed smoke cases are burned and
+no diagnostic followed.
+
+The prospective repair uses one act-discriminated schema whose branches are
+generated from the same exported contract table enforced by the runtime and
+gold validators. A language-equivalence assertion checks all 15 acts. The
+reader rule in §2.3.2 assigns a one-clause delegation to tutor selection and
+reserves low-agency deferral for a separate declarative inability, refusal, or
+handoff clause. The production-size eight-case schema must remain at or below
+10 nesting levels and 10,500 serialized bytes.
 
 ### 5.1 Targeted rare-state diagnostic
 
@@ -696,8 +774,10 @@ and score path must also reject unknown catalogue entries, ambiguous identity,
 non-literal evidence, malformed envelopes, and under-supported threshold
 cells without hand repair.
 
-The generated reader schema is also traversed as data before any live call.
-Every object property must appear in its `required` set, no node may admit
+The exact generated eight-case reader schema files that launch would send are
+also traversed as data before any live call; a smaller proxy does not satisfy
+the preflight. The acceptance ping likewise uses eight synthetic cases. Every
+object property must appear in its `required` set, no node may admit
 JSON `null`, target and action absence must each be represented only by the
 sole-field tagged object `{"state":"none"}`, and target, component, action-object, speech-act, executor,
 and value-type identities must be closed to their declared catalogue or
@@ -706,7 +786,11 @@ diagnostic catalogues; one failure blocks the freeze.
 
 The same traversal owns provider compatibility. It permits only the declared
 structured-output keyword subset and requires every `anyOf` branch to be
-pairwise disjoint through a distinct required singleton constant field. After
+pairwise disjoint through a distinct required singleton constant field. It
+also requires nesting depth at most 10 and serialized response-schema size at
+most 10,500 bytes. The prepare path enforces the same schema and 42,000-byte
+packet limits, and the launch path re-audits the exact bound schema before its
+first call. After
 that static preflight and before either smoke or diagnostic readers, one
 throwaway synthetic case sends the exact canonical response schema through the
 same Luna transport. This schema-acceptance ping is capped at one call,
@@ -725,6 +809,10 @@ executors, and vocabulary/contract inventory drift all fail the zero-call
 preflight. The exact synthetic, smoke, and diagnostic catalogues are audited;
 the live smoke is reserved for whether two fresh readers can read the valid
 contract alike.
+
+Each preflight uses a unique commit-prefixed temporary directory. It validates
+the completed report before an atomic rename; a failed check exits nonzero and
+cannot leave a passed-status artifact behind.
 
 Free text may support an evidence or display field, but it may not determine
 identity, equality, joins, state mutation, or gate passage. Reader tasks may

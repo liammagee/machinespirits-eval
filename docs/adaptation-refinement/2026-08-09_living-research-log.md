@@ -1801,3 +1801,30 @@ schemas to reject omitted properties, nullable nodes, missing absence tokens,
 or open catalogue identity domains before any model call. All three smoke
 cases from `b37b9faa` are burned; the next smoke uses wholly fresh wording and
 identifiers.
+
+## Progress Update — 12 August 2026, tier-A/B audit repair ready for clean freeze
+
+The four-lens V3 instrument audit at commit `1e102681` has been incorporated
+prospectively before another live reader call. One shared 15-act contract now
+drives the provider schema, reader materialization, private-gold validation,
+and live semantic validation. The schema is act-discriminated, pairwise
+disjoint, closed and total; the production eight-case form measures depth 9
+against a limit of 10 and is serialized below the 10,500-byte response-schema
+limit. Prepare and launch recheck the exact schema, the acceptance ping uses a
+production-sized eight-case envelope, and failed preflights cannot exit zero
+or leave an unvalidated passed artifact.
+
+The tier-B reader rules are now explicit: request-only literal value/component
+sets; tutor-default executor with surface licences for joint or unspecified;
+event-local targets for analysis, withdrawal and transfer; general compound
+multiplicity; delegation-versus-deferral precedence; and closed rules for the
+remaining anaphora, need-statement, sayback, coordination, rhetorical,
+conditional, action-tie, span, politeness, and reported-speech boundaries. The
+private construction key was regenerated under these conventions, and both
+the three-case smoke and 24-case diagnostic now use wholly fresh surfaces.
+
+This remains instrument preparation, not a V3 accuracy or policy result. The
+next evidence boundary is a clean-commit zero-call preflight, followed by the
+permanently excluded eight-case schema-acceptance ping and two-reader fresh
+smoke. Any semantic failure stops the pass path; a pass permits the fresh
+diagnostic and, on sufficient support, its separate decision readers.

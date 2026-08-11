@@ -29,7 +29,9 @@ export const ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_AUTHORIZATION_SCHEMA =
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const READER_ID = 'schema-acceptance-reader';
 const BATCH_ID = 'schema-acceptance-batch-01';
-const SAMPLE_ID = 'synthetic-schema-acceptance-amber-token';
+const SAMPLE_IDS = Object.freeze(
+  Array.from({ length: 8 }, (_, index) => `synthetic-schema-acceptance-${String(index + 1).padStart(2, '0')}`),
+);
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
@@ -111,13 +113,13 @@ export function buildAdaptiveWarrantSemanticSchemaAcceptanceCorpus(sourceCommit)
         },
       ],
     },
-    cases: [
-      {
-        sample_id: SAMPLE_ID,
-        current_learner_turn: { turn: 2, learner: 'I will compare the amber token with cast V.' },
-        public_evidence_at_decision: ['The amber token and cast V are public synthetic identifiers.'],
-      },
-    ],
+    cases: SAMPLE_IDS.map((sampleId, index) => ({
+      sample_id: sampleId,
+      current_learner_turn: { turn: 2, learner: 'I will compare the amber token with cast V.' },
+      public_evidence_at_decision: [
+        `The amber token and cast V are public synthetic identifiers for transport row ${index + 1}.`,
+      ],
+    })),
   };
 }
 
@@ -141,7 +143,7 @@ export function prepareAdaptiveWarrantSemanticSchemaAcceptancePing({ outputDir, 
     batchId: BATCH_ID,
     studyId: corpus.study_id,
     corpusSha256,
-    requiredSampleIds: [SAMPLE_ID],
+    requiredSampleIds: SAMPLE_IDS,
     semanticCatalog: corpus.semantic_annotation_catalog,
   });
   const responseSchemaPath = path.join(resolvedOutput, 'response.schema.json');
@@ -160,21 +162,25 @@ export function prepareAdaptiveWarrantSemanticSchemaAcceptancePing({ outputDir, 
     study_id: corpus.study_id,
     corpus_sha256: corpusSha256,
     semantic_annotation_catalog: corpus.semantic_annotation_catalog,
-    required_sample_ids: [SAMPLE_ID],
-    cases_by_sample_id: { [SAMPLE_ID]: corpus.cases[0] },
+    required_sample_ids: SAMPLE_IDS,
+    cases_by_sample_id: Object.fromEntries(corpus.cases.map((row) => [row.sample_id, row])),
     response_template: {
       schema: ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA,
       reader_id: READER_ID,
       batch_id: BATCH_ID,
       study_id: corpus.study_id,
       corpus_sha256: corpusSha256,
-      cases_by_sample_id: {
-        [SAMPLE_ID]: {
-          genuinely_ambiguous: false,
-          events: [],
-          note: 'Synthetic transport acceptance only.',
-        },
-      },
+      cases_by_sample_id: Object.fromEntries(
+        SAMPLE_IDS.map((sampleId) => [
+          sampleId,
+          {
+            genuinely_ambiguous: false,
+            ambiguity_reason: 'none',
+            events: [],
+            note: 'Synthetic transport acceptance only.',
+          },
+        ]),
+      ),
     },
     response_json_schema: responseSchema,
   };
@@ -314,18 +320,24 @@ export async function runAdaptiveWarrantSemanticSchemaAcceptancePing({
       parsed.batch_id !== BATCH_ID ||
       parsed.study_id !== corpus.study_id ||
       parsed.corpus_sha256 !== freeze.corpus.sha256 ||
-      JSON.stringify(Object.keys(parsed.cases_by_sample_id || {})) !== JSON.stringify([SAMPLE_ID])
+      JSON.stringify(Object.keys(parsed.cases_by_sample_id || {}).sort()) !== JSON.stringify([...SAMPLE_IDS].sort())
     ) {
       throw new Error('schema-acceptance response binding mismatch');
     }
-    const caseResponse = parsed.cases_by_sample_id[SAMPLE_ID];
-    exactFields(caseResponse, ['genuinely_ambiguous', 'events', 'note'], 'schema-acceptance case');
-    for (const [index, event] of (caseResponse.events || []).entries()) {
-      materializeAdaptiveWarrantSemanticReaderEvent({
-        event,
-        semanticCatalog: corpus.semantic_annotation_catalog,
-        label: `schema-acceptance event ${index}`,
-      });
+    for (const sampleId of SAMPLE_IDS) {
+      const caseResponse = parsed.cases_by_sample_id[sampleId];
+      exactFields(
+        caseResponse,
+        ['genuinely_ambiguous', 'ambiguity_reason', 'events', 'note'],
+        `schema-acceptance case ${sampleId}`,
+      );
+      for (const [index, event] of (caseResponse.events || []).entries()) {
+        materializeAdaptiveWarrantSemanticReaderEvent({
+          event,
+          semanticCatalog: corpus.semantic_annotation_catalog,
+          label: `schema-acceptance ${sampleId} event ${index}`,
+        });
+      }
     }
     const responsePath = path.join(resolvedOutput, 'schema-acceptance.response.json');
     writeJson(responsePath, parsed);
