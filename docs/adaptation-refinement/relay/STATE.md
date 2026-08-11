@@ -12,7 +12,7 @@
   the driver drafts restated measure definitions in its report, and
   decision readers run ONLY AFTER a reviewer reply signs those off.
 - **Driver:** the session whose prompt quotes the lease token in 006c
-  (currently DRIVER-LEASE-2026-08-12-C). Other sessions: read-only.
+  (currently DRIVER-LEASE-2026-08-12-D). Other sessions: read-only.
 - **Instrument commit:** `225a7b07` ("Separate V3 structural and semantic
   gates"). The instrument is CLOSED — it reopens only for a transport,
   schema, provenance, or non-evaluability defect. Never for semantic
