@@ -7,6 +7,17 @@
 
 **Annotator:** Claude (single annotator, 2026-08-09). These are triangulation labels, not ground truth; disagreement with the shadow is a finding either way.
 
+> **Current implementation status (11 August 2026).** The typed mechanism in
+> `services/adaptiveWarrantGateCore.js` and the public-obligation/lifecycle
+> reducers superseded the v0 shadow rules on this date. The perfect scores below
+> are historical calibration results for the then-current v0/v0.1 rules; they
+> are not regressions guaranteed by the typed mechanism at the current tip.
+> Replaying the unchanged v0 labels against the current implementation gives
+> **5/6** on the 23 July trace, **2/5** on the 24 July trace (**7/11** combined),
+> and **2/4** on the held-out-borderline trace. These corpora are burned
+> diagnostics and must not be used to retune the current mechanism or as a
+> present pass/fail gate.
+
 **Conventions.** Dialogue order is learner turn N then tutor turn N. A *decision point* D@tN is the strategy selection at tutor turn N (hold the current action family or revise it), judged with everything visible when it was made — including learner turn N. The shadow's warrant verdict at row N−1 uses evidence only through tutor turn N−1, so it sees one learner turn less than the decision it predicts. The gold question at each point: **was revising the pedagogical strategy warranted here, and did the tutor do the right thing?**
 
 ## Trace 1, session 1 — the hostile learner
@@ -61,7 +72,7 @@ Two more instrument notes from the exercise:
 
 The shadow was restructured after this comparison: warrants are now computed at decision time (the decision at turn N sees learner turn N), explicit repair requests and stalls warrant immediately, register complaints warrant a register change at one and escalate to a strategy warrant at two, and an engaged-analytic learner turn masks the accumulated-trouble warrant, reading a flat fact record as productive divergence.
 
-Result: **11/11 agreement with gold** (`--gold docs/adaptation-refinement/gold-decisions.v0.json`). Both disagreement classes closed: the "what are you talking about?" decision is now warranted-and-revised (the learner's own words are the warrant), and the trace-2 plateau turns are aligned holds with their conceptual divergence marked productive.
+Historical result under the v0.1 rules: **11/11 agreement with gold** (`--gold docs/adaptation-refinement/gold-decisions.v0.json`). Both disagreement classes closed: the "what are you talking about?" decision is now warranted-and-revised (the learner's own words are the warrant), and the trace-2 plateau turns are aligned holds with their conceptual divergence marked productive. After the typed mechanism superseded those rules on 11 August 2026, the same labels score **5/6** and **2/5** by source trace (**7/11** combined).
 
 Two caveats:
 
@@ -74,7 +85,7 @@ Two caveats:
 
 **Protocol:** gold (`gold-decisions-heldout.v0.json`) was annotated from the transcript before the shadow ran on this trace. Borderline points carry an `uncertain` label — reported, not scored. No warrant rules or thresholds were changed after seeing results; the one post-hoc change was input plumbing (automated sessions log learner text under a different trace event than interactive ones, and the classifier was blind until that second source was added). Both passes are reported.
 
-**Result:** 3/4 scored decisions agree; 3 uncertain reported. Original-gold regression intact (11/11).
+**Historical first-pass result:** 3/4 scored decisions agree; 3 uncertain reported. At that calibration point the original v0 gold scored 11/11; the current typed mechanism instead scores 7/11, as recorded above.
 
 | Decision | Gold | Shadow (pass 2) | |
 |---|---|---|---|
@@ -90,9 +101,9 @@ Two caveats:
 
 **Deference label added (2026-08-10, after the test).** The classifier now labels permission-framed deferral (`low_agency_deferral`, matching the ontology's resistance-or-low-agency request type). The pattern is start-anchored, which carries the pragmatic distinction rather than a tuned threshold: a turn that LEADS with the permission modal ("May I keep the entry that…") defers the whole move and stops masking; a turn that leads with content and appends a recording request ("It supports Verrell's access; may I write that…") made a claim first and stays analytic. Deference neither masks nor immediately warrants.
 
-Re-run on this corpus: **4/4 scored agree** (t2, t3, t6, t8), 3 uncertain reported — the shadow calls all three uncertain points warranted, a defensible stance on turns where annotators split. Original-gold regression stays 11/11.
+Historical re-run under the deference-augmented v0 rules: **4/4 scored agree** (t2, t3, t6, t8), 3 uncertain reported — the shadow calls all three uncertain points warranted, a defensible stance on turns where annotators split. At that point the original v0 gold also remained 11/11. Under the typed mechanism that superseded these rules on 11 August 2026, the held-out-borderline score is **2/4** and the original v0 score is **7/11**.
 
-**This trace is now burned as a held-out corpus.** The label was designed after seeing its failure on this session, so 4/4 here shows the fix expresses the gold, nothing more. True validation needs a fresh session the current rules have never seen — ideally with a second annotator on the gold, since the t3 label already showed transcript-level and record-level readings can split.
+**This trace is now burned as a held-out corpus.** The label was designed after seeing its failure on this session, so the historical 4/4 showed only that the v0 fix expressed the gold; its current typed-mechanism score is 2/4. True validation needs a fresh session the current rules have never seen — ideally with a second annotator on the gold, since the t3 label already showed transcript-level and record-level readings can split.
 
 ## Second-annotator validation (2026-08-10)
 
@@ -122,9 +133,11 @@ accuracy 0.600. This corpus is burned.
 **Candidate repair:** the error audit motivated three rule changes: discharge
 old flat-record trouble after positive record growth, require sustained
 deference before challenge, and let repeated interactional trouble defeat the
-analytic mask only after prior progress and a fresh plateau. Earlier held-out
-hard decisions remained 4/4 and 1/1; retrospective primary agreement became
-15/15. No generalization claim was made from that fit.
+analytic mask only after prior progress and a fresh plateau. Under that
+historical calibration implementation, earlier held-out hard decisions
+remained 4/4 and 1/1; retrospective primary agreement became 15/15. These are
+not current typed-mechanism regression scores. No generalization claim was
+made from that fit.
 
 **Fresh decision holdout:** a second 18-case sample was drawn from different
 decision points in the same valid pilot. The first freeze was rejected before
