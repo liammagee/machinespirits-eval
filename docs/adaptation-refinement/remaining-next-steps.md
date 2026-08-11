@@ -823,3 +823,31 @@ The remaining sequence is:
 6. obtain two independent labels and apply the unchanged mechanism thresholds
    to that representative corpus alone; and
 7. run no downstream outcome comparison unless the representative gate passes.
+
+## Current restart boundary after the candidate-safety diagnostic repair
+
+The clean `7f743988268b7f3baf15c8db249c423a331278a8` diagnostic completed both
+independent 24-case Luna reads in 6/8 calls. It achieved 1.000 binary precision,
+recall, and accuracy, plus exact request/proposal, persistence, completion, and
+candidate-override performance. It remained diagnostic-only and emitted no
+pass/fail decision.
+
+One genuine measurement confound remained: the typed
+`candidate_safety_override` decision had no corresponding reader basis, so the
+scorer mislabeled an incomplete-inquiry veto as `inquiry_completion`. The
+prospective instrument now exposes `candidate_safety` separately, tests that
+mapping, and states explicitly that a fulfilled request remains `satisfied` at
+the next decision rather than resetting to `none`.
+
+The remaining sequence is:
+
+1. verify, commit, and push this narrow vocabulary repair;
+2. freeze the same 24-case diagnostic from that clean commit and collect two
+   isolated Luna reads under the standing eight-call ceiling;
+3. score it only as a diagnostic and permit no further repair unless a new,
+   localized detector or instrument defect appears;
+4. if stable, generate the predeclared fresh two-world, six-profile,
+   96-observe-decision `natural_prevalence` corpus;
+5. obtain two independent labels and apply the unchanged mechanism thresholds
+   to that representative corpus alone; and
+6. run no downstream outcome comparison unless the representative gate passes.

@@ -150,6 +150,7 @@ const ANNOTATION_WARRANT_BASES = Object.freeze([
   'immediate_repair',
   'public_obligation',
   'inquiry_completion',
+  'candidate_safety',
   'action_contract',
   'register_or_accumulated_trouble',
   'none',
@@ -2409,9 +2410,8 @@ function predictedWarrantBasis(decision) {
   const basis = String(decision?.warrant_basis || '');
   if (basis.startsWith('immediate:')) return 'immediate_repair';
   if (basis.startsWith('public_obligation_')) return 'public_obligation';
-  if (basis.startsWith('inquiry_complete:') || basis.startsWith('inquiry_incomplete_candidate:')) {
-    return 'inquiry_completion';
-  }
+  if (basis.startsWith('inquiry_complete:')) return 'inquiry_completion';
+  if (basis.startsWith('inquiry_incomplete_candidate:')) return 'candidate_safety';
   if (basis.startsWith('contract_')) return 'action_contract';
   if (basis.startsWith('register_escalation:') || basis.startsWith('accumulated:')) {
     return 'register_or_accumulated_trouble';
@@ -3422,7 +3422,8 @@ Every case-level and per-dimension note must contain at least ${ADAPTIVE_WARRANT
 - Selection: “Could you choose which public record we should inspect?” delegates a choice, not result production.
 - Record entry: “I can record that finding now” offers to write an already-public claim; it is neither a test proposal nor tutor-owned result debt.
 - Commitment transition and candidate override are independent. A prior family may warrant transition while the current candidate already realizes the correct successor, or a prior family may remain valid while this particular candidate still needs correction.
-- Apply warrant-basis precedence exactly: immediate repair, actionable public obligation, strict inquiry completion, action-contract result, then register or accumulated trouble. Use \`none/hold\` only when none applies.
+- A request answered in tutor turn 1 remains \`satisfied\` at learner turn 2 with an empty source-turn array; it is not \`none\`. Use \`none\` only when no request occurred anywhere in the public transcript.
+- Apply warrant-basis precedence exactly: immediate repair, actionable public obligation, strict inquiry completion, candidate safety for an unsafe close while inquiry is incomplete, action-contract result, then register or accumulated trouble. Use \`none/hold\` only when none applies.
 - Explicit analytic work can be conceptually aligned even when the learner record stays flat. Conceptual stalling needs a public failure signal such as an explicit stall or low-agency deferral; productive testing is not conceptual failure.
 - Strategy exhaustion follows the supplied typed expected-uptake contract. If the contract says the learner adopted or used the staged evidence, do not mark the family exhausted only because the learner's surface wording still sounds dependent. Mark exhaustion when that contract is defeated, expired, or repeatedly failed.
 - \`aligned\` means the descriptive state satisfies that dimension's stated norm, even when the move is valuable. Record growth or explicit analytic work is conceptually aligned; voluntary agentive participation is engagement-aligned. Use \`productive\` only for a useful departure from the stated norm, not as a synonym for good, active, or successful.
@@ -3434,10 +3435,11 @@ Every case-level and per-dimension note must contain at least ${ADAPTIVE_WARRANT
 1. An explicit repair request or stall is an immediate repair warrant.
 2. A tutor-directed request for an available public result creates a tutor obligation; a learner proposal to run a test does not. For multiple obligations use the state precedence overdue, then open/reactivated, then deferred, then the latest resolved state, then none. An actionable open, overdue, or reactivated public obligation outranks closure and unrelated questioning. An accountable deferral remains recorded but is nonblocking until its named public condition occurs or the obligation is reminded or released.
 3. Whole-inquiry completion requires a supported terminal learner assertion, known exhausted licensed evidence, integrated released evidence, no unsupported assertion or active dropped fact, and no actionable open, overdue, or reactivated public obligation. A fixed horizon or locally fluent turn is not completion.
-4. Action-contract success, defeat, or expiry is judged against the prior delivered family and its deadline.
-5. Register or accumulated trouble is considered only after the higher-priority cases above. Productive analytic resistance is not a stall.
-6. \`commitment_transition_warranted\` asks whether the held pedagogical family should change beyond the current response. Public-obligation fulfilment is a response-level requirement and therefore does not by itself change that commitment; it can require a current-candidate override. A strict terminal close or a contract/immediate/trouble-driven pedagogical switch does change the commitment when its successor differs from the prior family. \`current_candidate_override_required\` asks whether the concrete pre-gate candidate must change; either label can differ from the other.
-7. Judge divergence before judging whether it warrants a commitment revision. Conceptual concerns learner-record progress; interactional concerns uptake, repetition, register trouble, and tutor-owned public debt; engagement concerns voluntary agency; pacing concerns publicly evidenced acceleration or deceleration from authored pace; epistemic concerns unsupported, dropped, unintegrated, or prematurely terminal claims; strategy exhaustion concerns a held family whose expected-uptake contract has been defeated, expired, or repeatedly failed.
+4. A \`close_inquiry\` candidate while whole-inquiry state is incomplete has \`candidate_safety\` as its primary basis. Recommend a safe nonterminal family; do not call the inquiry complete, and do not infer a held-family transition when the safe successor retains the prior family.
+5. Action-contract success, defeat, or expiry is judged against the prior delivered family and its deadline.
+6. Register or accumulated trouble is considered only after the higher-priority cases above. Productive analytic resistance is not a stall.
+7. \`commitment_transition_warranted\` asks whether the held pedagogical family should change beyond the current response. Public-obligation fulfilment is a response-level requirement and therefore does not by itself change that commitment; it can require a current-candidate override. A strict terminal close or a contract/immediate/trouble-driven pedagogical switch does change the commitment when its successor differs from the prior family. \`current_candidate_override_required\` asks whether the concrete pre-gate candidate must change; either label can differ from the other.
+8. Judge divergence before judging whether it warrants a commitment revision. Conceptual concerns learner-record progress; interactional concerns uptake, repetition, register trouble, and tutor-owned public debt; engagement concerns voluntary agency; pacing concerns publicly evidenced acceleration or deceleration from authored pace; epistemic concerns unsupported, dropped, unintegrated, or prematurely terminal claims; strategy exhaustion concerns a held family whose expected-uptake contract has been defeated, expired, or repeatedly failed.
 
 When the evidence cannot distinguish the permitted labels, use \`uncertain\` and explain the decision-time ambiguity in the note.
 `;

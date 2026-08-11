@@ -325,3 +325,23 @@ files pass, and structurally emits no pass/fail result. The item remains active
 pending a clean pushed checkpoint, one final diagnostic confirmation, and then
 passage of the separately frozen 96-case representative natural-frame gate.
 No downstream outcome study is licensed.
+
+The next diagnostic from clean commit
+`7f743988268b7f3baf15c8db249c423a331278a8` completed two isolated Luna reads
+in the six planned calls. On 23 hard-consensus cases it achieved binary
+precision, recall, and accuracy of 1.000; request/proposal macro-F1,
+obligation-persistence accuracy, inquiry-completion precision/recall,
+transition-family accuracy, and candidate-override accuracy were also 1.000.
+The dedicated scorer emitted no gate decision.
+
+The read found one final measurement-vocabulary defect: the live
+`candidate_safety_override` for a premature close had no distinct reader basis
+and was incorrectly scored as `inquiry_completion` despite an incomplete
+inquiry state. The prospective instrument now exposes `candidate_safety`
+across corpus, packet, schema, validation, and scorer, with an exact mapping
+test. Resolved-lifecycle guidance also states explicitly that a fulfilled
+turn-one request remains `satisfied` at the next decision. This change burns
+the diagnostic relative to the repaired instrument. The item remains active
+pending one final clean diagnostic confirmation and passage of the separately
+frozen representative 96-case natural-frame gate. No downstream outcome study
+is licensed.

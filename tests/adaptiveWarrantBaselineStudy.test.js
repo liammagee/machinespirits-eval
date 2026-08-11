@@ -2399,6 +2399,53 @@ test('v3 successor denominator requires a gold commitment transition and an exac
   assert.equal(score.metrics.transitionAccuracy, 0);
 });
 
+test('candidate safety remains distinct from whole-inquiry completion in annotation scoring', () => {
+  const row = {
+    sample_id: 'unsafe-close-candidate',
+    speech_act: 'learner_proposed_test',
+    open_obligation_source_turns: [],
+    obligation_state: 'satisfied',
+    inquiry_state: 'incomplete',
+    commitment_transition_warranted: 'no',
+    current_candidate_override_required: 'yes',
+    primary_warrant_basis: 'candidate_safety',
+    recommended_action_family: 'stage_next_step',
+    note: 'The close candidate is unsafe while licensed public evidence still remains.',
+  };
+  const response = {
+    schema: 'machinespirits.adaptation-refinement.warrant-annotation-response.v3',
+    cases: [row],
+  };
+  const key = {
+    cases: [
+      {
+        sample_id: row.sample_id,
+        shadow: {
+          revision_warranted: true,
+          commitment_transition_warranted: false,
+          current_candidate_override_required: true,
+          warrant_basis: 'inquiry_incomplete_candidate:licensed_evidence_remains',
+          policy: { family: 'stage_next_step' },
+          public_obligation: {
+            speech_act: { kind: 'learner_proposed_test' },
+            obligations: [{ id: 'public-obligation-001', status: 'satisfied', created_turn: 1 }],
+          },
+          inquiry_completion: {
+            status: 'open',
+            checks: { remaining_licensed_evidence_count: 2 },
+          },
+        },
+      },
+    ],
+  };
+  const score = scoreBlindedAnnotations({ annotatorA: response, annotatorB: response, key });
+  assert.equal(score.cases[0].predicted_primary_warrant_basis, 'candidate_safety');
+  assert.equal(score.cases[0].predicted_inquiry_state, 'incomplete');
+  assert.equal(score.cases[0].predicted_commitment_transition, 'no');
+  assert.equal(score.cases[0].predicted_candidate_override, 'yes');
+  assert.equal(score.metrics.primaryWarrantBasisAccuracy, 1);
+});
+
 test('closure safety uses gold incomplete inquiry and unresolved obligation even when the gate calls itself complete', () => {
   const row = {
     sample_id: 'unsafe-gold-close',

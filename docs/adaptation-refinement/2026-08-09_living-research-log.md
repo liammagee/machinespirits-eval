@@ -1146,3 +1146,42 @@ clean checkpoint to establish that the repaired instrument and localized
 detectors are coherent, followed by the predeclared fresh 96-case
 `natural_prevalence` frame. Only that representative frame can pass the
 mechanism gate. No downstream outcome run is licensed.
+
+## Progress Update — 11 August 2026, final diagnostic finds one missing typed basis
+
+The fresh 24-case diagnostic from clean commit
+`7f743988268b7f3baf15c8db249c423a331278a8` completed two isolated Luna reads
+in the six planned calls under authorization digest
+`7f66a68aa825b0e57ee10e38962c06ceb6f88fd4c418a00135a77b9bf8cc9f53`.
+Both readers supplied 24/24 cases with distinct identities. Reader B required
+no normalization; Reader A triggered three predeclared `none`-basis family
+canonicalizations, each recorded in the normalization audit. The dedicated
+scorer validated both blind artifacts and authorization bindings before
+opening the private key and correctly emitted `pass_fail_gate=not_applicable`.
+
+On 23 hard-consensus cases the binary detector produced TP=19, TN=4, no false
+positives or false negatives, and precision, recall, and accuracy of 1.000.
+Raw reader agreement was 0.958. Request/proposal macro-F1, obligation
+persistence, inquiry-completion precision/recall, transition-family accuracy,
+candidate override, and binary decision accuracy were all 1.000. Commitment-
+transition accuracy was 0.952 and primary-basis accuracy 0.957. All six
+divergence interpretations met 0.808–1.000 macro-F1; joint accuracies ranged
+from 0.905 to 1.000. These remain diagnostic values and cannot pass the gate.
+
+The remaining basis error was an instrument confound. The live mechanism has a
+typed `candidate_safety_override` for a proposed `close_inquiry` action while
+whole-inquiry state is still open, but the reader vocabulary offered no
+candidate-safety basis. The scorer consequently collapsed
+`inquiry_incomplete_candidate:*` into `inquiry_completion`, contradicting the
+same row's predicted `incomplete` state, while readers improvised trouble or
+no-basis labels. Prospectively, `candidate_safety` is now a separate primary
+basis in the corpus, packets, schemas, validation, and scorer. The handbook
+also gives an explicit resolved-lifecycle example: a request answered on tutor
+turn 1 remains `satisfied` at learner turn 2 with no open source turns rather
+than resetting to `none`.
+
+This vocabulary change burns the completed diagnostic relative to the repaired
+instrument. One final clean freeze and independent read must verify the
+measurement repair. If it is coherent, the next inferential step is the
+already-declared fresh 96-case natural-prevalence corpus under unchanged gate
+thresholds. No downstream outcome run is licensed.

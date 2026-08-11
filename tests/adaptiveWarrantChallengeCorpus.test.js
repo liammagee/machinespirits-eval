@@ -67,9 +67,10 @@ function annotationFromKey({ corpus, key, corpusSha256, annotatorId, runId }) {
         ? 'immediate_repair'
         : projection.warrant_basis.startsWith('public_obligation_')
           ? 'public_obligation'
-          : projection.warrant_basis.startsWith('inquiry_complete:') ||
-              projection.warrant_basis.startsWith('inquiry_incomplete_candidate:')
+          : projection.warrant_basis.startsWith('inquiry_complete:')
             ? 'inquiry_completion'
+            : projection.warrant_basis.startsWith('inquiry_incomplete_candidate:')
+              ? 'candidate_safety'
             : projection.warrant_basis.startsWith('contract_')
               ? 'action_contract'
               : projection.warrant_basis.startsWith('register_') || projection.warrant_basis.startsWith('accumulated:')

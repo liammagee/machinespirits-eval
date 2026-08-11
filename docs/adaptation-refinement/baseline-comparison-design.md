@@ -324,6 +324,10 @@ inquiry state, prior-commitment transition, current-candidate override, primary
 warrant basis, and successor family. The freeze assigns deterministic opaque
 hash identifiers after a global hash shuffle of paired corpus/key rows; neither
 sequential IDs nor row grouping may reveal world, profile, condition, or turn.
+Primary basis keeps an incomplete-inquiry safety veto distinct from a completed-
+inquiry terminal transition: `candidate_safety` labels a `close_inquiry`
+candidate that must be replaced while the inquiry remains open, whereas
+`inquiry_completion` is legal only when strict completion is already satisfied.
 V3 reader envelopes and case rows use exact allowlists and scalar/array types.
 Unknown or extra fields—including private/source material supplied through an
 undeclared field—and type/schema violations fail before unblinding. The short

@@ -570,6 +570,7 @@ export function buildAdaptiveWarrantChallengeCorpus({
       'immediate_repair',
       'public_obligation',
       'inquiry_completion',
+      'candidate_safety',
       'action_contract',
       'register_or_accumulated_trouble',
       'none',
