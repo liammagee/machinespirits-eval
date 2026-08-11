@@ -21,6 +21,16 @@ export function ensureTutorStubPublicObligationFallbackOwnership({
   return [ownedText, remainder].filter(Boolean).join(' ');
 }
 
+export function composeTutorStubTerminalFallback({
+  baseFallbackText = '',
+  fallbackUptake = '',
+  fallbackOwnsComposition = false,
+  ensureFallbackComposition,
+} = {}) {
+  if (fallbackOwnsComposition) return String(baseFallbackText || '').trim();
+  return ensureFallbackComposition(baseFallbackText, fallbackUptake);
+}
+
 export function createTutorStubTutorTerminalRuntime(dependencies = {}) {
   const {
     appendTraceEvent,
@@ -281,10 +291,16 @@ export function createTutorStubTutorTerminalRuntime(dependencies = {}) {
             : scaffoldGuardEnabled
               ? deterministicGenerousInferenceFallback(fallbackContext)
               : deterministicTutorStubContextualFallback(fallbackContext);
-    const composedFallbackText =
-      dramaticReleaseGuardEnabled || instructionalMetaRepair
-        ? baseFallbackText
-        : ensureFallbackComposition(baseFallbackText, fallbackUptake);
+    const composedFallbackText = composeTutorStubTerminalFallback({
+      baseFallbackText,
+      fallbackUptake,
+      fallbackOwnsComposition:
+        instructionalMetaRepair ||
+        closureFallbackSelected ||
+        dramaticReleaseGuardEnabled ||
+        configuredContinuationFallbackRequired,
+      ensureFallbackComposition,
+    });
     const fallbackText = ensureTutorStubPublicObligationFallbackOwnership({
       text: composedFallbackText,
       obligationUptake: publicObligationOwnsFallback ? deterministicFallbackUptake : '',

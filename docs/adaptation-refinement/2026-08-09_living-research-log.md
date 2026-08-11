@@ -1501,3 +1501,23 @@ focus and delivery checks, while `public_terms` remains an identity field. A
 model-free regression freezes the observed generic request and requires an
 empty identity list alongside nonempty derived progression terms. A fresh clean
 matrix remains required before annotation resumes.
+
+## Progress Update — 11 August 2026, terminal fallback composition now has one owner
+
+The clean `70b4b799882091e2d418b8733b42dd00e82745e6` restart completed 18 valid
+children and 144 valid turns before the first child in the final wave failed
+closed. On active turn six of the Foxtrot low-agency cell, final authority
+selected `challenge_resistance`. The deterministic configured continuation
+already began with the correct family-specific uptake, but the terminal
+runtime prepended a generic uptake and duplicated the composition. The
+responsive-family audit correctly scopes recognition to the first uptake
+sentence, so it rejected the now-hidden selected family. The partial packet is
+burned and is not a mechanism result.
+
+This was a terminal composition seam rather than a reducer or phrase-realizer
+failure. Prospectively, configured continuation, closure, instructional
+repair, and dramatic-release fallbacks declare ownership of their complete
+uptake-and-development composition and bypass the generic terminal composer.
+Unowned scaffold and contextual fragments still receive exactly one external
+uptake. A focused regression freezes both branches. A fresh clean matrix and
+complete delivery gate remain mandatory before annotation resumes.

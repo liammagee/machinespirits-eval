@@ -1234,3 +1234,31 @@ sequence is:
    response schema;
 4. apply the unchanged representative scorer; and
 5. run no downstream outcome comparison unless the representative gate passes.
+
+## Current restart boundary after terminal-fallback composition ownership
+
+The clean `70b4b799882091e2d418b8733b42dd00e82745e6` restart completed its first
+18 children with valid seals and 144 valid turns. The first completed child in
+the final wave failed closed on active turn six of the Foxtrot low-agency cell.
+Final authority selected `challenge_resistance`, and the configured
+continuation fallback generated the required family-specific uptake. The
+terminal runtime then treated that already-complete fallback as an unowned
+fragment, prepended a generic uptake, and duplicated the composition. Because
+the responsive-family audit correctly reads the first uptake sentence, it
+could no longer see the selected family. The partial packet is burned and will
+not be annotated.
+
+Prospectively, terminal fallback branches that already return a complete
+uptake-and-development composition retain ownership of that composition.
+Configured continuation, closure, instructional repair, and dramatic release
+therefore bypass the generic terminal composer; only genuinely unowned
+scaffold and contextual fragments receive an external uptake. The remaining
+sequence is:
+
+1. verify, commit, and push the terminal composition-ownership repair;
+2. freeze a new clean representative matrix and require 24/24 valid children,
+   192/192 structured parity, and 192/192 delivery application;
+3. collect and assemble two fresh independent readers under the case-specific
+   response schema;
+4. apply the unchanged representative scorer; and
+5. run no downstream outcome comparison unless the representative gate passes.

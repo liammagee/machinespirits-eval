@@ -14,7 +14,10 @@ import {
 } from '../services/tutorStubTurnProgressionContract.js';
 import { auditTutorStubQuestionSupportResponse } from '../services/tutorStubQuestionSupport.js';
 import { tutorStubSubstantiveLearnerEcho } from '../services/tutorStubResponseComposition.js';
-import { ensureTutorStubPublicObligationFallbackOwnership } from '../services/tutorStubTutorTerminalRuntime.js';
+import {
+  composeTutorStubTerminalFallback,
+  ensureTutorStubPublicObligationFallbackOwnership,
+} from '../services/tutorStubTutorTerminalRuntime.js';
 import { buildTutorStubWorldScaffold } from '../services/tutorStubWorldScaffold.js';
 
 function composition({
@@ -468,6 +471,36 @@ test('terminal recovery restores obligation-owned deferral before writable entry
   assert.ok(repaired.indexOf(obligationUptake) < repaired.indexOf(authoredSource));
   assert.equal(audit.public_obligation.resolved, true, JSON.stringify(audit.issues));
   assert.equal(audit.public_obligation.outcome, 'named_unavailability_with_concrete_next_step');
+});
+
+test('a configured terminal fallback keeps its family-specific uptake as the first owned sentence', () => {
+  const genericUptake = 'Yes—look for evidence that Moth contacted the music core.';
+  const configuredFallback =
+    'Instead of copying my line, choose what the public clue supports in your own words; yes—look for evidence that Moth contacted the music core. I put the inquiry log in front of us.';
+  let compositionCalls = 0;
+  const ensureFallbackComposition = (text, uptake) => {
+    compositionCalls += 1;
+    return `${uptake} ${text}`;
+  };
+
+  const owned = composeTutorStubTerminalFallback({
+    baseFallbackText: configuredFallback,
+    fallbackUptake: genericUptake,
+    fallbackOwnsComposition: true,
+    ensureFallbackComposition,
+  });
+  assert.equal(owned, configuredFallback);
+  assert.equal(compositionCalls, 0);
+  assert.match(owned, /^Instead of copying my line, choose/iu);
+
+  const unowned = composeTutorStubTerminalFallback({
+    baseFallbackText: 'I put the inquiry log in front of us.',
+    fallbackUptake: genericUptake,
+    fallbackOwnsComposition: false,
+    ensureFallbackComposition,
+  });
+  assert.equal(unowned, `${genericUptake} I put the inquiry log in front of us.`);
+  assert.equal(compositionCalls, 1);
 });
 
 test('a writable-entry turn compiles a declarative handoff on the learner requested relation', () => {
