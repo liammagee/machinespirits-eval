@@ -50,7 +50,7 @@ not an in-place repair of V2.
 ### 2.1 Envelope and multiplicity
 
 The learner-analysis result must contain one
-`machinespirits.adaptation-refinement.semantic-event-extraction.v1` envelope.
+`machinespirits.adaptation-refinement.semantic-event-extraction.v2` envelope.
 An utterance may contain zero, one, or several ordered events. Compound speech
 is not collapsed to a single primary label: “I would compare the dies; what
 does the comparison show?” contains both a proposed action and a result
@@ -61,7 +61,7 @@ The conceptual envelope is:
 
 ```json
 {
-  "schema": "machinespirits.adaptation-refinement.semantic-event-extraction.v1",
+  "schema": "machinespirits.adaptation-refinement.semantic-event-extraction.v2",
   "source_turn": 4,
   "source_text_sha256": "...",
   "events": [
@@ -71,16 +71,16 @@ The conceptual envelope is:
       "speech_act": "tutor_directed_public_result_request",
       "target": {
         "kind": "record_entry",
-        "subject": "shelf-two access record",
-        "public_identifiers": ["shelf-two"],
+        "target_id": "target-shelf-two-access-record",
+        "public_identifier_ids": ["public-id-shelf-two"],
         "requested_value_types": ["time"],
-        "required_components": ["access_time"]
+        "component_ids": ["access_time"]
       },
       "requested_or_proposed_action": {
         "mode": "requested",
         "actor": "tutor",
         "action": "supply_public_result",
-        "object": "shelf-two access times"
+        "action_object_id": "target-shelf-two-access-record"
       },
       "evidence_span": {
         "text": "show me the shelf-two access times",
@@ -137,7 +137,7 @@ normative consequences.
 
 ### 2.3 Target and action identity
 
-`target.subject` names the public object or relation whose result is owed.
+`target.target_id` names the stable public object or relation whose result is owed.
 `target.requested_value_types` names the fields requested from it. Value types
 include `name`, `time`, `date`, `weight`, `sound`, `material`, `match_status`,
 `record_text`, and `other`. A value type must never become a subject term merely
@@ -147,8 +147,8 @@ For “show me the shelf-two access times”, the required paper result is:
 
 - speaker: learner;
 - speech act: `tutor_directed_public_result_request`;
-- target subject: the shelf-two access record, with `shelf-two` retained as a
-  public identifier;
+- target ID: `target-shelf-two-access-record`, with `public-id-shelf-two`
+  retained as a public identifier ID;
 - requested value type: `time`;
 - action: learner requests the tutor to supply a public result;
 - evidence span: the exact request text;
@@ -388,7 +388,7 @@ Two isolated extraction readers receive, for every case:
 They do not receive the model extraction, validator output, obligation ledger,
 warrant decision, condition identity, active-arm response, private key,
 support-plan tags, later turns, technical trace, or the other reader's output.
-Each reader returns the ordered semantic events, target subject, requested
+Each reader returns the ordered semantic events, target ID, requested
 value types, action mode/actor/action, literal evidence span, and whether the
 utterance is genuinely ambiguous under the handbook. Reader confidence is not
 used as a substitute for field agreement.
@@ -397,11 +397,22 @@ The reader response schema carries only the literal `evidence_span.text`, not
 numeric offsets. The text must be non-empty, no longer than 240 characters,
 and occur exactly once in the current learner utterance. Exact JavaScript
 UTF-16 `start` and exclusive `end` offsets are then derived mechanically by the
-assembler and listed case by case in its assembly audit. A missing, repeated,
-or non-literal span fails assembly. This schema-declared derivation removes
-LLM character-count arithmetic from the reader instrument; it does not relax
-the live extractor contract in section 2, which still requires validated text
-and offsets in the learner-analysis envelope.
+assembler, and events are ordered by those literal start positions with source
+order as the equal-position tie. Both operations are listed case by case in
+the assembly audit. A missing, repeated, or non-literal span fails assembly.
+This schema-declared derivation removes LLM character-count and list-order
+arithmetic from the reader instrument; it does not relax the live extractor
+contract in section 2, which still requires validated text and offsets in the
+learner-analysis envelope.
+
+The frozen corpus also carries one public corpus-wide annotation catalogue of
+`target_id`, `public_identifier_id`, `component_id`, and `action_object_id`
+entries. Every entry keeps its stable ID separate from a reader-facing display
+label. The catalogue contains the union of public candidates available across
+all cases but no case mapping, construction stratum, expected event, or model
+output. Readers return IDs only. This prevents synonymous reader prose from
+destroying typed agreement while still requiring each reader to decide which
+public referent and action applies in the case.
 
 Both extraction files must assemble with exact IDs, no missing or additional
 fields, and no hand repair. Only schema-declared mechanical canonicalization
@@ -419,7 +430,7 @@ blind replication, not cross-model validation.
 
 Hard extraction consensus requires both readers to agree on event count and,
 for the relevant event, speech act, action mode, action actor, action,
-target-present status, target subject, requested value types, and ambiguity.
+target-present status, target ID, requested value types, and ambiguity.
 Span differences are scored separately and do not erase otherwise hard field
 consensus. A reader disagreement or either reader marking genuine ambiguity is
 reported as uncertain and excluded from field-gold scoring; it remains in raw
@@ -559,6 +570,10 @@ not ask a model to calculate offsets, hashes, token counts, ordering keys, or
 other deterministic arithmetic. Downstream semantic compilers consume typed
 events rather than learner prose; regex remains limited to exact syntax,
 identifiers, provenance checks, and explicitly conservative fallbacks.
+
+Tests must be strict about semantic behaviour and evidence integrity, but
+invariant to harmless representational variation. No free-text field may
+determine identity, consensus, joins, state mutation, or gate passage.
 
 After the zero-call preflight, at most one separately authorized two-call
 smoke may use synthetic cases that are permanently excluded from every

@@ -18,23 +18,36 @@ import {
 } from '../scripts/prepare-adaptive-warrant-semantic-annotations.js';
 import { prepareAdaptiveWarrantAnnotationBatches } from '../scripts/prepare-adaptive-warrant-annotation-batches.js';
 import { buildAdaptiveWarrantV3SemanticDiagnostic } from '../scripts/build-adaptive-warrant-v3-semantic-diagnostic.js';
+import { runAdaptiveWarrantSemanticBrittlenessPreflight } from '../scripts/run-adaptive-warrant-semantic-brittleness-preflight.js';
+import { buildAdaptiveWarrantSemanticSmokeCorpus } from '../scripts/run-adaptive-warrant-semantic-schema-smoke.js';
+import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
 
 const CORPUS_SHA = 'frozen-semantic-corpus';
 
 function target(index) {
   return {
     kind: 'record_entry',
-    subject: `bay ${index} access record`,
-    public_identifiers: [`bay-${index}`],
+    target_id: `target-bay-${index}-access-record`,
+    public_identifier_ids: [`public-id-bay-${index}`],
     requested_value_types: ['time'],
-    required_components: ['access_time'],
+    component_ids: ['access_time'],
   };
 }
 
 function action(kind, index) {
   return kind === 'tutor_directed_public_result_request'
-    ? { mode: 'requested', actor: 'tutor', action: 'supply_public_result', object: `bay-${index} access time` }
-    : { mode: 'proposed', actor: 'learner', action: 'perform_public_test', object: `inspect bay-${index} log` };
+    ? {
+        mode: 'requested',
+        actor: 'tutor',
+        action: 'supply_public_result',
+        action_object_id: `action-object-bay-${index}-access-time`,
+      }
+    : {
+        mode: 'proposed',
+        actor: 'learner',
+        action: 'perform_public_test',
+        action_object_id: `action-object-inspect-bay-${index}-log`,
+      };
 }
 
 function event(kind, text, index) {
@@ -59,7 +72,28 @@ function fixture(count = 8) {
       kind: request ? 'tutor_directed_public_result_request' : 'learner_proposed_test',
     };
   });
-  return { schema: 'blinded-fixture', study_id: 'semantic-study', blinded: true, cases };
+  return {
+    schema: 'blinded-fixture',
+    study_id: 'semantic-brittleness-preflight-test',
+    blinded: true,
+    semantic_annotation_catalog: {
+      schema: 'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v2',
+      targets: cases.map((row, index) => ({
+        target_id: target(index + 1).target_id,
+        display_label: `bay ${index + 1} access record`,
+      })),
+      public_identifiers: cases.map((row, index) => ({
+        public_identifier_id: target(index + 1).public_identifier_ids[0],
+        display_label: `bay-${index + 1}`,
+      })),
+      components: [{ component_id: 'access_time', display_label: 'access time' }],
+      action_objects: cases.map((row, index) => ({
+        action_object_id: action(row.kind, index + 1).action_object_id,
+        display_label: `${row.kind} bay ${index + 1}`,
+      })),
+    },
+    cases,
+  };
 }
 
 function reader(corpus, readerId, runId) {
@@ -169,6 +203,7 @@ test('semantic collection freezes exact packets and derives only unique literal 
     corpusRole: 'targeted_challenge',
     batchSize: 4,
     maximumCalls: 4,
+    preflightMode: true,
   });
   assert.equal(prepared.authorizationRequest.call_budget.planned_calls, 4);
   assert.equal(prepared.authorizationRequest.call_budget.maximum_calls, 4);
@@ -177,11 +212,16 @@ test('semantic collection freezes exact packets and derives only unique literal 
     true,
   );
   const firstBatchSchema = JSON.parse(fs.readFileSync(prepared.manifest.readers[0].batches[0].response_schema_path));
-  const firstSampleSchema = firstBatchSchema.properties.cases_by_sample_id.properties['sample-1'];
+  assert.deepEqual(firstBatchSchema.properties.cases_by_sample_id.properties['sample-1'], { $ref: '#/$defs/case' });
+  const firstSampleSchema = firstBatchSchema.$defs.case;
   assert.equal(firstSampleSchema.properties.note.minLength, 8);
   assert.deepEqual(Object.keys(firstSampleSchema.properties.events.items.properties.evidence_span.properties), [
     'text',
   ]);
+  assert.equal(
+    firstSampleSchema.properties.events.items.properties.target.properties.target_id.pattern,
+    '^[a-z0-9][a-z0-9_-]{0,95}$',
+  );
   const reader = prepared.manifest.readers[0];
   const responseDir = path.join(root, 'responses');
   fs.mkdirSync(responseDir, { recursive: true });
@@ -216,7 +256,7 @@ test('semantic collection freezes exact packets and derives only unique literal 
     true,
   );
   const audit = JSON.parse(fs.readFileSync(assembled.auditPath, 'utf8'));
-  assert.equal(audit.normalization, 'schema_declared_unique_literal_span_offset_derivation');
+  assert.equal(audit.normalization, 'schema_declared_literal_span_and_event_order_derivation');
   assert.equal(audit.edit_count, 8);
   assert.equal(
     audit.canonicalizations.every((row) => row.operation === 'derive_unique_literal_utf16_offsets'),
@@ -229,6 +269,11 @@ test('fresh V3 diagnostic supplies the predeclared semantic and rare-state const
   assert.equal(built.corpus.blinded, true);
   assert.equal(built.corpus.sampling.gate_eligible, false);
   assert.equal(built.corpus.cases.length, 24);
+  assert.equal(built.corpus.semantic_annotation_catalog.targets.length >= 8, true);
+  assert.equal(
+    built.corpus.semantic_annotation_catalog.targets.some((value) => value.display_label.includes('expected')),
+    false,
+  );
   assert.equal(built.key.cases.length, 24);
   const strata = built.supportPlan.strata;
   assert.ok(strata.result_request.length >= 4);
@@ -251,7 +296,9 @@ test('fresh V3 diagnostic supplies the predeclared semantic and rare-state const
 
 test('fresh V3 support plan prepares a separate blinded decision-reader collection', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'v3-decision-annotation-'));
-  const built = buildAdaptiveWarrantV3SemanticDiagnostic({ studyId: 'v3-decision-fixture' });
+  const built = buildAdaptiveWarrantV3SemanticDiagnostic({
+    studyId: 'semantic-brittleness-preflight-v3-decision-fixture',
+  });
   const corpusPath = path.join(root, 'corpus.json');
   const handbookPath = path.join(root, 'decision-handbook.md');
   const supportPath = path.join(root, 'support.private.json');
@@ -267,10 +314,81 @@ test('fresh V3 support plan prepares a separate blinded decision-reader collecti
     corpusRole: 'targeted_challenge',
     batchSize: 8,
     maxAnnotationCalls: 8,
+    preflightMode: true,
   });
   assert.equal(prepared.manifest.gate_eligible, false);
   assert.equal(prepared.authorizationRequest.call_budget.planned_calls, 6);
   assert.equal(prepared.authorizationRequest.call_budget.maximum_calls, 8);
   assert.equal(prepared.manifest.support_plan.counts.result_request >= 4, true);
   assert.equal(prepared.manifest.support_plan.counts.proposed_test >= 4, true);
+});
+
+test('zero-call brittleness preflight exercises the complete instrument path and binds every fingerprint', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-brittleness-preflight-'));
+  const result = runAdaptiveWarrantSemanticBrittlenessPreflight({
+    outputPath: path.join(root, 'preflight.json'),
+    sourceCommit: 'a'.repeat(40),
+  });
+  assert.equal(result.artifact.zero_model_calls, true);
+  assert.equal(result.artifact.status, 'passed');
+  assert.equal(result.artifact.verdict, 'instrument_ready');
+  assert.equal(result.artifact.checks.every((row) => row.status === 'pass'), true);
+  assert.match(result.artifact.bindings.extraction_schema.digest, /^[0-9a-f]{64}$/u);
+  assert.match(result.artifact.bindings.reader_schema_digest, /^[0-9a-f]{64}$/u);
+  assert.match(result.artifact.bindings.consensus_scorer_fingerprint, /^[0-9a-f]{64}$/u);
+  assert.match(result.artifact.bindings.threshold_configuration_digest, /^[0-9a-f]{64}$/u);
+  assert.match(result.artifact.bindings.corpus_builder_fingerprint, /^[0-9a-f]{64}$/u);
+});
+
+test('semantic collection refuses to prepare without a passing preflight outside the internal synthetic path', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-preflight-required-'));
+  const corpus = fixture();
+  corpus.study_id = 'ordinary-v3-semantic-study';
+  const corpusPath = path.join(root, 'corpus.json');
+  const handbookPath = path.join(root, 'handbook.md');
+  fs.writeFileSync(corpusPath, `${JSON.stringify(corpus, null, 2)}\n`);
+  fs.writeFileSync(handbookPath, '# Frozen semantic handbook\n');
+  assert.throws(
+    () =>
+      prepareAdaptiveWarrantSemanticAnnotationBatches({
+        corpusPath,
+        handbookPath,
+        outputDir: path.join(root, 'collection'),
+        corpusRole: 'targeted_challenge',
+      }),
+    /requires a passing preflight artifact/u,
+  );
+});
+
+test('semantic preflight validation refuses stale source and instrument fingerprints', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-preflight-stale-'));
+  const sourceCommit = 'c'.repeat(40);
+  const result = runAdaptiveWarrantSemanticBrittlenessPreflight({
+    outputPath: path.join(root, 'preflight.json'),
+    sourceCommit,
+  });
+  assert.throws(
+    () =>
+      validateAdaptiveWarrantSemanticPreflightArtifact({
+        artifact: result.artifact,
+        expectedSourceCommit: 'd'.repeat(40),
+      }),
+    /stale or fingerprint-mismatched/u,
+  );
+  const altered = structuredClone(result.artifact);
+  altered.bindings.reader_schema_digest = '0'.repeat(64);
+  assert.throws(
+    () => validateAdaptiveWarrantSemanticPreflightArtifact({ artifact: altered, expectedSourceCommit: sourceCommit }),
+    /stale or fingerprint-mismatched/u,
+  );
+});
+
+test('the two-call schema smoke uses synthetic cases that are permanently excluded from evidence', () => {
+  const corpus = buildAdaptiveWarrantSemanticSmokeCorpus('b'.repeat(40));
+  assert.equal(corpus.synthetic_smoke_only, true);
+  assert.equal(corpus.permanently_excluded_from_research, true);
+  assert.equal(corpus.cases.length, 2);
+  assert.equal(corpus.semantic_annotation_catalog.targets.length, 2);
+  assert.equal(JSON.stringify(corpus).includes('construction_support'), false);
+  assert.equal(JSON.stringify(corpus).includes('expected_semantic_events'), false);
 });

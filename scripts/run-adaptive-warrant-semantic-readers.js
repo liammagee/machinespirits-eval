@@ -8,6 +8,7 @@ import { parseArgs } from 'node:util';
 
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
 import { ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA } from '../services/adaptiveWarrantSemanticAnnotation.js';
+import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
 import {
   ADAPTIVE_WARRANT_SEMANTIC_AUTHORIZATION_REQUEST_SCHEMA,
   ADAPTIVE_WARRANT_SEMANTIC_COLLECTION_MANIFEST_SCHEMA,
@@ -72,7 +73,9 @@ function validateAuthorization({ request, requestPath, manifest, approvedBy }) {
     request.study_id !== manifest.study_id ||
     request.bindings.manifest_sha256 !== fileSha256(manifest.__path) ||
     request.bindings.corpus_sha256 !== manifest.corpus.sha256 ||
-    request.bindings.handbook_sha256 !== manifest.handbook.sha256
+    request.bindings.handbook_sha256 !== manifest.handbook.sha256 ||
+    JSON.stringify(request.bindings.brittleness_preflight) !==
+      JSON.stringify(manifest.brittleness_preflight)
   ) {
     throw new Error('semantic reader authorization request is not bound to the collection');
   }
@@ -92,7 +95,12 @@ function validateAuthorization({ request, requestPath, manifest, approvedBy }) {
 }
 
 function validateFreeze({ freeze, manifest, repoRoot }) {
-  if (freeze.schema !== ADAPTIVE_WARRANT_V3_SEMANTIC_DIAGNOSTIC_FREEZE_SCHEMA || freeze.status !== 'frozen') {
+  const diagnostic = freeze.schema === ADAPTIVE_WARRANT_V3_SEMANTIC_DIAGNOSTIC_FREEZE_SCHEMA;
+  const syntheticSmoke =
+    freeze.schema === 'machinespirits.adaptation-refinement.semantic-schema-smoke-freeze.v1' &&
+    freeze.synthetic_smoke_only === true &&
+    freeze.permanently_excluded_from_research === true;
+  if ((!diagnostic && !syntheticSmoke) || freeze.status !== 'frozen') {
     throw new Error('semantic reader launch requires the V3 diagnostic freeze');
   }
   if (
@@ -107,14 +115,28 @@ function validateFreeze({ freeze, manifest, repoRoot }) {
   if (commit !== freeze.source_commit || status) {
     throw new Error('semantic reader launch requires the exact clean frozen commit');
   }
-  for (const binding of [
-    freeze.design,
-    freeze.corpus,
-    freeze.handbook,
-    freeze.decision_handbook,
-    freeze.private_key,
-    freeze.private_support_plan,
-  ]) {
+  const preflightBinding = freeze.brittleness_preflight;
+  if (!preflightBinding?.path || fileSha256(preflightBinding.path) !== preflightBinding.sha256) {
+    throw new Error('semantic diagnostic brittleness preflight drift');
+  }
+  validateAdaptiveWarrantSemanticPreflightArtifact({
+    artifact: readJson(preflightBinding.path),
+    expectedSourceCommit: commit,
+  });
+  if (manifest.brittleness_preflight?.sha256 !== preflightBinding.sha256) {
+    throw new Error('semantic collection or authorization does not bind the frozen brittleness preflight');
+  }
+  const artifactBindings = diagnostic
+    ? [
+        freeze.design,
+        freeze.corpus,
+        freeze.handbook,
+        freeze.decision_handbook,
+        freeze.private_key,
+        freeze.private_support_plan,
+      ]
+    : [freeze.corpus, freeze.handbook];
+  for (const binding of artifactBindings) {
     if (!binding?.path || fileSha256(binding.path) !== binding.sha256) {
       throw new Error('semantic diagnostic freeze artifact drift');
     }
@@ -192,6 +214,12 @@ export async function runAdaptiveWarrantSemanticReaders({
   const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
   validateFreeze({ freeze, manifest, repoRoot });
   validatePreparedArtifacts(request, manifest);
+  if (
+    freeze.synthetic_smoke_only === true &&
+    (request.call_budget.planned_calls !== 2 || request.call_budget.maximum_calls !== 2)
+  ) {
+    throw new Error('semantic schema smoke is capped at exactly two model calls');
+  }
   const authorization = validateAuthorization({
     request,
     requestPath: resolvedRequest,

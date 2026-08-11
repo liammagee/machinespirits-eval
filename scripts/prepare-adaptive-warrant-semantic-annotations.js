@@ -3,6 +3,7 @@
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { parseArgs } from 'node:util';
 
 import {
@@ -13,14 +14,17 @@ import {
   scoreAdaptiveWarrantSemanticExtraction,
   summarizeAdaptiveWarrantSemanticDiagnosticSupport,
   validateAdaptiveWarrantSemanticAnnotationResponse,
+  validateAdaptiveWarrantSemanticReaderCatalog,
 } from '../services/adaptiveWarrantSemanticAnnotation.js';
+import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_COLLECTION_MANIFEST_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-annotation-collection.v1';
+  'machinespirits.adaptation-refinement.semantic-event-annotation-collection.v2';
 export const ADAPTIVE_WARRANT_SEMANTIC_READER_PACKET_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-reader-packet.v1';
+  'machinespirits.adaptation-refinement.semantic-event-reader-packet.v2';
 export const ADAPTIVE_WARRANT_SEMANTIC_AUTHORIZATION_REQUEST_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-annotation-authorization-request.v1';
+  'machinespirits.adaptation-refinement.semantic-event-annotation-authorization-request.v2';
+const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 
 const BATCH_FIELDS = Object.freeze([
   'schema',
@@ -32,6 +36,8 @@ const BATCH_FIELDS = Object.freeze([
 ]);
 const CASE_FIELDS = Object.freeze(['genuinely_ambiguous', 'events', 'note']);
 const EVENT_FIELDS = Object.freeze(['speech_act', 'target', 'requested_or_proposed_action', 'evidence_span']);
+const MAXIMUM_READER_PACKET_BYTES = 42000;
+const MAXIMUM_READER_RESPONSE_BYTES = 10500;
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -105,6 +111,8 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
   annotationModel = 'codex.gpt-5.6-luna',
   annotationDestination = 'OpenAI Codex CLI (ChatGPT-account route)',
   maximumCalls = null,
+  preflightPath = null,
+  preflightMode = false,
 } = {}) {
   if (!['targeted_challenge', 'natural_prevalence'].includes(corpusRole)) {
     throw new Error('semantic annotation corpus role must be targeted_challenge or natural_prevalence');
@@ -118,6 +126,23 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
   const corpus = readJson(resolvedCorpus);
   if (corpus.blinded !== true || !corpus.study_id || !Array.isArray(corpus.cases)) {
     throw new Error('semantic annotation requires a frozen blinded corpus');
+  }
+  const semanticCatalog = corpus.semantic_annotation_catalog;
+  validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
+  let preflightBinding = null;
+  if (preflightMode) {
+    if (!String(corpus.study_id).startsWith('semantic-brittleness-preflight-')) {
+      throw new Error('semantic preflight bypass is restricted to the synthetic brittleness instrument');
+    }
+  } else {
+    if (!preflightPath) throw new Error('semantic annotation preparation requires a passing preflight artifact');
+    const gitStatus = execFileSync('git', ['status', '--porcelain'], { cwd: ROOT, encoding: 'utf8' }).trim();
+    if (gitStatus) throw new Error('semantic annotation preparation requires a clean committed worktree');
+    const sourceCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+    const resolvedPreflight = path.resolve(preflightPath);
+    const preflight = readJson(resolvedPreflight);
+    validateAdaptiveWarrantSemanticPreflightArtifact({ artifact: preflight, expectedSourceCommit: sourceCommit });
+    preflightBinding = { path: resolvedPreflight, sha256: fileSha256(resolvedPreflight), source_commit: sourceCommit };
   }
   const sampleIds = exactIds(
     corpus.cases.map((row) => row.sample_id),
@@ -139,6 +164,7 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
         studyId: corpus.study_id,
         corpusSha256,
         requiredSampleIds,
+        semanticCatalog,
       });
       const packet = {
         schema: ADAPTIVE_WARRANT_SEMANTIC_READER_PACKET_SCHEMA,
@@ -156,10 +182,12 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
           'Preserve event order. A compound utterance may have several events; do not collapse a proposal and a result request.',
           'Use genuinely_ambiguous=true only when the public handbook leaves two material readings unresolved.',
           'Every evidence_span must contain only text: one non-empty literal substring that occurs exactly once in current_learner_turn.learner. Do not return start or end; the assembler derives UTF-16 offsets mechanically and records them in its audit.',
+          'For target.target_id, target.public_identifier_ids, target.component_ids, and action.action_object_id, use only exact IDs from semantic_annotation_catalog. Display labels are explanatory only. The catalog is corpus-wide public vocabulary, not a case label; choose only IDs supported by the current public case.',
           'Every case note must contain at least eight characters of case-specific public-evidence rationale, including when the case is not ambiguous.',
-          'Keep target.subject separate from requested_value_types. A requested name, time, date, or weight is not automatically a target subject.',
+          'Keep target_id separate from requested_value_types. A requested name, time, date, or weight is not automatically a target.',
         ],
         handbook_markdown: handbookMarkdown,
+        semantic_annotation_catalog: semanticCatalog,
         required_sample_ids: requiredSampleIds,
         cases_by_sample_id: Object.fromEntries(requiredSampleIds.map((id) => [id, publicSemanticCase(byId.get(id))])),
         response_template: {
@@ -176,6 +204,11 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
       const schemaPath = path.join(resolvedOutput, 'packets', readerId, `${batchId}.response.schema.json`);
       writeJson(packetPath, packet);
       writeJson(schemaPath, outputSchema);
+      const packetBytes = fs.statSync(packetPath).size;
+      const responseSchemaBytes = fs.statSync(schemaPath).size;
+      if (packetBytes > MAXIMUM_READER_PACKET_BYTES) {
+        throw new Error(`${batchId} exceeds the ${MAXIMUM_READER_PACKET_BYTES}-byte prompt limit`);
+      }
       batches.push({
         batch_id: batchId,
         required_sample_ids: requiredSampleIds,
@@ -183,6 +216,10 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
         packet_sha256: fileSha256(packetPath),
         response_schema_path: schemaPath,
         response_schema_sha256: fileSha256(schemaPath),
+        packet_bytes: packetBytes,
+        maximum_packet_bytes: MAXIMUM_READER_PACKET_BYTES,
+        response_schema_bytes: responseSchemaBytes,
+        maximum_response_bytes: MAXIMUM_READER_RESPONSE_BYTES,
         expected_response_filename: `${batchId}.response.json`,
       });
     }
@@ -198,6 +235,12 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
     corpus: { path: resolvedCorpus, sha256: corpusSha256, cases: sampleIds.length },
     handbook: { path: resolvedHandbook, sha256: handbookSha256 },
     batch_size: batchSize,
+    size_audit: {
+      maximum_packet_bytes: MAXIMUM_READER_PACKET_BYTES,
+      largest_packet_bytes: Math.max(...readers.flatMap((reader) => reader.batches.map((batch) => batch.packet_bytes))),
+      maximum_response_bytes: MAXIMUM_READER_RESPONSE_BYTES,
+    },
+    brittleness_preflight: preflightBinding || { mode: 'synthetic_internal_zero_call' },
     readers,
   };
   const manifestPath = path.join(resolvedOutput, 'semantic-annotation-collection-manifest.json');
@@ -238,6 +281,7 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
       manifest_sha256: fileSha256(manifestPath),
       corpus_sha256: corpusSha256,
       handbook_sha256: handbookSha256,
+      brittleness_preflight: preflightBinding,
       packets: readers.flatMap((reader) =>
         reader.batches.map((batch) => ({
           reader_id: reader.reader_id,
@@ -272,6 +316,8 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
   const reader = manifest.readers.find((row) => row.reader_id === readerId);
   if (!reader) throw new Error(`unknown semantic reader ${readerId}`);
   const corpus = readJson(manifest.corpus.path);
+  const semanticCatalog = corpus.semantic_annotation_catalog;
+  const catalogIds = validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
   const order = new Map(corpus.cases.map((row, index) => [row.sample_id, index]));
   const corpusById = new Map(corpus.cases.map((row) => [row.sample_id, row]));
   const cases = [];
@@ -283,6 +329,10 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
       throw new Error(`${batch.batch_id} response schema drift`);
     }
     const responsePath = path.join(path.resolve(responseDir), batch.expected_response_filename);
+    const responseBytes = fs.statSync(responsePath).size;
+    if (responseBytes > MAXIMUM_READER_RESPONSE_BYTES) {
+      throw new Error(`${batch.batch_id} exceeds the ${MAXIMUM_READER_RESPONSE_BYTES}-byte response limit`);
+    }
     const response = readJson(responsePath);
     exactFields(response, BATCH_FIELDS, `${batch.batch_id} response`);
     if (
@@ -308,8 +358,28 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
         throw new Error(`${batch.batch_id} ${sampleId} events must be a bounded array`);
       }
       const learnerText = String(corpusById.get(sampleId)?.current_learner_turn?.learner || '');
-      const events = row.events.map((event, eventIndex) => {
+      const derivedEvents = row.events.map((event, eventIndex) => {
         exactFields(event, EVENT_FIELDS, `${batch.batch_id} ${sampleId} event ${eventIndex}`);
+        if (
+          event.target &&
+          (!catalogIds.target_ids.includes(event.target.target_id) ||
+            (event.target.public_identifier_ids || []).some(
+              (value) => !catalogIds.public_identifier_ids.includes(value),
+            ) ||
+            (event.target.component_ids || []).some(
+              (value) => !catalogIds.component_ids.includes(value),
+            ))
+        ) {
+          throw new Error(`${batch.batch_id} ${sampleId} event ${eventIndex} uses IDs outside the public catalog`);
+        }
+        if (
+          event.requested_or_proposed_action?.action_object_id &&
+          !catalogIds.action_object_ids.includes(event.requested_or_proposed_action.action_object_id)
+        ) {
+          throw new Error(
+            `${batch.batch_id} ${sampleId} event ${eventIndex} action object ID is outside the public catalog`,
+          );
+        }
         exactFields(event.evidence_span, ['text'], `${batch.batch_id} ${sampleId} event ${eventIndex} span`);
         const text = event.evidence_span.text;
         if (typeof text !== 'string' || !text.length || text.length > 240) {
@@ -327,11 +397,33 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
           start,
           end,
         });
-        return { ...event, evidence_span: { text, start, end } };
+        return { ...event, evidence_span: { text, start, end }, source_event_index: eventIndex };
       });
+      const events = derivedEvents
+        .toSorted(
+          (left, right) =>
+            left.evidence_span.start - right.evidence_span.start || left.source_event_index - right.source_event_index,
+        )
+        .map(({ source_event_index: sourceEventIndex, ...event }, orderedIndex) => {
+          if (sourceEventIndex !== orderedIndex) {
+            canonicalizations.push({
+              sample_id: sampleId,
+              event_index: sourceEventIndex,
+              operation: 'order_events_by_literal_span',
+              ordered_index: orderedIndex,
+            });
+          }
+          return event;
+        });
       cases.push({ sample_id: sampleId, ...row, events });
     }
-    inputs.push({ batch_id: batch.batch_id, path: responsePath, sha256: fileSha256(responsePath) });
+    inputs.push({
+      batch_id: batch.batch_id,
+      path: responsePath,
+      sha256: fileSha256(responsePath),
+      response_bytes: responseBytes,
+      maximum_response_bytes: MAXIMUM_READER_RESPONSE_BYTES,
+    });
   }
   cases.sort((left, right) => order.get(left.sample_id) - order.get(right.sample_id));
   const assembled = {
@@ -355,7 +447,7 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
     manifest: { path: resolvedManifest, sha256: fileSha256(resolvedManifest) },
     reader_id: readerId,
     annotation_run_id: annotationRunId,
-    normalization: 'schema_declared_unique_literal_span_offset_derivation',
+    normalization: 'schema_declared_literal_span_and_event_order_derivation',
     edit_count: canonicalizations.length,
     canonicalizations,
     input_batches: inputs,
@@ -447,7 +539,7 @@ export function scoreAdaptiveWarrantSemanticReaderSupportFiles({
 
 function usage() {
   return `Usage:
-  node scripts/prepare-adaptive-warrant-semantic-annotations.js prepare --corpus <file> --handbook <file> --out <dir> --corpus-role targeted_challenge|natural_prevalence [--batch-size 8] [--max-annotation-calls 8]
+  node scripts/prepare-adaptive-warrant-semantic-annotations.js prepare --corpus <file> --handbook <file> --preflight <passing-artifact> --out <dir> --corpus-role targeted_challenge|natural_prevalence [--batch-size 8] [--max-annotation-calls 8]
   node scripts/prepare-adaptive-warrant-semantic-annotations.js assemble --manifest <file> --reader <id> --annotation-run-id <id> --responses <dir> --output <file>
   node scripts/prepare-adaptive-warrant-semantic-annotations.js support --manifest <file> --reader-a <file> --reader-b <file> --output <file>
   node scripts/prepare-adaptive-warrant-semantic-annotations.js score --manifest <file> --reader-a <file> --reader-b <file> --predictions <file> --output <file>
@@ -461,6 +553,7 @@ function main() {
     options: {
       corpus: { type: 'string' },
       handbook: { type: 'string' },
+      preflight: { type: 'string' },
       out: { type: 'string' },
       'corpus-role': { type: 'string' },
       'batch-size': { type: 'string' },
@@ -489,6 +582,7 @@ function main() {
       corpusRole: values['corpus-role'],
       batchSize: values['batch-size'] ? Number(values['batch-size']) : 8,
       maximumCalls: values['max-annotation-calls'] ? Number(values['max-annotation-calls']) : null,
+      preflightPath: values.preflight,
     });
     process.stdout.write(`${result.manifestPath}\n${result.authorizationRequestPath}\n`);
     return;

@@ -430,16 +430,16 @@ describe('strict public learner analysis', () => {
           speech_act: 'tutor_directed_public_result_request',
           target: {
             kind: 'record_entry',
-            subject: 'shelf-two access record',
-            public_identifiers: ['shelf-two'],
+            target_id: 'target-shelf-two-access-record',
+            public_identifier_ids: ['public-id-shelf-two'],
             requested_value_types: ['time'],
-            required_components: ['access_time'],
+            component_ids: ['access_time'],
           },
           requested_or_proposed_action: {
             mode: 'requested',
             actor: 'tutor',
             action: 'supply_public_result',
-            object: 'shelf-two access times',
+            action_object_id: 'target-shelf-two-access-record',
           },
           evidence_span: { text: learnerText, start: 0, end: learnerText.length },
           confidence: 'high',
@@ -454,7 +454,8 @@ describe('strict public learner analysis', () => {
         includeSemanticEvents: true,
         benchmarkLearnerText: learnerText,
         tutorTurn: 3,
-        semanticPublicText: 'The public shelf-two record is available.',
+        semanticPublicText:
+          'The public target-shelf-two-access-record with public-id-shelf-two is available.',
       }),
     );
     const provider = buildTutorStubPublicLearnerAnalysisProviderOutputSchema({ includeSemanticEvents: true });
@@ -469,7 +470,7 @@ describe('strict public learner analysis', () => {
       includeSemanticEvents: true,
     });
     assert.match(prompt, /# Semantic-event extraction/u);
-    assert.match(prompt, /Names, times, dates.*are value types.*not automatically target subjects/u);
+    assert.match(prompt, /Names, times, dates.*are value types.*not automatically targets/u);
   });
 
   it('rejects fences, aliases, extra keys, wrong types, and unknown predictive labels locally', () => {

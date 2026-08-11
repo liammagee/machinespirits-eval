@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
+import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
 import {
   ADAPTIVE_WARRANT_ANNOTATION_BATCH_RESPONSE_SCHEMA,
   ADAPTIVE_WARRANT_ANNOTATION_COLLECTION_MANIFEST_SCHEMA,
@@ -74,6 +75,17 @@ function validateFreeze({ freeze, manifest, repoRoot }) {
   const status = gitValue(['status', '--short'], repoRoot);
   if (commit !== freeze.source_commit || status) {
     throw new Error('decision reader launch requires the exact clean frozen commit');
+  }
+  const preflightBinding = freeze.brittleness_preflight;
+  if (!preflightBinding?.path || fileSha256(preflightBinding.path) !== preflightBinding.sha256) {
+    throw new Error('decision reader brittleness preflight drift');
+  }
+  validateAdaptiveWarrantSemanticPreflightArtifact({
+    artifact: readJson(preflightBinding.path),
+    expectedSourceCommit: commit,
+  });
+  if (manifest.semantic_brittleness_preflight?.sha256 !== preflightBinding.sha256) {
+    throw new Error('decision collection does not bind the frozen brittleness preflight');
   }
   for (const binding of [
     freeze.design,

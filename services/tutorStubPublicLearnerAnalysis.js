@@ -400,28 +400,28 @@ function semanticEventLocalOutputSchema() {
   const target = {
     type: ['object', 'null'],
     additionalProperties: false,
-    required: ['kind', 'subject', 'public_identifiers', 'requested_value_types', 'required_components'],
+    required: ['kind', 'target_id', 'public_identifier_ids', 'requested_value_types', 'component_ids'],
     properties: {
       kind: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS] },
-      subject: { type: 'string' },
-      public_identifiers: { type: 'array', maxItems: 6, items: { type: 'string' } },
+      target_id: { type: 'string' },
+      public_identifier_ids: { type: 'array', maxItems: 6, items: { type: 'string' } },
       requested_value_types: {
         type: 'array',
         maxItems: 4,
         items: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES] },
       },
-      required_components: { type: 'array', maxItems: 4, items: { type: 'string' } },
+      component_ids: { type: 'array', maxItems: 4, items: { type: 'string' } },
     },
   };
   const action = {
     type: ['object', 'null'],
     additionalProperties: false,
-    required: ['mode', 'actor', 'action', 'object'],
+    required: ['mode', 'actor', 'action', 'action_object_id'],
     properties: {
       mode: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES] },
       actor: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_ACTORS] },
       action: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTIONS] },
-      object: { type: 'string' },
+      action_object_id: { type: ['string', 'null'] },
     },
   };
   return {
@@ -607,19 +607,19 @@ function providerObjectSchema(properties) {
 function semanticEventProviderOutputSchema() {
   const target = providerObjectSchema({
     kind: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS] },
-    subject: { type: 'string' },
-    public_identifiers: { type: 'array', items: { type: 'string' } },
+    target_id: { type: 'string' },
+    public_identifier_ids: { type: 'array', items: { type: 'string' } },
     requested_value_types: {
       type: 'array',
       items: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES] },
     },
-    required_components: { type: 'array', items: { type: 'string' } },
+    component_ids: { type: 'array', items: { type: 'string' } },
   });
   const action = providerObjectSchema({
     mode: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES] },
     actor: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_ACTORS] },
     action: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTIONS] },
-    object: { type: 'string' },
+    action_object_id: { type: ['string', 'null'] },
   });
   return providerObjectSchema({
     schema: { type: 'string', enum: [ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA] },
@@ -1377,16 +1377,16 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
           speech_act: ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.join('|'),
           target: {
             kind: ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS.join('|'),
-            subject: 'public object or relation, separate from requested value types',
-            public_identifiers: ['exact public identifier'],
+            target_id: 'exact stable public target ID from the public context',
+            public_identifier_ids: ['exact stable public identifier ID'],
             requested_value_types: ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES,
-            required_components: ['typed answer component'],
+            component_ids: ['typed answer component ID'],
           },
           requested_or_proposed_action: {
             mode: ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES.join('|'),
             actor: ADAPTIVE_WARRANT_SEMANTIC_ACTION_ACTORS.join('|'),
             action: ADAPTIVE_WARRANT_SEMANTIC_ACTIONS.join('|'),
-            object: 'short public action object',
+            action_object_id: 'stable public target ID or null',
           },
           evidence_span: { text: 'exact current-turn substring', start: 0, end: 1 },
           confidence: ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE.join('|'),
@@ -1505,7 +1505,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
       : null,
     includeSemanticEvents ? `speech_act must be one of: ${ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.join(', ')}.` : null,
     includeSemanticEvents
-      ? 'Separate target.subject (the public object or relation) from target.requested_value_types (the fields requested about it). Names, times, dates, weights, sounds, materials, and match status are value types when the learner asks for those values; they are not automatically target subjects.'
+      ? 'Use only stable public IDs already printed in the public context. Separate target.target_id (the public object or relation) from target.requested_value_types (the fields requested about it). Names, times, dates, weights, sounds, materials, and match status are value types when the learner asks for those values; they are not automatically targets.'
       : null,
     includeSemanticEvents
       ? 'Use requested mode with actor=tutor for a request that the tutor supply a public result; use proposed mode with actor=learner for a learner-proposed public test. A request that the tutor choose the next step is tutor_selection_request plus select_next_step and may also carry a separate low_agency_deferral event.'

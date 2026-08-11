@@ -168,26 +168,36 @@ function publicTarget(surface) {
 function semanticPublicTarget(target) {
   if (!target) return null;
   const kind = String(target.kind || 'public_exhibit_result');
-  const subjectSurface = [target.subject, ...(target.public_identifiers || [])].filter(Boolean).join(' ');
-  const publicTerms = contentTerms(subjectSurface).slice(0, 16);
+  const targetId = String(target.target_id || '').trim();
+  const publicIdentifierIds = [...new Set((target.public_identifier_ids || []).map(String))].sort();
+  const publicTerms = contentTerms([targetId, ...publicIdentifierIds].join(' '))
+    .filter(
+      (term) =>
+        !term.startsWith('target-') &&
+        !term.startsWith('public-id-') &&
+        !['target', 'public', 'id'].includes(term),
+    )
+    .slice(0, 16);
   const subjectTerms = targetSubjectTerms(publicTerms);
   const valueComponents = (target.requested_value_types || []).map((valueType) => ({
     id: `requested_${String(valueType)}`,
     terms: [String(valueType)],
     value_type: String(valueType),
   }));
-  const declaredComponents = (target.required_components || []).map((component) => ({
+  const declaredComponents = (target.component_ids || []).map((component) => ({
     id: String(component),
     terms: [],
   }));
   return {
     kind,
-    signature: `${kind}:${subjectTerms.slice(0, 4).sort().join('|') || 'generic'}`,
+    signature: `${kind}:${targetId}`,
+    target_id: targetId,
+    public_identifier_ids: publicIdentifierIds,
     public_terms: publicTerms,
     subject_terms: subjectTerms,
     requested_value_types: [...new Set((target.requested_value_types || []).map(String))],
     required_components: mergeRequiredComponents(valueComponents, declaredComponents),
-    source_surface: String(target.subject || ''),
+    source_surface: targetId,
     semantic_target: clone(target),
   };
 }

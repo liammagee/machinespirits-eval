@@ -8,12 +8,14 @@ import {
 } from './adaptiveWarrantSemanticEvents.js';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_ANNOTATION_RESPONSE_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-annotation-response.v1';
+  'machinespirits.adaptation-refinement.semantic-event-annotation-response.v2';
 export const ADAPTIVE_WARRANT_SEMANTIC_CONSENSUS_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-consensus.v1';
-export const ADAPTIVE_WARRANT_SEMANTIC_SCORE_SCHEMA = 'machinespirits.adaptation-refinement.semantic-event-score.v1';
+  'machinespirits.adaptation-refinement.semantic-event-consensus.v2';
+export const ADAPTIVE_WARRANT_SEMANTIC_SCORE_SCHEMA = 'machinespirits.adaptation-refinement.semantic-event-score.v2';
 export const ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-annotation-batch-response.v1';
+  'machinespirits.adaptation-refinement.semantic-event-annotation-batch-response.v2';
+export const ADAPTIVE_WARRANT_SEMANTIC_READER_CATALOG_SCHEMA =
+  'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v2';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_GATE = Object.freeze({
   minimum_reader_agreement: 0.8,
@@ -52,23 +54,33 @@ function closedSchema(properties) {
   return { type: 'object', additionalProperties: false, required: Object.keys(properties), properties };
 }
 
-function semanticReaderEventSchema() {
+function semanticReaderEventSchema(semanticCatalog) {
+  validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
+  const id = { type: 'string', pattern: '^[a-z0-9][a-z0-9_-]{0,95}$' };
   const target = closedSchema({
     kind: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS] },
-    subject: { type: 'string' },
-    public_identifiers: { type: 'array', maxItems: 6, items: { type: 'string' } },
+    target_id: id,
+    public_identifier_ids: {
+      type: 'array',
+      maxItems: 6,
+      items: id,
+    },
     requested_value_types: {
       type: 'array',
       maxItems: 4,
       items: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES] },
     },
-    required_components: { type: 'array', maxItems: 4, items: { type: 'string' } },
+    component_ids: {
+      type: 'array',
+      maxItems: 4,
+      items: id,
+    },
   });
   const action = closedSchema({
     mode: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES] },
     actor: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_ACTORS] },
     action: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTIONS] },
-    object: { type: 'string' },
+    action_object_id: { ...id, type: ['string', 'null'] },
   });
   return closedSchema({
     speech_act: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS] },
@@ -86,13 +98,15 @@ export function buildAdaptiveWarrantSemanticBatchOutputSchema({
   studyId,
   corpusSha256,
   requiredSampleIds,
+  semanticCatalog,
 } = {}) {
+  validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
   const caseSchema = closedSchema({
     genuinely_ambiguous: { type: 'boolean' },
-    events: { type: 'array', maxItems: 4, items: semanticReaderEventSchema() },
+    events: { type: 'array', maxItems: 4, items: semanticReaderEventSchema(semanticCatalog) },
     note: { type: 'string', minLength: 8 },
   });
-  return closedSchema({
+  const root = closedSchema({
     schema: { type: 'string', enum: [ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA] },
     reader_id: { type: 'string', enum: [readerId] },
     batch_id: { type: 'string', enum: [batchId] },
@@ -102,9 +116,10 @@ export function buildAdaptiveWarrantSemanticBatchOutputSchema({
       type: 'object',
       additionalProperties: false,
       required: [...requiredSampleIds],
-      properties: Object.fromEntries(requiredSampleIds.map((sampleId) => [sampleId, caseSchema])),
+      properties: Object.fromEntries(requiredSampleIds.map((sampleId) => [sampleId, { $ref: '#/$defs/case' }])),
     },
   });
+  return { ...root, $defs: { case: caseSchema } };
 }
 
 function exactFields(value, expected, label) {
@@ -123,6 +138,40 @@ function normalizedText(value) {
     .toLocaleLowerCase();
 }
 
+function catalogEntryIds(catalog, field, idField) {
+  const rows = catalog?.[field];
+  if (!Array.isArray(rows) || !rows.length) throw new Error(`semantic reader catalog ${field} must be non-empty`);
+  const ids = rows.map((row, index) => {
+    exactFields(row, [idField, 'display_label'], `semantic reader catalog ${field}[${index}]`);
+    if (typeof row[idField] !== 'string' || !row[idField].trim()) {
+      throw new Error(`semantic reader catalog ${field}[${index}].${idField} is required`);
+    }
+    if (typeof row.display_label !== 'string' || !row.display_label.trim()) {
+      throw new Error(`semantic reader catalog ${field}[${index}].display_label is required`);
+    }
+    return row[idField];
+  });
+  if (new Set(ids).size !== ids.length) throw new Error(`semantic reader catalog ${field} IDs must be unique`);
+  return ids;
+}
+
+export function validateAdaptiveWarrantSemanticReaderCatalog(catalog) {
+  exactFields(
+    catalog,
+    ['schema', 'targets', 'public_identifiers', 'components', 'action_objects'],
+    'semantic reader catalog',
+  );
+  if (catalog.schema !== ADAPTIVE_WARRANT_SEMANTIC_READER_CATALOG_SCHEMA) {
+    throw new Error('semantic reader catalog schema mismatch');
+  }
+  return {
+    target_ids: catalogEntryIds(catalog, 'targets', 'target_id'),
+    public_identifier_ids: catalogEntryIds(catalog, 'public_identifiers', 'public_identifier_id'),
+    component_ids: catalogEntryIds(catalog, 'components', 'component_id'),
+    action_object_ids: catalogEntryIds(catalog, 'action_objects', 'action_object_id'),
+  };
+}
+
 function exactStringSet(value, allowed, label, maximum = Infinity) {
   if (!Array.isArray(value) || value.length > maximum) throw new Error(`${label} must be a bounded array`);
   if (value.some((entry) => typeof entry !== 'string' || !entry.trim() || !allowed.includes(entry))) {
@@ -136,15 +185,15 @@ function learnerTextForCase(row) {
   return String(row?.current_learner_turn?.learner ?? row?.learner_text ?? row?.learner ?? '');
 }
 
-function validateTarget(target, label) {
+function validateTarget(target, label, catalogIds) {
   if (target === null) return null;
-  exactFields(target, ['kind', 'subject', 'public_identifiers', 'requested_value_types', 'required_components'], label);
+  exactFields(target, ['kind', 'target_id', 'public_identifier_ids', 'requested_value_types', 'component_ids'], label);
   if (!ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS.includes(target.kind)) throw new Error(`${label}.kind is invalid`);
-  if (typeof target.subject !== 'string' || !target.subject.trim()) throw new Error(`${label}.subject is required`);
+  if (!catalogIds.target_ids.includes(target.target_id)) throw new Error(`${label}.target_id is outside the catalog`);
   const publicIdentifiers = exactStringSet(
-    target.public_identifiers,
-    target.public_identifiers,
-    `${label}.public_identifiers`,
+    target.public_identifier_ids,
+    catalogIds.public_identifier_ids,
+    `${label}.public_identifier_ids`,
     6,
   );
   const requestedValueTypes = exactStringSet(
@@ -154,34 +203,36 @@ function validateTarget(target, label) {
     4,
   );
   const requiredComponents = exactStringSet(
-    target.required_components,
-    target.required_components,
-    `${label}.required_components`,
+    target.component_ids,
+    catalogIds.component_ids,
+    `${label}.component_ids`,
     4,
   );
   return {
     kind: target.kind,
-    subject: normalizedText(target.subject),
-    public_identifiers: publicIdentifiers.map(normalizedText).sort(),
+    target_id: target.target_id,
+    public_identifier_ids: publicIdentifiers.sort(),
     requested_value_types: requestedValueTypes.sort(),
-    required_components: requiredComponents.map(normalizedText).sort(),
+    component_ids: requiredComponents.sort(),
   };
 }
 
-function validateAction(action, label) {
+function validateAction(action, label, catalogIds) {
   if (action === null) return null;
-  exactFields(action, ['mode', 'actor', 'action', 'object'], label);
+  exactFields(action, ['mode', 'actor', 'action', 'action_object_id'], label);
   if (!ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES.includes(action.mode)) throw new Error(`${label}.mode is invalid`);
   if (!ADAPTIVE_WARRANT_SEMANTIC_ACTION_ACTORS.includes(action.actor)) throw new Error(`${label}.actor is invalid`);
   if (!ADAPTIVE_WARRANT_SEMANTIC_ACTIONS.includes(action.action)) throw new Error(`${label}.action is invalid`);
-  if (typeof action.object !== 'string') throw new Error(`${label}.object must be a string`);
+  if (action.action_object_id !== null && !catalogIds.action_object_ids.includes(action.action_object_id)) {
+    throw new Error(`${label}.action_object_id is outside the catalog`);
+  }
   if (action.mode === 'none' && (action.actor !== 'none' || action.action !== 'none')) {
     throw new Error(`${label} has an illegal none combination`);
   }
   if (action.mode !== 'none' && (action.actor === 'none' || action.action === 'none')) {
     throw new Error(`${label} has an incomplete action combination`);
   }
-  return { ...action, object: normalizedText(action.object) };
+  return { ...action };
 }
 
 function validateSpan(span, learnerText, label) {
@@ -200,17 +251,18 @@ function validateSpan(span, learnerText, label) {
   return { text: span.text, start: span.start, end: span.end };
 }
 
-function validateReaderEvent(event, learnerText, label) {
+function validateReaderEvent(event, learnerText, label, catalogIds) {
   exactFields(event, EVENT_FIELDS, label);
   if (!ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.includes(event.speech_act)) {
     throw new Error(`${label}.speech_act is invalid`);
   }
   return {
     speech_act: event.speech_act,
-    target: validateTarget(event.target, `${label}.target`),
+    target: validateTarget(event.target, `${label}.target`, catalogIds),
     requested_or_proposed_action: validateAction(
       event.requested_or_proposed_action,
       `${label}.requested_or_proposed_action`,
+      catalogIds,
     ),
     evidence_span: validateSpan(event.evidence_span, learnerText, `${label}.evidence_span`),
   };
@@ -228,6 +280,7 @@ export function validateAdaptiveWarrantSemanticAnnotationResponse({ response, co
     throw new Error('semantic annotation response requires independent reader identity');
   }
   const corpusById = new Map((corpus?.cases || []).map((row) => [row.sample_id, row]));
+  const catalogIds = validateAdaptiveWarrantSemanticReaderCatalog(corpus?.semantic_annotation_catalog);
   if (corpusById.size !== corpus?.cases?.length || response.cases?.length !== corpusById.size) {
     throw new Error('semantic annotation response case count mismatch');
   }
@@ -252,7 +305,7 @@ export function validateAdaptiveWarrantSemanticAnnotationResponse({ response, co
       sample_id: row.sample_id,
       genuinely_ambiguous: row.genuinely_ambiguous,
       events: row.events.map((event, eventIndex) =>
-        validateReaderEvent(event, learnerText, `semantic annotation ${row.sample_id} event ${eventIndex}`),
+        validateReaderEvent(event, learnerText, `semantic annotation ${row.sample_id} event ${eventIndex}`, catalogIds),
       ),
       note: row.note.trim(),
     };
@@ -261,7 +314,7 @@ export function validateAdaptiveWarrantSemanticAnnotationResponse({ response, co
   return { ok: true, cases };
 }
 
-function fieldEvent(event) {
+export function adaptiveWarrantSemanticConsensusIdentity(event) {
   return {
     speech_act: event.speech_act,
     target: event.target,
@@ -270,11 +323,10 @@ function fieldEvent(event) {
 }
 
 function fieldsAgree(left, right) {
-  return JSON.stringify(fieldEvent(left)) === JSON.stringify(fieldEvent(right));
-}
-
-function structureAgree(left, right) {
-  return JSON.stringify(left) === JSON.stringify(right);
+  return (
+    JSON.stringify(adaptiveWarrantSemanticConsensusIdentity(left)) ===
+    JSON.stringify(adaptiveWarrantSemanticConsensusIdentity(right))
+  );
 }
 
 export function buildAdaptiveWarrantSemanticConsensus({ readerA, readerB, corpus, corpusSha256 } = {}) {
@@ -293,7 +345,7 @@ export function buildAdaptiveWarrantSemanticConsensus({ readerA, readerB, corpus
     return {
       sample_id: left.sample_id,
       raw_structure_agreement:
-        left.genuinely_ambiguous === right.genuinely_ambiguous && structureAgree(left.events, right.events),
+        left.genuinely_ambiguous === right.genuinely_ambiguous && eventFieldsAgree,
       event_fields_agreement: eventFieldsAgree,
       span_exact_agreement:
         left.events.length === right.events.length &&
@@ -328,7 +380,7 @@ export function summarizeAdaptiveWarrantSemanticDiagnosticSupport(consensus) {
     proposed_tests: hard.filter((row) => hasAct(row, 'learner_proposed_test')).length,
     target_value_partitions: hard.filter((row) =>
       (row.events || []).some(
-        (event) => event.target?.subject && (event.target.requested_value_types || []).length > 0,
+        (event) => event.target?.target_id && (event.target.requested_value_types || []).length > 0,
       ),
     ).length,
     record_entry_requests: hard.filter((row) => hasAct(row, 'learner_record_entry_request')).length,
@@ -365,14 +417,14 @@ function predictionEvents(prediction) {
       target: event.target
         ? {
             kind: event.target.kind,
-            subject: normalizedText(event.target.subject),
-            public_identifiers: (event.target.public_identifiers || []).map(normalizedText).sort(),
+            target_id: event.target.target_id,
+            public_identifier_ids: [...(event.target.public_identifier_ids || [])].sort(),
             requested_value_types: [...(event.target.requested_value_types || [])].sort(),
-            required_components: (event.target.required_components || []).map(normalizedText).sort(),
+            component_ids: [...(event.target.component_ids || [])].sort(),
           }
         : null,
       requested_or_proposed_action: event.requested_or_proposed_action
-        ? { ...event.requested_or_proposed_action, object: normalizedText(event.requested_or_proposed_action.object) }
+        ? { ...event.requested_or_proposed_action }
         : null,
       evidence_span: event.evidence_span,
     }));
@@ -500,7 +552,7 @@ export function scoreAdaptiveWarrantSemanticExtraction({ consensus, predictionsB
     subject_value_partition_accuracy: divide(
       targetKindRows.filter(
         (row) =>
-          row.predicted?.target?.subject === row.gold.target.subject &&
+          row.predicted?.target?.target_id === row.gold.target.target_id &&
           JSON.stringify(row.predicted?.target?.requested_value_types || []) ===
             JSON.stringify(row.gold.target.requested_value_types),
       ).length,
@@ -509,8 +561,8 @@ export function scoreAdaptiveWarrantSemanticExtraction({ consensus, predictionsB
     requested_component_exact_set_accuracy: divide(
       componentRows.filter(
         (row) =>
-          JSON.stringify(row.predicted?.target?.required_components || []) ===
-          JSON.stringify(row.gold.target.required_components),
+          JSON.stringify(row.predicted?.target?.component_ids || []) ===
+          JSON.stringify(row.gold.target.component_ids),
       ).length,
       componentRows.length,
     ),

@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-extraction.v1';
+  'machinespirits.adaptation-refinement.semantic-event-extraction.v2';
 export const ADAPTIVE_WARRANT_SEMANTIC_VALIDATION_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-event-validation.v1';
 export const ADAPTIVE_WARRANT_SEMANTIC_SIGNAL_SCHEMA =
@@ -144,10 +144,10 @@ function normalizedTarget(target, issues, eventIndex) {
     return null;
   }
   enumIssue(target.kind, ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS, `${path}.kind`, issues);
-  if (typeof target.subject !== 'string' || !target.subject.trim()) issues.push(`${path}.subject:required`);
+  if (typeof target.target_id !== 'string' || !target.target_id.trim()) issues.push(`${path}.target_id:required`);
   arrayLimitIssues(
-    target.public_identifiers,
-    `${path}.public_identifiers`,
+    target.public_identifier_ids,
+    `${path}.public_identifier_ids`,
     ADAPTIVE_WARRANT_SEMANTIC_EVENT_LIMITS.maxPublicIdentifiers,
     issues,
   );
@@ -158,8 +158,8 @@ function normalizedTarget(target, issues, eventIndex) {
     issues,
   );
   arrayLimitIssues(
-    target.required_components,
-    `${path}.required_components`,
+    target.component_ids,
+    `${path}.component_ids`,
     ADAPTIVE_WARRANT_SEMANTIC_EVENT_LIMITS.maxRequiredComponents,
     issues,
   );
@@ -168,10 +168,10 @@ function normalizedTarget(target, issues, eventIndex) {
   }
   return {
     kind: target.kind,
-    subject: String(target.subject || '').trim() || null,
-    public_identifiers: [...new Set((target.public_identifiers || []).map((value) => String(value).trim()))],
-    requested_value_types: [...new Set((target.requested_value_types || []).map((value) => String(value).trim()))],
-    required_components: [...new Set((target.required_components || []).map((value) => String(value).trim()))],
+    target_id: String(target.target_id || '').trim() || null,
+    public_identifier_ids: [...new Set((target.public_identifier_ids || []).map((value) => String(value).trim()))].sort(),
+    requested_value_types: [...new Set((target.requested_value_types || []).map((value) => String(value).trim()))].sort(),
+    component_ids: [...new Set((target.component_ids || []).map((value) => String(value).trim()))].sort(),
   };
 }
 
@@ -185,7 +185,9 @@ function normalizedAction(action, issues, eventIndex) {
   enumIssue(action.mode, ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES, `${path}.mode`, issues);
   enumIssue(action.actor, ADAPTIVE_WARRANT_SEMANTIC_ACTION_ACTORS, `${path}.actor`, issues);
   enumIssue(action.action, ADAPTIVE_WARRANT_SEMANTIC_ACTIONS, `${path}.action`, issues);
-  if (typeof action.object !== 'string') issues.push(`${path}.object:invalid_string`);
+  if (action.action_object_id !== null && (typeof action.action_object_id !== 'string' || !action.action_object_id.trim())) {
+    issues.push(`${path}.action_object_id:invalid`);
+  }
   if (action.mode === 'none' && (action.actor !== 'none' || action.action !== 'none')) {
     issues.push(`${path}:illegal_none_combination`);
   }
@@ -196,7 +198,7 @@ function normalizedAction(action, issues, eventIndex) {
     mode: action.mode,
     actor: action.actor,
     action: action.action,
-    object: String(action.object || '').trim(),
+    action_object_id: action.action_object_id === null ? null : String(action.action_object_id || '').trim(),
   };
 }
 
@@ -205,13 +207,7 @@ function spansOverlap(left, right) {
 }
 
 function publicIdentifierPresent(identifier, publicText) {
-  return String(publicText || '')
-    .toLocaleLowerCase()
-    .includes(
-      String(identifier || '')
-        .trim()
-        .toLocaleLowerCase(),
-    );
+  return String(publicText || '').includes(String(identifier || '').trim());
 }
 
 /**
@@ -277,9 +273,9 @@ export function validateAdaptiveWarrantSemanticExtraction(
     if (text.length > ADAPTIVE_WARRANT_SEMANTIC_EVENT_LIMITS.maxEvidenceSpanChars) {
       issues.push(`events[${eventIndex}].evidence_span:too_many_chars`);
     }
-    for (const identifier of target?.public_identifiers || []) {
+    for (const identifier of [target?.target_id, ...(target?.public_identifier_ids || [])].filter(Boolean)) {
       if (!publicIdentifierPresent(identifier, combinedPublicText)) {
-        issues.push(`events[${eventIndex}].target.public_identifiers:not_public`);
+        issues.push(`events[${eventIndex}].target.identifiers:not_public`);
       }
     }
     const uncertainty = [...new Set((event.uncertainty || []).map(String))];

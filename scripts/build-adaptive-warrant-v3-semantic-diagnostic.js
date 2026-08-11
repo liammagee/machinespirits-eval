@@ -6,6 +6,7 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 
 import { getAdaptiveWarrantActionContract } from '../services/adaptiveWarrantActionContracts.js';
+import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
 import {
   ADAPTIVE_WARRANT_ANNOTATION_SCHEMA,
   adaptiveWarrantStudySourceFingerprint,
@@ -42,6 +43,7 @@ export const ADAPTIVE_WARRANT_V3_SEMANTIC_DIAGNOSTIC_MINIMA = Object.freeze({
 
 const TARGETS = Object.freeze({
   quay: target(
+    'target-quay-nine-visitor-ledger',
     'record_entry',
     'quay-nine visitor ledger',
     ['quay-nine'],
@@ -49,6 +51,7 @@ const TARGETS = Object.freeze({
     ['visitor_name', 'clock_time'],
   ),
   lamp: target(
+    'target-lamp-room-sign-in-book',
     'record_entry',
     'lamp-room sign-in book',
     ['lamp-room'],
@@ -56,6 +59,7 @@ const TARGETS = Object.freeze({
     ['sign_in_date', 'visitor_name'],
   ),
   token: target(
+    'target-token-k17-scale-record',
     'weight_or_ring_result',
     'archive scale record for token K-17',
     ['K-17'],
@@ -63,6 +67,7 @@ const TARGETS = Object.freeze({
     ['measured_weight'],
   ),
   sample: target(
+    'target-sample-c4-public-assay',
     'material_or_assay_result',
     'public assay for sample C-4',
     ['C-4'],
@@ -70,15 +75,31 @@ const TARGETS = Object.freeze({
     ['assayed_material'],
   ),
   seal: target(
+    'target-imprint-q-mould-three-comparison',
     'comparison_result',
     'seal imprint Q comparison',
     ['imprint Q', 'mould three'],
     ['match_status'],
     ['match_status'],
   ),
-  ring: target('weight_or_ring_result', 'bell-test record for ring H', ['ring H'], ['sound'], ['recorded_sound']),
-  ferry: target('record_entry', 'ferry-seven movement log', ['ferry-seven'], ['time'], ['movement_time']),
+  ring: target(
+    'target-ring-h-bell-test-record',
+    'weight_or_ring_result',
+    'bell-test record for ring H',
+    ['ring H'],
+    ['sound'],
+    ['recorded_sound'],
+  ),
+  ferry: target(
+    'target-ferry-seven-movement-log',
+    'record_entry',
+    'ferry-seven movement log',
+    ['ferry-seven'],
+    ['time'],
+    ['movement_time'],
+  ),
   latch: target(
+    'target-blue-door-latch-photograph',
     'mark_or_tool_result',
     'blue-door latch photograph',
     ['blue-door'],
@@ -87,13 +108,23 @@ const TARGETS = Object.freeze({
   ),
 });
 
-function target(kind, subject, publicIdentifiers, requestedValueTypes, requiredComponents) {
+function stableId(prefix, label) {
+  return `${prefix}-${String(label)
+    .normalize('NFKD')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/gu, '-')
+    .replace(/^-|-$/gu, '')}`;
+}
+
+function target(targetId, kind, displayLabel, publicIdentifiers, requestedValueTypes, requiredComponents) {
   return {
     kind,
-    subject,
-    public_identifiers: publicIdentifiers,
+    target_id: targetId,
+    display_label: displayLabel,
+    public_identifier_ids: publicIdentifiers.map((label) => stableId('public-id', label)),
+    public_identifier_labels: publicIdentifiers,
     requested_value_types: requestedValueTypes,
-    required_components: requiredComponents,
+    component_ids: requiredComponents,
   };
 }
 
@@ -115,16 +146,39 @@ function writeJson(filePath, value) {
 }
 
 function action(mode, actor, actionName, object) {
-  return { mode, actor, action: actionName, object };
+  return {
+    mode,
+    actor,
+    action: actionName,
+    action_object_id: stableId('action-object', object),
+    action_object_display_label: object,
+  };
 }
 
-function event(speechAct, text, { target: eventTarget = null, action: eventAction = null, span = text } = {}) {
+function eventTarget(targetValue) {
+  if (!targetValue) return null;
+  return {
+    kind: targetValue.kind,
+    target_id: targetValue.target_id,
+    public_identifier_ids: [...targetValue.public_identifier_ids],
+    requested_value_types: [...targetValue.requested_value_types],
+    component_ids: [...targetValue.component_ids],
+  };
+}
+
+function eventAction(actionValue) {
+  if (!actionValue) return null;
+  const { action_object_display_label: displayLabel, ...typed } = actionValue;
+  return { ...typed, action_object_display_label: displayLabel };
+}
+
+function event(speechAct, text, { target: targetValue = null, action: actionValue = null, span = text } = {}) {
   const start = text.indexOf(span);
   if (start < 0) throw new Error(`semantic diagnostic span is not literal: ${span}`);
   return {
     speech_act: speechAct,
-    target: eventTarget,
-    requested_or_proposed_action: eventAction,
+    target: eventTarget(targetValue),
+    requested_or_proposed_action: eventAction(actionValue),
     evidence_span: { text: span, start, end: start + span.length },
   };
 }
@@ -160,7 +214,7 @@ function proposal(text, eventTarget, object, extra = {}) {
 function diagnosticSpecs() {
   const specs = [
     request(
-      'What visitor and time are written in the public quay-nine ledger?',
+      'Please give me the visitor name and clock time listed under quay-nine.',
       TARGETS.quay,
       'quay-nine visitor and time',
       {
@@ -174,7 +228,7 @@ function diagnosticSpecs() {
         support: ['obligation_persistence', 'divergence_interactional_nonaligned'],
       },
     ),
-    request('Read the lamp-room sign-in date and visitor back to me.', TARGETS.lamp, 'lamp-room sign-in values', {
+    request('Tell me both the date and signer shown in the lamp-room book.', TARGETS.lamp, 'lamp-room sign-in values', {
       transcript: [
         {
           turn: 1,
@@ -184,15 +238,15 @@ function diagnosticSpecs() {
       ],
       support: ['obligation_persistence', 'divergence_interactional_nonaligned'],
     }),
-    request('What weight does the archive scale assign to token K-17?', TARGETS.token, 'K-17 weight'),
-    request('Report the material named by the public C-4 assay.', TARGETS.sample, 'C-4 material'),
+    request('Which weight is recorded for archive token K-17?', TARGETS.token, 'K-17 weight'),
+    request('Name the material the C-4 public assay identifies.', TARGETS.sample, 'C-4 material'),
     request(
-      'According to the comparison, is imprint Q a match for mould three?',
+      'Does the public seal comparison mark imprint Q as matching mould three?',
       TARGETS.seal,
       'imprint Q match status',
     ),
-    request('What sound is entered for ring H in the bell-test record?', TARGETS.ring, 'ring H recorded sound'),
-    proposal("Next I will review ferry-seven's movement entry myself.", TARGETS.ferry, 'inspect ferry-seven log', {
+    request('Read out the recorded tone for ring H from the bell-test sheet.', TARGETS.ring, 'ring H recorded sound'),
+    proposal("I’ll inspect ferry-seven’s logged movement time myself next.", TARGETS.ferry, 'inspect ferry-seven log', {
       transcript: [
         {
           turn: 1,
@@ -203,7 +257,7 @@ function diagnosticSpecs() {
       support: ['obligation_resolution'],
     }),
     proposal(
-      'I will test the blue-door photograph against the known tool marks.',
+      'I’ll compare the blue-door latch image with the reference tool scratches.',
       TARGETS.latch,
       'compare blue-door latch marks',
       {
@@ -218,18 +272,18 @@ function diagnosticSpecs() {
       },
     ),
     proposal(
-      "Before concluding, I will trace the order of entries in quay-nine's ledger.",
+      'My next test is to reconstruct the sequence in the quay-nine visitor log.',
       TARGETS.quay,
       'inspect quay-nine sequence',
     ),
-    proposal('My proposed check is to weigh K-17 against the reference.', TARGETS.token, 'weigh K-17'),
-    proposal('I will put imprint Q beside mould three for the next comparison.', TARGETS.seal, 'compare imprint Q'),
-    proposal("I will compare ring H's tone with the published bell-test entry.", TARGETS.ring, 'compare ring H tone'),
+    proposal('I propose weighing token K-17 against the archive reference.', TARGETS.token, 'weigh K-17'),
+    proposal('I’ll set imprint Q alongside mould three and compare them.', TARGETS.seal, 'compare imprint Q'),
+    proposal('I’ll check ring H’s sound against the published bell entry.', TARGETS.ring, 'compare ring H tone'),
   ];
 
   for (const [text, eventTarget, object] of [
-    ['Add a bounded note: quay-nine establishes access but not removal.', TARGETS.quay, 'record access not removal'],
-    ['Enter the public C-4 tin finding, with its source still open.', TARGETS.sample, 'record bounded assay claim'],
+    ['Record only this limit: quay-nine proves entry, not removal.', TARGETS.quay, 'record access not removal'],
+    ['Let’s enter the sourced C-4 tin result without closing the source question.', TARGETS.sample, 'record bounded assay claim'],
   ]) {
     specs.push({
       text,
@@ -245,8 +299,8 @@ function diagnosticSpecs() {
   }
 
   for (const text of [
-    'Pick the first public exhibit for me to inspect.',
-    'I cannot choose; tell me which check to do next.',
+    'Choose which public exhibit I should examine first.',
+    'I’m unable to pick the next test; select one for me.',
   ]) {
     specs.push({
       text,
@@ -260,72 +314,72 @@ function diagnosticSpecs() {
     });
   }
 
-  const compoundA = "I will read ferry-seven's log myself; after that, state its recorded time.";
+  const compoundA = 'I’ll inspect the ferry-seven log myself; then give me its recorded time.';
   specs.push({
     text: compoundA,
     events: [
       event('learner_proposed_test', compoundA, {
         target: TARGETS.ferry,
         action: action('proposed', 'learner', 'perform_public_test', 'inspect ferry-seven log'),
-        span: "I will read ferry-seven's log myself",
+        span: 'I’ll inspect the ferry-seven log myself',
       }),
       event('tutor_directed_public_result_request', compoundA, {
         target: TARGETS.ferry,
         action: action('requested', 'tutor', 'supply_public_result', 'ferry-seven recorded time'),
-        span: 'state its recorded time',
+        span: 'give me its recorded time',
       }),
     ],
     support: ['result_request', 'proposed_test', 'target_value_partition', 'compound_act', 'inquiry_incomplete'],
   });
-  const compoundB = 'I will compare imprint Q; you should then tell me whether mould three matches it.';
+  const compoundB = 'I’ll compare imprint Q myself; afterward, report whether it matches mould three.';
   specs.push({
     text: compoundB,
     events: [
       event('learner_proposed_test', compoundB, {
         target: TARGETS.seal,
         action: action('proposed', 'learner', 'perform_public_test', 'compare imprint Q'),
-        span: 'I will compare imprint Q',
+        span: 'I’ll compare imprint Q myself',
       }),
       event('tutor_directed_public_result_request', compoundB, {
         target: TARGETS.seal,
         action: action('requested', 'tutor', 'supply_public_result', 'imprint Q match status'),
-        span: 'you should then tell me whether mould three matches it',
+        span: 'report whether it matches mould three',
       }),
     ],
     support: ['result_request', 'proposed_test', 'target_value_partition', 'compound_act', 'inquiry_incomplete'],
   });
 
-  const analytic = 'The sign-in proves someone was present, not that they moved the lamp; can we record only that?';
+  const analytic = 'The sign-in establishes presence but not lamp movement; may we record just that limit?';
   specs.push({
     text: analytic,
     events: [
       event('analytic_contribution', analytic, {
-        span: 'The sign-in proves someone was present, not that they moved the lamp',
+        span: 'The sign-in establishes presence but not lamp movement',
       }),
       event('learner_record_entry_request', analytic, {
         target: TARGETS.lamp,
         action: action('requested', 'joint', 'record_public_claim', 'record evidential limit'),
-        span: 'can we record only that',
+        span: 'may we record just that limit',
       }),
     ],
     support: ['record_entry_request', 'analytic_permission_suffix', 'inquiry_incomplete'],
   });
-  const defer = 'Select my next step, please. I would rather not decide.';
+  const defer = 'Choose the next check for me, please. I don’t want to make the choice.';
   specs.push({
     text: defer,
     events: [
       event('tutor_selection_request', defer, {
         action: action('requested', 'tutor', 'select_next_step', 'next move'),
-        span: 'Select my next step, please.',
+        span: 'Choose the next check for me, please.',
       }),
-      event('low_agency_deferral', defer, { span: 'I would rather not decide' }),
+      event('low_agency_deferral', defer, { span: 'I don’t want to make the choice' }),
     ],
     support: ['tutor_selection_request', 'low_agency_deferral', 'divergence_engagement_nonaligned'],
   });
 
   for (const [text, eventTarget] of [
-    ['What observation would separate a copied seal from the original Q imprint?', TARGETS.seal],
-    ['What public fact could tie the quay-nine visit to the later removal?', TARGETS.quay],
+    ['Which observable difference would distinguish a copied seal from imprint Q?', TARGETS.seal],
+    ['What public record would connect the quay-nine entry to the later removal?', TARGETS.quay],
   ]) {
     specs.push({
       text,
@@ -334,7 +388,7 @@ function diagnosticSpecs() {
     });
   }
 
-  const repairText = 'I do not understand why a visit does not prove removal; walk me through that distinction.';
+  const repairText = 'Explain why a logged visit still falls short of proving removal; I’m missing that step.';
   specs.push({
     text: repairText,
     events: [
@@ -344,7 +398,7 @@ function diagnosticSpecs() {
     ],
     support: ['repair_request', 'inquiry_incomplete', 'divergence_conceptual_nonaligned'],
   });
-  const stalledText = 'I am stuck and have nothing to try.';
+  const stalledText = 'I have run out of approaches and cannot suggest another check.';
   specs.push({
     text: stalledText,
     events: [event('stall', stalledText)],
@@ -472,11 +526,13 @@ Each event has speech_act, target, requested_or_proposed_action, and an exact li
 
 A result request asks the tutor to supply what a named public check, record, or comparison shows. A proposed test commits or proposes that the learner or joint inquiry perform a check; it does not create tutor result debt merely because the sentence says check, inspect, compare, test, listen, or weigh. A criterion question asks what evidence would establish a link. A record-entry request asks to write an already-public bounded claim, not discover a missing result. A tutor-selection request delegates the choice of next step and may coexist with low_agency_deferral. Analytic reasoning may coexist with a polite permission suffix; preserve both acts and do not convert the analytic clause into deference.
 
-target.subject is the public object or relation under inquiry. requested_value_types contains values sought about it: name, time, date, weight, sound, material, match_status, record_text, or other. Requested values are not subject terms. public_identifiers contain exact public identifiers. required_components names the answer components.
+target_id identifies the public object or relation under inquiry. requested_value_types contains values sought about it: name, time, date, weight, sound, material, match_status, record_text, or other. Requested values are not targets. public_identifier_ids identify exact public names and component_ids identify answer components.
 
 Action mode is requested, proposed, or none. Actor is learner, tutor, joint, unspecified, or none. Action is supply_public_result, perform_public_test, select_next_step, record_public_claim, explain_wording, withdraw_request, or none. Use null when target or action does not apply.
 
-Return only evidence_span.text: a non-empty literal substring that occurs exactly once in current_learner_turn.learner. Do not calculate offsets; the assembler derives JavaScript UTF-16 start and exclusive end offsets mechanically and records them in its audit. Mark genuinely_ambiguous only when two material readings remain plausible after applying this handbook. Give every case a short case-specific public-evidence rationale. Do not see or infer model predictions, private support tags, downstream decisions, or another reader response.
+Use exact target_id, public_identifier_ids, component_ids, and action_object_id values from the supplied corpus-wide semantic_annotation_catalog. Display labels explain the IDs but never determine identity or agreement. The catalogue standardises public identities across readers; it does not identify which entry applies to any case. Choose only entries supported by the current public text.
+
+Return only evidence_span.text: a non-empty literal substring that occurs exactly once in current_learner_turn.learner. Do not calculate offsets or order events by a private taxonomy; the assembler derives JavaScript UTF-16 start and exclusive end offsets, orders events by literal span position, and records both operations in its audit. Mark genuinely_ambiguous only when two material readings remain plausible after applying this handbook. Give every case a short case-specific public-evidence rationale. Do not see or infer model predictions, private support tags, downstream decisions, or another reader response.
 `;
 }
 
@@ -490,6 +546,36 @@ export function buildAdaptiveWarrantV3SemanticDiagnostic({ studyId } = {}) {
     return { row, spec, sampleId };
   });
   paired.sort((left, right) => left.sampleId.localeCompare(right.sampleId));
+  const allEvents = specs.flatMap((spec) => spec.events);
+  const targetRows = Object.values(TARGETS);
+  const publicIdentifierRows = targetRows.flatMap((entry) =>
+    entry.public_identifier_ids.map((publicIdentifierId, index) => ({
+      public_identifier_id: publicIdentifierId,
+      display_label: entry.public_identifier_labels[index],
+    })),
+  );
+  const semanticAnnotationCatalog = {
+    schema: 'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v2',
+    targets: targetRows
+      .map((entry) => ({ target_id: entry.target_id, display_label: entry.display_label }))
+      .toSorted((left, right) => left.target_id.localeCompare(right.target_id)),
+    public_identifiers: [...new Map(publicIdentifierRows.map((entry) => [entry.public_identifier_id, entry])).values()]
+      .toSorted((left, right) => left.public_identifier_id.localeCompare(right.public_identifier_id)),
+    components: [...new Set(targetRows.flatMap((entry) => entry.component_ids))]
+      .sort()
+      .map((componentId) => ({ component_id: componentId, display_label: componentId.replaceAll('_', ' ') })),
+    action_objects: [
+      ...new Map(
+        allEvents
+          .map((entry) => entry.requested_or_proposed_action)
+          .filter(Boolean)
+          .map((entry) => [
+            entry.action_object_id,
+            { action_object_id: entry.action_object_id, display_label: entry.action_object_display_label },
+          ]),
+      ).values(),
+    ].toSorted((left, right) => left.action_object_id.localeCompare(right.action_object_id)),
+  };
   const corpus = {
     schema: ADAPTIVE_WARRANT_ANNOTATION_SCHEMA,
     study_id: studyId,
@@ -520,6 +606,7 @@ export function buildAdaptiveWarrantV3SemanticDiagnostic({ studyId } = {}) {
       total_cases: paired.length,
       natural_prevalence_estimation_forbidden: true,
     },
+    semantic_annotation_catalog: semanticAnnotationCatalog,
     cases: paired.map(({ row }) => row),
   };
   const key = {
@@ -528,7 +615,16 @@ export function buildAdaptiveWarrantV3SemanticDiagnostic({ studyId } = {}) {
     cases: paired.map(({ sampleId, spec, row }) => ({
       sample_id: sampleId,
       source_fingerprint: annotationCaseFingerprint(row),
-      expected_semantic_events: spec.events,
+      expected_semantic_events: spec.events.map((eventRow) => ({
+        ...eventRow,
+        requested_or_proposed_action: eventRow.requested_or_proposed_action
+          ? Object.fromEntries(
+              Object.entries(eventRow.requested_or_proposed_action).filter(
+                ([field]) => field !== 'action_object_display_label',
+              ),
+            )
+          : null,
+      })),
       construction_support: spec.support,
     })),
   };
@@ -549,7 +645,11 @@ export function buildAdaptiveWarrantV3SemanticDiagnostic({ studyId } = {}) {
   return { corpus, key, supportPlan, handbook: semanticHandbook() };
 }
 
-export function writeAdaptiveWarrantV3SemanticDiagnostic({ outputDir, excludedCorpusPaths = [] } = {}) {
+export function writeAdaptiveWarrantV3SemanticDiagnostic({
+  outputDir,
+  excludedCorpusPaths = [],
+  preflightPath,
+} = {}) {
   const resolvedOutput = path.resolve(outputDir);
   if (fs.existsSync(resolvedOutput) && fs.readdirSync(resolvedOutput).length) {
     throw new Error(`V3 semantic diagnostic output is not empty: ${resolvedOutput}`);
@@ -559,6 +659,13 @@ export function writeAdaptiveWarrantV3SemanticDiagnostic({ outputDir, excludedCo
   if (provenance.gitStatus) throw new Error('V3 semantic diagnostic freeze requires a clean committed worktree');
   if (!/^[0-9a-f]{40}$/u.test(provenance.gitCommit || ''))
     throw new Error('V3 semantic diagnostic requires exact commit');
+  if (!preflightPath) throw new Error('V3 semantic diagnostic requires a passing brittleness preflight');
+  const resolvedPreflight = path.resolve(preflightPath);
+  const preflight = readJson(resolvedPreflight);
+  validateAdaptiveWarrantSemanticPreflightArtifact({
+    artifact: preflight,
+    expectedSourceCommit: provenance.gitCommit,
+  });
   fs.mkdirSync(resolvedOutput, { recursive: true });
   const studyId = `adaptive-warrant-v3-semantic-diagnostic-${provenance.gitCommit.slice(0, 12)}`;
   const built = buildAdaptiveWarrantV3SemanticDiagnostic({ studyId });
@@ -598,6 +705,13 @@ export function writeAdaptiveWarrantV3SemanticDiagnostic({ outputDir, excludedCo
     private_key: { path: keyPath, sha256: fileSha256(keyPath) },
     private_support_plan: { path: supportPath, sha256: fileSha256(supportPath) },
     zero_overlap: { excluded_corpora: excluded, verified_overlap_count: 0 },
+    brittleness_preflight: {
+      path: resolvedPreflight,
+      sha256: fileSha256(resolvedPreflight),
+      status: preflight.status,
+      source_commit: preflight.bindings.source_commit,
+      bindings_digest: sha256(JSON.stringify(preflight.bindings)),
+    },
     provenance,
   };
   const manifestPath = path.join(resolvedOutput, 'diagnostic-freeze-manifest.json');
@@ -615,13 +729,14 @@ export function writeAdaptiveWarrantV3SemanticDiagnostic({ outputDir, excludedCo
 }
 
 function usage() {
-  return 'Usage: node scripts/build-adaptive-warrant-v3-semantic-diagnostic.js --out <empty-dir> --exclude-corpus <prior-corpus> [--exclude-corpus <prior-corpus> ...]\n';
+  return 'Usage: node scripts/build-adaptive-warrant-v3-semantic-diagnostic.js --out <empty-dir> --preflight <passing-artifact> --exclude-corpus <prior-corpus> [--exclude-corpus <prior-corpus> ...]\n';
 }
 
 function main() {
   const { values } = parseArgs({
     options: {
       out: { type: 'string' },
+      preflight: { type: 'string' },
       'exclude-corpus': { type: 'string', multiple: true, default: [] },
       help: { type: 'boolean', short: 'h' },
     },
@@ -635,6 +750,7 @@ function main() {
   const result = writeAdaptiveWarrantV3SemanticDiagnostic({
     outputDir: values.out,
     excludedCorpusPaths: values['exclude-corpus'],
+    preflightPath: values.preflight,
   });
   process.stdout.write(`${result.manifestPath}\n`);
 }

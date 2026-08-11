@@ -208,27 +208,30 @@ test('validated semantic events cover the V2 result-request and value-type misse
         speechAct: 'tutor_directed_public_result_request',
         target: {
           kind: 'record_entry',
-          subject: 'shelf-two access record',
-          public_identifiers: ['shelf-two'],
+          target_id: 'target-shelf-two-access-record',
+          public_identifier_ids: ['public-id-shelf-two'],
           requested_value_types: ['name', 'time'],
-          required_components: [],
+          component_ids: [],
         },
         action: {
           mode: 'requested',
           actor: 'tutor',
           action: 'supply_public_result',
-          object: 'shelf-two access names and times',
+          action_object_id: 'target-shelf-two-access-record',
         },
       }),
     ],
-    { publicText: 'The public case includes shelf-two records.' },
+    {
+      publicText:
+        'The public case includes target-shelf-two-access-record identified by public-id-shelf-two.',
+    },
   );
   assert.equal(extraction.extraction_status, 'accepted');
   const ledger = createAdaptiveWarrantPublicObligationLedger();
   const decision = ledger.assess({ turn: 1, learnerText, semanticEventExtraction: extraction });
   assert.equal(decision.speech_act.kind, 'tutor_directed_public_result_request');
-  assert.ok(decision.blocking_obligation.target.subject_terms.includes('shelf-two'));
-  assert.ok(decision.blocking_obligation.target.subject_terms.includes('access'));
+  assert.equal(decision.blocking_obligation.target.target_id, 'target-shelf-two-access-record');
+  assert.deepEqual(decision.blocking_obligation.target.public_identifier_ids, ['public-id-shelf-two']);
   assert.equal(decision.blocking_obligation.target.subject_terms.includes('name'), false);
   assert.equal(decision.blocking_obligation.target.subject_terms.includes('time'), false);
   assert.deepEqual(decision.blocking_obligation.target.requested_value_types, ['name', 'time']);
@@ -246,6 +249,81 @@ test('validated semantic events cover the V2 result-request and value-type misse
   ]);
 });
 
+test('live semantic extraction is paraphrase-invariant and contrast-sensitive at the typed boundary', () => {
+  const publicText = 'Public target target-shelf-two-access-record has identifier public-id-shelf-two.';
+  const typedTarget = {
+    kind: 'record_entry',
+    target_id: 'target-shelf-two-access-record',
+    public_identifier_ids: ['public-id-shelf-two'],
+    requested_value_types: ['time'],
+    component_ids: ['clock_time'],
+  };
+  const requestAction = {
+    mode: 'requested',
+    actor: 'tutor',
+    action: 'supply_public_result',
+    action_object_id: 'target-shelf-two-access-record',
+  };
+  const requests = ['Show me the shelf-two access times.', 'Please report the access times for shelf two.'].map(
+    (learnerText, index) =>
+      semanticExtraction(
+        learnerText,
+        [
+          semanticEvent({
+            learnerText,
+            eventId: `request-${index + 1}`,
+            speechAct: 'tutor_directed_public_result_request',
+            target: typedTarget,
+            action: requestAction,
+          }),
+        ],
+        { publicText },
+      ),
+  );
+  const ledgers = requests.map((extraction, index) =>
+    createAdaptiveWarrantPublicObligationLedger().assess({
+      turn: 1,
+      learnerText: index === 0 ? 'Show me the shelf-two access times.' : 'Please report the access times for shelf two.',
+      semanticEventExtraction: extraction,
+    }),
+  );
+  assert.equal(requests.every((row) => row.extraction_status === 'accepted'), true);
+  assert.equal(ledgers[0].blocking_obligation.target.signature, ledgers[1].blocking_obligation.target.signature);
+  assert.equal(ledgers[0].speech_act.kind, ledgers[1].speech_act.kind);
+
+  const proposalText = 'I will inspect the shelf-two access record.';
+  const proposal = semanticExtraction(
+    proposalText,
+    [
+      semanticEvent({
+        learnerText: proposalText,
+        eventId: 'proposal-1',
+        speechAct: 'learner_proposed_test',
+        target: typedTarget,
+        action: {
+          mode: 'proposed',
+          actor: 'learner',
+          action: 'perform_public_test',
+          action_object_id: 'target-shelf-two-access-record',
+        },
+      }),
+    ],
+    { publicText },
+  );
+  const proposalDecision = createAdaptiveWarrantPublicObligationLedger().assess({
+    turn: 1,
+    learnerText: proposalText,
+    semanticEventExtraction: proposal,
+  });
+  assert.equal(proposal.extraction_status, 'accepted');
+  assert.equal(proposalDecision.speech_act.kind, 'learner_proposed_test');
+  assert.equal(proposalDecision.open_count, 0);
+  assert.notEqual(
+    compileAdaptiveWarrantSemanticSignal(proposal).primary,
+    compileAdaptiveWarrantSemanticSignal(requests[0]).primary,
+  );
+});
+
 test('event-to-engagement compilation resolves tutor selection as deference without hiding analytic multiplicity', () => {
   const learnerText = 'Would you choose the first matter for me to examine?';
   const extraction = semanticExtraction(learnerText, [
@@ -253,7 +331,12 @@ test('event-to-engagement compilation resolves tutor selection as deference with
       learnerText,
       eventId: 'selection',
       speechAct: 'tutor_selection_request',
-      action: { mode: 'requested', actor: 'tutor', action: 'select_next_step', object: 'first matter' },
+      action: {
+        mode: 'requested',
+        actor: 'tutor',
+        action: 'select_next_step',
+        action_object_id: 'action-object-first-matter',
+      },
     }),
     semanticEvent({
       learnerText,
@@ -275,10 +358,10 @@ test('conflicting semantic actors become uncertain and cannot mutate the warrant
     learnerText,
     target: {
       kind: 'record_entry',
-      subject: 'public log',
-      public_identifiers: ['public log'],
+      target_id: 'target-public-log',
+      public_identifier_ids: ['public-id-public-log'],
       requested_value_types: ['record_text'],
-      required_components: [],
+      component_ids: [],
     },
   };
   const extraction = semanticExtraction(
@@ -288,16 +371,26 @@ test('conflicting semantic actors become uncertain and cannot mutate the warrant
         ...shared,
         eventId: 'tutor-actor',
         speechAct: 'tutor_directed_public_result_request',
-        action: { mode: 'requested', actor: 'tutor', action: 'supply_public_result', object: 'public log' },
+        action: {
+          mode: 'requested',
+          actor: 'tutor',
+          action: 'supply_public_result',
+          action_object_id: 'target-public-log',
+        },
       }),
       semanticEvent({
         ...shared,
         eventId: 'learner-actor',
         speechAct: 'learner_proposed_test',
-        action: { mode: 'proposed', actor: 'learner', action: 'perform_public_test', object: 'public log' },
+        action: {
+          mode: 'proposed',
+          actor: 'learner',
+          action: 'perform_public_test',
+          action_object_id: 'target-public-log',
+        },
       }),
     ],
-    { publicText: 'The public log is available.' },
+    { publicText: 'target-public-log (public-id-public-log) is available.' },
   );
   assert.equal(extraction.extraction_status, 'uncertain');
   assert.deepEqual(

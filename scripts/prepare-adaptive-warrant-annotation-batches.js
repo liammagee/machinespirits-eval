@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { isDeepStrictEqual, parseArgs } from 'node:util';
@@ -18,6 +19,9 @@ import {
   ADAPTIVE_WARRANT_V3_SEMANTIC_DIAGNOSTIC_MINIMA,
   ADAPTIVE_WARRANT_V3_SEMANTIC_SUPPORT_PLAN_SCHEMA,
 } from './build-adaptive-warrant-v3-semantic-diagnostic.js';
+import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
+
+const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 
 export const ADAPTIVE_WARRANT_ANNOTATION_COLLECTION_MANIFEST_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-annotation-collection-manifest.v1';
@@ -364,6 +368,8 @@ export function prepareAdaptiveWarrantAnnotationBatches({
   annotationModel = 'codex.gpt-5.6-luna',
   annotationDestination = 'OpenAI Codex CLI (ChatGPT-account route)',
   maxAnnotationCalls = null,
+  preflightPath = null,
+  preflightMode = false,
 } = {}) {
   if (!CORPUS_ROLES.includes(corpusRole)) throw new Error(`corpusRole must be one of ${CORPUS_ROLES.join(', ')}`);
   if (!Number.isInteger(batchSize) || batchSize < 1) throw new Error('batchSize must be a positive integer');
@@ -382,15 +388,36 @@ export function prepareAdaptiveWarrantAnnotationBatches({
   const handbookSha256 = fileSha256(resolvedHandbookPath);
   let supportPlan = null;
   let supportCounts = null;
+  let semanticPreflight = null;
   if (corpusRole === 'targeted_challenge') {
     if (!supportPlanPath) throw new Error('targeted_challenge corpus requires a private support plan');
     const resolvedSupportPlanPath = path.resolve(supportPlanPath);
+    const supportPlanArtifact = readJson(resolvedSupportPlanPath);
     supportPlan = { path: resolvedSupportPlanPath, sha256: fileSha256(resolvedSupportPlanPath) };
     supportCounts = validateChallengeSupportPlan({
-      plan: readJson(resolvedSupportPlanPath),
+      plan: supportPlanArtifact,
       corpus,
       corpusSha256,
     });
+    if (supportPlanArtifact.schema === ADAPTIVE_WARRANT_V3_SEMANTIC_SUPPORT_PLAN_SCHEMA) {
+      if (preflightMode) {
+        if (!String(corpus.study_id).startsWith('semantic-brittleness-preflight-')) {
+          throw new Error('decision-reader preflight bypass is restricted to synthetic tests');
+        }
+        semanticPreflight = { mode: 'synthetic_internal_zero_call' };
+      } else {
+        if (!preflightPath) throw new Error('V3 decision-reader preparation requires a passing semantic preflight');
+        const status = execFileSync('git', ['status', '--porcelain'], { cwd: ROOT, encoding: 'utf8' }).trim();
+        if (status) throw new Error('V3 decision-reader preparation requires a clean committed worktree');
+        const sourceCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+        const resolvedPreflight = path.resolve(preflightPath);
+        validateAdaptiveWarrantSemanticPreflightArtifact({
+          artifact: readJson(resolvedPreflight),
+          expectedSourceCommit: sourceCommit,
+        });
+        semanticPreflight = { path: resolvedPreflight, sha256: fileSha256(resolvedPreflight), source_commit: sourceCommit };
+      }
+    }
   } else if (supportPlanPath) {
     throw new Error('natural_prevalence corpus must not carry a targeted support plan');
   }
@@ -512,6 +539,7 @@ export function prepareAdaptiveWarrantAnnotationBatches({
     corpus: { path: resolvedCorpusPath, sha256: corpusSha256, cases: sampleIds.length },
     handbook: { path: resolvedHandbookPath, sha256: handbookSha256 },
     support_plan: supportPlan ? { ...supportPlan, counts: supportCounts } : null,
+    semantic_brittleness_preflight: semanticPreflight,
     batch_size: batchSize,
     readers,
   };
@@ -558,6 +586,7 @@ export function prepareAdaptiveWarrantAnnotationBatches({
       collection_manifest_sha256: fileSha256(manifestPath),
       corpus_sha256: corpusSha256,
       handbook_sha256: handbookSha256,
+      semantic_brittleness_preflight: semanticPreflight,
       reader_packets: readers.flatMap((reader) =>
         reader.batches.map((batch) => ({
           reader_id: reader.reader_id,
@@ -837,7 +866,7 @@ export function validateAdaptiveWarrantAnnotationCorpusPair({ naturalManifestPat
 
 function usage() {
   return `Usage:
-  node scripts/prepare-adaptive-warrant-annotation-batches.js prepare --corpus <file> --handbook <file> --out <dir> --corpus-role natural_prevalence|targeted_challenge [--support-plan <file>] [--batch-size 8] [--model <ref>] [--destination <route>] [--max-annotation-calls <n>]
+  node scripts/prepare-adaptive-warrant-annotation-batches.js prepare --corpus <file> --handbook <file> --out <dir> --corpus-role natural_prevalence|targeted_challenge [--support-plan <file>] [--preflight <passing-artifact>] [--batch-size 8] [--model <ref>] [--destination <route>] [--max-annotation-calls <n>]
   node scripts/prepare-adaptive-warrant-annotation-batches.js assemble --manifest <file> --reader <id> --annotation-run-id <id> --responses <dir> --output <file>
   node scripts/prepare-adaptive-warrant-annotation-batches.js pair-check --natural-manifest <file> --challenge-manifest <file> [--output <file>]
 `;
@@ -853,6 +882,7 @@ async function main() {
       out: { type: 'string' },
       'corpus-role': { type: 'string' },
       'support-plan': { type: 'string' },
+      preflight: { type: 'string' },
       'batch-size': { type: 'string' },
       manifest: { type: 'string' },
       reader: { type: 'string' },
@@ -883,6 +913,7 @@ async function main() {
       annotationModel: values.model || 'codex.gpt-5.6-luna',
       annotationDestination: values.destination || 'OpenAI Codex CLI (ChatGPT-account route)',
       maxAnnotationCalls: values['max-annotation-calls'] ? Number(values['max-annotation-calls']) : null,
+      preflightPath: values.preflight,
     });
     process.stdout.write(`${result.manifestPath}\n${result.authorizationRequestPath}\n`);
     return;
