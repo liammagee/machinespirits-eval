@@ -1339,3 +1339,26 @@ closure recognizer, whose exact-text regression now passes. This diagnosis
 does not rescue the packet. A new clean matrix must pass all 192 delivery
 checks before the 96-case representative corpus can be frozen; no downstream
 outcome run is licensed.
+
+## Progress Update — 11 August 2026, exact-source and discourse ownership localized
+
+The clean `2dce94acc6cf400ac674f168530652d29e33c1a7` matrix passed preflight and
+sealed its first 18 reported children valid. The nineteenth child—active
+Foxtrot fast learner—exhausted response recovery on turn three, and the matrix
+was stopped immediately. The partial packet is burned.
+
+The terminal fallback had actually delivered the exact authored SOURCE once
+and accountably deferred the named public obligation. Two generic audits then
+contradicted those typed facts. The evidence scanner failed to split after a
+sentence-final closing quotation mark and attached the next host sentence to
+the source correspondence. The dramatic-release audit demanded a return
+question even though the progression contract explicitly prohibited questions
+on this answer-owned turn. An imperative “examine a trace” was also being read
+as a positive exhibit correspondence.
+
+Prospectively, quotation-aware sentence boundaries isolate exact SOURCE spans,
+imperative examination remains non-assertive, and the progression contract
+governs whether dramatic release requires a question in both live and frozen
+replay. These are bounded instrument repairs; the mechanism, sample, and gate
+remain unchanged. A fresh 24/24 matrix is still required before the 96-case
+reader stage, and no downstream outcome run is licensed.

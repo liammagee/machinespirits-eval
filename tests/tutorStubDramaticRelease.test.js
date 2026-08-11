@@ -143,6 +143,27 @@ test('one delivery of each sentence in a multi-sentence clue remains valid', () 
   assert.equal(auditTutorStubDramaticReleaseResponse({ text, frame }).ok, true);
 });
 
+test('a declarative answer-owned turn does not inherit a contradictory return question', () => {
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [
+      {
+        premise: 'p_clamp',
+        via: 'director',
+        surface: 'Fresh docking-clamp marks score the rail. The registry matches them to Moth.',
+        presentation: { mode: 'enacted_role', role: 'source of the clue' },
+      },
+    ],
+  });
+  const text =
+    'I look at the inquiry log and say, “I can confirm this: Fresh docking-clamp marks score the rail. The registry matches them to Moth.” That public-record release is next.';
+  const turnProgressionContract = { handoff_contract: { question_allowed: false } };
+  const audit = auditTutorStubDramaticReleaseResponse({ text, frame, turnProgressionContract });
+
+  assert.equal(audit.returnVisible, false);
+  assert.equal(audit.returnRequired, false);
+  assert.equal(audit.ok, true, JSON.stringify(audit.issues));
+});
+
 test('the multiplicity guard ignores a restated old clue when a different clue is due', () => {
   const frame = buildTutorStubDramaticReleaseFrame({
     dueEvidence: [

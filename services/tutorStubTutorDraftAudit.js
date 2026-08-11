@@ -128,6 +128,7 @@ export function createTutorStubTutorDraftAudit(dependencies = {}) {
             text: response.text,
             frame: dramaticReleaseFrame,
             sourceAccessibilityAudit: liveSourceActionAlignmentAudit,
+            turnProgressionContract: firstDraftContract?.progression || null,
           })
         : { ok: true, active: false, issues: [] };
       const releaseDeliveryAudit = auditTutorStubReleaseDelivery({

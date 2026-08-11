@@ -931,3 +931,19 @@ fails. The audit must preserve both facts rather than collapsing every warning
 into one false mechanism divergence. Explicit terminal language remains
 surface-checked, including the bounded “incident is closed” construction and
 its open/not-closed negatives.
+
+## 26. Typed progression owns whether a release may ask a question
+
+A dramatic clue release owns how due evidence enters the scene; it does not own
+the discourse act at the terminal boundary. When the typed progression
+contract prohibits a question because an existing public request must receive
+an answer or accountable deferral, the dramatic-release audit must not demand
+a generic “what changes?” question. Live delivery and frozen replay therefore
+pass the same progression contract into that audit.
+
+Exact authored SOURCE text is similarly insulated from adjacent host prose.
+Sentence segmentation recognizes sentence-final closing quotation marks, so a
+later phrase cannot change the evidence object used to assess a correspondence
+inside the source. These boundaries preserve independent observations: source
+delivery, dramatic realization, obligation resolution, and terminal discourse
+act can each pass or fail without one silently rewriting another.

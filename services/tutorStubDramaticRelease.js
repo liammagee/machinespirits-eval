@@ -509,7 +509,9 @@ export function auditTutorStubDramaticReleaseResponse({
   text = '',
   frame = null,
   sourceAccessibilityAudit = null,
+  turnProgressionContract = null,
 } = {}) {
+  const returnRequired = turnProgressionContract?.handoff_contract?.question_allowed !== false;
   if (!frame?.active) {
     return {
       schema: TUTOR_STUB_DRAMATIC_RELEASE_SCHEMA,
@@ -519,6 +521,7 @@ export function auditTutorStubDramaticReleaseResponse({
       enactmentVisible: false,
       exhibitHandoffVisible: false,
       returnVisible: false,
+      returnRequired,
       clueDeliveryMultiplicity: { ok: true, active: false, issues: [], repeatedEntries: [] },
       issues: [],
     };
@@ -577,7 +580,7 @@ export function auditTutorStubDramaticReleaseResponse({
       reason: 'states an exhibit abstractly instead of visibly showing, reading, opening, testing, or placing it',
     });
   }
-  if (!returnVisible) {
+  if (returnRequired && !returnVisible) {
     issues.push({
       type: 'missing_return_to_inquiry',
       reason: 'does not keep the learner in the clue performance with a question about what changes',
@@ -592,6 +595,7 @@ export function auditTutorStubDramaticReleaseResponse({
     enactmentVisible,
     exhibitHandoffVisible,
     returnVisible,
+    returnRequired,
     metaRoleplayAnnouncement,
     metaReleaseAnnouncement,
     roleStageDirection,

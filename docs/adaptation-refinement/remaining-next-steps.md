@@ -1055,3 +1055,23 @@ all tool-bearing events remain fatal. The remaining sequence is:
 4. only then collect two independent readers of the fresh 96-case natural frame
    and apply the unchanged gate; and
 5. run no downstream outcome comparison unless that representative gate passes.
+
+## Current restart boundary after quoted-source and question-ownership repair
+
+The clean representative attempt from
+`2dce94acc6cf400ac674f168530652d29e33c1a7` sealed 18/18 initially reported
+children valid, then stopped when the nineteenth child failed on turn three.
+The exact fallback SOURCE and typed obligation deferral were correct. A quoted-
+sentence boundary caused a false correspondence leak, while the dramatic audit
+demanded a question forbidden by the same turn's progression contract. The
+partial packet is burned.
+
+The remaining sequence is:
+
+1. verify, commit, and push the source-boundary and question-ownership repair;
+2. freeze a new clean SHA and generate its digest-bound representative request;
+3. require all 24 valid child seals, 192 learner analyses, exact live/replay
+   parity, and zero delivery mismatch;
+4. only then collect two independent readers of the fresh 96-case natural
+   frame and apply the unchanged gate; and
+5. run no downstream outcome comparison unless that representative gate passes.

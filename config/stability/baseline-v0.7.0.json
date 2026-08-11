@@ -37,7 +37,7 @@
     {
       "file": "services/tutorStubDramaticRelease.js",
       "claim": "clue span replacement (model-voiced deliveries; t5 wedge case recorded)",
-      "sha256": "9a2bc0d894483a1ccbf2f1578a27da393529d73e4dcc68bb0d022b40bc23cd57"
+      "sha256": "4d7cc758e5ac41a1551430b03ab63eb0ef04352b0eaf54060a0b0b1e8ddd5b64"
     },
     {
       "file": "services/tutorStubTutorTurnPipeline.js",
@@ -77,7 +77,7 @@
     {
       "file": "services/tutorStubTutorDraftAudit.js",
       "claim": "delivery guard battery, dispositions, and audit trace shape",
-      "sha256": "f15453508b3ed53b4768f24bb7790330bde47ed05dd1a15761b80e4379355c22"
+      "sha256": "2d4ceeee349a28d20725aa126d81413cdd0be32d103c2662a113a007d3b8b6af"
     },
     {
       "file": "services/tutorStubResponsePolicy.js",

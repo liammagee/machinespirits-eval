@@ -63,7 +63,7 @@ const NAMED_MATCH_PATTERN =
 const EVIDENCE_OBJECT_PATTERN =
   /\b(?:alloys?|assays?|coins?|crucibles?|dies?|entries|entry|flaws?|leavings|logs?|marks?|metals?|records?|residues?|samples?|shillings?|strains?|streaks?|tools?|traces?)\b/iu;
 const NON_ASSERTIVE_PATTERN =
-  /\b(?:before|can|could|if|look for|may|might|must|need(?:s)? to|seek(?:s|ing)?|should|unless|until|whether|would)\b|\b(?:missing|required)\s+(?:link|test|evidence)\b|\bthe next (?:safe )?(?:check|evidence|record|test)\b|\b(?:where|how|what)\b[^.!?;]{0,35}\bto trace\b|\bneed(?:s|ed)?\b[^.!?;]{0,80}\bto\b|\b(?:do|does|did|has|have|is|are|was|were) not\b|\b(?:don[’']t|doesn[’']t|didn[’']t|hasn[’']t|haven[’']t|isn[’']t|aren[’']t|wasn[’']t|weren[’']t|never|no match|not yet|nor)\b|\b(?:no|neither)\b[^.!?;]{0,80}\b(?:answer(?:s|ed)? to|correspond(?:s|ed)? to|match(?:es|ed)?|tie(?:s|d)? (?:back )?to|trace(?:s|d)? (?:back )?to)\b/iu;
+  /^(?:please\s+)?(?:examine|inspect)\b|\b(?:before|can|could|if|look for|may|might|must|need(?:s)? to|seek(?:s|ing)?|should|unless|until|whether|would)\b|\b(?:missing|required)\s+(?:link|test|evidence)\b|\bthe next (?:safe )?(?:check|evidence|record|test)\b|\b(?:where|how|what)\b[^.!?;]{0,35}\bto trace\b|\bneed(?:s|ed)?\b[^.!?;]{0,80}\bto\b|\b(?:do|does|did|has|have|is|are|was|were) not\b|\b(?:don[’']t|doesn[’']t|didn[’']t|hasn[’']t|haven[’']t|isn[’']t|aren[’']t|wasn[’']t|weren[’']t|never|no match|not yet|nor)\b|\b(?:no|neither)\b[^.!?;]{0,80}\b(?:answer(?:s|ed)? to|correspond(?:s|ed)? to|match(?:es|ed)?|tie(?:s|d)? (?:back )?to|trace(?:s|d)? (?:back )?to)\b/iu;
 const PERSON_ATTRIBUTION_PATTERN =
   /\b(?:hand|holder|name|owner|person)\b[^.!?;]{0,24}\b(?:is|remains?|was)\s+(?:already\s+|now\s+)?tied to\b|\btie(?:s|d)?\b[^.!?;]{0,24}\b(?:her|him|person|them)\b[^.!?;]{0,12}\bto\b/iu;
 const CUSTODY_ATTRIBUTION_PATTERN =
@@ -83,7 +83,11 @@ function oneLine(value) {
 
 function clauses(value) {
   return oneLine(value)
-    .split(/(?<=[.!?;])\s+/gu)
+    // A closing quotation mark belongs to the preceding sentence. Split after
+    // it as well, otherwise the next host sentence can be glued onto an exact
+    // authored SOURCE and change which evidence object appears to own the
+    // correspondence.
+    .split(/(?:(?<=[.!?;])|(?<=[.!?;][”"']))\s+/gu)
     .map((part) => part.trim())
     .filter(Boolean);
 }

@@ -1052,3 +1052,22 @@ pre-repair closure audit, while the prospective recognizer test passes the
 exact public text. The packet is burned and cannot be retrospectively frozen.
 A fresh clean representative execution must still demonstrate 192/192 delivery
 application before reader annotation.
+
+The subsequent clean execution from
+`2dce94acc6cf400ac674f168530652d29e33c1a7` cleared the repaired delivery
+cases through its first 18 complete children. The nineteenth reported child,
+the active Foxtrot fast-learner cell, exhausted response recovery on turn
+three. Its exact deterministic SOURCE and public-obligation deferral passed
+their owning audits, but two generic surface checks contradicted them: the
+evidence-correspondence scanner joined the sentence after a closing quotation
+mark onto the authored source, and the dramatic-release audit demanded a
+question even though the typed progression contract prohibited one. The run
+was stopped immediately and the partial packet is burned.
+
+Prospectively, evidence clauses split after sentence-final closing quotation
+marks, imperative requests to examine a possible trace are non-assertive, and
+the dramatic-release return question is required only when the typed handoff
+permits a question. Live and frozen replay pass the same progression contract
+to that audit. These are instrument-ownership corrections, not changes to the
+warrant mechanism or predeclared gate. A fresh clean 24-dialogue execution is
+still required before annotation.

@@ -700,6 +700,7 @@ export function auditTutorStubFrozenCandidate({
         text: auditedText,
         frame: bundle.frames?.dramaticRelease,
         sourceAccessibilityAudit: jointPerformanceComposition?.sourceAccessibilityAudit || null,
+        turnProgressionContract: bundle.firstDraftContract?.progression || null,
       })
     : { ok: true, active: false, issues: [] };
   const responseConfigurationAudit = guards.actorialRealization

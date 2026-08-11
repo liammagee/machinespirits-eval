@@ -467,3 +467,22 @@ warrant basis, policy family, obligation lifecycle, or divergence threshold.
 They prevent general delivery diagnostics from claiming authority over the
 gate-owned configuration and obligation subcontracts. The pre-repair packet
 remains burned; only a fresh execution can establish the delivery boundary.
+
+### 7.17 Exact-source punctuation and question ownership
+
+The next clean representative attempt completed 18 children before one active
+Foxtrot fast-learner child exhausted the tutor guard. The deterministic
+fallback contained the exact due SOURCE once and satisfied the typed public-
+obligation deferral. Its failure arose downstream: sentence splitting did not
+recognize punctuation followed by a closing quotation mark, so the following
+host sentence altered evidence-correspondence ownership; independently, the
+dramatic-release audit required a return question on a turn whose progression
+contract explicitly set `question_allowed=false`.
+
+The prospective repair makes both authorities explicit. Quoted SOURCE
+sentences terminate before subsequent host prose, and dramatic realization
+cannot introduce a question forbidden by the progression owner. Imperative
+instructions to examine a possible trace are also distinguished from positive
+claims that two exhibits already correspond. None of these changes affect the
+normative DAG, descriptive state, warrant basis, or gate threshold. The partial
+packet remains burned.
