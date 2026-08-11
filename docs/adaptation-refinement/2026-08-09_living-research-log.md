@@ -1642,3 +1642,44 @@ This is diagnostic support, not gate passage or prevalence evidence. It clears
 the way to freeze a fresh representative matrix from a new clean documentation
 checkpoint. No prior challenge row may enter that natural score, and no outcome
 comparison begins before the representative V2 gate passes.
+
+## Progress Update — 11 August 2026, representative V2 gate failed cleanly
+
+The representative matrix frozen from clean commit
+`22f2b6c9de94037ac3d04a89ab05825b8bfff186` cleared every execution boundary:
+24/24 eight-turn dialogues and child seals were valid, all 192 learner-analysis
+calls completed, structured live/replay parity was 192/192, delivered-gate
+application was 192/192, and there were no prompt-audit, leak, delivery, or
+provenance failures. The resulting natural-prevalence corpus contains all 96
+observe-arm decisions.
+
+Two independent Luna readers completed twelve strict eight-case batches each.
+Reader A assembled without normalization. Reader B required two predeclared
+mechanical canonicalizations from `stage_next_step` to `hold` where the same
+rows explicitly selected a `none` warrant basis; there were no hand edits or
+content repairs. Raw agreement was 0.875 and 84 cases reached binary consensus.
+
+V2 failed. Precision (0.765), accuracy (0.833), diligent false-positive rate
+(0), obligation-lifecycle accuracy (0.824), commitment-transition accuracy
+(0.953), candidate-override accuracy (0.831), primary-basis accuracy (0.852),
+closure safety, parity, and delivery passed. Recall was 0.565, transition
+accuracy 0.625, hard mechanism consensus 0.646, request/proposal macro-F1
+0.510, and inquiry-completion recall 0.667. Interactional, engagement, and
+strategy-exhaustion interpretation macro-F1 also failed.
+
+The failure localizes a real natural-language generalization gap rather than a
+runtime confound. The public speech-act layer misses ordinary requests such as
+“show me the shelf-two access times”, “what entries does the log show”, “I’d
+still need the public log”, record-confirmation turns, and tutor-selection
+turns. Its delivery matcher also treats requested value types such as `names`
+and `times` as target subjects, so a response that supplies Dario and 12:02 can
+remain falsely overdue.
+
+V2 also retained one sampling-category error. The unselected natural census
+contained one conceptual and zero epistemic non-aligned consensus cases, so
+only four of six dimensions were interpretation-evaluable. Requiring five
+evaluable dimensions still asks a representative frame to guarantee rare
+states. This corpus remains a failed V2 result and will not be rescored. Before
+fresh labels, V3 must separate natural performance checks from rare-state
+interpretation support without pooling diagnostic cases into prevalence. No
+downstream outcome run is licensed.

@@ -1277,3 +1277,30 @@ repairs. The next pass/fail act is a newly generated representative matrix and
 fresh 96-case natural corpus under V2. Its runtime, parity, delivery,
 independent-reader, and scoring boundaries remain unchanged. Outcomes stay
 blocked pending representative passage.
+
+## Representative V2 result — 11 August 2026
+
+The replacement natural matrix at clean commit
+`22f2b6c9de94037ac3d04a89ab05825b8bfff186` passed the execution instrument:
+24/24 valid child seals, 192 learner-analysis calls, 192/192 structured
+live/replay comparisons, and 192/192 delivered-gate comparisons with zero
+mismatches, prompt-audit failures, leaks, or delivery issues. The frozen corpus
+is the complete 96-decision observe-arm census.
+
+Two fresh independent readers completed all cases. Reader A required no
+normalization. Reader B required two schema-declared `none`-basis action-family
+canonicalizations and no content edits. V2 failed with raw agreement 0.875,
+precision 0.765, recall 0.565, accuracy 0.833, transition accuracy 0.625, hard
+mechanism consensus 0.646, request/proposal macro-F1 0.510, and inquiry recall
+0.667. The corpus and score are frozen historical evidence; they may not be
+rescored under a later gate.
+
+The case audit identifies two prospective corrections. First, the surface
+classifier and target-delivery matcher must cover ordinary natural variants of
+result requests, proposed tests, record-entry requests, and tutor-selection
+requests, and must distinguish a requested value type such as a name or time
+from the public subject whose result is owed. Second, V2's minimum of five
+interpretation-evaluable dimensions remains a rare-state quota in disguise:
+this unselected corpus supplied one conceptual and zero epistemic non-aligned
+consensus cases. V3 must be declared before new labels and must not pool the
+challenge into the natural estimand. Outcomes remain blocked.

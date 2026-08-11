@@ -1373,3 +1373,35 @@ the result; freeze one new clean 24-dialogue representative matrix; require
 24/24 valid child seals, 192/192 structured parity, and 192/192 delivery
 application; freeze all 96 observe decisions; collect two fresh readers; and
 apply V2 to that representative corpus alone. No outcome run is yet licensed.
+
+## Current restart boundary after the representative V2 failure
+
+The clean `22f2b6c9de94037ac3d04a89ab05825b8bfff186` matrix completed 24/24
+valid eight-turn children, 192/192 learner-analysis calls, 192/192 structured
+parity, and 192/192 delivery application with no mismatches or integrity
+failures. Two fresh independent Luna readers labelled all 96 observe decisions.
+Reader A assembled with zero normalization; Reader B used two allowed
+`none`-basis family canonicalizations and no content repair.
+
+The representative V2 gate failed: agreement 0.875, precision 0.765, recall
+0.565, accuracy 0.833, transition accuracy 0.625, hard mechanism consensus
+0.646, request/proposal macro-F1 0.510, and inquiry-completion recall 0.667.
+The natural frame contained only one conceptual and no epistemic non-aligned
+consensus case, leaving four rather than five interpretation-evaluable axes.
+The score is final for V2 and cannot be rerun under a revised gate.
+
+The remaining sequence is:
+
+1. repair the bounded natural-language speech-act and target-delivery misses,
+   adding the failed natural forms as calibration tests;
+2. correct engagement precedence where explicit surface delegation is masked
+   by a model-supplied analytic or steering label, and audit the interactional
+   rows after public-debt repair;
+3. declare V3 before any new labels, retaining all representative performance
+   thresholds while treating naturally unsupported interpretation axes as
+   reported support limits rather than a fixed rare-state quota;
+4. rerun the gate-ineligible challenge only if the bounded mechanism changes
+   require renewed rare-state diagnosis;
+5. freeze a new clean representative matrix and two fresh readers; and
+6. run no downstream outcome comparison unless that fresh representative gate
+   passes.
