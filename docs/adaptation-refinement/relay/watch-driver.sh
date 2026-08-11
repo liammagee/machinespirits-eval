@@ -6,16 +6,21 @@ DIR="$HOME/.codex/sessions"
 CUR=""
 TP=""
 trap '[ -n "$TP" ] && kill "$TP" 2>/dev/null; exit 0' INT TERM
+newest() {
+  find "$DIR" -name 'rollout-*.jsonl' -mmin -720 2>/dev/null \
+    -exec stat -f '%m %N' {} + | sort -rn | head -1 | cut -d' ' -f2-
+}
 while true; do
-  NEW=$(ls -t "$DIR"/*/*/*/rollout-*.jsonl 2>/dev/null | head -1)
+  NEW=$(newest)
   if [ -n "$NEW" ] && [ "$NEW" != "$CUR" ]; then
     [ -n "$TP" ] && kill "$TP" 2>/dev/null
     CUR="$NEW"
     echo ""
     echo "=== following $(basename "$CUR") ==="
-    tail -n 30 -f "$CUR" \
-      | grep --line-buffered -E '"agent_message"|"command"' \
-      | cut -c1-400 &
+    tail -n 100 -f "$CUR" \
+      | grep --line-buffered -E '"agent_message"|"exec_command_begin"' \
+      | sed -u -E 's/.*"message":"([^"]*).*/MSG: \1/; s/.*"command":\[([^]]*)\].*/CMD: \1/' \
+      | cut -c1-300 &
     TP=$!
   fi
   sleep 15
