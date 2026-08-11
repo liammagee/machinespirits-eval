@@ -1355,3 +1355,21 @@ form without a pace modifier. Prospectively the handbook and batch instruction
 now state that pacing and engagement are independent. This diagnostic is burned
 relative to that clarification. Verify, commit, freeze, and rerun the six-reader-
 batch diagnostic sequence before any representative execution.
+
+## Current restart boundary after supported V2 diagnostic
+
+The replacement diagnostic from clean
+`afceef4e86c09186f41ad64ba6c70c5fbe271f97` completed both fresh readers in
+six calls with zero normalization. Every diagnostic support minimum passed,
+including engagement non-alignment at 3/2. Binary agreement, precision, recall,
+accuracy, transition accuracy, request/proposal macro-F1, lifecycle accuracy,
+inquiry precision/recall, commitment transition, candidate override, primary
+basis, and every divergence interpretation accuracy were 1.000. Hard mechanism
+consensus was 0.917; per-axis hard consensus ranged from 0.750 to 1.000, and all
+magnitude, persistence, and joint accuracies exceeded the V2 thresholds.
+
+This closes the rare-state diagnostic checkpoint only. Next: record and commit
+the result; freeze one new clean 24-dialogue representative matrix; require
+24/24 valid child seals, 192/192 structured parity, and 192/192 delivery
+application; freeze all 96 observe decisions; collect two fresh readers; and
+apply V2 to that representative corpus alone. No outcome run is yet licensed.

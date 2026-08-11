@@ -1619,3 +1619,26 @@ engagement are explicitly orthogonal: a pace request receives its pacing label,
 while voluntary agency or repeated delegation independently determines
 engagement. The current diagnostic remains gate-ineligible and is burned
 relative to this clarification. No representative or outcome execution began.
+
+## Progress Update — 11 August 2026, rare-state diagnostic checkpoint supported
+
+The replacement challenge frozen at clean commit
+`afceef4e86c09186f41ad64ba6c70c5fbe271f97` used six Luna annotation calls
+under digest `49e8cbc7284c9f3ca41b17b91faabadf8311aa9887ab51b60e5ab7d207bb5043`.
+Both fresh readers assembled all 24 cases with zero normalization. Every
+reader-backed support minimum passed: 8 result requests, 8 proposals, 8
+persistence cases, 8 resolutions against 6 required, 8 complete and 16
+incomplete inquiries, and respectively 5, 8, 3, 4, 4, and 3 non-aligned cases
+across conceptual, interactional, engagement, pacing, epistemic, and strategy
+exhaustion.
+
+Binary decision agreement, precision, recall, and accuracy were 1.000. All
+typed mechanism accuracies and all six divergence interpretation accuracies
+were 1.000 on consensus cases. Hard mechanism consensus was 0.917. Per-axis
+hard consensus was at least 0.750, while magnitude, persistence, and joint
+accuracies all exceeded their declared V2 thresholds.
+
+This is diagnostic support, not gate passage or prevalence evidence. It clears
+the way to freeze a fresh representative matrix from a new clean documentation
+checkpoint. No prior challenge row may enter that natural score, and no outcome
+comparison begins before the representative V2 gate passes.

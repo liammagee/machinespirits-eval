@@ -1257,3 +1257,23 @@ stalled low-agency engagement and independently productive pacing. The scored
 diagnostic is retained as diagnostic history but burned for the clarified
 instrument. A fresh clean freeze and fresh readers are required before the V2
 representative matrix may begin.
+
+## Supported V2 rare-state diagnostic — 11 August 2026
+
+After the axis clarification, the challenge frozen from
+`afceef4e86c09186f41ad64ba6c70c5fbe271f97` completed two fresh independent
+Luna readers in six authorized calls. Both 24-case artifacts assembled without
+normalization. All reader-backed construction minima passed, including three
+engagement non-aligned cases against the minimum of two. Hard mechanism
+consensus was 0.917. Binary decisions and every typed mechanism accuracy were
+1.000 on consensus cases; all six divergence interpretation accuracies were
+also 1.000. Per-axis hard consensus and every magnitude, persistence, and joint
+accuracy exceeded the corresponding V2 threshold.
+
+The result remains `diagnostic_only`, `gate_eligible: false`, and cannot be
+pooled with or substituted for natural cases. It establishes that the bounded
+rare-state probes and reader instrument are usable after the prospective
+repairs. The next pass/fail act is a newly generated representative matrix and
+fresh 96-case natural corpus under V2. Its runtime, parity, delivery,
+independent-reader, and scoring boundaries remain unchanged. Outcomes stay
+blocked pending representative passage.
