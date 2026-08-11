@@ -1235,6 +1235,8 @@ test('compound repair and result request keeps the repair family plus an orthogo
     proposedActionFamily: 'stage_next_step',
   });
   assert.equal(decision.warrant_basis, 'immediate:repair_request');
+  assert.equal(decision.decision_kind, 'pedagogical_commitment_transition');
+  assert.equal(decision.commitment_transition_warranted, true);
   assert.equal(decision.policy.family, 'repair_explanation');
   assert.equal(decision.override.action_family, 'repair_explanation');
   assert.equal(decision.public_obligation.blocking_obligation.status, 'open');

@@ -376,3 +376,17 @@ tutor to choose the investigation; and resolution probes explicitly acknowledge
 the answered request. The item remains active pending a supported clean
 diagnostic and the separate representative gate. No downstream outcome study
 is licensed.
+
+The `d0039481d4c69129da5230cc3296b7b1850c4d5b` diagnostic completed two clean
+24-case readers in 6/8 calls. Binary accuracy remained 1.000 and obligation
+support improved to 8/8 result requests, 7/8 persistence, and 8/6 resolution,
+but proposed-test, pacing, and epistemic support remained insufficient.
+
+Inspection found one real mechanism defect: an immediate-repair basis plus
+public debt selected a pedagogical repair policy while the outer decision kind
+was response-level, suppressing the commitment transition. Decision-kind
+precedence now follows basis precedence, with a regression test. Packet rules
+and redundant challenge rows prospectively disambiguate proposals, obligation
+sources, safe pace requests, and unsafe premature claims. The item remains
+active pending a supported clean diagnostic and the representative natural-
+frame gate; no downstream outcome study is licensed.

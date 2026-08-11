@@ -898,3 +898,26 @@ The remaining sequence is:
 4. if supported, freeze the predeclared 96-case representative natural frame
    and apply the unchanged gate to it alone; and
 5. run no downstream outcome comparison unless the representative gate passes.
+
+## Current restart boundary after the compound-decision audit
+
+The clean `d0039481d4c69129da5230cc3296b7b1850c4d5b` diagnostic completed both
+readers in 6/8 calls with zero normalization edits and 1.000 binary agreement,
+precision, recall, and accuracy. Obligation support improved to 8/8 requests,
+7/8 persistence, and 8/6 resolution. Support still failed at proposed tests
+6/8, pacing 1/2, and epistemic 0/2.
+
+The localized prospective repair clarifies proposal, pacing, epistemic, and
+obligation-source rules and adds redundancy for the rare divergence axes. It
+also fixes a real mechanism inconsistency: immediate repair now retains a
+pedagogical outer decision kind when public debt is present, so a changed held
+family is correctly recorded as a commitment transition.
+
+The remaining sequence is:
+
+1. verify, commit, and push the compound-decision and reader-boundary repair;
+2. freeze and independently annotate the repaired 24-case diagnostic;
+3. require reader-backed support and inspect every typed mismatch;
+4. if no localized defect remains, freeze the representative 96-case natural
+   frame and apply the unchanged gate to it alone; and
+5. run no downstream outcome comparison unless that representative gate passes.

@@ -827,6 +827,12 @@ turn that neither answers nor accountably defers it; a reminder preserves that
 overdue state. A direct result-request clause is the operative speech act when
 the same learner turn also contains a tutor-selection phrase.
 
+Immediate repair remains a pedagogical commitment transition when it changes
+the held family, even if the same turn also creates or reminds response-level
+public debt. On divergence coding, an explicit safe pace request is productive;
+an unsupported or premature terminal claim is epistemically unsafe. The
+challenge carries redundant authored examples for these rare axes.
+
 The targeted corpus is a **diagnostic instrument, not a gate corpus**. Its
 labels may expose detector failures and motivate a bounded repair, but neither
 its cases nor its scores may satisfy a pass/fail threshold, estimate prevalence

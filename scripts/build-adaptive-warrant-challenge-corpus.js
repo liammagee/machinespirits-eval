@@ -54,11 +54,11 @@ const RESULT_TARGETS = Object.freeze([
   { noun: 'clue record', subject: 'gate latch', answer: 'the gate latch carried fresh scratches' },
 ]);
 const PROPOSAL_TARGETS = Object.freeze([
-  'compare the relay log times',
+  'inspect the relay log times as a comparison test',
   'inspect the balance calibration',
   'test the silver sample again',
   'check the witness record timestamps',
-  'compare the two die marks',
+  'inspect the two die marks as a comparison test',
   'inspect the cable evidence photograph',
   'listen to the signal ring',
   'check the clue mark on the gate latch',
@@ -164,12 +164,16 @@ function resultRequest(target) {
 function persistenceSpecs() {
   return RESULT_TARGETS.map((target, index) => {
     const conceptual = index < 3;
-    const engagement = index === 4 || index === 5;
-    const pacing = index >= 6;
+    const engagement = index >= 3 && index <= 5;
+    const pacing = index >= 4;
     const currentPrefix = conceptual
       ? "I don't understand how to use this result."
       : engagement
-        ? 'Would you have me repeat this?'
+        ? index === 4
+          ? 'Would you have me repeat this more slowly?'
+          : index === 5
+            ? 'Would you have me repeat this more quickly?'
+            : 'Would you have me repeat this?'
         : pacing
           ? index === 6
             ? 'Please slow down.'
@@ -185,7 +189,7 @@ function persistenceSpecs() {
           baseTurn,
           {
             turn: 2,
-            learner: 'Could you choose what I should do next?',
+            learner: 'Would you have me repeat the same step?',
             tutor: 'Consider another general possibility first.',
           },
         ]
@@ -199,7 +203,7 @@ function persistenceSpecs() {
       dag_growth: 0,
       turns_since_dag_growth: conceptual ? 3 : engagement ? 4 : 1,
       pacing_signal: pacing
-        ? { direction: index === 6 ? 'slower' : 'faster', strength: 0.9, source: 'explicit_public_request' }
+        ? { direction: index % 2 === 0 ? 'slower' : 'faster', strength: 0.9, source: 'explicit_public_request' }
         : null,
       action_contract: liveContract(),
       proposed_action_family: 'stage_next_step',
@@ -225,7 +229,7 @@ function proposalSpecs() {
     const prior = RESULT_TARGETS[index];
     const resolved = true;
     const strategy = index < 2 || index === 4;
-    const epistemic = index === 2 || index === 3;
+    const epistemic = [2, 3, 6, 7].includes(index);
     return {
       design_id: `proposal-${String(index + 1).padStart(2, '0')}`,
       group: 'proposal_and_resolution',

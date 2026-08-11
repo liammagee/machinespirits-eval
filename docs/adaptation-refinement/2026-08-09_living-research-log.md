@@ -1256,3 +1256,33 @@ signal without asking the tutor to choose the next investigation, and every
 proposal row explicitly acknowledges the answered request. This burns the
 `67063052` freeze. One newly frozen diagnostic must confirm support before the
 representative natural frame; no downstream outcome run is licensed.
+
+## Progress Update — 11 August 2026, compound decision-kind defect repaired
+
+The clean `d0039481d4c69129da5230cc3296b7b1850c4d5b` diagnostic completed two
+24-case readers in six of eight Luna calls under digest
+`269682d5935cbc4966ef47246fb5f8cb3a49c019a169adb264df7245cbb5f190`.
+Both readers assembled without normalization and agreed on every binary warrant;
+precision, recall, and accuracy were 1.000. The obligation clarification worked:
+result-request support rose to 8/8, exact persistence to 7/8, and resolution to
+8/6. The diagnostic remained gate-ineligible and returned
+`insufficient_support` because proposed tests were 6/8, pacing 1/2, and
+epistemic 0/2.
+
+Case inspection separated residual wording ambiguity from a real mechanism
+error. Two “let's compare” moves were read as `other`; pacing requests split
+between productive and stalled; unsupported premature closure split between
+unsafe and stalled; and one non-result low-agency turn was incorrectly counted
+as an obligation source. Those boundaries are now explicit, and the same
+24-case design carries three engagement, four pacing, and four epistemic probes
+for redundancy.
+
+More importantly, three compound comprehension-repair/result-request cases had
+an immediate-repair basis and `repair_explanation` policy but an outer
+`public_obligation_fulfilment` decision kind. That response-level metadata
+suppressed the held-family transition despite the higher-priority pedagogical
+repair. Both readers consistently marked the transition. Prospectively,
+decision-kind precedence now follows basis precedence: immediate repair remains
+pedagogical, while the public-result obligation is an orthogonal response
+directive. A focused regression test fixes that invariant. This burns the
+`d0039481` freeze; one clean diagnostic remains before the representative frame.

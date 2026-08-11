@@ -120,6 +120,9 @@ test('authored challenge realizes its declared diagnostic coverage without becom
   for (const [stratum, minimum] of Object.entries(ADAPTIVE_WARRANT_CHALLENGE_DIAGNOSTIC_MINIMA)) {
     assert.ok(built.supportPlan.strata[stratum].length >= minimum, `${stratum} diagnostic coverage`);
   }
+  assert.ok(built.supportPlan.strata.divergence_engagement_nonaligned.length >= 3);
+  assert.ok(built.supportPlan.strata.divergence_pacing_nonaligned.length >= 4);
+  assert.ok(built.supportPlan.strata.divergence_epistemic_nonaligned.length >= 4);
   assert.equal(new Set(built.corpus.cases.map((row) => row.sample_id)).size, 24);
   assert.deepEqual(
     built.corpus.cases.map((row) => row.sample_id),
@@ -230,6 +233,9 @@ test('challenge freeze is gate-ineligible, drift-checked, and produces a digest-
     );
     assert.ok(firstPacket.instructions.some((instruction) => instruction.includes('later reminder remains overdue')));
     assert.ok(firstPacket.instructions.some((instruction) => instruction.includes('direct result-request clause')));
+    assert.ok(firstPacket.instructions.some((instruction) => instruction.includes('names no requested result')));
+    assert.ok(firstPacket.instructions.some((instruction) => instruction.includes('productive pacing divergence')));
+    assert.ok(firstPacket.instructions.some((instruction) => instruction.includes('premature whole-inquiry claim is unsafe')));
     assert.match(firstBatch.output_schema_sha256, /^[0-9a-f]{64}$/u);
     assert.equal(
       prepared.authorizationRequest.bindings.reader_packets[0].output_schema_sha256,

@@ -262,15 +262,17 @@ export function evaluateWarrant({
     masked,
     immediate,
     accumulated,
-    decision_kind: terminalTransition
-      ? 'terminal_transition'
-      : obligationRevision
-        ? 'public_obligation_fulfilment'
-        : unsafeClosureCandidate
-          ? 'candidate_safety_override'
-          : revisionWarranted
-            ? 'pedagogical_commitment_transition'
-            : 'hold',
+    decision_kind: immediate
+      ? 'pedagogical_commitment_transition'
+      : terminalTransition
+        ? 'terminal_transition'
+        : obligationRevision
+          ? 'public_obligation_fulfilment'
+          : unsafeClosureCandidate
+            ? 'candidate_safety_override'
+            : revisionWarranted
+              ? 'pedagogical_commitment_transition'
+              : 'hold',
     register_escalation: registerEscalation,
     public_obligation_revision: obligationRevision,
     terminal_transition: terminalTransition,
