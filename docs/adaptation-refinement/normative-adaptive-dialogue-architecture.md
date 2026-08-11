@@ -977,3 +977,19 @@ advisory policy for stylistic configuration axes or by terminal fallback.
 Outside active final authority, configuration visibility retains its previous
 diagnostic status. This keeps the normative policy decision, internal delivery
 route, and observed public action as three distinct measurable layers.
+
+## 29. Public obligations require referential identity across turns
+
+A public obligation is an object in the normative dialogue state, not a bag of
+keywords re-created on every learner turn. Clause-local extraction should keep
+new requests precise, but a later anaphoric phrase can renew an existing debt
+without repeating its complete name.
+
+The ledger therefore resolves a generic referential request only against its
+active public state. Resolution requires an explicit referential cue, evidence
+that the full learner surface names the candidate's target kind, public subject
+overlap, and one uniquely best candidate. The resolver records the bound
+obligation identifier and the pre-resolution target. If candidates tie, the
+reference remains unresolved rather than silently merging normative objects.
+This separates public-reference resolution from both result delivery and the
+private gate transition while keeping live and replay state identical.

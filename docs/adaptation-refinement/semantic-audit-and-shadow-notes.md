@@ -524,3 +524,19 @@ draft audit now carries the active final-authority ownership context into guard
 disposition, which treats `selected_action_family_not_visible` as hard under
 strict, shadow-advisory, and terminal-fallback paths. Repair preserves all
 other configuration axes and must produce a newly audited public surface.
+
+### 7.20 Generic reminders need a unique public referent
+
+The first child from the `1624e6b8` restart correctly deferred a named jukebox
+access-log request, then failed when the learner renewed it as “the matching
+record when it is released.” Clause-local classification produced a generic
+target and the ledger opened a second debt, making a valid target-specific
+deferral impossible. This was a public-state identity defect upstream of
+delivery scoring.
+
+The repair does not infer from private state or choose an arbitrary recent
+request. It binds only a generic request with an explicit referential cue when
+the full public learner surface supplies target-kind evidence and subject
+overlap that identify one uniquely best active obligation. The audit records
+the original generic target and resolved obligation ID. Equal candidates remain
+unresolved, preserving the distinction between two genuinely separate debts.

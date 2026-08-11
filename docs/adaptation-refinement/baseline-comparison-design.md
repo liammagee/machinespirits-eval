@@ -1117,3 +1117,19 @@ owns that family. The general response-configuration visibility diagnostic
 retains its existing advisory/report-only status outside that causal boundary.
 The failed packet remains burned, and the unchanged 192-decision delivery gate
 must be rerun before annotation.
+
+## Referential obligation identity — 11 August 2026
+
+The first child from clean commit `1624e6b889b1a1d47379befbbb39a746e2a3d4b8`
+exposed an identity failure after a valid deferral. The learner's subsequent
+request for “the matching record when it is released” repeated public terms
+from the named jukebox-access-log debt, but clause-local extraction created a
+second generic obligation. The resulting failure was an instrument defect, not
+a failed model delivery, and the partial packet is burned.
+
+The prospective resolver is deliberately bounded: the new request must have a
+generic target, contain an explicit referential cue, name the prior target's
+evidence kind, and overlap a uniquely best active obligation's public subject
+terms. Equal support for two obligations remains ambiguous and creates no
+coalescing shortcut. The unchanged representative gate must again pass 24
+valid seals, 192/192 replay parity, and 192/192 delivery before annotation.

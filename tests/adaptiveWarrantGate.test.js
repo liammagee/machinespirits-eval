@@ -566,6 +566,55 @@ test('public-obligation reminders coalesce across synonymous test wording', () =
   assert.deepEqual(reminded.obligations[0].source_turns, [1, 2]);
 });
 
+test('anaphoric record reminders reactivate the uniquely named deferred obligation', () => {
+  const ledger = createAdaptiveWarrantPublicObligationLedger();
+  const created = ledger.assess({
+    turn: 1,
+    learnerText:
+      'Could you show me the jukebox’s access log first? That might tell us who actually touched the music core, not just who had a motive.',
+  });
+  assert.equal(created.obligations.length, 1);
+
+  const reminded = ledger.assess({
+    turn: 2,
+    learnerText:
+      'Then I can only record that the access log is not public yet, so I still cannot say who touched the music core; please show the matching record when it is released.',
+    priorTutorOutcome: {
+      turn: 1,
+      tutor_text:
+        'The jukebox access log is not public yet; once its matching public record is released, I can answer it.',
+    },
+  });
+
+  assert.equal(reminded.obligations.length, 1);
+  assert.equal(reminded.obligations[0].id, created.obligations[0].id);
+  assert.equal(reminded.obligations[0].status, 'reactivated');
+  assert.equal(reminded.obligations[0].occurrences, 2);
+  assert.deepEqual(reminded.obligations[0].source_turns, [1, 2]);
+  assert.equal(reminded.blocking_obligation.id, created.obligations[0].id);
+  assert.equal(reminded.speech_act.target.signature, created.obligations[0].target.signature);
+  assert.equal(reminded.speech_act.referential_resolution.obligation_id, created.obligations[0].id);
+  assert.ok(reminded.events.some((event) => event.type === 'referential_reminder_resolved'));
+});
+
+test('ambiguous generic reminders do not collapse two equally supported obligations', () => {
+  const ledger = createAdaptiveWarrantPublicObligationLedger();
+  ledger.assess({ turn: 1, learnerText: 'Please show the Foxtrot access log.' });
+  ledger.assess({
+    turn: 2,
+    learnerText: 'Please show the Larkspur access log.',
+    priorTutorOutcome: { turn: 1, tutor_text: 'Neither access log is public yet.' },
+  });
+  const ambiguous = ledger.assess({
+    turn: 3,
+    learnerText: 'Please show that matching record when it is released.',
+    priorTutorOutcome: { turn: 2, tutor_text: 'Neither access log is public yet.' },
+  });
+
+  assert.equal(ambiguous.obligations.length, 3);
+  assert.equal(ambiguous.speech_act.referential_resolution, undefined);
+});
+
 test('die-comparison paraphrases coalesce without rhetorical words becoming target identity', () => {
   const ledger = createAdaptiveWarrantPublicObligationLedger();
   ledger.assess({ turn: 1, learnerText: 'What distinctive die mark did the comparison reveal?' });

@@ -877,6 +877,26 @@ The remaining sequence is:
    natural frame and apply the unchanged gate to it alone; and
 5. run no downstream outcome comparison unless that representative gate passes.
 
+## Current restart boundary after referential-identity repair
+
+The first sealed child from clean commit
+`1624e6b889b1a1d47379befbbb39a746e2a3d4b8` was invalid after the ledger
+split one deferred named request into a second generic request when the learner
+referred to it as “the matching record.” The partial packet is burned. The
+prospective repair binds only uniquely supported generic reminders; ambiguous
+references remain separate.
+
+The remaining sequence is:
+
+1. verify, commit, and push the referential-identity repair;
+2. freeze a new clean SHA and generate its automatically accepted,
+   digest-bound representative request under the standing authorization;
+3. require all 24 valid child seals, 192 learner analyses, exact live/replay
+   parity, and zero delivery mismatch;
+4. only then freeze a new zero-overlap 96-case natural corpus, collect two
+   independent readers, and apply the unchanged gate; and
+5. run no downstream outcome comparison unless that representative gate passes.
+
 ## Current restart boundary after active-family realization repair
 
 The clean `ba8b1422607c50ae95eb958bd162cb7ee2c8da2c` matrix completed 24/24

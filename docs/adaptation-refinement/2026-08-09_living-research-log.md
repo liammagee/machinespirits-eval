@@ -1402,3 +1402,21 @@ authority. Prospectively, that narrow case is a hard repair trigger under both
 guard policies and even at terminal fallback. Ordinary selector-style
 configuration misses remain advisory/report-only. The packet is burned; a
 fresh clean matrix must demonstrate 192/192 visible delivery before readers.
+
+## Progress Update — 11 August 2026, anaphoric obligation identity localized
+
+The clean `1624e6b889b1a1d47379befbbb39a746e2a3d4b8` replacement attempt passed
+preflight but stopped at its first sealed invalid child. Turn one correctly
+created and accountably deferred the learner's request for the jukebox access
+log. On turn two the learner explicitly renewed that request as “the matching
+record when it is released.” The clause-local target extractor reduced this to
+a new generic target instead of binding it to the still-active named debt, so
+every otherwise valid deferral failed target coverage. The partial packet is
+burned.
+
+Prospectively, a generic request with an explicit referential cue may reactivate
+an active obligation only when target-kind evidence and named surface overlap
+select one unique candidate. Ties remain unresolved and cannot collapse
+distinct debts. This preserves clause-local precision while making cross-turn
+identity explicit and auditable. A fresh clean matrix remains required before
+reader collection; no downstream outcome run is licensed.

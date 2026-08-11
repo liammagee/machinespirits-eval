@@ -202,6 +202,48 @@ function targetsEquivalent(left, right) {
   return leftSubjects.size === rightSubjects.size && [...leftSubjects].every((term) => rightSubjects.has(term));
 }
 
+const REFERENTIAL_REMINDER_CUE =
+  /\b(?:again|it|matching|same|still|that|this|those|when (?:it|that)|yet)\b/iu;
+
+function targetKindNamedInSurface(kind, surface) {
+  const source = oneLine(surface).toLowerCase();
+  if (kind === 'weight_or_ring_result') return /\b(?:balance|ring|sound|weight|weigh)\b/u.test(source);
+  if (kind === 'material_or_assay_result') {
+    return /\b(?:alloy|assay|cupel|dross|metal|silver|touchstone)\b/u.test(source);
+  }
+  if (kind === 'mark_or_tool_result') return /\b(?:die|flaw|graver|mark|tool|cut)\b/u.test(source);
+  if (kind === 'comparison_result') return /\b(?:compare|comparison|link|match|tie)\b/u.test(source);
+  if (kind === 'record_entry') return /\b(?:entry|log|record|witness)\b/u.test(source);
+  return EVIDENCE_CUE.test(source);
+}
+
+function referentialReminderCandidate(rows, speechAct) {
+  const target = speechAct?.target;
+  const targetSubjects = target?.subject_terms || targetSubjectTerms(target?.public_terms || []);
+  if (targetSubjects.length || !REFERENTIAL_REMINDER_CUE.test(speechAct?.surface || '')) return null;
+
+  const surfaceTerms = new Set(contentTerms(speechAct.surface));
+  const candidates = rows
+    .filter(
+      (row) =>
+        ['open', 'overdue', 'reactivated', 'deferred'].includes(row.status) &&
+        targetKindNamedInSurface(row.target?.kind, speechAct.surface),
+    )
+    .map((row) => {
+      const subjects = row.target?.subject_terms || targetSubjectTerms(row.target?.public_terms || []);
+      return {
+        row,
+        overlap: subjects.filter((term) => surfaceTerms.has(term)).length,
+      };
+    })
+    .filter(({ overlap }) => overlap > 0)
+    .sort((left, right) => right.overlap - left.overlap || blockingOrder(left.row, right.row));
+
+  if (!candidates.length) return null;
+  if (candidates.length > 1 && candidates[0].overlap === candidates[1].overlap) return null;
+  return candidates[0].row;
+}
+
 /**
  * Classify the learner's public speech act. Surface patterns are deliberately
  * precision-first: a plan to perform a test is not a request that the tutor
@@ -559,12 +601,27 @@ export function createAdaptiveWarrantPublicObligationLedger({ obligations = [] }
       events.push(...closeByLearnerAct(speechAct, normalizedTurn));
 
       if (speechAct.creates_obligation) {
-        const existing = rows.find(
+        const equivalent = rows.find(
           (row) =>
             ['open', 'overdue', 'reactivated', 'deferred'].includes(row.status) &&
             targetsEquivalent(row.target, speechAct.target),
         );
+        const referential = equivalent ? null : referentialReminderCandidate(rows, speechAct);
+        const existing = equivalent || referential;
         if (existing) {
+          if (referential) {
+            speechAct.referential_resolution = {
+              kind: 'active_public_obligation',
+              obligation_id: referential.id,
+              original_target: clone(speechAct.target),
+            };
+            speechAct.target = clone(referential.target);
+            events.push({
+              type: 'referential_reminder_resolved',
+              obligation_id: referential.id,
+              turn: normalizedTurn,
+            });
+          }
           existing.target.required_components = mergeRequiredComponents(
             existing.target.required_components,
             speechAct.target.required_components,

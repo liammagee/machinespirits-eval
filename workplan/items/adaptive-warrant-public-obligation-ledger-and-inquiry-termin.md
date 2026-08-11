@@ -523,3 +523,15 @@ configuration visibility remains advisory/report-only. The packet is burned.
 The item remains active pending verification, a clean pushed checkpoint, a
 new 24/24 and 192/192 delivery run, two fresh readers, and passage of the
 unchanged representative gate. No downstream outcome study is licensed.
+
+The first child from clean commit
+`1624e6b889b1a1d47379befbbb39a746e2a3d4b8` stopped the next matrix after a
+valid named deferral was split into a new generic debt by the learner's
+anaphoric reminder “the matching record.” The partial packet is burned.
+Prospectively, generic reminders bind only when an explicit public cue,
+target-kind evidence, and subject overlap select one uniquely best active
+obligation; ties remain unresolved. Exact and ambiguity regressions pass. The
+item remains active pending full verification, a clean pushed checkpoint, a
+fresh 24/24 execution with 192/192 parity and delivery, two fresh readers, and
+passage of the unchanged representative gate. No downstream outcome study is
+licensed.
