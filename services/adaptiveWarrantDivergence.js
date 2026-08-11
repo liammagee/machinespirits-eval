@@ -24,22 +24,20 @@ export const ADAPTIVE_WARRANT_DIVERGENCE_INTERPRETATIONS = Object.freeze([
   'unsafe',
 ]);
 
-export const ADAPTIVE_WARRANT_DIVERGENCE_MAGNITUDES = Object.freeze([
-  'none',
-  'low',
-  'moderate',
-  'high',
-]);
+export const ADAPTIVE_WARRANT_DIVERGENCE_MAGNITUDES = Object.freeze(['none', 'low', 'moderate', 'high']);
 
-function row(dimension, {
-  normativeState,
-  descriptiveState,
-  magnitude = 'none',
-  persistence = 0,
-  interpretation = 'aligned',
-  repairWarranted = false,
-  evidence = [],
-} = {}) {
+function row(
+  dimension,
+  {
+    normativeState,
+    descriptiveState,
+    magnitude = 'none',
+    persistence = 0,
+    interpretation = 'aligned',
+    repairWarranted = false,
+    evidence = [],
+  } = {},
+) {
   return {
     schema: ADAPTIVE_WARRANT_DIVERGENCE_SCHEMA,
     dimension,
@@ -160,13 +158,17 @@ function interactionalRow({ troubleTurns, complaintTurns, publicObligation, turn
 
 function engagementRow({ signal, classification, deferenceSustained, recentSignals }) {
   const turn = classificationTurn(classification);
-  const lowAgency =
-    signal?.primary === 'low_agency_deferral' ||
-    ['passive', 'complying'].includes(turn.agency) ||
-    ['resistance_or_low_agency', 'answer_seeking_or_overreach'].includes(turn.request_type);
-  const analytic = signal?.primary === 'engaged_analytic' || ['steering', 'self_correcting'].includes(turn.agency);
+  const semanticSignal = signal?.source === 'validated_semantic_events';
+  const lowAgency = semanticSignal
+    ? signal.deference_present === true
+    : signal?.primary === 'low_agency_deferral' ||
+      ['passive', 'complying'].includes(turn.agency) ||
+      ['resistance_or_low_agency', 'answer_seeking_or_overreach'].includes(turn.request_type);
+  const analytic = semanticSignal
+    ? signal.engaged_analytic_present === true
+    : signal?.primary === 'engaged_analytic' || ['steering', 'self_correcting'].includes(turn.agency);
   const deferenceCount = (recentSignals || []).filter((entry) => entry?.labels?.includes('low_agency_deferral')).length;
-  if (analytic) {
+  if (analytic && !lowAgency) {
     return row('engagement', {
       normativeState: 'voluntary_agentive_participation',
       descriptiveState: 'agentive_or_analytic_participation',
@@ -254,8 +256,7 @@ function strategyExhaustionRow({ actionContract, troubleTurns }) {
   if (!exhausted) {
     return row('strategy_exhaustion', {
       normativeState: 'held_strategy_retained_only_while_expected_uptake_contract_remains_live',
-      descriptiveState:
-        status === 'success' ? 'expected_uptake_observed' : `contract_${status || 'not_applicable'}`,
+      descriptiveState: status === 'success' ? 'expected_uptake_observed' : `contract_${status || 'not_applicable'}`,
       evidence: status === 'success' ? [`contract_status:${status}`] : [],
     });
   }
@@ -267,7 +268,11 @@ function strategyExhaustionRow({ actionContract, troubleTurns }) {
     persistence,
     interpretation: 'stalled',
     repairWarranted: true,
-    evidence: [`contract_status:${status}`, `contract_responses:${responseCount}`, `trouble_turns:${accumulatedTrouble}`],
+    evidence: [
+      `contract_status:${status}`,
+      `contract_responses:${responseCount}`,
+      `trouble_turns:${accumulatedTrouble}`,
+    ],
   });
 }
 

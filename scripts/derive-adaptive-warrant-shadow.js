@@ -303,6 +303,7 @@ function deriveStructuredSessionShadow(session, sessionIndex) {
       turn,
       learnerText: input?.learner_text ?? record.learner ?? fact?.learnerText ?? '',
       classification: input?.classification ?? fact?.classificationEnvelope ?? null,
+      semanticEventExtraction: input?.semantic_event_extraction ?? liveDecision?.semantic_event_extraction ?? null,
       dagModel: input?.learner_dag_model ?? record.tutorLearnerDagModel ?? fact?.dagModel ?? null,
       priorActionFamily: priorDeliveredActionFamily,
       proposedActionFamily:
@@ -316,7 +317,7 @@ function deriveStructuredSessionShadow(session, sessionIndex) {
       pacingSignal:
         input && Object.prototype.hasOwnProperty.call(input, 'pacing_signal')
           ? input.pacing_signal
-          : record.releasePacing?.signal ?? fact?.pacingSignal ?? null,
+          : (record.releasePacing?.signal ?? fact?.pacingSignal ?? null),
       boundedInquiryScope: input?.bounded_inquiry_scope ?? null,
       unsupportedAssertionCount: input?.unsupported_assertion_count ?? fact?.unsupportedAssertionCount ?? 0,
       activeDroppedFactCount: Number(
@@ -423,8 +424,8 @@ function deriveSessionShadow(session, sessionIndex, { includeTurnOne = false } =
     const previousDecision = decisions.at(-1) || null;
     const priorWasResponseLevelCorrection = Boolean(
       previousDecision &&
-        ['public_obligation_fulfilment', 'candidate_safety_override'].includes(previousDecision.decision_kind) &&
-        previousDecision.commitment_transition_warranted !== true,
+      ['public_obligation_fulfilment', 'candidate_safety_override'].includes(previousDecision.decision_kind) &&
+      previousDecision.commitment_transition_warranted !== true,
     );
     if (!strategyInForce && prior.selection.action_family) strategyInForce = prior.selection.action_family;
     if (

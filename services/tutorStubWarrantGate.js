@@ -42,6 +42,7 @@ import {
 } from './adaptiveWarrantInquiryCompletion.js';
 import { buildAdaptiveWarrantObligationDirective } from './adaptiveWarrantPolicy.js';
 import { createAdaptiveWarrantPublicObligationLedger } from './adaptiveWarrantPublicObligationLedger.js';
+import { compileAdaptiveWarrantSemanticSignal } from './adaptiveWarrantSemanticEvents.js';
 
 export const TUTOR_STUB_WARRANT_GATE_SCHEMA = 'machinespirits.tutor-stub.warrant-gate.v5';
 export const TUTOR_STUB_WARRANT_GATE_OUTCOME_SCHEMA = 'machinespirits.tutor-stub.warrant-gate-outcome.v3';
@@ -272,9 +273,8 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
       if (pacingSignal?.direction && pacingSignal.direction !== 'steady') {
         defeaters.push(`pacing_signal:${pacingSignal.direction}`);
       }
-      const deliveredConfigurationProjection = projectTutorStubWarrantGateOutcomeConfiguration(
-        deliveredResponseConfiguration,
-      );
+      const deliveredConfigurationProjection =
+        projectTutorStubWarrantGateOutcomeConfiguration(deliveredResponseConfiguration);
       const outcome = {
         schema: TUTOR_STUB_WARRANT_GATE_OUTCOME_SCHEMA,
         turn: normalizedTurn,
@@ -304,6 +304,7 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
       turn,
       learnerText = '',
       classification = null,
+      semanticEventExtraction = null,
       dagModel = null,
       priorActionFamily = null,
       proposedActionFamily = null,
@@ -339,8 +340,8 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
       // held strategy; ordinary or explicitly warranted transitions do.
       const priorWasResponseLevelCorrection = Boolean(
         previousDecision &&
-          ['public_obligation_fulfilment', 'candidate_safety_override'].includes(previousDecision.decision_kind) &&
-          previousDecision.commitment_transition_warranted !== true,
+        ['public_obligation_fulfilment', 'candidate_safety_override'].includes(previousDecision.decision_kind) &&
+        previousDecision.commitment_transition_warranted !== true,
       );
       priorDeliveredActionFamily = priorActionFamily || null;
       if (priorActionFamily && priorActionFamily !== strategyInForce && !priorWasResponseLevelCorrection) {
@@ -350,7 +351,9 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         complaintTurns = [];
       }
 
-      const signal = classifyLearnerSignal(learnerText);
+      const signal = semanticEventExtraction
+        ? compileAdaptiveWarrantSemanticSignal(semanticEventExtraction)
+        : classifyLearnerSignal(learnerText);
       const total = dagTotal(dagModel);
       const dagGrowth = previousDagTotal === null ? null : total - previousDagTotal;
       previousDagTotal = total;
@@ -371,6 +374,7 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         turn,
         learnerText,
         classification,
+        semanticEventExtraction,
         priorTutorOutcome: priorTurnOutcome,
       });
       const inquiryCompletion = assessAdaptiveWarrantInquiryCompletion({
@@ -394,6 +398,7 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         learnerText,
         classification,
         signal,
+        semanticEventExtraction,
         dagGrowth,
       });
       if (actionContract?.transition?.discharge_prior_trouble) troubleTurns = [];
@@ -417,6 +422,7 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         turn,
         learnerText,
         classification,
+        semanticEventExtraction,
         dagModel,
         priorActionFamily: priorDeliveredActionFamily,
         proposedActionFamily,
@@ -435,6 +441,7 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
           strategy_since_turn: strategySince,
           prior_delivered_action_family: priorDeliveredActionFamily,
           learner_signal: signal,
+          semantic_event_extraction: semanticEventExtraction,
           dag_total: total,
           dag_growth: dagGrowth,
           turns_since_dag_growth: turnsSinceDagGrowth,
@@ -490,6 +497,7 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         pre_gate_proposed_action_family: proposedActionFamily || null,
         strategy_since_turn: strategySince,
         learner_signal: signal,
+        semantic_event_extraction: semanticEventExtraction,
         dag_total: total,
         dag_growth: dagGrowth,
         prior_turn_outcome: priorTurnOutcome,
@@ -562,6 +570,8 @@ export function restoreTutorStubWarrantGateFromTurns(gate, turns = []) {
       turn,
       learnerText: storedInput?.learner_text ?? record.learner ?? '',
       classification: storedInput?.classification || record.classification || null,
+      semanticEventExtraction:
+        storedInput?.semantic_event_extraction || storedDecision?.semantic_event_extraction || null,
       dagModel: storedInput?.learner_dag_model || record.tutorLearnerDagModel || null,
       priorActionFamily: priorDeliveredActionFamily,
       proposedActionFamily: storedDecision?.pre_gate_proposed_action_family || deliveredActionFamily,

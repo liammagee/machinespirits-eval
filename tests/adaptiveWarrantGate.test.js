@@ -22,6 +22,12 @@ import {
   createAdaptiveWarrantPublicObligationLedger,
 } from '../services/adaptiveWarrantPublicObligationLedger.js';
 import { recommendRepairPolicy } from '../services/adaptiveWarrantPolicy.js';
+import {
+  ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA,
+  adaptiveWarrantSemanticSourceHash,
+  compileAdaptiveWarrantSemanticSignal,
+  validateAdaptiveWarrantSemanticExtraction,
+} from '../services/adaptiveWarrantSemanticEvents.js';
 import { createTutorStubInteractiveLearnerRuntime } from '../services/tutorStubInteractiveLearnerRuntime.js';
 import {
   assessTutorStubWarrantGateAtResponseSelection,
@@ -48,6 +54,42 @@ import {
 
 function dagModel(groundedCount) {
   return { learnerRecord: { grounded: Array.from({ length: groundedCount }, (_, i) => [`f${i}`]), voicedDerived: [] } };
+}
+
+function semanticExtraction(learnerText, events, { turn = 1, publicText = '' } = {}) {
+  return validateAdaptiveWarrantSemanticExtraction(
+    {
+      schema: ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA,
+      source_turn: turn,
+      source_text_sha256: adaptiveWarrantSemanticSourceHash(learnerText),
+      events,
+      extraction_status: 'accepted',
+    },
+    { learnerText, publicText, turn },
+  );
+}
+
+function semanticEvent({
+  learnerText,
+  eventId,
+  speechAct,
+  target = null,
+  action = null,
+  span = learnerText,
+  start = learnerText.indexOf(span),
+  confidence = 'high',
+  uncertainty = [],
+}) {
+  return {
+    event_id: eventId,
+    speaker: 'learner',
+    speech_act: speechAct,
+    target,
+    requested_or_proposed_action: action,
+    evidence_span: { text: span, start, end: start + span.length },
+    confidence,
+    uncertainty,
+  };
 }
 
 const CATALOGUE_ACTION_FAMILIES = [
@@ -153,6 +195,123 @@ test('public speech acts separate proposed tests, criteria, and tutor-directed r
     null,
     'the action-contract compatibility classifier must not turn a learner proposal into tutor debt',
   );
+});
+
+test('validated semantic events cover the V2 result-request and value-type misses', () => {
+  const learnerText = 'Show me the shelf-two access times.';
+  const extraction = semanticExtraction(
+    learnerText,
+    [
+      semanticEvent({
+        learnerText,
+        eventId: 'event-1',
+        speechAct: 'tutor_directed_public_result_request',
+        target: {
+          kind: 'record_entry',
+          subject: 'shelf-two access record',
+          public_identifiers: ['shelf-two'],
+          requested_value_types: ['name', 'time'],
+          required_components: [],
+        },
+        action: {
+          mode: 'requested',
+          actor: 'tutor',
+          action: 'supply_public_result',
+          object: 'shelf-two access names and times',
+        },
+      }),
+    ],
+    { publicText: 'The public case includes shelf-two records.' },
+  );
+  assert.equal(extraction.extraction_status, 'accepted');
+  const ledger = createAdaptiveWarrantPublicObligationLedger();
+  const decision = ledger.assess({ turn: 1, learnerText, semanticEventExtraction: extraction });
+  assert.equal(decision.speech_act.kind, 'tutor_directed_public_result_request');
+  assert.ok(decision.blocking_obligation.target.subject_terms.includes('shelf-two'));
+  assert.ok(decision.blocking_obligation.target.subject_terms.includes('access'));
+  assert.equal(decision.blocking_obligation.target.subject_terms.includes('name'), false);
+  assert.equal(decision.blocking_obligation.target.subject_terms.includes('time'), false);
+  assert.deepEqual(decision.blocking_obligation.target.requested_value_types, ['name', 'time']);
+  const delivery = auditAdaptiveWarrantPublicObligationDelivery({
+    obligation: decision.blocking_obligation,
+    tutorOutcome: {
+      turn: 1,
+      tutor_text: 'The shelf-two access record shows Dario accessed shelf two at 12:02.',
+    },
+  });
+  assert.equal(delivery.status, 'satisfied');
+  assert.deepEqual(delivery.component_delivery, [
+    { id: 'requested_name', answered: true },
+    { id: 'requested_time', answered: true },
+  ]);
+});
+
+test('event-to-engagement compilation resolves tutor selection as deference without hiding analytic multiplicity', () => {
+  const learnerText = 'Would you choose the first matter for me to examine?';
+  const extraction = semanticExtraction(learnerText, [
+    semanticEvent({
+      learnerText,
+      eventId: 'selection',
+      speechAct: 'tutor_selection_request',
+      action: { mode: 'requested', actor: 'tutor', action: 'select_next_step', object: 'first matter' },
+    }),
+    semanticEvent({
+      learnerText,
+      eventId: 'analytic',
+      speechAct: 'analytic_contribution',
+      action: null,
+    }),
+  ]);
+  const signal = compileAdaptiveWarrantSemanticSignal(extraction);
+  assert.equal(signal.primary, 'low_agency_deferral');
+  assert.deepEqual(signal.labels, ['low_agency_deferral', 'engaged_analytic']);
+  assert.equal(signal.deference_present, true);
+  assert.equal(signal.engaged_analytic_present, true);
+});
+
+test('conflicting semantic actors become uncertain and cannot mutate the warrant ledger', () => {
+  const learnerText = 'Check the public log.';
+  const shared = {
+    learnerText,
+    target: {
+      kind: 'record_entry',
+      subject: 'public log',
+      public_identifiers: ['public log'],
+      requested_value_types: ['record_text'],
+      required_components: [],
+    },
+  };
+  const extraction = semanticExtraction(
+    learnerText,
+    [
+      semanticEvent({
+        ...shared,
+        eventId: 'tutor-actor',
+        speechAct: 'tutor_directed_public_result_request',
+        action: { mode: 'requested', actor: 'tutor', action: 'supply_public_result', object: 'public log' },
+      }),
+      semanticEvent({
+        ...shared,
+        eventId: 'learner-actor',
+        speechAct: 'learner_proposed_test',
+        action: { mode: 'proposed', actor: 'learner', action: 'perform_public_test', object: 'public log' },
+      }),
+    ],
+    { publicText: 'The public log is available.' },
+  );
+  assert.equal(extraction.extraction_status, 'uncertain');
+  assert.deepEqual(
+    extraction.events.map((event) => event.validation.status),
+    ['uncertain', 'uncertain'],
+  );
+  assert.equal(compileAdaptiveWarrantSemanticSignal(extraction).primary, 'neutral');
+  const decision = createAdaptiveWarrantPublicObligationLedger().assess({
+    turn: 1,
+    learnerText,
+    semanticEventExtraction: extraction,
+  });
+  assert.equal(decision.open_count, 0);
+  assert.equal(decision.speech_act.kind, 'other');
 });
 
 test('public speech-act classifier does not invent tutor result debt from the failed study turns', () => {
@@ -281,8 +440,14 @@ test('public target terms normalize alphanumeric identifiers without empty or tr
   });
   assert.equal(request.kind, 'tutor_directed_public_result_request');
   assert.ok(request.target.public_terms.includes('wf-11'));
-  assert.equal(request.target.public_terms.some((term) => !term || term.endsWith('-')), false);
-  assert.equal(request.target.subject_terms.some((term) => !term || term.endsWith('-')), false);
+  assert.equal(
+    request.target.public_terms.some((term) => !term || term.endsWith('-')),
+    false,
+  );
+  assert.equal(
+    request.target.subject_terms.some((term) => !term || term.endsWith('-')),
+    false,
+  );
 });
 
 test('public-result debt is scoped to the directed clause instead of incidental earlier claims', () => {
@@ -300,14 +465,14 @@ test('public-result debt is scoped to the directed clause instead of incidental 
       expectedSubjects: ['moth', 'override', 'key', 'wipe', 'pulse'],
     },
     {
-      learnerText:
-        'What should I write next about what the badge log establishes and what evidence is still needed?',
+      learnerText: 'What should I write next about what the badge log establishes and what evidence is still needed?',
       expectedSurface:
         'What should I write next about what the badge log establishes and what evidence is still needed?',
       expectedSubjects: ['badge'],
     },
     {
-      learnerText: 'What is the boot log\u2019s last-activity line? I need that entry before I can record what it proves.',
+      learnerText:
+        'What is the boot log\u2019s last-activity line? I need that entry before I can record what it proves.',
       expectedSurface: 'What is the boot log\u2019s last-activity line?',
       expectedSubjects: ['boot', 'last-activity'],
     },
@@ -396,7 +561,10 @@ test('live host stance audit excludes immutable direct-source prose without hidi
   });
   assert.equal(hostSurface.active, true);
   assert.equal(hostSurface.reason, 'typed_live_host_axes_exclude_exact_source');
-  assert.deepEqual(hostSurface.excluded_spans.map((span) => span.kind), ['exact_source']);
+  assert.deepEqual(
+    hostSurface.excluded_spans.map((span) => span.kind),
+    ['exact_source'],
+  );
   assert.doesNotMatch(hostSurface.text, /mug in hand/iu);
 
   const audit = auditTutorStubResponseConfiguration({
@@ -1853,10 +2021,7 @@ test('gate outcomes carry a digest-bound projection instead of recursively nesti
     },
   };
   const directProjection = projectTutorStubWarrantGateOutcomeConfiguration(delivered);
-  assert.equal(
-    directProjection.configuration.adaptive_warrant_enforcement.final_authority_audit,
-    undefined,
-  );
+  assert.equal(directProjection.configuration.adaptive_warrant_enforcement.final_authority_audit, undefined);
   assert.equal(directProjection.provenance.omitted_schema, finalAuthorityAudit.schema);
   assert.match(directProjection.provenance.omitted_sha256, /^[a-f0-9]{64}$/u);
   assert.deepEqual(delivered.adaptive_warrant_enforcement.final_authority_audit, finalAuthorityAudit);

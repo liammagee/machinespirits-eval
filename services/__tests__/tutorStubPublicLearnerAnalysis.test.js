@@ -6,6 +6,10 @@ import { describe, it } from 'node:test';
 import { loadWorld } from '../dramaticDerivation/world.js';
 import { tutorStubLearnerDagGrounded } from '../tutorStubDialogueClosure.js';
 import {
+  ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA,
+  adaptiveWarrantSemanticSourceHash,
+} from '../adaptiveWarrantSemanticEvents.js';
+import {
   TUTOR_STUB_EVIDENCE_USE_RUBRICS,
   TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
   TUTOR_STUB_EVIDENCE_USE_RUBRIC_LEGACY,
@@ -411,6 +415,61 @@ describe('strict public learner analysis', () => {
     assert.match(strictPrompt, /Return every field required by the supplied provider schema/u);
     assert.match(strictPrompt, /empty arrays, null hypothesis\/assert_answer, an empty notes string/u);
     assert.doesNotMatch(strictPrompt, /Return sparse JSON: omit empty arrays/u);
+  });
+
+  it('adds a bounded semantic envelope to the existing learner-analysis seat and validates literal evidence', () => {
+    const learnerText = 'Show me the shelf-two access times.';
+    const semanticEvents = {
+      schema: ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA,
+      source_turn: 3,
+      source_text_sha256: adaptiveWarrantSemanticSourceHash(learnerText),
+      events: [
+        {
+          event_id: 'turn-003-event-01',
+          speaker: 'learner',
+          speech_act: 'tutor_directed_public_result_request',
+          target: {
+            kind: 'record_entry',
+            subject: 'shelf-two access record',
+            public_identifiers: ['shelf-two'],
+            requested_value_types: ['time'],
+            required_components: ['access_time'],
+          },
+          requested_or_proposed_action: {
+            mode: 'requested',
+            actor: 'tutor',
+            action: 'supply_public_result',
+            object: 'shelf-two access times',
+          },
+          evidence_span: { text: learnerText, start: 0, end: learnerText.length },
+          confidence: 'high',
+          uncertainty: [],
+        },
+      ],
+      extraction_status: 'accepted',
+    };
+    const analysis = validAnalysis({ root: { semantic_events: semanticEvents } });
+    assert.doesNotThrow(() =>
+      parseTutorStubPublicLearnerAnalysisStrict(JSON.stringify(analysis), {
+        includeSemanticEvents: true,
+        benchmarkLearnerText: learnerText,
+        tutorTurn: 3,
+        semanticPublicText: 'The public shelf-two record is available.',
+      }),
+    );
+    const provider = buildTutorStubPublicLearnerAnalysisProviderOutputSchema({ includeSemanticEvents: true });
+    assertCodexProviderSchema(provider);
+    assert.equal(provider.properties.semantic_events.properties.events.items.properties.evidence_span.type, 'object');
+    const prompt = buildTutorStubPublicLearnerAnalysisPrompt({
+      learnerText,
+      topic: 'public record reasoning',
+      world: buildTutorStubPublicLearnerAnalysisWorld(smokeWorld()),
+      tutorTurn: 3,
+      publicStagedEvidence: [],
+      includeSemanticEvents: true,
+    });
+    assert.match(prompt, /# Semantic-event extraction/u);
+    assert.match(prompt, /Names, times, dates.*are value types.*not automatically target subjects/u);
   });
 
   it('rejects fences, aliases, extra keys, wrong types, and unknown predictive labels locally', () => {

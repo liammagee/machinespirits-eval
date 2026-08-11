@@ -18,6 +18,19 @@ import { tutorStubAssertedClaimText } from './tutorStubConclusionAssertion.js';
 import { closeTruncatedTutorStubJson, normalizeTutorStubAnalysisEnvelope } from './tutorStubJson.js';
 import { buildTutorStubLearnerAdvance } from './tutorStubLearnerAdvance.js';
 import { buildTutorStubStateObservation } from './adaptiveTutor/tutorStubStateAdapter.js';
+import {
+  ADAPTIVE_WARRANT_SEMANTIC_ACTION_ACTORS,
+  ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES,
+  ADAPTIVE_WARRANT_SEMANTIC_ACTIONS,
+  ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE,
+  ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA,
+  ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS,
+  ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS,
+  ADAPTIVE_WARRANT_SEMANTIC_UNCERTAINTY_REASONS,
+  ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES,
+  adaptiveWarrantSemanticSourceHash,
+  validateAdaptiveWarrantSemanticExtraction,
+} from './adaptiveWarrantSemanticEvents.js';
 
 export const TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_SYSTEM_PROMPT = [
   'You are a compact up-front reviewer for an experimental tutor.',
@@ -383,6 +396,88 @@ function discourseOutputSchema() {
   };
 }
 
+function semanticEventLocalOutputSchema() {
+  const target = {
+    type: ['object', 'null'],
+    additionalProperties: false,
+    required: ['kind', 'subject', 'public_identifiers', 'requested_value_types', 'required_components'],
+    properties: {
+      kind: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS] },
+      subject: { type: 'string' },
+      public_identifiers: { type: 'array', maxItems: 6, items: { type: 'string' } },
+      requested_value_types: {
+        type: 'array',
+        maxItems: 4,
+        items: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES] },
+      },
+      required_components: { type: 'array', maxItems: 4, items: { type: 'string' } },
+    },
+  };
+  const action = {
+    type: ['object', 'null'],
+    additionalProperties: false,
+    required: ['mode', 'actor', 'action', 'object'],
+    properties: {
+      mode: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES] },
+      actor: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_ACTORS] },
+      action: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTIONS] },
+      object: { type: 'string' },
+    },
+  };
+  return {
+    type: 'object',
+    additionalProperties: false,
+    required: ['schema', 'source_turn', 'source_text_sha256', 'events', 'extraction_status'],
+    properties: {
+      schema: { type: 'string', const: ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA },
+      source_turn: { type: 'integer', minimum: 1 },
+      source_text_sha256: { type: 'string', minLength: 64, maxLength: 64 },
+      events: {
+        type: 'array',
+        maxItems: 4,
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: [
+            'event_id',
+            'speaker',
+            'speech_act',
+            'target',
+            'requested_or_proposed_action',
+            'evidence_span',
+            'confidence',
+            'uncertainty',
+          ],
+          properties: {
+            event_id: { type: 'string' },
+            speaker: { type: 'string', enum: ['learner', 'tutor'] },
+            speech_act: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS] },
+            target,
+            requested_or_proposed_action: action,
+            evidence_span: {
+              type: 'object',
+              additionalProperties: false,
+              required: ['text', 'start', 'end'],
+              properties: {
+                text: { type: 'string', maxLength: 240 },
+                start: { type: 'integer', minimum: 0 },
+                end: { type: 'integer', minimum: 1 },
+              },
+            },
+            confidence: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE] },
+            uncertainty: {
+              type: 'array',
+              maxItems: 3,
+              items: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_UNCERTAINTY_REASONS] },
+            },
+          },
+        },
+      },
+      extraction_status: { type: 'string', enum: ['accepted', 'uncertain'] },
+    },
+  };
+}
+
 /**
  * Local semantic schema retained for documentation and non-provider
  * validation. It deliberately expresses sparse optional fields and richer
@@ -392,6 +487,7 @@ function discourseOutputSchema() {
 export function buildTutorStubPublicLearnerAnalysisOutputSchema({
   includeRegisterSelection = false,
   includeBenchmarkTransitionEvent = false,
+  includeSemanticEvents = false,
 } = {}) {
   const properties = {
     classification: {
@@ -449,6 +545,10 @@ export function buildTutorStubPublicLearnerAnalysisOutputSchema({
     },
   };
   const required = ['classification', 'learner_record'];
+  if (includeSemanticEvents) {
+    properties.semantic_events = semanticEventLocalOutputSchema();
+    required.push('semantic_events');
+  }
   if (includeBenchmarkTransitionEvent) {
     properties.benchmark_transition = {
       type: 'object',
@@ -504,6 +604,51 @@ function providerObjectSchema(properties) {
   };
 }
 
+function semanticEventProviderOutputSchema() {
+  const target = providerObjectSchema({
+    kind: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS] },
+    subject: { type: 'string' },
+    public_identifiers: { type: 'array', items: { type: 'string' } },
+    requested_value_types: {
+      type: 'array',
+      items: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES] },
+    },
+    required_components: { type: 'array', items: { type: 'string' } },
+  });
+  const action = providerObjectSchema({
+    mode: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES] },
+    actor: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_ACTORS] },
+    action: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTIONS] },
+    object: { type: 'string' },
+  });
+  return providerObjectSchema({
+    schema: { type: 'string', enum: [ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA] },
+    source_turn: { type: 'integer' },
+    source_text_sha256: { type: 'string' },
+    events: {
+      type: 'array',
+      items: providerObjectSchema({
+        event_id: { type: 'string' },
+        speaker: { type: 'string', enum: ['learner', 'tutor'] },
+        speech_act: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS] },
+        target: { ...target, type: ['object', 'null'] },
+        requested_or_proposed_action: { ...action, type: ['object', 'null'] },
+        evidence_span: providerObjectSchema({
+          text: { type: 'string' },
+          start: { type: 'integer' },
+          end: { type: 'integer' },
+        }),
+        confidence: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE] },
+        uncertainty: {
+          type: 'array',
+          items: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_UNCERTAINTY_REASONS] },
+        },
+      }),
+    },
+    extraction_status: { type: 'string', enum: ['accepted', 'uncertain'] },
+  });
+}
+
 function providerScoreOutputSchema() {
   // OpenAI Structured Outputs does not enforce numeric ranges. The strict
   // local semantic parser retains the authoritative 1-5 check.
@@ -544,6 +689,7 @@ function providerDiscourseOutputSchema() {
 export function buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
   includeRegisterSelection = false,
   includeBenchmarkTransitionEvent = false,
+  includeSemanticEvents = false,
 } = {}) {
   const properties = {
     classification: providerObjectSchema({
@@ -578,6 +724,7 @@ export function buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
       notes: { type: 'string' },
     }),
   };
+  if (includeSemanticEvents) properties.semantic_events = semanticEventProviderOutputSchema();
   if (includeBenchmarkTransitionEvent) {
     properties.benchmark_transition = providerObjectSchema({
       family: { type: 'string', enum: [...BENCHMARK_TRANSITION_FAMILIES] },
@@ -1197,6 +1344,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
   dagPreflight = null,
   priorPublicLearnerState = null,
   includeBenchmarkTransitionEvent = false,
+  includeSemanticEvents = false,
   strictProviderEnvelope = false,
   promptProfile = TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.BASELINE,
   evidenceUseRubric = TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
@@ -1217,6 +1365,37 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
     classification: tutorStubLearnerClassificationPromptSchema(),
     learner_record: tutorStubLearnerRecordPromptSchema(),
   };
+  if (includeSemanticEvents) {
+    schema.semantic_events = {
+      schema: ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA,
+      source_turn: Number(tutorTurn),
+      source_text_sha256: adaptiveWarrantSemanticSourceHash(learnerText),
+      events: [
+        {
+          event_id: 'event-01',
+          speaker: 'learner|tutor',
+          speech_act: ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.join('|'),
+          target: {
+            kind: ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS.join('|'),
+            subject: 'public object or relation, separate from requested value types',
+            public_identifiers: ['exact public identifier'],
+            requested_value_types: ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES,
+            required_components: ['typed answer component'],
+          },
+          requested_or_proposed_action: {
+            mode: ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES.join('|'),
+            actor: ADAPTIVE_WARRANT_SEMANTIC_ACTION_ACTORS.join('|'),
+            action: ADAPTIVE_WARRANT_SEMANTIC_ACTIONS.join('|'),
+            object: 'short public action object',
+          },
+          evidence_span: { text: 'exact current-turn substring', start: 0, end: 1 },
+          confidence: ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE.join('|'),
+          uncertainty: ADAPTIVE_WARRANT_SEMANTIC_UNCERTAINTY_REASONS,
+        },
+      ],
+      extraction_status: 'accepted|uncertain',
+    };
+  }
   if (includeBenchmarkTransitionEvent) {
     schema.benchmark_transition = {
       family: BENCHMARK_TRANSITION_FAMILIES.join('|'),
@@ -1239,8 +1418,11 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
     'Return both:',
     '1. A pedagogical discourse classification.',
     '2. A conservative public learner-record update for the tutor-side learner-DAG model.',
+    includeSemanticEvents
+      ? '3. Ordered semantic events for the current learner utterance; this reuses the same call and does not make the events authoritative.'
+      : null,
     includeRegisterSelection
-      ? '3. A tutor engagement-stance selection made by the up-front reviewer using the classification plus the tutor-side learner-DAG state.'
+      ? `${includeSemanticEvents ? '4' : '3'}. A tutor engagement-stance selection made by the up-front reviewer using the classification plus the tutor-side learner-DAG state.`
       : null,
     policyInstruction,
     '',
@@ -1313,6 +1495,34 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
     '- epistemic_stance: receptive, confused, exploratory, overconfident, resistant, answer_seeking, reflective, grounded',
     '- agency: passive, complying, attempting, steering, self_correcting',
     '',
+    includeSemanticEvents ? '# Semantic-event extraction' : null,
+    includeSemanticEvents ? '' : null,
+    includeSemanticEvents
+      ? `Echo source_turn=${Number(tutorTurn)} and source_text_sha256=${adaptiveWarrantSemanticSourceHash(learnerText)} exactly.`
+      : null,
+    includeSemanticEvents
+      ? 'Return zero to four ordered events. Keep distinct acts in distinct events; do not collapse a proposal followed by a result request.'
+      : null,
+    includeSemanticEvents ? `speech_act must be one of: ${ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.join(', ')}.` : null,
+    includeSemanticEvents
+      ? 'Separate target.subject (the public object or relation) from target.requested_value_types (the fields requested about it). Names, times, dates, weights, sounds, materials, and match status are value types when the learner asks for those values; they are not automatically target subjects.'
+      : null,
+    includeSemanticEvents
+      ? 'Use requested mode with actor=tutor for a request that the tutor supply a public result; use proposed mode with actor=learner for a learner-proposed public test. A request that the tutor choose the next step is tutor_selection_request plus select_next_step and may also carry a separate low_agency_deferral event.'
+      : null,
+    includeSemanticEvents
+      ? 'Emit analytic_contribution only for explicit reasoning, testing, comparison, evidence limitation, or criterion work. It may coexist with another act.'
+      : null,
+    includeSemanticEvents
+      ? 'evidence_span must be an exact substring of the current learner turn with JavaScript UTF-16 start and exclusive end offsets.'
+      : null,
+    includeSemanticEvents
+      ? 'Use confidence=high with uncertainty=[] only when the act, actor, target, and span are unambiguous. Otherwise use medium or low and one to three declared uncertainty reasons; do not guess.'
+      : null,
+    includeSemanticEvents
+      ? 'Use target=null and requested_or_proposed_action=null when those fields do not apply.'
+      : null,
+    includeSemanticEvents ? '' : null,
     includeRegisterSelection ? '# Request type registry' : null,
     includeRegisterSelection ? '' : null,
     includeRegisterSelection
@@ -1608,7 +1818,14 @@ function requireNullableString(value, path) {
 
 function validateStrictAnalysis(
   parsed,
-  { includeRegisterSelection = false, includeBenchmarkTransitionEvent = false, benchmarkLearnerText = null } = {},
+  {
+    includeRegisterSelection = false,
+    includeBenchmarkTransitionEvent = false,
+    includeSemanticEvents = false,
+    benchmarkLearnerText = null,
+    tutorTurn = null,
+    semanticPublicText = null,
+  } = {},
 ) {
   const root = requireObject(parsed, '$');
   const rootFields = [
@@ -1616,6 +1833,7 @@ function validateStrictAnalysis(
     'learner_record',
     ...(includeRegisterSelection ? ['register_selection'] : []),
     ...(includeBenchmarkTransitionEvent ? ['benchmark_transition'] : []),
+    ...(includeSemanticEvents ? ['semantic_events'] : []),
   ];
   requireExactKeys(root, { allowed: rootFields, required: rootFields, path: '$' });
   const classification = requireObject(root.classification, '$.classification');
@@ -1814,6 +2032,23 @@ function validateStrictAnalysis(
       );
     }
   }
+  if (includeSemanticEvents) {
+    const semantic = validateAdaptiveWarrantSemanticExtraction(root.semantic_events, {
+      learnerText: benchmarkLearnerText,
+      publicText: semanticPublicText ?? benchmarkLearnerText,
+      turn: tutorTurn,
+    });
+    const eventIssues = semantic.events.flatMap((event) => event.validation.issues);
+    if (semantic.envelope_issues.length || eventIssues.length) {
+      throw new TutorStubPublicLearnerAnalysisError(
+        `strict public learner analysis returned invalid semantic events: ${[
+          ...semantic.envelope_issues,
+          ...eventIssues,
+        ].join(', ')}`,
+        { code: 'invalid_semantic_events', details: semantic },
+      );
+    }
+  }
   return root;
 }
 
@@ -1847,7 +2082,15 @@ export function parseTutorStubPublicLearnerAnalysisStrict(rawText, options = {})
 
 function analysisParts(
   raw,
-  { strict = false, includeRegisterSelection = false, includeBenchmarkTransitionEvent = false } = {},
+  {
+    strict = false,
+    includeRegisterSelection = false,
+    includeBenchmarkTransitionEvent = false,
+    includeSemanticEvents = false,
+    benchmarkLearnerText = null,
+    tutorTurn = null,
+    semanticPublicText = null,
+  } = {},
 ) {
   const parsed = raw?.parsed || raw || {};
   const classification =
@@ -1863,10 +2106,18 @@ function analysisParts(
     (!strict && (parsed.registerSelection || parsed.tutor_register || parsed.register)) ||
     null;
   const benchmarkTransition = parsed.benchmark_transition || null;
+  const semanticEvents = parsed.semantic_events || null;
   if (strict) {
-    validateStrictAnalysis(parsed, { includeRegisterSelection, includeBenchmarkTransitionEvent });
+    validateStrictAnalysis(parsed, {
+      includeRegisterSelection,
+      includeBenchmarkTransitionEvent,
+      includeSemanticEvents,
+      benchmarkLearnerText,
+      tutorTurn,
+      semanticPublicText,
+    });
   }
-  return { classification, learnerRecord, registerSelection, benchmarkTransition };
+  return { classification, learnerRecord, registerSelection, benchmarkTransition, semanticEvents };
 }
 
 function responseMetadata(raw = {}) {
@@ -1888,6 +2139,7 @@ export function splitTutorStubPublicLearnerAnalysis(raw, options = {}) {
     learnerRecordUpdate: parts.learnerRecord ? { ...parts.learnerRecord, ...metadata } : null,
     registerSelection: parts.registerSelection,
     benchmarkTransitionEvent: parts.benchmarkTransition,
+    semanticEvents: parts.semanticEvents,
   };
 }
 
@@ -1958,6 +2210,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
   dagPreflight = null,
   priorPublicLearnerState = null,
   includeBenchmarkTransitionEvent = false,
+  includeSemanticEvents = false,
   callModel,
   parseMode = TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.STRICT_BENCHMARK,
   role = 'tutor_stub_public_learner_analysis',
@@ -1970,7 +2223,10 @@ export async function extractTutorStubPublicLearnerAnalysis({
   const strict = parseMode === TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.STRICT_BENCHMARK;
   const effectiveRole = strict ? 'tutor_stub_public_learner_analysis' : role;
   const outputSchema = strict
-    ? buildTutorStubPublicLearnerAnalysisProviderOutputSchema({ includeBenchmarkTransitionEvent })
+    ? buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
+        includeBenchmarkTransitionEvent,
+        includeSemanticEvents,
+      })
     : null;
   let analysisPrompt = typeof prompt === 'string' ? prompt : null;
   const preCallFailure = (error) =>
@@ -2008,6 +2264,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
     ? buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
         includeRegisterSelection,
         includeBenchmarkTransitionEvent,
+        includeSemanticEvents,
       })
     : null;
   try {
@@ -2035,6 +2292,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
         dagPreflight,
         priorPublicLearnerState,
         includeBenchmarkTransitionEvent,
+        includeSemanticEvents,
         strictProviderEnvelope: strict,
         promptProfile,
         evidenceUseRubric,
@@ -2209,7 +2467,10 @@ export async function extractTutorStubPublicLearnerAnalysis({
       ? parseTutorStubPublicLearnerAnalysisStrict(rawText, {
           includeRegisterSelection,
           includeBenchmarkTransitionEvent,
+          includeSemanticEvents,
           benchmarkLearnerText: learnerText,
+          tutorTurn,
+          semanticPublicText: analysisPrompt,
         })
       : parseTutorStubPublicLearnerAnalysisInteractive(rawText);
   } catch (error) {
@@ -2224,6 +2485,37 @@ export async function extractTutorStubPublicLearnerAnalysis({
       effectiveRole,
       dispatchCount: 1,
     });
+  }
+
+  const semanticEventExtraction = includeSemanticEvents
+    ? validateAdaptiveWarrantSemanticExtraction(parsedResult.parsed?.semantic_events, {
+        learnerText,
+        publicText: analysisPrompt,
+        turn: tutorTurn,
+        rawResponseText: rawText,
+      })
+    : null;
+  if (
+    semanticEventExtraction &&
+    (semanticEventExtraction.envelope_issues.length || semanticEventExtraction.counts.rejected > 0)
+  ) {
+    throw attachCallFailure(
+      new TutorStubPublicLearnerAnalysisError('public learner analysis returned invalid semantic events', {
+        code: 'invalid_semantic_events',
+        details: semanticEventExtraction,
+      }),
+      {
+        modelCallOptions,
+        response,
+        injectedCallMetadata,
+        strict,
+        analysisPrompt,
+        outputSchema: effectiveOutputSchema,
+        rawText,
+        effectiveRole,
+        dispatchCount: 1,
+      },
+    );
   }
 
   const callMetadata = detailedCallMetadata({
@@ -2251,9 +2543,11 @@ export async function extractTutorStubPublicLearnerAnalysis({
     model: response?.model || null,
     latencyMs: Number(response?.latencyMs || 0),
     usage: response?.usage || null,
+    promptAudit: response?.promptAudit || null,
     parseMode,
     callMetadata,
     call_metadata,
+    semanticEventExtraction,
     provenance: {
       model_input_public_only: true,
       public_world_projection: true,
@@ -2654,6 +2948,7 @@ export function postprocessTutorStubPublicLearnerAnalysis({
   publicStagedEvidence = null,
   publicReleaseLedger = null,
   includeBenchmarkTransitionEvent = false,
+  includeSemanticEvents = false,
 } = {}) {
   const record = learnerRecord || createTutorStubPublicLearnerRecord(world);
   const dropoutState = dropout || createTutorStubDagFactDropoutState();
@@ -2677,10 +2972,15 @@ export function postprocessTutorStubPublicLearnerAnalysis({
       learnerRecordUpdate,
       registerSelection,
       benchmarkTransitionEvent,
+      semanticEvents,
     } = splitTutorStubPublicLearnerAnalysis(rawAnalysis, {
       strict,
       includeRegisterSelection,
       includeBenchmarkTransitionEvent,
+      includeSemanticEvents,
+      benchmarkLearnerText: learnerText,
+      tutorTurn,
+      semanticPublicText: rawAnalysis.prompt || learnerText,
     });
     if (!rawClassification || !learnerRecordUpdate) {
       throw new TutorStubPublicLearnerAnalysisError(
@@ -2689,6 +2989,14 @@ export function postprocessTutorStubPublicLearnerAnalysis({
       );
     }
     const classification = normalizeTutorStubClassificationAgainstLearnerSurface(rawClassification, learnerText);
+    const semanticEventExtraction = includeSemanticEvents
+      ? validateAdaptiveWarrantSemanticExtraction(semanticEvents, {
+          learnerText,
+          publicText: rawAnalysis.prompt || learnerText,
+          turn: tutorTurn,
+          rawResponseText: rawAnalysis.rawText || null,
+        })
+      : null;
     const tutorLearnerDag = applyTutorStubPublicLearnerRecordUpdate({
       update: learnerRecordUpdate,
       world,
@@ -2727,6 +3035,7 @@ export function postprocessTutorStubPublicLearnerAnalysis({
       learnerRecordUpdate,
       registerSelection,
       benchmarkTransitionEvent,
+      semanticEventExtraction,
       tutorLearnerDag,
       turnRecord,
       stateObservation,
@@ -2812,6 +3121,7 @@ export async function analyzeTutorStubPublicLearnerTurn({
     registerPolicy: promptContext.registerPolicy || null,
     registerEnabled: promptContext.registerEnabled === true,
     registerPalette: Array.isArray(promptContext.registerPalette) ? promptContext.registerPalette : [],
+    includeSemanticEvents: promptContext.includeSemanticEvents === true,
     role: promptContext.role || 'tutor_stub_public_learner_analysis',
     maxTokens: Number.isFinite(Number(promptContext.maxTokens)) ? Number(promptContext.maxTokens) : 2500,
     evidenceUseRubric: promptContext.evidenceUseRubric ?? TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
@@ -2831,5 +3141,6 @@ export async function analyzeTutorStubPublicLearnerTurn({
     humanDiscourseFrame,
     publicStagedEvidence: stagedPublicProjection,
     publicReleaseLedger,
+    includeSemanticEvents: promptContext.includeSemanticEvents === true,
   });
 }

@@ -341,6 +341,7 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
         turn: gateTurn,
         learnerText,
         classification,
+        semanticEventExtraction: raw?.semanticEventExtraction || null,
         dagModel: tutorLearnerDag?.model || null,
         priorActionFamily: state.register?.current?.action_family || null,
         proposedActionFamily: preGateAction.actionFamily || null,

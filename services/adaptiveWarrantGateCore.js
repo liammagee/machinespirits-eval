@@ -83,9 +83,7 @@ function decisionPriorOutcome(outcome) {
     delivered_response_configuration:
       outcome.delivered_response_configuration || outcome.deliveredResponseConfiguration || null,
     delivered_response_configuration_provenance:
-      outcome.delivered_response_configuration_provenance ||
-      outcome.deliveredResponseConfigurationProvenance ||
-      null,
+      outcome.delivered_response_configuration_provenance || outcome.deliveredResponseConfigurationProvenance || null,
     defeaters: Array.isArray(outcome.defeaters) ? [...outcome.defeaters] : [],
   };
 }
@@ -98,6 +96,7 @@ export function buildAdaptiveWarrantDecisionInputSnapshot({
   turn,
   learnerText = '',
   classification = null,
+  semanticEventExtraction = null,
   dagModel = null,
   priorActionFamily = null,
   proposedActionFamily = null,
@@ -118,6 +117,7 @@ export function buildAdaptiveWarrantDecisionInputSnapshot({
     turn: Number(turn),
     learner_text: String(learnerText || ''),
     classification,
+    semantic_event_extraction: semanticEventExtraction,
     learner_dag_model: dagModel,
     prior_delivered_action_family: priorActionFamily || null,
     pre_gate_proposed_action_family: proposedActionFamily || null,

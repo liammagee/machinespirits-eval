@@ -37,8 +37,7 @@ const INTERPRETATION_QUESTION =
   /\bwhat\b.{0,60}\b(?:evidence|exhibit|fact|mark|reading|record|result|trace|weight)\b.{0,40}\bmean(?:s|ing)?\b/iu;
 const SELECTION_QUESTION =
   /(?:\b(?:what|which)\b.{0,80}\b(?:(?:should|would|could|can|do) (?:i|we)|(?:i|we) (?:should|would|could|can)|(?:first|next))|\b(?:can|could|will|would) you\s+choose\s+which\b|\b(?:(?:can|could|will|would) you\s+|please\s+)?(?:choose|tell) me\b.{0,70}(?:\bwhat to\s+(?:check|compare|examine|inspect|test|weigh)\s+(?:first|next)\b|\bthe\s+(?:first|next)\s+(?:check|comparison|exhibit|test)\b))\s*[.?!]*$/iu;
-const TUTOR_SELECTION_DIRECTIVE =
-  /\b(?:can|could|will|would) you\s+(?:please\s+)?choose\s+(?:which|what)\b/iu;
+const TUTOR_SELECTION_DIRECTIVE = /\b(?:can|could|will|would) you\s+(?:please\s+)?choose\s+(?:which|what)\b/iu;
 const WORDING_REQUEST =
   /(?:\b(?:can|could|will|would) you\b.{0,70}\b(?:give|provide|show|tell) me\b.{0,30}\b(?:exact|first|next|opening)?\s*(?:line|phrase|sentence|wording)\b|\b(?:give|provide|show|tell) me\b.{0,30}\b(?:exact|first|next|opening)?\s*(?:line|phrase|sentence|wording)\b|\bhow (?:can|could|should|would) i\b.{0,55}\b(?:phrase|say|state|word|write)\b)/iu;
 const LEARNER_RECORD_ENTRY_REQUEST =
@@ -61,7 +60,7 @@ const NON_ANSWER_VALUE_TERMS = new Set(
 );
 
 const TARGET_METHOD_TERMS = new Set(
-  'alloy assay balance check compare comparison cupel die dross evidence entry examine exhibit fact flaw graver inspect link log mark match material metal public reading record result ring sample shilling show silver test tie tool touchstone trace weigh weighing weight witness'.split(
+  'alloy assay balance check compare comparison cupel date dates die dross evidence entry examine exhibit fact flaw graver inspect link log mark match material metal name names public reading record result ring sample shilling show silver sound sounds test tie time times tool touchstone trace weigh weighing weight witness'.split(
     ' ',
   ),
 );
@@ -166,6 +165,62 @@ function publicTarget(surface) {
   };
 }
 
+function semanticPublicTarget(target) {
+  if (!target) return null;
+  const kind = String(target.kind || 'public_exhibit_result');
+  const subjectSurface = [target.subject, ...(target.public_identifiers || [])].filter(Boolean).join(' ');
+  const publicTerms = contentTerms(subjectSurface).slice(0, 16);
+  const subjectTerms = targetSubjectTerms(publicTerms);
+  const valueComponents = (target.requested_value_types || []).map((valueType) => ({
+    id: `requested_${String(valueType)}`,
+    terms: [String(valueType)],
+    value_type: String(valueType),
+  }));
+  const declaredComponents = (target.required_components || []).map((component) => ({
+    id: String(component),
+    terms: [],
+  }));
+  return {
+    kind,
+    signature: `${kind}:${subjectTerms.slice(0, 4).sort().join('|') || 'generic'}`,
+    public_terms: publicTerms,
+    subject_terms: subjectTerms,
+    requested_value_types: [...new Set((target.requested_value_types || []).map(String))],
+    required_components: mergeRequiredComponents(valueComponents, declaredComponents),
+    source_surface: String(target.subject || ''),
+    semantic_target: clone(target),
+  };
+}
+
+function speechActFromSemanticEvents({ learnerText = '', classification = null, semanticEventExtraction } = {}) {
+  if (!semanticEventExtraction) return null;
+  const accepted = (semanticEventExtraction.events || []).filter((event) => event?.validation?.status === 'accepted');
+  const disposition = accepted.find((event) => ['withdrawal', 'transfer_to_learner'].includes(event.speech_act));
+  const precedence = [
+    'tutor_directed_public_result_request',
+    'learner_proposed_test',
+    'criterion_question',
+    'tutor_selection_request',
+    'learner_record_entry_request',
+    'learner_wording_request',
+    'withdrawal',
+    'transfer_to_learner',
+  ];
+  const selected = precedence.map((kind) => accepted.find((event) => event.speech_act === kind)).find(Boolean) || null;
+  const kind = selected?.speech_act || 'other';
+  return {
+    schema: ADAPTIVE_WARRANT_PUBLIC_SPEECH_ACT_SCHEMA,
+    kind,
+    creates_obligation: kind === 'tutor_directed_public_result_request',
+    target: semanticPublicTarget(selected?.target || null),
+    surface: oneLine(learnerText) || null,
+    prior_obligation_disposition: disposition?.speech_act || null,
+    corroborating_classifier_move: classificationTurn(classification).discourse_move || null,
+    semantic_event_ids: accepted.map((event) => event.event_id),
+    semantic_extraction_status: semanticEventExtraction.extraction_status || null,
+  };
+}
+
 function publicSpeechClauses(surface) {
   return oneLine(surface)
     .split(/(?<=[.!?;])\s+/u)
@@ -206,8 +261,7 @@ function targetsEquivalent(left, right) {
   return leftSubjects.size === rightSubjects.size && [...leftSubjects].every((term) => rightSubjects.has(term));
 }
 
-const REFERENTIAL_REMINDER_CUE =
-  /\b(?:again|it|matching|same|still|that|this|those|when (?:it|that)|yet)\b/iu;
+const REFERENTIAL_REMINDER_CUE = /\b(?:again|it|matching|same|still|that|this|those|when (?:it|that)|yet)\b/iu;
 
 function targetKindNamedInSurface(kind, surface) {
   const source = oneLine(surface).toLowerCase();
@@ -253,7 +307,13 @@ function referentialReminderCandidate(rows, speechAct) {
  * precision-first: a plan to perform a test is not a request that the tutor
  * provide its result.
  */
-export function classifyAdaptiveWarrantPublicSpeechAct({ learnerText = '', classification = null } = {}) {
+export function classifyAdaptiveWarrantPublicSpeechAct({
+  learnerText = '',
+  classification = null,
+  semanticEventExtraction = null,
+} = {}) {
+  const semanticAct = speechActFromSemanticEvents({ learnerText, classification, semanticEventExtraction });
+  if (semanticAct) return semanticAct;
   const surface = oneLine(learnerText);
   const turn = classificationTurn(classification);
   const withdrawalMatch = surface.match(WITHDRAWAL);
@@ -283,9 +343,7 @@ export function classifyAdaptiveWarrantPublicSpeechAct({ learnerText = '', class
   const directedResultSurface = directedResultRequestSurface(operativeSurface);
   const recordEntryMatch = operativeSurface.match(LEARNER_RECORD_ENTRY_REQUEST);
   const directedResultStart = directedResultSurface ? operativeSurface.lastIndexOf(directedResultSurface) : -1;
-  const recordEntryEnd = recordEntryMatch
-    ? Number(recordEntryMatch.index || 0) + recordEntryMatch[0].length
-    : -1;
+  const recordEntryEnd = recordEntryMatch ? Number(recordEntryMatch.index || 0) + recordEntryMatch[0].length : -1;
   const laterDirectedResultClause = directedResultStart >= 0 && directedResultStart > recordEntryEnd;
 
   // A criterion question asks what kind of evidence would establish a link;
@@ -325,7 +383,8 @@ export function classifyAdaptiveWarrantPublicSpeechAct({ learnerText = '', class
     EVIDENCE_CUE.test(operativeSurface) &&
     DIRECTED_TEST_PROPOSAL.test(operativeSurface) &&
     !DIRECTED_TEST_RESULT_CLAUSE.test(operativeSurface);
-  const resultRequest = Boolean(directedResultSurface) || (EVIDENCE_CUE.test(operativeSurface) && RESULT_REQUEST.test(operativeSurface));
+  const resultRequest =
+    Boolean(directedResultSurface) || (EVIDENCE_CUE.test(operativeSurface) && RESULT_REQUEST.test(operativeSurface));
   if (resultRequest && !directedTestProposal && (!proposal || DIRECTED_RESULT_CLAUSE.test(operativeSurface))) {
     return {
       ...base,
@@ -403,6 +462,22 @@ function concreteNextStepForTarget(text, target) {
 }
 
 function componentAnswerBearing(text, component) {
+  const source = oneLine(text);
+  if (component?.value_type === 'time') {
+    return /\b(?:[01]?\d|2[0-3]):[0-5]\d\b|\b(?:noon|midnight)\b/iu.test(source);
+  }
+  if (component?.value_type === 'date') {
+    return /\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?\b/iu.test(source);
+  }
+  if (component?.value_type === 'name') {
+    return /(?:^|[,:;]\s+|\b(?:was|is|by|from|shows?|lists?|names?)\s+)[A-Z][\p{L}'’-]{2,}/u.test(source);
+  }
+  if (component?.value_type === 'weight') {
+    return /\b\d+(?:\.\d+)?\s*(?:g|kg|grams?|kilograms?|oz|ounces?|lb|pounds?)\b/iu.test(source);
+  }
+  if (component?.value_type === 'match_status') {
+    return /\b(?:matches?|matched|no match|does not match|did not match|different)\b/iu.test(source);
+  }
   const terms = (component?.terms || []).map((term) => term.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'));
   if (!terms.length) return false;
   const relation = oneLine(text).match(
@@ -460,6 +535,9 @@ function deliveryFor(obligation, tutorOutcome) {
   }));
   const requiredComponentsAnswered =
     componentDelivery.length === 0 || componentDelivery.every((component) => component.answered);
+  const typedValueAnswer = Boolean(
+    obligation.target?.requested_value_types?.length && targetNamed && requiredComponentsAnswered,
+  );
   const matchingRelease = releasedEvidence.find((row) =>
     targetTermsMatch(obligation.target, `${row.surface} ${row.fact}`, { kindFallback: false }),
   );
@@ -474,6 +552,7 @@ function deliveryFor(obligation, tutorOutcome) {
   const supplied = Boolean(
     matchingRelease ||
     boundedNegativeComparison ||
+    typedValueAnswer ||
     (!unavailable && targetNamed && answerRelation && requiredComponentsAnswered),
   );
   const questionCount = (auditedTutorText.match(/\?/gu) || []).length;
@@ -599,13 +678,23 @@ export function createAdaptiveWarrantPublicObligationLedger({ obligations = [] }
   return {
     schema: ADAPTIVE_WARRANT_PUBLIC_OBLIGATION_LEDGER_SCHEMA,
 
-    assess({ turn, learnerText = '', classification = null, priorTutorOutcome = null } = {}) {
+    assess({
+      turn,
+      learnerText = '',
+      classification = null,
+      semanticEventExtraction = null,
+      priorTutorOutcome = null,
+    } = {}) {
       const normalizedTurn = Number(turn);
       if (!Number.isFinite(normalizedTurn) || normalizedTurn < 1) {
         throw new Error('public-obligation ledger requires a positive decision turn');
       }
       const events = reconcileTutorOutcome(priorTutorOutcome);
-      const speechAct = classifyAdaptiveWarrantPublicSpeechAct({ learnerText, classification });
+      const speechAct = classifyAdaptiveWarrantPublicSpeechAct({
+        learnerText,
+        classification,
+        semanticEventExtraction,
+      });
       events.push(...closeByLearnerAct(speechAct, normalizedTurn));
 
       if (speechAct.creates_obligation) {
@@ -635,9 +724,9 @@ export function createAdaptiveWarrantPublicObligationLedger({ obligations = [] }
             speechAct.target.required_components,
           );
           existing.last_reminded_turn = normalizedTurn;
-          existing.source_turns = [...new Set([...(existing.source_turns || [existing.created_turn]), normalizedTurn])].sort(
-            (left, right) => left - right,
-          );
+          existing.source_turns = [
+            ...new Set([...(existing.source_turns || [existing.created_turn]), normalizedTurn]),
+          ].sort((left, right) => left - right);
           existing.occurrences += 1;
           existing.status = existing.status === 'deferred' ? 'reactivated' : existing.status;
           addHistory(existing, { type: 'reminded', turn: normalizedTurn, surface: speechAct.surface });

@@ -165,8 +165,12 @@ function classificationTurn(classification) {
 const UNRESOLVED_FORM = /\b(?:no|not|none|missing|without|unrecorded|unshown|unproved|yet|still|before)\b/iu;
 
 /** Extract only a concrete, learner-visible request for missing evidence. */
-export function classifyAdaptiveWarrantEvidenceRequest({ learnerText = '', classification = null } = {}) {
-  const act = classifyAdaptiveWarrantPublicSpeechAct({ learnerText, classification });
+export function classifyAdaptiveWarrantEvidenceRequest({
+  learnerText = '',
+  classification = null,
+  semanticEventExtraction = null,
+} = {}) {
+  const act = classifyAdaptiveWarrantPublicSpeechAct({ learnerText, classification, semanticEventExtraction });
   if (!act.creates_obligation) return null;
   return {
     schema: ADAPTIVE_WARRANT_EVIDENCE_REQUEST_SCHEMA,
@@ -211,6 +215,10 @@ function isResistanceSignal(signal, turn) {
   );
 }
 
+function signalHasSurface(signal) {
+  return signal?.surface_present === true || Boolean(oneLine(signal?.surface));
+}
+
 function classifyContractResponse({ family, signal, turn, dagGrowth }) {
   if (family === 'challenge_resistance') {
     if (isAgentiveEvidenceMove(turn)) return { status: 'success', reason: 'agentive_bounded_evidence_move' };
@@ -218,7 +226,7 @@ function classifyContractResponse({ family, signal, turn, dagGrowth }) {
   }
   if (family === 'repair_explanation' || family === 'clarify_term') {
     if (isRepairSignal(signal, turn)) return { status: 'defeat', reason: 'repair_or_clarification_request_persists' };
-    if (oneLine(signal?.surface) && turn.epistemic_stance !== 'confused') {
+    if (signalHasSurface(signal) && turn.epistemic_stance !== 'confused') {
       return { status: 'success', reason: 'learner_resumed_after_repair' };
     }
   }
@@ -233,21 +241,21 @@ function classifyContractResponse({ family, signal, turn, dagGrowth }) {
   if (
     family === 'answer_accountably' &&
     !isRepairSignal(signal, turn) &&
-    (isEvidenceMove(turn) || oneLine(signal?.surface))
+    (isEvidenceMove(turn) || signalHasSurface(signal))
   ) {
     return { status: 'success', reason: 'learner_received_or_contested_bounded_answer' };
   }
   if (family === 'compress_sayback' && isEvidenceMove(turn)) {
     return { status: 'success', reason: 'learner_restated_supported_claim' };
   }
-  if (family === 'reanchor_lived_stake' && !isResistanceSignal(signal, turn) && oneLine(signal?.surface)) {
+  if (family === 'reanchor_lived_stake' && !isResistanceSignal(signal, turn) && signalHasSurface(signal)) {
     return { status: 'success', reason: 'learner_reengaged_after_lived_stake' };
   }
-  if (family === 'receive_vulnerability' && !isResistanceSignal(signal, turn) && oneLine(signal?.surface)) {
+  if (family === 'receive_vulnerability' && !isResistanceSignal(signal, turn) && signalHasSurface(signal)) {
     return { status: 'success', reason: 'learner_continued_voluntarily' };
   }
   if (family === 'close_inquiry') return { status: 'success', reason: 'terminal_family_delivered' };
-  if (family === 'baseline_plain_response' && oneLine(signal?.surface)) {
+  if (family === 'baseline_plain_response' && signalHasSurface(signal)) {
     return { status: 'success', reason: 'learner_responded' };
   }
   return { status: 'pending', reason: 'expected_uptake_not_yet_observed' };
@@ -290,10 +298,15 @@ export function createAdaptiveWarrantActionContractTracker() {
       learnerText = '',
       classification = null,
       signal = null,
+      semanticEventExtraction = null,
       dagGrowth = null,
     } = {}) {
       const normalizedTurn = Number(turn);
-      const request = classifyAdaptiveWarrantEvidenceRequest({ learnerText, classification });
+      const request = classifyAdaptiveWarrantEvidenceRequest({
+        learnerText,
+        classification,
+        semanticEventExtraction,
+      });
 
       const definition = getAdaptiveWarrantActionContract(actionFamily);
       if (!definition || !Number.isFinite(normalizedTurn) || normalizedTurn < 2) {
