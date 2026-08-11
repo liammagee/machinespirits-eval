@@ -393,6 +393,16 @@ value types, action mode/actor/action, literal evidence span, and whether the
 utterance is genuinely ambiguous under the handbook. Reader confidence is not
 used as a substitute for field agreement.
 
+The reader response schema carries only the literal `evidence_span.text`, not
+numeric offsets. The text must be non-empty, no longer than 240 characters,
+and occur exactly once in the current learner utterance. Exact JavaScript
+UTF-16 `start` and exclusive `end` offsets are then derived mechanically by the
+assembler and listed case by case in its assembly audit. A missing, repeated,
+or non-literal span fails assembly. This schema-declared derivation removes
+LLM character-count arithmetic from the reader instrument; it does not relax
+the live extractor contract in section 2, which still requires validated text
+and offsets in the learner-analysis envelope.
+
 Both extraction files must assemble with exact IDs, no missing or additional
 fields, and no hand repair. Only schema-declared mechanical canonicalization
 may occur, and every such change must be disclosed. The private prediction key

@@ -155,7 +155,7 @@ test('semantic annotation validation rejects non-literal spans before consensus'
   );
 });
 
-test('semantic collection freezes exact packets and assembles without normalization', () => {
+test('semantic collection freezes exact packets and derives only unique literal span offsets', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-annotation-'));
   const corpus = fixture();
   const corpusPath = path.join(root, 'corpus.json');
@@ -176,6 +176,12 @@ test('semantic collection freezes exact packets and assembles without normalizat
     prepared.authorizationRequest.payload_scope.excluded.includes('private key, design support plan, and predictions'),
     true,
   );
+  const firstBatchSchema = JSON.parse(fs.readFileSync(prepared.manifest.readers[0].batches[0].response_schema_path));
+  const firstSampleSchema = firstBatchSchema.properties.cases_by_sample_id.properties['sample-1'];
+  assert.equal(firstSampleSchema.properties.note.minLength, 8);
+  assert.deepEqual(Object.keys(firstSampleSchema.properties.events.items.properties.evidence_span.properties), [
+    'text',
+  ]);
   const reader = prepared.manifest.readers[0];
   const responseDir = path.join(root, 'responses');
   fs.mkdirSync(responseDir, { recursive: true });
@@ -184,9 +190,11 @@ test('semantic collection freezes exact packets and assembles without normalizat
     const response = packet.response_template;
     for (const sampleId of batch.required_sample_ids) {
       const row = corpus.cases.find((candidate) => candidate.sample_id === sampleId);
+      const readerEvent = event(row.kind, row.current_learner_turn.learner, Number(sampleId.split('-').at(-1)));
+      readerEvent.evidence_span = { text: readerEvent.evidence_span.text };
       response.cases_by_sample_id[sampleId] = {
         genuinely_ambiguous: false,
-        events: [event(row.kind, row.current_learner_turn.learner, Number(sampleId.split('-').at(-1)))],
+        events: [readerEvent],
         note: 'The public actor and action are explicit.',
       };
     }
@@ -203,9 +211,17 @@ test('semantic collection freezes exact packets and assembles without normalizat
     outputPath: path.join(root, 'reader-a.json'),
   });
   assert.equal(assembled.response.cases.length, 8);
+  assert.equal(
+    assembled.response.cases.every((row) => Number.isInteger(row.events[0].evidence_span.start)),
+    true,
+  );
   const audit = JSON.parse(fs.readFileSync(assembled.auditPath, 'utf8'));
-  assert.equal(audit.normalization, 'none');
-  assert.equal(audit.edit_count, 0);
+  assert.equal(audit.normalization, 'schema_declared_unique_literal_span_offset_derivation');
+  assert.equal(audit.edit_count, 8);
+  assert.equal(
+    audit.canonicalizations.every((row) => row.operation === 'derive_unique_literal_utf16_offsets'),
+    true,
+  );
 });
 
 test('fresh V3 diagnostic supplies the predeclared semantic and rare-state construction floors', () => {

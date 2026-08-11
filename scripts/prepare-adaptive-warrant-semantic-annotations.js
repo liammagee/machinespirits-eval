@@ -31,6 +31,7 @@ const BATCH_FIELDS = Object.freeze([
   'cases_by_sample_id',
 ]);
 const CASE_FIELDS = Object.freeze(['genuinely_ambiguous', 'events', 'note']);
+const EVENT_FIELDS = Object.freeze(['speech_act', 'target', 'requested_or_proposed_action', 'evidence_span']);
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -76,7 +77,11 @@ function assertEmptyDirectory(outputDir) {
 }
 
 function responseCaseTemplate() {
-  return { genuinely_ambiguous: false, events: [], note: '' };
+  return {
+    genuinely_ambiguous: false,
+    events: [],
+    note: 'REPLACE with case-specific public rationale.',
+  };
 }
 
 function publicSemanticCase(row) {
@@ -150,7 +155,8 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
           'Return the exact JSON response envelope with every required opaque sample-id key and no prose outside JSON.',
           'Preserve event order. A compound utterance may have several events; do not collapse a proposal and a result request.',
           'Use genuinely_ambiguous=true only when the public handbook leaves two material readings unresolved.',
-          'Every evidence span must be a literal substring of current_learner_turn.learner with JavaScript UTF-16 start and exclusive end offsets.',
+          'Every evidence_span must contain only text: one non-empty literal substring that occurs exactly once in current_learner_turn.learner. Do not return start or end; the assembler derives UTF-16 offsets mechanically and records them in its audit.',
+          'Every case note must contain at least eight characters of case-specific public-evidence rationale, including when the case is not ambiguous.',
           'Keep target.subject separate from requested_value_types. A requested name, time, date, or weight is not automatically a target subject.',
         ],
         handbook_markdown: handbookMarkdown,
@@ -267,8 +273,10 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
   if (!reader) throw new Error(`unknown semantic reader ${readerId}`);
   const corpus = readJson(manifest.corpus.path);
   const order = new Map(corpus.cases.map((row, index) => [row.sample_id, index]));
+  const corpusById = new Map(corpus.cases.map((row) => [row.sample_id, row]));
   const cases = [];
   const inputs = [];
+  const canonicalizations = [];
   for (const batch of reader.batches) {
     if (fileSha256(batch.packet_path) !== batch.packet_sha256) throw new Error(`${batch.batch_id} packet drift`);
     if (fileSha256(batch.response_schema_path) !== batch.response_schema_sha256) {
@@ -293,7 +301,35 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
     for (const sampleId of batch.required_sample_ids) {
       const row = response.cases_by_sample_id[sampleId];
       exactFields(row, CASE_FIELDS, `${batch.batch_id} ${sampleId}`);
-      cases.push({ sample_id: sampleId, ...row });
+      if (typeof row.note !== 'string' || row.note.trim().length < 8) {
+        throw new Error(`${batch.batch_id} ${sampleId} requires a case-specific rationale`);
+      }
+      if (!Array.isArray(row.events) || row.events.length > 4) {
+        throw new Error(`${batch.batch_id} ${sampleId} events must be a bounded array`);
+      }
+      const learnerText = String(corpusById.get(sampleId)?.current_learner_turn?.learner || '');
+      const events = row.events.map((event, eventIndex) => {
+        exactFields(event, EVENT_FIELDS, `${batch.batch_id} ${sampleId} event ${eventIndex}`);
+        exactFields(event.evidence_span, ['text'], `${batch.batch_id} ${sampleId} event ${eventIndex} span`);
+        const text = event.evidence_span.text;
+        if (typeof text !== 'string' || !text.length || text.length > 240) {
+          throw new Error(`${batch.batch_id} ${sampleId} event ${eventIndex} span text is invalid`);
+        }
+        const start = learnerText.indexOf(text);
+        if (start < 0 || learnerText.lastIndexOf(text) !== start) {
+          throw new Error(`${batch.batch_id} ${sampleId} event ${eventIndex} span must be a unique literal substring`);
+        }
+        const end = start + text.length;
+        canonicalizations.push({
+          sample_id: sampleId,
+          event_index: eventIndex,
+          operation: 'derive_unique_literal_utf16_offsets',
+          start,
+          end,
+        });
+        return { ...event, evidence_span: { text, start, end } };
+      });
+      cases.push({ sample_id: sampleId, ...row, events });
     }
     inputs.push({ batch_id: batch.batch_id, path: responsePath, sha256: fileSha256(responsePath) });
   }
@@ -319,8 +355,9 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
     manifest: { path: resolvedManifest, sha256: fileSha256(resolvedManifest) },
     reader_id: readerId,
     annotation_run_id: annotationRunId,
-    normalization: 'none',
-    edit_count: 0,
+    normalization: 'schema_declared_unique_literal_span_offset_derivation',
+    edit_count: canonicalizations.length,
+    canonicalizations,
     input_batches: inputs,
     validation,
     output: { path: resolvedOutput, sha256: fileSha256(resolvedOutput) },

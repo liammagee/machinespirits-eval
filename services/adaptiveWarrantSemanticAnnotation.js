@@ -56,12 +56,13 @@ function semanticReaderEventSchema() {
   const target = closedSchema({
     kind: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS] },
     subject: { type: 'string' },
-    public_identifiers: { type: 'array', items: { type: 'string' } },
+    public_identifiers: { type: 'array', maxItems: 6, items: { type: 'string' } },
     requested_value_types: {
       type: 'array',
+      maxItems: 4,
       items: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES] },
     },
-    required_components: { type: 'array', items: { type: 'string' } },
+    required_components: { type: 'array', maxItems: 4, items: { type: 'string' } },
   });
   const action = closedSchema({
     mode: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES] },
@@ -74,9 +75,7 @@ function semanticReaderEventSchema() {
     target: { ...target, type: ['object', 'null'] },
     requested_or_proposed_action: { ...action, type: ['object', 'null'] },
     evidence_span: closedSchema({
-      text: { type: 'string' },
-      start: { type: 'integer' },
-      end: { type: 'integer' },
+      text: { type: 'string', minLength: 1, maxLength: 240 },
     }),
   });
 }
@@ -90,8 +89,8 @@ export function buildAdaptiveWarrantSemanticBatchOutputSchema({
 } = {}) {
   const caseSchema = closedSchema({
     genuinely_ambiguous: { type: 'boolean' },
-    events: { type: 'array', items: semanticReaderEventSchema() },
-    note: { type: 'string' },
+    events: { type: 'array', maxItems: 4, items: semanticReaderEventSchema() },
+    note: { type: 'string', minLength: 8 },
   });
   return closedSchema({
     schema: { type: 'string', enum: [ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA] },

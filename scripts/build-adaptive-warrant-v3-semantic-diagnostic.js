@@ -489,7 +489,7 @@ target.subject is the public object or relation under inquiry. requested_value_t
 
 Action mode is requested, proposed, or none. Actor is learner, tutor, joint, unspecified, or none. Action is supply_public_result, perform_public_test, select_next_step, record_public_claim, explain_wording, withdraw_request, or none. Use null when target or action does not apply.
 
-Evidence span offsets are JavaScript UTF-16 indices into current_learner_turn.learner with exclusive end. Mark genuinely_ambiguous only when two material readings remain plausible after applying this handbook. Do not see or infer model predictions, private support tags, downstream decisions, or another reader response.
+Return only evidence_span.text: a non-empty literal substring that occurs exactly once in current_learner_turn.learner. Do not calculate offsets; the assembler derives JavaScript UTF-16 start and exclusive end offsets mechanically and records them in its audit. Mark genuinely_ambiguous only when two material readings remain plausible after applying this handbook. Give every case a short case-specific public-evidence rationale. Do not see or infer model predictions, private support tags, downstream decisions, or another reader response.
 `;
 }
 
