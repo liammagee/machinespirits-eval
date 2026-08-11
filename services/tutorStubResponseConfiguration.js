@@ -1994,6 +1994,7 @@ function realizationMetrics(text, world) {
     averageSentenceWords: Number((words.length / Math.max(1, sentences.length)).toFixed(2)),
     maxSentenceWords: Math.max(0, ...sentences.map((sentence) => responseWords(sentence).length)),
     questionCount: (String(text).match(/\?/gu) || []).length,
+    secondPerson: /\b(?:you|your|we|let's)\b/iu.test(text),
     concreteSceneTerms: [...new Set(sceneTerms)].slice(0, 12),
     concreteSceneTermCount: new Set(sceneTerms).size,
   };

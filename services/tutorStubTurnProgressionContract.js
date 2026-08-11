@@ -1453,7 +1453,17 @@ export function auditTutorStubLiveTurnProgressionV1({
   const uptake = oneLine(observedComposition?.uptake);
   const development = oneLine(observedComposition?.development);
   const sentences = liveSentences(responseText, authoredSourceTexts);
-  const terminalSurface = sentences.at(-1) || '';
+  const requiredExactQuestion = oneLine(contract.handoff_contract?.required_exact_question);
+  // A required question can itself quote a previously public, multi-sentence
+  // clue. `Intl.Segmenter` sees the punctuation inside that ordinary quotation
+  // as sentence boundaries because it is not the currently released authored
+  // SOURCE. Terminality is already checked against the last host question mark;
+  // when the complete required question is the response suffix, retain that
+  // exact public span as the terminal surface instead of a quoted fragment.
+  const terminalSurface =
+    requiredExactQuestion && responseText.endsWith(requiredExactQuestion)
+      ? requiredExactQuestion
+      : sentences.at(-1) || '';
   const questionPositions = hostQuestionPositions(responseText, authoredSourceTexts);
   const questionCount = questionPositions.length;
   const uptakeQuestionCount = hostQuestionPositions(uptake, authoredSourceTexts).length;

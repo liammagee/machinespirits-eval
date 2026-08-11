@@ -1133,3 +1133,22 @@ evidence kind, and overlap a uniquely best active obligation's public subject
 terms. Equal support for two obligations remains ambiguous and creates no
 coalescing shortcut. The unchanged representative gate must again pass 24
 valid seals, 192/192 replay parity, and 192/192 delivery before annotation.
+
+## Active-family fallback closure — 11 August 2026
+
+The clean `1490d82a944fe21837fdd475bba0480f529bda5b` matrix was stopped at its
+first invalid child. On answer-seeking Foxtrot turn seven, active final
+authority selected `challenge_resistance`, but all three response attempts
+continued the proof task without visibly interrupting rote copying or returning
+a choice. The active-family delivery veto correctly rejected the terminal
+fallback. The partial packet is burned.
+
+The prospective fallback now preserves action-family ownership at the public
+span that the auditor actually assigns: `answer_accountably`,
+`challenge_resistance`, and `receive_vulnerability` are realized in uptake;
+development-owned families remain in development; `compress_sayback` owns its
+single short question; and closure is explicitly public. A regression audits
+the complete safely terminable family matrix. Exact terminal questions are
+also matched as whole response suffixes so quoted prior clues cannot be split
+into a false missing-handoff result. The representative thresholds and sample
+remain unchanged.

@@ -877,6 +877,26 @@ The remaining sequence is:
    natural frame and apply the unchanged gate to it alone; and
 5. run no downstream outcome comparison unless that representative gate passes.
 
+## Current restart boundary after active-fallback realization
+
+The clean `1490d82a944fe21837fdd475bba0480f529bda5b` attempt passed preflight and
+the prior identity failure, then stopped on the first completed child. Active
+`challenge_resistance` was not visible in any response attempt, including the
+deterministic fallback. A quoted multi-sentence clue also fragmented the exact
+terminal-question audit. The partial packet is burned.
+
+The remaining sequence is:
+
+1. verify, commit, and push the action-family fallback and exact-question
+   boundary repairs;
+2. freeze a new clean SHA and automatically accept its digest under the
+   standing authorization;
+3. require 24 valid child seals, 192 learner analyses, exact live/replay parity,
+   and zero delivery mismatch;
+4. only then freeze the zero-overlap 96-case natural corpus, collect two fresh
+   independent readers, and apply the unchanged representative gate; and
+5. run no downstream outcome comparison unless that gate passes.
+
 ## Current restart boundary after referential-identity repair
 
 The first sealed child from clean commit

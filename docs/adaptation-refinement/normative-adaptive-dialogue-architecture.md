@@ -993,3 +993,20 @@ obligation identifier and the pre-resolution target. If candidates tie, the
 reference remains unresolved rather than silently merging normative objects.
 This separates public-reference resolution from both result delivery and the
 private gate transition while keeping live and replay state identical.
+
+## 30. Final authority owns a public span, not only a response
+
+An action family can be visible in the response as a whole yet absent from the
+span that performs it. Direct accountability, resistance challenge,
+vulnerability reception, and explanation repair are uptake-owned actions;
+evidence staging and most reanchoring actions are development-owned. A fallback
+that adds the right cue to the wrong span does not deliver the intervention.
+
+Deterministic recovery therefore realizes each active family in its declared
+public owner. Uptake-owned families rewrite the bounded first sentence while
+preserving learner focus; development-owned families add their public move
+before the typed handoff; compression owns one short sayback question; strict
+completion owns an explicit public closure. The visibility matrix is audited
+family by family. Separately, an exact required handoff is a bound public span:
+if the whole question is the terminal response suffix, punctuation inside its
+quoted prior evidence cannot change its identity.

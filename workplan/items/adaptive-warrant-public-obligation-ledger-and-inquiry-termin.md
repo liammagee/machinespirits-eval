@@ -524,6 +524,20 @@ The item remains active pending verification, a clean pushed checkpoint, a
 new 24/24 and 192/192 delivery run, two fresh readers, and passage of the
 unchanged representative gate. No downstream outcome study is licensed.
 
+The clean `1490d82a944fe21837fdd475bba0480f529bda5b` restart passed preflight and
+the prior anaphoric path, then stopped on its first completed child. Active
+`challenge_resistance` remained internal across all three response attempts;
+none interrupted copying or returned public choice. The hard final-authority
+veto was correct. A second, nonblocking issue split an exact terminal question
+inside its quoted two-sentence prior clue. The partial packet is burned.
+Prospectively, deterministic fallback realizes every safely terminable active
+family in its owning uptake or development span, and exact required questions
+bind as complete terminal suffixes. Focused family-matrix, progression,
+configuration, composition, and guard regressions pass. The item remains active
+pending full verification, a clean pushed checkpoint, a fresh 24/24 execution,
+two readers, and passage of the unchanged gate. No downstream outcome study is
+licensed.
+
 The first child from clean commit
 `1624e6b889b1a1d47379befbbb39a746e2a3d4b8` stopped the next matrix after a
 valid named deferral was split into a new generic debt by the learner's

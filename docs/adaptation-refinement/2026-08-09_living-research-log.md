@@ -1420,3 +1420,21 @@ select one unique candidate. Ties remain unresolved and cannot collapse
 distinct debts. This preserves clause-local precision while making cross-turn
 identity explicit and auditable. A fresh clean matrix remains required before
 reader collection; no downstream outcome run is licensed.
+
+## Progress Update — 11 August 2026, active fallback realization completed
+
+The clean `1490d82a944fe21837fdd475bba0480f529bda5b` restart passed preflight and
+the repaired anaphoric path live, but its first completed child stopped on turn
+seven. Active final authority selected `challenge_resistance` after repeated
+answer-seeking. The model draft, recovery, and deterministic fallback all
+continued the evidence exercise without publicly interrupting the copying
+pattern or returning choice to the learner. The hard delivery veto therefore
+worked as designed. The partial packet is burned.
+
+The same turn exposed a nonblocking audit defect: its exact terminal question
+quoted a previously public two-sentence clue, and sentence segmentation kept
+only the quotation tail. Prospectively, uptake-owned active families receive a
+family-specific first sentence, every safely terminable active family has a
+deterministic visibility regression, and an exact required question that is the
+full response suffix remains the terminal surface even when it contains quoted
+sentence punctuation. A new clean matrix is required before readers.

@@ -242,6 +242,43 @@ test('live progression applies the same obligation audit while ignoring question
   assert.ok(rejected.issues.some((issue) => issue.type === 'public_obligation_replaced_by_question'));
 });
 
+test('a required terminal question may quote a previously public multi-sentence clue', () => {
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText: 'How should that clue enter the chain?',
+    responseCompositionFrame: {
+      learner_move: { summary: 'The learner asks how the earlier clue enters the chain.' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    actionFamily: 'challenge_resistance',
+  });
+  const clue =
+    'Fresh marks score the rail, still warm. The registry matches their spacing to Moth’s retired chassis.';
+  const exactQuestion = `How does the public clue “${clue}” enter the chain you just stated?`;
+  contract.handoff_contract.question_allowed = true;
+  contract.handoff_contract.question_required = true;
+  contract.handoff_contract.question_owner = 'handoff';
+  contract.handoff_contract.terminal_if_question = true;
+  contract.handoff_contract.required_exact_question = exactQuestion;
+  contract.handoff_contract.required_target_surfaces = [];
+  contract.handoff_contract.required_target_terms = [];
+  contract.turn_focus_contract.sibling_relation_requires_explicit_bridge = false;
+  const uptake = 'I will interrupt the copying pattern and return the public judgment to you.';
+  const development = `I read the inquiry log. ${exactQuestion}`;
+  const audit = auditTutorStubLiveTurnProgressionV1({
+    contract,
+    text: `${uptake} ${development}`,
+    responseComposition: { uptake, development },
+  });
+
+  assert.equal(
+    audit.issues.some((issue) => issue.type === 'required_exact_handoff_question_missing'),
+    false,
+    JSON.stringify(audit.issues),
+  );
+  assert.equal(audit.observed.terminal_surface, exactQuestion);
+});
+
 test('structured and live progression reject an obligation answered only after an authored source', () => {
   const contract = obligationProgressionContract();
   const dueSource = 'The die register names a fresh cutting tool.';

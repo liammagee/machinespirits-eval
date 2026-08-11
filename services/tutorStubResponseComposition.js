@@ -1751,6 +1751,7 @@ function configuredFallbackStance(stance) {
 }
 
 function configuredFallbackHandoff({ support = null, actionFamily = null } = {}) {
+  if (actionFamily === 'compress_sayback') return 'Can you say that public finding in one short sentence?';
   if (support?.clarificationInvitationRequired) {
     return 'Would you rather test that distinction against what is already public, hold it open for the next public fact, or ask me to clarify a word or connection?';
   }
@@ -1762,6 +1763,31 @@ function configuredFallbackHandoff({ support = null, actionFamily = null } = {})
   }
   if (actionFamily === 'close_inquiry') return 'That is enough to close the record without another demand.';
   return 'What does that let us carry forward?';
+}
+
+function configuredFallbackActionFamily(actionFamily) {
+  return (
+    {
+      clarify_distinction: 'The difference is what this evidence supports, rather than the conclusion beyond it.',
+      reanchor_lived_stake: 'You can test what this changes at the public object in front of us.',
+      reanchor_public_evidence: 'The public record stands, but the stronger claim remains open.',
+      close_inquiry: 'The public record supports that finding; this inquiry is closed.',
+    }[actionFamily] || null
+  );
+}
+
+function configuredFallbackActionUptake(actionFamily, uptake) {
+  const publicUptake = oneLine(uptake);
+  const continuation = publicUptake
+    ? `${publicUptake.charAt(0).toLowerCase()}${publicUptake.slice(1)}`
+    : 'I will keep your public point central';
+  return (
+    {
+      answer_accountably: `I will answer directly and state what would check it; ${continuation}`,
+      challenge_resistance: `Instead of copying my line, choose what the public clue supports in your own words; ${continuation}`,
+      receive_vulnerability: `I hear the concern, and you can leave the next judgment open; ${continuation}`,
+    }[actionFamily] || publicUptake
+  );
 }
 
 function configuredFallbackVariationBridge(variant) {
@@ -1906,9 +1932,13 @@ export function deterministicTutorStubConfiguredContinuationFallback({
   const termDefinition = configuredFallbackTermDefinition({ responseConfiguration, world });
   const candidates = configuredFallbackVariantOrder({ variationKey, recentTutorTexts }).map((variant) =>
     [
-      integrationTarget?.active ? oneLine(integrationTarget.qualification) : oneLine(uptake),
+      configuredFallbackActionUptake(
+        actionFamily,
+        integrationTarget?.active ? oneLine(integrationTarget.qualification) : oneLine(uptake),
+      ),
       termDefinition,
       configuredFallbackVariationBridge(variant),
+      configuredFallbackActionFamily(actionFamily),
       integrationTarget?.active || !uptakeAlreadyPerformsRecordKeeper
         ? configuredFallbackPerformance({ part, object, tactic, diction })
         : null,

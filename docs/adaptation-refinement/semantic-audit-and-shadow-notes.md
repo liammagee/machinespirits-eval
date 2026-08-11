@@ -540,3 +540,19 @@ the full public learner surface supplies target-kind evidence and subject
 overlap that identify one uniquely best active obligation. The audit records
 the original generic target and resolved obligation ID. Equal candidates remain
 unresolved, preserving the distinction between two genuinely separate debts.
+
+### 7.21 Active fallback must realize the family in its owning span
+
+The first completed `1490d82a` child failed on active
+`challenge_resistance`. The public text staged evidence and asked a useful
+integration question, but it never named the answer-seeking obstacle or gave
+the judgment back to the learner. Because this family is audited in uptake,
+adding an internal configuration or a later generic handoff cannot satisfy it.
+The hard veto was a valid mechanism failure.
+
+Prospectively, deterministic fallback has an explicit family-to-span contract
+and a full visibility regression over every safely terminable family. The same
+failed turn's exact question quoted a two-sentence prior clue; the live audit
+now recognizes the complete terminal suffix rather than the segmenter's final
+quotation fragment. Neither correction changes the gate decision, sampling
+frame, reader task, or thresholds.
