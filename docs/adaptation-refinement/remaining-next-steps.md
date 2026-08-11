@@ -791,3 +791,35 @@ instrument prerequisite:
    frame under the already declared thresholds.
 
 No downstream outcome run is licensed.
+
+## Current restart boundary after the completed targeted diagnostic
+
+The clean `8af328eafc9ca7151f6d31ef2ef376af6cb44bb6` freeze completed two
+independent 24-case reads in 6/8 calls with zero normalization edits. Raw
+warrant agreement was 0.875; the diagnostic showed strong request/proposal,
+transition, completion, override, basis, and closure behavior, but exact
+obligation persistence was 0/8. It also exposed ambiguity in productive versus
+aligned divergence and response-level versus commitment-level revision. The
+challenge is diagnostic only and did not pass a gate.
+
+The prospective repair is implemented: retain all unresolved reminder turns;
+restrict commitment transition to pedagogical/terminal decision kinds; narrow
+low-agency detection so polite question prefaces do not count; clarify
+dimension, lifecycle, and basis rules in each reader packet; fail closed on
+publicly inconsistent bases; and use the dedicated gate-ineligible challenge
+scorer instead of the representative-study scorer.
+
+The remaining sequence is:
+
+1. complete full no-model verification, commit, and push this bounded repair;
+2. freeze one final 24-case diagnostic from the clean commit and inspect its
+   support, packet, provenance, call-budget, and authorization bindings;
+3. collect two independent Luna readers under the standing bounded
+   authorization, stopping on any schema or semantic inconsistency;
+4. score with the dedicated diagnostic scorer and make another prospective
+   repair only if a localized detector or instrument defect remains;
+5. after diagnostic stability, generate the predeclared fresh two-world,
+   six-profile, 96-observe-decision `natural_prevalence` corpus;
+6. obtain two independent labels and apply the unchanged mechanism thresholds
+   to that representative corpus alone; and
+7. run no downstream outcome comparison unless the representative gate passes.

@@ -36,7 +36,23 @@ const ANALYTIC_MARKER_PATTERN =
 // write that…") made a claim first and stays analytic. Deference neither masks
 // accumulated trouble nor immediately warrants.
 const DEFERENCE_PATTERN =
-  /^(?:may|might|should|shall|could|can|would) (?:i|we)\b|^(?:would|could|will|can) you (?:have|like|choose|pick|decide)\b|^do you want (?:me|us) to\b|^is it (?:all right|ok(?:ay)?) if (?:i|we)\b/iu;
+  /^(?:may|might|should|shall|could|can|would) (?:i|we)\s+(?:add|enter|keep|note|put|record|repeat|say|use|write)\b|^(?:would|could|will|can) you (?:have|like|choose|pick|decide)\b|^do you want (?:me|us) to\b|^is it (?:all right|ok(?:ay)?) if (?:i|we)\b/iu;
+
+/**
+ * A warranted response-level correction is not automatically a change to the
+ * held pedagogical commitment. Public-obligation fulfilment and candidate
+ * safety vetoes repair the current candidate; terminal and pedagogical
+ * transitions change the family that should govern what follows.
+ */
+export function isAdaptiveWarrantCommitmentTransition({
+  warrant = null,
+  strategyInForce = null,
+  recommendedActionFamily = null,
+} = {}) {
+  if (!warrant?.revision_warranted || !strategyInForce || !recommendedActionFamily) return false;
+  if (!['pedagogical_commitment_transition', 'terminal_transition'].includes(warrant.decision_kind)) return false;
+  return recommendedActionFamily !== strategyInForce;
+}
 
 function canonicalJson(value) {
   if (Array.isArray(value)) return value.map(canonicalJson);

@@ -1097,3 +1097,52 @@ freeze and payload-specific authorization are required before any further
 reader call. Full verification also passes 8,452/8,452 hermetic root tests,
 137/137 tutor-core tests, and 490/490 workplan items. No downstream outcome run
 is licensed.
+
+## Progress Update — 11 August 2026, completed diagnostic isolates lifecycle and layer-separation repairs
+
+The third 24-case targeted-challenge freeze from clean commit
+`8af328eafc9ca7151f6d31ef2ef376af6cb44bb6` completed both independent Luna
+reads under digest
+`70482c873533e027a0ba5b0e59b673a29e2c213b2b48a3bdbfa5229ae5a8bd20`.
+Six of eight authorized calls were used, both 24-case responses assembled with
+zero normalization edits, and no reader saw the private key or the other
+reader's responses. Raw warrant agreement was 0.875. On 21 hard-consensus
+decisions the detector produced TP=20, FN=1, precision 1.000, recall 0.952,
+and accuracy 0.952. Request/proposal macro-F1, transition accuracy, completion
+precision/recall, candidate override, primary basis, and closure safety all
+scored 1.000 or zero violations as applicable. These are diagnostic values,
+not gate passage.
+
+The diagnostic localized two detector defects. Every repeated unresolved
+request was represented only by its creation turn, producing 0/8 exact
+obligation-persistence matches even though both readers retained creation and
+reminder turns. The architecture also derived commitment transition from any
+recommended-family difference, so response-level public-obligation fulfilment
+was misreported as a persistent pedagogical switch. Prospectively, ledger rows
+retain every unresolved creation/reminder turn, and commitment transition is
+now restricted to pedagogical or terminal transitions; public-obligation
+fulfilment and candidate-safety vetoes remain current-response corrections.
+
+The same read exposed remaining measurement ambiguity rather than a safe
+detector target. Readers sometimes used `productive` as a synonym for a good
+or agentive move even when conceptual and engagement norms were met, duplicated
+contract defeat onto the interactional axis inconsistently, disagreed over
+whether recently satisfied debt should be `none` or `satisfied`, and one row
+used a positive basis despite a live contract and no transition or override.
+The prospective handbook and packet contract now define dimension-specific
+alignment, resolved-state persistence, response-level versus commitment-level
+change, and admissible public evidence for action-contract, completion, and
+obligation bases. The polite preface “May I ask…” is no longer classified as
+low agency; authored conceptual challenges now use an unambiguous substantive
+choice deferral.
+
+The generic representative-study scorer also rejected the targeted manifest,
+forcing a one-off composite score. A dedicated challenge scorer now validates
+both blind artifacts and independent identities before private-key access,
+binds the authorization and freeze artifacts, and emits an explicit
+`not_applicable` pass/fail result. Any new challenge freeze is burned relative
+to these repairs. The next evidential step is one final diagnostic read from a
+clean checkpoint to establish that the repaired instrument and localized
+detectors are coherent, followed by the predeclared fresh 96-case
+`natural_prevalence` frame. Only that representative frame can pass the
+mechanism gate. No downstream outcome run is licensed.

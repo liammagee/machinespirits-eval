@@ -2250,6 +2250,36 @@ export function validateBlindedAnnotationResponse({ response, corpus, expectedCo
       if (!['none', 'uncertain'].includes(basis) && ['hold', 'uncertain'].includes(family)) {
         throw new Error(`annotation response ${row.sample_id} requires an action family for a positive warrant basis`);
       }
+      const publicCase = corpusById.get(row.sample_id) || {};
+      const publicContract = publicCase.normative_action_contract || {};
+      if (basis === 'action_contract' && publicContract.transition?.revision_warranted !== true) {
+        throw new Error(
+          `annotation response ${row.sample_id} cannot use action_contract without a public contract transition`,
+        );
+      }
+      if (
+        basis === 'action_contract' &&
+        publicContract.transition?.recommended_action_family &&
+        family !== publicContract.transition.recommended_action_family
+      ) {
+        throw new Error(
+          `annotation response ${row.sample_id} action_contract family does not match the public contract successor`,
+        );
+      }
+      if (
+        basis === 'inquiry_completion' &&
+        row.inquiry_state !== 'complete' &&
+        publicCase.pre_gate_proposed_action_family !== 'close_inquiry'
+      ) {
+        throw new Error(
+          `annotation response ${row.sample_id} cannot use inquiry_completion without completion or a close candidate`,
+        );
+      }
+      if (basis === 'public_obligation' && !['open', 'overdue'].includes(obligationState)) {
+        throw new Error(
+          `annotation response ${row.sample_id} cannot use public_obligation without actionable public debt`,
+        );
+      }
       if (v4) {
         for (const dimension of ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS) {
           const divergence = row.divergence_by_dimension?.[dimension] || {};
@@ -2409,7 +2439,13 @@ function predictedOpenObligationSourceTurns(decision) {
   const obligations = decision?.public_obligation?.obligations;
   if (!Array.isArray(obligations)) return null;
   const unresolved = obligations.filter((row) => ['open', 'overdue', 'reactivated', 'deferred'].includes(row?.status));
-  const sourceTurns = unresolved.map((row) => Number(row?.created_turn));
+  const sourceTurns = unresolved.flatMap((row) => {
+    if (Array.isArray(row?.source_turns) && row.source_turns.length) return row.source_turns.map(Number);
+    const historyTurns = (row?.history || [])
+      .filter((event) => ['created', 'reminded'].includes(event?.type))
+      .map((event) => Number(event?.turn));
+    return historyTurns.length ? historyTurns : [Number(row?.created_turn)];
+  });
   if (sourceTurns.some((turn) => !Number.isInteger(turn) || turn < 1)) return null;
   return [...new Set(sourceTurns)].sort((left, right) => left - right);
 }
@@ -3364,7 +3400,7 @@ Each response envelope must use \`${ADAPTIVE_WARRANT_ANNOTATION_RESPONSE_V4_SCHE
 ## Labels
 
 - Speech act: \`${ANNOTATION_SPEECH_ACTS.join('` | `')}\`.
-- Obligation state: \`${ANNOTATION_OBLIGATION_STATES.join('` | `')}\`. Record every source turn for a still-open obligation.
+- Obligation state: \`${ANNOTATION_OBLIGATION_STATES.join('` | `')}\`. Record every creation or reminder turn for a still-unresolved obligation. A satisfied, withdrawn, or transferred obligation keeps its resolved lifecycle label at the next decision but has no open source turns; use \`none\` only when no public obligation has occurred.
 - Inquiry state: \`${ANNOTATION_INQUIRY_STATES.join('` | `')}\`.
 - Commitment transition and current-candidate override: \`yes | no | uncertain\`; these are separate judgments.
 - Primary warrant basis: \`${ANNOTATION_WARRANT_BASES.join('` | `')}\`.
@@ -3389,6 +3425,9 @@ Every case-level and per-dimension note must contain at least ${ADAPTIVE_WARRANT
 - Apply warrant-basis precedence exactly: immediate repair, actionable public obligation, strict inquiry completion, action-contract result, then register or accumulated trouble. Use \`none/hold\` only when none applies.
 - Explicit analytic work can be conceptually aligned even when the learner record stays flat. Conceptual stalling needs a public failure signal such as an explicit stall or low-agency deferral; productive testing is not conceptual failure.
 - Strategy exhaustion follows the supplied typed expected-uptake contract. If the contract says the learner adopted or used the staged evidence, do not mark the family exhausted only because the learner's surface wording still sounds dependent. Mark exhaustion when that contract is defeated, expired, or repeatedly failed.
+- \`aligned\` means the descriptive state satisfies that dimension's stated norm, even when the move is valuable. Record growth or explicit analytic work is conceptually aligned; voluntary agentive participation is engagement-aligned. Use \`productive\` only for a useful departure from the stated norm, not as a synonym for good, active, or successful.
+- Keep contract defeat on the strategy-exhaustion axis unless separate public uptake, repetition, register, or tutor-debt evidence establishes interactional trouble; do not duplicate the contract label onto interactional by default.
+- A polite preface such as “May I ask you this?” before a concrete result request is not low-agency deferral. Low agency requires handing the substantive choice or record move back to the tutor.
 
 ## Precedence and safety
 
@@ -3397,7 +3436,7 @@ Every case-level and per-dimension note must contain at least ${ADAPTIVE_WARRANT
 3. Whole-inquiry completion requires a supported terminal learner assertion, known exhausted licensed evidence, integrated released evidence, no unsupported assertion or active dropped fact, and no actionable open, overdue, or reactivated public obligation. A fixed horizon or locally fluent turn is not completion.
 4. Action-contract success, defeat, or expiry is judged against the prior delivered family and its deadline.
 5. Register or accumulated trouble is considered only after the higher-priority cases above. Productive analytic resistance is not a stall.
-6. \`commitment_transition_warranted\` asks whether the prior family should change. \`current_candidate_override_required\` asks whether the concrete pre-gate candidate must change; either can differ from the other.
+6. \`commitment_transition_warranted\` asks whether the held pedagogical family should change beyond the current response. Public-obligation fulfilment is a response-level requirement and therefore does not by itself change that commitment; it can require a current-candidate override. A strict terminal close or a contract/immediate/trouble-driven pedagogical switch does change the commitment when its successor differs from the prior family. \`current_candidate_override_required\` asks whether the concrete pre-gate candidate must change; either label can differ from the other.
 7. Judge divergence before judging whether it warrants a commitment revision. Conceptual concerns learner-record progress; interactional concerns uptake, repetition, register trouble, and tutor-owned public debt; engagement concerns voluntary agency; pacing concerns publicly evidenced acceleration or deceleration from authored pace; epistemic concerns unsupported, dropped, unintegrated, or prematurely terminal claims; strategy exhaustion concerns a held family whose expected-uptake contract has been defeated, expired, or repeatedly failed.
 
 When the evidence cannot distinguish the permitted labels, use \`uncertain\` and explain the decision-time ambiguity in the note.

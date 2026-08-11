@@ -562,6 +562,7 @@ test('public-obligation reminders coalesce across synonymous test wording', () =
   assert.equal(reminded.obligations.length, 1);
   assert.equal(reminded.obligations[0].occurrences, 2);
   assert.equal(reminded.obligations[0].last_reminded_turn, 2);
+  assert.deepEqual(reminded.obligations[0].source_turns, [1, 2]);
 });
 
 test('die-comparison paraphrases coalesce without rhetorical words becoming target identity', () => {
@@ -1058,6 +1059,11 @@ test('classifier: permission frame leading the utterance is deference', () => {
   assert.equal(signal.primary, 'low_agency_deferral');
 });
 
+test('classifier: polite permission to ask a concrete result question is not low-agency deferral', () => {
+  const signal = classifyLearnerSignal('May I ask you this? What does the balance record show?');
+  assert.equal(signal.primary, 'neutral');
+});
+
 test('classifier: content-first turn with a trailing permission tag stays analytic', () => {
   const signal = classifyLearnerSignal(
     'It supports Verrell’s access to the crucible; may I write that we need evidence before naming him?',
@@ -1139,7 +1145,7 @@ test('gate: observe mode records but never overrides; active mode overrides afte
   }
 });
 
-test('gate separates a warranted commitment transition from a candidate that already satisfies it', () => {
+test('gate separates response-level obligation fulfilment from a candidate that already satisfies it', () => {
   const gate = createTutorStubWarrantGate({ mode: 'active' });
   const decision = gate.assess({
     turn: 1,
@@ -1149,7 +1155,7 @@ test('gate separates a warranted commitment transition from a candidate that alr
     proposedActionFamily: 'answer_accountably',
   });
   assert.equal(decision.revision_warranted, true);
-  assert.equal(decision.commitment_transition_warranted, true);
+  assert.equal(decision.commitment_transition_warranted, false);
   assert.equal(decision.current_candidate_override_required, false);
   assert.equal(decision.override, null);
   assert.equal(decision.obligation_directive.obligation_id, 'public-obligation-001');
@@ -1170,6 +1176,35 @@ test('same-family accountable answering receives a directive without a false str
   assert.equal(decision.override, null);
   assert.equal(decision.policy.review, 'persist_with_adjustment');
   assert.ok(decision.obligation_directive);
+});
+
+test('response-level obligation fulfilment does not replace the held pedagogical commitment next turn', () => {
+  const gate = createTutorStubWarrantGate({ mode: 'active' });
+  const first = gate.assess({
+    turn: 1,
+    learnerText: 'What do the balance and ring show?',
+    dagModel: dagModel(3),
+    priorActionFamily: 'stage_next_step',
+    proposedActionFamily: 'stage_next_step',
+  });
+  assert.equal(first.decision_kind, 'public_obligation_fulfilment');
+  assert.equal(first.commitment_transition_warranted, false);
+  assert.equal(first.override.action_family, 'answer_accountably');
+  gate.recordTurnOutcome({
+    turn: 1,
+    actionFamily: 'answer_accountably',
+    tutorText: 'The balance reads twelve grams and the ring sounds hollow.',
+  });
+  const second = gate.assess({
+    turn: 2,
+    learnerText: 'I will compare that result with the public assay.',
+    dagModel: dagModel(4),
+    priorActionFamily: 'answer_accountably',
+    proposedActionFamily: 'stage_next_step',
+  });
+  assert.equal(second.prior_delivered_action_family, 'answer_accountably');
+  assert.equal(second.strategy_in_force, 'stage_next_step');
+  assert.equal(gate.snapshot().strategy_in_force, 'stage_next_step');
 });
 
 test('compound repair and result request keeps the repair family plus an orthogonal obligation directive', () => {
@@ -1203,6 +1238,7 @@ test('strict whole-inquiry completion is carried as a terminal transition', () =
   assert.equal(decision.decision_kind, 'terminal_transition');
   assert.equal(decision.inquiry_completion.status, 'complete');
   assert.equal(decision.policy.family, 'close_inquiry');
+  assert.equal(decision.commitment_transition_warranted, true);
   assert.equal(decision.override.action_family, 'close_inquiry');
 });
 

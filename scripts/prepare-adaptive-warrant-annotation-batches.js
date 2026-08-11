@@ -170,15 +170,19 @@ function caseResponseSchema(allowedActionFamilies) {
         type: 'array',
         items: { type: 'integer', minimum: 1 },
         description:
-          'Unresolved source turns only. This array must be empty for none, satisfied, or withdrawn_or_transferred; use at least one source turn for open, overdue, or deferred.',
+          'Every creation or reminder turn for unresolved debt. This array must be empty for none, satisfied, or withdrawn_or_transferred; use at least one source turn for open, overdue, or deferred.',
       },
       obligation_state: {
         enum: ['none', 'open', 'overdue', 'deferred', 'satisfied', 'withdrawn_or_transferred', 'uncertain'],
         description:
-          'Resolved states satisfied and withdrawn_or_transferred must not retain open_obligation_source_turns.',
+          'Resolved states satisfied and withdrawn_or_transferred persist as the latest lifecycle state but must not retain open_obligation_source_turns. Use none only when no public obligation occurred.',
       },
       inquiry_state: { enum: ['complete', 'incomplete', 'uncertain'] },
-      commitment_transition_warranted: { enum: ['yes', 'no', 'uncertain'] },
+      commitment_transition_warranted: {
+        enum: ['yes', 'no', 'uncertain'],
+        description:
+          'Whether the held pedagogical family should change beyond this response. Public-obligation fulfilment alone is not a commitment transition; a differing terminal or pedagogical successor is.',
+      },
       current_candidate_override_required: { enum: ['yes', 'no', 'uncertain'] },
       primary_warrant_basis: {
         enum: [
@@ -350,6 +354,10 @@ export function prepareAdaptiveWarrantAnnotationBatches({
           `The handbook's V4 envelope describes the assembled reader artifact, not this batch response. For this batch, use schema ${ADAPTIVE_WARRANT_ANNOTATION_BATCH_RESPONSE_SCHEMA} and exactly the six top-level fields in response_template; do not add annotator_id or annotation_run_id.`,
           'Use only an exact value from allowed_recommended_action_families; immediate_repair is a warrant basis, not an action family.',
           'open_obligation_source_turns contains unresolved sources only: it must be empty for none, satisfied, or withdrawn_or_transferred, and non-empty for open, overdue, or deferred.',
+          'For unresolved debt, list every public creation or reminder turn. A resolved obligation remains satisfied or withdrawn_or_transferred at the next decision; none means no obligation occurred.',
+          'Use aligned when the dimensional norm is met: record growth or explicit analytic work is conceptual alignment, and voluntary agency is engagement alignment. Productive means a useful departure from the norm, not merely a good move.',
+          'Public-obligation fulfilment can override the current candidate but does not by itself change the held pedagogical commitment. A differing terminal or pedagogical successor does.',
+          'Use action_contract only when the supplied public contract requires a transition, inquiry_completion only for a complete inquiry, and public_obligation only for actionable open or overdue debt.',
           'Do not use tools, external sources, private predictions, technical traces, or another reader response.',
           `Every case-level and dimension note must contain at least ${ADAPTIVE_WARRANT_ANNOTATION_MIN_NOTE_CHARACTERS} characters of case-specific public evidence.`,
         ],

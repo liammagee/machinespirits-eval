@@ -843,3 +843,21 @@ preserve the design sequence.
 ## 20. Design Anchor
 
 > **Do not ask only what the tutor should say next. Ask what the conversation should be becoming next, what evidence shows that it is or is not becoming that, and what revision is warranted when the trajectories diverge.**
+
+## 21. Completed targeted diagnostic: response repair is not commitment revision
+
+The completed third challenge read separated response-level obligation repair
+from pedagogical commitment. A public result debt can require the next
+candidate to answer accountably without changing the family that should govern
+the subsequent dialogue; a terminal close or pedagogical successor can change
+that commitment. Ledger rows now retain every unresolved creation/reminder
+turn, so lifecycle persistence is an event sequence rather than a single
+origin pointer. The annotation contract mirrors both distinctions.
+
+Dimension labels are explicitly norm-relative. A good move is `aligned` when
+it satisfies the stated norm—record growth or analytic work for conceptual
+state, voluntary agency for engagement. `Productive` is reserved for useful
+departure from that norm. Contract defeat is scored on strategy exhaustion and
+does not automatically duplicate onto interactional divergence. A dedicated
+diagnostic scorer validates the targeted freeze while making its pass/fail
+result structurally `not_applicable`.

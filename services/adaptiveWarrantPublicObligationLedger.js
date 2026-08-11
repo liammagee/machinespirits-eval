@@ -570,6 +570,9 @@ export function createAdaptiveWarrantPublicObligationLedger({ obligations = [] }
             speechAct.target.required_components,
           );
           existing.last_reminded_turn = normalizedTurn;
+          existing.source_turns = [...new Set([...(existing.source_turns || [existing.created_turn]), normalizedTurn])].sort(
+            (left, right) => left - right,
+          );
           existing.occurrences += 1;
           existing.status = existing.status === 'deferred' ? 'reactivated' : existing.status;
           addHistory(existing, { type: 'reminded', turn: normalizedTurn, surface: speechAct.surface });
@@ -584,6 +587,7 @@ export function createAdaptiveWarrantPublicObligationLedger({ obligations = [] }
             target: clone(speechAct.target),
             created_turn: normalizedTurn,
             last_reminded_turn: normalizedTurn,
+            source_turns: [normalizedTurn],
             response_due_turn: normalizedTurn,
             occurrences: 1,
             status: 'open',

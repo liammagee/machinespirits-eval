@@ -27,6 +27,7 @@ import {
   classifyLearnerSignal,
   buildAdaptiveWarrantDecisionInputSnapshot,
   evaluateWarrant,
+  isAdaptiveWarrantCommitmentTransition,
   REPETITION_DEFEATER_THRESHOLD,
 } from './adaptiveWarrantGateCore.js';
 import { projectAdaptiveWarrantDivergence } from './adaptiveWarrantDivergence.js';
@@ -219,6 +220,7 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
   const history = [];
   let strategyInForce = null;
   let strategySince = null;
+  let priorDeliveredActionFamily = null;
   let troubleTurns = [];
   let complaintTurns = [];
   let previousDagTotal = null;
@@ -314,12 +316,14 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
       releasedEvidenceIntegrated = true,
     } = {}) {
       const priorTurn = turn - 1;
+      const previousDecision = history.at(-1)?.decision || null;
       boundedInquiryScopeAtDecision = boundedInquiryScope ? structuredClone(boundedInquiryScope) : null;
       const priorTurnOutcome = pendingOutcomes.get(priorTurn) || null;
       const publicObligationBefore = publicObligations.snapshot();
       const reducerStateBefore = {
         strategy_in_force: strategyInForce,
         strategy_since_turn: strategySince,
+        prior_delivered_action_family: priorDeliveredActionFamily,
         previous_dag_total: previousDagTotal,
         turns_since_dag_growth: turnsSinceDagGrowth,
         trouble_turns: structuredClone(troubleTurns),
@@ -330,9 +334,16 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         public_obligation_ledger: publicObligationBefore,
       };
 
-      // Strategy streak bookkeeping: a family change (by whatever mechanism)
-      // resets the trouble and complaint pools.
-      if (priorActionFamily && priorActionFamily !== strategyInForce) {
+      // The delivered family and the held pedagogical commitment are separate.
+      // A one-turn obligation/safety repair does not silently become the next
+      // held strategy; ordinary or explicitly warranted transitions do.
+      const priorWasResponseLevelCorrection = Boolean(
+        previousDecision &&
+          ['public_obligation_fulfilment', 'candidate_safety_override'].includes(previousDecision.decision_kind) &&
+          previousDecision.commitment_transition_warranted !== true,
+      );
+      priorDeliveredActionFamily = priorActionFamily || null;
+      if (priorActionFamily && priorActionFamily !== strategyInForce && !priorWasResponseLevelCorrection) {
         strategyInForce = priorActionFamily;
         strategySince = turn;
         troubleTurns = [];
@@ -407,7 +418,7 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         learnerText,
         classification,
         dagModel,
-        priorActionFamily: strategyInForce,
+        priorActionFamily: priorDeliveredActionFamily,
         proposedActionFamily,
         dialogueClosureFrame,
         evidenceAvailability,
@@ -422,6 +433,7 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         currentReducerInputs: {
           strategy_in_force: strategyInForce,
           strategy_since_turn: strategySince,
+          prior_delivered_action_family: priorDeliveredActionFamily,
           learner_signal: signal,
           dag_total: total,
           dag_growth: dagGrowth,
@@ -451,12 +463,11 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
       });
 
       const recommendedActionFamily = warrant.policy?.family || null;
-      const commitmentTransitionWarranted = Boolean(
-        warrant.revision_warranted &&
-        strategyInForce &&
-        recommendedActionFamily &&
-        recommendedActionFamily !== strategyInForce,
-      );
+      const commitmentTransitionWarranted = isAdaptiveWarrantCommitmentTransition({
+        warrant,
+        strategyInForce,
+        recommendedActionFamily,
+      });
       const candidateOverrideRequired = Boolean(
         warrant.revision_warranted && recommendedActionFamily && recommendedActionFamily !== proposedActionFamily,
       );
@@ -475,7 +486,7 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         mode,
         turn,
         strategy_in_force: strategyInForce,
-        prior_delivered_action_family: strategyInForce,
+        prior_delivered_action_family: priorDeliveredActionFamily,
         pre_gate_proposed_action_family: proposedActionFamily || null,
         strategy_since_turn: strategySince,
         learner_signal: signal,
@@ -518,6 +529,7 @@ export function createTutorStubWarrantGate({ mode = 'observe' } = {}) {
         mode,
         strategy_in_force: strategyInForce,
         strategy_since_turn: strategySince,
+        prior_delivered_action_family: priorDeliveredActionFamily,
         previous_dag_total: previousDagTotal,
         turns_since_dag_growth: turnsSinceDagGrowth,
         trouble_turns: structuredClone(troubleTurns),

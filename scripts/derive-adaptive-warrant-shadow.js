@@ -46,6 +46,7 @@ import { parseArgs } from 'node:util';
 import {
   classifyLearnerSignal,
   evaluateWarrant,
+  isAdaptiveWarrantCommitmentTransition,
   REPETITION_DEFEATER_THRESHOLD,
 } from '../services/adaptiveWarrantGateCore.js';
 import { projectAdaptiveWarrantDivergence } from '../services/adaptiveWarrantDivergence.js';
@@ -382,6 +383,8 @@ function deriveSessionShadow(session, sessionIndex, { includeTurnOne = false } =
   const decisions = [];
   let turnsSinceDagGrowth = 0;
   let troubleFloorTurn = 0;
+  let strategyInForce = null;
+  let strategySinceIndex = 0;
   const actionContracts = createAdaptiveWarrantActionContractTracker();
   const publicObligations = createAdaptiveWarrantPublicObligationLedger();
 
@@ -393,6 +396,7 @@ function deriveSessionShadow(session, sessionIndex, { includeTurnOne = false } =
   const firstTurn = turns[0];
   const firstFact = firstTurn === undefined ? null : facts.get(firstTurn);
   if (firstFact?.selection?.action_family) {
+    strategyInForce = firstFact.selection.action_family;
     actionContracts.assess({
       turn: firstTurn,
       actionFamily: firstFact.selection.action_family,
@@ -416,16 +420,24 @@ function deriveSessionShadow(session, sessionIndex, { includeTurnOne = false } =
     const prior = facts.get(turns[i - 1]);
     const current = facts.get(turn);
 
-    // Strategy in force = the family held through turn N-1; streak counts how
-    // long it has been held.
-    let sinceIndex = i - 1;
-    while (
-      sinceIndex > 0 &&
-      facts.get(turns[sinceIndex - 1]).selection.action_family === prior.selection.action_family
+    const previousDecision = decisions.at(-1) || null;
+    const priorWasResponseLevelCorrection = Boolean(
+      previousDecision &&
+        ['public_obligation_fulfilment', 'candidate_safety_override'].includes(previousDecision.decision_kind) &&
+        previousDecision.commitment_transition_warranted !== true,
+    );
+    if (!strategyInForce && prior.selection.action_family) strategyInForce = prior.selection.action_family;
+    if (
+      prior.selection.action_family &&
+      prior.selection.action_family !== strategyInForce &&
+      !priorWasResponseLevelCorrection
     ) {
-      sinceIndex -= 1;
+      strategyInForce = prior.selection.action_family;
+      strategySinceIndex = i - 1;
     }
-    const streakTurns = turns.slice(sinceIndex, i);
+    // A response-level correction remains in the delivered history but does
+    // not reset the held pedagogical commitment or its evidence streak.
+    const streakTurns = turns.slice(strategySinceIndex, i);
     const streak = streakTurns.length;
 
     // Decision-time learner signal: learner turn N, else the latest committed
@@ -453,7 +465,7 @@ function deriveSessionShadow(session, sessionIndex, { includeTurnOne = false } =
     // register complaints through N.
     const actionContract = actionContracts.assess({
       turn,
-      actionFamily: prior.selection.action_family,
+      actionFamily: strategyInForce,
       learnerText,
       classification,
       signal,
@@ -531,26 +543,25 @@ function deriveSessionShadow(session, sessionIndex, { includeTurnOne = false } =
       complaintTurns,
       deferenceSustained,
       divergence,
-      strategyInForce: prior.selection.action_family,
+      strategyInForce,
       actionContract,
       publicObligation,
       inquiryCompletion,
       proposedActionFamily,
     });
     const policy = warrant.policy;
-    const commitmentTransitionWarranted = Boolean(
-      warrant.revision_warranted &&
-      prior.selection.action_family &&
-      policy?.family &&
-      policy.family !== prior.selection.action_family,
-    );
+    const commitmentTransitionWarranted = isAdaptiveWarrantCommitmentTransition({
+      warrant,
+      strategyInForce,
+      recommendedActionFamily: policy?.family,
+    });
     const candidateOverrideRequired = Boolean(
       warrant.revision_warranted && policy?.family && policy.family !== proposedActionFamily,
     );
 
     decisions.push({
       turn,
-      strategy_in_force: prior.selection.action_family,
+      strategy_in_force: strategyInForce,
       held_for_turns: streak,
       decided: revised ? `revise:${current.selection.action_family}` : 'hold',
       realization_changed: realizationChanged,

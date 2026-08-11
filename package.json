@@ -44,6 +44,7 @@
     "tutor:stub:auto-eval": "node scripts/run-tutor-stub-auto-eval.js",
     "tutor:stub:warrant-baseline": "node scripts/run-adaptive-warrant-baseline-study.js",
     "tutor:stub:warrant-challenge": "node scripts/build-adaptive-warrant-challenge-corpus.js",
+    "tutor:stub:warrant-challenge-score": "node scripts/score-adaptive-warrant-challenge-annotations.js",
     "tutor:stub:profile-world-deconfound:review": "node scripts/review-learner-profile-world-deconfound.js",
     "tutor:stub:profile-world-deconfound:replay-l1": "node scripts/replay-learner-profile-recovery-l1.js",
     "tutor:stub:profile-world-deconfound:prepare": "node scripts/prepare-learner-profile-world-deconfound.js",

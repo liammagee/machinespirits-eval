@@ -306,3 +306,22 @@ full verification passes 8,452/8,452 root tests, 137/137 tutor-core tests, and
 new digest-bound diagnostic freeze, two no-repair assemblies, diagnostic
 analysis and any bounded prospective detector repair, then the independent
 representative natural-frame gate. No downstream outcome run is licensed.
+
+The third targeted-challenge freeze from clean commit
+`8af328eafc9ca7151f6d31ef2ef376af6cb44bb6` completed both independent Luna
+readers in 6/8 calls with zero normalization edits. Raw warrant agreement was
+0.875; 21 hard consensuses yielded precision 1.000 and recall/accuracy 0.952,
+but obligation persistence was 0/8 because the projection retained only each
+debt's creation turn. The challenge remains diagnostic-only and gate-
+ineligible.
+
+Prospective code now retains every unresolved creation/reminder turn, separates
+response-level obligation fulfilment from pedagogical commitment transition,
+narrows polite question prefaces out of low-agency deferral, strengthens the
+reader contract around aligned/productive dimensions and resolved lifecycle
+state, and rejects positive bases unsupported by the supplied public contract.
+A dedicated scorer validates this challenge manifest only after both blind
+files pass, and structurally emits no pass/fail result. The item remains active
+pending a clean pushed checkpoint, one final diagnostic confirmation, and then
+passage of the separately frozen 96-case representative natural-frame gate.
+No downstream outcome study is licensed.

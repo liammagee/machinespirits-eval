@@ -10,7 +10,11 @@ import {
   ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS,
   projectAdaptiveWarrantDivergence,
 } from '../services/adaptiveWarrantDivergence.js';
-import { classifyLearnerSignal, evaluateWarrant } from '../services/adaptiveWarrantGateCore.js';
+import {
+  classifyLearnerSignal,
+  evaluateWarrant,
+  isAdaptiveWarrantCommitmentTransition,
+} from '../services/adaptiveWarrantGateCore.js';
 import { assessAdaptiveWarrantInquiryCompletion } from '../services/adaptiveWarrantInquiryCompletion.js';
 import { createAdaptiveWarrantPublicObligationLedger } from '../services/adaptiveWarrantPublicObligationLedger.js';
 import {
@@ -36,6 +40,7 @@ const CHALLENGE_SOURCE_FILES = Object.freeze([
   'package.json',
   'scripts/build-adaptive-warrant-challenge-corpus.js',
   'scripts/prepare-adaptive-warrant-annotation-batches.js',
+  'scripts/score-adaptive-warrant-challenge-annotations.js',
   'tests/adaptiveWarrantChallengeCorpus.test.js',
 ]);
 const RESULT_TARGETS = Object.freeze([
@@ -162,7 +167,7 @@ function persistenceSpecs() {
     const engagement = index === 4 || index === 5;
     const pacing = index >= 6;
     const currentPrefix = conceptual
-      ? 'May I ask you this?'
+      ? 'Would you decide what I should record?'
       : engagement
         ? 'Would you decide what I should do again?'
         : pacing
@@ -391,9 +396,11 @@ function challengeProjection(spec) {
       divergence,
       prior_delivered_action_family: 'stage_next_step',
       pre_gate_proposed_action_family: spec.proposed_action_family,
-      commitment_transition_warranted: Boolean(
-        warrant.revision_warranted && recommendedFamily && recommendedFamily !== 'stage_next_step',
-      ),
+      commitment_transition_warranted: isAdaptiveWarrantCommitmentTransition({
+        warrant,
+        strategyInForce: 'stage_next_step',
+        recommendedActionFamily: recommendedFamily,
+      }),
       current_candidate_override_required: Boolean(
         warrant.revision_warranted && recommendedFamily && recommendedFamily !== spec.proposed_action_family,
       ),

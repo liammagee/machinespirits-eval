@@ -17,6 +17,11 @@ import {
   prepareAdaptiveWarrantAnnotationBatches,
   validateAdaptiveWarrantAnnotationAuthorizationRequest,
 } from '../scripts/prepare-adaptive-warrant-annotation-batches.js';
+import { ADAPTIVE_WARRANT_ANNOTATION_RESPONSE_V4_SCHEMA } from '../scripts/run-adaptive-warrant-baseline-study.js';
+import {
+  ADAPTIVE_WARRANT_TARGETED_CHALLENGE_SCORE_SCHEMA,
+  scoreAdaptiveWarrantChallengeAnnotations,
+} from '../scripts/score-adaptive-warrant-challenge-annotations.js';
 
 function cleanTestProvenance() {
   return {
@@ -31,6 +36,72 @@ function writeEmptyExcludedCorpus(root) {
   const excludedPath = path.join(root, 'excluded-prior-corpus.json');
   fs.writeFileSync(excludedPath, '{"cases":[]}\n');
   return excludedPath;
+}
+
+function annotationFromKey({ corpus, key, corpusSha256, annotatorId, runId }) {
+  const byId = new Map(key.cases.map((row) => [row.sample_id, row]));
+  return {
+    schema: ADAPTIVE_WARRANT_ANNOTATION_RESPONSE_V4_SCHEMA,
+    study_id: corpus.study_id,
+    corpus_sha256: corpusSha256,
+    annotator_id: annotatorId,
+    annotation_run_id: runId,
+    cases: corpus.cases.map((publicCase) => {
+      const projection = byId.get(publicCase.sample_id).shadow;
+      const obligations = projection.public_obligation?.obligations || [];
+      const unresolved = obligations.filter((row) =>
+        ['open', 'overdue', 'reactivated', 'deferred'].includes(row.status),
+      );
+      const state = obligations.some((row) => row.status === 'overdue' || row.status === 'reactivated')
+        ? 'overdue'
+        : obligations.some((row) => row.status === 'open')
+          ? 'open'
+          : obligations.some((row) => row.status === 'deferred')
+            ? 'deferred'
+            : obligations.at(-1)?.status === 'satisfied'
+              ? 'satisfied'
+              : ['withdrawn', 'transferred_to_learner'].includes(obligations.at(-1)?.status)
+                ? 'withdrawn_or_transferred'
+                : 'none';
+      const basis = projection.warrant_basis.startsWith('immediate:')
+        ? 'immediate_repair'
+        : projection.warrant_basis.startsWith('public_obligation_')
+          ? 'public_obligation'
+          : projection.warrant_basis.startsWith('inquiry_complete:') ||
+              projection.warrant_basis.startsWith('inquiry_incomplete_candidate:')
+            ? 'inquiry_completion'
+            : projection.warrant_basis.startsWith('contract_')
+              ? 'action_contract'
+              : projection.warrant_basis.startsWith('register_') || projection.warrant_basis.startsWith('accumulated:')
+                ? 'register_or_accumulated_trouble'
+                : 'none';
+      return {
+        sample_id: publicCase.sample_id,
+        speech_act: projection.public_obligation.speech_act.kind,
+        open_obligation_source_turns: [
+          ...new Set(unresolved.flatMap((row) => row.source_turns || [row.created_turn])),
+        ].sort((left, right) => left - right),
+        obligation_state: state,
+        inquiry_state: projection.inquiry_completion.status === 'complete' ? 'complete' : 'incomplete',
+        commitment_transition_warranted: projection.commitment_transition_warranted ? 'yes' : 'no',
+        current_candidate_override_required: projection.current_candidate_override_required ? 'yes' : 'no',
+        primary_warrant_basis: basis,
+        recommended_action_family: projection.revision_warranted ? projection.policy.family : 'hold',
+        note: 'Public decision-time fields jointly support this deterministic test annotation.',
+        divergence_by_dimension: Object.fromEntries(
+          projection.divergence.map((row) => [
+            row.dimension,
+            {
+              interpretation: row.interpretation,
+              magnitude: row.magnitude,
+              persistence: row.persistence === 0 ? 'none' : row.persistence === 1 ? 'single_turn' : 'sustained',
+              note: `Public ${row.dimension} evidence supports this deterministic test label.`,
+            },
+          ]),
+        ),
+      };
+    }),
+  };
 }
 
 test('authored challenge realizes its declared diagnostic coverage without becoming gate evidence', () => {
@@ -59,6 +130,7 @@ test('challenge source provenance binds the builder, collection logic, and dedic
     'package.json',
     'scripts/build-adaptive-warrant-challenge-corpus.js',
     'scripts/prepare-adaptive-warrant-annotation-batches.js',
+    'scripts/score-adaptive-warrant-challenge-annotations.js',
     'tests/adaptiveWarrantChallengeCorpus.test.js',
   ]) {
     assert.match(provenance.files[relative], /^[0-9a-f]{64}$/u, relative);
@@ -195,6 +267,48 @@ test('challenge freeze proves zero overlap with explicitly excluded corpora', ()
         }),
       /overlaps 24 excluded public cases/u,
     );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('dedicated challenge scorer validates blind readers and never emits a pass-fail gate result', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'warrant-diagnostic-score-'));
+  try {
+    const frozen = writeAdaptiveWarrantChallengeCorpus({
+      outputDir: path.join(root, 'freeze'),
+      provenance: cleanTestProvenance(),
+      excludedCorpusPaths: [writeEmptyExcludedCorpus(root)],
+    });
+    const annotationA = annotationFromKey({
+      corpus: frozen.corpus,
+      key: frozen.key,
+      corpusSha256: frozen.manifest.corpus.sha256,
+      annotatorId: 'reader-a',
+      runId: 'reader-a-independent-run',
+    });
+    const annotationB = annotationFromKey({
+      corpus: frozen.corpus,
+      key: frozen.key,
+      corpusSha256: frozen.manifest.corpus.sha256,
+      annotatorId: 'reader-b',
+      runId: 'reader-b-independent-run',
+    });
+    const firstPath = path.join(root, 'reader-a.json');
+    const secondPath = path.join(root, 'reader-b.json');
+    fs.writeFileSync(firstPath, `${JSON.stringify(annotationA, null, 2)}\n`);
+    fs.writeFileSync(secondPath, `${JSON.stringify(annotationB, null, 2)}\n`);
+    const scored = scoreAdaptiveWarrantChallengeAnnotations({
+      rootDir: path.dirname(frozen.manifestPath),
+      annotationAPath: firstPath,
+      annotationBPath: secondPath,
+    });
+    assert.equal(scored.artifact.schema, ADAPTIVE_WARRANT_TARGETED_CHALLENGE_SCORE_SCHEMA);
+    assert.equal(scored.artifact.gate_eligible, false);
+    assert.equal(scored.artifact.pass_fail_gate.status, 'not_applicable');
+    assert.equal(scored.artifact.score.metrics.totalCases, 24);
+    assert.equal(scored.artifact.score.metrics.obligationPersistenceAccuracy, 1);
+    assert.equal(Object.hasOwn(scored.artifact, 'decisionGate'), false);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

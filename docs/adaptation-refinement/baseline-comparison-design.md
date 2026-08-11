@@ -879,3 +879,40 @@ represent unresolved debt only, so resolved states require an empty array and
 open/overdue/deferred states require a source. This remains collection-
 instrument repair, not detector evidence. It requires another clean freeze and
 authorization before readers resume.
+
+## Completed targeted diagnostic and prospective V5 repair — 11 August 2026
+
+The clean `8af328eafc9ca7151f6d31ef2ef376af6cb44bb6` challenge freeze completed
+two independent 24-case reads in six calls with zero normalization edits. Raw
+warrant agreement was 0.875; 21 hard-consensus decisions yielded precision
+1.000, recall/accuracy 0.952, request/proposal macro-F1 1.000, and zero closure
+safety violations. The challenge remains gate-ineligible, so none of these
+figures establishes mechanism passage.
+
+The lifecycle score exposed a deterministic defect: repeated unresolved
+requests retained only `created_turn`, yielding 0/8 exact persistence despite
+both readers identifying creation and reminder turns. The commitment field
+also conflated transient public-obligation fulfilment with a change to the
+held pedagogical family. Prospectively, the ledger retains all unresolved
+source/reminder turns, and only pedagogical or terminal decision kinds can set
+`commitment_transition_warranted`; response-level obligation fulfilment and
+candidate-safety vetoes remain candidate corrections.
+
+Reader disagreements also exposed underspecified annotation boundaries.
+`aligned` now explicitly covers successful norm satisfaction, including record
+growth, analytic work, and voluntary agency; `productive` is reserved for a
+useful departure from the stated norm. Resolved lifecycle state persists at
+the next decision with an empty unresolved-source list, and `none` means no
+obligation occurred. Contract defeat belongs to strategy exhaustion unless
+separate public interactional trouble exists. Positive basis labels must be
+licensed by the supplied public contract, completion/close state, or actionable
+debt. A polite permission to ask a result question is not itself low-agency
+deferral.
+
+A dedicated targeted-challenge scorer now owns this manifest type. It validates
+both blind responses and independent identities before key access and always
+emits `pass_fail_gate=not_applicable`; it cannot accidentally route challenge
+rows through `ADAPTIVE_WARRANT_DECISION_GATE`. These prospective changes burn
+the completed diagnostic relative to the repaired implementation. One clean
+diagnostic confirmation precedes the already declared representative 96-case
+natural frame, which remains the sole mechanism gate.
