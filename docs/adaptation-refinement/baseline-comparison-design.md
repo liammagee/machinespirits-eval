@@ -368,6 +368,15 @@ budget; every retry consumes that same budget. The complete matrix therefore
 has a hard maximum of 1,536 model calls. Exhaustion seals the child as
 incomplete and cannot reserve call 65.
 
+Codex protocol failures are not tool use. Top-level `error`, `turn.failed`, and
+item-level `error` events are redacted and classified as failed turns; actual
+command, file, function, MCP, web-search, and other unknown item shapes remain
+inside the strict no-tools rejection boundary. One failed turn or unknown
+transport/schema envelope may be retried once for that individual model call.
+The retry receives a fresh metered reservation and remains inside the same
+64-call child cap. A second consecutive failure remains fatal; no retry may
+follow a known tool event.
+
 For this frozen protocol all three roles—speaking tutor, learner analysis, and
 automated learner—request `codex.gpt-5.6-luna`, resolved through the **OpenAI
 Codex CLI (ChatGPT-account route)**. No OpenRouter, Anthropic, or direct OpenAI
@@ -941,3 +950,25 @@ rows through `ADAPTIVE_WARRANT_DECISION_GATE`. These prospective changes burn
 the completed diagnostic relative to the repaired implementation. One clean
 diagnostic confirmation precedes the already declared representative 96-case
 natural frame, which remains the sole mechanism gate.
+
+## Representative execution transport correction — 11 August 2026
+
+The first post-diagnostic representative attempt from clean commit
+`13ad2538170d682b8bfbc9eb342658104605a71d` was stopped during its first worker
+wave. Three reported children were valid and three were sealed
+`evidence_invalid`; other in-flight children were intentionally terminated.
+Each invalid row had received a Codex stream containing top-level `error` and
+`turn.failed` events. The bridge collapsed those known failure events to
+`unknown` and reported a no-tools policy violation. Learner-analysis recovery
+could keep some dialogues moving, but the speaking-tutor path had no equivalent
+per-call retry, so a transient failed turn could invalidate an otherwise
+complete eight-turn child. The partial packet is burned and cannot be resumed
+or annotated.
+
+Prospectively, known failed-turn lifecycle events are separate from prohibited
+tool events, and the shared prompt transport owns one bounded retry per model
+call across tutor, analyzer, and learner roles. Both attempts consume the
+declared budget. The no-tools boundary is unchanged for real or unknown tool
+shapes. A new clean commit, dry request, and digest-bound representative
+execution are required; the prior authorization cannot be reused after this
+source change.

@@ -941,3 +941,25 @@ Targeted repair is complete. The remaining sequence is:
 4. inspect failures without pooling or repairing against the representative
    labels; and
 5. run no downstream outcome comparison unless the representative gate passes.
+
+## Current restart boundary after the failed-turn transport correction
+
+The first representative attempt from
+`13ad2538170d682b8bfbc9eb342658104605a71d` was stopped during its first worker
+wave after three valid and three `evidence_invalid` reported children. The
+invalid rows contained Codex `error` and `turn.failed` lifecycle events that
+were incorrectly surfaced as no-tools violations; other children completed,
+so this was a stochastic transport confound rather than a mechanism result.
+The partial run and packet are burned.
+
+The prospective correction classifies failed turns separately, retries one
+individual call once with fresh call-budget accounting, and still refuses every
+known tool event without retry. The remaining sequence is:
+
+1. commit and push the transport correction from a fully verified checkpoint;
+2. freeze a new clean representative execution and generate its new digest;
+3. run all 24 dialogues, requiring 24 valid seals, 192 learner analyses, exact
+   observe/active replay parity, and zero delivery mismatch;
+4. collect two independent blind readers of the new 96-case
+   `natural_prevalence` corpus and apply the unchanged representative gate; and
+5. run no downstream outcome comparison unless that gate passes.

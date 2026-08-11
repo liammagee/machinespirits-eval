@@ -37,6 +37,7 @@ export function createTutorStubPromptTransport(dependencies) {
     turn = null,
     signal = null,
     historyTurns = null,
+    cliPolicyRetryUsed = false,
   }) {
     let prompt = promptInput;
     let systemPrompt = systemPromptInput;
@@ -293,6 +294,7 @@ export function createTutorStubPromptTransport(dependencies) {
       response.promptAudit = promptAudit;
       return response;
     } catch (err) {
+      const retryDecision = tutorStubCliPolicyRetryDecision(err, { alreadyUsed: cliPolicyRetryUsed });
       appendTraceEvent(trace, {
         type: err?.name === 'AbortError' ? 'model_call_aborted' : 'model_call_error',
         role,
@@ -309,10 +311,34 @@ export function createTutorStubPromptTransport(dependencies) {
           promptAudit,
         },
         error: err.message,
-        ...(err?.code === 'CLI_PROVIDER_POLICY_VIOLATION'
-          ? { cliPolicyViolation: tutorStubCliPolicyRetryDecision(err, { alreadyUsed: true }) }
+        ...(err?.code === 'CLI_PROVIDER_POLICY_VIOLATION' || err?.code === 'CLI_PROVIDER_TURN_FAILED'
+          ? { cliPolicyViolation: retryDecision }
           : {}),
       });
+      if (retryDecision.retry) {
+        appendTraceEvent(trace, {
+          type: 'cli_policy_retry_decision',
+          role,
+          turn,
+          decision: retryDecision,
+          publicTranscriptChanged: false,
+        });
+        return callPromptModel({
+          prompt: promptInput,
+          messageHistory,
+          resolved,
+          systemPrompt: systemPromptInput,
+          role,
+          maxTokens,
+          trace,
+          stream,
+          cliEffort,
+          turn,
+          signal,
+          historyTurns,
+          cliPolicyRetryUsed: true,
+        });
+      }
       throw err;
     }
   }

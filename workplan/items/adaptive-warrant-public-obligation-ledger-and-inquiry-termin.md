@@ -401,3 +401,19 @@ scores remained above declared thresholds. The diagnostic emitted no gate
 result and targeted repair stops here. The item remains active for the fresh
 96-case representative natural-frame gate; no downstream outcome study is
 licensed.
+
+The first representative attempt from clean commit
+`13ad2538170d682b8bfbc9eb342658104605a71d` was stopped during its first worker
+wave after three valid and three `evidence_invalid` reported children. The
+invalid rows were transport failures: Codex emitted top-level `error` and
+`turn.failed`, which the bridge collapsed to unknown no-tools violations, and
+the tutor path lacked an individual-call retry. The partial packet is burned.
+Prospectively, failed-turn lifecycle events are redacted separately from tool
+events and the shared tutor/analyzer/learner transport owns one freshly metered
+retry per call inside the unchanged 64-call cap. Known tool events remain
+fatal and are not retried. Focused transport/mechanism verification passes
+238/238 tests; the complete hermetic suite passes 8,461/8,461 root tests and
+137/137 tutor-core tests; lint and 490/490 workplan checks pass. The item
+remains active pending a clean pushed checkpoint, a new digest-bound 24/24
+representative run, two independent 96-case readers, and passage of the
+unchanged gate. No downstream outcome study is licensed.

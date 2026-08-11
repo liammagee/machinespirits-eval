@@ -382,3 +382,21 @@ dialogue turns for prevalence and false-positive behavior, and a separately
 authored challenge surface for rare lifecycle, completion, and divergence
 states. Combining their case pools would destroy the descriptive prevalence
 claim, so their scores and inferential roles remain separate.
+
+### 7.12 Representative-attempt transport audit
+
+The first representative execution after the supported diagnostic did not
+reach the mechanism instrument. During the first worker wave, Codex emitted
+redacted failed-turn lifecycle events on three children. The bridge classified
+those events as unknown no-tools violations, and the speaking-tutor transport
+had no per-call retry. Three other reported children completed normally, which
+rules out a matrix-wide prompt or route failure. The partial run is burned.
+
+This boundary is procedural but causally important. A stochastic provider turn
+failure must not be recorded as evidence about the adaptive policy, and rows
+must not enter the corpus merely because their transport happened to be lucky.
+Known `error`/`turn.failed` protocol events are now typed as failed turns rather
+than tool use. The shared transport may retry one individual call once, with a
+fresh reservation inside the existing child cap; a repeated failure remains
+fatal. Known tool events still receive no retry. This correction changes no
+warrant, obligation, completion, commitment, or divergence rule.

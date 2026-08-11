@@ -867,3 +867,19 @@ departure from that norm. Contract defeat is scored on strategy exhaustion and
 does not automatically duplicate onto interactional divergence. A dedicated
 diagnostic scorer validates the targeted freeze while making its pass/fail
 result structurally `not_applicable`.
+
+## 22. Failed provider turns are outside the dialogue DAG
+
+A provider failure before an accepted role response is not a descriptive
+learner state, a tutor action, or evidence of normative/descriptive divergence.
+It must remain outside the committed conversation DAG. The Codex bridge
+therefore distinguishes redacted lifecycle failures (`error`, `turn.failed`,
+and item-level `error`) from prohibited tool-bearing events. The shared role
+transport permits one freshly metered retry for an individual failed call; two
+consecutive failures seal the child incomplete. Command, file, function, MCP,
+web-search, and unknown tool shapes remain fail-closed and are never retried.
+
+This rule prevents transport luck from selecting which dialogues become
+measurable while preserving the original safety and 64-call child boundary. It
+does not alter the live/offline reducer, the six divergence projections, or the
+representative gate.

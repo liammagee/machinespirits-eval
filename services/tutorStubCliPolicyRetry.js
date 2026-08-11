@@ -26,6 +26,12 @@ function safeAudit(audit = null) {
       item_type: event?.item_type ? String(event.item_type) : null,
       ...(finiteCount(event?.count) ? { count: finiteCount(event.count) } : {}),
     })),
+    failure_event_count: finiteCount(source.failure_event_count),
+    failure_events: (Array.isArray(source.failure_events) ? source.failure_events : []).map((event) => ({
+      index: Number.isInteger(event?.index) ? event.index : null,
+      event_type: String(event?.event_type || 'unknown'),
+      item_type: event?.item_type ? String(event.item_type) : null,
+    })),
   };
 }
 
@@ -40,14 +46,16 @@ export function tutorStubCliPolicyRetryDecision(error, { alreadyUsed = false } =
     (event) => KNOWN_TOOL_TYPES.has(event.event_type) || KNOWN_TOOL_TYPES.has(event.item_type),
   );
   const policyViolation = error?.code === 'CLI_PROVIDER_POLICY_VIOLATION' && error?.provider === 'codex';
-  const retry = Boolean(policyViolation && !alreadyUsed && !knownToolEvent);
+  const failedTurn = error?.code === 'CLI_PROVIDER_TURN_FAILED' && error?.provider === 'codex';
+  const retryableFailure = policyViolation || failedTurn;
+  const retry = Boolean(retryableFailure && !alreadyUsed && !knownToolEvent);
   return {
     schema: TUTOR_STUB_CLI_POLICY_RETRY_SCHEMA,
     retry,
-    reason: !policyViolation
+    reason: !retryableFailure
       ? 'not_codex_policy_violation'
       : alreadyUsed
-        ? 'dialogue_retry_already_used'
+        ? 'call_retry_already_used'
         : knownToolEvent
           ? 'known_tool_event_refused'
           : 'bounded_transport_or_schema_retry',
