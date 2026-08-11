@@ -138,7 +138,10 @@ normative consequences.
 
 ### 2.3 Target and action identity
 
-`target.target_id` names the stable public object or relation whose result is owed.
+`target.target_id` names the stable public object, relation, or enumerated
+choice set whose result or selection is owed. A `tutor_selection_request`
+requires the catalogue target naming the public choices; neither the requested
+value nor the tutor becomes the target.
 `target.requested_value_types` names the fields requested from it. Value types
 include `name`, `time`, `date`, `weight`, `sound`, `material`, `match_status`,
 `record_text`, and `other`. A value type must never become a subject term merely
@@ -196,7 +199,7 @@ ask a reader for a fact it already knows.
 | Event multiplicity and order | Reader, then mechanical ordering | One event per independent clause-level act that changes a distinct typed state. One clause receives one act under the precedence table. Distinct events require non-overlapping minimal literal spans and are mechanically ordered by span start. |
 | `speaker` | Harness | Current packet authorship supplies `learner`; absent from reader schema. |
 | `speech_act` | Reader | One value from the closed vocabulary under the within-clause precedence table. No synonymous labels. |
-| `target_id` | Reader | The public object or relation under inquiry, chosen from the catalogue; requested values are never targets. |
+| `target_id` | Reader | The public object, relation, or enumerated choice set under inquiry, chosen from the catalogue; requested values and actors are never targets. Tutor-selection requests require the public choice-set target. |
 | `target.kind` | Harness | Derived exactly from the selected `target_id`; absent from reader schema. |
 | `public_identifier_ids` | Harness | Exact catalogue identifiers for `target_id`; absent from reader schema. |
 | `requested_value_types` | Reader | Exact closed-set values explicitly requested or produced by the clause; may be empty. A value such as `time` or `match_status` is not a subject or target kind. |
@@ -543,6 +546,21 @@ or outcome call followed it. The fourth instrument replaces reader-authored
 other harness-known field from the reader response, and closes multiplicity
 and target/value rules in the tabletop above.
 
+### 5.0.1 Invalid pre-diagnostic smoke: contract/catalog inconsistency
+
+The first post-repair two-call smoke at clean commit `93519217` is preserved at
+`/private/tmp/adaptive-warrant-v3-semantic-smoke-run-93519217`. Both independent
+readers completed all three fresh cases and returned the same semantic identity
+for every case. Both correctly attached the public archive-choice target to the
+tutor-selection request, but the production act contract still declared that
+field forbidden. Assembly therefore failed before a smoke result could pass.
+
+This is not reader disagreement, model-capability evidence, or the fourth
+diagnostic. It is a zero-call-detectable contract/catalog inconsistency. The
+repair makes the public choice-set target required for
+`tutor_selection_request`; the burned smoke wording and identifiers cannot be
+reused.
+
 ### 5.1 Targeted rare-state diagnostic
 
 The rare-state surface is a separately authored 24-case public decision-time
@@ -631,6 +649,18 @@ or component ID must be detected. The complete prepare, assemble, consensus,
 and score path must also reject unknown catalogue entries, ambiguous identity,
 non-literal evidence, malformed envelopes, and under-supported threshold
 cells without hand repair.
+
+It must also audit contract/catalog consistency before any live smoke. Every
+speech act in the closed vocabulary must have a satisfiable required,
+optional, and forbidden field pattern against each catalogue that can be
+frozen. For each act, the audit derives a catalogue-backed worked example,
+materializes its mechanical fields, and sends it through the production
+annotation validator. Missing action families, action objects bound to a
+forbidden target, required targets absent from an action binding, illegal
+executors, and vocabulary/contract inventory drift all fail the zero-call
+preflight. The exact synthetic, smoke, and diagnostic catalogues are audited;
+the live smoke is reserved for whether two fresh readers can read the valid
+contract alike.
 
 Free text may support an evidence or display field, but it may not determine
 identity, equality, joins, state mutation, or gate passage. Reader tasks may

@@ -118,6 +118,30 @@ const TARGETS = Object.freeze({
     ['match_status'],
     ['groove_match'],
   ),
+  registerChoice: target(
+    'target-public-register-choice-set',
+    'public_exhibit_result',
+    'public register choices',
+    ['public register choices'],
+    ['other'],
+    ['next_check'],
+  ),
+  assayChoice: target(
+    'target-public-assay-choice-set',
+    'public_exhibit_result',
+    'public assay choices',
+    ['two public assays'],
+    ['other'],
+    ['next_check'],
+  ),
+  archiveChoice: target(
+    'target-public-archive-check-choice-set',
+    'public_exhibit_result',
+    'public archive-check choices',
+    ['public archive checks'],
+    ['other'],
+    ['next_check'],
+  ),
 });
 
 function stableId(prefix, label) {
@@ -351,6 +375,7 @@ function diagnosticSpecs() {
     text: selectOne,
     events: [
       event('tutor_selection_request', selectOne, {
+        target: TARGETS.registerChoice,
         action: action('requested', 'tutor', 'select_next_step', 'first public register'),
       }),
     ],
@@ -362,6 +387,7 @@ function diagnosticSpecs() {
     events: [
       event('low_agency_deferral', selectTwo, { span: 'I cannot choose between the two assays' }),
       event('tutor_selection_request', selectTwo, {
+        target: TARGETS.assayChoice,
         action: action('requested', 'tutor', 'select_next_step', 'next assay test'),
         span: 'select the next test for me',
       }),
@@ -429,6 +455,7 @@ function diagnosticSpecs() {
     text: defer,
     events: [
       event('tutor_selection_request', defer, {
+        target: TARGETS.archiveChoice,
         action: action('requested', 'tutor', 'select_next_step', 'next move'),
         span: 'Choose the next archive check for me',
       }),
@@ -600,7 +627,7 @@ Speech-act precedence within one clause is: explicit repair or wording request; 
 
 ## Target fields
 
-target_id identifies the public object or relation under inquiry. Return target=null when the act has no public object. A target is required for result requests, proposed tests, criterion questions, and record-entry requests; forbidden for tutor-selection, wording/repair, stall, complaint, and low-agency acts; and optional for analytic_contribution and other.
+target_id identifies the public object, relation, or enumerated choice set under inquiry. Return target=null when the act has no public object. A target is required for result requests, proposed tests, criterion questions, record-entry requests, and tutor-selection requests. For tutor selection, choose the catalogue target naming the publicly enumerated choices, never the requested value or the tutor. A target is forbidden for wording/repair, stall, complaint, and low-agency acts; and optional for analytic_contribution and other.
 
 requested_value_types contains only values explicitly requested or produced by the clause: name, time, date, weight, sound, material, match_status, record_text, or other. Requested values are never targets or target kinds. component_ids contains only the catalogue answer components explicitly requested or produced. The harness adds target kind and public identifiers from the selected target_id.
 
@@ -626,14 +653,24 @@ export function buildAdaptiveWarrantV3SemanticDiagnostic({ studyId } = {}) {
     return { row, spec, sampleId };
   });
   paired.sort((left, right) => left.sampleId.localeCompare(right.sampleId));
-  const actionCatalogRows = specs.flatMap((spec) =>
-    spec.events
-      .filter((eventRow) => eventRow.requested_or_proposed_action)
-      .map((eventRow) => ({
-        action: eventRow.requested_or_proposed_action,
-        target_id: eventRow.target?.target_id || null,
-      })),
-  );
+  const actionCatalogRows = [
+    ...specs.flatMap((spec) =>
+      spec.events
+        .filter((eventRow) => eventRow.requested_or_proposed_action)
+        .map((eventRow) => ({
+          action: eventRow.requested_or_proposed_action,
+          target_id: eventRow.target?.target_id || null,
+        })),
+    ),
+    {
+      action: eventAction(action('requested', 'tutor', 'explain_wording', 'explain public wording')),
+      target_id: null,
+    },
+    {
+      action: eventAction(action('requested', 'learner', 'withdraw_request', 'withdraw current request')),
+      target_id: null,
+    },
+  ];
   const targetRows = Object.values(TARGETS);
   const publicIdentifierRows = targetRows.flatMap((entry) =>
     entry.public_identifier_ids.map((publicIdentifierId, index) => ({

@@ -54,35 +54,35 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
     schema: 'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v3',
     targets: [
       {
-        target_id: 'target-smoke-north-vault-note',
+        target_id: 'target-smoke-west-annex-docket',
         kind: 'record_entry',
-        public_identifier_ids: ['public-id-smoke-north-vault'],
+        public_identifier_ids: ['public-id-smoke-west-annex'],
         allowed_value_types: ['record_text'],
         component_ids: ['bounded_finding'],
-        display_label: 'synthetic north-vault note',
+        display_label: 'synthetic west-annex docket',
       },
       {
-        target_id: 'target-smoke-copper-latch-plate-r',
+        target_id: 'target-smoke-brass-seal-mould-q',
         kind: 'mark_or_tool_result',
-        public_identifier_ids: ['public-id-smoke-copper-latch', 'public-id-smoke-plate-r'],
+        public_identifier_ids: ['public-id-smoke-brass-seal', 'public-id-smoke-mould-q'],
         allowed_value_types: ['match_status'],
         component_ids: ['match_status'],
-        display_label: 'synthetic copper-latch comparison',
+        display_label: 'synthetic brass-seal comparison',
       },
       {
-        target_id: 'target-smoke-archive-choice',
+        target_id: 'target-smoke-canal-manifest-choice',
         kind: 'public_exhibit_result',
-        public_identifier_ids: ['public-id-smoke-archive-choice'],
+        public_identifier_ids: ['public-id-smoke-canal-manifests'],
         allowed_value_types: ['other'],
         component_ids: ['next_check'],
-        display_label: 'synthetic archive-choice set',
+        display_label: 'synthetic canal-manifest choice set',
       },
     ],
     public_identifiers: [
-      { public_identifier_id: 'public-id-smoke-north-vault', display_label: 'north-vault note' },
-      { public_identifier_id: 'public-id-smoke-copper-latch', display_label: 'copper latch' },
-      { public_identifier_id: 'public-id-smoke-plate-r', display_label: 'plate R' },
-      { public_identifier_id: 'public-id-smoke-archive-choice', display_label: 'archive checks' },
+      { public_identifier_id: 'public-id-smoke-west-annex', display_label: 'west-annex docket' },
+      { public_identifier_id: 'public-id-smoke-brass-seal', display_label: 'brass seal' },
+      { public_identifier_id: 'public-id-smoke-mould-q', display_label: 'mould Q' },
+      { public_identifier_id: 'public-id-smoke-canal-manifests', display_label: 'canal manifests' },
     ],
     components: [
       { component_id: 'bounded_finding', display_label: 'bounded finding' },
@@ -91,32 +91,46 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
     ],
     action_objects: [
       {
-        action_object_id: 'action-object-smoke-enter-bounded-finding',
+        action_object_id: 'action-object-smoke-add-west-annex-finding',
         mode: 'requested',
         action: 'record_public_claim',
-        target_id: 'target-smoke-north-vault-note',
-        display_label: 'enter the bounded north-vault finding',
+        target_id: 'target-smoke-west-annex-docket',
+        display_label: 'add the bounded west-annex finding',
       },
       {
-        action_object_id: 'action-object-smoke-select-archive-check',
+        action_object_id: 'action-object-smoke-select-canal-manifest',
         mode: 'requested',
         action: 'select_next_step',
-        target_id: null,
-        display_label: 'select the first archive check',
+        target_id: 'target-smoke-canal-manifest-choice',
+        display_label: 'select the first canal manifest',
       },
       {
-        action_object_id: 'action-object-smoke-compare-copper-latch',
+        action_object_id: 'action-object-smoke-compare-brass-seal',
         mode: 'proposed',
         action: 'perform_public_test',
-        target_id: 'target-smoke-copper-latch-plate-r',
-        display_label: 'compare the copper latch with plate R',
+        target_id: 'target-smoke-brass-seal-mould-q',
+        display_label: 'compare the brass seal with mould Q',
       },
       {
-        action_object_id: 'action-object-smoke-report-copper-match',
+        action_object_id: 'action-object-smoke-report-brass-seal-match',
         mode: 'requested',
         action: 'supply_public_result',
-        target_id: 'target-smoke-copper-latch-plate-r',
-        display_label: 'report the copper-latch match status',
+        target_id: 'target-smoke-brass-seal-mould-q',
+        display_label: 'report the brass-seal match status',
+      },
+      {
+        action_object_id: 'action-object-smoke-explain-public-wording',
+        mode: 'requested',
+        action: 'explain_wording',
+        target_id: null,
+        display_label: 'explain public wording',
+      },
+      {
+        action_object_id: 'action-object-smoke-withdraw-current-request',
+        mode: 'requested',
+        action: 'withdraw_request',
+        target_id: null,
+        display_label: 'withdraw the current request',
       },
     ],
   };
@@ -129,30 +143,30 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
     semantic_annotation_catalog: catalog,
     cases: [
       {
-        sample_id: 'synthetic-smoke-record-entry-request',
+        sample_id: 'synthetic-smoke-west-annex-record',
         current_learner_turn: {
           turn: 2,
           learner:
-            'The north-vault note establishes receipt, not transfer; please enter that bounded finding in our ledger.',
+            'The west-annex docket establishes delivery, not custody; add only that bounded point to the case ledger.',
         },
-        public_evidence_at_decision: ['target-smoke-north-vault-note is identified by public-id-smoke-north-vault.'],
+        public_evidence_at_decision: ['target-smoke-west-annex-docket is identified by public-id-smoke-west-annex.'],
       },
       {
-        sample_id: 'synthetic-smoke-tutor-selection-request',
+        sample_id: 'synthetic-smoke-canal-selection',
         current_learner_turn: {
           turn: 2,
-          learner: 'Select the first archive check for me; I cannot choose between them.',
+          learner: 'Choose which canal manifest I should inspect first; I will not make that choice myself.',
         },
-        public_evidence_at_decision: ['public-id-smoke-archive-choice names the available archive checks.'],
+        public_evidence_at_decision: ['public-id-smoke-canal-manifests names the available canal manifests.'],
       },
       {
-        sample_id: 'synthetic-smoke-compound-probe',
+        sample_id: 'synthetic-smoke-brass-seal-compound',
         current_learner_turn: {
           turn: 2,
-          learner: 'I will test the copper latch against plate R; afterward, tell me the recorded match status.',
+          learner: 'I will compare the brass seal with mould Q; once I have, state the logged correspondence.',
         },
         public_evidence_at_decision: [
-          'target-smoke-copper-latch-plate-r is identified by public-id-smoke-copper-latch and public-id-smoke-plate-r.',
+          'target-smoke-brass-seal-mould-q is identified by public-id-smoke-brass-seal and public-id-smoke-mould-q.',
         ],
       },
     ],
@@ -160,19 +174,26 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
 }
 
 function expectedSmokeIdentities() {
-  const northVault = {
+  const westAnnex = {
     kind: 'record_entry',
-    target_id: 'target-smoke-north-vault-note',
-    public_identifier_ids: ['public-id-smoke-north-vault'],
+    target_id: 'target-smoke-west-annex-docket',
+    public_identifier_ids: ['public-id-smoke-west-annex'],
     requested_value_types: ['record_text'],
     component_ids: ['bounded_finding'],
   };
-  const copperLatch = {
+  const brassSeal = {
     kind: 'mark_or_tool_result',
-    target_id: 'target-smoke-copper-latch-plate-r',
-    public_identifier_ids: ['public-id-smoke-copper-latch', 'public-id-smoke-plate-r'],
+    target_id: 'target-smoke-brass-seal-mould-q',
+    public_identifier_ids: ['public-id-smoke-brass-seal', 'public-id-smoke-mould-q'],
     requested_value_types: ['match_status'],
     component_ids: ['match_status'],
+  };
+  const canalChoice = {
+    kind: 'public_exhibit_result',
+    target_id: 'target-smoke-canal-manifest-choice',
+    public_identifier_ids: ['public-id-smoke-canal-manifests'],
+    requested_value_types: ['other'],
+    component_ids: ['next_check'],
   };
   const event = (speechAct, target, mode, executor, action, actionObjectId) => ({
     speaker: 'learner',
@@ -182,44 +203,44 @@ function expectedSmokeIdentities() {
       actionObjectId === null ? null : { mode, executor, action, action_object_id: actionObjectId },
   });
   return {
-    'synthetic-smoke-record-entry-request': [
-      event('analytic_contribution', northVault, null, null, null, null),
+    'synthetic-smoke-west-annex-record': [
+      event('analytic_contribution', westAnnex, null, null, null, null),
       event(
         'learner_record_entry_request',
-        northVault,
+        westAnnex,
         'requested',
         'tutor',
         'record_public_claim',
-        'action-object-smoke-enter-bounded-finding',
+        'action-object-smoke-add-west-annex-finding',
       ),
     ],
-    'synthetic-smoke-tutor-selection-request': [
+    'synthetic-smoke-canal-selection': [
       event(
         'tutor_selection_request',
-        null,
+        canalChoice,
         'requested',
         'tutor',
         'select_next_step',
-        'action-object-smoke-select-archive-check',
+        'action-object-smoke-select-canal-manifest',
       ),
       event('low_agency_deferral', null, null, null, null, null),
     ],
-    'synthetic-smoke-compound-probe': [
+    'synthetic-smoke-brass-seal-compound': [
       event(
         'learner_proposed_test',
-        copperLatch,
+        brassSeal,
         'proposed',
         'learner',
         'perform_public_test',
-        'action-object-smoke-compare-copper-latch',
+        'action-object-smoke-compare-brass-seal',
       ),
       event(
         'tutor_directed_public_result_request',
-        copperLatch,
+        brassSeal,
         'requested',
         'tutor',
         'supply_public_result',
-        'action-object-smoke-report-copper-match',
+        'action-object-smoke-report-brass-seal-match',
       ),
     ],
   };
@@ -247,7 +268,7 @@ Use one event for each independent clause-level act that changes a distinct type
 
 The current-turn speaker is mechanically learner and must not be returned. Executor means the party who must perform the action, never the speaker. Every request-type act requires executor different from speaker. A tutor-directed result request, tutor-selection request, and record-entry request therefore use executor=tutor when addressed to the tutor; a learner proposal uses executor=learner.
 
-Return only target_id, requested_value_types, and component_ids for a target. The harness derives kind and public identifiers from target_id. Return only executor and action_object_id for an action. The harness derives mode and operation from action_object_id. A requested value such as match_status is not a target kind.
+Return only target_id, requested_value_types, and component_ids for a target. The harness derives kind and public identifiers from target_id. Tutor-selection requests require the catalogue target that names the publicly enumerated choices. Return only executor and action_object_id for an action. The harness derives mode and operation from action_object_id. A requested value such as match_status is not a target kind.
 
 A record-entry request may coexist with an independent analytic clause. A tutor-selection request carries a second low_agency_deferral event only when a separate clause explicitly declines choice. A proposal followed by a request for its result is two events in surface order.
 
@@ -399,9 +420,9 @@ export async function runAdaptiveWarrantSemanticSchemaSmoke({
         ),
     ),
     cross_reader_hard_consensus: consensus.hard_consensus_cases === corpus.cases.length,
-    record_entry_contract_agreement: expectedMatches['synthetic-smoke-record-entry-request'] === true,
-    tutor_selection_contract_agreement: expectedMatches['synthetic-smoke-tutor-selection-request'] === true,
-    compound_probe_contract_agreement: expectedMatches['synthetic-smoke-compound-probe'] === true,
+    record_entry_contract_agreement: expectedMatches['synthetic-smoke-west-annex-record'] === true,
+    tutor_selection_contract_agreement: expectedMatches['synthetic-smoke-canal-selection'] === true,
+    compound_probe_contract_agreement: expectedMatches['synthetic-smoke-brass-seal-compound'] === true,
   };
   const passed = Object.values(checks).every(Boolean);
   const result = {

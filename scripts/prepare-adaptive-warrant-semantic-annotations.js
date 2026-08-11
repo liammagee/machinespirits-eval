@@ -190,6 +190,7 @@ export function prepareAdaptiveWarrantSemanticAnnotationBatches({
           'Action executor means the party who must perform the action, never the utterance speaker. A request-type act must have executor different from speaker.',
           'Every case note must contain at least eight characters of case-specific public-evidence rationale, including when the case is not ambiguous.',
           'Keep target_id separate from requested_value_types. A requested name, time, date, or weight is not automatically a target.',
+          'A tutor_selection_request requires the catalogue target naming the publicly enumerated choices; the tutor and the requested next-step value are not targets.',
         ],
         handbook_markdown: handbookMarkdown,
         semantic_annotation_catalog: semanticCatalog,

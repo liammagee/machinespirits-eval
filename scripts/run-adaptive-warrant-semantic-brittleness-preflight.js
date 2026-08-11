@@ -6,6 +6,7 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 
 import {
+  auditAdaptiveWarrantSemanticContractCatalog,
   adaptiveWarrantSemanticConsensusIdentity,
   buildAdaptiveWarrantSemanticConsensus,
   scoreAdaptiveWarrantSemanticExtraction,
@@ -21,6 +22,8 @@ import {
   assembleAdaptiveWarrantSemanticAnnotationResponse,
   prepareAdaptiveWarrantSemanticAnnotationBatches,
 } from './prepare-adaptive-warrant-semantic-annotations.js';
+import { buildAdaptiveWarrantV3SemanticDiagnostic } from './build-adaptive-warrant-v3-semantic-diagnostic.js';
+import { buildAdaptiveWarrantSemanticSmokeCorpus } from './run-adaptive-warrant-semantic-schema-smoke.js';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 
@@ -75,7 +78,7 @@ function syntheticInstrument(sourceCommit) {
     expected.set(`preflight-${index}`, [
       {
         speech_act: speechAct,
-        target: speechAct === 'tutor_selection_request' ? null : target(index),
+        target: target(index),
         requested_or_proposed_action: action(speechAct, index),
         evidence_span: { text: phrase },
       },
@@ -138,6 +141,20 @@ function syntheticInstrument(sourceCommit) {
             ];
           }),
       ).values(),
+      {
+        action_object_id: 'action-object-preflight-explain-wording',
+        mode: 'requested',
+        action: 'explain_wording',
+        target_id: null,
+        display_label: 'Synthetic explain public wording',
+      },
+      {
+        action_object_id: 'action-object-preflight-withdraw-request',
+        mode: 'requested',
+        action: 'withdraw_request',
+        target_id: null,
+        display_label: 'Synthetic withdraw request',
+      },
     ],
   };
   return {
@@ -226,6 +243,14 @@ function throwsValidation({ response, corpus, corpusSha256 }) {
   }
 }
 
+function captureContractCatalogAudit(semanticCatalog) {
+  try {
+    return auditAdaptiveWarrantSemanticContractCatalog({ semanticCatalog });
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
+}
+
 export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sourceCommit } = {}) {
   if (!/^[0-9a-f]{40}$/u.test(sourceCommit || '')) throw new Error('preflight requires an exact source commit');
   const resolvedOutput = path.resolve(outputPath);
@@ -235,6 +260,15 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
   }
   fs.mkdirSync(workDir, { recursive: true });
   const { corpus, expected } = syntheticInstrument(sourceCommit);
+  const syntheticContractCatalogAudit = captureContractCatalogAudit(corpus.semantic_annotation_catalog);
+  const smokeContractCatalogAudit = captureContractCatalogAudit(
+    buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit).semantic_annotation_catalog,
+  );
+  const diagnosticContractCatalogAudit = captureContractCatalogAudit(
+    buildAdaptiveWarrantV3SemanticDiagnostic({
+      studyId: `semantic-contract-catalog-preflight-${sourceCommit.slice(0, 12)}`,
+    }).corpus.semantic_annotation_catalog,
+  );
   const corpusPath = path.join(workDir, 'synthetic-corpus.json');
   const handbookPath = path.join(workDir, 'synthetic-handbook.md');
   writeJson(corpusPath, corpus);
@@ -346,6 +380,23 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
   const schemaText = JSON.stringify(schemas);
   const scoreStates = Object.values(score.checks);
   const checks = [
+    check(
+      'all_event_contracts_satisfiable_by_preflight_catalog',
+      syntheticContractCatalogAudit.ok === true &&
+        syntheticContractCatalogAudit.speech_act_count === 15 &&
+        syntheticContractCatalogAudit.worked_example_count === 15,
+      syntheticContractCatalogAudit,
+    ),
+    check(
+      'smoke_catalog_worked_examples_pass_production_validator',
+      smokeContractCatalogAudit.ok === true && smokeContractCatalogAudit.worked_example_count === 15,
+      smokeContractCatalogAudit,
+    ),
+    check(
+      'diagnostic_catalog_worked_examples_pass_production_validator',
+      diagnosticContractCatalogAudit.ok === true && diagnosticContractCatalogAudit.worked_example_count === 15,
+      diagnosticContractCatalogAudit,
+    ),
     check('complete_prepare_assemble_consensus_score_path', consensus.hard_consensus_cases === corpus.cases.length),
     check('equivalent_descriptions_same_consensus', consensus.hard_consensus_cases === corpus.cases.length),
     check(
@@ -409,6 +460,11 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       reader_schema_instances_digest: adaptiveWarrantSemanticValueSha256(schemas),
       collection_manifest_sha256: adaptiveWarrantSemanticValueSha256(prepared.manifest),
       work_dir: workDir,
+      contract_catalog_audits: {
+        synthetic: syntheticContractCatalogAudit,
+        smoke: smokeContractCatalogAudit,
+        diagnostic: diagnosticContractCatalogAudit,
+      },
     },
   };
   writeJson(resolvedOutput, artifact);

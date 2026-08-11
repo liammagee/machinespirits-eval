@@ -62,7 +62,7 @@ export const ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT = Object.freeze({
     'One event per independent clause-level act that would change a distinct typed state; explanatory material is not a second event.',
   speaker: 'Mechanically supplied from current-turn authorship; never reader-judged.',
   speech_act: 'Reader chooses one closed act under the handbook precedence table.',
-  target_id: 'Reader chooses the public object or relation, never a requested value.',
+  target_id: 'Reader chooses the public object, relation, or enumerated choice set, never a requested value or actor.',
   target_kind: 'Mechanically supplied from the selected target catalogue entry; never reader-judged.',
   public_identifier_ids: 'Mechanically supplied from the selected target catalogue entry; never reader-judged.',
   requested_value_types: 'Exact closed-set values explicitly requested or produced by the clause.',
@@ -77,7 +77,7 @@ export const ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT = Object.freeze({
   note: 'Auditable rationale only; excluded from identity, consensus, scoring joins, and gates.',
 });
 
-const SPEECH_ACT_CONTRACTS = Object.freeze({
+export const ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS = Object.freeze({
   tutor_directed_public_result_request: Object.freeze({
     target: 'required',
     action: 'required',
@@ -94,7 +94,7 @@ const SPEECH_ACT_CONTRACTS = Object.freeze({
   }),
   criterion_question: Object.freeze({ target: 'required', action: 'forbidden' }),
   tutor_selection_request: Object.freeze({
-    target: 'forbidden',
+    target: 'required',
     action: 'required',
     mode: 'requested',
     operation: 'select_next_step',
@@ -380,7 +380,7 @@ function validateAction(action, label, catalogIds) {
 }
 
 function validateSpeechActCompatibility(event, label) {
-  const contract = SPEECH_ACT_CONTRACTS[event.speech_act];
+  const contract = ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS[event.speech_act];
   if (!contract) throw new Error(`${label}.speech_act has no declared contract`);
   const hasTarget = event.target !== null;
   const hasAction = event.requested_or_proposed_action !== null;
@@ -470,6 +470,129 @@ export function materializeAdaptiveWarrantSemanticReaderEvent({ event, semanticC
   };
   validateSpeechActCompatibility(materialized, label);
   return materialized;
+}
+
+function contractWorkedExample({ speechAct, contract, catalogIds }) {
+  const actionEntries = Object.values(catalogIds.action_objects_by_id).toSorted((left, right) =>
+    left.action_object_id.localeCompare(right.action_object_id),
+  );
+  let actionEntry = null;
+  if (contract.action === 'required') {
+    actionEntry = actionEntries.find((candidate) => {
+      if (candidate.mode !== contract.mode || candidate.action !== contract.operation) return false;
+      if (contract.target === 'required') return candidate.target_id !== null;
+      if (contract.target === 'forbidden') return candidate.target_id === null;
+      return true;
+    });
+    if (!actionEntry) {
+      throw new Error(
+        `semantic reader catalog cannot satisfy ${speechAct}: no ${contract.mode}/${contract.operation} action object has a compatible target binding`,
+      );
+    }
+  }
+
+  let targetEntry = null;
+  if (actionEntry?.target_id) targetEntry = catalogIds.targets_by_id[actionEntry.target_id];
+  if (contract.target === 'required' && !targetEntry) {
+    targetEntry = Object.values(catalogIds.targets_by_id).toSorted((left, right) =>
+      left.target_id.localeCompare(right.target_id),
+    )[0];
+  }
+  if (contract.target === 'required' && !targetEntry) {
+    throw new Error(`semantic reader catalog cannot satisfy ${speechAct}: no target is available`);
+  }
+  if (contract.target === 'forbidden' && targetEntry) {
+    throw new Error(
+      `semantic reader catalog cannot satisfy ${speechAct}: its action object requires a forbidden target`,
+    );
+  }
+
+  const executor = contract.action === 'required' ? contract.executors[0] : null;
+  if (contract.action === 'required' && !executor) {
+    throw new Error(`semantic reader contract ${speechAct} has no permitted executor`);
+  }
+  if (REQUEST_SPEECH_ACTS.has(speechAct) && executor === 'learner') {
+    throw new Error(`semantic reader contract ${speechAct} cannot satisfy request executor asymmetry`);
+  }
+  return {
+    speech_act: speechAct,
+    target: targetEntry
+      ? {
+          target_id: targetEntry.target_id,
+          requested_value_types: [],
+          component_ids: [],
+        }
+      : null,
+    requested_or_proposed_action: actionEntry ? { executor, action_object_id: actionEntry.action_object_id } : null,
+    evidence_span: { text: `Contract worked example for ${speechAct}.` },
+  };
+}
+
+export function auditAdaptiveWarrantSemanticContractCatalog({ semanticCatalog } = {}) {
+  const catalogIds = validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
+  const contractActs = Object.keys(ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS).toSorted();
+  const vocabularyActs = [...ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS].toSorted();
+  if (JSON.stringify(contractActs) !== JSON.stringify(vocabularyActs)) {
+    throw new Error('semantic speech-act vocabulary and contract inventory differ');
+  }
+  const workedExamples = contractActs.map((speechAct, index) => {
+    const readerEvent = contractWorkedExample({
+      speechAct,
+      contract: ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS[speechAct],
+      catalogIds,
+    });
+    const fullEvent = materializeAdaptiveWarrantSemanticReaderEvent({
+      event: readerEvent,
+      semanticCatalog,
+      label: `semantic catalog worked example ${speechAct}`,
+    });
+    const learner = readerEvent.evidence_span.text;
+    return {
+      sample_id: `contract-worked-example-${String(index + 1).padStart(2, '0')}-${speechAct}`,
+      learner,
+      event: {
+        ...fullEvent,
+        evidence_span: { text: learner, start: 0, end: learner.length },
+      },
+    };
+  });
+  const corpusSha256 = 'zero-call-contract-catalog-consistency';
+  const corpus = {
+    schema: 'machinespirits.adaptation-refinement.annotation-corpus.v1',
+    study_id: 'adaptive-warrant-semantic-contract-catalog-consistency',
+    blinded: true,
+    semantic_annotation_catalog: semanticCatalog,
+    cases: workedExamples.map((row) => ({
+      sample_id: row.sample_id,
+      current_learner_turn: { turn: 1, learner: row.learner },
+    })),
+  };
+  const response = {
+    schema: ADAPTIVE_WARRANT_SEMANTIC_ANNOTATION_RESPONSE_SCHEMA,
+    study_id: corpus.study_id,
+    corpus_sha256: corpusSha256,
+    annotator_id: 'zero-call-contract-catalog-audit',
+    annotation_run_id: 'zero-call-contract-catalog-audit',
+    cases: workedExamples.map((row) => ({
+      sample_id: row.sample_id,
+      genuinely_ambiguous: false,
+      events: [row.event],
+      note: 'Catalog-derived worked example validated through the production annotation validator.',
+    })),
+  };
+  validateAdaptiveWarrantSemanticAnnotationResponse({ response, corpus, corpusSha256 });
+  return {
+    ok: true,
+    speech_act_count: contractActs.length,
+    worked_example_count: workedExamples.length,
+    worked_examples: workedExamples.map((row) => ({
+      sample_id: row.sample_id,
+      speech_act: row.event.speech_act,
+      target_id: row.event.target?.target_id ?? null,
+      action_object_id: row.event.requested_or_proposed_action?.action_object_id ?? null,
+      executor: row.event.requested_or_proposed_action?.executor ?? null,
+    })),
+  };
 }
 
 function validateSpan(span, learnerText, label) {

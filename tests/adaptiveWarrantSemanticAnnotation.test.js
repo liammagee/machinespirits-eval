@@ -8,6 +8,7 @@ import test from 'node:test';
 import {
   ADAPTIVE_WARRANT_SEMANTIC_ANNOTATION_RESPONSE_SCHEMA,
   ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT,
+  auditAdaptiveWarrantSemanticContractCatalog,
   buildAdaptiveWarrantSemanticConsensus,
   materializeAdaptiveWarrantSemanticReaderEvent,
   scoreAdaptiveWarrantSemanticExtraction,
@@ -326,6 +327,29 @@ test('reader event materialization derives mechanical fields and enforces reques
   );
 });
 
+test('contract/catalog audit validates every speech act through the production annotation validator', () => {
+  const corpus = buildAdaptiveWarrantSemanticSmokeCorpus('b'.repeat(40));
+  const audit = auditAdaptiveWarrantSemanticContractCatalog({
+    semanticCatalog: corpus.semantic_annotation_catalog,
+  });
+  assert.equal(audit.ok, true);
+  assert.equal(audit.speech_act_count, 15);
+  assert.equal(audit.worked_example_count, 15);
+  assert.equal(
+    audit.worked_examples.find((row) => row.speech_act === 'tutor_selection_request').target_id,
+    'target-smoke-canal-manifest-choice',
+  );
+
+  const inconsistent = structuredClone(corpus.semantic_annotation_catalog);
+  inconsistent.action_objects.find(
+    (row) => row.action_object_id === 'action-object-smoke-select-canal-manifest',
+  ).target_id = null;
+  assert.throws(
+    () => auditAdaptiveWarrantSemanticContractCatalog({ semanticCatalog: inconsistent }),
+    /cannot satisfy tutor_selection_request/u,
+  );
+});
+
 test('the tabletop contract accounts for every reader field and every mechanical derivative', () => {
   assert.deepEqual(
     Object.keys(ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT).sort(),
@@ -452,6 +476,13 @@ test('zero-call brittleness preflight exercises the complete instrument path and
     result.artifact.checks.every((row) => row.status === 'pass'),
     true,
   );
+  for (const checkName of [
+    'all_event_contracts_satisfiable_by_preflight_catalog',
+    'smoke_catalog_worked_examples_pass_production_validator',
+    'diagnostic_catalog_worked_examples_pass_production_validator',
+  ]) {
+    assert.equal(result.artifact.checks.find((row) => row.name === checkName).status, 'pass');
+  }
   assert.match(result.artifact.bindings.extraction_schema.digest, /^[0-9a-f]{64}$/u);
   assert.match(result.artifact.bindings.reader_schema_digest, /^[0-9a-f]{64}$/u);
   assert.match(result.artifact.bindings.consensus_scorer_fingerprint, /^[0-9a-f]{64}$/u);

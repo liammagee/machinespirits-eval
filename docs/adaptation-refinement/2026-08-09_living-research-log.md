@@ -1755,3 +1755,25 @@ will be no fifth rewrite: later outcome scope must be restricted to fields
 with proven consensus. All three prior semantic corpora remain burned. The
 next freeze must use wholly fresh cases from a new clean commit and remains a
 diagnostic instrument, not prevalence or gate evidence.
+
+## Progress Update — 12 August 2026, live smoke catches a zero-call contract defect
+
+The first two-reader smoke after contract death three ran from clean commit
+`93519217`. Both Luna readers completed all three fresh synthetic cases and
+agreed on every typed event identity. Both attached the public archive-choice
+target to the tutor-selection request, but the production speech-act contract
+still declared that target forbidden. Assembly stopped before a passing smoke
+artifact; no diagnostic freeze or downstream reader run followed. The smoke
+is preserved at
+`/private/tmp/adaptive-warrant-v3-semantic-smoke-run-93519217` and its cases are
+burned.
+
+This was a contract/catalog inconsistency, not a reader-consensus or model
+capability failure, and it did not consume the fourth diagnostic attempt. The
+prospective repair requires the publicly enumerated choice set as the target
+of `tutor_selection_request`. The zero-call preflight now owns this failure
+class: it must show that every speech-act field contract is satisfiable by the
+synthetic, smoke, and diagnostic catalogues, derive one catalogue-backed worked
+example for every act, and validate all examples through the production
+annotation validator. A wholly fresh smoke remains necessary for the distinct
+question of whether two live readers interpret that valid contract alike.
