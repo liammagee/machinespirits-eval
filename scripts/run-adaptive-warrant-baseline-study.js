@@ -81,7 +81,9 @@ const ADAPTIVE_WARRANT_LAUNCH_AUTHORIZATION_FIELDS = Object.freeze([
 ]);
 
 export const ADAPTIVE_WARRANT_DECISION_GATE = Object.freeze({
-  schema: 'machinespirits.adaptation-refinement.warrant-decision-gate.v1',
+  schema: 'machinespirits.adaptation-refinement.warrant-decision-gate.v2',
+  sampling_role: 'representative_natural_prevalence_only',
+  rare_state_policy: 'separate_gate_ineligible_targeted_diagnostic',
   minimum_raw_annotator_agreement: 0.8,
   minimum_scored_consensus_cases: 12,
   minimum_consensus_positive_cases: 2,
@@ -102,10 +104,8 @@ export const ADAPTIVE_WARRANT_DECISION_GATE = Object.freeze({
   minimum_proposed_test_cases: 8,
   minimum_request_proposal_macro_f1: 0.8,
   minimum_obligation_lifecycle_accuracy: 0.8,
-  minimum_obligation_persistence_cases: 8,
-  minimum_obligation_resolution_cases: 6,
   maximum_proposed_test_false_obligation_rate: 0.1,
-  minimum_inquiry_complete_cases: 8,
+  minimum_inquiry_complete_cases: 2,
   minimum_inquiry_incomplete_cases: 12,
   minimum_inquiry_completion_precision: 0.9,
   minimum_inquiry_completion_recall: 0.75,
@@ -118,6 +118,7 @@ export const ADAPTIVE_WARRANT_DECISION_GATE = Object.freeze({
   maximum_structured_parity_mismatches: 0,
   minimum_divergence_dimension_consensus_rate: 0.75,
   minimum_divergence_nonaligned_cases_per_dimension: 2,
+  minimum_divergence_evaluable_dimensions: 5,
   minimum_divergence_interpretation_macro_f1: 0.7,
   minimum_divergence_magnitude_accuracy: 0.7,
   minimum_divergence_persistence_accuracy: 0.7,
@@ -2945,18 +2946,6 @@ export function evaluateAdaptiveWarrantDecisionGate(
         'min',
       ),
       check(
-        'obligation_persistence_cases',
-        metrics.obligationPersistenceCases,
-        gate.minimum_obligation_persistence_cases,
-        'min',
-      ),
-      check(
-        'obligation_resolution_cases',
-        metrics.obligationResolutionCases,
-        gate.minimum_obligation_resolution_cases,
-        'min',
-      ),
-      check(
         'proposed_test_false_obligation_rate',
         metrics.proposedTestFalseObligationRate,
         gate.maximum_proposed_test_false_obligation_rate,
@@ -3035,25 +3024,22 @@ export function evaluateAdaptiveWarrantDecisionGate(
         'max',
       ),
     );
+    const divergenceCoverage = [];
     for (const dimension of metrics.divergenceDimensionMetrics ? ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS : []) {
       const divergence = metrics.divergenceDimensionMetrics?.[dimension] || {};
+      const nonalignedCases = Number(divergence.nonaligned_consensus_cases || 0);
+      const interpretationEvaluable = nonalignedCases >= gate.minimum_divergence_nonaligned_cases_per_dimension;
+      divergenceCoverage.push({
+        dimension,
+        nonaligned_consensus_cases: nonalignedCases,
+        minimum_nonaligned_cases: gate.minimum_divergence_nonaligned_cases_per_dimension,
+        interpretation_evaluable: interpretationEvaluable,
+      });
       checks.push(
         check(
           `divergence_${dimension}_consensus_rate`,
           divergence.hard_consensus_rate,
           gate.minimum_divergence_dimension_consensus_rate,
-          'min',
-        ),
-        check(
-          `divergence_${dimension}_nonaligned_cases`,
-          divergence.nonaligned_consensus_cases,
-          gate.minimum_divergence_nonaligned_cases_per_dimension,
-          'min',
-        ),
-        check(
-          `divergence_${dimension}_interpretation_macro_f1`,
-          divergence.interpretation_macro_f1,
-          gate.minimum_divergence_interpretation_macro_f1,
           'min',
         ),
         check(
@@ -3075,6 +3061,26 @@ export function evaluateAdaptiveWarrantDecisionGate(
           'min',
         ),
       );
+      if (interpretationEvaluable) {
+        checks.push(
+          check(
+            `divergence_${dimension}_interpretation_macro_f1`,
+            divergence.interpretation_macro_f1,
+            gate.minimum_divergence_interpretation_macro_f1,
+            'min',
+          ),
+        );
+      }
+    }
+    if (divergenceCoverage.length) {
+      checks.push(
+        check(
+          'divergence_evaluable_dimensions',
+          divergenceCoverage.filter((row) => row.interpretation_evaluable).length,
+          gate.minimum_divergence_evaluable_dimensions,
+          'min',
+        ),
+      );
     }
   }
   return {
@@ -3082,6 +3088,22 @@ export function evaluateAdaptiveWarrantDecisionGate(
     gate,
     passed: checks.every((row) => row.passed),
     checks,
+    support_boundary: {
+      representative_gate_only: true,
+      rare_state_diagnostic_gate_eligible: false,
+      obligation_persistence_cases_observed: metrics.obligationPersistenceCases ?? null,
+      obligation_resolution_cases_observed: metrics.obligationResolutionCases ?? null,
+      divergence: (metrics.divergenceDimensionMetrics ? ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS : []).map(
+        (dimension) => ({
+          dimension,
+          nonaligned_consensus_cases:
+            metrics.divergenceDimensionMetrics?.[dimension]?.nonaligned_consensus_cases ?? null,
+          interpretation_evaluable:
+            Number(metrics.divergenceDimensionMetrics?.[dimension]?.nonaligned_consensus_cases || 0) >=
+            gate.minimum_divergence_nonaligned_cases_per_dimension,
+        }),
+      ),
+    },
   };
 
   function check(id, actual, threshold, direction) {

@@ -1193,3 +1193,43 @@ and rare-state adequacy jointly license progression without representing the
 challenge as a prevalence sample. After diagnostic verification and any
 bounded repair, a new clean 24-dialogue matrix and fresh independent reader pair
 are required. No downstream outcome comparison is licensed before passage.
+
+## Prospectively declared representative gate V2 — 11 August 2026
+
+V1 is retained as the gate that produced the failed
+`5ddf1d28a23f57bb48612314203aaab62c284363` result. It may not be rerun over
+those labels with V2. The first valid natural corpus demonstrated that V1
+conflated an unselected prevalence frame with authored rare-state coverage:
+fixed persistence, resolution, completion, and six-axis non-alignment quotas
+belong to the challenge design, not to a census of natural decisions.
+
+`machinespirits.adaptation-refinement.warrant-decision-gate.v2` is declared
+before any replacement labels. The pass/fail sampling frame remains exactly one
+fresh two-world, six-profile, observe/active matrix with master seed 401 and all
+96 observe decisions annotated. No balancing, prediction-conditioned selection,
+down-sampling, challenge pooling, or post-hoc case replacement is permitted.
+
+V2 retains the V1 performance thresholds for raw reader agreement, binary
+precision/recall/accuracy, transition accuracy, diligent false positives,
+live/shadow and structured parity, typed mechanism consensus, request/proposal
+macro-F1, obligation-lifecycle accuracy, proposed-test false obligations,
+inquiry precision/recall, commitment transition, candidate override, primary
+warrant basis, closure safety, and every divergence accuracy. The natural
+complete-inquiry support floor is two. A dimension's interpretation macro-F1
+is gate-applicable only with at least two reader-consensus non-aligned cases,
+and at least five of the six dimensions must be interpretation-evaluable.
+Consensus, magnitude, persistence, and joint accuracy still apply to all six.
+
+The gate artifact records natural persistence and resolution counts as support
+descriptors rather than threshold checks. Rare-state adequacy is probed by the
+separate, gate-ineligible targeted diagnostic, whose authored minima remain
+eight result requests, eight proposed tests, eight persistence cases, six
+resolution cases, eight complete and twelve incomplete inquiries, and two non-
+aligned cases per divergence dimension. Diagnostic rows can reveal a defect and
+force prospective repair, but can never make V2 pass or estimate prevalence.
+
+This is a protocol correction informed by the V1 calibration failure, not a
+claim that V1 passed. The next sequence is a clean diagnostic freeze and two
+independent reads, followed—only if no further defect is localized—by a new
+clean representative execution and reader pair under V2. Outcomes remain
+unauthorized until that representative gate passes.

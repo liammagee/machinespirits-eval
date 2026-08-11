@@ -2408,10 +2408,9 @@ test('v4 scorer measures interpretation, magnitude, persistence, and joint diver
     structuredParityMismatches: 0,
     requireMechanismMetrics: true,
   });
-  assert.equal(
-    gate.checks.find((row) => row.id === 'divergence_conceptual_nonaligned_cases').passed,
-    false,
-  );
+  assert.equal(gate.checks.some((row) => row.id === 'divergence_conceptual_interpretation_macro_f1'), false);
+  assert.equal(gate.checks.find((row) => row.id === 'divergence_evaluable_dimensions').passed, false);
+  assert.equal(gate.support_boundary.divergence.every((row) => row.interpretation_evaluable === false), true);
 });
 
 test('obligation lifecycle exactness rejects the wrong unresolved source turn even when state matches', () => {
@@ -2847,6 +2846,77 @@ test('mechanism gate cannot downgrade to legacy checks and gates all typed decis
     parity,
   );
   assert.equal(passed.passed, true);
+});
+
+test('representative v2 gate reports rare support without importing diagnostic quotas', () => {
+  const divergenceDimensions = [
+    'conceptual',
+    'interactional',
+    'engagement',
+    'pacing',
+    'epistemic',
+    'strategy_exhaustion',
+  ];
+  const divergence = Object.fromEntries(
+    divergenceDimensions.map((dimension, index) => [
+      dimension,
+      {
+        hard_consensus_rate: 1,
+        nonaligned_consensus_cases: index === 4 ? 0 : 2,
+        interpretation_macro_f1: 1,
+        magnitude_accuracy: 1,
+        persistence_accuracy: 1,
+        joint_accuracy: 1,
+      },
+    ]),
+  );
+  const metrics = {
+    rawAnnotatorAgreement: 1,
+    scoredConsensusCases: 75,
+    consensusPositiveCases: 26,
+    consensusNegativeCases: 49,
+    precision: 1,
+    recall: 1,
+    accuracy: 1,
+    transitionConsensusCases: 10,
+    transitionAccuracy: 1,
+    diligentConsensusNegativeCases: 10,
+    diligentFalsePositiveRate: 0,
+    mechanismHardConsensusRate: 1,
+    resultRequestConsensusCases: 10,
+    proposedTestConsensusCases: 18,
+    requestProposalMacroF1: 1,
+    obligationLifecycleAccuracy: 1,
+    obligationPersistenceCases: 1,
+    obligationResolutionCases: 1,
+    proposedTestFalseObligationRate: 0,
+    inquiryCompleteConsensusCases: 4,
+    inquiryIncompleteConsensusCases: 89,
+    inquiryCompletionPrecision: 1,
+    inquiryCompletionRecall: 1,
+    commitmentTransitionAccuracy: 1,
+    candidateOverrideAccuracy: 1,
+    primaryWarrantBasisAccuracy: 1,
+    closureSafetyViolations: 0,
+    divergenceDimensionMetrics: divergence,
+  };
+  const result = evaluateAdaptiveWarrantDecisionGate(
+    { metrics },
+    {
+      liveShadowAgreement: 1,
+      structuredParityComparisons: 192,
+      structuredParityComparisonsByMode: { observe: 96, active: 96 },
+      structuredParityMismatches: 0,
+      requireMechanismMetrics: true,
+    },
+  );
+  assert.equal(result.schema, 'machinespirits.adaptation-refinement.warrant-decision-gate.v2');
+  assert.equal(result.passed, true);
+  assert.equal(result.checks.some((row) => row.id === 'obligation_persistence_cases'), false);
+  assert.equal(result.checks.some((row) => row.id === 'obligation_resolution_cases'), false);
+  assert.equal(result.checks.find((row) => row.id === 'divergence_evaluable_dimensions').actual, 5);
+  assert.equal(result.checks.some((row) => row.id === 'divergence_epistemic_interpretation_macro_f1'), false);
+  assert.equal(result.support_boundary.rare_state_diagnostic_gate_eligible, false);
 });
 
 test('decision gate fails closed on null rate denominators and requires diligent negative support', () => {

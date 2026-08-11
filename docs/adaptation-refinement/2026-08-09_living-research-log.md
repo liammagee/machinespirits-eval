@@ -1561,3 +1561,36 @@ performance from rare-state adequacy so sparse natural support cannot be
 silently supplemented with challenge cases. Only then may a new clean
 representative matrix, corpus, and independent annotation pair be frozen. The
 outcome comparison remains blocked until that declared gate passes.
+
+## Progress Update — 11 August 2026, V2 sampling claims separated before new labels
+
+The V1 failure exposed a design error in addition to mechanism errors: rare-
+state challenge quotas had been embedded in the representative natural gate.
+The 96-case natural census produced one persistence case, one resolution case,
+four complete inquiries, and no epistemically non-aligned case. Requiring that
+same unselected frame to contain the challenge minima silently treated it as a
+stratified sample.
+
+The prospective V2 gate fixes the estimand before any new annotations. The
+natural-prevalence corpus remains the sole pass/fail corpus and retains the
+declared performance thresholds. Its complete-inquiry minimum is two naturally
+occurring cases. A divergence interpretation macro-F1 enters the gate only
+when that dimension has at least two consensus non-aligned cases, and at least
+five of six dimensions must meet that evaluability condition. Consensus,
+magnitude, persistence, and joint accuracy remain required on every dimension.
+Observed persistence and resolution counts are reported but no longer pretend
+to be natural sampling quotas.
+
+The separately authored challenge keeps the stronger diagnostic minima: eight
+result requests, eight proposed tests, eight persistence cases, six resolution
+cases, eight complete inquiries, twelve incomplete inquiries, and two non-
+aligned cases on every divergence dimension. Those cases remain explicitly
+gate-ineligible and cannot be pooled, weighted, or substituted into the
+representative score. V2 therefore requires representative performance while
+using the diagnostic only to expose rare-state defects. It does not rehabilitate
+or rescore the failed V1 corpus.
+
+The challenge projection now also exposes public contract `started_turn` and
+`response_count`, matching the repaired natural instrument. Once this change
+is committed from a clean checkpoint, the next bounded model act is a fresh
+two-reader diagnostic under the standing digest-bound authorization policy.

@@ -52,12 +52,14 @@ const BATCH_RESPONSE_FIELDS = Object.freeze([
   'cases_by_sample_id',
 ]);
 export const ADAPTIVE_WARRANT_CHALLENGE_DIAGNOSTIC_MINIMA = Object.freeze({
-  tutor_directed_public_result_request: ADAPTIVE_WARRANT_DECISION_GATE.minimum_result_request_cases,
-  learner_proposed_test: ADAPTIVE_WARRANT_DECISION_GATE.minimum_proposed_test_cases,
-  obligation_persistence: ADAPTIVE_WARRANT_DECISION_GATE.minimum_obligation_persistence_cases,
-  obligation_resolution: ADAPTIVE_WARRANT_DECISION_GATE.minimum_obligation_resolution_cases,
-  inquiry_complete: ADAPTIVE_WARRANT_DECISION_GATE.minimum_inquiry_complete_cases,
-  inquiry_incomplete: ADAPTIVE_WARRANT_DECISION_GATE.minimum_inquiry_incomplete_cases,
+  // These are authored diagnostic coverage requirements, not representative
+  // prevalence thresholds. Keep them explicit and independent from the gate.
+  tutor_directed_public_result_request: 8,
+  learner_proposed_test: 8,
+  obligation_persistence: 8,
+  obligation_resolution: 6,
+  inquiry_complete: 8,
+  inquiry_incomplete: 12,
   ...Object.fromEntries(
     ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS.map((dimension) => [
       `divergence_${dimension}_nonaligned`,

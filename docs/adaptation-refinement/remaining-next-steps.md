@@ -1304,3 +1304,35 @@ The remaining sequence is:
    representative execution and collect two fresh independent readers; and
 5. run no downstream outcome comparison unless that new representative gate
    passes under the prospectively declared design.
+
+## Prospective V2 evidence boundary before any new labels
+
+The first valid natural frame showed that V1 mixed two different sampling
+claims. Its accuracy thresholds measured representative performance, while its
+fixed quotas for obligation persistence, obligation resolution, complete
+inquiries, and every non-aligned divergence dimension assumed a deliberately
+enriched challenge. A 96-case census of naturally generated turns cannot be
+both unselected and guaranteed to contain those rare strata.
+
+V2 corrects that category error prospectively. The failed V1 score remains
+unchanged and cannot be rescored. The only pass/fail gate remains the fresh
+96-case `natural_prevalence` census. It retains the existing agreement,
+precision, recall, accuracy, transition, typed-mechanism, lifecycle, inquiry-
+accuracy, safety, parity, and divergence-performance thresholds. Complete-
+inquiry support becomes two natural cases rather than the challenge quota of
+eight. Divergence interpretation is scored only on dimensions with at least two
+reader-consensus non-aligned cases, and at least five of six dimensions must be
+evaluable. Every dimension still gates reader consensus plus magnitude,
+persistence, and joint accuracy, including aligned-only dimensions.
+
+The separate 24-case targeted diagnostic retains its explicit eight
+persistence, six resolution, eight complete-inquiry, and two-non-aligned-per-
+dimension construction minima. It remains gate-ineligible: its labels diagnose
+rare-state competence and may motivate another prospective repair, but they
+cannot fill a natural denominator, change a representative rate, or contribute
+to passage. Its public contract cases now carry the same instance timing as the
+natural corpus.
+
+Next: verify and ship V2, freeze a clean 24-case diagnostic, inspect both fresh
+readers for any remaining semantic defect, repair and burn if necessary, then
+freeze a new clean representative matrix. No outcome run precedes a V2 pass.

@@ -133,6 +133,9 @@ test('authored challenge realizes its declared diagnostic coverage without becom
       (row) =>
         row.normative_action_contract?.schema ===
           'machinespirits.adaptation-refinement.action-family-contract.v1' &&
+        row.normative_action_contract.expected_response_match === 'any' &&
+        Number.isInteger(row.normative_action_contract_instance?.started_turn) &&
+        Number.isInteger(row.normative_action_contract_instance?.response_count) &&
         !Object.hasOwn(row.normative_action_contract, 'status') &&
         !Object.hasOwn(row.normative_action_contract, 'transition'),
     ),

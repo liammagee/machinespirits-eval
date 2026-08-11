@@ -332,6 +332,15 @@ function recentSignals(spec) {
 
 function challengeProjection(spec) {
   const { turn, projection: publicObligation } = ledgerAtDecision(spec);
+  const responseCount = Number(spec.action_contract?.instance?.response_count || 0);
+  const actionContract = {
+    ...spec.action_contract,
+    instance: {
+      started_turn: Math.max(1, turn - responseCount),
+      response_count: responseCount,
+      from_family: null,
+    },
+  };
   const signals = recentSignals(spec);
   const signal = signals.at(-1);
   const troubleTurns = spec.action_contract.status === 'defeat'
@@ -376,7 +385,7 @@ function challengeProjection(spec) {
     complaintTurns: [],
     deferenceSustained: signals.length >= 3 && signals.slice(-3).every((row) => row.labels.includes('low_agency_deferral')),
     pacingSignal: spec.pacing_signal,
-    actionContract: spec.action_contract,
+    actionContract,
     publicObligation,
     inquiryCompletion,
     proposedActionFamily: spec.proposed_action_family,
@@ -388,7 +397,7 @@ function challengeProjection(spec) {
     deferenceSustained: signals.length >= 3 && signals.slice(-3).every((row) => row.labels.includes('low_agency_deferral')),
     divergence,
     strategyInForce: 'stage_next_step',
-    actionContract: spec.action_contract,
+    actionContract,
     publicObligation,
     inquiryCompletion,
     proposedActionFamily: spec.proposed_action_family,
@@ -466,6 +475,7 @@ function publicCase(spec, generated) {
     // lifecycle outcome or recommended transition. They must infer whether
     // success, defeat, or expiry occurred from the public evidence.
     normative_action_contract: getAdaptiveWarrantActionContract(spec.action_contract.family),
+    normative_action_contract_instance: generated.projection.action_contract?.instance || null,
     descriptive_evidence_at_decision: {
       dag_growth: spec.dag_growth,
       turns_since_dag_growth: spec.turns_since_dag_growth,
