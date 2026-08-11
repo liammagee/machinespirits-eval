@@ -1594,3 +1594,28 @@ The challenge projection now also exposes public contract `started_turn` and
 `response_count`, matching the repaired natural instrument. Once this change
 is committed from a clean checkpoint, the next bounded model act is a fresh
 two-reader diagnostic under the standing digest-bound authorization policy.
+
+## Progress Update — 11 August 2026, V2 diagnostic localizes one cross-axis confound
+
+The diagnostic frozen at clean commit
+`efc87a997d48ea6542e40a2cecf70e8d75a292df` consumed six of its eight
+digest-bound Luna calls. Both independent readers returned all 24 cases and the
+assembler made zero normalizations. Consensus accuracy was 1.000 for binary
+warrant decisions, transitions, speech-act request/proposal distinctions,
+obligation lifecycle, inquiry completion, commitment transitions, candidate
+override, and primary warrant basis. Hard mechanism consensus was 0.958.
+
+Support passed for result requests, proposed tests, persistence, resolution,
+complete and incomplete inquiries, and five divergence axes. Engagement
+non-alignment reached only one of the required two consensus cases. The two
+disagreements were the deliberately compound slower/faster low-agency probes:
+Reader A coded stalled engagement plus productive pacing, while Reader B
+treated the useful pace request as productive on both axes. Both readers agreed
+on stalled engagement for the otherwise identical low-agency probe without a
+pace modifier.
+
+This is a cross-axis reader instruction confound. Prospectively, pacing and
+engagement are explicitly orthogonal: a pace request receives its pacing label,
+while voluntary agency or repeated delegation independently determines
+engagement. The current diagnostic remains gate-ineligible and is burned
+relative to this clarification. No representative or outcome execution began.

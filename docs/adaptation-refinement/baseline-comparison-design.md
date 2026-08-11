@@ -1233,3 +1233,27 @@ claim that V1 passed. The next sequence is a clean diagnostic freeze and two
 independent reads, followed—only if no further defect is localized—by a new
 clean representative execution and reader pair under V2. Outcomes remain
 unauthorized until that representative gate passes.
+
+## First V2 diagnostic result and prospective axis clarification — 11 August 2026
+
+The 24-case diagnostic from clean commit
+`efc87a997d48ea6542e40a2cecf70e8d75a292df` completed both independent
+readers in six calls with zero normalization. On reader-consensus cases every
+typed mechanism accuracy was 1.000 and hard mechanism consensus was 0.958.
+All construction minima were realized by reader consensus except engagement
+non-alignment: one case was observed against the minimum of two.
+
+The shortfall is localized to compound low-agency and pacing cases. Reader A
+kept repeated delegation as stalled engagement while treating slower/faster as
+productive pacing. Reader B allowed the useful pace request to make engagement
+productive too. Agreement on the same low-agency form without a pace modifier
+shows that the confound is dimensional leakage rather than an unresolved
+low-agency definition.
+
+Prospectively the handbook and packet instructions state that pacing and
+engagement are orthogonal. A voluntary pace request is engagement-aligned; a
+repeated “would you have me repeat this more slowly/quickly?” construction is
+stalled low-agency engagement and independently productive pacing. The scored
+diagnostic is retained as diagnostic history but burned for the clarified
+instrument. A fresh clean freeze and fresh readers are required before the V2
+representative matrix may begin.

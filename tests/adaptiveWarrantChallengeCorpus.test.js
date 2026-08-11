@@ -159,6 +159,7 @@ test('authored challenge realizes its declared diagnostic coverage without becom
     ),
   );
   assert.match(mechanismAnnotationHandbook(), /becomes `overdue` when a completed tutor turn neither answers/u);
+  assert.match(mechanismAnnotationHandbook(), /Pacing and engagement are orthogonal/u);
 });
 
 test('challenge source provenance binds the builder, collection logic, and dedicated tests', () => {
@@ -234,6 +235,7 @@ test('challenge freeze is gate-ineligible, drift-checked, and produces a digest-
       firstOutputSchema.$defs.case.properties.open_obligation_source_turns.description,
       /empty for none, satisfied, or withdrawn_or_transferred/u,
     );
+    assert.match(firstPacket.instructions.join(' '), /Pacing and engagement are independent axes/u);
     assert.doesNotMatch(JSON.stringify(firstOutputSchema.properties), /annotator_id|annotation_run_id/u);
     assert.ok(
       firstPacket.instructions.some(

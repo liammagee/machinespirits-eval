@@ -3459,6 +3459,7 @@ Every case-level and per-dimension note must contain at least ${ADAPTIVE_WARRANT
 - Keep contract defeat on the strategy-exhaustion axis unless separate public uptake, repetition, register, or tutor-debt evidence establishes interactional trouble; do not duplicate the contract label onto interactional by default.
 - A polite preface such as “May I ask you this?” before a concrete result request is not low-agency deferral. Low agency requires handing the substantive choice or record move back to the tutor.
 - A public request to slow down or speed up is \`productive\` pacing divergence unless separate public evidence makes that pacing unsafe or failed; the pace request alone is not immediate repair.
+- Pacing and engagement are orthogonal. Do not copy a \`productive\` pacing label onto engagement. A voluntary pace request remains engagement-aligned; repeated “would you have me repeat this more slowly/quickly?” remains stalled low-agency engagement while independently receiving productive pacing.
 - On the epistemic axis, an unsupported assertion or premature whole-inquiry claim is \`unsafe\`; reserve \`stalled\` for dropped or unintegrated evidence without such a claim.
 
 ## Precedence and safety

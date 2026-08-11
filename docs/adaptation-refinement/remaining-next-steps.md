@@ -1336,3 +1336,22 @@ natural corpus.
 Next: verify and ship V2, freeze a clean 24-case diagnostic, inspect both fresh
 readers for any remaining semantic defect, repair and burn if necessary, then
 freeze a new clean representative matrix. No outcome run precedes a V2 pass.
+
+## Current restart boundary after the first V2 diagnostic read
+
+The clean `efc87a997d48ea6542e40a2cecf70e8d75a292df` challenge used six of
+eight authorized Luna calls. Both readers assembled 24/24 cases with zero
+normalization. All typed mechanism measures were exact on consensus cases:
+binary, transition, request/proposal, lifecycle, inquiry, commitment, override,
+and basis accuracy were 1.000; hard mechanism consensus was 0.958. Every
+reader-backed support minimum passed except engagement non-alignment, where one
+of two required cases reached hard consensus.
+
+The two lost engagement cases combine repeated “would you have me repeat this”
+low agency with an explicit slower/faster request. Reader A kept engagement
+stalled and pacing productive; Reader B copied productive pacing onto
+engagement. Both readers agreed on stalled engagement for the same low-agency
+form without a pace modifier. Prospectively the handbook and batch instruction
+now state that pacing and engagement are independent. This diagnostic is burned
+relative to that clarification. Verify, commit, freeze, and rerun the six-reader-
+batch diagnostic sequence before any representative execution.
