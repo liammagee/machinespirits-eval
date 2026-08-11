@@ -17,7 +17,10 @@ import {
   prepareAdaptiveWarrantAnnotationBatches,
   validateAdaptiveWarrantAnnotationAuthorizationRequest,
 } from '../scripts/prepare-adaptive-warrant-annotation-batches.js';
-import { ADAPTIVE_WARRANT_ANNOTATION_RESPONSE_V4_SCHEMA } from '../scripts/run-adaptive-warrant-baseline-study.js';
+import {
+  ADAPTIVE_WARRANT_ANNOTATION_RESPONSE_V4_SCHEMA,
+  mechanismAnnotationHandbook,
+} from '../scripts/run-adaptive-warrant-baseline-study.js';
 import {
   ADAPTIVE_WARRANT_TARGETED_CHALLENGE_SCORE_SCHEMA,
   scoreAdaptiveWarrantChallengeAnnotations,
@@ -122,6 +125,20 @@ test('authored challenge realizes its declared diagnostic coverage without becom
     built.corpus.cases.map((row) => row.sample_id),
     [...built.corpus.cases.map((row) => row.sample_id)].sort(),
   );
+  const publicById = new Map(built.corpus.cases.map((row) => [row.sample_id, row]));
+  const proposalCases = built.key.cases.filter((row) => row.job_id.startsWith('proposal-'));
+  assert.equal(proposalCases.length, 8);
+  assert.ok(
+    proposalCases.every((row) => publicById.get(row.sample_id).current_learner_turn.learner.includes('answered my result request')),
+  );
+  const engagementPersistence = built.key.cases.filter((row) => ['persistence-05', 'persistence-06'].includes(row.job_id));
+  assert.equal(engagementPersistence.length, 2);
+  assert.ok(
+    engagementPersistence.every(
+      (row) => !publicById.get(row.sample_id).current_learner_turn.learner.includes('decide what I should do'),
+    ),
+  );
+  assert.match(mechanismAnnotationHandbook(), /becomes `overdue` when a completed tutor turn neither answers/u);
 });
 
 test('challenge source provenance binds the builder, collection logic, and dedicated tests', () => {
@@ -211,6 +228,8 @@ test('challenge freeze is gate-ineligible, drift-checked, and produces a digest-
           instruction.includes('open_obligation_source_turns') && instruction.includes('satisfied'),
       ),
     );
+    assert.ok(firstPacket.instructions.some((instruction) => instruction.includes('later reminder remains overdue')));
+    assert.ok(firstPacket.instructions.some((instruction) => instruction.includes('direct result-request clause')));
     assert.match(firstBatch.output_schema_sha256, /^[0-9a-f]{64}$/u);
     assert.equal(
       prepared.authorizationRequest.bindings.reader_packets[0].output_schema_sha256,

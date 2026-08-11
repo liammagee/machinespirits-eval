@@ -169,7 +169,7 @@ function persistenceSpecs() {
     const currentPrefix = conceptual
       ? "I don't understand how to use this result."
       : engagement
-        ? 'Would you decide what I should do again?'
+        ? 'Would you have me repeat this?'
         : pacing
           ? index === 6
             ? 'Please slow down.'
@@ -246,8 +246,8 @@ function proposalSpecs() {
             },
           ],
       current_learner_text: epistemic
-        ? `This already proves the whole case, although no final link is public. Let's ${proposal}.`
-        : `Let's ${proposal}.`,
+        ? `You answered my result request. This already proves the whole case, although no final link is public. Let's ${proposal}.`
+        : `You answered my result request. Let's ${proposal}.`,
       dag_growth: strategy ? 0 : 1,
       turns_since_dag_growth: strategy ? 2 : 0,
       pacing_signal: null,

@@ -876,3 +876,25 @@ The remaining sequence is:
 4. if supported, freeze the already-predeclared fresh 96-case representative
    natural frame and apply the unchanged gate to it alone; and
 5. run no downstream outcome comparison unless that representative gate passes.
+
+## Current restart boundary after the obligation-reader audit
+
+The clean `6706305255e5f71b904b5ed7c16b7001833818a7` diagnostic completed both
+24-case readers in 6/8 calls with zero normalization edits. Binary agreement
+and accuracy were perfect and every divergence support minimum passed, but the
+new reader-backed audit correctly returned `insufficient_support`: result
+requests 6/8, exact persistence 3/8, and resolution 5/6.
+
+The remaining disagreement is localized to lifecycle and compound-act reading.
+The prospective instrument now states exactly when `open` becomes `overdue`,
+preserves overdue on reminder, gives a direct result-request clause precedence,
+and makes prior satisfaction explicit in every resolution probe.
+
+The remaining sequence is:
+
+1. verify, commit, and push this bounded annotation-boundary repair;
+2. freeze and independently annotate one new 24-case diagnostic;
+3. require every reader-backed support minimum and inspect typed accuracy;
+4. if supported, freeze the predeclared 96-case representative natural frame
+   and apply the unchanged gate to it alone; and
+5. run no downstream outcome comparison unless the representative gate passes.

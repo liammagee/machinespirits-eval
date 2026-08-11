@@ -361,3 +361,18 @@ metadata no longer claims a held-strategy switch. The item remains active
 pending one supported diagnostic read and passage of the separately frozen
 representative 96-case natural-frame gate. No downstream outcome study is
 licensed.
+
+The `6706305255e5f71b904b5ed7c16b7001833818a7` diagnostic completed both
+readers in 6/8 Luna calls with zero normalization edits. Binary warrant
+agreement and accuracy were 1.000 and all six divergence support minima passed,
+but reader-backed support correctly failed at result requests 6/8, exact
+persistence 3/8, and resolution 5/6. The disagreements were confined to
+compound selection/result turns, the unstated `open`-to-`overdue` transition,
+and resolved state being reset to `none`.
+
+Prospectively, the handbook and packet state the exact lifecycle and compound-
+act precedence; engagement probes retain low-agency evidence without asking the
+tutor to choose the investigation; and resolution probes explicitly acknowledge
+the answered request. The item remains active pending a supported clean
+diagnostic and the separate representative gate. No downstream outcome study
+is licensed.

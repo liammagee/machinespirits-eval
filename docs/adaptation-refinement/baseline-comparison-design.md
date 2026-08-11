@@ -822,6 +822,11 @@ actually realizes each frozen support minimum. Authored support tags are
 construction checks only; they cannot substitute for reader-backed support or
 contribute to the representative gate.
 
+For lifecycle coding, an open request becomes overdue after a completed tutor
+turn that neither answers nor accountably defers it; a reminder preserves that
+overdue state. A direct result-request clause is the operative speech act when
+the same learner turn also contains a tutor-selection phrase.
+
 The targeted corpus is a **diagnostic instrument, not a gate corpus**. Its
 labels may expose detector failures and motivate a bounded repair, but neither
 its cases nor its scores may satisfy a pass/fail threshold, estimate prevalence

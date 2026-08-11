@@ -1229,3 +1229,30 @@ These prospective changes burn the `6a5074df` diagnostic. The next clean read
 must achieve reader-backed diagnostic support; only then should the fresh
 representative 96-case natural frame be generated. No downstream outcome run
 is licensed.
+
+## Progress Update — 11 August 2026, obligation-reader boundary localized
+
+The clean `6706305255e5f71b904b5ed7c16b7001833818a7` diagnostic used six of eight
+authorized Luna calls under digest
+`f40ea3b375b9baf29373ad068e80c0e10b3ae800fb2bdc64eca735afa15b7f4a`.
+Both readers assembled 24/24 cases with zero normalization edits. Binary
+warrant agreement, precision, recall, and accuracy were all 1.000. Every
+divergence axis met reader-backed support; interpretation and joint accuracy
+were 0.917–1.000 except pacing macro-F1 at 0.651.
+
+The new support audit correctly failed the diagnostic. Consensus supplied only
+6/8 result requests, 3/8 exact persistence cases, and 5/6 resolutions. The
+disagreements were localized: three reminders split only between `open` and
+`overdue`; two engagement cases combined tutor selection with a direct result
+request; and three answered requests split between persistent `satisfied` and
+an incorrect reset to `none`. These are annotation-boundary confounds rather
+than binary or primary-basis detector errors.
+
+Prospectively, the handbook and packet now state the runtime lifecycle rule:
+an unanswered, non-deferred request becomes overdue after the completed tutor
+turn, and a reminder remains overdue. Direct result-request clauses outrank a
+selection phrase in the same turn. The challenge preserves the engagement
+signal without asking the tutor to choose the next investigation, and every
+proposal row explicitly acknowledges the answered request. This burns the
+`67063052` freeze. One newly frozen diagnostic must confirm support before the
+representative natural frame; no downstream outcome run is licensed.

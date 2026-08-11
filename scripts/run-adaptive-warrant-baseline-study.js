@@ -3417,12 +3417,14 @@ Every case-level and per-dimension note must contain at least ${ADAPTIVE_WARRANT
 ## Disjoint calibration examples
 
 - Result request: “What does the next public clue show?” asks the tutor to supply an available result and can create tutor-owned debt.
+- If one learner turn contains both a tutor-selection phrase and a direct result-request clause, code the direct result request as the operative speech act.
 - Proposed test: “Can we inspect the next clue?” proposes an investigation; it does not yet ask the tutor to report a known result.
 - Criterion: “What would the next clue need to establish?” asks for a standard of proof, not a result.
 - Selection: “Could you choose which public record we should inspect?” delegates a choice, not result production.
 - Record entry: “I can record that finding now” offers to write an already-public claim; it is neither a test proposal nor tutor-owned result debt.
 - Commitment transition and candidate override are independent. A prior family may warrant transition while the current candidate already realizes the correct successor, or a prior family may remain valid while this particular candidate still needs correction.
 - A request answered in tutor turn 1 remains \`satisfied\` at learner turn 2 with an empty source-turn array; it is not \`none\`. Use \`none\` only when no request occurred anywhere in the public transcript.
+- An \`open\` request becomes \`overdue\` when a completed tutor turn neither answers it nor accountably defers it. A later reminder preserves \`overdue\`; it does not reset the obligation to \`open\`.
 - Apply warrant-basis precedence exactly: immediate repair, actionable public obligation, strict inquiry completion, candidate safety for an unsafe close while inquiry is incomplete, action-contract result, then register or accumulated trouble. Use \`none/hold\` only when none applies.
 - Explicit analytic work can be conceptually aligned even when the learner record stays flat. Conceptual stalling needs a public failure signal such as an explicit stall or low-agency deferral; productive testing is not conceptual failure.
 - Strategy exhaustion follows the supplied typed expected-uptake contract. If the contract says the learner adopted or used the staged evidence, do not mark the family exhausted only because the learner's surface wording still sounds dependent. Mark exhaustion when that contract is defeated, expired, or repeatedly failed.
