@@ -1040,8 +1040,8 @@ artifact while the packet template described the per-call batch artifact. The
 fail-closed assembler rejected the extra fields. A structured-output retry
 removed the extra fields but still selected the handbook's V4 schema literal,
 confirming that this was an instruction/envelope conflict rather than a JSON
-formatting accident. Three exploratory structured-schema submissions were
-rejected by the API before inference and do not count as annotation calls.
+formatting accident. Three paired exploratory structured-schema rounds—six API
+requests—were rejected before inference and do not count as annotation calls.
 Four genuine Luna calls were used; four authorized calls remain unused. No
 Reader B call was made, the private key was not read, no consensus or accuracy
 score was computed, and the freeze is burned as an annotation instrument.
