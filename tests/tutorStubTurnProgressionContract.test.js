@@ -113,6 +113,7 @@ test('public obligation compilation preserves target identity and requires every
   assert.deepEqual(directive, frozenDirective);
   assert.equal(contract.public_obligation_contract.complete, true);
   assert.equal(contract.public_obligation_contract.target.signature, directive.target.signature);
+  assert.deepEqual(contract.public_obligation_contract.target.public_terms, directive.target.public_terms);
   assert.deepEqual(contract.public_obligation_contract.target.subject_terms, directive.target.subject_terms);
   assert.deepEqual(
     contract.public_obligation_contract.target.required_components,
@@ -149,6 +150,28 @@ test('public obligation compilation preserves target identity and requires every
     { id: 'weight_reading', answered: true },
     { id: 'ring_sound', answered: true },
   ]);
+});
+
+test('public obligation compilation keeps an empty generic target distinct from derived progression terms', () => {
+  const directive = publicObligationDirective({
+    target: {
+      kind: 'record_entry',
+      signature: 'record_entry:generic',
+      public_terms: [],
+      subject_terms: [],
+      required_components: [],
+      source_surface: 'Give me the next public record.',
+    },
+  });
+  const contract = obligationProgressionContract({
+    learnerText: directive.target.source_surface,
+    dramaticReleaseFrame: { active: false, entries: [] },
+    publicObligationDirective: directive,
+  });
+
+  assert.equal(contract.public_obligation_contract.complete, true);
+  assert.deepEqual(contract.public_obligation_contract.target.public_terms, []);
+  assert.deepEqual(contract.public_obligation_contract.target.progression_terms, ['public']);
 });
 
 test('public obligation compilation fails closed on malformed target-integrity fields', () => {

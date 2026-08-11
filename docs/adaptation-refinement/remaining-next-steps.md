@@ -1209,3 +1209,28 @@ responsive family in the public uptake span. The remaining sequence is:
    schema and require both to assemble without content repair;
 4. apply the unchanged representative scorer; and
 5. run no downstream outcome comparison unless the representative gate passes.
+
+## Current restart boundary after generic-target identity preservation
+
+The clean `495859cbafde252bdd997ead257a19910f00d5d5` matrix completed all 24
+children with valid seals and all 192 planned turns. Structured replay remained
+exact. The parent failed one of 192 delivery-application comparisons on active
+turn eight of the Foxtrot fast-learner cell. The gate directive represented a
+generic request for the next public record with `public_terms: []`; the
+first-draft compiler replaced that identity field with the derived matching
+term `public`. Public delivery was valid, but the exact comparator correctly
+rejected the compiler mutation. The packet is burned and will not be annotated.
+
+Prospectively, compiled targets preserve the directive's `public_terms`
+verbatim, including an explicitly empty generic target. Vocabulary derived
+from the public source surface remains available only through the separate
+`progression_terms` field used for realization and audit. The remaining
+sequence is:
+
+1. verify, commit, and push the generic-target identity repair;
+2. freeze a new clean representative matrix and require 24/24 valid children,
+   192/192 structured parity, and 192/192 delivery application;
+3. collect and assemble two fresh independent readers under the case-specific
+   response schema;
+4. apply the unchanged representative scorer; and
+5. run no downstream outcome comparison unless the representative gate passes.

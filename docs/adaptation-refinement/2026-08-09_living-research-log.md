@@ -1481,3 +1481,23 @@ use the same idempotent realizer before an authored source. The focused
 regression reproduces the failed low-agency question and requires the released
 response to make `challenge_resistance` visible in its uptake span. A new clean
 matrix remains mandatory before annotation resumes.
+
+## Progress Update — 11 August 2026, generic obligation targets retain exact identity
+
+The clean `495859cbafde252bdd997ead257a19910f00d5d5` replacement matrix closed
+24/24 valid child seals and all 192 planned turns. It failed the parent delivery
+gate on one exact representation comparison. On active turn eight of the
+Foxtrot fast-learner cell, the learner requested the next public record without
+naming a more specific target. The gate directive correctly stored
+`public_terms: []`. During first-draft compilation, the compiler copied the
+derived surface-matching token `public` into `public_terms`; the final response
+validly deferred the unavailable record, but the delivery comparator detected
+that the compiled target no longer exactly matched final authority. The packet
+is burned and was not exposed to readers.
+
+The prospective repair preserves the directive target without enrichment.
+Derived vocabulary remains in `progression_terms`, where it already drives
+focus and delivery checks, while `public_terms` remains an identity field. A
+model-free regression freezes the observed generic request and requires an
+empty identity list alongside nonempty derived progression terms. A fresh clean
+matrix remains required before annotation resumes.

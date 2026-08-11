@@ -277,7 +277,7 @@ function compilePublicObligationResolutionContract(directive = null) {
     target: {
       kind: kind || null,
       signature,
-      public_terms: directivePublicTerms.length ? directivePublicTerms : progressionTerms,
+      public_terms: directivePublicTerms,
       subject_terms: subjectTerms,
       required_components: requiredComponents,
       progression_terms: progressionTerms,
