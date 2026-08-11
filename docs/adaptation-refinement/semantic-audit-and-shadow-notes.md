@@ -486,3 +486,25 @@ instructions to examine a possible trace are also distinguished from positive
 claims that two exhibits already correspond. None of these changes affect the
 normative DAG, descriptive state, warrant basis, or gate threshold. The partial
 packet remains burned.
+
+### 7.18 Contract-result projection ownership
+
+The `d7549b38` run proved runtime, replay, and delivery application across all
+192 decisions, but the representative reader assembly exposed an authority
+gap between the public corpus and its validator. The live gate's action-contract
+object contains both the authored expected-uptake contract and a typed
+decision-time transition. The blinded projection retained only the authored
+contract, correctly keeping the gate result private. Readers independently
+inferred success, defeat, or expiry, while the validator incorrectly allowed
+the `action_contract` basis only when that hidden transition said
+`revision_warranted=true`.
+
+Both readers independently classified a successful renewal as a positive
+contract basis, and the same mismatch occurred 73 times across 192 labels.
+The repair keeps ownership with independent gold judgment. The raw public
+contract declares its possible successors; readers choose among them from
+public evidence, and the validator checks only that a positive contract family
+is one of those declarations. A non-revising renewal confirms the held family
+without creating a warrant. No private gate prediction, eventual response,
+condition, or profile is exposed. The old packet is burned; the repaired
+instrument can be evaluated only on a fresh run.

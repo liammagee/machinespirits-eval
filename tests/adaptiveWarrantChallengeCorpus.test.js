@@ -128,6 +128,20 @@ test('authored challenge realizes its declared diagnostic coverage without becom
     built.corpus.cases.map((row) => row.sample_id),
     [...built.corpus.cases.map((row) => row.sample_id)].sort(),
   );
+  assert.ok(
+    built.corpus.cases.every(
+      (row) =>
+        row.normative_action_contract?.schema ===
+          'machinespirits.adaptation-refinement.action-family-contract.v1' &&
+        !Object.hasOwn(row.normative_action_contract, 'status') &&
+        !Object.hasOwn(row.normative_action_contract, 'transition'),
+    ),
+  );
+  assert.ok(
+    built.key.cases.some(
+      (row) => row.shadow.action_contract?.status === 'defeat' && row.shadow.action_contract?.transition,
+    ),
+  );
   const publicById = new Map(built.corpus.cases.map((row) => [row.sample_id, row]));
   const proposalCases = built.key.cases.filter((row) => row.job_id.startsWith('proposal-'));
   assert.equal(proposalCases.length, 8);

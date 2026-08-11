@@ -1362,3 +1362,25 @@ governs whether dramatic release requires a question in both live and frozen
 replay. These are bounded instrument repairs; the mechanism, sample, and gate
 remain unchanged. A fresh 24/24 matrix is still required before the 96-case
 reader stage, and no downstream outcome run is licensed.
+
+## Progress Update — 11 August 2026, runtime cleared; reader projection burned
+
+The clean `d7549b382d34b351bd90aaa0cbfe9303e1e54b9c` representative matrix
+completed 24/24 valid dialogues, 192/192 learner analyses, 192/192 structured
+live/replay comparisons, and 192/192 delivery-application comparisons with no
+mismatches or issues. The exact 96-case observe corpus froze with zero overlap
+against the three declared exclusions.
+
+Both independent Luna readers completed their twelve eight-case batches. The
+assembler stopped before opening the private key: both readers treated a
+successful non-revising contract renewal as an `action_contract` warrant. The
+public corpus correctly withheld the gate's typed transition, but the validator
+incorrectly required that hidden result. A public-only audit found 73/192 such
+labels, no lifecycle/inquiry/debt violations, and 15 declared `none -> hold`
+canonicalizations. The packet is burned and was not scored.
+
+Prospectively the gate transition stays private. Readers independently judge
+the raw contract against public evidence, and the validator checks only that
+an `action_contract` family is one of the contract's declared public successors;
+a non-revising renewal is `none/hold` absent a higher basis. A fresh clean
+matrix and fresh independent readers remain required under the unchanged gate.

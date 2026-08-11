@@ -195,6 +195,8 @@ function caseResponseSchema(allowedActionFamilies) {
           'none',
           'uncertain',
         ],
+        description:
+          'Judge the raw public contract independently. Use action_contract only when public evidence requires one of its declared successor families; a successful renewal that retains the held family is not a warrant.',
       },
       recommended_action_family: {
         enum: allowedActionFamilies,
@@ -363,6 +365,7 @@ export function prepareAdaptiveWarrantAnnotationBatches({
           'A public request to slow down or speed up is productive pacing divergence unless separate public evidence makes that pacing unsafe or failed; the pace request alone is not immediate repair.',
           'On the epistemic axis, an unsupported assertion or premature whole-inquiry claim is unsafe; reserve stalled for dropped or unintegrated evidence without an unsupported or premature claim.',
           'An immediate repair basis outranks an accompanying public obligation: when repair_explanation replaces the held family, commitment_transition_warranted is yes even though the result obligation also needs a response.',
+          'Judge contract success, defeat, or expiry independently from the raw normative_action_contract and public evidence; no gate transition or prediction is supplied. Use action_contract only when the judgment requires one of its declared successor families. A successful renew that retains the held family is not a warrant; use none/hold when no higher basis applies.',
           'Use aligned when the dimensional norm is met: record growth or explicit analytic work is conceptual alignment, and voluntary agency is engagement alignment. Productive means a useful departure from the norm, not merely a good move.',
           'For strategy exhaustion, follow the supplied contract result: defeat or expiry with revision_warranted=true is stalled even when the current learner wording sounds active; a live or successful contract is aligned unless separate strategy evidence defeats it.',
           'Public-obligation fulfilment can override the current candidate but does not by itself change the held pedagogical commitment. A differing terminal or pedagogical successor does.',

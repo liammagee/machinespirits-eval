@@ -1991,7 +1991,7 @@ export function buildBlindedAnnotationCorpus(
       study_id: studyId,
       blinded: true,
       instructions:
-        'Independently label the public speech act, obligation lifecycle, inquiry completion, commitment transition, candidate override, primary warrant basis, successor family, and all six normative/descriptive divergence dimensions. For each dimension label interpretation (aligned, productive, stalled, unsafe), magnitude (none, low, moderate, high), and persistence (none, single_turn, sustained). Use only the frozen public inquiry brief, transcript, normative action contract, and raw decision-time evidence. Audit structured counters against the public transcript; do not treat a counter or learner analysis as self-validating. Productive departure is divergence without pedagogical failure. An answerable public obligation outranks closure; closure requires exhausted licensed evidence, a supported terminal learner assertion, and no actionable open obligation. Use uncertain when public inputs do not determine a label; never infer from hidden evidence or the eventual tutor reply.',
+        'Independently label the public speech act, obligation lifecycle, inquiry completion, commitment transition, candidate override, primary warrant basis, successor family, and all six normative/descriptive divergence dimensions. For each dimension label interpretation (aligned, productive, stalled, unsafe), magnitude (none, low, moderate, high), and persistence (none, single_turn, sustained). Use only the frozen public inquiry brief, transcript, raw normative action contract, and raw decision-time evidence. Independently judge whether the public evidence satisfies, defeats, or expires that contract. Use action_contract only when this judgment requires a declared successor; a successful renewal that retains the held family is not a warrant. Never infer or request the gate prediction. Audit structured counters against the public transcript; do not treat a counter or learner analysis as self-validating. Productive departure is divergence without pedagogical failure. An answerable public obligation outranks closure; closure requires exhausted licensed evidence, a supported terminal learner assertion, and no actionable open obligation. Use uncertain when public inputs do not determine a label; never infer from hidden evidence or the eventual tutor reply.',
       allowed_recommended_action_families: [...ANNOTATION_ACTION_FAMILIES, 'hold', 'uncertain'],
       allowed_speech_acts: [...ANNOTATION_SPEECH_ACTS],
       allowed_obligation_states: [...ANNOTATION_OBLIGATION_STATES],
@@ -2258,18 +2258,14 @@ export function validateBlindedAnnotationResponse({ response, corpus, expectedCo
       }
       const publicCase = corpusById.get(row.sample_id) || {};
       const publicContract = publicCase.normative_action_contract || {};
-      if (basis === 'action_contract' && publicContract.transition?.revision_warranted !== true) {
+      const publicContractSuccessors = [
+        publicContract.success_transition,
+        publicContract.defeat_transition,
+        publicContract.expiry_transition,
+      ].filter((candidate) => ANNOTATION_ACTION_FAMILIES.includes(candidate));
+      if (basis === 'action_contract' && !publicContractSuccessors.includes(family)) {
         throw new Error(
-          `annotation response ${row.sample_id} cannot use action_contract without a public contract transition`,
-        );
-      }
-      if (
-        basis === 'action_contract' &&
-        publicContract.transition?.recommended_action_family &&
-        family !== publicContract.transition.recommended_action_family
-      ) {
-        throw new Error(
-          `annotation response ${row.sample_id} action_contract family does not match the public contract successor`,
+          `annotation response ${row.sample_id} action_contract family is not a declared public contract successor`,
         );
       }
       if (
@@ -3432,6 +3428,7 @@ Every case-level and per-dimension note must contain at least ${ADAPTIVE_WARRANT
 - An \`open\` request becomes \`overdue\` when a completed tutor turn neither answers it nor accountably defers it. A later reminder preserves \`overdue\`; it does not reset the obligation to \`open\`.
 - Only a direct target-specific result request creates or reminds obligation source turns. A selection or low-agency turn that names no requested result is not a source turn.
 - Apply warrant-basis precedence exactly: immediate repair, actionable public obligation, strict inquiry completion, candidate safety for an unsafe close while inquiry is incomplete, action-contract result, then register or accumulated trouble. Use \`none/hold\` only when none applies.
+- Judge contract success, defeat, or expiry independently from the raw public contract and public decision-time evidence; no gate transition or prediction is supplied. Use \`action_contract\` only when that judgment requires one of the contract's declared successor families. A successful \`renew\` that retains the held family is not a warrant; if no higher basis applies, label \`none/hold\`.
 - Explicit analytic work can be conceptually aligned even when the learner record stays flat. Conceptual stalling needs a public failure signal such as an explicit stall or low-agency deferral; productive testing is not conceptual failure.
 - Strategy exhaustion follows the supplied typed expected-uptake contract. If the contract says the learner adopted or used the staged evidence, do not mark the family exhausted only because the learner's surface wording still sounds dependent. Mark exhaustion when that contract is defeated, expired, or repeatedly failed.
 - \`aligned\` means the descriptive state satisfies that dimension's stated norm, even when the move is valuable. Record growth or explicit analytic work is conceptually aligned; voluntary agentive participation is engagement-aligned. Use \`productive\` only for a useful departure from the stated norm, not as a synonym for good, active, or successful.
@@ -3446,7 +3443,7 @@ Every case-level and per-dimension note must contain at least ${ADAPTIVE_WARRANT
 2. A tutor-directed request for an available public result creates a tutor obligation; a learner proposal to run a test does not. For multiple obligations use the state precedence overdue, then open/reactivated, then deferred, then the latest resolved state, then none. An actionable open, overdue, or reactivated public obligation outranks closure and unrelated questioning. An accountable deferral remains recorded but is nonblocking until its named public condition occurs or the obligation is reminded or released.
 3. Whole-inquiry completion requires a supported terminal learner assertion, known exhausted licensed evidence, integrated released evidence, no unsupported assertion or active dropped fact, and no actionable open, overdue, or reactivated public obligation. A fixed horizon or locally fluent turn is not completion.
 4. A \`close_inquiry\` candidate while whole-inquiry state is incomplete has \`candidate_safety\` as its primary basis. Recommend a safe nonterminal family; do not call the inquiry complete, and do not infer a held-family transition when the safe successor retains the prior family.
-5. Action-contract success, defeat, or expiry is judged against the prior delivered family and its deadline.
+5. Action-contract success, defeat, or expiry is judged independently against the prior delivered family, the raw contract, its deadline, and public evidence. Select only the corresponding declared successor family. A non-revising renewal is \`none/hold\` unless a higher-priority basis applies; the gate's own transition is never shown to readers.
 6. Register or accumulated trouble is considered only after the higher-priority cases above. Productive analytic resistance is not a stall.
 7. \`commitment_transition_warranted\` asks whether the held pedagogical family should change beyond the current response. Public-obligation fulfilment is a response-level requirement and therefore does not by itself change that commitment; it can require a current-candidate override. Immediate repair remains the primary pedagogical transition when the same turn also creates or reminds an obligation. A strict terminal close or a contract/immediate/trouble-driven pedagogical switch changes the commitment when its successor differs from the prior family. \`current_candidate_override_required\` asks whether the concrete pre-gate candidate must change; either label can differ from the other.
 8. Judge divergence before judging whether it warrants a commitment revision. Conceptual concerns learner-record progress; interactional concerns uptake, repetition, register trouble, and tutor-owned public debt; engagement concerns voluntary agency; pacing concerns publicly evidenced acceleration or deceleration from authored pace; epistemic concerns unsupported, dropped, unintegrated, or prematurely terminal claims; strategy exhaustion concerns a held family whose expected-uptake contract has been defeated, expired, or repeatedly failed.

@@ -1482,6 +1482,27 @@ test('annotation corpus hides condition and keeps the arm mapping in a separate 
     resultRow({ profile: 'low_agency', condition: 'instrumented', seed: 101 }),
     resultRow({ profile: 'low_agency', condition: 'intervening', seed: 101 }),
   ];
+  rows[0].decisions[0].gate = {
+    revision_warranted: true,
+    action_contract: {
+      contract: {
+        schema: 'machinespirits.adaptation-refinement.action-family-contract.v1',
+        expected_learner_responses: ['examines_or_uses_named_public_material'],
+        deadline_turns: 2,
+        success_transition: 'stage_next_step',
+        defeat_transition: 'clarify_distinction',
+        expiry_transition: 'answer_accountably',
+        exit_on_success: true,
+        terminal: false,
+      },
+      transition: {
+        type: 'stage_next_step',
+        revision_warranted: true,
+        recommended_action_family: 'stage_next_step',
+        discharge_prior_trouble: true,
+      },
+    },
+  };
   const { corpus, key } = buildBlindedAnnotationCorpus(rows, { perCell: 1, studyId: 'test' });
   const repeated = buildBlindedAnnotationCorpus([...rows].reverse(), { perCell: 1, studyId: 'test' });
   assert.equal(corpus.cases.length, 3);
@@ -1498,6 +1519,11 @@ test('annotation corpus hides condition and keeps the arm mapping in a separate 
   assert.ok(corpus.cases.every((row) => /^case-[0-9a-f]{24}$/u.test(row.sample_id)));
   assert.ok(corpus.cases.every((row) => !/^case-\d{3}$/u.test(row.sample_id)));
   assert.ok(corpus.cases.every((row, index) => key.cases[index].source_fingerprint === annotationCaseFingerprint(row)));
+  const contractKey = key.cases.find((row) => row.job_id === rows[0].jobId);
+  const contractCase = corpus.cases.find((row) => row.sample_id === contractKey.sample_id);
+  assert.equal('transition' in contractCase.normative_action_contract, false);
+  assert.equal(contractCase.normative_action_contract.defeat_transition, 'clarify_distinction');
+  assert.equal(contractKey.gate.action_contract.transition.revision_warranted, true);
   assert.equal(corpus.sampling.ordering, 'deterministic_global_sha256_v1');
   assert.equal(corpus.sampling.sample_id_scheme, 'opaque_sha256_96bit_v1');
 });
@@ -2036,6 +2062,61 @@ test('v4 annotation validation rejects contamination, non-typed values, and inco
         expectedCorpusSha256: response.corpus_sha256,
       }),
     /non-aligned conceptual divergence requires non-none magnitude/u,
+  );
+
+  const contractCorpus = {
+    ...corpus,
+    study_id: 'strict-v4-contract-shape',
+    cases: [
+      {
+        sample_id: 'case-contract',
+        current_learner_turn: { turn: 3 },
+        normative_action_contract: {
+          schema: 'machinespirits.adaptation-refinement.action-family-contract.v1',
+          expected_learner_responses: ['examines_or_uses_named_public_material'],
+          deadline_turns: 2,
+          success_transition: 'renew',
+          defeat_transition: 'clarify_distinction',
+          expiry_transition: 'answer_accountably',
+          exit_on_success: false,
+          terminal: false,
+        },
+      },
+    ],
+  };
+  const contractRow = {
+    ...row,
+    sample_id: 'case-contract',
+    commitment_transition_warranted: 'yes',
+    current_candidate_override_required: 'yes',
+    primary_warrant_basis: 'action_contract',
+    recommended_action_family: 'clarify_distinction',
+    note: 'The public uptake evidence defeats the raw expected-response contract.',
+  };
+  const contractResponse = {
+    ...response,
+    study_id: contractCorpus.study_id,
+    cases: [contractRow],
+  };
+  assert.equal(
+    validateBlindedAnnotationResponse({
+      response: contractResponse,
+      corpus: contractCorpus,
+      expectedCorpusSha256: contractResponse.corpus_sha256,
+    }).ok,
+    true,
+  );
+  assert.throws(
+    () =>
+      validateBlindedAnnotationResponse({
+        response: {
+          ...contractResponse,
+          cases: [{ ...contractRow, recommended_action_family: 'stage_next_step' }],
+        },
+        corpus: contractCorpus,
+        expectedCorpusSha256: contractResponse.corpus_sha256,
+      }),
+    /not a declared public contract successor/u,
   );
 });
 

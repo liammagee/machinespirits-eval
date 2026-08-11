@@ -1071,3 +1071,31 @@ permits a question. Live and frozen replay pass the same progression contract
 to that audit. These are instrument-ownership corrections, not changes to the
 warrant mechanism or predeclared gate. A fresh clean 24-dialogue execution is
 still required before annotation.
+
+## Representative contract-result blinding correction — 11 August 2026
+
+The clean `d7549b382d34b351bd90aaa0cbfe9303e1e54b9c` execution cleared the full
+runtime boundary: 24/24 children sealed valid, all 192 learner-analysis calls
+completed, structured live/replay parity was 192/192 with zero mismatches, and
+delivery application was 192/192 with zero mismatches or issues. Its frozen
+representative corpus contained exactly all 96 observe decisions from the
+predeclared frame and had zero overlap with all three excluded prior corpora.
+
+Two independent Luna readers then completed all 24 authorized eight-case
+batches. Assembly stopped before key access or scoring because both readers
+used `action_contract` on the first case despite a non-revising successful
+renewal. A public-only audit found the same mismatch on 73/192 labels. The
+corpus correctly exposed only the raw expected-uptake contract, while the
+validator incorrectly required the gate's hidden typed `transition` to license
+the basis. Fifteen `none`/family pairs were within the
+two predeclared canonicalizations, and no lifecycle, inquiry, or public-debt
+invariant failed.
+
+This is a collection-projection confound, not a detector result. The freeze and
+all responses are burned and will not be repaired or scored. Prospectively,
+readers independently judge success, defeat, or expiry from the raw public
+contract and public evidence. `action_contract` must name one of that contract's
+declared successor families; a renewal that retains the held family is
+`none/hold` when no higher basis applies. The gate transition remains private.
+The unchanged representative frame and gate must run again from a new clean
+commit before any downstream outcome study.

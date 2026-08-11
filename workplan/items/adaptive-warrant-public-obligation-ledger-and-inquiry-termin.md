@@ -489,3 +489,24 @@ audits defer question ownership to typed progression. The item remains active
 pending full verification, a clean pushed checkpoint, a fresh 24/24 run,
 192/192 delivery proof, two independent readers, and passage of the unchanged
 representative gate. No downstream outcome study is licensed.
+
+The clean `d7549b382d34b351bd90aaa0cbfe9303e1e54b9c` execution cleared every
+runtime instrument: 24/24 valid children, 192/192 learner-analysis calls,
+192/192 structured parity, and 192/192 delivery application, all without
+mismatch or issue. The representative 96-case observe corpus froze with exact
+coverage and zero overlap. Both isolated Luna readers completed all 24 bounded
+batches, but assembly stopped before key access. The corpus builder exposed the
+raw expected-uptake contract and correctly withheld the gate prediction; both
+readers labeled non-revising successful renewals as `action_contract`, while
+the validator incorrectly required the hidden transition to authorize that basis. A
+public-only audit found this on 73/192 labels; the only other inconsistencies
+were 15 explicitly allowed `none -> hold` canonicalizations. The freeze is
+burned and unscored.
+
+Prospectively, the gate transition stays private. Readers independently judge
+the raw contract against public evidence; the validator permits only its
+declared successor families, and non-revising renewal is `none/hold` absent a
+higher basis. The item remains active pending verification,
+a pushed clean checkpoint, a new 24/24 execution, two fresh readers, and
+passage of the unchanged representative gate. No downstream outcome study is
+licensed.

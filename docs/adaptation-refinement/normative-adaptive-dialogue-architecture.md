@@ -947,3 +947,18 @@ later phrase cannot change the evidence object used to assess a correspondence
 inside the source. These boundaries preserve independent observations: source
 delivery, dramatic realization, obligation resolution, and terminal discourse
 act can each pass or fail without one silently rewriting another.
+
+## 27. Contract specification is public; contract result is independently judged
+
+An expected-uptake contract specifies the norm for a held action family. The
+gate's typed transition is its own result of applying that norm and must remain
+hidden from blind readers. Otherwise the detector would supply part of its own
+gold label and collapse normative/descriptive divergence into self-agreement.
+
+The representative public projection therefore freezes the raw authored
+contract, prior family, deadline evidence, and public uptake evidence—but not
+the gate transition. Readers independently judge success, defeat, or expiry
+and may select only a successor declared by that contract. A successful renewal
+that retains the held family creates no warrant; absent a higher-priority basis,
+the decision is `none/hold`. The validator enforces vocabulary and public
+contract support without re-performing or revealing the detector decision.

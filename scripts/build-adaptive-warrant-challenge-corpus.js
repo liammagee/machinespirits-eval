@@ -5,7 +5,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 
-import { ADAPTIVE_WARRANT_ACTION_FAMILY_CONTRACTS } from '../services/adaptiveWarrantActionContracts.js';
+import {
+  ADAPTIVE_WARRANT_ACTION_FAMILY_CONTRACTS,
+  getAdaptiveWarrantActionContract,
+} from '../services/adaptiveWarrantActionContracts.js';
 import {
   ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS,
   projectAdaptiveWarrantDivergence,
@@ -153,7 +156,7 @@ function defeatedContract() {
     status: 'defeat',
     reason: 'expected_uptake_not_observed',
     instance: { response_count: 2, deadline_responses: 2 },
-    transition: { revision_warranted: true, recommended_action_family: 'clarify_distinction' },
+    transition: { revision_warranted: true, recommended_action_family: 'answer_accountably' },
   };
 }
 
@@ -459,7 +462,10 @@ function publicCase(spec, generated) {
       remaining_licensed_count: generated.evidenceAvailability.remaining_licensed_count,
       release_scope_exhausted: generated.evidenceAvailability.release_scope_exhausted,
     },
-    normative_action_contract: spec.action_contract,
+    // Readers receive the declared contract, not the gate's evaluated
+    // lifecycle outcome or recommended transition. They must infer whether
+    // success, defeat, or expiry occurred from the public evidence.
+    normative_action_contract: getAdaptiveWarrantActionContract(spec.action_contract.family),
     descriptive_evidence_at_decision: {
       dag_growth: spec.dag_growth,
       turns_since_dag_growth: spec.turns_since_dag_growth,

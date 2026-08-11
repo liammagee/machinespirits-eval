@@ -83,6 +83,18 @@ test('reader packets use exact sample-id maps and assembly applies only declared
       [2, 2],
     );
     assert.match(prepared.manifest.inference_boundary, /natural prevalence/u);
+    const firstPacket = JSON.parse(
+      fs.readFileSync(prepared.manifest.readers[0].batches[0].packet_path, 'utf8'),
+    );
+    assert.ok(
+      firstPacket.instructions.some((instruction) =>
+        instruction.includes('no gate transition or prediction is supplied'),
+      ),
+    );
+    assert.match(
+      firstPacket.response_json_schema.$defs.case.properties.primary_warrant_basis.description,
+      /Judge the raw public contract independently/u,
+    );
 
     const reader = prepared.manifest.readers[0];
     const responseDir = path.join(root, 'responses-a');

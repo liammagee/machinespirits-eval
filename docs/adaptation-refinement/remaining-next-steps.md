@@ -1075,3 +1075,26 @@ The remaining sequence is:
 4. only then collect two independent readers of the fresh 96-case natural
    frame and apply the unchanged gate; and
 5. run no downstream outcome comparison unless that representative gate passes.
+
+## Current restart boundary after contract-result blinding repair
+
+The clean `d7549b382d34b351bd90aaa0cbfe9303e1e54b9c` matrix finally passed the
+complete execution boundary: 24 valid seals, 192 learner analyses, exact
+192/192 live/replay parity, and exact 192/192 delivery application. Its fresh
+96-case representative corpus also passed freeze and zero-overlap checks.
+
+All 24 bounded Luna annotation calls completed, but assembly failed before
+private-key access because the validator required a hidden typed contract
+transition that the blinded corpus correctly did not expose. Both readers treated a
+successful non-revising renewal as an `action_contract` warrant; the packet and
+responses are burned and unscored.
+
+The remaining sequence is:
+
+1. verify, commit, and push the raw-contract reader and validator boundary;
+2. generate a fresh clean 24-dialogue representative matrix and require the
+   same 24/24, 192/192 parity, and 192/192 delivery results;
+3. freeze a new zero-overlap 96-case natural corpus that keeps the gate
+   transition private and exposes only the raw normative contract;
+4. collect two fresh independent readers and apply the unchanged scorer; and
+5. run no downstream outcome comparison unless that representative gate passes.
