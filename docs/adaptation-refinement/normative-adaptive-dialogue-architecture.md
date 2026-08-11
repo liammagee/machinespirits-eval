@@ -913,3 +913,21 @@ waits 5 seconds before the first redispatch and 15 before the second; the wait
 is abort-aware. A third failure is terminal. Known command, file, function,
 MCP, web, or unknown tool events remain non-retryable. This is transport
 validity, not conversational adaptation.
+
+## 25. Recovery configuration and delivery diagnostics have separate authority
+
+A plain recovery is a typed safety transition, not an attempt to realize the
+original expressive stance. Its delivery proof is the exact selected-to-
+speaking-to-recovery configuration transition plus agreement that the final
+configuration is `plain`; no affirmative surface marker is required for the
+absence of an expressive operation. Likewise, obligation realization is owned
+by the obligation sub-audit. Other progression defects remain visible but do
+not retrospectively make an answered or accountably deferred obligation
+unresolved.
+
+This separation matters to the layered DAG: descriptive public delivery may
+carry an action and obligation correctly while another conversational contract
+fails. The audit must preserve both facts rather than collapsing every warning
+into one false mechanism divergence. Explicit terminal language remains
+surface-checked, including the bounded “incident is closed” construction and
+its open/not-closed negatives.

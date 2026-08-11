@@ -464,3 +464,15 @@ tests; the baseline and hermetic manifests and all 490 workplan items validate.
 The item remains active pending a clean pushed checkpoint, a new digest-bound
 24/24 run, two independent 96-case readers, and passage of the unchanged gate.
 No downstream outcome study is licensed.
+
+The clean `a9541670dbafa6b01bd71f65c34a89c618b3ad83` representative attempt
+finally cleared transport: 24/24 children, 192/192 analysis calls, and 192/192
+structured parity were valid. It failed delivery application on seven active
+decisions with nine issues. Inspection found no displaced action: five issues
+misread exact cue-free plain recovery, three allowed unrelated handoff warnings
+to negate resolved obligation sub-audits, and one missed the literal close
+“the incident is closed.” Bounded prospective corrections and negatives now
+separate those authorities. The packet is burned. The item remains active for
+a new clean 24/24 execution, 192/192 delivery proof, two independent readers,
+and passage of the unchanged representative gate. No downstream outcome study
+is licensed.

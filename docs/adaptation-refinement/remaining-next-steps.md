@@ -877,6 +877,36 @@ The remaining sequence is:
    natural frame and apply the unchanged gate to it alone; and
 5. run no downstream outcome comparison unless that representative gate passes.
 
+## Current restart boundary after representative delivery-audit localization
+
+The clean representative attempt from
+`a9541670dbafa6b01bd71f65c34a89c618b3ad83` completed 24/24 valid dialogues,
+192/192 learner-analysis calls, and 192/192 structured live/replay comparisons.
+Transport is no longer the blocker. Delivery application stopped at 185/192
+matched decisions: seven active recovery decisions carried nine audit issues.
+
+All seven retained their gate-owned action family. Five failures required a
+positive visibility cue for the deliberately cue-free `plain` recovery stance;
+three conflated an unrelated handoff warning with the separately resolved
+public obligation; one missed “the incident is closed.” These are prospective
+instrument corrections with explicit negative controls. The failed packet is
+burned.
+
+The remaining sequence is:
+
+1. finish full verification, commit, and push the bounded delivery-audit and
+   closure-recognizer corrections;
+2. freeze a new clean SHA and automatically materialize its digest-bound
+   accepted authorization from the standing in-scope user consent;
+3. run the unchanged 24-dialogue representative matrix, requiring 24 valid
+   seals, 192/192 learner analyses, 192/192 structured parity, and 192/192
+   delivery application;
+4. only then freeze all 96 observe decisions and obtain two isolated blind
+   readers through the deterministic keyed batch instrument;
+5. apply the unchanged representative gate, treating missing rare-state
+   support as an inconclusive failure; and
+6. run no downstream outcome comparison unless that gate passes.
+
 ## Current restart boundary after the obligation-reader audit
 
 The clean `6706305255e5f71b904b5ed7c16b7001833818a7` diagnostic completed both

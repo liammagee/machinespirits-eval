@@ -315,6 +315,7 @@ describe('tutor-stub dialogue closure', () => {
       'The record closes here; no further clue is needed.',
       'The record closes at crew level; there is no next clue to give.',
       'The record closes with Wrenfold named, not an individual handler.',
+      'Dario cannot be named, so the incident is closed.',
     ]) {
       const audit = auditTutorStubDialogueClosureResponse({ frame, text });
       assert.equal(audit.ok, true, text);
@@ -324,6 +325,8 @@ describe('tutor-stub dialogue closure', () => {
     for (const text of [
       'The record closes in on Moth as the evidence accumulates.',
       'The record closes in on Moth, but the inquiry remains open.',
+      'The incident is not closed while the taker remains unproved.',
+      'The incident remains open until the access record is public.',
     ]) {
       const audit = auditTutorStubDialogueClosureResponse({ frame, text });
       assert.equal(audit.ok, false, text);

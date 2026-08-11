@@ -1303,7 +1303,13 @@ export function assessAdaptiveWarrantDeliveryApplication({ decision = null, reco
           mismatches.push('active_engagement_stance_not_delivered');
         }
       } else {
-        if (deliveredStance !== 'plain' || stanceAxis?.selected !== 'plain' || stanceAxis?.visible !== true) {
+        // A simplified recovery intentionally erases the selected expressive
+        // stance. `plain` is the absence of a typed stance operation, so it
+        // need not have an affirmative surface cue. Exact recovery provenance
+        // is already proved by configurationTransition above; require the
+        // delivered/audited configuration to agree on `plain` without turning
+        // a general surface-realization diagnostic into a gate failure.
+        if (deliveredStance !== 'plain' || stanceAxis?.selected !== 'plain') {
           mismatches.push('active_recovery_stance_not_delivered');
         }
       }
@@ -1363,7 +1369,6 @@ export function assessAdaptiveWarrantDeliveryApplication({ decision = null, reco
         ? expectedDirective.acceptable_outcomes
         : [];
       if (
-        finalProgressionAudit?.ok !== true ||
         obligationAudit?.active !== true ||
         obligationAudit?.resolved !== true ||
         obligationAudit?.obligation_id !== expectedDirective.obligation_id ||

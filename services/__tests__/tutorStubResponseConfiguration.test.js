@@ -620,6 +620,7 @@ test('the mechanism-study incident closure surfaces visibly close the inquiry', 
   for (const development of [
     'The incident log can now close: the Wrenfold crew took Priya’s lunchbox from shelf two.',
     'The incident record is now closed: Wrenfold took Priya’s lunchbox for the authorized inspection.',
+    'Dario cannot be named, so the incident is closed.',
   ]) {
     const audit = auditTutorStubResponseConfiguration({
       text: development,
@@ -628,6 +629,19 @@ test('the mechanism-study incident closure surfaces visibly close the inquiry', 
       composition: { development },
     });
     assert.equal(audit.axes.action_family.visible, true, development);
+  }
+
+  for (const development of [
+    'The incident is not closed while the taker remains unproved.',
+    'The incident remains open until the access record is public.',
+  ]) {
+    const audit = auditTutorStubResponseConfiguration({
+      text: development,
+      configuration,
+      world: testWorld(),
+      composition: { development },
+    });
+    assert.equal(audit.axes.action_family.visible, false, development);
   }
 });
 

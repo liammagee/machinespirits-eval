@@ -1312,3 +1312,30 @@ not state or interpretation disagreements; no localized detector or instrument
 defect remains. Targeted repair therefore stops here. The diagnostic cannot
 establish passage or prevalence. The next step is the fresh predeclared 96-case
 natural-prevalence frame; no downstream outcome run is yet licensed.
+
+## Progress Update — 11 August 2026, representative transport cleared and delivery audit localized
+
+The clean `a9541670dbafa6b01bd71f65c34a89c618b3ad83` representative matrix
+completed all 24 eight-turn dialogues with valid seals. All 192 learner-analysis
+calls completed and structured live/replay parity was 192/192 with zero
+mismatches. The delayed retry protocol therefore cleared the transport
+confound. The run used 611 model calls under authorization digest
+`b5929b561ffbb1895bccf4e69b745ec6187a56390452bd5fb24423cc8ecaeab1`.
+
+The matrix still failed closed as `invalid_delivery_application`: seven active
+decisions across four dialogues carried nine issues. Every affected decision
+retained the expected, selected, speaking, and delivered family. Five issues
+mistook cue-free exact `plain` recovery for a missing stance; three let an
+unrelated handoff warning override a resolved obligation sub-audit; and one
+finite recognizer missed the literal terminal form “the incident is closed.”
+
+The prospective correction narrows each ownership boundary. Exact recovery
+configuration proves the intentional move to `plain`; obligation realization
+is decided by its own resolved delivery object rather than the enclosing
+progression boolean; and bounded incident-closure grammar includes explicit
+open/not-closed negatives. Model-free replay clears eight of the nine stored
+issues. The remaining immutable stored surface audit predates the corrected
+closure recognizer, whose exact-text regression now passes. This diagnosis
+does not rescue the packet. A new clean matrix must pass all 192 delivery
+checks before the 96-case representative corpus can be frozen; no downstream
+outcome run is licensed.

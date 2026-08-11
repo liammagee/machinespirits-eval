@@ -449,3 +449,21 @@ redispatches by 5 and 15 seconds. Waiting is abort-aware and adds no transcript
 event. A third failed turn seals the child invalid, while tool events still
 receive no retry. The delay and retry count are instrument properties only;
 they cannot enter the normative or descriptive dialogue DAG.
+
+### 7.16 Delivery-audit ownership under exact recovery
+
+The first transport-valid representative matrix exposed three remaining audit
+ownership errors. A simplified recovery is an exact typed configuration
+transition whose `plain` stance means no expressive stance operation applies;
+requiring a positive `plain` cue contradicts that representation. A public
+obligation delivery has its own active, identity, outcome, and component
+checks; an unrelated terminal-handoff issue in the enclosing progression audit
+cannot erase those facts. Finally, an explicit “incident is closed” surface is
+a terminal declaration, while “incident is not closed” and “incident remains
+open” are not.
+
+These corrections change no descriptive learner state, normative trajectory,
+warrant basis, policy family, obligation lifecycle, or divergence threshold.
+They prevent general delivery diagnostics from claiming authority over the
+gate-owned configuration and obligation subcontracts. The pre-repair packet
+remains burned; only a fresh execution can establish the delivery boundary.

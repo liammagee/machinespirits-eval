@@ -939,6 +939,41 @@ test('delivery application proves observe inertia and active final-authority del
     configurationAudit(recoveryConfiguration);
   assert.equal(assessAdaptiveWarrantDeliveryApplication({ decision: activeDecision, record: recoveryRecord }).ok, true);
 
+  const cueFreePlainRecovery = structuredClone(recoveryRecord);
+  cueFreePlainRecovery.responseConfigurationAudit.axes.engagement_stance.visible = false;
+  cueFreePlainRecovery.tutorGuardAccounting.finalDelivery.audits.responseConfigurationAudit.axes.engagement_stance.visible =
+    false;
+  assert.equal(
+    assessAdaptiveWarrantDeliveryApplication({ decision: activeDecision, record: cueFreePlainRecovery }).ok,
+    true,
+    'plain recovery is an exact configuration transition, not an affirmative stance operation',
+  );
+
+  const obligationWithUnrelatedProgressionWarning = structuredClone(recoveryRecord);
+  obligationWithUnrelatedProgressionWarning.tutorGuardAccounting.finalDelivery.audits.liveTurnProgressionAudit.ok =
+    false;
+  obligationWithUnrelatedProgressionWarning.tutorGuardAccounting.finalDelivery.audits.liveTurnProgressionAudit.issues = [
+    { type: 'required_exact_handoff_question_missing' },
+  ];
+  assert.equal(
+    assessAdaptiveWarrantDeliveryApplication({
+      decision: activeDecision,
+      record: obligationWithUnrelatedProgressionWarning,
+    }).ok,
+    true,
+    'an unrelated progression warning does not erase a resolved obligation sub-audit',
+  );
+
+  const unresolvedObligation = structuredClone(obligationWithUnrelatedProgressionWarning);
+  unresolvedObligation.tutorGuardAccounting.finalDelivery.audits.liveTurnProgressionAudit.public_obligation.resolved =
+    false;
+  const unresolvedAssessment = assessAdaptiveWarrantDeliveryApplication({
+    decision: activeDecision,
+    record: unresolvedObligation,
+  });
+  assert.equal(unresolvedAssessment.ok, false);
+  assert.ok(unresolvedAssessment.mismatches.includes('active_obligation_not_realized_in_public_delivery'));
+
   const mutatedRecovery = structuredClone(recoveryRecord);
   mutatedRecovery.deliveredResponseConfiguration.actorial_part_selection.authored_role = 'invented witness';
   mutatedRecovery.tutorGuardAccounting.finalDelivery.deliveryConfiguration.actorial_part_selection.authored_role =

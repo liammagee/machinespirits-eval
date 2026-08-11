@@ -1023,3 +1023,32 @@ consumes provider and 64-call child budget. A third failure is terminal, and
 known or unknown tool-bearing events remain non-retryable. This changes the
 transport protocol from schema v1 to v2; it does not change any dialogue state,
 warrant rule, sample, threshold, or scorer.
+
+The clean representative execution from
+`a9541670dbafa6b01bd71f65c34a89c618b3ad83` then crossed the transport
+boundary: all 24 eight-turn children sealed valid, all 192 learner-analysis
+calls completed, and structured live/replay parity was 192/192. The execution
+used 611 model calls under digest
+`b5929b561ffbb1895bccf4e69b745ec6187a56390452bd5fb24423cc8ecaeab1`.
+It nevertheless stopped as `invalid_delivery_application`: seven decisions in
+four active dialogues produced nine audit issues.
+
+Inspection localized all nine to measurement, not displaced gate action. Five
+plain-recovery decisions were rejected because the generic surface audit did
+not mark the absence of an expressive stance as a visible `plain` cue, even
+though selected, speaking, and exact recovery configurations were intact.
+Three resolved obligation sub-audits were rejected because an unrelated
+terminal-handoff warning made the enclosing progression audit false. One
+literal terminal response—“the incident is closed”—retained
+`close_inquiry` throughout but fell outside the finite closure recognizer.
+
+Prospectively, exact recovery provenance plus delivered/audited `plain` is the
+recovery-stance contract; an unrelated progression issue cannot negate an
+independently resolved obligation delivery; and the closure grammar admits
+the bounded `incident is closed` form while explicitly rejecting `incident is
+not closed` and `incident remains open`. Model-free replay of the immutable
+stored audits removes eight of nine issues; the ninth remains in the stored
+pre-repair closure audit, while the prospective recognizer test passes the
+exact public text. The packet is burned and cannot be retrospectively frozen.
+A fresh clean representative execution must still demonstrate 192/192 delivery
+application before reader annotation.
