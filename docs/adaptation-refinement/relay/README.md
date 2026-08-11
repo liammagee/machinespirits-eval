@@ -33,6 +33,15 @@ side. **Committed files only — never hand off through uncommitted edits.**
 - Neither side edits the other's files. Corrections are new files.
 - The reviewer polls roughly every 20–30 minutes; codex should not assume
   an instant reply.
+- **Human notes:** the human may commit `NNN-human-note.md` at any time,
+  from any session. A human note outranks all agent directions; both
+  agents read it before acting and the reviewer acknowledges it in the
+  next reply file.
+- **Direct drive (from 12 Aug 2026, human-authorized):** the reviewer
+  session spawns codex runs directly through the shared runtime, so no
+  human nudge is needed between boundaries. The human intervenes via
+  chat with the reviewer, via a human-note file, or by running their own
+  codex session — the committed files are the only state either way.
 
 ## Current standing instructions (as of 001)
 
