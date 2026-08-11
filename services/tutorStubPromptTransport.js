@@ -21,6 +21,7 @@ export function createTutorStubPromptTransport(dependencies) {
     streamAI,
     tutorStubCliPolicyRetryDecision,
     tutorStubPromptSurfaceForRole,
+    waitTutorStubCliPolicyRetryDelay,
     write,
   } = dependencies;
 
@@ -37,7 +38,7 @@ export function createTutorStubPromptTransport(dependencies) {
     turn = null,
     signal = null,
     historyTurns = null,
-    cliPolicyRetryUsed = false,
+    cliPolicyRetryCount = 0,
   }) {
     let prompt = promptInput;
     let systemPrompt = systemPromptInput;
@@ -294,7 +295,7 @@ export function createTutorStubPromptTransport(dependencies) {
       response.promptAudit = promptAudit;
       return response;
     } catch (err) {
-      const retryDecision = tutorStubCliPolicyRetryDecision(err, { alreadyUsed: cliPolicyRetryUsed });
+      const retryDecision = tutorStubCliPolicyRetryDecision(err, { retryCount: cliPolicyRetryCount });
       appendTraceEvent(trace, {
         type: err?.name === 'AbortError' ? 'model_call_aborted' : 'model_call_error',
         role,
@@ -323,6 +324,7 @@ export function createTutorStubPromptTransport(dependencies) {
           decision: retryDecision,
           publicTranscriptChanged: false,
         });
+        await waitTutorStubCliPolicyRetryDelay(retryDecision.delay_ms, { signal });
         return callPromptModel({
           prompt: promptInput,
           messageHistory,
@@ -336,7 +338,7 @@ export function createTutorStubPromptTransport(dependencies) {
           turn,
           signal,
           historyTurns,
-          cliPolicyRetryUsed: true,
+          cliPolicyRetryCount: cliPolicyRetryCount + 1,
         });
       }
       throw err;

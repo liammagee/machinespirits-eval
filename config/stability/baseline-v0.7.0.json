@@ -42,7 +42,7 @@
     {
       "file": "services/tutorStubTutorTurnPipeline.js",
       "claim": "tutor-turn coordination and extracted runtime delegation",
-      "sha256": "e8e3acf6946b9f47e9131c19ac9dfdc5c116c0f1e92d209d57531b1e23099bf5"
+      "sha256": "ed2a8742b01ad1d05191b721d0f60bfa0f9409f9f3113aab2c8e315a7ccf886c"
     },
     {
       "file": "services/tutorStubTutorTurnPreparation.js",
@@ -52,7 +52,7 @@
     {
       "file": "services/tutorStubTutorAttemptRuntime.js",
       "claim": "prompt audit/recovery; provider-attempt dispatch; Program-2 budget reservation and trace envelope",
-      "sha256": "5de4c9c0a29ec6bf711b0af16d512bbc9768e8c0cad807d5d1bc2a6038f5ff57"
+      "sha256": "a4e2f1a3655908e5bd68fb172b010b03d6139cd66462f43799a71ea356fb1dc7"
     },
     {
       "file": "services/tutorStubTutorCommitteeRuntime.js",

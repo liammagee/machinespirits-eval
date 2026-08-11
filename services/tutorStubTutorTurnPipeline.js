@@ -141,6 +141,7 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
     tutorStubTerminalFallbackFailureMessage,
     tutorStubTuningTurnAdvisory,
     tutorStubTurnFeedbackPrompt,
+    waitTutorStubCliPolicyRetryDelay,
     worldLedgerTerm,
   } = dependencies;
 
@@ -158,6 +159,7 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
     reserveTutorStubMeteredModelCall,
     streamAI,
     tutorStubCliPolicyRetryDecision,
+    waitTutorStubCliPolicyRetryDelay,
   });
   const bindTutorCommitteeRuntime = createTutorStubTutorCommitteeRuntime({
     PROGRAM2_COMMITTEE_SCHEMA,

@@ -326,6 +326,21 @@ pending a clean pushed checkpoint, one final diagnostic confirmation, and then
 passage of the separately frozen 96-case representative natural-frame gate.
 No downstream outcome study is licensed.
 
+The representative attempt from clean commit
+`b61d96be7c5cd3d140892a640e635cfc3cff4714` sealed its first 12 children valid.
+Wave three then produced two invalid children on different roles; each typed
+failed turn was immediately redispatched and failed again, with only 2–3 ms
+between decision and new reservation. One additional child sealed valid during
+shutdown. The partial packet is burned. Prospectively, transport schema v2
+permits two abort-aware delayed redispatches after 5 and 15 seconds, each
+freshly metered inside the unchanged child cap. A third failure and every tool
+event remain fatal. Focused retry/transport/pipeline verification passes 31/31
+tests and lint; the complete hermetic suite passes 8,465/8,465 root tests and
+137/137 tutor-core tests, with synchronized manifests and 490/490 valid
+workplan items. The item remains active pending a clean pushed checkpoint, a
+new digest-bound 24/24 run, two independent 96-case readers, and passage of the
+unchanged gate. No downstream outcome study is licensed.
+
 The next diagnostic from clean commit
 `7f743988268b7f3baf15c8db249c423a331278a8` completed two isolated Luna reads
 in the six planned calls. On 23 hard-consensus cases it achieved binary

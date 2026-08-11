@@ -1003,3 +1003,25 @@ The remaining sequence is:
 4. only then collect two independent readers of the fresh 96-case natural frame
    and apply the unchanged gate; and
 5. run no downstream outcome comparison unless that representative gate passes.
+
+## Current restart boundary after retry-correlation repair
+
+The representative attempt from
+`b61d96be7c5cd3d140892a640e635cfc3cff4714` closed 12/12 initial children
+valid, then produced two invalid children in wave three. Each invalid child hit
+a typed failed turn and an immediate second failed turn on a different role;
+the fresh reservation occurred only 2–3 ms after the first failure. One more
+child closed valid during shutdown. The partial packet is burned and is not a
+mechanism result.
+
+Transport schema v2 allows two abort-aware delayed redispatches, after 5 and 15
+seconds, with fresh provider and child-budget reservations. A third failure and
+all tool-bearing events remain fatal. The remaining sequence is:
+
+1. verify, commit, and push the delayed retry protocol;
+2. freeze a new clean SHA and digest-bound representative request;
+3. require all 24 valid child seals, exact live/replay parity, and zero delivery
+   mismatch;
+4. only then collect two independent readers of the fresh 96-case natural frame
+   and apply the unchanged gate; and
+5. run no downstream outcome comparison unless that representative gate passes.

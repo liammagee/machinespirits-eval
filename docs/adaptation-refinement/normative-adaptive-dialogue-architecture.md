@@ -875,9 +875,10 @@ learner state, a tutor action, or evidence of normative/descriptive divergence.
 It must remain outside the committed conversation DAG. The Codex bridge
 therefore distinguishes redacted lifecycle failures (`error`, `turn.failed`,
 and item-level `error`) from prohibited tool-bearing events. The shared role
-transport permits one freshly metered retry for an individual failed call; two
-consecutive failures seal the child incomplete. Command, file, function, MCP,
-web-search, and unknown tool shapes remain fail-closed and are never retried.
+transport permits two freshly metered, abort-aware delayed redispatches for an
+individual failed call; three consecutive failures seal the child incomplete.
+Command, file, function, MCP, web-search, and unknown tool shapes remain
+fail-closed and are never retried.
 
 This rule prevents transport luck from selecting which dialogues become
 measurable while preserving the original safety and 64-call child boundary. It
@@ -901,13 +902,14 @@ language, not a new normative rule or detector threshold.
 
 Tutor first drafts and tutor repairs are separate provider calls even when they
 belong to one public turn. A failed repair call must therefore receive the same
-transport treatment as learner and analysis calls: one new reservation and one
-fresh dispatch, with no public transcript mutation. Retry state is local to the
+transport treatment as learner and analysis calls: each redispatch gets a new
+reservation, with no public transcript mutation. Retry state is local to the
 individual call, not shared across a dialogue or tutor-turn repair ladder.
 
 The tutor-attempt runtime owns this boundary because it owns both first-draft
-and recovery dispatches. It records the failed call, decision, and fresh
-reservation before any accepted response can enter the dialogue DAG. Repeated
-failure is terminal; known command, file, function, MCP, web, or unknown tool
-events remain non-retryable. This is transport validity, not conversational
-adaptation.
+and recovery dispatches. It records the failed call, decision, delay, and fresh
+reservation before any accepted response can enter the dialogue DAG. Schema v2
+waits 5 seconds before the first redispatch and 15 before the second; the wait
+is abort-aware. A third failure is terminal. Known command, file, function,
+MCP, web, or unknown tool events remain non-retryable. This is transport
+validity, not conversational adaptation.

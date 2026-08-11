@@ -1006,3 +1006,20 @@ including recovery, receives the same one bounded failed-turn retry with a
 fresh provider and child-budget reservation. Repeated failure remains fatal,
 and known tool events remain non-retryable. No dialogue, mechanism, or gate
 rule changes.
+
+The following representative attempt from clean commit
+`b61d96be7c5cd3d140892a640e635cfc3cff4714` validated the repaired tutor seam
+but exposed temporal correlation in the retry itself. The first 12 children
+sealed valid. In wave three, two different children and roles each received a
+failed turn followed by another failed turn after an immediate redispatch; the
+retry reservation followed its decision by only 2–3 ms. Other calls succeeded
+between these failures. The run was stopped with 12 valid children, two sealed
+invalid children, and one additional valid child reported during shutdown. The
+partial packet is burned.
+
+Prospectively, a typed transport/schema failure receives at most two
+abort-aware delayed redispatches, after 5 and 15 seconds. Each dispatch still
+consumes provider and 64-call child budget. A third failure is terminal, and
+known or unknown tool-bearing events remain non-retryable. This changes the
+transport protocol from schema v1 to v2; it does not change any dialogue state,
+warrant rule, sample, threshold, or scorer.

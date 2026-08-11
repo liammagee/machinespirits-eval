@@ -70,13 +70,16 @@ function transportWith(callAIWithCliBridge, counters, trace) {
     tutorStubPromptSurfaceForRole(role) {
       return role;
     },
+    waitTutorStubCliPolicyRetryDelay(delayMs) {
+      counters.delays.push(delayMs);
+    },
     write() {},
   });
 }
 
 describe('tutor-stub prompt transport', () => {
-  it('retries one failed Codex turn per individual call with fresh budget accounting', async () => {
-    const counters = { calls: 0, provider: 0, metered: 0 };
+  it('delays and freshly meters an individual failed Codex turn before redispatch', async () => {
+    const counters = { calls: 0, provider: 0, metered: 0, delays: [] };
     const trace = [];
     const transport = transportWith(async () => {
       counters.calls += 1;
@@ -102,15 +105,15 @@ describe('tutor-stub prompt transport', () => {
     });
 
     assert.equal(result.text, 'accepted response');
-    assert.deepEqual(counters, { calls: 2, provider: 2, metered: 2 });
+    assert.deepEqual(counters, { calls: 2, provider: 2, metered: 2, delays: [5000] });
     assert.equal(trace.filter((event) => event.type === 'cli_policy_retry_decision').length, 1);
     assert.equal(trace.find((event) => event.type === 'cli_policy_retry_decision').decision.retry, true);
     assert.equal(trace.filter((event) => event.type === 'model_call_error').length, 1);
     assert.equal(trace.filter((event) => event.type === 'model_call').length, 1);
   });
 
-  it('stops after the bounded retry for two consecutive failed turns', async () => {
-    const counters = { calls: 0, provider: 0, metered: 0 };
+  it('stops after two delayed redispatches for three consecutive failed turns', async () => {
+    const counters = { calls: 0, provider: 0, metered: 0, delays: [] };
     const trace = [];
     const transport = transportWith(async () => {
       counters.calls += 1;
@@ -130,10 +133,10 @@ describe('tutor-stub prompt transport', () => {
       (error) => error.code === 'CLI_PROVIDER_TURN_FAILED',
     );
 
-    assert.deepEqual(counters, { calls: 2, provider: 2, metered: 2 });
+    assert.deepEqual(counters, { calls: 3, provider: 3, metered: 3, delays: [5000, 15000] });
     assert.deepEqual(
       trace.filter((event) => event.type === 'model_call_error').map((event) => event.cliPolicyViolation.retry),
-      [true, false],
+      [true, true, false],
     );
   });
 });

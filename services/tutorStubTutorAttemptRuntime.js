@@ -19,6 +19,7 @@ export function createTutorStubTutorAttemptRuntime(dependencies = {}) {
     reserveTutorStubMeteredModelCall,
     streamAI,
     tutorStubCliPolicyRetryDecision,
+    waitTutorStubCliPolicyRetryDelay,
   } = dependencies;
 
   return function bindTutorStubTutorAttemptRuntime(context = {}) {
@@ -213,7 +214,7 @@ export function createTutorStubTutorAttemptRuntime(dependencies = {}) {
       let startedAt = null;
       let response;
       if (isCliProvider(resolved.provider)) {
-        async function dispatchCliTutorAttempt({ cliPolicyRetryUsed = false } = {}) {
+        async function dispatchCliTutorAttempt({ cliPolicyRetryCount = 0 } = {}) {
           startedAt = new Date().toISOString();
           reserveTutorAttemptBudget();
           try {
@@ -240,7 +241,7 @@ export function createTutorStubTutorAttemptRuntime(dependencies = {}) {
               tokenUsageAvailable: result.tokenUsageAvailable,
             };
           } catch (err) {
-            const retryDecision = tutorStubCliPolicyRetryDecision(err, { alreadyUsed: cliPolicyRetryUsed });
+            const retryDecision = tutorStubCliPolicyRetryDecision(err, { retryCount: cliPolicyRetryCount });
             appendTraceEvent(trace, {
               type: err?.name === 'AbortError' ? 'model_call_aborted' : 'model_call_error',
               role,
@@ -263,7 +264,8 @@ export function createTutorStubTutorAttemptRuntime(dependencies = {}) {
                 decision: retryDecision,
                 publicTranscriptChanged: false,
               });
-              return dispatchCliTutorAttempt({ cliPolicyRetryUsed: true });
+              await waitTutorStubCliPolicyRetryDelay(retryDecision.delay_ms, { signal });
+              return dispatchCliTutorAttempt({ cliPolicyRetryCount: cliPolicyRetryCount + 1 });
             }
             throw err;
           }

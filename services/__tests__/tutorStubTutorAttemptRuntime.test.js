@@ -45,6 +45,9 @@ function bindRuntime({ callAIWithCliBridge, trace, reservations }) {
     },
     streamAI: async function* () {},
     tutorStubCliPolicyRetryDecision,
+    waitTutorStubCliPolicyRetryDelay(delayMs) {
+      reservations.delays.push(delayMs);
+    },
   });
   return bind({
     actorialRealizationGuardEnabled: false,
@@ -83,7 +86,7 @@ function bindRuntime({ callAIWithCliBridge, trace, reservations }) {
 
 test('a failed Codex tutor-recovery turn gets one fresh metered retry', async () => {
   const trace = [];
-  const reservations = { provider: 0, metered: 0 };
+  const reservations = { provider: 0, metered: 0, delays: [] };
   let calls = 0;
   const { invokeTutorAttempt } = bindRuntime({
     trace,
@@ -111,7 +114,7 @@ test('a failed Codex tutor-recovery turn gets one fresh metered retry', async ()
 
   assert.equal(response.text, 'The exact public record is now preserved.');
   assert.equal(calls, 2);
-  assert.deepEqual(reservations, { provider: 2, metered: 2 });
+  assert.deepEqual(reservations, { provider: 2, metered: 2, delays: [5000] });
   assert.equal(trace.filter((event) => event.type === 'model_call_error').length, 1);
   assert.equal(trace.filter((event) => event.type === 'cli_policy_retry_decision').length, 1);
   assert.equal(trace.filter((event) => event.type === 'model_call').length, 1);
@@ -119,9 +122,9 @@ test('a failed Codex tutor-recovery turn gets one fresh metered retry', async ()
   assert.equal(trace.find((event) => event.type === 'cli_policy_retry_decision').publicTranscriptChanged, false);
 });
 
-test('a tutor-recovery retry is bounded to one redispatch', async () => {
+test('a tutor-recovery retry is bounded to two delayed redispatches', async () => {
   const trace = [];
-  const reservations = { provider: 0, metered: 0 };
+  const reservations = { provider: 0, metered: 0, delays: [] };
   let calls = 0;
   const { invokeTutorAttempt } = bindRuntime({
     trace,
@@ -141,9 +144,9 @@ test('a tutor-recovery retry is bounded to one redispatch', async () => {
     /turn failed/u,
   );
 
-  assert.equal(calls, 2);
-  assert.deepEqual(reservations, { provider: 2, metered: 2 });
-  assert.equal(trace.filter((event) => event.type === 'model_call_error').length, 2);
-  assert.equal(trace.filter((event) => event.type === 'cli_policy_retry_decision').length, 1);
-  assert.equal(trace.at(-1).cliPolicyViolation.reason, 'call_retry_already_used');
+  assert.equal(calls, 3);
+  assert.deepEqual(reservations, { provider: 3, metered: 3, delays: [5000, 15000] });
+  assert.equal(trace.filter((event) => event.type === 'model_call_error').length, 3);
+  assert.equal(trace.filter((event) => event.type === 'cli_policy_retry_decision').length, 2);
+  assert.equal(trace.at(-1).cliPolicyViolation.reason, 'call_retry_limit_reached');
 });

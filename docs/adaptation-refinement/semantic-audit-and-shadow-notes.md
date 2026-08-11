@@ -434,3 +434,18 @@ retry for a typed Codex transport/schema failure, without changing public
 history. Two consecutive failures still invalidate the child, and tool-bearing
 events are still refused. The partial packet is burned and supplies no
 mechanism evidence.
+
+### 7.15 Retry temporal independence
+
+The next clean attempt showed that merely repeating a failed provider dispatch
+does not make the second attempt independent. Across the first 15 reported
+children, two roles hit a second failed turn after immediate redispatch; their
+retry reservations followed the failure decisions by 2–3 ms. Other calls
+succeeded between the affected calls, so the pattern was not a deterministic
+prompt or dialogue failure. The packet is burned.
+
+Transport schema v2 retains strict metering but spaces its two permitted
+redispatches by 5 and 15 seconds. Waiting is abort-aware and adds no transcript
+event. A third failed turn seals the child invalid, while tool events still
+receive no retry. The delay and retry count are instrument properties only;
+they cannot enter the normative or descriptive dialogue DAG.
