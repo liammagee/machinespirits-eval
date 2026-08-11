@@ -213,7 +213,10 @@ function expectedExecutorForSurface(event) {
   return null;
 }
 
-export function adaptiveWarrantSemanticContractIssues(event, { eventIndex = 0, enforceLiteralSets = true } = {}) {
+export function adaptiveWarrantSemanticContractIssues(
+  event,
+  { eventIndex = 0, enforceLiteralSets = false, enforceSurfaceExecutor = false } = {},
+) {
   const issues = [];
   const prefix = `events[${eventIndex}]`;
   const contract = ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS[event?.speech_act];
@@ -237,7 +240,7 @@ export function adaptiveWarrantSemanticContractIssues(event, { eventIndex = 0, e
     if (REQUEST_SPEECH_ACTS.has(event.speech_act) && action.executor === 'learner') {
       issues.push(`${prefix}.requested_or_proposed_action:executor_matches_request_speaker`);
     }
-    const expectedExecutor = expectedExecutorForSurface(event);
+    const expectedExecutor = enforceSurfaceExecutor ? expectedExecutorForSurface(event) : null;
     if (expectedExecutor && action.executor !== expectedExecutor) {
       issues.push(`${prefix}.requested_or_proposed_action:executor_surface_rule_requires_${expectedExecutor}`);
     }
@@ -248,6 +251,10 @@ export function adaptiveWarrantSemanticContractIssues(event, { eventIndex = 0, e
   if (!permitsRequestedSets && (valueTypes.length || componentIds.length)) {
     issues.push(`${prefix}.target:value_component_sets_forbidden_for_non_request`);
   }
+  // Surface-to-catalogue agreement is semantic evidence, not a structural
+  // validity condition. Callers may request this diagnostic explicitly for
+  // scoring, but production acceptance must not recreate a lexical extractor
+  // by comparing canonical ID words with the utterance.
   if (enforceLiteralSets && permitsRequestedSets) {
     for (const valueType of valueTypes) {
       if (!adaptiveWarrantSemanticValueTypeIsLiteral(valueType, event?.evidence_span?.text)) {

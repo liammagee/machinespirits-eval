@@ -204,8 +204,8 @@ ask a reader for a fact it already knows.
 | `target` / `target_id` | Reader | Total and non-null: the public object, relation, or enumerated choice set the act itself is about, chosen from the catalogue in the `state="catalog"` branch, or the exact sole-field object `{"state":"none"}` when that act names no catalogue entity. Requested values and actors are never targets. Tutor-selection requests require the public choice-set target. For `analytic_contribution`, ownership follows the analysis itself independently of any co-occurring request. |
 | `target.kind` | Harness | Derived exactly from the selected `target_id`; absent from reader schema. |
 | `public_identifier_ids` | Harness | Exact catalogue identifiers for `target_id`; absent from reader schema. |
-| `requested_value_types` | Reader | Non-empty only for request-mode acts and only for closed-set values literally named in the event span. Every proposal, question, analysis, withdrawal, and transfer uses an empty array. A value such as `time` or `match_status` is not a subject or target kind. |
-| `component_ids` | Reader | Non-empty only for request-mode acts and only for catalogue components literally named in the event span. Every proposal, question, analysis, withdrawal, and transfer uses an empty array. |
+| `requested_value_types` | Reader | Non-empty only for request-mode acts and only for closed-set values named by the event. Every proposal, question, analysis, withdrawal, and transfer uses an empty array. A value such as `time` or `match_status` is not a subject or target kind. Surface-to-ID fit is scored semantically; lexical word overlap is never a validity condition. |
+| `component_ids` | Reader | Non-empty only for request-mode acts and only for catalogue components requested by the event. Every proposal, question, analysis, withdrawal, and transfer uses an empty array. Surface-to-ID fit is scored semantically; lexical word overlap is never a validity condition. |
 | `executor` | Reader | The party who must perform the action, not the speaker. Request-type acts cannot use learner execution. |
 | `requested_or_proposed_action` / `action_object_id` | Reader | Total and non-null: the public action object licensed by the clause, chosen from the catalogue in the `state="catalog"` branch, or the exact sole-field object `{"state":"none"}` when no action applies. |
 | action `mode` and operation | Harness | Derived exactly from `action_object_id`; absent from reader schema and checked against the speech act. |
@@ -685,6 +685,37 @@ reserves low-agency deferral for a separate declarative inability, refusal, or
 handoff clause. The production-size eight-case schema must remain at or below
 10 nesting levels and 10,500 serialized bytes.
 
+### 5.0.5 Superseded smoke: lexical validator false positive
+
+The fresh smoke from clean commit `4beccd8f` is preserved at
+`/private/tmp/adaptive-warrant-v3-semantic-smoke-4beccd8f-run`. Both readers
+selected the same `next_check` catalogue component for “Choose which
+observatory chart I should inspect first”, but assembly rejected that shared
+encoding because neither canonical ID word occurred literally in the span.
+That rejection is a validator false positive: it recreates the lexical
+observation layer that V3 is intended to measure. The omitted separate
+low-agency deferral by one reader is a reader miss under the already-written
+general multiplicity rule, not a contract ambiguity. The stop rule is not
+triggered, but all exposed cases remain burned.
+
+Prospectively the instrument gate is structural only: schema validity,
+catalogue membership, unique literal evidence span, provenance, size, and no
+prohibited tools. Word overlap between a surface and a canonical value or
+component ID may be reported as scoring evidence but cannot reject an
+encoding. Semantic correctness belongs to independent-reader consensus and
+gold comparison.
+
+The first structural-smoke attempt under this amendment, from commit
+`65d45700`, is preserved at
+`/private/tmp/adaptive-warrant-v3-semantic-smoke-65d45700-run`. Its reader
+response was rejected because the hard validator inferred `joint` execution
+from the word “our” even though the reader supplied a contract-compatible
+typed executor. This is the same implementation defect class: a lexical
+semantic judgment remained in the structural gate. It provides no evidence
+about agreement or model capability, burns those fresh cases, and is repaired
+within this already-approved prospective amendment by making surface-executor
+comparison diagnostic-only.
+
 ### 5.1 Targeted rare-state diagnostic
 
 The rare-state surface is a separately authored 24-case public decision-time
@@ -834,11 +865,15 @@ result request. Neither wording nor case identity may reuse a burned case.
 
 The smoke passes only when both calls complete without repair or prohibited
 tools, both responses assemble using declared literal-span derivation and
-ordering only, all 3/3 cases reach hard cross-reader consensus, and each
-consensus identity exactly matches the preregistered typed pattern including
-multiplicity, speech acts, targets, executor, and action object. Merely
-returning schema-valid JSON is insufficient. A failure blocks the diagnostic
-freeze.
+ordering only, and every semantic disagreement is classified against the
+preregistered closed contract identity. Hard consensus and exact expected
+identity are reported as semantic observations, not structural checks. A
+disagreement where one encoding violates the preregistered written rule is a
+reader error and does not block; a disagreement for which neither encoding can
+be excluded by that rule is a both-defensible contract ambiguity and blocks.
+Merely returning schema-valid JSON is still insufficient because provenance,
+literal-span uniqueness, normalization, and the disagreement classification
+must all close.
 
 ## 6. Predeclared V3 thresholds
 
@@ -974,19 +1009,20 @@ repair, adjudicator, or tie-break model.
 ## 8. Stop rule and licensed next step
 
 The sequence stops before the representative run if the diagnostic lacks
-reader-backed support, reveals an unresolved semantic or reader-interface
-defect, exceeds its call ceiling, or requires any hand repair. A principled
-change burns that diagnostic and requires a new clean commit and freeze.
+reader-backed support, reveals a transport, schema, provenance,
+non-evaluability, or both-defensible contract-ambiguity defect, exceeds its
+call ceiling, or requires any hand repair. Ordinary reader semantic misses are
+recorded in the score and do not reopen the instrument. A principled change
+burns that diagnostic and requires a new clean commit and freeze.
 
-The fourth semantic diagnostic is the final contract-refinement attempt in
-this V3 cycle. If it again fails hard consensus for a contract-definition
-reason rather than a model-capability error, there is no fifth refinement and
-no new all-field diagnostic. The failed artifact is preserved, and any later
-outcome study must be prospectively scoped to the semantic fields and derived
-policy cells that already demonstrated hard reader consensus. Fields without
-proven consensus are reported as unvalidated and cannot support a mechanism
-claim. A model-capability failure remains a substantive negative result under
-the declared contract; it is not repaired by rewriting reader instructions.
+This is the final contract-refinement attempt in this V3 cycle. A diagnostic
+support failure driven by a both-defensible contract ambiguity invokes the
+preregistered scope cut: there is no fifth refinement and no new all-field
+diagnostic. A support failure driven by reader misses is a substantive result
+about the reader model under the declared contract and is handled in scoring
+and thresholds, not by rewriting reader instructions. Any later outcome study
+must be prospectively scoped to fields and derived policy cells with proven
+hard consensus; unvalidated fields cannot support a mechanism claim.
 
 The representative sequence stops without scoring if any execution
 prerequisite, seal, parity, delivery, prompt, leak, provenance, payload, or

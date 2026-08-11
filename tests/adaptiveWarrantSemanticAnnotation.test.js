@@ -11,6 +11,7 @@ import {
   auditAdaptiveWarrantSemanticContractCatalog,
   auditAdaptiveWarrantSemanticReaderSchemaTotality,
   buildAdaptiveWarrantSemanticConsensus,
+  classifyAdaptiveWarrantSemanticDisagreements,
   materializeAdaptiveWarrantSemanticReaderEvent,
   scoreAdaptiveWarrantSemanticExtraction,
   summarizeAdaptiveWarrantSemanticDiagnosticSupport,
@@ -403,6 +404,56 @@ test('reader event materialization derives mechanical fields and enforces reques
   );
 });
 
+test('catalogue value and component choices are semantic judgments, not lexical hard-validation rules', () => {
+  const corpus = buildAdaptiveWarrantSemanticSmokeCorpus('b'.repeat(40));
+  const materialized = materializeAdaptiveWarrantSemanticReaderEvent({
+    event: {
+      speech_act: 'tutor_selection_request',
+      target: {
+        state: 'catalog',
+        target_id: 'target-smoke-weather-card-choice',
+        requested_value_types: ['other'],
+        component_ids: ['next_check'],
+      },
+      requested_or_proposed_action: {
+        state: 'catalog',
+        executor: 'tutor',
+        action_object_id: 'action-object-smoke-select-weather-card',
+      },
+      evidence_span: { text: 'Select the first weather-card comparison for our review.' },
+    },
+    semanticCatalog: corpus.semantic_annotation_catalog,
+  });
+  assert.deepEqual(materialized.target.component_ids, ['next_check']);
+  assert.deepEqual(materialized.target.requested_value_types, ['other']);
+});
+
+test('disagreement discriminator records reader errors and blocks unresolved contract ambiguity', () => {
+  const corpus = fixture(1);
+  const readerA = reader(corpus, 'reader-a', 'run-a');
+  const readerB = reader(corpus, 'reader-b', 'run-b');
+  readerB.cases[0].events = [];
+  readerB.cases[0].note = 'The reader did not identify an event in this case.';
+  const consensus = buildAdaptiveWarrantSemanticConsensus({ readerA, readerB, corpus, corpusSha256: CORPUS_SHA });
+  const expectedEventsBySampleId = { [corpus.cases[0].sample_id]: readerA.cases[0].events };
+  const classified = classifyAdaptiveWarrantSemanticDisagreements({ consensus, expectedEventsBySampleId });
+  assert.equal(classified.status, 'classified_no_contract_ambiguity');
+  assert.equal(classified.cases[0].classification, 'reader_error');
+  assert.deepEqual(classified.cases[0].reader_errors, ['reader-b']);
+
+  const impossibleExpected = {
+    [corpus.cases[0].sample_id]: [
+      { ...readerA.cases[0].events[0], speech_act: 'criterion_question' },
+    ],
+  };
+  const blocked = classifyAdaptiveWarrantSemanticDisagreements({
+    consensus,
+    expectedEventsBySampleId: impossibleExpected,
+  });
+  assert.equal(blocked.status, 'blocked_contract_ambiguity');
+  assert.equal(blocked.cases[0].classification, 'both_defensible_contract_ambiguity');
+});
+
 test('reader events require total non-null target and action fields with explicit none tokens', () => {
   const corpus = buildAdaptiveWarrantSemanticSmokeCorpus('b'.repeat(40));
   const analyticText = corpus.cases[0].current_learner_turn.learner.split(';')[0];
@@ -410,7 +461,7 @@ test('reader events require total non-null target and action fields with explici
     speech_act: 'analytic_contribution',
     target: {
       state: 'catalog',
-      target_id: 'target-smoke-west-landing-docket',
+      target_id: 'target-smoke-canal-quay-manifest',
       requested_value_types: [],
       component_ids: [],
     },
@@ -421,7 +472,7 @@ test('reader events require total non-null target and action fields with explici
     event: analytic,
     semanticCatalog: corpus.semantic_annotation_catalog,
   });
-  assert.equal(materialized.target.target_id, 'target-smoke-west-landing-docket');
+  assert.equal(materialized.target.target_id, 'target-smoke-canal-quay-manifest');
   assert.equal(materialized.requested_or_proposed_action, null);
 
   assert.throws(
@@ -452,12 +503,12 @@ test('contract/catalog audit validates every speech act through the production a
   assert.equal(audit.worked_example_count, 15);
   assert.equal(
     audit.worked_examples.find((row) => row.speech_act === 'tutor_selection_request').target_id,
-    'target-smoke-observatory-chart-choice',
+    'target-smoke-weather-card-choice',
   );
 
   const inconsistent = structuredClone(corpus.semantic_annotation_catalog);
   inconsistent.action_objects.find(
-    (row) => row.action_object_id === 'action-object-smoke-select-observatory-chart',
+    (row) => row.action_object_id === 'action-object-smoke-select-weather-card',
   ).target_id = null;
   assert.throws(
     () => auditAdaptiveWarrantSemanticContractCatalog({ semanticCatalog: inconsistent }),

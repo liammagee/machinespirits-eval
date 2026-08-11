@@ -11,6 +11,7 @@ import {
   ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA,
   buildAdaptiveWarrantSemanticBatchOutputSchema,
   buildAdaptiveWarrantSemanticConsensus,
+  classifyAdaptiveWarrantSemanticDisagreements,
   materializeAdaptiveWarrantSemanticReaderEvent,
   scoreAdaptiveWarrantSemanticExtraction,
   summarizeAdaptiveWarrantSemanticDiagnosticSupport,
@@ -560,6 +561,7 @@ export function scoreAdaptiveWarrantSemanticReaderSupportFiles({
   manifestPath,
   readerAPath,
   readerBPath,
+  privateKeyPath,
   outputPath,
 } = {}) {
   const manifest = readJson(path.resolve(manifestPath));
@@ -574,6 +576,17 @@ export function scoreAdaptiveWarrantSemanticReaderSupportFiles({
     corpus,
     corpusSha256: manifest.corpus.sha256,
   });
+  const privateKey = readJson(path.resolve(privateKeyPath));
+  if (privateKey.study_id !== manifest.study_id || !Array.isArray(privateKey.cases)) {
+    throw new Error('semantic support private key does not bind the diagnostic study');
+  }
+  const expectedEventsBySampleId = Object.fromEntries(
+    privateKey.cases.map((row) => [row.sample_id, row.expected_semantic_events]),
+  );
+  const disagreementClassification = classifyAdaptiveWarrantSemanticDisagreements({
+    consensus,
+    expectedEventsBySampleId,
+  });
   const artifact = {
     ...summarizeAdaptiveWarrantSemanticDiagnosticSupport(consensus),
     study_id: manifest.study_id,
@@ -582,10 +595,12 @@ export function scoreAdaptiveWarrantSemanticReaderSupportFiles({
       raw_structure_agreement: consensus.raw_structure_agreement,
       hard_consensus_cases: consensus.hard_consensus_cases,
     },
+    disagreement_classification: disagreementClassification,
     inputs: {
       manifest_sha256: fileSha256(path.resolve(manifestPath)),
       reader_a_sha256: fileSha256(path.resolve(readerAPath)),
       reader_b_sha256: fileSha256(path.resolve(readerBPath)),
+      private_key_sha256: fileSha256(path.resolve(privateKeyPath)),
     },
     consensus,
   };
@@ -598,7 +613,7 @@ function usage() {
   return `Usage:
   node scripts/prepare-adaptive-warrant-semantic-annotations.js prepare --corpus <file> --handbook <file> --preflight <passing-artifact> --schema-acceptance <passing-result> --out <dir> --corpus-role targeted_challenge|natural_prevalence [--batch-size 8] [--max-annotation-calls 8]
   node scripts/prepare-adaptive-warrant-semantic-annotations.js assemble --manifest <file> --reader <id> --annotation-run-id <id> --responses <dir> --output <file>
-  node scripts/prepare-adaptive-warrant-semantic-annotations.js support --manifest <file> --reader-a <file> --reader-b <file> --output <file>
+  node scripts/prepare-adaptive-warrant-semantic-annotations.js support --manifest <file> --reader-a <file> --reader-b <file> --private-key <file> --output <file>
   node scripts/prepare-adaptive-warrant-semantic-annotations.js score --manifest <file> --reader-a <file> --reader-b <file> --predictions <file> --output <file>
 `;
 }
@@ -623,6 +638,7 @@ function main() {
       output: { type: 'string' },
       'reader-a': { type: 'string' },
       'reader-b': { type: 'string' },
+      'private-key': { type: 'string' },
       predictions: { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
@@ -673,6 +689,7 @@ function main() {
       manifestPath: values.manifest,
       readerAPath: values['reader-a'],
       readerBPath: values['reader-b'],
+      privateKeyPath: values['private-key'],
       outputPath: values.output,
     });
     process.stdout.write(`${result.outputPath}\n`);

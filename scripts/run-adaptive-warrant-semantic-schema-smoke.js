@@ -13,6 +13,7 @@ import {
 import {
   adaptiveWarrantSemanticConsensusIdentity,
   buildAdaptiveWarrantSemanticConsensus,
+  classifyAdaptiveWarrantSemanticDisagreements,
 } from '../services/adaptiveWarrantSemanticAnnotation.js';
 import {
   assembleAdaptiveWarrantSemanticAnnotationResponse,
@@ -57,35 +58,35 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
     schema: 'machinespirits.adaptation-refinement.semantic-event-reader-catalog.v3',
     targets: [
       {
-        target_id: 'target-smoke-west-landing-docket',
+        target_id: 'target-smoke-canal-quay-manifest',
         kind: 'record_entry',
-        public_identifier_ids: ['public-id-smoke-west-landing'],
+        public_identifier_ids: ['public-id-smoke-canal-quay'],
         allowed_value_types: ['record_text'],
         component_ids: ['bounded_finding'],
-        display_label: 'synthetic west-landing docket',
+        display_label: 'synthetic canal-quay manifest',
       },
       {
-        target_id: 'target-smoke-copper-seal-mould-q',
+        target_id: 'target-smoke-amber-token-stamp-k',
         kind: 'mark_or_tool_result',
-        public_identifier_ids: ['public-id-smoke-copper-seal', 'public-id-smoke-mould-q'],
+        public_identifier_ids: ['public-id-smoke-amber-token', 'public-id-smoke-stamp-k'],
         allowed_value_types: ['match_status'],
         component_ids: ['match_status'],
-        display_label: 'synthetic copper-seal comparison',
+        display_label: 'synthetic amber-token comparison',
       },
       {
-        target_id: 'target-smoke-observatory-chart-choice',
+        target_id: 'target-smoke-weather-card-choice',
         kind: 'public_exhibit_result',
-        public_identifier_ids: ['public-id-smoke-observatory-charts'],
+        public_identifier_ids: ['public-id-smoke-weather-cards'],
         allowed_value_types: ['other'],
         component_ids: ['next_check'],
-        display_label: 'synthetic observatory-chart choice set',
+        display_label: 'synthetic weather-card choice set',
       },
     ],
     public_identifiers: [
-      { public_identifier_id: 'public-id-smoke-west-landing', display_label: 'west-landing docket' },
-      { public_identifier_id: 'public-id-smoke-copper-seal', display_label: 'copper seal' },
-      { public_identifier_id: 'public-id-smoke-mould-q', display_label: 'mould Q' },
-      { public_identifier_id: 'public-id-smoke-observatory-charts', display_label: 'observatory charts' },
+      { public_identifier_id: 'public-id-smoke-canal-quay', display_label: 'canal-quay manifest' },
+      { public_identifier_id: 'public-id-smoke-amber-token', display_label: 'amber token' },
+      { public_identifier_id: 'public-id-smoke-stamp-k', display_label: 'stamp K' },
+      { public_identifier_id: 'public-id-smoke-weather-cards', display_label: 'weather-card comparisons' },
     ],
     components: [
       { component_id: 'bounded_finding', display_label: 'bounded finding' },
@@ -94,32 +95,32 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
     ],
     action_objects: [
       {
-        action_object_id: 'action-object-smoke-enter-west-landing-finding',
+        action_object_id: 'action-object-smoke-enter-canal-quay-finding',
         mode: 'requested',
         action: 'record_public_claim',
-        target_id: 'target-smoke-west-landing-docket',
-        display_label: 'enter the bounded west-landing finding',
+        target_id: 'target-smoke-canal-quay-manifest',
+        display_label: 'enter the bounded canal-quay finding',
       },
       {
-        action_object_id: 'action-object-smoke-select-observatory-chart',
+        action_object_id: 'action-object-smoke-select-weather-card',
         mode: 'requested',
         action: 'select_next_step',
-        target_id: 'target-smoke-observatory-chart-choice',
-        display_label: 'select the first observatory chart',
+        target_id: 'target-smoke-weather-card-choice',
+        display_label: 'select the first weather-card comparison',
       },
       {
-        action_object_id: 'action-object-smoke-compare-copper-seal',
+        action_object_id: 'action-object-smoke-compare-amber-token',
         mode: 'proposed',
         action: 'perform_public_test',
-        target_id: 'target-smoke-copper-seal-mould-q',
-        display_label: 'compare the copper seal with mould Q',
+        target_id: 'target-smoke-amber-token-stamp-k',
+        display_label: 'compare the amber token with stamp K',
       },
       {
-        action_object_id: 'action-object-smoke-report-copper-seal-match',
+        action_object_id: 'action-object-smoke-report-amber-token-match',
         mode: 'requested',
         action: 'supply_public_result',
-        target_id: 'target-smoke-copper-seal-mould-q',
-        display_label: 'report the copper-seal matching result',
+        target_id: 'target-smoke-amber-token-stamp-k',
+        display_label: 'report the amber-token matching result',
       },
       {
         action_object_id: 'action-object-smoke-explain-public-wording',
@@ -146,33 +147,33 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
     semantic_annotation_catalog: catalog,
     cases: [
       {
-        sample_id: 'synthetic-smoke-west-landing-record',
+        sample_id: 'synthetic-smoke-canal-quay-record',
         current_learner_turn: {
           turn: 2,
           learner:
-            'The west-landing docket establishes delivery, not custody; enter only that bounded finding in the case book.',
+            'The canal-quay manifest establishes loading, not receipt. Enter only that bounded conclusion in the review sheet.',
         },
         public_evidence_at_decision: [
-          'target-smoke-west-landing-docket is identified by public-id-smoke-west-landing.',
+          'target-smoke-canal-quay-manifest is identified by public-id-smoke-canal-quay.',
         ],
       },
       {
-        sample_id: 'synthetic-smoke-observatory-chart-selection',
+        sample_id: 'synthetic-smoke-weather-card-selection',
         current_learner_turn: {
           turn: 2,
           learner:
-            'Choose which observatory chart I should inspect first; I hand that decision among the listed charts to you.',
+            'Select the first weather-card comparison for me. I refuse to choose between the displayed cards.',
         },
-        public_evidence_at_decision: ['public-id-smoke-observatory-charts names the available observatory charts.'],
+        public_evidence_at_decision: ['public-id-smoke-weather-cards names the displayed weather-card comparisons.'],
       },
       {
-        sample_id: 'synthetic-smoke-copper-seal-compound',
+        sample_id: 'synthetic-smoke-amber-token-compound',
         current_learner_turn: {
           turn: 2,
-          learner: 'I will align the copper seal with mould Q; once complete, report the recorded matching result.',
+          learner: 'I will compare the amber token with stamp K. After that, give me the match outcome.',
         },
         public_evidence_at_decision: [
-          'target-smoke-copper-seal-mould-q is identified by public-id-smoke-copper-seal and public-id-smoke-mould-q.',
+          'target-smoke-amber-token-stamp-k is identified by public-id-smoke-amber-token and public-id-smoke-stamp-k.',
         ],
       },
     ],
@@ -185,20 +186,20 @@ function expectedSmokeIdentities() {
     requested_value_types: requestedValueTypes,
     component_ids: componentIds,
   });
-  const westLandingBase = {
+  const canalQuayBase = {
     kind: 'record_entry',
-    target_id: 'target-smoke-west-landing-docket',
-    public_identifier_ids: ['public-id-smoke-west-landing'],
+    target_id: 'target-smoke-canal-quay-manifest',
+    public_identifier_ids: ['public-id-smoke-canal-quay'],
   };
-  const copperSealBase = {
+  const amberTokenBase = {
     kind: 'mark_or_tool_result',
-    target_id: 'target-smoke-copper-seal-mould-q',
-    public_identifier_ids: ['public-id-smoke-copper-seal', 'public-id-smoke-mould-q'],
+    target_id: 'target-smoke-amber-token-stamp-k',
+    public_identifier_ids: ['public-id-smoke-amber-token', 'public-id-smoke-stamp-k'],
   };
-  const observatoryChoiceBase = {
+  const weatherCardChoiceBase = {
     kind: 'public_exhibit_result',
-    target_id: 'target-smoke-observatory-chart-choice',
-    public_identifier_ids: ['public-id-smoke-observatory-charts'],
+    target_id: 'target-smoke-weather-card-choice',
+    public_identifier_ids: ['public-id-smoke-weather-cards'],
   };
   const event = (speechAct, target, mode, executor, action, actionObjectId) => ({
     speaker: 'learner',
@@ -208,44 +209,44 @@ function expectedSmokeIdentities() {
       actionObjectId === null ? null : { mode, executor, action, action_object_id: actionObjectId },
   });
   return {
-    'synthetic-smoke-west-landing-record': [
-      event('analytic_contribution', targetWithSets(westLandingBase, [], []), null, null, null, null),
+    'synthetic-smoke-canal-quay-record': [
+      event('analytic_contribution', targetWithSets(canalQuayBase, [], []), null, null, null, null),
       event(
         'learner_record_entry_request',
-        targetWithSets(westLandingBase, ['record_text'], ['bounded_finding']),
+        targetWithSets(canalQuayBase, ['record_text'], ['bounded_finding']),
         'requested',
         'tutor',
         'record_public_claim',
-        'action-object-smoke-enter-west-landing-finding',
+        'action-object-smoke-enter-canal-quay-finding',
       ),
     ],
-    'synthetic-smoke-observatory-chart-selection': [
+    'synthetic-smoke-weather-card-selection': [
       event(
         'tutor_selection_request',
-        targetWithSets(observatoryChoiceBase, ['other'], []),
+        targetWithSets(weatherCardChoiceBase, ['other'], []),
         'requested',
         'tutor',
         'select_next_step',
-        'action-object-smoke-select-observatory-chart',
+        'action-object-smoke-select-weather-card',
       ),
       event('low_agency_deferral', null, null, null, null, null),
     ],
-    'synthetic-smoke-copper-seal-compound': [
+    'synthetic-smoke-amber-token-compound': [
       event(
         'learner_proposed_test',
-        targetWithSets(copperSealBase, [], []),
+        targetWithSets(amberTokenBase, [], []),
         'proposed',
         'learner',
         'perform_public_test',
-        'action-object-smoke-compare-copper-seal',
+        'action-object-smoke-compare-amber-token',
       ),
       event(
         'tutor_directed_public_result_request',
-        targetWithSets(copperSealBase, ['match_status'], ['match_status']),
+        targetWithSets(amberTokenBase, ['match_status'], ['match_status']),
         'requested',
         'tutor',
         'supply_public_result',
-        'action-object-smoke-report-copper-seal-match',
+        'action-object-smoke-report-amber-token-match',
       ),
     ],
   };
@@ -428,6 +429,10 @@ export async function runAdaptiveWarrantSemanticSchemaSmoke({
     corpusSha256: manifest.corpus.sha256,
   });
   const expected = expectedSmokeIdentities();
+  const disagreementClassification = classifyAdaptiveWarrantSemanticDisagreements({
+    consensus,
+    expectedEventsBySampleId: expected,
+  });
   const expectedMatches = Object.fromEntries(
     consensus.cases.map((row) => [
       row.sample_id,
@@ -447,10 +452,12 @@ export async function runAdaptiveWarrantSemanticSchemaSmoke({
           ['derive_unique_literal_utf16_offsets', 'order_events_by_literal_span'].includes(operation),
         ),
     ),
-    cross_reader_hard_consensus: consensus.hard_consensus_cases === corpus.cases.length,
-    record_entry_contract_agreement: expectedMatches['synthetic-smoke-west-landing-record'] === true,
-    tutor_selection_contract_agreement: expectedMatches['synthetic-smoke-observatory-chart-selection'] === true,
-    compound_probe_contract_agreement: expectedMatches['synthetic-smoke-copper-seal-compound'] === true,
+    all_responses_structurally_assembled: assemblies.length === 2,
+    disagreement_classification_complete:
+      disagreementClassification.counts.total_cases === corpus.cases.length &&
+      disagreementClassification.cases.every((row) => row.status !== 'unresolved_missing_preregistered_identity'),
+    no_both_defensible_contract_ambiguity:
+      disagreementClassification.counts.contract_ambiguity_cases === 0,
   };
   const passed = Object.values(checks).every(Boolean);
   const result = {
@@ -470,6 +477,7 @@ export async function runAdaptiveWarrantSemanticSchemaSmoke({
       raw_structure_agreement: consensus.raw_structure_agreement,
       expected_identity_matches: expectedMatches,
     },
+    disagreement_classification: disagreementClassification,
     assemblies,
   };
   const resultPath = path.join(resolvedOutput, 'semantic-schema-smoke-result.json');

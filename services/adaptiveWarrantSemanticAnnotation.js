@@ -15,7 +15,9 @@ export { ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS } from './adaptiveWarran
 export const ADAPTIVE_WARRANT_SEMANTIC_ANNOTATION_RESPONSE_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-event-annotation-response.v4';
 export const ADAPTIVE_WARRANT_SEMANTIC_CONSENSUS_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-consensus.v4';
+  'machinespirits.adaptation-refinement.semantic-event-consensus.v5';
+export const ADAPTIVE_WARRANT_SEMANTIC_DISAGREEMENT_CLASSIFICATION_SCHEMA =
+  'machinespirits.adaptation-refinement.semantic-event-disagreement-classification.v1';
 export const ADAPTIVE_WARRANT_SEMANTIC_SCORE_SCHEMA = 'machinespirits.adaptation-refinement.semantic-event-score.v4';
 export const ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-event-annotation-batch-response.v6';
@@ -932,6 +934,89 @@ export function adaptiveWarrantSemanticConsensusIdentity(event) {
     speech_act: event.speech_act,
     target: event.target,
     requested_or_proposed_action: event.requested_or_proposed_action,
+  };
+}
+
+function semanticIdentityList(events) {
+  return (events || []).map(adaptiveWarrantSemanticConsensusIdentity);
+}
+
+function identitiesEqual(left, right) {
+  return JSON.stringify(semanticIdentityList(left)) === JSON.stringify(semanticIdentityList(right));
+}
+
+/**
+ * Apply the preregistered ambiguity-versus-reader-error discriminator.
+ *
+ * The expected identity is private harness evidence and is never exposed to a
+ * reader. A disagreeing encoding that departs from that closed contract
+ * instance is a reader error. If neither encoding realizes the preregistered
+ * instance, the harness conservatively treats the pair as a possible
+ * both-defensible ambiguity and blocks rather than guessing which reader is
+ * wrong.
+ */
+export function classifyAdaptiveWarrantSemanticDisagreements({
+  consensus,
+  expectedEventsBySampleId,
+} = {}) {
+  const rows = (consensus?.cases || []).map((row) => {
+    if (row.hard_consensus) {
+      return {
+        sample_id: row.sample_id,
+        status: 'not_applicable_consensus',
+        classification: 'none',
+        reader_errors: [],
+        basis: 'readers_agree_on_semantic_identity',
+      };
+    }
+    const expected = expectedEventsBySampleId?.[row.sample_id];
+    if (!Array.isArray(expected)) {
+      return {
+        sample_id: row.sample_id,
+        status: 'unresolved_missing_preregistered_identity',
+        classification: 'both_defensible_contract_ambiguity',
+        reader_errors: [],
+        basis: 'no_preregistered_contract_identity_available',
+      };
+    }
+    const readerAMatches = identitiesEqual(row.reader_a.events, expected);
+    const readerBMatches = identitiesEqual(row.reader_b.events, expected);
+    if (readerAMatches || readerBMatches) {
+      const readerErrors = [
+        ...(readerAMatches ? [] : [consensus.reader_ids[0]]),
+        ...(readerBMatches ? [] : [consensus.reader_ids[1]]),
+      ];
+      return {
+        sample_id: row.sample_id,
+        status: 'classified',
+        classification: 'reader_error',
+        reader_errors: readerErrors,
+        basis: 'one_encoding_matches_preregistered_closed_contract_identity',
+      };
+    }
+    return {
+      sample_id: row.sample_id,
+      status: 'classified_blocking',
+      classification: 'both_defensible_contract_ambiguity',
+      reader_errors: [],
+      basis: 'neither_encoding_matches_preregistered_closed_contract_identity',
+    };
+  });
+  const disagreements = rows.filter((row) => row.classification !== 'none');
+  const ambiguityCount = disagreements.filter(
+    (row) => row.classification === 'both_defensible_contract_ambiguity',
+  ).length;
+  return {
+    schema: ADAPTIVE_WARRANT_SEMANTIC_DISAGREEMENT_CLASSIFICATION_SCHEMA,
+    status: ambiguityCount ? 'blocked_contract_ambiguity' : 'classified_no_contract_ambiguity',
+    counts: {
+      total_cases: rows.length,
+      consensus_cases: rows.length - disagreements.length,
+      disagreement_cases: disagreements.length,
+      reader_error_cases: disagreements.filter((row) => row.classification === 'reader_error').length,
+      contract_ambiguity_cases: ambiguityCount,
+    },
+    cases: rows,
   };
 }
 
