@@ -5,6 +5,14 @@ session and the Claude reviewer session. Both sessions share this repo on
 the same machine, so a committed file is immediately visible to the other
 side. **Committed files only — never hand off through uncommitted edits.**
 
+## Required reading for a driver
+
+`STATE.md` plus the current direction file it names — nothing else. The
+numbered history and the audit are evidence; read them only when STATE.md
+points at them for the task at hand. The reviewer updates STATE.md with
+every new direction; if STATE.md and a numbered file conflict, the
+numbered file wins and the mismatch is reported.
+
 ## Protocol
 
 1. **Codex** writes each boundary report to
