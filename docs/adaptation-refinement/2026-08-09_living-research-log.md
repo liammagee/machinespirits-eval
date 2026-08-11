@@ -1461,3 +1461,23 @@ vocabulary. This removes a response-envelope confound without exposing the
 private gate transition or changing the frozen decision thresholds. A fresh
 clean matrix and two fresh readers remain required before the representative
 gate can be scored.
+
+## Progress Update — 11 August 2026, release fallback now carries active family ownership
+
+The clean `1dc24ee2bac47001f6d45511cad46079dcbb878b` restart passed every launch
+preflight under digest
+`4e59e6e3b101fb41e16d2f286a368f05e11fb18136cde09421d5db9115d08d93`.
+Its first completed child failed closed on active turn three. The typed reducer
+selected `challenge_resistance`, but the model draft, repair, and deterministic
+presented-exhibit fallback merely answered the learner and released the due
+badge-log source. The public uptake did not interrupt copying or return a
+choice, so the active-delivery audit correctly rejected it. The parent was
+stopped at once; the partial packet is burned and is not a mechanism result.
+
+The cause was a composition seam: the configured continuation fallback used
+the shared family-specific uptake realizer, while the dramatic-release
+fallback accepted any otherwise preservable uptake. Prospectively both paths
+use the same idempotent realizer before an authored source. The focused
+regression reproduces the failed low-agency question and requires the released
+response to make `challenge_resistance` visible in its uptake span. A new clean
+matrix remains mandatory before annotation resumes.

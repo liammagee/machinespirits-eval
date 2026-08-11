@@ -1184,3 +1184,28 @@ family enum is limited to that exact public list. The remaining sequence is:
    authorization and require both to assemble without content repair;
 4. apply the unchanged representative scorer; and
 5. run no downstream outcome comparison unless the representative gate passes.
+
+## Current restart boundary after release-fallback family realization
+
+The clean `1dc24ee2bac47001f6d45511cad46079dcbb878b` restart used the accepted
+authorization digest
+`4e59e6e3b101fb41e16d2f286a368f05e11fb18136cde09421d5db9115d08d93`.
+Preflight passed, but the first completed child sealed `incomplete` on active
+turn three. The reducer selected `challenge_resistance`; the model draft,
+repair, and deterministic presented-exhibit fallback answered the learner and
+released the due source without visibly interrupting copying or returning
+choice. The hard active-delivery audit correctly rejected the turn. The parent
+was stopped immediately, and the partial packet is burned.
+
+Prospectively, the shared deterministic action-family uptake is now also
+applied by the dramatic-release fallback before any exact authored source. It
+leaves already-visible uptake unchanged and otherwise realizes the selected
+responsive family in the public uptake span. The remaining sequence is:
+
+1. verify, commit, and push the shared release-fallback realization repair;
+2. freeze a new clean representative matrix and require 24/24 valid children,
+   192/192 structured parity, and 192/192 delivery application;
+3. collect two fresh independent readers with the case-specific response
+   schema and require both to assemble without content repair;
+4. apply the unchanged representative scorer; and
+5. run no downstream outcome comparison unless the representative gate passes.

@@ -5,6 +5,7 @@ import {
   TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA,
 } from './tutorStubResponseContractSchemas.js';
 import { tutorStubFirstPersonRoleVoiceVisible, tutorStubRoleStageDirectionVisible } from './tutorStubRoleVisibility.js';
+import { configuredFallbackActionUptake } from './tutorStubResponseComposition.js';
 import {
   TUTOR_STUB_SCENE_DICTION_PERIOD,
   resolveTutorStubSceneDiction,
@@ -913,6 +914,7 @@ export function deterministicTutorStubDramaticReleaseFallback({
   const hostPart = fallbackHostPart(responseConfiguration);
   const compensation = deterministicTutorStubSourceAccessibilityCompensation(sourceAccessibilityContract);
   const compensationSourceId = sourceAccessibilityContract?.compensation?.source_id || null;
+  const actionUptake = configuredFallbackActionUptake(responseConfiguration?.action_family, uptake);
   const rendered = frame.entries.map((entry, index) =>
     entry.mode === 'enacted_role'
       ? renderEnactedEntry(entry, {
@@ -938,7 +940,7 @@ export function deterministicTutorStubDramaticReleaseFallback({
     ? 'You can also ask me to unpack any word or connection in it.'
     : null;
   const directRepair =
-    support?.responsiveRepairRequired && !oneLine(uptake)
+    support?.responsiveRepairRequired && !oneLine(actionUptake)
       ? 'You’re right—I did not answer your question directly. The public record that answers it is this:'
       : null;
   const development = [
@@ -949,11 +951,11 @@ export function deterministicTutorStubDramaticReleaseFallback({
       support,
       defaultQuestion: fallbackQuestion({ stance, variationKey, avoidQuestion }),
       publicObject: sceneObject(frame.entries[0], 'record', world),
-      priorPublicText: uptake,
+      priorPublicText: actionUptake,
     }),
     turnProgressionContract?.handoff_contract?.question_allowed === false ? null : clarification,
   ]
     .filter(Boolean)
     .join(' ');
-  return [oneLine(uptake), development].filter(Boolean).join(' ');
+  return [oneLine(actionUptake), development].filter(Boolean).join(' ');
 }

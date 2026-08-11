@@ -3646,6 +3646,43 @@ test('presented-exhibit fallback preserves the selected part and tactic across e
   }
 });
 
+test('presented-exhibit fallback realizes an active challenge in uptake before releasing the clue', () => {
+  const dueEvidence = [
+    {
+      surface: 'The badge log has Dario in the kitchen at 12:02.',
+      via: 'tutor',
+      presentation: { mode: 'presented_exhibit' },
+    },
+  ];
+  const frame = buildTutorStubDramaticReleaseFrame({ dueEvidence });
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'plain',
+    learnerText: 'Do you want me to say what the noon entries show?',
+    classification: classification({ requestType: 'conceptual_clarity_request', conceptual: 2 }),
+    tutorLearnerDag: learnerDag(),
+    dueEvidence,
+    world: testWorld(),
+  });
+  const configuration = { ...base, action_family: 'challenge_resistance' };
+  const text = deterministicTutorStubDramaticReleaseFallback({
+    frame,
+    uptake: 'Yes: you’re checking whether to state what the noon entries establish.',
+    responseConfiguration: configuration,
+    variationKey: 'active-challenge-before-release',
+    world: testWorld(),
+  });
+  const [uptake] = text.split(/(?<=[.!?])\s+/u);
+  const audit = auditTutorStubResponseConfiguration({
+    text,
+    configuration,
+    world: testWorld(),
+    composition: { uptake, development: text.slice(uptake.length).trim() },
+  });
+
+  assert.match(uptake, /Instead of copying my line, choose/iu);
+  assert.equal(audit.axes.action_family.visible, true, text);
+});
+
 test('learner-responsive action families are audited on uptake rather than clue development', () => {
   const configuration = buildTutorStubResponseConfiguration({
     engagementStance: 'precise',

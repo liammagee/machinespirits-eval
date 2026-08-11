@@ -1776,8 +1776,18 @@ function configuredFallbackActionFamily(actionFamily) {
   );
 }
 
-function configuredFallbackActionUptake(actionFamily, uptake) {
+export function configuredFallbackActionUptake(actionFamily, uptake) {
   const publicUptake = oneLine(uptake);
+  const alreadyVisible =
+    (actionFamily === 'answer_accountably' &&
+      /\b(?:answer|because|before|check|if|unless|until|would count|could show|wrong|revise)\b|\bnot\b[^.!?]{0,90}\b(?:establish|identify|mean|place|prove|show|support|tie)\w*\b/iu.test(
+        publicUptake,
+      )) ||
+    (actionFamily === 'challenge_resistance' &&
+      /\b(?:but|instead|choose|test|stop|risk|refuse|try)\b/iu.test(publicUptake)) ||
+    (actionFamily === 'receive_vulnerability' &&
+      /\b(?:i hear|that sounds|you are naming|you've named|it makes sense|you can)\b/iu.test(publicUptake));
+  if (alreadyVisible) return publicUptake;
   const continuation = publicUptake
     ? `${publicUptake.charAt(0).toLowerCase()}${publicUptake.slice(1)}`
     : 'I will keep your public point central';
