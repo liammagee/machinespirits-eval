@@ -160,7 +160,7 @@ function proposal(text, eventTarget, object, extra = {}) {
 function diagnosticSpecs() {
   const specs = [
     request(
-      "Read out the quay-nine ledger's recorded visitor and clock time.",
+      'What visitor and time are written in the public quay-nine ledger?',
       TARGETS.quay,
       'quay-nine visitor and time',
       {
@@ -174,7 +174,7 @@ function diagnosticSpecs() {
         support: ['obligation_persistence', 'divergence_interactional_nonaligned'],
       },
     ),
-    request('Which date and name appear in the lamp-room sign-in book?', TARGETS.lamp, 'lamp-room sign-in values', {
+    request('Read the lamp-room sign-in date and visitor back to me.', TARGETS.lamp, 'lamp-room sign-in values', {
       transcript: [
         {
           turn: 1,
@@ -184,15 +184,15 @@ function diagnosticSpecs() {
       ],
       support: ['obligation_persistence', 'divergence_interactional_nonaligned'],
     }),
-    request('Tell me the weight registered for token K-17 in the archive scale record.', TARGETS.token, 'K-17 weight'),
-    request('What material did the public assay identify in sample C-4?', TARGETS.sample, 'C-4 material'),
+    request('What weight does the archive scale assign to token K-17?', TARGETS.token, 'K-17 weight'),
+    request('Report the material named by the public C-4 assay.', TARGETS.sample, 'C-4 material'),
     request(
-      'Does the seal comparison record whether imprint Q matches mould three?',
+      'According to the comparison, is imprint Q a match for mould three?',
       TARGETS.seal,
       'imprint Q match status',
     ),
-    request('Give me the sound recorded by the bell test for ring H.', TARGETS.ring, 'ring H recorded sound'),
-    proposal('I will cross-check the ferry-seven movement log next.', TARGETS.ferry, 'inspect ferry-seven log', {
+    request('What sound is entered for ring H in the bell-test record?', TARGETS.ring, 'ring H recorded sound'),
+    proposal("Next I will review ferry-seven's movement entry myself.", TARGETS.ferry, 'inspect ferry-seven log', {
       transcript: [
         {
           turn: 1,
@@ -203,7 +203,7 @@ function diagnosticSpecs() {
       support: ['obligation_resolution'],
     }),
     proposal(
-      'My next test is to compare the blue-door latch photograph with the tool marks.',
+      'I will test the blue-door photograph against the known tool marks.',
       TARGETS.latch,
       'compare blue-door latch marks',
       {
@@ -218,30 +218,18 @@ function diagnosticSpecs() {
       },
     ),
     proposal(
-      'I will inspect the quay-nine ledger for a sequence before drawing a conclusion.',
+      "Before concluding, I will trace the order of entries in quay-nine's ledger.",
       TARGETS.quay,
       'inspect quay-nine sequence',
     ),
-    proposal('I propose weighing token K-17 against the calibrated reference.', TARGETS.token, 'weigh K-17'),
-    proposal('Let me compare imprint Q with mould three as the next public test.', TARGETS.seal, 'compare imprint Q'),
-    proposal(
-      'I will listen to ring H and compare its tone with the public bell-test record.',
-      TARGETS.ring,
-      'compare ring H tone',
-    ),
+    proposal('My proposed check is to weigh K-17 against the reference.', TARGETS.token, 'weigh K-17'),
+    proposal('I will put imprint Q beside mould three for the next comparison.', TARGETS.seal, 'compare imprint Q'),
+    proposal("I will compare ring H's tone with the published bell-test entry.", TARGETS.ring, 'compare ring H tone'),
   ];
 
   for (const [text, eventTarget, object] of [
-    [
-      'Please enter that the quay-nine ledger establishes access, not removal.',
-      TARGETS.quay,
-      'record access not removal',
-    ],
-    [
-      'Record that sample C-4 contains tin while leaving its source unresolved.',
-      TARGETS.sample,
-      'record bounded assay claim',
-    ],
+    ['Add a bounded note: quay-nine establishes access but not removal.', TARGETS.quay, 'record access not removal'],
+    ['Enter the public C-4 tin finding, with its source still open.', TARGETS.sample, 'record bounded assay claim'],
   ]) {
     specs.push({
       text,
@@ -257,8 +245,8 @@ function diagnosticSpecs() {
   }
 
   for (const text of [
-    'Would you choose which public exhibit I should examine first?',
-    'Could you select the next check for me because I cannot choose one?',
+    'Pick the first public exhibit for me to inspect.',
+    'I cannot choose; tell me which check to do next.',
   ]) {
     specs.push({
       text,
@@ -272,72 +260,72 @@ function diagnosticSpecs() {
     });
   }
 
-  const compoundA = 'I will inspect the ferry-seven log; then tell me which time it records.';
+  const compoundA = "I will read ferry-seven's log myself; after that, state its recorded time.";
   specs.push({
     text: compoundA,
     events: [
       event('learner_proposed_test', compoundA, {
         target: TARGETS.ferry,
         action: action('proposed', 'learner', 'perform_public_test', 'inspect ferry-seven log'),
-        span: 'I will inspect the ferry-seven log',
+        span: "I will read ferry-seven's log myself",
       }),
       event('tutor_directed_public_result_request', compoundA, {
         target: TARGETS.ferry,
         action: action('requested', 'tutor', 'supply_public_result', 'ferry-seven recorded time'),
-        span: 'tell me which time it records',
+        span: 'state its recorded time',
       }),
     ],
     support: ['result_request', 'proposed_test', 'target_value_partition', 'compound_act', 'inquiry_incomplete'],
   });
-  const compoundB = 'I propose comparing imprint Q, and I want you to report whether it matches mould three.';
+  const compoundB = 'I will compare imprint Q; you should then tell me whether mould three matches it.';
   specs.push({
     text: compoundB,
     events: [
       event('learner_proposed_test', compoundB, {
         target: TARGETS.seal,
         action: action('proposed', 'learner', 'perform_public_test', 'compare imprint Q'),
-        span: 'I propose comparing imprint Q',
+        span: 'I will compare imprint Q',
       }),
       event('tutor_directed_public_result_request', compoundB, {
         target: TARGETS.seal,
         action: action('requested', 'tutor', 'supply_public_result', 'imprint Q match status'),
-        span: 'I want you to report whether it matches mould three',
+        span: 'you should then tell me whether mould three matches it',
       }),
     ],
     support: ['result_request', 'proposed_test', 'target_value_partition', 'compound_act', 'inquiry_incomplete'],
   });
 
-  const analytic = 'The lamp-room entry proves presence only, not who moved the lamp; may I record that limit?';
+  const analytic = 'The sign-in proves someone was present, not that they moved the lamp; can we record only that?';
   specs.push({
     text: analytic,
     events: [
       event('analytic_contribution', analytic, {
-        span: 'The lamp-room entry proves presence only, not who moved the lamp',
+        span: 'The sign-in proves someone was present, not that they moved the lamp',
       }),
       event('learner_record_entry_request', analytic, {
         target: TARGETS.lamp,
         action: action('requested', 'joint', 'record_public_claim', 'record evidential limit'),
-        span: 'may I record that limit',
+        span: 'can we record only that',
       }),
     ],
     support: ['record_entry_request', 'analytic_permission_suffix', 'inquiry_incomplete'],
   });
-  const defer = 'Would you decide the next move for me? I do not want to choose.';
+  const defer = 'Select my next step, please. I would rather not decide.';
   specs.push({
     text: defer,
     events: [
       event('tutor_selection_request', defer, {
         action: action('requested', 'tutor', 'select_next_step', 'next move'),
-        span: 'Would you decide the next move for me?',
+        span: 'Select my next step, please.',
       }),
-      event('low_agency_deferral', defer, { span: 'I do not want to choose' }),
+      event('low_agency_deferral', defer, { span: 'I would rather not decide' }),
     ],
     support: ['tutor_selection_request', 'low_agency_deferral', 'divergence_engagement_nonaligned'],
   });
 
   for (const [text, eventTarget] of [
-    ['What public observation would distinguish a copied seal from an original imprint Q?', TARGETS.seal],
-    ['Which evidence would connect the quay-nine visit to the later removal?', TARGETS.quay],
+    ['What observation would separate a copied seal from the original Q imprint?', TARGETS.seal],
+    ['What public fact could tie the quay-nine visit to the later removal?', TARGETS.quay],
   ]) {
     specs.push({
       text,
@@ -346,8 +334,7 @@ function diagnosticSpecs() {
     });
   }
 
-  const repairText =
-    'I cannot follow the distinction between a recorded visit and proof of removal; explain it plainly.';
+  const repairText = 'I do not understand why a visit does not prove removal; walk me through that distinction.';
   specs.push({
     text: repairText,
     events: [
@@ -357,7 +344,7 @@ function diagnosticSpecs() {
     ],
     support: ['repair_request', 'inquiry_incomplete', 'divergence_conceptual_nonaligned'],
   });
-  const stalledText = 'I have no idea.';
+  const stalledText = 'I am stuck and have nothing to try.';
   specs.push({
     text: stalledText,
     events: [event('stall', stalledText)],
