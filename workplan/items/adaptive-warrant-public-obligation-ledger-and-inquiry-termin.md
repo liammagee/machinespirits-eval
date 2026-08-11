@@ -510,3 +510,16 @@ higher basis. The item remains active pending verification,
 a pushed clean checkpoint, a new 24/24 execution, two fresh readers, and
 passage of the unchanged representative gate. No downstream outcome study is
 licensed.
+
+The clean `ba8b1422607c50ae95eb958bd162cb7ee2c8da2c` replacement execution
+sealed 24/24 children valid and retained exact 192/192 structured replay
+parity. It failed three delivery checks, all active turn-eight
+`close_inquiry` decisions. Each internal configuration transition was exact,
+but the public tutor response stated the verdict without visibly closing the
+inquiry. This is an intervention-enforcement defect, not a scorer
+canonicalization issue. Prospectively, an action-family visibility miss is a
+hard veto when active warrant final authority owns that family; ordinary
+configuration visibility remains advisory/report-only. The packet is burned.
+The item remains active pending verification, a clean pushed checkpoint, a
+new 24/24 and 192/192 delivery run, two fresh readers, and passage of the
+unchanged representative gate. No downstream outcome study is licensed.

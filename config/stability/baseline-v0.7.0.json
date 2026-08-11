@@ -77,7 +77,7 @@
     {
       "file": "services/tutorStubTutorDraftAudit.js",
       "claim": "delivery guard battery, dispositions, and audit trace shape",
-      "sha256": "2d4ceeee349a28d20725aa126d81413cdd0be32d103c2662a113a007d3b8b6af"
+      "sha256": "9e5b292649d7e9ec4b2e60deb89c5f8a584f0c7cad7fda3282948f76235cfacb"
     },
     {
       "file": "services/tutorStubResponsePolicy.js",

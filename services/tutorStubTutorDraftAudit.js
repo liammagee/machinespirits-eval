@@ -155,6 +155,14 @@ export function createTutorStubTutorDraftAudit(dependencies = {}) {
           reason: liveConfigurationSurface.reason,
           excluded_spans: liveConfigurationSurface.excluded_spans,
         };
+        const warrantEnforcement = auditConfiguration?.adaptive_warrant_enforcement || null;
+        responseConfigurationAudit.adaptive_warrant_delivery = {
+          schema: 'machinespirits.tutor-stub.adaptive-warrant-delivery-audit-context.v1',
+          active: warrantEnforcement?.applied === true,
+          desired_action_family: warrantEnforcement?.desired_action_family || null,
+          warrant_basis: warrantEnforcement?.warrant_basis || null,
+          decision_kind: warrantEnforcement?.decision_kind || null,
+        };
       }
       const actorialRealizationAudit = responseConfigurationAudit?.actorial_realization || {
         ok: true,

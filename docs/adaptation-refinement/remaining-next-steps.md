@@ -877,6 +877,24 @@ The remaining sequence is:
    natural frame and apply the unchanged gate to it alone; and
 5. run no downstream outcome comparison unless that representative gate passes.
 
+## Current restart boundary after active-family realization repair
+
+The clean `ba8b1422607c50ae95eb958bd162cb7ee2c8da2c` matrix completed 24/24
+valid children and exact 192/192 structured parity. It failed three of 192
+delivery checks: active turn-eight `close_inquiry` decisions reached the final
+configuration exactly, but the tutor text stated a verdict without visibly
+closing the inquiry. The complete packet is burned and cannot be annotated.
+
+The remaining sequence is:
+
+1. verify, commit, and push the active-final-authority visibility veto;
+2. freeze a new clean SHA and generate its digest-bound representative request;
+3. require 24/24 valid seals, 192 learner analyses, exact 192/192 replay parity,
+   and visible 192/192 delivery application;
+4. only then freeze the new 96-case raw-contract corpus, collect two fresh
+   independent readers, and apply the unchanged representative gate; and
+5. run no downstream outcome comparison unless that gate passes.
+
 ## Current restart boundary after representative delivery-audit localization
 
 The clean representative attempt from

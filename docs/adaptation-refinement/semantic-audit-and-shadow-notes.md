@@ -508,3 +508,19 @@ is one of those declarations. A non-revising renewal confirms the held family
 without creating a warrant. No private gate prediction, eventual response,
 condition, or profile is exposed. The old packet is burned; the repaired
 instrument can be evaluated only on a fresh run.
+
+### 7.19 Active final authority owns public action realization
+
+The `ba8b1422` replacement run cleared child validity and structured replay but
+exposed three active terminal surfaces that preserved `close_inquiry` through
+selected, speaking, and delivered configuration without visibly closing the
+public inquiry. A structural configuration transition therefore cannot stand
+in for a semantic delivery observation.
+
+General configuration visibility remains a useful advisory diagnostic. The
+narrow exception is a family claimed as the active warrant intervention: if
+that family is not visible, the mechanism was not publicly delivered. The
+draft audit now carries the active final-authority ownership context into guard
+disposition, which treats `selected_action_family_not_visible` as hard under
+strict, shadow-advisory, and terminal-fallback paths. Repair preserves all
+other configuration axes and must produce a newly audited public surface.

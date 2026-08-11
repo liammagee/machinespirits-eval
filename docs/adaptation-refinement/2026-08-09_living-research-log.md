@@ -1384,3 +1384,21 @@ the raw contract against public evidence, and the validator checks only that
 an `action_contract` family is one of the contract's declared public successors;
 a non-revising renewal is `none/hold` absent a higher basis. A fresh clean
 matrix and fresh independent readers remain required under the unchanged gate.
+
+## Progress Update — 11 August 2026, active delivery ownership enforced
+
+The clean `ba8b1422607c50ae95eb958bd162cb7ee2c8da2c` replacement matrix again
+completed 24/24 valid eight-turn dialogues and 192/192 structured live/replay
+comparisons. It failed closed as `invalid_delivery_application` on three of
+192 delivery checks. All three were active turn-eight terminal decisions: the
+gate selected `close_inquiry`, and selected, speaking, and delivered
+configurations agreed exactly, but the public response stated the supported
+verdict without visibly closing the inquiry.
+
+This is a real enforcement gap. The ordinary response-configuration policy
+treated non-actorial visibility misses as advisory, so it could accept a text
+that did not publicly realize the family owned by active warrant final
+authority. Prospectively, that narrow case is a hard repair trigger under both
+guard policies and even at terminal fallback. Ordinary selector-style
+configuration misses remain advisory/report-only. The packet is burned; a
+fresh clean matrix must demonstrate 192/192 visible delivery before readers.

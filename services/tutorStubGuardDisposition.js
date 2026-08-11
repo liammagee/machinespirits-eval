@@ -25,7 +25,11 @@ export const TUTOR_STUB_GUARD_DISPOSITION_SCHEMA = 'machinespirits.tutor-stub.gu
 // columns. The broad live-progression family remains advisory under shadow;
 // only failing to answer/defer an active public request, or replacing it with
 // another question, regains a veto.
-export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 8;
+// 9 (2026-08-11): an action family owned by active adaptive-warrant final
+// authority must be visible in the delivered public text. Ordinary selector
+// configuration misses remain non-vetoing; this rule is scoped to the causal
+// intervention whose delivery the mechanism study is intended to verify.
+export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 9;
 
 export const TUTOR_STUB_GUARD_BOUNDARY_POLICIES = Object.freeze({
   strict: 'strict',
@@ -270,6 +274,13 @@ const RULES = Object.freeze([
     rationale:
       'Non-actorial configuration axes were never delivery vetoes and remain report-only under the strict policy.',
   }),
+  rule({
+    guard: 'adaptive_warrant_delivery',
+    type: 'selected_action_family_not_visible',
+    category: 'causal_intervention_integrity',
+    rationale:
+      'An action family selected by active adaptive-warrant final authority must be publicly realized before the turn can count as delivered.',
+  }),
 ]);
 
 const RULES_BY_KEY = new Map(RULES.map((entry) => [entry.id, entry]));
@@ -509,6 +520,7 @@ function auditIssueRows(guard, audit, findingsKey = 'issues') {
 /** Build one immutable view of deterministic audit findings for disposition. */
 export function tutorStubGuardIssueRows(audits = null) {
   const source = audits || {};
+  const adaptiveWarrantDelivery = source.responseConfigurationAudit?.adaptive_warrant_delivery || null;
   const rows = [
     ...auditIssueRows('leak', source.leakAudit, 'leaks'),
     ...auditIssueRows('human_scaffold', source.scaffoldAudit),
@@ -527,6 +539,16 @@ export function tutorStubGuardIssueRows(audits = null) {
   ];
   for (const [axis, audit] of Object.entries(source.responseConfigurationAudit?.axes || {})) {
     if (axis === 'actorial_part' || audit?.compatibility_alias_of || audit?.visible !== false) continue;
+    if (axis === 'action_family' && adaptiveWarrantDelivery?.active === true) {
+      rows.push({
+        guard: 'adaptive_warrant_delivery',
+        type: 'selected_action_family_not_visible',
+        selected: audit?.selected || null,
+        desired_action_family: adaptiveWarrantDelivery.desired_action_family || null,
+        reason: `active warrant final authority selected ${adaptiveWarrantDelivery.desired_action_family || audit?.selected || 'an action family'}, but the public tutor response did not visibly realize it`,
+      });
+      continue;
+    }
     rows.push({
       guard: 'response_configuration',
       type: 'axis_not_visible',

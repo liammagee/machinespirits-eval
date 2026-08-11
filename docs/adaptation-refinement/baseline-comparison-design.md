@@ -1099,3 +1099,21 @@ declared successor families; a renewal that retains the held family is
 `none/hold` when no higher basis applies. The gate transition remains private.
 The unchanged representative frame and gate must run again from a new clean
 commit before any downstream outcome study.
+
+## Active-family surface enforcement — 11 August 2026
+
+The clean `ba8b1422607c50ae95eb958bd162cb7ee2c8da2c` rerun completed all 24
+dialogues with valid seals and exact structured replay parity. Three of 192
+delivery checks failed on active terminal decisions. In each case the gate,
+selector, speaking configuration, and final delivery all named
+`close_inquiry`, but the public tutor text declared the verdict without a
+visible closure act.
+
+The delivery gate is correct to reject this. Configuration identity proves
+that the intervention reached the speaker; it does not prove that the speaker
+made the intervention public. Prospectively, an invisible action family is a
+hard response-repair issue only when active adaptive-warrant final authority
+owns that family. The general response-configuration visibility diagnostic
+retains its existing advisory/report-only status outside that causal boundary.
+The failed packet remains burned, and the unchanged 192-decision delivery gate
+must be rerun before annotation.

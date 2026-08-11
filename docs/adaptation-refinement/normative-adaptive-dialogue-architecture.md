@@ -962,3 +962,18 @@ and may select only a successor declared by that contract. A successful renewal
 that retains the held family creates no warrant; absent a higher-priority basis,
 the decision is `none/hold`. The validator enforces vocabulary and public
 contract support without re-performing or revealing the detector decision.
+
+## 28. Active final authority requires public realization
+
+A selected response configuration is an internal commitment; public tutor
+speech is its descriptive realization. Exact selected-to-speaking-to-delivered
+configuration equality proves routing but cannot prove that the learner
+encountered the selected action family.
+
+When active adaptive-warrant final authority owns an action family, its public
+visibility is therefore part of the causal intervention contract. An invisible
+family triggers bounded repair and cannot be downgraded by the ordinary
+advisory policy for stylistic configuration axes or by terminal fallback.
+Outside active final authority, configuration visibility retains its previous
+diagnostic status. This keeps the normative policy decision, internal delivery
+route, and observed public action as three distinct measurable layers.
