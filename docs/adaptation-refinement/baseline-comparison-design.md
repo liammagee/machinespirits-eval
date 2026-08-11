@@ -839,6 +839,11 @@ its cases nor its scores may satisfy a pass/fail threshold, estimate prevalence
 or false-positive rates, or establish validation. Any repair it motivates
 burns it relative to the repaired implementation.
 
+The clean post-repair diagnostic at `068fb84223662d5eb322a4f7c13c2bb1be550c6f`
+met every frozen reader-backed support minimum. This closes instrument repair;
+it does not pass the mechanism gate. The next evidence must come from the
+predeclared representative natural-prevalence frame below.
+
 The pass/fail gate remains the representative `natural_prevalence` frame:
 after the last diagnostic-driven repair, generate the already-declared two-
 world, six-profile observe/active matrix with one new eight-turn dialogue per

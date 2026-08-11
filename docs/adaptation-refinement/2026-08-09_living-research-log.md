@@ -1286,3 +1286,29 @@ decision-kind precedence now follows basis precedence: immediate repair remains
 pedagogical, while the public-result obligation is an orthogonal response
 directive. A focused regression test fixes that invariant. This burns the
 `d0039481` freeze; one clean diagnostic remains before the representative frame.
+
+## Progress Update — 11 August 2026, targeted instrument supported
+
+The clean `068fb84223662d5eb322a4f7c13c2bb1be550c6f` diagnostic completed two
+independent 24-case Luna readers in six of eight calls under digest
+`9ef452221405fbb84539fe567649c22afbf7b12ccbac36cfba8fcac2a41fb99a`.
+Both readers assembled 24/24 cases with zero normalization edits. The dedicated
+scorer returned `diagnostic_support=supported` while retaining
+`pass_fail_gate=not_applicable`.
+
+Every frozen support minimum passed: result request 8/8, proposed test 8/8,
+persistence 8/8, resolution 8/6, complete inquiry 8/8, incomplete inquiry
+16/12, and non-aligned consensus of conceptual 5/2, interactional 8/2,
+engagement 3/2, pacing 4/2, epistemic 4/2, and strategy exhaustion 3/2. Raw
+binary agreement, precision, recall, accuracy, successor accuracy,
+request/proposal macro-F1, lifecycle and persistence accuracy, inquiry
+precision/recall, commitment transition, candidate override, primary basis,
+and all six divergence interpretation accuracies were 1.000.
+
+Divergence magnitude/joint accuracies ranged from 0.833 to 1.000 and all
+exceeded the predeclared representative thresholds of 0.700 magnitude and
+0.650 joint accuracy. Residual differences were bounded severity judgments,
+not state or interpretation disagreements; no localized detector or instrument
+defect remains. Targeted repair therefore stops here. The diagnostic cannot
+establish passage or prevalence. The next step is the fresh predeclared 96-case
+natural-prevalence frame; no downstream outcome run is yet licensed.

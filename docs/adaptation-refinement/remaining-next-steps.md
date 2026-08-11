@@ -921,3 +921,23 @@ The remaining sequence is:
 4. if no localized defect remains, freeze the representative 96-case natural
    frame and apply the unchanged gate to it alone; and
 5. run no downstream outcome comparison unless that representative gate passes.
+
+## Current restart boundary after supported diagnostic closeout
+
+The clean `068fb84223662d5eb322a4f7c13c2bb1be550c6f` diagnostic completed both
+24-case readers in 6/8 calls with zero normalization edits. Every reader-backed
+support minimum passed. Core typed decision and transition measures and all six
+divergence interpretations scored 1.000; magnitude and joint accuracies remained
+above their declared representative thresholds. The scorer correctly emitted
+no gate result.
+
+Targeted repair is complete. The remaining sequence is:
+
+1. commit and push this diagnostic closeout;
+2. freeze the predeclared two-world, six-profile, 96-decision
+   `natural_prevalence` corpus from a clean commit;
+3. collect two independent blind readers and apply the unchanged representative
+   mechanism gate;
+4. inspect failures without pooling or repairing against the representative
+   labels; and
+5. run no downstream outcome comparison unless the representative gate passes.

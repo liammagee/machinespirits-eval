@@ -390,3 +390,14 @@ and redundant challenge rows prospectively disambiguate proposals, obligation
 sources, safe pace requests, and unsafe premature claims. The item remains
 active pending a supported clean diagnostic and the representative natural-
 frame gate; no downstream outcome study is licensed.
+
+The clean post-repair diagnostic at
+`068fb84223662d5eb322a4f7c13c2bb1be550c6f` completed two 24-case readers in
+6/8 calls with zero normalization edits. Every frozen reader-backed support
+minimum passed. Binary decision, successor, request/proposal, lifecycle,
+persistence, inquiry, commitment, override, basis, and divergence
+interpretation measures were 1.000 on hard consensus; magnitude and joint
+scores remained above declared thresholds. The diagnostic emitted no gate
+result and targeted repair stops here. The item remains active for the fresh
+96-case representative natural-frame gate; no downstream outcome study is
+licensed.
