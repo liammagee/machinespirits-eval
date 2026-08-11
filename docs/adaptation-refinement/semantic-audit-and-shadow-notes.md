@@ -417,3 +417,20 @@ When a compound already contains a component, the redundant component is not
 spoken; multiple compound targets are separated as phrases. This keeps exact
 matching evidence available internally without exposing normalization
 artifacts in dialogue. The attempt and packet are burned.
+
+### 7.14 Tutor-recovery transport ownership
+
+The next clean representative attempt passed the former compound-target point,
+but one child sealed invalid after a rejected tutor draft needed repair. The
+draft rejection was correct: it paraphrased an exact authored source and
+substituted a different handoff question. The following
+`tutor_stub_tutor_recovery` call received a Codex failed-turn lifecycle event.
+Unlike learner, analyzer, and auxiliary calls, tutor attempts were dispatched
+by a separate runtime that had not inherited the shared bounded retry.
+
+The correction belongs at that attempt owner, not in dialogue policy. Every
+tutor first-draft or repair dispatch now receives at most one fresh metered
+retry for a typed Codex transport/schema failure, without changing public
+history. Two consecutive failures still invalidate the child, and tool-bearing
+events are still refused. The partial packet is burned and supplies no
+mechanism evidence.

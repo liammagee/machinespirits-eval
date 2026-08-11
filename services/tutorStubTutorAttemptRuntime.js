@@ -18,6 +18,7 @@ export function createTutorStubTutorAttemptRuntime(dependencies = {}) {
     reserveProgram2ProviderBudget,
     reserveTutorStubMeteredModelCall,
     streamAI,
+    tutorStubCliPolicyRetryDecision,
   } = dependencies;
 
   return function bindTutorStubTutorAttemptRuntime(context = {}) {
@@ -64,7 +65,6 @@ export function createTutorStubTutorAttemptRuntime(dependencies = {}) {
       instructionTextsOverride = null,
       privilegeAdvisoryOverride = null,
     }) {
-      const startedAt = new Date().toISOString();
       const instructionTexts =
         instructionTextsOverride || (passthrough ? [systemPrompt] : effectiveSpeakerInstructionTexts);
       let attemptSystemPrompt = systemPromptOverride || effectiveSpeakerSystemPrompt;
@@ -206,33 +206,74 @@ export function createTutorStubTutorAttemptRuntime(dependencies = {}) {
       };
       if (cliEffort) request.config.cliEffort = cliEffort;
       const useStreamingApi = streamMode === 'live' || streamMode === 'buffered';
-      reserveProgram2ProviderBudget({ maxTokens, trace, role, turn: tutorTurn });
-      reserveTutorStubMeteredModelCall({ trace, role, turn: tutorTurn });
+      function reserveTutorAttemptBudget() {
+        reserveProgram2ProviderBudget({ maxTokens, trace, role, turn: tutorTurn });
+        reserveTutorStubMeteredModelCall({ trace, role, turn: tutorTurn });
+      }
+      let startedAt = null;
       let response;
       if (isCliProvider(resolved.provider)) {
-        const result = await callAIWithCliBridge(
-          { provider: resolved.provider, model: resolved.model },
-          attemptSystemPrompt,
-          effectiveAttemptUserPrompt,
-          role,
-          { messageHistory: messages, effort: cliEffort, signal },
-        );
-        response = {
-          text: result.text,
-          provider: result.provider,
-          model: result.model,
-          latencyMs: result.latencyMs,
-          usage: {
-            inputTokens: result.inputTokens || 0,
-            outputTokens: result.outputTokens || 0,
-            totalTokens: (result.inputTokens || 0) + (result.outputTokens || 0),
-            cost: result.cost || 0,
-          },
-          effort: result.effort || result.reasoningEffort || null,
-          reasoningEffort: result.reasoningEffort || result.effort || null,
-          tokenUsageAvailable: result.tokenUsageAvailable,
-        };
-      } else if (useStreamingApi) {
+        async function dispatchCliTutorAttempt({ cliPolicyRetryUsed = false } = {}) {
+          startedAt = new Date().toISOString();
+          reserveTutorAttemptBudget();
+          try {
+            const result = await callAIWithCliBridge(
+              { provider: resolved.provider, model: resolved.model },
+              attemptSystemPrompt,
+              effectiveAttemptUserPrompt,
+              role,
+              { messageHistory: messages, effort: cliEffort, signal },
+            );
+            return {
+              text: result.text,
+              provider: result.provider,
+              model: result.model,
+              latencyMs: result.latencyMs,
+              usage: {
+                inputTokens: result.inputTokens || 0,
+                outputTokens: result.outputTokens || 0,
+                totalTokens: (result.inputTokens || 0) + (result.outputTokens || 0),
+                cost: result.cost || 0,
+              },
+              effort: result.effort || result.reasoningEffort || null,
+              reasoningEffort: result.reasoningEffort || result.effort || null,
+              tokenUsageAvailable: result.tokenUsageAvailable,
+            };
+          } catch (err) {
+            const retryDecision = tutorStubCliPolicyRetryDecision(err, { alreadyUsed: cliPolicyRetryUsed });
+            appendTraceEvent(trace, {
+              type: err?.name === 'AbortError' ? 'model_call_aborted' : 'model_call_error',
+              role,
+              turn: tutorTurn,
+              startedAt,
+              provider: resolved.provider,
+              model: resolved.model,
+              request,
+              error: err.message,
+              ...(err?.code === 'CLI_PROVIDER_POLICY_VIOLATION' || err?.code === 'CLI_PROVIDER_TURN_FAILED'
+                ? { cliPolicyViolation: retryDecision }
+                : {}),
+            });
+            err.tutorAttemptModelCallErrorTraced = true;
+            if (retryDecision.retry) {
+              appendTraceEvent(trace, {
+                type: 'cli_policy_retry_decision',
+                role,
+                turn: tutorTurn,
+                decision: retryDecision,
+                publicTranscriptChanged: false,
+              });
+              return dispatchCliTutorAttempt({ cliPolicyRetryUsed: true });
+            }
+            throw err;
+          }
+        }
+        response = await dispatchCliTutorAttempt();
+      } else {
+        startedAt = new Date().toISOString();
+        reserveTutorAttemptBudget();
+      }
+      if (!isCliProvider(resolved.provider) && useStreamingApi) {
         const sink = streamMode === 'live' ? createConsoleTokenSink(role, stream?.interim) : null;
         let final = null;
         for await (const chunk of streamAI({
@@ -260,7 +301,7 @@ export function createTutorStubTutorAttemptRuntime(dependencies = {}) {
           generatedWithStreaming: true,
           bufferedStream: streamMode === 'buffered',
         };
-      } else {
+      } else if (!isCliProvider(resolved.provider)) {
         const result = await callAI({
           provider: resolved.provider,
           model: resolved.model,

@@ -896,3 +896,18 @@ targets, not one generated compound identifier.
 The identity, lifecycle, acceptable outcomes, and delivery audit remain
 unchanged. This is a projection from typed obligation state to speakable public
 language, not a new normative rule or detector threshold.
+
+## 24. Retry ownership follows the individual provider dispatch
+
+Tutor first drafts and tutor repairs are separate provider calls even when they
+belong to one public turn. A failed repair call must therefore receive the same
+transport treatment as learner and analysis calls: one new reservation and one
+fresh dispatch, with no public transcript mutation. Retry state is local to the
+individual call, not shared across a dialogue or tutor-turn repair ladder.
+
+The tutor-attempt runtime owns this boundary because it owns both first-draft
+and recovery dispatches. It records the failed call, decision, and fresh
+reservation before any accepted response can enter the dialogue DAG. Repeated
+failure is terminal; known command, file, function, MCP, web, or unknown tool
+events remain non-retryable. This is transport validity, not conversational
+adaptation.

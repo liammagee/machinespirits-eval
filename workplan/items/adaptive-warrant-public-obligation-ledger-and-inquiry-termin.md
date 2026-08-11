@@ -432,3 +432,20 @@ hermetic suite passes 8,462/8,462 root tests and 137/137 tutor-core tests. The i
 remains active pending a clean pushed checkpoint, new digest-bound 24/24 run,
 two independent 96-case readers, and passage of the unchanged gate. No
 downstream outcome study is licensed.
+
+The clean representative attempt from
+`c22a475872a7d30e3e1743a358df610be88157de` passed preflight and progressed
+past the prior compound-target failure. It was stopped after one valid child
+and one `evidence_invalid` child. The invalid child correctly rejected a tutor
+draft that changed an exact source and handoff; its subsequent
+`tutor_stub_tutor_recovery` call then emitted a Codex failed-turn event. Tutor
+attempts were owned by a separate dispatch runtime and had not inherited the
+shared one-retry policy. The partial packet is burned. Prospectively, each tutor
+first-draft or recovery attempt receives one freshly metered retry for a typed
+Codex transport/schema failure, while repeated failure and tool events remain
+fatal. Focused transport/pipeline verification passes 26/26 tests and lint. The
+complete hermetic suite passes 8,464/8,464 root tests and 137/137 tutor-core
+tests; the baseline and hermetic manifests and all 490 workplan items validate.
+The item remains active pending a clean pushed checkpoint, a new digest-bound
+24/24 run, two independent 96-case readers, and passage of the unchanged gate.
+No downstream outcome study is licensed.

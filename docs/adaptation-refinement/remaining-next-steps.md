@@ -982,3 +982,24 @@ omits their redundant component terms. The remaining sequence is:
 4. if 24/24 are valid, collect two independent readers of the new 96-case
    natural frame and run the unchanged gate; and
 5. run no downstream outcome comparison unless that representative gate passes.
+
+## Current restart boundary after tutor-recovery transport repair
+
+The clean representative attempt from
+`c22a475872a7d30e3e1743a358df610be88157de` passed preflight and progressed
+past the former compound-target failure. One child then sealed invalid when a
+correctly rejected tutor draft entered the recovery ladder and the recovery
+provider call emitted `turn.failed`. That separate tutor-attempt runtime lacked
+the per-call retry already used by learner and analyzer transports. One other
+child completed before the matrix was stopped. The entire partial packet is
+burned.
+
+The remaining sequence is:
+
+1. verify, commit, and push the tutor-attempt retry correction;
+2. freeze a new clean SHA and generate a new digest-bound representative request;
+3. run all 24 dialogues to 24 valid seals, exact live/replay parity, and zero
+   delivery mismatch;
+4. only then collect two independent readers of the fresh 96-case natural frame
+   and apply the unchanged gate; and
+5. run no downstream outcome comparison unless that representative gate passes.

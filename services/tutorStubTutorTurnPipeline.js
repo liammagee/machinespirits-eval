@@ -128,6 +128,7 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
     tutorStubFirstDraftContractPrompt,
     tutorStubGuardDeliveryDecision,
     tutorStubGuardIssueRows,
+    tutorStubCliPolicyRetryDecision,
     tutorStubLearnerRequestedPlainStyle,
     tutorStubLearnerSelectedToolMarkPath,
     tutorStubLiveResponseConfigurationSurface,
@@ -156,6 +157,7 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
     reserveProgram2ProviderBudget,
     reserveTutorStubMeteredModelCall,
     streamAI,
+    tutorStubCliPolicyRetryDecision,
   });
   const bindTutorCommitteeRuntime = createTutorStubTutorCommitteeRuntime({
     PROGRAM2_COMMITTEE_SCHEMA,
@@ -661,15 +663,17 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
         cliEffort,
       });
     } catch (err) {
-      appendTraceEvent(trace, {
-        type: err?.name === 'AbortError' ? 'model_call_aborted' : 'model_call_error',
-        role: roleBase,
-        turn: tutorTurn,
-        provider: resolved.provider,
-        model: resolved.model,
-        error: err.message,
-        ...(err?.tutorFallbackFailure ? { terminalFailure: err.tutorFallbackFailure } : {}),
-      });
+      if (!err?.tutorAttemptModelCallErrorTraced) {
+        appendTraceEvent(trace, {
+          type: err?.name === 'AbortError' ? 'model_call_aborted' : 'model_call_error',
+          role: roleBase,
+          turn: tutorTurn,
+          provider: resolved.provider,
+          model: resolved.model,
+          error: err.message,
+          ...(err?.tutorFallbackFailure ? { terminalFailure: err.tutorFallbackFailure } : {}),
+        });
+      }
       throw err;
     }
   };

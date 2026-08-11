@@ -1783,6 +1783,7 @@ export async function runTutorStubCliApplicationHost({
     tutorStubFirstDraftContractPrompt,
     tutorStubGuardDeliveryDecision,
     tutorStubGuardIssueRows,
+    tutorStubCliPolicyRetryDecision,
     tutorStubLearnerRequestedPlainStyle,
     tutorStubLearnerSelectedToolMarkPath,
     tutorStubLiveResponseConfigurationSurface,

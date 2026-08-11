@@ -989,3 +989,20 @@ compound targets remain separate public phrases rather than being fused into a
 new identifier. Ledger identity, target matching, warrant selection, and gate
 thresholds do not change. A fresh checkpoint and digest are required before
 the representative matrix restarts.
+
+The representative attempt from clean commit
+`c22a475872a7d30e3e1743a358df610be88157de` passed preflight and carried the
+previous compound case beyond its former failure. It was stopped after the
+first reported child sealed `evidence_invalid` and one other child sealed
+valid. The invalid child completed six turns. On turn seven, its first tutor
+draft correctly failed the exact-source and exact-handoff delivery audits; the
+separate tutor-recovery call then received a Codex `turn.failed` event and
+terminated the child. The partial packet is burned.
+
+This exposed a remaining ownership split: the shared prompt transport covered
+learner, learner-analysis, and auxiliary calls, while tutor first-draft and
+repair calls used a distinct attempt runtime. Prospectively, each tutor attempt,
+including recovery, receives the same one bounded failed-turn retry with a
+fresh provider and child-budget reservation. Repeated failure remains fatal,
+and known tool events remain non-retryable. No dialogue, mechanism, or gate
+rule changes.

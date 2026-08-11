@@ -76,6 +76,7 @@
         "services/__tests__/tutorStubPerformanceObligationContract.test.js",
         "services/__tests__/tutorStubPolicySampler.test.js",
         "services/__tests__/tutorStubPromptTransport.test.js",
+        "services/__tests__/tutorStubTutorAttemptRuntime.test.js",
         "services/__tests__/tutorStubPublicHistory.test.js",
         "services/__tests__/tutorStubPublicLearnerAnalysis.test.js",
         "services/__tests__/tutorStubPublicText.test.js",
