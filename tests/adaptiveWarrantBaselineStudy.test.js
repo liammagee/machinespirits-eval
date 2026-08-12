@@ -1928,7 +1928,12 @@ test('mechanism corpus freezes all 96 observe decisions and excludes active pred
   const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), 'warrant-mechanism-freeze-'));
   try {
     const excludedCorpusPath = path.join(rootDir, 'prior-corpus.json');
+    const excludedDiagnosticPath = path.join(rootDir, 'prior-diagnostic-probe.json');
     fs.writeFileSync(excludedCorpusPath, `${JSON.stringify({ cases: [] })}\n`);
+    fs.writeFileSync(
+      excludedDiagnosticPath,
+      `${JSON.stringify({ schema: 'diagnostic-probe', rows: [], permanently_excluded_from_scoring: true })}\n`,
+    );
     const plan = {
       studyId: 'mechanism-freeze',
       design: 'docs/adaptation-refinement/baseline-comparison-design.md',
@@ -1945,8 +1950,8 @@ test('mechanism corpus freezes all 96 observe decisions and excludes active pred
         annotationAllDecisions: true,
         contractValidation: false,
         mechanismValidation: true,
-        excludedAnnotationCorpora: [excludedCorpusPath],
-        requiredExcludedAnnotationCorpora: [excludedCorpusPath],
+        excludedAnnotationCorpora: [excludedCorpusPath, excludedDiagnosticPath],
+        requiredExcludedAnnotationCorpora: [excludedCorpusPath, excludedDiagnosticPath],
       },
     };
     const missingExclusionRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'warrant-mechanism-no-exclusion-'));

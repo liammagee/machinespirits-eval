@@ -4090,12 +4090,12 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status, coverageHalt 
       }
       for (const excludedPath of plan.config.excludedAnnotationCorpora || []) {
         const excluded = readJson(excludedPath);
-        if (!Array.isArray(excluded.cases)) {
+        if ('cases' in excluded && !Array.isArray(excluded.cases)) {
           throw new Error(`excluded annotation corpus has an invalid cases schema: ${excludedPath}`);
         }
         const matchedCorpusId =
           excluded.study_id || excluded.studyId || excluded.schema || path.basename(path.dirname(excludedPath));
-        for (const row of excluded.cases) {
+        for (const row of excluded.cases || []) {
           const fingerprint = annotationCaseFingerprint(row);
           for (const candidate of candidatesByFingerprint.get(fingerprint) || []) {
             if (!candidate.key) {
