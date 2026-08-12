@@ -24,8 +24,18 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — direction 067: locate or lawfully construct the
-  instrument freeze (zero-call).** Report 066 (`8ad77c03`)
+- **CURRENT — ruling + direction 068: acceptance ping (1 call) +
+  input-seam amendment + pilot launch (594 calls), one driver take,
+  report 069, GO note 068a.** Options 1/2 of direction 067 closed by
+  two independent sweeps (no surviving freeze or acceptance artifact
+  anywhere); two driver takes on 067 were cut off with nothing
+  committed (clean under 052a). Total authorized spend 595; counter
+  3,523 → 4,118 of 11,337. **Morning-review flag: +1 call over the
+  frozen 594 plan and a post-review input-seam amendment; the human
+  can void.** Reviewer messaging with the second session reduced to
+  final-gate only (user instruction, 13 Aug).
+- **RESOLVED — direction 067 (superseded by 068): locate or lawfully
+  construct the instrument freeze (zero-call).** Report 066 (`8ad77c03`)
   delivered the harness at `67c4cf6d`
   (`scripts/run-adaptive-warrant-outcome-pilot.js`). Two-sided
   review: second session bytes PASS (pins untouched, suites 24/24
