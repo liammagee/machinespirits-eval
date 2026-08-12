@@ -14,8 +14,26 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **HARD STOP — awaiting the human (freeze-overlap, ~20:45).** The
-  seed-514 matrix COMPLETED CLEAN (24/24 dialogues, 606/606 calls,
+- **CURRENT DIRECTION — 041**
+  (`041-reviewer-direction-drop-and-log-freeze-seed-514.md`, lease
+  `DRIVER-LEASE-2026-08-12-H`, report target `042-codex-report.md`).
+  The human resolved the freeze-overlap hard stop at ~21:04, typed
+  directly in the reviewer session: **"drop the three duplicate cases
+  and proceed."** Registered as the drop-and-log amendment: at freeze
+  time, cases whose fingerprints match excluded corpora are dropped
+  from the reader packet and logged in the freeze manifest — never
+  sent; the freeze no longer fails closed on overlap; prospective,
+  content-blind, disclosed. Ordered actions: A1 amend the freeze +
+  guard tests (zero-call); A2 re-freeze the quarantined seed-514
+  corpus, expect 92 frozen / 3 dropped (any other drop set = stop);
+  A3 readers on the frozen packet, support gate, report 042 with the
+  drop log and BOTH coverage rates, then the reviewer's matrix-gate
+  ruling. The human's ruling supersedes the provisional burn of the
+  seed-514 corpus for reader use; the 3 dropped cases stay unlicensed
+  forever; seed 515 stays unspent. Budget **3,146/8,000** at issue;
+  remaining 4,854.
+- **RESOLVED — freeze-overlap hard stop of ~20:45** (kept as history).
+  The seed-514 matrix COMPLETED CLEAN (24/24 dialogues, 606/606 calls,
   zero errors, 192/192 live/offline parity; checkpoint coverage
   139/144 = 96.53%, final 187/192 = 97.40%, no coverage halt — the
   first complete matrix of the arc). Defect #12 (final status checker
@@ -24,18 +42,14 @@
   `3eca7086`, ledgered, guarded, chain green; the reducer replay
   resolves seed 514 `complete`. The annotation freeze then FAILED
   CLOSED: 3 overlap rows / 2 fingerprints against excluded corpora —
-  all the LOW-AGENCY learner's formulaic turn-1 opening ("Could you
-  choose what I should check/examine first?"), matching a prior
-  mechanism run, the preserved 36d2e63f matrix, and burned seed 504.
-  Direction 038 keeps contamination/provenance as a human hard stop.
-  Corpus quarantined; no reader called; seed 515 NOT launched. Driver
-  report: `039-codex-report.md` (accepted). Reviewer ruling + options:
-  `040-reviewer-note-seed-514-freeze-overlap-accepted.md` — reviewer
-  reads the overlap as deterministic persona recurrence, not leakage;
-  leans to amending the exclusion rule to whole-case fingerprints and
-  re-freezing seed 514 (human authority — instrument amendment).
-  Spending seed 515 unchanged is futile (same recurrence) and is seed
-  shopping. Budget **3,146/8,000**; remaining 4,854.
+  all the LOW-AGENCY learner's formulaic turn-1 opening, matching a
+  prior mechanism run, the preserved 36d2e63f matrix, and burned seed
+  504. Reviewer verification (note 040 + addendum): the collision is
+  STRUCTURAL at turn 1 — the fingerprint hashes the pre-decision
+  transcript (empty at turn 1) plus the opener, so formulaic personas
+  collide by construction and no run-specific content enters the hash.
+  Driver report: `039-codex-report.md` (accepted). RESOLUTION: the
+  human ruled drop-and-log — see current direction 041.
 - **RESOLVED — direction 038** (kept as history;
   `038-reviewer-direction-composite-label-repair-seed-514.md`, lease
   `DRIVER-LEASE-2026-08-12-G` retired with report 039 and note 040).
@@ -275,9 +289,9 @@
   pooled. Earlier results stand: supplement PASSED (5/2), five-cell
   layer certified, decision readers 0.833 binary.
 - **Driver:** the session whose prompt quotes the lease token in 006c.
-  NO LIVE LEASE — G retired with report 039 and note 040; do not
-  relaunch the driver until the human rules on the exclusion-rule
-  amendment. Other sessions: read-only.
+  LIVE LEASE: `DRIVER-LEASE-2026-08-12-H` under direction 041
+  (drop-and-log freeze amendment → re-freeze seed 514 at 92 cases →
+  readers → support gate → report 042). Other sessions: read-only.
 - **Instrument commit:** `225a7b07` ("Separate V3 structural and semantic
   gates"). The instrument is CLOSED — it reopens only for a transport,
   schema, provenance, or non-evaluability defect. Never for semantic
