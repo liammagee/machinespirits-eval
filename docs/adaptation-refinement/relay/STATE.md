@@ -14,6 +14,12 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
+- **Defect ledger:** `DEFECT-LEDGER.md` — every systematic harness
+  defect and its regression guard, plus the standing policy (human,
+  12 Aug): systematic transport defects are WARNINGS inside the
+  registered coverage line; restart only on a failed gate; never patch
+  a live run; never waive a failed gate post hoc. Keep it current —
+  new systematic defects get an entry with their guard test.
 - **Contingency on file:** `028-reviewer-direction-prompt-cap-contingency.md` —
   applies ONLY if the seed-507 matrix coverage-halts or fails its gate
   with prompt-audit overflow as a cause (turn-8 analysis prompts
