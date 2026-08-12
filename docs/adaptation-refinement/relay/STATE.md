@@ -29,8 +29,10 @@
   (r49, design only, never scored under this gate): 0.914 / 0.978 /
   1.000 / 83/93 / 18 / 8 — reviewer and second session matched to
   the digit. Object-set grain reported-not-gating under two pinned
-  extractions (event slot 63/93; catalogue binding 75/93 — they
-  differ, never conflate). Budget 3,337/8,000 direct-ceiling
+  extractions (event-target-slot set 75/93; catalogue-binding set
+  76/93 — registration §4 pins the exact computations; a pre-scorer
+  amendment corrected the first figures, which came from an unpinned
+  extraction). Budget 3,337/8,000 direct-ceiling
   authority; 186 planned calls (end state 3,523); relayed ceiling
   renewal recorded, not relied on. Readers may run two-wide.
 - **RESOLVED — ruling 051** (kept as history). Report 050 ACCEPTED in

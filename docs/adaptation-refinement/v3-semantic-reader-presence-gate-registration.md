@@ -98,10 +98,24 @@ report and the paper, with no floors:
   24/93) — including the diff profile (targets/actions/speech
   acts/counts).
 - Target-object-set agreement under BOTH pinned extractions, which
-  differ and must never be conflated: (a) the unordered set of
-  `target` slot ids across the case's events (pilot 63/93); (b) the
-  unordered set of catalogue-action target bindings via
-  `requested_or_proposed_action` (pilot 75/93).
+  are distinct definitions and must never be conflated. Both compare
+  reader A's set to reader B's set per case, over all 93 cases, as
+  SETS (not multisets) of bare target-id strings:
+  (a) **event-target-slot set** = the set of `target.target_id` over
+  the case's events whose `target.state` is `catalog`; events with
+  any other target state contribute nothing (pilot 75/93);
+  (b) **catalogue-binding set** = for each event whose
+  `requested_or_proposed_action.state` is `catalog`, look the
+  `action_object_id` up in the frozen catalogue and take that action
+  object's registered `target_id`; null-target action objects
+  contribute nothing; an action id absent from the catalogue
+  contributes the sentinel `__UNKNOWN_ACTION__` (pilot 76/93).
+  Amendment note (prospective, before any confirmation call): the
+  first committed version of this section gave pilot figures 63/93
+  and 75/93 from an unpinned extraction that let no-target events
+  insert a null element. The definitions above are the registered
+  ones; both figures were re-derived under them and confirmed
+  independently by the second session before the scorer was written.
 - Catalogue-binding validity failure count per reader.
 
 ## 5. What a PASS licenses
