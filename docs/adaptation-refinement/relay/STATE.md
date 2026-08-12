@@ -24,7 +24,26 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — direction 055: outcome study registered; A1 + pilot**
+- **CURRENT — ruling 057: outcome pilot BLOCKED for the human;
+  standing-permission binding is an open design decision**
+  (`057-reviewer-ruling-standing-permission-binding-open.md`, rules
+  on report 056 at `f74929ae`). The driver stopped A1 zero-call: the
+  live gate has no single "verbatim template + hint menu" — the
+  injectable strings live in five sources with mutually exclusive
+  state-picked branches. The purpose clause rules out a partial
+  paste and a flat concatenation; the remaining choice (scope of the
+  string union + new conditional-prefix prose, versus a Phase-5
+  smoke-prompt reconstruction, versus dropping the condition) is a
+  design decision reserved for the human (registration §7, note
+  052e). Recommendation recorded in 057 §4: conditional menu, full
+  injectable scope, byte-level drift guard, second-session byte
+  review before go. Nothing spent: budget 3,523/11,337, no seed, no
+  manifest, no take burned. Lease N continues ZERO-CALL only on
+  binding-independent parts (harness for measures 1–6 per pins
+  055a/055b, guard suite, bare + gated run configs; report 056a).
+  HOLD on all paid calls stands. Notes 055a (three pins) and 055b
+  (measure-1 reader output form) bind the eventual A1 manifest.
+- **RESOLVED — direction 055: outcome study registered; A1 + pilot**
   (`055-reviewer-direction-outcome-study-pilot.md`; lease
   `DRIVER-LEASE-2026-08-13-N`; report to 056). Registration frozen
   before any outcome call:
@@ -34,8 +53,8 @@
   reviewer GO only; measures 1–6 deterministic per the design draft,
   7–8 presence-grain via the unchanged r52 instrument (consensus
   cases only, fresh readers); fine grain stays out everywhere.
-  HOLD: no paid call until the reviewer commits a go note after the
-  second session reviews the registration. Budget 3,523/11,337;
+  A1 stopped on the unbound standing-permission source (report 056);
+  superseded by ruling 057 above. Budget 3,523/11,337;
   per-phase planned counts recorded pre-call and reviewer-approved.
 - **RESOLVED — direction 052: presence-grain gate registered; run the
   confirmation** (`052-reviewer-direction-presence-gate-confirmation.md`;
