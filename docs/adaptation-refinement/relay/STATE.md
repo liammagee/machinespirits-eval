@@ -14,6 +14,15 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
+- **Contingency on file:** `028-reviewer-direction-prompt-cap-contingency.md` —
+  applies ONLY if the seed-507 matrix coverage-halts or fails its gate
+  with prompt-audit overflow as a cause (turn-8 analysis prompts
+  exceed the 42,000-char audit cap; loss is systematic on late turns).
+  Pre-declared replacements: maxChars 56,000, maxApproxTokens 14,000;
+  plus a zero-call probe/live prompt-parity preflight assertion;
+  relaunch at seed 508; never patch a live run. Every matrix report
+  must split unanalyzed turns into audit-overflow vs model-residual
+  classes and the gate ruling quotes both.
 - **Current direction:** `027-reviewer-direction-template-projection.md` —
   answers report 026 (025's retry ping failed on a missing value at
   `$.semantic_events.extraction_status`, evidence retained). Ruling:
