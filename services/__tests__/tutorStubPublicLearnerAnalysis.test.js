@@ -5,10 +5,6 @@ import { describe, it } from 'node:test';
 
 import { loadWorld } from '../dramaticDerivation/world.js';
 import { tutorStubLearnerDagGrounded } from '../tutorStubDialogueClosure.js';
-import {
-  ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA,
-  adaptiveWarrantSemanticSourceHash,
-} from '../adaptiveWarrantSemanticEvents.js';
 import { auditAdaptiveWarrantLiveSemanticSchemaTotality } from '../adaptiveWarrantSemanticAnnotation.js';
 import {
   TUTOR_STUB_EVIDENCE_USE_RUBRICS,
@@ -423,12 +419,8 @@ describe('strict public learner analysis', () => {
   it('adds a bounded semantic envelope to the existing learner-analysis seat and validates literal evidence', () => {
     const learnerText = 'Show me the shelf-two access times.';
     const semanticEvents = {
-      schema: ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA,
-      source_turn: 3,
-      source_text_sha256: adaptiveWarrantSemanticSourceHash(learnerText),
       events: [
         {
-          event_id: 'turn-003-event-01',
           speech_act: 'tutor_directed_public_result_request',
           target: {
             state: 'catalog',
@@ -450,7 +442,6 @@ describe('strict public learner analysis', () => {
           uncertainty: [],
         },
       ],
-      extraction_status: 'accepted',
     };
     const analysis = validAnalysis({ root: { semantic_events: semanticEvents } });
     assert.doesNotThrow(() =>
@@ -464,6 +455,7 @@ describe('strict public learner analysis', () => {
     const provider = buildTutorStubPublicLearnerAnalysisProviderOutputSchema({ includeSemanticEvents: true });
     assertCodexProviderSchema(provider);
     const eventBranches = provider.properties.semantic_events.properties.events.items.anyOf;
+    assert.deepEqual(Object.keys(provider.properties.semantic_events.properties), ['events']);
     assert.equal(eventBranches.length, 15);
     const resultRequest = eventBranches.find(
       (branch) => branch.properties.speech_act.enum[0] === 'tutor_directed_public_result_request',

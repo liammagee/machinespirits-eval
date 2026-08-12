@@ -475,9 +475,6 @@ export function validateAdaptiveWarrantSemanticExtraction(
   const source = candidate && typeof candidate === 'object' && !Array.isArray(candidate) ? candidate : {};
   const sourceText = String(learnerText || '');
   const envelopeIssues = [];
-  if (source.schema !== ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA) envelopeIssues.push('schema:invalid');
-  if (Number(source.source_turn) !== Number(turn)) envelopeIssues.push('source_turn:mismatch');
-  if (source.source_text_sha256 !== sha256(sourceText)) envelopeIssues.push('source_text_sha256:mismatch');
   if (!Array.isArray(source.events)) envelopeIssues.push('events:invalid_array');
   if ((source.events || []).length > ADAPTIVE_WARRANT_SEMANTIC_EVENT_LIMITS.maxEvents) {
     envelopeIssues.push('events:too_many_items');
@@ -492,14 +489,10 @@ export function validateAdaptiveWarrantSemanticExtraction(
   }
 
   const combinedPublicText = `${String(publicText || '')}\n${sourceText}`;
-  const seenEventIds = new Set();
   const events = (Array.isArray(source.events) ? source.events : []).map((rawEvent, eventIndex) => {
     const issues = [];
     const event = rawEvent && typeof rawEvent === 'object' && !Array.isArray(rawEvent) ? rawEvent : {};
-    const eventId = String(event.event_id || '').trim();
-    if (!eventId) issues.push(`events[${eventIndex}].event_id:required`);
-    if (seenEventIds.has(eventId)) issues.push(`events[${eventIndex}].event_id:duplicate`);
-    seenEventIds.add(eventId);
+    const eventId = `turn-${String(Number(turn) || 0).padStart(3, '0')}-event-${String(eventIndex + 1).padStart(2, '0')}`;
     enumIssue(event.speech_act, ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS, `events[${eventIndex}].speech_act`, issues);
     enumIssue(event.confidence, ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE, `events[${eventIndex}].confidence`, issues);
     arrayLimitIssues(
@@ -546,7 +539,7 @@ export function validateAdaptiveWarrantSemanticExtraction(
     const uncertainty = [...new Set((event.uncertainty || []).map(String))];
     const asserted = event.confidence === 'high' && uncertainty.length === 0;
     return {
-      event_id: eventId || `invalid-event-${eventIndex + 1}`,
+      event_id: eventId,
       speaker: 'learner',
       speech_act: event.speech_act || null,
       target,
@@ -588,9 +581,9 @@ export function validateAdaptiveWarrantSemanticExtraction(
   const rejectedCount = events.filter((event) => event.validation.status === 'rejected').length;
   return {
     schema: ADAPTIVE_WARRANT_SEMANTIC_VALIDATION_SCHEMA,
-    source_schema: source.schema || null,
-    source_turn: Number(source.source_turn) || null,
-    source_text_sha256: source.source_text_sha256 || null,
+    source_schema: ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA,
+    source_turn: Number(turn) || null,
+    source_text_sha256: sha256(sourceText),
     source_text_present: sourceText.length > 0,
     events,
     extraction_status: envelopeIssues.length || rejectedCount ? 'invalid' : uncertainCount ? 'uncertain' : 'accepted',

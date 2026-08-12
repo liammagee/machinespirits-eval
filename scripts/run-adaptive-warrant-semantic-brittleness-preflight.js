@@ -588,8 +588,24 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     ...Object.values(liveSemanticSchemas),
   ]);
   const modelFacingDerivedFieldAudit = {
-    contains_start_property: /"start"\s*:/u.test(modelFacingSchemaText),
-    contains_end_property: /"end"\s*:/u.test(modelFacingSchemaText),
+    forbidden_mechanical_fields: [
+      'speaker',
+      'source_turn',
+      'source_text_sha256',
+      'event_id',
+      'start',
+      'end',
+      'extraction_status',
+    ],
+    present_forbidden_mechanical_fields: [
+      'speaker',
+      'source_turn',
+      'source_text_sha256',
+      'event_id',
+      'start',
+      'end',
+      'extraction_status',
+    ].filter((field) => new RegExp(`"${field}"\\s*:`, 'u').test(modelFacingSchemaText)),
     all_reader_schemas_literal_quote_only: allReaderSchemaAudits.every(
       (audit) => audit.model_supplies_literal_quote_only === true,
     ),
@@ -726,9 +742,8 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       ),
     ),
     check(
-      'model_facing_schemas_contain_no_mechanically_derivable_offsets',
-      modelFacingDerivedFieldAudit.contains_start_property === false &&
-        modelFacingDerivedFieldAudit.contains_end_property === false &&
+      'model_facing_schemas_contain_no_mechanically_derivable_fields',
+      modelFacingDerivedFieldAudit.present_forbidden_mechanical_fields.length === 0 &&
         modelFacingDerivedFieldAudit.all_reader_schemas_literal_quote_only &&
         modelFacingDerivedFieldAudit.all_live_schemas_literal_quote_only,
       modelFacingDerivedFieldAudit,

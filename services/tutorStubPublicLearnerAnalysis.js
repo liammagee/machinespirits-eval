@@ -29,7 +29,6 @@ import {
   ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS,
   ADAPTIVE_WARRANT_SEMANTIC_UNCERTAINTY_REASONS,
   ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES,
-  adaptiveWarrantSemanticSourceHash,
   validateAdaptiveWarrantSemanticExtraction,
 } from './adaptiveWarrantSemanticEvents.js';
 
@@ -444,7 +443,6 @@ export function buildTutorStubPublicLearnerAnalysisSemanticOutputSchema() {
   const eventFor = (speechAct) => {
     const contract = ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS[speechAct];
     return providerObjectSchema({
-      event_id: { type: 'string' },
       speech_act: { type: 'string', enum: [speechAct] },
       target: targetFor(contract),
       requested_or_proposed_action: actionFor(contract),
@@ -460,17 +458,13 @@ export function buildTutorStubPublicLearnerAnalysisSemanticOutputSchema() {
   return {
     type: 'object',
     additionalProperties: false,
-    required: ['schema', 'source_turn', 'source_text_sha256', 'events', 'extraction_status'],
+    required: ['events'],
     properties: {
-      schema: { type: 'string', enum: [ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA] },
-      source_turn: { type: 'integer', minimum: 1 },
-      source_text_sha256: { type: 'string' },
       events: {
         type: 'array',
         maxItems: 4,
         items: { anyOf: ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.map(eventFor) },
       },
-      extraction_status: { type: 'string', enum: ['accepted', 'uncertain'] },
     },
   };
 }
@@ -1318,12 +1312,8 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
   };
   if (includeSemanticEvents) {
     schema.semantic_events = {
-      schema: ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA,
-      source_turn: Number(tutorTurn),
-      source_text_sha256: adaptiveWarrantSemanticSourceHash(learnerText),
       events: [
         {
-          event_id: 'event-01',
           speech_act: ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.join('|'),
           target: {
             state: 'catalog|none',
@@ -1345,7 +1335,6 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
           uncertainty: ADAPTIVE_WARRANT_SEMANTIC_UNCERTAINTY_REASONS,
         },
       ],
-      extraction_status: 'accepted|uncertain',
     };
   }
   if (includeBenchmarkTransitionEvent) {
@@ -1450,7 +1439,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
     includeSemanticEvents ? '# Semantic-event extraction' : null,
     includeSemanticEvents ? '' : null,
     includeSemanticEvents
-      ? `Echo source_turn=${Number(tutorTurn)} and source_text_sha256=${adaptiveWarrantSemanticSourceHash(learnerText)} exactly.`
+      ? 'Return only semantic judgments in semantic_events.events. The harness supplies speaker, turn, source hash, event IDs, offsets, order, and envelope status.'
       : null,
     includeSemanticEvents
       ? 'Return zero to four ordered events. Keep distinct acts in distinct events; do not collapse a proposal followed by a result request.'

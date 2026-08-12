@@ -59,16 +59,12 @@ does the comparison show?” contains both a proposed action and a result
 request. Within one clause, the closed speech-act precedence in §2.3.2 selects
 one act; deterministic engagement precedence is applied only after extraction.
 
-The conceptual envelope is:
+The model-facing semantic envelope is:
 
 ```json
 {
-  "schema": "machinespirits.adaptation-refinement.semantic-event-extraction.v3",
-  "source_turn": 4,
-  "source_text_sha256": "...",
   "events": [
     {
-      "event_id": "turn-004-event-01",
       "speech_act": "tutor_directed_public_result_request",
       "target": {
         "kind": "record_entry",
@@ -87,16 +83,16 @@ The conceptual envelope is:
       "confidence": "high",
       "uncertainty": []
     }
-  ],
-  "extraction_status": "accepted"
+  ]
 }
 ```
 
-At the model boundary, `evidence_span` is only the unique literal quote. The
-harness locates it in the current learner turn and materializes JavaScript
-UTF-16 `start` and exclusive `end` offsets in the validated internal event. A
-missing or repeated quote fails closed; model-supplied numeric offsets are not
-accepted or consulted.
+The harness binds the schema identifier, source turn, source-text hash, event
+IDs, and final extraction status. At the model boundary, `evidence_span` is
+only the unique literal quote. The harness locates it in the current learner
+turn and materializes JavaScript UTF-16 `start` and exclusive `end` offsets in
+the validated internal event. A missing or repeated quote fails closed;
+model-supplied metadata or numeric offsets are not accepted or consulted.
 
 ### 2.2 Required event fields
 
@@ -846,8 +842,9 @@ cannot leave a passed-status artifact behind.
 
 Free text may support an evidence or display field, but it may not determine
 identity, equality, joins, state mutation, or gate passage. Model-facing
-extractor and reader tasks may not ask a model to calculate offsets, token
-counts, ordering keys, or other deterministic arithmetic. Downstream semantic compilers consume typed
+extractor and reader tasks may not ask a model to calculate offsets, hashes,
+event IDs, envelope status, token counts, ordering keys, or other deterministic
+arithmetic. Downstream semantic compilers consume typed
 events rather than learner prose; regex remains limited to exact syntax,
 identifiers, provenance checks, and explicitly conservative fallbacks.
 
