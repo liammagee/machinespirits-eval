@@ -5,18 +5,19 @@
 
 ## Now
 
-- **Current direction:** `012-reviewer-direction-live-seat-repair.md` —
-  the first representative matrix FAILED in execution (report 011: live
-  learner-analysis seat produced 55/192 usable calls; sentinel prose
-  leaked into tutor turns; corpus preserved, unscored, never pooled).
-  Authorized now, zero provider calls: failure taxonomy of the 137
-  failed calls from `/private/tmp/adaptive-warrant-v3-matrix-live-36d2e63f`,
-  live-seat repair (unify with the certified contract, fail-closed typed
-  no-signal fallback), preflight extensions. The matrix RERUN is
-  HUMAN-GATED — do not launch; report with a quota reading and wait.
-  Earlier results stand: supplement PASSED (5/2), five-cell layer
-  certified, decision readers 0.833 binary (ruling 010 preregisters the
-  mechanism-typing fallback).
+- **Current direction:** `014-reviewer-direction-rerun-authorized.md` —
+  live-seat repair ACCEPTED (report 013: 137 failures = 7 parse + 130
+  strict-validator rejections; root cause was the legacy schema-free
+  parse mode on the live seat, fixed at `575801bc`). Human authorized
+  (12 Aug, in chat): run the one-call acceptance ping from the frozen
+  packet; on its pass, the fresh representative matrix (new seed, same
+  frozen design, ~612 calls, 1,536 ceiling, attended, checkpointed).
+  Ping fail = STOP and report. After the matrix: gate pass = stop before
+  the outcome study (own prereg + human go); gate fail = stop for review
+  (004 scope-cut options). Ruling 010's mechanism-typing fallback
+  stands. The failed 36d2e63f matrix stays preserved, unscored, never
+  pooled. Earlier results stand: supplement PASSED (5/2), five-cell
+  layer certified, decision readers 0.833 binary.
 - **Driver:** the session whose prompt quotes the lease token in 006c
   (currently DRIVER-LEASE-2026-08-12-D). Other sessions: read-only.
 - **Instrument commit:** `225a7b07` ("Separate V3 structural and semantic
