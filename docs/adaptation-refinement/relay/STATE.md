@@ -14,7 +14,19 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **CURRENT — direction 052: presence-grain gate registered; run the
+- **CURRENT — ruling 054: presence-grain confirmation gate PASSED**
+  (`054-reviewer-ruling-presence-gate-pass.md`, rules on report 053 at
+  `47286724`). All six floors met: 86/93 = 0.925, 89/93 = 0.957,
+  93/93 = 1.000, consensus 83/93, support 17 + 7. Three independent
+  scorings (A1 scorer, second session, reviewer) matched to the digit
+  on every gating and reported value; admissibility clean (186/186,
+  zero failures, digests matched, no r47/r49 pooling). Licenses
+  presence-level claims only; fine-grain stays FAILED (strict 26/93
+  out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
+  unspent. Lease M retired. NEXT per note 052e: outcome study —
+  prospective registration, then the 6-dialogues-per-tutor-version
+  go/no-go pilot, then the main run only if the pilot is clean.
+- **RESOLVED — direction 052: presence-grain gate registered; run the
   confirmation** (`052-reviewer-direction-presence-gate-confirmation.md`;
   lease `DRIVER-LEASE-2026-08-13-M`; report to 053). The human ruled
   on 051 ("register the coarse gate and buy the confirmation run" —
