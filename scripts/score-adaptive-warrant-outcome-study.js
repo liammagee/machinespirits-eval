@@ -14,6 +14,7 @@
  */
 
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -67,6 +68,10 @@ export const DECISION_READER_INSTRUMENT_BINDINGS = Object.freeze({
 
 function ratio(numerator, denominator) {
   return denominator ? numerator / denominator : null;
+}
+
+function fileSha256(filePath) {
+  return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
 }
 
 function requireBoolean(value, label) {
@@ -156,6 +161,96 @@ export function preflightOutcomeDecisionReader(observed = {}) {
   };
 }
 
+export function verifyOutcomeDecisionReaderRunEvidence(runRecordPath) {
+  const checks = {
+    run_record_present: false,
+    run_record_readable: false,
+    run_status_complete: false,
+    batches_present: false,
+    batch_identities_unique: false,
+  };
+  const result = {
+    schema: 'machinespirits.adaptation-refinement.warrant-outcome-decision-reader-run-evidence.v1',
+    zero_model_calls: true,
+    run_record_path: typeof runRecordPath === 'string' && runRecordPath.trim() ? runRecordPath : null,
+    status: 'failed',
+    checks,
+    batches: [],
+  };
+  if (!result.run_record_path) return result;
+
+  const resolvedRunPath = path.resolve(ROOT, result.run_record_path);
+  checks.run_record_present = fs.existsSync(resolvedRunPath);
+  if (!checks.run_record_present) return result;
+
+  let run;
+  try {
+    run = JSON.parse(fs.readFileSync(resolvedRunPath, 'utf8'));
+    checks.run_record_readable = true;
+  } catch (error) {
+    result.error = error.message;
+    return result;
+  }
+
+  checks.run_status_complete = run?.status === 'complete';
+  checks.batches_present = Array.isArray(run?.batches) && run.batches.length > 0;
+  if (!checks.batches_present) return result;
+
+  const identities = new Set();
+  let duplicateIdentity = false;
+  result.batches = run.batches.map((batch, index) => {
+    const identity = `${batch?.reader_id ?? ''}:${batch?.batch_id ?? ''}`;
+    const identityPresent = Boolean(batch?.reader_id?.trim?.() && batch?.batch_id?.trim?.());
+    if (identities.has(identity)) duplicateIdentity = true;
+    identities.add(identity);
+    const responsePath =
+      typeof batch?.response_path === 'string' && batch.response_path.trim()
+        ? path.resolve(path.dirname(resolvedRunPath), batch.response_path)
+        : null;
+    const responsePresent = Boolean(responsePath && fs.existsSync(responsePath));
+    const declaredHashValid = /^[a-f0-9]{64}$/u.test(batch?.response_sha256 || '');
+    let observedHash = null;
+    let responseHashMatch = false;
+    if (responsePresent) {
+      try {
+        observedHash = fileSha256(responsePath);
+        responseHashMatch = declaredHashValid && observedHash === batch.response_sha256;
+      } catch {
+        responseHashMatch = false;
+      }
+    }
+    const prohibitedToolCountPresent =
+      Object.hasOwn(batch || {}, 'prohibited_tool_event_count') &&
+      Number.isFinite(batch.prohibited_tool_event_count);
+    const batchChecks = {
+      identity_present: identityPresent,
+      status_complete: batch?.status === 'complete',
+      response_present: responsePresent,
+      response_hash_declared: declaredHashValid,
+      response_hash_match: responseHashMatch,
+      model_independently_attested: batch?.model_independently_attested === true,
+      prohibited_tool_count_present: prohibitedToolCountPresent,
+      prohibited_tool_count_zero: prohibitedToolCountPresent && batch.prohibited_tool_event_count === 0,
+    };
+    return {
+      index,
+      reader_id: batch?.reader_id ?? null,
+      batch_id: batch?.batch_id ?? null,
+      response_path: responsePath,
+      expected_response_sha256: batch?.response_sha256 ?? null,
+      observed_response_sha256: observedHash,
+      status: Object.values(batchChecks).every(Boolean) ? 'passed' : 'failed',
+      checks: batchChecks,
+    };
+  });
+  checks.batch_identities_unique = !duplicateIdentity;
+  result.status =
+    Object.values(checks).every(Boolean) && result.batches.every((batch) => batch.status === 'passed')
+      ? 'passed'
+      : 'failed';
+  return result;
+}
+
 export function guardVerbatimPromptBindings(bindings = []) {
   const rows = bindings.map((row) => ({
     source: row.source,
@@ -182,7 +277,9 @@ export function guardNoPoolingFingerprints({ candidates = [], excluded = [] } = 
   };
 }
 
-export function scoreOutcomeDecisionCases(cases = []) {
+export function scoreOutcomeDecisionCases(cases = [], decisionReaderRunRecordPath) {
+  const runEvidence = verifyOutcomeDecisionReaderRunEvidence(decisionReaderRunRecordPath);
+  if (runEvidence.status !== 'passed') throw new Error('decision-reader run evidence failed closed');
   const scored = [];
   let nonConsensus = 0;
   for (const row of cases) {
@@ -206,6 +303,7 @@ export function scoreOutcomeDecisionCases(cases = []) {
   const correct = scored.filter((row) => row.correct).length;
   return {
     reader_output_form: OUTCOME_STUDY_READER_OUTPUT_FORM,
+    decision_reader_run_evidence: runEvidence,
     total_cases: cases.length,
     consensus_cases: scored.length,
     non_consensus_cases: nonConsensus,
@@ -358,7 +456,10 @@ export function scoreAdaptiveWarrantOutcomeStudy(input = {}) {
   const decisionPreflight = preflightOutcomeDecisionReader(input.decision_reader_preflight);
   if (decisionPreflight.status !== 'passed') throw new Error('decision-reader instrument digest preflight failed');
   const dialogueScores = (input.dialogues || []).map(scoreOutcomeDialogue);
-  const decisionScore = scoreOutcomeDecisionCases(input.decision_cases || []);
+  const decisionScore = scoreOutcomeDecisionCases(
+    input.decision_cases || [],
+    input.decision_reader_run_record_path,
+  );
   const presenceScore = scoreOutcomePresenceCases(input.presence_cases || []);
   return {
     schema: ADAPTIVE_WARRANT_OUTCOME_SCORE_SCHEMA,

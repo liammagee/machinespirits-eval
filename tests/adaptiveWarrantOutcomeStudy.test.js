@@ -1,5 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 import {
   DECISION_READER_INSTRUMENT_BINDINGS,
@@ -16,6 +20,7 @@ import {
   scoreOutcomeDecisionCases,
   scoreOutcomeDialogue,
   scoreOutcomePresenceCases,
+  verifyOutcomeDecisionReaderRunEvidence,
 } from '../scripts/score-adaptive-warrant-outcome-study.js';
 
 const digest = (character) => character.repeat(64);
@@ -26,6 +31,38 @@ function presenceBindings(overrides = {}) {
     ...PRESENCE_CHANNEL_CAPS,
     ...overrides,
   };
+}
+
+function decisionReaderRunFixture(t, batchOverrides = {}) {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'outcome-decision-reader-'));
+  t.after(() => fs.rmSync(fixtureDir, { recursive: true, force: true }));
+  const responsePath = path.join(fixtureDir, 'response.json');
+  fs.writeFileSync(responsePath, '{"fixture":"decision-reader-response"}\n');
+  const responseSha256 = createHash('sha256').update(fs.readFileSync(responsePath)).digest('hex');
+  const runPath = path.join(fixtureDir, 'decision-reader-run.json');
+  fs.writeFileSync(
+    runPath,
+    `${JSON.stringify(
+      {
+        status: 'complete',
+        batches: [
+          {
+            reader_id: 'reader-a',
+            batch_id: 'batch-a',
+            status: 'complete',
+            response_path: responsePath,
+            response_sha256: responseSha256,
+            model_independently_attested: true,
+            prohibited_tool_event_count: 0,
+            ...batchOverrides,
+          },
+        ],
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  return runPath;
 }
 
 function turn(turnNumber, overrides = {}) {
@@ -49,32 +86,55 @@ test('run configurations expose bare and gated only', () => {
   assert.equal(JSON.stringify(OUTCOME_STUDY_RUN_CONFIGURATIONS).includes('standing'), false);
 });
 
-test('measure 1 names path 1 and scores consensus decisions only', () => {
+test('measure 1 names path 1 and scores consensus decisions only', (t) => {
   assert.match(OUTCOME_STUDY_READER_OUTPUT_FORM, /path 1/u);
   assert.match(OUTCOME_STUDY_READER_OUTPUT_FORM, /world YAML/u);
-  const score = scoreOutcomeDecisionCases([
-    {
-      sample_id: 'a',
-      dialogue_id: 'd1',
-      turn: 2,
-      condition: 'bare',
-      reader_a_decision: 'yes',
-      reader_b_decision: 'yes',
-      logged_observe_decision: true,
-    },
-    {
-      sample_id: 'b',
-      dialogue_id: 'd1',
-      turn: 3,
-      condition: 'bare',
-      reader_a_decision: 'yes',
-      reader_b_decision: 'no',
-      logged_observe_decision: false,
-    },
-  ]);
+  const score = scoreOutcomeDecisionCases(
+    [
+      {
+        sample_id: 'a',
+        dialogue_id: 'd1',
+        turn: 2,
+        condition: 'bare',
+        reader_a_decision: 'yes',
+        reader_b_decision: 'yes',
+        logged_observe_decision: true,
+      },
+      {
+        sample_id: 'b',
+        dialogue_id: 'd1',
+        turn: 3,
+        condition: 'bare',
+        reader_a_decision: 'yes',
+        reader_b_decision: 'no',
+        logged_observe_decision: false,
+      },
+    ],
+    decisionReaderRunFixture(t),
+  );
   assert.equal(score.consensus_cases, 1);
   assert.equal(score.non_consensus_cases, 1);
   assert.equal(score.correctness_rate, 1);
+  assert.equal(score.decision_reader_run_evidence.status, 'passed');
+});
+
+test('measure 1 hard-stops when the decision-reader run record is missing', () => {
+  const evidence = verifyOutcomeDecisionReaderRunEvidence();
+  assert.equal(evidence.status, 'failed');
+  assert.equal(evidence.checks.run_record_present, false);
+  assert.throws(() => scoreOutcomeDecisionCases([]), /decision-reader run evidence failed closed/u);
+});
+
+test('measure 1 hard-stops on partial decision-reader run evidence', (t) => {
+  const runPath = decisionReaderRunFixture(t, { model_independently_attested: undefined });
+  const evidence = verifyOutcomeDecisionReaderRunEvidence(runPath);
+  assert.equal(evidence.status, 'failed');
+  assert.equal(evidence.batches[0].checks.response_hash_match, true);
+  assert.equal(evidence.batches[0].checks.model_independently_attested, false);
+  assert.throws(
+    () => scoreOutcomeDecisionCases([], runPath),
+    /decision-reader run evidence failed closed/u,
+  );
 });
 
 test('measure 1 decision-reader instrument is digest pinned and fails on drift', () => {
