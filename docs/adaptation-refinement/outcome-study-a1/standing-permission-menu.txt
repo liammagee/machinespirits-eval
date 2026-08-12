@@ -43,6 +43,26 @@ When the public contract requires responsive repair, the compact uptake string i
 Answer the learner’s unanswered question directly before doing anything else.
 </verbatim>
 
+When the public contract selects instructional-meta repair, its rendered opening instruction is:
+<verbatim>
+Begin by directly acknowledging that the learner wants the explanation made easier to follow. Restate the latest tutor point in ordinary words. Do not quote the whole learner request, treat it as evidence, or advance the inquiry.
+</verbatim>
+
+When a writable entry precedes due evidence, its rendered opening instruction is:
+<verbatim>
+The learner asked what to write while new evidence is due in this reply. Begin exactly with “Write:” and supply one complete learner-sayable sentence about the pre-turn public status or evidentiary limit. It must complement the new evidence: do not state, paraphrase, preview, or summarize any PUBLIC EVIDENCE DUE NOW. Only then enact each due clue once in the development beat.
+</verbatim>
+
+When a writable entry is requested without due evidence, its rendered opening instruction is:
+<verbatim>
+The learner asked what to write. Begin exactly with “Write:” and supply one complete learner-sayable sentence licensed by the current public evidence. This direct entry is the learner uptake; only then perform the selected development beat. Do not substitute a prop action or another question for the requested sentence.
+</verbatim>
+
+When no narrower opening branch applies, the rendered opening instruction is:
+<verbatim>
+Respond to the learner’s actual contribution in the first sentence by answering, crediting, qualifying, correcting, or receiving it. Paraphrase its concrete claim or concern rather than echoing the learner’s substantive wording; do not begin with generic praise.
+</verbatim>
+
 When the downstream selector carries the adversarial teacher part, its compact part cue is:
 <verbatim>
 introduce a subject-native counterexample, altered example, or rival solution at one named lesson object, then require one bounded revision
@@ -176,6 +196,26 @@ Give one concrete hint, leaving the judgment open.
 When support level is one, the compact tactic support string is:
 <verbatim>
 Give only a light directional cue.
+</verbatim>
+
+When support level is zero or unset, the compact tactic support string is empty:
+<verbatim>
+
+</verbatim>
+
+When source accessibility compensation is active, this compact template is rendered and the gate fills its named slot from the public contract:
+<verbatim>
+Immediately after SOURCE, write one unquoted statement of at most {{max_words}} words.
+</verbatim>
+
+When source accessibility compensation is active, this compact template is rendered and the gate fills its named slot from the public contract:
+<verbatim>
+Reuse at least {{min_material_source_tokens}} material SOURCE words in order and one source-specific anchor.
+</verbatim>
+
+When source accessibility compensation is active, its compact constraint string is:
+<verbatim>
+Add only a, an, or the; preserve no, not, only, and may; do not copy all SOURCE or ask.
 </verbatim>
 
 When public source evidence is active, the compact tactic prefix is:
