@@ -6,11 +6,11 @@
     "registration": "docs/adaptation-refinement/v3-outcome-study-registration.md",
     "amendment": "docs/adaptation-refinement/v3-outcome-study-registration-amendment-1.md",
     "direction": "docs/adaptation-refinement/relay/062-reviewer-direction-menu-membership-classification.md",
-    "a1_commit": "a41be6da8564004cd23339e0f0f7c812de916f11"
+    "a1_commit": "df187b0cd9177d69ecc8b8010c867ad865a438c4"
   },
   "standing_permission": {
     "menu_json": "docs/adaptation-refinement/outcome-study-a1/standing-permission-menu.json",
-    "menu_json_sha256": "9c8f0ac4aa8bfbc7966f15c9e5fa67720af695d555e9f58ca031f314f4eb240f",
+    "menu_json_sha256": "ce8d88065fb7ce23f64a4ebc99a7b2a47615f0a453dabf8c97e27d9dfc073cb3",
     "menu_text": "docs/adaptation-refinement/outcome-study-a1/standing-permission-menu.txt",
     "menu_text_sha256": "966f3aa71dbcb907cf9f98e5d873c78ef00c697d29a4e6e360519a784d8257dd",
     "entry_count": 63,
