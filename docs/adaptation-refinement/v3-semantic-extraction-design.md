@@ -792,12 +792,20 @@ the final diagnostic repair from one clean committed source:
   `counterexample_hunter`, `goalpost_shifter`, and `fast_learner`;
 - conditions: `observe` and `active`;
 - one fresh eight-turn dialogue per world/profile/condition cell;
-- master seed: `507` (seeds `503`–`506` and both Direction 021 probe sets are
-  burned; `508`–`510` remain prospective reserves). Seed 506 exposed a
+- master seed: `508` (seeds `503`–`507` and both Direction 021 probe sets are
+  burned; `509`–`510` remain prospective reserves). Seed 506 exposed a
   transport-only prompt-serialization defect: pretty-printed register and
   learner-DAG JSON crossed the unchanged 42,000-character envelope on late
   turns. The prospective repair minifies those same JSON values without
-  changing prompt words, schemas, semantic rules, or the envelope limit;
+  changing prompt words, schemas, semantic rules, or the envelope limit. Seed
+  507 then confirmed the repaired analysis seat at 51/54 validator-surviving
+  returned analyses in a zero-call replay (5.56% returned-analysis discard;
+  51/56 completed turns analyzed, 8.93% total coverage loss), but exposed a
+  transport-only parent finalization defect: the running aggregate tried to
+  validate a one-row partial reader catalog before the matrix was complete.
+  The prospective repair defers reader-corpus construction while status is
+  `running`; it changes no child prompt, semantic schema, validator, rubric,
+  reader instrument, or coverage threshold;
 - 24 dialogues and 192 scheduled learner-analysis turns total; the analyzed
   decision census contains every turn that passes the frozen per-turn analysis
   contract, with unreadable turns recorded only as coverage loss;

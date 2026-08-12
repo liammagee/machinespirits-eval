@@ -553,7 +553,7 @@ test('mechanism model routing is frozen before authorization', () => {
 });
 
 test('mechanism-validation plan is the frozen two-world, six-profile, observe-active matrix', () => {
-  assert.equal(ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.masterSeed, 507);
+  assert.equal(ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.masterSeed, 508);
   const jobs = buildAdaptiveWarrantBaselineJobs({
     rootDir: '/tmp/warrant-mechanism-study',
     runs: ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.runs,
@@ -726,6 +726,35 @@ test('coverage-halt finalization writes all sealed rows without freezing partial
     assert.equal(study.rows.length, 1);
     assert.equal(study.analysisCoverage.analysis_turns, 8);
     assert.equal(study.analysisCoverage.unanalyzed_turns, 2);
+    assert.equal(fs.existsSync(path.join(rootDir, 'study-results.json')), true);
+    assert.equal(fs.existsSync(path.join(rootDir, 'annotation-sample.blinded.json')), false);
+    assert.equal(fs.existsSync(path.join(rootDir, 'annotation-key.private.json')), false);
+  } finally {
+    fs.rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('running mechanism finalization does not freeze or validate a partial reader corpus', () => {
+  const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), 'warrant-running-finalization-'));
+  try {
+    const row = resultRow({ profile: 'diligent', condition: 'instrumented', seed: 508 });
+    const plan = {
+      studyId: 'running-finalization',
+      design: 'docs/adaptation-refinement/baseline-comparison-design.md',
+      jobs: [{ id: row.jobId }],
+      config: {
+        runs: 1,
+        horizon: 8,
+        worlds: [row.world],
+        profiles: [row.profile],
+        conditions: [{ id: row.condition, warrantGateMode: row.warrantGateMode }],
+        mechanismValidation: true,
+      },
+    };
+    const study = writeStudyArtifacts({ rootDir, plan, rows: [row], status: 'running' });
+    assert.equal(study.status, 'running');
+    assert.equal(study.rows.length, 1);
+    assert.equal(study.analysisCoverage.analysis_turns, 8);
     assert.equal(fs.existsSync(path.join(rootDir, 'study-results.json')), true);
     assert.equal(fs.existsSync(path.join(rootDir, 'annotation-sample.blinded.json')), false);
     assert.equal(fs.existsSync(path.join(rootDir, 'annotation-key.private.json')), false);
