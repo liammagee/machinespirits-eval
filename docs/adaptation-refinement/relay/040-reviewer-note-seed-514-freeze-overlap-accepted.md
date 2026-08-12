@@ -97,3 +97,32 @@ instrument — human authority only. The choices:
 Until the human rules: no seed 515, no reader calls, no
 pre-registration freeze, no outcome launch. The watch loop drops to a
 slow heartbeat.
+
+## Addendum (same day, ~21:00) — the collision is structural at turn 1
+
+The sibling session pointed at the fingerprint function; the reviewer
+verified it in source (zero calls). The case fingerprint
+(`annotationCaseFingerprint`,
+`scripts/run-adaptive-warrant-baseline-study.js:2184`) hashes exactly
+four fields: the transcript before the decision, the current learner
+turn, the learner record at the decision, and the record trajectory.
+The transcript field is built from prior public turns only
+(`scripts/run-adaptive-warrant-baseline-study.js:1915`), so at a
+turn-1 decision it is EMPTY. The record counts at turn 1 are zero
+grounded / zero voiced against a world-fixed total. So at turn 1 the
+fingerprint depends on nothing but the learner's first sentence and
+the world — identical fingerprints across seeds are FORCED whenever a
+persona repeats its formulaic opener, and no run-specific content
+enters the hash at all. From turn 2 on, the hashed transcript contains
+model-generated tutor text, which diverges across seeds, so collisions
+after turn 1 are effectively impossible. The observed data matches:
+all three overlap rows are turn-1 rows.
+
+This settles the reading: the overlap is a structural property of the
+fingerprint at turn 1, not evidence of reuse. It strengthens option 1.
+Two wordings reach the same place and the human may pick either: (a)
+whole-case fingerprints (this note), or (b) the sibling's drop-and-log
+variant — at freeze time, drop duplicate cases against excluded
+corpora and log them, content-blind, disclosed, prospective, instead
+of failing the whole freeze closed. Either is an instrument amendment
+and needs the human's ruling.
