@@ -14,8 +14,19 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **Reviewer position on the seed-509 relaunch (15:50, from the live
-  log; the driver's report is still pending):** seed 507 crashed on a
+- **Current direction: `029-reviewer-direction-s509-halt-diagnosis.md`**
+  (16:12) — seed 509 coverage-halted at 25/128 = 19.53%, ZERO cap
+  blocks (the 028 repair worked; every loss is a validator/model
+  discard). SEED 510 IS FROZEN — no launches of any kind. No
+  threshold, validator, contract, or cap change. Ordered, all zero
+  provider calls: failure-code split of all 507/508/509 losses
+  (mechanical vs contract-rule vs no-return), concentration by
+  profile/world/condition/turn, per-seed trend table. Then report and
+  STOP. A dominating mechanical rule = ledger entry + possible repair
+  licensing 510; genuine semantic misses = matrix gate fails on
+  instrument yield = human decision point.
+- Prior reviewer position on the seed-509 relaunch (15:50, from the live
+  log; the driver's report is still pending): seed 507 crashed on a
   transport defect (parent finalization validated a partial reader
   catalog mid-run) with coverage INSIDE the line (8.93%); seed 508
   coverage-halted at 22.9% (10 frozen-validator discards + 1 cap
