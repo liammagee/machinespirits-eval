@@ -14,16 +14,27 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **CURRENT DIRECTION: 030** (human ruled 17:20 — option 1). The
-  hard stop below is RESOLVED. The human chose to amend the two
-  contract rules that carry 22 of the 25 seed-509 discards, as an
-  open post-hoc amendment (contract v3.1), and to spend seed 510 on
-  it. Direction `030-reviewer-direction-contract-v3.1-seed-510.md`
-  pre-declares both amendments, the licensing chain (v3.1 tests,
-  zero-call replay of the seed-509 returns predicting ≤15%,
-  preflights), and the launch. Unattended mode under note 023
-  RESUMES with 030 as the work order. If seed 510 coverage-halts:
-  human hard stop, seeds exhausted.
+- **HARD STOP — SEEDS EXHAUSTED, WAITING ON THE HUMAN** (17:33;
+  report `031-codex-report.md`). Seed 510 ran under contract v3.1
+  (both 030 amendments, licensed in order, replay predicted 9.92%)
+  and coverage-halted at the registered checkpoint: 25/160 =
+  15.625% against the 15% ceiling. A NEAR MISS: after the last
+  already-running child sealed, the descriptive final total was
+  25/168 = 14.881% — under the line — but the failed self-halt
+  checkpoint is not waived post hoc. Cause split: 19 of 25 losses
+  are the seat using the NEW `"unspecified"` sentinel on
+  non-request acts (forbidden by v3.1's own rule 1); 3 non-atomic
+  overlaps, 1 non-public identifier, 1 non-literal span, 1 timeout;
+  ZERO audit overflows. The two OLD failure classes are gone — the
+  amendments worked; the model overgeneralized the new marker.
+  Calls 1,673/4,000. No matrix gate ruling (halt preceded the
+  reader stage). Direction 030 grants no further authority: no
+  retry, no amendment, no alternate seat. The human must choose:
+  stop the programme, or issue a new prospective protocol. DO NOT
+  relaunch the driver; the watch loop is stopped.
+- **RESOLVED — direction 030** (human ruled 17:20 — option 1): amend
+  the two rules as contract v3.1, spend seed 510. Executed; see the
+  hard stop above and report 031.
 - **RESOLVED — hard stop of 16:40** (report
   `029-codex-report.md`, merged at `40022061`; kept as history). Seed 509
   coverage-halted at 25/128 = 19.53% unanalyzed; ZERO cap blocks (the
