@@ -17,9 +17,17 @@ it and closes the class.
    authorized rerun, in order: 505, then 506. These are predeclared now
    so no later direction ever leaves the seed unnamed.
 2. **Seed-lock amendment:** change the predeclared master seed from 503
-   to 504 in the design/runner seed lock — the minimal edit that names
-   504 (and may list 505/506 as reserves). Nothing else in the frozen
-   design changes. Commit the amendment with the usual conventions.
+   to 504 in the design/runner seed lock (the mechanism-validation spec
+   in `scripts/run-adaptive-warrant-baseline-study.js`) — the minimal
+   edit that names 504 (and may list 505/506 as reserves). Commit the
+   amendment with the usual conventions.
+2b. **Exclusion-list amendment (authorized in the same commit):** extend
+   the frozen excluded-corpora list to cover every corpus burned since
+   it was frozen — the failed seed-503 matrix (`36d2e63f`) and the
+   diagnostic/supplement corpora — per the standing burn discipline.
+   The driver names the exact artifact paths; adding exclusions is
+   always in scope, removing one never is. Nothing else in the frozen
+   design changes.
 3. **Zero-call preflight at the amended commit.** Must pass.
 4. **Ping carry-over rule:** the passed acceptance ping (report 015,
    1/1) remains valid IF the live schema digests at the amended commit
