@@ -34,7 +34,7 @@ export const OUTCOME_A1_ENUMERATION_RULE = Object.freeze({
   templates:
     'For a compact template, quote every fixed segment byte-for-byte in source order and show each interpolated public-contract value as a named {{slot}}; the descriptive prefix states that the gate fills those slots from the public contract, and the drift guard compares the fixed_segments array byte-for-byte.',
   question_support:
-    'Do not include buildTutorStubQuestionSupport tutorInstruction strings: they populate the detailed contract ending.instruction field, but the live compact host-plan renderer does not read that field. Include the compact handoff strings selected from question-support state flags instead.',
+    'Do not include buildTutorStubQuestionSupport tutorInstruction strings: they populate the detailed contract ending.instruction field, but the live compact host-plan renderer does not read that field. Classify the compact question-support-dependent strings individually: responsive-repair, bounded-choice, and clarification additions are OUT because their upstream question-support switches are unreachable; question-boundary strings remain IN because gate-selected action family and public-obligation state reach progression.handoff_contract.question_allowed.',
   membership_test:
     'A candidate string is IN exactly when its switching variable is reachable from the gate verdict, repair policy, or register selection. An unreachable switch is OUT even when the string is prompt-reaching. A doubtful trace stays IN and records the doubt.',
   null_branch:
@@ -301,6 +301,9 @@ function inClassification(id) {
       switching_variable: 'response_configuration.actorial_part and actorial_part_label',
       trace:
         'Gate-selected action family and stance feed selectTutorStubActorialPart; the resulting register selection chooses the compact part cue and wrapper.',
+      ...(id === 'part.fallback'
+        ? { doubt: 'Reachability of an unlisted part value is not proven; ruling 060b keeps uncertain traces IN.' }
+        : {}),
     };
   }
   if (id.startsWith('tactic.execution.')) {
@@ -414,7 +417,7 @@ function classifyCandidate(row) {
     id: row.id,
     source: row.source,
     switching_variable: classification.switching_variable,
-    gate_decision_path_reachable: excluded ? false : true,
+    gate_decision_path_reachable: row.id === 'tactic.support.0' ? true : !excluded,
     verdict: excluded ? 'OUT' : 'IN',
     trace: classification.trace,
     ...(classification.doubt ? { doubt: classification.doubt } : {}),
