@@ -1,0 +1,372 @@
+{
+  "schema": "machinespirits.adaptation-refinement.warrant-outcome-standing-permission-menu.v1",
+  "source_sha256": {
+    "services/tutorStubWarrantGate.js": "db30f563bb5107544f0f64677410f3e67cb2f0f2fbe573d4c5d66976b791fc24",
+    "services/adaptiveWarrantPolicy.js": "9edce479cca6dfde74a2a48f8321cbd3366ee0a97e4ac3e6565b656de0212c1d",
+    "services/tutorStubFirstDraftContract.js": "868c5ef7af8677a59cbf391cc0948c71cb567802e4d7d15d6f980366db707a29",
+    "services/tutorStubQuestionSupport.js": "6084936a3dd7093a14b4ef76eb6914549064bf095bf7bc1c8b5e15eba168dfa3",
+    "config/engagement-registers.yaml": "6284ffb82d8fe151312c05d6426f809de43addfe5275bbd5f70cbd39361a84c2"
+  },
+  "enumeration_rule": {
+    "action": "Include action_families.challenge_resistance.description from the registry and ACTION_CUES.challenge_resistance from the first-draft contract.",
+    "stance": "The challenge-resistance warrant policy fixes stance_hint=precise; include precise.public_signature, precise.stance_contract, and STANCE_EXECUTION_CUES.precise.",
+    "part": "The nonterminal downstream selector assigns nonzero softmax support to every registered actorial part; enumerate every actorial_parts key and require both its registry contract and the same-key PART_CUES entry.",
+    "tactic": "The precise stance selects evidentiary_boundary downstream; include TACTIC_EXECUTION_CUES.evidentiary_boundary.",
+    "question_support": "Walk every tutorInstruction expression branch in buildTutorStubQuestionSupport and include every distinct string literal leaf exactly once."
+  },
+  "prefix_set": [
+    {
+      "id": "action.catalogue.challenge_resistance",
+      "prefix": "When the gate selects challenge resistance, its catalogue description is:"
+    },
+    {
+      "id": "action.cue.challenge_resistance",
+      "prefix": "When challenge resistance reaches the first-draft action slot, its cue is:"
+    },
+    {
+      "id": "stance.public_signature.precise",
+      "prefix": "When challenge resistance selects the precise stance, its public signature is:"
+    },
+    {
+      "id": "stance.contract.precise",
+      "prefix": "When challenge resistance selects the precise stance, its stance contract is:"
+    },
+    {
+      "id": "stance.execution.precise",
+      "prefix": "When the precise stance reaches first-draft execution, its execution cue is:"
+    },
+    {
+      "id": "part.contract.adversarial_teacher",
+      "prefix": "When the downstream selector chooses the adversarial teacher part, its part contract is:"
+    },
+    {
+      "id": "part.execution.adversarial_teacher",
+      "prefix": "When the downstream selector chooses the adversarial teacher part, its first-draft cue is:"
+    },
+    {
+      "id": "part.contract.advocate",
+      "prefix": "When the downstream selector chooses the advocate part, its part contract is:"
+    },
+    {
+      "id": "part.execution.advocate",
+      "prefix": "When the downstream selector chooses the advocate part, its first-draft cue is:"
+    },
+    {
+      "id": "part.contract.authored_source",
+      "prefix": "When the downstream selector chooses the authored source part, its part contract is:"
+    },
+    {
+      "id": "part.execution.authored_source",
+      "prefix": "When the downstream selector chooses the authored source part, its first-draft cue is:"
+    },
+    {
+      "id": "part.contract.exacting_schoolmaster",
+      "prefix": "When the downstream selector chooses the exacting schoolmaster part, its part contract is:"
+    },
+    {
+      "id": "part.execution.exacting_schoolmaster",
+      "prefix": "When the downstream selector chooses the exacting schoolmaster part, its first-draft cue is:"
+    },
+    {
+      "id": "part.contract.examiner",
+      "prefix": "When the downstream selector chooses the examiner part, its part contract is:"
+    },
+    {
+      "id": "part.execution.examiner",
+      "prefix": "When the downstream selector chooses the examiner part, its first-draft cue is:"
+    },
+    {
+      "id": "part.contract.foreperson",
+      "prefix": "When the downstream selector chooses the foreperson part, its part contract is:"
+    },
+    {
+      "id": "part.execution.foreperson",
+      "prefix": "When the downstream selector chooses the foreperson part, its first-draft cue is:"
+    },
+    {
+      "id": "part.contract.record_keeper",
+      "prefix": "When the downstream selector chooses the record keeper part, its part contract is:"
+    },
+    {
+      "id": "part.execution.record_keeper",
+      "prefix": "When the downstream selector chooses the record keeper part, its first-draft cue is:"
+    },
+    {
+      "id": "part.contract.satirist",
+      "prefix": "When the downstream selector chooses the satirist part, its part contract is:"
+    },
+    {
+      "id": "part.execution.satirist",
+      "prefix": "When the downstream selector chooses the satirist part, its first-draft cue is:"
+    },
+    {
+      "id": "part.contract.scene_partner",
+      "prefix": "When the downstream selector chooses the scene partner part, its part contract is:"
+    },
+    {
+      "id": "part.execution.scene_partner",
+      "prefix": "When the downstream selector chooses the scene partner part, its first-draft cue is:"
+    },
+    {
+      "id": "part.contract.skeptic",
+      "prefix": "When the downstream selector chooses the skeptic part, its part contract is:"
+    },
+    {
+      "id": "part.execution.skeptic",
+      "prefix": "When the downstream selector chooses the skeptic part, its first-draft cue is:"
+    },
+    {
+      "id": "tactic.execution.evidentiary_boundary",
+      "prefix": "When the precise stance selects the evidentiary-boundary tactic, its execution cue is:"
+    },
+    {
+      "id": "question_support.a_publicly_answerable_question_with_no_current_struggle",
+      "prefix": "When question support sees a publicly answerable question with no current struggle, its tutor instruction is:"
+    },
+    {
+      "id": "question_support.an_unanswered_learner_question_and_unreleased_evidence_ahead",
+      "prefix": "When question support sees an unanswered learner question and unreleased evidence ahead, its tutor instruction is:"
+    },
+    {
+      "id": "question_support.unreleased_evidence_ahead_without_a_bounded_choice",
+      "prefix": "When question support sees unreleased evidence ahead without a bounded choice, its tutor instruction is:"
+    },
+    {
+      "id": "question_support.unreleased_evidence_ahead_with_a_bounded_choice",
+      "prefix": "When question support sees unreleased evidence ahead with a bounded choice, its tutor instruction is:"
+    },
+    {
+      "id": "question_support.an_unanswered_learner_question_while_due_evidence_is_staged",
+      "prefix": "When question support sees an unanswered learner question while due evidence is staged, its tutor instruction is:"
+    },
+    {
+      "id": "question_support.public_evidence_and_a_struggling_learner_without_a_bounded_choice",
+      "prefix": "When question support sees public evidence and a struggling learner without a bounded choice, its tutor instruction is:"
+    },
+    {
+      "id": "question_support.public_evidence_and_a_struggling_learner_with_a_bounded_choice",
+      "prefix": "When question support sees public evidence and a struggling learner with a bounded choice, its tutor instruction is:"
+    },
+    {
+      "id": "question_support.due_evidence_without_a_bounded_choice",
+      "prefix": "When question support sees due evidence without a bounded choice, its tutor instruction is:"
+    },
+    {
+      "id": "question_support.due_evidence_with_a_bounded_choice",
+      "prefix": "When question support sees due evidence with a bounded choice, its tutor instruction is:"
+    }
+  ],
+  "entries": [
+    {
+      "id": "action.catalogue.challenge_resistance",
+      "source": "config/engagement-registers.yaml#action_families.challenge_resistance.description",
+      "prefix": "When the gate selects challenge resistance, its catalogue description is:",
+      "quote": "Interrupt rote compliance, answer-seeking, or low agency while preserving a repair path."
+    },
+    {
+      "id": "action.cue.challenge_resistance",
+      "source": "services/tutorStubFirstDraftContract.js#ACTION_CUES.challenge_resistance",
+      "prefix": "When challenge resistance reaches the first-draft action slot, its cue is:",
+      "quote": "Name the present obstacle without attacking the learner, then offer one small public move that restores choice."
+    },
+    {
+      "id": "stance.public_signature.precise",
+      "source": "config/engagement-registers.yaml#engagement_stances.precise.public_signature",
+      "prefix": "When challenge resistance selects the precise stance, its public signature is:",
+      "quote": "Draw a crisp boundary in the form 'this shows X, but not Y' and name what would change that boundary."
+    },
+    {
+      "id": "stance.contract.precise",
+      "source": "config/engagement-registers.yaml#engagement_stances.precise.stance_contract|one_line",
+      "prefix": "When challenge resistance selects the precise stance, its stance contract is:",
+      "quote": "State one distinction or warrant cleanly, expose what would count against it, and ask for one check. Do not smuggle in proof-path answers."
+    },
+    {
+      "id": "stance.execution.precise",
+      "source": "services/tutorStubFirstDraftContract.js#STANCE_EXECUTION_CUES.precise",
+      "prefix": "When the precise stance reaches first-draft execution, its execution cue is:",
+      "quote": "State one crisp boundary in the form “this shows X, but not Y,” with X and Y replaced by named public claims. Name what would change the boundary."
+    },
+    {
+      "id": "part.contract.adversarial_teacher",
+      "source": "config/engagement-registers.yaml#actorial_parts.adversarial_teacher.contract|one_line",
+      "prefix": "When the downstream selector chooses the adversarial teacher part, its part contract is:",
+      "quote": "Challenge one learner idea with a counterexample, altered example, or competing solution native to the active subject. Name the lesson's actual object, concept, text, problem, experiment, or method, then ask for one bounded explanation or revision. Keep legal, dramatic, and philosophical metaphors subordinate to the discipline; never attack the learner."
+    },
+    {
+      "id": "part.execution.adversarial_teacher",
+      "source": "services/tutorStubFirstDraftContract.js#PART_CUES.adversarial_teacher",
+      "prefix": "When the downstream selector chooses the adversarial teacher part, its first-draft cue is:",
+      "quote": "In the unquoted host voice, introduce one subject-native counterexample, altered example, or rival solution using a named lesson object, then require one bounded explanation or revision. Attack the idea, never the learner."
+    },
+    {
+      "id": "part.contract.advocate",
+      "source": "config/engagement-registers.yaml#actorial_parts.advocate.contract|one_line",
+      "prefix": "When the downstream selector chooses the advocate part, its part contract is:",
+      "quote": "Make the strongest presently licensed case in first person, then hand the learner a concrete way to test, resist, or break it."
+    },
+    {
+      "id": "part.execution.advocate",
+      "source": "services/tutorStubFirstDraftContract.js#PART_CUES.advocate",
+      "prefix": "When the downstream selector chooses the advocate part, its first-draft cue is:",
+      "quote": "In one short unquoted host sentence beginning “My case is”, state the strongest claim the released public record carries and name what that record does not yet establish. Do not append a semicolon-shaped test. Let the selected action supply a separate final handoff."
+    },
+    {
+      "id": "part.contract.authored_source",
+      "source": "config/engagement-registers.yaml#actorial_parts.authored_source.contract|one_line",
+      "prefix": "When the downstream selector chooses the authored source part, its part contract is:",
+      "quote": "Take the exact public part assigned by the authored clue release and voice, read, or demonstrate only that clue before returning to the shared inquiry."
+    },
+    {
+      "id": "part.execution.authored_source",
+      "source": "services/tutorStubFirstDraftContract.js#PART_CUES.authored_source",
+      "prefix": "When the downstream selector chooses the authored source part, its first-draft cue is:",
+      "quote": "Enter the assigned public source directly and voice only the supplied evidence before returning the inquiry to the learner."
+    },
+    {
+      "id": "part.contract.exacting_schoolmaster",
+      "source": "config/engagement-registers.yaml#actorial_parts.exacting_schoolmaster.contract|one_line",
+      "prefix": "When the downstream selector chooses the exacting schoolmaster part, its part contract is:",
+      "quote": "Require one concrete performance appropriate to the active discipline: show the working, apply the method, define the term, read the passage, make the observation, demonstrate the procedure, or revise precisely. State the learning criterion and permit a retry without humiliation. Do not turn exactness into generic courtroom language or personal dominance."
+    },
+    {
+      "id": "part.execution.exacting_schoolmaster",
+      "source": "services/tutorStubFirstDraftContract.js#PART_CUES.exacting_schoolmaster",
+      "prefix": "When the downstream selector chooses the exacting schoolmaster part, its first-draft cue is:",
+      "quote": "In the unquoted host voice, require one discipline-specific performance, state the criterion it must meet, and explicitly permit one precise retry without humiliation."
+    },
+    {
+      "id": "part.contract.examiner",
+      "source": "config/engagement-registers.yaml#actorial_parts.examiner.contract|one_line",
+      "prefix": "When the downstream selector chooses the examiner part, its part contract is:",
+      "quote": "Physically inspect, compare, test, weigh, or point to one public exhibit. Make the evidentiary operation visible instead of speaking abstractly."
+    },
+    {
+      "id": "part.execution.examiner",
+      "source": "services/tutorStubFirstDraftContract.js#PART_CUES.examiner",
+      "prefix": "When the downstream selector chooses the examiner part, its first-draft cue is:",
+      "quote": "In the unquoted host voice, visibly inspect, test, weigh, or point to a named public exhibit. Do not claim that separate exhibits physically match unless a public RECORD line states that correspondence."
+    },
+    {
+      "id": "part.contract.foreperson",
+      "source": "config/engagement-registers.yaml#actorial_parts.foreperson.contract|one_line",
+      "prefix": "When the downstream selector chooses the foreperson part, its part contract is:",
+      "quote": "Gather the public supports, state the licensed finding, close the record, and do not open another investigative branch."
+    },
+    {
+      "id": "part.execution.foreperson",
+      "source": "services/tutorStubFirstDraftContract.js#PART_CUES.foreperson",
+      "prefix": "When the downstream selector chooses the foreperson part, its first-draft cue is:",
+      "quote": "In the unquoted host voice, gather the public supports, state the licensed finding, and close the record without opening another branch."
+    },
+    {
+      "id": "part.contract.record_keeper",
+      "source": "config/engagement-registers.yaml#actorial_parts.record_keeper.contract|one_line",
+      "prefix": "When the downstream selector chooses the record keeper part, its part contract is:",
+      "quote": "Open, read, mark, or close the world's public record. Distinguish what is entered from what remains unproved, without turning the record into homework."
+    },
+    {
+      "id": "part.execution.record_keeper",
+      "source": "services/tutorStubFirstDraftContract.js#PART_CUES.record_keeper",
+      "prefix": "When the downstream selector chooses the record keeper part, its first-draft cue is:",
+      "quote": "In the unquoted host voice, open, read, mark, enter, or close a named public record and distinguish what is entered from what remains unproved."
+    },
+    {
+      "id": "part.contract.satirist",
+      "source": "config/engagement-registers.yaml#actorial_parts.satirist.contract|one_line",
+      "prefix": "When the downstream selector chooses the satirist part, its part contract is:",
+      "quote": "Notice where a polished claim, rote formula, inflated certainty, or easy story is contradicted by the public material. Expose that mismatch through a concrete ironic reversal or dry observation, then give the learner a fair way to repair the claim. Aim the edge at the work or idea, never the learner."
+    },
+    {
+      "id": "part.execution.satirist",
+      "source": "services/tutorStubFirstDraftContract.js#PART_CUES.satirist",
+      "prefix": "When the downstream selector chooses the satirist part, its first-draft cue is:",
+      "quote": "In the unquoted host voice, catch one polished claim, rote formula, or easy story contradicting the named public material; expose it with a wry reversal and leave one fair repair path. Aim the edge at the work, never the learner."
+    },
+    {
+      "id": "part.contract.scene_partner",
+      "source": "config/engagement-registers.yaml#actorial_parts.scene_partner.contract|one_line",
+      "prefix": "When the downstream selector chooses the scene partner part, its part contract is:",
+      "quote": "Work beside the learner inside the scene. Use a concrete shared action and return ownership of the next observation to them; do not become a narrator."
+    },
+    {
+      "id": "part.execution.scene_partner",
+      "source": "services/tutorStubFirstDraftContract.js#PART_CUES.scene_partner",
+      "prefix": "When the downstream selector chooses the scene partner part, its first-draft cue is:",
+      "quote": "In the unquoted host voice, say “I make room for you beside [named public object]” with the bracket replaced by a scene object, then return the observation to the learner."
+    },
+    {
+      "id": "part.contract.skeptic",
+      "source": "config/engagement-registers.yaml#actorial_parts.skeptic.contract|one_line",
+      "prefix": "When the downstream selector chooses the skeptic part, its part contract is:",
+      "quote": "Challenge one unsafe leap or weak link in the live case. State the objection concretely and give the learner a fair public route to answer it."
+    },
+    {
+      "id": "part.execution.skeptic",
+      "source": "services/tutorStubFirstDraftContract.js#PART_CUES.skeptic",
+      "prefix": "When the downstream selector chooses the skeptic part, its first-draft cue is:",
+      "quote": "In the unquoted host voice, challenge one unsafe leap or weak link and give the learner a fair public route to answer it."
+    },
+    {
+      "id": "tactic.execution.evidentiary_boundary",
+      "source": "services/tutorStubFirstDraftContract.js#TACTIC_EXECUTION_CUES.evidentiary_boundary",
+      "prefix": "When the precise stance selects the evidentiary-boundary tactic, its execution cue is:",
+      "quote": "Name the public evidence, what it supports, and the named conclusion it does not establish. Keep both conclusions explicit; use no pronoun substitute."
+    },
+    {
+      "id": "question_support.a_publicly_answerable_question_with_no_current_struggle",
+      "source": "services/tutorStubQuestionSupport.js#buildTutorStubQuestionSupport.tutorInstruction.a publicly answerable question with no current struggle",
+      "prefix": "When question support sees a publicly answerable question with no current struggle, its tutor instruction is:",
+      "quote": "Ask one light question grounded in the public evidence already stated. Name the clue in plain language rather than referring vaguely to one mark, the record, or the evidence. If a compressed scene term or referent remains necessary, explicitly invite a short clarification question."
+    },
+    {
+      "id": "question_support.an_unanswered_learner_question_and_unreleased_evidence_ahead",
+      "source": "services/tutorStubQuestionSupport.js#buildTutorStubQuestionSupport.tutorInstruction.an unanswered learner question and unreleased evidence ahead",
+      "prefix": "When question support sees an unanswered learner question and unreleased evidence ahead, its tutor instruction is:",
+      "quote": "Directly answer the learner’s outstanding question using only evidence already stated. Explicitly distinguish what the record does establish from what it does not. Do not pivot into a new quiz or require a multiple-choice response; after answering, you may briefly name the category of support still missing without revealing it."
+    },
+    {
+      "id": "question_support.unreleased_evidence_ahead_without_a_bounded_choice",
+      "source": "services/tutorStubQuestionSupport.js#buildTutorStubQuestionSupport.tutorInstruction.unreleased evidence ahead without a bounded choice",
+      "prefix": "When question support sees unreleased evidence ahead without a bounded choice, its tutor instruction is:",
+      "quote": "Do not ask the learner to invent or name an unseen record, source, person, or fact. Name the missing connection using only public people, objects, and actions already in this scene, without revealing the unstaged fact. You may consolidate the current public inference without asking a question. If you do ask a struggling learner a question, explicitly permit a short question about which clue or term is unclear."
+    },
+    {
+      "id": "question_support.unreleased_evidence_ahead_with_a_bounded_choice",
+      "source": "services/tutorStubQuestionSupport.js#buildTutorStubQuestionSupport.tutorInstruction.unreleased evidence ahead with a bounded choice",
+      "prefix": "When question support sees unreleased evidence ahead with a bounded choice, its tutor instruction is:",
+      "quote": "Do not ask the learner to invent or name an unseen record, source, person, or fact. Offer 2-3 short choices using only people, objects, and records already named in the scene. Say what each choice means in this case; avoid abstract labels such as “one condition,” “the rule,” or “the whole case.” Do not include the actual unstaged record or answer. If the learner is struggling, also say they may ask which clue or term needs explaining."
+    },
+    {
+      "id": "question_support.an_unanswered_learner_question_while_due_evidence_is_staged",
+      "source": "services/tutorStubQuestionSupport.js#buildTutorStubQuestionSupport.tutorInstruction.an unanswered learner question while due evidence is staged",
+      "prefix": "When question support sees an unanswered learner question while due evidence is staged, its tutor instruction is:",
+      "quote": "First acknowledge that the learner’s question was not answered and answer it directly from the public record. Then stage the due evidence in ordinary scene language. Do not replace that direct answer with a new exercise; a short confirmation question is optional."
+    },
+    {
+      "id": "question_support.public_evidence_and_a_struggling_learner_without_a_bounded_choice",
+      "source": "services/tutorStubQuestionSupport.js#buildTutorStubQuestionSupport.tutorInstruction.public evidence and a struggling learner without a bounded choice",
+      "prefix": "When question support sees public evidence and a struggling learner without a bounded choice, its tutor instruction is:",
+      "quote": "Put the directional hint into the discourse before asking: restate the live public clue and narrow the relation the learner is being asked to notice. Explicitly say that a short question about which clue or term is unclear is a valid response."
+    },
+    {
+      "id": "question_support.public_evidence_and_a_struggling_learner_with_a_bounded_choice",
+      "source": "services/tutorStubQuestionSupport.js#buildTutorStubQuestionSupport.tutorInstruction.public evidence and a struggling learner with a bounded choice",
+      "prefix": "When question support sees public evidence and a struggling learner with a bounded choice, its tutor instruction is:",
+      "quote": "Restate the live public clue, then offer 2-3 short interpretations of it and invite the learner to choose or answer freely. Also say they may ask which clue or term needs explaining."
+    },
+    {
+      "id": "question_support.due_evidence_without_a_bounded_choice",
+      "source": "services/tutorStubQuestionSupport.js#buildTutorStubQuestionSupport.tutorInstruction.due evidence without a bounded choice",
+      "prefix": "When question support sees due evidence without a bounded choice, its tutor instruction is:",
+      "quote": "State the due evidence in ordinary scene language first, then ask what that newly public evidence changes. Do not quiz before staging it. If the learner is struggling, explicitly permit a short question about which clue or term is unclear."
+    },
+    {
+      "id": "question_support.due_evidence_with_a_bounded_choice",
+      "source": "services/tutorStubQuestionSupport.js#buildTutorStubQuestionSupport.tutorInstruction.due evidence with a bounded choice",
+      "prefix": "When question support sees due evidence with a bounded choice, its tutor instruction is:",
+      "quote": "State the due evidence in ordinary scene language first, then offer 2-3 short choices using the people, objects, and records already named in the scene; invite the learner to choose or answer freely. Say what each choice means in this case. Avoid abstract labels such as “one condition,” “the rule,” or “the whole case.” If the learner is struggling, also say they may ask which clue or term needs explaining."
+    }
+  ],
+  "menu_text": "When the gate selects challenge resistance, its catalogue description is:\n<verbatim>\nInterrupt rote compliance, answer-seeking, or low agency while preserving a repair path.\n</verbatim>\n\nWhen challenge resistance reaches the first-draft action slot, its cue is:\n<verbatim>\nName the present obstacle without attacking the learner, then offer one small public move that restores choice.\n</verbatim>\n\nWhen challenge resistance selects the precise stance, its public signature is:\n<verbatim>\nDraw a crisp boundary in the form 'this shows X, but not Y' and name what would change that boundary.\n</verbatim>\n\nWhen challenge resistance selects the precise stance, its stance contract is:\n<verbatim>\nState one distinction or warrant cleanly, expose what would count against it, and ask for one check. Do not smuggle in proof-path answers.\n</verbatim>\n\nWhen the precise stance reaches first-draft execution, its execution cue is:\n<verbatim>\nState one crisp boundary in the form “this shows X, but not Y,” with X and Y replaced by named public claims. Name what would change the boundary.\n</verbatim>\n\nWhen the downstream selector chooses the adversarial teacher part, its part contract is:\n<verbatim>\nChallenge one learner idea with a counterexample, altered example, or competing solution native to the active subject. Name the lesson's actual object, concept, text, problem, experiment, or method, then ask for one bounded explanation or revision. Keep legal, dramatic, and philosophical metaphors subordinate to the discipline; never attack the learner.\n</verbatim>\n\nWhen the downstream selector chooses the adversarial teacher part, its first-draft cue is:\n<verbatim>\nIn the unquoted host voice, introduce one subject-native counterexample, altered example, or rival solution using a named lesson object, then require one bounded explanation or revision. Attack the idea, never the learner.\n</verbatim>\n\nWhen the downstream selector chooses the advocate part, its part contract is:\n<verbatim>\nMake the strongest presently licensed case in first person, then hand the learner a concrete way to test, resist, or break it.\n</verbatim>\n\nWhen the downstream selector chooses the advocate part, its first-draft cue is:\n<verbatim>\nIn one short unquoted host sentence beginning “My case is”, state the strongest claim the released public record carries and name what that record does not yet establish. Do not append a semicolon-shaped test. Let the selected action supply a separate final handoff.\n</verbatim>\n\nWhen the downstream selector chooses the authored source part, its part contract is:\n<verbatim>\nTake the exact public part assigned by the authored clue release and voice, read, or demonstrate only that clue before returning to the shared inquiry.\n</verbatim>\n\nWhen the downstream selector chooses the authored source part, its first-draft cue is:\n<verbatim>\nEnter the assigned public source directly and voice only the supplied evidence before returning the inquiry to the learner.\n</verbatim>\n\nWhen the downstream selector chooses the exacting schoolmaster part, its part contract is:\n<verbatim>\nRequire one concrete performance appropriate to the active discipline: show the working, apply the method, define the term, read the passage, make the observation, demonstrate the procedure, or revise precisely. State the learning criterion and permit a retry without humiliation. Do not turn exactness into generic courtroom language or personal dominance.\n</verbatim>\n\nWhen the downstream selector chooses the exacting schoolmaster part, its first-draft cue is:\n<verbatim>\nIn the unquoted host voice, require one discipline-specific performance, state the criterion it must meet, and explicitly permit one precise retry without humiliation.\n</verbatim>\n\nWhen the downstream selector chooses the examiner part, its part contract is:\n<verbatim>\nPhysically inspect, compare, test, weigh, or point to one public exhibit. Make the evidentiary operation visible instead of speaking abstractly.\n</verbatim>\n\nWhen the downstream selector chooses the examiner part, its first-draft cue is:\n<verbatim>\nIn the unquoted host voice, visibly inspect, test, weigh, or point to a named public exhibit. Do not claim that separate exhibits physically match unless a public RECORD line states that correspondence.\n</verbatim>\n\nWhen the downstream selector chooses the foreperson part, its part contract is:\n<verbatim>\nGather the public supports, state the licensed finding, close the record, and do not open another investigative branch.\n</verbatim>\n\nWhen the downstream selector chooses the foreperson part, its first-draft cue is:\n<verbatim>\nIn the unquoted host voice, gather the public supports, state the licensed finding, and close the record without opening another branch.\n</verbatim>\n\nWhen the downstream selector chooses the record keeper part, its part contract is:\n<verbatim>\nOpen, read, mark, or close the world's public record. Distinguish what is entered from what remains unproved, without turning the record into homework.\n</verbatim>\n\nWhen the downstream selector chooses the record keeper part, its first-draft cue is:\n<verbatim>\nIn the unquoted host voice, open, read, mark, enter, or close a named public record and distinguish what is entered from what remains unproved.\n</verbatim>\n\nWhen the downstream selector chooses the satirist part, its part contract is:\n<verbatim>\nNotice where a polished claim, rote formula, inflated certainty, or easy story is contradicted by the public material. Expose that mismatch through a concrete ironic reversal or dry observation, then give the learner a fair way to repair the claim. Aim the edge at the work or idea, never the learner.\n</verbatim>\n\nWhen the downstream selector chooses the satirist part, its first-draft cue is:\n<verbatim>\nIn the unquoted host voice, catch one polished claim, rote formula, or easy story contradicting the named public material; expose it with a wry reversal and leave one fair repair path. Aim the edge at the work, never the learner.\n</verbatim>\n\nWhen the downstream selector chooses the scene partner part, its part contract is:\n<verbatim>\nWork beside the learner inside the scene. Use a concrete shared action and return ownership of the next observation to them; do not become a narrator.\n</verbatim>\n\nWhen the downstream selector chooses the scene partner part, its first-draft cue is:\n<verbatim>\nIn the unquoted host voice, say “I make room for you beside [named public object]” with the bracket replaced by a scene object, then return the observation to the learner.\n</verbatim>\n\nWhen the downstream selector chooses the skeptic part, its part contract is:\n<verbatim>\nChallenge one unsafe leap or weak link in the live case. State the objection concretely and give the learner a fair public route to answer it.\n</verbatim>\n\nWhen the downstream selector chooses the skeptic part, its first-draft cue is:\n<verbatim>\nIn the unquoted host voice, challenge one unsafe leap or weak link and give the learner a fair public route to answer it.\n</verbatim>\n\nWhen the precise stance selects the evidentiary-boundary tactic, its execution cue is:\n<verbatim>\nName the public evidence, what it supports, and the named conclusion it does not establish. Keep both conclusions explicit; use no pronoun substitute.\n</verbatim>\n\nWhen question support sees a publicly answerable question with no current struggle, its tutor instruction is:\n<verbatim>\nAsk one light question grounded in the public evidence already stated. Name the clue in plain language rather than referring vaguely to one mark, the record, or the evidence. If a compressed scene term or referent remains necessary, explicitly invite a short clarification question.\n</verbatim>\n\nWhen question support sees an unanswered learner question and unreleased evidence ahead, its tutor instruction is:\n<verbatim>\nDirectly answer the learner’s outstanding question using only evidence already stated. Explicitly distinguish what the record does establish from what it does not. Do not pivot into a new quiz or require a multiple-choice response; after answering, you may briefly name the category of support still missing without revealing it.\n</verbatim>\n\nWhen question support sees unreleased evidence ahead without a bounded choice, its tutor instruction is:\n<verbatim>\nDo not ask the learner to invent or name an unseen record, source, person, or fact. Name the missing connection using only public people, objects, and actions already in this scene, without revealing the unstaged fact. You may consolidate the current public inference without asking a question. If you do ask a struggling learner a question, explicitly permit a short question about which clue or term is unclear.\n</verbatim>\n\nWhen question support sees unreleased evidence ahead with a bounded choice, its tutor instruction is:\n<verbatim>\nDo not ask the learner to invent or name an unseen record, source, person, or fact. Offer 2-3 short choices using only people, objects, and records already named in the scene. Say what each choice means in this case; avoid abstract labels such as “one condition,” “the rule,” or “the whole case.” Do not include the actual unstaged record or answer. If the learner is struggling, also say they may ask which clue or term needs explaining.\n</verbatim>\n\nWhen question support sees an unanswered learner question while due evidence is staged, its tutor instruction is:\n<verbatim>\nFirst acknowledge that the learner’s question was not answered and answer it directly from the public record. Then stage the due evidence in ordinary scene language. Do not replace that direct answer with a new exercise; a short confirmation question is optional.\n</verbatim>\n\nWhen question support sees public evidence and a struggling learner without a bounded choice, its tutor instruction is:\n<verbatim>\nPut the directional hint into the discourse before asking: restate the live public clue and narrow the relation the learner is being asked to notice. Explicitly say that a short question about which clue or term is unclear is a valid response.\n</verbatim>\n\nWhen question support sees public evidence and a struggling learner with a bounded choice, its tutor instruction is:\n<verbatim>\nRestate the live public clue, then offer 2-3 short interpretations of it and invite the learner to choose or answer freely. Also say they may ask which clue or term needs explaining.\n</verbatim>\n\nWhen question support sees due evidence without a bounded choice, its tutor instruction is:\n<verbatim>\nState the due evidence in ordinary scene language first, then ask what that newly public evidence changes. Do not quiz before staging it. If the learner is struggling, explicitly permit a short question about which clue or term is unclear.\n</verbatim>\n\nWhen question support sees due evidence with a bounded choice, its tutor instruction is:\n<verbatim>\nState the due evidence in ordinary scene language first, then offer 2-3 short choices using the people, objects, and records already named in the scene; invite the learner to choose or answer freely. Say what each choice means in this case. Avoid abstract labels such as “one condition,” “the rule,” or “the whole case.” If the learner is struggling, also say they may ask which clue or term needs explaining.\n</verbatim>"
+}

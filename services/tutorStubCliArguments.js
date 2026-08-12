@@ -103,6 +103,7 @@ export function parseTutorStubCliArguments({
       demo: { type: 'boolean', default: false },
       save: { type: 'string' },
       'prompt-book-context': { type: 'string' },
+      'standing-instructions-file': { type: 'string' },
       'trace-dir': { type: 'string', default: stub.traceDir },
       'artifact-archive': { type: 'string', default: stub.artifactArchive },
       'settings-file': { type: 'string', default: stub.settingsFile },

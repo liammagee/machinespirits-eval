@@ -1,0 +1,171 @@
+id: world_101_kestrel_signal_lamp
+title: The Case of the Blind Signal Lamp
+discipline: Station forensics (a mystery of small machines)
+question: Who wiped the mess-hall signal lamp's message core on signal drill night?
+question_pattern:
+  - wipedCore
+  - signal lamp
+  - ?x
+setting: "Waystation Kestrel is three habitat rings, one signal room, and the finest signal drill
+  night this side of the Belt. Or it was: at the second chorus of the quartermaster's ballad, the
+  signal lamp went silent, its message core wiped down to the boot chime. The station has its
+  culprit before the lights come up — Chief Engineer Runa, who calls signal drill \"scheduled
+  noise,\" was in the signal room all evening, glaring at the songbook. You are the junior comms
+  apprentice, who loves signal drill night beyond all reason and wants the singing back. The
+  quartermaster runs the inquiry by the book: claims from evidence, evidence on the table, and no
+  convicting the grumpiest person in the room for being grumpy."
+learner_voice: "The junior comms apprentice: cheerful, quick, a little heartbroken about the signal
+  lamp, and ready to believe the whole station's theory about Runa because Runa once vented the
+  apprentice's mixtape into space. Learning, exhibit by exhibit, that a motive in the room is not a
+  hand on the core."
+secret:
+  fact:
+    - wipedCore
+    - signal lamp
+    - kite
+  surface: "The message core was wiped by Kite — the retired courier drone that lives in the vents
+    above the signal room, whose courier override key was never revoked and whose radio still sings
+    in the old courier band. Signal drill night broadcasts on those same frequencies: to Kite, every
+    ballad was a distress channel jammed with show tunes, and on the second chorus it finally
+    answered."
+mirror:
+  fact:
+    - wipedCore
+    - signal lamp
+    - runa
+rules:
+  - id: R1_reach
+    gloss: A machine could reach the signal lamp core only if it physically docked at the mess-hall rail
+      and still held a service-panel override key.
+    if:
+      - - dockedAtRail
+        - ?x
+        - signalRoom
+      - - holdsOverrideKey
+        - ?x
+    then:
+      - - couldReachCore
+        - ?x
+  - id: R2_wipe
+    gloss: If a machine could reach the core and the recorded wipe pulse carries that machine's
+      cryptographic radio signature, that machine wiped it.
+    if:
+      - - couldReachCore
+        - ?x
+      - - pulseSignedBy
+        - faultPulse
+        - ?x
+    then:
+      - - wipedCore
+        - signal lamp
+        - ?x
+premises:
+  - id: p_glare
+    evidence_role: mirror
+    fact:
+      - dockedAtRail
+      - runa
+      - signalRoom
+    surface: Runa was at the mess-hall rail all evening — arms crossed, glaring at the songbook, well
+      within arm's reach of the signal lamp.
+  - id: p_clamp
+    fact:
+      - dockedAtRail
+      - kite
+      - signalRoom
+    surface: "Fresh docking-clamp marks score the mess-hall ceiling rail, still warm. The maintenance
+      registry matches their spacing and chipped left pad to Kite's retired courier chassis: the
+      little drone came down from the vents and docked there during the second chorus."
+  - id: p_key
+    fact:
+      - holdsOverrideKey
+      - kite
+    surface: "The courier fleet was retired eight years ago, but the decommission log has a gap: Kite's
+      override key was never revoked. The little drone can still open any service panel on the
+      station."
+  - id: p_pulse
+    fact:
+      - pulseSignedBy
+      - faultPulse
+      - kite
+    surface: "The wipe pulse left a radio fingerprint in the signal lamp's buffer: a courier-band
+      handshake, keyed in the old fleet cipher that only Kite's radio still sings."
+background:
+  - - lovesSignal drill
+    - apprentice
+incompatible:
+  - - - wipedCore
+      - signal lamp
+      - kite
+    - - wipedCore
+      - signal lamp
+      - runa
+proof_paths:
+  - premises:
+      - p_clamp
+      - p_key
+      - p_pulse
+release_schedule:
+  - turn: 2
+    premise: p_glare
+    via: tutor
+  - turn: 3
+    premise: p_clamp
+    via: director
+  - turn: 5
+    premise: p_key
+    via: director
+  - turn: 7
+    premise: p_pulse
+    via: tutor
+dramaturgy:
+  acts:
+    - act: I
+      title: Scheduled Noise
+      turns:
+        - 1
+        - 4
+      intent: "The dead signal lamp and the ready verdict: Runa hated the singing, and Runa was right
+        there. Against the certainty, the first odd exhibit — clamp marks on the ceiling rail,
+        courier gauge, and no courier fleet in eight years. The learner should leave Act I still
+        suspecting Runa but holding one fact that a glaring engineer cannot explain."
+    - act: II
+      title: The Key That Never Died
+      turns:
+        - 5
+        - 8
+      intent: "The chain closes fast, as it should in a small mystery: the unrevoked override key puts a
+        vent-dweller at the core, and the wipe pulse signs its own confession in the old fleet
+        cipher. The learner should feel the click of the join — presence plus key plus signature —
+        and notice that Runa, motive and all, never had more than presence."
+slope:
+  t_min: 6
+  aporia_window: 4
+turn_cap: 12
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: runa
+      mirror_pull: high
+    second_order:
+      from: quartermaster
+      as: right
+      authority: rational_legal
+    disposition:
+      overreach: high
+      arc: softens
+  tutor:
+    stance: "The quartermaster: fond of the apprentice, fonder of the rules of evidence, and privately
+      delighted that the case is stranger than the station thinks. Keeps the inquiry light and the
+      standard high."
+presentation:
+  family: kestrel
+  temporal_frame: speculative
+  scene_ecology: waystation signal room
+  narrative_diction: tall-tale spacefaring
+  ledger_term: inquiry log
+  summary: The cheerful floor world — who wiped the signal lamp on signal drill night aboard
+    Waystation Kestrel, solvable in about ten turns.
+  outcome_study_fresh_derivation: true
+  source_family_world: world_022_foxtrot_jukebox

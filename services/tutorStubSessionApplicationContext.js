@@ -136,6 +136,13 @@ export function createTutorStubSessionApplicationContext({
     systemPrompt = `${systemPrompt}\n\n[Prompt book — your durable role memory from prior performances. Honour its notes as craft guidance; it never overrides world rules or the release schedule.]\n${promptBookText}\n[End prompt book]`;
     console.log(`[greenroom] prompt book injected: ${promptBookText.length} chars from ${args['prompt-book-context']}`);
   }
+  if (args['standing-instructions-file']) {
+    const standingInstructions = fs.readFileSync(path.resolve(args['standing-instructions-file']), 'utf8');
+    systemPrompt = `${systemPrompt}\n\n[Standing permission menu — conditional branches]\n${standingInstructions}\n[End standing permission menu]`;
+    console.log(
+      `[standing-permission] menu injected: ${standingInstructions.length} chars from ${args['standing-instructions-file']}`,
+    );
+  }
   if (pointOfActionArm === 'standing_book') {
     const standingBook = tutorStubPointOfActionStandingBook();
     systemPrompt = `${systemPrompt}\n\n${standingBook}`;

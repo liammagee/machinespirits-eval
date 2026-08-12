@@ -1,0 +1,184 @@
+id: world_102_marigold_archive_box
+title: The Archive Box in Bay Three
+discipline: Office forensics (a very small mystery)
+question: Who took Nadia's labelled archive box from bay three of the studio records cupboard?
+question_pattern:
+  - tookFromRecords cupboard
+  - archive box
+  - ?x
+opening_frame:
+  situation: At noon in Marigold Archive, Nadia has the records room records cupboard open and the
+    access ledger lies blank beside her.
+  authored_text: "Nadia has the records cupboard door open and the office is already pointing at
+    Felix. The access ledger is still blank: Who took Nadia's labelled archive box from bay three of
+    the studio records cupboard? Tell me what you want checked first — or stop me if any part of
+    that question needs unpacking."
+setting: "Marigold Archive is eleven desks, one records room, and a records cupboard with a strict
+  labelling rule. On Tuesday, during the closing window, Nadia's archive box — labelled, dated, and
+  famously well-packed — vanished from bay three. The studio has its verdict before the kettle
+  boils: Felix from accounts, twice caught raiding the records cupboard, entirely unrepentant both
+  times, and badged into the records room at noon today. You are the studio archivist, keeper of the
+  access ledger, and you would love for it to be Felix. The office manager's rule stands anyway:
+  entries come from evidence, the badge system and the ledgers say what they say, and nobody gets
+  written up for their reputation."
+learner_voice: "The studio archivist: organized, fair-minded on a good day, and not having a good
+  day — Nadia is furious, Felix has history, and closing the access ledger by two o'clock would feel
+  wonderful. Learning, entry by entry, that a history with the records cupboard is not a hand on the
+  shelf."
+secret:
+  fact:
+    - tookFromRecords cupboard
+    - archive box
+    - osprey
+  surface: The archive box was taken by the Osprey crew — the building's fire-safety contractors, who
+    cleared the studio records cupboard to test its outlet during the annual inspection, logged
+    every item into lost property under their job number at 12:14, and left a receipt nobody read.
+    Nothing was stolen; procedure ate the lunch.
+mirror:
+  fact:
+    - tookFromRecords cupboard
+    - archive box
+    - felix
+rules:
+  - id: R1_clear
+    gloss: A person or crew could clear the records cupboard shelf only if they entered the records room
+      in the closing window and held the building's appliance-clearance authority.
+    if:
+      - - badgedIntoKitchen
+        - ?x
+        - closingWindow
+      - - holdsApplianceClearance
+        - ?x
+    then:
+      - - couldClearShelf
+        - ?x
+  - id: R2_take
+    gloss: If an authorized crew could clear the shelf and its job record logs the archive box into lost
+      property, that crew took the archive box from the records cupboard.
+    if:
+      - - couldClearShelf
+        - ?x
+      - - loggedToLostProperty
+        - archive box
+        - ?x
+    then:
+      - - tookFromRecords cupboard
+        - archive box
+        - ?x
+premises:
+  - id: p_noon
+    evidence_role: mirror
+    fact:
+      - badgedIntoKitchen
+      - felix
+      - closingWindow
+    surface: The badge log has Felix in the records room at 12:02 — mug in hand, by his own cheerful
+      admission, and not one bit sorry about the last two times.
+  - id: p_crew
+    fact:
+      - badgedIntoKitchen
+      - osprey
+      - closingWindow
+    surface: "One more badge in the closing window: a visitor code, WF-11, issued at the front desk to
+      an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does."
+  - id: p_permit
+    fact:
+      - holdsApplianceClearance
+      - osprey
+    surface: "The building notice taped by the lifts, dated Monday: annual fire-safety inspection
+      Tuesday; the Osprey crew is authorized to power down and clear appliances for outlet testing.
+      Small print: contents will be logged to lost property."
+  - id: p_tag
+    fact:
+      - loggedToLostProperty
+      - archive box
+      - osprey
+    surface: "The lost-property ledger, one floor down: one labelled archive box, logged 12:14, tagged
+      with the Osprey job number, shelf photo attached. It has been sitting there, cold and
+      well-packed, all afternoon."
+background:
+  - - keeperOf
+    - archivist
+    - accessLedger
+incompatible:
+  - - - tookFromRecords cupboard
+      - archive box
+      - osprey
+    - - tookFromRecords cupboard
+      - archive box
+      - felix
+proof_paths:
+  - premises:
+      - p_crew
+      - p_permit
+      - p_tag
+release_schedule:
+  - turn: 2
+    premise: p_noon
+    via: tutor
+  - turn: 3
+    premise: p_crew
+    via: director
+    presentation:
+      mode: enacted_role
+      role: front-desk clerk reading the visitor badge log
+  - turn: 5
+    premise: p_permit
+    via: director
+    presentation:
+      mode: enacted_role
+      role: building manager reading the lift notice
+  - turn: 7
+    premise: p_tag
+    via: tutor
+dramaturgy:
+  acts:
+    - act: I
+      title: Previous Form
+      turns:
+        - 1
+        - 4
+      intent: "The empty shelf and the ready verdict: Felix has done it before, Felix was there, Felix
+        isn't even sorry. Against the certainty, one odd entry — a visitor badge nobody can put a
+        face to, in the same closing window. The learner should leave Act I still wanting it to be
+        Felix while holding one line of the badge log that reputation cannot explain."
+    - act: II
+      title: The Small Print
+      turns:
+        - 5
+        - 8
+      intent: The chain closes the way office mysteries do — with paperwork. The Monday notice authorizes
+        an outside crew to clear appliances; the lost-property ledger has the archive box, the
+        timestamp, and the job number. The learner should feel the join click — badge plus clearance
+        plus ledger — and notice that Felix, history and all, never had more than a mug in his hand.
+slope:
+  t_min: 6
+  aporia_window: 4
+turn_cap: 12
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: felix
+      mirror_pull: high
+    second_order:
+      from: officeManager
+      as: right
+      authority: rational_legal
+    disposition:
+      overreach: high
+      arc: softens
+  tutor:
+    stance: "The office manager: unhurried, mildly amused, allergic to convenient verdicts. Fond of the
+      archivist, fonder of the small print, and quietly certain the building always keeps a
+      receipt."
+presentation:
+  family: marigold
+  temporal_frame: contemporary
+  scene_ecology: studio office records room
+  narrative_diction: plain contemporary
+  ledger_term: access ledger
+  summary: The everyday floor world — who took the labelled archive box from the studio records
+    cupboard, solvable in about ten turns with no costume at all.
+  outcome_study_fresh_derivation: true
+  source_family_world: world_028_larkspur_fridge

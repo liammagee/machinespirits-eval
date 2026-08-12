@@ -176,6 +176,7 @@ const { values: args } = parseArgs({
       default: process.env.TUTOR_STUB_EVAL_AUTO_LEARNER_PROFILE_ID || 'diligent',
     },
     'parent-run-id': { type: 'string', default: process.env.TUTOR_STUB_EVAL_PARENT_RUN_ID || '' },
+    'standing-instructions-file': { type: 'string', default: '' },
     'report-from': { type: 'string', default: '' },
     'resume-from': { type: 'string', default: '' },
     'resume-statuses': { type: 'string', default: 'failed' },
@@ -277,6 +278,8 @@ Options:
                               built-in profile when no custom text is supplied
                               (default: diligent; use --list-learner-profiles)
   --parent-run-id <id>        semantic parent evidence run (set by QA orchestration)
+  --standing-instructions-file <path>
+                              append a byte-frozen conditional instruction menu to the tutor system prompt
   --report-from <json>       verify when sealed and write a derived sibling report; source stays read-only
   --resume-from <json>       rerun rows in a new sealed sibling transaction; source stays read-only
   --resume-statuses <csv>    statuses to rerun with --resume-from (default: failed)
@@ -10293,6 +10296,9 @@ function tutorStubArgs({ policy, runIndex, totalRuns, traceDir }) {
   if (args['pressure-turns']) command.push('--pressure-turns', args['pressure-turns']);
   if (args['point-of-action-arm']) {
     command.push('--point-of-action-arm', normalizeTutorStubPointOfActionArm(args['point-of-action-arm']));
+  }
+  if (args['standing-instructions-file']) {
+    command.push('--standing-instructions-file', args['standing-instructions-file']);
   }
   if (args['first-message']) command.push('--once', args['first-message']);
   if (args['cli-effort']) command.push('--cli-effort', args['cli-effort']);

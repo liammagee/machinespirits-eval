@@ -46,6 +46,24 @@ export const OUTCOME_STUDY_RUN_CONFIGURATIONS = Object.freeze([
     learner_analysis_prompt_profile: 'handbook_v1',
     cli_args: Object.freeze(['--turns', '8', '--no-stop-on-grounded', '--warrant-gate', 'active']),
   }),
+  Object.freeze({
+    id: 'standing_permission',
+    warrant_gate_mode: 'off',
+    horizon: 8,
+    learner_profile: 'low_agency',
+    learner_analysis_prompt_profile: 'handbook_v1',
+    standing_instructions_file:
+      'docs/adaptation-refinement/outcome-study-a1/standing-permission-menu.json',
+    cli_args: Object.freeze([
+      '--turns',
+      '8',
+      '--no-stop-on-grounded',
+      '--warrant-gate',
+      'off',
+      '--standing-instructions-file',
+      'docs/adaptation-refinement/outcome-study-a1/standing-permission-menu.txt',
+    ]),
+  }),
 ]);
 
 export const PRESENCE_CHANNEL_DIGEST_FIELDS = Object.freeze([
@@ -343,7 +361,9 @@ function normalizeOutcomeTurn(row) {
 }
 
 export function extractOutcomeDialogueFromTraceRows({ dialogue_id, condition, rows } = {}) {
-  if (!['bare', 'gated'].includes(condition)) throw new Error(`unsupported outcome condition: ${condition}`);
+  if (!['bare', 'gated', 'standing_permission'].includes(condition)) {
+    throw new Error(`unsupported outcome condition: ${condition}`);
+  }
   const turns = (rows || [])
     .filter((row) => row?.type === 'turn_complete' && row.turnRecord)
     .map((row) => normalizeOutcomeTurn(row.turnRecord))

@@ -22,6 +22,11 @@ import {
   scoreOutcomePresenceCases,
   verifyOutcomeDecisionReaderRunEvidence,
 } from '../scripts/score-adaptive-warrant-outcome-study.js';
+import {
+  buildOutcomeStandingPermissionMenu,
+  guardOutcomeStandingPermissionMenu,
+  guardOutcomePilotPreparation,
+} from '../scripts/prepare-adaptive-warrant-outcome-study.js';
 
 const digest = (character) => character.repeat(64);
 
@@ -80,10 +85,61 @@ function turn(turnNumber, overrides = {}) {
   };
 }
 
-test('run configurations expose bare and gated only', () => {
-  assert.deepEqual(OUTCOME_STUDY_RUN_CONFIGURATIONS.map((row) => row.id), ['bare', 'gated']);
-  assert.deepEqual(OUTCOME_STUDY_RUN_CONFIGURATIONS.map((row) => row.warrant_gate_mode), ['off', 'active']);
-  assert.equal(JSON.stringify(OUTCOME_STUDY_RUN_CONFIGURATIONS).includes('standing'), false);
+test('run configurations expose bare, gated, and standing-permission conditions', () => {
+  assert.deepEqual(OUTCOME_STUDY_RUN_CONFIGURATIONS.map((row) => row.id), [
+    'bare',
+    'gated',
+    'standing_permission',
+  ]);
+  assert.deepEqual(OUTCOME_STUDY_RUN_CONFIGURATIONS.map((row) => row.warrant_gate_mode), [
+    'off',
+    'active',
+    'off',
+  ]);
+  assert.match(OUTCOME_STUDY_RUN_CONFIGURATIONS[2].cli_args.join(' '), /standing-instructions-file/u);
+});
+
+test('standing-permission byte guard passes the complete generated menu', () => {
+  const menu = buildOutcomeStandingPermissionMenu();
+  const result = guardOutcomeStandingPermissionMenu(menu);
+  assert.equal(result.status, 'passed');
+  assert.equal(result.observed_entry_count, result.expected_entry_count);
+  assert.equal(result.missing.length, 0);
+});
+
+test('standing-permission byte guard fails on one altered quoted byte', () => {
+  const menu = buildOutcomeStandingPermissionMenu();
+  menu.entries[0].quote = `${menu.entries[0].quote.slice(0, -1)}!`;
+  menu.menu_text = menu.entries
+    .map((row) => `${row.prefix}\n<verbatim>\n${row.quote}\n</verbatim>`)
+    .join('\n\n');
+  const result = guardOutcomeStandingPermissionMenu(menu);
+  assert.equal(result.status, 'failed');
+  assert.equal(result.rows[0].quote_bytes_match, false);
+});
+
+test('standing-permission byte guard fails when one branch is missing', () => {
+  const menu = buildOutcomeStandingPermissionMenu();
+  const removed = menu.entries.pop();
+  menu.menu_text = menu.entries
+    .map((row) => `${row.prefix}\n<verbatim>\n${row.quote}\n</verbatim>`)
+    .join('\n\n');
+  const result = guardOutcomeStandingPermissionMenu(menu);
+  assert.equal(result.status, 'failed');
+  assert.deepEqual(result.missing, [removed.id]);
+});
+
+test('fresh pilot worlds and seeds pass the pre-call fingerprint guard', () => {
+  const result = guardOutcomePilotPreparation({
+    worldPaths: [
+      'docs/adaptation-refinement/outcome-study-a1/worlds/world_101_kestrel_signal_lamp.yaml',
+      'docs/adaptation-refinement/outcome-study-a1/worlds/world_102_marigold_archive_box.yaml',
+    ],
+  });
+  assert.equal(result.status, 'passed');
+  assert.equal(result.prepared_run_count, 18);
+  assert.deepEqual(result.seeds, [515, 516, 517]);
+  assert.equal(result.post_generation_case_guard_required, true);
 });
 
 test('measure 1 names path 1 and scores consensus decisions only', (t) => {

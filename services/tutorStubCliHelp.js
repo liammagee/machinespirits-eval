@@ -200,6 +200,8 @@ Options:
   --goal <text>          tutor objective
   --style <text>         tutor style constraints
   --system <path>        replace generated system prompt with a file
+  --standing-instructions-file <path>
+                         append a byte-frozen conditional instruction menu
   --once <text>          run one turn and exit
   --auto-learner         run unattended with an LLM learner
   --auto-learner-model <ref>
