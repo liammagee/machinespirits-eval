@@ -834,7 +834,8 @@ export function validateAdaptiveWarrantAnnotationAuthorizationRequest({ requestP
   }
   if (
     request.bindings.source_commit !== manifest.source_commit ||
-    request.bindings.source_commit !== manifest.semantic_brittleness_preflight?.source_commit
+    (manifest.semantic_brittleness_preflight &&
+      request.bindings.source_commit !== manifest.semantic_brittleness_preflight.source_commit)
   ) {
     throw new Error('annotation authorization request source-commit binding mismatch');
   }
