@@ -24,8 +24,29 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — ruling 068b: 068/068a RETRACTED; pilot launch on GO
-  note 068c (594 calls, no ping).**
+- **CURRENT — ruling 069a: pilot stopped on plan arithmetic; corrected
+  1116-call plan human-approved; GO note 069b pending.**
+  (`069a-reviewer-ruling-technical-stop-plan-arithmetic.md`, rules on
+  report 069 at `6278768b`.) The 068c launch ran verbatim; every guard
+  passed; but a live 8-turn dialogue reserves ~26 low-level calls, not
+  the 1 the frozen plan counted. The driver interrupted fail-closed
+  during dialogue 2 — lawful under 052a, ruled TECHNICAL. Spend:
+  conservative 33; counter **3,556** of 11,337. Dialogue 1 sealed
+  complete (reuse decided at re-review; the corrected plan regenerates
+  fresh); dialogue 2 QUARANTINED, re-take at same seed. Corrected plan:
+  per-dialogue cap 30 enforced at the stub level; (18 × 30) + 288 +
+  288 = **1116**; counter 3,556 → 4,672 if completed. **Human approved
+  the doubled budget in session, 13 Aug: "prepare it now, I approve in
+  advance."** Harness constants/guards, manifest `planned_calls`, and
+  tests re-pinned (new regression test pins the cap against the
+  measured live unit; suites 191/191 + ESLint). GO note 068c is
+  CONSUMED. Sequence: second-session review of the arithmetic diff
+  (final-gate), then GO note 069b, fresh out dir
+  `…outcome-pilot-v2-live-2026-08-13`. **Morning-review flags: the
+  stop, the wrong frozen arithmetic (both prior review passes missed
+  it), 068c consumed.**
+- **RESOLVED — ruling 068b: 068/068a RETRACTED; pilot launch on GO
+  note 068c (594 calls, no ping) — 068c now CONSUMED per 069a.**
   (`068b-reviewer-ruling-retraction-and-guard-fix.md`.) Driver
   report 068 (`369becfe`) found the lawful instrument freeze at
   `/private/tmp/adaptive-warrant-v3-matrix-live-489f2429-r38-s514/annotation-freeze-manifest-r52-presence-confirmation.json`

@@ -58,11 +58,15 @@ export const OUTCOME_PILOT_CHECKPOINT_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-outcome-pilot-checkpoint.v1';
 export const OUTCOME_PILOT_FREEZE_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-mechanism-validation-freeze.v1';
+// Corrected under ruling 069a: a live 8-turn dialogue reserves ~26 low-level
+// model calls (report 069 measured unit), so generation is budgeted as a cap
+// of 30 per dialogue, not 1. Human approved the corrected budget in advance.
+export const OUTCOME_PILOT_PER_DIALOGUE_CAP = 30;
 export const OUTCOME_PILOT_CALL_PLAN = Object.freeze({
-  generation: 18,
+  generation: 18 * OUTCOME_PILOT_PER_DIALOGUE_CAP,
   presence_readers: 288,
   decision_readers: 288,
-  total: 594,
+  total: 18 * OUTCOME_PILOT_PER_DIALOGUE_CAP + 288 + 288,
 });
 export const OUTCOME_PILOT_READER_CONCURRENCY = 2;
 
@@ -104,7 +108,7 @@ export function printOutcomePilotPlan(manifest = null) {
   return [
     'Adaptive-warrant outcome pilot: HOLD / zero-call plan only.',
     `Entry point: ${relativeToRoot(SCRIPT_PATH)}`,
-    `Dialogues: ${plan.generation ?? 18}; presence readers: ${plan.presence_readers ?? 288}; decision readers: ${plan.decision_readers ?? 288}; total: ${plan.total ?? 594}.`,
+    `Generation call cap: ${plan.generation ?? 540}; presence readers: ${plan.presence_readers ?? 288}; decision readers: ${plan.decision_readers ?? 288}; total: ${plan.total ?? 1116}.`,
     'A paid run requires --go-note <fresh committed reviewer go note> --accept-charges.',
     `The consumed note ${CONSUMED_GO_NOTE} is never accepted.`,
   ].join('\n');
@@ -131,8 +135,8 @@ export function validateOutcomePilotGoNote(goNotePath) {
   if (!text.includes('run-adaptive-warrant-outcome-pilot.js')) {
     throw new Error('outcome pilot refuses: go note does not name the executable entry point');
   }
-  if (!/\bGO\b/u.test(text) || !/594/u.test(text)) {
-    throw new Error('outcome pilot refuses: go note lacks the pilot GO and 594-call scope');
+  if (!/\bGO\b/u.test(text) || !/1116/u.test(text)) {
+    throw new Error('outcome pilot refuses: go note lacks the pilot GO and 1116-call scope');
   }
   return { path: resolved, relative_path: relative, sha256: sha256(onDisk) };
 }
@@ -171,15 +175,15 @@ export function verifyOutcomePilotManifestBindings({ manifestPath = DEFAULT_MANI
   assertExactObject(
     manifest.planned_calls,
     {
-      generation: 18,
+      generation: 540,
       presence_readers: 288,
       decision_readers: 288,
-      total: 594,
-      arithmetic: '18 + (2 x 144) + (2 x 144) = 594',
-      counter_before: 3523,
-      counter_after_if_completed: 4117,
+      total: 1116,
+      arithmetic: '(18 x 30 cap) + (2 x 144) + (2 x 144) = 1116; measured live unit 26 per dialogue (report 069)',
+      counter_before: 3556,
+      counter_after_if_completed: 4672,
       ceiling: 11337,
-      remaining_after_if_completed: 7220,
+      remaining_after_if_completed: 6665,
     },
     'pilot call plan',
   );
@@ -315,7 +319,7 @@ export function createOutcomePilotBudget({ checkpointPath, checkpoint = null } =
     if (!Object.hasOwn(state.call_budget.actual, phase) || phase === 'total')
       throw new Error(`unknown budget phase ${phase}`);
     if (state.call_budget.actual.total >= state.call_budget.plan.total) {
-      throw new Error('594-call budget exhausted; refusing model call');
+      throw new Error(`${state.call_budget.plan.total}-call budget exhausted; refusing model call`);
     }
     state.call_budget.actual[phase] += 1;
     state.call_budget.events.push({ type: 'model_call_budget_reserved', phase, ...event });
@@ -324,7 +328,7 @@ export function createOutcomePilotBudget({ checkpointPath, checkpoint = null } =
   const reserveMany = (phase, count, event = {}) => {
     if (!Number.isInteger(count) || count < 0) throw new Error('reservation count must be a non-negative integer');
     if (state.call_budget.actual.total + count > state.call_budget.plan.total) {
-      throw new Error('594-call budget overrun refused');
+      throw new Error(`${state.call_budget.plan.total}-call budget overrun refused`);
     }
     for (let index = 0; index < count; index += 1) reserve(phase, { ...event, ordinal: index + 1 });
   };
@@ -379,7 +383,7 @@ export function buildOutcomePilotJobs({ manifest, rootDir, dryRun = false } = {}
       '--max-tokens',
       '4096',
       '--model-call-budget',
-      String(OUTCOME_PILOT_CALL_PLAN.total),
+      String(OUTCOME_PILOT_PER_DIALOGUE_CAP),
       '--register-temperature',
       '0.15',
       '--dag-fact-dropout',

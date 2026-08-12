@@ -37,31 +37,134 @@
       "sha256": "33ef86c9d65eb25f7d140f9c7cc07fc5a3afd3c9ba07cdc721139235402e3c18"
     }
   ],
-  "seeds": [515, 516, 517],
+  "seeds": [
+    515,
+    516,
+    517
+  ],
   "conditions": {
-    "bare": { "warrant_gate": "off", "standing_permission_menu": false },
-    "gated": { "warrant_gate": "active", "standing_permission_menu": false },
-    "standing_permission": { "warrant_gate": "off", "standing_permission_menu": true }
+    "bare": {
+      "warrant_gate": "off",
+      "standing_permission_menu": false
+    },
+    "gated": {
+      "warrant_gate": "active",
+      "standing_permission_menu": false
+    },
+    "standing_permission": {
+      "warrant_gate": "off",
+      "standing_permission_menu": true
+    }
   },
   "interleaved_condition_assignment": [
-    { "order": 1, "world": "world_101_kestrel_signal_lamp", "seed": 515, "condition": "bare" },
-    { "order": 2, "world": "world_101_kestrel_signal_lamp", "seed": 515, "condition": "gated" },
-    { "order": 3, "world": "world_101_kestrel_signal_lamp", "seed": 515, "condition": "standing_permission" },
-    { "order": 4, "world": "world_102_marigold_archive_box", "seed": 515, "condition": "gated" },
-    { "order": 5, "world": "world_102_marigold_archive_box", "seed": 515, "condition": "standing_permission" },
-    { "order": 6, "world": "world_102_marigold_archive_box", "seed": 515, "condition": "bare" },
-    { "order": 7, "world": "world_101_kestrel_signal_lamp", "seed": 516, "condition": "standing_permission" },
-    { "order": 8, "world": "world_101_kestrel_signal_lamp", "seed": 516, "condition": "bare" },
-    { "order": 9, "world": "world_101_kestrel_signal_lamp", "seed": 516, "condition": "gated" },
-    { "order": 10, "world": "world_102_marigold_archive_box", "seed": 516, "condition": "bare" },
-    { "order": 11, "world": "world_102_marigold_archive_box", "seed": 516, "condition": "gated" },
-    { "order": 12, "world": "world_102_marigold_archive_box", "seed": 516, "condition": "standing_permission" },
-    { "order": 13, "world": "world_101_kestrel_signal_lamp", "seed": 517, "condition": "gated" },
-    { "order": 14, "world": "world_101_kestrel_signal_lamp", "seed": 517, "condition": "standing_permission" },
-    { "order": 15, "world": "world_101_kestrel_signal_lamp", "seed": 517, "condition": "bare" },
-    { "order": 16, "world": "world_102_marigold_archive_box", "seed": 517, "condition": "standing_permission" },
-    { "order": 17, "world": "world_102_marigold_archive_box", "seed": 517, "condition": "bare" },
-    { "order": 18, "world": "world_102_marigold_archive_box", "seed": 517, "condition": "gated" }
+    {
+      "order": 1,
+      "world": "world_101_kestrel_signal_lamp",
+      "seed": 515,
+      "condition": "bare"
+    },
+    {
+      "order": 2,
+      "world": "world_101_kestrel_signal_lamp",
+      "seed": 515,
+      "condition": "gated"
+    },
+    {
+      "order": 3,
+      "world": "world_101_kestrel_signal_lamp",
+      "seed": 515,
+      "condition": "standing_permission"
+    },
+    {
+      "order": 4,
+      "world": "world_102_marigold_archive_box",
+      "seed": 515,
+      "condition": "gated"
+    },
+    {
+      "order": 5,
+      "world": "world_102_marigold_archive_box",
+      "seed": 515,
+      "condition": "standing_permission"
+    },
+    {
+      "order": 6,
+      "world": "world_102_marigold_archive_box",
+      "seed": 515,
+      "condition": "bare"
+    },
+    {
+      "order": 7,
+      "world": "world_101_kestrel_signal_lamp",
+      "seed": 516,
+      "condition": "standing_permission"
+    },
+    {
+      "order": 8,
+      "world": "world_101_kestrel_signal_lamp",
+      "seed": 516,
+      "condition": "bare"
+    },
+    {
+      "order": 9,
+      "world": "world_101_kestrel_signal_lamp",
+      "seed": 516,
+      "condition": "gated"
+    },
+    {
+      "order": 10,
+      "world": "world_102_marigold_archive_box",
+      "seed": 516,
+      "condition": "bare"
+    },
+    {
+      "order": 11,
+      "world": "world_102_marigold_archive_box",
+      "seed": 516,
+      "condition": "gated"
+    },
+    {
+      "order": 12,
+      "world": "world_102_marigold_archive_box",
+      "seed": 516,
+      "condition": "standing_permission"
+    },
+    {
+      "order": 13,
+      "world": "world_101_kestrel_signal_lamp",
+      "seed": 517,
+      "condition": "gated"
+    },
+    {
+      "order": 14,
+      "world": "world_101_kestrel_signal_lamp",
+      "seed": 517,
+      "condition": "standing_permission"
+    },
+    {
+      "order": 15,
+      "world": "world_101_kestrel_signal_lamp",
+      "seed": 517,
+      "condition": "bare"
+    },
+    {
+      "order": 16,
+      "world": "world_102_marigold_archive_box",
+      "seed": 517,
+      "condition": "standing_permission"
+    },
+    {
+      "order": 17,
+      "world": "world_102_marigold_archive_box",
+      "seed": 517,
+      "condition": "bare"
+    },
+    {
+      "order": 18,
+      "world": "world_102_marigold_archive_box",
+      "seed": 517,
+      "condition": "gated"
+    }
   ],
   "case_extraction": {
     "rule": "Extract one decision-turn case for every completed turn in each fixed eight-turn dialogue.",
@@ -84,7 +187,10 @@
       "preparer_sha256": "9b545f368da469d0271613751d6da6f11bb4ae1fc57fa63d39a66733ce83177c",
       "reader_digest": "6cb95fd8032f4c43c9fdc1e45808680365d5a0d3eb2dda5ef085e4d97e10145f"
     },
-    "caps_bytes": { "response": 14000, "packet": 42000 }
+    "caps_bytes": {
+      "response": 14000,
+      "packet": 42000
+    }
   },
   "decision_channel": {
     "readers": 2,
@@ -96,15 +202,15 @@
     }
   },
   "planned_calls": {
-    "generation": 18,
+    "generation": 540,
     "presence_readers": 288,
     "decision_readers": 288,
-    "total": 594,
-    "arithmetic": "18 + (2 x 144) + (2 x 144) = 594",
-    "counter_before": 3523,
-    "counter_after_if_completed": 4117,
+    "total": 1116,
+    "arithmetic": "(18 x 30 cap) + (2 x 144) + (2 x 144) = 1116; measured live unit 26 per dialogue (report 069)",
+    "counter_before": 3556,
+    "counter_after_if_completed": 4672,
     "ceiling": 11337,
-    "remaining_after_if_completed": 7220
+    "remaining_after_if_completed": 6665
   },
   "launch_authorized": false,
   "hold": "No model or reader call may run until the reviewer commits the go note after second-session byte review and manifest verification."

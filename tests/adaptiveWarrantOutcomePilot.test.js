@@ -5,8 +5,10 @@ import os from 'node:os';
 import path from 'node:path';
 
 import {
+  OUTCOME_PILOT_CALL_PLAN,
   OUTCOME_PILOT_CHECKPOINT_SCHEMA,
   OUTCOME_PILOT_FREEZE_SCHEMA,
+  OUTCOME_PILOT_PER_DIALOGUE_CAP,
   createOutcomePilotBudget,
   executeOutcomePilot,
   runOutcomeGeneration,
@@ -76,9 +78,9 @@ test('checkpoint resume skips a completed dialogue', async (t) => {
     schema: OUTCOME_PILOT_CHECKPOINT_SCHEMA,
     status: 'generation',
     call_budget: {
-      plan: { generation: 18, presence_readers: 288, decision_readers: 288, total: 594 },
-      actual: { generation: 1, presence_readers: 0, decision_readers: 0, total: 1 },
-      delta: { generation: 17, presence_readers: 288, decision_readers: 288, total: 593 },
+      plan: { generation: 540, presence_readers: 288, decision_readers: 288, total: 1116 },
+      actual: { generation: 26, presence_readers: 0, decision_readers: 0, total: 26 },
+      delta: { generation: 514, presence_readers: 288, decision_readers: 288, total: 1090 },
       events: [],
     },
     dialogues: [{ id: 'done-dialogue', status: 'complete' }],
@@ -116,10 +118,22 @@ test('representative freeze validates in the form accepted by the frozen decisio
   });
 });
 
-test('continuous budget refuses the 595th reservation', (t) => {
+test('continuous budget refuses the 1117th reservation', (t) => {
   const directory = temporaryDirectory(t);
   const budget = createOutcomePilotBudget({ checkpointPath: path.join(directory, 'checkpoint.json') });
-  budget.reserveMany('presence_readers', 594);
-  assert.throws(() => budget.reserve('decision_readers'), /594-call budget exhausted/u);
-  assert.equal(budget.state.call_budget.actual.total, 594);
+  budget.reserveMany('presence_readers', 1116);
+  assert.throws(() => budget.reserve('decision_readers'), /1116-call budget exhausted/u);
+  assert.equal(budget.state.call_budget.actual.total, 1116);
+});
+
+test('generation cap covers the measured live per-dialogue unit (report 069: 26 calls)', () => {
+  assert.ok(OUTCOME_PILOT_PER_DIALOGUE_CAP >= 26);
+  assert.equal(OUTCOME_PILOT_CALL_PLAN.generation, 18 * OUTCOME_PILOT_PER_DIALOGUE_CAP);
+  assert.equal(
+    OUTCOME_PILOT_CALL_PLAN.total,
+    OUTCOME_PILOT_CALL_PLAN.generation +
+      OUTCOME_PILOT_CALL_PLAN.presence_readers +
+      OUTCOME_PILOT_CALL_PLAN.decision_readers,
+  );
+  assert.ok(OUTCOME_PILOT_CALL_PLAN.presence_readers >= 288);
 });
