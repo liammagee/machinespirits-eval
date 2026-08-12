@@ -154,3 +154,24 @@ block verdict is made.
 Unrelated pre-existing worktree changes were not staged or modified: the
 deleted generated Python bytecode file and the three untracked skill
 directories remain outside both continuation commits.
+
+## Addendum under reviewer note 057a — decision-reader evidence fails closed
+
+Implementation commit `1460709d2e4676107f9b67872b4d6abbb5a7113d`
+closes the prospective omission identified in note 057a. Before measure 1 can
+score any case, the harness now requires a readable decision-reader run record
+with `status: complete`; at least one uniquely identified completed batch; an
+on-disk response whose SHA-256 matches that batch's recorded hash; explicit
+`model_independently_attested: true`; and an explicitly recorded prohibited-
+tool count of zero. The returned evidence preflight preserves run-level and
+per-batch pass/fail accounting. Missing records and any partial batch evidence
+hard-stop before a measure-1 result is produced.
+
+The focused fixtures now include both the missing-record and partial-evidence
+cases. `node --test tests/adaptiveWarrantOutcomeStudy.test.js` passes 12/12,
+and ESLint passes on the scorer and focused test. The frozen preparer remains
+at `f23d3b1619734091e9b5ac9a37501c8a64f07c1cbf240e62e9b8e7eb43a767fc`;
+the frozen reader runner remains at
+`1eb6be9d4cf2d802ff2bcb16394fdd0f99952d10a3ff62456ebc79ad42346116`.
+No model call, world, seed, manifest, or branch push occurred; budget remains
+3,523 / 11,337.
