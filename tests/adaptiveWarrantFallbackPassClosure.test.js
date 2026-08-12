@@ -2,7 +2,14 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { compileTutorStubTurnProgressionContract } from '../services/tutorStubTurnProgressionContract.js';
-import { verifyFallbackPassClosureContract } from '../scripts/verify-adaptive-warrant-fallback-pass-closure.js';
+import {
+  syntheticFallbackClosureTargets,
+  verifyFallbackPassClosureContract,
+} from '../scripts/verify-adaptive-warrant-fallback-pass-closure.js';
+import {
+  ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS,
+  ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES,
+} from '../services/adaptiveWarrantSemanticEvents.js';
 
 function firstDraftContractFor(target) {
   return {
@@ -59,4 +66,47 @@ test('fallback-pass closure covers generic, typed-value, and named obligation ta
     assert.equal(result.repetitionOk, true, JSON.stringify(result.repetitionIssues));
     assert.equal(result.finalResponseCheckOk, true, JSON.stringify(result.hardIssues));
   }
+});
+
+test('fallback-pass closure v2 generates every ledger kind, label shape, and requested value type', () => {
+  const targets = syntheticFallbackClosureTargets();
+  const kinds = [...new Set(targets.map((row) => row.target.kind))].sort();
+  const shapes = [...new Set(targets.flatMap((row) => row.labelShapes))].sort();
+  const valueTypes = shapes
+    .filter((shape) => shape.startsWith('requested_value_type:'))
+    .map((shape) => shape.slice('requested_value_type:'.length))
+    .sort();
+
+  assert.deepEqual(kinds, [...ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS].sort());
+  assert.deepEqual(valueTypes, [...ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES].sort());
+  for (const shape of ['composite_terms', 'hyphenated_compound', 'writable_entry', 'generic_sentinel']) {
+    assert.ok(shapes.includes(shape), shape);
+  }
+
+  for (const { id, target } of targets) {
+    const result = verifyFallbackPassClosureContract({
+      publicObligationDirective: {
+        obligation_id: `synthetic-closure-${id}`,
+        target,
+        acceptable_outcomes: ['bounded_public_answer', 'named_unavailability_with_concrete_next_step'],
+      },
+      learnerText: target.source_surface,
+    });
+    assert.equal(result.compiledComplete, true, id);
+    assert.equal(result.resolutionOk, true, `${id}: ${JSON.stringify(result.progressionIssues)}`);
+    assert.equal(result.repetitionOk, true, `${id}: ${JSON.stringify(result.repetitionIssues)}`);
+    assert.equal(result.finalResponseCheckOk, true, `${id}: ${JSON.stringify(result.hardIssues)}`);
+  }
+
+  const writable = targets.find((row) => row.id === 'writable-entry');
+  const writableResult = verifyFallbackPassClosureContract({
+    publicObligationDirective: {
+      obligation_id: 'synthetic-closure-writable-entry',
+      target: writable.target,
+      acceptable_outcomes: ['bounded_public_answer', 'named_unavailability_with_concrete_next_step'],
+    },
+    learnerText: writable.target.source_surface,
+  });
+  assert.match(writableResult.fallbackText, /^The log entry is not public yet/iu);
+  assert.doesNotMatch(writableResult.fallbackText, /first-log-entry-log entry/iu);
 });

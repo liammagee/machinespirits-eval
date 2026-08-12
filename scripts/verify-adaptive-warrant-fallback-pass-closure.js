@@ -14,9 +14,13 @@ import {
   deterministicTutorStubTurnProgressionUptake,
 } from '../services/tutorStubTurnProgressionContract.js';
 import { ensureTutorStubPublicObligationFallbackOwnership } from '../services/tutorStubTutorTerminalRuntime.js';
+import {
+  ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS,
+  ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES,
+} from '../services/adaptiveWarrantSemanticEvents.js';
 
 export const ADAPTIVE_WARRANT_FALLBACK_PASS_CLOSURE_SCHEMA =
-  'machinespirits.adaptation-refinement.fallback-pass-closure.v1';
+  'machinespirits.adaptation-refinement.fallback-pass-closure.v2';
 
 const DEFAULTS = Object.freeze({
   seed511Root: '/private/tmp/adaptive-warrant-v3-matrix-live-3e758071-v32-s511',
@@ -159,6 +163,91 @@ function directiveFromCompiled(obligation) {
   };
 }
 
+const KIND_CASES = Object.freeze({
+  material_or_assay_result: Object.freeze({ publicTerms: ['sample', 'assay'], subjectTerms: ['sample'] }),
+  weight_or_ring_result: Object.freeze({ publicTerms: ['clip', 'balance'], subjectTerms: ['clip'] }),
+  comparison_result: Object.freeze({ publicTerms: ['seal', 'comparison'], subjectTerms: ['seal'] }),
+  mark_or_tool_result: Object.freeze({ publicTerms: ['coin', 'mark'], subjectTerms: ['coin'] }),
+  record_entry: Object.freeze({ publicTerms: ['badge', 'log', 'entry'], subjectTerms: ['badge'] }),
+  public_exhibit_result: Object.freeze({ publicTerms: ['exhibit', 'result'], subjectTerms: ['exhibit'] }),
+  other: Object.freeze({ publicTerms: ['choice', 'result'], subjectTerms: ['choice'] }),
+});
+
+function syntheticTarget({ id, kind, publicTerms, subjectTerms, sourceSurface, requiredComponents = [], labelShapes }) {
+  return {
+    id,
+    labelShapes,
+    target: {
+      kind,
+      signature: `${kind}:synthetic-${id}`,
+      public_terms: publicTerms,
+      subject_terms: subjectTerms,
+      required_components: requiredComponents,
+      source_surface: sourceSurface,
+    },
+  };
+}
+
+export function syntheticFallbackClosureTargets() {
+  const targets = ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS.map((kind) => {
+    const shape = KIND_CASES[kind];
+    assert.ok(shape, `synthetic closure has no target-kind generator for ${kind}`);
+    return syntheticTarget({
+      id: `kind-${kind}`,
+      kind,
+      publicTerms: shape.publicTerms,
+      subjectTerms: shape.subjectTerms,
+      sourceSurface: shape.publicTerms.join(' '),
+      labelShapes: ['kind'],
+    });
+  });
+  targets.push(
+    syntheticTarget({
+      id: 'composite-terms',
+      kind: 'comparison_result',
+      publicTerms: ['room-presence', 'fridge-access', 'comparison'],
+      subjectTerms: ['room-presence', 'fridge-access'],
+      sourceSurface: 'room-presence and fridge-access comparison',
+      labelShapes: ['composite_terms', 'hyphenated_compound'],
+    }),
+    syntheticTarget({
+      id: 'writable-entry',
+      kind: 'record_entry',
+      publicTerms: ['first-log-entry', 'log', 'entry'],
+      subjectTerms: [],
+      // The ledger's public target surface is the plain requested object;
+      // `first-log-entry` is the composite catalogue/subject term that used
+      // to corrupt the rendered label.
+      sourceSurface: 'log entry',
+      labelShapes: ['composite_terms', 'hyphenated_compound', 'writable_entry'],
+    }),
+    syntheticTarget({
+      id: 'generic-sentinel',
+      kind: 'public_exhibit_result',
+      publicTerms: ['evidence'],
+      subjectTerms: [],
+      sourceSurface: 'generic evidence request',
+      labelShapes: ['generic_sentinel'],
+    }),
+  );
+  for (const valueType of ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES) {
+    targets.push(
+      syntheticTarget({
+        id: `value-type-${valueType}`,
+        kind: 'public_exhibit_result',
+        publicTerms: ['evidence'],
+        subjectTerms: [],
+        sourceSurface: 'generic evidence request',
+        requiredComponents: [
+          { id: `requested_${valueType}`, terms: [valueType], value_type: valueType },
+        ],
+        labelShapes: [`requested_value_type:${valueType}`],
+      }),
+    );
+  }
+  return targets;
+}
+
 export function verifyFallbackPassClosureContract({
   firstDraftContract,
   publicObligationDirective = null,
@@ -277,24 +366,64 @@ export function runFallbackPassClosure({
       checks.push({ corpus: trace.corpus, tracePath: trace.tracePath, turn, ...check });
     }
   }
-  assert.ok(checks.length > 0, 'retained corpora expose no reachable obligation targets');
+  const retainedChecks = [...checks];
+  assert.ok(retainedChecks.length > 0, 'retained corpora expose no reachable obligation targets');
+  const syntheticTargets = syntheticFallbackClosureTargets();
+  const syntheticChecks = syntheticTargets.map(({ id, labelShapes, target }) => ({
+    corpus: 'synthetic',
+    syntheticTargetId: id,
+    labelShapes,
+    ...verifyFallbackPassClosureContract({
+      publicObligationDirective: {
+        obligation_id: `synthetic-closure-${id}`,
+        target,
+        acceptable_outcomes: ['bounded_public_answer', 'named_unavailability_with_concrete_next_step'],
+      },
+      learnerText: target.source_surface,
+    }),
+  }));
+  checks.push(...syntheticChecks);
   for (const check of checks) {
-    assert.equal(check.compiledComplete, true, `${check.tracePath}:${check.turn}: compile failed`);
-    assert.equal(check.noQuestion, true, `${check.tracePath}:${check.turn}: fallback asks a question`);
-    assert.equal(check.duplicateCount, 1, `${check.tracePath}:${check.turn}: fallback template repeated`);
-    assert.equal(check.resolutionOk, true, `${check.tracePath}:${check.turn}: obligation resolution failed`);
-    assert.ok(['deferred', 'satisfied'].includes(check.deliveryStatus), `${check.tracePath}:${check.turn}: unresolved`);
-    assert.equal(check.repetitionOk, true, `${check.tracePath}:${check.turn}: repetition failed`);
-    assert.equal(check.finalResponseCheckOk, true, `${check.tracePath}:${check.turn}: final response check failed`);
-    assert.deepEqual(check.hardIssues, [], `${check.tracePath}:${check.turn}: hard final-check issues`);
+    const location = check.syntheticTargetId || `${check.tracePath}:${check.turn}`;
+    assert.equal(check.compiledComplete, true, `${location}: compile failed`);
+    assert.equal(check.noQuestion, true, `${location}: fallback asks a question`);
+    assert.equal(check.duplicateCount, 1, `${location}: fallback template repeated`);
+    assert.equal(check.resolutionOk, true, `${location}: obligation resolution failed`);
+    assert.ok(['deferred', 'satisfied'].includes(check.deliveryStatus), `${location}: unresolved`);
+    assert.equal(check.repetitionOk, true, `${location}: repetition failed`);
+    assert.equal(check.finalResponseCheckOk, true, `${location}: final response check failed`);
+    assert.deepEqual(check.hardIssues, [], `${location}: hard final-check issues`);
+  }
+  const emittedKinds = [...new Set(syntheticTargets.map((row) => row.target.kind))].sort();
+  const emittedLabelShapes = [...new Set(syntheticTargets.flatMap((row) => row.labelShapes))].sort();
+  const emittedValueTypes = emittedLabelShapes
+    .filter((shape) => shape.startsWith('requested_value_type:'))
+    .map((shape) => shape.slice('requested_value_type:'.length))
+    .sort();
+  assert.deepEqual(emittedKinds, [...ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS].sort(), 'synthetic target-kind gap');
+  assert.deepEqual(
+    emittedValueTypes,
+    [...ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES].sort(),
+    'synthetic requested-value-type gap',
+  );
+  for (const shape of ['composite_terms', 'hyphenated_compound', 'writable_entry', 'generic_sentinel']) {
+    assert.ok(emittedLabelShapes.includes(shape), `synthetic label-shape gap: ${shape}`);
   }
   const artifact = {
     schema: ADAPTIVE_WARRANT_FALLBACK_PASS_CLOSURE_SCHEMA,
     status: 'fallback_pass_closure_green',
     providerCalls: 0,
     corpusSummary,
+    retainedReachableObligationOccurrences: retainedChecks.length,
+    syntheticTargetCount: syntheticChecks.length,
     reachableObligationOccurrences: checks.length,
     uniqueTargetSignatures: [...new Set(checks.map((row) => row.targetSignature))].sort(),
+    syntheticCoverage: {
+      targetKinds: emittedKinds,
+      labelShapes: emittedLabelShapes,
+      requestedValueTypes: emittedValueTypes,
+      unsupportedShapes: [],
+    },
     checks,
   };
   artifact.closureDigest = sha256(JSON.stringify(artifact));

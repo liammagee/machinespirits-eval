@@ -1025,9 +1025,34 @@ function declarativeFallbackFocus(
           .map(oneLine)
           .filter(Boolean)
           .slice(0, 6);
-    const targetLabel = targetTerms.some((term) => term.includes('-'))
-      ? `${targetTerms.join(' and ')} ${kindLabel}`
-      : [...targetTerms, kindLabel].join('-');
+    const kindWords = kindLabel
+      .toLowerCase()
+      .split(/[\s-]+/u)
+      .filter((term) => term && !['and', 'or'].includes(term));
+    const targetWords = new Set(
+      targetTerms.flatMap((term) => term.toLowerCase().split(/[\s-]+/u)).filter(Boolean),
+    );
+    const representedKindWords = kindWords.filter((term) => targetWords.has(term));
+    const missingKindWords = kindWords.filter((term) => !targetWords.has(term));
+    let targetLabel;
+    if (representedKindWords.length === kindWords.length) {
+      // Semantic catalogue ids can already be composite public labels, for
+      // example `first-log-entry`. Do not append the kind a second time. If
+      // the only extra material is an ordinal/catalogue wrapper, prefer the
+      // plain kind label exposed by the public surface (`log entry`).
+      const meaningfulTargetWords = [...targetWords].filter(
+        (term) => !['first', 'next', 'public', 'requested', 'target', 'the'].includes(term),
+      );
+      targetLabel = meaningfulTargetWords.every((term) => kindWords.includes(term))
+        ? kindLabel
+        : targetTerms.join(' and ');
+    } else if (representedKindWords.length > 0) {
+      targetLabel = `${targetTerms.join(' and ')} ${missingKindWords.join(' ')}`;
+    } else {
+      targetLabel = targetTerms.some((term) => term.includes('-'))
+        ? `${targetTerms.join(' and ')} ${kindLabel}`
+        : [...targetTerms, kindLabel].join('-');
+    }
     return `The ${targetLabel} is not public yet; once a matching public record is available, I can answer it.`;
   }
   if (contract?.discourse_plane?.plane === 'instructional_meta') {
