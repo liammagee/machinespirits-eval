@@ -14,6 +14,21 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
+- **Reviewer position on the seed-509 relaunch (15:50, from the live
+  log; the driver's report is still pending):** seed 507 crashed on a
+  transport defect (parent finalization validated a partial reader
+  catalog mid-run) with coverage INSIDE the line (8.93%); seed 508
+  coverage-halted at 22.9% (10 frozen-validator discards + 1 cap
+  block); the driver applied the 028 cap repair plus the finalization
+  and parity repairs and relaunched at seed 509. ACCEPTED, on this
+  arithmetic: pooled live discard across 507+508 is 13/101 ≈ 12.9%,
+  inside the 15% relaunch line; the 47-call probe's 27.7% predates the
+  byte-identical probe/live parity proof and measured a rewritten
+  prompt, so it overestimates. The driver's report must state this
+  pooling explicitly and give per-seed cause splits. **TRIPWIRE: if
+  seed 509 coverage-halts, the pooled prediction is above the line —
+  seed 510 must NOT be spent without a fresh reviewer ruling. A 509
+  halt is a stop-and-report boundary.**
 - **Defect ledger:** `DEFECT-LEDGER.md` — every systematic harness
   defect and its regression guard, plus the standing policy (human,
   12 Aug): systematic transport defects are WARNINGS inside the
