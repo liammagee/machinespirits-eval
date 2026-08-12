@@ -11,7 +11,7 @@ export const TUTOR_STUB_PROMPT_BUDGETS = Object.freeze({
   // and every later turn. Keep the surface bounded, but align its ceiling with
   // the already-audited tutor-turn envelope so an eight-turn compact prompt can
   // execute instead of silently degrading to failed classifications.
-  learner_analysis: Object.freeze({ maxChars: 42_000, maxApproxTokens: 10_500 }),
+  learner_analysis: Object.freeze({ maxChars: 56_000, maxApproxTokens: 14_000 }),
   automated_learner: Object.freeze({ maxChars: 24_000, maxApproxTokens: 6_000 }),
   mixed_learner: Object.freeze({ maxChars: 28_000, maxApproxTokens: 7_000 }),
   clarifier: Object.freeze({ maxChars: 16_000, maxApproxTokens: 4_000 }),

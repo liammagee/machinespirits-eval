@@ -23,7 +23,10 @@ import {
 } from '../scripts/prepare-adaptive-warrant-semantic-annotations.js';
 import { prepareAdaptiveWarrantAnnotationBatches } from '../scripts/prepare-adaptive-warrant-annotation-batches.js';
 import { buildAdaptiveWarrantV3SemanticDiagnostic } from '../scripts/build-adaptive-warrant-v3-semantic-diagnostic.js';
-import { runAdaptiveWarrantSemanticBrittlenessPreflight } from '../scripts/run-adaptive-warrant-semantic-brittleness-preflight.js';
+import {
+  auditAdaptiveWarrantProbeLivePromptParity,
+  runAdaptiveWarrantSemanticBrittlenessPreflight,
+} from '../scripts/run-adaptive-warrant-semantic-brittleness-preflight.js';
 import { buildAdaptiveWarrantSemanticSmokeCorpus } from '../scripts/run-adaptive-warrant-semantic-schema-smoke.js';
 import {
   buildAdaptiveWarrantSemanticSchemaAcceptanceResponseTemplate,
@@ -672,6 +675,7 @@ test('zero-call brittleness preflight exercises the complete instrument path and
     'diagnostic_prompt_and_response_schema_size_limits',
     'model_facing_schemas_contain_no_mechanically_derivable_fields',
     'live_handbook_prompt_matches_frozen_reader_rules_and_size_budget',
+    'diagnostic_probe_and_live_matrix_prompt_paths_are_byte_identical',
     'unique_absent_duplicate_and_overlap_spans_use_mechanical_derivation',
     'acceptance_ping_retains_failure_evidence_and_reports_response_state',
     'acceptance_ping_synthetic_template_validates_against_enforced_response_schema',
@@ -684,6 +688,18 @@ test('zero-call brittleness preflight exercises the complete instrument path and
   assert.match(result.artifact.bindings.consensus_scorer_fingerprint, /^[0-9a-f]{64}$/u);
   assert.match(result.artifact.bindings.threshold_configuration_digest, /^[0-9a-f]{64}$/u);
   assert.match(result.artifact.bindings.corpus_builder_fingerprint, /^[0-9a-f]{64}$/u);
+});
+
+test('probe/live prompt parity fails on any byte divergence', () => {
+  assert.equal(
+    auditAdaptiveWarrantProbeLivePromptParity({ livePrompt: 'same bytes', probePrompt: 'same bytes' }).byte_identical,
+    true,
+  );
+  assert.equal(
+    auditAdaptiveWarrantProbeLivePromptParity({ livePrompt: 'same bytes', probePrompt: 'same bytes\n' })
+      .byte_identical,
+    false,
+  );
 });
 
 test('schema-acceptance ping compares canonical values and identifies true deviations', () => {

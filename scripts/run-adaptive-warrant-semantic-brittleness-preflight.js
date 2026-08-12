@@ -22,6 +22,7 @@ import {
   buildTutorStubPublicLearnerAnalysisPrompt,
   buildTutorStubPublicLearnerAnalysisOutputSchema,
   buildTutorStubPublicLearnerAnalysisProviderOutputSchema,
+  rewriteTutorStubPublicLearnerAnalysisPromptProfile,
 } from '../services/tutorStubPublicLearnerAnalysis.js';
 import {
   TUTOR_STUB_CLI_REQUEST_PATH,
@@ -350,6 +351,14 @@ function captureContractCatalogAudit(semanticCatalog) {
   }
 }
 
+export function auditAdaptiveWarrantProbeLivePromptParity({ livePrompt, probePrompt } = {}) {
+  return {
+    byte_identical: typeof livePrompt === 'string' && livePrompt === probePrompt,
+    live_sha256: adaptiveWarrantSemanticValueSha256(livePrompt),
+    probe_sha256: adaptiveWarrantSemanticValueSha256(probePrompt),
+  };
+}
+
 export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sourceCommit } = {}) {
   if (!/^[0-9a-f]{40}$/u.test(sourceCommit || '')) throw new Error('preflight requires an exact source commit');
   const resolvedOutput = path.resolve(outputPath);
@@ -367,7 +376,7 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     diagnosticBuilt.handbook.includes(paragraph),
   );
   const frozenHandbookRules = frozenHandbookParagraphs.join('\n\n');
-  const liveHandbookPrompt = buildTutorStubPublicLearnerAnalysisPrompt({
+  const syntheticPromptInput = {
     learnerText: 'Please show me the public record result, then I will test the next listed check.',
     topic: 'synthetic prompt-handbook parity audit',
     world: {
@@ -383,8 +392,14 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     publicTranscript: [],
     currentTutorText: 'Choose the first or second public check.',
     publicStagedEvidence: [],
-    includeSemanticEvents: true,
+    registerEnabled: true,
+    registerPolicy: 'dynamic',
+    registerPalette: ['plain'],
     strictProviderEnvelope: true,
+  };
+  const liveHandbookPrompt = buildTutorStubPublicLearnerAnalysisPrompt({
+    ...syntheticPromptInput,
+    includeSemanticEvents: true,
     promptProfile: TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.HANDBOOK_V1,
   });
   const handbookPromptParityAudit = {
@@ -402,9 +417,16 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     live_prompt_contains_exact_block: liveHandbookPrompt.includes(TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULES),
     live_prompt_chars: liveHandbookPrompt.length,
     live_prompt_approximate_tokens: Math.ceil(liveHandbookPrompt.length / 4),
-    maximum_prompt_chars: 42000,
-    maximum_prompt_approximate_tokens: 10500,
+    maximum_prompt_chars: 56000,
+    maximum_prompt_approximate_tokens: 14000,
   };
+  const probeLivePromptParityAudit = auditAdaptiveWarrantProbeLivePromptParity({
+    livePrompt: liveHandbookPrompt,
+    probePrompt: rewriteTutorStubPublicLearnerAnalysisPromptProfile(liveHandbookPrompt, {
+      includeRegisterSelection: true,
+      includeSemanticEvents: true,
+    }),
+  });
   const syntheticContractCatalogAudit = captureContractCatalogAudit(corpus.semantic_annotation_catalog);
   const smokeContractCatalogAudit = captureContractCatalogAudit(smokeCorpus.semantic_annotation_catalog);
   const diagnosticContractCatalogAudit = captureContractCatalogAudit(diagnosticCorpus.semantic_annotation_catalog);
@@ -657,9 +679,9 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       !compactPromptVocabulary.engagementStancePalettePromptRows(['plain', 'precise']).includes('\n'),
     request_type_json_minified: !compactPromptVocabulary.requestTypePromptRows().includes('\n'),
     learner_dag_json_minified: !projectTutorStubLearnerDagPromptSummary({ turn: 1 }).includes('\n'),
-    prompt_limit_unchanged:
-      handbookPromptParityAudit.maximum_prompt_chars === 42000 &&
-      handbookPromptParityAudit.maximum_prompt_approximate_tokens === 10500,
+    prompt_limit_matches_direction_028:
+      handbookPromptParityAudit.maximum_prompt_chars === 56000 &&
+      handbookPromptParityAudit.maximum_prompt_approximate_tokens === 14000,
   };
   const firstCallCoverageGuard = evaluateAdaptiveWarrantAnalysisCoverageHalt([
     {
@@ -901,6 +923,11 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       handbookPromptParityAudit,
     ),
     check(
+      'diagnostic_probe_and_live_matrix_prompt_paths_are_byte_identical',
+      probeLivePromptParityAudit.byte_identical,
+      probeLivePromptParityAudit,
+    ),
+    check(
       'unique_absent_duplicate_and_overlap_spans_use_mechanical_derivation',
       Object.values(spanDerivationAudit).every(Boolean),
       spanDerivationAudit,
@@ -948,6 +975,7 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       live_semantic_local_provider_language_equivalent: liveSchemaLanguageEquivalent,
       model_facing_derived_field_audit: modelFacingDerivedFieldAudit,
       handbook_prompt_parity_audit: handbookPromptParityAudit,
+      probe_live_prompt_parity_audit: probeLivePromptParityAudit,
       span_derivation_audit: spanDerivationAudit,
       punctuation_normalized_quote_audit: punctuationNormalizedQuoteAudit,
       fallback_sentinel_leak_paths: sentinelLeakPaths,

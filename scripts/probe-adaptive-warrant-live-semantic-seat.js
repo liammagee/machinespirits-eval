@@ -27,8 +27,8 @@ const DEFAULT_SOURCE_ROOT = '/private/tmp/adaptive-warrant-v3-matrix-live-a4529e
 const DEFAULT_SOURCE_COMMIT = 'a4529e798012b2fb0366fea30fc2a0798b3a69ab';
 const DEFAULT_SOURCE_CLOSURE = '60124bc8910b54bbebde7db2a17a9d458edfaf220622d0791a01707236046ffc';
 const MAXIMUM_CALLS = 48;
-const MAXIMUM_PROMPT_CHARS = 42000;
-const MAXIMUM_PROMPT_APPROXIMATE_TOKENS = 10500;
+const MAXIMUM_PROMPT_CHARS = 56000;
+const MAXIMUM_PROMPT_APPROXIMATE_TOKENS = 14000;
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex');

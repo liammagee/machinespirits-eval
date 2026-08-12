@@ -553,7 +553,7 @@ test('mechanism model routing is frozen before authorization', () => {
 });
 
 test('mechanism-validation plan is the frozen two-world, six-profile, observe-active matrix', () => {
-  assert.equal(ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.masterSeed, 508);
+  assert.equal(ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.masterSeed, 509);
   const jobs = buildAdaptiveWarrantBaselineJobs({
     rootDir: '/tmp/warrant-mechanism-study',
     runs: ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.runs,

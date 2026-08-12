@@ -231,8 +231,10 @@ export const MECHANISM_VALIDATION_EXCLUDED_CORPORA = Object.freeze([
   '/private/tmp/adaptive-warrant-v3-matrix-live-a4529e79-s505/annotation-sample.blinded.json',
   '/private/tmp/adaptive-warrant-v3-matrix-live-fe2d7a2f-s506/annotation-sample.blinded.json',
   '/private/tmp/adaptive-warrant-v3-matrix-live-bc707cd0-s507/annotation-sample.blinded.json',
+  '/private/tmp/adaptive-warrant-v3-matrix-live-0897d030-s508/annotation-sample.blinded.json',
   '/private/tmp/adaptive-warrant-v3-handbook-probe-96bada6e-luna/diagnostic-probe.json',
   '/private/tmp/adaptive-warrant-v3-handbook-probe-39757d4e-sonnet/diagnostic-probe.json',
+  '/private/tmp/adaptive-warrant-v3-handbook-probe-2e90d863-s508-luna/diagnostic-probe.json',
 ]);
 const DEFAULT_MODEL = 'codex.gpt-5.6-luna';
 const DEFAULT_ANALYSIS_MODEL = DEFAULT_MODEL;
@@ -241,7 +243,7 @@ export const ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC = Object.freeze({
   profiles: MECHANISM_VALIDATION_PROFILES,
   conditions: MECHANISM_VALIDATION_CONDITIONS,
   runs: 1,
-  masterSeed: 508,
+  masterSeed: 509,
   horizon: 8,
   models: Object.freeze({
     tutor: DEFAULT_MODEL,
@@ -4568,7 +4570,7 @@ function printHelp() {
 
 Options:
   --runs <1|5|10>           n per cell (1 with validation modes)
-  --master-seed <n>         first paired seed (508 mechanism; 301 contract; otherwise 101)
+  --master-seed <n>         first paired seed (509 mechanism; 301 contract; otherwise 101)
   --parallelism <n>         concurrent dialogues (default: 6)
   --root <path>             output root (default: ignored timestamped directory)
   --model <ref>             speaking tutor model (default: codex.gpt-5.6-luna)
