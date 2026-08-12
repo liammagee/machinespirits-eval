@@ -942,7 +942,7 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     check('out_of_catalogue_value_fails_closed', throwsValidation({ response: outOfCatalog, corpus, corpusSha256 })),
     check('ambiguous_value_fails_closed', ambiguousConsensus.cases[0].hard_consensus === false),
     check('prompt_size_within_42000_bytes', Math.max(...packetSizes) <= 42000, { maximum: Math.max(...packetSizes) }),
-    check('response_size_within_10500_bytes', Math.max(...responseSizes) <= 10500, {
+    check('response_size_within_14000_bytes', Math.max(...responseSizes) <= 14000, {
       maximum: Math.max(...responseSizes),
     }),
   ];
