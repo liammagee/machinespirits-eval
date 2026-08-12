@@ -14,7 +14,23 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **Current direction:** `022-reviewer-direction-luna-coverage-note.md` —
+- **Current direction:** `025-reviewer-direction-ping-criterion.md` —
+  answers report 024 (seed-506 launch stopped at the acceptance ping:
+  Luna's response passed schema + strict parse + validator but failed
+  a byte-identity comparison against the synthetic template; the
+  harness discarded the response). Ruling: transport-harness defect,
+  timebox class. Orders: (1) ping harness retains raw + parsed
+  response and the first differing field path on any acceptance
+  failure, and reports status truthfully; (2) ping acceptance =
+  provenance + strict parse + validator + CANONICAL-VALUE equality to
+  the template (key order/bytes irrelevant, strings compared under the
+  validator's own punctuation normalization; any differing VALUE still
+  fails) — ping harness only, live validator untouched; (3) focused
+  tests + preflight assertion; (4) ONE retry ping — pass = launch the
+  matrix at seed 506 under 022's terms with no stop; fail = STOP with
+  the retained diff. Unattended budget spent: 1 of 4,000 (retry makes
+  2; matrix ~612 on pass).
+  Prior: `022-reviewer-direction-luna-coverage-note.md` —
   021 ran to its hard stop: Luna + handbook_v1 probe 5/48 = 10.42%
   (fail by one call); Sonnet upgrade probe 25/48 = 52.08% (17/48 =
   35.4% after the apostrophe finding below — still fail; Sonnet
