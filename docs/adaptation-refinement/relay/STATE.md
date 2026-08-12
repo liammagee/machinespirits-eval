@@ -14,26 +14,31 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **CURRENT DIRECTION — 045**
-  (`045-reviewer-direction-reader-schema-cap-raise.md`, lease
-  `DRIVER-LEASE-2026-08-12-J`, report target `046-codex-report.md`).
-  Report 044 ACCEPTED: defect-#14 repaired at `a925fb7a` (70/70
-  green); the seed-514 freeze COMPLETED — 93 frozen / 2 dropped / 3
-  logged match relationships, identity-exact to report 042; manifest
-  written; all instrument digests unchanged; zero calls. A3 then
-  stopped pre-exposure on defect #15: the response schema built from
-  this matrix's larger representative catalogue is 10,930 bytes
-  against the frozen 10,500-byte transport cap
-  (`MAXIMUM_READER_RESPONSE_BYTES`), failing even the one-case batch.
-  Reviewer ruling: defect-#5 precedent — a size cap blocking a legal
-  request is run-management transport, not a semantic instrument;
-  raised to **14,000 bytes** under standing rule 4b with guards (real
-  10,930-byte schema passes; >14,000 still fails; semantic digests
-  `51107d43…`/`e5af8f2b…` re-asserted unchanged). Packet cap 42,000
-  untouched; batch = one-case partition (32,369 bytes, passes); 93
-  packets per reader, planned call count recorded before any call.
-  Then readers, support gate, report 046, reviewer's matrix-gate
-  ruling. Budget **3,146/8,000**; remaining 4,854. Seed 515 unspent.
+- **CURRENT DIRECTION — 047**
+  (`047-reviewer-direction-reader-digest-repin.md`, lease
+  `DRIVER-LEASE-2026-08-12-K`, report target `048-codex-report.md`).
+  Report 046 ACCEPTED: direction 045's two requirements conflicted —
+  the cap edit necessarily changes the reader digest, because the
+  digest hashes the whole preparer source file (transport constant
+  included). The driver's zero-call projection shows ONLY transport
+  moves: provider schema, extraction schema, one-case response bytes
+  (`f944b9b8…`, 10,930), and the one-case packet (`237c0784…`) are
+  all byte-identical. Reviewer ruling under the human's standing
+  no-spurious-stops order: **re-pin the reader digest at the
+  projected value** `7b084d93…` (preparer source `af2a9182…`) with a
+  byte-level equivalence proof at the repair commit — any value other
+  than the projection = stop. Extraction digest stays `e5af8f2b…`.
+  Then cap 10,500 → 14,000, guards, ledger #15 closed; A2 readers on
+  the frozen 93-case packet at the one-case partition, **planned 93 ×
+  2 readers = 186 calls** recorded before any call; support gate;
+  report 048; reviewer's matrix-gate ruling. Budget **3,146/8,000**;
+  remaining 4,854. Seed 515 unspent.
+- **RESOLVED — direction 045** (kept as history). Report 044
+  accepted; the seed-514 freeze COMPLETED at 93/2/3 (manifest
+  `668511bb…`); defect #15 (response schema 10,930 vs frozen 10,500
+  cap at every legal batch size) ruled a transport repair, cap 14,000
+  authorized. The driver then stopped zero-call (report 046) on the
+  digest conflict now resolved by direction 047.
 - **RESOLVED — directions 041/043** (kept as history). The human's
   drop-and-log ruling ("drop the three duplicate cases and proceed",
   typed 21:04) was implemented (commits `31ad8ec9`, `177881d6`;
