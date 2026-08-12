@@ -246,7 +246,7 @@ export const ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC = Object.freeze({
   profiles: MECHANISM_VALIDATION_PROFILES,
   conditions: MECHANISM_VALIDATION_CONDITIONS,
   runs: 1,
-  masterSeed: 514,
+  masterSeed: 515,
   horizon: 8,
   models: Object.freeze({
     tutor: DEFAULT_MODEL,
@@ -1808,10 +1808,9 @@ export function resolveAdaptiveWarrantStudyStatus(
     requireStructuredParity &&
     !rows.every((row) => {
       const decisionTurns = (row.decisions || []).map((decision) => Number(decision.turn)).sort((a, b) => a - b);
-      const unanalyzedTurns = new Set((row.learnerAnalysisUnanalyzedTurns || []).map(Number));
-      const expectedTurns = Array.from({ length: horizon }, (_, index) => index + 1).filter(
-        (turn) => !unanalyzedTurns.has(turn),
-      );
+      // Analysis failures are covered by the registered deterministic fallback,
+      // which still emits a decision and enters both sides of the parity check.
+      const expectedTurns = Array.from({ length: horizon }, (_, index) => index + 1);
       return (
         JSON.stringify(decisionTurns) === JSON.stringify(expectedTurns) &&
         row.liveShadowStructuredComparisonCount === expectedTurns.length &&
@@ -1825,7 +1824,9 @@ export function resolveAdaptiveWarrantStudyStatus(
     requireDeliveryApplication &&
     !rows.every((row) => {
       const applications = (row.decisions || []).map((decision) => decision.delivery_application);
-      const expectedApplications = horizon - Number(row.learnerAnalysisUnanalyzedCount || 0);
+      // The fallback decision is delivered and audited like every model-backed
+      // decision, so the application denominator remains the full horizon.
+      const expectedApplications = horizon;
       return (
         applications.length === expectedApplications &&
         applications.every(

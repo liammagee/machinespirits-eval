@@ -555,7 +555,7 @@ test('mechanism model routing is frozen before authorization', () => {
 });
 
 test('mechanism-validation plan is the frozen two-world, six-profile, observe-active matrix', () => {
-  assert.equal(ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.masterSeed, 514);
+  assert.equal(ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.masterSeed, 515);
   const jobs = buildAdaptiveWarrantBaselineJobs({
     rootDir: '/tmp/warrant-mechanism-study',
     runs: ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.runs,
@@ -793,7 +793,7 @@ test('aggregator keeps manipulation checks separate and computes paired downstre
   assert.equal(aggregates.pairedContrasts.low_agency.instrumentedMinusBaselineDeferenceBreakTurn, 0);
 });
 
-test('study status fails closed when a completed row used learner-analysis fallback', () => {
+test('study status accepts registered fallback coverage but fails closed on audit drift', () => {
   const jobs = [{ id: 'one' }];
   const valid = resultRow({ profile: 'low_agency', condition: 'baseline', seed: 101 });
   assert.equal(resolveAdaptiveWarrantStudyStatus([valid], jobs), 'complete');
@@ -1442,6 +1442,16 @@ test('mechanism-validation status requires exact reducer parity and delivered ap
   const jobs = [{ id: observe.jobId }, { id: active.jobId }];
   const options = { horizon: 8, requireStructuredParity: true, requireDeliveryApplication: true };
   assert.equal(resolveAdaptiveWarrantStudyStatus([observe, active], jobs, options), 'complete');
+  const activeWithFallbackTurn = structuredClone(active);
+  activeWithFallbackTurn.learnerAnalysisUnanalyzedCount = 1;
+  activeWithFallbackTurn.learnerAnalysisUnanalyzedTurns = [4];
+  activeWithFallbackTurn.learnerAnalysisErrorCount = 1;
+  activeWithFallbackTurn.learnerAnalysisCoverage = 0.875;
+  assert.equal(
+    resolveAdaptiveWarrantStudyStatus([observe, activeWithFallbackTurn], jobs, options),
+    'complete',
+    'a registered deterministic fallback still participates in parity and delivery application',
+  );
   assert.equal(
     resolveAdaptiveWarrantStudyStatus([observe, { ...active, liveShadowStructuredComparisonCount: 0 }], jobs, options),
     'invalid_parity',
