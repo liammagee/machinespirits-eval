@@ -164,15 +164,15 @@ export function collectAdaptiveWarrantLiveSemanticProbeInputs({
       });
     }
   }
-  if (rows.length < 1 || rows.length > MAXIMUM_CALLS) {
-    throw new Error(`probe requires 1-${MAXIMUM_CALLS} preserved calls, found ${rows.length}`);
-  }
+  if (rows.length < 1) throw new Error('probe requires at least one preserved call');
+  const selectedRows = rows.slice(0, MAXIMUM_CALLS);
   return {
     sourceRoot: resolvedRoot,
     sourceCommit,
     files,
     combinedSha256,
-    rows,
+    availableRows: rows.length,
+    rows: selectedRows,
   };
 }
 
@@ -322,6 +322,8 @@ export async function runAdaptiveWarrantLiveSemanticSeatProbe({
       commit: inputs.sourceCommit,
       trace_count: inputs.files.length,
       combined_sha256: inputs.combinedSha256,
+      available_preserved_calls: inputs.availableRows,
+      selection_rule: `first_${MAXIMUM_CALLS}_in_sorted_trace_then_turn_order`,
     },
     result: {
       completed_analysis_calls: rows.length,
