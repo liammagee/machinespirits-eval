@@ -5,15 +5,20 @@
 
 ## Now
 
-- **Current direction:** `017-reviewer-direction-halt-threshold.md` —
-  mid-run: analysis calls return responses but provenance says
-  `structuredOutput=false`, so the fail-closed path drops them as
-  unanalyzed. Measure the unanalyzed rate over completed turns NOW;
-  ≥10% = halt at the dialogue boundary (seed-504 corpus burned),
-  zero-call diagnosis of the flag source, fix + preflight extension,
-  relaunch at reserve seed 505 (pre-authorized; ping carry-over per
-  016). <10% = run to completion, state the rate in the report.
-  Prior: `016-reviewer-direction-seed-lock.md` —
+- **Current direction:** `019-reviewer-direction-offset-derivation.md` —
+  seed-505 halt: transport fix HELD (48/48 structured), but 44/48
+  analyses died on model-supplied character offsets while 82/83 quoted
+  spans occur uniquely in the turn. Ruled a schema defect (timebox
+  class), NOT a gate verdict. Repair both seats prospectively: model
+  gives the unique literal quote only, harness derives offsets and
+  checks overlap mechanically; act constraints unchanged; certification
+  stands (consensus was closed-label identity). Zero-call counterfactual
+  on the 48 preserved responses gates the relaunch: predicted discard
+  ≤10% = relaunch at seed 506, no stop; >10% = STOP for human (residue
+  = real semantic non-compliance; seat-upgrade decision). Reserve seeds
+  after 506: 507-510, in order. Burned: seed-503, -504, -505 corpora.
+  Prior: `017-reviewer-direction-halt-threshold.md` (halt threshold +
+  guards), `016-reviewer-direction-seed-lock.md` —
   replacement master seed 504 named (reserves 505, 506); the one-line
   seed-lock amendment is authorized; preflight at the amended commit;
   the passed ping carries over if the live schema digests are unchanged
