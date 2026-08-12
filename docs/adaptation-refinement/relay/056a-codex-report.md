@@ -175,3 +175,4 @@ the frozen reader runner remains at
 `1eb6be9d4cf2d802ff2bcb16394fdd0f99952d10a3ff62456ebc79ad42346116`.
 No model call, world, seed, manifest, or branch push occurred; budget remains
 3,523 / 11,337.
+Reviewer-check fixture commit `6a0825f433aaf344c595015f2548dcd3aa4af360` adds the tamper-after-record hash-mismatch case; the focused suite passes 13/13 and ESLint passes on the test.
