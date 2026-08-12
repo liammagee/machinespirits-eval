@@ -6,8 +6,9 @@
 
 ## Prospective repair
 
-Commit `bacf10b6719238e919385a437134838a1a4e1f2c` implements relay 019's
-mechanical span rule for both model seats:
+Commits `bacf10b6719238e919385a437134838a1a4e1f2c` and
+`84e3dcbbccfd0cab6e70354efb4d7931aba942d5` implement relay 019's mechanical
+derivation rule for both model seats. The latter is the final validator commit:
 
 - the live learner-analysis and semantic-reader model schemas now request one
   literal `evidence_span` string and contain no numeric offset fields;
@@ -15,6 +16,8 @@ mechanical span rule for both model seats:
   derives JavaScript UTF-16 `start` and exclusive `end` offsets;
 - missing and repeated quotes fail closed;
 - event order and overlap are checked from the derived intervals;
+- source turn, source hash, event IDs, event order, and envelope status are
+  supplied by the harness rather than requested from either model seat;
 - act-specific target/value constraints are unchanged;
 - the design records the repair as prospective and does not rescore any
   historical corpus;
@@ -28,7 +31,7 @@ mechanical span rule for both model seats:
 Focused live-extractor, reader-instrument, and semantic-gate tests passed:
 126/126. The clean detached commit preflight passed 36/36 with verdict
 `instrument_ready`. Its SHA-256 is
-`4e15fc2c9ba9d19fb8923c9483ffdce07adbbeb4713f8f13b5d9c4347b08cfe2`.
+`2d027ede74abc52b10d6b2f868f99084970827752b4d9350cd75d400c547db12`.
 
 ## Exact zero-call counterfactual
 
@@ -39,14 +42,14 @@ seed-505 traces at
 - original source commit:
   `a4529e798012b2fb0366fea30fc2a0798b3a69ab`;
 - repaired validator commit:
-  `bacf10b6719238e919385a437134838a1a4e1f2c`;
+  `84e3dcbbccfd0cab6e70354efb4d7931aba942d5`;
 - six-trace input-closure SHA-256:
   `60124bc8910b54bbebde7db2a17a9d458edfaf220622d0791a01707236046ffc`.
 
 The artifact is
-`/private/tmp/adaptive-warrant-v3-seed505-offset-counterfactual-bacf10b6.json`,
+`/private/tmp/adaptive-warrant-v3-seed505-offset-counterfactual-84e3dcbb.json`,
 SHA-256
-`5a5f2f61ee9d373533bfe2507d6e79d8e3b0c82a8dd2003c193ea5edc385dc6d`.
+`e36e88d64451dc136ce6ad0915bbfc8e5d15a98c034e556d207c0d110f5cf959`.
 It records zero provider calls.
 
 Result:
