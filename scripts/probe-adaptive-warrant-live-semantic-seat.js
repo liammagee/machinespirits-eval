@@ -115,6 +115,7 @@ export function collectAdaptiveWarrantLiveSemanticProbeInputs({
   sourceRoot = DEFAULT_SOURCE_ROOT,
   expectedSourceCommit = DEFAULT_SOURCE_COMMIT,
   expectedSourceClosure = DEFAULT_SOURCE_CLOSURE,
+  selectionOffset = 0,
 } = {}) {
   const resolvedRoot = path.resolve(sourceRoot);
   const plan = JSON.parse(fs.readFileSync(path.join(resolvedRoot, 'study-plan.json'), 'utf8'));
@@ -165,13 +166,18 @@ export function collectAdaptiveWarrantLiveSemanticProbeInputs({
     }
   }
   if (rows.length < 1) throw new Error('probe requires at least one preserved call');
-  const selectedRows = rows.slice(0, MAXIMUM_CALLS);
+  const offset = Number(selectionOffset);
+  if (!Number.isInteger(offset) || offset < 0 || offset >= rows.length) {
+    throw new Error(`probe selection offset must identify a preserved call, got ${selectionOffset}`);
+  }
+  const selectedRows = rows.slice(offset, offset + MAXIMUM_CALLS);
   return {
     sourceRoot: resolvedRoot,
     sourceCommit,
     files,
     combinedSha256,
     availableRows: rows.length,
+    selectionOffset: offset,
     rows: selectedRows,
   };
 }
@@ -196,6 +202,7 @@ export async function runAdaptiveWarrantLiveSemanticSeatProbe({
   modelRef = 'codex.gpt-5.6-luna',
   expectedSourceCommit = DEFAULT_SOURCE_COMMIT,
   expectedSourceClosure = DEFAULT_SOURCE_CLOSURE,
+  selectionOffset = 0,
   approvedBy,
   concurrency = 4,
   callModel = callAIWithCliBridge,
@@ -212,6 +219,7 @@ export async function runAdaptiveWarrantLiveSemanticSeatProbe({
     sourceRoot,
     expectedSourceCommit,
     expectedSourceClosure,
+    selectionOffset,
   });
   const outputSchema = buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
     includeRegisterSelection: true,
@@ -323,7 +331,8 @@ export async function runAdaptiveWarrantLiveSemanticSeatProbe({
       trace_count: inputs.files.length,
       combined_sha256: inputs.combinedSha256,
       available_preserved_calls: inputs.availableRows,
-      selection_rule: `first_${MAXIMUM_CALLS}_in_sorted_trace_then_turn_order`,
+      selection_offset: inputs.selectionOffset,
+      selection_rule: `${MAXIMUM_CALLS}_call_block_from_offset_in_sorted_trace_then_turn_order`,
     },
     result: {
       completed_analysis_calls: rows.length,
@@ -474,6 +483,7 @@ async function main() {
       preflight: { type: 'string' },
       'expected-source-sha': { type: 'string' },
       'expected-source-closure': { type: 'string' },
+      'selection-offset': { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
     strict: true,
@@ -492,6 +502,7 @@ async function main() {
       modelRef: values.model,
       expectedSourceCommit: values['expected-source-sha'] || DEFAULT_SOURCE_COMMIT,
       expectedSourceClosure: values['expected-source-closure'] || DEFAULT_SOURCE_CLOSURE,
+      selectionOffset: Number(values['selection-offset'] || 0),
       approvedBy: values['approved-by'],
       concurrency: Number(values.concurrency || 4),
     });
