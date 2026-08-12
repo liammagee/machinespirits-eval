@@ -24,8 +24,33 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — ruling 069a: pilot stopped on plan arithmetic; corrected
-  1116-call plan human-approved; GO note 069b pending.**
+- **CURRENT — direction 072: repair the standing-permission
+  prompt-audit conflict; report to 073; no launch.**
+  Chain since 069a: GO note 069b issued (corrected 1116 plan at
+  `8ad749ec`; guard-verified; second-session PASS). First launch
+  refused at the clean-worktree guard — concurrent paper-session dirt;
+  report 070 (`9360233a`), ruling 070a (TECHNICAL, zero calls, 069b
+  valid for one relaunch). Relaunch ran: dialogues 1–2 sealed, then
+  dialogue 3 (standing permission) died pre-call — the injected menu
+  (12,399 chars) breaks the `tutor_system` prompt audit
+  deterministically (size caps 16,000/4,000 + by-construction
+  duplicate lines per ruling 059a). **The reviewer delivered the
+  SIGINT** (fail-closed; report 071 at `839864fe` left the cause
+  unassigned; disclosed in ruling 071a). Spend 57 conservative;
+  counter **3,613** of 11,337. v2 dialogues 3–4 QUARANTINED; 1–2
+  sealed but support no ruling; **GO 069b CONSUMED**. Ruling 071a =
+  TECHNICAL under 052a; re-take at same seeds after repair. Direction
+  072: (1) sized budget for the menu-bearing surface, (2) duplicate
+  exemption scoped to the delimited menu block, (3) zero-call
+  three-condition render preflight in the launcher, (4) regression
+  tests on the real frozen files; counter re-pin 3613 → 4729.
+  Sequence after report 073: reviewer zero-call verify → ONE
+  second-session final-gate review → fresh GO note → v3 out dir →
+  relaunch. **Morning-review flags: reviewer SIGINT; audit-vs-menu
+  conflict; two review passes missed what one prompt render would
+  have caught; concurrent paper commits in this worktree.**
+- **RESOLVED — ruling 069a: pilot stopped on plan arithmetic; corrected
+  1116-call plan human-approved; GO 069b issued and later consumed.**
   (`069a-reviewer-ruling-technical-stop-plan-arithmetic.md`, rules on
   report 069 at `6278768b`.) The 068c launch ran verbatim; every guard
   passed; but a live 8-turn dialogue reserves ~26 low-level calls, not
