@@ -14,8 +14,23 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **HARD STOP — SEEDS EXHAUSTED, WAITING ON THE HUMAN** (17:33;
-  report `031-codex-report.md`). Seed 510 ran under contract v3.1
+- **CURRENT DIRECTION: 032** (human granted further authority
+  ~17:45). The seed-510 halt was caused by a defect the v3.1
+  amendment introduced — DEFECT-LEDGER entry #6: the handbook prose
+  licenses the `unspecified` sentinel on any request act with no
+  named catalogue item, but the validator adds two unwritten
+  conditions, leaving wording requests and proposed tests with NO
+  valid encoding. 21 of 27 seed-510 losses; 13 on answer_seeking's
+  signature wording requests. Direction
+  `032-reviewer-direction-contract-v3.2-seed-511.md` pre-declares
+  contract v3.2 (slot-local sentinel, normalization never fatal,
+  prose aligned), three guard tests (encodability closure,
+  prose/validator agreement, normalization), fresh seeds 511–514,
+  and the licensing chain (replay of s510 returns must predict
+  ≤15%; reviewer predicts ~3.6%). Ceiling unchanged. Unattended
+  mode under note 023 resumes with 032 as the work order.
+- **RESOLVED — hard stop of 17:33** (report `031-codex-report.md`;
+  kept as history). Seed 510 ran under contract v3.1
   (both 030 amendments, licensed in order, replay predicted 9.92%)
   and coverage-halted at the registered checkpoint: 25/160 =
   15.625% against the 15% ceiling. A NEAR MISS: after the last
