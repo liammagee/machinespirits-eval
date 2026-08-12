@@ -14,21 +14,36 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **CURRENT DIRECTION: 032** (human granted further authority
-  ~17:45). The seed-510 halt was caused by a defect the v3.1
-  amendment introduced — DEFECT-LEDGER entry #6: the handbook prose
-  licenses the `unspecified` sentinel on any request act with no
-  named catalogue item, but the validator adds two unwritten
-  conditions, leaving wording requests and proposed tests with NO
-  valid encoding. 21 of 27 seed-510 losses; 13 on answer_seeking's
-  signature wording requests. Direction
-  `032-reviewer-direction-contract-v3.2-seed-511.md` pre-declares
-  contract v3.2 (slot-local sentinel, normalization never fatal,
-  prose aligned), three guard tests (encodability closure,
-  prose/validator agreement, normalization), fresh seeds 511–514,
-  and the licensing chain (replay of s510 returns must predict
-  ≤15%; reviewer predicts ~3.6%). Ceiling unchanged. Unattended
-  mode under note 023 resumes with 032 as the work order.
+- **CURRENT DIRECTION: 034**
+  (`034-reviewer-direction-progression-repair-seed-512.md`, lease
+  `DRIVER-LEASE-2026-08-12-E`). Answers report 033. Contract v3.2 is
+  VINDICATED: 22 of 24 seed-511 children sealed, coverage 6/176 =
+  3.41% (checkpoint 1/96 = 1.04%), ZERO sentinel-encodability losses.
+  The matrix is incomplete because of two reviewer-reproduced harness
+  defects, DEFECT-LEDGER entries #7 and #8: (7) the obligation
+  ledger's generic sentinel target signature
+  (`generic_evidence_request`) fails the progression compiler's
+  kind-prefix rule, so the intervening-condition tutor dies on
+  `invalid_turn_progression_contract` before drafting — deterministic
+  on the fast learner's no-item opening, both worlds; (8) the
+  reader-catalogue builder leaves `public_identifiers` empty when
+  observed events reference none, so the packet cannot freeze on a
+  valid corpus. Both are harness plumbing; the amendment chain does
+  NOT grow (still v3.0→v3.1→v3.2). Direction 034 pre-declares repairs
+  R1 (kind-prefixed ledger signature) + R2 (catalogue placeholder;
+  `unspecified` never a catalogue entry), three guards, and a
+  zero-call chain (guards green → both preserved failed-draw
+  directives compile complete → packet freezes on the retained s511
+  partial corpus → s510 replay identical 2.70% → preflight) that
+  licenses SEED 512 as fresh primary. Seed 511 burned; 513–514
+  reserves. Same progression fatal recurring at s512 = STOP. Budget
+  2,242/4,000; ~2,842 projected after the matrix.
+- **RESOLVED — stop of report 033** (kept as history). Seed 511 ran
+  under v3.2 at `3e758071` (licensed: 179/179 focused incl. 3 guards;
+  s510 replay 5/185 = 2.70%; preflight 42/42). 22/24 complete; both
+  fast_learner/intervening children died deterministically pre-draft;
+  packet freeze failed on the empty generic catalogue. 569 calls
+  spent. Ruling: direction 034 above.
 - **RESOLVED — hard stop of 17:33** (report `031-codex-report.md`;
   kept as history). Seed 510 ran under contract v3.1
   (both 030 amendments, licensed in order, replay predicted 9.92%)
@@ -199,7 +214,7 @@
   pooled. Earlier results stand: supplement PASSED (5/2), five-cell
   layer certified, decision readers 0.833 binary.
 - **Driver:** the session whose prompt quotes the lease token in 006c
-  (currently DRIVER-LEASE-2026-08-12-D). Other sessions: read-only.
+  (currently DRIVER-LEASE-2026-08-12-E). Other sessions: read-only.
 - **Instrument commit:** `225a7b07` ("Separate V3 structural and semantic
   gates"). The instrument is CLOSED — it reopens only for a transport,
   schema, provenance, or non-evaluability defect. Never for semantic
