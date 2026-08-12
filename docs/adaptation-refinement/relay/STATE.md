@@ -5,7 +5,15 @@
 
 ## Now
 
-- **Current direction:** `016-reviewer-direction-seed-lock.md` —
+- **Current direction:** `017-reviewer-direction-halt-threshold.md` —
+  mid-run: analysis calls return responses but provenance says
+  `structuredOutput=false`, so the fail-closed path drops them as
+  unanalyzed. Measure the unanalyzed rate over completed turns NOW;
+  ≥10% = halt at the dialogue boundary (seed-504 corpus burned),
+  zero-call diagnosis of the flag source, fix + preflight extension,
+  relaunch at reserve seed 505 (pre-authorized; ping carry-over per
+  016). <10% = run to completion, state the rate in the report.
+  Prior: `016-reviewer-direction-seed-lock.md` —
   replacement master seed 504 named (reserves 505, 506); the one-line
   seed-lock amendment is authorized; preflight at the amended commit;
   the passed ping carries over if the live schema digests are unchanged
