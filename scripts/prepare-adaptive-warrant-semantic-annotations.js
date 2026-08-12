@@ -22,6 +22,7 @@ import {
   validateAdaptiveWarrantSemanticPreflightArtifact,
   validateAdaptiveWarrantSemanticSchemaAcceptanceResult,
 } from '../services/adaptiveWarrantSemanticPreflight.js';
+import { deriveAdaptiveWarrantSemanticEvidenceSpan } from '../services/adaptiveWarrantSemanticEvents.js';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_COLLECTION_MANIFEST_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-event-annotation-collection.v6';
@@ -441,9 +442,11 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
         if (typeof text !== 'string' || !text.length || text.length > 240) {
           throw new Error(`${batch.batch_id} ${sampleId} event ${eventIndex} span text is invalid`);
         }
-        const start = learnerText.indexOf(text);
-        if (start < 0) throw new Error(`${batch.batch_id} ${sampleId} event ${eventIndex} span is not literal`);
-        if (learnerText.lastIndexOf(text) !== start) {
+        const derivation = deriveAdaptiveWarrantSemanticEvidenceSpan(learnerText, text);
+        if (derivation.status === 'not_literal') {
+          throw new Error(`${batch.batch_id} ${sampleId} event ${eventIndex} span is not literal`);
+        }
+        if (derivation.status === 'non_unique_literal') {
           assemblyRejection = {
             code: 'non_unique_literal_span',
             detail: `event ${eventIndex} span occurs more than once`,
@@ -461,19 +464,19 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
         if (typeof text !== 'string' || !text.length || text.length > 240) {
           throw new Error(`${batch.batch_id} ${sampleId} event ${eventIndex} span text is invalid`);
         }
-        const start = learnerText.indexOf(text);
-        const end = start + text.length;
+        const derivation = deriveAdaptiveWarrantSemanticEvidenceSpan(learnerText, text);
+        const { text: sourceText, start, end } = derivation.evidence_span;
         canonicalizations.push({
           sample_id: sampleId,
           event_index: eventIndex,
-          operation: 'derive_unique_literal_utf16_offsets',
+          operation: 'derive_punctuation_normalized_unique_literal_utf16_offsets',
           start,
           end,
         });
         const materialized = materializeAdaptiveWarrantSemanticReaderEvent({
           event: {
             ...event,
-            evidence_span: { text, start, end },
+            evidence_span: { text: sourceText, start, end },
           },
           semanticCatalog,
           label: `${batch.batch_id} ${sampleId} event ${eventIndex}`,
@@ -528,7 +531,7 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
     manifest: { path: resolvedManifest, sha256: fileSha256(resolvedManifest) },
     reader_id: readerId,
     annotation_run_id: annotationRunId,
-    normalization: 'schema_declared_literal_span_and_event_order_derivation',
+    normalization: 'schema_declared_punctuation_normalized_literal_span_and_event_order_derivation',
     edit_count: canonicalizations.length,
     canonicalizations,
     input_batches: inputs,

@@ -429,6 +429,14 @@ function publicIdentifierPresent(identifier, publicText) {
   return String(publicText || '').includes(String(identifier || '').trim());
 }
 
+const ADAPTIVE_WARRANT_QUOTE_PUNCTUATION_PATTERN = /[\u2018\u2019\u201c\u201d]/gu;
+
+export function normalizeAdaptiveWarrantSemanticQuotePunctuation(value) {
+  return String(value || '').replace(ADAPTIVE_WARRANT_QUOTE_PUNCTUATION_PATTERN, (character) =>
+    character === '\u2018' || character === '\u2019' ? "'" : '"',
+  );
+}
+
 /**
  * Convert the model's only span judgment — one literal quote — into the
  * internal UTF-16 interval. Numeric offsets are deliberately never trusted
@@ -436,29 +444,32 @@ function publicIdentifierPresent(identifier, publicText) {
  */
 export function deriveAdaptiveWarrantSemanticEvidenceSpan(learnerText, suppliedSpan) {
   const sourceText = String(learnerText || '');
-  const text =
+  const suppliedText =
     typeof suppliedSpan === 'string'
       ? suppliedSpan
       : suppliedSpan && typeof suppliedSpan === 'object' && !Array.isArray(suppliedSpan)
         ? String(suppliedSpan.text || '')
         : '';
-  const start = text ? sourceText.indexOf(text) : -1;
+  const normalizedSourceText = normalizeAdaptiveWarrantSemanticQuotePunctuation(sourceText);
+  const normalizedSuppliedText = normalizeAdaptiveWarrantSemanticQuotePunctuation(suppliedText);
+  const start = normalizedSuppliedText ? normalizedSourceText.indexOf(normalizedSuppliedText) : -1;
   if (start < 0) {
     return {
-      evidence_span: { text, start: null, end: null },
+      evidence_span: { text: suppliedText, start: null, end: null },
       status: 'not_literal',
       issues: ['not_literal'],
     };
   }
-  if (sourceText.indexOf(text, start + 1) >= 0) {
+  if (normalizedSourceText.indexOf(normalizedSuppliedText, start + 1) >= 0) {
     return {
-      evidence_span: { text, start: null, end: null },
+      evidence_span: { text: suppliedText, start: null, end: null },
       status: 'non_unique_literal',
       issues: ['non_unique_literal'],
     };
   }
+  const end = start + normalizedSuppliedText.length;
   return {
-    evidence_span: { text, start, end: start + text.length },
+    evidence_span: { text: sourceText.slice(start, end), start, end },
     status: 'derived_unique_literal',
     issues: [],
   };

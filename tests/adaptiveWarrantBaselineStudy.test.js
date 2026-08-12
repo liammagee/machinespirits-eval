@@ -33,6 +33,7 @@ import {
   resolveAdaptiveWarrantStudyStatus,
   scoreAnnotationArtifacts,
   scoreBlindedAnnotations,
+  summarizeAdaptiveWarrantAnalysisCoverage,
   summarizeAdaptiveWarrantTrace,
   validateAdaptiveWarrantAnnotationFreeze,
   validateBlindedAnnotationResponse,
@@ -89,6 +90,8 @@ function resultRow({
     childStatus: 'ok',
     turnCount: 8,
     learnerAnalysisCallCount: 8,
+    learnerAnalysisUnanalyzedCount: 0,
+    learnerAnalysisUnanalyzedTurns: [],
     learnerAnalysisPromptFailureCount: 0,
     learnerAnalysisErrorCount: 0,
     learnerAnalysisCoverage: 1,
@@ -181,8 +184,8 @@ test('study plan is a paired 3-condition x 3-profile matrix with frozen eight-tu
   }
 });
 
-test('analysis coverage guard halts on the first blind call and at the running ten-percent threshold', () => {
-  assert.equal(ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_RATE, 0.1);
+test('analysis coverage guard halts on the first blind call and at the registered fifteen-percent threshold', () => {
+  assert.equal(ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_RATE, 0.15);
   assert.equal(ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_MINIMUM_TURNS, 10);
 
   const firstCall = evaluateAdaptiveWarrantAnalysisCoverageHalt([
@@ -204,16 +207,25 @@ test('analysis coverage guard halts on the first blind call and at the running t
   ]);
   assert.equal(belowSupport.status, 'continue');
 
-  const rateBreach = evaluateAdaptiveWarrantAnalysisCoverageHalt([
+  const measuredExpectedRate = evaluateAdaptiveWarrantAnalysisCoverageHalt([
     {
       learnerAnalysisCallCount: 10,
       learnerAnalysisUnanalyzedCount: 1,
       firstLearnerAnalysisStatus: 'analyzed',
     },
   ]);
+  assert.equal(measuredExpectedRate.status, 'continue');
+
+  const rateBreach = evaluateAdaptiveWarrantAnalysisCoverageHalt([
+    {
+      learnerAnalysisCallCount: 10,
+      learnerAnalysisUnanalyzedCount: 2,
+      firstLearnerAnalysisStatus: 'analyzed',
+    },
+  ]);
   assert.equal(rateBreach.status, 'coverage_halt');
   assert.equal(rateBreach.reason, 'unanalyzed_rate_threshold');
-  assert.equal(rateBreach.unanalyzed_rate, 0.1);
+  assert.equal(rateBreach.unanalyzed_rate, 0.2);
 });
 
 test('live mechanism authorization binds the frozen model destination, private payload scope, and source closure', () => {
@@ -253,7 +265,7 @@ test('live mechanism authorization binds the frozen model destination, private p
         profiles: MECHANISM_VALIDATION_PROFILES,
         conditions: MECHANISM_VALIDATION_CONDITIONS,
         model: 'codex.gpt-5.6-luna',
-        analysisModel: 'claude-code.claude-sonnet-5',
+        analysisModel: 'codex.gpt-5.6-luna',
         learnerModel: 'codex.gpt-5.6-luna',
         maxTokens: 4096,
         historyTurns: 4,
@@ -265,7 +277,7 @@ test('live mechanism authorization binds the frozen model destination, private p
         annotationConditions: ['instrumented'],
         excludedAnnotationCorpora: [excludedCorpusPath],
         learnerAnalysisPromptProfile: 'handbook_v1',
-        fixedSeams: ['prospective mixed-model routing: Luna tutor and learner, Sonnet learner analysis'],
+        fixedSeams: ['same Luna model routing with handbook_v1 learner analysis'],
         dryRun: true,
       },
       jobs,
@@ -273,10 +285,7 @@ test('live mechanism authorization binds the frozen model destination, private p
     const request = buildAdaptiveWarrantLaunchAuthorizationRequest(plan);
     assert.equal(request.contract.execution.dialogues, 24);
     assert.equal(request.contract.execution.maximum_tutor_decisions, 192);
-    assert.deepEqual(request.contract.authorized_destinations, [
-      'Anthropic Claude Code CLI',
-      'OpenAI Codex CLI (ChatGPT-account route)',
-    ]);
+    assert.deepEqual(request.contract.authorized_destinations, ['OpenAI Codex CLI (ChatGPT-account route)']);
     assert.equal(request.contract.annotation.excluded_prior_corpora[0].sha256.length, 64);
     assert.equal(request.contract.private_payload_scope_sha256.length, 64);
     assert.equal(request.approvable, true);
@@ -511,12 +520,12 @@ test('mechanism model routing is frozen before authorization', () => {
   assert.deepEqual(
     assertAdaptiveWarrantMechanismModelRefs({
       model: 'codex.gpt-5.6-luna',
-      analysisModel: 'claude-code.claude-sonnet-5',
+      analysisModel: 'codex.gpt-5.6-luna',
       learnerModel: 'codex.gpt-5.6-luna',
     }),
     {
       tutor: 'codex.gpt-5.6-luna',
-      learner_analysis: 'claude-code.claude-sonnet-5',
+      learner_analysis: 'codex.gpt-5.6-luna',
       automated_learner: 'codex.gpt-5.6-luna',
     },
   );
@@ -532,7 +541,7 @@ test('mechanism model routing is frozen before authorization', () => {
 });
 
 test('mechanism-validation plan is the frozen two-world, six-profile, observe-active matrix', () => {
-  assert.equal(ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.masterSeed, 505);
+  assert.equal(ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.masterSeed, 506);
   const jobs = buildAdaptiveWarrantBaselineJobs({
     rootDir: '/tmp/warrant-mechanism-study',
     runs: ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.runs,
@@ -638,10 +647,37 @@ test('study status fails closed when a completed row used learner-analysis fallb
   const valid = resultRow({ profile: 'low_agency', condition: 'baseline', seed: 101 });
   assert.equal(resolveAdaptiveWarrantStudyStatus([valid], jobs), 'complete');
   assert.equal(resolveAdaptiveWarrantStudyStatus([{ ...valid, learnerAnalysisCoverage: 0 }], jobs), 'invalid_analysis');
+  const withinRegisteredCoverage = {
+    ...valid,
+    learnerAnalysisUnanalyzedCount: 1,
+    learnerAnalysisUnanalyzedTurns: [2],
+    learnerAnalysisErrorCount: 1,
+    learnerAnalysisCoverage: 0.875,
+  };
+  assert.equal(resolveAdaptiveWarrantStudyStatus([withinRegisteredCoverage], jobs), 'complete');
   assert.equal(
     resolveAdaptiveWarrantStudyStatus([{ ...valid, promptAuditRecoveryCount: 1 }], jobs),
     'invalid_analysis',
   );
+});
+
+test('analysis coverage summary records overall and per-dialogue denominators for the gate ruling', () => {
+  const rows = [
+    resultRow({ profile: 'diligent', condition: 'instrumented', seed: 506 }),
+    {
+      ...resultRow({ profile: 'diligent', condition: 'intervening', seed: 506 }),
+      learnerAnalysisUnanalyzedCount: 1,
+      learnerAnalysisUnanalyzedTurns: [4],
+      learnerAnalysisCoverage: 0.875,
+    },
+  ];
+  const coverage = summarizeAdaptiveWarrantAnalysisCoverage(rows);
+  assert.equal(coverage.analysis_turns, 16);
+  assert.equal(coverage.analyzed_turns, 15);
+  assert.equal(coverage.unanalyzed_turns, 1);
+  assert.equal(coverage.coverage, 0.9375);
+  assert.equal(coverage.gate_ruling, 'within_registered_coverage');
+  assert.deepEqual(coverage.dialogues[1].unanalyzed_turn_numbers, [4]);
 });
 
 test('delivery application proves observe inertia and active final-authority delivery', () => {
@@ -1712,6 +1748,9 @@ test('mechanism corpus freezes all 96 observe decisions and excludes active pred
     assert.equal(manifest.structured_parity.mismatches, 0);
     assert.equal(manifest.annotation_handbook.sha256, frozenCorpus.provenance.annotation_handbook.sha256);
     assert.equal(manifest.coverage.exact_dialogue_coverage, true);
+    assert.equal(manifest.coverage.learner_analysis.coverage, 1);
+    assert.equal(manifest.coverage.learner_analysis.gate_ruling, 'within_registered_coverage');
+    assert.equal(manifest.coverage.learner_analysis.dialogues.length, 24);
     assert.equal(manifest.coverage.annotation.exact, true);
     assert.equal(manifest.coverage.annotation.active_cases, 0);
     assert.equal(manifest.study_plan.sha256.length, 64);
@@ -2829,6 +2868,38 @@ test('mechanism decision gate requires nonzero structured parity in observe and 
   assert.equal(checks.structured_parity_active_comparisons.passed, false);
   assert.equal(checks.structured_parity_mismatches.passed, true);
   assert.equal(gate.passed, false);
+});
+
+test('mechanism gate quotes the registered analysis coverage and uses analyzed parity denominators', () => {
+  const analysisCoverage = {
+    threshold: 0.15,
+    analysis_turns: 16,
+    analyzed_turns: 15,
+    unanalyzed_turns: 1,
+    unanalyzed_rate: 0.0625,
+    coverage: 0.9375,
+    gate_ruling: 'within_registered_coverage',
+    by_condition: {
+      instrumented: { analyzed_turns: 8 },
+      intervening: { analyzed_turns: 7 },
+    },
+    dialogues: [],
+  };
+  const gate = evaluateAdaptiveWarrantDecisionGate(
+    { metrics: { mechanismHardConsensusRate: 1 } },
+    {
+      liveShadowAgreement: 1,
+      structuredParityComparisons: 15,
+      structuredParityComparisonsByMode: { observe: 8, active: 7 },
+      structuredParityMismatches: 0,
+      analysisCoverage,
+    },
+  );
+  const checks = Object.fromEntries(gate.checks.map((row) => [row.id, row]));
+  assert.equal(checks.learner_analysis_unanalyzed_rate.passed, true);
+  assert.equal(checks.structured_parity_comparisons.threshold, 15);
+  assert.equal(checks.structured_parity_active_comparisons.threshold, 7);
+  assert.equal(gate.analysis_coverage_ruling.coverage, 0.9375);
 });
 
 test('mechanism gate cannot downgrade to legacy checks and gates all typed decision accuracies', () => {

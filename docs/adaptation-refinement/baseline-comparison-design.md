@@ -1304,3 +1304,29 @@ interpretation-evaluable dimensions remains a rare-state quota in disguise:
 this unselected corpus supplied one conceptual and zero epistemic non-aligned
 consensus cases. V3 must be declared before new labels and must not pool the
 challenge into the natural estimand. Outcomes remain blocked.
+
+## Seed-506 V3 live-seat and coverage amendment — 12 August 2026
+
+Direction 022 prospectively freezes the next representative execution at
+master seed 506 with all tutor, learner-analysis, and automated-learner roles on
+`codex.gpt-5.6-luna`; learner analysis retains the `handbook_v1` prompt. The
+single pre-authorized Sonnet analysis-seat probe failed and is diagnostic-only.
+Seeds 503–505 and both Direction 021 probe sets remain burned and cannot be
+pooled or rescored. Seeds 507–510 remain unused reserves.
+
+Before quote lookup, the shared live/reader harness maps typographic left/right
+apostrophes to ASCII apostrophe and typographic left/right quotation marks to
+ASCII quotation mark. No word, case, or whitespace normalization is allowed.
+Uniqueness is checked after that one-code-point mapping; duplicate matches fail
+closed, while accepted offsets and canonical quote text are taken from the
+original learner turn.
+
+The first-call blind gate is unchanged. With at least ten observed analysis
+turns, the self-halt threshold is now `>= 0.15` unanalyzed, grounded in the
+fixed-seat Luna probe's 5/48 = 10.4% discard rate with approximately four
+percentage points of sampling uncertainty. Per-turn strictness is unchanged:
+an unanalyzed turn is a coverage loss and is excluded from tutor projection,
+parity, delivery, reader annotation, and every score. The matrix report and
+the final gate ruling must state analyzed/total coverage overall and for each
+dialogue. This amendment permits no post-hoc repair and changes no semantic or
+decision-quality threshold.

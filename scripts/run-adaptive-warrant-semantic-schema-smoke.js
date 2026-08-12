@@ -447,9 +447,11 @@ export async function runAdaptiveWarrantSemanticSchemaSmoke({
     no_schema_repair: run.run.batches.every((batch) => batch.status === 'complete'),
     declared_normalization_only: assemblies.every(
       (row) =>
-        row.normalization === 'schema_declared_literal_span_and_event_order_derivation' &&
+        row.normalization === 'schema_declared_punctuation_normalized_literal_span_and_event_order_derivation' &&
         row.canonicalization_operations.every((operation) =>
-          ['derive_unique_literal_utf16_offsets', 'order_events_by_literal_span'].includes(operation),
+          ['derive_punctuation_normalized_unique_literal_utf16_offsets', 'order_events_by_literal_span'].includes(
+            operation,
+          ),
         ),
     ),
     all_responses_structurally_assembled: assemblies.length === 2,

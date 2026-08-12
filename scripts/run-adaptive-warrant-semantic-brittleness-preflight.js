@@ -285,6 +285,8 @@ function spanDerivationPreflightAudit() {
   const absent = validate('alpha beta gamma', ['delta']);
   const duplicate = validate('echo then echo', ['echo']);
   const overlap = validate('alpha beta gamma', ['alpha beta', 'beta gamma']);
+  const punctuationRescue = validate('I’ll compare the “amber” token.', [`I'll compare the "amber" token.`]);
+  const punctuationDuplicate = validate(`I’ll compare it, then I'll compare it again.`, [`I'll compare it`]);
   return {
     unique_quote_derived:
       unique.events[0]?.evidence_span?.start === 6 &&
@@ -292,6 +294,13 @@ function spanDerivationPreflightAudit() {
       unique.events[0]?.evidence_span_derivation?.status === 'derived_unique_literal',
     absent_quote_fails: absent.events[0]?.validation?.issues.includes('events[0].evidence_span:not_literal'),
     duplicate_quote_fails: duplicate.events[0]?.validation?.issues.includes(
+      'events[0].evidence_span:non_unique_literal',
+    ),
+    punctuation_normalized_quote_derived_on_original_text:
+      punctuationRescue.events[0]?.evidence_span?.text === 'I’ll compare the “amber” token.' &&
+      punctuationRescue.events[0]?.evidence_span?.start === 0 &&
+      punctuationRescue.events[0]?.validation?.status === 'accepted',
+    duplicate_after_punctuation_normalization_fails_closed: punctuationDuplicate.events[0]?.validation?.issues.includes(
       'events[0].evidence_span:non_unique_literal',
     ),
     overlap_detected_mechanically: overlap.events.every((event) =>
@@ -610,7 +619,7 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
   const rateCoverageGuard = evaluateAdaptiveWarrantAnalysisCoverageHalt([
     {
       learnerAnalysisCallCount: ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_MINIMUM_TURNS,
-      learnerAnalysisUnanalyzedCount: 1,
+      learnerAnalysisUnanalyzedCount: 2,
       firstLearnerAnalysisStatus: 'analyzed',
     },
   ]);
@@ -627,6 +636,21 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       representativeRunnerSource.includes('() => coverageHalt === null') &&
       representativeRunnerSource.includes('evaluateAdaptiveWarrantAnalysisCoverageHalt(completedRows)'),
     typed_status_wired: representativeRunnerSource.includes("status: coverageHalt ? 'coverage_halt' : 'running'"),
+  };
+  const semanticEventSource = fs.readFileSync(path.join(ROOT, 'services/adaptiveWarrantSemanticEvents.js'), 'utf8');
+  const readerAssemblySource = fs.readFileSync(
+    path.join(ROOT, 'scripts/prepare-adaptive-warrant-semantic-annotations.js'),
+    'utf8',
+  );
+  const punctuationNormalizedQuoteAudit = {
+    canonicalizes_only_declared_quote_code_points:
+      semanticEventSource.includes('ADAPTIVE_WARRANT_QUOTE_PUNCTUATION_PATTERN') &&
+      semanticEventSource.includes('\\u2018\\u2019\\u201c\\u201d'),
+    live_seat_uses_shared_derivation:
+      semanticEventSource.includes('deriveAdaptiveWarrantSemanticEvidenceSpan(sourceText, event.evidence_span)'),
+    reader_seat_imports_shared_derivation:
+      readerAssemblySource.includes("import { deriveAdaptiveWarrantSemanticEvidenceSpan } from '../services/adaptiveWarrantSemanticEvents.js'") &&
+      readerAssemblySource.includes('deriveAdaptiveWarrantSemanticEvidenceSpan(learnerText, text)'),
   };
   const modelFacingSchemaText = JSON.stringify([
     ...schemas,
@@ -719,7 +743,7 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     ),
     check(
       'representative_runner_first_call_and_coverage_halt_guards_wired',
-      coverageGuardAudit.threshold === 0.1 &&
+      coverageGuardAudit.threshold === 0.15 &&
         coverageGuardAudit.minimum_turns === 10 &&
         firstCallCoverageGuard.status === 'coverage_halt' &&
         firstCallCoverageGuard.reason === 'first_call_unanalyzed' &&
@@ -728,6 +752,11 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
         coverageGuardAudit.wired_before_new_job_admission &&
         coverageGuardAudit.typed_status_wired,
       coverageGuardAudit,
+    ),
+    check(
+      'punctuation_normalized_quote_matching_is_shared_by_live_and_reader_seats',
+      Object.values(punctuationNormalizedQuoteAudit).every(Boolean),
+      punctuationNormalizedQuoteAudit,
     ),
     check(
       'reader_schema_uses_only_supported_provider_keywords',
@@ -853,6 +882,7 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       model_facing_derived_field_audit: modelFacingDerivedFieldAudit,
       handbook_prompt_parity_audit: handbookPromptParityAudit,
       span_derivation_audit: spanDerivationAudit,
+      punctuation_normalized_quote_audit: punctuationNormalizedQuoteAudit,
       fallback_sentinel_leak_paths: sentinelLeakPaths,
       shared_cli_request_path_audit: sharedRequestPathAudit,
       representative_runner_coverage_guard_audit: coverageGuardAudit,

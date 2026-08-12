@@ -107,6 +107,22 @@ test('semantic evidence spans derive UTF-16 offsets only from one unique literal
   });
   assert.equal(unique.events[0].evidence_span_derivation.status, 'derived_unique_literal');
 
+  const punctuationText = 'I’ll compare the “amber” token now.';
+  const punctuationNormalized = semanticExtraction(punctuationText, [
+    semanticEvent({
+      learnerText: punctuationText,
+      eventId: 'punctuation-normalized-span',
+      speechAct: 'other',
+      span: `I'll compare the "amber" token now.`,
+    }),
+  ]);
+  assert.deepEqual(punctuationNormalized.events[0].evidence_span, {
+    text: punctuationText,
+    start: 0,
+    end: punctuationText.length,
+  });
+  assert.equal(punctuationNormalized.events[0].validation.status, 'accepted');
+
   const legacyOffsets = semanticExtraction(uniqueText, [
     {
       ...semanticEvent({
@@ -130,6 +146,19 @@ test('semantic evidence spans derive UTF-16 offsets only from one unique literal
     semanticEvent({ learnerText: duplicateText, eventId: 'duplicate-span', speechAct: 'other', span: 'echo' }),
   ]);
   assert.ok(duplicate.events[0].validation.issues.includes('events[0].evidence_span:non_unique_literal'));
+
+  const punctuationDuplicateText = `I’ll compare it, then I'll compare it again.`;
+  const punctuationDuplicate = semanticExtraction(punctuationDuplicateText, [
+    semanticEvent({
+      learnerText: punctuationDuplicateText,
+      eventId: 'punctuation-duplicate-span',
+      speechAct: 'other',
+      span: `I'll compare it`,
+    }),
+  ]);
+  assert.ok(
+    punctuationDuplicate.events[0].validation.issues.includes('events[0].evidence_span:non_unique_literal'),
+  );
 });
 
 const CATALOGUE_ACTION_FAMILIES = [

@@ -433,6 +433,17 @@ and one final 48-turn diagnostic probe. The speaking tutor and automated learner
 remain `codex.gpt-5.6-luna`. If the second probe also exceeds 10%, the study
 stops for human review; no coverage caveat is permitted.
 
+Prospective amendment on 12 August 2026 after the two Direction 021 probes:
+the representative learner-analysis seat returns to
+`codex.gpt-5.6-luna` with `handbook_v1`. Luna was the best measured fixed seat
+(5/48 discarded, 10.4%); the one authorized Sonnet comparison remained worse
+after correcting quote-byte trivia. The correction canonicalizes only
+typographic versus ASCII apostrophes and quotation marks before locating a
+model-supplied quote. Words still match exactly, normalized duplicates fail
+closed, and the harness derives offsets and canonical span text from the
+original learner turn. The live validator and reader assembler use the same
+mechanical matcher; no historical corpus is rescored.
+
 ### 3.2 Prompt and response size budget
 
 The semantic-event task stays inside the existing learner-analysis envelope;
@@ -531,6 +542,12 @@ tie. A missing, repeated, or non-literal span fails closed. This prospective
 12 August 2026 repair follows the seed-505 coverage halt and removes LLM
 character-count arithmetic without changing the semantic identity of any
 event or rescoring a historical corpus.
+
+For the seed-506 representative matrix, U+2018/U+2019 are mechanically matched
+as ASCII apostrophe and U+201C/U+201D as ASCII quotation mark on both sides of
+the quote lookup. The unique interval and returned span text remain grounded
+in the original turn. This is punctuation normalization only, not lexical,
+case, whitespace, or semantic normalization.
 
 The frozen corpus also carries one public corpus-wide annotation catalogue of
 `target_id`, `public_identifier_id`, `component_id`, and `action_object_id`
@@ -775,12 +792,14 @@ the final diagnostic repair from one clean committed source:
   `counterexample_hunter`, `goalpost_shifter`, and `fast_learner`;
 - conditions: `observe` and `active`;
 - one fresh eight-turn dialogue per world/profile/condition cell;
-- master seed: `505` (`506` reserved prospectively for any separately
-  authorized future rerun; partial seed `504` was burned by relay 017's
-  learner-analysis coverage halt);
-- 24 dialogues and 192 decisions total;
-- the corpus is every decision from all twelve observe dialogues: 96 cases,
-  with no balancing, prediction filtering, replacement, or post-hoc selection;
+- master seed: `506` (seeds `503`, `504`, and `505` and both Direction 021
+  probe sets are burned; `507`–`510` remain prospective reserves);
+- 24 dialogues and 192 scheduled learner-analysis turns total; the analyzed
+  decision census contains every turn that passes the frozen per-turn analysis
+  contract, with unreadable turns recorded only as coverage loss;
+- the reader corpus is every analyzed decision from all twelve observe
+  dialogues, up to 96 cases, with no balancing, prediction filtering,
+  replacement, or post-hoc selection;
 - active decisions are reserved for matched execution, parity, and delivery
   verification and are not added to the reader denominator.
 
@@ -789,6 +808,16 @@ matrix, seed derivation, semantic schema, validator fingerprint, reducer
 fingerprint, handbook hashes, reader schemas, thresholds, prior-corpus
 exclusions, authorization payload, and call ceilings. Any drift burns the
 freeze.
+
+The first learner-analysis call remains a hard blind-turn stop. After at least
+ten analysis turns, the registered coverage self-halt is prospectively 15%
+unanalyzed (halt at `>= 0.15`). The ground is the fixed Luna + `handbook_v1`
+probe estimate, 5/48 = 10.4% with sampling uncertainty of roughly four
+percentage points. This changes run management, not per-turn validity:
+unanalyzed turns contribute no tutor projection, parity or delivery comparison,
+reader case, or score. The matrix and final gate artifacts report analyzed and
+unanalyzed counts, overall coverage, and every dialogue's coverage; the gate
+ruling quotes that coverage boundary explicitly.
 
 Natural absence of a rare state is reported as `not_evaluable` for that cell.
 It does not fail the representative gate and cannot be filled with diagnostic

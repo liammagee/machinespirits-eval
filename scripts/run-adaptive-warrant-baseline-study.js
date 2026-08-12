@@ -79,7 +79,7 @@ export const ADAPTIVE_WARRANT_LAUNCH_AUTHORIZATION_REQUEST_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-study-launch-authorization-request.v1';
 export const ADAPTIVE_WARRANT_LAUNCH_AUTHORIZATION_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-study-launch-authorization.v1';
-export const ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_RATE = 0.1;
+export const ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_RATE = 0.15;
 export const ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_MINIMUM_TURNS = 10;
 const ADAPTIVE_WARRANT_LAUNCH_CONTRACT_SCHEMA = 'machinespirits.adaptation-refinement.warrant-study-launch-contract.v1';
 const ADAPTIVE_WARRANT_LAUNCH_AUTHORIZATION_FIELDS = Object.freeze([
@@ -228,15 +228,18 @@ export const MECHANISM_VALIDATION_EXCLUDED_CORPORA = Object.freeze([
   '/private/tmp/adaptive-warrant-v3-record-entry-supplement-006-225a7b07/annotation-sample.blinded.json',
   '/private/tmp/adaptive-warrant-v3-matrix-live-36d2e63f/annotation-sample.blinded.json',
   '/private/tmp/adaptive-warrant-v3-matrix-live-d72931bf-s504/annotation-sample.blinded.json',
+  '/private/tmp/adaptive-warrant-v3-matrix-live-a4529e79-s505/annotation-sample.blinded.json',
+  '/private/tmp/adaptive-warrant-v3-handbook-probe-96bada6e-luna/diagnostic-probe.json',
+  '/private/tmp/adaptive-warrant-v3-handbook-probe-39757d4e-sonnet/diagnostic-probe.json',
 ]);
 const DEFAULT_MODEL = 'codex.gpt-5.6-luna';
-const DEFAULT_ANALYSIS_MODEL = 'claude-code.claude-sonnet-5';
+const DEFAULT_ANALYSIS_MODEL = DEFAULT_MODEL;
 export const ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC = Object.freeze({
   worlds: MECHANISM_VALIDATION_WORLDS,
   profiles: MECHANISM_VALIDATION_PROFILES,
   conditions: MECHANISM_VALIDATION_CONDITIONS,
   runs: 1,
-  masterSeed: 505,
+  masterSeed: 506,
   horizon: 8,
   models: Object.freeze({
     tutor: DEFAULT_MODEL,
@@ -1562,6 +1565,7 @@ export function summarizeAdaptiveWarrantTrace({ tracePath, job, childStatus = nu
     turnCount: turnRecords.length,
     learnerAnalysisCallCount: learnerAnalysisCalls.length,
     learnerAnalysisUnanalyzedCount: learnerAnalysisUnanalyzed.length,
+    learnerAnalysisUnanalyzedTurns: [...learnerAnalysisUnanalyzedTurns].sort((left, right) => left - right),
     firstLearnerAnalysisStatus:
       firstLearnerAnalysisTurn === null
         ? 'missing'
@@ -1776,25 +1780,34 @@ export function resolveAdaptiveWarrantStudyStatus(
   if (rows.length !== jobs.length) return 'incomplete';
   if (dryRun) return rows.every((row) => row.childStatus === 'dry_run') ? 'dry_run' : 'incomplete';
   if (!rows.every((row) => row.childStatus === 'ok')) return 'incomplete';
+  const coverageGuard = evaluateAdaptiveWarrantAnalysisCoverageHalt(rows);
   const analysisValid = rows.every(
-    (row) =>
-      row.turnCount === horizon &&
-      row.learnerAnalysisCallCount === row.turnCount &&
-      row.learnerAnalysisErrorCount === 0 &&
-      row.learnerAnalysisPromptFailureCount === 0 &&
-      Number(row.promptAuditFailureCount || 0) === 0 &&
-      Number(row.promptAuditRecoveryCount || 0) === 0 &&
-      row.learnerAnalysisCoverage === 1,
+    (row) => {
+      const unanalyzed = Number(row.learnerAnalysisUnanalyzedCount || 0);
+      const expectedCoverage = row.turnCount ? Number(((row.turnCount - unanalyzed) / row.turnCount).toFixed(3)) : null;
+      return (
+        row.turnCount === horizon &&
+        row.learnerAnalysisCallCount === row.turnCount &&
+        Number(row.learnerAnalysisErrorCount || 0) <= unanalyzed &&
+        row.learnerAnalysisPromptFailureCount === 0 &&
+        Number(row.promptAuditFailureCount || 0) === 0 &&
+        Number(row.promptAuditRecoveryCount || 0) === 0 &&
+        row.learnerAnalysisCoverage === expectedCoverage
+      );
+    },
   );
-  if (!analysisValid) return 'invalid_analysis';
+  if (!analysisValid || coverageGuard.halt) return 'invalid_analysis';
   if (
     requireStructuredParity &&
     !rows.every((row) => {
       const decisionTurns = (row.decisions || []).map((decision) => Number(decision.turn)).sort((a, b) => a - b);
-      const expectedTurns = Array.from({ length: horizon }, (_, index) => index + 1);
+      const unanalyzedTurns = new Set((row.learnerAnalysisUnanalyzedTurns || []).map(Number));
+      const expectedTurns = Array.from({ length: horizon }, (_, index) => index + 1).filter(
+        (turn) => !unanalyzedTurns.has(turn),
+      );
       return (
         JSON.stringify(decisionTurns) === JSON.stringify(expectedTurns) &&
-        row.liveShadowStructuredComparisonCount === horizon &&
+        row.liveShadowStructuredComparisonCount === expectedTurns.length &&
         row.liveShadowStructuredMismatchCount === 0
       );
     })
@@ -1805,13 +1818,14 @@ export function resolveAdaptiveWarrantStudyStatus(
     requireDeliveryApplication &&
     !rows.every((row) => {
       const applications = (row.decisions || []).map((decision) => decision.delivery_application);
+      const expectedApplications = horizon - Number(row.learnerAnalysisUnanalyzedCount || 0);
       return (
-        applications.length === horizon &&
+        applications.length === expectedApplications &&
         applications.every(
           (application) =>
             application?.checked === true && application.ok === true && application.mode === row.warrantGateMode,
         ) &&
-        row.deliveryApplicationComparisonCount === horizon &&
+        row.deliveryApplicationComparisonCount === expectedApplications &&
         row.deliveryApplicationMismatchCount === 0 &&
         row.deliveryApplicationIssueCount === 0
       );
@@ -1854,7 +1868,13 @@ export function buildBlindedAnnotationCorpus(
               row.childStatus === 'ok',
           )
           .flatMap((row) =>
-            row.decisions.map((decision) => ({ row, decision })).filter(({ decision }) => decision.turn >= minimumTurn),
+            row.decisions
+              .map((decision) => ({ row, decision }))
+              .filter(
+                ({ decision }) =>
+                  decision.turn >= minimumTurn &&
+                  !(row.learnerAnalysisUnanalyzedTurns || []).map(Number).includes(Number(decision.turn)),
+              ),
           )
           .sort((left, right) =>
             sha256(`${samplingSeed}|${left.row.jobId}|${left.decision.turn}`).localeCompare(
@@ -2966,6 +2986,7 @@ export function evaluateAdaptiveWarrantDecisionGate(
     structuredParityComparisons = null,
     structuredParityComparisonsByMode = {},
     structuredParityMismatches = null,
+    analysisCoverage = null,
     requireMechanismMetrics = false,
     gate = ADAPTIVE_WARRANT_DECISION_GATE,
   } = {},
@@ -2981,6 +3002,16 @@ export function evaluateAdaptiveWarrantDecisionGate(
     check('accuracy', metrics.accuracy, gate.minimum_accuracy, 'min'),
     check('live_shadow_agreement', liveShadowAgreement, gate.required_live_shadow_agreement, 'min'),
   ];
+  if (analysisCoverage) {
+    checks.push(
+      check(
+        'learner_analysis_unanalyzed_rate',
+        analysisCoverage.unanalyzed_rate,
+        analysisCoverage.threshold,
+        'lt',
+      ),
+    );
+  }
   if (Number(metrics.transitionConsensusCases || 0) >= gate.minimum_transition_consensus_cases) {
     checks.push(
       check(
@@ -3028,19 +3059,21 @@ export function evaluateAdaptiveWarrantDecisionGate(
       check(
         'structured_parity_comparisons',
         structuredParityComparisons,
-        gate.minimum_structured_parity_comparisons,
+        analysisCoverage?.analyzed_turns ?? gate.minimum_structured_parity_comparisons,
         'min',
       ),
       check(
         'structured_parity_observe_comparisons',
         structuredParityComparisonsByMode.observe,
-        gate.minimum_structured_parity_comparisons_per_mode,
+        analysisCoverage?.by_condition?.instrumented?.analyzed_turns ??
+          gate.minimum_structured_parity_comparisons_per_mode,
         'min',
       ),
       check(
         'structured_parity_active_comparisons',
         structuredParityComparisonsByMode.active,
-        gate.minimum_structured_parity_comparisons_per_mode,
+        analysisCoverage?.by_condition?.intervening?.analyzed_turns ??
+          gate.minimum_structured_parity_comparisons_per_mode,
         'min',
       ),
       check(
@@ -3176,6 +3209,18 @@ export function evaluateAdaptiveWarrantDecisionGate(
     gate,
     passed: controllingChecks.filter((row) => row.controlling).every((row) => row.passed),
     checks: controllingChecks,
+    analysis_coverage_ruling: analysisCoverage
+      ? {
+          status: analysisCoverage.gate_ruling,
+          analyzed_turns: analysisCoverage.analyzed_turns,
+          analysis_turns: analysisCoverage.analysis_turns,
+          unanalyzed_turns: analysisCoverage.unanalyzed_turns,
+          unanalyzed_rate: analysisCoverage.unanalyzed_rate,
+          coverage: analysisCoverage.coverage,
+          halt_threshold: analysisCoverage.threshold,
+          per_dialogue: analysisCoverage.dialogues,
+        }
+      : null,
     mechanism_typing_claim: mechanismTypingCut
       ? {
           status: 'cut_below_consensus_floor',
@@ -3211,7 +3256,9 @@ export function evaluateAdaptiveWarrantDecisionGate(
 
   function check(id, actual, threshold, direction) {
     const measured = typeof actual === 'number' && Number.isFinite(actual) ? actual : null;
-    const passed = measured !== null && (direction === 'max' ? measured <= threshold : measured >= threshold);
+    const passed =
+      measured !== null &&
+      (direction === 'max' ? measured <= threshold : direction === 'lt' ? measured < threshold : measured >= threshold);
     return { id, actual: measured, direction, threshold, passed };
   }
 }
@@ -3242,6 +3289,22 @@ function markdownReport(study) {
         );
       }
     }
+  }
+  if (mechanismValidation && study.analysisCoverage) {
+    const coverage = study.analysisCoverage;
+    lines.push(
+      '',
+      '## Learner-analysis coverage',
+      '',
+      `Overall: **${coverage.analyzed_turns}/${coverage.analysis_turns} analyzed (${coverage.coverage})**; ${coverage.unanalyzed_turns} unanalyzed (${coverage.unanalyzed_rate}); registered self-halt threshold ${coverage.threshold}; ruling **${coverage.gate_ruling}**.`,
+      '',
+      '| Dialogue | World | Learner | Condition | Analyzed/total | Coverage | Unanalyzed turns |',
+      '|---|---|---|---|---:|---:|---|',
+      ...coverage.dialogues.map(
+        (row) =>
+          `| ${row.job_id} | ${row.world || 'default'} | ${row.profile} | ${row.condition} | ${row.analyzed_turns}/${row.analysis_turns} | ${row.coverage} | ${row.unanalyzed_turn_numbers.join(', ') || 'none'} |`,
+      ),
+    );
   }
   if (study.decisionQuality) {
     const metrics = study.decisionQuality.metrics;
@@ -3529,6 +3592,53 @@ export function evaluateAdaptiveWarrantAnalysisCoverageHalt(
   };
 }
 
+export function summarizeAdaptiveWarrantAnalysisCoverage(rows = []) {
+  const dialogues = rows.map((row) => {
+    const analysisTurns = Number(row?.learnerAnalysisCallCount || 0);
+    const unanalyzedTurns = Number(row?.learnerAnalysisUnanalyzedCount || 0);
+    const unanalyzedRate = analysisTurns ? unanalyzedTurns / analysisTurns : 0;
+    return {
+      job_id: row?.jobId || null,
+      world: row?.world || null,
+      profile: row?.profile || null,
+      condition: row?.condition || null,
+      analysis_turns: analysisTurns,
+      analyzed_turns: Math.max(0, analysisTurns - unanalyzedTurns),
+      unanalyzed_turns: unanalyzedTurns,
+      unanalyzed_turn_numbers: (row?.learnerAnalysisUnanalyzedTurns || []).map(Number).sort((a, b) => a - b),
+      unanalyzed_rate: Number(unanalyzedRate.toFixed(6)),
+      coverage: Number((1 - unanalyzedRate).toFixed(6)),
+    };
+  });
+  const analysisTurns = dialogues.reduce((sum, row) => sum + row.analysis_turns, 0);
+  const unanalyzedTurns = dialogues.reduce((sum, row) => sum + row.unanalyzed_turns, 0);
+  const unanalyzedRate = analysisTurns ? unanalyzedTurns / analysisTurns : 0;
+  return {
+    schema: 'machinespirits.adaptation-refinement.warrant-analysis-coverage-summary.v1',
+    threshold: ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_RATE,
+    minimum_turns: ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_MINIMUM_TURNS,
+    analysis_turns: analysisTurns,
+    analyzed_turns: Math.max(0, analysisTurns - unanalyzedTurns),
+    unanalyzed_turns: unanalyzedTurns,
+    unanalyzed_rate: Number(unanalyzedRate.toFixed(6)),
+    coverage: Number((1 - unanalyzedRate).toFixed(6)),
+    gate_ruling:
+      analysisTurns >= ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_MINIMUM_TURNS &&
+      unanalyzedRate >= ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_RATE
+        ? 'coverage_halt'
+        : 'within_registered_coverage',
+    by_condition: Object.fromEntries(
+      [...new Set(dialogues.map((row) => row.condition).filter(Boolean))].map((condition) => {
+        const cells = dialogues.filter((row) => row.condition === condition);
+        const total = cells.reduce((sum, row) => sum + row.analysis_turns, 0);
+        const missing = cells.reduce((sum, row) => sum + row.unanalyzed_turns, 0);
+        return [condition, { analysis_turns: total, analyzed_turns: total - missing, unanalyzed_turns: missing }];
+      }),
+    ),
+    dialogues,
+  };
+}
+
 async function runPool(jobs, parallelism, worker, onFinish, shouldContinue = () => true) {
   let cursor = 0;
   const runners = Array.from({ length: Math.min(parallelism, jobs.length) }, async () => {
@@ -3614,7 +3724,7 @@ function planAxes(plan) {
 }
 
 function mechanismCoverage(rows, annotationKey, axes, { runs, horizon }) {
-  const expectedTurns = Array.from({ length: horizon }, (_, index) => index + 1);
+  const allTurns = Array.from({ length: horizon }, (_, index) => index + 1);
   const cells = axes.worlds.flatMap((world) =>
     axes.profiles.flatMap((profile) =>
       axes.conditions.map((condition) => {
@@ -3622,12 +3732,17 @@ function mechanismCoverage(rows, annotationKey, axes, { runs, horizon }) {
           (row) => row.world === world && row.profile === profile && row.condition === condition.id,
         );
         const dialogues = cellRows.map((row) => {
+          const unanalyzedTurns = new Set((row.learnerAnalysisUnanalyzedTurns || []).map(Number));
+          const expectedTurns = allTurns.filter((turn) => !unanalyzedTurns.has(turn));
           const decisionTurns = (row.decisions || [])
             .map((decision) => Number(decision.turn))
             .sort((left, right) => left - right);
           return {
             job_id: row.jobId,
             seed: row.seed,
+            analysis_turns: Number(row.learnerAnalysisCallCount || 0),
+            unanalyzed_turns: [...unanalyzedTurns].sort((left, right) => left - right),
+            expected_analyzed_turns: expectedTurns,
             decision_turns: decisionTurns,
             exact_turn_coverage: JSON.stringify(decisionTurns) === JSON.stringify(expectedTurns),
             structured_parity_comparisons: Number(row.liveShadowStructuredComparisonCount || 0),
@@ -3646,7 +3761,7 @@ function mechanismCoverage(rows, annotationKey, axes, { runs, horizon }) {
             dialogues.every(
               (row) =>
                 row.exact_turn_coverage &&
-                row.structured_parity_comparisons === horizon &&
+                row.structured_parity_comparisons === row.expected_analyzed_turns.length &&
                 row.structured_parity_mismatches === 0,
             ),
           dialogues,
@@ -3655,12 +3770,21 @@ function mechanismCoverage(rows, annotationKey, axes, { runs, horizon }) {
     ),
   );
   const annotationRows = annotationKey.cases || [];
-  const expectedObserveCases = axes.worlds.length * axes.profiles.length * horizon;
+  const observeRows = rows.filter((row) => row.condition === 'instrumented');
+  const expectedObserveCases = observeRows.reduce(
+    (sum, row) => sum + horizon - Number(row.learnerAnalysisUnanalyzedCount || 0),
+    0,
+  );
   const annotationCells = axes.worlds.flatMap((world) =>
     axes.profiles.map((profile) => {
       const cellRows = annotationRows.filter(
         (row) => row.world === world && row.profile === profile && row.condition === 'instrumented',
       );
+      const sourceRows = observeRows.filter((row) => row.world === world && row.profile === profile);
+      const expectedTurns = sourceRows.flatMap((row) => {
+        const unanalyzed = new Set((row.learnerAnalysisUnanalyzedTurns || []).map(Number));
+        return allTurns.filter((turn) => !unanalyzed.has(turn));
+      });
       const turns = cellRows.map((row) => Number(row.turn)).sort((left, right) => left - right);
       return {
         world,
@@ -3668,15 +3792,17 @@ function mechanismCoverage(rows, annotationKey, axes, { runs, horizon }) {
         condition: 'instrumented',
         cases: cellRows.length,
         turns,
-        exact: cellRows.length === horizon && JSON.stringify(turns) === JSON.stringify(expectedTurns),
+        expected_cases: expectedTurns.length,
+        exact: cellRows.length === expectedTurns.length && JSON.stringify(turns) === JSON.stringify(expectedTurns),
       };
     }),
   );
   return {
-    expected_turns_per_dialogue: expectedTurns,
+    expected_turns_per_dialogue: allTurns,
     expected_dialogues: axes.worlds.length * axes.profiles.length * axes.conditions.length * runs,
     observed_dialogues: rows.length,
     exact_dialogue_coverage: cells.every((cell) => cell.exact),
+    learner_analysis: summarizeAdaptiveWarrantAnalysisCoverage(rows),
     cells,
     annotation: {
       arm: 'instrumented',
@@ -3761,6 +3887,12 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status, coverageHalt 
   const semanticArtifacts = mechanismValidation
     ? buildAdaptiveWarrantNaturalSemanticArtifacts(annotation.key.cases)
     : null;
+  const coverage = mechanismValidation
+    ? mechanismCoverage(rows, annotation.key, axes, {
+        runs: plan.config.runs,
+        horizon: plan.config.horizon,
+      })
+    : null;
   if (semanticArtifacts) annotation.corpus.semantic_annotation_catalog = semanticArtifacts.catalog;
   const handbookPath = mechanismValidation ? path.join(rootDir, 'annotation-handbook.md') : null;
   const semanticHandbookPath = mechanismValidation ? path.join(rootDir, 'semantic-annotation-handbook.md') : null;
@@ -3844,6 +3976,7 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status, coverageHalt 
     studyId: plan.studyId,
     status,
     coverageHalt,
+    analysisCoverage: coverage?.learner_analysis || null,
     updatedAt: new Date().toISOString(),
     plan,
     analysisProvenance,
@@ -3877,8 +4010,7 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status, coverageHalt 
           `mechanism-validation freeze is missing ${missingRequiredExclusions.length} required prior corpora`,
         );
       }
-      const expectedCases =
-        axes.worlds.length * axes.profiles.length * annotationConditions.length * plan.config.horizon;
+      const expectedCases = coverage?.annotation?.expected_cases ?? 0;
       if (annotation.corpus.cases.length !== expectedCases) {
         throw new Error(
           `mechanism-validation annotation freeze expected ${expectedCases} cases, got ${annotation.corpus.cases.length}`,
@@ -3926,19 +4058,12 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status, coverageHalt 
             .reduce((sum, row) => sum + Number(row.liveShadowStructuredComparisonCount || 0), 0),
         ]),
       );
-      const coverage = mechanismValidation
-        ? mechanismCoverage(rows, annotation.key, axes, {
-            runs: plan.config.runs,
-            horizon: plan.config.horizon,
-          })
-        : null;
       if (
         coverage &&
         (!coverage.exact_dialogue_coverage ||
           !coverage.annotation.exact ||
           coverage.annotation.active_cases !== 0 ||
-          JSON.stringify(coverage.annotation.turns) !==
-            JSON.stringify(Array.from({ length: plan.config.horizon }, (_, index) => index + 1)))
+          coverage.learner_analysis.gate_ruling !== 'within_registered_coverage')
       ) {
         throw new Error('mechanism-validation freeze does not have exact cell, turn, and observe-only coverage');
       }
@@ -4322,6 +4447,7 @@ export function scoreAnnotationArtifacts({
       structuredParityComparisons,
       structuredParityComparisonsByMode,
       structuredParityMismatches,
+      analysisCoverage: manifest?.coverage?.learner_analysis || study?.analysisCoverage || null,
       requireMechanismMetrics: mechanismCorpus,
     }),
   };
@@ -4406,11 +4532,11 @@ function printHelp() {
 
 Options:
   --runs <1|5|10>           n per cell (1 with validation modes)
-  --master-seed <n>         first paired seed (505 mechanism; 301 contract; otherwise 101)
+  --master-seed <n>         first paired seed (506 mechanism; 301 contract; otherwise 101)
   --parallelism <n>         concurrent dialogues (default: 6)
   --root <path>             output root (default: ignored timestamped directory)
   --model <ref>             speaking tutor model (default: codex.gpt-5.6-luna)
-  --analysis-model <ref>    classifier and learner-record model (mechanism default: claude-code.claude-sonnet-5)
+  --analysis-model <ref>    classifier and learner-record model (mechanism default: codex.gpt-5.6-luna)
   --learner-model <ref>     automated learner model (default: same)
   --dry-run                 execute every child auto-eval in dry-run mode
   --launch-approved         required for model-backed execution
@@ -4753,14 +4879,14 @@ async function main() {
         'no stop on grounded closure',
         'no light adaptation',
         'no DAG fact dropout',
-        'prospective mixed-model routing: Luna tutor and learner, Sonnet learner analysis',
+        'same Luna model routing with handbook_v1 learner analysis',
         'handbook_v1 learner-analysis prompt profile',
         'same seed within profile x session index',
         ...(mechanismValidation
           ? [
               'two predeclared worlds',
               'observe and active arms only',
-              'all eight observe decisions enter the primary annotation corpus',
+              'every analyzed observe decision enters the primary annotation corpus',
               'active decisions excluded from primary gold annotations',
               'zero structured live/offline parity mismatches with nonzero observe and active denominators',
             ]

@@ -241,6 +241,7 @@ test('semantic annotation validation rejects non-literal spans before consensus'
 test('semantic collection freezes exact packets and derives only unique literal span offsets', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-annotation-'));
   const corpus = fixture();
+  corpus.cases[0].current_learner_turn.learner = 'I’d like the bay-1 access time.';
   const corpusPath = path.join(root, 'corpus.json');
   const handbookPath = path.join(root, 'handbook.md');
   fs.writeFileSync(corpusPath, `${JSON.stringify(corpus, null, 2)}\n`);
@@ -348,6 +349,7 @@ test('semantic collection freezes exact packets and derives only unique literal 
       const row = corpus.cases.find((candidate) => candidate.sample_id === sampleId);
       const packetEvent = readerEvent(row.kind, row.current_learner_turn.learner, Number(sampleId.split('-').at(-1)));
       packetEvent.evidence_span = packetEvent.evidence_span.text;
+      if (sampleId === 'sample-1') packetEvent.evidence_span = packetEvent.evidence_span.replace('’', "'");
       response.cases_by_sample_id[sampleId] = {
         genuinely_ambiguous: false,
         ambiguity_reason: 'none',
@@ -368,15 +370,18 @@ test('semantic collection freezes exact packets and derives only unique literal 
     outputPath: path.join(root, 'reader-a.json'),
   });
   assert.equal(assembled.response.cases.length, 8);
+  assert.equal(assembled.response.cases[0].events[0].evidence_span.text, 'I’d like the bay-1 access time.');
   assert.equal(
     assembled.response.cases.every((row) => Number.isInteger(row.events[0].evidence_span.start)),
     true,
   );
   const audit = JSON.parse(fs.readFileSync(assembled.auditPath, 'utf8'));
-  assert.equal(audit.normalization, 'schema_declared_literal_span_and_event_order_derivation');
+  assert.equal(audit.normalization, 'schema_declared_punctuation_normalized_literal_span_and_event_order_derivation');
   assert.equal(audit.edit_count, 8);
   assert.equal(
-    audit.canonicalizations.every((row) => row.operation === 'derive_unique_literal_utf16_offsets'),
+    audit.canonicalizations.every(
+      (row) => row.operation === 'derive_punctuation_normalized_unique_literal_utf16_offsets',
+    ),
     true,
   );
 });
