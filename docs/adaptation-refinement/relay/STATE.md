@@ -24,7 +24,22 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — ruling 059a + direction 060: the menu quotes the
+- **CURRENT — direction 062: one zero-call send-back on the
+  rendered menu.** Report 061 (`6a713d62`, A1 `1bf82265`, manifest
+  repin `d09e252d`) passed the reviewer's manifest verification
+  (all 058 §4 elements, 055b line verbatim, SHA table = 056,
+  repairs confined, suites green, zero calls) and the second
+  session's byte + coverage layers (87/87 byte-exact, checklist
+  complete, removals accounted). It failed ruling 060b membership:
+  `opening.instructional_meta` still in; no per-string
+  classification. Direction 062: remove it, classify every entry
+  (switching variable, gate reachability, verdict — trace decides
+  the contested learner-driven strings), drop the empty-quote
+  support-zero entry, rerun boundary, repin manifest, report 063.
+  Then: sibling byte re-review, reviewer manifest re-check, GO
+  note, paid pilot (594 planned calls, 3,523 to 4,117 of 11,337).
+  Watch cadence 600s (human-set).
+- **RESOLVED — ruling 059a + direction 060: the menu quotes the
   RENDERED layer.** Report 059 (`11d5c543`) stopped clean at the
   check boundary (lint + help-digest fixture; both reproduced by
   the reviewer; zero calls; seeds 515–517 prepared, none claimed).
