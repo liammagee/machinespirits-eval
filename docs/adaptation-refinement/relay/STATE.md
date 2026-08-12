@@ -14,17 +14,24 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **Current direction: `029-reviewer-direction-s509-halt-diagnosis.md`**
-  (16:12) — seed 509 coverage-halted at 25/128 = 19.53%, ZERO cap
-  blocks (the 028 repair worked; every loss is a validator/model
-  discard). SEED 510 IS FROZEN — no launches of any kind. No
-  threshold, validator, contract, or cap change. Ordered, all zero
-  provider calls: failure-code split of all 507/508/509 losses
-  (mechanical vs contract-rule vs no-return), concentration by
-  profile/world/condition/turn, per-seed trend table. Then report and
-  STOP. A dominating mechanical rule = ledger entry + possible repair
-  licensing 510; genuine semantic misses = matrix gate fails on
-  instrument yield = human decision point.
+- **HARD STOP — WAITING ON THE HUMAN** (16:40; report
+  `029-codex-report.md`, merged at `40022061`). Seed 509
+  coverage-halted at 25/128 = 19.53% unanalyzed; ZERO cap blocks (the
+  028 repair worked). All losses are the analysis seat breaking
+  written rules: missing catalogue targets, forbidden value/component
+  sets, non-public identifiers, non-literal spans, non-atomic
+  overlaps — reader/model error, not contract ambiguity. Three
+  disjoint paid probe blocks over the burned returned analyses:
+  8/48, 12/48, 7/35 — none inside the 15% relaunch line; pooled
+  20.61%. Seed 510 unburned and FROZEN. Calls spent 1,085/4,000.
+  Driver exited cleanly; DO NOT relaunch until the human chooses:
+  (1) redesign/cut the live semantic-typing layer prospectively;
+  (2) a different analysis seat or an openly registered new
+  coverage/relaunch criterion; (3) stop the matrix programme here.
+  Reviewer note: reviewer direction 029 (freeze + zero-call
+  diagnosis) crossed with the driver's own equivalent work — its
+  concentration-by-profile split remains undone and is the first
+  zero-cost input to the human decision.
 - Prior reviewer position on the seed-509 relaunch (15:50, from the live
   log; the driver's report is still pending): seed 507 crashed on a
   transport defect (parent finalization validated a partial reader
