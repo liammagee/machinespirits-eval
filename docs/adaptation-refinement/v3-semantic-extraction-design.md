@@ -965,6 +965,17 @@ report participates in V3 passage. Conditional failure still blocks passage
 because it demonstrates a downstream policy defect even if an end-to-end
 error happens to cancel it.
 
+The representative matrix has one preregistered mechanism-typing fallback.
+If raw binary decision-reader agreement reaches `0.80` but full typed-mechanism
+consensus remains below `0.75`, the typed mechanism-attribution layer is cut
+from certified claims and its checks become advisory. The run is not iterated,
+the instrument is not reopened, and diagnostic rows are not imported. Binary
+decision correctness and the separately scored five-cell semantic-extraction
+layer remain eligible to carry the later outcome study. Any attribution to the
+`register_or_accumulated_trouble` basis family must retain an explicit
+reliability caveat, because three of the four diagnostic binary disagreements
+occurred in that family.
+
 ### 6.4 V3 verdict
 
 `V3 mechanism supported` requires, conjunctively:

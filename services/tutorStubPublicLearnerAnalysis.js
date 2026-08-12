@@ -397,11 +397,18 @@ function discourseOutputSchema() {
 }
 
 function semanticEventLocalOutputSchema() {
-  const target = {
-    type: ['object', 'null'],
+  const absent = {
+    type: 'object',
     additionalProperties: false,
-    required: ['kind', 'target_id', 'public_identifier_ids', 'requested_value_types', 'component_ids'],
+    required: ['state'],
+    properties: { state: { type: 'string', const: 'none' } },
+  };
+  const target = {
+    type: 'object',
+    additionalProperties: false,
+    required: ['state', 'kind', 'target_id', 'public_identifier_ids', 'requested_value_types', 'component_ids'],
     properties: {
+      state: { type: 'string', const: 'catalog' },
       kind: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS] },
       target_id: { type: 'string' },
       public_identifier_ids: { type: 'array', maxItems: 6, items: { type: 'string' } },
@@ -414,14 +421,18 @@ function semanticEventLocalOutputSchema() {
     },
   };
   const action = {
-    type: ['object', 'null'],
+    type: 'object',
     additionalProperties: false,
-    required: ['mode', 'executor', 'action', 'action_object_id'],
+    required: ['state', 'mode', 'executor', 'action', 'action_object_id'],
     properties: {
-      mode: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES] },
-      executor: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS] },
-      action: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTIONS] },
-      action_object_id: { type: ['string', 'null'] },
+      state: { type: 'string', const: 'catalog' },
+      mode: { type: 'string', enum: ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES.filter((value) => value !== 'none') },
+      executor: {
+        type: 'string',
+        enum: ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS.filter((value) => value !== 'none'),
+      },
+      action: { type: 'string', enum: ADAPTIVE_WARRANT_SEMANTIC_ACTIONS.filter((value) => value !== 'none') },
+      action_object_id: { type: 'string' },
     },
   };
   return {
@@ -450,8 +461,8 @@ function semanticEventLocalOutputSchema() {
           properties: {
             event_id: { type: 'string' },
             speech_act: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS] },
-            target,
-            requested_or_proposed_action: action,
+            target: { anyOf: [absent, target] },
+            requested_or_proposed_action: { anyOf: [absent, action] },
             evidence_span: {
               type: 'object',
               additionalProperties: false,
@@ -603,7 +614,9 @@ function providerObjectSchema(properties) {
 }
 
 function semanticEventProviderOutputSchema() {
+  const absent = providerObjectSchema({ state: { type: 'string', enum: ['none'] } });
   const target = providerObjectSchema({
+    state: { type: 'string', enum: ['catalog'] },
     kind: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS] },
     target_id: { type: 'string' },
     public_identifier_ids: { type: 'array', items: { type: 'string' } },
@@ -614,10 +627,14 @@ function semanticEventProviderOutputSchema() {
     component_ids: { type: 'array', items: { type: 'string' } },
   });
   const action = providerObjectSchema({
-    mode: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES] },
-    executor: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS] },
-    action: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_ACTIONS] },
-    action_object_id: { type: ['string', 'null'] },
+    state: { type: 'string', enum: ['catalog'] },
+    mode: { type: 'string', enum: ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES.filter((value) => value !== 'none') },
+    executor: {
+      type: 'string',
+      enum: ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS.filter((value) => value !== 'none'),
+    },
+    action: { type: 'string', enum: ADAPTIVE_WARRANT_SEMANTIC_ACTIONS.filter((value) => value !== 'none') },
+    action_object_id: { type: 'string' },
   });
   return providerObjectSchema({
     schema: { type: 'string', enum: [ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA] },
@@ -628,8 +645,8 @@ function semanticEventProviderOutputSchema() {
       items: providerObjectSchema({
         event_id: { type: 'string' },
         speech_act: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS] },
-        target: { ...target, type: ['object', 'null'] },
-        requested_or_proposed_action: { ...action, type: ['object', 'null'] },
+        target: { anyOf: [absent, target] },
+        requested_or_proposed_action: { anyOf: [absent, action] },
         evidence_span: providerObjectSchema({
           text: { type: 'string' },
           start: { type: 'integer' },
@@ -1372,6 +1389,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
           event_id: 'event-01',
           speech_act: ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.join('|'),
           target: {
+            state: 'catalog|none',
             kind: ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS.join('|'),
             target_id: 'exact stable public target ID from the public context',
             public_identifier_ids: ['exact stable public identifier ID'],
@@ -1379,10 +1397,11 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
             component_ids: ['typed answer component ID'],
           },
           requested_or_proposed_action: {
+            state: 'catalog|none',
             mode: ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES.join('|'),
             executor: ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS.join('|'),
             action: ADAPTIVE_WARRANT_SEMANTIC_ACTIONS.join('|'),
-            action_object_id: 'stable public target ID or null',
+            action_object_id: 'stable public action ID',
           },
           evidence_span: { text: 'exact current-turn substring', start: 0, end: 1 },
           confidence: ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE.join('|'),
@@ -1516,7 +1535,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
       ? 'Use confidence=high with uncertainty=[] only when the act, executor, target, and span are unambiguous. Otherwise use medium or low and one to three declared uncertainty reasons; do not guess.'
       : null,
     includeSemanticEvents
-      ? 'Use target=null and requested_or_proposed_action=null when those fields do not apply.'
+      ? 'Target and requested_or_proposed_action are total tagged objects. Use exactly {"state":"none"} when a field does not apply; otherwise use state="catalog" and return every catalog-branch field. Never return null or omit either field.'
       : null,
     includeSemanticEvents ? '' : null,
     includeRegisterSelection ? '# Request type registry' : null,

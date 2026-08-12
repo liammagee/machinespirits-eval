@@ -16,9 +16,16 @@ export const ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_RESULT_SCHEMA =
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const FINGERPRINT_FILES = Object.freeze({
   extraction: 'services/adaptiveWarrantSemanticEvents.js',
+  live_extraction_envelope: 'services/tutorStubPublicLearnerAnalysis.js',
   reader_and_scorer: 'services/adaptiveWarrantSemanticAnnotation.js',
   preparation_and_assembly: 'scripts/prepare-adaptive-warrant-semantic-annotations.js',
+  decision_preparation_and_assembly: 'scripts/prepare-adaptive-warrant-annotation-batches.js',
+  brittleness_preflight: 'scripts/run-adaptive-warrant-semantic-brittleness-preflight.js',
   schema_acceptance_ping: 'scripts/run-adaptive-warrant-semantic-schema-acceptance-ping.js',
+  schema_smoke: 'scripts/run-adaptive-warrant-semantic-schema-smoke.js',
+  semantic_reader_runner: 'scripts/run-adaptive-warrant-semantic-readers.js',
+  decision_reader_runner: 'scripts/run-adaptive-warrant-decision-readers.js',
+  representative_matrix_runner: 'scripts/run-adaptive-warrant-baseline-study.js',
   corpus_builder: 'scripts/build-adaptive-warrant-v3-semantic-diagnostic.js',
 });
 

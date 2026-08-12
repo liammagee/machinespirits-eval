@@ -338,6 +338,11 @@ function normalizedTarget(target, issues, eventIndex) {
     issues.push(`${path}:invalid_object`);
     return null;
   }
+  if (target.state === 'none') {
+    if (Object.keys(target).length !== 1) issues.push(`${path}:invalid_none_shape`);
+    return null;
+  }
+  if (target.state !== undefined && target.state !== 'catalog') issues.push(`${path}.state:invalid_enum`);
   enumIssue(target.kind, ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS, `${path}.kind`, issues);
   if (typeof target.target_id !== 'string' || !target.target_id.trim()) issues.push(`${path}.target_id:required`);
   arrayLimitIssues(
@@ -381,6 +386,11 @@ function normalizedAction(action, issues, eventIndex) {
     issues.push(`${path}:invalid_object`);
     return null;
   }
+  if (action.state === 'none') {
+    if (Object.keys(action).length !== 1) issues.push(`${path}:invalid_none_shape`);
+    return null;
+  }
+  if (action.state !== undefined && action.state !== 'catalog') issues.push(`${path}.state:invalid_enum`);
   enumIssue(action.mode, ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES, `${path}.mode`, issues);
   enumIssue(action.executor, ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS, `${path}.executor`, issues);
   enumIssue(action.action, ADAPTIVE_WARRANT_SEMANTIC_ACTIONS, `${path}.action`, issues);
@@ -476,7 +486,7 @@ export function validateAdaptiveWarrantSemanticExtraction(
     if (text.length > ADAPTIVE_WARRANT_SEMANTIC_EVENT_LIMITS.maxEvidenceSpanChars) {
       issues.push(`events[${eventIndex}].evidence_span:too_many_chars`);
     }
-    for (const identifier of [target?.target_id, ...(target?.public_identifier_ids || [])].filter(Boolean)) {
+    for (const identifier of target?.public_identifier_ids || []) {
       if (!publicIdentifierPresent(identifier, combinedPublicText)) {
         issues.push(`events[${eventIndex}].target.identifiers:not_public`);
       }
@@ -519,7 +529,12 @@ export function validateAdaptiveWarrantSemanticExtraction(
       for (const event of [left, right]) {
         event.validation.status = 'uncertain';
         event.validation.issues = [...new Set([...event.validation.issues, 'overlapping_events:non_atomic_span'])];
-        event.uncertainty = [...new Set([...event.uncertainty, 'ambiguous_multiplicity'])];
+        event.uncertainty = [
+          ...new Set([
+            ...event.uncertainty.filter((reason) => reason !== 'ambiguous_multiplicity').slice(0, 2),
+            'ambiguous_multiplicity',
+          ]),
+        ];
       }
     }
   }

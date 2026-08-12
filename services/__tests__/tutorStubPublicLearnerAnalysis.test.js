@@ -428,6 +428,7 @@ describe('strict public learner analysis', () => {
           event_id: 'turn-003-event-01',
           speech_act: 'tutor_directed_public_result_request',
           target: {
+            state: 'catalog',
             kind: 'record_entry',
             target_id: 'target-shelf-two-access-record',
             public_identifier_ids: ['public-id-shelf-two'],
@@ -435,6 +436,7 @@ describe('strict public learner analysis', () => {
             component_ids: ['access_time'],
           },
           requested_or_proposed_action: {
+            state: 'catalog',
             mode: 'requested',
             executor: 'tutor',
             action: 'supply_public_result',
@@ -453,12 +455,19 @@ describe('strict public learner analysis', () => {
         includeSemanticEvents: true,
         benchmarkLearnerText: learnerText,
         tutorTurn: 3,
-        semanticPublicText: 'The public target-shelf-two-access-record with public-id-shelf-two is available.',
+        semanticPublicText: 'The public shelf-two record with public-id-shelf-two is available.',
       }),
     );
     const provider = buildTutorStubPublicLearnerAnalysisProviderOutputSchema({ includeSemanticEvents: true });
     assertCodexProviderSchema(provider);
     assert.equal(provider.properties.semantic_events.properties.events.items.properties.evidence_span.type, 'object');
+    assert.equal(provider.properties.semantic_events.properties.events.items.properties.target.anyOf.length, 2);
+    assert.equal(
+      provider.properties.semantic_events.properties.events.items.properties.target.anyOf.some(
+        (branch) => branch.properties.state.enum[0] === 'none',
+      ),
+      true,
+    );
     assert.equal('speaker' in provider.properties.semantic_events.properties.events.items.properties, false);
     const prompt = buildTutorStubPublicLearnerAnalysisPrompt({
       learnerText,
@@ -470,6 +479,7 @@ describe('strict public learner analysis', () => {
     });
     assert.match(prompt, /# Semantic-event extraction/u);
     assert.match(prompt, /Names, times, dates.*are value types.*not automatically targets/u);
+    assert.match(prompt, /Never return null or omit either field/u);
   });
 
   it('rejects fences, aliases, extra keys, wrong types, and unknown predictive labels locally', () => {

@@ -436,6 +436,26 @@ export function prepareAdaptiveWarrantAnnotationBatches({
     }
   } else if (supportPlanPath) {
     throw new Error('natural_prevalence corpus must not carry a targeted support plan');
+  } else {
+    if (preflightMode) {
+      semanticPreflight = { mode: 'synthetic_internal_zero_call', source_commit: 'synthetic' };
+    } else {
+      if (!preflightPath)
+        throw new Error('V3 natural decision-reader preparation requires a passing semantic preflight');
+      const status = execFileSync('git', ['status', '--porcelain'], { cwd: ROOT, encoding: 'utf8' }).trim();
+      if (status) throw new Error('V3 natural decision-reader preparation requires a clean committed worktree');
+      const sourceCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+      const resolvedPreflight = path.resolve(preflightPath);
+      validateAdaptiveWarrantSemanticPreflightArtifact({
+        artifact: readJson(resolvedPreflight),
+        expectedSourceCommit: sourceCommit,
+      });
+      semanticPreflight = {
+        path: resolvedPreflight,
+        sha256: fileSha256(resolvedPreflight),
+        source_commit: sourceCommit,
+      };
+    }
   }
 
   assertEmptyOutputDirectory(resolvedOutputDir);
@@ -551,6 +571,7 @@ export function prepareAdaptiveWarrantAnnotationBatches({
     handbook: { path: resolvedHandbookPath, sha256: handbookSha256 },
     support_plan: supportPlan ? { ...supportPlan, counts: supportCounts } : null,
     semantic_brittleness_preflight: semanticPreflight,
+    source_commit: semanticPreflight?.source_commit || null,
     batch_size: batchSize,
     readers,
   };
@@ -596,6 +617,7 @@ export function prepareAdaptiveWarrantAnnotationBatches({
       corpus_sha256: corpusSha256,
       handbook_sha256: handbookSha256,
       semantic_brittleness_preflight: semanticPreflight,
+      source_commit: semanticPreflight?.source_commit || null,
       reader_packets: readers.flatMap((reader) =>
         reader.batches.map((batch) => ({
           reader_id: reader.reader_id,
@@ -646,6 +668,7 @@ export function assembleAdaptiveWarrantAnnotationResponse({
   annotationRunId,
   responseDir,
   outputPath,
+  runPath = null,
 } = {}) {
   const resolvedManifestPath = path.resolve(manifestPath);
   const manifest = readJson(resolvedManifestPath);
@@ -662,6 +685,16 @@ export function assembleAdaptiveWarrantAnnotationResponse({
   const cases = [];
   const edits = [];
   const inputBatches = [];
+  const verifiedRun = runPath ? readJson(path.resolve(runPath)) : null;
+  if (verifiedRun) {
+    if (
+      verifiedRun.status !== 'complete' ||
+      verifiedRun.study_id !== manifest.study_id ||
+      verifiedRun.source_commit !== manifest.source_commit
+    ) {
+      throw new Error('decision assembly requires a complete source-bound reader run');
+    }
+  }
 
   for (const batch of reader.batches) {
     if (fileSha256(batch.packet_path) !== batch.packet_sha256) {
@@ -675,6 +708,18 @@ export function assembleAdaptiveWarrantAnnotationResponse({
       throw new Error(`batch response schema ${batch.batch_id} is not bound by its reader packet`);
     }
     const batchPath = path.join(path.resolve(responseDir), batch.expected_response_filename);
+    if (verifiedRun) {
+      const runBatch = verifiedRun.batches.find((row) => row.reader_id === readerId && row.batch_id === batch.batch_id);
+      if (
+        runBatch?.status !== 'complete' ||
+        runBatch.response_path !== batchPath ||
+        runBatch.response_sha256 !== fileSha256(batchPath) ||
+        runBatch.model_independently_attested !== true ||
+        Number(runBatch.prohibited_tool_event_count || 0) !== 0
+      ) {
+        throw new Error(`batch ${batch.batch_id} lacks verified model-run evidence`);
+      }
+    }
     const response = readJson(batchPath);
     exactFields(response, BATCH_RESPONSE_FIELDS, `batch response ${batch.batch_id}`);
     if (
@@ -722,6 +767,7 @@ export function assembleAdaptiveWarrantAnnotationResponse({
     reader_id: readerId,
     annotation_run_id: annotationRunId,
     input_batches: inputBatches,
+    verified_run: runPath ? { path: path.resolve(runPath), sha256: fileSha256(path.resolve(runPath)) } : null,
     policy: {
       allowed_edits: [
         'primary_warrant_basis none forces recommended_action_family hold',
@@ -785,6 +831,12 @@ export function validateAdaptiveWarrantAnnotationAuthorizationRequest({ requestP
     request.bindings.handbook_sha256 !== manifest.handbook.sha256
   ) {
     throw new Error('annotation authorization request corpus or handbook binding mismatch');
+  }
+  if (
+    request.bindings.source_commit !== manifest.source_commit ||
+    request.bindings.source_commit !== manifest.semantic_brittleness_preflight?.source_commit
+  ) {
+    throw new Error('annotation authorization request source-commit binding mismatch');
   }
   const expectedPackets = manifest.readers.flatMap((reader) =>
     reader.batches.map((batch) => ({
@@ -878,7 +930,7 @@ export function validateAdaptiveWarrantAnnotationCorpusPair({ naturalManifestPat
 function usage() {
   return `Usage:
   node scripts/prepare-adaptive-warrant-annotation-batches.js prepare --corpus <file> --handbook <file> --out <dir> --corpus-role natural_prevalence|targeted_challenge [--support-plan <file>] [--preflight <passing-artifact>] [--batch-size 8] [--model <ref>] [--destination <route>] [--max-annotation-calls <n>]
-  node scripts/prepare-adaptive-warrant-annotation-batches.js assemble --manifest <file> --reader <id> --annotation-run-id <id> --responses <dir> --output <file>
+  node scripts/prepare-adaptive-warrant-annotation-batches.js assemble --manifest <file> --reader <id> --annotation-run-id <id> --responses <dir> --run <decision-reader-run.json> --output <file>
   node scripts/prepare-adaptive-warrant-annotation-batches.js pair-check --natural-manifest <file> --challenge-manifest <file> [--output <file>]
 `;
 }
@@ -899,6 +951,7 @@ async function main() {
       reader: { type: 'string' },
       'annotation-run-id': { type: 'string' },
       responses: { type: 'string' },
+      run: { type: 'string' },
       output: { type: 'string' },
       'natural-manifest': { type: 'string' },
       'challenge-manifest': { type: 'string' },
@@ -930,12 +983,14 @@ async function main() {
     return;
   }
   if (command === 'assemble') {
+    if (!values.run) throw new Error('live decision assembly requires --run <decision-reader-run.json>');
     const result = assembleAdaptiveWarrantAnnotationResponse({
       manifestPath: values.manifest,
       readerId: values.reader,
       annotationRunId: values['annotation-run-id'],
       responseDir: values.responses,
       outputPath: values.output,
+      runPath: values.run,
     });
     process.stdout.write(`${result.outputPath}\n${result.auditPath}\n`);
     return;

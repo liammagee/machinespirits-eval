@@ -186,7 +186,7 @@ test('live mechanism authorization binds the frozen model destination, private p
     const jobs = buildAdaptiveWarrantBaselineJobs({
       rootDir: path.join(rootDir, 'dry-run'),
       runs: 1,
-      masterSeed: 401,
+      masterSeed: 503,
       studyId: 'mechanism-dry-run',
       dryRun: true,
       worlds: MECHANISM_VALIDATION_WORLDS,
@@ -207,7 +207,7 @@ test('live mechanism authorization binds the frozen model destination, private p
       },
       config: {
         runs: 1,
-        masterSeed: 401,
+        masterSeed: 503,
         parallelism: 6,
         horizon: 8,
         policy: 'dynamic',
@@ -261,7 +261,7 @@ test('live mechanism authorization binds the frozen model destination, private p
     const liveJobs = buildAdaptiveWarrantBaselineJobs({
       rootDir: path.join(rootDir, 'live-run'),
       runs: 1,
-      masterSeed: 401,
+      masterSeed: 503,
       studyId: 'mechanism-live',
       dryRun: false,
       worlds: MECHANISM_VALIDATION_WORLDS,
@@ -508,7 +508,7 @@ test('mechanism-validation plan is the frozen two-world, six-profile, observe-ac
   assert.deepEqual([...new Set(jobs.map((job) => job.world))].sort(), [...MECHANISM_VALIDATION_WORLDS].sort());
   assert.deepEqual([...new Set(jobs.map((job) => job.profile))].sort(), [...MECHANISM_VALIDATION_PROFILES].sort());
   assert.deepEqual([...new Set(jobs.map((job) => job.condition))].sort(), ['instrumented', 'intervening']);
-  assert.ok(jobs.every((job) => job.seed === 401 && job.horizon === 8 && job.mechanismValidation));
+  assert.ok(jobs.every((job) => job.seed === 503 && job.horizon === 8 && job.mechanismValidation));
   assert.ok(jobs.every((job) => job.command[job.command.indexOf('--turns') + 1] === '8'));
   assert.ok(jobs.every((job) => job.command[job.command.indexOf('--world') + 1] === job.world));
   assert.ok(jobs.every((job) => !job.id.includes('baseline')));
@@ -700,8 +700,7 @@ test('delivery application proves observe inertia and active final-authority del
 
   const invisibleObserveRecord = structuredClone(observeRecord);
   invisibleObserveRecord.responseConfigurationAudit.axes.action_family.visible = false;
-  invisibleObserveRecord.tutorGuardAccounting.finalDelivery.audits.responseConfigurationAudit.axes.action_family.visible =
-    false;
+  invisibleObserveRecord.tutorGuardAccounting.finalDelivery.audits.responseConfigurationAudit.axes.action_family.visible = false;
   assert.equal(
     assessAdaptiveWarrantDeliveryApplication({ decision: observeDecision, record: invisibleObserveRecord }).ok,
     true,
@@ -866,8 +865,7 @@ test('delivery application proves observe inertia and active final-authority del
   assert.equal(assessAdaptiveWarrantDeliveryApplication({ decision: activeDecision, record: activeRecord }).ok, true);
   const invisibleActiveRecord = structuredClone(activeRecord);
   invisibleActiveRecord.responseConfigurationAudit.axes.action_family.visible = false;
-  invisibleActiveRecord.tutorGuardAccounting.finalDelivery.audits.responseConfigurationAudit.axes.action_family.visible =
-    false;
+  invisibleActiveRecord.tutorGuardAccounting.finalDelivery.audits.responseConfigurationAudit.axes.action_family.visible = false;
   const invisibleActiveAssessment = assessAdaptiveWarrantDeliveryApplication({
     decision: activeDecision,
     record: invisibleActiveRecord,
@@ -941,8 +939,7 @@ test('delivery application proves observe inertia and active final-authority del
 
   const cueFreePlainRecovery = structuredClone(recoveryRecord);
   cueFreePlainRecovery.responseConfigurationAudit.axes.engagement_stance.visible = false;
-  cueFreePlainRecovery.tutorGuardAccounting.finalDelivery.audits.responseConfigurationAudit.axes.engagement_stance.visible =
-    false;
+  cueFreePlainRecovery.tutorGuardAccounting.finalDelivery.audits.responseConfigurationAudit.axes.engagement_stance.visible = false;
   assert.equal(
     assessAdaptiveWarrantDeliveryApplication({ decision: activeDecision, record: cueFreePlainRecovery }).ok,
     true,
@@ -950,11 +947,9 @@ test('delivery application proves observe inertia and active final-authority del
   );
 
   const obligationWithUnrelatedProgressionWarning = structuredClone(recoveryRecord);
-  obligationWithUnrelatedProgressionWarning.tutorGuardAccounting.finalDelivery.audits.liveTurnProgressionAudit.ok =
-    false;
-  obligationWithUnrelatedProgressionWarning.tutorGuardAccounting.finalDelivery.audits.liveTurnProgressionAudit.issues = [
-    { type: 'required_exact_handoff_question_missing' },
-  ];
+  obligationWithUnrelatedProgressionWarning.tutorGuardAccounting.finalDelivery.audits.liveTurnProgressionAudit.ok = false;
+  obligationWithUnrelatedProgressionWarning.tutorGuardAccounting.finalDelivery.audits.liveTurnProgressionAudit.issues =
+    [{ type: 'required_exact_handoff_question_missing' }];
   assert.equal(
     assessAdaptiveWarrantDeliveryApplication({
       decision: activeDecision,
@@ -965,8 +960,7 @@ test('delivery application proves observe inertia and active final-authority del
   );
 
   const unresolvedObligation = structuredClone(obligationWithUnrelatedProgressionWarning);
-  unresolvedObligation.tutorGuardAccounting.finalDelivery.audits.liveTurnProgressionAudit.public_obligation.resolved =
-    false;
+  unresolvedObligation.tutorGuardAccounting.finalDelivery.audits.liveTurnProgressionAudit.public_obligation.resolved = false;
   const unresolvedAssessment = assessAdaptiveWarrantDeliveryApplication({
     decision: activeDecision,
     record: unresolvedObligation,
@@ -2408,9 +2402,18 @@ test('v4 scorer measures interpretation, magnitude, persistence, and joint diver
     structuredParityMismatches: 0,
     requireMechanismMetrics: true,
   });
-  assert.equal(gate.checks.some((row) => row.id === 'divergence_conceptual_interpretation_macro_f1'), false);
-  assert.equal(gate.checks.find((row) => row.id === 'divergence_evaluable_dimensions').passed, false);
-  assert.equal(gate.support_boundary.divergence.every((row) => row.interpretation_evaluable === false), true);
+  assert.equal(
+    gate.checks.some((row) => row.id === 'divergence_conceptual_interpretation_macro_f1'),
+    false,
+  );
+  assert.equal(
+    gate.checks.some((row) => row.id === 'divergence_evaluable_dimensions'),
+    false,
+  );
+  assert.equal(
+    gate.support_boundary.divergence.every((row) => row.interpretation_evaluable === false),
+    true,
+  );
 });
 
 test('obligation lifecycle exactness rejects the wrong unresolved source turn even when state matches', () => {
@@ -2834,6 +2837,20 @@ test('mechanism gate cannot downgrade to legacy checks and gates all typed decis
     ADAPTIVE_WARRANT_DECISION_GATE.minimum_commitment_transition_accuracy,
   );
 
+  const preregisteredCut = evaluateAdaptiveWarrantDecisionGate(
+    {
+      metrics: {
+        ...mechanismMetrics,
+        mechanismHardConsensusRate: 0.667,
+      },
+    },
+    parity,
+  );
+  assert.equal(preregisteredCut.passed, true);
+  assert.equal(preregisteredCut.mechanism_typing_claim.status, 'cut_below_consensus_floor');
+  assert.equal(preregisteredCut.checks.find((row) => row.id === 'mechanism_hard_consensus_rate').controlling, false);
+  assert.equal(preregisteredCut.checks.find((row) => row.id === 'commitment_transition_accuracy').controlling, false);
+
   const passed = evaluateAdaptiveWarrantDecisionGate(
     {
       metrics: {
@@ -2910,16 +2927,28 @@ test('representative v2 gate reports rare support without importing diagnostic q
       requireMechanismMetrics: true,
     },
   );
-  assert.equal(result.schema, 'machinespirits.adaptation-refinement.warrant-decision-gate.v2');
+  assert.equal(result.schema, 'machinespirits.adaptation-refinement.warrant-decision-gate.v3');
   assert.equal(result.passed, true);
-  assert.equal(result.checks.some((row) => row.id === 'obligation_persistence_cases'), false);
-  assert.equal(result.checks.some((row) => row.id === 'obligation_resolution_cases'), false);
-  assert.equal(result.checks.find((row) => row.id === 'divergence_evaluable_dimensions').actual, 5);
-  assert.equal(result.checks.some((row) => row.id === 'divergence_epistemic_interpretation_macro_f1'), false);
+  assert.equal(
+    result.checks.some((row) => row.id === 'obligation_persistence_cases'),
+    false,
+  );
+  assert.equal(
+    result.checks.some((row) => row.id === 'obligation_resolution_cases'),
+    false,
+  );
+  assert.equal(
+    result.checks.some((row) => row.id === 'divergence_evaluable_dimensions'),
+    false,
+  );
+  assert.equal(
+    result.checks.some((row) => row.id === 'divergence_epistemic_interpretation_macro_f1'),
+    false,
+  );
   assert.equal(result.support_boundary.rare_state_diagnostic_gate_eligible, false);
 });
 
-test('decision gate fails closed on null rate denominators and requires diligent negative support', () => {
+test('decision gate leaves naturally unsupported diligent and transition cells not evaluable', () => {
   const metrics = {
     rawAnnotatorAgreement: 1,
     scoredConsensusCases: 12,
@@ -2928,8 +2957,8 @@ test('decision gate fails closed on null rate denominators and requires diligent
     precision: 1,
     recall: 1,
     accuracy: 1,
-    transitionConsensusCases: 2,
-    transitionAccuracy: 1,
+    transitionConsensusCases: 1,
+    transitionAccuracy: null,
     diligentConsensusNegativeCases: 0,
     diligentFalsePositiveRate: null,
   };
@@ -2940,10 +2969,11 @@ test('decision gate fails closed on null rate denominators and requires diligent
     },
   );
   const checks = Object.fromEntries(gate.checks.map((row) => [row.id, row]));
-  assert.equal(checks.diligent_consensus_negative_cases.passed, false);
-  assert.equal(checks.diligent_false_positive_rate.actual, null);
-  assert.equal(checks.diligent_false_positive_rate.passed, false);
-  assert.equal(gate.passed, false);
+  assert.equal(checks.diligent_consensus_negative_cases, undefined);
+  assert.equal(checks.diligent_false_positive_rate, undefined);
+  assert.equal(checks.transition_consensus_cases, undefined);
+  assert.equal(checks.transition_accuracy, undefined);
+  assert.equal(gate.passed, true);
 });
 
 test('v3 annotation vocabulary preserves obligation-closing withdrawal and transfer acts', () => {

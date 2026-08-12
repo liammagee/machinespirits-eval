@@ -339,6 +339,7 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
   annotationRunId,
   responseDir,
   outputPath,
+  runPath = null,
 } = {}) {
   const resolvedManifest = path.resolve(manifestPath);
   const manifest = readJson(resolvedManifest);
@@ -358,12 +359,34 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
   const cases = [];
   const inputs = [];
   const canonicalizations = [];
+  const verifiedRun = runPath ? readJson(path.resolve(runPath)) : null;
+  if (verifiedRun) {
+    if (
+      verifiedRun.status !== 'complete' ||
+      verifiedRun.study_id !== manifest.study_id ||
+      verifiedRun.source_commit !== manifest.source_commit
+    ) {
+      throw new Error('semantic assembly requires a complete source-bound reader run');
+    }
+  }
   for (const batch of reader.batches) {
     if (fileSha256(batch.packet_path) !== batch.packet_sha256) throw new Error(`${batch.batch_id} packet drift`);
     if (fileSha256(batch.response_schema_path) !== batch.response_schema_sha256) {
       throw new Error(`${batch.batch_id} response schema drift`);
     }
     const responsePath = path.join(path.resolve(responseDir), batch.expected_response_filename);
+    if (verifiedRun) {
+      const runBatch = verifiedRun.batches.find((row) => row.reader_id === readerId && row.batch_id === batch.batch_id);
+      if (
+        runBatch?.status !== 'complete' ||
+        runBatch.response_path !== responsePath ||
+        runBatch.response_sha256 !== fileSha256(responsePath) ||
+        runBatch.model_independently_attested !== true ||
+        Number(runBatch.prohibited_tool_event_count || 0) !== 0
+      ) {
+        throw new Error(`${batch.batch_id} lacks verified model-run evidence`);
+      }
+    }
     const responseBytes = fs.statSync(responsePath).size;
     if (responseBytes > MAXIMUM_READER_RESPONSE_BYTES) {
       throw new Error(`${batch.batch_id} exceeds the ${MAXIMUM_READER_RESPONSE_BYTES}-byte response limit`);
@@ -509,6 +532,7 @@ export function assembleAdaptiveWarrantSemanticAnnotationResponse({
     edit_count: canonicalizations.length,
     canonicalizations,
     input_batches: inputs,
+    verified_run: runPath ? { path: path.resolve(runPath), sha256: fileSha256(path.resolve(runPath)) } : null,
     validation,
     output: { path: resolvedOutput, sha256: fileSha256(resolvedOutput) },
   });
@@ -612,7 +636,7 @@ export function scoreAdaptiveWarrantSemanticReaderSupportFiles({
 function usage() {
   return `Usage:
   node scripts/prepare-adaptive-warrant-semantic-annotations.js prepare --corpus <file> --handbook <file> --preflight <passing-artifact> --schema-acceptance <passing-result> --out <dir> --corpus-role targeted_challenge|natural_prevalence [--batch-size 8] [--max-annotation-calls 8]
-  node scripts/prepare-adaptive-warrant-semantic-annotations.js assemble --manifest <file> --reader <id> --annotation-run-id <id> --responses <dir> --output <file>
+  node scripts/prepare-adaptive-warrant-semantic-annotations.js assemble --manifest <file> --reader <id> --annotation-run-id <id> --responses <dir> --run <semantic-reader-run.json> --output <file>
   node scripts/prepare-adaptive-warrant-semantic-annotations.js support --manifest <file> --reader-a <file> --reader-b <file> --private-key <file> --output <file>
   node scripts/prepare-adaptive-warrant-semantic-annotations.js score --manifest <file> --reader-a <file> --reader-b <file> --predictions <file> --output <file>
 `;
@@ -635,6 +659,7 @@ function main() {
       reader: { type: 'string' },
       'annotation-run-id': { type: 'string' },
       responses: { type: 'string' },
+      run: { type: 'string' },
       output: { type: 'string' },
       'reader-a': { type: 'string' },
       'reader-b': { type: 'string' },
@@ -663,12 +688,14 @@ function main() {
     return;
   }
   if (command === 'assemble') {
+    if (!values.run) throw new Error('live semantic assembly requires --run <semantic-reader-run.json>');
     const result = assembleAdaptiveWarrantSemanticAnnotationResponse({
       manifestPath: values.manifest,
       readerId: values.reader,
       annotationRunId: values['annotation-run-id'],
       responseDir: values.responses,
       outputPath: values.output,
+      runPath: values.run,
     });
     process.stdout.write(`${result.outputPath}\n${result.auditPath}\n`);
     return;

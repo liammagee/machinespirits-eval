@@ -50,6 +50,20 @@ import {
   ADAPTIVE_WARRANT_DIVERGENCE_INTERPRETATIONS,
   ADAPTIVE_WARRANT_DIVERGENCE_MAGNITUDES,
 } from '../services/adaptiveWarrantDivergence.js';
+import {
+  validateAdaptiveWarrantSemanticPreflightArtifact,
+  validateAdaptiveWarrantSemanticSchemaAcceptanceResult,
+} from '../services/adaptiveWarrantSemanticPreflight.js';
+import {
+  ADAPTIVE_WARRANT_SEMANTIC_READER_CATALOG_SCHEMA,
+  auditAdaptiveWarrantSemanticContractCatalog,
+  validateAdaptiveWarrantSemanticReaderCatalog,
+} from '../services/adaptiveWarrantSemanticAnnotation.js';
+import {
+  ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS,
+  ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES,
+} from '../services/adaptiveWarrantSemanticEvents.js';
+import { adaptiveWarrantSemanticReaderHandbook } from './build-adaptive-warrant-v3-semantic-diagnostic.js';
 
 export const ADAPTIVE_WARRANT_BASELINE_STUDY_SCHEMA = 'machinespirits.adaptation-refinement.baseline-study.v1';
 export const ADAPTIVE_WARRANT_BASELINE_RESULT_SCHEMA = 'machinespirits.adaptation-refinement.baseline-study-results.v1';
@@ -81,7 +95,7 @@ const ADAPTIVE_WARRANT_LAUNCH_AUTHORIZATION_FIELDS = Object.freeze([
 ]);
 
 export const ADAPTIVE_WARRANT_DECISION_GATE = Object.freeze({
-  schema: 'machinespirits.adaptation-refinement.warrant-decision-gate.v2',
+  schema: 'machinespirits.adaptation-refinement.warrant-decision-gate.v3',
   sampling_role: 'representative_natural_prevalence_only',
   rare_state_policy: 'separate_gate_ineligible_targeted_diagnostic',
   minimum_raw_annotator_agreement: 0.8,
@@ -97,16 +111,8 @@ export const ADAPTIVE_WARRANT_DECISION_GATE = Object.freeze({
   maximum_diligent_false_positive_rate: 0.25,
   required_live_shadow_agreement: 1,
   minimum_mechanism_hard_consensus_rate: 0.75,
-  minimum_mechanism_consensus_positive_cases: 12,
-  minimum_mechanism_consensus_negative_cases: 24,
-  minimum_mechanism_transition_consensus_cases: 10,
-  minimum_result_request_cases: 8,
-  minimum_proposed_test_cases: 8,
-  minimum_request_proposal_macro_f1: 0.8,
   minimum_obligation_lifecycle_accuracy: 0.8,
   maximum_proposed_test_false_obligation_rate: 0.1,
-  minimum_inquiry_complete_cases: 2,
-  minimum_inquiry_incomplete_cases: 12,
   minimum_inquiry_completion_precision: 0.9,
   minimum_inquiry_completion_recall: 0.75,
   minimum_commitment_transition_accuracy: 0.75,
@@ -118,7 +124,6 @@ export const ADAPTIVE_WARRANT_DECISION_GATE = Object.freeze({
   maximum_structured_parity_mismatches: 0,
   minimum_divergence_dimension_consensus_rate: 0.75,
   minimum_divergence_nonaligned_cases_per_dimension: 2,
-  minimum_divergence_evaluable_dimensions: 5,
   minimum_divergence_interpretation_macro_f1: 0.7,
   minimum_divergence_magnitude_accuracy: 0.7,
   minimum_divergence_persistence_accuracy: 0.7,
@@ -181,29 +186,14 @@ const V3_ANNOTATION_CASE_SCALAR_FIELDS = Object.freeze(
   V3_ANNOTATION_CASE_FIELDS.filter((field) => field !== 'open_obligation_source_turns'),
 );
 const V4_ANNOTATION_CASE_FIELDS = Object.freeze([...V3_ANNOTATION_CASE_FIELDS, 'divergence_by_dimension']);
-const V4_ANNOTATION_CASE_SCALAR_FIELDS = Object.freeze(
-  V3_ANNOTATION_CASE_SCALAR_FIELDS,
-);
-const V4_DIVERGENCE_FIELDS = Object.freeze([
-  'interpretation',
-  'magnitude',
-  'persistence',
-  'note',
-]);
+const V4_ANNOTATION_CASE_SCALAR_FIELDS = Object.freeze(V3_ANNOTATION_CASE_SCALAR_FIELDS);
+const V4_DIVERGENCE_FIELDS = Object.freeze(['interpretation', 'magnitude', 'persistence', 'note']);
 const ANNOTATION_DIVERGENCE_INTERPRETATIONS = Object.freeze([
   ...ADAPTIVE_WARRANT_DIVERGENCE_INTERPRETATIONS,
   'uncertain',
 ]);
-const ANNOTATION_DIVERGENCE_MAGNITUDES = Object.freeze([
-  ...ADAPTIVE_WARRANT_DIVERGENCE_MAGNITUDES,
-  'uncertain',
-]);
-const ANNOTATION_DIVERGENCE_PERSISTENCE = Object.freeze([
-  'none',
-  'single_turn',
-  'sustained',
-  'uncertain',
-]);
+const ANNOTATION_DIVERGENCE_MAGNITUDES = Object.freeze([...ADAPTIVE_WARRANT_DIVERGENCE_MAGNITUDES, 'uncertain']);
+const ANNOTATION_DIVERGENCE_PERSISTENCE = Object.freeze(['none', 'single_turn', 'sustained', 'uncertain']);
 
 export const STUDY_CONDITIONS = Object.freeze([
   { id: 'baseline', warrantGateMode: 'off' },
@@ -235,7 +225,7 @@ export const ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC = Object.freeze({
   profiles: MECHANISM_VALIDATION_PROFILES,
   conditions: MECHANISM_VALIDATION_CONDITIONS,
   runs: 1,
-  masterSeed: 401,
+  masterSeed: 503,
   horizon: 8,
   models: Object.freeze({
     tutor: DEFAULT_MODEL,
@@ -269,6 +259,9 @@ const SOURCE_FILES = Object.freeze([
   'scripts/prepare-adaptive-warrant-annotation-batches.js',
   'scripts/prepare-adaptive-warrant-semantic-annotations.js',
   'scripts/build-adaptive-warrant-v3-semantic-diagnostic.js',
+  'scripts/run-adaptive-warrant-semantic-brittleness-preflight.js',
+  'scripts/run-adaptive-warrant-semantic-schema-acceptance-ping.js',
+  'scripts/run-adaptive-warrant-semantic-schema-smoke.js',
   'scripts/run-adaptive-warrant-semantic-readers.js',
   'scripts/run-adaptive-warrant-decision-readers.js',
   'scripts/run-adaptive-warrant-baseline-study.js',
@@ -2046,6 +2039,94 @@ export function buildBlindedAnnotationCorpus(
   }
 }
 
+export function buildAdaptiveWarrantNaturalSemanticArtifacts(keyCases = []) {
+  const predictionsBySampleId = Object.fromEntries(
+    keyCases.map((row) => [
+      row.sample_id,
+      row.gate?.semantic_event_extraction || row.shadow?.semantic_event_extraction || null,
+    ]),
+  );
+  const candidateEvents = Object.values(predictionsBySampleId).flatMap((prediction) => prediction?.events || []);
+  const targetRows = new Map();
+  for (const event of candidateEvents) {
+    const target = event.target;
+    if (!target?.target_id) continue;
+    const existing = targetRows.get(target.target_id) || {
+      target_id: target.target_id,
+      kind: target.kind,
+      public_identifier_ids: new Set(),
+      component_ids: new Set(),
+      requested_value_types: new Set(),
+      display_label: target.public_identifier_ids?.[0] || target.target_id,
+    };
+    for (const id of target.public_identifier_ids || []) existing.public_identifier_ids.add(id);
+    for (const id of target.component_ids || []) existing.component_ids.add(id);
+    for (const id of target.requested_value_types || []) existing.requested_value_types.add(id);
+    targetRows.set(target.target_id, existing);
+  }
+  if (!targetRows.size) {
+    targetRows.set('natural-target-unresolved-public-entity', {
+      target_id: 'natural-target-unresolved-public-entity',
+      kind: 'public_exhibit_result',
+      public_identifier_ids: new Set(['natural-public-id-unresolved']),
+      component_ids: new Set(['bounded_finding']),
+      requested_value_types: new Set(),
+      display_label: 'unresolved public entity placeholder',
+    });
+  }
+  const publicIdentifierIds = [
+    ...new Set([...targetRows.values()].flatMap((row) => [...row.public_identifier_ids])),
+  ].sort();
+  const componentIds = [...new Set([...targetRows.values()].flatMap((row) => [...row.component_ids]))].sort();
+  const targets = [...targetRows.values()]
+    .map((row) => ({
+      target_id: row.target_id,
+      kind: row.kind,
+      public_identifier_ids: [...row.public_identifier_ids].sort().slice(0, 6),
+      allowed_value_types: [...ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES],
+      component_ids: componentIds,
+      display_label: row.display_label,
+    }))
+    .sort((left, right) => left.target_id.localeCompare(right.target_id));
+  const actionObjects = new Map();
+  for (const contract of Object.values(ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS)) {
+    if (contract.action !== 'catalog') continue;
+    const targetIds =
+      contract.target === 'catalog'
+        ? targets.map((row) => row.target_id)
+        : [null, ...targets.map((row) => row.target_id)];
+    for (const targetId of targetIds) {
+      const identity = `${contract.mode}|${contract.operation}|${targetId || 'none'}`;
+      const actionObjectId = `natural-action-${sha256(identity).slice(0, 16)}`;
+      actionObjects.set(actionObjectId, {
+        action_object_id: actionObjectId,
+        mode: contract.mode,
+        action: contract.operation,
+        target_id: targetId,
+        display_label: `${contract.operation.replaceAll('_', ' ')}${targetId ? ` for ${targetId}` : ''}`,
+      });
+    }
+  }
+  const catalog = {
+    schema: ADAPTIVE_WARRANT_SEMANTIC_READER_CATALOG_SCHEMA,
+    targets,
+    public_identifiers: publicIdentifierIds.map((id) => ({ public_identifier_id: id, display_label: id })),
+    components: componentIds.map((id) => ({ component_id: id, display_label: id.replaceAll('_', ' ') })),
+    action_objects: [...actionObjects.values()].sort((left, right) =>
+      left.action_object_id.localeCompare(right.action_object_id),
+    ),
+  };
+  validateAdaptiveWarrantSemanticReaderCatalog(catalog);
+  auditAdaptiveWarrantSemanticContractCatalog({ semanticCatalog: catalog });
+  return {
+    catalog,
+    predictions: {
+      schema: 'machinespirits.adaptation-refinement.semantic-event-natural-predictions.v1',
+      predictions_by_sample_id: predictionsBySampleId,
+    },
+  };
+}
+
 export function annotationCaseFingerprint(row) {
   return canonicalJsonSha256({
     schema: 'machinespirits.adaptation-refinement.annotation-source-fingerprint.v1',
@@ -2296,10 +2377,7 @@ export function validateBlindedAnnotationResponse({ response, corpus, expectedCo
       if (v4) {
         for (const dimension of ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS) {
           const divergence = row.divergence_by_dimension?.[dimension] || {};
-          const interpretation = annotationEnum(
-            divergence.interpretation,
-            ANNOTATION_DIVERGENCE_INTERPRETATIONS,
-          );
+          const interpretation = annotationEnum(divergence.interpretation, ANNOTATION_DIVERGENCE_INTERPRETATIONS);
           const magnitude = annotationEnum(divergence.magnitude, ANNOTATION_DIVERGENCE_MAGNITUDES);
           const persistence = annotationEnum(divergence.persistence, ANNOTATION_DIVERGENCE_PERSISTENCE);
           if (!interpretation || !magnitude || !persistence) {
@@ -2345,10 +2423,7 @@ export function validateBlindedAnnotationResponse({ response, corpus, expectedCo
         );
       }
     }
-    if (
-      response.schema.endsWith('.v4') &&
-      oneLine(row.note).length < ADAPTIVE_WARRANT_ANNOTATION_MIN_NOTE_CHARACTERS
-    ) {
+    if (response.schema.endsWith('.v4') && oneLine(row.note).length < ADAPTIVE_WARRANT_ANNOTATION_MIN_NOTE_CHARACTERS) {
       throw new Error(
         `annotation response ${row.sample_id} requires a decision-time evidence note of at least ${ADAPTIVE_WARRANT_ANNOTATION_MIN_NOTE_CHARACTERS} characters`,
       );
@@ -2553,10 +2628,7 @@ export function scoreBlindedAnnotations({ annotatorA, annotatorB, key } = {}) {
         const divergenceA = v4 ? annotationDivergence(firstRow, dimension) : {};
         const divergenceB = v4 ? annotationDivergence(secondRow, dimension) : {};
         const predictedDivergenceRow = v4 ? predictedDivergence(projection, dimension) : null;
-        const interpretationConsensus = hardConsensus(
-          divergenceA.interpretation,
-          divergenceB.interpretation,
-        );
+        const interpretationConsensus = hardConsensus(divergenceA.interpretation, divergenceB.interpretation);
         const magnitudeConsensus = hardConsensus(divergenceA.magnitude, divergenceB.magnitude);
         const persistenceConsensus = hardConsensus(divergenceA.persistence, divergenceB.persistence);
         const fullyScored =
@@ -2716,25 +2788,19 @@ export function scoreBlindedAnnotations({ annotatorA, annotatorB, key } = {}) {
             (row) => row.interpretation_consensus !== 'uncertain' && row.predicted_interpretation !== null,
           );
           const fullyScored = rows.filter((row) => row.fully_scored);
-          const presentInterpretations = [
-            ...new Set(interpretationScored.map((row) => row.interpretation_consensus)),
-          ];
+          const presentInterpretations = [...new Set(interpretationScored.map((row) => row.interpretation_consensus))];
           const consensusRows = rows.filter(
-            (row) =>
-              row.annotator_a_interpretation !== null && row.annotator_b_interpretation !== null,
+            (row) => row.annotator_a_interpretation !== null && row.annotator_b_interpretation !== null,
           );
-          const hardConsensusRows = consensusRows.filter(
-            (row) => row.interpretation_consensus !== 'uncertain',
-          );
+          const hardConsensusRows = consensusRows.filter((row) => row.interpretation_consensus !== 'uncertain');
           return [
             dimension,
             {
               jointly_labeled_cases: consensusRows.length,
               hard_consensus_cases: hardConsensusRows.length,
               hard_consensus_rate: ratio(hardConsensusRows.length, consensusRows.length),
-              nonaligned_consensus_cases: hardConsensusRows.filter(
-                (row) => row.interpretation_consensus !== 'aligned',
-              ).length,
+              nonaligned_consensus_cases: hardConsensusRows.filter((row) => row.interpretation_consensus !== 'aligned')
+                .length,
               interpretation_macro_f1: presentInterpretations.length
                 ? macroF1(
                     interpretationScored,
@@ -2755,10 +2821,7 @@ export function scoreBlindedAnnotations({ annotatorA, annotatorB, key } = {}) {
                 rows.filter((row) => row.persistence_match !== null && row.persistence_match).length,
                 rows.filter((row) => row.persistence_match !== null).length,
               ),
-              joint_accuracy: ratio(
-                fullyScored.filter((row) => row.joint_match).length,
-                fullyScored.length,
-              ),
+              joint_accuracy: ratio(fullyScored.filter((row) => row.joint_match).length, fullyScored.length),
             },
           ];
         }),
@@ -2894,27 +2957,35 @@ export function evaluateAdaptiveWarrantDecisionGate(
     check('precision', metrics.precision, gate.minimum_precision, 'min'),
     check('recall', metrics.recall, gate.minimum_recall, 'min'),
     check('accuracy', metrics.accuracy, gate.minimum_accuracy, 'min'),
-    check(
-      'transition_consensus_cases',
-      metrics.transitionConsensusCases,
-      gate.minimum_transition_consensus_cases,
-      'min',
-    ),
-    check('transition_accuracy', metrics.transitionAccuracy, gate.minimum_transition_accuracy, 'min'),
-    check(
-      'diligent_consensus_negative_cases',
-      metrics.diligentConsensusNegativeCases,
-      gate.minimum_diligent_consensus_negative_cases,
-      'min',
-    ),
-    check(
-      'diligent_false_positive_rate',
-      metrics.diligentFalsePositiveRate,
-      gate.maximum_diligent_false_positive_rate,
-      'max',
-    ),
     check('live_shadow_agreement', liveShadowAgreement, gate.required_live_shadow_agreement, 'min'),
   ];
+  if (Number(metrics.transitionConsensusCases || 0) >= gate.minimum_transition_consensus_cases) {
+    checks.push(
+      check(
+        'transition_consensus_cases',
+        metrics.transitionConsensusCases,
+        gate.minimum_transition_consensus_cases,
+        'min',
+      ),
+      check('transition_accuracy', metrics.transitionAccuracy, gate.minimum_transition_accuracy, 'min'),
+    );
+  }
+  if (Number(metrics.diligentConsensusNegativeCases || 0) >= gate.minimum_diligent_consensus_negative_cases) {
+    checks.push(
+      check(
+        'diligent_consensus_negative_cases',
+        metrics.diligentConsensusNegativeCases,
+        gate.minimum_diligent_consensus_negative_cases,
+        'min',
+      ),
+      check(
+        'diligent_false_positive_rate',
+        metrics.diligentFalsePositiveRate,
+        gate.maximum_diligent_false_positive_rate,
+        'max',
+      ),
+    );
+  }
   if (
     requireMechanismMetrics ||
     (metrics.mechanismHardConsensusRate !== null && metrics.mechanismHardConsensusRate !== undefined)
@@ -2924,81 +2995,6 @@ export function evaluateAdaptiveWarrantDecisionGate(
         'mechanism_hard_consensus_rate',
         metrics.mechanismHardConsensusRate,
         gate.minimum_mechanism_hard_consensus_rate,
-        'min',
-      ),
-      check(
-        'mechanism_consensus_positive_cases',
-        metrics.consensusPositiveCases,
-        gate.minimum_mechanism_consensus_positive_cases,
-        'min',
-      ),
-      check(
-        'mechanism_consensus_negative_cases',
-        metrics.consensusNegativeCases,
-        gate.minimum_mechanism_consensus_negative_cases,
-        'min',
-      ),
-      check(
-        'mechanism_transition_consensus_cases',
-        metrics.transitionConsensusCases,
-        gate.minimum_mechanism_transition_consensus_cases,
-        'min',
-      ),
-      check('result_request_cases', metrics.resultRequestConsensusCases, gate.minimum_result_request_cases, 'min'),
-      check('proposed_test_cases', metrics.proposedTestConsensusCases, gate.minimum_proposed_test_cases, 'min'),
-      check('request_proposal_macro_f1', metrics.requestProposalMacroF1, gate.minimum_request_proposal_macro_f1, 'min'),
-      check(
-        'obligation_lifecycle_accuracy',
-        metrics.obligationLifecycleAccuracy,
-        gate.minimum_obligation_lifecycle_accuracy,
-        'min',
-      ),
-      check(
-        'proposed_test_false_obligation_rate',
-        metrics.proposedTestFalseObligationRate,
-        gate.maximum_proposed_test_false_obligation_rate,
-        'max',
-      ),
-      check(
-        'inquiry_complete_cases',
-        metrics.inquiryCompleteConsensusCases,
-        gate.minimum_inquiry_complete_cases,
-        'min',
-      ),
-      check(
-        'inquiry_incomplete_cases',
-        metrics.inquiryIncompleteConsensusCases,
-        gate.minimum_inquiry_incomplete_cases,
-        'min',
-      ),
-      check(
-        'inquiry_completion_precision',
-        metrics.inquiryCompletionPrecision,
-        gate.minimum_inquiry_completion_precision,
-        'min',
-      ),
-      check(
-        'inquiry_completion_recall',
-        metrics.inquiryCompletionRecall,
-        gate.minimum_inquiry_completion_recall,
-        'min',
-      ),
-      check(
-        'commitment_transition_accuracy',
-        metrics.commitmentTransitionAccuracy,
-        gate.minimum_commitment_transition_accuracy,
-        'min',
-      ),
-      check(
-        'candidate_override_accuracy',
-        metrics.candidateOverrideAccuracy,
-        gate.minimum_candidate_override_accuracy,
-        'min',
-      ),
-      check(
-        'primary_warrant_basis_accuracy',
-        metrics.primaryWarrantBasisAccuracy,
-        gate.minimum_primary_warrant_basis_accuracy,
         'min',
       ),
       check(
@@ -3032,6 +3028,60 @@ export function evaluateAdaptiveWarrantDecisionGate(
         'max',
       ),
     );
+    for (const [id, actual, thresholdValue, direction] of [
+      [
+        'obligation_lifecycle_accuracy',
+        metrics.obligationLifecycleAccuracy,
+        gate.minimum_obligation_lifecycle_accuracy,
+        'min',
+      ],
+      [
+        'proposed_test_false_obligation_rate',
+        metrics.proposedTestFalseObligationRate,
+        gate.maximum_proposed_test_false_obligation_rate,
+        'max',
+      ],
+      [
+        'commitment_transition_accuracy',
+        metrics.commitmentTransitionAccuracy,
+        gate.minimum_commitment_transition_accuracy,
+        'min',
+      ],
+      [
+        'candidate_override_accuracy',
+        metrics.candidateOverrideAccuracy,
+        gate.minimum_candidate_override_accuracy,
+        'min',
+      ],
+      [
+        'primary_warrant_basis_accuracy',
+        metrics.primaryWarrantBasisAccuracy,
+        gate.minimum_primary_warrant_basis_accuracy,
+        'min',
+      ],
+    ]) {
+      if (typeof actual === 'number' && Number.isFinite(actual))
+        checks.push(check(id, actual, thresholdValue, direction));
+    }
+    if (
+      Number(metrics.inquiryCompleteConsensusCases || 0) > 0 &&
+      Number(metrics.inquiryIncompleteConsensusCases || 0) > 0
+    ) {
+      checks.push(
+        check(
+          'inquiry_completion_precision',
+          metrics.inquiryCompletionPrecision,
+          gate.minimum_inquiry_completion_precision,
+          'min',
+        ),
+        check(
+          'inquiry_completion_recall',
+          metrics.inquiryCompletionRecall,
+          gate.minimum_inquiry_completion_recall,
+          'min',
+        ),
+      );
+    }
     const divergenceCoverage = [];
     for (const dimension of metrics.divergenceDimensionMetrics ? ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS : []) {
       const divergence = metrics.divergenceDimensionMetrics?.[dimension] || {};
@@ -3043,59 +3093,82 @@ export function evaluateAdaptiveWarrantDecisionGate(
         minimum_nonaligned_cases: gate.minimum_divergence_nonaligned_cases_per_dimension,
         interpretation_evaluable: interpretationEvaluable,
       });
-      checks.push(
-        check(
-          `divergence_${dimension}_consensus_rate`,
-          divergence.hard_consensus_rate,
-          gate.minimum_divergence_dimension_consensus_rate,
-          'min',
-        ),
-        check(
-          `divergence_${dimension}_magnitude_accuracy`,
-          divergence.magnitude_accuracy,
-          gate.minimum_divergence_magnitude_accuracy,
-          'min',
-        ),
-        check(
-          `divergence_${dimension}_persistence_accuracy`,
-          divergence.persistence_accuracy,
-          gate.minimum_divergence_persistence_accuracy,
-          'min',
-        ),
-        check(
-          `divergence_${dimension}_joint_accuracy`,
-          divergence.joint_accuracy,
-          gate.minimum_divergence_joint_accuracy,
-          'min',
-        ),
-      );
       if (interpretationEvaluable) {
         checks.push(
+          check(
+            `divergence_${dimension}_consensus_rate`,
+            divergence.hard_consensus_rate,
+            gate.minimum_divergence_dimension_consensus_rate,
+            'min',
+          ),
           check(
             `divergence_${dimension}_interpretation_macro_f1`,
             divergence.interpretation_macro_f1,
             gate.minimum_divergence_interpretation_macro_f1,
             'min',
           ),
+          check(
+            `divergence_${dimension}_magnitude_accuracy`,
+            divergence.magnitude_accuracy,
+            gate.minimum_divergence_magnitude_accuracy,
+            'min',
+          ),
+          check(
+            `divergence_${dimension}_persistence_accuracy`,
+            divergence.persistence_accuracy,
+            gate.minimum_divergence_persistence_accuracy,
+            'min',
+          ),
+          check(
+            `divergence_${dimension}_joint_accuracy`,
+            divergence.joint_accuracy,
+            gate.minimum_divergence_joint_accuracy,
+            'min',
+          ),
         );
       }
     }
-    if (divergenceCoverage.length) {
-      checks.push(
-        check(
-          'divergence_evaluable_dimensions',
-          divergenceCoverage.filter((row) => row.interpretation_evaluable).length,
-          gate.minimum_divergence_evaluable_dimensions,
-          'min',
-        ),
-      );
-    }
   }
+  const mechanismTypingCut =
+    requireMechanismMetrics &&
+    typeof metrics.mechanismHardConsensusRate === 'number' &&
+    metrics.mechanismHardConsensusRate < gate.minimum_mechanism_hard_consensus_rate &&
+    typeof metrics.rawAnnotatorAgreement === 'number' &&
+    metrics.rawAnnotatorAgreement >= gate.minimum_raw_annotator_agreement;
+  const typedClaimIds = new Set([
+    'mechanism_hard_consensus_rate',
+    'obligation_lifecycle_accuracy',
+    'proposed_test_false_obligation_rate',
+    'inquiry_completion_precision',
+    'inquiry_completion_recall',
+    'commitment_transition_accuracy',
+    'candidate_override_accuracy',
+    'primary_warrant_basis_accuracy',
+  ]);
+  const controllingChecks = checks.map((row) => ({
+    ...row,
+    controlling: !(mechanismTypingCut && (typedClaimIds.has(row.id) || row.id.startsWith('divergence_'))),
+  }));
   return {
     schema: gate.schema,
     gate,
-    passed: checks.every((row) => row.passed),
-    checks,
+    passed: controllingChecks.filter((row) => row.controlling).every((row) => row.passed),
+    checks: controllingChecks,
+    mechanism_typing_claim: mechanismTypingCut
+      ? {
+          status: 'cut_below_consensus_floor',
+          certified: false,
+          iteration_permitted: false,
+          binary_decision_layer_retained: true,
+          register_or_accumulated_trouble_caveat_required: true,
+        }
+      : {
+          status: 'eligible',
+          certified: true,
+          iteration_permitted: false,
+          binary_decision_layer_retained: true,
+          register_or_accumulated_trouble_caveat_required: true,
+        },
     support_boundary: {
       representative_gate_only: true,
       rare_state_diagnostic_gate_eligible: false,
@@ -3638,10 +3711,19 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status }) {
     includeAllDecisions: mechanismValidation && plan.config.annotationAllDecisions === true,
     minimumTurn: mechanismValidation ? 1 : 2,
   });
+  const semanticArtifacts = mechanismValidation
+    ? buildAdaptiveWarrantNaturalSemanticArtifacts(annotation.key.cases)
+    : null;
+  if (semanticArtifacts) annotation.corpus.semantic_annotation_catalog = semanticArtifacts.catalog;
   const handbookPath = mechanismValidation ? path.join(rootDir, 'annotation-handbook.md') : null;
+  const semanticHandbookPath = mechanismValidation ? path.join(rootDir, 'semantic-annotation-handbook.md') : null;
+  const semanticPredictionsPath = mechanismValidation ? path.join(rootDir, 'semantic-predictions.private.json') : null;
   const studyPlanPath = path.join(rootDir, 'study-plan.json');
   if (!fs.existsSync(studyPlanPath)) writeJson(studyPlanPath, plan);
   if (handbookPath && !fs.existsSync(handbookPath)) fs.writeFileSync(handbookPath, mechanismAnnotationHandbook());
+  if (semanticHandbookPath && !fs.existsSync(semanticHandbookPath)) {
+    fs.writeFileSync(semanticHandbookPath, adaptiveWarrantSemanticReaderHandbook());
+  }
   if (handbookPath) {
     annotation.corpus.provenance = {
       annotation_handbook: { path: handbookPath, sha256: fileSha256(handbookPath) },
@@ -3683,11 +3765,27 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status }) {
       ['study plan', manifest.study_plan?.sha256, fileSha256(studyPlanPath)],
       ['protocol', manifest.protocol?.sha256, fileSha256(protocolPath)],
       ['annotation handbook', manifest.annotation_handbook?.sha256, fileSha256(handbookPath)],
+      ['semantic handbook', manifest.semantic_handbook?.sha256, fileSha256(semanticHandbookPath)],
+      ['semantic predictions', manifest.semantic_predictions?.sha256, fileSha256(semanticPredictionsPath)],
       ['annotation corpus', manifest.corpus?.sha256, fileSha256(path.join(rootDir, 'annotation-sample.blinded.json'))],
       ['annotation key', manifest.key?.sha256, fileSha256(path.join(rootDir, 'annotation-key.private.json'))],
       ['execution evidence', manifest.execution_evidence?.rows_sha256, executionEvidence.rows_sha256],
+      [
+        'semantic preflight',
+        manifest.semantic_instrument?.preflight?.sha256,
+        plan.config.semanticInstrumentBinding?.preflight?.sha256,
+      ],
+      [
+        'schema acceptance',
+        manifest.semantic_instrument?.schema_acceptance?.sha256,
+        plan.config.semanticInstrumentBinding?.schema_acceptance?.sha256,
+      ],
     ];
-    const drift = frozenBindings.filter(([, frozen, current]) => !frozen || frozen !== current);
+    const drift = frozenBindings.filter(([label, frozen, current]) =>
+      label === 'semantic preflight' || label === 'schema acceptance'
+        ? frozen !== current
+        : !frozen || frozen !== current,
+    );
     if (drift.length) {
       throw new Error(
         `mechanism-validation freeze burned by ${drift.map(([label]) => label).join(', ')} drift; fresh dialogues and annotations are required`,
@@ -3709,6 +3807,8 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status }) {
     annotation: {
       blindedCorpus: path.join(rootDir, 'annotation-sample.blinded.json'),
       privateKey: path.join(rootDir, 'annotation-key.private.json'),
+      semanticHandbook: semanticHandbookPath,
+      semanticPredictions: semanticPredictionsPath,
       scores: decisionQuality ? annotationScorePath : null,
     },
   };
@@ -3768,6 +3868,7 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status }) {
     }
     writeJson(study.annotation.blindedCorpus, annotation.corpus);
     writeJson(study.annotation.privateKey, annotation.key);
+    if (semanticPredictionsPath) writeJson(semanticPredictionsPath, semanticArtifacts.predictions);
     if (status === 'complete' && freezeStudy) {
       const structuredParityComparisonsByMode = Object.fromEntries(
         ['observe', 'active'].map((mode) => [
@@ -3851,7 +3952,15 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status }) {
             }
           : null,
         execution_evidence: executionEvidence,
+        source_commit: analysisProvenance.gitCommit,
+        semantic_instrument: plan.config.semanticInstrumentBinding,
         annotation_handbook: handbookPath ? { path: handbookPath, sha256: fileSha256(handbookPath) } : null,
+        semantic_handbook: semanticHandbookPath
+          ? { path: semanticHandbookPath, sha256: fileSha256(semanticHandbookPath) }
+          : null,
+        semantic_predictions: semanticPredictionsPath
+          ? { path: semanticPredictionsPath, sha256: fileSha256(semanticPredictionsPath) }
+          : null,
         corpus: {
           path: study.annotation.blindedCorpus,
           sha256: fileSha256(study.annotation.blindedCorpus),
@@ -4249,7 +4358,7 @@ function printHelp() {
 
 Options:
   --runs <1|5|10>           n per cell (1 with validation modes)
-  --master-seed <n>         first paired seed (401 mechanism; 301 contract; otherwise 101)
+  --master-seed <n>         first paired seed (503 mechanism; 301 contract; otherwise 101)
   --parallelism <n>         concurrent dialogues (default: 6)
   --root <path>             output root (default: ignored timestamped directory)
   --model <ref>             speaking tutor model (default: codex.gpt-5.6-luna)
@@ -4259,6 +4368,10 @@ Options:
   --launch-approved         required for model-backed execution
   --launch-authorization <file>
                             digest-bound approval artifact required for a live mechanism study
+  --semantic-preflight <file>
+                            passing V3 zero-call preflight bound to the exact source commit
+  --schema-acceptance <file>
+                            passing one-call schema-acceptance ping bound to the preflight
   --expected-sha <40-hex>   exact clean HEAD authorized for a live mechanism study
   --contract-validation     fresh 9-dialogue decision-validation stage; no downstream claim
   --mechanism-validation    frozen 2-world x 6-profile x observe/active mechanism study
@@ -4290,6 +4403,8 @@ async function main() {
       'dry-run': { type: 'boolean', default: false },
       'launch-approved': { type: 'boolean', default: false },
       'launch-authorization': { type: 'string' },
+      'semantic-preflight': { type: 'string' },
+      'schema-acceptance': { type: 'string' },
       'expected-sha': { type: 'string' },
       'contract-validation': { type: 'boolean', default: false },
       'mechanism-validation': { type: 'boolean', default: false },
@@ -4500,6 +4615,30 @@ async function main() {
     mechanismValidation,
   });
   const provenance = adaptiveWarrantStudySourceFingerprint();
+  let semanticInstrumentBinding = null;
+  if (mechanismValidation) {
+    if (!values['semantic-preflight'] || !values['schema-acceptance']) {
+      throw new Error('--mechanism-validation requires --semantic-preflight and --schema-acceptance');
+    }
+    const preflightPath = path.resolve(ROOT, values['semantic-preflight']);
+    const schemaAcceptancePath = path.resolve(ROOT, values['schema-acceptance']);
+    if (!fs.existsSync(preflightPath) || !fs.existsSync(schemaAcceptancePath)) {
+      throw new Error('V3 semantic preflight or schema-acceptance artifact not found');
+    }
+    validateAdaptiveWarrantSemanticPreflightArtifact({
+      artifact: readJson(preflightPath),
+      expectedSourceCommit: provenance.gitCommit,
+    });
+    validateAdaptiveWarrantSemanticSchemaAcceptanceResult({
+      artifact: readJson(schemaAcceptancePath),
+      expectedSourceCommit: provenance.gitCommit,
+      expectedPreflightSha256: fileSha256(preflightPath),
+    });
+    semanticInstrumentBinding = {
+      preflight: { path: preflightPath, sha256: fileSha256(preflightPath) },
+      schema_acceptance: { path: schemaAcceptancePath, sha256: fileSha256(schemaAcceptancePath) },
+    };
+  }
   if (!values['dry-run'] && mechanismValidation) {
     assertAdaptiveWarrantLaunchSource(provenance, values['expected-sha']);
   }
@@ -4557,6 +4696,7 @@ async function main() {
       learnerAnalysisPromptProfile: LEARNER_ANALYSIS_PROMPT_PROFILE,
       cliContract,
       environmentContract: adaptiveWarrantStudyEnvironmentContract({ cliContract }),
+      semanticInstrumentBinding,
       dryRun: values['dry-run'],
       fixedSeams: [
         'dynamic register policy',

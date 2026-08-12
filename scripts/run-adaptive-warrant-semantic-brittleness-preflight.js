@@ -7,6 +7,7 @@ import { parseArgs } from 'node:util';
 
 import {
   auditAdaptiveWarrantSemanticContractCatalog,
+  auditAdaptiveWarrantProviderOutputSchema,
   auditAdaptiveWarrantSemanticReaderSchemaTotality,
   adaptiveWarrantSemanticConsensusIdentity,
   buildAdaptiveWarrantSemanticBatchOutputSchema,
@@ -14,6 +15,7 @@ import {
   scoreAdaptiveWarrantSemanticExtraction,
   validateAdaptiveWarrantSemanticAnnotationResponse,
 } from '../services/adaptiveWarrantSemanticAnnotation.js';
+import { buildTutorStubPublicLearnerAnalysisProviderOutputSchema } from '../services/tutorStubPublicLearnerAnalysis.js';
 import {
   ADAPTIVE_WARRANT_SEMANTIC_PREFLIGHT_SCHEMA,
   adaptiveWarrantSemanticInstrumentBindings,
@@ -446,6 +448,13 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     readerSchemaTotalityAudits.smoke,
     ...readerSchemaTotalityAudits.diagnostic_shipped_batches,
   ];
+  const liveSemanticSchema = buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
+    includeSemanticEvents: true,
+  }).properties.semantic_events;
+  const liveSemanticSchemaAudit = auditAdaptiveWarrantProviderOutputSchema({
+    schema: liveSemanticSchema,
+    maximumDepth: 10,
+  });
   const schemaText = JSON.stringify(schemas);
   const scoreStates = Object.values(score.checks);
   const checks = [
@@ -476,6 +485,14 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
           audit.catalogue_domains_closed === true,
       ),
       readerSchemaTotalityAudits,
+    ),
+    check(
+      'live_semantic_fields_total_non_nullable_and_provider_compatible',
+      liveSemanticSchemaAudit.ok === true &&
+        liveSemanticSchemaAudit.reader_fields_total === true &&
+        liveSemanticSchemaAudit.provider_keywords_supported === true &&
+        liveSemanticSchemaAudit.nesting_depth_within_limit === true,
+      liveSemanticSchemaAudit,
     ),
     check(
       'reader_schema_uses_only_supported_provider_keywords',

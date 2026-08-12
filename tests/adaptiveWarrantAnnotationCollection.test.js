@@ -55,17 +55,15 @@ function completedCase(overrides = {}) {
     recommended_action_family: 'hold',
     note: 'The public decision-time evidence supports holding this commitment.',
     divergence_by_dimension: Object.fromEntries(
-      ['conceptual', 'interactional', 'engagement', 'pacing', 'epistemic', 'strategy_exhaustion'].map(
-        (dimension) => [
-          dimension,
-          {
-            interpretation: 'aligned',
-            magnitude: 'none',
-            persistence: 'none',
-            note: `The public ${dimension} evidence remains aligned with its norm.`,
-          },
-        ],
-      ),
+      ['conceptual', 'interactional', 'engagement', 'pacing', 'epistemic', 'strategy_exhaustion'].map((dimension) => [
+        dimension,
+        {
+          interpretation: 'aligned',
+          magnitude: 'none',
+          persistence: 'none',
+          note: `The public ${dimension} evidence remains aligned with its norm.`,
+        },
+      ]),
     ),
     ...overrides,
   };
@@ -84,6 +82,7 @@ test('reader packets use exact sample-id maps and assembly applies only declared
       outputDir: path.join(root, 'collection'),
       batchSize: 2,
       corpusRole: 'natural_prevalence',
+      preflightMode: true,
     });
     assert.equal(prepared.manifest.readers.length, 2);
     assert.deepEqual(
@@ -91,9 +90,7 @@ test('reader packets use exact sample-id maps and assembly applies only declared
       [2, 2],
     );
     assert.match(prepared.manifest.inference_boundary, /natural prevalence/u);
-    const firstPacket = JSON.parse(
-      fs.readFileSync(prepared.manifest.readers[0].batches[0].packet_path, 'utf8'),
-    );
+    const firstPacket = JSON.parse(fs.readFileSync(prepared.manifest.readers[0].batches[0].packet_path, 'utf8'));
     assert.ok(
       firstPacket.instructions.some((instruction) =>
         instruction.includes('no gate transition or prediction is supplied'),
@@ -108,9 +105,7 @@ test('reader packets use exact sample-id maps and assembly applies only declared
       'ground_in_material',
     ]);
     assert.ok(
-      firstPacket.instructions.some((instruction) =>
-        instruction.includes('response schema enforces this pairing'),
-      ),
+      firstPacket.instructions.some((instruction) => instruction.includes('response schema enforces this pairing')),
     );
     assert.deepEqual(
       firstPacket.response_json_schema.$defs.case_action_contract_1.properties.recommended_action_family.enum,
@@ -129,11 +124,7 @@ test('reader packets use exact sample-id maps and assembly applies only declared
       const casesById = Object.fromEntries(
         batch.required_sample_ids.map((sampleId, caseIndex) => [
           sampleId,
-          completedCase(
-            batchIndex === 0 && caseIndex === 0
-              ? { recommended_action_family: 'stage_next_step' }
-              : {},
-          ),
+          completedCase(batchIndex === 0 && caseIndex === 0 ? { recommended_action_family: 'stage_next_step' } : {}),
         ]),
       );
       writeJson(path.join(responseDir, batch.expected_response_filename), {
@@ -191,6 +182,7 @@ test('V4 response validation rejects placeholder notes before consensus scoring'
       outputDir: path.join(root, 'collection'),
       batchSize: 1,
       corpusRole: 'natural_prevalence',
+      preflightMode: true,
     });
     const batch = prepared.manifest.readers[0].batches[0];
     const responseDir = path.join(root, 'responses');
@@ -234,6 +226,7 @@ test('natural gate and targeted diagnostic corpora remain separate without pooli
       handbookPath,
       outputDir: path.join(root, 'natural-collection'),
       corpusRole: 'natural_prevalence',
+      preflightMode: true,
     });
 
     const challengeIds = challengeCorpus.cases.map((row) => row.sample_id);

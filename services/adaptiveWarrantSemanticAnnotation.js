@@ -463,8 +463,13 @@ export function validateAdaptiveWarrantSemanticReaderCatalog(catalog) {
       const label = `semantic reader catalog targets[${index}]`;
       if (!ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS.includes(row.kind)) throw new Error(`${label}.kind is invalid`);
       exactStringSet(row.public_identifier_ids, publicIdentifierIds, `${label}.public_identifier_ids`, 6);
-      exactStringSet(row.allowed_value_types, ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES, `${label}.allowed_value_types`, 4);
-      exactStringSet(row.component_ids, componentIds, `${label}.component_ids`, 4);
+      exactStringSet(
+        row.allowed_value_types,
+        ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES,
+        `${label}.allowed_value_types`,
+        ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES.length,
+      );
+      exactStringSet(row.component_ids, componentIds, `${label}.component_ids`, componentIds.length);
       return [row.target_id, row];
     }),
   );
@@ -955,10 +960,7 @@ function identitiesEqual(left, right) {
  * both-defensible ambiguity and blocks rather than guessing which reader is
  * wrong.
  */
-export function classifyAdaptiveWarrantSemanticDisagreements({
-  consensus,
-  expectedEventsBySampleId,
-} = {}) {
+export function classifyAdaptiveWarrantSemanticDisagreements({ consensus, expectedEventsBySampleId } = {}) {
   const rows = (consensus?.cases || []).map((row) => {
     if (row.hard_consensus) {
       return {

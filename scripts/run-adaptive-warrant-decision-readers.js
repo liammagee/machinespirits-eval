@@ -61,22 +61,32 @@ function exactFields(value, expected, label) {
 }
 
 function validateFreeze({ freeze, manifest, repoRoot }) {
-  if (freeze.schema !== ADAPTIVE_WARRANT_V3_SEMANTIC_DIAGNOSTIC_FREEZE_SCHEMA || freeze.status !== 'frozen') {
-    throw new Error('decision reader launch requires the V3 diagnostic freeze');
+  const diagnostic = freeze.schema === ADAPTIVE_WARRANT_V3_SEMANTIC_DIAGNOSTIC_FREEZE_SCHEMA;
+  const natural = freeze.schema === 'machinespirits.adaptation-refinement.warrant-mechanism-validation-freeze.v1';
+  if ((!diagnostic && !natural) || freeze.status !== 'frozen') {
+    throw new Error('decision reader launch requires a V3 diagnostic or representative freeze');
   }
+  const frozenHandbook = diagnostic ? freeze.decision_handbook : freeze.annotation_handbook;
   if (
     freeze.study_id !== manifest.study_id ||
     freeze.corpus.sha256 !== manifest.corpus.sha256 ||
-    freeze.decision_handbook.sha256 !== manifest.handbook.sha256
+    frozenHandbook?.sha256 !== manifest.handbook.sha256
   ) {
-    throw new Error('decision collection does not bind the diagnostic freeze');
+    throw new Error('decision collection does not bind its frozen corpus and handbook');
   }
+  if (
+    (diagnostic && manifest.corpus_role !== 'targeted_challenge') ||
+    (natural && manifest.corpus_role !== 'natural_prevalence')
+  ) {
+    throw new Error('decision collection role does not match its freeze');
+  }
+  const sourceCommit = freeze.source_commit || freeze.provenance?.gitCommit;
   const commit = gitValue(['rev-parse', 'HEAD'], repoRoot);
   const status = gitValue(['status', '--short'], repoRoot);
-  if (commit !== freeze.source_commit || status) {
+  if (commit !== sourceCommit || manifest.source_commit !== sourceCommit || status) {
     throw new Error('decision reader launch requires the exact clean frozen commit');
   }
-  const preflightBinding = freeze.brittleness_preflight;
+  const preflightBinding = diagnostic ? freeze.brittleness_preflight : freeze.semantic_instrument?.preflight;
   if (!preflightBinding?.path || fileSha256(preflightBinding.path) !== preflightBinding.sha256) {
     throw new Error('decision reader brittleness preflight drift');
   }
@@ -87,14 +97,17 @@ function validateFreeze({ freeze, manifest, repoRoot }) {
   if (manifest.semantic_brittleness_preflight?.sha256 !== preflightBinding.sha256) {
     throw new Error('decision collection does not bind the frozen brittleness preflight');
   }
-  for (const binding of [
-    freeze.design,
-    freeze.corpus,
-    freeze.handbook,
-    freeze.decision_handbook,
-    freeze.private_key,
-    freeze.private_support_plan,
-  ]) {
+  const frozenBindings = diagnostic
+    ? [
+        freeze.design,
+        freeze.corpus,
+        freeze.handbook,
+        freeze.decision_handbook,
+        freeze.private_key,
+        freeze.private_support_plan,
+      ]
+    : [freeze.protocol, freeze.corpus, freeze.annotation_handbook, freeze.key, freeze.study_plan];
+  for (const binding of frozenBindings) {
     if (!binding?.path || fileSha256(binding.path) !== binding.sha256) {
       throw new Error('V3 diagnostic freeze artifact drift');
     }
@@ -118,13 +131,14 @@ export async function runAdaptiveWarrantDecisionReaders({
   outputDir,
   approvedBy,
   effort = 'medium',
+  resume = false,
   callModel = callAIWithCliBridge,
 } = {}) {
   const resolvedManifest = path.resolve(manifestPath);
   const resolvedFreeze = path.resolve(freezeManifestPath);
   const resolvedRequest = path.resolve(authorizationRequestPath);
   const resolvedOutput = path.resolve(outputDir);
-  if (fs.existsSync(resolvedOutput) && fs.readdirSync(resolvedOutput).length) {
+  if (fs.existsSync(resolvedOutput) && fs.readdirSync(resolvedOutput).length && !resume) {
     throw new Error(`decision reader run output is not empty: ${resolvedOutput}`);
   }
   fs.mkdirSync(resolvedOutput, { recursive: true });
@@ -132,7 +146,7 @@ export async function runAdaptiveWarrantDecisionReaders({
   if (
     manifest.schema !== ADAPTIVE_WARRANT_ANNOTATION_COLLECTION_MANIFEST_SCHEMA ||
     manifest.status !== 'prepared' ||
-    manifest.corpus_role !== 'targeted_challenge'
+    !['targeted_challenge', 'natural_prevalence'].includes(manifest.corpus_role)
   ) {
     throw new Error('decision reader collection manifest is not a prepared targeted challenge');
   }
@@ -157,24 +171,45 @@ export async function runAdaptiveWarrantDecisionReaders({
     approved_by: approvedBy.trim(),
     approved_at: new Date().toISOString(),
   };
-  atomicWriteJson(path.join(resolvedOutput, 'accepted-authorization.json'), authorization);
-  const run = {
+  const runPath = path.join(resolvedOutput, 'decision-reader-run.json');
+  const freshRun = {
     schema: ADAPTIVE_WARRANT_DECISION_READER_RUN_SCHEMA,
     status: 'running',
     study_id: manifest.study_id,
-    source_commit: freeze.source_commit,
+    source_commit: freeze.source_commit || freeze.provenance?.gitCommit,
     authorization,
     model: request.model,
     destination: request.destination,
     call_budget: request.call_budget,
     calls_attempted: 0,
     calls_completed: 0,
+    exposed_sample_ids: [],
     batches: [],
   };
-  const runPath = path.join(resolvedOutput, 'decision-reader-run.json');
+  const run = resume ? readJson(runPath) : freshRun;
+  if (
+    run.study_id !== freshRun.study_id ||
+    run.source_commit !== freshRun.source_commit ||
+    run.authorization?.approval_digest !== authorization.approval_digest ||
+    !['running', 'incomplete_model_call_failure', 'incomplete_call_budget_exhausted'].includes(run.status)
+  ) {
+    throw new Error('decision reader resume checkpoint does not match the frozen launch');
+  }
+  run.status = 'running';
+  run.exposed_sample_ids ||= [];
+  if (!resume) atomicWriteJson(path.join(resolvedOutput, 'accepted-authorization.json'), authorization);
   atomicWriteJson(runPath, run);
   for (const reader of manifest.readers) {
     for (const batch of reader.batches) {
+      const completed = run.batches.find(
+        (row) => row.reader_id === reader.reader_id && row.batch_id === batch.batch_id && row.status === 'complete',
+      );
+      if (completed) {
+        if (!completed.response_path || fileSha256(completed.response_path) !== completed.response_sha256) {
+          throw new Error(`${batch.batch_id} completed checkpoint response drift`);
+        }
+        continue;
+      }
       if (run.calls_attempted >= request.call_budget.maximum_calls) {
         run.status = 'incomplete_call_budget_exhausted';
         atomicWriteJson(runPath, run);
@@ -183,6 +218,7 @@ export async function runAdaptiveWarrantDecisionReaders({
       const packet = readJson(batch.packet_path);
       const outputSchema = readJson(batch.output_schema_path);
       run.calls_attempted += 1;
+      run.exposed_sample_ids = [...new Set([...run.exposed_sample_ids, ...batch.required_sample_ids])].sort();
       atomicWriteJson(runPath, run);
       const started = Date.now();
       try {
@@ -243,6 +279,7 @@ export async function runAdaptiveWarrantDecisionReaders({
           output_schema_sha256: batch.output_schema_sha256,
           latency_ms: Date.now() - started,
           error: error.message,
+          exposed_sample_ids: [...batch.required_sample_ids],
         });
         atomicWriteJson(runPath, run);
         throw error;
@@ -257,7 +294,7 @@ export async function runAdaptiveWarrantDecisionReaders({
 }
 
 function usage() {
-  return 'Usage: node scripts/run-adaptive-warrant-decision-readers.js --manifest <collection> --freeze-manifest <freeze> --authorization-request <request> --out <empty-dir> --approved-by <standing-authorization-record> [--effort medium]\n';
+  return 'Usage: node scripts/run-adaptive-warrant-decision-readers.js --manifest <collection> --freeze-manifest <freeze> --authorization-request <request> --out <dir> --approved-by <standing-authorization-record> [--effort medium] [--resume]\n';
 }
 
 async function main() {
@@ -269,6 +306,7 @@ async function main() {
       out: { type: 'string' },
       'approved-by': { type: 'string' },
       effort: { type: 'string' },
+      resume: { type: 'boolean', default: false },
       help: { type: 'boolean', short: 'h' },
     },
     strict: true,
@@ -284,6 +322,7 @@ async function main() {
     outputDir: values.out,
     approvedBy: values['approved-by'],
     effort: values.effort || 'medium',
+    resume: values.resume,
   });
   process.stdout.write(`${result.runPath}\n`);
 }

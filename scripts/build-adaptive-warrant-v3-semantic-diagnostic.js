@@ -606,7 +606,7 @@ function publicCase(spec, index) {
   };
 }
 
-function semanticHandbook() {
+export function adaptiveWarrantSemanticReaderHandbook() {
   return `# Frozen V3 semantic-event reader handbook
 
 Label only the current public learner utterance in its supplied public context.
@@ -783,7 +783,7 @@ export function buildAdaptiveWarrantV3SemanticDiagnostic({ studyId } = {}) {
       ]),
     ),
   };
-  return { corpus, key, supportPlan, handbook: semanticHandbook() };
+  return { corpus, key, supportPlan, handbook: adaptiveWarrantSemanticReaderHandbook() };
 }
 
 export function writeAdaptiveWarrantV3SemanticDiagnostic({
