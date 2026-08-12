@@ -49,13 +49,20 @@ test('manifest guard refuses a menu SHA mismatch', (t) => {
   assert.throws(() => verifyOutcomePilotManifestBindings({ manifestPath }), /menu JSON SHA mismatch/u);
 });
 
+test('manifest guard passes on the real frozen files (menu text carries one trailing newline)', () => {
+  const result = verifyOutcomePilotManifestBindings({});
+  assert.equal(typeof result, 'object');
+});
+
 test('annotationCaseFingerprint failure blocks reader admission', async () => {
   let readerCalls = 0;
   await assert.rejects(
     runReadersAfterFingerprintGuard({
       cases: [fingerprintCase(1)],
       expectedCount: 2,
-      runReaders: async () => { readerCalls += 1; },
+      runReaders: async () => {
+        readerCalls += 1;
+      },
     }),
     /expected 2 cases, got 1/u,
   );
@@ -83,7 +90,10 @@ test('checkpoint resume skips a completed dialogue', async (t) => {
     jobs: [{ id: 'done-dialogue', command: ['false'] }],
     checkpoint,
     budget,
-    runDialogue: async () => { launches += 1; return { status: 1 }; },
+    runDialogue: async () => {
+      launches += 1;
+      return { status: 1 };
+    },
   });
   assert.equal(launches, 0);
   assert.equal(checkpoint.dialogues.length, 1);

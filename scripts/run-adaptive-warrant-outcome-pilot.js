@@ -53,8 +53,7 @@ const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const DEFAULT_MANIFEST = 'docs/adaptation-refinement/outcome-study-a1/pilot-manifest.json';
 const CONSUMED_GO_NOTE = 'docs/adaptation-refinement/relay/063a-reviewer-go-note-outcome-pilot.md';
 
-export const OUTCOME_PILOT_RUN_SCHEMA =
-  'machinespirits.adaptation-refinement.warrant-outcome-pilot-run.v1';
+export const OUTCOME_PILOT_RUN_SCHEMA = 'machinespirits.adaptation-refinement.warrant-outcome-pilot-run.v1';
 export const OUTCOME_PILOT_CHECKPOINT_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-outcome-pilot-checkpoint.v1';
 export const OUTCOME_PILOT_FREEZE_SCHEMA =
@@ -160,21 +159,30 @@ export function verifyOutcomePilotManifestBindings({ manifestPath = DEFAULT_MANI
   }
   const menu = readJson(path.resolve(ROOT, standing.menu_json));
   const menuGuard = guardOutcomeStandingPermissionMenu(menu);
-  if (menuGuard.status !== 'passed' || menu.menu_text !== fs.readFileSync(path.resolve(ROOT, standing.menu_text), 'utf8')) {
+  // The frozen menu .txt is the menu_text field plus exactly one trailing
+  // newline; the pinned SHA covers the file bytes, so compare against that.
+  if (
+    menuGuard.status !== 'passed' ||
+    `${menu.menu_text}\n` !== fs.readFileSync(path.resolve(ROOT, standing.menu_text), 'utf8')
+  ) {
     throw new Error('standing-permission menu byte guard failed');
   }
   assertExactObject(manifest.seeds, OUTCOME_PILOT_SEEDS, 'pilot seeds');
-  assertExactObject(manifest.planned_calls, {
-    generation: 18,
-    presence_readers: 288,
-    decision_readers: 288,
-    total: 594,
-    arithmetic: '18 + (2 x 144) + (2 x 144) = 594',
-    counter_before: 3523,
-    counter_after_if_completed: 4117,
-    ceiling: 11337,
-    remaining_after_if_completed: 7220,
-  }, 'pilot call plan');
+  assertExactObject(
+    manifest.planned_calls,
+    {
+      generation: 18,
+      presence_readers: 288,
+      decision_readers: 288,
+      total: 594,
+      arithmetic: '18 + (2 x 144) + (2 x 144) = 594',
+      counter_before: 3523,
+      counter_after_if_completed: 4117,
+      ceiling: 11337,
+      remaining_after_if_completed: 7220,
+    },
+    'pilot call plan',
+  );
   if (
     manifest.interleaved_condition_assignment?.length !== 18 ||
     manifest.case_extraction?.expected_case_count !== 144 ||
@@ -191,7 +199,12 @@ export function verifyOutcomePilotManifestBindings({ manifestPath = DEFAULT_MANI
   return { manifest, resolvedManifest, menuGuard, preparation };
 }
 
-export function verifyOutcomePilotReaderBindings({ manifest, instrumentFreezePath, preflightPath, schemaAcceptancePath } = {}) {
+export function verifyOutcomePilotReaderBindings({
+  manifest,
+  instrumentFreezePath,
+  preflightPath,
+  schemaAcceptancePath,
+} = {}) {
   if (!instrumentFreezePath || !preflightPath || !schemaAcceptancePath) {
     throw new Error('outcome pilot reader bindings require a frozen instrument, preflight, and schema acceptance');
   }
@@ -210,14 +223,27 @@ export function verifyOutcomePilotReaderBindings({ manifest, instrumentFreezePat
   const checks = {
     extraction_schema_digest: bindings.extraction_schema.digest === presence.extraction_schema_digest,
     reader_digest: bindings.reader_schema_digest === presence.reader_digest,
-    semantic_preparer: fileSha256(path.join(ROOT, 'scripts/prepare-adaptive-warrant-semantic-annotations.js')) === presence.preparer_sha256,
-    provider_response_schema: readJson(path.resolve(schemaAcceptancePath)).response_schema?.sha256 === presence.provider_response_schema_sha256,
-    decision_preparer: fileSha256(path.join(ROOT, 'scripts/prepare-adaptive-warrant-annotation-batches.js')) === manifest.decision_channel.digests.preparation_and_assembly_sha256,
-    decision_runner: fileSha256(path.join(ROOT, 'scripts/run-adaptive-warrant-decision-readers.js')) === manifest.decision_channel.digests.reader_runner_sha256,
-    decision_handbook: fileSha256(freeze.annotation_handbook.path) === manifest.decision_channel.digests.handbook_sha256,
+    semantic_preparer:
+      fileSha256(path.join(ROOT, 'scripts/prepare-adaptive-warrant-semantic-annotations.js')) ===
+      presence.preparer_sha256,
+    provider_response_schema:
+      readJson(path.resolve(schemaAcceptancePath)).response_schema?.sha256 === presence.provider_response_schema_sha256,
+    decision_preparer:
+      fileSha256(path.join(ROOT, 'scripts/prepare-adaptive-warrant-annotation-batches.js')) ===
+      manifest.decision_channel.digests.preparation_and_assembly_sha256,
+    decision_runner:
+      fileSha256(path.join(ROOT, 'scripts/run-adaptive-warrant-decision-readers.js')) ===
+      manifest.decision_channel.digests.reader_runner_sha256,
+    decision_handbook:
+      fileSha256(freeze.annotation_handbook.path) === manifest.decision_channel.digests.handbook_sha256,
   };
   if (Object.values(checks).some((pass) => !pass)) {
-    throw new Error(`outcome pilot frozen reader binding mismatch: ${Object.entries(checks).filter(([, pass]) => !pass).map(([name]) => name).join(', ')}`);
+    throw new Error(
+      `outcome pilot frozen reader binding mismatch: ${Object.entries(checks)
+        .filter(([, pass]) => !pass)
+        .map(([name]) => name)
+        .join(', ')}`,
+    );
   }
   return { status: 'passed', checks, freeze };
 }
@@ -286,7 +312,8 @@ export function createOutcomePilotBudget({ checkpointPath, checkpoint = null } =
     if (checkpointPath) atomicWriteJson(checkpointPath, state);
   };
   const reserve = (phase, event = {}) => {
-    if (!Object.hasOwn(state.call_budget.actual, phase) || phase === 'total') throw new Error(`unknown budget phase ${phase}`);
+    if (!Object.hasOwn(state.call_budget.actual, phase) || phase === 'total')
+      throw new Error(`unknown budget phase ${phase}`);
     if (state.call_budget.actual.total >= state.call_budget.plan.total) {
       throw new Error('594-call budget exhausted; refusing model call');
     }
@@ -311,7 +338,9 @@ function outcomeDialogueId(row) {
 
 export function buildOutcomePilotJobs({ manifest, rootDir, dryRun = false } = {}) {
   const worlds = new Map(manifest.worlds.map((world) => [world.id, world.path]));
-  const configurations = new Map(OUTCOME_STUDY_RUN_CONFIGURATIONS.map((configuration) => [configuration.id, configuration]));
+  const configurations = new Map(
+    OUTCOME_STUDY_RUN_CONFIGURATIONS.map((configuration) => [configuration.id, configuration]),
+  );
   return manifest.interleaved_condition_assignment.map((assignment) => {
     const configuration = configurations.get(assignment.condition);
     const worldPath = worlds.get(assignment.world);
@@ -321,28 +350,50 @@ export function buildOutcomePilotJobs({ manifest, rootDir, dryRun = false } = {}
     const command = [
       process.execPath,
       'scripts/run-tutor-stub-auto-eval.js',
-      '--runs', '1',
-      '--run-seed', String(assignment.seed),
-      '--policies', 'dynamic',
-      '--auto-learner-profile-id', configuration.learner_profile,
-      '--world', worldPath,
-      '--dag-mode', 'strict_dag',
-      '--loop-mode', 'strict',
-      '--model', 'codex.gpt-5.6-luna',
-      '--analysis-model', 'codex.gpt-5.6-luna',
-      '--auto-learner-model', 'codex.gpt-5.6-luna',
-      '--learner-analysis-prompt-profile', configuration.learner_analysis_prompt_profile,
-      '--cli-effort', 'medium',
-      '--history-turns', '4',
-      '--max-tokens', '4096',
-      '--model-call-budget', String(OUTCOME_PILOT_CALL_PLAN.total),
-      '--register-temperature', '0.15',
-      '--dag-fact-dropout', '0',
-      '--release-speed', '1',
-      '--parallelism', '1',
-      '--progress-interval', '60',
-      '--trace-dir', jobDir,
-      '--parent-run-id', path.basename(rootDir),
+      '--runs',
+      '1',
+      '--run-seed',
+      String(assignment.seed),
+      '--policies',
+      'dynamic',
+      '--auto-learner-profile-id',
+      configuration.learner_profile,
+      '--world',
+      worldPath,
+      '--dag-mode',
+      'strict_dag',
+      '--loop-mode',
+      'strict',
+      '--model',
+      'codex.gpt-5.6-luna',
+      '--analysis-model',
+      'codex.gpt-5.6-luna',
+      '--auto-learner-model',
+      'codex.gpt-5.6-luna',
+      '--learner-analysis-prompt-profile',
+      configuration.learner_analysis_prompt_profile,
+      '--cli-effort',
+      'medium',
+      '--history-turns',
+      '4',
+      '--max-tokens',
+      '4096',
+      '--model-call-budget',
+      String(OUTCOME_PILOT_CALL_PLAN.total),
+      '--register-temperature',
+      '0.15',
+      '--dag-fact-dropout',
+      '0',
+      '--release-speed',
+      '1',
+      '--parallelism',
+      '1',
+      '--progress-interval',
+      '60',
+      '--trace-dir',
+      jobDir,
+      '--parent-run-id',
+      path.basename(rootDir),
       '--no-ledger',
       '--no-html-report',
       '--keep-going',
@@ -381,7 +432,9 @@ function spawnLogged(command, { cwd = ROOT, logPath = null } = {}) {
     child.stdout.on('data', (chunk) => log?.write(chunk));
     child.stderr.on('data', (chunk) => log?.write(chunk));
     let error = null;
-    child.on('error', (cause) => { error = cause.message; });
+    child.on('error', (cause) => {
+      error = cause.message;
+    });
     child.on('close', (status, signal) => {
       log?.end();
       resolve({ status, signal, error, logPath });
@@ -391,11 +444,21 @@ function spawnLogged(command, { cwd = ROOT, logPath = null } = {}) {
 
 function countReservedEvents(tracePath) {
   if (!tracePath || !fs.existsSync(tracePath)) return 0;
-  return fs.readFileSync(tracePath, 'utf8').split('\n').filter((line) => line.includes('"type":"model_call_budget_reserved"') || line.includes('"type": "model_call_budget_reserved"')).length;
+  return fs
+    .readFileSync(tracePath, 'utf8')
+    .split('\n')
+    .filter(
+      (line) =>
+        line.includes('"type":"model_call_budget_reserved"') || line.includes('"type": "model_call_budget_reserved"'),
+    ).length;
 }
 
 function readJsonl(filePath) {
-  return fs.readFileSync(filePath, 'utf8').split('\n').filter(Boolean).map((line) => JSON.parse(line));
+  return fs
+    .readFileSync(filePath, 'utf8')
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
 }
 
 export function guardOutcomeAnnotationFingerprints({ cases, expectedCount = 144, excludedCases = [] } = {}) {
@@ -403,7 +466,8 @@ export function guardOutcomeAnnotationFingerprints({ cases, expectedCount = 144,
     throw new Error(`annotationCaseFingerprint guard expected ${expectedCount} cases, got ${cases?.length ?? 0}`);
   }
   const fingerprints = cases.map(annotationCaseFingerprint);
-  if (new Set(fingerprints).size !== fingerprints.length) throw new Error('annotationCaseFingerprint guard found duplicates');
+  if (new Set(fingerprints).size !== fingerprints.length)
+    throw new Error('annotationCaseFingerprint guard found duplicates');
   const excluded = new Set((excludedCases || []).map(annotationCaseFingerprint));
   const overlap = fingerprints.filter((fingerprint) => excluded.has(fingerprint));
   if (overlap.length) throw new Error(`annotationCaseFingerprint guard found ${overlap.length} excluded overlaps`);
@@ -439,7 +503,13 @@ export function emitOutcomePilotNaturalFreeze({
     newly_generated_dialogues: true,
     prediction_balanced_diagnostic_sample: false,
     all_observe_decisions: true,
-    sampling: { worlds: 2, profiles: ['low_agency'], conditions: ['bare', 'gated', 'standing_permission'], turns_per_dialogue: 8, total_cases: 144 },
+    sampling: {
+      worlds: 2,
+      profiles: ['low_agency'],
+      conditions: ['bare', 'gated', 'standing_permission'],
+      turns_per_dialogue: 8,
+      total_cases: 144,
+    },
     protocol: binding(path.resolve(ROOT, 'docs/adaptation-refinement/v3-outcome-study-registration.md')),
     study_plan: binding(studyPlan),
     source_commit: sourceCommit,
@@ -546,7 +616,8 @@ function writeOutcomeCorpusArtifacts({ rootDir, built }) {
 async function runReaderProcesses({ semanticCommand, decisionCommand, checkpoint, budget, runProcess = spawnLogged }) {
   const remaining = OUTCOME_PILOT_CALL_PLAN.total - checkpoint.call_budget.actual.total;
   const required = OUTCOME_PILOT_CALL_PLAN.presence_readers + OUTCOME_PILOT_CALL_PLAN.decision_readers;
-  if (remaining < required) throw new Error(`reader launch refused: ${remaining} calls remain but ${required} are required`);
+  if (remaining < required)
+    throw new Error(`reader launch refused: ${remaining} calls remain but ${required} are required`);
   const [semantic, decision] = await Promise.all([
     runProcess(semanticCommand, { cwd: ROOT }),
     runProcess(decisionCommand, { cwd: ROOT }),
@@ -689,8 +760,36 @@ export async function executeOutcomePilot({
   const presenceRunDir = path.join(rootDir, 'presence-readers');
   const decisionRunDir = path.join(rootDir, 'decision-readers');
   await runReaderProcesses({
-    semanticCommand: [process.execPath, 'scripts/run-adaptive-warrant-semantic-readers.js', '--manifest', semanticCollection.manifestPath, '--freeze-manifest', freezePath, '--authorization-request', semanticCollection.authorizationRequestPath, '--out', presenceRunDir, '--approved-by', goNote.relative_path, ...(resume ? ['--resume'] : [])],
-    decisionCommand: [process.execPath, 'scripts/run-adaptive-warrant-decision-readers.js', '--manifest', decisionCollection.manifestPath, '--freeze-manifest', freezePath, '--authorization-request', decisionCollection.authorizationRequestPath, '--out', decisionRunDir, '--approved-by', goNote.relative_path, ...(resume ? ['--resume'] : [])],
+    semanticCommand: [
+      process.execPath,
+      'scripts/run-adaptive-warrant-semantic-readers.js',
+      '--manifest',
+      semanticCollection.manifestPath,
+      '--freeze-manifest',
+      freezePath,
+      '--authorization-request',
+      semanticCollection.authorizationRequestPath,
+      '--out',
+      presenceRunDir,
+      '--approved-by',
+      goNote.relative_path,
+      ...(resume ? ['--resume'] : []),
+    ],
+    decisionCommand: [
+      process.execPath,
+      'scripts/run-adaptive-warrant-decision-readers.js',
+      '--manifest',
+      decisionCollection.manifestPath,
+      '--freeze-manifest',
+      freezePath,
+      '--authorization-request',
+      decisionCollection.authorizationRequestPath,
+      '--out',
+      decisionRunDir,
+      '--approved-by',
+      goNote.relative_path,
+      ...(resume ? ['--resume'] : []),
+    ],
     checkpoint: budget.state,
     budget,
     runProcess: runReaderProcess,
@@ -813,7 +912,11 @@ async function main() {
   }
   if (!values['go-note'] || !values['accept-charges']) {
     let manifest = null;
-    try { manifest = readJson(path.resolve(ROOT, values.manifest)); } catch { /* plan remains static */ }
+    try {
+      manifest = readJson(path.resolve(ROOT, values.manifest));
+    } catch {
+      /* plan remains static */
+    }
     process.stdout.write(`${printOutcomePilotPlan(manifest)}\n`);
     return;
   }
@@ -825,7 +928,9 @@ async function main() {
     resume: values.resume,
     instrumentFreezePath: values['instrument-freeze'],
   });
-  process.stdout.write(`${JSON.stringify({ status: result.status, checkpoint: path.resolve(ROOT, values.out, 'outcome-pilot-checkpoint.json') })}\n`);
+  process.stdout.write(
+    `${JSON.stringify({ status: result.status, checkpoint: path.resolve(ROOT, values.out, 'outcome-pilot-checkpoint.json') })}\n`,
+  );
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(SCRIPT_PATH)) {

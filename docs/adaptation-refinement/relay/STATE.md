@@ -24,16 +24,25 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — ruling + direction 068: acceptance ping (1 call) +
-  input-seam amendment + pilot launch (594 calls), one driver take,
-  report 069, GO note 068a.** Options 1/2 of direction 067 closed by
-  two independent sweeps (no surviving freeze or acceptance artifact
-  anywhere); two driver takes on 067 were cut off with nothing
-  committed (clean under 052a). Total authorized spend 595; counter
-  3,523 → 4,118 of 11,337. **Morning-review flag: +1 call over the
-  frozen 594 plan and a post-review input-seam amendment; the human
-  can void.** Reviewer messaging with the second session reduced to
+- **CURRENT — ruling 068b: 068/068a RETRACTED; pilot launch on GO
+  note 068c (594 calls, no ping).**
+  (`068b-reviewer-ruling-retraction-and-guard-fix.md`.) Driver
+  report 068 (`369becfe`) found the lawful instrument freeze at
+  `/private/tmp/adaptive-warrant-v3-matrix-live-489f2429-r38-s514/annotation-freeze-manifest-r52-presence-confirmation.json`
+  — the sweeps behind ruling 068 missed `/private/tmp`, and the
+  "cut off" takes were alive (reviewer launcher pattern reported
+  completion at spawn). No ping, no input-seam amendment; the take
+  launched under 068 was killed at zero calls, zero commits. One
+  real harness bug fixed (menu byte guard vs the file's trailing
+  newline; reviewer edit, second session diagnosis, regression
+  test on the real frozen files, 25/25 + ESLint). Freeze artifacts
+  preserved to the archive repo with hash checks. Plan back to
+  **594**; counter 3,523 → 4,117 of 11,337 when the pilot
+  completes. **Morning-review flags: the 068 retraction and the
+  reviewer-made harness edit.** Second-session messaging stays
   final-gate only (user instruction, 13 Aug).
+- **RESOLVED — ruling + direction 068 + GO note 068a: VOID** (wrong
+  premise; retracted by 068b above; never executed, nothing spent).
 - **RESOLVED — direction 067 (superseded by 068): locate or lawfully
   construct the instrument freeze (zero-call).** Report 066 (`8ad77c03`)
   delivered the harness at `67c4cf6d`
