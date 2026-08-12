@@ -5,15 +5,18 @@
 
 ## Now
 
-- **Current direction:** `009-reviewer-direction-matrix-authorized.md` —
-  supplement PASSED (5/2 record-entry consensus; five-cell layer
-  certified). Decision readers on the 225a7b07 corpus are running on the
-  pre-authorized path; on their success the representative matrix is
-  ALSO pre-authorized (human, 12 Aug): 24 natural dialogues, ~192 calls,
-  readers, V3 natural-performance gate. Probe quota headroom before the
-  matrix launch; if short, ask in chat (reset available). After the
-  matrix: gate pass = stop before the outcome study (own prereg + human
-  go); gate fail = stop for review (004 scope-cut options).
+- **Current direction:** `012-reviewer-direction-live-seat-repair.md` —
+  the first representative matrix FAILED in execution (report 011: live
+  learner-analysis seat produced 55/192 usable calls; sentinel prose
+  leaked into tutor turns; corpus preserved, unscored, never pooled).
+  Authorized now, zero provider calls: failure taxonomy of the 137
+  failed calls from `/private/tmp/adaptive-warrant-v3-matrix-live-36d2e63f`,
+  live-seat repair (unify with the certified contract, fail-closed typed
+  no-signal fallback), preflight extensions. The matrix RERUN is
+  HUMAN-GATED — do not launch; report with a quota reading and wait.
+  Earlier results stand: supplement PASSED (5/2), five-cell layer
+  certified, decision readers 0.833 binary (ruling 010 preregisters the
+  mechanism-typing fallback).
 - **Driver:** the session whose prompt quotes the lease token in 006c
   (currently DRIVER-LEASE-2026-08-12-D). Other sessions: read-only.
 - **Instrument commit:** `225a7b07` ("Separate V3 structural and semantic
