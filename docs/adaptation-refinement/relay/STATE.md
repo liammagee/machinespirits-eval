@@ -14,27 +14,37 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **CURRENT DIRECTION — 043**
-  (`043-reviewer-direction-drop-count-reconciled-93.md`, lease
-  `DRIVER-LEASE-2026-08-12-I`, report target `044-codex-report.md`).
-  Report 042 ACCEPTED: the driver implemented the drop-and-log
-  amendment (commits `31ad8ec9`, `177881d6`; ledger #13; guards green
-  70/70), then stopped at 041's tripwire — the content-blind rule
-  yields 93 retained, not the directed 92, because the audit's "3
-  overlaps" were case-by-corpus MATCH relationships over 2 distinct
-  candidates (the foxtrot candidate matches two corpora). Reviewer
-  reconciled zero-call in the quarantined key: no fingerprint appears
-  twice among the 95 candidates; only one foxtrot low-agency turn-1
-  candidate exists; 92 was arithmetically impossible. AMENDED
-  EXPECTATION: 93 frozen / 2 dropped / 3 logged relationships,
-  identity-exact to report 042's drop log. Direction 043 also orders
-  the defect-#14 repair (the freeze's legacy exactness check —
-  "exact cell, turn, and observe-only coverage" — rejects any
-  drop-and-log freeze by design; amend to full design MINUS logged
-  drops, fail closed on unlogged gaps), then A2 complete the freeze,
-  A3 readers + support gate + report 044, reviewer's matrix-gate
-  ruling. Zero calls spent under 041; budget **3,146/8,000**;
-  remaining 4,854. Seed 515 unspent.
+- **CURRENT DIRECTION — 045**
+  (`045-reviewer-direction-reader-schema-cap-raise.md`, lease
+  `DRIVER-LEASE-2026-08-12-J`, report target `046-codex-report.md`).
+  Report 044 ACCEPTED: defect-#14 repaired at `a925fb7a` (70/70
+  green); the seed-514 freeze COMPLETED — 93 frozen / 2 dropped / 3
+  logged match relationships, identity-exact to report 042; manifest
+  written; all instrument digests unchanged; zero calls. A3 then
+  stopped pre-exposure on defect #15: the response schema built from
+  this matrix's larger representative catalogue is 10,930 bytes
+  against the frozen 10,500-byte transport cap
+  (`MAXIMUM_READER_RESPONSE_BYTES`), failing even the one-case batch.
+  Reviewer ruling: defect-#5 precedent — a size cap blocking a legal
+  request is run-management transport, not a semantic instrument;
+  raised to **14,000 bytes** under standing rule 4b with guards (real
+  10,930-byte schema passes; >14,000 still fails; semantic digests
+  `51107d43…`/`e5af8f2b…` re-asserted unchanged). Packet cap 42,000
+  untouched; batch = one-case partition (32,369 bytes, passes); 93
+  packets per reader, planned call count recorded before any call.
+  Then readers, support gate, report 046, reviewer's matrix-gate
+  ruling. Budget **3,146/8,000**; remaining 4,854. Seed 515 unspent.
+- **RESOLVED — directions 041/043** (kept as history). The human's
+  drop-and-log ruling ("drop the three duplicate cases and proceed",
+  typed 21:04) was implemented (commits `31ad8ec9`, `177881d6`;
+  ledger #13) with one reconciliation: the audit's "3 overlaps" were
+  match relationships over 2 distinct candidates (the foxtrot case
+  matches two corpora; only one foxtrot turn-1 candidate exists), so
+  the correct content-blind result is 93 retained, verified zero-call
+  by reviewer AND the second session independently. Defect-#14 (freeze
+  exactness check rejected drop-and-log freezes by design) repaired at
+  `a925fb7a`. Reports 042/044 accepted; zero calls spent since the
+  matrix.
 - **RESOLVED — freeze-overlap hard stop of ~20:45** (kept as history).
   The seed-514 matrix COMPLETED CLEAN (24/24 dialogues, 606/606 calls,
   zero errors, 192/192 live/offline parity; checkpoint coverage
