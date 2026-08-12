@@ -24,21 +24,26 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — direction 062: one zero-call send-back on the
-  rendered menu.** Report 061 (`6a713d62`, A1 `1bf82265`, manifest
-  repin `d09e252d`) passed the reviewer's manifest verification
-  (all 058 §4 elements, 055b line verbatim, SHA table = 056,
-  repairs confined, suites green, zero calls) and the second
-  session's byte + coverage layers (87/87 byte-exact, checklist
-  complete, removals accounted). It failed ruling 060b membership:
-  `opening.instructional_meta` still in; no per-string
-  classification. Direction 062: remove it, classify every entry
-  (switching variable, gate reachability, verdict — trace decides
-  the contested learner-driven strings), drop the empty-quote
-  support-zero entry, rerun boundary, repin manifest, report 063.
-  Then: sibling byte re-review, reviewer manifest re-check, GO
-  note, paid pilot (594 planned calls, 3,523 to 4,117 of 11,337).
+- **CURRENT — GO note 063a: the paid pilot block is authorized and
+  running.** Report 063 (`e4f4c99b`, classification `df187b0c`,
+  manifest repin `65029ccd`) passed BOTH gates: the second session's
+  three-layer review (bytes, 060a coverage, 060b membership — PASS,
+  no send-back) and the reviewer's re-check (menu SHAs match disk,
+  63 entries, 87-row classification at full trace depth, code spot
+  checks hold, SHA table = 056, suites 18/18 + 34/34 rerun, zero
+  calls). GO note `063a-reviewer-go-note-outcome-pilot.md` lifts the
+  HOLD for the pilot ONLY: 18 dialogues 6/6/6 interleaved, seeds
+  515–517, checkpoint per dialogue, 2+2 fresh readers per case, 594
+  planned calls, 3,523 to 4,117 of 11,337. Main block NOT
+  authorized — separate go note after pilot scoring. Report to 064.
   Watch cadence 600s (human-set).
+- **RESOLVED — direction 062: ruling-060b send-back executed
+  clean.** Report 061's menu raced the ruling; direction 062
+  removed `opening.instructional_meta` and the empty-quote
+  support-zero entry and added the per-string classification
+  (switching variable, gate reachability, verdict, trace; doubt
+  rows kept IN). The drift guard now also fails on classification
+  drift.
 - **RESOLVED — ruling 059a + direction 060: the menu quotes the
   RENDERED layer.** Report 059 (`11d5c543`) stopped clean at the
   check boundary (lint + help-digest fixture; both reproduced by
