@@ -4043,6 +4043,7 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status, coverageHalt 
   fs.writeFileSync(path.join(rootDir, 'study-results.md'), markdownReport(study));
   if (!preserveFrozenAnnotation) {
     const freezeStudy = plan.config.contractValidation === true || mechanismValidation;
+    const droppedOverlapCases = [];
     if (status === 'complete' && mechanismValidation) {
       if (!(plan.config.excludedAnnotationCorpora || []).length) {
         throw new Error('mechanism-validation freeze requires at least one explicitly excluded prior corpus');
@@ -4079,17 +4080,54 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status, coverageHalt 
       }
     }
     if (status === 'complete' && freezeStudy) {
-      const currentFingerprints = new Set(annotation.corpus.cases.map(annotationCaseFingerprint));
-      const overlapRows = [];
+      const candidatesByFingerprint = new Map();
+      const keyBySampleId = new Map(annotation.key.cases.map((row) => [row.sample_id, row]));
+      for (const row of annotation.corpus.cases) {
+        const fingerprint = annotationCaseFingerprint(row);
+        const candidates = candidatesByFingerprint.get(fingerprint) || [];
+        candidates.push({ corpus: row, key: keyBySampleId.get(row.sample_id) });
+        candidatesByFingerprint.set(fingerprint, candidates);
+      }
       for (const excludedPath of plan.config.excludedAnnotationCorpora || []) {
         const excluded = readJson(excludedPath);
-        for (const row of excluded.cases || []) {
+        if (!Array.isArray(excluded.cases)) {
+          throw new Error(`excluded annotation corpus has an invalid cases schema: ${excludedPath}`);
+        }
+        const matchedCorpusId =
+          excluded.study_id || excluded.studyId || excluded.schema || path.basename(path.dirname(excludedPath));
+        for (const row of excluded.cases) {
           const fingerprint = annotationCaseFingerprint(row);
-          if (currentFingerprints.has(fingerprint)) overlapRows.push({ excludedPath, fingerprint });
+          for (const candidate of candidatesByFingerprint.get(fingerprint) || []) {
+            if (!candidate.key) {
+              throw new Error(`annotation overlap candidate ${candidate.corpus.sample_id} is missing its private key`);
+            }
+            droppedOverlapCases.push({
+              sample_id: candidate.corpus.sample_id,
+              fingerprint,
+              matched_corpus_id: matchedCorpusId,
+              matched_corpus_path: excludedPath,
+              world: candidate.key.world,
+              learner_profile: candidate.key.profile,
+              condition: candidate.key.condition,
+              decision_turn: candidate.key.turn,
+            });
+          }
         }
       }
-      if (overlapRows.length) {
-        throw new Error(`annotation freeze overlaps ${overlapRows.length} excluded cases`);
+      const droppedSampleIds = new Set(droppedOverlapCases.map((row) => row.sample_id));
+      if (droppedSampleIds.size) {
+        const retainedSampleIds = new Set(
+          annotation.corpus.cases.filter((row) => !droppedSampleIds.has(row.sample_id)).map((row) => row.sample_id),
+        );
+        annotation.corpus.cases = annotation.corpus.cases.filter((row) => retainedSampleIds.has(row.sample_id));
+        annotation.key.cases = annotation.key.cases.filter((row) => retainedSampleIds.has(row.sample_id));
+        if (semanticArtifacts?.predictions?.predictions_by_sample_id) {
+          semanticArtifacts.predictions.predictions_by_sample_id = Object.fromEntries(
+            Object.entries(semanticArtifacts.predictions.predictions_by_sample_id).filter(([sampleId]) =>
+              retainedSampleIds.has(sampleId),
+            ),
+          );
+        }
       }
     }
     writeJson(study.annotation.blindedCorpus, annotation.corpus);
@@ -4136,6 +4174,7 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status, coverageHalt 
               total_cases: annotation.corpus.cases.length,
             }
           : null,
+        dropped_overlap_cases: droppedOverlapCases,
         zero_overlap: {
           source_fingerprint_schema: 'machinespirits.adaptation-refinement.annotation-source-fingerprint.v1',
           projection_fingerprint_schema: 'machinespirits.adaptation-refinement.annotation-projection-fingerprint.v1',
@@ -4143,6 +4182,8 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status, coverageHalt 
             path: excludedPath,
             sha256: fileSha256(excludedPath),
           })),
+          matched_overlap_count: droppedOverlapCases.length,
+          dropped_case_count: new Set(droppedOverlapCases.map((row) => row.sample_id)).size,
           verified_overlap_count: 0,
         },
         decision_gate: ADAPTIVE_WARRANT_DECISION_GATE,

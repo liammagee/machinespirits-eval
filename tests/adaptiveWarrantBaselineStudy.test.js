@@ -1985,6 +1985,9 @@ test('mechanism corpus freezes all 96 observe decisions and excludes active pred
     assert.equal(manifest.coverage.learner_analysis.dialogues.length, 24);
     assert.equal(manifest.coverage.annotation.exact, true);
     assert.equal(manifest.coverage.annotation.active_cases, 0);
+    assert.deepEqual(manifest.dropped_overlap_cases, []);
+    assert.equal(manifest.zero_overlap.matched_overlap_count, 0);
+    assert.equal(manifest.zero_overlap.dropped_case_count, 0);
     assert.equal(manifest.study_plan.sha256.length, 64);
     assert.equal(manifest.protocol.sha256.length, 64);
     assert.ok(fs.existsSync(path.join(rootDir, 'annotation-handbook.md')));
@@ -1995,6 +1998,117 @@ test('mechanism corpus freezes all 96 observe decisions and excludes active pred
     const frozenKeyText = fs.readFileSync(keyPath, 'utf8');
     const frozenManifestText = fs.readFileSync(manifestPath, 'utf8');
     assert.equal(validateAdaptiveWarrantAnnotationFreeze({ rootDir, corpusPath, keyPath }).audit.ok, true);
+
+    const invalidExcludedRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'warrant-mechanism-invalid-exclusion-'));
+    try {
+      const invalidExcludedPath = path.join(invalidExcludedRoot, 'invalid-prior-corpus.json');
+      fs.writeFileSync(invalidExcludedPath, `${JSON.stringify({ schema: 'invalid', cases: null })}\n`);
+      assert.throws(
+        () =>
+          writeStudyArtifacts({
+            rootDir: invalidExcludedRoot,
+            plan: {
+              ...plan,
+              config: {
+                ...plan.config,
+                excludedAnnotationCorpora: [invalidExcludedPath],
+                requiredExcludedAnnotationCorpora: [invalidExcludedPath],
+              },
+            },
+            rows,
+            status: 'complete',
+          }),
+        /excluded annotation corpus has an invalid cases schema/u,
+      );
+      assert.equal(fs.existsSync(path.join(invalidExcludedRoot, 'annotation-freeze-manifest.json')), false);
+    } finally {
+      fs.rmSync(invalidExcludedRoot, { recursive: true, force: true });
+    }
+
+    const overlapRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'warrant-mechanism-drop-overlap-'));
+    try {
+      const overlapRows = structuredClone(rows);
+      const uniqueSourceRow = overlapRows.find((row) => row.condition === 'instrumented');
+      uniqueSourceRow.publicTurns[0].learner = 'A uniquely planted public learner opening for the overlap guard.';
+      const overlapPreview = buildBlindedAnnotationCorpus(overlapRows, {
+        studyId: 'mechanism-freeze',
+        worlds: MECHANISM_VALIDATION_WORLDS,
+        profiles: MECHANISM_VALIDATION_PROFILES,
+        conditions: MECHANISM_VALIDATION_CONDITIONS.filter((row) => row.id === 'instrumented'),
+        includeAllDecisions: true,
+        minimumTurn: 1,
+        predictionBalanced: false,
+      });
+      const plantedKey = overlapPreview.key.cases.find(
+        (row) => row.job_id === uniqueSourceRow.jobId && row.turn === 1,
+      );
+      const plantedCase = overlapPreview.corpus.cases.find((row) => row.sample_id === plantedKey.sample_id);
+      const plantedExcludedPath = path.join(overlapRoot, 'planted-prior-corpus.json');
+      fs.writeFileSync(
+        plantedExcludedPath,
+        `${JSON.stringify({ study_id: 'planted-prior-corpus', cases: [plantedCase] }, null, 2)}\n`,
+      );
+      writeStudyArtifacts({
+        rootDir: overlapRoot,
+        plan: {
+          ...plan,
+          config: {
+            ...plan.config,
+            excludedAnnotationCorpora: [plantedExcludedPath],
+            requiredExcludedAnnotationCorpora: [plantedExcludedPath],
+          },
+        },
+        rows: overlapRows,
+        status: 'complete',
+      });
+      const droppedCorpusPath = path.join(overlapRoot, 'annotation-sample.blinded.json');
+      const droppedCorpus = JSON.parse(fs.readFileSync(droppedCorpusPath, 'utf8'));
+      const droppedKey = JSON.parse(fs.readFileSync(path.join(overlapRoot, 'annotation-key.private.json'), 'utf8'));
+      const droppedManifest = JSON.parse(
+        fs.readFileSync(path.join(overlapRoot, 'annotation-freeze-manifest.json'), 'utf8'),
+      );
+      assert.equal(droppedCorpus.cases.length, 95);
+      assert.equal(droppedKey.cases.length, 95);
+      assert.deepEqual(droppedManifest.dropped_overlap_cases, [
+        {
+          sample_id: plantedCase.sample_id,
+          fingerprint: plantedKey.source_fingerprint,
+          matched_corpus_id: 'planted-prior-corpus',
+          matched_corpus_path: plantedExcludedPath,
+          world: plantedKey.world,
+          learner_profile: plantedKey.profile,
+          condition: plantedKey.condition,
+          decision_turn: plantedKey.turn,
+        },
+      ]);
+      assert.equal(droppedManifest.zero_overlap.matched_overlap_count, 1);
+      assert.equal(droppedManifest.zero_overlap.dropped_case_count, 1);
+      assert.ok(droppedCorpus.cases.every((row) => annotationCaseFingerprint(row) !== plantedKey.source_fingerprint));
+      assert.ok(droppedKey.cases.every((row) => row.source_fingerprint !== plantedKey.source_fingerprint));
+
+      const packetCorpusPath = path.join(overlapRoot, 'packet-corpus.json');
+      fs.writeFileSync(
+        packetCorpusPath,
+        `${JSON.stringify({ ...droppedCorpus, study_id: 'semantic-brittleness-preflight-drop-overlap' }, null, 2)}\n`,
+      );
+      const packetOutputDir = path.join(overlapRoot, 'reader-packets');
+      prepareAdaptiveWarrantSemanticAnnotationBatches({
+        corpusPath: packetCorpusPath,
+        handbookPath: path.join(overlapRoot, 'semantic-annotation-handbook.md'),
+        outputDir: packetOutputDir,
+        corpusRole: 'natural_prevalence',
+        preflightMode: true,
+      });
+      const packetText = fs
+        .readdirSync(path.join(packetOutputDir, 'packets'), { recursive: true })
+        .filter((entry) => String(entry).endsWith('.packet.json'))
+        .map((entry) => fs.readFileSync(path.join(packetOutputDir, 'packets', entry), 'utf8'))
+        .join('\n');
+      assert.doesNotMatch(packetText, new RegExp(plantedCase.sample_id, 'u'));
+      assert.doesNotMatch(packetText, new RegExp(plantedKey.source_fingerprint, 'u'));
+    } finally {
+      fs.rmSync(overlapRoot, { recursive: true, force: true });
+    }
 
     fs.writeFileSync(
       corpusPath,
