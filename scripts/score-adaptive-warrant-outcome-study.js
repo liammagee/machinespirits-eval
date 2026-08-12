@@ -1,0 +1,393 @@
+#!/usr/bin/env node
+
+/**
+ * Zero-call scorer for the registered adaptive-warrant outcome study.
+ *
+ * Authority:
+ *   docs/adaptation-refinement/v3-outcome-study-registration.md section 4
+ *   docs/adaptation-refinement/relay/055a-reviewer-note-three-pins-before-go.md
+ *   docs/adaptation-refinement/relay/055b-reviewer-note-measure1-reader-output-form.md
+ *   docs/adaptation-refinement/relay/057-reviewer-ruling-standing-permission-binding-open.md section 5
+ *
+ * This file never launches a child process or a model call. It contains only
+ * the two binding-independent run templates and deterministic scoring helpers.
+ */
+
+import fs from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
+import { fileURLToPath } from 'node:url';
+
+import { isUnhedgedOwnVoiceClaim } from './run-adaptive-warrant-baseline-study.js';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+export const ADAPTIVE_WARRANT_OUTCOME_SCORE_SCHEMA =
+  'machinespirits.adaptation-refinement.warrant-outcome-score.v1';
+
+export const OUTCOME_STUDY_READER_OUTPUT_FORM =
+  'Measure 1 reader output form: path 1. Each frozen binary decision reader reports commitment_transition_warranted (yes/no); the harness compares the logged observe-arm revision_warranted decision with two-reader consensus. The public world ground-truth source is the SHA-pinned world YAML projected into the decision packet public_inquiry_brief, and the same source is used in every condition.';
+
+export const OUTCOME_STUDY_RUN_CONFIGURATIONS = Object.freeze([
+  Object.freeze({
+    id: 'bare',
+    warrant_gate_mode: 'off',
+    horizon: 8,
+    learner_profile: 'low_agency',
+    learner_analysis_prompt_profile: 'handbook_v1',
+    cli_args: Object.freeze(['--turns', '8', '--no-stop-on-grounded', '--warrant-gate', 'off']),
+  }),
+  Object.freeze({
+    id: 'gated',
+    warrant_gate_mode: 'active',
+    horizon: 8,
+    learner_profile: 'low_agency',
+    learner_analysis_prompt_profile: 'handbook_v1',
+    cli_args: Object.freeze(['--turns', '8', '--no-stop-on-grounded', '--warrant-gate', 'active']),
+  }),
+]);
+
+export const PRESENCE_CHANNEL_DIGEST_FIELDS = Object.freeze([
+  'corpus_sha256',
+  'extraction_schema_digest',
+  'provider_response_schema_sha256',
+  'one_case_response_schema_sha256',
+  'one_case_packet_sha256',
+  'preparer_sha256',
+  'reader_digest',
+]);
+
+export const PRESENCE_CHANNEL_CAPS = Object.freeze({ response_cap: 14000, packet_cap: 42000 });
+
+export const DECISION_READER_INSTRUMENT_BINDINGS = Object.freeze({
+  handbook_sha256: '5673c14b8f2a2b17c599e947c87f6d03c10df6dcdbeadcb257d882f008902003',
+  preparation_and_assembly_sha256: 'f23d3b1619734091e9b5ac9a37501c8a64f07c1cbf240e62e9b8e7eb43a767fc',
+  reader_runner_sha256: '1eb6be9d4cf2d802ff2bcb16394fdd0f99952d10a3ff62456ebc79ad42346116',
+});
+
+function ratio(numerator, denominator) {
+  return denominator ? numerator / denominator : null;
+}
+
+function requireBoolean(value, label) {
+  if (typeof value !== 'boolean') throw new Error(`${label} must be boolean`);
+  return value;
+}
+
+function decisionLabel(value, label) {
+  if (value === true || value === 'yes') return 'yes';
+  if (value === false || value === 'no') return 'no';
+  if (value === 'uncertain') return 'uncertain';
+  throw new Error(`${label} must be yes, no, uncertain, or boolean`);
+}
+
+function maxRun(values) {
+  const lengths = [];
+  let current = 0;
+  for (const value of values) {
+    if (value) current += 1;
+    else if (current) {
+      lengths.push(current);
+      current = 0;
+    }
+  }
+  if (current) lengths.push(current);
+  return { streak_lengths: lengths, maximum_streak: lengths.length ? Math.max(...lengths) : 0 };
+}
+
+function exactMode(values) {
+  const counts = new Map();
+  for (const value of values) {
+    const key = JSON.stringify(value);
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  const maximum_count = counts.size ? Math.max(...counts.values()) : 0;
+  return {
+    denominator: values.length,
+    maximum_count,
+    maximum_share: ratio(maximum_count, values.length),
+    saturated: values.length > 0 && maximum_count / values.length > 0.9,
+  };
+}
+
+export function preflightOutcomePresenceChannel({ expected, observed } = {}) {
+  const checks = {};
+  for (const field of PRESENCE_CHANNEL_DIGEST_FIELDS) {
+    const expectedValue = expected?.[field];
+    const observedValue = observed?.[field];
+    checks[field] = {
+      expected: expectedValue ?? null,
+      observed: observedValue ?? null,
+      pass:
+        typeof expectedValue === 'string' &&
+        /^[a-f0-9]{64}$/u.test(expectedValue) &&
+        observedValue === expectedValue,
+    };
+  }
+  for (const field of Object.keys(PRESENCE_CHANNEL_CAPS)) {
+    checks[field] = {
+      expected: PRESENCE_CHANNEL_CAPS[field],
+      observed: observed?.[field] ?? null,
+      pass: expected?.[field] === PRESENCE_CHANNEL_CAPS[field] && observed?.[field] === PRESENCE_CHANNEL_CAPS[field],
+    };
+  }
+  return {
+    schema: 'machinespirits.adaptation-refinement.warrant-outcome-presence-preflight.v1',
+    zero_model_calls: true,
+    required_digest_count: PRESENCE_CHANNEL_DIGEST_FIELDS.length,
+    required_cap_count: Object.keys(PRESENCE_CHANNEL_CAPS).length,
+    status: Object.values(checks).every((check) => check.pass) ? 'passed' : 'failed',
+    checks,
+  };
+}
+
+export function preflightOutcomeDecisionReader(observed = {}) {
+  const checks = Object.fromEntries(
+    Object.entries(DECISION_READER_INSTRUMENT_BINDINGS).map(([field, expected]) => [
+      field,
+      { expected, observed: observed?.[field] ?? null, pass: observed?.[field] === expected },
+    ]),
+  );
+  return {
+    schema: 'machinespirits.adaptation-refinement.warrant-outcome-decision-reader-preflight.v1',
+    zero_model_calls: true,
+    status: Object.values(checks).every((check) => check.pass) ? 'passed' : 'failed',
+    checks,
+  };
+}
+
+export function guardVerbatimPromptBindings(bindings = []) {
+  const rows = bindings.map((row) => ({
+    source: row.source,
+    expected: row.expected,
+    observed: row.observed,
+    pass: typeof row.expected === 'string' && row.observed === row.expected,
+  }));
+  return {
+    status: rows.length > 0 && rows.every((row) => row.pass) ? 'passed' : 'failed',
+    rows,
+  };
+}
+
+export function guardNoPoolingFingerprints({ candidates = [], excluded = [] } = {}) {
+  const excludedSet = new Set(excluded);
+  const duplicates = candidates.filter((fingerprint, index) => candidates.indexOf(fingerprint) !== index);
+  const overlaps = candidates.filter((fingerprint) => excludedSet.has(fingerprint));
+  return {
+    status: duplicates.length === 0 && overlaps.length === 0 ? 'passed' : 'failed',
+    candidate_count: candidates.length,
+    excluded_count: excluded.length,
+    duplicates: [...new Set(duplicates)].sort(),
+    overlaps: [...new Set(overlaps)].sort(),
+  };
+}
+
+export function scoreOutcomeDecisionCases(cases = []) {
+  const scored = [];
+  let nonConsensus = 0;
+  for (const row of cases) {
+    const left = decisionLabel(row.reader_a_decision, `${row.sample_id}:reader_a_decision`);
+    const right = decisionLabel(row.reader_b_decision, `${row.sample_id}:reader_b_decision`);
+    if (left !== right || left === 'uncertain') {
+      nonConsensus += 1;
+      continue;
+    }
+    const logged = decisionLabel(row.logged_observe_decision, `${row.sample_id}:logged_observe_decision`);
+    scored.push({
+      sample_id: row.sample_id,
+      dialogue_id: row.dialogue_id,
+      turn: row.turn,
+      condition: row.condition,
+      reader_consensus_decision: left,
+      logged_observe_decision: logged,
+      correct: logged === left,
+    });
+  }
+  const correct = scored.filter((row) => row.correct).length;
+  return {
+    reader_output_form: OUTCOME_STUDY_READER_OUTPUT_FORM,
+    total_cases: cases.length,
+    consensus_cases: scored.length,
+    non_consensus_cases: nonConsensus,
+    correct,
+    correctness_rate: ratio(correct, scored.length),
+    cases: scored,
+  };
+}
+
+function normalizeOutcomeTurn(row) {
+  const gate = row.warrant_gate_decision || row.warrantGateDecision || null;
+  const learnerSignal = row.learner_signal || gate?.learner_signal || null;
+  const actionFamily =
+    row.actual_action_family ||
+    row.delivered_action_family ||
+    row.deliveredResponseConfiguration?.action_family ||
+    row.responseConfiguration?.action_family ||
+    row.preFinalWarrantSelection?.action_family ||
+    null;
+  const closure = row.dialogue_closure || row.dialogueClosure || null;
+  return {
+    turn: Number(row.turn),
+    learner_text: row.learner_text ?? row.learner ?? '',
+    deference: requireBoolean(
+      row.deference ?? learnerSignal?.deference_present,
+      `turn ${row.turn}: deterministic compiler deference`,
+    ),
+    dag_total: Number(row.dag_total ?? row.stateObservation?.dag?.grounded_count),
+    actual_action_family: actionFamily,
+    typed_warrant_supported:
+      row.typed_warrant_supported ??
+      Boolean(gate?.revision_warranted && gate?.policy?.family === 'challenge_resistance'),
+    closure_audit_ok: row.closure_audit_ok ?? closure?.audit?.ok ?? true,
+    closes_dialogue: row.closes_dialogue ?? closure?.audit?.closesDialogue ?? false,
+    closure_available: row.closure_available ?? closure?.frame?.available ?? false,
+  };
+}
+
+export function extractOutcomeDialogueFromTraceRows({ dialogue_id, condition, rows } = {}) {
+  if (!['bare', 'gated'].includes(condition)) throw new Error(`unsupported outcome condition: ${condition}`);
+  const turns = (rows || [])
+    .filter((row) => row?.type === 'turn_complete' && row.turnRecord)
+    .map((row) => normalizeOutcomeTurn(row.turnRecord))
+    .sort((left, right) => left.turn - right.turn);
+  if (!turns.length) throw new Error(`${dialogue_id}: no turn_complete rows`);
+  return { dialogue_id, condition, turns };
+}
+
+export function scoreOutcomeDialogue(dialogue) {
+  const turns = [...(dialogue.turns || [])].map(normalizeOutcomeTurn).sort((a, b) => a.turn - b.turn);
+  if (!turns.length) throw new Error(`${dialogue.dialogue_id}: no turns`);
+  const challengeTurns = turns.filter((row) => row.actual_action_family === 'challenge_resistance');
+  const warrantedChallenges = challengeTurns.filter((row) => row.typed_warrant_supported);
+  const deference = maxRun(turns.map((row) => row.deference));
+  const ownVoice = turns.map((row) => isUnhedgedOwnVoiceClaim(row.learner_text));
+  const breakIndex = ownVoice.findIndex(Boolean);
+  const breakTurn = breakIndex < 0 ? null : turns[breakIndex].turn;
+  const breakPersists = breakIndex < 0 ? false : ownVoice.slice(breakIndex).every(Boolean);
+  const dagAtBreak = breakIndex < 0 ? null : turns[breakIndex].dag_total;
+  const finalDag = turns.at(-1).dag_total;
+  const recordGrowthAfterBreak =
+    breakIndex < 0 || !Number.isFinite(dagAtBreak) || !Number.isFinite(finalDag) ? null : finalDag > dagAtBreak;
+  const illegitimateClosures = turns.filter(
+    (row) => row.closure_audit_ok !== true || (row.closes_dialogue && !row.closure_available),
+  );
+  return {
+    dialogue_id: dialogue.dialogue_id,
+    condition: dialogue.condition,
+    turn_count: turns.length,
+    measure_2_warranted_challenge_rate: {
+      warranted_challenge_turns: warrantedChallenges.length,
+      challenge_turns: challengeTurns.length,
+      decision_turns: turns.length,
+      rate: warrantedChallenges.length / turns.length,
+    },
+    measure_3_sustained_deference: deference,
+    measure_4_deference_break: { first_turn: breakTurn, persists_to_end: breakPersists },
+    measure_5_record_growth_after_break: {
+      observed: recordGrowthAfterBreak,
+      dag_at_break: dagAtBreak,
+      final_dag_total: Number.isFinite(finalDag) ? finalDag : null,
+    },
+    measure_6_closure_legitimacy: {
+      legitimate: illegitimateClosures.length === 0,
+      illegitimate_turns: illegitimateClosures.map((row) => row.turn),
+    },
+  };
+}
+
+export function scoreOutcomePresenceCases(cases = []) {
+  const consensus = [];
+  let inadmissible = 0;
+  let nonConsensus = 0;
+  for (const row of cases) {
+    if (row.admissible_pair !== true) {
+      inadmissible += 1;
+      continue;
+    }
+    if (row.presence_grain_consensus !== true) {
+      nonConsensus += 1;
+      continue;
+    }
+    const presence = row.reader_a_presence || row.consensus_presence;
+    if (typeof presence?.result_request !== 'boolean' || typeof presence?.proposed_test !== 'boolean') {
+      inadmissible += 1;
+      continue;
+    }
+    consensus.push({
+      sample_id: row.sample_id,
+      dialogue_id: row.dialogue_id,
+      condition: row.condition,
+      result_request: presence.result_request,
+      proposed_test: presence.proposed_test,
+    });
+  }
+  return {
+    total_cases: cases.length,
+    consensus_cases: consensus.length,
+    non_consensus_cases: nonConsensus,
+    inadmissible_cases: inadmissible,
+    result_request_presence_rate: ratio(consensus.filter((row) => row.result_request).length, consensus.length),
+    proposed_test_presence_rate: ratio(consensus.filter((row) => row.proposed_test).length, consensus.length),
+    cases: consensus,
+  };
+}
+
+export function assessOutcomePilotSaturation({ dialogueScores = [], presenceScore } = {}) {
+  const presenceCases = presenceScore?.cases || [];
+  return {
+    denominator_rule: {
+      measures_2_4: 'dialogues pooled across conditions',
+      measures_7_8: 'consensus cases pooled across conditions; non-consensus and inadmissible cases excluded',
+    },
+    measure_2: exactMode(dialogueScores.map((row) => row.measure_2_warranted_challenge_rate.rate)),
+    measure_3: exactMode(dialogueScores.map((row) => row.measure_3_sustained_deference.maximum_streak)),
+    measure_4: exactMode(
+      dialogueScores.map((row) => [
+        row.measure_4_deference_break.first_turn,
+        row.measure_4_deference_break.persists_to_end,
+      ]),
+    ),
+    measure_7: exactMode(presenceCases.map((row) => row.result_request)),
+    measure_8: exactMode(presenceCases.map((row) => row.proposed_test)),
+  };
+}
+
+export function scoreAdaptiveWarrantOutcomeStudy(input = {}) {
+  const preflight = preflightOutcomePresenceChannel(input.presence_preflight);
+  if (preflight.status !== 'passed') throw new Error('presence-channel digest preflight failed');
+  const decisionPreflight = preflightOutcomeDecisionReader(input.decision_reader_preflight);
+  if (decisionPreflight.status !== 'passed') throw new Error('decision-reader instrument digest preflight failed');
+  const dialogueScores = (input.dialogues || []).map(scoreOutcomeDialogue);
+  const decisionScore = scoreOutcomeDecisionCases(input.decision_cases || []);
+  const presenceScore = scoreOutcomePresenceCases(input.presence_cases || []);
+  return {
+    schema: ADAPTIVE_WARRANT_OUTCOME_SCORE_SCHEMA,
+    zero_model_calls: true,
+    conditions_scored: [...new Set(dialogueScores.map((row) => row.condition))].sort(),
+    reader_output_form: OUTCOME_STUDY_READER_OUTPUT_FORM,
+    decision_reader_preflight: decisionPreflight,
+    presence_preflight: preflight,
+    measure_1_decision_correctness: decisionScore,
+    dialogue_measures_2_6: dialogueScores,
+    presence_measures_7_8: presenceScore,
+    pilot_saturation: assessOutcomePilotSaturation({ dialogueScores, presenceScore }),
+  };
+}
+
+function main() {
+  const args = process.argv.slice(2);
+  if (args.length !== 2 || args[0] !== '--input') {
+    throw new Error('Usage: node scripts/score-adaptive-warrant-outcome-study.js --input <prepared-zero-call-input.json>');
+  }
+  const input = JSON.parse(fs.readFileSync(path.resolve(ROOT, args[1]), 'utf8'));
+  process.stdout.write(`${JSON.stringify(scoreAdaptiveWarrantOutcomeStudy(input), null, 2)}\n`);
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  try {
+    main();
+  } catch (error) {
+    console.error(`[outcome-study-scorer] ${error.message}`);
+    process.exitCode = 1;
+  }
+}
