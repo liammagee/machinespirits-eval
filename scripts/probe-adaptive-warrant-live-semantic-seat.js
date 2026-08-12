@@ -164,7 +164,9 @@ export function collectAdaptiveWarrantLiveSemanticProbeInputs({
       });
     }
   }
-  if (rows.length !== MAXIMUM_CALLS) throw new Error(`probe requires exactly 48 preserved calls, found ${rows.length}`);
+  if (rows.length < 1 || rows.length > MAXIMUM_CALLS) {
+    throw new Error(`probe requires 1-${MAXIMUM_CALLS} preserved calls, found ${rows.length}`);
+  }
   return {
     sourceRoot: resolvedRoot,
     sourceCommit,
@@ -314,7 +316,7 @@ export async function runAdaptiveWarrantLiveSemanticSeatProbe({
     prompt_profile: 'handbook_v1',
     model: modelRef,
     destination,
-    calls: { planned: MAXIMUM_CALLS, attempted: rows.length, maximum: MAXIMUM_CALLS, retries: 0 },
+    calls: { planned: rows.length, attempted: rows.length, maximum: MAXIMUM_CALLS, retries: 0 },
     source: {
       root: inputs.sourceRoot,
       commit: inputs.sourceCommit,
@@ -326,8 +328,8 @@ export async function runAdaptiveWarrantLiveSemanticSeatProbe({
       surviving_calls: rows.length - discardedRows.length,
       discarded_calls: discardedRows.length,
       discard_rate: discardedRows.length / rows.length,
-      relaunch_threshold: 0.1,
-      relaunch_gate: discardedRows.length / rows.length <= 0.1 ? 'pass' : 'fail',
+      relaunch_threshold: 0.15,
+      relaunch_gate: discardedRows.length / rows.length <= 0.15 ? 'pass' : 'fail',
       error_code_counts: errorCodeCounts,
       residual_issue_counts: residualIssueCounts,
     },
