@@ -14,8 +14,23 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **HARD STOP FOR THE HUMAN (19:45). DO NOT relaunch the driver; the
-  watch loop is stopped. No lease is live.** Seed 513 failed the
+- **CURRENT DIRECTION: 038**
+  (`038-reviewer-direction-composite-label-repair-seed-514.md`, lease
+  `DRIVER-LEASE-2026-08-12-G`, report target 039). The human ruled at
+  19:52 (typed in the reviewer session; verified verbatim in the
+  sibling session transcript): repair defect #11 (composite-target
+  label rendering), closure v2 with SYNTHETIC targets for every label
+  shape the ledger can emit, seed 514 licensed under the same
+  zero-call chain (identical 2.70% s510 replay), **call ceiling raised
+  4,000 → 8,000**, and a standing "no hard-stop, continue until done"
+  instruction. Encoded continuation policy: deterministic harness
+  defects = repair with ledger entry + guards, mint the next disclosed
+  seed (515, 516, …), continue. Human hard stops ONLY: instrument
+  amendments; contamination/provenance; the 8,000 ceiling; coverage
+  losses not dominated by a nameable defect (seed shopping is not
+  covered). Never patch a live run; never waive a failed gate post
+  hoc. Budget 2,540/8,000; matrix ~600.
+- **RESOLVED — hard stop of 19:45** (kept as history). Seed 513 failed the
   launcher's own local test preflight BEFORE any child or paid call:
   the new target-aware fallback mangles composite target labels
   ("The first-log-entry-log entry is not public yet…"); one
@@ -26,11 +41,9 @@
   entry #11 (composite-label rendering; the fallback-pass closure was
   green but its corpus exposes only one target signature — widen it on
   any repair). Budget: driver recount adopted — seed 512 = 298
-  attempts; running total **2,540/4,000**; headroom 1,460; matrix
-  ~600. The human must choose: (1) repair defect #11 + widened closure
-  and spend seed 514 (last reserve); (2) same repair but un-burn seed
-  513 (zero calls spent, nothing seen — reviewer leans this way, only
-  the human can un-burn); (3) stop the matrix programme.
+  attempts; running total **2,540/4,000 at the time**; matrix ~600.
+  RESOLUTION: the human ruled option 1 plus a ceiling raise to 8,000
+  and a continue-until-done instruction — see current direction 038.
 - **RESOLVED — direction 035** (kept as history;
   `035-reviewer-direction-fallback-repair-seed-513.md`, lease
   `DRIVER-LEASE-2026-08-12-F` retired with report 036). Repairs R1/R2
