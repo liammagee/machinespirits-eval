@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "July 2026"
-version: "3.0.285"
+version: "3.0.286"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -3704,7 +3704,9 @@ The adaptation-refinement arc's outcome study (the warrant-gate three-condition 
 
 Four design lessons follow, stated as constraints rather than morals. (1) Oversight agents are agents: they act on stale state, race their own subordinates, and inflate urgency, so an oversight layer needs the same independent verification it imposes — turtles at least one level down. (2) Proportionality is a design parameter: the cost of invoking a control should scale with the harm it prevents, and a control that is free to invoke and expensive to satisfy will be invoked until it consumes the budget. (3) Authority should bind to durable committed state, not to message traffic; every error in this episode was ruled on appearances and corrected from the record. (4) The ceiling held because it was mechanical: the one control that never generated a memo was the call counter.
 
-*Status.* Process observation, not a tutoring result; it originates no claim about any experimental condition. Every number reproduces from the committed relay ledger (`docs/adaptation-refinement/relay/`, memos 001–068c and `STATE.md`) and `git log` over 2026-08-12/13 on the campaign branch.
+**Coda: the number nobody litigated.** The launch this apparatus finally authorized stopped inside its second dialogue. The frozen plan had budgeted one model call per dialogue; a live 8-turn dialogue costs about 26. Both formal review passes had checked the plan's arithmetic internally — the sums were consistent — but neither had checked its one empirical premise against a live trace, and the byte-level litigation described above never touched it, because the guards can only dispute what is pinned, and the price of a dialogue was an assumption, not an artifact. The stop itself worked as designed: the driver halted at 33 spent calls of a ceiling of 11,337, quarantined the interrupted dialogue, and the corrected plan (30-call per-dialogue cap, 1,116 total) closed a live hole the original had carried — each dialogue can now draw only its own cap, where before any one dialogue's child process was handed the entire budget. The addendum to lesson (2), then: a verification regime concentrates scrutiny on whatever is cheap to check, and the constants that enter by assumption — unpinned, unhashed, uncontested — are exactly where the residual risk pools. One trailing newline drew ten memos; the 26-to-1 error in the plan's central quantity drew none until reality priced it.
+
+*Status.* Process observation, not a tutoring result; it originates no claim about any experimental condition. Every number reproduces from the committed relay ledger (`docs/adaptation-refinement/relay/`, memos 001–069a and `STATE.md`) and `git log` over 2026-08-12/13 on the campaign branch.
 
 ## 8. Limitations
 
@@ -4666,6 +4668,10 @@ The published version prior to this cycle was **v3.0.42** (2026-04-21). What fol
 **Net effect across the cycle**. Three mechanisms originally claimed; now two supported, one clean null. The two supported mechanisms have stronger evidence than before (A11 confirming architecture residual; §7.9 closing the density alternative at the orientation-family level). The paper has a new methodological contribution (pedagogical-orientation taxonomy, `docs/pedagogical-taxonomy.md`) and a retracted-then-corrected experiment (A10 v1 → A10 v2). An `/ultrareview` pass caught the bug_007 issue before A10's result propagated into a broken paper claim. Net paper length grew by ~6% (new §7.9 orientation-family content); net theoretical-content distinctiveness shrank slightly (recognition now framed as one family member rather than the uniquely-necessary frame), but defensibility strengthened.
 
 Individual v3.0.X entries follow in chronological order (newest first):
+
+**v3.0.286** (2026-08-13)
+
+:   **§7.15 coda --- the number nobody litigated.** The pilot launch the §7.15 apparatus authorized stopped fail-closed inside its second dialogue: the frozen plan budgeted 1 generation call per dialogue against a measured live cost of ~26, an assumption both formal review passes checked for internal consistency but never against a live trace. Recorded as the addendum to design lesson (2): verification regimes concentrate scrutiny on what is cheap to check (pinned bytes drew ten memos over a newline), while constants entering by assumption are where residual risk pools (the 26-to-1 error in the plan's central quantity drew none until execution). The stop spent 33 of 11,337 ceiling calls; the corrected 1,116-call plan also closed a live defect (per-dialogue budget cap enforced at source, where previously each dialogue's child process was handed the entire plan budget). Status-line ledger range extended to memo 069a. Process observation only: no body numbers, no renumbering. Source: relay memos 069/069a, commits `6278768b`, `8ad749ec`.
 
 **v3.0.285** (2026-08-13)
 
