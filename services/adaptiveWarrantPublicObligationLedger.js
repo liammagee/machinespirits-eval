@@ -438,8 +438,12 @@ function targetTermsMatch(target, text, { kindFallback = true } = {}) {
   // A named target must remain named. Kind-level words such as "match" or
   // "comparison" cannot discharge a different obligation of the same type.
   if (subjectTerms.length) return subjectTerms.every((term) => terms.has(term));
-  const shared = (target?.public_terms || []).filter((term) => terms.has(term)).length;
-  if (shared >= 2) return true;
+  const publicShared = (target?.public_terms || []).filter((term) => terms.has(term)).length;
+  const progressionTerms = target?.progression_terms || [];
+  const progressionShared = progressionTerms.filter((term) => terms.has(term)).length;
+  if (publicShared >= 2 || (progressionTerms.length > 0 && progressionShared >= Math.min(2, progressionTerms.length))) {
+    return true;
+  }
   if (!kindFallback) return false;
   const source = oneLine(text).toLowerCase();
   if (target?.kind === 'weight_or_ring_result') return /\b(?:balance|ring|sound|weight|weigh)\b/u.test(source);
@@ -449,7 +453,7 @@ function targetTermsMatch(target, text, { kindFallback = true } = {}) {
   if (target?.kind === 'mark_or_tool_result') return /\b(?:die|flaw|graver|mark|tool|cut)\b/u.test(source);
   if (target?.kind === 'comparison_result') return /\b(?:compare|comparison|link|match|tie)\b/u.test(source);
   if (target?.kind === 'record_entry') return /\b(?:entry|log|record|witness)\b/u.test(source);
-  return shared >= 1;
+  return publicShared >= 1;
 }
 
 function answerBearingRelation(text) {
@@ -488,7 +492,7 @@ function concreteNextStepForTarget(text, target) {
   return false;
 }
 
-function componentAnswerBearing(text, component) {
+function componentAnswerBearing(text, component, target) {
   const source = oneLine(text);
   if (component?.value_type === 'time') {
     return /\b(?:[01]?\d|2[0-3]):[0-5]\d\b|\b(?:noon|midnight)\b/iu.test(source);
@@ -505,6 +509,11 @@ function componentAnswerBearing(text, component) {
   if (component?.value_type === 'match_status') {
     return /\b(?:matches?|matched|no match|does not match|did not match|different)\b/iu.test(source);
   }
+  // `other`, `record_text`, and future unlisted value types describe the
+  // requested answer shape; they are not words the tutor must utter. Score
+  // them by the same target-scoped answer-bearing relation as the enclosing
+  // obligation. Declared non-value components retain their literal terms.
+  if (component?.value_type) return targetScopedClaim(source, target, answerBearingRelation);
   const terms = (component?.terms || []).map((term) => term.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'));
   if (!terms.length) return false;
   const relation = oneLine(text).match(
@@ -558,7 +567,7 @@ function deliveryFor(obligation, tutorOutcome) {
   const answerRelation = targetScopedClaim(auditedTutorText, obligation.target, answerBearingRelation);
   const componentDelivery = (obligation.target?.required_components || []).map((component) => ({
     id: component.id,
-    answered: componentAnswerBearing(auditedTutorText, component),
+    answered: componentAnswerBearing(auditedTutorText, component, obligation.target),
   }));
   const requiredComponentsAnswered =
     componentDelivery.length === 0 || componentDelivery.every((component) => component.answered);

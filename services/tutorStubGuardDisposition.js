@@ -29,7 +29,11 @@ export const TUTOR_STUB_GUARD_DISPOSITION_SCHEMA = 'machinespirits.tutor-stub.gu
 // authority must be visible in the delivered public text. Ordinary selector
 // configuration misses remain non-vetoing; this rule is scoped to the causal
 // intervention whose delivery the mechanism study is intended to verify.
-export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 9;
+// 10 (2026-08-12): on the deterministic terminal fallback only, selected
+// adaptive-warrant tactic visibility is advisory because the harness owns the
+// fixed safety prose. Repetition is explicitly excluded from the older broad
+// conversational accommodation and remains blocking on the last resort.
+export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 10;
 
 export const TUTOR_STUB_GUARD_BOUNDARY_POLICIES = Object.freeze({
   strict: 'strict',
@@ -330,6 +334,7 @@ export function classifyTutorStubGuardIssue(issue, { allowActorialAdvisory = fal
     terminalFallback &&
     resolved.known &&
     resolved.rule.category === 'conversational_integrity' &&
+    normalized.guard !== 'repetition' &&
     resolved.rule.strict === HARD;
   const terminalFallbackActorialOverride =
     terminalFallback && resolved.known && normalized.guard === 'actorial_realization' && resolved.rule.strict === HARD;
@@ -351,9 +356,18 @@ export function classifyTutorStubGuardIssue(issue, { allowActorialAdvisory = fal
     resolved.rule.category === 'dramatic_realization' &&
     resolved.rule.strict === HARD &&
     resolved.rule.shadow === ADVISORY;
+  const terminalFallbackStyleOverride =
+    terminalFallback &&
+    resolved.known &&
+    normalized.guard === 'adaptive_warrant_delivery' &&
+    normalized.type === 'selected_action_family_not_visible';
   const terminalFallbackOverride =
-    terminalFallbackConversationalOverride || terminalFallbackActorialOverride || terminalFallbackDramaticFormOverride;
+    terminalFallbackConversationalOverride ||
+    terminalFallbackActorialOverride ||
+    terminalFallbackDramaticFormOverride ||
+    terminalFallbackStyleOverride;
   const strictDisposition = actorialOverride || terminalFallbackOverride ? ADVISORY : resolved.rule.strict;
+  const shadowDisposition = terminalFallbackStyleOverride ? ADVISORY : resolved.rule.shadow;
   return {
     issue: normalized,
     known: resolved.known,
@@ -362,7 +376,7 @@ export function classifyTutorStubGuardIssue(issue, { allowActorialAdvisory = fal
     category: resolved.rule.category,
     rationale: resolved.rule.rationale,
     strictDisposition,
-    shadowDisposition: resolved.rule.shadow,
+    shadowDisposition,
     legacyOverride: actorialOverride
       ? 'allow_actorial_advisory'
       : terminalFallbackConversationalOverride
@@ -371,6 +385,8 @@ export function classifyTutorStubGuardIssue(issue, { allowActorialAdvisory = fal
           ? 'terminal_fallback_actorial_advisory'
           : terminalFallbackDramaticFormOverride
             ? 'terminal_fallback_dramatic_form_advisory'
+            : terminalFallbackStyleOverride
+              ? 'terminal_fallback_style_advisory'
             : null,
   };
 }

@@ -1019,9 +1019,15 @@ function declarativeFallbackFocus(
     // Keep authored compounds as separate lexical targets. Joining
     // `room-presence` and `fridge-access` with another hyphen creates one new
     // token that cannot satisfy either original target in the delivery audit.
-    const targetLabel = subjects.some((term) => term.includes('-'))
-      ? `${subjects.join(' and ')} ${kindLabel}`
-      : [...subjects, kindLabel].join('-');
+    const targetTerms = subjects.length
+      ? subjects
+      : (Array.isArray(target.progression_terms) ? target.progression_terms : target.public_terms || [])
+          .map(oneLine)
+          .filter(Boolean)
+          .slice(0, 6);
+    const targetLabel = targetTerms.some((term) => term.includes('-'))
+      ? `${targetTerms.join(' and ')} ${kindLabel}`
+      : [...targetTerms, kindLabel].join('-');
     return `The ${targetLabel} is not public yet; once a matching public record is available, I can answer it.`;
   }
   if (contract?.discourse_plane?.plane === 'instructional_meta') {

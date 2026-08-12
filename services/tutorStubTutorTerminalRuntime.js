@@ -12,12 +12,15 @@ export function ensureTutorStubPublicObligationFallbackOwnership({
   const fallbackText = String(text || '').trim();
   const ownedText = String(obligationUptake || '').trim();
   if (turnProgressionContract?.public_obligation_contract?.complete !== true || !ownedText) return fallbackText;
-  if (fallbackText.startsWith(ownedText)) return fallbackText;
-  const duplicateOffset = fallbackText.indexOf(ownedText);
-  const remainder =
-    duplicateOffset < 0
-      ? fallbackText
-      : `${fallbackText.slice(0, duplicateOffset)}${fallbackText.slice(duplicateOffset + ownedText.length)}`.trim();
+  // The configured continuation can realize the same contract-owned deferral
+  // in both uptake and handoff. Keep one authoritative copy at the front and
+  // remove every composer duplicate so the terminal response clears the same
+  // repetition guard as an ordinary draft.
+  const remainder = fallbackText
+    .split(ownedText)
+    .join(' ')
+    .replace(/\s+/gu, ' ')
+    .trim();
   return [ownedText, remainder].filter(Boolean).join(' ');
 }
 

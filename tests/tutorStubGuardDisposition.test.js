@@ -60,6 +60,19 @@ test('evidence boundaries stay hard on the terminal fallback', () => {
   assert.equal(decision.hardIssues.length, 1);
 });
 
+test('defect 9: repetition remains blocking while terminal-only tactic visibility is advisory', () => {
+  const repetition = { guard: 'repetition', type: 'repeated_tutor_sentence' };
+  const tactic = { guard: 'adaptive_warrant_delivery', type: 'selected_action_family_not_visible' };
+  const ordinary = decideTutorStubGuardDelivery([tactic]);
+  const fallback = decideTutorStubGuardDelivery([repetition, tactic], { terminalFallback: true });
+
+  assert.equal(ordinary.ok, false);
+  assert.equal(fallback.ok, false);
+  assert.deepEqual(fallback.hardIssues, [repetition]);
+  assert.deepEqual(fallback.advisoryIssues, [tactic]);
+  assert.equal(fallback.dispositions[1].legacyOverride, 'terminal_fallback_style_advisory');
+});
+
 test('premature strict-DAG closure stays hard on the terminal fallback', () => {
   const issue = { guard: 'dialogue_closure', type: 'premature_dialogue_close' };
   const decision = decideTutorStubGuardDelivery([issue], { terminalFallback: true });

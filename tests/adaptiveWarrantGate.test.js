@@ -1513,6 +1513,43 @@ test('delivery audit requires an answer-bearing target relation, not target noun
   }
 });
 
+test('defect 10: unlisted value types use the target-scoped answer relation, never their literal tokens', () => {
+  const obligation = {
+    id: 'public-obligation-value-types',
+    target: {
+      kind: 'record_entry',
+      signature: 'record_entry:badge-log',
+      public_terms: ['badge', 'log', 'record'],
+      subject_terms: ['badge'],
+      requested_value_types: ['other', 'record_text'],
+      required_components: [
+        { id: 'requested_other', terms: ['other'], value_type: 'other' },
+        { id: 'requested_record_text', terms: ['record_text'], value_type: 'record_text' },
+      ],
+    },
+  };
+  const answered = auditAdaptiveWarrantPublicObligationDelivery({
+    obligation,
+    tutorOutcome: { tutor_text: 'The badge log reads WF-11.' },
+  });
+  const tokenOnly = auditAdaptiveWarrantPublicObligationDelivery({
+    obligation,
+    tutorOutcome: { tutor_text: 'The badge log contains other and record_text.' },
+  });
+
+  assert.equal(answered.status, 'satisfied');
+  assert.equal(answered.answer_bearing_relation, true);
+  assert.deepEqual(answered.component_delivery, [
+    { id: 'requested_other', answered: true },
+    { id: 'requested_record_text', answered: true },
+  ]);
+  assert.equal(tokenOnly.status, 'unfulfilled');
+  assert.deepEqual(tokenOnly.component_delivery, [
+    { id: 'requested_other', answered: false },
+    { id: 'requested_record_text', answered: false },
+  ]);
+});
+
 test('evidence availability uses the pre-delivery boundary for both live and committed snapshots', () => {
   const schedule = [
     { premise: 'p1', effectiveTurn: 1, releasedTurn: 1 },

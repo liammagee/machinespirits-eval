@@ -417,6 +417,39 @@ test('deterministic recovery preserves distinct compound obligation targets', ()
   assert.equal(audit.public_obligation.outcome, 'named_unavailability_with_concrete_next_step');
 });
 
+test('defect 9: a generic-target terminal deferral names the target and passes by construction', () => {
+  const directive = publicObligationDirective({
+    target: {
+      kind: 'public_exhibit_result',
+      signature: 'public_exhibit_result:generic_evidence_request',
+      public_terms: ['evidence'],
+      subject_terms: [],
+      required_components: [],
+      source_surface: 'generic evidence request',
+    },
+  });
+  const contract = obligationProgressionContract({
+    learnerText: 'What public evidence can we examine first?',
+    dramaticReleaseFrame: { active: false, entries: [] },
+    responseCompositionFrame: {
+      learner_move: { summary: 'The learner requests generic public evidence.' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    publicObligationDirective: directive,
+  });
+  const fallback = deterministicTutorStubTurnProgressionUptake({ contract });
+  const audit = auditTutorStubTurnProgression({
+    contract,
+    composition: composition({ uptake: fallback, entry: '', response: '', handoff: '' }),
+  });
+
+  assert.match(fallback, /generic-evidence-request/iu);
+  assert.doesNotMatch(fallback, /\?/u);
+  assert.equal(audit.ok, true, JSON.stringify(audit.issues));
+  assert.equal(audit.public_obligation.outcome, 'named_unavailability_with_concrete_next_step');
+});
+
 test('deterministic obligation handoff does not repeat a deferral already delivered in uptake', () => {
   const contract = obligationProgressionContract({
     dramaticReleaseFrame: { active: false, entries: [] },
@@ -471,6 +504,20 @@ test('terminal recovery restores obligation-owned deferral before writable entry
   assert.ok(repaired.indexOf(obligationUptake) < repaired.indexOf(authoredSource));
   assert.equal(audit.public_obligation.resolved, true, JSON.stringify(audit.issues));
   assert.equal(audit.public_obligation.outcome, 'named_unavailability_with_concrete_next_step');
+});
+
+test('defect 9: terminal ownership removes a composer duplicate even when the deferral is already first', () => {
+  const contract = obligationProgressionContract();
+  const obligationUptake = deterministicTutorStubTurnProgressionUptake({ contract });
+  const middle = 'I set the balance beside the clipped shilling.';
+  const repaired = ensureTutorStubPublicObligationFallbackOwnership({
+    text: `${obligationUptake} ${middle} ${obligationUptake}`,
+    obligationUptake,
+    turnProgressionContract: contract,
+  });
+
+  assert.equal(repaired, `${obligationUptake} ${middle}`);
+  assert.equal(repaired.indexOf(obligationUptake, obligationUptake.length), -1);
 });
 
 test('a configured terminal fallback keeps its family-specific uptake as the first owned sentence', () => {

@@ -124,7 +124,7 @@ test('the live terminal fallback cannot exhaust delivery on optional actorial an
 
   const decision = decideTutorStubGuardDelivery(rows, { terminalFallback: true });
   assert.equal(decision.ok, true);
-  assert.equal(decision.catalogVersion, 9);
+  assert.equal(decision.catalogVersion, 10);
   assert.deepEqual(decision.hardIssues, []);
   assert.deepEqual(
     decision.advisoryIssues.map((issue) => `${issue.guard}:${issue.type}`),
@@ -143,7 +143,7 @@ test('the live terminal fallback cannot exhaust delivery on optional actorial an
   );
 });
 
-test('active adaptive-warrant final authority makes an invisible selected family a hard veto', () => {
+test('active adaptive-warrant final authority is hard on drafts and advisory only on the terminal fallback', () => {
   const rows = tutorStubGuardIssueRows({
     responseConfigurationAudit: {
       adaptive_warrant_delivery: {
@@ -163,13 +163,20 @@ test('active adaptive-warrant final authority makes an invisible selected family
       ['adaptive_warrant_delivery', 'selected_action_family_not_visible', null],
     ],
   );
-  for (const options of [{}, { boundaryPolicy: 'shadow_advisory' }, { terminalFallback: true }]) {
+  for (const options of [{}, { boundaryPolicy: 'shadow_advisory' }]) {
     const decision = decideTutorStubGuardDelivery(rows, options);
     assert.equal(decision.ok, false, JSON.stringify(options));
     assert.equal(decision.hardIssues.length, 1, JSON.stringify(options));
     assert.equal(decision.hardIssues[0].guard, 'adaptive_warrant_delivery');
     assert.equal(decision.dispositions.find((row) => row.issue.guard === 'adaptive_warrant_delivery').known, true);
   }
+  const fallback = decideTutorStubGuardDelivery(rows, { terminalFallback: true });
+  assert.equal(fallback.ok, true);
+  assert.deepEqual(fallback.hardIssues, []);
+  assert.equal(
+    fallback.dispositions.find((row) => row.issue.guard === 'adaptive_warrant_delivery')?.legacyOverride,
+    'terminal_fallback_style_advisory',
+  );
 });
 
 test('draft audit carries active warrant final-authority ownership into guard disposition', () => {
