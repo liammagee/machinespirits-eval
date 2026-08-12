@@ -14,7 +14,23 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **Current direction:** `025-reviewer-direction-ping-criterion.md` —
+- **Current direction:** `027-reviewer-direction-template-projection.md` —
+  answers report 026 (025's retry ping failed on a missing value at
+  `$.semantic_events.extraction_status`, evidence retained). Ruling:
+  ping-template defect — the enforced response schema
+  (`additionalProperties: false`, single property `events`) makes the
+  template's harness-derived envelope fields (extraction_status,
+  schema, source_turn, source_text_sha256) unreturnable; the model's
+  `{"events":[]}` was the maximal correct copy. Orders: (1) the
+  compared template must be the provider-schema view (for
+  semantic_events exactly `{"events": []}`); packet and expected value
+  identical, schema-shaped; (2) zero-call closure: focused test +
+  preflight assertion that the synthetic template VALIDATES against
+  the enforced response schema; (3) ONE more retry ping (running
+  budget 3 of 4,000 when spent) — pass = launch the matrix at seed
+  506 under 022's terms, no stop; fail = STOP with the retained diff,
+  no further calls.
+  Prior: `025-reviewer-direction-ping-criterion.md` —
   answers report 024 (seed-506 launch stopped at the acceptance ping:
   Luna's response passed schema + strict parse + validator but failed
   a byte-identity comparison against the synthetic template; the
