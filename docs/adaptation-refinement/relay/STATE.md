@@ -5,24 +5,30 @@
 
 ## Now
 
-- **Current direction:** `021-reviewer-direction-prompt-parity.md` —
-  counterfactual gate FAILED (26/48 = 54.2% predicted discards; 21 of
-  26 break `value_component_sets_forbidden_for_non_request`, 10
-  overlap, 1 non-literal). Ruled a contract-communication defect
-  (timebox class): the live compact prompt never states the empty-sets
-  rule or the span rules that the frozen reader handbook states and
-  the validator enforces; the same Luna passed 21/24 WITH the
-  handbook. Human decision (12 Aug chat): prompt parity first, seat
-  upgrade second, coverage caveat REJECTED. Authorized: port handbook
-  rules verbatim into the live prompt (profile `handbook_v1` or amend
-  `compact_v1` in place — rule 4b); 48-call diagnostic probe on the
-  burned seed-505 turns (outputs never evidence); preflight asserts
-  prompt/handbook parity. Gate: probe ≤10% = relaunch at seed 506, no
-  stop; >10% = seat upgrade pre-authorized (learner-analysis role
-  ONLY → strongest claude-code Sonnet in the bridge; ping + second
-  48-call probe, same gate; >10% again = STOP for human). Budget: two
-  probes max (96 calls) + one ping. Reserve seeds 507-510 unchanged.
-  Burned: seed-503, -504, -505 corpora.
+- **Current direction:** `022-reviewer-direction-luna-coverage-note.md` —
+  021 ran to its hard stop: Luna + handbook_v1 probe 5/48 = 10.42%
+  (fail by one call); Sonnet upgrade probe 25/48 = 52.08% (17/48 =
+  35.4% after the apostrophe finding below — still fail; Sonnet
+  breaks the value/component rule 19 vs Luna's 3). Reviewer probe
+  audit: 8 Sonnet "not_literal" discards were byte-matching on
+  typographic vs ASCII apostrophes, a harness defect; the fix rescues
+  nothing on Luna (its one quote failure is a real misquote). Human
+  decision (12 Aug chat): (1) seat back to `codex.gpt-5.6-luna` +
+  `handbook_v1` (revert 39757d4e's model pin, keep its guards); (2)
+  punctuation-normalized quote matching both seats, mechanical,
+  prospective, preflight-asserted; (3) coverage self-halt 10% → 15%
+  (first-call gate stays), grounds registered: probe-measured expected
+  unanalyzed 10.4% ±~4; per-turn strictness unchanged; matrix report
+  must state achieved coverage and the gate ruling must quote it; (4)
+  RELAUNCH at reserve seed 506 under the standing authorization.
+  After the matrix: gate pass = stop before outcome study (freeze
+  prereg from `2026-08-12_outcome-study-design-draft.md`, human go);
+  gate fail = stop for review (004 options); ruling 010 fallback
+  stands. Reserve seeds 507-510 unchanged. Burned: seed-503, -504,
+  -505 corpora + both 021 probe artifact sets.
+  Prior: `021-reviewer-direction-prompt-parity.md` — prompt parity
+  (handbook rules ported into the live prompt) + pre-authorized
+  Sonnet seat try; both probe gates failed; report `5923b99e`.
   Prior: `019-reviewer-direction-offset-derivation.md` — mechanical
   offset derivation both seats (model gives unique literal quote,
   harness derives offsets + overlap), landed at `84e3dcbb`, 126/126
