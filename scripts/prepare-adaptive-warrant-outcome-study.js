@@ -30,11 +30,15 @@ export const OUTCOME_A1_SOURCE_PINS = Object.freeze({
 
 export const OUTCOME_A1_ENUMERATION_RULE = Object.freeze({
   rendered_layer:
-    'Starting from tutorStubFirstDraftContractPrompt, enumerate every fixed string that can flow into a rendered field downstream of a gate decision from the SHA-pinned services/tutorStubFirstDraftContract.js: every compact uptake branch and rendered opening branch; every COMPACT_PART_CUES value plus the inline scene-partner branch and other compact-part literals; every TACTIC_EXECUTION_CUES value plus compact tactic/support branches and source-accessibility compensation; every compact stance cue; every compact handoff branch; and every compact action cue. Sweep every stance and action-family key mechanically without reachability pruning; exclude constant framing lines that do not vary with a gate decision.',
+    'Starting from tutorStubFirstDraftContractPrompt, enumerate every candidate fixed string that can flow into a rendered field from the SHA-pinned services/tutorStubFirstDraftContract.js, then apply ruling 060b per string: identify its switching variable, trace whether the gate verdict, repair policy, or register selection can reach that variable, and include the string if and only if the trace is reachable. Sweep every part, tactic, stance, action, and support cue mechanically without reachability pruning inside those gate-varying families; exclude strings switched only by learner wording, learner state, question-support state, source state, or progression bookkeeping that the gate decision path cannot change.',
   templates:
     'For a compact template, quote every fixed segment byte-for-byte in source order and show each interpolated public-contract value as a named {{slot}}; the descriptive prefix states that the gate fills those slots from the public contract, and the drift guard compares the fixed_segments array byte-for-byte.',
   question_support:
     'Do not include buildTutorStubQuestionSupport tutorInstruction strings: they populate the detailed contract ending.instruction field, but the live compact host-plan renderer does not read that field. Include the compact handoff strings selected from question-support state flags instead.',
+  membership_test:
+    'A candidate string is IN exactly when its switching variable is reachable from the gate verdict, repair policy, or register selection. An unreachable switch is OUT even when the string is prompt-reaching. A doubtful trace stays IN and records the doubt.',
+  null_branch:
+    'compactSupportInstruction support level zero or unset returns the empty string. It injects no words, so tactic.support.0 is documented as a null branch and is not a menu entry.',
 });
 
 export const OUTCOME_PILOT_SEEDS = Object.freeze([515, 516, 517]);
@@ -154,6 +158,269 @@ function keyedRows(map, { idPrefix, sourceConstant, prefix }) {
     );
 }
 
+const OUTCOME_A1_OUT_CLASSIFICATIONS = Object.freeze({
+  'uptake.accelerated': {
+    switching_variable: 'responseCompositionFrame.learner_dag.learner_advance.accelerated',
+    trace:
+      'Learner-DAG advancement is computed from learner state before response configuration; the gate verdict, repair policy, and register selection do not write it.',
+  },
+  'uptake.learner_move': {
+    switching_variable: 'contract.learner_move from learnerText and responseCompositionFrame.learner_move',
+    trace:
+      'The learner-move surface is copied from the learner turn and composition frame; the gate decision path cannot change that learner-state field.',
+  },
+  'uptake.writable_complementary': {
+    switching_variable: 'tutorStubLearnerRequestsWritableEntry(learnerText) with due release cues',
+    trace:
+      'The writable-entry classifier reads learner wording and due evidence before the gate-selected response configuration; the gate path cannot reach either switch.',
+  },
+  'uptake.writable_causal': {
+    switching_variable: 'tutorStubLearnerRequestsWritableEntry(learnerText) with a named causal contract',
+    trace:
+      'The writable-entry request and causal contract are derived from learner wording and committed public evidence; the gate path cannot reach them.',
+  },
+  'uptake.writable_causal_generic': {
+    switching_variable: 'tutorStubLearnerRequestsWritableEntry(learnerText) with an unnamed causal subject',
+    trace:
+      'The writable-entry request and causal contract are derived from learner wording and committed public evidence; the gate path cannot reach them.',
+  },
+  'uptake.writable_record': {
+    switching_variable: 'tutorStubLearnerRequestsWritableEntry(learnerText) with a rendered public record',
+    trace:
+      'The writable-entry request and public-record availability are learner/evidence inputs; the gate path cannot reach them.',
+  },
+  'uptake.writable_record_fallback': {
+    switching_variable: 'tutorStubLearnerRequestsWritableEntry(learnerText) without a rendered public record',
+    trace:
+      'The writable-entry request and public-record availability are learner/evidence inputs; the gate path cannot reach them.',
+  },
+  'uptake.responsive_repair': {
+    switching_variable: 'questionSupport.responsiveRepairRequired',
+    trace:
+      'Question support is compiled from the learner turn upstream of response selection; the gate verdict, repair policy, and register selection do not write responsiveRepairRequired.',
+  },
+  'opening.instructional_meta': {
+    switching_variable: 'responseCompositionFrame.discourse_plane.plane',
+    trace:
+      'The learner-wording discourse-plane classifier sets instructional_meta upstream of the gate, and instructional repair structurally overrides the gate-selected stance and action.',
+  },
+  'opening.writable_before_due_evidence': {
+    switching_variable: 'tutorStubLearnerRequestsWritableEntry(learnerText) with due release cues',
+    trace:
+      'The writable-entry classifier reads learner wording and due evidence before the gate-selected response configuration; the gate path cannot reach either switch.',
+  },
+  'opening.writable_entry': {
+    switching_variable: 'tutorStubLearnerRequestsWritableEntry(learnerText) without due release cues',
+    trace:
+      'The writable-entry classifier reads learner wording and due evidence before the gate-selected response configuration; the gate path cannot reach either switch.',
+  },
+  'part.prop.existing': {
+    switching_variable: 'scene_action_budget.saturated and dramaticReleaseFrame.requiresExhibitHandoff',
+    trace:
+      'Prop availability is fixed by scene-budget and release state; the gate decision path does not write either field.',
+  },
+  'part.prop.named': {
+    switching_variable: 'scene_action_budget.saturated and dramaticReleaseFrame.requiresExhibitHandoff',
+    trace:
+      'Prop availability is fixed by scene-budget and release state; the gate decision path does not write either field.',
+  },
+  'tactic.support.0': {
+    switching_variable: 'configuration.support_level equal to zero or unset',
+    trace:
+      'The null branch returns an empty string, so there are no instruction bytes to inject regardless of reachability.',
+  },
+  'tactic.source_accessibility.max_words': {
+    switching_variable: 'sourceAccessibility.effective_mode and sourceAccessibility.owner',
+    trace:
+      'Source-accessibility mode is compiled from the source policy and due-source contract, not from the gate verdict, repair policy, or register selection.',
+  },
+  'tactic.source_accessibility.material_tokens': {
+    switching_variable: 'sourceAccessibility.effective_mode and sourceAccessibility.owner',
+    trace:
+      'Source-accessibility mode is compiled from the source policy and due-source contract, not from the gate verdict, repair policy, or register selection.',
+  },
+  'tactic.source_accessibility.constraints': {
+    switching_variable: 'sourceAccessibility.effective_mode and sourceAccessibility.owner',
+    trace:
+      'Source-accessibility mode is compiled from the source policy and due-source contract, not from the gate verdict, repair policy, or register selection.',
+  },
+  'tactic.source_boundary': {
+    switching_variable: 'contract.evidence.active',
+    trace:
+      'Active SOURCE presence is fixed by dramatic release state before the speaking configuration; the gate path cannot create or remove due evidence.',
+  },
+  'tactic.causal_performance': {
+    switching_variable: 'writableEntryCausalContract from learner wording and committed public evidence',
+    trace:
+      'The causal-performance addition is switched by the writable-entry classifier and public evidence, neither of which the gate path can change.',
+  },
+  'handoff.settled': {
+    switching_variable: 'conversational_completion.resolved and its prohibited settled surfaces',
+    trace:
+      'Settled-surface bookkeeping is copied from the learner-side conversational-completion frame; the gate path does not write it.',
+  },
+  'handoff.declarative_fallback': {
+    switching_variable: 'absence of progression.handoff_contract.instruction under declarative question support',
+    trace:
+      'compileTutorStubTurnProgressionContract always supplies handoff_contract.instruction; the gate path cannot create the missing-instruction condition for this fallback literal.',
+  },
+  'handoff.bounded_choices': {
+    switching_variable: 'questionSupport.modality matching bounded choice',
+    trace:
+      'The compact host plan appends this string directly from question-support modality, an upstream learner-state field the gate path cannot write.',
+  },
+  'handoff.clarification_invitation': {
+    switching_variable: 'questionSupport.clarificationInvitationRequired',
+    trace:
+      'The compact host plan appends this string directly from an upstream question-support field the gate path cannot write.',
+  },
+  'action.override.responsive_repair': {
+    switching_variable: 'questionSupport.responsiveRepairRequired',
+    trace:
+      'Responsive repair is fixed by question-support analysis upstream of the gate; the gate path cannot write the flag.',
+  },
+});
+
+function inClassification(id) {
+  if (id === 'uptake.default') {
+    return {
+      switching_variable: 'progression.public_obligation_contract.complete versus the compact-uptake fallback',
+      trace:
+        'The gate can supply public_obligation_directive; compilation turns it into a complete public-obligation contract that replaces or restores the default uptake branch.',
+    };
+  }
+  if (id === 'opening.default_response') {
+    return {
+      switching_variable: 'fallback after progression.public_obligation_contract.complete and upstream opening branches',
+      trace:
+        'The gate can supply public_obligation_directive, so its decision path reaches the public-obligation discriminator immediately above this fallback.',
+    };
+  }
+  if (id.startsWith('part.')) {
+    return {
+      switching_variable: 'response_configuration.actorial_part and actorial_part_label',
+      trace:
+        'Gate-selected action family and stance feed selectTutorStubActorialPart; the resulting register selection chooses the compact part cue and wrapper.',
+    };
+  }
+  if (id.startsWith('tactic.execution.')) {
+    return {
+      switching_variable: 'response_configuration.actorial_performance.id',
+      trace:
+        'The gate-selected stance feeds selectTutorStubActorialPerformance, so register selection can change which tactic execution cue renders.',
+    };
+  }
+  if (id.startsWith('tactic.support.')) {
+    return {
+      switching_variable: 'response_configuration.support_level',
+      trace:
+        'Support level is a policy-selected response-configuration field downstream of the gate; ruling 060b keeps the complete nonempty support cue family in.',
+    };
+  }
+  if (id === 'tactic.delivered_boundary') {
+    return {
+      switching_variable: 'performance obligation tactic_applicability for the gate-selected actorial_performance',
+      trace:
+        'The gate-selected stance changes the requested tactic; the performance compiler may replace an inapplicable selected tactic and inject this transition.',
+    };
+  }
+  if (id === 'tactic.direction_only_rapid_handoff') {
+    return {
+      switching_variable: 'questionSupport.answerability together with gate-reachable actorial_performance.id',
+      trace:
+        'Question-support state is fixed, but the gate-selected stance can choose or displace rapid_handoff, so the gate path can change whether this recast renders.',
+    };
+  }
+  if (id.startsWith('tactic.question_boundary.')) {
+    return {
+      switching_variable: 'progression.handoff_contract.question_allowed',
+      trace:
+        'Gate-selected action family and public_obligation_directive feed chooseHandoffMode, which sets question_allowed and selects the handoff-owned versus no-question boundary.',
+    };
+  }
+  if (id.startsWith('tactic.question_owned.')) {
+    return {
+      switching_variable: 'gate-reachable actorial_performance.id and progression.handoff_contract question ownership',
+      trace:
+        'The gate-selected stance changes the tactic, while gate-selected action/public-obligation state can change handoff ownership; either path can change the rendered recast.',
+    };
+  }
+  if (id.startsWith('stance.')) {
+    return {
+      switching_variable: 'response_configuration.engagement_stance',
+      trace:
+        'An active warranted decision patches engagement_stance directly, so register selection can change the compact stance cue.',
+      ...(id === 'stance.fallback'
+        ? { doubt: 'Reachability of an unlisted stance value is not proven; ruling 060b keeps uncertain traces IN.' }
+        : {}),
+    };
+  }
+  if (id === 'handoff.bridge') {
+    return {
+      switching_variable: 'turn_focus_contract.sibling_relation_requires_explicit_bridge',
+      trace:
+        'A gate-supplied complete public obligation forces sibling_relation_requires_explicit_bridge false, so the gate path can suppress or restore this bridge.',
+    };
+  }
+  if (id === 'handoff.public_limit' || id === 'handoff.optional_question') {
+    return {
+      switching_variable: 'progression.handoff_contract mode and question_required',
+      trace:
+        'Gate-selected action family, tactic, and public obligation feed chooseHandoffMode and question_required, so the gate path can change this handoff branch.',
+    };
+  }
+  if (id === 'handoff.source_question') {
+    return {
+      switching_variable: 'development.action_family equal to stage_next_step with active evidence',
+      trace:
+        'Evidence presence is fixed, but the repair policy can select or displace stage_next_step and thereby change whether this string renders.',
+    };
+  }
+  if (id === 'handoff.action_question') {
+    return {
+      switching_variable: 'gate-reachable compact_action_instruction and default handoff mode',
+      trace:
+        'The repair policy selects the action family embedded in this template, and gate-selected action/public-obligation state can also change the default handoff branch.',
+    };
+  }
+  if (id === 'action.override.closure') {
+    return {
+      switching_variable: 'dialogueClosureFrame.mandatory after adaptive-warrant inquiry-completion constraint',
+      trace:
+        'The active gate constrains legacy closure with its inquiry-completion verdict, so its decision path can suppress or retain the closure override.',
+    };
+  }
+  if (id === 'action.override.active_source') {
+    return {
+      switching_variable: 'development.action_family equal to stage_next_step with active evidence',
+      trace:
+        'Evidence presence is fixed, but the gate repair policy can select or displace stage_next_step and thereby change the override.',
+    };
+  }
+  if (id.startsWith('action.compact_cue.')) {
+    return {
+      switching_variable: 'response_configuration.action_family',
+      trace:
+        'The active gate repair policy overrides action_family directly; ruling 060b requires the whole action cue family without reachability pruning.',
+    };
+  }
+  throw new Error(`missing IN membership classification for ${id}`);
+}
+
+function classifyCandidate(row) {
+  const excluded = OUTCOME_A1_OUT_CLASSIFICATIONS[row.id];
+  const classification = excluded || inClassification(row.id);
+  return {
+    id: row.id,
+    source: row.source,
+    switching_variable: classification.switching_variable,
+    gate_decision_path_reachable: excluded ? false : true,
+    verdict: excluded ? 'OUT' : 'IN',
+    trace: classification.trace,
+    ...(classification.doubt ? { doubt: classification.doubt } : {}),
+  };
+}
+
 function sourceRows() {
   const firstDraftPath = 'services/tutorStubFirstDraftContract.js';
   const firstDraft = read(firstDraftPath).toString('utf8');
@@ -215,6 +482,23 @@ function sourceRows() {
     ...keyedRows(actionCues, { idPrefix: 'action.compact_cue', sourceConstant: 'compactActionInstruction.cues', prefix: (key) => `When the gate carries the ${key.replaceAll('_', ' ')} action family, its compact action cue is:` }),
   ];
   return rows;
+}
+
+function classifiedSourceRows() {
+  return sourceRows().map((row) => ({ row, classification: classifyCandidate(row) }));
+}
+
+function includedSourceRows() {
+  return classifiedSourceRows()
+    .filter(({ classification }) => classification.verdict === 'IN')
+    .map(({ row }) => row);
+}
+
+function enumerationRule() {
+  return {
+    ...OUTCOME_A1_ENUMERATION_RULE,
+    per_string_classification: classifiedSourceRows().map(({ classification }) => classification),
+  };
 }
 
 function renderMenu(rows) {
@@ -403,11 +687,11 @@ export function guardOutcomePilotPreparation({ worldPaths, seeds = OUTCOME_PILOT
 }
 
 export function buildOutcomeStandingPermissionMenu() {
-  const rows = sourceRows();
+  const rows = includedSourceRows();
   return {
     schema: OUTCOME_A1_MENU_SCHEMA,
     source_sha256: { ...OUTCOME_A1_SOURCE_PINS },
-    enumeration_rule: { ...OUTCOME_A1_ENUMERATION_RULE },
+    enumeration_rule: enumerationRule(),
     prefix_set: rows.map(({ id, prefix }) => ({ id, prefix })),
     entries: rows,
     menu_text: renderMenu(rows),
@@ -421,7 +705,8 @@ export function guardOutcomeStandingPermissionMenu(material) {
       return [relativePath, { expected, observed, pass: observed === expected }];
     }),
   );
-  const expectedRows = sourceRows();
+  const expectedRows = includedSourceRows();
+  const expectedEnumerationRule = enumerationRule();
   const actualRows = Array.isArray(material?.entries) ? material.entries : [];
   const expectedById = new Map(expectedRows.map((row) => [row.id, row]));
   const actualById = new Map(actualRows.map((row) => [row.id, row]));
@@ -443,6 +728,8 @@ export function guardOutcomeStandingPermissionMenu(material) {
     };
   });
   const renderedMatches = material?.menu_text === renderMenu(actualRows);
+  const enumerationRuleMatches =
+    JSON.stringify(material?.enumeration_rule) === JSON.stringify(expectedEnumerationRule);
   const pass =
     material?.schema === OUTCOME_A1_MENU_SCHEMA &&
     Object.values(sourceChecks).every((check) => check.pass) &&
@@ -457,6 +744,7 @@ export function guardOutcomeStandingPermissionMenu(material) {
         row.prefix_bytes_match &&
         row.source_location_match,
     ) &&
+    enumerationRuleMatches &&
     renderedMatches;
   return {
     schema: 'machinespirits.adaptation-refinement.warrant-outcome-menu-drift-guard.v1',
@@ -468,6 +756,7 @@ export function guardOutcomeStandingPermissionMenu(material) {
     missing,
     unexpected,
     duplicate_ids: [...new Set(duplicateIds)].sort(),
+    enumeration_rule_matches: enumerationRuleMatches,
     rendered_menu_matches_entries: renderedMatches,
     rows: rowChecks,
   };

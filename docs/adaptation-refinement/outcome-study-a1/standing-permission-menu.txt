@@ -3,61 +3,6 @@ When no narrower uptake branch applies, the compact uptake string is:
 Answer, credit, qualify, correct, or receive the learner’s concrete move; never use generic praise.
 </verbatim>
 
-When the public contract records learner acceleration, the compact uptake addition is:
-<verbatim>
-Credit every warranted move; do not ask for it again.
-</verbatim>
-
-When the public contract carries a learner move, this compact uptake template is rendered and the gate fills its named slot from the public contract:
-<verbatim>
-Carry forward this move: {{learner_move}}
-</verbatim>
-
-When a writable entry must precede complementary due evidence, the compact uptake string is:
-<verbatim>
-Begin exactly “Write:” with one learner-sayable pre-turn limit; do not preview or paraphrase SOURCE.
-</verbatim>
-
-When the public contract carries a causal subject and outcome, this compact uptake template is rendered and the gate fills its named slots from the public contract:
-<verbatim>
-Begin exactly “Write:” with this learner-sayable sentence: “The {{causal_subject}} did not cause the {{causal_outcome}}.” Keep both named roles exact; never widen either role or change cause into prevention.
-</verbatim>
-
-When the public contract carries a causal relation without a named subject, the compact uptake string is:
-<verbatim>
-Begin exactly “Write:” with one learner-sayable sentence: the candidate was inactive while the outcome still occurred, so this rules out candidate causation. Preserve named actors and polarity; never say the candidate failed to prevent or stop the outcome.
-</verbatim>
-
-When a writable entry can point to a rendered public record, the compact uptake string is:
-<verbatim>
-Begin exactly “Write:” with one learner-sayable sentence saying what one numbered RECORD line says. Preserve its actors, relation, and polarity; never reverse cause or evidentiary force, and claim nothing the line does not carry.
-</verbatim>
-
-When a writable entry has no rendered public-record block, the compact uptake fallback is:
-<verbatim>
-Begin exactly “Write:” with one learner-sayable sentence licensed by the public record. Preserve actors, relation, and polarity; never reverse cause or evidentiary force.
-</verbatim>
-
-When the public contract requires responsive repair, the compact uptake string is:
-<verbatim>
-Answer the learner’s unanswered question directly before doing anything else.
-</verbatim>
-
-When the public contract selects instructional-meta repair, its rendered opening instruction is:
-<verbatim>
-Begin by directly acknowledging that the learner wants the explanation made easier to follow. Restate the latest tutor point in ordinary words. Do not quote the whole learner request, treat it as evidence, or advance the inquiry.
-</verbatim>
-
-When a writable entry precedes due evidence, its rendered opening instruction is:
-<verbatim>
-The learner asked what to write while new evidence is due in this reply. Begin exactly with “Write:” and supply one complete learner-sayable sentence about the pre-turn public status or evidentiary limit. It must complement the new evidence: do not state, paraphrase, preview, or summarize any PUBLIC EVIDENCE DUE NOW. Only then enact each due clue once in the development beat.
-</verbatim>
-
-When a writable entry is requested without due evidence, its rendered opening instruction is:
-<verbatim>
-The learner asked what to write. Begin exactly with “Write:” and supply one complete learner-sayable sentence licensed by the current public evidence. This direct entry is the learner uptake; only then perform the selected development beat. Do not substitute a prop action or another question for the requested sentence.
-</verbatim>
-
 When no narrower opening branch applies, the rendered opening instruction is:
 <verbatim>
 Respond to the learner’s actual contribution in the first sentence by answering, crediting, qualifying, correcting, or receiving it. Paraphrase its concrete claim or concern rather than echoing the learner’s substantive wording; do not begin with generic praise.
@@ -121,16 +66,6 @@ place both speakers at one named public object using “you”, “we”, or “
 When no named compact part cue is available, the compact part fallback is:
 <verbatim>
 perform one concrete public action or judgment
-</verbatim>
-
-When the public contract forbids a new prop, the compact part addition is:
-<verbatim>
-Use an already-named object; add no prop.
-</verbatim>
-
-When the public contract permits a scene object, the compact part addition is:
-<verbatim>
-Name one public scene object.
 </verbatim>
 
 For every selected part, this compact wrapper is rendered and the gate fills its named slots from the public contract:
@@ -198,31 +133,6 @@ When support level is one, the compact tactic support string is:
 Give only a light directional cue.
 </verbatim>
 
-When support level is zero or unset, the compact tactic support string is empty:
-<verbatim>
-
-</verbatim>
-
-When source accessibility compensation is active, this compact template is rendered and the gate fills its named slot from the public contract:
-<verbatim>
-Immediately after SOURCE, write one unquoted statement of at most {{max_words}} words.
-</verbatim>
-
-When source accessibility compensation is active, this compact template is rendered and the gate fills its named slot from the public contract:
-<verbatim>
-Reuse at least {{min_material_source_tokens}} material SOURCE words in order and one source-specific anchor.
-</verbatim>
-
-When source accessibility compensation is active, its compact constraint string is:
-<verbatim>
-Add only a, an, or the; preserve no, not, only, and may; do not copy all SOURCE or ask.
-</verbatim>
-
-When public source evidence is active, the compact tactic prefix is:
-<verbatim>
-After SOURCE closes, make TACTIC a new unquoted sentence.
-</verbatim>
-
 When the requested pressure tactic is inapplicable, the compact tactic transition is:
 <verbatim>
 Use the delivered boundary tactic, not the requested pressure tactic.
@@ -231,11 +141,6 @@ Use the delivered boundary tactic, not the requested pressure tactic.
 When direction-only support recasts rapid handoff, the compact tactic execution string is:
 <verbatim>
 Move straight from one already-public object or line to the present evidentiary limit. State the direction of the missing support yourself and end declaratively; do not ask the learner to name unseen evidence.
-</verbatim>
-
-When the public contract carries a causal subject and outcome, this tactic template is rendered and the gate fills its named slots from the public contract:
-<verbatim>
-Say “The {{causal_subject}} did not cause the {{causal_outcome}}; actual cause remains open.” Add no third clause or role change.
 </verbatim>
 
 When the handoff owns an allowed question, the compact tactic boundary is:
@@ -313,19 +218,9 @@ When the public contract carries an unlisted stance, this compact stance fallbac
 Make it visibly {{engagement_stance}}.
 </verbatim>
 
-When the public contract names a settled surface, the compact handoff addition is:
-<verbatim>
-Do not reopen the settled point.
-</verbatim>
-
 When the public contract requires a sibling-relation bridge, the compact handoff addition is:
 <verbatim>
 Connect SOURCE to the learner’s requested relation.
-</verbatim>
-
-When declarative support has no supplied handoff instruction, the compact handoff fallback is:
-<verbatim>
-End declaratively; ask no question.
 </verbatim>
 
 When questions are forbidden without another special branch, the compact handoff string is:
@@ -348,24 +243,9 @@ When the default handoff owns the final question, this compact handoff template 
 {{compact_action_instruction}} HANDOFF owns the one final question.
 </verbatim>
 
-When question-support state requires bounded choices, the compact handoff addition is:
-<verbatim>
-Express two or three recognizable public-safe choices declaratively; do not turn the list into a question.
-</verbatim>
-
-When question-support state requires a clarification invitation, the compact handoff addition is:
-<verbatim>
-Also say that the learner may ask for a direct explanation of one clue, connection, or term.
-</verbatim>
-
 When the public contract requires closure, the compact action override is:
 <verbatim>
 State the licensed public finding and close the inquiry; ask no question.
-</verbatim>
-
-When the public contract requires responsive repair, the compact action override is:
-<verbatim>
-End after the direct answer or one public way to check it; do not substitute another exercise.
 </verbatim>
 
 When active source evidence carries stage-next-step, the compact action override is:

@@ -103,8 +103,32 @@ test('standing-permission byte guard passes the complete generated menu', () => 
   const menu = buildOutcomeStandingPermissionMenu();
   const result = guardOutcomeStandingPermissionMenu(menu);
   assert.equal(result.status, 'passed');
+  assert.equal(menu.entries.length, 63);
+  assert.equal(menu.enumeration_rule.per_string_classification.length, 87);
+  assert.equal(
+    menu.enumeration_rule.per_string_classification.filter((row) => row.verdict === 'IN').length,
+    63,
+  );
+  assert.equal(
+    menu.enumeration_rule.per_string_classification.find((row) => row.id === 'opening.instructional_meta')
+      ?.verdict,
+    'OUT',
+  );
+  assert.equal(
+    menu.enumeration_rule.per_string_classification.find((row) => row.id === 'tactic.support.0')?.verdict,
+    'OUT',
+  );
+  assert.match(menu.enumeration_rule.null_branch, /empty string/u);
   assert.equal(result.observed_entry_count, result.expected_entry_count);
   assert.equal(result.missing.length, 0);
+});
+
+test('standing-permission byte guard fails when the membership classification changes', () => {
+  const menu = buildOutcomeStandingPermissionMenu();
+  menu.enumeration_rule.per_string_classification[0].verdict = 'OUT';
+  const result = guardOutcomeStandingPermissionMenu(menu);
+  assert.equal(result.status, 'failed');
+  assert.equal(result.enumeration_rule_matches, false);
 });
 
 test('standing-permission byte guard fails on one altered quoted byte', () => {
