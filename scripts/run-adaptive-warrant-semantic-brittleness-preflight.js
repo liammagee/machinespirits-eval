@@ -7,7 +7,7 @@ import { parseArgs } from 'node:util';
 
 import {
   auditAdaptiveWarrantSemanticContractCatalog,
-  auditAdaptiveWarrantProviderOutputSchema,
+  auditAdaptiveWarrantLiveSemanticSchemaTotality,
   auditAdaptiveWarrantSemanticReaderSchemaTotality,
   adaptiveWarrantSemanticConsensusIdentity,
   buildAdaptiveWarrantSemanticBatchOutputSchema,
@@ -15,7 +15,10 @@ import {
   scoreAdaptiveWarrantSemanticExtraction,
   validateAdaptiveWarrantSemanticAnnotationResponse,
 } from '../services/adaptiveWarrantSemanticAnnotation.js';
-import { buildTutorStubPublicLearnerAnalysisProviderOutputSchema } from '../services/tutorStubPublicLearnerAnalysis.js';
+import {
+  buildTutorStubPublicLearnerAnalysisOutputSchema,
+  buildTutorStubPublicLearnerAnalysisProviderOutputSchema,
+} from '../services/tutorStubPublicLearnerAnalysis.js';
 import {
   ADAPTIVE_WARRANT_SEMANTIC_PREFLIGHT_SCHEMA,
   adaptiveWarrantSemanticInstrumentBindings,
@@ -448,13 +451,31 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     readerSchemaTotalityAudits.smoke,
     ...readerSchemaTotalityAudits.diagnostic_shipped_batches,
   ];
-  const liveSemanticSchema = buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
-    includeSemanticEvents: true,
-  }).properties.semantic_events;
-  const liveSemanticSchemaAudit = auditAdaptiveWarrantProviderOutputSchema({
-    schema: liveSemanticSchema,
-    maximumDepth: 10,
-  });
+  const liveSemanticSchemas = {
+    local: buildTutorStubPublicLearnerAnalysisOutputSchema({ includeSemanticEvents: true }).properties.semantic_events,
+    provider: buildTutorStubPublicLearnerAnalysisProviderOutputSchema({ includeSemanticEvents: true }).properties
+      .semantic_events,
+  };
+  const liveSemanticSchemaAudits = Object.fromEntries(
+    Object.entries(liveSemanticSchemas).map(([seat, schema]) => [
+      seat,
+      auditAdaptiveWarrantLiveSemanticSchemaTotality({ schema }),
+    ]),
+  );
+  const liveSchemaLanguageEquivalent =
+    adaptiveWarrantSemanticValueSha256(liveSemanticSchemas.local) ===
+    adaptiveWarrantSemanticValueSha256(liveSemanticSchemas.provider);
+  const sentinel = ['Classifier failed', ' before the tutor turn.'].join('');
+  const promptAssemblySources = [
+    'services/tutorStubLearnerClassification.js',
+    'services/tutorStubTutorPromptContext.js',
+    'services/tutorStubResponseComposition.js',
+    'services/tutorStubTurnProgressionContract.js',
+    'services/tutorStubLearnerAnalysisRuntime.js',
+  ];
+  const sentinelLeakPaths = promptAssemblySources.filter((relativePath) =>
+    fs.readFileSync(path.join(ROOT, relativePath), 'utf8').includes(sentinel),
+  );
   const schemaText = JSON.stringify(schemas);
   const scoreStates = Object.values(score.checks);
   const checks = [
@@ -487,13 +508,23 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       readerSchemaTotalityAudits,
     ),
     check(
-      'live_semantic_fields_total_non_nullable_and_provider_compatible',
-      liveSemanticSchemaAudit.ok === true &&
-        liveSemanticSchemaAudit.reader_fields_total === true &&
-        liveSemanticSchemaAudit.provider_keywords_supported === true &&
-        liveSemanticSchemaAudit.nesting_depth_within_limit === true,
-      liveSemanticSchemaAudit,
+      'live_local_and_provider_semantic_schemas_are_total_act_closed_and_equivalent',
+      Object.values(liveSemanticSchemaAudits).every(
+        (audit) =>
+          audit.ok === true &&
+          audit.reader_fields_total === true &&
+          audit.explicit_none_tokens === true &&
+          audit.provider_keywords_supported === true &&
+          audit.union_branches_pairwise_disjoint === true &&
+          audit.act_contract_language_equivalent === true &&
+          audit.nesting_depth_within_limit === true,
+      ) && liveSchemaLanguageEquivalent,
+      { audits: liveSemanticSchemaAudits, local_provider_language_equivalent: liveSchemaLanguageEquivalent },
     ),
+    check('fallback_sentinel_absent_from_prompt_assembly_sources', sentinelLeakPaths.length === 0, {
+      scanned_paths: promptAssemblySources,
+      leak_paths: sentinelLeakPaths,
+    }),
     check(
       'reader_schema_uses_only_supported_provider_keywords',
       allReaderSchemaAudits.every((audit) => audit.provider_keywords_supported === true),
@@ -592,6 +623,9 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
         diagnostic: diagnosticContractCatalogAudit,
       },
       reader_schema_totality_audits: readerSchemaTotalityAudits,
+      live_semantic_schema_totality_audits: liveSemanticSchemaAudits,
+      live_semantic_local_provider_language_equivalent: liveSchemaLanguageEquivalent,
+      fallback_sentinel_leak_paths: sentinelLeakPaths,
     },
   };
   if (passed) validateAdaptiveWarrantSemanticPreflightArtifact({ artifact, expectedSourceCommit: sourceCommit });

@@ -725,7 +725,8 @@ test('the one-call schema-acceptance ping is synthetic, excluded, and stale resu
   const corpus = buildAdaptiveWarrantSemanticSchemaAcceptanceCorpus(sourceCommit);
   assert.equal(corpus.synthetic_schema_acceptance_only, true);
   assert.equal(corpus.permanently_excluded_from_research, true);
-  assert.equal(corpus.cases.length, 8);
+  assert.equal(corpus.cases.length, 1);
+  assert.equal(corpus.cases[0].sample_id, 'synthetic-live-analysis-schema-acceptance-01');
   const artifact = {
     schema: ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_RESULT_SCHEMA,
     status: 'passed',

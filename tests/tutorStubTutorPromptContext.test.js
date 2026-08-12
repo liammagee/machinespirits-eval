@@ -8,8 +8,10 @@ import { fileURLToPath } from 'node:url';
 import {
   projectTutorStubDialogueClosureContext,
   projectTutorStubHumanDiscourseContext,
+  projectTutorStubLearnerClassifierContext,
   projectTutorStubLearnerDagModelContext,
 } from '../services/tutorStubTutorPromptContext.js';
+import { buildTutorStubFailedClassification } from '../services/tutorStubLearnerClassification.js';
 import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -24,6 +26,12 @@ function deepFreeze(value, seen = new WeakSet()) {
   for (const child of Object.values(value)) deepFreeze(child, seen);
   return Object.freeze(value);
 }
+
+test('an unanalyzed learner marker contributes no tutor planning prose', () => {
+  const marker = buildTutorStubFailedClassification({ code: 'invalid_semantic_events' });
+  assert.equal(projectTutorStubLearnerClassifierContext(marker), '');
+  assert.equal(JSON.stringify(marker).includes('Classifier failed before the tutor turn.'), false);
+});
 
 function fullLearnerDagFixture() {
   return {

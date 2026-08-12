@@ -200,6 +200,119 @@ export function auditAdaptiveWarrantProviderOutputSchema({ schema, maximumDepth 
   };
 }
 
+export function auditAdaptiveWarrantLiveSemanticSchemaTotality({ schema } = {}) {
+  const providerAudit = auditAdaptiveWarrantProviderOutputSchema({ schema, maximumDepth: 10 });
+  const issues = [...providerAudit.issues];
+  const eventUnion = schema?.properties?.events?.items?.anyOf;
+  const branchByState = (candidate, label) => {
+    const choices = candidate?.anyOf;
+    if (!Array.isArray(choices) || choices.length !== 2) {
+      issues.push(`${label} must have exactly two anyOf branches`);
+      return {};
+    }
+    const branches = {};
+    for (const [index, choice] of choices.entries()) {
+      const values = choice?.properties?.state?.enum;
+      if (
+        choice?.type !== 'object' ||
+        !Array.isArray(choice.required) ||
+        !choice.required.includes('state') ||
+        !Array.isArray(values) ||
+        values.length !== 1
+      ) {
+        issues.push(`${label}.anyOf[${index}] lacks a required singleton state discriminator`);
+        continue;
+      }
+      if (branches[values[0]]) issues.push(`${label} union branches share discriminator ${values[0]}`);
+      branches[values[0]] = choice;
+    }
+    if (!branches.catalog || !branches.none || Object.keys(branches).length !== 2) {
+      issues.push(`${label} union is not pairwise disjoint on catalog/none state`);
+    }
+    return branches;
+  };
+  const exactEnum = (actual, expected, label) => {
+    if (JSON.stringify([...(actual || [])].sort()) !== JSON.stringify([...expected].sort())) {
+      issues.push(`${label} is not closed to the shared contract`);
+    }
+  };
+  if (!Array.isArray(eventUnion) || eventUnion.length !== ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.length) {
+    issues.push('live event union must have one branch per speech act');
+  }
+  const branchesBySpeechAct = {};
+  let unionsPairwiseDisjoint = true;
+  let explicitNoneTokens = true;
+  for (const [index, branch] of (eventUnion || []).entries()) {
+    const speechActs = branch?.properties?.speech_act?.enum;
+    if (!Array.isArray(speechActs) || speechActs.length !== 1 || branchesBySpeechAct[speechActs[0]]) {
+      issues.push(`live event.anyOf[${index}] lacks a unique singleton speech_act discriminator`);
+      unionsPairwiseDisjoint = false;
+      continue;
+    }
+    const speechAct = speechActs[0];
+    branchesBySpeechAct[speechAct] = branch;
+    const contract = ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS[speechAct];
+    if (!contract) {
+      issues.push(`live event.anyOf[${index}] has an undeclared speech act`);
+      continue;
+    }
+    const targetSchema = branch.properties?.target;
+    const actionSchema = branch.properties?.requested_or_proposed_action;
+    const targetBranches = contract.target === 'catalog_or_none' ? branchByState(targetSchema, `${speechAct}.target`) : {};
+    const targetCatalog = contract.target === 'catalog' ? targetSchema : targetBranches.catalog;
+    const targetNone = contract.target === 'none' ? targetSchema : targetBranches.none;
+    if (targetCatalog) {
+      exactEnum(
+        targetCatalog.properties?.kind?.enum,
+        ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS,
+        `${speechAct}.target.kind`,
+      );
+      exactEnum(
+        targetCatalog.properties?.requested_value_types?.items?.enum,
+        ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES,
+        `${speechAct}.target.requested_value_types`,
+      );
+    }
+    if (contract.target !== 'catalog' && targetNone?.properties?.state?.enum?.[0] !== 'none') {
+      issues.push(`${speechAct}.target lacks the exact none branch`);
+      explicitNoneTokens = false;
+    }
+    if (contract.target === 'catalog_or_none' && (!targetBranches.catalog || !targetBranches.none)) {
+      unionsPairwiseDisjoint = false;
+    }
+    if (contract.action === 'none') {
+      if (actionSchema?.properties?.state?.enum?.[0] !== 'none') {
+        issues.push(`${speechAct}.action lacks the exact none branch`);
+        explicitNoneTokens = false;
+      }
+    } else {
+      exactEnum(actionSchema?.properties?.mode?.enum, [contract.mode], `${speechAct}.action.mode`);
+      exactEnum(actionSchema?.properties?.action?.enum, [contract.operation], `${speechAct}.action.operation`);
+      exactEnum(actionSchema?.properties?.executor?.enum, contract.executors, `${speechAct}.action.executor`);
+    }
+  }
+  const missingActs = ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.filter((speechAct) => !branchesBySpeechAct[speechAct]);
+  if (missingActs.length) issues.push(`live event union omits speech acts: ${missingActs.join(', ')}`);
+  return {
+    ok: issues.length === 0,
+    issue_count: issues.length,
+    issues,
+    reader_fields_total: issues.every((issue) => !issue.includes('optional') && !issue.includes('null')),
+    explicit_none_tokens: explicitNoneTokens,
+    provider_keywords_supported: providerAudit.provider_keywords_supported,
+    union_branches_pairwise_disjoint: unionsPairwiseDisjoint,
+    act_contract_language_equivalent: issues.every(
+      (issue) =>
+        !issue.includes('speech act') &&
+        !issue.includes('.action.') &&
+        !issue.includes('exact none branch') &&
+        !issue.includes('shared contract'),
+    ),
+    maximum_nesting_depth: providerAudit.maximum_nesting_depth,
+    nesting_depth_within_limit: providerAudit.nesting_depth_within_limit,
+  };
+}
+
 function semanticReaderEventSchema(semanticCatalog) {
   const catalogIds = validateAdaptiveWarrantSemanticReaderCatalog(semanticCatalog);
   const catalogTarget = closedSchema({

@@ -24,6 +24,7 @@ import {
   ADAPTIVE_WARRANT_SEMANTIC_ACTIONS,
   ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE,
   ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA,
+  ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS,
   ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS,
   ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS,
   ADAPTIVE_WARRANT_SEMANTIC_UNCERTAINTY_REASONS,
@@ -396,102 +397,97 @@ function discourseOutputSchema() {
   };
 }
 
-function semanticEventLocalOutputSchema() {
-  const absent = {
+function providerObjectSchema(properties) {
+  return {
     type: 'object',
     additionalProperties: false,
-    required: ['state'],
-    properties: { state: { type: 'string', const: 'none' } },
+    required: Object.keys(properties),
+    properties,
   };
-  const target = {
-    type: 'object',
-    additionalProperties: false,
-    required: ['state', 'kind', 'target_id', 'public_identifier_ids', 'requested_value_types', 'component_ids'],
-    properties: {
-      state: { type: 'string', const: 'catalog' },
-      kind: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS] },
-      target_id: { type: 'string' },
-      public_identifier_ids: { type: 'array', maxItems: 6, items: { type: 'string' } },
-      requested_value_types: {
+}
+
+/**
+ * One act-discriminated semantic-event language is shared by local validation
+ * and provider structured output. Per-act target/action shapes come directly
+ * from the certified contract table; the deterministic runtime retains the
+ * richer offset, size, catalogue, and public-evidence checks.
+ */
+export function buildTutorStubPublicLearnerAnalysisSemanticOutputSchema() {
+  const absent = providerObjectSchema({ state: { type: 'string', enum: ['none'] } });
+  const catalogTarget = providerObjectSchema({
+    state: { type: 'string', enum: ['catalog'] },
+    kind: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS] },
+    target_id: { type: 'string' },
+    public_identifier_ids: { type: 'array', maxItems: 6, items: { type: 'string' } },
+    requested_value_types: {
+      type: 'array',
+      maxItems: 4,
+      items: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES] },
+    },
+    component_ids: { type: 'array', maxItems: 4, items: { type: 'string' } },
+  });
+  const targetFor = (contract) => {
+    if (contract.target === 'catalog') return catalogTarget;
+    if (contract.target === 'none') return absent;
+    return { anyOf: [catalogTarget, absent] };
+  };
+  const actionFor = (contract) =>
+    contract.action === 'none'
+      ? absent
+      : providerObjectSchema({
+          state: { type: 'string', enum: ['catalog'] },
+          mode: { type: 'string', enum: [contract.mode] },
+          executor: { type: 'string', enum: [...contract.executors] },
+          action: { type: 'string', enum: [contract.operation] },
+          action_object_id: { type: 'string' },
+        });
+  const eventFor = (speechAct) => {
+    const contract = ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS[speechAct];
+    return providerObjectSchema({
+      event_id: { type: 'string' },
+      speech_act: { type: 'string', enum: [speechAct] },
+      target: targetFor(contract),
+      requested_or_proposed_action: actionFor(contract),
+      evidence_span: providerObjectSchema({
+        text: { type: 'string' },
+        start: { type: 'integer', minimum: 0 },
+        end: { type: 'integer', minimum: 1 },
+      }),
+      confidence: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE] },
+      uncertainty: {
         type: 'array',
-        maxItems: 4,
-        items: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES] },
+        maxItems: 3,
+        items: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_UNCERTAINTY_REASONS] },
       },
-      component_ids: { type: 'array', maxItems: 4, items: { type: 'string' } },
-    },
-  };
-  const action = {
-    type: 'object',
-    additionalProperties: false,
-    required: ['state', 'mode', 'executor', 'action', 'action_object_id'],
-    properties: {
-      state: { type: 'string', const: 'catalog' },
-      mode: { type: 'string', enum: ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES.filter((value) => value !== 'none') },
-      executor: {
-        type: 'string',
-        enum: ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS.filter((value) => value !== 'none'),
-      },
-      action: { type: 'string', enum: ADAPTIVE_WARRANT_SEMANTIC_ACTIONS.filter((value) => value !== 'none') },
-      action_object_id: { type: 'string' },
-    },
+    });
   };
   return {
     type: 'object',
     additionalProperties: false,
     required: ['schema', 'source_turn', 'source_text_sha256', 'events', 'extraction_status'],
     properties: {
-      schema: { type: 'string', const: ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA },
+      schema: { type: 'string', enum: [ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA] },
       source_turn: { type: 'integer', minimum: 1 },
-      source_text_sha256: { type: 'string', minLength: 64, maxLength: 64 },
+      source_text_sha256: { type: 'string' },
       events: {
         type: 'array',
         maxItems: 4,
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          required: [
-            'event_id',
-            'speech_act',
-            'target',
-            'requested_or_proposed_action',
-            'evidence_span',
-            'confidence',
-            'uncertainty',
-          ],
-          properties: {
-            event_id: { type: 'string' },
-            speech_act: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS] },
-            target: { anyOf: [absent, target] },
-            requested_or_proposed_action: { anyOf: [absent, action] },
-            evidence_span: {
-              type: 'object',
-              additionalProperties: false,
-              required: ['text', 'start', 'end'],
-              properties: {
-                text: { type: 'string', maxLength: 240 },
-                start: { type: 'integer', minimum: 0 },
-                end: { type: 'integer', minimum: 1 },
-              },
-            },
-            confidence: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE] },
-            uncertainty: {
-              type: 'array',
-              maxItems: 3,
-              items: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_UNCERTAINTY_REASONS] },
-            },
-          },
-        },
+        items: { anyOf: ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.map(eventFor) },
       },
       extraction_status: { type: 'string', enum: ['accepted', 'uncertain'] },
     },
   };
 }
 
+function semanticEventLocalOutputSchema() {
+  return buildTutorStubPublicLearnerAnalysisSemanticOutputSchema();
+}
+
 /**
- * Local semantic schema retained for documentation and non-provider
- * validation. It deliberately expresses sparse optional fields and richer
- * JSON-Schema constraints, so it must not be sent to OpenAI/Codex Structured
- * Outputs. Interactive parsing remains schema-free and tolerant.
+ * Local analysis-envelope schema retained for documentation and non-provider
+ * validation. Its semantic-events member is the same provider-compatible,
+ * act-discriminated language used by Structured Outputs; the surrounding
+ * legacy analysis fields remain more permissive for non-provider callers.
  */
 export function buildTutorStubPublicLearnerAnalysisOutputSchema({
   includeRegisterSelection = false,
@@ -604,63 +600,8 @@ export const TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_OUTPUT_SCHEMA = Object.freeze(
   buildTutorStubPublicLearnerAnalysisOutputSchema(),
 );
 
-function providerObjectSchema(properties) {
-  return {
-    type: 'object',
-    additionalProperties: false,
-    required: Object.keys(properties),
-    properties,
-  };
-}
-
 function semanticEventProviderOutputSchema() {
-  const absent = providerObjectSchema({ state: { type: 'string', enum: ['none'] } });
-  const target = providerObjectSchema({
-    state: { type: 'string', enum: ['catalog'] },
-    kind: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS] },
-    target_id: { type: 'string' },
-    public_identifier_ids: { type: 'array', items: { type: 'string' } },
-    requested_value_types: {
-      type: 'array',
-      items: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES] },
-    },
-    component_ids: { type: 'array', items: { type: 'string' } },
-  });
-  const action = providerObjectSchema({
-    state: { type: 'string', enum: ['catalog'] },
-    mode: { type: 'string', enum: ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES.filter((value) => value !== 'none') },
-    executor: {
-      type: 'string',
-      enum: ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS.filter((value) => value !== 'none'),
-    },
-    action: { type: 'string', enum: ADAPTIVE_WARRANT_SEMANTIC_ACTIONS.filter((value) => value !== 'none') },
-    action_object_id: { type: 'string' },
-  });
-  return providerObjectSchema({
-    schema: { type: 'string', enum: [ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA] },
-    source_turn: { type: 'integer' },
-    source_text_sha256: { type: 'string' },
-    events: {
-      type: 'array',
-      items: providerObjectSchema({
-        event_id: { type: 'string' },
-        speech_act: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS] },
-        target: { anyOf: [absent, target] },
-        requested_or_proposed_action: { anyOf: [absent, action] },
-        evidence_span: providerObjectSchema({
-          text: { type: 'string' },
-          start: { type: 'integer' },
-          end: { type: 'integer' },
-        }),
-        confidence: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE] },
-        uncertainty: {
-          type: 'array',
-          items: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_UNCERTAINTY_REASONS] },
-        },
-      }),
-    },
-    extraction_status: { type: 'string', enum: ['accepted', 'uncertain'] },
-  });
+  return buildTutorStubPublicLearnerAnalysisSemanticOutputSchema();
 }
 
 function providerScoreOutputSchema() {
@@ -2229,6 +2170,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
   callModel,
   parseMode = TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.STRICT_BENCHMARK,
   role = 'tutor_stub_public_learner_analysis',
+  strictRole = null,
   maxTokens = 2500,
   prompt = null,
   promptProfile = TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.BASELINE,
@@ -2236,7 +2178,15 @@ export async function extractTutorStubPublicLearnerAnalysis({
   modelCallOptions = {},
 } = {}) {
   const strict = parseMode === TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.STRICT_BENCHMARK;
-  const effectiveRole = strict ? 'tutor_stub_public_learner_analysis' : role;
+  const effectiveRole = strict ? strictRole || 'tutor_stub_public_learner_analysis' : role;
+  if (
+    strictRole !== null &&
+    !['tutor_stub_learner_analysis', 'tutor_stub_learner_analysis_prefetch'].includes(String(strictRole))
+  ) {
+    throw new TutorStubPublicLearnerAnalysisError(`unsupported strict live learner-analysis role: ${strictRole}`, {
+      code: 'invalid_strict_live_role',
+    });
+  }
   const outputSchema = strict
     ? buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
         includeBenchmarkTransitionEvent,

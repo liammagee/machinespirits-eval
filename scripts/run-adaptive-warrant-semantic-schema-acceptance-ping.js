@@ -7,17 +7,19 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 
 import {
-  ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA,
-  buildAdaptiveWarrantSemanticBatchOutputSchema,
-  materializeAdaptiveWarrantSemanticReaderEvent,
   validateAdaptiveWarrantSemanticReaderCatalog,
 } from '../services/adaptiveWarrantSemanticAnnotation.js';
+import { adaptiveWarrantSemanticSourceHash } from '../services/adaptiveWarrantSemanticEvents.js';
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
 import {
   ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_RESULT_SCHEMA,
   adaptiveWarrantSemanticValueSha256,
   validateAdaptiveWarrantSemanticPreflightArtifact,
 } from '../services/adaptiveWarrantSemanticPreflight.js';
+import {
+  buildTutorStubPublicLearnerAnalysisProviderOutputSchema,
+  parseTutorStubPublicLearnerAnalysisStrict,
+} from '../services/tutorStubPublicLearnerAnalysis.js';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_FREEZE_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-schema-acceptance-freeze.v1';
@@ -27,11 +29,8 @@ export const ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_AUTHORIZATION_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-schema-acceptance-authorization-request.v1';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
-const READER_ID = 'schema-acceptance-reader';
-const BATCH_ID = 'schema-acceptance-batch-01';
-const SAMPLE_IDS = Object.freeze(
-  Array.from({ length: 8 }, (_, index) => `synthetic-schema-acceptance-${String(index + 1).padStart(2, '0')}`),
-);
+const SAMPLE_ID = 'synthetic-live-analysis-schema-acceptance-01';
+const LEARNER_TEXT = 'I will compare the amber token with cast V.';
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
@@ -56,13 +55,6 @@ function cleanSource() {
   const sourceCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
   if (!/^[0-9a-f]{40}$/u.test(sourceCommit)) throw new Error('schema-acceptance ping requires an exact commit');
   return sourceCommit;
-}
-
-function exactFields(value, expected, label) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(`${label} must be an object`);
-  if (JSON.stringify(Object.keys(value).sort()) !== JSON.stringify([...expected].sort())) {
-    throw new Error(`${label} has unexpected fields`);
-  }
 }
 
 export function buildAdaptiveWarrantSemanticSchemaAcceptanceCorpus(sourceCommit) {
@@ -113,13 +105,70 @@ export function buildAdaptiveWarrantSemanticSchemaAcceptanceCorpus(sourceCommit)
         },
       ],
     },
-    cases: SAMPLE_IDS.map((sampleId, index) => ({
-      sample_id: sampleId,
-      current_learner_turn: { turn: 2, learner: 'I will compare the amber token with cast V.' },
-      public_evidence_at_decision: [
-        `The amber token and cast V are public synthetic identifiers for transport row ${index + 1}.`,
-      ],
-    })),
+    cases: [
+      {
+        sample_id: SAMPLE_ID,
+        current_learner_turn: { turn: 2, learner: LEARNER_TEXT },
+        public_evidence_at_decision: [
+          'The amber token and cast V are public synthetic identifiers for this transport-only case.',
+        ],
+      },
+    ],
+  };
+}
+
+function liveAnalysisResponseTemplate() {
+  return {
+    classification: {
+      turn: {
+        summary: 'Synthetic transport-only learner analysis.',
+        request_type: 'off_task_or_mixed',
+        discourse_move: 'claim',
+        evidence_use: 'none',
+        epistemic_stance: 'exploratory',
+        affect: 'neutral',
+        agency: 'attempting',
+        scores: {
+          conceptual_engagement: { score: 3, reason: 'Synthetic transport acceptance only.' },
+          epistemic_readiness: { score: 3, reason: 'Synthetic transport acceptance only.' },
+        },
+        pedagogical_need: 'Synthetic transport acceptance only.',
+      },
+      overall: {
+        summary: 'Synthetic transport acceptance only.',
+        trajectory: 'Synthetic transport acceptance only.',
+        recurring_pattern: 'Synthetic transport acceptance only.',
+        current_state: 'Synthetic transport acceptance only.',
+        next_best_tutor_move: 'Synthetic transport acceptance only.',
+      },
+    },
+    learner_record: {
+      adopt: [],
+      retract: [],
+      derive: [],
+      hypothesis: null,
+      assert_answer: null,
+      human_discourse: {
+        proof_status: 'unclear',
+        provisional_claims: [],
+        implied_warrants: [],
+        missing_warrants: [],
+        implied_public_premises: [],
+        suppressed_or_private_premises: [],
+        common_sense_bridges: [],
+        illicit_hidden_premises: [],
+        proof_debt_candidates: [],
+        side_arc: { detected: false, type: null, reason: null, return_target: null },
+      },
+      notes: 'Synthetic transport acceptance only.',
+    },
+    semantic_events: {
+      schema: 'machinespirits.adaptation-refinement.semantic-event-extraction.v3',
+      source_turn: 2,
+      source_text_sha256: adaptiveWarrantSemanticSourceHash(LEARNER_TEXT),
+      events: [],
+      extraction_status: 'accepted',
+    },
   };
 }
 
@@ -138,50 +187,23 @@ export function prepareAdaptiveWarrantSemanticSchemaAcceptancePing({ outputDir, 
   const corpusPath = path.join(resolvedOutput, 'synthetic-schema-acceptance-corpus.json');
   writeJson(corpusPath, corpus);
   const corpusSha256 = fileSha256(corpusPath);
-  const responseSchema = buildAdaptiveWarrantSemanticBatchOutputSchema({
-    readerId: READER_ID,
-    batchId: BATCH_ID,
-    studyId: corpus.study_id,
-    corpusSha256,
-    requiredSampleIds: SAMPLE_IDS,
-    semanticCatalog: corpus.semantic_annotation_catalog,
-  });
+  const responseSchema = buildTutorStubPublicLearnerAnalysisProviderOutputSchema({ includeSemanticEvents: true });
   const responseSchemaPath = path.join(resolvedOutput, 'response.schema.json');
   writeJson(responseSchemaPath, responseSchema);
   const packet = {
     schema: ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_PACKET_SCHEMA,
-    task: 'transport_only_structured_output_schema_acceptance',
+    task: 'transport_only_live_analysis_schema_acceptance',
     inferential_role: 'transport_only_permanently_excluded',
     instructions: [
       'This is a synthetic provider-schema acceptance ping, not a reader judgment or research case.',
-      'Return the exact schema-bound envelope. Use events=[] and a case-specific note of at least eight characters.',
+      'Return the exact supplied live learner-analysis response template without changing any value.',
       'Do not use tools and do not add prose outside the JSON object.',
     ],
-    reader_id: READER_ID,
-    batch_id: BATCH_ID,
     study_id: corpus.study_id,
     corpus_sha256: corpusSha256,
     semantic_annotation_catalog: corpus.semantic_annotation_catalog,
-    required_sample_ids: SAMPLE_IDS,
-    cases_by_sample_id: Object.fromEntries(corpus.cases.map((row) => [row.sample_id, row])),
-    response_template: {
-      schema: ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA,
-      reader_id: READER_ID,
-      batch_id: BATCH_ID,
-      study_id: corpus.study_id,
-      corpus_sha256: corpusSha256,
-      cases_by_sample_id: Object.fromEntries(
-        SAMPLE_IDS.map((sampleId) => [
-          sampleId,
-          {
-            genuinely_ambiguous: false,
-            ambiguity_reason: 'none',
-            events: [],
-            note: 'Synthetic transport acceptance only.',
-          },
-        ]),
-      ),
-    },
+    case: corpus.cases[0],
+    response_template: liveAnalysisResponseTemplate(),
     response_json_schema: responseSchema,
   };
   const packetPath = path.join(resolvedOutput, 'schema-acceptance.packet.json');
@@ -189,7 +211,7 @@ export function prepareAdaptiveWarrantSemanticSchemaAcceptancePing({ outputDir, 
   const authorizationContract = {
     schema: ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_AUTHORIZATION_SCHEMA,
     status: 'approval_required',
-    task: 'transport_only_structured_output_schema_acceptance',
+    task: 'transport_only_live_analysis_schema_acceptance',
     inferential_role: 'transport_only_permanently_excluded',
     synthetic_case_permanently_excluded: true,
     source_commit: sourceCommit,
@@ -307,37 +329,18 @@ export async function runAdaptiveWarrantSemanticSchemaAcceptancePing({
         maxStderrBytes: 64_000,
       },
     );
-    const parsed = JSON.parse(String(response.text || '').trim());
-    exactFields(
-      parsed,
-      ['schema', 'reader_id', 'batch_id', 'study_id', 'corpus_sha256', 'cases_by_sample_id'],
-      'schema-acceptance response',
-    );
+    const parsed = parseTutorStubPublicLearnerAnalysisStrict(String(response.text || '').trim(), {
+      includeSemanticEvents: true,
+      benchmarkLearnerText: LEARNER_TEXT,
+      semanticPublicText: JSON.stringify(readJson(freeze.packet.path)),
+      tutorTurn: 2,
+    }).parsed;
     const corpus = readJson(freeze.corpus.path);
-    if (
-      parsed.schema !== ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA ||
-      parsed.reader_id !== READER_ID ||
-      parsed.batch_id !== BATCH_ID ||
-      parsed.study_id !== corpus.study_id ||
-      parsed.corpus_sha256 !== freeze.corpus.sha256 ||
-      JSON.stringify(Object.keys(parsed.cases_by_sample_id || {}).sort()) !== JSON.stringify([...SAMPLE_IDS].sort())
-    ) {
-      throw new Error('schema-acceptance response binding mismatch');
+    if (corpus.cases.length !== 1 || corpus.cases[0].sample_id !== SAMPLE_ID) {
+      throw new Error('schema-acceptance synthetic corpus binding mismatch');
     }
-    for (const sampleId of SAMPLE_IDS) {
-      const caseResponse = parsed.cases_by_sample_id[sampleId];
-      exactFields(
-        caseResponse,
-        ['genuinely_ambiguous', 'ambiguity_reason', 'events', 'note'],
-        `schema-acceptance case ${sampleId}`,
-      );
-      for (const [index, event] of (caseResponse.events || []).entries()) {
-        materializeAdaptiveWarrantSemanticReaderEvent({
-          event,
-          semanticCatalog: corpus.semantic_annotation_catalog,
-          label: `schema-acceptance ${sampleId} event ${index}`,
-        });
-      }
+    if (JSON.stringify(parsed) !== JSON.stringify(readJson(freeze.packet.path).response_template)) {
+      throw new Error('schema-acceptance live response template mismatch');
     }
     const responsePath = path.join(resolvedOutput, 'schema-acceptance.response.json');
     writeJson(responsePath, parsed);

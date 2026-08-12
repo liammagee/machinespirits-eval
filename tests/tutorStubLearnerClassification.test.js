@@ -8,40 +8,27 @@ import {
   applyTutorStubLearnerAdvanceAssessment,
   buildTutorStubFailedClassification,
   floorTutorStubClassifierScore,
+  isTutorStubUnanalyzedClassification,
+  TUTOR_STUB_UNANALYZED_CLASSIFICATION_SCHEMA,
 } from '../services/tutorStubLearnerClassification.js';
 import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-test('failed classification preserves conservative public fallback and supplied metadata', () => {
+test('failed classification is a typed no-signal marker with supplied technical metadata', () => {
   const usage = { inputTokens: 12, outputTokens: 3, totalTokens: 15, cost: 0.001 };
   assert.deepEqual(
     buildTutorStubFailedClassification({
-      message: 'provider unavailable',
+      code: 'provider_unavailable',
       resolved: { provider: 'codex', model: 'gpt-5.6-sol' },
       latencyMs: 41,
       usage,
     }),
     {
-      error: 'provider unavailable',
-      turn: {
-        summary: 'Classifier failed before the tutor turn.',
-        request_type: 'off_task_or_mixed',
-        discourse_move: 'unknown',
-        evidence_use: 'unknown',
-        epistemic_stance: 'unknown',
-        affect: 'unknown',
-        agency: 'unknown',
-        scores: {},
-        pedagogical_need: 'Proceed cautiously and use the learner input directly.',
-      },
-      overall: {
-        summary: 'Overall classification is unavailable because the classifier failed.',
-        trajectory: 'unknown',
-        recurring_pattern: 'unknown',
-        current_state: 'unknown',
-        next_best_tutor_move: 'Ask a focused diagnostic question.',
-      },
+      schema: TUTOR_STUB_UNANALYZED_CLASSIFICATION_SCHEMA,
+      analysis_status: 'unanalyzed',
+      signal: { state: 'none' },
+      failure_code: 'provider_unavailable',
       provider: 'codex',
       model: 'gpt-5.6-sol',
       latencyMs: 41,
@@ -51,15 +38,17 @@ test('failed classification preserves conservative public fallback and supplied 
 });
 
 test('failed classification preserves null route metadata and fresh zero-usage defaults', () => {
-  const first = buildTutorStubFailedClassification({ message: 'first' });
-  const second = buildTutorStubFailedClassification({ message: 'second' });
+  const first = buildTutorStubFailedClassification({ code: 'first' });
+  const second = buildTutorStubFailedClassification({ code: 'second' });
 
   assert.deepEqual(first.usage, { inputTokens: 0, outputTokens: 0, totalTokens: 0, cost: 0 });
   assert.equal(first.provider, null);
   assert.equal(first.model, null);
   assert.equal(first.latencyMs, 0);
   assert.notEqual(first.usage, second.usage);
-  assert.notEqual(first.turn, second.turn);
+  assert.notEqual(first.signal, second.signal);
+  assert.equal(isTutorStubUnanalyzedClassification(first), true);
+  assert.equal(JSON.stringify(first).includes('Classifier failed before the tutor turn.'), false);
 });
 
 test('the CLI imports rather than redeclares failed-classification construction', () => {

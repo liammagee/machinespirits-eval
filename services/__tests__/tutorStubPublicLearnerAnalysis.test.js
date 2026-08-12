@@ -9,6 +9,7 @@ import {
   ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA,
   adaptiveWarrantSemanticSourceHash,
 } from '../adaptiveWarrantSemanticEvents.js';
+import { auditAdaptiveWarrantLiveSemanticSchemaTotality } from '../adaptiveWarrantSemanticAnnotation.js';
 import {
   TUTOR_STUB_EVIDENCE_USE_RUBRICS,
   TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
@@ -260,6 +261,8 @@ const PROVIDER_SCHEMA_KEYWORDS = new Set([
   'enum',
   'items',
   'anyOf',
+  'maxItems',
+  'minimum',
 ]);
 
 function assertCodexProviderSchema(schema, path = '$') {
@@ -460,15 +463,28 @@ describe('strict public learner analysis', () => {
     );
     const provider = buildTutorStubPublicLearnerAnalysisProviderOutputSchema({ includeSemanticEvents: true });
     assertCodexProviderSchema(provider);
-    assert.equal(provider.properties.semantic_events.properties.events.items.properties.evidence_span.type, 'object');
-    assert.equal(provider.properties.semantic_events.properties.events.items.properties.target.anyOf.length, 2);
+    const eventBranches = provider.properties.semantic_events.properties.events.items.anyOf;
+    assert.equal(eventBranches.length, 15);
+    const resultRequest = eventBranches.find(
+      (branch) => branch.properties.speech_act.enum[0] === 'tutor_directed_public_result_request',
+    );
+    assert.equal(resultRequest.properties.evidence_span.type, 'object');
+    assert.equal(resultRequest.properties.target.properties.state.enum[0], 'catalog');
+    const analytic = eventBranches.find(
+      (branch) => branch.properties.speech_act.enum[0] === 'analytic_contribution',
+    );
+    assert.equal(analytic.properties.target.anyOf.length, 2);
     assert.equal(
-      provider.properties.semantic_events.properties.events.items.properties.target.anyOf.some(
+      analytic.properties.target.anyOf.some(
         (branch) => branch.properties.state.enum[0] === 'none',
       ),
       true,
     );
-    assert.equal('speaker' in provider.properties.semantic_events.properties.events.items.properties, false);
+    assert.equal('speaker' in resultRequest.properties, false);
+    assert.equal(
+      auditAdaptiveWarrantLiveSemanticSchemaTotality({ schema: provider.properties.semantic_events }).ok,
+      true,
+    );
     const prompt = buildTutorStubPublicLearnerAnalysisPrompt({
       learnerText,
       topic: 'public record reasoning',

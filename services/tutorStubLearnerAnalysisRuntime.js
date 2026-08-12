@@ -187,7 +187,7 @@ export function createTutorStubLearnerAnalysisRuntime({
     } catch (err) {
       if (err?.name === 'AbortError') throw err;
       return failedClassification({
-        message: err.message,
+        code: err.code || 'learner_classification_failed',
         resolved: state.classifier.resolved,
         latencyMs: Date.now() - startedAt,
       });
@@ -356,6 +356,7 @@ export function createTutorStubLearnerAnalysisRuntime({
       promptProfile: state.learnerAnalysisPromptProfile,
       evidenceUseRubric: state.learnerAnalysisEvidenceUseRubric,
       includeSemanticEvents,
+      strictProviderEnvelope: includeSemanticEvents,
     };
     const prompt = buildTutorStubPublicLearnerAnalysisPrompt(promptInput);
     if (includeSemanticEvents) {
@@ -435,8 +436,11 @@ export function createTutorStubLearnerAnalysisRuntime({
       prompt,
       dagPreflight: effectiveDagPreflight,
       callModel: callPromptModel,
-      parseMode: TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.INTERACTIVE,
+      parseMode: includeSemanticEvents
+        ? TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.STRICT_BENCHMARK
+        : TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.INTERACTIVE,
       role,
+      strictRole: includeSemanticEvents ? role : null,
       maxTokens: includeSemanticEvents ? 2500 : Math.max(2500, state.maxTokens || 0),
       includeSemanticEvents,
       modelCallOptions: {
@@ -480,7 +484,7 @@ export function createTutorStubLearnerAnalysisRuntime({
       (parsed.turn && parsed.overall ? parsed : null);
     if (!source) {
       return failedClassification({
-        message: 'Combined learner analysis did not include a classification object.',
+        code: 'combined_analysis_missing_classification',
         resolved: state.learnerDag.resolved,
         latencyMs: raw?.latencyMs || 0,
         usage: raw?.usage,
@@ -793,9 +797,20 @@ export function createTutorStubLearnerAnalysisRuntime({
       // committed prefix instead of consuming that turn twice.
       resetTutorStubWarrantGateAfterLearnerAnalysisFailure(state);
       const classification = failedClassification({
-        message: err.message,
+        code: err.code || 'combined_analysis_failed',
         resolved: state.learnerDag.resolved,
         latencyMs: Date.now() - startedAt,
+      });
+      appendTraceEvent(state.trace, {
+        type: 'learner_analysis_unanalyzed',
+        turn: tutorTurn,
+        analysisStatus: 'unanalyzed',
+        signal: { state: 'none' },
+        failure: {
+          code: err.code || 'combined_analysis_failed',
+          message: String(err.message || err),
+        },
+        publicTranscriptChanged: false,
       });
       const empty = emptyTutorLearnerDagModel(state, tutorTurn, raw?.dagPreflight || null);
       const tutorLearnerDag = {
