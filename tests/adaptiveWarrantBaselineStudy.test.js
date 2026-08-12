@@ -226,6 +226,18 @@ test('analysis coverage guard halts on the first blind call and at the registere
   assert.equal(rateBreach.status, 'coverage_halt');
   assert.equal(rateBreach.reason, 'unanalyzed_rate_threshold');
   assert.equal(rateBreach.unanalyzed_rate, 0.2);
+
+  const localPromptFailuresRemainInDenominator = evaluateAdaptiveWarrantAnalysisCoverageHalt([
+    {
+      turnCount: 10,
+      learnerAnalysisCallCount: 8,
+      learnerAnalysisUnanalyzedCount: 2,
+      firstLearnerAnalysisStatus: 'analyzed',
+    },
+  ]);
+  assert.equal(localPromptFailuresRemainInDenominator.analysis_turns, 10);
+  assert.equal(localPromptFailuresRemainInDenominator.unanalyzed_rate, 0.2);
+  assert.equal(localPromptFailuresRemainInDenominator.status, 'coverage_halt');
 });
 
 test('live mechanism authorization binds the frozen model destination, private payload scope, and source closure', () => {
@@ -678,6 +690,48 @@ test('analysis coverage summary records overall and per-dialogue denominators fo
   assert.equal(coverage.coverage, 0.9375);
   assert.equal(coverage.gate_ruling, 'within_registered_coverage');
   assert.deepEqual(coverage.dialogues[1].unanalyzed_turn_numbers, [4]);
+});
+
+test('coverage-halt finalization writes all sealed rows without freezing partial annotation artifacts', () => {
+  const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), 'warrant-coverage-halt-finalization-'));
+  try {
+    const row = {
+      ...resultRow({ profile: 'diligent', condition: 'instrumented', seed: 506 }),
+      learnerAnalysisCallCount: 6,
+      learnerAnalysisUnanalyzedCount: 2,
+      learnerAnalysisUnanalyzedTurns: [7, 8],
+      learnerAnalysisCoverage: 0.75,
+    };
+    const plan = {
+      studyId: 'coverage-halt-finalization',
+      design: 'docs/adaptation-refinement/baseline-comparison-design.md',
+      jobs: [{ id: row.jobId }],
+      config: {
+        runs: 1,
+        horizon: 8,
+        worlds: [row.world],
+        profiles: [row.profile],
+        conditions: [{ id: row.condition, warrantGateMode: row.warrantGateMode }],
+        mechanismValidation: true,
+      },
+    };
+    const study = writeStudyArtifacts({
+      rootDir,
+      plan,
+      rows: [row],
+      status: 'coverage_halt',
+      coverageHalt: { status: 'coverage_halt', reason: 'unanalyzed_rate_threshold' },
+    });
+    assert.equal(study.status, 'coverage_halt');
+    assert.equal(study.rows.length, 1);
+    assert.equal(study.analysisCoverage.analysis_turns, 8);
+    assert.equal(study.analysisCoverage.unanalyzed_turns, 2);
+    assert.equal(fs.existsSync(path.join(rootDir, 'study-results.json')), true);
+    assert.equal(fs.existsSync(path.join(rootDir, 'annotation-sample.blinded.json')), false);
+    assert.equal(fs.existsSync(path.join(rootDir, 'annotation-key.private.json')), false);
+  } finally {
+    fs.rmSync(rootDir, { recursive: true, force: true });
+  }
 });
 
 test('delivery application proves observe inertia and active final-authority delivery', () => {

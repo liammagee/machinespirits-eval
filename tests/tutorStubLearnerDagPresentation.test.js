@@ -92,6 +92,7 @@ test('learner-DAG prompt summary preserves bounded record history and fallback f
     },
   };
   const summary = JSON.parse(projectTutorStubLearnerDagPromptSummary(model));
+  assert.equal(projectTutorStubLearnerDagPromptSummary(model).includes('\n'), false);
 
   assert.equal(summary.turn, 7);
   assert.deepEqual(summary.metrics, { groundedCount: 9 });

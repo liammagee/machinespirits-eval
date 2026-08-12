@@ -38,6 +38,8 @@ import {
   adaptiveWarrantSemanticSourceHash,
   validateAdaptiveWarrantSemanticExtraction,
 } from '../services/adaptiveWarrantSemanticEvents.js';
+import { projectTutorStubLearnerDagPromptSummary } from '../services/tutorStubLearnerDagPresentation.js';
+import { createTutorStubRegisterPromptVocabulary } from '../services/tutorStubRegisterPalette.js';
 import {
   assembleAdaptiveWarrantSemanticAnnotationResponse,
   prepareAdaptiveWarrantSemanticAnnotationBatches,
@@ -640,6 +642,25 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     buildAdaptiveWarrantSemanticSchemaAcceptanceResponseTemplate(),
     acceptancePingResponseSchema,
   );
+  const compactPromptVocabulary = createTutorStubRegisterPromptVocabulary({
+    getEngagementStanceDefinition: (name) => ({
+      valence: 'positive',
+      public_signature: `${name} public signature`,
+      stance_contract: `${name} stance contract`,
+    }),
+    getRequestTypeDefinitions: () => ({
+      evidence_request: { description: 'Request public evidence.', dag_use: 'hold the current node' },
+    }),
+  });
+  const compactPromptSerializationAudit = {
+    palette_json_minified:
+      !compactPromptVocabulary.engagementStancePalettePromptRows(['plain', 'precise']).includes('\n'),
+    request_type_json_minified: !compactPromptVocabulary.requestTypePromptRows().includes('\n'),
+    learner_dag_json_minified: !projectTutorStubLearnerDagPromptSummary({ turn: 1 }).includes('\n'),
+    prompt_limit_unchanged:
+      handbookPromptParityAudit.maximum_prompt_chars === 42000 &&
+      handbookPromptParityAudit.maximum_prompt_approximate_tokens === 10500,
+  };
   const firstCallCoverageGuard = evaluateAdaptiveWarrantAnalysisCoverageHalt([
     {
       learnerAnalysisCallCount: 1,
@@ -781,6 +802,11 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       'acceptance_ping_synthetic_template_validates_against_enforced_response_schema',
       acceptancePingTemplateSchemaAudit.valid === true,
       acceptancePingTemplateSchemaAudit,
+    ),
+    check(
+      'live_analysis_prompt_metadata_is_minified_inside_unchanged_envelope',
+      Object.values(compactPromptSerializationAudit).every(Boolean),
+      compactPromptSerializationAudit,
     ),
     check(
       'representative_runner_first_call_and_coverage_halt_guards_wired',
@@ -928,6 +954,7 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       shared_cli_request_path_audit: sharedRequestPathAudit,
       acceptance_ping_failure_evidence_audit: acceptancePingFailureEvidenceAudit,
       acceptance_ping_template_schema_audit: acceptancePingTemplateSchemaAudit,
+      compact_prompt_serialization_audit: compactPromptSerializationAudit,
       representative_runner_coverage_guard_audit: coverageGuardAudit,
     },
   };

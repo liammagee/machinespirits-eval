@@ -3574,7 +3574,10 @@ export function evaluateAdaptiveWarrantAnalysisCoverageHalt(
     minimumTurns = ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_MINIMUM_TURNS,
   } = {},
 ) {
-  const analysisTurns = rows.reduce((sum, row) => sum + Number(row?.learnerAnalysisCallCount || 0), 0);
+  const analysisTurns = rows.reduce(
+    (sum, row) => sum + Number(row?.turnCount || row?.learnerAnalysisCallCount || 0),
+    0,
+  );
   const unanalyzedTurns = rows.reduce((sum, row) => sum + Number(row?.learnerAnalysisUnanalyzedCount || 0), 0);
   const unanalyzedRate = analysisTurns ? unanalyzedTurns / analysisTurns : 0;
   const firstCallUnanalyzed = rows[0]?.firstLearnerAnalysisStatus === 'unanalyzed';
@@ -3594,7 +3597,7 @@ export function evaluateAdaptiveWarrantAnalysisCoverageHalt(
 
 export function summarizeAdaptiveWarrantAnalysisCoverage(rows = []) {
   const dialogues = rows.map((row) => {
-    const analysisTurns = Number(row?.learnerAnalysisCallCount || 0);
+    const analysisTurns = Number(row?.turnCount || row?.learnerAnalysisCallCount || 0);
     const unanalyzedTurns = Number(row?.learnerAnalysisUnanalyzedCount || 0);
     const unanalyzedRate = analysisTurns ? unanalyzedTurns / analysisTurns : 0;
     return {
@@ -3874,6 +3877,37 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status, coverageHalt 
     horizon: plan.config.horizon,
     ...axes,
   });
+  if (status === 'coverage_halt') {
+    const studyPlanPath = path.join(rootDir, 'study-plan.json');
+    if (!fs.existsSync(studyPlanPath)) writeJson(studyPlanPath, plan);
+    const analysisProvenance = adaptiveWarrantStudySourceFingerprint();
+    const executionEvidence = buildAdaptiveWarrantStudyExecutionEvidence(rows);
+    const study = {
+      schema: ADAPTIVE_WARRANT_BASELINE_STUDY_SCHEMA,
+      studyId: plan.studyId,
+      status,
+      coverageHalt,
+      analysisCoverage: summarizeAdaptiveWarrantAnalysisCoverage(rows),
+      updatedAt: new Date().toISOString(),
+      plan,
+      analysisProvenance,
+      executionEvidence,
+      rows,
+      aggregates,
+      decisionQuality: null,
+      postRepairValidation: null,
+      annotation: {
+        blindedCorpus: null,
+        privateKey: null,
+        semanticHandbook: null,
+        semanticPredictions: null,
+        scores: null,
+      },
+    };
+    writeJson(path.join(rootDir, 'study-results.json'), study);
+    fs.writeFileSync(path.join(rootDir, 'study-results.md'), markdownReport(study));
+    return study;
+  }
   const annotation = buildBlindedAnnotationCorpus(rows, {
     perCell: plan.config.annotationPerCell,
     studyId: plan.studyId,

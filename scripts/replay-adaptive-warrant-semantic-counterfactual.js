@@ -6,6 +6,7 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 
 import { parseTutorStubPublicLearnerAnalysisStrict } from '../services/tutorStubPublicLearnerAnalysis.js';
+import { ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_RATE } from './run-adaptive-warrant-baseline-study.js';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_COUNTERFACTUAL_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-counterfactual-replay.v1';
@@ -139,8 +140,11 @@ export function replayAdaptiveWarrantSemanticCounterfactual({ root, outputPath, 
       predicted_surviving_calls: completed - discarded,
       predicted_discarded_calls: discarded,
       predicted_discard_rate: completed ? discarded / completed : null,
-      relaunch_threshold: 0.1,
-      relaunch_gate: completed > 0 && discarded / completed <= 0.1 ? 'pass' : 'fail',
+      relaunch_threshold: ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_RATE,
+      relaunch_gate:
+        completed > 0 && discarded / completed <= ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_RATE
+          ? 'pass'
+          : 'fail',
       error_code_counts: errorCodeCounts,
       residual_issue_counts: issueCounts,
     },

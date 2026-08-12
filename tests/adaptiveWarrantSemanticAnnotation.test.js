@@ -675,6 +675,7 @@ test('zero-call brittleness preflight exercises the complete instrument path and
     'unique_absent_duplicate_and_overlap_spans_use_mechanical_derivation',
     'acceptance_ping_retains_failure_evidence_and_reports_response_state',
     'acceptance_ping_synthetic_template_validates_against_enforced_response_schema',
+    'live_analysis_prompt_metadata_is_minified_inside_unchanged_envelope',
   ]) {
     assert.equal(result.artifact.checks.find((row) => row.name === checkName).status, 'pass');
   }
