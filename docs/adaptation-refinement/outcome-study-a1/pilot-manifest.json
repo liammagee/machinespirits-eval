@@ -1,0 +1,111 @@
+{
+  "schema": "machinespirits.adaptation-refinement.warrant-outcome-pilot-manifest.v1",
+  "status": "prepared_hold_for_reviewer_go",
+  "zero_model_calls": true,
+  "authority": {
+    "registration": "docs/adaptation-refinement/v3-outcome-study-registration.md",
+    "amendment": "docs/adaptation-refinement/v3-outcome-study-registration-amendment-1.md",
+    "direction": "docs/adaptation-refinement/relay/060-reviewer-direction-menu-rendered-layer-repair.md",
+    "a1_commit": "1aa0e6e926ee12ecef7b62b7b71094bb0400d4bf"
+  },
+  "standing_permission": {
+    "menu_json": "docs/adaptation-refinement/outcome-study-a1/standing-permission-menu.json",
+    "menu_json_sha256": "1b74e8dbb43edaca959a44752fe50b53f8129022647d1f31d5bed053be0dd5cf",
+    "menu_text": "docs/adaptation-refinement/outcome-study-a1/standing-permission-menu.txt",
+    "menu_text_sha256": "b4ec255c5c8ce11b436b52505ea08f39d668ad5ac56a1e2d81003412747b68c8",
+    "entry_count": 79,
+    "enumeration_rule": "Enumerate the fixed compact strings rendered by tutorStubFirstDraftContractPrompt downstream of a gate decision from the SHA-pinned services/tutorStubFirstDraftContract.js: every compact uptake branch; every COMPACT_PART_CUES value plus the inline scene-partner branch and other compact-part literals; every TACTIC_EXECUTION_CUES value plus compact tactic/support branches; every compact stance cue; every compact handoff branch; and every compact action cue. Sweep every stance and action-family key mechanically without reachability pruning. For templates, quote every fixed segment byte-for-byte in source order and show interpolated public-contract values as named {{slots}}; the descriptive prefix states that the gate fills the slots from the public contract, and the drift guard compares fixed segments byte-for-byte. The long buildTutorStubQuestionSupport tutorInstruction strings are excluded because the live compact host-plan renderer does not read ending.instruction; the compact handoff strings selected by question-support state flags are included instead.",
+    "source_sha256": {
+      "services/tutorStubWarrantGate.js": "db30f563bb5107544f0f64677410f3e67cb2f0f2fbe573d4c5d66976b791fc24",
+      "services/adaptiveWarrantPolicy.js": "9edce479cca6dfde74a2a48f8321cbd3366ee0a97e4ac3e6565b656de0212c1d",
+      "services/tutorStubFirstDraftContract.js": "868c5ef7af8677a59cbf391cc0948c71cb567802e4d7d15d6f980366db707a29",
+      "services/tutorStubQuestionSupport.js": "6084936a3dd7093a14b4ef76eb6914549064bf095bf7bc1c8b5e15eba168dfa3",
+      "config/engagement-registers.yaml": "6284ffb82d8fe151312c05d6426f809de43addfe5275bbd5f70cbd39361a84c2"
+    }
+  },
+  "worlds": [
+    {
+      "id": "world_101_kestrel_signal_lamp",
+      "path": "docs/adaptation-refinement/outcome-study-a1/worlds/world_101_kestrel_signal_lamp.yaml",
+      "family_source": "world_022_foxtrot_jukebox",
+      "sha256": "6f436cc7293cebd4970b9737b17984e0db7259bcdbff646f723e645b5cb5af10"
+    },
+    {
+      "id": "world_102_marigold_archive_box",
+      "path": "docs/adaptation-refinement/outcome-study-a1/worlds/world_102_marigold_archive_box.yaml",
+      "family_source": "world_028_larkspur_fridge",
+      "sha256": "33ef86c9d65eb25f7d140f9c7cc07fc5a3afd3c9ba07cdc721139235402e3c18"
+    }
+  ],
+  "seeds": [515, 516, 517],
+  "conditions": {
+    "bare": { "warrant_gate": "off", "standing_permission_menu": false },
+    "gated": { "warrant_gate": "active", "standing_permission_menu": false },
+    "standing_permission": { "warrant_gate": "off", "standing_permission_menu": true }
+  },
+  "interleaved_condition_assignment": [
+    { "order": 1, "world": "world_101_kestrel_signal_lamp", "seed": 515, "condition": "bare" },
+    { "order": 2, "world": "world_101_kestrel_signal_lamp", "seed": 515, "condition": "gated" },
+    { "order": 3, "world": "world_101_kestrel_signal_lamp", "seed": 515, "condition": "standing_permission" },
+    { "order": 4, "world": "world_102_marigold_archive_box", "seed": 515, "condition": "gated" },
+    { "order": 5, "world": "world_102_marigold_archive_box", "seed": 515, "condition": "standing_permission" },
+    { "order": 6, "world": "world_102_marigold_archive_box", "seed": 515, "condition": "bare" },
+    { "order": 7, "world": "world_101_kestrel_signal_lamp", "seed": 516, "condition": "standing_permission" },
+    { "order": 8, "world": "world_101_kestrel_signal_lamp", "seed": 516, "condition": "bare" },
+    { "order": 9, "world": "world_101_kestrel_signal_lamp", "seed": 516, "condition": "gated" },
+    { "order": 10, "world": "world_102_marigold_archive_box", "seed": 516, "condition": "bare" },
+    { "order": 11, "world": "world_102_marigold_archive_box", "seed": 516, "condition": "gated" },
+    { "order": 12, "world": "world_102_marigold_archive_box", "seed": 516, "condition": "standing_permission" },
+    { "order": 13, "world": "world_101_kestrel_signal_lamp", "seed": 517, "condition": "gated" },
+    { "order": 14, "world": "world_101_kestrel_signal_lamp", "seed": 517, "condition": "standing_permission" },
+    { "order": 15, "world": "world_101_kestrel_signal_lamp", "seed": 517, "condition": "bare" },
+    { "order": 16, "world": "world_102_marigold_archive_box", "seed": 517, "condition": "standing_permission" },
+    { "order": 17, "world": "world_102_marigold_archive_box", "seed": 517, "condition": "bare" },
+    { "order": 18, "world": "world_102_marigold_archive_box", "seed": 517, "condition": "gated" }
+  ],
+  "case_extraction": {
+    "rule": "Extract one decision-turn case for every completed turn in each fixed eight-turn dialogue.",
+    "dialogues": 18,
+    "turns_per_dialogue": 8,
+    "expected_case_count": 144,
+    "post_generation_annotation_case_fingerprint_guard_required": true
+  },
+  "measure_1_reader_output_form": "Measure 1 reader output form: path 1. Each frozen binary decision reader reports commitment_transition_warranted (yes/no); the harness compares the logged observe-arm revision_warranted decision with two-reader consensus. The public world ground-truth source is the SHA-pinned world YAML projected into the decision packet public_inquiry_brief, and the same source is used in every condition.",
+  "decision_run_record_rule": "Decision-batch preparation and scoring always receive the run-record path, and the harness check in note 057a section 1 guards the omission case.",
+  "presence_channel": {
+    "readers": 2,
+    "calls_per_case": 2,
+    "digests": {
+      "corpus_sha256": "52bc3ae49f634bd2c4b872f843b1be1f15e859618b3ffa7cfa1fb0ae7cc1e184",
+      "extraction_schema_digest": "e5af8f2b6877e7e427ddae77bf7ed58bf0b6d129082885a838905cad5bce820d",
+      "provider_response_schema_sha256": "44b4807e25f0620e2677ed49031dec558daa6f0aeec0f20a97b85ec2c6cb6bc1",
+      "one_case_response_schema_sha256": "f944b9b89c7bc3c3756bfe81dac476e2e84ca1fc215dbb1b05df89b3288135f0",
+      "one_case_packet_sha256": "237c0784f637cb74ea124a5ec2c00912e3bc39eddf6359573c276fa823c3e06b",
+      "preparer_sha256": "9b545f368da469d0271613751d6da6f11bb4ae1fc57fa63d39a66733ce83177c",
+      "reader_digest": "6cb95fd8032f4c43c9fdc1e45808680365d5a0d3eb2dda5ef085e4d97e10145f"
+    },
+    "caps_bytes": { "response": 14000, "packet": 42000 }
+  },
+  "decision_channel": {
+    "readers": 2,
+    "calls_per_case": 2,
+    "digests": {
+      "handbook_sha256": "5673c14b8f2a2b17c599e947c87f6d03c10df6dcdbeadcb257d882f008902003",
+      "preparation_and_assembly_sha256": "f23d3b1619734091e9b5ac9a37501c8a64f07c1cbf240e62e9b8e7eb43a767fc",
+      "reader_runner_sha256": "1eb6be9d4cf2d802ff2bcb16394fdd0f99952d10a3ff62456ebc79ad42346116"
+    }
+  },
+  "planned_calls": {
+    "generation": 18,
+    "presence_readers": 288,
+    "decision_readers": 288,
+    "total": 594,
+    "arithmetic": "18 + (2 x 144) + (2 x 144) = 594",
+    "counter_before": 3523,
+    "counter_after_if_completed": 4117,
+    "ceiling": 11337,
+    "remaining_after_if_completed": 7220
+  },
+  "launch_authorized": false,
+  "hold": "No model or reader call may run until the reviewer commits the go note after second-session byte review and manifest verification."
+}
