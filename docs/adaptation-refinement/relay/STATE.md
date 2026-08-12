@@ -14,24 +14,27 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **CURRENT DIRECTION — 041**
-  (`041-reviewer-direction-drop-and-log-freeze-seed-514.md`, lease
-  `DRIVER-LEASE-2026-08-12-H`, report target `042-codex-report.md`).
-  The human resolved the freeze-overlap hard stop at ~21:04, typed
-  directly in the reviewer session: **"drop the three duplicate cases
-  and proceed."** Registered as the drop-and-log amendment: at freeze
-  time, cases whose fingerprints match excluded corpora are dropped
-  from the reader packet and logged in the freeze manifest — never
-  sent; the freeze no longer fails closed on overlap; prospective,
-  content-blind, disclosed. Ordered actions: A1 amend the freeze +
-  guard tests (zero-call); A2 re-freeze the quarantined seed-514
-  corpus, expect 92 frozen / 3 dropped (any other drop set = stop);
-  A3 readers on the frozen packet, support gate, report 042 with the
-  drop log and BOTH coverage rates, then the reviewer's matrix-gate
-  ruling. The human's ruling supersedes the provisional burn of the
-  seed-514 corpus for reader use; the 3 dropped cases stay unlicensed
-  forever; seed 515 stays unspent. Budget **3,146/8,000** at issue;
-  remaining 4,854.
+- **CURRENT DIRECTION — 043**
+  (`043-reviewer-direction-drop-count-reconciled-93.md`, lease
+  `DRIVER-LEASE-2026-08-12-I`, report target `044-codex-report.md`).
+  Report 042 ACCEPTED: the driver implemented the drop-and-log
+  amendment (commits `31ad8ec9`, `177881d6`; ledger #13; guards green
+  70/70), then stopped at 041's tripwire — the content-blind rule
+  yields 93 retained, not the directed 92, because the audit's "3
+  overlaps" were case-by-corpus MATCH relationships over 2 distinct
+  candidates (the foxtrot candidate matches two corpora). Reviewer
+  reconciled zero-call in the quarantined key: no fingerprint appears
+  twice among the 95 candidates; only one foxtrot low-agency turn-1
+  candidate exists; 92 was arithmetically impossible. AMENDED
+  EXPECTATION: 93 frozen / 2 dropped / 3 logged relationships,
+  identity-exact to report 042's drop log. Direction 043 also orders
+  the defect-#14 repair (the freeze's legacy exactness check —
+  "exact cell, turn, and observe-only coverage" — rejects any
+  drop-and-log freeze by design; amend to full design MINUS logged
+  drops, fail closed on unlogged gaps), then A2 complete the freeze,
+  A3 readers + support gate + report 044, reviewer's matrix-gate
+  ruling. Zero calls spent under 041; budget **3,146/8,000**;
+  remaining 4,854. Seed 515 unspent.
 - **RESOLVED — freeze-overlap hard stop of ~20:45** (kept as history).
   The seed-514 matrix COMPLETED CLEAN (24/24 dialogues, 606/606 calls,
   zero errors, 192/192 live/offline parity; checkpoint coverage
@@ -289,9 +292,10 @@
   pooled. Earlier results stand: supplement PASSED (5/2), five-cell
   layer certified, decision readers 0.833 binary.
 - **Driver:** the session whose prompt quotes the lease token in 006c.
-  LIVE LEASE: `DRIVER-LEASE-2026-08-12-H` under direction 041
-  (drop-and-log freeze amendment → re-freeze seed 514 at 92 cases →
-  readers → support gate → report 042). Other sessions: read-only.
+  LIVE LEASE: `DRIVER-LEASE-2026-08-12-I` under direction 043
+  (defect-#14 exactness-check repair → complete the seed-514 freeze at
+  93 cases → readers → support gate → report 044). Lease H retired
+  with report 042. Other sessions: read-only.
 - **Instrument commit:** `225a7b07` ("Separate V3 structural and semantic
   gates"). The instrument is CLOSED — it reopens only for a transport,
   schema, provenance, or non-evaluability defect. Never for semantic
