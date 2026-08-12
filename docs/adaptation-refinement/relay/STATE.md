@@ -24,19 +24,34 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — Amendment 1 + direction 058: human ruled ("I approve
+- **CURRENT — ruling 059a + direction 060: the menu quotes the
+  RENDERED layer.** Report 059 (`11d5c543`) stopped clean at the
+  check boundary (lint + help-digest fixture; both reproduced by
+  the reviewer; zero calls; seeds 515–517 prepared, none claimed).
+  The second session's byte review: quotes byte-faithful (35/35,
+  SHA table equals report 056) BUT the menu enumerated the
+  contract-object strings while the live speaking prompt renders
+  the compact host-plan strings from the same pinned file. Ruling
+  059a (`059a-reviewer-ruling-menu-rendered-layer.md`): "injected"
+  in Amendment 1 §1 means rendered into the live speaking prompt —
+  settled by the registration's purpose clause, same method as
+  ruling 057; five-source scope unchanged. **FLAG FOR THE HUMAN'S
+  MORNING REVIEW: this is the reviewer's interpretation of the
+  approved "full scope"; the human can override.** Direction 060:
+  one zero-call repair pass (lint, help digest), rebuild the menu
+  on the compact layer with template-slot handling, rerun the
+  whole boundary, then the pilot manifest; report to 061. HOLD on
+  paid calls stands; sequence: report 061, second-session byte
+  review, reviewer manifest verification, THEN go note. Budget
+  3,523/11,337.
+- **RESOLVED — Amendment 1 + direction 058: human ruled ("I approve
   the menu with full scope", relayed 13 Aug ~06:40, recorded
   verbatim in `v3-outcome-study-registration-amendment-1.md`); the
   standing-permission condition is bound as a conditional menu over
   the full injectable union from the five SHA-pinned sources, with
   descriptive-only prefix sentences and a byte-level drift guard.
-  Lease N unblocked ZERO-CALL for A1 completion
-  (`058-reviewer-direction-standing-permission-a1-completion.md`,
-  report to 059): menu + drift guard + fixtures, worlds + seeds +
-  fingerprint guard, pilot manifest per 055a/055b/057a. HOLD on
-  paid calls stands until the go note; sequence: driver report 059,
-  second session reviews menu bytes, reviewer verifies manifest,
-  THEN go note. Budget 3,523/11,337.**
+  Lease N ran the zero-call A1 completion and stopped at the check
+  boundary; superseded by ruling 059a + direction 060 above.
 - **RESOLVED — ruling 057: outcome pilot BLOCKED for the human;
   standing-permission binding is an open design decision**
   (`057-reviewer-ruling-standing-permission-binding-open.md`, rules
