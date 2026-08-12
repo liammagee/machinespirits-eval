@@ -5,6 +5,15 @@
 
 ## Now
 
+- **UNATTENDED MODE ACTIVE** (human authorized 12 Aug ~14:20): see
+  `023-reviewer-note-unattended-mode.md` — reviewer may re-invoke the
+  idle driver headless; driver envelope: timebox repairs, ≤48-call
+  probes on burned turns, reserve-seed relaunches (507-510) at
+  predicted discard ≤15%, matrix gate ruling. Reviewer-gated (no
+  human): prereg freeze → pilot → main block. Hard stops for the
+  human: seeds exhausted, semantic-contract changes, missing
+  value/authority, 4,000-call budget, contamination. Ends when the
+  human says so; minimum goal = matrix gate PASS.
 - **Current direction:** `022-reviewer-direction-luna-coverage-note.md` —
   021 ran to its hard stop: Luna + handbook_v1 probe 5/48 = 10.42%
   (fail by one call); Sonnet upgrade probe 25/48 = 52.08% (17/48 =
