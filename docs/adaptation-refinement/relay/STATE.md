@@ -38,11 +38,22 @@
   052e). Recommendation recorded in 057 §4: conditional menu, full
   injectable scope, byte-level drift guard, second-session byte
   review before go. Nothing spent: budget 3,523/11,337, no seed, no
-  manifest, no take burned. Lease N continues ZERO-CALL only on
-  binding-independent parts (harness for measures 1–6 per pins
-  055a/055b, guard suite, bare + gated run configs; report 056a).
-  HOLD on all paid calls stands. Notes 055a (three pins) and 055b
-  (measure-1 reader output form) bind the eventual A1 manifest.
+  manifest, no take burned. Lease N's zero-call continuation is
+  COMPLETE and verified by both sessions: scoring harness for
+  measures 1–6 + presence preflight (`5b24782a`, report 056a),
+  decision-reader evidence guard failing closed per note 057a
+  (`1460709d`), hash-tamper fixture (`6a0825f4`) — focused suite
+  13/13 on both sessions' independent runs. Note 057a arose because
+  pin 1 put the decision readers back on the live path while their
+  batch preparer skips all evidence checks when no run record is
+  passed; the pinned bytes stay frozen and the new harness
+  duplicates the checks fail-closed (also closing the absent
+  prohibited-tool-count hole). HOLD on all paid calls stands. The
+  eventual A1 manifest is bound by notes 055a (three pins), 055b
+  (measure-1 reader output form = path 1), and 057a §2 (run-record
+  path always passed); go-note wording: say "consensus value", not
+  "reader A's value". QUIET HOLD: everything waits on the human's
+  binding ruling (057 §3–4).
 - **RESOLVED — direction 055: outcome study registered; A1 + pilot**
   (`055-reviewer-direction-outcome-study-pilot.md`; lease
   `DRIVER-LEASE-2026-08-13-N`; report to 056). Registration frozen
