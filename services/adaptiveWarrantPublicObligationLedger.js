@@ -188,10 +188,26 @@ function semanticPublicTarget(target) {
     id: String(component),
     terms: [],
   }));
+  if (targetId === 'unspecified') {
+    return {
+      kind: 'public_exhibit_result',
+      signature: 'generic_evidence_request',
+      target_id: null,
+      catalogue_target_named: false,
+      public_identifier_ids: [],
+      public_terms: ['evidence'],
+      subject_terms: [],
+      requested_value_types: [...new Set((target.requested_value_types || []).map(String))],
+      required_components: mergeRequiredComponents(valueComponents, declaredComponents),
+      source_surface: 'generic evidence request',
+      semantic_target: clone(target),
+    };
+  }
   return {
     kind,
     signature: `${kind}:${targetId}`,
     target_id: targetId,
+    catalogue_target_named: true,
     public_identifier_ids: publicIdentifierIds,
     public_terms: publicTerms,
     subject_terms: subjectTerms,
@@ -416,6 +432,7 @@ export function classifyAdaptiveWarrantPublicSpeechAct({
 }
 
 function targetTermsMatch(target, text, { kindFallback = true } = {}) {
+  if (target?.catalogue_target_named === false) return EVIDENCE_CUE.test(oneLine(text));
   const terms = new Set(contentTerms(text));
   const subjectTerms = target?.subject_terms || targetSubjectTerms(target?.public_terms || []);
   // A named target must remain named. Kind-level words such as "match" or

@@ -94,7 +94,8 @@ describe('semantic-event prompt profiles', () => {
     });
     assert.doesNotMatch(compact, /## Event multiplicity/u);
     assert.equal(handbook.includes(TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULES), true);
-    assert.match(handbook, /requested_value_types and component_ids are non-empty only for request-mode acts/u);
+    assert.match(handbook, /use the literal string "unspecified" for both target_id and action_object_id/u);
+    assert.doesNotMatch(handbook, /requested_value_types and component_ids are non-empty only for request-mode acts/u);
     assert.match(handbook, /Separate events have distinct non-overlapping spans/u);
     assert.match(handbook, /shortest complete literal clause/u);
     assert.ok(handbook.length <= 42000);

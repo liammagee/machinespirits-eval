@@ -77,13 +77,13 @@ export const ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT = Object.freeze({
   speaker: 'Mechanically supplied from current-turn authorship; never reader-judged.',
   speech_act: 'Reader chooses one closed act under the handbook precedence table.',
   target_id:
-    'Reader chooses the public object, relation, or enumerated choice set that the act itself is about, never a requested value or actor; use the total tagged state=none branch when the act names no catalogue entity.',
+    'Reader chooses the public object, relation, or enumerated choice set that the act itself is about, never a requested value or actor; a request act with no named catalogue item uses the literal unspecified sentinel for both target and action IDs; use the total tagged state=none branch when no target applies.',
   target_kind: 'Mechanically supplied from the selected target catalogue entry; never reader-judged.',
   public_identifier_ids: 'Mechanically supplied from the selected target catalogue entry; never reader-judged.',
   requested_value_types:
-    'Exact closed-set values literally named by request-mode clauses; empty for proposals, questions, analysis, withdrawal, and transfer.',
+    'Descriptive closed-set values literally named by the clause; permitted on every act and never used to decide whether the act is a request.',
   component_ids:
-    'Exact catalogue components literally named by request-mode clauses; empty for proposals, questions, analysis, withdrawal, and transfer.',
+    'Descriptive catalogue components literally named by the clause; permitted on every act and never used to decide whether the act is a request.',
   action_mode: 'Mechanically supplied from the selected action-object catalogue entry; never reader-judged.',
   executor: 'Reader chooses who must perform the action; this is not the utterance speaker.',
   action: 'Mechanically supplied from the selected action-object catalogue entry; never reader-judged.',

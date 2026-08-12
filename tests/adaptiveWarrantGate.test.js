@@ -24,6 +24,7 @@ import {
 import { recommendRepairPolicy } from '../services/adaptiveWarrantPolicy.js';
 import {
   ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA,
+  ADAPTIVE_WARRANT_SEMANTIC_VALIDATION_SCHEMA,
   adaptiveWarrantSemanticSourceHash,
   compileAdaptiveWarrantSemanticSignal,
   validateAdaptiveWarrantSemanticExtraction,
@@ -391,6 +392,113 @@ test('live semantic extraction is paraphrase-invariant and contrast-sensitive at
     compileAdaptiveWarrantSemanticSignal(proposal).primary,
     compileAdaptiveWarrantSemanticSignal(requests[0]).primary,
   );
+});
+
+test('V3.1 licenses only paired unspecified IDs on request acts and keeps empty IDs invalid', () => {
+  assert.equal(ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA.endsWith('.v3.1'), true);
+  assert.equal(ADAPTIVE_WARRANT_SEMANTIC_VALIDATION_SCHEMA.endsWith('.v3.1'), true);
+  const learnerText = 'What public evidence can we examine first?';
+  const accepted = semanticExtraction(learnerText, [
+    semanticEvent({
+      learnerText,
+      eventId: 'generic-request',
+      speechAct: 'tutor_directed_public_result_request',
+      target: {
+        kind: 'other',
+        target_id: 'unspecified',
+        public_identifier_ids: [],
+        requested_value_types: [],
+        component_ids: [],
+      },
+      action: {
+        mode: 'requested',
+        executor: 'tutor',
+        action: 'supply_public_result',
+        action_object_id: 'unspecified',
+      },
+    }),
+  ]);
+  assert.equal(accepted.extraction_status, 'accepted');
+  assert.equal(accepted.events[0].validation.status, 'accepted');
+  const obligation = createAdaptiveWarrantPublicObligationLedger().assess({
+    turn: 1,
+    learnerText,
+    semanticEventExtraction: accepted,
+  }).blocking_obligation;
+  assert.equal(obligation.target.signature, 'generic_evidence_request');
+  assert.equal(obligation.target.target_id, null);
+  assert.equal(obligation.target.catalogue_target_named, false);
+
+  const empty = semanticExtraction(learnerText, [
+    semanticEvent({
+      learnerText,
+      eventId: 'empty-request',
+      speechAct: 'tutor_directed_public_result_request',
+      target: {
+        kind: 'other',
+        target_id: '',
+        public_identifier_ids: [],
+        requested_value_types: [],
+        component_ids: [],
+      },
+      action: {
+        mode: 'requested',
+        executor: 'tutor',
+        action: 'supply_public_result',
+        action_object_id: '',
+      },
+    }),
+  ]);
+  assert.equal(empty.extraction_status, 'invalid');
+  assert.equal(empty.events[0].validation.issues.some((issue) => issue.endsWith('.target_id:required')), true);
+  assert.equal(
+    empty.events[0].validation.issues.some((issue) => issue.endsWith('.action_object_id:invalid')),
+    true,
+  );
+});
+
+test('V3.1 rejects unspecified on non-request acts and permits descriptive value sets there', () => {
+  const learnerText = 'Does the seal match?';
+  const sentinel = semanticExtraction(learnerText, [
+    semanticEvent({
+      learnerText,
+      eventId: 'criterion-sentinel',
+      speechAct: 'criterion_question',
+      target: {
+        kind: 'comparison_result',
+        target_id: 'unspecified',
+        public_identifier_ids: [],
+        requested_value_types: ['match_status'],
+        component_ids: ['seal_match'],
+      },
+      action: null,
+    }),
+  ]);
+  assert.equal(sentinel.extraction_status, 'invalid');
+  assert.equal(
+    sentinel.events[0].validation.issues.includes('events[0]:unspecified_ids_forbidden_for_non_request'),
+    true,
+  );
+
+  const descriptive = semanticExtraction(learnerText, [
+    semanticEvent({
+      learnerText,
+      eventId: 'criterion-catalog',
+      speechAct: 'criterion_question',
+      target: {
+        kind: 'comparison_result',
+        target_id: 'target-seal-comparison',
+        public_identifier_ids: [],
+        requested_value_types: ['match_status'],
+        component_ids: ['seal_match'],
+      },
+      action: null,
+    }),
+  ]);
+  assert.equal(descriptive.extraction_status, 'accepted');
+  assert.equal(descriptive.events[0].validation.status, 'accepted');
+  assert.deepEqual(descriptive.events[0].target.requested_value_types, ['match_status']);
+  assert.deepEqual(descriptive.events[0].target.component_ids, ['seal_match']);
 });
 
 test('event-to-engagement compilation resolves tutor selection as deference without hiding analytic multiplicity', () => {

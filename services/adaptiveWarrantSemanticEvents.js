@@ -1,11 +1,12 @@
 import { createHash } from 'node:crypto';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-extraction.v3';
+  'machinespirits.adaptation-refinement.semantic-event-extraction.v3.1';
 export const ADAPTIVE_WARRANT_SEMANTIC_VALIDATION_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-validation.v3';
+  'machinespirits.adaptation-refinement.semantic-event-validation.v3.1';
 export const ADAPTIVE_WARRANT_SEMANTIC_SIGNAL_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-engagement-signal.v1';
+export const ADAPTIVE_WARRANT_SEMANTIC_UNSPECIFIED_ID = 'unspecified';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_EVENT_LIMITS = Object.freeze({
   maxEvents: 4,
@@ -247,15 +248,24 @@ export function adaptiveWarrantSemanticContractIssues(
   }
   const valueTypes = target?.requested_value_types || [];
   const componentIds = target?.component_ids || [];
-  const permitsRequestedSets = REQUEST_SPEECH_ACTS.has(event.speech_act);
-  if (!permitsRequestedSets && (valueTypes.length || componentIds.length)) {
-    issues.push(`${prefix}.target:value_component_sets_forbidden_for_non_request`);
+  const targetIsUnspecified = target?.target_id === ADAPTIVE_WARRANT_SEMANTIC_UNSPECIFIED_ID;
+  const actionIsUnspecified = action?.action_object_id === ADAPTIVE_WARRANT_SEMANTIC_UNSPECIFIED_ID;
+  const permitsUnspecified =
+    REQUEST_SPEECH_ACTS.has(event.speech_act) && contract.target === 'catalog' && contract.action === 'catalog';
+  if ((targetIsUnspecified || actionIsUnspecified) && !permitsUnspecified) {
+    issues.push(`${prefix}:unspecified_ids_forbidden_for_non_request`);
+  }
+  if (permitsUnspecified && targetIsUnspecified !== actionIsUnspecified) {
+    issues.push(`${prefix}:unspecified_target_and_action_must_be_paired`);
+  }
+  if (targetIsUnspecified && (target?.public_identifier_ids || []).length) {
+    issues.push(`${prefix}.target:unspecified_cannot_name_public_identifiers`);
   }
   // Surface-to-catalogue agreement is semantic evidence, not a structural
   // validity condition. Callers may request this diagnostic explicitly for
   // scoring, but production acceptance must not recreate a lexical extractor
   // by comparing canonical ID words with the utterance.
-  if (enforceLiteralSets && permitsRequestedSets) {
+  if (enforceLiteralSets) {
     for (const valueType of valueTypes) {
       if (!adaptiveWarrantSemanticValueTypeIsLiteral(valueType, event?.evidence_span?.text)) {
         issues.push(`${prefix}.target.requested_value_types:not_literal_in_span`);
