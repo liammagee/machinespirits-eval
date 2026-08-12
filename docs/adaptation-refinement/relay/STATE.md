@@ -23,9 +23,20 @@
   zero failures, digests matched, no r47/r49 pooling). Licenses
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
-  unspent. Lease M retired. NEXT per note 052e: outcome study —
-  prospective registration, then the 6-dialogues-per-tutor-version
-  go/no-go pilot, then the main run only if the pilot is clean.
+  unspent. Lease M retired.
+- **CURRENT — direction 055: outcome study registered; A1 + pilot**
+  (`055-reviewer-direction-outcome-study-pilot.md`; lease
+  `DRIVER-LEASE-2026-08-13-N`; report to 056). Registration frozen
+  before any outcome call:
+  `docs/adaptation-refinement/v3-outcome-study-registration.md` —
+  three conditions (bare / gated / standing-permission verbatim),
+  pilot 6 per condition go/no-go, main fixed 24 per condition on a
+  reviewer GO only; measures 1–6 deterministic per the design draft,
+  7–8 presence-grain via the unchanged r52 instrument (consensus
+  cases only, fresh readers); fine grain stays out everywhere.
+  HOLD: no paid call until the reviewer commits a go note after the
+  second session reviews the registration. Budget 3,523/11,337;
+  per-phase planned counts recorded pre-call and reviewer-approved.
 - **RESOLVED — direction 052: presence-grain gate registered; run the
   confirmation** (`052-reviewer-direction-presence-gate-confirmation.md`;
   lease `DRIVER-LEASE-2026-08-13-M`; report to 053). The human ruled
