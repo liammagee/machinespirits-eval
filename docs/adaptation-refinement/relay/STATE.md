@@ -37,8 +37,10 @@
   renewal recorded, not relied on. Readers may run two-wide.
   Overnight ruling recorded as relayed (052a): substantive FAIL is
   terminal; technical/operational failures do not burn the attempt
-  and re-takes are authorized inside the 8,000 ceiling; the
-  reviewer classifies and discloses before any re-take.
+  and re-takes are authorized; the reviewer classifies and discloses
+  before any re-take. Ceiling RENEWED DIRECTLY by the human in the
+  reviewer session (052b, 13 Aug ~00:14): fresh 8,000 if needed —
+  hard ceiling now 11,337 total, counter continues from 3,337.
 - **RESOLVED — ruling 051** (kept as history). Report 050 ACCEPTED in
   full; the two assembly stops ruled READER ERROR = data (the lawful
   null-target `explain_wording` entry existed in every catalogue);
