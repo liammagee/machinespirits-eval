@@ -767,6 +767,109 @@ test('semantic collection refuses to prepare without a passing preflight outside
   );
 });
 
+test('semantic assembly accepts only independently attested or exact registered bridge-echo model evidence', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-run-attestation-'));
+  const corpus = fixture(1);
+  const corpusPath = path.join(root, 'corpus.json');
+  const handbookPath = path.join(root, 'handbook.md');
+  fs.writeFileSync(corpusPath, `${JSON.stringify(corpus, null, 2)}\n`);
+  fs.writeFileSync(handbookPath, '# Frozen semantic handbook\n');
+  const prepared = prepareAdaptiveWarrantSemanticAnnotationBatches({
+    corpusPath,
+    handbookPath,
+    outputDir: path.join(root, 'collection'),
+    corpusRole: 'targeted_challenge',
+    batchSize: 1,
+    preflightMode: true,
+  });
+  const reader = prepared.manifest.readers[0];
+  const batch = reader.batches[0];
+  const responseDir = path.join(root, 'responses');
+  const responsePath = path.join(responseDir, batch.expected_response_filename);
+  const packet = JSON.parse(fs.readFileSync(batch.packet_path, 'utf8'));
+  const response = packet.response_template;
+  const row = corpus.cases[0];
+  const packetEvent = readerEvent(row.kind, row.current_learner_turn.learner, 1);
+  packetEvent.evidence_span = packetEvent.evidence_span.text;
+  response.cases_by_sample_id[row.sample_id] = {
+    genuinely_ambiguous: false,
+    ambiguity_reason: 'none',
+    events: [packetEvent],
+    note: 'The public executor and action are explicit.',
+  };
+  fs.mkdirSync(responseDir, { recursive: true });
+  fs.writeFileSync(responsePath, `${JSON.stringify(response, null, 2)}\n`);
+  const responseSha256 = createHash('sha256').update(fs.readFileSync(responsePath)).digest('hex');
+  const baseBatch = {
+    reader_id: reader.reader_id,
+    batch_id: batch.batch_id,
+    status: 'complete',
+    response_path: responsePath,
+    response_sha256: responseSha256,
+    returned_provider: 'codex',
+    returned_model: 'gpt-5.6-luna',
+    model_attestation_basis: 'explicit_cli_model_argument_accepted_bridge_echo',
+    model_independently_attested: false,
+    prohibited_tool_event_count: 0,
+  };
+  const runPath = path.join(root, 'semantic-reader-run.json');
+  const assemble = (name, batchOverrides = {}) => {
+    fs.writeFileSync(
+      runPath,
+      `${JSON.stringify(
+        {
+          status: 'complete',
+          study_id: prepared.manifest.study_id,
+          source_commit: prepared.manifest.source_commit,
+          model: 'codex.gpt-5.6-luna',
+          batches: [{ ...baseBatch, ...batchOverrides }],
+        },
+        null,
+        2,
+      )}\n`,
+    );
+    return assembleAdaptiveWarrantSemanticAnnotationResponse({
+      manifestPath: prepared.manifestPath,
+      readerId: reader.reader_id,
+      annotationRunId: `attestation-${name}`,
+      responseDir,
+      runPath,
+      outputPath: path.join(root, `${name}.json`),
+    });
+  };
+
+  assert.doesNotThrow(() =>
+    assemble('independently-attested', {
+      returned_provider: 'future-provider',
+      returned_model: 'future-model',
+      model_attestation_basis: 'future-independent-attestation',
+      model_independently_attested: true,
+    }),
+  );
+  assert.doesNotThrow(() => assemble('registered-bridge-echo'));
+  assert.throws(
+    () =>
+      assemble('cli-default', {
+        model_attestation_basis: 'cli_default_not_independently_attested',
+      }),
+    /lacks verified model-run evidence/u,
+  );
+  for (const [name, mismatch] of [
+    ['provider-mismatch', { returned_provider: 'claude-code' }],
+    ['model-mismatch', { returned_model: 'gpt-5.6-terra' }],
+  ]) {
+    assert.throws(() => assemble(name, mismatch), /lacks verified model-run evidence/u);
+  }
+  assert.throws(
+    () => assemble('prohibited-tool-event', { prohibited_tool_event_count: 1 }),
+    /lacks verified model-run evidence/u,
+  );
+  assert.throws(
+    () => assemble('response-sha-mismatch', { response_sha256: '0'.repeat(64) }),
+    /lacks verified model-run evidence/u,
+  );
+});
+
 test('semantic preflight validation refuses stale source and instrument fingerprints', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-preflight-stale-'));
   const sourceCommit = 'c'.repeat(40);
