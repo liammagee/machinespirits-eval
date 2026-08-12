@@ -445,7 +445,7 @@ describe('strict public learner analysis', () => {
             action: 'supply_public_result',
             action_object_id: 'target-shelf-two-access-record',
           },
-          evidence_span: { text: learnerText, start: 0, end: learnerText.length },
+          evidence_span: learnerText,
           confidence: 'high',
           uncertainty: [],
         },
@@ -468,7 +468,8 @@ describe('strict public learner analysis', () => {
     const resultRequest = eventBranches.find(
       (branch) => branch.properties.speech_act.enum[0] === 'tutor_directed_public_result_request',
     );
-    assert.equal(resultRequest.properties.evidence_span.type, 'object');
+    assert.equal(resultRequest.properties.evidence_span.type, 'string');
+    assert.equal('properties' in resultRequest.properties.evidence_span, false);
     assert.equal(resultRequest.properties.target.properties.state.enum[0], 'catalog');
     const analytic = eventBranches.find(
       (branch) => branch.properties.speech_act.enum[0] === 'analytic_contribution',
@@ -495,6 +496,7 @@ describe('strict public learner analysis', () => {
     });
     assert.match(prompt, /# Semantic-event extraction/u);
     assert.match(prompt, /Names, times, dates.*are value types.*not automatically targets/u);
+    assert.match(prompt, /harness derives JavaScript UTF-16 offsets mechanically/u);
     assert.match(prompt, /Never return null or omit either field/u);
   });
 

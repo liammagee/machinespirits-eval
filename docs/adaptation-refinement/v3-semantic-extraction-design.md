@@ -83,11 +83,7 @@ The conceptual envelope is:
         "action": "supply_public_result",
         "action_object_id": "target-shelf-two-access-record"
       },
-      "evidence_span": {
-        "text": "show me the shelf-two access times",
-        "start": 0,
-        "end": 34
-      },
+      "evidence_span": "show me the shelf-two access times",
       "confidence": "high",
       "uncertainty": []
     }
@@ -96,9 +92,11 @@ The conceptual envelope is:
 }
 ```
 
-Offsets use JavaScript UTF-16 string indices and an exclusive `end`. The
-example offsets above are illustrative; implementation tests must compute and
-verify the exact saved offsets rather than copying them from this document.
+At the model boundary, `evidence_span` is only the unique literal quote. The
+harness locates it in the current learner turn and materializes JavaScript
+UTF-16 `start` and exclusive `end` offsets in the validated internal event. A
+missing or repeated quote fails closed; model-supplied numeric offsets are not
+accepted or consulted.
 
 ### 2.2 Required event fields
 
@@ -112,7 +110,7 @@ or scoring.
 | `speech_act` | One declared act from the closed V3 vocabulary. Unknown acts use `other`; they are never invented as near-synonyms. |
 | `target` | A public target object or explicit semantic absence. At the reader boundary this field is always a non-null tagged object: `{"state":"catalog", ...}` or exactly `{"state":"none"}`. The assembler alone normalizes the latter to internal `null`. It separates the object under discussion from values requested about it. |
 | `requested_or_proposed_action` | A typed action object or explicit semantic absence. At the reader boundary this field is always a non-null tagged object: `{"state":"catalog", ...}` or exactly `{"state":"none"}`. The assembler alone normalizes the latter. |
-| `evidence_span` | Exact literal text plus verified start/end offsets into the current public utterance. Paraphrases and inferred spans are invalid. |
+| `evidence_span` | At every model boundary, one exact literal quote that occurs once in the current public utterance. The harness derives and verifies internal start/end offsets. Paraphrases, missing quotes, and repeated quotes are invalid. |
 | `confidence` | `high`, `medium`, or `low`. This is a bounded self-report, not a calibrated probability. |
 | `uncertainty` | A possibly empty list from the closed reasons below. Any non-empty list prevents asserted state mutation. |
 
@@ -209,8 +207,8 @@ ask a reader for a fact it already knows.
 | `executor` | Reader | The party who must perform the action, not the speaker. Request-type acts cannot use learner execution. |
 | `requested_or_proposed_action` / `action_object_id` | Reader | Total and non-null: the public action object licensed by the clause, chosen from the catalogue in the `state="catalog"` branch, or the exact sole-field object `{"state":"none"}` when no action applies. |
 | action `mode` and operation | Harness | Derived exactly from `action_object_id`; absent from reader schema and checked against the speech act. |
-| `evidence_span` | Reader | At the reader transport boundary, one string containing the shortest complete literal clause. It must occur exactly once and not overlap another event span. This scalar representation keeps the canonical act-discriminated provider schema within its byte and depth budgets; it changes no reader judgment. |
-| span offsets and event order | Harness | Derived from the unique literal span and audited; absent from reader schema. |
+| `evidence_span` | Extractor or reader | At either model transport boundary, one string containing the shortest complete literal clause. It must occur exactly once and not overlap another event span. This scalar representation keeps the canonical act-discriminated provider schema within its byte and depth budgets; it changes no semantic judgment. |
+| span offsets and event order | Harness | Derived from the unique literal span and audited; absent from every model-facing schema. |
 | `genuinely_ambiguous` | Reader | True only when two complete typed readings remain after every closed rule; then `events=[]`. |
 | `ambiguity_reason` | Reader | Total closed value: `none` when not ambiguous, otherwise exactly one of `speech_act`, `executor`, `target`, `action_object`, `multiplicity`, `referent`, `span`, or `context`. |
 | `assembly_rejection` | Harness | Added after reading. A non-unique literal span produces a typed case-level rejection rather than a batch crash. |
@@ -510,17 +508,16 @@ harness supplies speaker; derives target kind and public identifiers from the
 target ID; and derives action mode and operation from the action-object ID.
 Reader confidence is not used as a substitute for field agreement.
 
-The reader response schema carries only the literal `evidence_span.text`, not
-numeric offsets. The text must be non-empty, no longer than 240 characters,
-and occur exactly once in the current learner utterance. Exact JavaScript
-UTF-16 `start` and exclusive `end` offsets are then derived mechanically by the
-assembler, and events are ordered by those literal start positions with source
-order as the equal-position tie. Both operations are listed case by case in
-the assembly audit. A missing, repeated, or non-literal span fails assembly.
-This schema-declared derivation removes LLM character-count and list-order
-arithmetic from the reader instrument; it does not relax the live extractor
-contract in section 2, which still requires validated text and offsets in the
-learner-analysis envelope.
+Both the live extractor and reader response schemas carry only the literal
+`evidence_span` string, not numeric offsets. The text must be non-empty, no
+longer than 240 characters, and occur exactly once in the current learner
+utterance. Exact JavaScript UTF-16 `start` and exclusive `end` offsets are then
+derived mechanically by the live validator or reader assembler, and events are
+ordered by those literal start positions with source order as the equal-position
+tie. A missing, repeated, or non-literal span fails closed. This prospective
+12 August 2026 repair follows the seed-505 coverage halt and removes LLM
+character-count arithmetic without changing the semantic identity of any
+event or rescoring a historical corpus.
 
 The frozen corpus also carries one public corpus-wide annotation catalogue of
 `target_id`, `public_identifier_id`, `component_id`, and `action_object_id`
@@ -848,9 +845,9 @@ the completed report before an atomic rename; a failed check exits nonzero and
 cannot leave a passed-status artifact behind.
 
 Free text may support an evidence or display field, but it may not determine
-identity, equality, joins, state mutation, or gate passage. Reader tasks may
-not ask a model to calculate offsets, hashes, token counts, ordering keys, or
-other deterministic arithmetic. Downstream semantic compilers consume typed
+identity, equality, joins, state mutation, or gate passage. Model-facing
+extractor and reader tasks may not ask a model to calculate offsets, token
+counts, ordering keys, or other deterministic arithmetic. Downstream semantic compilers consume typed
 events rather than learner prose; regex remains limited to exact syntax,
 identifiers, provenance checks, and explicitly conservative fallbacks.
 

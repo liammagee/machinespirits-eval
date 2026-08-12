@@ -258,6 +258,10 @@ export function auditAdaptiveWarrantLiveSemanticSchemaTotality({ schema } = {}) 
     }
     const targetSchema = branch.properties?.target;
     const actionSchema = branch.properties?.requested_or_proposed_action;
+    const evidenceSpanSchema = branch.properties?.evidence_span;
+    if (evidenceSpanSchema?.type !== 'string' || evidenceSpanSchema?.properties) {
+      issues.push(`${speechAct}.evidence_span must contain only the model-supplied literal quote`);
+    }
     const targetBranches = contract.target === 'catalog_or_none' ? branchByState(targetSchema, `${speechAct}.target`) : {};
     const targetCatalog = contract.target === 'catalog' ? targetSchema : targetBranches.catalog;
     const targetNone = contract.target === 'none' ? targetSchema : targetBranches.none;
@@ -308,6 +312,7 @@ export function auditAdaptiveWarrantLiveSemanticSchemaTotality({ schema } = {}) 
         !issue.includes('exact none branch') &&
         !issue.includes('shared contract'),
     ),
+    model_supplies_literal_quote_only: issues.every((issue) => !issue.includes('.evidence_span')),
     maximum_nesting_depth: providerAudit.maximum_nesting_depth,
     nesting_depth_within_limit: providerAudit.nesting_depth_within_limit,
   };
@@ -432,6 +437,10 @@ export function auditAdaptiveWarrantSemanticReaderSchemaTotality({ schema, seman
     }
     const targetSchema = resolveSchema(branch.properties?.target);
     const actionSchema = resolveSchema(branch.properties?.requested_or_proposed_action);
+    const evidenceSpanSchema = resolveSchema(branch.properties?.evidence_span);
+    if (evidenceSpanSchema?.type !== 'string' || evidenceSpanSchema?.properties) {
+      issues.push(`${speechAct}.evidence_span must contain only the reader-supplied literal quote`);
+    }
     const targetBranches =
       contract.target === 'catalog_or_none' ? branchByState(targetSchema?.anyOf, `${speechAct}.target`) : {};
     const targetCatalog = contract.target === 'catalog' ? targetSchema : targetBranches.catalog;
@@ -482,6 +491,7 @@ export function auditAdaptiveWarrantSemanticReaderSchemaTotality({ schema, seman
         !issue.includes('executor') &&
         !issue.includes('exact none branch'),
     ),
+    model_supplies_literal_quote_only: issues.every((issue) => !issue.includes('.evidence_span')),
     maximum_nesting_depth: maximumNestingDepth,
     nesting_depth_within_limit: maximumNestingDepth <= 10,
   };

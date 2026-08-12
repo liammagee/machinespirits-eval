@@ -30,6 +30,11 @@ import {
   validateAdaptiveWarrantSemanticPreflightArtifact,
 } from '../services/adaptiveWarrantSemanticPreflight.js';
 import {
+  ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA,
+  adaptiveWarrantSemanticSourceHash,
+  validateAdaptiveWarrantSemanticExtraction,
+} from '../services/adaptiveWarrantSemanticEvents.js';
+import {
   assembleAdaptiveWarrantSemanticAnnotationResponse,
   prepareAdaptiveWarrantSemanticAnnotationBatches,
 } from './prepare-adaptive-warrant-semantic-annotations.js';
@@ -250,6 +255,45 @@ function predictionsFrom(response) {
 
 function check(name, condition, evidence = null) {
   return { name, status: condition ? 'pass' : 'fail', evidence };
+}
+
+function spanDerivationPreflightAudit() {
+  const validate = (learnerText, spans) =>
+    validateAdaptiveWarrantSemanticExtraction(
+      {
+        schema: ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA,
+        source_turn: 1,
+        source_text_sha256: adaptiveWarrantSemanticSourceHash(learnerText),
+        events: spans.map((evidenceSpan, index) => ({
+          event_id: `span-preflight-${index + 1}`,
+          speech_act: 'other',
+          target: { state: 'none' },
+          requested_or_proposed_action: { state: 'none' },
+          evidence_span: evidenceSpan,
+          confidence: 'high',
+          uncertainty: [],
+        })),
+        extraction_status: 'accepted',
+      },
+      { learnerText, publicText: learnerText, turn: 1 },
+    );
+  const unique = validate('alpha beta gamma', ['beta']);
+  const absent = validate('alpha beta gamma', ['delta']);
+  const duplicate = validate('echo then echo', ['echo']);
+  const overlap = validate('alpha beta gamma', ['alpha beta', 'beta gamma']);
+  return {
+    unique_quote_derived:
+      unique.events[0]?.evidence_span?.start === 6 &&
+      unique.events[0]?.evidence_span?.end === 10 &&
+      unique.events[0]?.evidence_span_derivation?.status === 'derived_unique_literal',
+    absent_quote_fails: absent.events[0]?.validation?.issues.includes('events[0].evidence_span:not_literal'),
+    duplicate_quote_fails: duplicate.events[0]?.validation?.issues.includes(
+      'events[0].evidence_span:non_unique_literal',
+    ),
+    overlap_detected_mechanically: overlap.events.every((event) =>
+      event.validation?.issues.includes('overlapping_events:non_atomic_span'),
+    ),
+  };
 }
 
 function meaningMutationDetected({ base, corpus, corpusSha256, mutate }) {
@@ -538,7 +582,22 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       representativeRunnerSource.includes('evaluateAdaptiveWarrantAnalysisCoverageHalt(completedRows)'),
     typed_status_wired: representativeRunnerSource.includes("status: coverageHalt ? 'coverage_halt' : 'running'"),
   };
-  const schemaText = JSON.stringify(schemas);
+  const modelFacingSchemaText = JSON.stringify([
+    ...schemas,
+    ...diagnosticSchemas,
+    ...Object.values(liveSemanticSchemas),
+  ]);
+  const modelFacingDerivedFieldAudit = {
+    contains_start_property: /"start"\s*:/u.test(modelFacingSchemaText),
+    contains_end_property: /"end"\s*:/u.test(modelFacingSchemaText),
+    all_reader_schemas_literal_quote_only: allReaderSchemaAudits.every(
+      (audit) => audit.model_supplies_literal_quote_only === true,
+    ),
+    all_live_schemas_literal_quote_only: Object.values(liveSemanticSchemaAudits).every(
+      (audit) => audit.model_supplies_literal_quote_only === true,
+    ),
+  };
+  const spanDerivationAudit = spanDerivationPreflightAudit();
   const scoreStates = Object.values(score.checks);
   const checks = [
     check(
@@ -579,6 +638,7 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
           audit.provider_keywords_supported === true &&
           audit.union_branches_pairwise_disjoint === true &&
           audit.act_contract_language_equivalent === true &&
+          audit.model_supplies_literal_quote_only === true &&
           audit.nesting_depth_within_limit === true,
       ) && liveSchemaLanguageEquivalent,
       { audits: liveSemanticSchemaAudits, local_provider_language_equivalent: liveSchemaLanguageEquivalent },
@@ -665,7 +725,19 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
         (field) => !['note', 'description', 'display_label', 'evidence_span'].includes(field),
       ),
     ),
-    check('reader_schema_contains_no_offset_arithmetic', !/"(?:start|end|token_count|hash)"\s*:/u.test(schemaText)),
+    check(
+      'model_facing_schemas_contain_no_mechanically_derivable_offsets',
+      modelFacingDerivedFieldAudit.contains_start_property === false &&
+        modelFacingDerivedFieldAudit.contains_end_property === false &&
+        modelFacingDerivedFieldAudit.all_reader_schemas_literal_quote_only &&
+        modelFacingDerivedFieldAudit.all_live_schemas_literal_quote_only,
+      modelFacingDerivedFieldAudit,
+    ),
+    check(
+      'unique_absent_duplicate_and_overlap_spans_use_mechanical_derivation',
+      Object.values(spanDerivationAudit).every(Boolean),
+      spanDerivationAudit,
+    ),
     check(
       'all_scored_threshold_cells_evaluable',
       !scoreStates.includes('not_evaluable') && !scoreStates.includes('inconclusive_support'),
@@ -707,6 +779,8 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       reader_schema_totality_audits: readerSchemaTotalityAudits,
       live_semantic_schema_totality_audits: liveSemanticSchemaAudits,
       live_semantic_local_provider_language_equivalent: liveSchemaLanguageEquivalent,
+      model_facing_derived_field_audit: modelFacingDerivedFieldAudit,
+      span_derivation_audit: spanDerivationAudit,
       fallback_sentinel_leak_paths: sentinelLeakPaths,
       shared_cli_request_path_audit: sharedRequestPathAudit,
       representative_runner_coverage_guard_audit: coverageGuardAudit,

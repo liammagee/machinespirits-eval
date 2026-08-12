@@ -76,7 +76,6 @@ function semanticEvent({
   target = null,
   action = null,
   span = learnerText,
-  start = learnerText.indexOf(span),
   confidence = 'high',
   uncertainty = [],
 }) {
@@ -85,11 +84,53 @@ function semanticEvent({
     speech_act: speechAct,
     target,
     requested_or_proposed_action: action,
-    evidence_span: { text: span, start, end: start + span.length },
+    evidence_span: span,
     confidence,
     uncertainty,
   };
 }
+
+test('semantic evidence spans derive UTF-16 offsets only from one unique literal quote', () => {
+  const uniqueText = 'A “quoted” clue sits here.';
+  const unique = semanticExtraction(uniqueText, [
+    semanticEvent({
+      learnerText: uniqueText,
+      eventId: 'unique-span',
+      speechAct: 'other',
+      span: '“quoted”',
+    }),
+  ]);
+  assert.deepEqual(unique.events[0].evidence_span, {
+    text: '“quoted”',
+    start: uniqueText.indexOf('“quoted”'),
+    end: uniqueText.indexOf('“quoted”') + '“quoted”'.length,
+  });
+  assert.equal(unique.events[0].evidence_span_derivation.status, 'derived_unique_literal');
+
+  const legacyOffsets = semanticExtraction(uniqueText, [
+    {
+      ...semanticEvent({
+        learnerText: uniqueText,
+        eventId: 'legacy-offset-span',
+        speechAct: 'other',
+        span: '“quoted”',
+      }),
+      evidence_span: { text: '“quoted”', start: 0, end: 1 },
+    },
+  ]);
+  assert.deepEqual(legacyOffsets.events[0].evidence_span, unique.events[0].evidence_span);
+
+  const absent = semanticExtraction(uniqueText, [
+    semanticEvent({ learnerText: uniqueText, eventId: 'absent-span', speechAct: 'other', span: 'missing' }),
+  ]);
+  assert.ok(absent.events[0].validation.issues.includes('events[0].evidence_span:not_literal'));
+
+  const duplicateText = 'echo then echo';
+  const duplicate = semanticExtraction(duplicateText, [
+    semanticEvent({ learnerText: duplicateText, eventId: 'duplicate-span', speechAct: 'other', span: 'echo' }),
+  ]);
+  assert.ok(duplicate.events[0].validation.issues.includes('events[0].evidence_span:non_unique_literal'));
+});
 
 const CATALOGUE_ACTION_FAMILIES = [
   'clarify_term',

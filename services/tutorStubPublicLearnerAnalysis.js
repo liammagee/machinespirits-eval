@@ -410,7 +410,7 @@ function providerObjectSchema(properties) {
  * One act-discriminated semantic-event language is shared by local validation
  * and provider structured output. Per-act target/action shapes come directly
  * from the certified contract table; the deterministic runtime retains the
- * richer offset, size, catalogue, and public-evidence checks.
+ * richer derived-offset, size, catalogue, and public-evidence checks.
  */
 export function buildTutorStubPublicLearnerAnalysisSemanticOutputSchema() {
   const absent = providerObjectSchema({ state: { type: 'string', enum: ['none'] } });
@@ -448,11 +448,7 @@ export function buildTutorStubPublicLearnerAnalysisSemanticOutputSchema() {
       speech_act: { type: 'string', enum: [speechAct] },
       target: targetFor(contract),
       requested_or_proposed_action: actionFor(contract),
-      evidence_span: providerObjectSchema({
-        text: { type: 'string' },
-        start: { type: 'integer', minimum: 0 },
-        end: { type: 'integer', minimum: 1 },
-      }),
+      evidence_span: { type: 'string' },
       confidence: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE] },
       uncertainty: {
         type: 'array',
@@ -1344,7 +1340,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
             action: ADAPTIVE_WARRANT_SEMANTIC_ACTIONS.join('|'),
             action_object_id: 'stable public action ID',
           },
-          evidence_span: { text: 'exact current-turn substring', start: 0, end: 1 },
+          evidence_span: 'one unique exact current-turn substring',
           confidence: ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE.join('|'),
           uncertainty: ADAPTIVE_WARRANT_SEMANTIC_UNCERTAINTY_REASONS,
         },
@@ -1470,7 +1466,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
       ? 'Emit analytic_contribution only for explicit reasoning, testing, comparison, evidence limitation, or criterion work. It may coexist with another act.'
       : null,
     includeSemanticEvents
-      ? 'evidence_span must be an exact substring of the current learner turn with JavaScript UTF-16 start and exclusive end offsets.'
+      ? 'evidence_span must be one unique exact substring of the current learner turn. Return only that literal quote; the harness derives JavaScript UTF-16 offsets mechanically.'
       : null,
     includeSemanticEvents
       ? 'Use confidence=high with uncertainty=[] only when the act, executor, target, and span are unambiguous. Otherwise use medium or low and one to three declared uncertainty reasons; do not guess.'

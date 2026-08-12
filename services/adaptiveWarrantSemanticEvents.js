@@ -415,11 +415,53 @@ function normalizedAction(action, issues, eventIndex) {
 }
 
 function spansOverlap(left, right) {
-  return Number(left?.start) < Number(right?.end) && Number(right?.start) < Number(left?.end);
+  return (
+    Number.isInteger(left?.start) &&
+    Number.isInteger(left?.end) &&
+    Number.isInteger(right?.start) &&
+    Number.isInteger(right?.end) &&
+    left.start < right.end &&
+    right.start < left.end
+  );
 }
 
 function publicIdentifierPresent(identifier, publicText) {
   return String(publicText || '').includes(String(identifier || '').trim());
+}
+
+/**
+ * Convert the model's only span judgment — one literal quote — into the
+ * internal UTF-16 interval. Numeric offsets are deliberately never trusted
+ * from a model response.
+ */
+export function deriveAdaptiveWarrantSemanticEvidenceSpan(learnerText, suppliedSpan) {
+  const sourceText = String(learnerText || '');
+  const text =
+    typeof suppliedSpan === 'string'
+      ? suppliedSpan
+      : suppliedSpan && typeof suppliedSpan === 'object' && !Array.isArray(suppliedSpan)
+        ? String(suppliedSpan.text || '')
+        : '';
+  const start = text ? sourceText.indexOf(text) : -1;
+  if (start < 0) {
+    return {
+      evidence_span: { text, start: null, end: null },
+      status: 'not_literal',
+      issues: ['not_literal'],
+    };
+  }
+  if (sourceText.indexOf(text, start + 1) >= 0) {
+    return {
+      evidence_span: { text, start: null, end: null },
+      status: 'non_unique_literal',
+      issues: ['non_unique_literal'],
+    };
+  }
+  return {
+    evidence_span: { text, start, end: start + text.length },
+    status: 'derived_unique_literal',
+    issues: [],
+  };
 }
 
 /**
@@ -474,14 +516,12 @@ export function validateAdaptiveWarrantSemanticExtraction(
     if (REQUEST_SPEECH_ACTS.has(event.speech_act) && action?.executor === 'learner') {
       issues.push(`events[${eventIndex}].requested_or_proposed_action:executor_matches_request_speaker`);
     }
-    const span = event.evidence_span && typeof event.evidence_span === 'object' ? event.evidence_span : {};
-    const start = Number(span.start);
-    const end = Number(span.end);
-    const text = String(span.text || '');
-    if (!Number.isInteger(start) || !Number.isInteger(end) || start < 0 || end <= start || end > sourceText.length) {
-      issues.push(`events[${eventIndex}].evidence_span:invalid_offsets`);
-    } else if (sourceText.slice(start, end) !== text) {
+    const spanDerivation = deriveAdaptiveWarrantSemanticEvidenceSpan(sourceText, event.evidence_span);
+    const { text, start, end } = spanDerivation.evidence_span;
+    if (spanDerivation.status === 'not_literal') {
       issues.push(`events[${eventIndex}].evidence_span:not_literal`);
+    } else if (spanDerivation.status === 'non_unique_literal') {
+      issues.push(`events[${eventIndex}].evidence_span:non_unique_literal`);
     }
     if (text.length > ADAPTIVE_WARRANT_SEMANTIC_EVENT_LIMITS.maxEvidenceSpanChars) {
       issues.push(`events[${eventIndex}].evidence_span:too_many_chars`);
@@ -512,6 +552,10 @@ export function validateAdaptiveWarrantSemanticExtraction(
       target,
       requested_or_proposed_action: action,
       evidence_span: { text, start, end },
+      evidence_span_derivation: {
+        source: 'unique_literal_quote',
+        status: spanDerivation.status,
+      },
       confidence: event.confidence || null,
       uncertainty,
       validation: {
