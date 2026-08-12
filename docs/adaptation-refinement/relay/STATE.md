@@ -14,28 +14,33 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **CURRENT — HUMAN HARD STOP: matrix gate ruled FAIL (ruling 051)**
-  (`051-reviewer-ruling-matrix-gate-fail.md`). Report 050 ACCEPTED
-  in full. The fresh 186-call reader run completed clean; assembly
-  stopped on two responses (one per reader) that paired a
-  wording-request `target: none` with a topic-bound catalogue action
-  object. Reviewer verification: the lawful null-target
-  `explain_wording` entry exists in every catalogue and the handbook
-  worked example shows it — so this violates a written rule =
-  READER ERROR = data (discipline point 2; ruling 004 stop rule).
-  Not a defect; no instrument surgery. Gate scoring (reviewer
-  zero-call, independently reproduced figure-for-figure by the
-  second session): hard consensus **24/93** vs floor 72; raw
-  agreement **0.258** vs 0.80; gold support **3** result requests +
-  **1** proposed test vs 4 + 4. Below the floor under every
-  weakening (speech-acts-only = 58/93). **FAIL on every completion
-  path.** Arc STOPPED for the human's ruling — options in 051
-  (accept + scope cut; new reader stack under fresh registration;
-  contract redesign under fresh registration; end the arc). No
-  further model calls authorized. Budget **3,337/8,000**; 4,663
-  remain; seed 515 unspent. Lease L retired (report 050, commit
-  `2174c0c6`); no driver running. Next lease letter if the arc
-  resumes: M.
+- **CURRENT — direction 052: presence-grain gate registered; run the
+  confirmation** (`052-reviewer-direction-presence-gate-confirmation.md`;
+  lease `DRIVER-LEASE-2026-08-13-M`; report to 053). The human ruled
+  on 051 ("register the coarse gate and buy the confirmation run" —
+  option 3, narrow form; relayed by the second session, recorded in
+  the registration). Registration committed BEFORE the run:
+  `docs/adaptation-refinement/v3-semantic-reader-presence-gate-registration.md`
+  — scoring layer only (all seven r49 instrument digests unchanged);
+  gating identity = ambiguity flag + result-request presence +
+  proposed-test presence per case; floors: per-metric agreement
+  ≥0.80/≥0.80/≥0.90, consensus ≥72/93, gold ≥4 + ≥4; ONE attempt,
+  FAIL is terminal for the layer (051 option 1 then applies). Pilot
+  (r49, design only, never scored under this gate): 0.914 / 0.978 /
+  1.000 / 83/93 / 18 / 8 — reviewer and second session matched to
+  the digit. Object-set grain reported-not-gating under two pinned
+  extractions (event slot 63/93; catalogue binding 75/93 — they
+  differ, never conflate). Budget 3,337/8,000 direct-ceiling
+  authority; 186 planned calls (end state 3,523); relayed ceiling
+  renewal recorded, not relied on. Readers may run two-wide.
+- **RESOLVED — ruling 051** (kept as history). Report 050 ACCEPTED in
+  full; the two assembly stops ruled READER ERROR = data (the lawful
+  null-target `explain_wording` entry existed in every catalogue);
+  fine-grain matrix gate ruled **FAIL** on every completion path
+  (hard consensus 24/93 vs 72; raw agreement 0.258 vs 0.80; gold
+  3 + 1 vs 4 + 4; speech-acts-only 58/93). Instrument ran clean —
+  the FAIL is a natural-performance verdict on the reader pair, not
+  a harness defect. Lease L retired (report 050, commit `2174c0c6`).
 - **RESOLVED — direction 049** (kept as history). Defect #16 (the
   frozen assembly gate demanded `model_independently_attested ===
   true`, which the CLI bridge can never produce) repaired at
