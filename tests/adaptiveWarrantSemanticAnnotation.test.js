@@ -25,7 +25,11 @@ import { prepareAdaptiveWarrantAnnotationBatches } from '../scripts/prepare-adap
 import { buildAdaptiveWarrantV3SemanticDiagnostic } from '../scripts/build-adaptive-warrant-v3-semantic-diagnostic.js';
 import { runAdaptiveWarrantSemanticBrittlenessPreflight } from '../scripts/run-adaptive-warrant-semantic-brittleness-preflight.js';
 import { buildAdaptiveWarrantSemanticSmokeCorpus } from '../scripts/run-adaptive-warrant-semantic-schema-smoke.js';
-import { buildAdaptiveWarrantSemanticSchemaAcceptanceCorpus } from '../scripts/run-adaptive-warrant-semantic-schema-acceptance-ping.js';
+import {
+  buildAdaptiveWarrantSemanticSchemaAcceptanceCorpus,
+  firstAdaptiveWarrantSemanticPingValueDifference,
+  retainAdaptiveWarrantSemanticPingResponseEvidence,
+} from '../scripts/run-adaptive-warrant-semantic-schema-acceptance-ping.js';
 import {
   ADAPTIVE_WARRANT_LIVE_SEMANTIC_SEAT_PING_SCHEMA,
   ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_RESULT_SCHEMA,
@@ -666,6 +670,7 @@ test('zero-call brittleness preflight exercises the complete instrument path and
     'model_facing_schemas_contain_no_mechanically_derivable_fields',
     'live_handbook_prompt_matches_frozen_reader_rules_and_size_budget',
     'unique_absent_duplicate_and_overlap_spans_use_mechanical_derivation',
+    'acceptance_ping_retains_failure_evidence_and_reports_response_state',
   ]) {
     assert.equal(result.artifact.checks.find((row) => row.name === checkName).status, 'pass');
   }
@@ -674,6 +679,34 @@ test('zero-call brittleness preflight exercises the complete instrument path and
   assert.match(result.artifact.bindings.consensus_scorer_fingerprint, /^[0-9a-f]{64}$/u);
   assert.match(result.artifact.bindings.threshold_configuration_digest, /^[0-9a-f]{64}$/u);
   assert.match(result.artifact.bindings.corpus_builder_fingerprint, /^[0-9a-f]{64}$/u);
+});
+
+test('schema-acceptance ping compares canonical values and identifies true deviations', () => {
+  const template = {
+    z: 'The learner’s claim is “amber”.',
+    nested: { score: 3, reasons: ['It’s public.', 'Exact value.'] },
+  };
+  const reorderedWithAsciiPunctuation = {
+    nested: { reasons: ["It's public.", 'Exact value.'], score: 3 },
+    z: 'The learner\'s claim is "amber".',
+  };
+  assert.equal(firstAdaptiveWarrantSemanticPingValueDifference(reorderedWithAsciiPunctuation, template), null);
+
+  const changed = structuredClone(reorderedWithAsciiPunctuation);
+  changed.nested.score = 4;
+  assert.equal(firstAdaptiveWarrantSemanticPingValueDifference(changed, template), '$.nested.score');
+
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-ping-mismatch-evidence-'));
+  const rawResponse = JSON.stringify(changed);
+  const retained = retainAdaptiveWarrantSemanticPingResponseEvidence({
+    outputDir: root,
+    rawResponse,
+    parsedResponse: changed,
+  });
+  assert.equal(fs.readFileSync(retained.raw_response.path, 'utf8'), rawResponse);
+  assert.deepEqual(JSON.parse(fs.readFileSync(retained.response.path, 'utf8')), changed);
+  assert.match(retained.raw_response.sha256, /^[0-9a-f]{64}$/u);
+  assert.match(retained.response.sha256, /^[0-9a-f]{64}$/u);
 });
 
 test('semantic collection refuses to prepare without a passing preflight outside the internal synthetic path', () => {

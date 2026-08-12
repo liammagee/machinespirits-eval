@@ -609,6 +609,26 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     ),
     ping_dispatches_shared_path: acceptancePingSource.includes('dispatchTutorStubCliBridgeRequest(callModel'),
   };
+  const acceptancePingFailureEvidenceAudit = {
+    raw_response_retained_before_strict_parse:
+      acceptancePingSource.indexOf(
+        '({ raw_response: rawResponseBinding } = retainAdaptiveWarrantSemanticPingResponseEvidence',
+      ) >= 0 &&
+      acceptancePingSource.indexOf(
+        '({ raw_response: rawResponseBinding } = retainAdaptiveWarrantSemanticPingResponseEvidence',
+      ) < acceptancePingSource.indexOf('parseTutorStubPublicLearnerAnalysisStrict(rawResponse'),
+    parsed_response_retained_before_value_comparison:
+      acceptancePingSource.indexOf(
+        '({ response: parsedResponseBinding } = retainAdaptiveWarrantSemanticPingResponseEvidence',
+      ) >= 0 &&
+      acceptancePingSource.indexOf(
+        '({ response: parsedResponseBinding } = retainAdaptiveWarrantSemanticPingResponseEvidence',
+      ) < acceptancePingSource.lastIndexOf('firstAdaptiveWarrantSemanticPingValueDifference('),
+    failure_reports_truthful_response_state: acceptancePingSource.includes('response_received: rawResponse !== null'),
+    failure_reports_first_differing_field_path: acceptancePingSource.includes(
+      'first_differing_field_path: firstDifferingFieldPath',
+    ),
+  };
   const firstCallCoverageGuard = evaluateAdaptiveWarrantAnalysisCoverageHalt([
     {
       learnerAnalysisCallCount: 1,
@@ -740,6 +760,11 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
           .filter(([key]) => key !== 'request_schema')
           .every(([, value]) => value === true),
       sharedRequestPathAudit,
+    ),
+    check(
+      'acceptance_ping_retains_failure_evidence_and_reports_response_state',
+      Object.values(acceptancePingFailureEvidenceAudit).every(Boolean),
+      acceptancePingFailureEvidenceAudit,
     ),
     check(
       'representative_runner_first_call_and_coverage_halt_guards_wired',
@@ -885,6 +910,7 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       punctuation_normalized_quote_audit: punctuationNormalizedQuoteAudit,
       fallback_sentinel_leak_paths: sentinelLeakPaths,
       shared_cli_request_path_audit: sharedRequestPathAudit,
+      acceptance_ping_failure_evidence_audit: acceptancePingFailureEvidenceAudit,
       representative_runner_coverage_guard_audit: coverageGuardAudit,
     },
   };

@@ -9,7 +9,10 @@ import { parseArgs } from 'node:util';
 import {
   validateAdaptiveWarrantSemanticReaderCatalog,
 } from '../services/adaptiveWarrantSemanticAnnotation.js';
-import { adaptiveWarrantSemanticSourceHash } from '../services/adaptiveWarrantSemanticEvents.js';
+import {
+  adaptiveWarrantSemanticSourceHash,
+  normalizeAdaptiveWarrantSemanticQuotePunctuation,
+} from '../services/adaptiveWarrantSemanticEvents.js';
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
 import { dispatchTutorStubCliBridgeRequest } from '../services/tutorStubCliRequest.js';
 import {
@@ -48,6 +51,59 @@ function readJson(filePath) {
 function writeJson(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+export function firstAdaptiveWarrantSemanticPingValueDifference(actual, expected, fieldPath = '$') {
+  if (typeof actual === 'string' && typeof expected === 'string') {
+    return normalizeAdaptiveWarrantSemanticQuotePunctuation(actual) ===
+      normalizeAdaptiveWarrantSemanticQuotePunctuation(expected)
+      ? null
+      : fieldPath;
+  }
+  if (Array.isArray(actual) || Array.isArray(expected)) {
+    if (!Array.isArray(actual) || !Array.isArray(expected)) return fieldPath;
+    if (actual.length !== expected.length) return `${fieldPath}.length`;
+    for (let index = 0; index < actual.length; index += 1) {
+      const difference = firstAdaptiveWarrantSemanticPingValueDifference(
+        actual[index],
+        expected[index],
+        `${fieldPath}[${index}]`,
+      );
+      if (difference) return difference;
+    }
+    return null;
+  }
+  if (actual && expected && typeof actual === 'object' && typeof expected === 'object') {
+    const keys = [...new Set([...Object.keys(actual), ...Object.keys(expected)])].sort((left, right) =>
+      left.localeCompare(right),
+    );
+    for (const key of keys) {
+      if (!Object.hasOwn(actual, key) || !Object.hasOwn(expected, key)) return `${fieldPath}.${key}`;
+      const difference = firstAdaptiveWarrantSemanticPingValueDifference(
+        actual[key],
+        expected[key],
+        `${fieldPath}.${key}`,
+      );
+      if (difference) return difference;
+    }
+    return null;
+  }
+  return Object.is(actual, expected) ? null : fieldPath;
+}
+
+export function retainAdaptiveWarrantSemanticPingResponseEvidence({ outputDir, rawResponse, parsedResponse } = {}) {
+  const retained = { raw_response: null, response: null };
+  if (rawResponse !== null && rawResponse !== undefined) {
+    const rawResponsePath = path.join(outputDir, 'schema-acceptance.response.raw.txt');
+    fs.writeFileSync(rawResponsePath, String(rawResponse));
+    retained.raw_response = { path: rawResponsePath, sha256: fileSha256(rawResponsePath) };
+  }
+  if (parsedResponse !== null && parsedResponse !== undefined) {
+    const parsedResponsePath = path.join(outputDir, 'schema-acceptance.response.json');
+    writeJson(parsedResponsePath, parsedResponse);
+    retained.response = { path: parsedResponsePath, sha256: fileSha256(parsedResponsePath) };
+  }
+  return retained;
 }
 
 function cleanSource() {
@@ -316,6 +372,12 @@ export async function runAdaptiveWarrantSemanticSchemaAcceptancePing({
     response_received: false,
     prohibited_tool_event_count: 0,
   };
+  let rawResponse = null;
+  let rawResponseBinding = null;
+  let parsedResponse = null;
+  let parsedResponseBinding = null;
+  let firstDifferingFieldPath = null;
+  let failureStatus = 'provider_failed_before_response';
   try {
     const response = await dispatchTutorStubCliBridgeRequest(callModel, {
       resolved: { provider: 'codex', model: 'gpt-5.6-luna' },
@@ -329,38 +391,68 @@ export async function runAdaptiveWarrantSemanticSchemaAcceptancePing({
       maxStdoutBytes: 256_000,
       maxStderrBytes: 64_000,
     });
-    const parsed = parseTutorStubPublicLearnerAnalysisStrict(String(response.text || '').trim(), {
+    rawResponse = String(response?.text || '').trim();
+    ({ raw_response: rawResponseBinding } = retainAdaptiveWarrantSemanticPingResponseEvidence({
+      outputDir: resolvedOutput,
+      rawResponse,
+    }));
+    failureStatus = 'response_received_strict_parse_failed';
+    parsedResponse = parseTutorStubPublicLearnerAnalysisStrict(rawResponse, {
       includeSemanticEvents: true,
       benchmarkLearnerText: LEARNER_TEXT,
       semanticPublicText: JSON.stringify(readJson(freeze.packet.path)),
       tutorTurn: 2,
     }).parsed;
+    ({ response: parsedResponseBinding } = retainAdaptiveWarrantSemanticPingResponseEvidence({
+      outputDir: resolvedOutput,
+      parsedResponse,
+    }));
+    failureStatus = 'parsed_response_provenance_failed';
+    const prohibitedToolEventCount = Number(response.prohibitedToolEventCount || 0);
+    if (response.structuredOutput !== true)
+      throw new Error('schema-acceptance response lacked structured-output provenance');
+    if (prohibitedToolEventCount !== 0) throw new Error('schema-acceptance ping used a prohibited tool');
     const corpus = readJson(freeze.corpus.path);
     if (corpus.cases.length !== 1 || corpus.cases[0].sample_id !== SAMPLE_ID) {
       throw new Error('schema-acceptance synthetic corpus binding mismatch');
     }
-    if (JSON.stringify(parsed) !== JSON.stringify(readJson(freeze.packet.path).response_template)) {
-      throw new Error('schema-acceptance live response template mismatch');
+    firstDifferingFieldPath = firstAdaptiveWarrantSemanticPingValueDifference(
+      parsedResponse,
+      readJson(freeze.packet.path).response_template,
+    );
+    if (firstDifferingFieldPath) {
+      failureStatus = 'parsed_response_canonical_value_mismatch';
+      throw new Error(`schema-acceptance live response value mismatch at ${firstDifferingFieldPath}`);
     }
-    const responsePath = path.join(resolvedOutput, 'schema-acceptance.response.json');
-    writeJson(responsePath, parsed);
     const result = {
       ...baseResult,
       status: 'passed',
       calls: { attempted: 1, completed: 1, maximum: 1 },
       response_received: true,
-      prohibited_tool_event_count: Number(response.prohibitedToolEventCount || 0),
+      strict_parse_succeeded: true,
+      validator_accepted: true,
+      canonical_value_match: true,
+      first_differing_field_path: null,
+      structured_output: true,
+      prohibited_tool_event_count: prohibitedToolEventCount,
       returned_provider: response.provider || null,
       returned_model: response.model || null,
-      response: { path: responsePath, sha256: fileSha256(responsePath) },
+      raw_response: rawResponseBinding,
+      response: parsedResponseBinding,
     };
-    if (result.prohibited_tool_event_count !== 0) throw new Error('schema-acceptance ping used a prohibited tool');
     writeJson(resultPath, result);
     return { result, resultPath };
   } catch (error) {
     writeJson(resultPath, {
       ...baseResult,
-      status: 'provider_rejected_or_failed_before_accepted_response',
+      status: failureStatus,
+      response_received: rawResponse !== null,
+      strict_parse_succeeded: parsedResponse !== null,
+      validator_accepted: parsedResponse !== null,
+      canonical_value_match: firstDifferingFieldPath === null ? null : false,
+      first_differing_field_path: firstDifferingFieldPath,
+      raw_response: rawResponseBinding,
+      response: parsedResponseBinding,
       error: String(error.message || error),
     });
     throw error;
