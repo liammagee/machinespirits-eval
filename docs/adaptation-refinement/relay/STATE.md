@@ -14,22 +14,42 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **CURRENT DIRECTION: 038**
-  (`038-reviewer-direction-composite-label-repair-seed-514.md`, lease
-  `DRIVER-LEASE-2026-08-12-G`, report target 039). The human ruled at
-  19:52 (typed in the reviewer session; verified verbatim in the
-  sibling session transcript): repair defect #11 (composite-target
-  label rendering), closure v2 with SYNTHETIC targets for every label
-  shape the ledger can emit, seed 514 licensed under the same
-  zero-call chain (identical 2.70% s510 replay), **call ceiling raised
-  4,000 → 8,000**, and a standing "no hard-stop, continue until done"
-  instruction. Encoded continuation policy: deterministic harness
-  defects = repair with ledger entry + guards, mint the next disclosed
-  seed (515, 516, …), continue. Human hard stops ONLY: instrument
-  amendments; contamination/provenance; the 8,000 ceiling; coverage
-  losses not dominated by a nameable defect (seed shopping is not
-  covered). Never patch a live run; never waive a failed gate post
-  hoc. Budget 2,540/8,000; matrix ~600.
+- **HARD STOP — awaiting the human (freeze-overlap, ~20:45).** The
+  seed-514 matrix COMPLETED CLEAN (24/24 dialogues, 606/606 calls,
+  zero errors, 192/192 live/offline parity; checkpoint coverage
+  139/144 = 96.53%, final 187/192 = 97.40%, no coverage halt — the
+  first complete matrix of the arc). Defect #12 (final status checker
+  dropped fallback turns from its denominators, wrote `invalid_parity`
+  on a clean run) was repaired per the continuation policy at
+  `3eca7086`, ledgered, guarded, chain green; the reducer replay
+  resolves seed 514 `complete`. The annotation freeze then FAILED
+  CLOSED: 3 overlap rows / 2 fingerprints against excluded corpora —
+  all the LOW-AGENCY learner's formulaic turn-1 opening ("Could you
+  choose what I should check/examine first?"), matching a prior
+  mechanism run, the preserved 36d2e63f matrix, and burned seed 504.
+  Direction 038 keeps contamination/provenance as a human hard stop.
+  Corpus quarantined; no reader called; seed 515 NOT launched. Driver
+  report: `039-codex-report.md` (accepted). Reviewer ruling + options:
+  `040-reviewer-note-seed-514-freeze-overlap-accepted.md` — reviewer
+  reads the overlap as deterministic persona recurrence, not leakage;
+  leans to amending the exclusion rule to whole-case fingerprints and
+  re-freezing seed 514 (human authority — instrument amendment).
+  Spending seed 515 unchanged is futile (same recurrence) and is seed
+  shopping. Budget **3,146/8,000**; remaining 4,854.
+- **RESOLVED — direction 038** (kept as history;
+  `038-reviewer-direction-composite-label-repair-seed-514.md`, lease
+  `DRIVER-LEASE-2026-08-12-G` retired with report 039 and note 040).
+  The human ruled at 19:52: repair defect #11, closure v2 with
+  SYNTHETIC targets, seed 514 licensed, **ceiling 4,000 → 8,000**,
+  standing "no hard-stop, continue until done" instruction encoded as
+  the continuation policy (deterministic harness defects =
+  repair + ledger + guards + next disclosed seed, continue; human
+  stops ONLY: instrument amendments, contamination/provenance, the
+  8,000 ceiling, coverage losses not dominated by a nameable defect).
+  Executed exactly: defect #11 repaired at `489f2429` (guard test
+  passed unmodified; closure v2 = 6 retained + 19 synthetic targets,
+  no unproducible shapes), chain green, matrix launched and completed
+  — see the hard stop above.
 - **RESOLVED — hard stop of 19:45** (kept as history). Seed 513 failed the
   launcher's own local test preflight BEFORE any child or paid call:
   the new target-aware fallback mangles composite target labels
@@ -254,8 +274,10 @@
   stands. The failed 36d2e63f matrix stays preserved, unscored, never
   pooled. Earlier results stand: supplement PASSED (5/2), five-cell
   layer certified, decision readers 0.833 binary.
-- **Driver:** the session whose prompt quotes the lease token in 006c
-  (currently DRIVER-LEASE-2026-08-12-F). Other sessions: read-only.
+- **Driver:** the session whose prompt quotes the lease token in 006c.
+  NO LIVE LEASE — G retired with report 039 and note 040; do not
+  relaunch the driver until the human rules on the exclusion-rule
+  amendment. Other sessions: read-only.
 - **Instrument commit:** `225a7b07` ("Separate V3 structural and semantic
   gates"). The instrument is CLOSED — it reopens only for a transport,
   schema, provenance, or non-evaluability defect. Never for semantic
