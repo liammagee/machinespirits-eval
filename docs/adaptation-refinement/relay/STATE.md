@@ -14,8 +14,18 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **HARD STOP — WAITING ON THE HUMAN** (16:40; report
-  `029-codex-report.md`, merged at `40022061`). Seed 509
+- **CURRENT DIRECTION: 030** (human ruled 17:20 — option 1). The
+  hard stop below is RESOLVED. The human chose to amend the two
+  contract rules that carry 22 of the 25 seed-509 discards, as an
+  open post-hoc amendment (contract v3.1), and to spend seed 510 on
+  it. Direction `030-reviewer-direction-contract-v3.1-seed-510.md`
+  pre-declares both amendments, the licensing chain (v3.1 tests,
+  zero-call replay of the seed-509 returns predicting ≤15%,
+  preflights), and the launch. Unattended mode under note 023
+  RESUMES with 030 as the work order. If seed 510 coverage-halts:
+  human hard stop, seeds exhausted.
+- **RESOLVED — hard stop of 16:40** (report
+  `029-codex-report.md`, merged at `40022061`; kept as history). Seed 509
   coverage-halted at 25/128 = 19.53% unanalyzed; ZERO cap blocks (the
   028 repair worked). All losses are the analysis seat breaking
   written rules: missing catalogue targets, forbidden value/component
