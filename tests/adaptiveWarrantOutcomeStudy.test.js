@@ -137,6 +137,24 @@ test('measure 1 hard-stops on partial decision-reader run evidence', (t) => {
   );
 });
 
+test('measure 1 hard-stops when a decision-reader response is altered after its hash is recorded', (t) => {
+  const runPath = decisionReaderRunFixture(t);
+  const runRecord = JSON.parse(fs.readFileSync(runPath, 'utf8'));
+  fs.writeFileSync(runRecord.batches[0].response_path, '{"fixture":"tampered-response"}\n');
+
+  const evidence = verifyOutcomeDecisionReaderRunEvidence(runPath);
+  const failedBatchChecks = Object.entries(evidence.batches[0].checks)
+    .filter(([, passed]) => !passed)
+    .map(([check]) => check);
+  assert.equal(evidence.status, 'failed');
+  assert.deepEqual(failedBatchChecks, ['response_hash_match']);
+  assert.equal(evidence.batches[0].checks.model_independently_attested, true);
+  assert.throws(
+    () => scoreOutcomeDecisionCases([], runPath),
+    /decision-reader run evidence failed closed/u,
+  );
+});
+
 test('measure 1 decision-reader instrument is digest pinned and fails on drift', () => {
   assert.equal(preflightOutcomeDecisionReader(DECISION_READER_INSTRUMENT_BINDINGS).status, 'passed');
   assert.equal(
