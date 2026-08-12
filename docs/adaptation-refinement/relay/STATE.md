@@ -24,7 +24,23 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — direction 072: repair the standing-permission
+- **CURRENT — GO note 073a: pilot third take (v3) launched.**
+  Direction 072 done at `4f3508cd` (report 073, `c72cf50f`): sized
+  `tutor_system_standing` surface 24,000/6,000 (plain surface
+  unchanged); duplicate audit scoped to the delimited menu block plus
+  per-branch; zero-call three-condition render preflight in the
+  launcher (all six real frozen renders PASS, ~2k chars margin);
+  counter re-pinned 3,613 → 4,729 (remaining 6,608). Reviewer
+  verification PASS (212/212, ESLint, diff read; dry-run audit escape
+  unreachable live). Second-session final-gate PASS, zero calls; two
+  non-blocking findings on record in its reply (preflight arg list
+  hand-copied, not shared with the job builder; duplicate exemption
+  coarser than strict twins — both bounded by fail-closed live audit
+  and SHA-pinned menu bytes). GO note 073a issued for one launch:
+  entry point at `4f3508cd`, out dir
+  `…outcome-pilot-v3-live-2026-08-13`, 1116-call plan, report file
+  074. Prior GO notes all consumed/void.
+- **RESOLVED — direction 072: repair the standing-permission
   prompt-audit conflict; report to 073; no launch.**
   Chain since 069a: GO note 069b issued (corrected 1116 plan at
   `8ad749ec`; guard-verified; second-session PASS). First launch
