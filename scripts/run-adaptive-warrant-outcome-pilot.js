@@ -180,10 +180,10 @@ export function verifyOutcomePilotManifestBindings({ manifestPath = DEFAULT_MANI
       decision_readers: 288,
       total: 1116,
       arithmetic: '(18 x 30 cap) + (2 x 144) + (2 x 144) = 1116; measured live unit 26 per dialogue (report 069)',
-      counter_before: 3556,
-      counter_after_if_completed: 4672,
+      counter_before: 3613,
+      counter_after_if_completed: 4729,
       ceiling: 11337,
-      remaining_after_if_completed: 6665,
+      remaining_after_if_completed: 6608,
     },
     'pilot call plan',
   );
@@ -424,6 +424,153 @@ export function buildOutcomePilotJobs({ manifest, rootDir, dryRun = false } = {}
   });
 }
 
+function parseTutorStubDryRun(stdout) {
+  const text = String(stdout || '');
+  const jsonStart = text.indexOf('{');
+  if (jsonStart < 0) throw new Error('tutor prompt preflight returned no dry-run JSON');
+  return JSON.parse(text.slice(jsonStart));
+}
+
+export function renderOutcomePilotPromptConfiguration({ worldPath, condition, seed = 515, traceDir } = {}) {
+  const configuration = OUTCOME_STUDY_RUN_CONFIGURATIONS.find((row) => row.id === condition);
+  if (!configuration) throw new Error(`unknown outcome prompt-preflight condition ${condition}`);
+  const standingInstructionsIndex = configuration.cli_args.indexOf('--standing-instructions-file');
+  const standingInstructionsFile =
+    standingInstructionsIndex >= 0 ? configuration.cli_args[standingInstructionsIndex + 1] : null;
+  const args = [
+    'scripts/tutor-stub.js',
+    '--lab',
+    'automated_eval',
+    '--model-call-budget',
+    String(OUTCOME_PILOT_PER_DIALOGUE_CAP),
+    '--auto-learner',
+    '--auto-turns',
+    String(configuration.horizon),
+    '--auto-safety-turns',
+    '80',
+    '--model',
+    'codex.gpt-5.6-luna',
+    '--classifier-model',
+    'codex.gpt-5.6-luna',
+    '--learner-record-model',
+    'codex.gpt-5.6-luna',
+    '--auto-learner-model',
+    'codex.gpt-5.6-luna',
+    '--auto-learner-profile',
+    configuration.learner_profile,
+    '--tutor-learner-dag',
+    '--world',
+    worldPath,
+    '--dag-mode',
+    'strict_dag',
+    '--register-policy',
+    'dynamic',
+    '--register-palette',
+    'all',
+    '--register-temperature',
+    '0.15',
+    '--dag-fact-dropout',
+    '0',
+    '--dag-fact-dropout-seed',
+    String(seed),
+    '--release-speed',
+    '1',
+    '--run-seed',
+    String(seed),
+    '--eval-repeat',
+    '1',
+    '--eval-job-id',
+    `prompt-preflight-${condition}`,
+    '--trace-dir',
+    traceDir || path.join('/tmp', 'adaptive-warrant-outcome-prompt-preflight'),
+    '--loop-mode',
+    'strict',
+    '--no-stream',
+    '--no-interim-animation',
+    '--dag',
+    '--no-auto-stop-on-grounded',
+    '--cli-effort',
+    'medium',
+    '--max-tokens',
+    '4096',
+    '--history-turns',
+    '4',
+    '--learner-analysis-prompt-profile',
+    configuration.learner_analysis_prompt_profile,
+    '--learner',
+    'Automated learner run 1/1 for policy dynamic.',
+    '--dry-run',
+    ...(standingInstructionsFile ? ['--standing-instructions-file', standingInstructionsFile] : []),
+  ];
+  const rendered = parseTutorStubDryRun(
+    execFileSync(process.execPath, args, {
+      cwd: ROOT,
+      encoding: 'utf8',
+      maxBuffer: 4 * 1024 * 1024,
+      env: {
+        ...process.env,
+        NO_COLOR: '1',
+        TUTOR_STUB_EVAL_POLICY: 'dynamic',
+        TUTOR_STUB_EVAL_RUN_INDEX: '1',
+        TUTOR_STUB_WARRANT_GATE: configuration.warrant_gate_mode,
+      },
+    }),
+  );
+  return {
+    condition,
+    world: rendered.world,
+    systemPrompt: rendered.systemPrompt,
+    audit: rendered.promptArchitecture.audit.baseSystem,
+  };
+}
+
+export function preflightOutcomePilotPromptAudits({ manifest, outputPath } = {}) {
+  if (!manifest?.worlds?.length) throw new Error('outcome prompt preflight requires frozen worlds');
+  if (!outputPath) throw new Error('outcome prompt preflight requires an artifact path');
+  const traceDir = path.join(path.dirname(path.resolve(outputPath)), 'prompt-audit-dry-run');
+  const renders = manifest.worlds.flatMap((world) =>
+    OUTCOME_STUDY_RUN_CONFIGURATIONS.map((configuration) => {
+      const rendered = renderOutcomePilotPromptConfiguration({
+        worldPath: world.path,
+        condition: configuration.id,
+        seed: manifest.seeds[0],
+        traceDir,
+      });
+      return {
+        condition: configuration.id,
+        world: world.id,
+        world_path: world.path,
+        surface: rendered.audit.surface,
+        chars: rendered.audit.chars,
+        approximate_tokens: rendered.audit.approximateTokens,
+        budget: rendered.audit.budget,
+        duplicate_instruction_lines: rendered.audit.duplicateInstructionLines,
+        violations: rendered.audit.violations,
+        ok: rendered.audit.ok,
+        prompt_sha256: sha256(rendered.systemPrompt),
+      };
+    }),
+  );
+  const artifact = {
+    schema: 'machinespirits.adaptation-refinement.outcome-prompt-audit-preflight.v1',
+    created_at: new Date().toISOString(),
+    makes_model_calls: false,
+    model_calls: 0,
+    status: renders.every((row) => row.ok) ? 'passed' : 'failed',
+    renders,
+  };
+  atomicWriteJson(outputPath, artifact);
+  if (artifact.status !== 'passed') {
+    throw new Error(
+      `outcome prompt-audit preflight failed: ${renders
+        .filter((row) => !row.ok)
+        .map((row) => `${row.world}/${row.condition}:${row.violations.map((violation) => violation.code).join('+')}`)
+        .join(', ')}`,
+    );
+  }
+  return artifact;
+}
+
 function spawnLogged(command, { cwd = ROOT, logPath = null } = {}) {
   return new Promise((resolve) => {
     if (logPath) fs.mkdirSync(path.dirname(logPath), { recursive: true });
@@ -657,6 +804,11 @@ export async function executeOutcomePilot({
   const checkpointPath = path.join(rootDir, 'outcome-pilot-checkpoint.json');
   if (fs.existsSync(rootDir) && !resume) throw new Error('outcome pilot output exists; pass --resume');
   if (resume && !fs.existsSync(checkpointPath)) throw new Error('--resume requires an existing checkpoint');
+  const promptAuditPreflightPath = path.join(rootDir, 'prompt-audit-preflight.json');
+  const promptAuditPreflight = preflightOutcomePilotPromptAudits({
+    manifest: guarded.manifest,
+    outputPath: promptAuditPreflightPath,
+  });
   const checkpoint = resume ? readJson(checkpointPath) : null;
   const budget = createOutcomePilotBudget({ checkpointPath, checkpoint });
   const semanticPreflightPath = path.join(rootDir, 'semantic-brittleness-preflight.json');
@@ -687,6 +839,12 @@ export async function executeOutcomePilot({
     menu: guarded.menuGuard,
     prepared_identity: guarded.preparation,
     frozen_readers: readerBindings,
+    prompt_audit: {
+      path: promptAuditPreflightPath,
+      sha256: fileSha256(promptAuditPreflightPath),
+      status: promptAuditPreflight.status,
+      renders: promptAuditPreflight.renders,
+    },
   };
   budget.persist();
 

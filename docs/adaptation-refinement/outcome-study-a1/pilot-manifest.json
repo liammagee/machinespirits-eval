@@ -207,10 +207,10 @@
     "decision_readers": 288,
     "total": 1116,
     "arithmetic": "(18 x 30 cap) + (2 x 144) + (2 x 144) = 1116; measured live unit 26 per dialogue (report 069)",
-    "counter_before": 3556,
-    "counter_after_if_completed": 4672,
+    "counter_before": 3613,
+    "counter_after_if_completed": 4729,
     "ceiling": 11337,
-    "remaining_after_if_completed": 6665
+    "remaining_after_if_completed": 6608
   },
   "launch_authorized": false,
   "hold": "No model or reader call may run until the reviewer commits the go note after second-session byte review and manifest verification."

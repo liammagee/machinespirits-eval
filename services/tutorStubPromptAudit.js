@@ -4,6 +4,11 @@ export const TUTOR_STUB_PROMPT_ARCHITECTURE_SCHEMA = 'machinespirits.tutor-stub.
 
 export const TUTOR_STUB_PROMPT_BUDGETS = Object.freeze({
   tutor_system: Object.freeze({ maxChars: 16_000, maxApproxTokens: 4_000 }),
+  // The registered outcome-study standing-permission condition appends a
+  // 12,399-character frozen menu to a real tutor base prompt of roughly 9.4k
+  // characters. Keep the ordinary tutor_system ceiling unchanged, while
+  // giving this explicitly menu-bearing surface a bounded ~2k-char margin.
+  tutor_system_standing: Object.freeze({ maxChars: 24_000, maxApproxTokens: 6_000 }),
   tutor_turn: Object.freeze({ maxChars: 42_000, maxApproxTokens: 10_500 }),
   // Combined classification + learner-record prompts carry the public world,
   // deterministic DAG preflight, and a bounded transcript window. The former
@@ -103,6 +108,7 @@ export function auditTutorStubPrompt({
   userPrompt = '',
   messageHistory = [],
   instructionTexts = null,
+  duplicateInstructionScopes = null,
   budget = null,
 } = {}) {
   const resolvedBudget = budget || TUTOR_STUB_PROMPT_BUDGETS[surface] || TUTOR_STUB_PROMPT_BUDGETS.default;
@@ -112,7 +118,12 @@ export function auditTutorStubPrompt({
   const totalText = [systemPrompt, historyText, userPrompt].filter(Boolean).join('\n\n');
   const chars = totalText.length;
   const approximateTokens = Math.ceil(chars / 4);
-  const duplicates = duplicateInstructionLines(instructionTexts || [systemPrompt, userPrompt]);
+  const duplicateScopes = Array.isArray(duplicateInstructionScopes)
+    ? duplicateInstructionScopes
+    : [instructionTexts || [systemPrompt, userPrompt]];
+  const duplicates = duplicateScopes.flatMap((scope) =>
+    duplicateInstructionLines(Array.isArray(scope) ? scope : [scope]),
+  );
   const violations = [];
   if (chars > resolvedBudget.maxChars) {
     violations.push({

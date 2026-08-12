@@ -11,11 +11,15 @@ import {
   OUTCOME_PILOT_PER_DIALOGUE_CAP,
   createOutcomePilotBudget,
   executeOutcomePilot,
+  preflightOutcomePilotPromptAudits,
+  renderOutcomePilotPromptConfiguration,
   runOutcomeGeneration,
   runReadersAfterFingerprintGuard,
   validateOutcomeFreezeFormForFrozenDecisionRunner,
   verifyOutcomePilotManifestBindings,
 } from '../scripts/run-adaptive-warrant-outcome-pilot.js';
+import { auditTutorStubPrompt, TUTOR_STUB_PROMPT_BUDGETS } from '../services/tutorStubPromptAudit.js';
+import { auditTutorStubBaseSystemPrompt } from '../services/tutorStubSessionApplicationContext.js';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 
@@ -54,6 +58,117 @@ test('manifest guard refuses a menu SHA mismatch', (t) => {
 test('manifest guard passes on the real frozen files (menu text carries one trailing newline)', () => {
   const result = verifyOutcomePilotManifestBindings({});
   assert.equal(typeof result, 'object');
+  assert.deepEqual(result.manifest.planned_calls, {
+    generation: 540,
+    presence_readers: 288,
+    decision_readers: 288,
+    total: 1116,
+    arithmetic: '(18 x 30 cap) + (2 x 144) + (2 x 144) = 1116; measured live unit 26 per dialogue (report 069)',
+    counter_before: 3613,
+    counter_after_if_completed: 4729,
+    ceiling: 11337,
+    remaining_after_if_completed: 6608,
+  });
+});
+
+test('real frozen worlds render all three conditions through the zero-call prompt preflight', (t) => {
+  const directory = temporaryDirectory(t);
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'docs/adaptation-refinement/outcome-study-a1/pilot-manifest.json'), 'utf8'),
+  );
+  const artifactPath = path.join(directory, 'prompt-audit-preflight.json');
+  const artifact = preflightOutcomePilotPromptAudits({ manifest, outputPath: artifactPath });
+  assert.equal(artifact.status, 'passed');
+  assert.equal(artifact.makes_model_calls, false);
+  assert.equal(artifact.model_calls, 0);
+  assert.equal(artifact.renders.length, 6);
+  assert.ok(artifact.renders.every((row) => row.ok && row.violations.length === 0));
+  assert.ok(
+    artifact.renders
+      .filter((row) => row.condition !== 'standing_permission')
+      .every(
+        (row) =>
+          row.surface === 'tutor_system' &&
+          row.budget.maxChars === TUTOR_STUB_PROMPT_BUDGETS.tutor_system.maxChars &&
+          row.budget.maxApproxTokens === TUTOR_STUB_PROMPT_BUDGETS.tutor_system.maxApproxTokens,
+      ),
+  );
+  assert.ok(
+    artifact.renders
+      .filter((row) => row.condition === 'standing_permission')
+      .every(
+        (row) =>
+          row.surface === 'tutor_system_standing' &&
+          row.budget.maxChars === TUTOR_STUB_PROMPT_BUDGETS.tutor_system_standing.maxChars &&
+          row.budget.maxApproxTokens === TUTOR_STUB_PROMPT_BUDGETS.tutor_system_standing.maxApproxTokens,
+      ),
+  );
+  assert.deepEqual(JSON.parse(fs.readFileSync(artifactPath, 'utf8')), artifact);
+});
+
+test('a genuine duplicate outside the real frozen standing-permission menu still fails', () => {
+  const worldPath = 'docs/adaptation-refinement/outcome-study-a1/worlds/world_101_kestrel_signal_lamp.yaml';
+  const rendered = renderOutcomePilotPromptConfiguration({
+    worldPath,
+    condition: 'standing_permission',
+    seed: 515,
+  });
+  const standingInstructions = fs.readFileSync(
+    path.join(ROOT, 'docs/adaptation-refinement/outcome-study-a1/standing-permission-menu.txt'),
+    'utf8',
+  );
+  const duplicate = 'This deliberately duplicated outer instruction must remain visible to the fail-closed prompt audit.';
+  const audit = auditTutorStubBaseSystemPrompt({
+    auditTutorStubPrompt,
+    systemPrompt: `${rendered.systemPrompt}\n${duplicate}\n${duplicate}`,
+    standingInstructions,
+  });
+  assert.equal(audit.ok, false);
+  assert.ok(audit.violations.some((violation) => violation.code === 'duplicate_instruction_lines'));
+});
+
+test('a genuine duplicate inside one real standing-permission branch still fails', () => {
+  const worldPath = 'docs/adaptation-refinement/outcome-study-a1/worlds/world_101_kestrel_signal_lamp.yaml';
+  const rendered = renderOutcomePilotPromptConfiguration({
+    worldPath,
+    condition: 'standing_permission',
+    seed: 515,
+  });
+  const standingInstructions = fs.readFileSync(
+    path.join(ROOT, 'docs/adaptation-refinement/outcome-study-a1/standing-permission-menu.txt'),
+    'utf8',
+  );
+  const instruction =
+    'Answer, credit, qualify, correct, or receive the learner’s concrete move; never use generic praise.';
+  const duplicatedInstructions = standingInstructions.replace(instruction, `${instruction}\n${instruction}`);
+  const audit = auditTutorStubBaseSystemPrompt({
+    auditTutorStubPrompt,
+    systemPrompt: rendered.systemPrompt.replace(standingInstructions, duplicatedInstructions),
+    standingInstructions: duplicatedInstructions,
+  });
+  assert.equal(audit.ok, false);
+  assert.ok(audit.violations.some((violation) => violation.code === 'duplicate_instruction_lines'));
+});
+
+test('an oversized prompt on the real frozen standing surface still fails', () => {
+  const worldPath = 'docs/adaptation-refinement/outcome-study-a1/worlds/world_102_marigold_archive_box.yaml';
+  const rendered = renderOutcomePilotPromptConfiguration({
+    worldPath,
+    condition: 'standing_permission',
+    seed: 515,
+  });
+  const standingInstructions = fs.readFileSync(
+    path.join(ROOT, 'docs/adaptation-refinement/outcome-study-a1/standing-permission-menu.txt'),
+    'utf8',
+  );
+  const audit = auditTutorStubBaseSystemPrompt({
+    auditTutorStubPrompt,
+    systemPrompt: `${rendered.systemPrompt}\n${'x'.repeat(TUTOR_STUB_PROMPT_BUDGETS.tutor_system_standing.maxChars)}`,
+    standingInstructions,
+  });
+  assert.equal(audit.ok, false);
+  assert.ok(audit.violations.some((violation) => violation.code === 'character_budget_exceeded'));
+  assert.ok(audit.violations.some((violation) => violation.code === 'approximate_token_budget_exceeded'));
 });
 
 test('annotationCaseFingerprint failure blocks reader admission', async () => {
