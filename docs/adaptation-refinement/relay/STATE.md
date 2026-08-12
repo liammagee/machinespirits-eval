@@ -14,25 +14,33 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **CURRENT DIRECTION — 047**
-  (`047-reviewer-direction-reader-digest-repin.md`, lease
-  `DRIVER-LEASE-2026-08-12-K`, report target `048-codex-report.md`).
-  Report 046 ACCEPTED: direction 045's two requirements conflicted —
-  the cap edit necessarily changes the reader digest, because the
-  digest hashes the whole preparer source file (transport constant
-  included). The driver's zero-call projection shows ONLY transport
-  moves: provider schema, extraction schema, one-case response bytes
-  (`f944b9b8…`, 10,930), and the one-case packet (`237c0784…`) are
-  all byte-identical. Reviewer ruling under the human's standing
-  no-spurious-stops order: **re-pin the reader digest at the
-  projected value** `7b084d93…` (preparer source `af2a9182…`) with a
-  byte-level equivalence proof at the repair commit — any value other
-  than the projection = stop. Extraction digest stays `e5af8f2b…`.
-  Then cap 10,500 → 14,000, guards, ledger #15 closed; A2 readers on
-  the frozen 93-case packet at the one-case partition, **planned 93 ×
-  2 readers = 186 calls** recorded before any call; support gate;
-  report 048; reviewer's matrix-gate ruling. Budget **3,146/8,000**;
-  remaining 4,854. Seed 515 unspent.
+- **CURRENT DIRECTION — 049**
+  (`049-reviewer-direction-attestation-gate-repair.md`, lease
+  `DRIVER-LEASE-2026-08-12-L`, report target `050-codex-report.md`).
+  Report 048 ACCEPTED: A1 conforming (cap 14,000; reader digest
+  re-pinned at `7b084d93…`, all eight equivalence letters PASS,
+  independently confirmed by the second session on commit
+  `62e4fd0a`). A2 stopped after 5 reserved attempts: every completed
+  response carried `model_independently_attested: false` and the
+  frozen assembly gate requires `true`. Reviewer verification: the
+  CLI bridge hardcodes false at all three return sites and no code
+  path ever sets true, while the same freeze registered CLI readers
+  (codex / gpt-5.6-luna) — the instrument contradicts itself, and
+  the stage-1 benchmark executor already registers the bridge-echo
+  tuple with attested-false as this repo's CLI provenance standard.
+  Ruling = **defect #16**: replace the gate with attested-true OR
+  the exact bridge-echo tuple pinned to the registered reader
+  identity (stronger: the old gate never checked provider/model).
+  The four collected responses are NOT admitted — quarantined, 5
+  attempts stay counted; readers re-run fresh (93 × 2 = 186 planned
+  calls). Digest re-pin discipline as in 047 (project first, prove
+  byte-identity of every semantic surface). Budget **3,151/8,000**;
+  remaining 4,849. Seed 515 unspent.
+- **RESOLVED — direction 047** (kept as history). Cap raised
+  10,500 → 14,000 at `62e4fd0a`; reader digest re-pinned
+  `51107d43…` → `7b084d93…` with the eight-letter equivalence proof;
+  ledger #15 closed; second-session cross-check PASS on all four
+  points. The reader stop it ordered is resolved by direction 049.
 - **RESOLVED — direction 045** (kept as history). Report 044
   accepted; the seed-514 freeze COMPLETED at 93/2/3 (manifest
   `668511bb…`); defect #15 (response schema 10,930 vs frozen 10,500
