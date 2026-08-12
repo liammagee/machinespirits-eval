@@ -14,28 +14,38 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **CURRENT DIRECTION — 049**
-  (`049-reviewer-direction-attestation-gate-repair.md`, lease
-  `DRIVER-LEASE-2026-08-12-L`, report target `050-codex-report.md`).
-  Report 048 ACCEPTED: A1 conforming (cap 14,000; reader digest
-  re-pinned at `7b084d93…`, all eight equivalence letters PASS,
-  independently confirmed by the second session on commit
-  `62e4fd0a`). A2 stopped after 5 reserved attempts: every completed
-  response carried `model_independently_attested: false` and the
-  frozen assembly gate requires `true`. Reviewer verification: the
-  CLI bridge hardcodes false at all three return sites and no code
-  path ever sets true, while the same freeze registered CLI readers
-  (codex / gpt-5.6-luna) — the instrument contradicts itself, and
-  the stage-1 benchmark executor already registers the bridge-echo
-  tuple with attested-false as this repo's CLI provenance standard.
-  Ruling = **defect #16**: replace the gate with attested-true OR
-  the exact bridge-echo tuple pinned to the registered reader
-  identity (stronger: the old gate never checked provider/model).
-  The four collected responses are NOT admitted — quarantined, 5
-  attempts stay counted; readers re-run fresh (93 × 2 = 186 planned
-  calls). Digest re-pin discipline as in 047 (project first, prove
-  byte-identity of every semantic surface). Budget **3,151/8,000**;
-  remaining 4,849. Seed 515 unspent.
+- **CURRENT — HUMAN HARD STOP: matrix gate ruled FAIL (ruling 051)**
+  (`051-reviewer-ruling-matrix-gate-fail.md`). Report 050 ACCEPTED
+  in full. The fresh 186-call reader run completed clean; assembly
+  stopped on two responses (one per reader) that paired a
+  wording-request `target: none` with a topic-bound catalogue action
+  object. Reviewer verification: the lawful null-target
+  `explain_wording` entry exists in every catalogue and the handbook
+  worked example shows it — so this violates a written rule =
+  READER ERROR = data (discipline point 2; ruling 004 stop rule).
+  Not a defect; no instrument surgery. Gate scoring (reviewer
+  zero-call, independently reproduced figure-for-figure by the
+  second session): hard consensus **24/93** vs floor 72; raw
+  agreement **0.258** vs 0.80; gold support **3** result requests +
+  **1** proposed test vs 4 + 4. Below the floor under every
+  weakening (speech-acts-only = 58/93). **FAIL on every completion
+  path.** Arc STOPPED for the human's ruling — options in 051
+  (accept + scope cut; new reader stack under fresh registration;
+  contract redesign under fresh registration; end the arc). No
+  further model calls authorized. Budget **3,337/8,000**; 4,663
+  remain; seed 515 unspent. Lease L retired (report 050, commit
+  `2174c0c6`); no driver running. Next lease letter if the arc
+  resumes: M.
+- **RESOLVED — direction 049** (kept as history). Defect #16 (the
+  frozen assembly gate demanded `model_independently_attested ===
+  true`, which the CLI bridge can never produce) repaired at
+  `4c33e6df`: attested-true OR the exact bridge-echo tuple pinned to
+  the registered reader identity; reader digest re-pinned
+  `7b084d93…` → `6cb95fd8…10145f`; all letters PASS; second-session
+  cross-check 6/6. The four r47 responses quarantined (never
+  admitted); their 5 attempts counted. Fresh 186-call run completed
+  186/186 with zero failures; every response admissible under the
+  repaired provenance gate.
 - **RESOLVED — direction 047** (kept as history). Cap raised
   10,500 → 14,000 at `62e4fd0a`; reader digest re-pinned
   `51107d43…` → `7b084d93…` with the eight-letter equivalence proof;
