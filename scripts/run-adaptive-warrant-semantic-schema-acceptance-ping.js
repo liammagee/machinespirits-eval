@@ -10,7 +10,6 @@ import {
   validateAdaptiveWarrantSemanticReaderCatalog,
 } from '../services/adaptiveWarrantSemanticAnnotation.js';
 import {
-  adaptiveWarrantSemanticSourceHash,
   normalizeAdaptiveWarrantSemanticQuotePunctuation,
 } from '../services/adaptiveWarrantSemanticEvents.js';
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
@@ -174,7 +173,71 @@ export function buildAdaptiveWarrantSemanticSchemaAcceptanceCorpus(sourceCommit)
   };
 }
 
-function liveAnalysisResponseTemplate() {
+export function validateAdaptiveWarrantSemanticPingTemplateAgainstSchema(
+  value,
+  schema,
+  fieldPath = '$',
+) {
+  const errors = [];
+  const visit = (candidate, node, candidatePath) => {
+    if (!node || typeof node !== 'object') {
+      errors.push(`${candidatePath}:missing_schema`);
+      return;
+    }
+    if (Array.isArray(node.anyOf)) {
+      const branchResults = node.anyOf.map((branch) => {
+        const branchErrors = [];
+        const priorLength = errors.length;
+        visit(candidate, branch, candidatePath);
+        branchErrors.push(...errors.splice(priorLength));
+        return branchErrors;
+      });
+      if (!branchResults.some((branchErrors) => branchErrors.length === 0)) {
+        errors.push(`${candidatePath}:no_anyOf_branch`);
+      }
+      return;
+    }
+    if (Array.isArray(node.oneOf)) {
+      const passingBranches = node.oneOf.filter((branch) => {
+        const priorLength = errors.length;
+        visit(candidate, branch, candidatePath);
+        const branchErrors = errors.splice(priorLength);
+        return branchErrors.length === 0;
+      });
+      if (passingBranches.length !== 1) errors.push(`${candidatePath}:oneOf_branch_count_${passingBranches.length}`);
+      return;
+    }
+    const allowedTypes = Array.isArray(node.type) ? node.type : node.type ? [node.type] : [];
+    const actualType =
+      candidate === null ? 'null' : Array.isArray(candidate) ? 'array' : typeof candidate;
+    if (allowedTypes.length && !allowedTypes.includes(actualType)) {
+      errors.push(`${candidatePath}:type_${actualType}`);
+      return;
+    }
+    if (Array.isArray(node.enum) && !node.enum.some((entry) => Object.is(entry, candidate))) {
+      errors.push(`${candidatePath}:not_in_enum`);
+    }
+    if (actualType === 'object') {
+      const properties = node.properties || {};
+      for (const requiredKey of node.required || []) {
+        if (!Object.hasOwn(candidate, requiredKey)) errors.push(`${candidatePath}.${requiredKey}:required`);
+      }
+      for (const [key, child] of Object.entries(candidate)) {
+        if (!Object.hasOwn(properties, key)) {
+          if (node.additionalProperties === false) errors.push(`${candidatePath}.${key}:additional_property`);
+          continue;
+        }
+        visit(child, properties[key], `${candidatePath}.${key}`);
+      }
+    } else if (actualType === 'array' && node.items) {
+      candidate.forEach((child, index) => visit(child, node.items, `${candidatePath}[${index}]`));
+    }
+  };
+  visit(value, schema, fieldPath);
+  return { valid: errors.length === 0, errors };
+}
+
+export function buildAdaptiveWarrantSemanticSchemaAcceptanceResponseTemplate() {
   return {
     classification: {
       turn: {
@@ -219,13 +282,7 @@ function liveAnalysisResponseTemplate() {
       },
       notes: 'Synthetic transport acceptance only.',
     },
-    semantic_events: {
-      schema: 'machinespirits.adaptation-refinement.semantic-event-extraction.v3',
-      source_turn: 2,
-      source_text_sha256: adaptiveWarrantSemanticSourceHash(LEARNER_TEXT),
-      events: [],
-      extraction_status: 'accepted',
-    },
+    semantic_events: { events: [] },
   };
 }
 
@@ -247,6 +304,16 @@ export function prepareAdaptiveWarrantSemanticSchemaAcceptancePing({ outputDir, 
   const responseSchema = buildTutorStubPublicLearnerAnalysisProviderOutputSchema({ includeSemanticEvents: true });
   const responseSchemaPath = path.join(resolvedOutput, 'response.schema.json');
   writeJson(responseSchemaPath, responseSchema);
+  const responseTemplate = buildAdaptiveWarrantSemanticSchemaAcceptanceResponseTemplate();
+  const responseTemplateValidation = validateAdaptiveWarrantSemanticPingTemplateAgainstSchema(
+    responseTemplate,
+    responseSchema,
+  );
+  if (!responseTemplateValidation.valid) {
+    throw new Error(
+      `schema-acceptance response template does not fit provider schema: ${responseTemplateValidation.errors.join(', ')}`,
+    );
+  }
   const packet = {
     schema: ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_PACKET_SCHEMA,
     task: 'transport_only_live_analysis_schema_acceptance',
@@ -260,7 +327,7 @@ export function prepareAdaptiveWarrantSemanticSchemaAcceptancePing({ outputDir, 
     corpus_sha256: corpusSha256,
     semantic_annotation_catalog: corpus.semantic_annotation_catalog,
     case: corpus.cases[0],
-    response_template: liveAnalysisResponseTemplate(),
+    response_template: responseTemplate,
     response_json_schema: responseSchema,
   };
   const packetPath = path.join(resolvedOutput, 'schema-acceptance.packet.json');

@@ -49,6 +49,10 @@ import {
   evaluateAdaptiveWarrantAnalysisCoverageHalt,
 } from './run-adaptive-warrant-baseline-study.js';
 import { buildAdaptiveWarrantSemanticSmokeCorpus } from './run-adaptive-warrant-semantic-schema-smoke.js';
+import {
+  buildAdaptiveWarrantSemanticSchemaAcceptanceResponseTemplate,
+  validateAdaptiveWarrantSemanticPingTemplateAgainstSchema,
+} from './run-adaptive-warrant-semantic-schema-acceptance-ping.js';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 
@@ -629,6 +633,13 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       'first_differing_field_path: firstDifferingFieldPath',
     ),
   };
+  const acceptancePingResponseSchema = buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
+    includeSemanticEvents: true,
+  });
+  const acceptancePingTemplateSchemaAudit = validateAdaptiveWarrantSemanticPingTemplateAgainstSchema(
+    buildAdaptiveWarrantSemanticSchemaAcceptanceResponseTemplate(),
+    acceptancePingResponseSchema,
+  );
   const firstCallCoverageGuard = evaluateAdaptiveWarrantAnalysisCoverageHalt([
     {
       learnerAnalysisCallCount: 1,
@@ -765,6 +776,11 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       'acceptance_ping_retains_failure_evidence_and_reports_response_state',
       Object.values(acceptancePingFailureEvidenceAudit).every(Boolean),
       acceptancePingFailureEvidenceAudit,
+    ),
+    check(
+      'acceptance_ping_synthetic_template_validates_against_enforced_response_schema',
+      acceptancePingTemplateSchemaAudit.valid === true,
+      acceptancePingTemplateSchemaAudit,
     ),
     check(
       'representative_runner_first_call_and_coverage_halt_guards_wired',
@@ -911,6 +927,7 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       fallback_sentinel_leak_paths: sentinelLeakPaths,
       shared_cli_request_path_audit: sharedRequestPathAudit,
       acceptance_ping_failure_evidence_audit: acceptancePingFailureEvidenceAudit,
+      acceptance_ping_template_schema_audit: acceptancePingTemplateSchemaAudit,
       representative_runner_coverage_guard_audit: coverageGuardAudit,
     },
   };

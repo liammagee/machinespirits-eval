@@ -26,10 +26,13 @@ import { buildAdaptiveWarrantV3SemanticDiagnostic } from '../scripts/build-adapt
 import { runAdaptiveWarrantSemanticBrittlenessPreflight } from '../scripts/run-adaptive-warrant-semantic-brittleness-preflight.js';
 import { buildAdaptiveWarrantSemanticSmokeCorpus } from '../scripts/run-adaptive-warrant-semantic-schema-smoke.js';
 import {
+  buildAdaptiveWarrantSemanticSchemaAcceptanceResponseTemplate,
   buildAdaptiveWarrantSemanticSchemaAcceptanceCorpus,
   firstAdaptiveWarrantSemanticPingValueDifference,
   retainAdaptiveWarrantSemanticPingResponseEvidence,
+  validateAdaptiveWarrantSemanticPingTemplateAgainstSchema,
 } from '../scripts/run-adaptive-warrant-semantic-schema-acceptance-ping.js';
+import { buildTutorStubPublicLearnerAnalysisProviderOutputSchema } from '../services/tutorStubPublicLearnerAnalysis.js';
 import {
   ADAPTIVE_WARRANT_LIVE_SEMANTIC_SEAT_PING_SCHEMA,
   ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_RESULT_SCHEMA,
@@ -671,6 +674,7 @@ test('zero-call brittleness preflight exercises the complete instrument path and
     'live_handbook_prompt_matches_frozen_reader_rules_and_size_budget',
     'unique_absent_duplicate_and_overlap_spans_use_mechanical_derivation',
     'acceptance_ping_retains_failure_evidence_and_reports_response_state',
+    'acceptance_ping_synthetic_template_validates_against_enforced_response_schema',
   ]) {
     assert.equal(result.artifact.checks.find((row) => row.name === checkName).status, 'pass');
   }
@@ -707,6 +711,23 @@ test('schema-acceptance ping compares canonical values and identifies true devia
   assert.deepEqual(JSON.parse(fs.readFileSync(retained.response.path, 'utf8')), changed);
   assert.match(retained.raw_response.sha256, /^[0-9a-f]{64}$/u);
   assert.match(retained.response.sha256, /^[0-9a-f]{64}$/u);
+});
+
+test('schema-acceptance ping template is the nested provider-schema view', () => {
+  const schema = buildTutorStubPublicLearnerAnalysisProviderOutputSchema({ includeSemanticEvents: true });
+  const template = buildAdaptiveWarrantSemanticSchemaAcceptanceResponseTemplate();
+  assert.deepEqual(template.semantic_events, { events: [] });
+  assert.deepEqual(validateAdaptiveWarrantSemanticPingTemplateAgainstSchema(template, schema), {
+    valid: true,
+    errors: [],
+  });
+
+  const drifted = structuredClone(template);
+  drifted.semantic_events.extraction_status = 'accepted';
+  assert.deepEqual(validateAdaptiveWarrantSemanticPingTemplateAgainstSchema(drifted, schema), {
+    valid: false,
+    errors: ['$.semantic_events.extraction_status:additional_property'],
+  });
 });
 
 test('semantic collection refuses to prepare without a passing preflight outside the internal synthetic path', () => {
