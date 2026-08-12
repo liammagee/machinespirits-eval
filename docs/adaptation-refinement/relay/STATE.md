@@ -45,6 +45,11 @@
   settles, a fresh registration at an intermediate grain (speech-act
   categories) on an amended handbook; r49/r52 = design pilots only;
   no change to tonight's run.
+  Outcome-study go-ahead (052e, relayed): a clean PASS on 053 —
+  floors met, both sessions' scoring matched to the digit —
+  authorizes the reviewer to register the outcome study and run the
+  6-per-version pilot without waking the human, inside the 11,337
+  ceiling; FAIL or messy PASS stops for the human.
 - **RESOLVED — ruling 051** (kept as history). Report 050 ACCEPTED in
   full; the two assembly stops ruled READER ERROR = data (the lawful
   null-target `explain_wording` entry existed in every catalogue);
