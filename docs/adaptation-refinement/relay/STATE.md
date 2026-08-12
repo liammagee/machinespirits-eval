@@ -24,7 +24,20 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — ruling 057: outcome pilot BLOCKED for the human;
+- **CURRENT — Amendment 1 + direction 058: human ruled ("I approve
+  the menu with full scope", relayed 13 Aug ~06:40, recorded
+  verbatim in `v3-outcome-study-registration-amendment-1.md`); the
+  standing-permission condition is bound as a conditional menu over
+  the full injectable union from the five SHA-pinned sources, with
+  descriptive-only prefix sentences and a byte-level drift guard.
+  Lease N unblocked ZERO-CALL for A1 completion
+  (`058-reviewer-direction-standing-permission-a1-completion.md`,
+  report to 059): menu + drift guard + fixtures, worlds + seeds +
+  fingerprint guard, pilot manifest per 055a/055b/057a. HOLD on
+  paid calls stands until the go note; sequence: driver report 059,
+  second session reviews menu bytes, reviewer verifies manifest,
+  THEN go note. Budget 3,523/11,337.**
+- **RESOLVED — ruling 057: outcome pilot BLOCKED for the human;
   standing-permission binding is an open design decision**
   (`057-reviewer-ruling-standing-permission-binding-open.md`, rules
   on report 056 at `f74929ae`). The driver stopped A1 zero-call: the
