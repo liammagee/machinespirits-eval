@@ -24,23 +24,38 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — direction 065: build the manifest-bound pilot
-  harness (zero-call).** Report 064 (`9d410d55`) was a structural
-  stop BEFORE the first paid call: the committed A1 package has no
-  executable harness that carries the frozen manifest through
-  generation, checkpoints, the fingerprint guard, reader packets,
-  and scoring; the driver rightly refused to hand-build it after
-  GO. Ruling 064a: technical under 052a (nothing ran, counter
-  3,523 unchanged, seeds 515–517 unspent); **GO note 063a is
-  CONSUMED** — no launch may cite it; the reader-freeze choice is
-  pinned (emit an already-accepted freeze form; frozen reader
-  digests stay untouched — compelled, so not a 052e human
-  decision); future go notes must name the executable entry point.
-  Direction 065: build the harness with fail-closed launch guards,
-  resume-safe checkpoints, mandatory fingerprint gate, pinned
-  freeze form, 594-call accounting, zero-call tests; report 066.
-  Then two-sided review, then a FRESH go note before any paid
-  call. Watch cadence 600s (human-set).
+- **CURRENT — direction 067: locate or lawfully construct the
+  instrument freeze (zero-call).** Report 066 (`8ad77c03`)
+  delivered the harness at `67c4cf6d`
+  (`scripts/run-adaptive-warrant-outcome-pilot.js`). Two-sided
+  review: second session bytes PASS (pins untouched, suites 24/24
+  + 111/111 reproduced); reviewer guards/tests PASS (launcher
+  digests match pins; consumed-note and fake-note refusals exit
+  nonzero; default invocation prints the plan and creates
+  nothing; the six direction-065 guard tests green). BUT the
+  harness's required `--instrument-freeze` input — a natural
+  freeze (`warrant-mechanism-validation-freeze.v1`, five bindings,
+  plus `semantic_instrument.schema_acceptance.path`) — exists
+  NOWHERE: not on disk, not in the archive repo, not in any
+  worktree, never in git history. Its only emitter is a
+  mechanism-validation LIVE run of the baseline study (only
+  dry-runs v1–v7 exist); the schema-acceptance artifact's only
+  producer is a paid one-call ping. The freeze-form test passes on
+  a synthetic fixture, so the suite could not catch this.
+  Direction 067: driver names the lawful source, or the zero-call
+  construction path, or states plainly that one paid ping (+1
+  call over the 594 plan) is required and STOPS. No fresh go note
+  until this input is pinned. Watch cadence 600s (human-set).
+- **RESOLVED — direction 065 executed clean: harness built.**
+  Report 064 (`9d410d55`) was a structural stop BEFORE the first
+  paid call (no executable harness). Ruling 064a: technical under
+  052a; **GO note 063a is CONSUMED**; reader-freeze form pinned;
+  future go notes must name the executable entry point and its
+  commit. Direction 065 built the harness with fail-closed launch
+  guards, resume-safe checkpoints, mandatory fingerprint gate,
+  pinned freeze form, 594-call accounting, zero-call tests
+  (report 066, commit `8ad77c03`). Counter 3,523 unchanged; seeds
+  515–517 unspent.
 - **RESOLVED — GO note 063a (consumed): report 063 passed both
   review gates** (second session three layers PASS; reviewer
   re-check PASS — menu SHAs, 87-row classification at full trace
