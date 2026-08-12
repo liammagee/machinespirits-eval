@@ -218,6 +218,13 @@ export const MECHANISM_VALIDATION_EXCLUDED_CORPORA = Object.freeze([
   '.tutor-stub-auto-eval/adaptive-warrant-baseline-pilot-v2-live-2026-08-10/annotation-sample.blinded.json',
   '.tutor-stub-auto-eval/adaptive-warrant-baseline-pilot-v2-live-2026-08-10/validation-sample.blinded.json',
   '.tutor-stub-auto-eval/adaptive-warrant-contract-validation-v1-live-2026-08-10/annotation-sample.blinded.json',
+  '/private/tmp/adaptive-warrant-mechanism-live-5ddf1d28/annotation-sample.blinded.json',
+  '/private/tmp/adaptive-warrant-v3-semantic-diagnostic-3ba68de5/annotation-sample.blinded.json',
+  '/private/tmp/adaptive-warrant-v3-semantic-diagnostic-d2bf37c7/annotation-sample.blinded.json',
+  '/private/tmp/adaptive-warrant-v3-semantic-diagnostic-7df153d9/annotation-sample.blinded.json',
+  '/private/tmp/adaptive-warrant-v3-semantic-diagnostic-225a7b07/annotation-sample.blinded.json',
+  '/private/tmp/adaptive-warrant-v3-record-entry-supplement-006-225a7b07/annotation-sample.blinded.json',
+  '/private/tmp/adaptive-warrant-v3-matrix-live-36d2e63f/annotation-sample.blinded.json',
 ]);
 const DEFAULT_MODEL = 'codex.gpt-5.6-luna';
 export const ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC = Object.freeze({
@@ -225,7 +232,7 @@ export const ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC = Object.freeze({
   profiles: MECHANISM_VALIDATION_PROFILES,
   conditions: MECHANISM_VALIDATION_CONDITIONS,
   runs: 1,
-  masterSeed: 503,
+  masterSeed: 504,
   horizon: 8,
   models: Object.freeze({
     tutor: DEFAULT_MODEL,
@@ -4358,7 +4365,7 @@ function printHelp() {
 
 Options:
   --runs <1|5|10>           n per cell (1 with validation modes)
-  --master-seed <n>         first paired seed (503 mechanism; 301 contract; otherwise 101)
+  --master-seed <n>         first paired seed (504 mechanism; 301 contract; otherwise 101)
   --parallelism <n>         concurrent dialogues (default: 6)
   --root <path>             output root (default: ignored timestamped directory)
   --model <ref>             speaking tutor model (default: codex.gpt-5.6-luna)

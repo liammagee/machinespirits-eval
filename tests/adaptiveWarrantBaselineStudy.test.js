@@ -186,7 +186,7 @@ test('live mechanism authorization binds the frozen model destination, private p
     const jobs = buildAdaptiveWarrantBaselineJobs({
       rootDir: path.join(rootDir, 'dry-run'),
       runs: 1,
-      masterSeed: 503,
+      masterSeed: ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.masterSeed,
       studyId: 'mechanism-dry-run',
       dryRun: true,
       worlds: MECHANISM_VALIDATION_WORLDS,
@@ -207,7 +207,7 @@ test('live mechanism authorization binds the frozen model destination, private p
       },
       config: {
         runs: 1,
-        masterSeed: 503,
+        masterSeed: ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.masterSeed,
         parallelism: 6,
         horizon: 8,
         policy: 'dynamic',
@@ -261,7 +261,7 @@ test('live mechanism authorization binds the frozen model destination, private p
     const liveJobs = buildAdaptiveWarrantBaselineJobs({
       rootDir: path.join(rootDir, 'live-run'),
       runs: 1,
-      masterSeed: 503,
+      masterSeed: ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.masterSeed,
       studyId: 'mechanism-live',
       dryRun: false,
       worlds: MECHANISM_VALIDATION_WORLDS,
@@ -491,6 +491,7 @@ test('mechanism model routing is frozen before authorization', () => {
 });
 
 test('mechanism-validation plan is the frozen two-world, six-profile, observe-active matrix', () => {
+  assert.equal(ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.masterSeed, 504);
   const jobs = buildAdaptiveWarrantBaselineJobs({
     rootDir: '/tmp/warrant-mechanism-study',
     runs: ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.runs,
@@ -508,7 +509,14 @@ test('mechanism-validation plan is the frozen two-world, six-profile, observe-ac
   assert.deepEqual([...new Set(jobs.map((job) => job.world))].sort(), [...MECHANISM_VALIDATION_WORLDS].sort());
   assert.deepEqual([...new Set(jobs.map((job) => job.profile))].sort(), [...MECHANISM_VALIDATION_PROFILES].sort());
   assert.deepEqual([...new Set(jobs.map((job) => job.condition))].sort(), ['instrumented', 'intervening']);
-  assert.ok(jobs.every((job) => job.seed === 503 && job.horizon === 8 && job.mechanismValidation));
+  assert.ok(
+    jobs.every(
+      (job) =>
+        job.seed === ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.masterSeed &&
+        job.horizon === 8 &&
+        job.mechanismValidation,
+    ),
+  );
   assert.ok(jobs.every((job) => job.command[job.command.indexOf('--turns') + 1] === '8'));
   assert.ok(jobs.every((job) => job.command[job.command.indexOf('--world') + 1] === job.world));
   assert.ok(jobs.every((job) => !job.id.includes('baseline')));
