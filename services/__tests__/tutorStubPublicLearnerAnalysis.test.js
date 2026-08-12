@@ -11,6 +11,8 @@ import {
   TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
   TUTOR_STUB_EVIDENCE_USE_RUBRIC_LEGACY,
   TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES,
+  TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULES,
+  TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES,
   TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA,
   TutorStubPublicLearnerAnalysisError,
   analyzeTutorStubPublicLearnerTurn,
@@ -70,6 +72,35 @@ function validAnalysis({ learnerRecord = {}, turn = {}, root = {} } = {}) {
     ...root,
   };
 }
+
+describe('semantic-event prompt profiles', () => {
+  it('keeps compact_v1 reproducible and ports the frozen handbook block only in handbook_v1', () => {
+    const common = {
+      learnerText: 'Show me what the public record says, then I will test the next check.',
+      topic: 'evidence reasoning',
+      world: buildTutorStubPublicLearnerAnalysisWorld(smokeWorld()),
+      tutorTurn: 1,
+      publicStagedEvidence: [],
+      includeSemanticEvents: true,
+      strictProviderEnvelope: true,
+    };
+    const compact = buildTutorStubPublicLearnerAnalysisPrompt({
+      ...common,
+      promptProfile: TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.COMPACT_V1,
+    });
+    const handbook = buildTutorStubPublicLearnerAnalysisPrompt({
+      ...common,
+      promptProfile: TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.HANDBOOK_V1,
+    });
+    assert.doesNotMatch(compact, /## Event multiplicity/u);
+    assert.equal(handbook.includes(TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULES), true);
+    assert.match(handbook, /requested_value_types and component_ids are non-empty only for request-mode acts/u);
+    assert.match(handbook, /Separate events have distinct non-overlapping spans/u);
+    assert.match(handbook, /shortest complete literal clause/u);
+    assert.ok(handbook.length <= 42000);
+    assert.ok(Math.ceil(handbook.length / 4) <= 10500);
+  });
+});
 
 function providerCompleteAnalysis() {
   return validAnalysis({

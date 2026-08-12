@@ -416,6 +416,23 @@ evidence, private support plan, gate prediction, annotation key, or downstream
 decision. Adding semantic extraction must not weaken the existing public-only
 preflight or speaker-privilege audit.
 
+Prospective amendment on 12 August 2026: the representative study uses the
+versioned learner-analysis prompt profile `handbook_v1`. It retains the compact
+public context but ports the contiguous event-multiplicity, target, action, and
+literal-span rule block byte-for-byte from the frozen reader handbook. The
+preflight compares the rule-block digests and requires the exact block in a
+constructed live prompt. `compact_v1` remains available only to reproduce the
+earlier burned runs and is not the V3 study profile.
+
+Before another representative launch, the 48 preserved seed-505 learner turns
+are a diagnostic-only prompt-parity probe: their new responses are permanently
+excluded from scoring, pooling, and claims. A discard rate at or below 10%
+licenses seed 506. A higher rate licenses one prospective learner-analysis-seat
+upgrade to `claude-code.claude-sonnet-5`, one transport-only acceptance ping,
+and one final 48-turn diagnostic probe. The speaking tutor and automated learner
+remain `codex.gpt-5.6-luna`. If the second probe also exceeds 10%, the study
+stops for human review; no coverage caveat is permitted.
+
 ### 3.2 Prompt and response size budget
 
 The semantic-event task stays inside the existing learner-analysis envelope;

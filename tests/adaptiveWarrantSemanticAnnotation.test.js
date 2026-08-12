@@ -658,6 +658,7 @@ test('zero-call brittleness preflight exercises the complete instrument path and
     'reader_schema_nesting_depth_at_most_10',
     'diagnostic_prompt_and_response_schema_size_limits',
     'model_facing_schemas_contain_no_mechanically_derivable_fields',
+    'live_handbook_prompt_matches_frozen_reader_rules_and_size_budget',
     'unique_absent_duplicate_and_overlap_spans_use_mechanical_derivation',
   ]) {
     assert.equal(result.artifact.checks.find((row) => row.name === checkName).status, 'pass');

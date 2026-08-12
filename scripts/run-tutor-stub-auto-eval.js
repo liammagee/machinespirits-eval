@@ -267,7 +267,7 @@ Options:
                               frozen final-stretch Step 4 arm; forwarded unchanged to every dialogue
   --model <ref>              tutor model (default: codex.gpt-5.6-luna)
   --analysis-model <ref>     classifier + learner-DAG model (default: codex.gpt-5.6-luna)
-  --learner-analysis-prompt-profile <baseline|compact_v1>
+  --learner-analysis-prompt-profile <baseline|compact_v1|handbook_v1>
                               forwarded learner-analysis prompt profile
   --auto-learner-model <ref> automated learner model (default: codex.gpt-5.6-luna)
   --model-call-budget <n>   finite model-call cap per child dialogue (default: 120)

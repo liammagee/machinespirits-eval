@@ -251,7 +251,7 @@ const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(SCRIPT_PATH), '..');
 const DEFAULT_HORIZON = 8;
 const MECHANISM_MODEL_CALL_BUDGET_PER_DIALOGUE = 64;
-const LEARNER_ANALYSIS_PROMPT_PROFILE = 'compact_v1';
+const LEARNER_ANALYSIS_PROMPT_PROFILE = 'handbook_v1';
 const SOURCE_FILES = Object.freeze([
   'docs/adaptation-refinement/baseline-comparison-design.md',
   'docs/adaptation-refinement/gold-annotations-first-corpus.md',
@@ -273,6 +273,7 @@ const SOURCE_FILES = Object.freeze([
   'scripts/run-adaptive-warrant-semantic-schema-acceptance-ping.js',
   'scripts/run-adaptive-warrant-semantic-schema-smoke.js',
   'scripts/run-adaptive-warrant-semantic-readers.js',
+  'scripts/probe-adaptive-warrant-live-semantic-seat.js',
   'scripts/run-adaptive-warrant-decision-readers.js',
   'scripts/run-adaptive-warrant-baseline-study.js',
   'scripts/derive-adaptive-warrant-shadow.js',
@@ -4752,7 +4753,7 @@ async function main() {
         'no light adaptation',
         'no DAG fact dropout',
         'same model routing',
-        'compact_v1 learner-analysis prompt profile',
+        'handbook_v1 learner-analysis prompt profile',
         'same seed within profile x session index',
         ...(mechanismValidation
           ? [

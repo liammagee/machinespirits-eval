@@ -27,6 +27,7 @@ const FINGERPRINT_FILES = Object.freeze({
   decision_reader_runner: 'scripts/run-adaptive-warrant-decision-readers.js',
   representative_matrix_runner: 'scripts/run-adaptive-warrant-baseline-study.js',
   semantic_counterfactual_replay: 'scripts/replay-adaptive-warrant-semantic-counterfactual.js',
+  live_semantic_seat_probe: 'scripts/probe-adaptive-warrant-live-semantic-seat.js',
   cli_request_path: 'services/tutorStubCliRequest.js',
   corpus_builder: 'scripts/build-adaptive-warrant-v3-semantic-diagnostic.js',
 });

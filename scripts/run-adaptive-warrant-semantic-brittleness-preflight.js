@@ -16,6 +16,10 @@ import {
   validateAdaptiveWarrantSemanticAnnotationResponse,
 } from '../services/adaptiveWarrantSemanticAnnotation.js';
 import {
+  TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULES,
+  TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULE_PARAGRAPHS,
+  TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES,
+  buildTutorStubPublicLearnerAnalysisPrompt,
   buildTutorStubPublicLearnerAnalysisOutputSchema,
   buildTutorStubPublicLearnerAnalysisProviderOutputSchema,
 } from '../services/tutorStubPublicLearnerAnalysis.js';
@@ -344,6 +348,48 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     studyId: `semantic-brittleness-preflight-diagnostic-${sourceCommit.slice(0, 12)}`,
   });
   const diagnosticCorpus = diagnosticBuilt.corpus;
+  const frozenHandbookParagraphs = TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULE_PARAGRAPHS.filter((paragraph) =>
+    diagnosticBuilt.handbook.includes(paragraph),
+  );
+  const frozenHandbookRules = frozenHandbookParagraphs.join('\n\n');
+  const liveHandbookPrompt = buildTutorStubPublicLearnerAnalysisPrompt({
+    learnerText: 'Please show me the public record result, then I will test the next listed check.',
+    topic: 'synthetic prompt-handbook parity audit',
+    world: {
+      id: 'semantic-handbook-preflight',
+      title: 'Synthetic handbook prompt audit',
+      discipline: 'semantic extraction',
+      question: 'What does the public record show?',
+      setting: 'A synthetic public record and two public checks are available.',
+      rules: [],
+      premises: [],
+    },
+    tutorTurn: 1,
+    publicTranscript: [],
+    currentTutorText: 'Choose the first or second public check.',
+    publicStagedEvidence: [],
+    includeSemanticEvents: true,
+    strictProviderEnvelope: true,
+    promptProfile: TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.HANDBOOK_V1,
+  });
+  const handbookPromptParityAudit = {
+    profile: TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.HANDBOOK_V1,
+    frozen_handbook_block_found:
+      frozenHandbookParagraphs.length === TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULE_PARAGRAPHS.length,
+    frozen_handbook_block_sha256: adaptiveWarrantSemanticValueSha256(frozenHandbookRules),
+    live_rule_block_sha256: adaptiveWarrantSemanticValueSha256(
+      TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULES,
+    ),
+    exact_digest_match:
+      frozenHandbookRules.length > 0 &&
+      adaptiveWarrantSemanticValueSha256(frozenHandbookRules) ===
+        adaptiveWarrantSemanticValueSha256(TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULES),
+    live_prompt_contains_exact_block: liveHandbookPrompt.includes(TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULES),
+    live_prompt_chars: liveHandbookPrompt.length,
+    live_prompt_approximate_tokens: Math.ceil(liveHandbookPrompt.length / 4),
+    maximum_prompt_chars: 42000,
+    maximum_prompt_approximate_tokens: 10500,
+  };
   const syntheticContractCatalogAudit = captureContractCatalogAudit(corpus.semantic_annotation_catalog);
   const smokeContractCatalogAudit = captureContractCatalogAudit(smokeCorpus.semantic_annotation_catalog);
   const diagnosticContractCatalogAudit = captureContractCatalogAudit(diagnosticCorpus.semantic_annotation_catalog);
@@ -749,6 +795,16 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       modelFacingDerivedFieldAudit,
     ),
     check(
+      'live_handbook_prompt_matches_frozen_reader_rules_and_size_budget',
+      handbookPromptParityAudit.frozen_handbook_block_found &&
+        handbookPromptParityAudit.exact_digest_match &&
+        handbookPromptParityAudit.live_prompt_contains_exact_block &&
+        handbookPromptParityAudit.live_prompt_chars <= handbookPromptParityAudit.maximum_prompt_chars &&
+        handbookPromptParityAudit.live_prompt_approximate_tokens <=
+          handbookPromptParityAudit.maximum_prompt_approximate_tokens,
+      handbookPromptParityAudit,
+    ),
+    check(
       'unique_absent_duplicate_and_overlap_spans_use_mechanical_derivation',
       Object.values(spanDerivationAudit).every(Boolean),
       spanDerivationAudit,
@@ -795,6 +851,7 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       live_semantic_schema_totality_audits: liveSemanticSchemaAudits,
       live_semantic_local_provider_language_equivalent: liveSchemaLanguageEquivalent,
       model_facing_derived_field_audit: modelFacingDerivedFieldAudit,
+      handbook_prompt_parity_audit: handbookPromptParityAudit,
       span_derivation_audit: spanDerivationAudit,
       fallback_sentinel_leak_paths: sentinelLeakPaths,
       shared_cli_request_path_audit: sharedRequestPathAudit,

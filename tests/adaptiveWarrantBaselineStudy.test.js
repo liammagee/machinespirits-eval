@@ -174,7 +174,7 @@ test('study plan is a paired 3-condition x 3-profile matrix with frozen eight-tu
         assert.equal(job.command[job.command.indexOf('--turns') + 1], '8');
         assert.equal(job.command[job.command.indexOf('--warrant-gate') + 1], condition.warrantGateMode);
         assert.equal(job.command[job.command.indexOf('--policies') + 1], 'dynamic');
-        assert.equal(job.command[job.command.indexOf('--learner-analysis-prompt-profile') + 1], 'compact_v1');
+        assert.equal(job.command[job.command.indexOf('--learner-analysis-prompt-profile') + 1], 'handbook_v1');
         assert.ok(job.command.includes('--dry-run'));
       }
     }
@@ -264,7 +264,7 @@ test('live mechanism authorization binds the frozen model destination, private p
         annotationAllDecisions: true,
         annotationConditions: ['instrumented'],
         excludedAnnotationCorpora: [excludedCorpusPath],
-        learnerAnalysisPromptProfile: 'compact_v1',
+        learnerAnalysisPromptProfile: 'handbook_v1',
         fixedSeams: ['same model routing'],
         dryRun: true,
       },
