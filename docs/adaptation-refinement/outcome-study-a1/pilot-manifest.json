@@ -6,15 +6,15 @@
     "registration": "docs/adaptation-refinement/v3-outcome-study-registration.md",
     "amendment": "docs/adaptation-refinement/v3-outcome-study-registration-amendment-1.md",
     "direction": "docs/adaptation-refinement/relay/060-reviewer-direction-menu-rendered-layer-repair.md",
-    "a1_commit": "1aa0e6e926ee12ecef7b62b7b71094bb0400d4bf"
+    "a1_commit": "1bf8226576905dd1c6329176a240ae29ecc93b7e"
   },
   "standing_permission": {
     "menu_json": "docs/adaptation-refinement/outcome-study-a1/standing-permission-menu.json",
-    "menu_json_sha256": "1b74e8dbb43edaca959a44752fe50b53f8129022647d1f31d5bed053be0dd5cf",
+    "menu_json_sha256": "9462cd5fef5c08237bd05467ff7b35d85bf8b08e0b3ca058ca00f8e3a0f4ed96",
     "menu_text": "docs/adaptation-refinement/outcome-study-a1/standing-permission-menu.txt",
-    "menu_text_sha256": "b4ec255c5c8ce11b436b52505ea08f39d668ad5ac56a1e2d81003412747b68c8",
-    "entry_count": 79,
-    "enumeration_rule": "Enumerate the fixed compact strings rendered by tutorStubFirstDraftContractPrompt downstream of a gate decision from the SHA-pinned services/tutorStubFirstDraftContract.js: every compact uptake branch; every COMPACT_PART_CUES value plus the inline scene-partner branch and other compact-part literals; every TACTIC_EXECUTION_CUES value plus compact tactic/support branches; every compact stance cue; every compact handoff branch; and every compact action cue. Sweep every stance and action-family key mechanically without reachability pruning. For templates, quote every fixed segment byte-for-byte in source order and show interpolated public-contract values as named {{slots}}; the descriptive prefix states that the gate fills the slots from the public contract, and the drift guard compares fixed segments byte-for-byte. The long buildTutorStubQuestionSupport tutorInstruction strings are excluded because the live compact host-plan renderer does not read ending.instruction; the compact handoff strings selected by question-support state flags are included instead.",
+    "menu_text_sha256": "9b099538de86976cdb29e9b9920d8eaa260acf95999224a20b9edec8f21be00e",
+    "entry_count": 87,
+    "enumeration_rule": "Starting from tutorStubFirstDraftContractPrompt, enumerate every fixed string that can flow into a rendered field downstream of a gate decision from the SHA-pinned services/tutorStubFirstDraftContract.js: every compact uptake branch and rendered opening branch; every COMPACT_PART_CUES value plus the inline scene-partner branch and other compact-part literals; every TACTIC_EXECUTION_CUES value plus compact tactic/support branches and source-accessibility compensation; every compact stance cue; every compact handoff branch; and every compact action cue. Sweep every stance and action-family key mechanically without reachability pruning; exclude constant framing lines that do not vary with a gate decision. For templates, quote every fixed segment byte-for-byte in source order and show interpolated public-contract values as named {{slots}}; the descriptive prefix states that the gate fills the slots from the public contract, and the drift guard compares fixed segments byte-for-byte. The long buildTutorStubQuestionSupport tutorInstruction strings are excluded because the live compact host-plan renderer does not read ending.instruction; the compact handoff strings selected by question-support state flags are included instead.",
     "source_sha256": {
       "services/tutorStubWarrantGate.js": "db30f563bb5107544f0f64677410f3e67cb2f0f2fbe573d4c5d66976b791fc24",
       "services/adaptiveWarrantPolicy.js": "9edce479cca6dfde74a2a48f8321cbd3366ee0a97e4ac3e6565b656de0212c1d",
