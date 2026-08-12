@@ -14,30 +14,36 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **CURRENT DIRECTION: 034**
-  (`034-reviewer-direction-progression-repair-seed-512.md`, lease
-  `DRIVER-LEASE-2026-08-12-E`). Answers report 033. Contract v3.2 is
-  VINDICATED: 22 of 24 seed-511 children sealed, coverage 6/176 =
-  3.41% (checkpoint 1/96 = 1.04%), ZERO sentinel-encodability losses.
-  The matrix is incomplete because of two reviewer-reproduced harness
-  defects, DEFECT-LEDGER entries #7 and #8: (7) the obligation
-  ledger's generic sentinel target signature
-  (`generic_evidence_request`) fails the progression compiler's
-  kind-prefix rule, so the intervening-condition tutor dies on
-  `invalid_turn_progression_contract` before drafting — deterministic
-  on the fast learner's no-item opening, both worlds; (8) the
-  reader-catalogue builder leaves `public_identifiers` empty when
-  observed events reference none, so the packet cannot freeze on a
-  valid corpus. Both are harness plumbing; the amendment chain does
-  NOT grow (still v3.0→v3.1→v3.2). Direction 034 pre-declares repairs
-  R1 (kind-prefixed ledger signature) + R2 (catalogue placeholder;
-  `unspecified` never a catalogue entry), three guards, and a
-  zero-call chain (guards green → both preserved failed-draw
-  directives compile complete → packet freezes on the retained s511
-  partial corpus → s510 replay identical 2.70% → preflight) that
-  licenses SEED 512 as fresh primary. Seed 511 burned; 513–514
-  reserves. Same progression fatal recurring at s512 = STOP. Budget
-  2,242/4,000; ~2,842 projected after the matrix.
+- **CURRENT DIRECTION: 035**
+  (`035-reviewer-direction-fallback-repair-seed-513.md`, lease
+  `DRIVER-LEASE-2026-08-12-F`). The reviewer KILLED the live seed-512
+  run at ~19:10: two gate-active children died on a new deterministic
+  fatal one layer below defect #7 — the progression contract now
+  compiles, but the final response check rejects every draft
+  (`public_obligation_unresolved`) and the deterministic fallback
+  fails its own harness's check, so children die guard-exhausted.
+  With two dead the 24-dialogue matrix could not complete; every
+  further call was going to a burned seed. DEFECT-LEDGER entries #9
+  (fallback deferral template names no target terms, repeats its own
+  sentence — the guaranteed last resort can never pass) and #10
+  (component matcher demands the raw value-type token — `other`,
+  `record_text` — in prose; answers can never score satisfied).
+  Direction 035 pre-declares repairs R1 (target-aware terminal
+  fallback that passes by construction; style checks advisory on the
+  terminal fallback only) + R2 (non-special value types scored by the
+  answer-bearing relation), the NEW fallback-pass closure guard (every
+  reachable obligation + deterministic fallback passes the full final
+  check, zero-call, over the retained 511/512 corpora), the s510
+  replay invariance (2.70%), preflight, then SEED 513 as fresh
+  primary. **Seed 514 is the LAST reserve and is NOT reviewer-
+  spendable: any seed-513 failure of any kind = human hard stop.**
+  Budget ≈2,535/4,000 (driver to recount); ~3,135 projected.
+- **RESOLVED — direction 034** (kept as history). Repairs for defects
+  #7/#8 committed at `1555a9bd`; the whole zero-call chain passed
+  (failed-draw directives compiled complete; s511 partial packet
+  froze; s510 replay identical 2.70%); seed 512 launched cleanly and
+  was then killed live by the reviewer when defect #9 surfaced (see
+  current direction). Seeds 511 AND 512 burned.
 - **RESOLVED — stop of report 033** (kept as history). Seed 511 ran
   under v3.2 at `3e758071` (licensed: 179/179 focused incl. 3 guards;
   s510 replay 5/185 = 2.70%; preflight 42/42). 22/24 complete; both
@@ -214,7 +220,7 @@
   pooled. Earlier results stand: supplement PASSED (5/2), five-cell
   layer certified, decision readers 0.833 binary.
 - **Driver:** the session whose prompt quotes the lease token in 006c
-  (currently DRIVER-LEASE-2026-08-12-E). Other sessions: read-only.
+  (currently DRIVER-LEASE-2026-08-12-F). Other sessions: read-only.
 - **Instrument commit:** `225a7b07` ("Separate V3 structural and semantic
   gates"). The instrument is CLOSED — it reopens only for a transport,
   schema, provenance, or non-evaluability defect. Never for semantic
