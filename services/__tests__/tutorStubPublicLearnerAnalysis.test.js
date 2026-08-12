@@ -6,6 +6,7 @@ import { describe, it } from 'node:test';
 import { loadWorld } from '../dramaticDerivation/world.js';
 import { tutorStubLearnerDagGrounded } from '../tutorStubDialogueClosure.js';
 import { auditAdaptiveWarrantLiveSemanticSchemaTotality } from '../adaptiveWarrantSemanticAnnotation.js';
+import { ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE } from '../adaptiveWarrantSemanticEvents.js';
 import {
   TUTOR_STUB_EVIDENCE_USE_RUBRICS,
   TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
@@ -94,7 +95,7 @@ describe('semantic-event prompt profiles', () => {
     });
     assert.doesNotMatch(compact, /## Event multiplicity/u);
     assert.equal(handbook.includes(TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULES), true);
-    assert.match(handbook, /use the literal string "unspecified" for both target_id and action_object_id/u);
+    assert.equal(handbook.includes(ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE), true);
     assert.doesNotMatch(handbook, /requested_value_types and component_ids are non-empty only for request-mode acts/u);
     assert.match(handbook, /Separate events have distinct non-overlapping spans/u);
     assert.match(handbook, /shortest complete literal clause/u);

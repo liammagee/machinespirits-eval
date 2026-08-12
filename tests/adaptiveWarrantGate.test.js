@@ -24,11 +24,17 @@ import {
 import { recommendRepairPolicy } from '../services/adaptiveWarrantPolicy.js';
 import {
   ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA,
+  ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE,
+  ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS,
+  ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS,
   ADAPTIVE_WARRANT_SEMANTIC_VALIDATION_SCHEMA,
   adaptiveWarrantSemanticSourceHash,
   compileAdaptiveWarrantSemanticSignal,
   validateAdaptiveWarrantSemanticExtraction,
 } from '../services/adaptiveWarrantSemanticEvents.js';
+import { ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT } from '../services/adaptiveWarrantSemanticAnnotation.js';
+import { TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULES } from '../services/tutorStubPublicLearnerAnalysis.js';
+import { adaptiveWarrantSemanticReaderHandbook } from '../scripts/build-adaptive-warrant-v3-semantic-diagnostic.js';
 import { createTutorStubInteractiveLearnerRuntime } from '../services/tutorStubInteractiveLearnerRuntime.js';
 import {
   assessTutorStubWarrantGateAtResponseSelection,
@@ -394,9 +400,59 @@ test('live semantic extraction is paraphrase-invariant and contrast-sensitive at
   );
 });
 
-test('V3.1 licenses only paired unspecified IDs on request acts and keeps empty IDs invalid', () => {
-  assert.equal(ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA.endsWith('.v3.1'), true);
-  assert.equal(ADAPTIVE_WARRANT_SEMANTIC_VALIDATION_SCHEMA.endsWith('.v3.1'), true);
+test('V3.2 encodability closure gives every speech act a valid no-catalogue-item encoding', () => {
+  assert.equal(ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA.endsWith('.v3.2'), true);
+  assert.equal(ADAPTIVE_WARRANT_SEMANTIC_VALIDATION_SCHEMA.endsWith('.v3.2'), true);
+  for (const speechAct of ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS) {
+    const contract = ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS[speechAct];
+    const learnerText = `No catalogue item is named for ${speechAct}.`;
+    const target =
+      contract.target === 'catalog'
+        ? {
+            kind: 'other',
+            target_id: 'unspecified',
+            public_identifier_ids: [],
+            requested_value_types: [],
+            component_ids: [],
+          }
+        : null;
+    const action =
+      contract.action === 'catalog'
+        ? {
+            mode: contract.mode,
+            executor: contract.executors[0],
+            action: contract.operation,
+            action_object_id: 'unspecified',
+          }
+        : null;
+    const extraction = semanticExtraction(learnerText, [
+      semanticEvent({ learnerText, eventId: `closure-${speechAct}`, speechAct, target, action }),
+    ]);
+    assert.equal(extraction.extraction_status, 'accepted', `${speechAct}: ${extraction.events[0].validation.issues}`);
+  }
+});
+
+test('V3.2 generated and live handbook prose states the exact slot-local sentinel rule', () => {
+  assert.equal(adaptiveWarrantSemanticReaderHandbook().includes(ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE), true);
+  assert.equal(
+    TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULES.includes(ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE),
+    true,
+  );
+  assert.equal(
+    ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT.target_id.includes(
+      ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE,
+    ),
+    true,
+  );
+  assert.equal(
+    ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT.action_object_id.includes(
+      ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE,
+    ),
+    true,
+  );
+});
+
+test('V3.2 applies the sentinel per slot, normalizes forbidden slots, and still rejects empty IDs', () => {
   const learnerText = 'What public evidence can we examine first?';
   const accepted = semanticExtraction(learnerText, [
     semanticEvent({
@@ -429,6 +485,62 @@ test('V3.1 licenses only paired unspecified IDs on request acts and keeps empty 
   assert.equal(obligation.target.target_id, null);
   assert.equal(obligation.target.catalogue_target_named, false);
 
+  const wordingText = 'What exactly should I write next?';
+  const wording = semanticExtraction(wordingText, [
+    semanticEvent({
+      learnerText: wordingText,
+      eventId: 'wording-request',
+      speechAct: 'learner_wording_request',
+      target: {
+        kind: 'other',
+        target_id: 'unspecified',
+        public_identifier_ids: [],
+        requested_value_types: [],
+        component_ids: [],
+      },
+      action: {
+        mode: 'requested',
+        executor: 'tutor',
+        action: 'explain_wording',
+        action_object_id: 'unspecified',
+      },
+    }),
+  ]);
+  assert.equal(wording.extraction_status, 'accepted');
+  assert.equal(wording.events[0].target, null);
+  assert.equal(wording.events[0].requested_or_proposed_action.action_object_id, 'unspecified');
+  assert.deepEqual(wording.events[0].validation.normalization_notes, [
+    'events[0].target:unspecified_normalized_to_none',
+  ]);
+
+  const criterionText = 'Does the seal match?';
+  const criterion = semanticExtraction(criterionText, [
+    semanticEvent({
+      learnerText: criterionText,
+      eventId: 'criterion-question',
+      speechAct: 'criterion_question',
+      target: {
+        kind: 'comparison_result',
+        target_id: 'unspecified',
+        public_identifier_ids: [],
+        requested_value_types: ['match_status'],
+        component_ids: ['seal_match'],
+      },
+      action: {
+        mode: 'requested',
+        executor: 'tutor',
+        action: 'supply_public_result',
+        action_object_id: 'unspecified',
+      },
+    }),
+  ]);
+  assert.equal(criterion.extraction_status, 'accepted');
+  assert.equal(criterion.events[0].target.target_id, 'unspecified');
+  assert.equal(criterion.events[0].requested_or_proposed_action, null);
+  assert.deepEqual(criterion.events[0].validation.normalization_notes, [
+    'events[0].requested_or_proposed_action:unspecified_normalized_to_none',
+  ]);
+
   const empty = semanticExtraction(learnerText, [
     semanticEvent({
       learnerText,
@@ -457,7 +569,7 @@ test('V3.1 licenses only paired unspecified IDs on request acts and keeps empty 
   );
 });
 
-test('V3.1 rejects unspecified on non-request acts and permits descriptive value sets there', () => {
+test('V3.2 permits slot-local unspecified and descriptive value sets on non-request acts', () => {
   const learnerText = 'Does the seal match?';
   const sentinel = semanticExtraction(learnerText, [
     semanticEvent({
@@ -474,11 +586,8 @@ test('V3.1 rejects unspecified on non-request acts and permits descriptive value
       action: null,
     }),
   ]);
-  assert.equal(sentinel.extraction_status, 'invalid');
-  assert.equal(
-    sentinel.events[0].validation.issues.includes('events[0]:unspecified_ids_forbidden_for_non_request'),
-    true,
-  );
+  assert.equal(sentinel.extraction_status, 'accepted');
+  assert.equal(sentinel.events[0].validation.status, 'accepted');
 
   const descriptive = semanticExtraction(learnerText, [
     semanticEvent({

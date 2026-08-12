@@ -1,12 +1,14 @@
 import { createHash } from 'node:crypto';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-extraction.v3.1';
+  'machinespirits.adaptation-refinement.semantic-event-extraction.v3.2';
 export const ADAPTIVE_WARRANT_SEMANTIC_VALIDATION_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-validation.v3.1';
+  'machinespirits.adaptation-refinement.semantic-event-validation.v3.2';
 export const ADAPTIVE_WARRANT_SEMANTIC_SIGNAL_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-engagement-signal.v1';
 export const ADAPTIVE_WARRANT_SEMANTIC_UNSPECIFIED_ID = 'unspecified';
+export const ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE =
+  'When a slot expects a catalogue ID and the words name no catalogue item, write the literal `unspecified` in that slot. Where no target applies, use the `state: none` branch.';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_EVENT_LIMITS = Object.freeze({
   maxEvents: 4,
@@ -250,13 +252,13 @@ export function adaptiveWarrantSemanticContractIssues(
   const componentIds = target?.component_ids || [];
   const targetIsUnspecified = target?.target_id === ADAPTIVE_WARRANT_SEMANTIC_UNSPECIFIED_ID;
   const actionIsUnspecified = action?.action_object_id === ADAPTIVE_WARRANT_SEMANTIC_UNSPECIFIED_ID;
-  const permitsUnspecified =
-    REQUEST_SPEECH_ACTS.has(event.speech_act) && contract.target === 'catalog' && contract.action === 'catalog';
-  if ((targetIsUnspecified || actionIsUnspecified) && !permitsUnspecified) {
-    issues.push(`${prefix}:unspecified_ids_forbidden_for_non_request`);
+  const targetPermitsUnspecified = contract.target === 'catalog' || contract.target === 'catalog_or_none';
+  const actionPermitsUnspecified = contract.action === 'catalog';
+  if (targetIsUnspecified && !targetPermitsUnspecified) {
+    issues.push(`${prefix}.target:unspecified_forbidden_for_slot`);
   }
-  if (permitsUnspecified && targetIsUnspecified !== actionIsUnspecified) {
-    issues.push(`${prefix}:unspecified_target_and_action_must_be_paired`);
+  if (actionIsUnspecified && !actionPermitsUnspecified) {
+    issues.push(`${prefix}.requested_or_proposed_action:unspecified_forbidden_for_slot`);
   }
   if (targetIsUnspecified && (target?.public_identifier_ids || []).length) {
     issues.push(`${prefix}.target:unspecified_cannot_name_public_identifiers`);
@@ -424,6 +426,23 @@ function normalizedAction(action, issues, eventIndex) {
   };
 }
 
+function normalizeAdaptiveWarrantSemanticSentinelSlots(event, contract, eventIndex) {
+  let target = event?.target ?? null;
+  let action = event?.requested_or_proposed_action ?? null;
+  const normalizationNotes = [];
+  if (target?.target_id === ADAPTIVE_WARRANT_SEMANTIC_UNSPECIFIED_ID && contract?.target === 'none') {
+    target = null;
+    normalizationNotes.push(`events[${eventIndex}].target:unspecified_normalized_to_none`);
+  }
+  if (action?.action_object_id === ADAPTIVE_WARRANT_SEMANTIC_UNSPECIFIED_ID && contract?.action === 'none') {
+    action = null;
+    normalizationNotes.push(
+      `events[${eventIndex}].requested_or_proposed_action:unspecified_normalized_to_none`,
+    );
+  }
+  return { target, action, normalizationNotes };
+}
+
 function spansOverlap(left, right) {
   return (
     Number.isInteger(left?.start) &&
@@ -525,8 +544,10 @@ export function validateAdaptiveWarrantSemanticExtraction(
     for (const reason of event.uncertainty || []) {
       enumIssue(reason, ADAPTIVE_WARRANT_SEMANTIC_UNCERTAINTY_REASONS, `events[${eventIndex}].uncertainty`, issues);
     }
-    const target = normalizedTarget(event.target, issues, eventIndex);
-    const action = normalizedAction(event.requested_or_proposed_action, issues, eventIndex);
+    const contract = ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS[event.speech_act];
+    const sentinelSlots = normalizeAdaptiveWarrantSemanticSentinelSlots(event, contract, eventIndex);
+    const target = normalizedTarget(sentinelSlots.target, issues, eventIndex);
+    const action = normalizedAction(sentinelSlots.action, issues, eventIndex);
     if (REQUEST_SPEECH_ACTS.has(event.speech_act) && action?.executor === 'learner') {
       issues.push(`events[${eventIndex}].requested_or_proposed_action:executor_matches_request_speaker`);
     }
@@ -575,6 +596,7 @@ export function validateAdaptiveWarrantSemanticExtraction(
       validation: {
         status: issues.length ? 'rejected' : asserted ? 'accepted' : 'uncertain',
         issues,
+        normalization_notes: sentinelSlots.normalizationNotes,
       },
     };
   });

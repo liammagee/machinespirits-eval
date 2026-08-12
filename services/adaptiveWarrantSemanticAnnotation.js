@@ -3,6 +3,7 @@ import {
   ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES,
   ADAPTIVE_WARRANT_SEMANTIC_ACTIONS,
   ADAPTIVE_WARRANT_SEMANTIC_REQUEST_SPEECH_ACTS,
+  ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE,
   ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS,
   ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS,
   ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS,
@@ -77,7 +78,7 @@ export const ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT = Object.freeze({
   speaker: 'Mechanically supplied from current-turn authorship; never reader-judged.',
   speech_act: 'Reader chooses one closed act under the handbook precedence table.',
   target_id:
-    'Reader chooses the public object, relation, or enumerated choice set that the act itself is about, never a requested value or actor; a request act with no named catalogue item uses the literal unspecified sentinel for both target and action IDs; use the total tagged state=none branch when no target applies.',
+    `Reader chooses the public object, relation, or enumerated choice set that the act itself is about, never a requested value or actor. ${ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE}`,
   target_kind: 'Mechanically supplied from the selected target catalogue entry; never reader-judged.',
   public_identifier_ids: 'Mechanically supplied from the selected target catalogue entry; never reader-judged.',
   requested_value_types:
@@ -88,7 +89,7 @@ export const ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT = Object.freeze({
   executor: 'Reader chooses who must perform the action; this is not the utterance speaker.',
   action: 'Mechanically supplied from the selected action-object catalogue entry; never reader-judged.',
   action_object_id:
-    'Reader chooses the public action object licensed by the clause; use the total tagged state=none branch when no action applies.',
+    `Reader chooses the public action object licensed by the clause. ${ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE}`,
   evidence_span: 'Reader supplies one unique literal minimal clause span; offsets and order are mechanical.',
   genuinely_ambiguous:
     'True only when two complete typed readings remain after every closed rule; an ambiguous case returns zero events.',

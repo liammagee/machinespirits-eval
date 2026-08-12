@@ -8,6 +8,7 @@ import { parseArgs } from 'node:util';
 import { getAdaptiveWarrantActionContract } from '../services/adaptiveWarrantActionContracts.js';
 import {
   ADAPTIVE_WARRANT_SEMANTIC_REQUEST_SPEECH_ACTS,
+  ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE,
   adaptiveWarrantSemanticComponentIsLiteral,
   adaptiveWarrantSemanticValueTypeIsLiteral,
 } from '../services/adaptiveWarrantSemanticEvents.js';
@@ -631,7 +632,7 @@ Speech-act precedence within one clause is: repair request versus wording reques
 
 ## Target fields
 
-target_id identifies the public object, relation, or enumerated choice set under inquiry. Target is always a tagged object: return state="catalog" with target_id, requested_value_types, and component_ids, or return the sole field state="none" when the act itself names no catalogue entity. Never return null or omit target. A catalogue target is required for result requests, proposed tests, criterion questions, record-entry requests, and tutor-selection requests. For request acts whose words name no catalogue item, use the literal string "unspecified" for both target_id and action_object_id; "unspecified" is invalid on non-request acts and the empty string is always invalid. For tutor selection, choose the catalogue target naming the publicly enumerated choices, never the requested value or the tutor. Wording/repair, stall, complaint, and low-agency acts use target state="none". For analytic_contribution, withdrawal, transfer_to_learner, and other, the target belongs to that act itself: choose the catalogue entity its clause is about, independent of any accompanying event; use state="none" only when that clause names no catalogue entity.
+target_id identifies the public object, relation, or enumerated choice set under inquiry. Target is always a tagged object: return state="catalog" with target_id, requested_value_types, and component_ids, or return the sole field state="none" when the act itself names no catalogue entity. Never return null or omit target. A catalogue target is required for result requests, proposed tests, criterion questions, record-entry requests, and tutor-selection requests. ${ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE} The empty string is always invalid. For tutor selection, choose the catalogue target naming the publicly enumerated choices, never the requested value or the tutor. Wording/repair, stall, complaint, and low-agency acts use target state="none". For analytic_contribution, withdrawal, transfer_to_learner, and other, the target belongs to that act itself: choose the catalogue entity its clause is about, independent of any accompanying event; use state="none" only when that clause names no catalogue entity.
 
 An anaphoric target may resolve through the supplied public transcript to the most recently mentioned catalogue entity. Abstain with ambiguity_reason="referent" only on an equal-recency tie. Requested values are never targets or target kinds. The harness adds target kind and public identifiers from target_id.
 

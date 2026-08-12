@@ -246,7 +246,7 @@ export const ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC = Object.freeze({
   profiles: MECHANISM_VALIDATION_PROFILES,
   conditions: MECHANISM_VALIDATION_CONDITIONS,
   runs: 1,
-  masterSeed: 510,
+  masterSeed: 511,
   horizon: 8,
   models: Object.freeze({
     tutor: DEFAULT_MODEL,
@@ -4573,7 +4573,7 @@ function printHelp() {
 
 Options:
   --runs <1|5|10>           n per cell (1 with validation modes)
-  --master-seed <n>         first paired seed (510 mechanism; 301 contract; otherwise 101)
+  --master-seed <n>         first paired seed (511 mechanism; 301 contract; otherwise 101)
   --parallelism <n>         concurrent dialogues (default: 6)
   --root <path>             output root (default: ignored timestamped directory)
   --model <ref>             speaking tutor model (default: codex.gpt-5.6-luna)

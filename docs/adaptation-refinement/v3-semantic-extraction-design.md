@@ -1,6 +1,11 @@
-# V3.1 Semantic Extraction Design and Predeclared Gate
+# V3.2 Semantic Extraction Design and Predeclared Gate
 
-**Status:** V3.1 is an open post-hoc contract amendment selected after seeds 503–509 failed; those corpora remain burned and seed 510 is the first fresh test under this contract
+**Status:** V3.2 repairs disclosed harness defect #6 after seed 510 halted under the openly amended V3.1 contract; seeds 503–510 remain burned and seed 511 is the first fresh test under V3.2
+
+**Amendment history:** V3.0 established the semantic-event instrument; V3.1
+openly amended the generic-request sentinel and descriptive value/component
+rules after seeds 503–509; V3.2 prospectively repairs V3.1's slot-pairing defect
+after seed 510. No burned corpus is outcome-scored under a later contract.
 
 **Declared:** 11 August 2026
 
@@ -50,7 +55,7 @@ not an in-place repair of V2.
 ### 2.1 Envelope and multiplicity
 
 The learner-analysis result must contain one
-`machinespirits.adaptation-refinement.semantic-event-extraction.v3.1` envelope.
+`machinespirits.adaptation-refinement.semantic-event-extraction.v3.2` envelope.
 An utterance may contain zero, one, or several ordered events. The compound
 licence is general, not a whitelist: each independent clause-level act that
 would change a distinct typed state receives an event, unless it is merely the
@@ -138,11 +143,12 @@ normative consequences.
 choice set whose result or selection is owed. A `tutor_selection_request`
 requires the catalogue target naming the public choices; neither the requested
 value nor the tutor becomes the target.
-On a request act whose literal words name no catalogue item, `target_id` and
-`action_object_id` are both the sentinel `unspecified`. The sentinel is invalid
-on every non-request act, the empty string remains invalid everywhere, and
-downstream consumers treat it as a generic evidence request rather than as a
-named catalogue item.
+When a slot expects a catalogue ID and the words name no catalogue item, write
+the literal `unspecified` in that slot. Where no target applies, use the
+`state: none` branch. Each slot is validated independently. A sentinel supplied
+in a slot forbidden by the act contract is normalized to the `none` branch and
+recorded rather than rejected; empty strings remain invalid. Downstream a
+sentinel slot is generic and never names a catalogue item.
 `target.requested_value_types` names the fields requested from it. Value types
 include `name`, `time`, `date`, `weight`, `sound`, `material`, `match_status`,
 `record_text`, and `other`. A value type must never become a subject term merely
@@ -200,13 +206,13 @@ ask a reader for a fact it already knows.
 | Event multiplicity and order | Reader, then mechanical ordering | One event per independent clause-level act that changes a distinct typed state. One clause receives one act under the precedence table. Distinct events require non-overlapping minimal literal spans and are mechanically ordered by span start. |
 | `speaker` | Harness | Current packet authorship supplies `learner`; absent from reader schema. |
 | `speech_act` | Reader | One value from the closed vocabulary under the within-clause precedence table. No synonymous labels. |
-| `target` / `target_id` | Reader | Total and non-null: the public object, relation, or enumerated choice set the act itself is about, chosen from the catalogue in the `state="catalog"` branch, or the exact sole-field object `{"state":"none"}` when no target applies. A request act whose words name no catalogue item uses `unspecified` for both target and action IDs; that sentinel is invalid on non-request acts and never names a catalogue item. Requested values and actors are never targets. Tutor-selection requests require the public choice-set target when one is named. For `analytic_contribution`, ownership follows the analysis itself independently of any co-occurring request. |
+| `target` / `target_id` | Reader | Total and non-null: the public object, relation, or enumerated choice set the act itself is about, chosen from the catalogue in the `state="catalog"` branch, or the exact sole-field object `{"state":"none"}` when no target applies. When this slot expects a catalogue ID and the words name no catalogue item, use `unspecified`; it never names a catalogue item. Requested values and actors are never targets. Tutor-selection requests require the public choice-set target when one is named. For `analytic_contribution`, ownership follows the analysis itself independently of any co-occurring request. |
 | `target.kind` | Harness | Derived exactly from the selected `target_id`; absent from reader schema. |
 | `public_identifier_ids` | Harness | Exact catalogue identifiers for `target_id`; absent from reader schema. |
 | `requested_value_types` | Reader | Descriptive closed-set values named by the event. They are permitted on every act; only `speech_act` determines whether an event is a request. A value such as `time` or `match_status` is not a subject or target kind. Surface-to-ID fit is scored semantically; lexical word overlap is never a validity condition. |
 | `component_ids` | Reader | Descriptive catalogue components named by the event. They are permitted on every act; only `speech_act` determines whether an event is a request. Surface-to-ID fit is scored semantically; lexical word overlap is never a validity condition. |
 | `executor` | Reader | The party who must perform the action, not the speaker. Request-type acts cannot use learner execution. |
-| `requested_or_proposed_action` / `action_object_id` | Reader | Total and non-null: the public action object licensed by the clause, chosen from the catalogue in the `state="catalog"` branch, or the exact sole-field object `{"state":"none"}` when no action applies. |
+| `requested_or_proposed_action` / `action_object_id` | Reader | Total and non-null: the public action object licensed by the clause, chosen from the catalogue in the `state="catalog"` branch, or the exact sole-field object `{"state":"none"}` when no action applies. When this slot expects a catalogue ID and the words name no catalogue item, use `unspecified`; it is independent of the target slot. A sentinel in a forbidden slot normalizes to the `none` branch and is recorded rather than rejected. |
 | action `mode` and operation | Harness | Derived exactly from `action_object_id`; absent from reader schema and checked against the speech act. |
 | `evidence_span` | Extractor or reader | At either model transport boundary, one string containing the shortest complete literal clause. It must occur exactly once and not overlap another event span. This scalar representation keeps the canonical act-discriminated provider schema within its byte and depth budgets; it changes no semantic judgment. |
 | span offsets and event order | Harness | Derived from the unique literal span and audited; absent from every model-facing schema. |
