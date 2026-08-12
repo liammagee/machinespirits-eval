@@ -5,19 +5,29 @@
 
 ## Now
 
-- **Current direction:** `019-reviewer-direction-offset-derivation.md` —
-  seed-505 halt: transport fix HELD (48/48 structured), but 44/48
-  analyses died on model-supplied character offsets while 82/83 quoted
-  spans occur uniquely in the turn. Ruled a schema defect (timebox
-  class), NOT a gate verdict. Repair both seats prospectively: model
-  gives the unique literal quote only, harness derives offsets and
-  checks overlap mechanically; act constraints unchanged; certification
-  stands (consensus was closed-label identity). Zero-call counterfactual
-  on the 48 preserved responses gates the relaunch: predicted discard
-  ≤10% = relaunch at seed 506, no stop; >10% = STOP for human (residue
-  = real semantic non-compliance; seat-upgrade decision). Reserve seeds
-  after 506: 507-510, in order. Burned: seed-503, -504, -505 corpora.
-  Prior: `017-reviewer-direction-halt-threshold.md` (halt threshold +
+- **Current direction:** `021-reviewer-direction-prompt-parity.md` —
+  counterfactual gate FAILED (26/48 = 54.2% predicted discards; 21 of
+  26 break `value_component_sets_forbidden_for_non_request`, 10
+  overlap, 1 non-literal). Ruled a contract-communication defect
+  (timebox class): the live compact prompt never states the empty-sets
+  rule or the span rules that the frozen reader handbook states and
+  the validator enforces; the same Luna passed 21/24 WITH the
+  handbook. Human decision (12 Aug chat): prompt parity first, seat
+  upgrade second, coverage caveat REJECTED. Authorized: port handbook
+  rules verbatim into the live prompt (profile `handbook_v1` or amend
+  `compact_v1` in place — rule 4b); 48-call diagnostic probe on the
+  burned seed-505 turns (outputs never evidence); preflight asserts
+  prompt/handbook parity. Gate: probe ≤10% = relaunch at seed 506, no
+  stop; >10% = seat upgrade pre-authorized (learner-analysis role
+  ONLY → strongest claude-code Sonnet in the bridge; ping + second
+  48-call probe, same gate; >10% again = STOP for human). Budget: two
+  probes max (96 calls) + one ping. Reserve seeds 507-510 unchanged.
+  Burned: seed-503, -504, -505 corpora.
+  Prior: `019-reviewer-direction-offset-derivation.md` — mechanical
+  offset derivation both seats (model gives unique literal quote,
+  harness derives offsets + overlap), landed at `84e3dcbb`, 126/126
+  focused tests, preflight 36/36 `instrument_ready`;
+  `017-reviewer-direction-halt-threshold.md` (halt threshold +
   guards), `016-reviewer-direction-seed-lock.md` —
   replacement master seed 504 named (reserves 505, 506); the one-line
   seed-lock amendment is authorized; preflight at the amended commit;
