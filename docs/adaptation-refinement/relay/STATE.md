@@ -14,9 +14,31 @@
   human: seeds exhausted, semantic-contract changes, missing
   value/authority, 4,000-call budget, contamination. Ends when the
   human says so; minimum goal = matrix gate PASS.
-- **CURRENT DIRECTION: 035**
-  (`035-reviewer-direction-fallback-repair-seed-513.md`, lease
-  `DRIVER-LEASE-2026-08-12-F`). The reviewer KILLED the live seed-512
+- **HARD STOP FOR THE HUMAN (19:45). DO NOT relaunch the driver; the
+  watch loop is stopped. No lease is live.** Seed 513 failed the
+  launcher's own local test preflight BEFORE any child or paid call:
+  the new target-aware fallback mangles composite target labels
+  ("The first-log-entry-log entry is not public yet…"); one
+  pre-existing test caught it (200/201). Zero calls spent at seed 513;
+  0 of 24 children started; both coverage rates N/A (0/0). Driver
+  report: `036-codex-report.md` (accepted). Reviewer ruling:
+  `037-reviewer-note-seed-513-hard-stop-accepted.md`. DEFECT-LEDGER
+  entry #11 (composite-label rendering; the fallback-pass closure was
+  green but its corpus exposes only one target signature — widen it on
+  any repair). Budget: driver recount adopted — seed 512 = 298
+  attempts; running total **2,540/4,000**; headroom 1,460; matrix
+  ~600. The human must choose: (1) repair defect #11 + widened closure
+  and spend seed 514 (last reserve); (2) same repair but un-burn seed
+  513 (zero calls spent, nothing seen — reviewer leans this way, only
+  the human can un-burn); (3) stop the matrix programme.
+- **RESOLVED — direction 035** (kept as history;
+  `035-reviewer-direction-fallback-repair-seed-513.md`, lease
+  `DRIVER-LEASE-2026-08-12-F` retired with report 036). Repairs R1/R2
+  + defect #9/#10 guards + fallback-pass closure landed at `37385273`;
+  the zero-call chain passed (closure green 6/6, s510 replay identical
+  5/185 = 2.70%, preflight 42/42, schema carryover, dry 24/24); the
+  live launch then hit the preflight failure above — a NEW class, so
+  the driver hard-stopped per the direction. The reviewer KILLED the live seed-512
   run at ~19:10: two gate-active children died on a new deterministic
   fatal one layer below defect #7 — the progression contract now
   compiles, but the final response check rejects every draft
