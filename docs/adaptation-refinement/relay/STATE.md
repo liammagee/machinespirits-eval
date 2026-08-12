@@ -24,19 +24,28 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — GO note 063a: the paid pilot block is authorized and
-  running.** Report 063 (`e4f4c99b`, classification `df187b0c`,
-  manifest repin `65029ccd`) passed BOTH gates: the second session's
-  three-layer review (bytes, 060a coverage, 060b membership — PASS,
-  no send-back) and the reviewer's re-check (menu SHAs match disk,
-  63 entries, 87-row classification at full trace depth, code spot
-  checks hold, SHA table = 056, suites 18/18 + 34/34 rerun, zero
-  calls). GO note `063a-reviewer-go-note-outcome-pilot.md` lifts the
-  HOLD for the pilot ONLY: 18 dialogues 6/6/6 interleaved, seeds
-  515–517, checkpoint per dialogue, 2+2 fresh readers per case, 594
-  planned calls, 3,523 to 4,117 of 11,337. Main block NOT
-  authorized — separate go note after pilot scoring. Report to 064.
-  Watch cadence 600s (human-set).
+- **CURRENT — direction 065: build the manifest-bound pilot
+  harness (zero-call).** Report 064 (`9d410d55`) was a structural
+  stop BEFORE the first paid call: the committed A1 package has no
+  executable harness that carries the frozen manifest through
+  generation, checkpoints, the fingerprint guard, reader packets,
+  and scoring; the driver rightly refused to hand-build it after
+  GO. Ruling 064a: technical under 052a (nothing ran, counter
+  3,523 unchanged, seeds 515–517 unspent); **GO note 063a is
+  CONSUMED** — no launch may cite it; the reader-freeze choice is
+  pinned (emit an already-accepted freeze form; frozen reader
+  digests stay untouched — compelled, so not a 052e human
+  decision); future go notes must name the executable entry point.
+  Direction 065: build the harness with fail-closed launch guards,
+  resume-safe checkpoints, mandatory fingerprint gate, pinned
+  freeze form, 594-call accounting, zero-call tests; report 066.
+  Then two-sided review, then a FRESH go note before any paid
+  call. Watch cadence 600s (human-set).
+- **RESOLVED — GO note 063a (consumed): report 063 passed both
+  review gates** (second session three layers PASS; reviewer
+  re-check PASS — menu SHAs, 87-row classification at full trace
+  depth, SHA table = 056, suites rerun). 063a authorized the pilot
+  but the launch stopped structurally; see ruling 064a above.
 - **RESOLVED — direction 062: ruling-060b send-back executed
   clean.** Report 061's menu raced the ruling; direction 062
   removed `opening.instructional_meta` and the empty-quote
