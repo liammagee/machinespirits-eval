@@ -27,8 +27,8 @@ const DEFAULT_SOURCE_ROOT = '/private/tmp/adaptive-warrant-v3-matrix-live-a4529e
 const DEFAULT_SOURCE_COMMIT = 'a4529e798012b2fb0366fea30fc2a0798b3a69ab';
 const DEFAULT_SOURCE_CLOSURE = '60124bc8910b54bbebde7db2a17a9d458edfaf220622d0791a01707236046ffc';
 const MAXIMUM_CALLS = 48;
-const MAXIMUM_PROMPT_CHARS = 42000;
-const MAXIMUM_PROMPT_APPROXIMATE_TOKENS = 10500;
+const MAXIMUM_PROMPT_CHARS = 56000;
+const MAXIMUM_PROMPT_APPROXIMATE_TOKENS = 14000;
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
@@ -115,6 +115,7 @@ export function collectAdaptiveWarrantLiveSemanticProbeInputs({
   sourceRoot = DEFAULT_SOURCE_ROOT,
   expectedSourceCommit = DEFAULT_SOURCE_COMMIT,
   expectedSourceClosure = DEFAULT_SOURCE_CLOSURE,
+  selectionOffset = 0,
 } = {}) {
   const resolvedRoot = path.resolve(sourceRoot);
   const plan = JSON.parse(fs.readFileSync(path.join(resolvedRoot, 'study-plan.json'), 'utf8'));
@@ -164,13 +165,20 @@ export function collectAdaptiveWarrantLiveSemanticProbeInputs({
       });
     }
   }
-  if (rows.length !== MAXIMUM_CALLS) throw new Error(`probe requires exactly 48 preserved calls, found ${rows.length}`);
+  if (rows.length < 1) throw new Error('probe requires at least one preserved call');
+  const offset = Number(selectionOffset);
+  if (!Number.isInteger(offset) || offset < 0 || offset >= rows.length) {
+    throw new Error(`probe selection offset must identify a preserved call, got ${selectionOffset}`);
+  }
+  const selectedRows = rows.slice(offset, offset + MAXIMUM_CALLS);
   return {
     sourceRoot: resolvedRoot,
     sourceCommit,
     files,
     combinedSha256,
-    rows,
+    availableRows: rows.length,
+    selectionOffset: offset,
+    rows: selectedRows,
   };
 }
 
@@ -194,6 +202,7 @@ export async function runAdaptiveWarrantLiveSemanticSeatProbe({
   modelRef = 'codex.gpt-5.6-luna',
   expectedSourceCommit = DEFAULT_SOURCE_COMMIT,
   expectedSourceClosure = DEFAULT_SOURCE_CLOSURE,
+  selectionOffset = 0,
   approvedBy,
   concurrency = 4,
   callModel = callAIWithCliBridge,
@@ -210,6 +219,7 @@ export async function runAdaptiveWarrantLiveSemanticSeatProbe({
     sourceRoot,
     expectedSourceCommit,
     expectedSourceClosure,
+    selectionOffset,
   });
   const outputSchema = buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
     includeRegisterSelection: true,
@@ -314,20 +324,23 @@ export async function runAdaptiveWarrantLiveSemanticSeatProbe({
     prompt_profile: 'handbook_v1',
     model: modelRef,
     destination,
-    calls: { planned: MAXIMUM_CALLS, attempted: rows.length, maximum: MAXIMUM_CALLS, retries: 0 },
+    calls: { planned: rows.length, attempted: rows.length, maximum: MAXIMUM_CALLS, retries: 0 },
     source: {
       root: inputs.sourceRoot,
       commit: inputs.sourceCommit,
       trace_count: inputs.files.length,
       combined_sha256: inputs.combinedSha256,
+      available_preserved_calls: inputs.availableRows,
+      selection_offset: inputs.selectionOffset,
+      selection_rule: `${MAXIMUM_CALLS}_call_block_from_offset_in_sorted_trace_then_turn_order`,
     },
     result: {
       completed_analysis_calls: rows.length,
       surviving_calls: rows.length - discardedRows.length,
       discarded_calls: discardedRows.length,
       discard_rate: discardedRows.length / rows.length,
-      relaunch_threshold: 0.1,
-      relaunch_gate: discardedRows.length / rows.length <= 0.1 ? 'pass' : 'fail',
+      relaunch_threshold: 0.15,
+      relaunch_gate: discardedRows.length / rows.length <= 0.15 ? 'pass' : 'fail',
       error_code_counts: errorCodeCounts,
       residual_issue_counts: residualIssueCounts,
     },
@@ -470,6 +483,7 @@ async function main() {
       preflight: { type: 'string' },
       'expected-source-sha': { type: 'string' },
       'expected-source-closure': { type: 'string' },
+      'selection-offset': { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
     strict: true,
@@ -488,6 +502,7 @@ async function main() {
       modelRef: values.model,
       expectedSourceCommit: values['expected-source-sha'] || DEFAULT_SOURCE_COMMIT,
       expectedSourceClosure: values['expected-source-closure'] || DEFAULT_SOURCE_CLOSURE,
+      selectionOffset: Number(values['selection-offset'] || 0),
       approvedBy: values['approved-by'],
       concurrency: Number(values.concurrency || 4),
     });

@@ -371,8 +371,8 @@ export function createTutorStubLearnerAnalysisRuntime({
         baseline_prompt_user_chars: baselinePrompt.length,
         semantic_prompt_delta_chars: prompt.length - baselinePrompt.length,
         semantic_prompt_delta_approx_tokens: Math.ceil((prompt.length - baselinePrompt.length) / 4),
-        configured_prompt_max_chars: 42_000,
-        configured_prompt_max_approx_tokens: 10_500,
+        configured_prompt_max_chars: 56_000,
+        configured_prompt_max_approx_tokens: 14_000,
         configured_response_max_tokens: 2_500,
       };
     }

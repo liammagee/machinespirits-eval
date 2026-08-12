@@ -792,12 +792,30 @@ the final diagnostic repair from one clean committed source:
   `counterexample_hunter`, `goalpost_shifter`, and `fast_learner`;
 - conditions: `observe` and `active`;
 - one fresh eight-turn dialogue per world/profile/condition cell;
-- master seed: `507` (seeds `503`–`506` and both Direction 021 probe sets are
-  burned; `508`–`510` remain prospective reserves). Seed 506 exposed a
+- master seed: `509` (seeds `503`–`508` and all diagnostic probe sets are
+  burned; `510` remains a prospective reserve). Seed 506 exposed a
   transport-only prompt-serialization defect: pretty-printed register and
   learner-DAG JSON crossed the unchanged 42,000-character envelope on late
   turns. The prospective repair minifies those same JSON values without
-  changing prompt words, schemas, semantic rules, or the envelope limit;
+  changing prompt words, schemas, semantic rules, or the envelope limit. Seed
+  507 then confirmed the repaired analysis seat at 51/54 validator-surviving
+  returned analyses in a zero-call replay (5.56% returned-analysis discard;
+  51/56 completed turns analyzed, 8.93% total coverage loss), but exposed a
+  transport-only parent finalization defect: the running aggregate tried to
+  validate a one-row partial reader catalog before the matrix was complete.
+  The prospective repair defers reader-corpus construction while status is
+  `running`; it changes no child prompt, semantic schema, validator, rubric,
+  reader instrument, or coverage threshold. Seed 508 then coverage-halted at
+  37/48 analyzed turns (77.08% coverage): one turn was blocked by the same
+  late-turn audit cap and ten returned analyses failed the frozen semantic
+  validator. Its zero-call replay (10/47 discarded) and 47-call burned-turn
+  probe (13/47 discarded) did not independently license another reserve.
+  Direction 028 nevertheless pre-authorized the still-unapplied systematic
+  overflow repair once seed 507 showed that cause: the learner-analysis audit
+  remains active but uses 56,000 characters / 14,000 approximate tokens, and
+  preflight now proves the diagnostic-probe rewrite and live handbook prompt
+  are byte-identical. Frozen-constant rule 4b moves that prospective repair
+  from the now-burned seed 508 to the next named reserve, seed 509;
 - 24 dialogues and 192 scheduled learner-analysis turns total; the analyzed
   decision census contains every turn that passes the frozen per-turn analysis
   contract, with unreadable turns recorded only as coverage loss;

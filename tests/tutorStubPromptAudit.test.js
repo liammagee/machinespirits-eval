@@ -54,16 +54,16 @@ test('semantic performance adjudication has its own bounded non-speaking prompt 
 test('combined learner analysis admits the bounded eight-turn envelope and still fails above it', () => {
   const withinBudget = auditTutorStubPrompt({
     surface: 'learner_analysis',
-    userPrompt: 'x'.repeat(41_500),
+    userPrompt: 'x'.repeat(55_500),
   });
   const aboveBudget = auditTutorStubPrompt({
     surface: 'learner_analysis',
-    userPrompt: 'x'.repeat(42_001),
+    userPrompt: 'x'.repeat(56_001),
   });
 
   assert.equal(withinBudget.ok, true);
-  assert.equal(withinBudget.budget.maxChars, 42_000);
-  assert.equal(withinBudget.budget.maxApproxTokens, 10_500);
+  assert.equal(withinBudget.budget.maxChars, 56_000);
+  assert.equal(withinBudget.budget.maxApproxTokens, 14_000);
   assert.equal(aboveBudget.ok, false);
   assert.ok(aboveBudget.violations.some((violation) => violation.code === 'character_budget_exceeded'));
 });
