@@ -3748,7 +3748,9 @@ function mechanismCoverage(rows, annotationKey, axes, { runs, horizon }) {
         );
         const dialogues = cellRows.map((row) => {
           const unanalyzedTurns = new Set((row.learnerAnalysisUnanalyzedTurns || []).map(Number));
-          const expectedTurns = allTurns.filter((turn) => !unanalyzedTurns.has(turn));
+          // Registered analysis failures still emit deterministic fallback decisions
+          // and therefore retain full-horizon parity coverage.
+          const expectedTurns = allTurns;
           const decisionTurns = (row.decisions || [])
             .map((decision) => Number(decision.turn))
             .sort((left, right) => left - right);
@@ -3826,6 +3828,64 @@ function mechanismCoverage(rows, annotationKey, axes, { runs, horizon }) {
       exact: annotationRows.length === expectedObserveCases && annotationCells.every((cell) => cell.exact),
       active_cases: annotationRows.filter((row) => row.condition === 'intervening').length,
       turns: [...new Set(annotationRows.map((row) => Number(row.turn)))].sort((left, right) => left - right),
+      cells: annotationCells,
+    },
+  };
+}
+
+function mechanismFreezeCoverageAfterLoggedDrops({
+  coverage,
+  candidateKeyCases,
+  retainedKeyCases,
+  droppedOverlapCases,
+}) {
+  const droppedSampleIds = new Set(droppedOverlapCases.map((row) => row.sample_id));
+  const candidateBySampleId = new Map(candidateKeyCases.map((row) => [row.sample_id, row]));
+  const expectedRetainedSampleIds = new Set(
+    candidateKeyCases.filter((row) => !droppedSampleIds.has(row.sample_id)).map((row) => row.sample_id),
+  );
+  const retainedSampleIds = new Set(retainedKeyCases.map((row) => row.sample_id));
+  const loggedDropsAreCandidates = [...droppedSampleIds].every((sampleId) => candidateBySampleId.has(sampleId));
+  const exactRetainedSet =
+    retainedSampleIds.size === expectedRetainedSampleIds.size &&
+    [...retainedSampleIds].every((sampleId) => expectedRetainedSampleIds.has(sampleId));
+  const annotationCells = coverage.annotation.cells.map((cell) => {
+    const candidateCellCases = candidateKeyCases.filter(
+      (row) => row.world === cell.world && row.profile === cell.profile && row.condition === cell.condition,
+    );
+    const retainedCellCases = retainedKeyCases.filter(
+      (row) => row.world === cell.world && row.profile === cell.profile && row.condition === cell.condition,
+    );
+    const expectedTurns = candidateCellCases
+      .filter((row) => !droppedSampleIds.has(row.sample_id))
+      .map((row) => Number(row.turn))
+      .sort((left, right) => left - right);
+    const retainedTurns = retainedCellCases
+      .map((row) => Number(row.turn))
+      .sort((left, right) => left - right);
+    return {
+      ...cell,
+      cases: retainedCellCases.length,
+      turns: retainedTurns,
+      expected_cases: expectedTurns.length,
+      exact:
+        cell.exact &&
+        retainedCellCases.length === expectedTurns.length &&
+        JSON.stringify(retainedTurns) === JSON.stringify(expectedTurns),
+    };
+  });
+  return {
+    ...coverage,
+    annotation: {
+      ...coverage.annotation,
+      expected_cases: expectedRetainedSampleIds.size,
+      observed_cases: retainedKeyCases.length,
+      exact:
+        coverage.annotation.exact &&
+        loggedDropsAreCandidates &&
+        exactRetainedSet &&
+        annotationCells.every((cell) => cell.exact),
+      turns: [...new Set(retainedKeyCases.map((row) => Number(row.turn)))].sort((left, right) => left - right),
       cells: annotationCells,
     },
   };
@@ -4044,6 +4104,7 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status, coverageHalt 
   if (!preserveFrozenAnnotation) {
     const freezeStudy = plan.config.contractValidation === true || mechanismValidation;
     const droppedOverlapCases = [];
+    const freezeCandidateKeyCases = [...annotation.key.cases];
     if (status === 'complete' && mechanismValidation) {
       if (!(plan.config.excludedAnnotationCorpora || []).length) {
         throw new Error('mechanism-validation freeze requires at least one explicitly excluded prior corpus');
@@ -4134,6 +4195,14 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status, coverageHalt 
     writeJson(study.annotation.privateKey, annotation.key);
     if (semanticPredictionsPath) writeJson(semanticPredictionsPath, semanticArtifacts.predictions);
     if (status === 'complete' && freezeStudy) {
+      const freezeCoverage = mechanismValidation
+        ? mechanismFreezeCoverageAfterLoggedDrops({
+            coverage,
+            candidateKeyCases: freezeCandidateKeyCases,
+            retainedKeyCases: annotation.key.cases,
+            droppedOverlapCases,
+          })
+        : coverage;
       const structuredParityComparisonsByMode = Object.fromEntries(
         ['observe', 'active'].map((mode) => [
           mode,
@@ -4143,11 +4212,11 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status, coverageHalt 
         ]),
       );
       if (
-        coverage &&
-        (!coverage.exact_dialogue_coverage ||
-          !coverage.annotation.exact ||
-          coverage.annotation.active_cases !== 0 ||
-          coverage.learner_analysis.gate_ruling !== 'within_registered_coverage')
+        freezeCoverage &&
+        (!freezeCoverage.exact_dialogue_coverage ||
+          !freezeCoverage.annotation.exact ||
+          freezeCoverage.annotation.active_cases !== 0 ||
+          freezeCoverage.learner_analysis.gate_ruling !== 'within_registered_coverage')
       ) {
         throw new Error('mechanism-validation freeze does not have exact cell, turn, and observe-only coverage');
       }
@@ -4203,7 +4272,7 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status, coverageHalt 
               structured_parity: 'structured_v1',
             }
           : null,
-        coverage,
+        coverage: freezeCoverage,
         structured_parity: mechanismValidation
           ? {
               comparisons: Object.values(structuredParityComparisonsByMode).reduce((sum, value) => sum + value, 0),

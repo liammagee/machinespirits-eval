@@ -2088,6 +2088,9 @@ test('mechanism corpus freezes all 96 observe decisions and excludes active pred
       ]);
       assert.equal(droppedManifest.zero_overlap.matched_overlap_count, 1);
       assert.equal(droppedManifest.zero_overlap.dropped_case_count, 1);
+      assert.equal(droppedManifest.coverage.annotation.expected_cases, 95);
+      assert.equal(droppedManifest.coverage.annotation.observed_cases, 95);
+      assert.equal(droppedManifest.coverage.annotation.exact, true);
       assert.ok(droppedCorpus.cases.every((row) => annotationCaseFingerprint(row) !== plantedKey.source_fingerprint));
       assert.ok(droppedKey.cases.every((row) => row.source_fingerprint !== plantedKey.source_fingerprint));
 
@@ -2113,6 +2116,46 @@ test('mechanism corpus freezes all 96 observe decisions and excludes active pred
       assert.doesNotMatch(packetText, new RegExp(plantedKey.source_fingerprint, 'u'));
     } finally {
       fs.rmSync(overlapRoot, { recursive: true, force: true });
+    }
+
+    const unloggedGapRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'warrant-mechanism-unlogged-gap-'));
+    try {
+      const incompleteRows = structuredClone(rows);
+      const incompleteObserveRow = incompleteRows.find((row) => row.condition === 'instrumented');
+      incompleteObserveRow.decisions = incompleteObserveRow.decisions.filter((decision) => decision.turn !== 1);
+      assert.throws(
+        () => writeStudyArtifacts({ rootDir: unloggedGapRoot, plan, rows: incompleteRows, status: 'complete' }),
+        /expected 96 cases, got 95/u,
+      );
+      assert.equal(fs.existsSync(path.join(unloggedGapRoot, 'annotation-freeze-manifest.json')), false);
+    } finally {
+      fs.rmSync(unloggedGapRoot, { recursive: true, force: true });
+    }
+
+    const fallbackRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'warrant-mechanism-registered-fallback-'));
+    try {
+      const fallbackRows = structuredClone(rows);
+      const fallbackObserveRow = fallbackRows.find((row) => row.condition === 'instrumented');
+      fallbackObserveRow.learnerAnalysisUnanalyzedTurns = [1];
+      fallbackObserveRow.learnerAnalysisUnanalyzedCount = 1;
+      fallbackObserveRow.learnerAnalysisErrorCount = 1;
+      fallbackObserveRow.learnerAnalysisCoverage = 0.875;
+      writeStudyArtifacts({ rootDir: fallbackRoot, plan, rows: fallbackRows, status: 'complete' });
+      const fallbackCorpus = JSON.parse(
+        fs.readFileSync(path.join(fallbackRoot, 'annotation-sample.blinded.json'), 'utf8'),
+      );
+      const fallbackManifest = JSON.parse(
+        fs.readFileSync(path.join(fallbackRoot, 'annotation-freeze-manifest.json'), 'utf8'),
+      );
+      assert.equal(fallbackCorpus.cases.length, 95);
+      assert.equal(fallbackManifest.coverage.exact_dialogue_coverage, true);
+      assert.equal(fallbackManifest.coverage.annotation.expected_cases, 95);
+      assert.equal(fallbackManifest.coverage.annotation.observed_cases, 95);
+      assert.equal(fallbackManifest.coverage.annotation.exact, true);
+      assert.equal(fallbackManifest.coverage.learner_analysis.unanalyzed_turns, 1);
+      assert.equal(fallbackManifest.coverage.learner_analysis.gate_ruling, 'within_registered_coverage');
+    } finally {
+      fs.rmSync(fallbackRoot, { recursive: true, force: true });
     }
 
     fs.writeFileSync(
