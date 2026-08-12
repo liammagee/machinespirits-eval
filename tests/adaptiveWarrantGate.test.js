@@ -27,11 +27,14 @@ import {
   ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE,
   ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS,
   ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS,
+  ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS,
   ADAPTIVE_WARRANT_SEMANTIC_VALIDATION_SCHEMA,
   adaptiveWarrantSemanticSourceHash,
   compileAdaptiveWarrantSemanticSignal,
   validateAdaptiveWarrantSemanticExtraction,
 } from '../services/adaptiveWarrantSemanticEvents.js';
+import { buildAdaptiveWarrantObligationDirective } from '../services/adaptiveWarrantPolicy.js';
+import { compileTutorStubTurnProgressionContract } from '../services/tutorStubTurnProgressionContract.js';
 import { ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT } from '../services/adaptiveWarrantSemanticAnnotation.js';
 import { TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULES } from '../services/tutorStubPublicLearnerAnalysis.js';
 import { adaptiveWarrantSemanticReaderHandbook } from '../scripts/build-adaptive-warrant-v3-semantic-diagnostic.js';
@@ -481,9 +484,31 @@ test('V3.2 applies the sentinel per slot, normalizes forbidden slots, and still 
     learnerText,
     semanticEventExtraction: accepted,
   }).blocking_obligation;
-  assert.equal(obligation.target.signature, 'generic_evidence_request');
+  assert.equal(obligation.target.signature, 'public_exhibit_result:generic_evidence_request');
   assert.equal(obligation.target.target_id, null);
   assert.equal(obligation.target.catalogue_target_named, false);
+  const directive = buildAdaptiveWarrantObligationDirective({ blocking_obligation: obligation });
+  const hostContract = buildTutorStubFirstDraftContract({
+    learnerText,
+    responseConfiguration: {
+      engagement_stance: 'precise',
+      action_family: 'answer_accountably',
+      audience_register: 'adult_novice',
+      lexical_accessibility: 'plain',
+      scene_immersion: 'grounded',
+      actorial_part: 'scene_partner',
+      actorial_performance: { id: 'unadorned_report' },
+      surface_budgets: { max_average_sentence_words: 18 },
+    },
+    responseCompositionFrame: {
+      learner_move: { summary: 'The learner asks for generic public evidence.' },
+      conversational_completion: { resolved: false },
+    },
+    dramaticReleaseFrame: { active: false, entries: [] },
+    publicObligationDirective: directive,
+  });
+  assert.equal(hostContract.progression.complete, true);
+  assert.equal(hostContract.progression.public_obligation_contract.complete, true);
 
   const wordingText = 'What exactly should I write next?';
   const wording = semanticExtraction(wordingText, [
@@ -567,6 +592,62 @@ test('V3.2 applies the sentinel per slot, normalizes forbidden slots, and still 
     empty.events[0].validation.issues.some((issue) => issue.endsWith('.action_object_id:invalid')),
     true,
   );
+});
+
+test('every blocking-obligation target the semantic ledger can emit closes under the progression compiler', () => {
+  const targetKinds = [...ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS, 'sentinel'];
+  for (const [index, targetKind] of targetKinds.entries()) {
+    const learnerText = `Show me the public result for item ${index}.`;
+    const sentinel = targetKind === 'sentinel';
+    const targetId = sentinel ? 'unspecified' : `target-closure-${index}`;
+    const extraction = semanticExtraction(
+      learnerText,
+      [
+        semanticEvent({
+          learnerText,
+          eventId: `ledger-closure-${index}`,
+          speechAct: 'tutor_directed_public_result_request',
+          target: {
+            kind: sentinel ? 'other' : targetKind,
+            target_id: targetId,
+            public_identifier_ids: sentinel ? [] : [`public-id-closure-${index}`],
+            requested_value_types: [],
+            component_ids: [],
+          },
+          action: {
+            mode: 'requested',
+            executor: 'tutor',
+            action: 'supply_public_result',
+            action_object_id: sentinel ? 'unspecified' : `action-object-closure-${index}`,
+          },
+        }),
+      ],
+      {
+        publicText: sentinel
+          ? ''
+          : `The public catalogue names ${targetId} as public-id-closure-${index}.`,
+      },
+    );
+    assert.equal(extraction.extraction_status, 'accepted', targetKind);
+    const assessment = createAdaptiveWarrantPublicObligationLedger().assess({
+      turn: 1,
+      learnerText,
+      semanticEventExtraction: extraction,
+    });
+    const directive = buildAdaptiveWarrantObligationDirective(assessment);
+    const contract = compileTutorStubTurnProgressionContract({
+      learnerText,
+      responseCompositionFrame: {
+        learner_move: { summary: 'The learner requests a public result.' },
+        conversational_completion: { resolved: false },
+      },
+      dramaticReleaseFrame: { active: false, entries: [] },
+      actionFamily: 'answer_accountably',
+      publicObligationDirective: directive,
+    });
+    assert.equal(contract.complete, true, `${targetKind}: ${contract.public_obligation_contract.compile_issues}`);
+    assert.equal(contract.public_obligation_contract.complete, true, targetKind);
+  }
 });
 
 test('V3.2 permits slot-local unspecified and descriptive value sets on non-request acts', () => {

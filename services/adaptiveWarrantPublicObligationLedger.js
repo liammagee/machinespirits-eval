@@ -191,7 +191,7 @@ function semanticPublicTarget(target) {
   if (targetId === 'unspecified') {
     return {
       kind: 'public_exhibit_result',
-      signature: 'generic_evidence_request',
+      signature: 'public_exhibit_result:generic_evidence_request',
       target_id: null,
       catalogue_target_named: false,
       public_identifier_ids: [],

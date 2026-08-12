@@ -246,7 +246,7 @@ export const ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC = Object.freeze({
   profiles: MECHANISM_VALIDATION_PROFILES,
   conditions: MECHANISM_VALIDATION_CONDITIONS,
   runs: 1,
-  masterSeed: 511,
+  masterSeed: 512,
   horizon: 8,
   models: Object.freeze({
     tutor: DEFAULT_MODEL,
@@ -2099,7 +2099,7 @@ export function buildAdaptiveWarrantNaturalSemanticArtifacts(keyCases = []) {
   const targetRows = new Map();
   for (const event of candidateEvents) {
     const target = event.target;
-    if (!target?.target_id) continue;
+    if (!target?.target_id || target.target_id === 'unspecified') continue;
     const existing = targetRows.get(target.target_id) || {
       target_id: target.target_id,
       kind: target.kind,
@@ -2126,7 +2126,9 @@ export function buildAdaptiveWarrantNaturalSemanticArtifacts(keyCases = []) {
   const publicIdentifierIds = [
     ...new Set([...targetRows.values()].flatMap((row) => [...row.public_identifier_ids])),
   ].sort();
+  if (!publicIdentifierIds.length) publicIdentifierIds.push('natural-public-id-unresolved');
   const componentIds = [...new Set([...targetRows.values()].flatMap((row) => [...row.component_ids]))].sort();
+  if (!componentIds.length) componentIds.push('bounded_finding');
   const targets = [...targetRows.values()]
     .map((row) => ({
       target_id: row.target_id,
@@ -2146,7 +2148,9 @@ export function buildAdaptiveWarrantNaturalSemanticArtifacts(keyCases = []) {
         : [null, ...targets.map((row) => row.target_id)];
     for (const targetId of targetIds) {
       const identity = `${contract.mode}|${contract.operation}|${targetId || 'none'}`;
-      const actionObjectId = `natural-action-${sha256(identity).slice(0, 16)}`;
+      // Keep opaque IDs compact enough that a valid natural catalogue remains
+      // inside the frozen provider response-schema byte ceiling.
+      const actionObjectId = `natural-act-${sha256(identity).slice(0, 16)}`;
       actionObjects.set(actionObjectId, {
         action_object_id: actionObjectId,
         mode: contract.mode,

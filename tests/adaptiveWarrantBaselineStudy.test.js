@@ -25,6 +25,7 @@ import {
   assertAdaptiveWarrantLaunchSource,
   buildAdaptiveWarrantBaselineJobs,
   buildAdaptiveWarrantLaunchAuthorizationRequest,
+  buildAdaptiveWarrantNaturalSemanticArtifacts,
   buildBlindedAnnotationCorpus,
   collectAdaptiveWarrantStudySourceFiles,
   evaluateAdaptiveWarrantAnalysisCoverageHalt,
@@ -50,6 +51,7 @@ import {
   STUDY_CONDITIONS,
   STUDY_PROFILES,
 } from '../scripts/run-adaptive-warrant-baseline-study.js';
+import { prepareAdaptiveWarrantSemanticAnnotationBatches } from '../scripts/prepare-adaptive-warrant-semantic-annotations.js';
 
 function fileDigest(filePath) {
   return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
@@ -553,7 +555,7 @@ test('mechanism model routing is frozen before authorization', () => {
 });
 
 test('mechanism-validation plan is the frozen two-world, six-profile, observe-active matrix', () => {
-  assert.equal(ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.masterSeed, 511);
+  assert.equal(ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.masterSeed, 512);
   const jobs = buildAdaptiveWarrantBaselineJobs({
     rootDir: '/tmp/warrant-mechanism-study',
     runs: ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.runs,
@@ -582,6 +584,143 @@ test('mechanism-validation plan is the frozen two-world, six-profile, observe-ac
   assert.ok(jobs.every((job) => job.command[job.command.indexOf('--turns') + 1] === '8'));
   assert.ok(jobs.every((job) => job.command[job.command.indexOf('--world') + 1] === job.world));
   assert.ok(jobs.every((job) => !job.id.includes('baseline')));
+});
+
+test('sentinel-only natural catalogues freeze reader packets without exposing the sentinel as an entry ID', () => {
+  const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), 'warrant-sentinel-catalogue-'));
+  try {
+    const learner = 'What public evidence can we examine first?';
+    const semanticArtifacts = buildAdaptiveWarrantNaturalSemanticArtifacts([
+      {
+        sample_id: 'sentinel-only-1',
+        gate: {
+          semantic_event_extraction: {
+            events: [
+              {
+                speech_act: 'tutor_directed_public_result_request',
+                target: {
+                  kind: 'other',
+                  target_id: 'unspecified',
+                  public_identifier_ids: [],
+                  requested_value_types: [],
+                  component_ids: [],
+                },
+              },
+            ],
+          },
+        },
+      },
+    ]);
+    const catalogueEntryIds = [
+      ...semanticArtifacts.catalog.targets.map((row) => row.target_id),
+      ...semanticArtifacts.catalog.public_identifiers.map((row) => row.public_identifier_id),
+      ...semanticArtifacts.catalog.components.map((row) => row.component_id),
+      ...semanticArtifacts.catalog.action_objects.map((row) => row.action_object_id),
+    ];
+    assert.equal(catalogueEntryIds.includes('unspecified'), false);
+    assert.deepEqual(
+      semanticArtifacts.catalog.public_identifiers.map((row) => row.public_identifier_id),
+      ['natural-public-id-unresolved'],
+    );
+    const sparseArtifacts = buildAdaptiveWarrantNaturalSemanticArtifacts(
+      Array.from({ length: 5 }, (_, index) => ({
+        sample_id: `sparse-named-${index + 1}`,
+        gate: {
+          semantic_event_extraction: {
+            events: [
+              {
+                speech_act: 'tutor_directed_public_result_request',
+                target: {
+                  kind: 'record_entry',
+                  target_id: `natural-target-sparse-record-${index + 1}`,
+                  public_identifier_ids: [],
+                  requested_value_types: [],
+                  component_ids: [],
+                },
+              },
+            ],
+          },
+        },
+      })),
+    );
+    assert.deepEqual(
+      sparseArtifacts.catalog.public_identifiers.map((row) => row.public_identifier_id),
+      ['natural-public-id-unresolved'],
+    );
+    assert.deepEqual(
+      sparseArtifacts.catalog.components.map((row) => row.component_id),
+      ['bounded_finding'],
+    );
+
+    const corpusPath = path.join(rootDir, 'sentinel-corpus.json');
+    const handbookPath = path.join(rootDir, 'semantic-handbook.md');
+    fs.writeFileSync(
+      corpusPath,
+      `${JSON.stringify(
+        {
+          schema: ADAPTIVE_WARRANT_ANNOTATION_SCHEMA,
+          study_id: 'semantic-brittleness-preflight-sentinel-only',
+          blinded: true,
+          semantic_annotation_catalog: semanticArtifacts.catalog,
+          cases: [
+            {
+              sample_id: 'sentinel-only-1',
+              current_learner_turn: { turn: 1, learner },
+              public_evidence_at_decision: [],
+            },
+          ],
+        },
+        null,
+        2,
+      )}\n`,
+    );
+    fs.writeFileSync(handbookPath, '# Frozen sentinel-only semantic handbook\n');
+    const frozen = prepareAdaptiveWarrantSemanticAnnotationBatches({
+      corpusPath,
+      handbookPath,
+      outputDir: path.join(rootDir, 'reader-packets'),
+      corpusRole: 'natural_prevalence',
+      batchSize: 1,
+      maximumCalls: 2,
+      preflightMode: true,
+    });
+    assert.equal(frozen.manifest.readers.length, 2);
+    assert.equal(frozen.authorizationRequest.call_budget.planned_calls, 2);
+
+    const sparseCorpusPath = path.join(rootDir, 'sparse-corpus.json');
+    fs.writeFileSync(
+      sparseCorpusPath,
+      `${JSON.stringify(
+        {
+          schema: ADAPTIVE_WARRANT_ANNOTATION_SCHEMA,
+          study_id: 'semantic-brittleness-preflight-sparse-natural-catalogue',
+          blinded: true,
+          semantic_annotation_catalog: sparseArtifacts.catalog,
+          cases: [
+            {
+              sample_id: 'sparse-named-1',
+              current_learner_turn: { turn: 1, learner },
+              public_evidence_at_decision: [],
+            },
+          ],
+        },
+        null,
+        2,
+      )}\n`,
+    );
+    const sparseFrozen = prepareAdaptiveWarrantSemanticAnnotationBatches({
+      corpusPath: sparseCorpusPath,
+      handbookPath,
+      outputDir: path.join(rootDir, 'sparse-reader-packets'),
+      corpusRole: 'natural_prevalence',
+      batchSize: 1,
+      maximumCalls: 2,
+      preflightMode: true,
+    });
+    assert.equal(sparseFrozen.manifest.readers.length, 2);
+  } finally {
+    fs.rmSync(rootDir, { recursive: true, force: true });
+  }
 });
 
 test('study provenance binds the complete tutor-stub integration closure', () => {
