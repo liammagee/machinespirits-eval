@@ -5,7 +5,12 @@
 
 ## Now
 
-- **Current direction:** `014-reviewer-direction-rerun-authorized.md` —
+- **Current direction:** `016-reviewer-direction-seed-lock.md` —
+  replacement master seed 504 named (reserves 505, 506); the one-line
+  seed-lock amendment is authorized; preflight at the amended commit;
+  the passed ping carries over if the live schema digests are unchanged
+  (else one fresh ping); then LAUNCH the matrix under 014's terms.
+  Background: `014-reviewer-direction-rerun-authorized.md` —
   live-seat repair ACCEPTED (report 013: 137 failures = 7 parse + 130
   strict-validator rejections; root cause was the legacy schema-free
   parse mode on the live seat, fixed at `575801bc`). Human authorized
@@ -51,6 +56,11 @@
    report-only commits.
 4. **Operational failures** (no artifact, no contract change): fix and
    retry without stopping; note in the report.
+4b. **Frozen-constant conflicts** (016): if a direction conflicts with a
+   frozen constant and the direction or a predeclared reserve list names
+   the replacement value, amend the constant in place, record the
+   amendment commit, and proceed — no stop. Stop only when the needed
+   value or authority is genuinely absent from the written record.
 5. **Pass path (pre-authorized):** preflight → acceptance ping → smoke →
    diagnostic/supplement freeze → readers → support gate → decision
    readers on the certified corpus. **Hard stops:** any contract-
