@@ -29,16 +29,12 @@ export const OUTCOME_A1_SOURCE_PINS = Object.freeze({
 });
 
 export const OUTCOME_A1_ENUMERATION_RULE = Object.freeze({
-  action:
-    'Include action_families.challenge_resistance.description from the registry and ACTION_CUES.challenge_resistance from the first-draft contract.',
-  stance:
-    'The challenge-resistance warrant policy fixes stance_hint=precise; include precise.public_signature, precise.stance_contract, and STANCE_EXECUTION_CUES.precise.',
-  part:
-    'The nonterminal downstream selector assigns nonzero softmax support to every registered actorial part; enumerate every actorial_parts key and require both its registry contract and the same-key PART_CUES entry.',
-  tactic:
-    'The precise stance selects evidentiary_boundary downstream; include TACTIC_EXECUTION_CUES.evidentiary_boundary.',
+  rendered_layer:
+    'Enumerate the fixed compact strings rendered by tutorStubFirstDraftContractPrompt downstream of a gate decision from the SHA-pinned services/tutorStubFirstDraftContract.js: every compact uptake branch; every COMPACT_PART_CUES value plus the inline scene-partner branch and other compact-part literals; every TACTIC_EXECUTION_CUES value plus compact tactic/support branches; every compact stance cue; every compact handoff branch; and every compact action cue. Sweep every stance and action-family key mechanically without reachability pruning.',
+  templates:
+    'For a compact template, quote every fixed segment byte-for-byte in source order and show each interpolated public-contract value as a named {{slot}}; the descriptive prefix states that the gate fills those slots from the public contract, and the drift guard compares the fixed_segments array byte-for-byte.',
   question_support:
-    'Walk every tutorInstruction expression branch in buildTutorStubQuestionSupport and include every distinct string literal leaf exactly once.',
+    'Do not include buildTutorStubQuestionSupport tutorInstruction strings: they populate the detailed contract ending.instruction field, but the live compact host-plan renderer does not read that field. Include the compact handoff strings selected from question-support state flags instead.',
 });
 
 export const OUTCOME_PILOT_SEEDS = Object.freeze([515, 516, 517]);
@@ -80,12 +76,6 @@ function read(relativePath) {
   return fs.readFileSync(path.join(ROOT, relativePath));
 }
 
-function oneLine(value) {
-  return String(value || '')
-    .replace(/\s+/gu, ' ')
-    .trim();
-}
-
 function walk(node, visit) {
   if (!node || typeof node !== 'object') return;
   visit(node);
@@ -114,160 +104,109 @@ function objectLiteralMap(sourceText, constantName) {
   );
 }
 
-function tutorInstructionLiterals(sourceText) {
+function functionObjectLiteralMap(sourceText, functionName, constantName) {
   const ast = parse(sourceText, { ecmaVersion: 'latest', sourceType: 'module' });
-  let supportFunction = null;
+  let functionNode = null;
   walk(ast, (node) => {
-    if (node.type === 'FunctionDeclaration' && node.id?.name === 'buildTutorStubQuestionSupport') {
-      supportFunction = node;
-    }
+    if (node.type === 'FunctionDeclaration' && node.id?.name === functionName) functionNode = node;
   });
-  if (!supportFunction) throw new Error('missing buildTutorStubQuestionSupport');
-  const strings = new Set();
-  walk(supportFunction, (node) => {
-    const key = node.type === 'Property' ? node.key?.name ?? node.key?.value : null;
-    if (key !== 'tutorInstruction') return;
-    const collectOutcomes = (value) => {
-      if (value?.type === 'Literal' && typeof value.value === 'string') strings.add(value.value);
-      else if (value?.type === 'ConditionalExpression') {
-        collectOutcomes(value.consequent);
-        collectOutcomes(value.alternate);
-      } else {
-        throw new Error(`unsupported tutorInstruction expression ${value?.type || 'missing'}`);
+  if (!functionNode) throw new Error(`missing function ${functionName}`);
+  let objectExpression = null;
+  walk(functionNode.body, (node) => {
+    if (node.type === 'VariableDeclarator' && node.id?.name === constantName) objectExpression = node.init;
+  });
+  if (objectExpression?.type !== 'ObjectExpression') {
+    throw new Error(`missing object constant ${functionName}.${constantName}`);
+  }
+  return Object.fromEntries(
+    objectExpression.properties.map((property) => {
+      const key = property.key?.name ?? property.key?.value;
+      if (typeof key !== 'string' || property.value?.type !== 'Literal' || typeof property.value.value !== 'string') {
+        throw new Error(`${functionName}.${constantName} contains a non-literal entry`);
       }
-    };
-    collectOutcomes(node.value);
-  });
-  return [...strings].sort();
+      return [key, property.value.value];
+    }),
+  );
 }
 
-function descriptivePrefix(kind, key) {
-  const prefixes = {
-    action_catalogue: 'When the gate selects challenge resistance, its catalogue description is:',
-    action_cue: 'When challenge resistance reaches the first-draft action slot, its cue is:',
-    stance_public_signature: 'When challenge resistance selects the precise stance, its public signature is:',
-    stance_contract: 'When challenge resistance selects the precise stance, its stance contract is:',
-    stance_execution: 'When the precise stance reaches first-draft execution, its execution cue is:',
-    tactic_execution: 'When the precise stance selects the evidentiary-boundary tactic, its execution cue is:',
-    question_support: `When question support sees ${key.replaceAll('_', ' ')}, its tutor instruction is:`,
-  };
-  if (kind === 'part_contract') {
-    return `When the downstream selector chooses the ${key.replaceAll('_', ' ')} part, its part contract is:`;
-  }
-  if (kind === 'part_execution') {
-    return `When the downstream selector chooses the ${key.replaceAll('_', ' ')} part, its first-draft cue is:`;
-  }
-  return prefixes[kind];
+function fixedRow({ id, source, prefix, quote }) {
+  return { id, source, prefix, quote, template_slots: [], fixed_segments: [quote] };
 }
 
-function questionSupportBranchKey(quote) {
-  const branches = [
-    ['Ask one light question', 'a publicly answerable question with no current struggle'],
-    ['Directly answer the learner’s outstanding question', 'an unanswered learner question and unreleased evidence ahead'],
-    ['Do not ask the learner to invent or name an unseen record, source, person, or fact. Name', 'unreleased evidence ahead without a bounded choice'],
-    ['Do not ask the learner to invent or name an unseen record, source, person, or fact. Offer', 'unreleased evidence ahead with a bounded choice'],
-    ['First acknowledge that the learner’s question was not answered', 'an unanswered learner question while due evidence is staged'],
-    ['Put the directional hint into the discourse', 'public evidence and a struggling learner without a bounded choice'],
-    ['Restate the live public clue, then offer', 'public evidence and a struggling learner with a bounded choice'],
-    ['State the due evidence in ordinary scene language first, then ask', 'due evidence without a bounded choice'],
-    ['State the due evidence in ordinary scene language first, then offer', 'due evidence with a bounded choice'],
-  ];
-  const match = branches.find(([opening]) => quote.startsWith(opening));
-  if (!match) throw new Error(`unclassified question-support branch: ${quote.slice(0, 80)}`);
-  return match[1];
+function templateRow({ id, source, prefix, fixedSegments, slots }) {
+  if (fixedSegments.length !== slots.length + 1) throw new Error(`invalid template row ${id}`);
+  const quote = fixedSegments
+    .map((segment, index) => `${segment}${slots[index] ? `{{${slots[index]}}}` : ''}`)
+    .join('');
+  return { id, source, prefix, quote, template_slots: slots, fixed_segments: fixedSegments };
+}
+
+function keyedRows(map, { idPrefix, sourceConstant, prefix }) {
+  return Object.keys(map)
+    .sort()
+    .map((key) =>
+      fixedRow({
+        id: `${idPrefix}.${key}`,
+        source: `services/tutorStubFirstDraftContract.js#${sourceConstant}.${key}`,
+        prefix: prefix(key),
+        quote: map[key],
+      }),
+    );
 }
 
 function sourceRows() {
-  const registryPath = 'config/engagement-registers.yaml';
   const firstDraftPath = 'services/tutorStubFirstDraftContract.js';
-  const questionSupportPath = 'services/tutorStubQuestionSupport.js';
-  const registry = yaml.parse(read(registryPath).toString('utf8'));
   const firstDraft = read(firstDraftPath).toString('utf8');
-  const questionSupport = read(questionSupportPath).toString('utf8');
-  const actionCues = objectLiteralMap(firstDraft, 'ACTION_CUES');
-  const partCues = objectLiteralMap(firstDraft, 'PART_CUES');
-  const stanceCues = objectLiteralMap(firstDraft, 'STANCE_EXECUTION_CUES');
+  const partCues = objectLiteralMap(firstDraft, 'COMPACT_PART_CUES');
   const tacticCues = objectLiteralMap(firstDraft, 'TACTIC_EXECUTION_CUES');
+  const stanceCues = functionObjectLiteralMap(firstDraft, 'compactStanceInstruction', 'cues');
+  const actionCues = functionObjectLiteralMap(firstDraft, 'compactActionInstruction', 'cues');
   const rows = [
-    {
-      id: 'action.catalogue.challenge_resistance',
-      kind: 'action_catalogue',
-      key: 'challenge_resistance',
-      source: `${registryPath}#action_families.challenge_resistance.description`,
-      quote: registry.action_families.challenge_resistance.description,
-    },
-    {
-      id: 'action.cue.challenge_resistance',
-      kind: 'action_cue',
-      key: 'challenge_resistance',
-      source: `${firstDraftPath}#ACTION_CUES.challenge_resistance`,
-      quote: actionCues.challenge_resistance,
-    },
-    {
-      id: 'stance.public_signature.precise',
-      kind: 'stance_public_signature',
-      key: 'precise',
-      source: `${registryPath}#engagement_stances.precise.public_signature`,
-      quote: registry.engagement_stances.precise.public_signature,
-    },
-    {
-      id: 'stance.contract.precise',
-      kind: 'stance_contract',
-      key: 'precise',
-      source: `${registryPath}#engagement_stances.precise.stance_contract|one_line`,
-      quote: oneLine(registry.engagement_stances.precise.stance_contract),
-    },
-    {
-      id: 'stance.execution.precise',
-      kind: 'stance_execution',
-      key: 'precise',
-      source: `${firstDraftPath}#STANCE_EXECUTION_CUES.precise`,
-      quote: stanceCues.precise,
-    },
+    fixedRow({ id: 'uptake.default', source: `${firstDraftPath}#compactUptakeInstruction.default`, prefix: 'When no narrower uptake branch applies, the compact uptake string is:', quote: 'Answer, credit, qualify, correct, or receive the learner’s concrete move; never use generic praise.' }),
+    fixedRow({ id: 'uptake.accelerated', source: `${firstDraftPath}#compactUptakeInstruction.accelerated`, prefix: 'When the public contract records learner acceleration, the compact uptake addition is:', quote: 'Credit every warranted move; do not ask for it again.' }),
+    templateRow({ id: 'uptake.learner_move', source: `${firstDraftPath}#compactUptakeInstruction.learnerMove`, prefix: 'When the public contract carries a learner move, this compact uptake template is rendered and the gate fills its named slot from the public contract:', fixedSegments: ['Carry forward this move: ', ''], slots: ['learner_move'] }),
+    fixedRow({ id: 'uptake.writable_complementary', source: `${firstDraftPath}#compactUptakeInstruction.writable.complementary`, prefix: 'When a writable entry must precede complementary due evidence, the compact uptake string is:', quote: 'Begin exactly “Write:” with one learner-sayable pre-turn limit; do not preview or paraphrase SOURCE.' }),
+    templateRow({ id: 'uptake.writable_causal', source: `${firstDraftPath}#compactUptakeInstruction.writable.causal`, prefix: 'When the public contract carries a causal subject and outcome, this compact uptake template is rendered and the gate fills its named slots from the public contract:', fixedSegments: ['Begin exactly “Write:” with this learner-sayable sentence: “The ', ' did not cause the ', '.” Keep both named roles exact; never widen either role or change cause into prevention.'], slots: ['causal_subject', 'causal_outcome'] }),
+    fixedRow({ id: 'uptake.writable_causal_generic', source: `${firstDraftPath}#compactUptakeInstruction.writable.causal_generic`, prefix: 'When the public contract carries a causal relation without a named subject, the compact uptake string is:', quote: 'Begin exactly “Write:” with one learner-sayable sentence: the candidate was inactive while the outcome still occurred, so this rules out candidate causation. Preserve named actors and polarity; never say the candidate failed to prevent or stop the outcome.' }),
+    fixedRow({ id: 'uptake.writable_record', source: `${firstDraftPath}#compactUptakeInstruction.writable.record`, prefix: 'When a writable entry can point to a rendered public record, the compact uptake string is:', quote: 'Begin exactly “Write:” with one learner-sayable sentence saying what one numbered RECORD line says. Preserve its actors, relation, and polarity; never reverse cause or evidentiary force, and claim nothing the line does not carry.' }),
+    fixedRow({ id: 'uptake.writable_record_fallback', source: `${firstDraftPath}#compactUptakeInstruction.writable.record_fallback`, prefix: 'When a writable entry has no rendered public-record block, the compact uptake fallback is:', quote: 'Begin exactly “Write:” with one learner-sayable sentence licensed by the public record. Preserve actors, relation, and polarity; never reverse cause or evidentiary force.' }),
+    fixedRow({ id: 'uptake.responsive_repair', source: `${firstDraftPath}#compactUptakeInstruction.responsive_repair`, prefix: 'When the public contract requires responsive repair, the compact uptake string is:', quote: 'Answer the learner’s unanswered question directly before doing anything else.' }),
+    ...keyedRows(partCues, { idPrefix: 'part.compact_cue', sourceConstant: 'COMPACT_PART_CUES', prefix: (key) => `When the downstream selector carries the ${key.replaceAll('_', ' ')} part, its compact part cue is:` }),
+    fixedRow({ id: 'part.inline.scene_partner', source: `${firstDraftPath}#compactPartInstruction.scene_partner`, prefix: 'When the selected part is scene partner, the live inline compact cue is:', quote: 'place both speakers at one named public object using “you”, “we”, or “together”; a solitary “I” beside the object does not count; do not ask a question yet' }),
+    fixedRow({ id: 'part.fallback', source: `${firstDraftPath}#compactPartInstruction.fallback`, prefix: 'When no named compact part cue is available, the compact part fallback is:', quote: 'perform one concrete public action or judgment' }),
+    fixedRow({ id: 'part.prop.existing', source: `${firstDraftPath}#compactPartInstruction.prop.existing`, prefix: 'When the public contract forbids a new prop, the compact part addition is:', quote: 'Use an already-named object; add no prop.' }),
+    fixedRow({ id: 'part.prop.named', source: `${firstDraftPath}#compactPartInstruction.prop.named`, prefix: 'When the public contract permits a scene object, the compact part addition is:', quote: 'Name one public scene object.' }),
+    templateRow({ id: 'part.wrapper', source: `${firstDraftPath}#compactPartInstruction.wrapper`, prefix: 'For every selected part, this compact wrapper is rendered and the gate fills its named slots from the public contract:', fixedSegments: ['As ', ', without naming the role, ', '.'], slots: ['actorial_part_label', 'compact_part_cue'] }),
+    ...keyedRows(tacticCues, { idPrefix: 'tactic.execution', sourceConstant: 'TACTIC_EXECUTION_CUES', prefix: (key) => `When the compact tactic builder carries the ${key.replaceAll('_', ' ')} tactic, its execution cue is:` }),
+    fixedRow({ id: 'tactic.support.3', source: `${firstDraftPath}#compactSupportInstruction.level_3`, prefix: 'When support level is three, the compact tactic support string is:', quote: 'Make the public connection explicit.' }),
+    fixedRow({ id: 'tactic.support.2', source: `${firstDraftPath}#compactSupportInstruction.level_2`, prefix: 'When support level is two, the compact tactic support string is:', quote: 'Give one concrete hint, leaving the judgment open.' }),
+    fixedRow({ id: 'tactic.support.1', source: `${firstDraftPath}#compactSupportInstruction.level_1`, prefix: 'When support level is one, the compact tactic support string is:', quote: 'Give only a light directional cue.' }),
+    fixedRow({ id: 'tactic.source_boundary', source: `${firstDraftPath}#compactTacticInstruction.sourceBoundary`, prefix: 'When public source evidence is active, the compact tactic prefix is:', quote: 'After SOURCE closes, make TACTIC a new unquoted sentence.' }),
+    fixedRow({ id: 'tactic.delivered_boundary', source: `${firstDraftPath}#compactTacticInstruction.transition`, prefix: 'When the requested pressure tactic is inapplicable, the compact tactic transition is:', quote: 'Use the delivered boundary tactic, not the requested pressure tactic.' }),
+    fixedRow({ id: 'tactic.direction_only_rapid_handoff', source: `${firstDraftPath}#buildTutorStubFirstDraftContract.directionOnlyWithoutNewEvidence`, prefix: 'When direction-only support recasts rapid handoff, the compact tactic execution string is:', quote: 'Move straight from one already-public object or line to the present evidentiary limit. State the direction of the missing support yourself and end declaratively; do not ask the learner to name unseen evidence.' }),
+    templateRow({ id: 'tactic.causal_performance', source: `${firstDraftPath}#typedCausalPerformanceInstruction`, prefix: 'When the public contract carries a causal subject and outcome, this tactic template is rendered and the gate fills its named slots from the public contract:', fixedSegments: ['Say “The ', ' did not cause the ', '; actual cause remains open.” Add no third clause or role change.'], slots: ['causal_subject', 'causal_outcome'] }),
+    fixedRow({ id: 'tactic.question_boundary.handoff', source: `${firstDraftPath}#questionOwnedTacticExecution.boundary.handoff`, prefix: 'When the handoff owns an allowed question, the compact tactic boundary is:', quote: 'Ask no question here; HANDOFF owns it.' }),
+    fixedRow({ id: 'tactic.question_boundary.none', source: `${firstDraftPath}#questionOwnedTacticExecution.boundary.none`, prefix: 'When the public contract forbids a question, the compact tactic boundary is:', quote: 'Ask no question here.' }),
+    templateRow({ id: 'tactic.question_owned.rapid_handoff', source: `${firstDraftPath}#questionOwnedTacticExecution.rapid_handoff`, prefix: 'When rapid handoff delegates question ownership, this compact tactic template is rendered and the gate fills its named slot from the public contract:', fixedSegments: ['Move straight from the named public object or line to one short declarative observation. ', ''], slots: ['question_boundary'] }),
+    templateRow({ id: 'tactic.question_owned.shared_scene_invitation', source: `${firstDraftPath}#questionOwnedTacticExecution.shared_scene_invitation`, prefix: 'When shared-scene invitation delegates question ownership, this compact tactic template is rendered and the gate fills its named slot from the public contract:', fixedSegments: ['Invite shared attention to the named public object declaratively using “you”, “we”, or “together”. ', ''], slots: ['question_boundary'] }),
+    templateRow({ id: 'tactic.question_owned.general', source: `${firstDraftPath}#questionOwnedTacticExecution.general`, prefix: 'When another tactic delegates question ownership, this compact tactic template is rendered and the gate fills its named slots from the public contract:', fixedSegments: ['', ' ', ''], slots: ['tactic_execution', 'question_boundary'] }),
+    ...keyedRows(stanceCues, { idPrefix: 'stance.compact_cue', sourceConstant: 'compactStanceInstruction.cues', prefix: (key) => `When the gate carries the ${key.replaceAll('_', ' ')} stance, its compact stance cue is:` }),
+    templateRow({ id: 'stance.fallback', source: `${firstDraftPath}#compactStanceInstruction.fallback`, prefix: 'When the public contract carries an unlisted stance, this compact stance fallback is rendered and the gate fills its named slot from the public contract:', fixedSegments: ['Make it visibly ', '.'], slots: ['engagement_stance'] }),
+    fixedRow({ id: 'handoff.settled', source: `${firstDraftPath}#compactProgressionHandoffInstruction.settled`, prefix: 'When the public contract names a settled surface, the compact handoff addition is:', quote: 'Do not reopen the settled point.' }),
+    fixedRow({ id: 'handoff.bridge', source: `${firstDraftPath}#compactProgressionHandoffInstruction.bridge`, prefix: 'When the public contract requires a sibling-relation bridge, the compact handoff addition is:', quote: 'Connect SOURCE to the learner’s requested relation.' }),
+    fixedRow({ id: 'handoff.declarative_fallback', source: `${firstDraftPath}#compactProgressionHandoffInstruction.declarative_fallback`, prefix: 'When declarative support has no supplied handoff instruction, the compact handoff fallback is:', quote: 'End declaratively; ask no question.' }),
+    fixedRow({ id: 'handoff.public_limit', source: `${firstDraftPath}#compactProgressionHandoffInstruction.public_limit`, prefix: 'When questions are forbidden without another special branch, the compact handoff string is:', quote: 'State the current public limit through the selected action; ask no question.' }),
+    fixedRow({ id: 'handoff.optional_question', source: `${firstDraftPath}#compactProgressionHandoffInstruction.optional_question`, prefix: 'When a handoff question is optional, the compact handoff string is:', quote: 'Carry the selected action to TURN FOCUS. HANDOFF may ask one final question there; otherwise end declaratively.' }),
+    fixedRow({ id: 'handoff.source_question', source: `${firstDraftPath}#compactProgressionHandoffInstruction.source_question`, prefix: 'When active source evidence and stage-next-step require a handoff question, the compact handoff string is:', quote: 'Ask one HANDOFF question about what SOURCE changes, supports, or rules out.' }),
+    templateRow({ id: 'handoff.action_question', source: `${firstDraftPath}#compactProgressionHandoffInstruction.action_question`, prefix: 'When the default handoff owns the final question, this compact handoff template is rendered and the gate fills its named slot from the public contract:', fixedSegments: ['', ' HANDOFF owns the one final question.'], slots: ['compact_action_instruction'] }),
+    fixedRow({ id: 'handoff.bounded_choices', source: `${firstDraftPath}#buildHostPlan.bounded_choice`, prefix: 'When question-support state requires bounded choices, the compact handoff addition is:', quote: 'Express two or three recognizable public-safe choices declaratively; do not turn the list into a question.' }),
+    fixedRow({ id: 'handoff.clarification_invitation', source: `${firstDraftPath}#buildHostPlan.clarification_invitation`, prefix: 'When question-support state requires a clarification invitation, the compact handoff addition is:', quote: 'Also say that the learner may ask for a direct explanation of one clue, connection, or term.' }),
+    fixedRow({ id: 'action.override.closure', source: `${firstDraftPath}#compactActionInstruction.closure`, prefix: 'When the public contract requires closure, the compact action override is:', quote: 'State the licensed public finding and close the inquiry; ask no question.' }),
+    fixedRow({ id: 'action.override.responsive_repair', source: `${firstDraftPath}#compactActionInstruction.responsive_repair`, prefix: 'When the public contract requires responsive repair, the compact action override is:', quote: 'End after the direct answer or one public way to check it; do not substitute another exercise.' }),
+    fixedRow({ id: 'action.override.active_source', source: `${firstDraftPath}#compactActionInstruction.active_source`, prefix: 'When active source evidence carries stage-next-step, the compact action override is:', quote: 'Return SOURCE as one concrete question about what it changes, supports, or rules out.' }),
+    ...keyedRows(actionCues, { idPrefix: 'action.compact_cue', sourceConstant: 'compactActionInstruction.cues', prefix: (key) => `When the gate carries the ${key.replaceAll('_', ' ')} action family, its compact action cue is:` }),
   ];
-  for (const key of Object.keys(registry.actorial_parts).sort()) {
-    if (typeof partCues[key] !== 'string') throw new Error(`PART_CUES is missing registered part ${key}`);
-    rows.push(
-      {
-        id: `part.contract.${key}`,
-        kind: 'part_contract',
-        key,
-        source: `${registryPath}#actorial_parts.${key}.contract|one_line`,
-        quote: oneLine(registry.actorial_parts[key].contract),
-      },
-      {
-        id: `part.execution.${key}`,
-        kind: 'part_execution',
-        key,
-        source: `${firstDraftPath}#PART_CUES.${key}`,
-        quote: partCues[key],
-      },
-    );
-  }
-  rows.push({
-    id: 'tactic.execution.evidentiary_boundary',
-    kind: 'tactic_execution',
-    key: 'evidentiary_boundary',
-    source: `${firstDraftPath}#TACTIC_EXECUTION_CUES.evidentiary_boundary`,
-    quote: tacticCues.evidentiary_boundary,
-  });
-  tutorInstructionLiterals(questionSupport).forEach((quote) => {
-    const key = questionSupportBranchKey(quote);
-    const idKey = key.replaceAll(/[^a-z0-9]+/gu, '_').replaceAll(/^_|_$/gu, '');
-    rows.push({
-      id: `question_support.${idKey}`,
-      kind: 'question_support',
-      key,
-      source: `${questionSupportPath}#buildTutorStubQuestionSupport.tutorInstruction.${key}`,
-      quote,
-    });
-  });
-  return rows.map((row) => ({
-    id: row.id,
-    source: row.source,
-    prefix: descriptivePrefix(row.kind, row.key),
-    quote: row.quote,
-  }));
+  return rows;
 }
 
 function renderMenu(rows) {
@@ -445,7 +384,7 @@ export function guardOutcomePilotPreparation({ worldPaths, seeds = OUTCOME_PILOT
     conditions,
     prepared_run_count: candidates.length,
     candidate_fingerprints: candidateFingerprints,
-    excluded_artifacts: exclusions.map(({ embedded_fingerprints: omitted, ...row }) => row),
+    excluded_artifacts: exclusions.map(({ embedded_fingerprints: _omitted, ...row }) => row),
     deference_session_identities: [...OUTCOME_PILOT_DEFERENCE_SESSION_IDENTITIES],
     exclusion_fingerprint_count: exclusionFingerprints.size,
     duplicate_candidate_fingerprints: [...new Set(duplicates)],
@@ -488,6 +427,9 @@ export function guardOutcomeStandingPermissionMenu(material) {
     return {
       id: expected.id,
       quote_bytes_match: actual?.quote === expected.quote,
+      fixed_segments_bytes_match:
+        JSON.stringify(actual?.fixed_segments) === JSON.stringify(expected.fixed_segments),
+      template_slots_match: JSON.stringify(actual?.template_slots) === JSON.stringify(expected.template_slots),
       prefix_bytes_match: actual?.prefix === expected.prefix,
       source_location_match: actual?.source === expected.source,
     };
@@ -499,7 +441,14 @@ export function guardOutcomeStandingPermissionMenu(material) {
     duplicateIds.length === 0 &&
     missing.length === 0 &&
     unexpected.length === 0 &&
-    rowChecks.every((row) => row.quote_bytes_match && row.prefix_bytes_match && row.source_location_match) &&
+    rowChecks.every(
+      (row) =>
+        row.quote_bytes_match &&
+        row.fixed_segments_bytes_match &&
+        row.template_slots_match &&
+        row.prefix_bytes_match &&
+        row.source_location_match,
+    ) &&
     renderedMatches;
   return {
     schema: 'machinespirits.adaptation-refinement.warrant-outcome-menu-drift-guard.v1',

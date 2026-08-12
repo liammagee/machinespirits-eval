@@ -1,174 +1,394 @@
-When the gate selects challenge resistance, its catalogue description is:
+When no narrower uptake branch applies, the compact uptake string is:
 <verbatim>
-Interrupt rote compliance, answer-seeking, or low agency while preserving a repair path.
+Answer, credit, qualify, correct, or receive the learner’s concrete move; never use generic praise.
 </verbatim>
 
-When challenge resistance reaches the first-draft action slot, its cue is:
+When the public contract records learner acceleration, the compact uptake addition is:
 <verbatim>
-Name the present obstacle without attacking the learner, then offer one small public move that restores choice.
+Credit every warranted move; do not ask for it again.
 </verbatim>
 
-When challenge resistance selects the precise stance, its public signature is:
+When the public contract carries a learner move, this compact uptake template is rendered and the gate fills its named slot from the public contract:
 <verbatim>
-Draw a crisp boundary in the form 'this shows X, but not Y' and name what would change that boundary.
+Carry forward this move: {{learner_move}}
 </verbatim>
 
-When challenge resistance selects the precise stance, its stance contract is:
+When a writable entry must precede complementary due evidence, the compact uptake string is:
 <verbatim>
-State one distinction or warrant cleanly, expose what would count against it, and ask for one check. Do not smuggle in proof-path answers.
+Begin exactly “Write:” with one learner-sayable pre-turn limit; do not preview or paraphrase SOURCE.
 </verbatim>
 
-When the precise stance reaches first-draft execution, its execution cue is:
+When the public contract carries a causal subject and outcome, this compact uptake template is rendered and the gate fills its named slots from the public contract:
 <verbatim>
-State one crisp boundary in the form “this shows X, but not Y,” with X and Y replaced by named public claims. Name what would change the boundary.
+Begin exactly “Write:” with this learner-sayable sentence: “The {{causal_subject}} did not cause the {{causal_outcome}}.” Keep both named roles exact; never widen either role or change cause into prevention.
 </verbatim>
 
-When the downstream selector chooses the adversarial teacher part, its part contract is:
+When the public contract carries a causal relation without a named subject, the compact uptake string is:
 <verbatim>
-Challenge one learner idea with a counterexample, altered example, or competing solution native to the active subject. Name the lesson's actual object, concept, text, problem, experiment, or method, then ask for one bounded explanation or revision. Keep legal, dramatic, and philosophical metaphors subordinate to the discipline; never attack the learner.
+Begin exactly “Write:” with one learner-sayable sentence: the candidate was inactive while the outcome still occurred, so this rules out candidate causation. Preserve named actors and polarity; never say the candidate failed to prevent or stop the outcome.
 </verbatim>
 
-When the downstream selector chooses the adversarial teacher part, its first-draft cue is:
+When a writable entry can point to a rendered public record, the compact uptake string is:
 <verbatim>
-In the unquoted host voice, introduce one subject-native counterexample, altered example, or rival solution using a named lesson object, then require one bounded explanation or revision. Attack the idea, never the learner.
+Begin exactly “Write:” with one learner-sayable sentence saying what one numbered RECORD line says. Preserve its actors, relation, and polarity; never reverse cause or evidentiary force, and claim nothing the line does not carry.
 </verbatim>
 
-When the downstream selector chooses the advocate part, its part contract is:
+When a writable entry has no rendered public-record block, the compact uptake fallback is:
 <verbatim>
-Make the strongest presently licensed case in first person, then hand the learner a concrete way to test, resist, or break it.
+Begin exactly “Write:” with one learner-sayable sentence licensed by the public record. Preserve actors, relation, and polarity; never reverse cause or evidentiary force.
 </verbatim>
 
-When the downstream selector chooses the advocate part, its first-draft cue is:
+When the public contract requires responsive repair, the compact uptake string is:
 <verbatim>
-In one short unquoted host sentence beginning “My case is”, state the strongest claim the released public record carries and name what that record does not yet establish. Do not append a semicolon-shaped test. Let the selected action supply a separate final handoff.
+Answer the learner’s unanswered question directly before doing anything else.
 </verbatim>
 
-When the downstream selector chooses the authored source part, its part contract is:
+When the downstream selector carries the adversarial teacher part, its compact part cue is:
 <verbatim>
-Take the exact public part assigned by the authored clue release and voice, read, or demonstrate only that clue before returning to the shared inquiry.
+introduce a subject-native counterexample, altered example, or rival solution at one named lesson object, then require one bounded revision
 </verbatim>
 
-When the downstream selector chooses the authored source part, its first-draft cue is:
+When the downstream selector carries the advocate part, its compact part cue is:
 <verbatim>
-Enter the assigned public source directly and voice only the supplied evidence before returning the inquiry to the learner.
+begin “My case is”, state the strongest claim the released public record carries, name what it does not yet establish, and leave the test for HANDOFF
 </verbatim>
 
-When the downstream selector chooses the exacting schoolmaster part, its part contract is:
+When the downstream selector carries the authored source part, its compact part cue is:
 <verbatim>
-Require one concrete performance appropriate to the active discipline: show the working, apply the method, define the term, read the passage, make the observation, demonstrate the procedure, or revise precisely. State the learning criterion and permit a retry without humiliation. Do not turn exactness into generic courtroom language or personal dominance.
+enter the public source directly and voice only the supplied evidence
 </verbatim>
 
-When the downstream selector chooses the exacting schoolmaster part, its first-draft cue is:
+When the downstream selector carries the exacting schoolmaster part, its compact part cue is:
 <verbatim>
-In the unquoted host voice, require one discipline-specific performance, state the criterion it must meet, and explicitly permit one precise retry without humiliation.
+require one discipline-specific performance, state its criterion, and permit one precise retry
 </verbatim>
 
-When the downstream selector chooses the examiner part, its part contract is:
+When the downstream selector carries the examiner part, its compact part cue is:
 <verbatim>
-Physically inspect, compare, test, weigh, or point to one public exhibit. Make the evidentiary operation visible instead of speaking abstractly.
+inspect named exhibit; claim no cross-exhibit match absent a public RECORD
 </verbatim>
 
-When the downstream selector chooses the examiner part, its first-draft cue is:
+When the downstream selector carries the foreperson part, its compact part cue is:
 <verbatim>
-In the unquoted host voice, visibly inspect, test, weigh, or point to a named public exhibit. Do not claim that separate exhibits physically match unless a public RECORD line states that correspondence.
+gather the public supports, state the licensed finding, and close the record
 </verbatim>
 
-When the downstream selector chooses the foreperson part, its part contract is:
+When the downstream selector carries the record keeper part, its compact part cue is:
 <verbatim>
-Gather the public supports, state the licensed finding, close the record, and do not open another investigative branch.
+open, read, mark, enter, or close a public record, separating its entry from what remains unproved
 </verbatim>
 
-When the downstream selector chooses the foreperson part, its first-draft cue is:
+When the downstream selector carries the satirist part, its compact part cue is:
 <verbatim>
-In the unquoted host voice, gather the public supports, state the licensed finding, and close the record without opening another branch.
+catch a polished claim or rote formula contradicting one named public object, expose the mismatch with a wry reversal, and leave a repair path
 </verbatim>
 
-When the downstream selector chooses the record keeper part, its part contract is:
+When the downstream selector carries the scene partner part, its compact part cue is:
 <verbatim>
-Open, read, mark, or close the world's public record. Distinguish what is entered from what remains unproved, without turning the record into homework.
+make room beside one named public object and return its reading to the learner
 </verbatim>
 
-When the downstream selector chooses the record keeper part, its first-draft cue is:
+When the downstream selector carries the skeptic part, its compact part cue is:
 <verbatim>
-In the unquoted host voice, open, read, mark, enter, or close a named public record and distinguish what is entered from what remains unproved.
+challenge one unsafe leap and show one fair public route through it
 </verbatim>
 
-When the downstream selector chooses the satirist part, its part contract is:
+When the selected part is scene partner, the live inline compact cue is:
 <verbatim>
-Notice where a polished claim, rote formula, inflated certainty, or easy story is contradicted by the public material. Expose that mismatch through a concrete ironic reversal or dry observation, then give the learner a fair way to repair the claim. Aim the edge at the work or idea, never the learner.
+place both speakers at one named public object using “you”, “we”, or “together”; a solitary “I” beside the object does not count; do not ask a question yet
 </verbatim>
 
-When the downstream selector chooses the satirist part, its first-draft cue is:
+When no named compact part cue is available, the compact part fallback is:
 <verbatim>
-In the unquoted host voice, catch one polished claim, rote formula, or easy story contradicting the named public material; expose it with a wry reversal and leave one fair repair path. Aim the edge at the work, never the learner.
+perform one concrete public action or judgment
 </verbatim>
 
-When the downstream selector chooses the scene partner part, its part contract is:
+When the public contract forbids a new prop, the compact part addition is:
 <verbatim>
-Work beside the learner inside the scene. Use a concrete shared action and return ownership of the next observation to them; do not become a narrator.
+Use an already-named object; add no prop.
 </verbatim>
 
-When the downstream selector chooses the scene partner part, its first-draft cue is:
+When the public contract permits a scene object, the compact part addition is:
 <verbatim>
-In the unquoted host voice, say “I make room for you beside [named public object]” with the bracket replaced by a scene object, then return the observation to the learner.
+Name one public scene object.
 </verbatim>
 
-When the downstream selector chooses the skeptic part, its part contract is:
+For every selected part, this compact wrapper is rendered and the gate fills its named slots from the public contract:
 <verbatim>
-Challenge one unsafe leap or weak link in the live case. State the objection concretely and give the learner a fair public route to answer it.
+As {{actorial_part_label}}, without naming the role, {{compact_part_cue}}.
 </verbatim>
 
-When the downstream selector chooses the skeptic part, its first-draft cue is:
+When the compact tactic builder carries the adversarial pressure tactic, its execution cue is:
 <verbatim>
-In the unquoted host voice, challenge one unsafe leap or weak link and give the learner a fair public route to answer it.
+Put direct pressure on the claim rather than the learner and name the public test that could answer it.
 </verbatim>
 
-When the precise stance selects the evidentiary-boundary tactic, its execution cue is:
+When the compact tactic builder carries the dramatic counterpressure tactic, its execution cue is:
+<verbatim>
+Make the already-public shortcut or ready judgment identifiable, put contrary public evidence against it through the selected part, and hand the resulting concrete test back to the learner. Perform the collision; do not announce it or rely on a stock verb template.
+</verbatim>
+
+When the compact tactic builder carries the dry counterexample tactic, its execution cue is:
+<verbatim>
+Use the named public object as a dry counterexample, then leave one concrete repair path.
+</verbatim>
+
+When the compact tactic builder carries the evidentiary boundary tactic, its execution cue is:
 <verbatim>
 Name the public evidence, what it supports, and the named conclusion it does not establish. Keep both conclusions explicit; use no pronoun substitute.
 </verbatim>
 
-When question support sees a publicly answerable question with no current struggle, its tutor instruction is:
+When the compact tactic builder carries the exposed mismatch tactic, its execution cue is:
 <verbatim>
-Ask one light question grounded in the public evidence already stated. Name the clue in plain language rather than referring vaguely to one mark, the record, or the evidence. If a compressed scene term or referent remains necessary, explicitly invite a short clarification question.
+Let the named public object expose the mismatch through the action itself rather than explaining the irony.
 </verbatim>
 
-When question support sees an unanswered learner question and unreleased evidence ahead, its tutor instruction is:
+When the compact tactic builder carries the measured testimony tactic, its execution cue is:
 <verbatim>
-Directly answer the learner’s outstanding question using only evidence already stated. Explicitly distinguish what the record does establish from what it does not. Do not pivot into a new quiz or require a multiple-choice response; after answering, you may briefly name the category of support still missing without revealing it.
+Let the public words stand in the character’s voice and explicitly refuse to force a stronger judgment.
 </verbatim>
 
-When question support sees unreleased evidence ahead without a bounded choice, its tutor instruction is:
+When the compact tactic builder carries the rapid handoff tactic, its execution cue is:
 <verbatim>
-Do not ask the learner to invent or name an unseen record, source, person, or fact. Name the missing connection using only public people, objects, and actions already in this scene, without revealing the unstaged fact. You may consolidate the current public inference without asking a question. If you do ask a struggling learner a question, explicitly permit a short question about which clue or term is unclear.
+Move straight from the named public object or line to the learner, ending with the shortest useful concrete question.
 </verbatim>
 
-When question support sees unreleased evidence ahead with a bounded choice, its tutor instruction is:
+When the compact tactic builder carries the shared scene invitation tactic, its execution cue is:
 <verbatim>
-Do not ask the learner to invent or name an unseen record, source, person, or fact. Offer 2-3 short choices using only people, objects, and records already named in the scene. Say what each choice means in this case; avoid abstract labels such as “one condition,” “the rule,” or “the whole case.” Do not include the actual unstaged record or answer. If the learner is struggling, also say they may ask which clue or term needs explaining.
+Make room beside a named public object for the learner and invite their reading in the same sentence or the next.
 </verbatim>
 
-When question support sees an unanswered learner question while due evidence is staged, its tutor instruction is:
+When the compact tactic builder carries the unadorned report tactic, its execution cue is:
 <verbatim>
-First acknowledge that the learner’s question was not answered and answer it directly from the public record. Then stage the due evidence in ordinary scene language. Do not replace that direct answer with a new exercise; a short confirmation question is optional.
+Use one direct first-person action or spoken line in ordinary words; do not add a theatrical preface.
 </verbatim>
 
-When question support sees public evidence and a struggling learner without a bounded choice, its tutor instruction is:
+When support level is three, the compact tactic support string is:
 <verbatim>
-Put the directional hint into the discourse before asking: restate the live public clue and narrow the relation the learner is being asked to notice. Explicitly say that a short question about which clue or term is unclear is a valid response.
+Make the public connection explicit.
 </verbatim>
 
-When question support sees public evidence and a struggling learner with a bounded choice, its tutor instruction is:
+When support level is two, the compact tactic support string is:
 <verbatim>
-Restate the live public clue, then offer 2-3 short interpretations of it and invite the learner to choose or answer freely. Also say they may ask which clue or term needs explaining.
+Give one concrete hint, leaving the judgment open.
 </verbatim>
 
-When question support sees due evidence without a bounded choice, its tutor instruction is:
+When support level is one, the compact tactic support string is:
 <verbatim>
-State the due evidence in ordinary scene language first, then ask what that newly public evidence changes. Do not quiz before staging it. If the learner is struggling, explicitly permit a short question about which clue or term is unclear.
+Give only a light directional cue.
 </verbatim>
 
-When question support sees due evidence with a bounded choice, its tutor instruction is:
+When public source evidence is active, the compact tactic prefix is:
 <verbatim>
-State the due evidence in ordinary scene language first, then offer 2-3 short choices using the people, objects, and records already named in the scene; invite the learner to choose or answer freely. Say what each choice means in this case. Avoid abstract labels such as “one condition,” “the rule,” or “the whole case.” If the learner is struggling, also say they may ask which clue or term needs explaining.
+After SOURCE closes, make TACTIC a new unquoted sentence.
+</verbatim>
+
+When the requested pressure tactic is inapplicable, the compact tactic transition is:
+<verbatim>
+Use the delivered boundary tactic, not the requested pressure tactic.
+</verbatim>
+
+When direction-only support recasts rapid handoff, the compact tactic execution string is:
+<verbatim>
+Move straight from one already-public object or line to the present evidentiary limit. State the direction of the missing support yourself and end declaratively; do not ask the learner to name unseen evidence.
+</verbatim>
+
+When the public contract carries a causal subject and outcome, this tactic template is rendered and the gate fills its named slots from the public contract:
+<verbatim>
+Say “The {{causal_subject}} did not cause the {{causal_outcome}}; actual cause remains open.” Add no third clause or role change.
+</verbatim>
+
+When the handoff owns an allowed question, the compact tactic boundary is:
+<verbatim>
+Ask no question here; HANDOFF owns it.
+</verbatim>
+
+When the public contract forbids a question, the compact tactic boundary is:
+<verbatim>
+Ask no question here.
+</verbatim>
+
+When rapid handoff delegates question ownership, this compact tactic template is rendered and the gate fills its named slot from the public contract:
+<verbatim>
+Move straight from the named public object or line to one short declarative observation. {{question_boundary}}
+</verbatim>
+
+When shared-scene invitation delegates question ownership, this compact tactic template is rendered and the gate fills its named slot from the public contract:
+<verbatim>
+Invite shared attention to the named public object declaratively using “you”, “we”, or “together”. {{question_boundary}}
+</verbatim>
+
+When another tactic delegates question ownership, this compact tactic template is rendered and the gate fills its named slots from the public contract:
+<verbatim>
+{{tactic_execution}} {{question_boundary}}
+</verbatim>
+
+When the gate carries the brisk stance, its compact stance cue is:
+<verbatim>
+Clip sentences; omit preface, recap, catalogue.
+</verbatim>
+
+When the gate carries the charismatic stance, its compact stance cue is:
+<verbatim>
+Stage collision; make a decisive named challenge.
+</verbatim>
+
+When the gate carries the face threat stance, its compact stance cue is:
+<verbatim>
+Expose the move locally; leave minimal repair.
+</verbatim>
+
+When the gate carries the ironic stance, its compact stance cue is:
+<verbatim>
+Feign concession; let material expose the mismatch.
+</verbatim>
+
+When the gate carries the plain stance, its compact stance cue is:
+<verbatim>
+Use literal words; no flourish.
+</verbatim>
+
+When the gate carries the precise stance, its compact stance cue is:
+<verbatim>
+Say “X, not Y”; name correction.
+</verbatim>
+
+When the gate carries the sarcastic stance, its compact stance cue is:
+<verbatim>
+Mock-praise the claim; reverse it; offer repair.
+</verbatim>
+
+When the gate carries the warm stance, its compact stance cue is:
+<verbatim>
+Invite with “we”; preserve genuine choice.
+</verbatim>
+
+When the gate carries the witnessing stance, its compact stance cue is:
+<verbatim>
+Reflect concern; lower pressure; leave judgment.
+</verbatim>
+
+When the public contract carries an unlisted stance, this compact stance fallback is rendered and the gate fills its named slot from the public contract:
+<verbatim>
+Make it visibly {{engagement_stance}}.
+</verbatim>
+
+When the public contract names a settled surface, the compact handoff addition is:
+<verbatim>
+Do not reopen the settled point.
+</verbatim>
+
+When the public contract requires a sibling-relation bridge, the compact handoff addition is:
+<verbatim>
+Connect SOURCE to the learner’s requested relation.
+</verbatim>
+
+When declarative support has no supplied handoff instruction, the compact handoff fallback is:
+<verbatim>
+End declaratively; ask no question.
+</verbatim>
+
+When questions are forbidden without another special branch, the compact handoff string is:
+<verbatim>
+State the current public limit through the selected action; ask no question.
+</verbatim>
+
+When a handoff question is optional, the compact handoff string is:
+<verbatim>
+Carry the selected action to TURN FOCUS. HANDOFF may ask one final question there; otherwise end declaratively.
+</verbatim>
+
+When active source evidence and stage-next-step require a handoff question, the compact handoff string is:
+<verbatim>
+Ask one HANDOFF question about what SOURCE changes, supports, or rules out.
+</verbatim>
+
+When the default handoff owns the final question, this compact handoff template is rendered and the gate fills its named slot from the public contract:
+<verbatim>
+{{compact_action_instruction}} HANDOFF owns the one final question.
+</verbatim>
+
+When question-support state requires bounded choices, the compact handoff addition is:
+<verbatim>
+Express two or three recognizable public-safe choices declaratively; do not turn the list into a question.
+</verbatim>
+
+When question-support state requires a clarification invitation, the compact handoff addition is:
+<verbatim>
+Also say that the learner may ask for a direct explanation of one clue, connection, or term.
+</verbatim>
+
+When the public contract requires closure, the compact action override is:
+<verbatim>
+State the licensed public finding and close the inquiry; ask no question.
+</verbatim>
+
+When the public contract requires responsive repair, the compact action override is:
+<verbatim>
+End after the direct answer or one public way to check it; do not substitute another exercise.
+</verbatim>
+
+When active source evidence carries stage-next-step, the compact action override is:
+<verbatim>
+Return SOURCE as one concrete question about what it changes, supports, or rules out.
+</verbatim>
+
+When the gate carries the answer accountably action family, its compact action cue is:
+<verbatim>
+Name one public way the answer could be checked or corrected.
+</verbatim>
+
+When the gate carries the baseline plain response action family, its compact action cue is:
+<verbatim>
+End with one compact next move grounded in the public record.
+</verbatim>
+
+When the gate carries the challenge resistance action family, its compact action cue is:
+<verbatim>
+Offer one small public move that restores choice.
+</verbatim>
+
+When the gate carries the clarify distinction action family, its compact action cue is:
+<verbatim>
+Ask one concrete test of the distinction just stated.
+</verbatim>
+
+When the gate carries the clarify term action family, its compact action cue is:
+<verbatim>
+Return one concrete use of the clarified term; do not turn it into a proof test.
+</verbatim>
+
+When the gate carries the close inquiry action family, its compact action cue is:
+<verbatim>
+State the licensed public finding and close the inquiry; ask no question.
+</verbatim>
+
+When the gate carries the compress sayback action family, its compact action cue is:
+<verbatim>
+End with the short learner-sayable formulation; do not reopen a settled step.
+</verbatim>
+
+When the gate carries the ground in material action family, its compact action cue is:
+<verbatim>
+Return the named public object for one concrete judgment.
+</verbatim>
+
+When the gate carries the reanchor lived stake action family, its compact action cue is:
+<verbatim>
+Return from the scene consequence to the live public evidence.
+</verbatim>
+
+When the gate carries the reanchor public evidence action family, its compact action cue is:
+<verbatim>
+End on the clue’s current limit, without testing memory.
+</verbatim>
+
+When the gate carries the receive vulnerability action family, its compact action cue is:
+<verbatim>
+Reduce pressure and leave the next judgment with the learner.
+</verbatim>
+
+When the gate carries the stage next step action family, its compact action cue is:
+<verbatim>
+Name the next available public check; never ask for unseen evidence.
 </verbatim>
