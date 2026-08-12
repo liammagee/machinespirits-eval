@@ -134,6 +134,14 @@ warranted challenge in two manners:
   edge-on-warranted-turns-only; same-act check (the repair action
   distribution must not differ between register policies); withdrawal
   check (the edge does not persist after the learner repairs the flaw).
+- **Consequence measure (primary for the follow-on):** for each
+  warranted challenge, does the learner produce the demanded evidence
+  within the next two learner turns? Scored from the learner's own
+  conduct against the challenge's typed demand — no judge taste enters.
+  The registered contrast is this repair rate for edged against neutral
+  challenges. This anchors the register question in what the challenge
+  makes happen, so a style-averse judge cannot mark the edge down as
+  deviance while the learner is in fact repairing.
 - **Sample size:** set after the main study reports, from its observed
   warranted-challenge rate — the follow-on needs enough warranted turns
   per dialogue for the manner contrast to have material.
