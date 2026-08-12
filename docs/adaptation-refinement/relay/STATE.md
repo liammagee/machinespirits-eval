@@ -41,6 +41,10 @@
   before any re-take. Ceiling RENEWED DIRECTLY by the human in the
   reviewer session (052b, 13 Aug ~00:14): fresh 8,000 if needed —
   hard ceiling now 11,337 total, counter continues from 3,337.
+  Later-arc intent banked (052d, relayed): after the presence gate
+  settles, a fresh registration at an intermediate grain (speech-act
+  categories) on an amended handbook; r49/r52 = design pilots only;
+  no change to tonight's run.
 - **RESOLVED — ruling 051** (kept as history). Report 050 ACCEPTED in
   full; the two assembly stops ruled READER ERROR = data (the lawful
   null-target `explain_wording` entry existed in every catalogue);
