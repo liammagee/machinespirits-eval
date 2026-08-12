@@ -29,9 +29,30 @@
   (2) a different analysis seat or an openly registered new
   coverage/relaunch criterion; (3) stop the matrix programme here.
   Reviewer note: reviewer direction 029 (freeze + zero-call
-  diagnosis) crossed with the driver's own equivalent work — its
-  concentration-by-profile split remains undone and is the first
-  zero-cost input to the human decision.
+  diagnosis) crossed with the driver's own equivalent work.
+- **Zero-call concentration split DONE** (reviewer, 17:05; script
+  `scripts/tally-semantic-replay-residuals.py`, commit `24147a29`,
+  run on the s509 counterfactual replay). Findings, all zero-call:
+  (a) two rule families carry 22 of the 25 discards —
+  `target.target_id:required` (+ its paired
+  `action_object_id:invalid`) and
+  `target:value_component_sets_forbidden_for_non_request`; relaxing
+  only those two would leave 3/128 = 2.34% unanalyzed, far inside the
+  15% line. (b) Both are contract–utterance mismatches, not model
+  sloppiness: generic evidence requests ("what public evidence can we
+  examine first?") name no catalogue item, so the required target_id
+  comes back empty; hybrid criterion questions ("does the seal
+  match?") are typed correctly as criterion_question but carry
+  requested_value_types, which the contract forbids on non-request
+  acts. Sonnet broke the same value/component rule 19× (report 022) —
+  two independent models failing the same two rules on the same
+  utterance class points at the rules. (c) The loss is BIASED:
+  counterexample_hunter carries 10 of 25 discards (one dialogue lost
+  6 of 8 turns); answer_seeking lost zero. Coverage loss deletes
+  exactly the challenge-heavy dialogues. Worlds/conditions/turns are
+  even. This is the reviewer's input to the human's three-way choice;
+  it favors option 1 (amend the two rules prospectively, openly
+  re-registered; seed 510 stays frozen until that is written).
 - Prior reviewer position on the seed-509 relaunch (15:50, from the live
   log; the driver's report is still pending): seed 507 crashed on a
   transport defect (parent finalization validated a partial reader
