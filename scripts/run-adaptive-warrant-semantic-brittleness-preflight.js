@@ -20,6 +20,10 @@ import {
   buildTutorStubPublicLearnerAnalysisProviderOutputSchema,
 } from '../services/tutorStubPublicLearnerAnalysis.js';
 import {
+  TUTOR_STUB_CLI_REQUEST_PATH,
+  buildTutorStubCliBridgeRequest,
+} from '../services/tutorStubCliRequest.js';
+import {
   ADAPTIVE_WARRANT_SEMANTIC_PREFLIGHT_SCHEMA,
   adaptiveWarrantSemanticInstrumentBindings,
   adaptiveWarrantSemanticValueSha256,
@@ -30,6 +34,11 @@ import {
   prepareAdaptiveWarrantSemanticAnnotationBatches,
 } from './prepare-adaptive-warrant-semantic-annotations.js';
 import { buildAdaptiveWarrantV3SemanticDiagnostic } from './build-adaptive-warrant-v3-semantic-diagnostic.js';
+import {
+  ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_MINIMUM_TURNS,
+  ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_RATE,
+  evaluateAdaptiveWarrantAnalysisCoverageHalt,
+} from './run-adaptive-warrant-baseline-study.js';
 import { buildAdaptiveWarrantSemanticSmokeCorpus } from './run-adaptive-warrant-semantic-schema-smoke.js';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
@@ -476,6 +485,59 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
   const sentinelLeakPaths = promptAssemblySources.filter((relativePath) =>
     fs.readFileSync(path.join(ROOT, relativePath), 'utf8').includes(sentinel),
   );
+  const sharedSchemaSentinel = { type: 'object', properties: {}, additionalProperties: false };
+  const sharedRequest = buildTutorStubCliBridgeRequest({
+    resolved: { provider: 'codex', model: 'gpt-5.6-luna' },
+    systemPrompt: 'synthetic system',
+    userPrompt: 'synthetic prompt',
+    role: 'synthetic-shared-path-audit',
+    outputSchema: sharedSchemaSentinel,
+    effort: 'low',
+    timeoutMs: 300_000,
+  });
+  const promptTransportSource = fs.readFileSync(path.join(ROOT, 'services/tutorStubPromptTransport.js'), 'utf8');
+  const acceptancePingSource = fs.readFileSync(
+    path.join(ROOT, 'scripts/run-adaptive-warrant-semantic-schema-acceptance-ping.js'),
+    'utf8',
+  );
+  const sharedRequestPathAudit = {
+    request_schema: sharedRequest.schema,
+    schema_forwarded: sharedRequest.options.outputSchema === sharedSchemaSentinel,
+    strict_effort_forwarded: sharedRequest.options.effort === 'low',
+    strict_timeout_forwarded: sharedRequest.options.timeoutMs === 300_000,
+    live_dispatches_shared_path: promptTransportSource.includes(
+      'dispatchTutorStubCliBridgeRequest(callAIWithCliBridge',
+    ),
+    ping_dispatches_shared_path: acceptancePingSource.includes('dispatchTutorStubCliBridgeRequest(callModel'),
+  };
+  const firstCallCoverageGuard = evaluateAdaptiveWarrantAnalysisCoverageHalt([
+    {
+      learnerAnalysisCallCount: 1,
+      learnerAnalysisUnanalyzedCount: 1,
+      firstLearnerAnalysisStatus: 'unanalyzed',
+    },
+  ]);
+  const rateCoverageGuard = evaluateAdaptiveWarrantAnalysisCoverageHalt([
+    {
+      learnerAnalysisCallCount: ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_MINIMUM_TURNS,
+      learnerAnalysisUnanalyzedCount: 1,
+      firstLearnerAnalysisStatus: 'analyzed',
+    },
+  ]);
+  const representativeRunnerSource = fs.readFileSync(
+    path.join(ROOT, 'scripts/run-adaptive-warrant-baseline-study.js'),
+    'utf8',
+  );
+  const coverageGuardAudit = {
+    threshold: ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_RATE,
+    minimum_turns: ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_MINIMUM_TURNS,
+    first_call_result: firstCallCoverageGuard,
+    rate_result: rateCoverageGuard,
+    wired_before_new_job_admission:
+      representativeRunnerSource.includes('() => coverageHalt === null') &&
+      representativeRunnerSource.includes('evaluateAdaptiveWarrantAnalysisCoverageHalt(completedRows)'),
+    typed_status_wired: representativeRunnerSource.includes("status: coverageHalt ? 'coverage_halt' : 'running'"),
+  };
   const schemaText = JSON.stringify(schemas);
   const scoreStates = Object.values(score.checks);
   const checks = [
@@ -525,6 +587,26 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       scanned_paths: promptAssemblySources,
       leak_paths: sentinelLeakPaths,
     }),
+    check(
+      'acceptance_ping_and_live_analysis_share_cli_request_path',
+      sharedRequestPathAudit.request_schema === TUTOR_STUB_CLI_REQUEST_PATH &&
+        Object.entries(sharedRequestPathAudit)
+          .filter(([key]) => key !== 'request_schema')
+          .every(([, value]) => value === true),
+      sharedRequestPathAudit,
+    ),
+    check(
+      'representative_runner_first_call_and_coverage_halt_guards_wired',
+      coverageGuardAudit.threshold === 0.1 &&
+        coverageGuardAudit.minimum_turns === 10 &&
+        firstCallCoverageGuard.status === 'coverage_halt' &&
+        firstCallCoverageGuard.reason === 'first_call_unanalyzed' &&
+        rateCoverageGuard.status === 'coverage_halt' &&
+        rateCoverageGuard.reason === 'unanalyzed_rate_threshold' &&
+        coverageGuardAudit.wired_before_new_job_admission &&
+        coverageGuardAudit.typed_status_wired,
+      coverageGuardAudit,
+    ),
     check(
       'reader_schema_uses_only_supported_provider_keywords',
       allReaderSchemaAudits.every((audit) => audit.provider_keywords_supported === true),
@@ -626,6 +708,8 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
       live_semantic_schema_totality_audits: liveSemanticSchemaAudits,
       live_semantic_local_provider_language_equivalent: liveSchemaLanguageEquivalent,
       fallback_sentinel_leak_paths: sentinelLeakPaths,
+      shared_cli_request_path_audit: sharedRequestPathAudit,
+      representative_runner_coverage_guard_audit: coverageGuardAudit,
     },
   };
   if (passed) validateAdaptiveWarrantSemanticPreflightArtifact({ artifact, expectedSourceCommit: sourceCommit });

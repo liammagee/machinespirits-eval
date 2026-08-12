@@ -11,6 +11,7 @@ import {
 } from '../services/adaptiveWarrantSemanticAnnotation.js';
 import { adaptiveWarrantSemanticSourceHash } from '../services/adaptiveWarrantSemanticEvents.js';
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
+import { dispatchTutorStubCliBridgeRequest } from '../services/tutorStubCliRequest.js';
 import {
   ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_RESULT_SCHEMA,
   adaptiveWarrantSemanticValueSha256,
@@ -316,19 +317,18 @@ export async function runAdaptiveWarrantSemanticSchemaAcceptancePing({
     prohibited_tool_event_count: 0,
   };
   try {
-    const response = await callModel(
-      { provider: 'codex', model: 'gpt-5.6-luna' },
-      'You are a transport-only structured-output schema acceptance ping. Return exactly the supplied schema-bound JSON and do not use tools.',
-      JSON.stringify(readJson(freeze.packet.path)),
-      'adaptive-warrant-semantic-schema-acceptance',
-      {
-        outputSchema: readJson(freeze.response_schema.path),
-        effort,
-        timeoutMs: 600_000,
-        maxStdoutBytes: 256_000,
-        maxStderrBytes: 64_000,
-      },
-    );
+    const response = await dispatchTutorStubCliBridgeRequest(callModel, {
+      resolved: { provider: 'codex', model: 'gpt-5.6-luna' },
+      systemPrompt:
+        'You are a transport-only structured-output schema acceptance ping. Return exactly the supplied schema-bound JSON and do not use tools.',
+      userPrompt: JSON.stringify(readJson(freeze.packet.path)),
+      role: 'adaptive-warrant-semantic-schema-acceptance',
+      outputSchema: readJson(freeze.response_schema.path),
+      effort,
+      timeoutMs: 600_000,
+      maxStdoutBytes: 256_000,
+      maxStderrBytes: 64_000,
+    });
     const parsed = parseTutorStubPublicLearnerAnalysisStrict(String(response.text || '').trim(), {
       includeSemanticEvents: true,
       benchmarkLearnerText: LEARNER_TEXT,

@@ -78,6 +78,53 @@ function transportWith(callAIWithCliBridge, counters, trace) {
 }
 
 describe('tutor-stub prompt transport', () => {
+  it('uses the shared CLI request path for a strict schema and preserves bridge provenance', async () => {
+    const counters = { calls: 0, provider: 0, metered: 0, delays: [] };
+    const trace = [];
+    const schema = { type: 'object', properties: {}, additionalProperties: false };
+    let bridgeRequest = null;
+    const transport = transportWith(async (...args) => {
+      bridgeRequest = args;
+      counters.calls += 1;
+      return {
+        text: '{}',
+        provider: 'codex',
+        model: 'gpt-test',
+        latencyMs: 1,
+        structuredOutput: true,
+        streamEventTypeCounts: { 'turn.completed': 1 },
+        streamItemTypeCounts: { agent_message: 1 },
+        structuredEventAudit: { prohibited_event_count: 0 },
+        prohibitedToolEventCount: 0,
+        modelAttestationBasis: 'explicit_cli_model_argument_accepted_bridge_echo',
+        modelIndependentlyAttested: false,
+      };
+    }, counters, trace);
+
+    const result = await transport.callPromptModel({
+      prompt: 'public prompt',
+      resolved: { provider: 'codex', model: 'gpt-test' },
+      systemPrompt: 'public system',
+      role: 'tutor_stub_learner_analysis',
+      outputSchema: schema,
+      effort: 'low',
+      timeoutMs: 300_000,
+      trace,
+      turn: 1,
+    });
+
+    assert.deepEqual(bridgeRequest[0], { provider: 'codex', model: 'gpt-test' });
+    assert.equal(bridgeRequest[3], 'tutor_stub_learner_analysis');
+    assert.equal(bridgeRequest[4].outputSchema, schema);
+    assert.equal(bridgeRequest[4].effort, 'low');
+    assert.equal(bridgeRequest[4].timeoutMs, 300_000);
+    assert.equal(result.structuredOutput, true);
+    assert.deepEqual(result.streamEventTypeCounts, { 'turn.completed': 1 });
+    assert.deepEqual(result.streamItemTypeCounts, { agent_message: 1 });
+    assert.equal(result.prohibitedToolEventCount, 0);
+    assert.equal(result.modelAttestationBasis, 'explicit_cli_model_argument_accepted_bridge_echo');
+  });
+
   it('delays and freshly meters an individual failed Codex turn before redispatch', async () => {
     const counters = { calls: 0, provider: 0, metered: 0, delays: [] };
     const trace = [];

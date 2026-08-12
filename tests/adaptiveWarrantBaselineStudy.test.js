@@ -27,6 +27,7 @@ import {
   buildAdaptiveWarrantLaunchAuthorizationRequest,
   buildBlindedAnnotationCorpus,
   collectAdaptiveWarrantStudySourceFiles,
+  evaluateAdaptiveWarrantAnalysisCoverageHalt,
   evaluateAdaptiveWarrantDecisionGate,
   isUnhedgedOwnVoiceClaim,
   resolveAdaptiveWarrantStudyStatus,
@@ -39,6 +40,8 @@ import {
   writeStudyArtifacts,
   ADAPTIVE_WARRANT_ANNOTATION_SCHEMA,
   ADAPTIVE_WARRANT_DECISION_GATE,
+  ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_MINIMUM_TURNS,
+  ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_RATE,
   ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC,
   MECHANISM_VALIDATION_CONDITIONS,
   MECHANISM_VALIDATION_PROFILES,
@@ -176,6 +179,41 @@ test('study plan is a paired 3-condition x 3-profile matrix with frozen eight-tu
       }
     }
   }
+});
+
+test('analysis coverage guard halts on the first blind call and at the running ten-percent threshold', () => {
+  assert.equal(ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_RATE, 0.1);
+  assert.equal(ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_MINIMUM_TURNS, 10);
+
+  const firstCall = evaluateAdaptiveWarrantAnalysisCoverageHalt([
+    {
+      learnerAnalysisCallCount: 1,
+      learnerAnalysisUnanalyzedCount: 1,
+      firstLearnerAnalysisStatus: 'unanalyzed',
+    },
+  ]);
+  assert.equal(firstCall.status, 'coverage_halt');
+  assert.equal(firstCall.reason, 'first_call_unanalyzed');
+
+  const belowSupport = evaluateAdaptiveWarrantAnalysisCoverageHalt([
+    {
+      learnerAnalysisCallCount: 9,
+      learnerAnalysisUnanalyzedCount: 1,
+      firstLearnerAnalysisStatus: 'analyzed',
+    },
+  ]);
+  assert.equal(belowSupport.status, 'continue');
+
+  const rateBreach = evaluateAdaptiveWarrantAnalysisCoverageHalt([
+    {
+      learnerAnalysisCallCount: 10,
+      learnerAnalysisUnanalyzedCount: 1,
+      firstLearnerAnalysisStatus: 'analyzed',
+    },
+  ]);
+  assert.equal(rateBreach.status, 'coverage_halt');
+  assert.equal(rateBreach.reason, 'unanalyzed_rate_threshold');
+  assert.equal(rateBreach.unanalyzed_rate, 0.1);
 });
 
 test('live mechanism authorization binds the frozen model destination, private payload scope, and source closure', () => {
@@ -491,7 +529,7 @@ test('mechanism model routing is frozen before authorization', () => {
 });
 
 test('mechanism-validation plan is the frozen two-world, six-profile, observe-active matrix', () => {
-  assert.equal(ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.masterSeed, 504);
+  assert.equal(ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.masterSeed, 505);
   const jobs = buildAdaptiveWarrantBaselineJobs({
     rootDir: '/tmp/warrant-mechanism-study',
     runs: ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC.runs,

@@ -765,8 +765,9 @@ the final diagnostic repair from one clean committed source:
   `counterexample_hunter`, `goalpost_shifter`, and `fast_learner`;
 - conditions: `observe` and `active`;
 - one fresh eight-turn dialogue per world/profile/condition cell;
-- master seed: `504` (`505`, then `506`, reserved prospectively for any
-  separately authorized future rerun);
+- master seed: `505` (`506` reserved prospectively for any separately
+  authorized future rerun; partial seed `504` was burned by relay 017's
+  learner-analysis coverage halt);
 - 24 dialogues and 192 decisions total;
 - the corpus is every decision from all twelve observe dialogues: 96 cases,
   with no balancing, prediction filtering, replacement, or post-hoc selection;

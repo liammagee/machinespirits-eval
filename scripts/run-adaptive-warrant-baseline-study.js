@@ -79,6 +79,8 @@ export const ADAPTIVE_WARRANT_LAUNCH_AUTHORIZATION_REQUEST_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-study-launch-authorization-request.v1';
 export const ADAPTIVE_WARRANT_LAUNCH_AUTHORIZATION_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-study-launch-authorization.v1';
+export const ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_RATE = 0.1;
+export const ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_MINIMUM_TURNS = 10;
 const ADAPTIVE_WARRANT_LAUNCH_CONTRACT_SCHEMA = 'machinespirits.adaptation-refinement.warrant-study-launch-contract.v1';
 const ADAPTIVE_WARRANT_LAUNCH_AUTHORIZATION_FIELDS = Object.freeze([
   'approval_digest',
@@ -225,6 +227,7 @@ export const MECHANISM_VALIDATION_EXCLUDED_CORPORA = Object.freeze([
   '/private/tmp/adaptive-warrant-v3-semantic-diagnostic-225a7b07/annotation-sample.blinded.json',
   '/private/tmp/adaptive-warrant-v3-record-entry-supplement-006-225a7b07/annotation-sample.blinded.json',
   '/private/tmp/adaptive-warrant-v3-matrix-live-36d2e63f/annotation-sample.blinded.json',
+  '/private/tmp/adaptive-warrant-v3-matrix-live-d72931bf-s504/annotation-sample.blinded.json',
 ]);
 const DEFAULT_MODEL = 'codex.gpt-5.6-luna';
 export const ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC = Object.freeze({
@@ -232,7 +235,7 @@ export const ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC = Object.freeze({
   profiles: MECHANISM_VALIDATION_PROFILES,
   conditions: MECHANISM_VALIDATION_CONDITIONS,
   runs: 1,
-  masterSeed: 504,
+  masterSeed: 505,
   horizon: 8,
   models: Object.freeze({
     tutor: DEFAULT_MODEL,
@@ -1516,6 +1519,9 @@ export function summarizeAdaptiveWarrantTrace({ tracePath, job, childStatus = nu
   const learnerAnalysisPromptFailures = events.filter(
     (event) => event.type === 'prompt_audit_failed' && event.role === 'tutor_stub_learner_analysis',
   );
+  const learnerAnalysisUnanalyzed = events.filter((event) => event.type === 'learner_analysis_unanalyzed');
+  const learnerAnalysisUnanalyzedTurns = new Set(learnerAnalysisUnanalyzed.map((event) => Number(event.turn)));
+  const firstLearnerAnalysisTurn = learnerAnalysisCalls.length ? Number(learnerAnalysisCalls[0].turn) : null;
   const promptAuditFailures = events.filter((event) => event.type === 'prompt_audit_failed');
   const promptAuditRecoveries = events.filter((event) => event.type === 'prompt_audit_recovery');
   const successfulLearnerAnalysisTurns = turnRecords.filter(
@@ -1553,6 +1559,13 @@ export function summarizeAdaptiveWarrantTrace({ tracePath, job, childStatus = nu
     tracePath,
     turnCount: turnRecords.length,
     learnerAnalysisCallCount: learnerAnalysisCalls.length,
+    learnerAnalysisUnanalyzedCount: learnerAnalysisUnanalyzed.length,
+    firstLearnerAnalysisStatus:
+      firstLearnerAnalysisTurn === null
+        ? 'missing'
+        : learnerAnalysisUnanalyzedTurns.has(firstLearnerAnalysisTurn)
+          ? 'unanalyzed'
+          : 'analyzed',
     learnerAnalysisPromptFailureCount: learnerAnalysisPromptFailures.length,
     promptAuditFailureCount: promptAuditFailures.length,
     promptAuditRecoveryCount: promptAuditRecoveries.length,
@@ -3489,10 +3502,35 @@ function runJob(job, { logsDir, beforeSpawn = null, cliContract = null }) {
   });
 }
 
-async function runPool(jobs, parallelism, worker, onFinish) {
+export function evaluateAdaptiveWarrantAnalysisCoverageHalt(
+  rows = [],
+  {
+    threshold = ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_RATE,
+    minimumTurns = ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_MINIMUM_TURNS,
+  } = {},
+) {
+  const analysisTurns = rows.reduce((sum, row) => sum + Number(row?.learnerAnalysisCallCount || 0), 0);
+  const unanalyzedTurns = rows.reduce((sum, row) => sum + Number(row?.learnerAnalysisUnanalyzedCount || 0), 0);
+  const unanalyzedRate = analysisTurns ? unanalyzedTurns / analysisTurns : 0;
+  const firstCallUnanalyzed = rows[0]?.firstLearnerAnalysisStatus === 'unanalyzed';
+  const rateBreach = analysisTurns >= minimumTurns && unanalyzedRate >= threshold;
+  return {
+    schema: 'machinespirits.adaptation-refinement.warrant-analysis-coverage-halt.v1',
+    status: firstCallUnanalyzed || rateBreach ? 'coverage_halt' : 'continue',
+    halt: firstCallUnanalyzed || rateBreach,
+    reason: firstCallUnanalyzed ? 'first_call_unanalyzed' : rateBreach ? 'unanalyzed_rate_threshold' : null,
+    analysis_turns: analysisTurns,
+    unanalyzed_turns: unanalyzedTurns,
+    unanalyzed_rate: Number(unanalyzedRate.toFixed(6)),
+    threshold,
+    minimum_turns: minimumTurns,
+  };
+}
+
+async function runPool(jobs, parallelism, worker, onFinish, shouldContinue = () => true) {
   let cursor = 0;
   const runners = Array.from({ length: Math.min(parallelism, jobs.length) }, async () => {
-    while (cursor < jobs.length) {
+    while (cursor < jobs.length && shouldContinue()) {
       const index = cursor;
       cursor += 1;
       const job = jobs[index];
@@ -3696,7 +3734,7 @@ export function buildAdaptiveWarrantStudyExecutionEvidence(rows = []) {
   };
 }
 
-export function writeStudyArtifacts({ rootDir, plan, rows, status }) {
+export function writeStudyArtifacts({ rootDir, plan, rows, status, coverageHalt = null }) {
   const axes = planAxes(plan);
   const mechanismValidation = plan.config.mechanismValidation === true;
   const annotationConditions = mechanismValidation
@@ -3803,6 +3841,7 @@ export function writeStudyArtifacts({ rootDir, plan, rows, status }) {
     schema: ADAPTIVE_WARRANT_BASELINE_STUDY_SCHEMA,
     studyId: plan.studyId,
     status,
+    coverageHalt,
     updatedAt: new Date().toISOString(),
     plan,
     analysisProvenance,
@@ -4365,7 +4404,7 @@ function printHelp() {
 
 Options:
   --runs <1|5|10>           n per cell (1 with validation modes)
-  --master-seed <n>         first paired seed (504 mechanism; 301 contract; otherwise 101)
+  --master-seed <n>         first paired seed (505 mechanism; 301 contract; otherwise 101)
   --parallelism <n>         concurrent dialogues (default: 6)
   --root <path>             output root (default: ignored timestamped directory)
   --model <ref>             speaking tutor model (default: codex.gpt-5.6-luna)
@@ -4830,6 +4869,7 @@ async function main() {
   }
   const pending = jobs.filter((job) => !rowsById.has(job.id));
   let completed = rowsById.size;
+  let coverageHalt = null;
   await runPool(
     pending,
     parallelism,
@@ -4850,22 +4890,36 @@ async function main() {
       console.log(
         `[warrant-study] ${completed}/${jobs.length} ${job.id}: ${row.childStatus} ${row.turnCount || 0} turns`,
       );
+      if (plan.config.mechanismValidation === true && !plan.config.dryRun) {
+        const completedRows = jobs.map((candidate) => rowsById.get(candidate.id)).filter(Boolean);
+        const guard = evaluateAdaptiveWarrantAnalysisCoverageHalt(completedRows);
+        if (guard.halt) {
+          coverageHalt = guard;
+          console.error(
+            `[warrant-study] coverage halt: ${guard.reason}; ${guard.unanalyzed_turns}/${guard.analysis_turns} unanalyzed`,
+          );
+        }
+      }
       writeStudyArtifacts({
         rootDir,
         plan,
         rows: jobs.map((candidate) => rowsById.get(candidate.id)).filter(Boolean),
-        status: 'running',
+        status: coverageHalt ? 'coverage_halt' : 'running',
+        coverageHalt,
       });
     },
+    () => coverageHalt === null,
   );
   const rows = jobs.map((job) => rowsById.get(job.id)).filter(Boolean);
-  const status = resolveAdaptiveWarrantStudyStatus(rows, jobs, {
-    dryRun: values['dry-run'],
-    horizon: plan.config.horizon,
-    requireStructuredParity: plan.config.mechanismValidation === true,
-    requireDeliveryApplication: plan.config.mechanismValidation === true,
-  });
-  const study = writeStudyArtifacts({ rootDir, plan, rows, status });
+  const status = coverageHalt
+    ? 'coverage_halt'
+    : resolveAdaptiveWarrantStudyStatus(rows, jobs, {
+        dryRun: values['dry-run'],
+        horizon: plan.config.horizon,
+        requireStructuredParity: plan.config.mechanismValidation === true,
+        requireDeliveryApplication: plan.config.mechanismValidation === true,
+      });
+  const study = writeStudyArtifacts({ rootDir, plan, rows, status, coverageHalt });
   console.log(`[warrant-study] report ${path.join(rootDir, 'study-results.md')}`);
   console.log(`[warrant-study] status=${study.status}`);
   if (!['complete', 'dry_run'].includes(status)) process.exitCode = 1;

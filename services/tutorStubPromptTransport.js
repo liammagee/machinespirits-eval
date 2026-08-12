@@ -1,3 +1,5 @@
+import { dispatchTutorStubCliBridgeRequest } from './tutorStubCliRequest.js';
+
 export function createTutorStubPromptTransport(dependencies) {
   const {
     C,
@@ -35,6 +37,11 @@ export function createTutorStubPromptTransport(dependencies) {
     trace = null,
     stream = null,
     cliEffort = null,
+    effort = null,
+    outputSchema = null,
+    timeoutMs = null,
+    maxStdoutBytes = null,
+    maxStderrBytes = null,
     turn = null,
     signal = null,
     historyTurns = null,
@@ -187,13 +194,20 @@ export function createTutorStubPromptTransport(dependencies) {
                 if (phase) active.phase = `${active.basePhase || active.phase} · ${phase}`;
               }
             : null;
-        const result = await callAIWithCliBridge(
-          { provider: resolved.provider, model: resolved.model },
+        const result = await dispatchTutorStubCliBridgeRequest(callAIWithCliBridge, {
+          resolved,
           systemPrompt,
-          prompt,
+          userPrompt: prompt,
           role,
-          { messageHistory: publicMessageHistory, effort: cliEffort, onEvent, signal },
-        );
+          messageHistory: publicMessageHistory,
+          effort: effort || cliEffort,
+          onEvent,
+          signal,
+          outputSchema,
+          timeoutMs,
+          maxStdoutBytes,
+          maxStderrBytes,
+        });
         response = {
           text: result.text,
           provider: result.provider,
@@ -211,6 +225,13 @@ export function createTutorStubPromptTransport(dependencies) {
           streamedEvents: result.streamedEvents || 0,
           invalidStreamLines: result.invalidStreamLines || 0,
           outputSource: result.outputSource || null,
+          structuredOutput: result.structuredOutput === true,
+          streamEventTypeCounts: result.streamEventTypeCounts || {},
+          streamItemTypeCounts: result.streamItemTypeCounts || {},
+          structuredEventAudit: result.structuredEventAudit || null,
+          prohibitedToolEventCount: Number(result.prohibitedToolEventCount || 0),
+          modelAttestationBasis: result.modelAttestationBasis || null,
+          modelIndependentlyAttested: result.modelIndependentlyAttested === true,
         };
       } else if (shouldStream) {
         const temperature = effectiveTemperatureForModel(resolved, 0.1);
@@ -335,6 +356,11 @@ export function createTutorStubPromptTransport(dependencies) {
           trace,
           stream,
           cliEffort,
+          effort,
+          outputSchema,
+          timeoutMs,
+          maxStdoutBytes,
+          maxStderrBytes,
           turn,
           signal,
           historyTurns,
