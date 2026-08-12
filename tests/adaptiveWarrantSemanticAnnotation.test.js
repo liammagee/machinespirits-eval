@@ -27,6 +27,7 @@ import { runAdaptiveWarrantSemanticBrittlenessPreflight } from '../scripts/run-a
 import { buildAdaptiveWarrantSemanticSmokeCorpus } from '../scripts/run-adaptive-warrant-semantic-schema-smoke.js';
 import { buildAdaptiveWarrantSemanticSchemaAcceptanceCorpus } from '../scripts/run-adaptive-warrant-semantic-schema-acceptance-ping.js';
 import {
+  ADAPTIVE_WARRANT_LIVE_SEMANTIC_SEAT_PING_SCHEMA,
   ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_RESULT_SCHEMA,
   validateAdaptiveWarrantSemanticPreflightArtifact,
   validateAdaptiveWarrantSemanticSchemaAcceptanceResult,
@@ -758,5 +759,21 @@ test('the one-call schema-acceptance ping is synthetic, excluded, and stale resu
         expectedPreflightSha256: '0'.repeat(64),
       }),
     /did not pass or is stale/u,
+  );
+
+  const upgradedSeatArtifact = {
+    ...artifact,
+    schema: ADAPTIVE_WARRANT_LIVE_SEMANTIC_SEAT_PING_SCHEMA,
+    model: 'claude-code.claude-sonnet-5',
+    destination: { provider: 'claude-code', model: 'claude-sonnet-5' },
+    structured_output: true,
+  };
+  assert.deepEqual(
+    validateAdaptiveWarrantSemanticSchemaAcceptanceResult({
+      artifact: upgradedSeatArtifact,
+      expectedSourceCommit: sourceCommit,
+      expectedPreflightSha256: preflightSha256,
+    }),
+    { ok: true },
   );
 });

@@ -7,6 +7,10 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
+import {
+  ADAPTIVE_WARRANT_LIVE_SEMANTIC_SEAT_PING_SCHEMA,
+  validateAdaptiveWarrantSemanticPreflightArtifact,
+} from '../services/adaptiveWarrantSemanticPreflight.js';
 import { dispatchTutorStubCliBridgeRequest } from '../services/tutorStubCliRequest.js';
 import {
   TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_SYSTEM_PROMPT,
@@ -17,8 +21,6 @@ import {
 
 export const ADAPTIVE_WARRANT_LIVE_SEMANTIC_SEAT_PROBE_SCHEMA =
   'machinespirits.adaptation-refinement.live-semantic-seat-diagnostic-probe.v1';
-export const ADAPTIVE_WARRANT_LIVE_SEMANTIC_SEAT_PING_SCHEMA =
-  'machinespirits.adaptation-refinement.live-semantic-seat-acceptance-ping.v1';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const DEFAULT_SOURCE_ROOT = '/private/tmp/adaptive-warrant-v3-matrix-live-a4529e79-s505';
@@ -39,6 +41,10 @@ function fileSha256(filePath) {
 function writeJson(filePath, value) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function readJson(filePath) {
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
 function cleanSource() {
@@ -383,12 +389,18 @@ function acceptancePingTemplate() {
 
 export async function runAdaptiveWarrantLiveSemanticSeatAcceptancePing({
   outputDir,
+  preflightPath,
   modelRef = 'claude-code.claude-sonnet-5',
   approvedBy,
   callModel = callAIWithCliBridge,
 } = {}) {
   const sourceCommit = cleanSource();
   if (!approvedBy?.trim()) throw new Error('analysis-seat ping requires the standing authorization reference');
+  const resolvedPreflight = path.resolve(preflightPath);
+  validateAdaptiveWarrantSemanticPreflightArtifact({
+    artifact: readJson(resolvedPreflight),
+    expectedSourceCommit: sourceCommit,
+  });
   const destination = modelDestination(modelRef);
   if (destination.provider !== 'claude-code') throw new Error('upgrade ping is reserved for the Claude analysis seat');
   const resolvedOutput = path.resolve(outputDir);
@@ -428,11 +440,14 @@ export async function runAdaptiveWarrantLiveSemanticSeatAcceptancePing({
     status: 'passed',
     generated_at: new Date().toISOString(),
     inferential_role: 'transport_only_permanently_excluded',
+    synthetic_case_permanently_excluded: true,
     source_commit: sourceCommit,
+    preflight: { path: resolvedPreflight, sha256: fileSha256(resolvedPreflight) },
     approved_by: approvedBy,
     model: modelRef,
     destination,
     calls: { attempted: 1, completed: 1, maximum: 1 },
+    response_received: true,
     structured_output: true,
     prohibited_tool_event_count: 0,
     raw_response_sha256: sha256(rawText),
@@ -452,6 +467,7 @@ async function main() {
       model: { type: 'string' },
       concurrency: { type: 'string' },
       'approved-by': { type: 'string' },
+      preflight: { type: 'string' },
       'expected-source-sha': { type: 'string' },
       'expected-source-closure': { type: 'string' },
       help: { type: 'boolean', short: 'h' },
@@ -459,7 +475,7 @@ async function main() {
     strict: true,
   });
   const usage =
-    'Usage:\n  node scripts/probe-adaptive-warrant-live-semantic-seat.js probe --out <empty-dir> --model <codex.gpt-5.6-luna|claude-code.claude-sonnet-5> --approved-by <standing-direction> [--root <seed505-root>] [--concurrency 4]\n  node scripts/probe-adaptive-warrant-live-semantic-seat.js ping --out <empty-dir> --model claude-code.claude-sonnet-5 --approved-by <standing-direction>\n';
+    'Usage:\n  node scripts/probe-adaptive-warrant-live-semantic-seat.js probe --out <empty-dir> --model <codex.gpt-5.6-luna|claude-code.claude-sonnet-5> --approved-by <standing-direction> [--root <seed505-root>] [--concurrency 4]\n  node scripts/probe-adaptive-warrant-live-semantic-seat.js ping --out <empty-dir> --preflight <passing-artifact> --model claude-code.claude-sonnet-5 --approved-by <standing-direction>\n';
   if (values.help || !command) {
     process.stdout.write(usage);
     return;
@@ -479,8 +495,10 @@ async function main() {
     return;
   }
   if (command === 'ping') {
+    if (!values.preflight) throw new Error(usage.trim());
     const result = await runAdaptiveWarrantLiveSemanticSeatAcceptancePing({
       outputDir: values.out,
+      preflightPath: values.preflight,
       modelRef: values.model,
       approvedBy: values['approved-by'],
     });

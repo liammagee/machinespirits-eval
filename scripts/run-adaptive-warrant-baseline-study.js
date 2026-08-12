@@ -230,6 +230,7 @@ export const MECHANISM_VALIDATION_EXCLUDED_CORPORA = Object.freeze([
   '/private/tmp/adaptive-warrant-v3-matrix-live-d72931bf-s504/annotation-sample.blinded.json',
 ]);
 const DEFAULT_MODEL = 'codex.gpt-5.6-luna';
+const DEFAULT_ANALYSIS_MODEL = 'claude-code.claude-sonnet-5';
 export const ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC = Object.freeze({
   worlds: MECHANISM_VALIDATION_WORLDS,
   profiles: MECHANISM_VALIDATION_PROFILES,
@@ -239,7 +240,7 @@ export const ADAPTIVE_WARRANT_MECHANISM_VALIDATION_SPEC = Object.freeze({
   horizon: 8,
   models: Object.freeze({
     tutor: DEFAULT_MODEL,
-    learner_analysis: DEFAULT_MODEL,
+    learner_analysis: DEFAULT_ANALYSIS_MODEL,
     automated_learner: DEFAULT_MODEL,
   }),
   annotationConditions: Object.freeze(['instrumented']),
@@ -762,7 +763,7 @@ export function assertAdaptiveWarrantMechanismModelRefs({ model, analysisModel, 
   const mismatches = Object.entries(observed).filter(([role, value]) => value !== expected[role]);
   if (mismatches.length) {
     throw new Error(
-      `--mechanism-validation requires ${DEFAULT_MODEL} for tutor, learner analysis, and learner roles; mismatched ${mismatches.map(([role]) => role).join(', ')}`,
+      `--mechanism-validation requires ${DEFAULT_MODEL} for tutor/learner and ${DEFAULT_ANALYSIS_MODEL} for learner analysis; mismatched ${mismatches.map(([role]) => role).join(', ')}`,
     );
   }
   return observed;
@@ -813,7 +814,7 @@ export function buildAdaptiveWarrantBaselineJobs({
   runs = 5,
   masterSeed = 101,
   model = DEFAULT_MODEL,
-  analysisModel = DEFAULT_MODEL,
+  analysisModel = DEFAULT_ANALYSIS_MODEL,
   learnerModel = DEFAULT_MODEL,
   world = 'world_005_marrick',
   worlds = null,
@@ -4409,7 +4410,7 @@ Options:
   --parallelism <n>         concurrent dialogues (default: 6)
   --root <path>             output root (default: ignored timestamped directory)
   --model <ref>             speaking tutor model (default: codex.gpt-5.6-luna)
-  --analysis-model <ref>    classifier and learner-record model (default: same)
+  --analysis-model <ref>    classifier and learner-record model (mechanism default: claude-code.claude-sonnet-5)
   --learner-model <ref>     automated learner model (default: same)
   --dry-run                 execute every child auto-eval in dry-run mode
   --launch-approved         required for model-backed execution
@@ -4442,7 +4443,7 @@ async function main() {
       parallelism: { type: 'string', default: '6' },
       root: { type: 'string' },
       model: { type: 'string', default: DEFAULT_MODEL },
-      'analysis-model': { type: 'string', default: DEFAULT_MODEL },
+      'analysis-model': { type: 'string', default: DEFAULT_ANALYSIS_MODEL },
       'learner-model': { type: 'string', default: DEFAULT_MODEL },
       'max-tokens': { type: 'string', default: '4096' },
       'history-turns': { type: 'string', default: '4' },
@@ -4752,7 +4753,7 @@ async function main() {
         'no stop on grounded closure',
         'no light adaptation',
         'no DAG fact dropout',
-        'same model routing',
+        'prospective mixed-model routing: Luna tutor and learner, Sonnet learner analysis',
         'handbook_v1 learner-analysis prompt profile',
         'same seed within profile x session index',
         ...(mechanismValidation

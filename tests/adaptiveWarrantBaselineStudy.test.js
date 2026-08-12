@@ -253,7 +253,7 @@ test('live mechanism authorization binds the frozen model destination, private p
         profiles: MECHANISM_VALIDATION_PROFILES,
         conditions: MECHANISM_VALIDATION_CONDITIONS,
         model: 'codex.gpt-5.6-luna',
-        analysisModel: 'codex.gpt-5.6-luna',
+        analysisModel: 'claude-code.claude-sonnet-5',
         learnerModel: 'codex.gpt-5.6-luna',
         maxTokens: 4096,
         historyTurns: 4,
@@ -265,7 +265,7 @@ test('live mechanism authorization binds the frozen model destination, private p
         annotationConditions: ['instrumented'],
         excludedAnnotationCorpora: [excludedCorpusPath],
         learnerAnalysisPromptProfile: 'handbook_v1',
-        fixedSeams: ['same model routing'],
+        fixedSeams: ['prospective mixed-model routing: Luna tutor and learner, Sonnet learner analysis'],
         dryRun: true,
       },
       jobs,
@@ -273,7 +273,10 @@ test('live mechanism authorization binds the frozen model destination, private p
     const request = buildAdaptiveWarrantLaunchAuthorizationRequest(plan);
     assert.equal(request.contract.execution.dialogues, 24);
     assert.equal(request.contract.execution.maximum_tutor_decisions, 192);
-    assert.deepEqual(request.contract.authorized_destinations, ['OpenAI Codex CLI (ChatGPT-account route)']);
+    assert.deepEqual(request.contract.authorized_destinations, [
+      'Anthropic Claude Code CLI',
+      'OpenAI Codex CLI (ChatGPT-account route)',
+    ]);
     assert.equal(request.contract.annotation.excluded_prior_corpora[0].sha256.length, 64);
     assert.equal(request.contract.private_payload_scope_sha256.length, 64);
     assert.equal(request.approvable, true);
@@ -508,12 +511,12 @@ test('mechanism model routing is frozen before authorization', () => {
   assert.deepEqual(
     assertAdaptiveWarrantMechanismModelRefs({
       model: 'codex.gpt-5.6-luna',
-      analysisModel: 'codex.gpt-5.6-luna',
+      analysisModel: 'claude-code.claude-sonnet-5',
       learnerModel: 'codex.gpt-5.6-luna',
     }),
     {
       tutor: 'codex.gpt-5.6-luna',
-      learner_analysis: 'codex.gpt-5.6-luna',
+      learner_analysis: 'claude-code.claude-sonnet-5',
       automated_learner: 'codex.gpt-5.6-luna',
     },
   );

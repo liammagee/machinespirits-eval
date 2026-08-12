@@ -12,6 +12,8 @@ export const ADAPTIVE_WARRANT_SEMANTIC_PREFLIGHT_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-brittleness-preflight.v1';
 export const ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_RESULT_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-schema-acceptance-result.v1';
+export const ADAPTIVE_WARRANT_LIVE_SEMANTIC_SEAT_PING_SCHEMA =
+  'machinespirits.adaptation-refinement.live-semantic-seat-acceptance-ping.v1';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const FINGERPRINT_FILES = Object.freeze({
@@ -90,9 +92,13 @@ export function validateAdaptiveWarrantSemanticSchemaAcceptanceResult({
   expectedSourceCommit,
   expectedPreflightSha256,
 } = {}) {
-  if (!artifact || artifact.schema !== ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_RESULT_SCHEMA) {
+  const recognizedSchema =
+    artifact?.schema === ADAPTIVE_WARRANT_SEMANTIC_SCHEMA_ACCEPTANCE_RESULT_SCHEMA ||
+    artifact?.schema === ADAPTIVE_WARRANT_LIVE_SEMANTIC_SEAT_PING_SCHEMA;
+  if (!recognizedSchema) {
     throw new Error('semantic schema-acceptance result schema mismatch');
   }
+  const upgradedSeatPing = artifact.schema === ADAPTIVE_WARRANT_LIVE_SEMANTIC_SEAT_PING_SCHEMA;
   if (
     artifact.status !== 'passed' ||
     artifact.inferential_role !== 'transport_only_permanently_excluded' ||
@@ -103,7 +109,11 @@ export function validateAdaptiveWarrantSemanticSchemaAcceptanceResult({
     artifact.calls?.completed !== 1 ||
     artifact.calls?.maximum !== 1 ||
     artifact.prohibited_tool_event_count !== 0 ||
-    artifact.preflight?.sha256 !== expectedPreflightSha256
+    artifact.preflight?.sha256 !== expectedPreflightSha256 ||
+    (upgradedSeatPing &&
+      (artifact.model !== 'claude-code.claude-sonnet-5' ||
+        artifact.destination?.provider !== 'claude-code' ||
+        artifact.structured_output !== true))
   ) {
     throw new Error('semantic schema-acceptance ping did not pass or is stale');
   }
