@@ -179,7 +179,7 @@ function writeJson(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
-export function validateReviewerAuthorizedRetakeResponse({
+export function validateAdaptiveWarrantReaderResponseContract({
   response,
   collectionManifest,
   reader,
@@ -188,7 +188,7 @@ export function validateReviewerAuthorizedRetakeResponse({
 } = {}) {
   const sampleId = batch.required_sample_ids?.[0];
   if (!sampleId || batch.required_sample_ids.length !== 1) {
-    throw new Error(`${batch.batch_id} reviewer-authorized re-take requires a one-case batch`);
+    throw new Error(`${batch.batch_id} full deterministic response validation requires a one-case batch`);
   }
   const corpus = readJson(collectionManifest.corpus.path);
   const corpusCase = corpus.cases.find((row) => row.sample_id === sampleId);
@@ -218,6 +218,10 @@ export function validateReviewerAuthorizedRetakeResponse({
     fs.rmSync(temporaryRoot, { recursive: true, force: true });
   }
   return { status: 'passed', sample_id: sampleId };
+}
+
+export function validateReviewerAuthorizedRetakeResponse(options = {}) {
+  return validateAdaptiveWarrantReaderResponseContract(options);
 }
 
 export function quarantineReviewerAuthorizedRetakeResponse({

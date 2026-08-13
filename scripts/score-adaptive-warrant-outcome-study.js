@@ -477,6 +477,88 @@ export function assessOutcomePilotSaturation({ dialogueScores = [], presenceScor
   };
 }
 
+function generationTimeSemanticEvents(row) {
+  return (
+    row?.gate?.semantic_event_extraction?.events ||
+    row?.shadow?.semantic_event_extraction?.events ||
+    row?.semantic_event_extraction?.events ||
+    []
+  );
+}
+
+export function describeOutcomeMeasures7And8FromStoredEvents(cases = []) {
+  const rows = cases.map((row) => {
+    const acts = new Set(generationTimeSemanticEvents(row).map((event) => event?.speech_act).filter(Boolean));
+    return {
+      sample_id: row.sample_id,
+      dialogue_id: row.job_id ?? row.dialogue_id ?? null,
+      turn: Number(row.turn),
+      condition: row.condition,
+      measure_7_result_request: acts.has('tutor_directed_public_result_request'),
+      measure_8_proposed_test: acts.has('learner_proposed_test'),
+    };
+  });
+  const conditions = [...new Set(rows.map((row) => row.condition))].sort();
+  const summarize = (conditionRows, field) => {
+    const present = conditionRows.filter((row) => row[field]).length;
+    return { present, total: conditionRows.length, rate: ratio(present, conditionRows.length) };
+  };
+  return {
+    inferential_role: 'report_only',
+    validation_label: 'not reader-validated',
+    source: 'stored_generation_time_semantic_events',
+    zero_model_calls: true,
+    total_cases: rows.length,
+    measure_7_result_requests: {
+      overall: summarize(rows, 'measure_7_result_request'),
+      by_condition: Object.fromEntries(
+        conditions.map((condition) => [
+          condition,
+          summarize(
+            rows.filter((row) => row.condition === condition),
+            'measure_7_result_request',
+          ),
+        ]),
+      ),
+    },
+    measure_8_proposed_tests: {
+      overall: summarize(rows, 'measure_8_proposed_test'),
+      by_condition: Object.fromEntries(
+        conditions.map((condition) => [
+          condition,
+          summarize(
+            rows.filter((row) => row.condition === condition),
+            'measure_8_proposed_test',
+          ),
+        ]),
+      ),
+    },
+    cases: rows,
+  };
+}
+
+export function scoreAdaptiveWarrantOutcomeMainBlock(input = {}) {
+  const decisionPreflight = preflightOutcomeDecisionReader(input.decision_reader_preflight);
+  if (decisionPreflight.status !== 'passed') throw new Error('decision-reader instrument digest preflight failed');
+  const dialogueScores = (input.dialogues || []).map(scoreOutcomeDialogue);
+  const decisionScore = scoreOutcomeDecisionCases(
+    input.decision_cases || [],
+    input.decision_reader_run_record_path,
+  );
+  const descriptive = describeOutcomeMeasures7And8FromStoredEvents(input.generation_time_cases || []);
+  return {
+    schema: 'machinespirits.adaptation-refinement.warrant-outcome-main-block-score.v1',
+    zero_model_calls: true,
+    conditions_scored: [...new Set(dialogueScores.map((row) => row.condition))].sort(),
+    reader_output_form: OUTCOME_STUDY_READER_OUTPUT_FORM,
+    channels_fielded: { decision: true, presence: false },
+    decision_reader_preflight: decisionPreflight,
+    measure_1_decision_correctness: decisionScore,
+    dialogue_measures_2_6: dialogueScores,
+    descriptive_measures_7_8: descriptive,
+  };
+}
+
 export function scoreAdaptiveWarrantOutcomeStudy(input = {}) {
   const preflight = preflightOutcomePresenceChannel(input.presence_preflight);
   if (preflight.status !== 'passed') throw new Error('presence-channel digest preflight failed');

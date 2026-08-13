@@ -1,0 +1,81 @@
+{
+  "schema": "machinespirits.adaptation-refinement.warrant-outcome-main-block-manifest.v1",
+  "status": "prepared_hold_for_reviewer_go_097a",
+  "zero_model_calls": true,
+  "authority": {
+    "registration": "docs/adaptation-refinement/relay/096-reviewer-reregistration-outcome-main-block.md",
+    "seed_amendment": "docs/adaptation-refinement/relay/096a-reviewer-amendment-main-block-seeds.md",
+    "direction": "docs/adaptation-refinement/relay/097-reviewer-direction-main-block-build.md"
+  },
+  "inherited_pilot_bindings": {
+    "path": "docs/adaptation-refinement/outcome-study-a1/pilot-manifest.json",
+    "sha256": "0393f629ff142b20cb6f02773b868950b75bdca5fd715535dff2d02208910c63",
+    "scope": "unchanged worlds, permission-seeking persona, standing-permission menu, source pins, and frozen reader instrument"
+  },
+  "worlds": [
+    {
+      "id": "world_101_kestrel_signal_lamp",
+      "path": "docs/adaptation-refinement/outcome-study-a1/worlds/world_101_kestrel_signal_lamp.yaml",
+      "sha256": "6f436cc7293cebd4970b9737b17984e0db7259bcdbff646f723e645b5cb5af10"
+    },
+    {
+      "id": "world_102_marigold_archive_box",
+      "path": "docs/adaptation-refinement/outcome-study-a1/worlds/world_102_marigold_archive_box.yaml",
+      "sha256": "33ef86c9d65eb25f7d140f9c7cc07fc5a3afd3c9ba07cdc721139235402e3c18"
+    }
+  ],
+  "seeds": [524, 525, 526, 527, 528, 529, 530, 531, 532, 533, 534, 535],
+  "conditions": ["bare", "gated", "standing_permission"],
+  "assignment": {
+    "rule": "For every seed, run every condition once in each world; order is deterministically interleaved by seed and world.",
+    "dialogues": 72,
+    "dialogues_per_condition": 24,
+    "dialogues_per_seed": 6,
+    "turns_per_dialogue": 8,
+    "learner_profile": "low_agency"
+  },
+  "case_extraction": {
+    "rule": "Extract one decision-turn case for every completed turn in each fixed eight-turn dialogue.",
+    "expected_case_count": 576,
+    "post_generation_annotation_case_fingerprint_guard_required": true
+  },
+  "channels": {
+    "decision": {
+      "enabled": true,
+      "readers": ["decision-reader-a", "decision-reader-b"],
+      "batch_size": 1,
+      "planned_calls": 1152,
+      "failed_attempt_allowance": 48,
+      "child_internal_allowance": 12,
+      "authorization_maximum_calls": 1188,
+      "absolute_attempt_ceiling": 1200,
+      "digests": {
+        "handbook_sha256": "5673c14b8f2a2b17c599e947c87f6d03c10df6dcdbeadcb257d882f008902003",
+        "preparation_and_assembly_sha256": "332447730054e13f02d6d8af0d5c4a58130254e08abf838b87237df62d14fb95",
+        "reader_runner_sha256": "c0a201300a66e32919d22aaac42e431f32bd1df595b582f7762928a148c2e6ad"
+      },
+      "acceptance": "Every response must pass the full deterministic assembly contract before it is admitted to the main-block score."
+    },
+    "presence": {
+      "enabled": false,
+      "reason": "Measures 7 and 8 are report-only and computed from stored generation-time semantic events."
+    }
+  },
+  "measures_7_8": {
+    "inferential_role": "report_only",
+    "validation_label": "not reader-validated",
+    "source": "stored_generation_time_semantic_events"
+  },
+  "planned_calls": {
+    "generation_expected": 2000,
+    "generation_cap": 2160,
+    "decision_readers": 1152,
+    "failed_attempt_allowance": 48,
+    "approximate_total": 3200,
+    "absolute_cap_total": 3360,
+    "counter_before": 5274,
+    "ceiling": 19337
+  },
+  "launch_authorized": false,
+  "hold": "No generation or reader call may run until committed reviewer note 097a names this entry point and exact scope."
+}

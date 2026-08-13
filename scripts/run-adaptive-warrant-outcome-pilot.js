@@ -489,11 +489,11 @@ export function createOutcomePilotBudget({ checkpointPath, checkpoint = null } =
   return { state, reserve, reserveMany, persist };
 }
 
-function outcomeDialogueId(row) {
-  return `outcome-pilot-${String(row.order).padStart(2, '0')}-${row.world}-s${row.seed}-${row.condition}`;
+function outcomeDialogueId(row, studyLabel = 'outcome-pilot') {
+  return `${studyLabel}-${String(row.order).padStart(2, '0')}-${row.world}-s${row.seed}-${row.condition}`;
 }
 
-export function buildOutcomePilotJobs({ manifest, rootDir, dryRun = false } = {}) {
+export function buildOutcomePilotJobs({ manifest, rootDir, dryRun = false, studyLabel = 'outcome-pilot' } = {}) {
   const worlds = new Map(manifest.worlds.map((world) => [world.id, world.path]));
   const configurations = new Map(
     OUTCOME_STUDY_RUN_CONFIGURATIONS.map((configuration) => [configuration.id, configuration]),
@@ -502,7 +502,7 @@ export function buildOutcomePilotJobs({ manifest, rootDir, dryRun = false } = {}
     const configuration = configurations.get(assignment.condition);
     const worldPath = worlds.get(assignment.world);
     if (!configuration || !worldPath) throw new Error(`manifest assignment ${assignment.order} is unresolved`);
-    const id = outcomeDialogueId(assignment);
+    const id = outcomeDialogueId(assignment, studyLabel);
     const jobDir = path.join(rootDir, 'dialogues', id);
     const command = [
       process.execPath,
@@ -987,14 +987,14 @@ export async function runOutcomeGeneration({
   return checkpoint.dialogues;
 }
 
-function prepareOutcomeCases({ rows, manifest, rootDir }) {
+export function prepareOutcomeCases({ rows, manifest, rootDir, samplingSeed = 'outcome-pilot-frozen-order' }) {
   const conditions = OUTCOME_STUDY_RUN_CONFIGURATIONS.map((configuration) => ({
     id: configuration.id,
     warrantGateMode: configuration.warrant_gate_mode,
   }));
   const built = buildBlindedAnnotationCorpus(rows, {
     studyId: path.basename(rootDir),
-    samplingSeed: 'outcome-pilot-frozen-order',
+    samplingSeed,
     profiles: ['low_agency'],
     conditions,
     worlds: manifest.worlds.map((world) => world.id),
@@ -1007,7 +1007,7 @@ function prepareOutcomeCases({ rows, manifest, rootDir }) {
   return built;
 }
 
-function writeOutcomeCorpusArtifacts({ rootDir, built }) {
+export function writeOutcomeCorpusArtifacts({ rootDir, built }) {
   const corpusPath = path.join(rootDir, 'annotation-sample.blinded.json');
   const keyPath = path.join(rootDir, 'annotation-key.private.json');
   atomicWriteJson(corpusPath, built.corpus);

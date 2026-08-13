@@ -28,6 +28,19 @@ import {
   verifyOutcomePilotReaderResumeArtifacts,
   writeOutcomePilotAssemblyRunView,
 } from '../scripts/run-adaptive-warrant-outcome-pilot.js';
+import {
+  OUTCOME_MAIN_BLOCK_ABSOLUTE_READER_ATTEMPT_CEILING,
+  OUTCOME_MAIN_BLOCK_AUTHORIZATION_MAXIMUM_CALLS,
+  OUTCOME_MAIN_BLOCK_CASES,
+  OUTCOME_MAIN_BLOCK_DECISION_CALLS,
+  OUTCOME_MAIN_BLOCK_SEEDS,
+  auditOutcomeMainBlockSeedFreshness,
+  buildOutcomeMainBlockAssignments,
+  guardOutcomeMainBlockDecisionCollection,
+  guardOutcomeMainBlockStudyPlan,
+  runAfterOutcomeMainBlockAllowanceGuard,
+  verifyOutcomeMainBlockManifest,
+} from '../scripts/run-adaptive-warrant-outcome-main-block.js';
 import { annotationCaseFingerprint } from '../scripts/run-adaptive-warrant-baseline-study.js';
 import {
   ADAPTIVE_WARRANT_ANNOTATION_BATCH_RESPONSE_SCHEMA,
@@ -43,6 +56,8 @@ import { runAdaptiveWarrantSemanticBrittlenessPreflight } from '../scripts/run-a
 import { runAdaptiveWarrantDecisionReaders } from '../scripts/run-adaptive-warrant-decision-readers.js';
 import { runAdaptiveWarrantSemanticReaders } from '../scripts/run-adaptive-warrant-semantic-readers.js';
 import { ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA } from '../services/adaptiveWarrantSemanticAnnotation.js';
+import { validateAdaptiveWarrantReaderResponseContract } from '../services/adaptiveWarrantReaderRetake.js';
+import { describeOutcomeMeasures7And8FromStoredEvents } from '../scripts/score-adaptive-warrant-outcome-study.js';
 import { auditTutorStubPrompt, TUTOR_STUB_PROMPT_BUDGETS } from '../services/tutorStubPromptAudit.js';
 import { auditTutorStubBaseSystemPrompt } from '../services/tutorStubSessionApplicationContext.js';
 
@@ -359,6 +374,125 @@ function validChildReaderResponse(fixture, prompt) {
     prohibitedToolEventCount: 0,
   };
 }
+
+test('main-block study plan freezes 72 dialogues, 24 per condition, and amended seeds 524-535', () => {
+  const guarded = verifyOutcomeMainBlockManifest();
+  assert.deepEqual(guarded.manifest.seeds, OUTCOME_MAIN_BLOCK_SEEDS);
+  assert.equal(guarded.manifest.channels.presence.enabled, false);
+  assert.equal(guarded.manifest.channels.decision.enabled, true);
+  const assignments = buildOutcomeMainBlockAssignments({ seeds: guarded.manifest.seeds });
+  const plan = guardOutcomeMainBlockStudyPlan({ manifest: guarded.manifest, assignments });
+  assert.equal(plan.status, 'passed');
+  assert.equal(plan.counts.dialogues, 72);
+  assert.deepEqual(plan.counts.by_condition, { bare: 24, gated: 24, standing_permission: 24 });
+  assert.equal(Object.keys(plan.counts.by_seed).length, 12);
+  assert.equal(Object.values(plan.counts.by_seed).every((count) => count === 6), true);
+});
+
+test('main-block seed-freshness audit passes a clean root and fails on run-plan and run-directory evidence', (t) => {
+  const directory = temporaryDirectory(t);
+  const clean = auditOutcomeMainBlockSeedFreshness({ roots: [directory] });
+  assert.equal(clean.status, 'passed');
+  const burned = path.join(directory, 'burned-smoke-s524');
+  fs.mkdirSync(burned, { recursive: true });
+  writeJson(path.join(burned, 'run-plan.json'), { command: ['--run-seed', '524'] });
+  const failed = auditOutcomeMainBlockSeedFreshness({ roots: [directory] });
+  assert.equal(failed.status, 'failed');
+  assert.equal(failed.hits.some((row) => row.seed === 524 && row.kind === 'run_directory_name'), true);
+  assert.equal(failed.hits.some((row) => row.seed === 524 && row.kind === 'run_metadata'), true);
+});
+
+test('main-block decision-only assembly guard freezes exactly 576 cases and 1,152 planned calls', () => {
+  const batches = Array.from({ length: OUTCOME_MAIN_BLOCK_CASES }, (_unused, index) => ({
+    required_sample_ids: [`case-${index + 1}`],
+  }));
+  const guard = guardOutcomeMainBlockDecisionCollection({
+    manifest: {
+      corpus: { cases: OUTCOME_MAIN_BLOCK_CASES },
+      readers: [
+        { reader_id: 'decision-reader-a', batches },
+        { reader_id: 'decision-reader-b', batches: structuredClone(batches) },
+      ],
+    },
+    authorizationRequest: {
+      call_budget: {
+        planned_calls: OUTCOME_MAIN_BLOCK_DECISION_CALLS,
+        maximum_calls: OUTCOME_MAIN_BLOCK_AUTHORIZATION_MAXIMUM_CALLS,
+      },
+    },
+  });
+  assert.equal(guard.status, 'passed');
+  assert.equal(guard.presence_channel_built, false);
+  assert.equal(guard.expected_cases, 576);
+  assert.equal(guard.expected_calls, 1152);
+});
+
+test('main-block full deterministic acceptance contract rejects an invalid fresh decision response', (t) => {
+  const fixture = childReaderFixture(t, 'decision', { oneCaseBatches: true });
+  const manifest = fixture.collection.manifest;
+  const reader = manifest.readers[0];
+  const batch = reader.batches[0];
+  const packet = fs.readFileSync(batch.packet_path, 'utf8');
+  const valid = JSON.parse(validChildReaderResponse(fixture, packet).text);
+  const sampleId = batch.required_sample_ids[0];
+  delete valid.cases_by_sample_id[sampleId].note;
+  assert.throws(
+    () =>
+      validateAdaptiveWarrantReaderResponseContract({
+        response: valid,
+        collectionManifest: manifest,
+        reader,
+        batch,
+        assemble: assembleAdaptiveWarrantAnnotationResponse,
+      }),
+    /unexpected fields|must contain|missing|required|exact/u,
+  );
+});
+
+test('main-block failed-attempt boundary refuses before invoking a model callback', async () => {
+  let calls = 0;
+  await assert.rejects(
+    runAfterOutcomeMainBlockAllowanceGuard({
+      callsAttempted: OUTCOME_MAIN_BLOCK_ABSOLUTE_READER_ATTEMPT_CEILING,
+      launch: async () => {
+        calls += 1;
+      },
+    }),
+    /48-attempt reader allowance exhausted/u,
+  );
+  assert.equal(calls, 0);
+});
+
+test('main-block measures 7 and 8 use stored events and stay explicitly not reader-validated', () => {
+  const result = describeOutcomeMeasures7And8FromStoredEvents([
+    {
+      sample_id: 'case-1',
+      job_id: 'dialogue-1',
+      turn: 1,
+      condition: 'gated',
+      gate: {
+        semantic_event_extraction: {
+          events: [
+            { speech_act: 'tutor_directed_public_result_request' },
+            { speech_act: 'learner_proposed_test' },
+          ],
+        },
+      },
+    },
+    {
+      sample_id: 'case-2',
+      job_id: 'dialogue-1',
+      turn: 2,
+      condition: 'gated',
+      gate: { semantic_event_extraction: { events: [] } },
+    },
+  ]);
+  assert.equal(result.zero_model_calls, true);
+  assert.equal(result.validation_label, 'not reader-validated');
+  assert.equal(result.source, 'stored_generation_time_semantic_events');
+  assert.deepEqual(result.measure_7_result_requests.overall, { present: 1, total: 2, rate: 0.5 });
+  assert.deepEqual(result.measure_8_proposed_tests.overall, { present: 1, total: 2, rate: 0.5 });
+});
 
 async function completeChildWithOneContractInvalidBatch(t, channel) {
   const fixture = childReaderFixture(t, channel, { oneCaseBatches: true });
