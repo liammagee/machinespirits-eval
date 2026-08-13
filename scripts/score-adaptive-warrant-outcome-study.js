@@ -76,7 +76,7 @@ export const PRESENCE_CHANNEL_DIGEST_FIELDS = Object.freeze([
   'reader_digest',
 ]);
 
-export const PRESENCE_CHANNEL_CAPS = Object.freeze({ response_cap: 14000, packet_cap: 42000 });
+export const PRESENCE_CHANNEL_CAPS = Object.freeze({ response_cap: 14000, packet_cap: 60000 });
 
 export const DECISION_READER_INSTRUMENT_BINDINGS = Object.freeze({
   handbook_sha256: '5673c14b8f2a2b17c599e947c87f6d03c10df6dcdbeadcb257d882f008902003',

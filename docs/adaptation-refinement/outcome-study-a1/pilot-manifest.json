@@ -184,12 +184,12 @@
       "provider_response_schema_sha256": "44b4807e25f0620e2677ed49031dec558daa6f0aeec0f20a97b85ec2c6cb6bc1",
       "one_case_response_schema_sha256": "f944b9b89c7bc3c3756bfe81dac476e2e84ca1fc215dbb1b05df89b3288135f0",
       "one_case_packet_sha256": "237c0784f637cb74ea124a5ec2c00912e3bc39eddf6359573c276fa823c3e06b",
-      "preparer_sha256": "9b545f368da469d0271613751d6da6f11bb4ae1fc57fa63d39a66733ce83177c",
+      "preparer_sha256": "05c748220a24e82c40a84fd319b73ae6184883c5350aaecf432cde1b920a6e9f",
       "reader_digest": "6cb95fd8032f4c43c9fdc1e45808680365d5a0d3eb2dda5ef085e4d97e10145f"
     },
     "caps_bytes": {
       "response": 14000,
-      "packet": 42000
+      "packet": 60000
     }
   },
   "decision_channel": {

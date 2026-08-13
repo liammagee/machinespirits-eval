@@ -82,6 +82,10 @@ test('manifest guard refuses a menu SHA mismatch', (t) => {
 test('manifest guard passes on the real frozen files (menu text carries one trailing newline)', () => {
   const result = verifyOutcomePilotManifestBindings({});
   assert.equal(typeof result, 'object');
+  assert.deepEqual(result.manifest.presence_channel.caps_bytes, {
+    response: 14000,
+    packet: 60000,
+  });
   assert.deepEqual(result.manifest.planned_calls, {
     generation: 540,
     presence_readers: 288,

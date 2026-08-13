@@ -1018,7 +1018,9 @@ export async function executeOutcomePilot({
     presenceManifest.size_audit?.maximum_response_bytes !== PRESENCE_CHANNEL_CAPS.response_cap ||
     presenceManifest.size_audit?.maximum_packet_bytes !== PRESENCE_CHANNEL_CAPS.packet_cap
   ) {
-    throw new Error('presence reader packet caps are not 14000/42000');
+    throw new Error(
+      `presence reader packet caps are not ${PRESENCE_CHANNEL_CAPS.response_cap}/${PRESENCE_CHANNEL_CAPS.packet_cap}`,
+    );
   }
   budget.state.status = 'readers';
   budget.state.freeze = { path: freezePath, form: freeze.schema, sha256: fileSha256(freezePath) };

@@ -265,6 +265,8 @@ test('semantic collection freezes exact packets and derives only unique literal 
     maximumCalls: 4,
     preflightMode: true,
   });
+  assert.equal(prepared.manifest.size_audit.maximum_response_bytes, 14000);
+  assert.equal(prepared.manifest.size_audit.maximum_packet_bytes, 60000);
   assert.equal(prepared.authorizationRequest.call_budget.planned_calls, 4);
   assert.equal(prepared.authorizationRequest.call_budget.maximum_calls, 4);
   assert.equal(

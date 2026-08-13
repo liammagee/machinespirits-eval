@@ -42,7 +42,7 @@ const BATCH_FIELDS = Object.freeze([
 ]);
 const CASE_FIELDS = Object.freeze(['genuinely_ambiguous', 'ambiguity_reason', 'events', 'note']);
 const EVENT_FIELDS = Object.freeze(['speech_act', 'target', 'requested_or_proposed_action', 'evidence_span']);
-const MAXIMUM_READER_PACKET_BYTES = 42000;
+const MAXIMUM_READER_PACKET_BYTES = 60000;
 const MAXIMUM_READER_RESPONSE_BYTES = 14000;
 
 function readJson(filePath) {
