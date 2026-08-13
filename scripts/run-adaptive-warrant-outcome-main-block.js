@@ -672,7 +672,7 @@ export async function executeOutcomeMainBlock({
     freeze = emitOutcomeMainBlockFreeze({
       outputPath: freezePath,
       studyId: path.basename(rootDir),
-      sourceCommit: git(['rev-parse', 'HEAD']),
+      sourceCommit: launchCommit,
       corpusPath: artifacts.corpusPath,
       keyPath: artifacts.keyPath,
       handbookPath,
