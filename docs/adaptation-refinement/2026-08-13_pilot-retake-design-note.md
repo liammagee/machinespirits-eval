@@ -114,18 +114,28 @@ the re-registration as its own small block (one world, one seed, gated only,
 ~8 turns ≈ 30 calls for the smoke), not as a patch to the passive-learner
 design.
 
+Full draft (smoke-B evidence, typed move menu, concession guard, the three
+defensive detection events): `2026-08-13_guarded-bad-learner-draft.md`.
+Smoke B confirmed both §3 predictions: the unguarded persona held 8/8
+turns, and the sensor-blindness failure recurred on the defensive pole —
+evidence-demands read as `low_agency_deferral`.
+
 ## 4. Proposed spend ladder (each rung needs its own authorization)
 
 | Rung | What | Calls |
 |---|---:|---:|
 | Smoke A | one gated dialogue, sensor fix live | 26 (SPENT) |
-| Smoke B | one guarded-bad-learner dialogue | ~30 (running) |
+| Smoke B | one unguarded-bad-learner dialogue | 29 (SPENT) |
+| Sol re-take of pilot dialogues 01–03 (diagnostic) | | ~90 (running) |
 | Re-registered pilot re-take (18 dialogues + readers) | | ~1,116 |
 | Main block (72 dialogues, unchanged design) | | ~4,500 |
 
-Smokes A and B were authorized 2026-08-13 ("do the two smokes"). Counter
-after smoke A: 4,093 / 11,337. All rungs together land near 9,750, inside
-the ceiling with ~1,600 spare.
+Smokes A and B were authorized 2026-08-13 ("do the two smokes"); the Sol
+re-take (codex.gpt-5.6-sol, `--cli-effort high`, dialogues 01–03 only) was
+authorized in-session the same day. Counter after smokes A and B:
+4,122 / 19,337 (ceiling raised +8,000 by human amendment 052c, relay note
+078, commit b0f9a5af). All rungs together land near 9,900, well inside the
+raised ceiling.
 
 Note for the sibling relay track: the learner-analysis coverage repair
 (commit 48bf2e97, direction 075) fixes the 144th-case assembly failure and
