@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -14,14 +15,31 @@ import {
   guardOutcomeAnnotationFingerprints,
   guardOutcomeDialogueLearnerAnalysisCoverage,
   preflightOutcomePilotPromptAudits,
+  prepareOrReuseOutcomePilotReaderCollection,
   renderOutcomePilotPromptConfiguration,
+  reuseOutcomePilotOriginalFreeze,
+  reuseOutcomePilotReaderCollection,
   runOutcomeGeneration,
   runReaderProcesses,
   runReadersAfterFingerprintGuard,
   validateOutcomeFreezeFormForFrozenDecisionRunner,
+  validateOutcomePilotZeroCallArtifacts,
   verifyOutcomePilotManifestBindings,
+  verifyOutcomePilotReaderResumeArtifacts,
 } from '../scripts/run-adaptive-warrant-outcome-pilot.js';
 import { annotationCaseFingerprint } from '../scripts/run-adaptive-warrant-baseline-study.js';
+import {
+  ADAPTIVE_WARRANT_ANNOTATION_BATCH_RESPONSE_SCHEMA,
+  prepareAdaptiveWarrantAnnotationBatches,
+} from '../scripts/prepare-adaptive-warrant-annotation-batches.js';
+import {
+  prepareAdaptiveWarrantSemanticAnnotationBatches,
+} from '../scripts/prepare-adaptive-warrant-semantic-annotations.js';
+import { buildAdaptiveWarrantV3SemanticDiagnostic } from '../scripts/build-adaptive-warrant-v3-semantic-diagnostic.js';
+import { runAdaptiveWarrantSemanticBrittlenessPreflight } from '../scripts/run-adaptive-warrant-semantic-brittleness-preflight.js';
+import { runAdaptiveWarrantDecisionReaders } from '../scripts/run-adaptive-warrant-decision-readers.js';
+import { runAdaptiveWarrantSemanticReaders } from '../scripts/run-adaptive-warrant-semantic-readers.js';
+import { ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA } from '../services/adaptiveWarrantSemanticAnnotation.js';
 import { auditTutorStubPrompt, TUTOR_STUB_PROMPT_BUDGETS } from '../services/tutorStubPromptAudit.js';
 import { auditTutorStubBaseSystemPrompt } from '../services/tutorStubSessionApplicationContext.js';
 
@@ -31,6 +49,19 @@ function temporaryDirectory(t) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'outcome-pilot-harness-'));
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   return directory;
+}
+
+function writeJson(filePath, value) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function fileSha256(filePath) {
+  return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
+function binding(filePath) {
+  return { path: filePath, sha256: fileSha256(filePath) };
 }
 
 function fingerprintCase(index) {
@@ -61,6 +92,231 @@ function v3Dialogue11FixtureEvents() {
     .trim()
     .split('\n')
     .map((line) => JSON.parse(line));
+}
+
+function reusableCollectionFixture(t, channel = 'presence') {
+  const directory = temporaryDirectory(t);
+  const collectionDir = path.join(directory, `${channel}-collection`);
+  const packetPath = path.join(collectionDir, 'packets', 'batch-01.packet.json');
+  const schemaPath = path.join(collectionDir, 'packets', 'batch-01.response.schema.json');
+  writeJson(packetPath, { packet: channel });
+  writeJson(schemaPath, { type: 'object' });
+  const presence = channel === 'presence';
+  const manifestPath = path.join(
+    collectionDir,
+    presence ? 'semantic-annotation-collection-manifest.json' : 'annotation-collection-manifest.json',
+  );
+  const authorizationRequestPath = path.join(
+    collectionDir,
+    presence ? 'semantic-annotation-authorization-request.json' : 'annotation-authorization-request.json',
+  );
+  const batch = {
+    batch_id: `${channel}-batch-01`,
+    packet_path: packetPath,
+    packet_sha256: fileSha256(packetPath),
+    ...(presence
+      ? { response_schema_path: schemaPath, response_schema_sha256: fileSha256(schemaPath) }
+      : { output_schema_path: schemaPath, output_schema_sha256: fileSha256(schemaPath) }),
+  };
+  writeJson(manifestPath, { readers: [{ reader_id: `${channel}-reader`, batches: [batch] }] });
+  writeJson(authorizationRequestPath, {
+    bindings: {
+      [presence ? 'manifest_sha256' : 'collection_manifest_sha256']: fileSha256(manifestPath),
+    },
+  });
+  return { collectionDir, manifestPath, authorizationRequestPath, packetPath, schemaPath };
+}
+
+function zeroCallArtifactFixture(t) {
+  const directory = temporaryDirectory(t);
+  const launchCommit = 'a'.repeat(40);
+  const preflightPath = path.join(directory, 'semantic-brittleness-preflight.json');
+  const schemaAcceptancePath = path.join(directory, 'semantic-schema-acceptance-carryover.json');
+  writeJson(preflightPath, {
+    schema: 'machinespirits.adaptation-refinement.semantic-brittleness-preflight.v1',
+    status: 'passed',
+    verdict: 'instrument_ready',
+    checks: [{ name: 'fixture', status: 'pass' }],
+    bindings: { source_commit: launchCommit },
+  });
+  writeJson(schemaAcceptancePath, {
+    schema: 'machinespirits.adaptation-refinement.semantic-schema-acceptance-result.v1',
+    status: 'passed',
+    inferential_role: 'transport_only_permanently_excluded',
+    synthetic_case_permanently_excluded: true,
+    source_commit: launchCommit,
+    response_received: true,
+    calls: { attempted: 1, completed: 1, maximum: 1 },
+    prohibited_tool_event_count: 0,
+    preflight: { path: preflightPath, sha256: fileSha256(preflightPath) },
+  });
+  const preflightBinding = { ...binding(preflightPath), source_commit: launchCommit };
+  const schemaAcceptanceBinding = {
+    ...binding(schemaAcceptancePath),
+    source_commit: launchCommit,
+    preflight_sha256: preflightBinding.sha256,
+  };
+  const freeze = {
+    source_commit: launchCommit,
+    semantic_instrument: { preflight: binding(preflightPath), schema_acceptance: binding(schemaAcceptancePath) },
+  };
+  const semanticCollection = {
+    manifest: {
+      source_commit: launchCommit,
+      brittleness_preflight: preflightBinding,
+      schema_acceptance_ping: schemaAcceptanceBinding,
+    },
+    authorizationRequest: {
+      bindings: {
+        source_commit: launchCommit,
+        brittleness_preflight: preflightBinding,
+        schema_acceptance_ping: schemaAcceptanceBinding,
+      },
+    },
+  };
+  const decisionCollection = {
+    manifest: { source_commit: launchCommit, semantic_brittleness_preflight: preflightBinding },
+    authorizationRequest: {
+      bindings: { source_commit: launchCommit, semantic_brittleness_preflight: preflightBinding },
+    },
+  };
+  return {
+    launchCommit,
+    preflightPath,
+    schemaAcceptancePath,
+    freeze,
+    semanticCollection,
+    decisionCollection,
+  };
+}
+
+function installFakeGit(t, directory) {
+  const binDir = path.join(directory, 'fake-bin');
+  const gitPath = path.join(binDir, 'git');
+  fs.mkdirSync(binDir, { recursive: true });
+  fs.writeFileSync(
+    gitPath,
+    [
+      '#!/bin/sh',
+      'if [ "$1" = "rev-parse" ] && [ "$2" = "HEAD" ]; then',
+      '  printf "%s\\n" "$OUTCOME_PILOT_TEST_GIT_HEAD"',
+      '  exit 0',
+      'fi',
+      'if [ "$1" = "status" ]; then',
+      '  exit 0',
+      'fi',
+      'exit 64',
+      '',
+    ].join('\n'),
+  );
+  fs.chmodSync(gitPath, 0o755);
+  const originalPath = process.env.PATH;
+  const originalHead = process.env.OUTCOME_PILOT_TEST_GIT_HEAD;
+  process.env.PATH = `${binDir}${path.delimiter}${originalPath}`;
+  t.after(() => {
+    process.env.PATH = originalPath;
+    if (originalHead === undefined) delete process.env.OUTCOME_PILOT_TEST_GIT_HEAD;
+    else process.env.OUTCOME_PILOT_TEST_GIT_HEAD = originalHead;
+  });
+}
+
+function childReaderFixture(t, channel) {
+  const directory = temporaryDirectory(t);
+  const launchCommit = '1'.repeat(40);
+  const resumeCommit = '2'.repeat(40);
+  installFakeGit(t, directory);
+  process.env.OUTCOME_PILOT_TEST_GIT_HEAD = launchCommit;
+
+  const studyId = `outcome-pilot-child-${channel}`;
+  const built = buildAdaptiveWarrantV3SemanticDiagnostic({ studyId });
+  const corpusPath = path.join(directory, 'corpus.json');
+  writeJson(corpusPath, built.corpus);
+  const semanticHandbookPath = path.join(directory, 'semantic-handbook.md');
+  const annotationHandbookPath = path.join(directory, 'annotation-handbook.md');
+  fs.writeFileSync(semanticHandbookPath, '# Frozen semantic handbook\n');
+  fs.writeFileSync(annotationHandbookPath, '# Frozen decision handbook\n');
+  const preflightPath = path.join(directory, 'semantic-brittleness-preflight.json');
+  runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath: preflightPath, sourceCommit: launchCommit });
+  const schemaAcceptancePath = path.join(directory, 'semantic-schema-acceptance-carryover.json');
+  writeJson(schemaAcceptancePath, {
+    schema: 'machinespirits.adaptation-refinement.semantic-schema-acceptance-result.v1',
+    status: 'passed',
+    inferential_role: 'transport_only_permanently_excluded',
+    synthetic_case_permanently_excluded: true,
+    source_commit: launchCommit,
+    response_received: true,
+    calls: { attempted: 1, completed: 1, maximum: 1 },
+    prohibited_tool_event_count: 0,
+    preflight: { path: preflightPath, sha256: fileSha256(preflightPath) },
+  });
+  const semanticCollection = prepareAdaptiveWarrantSemanticAnnotationBatches({
+    corpusPath,
+    handbookPath: semanticHandbookPath,
+    outputDir: path.join(directory, 'semantic-collection'),
+    corpusRole: 'natural_prevalence',
+    batchSize: built.corpus.cases.length,
+    maximumCalls: 2,
+    preflightPath,
+    schemaAcceptancePath,
+  });
+  const decisionCollection = prepareAdaptiveWarrantAnnotationBatches({
+    corpusPath,
+    handbookPath: annotationHandbookPath,
+    outputDir: path.join(directory, 'decision-collection'),
+    corpusRole: 'natural_prevalence',
+    batchSize: built.corpus.cases.length,
+    maxAnnotationCalls: 2,
+    preflightPath,
+  });
+  const artifactPath = (name, value = { name }) => {
+    const filePath = path.join(directory, name);
+    writeJson(filePath, value);
+    return filePath;
+  };
+  const freezePath = path.join(directory, 'annotation-freeze-manifest.json');
+  writeJson(freezePath, {
+    schema: OUTCOME_PILOT_FREEZE_SCHEMA,
+    study_id: studyId,
+    status: 'frozen',
+    source_commit: launchCommit,
+    protocol: binding(artifactPath('protocol.json')),
+    study_plan: binding(artifactPath('study-plan.json')),
+    semantic_instrument: { preflight: binding(preflightPath), schema_acceptance: binding(schemaAcceptancePath) },
+    annotation_handbook: binding(annotationHandbookPath),
+    semantic_handbook: binding(semanticHandbookPath),
+    semantic_predictions: binding(artifactPath('semantic-predictions.json')),
+    corpus: binding(corpusPath),
+    key: binding(artifactPath('key.json')),
+  });
+  const semantic = channel === 'semantic';
+  const collection = semantic ? semanticCollection : decisionCollection;
+  return {
+    directory,
+    launchCommit,
+    resumeCommit,
+    freezePath,
+    manifestPath: collection.manifestPath,
+    authorizationRequestPath: collection.authorizationRequestPath,
+    checkpointName: semantic ? 'semantic-reader-run.json' : 'decision-reader-run.json',
+    run: semantic ? runAdaptiveWarrantSemanticReaders : runAdaptiveWarrantDecisionReaders,
+    responseSchema: semantic
+      ? ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA
+      : ADAPTIVE_WARRANT_ANNOTATION_BATCH_RESPONSE_SCHEMA,
+  };
+}
+
+function childReaderResponse(fixture, prompt) {
+  const packet = JSON.parse(prompt);
+  return {
+    text: JSON.stringify({
+      schema: fixture.responseSchema,
+      reader_id: packet.reader_id,
+      batch_id: packet.batch_id,
+      study_id: packet.study_id,
+      corpus_sha256: packet.corpus_sha256,
+      cases_by_sample_id: Object.fromEntries(Object.keys(packet.cases_by_sample_id).map((sampleId) => [sampleId, {}])),
+    }),
+  };
 }
 
 test('paid execution refuses before any work when --go-note is absent', async () => {
@@ -369,6 +625,180 @@ test('resumed parent resumes only a child whose own checkpoint exists', async (t
       ['node', 'decision-reader'],
     ],
   );
+});
+
+test('resumed parent reuses a complete collection without calling its preparer', (t) => {
+  const fixture = reusableCollectionFixture(t, 'presence');
+  let preparerCalls = 0;
+  const collection = prepareOrReuseOutcomePilotReaderCollection({
+    childResume: true,
+    collectionDir: fixture.collectionDir,
+    channel: 'presence',
+    prepare: () => {
+      preparerCalls += 1;
+      return null;
+    },
+  });
+  assert.equal(collection.reused, true);
+  assert.equal(preparerCalls, 0);
+  assert.equal(collection.manifestPath, fixture.manifestPath);
+});
+
+test('collection reuse refuses a manifest, packet, or output-schema integrity mismatch', (t) => {
+  const manifestDrift = reusableCollectionFixture(t, 'presence');
+  fs.appendFileSync(manifestDrift.manifestPath, ' ');
+  assert.throws(
+    () => reuseOutcomePilotReaderCollection({ collectionDir: manifestDrift.collectionDir, channel: 'presence' }),
+    /collection manifest integrity mismatch/u,
+  );
+
+  const packetDrift = reusableCollectionFixture(t, 'decision');
+  fs.appendFileSync(packetDrift.packetPath, ' ');
+  assert.throws(
+    () => reuseOutcomePilotReaderCollection({ collectionDir: packetDrift.collectionDir, channel: 'decision' }),
+    /packet integrity mismatch/u,
+  );
+
+  const schemaDrift = reusableCollectionFixture(t, 'presence');
+  fs.appendFileSync(schemaDrift.schemaPath, ' ');
+  assert.throws(
+    () => reuseOutcomePilotReaderCollection({ collectionDir: schemaDrift.collectionDir, channel: 'presence' }),
+    /output schema integrity mismatch/u,
+  );
+});
+
+test('reader resume reuses the original freeze only when its parent-checkpoint hash matches', (t) => {
+  const rootDir = temporaryDirectory(t);
+  const freezePath = path.join(rootDir, 'annotation-freeze-manifest.json');
+  const frozenBinding = { path: '/tmp/frozen', sha256: 'a'.repeat(64) };
+  writeJson(freezePath, {
+    schema: OUTCOME_PILOT_FREEZE_SCHEMA,
+    status: 'frozen',
+    protocol: frozenBinding,
+    corpus: frozenBinding,
+    annotation_handbook: frozenBinding,
+    key: frozenBinding,
+    study_plan: frozenBinding,
+  });
+  const checkpoint = { freeze: { path: freezePath, sha256: fileSha256(freezePath) } };
+  assert.equal(reuseOutcomePilotOriginalFreeze({ rootDir, checkpoint }).reused, true);
+  fs.appendFileSync(freezePath, ' ');
+  assert.throws(
+    () => reuseOutcomePilotOriginalFreeze({ rootDir, checkpoint }),
+    /original emitted freeze does not match the parent checkpoint/u,
+  );
+});
+
+test('reader resume accepts launch-stamped zero-call artifacts bound by both collections and the freeze', (t) => {
+  const fixture = zeroCallArtifactFixture(t);
+  const result = verifyOutcomePilotReaderResumeArtifacts(fixture);
+  assert.deepEqual(result, {
+    status: 'passed',
+    source_commit: fixture.launchCommit,
+    preflight_sha256: fileSha256(fixture.preflightPath),
+    schema_acceptance_sha256: fileSha256(fixture.schemaAcceptancePath),
+  });
+});
+
+test('reader resume refuses byte-drifted zero-call artifacts while fresh validation still requires HEAD-fresh bytes', (t) => {
+  const drifted = zeroCallArtifactFixture(t);
+  fs.appendFileSync(drifted.preflightPath, ' ');
+  assert.throws(() => verifyOutcomePilotReaderResumeArtifacts(drifted), /reused brittleness preflight hash mismatch/u);
+
+  const stale = zeroCallArtifactFixture(t);
+  assert.throws(
+    () =>
+      validateOutcomePilotZeroCallArtifacts({
+        preflightPath: stale.preflightPath,
+        schemaAcceptancePath: stale.schemaAcceptancePath,
+        expectedSourceCommit: 'b'.repeat(40),
+      }),
+    /stale or fingerprint-mismatched/u,
+  );
+});
+
+test('both child runners accept an older launch stamp only on resume, record the resume commit, and bound failures', async (t) => {
+  for (const channel of ['semantic', 'decision']) {
+    await t.test(channel, async (childTest) => {
+      const fixture = childReaderFixture(childTest, channel);
+      const runArgs = (outputDir, callModel, resume = false) => ({
+        manifestPath: fixture.manifestPath,
+        freezeManifestPath: fixture.freezePath,
+        authorizationRequestPath: fixture.authorizationRequestPath,
+        outputDir,
+        approvedBy: 'tests/adaptiveWarrantOutcomePilot.test.js',
+        resume,
+        callModel,
+      });
+
+      const outputDir = path.join(fixture.directory, `${channel}-run`);
+      await assert.rejects(
+        fixture.run(
+          runArgs(outputDir, async () => {
+            throw new Error('synthetic transport failure');
+          }),
+        ),
+        /synthetic transport failure/u,
+      );
+      process.env.OUTCOME_PILOT_TEST_GIT_HEAD = fixture.resumeCommit;
+      let resumedCalls = 0;
+      const completed = await fixture.run(
+        runArgs(
+          outputDir,
+          async (_model, _system, prompt) => {
+            resumedCalls += 1;
+            return childReaderResponse(fixture, prompt);
+          },
+          true,
+        ),
+      );
+      assert.equal(completed.run.status, 'complete');
+      assert.equal(completed.run.calls_attempted, 3);
+      assert.equal(completed.run.calls_completed, 2);
+      assert.equal(resumedCalls, 2);
+      assert.deepEqual(completed.run.resumed_at_commits, [fixture.resumeCommit]);
+
+      await assert.rejects(
+        fixture.run(
+          runArgs(path.join(fixture.directory, `${channel}-fresh-stale`), async () => {
+            throw new Error('fresh stale launch must not call the model');
+          }),
+        ),
+        /requires the exact clean frozen commit/u,
+      );
+
+      process.env.OUTCOME_PILOT_TEST_GIT_HEAD = fixture.launchCommit;
+      const boundaryDir = path.join(fixture.directory, `${channel}-allowance-boundary`);
+      await assert.rejects(
+        fixture.run(
+          runArgs(boundaryDir, async () => {
+            throw new Error('synthetic boundary setup failure');
+          }),
+        ),
+        /synthetic boundary setup failure/u,
+      );
+      const checkpointPath = path.join(boundaryDir, fixture.checkpointName);
+      const checkpoint = JSON.parse(fs.readFileSync(checkpointPath, 'utf8'));
+      checkpoint.calls_attempted = checkpoint.call_budget.maximum_calls + 12;
+      writeJson(checkpointPath, checkpoint);
+      process.env.OUTCOME_PILOT_TEST_GIT_HEAD = fixture.resumeCommit;
+      let boundaryCalls = 0;
+      await assert.rejects(
+        fixture.run(
+          runArgs(
+            boundaryDir,
+            async () => {
+              boundaryCalls += 1;
+              throw new Error('allowance boundary called the model');
+            },
+            true,
+          ),
+        ),
+        /call budget exhausted/u,
+      );
+      assert.equal(boundaryCalls, 0);
+    });
+  }
 });
 
 test('launcher quarantines the sealed v3 dialogue-11 coverage shape before counting it complete', async (t) => {

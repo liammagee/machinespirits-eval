@@ -208,19 +208,20 @@ export function verifyOutcomePilotReaderBindings({
   instrumentFreezePath,
   preflightPath,
   schemaAcceptancePath,
+  expectedSourceCommit = null,
+  reuseLaunchArtifacts = false,
 } = {}) {
   if (!instrumentFreezePath || !preflightPath || !schemaAcceptancePath) {
     throw new Error('outcome pilot reader bindings require a frozen instrument, preflight, and schema acceptance');
   }
   const freeze = readJson(path.resolve(instrumentFreezePath));
   validateOutcomeFreezeFormForFrozenDecisionRunner(freeze);
-  const sourceCommit = git(['rev-parse', 'HEAD']);
-  const preflight = readJson(path.resolve(preflightPath));
-  validateAdaptiveWarrantSemanticPreflightArtifact({ artifact: preflight, expectedSourceCommit: sourceCommit });
-  validateAdaptiveWarrantSemanticSchemaAcceptanceResult({
-    artifact: readJson(path.resolve(schemaAcceptancePath)),
+  const sourceCommit = expectedSourceCommit || git(['rev-parse', 'HEAD']);
+  validateOutcomePilotZeroCallArtifacts({
+    preflightPath,
+    schemaAcceptancePath,
     expectedSourceCommit: sourceCommit,
-    expectedPreflightSha256: fileSha256(path.resolve(preflightPath)),
+    reuseLaunchArtifacts,
   });
   const bindings = adaptiveWarrantSemanticInstrumentBindings({ sourceCommit });
   const presence = manifest.presence_channel.digests;
@@ -250,6 +251,158 @@ export function verifyOutcomePilotReaderBindings({
     );
   }
   return { status: 'passed', checks, freeze };
+}
+
+export function validateOutcomePilotZeroCallArtifacts({
+  preflightPath,
+  schemaAcceptancePath,
+  expectedSourceCommit,
+  reuseLaunchArtifacts = false,
+} = {}) {
+  const resolvedPreflight = path.resolve(preflightPath);
+  const resolvedSchemaAcceptance = path.resolve(schemaAcceptancePath);
+  const preflight = readJson(resolvedPreflight);
+  if (reuseLaunchArtifacts) {
+    if (
+      preflight.status !== 'passed' ||
+      preflight.verdict !== 'instrument_ready' ||
+      !Array.isArray(preflight.checks) ||
+      preflight.checks.some((check) => check.status !== 'pass') ||
+      preflight.bindings?.source_commit !== expectedSourceCommit
+    ) {
+      throw new Error('outcome pilot reused brittleness preflight launch stamp mismatch');
+    }
+  } else {
+    validateAdaptiveWarrantSemanticPreflightArtifact({ artifact: preflight, expectedSourceCommit });
+  }
+  validateAdaptiveWarrantSemanticSchemaAcceptanceResult({
+    artifact: readJson(resolvedSchemaAcceptance),
+    expectedSourceCommit,
+    expectedPreflightSha256: fileSha256(resolvedPreflight),
+  });
+  return { status: 'passed', source_commit: expectedSourceCommit, reused: reuseLaunchArtifacts };
+}
+
+const REUSABLE_COLLECTION_FILES = Object.freeze({
+  presence: {
+    manifest: 'semantic-annotation-collection-manifest.json',
+    authorization: 'semantic-annotation-authorization-request.json',
+    manifestBinding: 'manifest_sha256',
+    schemaPath: 'response_schema_path',
+    schemaSha256: 'response_schema_sha256',
+  },
+  decision: {
+    manifest: 'annotation-collection-manifest.json',
+    authorization: 'annotation-authorization-request.json',
+    manifestBinding: 'collection_manifest_sha256',
+    schemaPath: 'output_schema_path',
+    schemaSha256: 'output_schema_sha256',
+  },
+});
+
+export function reuseOutcomePilotReaderCollection({ collectionDir, channel } = {}) {
+  const files = REUSABLE_COLLECTION_FILES[channel];
+  if (!files) throw new Error(`outcome pilot collection reuse has unknown channel ${channel}`);
+  const resolvedCollection = path.resolve(collectionDir);
+  const manifestPath = path.join(resolvedCollection, files.manifest);
+  const authorizationRequestPath = path.join(resolvedCollection, files.authorization);
+  if (!fs.existsSync(manifestPath) || !fs.existsSync(authorizationRequestPath)) {
+    throw new Error(`outcome pilot ${channel} collection reuse requires its manifest and authorization request`);
+  }
+  const manifest = readJson(manifestPath);
+  const authorizationRequest = readJson(authorizationRequestPath);
+  if (authorizationRequest.bindings?.[files.manifestBinding] !== fileSha256(manifestPath)) {
+    throw new Error(`outcome pilot ${channel} collection manifest integrity mismatch`);
+  }
+  for (const reader of manifest.readers || []) {
+    for (const batch of reader.batches || []) {
+      for (const [artifactPath, artifactSha256, label] of [
+        [batch.packet_path, batch.packet_sha256, 'packet'],
+        [batch[files.schemaPath], batch[files.schemaSha256], 'output schema'],
+      ]) {
+        if (!artifactPath || !artifactSha256 || !fs.existsSync(artifactPath) || fileSha256(artifactPath) !== artifactSha256) {
+          throw new Error(`outcome pilot ${channel} collection ${batch.batch_id} ${label} integrity mismatch`);
+        }
+      }
+    }
+  }
+  return { manifest, manifestPath, authorizationRequest, authorizationRequestPath, reused: true };
+}
+
+export function prepareOrReuseOutcomePilotReaderCollection({
+  childResume,
+  collectionDir,
+  channel,
+  reusedCollection = null,
+  prepare,
+} = {}) {
+  if (childResume) return reusedCollection || reuseOutcomePilotReaderCollection({ collectionDir, channel });
+  if (typeof prepare !== 'function') throw new Error(`outcome pilot ${channel} collection preparer is required`);
+  return prepare();
+}
+
+export function reuseOutcomePilotOriginalFreeze({ rootDir, checkpoint } = {}) {
+  const freezePath = path.join(path.resolve(rootDir), 'annotation-freeze-manifest.json');
+  const expectedSha256 = checkpoint?.freeze?.sha256;
+  if (!expectedSha256 || !fs.existsSync(freezePath) || fileSha256(freezePath) !== expectedSha256) {
+    throw new Error('outcome pilot original emitted freeze does not match the parent checkpoint');
+  }
+  const freeze = readJson(freezePath);
+  validateOutcomeFreezeFormForFrozenDecisionRunner(freeze);
+  return { freeze, freezePath, sha256: expectedSha256, reused: true };
+}
+
+export function verifyOutcomePilotReaderResumeArtifacts({
+  freeze,
+  semanticCollection,
+  decisionCollection,
+  preflightPath,
+  schemaAcceptancePath,
+} = {}) {
+  const launchCommit = freeze?.source_commit;
+  const preflightSha256 = fileSha256(path.resolve(preflightPath));
+  const schemaAcceptanceSha256 = fileSha256(path.resolve(schemaAcceptancePath));
+  const preflightBindings = [
+    freeze?.semantic_instrument?.preflight,
+    semanticCollection.manifest?.brittleness_preflight,
+    semanticCollection.authorizationRequest?.bindings?.brittleness_preflight,
+    decisionCollection.manifest?.semantic_brittleness_preflight,
+    decisionCollection.authorizationRequest?.bindings?.semantic_brittleness_preflight,
+  ];
+  const schemaAcceptanceBindings = [
+    freeze?.semantic_instrument?.schema_acceptance,
+    semanticCollection.manifest?.schema_acceptance_ping,
+    semanticCollection.authorizationRequest?.bindings?.schema_acceptance_ping,
+  ];
+  const launchStamps = [
+    semanticCollection.manifest?.source_commit,
+    semanticCollection.authorizationRequest?.bindings?.source_commit,
+    decisionCollection.manifest?.source_commit,
+    decisionCollection.authorizationRequest?.bindings?.source_commit,
+    ...preflightBindings.map((binding) => binding?.source_commit).filter(Boolean),
+    ...schemaAcceptanceBindings.map((binding) => binding?.source_commit).filter(Boolean),
+  ];
+  if (!launchCommit || launchStamps.some((stamp) => stamp !== launchCommit)) {
+    throw new Error('outcome pilot reused reader artifacts do not share the recorded launch commit');
+  }
+  if (preflightBindings.some((binding) => binding?.sha256 !== preflightSha256)) {
+    throw new Error('outcome pilot reused brittleness preflight hash mismatch');
+  }
+  if (schemaAcceptanceBindings.some((binding) => binding?.sha256 !== schemaAcceptanceSha256)) {
+    throw new Error('outcome pilot reused schema-acceptance carryover hash mismatch');
+  }
+  validateOutcomePilotZeroCallArtifacts({
+    preflightPath,
+    schemaAcceptancePath,
+    expectedSourceCommit: launchCommit,
+    reuseLaunchArtifacts: true,
+  });
+  return {
+    status: 'passed',
+    source_commit: launchCommit,
+    preflight_sha256: preflightSha256,
+    schema_acceptance_sha256: schemaAcceptanceSha256,
+  };
 }
 
 export function carryOverOutcomeSchemaAcceptance({ sourcePath, preflightPath, outputPath, authorizedBy } = {}) {
@@ -925,6 +1078,11 @@ export async function executeOutcomePilot({
   const checkpointPath = path.join(rootDir, 'outcome-pilot-checkpoint.json');
   if (fs.existsSync(rootDir) && !resume) throw new Error('outcome pilot output exists; pass --resume');
   if (resume && !fs.existsSync(checkpointPath)) throw new Error('--resume requires an existing checkpoint');
+  const presenceRunDir = path.join(rootDir, 'presence-readers');
+  const decisionRunDir = path.join(rootDir, 'decision-readers');
+  const semanticChildResume = resume && fs.existsSync(path.join(presenceRunDir, 'semantic-reader-run.json'));
+  const decisionChildResume = resume && fs.existsSync(path.join(decisionRunDir, 'decision-reader-run.json'));
+  const readerResume = semanticChildResume && decisionChildResume;
   const promptAuditPreflightPath = path.join(rootDir, 'prompt-audit-preflight.json');
   const promptAuditPreflight = preflightOutcomePilotPromptAudits({
     manifest: guarded.manifest,
@@ -934,6 +1092,15 @@ export async function executeOutcomePilot({
   const budget = createOutcomePilotBudget({ checkpointPath, checkpoint });
   const semanticPreflightPath = path.join(rootDir, 'semantic-brittleness-preflight.json');
   const schemaAcceptancePath = path.join(rootDir, 'semantic-schema-acceptance-carryover.json');
+  const reusedFreeze = readerResume ? reuseOutcomePilotOriginalFreeze({ rootDir, checkpoint: budget.state }) : null;
+  const presenceCollectionDir = path.join(rootDir, 'presence-collection');
+  const decisionCollectionDir = path.join(rootDir, 'decision-collection');
+  const reusedSemanticCollection = semanticChildResume
+    ? reuseOutcomePilotReaderCollection({ collectionDir: presenceCollectionDir, channel: 'presence' })
+    : null;
+  const reusedDecisionCollection = decisionChildResume
+    ? reuseOutcomePilotReaderCollection({ collectionDir: decisionCollectionDir, channel: 'decision' })
+    : null;
   if (!resume) {
     execFileSync(
       process.execPath,
@@ -947,11 +1114,22 @@ export async function executeOutcomePilot({
       authorizedBy: 'docs/adaptation-refinement/relay/065-reviewer-direction-outcome-pilot-harness.md',
     });
   }
+  if (readerResume) {
+    verifyOutcomePilotReaderResumeArtifacts({
+      freeze: reusedFreeze.freeze,
+      semanticCollection: reusedSemanticCollection,
+      decisionCollection: reusedDecisionCollection,
+      preflightPath: semanticPreflightPath,
+      schemaAcceptancePath,
+    });
+  }
   const readerBindings = verifyOutcomePilotReaderBindings({
     manifest: guarded.manifest,
     instrumentFreezePath,
     preflightPath: semanticPreflightPath,
     schemaAcceptancePath,
+    expectedSourceCommit: reusedFreeze?.freeze.source_commit || null,
+    reuseLaunchArtifacts: readerResume,
   });
   budget.state.status = 'generation';
   budget.state.go_note = goNote;
@@ -987,49 +1165,75 @@ export async function executeOutcomePilot({
   });
   budget.state.post_generation_fingerprint_guard = fingerprintGuard;
   budget.persist();
-  const artifacts = writeOutcomeCorpusArtifacts({ rootDir, built });
+  const artifacts = readerResume
+    ? {
+        corpusPath: reusedFreeze.freeze.corpus.path,
+        keyPath: reusedFreeze.freeze.key.path,
+        predictionsPath: reusedFreeze.freeze.semantic_predictions.path,
+      }
+    : writeOutcomeCorpusArtifacts({ rootDir, built });
 
   const annotationHandbook = sourceFreeze.annotation_handbook?.path;
   const semanticHandbook = sourceFreeze.semantic_handbook?.path;
   if (!annotationHandbook || !semanticHandbook) throw new Error('frozen natural instrument lacks reader handbooks');
-  const studyPlanPath = path.join(rootDir, 'outcome-pilot-study-plan.json');
-  atomicWriteJson(studyPlanPath, { schema: OUTCOME_PILOT_RUN_SCHEMA, manifest: budget.state.manifest, jobs });
-  const freezePath = path.join(rootDir, 'annotation-freeze-manifest.json');
-  const freeze = emitOutcomePilotNaturalFreeze({
-    outputPath: freezePath,
-    studyId: path.basename(rootDir),
-    sourceCommit: git(['rev-parse', 'HEAD']),
-    corpus: artifacts.corpusPath,
-    key: artifacts.keyPath,
-    annotationHandbook,
-    semanticHandbook,
-    semanticPredictions: artifacts.predictionsPath,
-    studyPlan: studyPlanPath,
-    semanticPreflight: semanticPreflightPath,
-    schemaAcceptance: schemaAcceptancePath,
-  });
+  const studyPlanPath = readerResume
+    ? reusedFreeze.freeze.study_plan.path
+    : path.join(rootDir, 'outcome-pilot-study-plan.json');
+  if (!readerResume) {
+    atomicWriteJson(studyPlanPath, { schema: OUTCOME_PILOT_RUN_SCHEMA, manifest: budget.state.manifest, jobs });
+  }
+  const freezePath = reusedFreeze?.freezePath || path.join(rootDir, 'annotation-freeze-manifest.json');
+  const freeze = readerResume
+    ? reusedFreeze.freeze
+    : emitOutcomePilotNaturalFreeze({
+        outputPath: freezePath,
+        studyId: path.basename(rootDir),
+        sourceCommit: git(['rev-parse', 'HEAD']),
+        corpus: artifacts.corpusPath,
+        key: artifacts.keyPath,
+        annotationHandbook,
+        semanticHandbook,
+        semanticPredictions: artifacts.predictionsPath,
+        studyPlan: studyPlanPath,
+        semanticPreflight: semanticPreflightPath,
+        schemaAcceptance: schemaAcceptancePath,
+      });
   validateOutcomeFreezeFormForFrozenDecisionRunner(freeze);
 
-  const semanticCollection = prepareAdaptiveWarrantSemanticAnnotationBatches({
-    corpusPath: artifacts.corpusPath,
-    handbookPath: semanticHandbook,
-    outputDir: path.join(rootDir, 'presence-collection'),
-    corpusRole: 'natural_prevalence',
-    readerIds: ['presence-reader-a', 'presence-reader-b'],
-    batchSize: 1,
-    maximumCalls: 288,
-    preflightPath: semanticPreflightPath,
-    schemaAcceptancePath,
+  const semanticCollection = prepareOrReuseOutcomePilotReaderCollection({
+    childResume: semanticChildResume,
+    collectionDir: presenceCollectionDir,
+    channel: 'presence',
+    reusedCollection: reusedSemanticCollection,
+    prepare: () =>
+      prepareAdaptiveWarrantSemanticAnnotationBatches({
+        corpusPath: artifacts.corpusPath,
+        handbookPath: semanticHandbook,
+        outputDir: presenceCollectionDir,
+        corpusRole: 'natural_prevalence',
+        readerIds: ['presence-reader-a', 'presence-reader-b'],
+        batchSize: 1,
+        maximumCalls: 288,
+        preflightPath: semanticPreflightPath,
+        schemaAcceptancePath,
+      }),
   });
-  const decisionCollection = prepareAdaptiveWarrantAnnotationBatches({
-    corpusPath: artifacts.corpusPath,
-    handbookPath: annotationHandbook,
-    outputDir: path.join(rootDir, 'decision-collection'),
-    corpusRole: 'natural_prevalence',
-    readerIds: ['decision-reader-a', 'decision-reader-b'],
-    batchSize: 1,
-    maxAnnotationCalls: 288,
-    preflightPath: semanticPreflightPath,
+  const decisionCollection = prepareOrReuseOutcomePilotReaderCollection({
+    childResume: decisionChildResume,
+    collectionDir: decisionCollectionDir,
+    channel: 'decision',
+    reusedCollection: reusedDecisionCollection,
+    prepare: () =>
+      prepareAdaptiveWarrantAnnotationBatches({
+        corpusPath: artifacts.corpusPath,
+        handbookPath: annotationHandbook,
+        outputDir: decisionCollectionDir,
+        corpusRole: 'natural_prevalence',
+        readerIds: ['decision-reader-a', 'decision-reader-b'],
+        batchSize: 1,
+        maxAnnotationCalls: 288,
+        preflightPath: semanticPreflightPath,
+      }),
   });
   const presenceManifest = semanticCollection.manifest;
   if (
@@ -1043,8 +1247,6 @@ export async function executeOutcomePilot({
   budget.state.status = 'readers';
   budget.state.freeze = { path: freezePath, form: freeze.schema, sha256: fileSha256(freezePath) };
   budget.persist();
-  const presenceRunDir = path.join(rootDir, 'presence-readers');
-  const decisionRunDir = path.join(rootDir, 'decision-readers');
   await runReaderProcesses({
     semanticCommand: [
       process.execPath,

@@ -23,6 +23,7 @@ import { ADAPTIVE_WARRANT_V3_SEMANTIC_DIAGNOSTIC_FREEZE_SCHEMA } from './build-a
 
 export const ADAPTIVE_WARRANT_SEMANTIC_READER_RUN_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-event-reader-run.v1';
+const MAXIMUM_FAILED_ATTEMPT_ALLOWANCE = 12;
 const BATCH_FIELDS = Object.freeze([
   'schema',
   'reader_id',
@@ -101,7 +102,7 @@ function validateAuthorization({ request, requestPath, manifest, approvedBy }) {
   };
 }
 
-function validateFreeze({ freeze, manifest, repoRoot }) {
+function validateFreeze({ freeze, manifest, repoRoot, resume }) {
   const diagnostic = freeze.schema === ADAPTIVE_WARRANT_V3_SEMANTIC_DIAGNOSTIC_FREEZE_SCHEMA;
   const syntheticSmoke =
     freeze.schema === 'machinespirits.adaptation-refinement.semantic-schema-smoke-freeze.v1' &&
@@ -126,17 +127,21 @@ function validateFreeze({ freeze, manifest, repoRoot }) {
   }
   const commit = gitValue(['rev-parse', 'HEAD'], repoRoot);
   const status = gitValue(['status', '--short'], repoRoot);
-  if (commit !== sourceCommit || status) {
+  if ((!resume && commit !== sourceCommit) || manifest.source_commit !== sourceCommit || status) {
     throw new Error('semantic reader launch requires the exact clean frozen commit');
   }
   const preflightBinding = natural ? freeze.semantic_instrument?.preflight : freeze.brittleness_preflight;
   if (!preflightBinding?.path || fileSha256(preflightBinding.path) !== preflightBinding.sha256) {
     throw new Error('semantic diagnostic brittleness preflight drift');
   }
-  validateAdaptiveWarrantSemanticPreflightArtifact({
-    artifact: readJson(preflightBinding.path),
-    expectedSourceCommit: commit,
-  });
+  const preflight = readJson(preflightBinding.path);
+  if (resume) {
+    if (preflight.bindings?.source_commit !== sourceCommit) {
+      throw new Error('semantic reader brittleness preflight launch stamp drift');
+    }
+  } else {
+    validateAdaptiveWarrantSemanticPreflightArtifact({ artifact: preflight, expectedSourceCommit: commit });
+  }
   if (manifest.brittleness_preflight?.sha256 !== preflightBinding.sha256) {
     throw new Error('semantic collection or authorization does not bind the frozen brittleness preflight');
   }
@@ -148,7 +153,7 @@ function validateFreeze({ freeze, manifest, repoRoot }) {
   }
   validateAdaptiveWarrantSemanticSchemaAcceptanceResult({
     artifact: readJson(schemaAcceptanceBinding.path),
-    expectedSourceCommit: commit,
+    expectedSourceCommit: resume ? sourceCommit : commit,
     expectedPreflightSha256: preflightBinding.sha256,
   });
   if (manifest.schema_acceptance_ping?.sha256 !== schemaAcceptanceBinding.sha256) {
@@ -171,6 +176,7 @@ function validateFreeze({ freeze, manifest, repoRoot }) {
       throw new Error('semantic diagnostic freeze artifact drift');
     }
   }
+  return { commit, sourceCommit };
 }
 
 function packetBindings(manifest) {
@@ -251,7 +257,7 @@ export async function runAdaptiveWarrantSemanticReaders({
   const freeze = readJson(resolvedFreeze);
   const request = readJson(resolvedRequest);
   const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
-  validateFreeze({ freeze, manifest, repoRoot });
+  const { commit } = validateFreeze({ freeze, manifest, repoRoot, resume });
   validatePreparedArtifacts(request, manifest);
   if (
     freeze.synthetic_smoke_only === true &&
@@ -289,6 +295,7 @@ export async function runAdaptiveWarrantSemanticReaders({
   ) {
     throw new Error('semantic reader resume checkpoint does not match the frozen launch');
   }
+  if (resume) run.resumed_at_commits = [...new Set([...(run.resumed_at_commits || []), commit])];
   run.status = 'running';
   run.exposed_sample_ids ||= [];
   if (!resume) atomicWriteJson(path.join(resolvedOutput, 'accepted-authorization.json'), authorization);
@@ -304,7 +311,7 @@ export async function runAdaptiveWarrantSemanticReaders({
         }
         continue;
       }
-      if (run.calls_attempted >= request.call_budget.maximum_calls) {
+      if (run.calls_attempted >= request.call_budget.maximum_calls + MAXIMUM_FAILED_ATTEMPT_ALLOWANCE) {
         run.status = 'incomplete_call_budget_exhausted';
         atomicWriteJson(runPath, run);
         throw new Error('semantic reader call budget exhausted');

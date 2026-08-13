@@ -18,6 +18,7 @@ import { ADAPTIVE_WARRANT_V3_SEMANTIC_DIAGNOSTIC_FREEZE_SCHEMA } from './build-a
 
 export const ADAPTIVE_WARRANT_DECISION_READER_RUN_SCHEMA =
   'machinespirits.adaptation-refinement.decision-reader-run.v1';
+const MAXIMUM_FAILED_ATTEMPT_ALLOWANCE = 12;
 
 const BATCH_FIELDS = Object.freeze([
   'schema',
@@ -60,7 +61,7 @@ function exactFields(value, expected, label) {
   }
 }
 
-function validateFreeze({ freeze, manifest, repoRoot }) {
+function validateFreeze({ freeze, manifest, repoRoot, resume }) {
   const diagnostic = freeze.schema === ADAPTIVE_WARRANT_V3_SEMANTIC_DIAGNOSTIC_FREEZE_SCHEMA;
   const natural = freeze.schema === 'machinespirits.adaptation-refinement.warrant-mechanism-validation-freeze.v1';
   if ((!diagnostic && !natural) || freeze.status !== 'frozen') {
@@ -83,17 +84,21 @@ function validateFreeze({ freeze, manifest, repoRoot }) {
   const sourceCommit = freeze.source_commit || freeze.provenance?.gitCommit;
   const commit = gitValue(['rev-parse', 'HEAD'], repoRoot);
   const status = gitValue(['status', '--short'], repoRoot);
-  if (commit !== sourceCommit || manifest.source_commit !== sourceCommit || status) {
+  if ((!resume && commit !== sourceCommit) || manifest.source_commit !== sourceCommit || status) {
     throw new Error('decision reader launch requires the exact clean frozen commit');
   }
   const preflightBinding = diagnostic ? freeze.brittleness_preflight : freeze.semantic_instrument?.preflight;
   if (!preflightBinding?.path || fileSha256(preflightBinding.path) !== preflightBinding.sha256) {
     throw new Error('decision reader brittleness preflight drift');
   }
-  validateAdaptiveWarrantSemanticPreflightArtifact({
-    artifact: readJson(preflightBinding.path),
-    expectedSourceCommit: commit,
-  });
+  const preflight = readJson(preflightBinding.path);
+  if (resume) {
+    if (preflight.bindings?.source_commit !== sourceCommit) {
+      throw new Error('decision reader brittleness preflight launch stamp drift');
+    }
+  } else {
+    validateAdaptiveWarrantSemanticPreflightArtifact({ artifact: preflight, expectedSourceCommit: commit });
+  }
   if (manifest.semantic_brittleness_preflight?.sha256 !== preflightBinding.sha256) {
     throw new Error('decision collection does not bind the frozen brittleness preflight');
   }
@@ -112,6 +117,7 @@ function validateFreeze({ freeze, manifest, repoRoot }) {
       throw new Error('V3 diagnostic freeze artifact drift');
     }
   }
+  return { commit, sourceCommit };
 }
 
 function parseJsonObject(text, batchId) {
@@ -153,7 +159,7 @@ export async function runAdaptiveWarrantDecisionReaders({
   const freeze = readJson(resolvedFreeze);
   const request = readJson(resolvedRequest);
   const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-  validateFreeze({ freeze, manifest, repoRoot });
+  const { commit } = validateFreeze({ freeze, manifest, repoRoot, resume });
   const authorizationValidation = validateAdaptiveWarrantAnnotationAuthorizationRequest({
     requestPath: resolvedRequest,
     manifestPath: resolvedManifest,
@@ -195,6 +201,7 @@ export async function runAdaptiveWarrantDecisionReaders({
   ) {
     throw new Error('decision reader resume checkpoint does not match the frozen launch');
   }
+  if (resume) run.resumed_at_commits = [...new Set([...(run.resumed_at_commits || []), commit])];
   run.status = 'running';
   run.exposed_sample_ids ||= [];
   if (!resume) atomicWriteJson(path.join(resolvedOutput, 'accepted-authorization.json'), authorization);
@@ -210,7 +217,7 @@ export async function runAdaptiveWarrantDecisionReaders({
         }
         continue;
       }
-      if (run.calls_attempted >= request.call_budget.maximum_calls) {
+      if (run.calls_attempted >= request.call_budget.maximum_calls + MAXIMUM_FAILED_ATTEMPT_ALLOWANCE) {
         run.status = 'incomplete_call_budget_exhausted';
         atomicWriteJson(runPath, run);
         throw new Error('decision reader call budget exhausted');
