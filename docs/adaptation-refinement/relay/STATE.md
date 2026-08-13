@@ -44,9 +44,13 @@
   P2a, P2b), main block 72 fresh dialogues / seeds 518–529 /
   decision channel only at the exact 576-case freeze, plan ≈ 3,200
   calls. Human GO given (verbatim "GO", 13 Aug, on the 096
-  summary). Direction 097 orders the build (zero calls, report 098);
-  launch waits for reviewer note 097a after zero-call verification
-  of the build.
+  summary). Direction 097 orders the build (zero calls, report 098).
+  First build pass STOPPED correctly at the seed-freshness gate:
+  096's seeds 518/519 were burned by design smokes A and B — a
+  reviewer error, corrected by amendment 096a, which re-registers
+  seeds **524–535** (reviewer-checked clean across repo, run dirs,
+  and archive) and directs the driver to resume 097. Launch waits
+  for reviewer note 097a after zero-call verification of the build.
 - **DONE — ruling 094a: contract-invalid reader response ruled
   TECHNICAL; quarantine + single-batch re-take.** Presence-reader-A
   batch 71 (`case-aad700bb…`) labeled a record-entry request with
