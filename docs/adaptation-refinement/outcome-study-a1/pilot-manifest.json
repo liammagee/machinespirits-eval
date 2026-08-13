@@ -180,7 +180,7 @@
     "calls_per_case": 2,
     "digests": {
       "corpus_sha256": "52bc3ae49f634bd2c4b872f843b1be1f15e859618b3ffa7cfa1fb0ae7cc1e184",
-      "extraction_schema_digest": "e5af8f2b6877e7e427ddae77bf7ed58bf0b6d129082885a838905cad5bce820d",
+      "extraction_schema_digest": "7cde2b7744ab4a3b8bee50c56a80a9d861367a47f493968823e033291b63ad4a",
       "provider_response_schema_sha256": "44b4807e25f0620e2677ed49031dec558daa6f0aeec0f20a97b85ec2c6cb6bc1",
       "one_case_response_schema_sha256": "f944b9b89c7bc3c3756bfe81dac476e2e84ca1fc215dbb1b05df89b3288135f0",
       "one_case_packet_sha256": "237c0784f637cb74ea124a5ec2c00912e3bc39eddf6359573c276fa823c3e06b",
