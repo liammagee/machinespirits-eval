@@ -29,3 +29,7 @@
 2026-08-13T05:12:06Z attempts=495 status=zero_call_artifact_regenerated artifact=semantic_brittleness_preflight source_commit=47917e6490fd0092e51e432276e7796140e888a8 new_calls=0
 2026-08-13T05:12:09Z attempts=495 resume=7 status=started packet_cap=60000
 2026-08-13T05:12:23Z attempts=495 resume=7 status=refused reason=semantic_schema_acceptance_carryover_stale reader_calls=0
+2026-08-13T05:12:51Z attempts=495 status=zero_call_artifact_regenerated artifact=semantic_brittleness_preflight source_commit=f1ea1c6f9d6b9afa5edd934ea42074268232c223 new_calls=0
+2026-08-13T05:12:52Z attempts=495 status=zero_call_artifact_regenerated artifact=semantic_schema_acceptance_carryover source_commit=f1ea1c6f9d6b9afa5edd934ea42074268232c223 new_calls=0 original_paid_result_unchanged=true
+2026-08-13T05:12:56Z attempts=495 resume=8 status=started packet_cap=60000
+2026-08-13T05:14:09Z attempts=495 resume=8 status=refused reason=frozen_reader_binding_mismatch_reader_digest presence_reader_calls=0 decision_reader_calls=0 terminal_under_current_direction=true
