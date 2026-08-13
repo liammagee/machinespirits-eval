@@ -37,8 +37,11 @@ are CONSUMED/VOID and stay so.
   seeds 515–517, same learner stack as v3 (registered — prediction P1
   depends on it), frozen manifest order, 144 expected cases with the
   analyzer-retry recovery path, 2+2 fresh readers per case. Plan:
-  (18 × 30 cap) + 288 + 288 = **1,116** calls; counter 4,198 → at
-  most 5,314 of 19,337 (remaining 14,023).
+  (18 × 30 cap) + 288 + 288 = **1116** calls; counter 4,198 → at
+  most 5,314 of 19,337 (remaining 14,023). (First launch attempt
+  refused here: the guard wants the bare literal 1116, and this note
+  wrote it with a comma. Note corrected and recommitted; zero calls
+  were spent.)
 - Expected and not a defect: under persistent deference the gate can
   re-arm the turn after a delivered challenge — the streak does not
   clear on delivery — so back-to-back challenge turns are within the
