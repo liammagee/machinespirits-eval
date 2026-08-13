@@ -38,3 +38,8 @@
 2026-08-13T05:24:50Z attempts=495 resume=10 status=refused reason=semantic_schema_acceptance_carryover_stale presence_reader_calls=0 decision_reader_calls=0
 2026-08-13T05:24:50Z attempts=495 status=zero_call_artifact_regenerated artifact=semantic_schema_acceptance_carryover source_commit=21400c4ae8ef112f23f7e732727b352ea9f8fd5c new_calls=0 original_paid_result_unchanged=true
 2026-08-13T05:24:50Z attempts=495 resume=11 status=refused reason=semantic_annotation_output_directory_not_empty path=presence-collection presence_reader_calls=0 decision_reader_calls=0 terminal_under_current_direction=true
+2026-08-13T05:30:21Z attempts=495 resume=12 status=refused reason=semantic_brittleness_preflight_stale presence_reader_calls=0 decision_reader_calls=0
+2026-08-13T05:30:21Z attempts=495 status=zero_call_artifact_regenerated artifact=semantic_brittleness_preflight source_commit=6885374e2df882b840d7c1e89a60a7c4a6537acb new_calls=0
+2026-08-13T05:30:21Z attempts=495 resume=13 status=refused reason=semantic_schema_acceptance_carryover_stale presence_reader_calls=0 decision_reader_calls=0
+2026-08-13T05:30:21Z attempts=495 status=zero_call_artifact_regenerated artifact=semantic_schema_acceptance_carryover source_commit=6885374e2df882b840d7c1e89a60a7c4a6537acb new_calls=0 original_paid_result_unchanged=true
+2026-08-13T05:30:21Z attempts=495 resume=14 status=failed reason=one_or_both_frozen_reader_launchers_failed checkpoint_status=readers presence_reader_calls=0 decision_reader_calls=0 terminal_under_current_direction=true
