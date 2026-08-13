@@ -17,3 +17,8 @@
 2026-08-13T04:28:08Z order=17 condition=bare world=world_102_marigold_archive_box seed=517 attempts=414 status=quarantined learner_analysis_unanalyzed_turn=6
 2026-08-13T04:34:17Z order=18 condition=gated world=world_102_marigold_archive_box seed=517 attempts=440
 2026-08-13T04:46:43Z order=17 condition=bare world=world_102_marigold_archive_box seed=517 attempts=495 resume=1
+2026-08-13T04:57:36Z attempts=495 resume=2 status=refused reason=semantic_brittleness_preflight_stale reader_calls=0
+2026-08-13T04:57:39Z attempts=495 status=zero_call_artifact_regenerated artifact=semantic_brittleness_preflight new_calls=0
+2026-08-13T04:57:52Z attempts=495 resume=3 status=refused reason=semantic_schema_acceptance_carryover_stale reader_calls=0
+2026-08-13T04:57:55Z attempts=495 status=zero_call_artifact_regenerated artifact=semantic_schema_acceptance_carryover new_calls=0
+2026-08-13T04:58:02Z attempts=495 resume=4 status=refused reason=presence_reader_packet_46007_exceeds_42000 reader_calls=0
