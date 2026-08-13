@@ -33,3 +33,8 @@
 2026-08-13T05:12:52Z attempts=495 status=zero_call_artifact_regenerated artifact=semantic_schema_acceptance_carryover source_commit=f1ea1c6f9d6b9afa5edd934ea42074268232c223 new_calls=0 original_paid_result_unchanged=true
 2026-08-13T05:12:56Z attempts=495 resume=8 status=started packet_cap=60000
 2026-08-13T05:14:09Z attempts=495 resume=8 status=refused reason=frozen_reader_binding_mismatch_reader_digest presence_reader_calls=0 decision_reader_calls=0 terminal_under_current_direction=true
+2026-08-13T05:24:50Z attempts=495 resume=9 status=refused reason=semantic_brittleness_preflight_stale presence_reader_calls=0 decision_reader_calls=0
+2026-08-13T05:24:50Z attempts=495 status=zero_call_artifact_regenerated artifact=semantic_brittleness_preflight source_commit=21400c4ae8ef112f23f7e732727b352ea9f8fd5c new_calls=0
+2026-08-13T05:24:50Z attempts=495 resume=10 status=refused reason=semantic_schema_acceptance_carryover_stale presence_reader_calls=0 decision_reader_calls=0
+2026-08-13T05:24:50Z attempts=495 status=zero_call_artifact_regenerated artifact=semantic_schema_acceptance_carryover source_commit=21400c4ae8ef112f23f7e732727b352ea9f8fd5c new_calls=0 original_paid_result_unchanged=true
+2026-08-13T05:24:50Z attempts=495 resume=11 status=refused reason=semantic_annotation_output_directory_not_empty path=presence-collection presence_reader_calls=0 decision_reader_calls=0 terminal_under_current_direction=true
