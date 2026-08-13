@@ -32,11 +32,11 @@ export const OUTCOME_STUDY_READER_OUTPUT_FORM =
 export const OUTCOME_STUDY_RUN_CONFIGURATIONS = Object.freeze([
   Object.freeze({
     id: 'bare',
-    warrant_gate_mode: 'off',
+    warrant_gate_mode: 'observe',
     horizon: 8,
     learner_profile: 'low_agency',
     learner_analysis_prompt_profile: 'handbook_v1',
-    cli_args: Object.freeze(['--turns', '8', '--no-stop-on-grounded', '--warrant-gate', 'off']),
+    cli_args: Object.freeze(['--turns', '8', '--no-stop-on-grounded', '--warrant-gate', 'observe']),
   }),
   Object.freeze({
     id: 'gated',
@@ -48,7 +48,7 @@ export const OUTCOME_STUDY_RUN_CONFIGURATIONS = Object.freeze([
   }),
   Object.freeze({
     id: 'standing_permission',
-    warrant_gate_mode: 'off',
+    warrant_gate_mode: 'observe',
     horizon: 8,
     learner_profile: 'low_agency',
     learner_analysis_prompt_profile: 'handbook_v1',
@@ -59,7 +59,7 @@ export const OUTCOME_STUDY_RUN_CONFIGURATIONS = Object.freeze([
       '8',
       '--no-stop-on-grounded',
       '--warrant-gate',
-      'off',
+      'observe',
       '--standing-instructions-file',
       'docs/adaptation-refinement/outcome-study-a1/standing-permission-menu.txt',
     ]),

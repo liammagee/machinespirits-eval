@@ -1853,6 +1853,41 @@ test('warrant: engaged-analytic masks accumulated trouble; deference does not', 
   assert.equal(unmasked.revision_warranted, true);
 });
 
+test('warrant: sustained deference arms at exactly three consecutive turns and resets on interruption', () => {
+  const gate = createTutorStubWarrantGate({ mode: 'observe' });
+  const assess = (turn, learnerText) =>
+    gate.assess({
+      turn,
+      learnerText,
+      dagModel: dagModel(turn),
+      priorActionFamily: 'stage_next_step',
+      proposedActionFamily: 'stage_next_step',
+    });
+
+  assert.equal(assess(1, 'May I enter the first public fact?').revision_warranted, false);
+  assert.equal(assess(2, 'Could I keep that entry?').revision_warranted, false);
+  assert.equal(assess(3, 'That evidence supports the timing, but the source still needs a direct test.').revision_warranted, false);
+  assert.equal(assess(4, 'May I record the timing distinction?').revision_warranted, false);
+  assert.equal(assess(5, 'Could I keep the source question open?').revision_warranted, false);
+  const thirdConsecutive = assess(6, 'May I write that a direct source test is still needed?');
+  assert.equal(thirdConsecutive.revision_warranted, true);
+  assert.equal(thirdConsecutive.warrant_basis, 'sustained_deference:3_turns');
+});
+
+test('warrant: sustained deference outranks accumulated trouble even with an analytic co-label', () => {
+  const result = evaluateWarrant({
+    signal: { primary: 'engaged_analytic', labels: ['low_agency_deferral', 'engaged_analytic'], surface: '' },
+    deferenceSustained: true,
+    troubleTurns: [
+      { turn: 1, defeaters: ['no_dag_growth'] },
+      { turn: 2, defeaters: ['no_dag_growth'] },
+    ],
+    strategyInForce: 'stage_next_step',
+  });
+  assert.equal(result.revision_warranted, true);
+  assert.equal(result.warrant_basis, 'sustained_deference:3_turns');
+});
+
 test('warrant: repair request is immediate and yields the repair-explanation policy', () => {
   const result = evaluateWarrant({
     signal: classifyLearnerSignal('this makes no sense'),
@@ -2124,7 +2159,7 @@ test('gate: completed-turn audits join record growth in the next decision-time e
   });
   assert.deepEqual(third.trouble_turns, [1, 2]);
   assert.equal(third.revision_warranted, true);
-  assert.equal(third.warrant_basis, 'accumulated:2_trouble_turns');
+  assert.equal(third.warrant_basis, 'sustained_deference:3_turns');
 });
 
 test('gate input digest binds complete reducer history, not only the current observation', () => {
@@ -2186,7 +2221,7 @@ test('gate input digest binds complete reducer history, not only the current obs
   assert.notEqual(withEarlierTrouble.input_digest, withoutEarlierTrouble.input_digest);
 });
 
-test('gate: a delivered family revision resets old trouble before consuming its own outcome', () => {
+test('gate: a delivered family revision resets old trouble while sustained deference remains consecutive', () => {
   const gate = createTutorStubWarrantGate({ mode: 'active' });
   gate.assess({ turn: 1, learnerText: 'May I enter it?', dagModel: dagModel(4), priorActionFamily: 'stage_next_step' });
   gate.recordTurnOutcome({ turn: 1, actionFamily: 'stage_next_step', deterministicFallback: true });
@@ -2208,7 +2243,8 @@ test('gate: a delivered family revision resets old trouble before consuming its 
     priorActionFamily: 'challenge_resistance',
   });
   assert.deepEqual(afterRevision.trouble_turns, [3]);
-  assert.equal(afterRevision.revision_warranted, false);
+  assert.equal(afterRevision.revision_warranted, true);
+  assert.equal(afterRevision.warrant_basis, 'sustained_deference:3_turns');
 });
 
 test('gate: successful challenge exits to stage_next_step even when the strict DAG stays flat', () => {

@@ -33,8 +33,10 @@ const ANALYTIC_MARKER_PATTERN =
 // Start-anchored on purpose: an utterance that LEADS with the permission modal
 // defers the whole move ("May I keep the entry that…"), while one that leads
 // with content and only appends a recording request ("It supports X; may I
-// write that…") made a claim first and stays analytic. Deference neither masks
-// accumulated trouble nor immediately warrants.
+// write that…") made a claim first and stays analytic. Single-turn deference
+// neither masks accumulated trouble nor immediately warrants; under
+// re-registration 079, three deferential decision-time signals in a row arm
+// the gate as sustained deference.
 const DEFERENCE_PATTERN =
   /^(?:may|might|should|shall|could|can|would) (?:i|we)\s+(?:add|enter|keep|note|put|record|repeat|say|use|write)\b|^(?:would|could|will|can) you (?:have|like|choose|pick|decide)\b|^do you want (?:me|us) to\b|^is it (?:all right|ok(?:ay)?) if (?:i|we)\b/iu;
 
@@ -181,7 +183,8 @@ export function classifyLearnerSignal(text) {
  *  - troubleTurns: prior tutor turns in the current strategy streak that carry
  *    defeaters ([{turn, defeaters}])
  *  - complaintTurns: learner register-complaint turns inside the streak
- *  - deferenceSustained: last three decision-time signals all permission-framed
+ *  - deferenceSustained: last three decision-time signals all permission-framed;
+ *    when true, this is its own revision warrant (re-registration 079)
  *  - divergence: typed divergence rows (for the policy choice)
  *  - strategyInForce: action family held through the prior turn
  *  - actionContract: expected-uptake lifecycle outcome for strategyInForce
@@ -222,6 +225,7 @@ export function evaluateWarrant({
     unsafeClosureCandidate ||
     priorityContractRevision ||
     registerEscalation ||
+    deferenceSustained === true ||
     accumulated ||
     contractRevision;
   const registerRevisionWarranted = complaintTurns.length >= 1;
@@ -237,13 +241,15 @@ export function evaluateWarrant({
             ? `contract_${actionContract.status}:${strategyInForce}:${actionContract.reason}`
             : registerEscalation
               ? `register_escalation:${complaintTurns.length}_complaints`
-              : accumulated
-                ? `accumulated:${troubleTurns.length}_trouble_turns`
-                : contractRevision
-                  ? `contract_${actionContract.status}:${strategyInForce}:${actionContract.reason}`
-                  : masked && troubleTurns.length >= ACCUMULATED_TROUBLE_THRESHOLD
-                    ? 'masked_by_engaged_analytic'
-                    : 'none';
+              : deferenceSustained === true
+                ? 'sustained_deference:3_turns'
+                : accumulated
+                  ? `accumulated:${troubleTurns.length}_trouble_turns`
+                  : contractRevision
+                    ? `contract_${actionContract.status}:${strategyInForce}:${actionContract.reason}`
+                    : masked && troubleTurns.length >= ACCUMULATED_TROUBLE_THRESHOLD
+                      ? 'masked_by_engaged_analytic'
+                      : 'none';
   const policy = revisionWarranted
     ? recommendRepairPolicy({
         signal,

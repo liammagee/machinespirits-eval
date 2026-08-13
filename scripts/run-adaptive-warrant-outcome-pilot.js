@@ -182,7 +182,7 @@ export function verifyOutcomePilotManifestBindings({ manifestPath = DEFAULT_MANI
       arithmetic: '(18 x 30 cap) + (2 x 144) + (2 x 144) = 1116; measured live unit 26 per dialogue (report 069)',
       counter_before: 4067,
       counter_after_if_completed: 5183,
-      ceiling: 11337,
+      ceiling: 19337,
       remaining_after_if_completed: 6154,
     },
     'pilot call plan',

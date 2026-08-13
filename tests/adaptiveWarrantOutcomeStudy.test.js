@@ -27,6 +27,8 @@ import {
   guardOutcomeStandingPermissionMenu,
   guardOutcomePilotPreparation,
 } from '../scripts/prepare-adaptive-warrant-outcome-study.js';
+import { deriveAdaptiveWarrantShadow } from '../scripts/derive-adaptive-warrant-shadow.js';
+import { createTutorStubWarrantGate } from '../services/tutorStubWarrantGate.js';
 
 const digest = (character) => character.repeat(64);
 
@@ -92,11 +94,73 @@ test('run configurations expose bare, gated, and standing-permission conditions'
     'standing_permission',
   ]);
   assert.deepEqual(OUTCOME_STUDY_RUN_CONFIGURATIONS.map((row) => row.warrant_gate_mode), [
-    'off',
+    'observe',
     'active',
-    'off',
+    'observe',
   ]);
   assert.match(OUTCOME_STUDY_RUN_CONFIGURATIONS[2].cli_args.join(' '), /standing-instructions-file/u);
+});
+
+test('all outcome conditions persist the same decision-time learner-signal block while only gated is active', () => {
+  const decisions = OUTCOME_STUDY_RUN_CONFIGURATIONS.map((configuration) =>
+    createTutorStubWarrantGate({ mode: configuration.warrant_gate_mode }).assess({
+      turn: 1,
+      learnerText: 'May I enter the public timing fact?',
+      dagModel: { learnerRecord: { grounded: [], voicedDerived: [] } },
+      priorActionFamily: 'stage_next_step',
+      proposedActionFamily: 'stage_next_step',
+    }),
+  );
+  assert.deepEqual(
+    decisions.map((decision) => decision.mode),
+    ['observe', 'active', 'observe'],
+  );
+  assert.ok(decisions.every((decision) => decision.learner_signal));
+  assert.deepEqual(decisions[0].learner_signal, decisions[1].learner_signal);
+  assert.deepEqual(decisions[1].learner_signal, decisions[2].learner_signal);
+  assert.deepEqual(Object.keys(decisions[0].learner_signal), Object.keys(decisions[2].learner_signal));
+  assert.equal(decisions[0].override, null);
+  assert.equal(decisions[2].override, null);
+});
+
+test('zero-call v3 decision-input replay reproduces registered sustained-deference predictions P1 and P2', () => {
+  const root = path.resolve(
+    '.tutor-stub-auto-eval/adaptive-warrant-outcome-pilot-v3-live-2026-08-13/dialogues',
+  );
+  const predictions = new Map([
+    ['02', null],
+    ['04', 6],
+    ['09', 3],
+    ['11', null],
+    ['13', 5],
+    ['18', 5],
+  ]);
+  const observed = new Map();
+
+  for (const [dialogue, expectedTurn] of predictions) {
+    const directory = fs
+      .readdirSync(root)
+      .find((name) => name.startsWith(`outcome-pilot-${dialogue}-`) && name.endsWith('-gated'));
+    assert.ok(directory, `missing quarantined v3 gated dialogue ${dialogue}`);
+    const trace = fs.readdirSync(path.join(root, directory)).find((name) => name.endsWith('.jsonl'));
+    assert.ok(trace, `missing quarantined v3 trace for dialogue ${dialogue}`);
+    const replay = deriveAdaptiveWarrantShadow(path.join(root, directory, trace), { includeTurnOne: true });
+    const armingTurns = replay.sessions
+      .at(-1)
+      .decisions.filter((decision) => decision.warrant_basis === 'sustained_deference:3_turns')
+      .map((decision) => decision.turn);
+    observed.set(dialogue, armingTurns[0] ?? null);
+    assert.equal(observed.get(dialogue), expectedTurn, `dialogue ${dialogue} earliest arming turn`);
+  }
+
+  assert.deepEqual(Object.fromEntries(observed), {
+    '02': null,
+    '04': 6,
+    '09': 3,
+    '11': null,
+    '13': 5,
+    '18': 5,
+  });
 });
 
 test('standing-permission byte guard passes the complete generated menu', () => {
