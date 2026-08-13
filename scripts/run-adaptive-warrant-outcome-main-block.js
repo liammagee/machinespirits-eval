@@ -406,6 +406,16 @@ export function createOutcomeMainBlockBudget({ checkpointPath, checkpoint = null
   return { state, reserveMany, persist };
 }
 
+export function resolveOutcomeMainBlockLaunchCommit({ checkpoint, semanticPreflight } = {}) {
+  const preflightCommit = semanticPreflight?.bindings?.source_commit;
+  if (!preflightCommit) throw new Error('outcome main-block reused semantic preflight launch stamp missing');
+  const freezeCommit = checkpoint?.freeze?.source_commit;
+  if (freezeCommit && freezeCommit !== preflightCommit) {
+    throw new Error('outcome main-block reused semantic preflight launch stamp drift');
+  }
+  return preflightCommit;
+}
+
 function emitOutcomeMainBlockFreeze({
   outputPath,
   studyId,
@@ -579,15 +589,14 @@ export async function executeOutcomeMainBlock({
     for (const required of [promptAuditPath, semanticPreflightPath, schemaAcceptancePath]) {
       if (!fs.existsSync(required)) throw new Error(`outcome main-block resume artifact missing: ${required}`);
     }
-    const launchCommit = checkpoint.freeze?.source_commit;
-    const preflight = readJson(semanticPreflightPath);
-    if (preflight.bindings?.source_commit !== launchCommit) {
-      throw new Error('outcome main-block reused semantic preflight launch stamp drift');
-    }
   }
+  const semanticPreflight = readJson(semanticPreflightPath);
+  const launchCommit = resume
+    ? resolveOutcomeMainBlockLaunchCommit({ checkpoint, semanticPreflight })
+    : git(['rev-parse', 'HEAD']);
   validateAdaptiveWarrantSemanticPreflightArtifact({
-    artifact: readJson(semanticPreflightPath),
-    expectedSourceCommit: resume ? checkpoint.freeze.source_commit : git(['rev-parse', 'HEAD']),
+    artifact: semanticPreflight,
+    expectedSourceCommit: launchCommit,
   });
 
   budget.state.status = 'generation';

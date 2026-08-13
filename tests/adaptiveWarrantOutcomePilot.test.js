@@ -38,6 +38,7 @@ import {
   buildOutcomeMainBlockAssignments,
   guardOutcomeMainBlockDecisionCollection,
   guardOutcomeMainBlockStudyPlan,
+  resolveOutcomeMainBlockLaunchCommit,
   runAfterOutcomeMainBlockAllowanceGuard,
   verifyOutcomeMainBlockManifest,
 } from '../scripts/run-adaptive-warrant-outcome-main-block.js';
@@ -822,6 +823,30 @@ test('checkpoint resume skips a completed dialogue', async (t) => {
   });
   assert.equal(launches, 0);
   assert.equal(checkpoint.dialogues.length, 1);
+});
+
+test('main-block resume reuses the preflight launch stamp before freeze emission and checks it afterward', () => {
+  const launchCommit = '1'.repeat(40);
+  const semanticPreflight = { bindings: { source_commit: launchCommit } };
+  assert.equal(
+    resolveOutcomeMainBlockLaunchCommit({ checkpoint: { freeze: null }, semanticPreflight }),
+    launchCommit,
+  );
+  assert.equal(
+    resolveOutcomeMainBlockLaunchCommit({
+      checkpoint: { freeze: { source_commit: launchCommit } },
+      semanticPreflight,
+    }),
+    launchCommit,
+  );
+  assert.throws(
+    () =>
+      resolveOutcomeMainBlockLaunchCommit({
+        checkpoint: { freeze: { source_commit: '2'.repeat(40) } },
+        semanticPreflight,
+      }),
+    /semantic preflight launch stamp drift/u,
+  );
 });
 
 test('resumed parent starts both readers fresh when neither child checkpoint exists', async (t) => {
