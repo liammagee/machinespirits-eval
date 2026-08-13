@@ -24,8 +24,18 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — amendment 093a: resume provenance widening + counter
-  correction; driver repairs and resumes.** The driver stopped 092a
+- **CURRENT — amendments 093a + 093b: resume provenance widening;
+  zero-call artifacts now FROZEN into paid bindings; driver repairs
+  and resumes.** Second structural stop (no report number spent):
+  093a task 6 still ordered regenerating the two zero-call artifacts,
+  but the paid collections and original freeze bind their launch-era
+  hashes and the children check those bytes. Reviewer confirmed the
+  on-disk artifacts still match (preflight `743ee634…`, carryover
+  `47efb494…`). Amendment 093b: on reader-resume the parent REUSES
+  both artifacts (hash- and stamp-checked against the frozen
+  bindings, not HEAD); the regenerate-in-place authority now applies
+  ONLY when no child checkpoint exists; parent-only change, the
+  four-element child diff stands. Report 094 next. The driver stopped 092a
   before any edit or call (report 093, `fe1da3da`): both children
   require collection stamp = freeze stamp = current clean HEAD, and
   the parent re-emits the freeze at HEAD, so a reused paid collection
