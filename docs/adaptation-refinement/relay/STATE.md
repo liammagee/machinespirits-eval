@@ -24,7 +24,25 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — ruling 074a + direction 075: v3 stopped at the frozen
+- **CURRENT — note 077: coverage repair VERIFIED PASS; GO for v4
+  WITHHELD pending a human ruling on re-registration scope.**
+  Direction 075 done at `48bf2e97` (report 076, `28459b65`): bounded
+  analyzer retry (2 fresh re-dispatches, strict parser unchanged),
+  fail-closed child seal (`learner_analysis_incomplete`, exit
+  nonzero), launcher seal-time coverage guard, regression tests on
+  the real dialogue-11 fixture (byte-verified), counter literals
+  re-pinned 4,067 → 5,183. Both sessions verified PASS, zero calls.
+  BUT the final gate surfaced a design fact: the warrant gate never
+  arms on sustained polite deference (verified in code + all four
+  never-challenging v3 gated dialogues + a live seed-518 smoke with
+  the sensor fix), so a v4 take would read zero challenges with
+  near-certainty. Making deference a warrant basis = substantive
+  change = fresh registration = human's call (052a). Counter also
+  stale: two human-authorized smokes in the second session (A: 26
+  calls; B live), ≥4,096 of 11,337; re-pin after B settles. Ledger
+  note: two 074a files exist (ruling + second-session verdict, same
+  verdict); numbering continues at 077.
+- **RESOLVED — ruling 074a + direction 075: v3 stopped at the frozen
   case-count guard (143/144); TECHNICAL; coverage repair directed.**
   v3 generation was clean — 18/18 dialogues sealed complete, 454
   calls, zero quarantines — but dialogue 11 (world 102, seed 516,
