@@ -24,7 +24,25 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — amendment 052c (note 078): the human raised the hard
+- **CURRENT — re-registration 079 + direction 080: v4 build ordered.**
+  The human approved option 1 verbatim ("approve option 1, prepare
+  the re-registration", 13 Aug). 079 registers four changes: the
+  committed deference sensor (`46bfbdd9`), sustained deference
+  (3 consecutive turns) as its own warrant basis
+  (`sustained_deference:3_turns`, to build), the committed
+  coverage repair (`48bf2e97`, 2 retries + fail-closed seal), and
+  decision-time learner signals in all three conditions. Predictions
+  P1/P2 pinned from the v3 replay table (arm t6/t3/t5/t5 for
+  never-breakers; never for self-breakers); risk R1 (interrupting
+  productive deferrers) report-only. Guarded bad learner EXCLUDED —
+  own future block. Direction 080 orders the build, zero calls:
+  warrant basis, condition-parity signals, ceiling re-pin
+  11,337→19,337, seal-gated counter re-pin (4,122 + Sol re-take
+  events, ONLY once all three sol dirs seal), tests incl. zero-call
+  v3 replay asserting P1/P2. Report to 081. Then: reviewer
+  verification, ONE second-session final gate, fresh GO note, v4
+  launch ("launch when the review passes, keep me posted" stands).
+- **052c (note 078): the human raised the hard
   ceiling by 8,000, from 11,337 to 19,337 attempts** (verbatim:
   "increase the call limit by another 8,000", 13 Aug). Counting rule
   unchanged. Manifest ceiling literals still say 11,337 and must be
