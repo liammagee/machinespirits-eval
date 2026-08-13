@@ -24,7 +24,29 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — GO note 073a: pilot third take (v3) launched.**
+- **CURRENT — ruling 074a + direction 075: v3 stopped at the frozen
+  case-count guard (143/144); TECHNICAL; coverage repair directed.**
+  v3 generation was clean — 18/18 dialogues sealed complete, 454
+  calls, zero quarantines — but dialogue 11 (world 102, seed 516,
+  gated) turn 5's strict learner analysis failed validation
+  (`invalid_semantic_events`: `events[0].target:
+  unspecified_cannot_name_public_identifiers`), was recorded
+  `learner_analysis_unanalyzed`, and the child sealed complete at
+  coverage 7/8. The corpus builder excluded that turn; the guard
+  refused before any reader call (report 074, `5eea75f9`). The child
+  log's `coverage 1` is DAG best-path coverage — a different metric;
+  no artifact conflict. Ruling 074a: technical under 052a; v3
+  dialogues 1–18 QUARANTINED from outcome admission; GO 073a
+  CONSUMED; counter **4,067** of 11,337; the 144-case gate is never
+  waived. Direction 075: (1) bounded analyzer retry (2 fresh
+  re-dispatches per turn, budget-reserved, strict parser unchanged),
+  (2) fail-closed child seal on coverage < 1.0, (3) launcher
+  seal-time coverage guard with immediate quarantine, (4) regression
+  tests on the real dialogue-11 artifacts; counter re-pin 4,067 →
+  5,183 (remaining 6,154). Report to 076. v4 relaunch needs
+  both-session review + a fresh GO note.
+- **RESOLVED — GO note 073a: pilot third take (v3) launched, stopped
+  post-generation.**
   Direction 072 done at `4f3508cd` (report 073, `c72cf50f`): sized
   `tutor_system_standing` surface 24,000/6,000 (plain surface
   unchanged); duplicate audit scoped to the delimited menu block plus
