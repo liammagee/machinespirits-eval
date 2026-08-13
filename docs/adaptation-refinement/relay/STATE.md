@@ -24,7 +24,26 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — re-registration 079 + direction 080: v4 build ordered.**
+- **CURRENT — v4 build DONE at `4a0129a4`; reviewer verification PASS;
+  awaiting second-session final gate + settled counter.** Driver
+  stopped once on the registered comment-conflict tripwire (report
+  081); direction 082 ruled registration 079 supersedes the stale
+  comment and corrected task-1 scope (arm on the existing
+  three-turn deference input; producer unchanged). Report 083: gate
+  arms on sustained deference with basis `sustained_deference:3_turns`
+  (after register escalation, before accumulated trouble); bare +
+  standing-permission now run the gate in observe mode (same
+  decision-time signal block in all three conditions, only gated
+  acts); ceiling literals re-pinned to 19,337; zero-call replay over
+  the quarantined v3 gated traces reproduces P1/P2 exactly
+  (t6/t3/t5/t5 for 04/09/13/18; never for 02/11). Reviewer ran
+  211/211 + ESLint clean, read the full diff, checked observe-mode
+  never intervenes. Counter pin DEFERRED — sol-smoke-03 still
+  running; GO note pins the settled value. Launch waits on the
+  final-gate verdict AND the settled counter; then a fresh GO note
+  (verbatim command, fresh v4 out dir) under the human's standing
+  "launch when the review passes".
+- **DONE — re-registration 079 + direction 080: v4 build ordered.**
   The human approved option 1 verbatim ("approve option 1, prepare
   the re-registration", 13 Aug). 079 registers four changes: the
   committed deference sensor (`46bfbdd9`), sustained deference
