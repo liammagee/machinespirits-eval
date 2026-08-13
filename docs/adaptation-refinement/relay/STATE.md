@@ -24,6 +24,12 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
+- **CURRENT — amendment 052c (note 078): the human raised the hard
+  ceiling by 8,000, from 11,337 to 19,337 attempts** (verbatim:
+  "increase the call limit by another 8,000", 13 Aug). Counting rule
+  unchanged. Manifest ceiling literals still say 11,337 and must be
+  re-pinned in the next directed repair. The GO hold below stands —
+  the raise is budget room, not a design ruling.
 - **CURRENT — note 077: coverage repair VERIFIED PASS; GO for v4
   WITHHELD pending a human ruling on re-registration scope.**
   Direction 075 done at `48bf2e97` (report 076, `28459b65`): bounded
