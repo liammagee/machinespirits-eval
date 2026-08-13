@@ -185,7 +185,7 @@
       "one_case_response_schema_sha256": "f944b9b89c7bc3c3756bfe81dac476e2e84ca1fc215dbb1b05df89b3288135f0",
       "one_case_packet_sha256": "237c0784f637cb74ea124a5ec2c00912e3bc39eddf6359573c276fa823c3e06b",
       "preparer_sha256": "05c748220a24e82c40a84fd319b73ae6184883c5350aaecf432cde1b920a6e9f",
-      "reader_digest": "6cb95fd8032f4c43c9fdc1e45808680365d5a0d3eb2dda5ef085e4d97e10145f"
+      "reader_digest": "936d2ef8dbaaa24ec465dba1120b6e348b59cab756ae43af73c9e727b82e0be7"
     },
     "caps_bytes": {
       "response": 14000,
