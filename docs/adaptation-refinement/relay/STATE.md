@@ -49,8 +49,23 @@
   096's seeds 518/519 were burned by design smokes A and B — a
   reviewer error, corrected by amendment 096a, which re-registers
   seeds **524–535** (reviewer-checked clean across repo, run dirs,
-  and archive) and directs the driver to resume 097. Launch waits
-  for reviewer note 097a after zero-call verification of the build.
+  and archive) and directs the driver to resume 097. The resumed
+  build completed (report 098 extended, `b8e4bd63`): launcher holds
+  by default, manifest frozen (seeds 524–535, worlds SHA-pinned,
+  absolute cap 3,360 calls), child runner still byte-pinned at
+  `c0a20130…`, 85 focused tests passed, zero paid calls. Reviewer
+  verified the build zero-call (pin shasum, HOLD run, paid-path
+  refusal, manifest arithmetic).
+- **CURRENT — GO note 097a CUT; main-block run LAUNCHED.**
+  `097a-reviewer-go-note-main-block.md` authorizes
+  `node scripts/run-adaptive-warrant-outcome-main-block.js
+  --accept-charges`. Counter opens 5,274/19,337; absolute cap 3,360
+  calls this run. 72 dialogues (24 per condition), worlds 101/102,
+  seeds 524–535, decision readers only (1,152 planned, ceiling
+  1,200), full-contract acceptance audit before scoring, M7/M8
+  report-only from stored events. Driver writes report **099**.
+  Resumption from technical failures authorized (083d/052a);
+  substantive fail terminal. NEVER push.
 - **DONE — ruling 094a: contract-invalid reader response ruled
   TECHNICAL; quarantine + single-batch re-take.** Presence-reader-A
   batch 71 (`case-aad700bb…`) labeled a record-entry request with
