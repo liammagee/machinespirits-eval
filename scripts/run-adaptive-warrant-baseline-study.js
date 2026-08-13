@@ -45,6 +45,7 @@ import {
   verifyAdaptiveWarrantStudyChildEvidence,
 } from '../services/adaptiveWarrantStudyIntegrity.js';
 import { collectTutorPrBenchmarkReachablePaths } from '../services/tutorStubPrBenchmarkHook.js';
+import { summarizeTutorStubLearnerAnalysisCoverage } from '../services/tutorStubLearnerAnalysisCoverage.js';
 import {
   ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS,
   ADAPTIVE_WARRANT_DIVERGENCE_INTERPRETATIONS,
@@ -1531,14 +1532,11 @@ export function summarizeAdaptiveWarrantTrace({ tracePath, job, childStatus = nu
   const learnerAnalysisPromptFailures = events.filter(
     (event) => event.type === 'prompt_audit_failed' && event.role === 'tutor_stub_learner_analysis',
   );
-  const learnerAnalysisUnanalyzed = events.filter((event) => event.type === 'learner_analysis_unanalyzed');
-  const learnerAnalysisUnanalyzedTurns = new Set(learnerAnalysisUnanalyzed.map((event) => Number(event.turn)));
+  const learnerAnalysisCoverage = summarizeTutorStubLearnerAnalysisCoverage(events);
+  const learnerAnalysisUnanalyzedTurns = new Set(learnerAnalysisCoverage.unanalyzedTurns);
   const firstLearnerAnalysisTurn = learnerAnalysisCalls.length ? Number(learnerAnalysisCalls[0].turn) : null;
   const promptAuditFailures = events.filter((event) => event.type === 'prompt_audit_failed');
   const promptAuditRecoveries = events.filter((event) => event.type === 'prompt_audit_recovery');
-  const successfulLearnerAnalysisTurns = turnRecords.filter(
-    (record) => record.classification?.combined === true && !record.classification?.error,
-  );
   const liveDecisions = decisions.filter((row) => row.gate);
   const shadowDecisions = decisions.filter((row) => row.shadow);
   const firstWarrant = shadowDecisions.find((row) => row.shadow.revision_warranted)?.turn || null;
@@ -1571,7 +1569,7 @@ export function summarizeAdaptiveWarrantTrace({ tracePath, job, childStatus = nu
     tracePath,
     turnCount: turnRecords.length,
     learnerAnalysisCallCount: learnerAnalysisCalls.length,
-    learnerAnalysisUnanalyzedCount: learnerAnalysisUnanalyzed.length,
+    learnerAnalysisUnanalyzedCount: learnerAnalysisCoverage.unanalyzedTurns.length,
     learnerAnalysisUnanalyzedTurns: [...learnerAnalysisUnanalyzedTurns].sort((left, right) => left - right),
     firstLearnerAnalysisStatus:
       firstLearnerAnalysisTurn === null
@@ -1583,9 +1581,7 @@ export function summarizeAdaptiveWarrantTrace({ tracePath, job, childStatus = nu
     promptAuditFailureCount: promptAuditFailures.length,
     promptAuditRecoveryCount: promptAuditRecoveries.length,
     learnerAnalysisErrorCount: turnRecords.filter((record) => record.classification?.error).length,
-    learnerAnalysisCoverage: turnRecords.length
-      ? Number((successfulLearnerAnalysisTurns.length / turnRecords.length).toFixed(3))
-      : null,
+    learnerAnalysisCoverage: turnRecords.length ? Number(learnerAnalysisCoverage.coverage.toFixed(3)) : null,
     initialDagTotal,
     finalDagTotal,
     learnerRecordGrowth:

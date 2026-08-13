@@ -34,6 +34,11 @@ import {
 } from '../services/experimentRunArtifacts.js';
 import { tutorStubPolicyRequiresDeterministicDraw } from '../services/tutorStubPolicySampler.js';
 import {
+  resolveTutorStubLearnerAnalysisSealDisposition,
+  summarizeTutorStubLearnerAnalysisCoverage,
+  TUTOR_STUB_LEARNER_ANALYSIS_INCOMPLETE_STATUS,
+} from '../services/tutorStubLearnerAnalysisCoverage.js';
+import {
   recordTutorStubModelObservation,
   summarizeTutorStubFixedHorizon,
   summarizeTutorStubFixedHorizonRows,
@@ -10837,6 +10842,21 @@ function startEvidenceTransaction({ traceDir, startedAt, jobs, config, resumePla
   return evidencePlan;
 }
 
+function learnerAnalysisSealDisposition(results, traceDir) {
+  return resolveTutorStubLearnerAnalysisSealDisposition(
+    (results || []).flatMap((result) =>
+      (result.traces || []).map((tracePath) => {
+        const resolved = resolveTracePath(tracePath, traceDir);
+        const { events } = readSelectedJsonlEventsSync(resolved, { retainTypes: ['turn_complete'] });
+        return {
+          jobId: result.key || null,
+          coverage: summarizeTutorStubLearnerAnalysisCoverage(events),
+        };
+      }),
+    ),
+  );
+}
+
 function sealEvidenceTransaction({
   traceDir,
   evidencePlan,
@@ -10848,30 +10868,37 @@ function sealEvidenceTransaction({
 }) {
   appendPolicyDrawEvents(traceDir, observedResults, evidencePlan);
   appendObservedModelEvents(traceDir, observedResults, evidencePlan);
+  const learnerAnalysis = status === 'complete' ? learnerAnalysisSealDisposition(results, traceDir) : null;
+  const effectiveStatus = learnerAnalysis?.status || status;
   appendRunEvent(traceDir, {
     type: 'run_completed',
-    status,
+    status: effectiveStatus,
     resultCount: results.length,
     summary: logicalArtifactPath(summaryPath, traceDir),
   });
   createRunSeal(traceDir, {
-    status,
+    status: effectiveStatus,
     metadata: {
       results: results.length,
       ok: results.filter((result) => result.status === 'ok').length,
       failed: results.filter((result) => result.status === 'failed').length,
       dryRun: results.filter((result) => result.status === 'dry_run').length,
       resumeOf: resumePlan?.sourceRunId || null,
+      learnerAnalysis,
     },
   });
-  if (status === 'incomplete') {
+  if (!['complete', 'dry_run'].includes(effectiveStatus)) {
     // Failed jobs never recorded their contracted draws, so full verification
     // cannot pass. Require the sealed partial evidence to be integrity-clean
     // and surface the unmet contract items without discarding the run.
     const verification = assertExperimentRun(traceDir, { completeness: false });
     const unmet = verifyExperimentRun(traceDir).errors;
     console.warn(
-      `[auto-eval] sealed ${traceDir} with status incomplete; integrity verified, ${unmet.length} unmet contract item(s)`,
+      `[auto-eval] sealed ${traceDir} with status ${effectiveStatus}; integrity verified, ${unmet.length} unmet contract item(s)${
+        learnerAnalysis?.unanalyzed?.length
+          ? `; unanalyzed turns ${learnerAnalysis.unanalyzed.map((row) => `${row.jobId || 'unknown'}:${row.turn}`).join(', ')}`
+          : ''
+      }`,
     );
     return verification;
   }
@@ -11253,7 +11280,7 @@ async function main() {
         summary: logicalArtifactPath(report.summaryPath, plan.traceDir),
         html: report.htmlPath ? logicalArtifactPath(report.htmlPath, plan.traceDir) : null,
       });
-      sealEvidenceTransaction({
+      const sealed = sealEvidenceTransaction({
         traceDir: plan.traceDir,
         evidencePlan,
         results: plan.retainedResults,
@@ -11262,6 +11289,7 @@ async function main() {
         summaryPath: report.summaryPath,
         resumePlan: plan,
       });
+      if (sealed.seal?.status === TUTOR_STUB_LEARNER_ANALYSIS_INCOMPLETE_STATUS) process.exit(1);
       return;
     }
     printProgress({
@@ -11303,7 +11331,7 @@ async function main() {
       html: report.htmlPath ? logicalArtifactPath(report.htmlPath, plan.traceDir) : null,
     });
     const failedRows = combinedResults.some((result) => result.status === 'failed');
-    sealEvidenceTransaction({
+    const sealed = sealEvidenceTransaction({
       traceDir: plan.traceDir,
       evidencePlan,
       results: combinedResults,
@@ -11312,7 +11340,8 @@ async function main() {
       summaryPath: report.summaryPath,
       resumePlan: plan,
     });
-    if (aborted || failedRows) process.exit(1);
+    if (aborted || failedRows || sealed.seal?.status === TUTOR_STUB_LEARNER_ANALYSIS_INCOMPLETE_STATUS)
+      process.exit(1);
     return;
   }
 
@@ -11354,14 +11383,15 @@ async function main() {
     html: report.htmlPath ? logicalArtifactPath(report.htmlPath, traceDir) : null,
   });
   const failedRows = results.some((result) => result.status === 'failed');
-  sealEvidenceTransaction({
+  const sealed = sealEvidenceTransaction({
     traceDir,
     evidencePlan,
     results,
     status: aborted || failedRows ? 'incomplete' : args['dry-run'] ? 'dry_run' : 'complete',
     summaryPath: report.summaryPath,
   });
-  if (aborted || failedRows) process.exit(1);
+  if (aborted || failedRows || sealed.seal?.status === TUTOR_STUB_LEARNER_ANALYSIS_INCOMPLETE_STATUS)
+    process.exit(1);
 }
 
 function writeSummary({

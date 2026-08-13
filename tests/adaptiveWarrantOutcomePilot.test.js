@@ -11,6 +11,7 @@ import {
   OUTCOME_PILOT_PER_DIALOGUE_CAP,
   createOutcomePilotBudget,
   executeOutcomePilot,
+  guardOutcomeDialogueLearnerAnalysisCoverage,
   preflightOutcomePilotPromptAudits,
   renderOutcomePilotPromptConfiguration,
   runOutcomeGeneration,
@@ -36,6 +37,17 @@ function fingerprintCase(index) {
     learner_record_at_decision: { grounded_count: index, voiced_derived_count: 0, total: index },
     learner_record_trajectory: [{ turn: index, grounded_count: index, voiced_derived_count: 0, total: index }],
   };
+}
+
+function v3Dialogue11FixtureEvents() {
+  return fs
+    .readFileSync(
+      path.join(ROOT, 'tests/fixtures/adaptive-warrant-outcome-v3-dialogue-11-learner-analysis.jsonl'),
+      'utf8',
+    )
+    .trim()
+    .split('\n')
+    .map((line) => JSON.parse(line));
 }
 
 test('paid execution refuses before any work when --go-note is absent', async () => {
@@ -64,10 +76,10 @@ test('manifest guard passes on the real frozen files (menu text carries one trai
     decision_readers: 288,
     total: 1116,
     arithmetic: '(18 x 30 cap) + (2 x 144) + (2 x 144) = 1116; measured live unit 26 per dialogue (report 069)',
-    counter_before: 3613,
-    counter_after_if_completed: 4729,
+    counter_before: 4067,
+    counter_after_if_completed: 5183,
     ceiling: 11337,
-    remaining_after_if_completed: 6608,
+    remaining_after_if_completed: 6154,
   });
 });
 
@@ -214,6 +226,62 @@ test('checkpoint resume skips a completed dialogue', async (t) => {
   });
   assert.equal(launches, 0);
   assert.equal(checkpoint.dialogues.length, 1);
+});
+
+test('launcher quarantines the sealed v3 dialogue-11 coverage shape before counting it complete', async (t) => {
+  const directory = temporaryDirectory(t);
+  const failure = v3Dialogue11FixtureEvents().find((event) => event.type === 'learner_analysis_unanalyzed');
+  const checkpoint = {
+    schema: OUTCOME_PILOT_CHECKPOINT_SCHEMA,
+    status: 'generation',
+    call_budget: {
+      plan: { ...OUTCOME_PILOT_CALL_PLAN },
+      actual: { generation: 0, presence_readers: 0, decision_readers: 0, total: 0 },
+      delta: { ...OUTCOME_PILOT_CALL_PLAN },
+      events: [],
+    },
+    dialogues: [],
+    quarantined_dialogues: [],
+  };
+  const budget = createOutcomePilotBudget({
+    checkpointPath: path.join(directory, 'checkpoint.json'),
+    checkpoint,
+  });
+  const row = {
+    childStatus: 'ok',
+    childEvidence: { ok: true, status: 'complete' },
+    turnCount: 8,
+    learnerAnalysisCoverage: 0.875,
+    learnerAnalysisUnanalyzedTurns: [failure.turn],
+    tracePath: null,
+  };
+  const guard = guardOutcomeDialogueLearnerAnalysisCoverage(row);
+  assert.deepEqual(guard, {
+    status: 'failed',
+    coverage: 0.875,
+    unanalyzed_turns: [5],
+    reason: 'learner_analysis_coverage_below_one: turns 5',
+  });
+  await runOutcomeGeneration({
+    jobs: [
+      {
+        id: 'dialogue-11',
+        ordinal: 11,
+        world: 'world_102',
+        seed: 516,
+        condition: 'gated',
+        command: [],
+        jobDir: path.join(directory, 'dialogues', 'dialogue-11'),
+      },
+    ],
+    checkpoint,
+    budget,
+    runDialogue: async () => ({ status: 0, error: null }),
+    collectJobResult: () => row,
+  });
+  assert.equal(checkpoint.dialogues[0].status, 'quarantined');
+  assert.equal(checkpoint.dialogues[0].error, 'learner_analysis_coverage_below_one: turns 5');
+  assert.equal(checkpoint.quarantined_dialogues.length, 1);
 });
 
 test('representative freeze validates in the form accepted by the frozen decision runner', () => {

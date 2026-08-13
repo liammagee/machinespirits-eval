@@ -1,3 +1,5 @@
+import { dispatchTutorStubLearnerAnalysisWithRetries } from './tutorStubLearnerAnalysisCoverage.js';
+
 export function resetTutorStubWarrantGateAfterLearnerAnalysisFailure(state) {
   if (!state) return false;
   const hadGate = Boolean(state.warrantGate);
@@ -428,29 +430,42 @@ export function createTutorStubLearnerAnalysisRuntime({
       dagPreflight: effectiveDagPreflight,
       tutorFeedback,
     });
-    const raw = await extractTutorStubPublicLearnerAnalysis({
-      learnerText,
-      topic: state.topic,
-      world: state.world,
-      tutorTurn,
-      prompt,
-      dagPreflight: effectiveDagPreflight,
-      callModel: callPromptModel,
-      parseMode: includeSemanticEvents
-        ? TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.STRICT_BENCHMARK
-        : TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.INTERACTIVE,
-      role,
-      strictRole: includeSemanticEvents ? role : null,
-      maxTokens: includeSemanticEvents ? 2500 : Math.max(2500, state.maxTokens || 0),
-      includeSemanticEvents,
-      modelCallOptions: {
-        resolved: state.learnerDag.resolved,
-        trace: state.trace,
-        stream,
-        cliEffort: state.cliEffort,
-        signal,
-      },
-    });
+    const dispatch = () =>
+      extractTutorStubPublicLearnerAnalysis({
+        learnerText,
+        topic: state.topic,
+        world: state.world,
+        tutorTurn,
+        prompt,
+        dagPreflight: effectiveDagPreflight,
+        callModel: callPromptModel,
+        parseMode: includeSemanticEvents
+          ? TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.STRICT_BENCHMARK
+          : TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.INTERACTIVE,
+        role,
+        strictRole: includeSemanticEvents ? role : null,
+        maxTokens: includeSemanticEvents ? 2500 : Math.max(2500, state.maxTokens || 0),
+        includeSemanticEvents,
+        modelCallOptions: {
+          resolved: state.learnerDag.resolved,
+          trace: state.trace,
+          stream,
+          cliEffort: state.cliEffort,
+          signal,
+        },
+      });
+    const raw = includeSemanticEvents
+      ? await dispatchTutorStubLearnerAnalysisWithRetries({
+          dispatch,
+          turn: tutorTurn,
+          appendAttempt: (attempt) =>
+            appendTraceEvent(state.trace, {
+              type: 'learner_analysis_attempt',
+              ...attempt,
+              publicTranscriptChanged: false,
+            }),
+        })
+      : await dispatch();
     const pendingSizeAudit = state.pendingLearnerAnalysisSemanticSizeAudit;
     if (includeSemanticEvents && Number(pendingSizeAudit?.turn) === Number(tutorTurn)) {
       delete state.pendingLearnerAnalysisSemanticSizeAudit;

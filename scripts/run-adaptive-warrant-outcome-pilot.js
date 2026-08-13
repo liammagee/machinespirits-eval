@@ -180,10 +180,10 @@ export function verifyOutcomePilotManifestBindings({ manifestPath = DEFAULT_MANI
       decision_readers: 288,
       total: 1116,
       arithmetic: '(18 x 30 cap) + (2 x 144) + (2 x 144) = 1116; measured live unit 26 per dialogue (report 069)',
-      counter_before: 3613,
-      counter_after_if_completed: 4729,
+      counter_before: 4067,
+      counter_after_if_completed: 5183,
       ceiling: 11337,
-      remaining_after_if_completed: 6608,
+      remaining_after_if_completed: 6154,
     },
     'pilot call plan',
   );
@@ -692,7 +692,30 @@ function checkpointHasCompletedDialogue(checkpoint, job) {
   return checkpoint.dialogues.some((row) => row.id === job.id && row.status === 'complete');
 }
 
-export async function runOutcomeGeneration({ jobs, checkpoint, budget, runDialogue = spawnLogged } = {}) {
+export function guardOutcomeDialogueLearnerAnalysisCoverage(row) {
+  if (row?.childStatus !== 'ok') return { status: 'not_checked', reason: 'child_not_complete' };
+  const sealed = row.childEvidence?.ok === true && row.childEvidence?.status === 'complete';
+  const unanalyzedTurns = (row.learnerAnalysisUnanalyzedTurns || []).map(Number).sort((a, b) => a - b);
+  const coverage = Number(row.learnerAnalysisCoverage);
+  if (sealed && coverage === 1 && unanalyzedTurns.length === 0) {
+    return { status: 'passed', coverage, unanalyzed_turns: [] };
+  }
+  const suffix = unanalyzedTurns.length ? `: turns ${unanalyzedTurns.join(',')}` : '';
+  return {
+    status: 'failed',
+    coverage: Number.isFinite(coverage) ? coverage : null,
+    unanalyzed_turns: unanalyzedTurns,
+    reason: `learner_analysis_coverage_below_one${suffix}`,
+  };
+}
+
+export async function runOutcomeGeneration({
+  jobs,
+  checkpoint,
+  budget,
+  runDialogue = spawnLogged,
+  collectJobResult = collectAdaptiveWarrantStudyJobResult,
+} = {}) {
   for (const job of jobs) {
     if (checkpointHasCompletedDialogue(checkpoint, job)) continue;
     const started = new Date().toISOString();
@@ -702,13 +725,18 @@ export async function runOutcomeGeneration({ jobs, checkpoint, budget, runDialog
     });
     let row;
     try {
-      row = collectAdaptiveWarrantStudyJobResult(job, processResult);
+      row = collectJobResult(job, processResult);
     } catch (error) {
       row = { childStatus: 'evidence_invalid', error: error.message, tracePath: null, turnCount: 0 };
     }
     const reservations = countReservedEvents(row.tracePath);
     budget.reserveMany('generation', reservations, { dialogue_id: job.id });
-    const complete = processResult.status === 0 && row.childStatus === 'ok' && row.turnCount === 8;
+    const learnerAnalysisCoverageGuard = guardOutcomeDialogueLearnerAnalysisCoverage(row);
+    const complete =
+      processResult.status === 0 &&
+      row.childStatus === 'ok' &&
+      row.turnCount === 8 &&
+      learnerAnalysisCoverageGuard.status === 'passed';
     const checkpointRow = {
       id: job.id,
       order: job.ordinal,
@@ -721,7 +749,13 @@ export async function runOutcomeGeneration({ jobs, checkpoint, budget, runDialog
       reserved_calls: reservations,
       run_record_path: path.join(job.jobDir, 'run-state.json'),
       trace_path: row.tracePath || null,
-      error: complete ? null : row.error || processResult.error || `child exit ${processResult.status}`,
+      learner_analysis_coverage_guard: learnerAnalysisCoverageGuard,
+      error:
+        complete
+          ? null
+          : learnerAnalysisCoverageGuard.status === 'failed'
+            ? learnerAnalysisCoverageGuard.reason
+            : row.error || processResult.error || `child exit ${processResult.status}`,
       result: row,
     };
     checkpoint.dialogues.push(checkpointRow);

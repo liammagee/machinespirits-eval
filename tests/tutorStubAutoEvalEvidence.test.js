@@ -92,47 +92,56 @@ process.stdin.on('end', () => {
     process.stderr.write('fake codex: induced failure for test marker\\n');
     process.exit(1);
   }
+  const analyzerResponse = {
+    classification: {
+      turn: {
+        summary: 'The learner explicitly asks to test public evidence before deciding.',
+        request_type: 'stepwise_support_request',
+        discourse_move: 'claim',
+        evidence_use: 'none',
+        epistemic_stance: 'exploratory',
+        affect: 'calm',
+        agency: 'steering',
+        scores: {
+          conceptual_engagement: { score: 3, reason: 'Requests an evidence test.' },
+          epistemic_readiness: { score: 4, reason: 'Withholds judgment pending evidence.' },
+        },
+        pedagogical_need: 'Offer one public evidence test.',
+      },
+      overall: {
+        summary: 'The learner is evidence-oriented.',
+        trajectory: 'initial evidence seeking',
+        recurring_pattern: 'none',
+        current_state: 'ready to inspect a public mark',
+        next_best_tutor_move: 'Name one public check without supplying its result.',
+      },
+    },
+    learner_record: {
+      adopt: [],
+      retract: [],
+      derive: [],
+      hypothesis: null,
+      assert_answer: null,
+      human_discourse: {
+        proof_status: 'unclear',
+        provisional_claims: [],
+        implied_warrants: [],
+        missing_warrants: [],
+        implied_public_premises: [],
+        suppressed_or_private_premises: [],
+        common_sense_bridges: [],
+        illicit_hidden_premises: [],
+        proof_debt_candidates: [],
+        side_arc: { detected: false, type: null, reason: null, return_target: null },
+      },
+      notes: '',
+    },
+    semantic_events: { events: [] },
+  };
   const response = role === 'learner'
     ? 'I would test the newest public mark before deciding.'
     : role === 'analyzer'
-      ? process.env.FAKE_CODEX_FORCE_RECOVERY === '1'
-        ? JSON.stringify({
-            classification: {
-              turn: {
-                summary: 'The learner explicitly asks to test public evidence before deciding.',
-                request_type: 'stepwise_support_request',
-                discourse_move: 'claim',
-                evidence_use: 'none',
-                epistemic_stance: 'exploratory',
-                affect: 'calm',
-                agency: 'steering',
-                scores: {
-                  conceptual_engagement: { score: 3, reason: 'Requests an evidence test.' },
-                  epistemic_readiness: { score: 4, reason: 'Withholds judgment pending evidence.' },
-                },
-                pedagogical_need: 'Offer one public evidence test.',
-              },
-              overall: {
-                summary: 'The learner is evidence-oriented.',
-                trajectory: 'initial evidence seeking',
-                recurring_pattern: 'none',
-                current_state: 'ready to inspect a public mark',
-                next_best_tutor_move: 'Name one public check without supplying its result.',
-              },
-            },
-            learner_record: { adopt: [], derive: [], notes: 'No public evidence has been adopted yet.' },
-            register_selection: {
-              engagement_stance: 'precise',
-              reviewer_signal: 'The learner asks for an evidence-bound next move.',
-              request_type: 'stepwise_support_request',
-              engagement_stance_reason: 'Precision keeps the next check bounded.',
-              expected_dag_move: 'identify one eligible public evidence edge',
-              expected_field_move: 'sustain evidence-aware agency',
-              expected_progress_marker: 'the learner names what one public mark would establish',
-              confidence: 0.9,
-            },
-          })
-        : '{}'
+      ? JSON.stringify(analyzerResponse)
       : process.env.FAKE_CODEX_FORCE_RECOVERY === '1' && role === 'recovery'
         ? 'Your suspicion outruns the public record. I set the trial-book beside the balance and keep the verdict open. Which public mark should we test first?'
         : process.env.FAKE_CODEX_FORCE_RECOVERY === '1' && input.includes('Learner says')
