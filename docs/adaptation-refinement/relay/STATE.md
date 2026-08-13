@@ -24,8 +24,25 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — ruling 091a: reader-launcher resume repair; driver
-  repairs the PARENT launcher and resumes.** After the cap raise
+- **CURRENT — ruling 092a: reader retry allowance + collection reuse;
+  driver repairs and resumes.** The 091a parent repair worked and the
+  readers RAN: presence 151/288 complete, decision 120/288 complete,
+  then decision batch 121 died on a codex CLI transport failure and
+  the driver stopped both children (report 092, `4f9de99c`; 272 paid
+  attempts, counter 4,965/19,337; all responses preserved). A plain
+  resume cannot work: each child refuses at `maximum_calls` attempts
+  and both checkpoints carry one no-response attempt, so each would
+  refuse one batch short; and a collection rebuild moves the approval
+  digest (it embeds the commit-stamped preflight), orphaning the paid
+  responses. Ruling 092a: TECHNICAL; parent reuses the existing
+  collections on resume (integrity-checked); both children get a
+  named 12-attempt failed-attempt allowance (byte-symmetric,
+  transport constant, 028/045/088 precedent); the decision-runner pin
+  is re-pinned with an equivalence proof; counter reconciled from
+  child checkpoints at completion. Remaining plan about 137 presence
+  + 168 decision calls. Report 093 next.
+- **DONE — ruling 091a: reader-launcher resume repair; driver
+  repaired the PARENT launcher and resumed.** After the cap raise
   (088, `7d82ab48`), the derived reader digest moved by construction
   and was re-pinned with an equivalence proof (note 088a,
   `21400c4a`). A stale zero-call presence-collection from the old-cap
