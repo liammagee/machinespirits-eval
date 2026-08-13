@@ -24,26 +24,39 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — ruling 094a: contract-invalid reader response ruled
-  TECHNICAL; quarantine + single-batch re-take; driver executes.**
-  The amended repair (`0128ba7d`) worked: both reader channels
-  COMPLETE at 290 attempted / 288 accepted each; counter reconciled
-  to 5,273/19,337 (report 094, `0e642b56`). The parent then failed in
-  free deterministic assembly: presence-reader-A batch 71
-  (`case-aad700bb…`) labels a record-entry request with target
-  `learner_record` while selecting the frozen action object bound to
-  `signal_lamp`. Reviewer confirmed zero-call: the handbook defines
-  the target as the object under inquiry (reader B wrote
-  `signal_lamp` and passes), so the response is defective and the
-  contract sound. Ruled TECHNICAL: a contract-invalid annotation is a
-  reading the instrument never validly produced — the
-  malformed-response class, not a substantive outcome. 094a directs:
-  zero-call enumeration of contract validity over all 576 responses;
-  stop if invalids exceed the per-channel allowance room (10 each);
-  else quarantine (move, never edit) + manifest-driven re-take in
-  both children with the full contract enforced at acceptance;
-  re-pin, full-diff proof, tests; resume, assemble, score, report
-  095. Counter opens 5,273.
+- **CURRENT — v4 pilot COMPLETE with registered NO-GO; main block
+  re-registered (096); awaiting explicit human GO.** Report 095
+  (`ef8a6e3d`): the 094a re-take cost one paid call (enumeration
+  found exactly one contract-invalid response, presence-A batch 71;
+  quarantined, replaced, replacement passed the full contract at
+  acceptance). Pilot gate: (a) PASS, (c) PASS, **(b) FAIL** — M7
+  99.275% and M8 91.304% single-value on 138 consensus cases, over
+  the 90% ceiling. Registered rule executed: stop and redesign the
+  failing measures. Key numbers: M2 warranted challenges gated 11/48
+  vs bare 0/48 vs standing 0/48; M1 correctness flat (76.1 / 80.0 /
+  75.6%); sensor armed in 6/6 gated dialogues (t3–t7, arming turn =
+  first challenge turn); old P2 observed FALSE (the one early
+  self-break re-deferred and armed anyway). Counter settled
+  **5,274/19,337**; run dir archived to the private repo
+  (`fcddcd63`). Re-registration **096** (human-approved drafting,
+  "Do it"): M7/M8 demoted to report-only, presence-reader channel
+  not re-fielded, predictions rewritten from pilot evidence (P1′,
+  P2a, P2b), main block 72 fresh dialogues / seeds 518–529 /
+  decision channel only at the exact 576-case freeze, plan ≈ 3,200
+  calls. Next: direction 097 (zero-call build) only after the human
+  reviews 096; launch needs a fresh GO note (097a) on an explicit
+  human GO. The main block stays UNAUTHORIZED.
+- **DONE — ruling 094a: contract-invalid reader response ruled
+  TECHNICAL; quarantine + single-batch re-take.** Presence-reader-A
+  batch 71 (`case-aad700bb…`) labeled a record-entry request with
+  target `learner_record` against the frozen action object bound to
+  `signal_lamp`; reviewer confirmed zero-call the response was
+  defective and the contract sound (reader B wrote `signal_lamp` and
+  passes). Directed enumeration over all 576 responses, quarantine
+  (move, never edit), manifest-driven re-take in both children with
+  the full contract enforced at acceptance, re-pin + full-diff
+  proof. Executed clean in report 095; both channels 288 unique
+  admitted responses.
 - **DONE — amendments 093a + 093b: resume provenance widening;
   zero-call artifacts FROZEN into paid bindings.** Second structural
   stop (no report number spent):
