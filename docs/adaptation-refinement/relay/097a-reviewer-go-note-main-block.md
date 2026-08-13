@@ -9,11 +9,24 @@ launch held by default, paid path refused without this note.
 
 ## Command
 
-From the worktree root:
+**Corrected 13 Aug after report 099** (`71a9cd9f`): the first form
+of this note named only `--accept-charges`; the launcher fail-closed
+refused, zero calls spent. That was a reviewer error — the pilot GO
+note (083a) shows the full flag form. The complete command, from the
+worktree root, is:
 
 ```bash
-node scripts/run-adaptive-warrant-outcome-main-block.js --accept-charges
+node scripts/run-adaptive-warrant-outcome-main-block.js \
+  --go-note docs/adaptation-refinement/relay/097a-reviewer-go-note-main-block.md \
+  --accept-charges \
+  --out .tutor-stub-auto-eval/adaptive-warrant-outcome-main-block-live-2026-08-13 \
+  --instrument-freeze /private/tmp/adaptive-warrant-v3-matrix-live-489f2429-r38-s514/annotation-freeze-manifest-r52-presence-confirmation.json
 ```
+
+The output directory is fresh (no directory of that name exists).
+The instrument freeze is the unchanged r52 manifest; the reviewer
+re-checked its digest today: `6a64b31f…`. Add `--resume` only on a
+resumption after a technical failure (083d/052a).
 
 ## Bounds
 

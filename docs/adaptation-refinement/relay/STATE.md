@@ -56,10 +56,16 @@
   `c0a20130…`, 85 focused tests passed, zero paid calls. Reviewer
   verified the build zero-call (pin shasum, HOLD run, paid-path
   refusal, manifest arithmetic).
-- **CURRENT — GO note 097a CUT; main-block run LAUNCHED.**
-  `097a-reviewer-go-note-main-block.md` authorizes
-  `node scripts/run-adaptive-warrant-outcome-main-block.js
-  --accept-charges`. Counter opens 5,274/19,337; absolute cap 3,360
+- **CURRENT — GO note 097a CUT (corrected once); main-block run
+  LAUNCHED.** First launch attempt refused fail-closed with zero
+  calls (report 099, `71a9cd9f`): the note named only
+  `--accept-charges`, but the launcher also requires `--go-note`,
+  `--out`, and `--instrument-freeze` — a reviewer error, the pilot
+  note 083a shows the full form. 097a corrected in place with the
+  complete command: fresh output dir
+  `.tutor-stub-auto-eval/adaptive-warrant-outcome-main-block-live-2026-08-13`,
+  instrument freeze = unchanged r52 manifest (digest re-checked
+  `6a64b31f…`). Counter opens 5,274/19,337; absolute cap 3,360
   calls this run. 72 dialogues (24 per condition), worlds 101/102,
   seeds 524–535, decision readers only (1,152 planned, ceiling
   1,200), full-contract acceptance audit before scoring, M7/M8
