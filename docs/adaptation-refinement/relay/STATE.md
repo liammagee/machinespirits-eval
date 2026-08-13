@@ -24,8 +24,19 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — v4 build DONE at `4a0129a4`; reviewer verification PASS;
-  awaiting second-session final gate + settled counter.** Driver
+- **CURRENT — v4 LAUNCH HANDED TO THE DRIVER (direction 083c).**
+  Final gate PASSED (second session, zero calls: scope, arming slot,
+  basis, policy consumption, independent replay-table match). Counter
+  settled and pinned at 4,198 (`856251d1`); ceiling 19,337. GO note
+  083a committed; two launch attempts refused zero-call (comma-format
+  `1,116` in the note, fixed at `5bed534f`; stale extraction-schema
+  fingerprint, re-pinned at `148621f3` — note 083b, cause = registered
+  sensor change `46bfbdd9`). The human then ruled (13 Aug): control to
+  the codex driver, reviewer interprets results only; "Go, approve if
+  needed. Do everything unattended, only report back completion or
+  failure." Driver owns launch + watch + report 084; reviewer reads
+  084 and rules. The 72-dialogue main block stays UNAUTHORIZED.
+- **DONE — v4 build at `4a0129a4`; reviewer verification PASS.** Driver
   stopped once on the registered comment-conflict tripwire (report
   081); direction 082 ruled registration 079 supersedes the stale
   comment and corrected task-1 scope (arm on the existing

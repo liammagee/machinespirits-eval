@@ -11,8 +11,13 @@ table matched independently), and the counter re-pin at `856251d1`
 4,198 independently). Human authority: the 1,116-call budget
 ("prepare it now, I approve in advance"), the raised ceiling 19,337
 (052c), and the standing instruction **"launch when the review
-passes, keep me posted"**. GO notes 063a, 068a, 068c, 069b, and 073a
-are CONSUMED/VOID and stay so.
+passes, keep me posted"**. On 13 August 2026 the human added, in the
+reviewer session: **"Go, approve if needed. Do everything unattended,
+only report back completion or failure"**, after asking that control
+be handed to a codex session with the reviewer reading results only.
+This lifts the quota hold relayed by the second session and delegates
+the launch and watch to the codex driver (direction 083c). GO notes
+063a, 068a, 068c, 069b, and 073a are CONSUMED/VOID and stay so.
 
 **GO** for the re-registered pilot block only:
 
@@ -20,7 +25,11 @@ are CONSUMED/VOID and stay so.
   at commit `856251d1` (v4 build `4a0129a4` + settled counter pin:
   sustained-deference warrant basis `sustained_deference:3_turns`;
   observe-mode signals in bare and standing-permission; coverage
-  guard from `48bf2e97`; ceiling 19,337).
+  guard from `48bf2e97`; ceiling 19,337). The entry-point script is
+  unchanged since `856251d1`; the pilot manifest carries the
+  fingerprint re-pin from commit `148621f3` (note 083b — the second
+  launch attempt refused on a stale extraction-schema fingerprint,
+  zero calls spent; the registered sensor change `46bfbdd9` moved it).
 - Instrument freeze input (unchanged, digest verified `6a64b31f…`):
   `/private/tmp/adaptive-warrant-v3-matrix-live-489f2429-r38-s514/annotation-freeze-manifest-r52-presence-confirmation.json`
 - Launch command, verbatim:
