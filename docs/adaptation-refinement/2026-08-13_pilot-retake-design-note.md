@@ -126,16 +126,16 @@ evidence-demands read as `low_agency_deferral`.
 |---|---:|---:|
 | Smoke A | one gated dialogue, sensor fix live | 26 (SPENT) |
 | Smoke B | one unguarded-bad-learner dialogue | 29 (SPENT) |
-| Sol re-take of pilot dialogues 01–03 (diagnostic) | | ~90 (running) |
+| Sol re-take of pilot dialogues 01–03 (diagnostic) | | 76 (SPENT) |
 | Re-registered pilot re-take (18 dialogues + readers) | | ~1,116 |
 | Main block (72 dialogues, unchanged design) | | ~4,500 |
 
 Smokes A and B were authorized 2026-08-13 ("do the two smokes"); the Sol
 re-take (codex.gpt-5.6-sol, `--cli-effort high`, dialogues 01–03 only) was
-authorized in-session the same day. Counter after smokes A and B:
-4,122 / 19,337 (ceiling raised +8,000 by human amendment 052c, relay note
-078, commit b0f9a5af). All rungs together land near 9,900, well inside the
-raised ceiling.
+authorized in-session the same day. Counter after smokes A and B
+and the Sol re-take: 4,198 / 19,337 (ceiling raised +8,000 by human
+amendment 052c, relay note 078, commit b0f9a5af). All rungs together land
+near 9,900, well inside the raised ceiling.
 
 Note for the sibling relay track: the learner-analysis coverage repair
 (commit 48bf2e97, direction 075) fixes the 144th-case assembly failure and
