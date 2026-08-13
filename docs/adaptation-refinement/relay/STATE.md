@@ -24,9 +24,29 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — amendments 093a + 093b: resume provenance widening;
-  zero-call artifacts now FROZEN into paid bindings; driver repairs
-  and resumes.** Second structural stop (no report number spent):
+- **CURRENT — ruling 094a: contract-invalid reader response ruled
+  TECHNICAL; quarantine + single-batch re-take; driver executes.**
+  The amended repair (`0128ba7d`) worked: both reader channels
+  COMPLETE at 290 attempted / 288 accepted each; counter reconciled
+  to 5,273/19,337 (report 094, `0e642b56`). The parent then failed in
+  free deterministic assembly: presence-reader-A batch 71
+  (`case-aad700bb…`) labels a record-entry request with target
+  `learner_record` while selecting the frozen action object bound to
+  `signal_lamp`. Reviewer confirmed zero-call: the handbook defines
+  the target as the object under inquiry (reader B wrote
+  `signal_lamp` and passes), so the response is defective and the
+  contract sound. Ruled TECHNICAL: a contract-invalid annotation is a
+  reading the instrument never validly produced — the
+  malformed-response class, not a substantive outcome. 094a directs:
+  zero-call enumeration of contract validity over all 576 responses;
+  stop if invalids exceed the per-channel allowance room (10 each);
+  else quarantine (move, never edit) + manifest-driven re-take in
+  both children with the full contract enforced at acceptance;
+  re-pin, full-diff proof, tests; resume, assemble, score, report
+  095. Counter opens 5,273.
+- **DONE — amendments 093a + 093b: resume provenance widening;
+  zero-call artifacts FROZEN into paid bindings.** Second structural
+  stop (no report number spent):
   093a task 6 still ordered regenerating the two zero-call artifacts,
   but the paid collections and original freeze bind their launch-era
   hashes and the children check those bytes. Reviewer confirmed the
