@@ -24,8 +24,24 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — ruling 092a: reader retry allowance + collection reuse;
-  driver repairs and resumes.** The 091a parent repair worked and the
+- **CURRENT — amendment 093a: resume provenance widening + counter
+  correction; driver repairs and resumes.** The driver stopped 092a
+  before any edit or call (report 093, `fe1da3da`): both children
+  require collection stamp = freeze stamp = current clean HEAD, and
+  the parent re-emits the freeze at HEAD, so a reused paid collection
+  (bound to `f43bcc64`) can never resume once relay commits move
+  HEAD — the guard forbids every post-failure resume under this
+  protocol. Reviewer confirmed in code. Amendment 093a: parent reuses
+  the ORIGINAL emitted freeze on resume (hash-checked against the
+  parent checkpoint); children get a resume-only widening (drop the
+  HEAD equality, keep clean-worktree and stamp equality, record each
+  resume commit); allowance and reuse stand; four-element diff scope
+  per child; decision-runner pin re-pinned with a full-diff proof.
+  Counter CORRECTED to 4,966/19,337 (child checkpoints: 273 reader
+  attempts, 271 responses). Expected completion near 5,271. Report
+  094 next.
+- **DONE — ruling 092a: reader retry allowance + collection reuse
+  (superseded in part by 093a).** The 091a parent repair worked and the
   readers RAN: presence 151/288 complete, decision 120/288 complete,
   then decision batch 121 died on a codex CLI transport failure and
   the driver stopped both children (report 092, `4f9de99c`; 272 paid
