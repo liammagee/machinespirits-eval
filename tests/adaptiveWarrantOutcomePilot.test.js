@@ -76,10 +76,10 @@ test('manifest guard passes on the real frozen files (menu text carries one trai
     decision_readers: 288,
     total: 1116,
     arithmetic: '(18 x 30 cap) + (2 x 144) + (2 x 144) = 1116; measured live unit 26 per dialogue (report 069)',
-    counter_before: 4067,
-    counter_after_if_completed: 5183,
+    counter_before: 4198,
+    counter_after_if_completed: 5314,
     ceiling: 19337,
-    remaining_after_if_completed: 6154,
+    remaining_after_if_completed: 14023,
   });
 });
 
@@ -129,7 +129,8 @@ test('a genuine duplicate outside the real frozen standing-permission menu still
     path.join(ROOT, 'docs/adaptation-refinement/outcome-study-a1/standing-permission-menu.txt'),
     'utf8',
   );
-  const duplicate = 'This deliberately duplicated outer instruction must remain visible to the fail-closed prompt audit.';
+  const duplicate =
+    'This deliberately duplicated outer instruction must remain visible to the fail-closed prompt audit.';
   const audit = auditTutorStubBaseSystemPrompt({
     auditTutorStubPrompt,
     systemPrompt: `${rendered.systemPrompt}\n${duplicate}\n${duplicate}`,

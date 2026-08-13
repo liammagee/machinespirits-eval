@@ -180,10 +180,10 @@ export function verifyOutcomePilotManifestBindings({ manifestPath = DEFAULT_MANI
       decision_readers: 288,
       total: 1116,
       arithmetic: '(18 x 30 cap) + (2 x 144) + (2 x 144) = 1116; measured live unit 26 per dialogue (report 069)',
-      counter_before: 4067,
-      counter_after_if_completed: 5183,
+      counter_before: 4198,
+      counter_after_if_completed: 5314,
       ceiling: 19337,
-      remaining_after_if_completed: 6154,
+      remaining_after_if_completed: 14023,
     },
     'pilot call plan',
   );
@@ -750,12 +750,11 @@ export async function runOutcomeGeneration({
       run_record_path: path.join(job.jobDir, 'run-state.json'),
       trace_path: row.tracePath || null,
       learner_analysis_coverage_guard: learnerAnalysisCoverageGuard,
-      error:
-        complete
-          ? null
-          : learnerAnalysisCoverageGuard.status === 'failed'
-            ? learnerAnalysisCoverageGuard.reason
-            : row.error || processResult.error || `child exit ${processResult.status}`,
+      error: complete
+        ? null
+        : learnerAnalysisCoverageGuard.status === 'failed'
+          ? learnerAnalysisCoverageGuard.reason
+          : row.error || processResult.error || `child exit ${processResult.status}`,
       result: row,
     };
     checkpoint.dialogues.push(checkpointRow);
