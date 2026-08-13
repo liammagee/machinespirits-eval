@@ -1027,29 +1027,86 @@ export async function runReaderProcesses({
   decisionRunDir,
   rootDir,
   resume = false,
+  quarantineManifestPath = null,
   checkpoint,
   budget,
   runProcess = spawnLogged,
 }) {
   const remaining = OUTCOME_PILOT_CALL_PLAN.total - checkpoint.call_budget.actual.total;
-  const required = OUTCOME_PILOT_CALL_PLAN.presence_readers + OUTCOME_PILOT_CALL_PLAN.decision_readers;
+  const presenceReservation = Math.max(
+    0,
+    OUTCOME_PILOT_CALL_PLAN.presence_readers - Number(checkpoint.call_budget.actual.presence_readers || 0),
+  );
+  const decisionReservation = Math.max(
+    0,
+    OUTCOME_PILOT_CALL_PLAN.decision_readers - Number(checkpoint.call_budget.actual.decision_readers || 0),
+  );
+  const required = presenceReservation + decisionReservation;
   if (remaining < required)
     throw new Error(`reader launch refused: ${remaining} calls remain but ${required} are required`);
   const semanticChildResume = resume && fs.existsSync(path.join(presenceRunDir, 'semantic-reader-run.json'));
   const decisionChildResume = resume && fs.existsSync(path.join(decisionRunDir, 'decision-reader-run.json'));
-  const [semantic, decision] = await Promise.all([
-    runProcess([...semanticCommand, ...(semanticChildResume ? ['--resume'] : [])], {
-      cwd: ROOT,
-      logPath: path.join(rootDir, 'presence-readers-launcher.log'),
-    }),
-    runProcess([...decisionCommand, ...(decisionChildResume ? ['--resume'] : [])], {
-      cwd: ROOT,
-      logPath: path.join(rootDir, 'decision-readers-launcher.log'),
-    }),
-  ]);
-  if (semantic.status !== 0 || decision.status !== 0) throw new Error('one or both frozen reader launchers failed');
-  budget.reserveMany('presence_readers', OUTCOME_PILOT_CALL_PLAN.presence_readers, { source: 'semantic-reader-run' });
-  budget.reserveMany('decision_readers', OUTCOME_PILOT_CALL_PLAN.decision_readers, { source: 'decision-reader-run' });
+  const quarantineManifest = quarantineManifestPath ? readJson(path.resolve(quarantineManifestPath)) : null;
+  const retakeChannels = new Set((quarantineManifest?.entries || []).map((entry) => entry.channel));
+  const semanticComplete =
+    semanticChildResume && readJson(path.join(presenceRunDir, 'semantic-reader-run.json')).status === 'complete';
+  const decisionComplete =
+    decisionChildResume && readJson(path.join(decisionRunDir, 'decision-reader-run.json')).status === 'complete';
+  const launches = [];
+  if (!semanticComplete || retakeChannels.has('presence')) {
+    launches.push(
+      runProcess(
+        [
+          ...semanticCommand,
+          ...(semanticChildResume ? ['--resume'] : []),
+          ...(retakeChannels.has('presence') ? ['--quarantine-manifest', path.resolve(quarantineManifestPath)] : []),
+        ],
+        { cwd: ROOT, logPath: path.join(rootDir, 'presence-readers-launcher.log') },
+      ),
+    );
+  }
+  if (!decisionComplete || retakeChannels.has('decision')) {
+    launches.push(
+      runProcess(
+        [
+          ...decisionCommand,
+          ...(decisionChildResume ? ['--resume'] : []),
+          ...(retakeChannels.has('decision') ? ['--quarantine-manifest', path.resolve(quarantineManifestPath)] : []),
+        ],
+        { cwd: ROOT, logPath: path.join(rootDir, 'decision-readers-launcher.log') },
+      ),
+    );
+  }
+  const results = await Promise.all(launches);
+  if (results.some((result) => result.status !== 0)) throw new Error('one or both frozen reader launchers failed');
+  if (presenceReservation) {
+    budget.reserveMany('presence_readers', presenceReservation, { source: 'semantic-reader-run' });
+  }
+  if (decisionReservation) {
+    budget.reserveMany('decision_readers', decisionReservation, { source: 'decision-reader-run' });
+  }
+}
+
+export function writeOutcomePilotAssemblyRunView({ runPath, outputPath } = {}) {
+  const resolvedRunPath = path.resolve(runPath);
+  const run = readJson(resolvedRunPath);
+  if (run.status !== 'complete') throw new Error('outcome pilot assembly view requires a complete reader run');
+  const latestComplete = new Map();
+  for (const row of run.batches || []) {
+    if (row.status === 'complete') latestComplete.set(`${row.reader_id}:${row.batch_id}`, row);
+  }
+  const view = {
+    ...run,
+    batches: [...latestComplete.values()],
+    assembly_view: {
+      source_run_path: resolvedRunPath,
+      source_run_sha256: fileSha256(resolvedRunPath),
+      selection: 'latest complete checkpoint row per reader and batch',
+    },
+  };
+  const resolvedOutputPath = path.resolve(outputPath);
+  atomicWriteJson(resolvedOutputPath, view);
+  return { path: resolvedOutputPath, sha256: fileSha256(resolvedOutputPath), run: view };
 }
 
 export async function executeOutcomePilot({
@@ -1080,6 +1137,9 @@ export async function executeOutcomePilot({
   if (resume && !fs.existsSync(checkpointPath)) throw new Error('--resume requires an existing checkpoint');
   const presenceRunDir = path.join(rootDir, 'presence-readers');
   const decisionRunDir = path.join(rootDir, 'decision-readers');
+  const quarantineManifestPath = path.join(rootDir, 'reader-response-quarantine-manifest.json');
+  const reviewerAuthorizedQuarantineManifest =
+    resume && fs.existsSync(quarantineManifestPath) ? quarantineManifestPath : null;
   const semanticChildResume = resume && fs.existsSync(path.join(presenceRunDir, 'semantic-reader-run.json'));
   const decisionChildResume = resume && fs.existsSync(path.join(decisionRunDir, 'decision-reader-run.json'));
   const readerResume = semanticChildResume && decisionChildResume;
@@ -1283,10 +1343,19 @@ export async function executeOutcomePilot({
     checkpoint: budget.state,
     budget,
     runProcess: runReaderProcess,
+    quarantineManifestPath: reviewerAuthorizedQuarantineManifest,
   });
 
   const presenceRunPath = path.join(presenceRunDir, 'semantic-reader-run.json');
   const decisionRunPath = path.join(decisionRunDir, 'decision-reader-run.json');
+  const presenceAssemblyRun = writeOutcomePilotAssemblyRunView({
+    runPath: presenceRunPath,
+    outputPath: path.join(rootDir, 'presence-reader-assembly-run-view.json'),
+  });
+  const decisionAssemblyRun = writeOutcomePilotAssemblyRunView({
+    runPath: decisionRunPath,
+    outputPath: path.join(rootDir, 'decision-reader-assembly-run-view.json'),
+  });
   const assembledPresence = new Map();
   for (const readerId of ['presence-reader-a', 'presence-reader-b']) {
     const assembled = assembleAdaptiveWarrantSemanticAnnotationResponse({
@@ -1295,7 +1364,7 @@ export async function executeOutcomePilot({
       annotationRunId: `${path.basename(rootDir)}-${readerId}`,
       responseDir: path.join(presenceRunDir, readerId),
       outputPath: path.join(rootDir, `${readerId}.assembled.json`),
-      runPath: presenceRunPath,
+      runPath: presenceAssemblyRun.path,
     });
     assembledPresence.set(readerId, assembled.response);
   }
@@ -1307,7 +1376,7 @@ export async function executeOutcomePilot({
       annotationRunId: `${path.basename(rootDir)}-${readerId}`,
       responseDir: path.join(decisionRunDir, readerId),
       outputPath: path.join(rootDir, `${readerId}.assembled.json`),
-      runPath: decisionRunPath,
+      runPath: decisionAssemblyRun.path,
     });
     assembledDecision.set(readerId, assembled.response);
   }
@@ -1368,12 +1437,16 @@ export async function executeOutcomePilot({
     dialogues,
     decision_cases: decisionCases,
     presence_cases: presenceCases,
-    decision_reader_run_record_path: decisionRunPath,
+    decision_reader_run_record_path: decisionAssemblyRun.path,
   });
   const scorePath = path.join(rootDir, 'outcome-pilot-score.json');
   atomicWriteJson(scorePath, score);
   budget.state.status = 'complete';
-  budget.state.reader_run_records = { presence: presenceRunPath, decision: decisionRunPath };
+  budget.state.reader_run_records = {
+    presence: presenceRunPath,
+    decision: decisionRunPath,
+    assembly_views: { presence: presenceAssemblyRun.path, decision: decisionAssemblyRun.path },
+  };
   budget.state.score = { path: scorePath, sha256: fileSha256(scorePath) };
   budget.persist();
   return budget.state;

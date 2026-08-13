@@ -18,8 +18,14 @@ import {
 import {
   ADAPTIVE_WARRANT_SEMANTIC_AUTHORIZATION_REQUEST_SCHEMA,
   ADAPTIVE_WARRANT_SEMANTIC_COLLECTION_MANIFEST_SCHEMA,
+  assembleAdaptiveWarrantSemanticAnnotationResponse,
 } from './prepare-adaptive-warrant-semantic-annotations.js';
 import { ADAPTIVE_WARRANT_V3_SEMANTIC_DIAGNOSTIC_FREEZE_SCHEMA } from './build-adaptive-warrant-v3-semantic-diagnostic.js';
+import {
+  loadReviewerAuthorizedReaderRetakes,
+  quarantineReviewerAuthorizedRetakeResponse,
+  validateReviewerAuthorizedRetakeResponse,
+} from '../services/adaptiveWarrantReaderRetake.js';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_READER_RUN_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-event-reader-run.v1';
@@ -239,6 +245,7 @@ export async function runAdaptiveWarrantSemanticReaders({
   approvedBy,
   effort = 'medium',
   resume = false,
+  quarantineManifestPath = null,
   callModel = callAIWithCliBridge,
 } = {}) {
   const resolvedManifest = path.resolve(manifestPath);
@@ -287,11 +294,23 @@ export async function runAdaptiveWarrantSemanticReaders({
     batches: [],
   };
   const run = resume ? readJson(runPath) : freshRun;
+  if (quarantineManifestPath && !resume) {
+    throw new Error('semantic reader quarantine manifest is valid only on resume');
+  }
+  const retakes = loadReviewerAuthorizedReaderRetakes({
+    quarantineManifestPath,
+    channel: 'presence',
+    collectionManifest: manifest,
+    run,
+    outputDir: resolvedOutput,
+  });
+  const resumableStatuses = ['running', 'incomplete_model_call_failure', 'incomplete_call_budget_exhausted'];
+  if (retakes.manifest) resumableStatuses.push('complete');
   if (
     run.study_id !== freshRun.study_id ||
     run.source_commit !== freshRun.source_commit ||
     run.authorization?.approval_digest !== authorization.approval_digest ||
-    !['running', 'incomplete_model_call_failure', 'incomplete_call_budget_exhausted'].includes(run.status)
+    !resumableStatuses.includes(run.status)
   ) {
     throw new Error('semantic reader resume checkpoint does not match the frozen launch');
   }
@@ -302,91 +321,146 @@ export async function runAdaptiveWarrantSemanticReaders({
   atomicWriteJson(runPath, run);
   for (const reader of manifest.readers) {
     for (const batch of reader.batches) {
-      const completed = run.batches.find(
+      const quarantineEntry = retakes.byBatch.get(`${reader.reader_id}:${batch.batch_id}`) || null;
+      const replacement = quarantineEntry
+        ? run.batches.findLast(
+            (row) =>
+              row.reader_id === reader.reader_id &&
+              row.batch_id === batch.batch_id &&
+              row.status === 'complete' &&
+              row.retake_of_response_sha256 === quarantineEntry.response_sha256 &&
+              row.quarantine_manifest_sha256 === retakes.manifestSha256,
+          )
+        : null;
+      const completed = replacement || run.batches.find(
         (row) => row.reader_id === reader.reader_id && row.batch_id === batch.batch_id && row.status === 'complete',
       );
-      if (completed) {
+      const pendingRetake = Boolean(quarantineEntry && !replacement);
+      if (completed && !pendingRetake) {
         if (!completed.response_path || fileSha256(completed.response_path) !== completed.response_sha256) {
           throw new Error(`${batch.batch_id} completed checkpoint response drift`);
         }
         continue;
       }
-      if (run.calls_attempted >= request.call_budget.maximum_calls + MAXIMUM_FAILED_ATTEMPT_ALLOWANCE) {
-        run.status = 'incomplete_call_budget_exhausted';
-        atomicWriteJson(runPath, run);
-        throw new Error('semantic reader call budget exhausted');
-      }
-      const packet = readJson(batch.packet_path);
-      const responseSchema = readJson(batch.response_schema_path);
-      const prompt = JSON.stringify(packet);
-      run.calls_attempted += 1;
-      run.exposed_sample_ids = [...new Set([...run.exposed_sample_ids, ...batch.required_sample_ids])].sort();
-      atomicWriteJson(runPath, run);
-      const started = Date.now();
-      try {
-        const result = await callModel(
-          { provider: 'codex', model: 'gpt-5.6-luna' },
-          'You are one isolated independent research reader. Use only the supplied frozen packet. Return exactly the schema-bound JSON object and do not use tools.',
-          prompt,
-          `adaptive-warrant-${reader.reader_id}-${batch.batch_id}`,
-          {
-            outputSchema: responseSchema,
-            effort,
-            timeoutMs: 600_000,
-            maxStdoutBytes: 256_000,
-            maxStderrBytes: 64_000,
-          },
-        );
-        const parsed = parseJsonObject(result.text, batch.batch_id);
-        exactFields(parsed, BATCH_FIELDS, `${batch.batch_id} model response`);
-        if (
-          parsed.schema !== ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA ||
-          parsed.reader_id !== reader.reader_id ||
-          parsed.batch_id !== batch.batch_id ||
-          parsed.study_id !== manifest.study_id ||
-          parsed.corpus_sha256 !== manifest.corpus.sha256
-        ) {
-          throw new Error(`${batch.batch_id} model response binding mismatch`);
+      while (true) {
+        if (run.calls_attempted >= request.call_budget.maximum_calls + MAXIMUM_FAILED_ATTEMPT_ALLOWANCE) {
+          run.status = 'incomplete_call_budget_exhausted';
+          atomicWriteJson(runPath, run);
+          throw new Error('semantic reader call budget exhausted');
         }
-        const responseIds = Object.keys(parsed.cases_by_sample_id || {}).sort();
-        const expectedIds = [...batch.required_sample_ids].sort();
-        if (JSON.stringify(responseIds) !== JSON.stringify(expectedIds)) {
-          throw new Error(`${batch.batch_id} model response sample-id mismatch`);
-        }
-        const outputPath = path.join(resolvedOutput, reader.reader_id, batch.expected_response_filename);
-        atomicWriteJson(outputPath, parsed);
-        run.calls_completed += 1;
-        run.batches.push({
-          reader_id: reader.reader_id,
-          batch_id: batch.batch_id,
-          status: 'complete',
-          packet_sha256: batch.packet_sha256,
-          response_schema_sha256: batch.response_schema_sha256,
-          response_path: outputPath,
-          response_sha256: fileSha256(outputPath),
-          latency_ms: Date.now() - started,
-          returned_provider: result.provider || null,
-          returned_model: result.model || null,
-          model_attestation_basis: result.modelAttestationBasis || null,
-          model_independently_attested: result.modelIndependentlyAttested === true,
-          prohibited_tool_event_count: Number(result.prohibitedToolEventCount || 0),
-        });
-      } catch (error) {
-        run.status = 'incomplete_model_call_failure';
-        run.batches.push({
-          reader_id: reader.reader_id,
-          batch_id: batch.batch_id,
-          status: 'failed',
-          packet_sha256: batch.packet_sha256,
-          response_schema_sha256: batch.response_schema_sha256,
-          latency_ms: Date.now() - started,
-          error: error.message,
-          exposed_sample_ids: [...batch.required_sample_ids],
-        });
+        const packet = readJson(batch.packet_path);
+        const responseSchema = readJson(batch.response_schema_path);
+        const prompt = JSON.stringify(packet);
+        run.calls_attempted += 1;
+        run.exposed_sample_ids = [...new Set([...run.exposed_sample_ids, ...batch.required_sample_ids])].sort();
         atomicWriteJson(runPath, run);
-        throw error;
+        const started = Date.now();
+        let result = null;
+        let rawResponse = null;
+        try {
+          result = await callModel(
+            { provider: 'codex', model: 'gpt-5.6-luna' },
+            'You are one isolated independent research reader. Use only the supplied frozen packet. Return exactly the schema-bound JSON object and do not use tools.',
+            prompt,
+            `adaptive-warrant-${reader.reader_id}-${batch.batch_id}`,
+            {
+              outputSchema: responseSchema,
+              effort,
+              timeoutMs: 600_000,
+              maxStdoutBytes: 256_000,
+              maxStderrBytes: 64_000,
+            },
+          );
+          rawResponse = String(result.text || '');
+          const parsed = parseJsonObject(rawResponse, batch.batch_id);
+          exactFields(parsed, BATCH_FIELDS, `${batch.batch_id} model response`);
+          if (
+            parsed.schema !== ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA ||
+            parsed.reader_id !== reader.reader_id ||
+            parsed.batch_id !== batch.batch_id ||
+            parsed.study_id !== manifest.study_id ||
+            parsed.corpus_sha256 !== manifest.corpus.sha256
+          ) {
+            throw new Error(`${batch.batch_id} model response binding mismatch`);
+          }
+          const responseIds = Object.keys(parsed.cases_by_sample_id || {}).sort();
+          const expectedIds = [...batch.required_sample_ids].sort();
+          if (JSON.stringify(responseIds) !== JSON.stringify(expectedIds)) {
+            throw new Error(`${batch.batch_id} model response sample-id mismatch`);
+          }
+          if (pendingRetake) {
+            validateReviewerAuthorizedRetakeResponse({
+              response: parsed,
+              collectionManifest: manifest,
+              reader,
+              batch,
+              assemble: assembleAdaptiveWarrantSemanticAnnotationResponse,
+            });
+          }
+          const outputPath = path.join(resolvedOutput, reader.reader_id, batch.expected_response_filename);
+          atomicWriteJson(outputPath, parsed);
+          run.calls_completed += 1;
+          run.batches.push({
+            reader_id: reader.reader_id,
+            batch_id: batch.batch_id,
+            status: 'complete',
+            packet_sha256: batch.packet_sha256,
+            response_schema_sha256: batch.response_schema_sha256,
+            response_path: outputPath,
+            response_sha256: fileSha256(outputPath),
+            latency_ms: Date.now() - started,
+            returned_provider: result.provider || null,
+            returned_model: result.model || null,
+            model_attestation_basis: result.modelAttestationBasis || null,
+            model_independently_attested: result.modelIndependentlyAttested === true,
+            prohibited_tool_event_count: Number(result.prohibitedToolEventCount || 0),
+            ...(pendingRetake
+              ? {
+                  reviewer_authorized_retake: true,
+                  retake_of_response_sha256: quarantineEntry.response_sha256,
+                  quarantine_manifest_sha256: retakes.manifestSha256,
+                  deterministic_contract_validation: 'passed',
+                }
+              : {}),
+          });
+        } catch (error) {
+          run.status = 'incomplete_model_call_failure';
+          const quarantined =
+            pendingRetake && rawResponse !== null
+              ? quarantineReviewerAuthorizedRetakeResponse({
+                  rawResponse,
+                  quarantineEntry,
+                  quarantineManifest: retakes.manifest,
+                  attempt: run.calls_attempted,
+                })
+              : null;
+          run.batches.push({
+            reader_id: reader.reader_id,
+            batch_id: batch.batch_id,
+            status: 'failed',
+            packet_sha256: batch.packet_sha256,
+            response_schema_sha256: batch.response_schema_sha256,
+            latency_ms: Date.now() - started,
+            error: error.message,
+            exposed_sample_ids: [...batch.required_sample_ids],
+            ...(pendingRetake
+              ? {
+                  reviewer_authorized_retake: true,
+                  retake_of_response_sha256: quarantineEntry.response_sha256,
+                  quarantine_manifest_sha256: retakes.manifestSha256,
+                  ...(quarantined
+                    ? { quarantine_path: quarantined.path, quarantine_sha256: quarantined.sha256 }
+                    : {}),
+                }
+              : {}),
+          });
+          atomicWriteJson(runPath, run);
+          if (pendingRetake && rawResponse !== null) continue;
+          throw error;
+        }
+        atomicWriteJson(runPath, run);
+        break;
       }
-      atomicWriteJson(runPath, run);
     }
   }
   run.status = 'complete';
@@ -396,7 +470,7 @@ export async function runAdaptiveWarrantSemanticReaders({
 }
 
 function usage() {
-  return 'Usage: node scripts/run-adaptive-warrant-semantic-readers.js --manifest <collection> --freeze-manifest <freeze> --authorization-request <request> --out <dir> --approved-by <standing-authorization-record> [--effort medium] [--resume]\n';
+  return 'Usage: node scripts/run-adaptive-warrant-semantic-readers.js --manifest <collection> --freeze-manifest <freeze> --authorization-request <request> --out <dir> --approved-by <standing-authorization-record> [--effort medium] [--resume] [--quarantine-manifest <manifest>]\n';
 }
 
 async function main() {
@@ -409,6 +483,7 @@ async function main() {
       'approved-by': { type: 'string' },
       effort: { type: 'string' },
       resume: { type: 'boolean', default: false },
+      'quarantine-manifest': { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
     strict: true,
@@ -425,6 +500,7 @@ async function main() {
     approvedBy: values['approved-by'],
     effort: values.effort || 'medium',
     resume: values.resume,
+    quarantineManifestPath: values['quarantine-manifest'] || null,
   });
   process.stdout.write(`${result.runPath}\n`);
 }

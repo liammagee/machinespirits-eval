@@ -26,13 +26,16 @@ import {
   validateOutcomePilotZeroCallArtifacts,
   verifyOutcomePilotManifestBindings,
   verifyOutcomePilotReaderResumeArtifacts,
+  writeOutcomePilotAssemblyRunView,
 } from '../scripts/run-adaptive-warrant-outcome-pilot.js';
 import { annotationCaseFingerprint } from '../scripts/run-adaptive-warrant-baseline-study.js';
 import {
   ADAPTIVE_WARRANT_ANNOTATION_BATCH_RESPONSE_SCHEMA,
+  assembleAdaptiveWarrantAnnotationResponse,
   prepareAdaptiveWarrantAnnotationBatches,
 } from '../scripts/prepare-adaptive-warrant-annotation-batches.js';
 import {
+  assembleAdaptiveWarrantSemanticAnnotationResponse,
   prepareAdaptiveWarrantSemanticAnnotationBatches,
 } from '../scripts/prepare-adaptive-warrant-semantic-annotations.js';
 import { buildAdaptiveWarrantV3SemanticDiagnostic } from '../scripts/build-adaptive-warrant-v3-semantic-diagnostic.js';
@@ -220,7 +223,7 @@ function installFakeGit(t, directory) {
   });
 }
 
-function childReaderFixture(t, channel) {
+function childReaderFixture(t, channel, { oneCaseBatches = false } = {}) {
   const directory = temporaryDirectory(t);
   const launchCommit = '1'.repeat(40);
   const resumeCommit = '2'.repeat(40);
@@ -254,8 +257,8 @@ function childReaderFixture(t, channel) {
     handbookPath: semanticHandbookPath,
     outputDir: path.join(directory, 'semantic-collection'),
     corpusRole: 'natural_prevalence',
-    batchSize: built.corpus.cases.length,
-    maximumCalls: 2,
+    batchSize: oneCaseBatches ? 1 : built.corpus.cases.length,
+    maximumCalls: oneCaseBatches ? built.corpus.cases.length * 2 : 2,
     preflightPath,
     schemaAcceptancePath,
   });
@@ -264,8 +267,8 @@ function childReaderFixture(t, channel) {
     handbookPath: annotationHandbookPath,
     outputDir: path.join(directory, 'decision-collection'),
     corpusRole: 'natural_prevalence',
-    batchSize: built.corpus.cases.length,
-    maxAnnotationCalls: 2,
+    batchSize: oneCaseBatches ? 1 : built.corpus.cases.length,
+    maxAnnotationCalls: oneCaseBatches ? built.corpus.cases.length * 2 : 2,
     preflightPath,
   });
   const artifactPath = (name, value = { name }) => {
@@ -297,6 +300,7 @@ function childReaderFixture(t, channel) {
     freezePath,
     manifestPath: collection.manifestPath,
     authorizationRequestPath: collection.authorizationRequestPath,
+    collection,
     checkpointName: semantic ? 'semantic-reader-run.json' : 'decision-reader-run.json',
     run: semantic ? runAdaptiveWarrantSemanticReaders : runAdaptiveWarrantDecisionReaders,
     responseSchema: semantic
@@ -316,6 +320,129 @@ function childReaderResponse(fixture, prompt) {
       corpus_sha256: packet.corpus_sha256,
       cases_by_sample_id: Object.fromEntries(Object.keys(packet.cases_by_sample_id).map((sampleId) => [sampleId, {}])),
     }),
+  };
+}
+
+function validChildReaderResponse(fixture, prompt) {
+  const packet = JSON.parse(prompt);
+  const response = structuredClone(packet.response_template);
+  for (const row of Object.values(response.cases_by_sample_id)) {
+    if (fixture.responseSchema === ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA) {
+      row.genuinely_ambiguous = false;
+      row.ambiguity_reason = 'none';
+      row.events = [];
+      row.note = 'No bounded semantic event is required by this synthetic contract-valid fixture.';
+    } else {
+      row.speech_act = 'other';
+      row.open_obligation_source_turns = [];
+      row.obligation_state = 'none';
+      row.inquiry_state = 'incomplete';
+      row.commitment_transition_warranted = 'no';
+      row.current_candidate_override_required = 'no';
+      row.primary_warrant_basis = 'none';
+      row.recommended_action_family = 'hold';
+      row.note = 'The public evidence does not require a commitment transition in this synthetic fixture.';
+      for (const divergence of Object.values(row.divergence_by_dimension)) {
+        divergence.interpretation = 'aligned';
+        divergence.magnitude = 'none';
+        divergence.persistence = 'none';
+        divergence.note = 'The public trace is aligned on this dimension in the synthetic fixture.';
+      }
+    }
+  }
+  return {
+    text: JSON.stringify(response),
+    provider: 'codex',
+    model: 'gpt-5.6-luna',
+    modelAttestationBasis: 'explicit_cli_model_argument_accepted_bridge_echo',
+    modelIndependentlyAttested: false,
+    prohibitedToolEventCount: 0,
+  };
+}
+
+async function completeChildWithOneContractInvalidBatch(t, channel) {
+  const fixture = childReaderFixture(t, channel, { oneCaseBatches: true });
+  const outputDir = path.join(fixture.directory, `${channel}-run`);
+  const manifest = JSON.parse(fs.readFileSync(fixture.manifestPath, 'utf8'));
+  const reader = manifest.readers[0];
+  const batch = reader.batches[0];
+  const args = {
+    manifestPath: fixture.manifestPath,
+    freezeManifestPath: fixture.freezePath,
+    authorizationRequestPath: fixture.authorizationRequestPath,
+    outputDir,
+    approvedBy: 'tests/adaptiveWarrantOutcomePilot.test.js',
+  };
+  await fixture.run({
+    ...args,
+    callModel: async (_model, _system, prompt) => {
+      const packet = JSON.parse(prompt);
+      return packet.reader_id === reader.reader_id && packet.batch_id === batch.batch_id
+        ? {
+            ...childReaderResponse(fixture, prompt),
+            provider: 'codex',
+            model: 'gpt-5.6-luna',
+            modelAttestationBasis: 'explicit_cli_model_argument_accepted_bridge_echo',
+            modelIndependentlyAttested: false,
+            prohibitedToolEventCount: 0,
+          }
+        : validChildReaderResponse(fixture, prompt);
+    },
+  });
+  const runPath = path.join(outputDir, fixture.checkpointName);
+  const run = JSON.parse(fs.readFileSync(runPath, 'utf8'));
+  const completion = run.batches.find(
+    (row) => row.reader_id === reader.reader_id && row.batch_id === batch.batch_id && row.status === 'complete',
+  );
+  const runRoot = path.dirname(outputDir);
+  const quarantineDirectory = path.join(runRoot, 'quarantine-ruling-094a-contract-invalid-responses');
+  const quarantinePath = path.join(quarantineDirectory, reader.reader_id, batch.expected_response_filename);
+  fs.mkdirSync(path.dirname(quarantinePath), { recursive: true });
+  fs.renameSync(completion.response_path, quarantinePath);
+  const authorityPath = path.join(
+    ROOT,
+    'docs/adaptation-refinement/relay/094a-reviewer-ruling-contract-invalid-response-retake.md',
+  );
+  const quarantineManifestPath = path.join(runRoot, 'reader-response-quarantine-manifest.json');
+  const retakeChannel = channel === 'semantic' ? 'presence' : 'decision';
+  writeJson(quarantineManifestPath, {
+    schema: 'machinespirits.adaptation-refinement.reader-response-quarantine-manifest.v1',
+    status: 'reviewer_authorized',
+    study_id: manifest.study_id,
+    created_at: '2026-08-13T00:00:00Z',
+    authority: { path: authorityPath, sha256: fileSha256(authorityPath) },
+    run_root: runRoot,
+    quarantine_directory: quarantineDirectory,
+    enumeration: {
+      accepted_responses_audited: 576,
+      presence_invalid: retakeChannel === 'presence' ? 1 : 0,
+      decision_invalid: retakeChannel === 'decision' ? 1 : 0,
+      allowance_room_per_channel: 10,
+    },
+    entries: [
+      {
+        channel: retakeChannel,
+        reader_id: reader.reader_id,
+        batch_id: batch.batch_id,
+        sample_id: batch.required_sample_ids[0],
+        response_path: completion.response_path,
+        quarantine_path: quarantinePath,
+        response_sha256: completion.response_sha256,
+        error: `${batch.batch_id} synthetic contract-invalid accepted response`,
+      },
+    ],
+  });
+  return {
+    fixture,
+    args,
+    manifest,
+    reader,
+    batch,
+    outputDir,
+    runPath,
+    quarantinePath,
+    quarantineManifestPath,
+    originalCompletion: completion,
   };
 }
 
@@ -797,6 +924,128 @@ test('both child runners accept an older launch stamp only on resume, record the
         /call budget exhausted/u,
       );
       assert.equal(boundaryCalls, 0);
+    });
+  }
+});
+
+test('both child runners re-run only manifest-listed completed batches and assemble the valid replacement set', async (t) => {
+  for (const channel of ['semantic', 'decision']) {
+    await t.test(channel, async (childTest) => {
+      const prepared = await completeChildWithOneContractInvalidBatch(childTest, channel);
+      const { fixture, args, manifest, reader, batch, outputDir, runPath, quarantineManifestPath } = prepared;
+      const unlistedBatch = reader.batches[1];
+      const unlistedPath = path.join(outputDir, reader.reader_id, unlistedBatch.expected_response_filename);
+      const unlistedSha256 = fileSha256(unlistedPath);
+      process.env.OUTCOME_PILOT_TEST_GIT_HEAD = fixture.resumeCommit;
+      const calledBatches = [];
+      const completed = await fixture.run({
+        ...args,
+        resume: true,
+        quarantineManifestPath,
+        callModel: async (_model, _system, prompt) => {
+          const packet = JSON.parse(prompt);
+          calledBatches.push(`${packet.reader_id}:${packet.batch_id}`);
+          return validChildReaderResponse(fixture, prompt);
+        },
+      });
+
+      assert.deepEqual(calledBatches, [`${reader.reader_id}:${batch.batch_id}`]);
+      assert.equal(fileSha256(unlistedPath), unlistedSha256);
+      assert.equal(
+        completed.run.batches.filter(
+          (row) => row.reader_id === reader.reader_id && row.batch_id === unlistedBatch.batch_id && row.status === 'complete',
+        ).length,
+        1,
+      );
+      const replacement = completed.run.batches.findLast(
+        (row) => row.reader_id === reader.reader_id && row.batch_id === batch.batch_id && row.status === 'complete',
+      );
+      assert.equal(replacement.reviewer_authorized_retake, true);
+      assert.equal(replacement.retake_of_response_sha256, prepared.originalCompletion.response_sha256);
+      assert.equal(replacement.deterministic_contract_validation, 'passed');
+      assert.equal(fs.existsSync(prepared.quarantinePath), true);
+      assert.equal(fileSha256(prepared.quarantinePath), prepared.originalCompletion.response_sha256);
+
+      const assemblyView = writeOutcomePilotAssemblyRunView({
+        runPath,
+        outputPath: path.join(path.dirname(outputDir), `${channel}-assembly-run-view.json`),
+      });
+      const assemble =
+        channel === 'semantic'
+          ? assembleAdaptiveWarrantSemanticAnnotationResponse
+          : assembleAdaptiveWarrantAnnotationResponse;
+      for (const manifestReader of manifest.readers) {
+        const assembled = assemble({
+          manifestPath: fixture.manifestPath,
+          readerId: manifestReader.reader_id,
+          annotationRunId: `replacement-assembly-${channel}-${manifestReader.reader_id}`,
+          responseDir: path.join(outputDir, manifestReader.reader_id),
+          outputPath: path.join(path.dirname(outputDir), `${channel}-${manifestReader.reader_id}.assembled.json`),
+          runPath: assemblyView.path,
+        });
+        assert.equal(assembled.response.cases.length > 0, true);
+      }
+    });
+  }
+});
+
+test('both child runners quarantine a contract-invalid re-draw, count it failed, and do not complete the batch', async (t) => {
+  for (const channel of ['semantic', 'decision']) {
+    await t.test(channel, async (childTest) => {
+      const prepared = await completeChildWithOneContractInvalidBatch(childTest, channel);
+      const { fixture, args, reader, batch, runPath, quarantineManifestPath } = prepared;
+      const before = JSON.parse(fs.readFileSync(runPath, 'utf8'));
+      process.env.OUTCOME_PILOT_TEST_GIT_HEAD = fixture.resumeCommit;
+      let calls = 0;
+      let invalidRaw = null;
+      await assert.rejects(
+        fixture.run({
+          ...args,
+          resume: true,
+          quarantineManifestPath,
+          callModel: async (_model, _system, prompt) => {
+            calls += 1;
+            if (calls === 1) {
+              const invalid = {
+                ...childReaderResponse(fixture, prompt),
+                provider: 'codex',
+                model: 'gpt-5.6-luna',
+                modelAttestationBasis: 'explicit_cli_model_argument_accepted_bridge_echo',
+                modelIndependentlyAttested: false,
+                prohibitedToolEventCount: 0,
+              };
+              invalidRaw = invalid.text;
+              return invalid;
+            }
+            throw new Error('synthetic transport stop after invalid re-draw');
+          },
+        }),
+        /synthetic transport stop after invalid re-draw/u,
+      );
+      assert.equal(calls, 2);
+      const after = JSON.parse(fs.readFileSync(runPath, 'utf8'));
+      assert.equal(after.calls_completed, before.calls_completed);
+      assert.equal(
+        after.batches.filter(
+          (row) =>
+            row.reader_id === reader.reader_id &&
+            row.batch_id === batch.batch_id &&
+            row.status === 'complete' &&
+            row.reviewer_authorized_retake === true,
+        ).length,
+        0,
+      );
+      const invalidAttempt = after.batches.find(
+        (row) =>
+          row.reader_id === reader.reader_id &&
+          row.batch_id === batch.batch_id &&
+          row.status === 'failed' &&
+          row.quarantine_path,
+      );
+      assert.equal(invalidAttempt.reviewer_authorized_retake, true);
+      assert.equal(fs.readFileSync(invalidAttempt.quarantine_path, 'utf8'), invalidRaw);
+      assert.equal(fileSha256(invalidAttempt.quarantine_path), invalidAttempt.quarantine_sha256);
+      assert.equal(fs.existsSync(prepared.originalCompletion.response_path), false);
     });
   }
 });

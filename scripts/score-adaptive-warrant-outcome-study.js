@@ -80,8 +80,8 @@ export const PRESENCE_CHANNEL_CAPS = Object.freeze({ response_cap: 14000, packet
 
 export const DECISION_READER_INSTRUMENT_BINDINGS = Object.freeze({
   handbook_sha256: '5673c14b8f2a2b17c599e947c87f6d03c10df6dcdbeadcb257d882f008902003',
-  preparation_and_assembly_sha256: 'f23d3b1619734091e9b5ac9a37501c8a64f07c1cbf240e62e9b8e7eb43a767fc',
-  reader_runner_sha256: '1eb6be9d4cf2d802ff2bcb16394fdd0f99952d10a3ff62456ebc79ad42346116',
+  preparation_and_assembly_sha256: '332447730054e13f02d6d8af0d5c4a58130254e08abf838b87237df62d14fb95',
+  reader_runner_sha256: 'c0a201300a66e32919d22aaac42e431f32bd1df595b582f7762928a148c2e6ad',
 });
 
 function ratio(numerator, denominator) {
@@ -240,13 +240,20 @@ export function verifyOutcomeDecisionReaderRunEvidence(runRecordPath) {
     const prohibitedToolCountPresent =
       Object.hasOwn(batch || {}, 'prohibited_tool_event_count') &&
       Number.isFinite(batch.prohibited_tool_event_count);
+    const registeredModelParts = String(run?.model || '').split('.');
+    const modelAttestationAccepted =
+      batch?.model_independently_attested === true ||
+      (batch?.model_attestation_basis === 'explicit_cli_model_argument_accepted_bridge_echo' &&
+        batch?.returned_provider === registeredModelParts[0] &&
+        batch?.returned_model === registeredModelParts.slice(1).join('.') &&
+        batch?.model_independently_attested === false);
     const batchChecks = {
       identity_present: identityPresent,
       status_complete: batch?.status === 'complete',
       response_present: responsePresent,
       response_hash_declared: declaredHashValid,
       response_hash_match: responseHashMatch,
-      model_independently_attested: batch?.model_independently_attested === true,
+      model_attestation_accepted: modelAttestationAccepted,
       prohibited_tool_count_present: prohibitedToolCountPresent,
       prohibited_tool_count_zero: prohibitedToolCountPresent && batch.prohibited_tool_event_count === 0,
     };

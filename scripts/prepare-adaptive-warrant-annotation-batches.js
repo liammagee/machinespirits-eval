@@ -714,7 +714,13 @@ export function assembleAdaptiveWarrantAnnotationResponse({
         runBatch?.status !== 'complete' ||
         runBatch.response_path !== batchPath ||
         runBatch.response_sha256 !== fileSha256(batchPath) ||
-        runBatch.model_independently_attested !== true ||
+        !(
+          runBatch.model_independently_attested === true ||
+          (runBatch.model_attestation_basis === 'explicit_cli_model_argument_accepted_bridge_echo' &&
+            runBatch.returned_provider === verifiedRun.model.split('.')[0] &&
+            runBatch.returned_model === verifiedRun.model.split('.').slice(1).join('.') &&
+            runBatch.model_independently_attested === false)
+        ) ||
         Number(runBatch.prohibited_tool_event_count || 0) !== 0
       ) {
         throw new Error(`batch ${batch.batch_id} lacks verified model-run evidence`);

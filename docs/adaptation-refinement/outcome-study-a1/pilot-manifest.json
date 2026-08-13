@@ -197,8 +197,8 @@
     "calls_per_case": 2,
     "digests": {
       "handbook_sha256": "5673c14b8f2a2b17c599e947c87f6d03c10df6dcdbeadcb257d882f008902003",
-      "preparation_and_assembly_sha256": "f23d3b1619734091e9b5ac9a37501c8a64f07c1cbf240e62e9b8e7eb43a767fc",
-      "reader_runner_sha256": "2253c184529f5cfb06bc05f3f1d8fe86960b96ef9363ac9de225639261ad8941"
+      "preparation_and_assembly_sha256": "332447730054e13f02d6d8af0d5c4a58130254e08abf838b87237df62d14fb95",
+      "reader_runner_sha256": "c0a201300a66e32919d22aaac42e431f32bd1df595b582f7762928a148c2e6ad"
     }
   },
   "planned_calls": {

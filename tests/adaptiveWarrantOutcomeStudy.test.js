@@ -52,6 +52,7 @@ function decisionReaderRunFixture(t, batchOverrides = {}) {
     `${JSON.stringify(
       {
         status: 'complete',
+        model: 'codex.gpt-5.6-luna',
         batches: [
           {
             reader_id: 'reader-a',
@@ -274,7 +275,7 @@ test('measure 1 hard-stops on partial decision-reader run evidence', (t) => {
   const evidence = verifyOutcomeDecisionReaderRunEvidence(runPath);
   assert.equal(evidence.status, 'failed');
   assert.equal(evidence.batches[0].checks.response_hash_match, true);
-  assert.equal(evidence.batches[0].checks.model_independently_attested, false);
+  assert.equal(evidence.batches[0].checks.model_attestation_accepted, false);
   assert.throws(
     () => scoreOutcomeDecisionCases([], runPath),
     /decision-reader run evidence failed closed/u,
@@ -292,11 +293,31 @@ test('measure 1 hard-stops when a decision-reader response is altered after its 
     .map(([check]) => check);
   assert.equal(evidence.status, 'failed');
   assert.deepEqual(failedBatchChecks, ['response_hash_match']);
-  assert.equal(evidence.batches[0].checks.model_independently_attested, true);
+  assert.equal(evidence.batches[0].checks.model_attestation_accepted, true);
   assert.throws(
     () => scoreOutcomeDecisionCases([], runPath),
     /decision-reader run evidence failed closed/u,
   );
+});
+
+test('measure 1 accepts only the exact registered CLI bridge-echo tuple when independent attestation is false', (t) => {
+  const passedPath = decisionReaderRunFixture(t, {
+    model_independently_attested: false,
+    model_attestation_basis: 'explicit_cli_model_argument_accepted_bridge_echo',
+    returned_provider: 'codex',
+    returned_model: 'gpt-5.6-luna',
+  });
+  assert.equal(verifyOutcomeDecisionReaderRunEvidence(passedPath).status, 'passed');
+
+  const failedPath = decisionReaderRunFixture(t, {
+    model_independently_attested: false,
+    model_attestation_basis: 'explicit_cli_model_argument_accepted_bridge_echo',
+    returned_provider: 'codex',
+    returned_model: 'gpt-5.6-terra',
+  });
+  const failed = verifyOutcomeDecisionReaderRunEvidence(failedPath);
+  assert.equal(failed.status, 'failed');
+  assert.equal(failed.batches[0].checks.model_attestation_accepted, false);
 });
 
 test('measure 1 decision-reader instrument is digest pinned and fails on drift', () => {
