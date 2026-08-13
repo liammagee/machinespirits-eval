@@ -24,18 +24,38 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — v4 LAUNCH HANDED TO THE DRIVER (direction 083c).**
-  Final gate PASSED (second session, zero calls: scope, arming slot,
-  basis, policy consumption, independent replay-table match). Counter
-  settled and pinned at 4,198 (`856251d1`); ceiling 19,337. GO note
-  083a committed; two launch attempts refused zero-call (comma-format
-  `1,116` in the note, fixed at `5bed534f`; stale extraction-schema
-  fingerprint, re-pinned at `148621f3` — note 083b, cause = registered
-  sensor change `46bfbdd9`). The human then ruled (13 Aug): control to
-  the codex driver, reviewer interprets results only; "Go, approve if
-  needed. Do everything unattended, only report back completion or
-  failure." Driver owns launch + watch + report 084; reviewer reads
-  084 and rules. The 72-dialogue main block stays UNAUTHORIZED.
+- **CURRENT — ruling 088: presence packet cap 42,000 → 60,000; driver
+  repairs and resumes.** Generation is COMPLETE and admitted: 18/18
+  dialogues sealed at coverage 1.0, 495 calls, counter 4,693/19,337
+  (report 087, `1176a1ff`). One dialogue (order 17) was quarantined
+  mid-generation on `invalid_semantic_events` and re-taken clean under
+  note 083d (30 + 25 calls, disclosed — the registered coverage repair
+  worked). The 144-case fingerprint guard first refused on 139/144
+  unique content hashes; ruling 086 classified it a TECHNICAL guard
+  misfire (deterministic opening turns produce genuine byte-twins) and
+  repaired the identity notion to (dialogue, turn, content) at
+  `41ca37ff`; the repaired guard passes with byte-twin groups 2/2/4
+  reported. The run then refused at the presence packet cap: 46,007
+  bytes vs 42,000, zero reader calls. Diagnosis: the registered
+  deference-sensor change (`46bfbdd9`, schema v3.2) grew the static
+  frame every packet carries (catalog 11,159 → 23,087; schema 11,713
+  → 13,551); all 288 packets would refuse; the batch is already one
+  case. Ruling 088: transport constant (028/045 precedent), raised to
+  60,000 (worst case 53,851); preparer digest re-pinned; response cap
+  and `score-semantic-reader-presence-gate.js` unchanged. Recorded
+  limitations: schema v3.2 vs frozen-instrument bytes (083b); packet
+  sizes above the confirmation envelope (088). P1/P2 observations
+  banked, interpretation reserved (086). Report 089 next. The
+  72-dialogue main block stays UNAUTHORIZED.
+- **DONE — v4 launch handed to the driver (083c/083d/083e).** Counter
+  settled at 4,198 (`856251d1`); GO note 083a; two zero-call refusals
+  fixed pre-launch (comma literal `5bed534f`; extraction-digest re-pin
+  `148621f3`, note 083b). Human rulings (13 Aug): control to the codex
+  driver, reviewer interprets results only; "Go, approve if needed.
+  Do everything unattended, only report back completion or failure";
+  resume authority "I authorise resumption from all failures where
+  possible" (note 083d). Refusal reports 084 (dir-exists; stale dir
+  quarantined, 083e) and 085/087 ruled above.
 - **DONE — v4 build at `4a0129a4`; reviewer verification PASS.** Driver
   stopped once on the registered comment-conflict tripwire (report
   081); direction 082 ruled registration 079 supersedes the stale
