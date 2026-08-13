@@ -43,9 +43,10 @@
   not re-fielded, predictions rewritten from pilot evidence (P1′,
   P2a, P2b), main block 72 fresh dialogues / seeds 518–529 /
   decision channel only at the exact 576-case freeze, plan ≈ 3,200
-  calls. Next: direction 097 (zero-call build) only after the human
-  reviews 096; launch needs a fresh GO note (097a) on an explicit
-  human GO. The main block stays UNAUTHORIZED.
+  calls. Human GO given (verbatim "GO", 13 Aug, on the 096
+  summary). Direction 097 orders the build (zero calls, report 098);
+  launch waits for reviewer note 097a after zero-call verification
+  of the build.
 - **DONE — ruling 094a: contract-invalid reader response ruled
   TECHNICAL; quarantine + single-batch re-take.** Presence-reader-A
   batch 71 (`case-aad700bb…`) labeled a record-entry request with
