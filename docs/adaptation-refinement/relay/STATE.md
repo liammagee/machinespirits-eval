@@ -24,7 +24,26 @@
   presence-level claims only; fine-grain stays FAILED (strict 26/93
   out of sample). Budget 3,523 spent; ceiling 11,337; seed 515
   unspent. Lease M retired.
-- **CURRENT — ruling 088: presence packet cap 42,000 → 60,000; driver
+- **CURRENT — ruling 091a: reader-launcher resume repair; driver
+  repairs the PARENT launcher and resumes.** After the cap raise
+  (088, `7d82ab48`), the derived reader digest moved by construction
+  and was re-pinned with an equivalence proof (note 088a,
+  `21400c4a`). A stale zero-call presence-collection from the old-cap
+  attempt was quarantined (note 090a, `6885374e`; driver granted
+  self-quarantine authority for that shape). Resume 14 then passed
+  every guard and BOTH packet preparations (288 presence packets at
+  45,419–50,523 bytes, 288 decision packets; checkpoint `readers`)
+  and failed at reader dispatch: the parent passes `--resume` to both
+  child reader launchers, the children read their own nonexistent run
+  checkpoints in fresh directories and exit before the first call
+  (report 091, `7fc23740`). Reviewer confirmed in code, zero-call.
+  Ruling 091a: TECHNICAL; parent-only repair (the parent is pinned by
+  no digest) — pass `--resume` per child only when that child's own
+  checkpoint exists; add child log capture; tests both branches;
+  self-quarantine authority extended to any zero-response reader
+  directory. Reader calls stay 0; counter 4,693/19,337. Report 092
+  next.
+- **DONE — ruling 088: presence packet cap 42,000 → 60,000; driver
   repairs and resumes.** Generation is COMPLETE and admitted: 18/18
   dialogues sealed at coverage 1.0, 495 calls, counter 4,693/19,337
   (report 087, `1176a1ff`). One dialogue (order 17) was quarantined
