@@ -867,14 +867,32 @@ function writeOutcomeCorpusArtifacts({ rootDir, built }) {
   return { corpusPath, keyPath, predictionsPath };
 }
 
-async function runReaderProcesses({ semanticCommand, decisionCommand, checkpoint, budget, runProcess = spawnLogged }) {
+export async function runReaderProcesses({
+  semanticCommand,
+  decisionCommand,
+  presenceRunDir,
+  decisionRunDir,
+  rootDir,
+  resume = false,
+  checkpoint,
+  budget,
+  runProcess = spawnLogged,
+}) {
   const remaining = OUTCOME_PILOT_CALL_PLAN.total - checkpoint.call_budget.actual.total;
   const required = OUTCOME_PILOT_CALL_PLAN.presence_readers + OUTCOME_PILOT_CALL_PLAN.decision_readers;
   if (remaining < required)
     throw new Error(`reader launch refused: ${remaining} calls remain but ${required} are required`);
+  const semanticChildResume = resume && fs.existsSync(path.join(presenceRunDir, 'semantic-reader-run.json'));
+  const decisionChildResume = resume && fs.existsSync(path.join(decisionRunDir, 'decision-reader-run.json'));
   const [semantic, decision] = await Promise.all([
-    runProcess(semanticCommand, { cwd: ROOT }),
-    runProcess(decisionCommand, { cwd: ROOT }),
+    runProcess([...semanticCommand, ...(semanticChildResume ? ['--resume'] : [])], {
+      cwd: ROOT,
+      logPath: path.join(rootDir, 'presence-readers-launcher.log'),
+    }),
+    runProcess([...decisionCommand, ...(decisionChildResume ? ['--resume'] : [])], {
+      cwd: ROOT,
+      logPath: path.join(rootDir, 'decision-readers-launcher.log'),
+    }),
   ]);
   if (semantic.status !== 0 || decision.status !== 0) throw new Error('one or both frozen reader launchers failed');
   budget.reserveMany('presence_readers', OUTCOME_PILOT_CALL_PLAN.presence_readers, { source: 'semantic-reader-run' });
@@ -1041,7 +1059,6 @@ export async function executeOutcomePilot({
       presenceRunDir,
       '--approved-by',
       goNote.relative_path,
-      ...(resume ? ['--resume'] : []),
     ],
     decisionCommand: [
       process.execPath,
@@ -1056,8 +1073,11 @@ export async function executeOutcomePilot({
       decisionRunDir,
       '--approved-by',
       goNote.relative_path,
-      ...(resume ? ['--resume'] : []),
     ],
+    presenceRunDir,
+    decisionRunDir,
+    rootDir,
+    resume,
     checkpoint: budget.state,
     budget,
     runProcess: runReaderProcess,

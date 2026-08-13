@@ -16,6 +16,7 @@ import {
   preflightOutcomePilotPromptAudits,
   renderOutcomePilotPromptConfiguration,
   runOutcomeGeneration,
+  runReaderProcesses,
   runReadersAfterFingerprintGuard,
   validateOutcomeFreezeFormForFrozenDecisionRunner,
   verifyOutcomePilotManifestBindings,
@@ -304,6 +305,70 @@ test('checkpoint resume skips a completed dialogue', async (t) => {
   });
   assert.equal(launches, 0);
   assert.equal(checkpoint.dialogues.length, 1);
+});
+
+test('resumed parent starts both readers fresh when neither child checkpoint exists', async (t) => {
+  const rootDir = temporaryDirectory(t);
+  const presenceRunDir = path.join(rootDir, 'presence-readers');
+  const decisionRunDir = path.join(rootDir, 'decision-readers');
+  const launches = [];
+  const reservations = [];
+  await runReaderProcesses({
+    semanticCommand: ['node', 'semantic-reader'],
+    decisionCommand: ['node', 'decision-reader'],
+    presenceRunDir,
+    decisionRunDir,
+    rootDir,
+    resume: true,
+    checkpoint: { call_budget: { actual: { total: 0 } } },
+    budget: { reserveMany: (...args) => reservations.push(args) },
+    runProcess: async (command, options) => {
+      launches.push({ command, options });
+      return { status: 0 };
+    },
+  });
+  assert.deepEqual(
+    launches.map((launch) => launch.command),
+    [
+      ['node', 'semantic-reader'],
+      ['node', 'decision-reader'],
+    ],
+  );
+  assert.deepEqual(
+    launches.map((launch) => launch.options.logPath),
+    [path.join(rootDir, 'presence-readers-launcher.log'), path.join(rootDir, 'decision-readers-launcher.log')],
+  );
+  assert.equal(reservations.length, 2);
+});
+
+test('resumed parent resumes only a child whose own checkpoint exists', async (t) => {
+  const rootDir = temporaryDirectory(t);
+  const presenceRunDir = path.join(rootDir, 'presence-readers');
+  const decisionRunDir = path.join(rootDir, 'decision-readers');
+  fs.mkdirSync(presenceRunDir, { recursive: true });
+  fs.writeFileSync(path.join(presenceRunDir, 'semantic-reader-run.json'), '{}\n');
+  const launches = [];
+  await runReaderProcesses({
+    semanticCommand: ['node', 'semantic-reader'],
+    decisionCommand: ['node', 'decision-reader'],
+    presenceRunDir,
+    decisionRunDir,
+    rootDir,
+    resume: true,
+    checkpoint: { call_budget: { actual: { total: 0 } } },
+    budget: { reserveMany: () => {} },
+    runProcess: async (command, options) => {
+      launches.push({ command, options });
+      return { status: 0 };
+    },
+  });
+  assert.deepEqual(
+    launches.map((launch) => launch.command),
+    [
+      ['node', 'semantic-reader', '--resume'],
+      ['node', 'decision-reader'],
+    ],
+  );
 });
 
 test('launcher quarantines the sealed v3 dialogue-11 coverage shape before counting it complete', async (t) => {
