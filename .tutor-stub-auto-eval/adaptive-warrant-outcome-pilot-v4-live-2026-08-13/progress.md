@@ -22,3 +22,5 @@
 2026-08-13T04:57:52Z attempts=495 resume=3 status=refused reason=semantic_schema_acceptance_carryover_stale reader_calls=0
 2026-08-13T04:57:55Z attempts=495 status=zero_call_artifact_regenerated artifact=semantic_schema_acceptance_carryover new_calls=0
 2026-08-13T04:58:02Z attempts=495 resume=4 status=refused reason=presence_reader_packet_46007_exceeds_42000 reader_calls=0
+2026-08-13T05:10:33Z attempts=495 resume=5 status=started cap_change_commit=7d82ab48201dc8e1d2f25918b2c5cd65adeaacaf packet_cap=60000
+2026-08-13T05:10:56Z attempts=495 resume=5 status=refused reason=clean_worktree_guard reader_calls=0
