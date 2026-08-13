@@ -612,21 +612,91 @@ function readJsonl(filePath) {
     .map((line) => JSON.parse(line));
 }
 
-export function guardOutcomeAnnotationFingerprints({ cases, expectedCount = 144, excludedCases = [] } = {}) {
+function outcomeAnnotationCaseFingerprint({ dialogueId, turn, contentHash }) {
+  return sha256(
+    JSON.stringify({
+      schema: 'machinespirits.adaptation-refinement.outcome-annotation-case-fingerprint.v2',
+      dialogue_id: dialogueId,
+      turn,
+      content_sha256: contentHash,
+    }),
+  );
+}
+
+export function guardOutcomeAnnotationFingerprints({
+  cases,
+  keyCases,
+  expectedCount = 144,
+  excludedCases = [],
+} = {}) {
   if (!Array.isArray(cases) || cases.length !== expectedCount) {
     throw new Error(`annotationCaseFingerprint guard expected ${expectedCount} cases, got ${cases?.length ?? 0}`);
   }
-  const fingerprints = cases.map(annotationCaseFingerprint);
-  if (new Set(fingerprints).size !== fingerprints.length)
-    throw new Error('annotationCaseFingerprint guard found duplicates');
+  if (!Array.isArray(keyCases) || keyCases.length !== expectedCount) {
+    throw new Error(
+      `annotationCaseFingerprint identity guard expected ${expectedCount} source bindings, got ${keyCases?.length ?? 0}`,
+    );
+  }
+  const keyBySampleId = new Map();
+  for (const keyCase of keyCases) {
+    if (!keyCase?.sample_id || keyBySampleId.has(keyCase.sample_id)) {
+      throw new Error('annotationCaseFingerprint identity guard found missing or doubled sample identity');
+    }
+    keyBySampleId.set(keyCase.sample_id, keyCase);
+  }
+  const identities = new Set();
+  const contentGroups = new Map();
+  const fingerprints = cases.map((corpusCase) => {
+    const keyCase = keyBySampleId.get(corpusCase?.sample_id);
+    const dialogueId = keyCase?.job_id;
+    const turn = Number(keyCase?.turn);
+    if (!dialogueId || !Number.isInteger(turn)) {
+      throw new Error('annotationCaseFingerprint identity guard found a missing dialogue or turn identity');
+    }
+    const identity = `${dialogueId}\u0000${turn}`;
+    if (identities.has(identity)) {
+      throw new Error(`annotationCaseFingerprint identity guard found doubled identity ${dialogueId} turn ${turn}`);
+    }
+    identities.add(identity);
+    const contentHash = annotationCaseFingerprint(corpusCase);
+    if (contentHash !== keyCase.source_fingerprint) {
+      throw new Error(
+        `annotationCaseFingerprint integrity guard found mutated case ${corpusCase.sample_id} (${dialogueId} turn ${turn})`,
+      );
+    }
+    const group = contentGroups.get(contentHash) || [];
+    group.push({ sample_id: corpusCase.sample_id, dialogue_id: dialogueId, turn });
+    contentGroups.set(contentHash, group);
+    return outcomeAnnotationCaseFingerprint({ dialogueId, turn, contentHash });
+  });
+  if (identities.size !== expectedCount || keyBySampleId.size !== expectedCount) {
+    throw new Error('annotationCaseFingerprint identity guard found missing or doubled identity');
+  }
+  const byteTwinGroups = [...contentGroups.entries()]
+    .filter(([, group]) => group.length > 1)
+    .map(([contentHash, group]) => ({ content_sha256: contentHash, cases: group }));
   const excluded = new Set((excludedCases || []).map(annotationCaseFingerprint));
-  const overlap = fingerprints.filter((fingerprint) => excluded.has(fingerprint));
+  const overlap = [...contentGroups.keys()].filter((contentHash) => excluded.has(contentHash));
   if (overlap.length) throw new Error(`annotationCaseFingerprint guard found ${overlap.length} excluded overlaps`);
-  return { status: 'passed', expected_case_count: expectedCount, observed_case_count: cases.length, fingerprints };
+  return {
+    status: 'passed',
+    expected_case_count: expectedCount,
+    observed_case_count: cases.length,
+    observed_identity_count: identities.size,
+    fingerprints,
+    unique_content_fingerprint_count: contentGroups.size,
+    byte_twin_groups: byteTwinGroups,
+  };
 }
 
-export async function runReadersAfterFingerprintGuard({ cases, expectedCount, excludedCases = [], runReaders } = {}) {
-  const guard = guardOutcomeAnnotationFingerprints({ cases, expectedCount, excludedCases });
+export async function runReadersAfterFingerprintGuard({
+  cases,
+  keyCases,
+  expectedCount,
+  excludedCases = [],
+  runReaders,
+} = {}) {
+  const guard = guardOutcomeAnnotationFingerprints({ cases, keyCases, expectedCount, excludedCases });
   if (typeof runReaders !== 'function') throw new Error('reader launcher callback is required');
   const result = await runReaders();
   return { guard, result };
@@ -894,6 +964,7 @@ export async function executeOutcomePilot({
   const built = prepareOutcomeCases({ rows, manifest: guarded.manifest, rootDir });
   const fingerprintGuard = guardOutcomeAnnotationFingerprints({
     cases: built.corpus.cases,
+    keyCases: built.key.cases,
     expectedCount: guarded.manifest.case_extraction.expected_case_count,
   });
   budget.state.post_generation_fingerprint_guard = fingerprintGuard;

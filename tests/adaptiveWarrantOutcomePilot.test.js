@@ -11,6 +11,7 @@ import {
   OUTCOME_PILOT_PER_DIALOGUE_CAP,
   createOutcomePilotBudget,
   executeOutcomePilot,
+  guardOutcomeAnnotationFingerprints,
   guardOutcomeDialogueLearnerAnalysisCoverage,
   preflightOutcomePilotPromptAudits,
   renderOutcomePilotPromptConfiguration,
@@ -19,6 +20,7 @@ import {
   validateOutcomeFreezeFormForFrozenDecisionRunner,
   verifyOutcomePilotManifestBindings,
 } from '../scripts/run-adaptive-warrant-outcome-pilot.js';
+import { annotationCaseFingerprint } from '../scripts/run-adaptive-warrant-baseline-study.js';
 import { auditTutorStubPrompt, TUTOR_STUB_PROMPT_BUDGETS } from '../services/tutorStubPromptAudit.js';
 import { auditTutorStubBaseSystemPrompt } from '../services/tutorStubSessionApplicationContext.js';
 
@@ -32,10 +34,20 @@ function temporaryDirectory(t) {
 
 function fingerprintCase(index) {
   return {
+    sample_id: `case-${index}`,
     transcript_before_decision: [{ turn: index, learner: `learner ${index}`, tutor: `tutor ${index}` }],
     current_learner_turn: { turn: index, learner: `current ${index}` },
     learner_record_at_decision: { grounded_count: index, voiced_derived_count: 0, total: index },
     learner_record_trajectory: [{ turn: index, grounded_count: index, voiced_derived_count: 0, total: index }],
+  };
+}
+
+function fingerprintKey(corpusCase, { dialogueId = `dialogue-${corpusCase.sample_id}`, turn } = {}) {
+  return {
+    sample_id: corpusCase.sample_id,
+    job_id: dialogueId,
+    turn: turn ?? corpusCase.current_learner_turn.turn,
+    source_fingerprint: annotationCaseFingerprint(corpusCase),
   };
 }
 
@@ -197,6 +209,67 @@ test('annotationCaseFingerprint failure blocks reader admission', async () => {
     /expected 2 cases, got 1/u,
   );
   assert.equal(readerCalls, 0);
+});
+
+test('annotationCaseFingerprint guard passes and reports legitimate byte twins with distinct identities', () => {
+  const first = fingerprintCase(1);
+  const twin = { ...structuredClone(first), sample_id: 'case-twin' };
+  const result = guardOutcomeAnnotationFingerprints({
+    cases: [first, twin],
+    keyCases: [
+      fingerprintKey(first, { dialogueId: 'dialogue-a', turn: 1 }),
+      fingerprintKey(twin, { dialogueId: 'dialogue-b', turn: 1 }),
+    ],
+    expectedCount: 2,
+  });
+  assert.equal(result.status, 'passed');
+  assert.equal(result.observed_identity_count, 2);
+  assert.equal(result.unique_content_fingerprint_count, 1);
+  assert.deepEqual(result.byte_twin_groups, [
+    {
+      content_sha256: annotationCaseFingerprint(first),
+      cases: [
+        { sample_id: 'case-1', dialogue_id: 'dialogue-a', turn: 1 },
+        { sample_id: 'case-twin', dialogue_id: 'dialogue-b', turn: 1 },
+      ],
+    },
+  ]);
+  assert.notEqual(result.fingerprints[0], result.fingerprints[1]);
+});
+
+test('annotationCaseFingerprint guard refuses a doubled dialogue and turn identity', () => {
+  const first = fingerprintCase(1);
+  const second = fingerprintCase(2);
+  assert.throws(
+    () =>
+      guardOutcomeAnnotationFingerprints({
+        cases: [first, second],
+        keyCases: [
+          fingerprintKey(first, { dialogueId: 'dialogue-a', turn: 1 }),
+          fingerprintKey(second, { dialogueId: 'dialogue-a', turn: 1 }),
+        ],
+        expectedCount: 2,
+      }),
+    /identity guard found doubled identity dialogue-a turn 1/u,
+  );
+});
+
+test('annotationCaseFingerprint guard refuses a case mutated after source extraction', () => {
+  const corpusCase = fingerprintCase(1);
+  const keyCase = fingerprintKey(corpusCase);
+  corpusCase.current_learner_turn.learner = 'mutated bytes';
+  assert.throws(
+    () => guardOutcomeAnnotationFingerprints({ cases: [corpusCase], keyCases: [keyCase], expectedCount: 1 }),
+    /integrity guard found mutated case case-1/u,
+  );
+});
+
+test('annotationCaseFingerprint guard refuses count drift', () => {
+  const corpusCase = fingerprintCase(1);
+  assert.throws(
+    () => guardOutcomeAnnotationFingerprints({ cases: [corpusCase], keyCases: [fingerprintKey(corpusCase)] }),
+    /expected 144 cases, got 1/u,
+  );
 });
 
 test('checkpoint resume skips a completed dialogue', async (t) => {
