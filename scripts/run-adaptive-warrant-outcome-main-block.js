@@ -416,6 +416,10 @@ export function resolveOutcomeMainBlockLaunchCommit({ checkpoint, semanticPrefli
   return preflightCommit;
 }
 
+export function shouldReuseOutcomeMainBlockLaunchArtifacts({ resume = false, readerResume = false } = {}) {
+  return Boolean(resume && readerResume);
+}
+
 function emitOutcomeMainBlockFreeze({
   outputPath,
   studyId,
@@ -568,8 +572,9 @@ export async function executeOutcomeMainBlock({
   const decisionRunDir = path.join(rootDir, 'decision-readers');
   const decisionRunPath = path.join(decisionRunDir, 'decision-reader-run.json');
   const readerResume = resume && fs.existsSync(decisionRunPath);
+  const reuseLaunchArtifacts = shouldReuseOutcomeMainBlockLaunchArtifacts({ resume, readerResume });
 
-  if (!resume) {
+  if (!reuseLaunchArtifacts) {
     preflightOutcomePilotPromptAudits({
       manifest: { ...guarded.manifest, interleaved_condition_assignment: guarded.assignments },
       outputPath: promptAuditPath,
@@ -591,7 +596,7 @@ export async function executeOutcomeMainBlock({
     }
   }
   const semanticPreflight = readJson(semanticPreflightPath);
-  const launchCommit = resume
+  const launchCommit = reuseLaunchArtifacts
     ? resolveOutcomeMainBlockLaunchCommit({ checkpoint, semanticPreflight })
     : git(['rev-parse', 'HEAD']);
   validateAdaptiveWarrantSemanticPreflightArtifact({
