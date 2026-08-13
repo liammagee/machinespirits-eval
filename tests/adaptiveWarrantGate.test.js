@@ -166,9 +166,7 @@ test('semantic evidence spans derive UTF-16 offsets only from one unique literal
       span: `I'll compare it`,
     }),
   ]);
-  assert.ok(
-    punctuationDuplicate.events[0].validation.issues.includes('events[0].evidence_span:non_unique_literal'),
-  );
+  assert.ok(punctuationDuplicate.events[0].validation.issues.includes('events[0].evidence_span:non_unique_literal'));
 });
 
 const CATALOGUE_ACTION_FAMILIES = [
@@ -442,15 +440,11 @@ test('V3.2 generated and live handbook prose states the exact slot-local sentine
     true,
   );
   assert.equal(
-    ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT.target_id.includes(
-      ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE,
-    ),
+    ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT.target_id.includes(ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE),
     true,
   );
   assert.equal(
-    ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT.action_object_id.includes(
-      ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE,
-    ),
+    ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT.action_object_id.includes(ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE),
     true,
   );
 });
@@ -587,7 +581,10 @@ test('V3.2 applies the sentinel per slot, normalizes forbidden slots, and still 
     }),
   ]);
   assert.equal(empty.extraction_status, 'invalid');
-  assert.equal(empty.events[0].validation.issues.some((issue) => issue.endsWith('.target_id:required')), true);
+  assert.equal(
+    empty.events[0].validation.issues.some((issue) => issue.endsWith('.target_id:required')),
+    true,
+  );
   assert.equal(
     empty.events[0].validation.issues.some((issue) => issue.endsWith('.action_object_id:invalid')),
     true,
@@ -623,9 +620,7 @@ test('every blocking-obligation target the semantic ledger can emit closes under
         }),
       ],
       {
-        publicText: sentinel
-          ? ''
-          : `The public catalogue names ${targetId} as public-id-closure-${index}.`,
+        publicText: sentinel ? '' : `The public catalogue names ${targetId} as public-id-closure-${index}.`,
       },
     );
     assert.equal(extraction.extraction_status, 'accepted', targetKind);
@@ -781,7 +776,9 @@ test('overlapping non-atomic semantic events become uncertain and cannot mutate 
     extraction.events.map((event) => event.validation.status),
     ['uncertain', 'uncertain'],
   );
-  assert.equal(compileAdaptiveWarrantSemanticSignal(extraction).primary, 'neutral');
+  const uncertainSignal = compileAdaptiveWarrantSemanticSignal(extraction);
+  assert.equal(uncertainSignal.primary, 'low_agency_deferral');
+  assert.equal(uncertainSignal.deference_present, true);
   const decision = createAdaptiveWarrantPublicObligationLedger().assess({
     turn: 1,
     learnerText,

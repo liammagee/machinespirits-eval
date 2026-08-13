@@ -436,9 +436,7 @@ function normalizeAdaptiveWarrantSemanticSentinelSlots(event, contract, eventInd
   }
   if (action?.action_object_id === ADAPTIVE_WARRANT_SEMANTIC_UNSPECIFIED_ID && contract?.action === 'none') {
     action = null;
-    normalizationNotes.push(
-      `events[${eventIndex}].requested_or_proposed_action:unspecified_normalized_to_none`,
-    );
+    normalizationNotes.push(`events[${eventIndex}].requested_or_proposed_action:unspecified_normalized_to_none`);
   }
   return { target, action, normalizationNotes };
 }
@@ -653,12 +651,10 @@ function engagementContribution(event) {
       return event.speech_act;
     case 'low_agency_deferral':
       return 'low_agency_deferral';
-    case 'tutor_selection_request': {
-      const action = event.requested_or_proposed_action;
-      return action?.mode === 'requested' && action?.executor === 'tutor' && action?.action === 'select_next_step'
-        ? 'low_agency_deferral'
-        : null;
-    }
+    case 'tutor_selection_request':
+    case 'learner_record_entry_request':
+    case 'tutor_directed_public_result_request':
+      return 'low_agency_deferral';
     case 'analytic_contribution':
     case 'learner_proposed_test':
     case 'criterion_question':
@@ -668,11 +664,12 @@ function engagementContribution(event) {
   }
 }
 
-/** Compile accepted events without consulting the source text. */
+/** Compile accepted and uncertain events without consulting the source text (rejected events never contribute). */
 export function compileAdaptiveWarrantSemanticSignal(validation) {
   const contributions = [];
   for (const [eventIndex, event] of (validation?.events || []).entries()) {
-    if (event?.validation?.status !== 'accepted') continue;
+    const status = event?.validation?.status;
+    if (status !== 'accepted' && status !== 'uncertain') continue;
     const label = engagementContribution(event);
     if (!label) continue;
     contributions.push({
