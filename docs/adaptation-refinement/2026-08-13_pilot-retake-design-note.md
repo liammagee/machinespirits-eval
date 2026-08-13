@@ -38,12 +38,21 @@ Two load-bearing details:
   permission-asking. The study's difficulty axis is the permission habit, not
   absent analysis, so the broad rule is the faithful one.
 
-**Policy-arming replay.** The armed turns above are turns where the gate's
-challenge rule would select the challenge-resistance family. Under the
-corrected sensor the gated condition arms challenges in 4 of 6 dialogues.
-Measure 2 becomes satisfiable; GO criterion (c) becomes testable rather than
-structurally impossible. (Whether an armed challenge survives drafting guards
-and lands in the delivered turn is a generation-time question for the smoke.)
+**Policy-arming replay — CORRECTED after smoke A.** The first version of this
+note claimed the armed turns above would select the challenge-resistance
+family. That was wrong. The policy is only consulted when the gate already
+warrants a revision (`revisionWarranted` in
+`services/adaptiveWarrantGateCore.js`), and sustained deference is not among
+the arming conditions — revision needs two trouble turns, a blocking
+obligation, a contract transition, a register escalation, or inquiry
+completion. In the four never-breaker dialogues the stored trouble count
+never exceeds 1 and the warrant basis is `none` on every non-terminal turn,
+so even with the corrected sensor no challenge would have been delivered.
+Smoke A (seed 518, gated, sensor fix live, 26 calls) confirmed this:
+deference now registers (3 of 8 turns), but the record kept growing, the
+basis stayed `none`, and zero challenges were delivered. The sensor fix is
+necessary but not enough. Whether sustained deference should itself warrant
+a revision is a design change for the registration, not a bug fix (§2.5).
 
 ## 2. Changes for the re-registration
 
@@ -61,6 +70,21 @@ and lands in the delivered turn is a generation-time question for the smoke.)
 4. **Decision-time signals in all conditions.** Bare and standing-permission
    turns must carry the same learner-signal block the gated turns carry, so
    the scorer never depends on a shadow stamp that can drift.
+5. **Sustained deference as a warrant basis (decision needed).** Today the
+   challenge family can only be delivered when deference happens to coincide
+   with another revision warrant (stalled record, blocking obligation,
+   escalation). These learners defer while the record grows, so the challenge
+   never fires — that is why all 144 pilot turns and smoke A read zero. The
+   candidate change: sustained deference (three deferential turns in a row)
+   becomes its own revision warrant with its own basis string, consulted at
+   the same precedence the policy comment already describes. This changes
+   what the gate does, not just what it sees, so it must be registered as a
+   design change with its own prediction — including the risk it makes the
+   gated tutor interrupt learners who are deferring politely while making
+   steady progress, which the pilot's four never-breakers all were. The
+   other option is to accept that this learner population cannot produce
+   challenge turns and drop criterion (c) for a re-scoped measure. Human
+   call, before any re-registration is drafted.
 
 ## 3. The guarded bad learner (new condition, optional)
 
@@ -94,14 +118,21 @@ design.
 
 | Rung | What | Calls |
 |---|---:|---:|
-| Smoke A | one gated dialogue, sensor fix live | ~30 |
-| Smoke B | one guarded-bad-learner dialogue | ~30 |
+| Smoke A | one gated dialogue, sensor fix live | 26 (SPENT) |
+| Smoke B | one guarded-bad-learner dialogue | ~30 (running) |
 | Re-registered pilot re-take (18 dialogues + readers) | | ~1,116 |
 | Main block (72 dialogues, unchanged design) | | ~4,500 |
 
-Counter today: 4,067 / 11,337. All rungs together land near 9,750, inside the
-ceiling with ~1,600 spare. Skipping smoke B and the bad-learner block saves
-its calls but leaves the defensive pole unmeasured.
+Smokes A and B were authorized 2026-08-13 ("do the two smokes"). Counter
+after smoke A: 4,093 / 11,337. All rungs together land near 9,750, inside
+the ceiling with ~1,600 spare.
+
+Note for the sibling relay track: the learner-analysis coverage repair
+(commit 48bf2e97, direction 075) fixes the 144th-case assembly failure and
+composes cleanly with the sensor patch (adaptiveWarrant* 199/199 at HEAD).
+But a v4 take under the current design still fails GO criterion (c) for the
+reason in §1 above, and any GO note must re-pin the counter after the
+smokes' spend. Reviewed and sent to the sibling session 2026-08-13.
 
 ## 5. What this note does not do
 
