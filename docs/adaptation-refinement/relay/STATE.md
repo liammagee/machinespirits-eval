@@ -56,7 +56,22 @@
   `c0a20130…`, 85 focused tests passed, zero paid calls. Reviewer
   verified the build zero-call (pin shasum, HOLD run, paid-path
   refusal, manifest arithmetic).
-- **CURRENT — GO note 097a CUT (corrected once); main-block run
+- **CURRENT — main block COMPLETE and VALID (ruling 100);
+  registration 101 CUT: steering/challenge decomposition.** Run
+  `…main-block-live-2026-08-13` closed at 3,081 calls, counter
+  8,355/19,337; all 1,152 reader responses passed the full contract;
+  four in-run failures ruled technical; archive sealed
+  (`eed2b597` in the private repo). Verdicts: P2a PASS (gated 19/24
+  breaks vs bare 10/24, standing 11/24); P1′ FAIL (11/24 armed +
+  delivered); P2b FAIL (7/19 breaks within three turns of a
+  challenge — 12 of 19 breaks had no challenge at all). Ruling 100
+  §4: effect attributed to always-on active-gate steering, not
+  timed challenges. Registration **101** now directs the build for
+  a two-condition decomposition (gated vs steering_only, 48
+  dialogues, seeds 536–549 skipping 541/547, 384 cases, 768 reads,
+  run cap 2,240). Driver builds zero-call, reports as **102**; no
+  paid call before GO note 103 plus explicit human approval.
+- **DONE — GO note 097a CUT (corrected once); main-block run
   LAUNCHED.** First launch attempt refused fail-closed with zero
   calls (report 099, `71a9cd9f`): the note named only
   `--accept-charges`, but the launcher also requires `--go-note`,
