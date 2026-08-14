@@ -72,10 +72,11 @@ dialogues, GO note 097a at `58402361`).
 4. **Disclose** the whole history in the run report; the reviewer
    rules on the class (technical vs substantive) after the fact.
 
-### Open items for report 099
+### Closure (ruling 100, 14 Aug 2026)
 
-- Reconcile the quarantined children's calls (including dialogue
-  72's 19 trace-only calls) into the closing counter.
-- Classify dialogue 72's fallback failure: if the final-check leak
-  flag on the deterministic fallback is reachable systematically, it
-  is a new defect-ledger entry, not just a quarantine.
+Both open items closed. The quarantined children's 76 trace-only
+calls (19 + 30 + 27) are folded into the authoritative run total of
+3,081 (report 099). The fallback leak stop
+(`leak:private_final_conclusion`, dialogue 25) happened once in 75
+child takes and is ruled a watch item, not a defect entry. All four
+in-run failures ruled technical class; run valid.
