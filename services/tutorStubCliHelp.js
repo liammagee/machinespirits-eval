@@ -84,7 +84,7 @@ Options:
                          model for --tutor-learner-dag; when the classifier is
                          also on, this single call returns both outputs
                          (default: ${STUB.learnerRecordModel})
-  --learner-analysis-prompt-profile <baseline|compact_v1>
+  --learner-analysis-prompt-profile <baseline|compact_v1|handbook_v1>
                          learner-analysis prompt profile; compact_v1 removes
                          only duplicate question text and JSON indentation
   --no-register-selection
@@ -207,6 +207,8 @@ Options:
   --goal <text>          tutor objective
   --style <text>         tutor style constraints
   --system <path>        replace generated system prompt with a file
+  --standing-instructions-file <path>
+                         append a byte-frozen conditional instruction menu
   --once <text>          run one turn and exit
   --auto-learner         run unattended with an LLM learner
   --auto-learner-model <ref>
@@ -437,7 +439,7 @@ Environment:
   TUTOR_STUB_LEARNER_RECORD_MODEL
                          optional default learner-record / combined-analysis model override
   TUTOR_STUB_LEARNER_ANALYSIS_PROMPT_PROFILE
-                         baseline (default) or compact_v1
+                         baseline (default), compact_v1, or handbook_v1
   TUTOR_STUB_TOPIC       optional default topic override
   TUTOR_STUB_WORLD       optional default detective-story world
   TUTOR_STUB_TURN_FEEDBACK=0

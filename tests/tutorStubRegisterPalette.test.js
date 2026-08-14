@@ -77,11 +77,15 @@ test('register prompt vocabulary preserves stance defaults, optional fields, and
     },
   );
   assert.equal(vocabulary.engagementStanceDefinitionSummary('missing').valence, 'unknown');
+  const palettePrompt = vocabulary.engagementStancePalettePromptRows(['plain', 'sparse']);
+  assert.equal(palettePrompt.includes('\n'), false);
   assert.deepEqual(
-    JSON.parse(vocabulary.engagementStancePalettePromptRows(['plain', 'sparse'])).map((row) => row.register),
+    JSON.parse(palettePrompt).map((row) => row.register),
     ['plain', 'sparse'],
   );
-  assert.deepEqual(JSON.parse(vocabulary.requestTypePromptRows()), [
+  const requestTypePrompt = vocabulary.requestTypePromptRows();
+  assert.equal(requestTypePrompt.includes('\n'), false);
+  assert.deepEqual(JSON.parse(requestTypePrompt), [
     {
       request_type: 'explain',
       role: 'logical_armature',

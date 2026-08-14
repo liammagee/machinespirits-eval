@@ -118,8 +118,46 @@ function typedActionDecision(turnRecord = {}) {
   ].find((candidate) => candidate && typeof candidate === 'object' && candidate.chosen_action);
 }
 
+function typedActionCancellation(turnRecord = {}) {
+  const decision = typedActionDecision(turnRecord);
+  if (!decision) return null;
+  const delivery = decision.delivery && typeof decision.delivery === 'object' ? decision.delivery : {};
+  const disposition = String(delivery.disposition || decision.status || '').trim();
+  const cancelledBeforeDelivery =
+    delivery.delivered === false ||
+    decision.status === 'cancelled_before_delivery' ||
+    /^(?:cancelled|displaced)(?:_|$)/u.test(disposition);
+  if (!cancelledBeforeDelivery) return null;
+  return {
+    decision,
+    provenance: {
+      contract_id: decision.contract_id || null,
+      action_type: decision.chosen_action?.action_type || null,
+      move_family: decision.chosen_action?.move_family || null,
+      status: 'cancelled_before_delivery',
+      delivery_disposition: disposition || 'not_delivered',
+      displaced_by: delivery.displaced_by || null,
+      selected_action_family: delivery.selected_action_family || decision.chosen_action?.move_family || null,
+      delivered_action_family: delivery.delivered_action_family || null,
+      displaced_configuration_fields: Array.isArray(delivery.displaced_configuration_fields)
+        ? [...delivery.displaced_configuration_fields]
+        : [],
+    },
+  };
+}
+
+function deliveredResponseConfiguration(turnRecord = {}) {
+  return [
+    turnRecord.deliveredResponseConfiguration,
+    turnRecord.delivered_response_configuration,
+    turnRecord.responseConfiguration,
+    turnRecord.response_configuration,
+    turnRecord.registerSelection?.response_configuration,
+  ].find((candidate) => candidate && typeof candidate === 'object' && !Array.isArray(candidate));
+}
+
 export function actionRecord(turnRecord, task) {
-  const typed = typedActionDecision(turnRecord);
+  const typed = typedActionCancellation(turnRecord) ? null : typedActionDecision(turnRecord);
   if (typed?.chosen_action) {
     return {
       action_type: typed.chosen_action.action_type,
@@ -137,23 +175,39 @@ export function actionRecord(turnRecord, task) {
     };
   }
   const selection = turnRecord.registerSelection || {};
+  const configuration = deliveredResponseConfiguration(turnRecord) || {};
   return {
-    move_family: selection.action_family || 'legacy_register_only',
-    support_level: null,
-    task_id: task.task_id,
-    item_difficulty: task.item_difficulty,
-    register: selection.selected_register || selection.engagement_stance || 'unknown',
+    move_family: configuration.action_family || selection.action_family || 'legacy_register_only',
+    support_level: configuration.support_level ?? selection.support_level ?? null,
+    task_id: configuration.task_id || selection.task_id || task.task_id,
+    knowledge_component: configuration.knowledge_component || selection.knowledge_component || null,
+    item_difficulty: configuration.item_difficulty ?? selection.item_difficulty ?? task.item_difficulty,
+    register:
+      configuration.engagement_stance ||
+      configuration.selected_register ||
+      selection.selected_register ||
+      selection.engagement_stance ||
+      'unknown',
     selection_probability: selection.selected_probability ?? null,
   };
 }
 
 export function actionSourceProvenance(turnRecord = {}) {
   const selection = turnRecord.registerSelection || {};
+  const cancellation = typedActionCancellation(turnRecord);
+  const configuration = deliveredResponseConfiguration(turnRecord);
   return {
     schema: 'machinespirits.adaptive-state-action-source-provenance.v1',
-    source: typedActionDecision(turnRecord) ? 'typed_action_decision' : 'legacy_register_selection',
-    source_controller_policy: selection.policy || null,
+    source: cancellation
+      ? configuration
+        ? 'delivered_response_configuration'
+        : 'register_selection_after_typed_action_cancellation'
+      : typedActionDecision(turnRecord)
+        ? 'typed_action_decision'
+        : 'legacy_register_selection',
+    source_controller_policy: configuration?.policy || selection.policy || null,
     excluded_from_prediction_features: true,
+    ...(cancellation ? { typed_action_cancellation: cancellation.provenance } : {}),
   };
 }
 

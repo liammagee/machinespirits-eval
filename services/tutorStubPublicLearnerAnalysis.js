@@ -18,6 +18,20 @@ import { tutorStubAssertedClaimText } from './tutorStubConclusionAssertion.js';
 import { closeTruncatedTutorStubJson, normalizeTutorStubAnalysisEnvelope } from './tutorStubJson.js';
 import { buildTutorStubLearnerAdvance } from './tutorStubLearnerAdvance.js';
 import { buildTutorStubStateObservation } from './adaptiveTutor/tutorStubStateAdapter.js';
+import {
+  ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS,
+  ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES,
+  ADAPTIVE_WARRANT_SEMANTIC_ACTIONS,
+  ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE,
+  ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA,
+  ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE,
+  ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS,
+  ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS,
+  ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS,
+  ADAPTIVE_WARRANT_SEMANTIC_UNCERTAINTY_REASONS,
+  ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES,
+  validateAdaptiveWarrantSemanticExtraction,
+} from './adaptiveWarrantSemanticEvents.js';
 
 export const TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_SYSTEM_PROMPT = [
   'You are a compact up-front reviewer for an experimental tutor.',
@@ -37,7 +51,70 @@ export const TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES = Object.freeze({
 export const TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES = Object.freeze({
   BASELINE: 'baseline',
   COMPACT_V1: 'compact_v1',
+  HANDBOOK_V1: 'handbook_v1',
 });
+
+/**
+ * Contiguous, byte-identical excerpt from the frozen V3 reader handbook.
+ * The semantic preflight proves this block remains present in that handbook
+ * and in the live handbook_v1 prompt before a study can launch.
+ */
+const TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_FULL_HANDBOOK_RULES = `## Event multiplicity
+
+Return one event per independent clause-level act that would change a distinct typed state. Explanatory or politeness wording inside a clause is not another event. The compound licence is general: any separate clause stating an inference, evidential limit, request, proposal, complaint, or deferral receives its own event unless it is merely the grammatical complement of another event. A single clause otherwise receives one event under the precedence below. Separate events have distinct non-overlapping spans and are ordered by surface position. One request for several values is one event, except that one clause coordinating several catalogue targets receives one event per target using the smallest non-overlapping identifier-bearing spans; this is the sole waiver of the complete-clause rule.
+
+A rhetorical question answered by the learner in the same turn creates no question event; annotate the answer clause. A conditional antecedent is never an event. A negated or deferred request is withdrawal only when the public transcript contains a matching prior request, otherwise it creates no event. Third-party reported speech is analytic; only a matrix-clause first-person commitment is a proposed test. Politeness is a modifier: a clause with its own imperative or performative verb remains an act.
+
+Each reader event has speech_act, target, requested_or_proposed_action, and evidence_span. Every field is required and non-null. evidence_span is the literal span string; the harness supplies offsets. The closed speech-act vocabulary is tutor_directed_public_result_request, learner_proposed_test, criterion_question, tutor_selection_request, learner_record_entry_request, learner_wording_request, withdrawal, transfer_to_learner, repair_request, stall, register_complaint, repetition_complaint, low_agency_deferral, analytic_contribution, and other.
+
+A result request asks the tutor to supply what a named public check, record, or comparison shows. A first-person declaration that the learner still needs a named public record is also a result request with tutor executor; without a public-record object it is analytic. A confirmation sayback of already-public content is analytic, and becomes a result request only when it asks for content not yet public. A proposed test is a new learner or joint plan. Transfer_to_learner instead explicitly takes responsibility for a previously tutor-owned or requested action. A criterion question asks what evidence would establish a link. A record-entry request asks to write an already-public bounded claim, not discover a missing result.
+
+A tutor-selection request is the clause that asks or directs the tutor to choose an enumerated next step. A separate declarative clause saying the learner cannot, refuses to, or leaves that choice to the tutor is low_agency_deferral with target and action both state="none". When one clause contains both delegation and inability language, tutor_selection_request wins and no second event is added. Learner_wording_request asks for restatement or the meaning of words; repair_request asks why an evidential or inferential relation holds or names a missing reasoning step. Stall states inability to continue or propose a check; register_complaint criticises tone or style; repetition_complaint says content was repeated; analytic_contribution states an inference or evidential limit; other is reserved for a distinct state-changing act fitting none of those definitions.
+
+Speech-act precedence within one clause is: repair request versus wording request under the distinction above; register complaint, repetition complaint, or stall under their distinct objects; withdrawal or transfer; tutor-selection request; low-agency deferral; result request; record-entry request; proposed test; criterion question; analytic contribution; other. Do not add a lower-precedence event for the same clause.
+
+## Target fields
+
+target_id identifies the public object, relation, or enumerated choice set under inquiry. Target is always a tagged object: return state="catalog" with target_id, requested_value_types, and component_ids, or return the sole field state="none" when the act itself names no catalogue entity. Never return null or omit target. A catalogue target is required for result requests, proposed tests, criterion questions, record-entry requests, and tutor-selection requests. ${ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE} The empty string is always invalid. For tutor selection, choose the catalogue target naming the publicly enumerated choices, never the requested value or the tutor. Wording/repair, stall, complaint, and low-agency acts use target state="none". For analytic_contribution, withdrawal, transfer_to_learner, and other, the target belongs to that act itself: choose the catalogue entity its clause is about, independent of any accompanying event; use state="none" only when that clause names no catalogue entity.
+
+An anaphoric target may resolve through the supplied public transcript to the most recently mentioned catalogue entity. Abstain with ambiguity_reason="referent" only on an equal-recency tie. Requested values are never targets or target kinds. The harness adds target kind and public identifiers from target_id.
+
+## Action fields
+
+requested_or_proposed_action is always a tagged object: return state="catalog" with executor and action_object_id, or the sole field state="none" when no action applies. Never return null or omit the field. Executor is the party who must perform the action, never the utterance speaker. For a request where the tutor is the only other party, use tutor. Use joint only when the span explicitly says we, our, or let's; use unspecified only for an explicitly impersonal or passive construction. A first-person singular proposal uses learner. The harness rejects any executor that does not follow this surface rule.
+
+When several action objects share the required operation and target, choose the most specific one whose display-label content words all occur in the span; break a remaining tie lexicographically by action_object_id.
+
+Use exact target_id, component_ids, and action_object_id values from the supplied corpus-wide semantic_annotation_catalog. Display labels explain IDs but never determine identity or agreement. The catalogue standardises public identities across readers; it does not identify which entry applies to any case. Choose only entries supported by current public text.
+
+Return evidence_span as a string. Start with the shortest complete literal clause that supports the event. If it occurs more than once, extend it leftward by whole tokens until unique; if no unique literal span exists, abstain with ambiguity_reason="span". Spans do not overlap except for the coordinated-target waiver above. Do not calculate offsets.`;
+
+function frozenHandbookParagraph(prefix) {
+  const paragraph = TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_FULL_HANDBOOK_RULES.split('\n\n').find((row) =>
+    row.startsWith(prefix),
+  );
+  if (!paragraph) throw new Error(`frozen semantic handbook paragraph is missing: ${prefix}`);
+  return paragraph;
+}
+
+export const TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULE_PARAGRAPHS = Object.freeze([
+  frozenHandbookParagraph('Return one event per independent clause-level act'),
+  frozenHandbookParagraph('target_id identifies the public object'),
+  frozenHandbookParagraph('An anaphoric target may resolve'),
+  frozenHandbookParagraph('requested_or_proposed_action is always a tagged object'),
+  frozenHandbookParagraph('When several action objects share'),
+  frozenHandbookParagraph('Use exact target_id, component_ids, and action_object_id values'),
+  frozenHandbookParagraph('Return evidence_span as a string.'),
+]);
+
+export const TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULES =
+  TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULE_PARAGRAPHS.join('\n\n');
+
+export const TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_SECTION = [
+  'Return only semantic judgments in semantic_events.events. The harness supplies speaker, turn, source hash, event IDs, offsets, order, and envelope status.',
+  TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULES,
+  'Use confidence=high with uncertainty=[] only when the act, executor, target, and span are unambiguous. Otherwise use medium or low and one to three declared uncertainty reasons; do not guess.',
+].join('\n');
 
 export function normalizeTutorStubPublicLearnerAnalysisPromptProfile(value = 'baseline') {
   const profile = String(value || 'baseline')
@@ -142,7 +219,7 @@ export const EVIDENCE_USE_RUBRIC_CLAUSES = Object.freeze({
     '- a bridge is voiced when this turn names the specific public evidence relied on and says what it licenses or rules out; citing a numbered rule is not required.',
     "- judge the bridge from this turn's words alone: support present in the record but not voiced here does not count, so a bare conclusion is omits_warrant even when the record would support it.",
     '- voicing a bridge and also naming what is still unproven is links_evidence_to_rule, not omits_warrant; log the acknowledged gap under missing warrant instead.',
-    '- e.g. "I enter the verdict: Edony struck the false shillings." => omits_warrant. "It shows Edony alone cast the blank at the weir-forge crucible, though it does not show she cut the die." => links_evidence_to_rule.',
+    '- e.g. "I enter the verdict: Candidate A caused the outcome." => omits_warrant. "The public mark shows Candidate A completed stage one, though it does not show who completed stage two." => links_evidence_to_rule.',
   ]),
 });
 
@@ -383,15 +460,93 @@ function discourseOutputSchema() {
   };
 }
 
+function providerObjectSchema(properties) {
+  return {
+    type: 'object',
+    additionalProperties: false,
+    required: Object.keys(properties),
+    properties,
+  };
+}
+
 /**
- * Local semantic schema retained for documentation and non-provider
- * validation. It deliberately expresses sparse optional fields and richer
- * JSON-Schema constraints, so it must not be sent to OpenAI/Codex Structured
- * Outputs. Interactive parsing remains schema-free and tolerant.
+ * One act-discriminated semantic-event language is shared by local validation
+ * and provider structured output. Per-act target/action shapes come directly
+ * from the certified contract table; the deterministic runtime retains the
+ * richer derived-offset, size, catalogue, and public-evidence checks.
+ */
+export function buildTutorStubPublicLearnerAnalysisSemanticOutputSchema() {
+  const absent = providerObjectSchema({ state: { type: 'string', enum: ['none'] } });
+  const catalogTarget = providerObjectSchema({
+    state: { type: 'string', enum: ['catalog'] },
+    kind: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS] },
+    target_id: { type: 'string' },
+    public_identifier_ids: { type: 'array', maxItems: 6, items: { type: 'string' } },
+    requested_value_types: {
+      type: 'array',
+      maxItems: 4,
+      items: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES] },
+    },
+    component_ids: { type: 'array', maxItems: 4, items: { type: 'string' } },
+  });
+  const targetFor = (contract) => {
+    if (contract.target === 'catalog') return catalogTarget;
+    if (contract.target === 'none') return absent;
+    return { anyOf: [catalogTarget, absent] };
+  };
+  const actionFor = (contract) =>
+    contract.action === 'none'
+      ? absent
+      : providerObjectSchema({
+          state: { type: 'string', enum: ['catalog'] },
+          mode: { type: 'string', enum: [contract.mode] },
+          executor: { type: 'string', enum: [...contract.executors] },
+          action: { type: 'string', enum: [contract.operation] },
+          action_object_id: { type: 'string' },
+        });
+  const eventFor = (speechAct) => {
+    const contract = ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS[speechAct];
+    return providerObjectSchema({
+      speech_act: { type: 'string', enum: [speechAct] },
+      target: targetFor(contract),
+      requested_or_proposed_action: actionFor(contract),
+      evidence_span: { type: 'string' },
+      confidence: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE] },
+      uncertainty: {
+        type: 'array',
+        maxItems: 3,
+        items: { type: 'string', enum: [...ADAPTIVE_WARRANT_SEMANTIC_UNCERTAINTY_REASONS] },
+      },
+    });
+  };
+  return {
+    type: 'object',
+    additionalProperties: false,
+    required: ['events'],
+    properties: {
+      events: {
+        type: 'array',
+        maxItems: 4,
+        items: { anyOf: ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.map(eventFor) },
+      },
+    },
+  };
+}
+
+function semanticEventLocalOutputSchema() {
+  return buildTutorStubPublicLearnerAnalysisSemanticOutputSchema();
+}
+
+/**
+ * Local analysis-envelope schema retained for documentation and non-provider
+ * validation. Its semantic-events member is the same provider-compatible,
+ * act-discriminated language used by Structured Outputs; the surrounding
+ * legacy analysis fields remain more permissive for non-provider callers.
  */
 export function buildTutorStubPublicLearnerAnalysisOutputSchema({
   includeRegisterSelection = false,
   includeBenchmarkTransitionEvent = false,
+  includeSemanticEvents = false,
 } = {}) {
   const properties = {
     classification: {
@@ -449,6 +604,10 @@ export function buildTutorStubPublicLearnerAnalysisOutputSchema({
     },
   };
   const required = ['classification', 'learner_record'];
+  if (includeSemanticEvents) {
+    properties.semantic_events = semanticEventLocalOutputSchema();
+    required.push('semantic_events');
+  }
   if (includeBenchmarkTransitionEvent) {
     properties.benchmark_transition = {
       type: 'object',
@@ -495,13 +654,8 @@ export const TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_OUTPUT_SCHEMA = Object.freeze(
   buildTutorStubPublicLearnerAnalysisOutputSchema(),
 );
 
-function providerObjectSchema(properties) {
-  return {
-    type: 'object',
-    additionalProperties: false,
-    required: Object.keys(properties),
-    properties,
-  };
+function semanticEventProviderOutputSchema() {
+  return buildTutorStubPublicLearnerAnalysisSemanticOutputSchema();
 }
 
 function providerScoreOutputSchema() {
@@ -544,6 +698,7 @@ function providerDiscourseOutputSchema() {
 export function buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
   includeRegisterSelection = false,
   includeBenchmarkTransitionEvent = false,
+  includeSemanticEvents = false,
 } = {}) {
   const properties = {
     classification: providerObjectSchema({
@@ -578,6 +733,7 @@ export function buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
       notes: { type: 'string' },
     }),
   };
+  if (includeSemanticEvents) properties.semantic_events = semanticEventProviderOutputSchema();
   if (includeBenchmarkTransitionEvent) {
     properties.benchmark_transition = providerObjectSchema({
       family: { type: 'string', enum: [...BENCHMARK_TRANSITION_FAMILIES] },
@@ -1155,6 +1311,86 @@ export function tutorStubEngagementStancePromptSchema() {
   };
 }
 
+export function buildTutorStubPublicLearnerAnalysisPromptSchema({
+  includeRegisterSelection = false,
+  includeBenchmarkTransitionEvent = false,
+  includeSemanticEvents = false,
+} = {}) {
+  const schema = {
+    classification: tutorStubLearnerClassificationPromptSchema(),
+    learner_record: tutorStubLearnerRecordPromptSchema(),
+  };
+  if (includeSemanticEvents) {
+    schema.semantic_events = {
+      events: [
+        {
+          speech_act: ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.join('|'),
+          target: {
+            state: 'catalog|none',
+            kind: ADAPTIVE_WARRANT_SEMANTIC_TARGET_KINDS.join('|'),
+            target_id: 'exact stable public target ID from the public context',
+            public_identifier_ids: ['exact stable public identifier ID'],
+            requested_value_types: ADAPTIVE_WARRANT_SEMANTIC_VALUE_TYPES,
+            component_ids: ['typed answer component ID'],
+          },
+          requested_or_proposed_action: {
+            state: 'catalog|none',
+            mode: ADAPTIVE_WARRANT_SEMANTIC_ACTION_MODES.join('|'),
+            executor: ADAPTIVE_WARRANT_SEMANTIC_ACTION_EXECUTORS.join('|'),
+            action: ADAPTIVE_WARRANT_SEMANTIC_ACTIONS.join('|'),
+            action_object_id: 'stable public action ID',
+          },
+          evidence_span: 'one unique exact current-turn substring',
+          confidence: ADAPTIVE_WARRANT_SEMANTIC_CONFIDENCE.join('|'),
+          uncertainty: ADAPTIVE_WARRANT_SEMANTIC_UNCERTAINTY_REASONS,
+        },
+      ],
+    };
+  }
+  if (includeBenchmarkTransitionEvent) {
+    schema.benchmark_transition = {
+      family: BENCHMARK_TRANSITION_FAMILIES.join('|'),
+      evidence_span: 'exact non-empty substring of the current learner turn',
+    };
+  }
+  if (includeRegisterSelection) schema.register_selection = tutorStubEngagementStancePromptSchema();
+  return schema;
+}
+
+export function rewriteTutorStubPublicLearnerAnalysisPromptProfile(
+  prompt,
+  {
+    promptProfile = TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.HANDBOOK_V1,
+    includeRegisterSelection = true,
+    includeBenchmarkTransitionEvent = false,
+    includeSemanticEvents = true,
+  } = {},
+) {
+  const normalizedProfile = normalizeTutorStubPublicLearnerAnalysisPromptProfile(promptProfile);
+  if (normalizedProfile !== TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.HANDBOOK_V1) {
+    throw new TutorStubPublicLearnerAnalysisError('preserved prompt rewrite supports handbook_v1 only', {
+      code: 'invalid_prompt_profile_rewrite',
+    });
+  }
+  const source = String(prompt || '');
+  const semanticStart = source.indexOf('# Semantic-event extraction\n\n');
+  const semanticEnd = source.indexOf('\n\n# Request type registry', semanticStart);
+  const schemaMarker = '# JSON schema\n\n';
+  const schemaStart = source.lastIndexOf(schemaMarker);
+  if (semanticStart < 0 || semanticEnd <= semanticStart || schemaStart <= semanticEnd) {
+    throw new TutorStubPublicLearnerAnalysisError('preserved prompt lacks the expected semantic/schema boundaries', {
+      code: 'invalid_preserved_prompt_shape',
+    });
+  }
+  const rewrittenSemantic = `${source.slice(0, semanticStart)}# Semantic-event extraction\n\n${TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_SECTION}${source.slice(semanticEnd, schemaStart)}`;
+  const schema = buildTutorStubPublicLearnerAnalysisPromptSchema({
+    includeRegisterSelection,
+    includeBenchmarkTransitionEvent,
+    includeSemanticEvents,
+  });
+  return `${rewrittenSemantic}${schemaMarker}${JSON.stringify(schema)}`;
+}
+
 function localPolicyInstruction(policy) {
   const instructions = {
     field:
@@ -1197,6 +1433,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
   dagPreflight = null,
   priorPublicLearnerState = null,
   includeBenchmarkTransitionEvent = false,
+  includeSemanticEvents = false,
   strictProviderEnvelope = false,
   promptProfile = TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.BASELINE,
   evidenceUseRubric = TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
@@ -1209,21 +1446,20 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
   const policy = String(registerPolicy || '').trim();
   const normalizedPromptProfile = normalizeTutorStubPublicLearnerAnalysisPromptProfile(promptProfile);
   const normalizedEvidenceUseRubric = normalizeTutorStubEvidenceUseRubric(evidenceUseRubric);
-  const compactPrompt = normalizedPromptProfile === TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.COMPACT_V1;
+  const compactPrompt = [
+    TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.COMPACT_V1,
+    TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.HANDBOOK_V1,
+  ].includes(normalizedPromptProfile);
+  const handbookPrompt =
+    normalizedPromptProfile === TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.HANDBOOK_V1;
   const includeRegisterSelection = Boolean(
     registerEnabled && !LOCAL_REGISTER_POLICIES.has(policy) && Array.isArray(registerPalette) && registerPalette.length,
   );
-  const schema = {
-    classification: tutorStubLearnerClassificationPromptSchema(),
-    learner_record: tutorStubLearnerRecordPromptSchema(),
-  };
-  if (includeBenchmarkTransitionEvent) {
-    schema.benchmark_transition = {
-      family: BENCHMARK_TRANSITION_FAMILIES.join('|'),
-      evidence_span: 'exact non-empty substring of the current learner turn',
-    };
-  }
-  if (includeRegisterSelection) schema.register_selection = tutorStubEngagementStancePromptSchema();
+  const schema = buildTutorStubPublicLearnerAnalysisPromptSchema({
+    includeRegisterSelection,
+    includeBenchmarkTransitionEvent,
+    includeSemanticEvents,
+  });
   const policyInstruction =
     registerEnabled && LOCAL_REGISTER_POLICIES.has(policy) ? localPolicyInstruction(policy) : null;
 
@@ -1239,8 +1475,11 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
     'Return both:',
     '1. A pedagogical discourse classification.',
     '2. A conservative public learner-record update for the tutor-side learner-DAG model.',
+    includeSemanticEvents
+      ? '3. Ordered semantic events for the current learner utterance; this reuses the same call and does not make the events authoritative.'
+      : null,
     includeRegisterSelection
-      ? '3. A tutor engagement-stance selection made by the up-front reviewer using the classification plus the tutor-side learner-DAG state.'
+      ? `${includeSemanticEvents ? '4' : '3'}. A tutor engagement-stance selection made by the up-front reviewer using the classification plus the tutor-side learner-DAG state.`
       : null,
     policyInstruction,
     '',
@@ -1313,6 +1552,37 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
     '- epistemic_stance: receptive, confused, exploratory, overconfident, resistant, answer_seeking, reflective, grounded',
     '- agency: passive, complying, attempting, steering, self_correcting',
     '',
+    includeSemanticEvents ? '# Semantic-event extraction' : null,
+    includeSemanticEvents ? '' : null,
+    includeSemanticEvents && !handbookPrompt
+      ? 'Return only semantic judgments in semantic_events.events. The harness supplies speaker, turn, source hash, event IDs, offsets, order, and envelope status.'
+      : null,
+    includeSemanticEvents && handbookPrompt ? TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_SECTION : null,
+    includeSemanticEvents && !handbookPrompt
+      ? 'Return zero to four ordered events. Keep distinct acts in distinct events; do not collapse a proposal followed by a result request.'
+      : null,
+    includeSemanticEvents && !handbookPrompt
+      ? `speech_act must be one of: ${ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.join(', ')}.`
+      : null,
+    includeSemanticEvents && !handbookPrompt
+      ? 'Use only stable public IDs already printed in the public context. Separate target.target_id (the public object, relation, or enumerated choice set) from target.requested_value_types (the fields requested about it). A tutor_selection_request requires the public choice-set target. Names, times, dates, weights, sounds, materials, and match status are value types when the learner asks for those values; they are not automatically targets.'
+      : null,
+    includeSemanticEvents && !handbookPrompt
+      ? 'Speaker is supplied mechanically as learner; do not return it. Executor means who must perform the action, not who spoke. Use requested mode with executor=tutor for a request that the tutor supply a public result; use proposed mode with executor=learner for a learner-proposed public test. A request that the tutor choose the next step is tutor_selection_request plus select_next_step and may also carry a separate low_agency_deferral event only when a separate clause explicitly refuses or delegates choice.'
+      : null,
+    includeSemanticEvents && !handbookPrompt
+      ? 'Emit analytic_contribution only for explicit reasoning, testing, comparison, evidence limitation, or criterion work. It may coexist with another act.'
+      : null,
+    includeSemanticEvents && !handbookPrompt
+      ? 'evidence_span must be one unique exact substring of the current learner turn. Return only that literal quote; the harness derives JavaScript UTF-16 offsets mechanically.'
+      : null,
+    includeSemanticEvents && !handbookPrompt
+      ? 'Use confidence=high with uncertainty=[] only when the act, executor, target, and span are unambiguous. Otherwise use medium or low and one to three declared uncertainty reasons; do not guess.'
+      : null,
+    includeSemanticEvents && !handbookPrompt
+      ? 'Target and requested_or_proposed_action are total tagged objects. Use exactly {"state":"none"} when a field does not apply; otherwise use state="catalog" and return every catalog-branch field. Never return null or omit either field.'
+      : null,
+    includeSemanticEvents ? '' : null,
     includeRegisterSelection ? '# Request type registry' : null,
     includeRegisterSelection ? '' : null,
     includeRegisterSelection
@@ -1608,7 +1878,14 @@ function requireNullableString(value, path) {
 
 function validateStrictAnalysis(
   parsed,
-  { includeRegisterSelection = false, includeBenchmarkTransitionEvent = false, benchmarkLearnerText = null } = {},
+  {
+    includeRegisterSelection = false,
+    includeBenchmarkTransitionEvent = false,
+    includeSemanticEvents = false,
+    benchmarkLearnerText = null,
+    tutorTurn = null,
+    semanticPublicText = null,
+  } = {},
 ) {
   const root = requireObject(parsed, '$');
   const rootFields = [
@@ -1616,6 +1893,7 @@ function validateStrictAnalysis(
     'learner_record',
     ...(includeRegisterSelection ? ['register_selection'] : []),
     ...(includeBenchmarkTransitionEvent ? ['benchmark_transition'] : []),
+    ...(includeSemanticEvents ? ['semantic_events'] : []),
   ];
   requireExactKeys(root, { allowed: rootFields, required: rootFields, path: '$' });
   const classification = requireObject(root.classification, '$.classification');
@@ -1814,6 +2092,23 @@ function validateStrictAnalysis(
       );
     }
   }
+  if (includeSemanticEvents) {
+    const semantic = validateAdaptiveWarrantSemanticExtraction(root.semantic_events, {
+      learnerText: benchmarkLearnerText,
+      publicText: semanticPublicText ?? benchmarkLearnerText,
+      turn: tutorTurn,
+    });
+    const eventIssues = semantic.events.flatMap((event) => event.validation.issues);
+    if (semantic.envelope_issues.length || eventIssues.length) {
+      throw new TutorStubPublicLearnerAnalysisError(
+        `strict public learner analysis returned invalid semantic events: ${[
+          ...semantic.envelope_issues,
+          ...eventIssues,
+        ].join(', ')}`,
+        { code: 'invalid_semantic_events', details: semantic },
+      );
+    }
+  }
   return root;
 }
 
@@ -1847,7 +2142,15 @@ export function parseTutorStubPublicLearnerAnalysisStrict(rawText, options = {})
 
 function analysisParts(
   raw,
-  { strict = false, includeRegisterSelection = false, includeBenchmarkTransitionEvent = false } = {},
+  {
+    strict = false,
+    includeRegisterSelection = false,
+    includeBenchmarkTransitionEvent = false,
+    includeSemanticEvents = false,
+    benchmarkLearnerText = null,
+    tutorTurn = null,
+    semanticPublicText = null,
+  } = {},
 ) {
   const parsed = raw?.parsed || raw || {};
   const classification =
@@ -1863,10 +2166,18 @@ function analysisParts(
     (!strict && (parsed.registerSelection || parsed.tutor_register || parsed.register)) ||
     null;
   const benchmarkTransition = parsed.benchmark_transition || null;
+  const semanticEvents = parsed.semantic_events || null;
   if (strict) {
-    validateStrictAnalysis(parsed, { includeRegisterSelection, includeBenchmarkTransitionEvent });
+    validateStrictAnalysis(parsed, {
+      includeRegisterSelection,
+      includeBenchmarkTransitionEvent,
+      includeSemanticEvents,
+      benchmarkLearnerText,
+      tutorTurn,
+      semanticPublicText,
+    });
   }
-  return { classification, learnerRecord, registerSelection, benchmarkTransition };
+  return { classification, learnerRecord, registerSelection, benchmarkTransition, semanticEvents };
 }
 
 function responseMetadata(raw = {}) {
@@ -1888,6 +2199,7 @@ export function splitTutorStubPublicLearnerAnalysis(raw, options = {}) {
     learnerRecordUpdate: parts.learnerRecord ? { ...parts.learnerRecord, ...metadata } : null,
     registerSelection: parts.registerSelection,
     benchmarkTransitionEvent: parts.benchmarkTransition,
+    semanticEvents: parts.semanticEvents,
   };
 }
 
@@ -1958,9 +2270,11 @@ export async function extractTutorStubPublicLearnerAnalysis({
   dagPreflight = null,
   priorPublicLearnerState = null,
   includeBenchmarkTransitionEvent = false,
+  includeSemanticEvents = false,
   callModel,
   parseMode = TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.STRICT_BENCHMARK,
   role = 'tutor_stub_public_learner_analysis',
+  strictRole = null,
   maxTokens = 2500,
   prompt = null,
   promptProfile = TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.BASELINE,
@@ -1968,9 +2282,20 @@ export async function extractTutorStubPublicLearnerAnalysis({
   modelCallOptions = {},
 } = {}) {
   const strict = parseMode === TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.STRICT_BENCHMARK;
-  const effectiveRole = strict ? 'tutor_stub_public_learner_analysis' : role;
+  const effectiveRole = strict ? strictRole || 'tutor_stub_public_learner_analysis' : role;
+  if (
+    strictRole !== null &&
+    !['tutor_stub_learner_analysis', 'tutor_stub_learner_analysis_prefetch'].includes(String(strictRole))
+  ) {
+    throw new TutorStubPublicLearnerAnalysisError(`unsupported strict live learner-analysis role: ${strictRole}`, {
+      code: 'invalid_strict_live_role',
+    });
+  }
   const outputSchema = strict
-    ? buildTutorStubPublicLearnerAnalysisProviderOutputSchema({ includeBenchmarkTransitionEvent })
+    ? buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
+        includeBenchmarkTransitionEvent,
+        includeSemanticEvents,
+      })
     : null;
   let analysisPrompt = typeof prompt === 'string' ? prompt : null;
   const preCallFailure = (error) =>
@@ -2008,6 +2333,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
     ? buildTutorStubPublicLearnerAnalysisProviderOutputSchema({
         includeRegisterSelection,
         includeBenchmarkTransitionEvent,
+        includeSemanticEvents,
       })
     : null;
   try {
@@ -2035,6 +2361,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
         dagPreflight,
         priorPublicLearnerState,
         includeBenchmarkTransitionEvent,
+        includeSemanticEvents,
         strictProviderEnvelope: strict,
         promptProfile,
         evidenceUseRubric,
@@ -2209,7 +2536,10 @@ export async function extractTutorStubPublicLearnerAnalysis({
       ? parseTutorStubPublicLearnerAnalysisStrict(rawText, {
           includeRegisterSelection,
           includeBenchmarkTransitionEvent,
+          includeSemanticEvents,
           benchmarkLearnerText: learnerText,
+          tutorTurn,
+          semanticPublicText: analysisPrompt,
         })
       : parseTutorStubPublicLearnerAnalysisInteractive(rawText);
   } catch (error) {
@@ -2224,6 +2554,37 @@ export async function extractTutorStubPublicLearnerAnalysis({
       effectiveRole,
       dispatchCount: 1,
     });
+  }
+
+  const semanticEventExtraction = includeSemanticEvents
+    ? validateAdaptiveWarrantSemanticExtraction(parsedResult.parsed?.semantic_events, {
+        learnerText,
+        publicText: analysisPrompt,
+        turn: tutorTurn,
+        rawResponseText: rawText,
+      })
+    : null;
+  if (
+    semanticEventExtraction &&
+    (semanticEventExtraction.envelope_issues.length || semanticEventExtraction.counts.rejected > 0)
+  ) {
+    throw attachCallFailure(
+      new TutorStubPublicLearnerAnalysisError('public learner analysis returned invalid semantic events', {
+        code: 'invalid_semantic_events',
+        details: semanticEventExtraction,
+      }),
+      {
+        modelCallOptions,
+        response,
+        injectedCallMetadata,
+        strict,
+        analysisPrompt,
+        outputSchema: effectiveOutputSchema,
+        rawText,
+        effectiveRole,
+        dispatchCount: 1,
+      },
+    );
   }
 
   const callMetadata = detailedCallMetadata({
@@ -2251,9 +2612,11 @@ export async function extractTutorStubPublicLearnerAnalysis({
     model: response?.model || null,
     latencyMs: Number(response?.latencyMs || 0),
     usage: response?.usage || null,
+    promptAudit: response?.promptAudit || null,
     parseMode,
     callMetadata,
     call_metadata,
+    semanticEventExtraction,
     provenance: {
       model_input_public_only: true,
       public_world_projection: true,
@@ -2654,6 +3017,7 @@ export function postprocessTutorStubPublicLearnerAnalysis({
   publicStagedEvidence = null,
   publicReleaseLedger = null,
   includeBenchmarkTransitionEvent = false,
+  includeSemanticEvents = false,
 } = {}) {
   const record = learnerRecord || createTutorStubPublicLearnerRecord(world);
   const dropoutState = dropout || createTutorStubDagFactDropoutState();
@@ -2677,10 +3041,15 @@ export function postprocessTutorStubPublicLearnerAnalysis({
       learnerRecordUpdate,
       registerSelection,
       benchmarkTransitionEvent,
+      semanticEvents,
     } = splitTutorStubPublicLearnerAnalysis(rawAnalysis, {
       strict,
       includeRegisterSelection,
       includeBenchmarkTransitionEvent,
+      includeSemanticEvents,
+      benchmarkLearnerText: learnerText,
+      tutorTurn,
+      semanticPublicText: rawAnalysis.prompt || learnerText,
     });
     if (!rawClassification || !learnerRecordUpdate) {
       throw new TutorStubPublicLearnerAnalysisError(
@@ -2689,6 +3058,14 @@ export function postprocessTutorStubPublicLearnerAnalysis({
       );
     }
     const classification = normalizeTutorStubClassificationAgainstLearnerSurface(rawClassification, learnerText);
+    const semanticEventExtraction = includeSemanticEvents
+      ? validateAdaptiveWarrantSemanticExtraction(semanticEvents, {
+          learnerText,
+          publicText: rawAnalysis.prompt || learnerText,
+          turn: tutorTurn,
+          rawResponseText: rawAnalysis.rawText || null,
+        })
+      : null;
     const tutorLearnerDag = applyTutorStubPublicLearnerRecordUpdate({
       update: learnerRecordUpdate,
       world,
@@ -2727,6 +3104,7 @@ export function postprocessTutorStubPublicLearnerAnalysis({
       learnerRecordUpdate,
       registerSelection,
       benchmarkTransitionEvent,
+      semanticEventExtraction,
       tutorLearnerDag,
       turnRecord,
       stateObservation,
@@ -2812,6 +3190,7 @@ export async function analyzeTutorStubPublicLearnerTurn({
     registerPolicy: promptContext.registerPolicy || null,
     registerEnabled: promptContext.registerEnabled === true,
     registerPalette: Array.isArray(promptContext.registerPalette) ? promptContext.registerPalette : [],
+    includeSemanticEvents: promptContext.includeSemanticEvents === true,
     role: promptContext.role || 'tutor_stub_public_learner_analysis',
     maxTokens: Number.isFinite(Number(promptContext.maxTokens)) ? Number(promptContext.maxTokens) : 2500,
     evidenceUseRubric: promptContext.evidenceUseRubric ?? TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
@@ -2831,5 +3210,6 @@ export async function analyzeTutorStubPublicLearnerTurn({
     humanDiscourseFrame,
     publicStagedEvidence: stagedPublicProjection,
     publicReleaseLedger,
+    includeSemanticEvents: promptContext.includeSemanticEvents === true,
   });
 }

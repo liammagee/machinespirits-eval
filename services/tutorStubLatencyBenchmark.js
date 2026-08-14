@@ -9,7 +9,7 @@ export const TUTOR_STUB_LATENCY_BENCHMARK_REPORT_SCHEMA = 'machinespirits.tutor-
 
 const PLANES = new Set(['object', 'instructional_meta', 'mixed']);
 const FACTORS = new Set(['baseline', 'effort', 'routing', 'prompt', 'prefetch']);
-const PROMPT_PROFILES = new Set(['baseline', 'compact_v1']);
+const PROMPT_PROFILES = new Set(['baseline', 'compact_v1', 'handbook_v1']);
 const PREFETCH_POLICIES = new Set(['always', 'analysis_only']);
 
 function requiredText(value, label) {

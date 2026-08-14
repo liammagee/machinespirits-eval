@@ -591,6 +591,40 @@ describe('cliProviderBridge', () => {
     }
   });
 
+  it('classifies Codex error and turn.failed events as a redacted failed turn, not tool use', async () => {
+    const secretCanary = 'SECRET-FAILED-TURN-CANARY-DO-NOT-EXPOSE';
+    const spawnImpl = () =>
+      fakeChild({
+        stdoutText: [
+          JSON.stringify({ type: 'thread.started' }),
+          JSON.stringify({ type: 'turn.started' }),
+          JSON.stringify({ type: 'error', message: secretCanary }),
+          JSON.stringify({ type: 'turn.failed', error: { message: secretCanary } }),
+        ].join('\n'),
+      });
+
+    await assert.rejects(
+      () =>
+        callAIWithCliBridge({ provider: 'codex', model: 'gpt-test' }, 'system', 'user', 'learner', {
+          effort: 'low',
+          timeoutMs: 1000,
+          spawnImpl,
+        }),
+      (error) => {
+        assert.equal(error.code, 'CLI_PROVIDER_TURN_FAILED');
+        assert.equal(error.audit.prohibited_event_count, 0);
+        assert.equal(error.audit.failure_event_count, 2);
+        assert.deepEqual(error.audit.failure_events, [
+          { index: 2, event_type: 'error', item_type: null },
+          { index: 3, event_type: 'turn.failed', item_type: null },
+        ]);
+        assert.doesNotMatch(error.message, new RegExp(secretCanary, 'u'));
+        assert.doesNotMatch(JSON.stringify(error.audit), new RegExp(secretCanary, 'u'));
+        return true;
+      },
+    );
+  });
+
   it('treats invalid JSONL as a policy violation for unstructured Codex calls', async () => {
     const secretCanary = 'SECRET-INVALID-JSONL-CANARY';
     const spawnImpl = (_command, args) => {

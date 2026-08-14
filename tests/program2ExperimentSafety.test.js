@@ -419,6 +419,7 @@ test('paid launch metadata cannot overwrite the certificate-bound launch plan', 
 test('tutor runtime reserves the Program 2 budget before both external dispatch paths', () => {
   const transportSource = fs.readFileSync(path.join(ROOT, 'services/tutorStubPromptTransport.js'), 'utf8');
   const attemptSource = fs.readFileSync(path.join(ROOT, 'services/tutorStubTutorAttemptRuntime.js'), 'utf8');
+  const sharedCliRequestSource = fs.readFileSync(path.join(ROOT, 'services/tutorStubCliRequest.js'), 'utf8');
   assert.equal(
     [transportSource, attemptSource].reduce(
       (count, source) =>
@@ -429,15 +430,21 @@ test('tutor runtime reserves the Program 2 budget before both external dispatch 
     ),
     2,
   );
-  for (const { source, reservation } of [
-    { source: transportSource, reservation: 'reserveProgram2ProviderBudget({ maxTokens, trace, role, turn });' },
+  for (const { source, reservation, dispatch } of [
+    {
+      source: transportSource,
+      reservation: 'reserveProgram2ProviderBudget({ maxTokens, trace, role, turn });',
+      dispatch: 'dispatchTutorStubCliBridgeRequest(',
+    },
     {
       source: attemptSource,
       reservation: 'reserveProgram2ProviderBudget({ maxTokens, trace, role, turn: tutorTurn });',
+      dispatch: 'callAIWithCliBridge(',
     },
   ]) {
     const reserveIndex = source.indexOf(reservation);
-    const dispatchIndex = source.indexOf('callAIWithCliBridge(', reserveIndex);
+    const dispatchIndex = source.indexOf(dispatch, reserveIndex);
     assert.ok(reserveIndex > 0 && dispatchIndex > reserveIndex);
   }
+  assert.match(sharedCliRequestSource, /return await callAIWithCliBridge\(/u);
 });

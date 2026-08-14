@@ -365,6 +365,31 @@ export function compileTutorStubPerformanceObligationContract({
 }
 
 /**
+ * Project the exact configuration used at the speaking boundary.
+ *
+ * Most contracts leave the selected response configuration untouched. When
+ * the compiler has proved the selected tactic inapplicable, its selection is
+ * the sole authority for both the complete replacement performance object and
+ * the transition that explains it. Keeping this projection shared prevents
+ * live execution and frozen replay from drifting into subtly different
+ * partial patches.
+ */
+export function buildTutorStubSpeakingResponseConfiguration({
+  responseConfiguration = null,
+  performanceObligationContract = null,
+} = {}) {
+  if (!responseConfiguration) return responseConfiguration;
+  if (performanceObligationContract?.tactic_applicability?.applicable !== false) {
+    return responseConfiguration;
+  }
+  return {
+    ...structuredClone(responseConfiguration),
+    actorial_performance: structuredClone(performanceObligationContract?.selection?.actorial_performance || null),
+    speaking_transition: structuredClone(performanceObligationContract?.selection?.speaking_transition || null),
+  };
+}
+
+/**
  * Render the contract as a compact speaking instruction. The wording stays
  * structural: public surfaces ground the obligations, while the speaker still
  * authors the line. This is intentionally different from the adjudicator

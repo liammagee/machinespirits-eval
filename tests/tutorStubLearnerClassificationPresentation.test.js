@@ -148,8 +148,10 @@ test('real technical-debug process preserves exact learner-classifier terminal b
     });
     const block = result.plain.match(/learner classifier >[\s\S]*?(?=tutor learner-DAG model >)/u)?.[0] || '';
 
-    assert.equal(Buffer.byteLength(block), 488);
-    assert.equal(sha256(block), '2cb87d9a99f0e6c52383a183c0524f75ade9759f23fa0915a6f8ffc407c98ded');
+    assert.equal(Buffer.byteLength(block), 313);
+    assert.equal(sha256(block), '16f6e4efd18e83f8885bc573ff1baf0aa046a15679ddf97301d9735d016a9faa');
+    assert.match(block, /The learner adds a specific clarification to the same turn\./u);
+    assert.doesNotMatch(block, /learner-classifier warning/u);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

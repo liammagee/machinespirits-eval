@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 /**
  * Owns the complete tutor-draft audit battery and its trace events. The caller
  * retains delivery policy, repair sequencing, and fallback selection.
@@ -126,6 +128,7 @@ export function createTutorStubTutorDraftAudit(dependencies = {}) {
             text: response.text,
             frame: dramaticReleaseFrame,
             sourceAccessibilityAudit: liveSourceActionAlignmentAudit,
+            turnProgressionContract: firstDraftContract?.progression || null,
           })
         : { ok: true, active: false, issues: [] };
       const releaseDeliveryAudit = auditTutorStubReleaseDelivery({
@@ -152,12 +155,21 @@ export function createTutorStubTutorDraftAudit(dependencies = {}) {
           reason: liveConfigurationSurface.reason,
           excluded_spans: liveConfigurationSurface.excluded_spans,
         };
+        const warrantEnforcement = auditConfiguration?.adaptive_warrant_enforcement || null;
+        responseConfigurationAudit.adaptive_warrant_delivery = {
+          schema: 'machinespirits.tutor-stub.adaptive-warrant-delivery-audit-context.v1',
+          active: warrantEnforcement?.applied === true,
+          desired_action_family: warrantEnforcement?.desired_action_family || null,
+          warrant_basis: warrantEnforcement?.warrant_basis || null,
+          decision_kind: warrantEnforcement?.decision_kind || null,
+        };
       }
       const actorialRealizationAudit = responseConfigurationAudit?.actorial_realization || {
         ok: true,
         issues: [],
         active: false,
       };
+      response.selectedSpeakingResponseConfiguration = jsonClone(speakingResponseConfiguration || null);
       response.deliveryResponseConfiguration = jsonClone(auditConfiguration || null);
       response.responseConfigurationTransition = jsonClone(
         auditConfiguration?.recovery_transition || auditConfiguration?.speaking_transition || null,
@@ -310,7 +322,15 @@ export function createTutorStubTutorDraftAudit(dependencies = {}) {
           frame: dialogueClosureFrame,
         });
       }
+      const normalizedAuditedText = String(response.text || '')
+        .replace(/\s+/gu, ' ')
+        .trim();
       return {
+        auditedText: {
+          schema: 'machinespirits.tutor-stub.audited-public-text.v1',
+          normalization: 'one_line_whitespace',
+          sha256: createHash('sha256').update(normalizedAuditedText).digest('hex'),
+        },
         ok:
           leakAudit.ok &&
           scaffoldAudit.ok &&

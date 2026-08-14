@@ -5,6 +5,7 @@ import {
   TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA,
 } from './tutorStubResponseContractSchemas.js';
 import { tutorStubFirstPersonRoleVoiceVisible, tutorStubRoleStageDirectionVisible } from './tutorStubRoleVisibility.js';
+import { configuredFallbackActionUptake } from './tutorStubResponseComposition.js';
 import {
   TUTOR_STUB_SCENE_DICTION_PERIOD,
   resolveTutorStubSceneDiction,
@@ -509,7 +510,9 @@ export function auditTutorStubDramaticReleaseResponse({
   text = '',
   frame = null,
   sourceAccessibilityAudit = null,
+  turnProgressionContract = null,
 } = {}) {
+  const returnRequired = turnProgressionContract?.handoff_contract?.question_allowed !== false;
   if (!frame?.active) {
     return {
       schema: TUTOR_STUB_DRAMATIC_RELEASE_SCHEMA,
@@ -519,6 +522,7 @@ export function auditTutorStubDramaticReleaseResponse({
       enactmentVisible: false,
       exhibitHandoffVisible: false,
       returnVisible: false,
+      returnRequired,
       clueDeliveryMultiplicity: { ok: true, active: false, issues: [], repeatedEntries: [] },
       issues: [],
     };
@@ -577,7 +581,7 @@ export function auditTutorStubDramaticReleaseResponse({
       reason: 'states an exhibit abstractly instead of visibly showing, reading, opening, testing, or placing it',
     });
   }
-  if (!returnVisible) {
+  if (returnRequired && !returnVisible) {
     issues.push({
       type: 'missing_return_to_inquiry',
       reason: 'does not keep the learner in the clue performance with a question about what changes',
@@ -592,6 +596,7 @@ export function auditTutorStubDramaticReleaseResponse({
     enactmentVisible,
     exhibitHandoffVisible,
     returnVisible,
+    returnRequired,
     metaRoleplayAnnouncement,
     metaReleaseAnnouncement,
     roleStageDirection,
@@ -909,6 +914,7 @@ export function deterministicTutorStubDramaticReleaseFallback({
   const hostPart = fallbackHostPart(responseConfiguration);
   const compensation = deterministicTutorStubSourceAccessibilityCompensation(sourceAccessibilityContract);
   const compensationSourceId = sourceAccessibilityContract?.compensation?.source_id || null;
+  const actionUptake = configuredFallbackActionUptake(responseConfiguration?.action_family, uptake);
   const rendered = frame.entries.map((entry, index) =>
     entry.mode === 'enacted_role'
       ? renderEnactedEntry(entry, {
@@ -934,7 +940,7 @@ export function deterministicTutorStubDramaticReleaseFallback({
     ? 'You can also ask me to unpack any word or connection in it.'
     : null;
   const directRepair =
-    support?.responsiveRepairRequired && !oneLine(uptake)
+    support?.responsiveRepairRequired && !oneLine(actionUptake)
       ? 'You’re right—I did not answer your question directly. The public record that answers it is this:'
       : null;
   const development = [
@@ -945,10 +951,11 @@ export function deterministicTutorStubDramaticReleaseFallback({
       support,
       defaultQuestion: fallbackQuestion({ stance, variationKey, avoidQuestion }),
       publicObject: sceneObject(frame.entries[0], 'record', world),
+      priorPublicText: actionUptake,
     }),
     turnProgressionContract?.handoff_contract?.question_allowed === false ? null : clarification,
   ]
     .filter(Boolean)
     .join(' ');
-  return [oneLine(uptake), development].filter(Boolean).join(' ');
+  return [oneLine(actionUptake), development].filter(Boolean).join(' ');
 }

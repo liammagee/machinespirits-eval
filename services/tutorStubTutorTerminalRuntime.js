@@ -1,3 +1,39 @@
+/**
+ * Public-result debt owns the first fallback sentence. Some recovery
+ * composers legitimately replace ordinary uptake with a writable entry or an
+ * integration qualification; this final boundary restores the already-audited
+ * answer/deferral before any authored source without rewriting source bytes.
+ */
+export function ensureTutorStubPublicObligationFallbackOwnership({
+  text = '',
+  obligationUptake = '',
+  turnProgressionContract = null,
+} = {}) {
+  const fallbackText = String(text || '').trim();
+  const ownedText = String(obligationUptake || '').trim();
+  if (turnProgressionContract?.public_obligation_contract?.complete !== true || !ownedText) return fallbackText;
+  // The configured continuation can realize the same contract-owned deferral
+  // in both uptake and handoff. Keep one authoritative copy at the front and
+  // remove every composer duplicate so the terminal response clears the same
+  // repetition guard as an ordinary draft.
+  const remainder = fallbackText
+    .split(ownedText)
+    .join(' ')
+    .replace(/\s+/gu, ' ')
+    .trim();
+  return [ownedText, remainder].filter(Boolean).join(' ');
+}
+
+export function composeTutorStubTerminalFallback({
+  baseFallbackText = '',
+  fallbackUptake = '',
+  fallbackOwnsComposition = false,
+  ensureFallbackComposition,
+} = {}) {
+  if (fallbackOwnsComposition) return String(baseFallbackText || '').trim();
+  return ensureFallbackComposition(baseFallbackText, fallbackUptake);
+}
+
 export function createTutorStubTutorTerminalRuntime(dependencies = {}) {
   const {
     appendTraceEvent,
@@ -162,8 +198,11 @@ export function createTutorStubTutorTerminalRuntime(dependencies = {}) {
       latestEvidence: humanDiscourseFrame?.scaffoldState?.releaseState?.latestReleased || null,
       recentTutorTexts,
     };
+    const publicObligationOwnsFallback =
+      firstDraftContract?.progression?.public_obligation_contract?.complete === true;
     const fallbackRequiresSpecificUptake =
       closureFallbackSelected ||
+      publicObligationOwnsFallback ||
       (audits?.responseCompositionAudit?.issues || []).some(
         (issue) => issue.type === 'learner_selected_test_not_acknowledged',
       ) ||
@@ -187,7 +226,9 @@ export function createTutorStubTutorTerminalRuntime(dependencies = {}) {
       ? deterministicFallbackUptake
       : preservableTutorUptake(audits) || firstRepairUptake || deterministicFallbackUptake;
     const fallbackUptakeCandidate =
-      firstDraftContract?.opening?.writable_entry_requested === true && !/^Write:\s*[“"]/u.test(candidateFallbackUptake)
+      !publicObligationOwnsFallback &&
+      firstDraftContract?.opening?.writable_entry_requested === true &&
+      !/^Write:\s*[“"]/u.test(candidateFallbackUptake)
         ? deterministicTutorStubWritableEntryUptake({ firstDraftContract })
         : candidateFallbackUptake;
     const fallbackUptakePreparation = prepareTutorStubDueClueUptake({
@@ -253,10 +294,21 @@ export function createTutorStubTutorTerminalRuntime(dependencies = {}) {
             : scaffoldGuardEnabled
               ? deterministicGenerousInferenceFallback(fallbackContext)
               : deterministicTutorStubContextualFallback(fallbackContext);
-    const fallbackText =
-      dramaticReleaseGuardEnabled || instructionalMetaRepair
-        ? baseFallbackText
-        : ensureFallbackComposition(baseFallbackText, fallbackUptake);
+    const composedFallbackText = composeTutorStubTerminalFallback({
+      baseFallbackText,
+      fallbackUptake,
+      fallbackOwnsComposition:
+        instructionalMetaRepair ||
+        closureFallbackSelected ||
+        dramaticReleaseGuardEnabled ||
+        configuredContinuationFallbackRequired,
+      ensureFallbackComposition,
+    });
+    const fallbackText = ensureTutorStubPublicObligationFallbackOwnership({
+      text: composedFallbackText,
+      obligationUptake: publicObligationOwnsFallback ? deterministicFallbackUptake : '',
+      turnProgressionContract: firstDraftContract?.progression || null,
+    });
     const fallbackClosureAudit = closureGuardEnabled
       ? auditTutorStubDialogueClosureResponse({ text: fallbackText, frame: dialogueClosureFrame })
       : audits.closureAudit;
@@ -287,6 +339,7 @@ export function createTutorStubTutorTerminalRuntime(dependencies = {}) {
       deterministicClosure: closureFallbackSelected,
       tokenUsageAvailable: response.tokenUsageAvailable,
       promptSnapshot: response.promptSnapshot || null,
+      firstDraftContract: structuredClone(firstDraftContract || null),
     };
     if (canStreamTutor) fallback.guardedStreamReplay = true;
     const fallbackAttempt = attempts.length;

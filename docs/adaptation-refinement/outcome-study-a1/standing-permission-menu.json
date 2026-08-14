@@ -1,0 +1,1626 @@
+{
+  "schema": "machinespirits.adaptation-refinement.warrant-outcome-standing-permission-menu.v1",
+  "source_sha256": {
+    "services/tutorStubWarrantGate.js": "db30f563bb5107544f0f64677410f3e67cb2f0f2fbe573d4c5d66976b791fc24",
+    "services/adaptiveWarrantPolicy.js": "8e17f23bab13270b83a10597ca820b08607b42e6757640c23b70dab25bf60837",
+    "services/tutorStubFirstDraftContract.js": "868c5ef7af8677a59cbf391cc0948c71cb567802e4d7d15d6f980366db707a29",
+    "services/tutorStubQuestionSupport.js": "6084936a3dd7093a14b4ef76eb6914549064bf095bf7bc1c8b5e15eba168dfa3",
+    "config/engagement-registers.yaml": "6284ffb82d8fe151312c05d6426f809de43addfe5275bbd5f70cbd39361a84c2"
+  },
+  "enumeration_rule": {
+    "rendered_layer": "Starting from tutorStubFirstDraftContractPrompt, enumerate every candidate fixed string that can flow into a rendered field from the SHA-pinned services/tutorStubFirstDraftContract.js, then apply ruling 060b per string: identify its switching variable, trace whether the gate verdict, repair policy, or register selection can reach that variable, and include the string if and only if the trace is reachable. Sweep every part, tactic, stance, action, and support cue mechanically without reachability pruning inside those gate-varying families; exclude strings switched only by learner wording, learner state, question-support state, source state, or progression bookkeeping that the gate decision path cannot change.",
+    "templates": "For a compact template, quote every fixed segment byte-for-byte in source order and show each interpolated public-contract value as a named {{slot}}; the descriptive prefix states that the gate fills those slots from the public contract, and the drift guard compares the fixed_segments array byte-for-byte.",
+    "question_support": "Do not include buildTutorStubQuestionSupport tutorInstruction strings: they populate the detailed contract ending.instruction field, but the live compact host-plan renderer does not read that field. Classify the compact question-support-dependent strings individually: responsive-repair, bounded-choice, and clarification additions are OUT because their upstream question-support switches are unreachable; question-boundary strings remain IN because gate-selected action family and public-obligation state reach progression.handoff_contract.question_allowed.",
+    "membership_test": "A candidate string is IN exactly when its switching variable is reachable from the gate verdict, repair policy, or register selection. An unreachable switch is OUT even when the string is prompt-reaching. A doubtful trace stays IN and records the doubt.",
+    "null_branch": "compactSupportInstruction support level zero or unset returns the empty string. It injects no words, so tactic.support.0 is documented as a null branch and is not a menu entry.",
+    "per_string_classification": [
+      {
+        "id": "uptake.default",
+        "source": "services/tutorStubFirstDraftContract.js#compactUptakeInstruction.default",
+        "switching_variable": "progression.public_obligation_contract.complete versus the compact-uptake fallback",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The gate can supply public_obligation_directive; compilation turns it into a complete public-obligation contract that replaces or restores the default uptake branch."
+      },
+      {
+        "id": "uptake.accelerated",
+        "source": "services/tutorStubFirstDraftContract.js#compactUptakeInstruction.accelerated",
+        "switching_variable": "responseCompositionFrame.learner_dag.learner_advance.accelerated",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "Learner-DAG advancement is computed from learner state before response configuration; the gate verdict, repair policy, and register selection do not write it."
+      },
+      {
+        "id": "uptake.learner_move",
+        "source": "services/tutorStubFirstDraftContract.js#compactUptakeInstruction.learnerMove",
+        "switching_variable": "contract.learner_move from learnerText and responseCompositionFrame.learner_move",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "The learner-move surface is copied from the learner turn and composition frame; the gate decision path cannot change that learner-state field."
+      },
+      {
+        "id": "uptake.writable_complementary",
+        "source": "services/tutorStubFirstDraftContract.js#compactUptakeInstruction.writable.complementary",
+        "switching_variable": "tutorStubLearnerRequestsWritableEntry(learnerText) with due release cues",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "The writable-entry classifier reads learner wording and due evidence before the gate-selected response configuration; the gate path cannot reach either switch."
+      },
+      {
+        "id": "uptake.writable_causal",
+        "source": "services/tutorStubFirstDraftContract.js#compactUptakeInstruction.writable.causal",
+        "switching_variable": "tutorStubLearnerRequestsWritableEntry(learnerText) with a named causal contract",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "The writable-entry request and causal contract are derived from learner wording and committed public evidence; the gate path cannot reach them."
+      },
+      {
+        "id": "uptake.writable_causal_generic",
+        "source": "services/tutorStubFirstDraftContract.js#compactUptakeInstruction.writable.causal_generic",
+        "switching_variable": "tutorStubLearnerRequestsWritableEntry(learnerText) with an unnamed causal subject",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "The writable-entry request and causal contract are derived from learner wording and committed public evidence; the gate path cannot reach them."
+      },
+      {
+        "id": "uptake.writable_record",
+        "source": "services/tutorStubFirstDraftContract.js#compactUptakeInstruction.writable.record",
+        "switching_variable": "tutorStubLearnerRequestsWritableEntry(learnerText) with a rendered public record",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "The writable-entry request and public-record availability are learner/evidence inputs; the gate path cannot reach them."
+      },
+      {
+        "id": "uptake.writable_record_fallback",
+        "source": "services/tutorStubFirstDraftContract.js#compactUptakeInstruction.writable.record_fallback",
+        "switching_variable": "tutorStubLearnerRequestsWritableEntry(learnerText) without a rendered public record",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "The writable-entry request and public-record availability are learner/evidence inputs; the gate path cannot reach them."
+      },
+      {
+        "id": "uptake.responsive_repair",
+        "source": "services/tutorStubFirstDraftContract.js#compactUptakeInstruction.responsive_repair",
+        "switching_variable": "questionSupport.responsiveRepairRequired",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "Question support is compiled from the learner turn upstream of response selection; the gate verdict, repair policy, and register selection do not write responsiveRepairRequired."
+      },
+      {
+        "id": "opening.instructional_meta",
+        "source": "services/tutorStubFirstDraftContract.js#buildTutorStubFirstDraftContract.opening.instructional_meta",
+        "switching_variable": "responseCompositionFrame.discourse_plane.plane",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "The learner-wording discourse-plane classifier sets instructional_meta upstream of the gate, and instructional repair structurally overrides the gate-selected stance and action."
+      },
+      {
+        "id": "opening.writable_before_due_evidence",
+        "source": "services/tutorStubFirstDraftContract.js#buildTutorStubFirstDraftContract.opening.writable_before_due_evidence",
+        "switching_variable": "tutorStubLearnerRequestsWritableEntry(learnerText) with due release cues",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "The writable-entry classifier reads learner wording and due evidence before the gate-selected response configuration; the gate path cannot reach either switch."
+      },
+      {
+        "id": "opening.writable_entry",
+        "source": "services/tutorStubFirstDraftContract.js#buildTutorStubFirstDraftContract.opening.writable_entry",
+        "switching_variable": "tutorStubLearnerRequestsWritableEntry(learnerText) without due release cues",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "The writable-entry classifier reads learner wording and due evidence before the gate-selected response configuration; the gate path cannot reach either switch."
+      },
+      {
+        "id": "opening.default_response",
+        "source": "services/tutorStubFirstDraftContract.js#buildTutorStubFirstDraftContract.opening.default",
+        "switching_variable": "fallback after progression.public_obligation_contract.complete and upstream opening branches",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The gate can supply public_obligation_directive, so its decision path reaches the public-obligation discriminator immediately above this fallback."
+      },
+      {
+        "id": "part.compact_cue.adversarial_teacher",
+        "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.adversarial_teacher",
+        "switching_variable": "response_configuration.actorial_part and actorial_part_label",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Gate-selected action family and stance feed selectTutorStubActorialPart; the resulting register selection chooses the compact part cue and wrapper."
+      },
+      {
+        "id": "part.compact_cue.advocate",
+        "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.advocate",
+        "switching_variable": "response_configuration.actorial_part and actorial_part_label",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Gate-selected action family and stance feed selectTutorStubActorialPart; the resulting register selection chooses the compact part cue and wrapper."
+      },
+      {
+        "id": "part.compact_cue.authored_source",
+        "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.authored_source",
+        "switching_variable": "response_configuration.actorial_part and actorial_part_label",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Gate-selected action family and stance feed selectTutorStubActorialPart; the resulting register selection chooses the compact part cue and wrapper."
+      },
+      {
+        "id": "part.compact_cue.exacting_schoolmaster",
+        "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.exacting_schoolmaster",
+        "switching_variable": "response_configuration.actorial_part and actorial_part_label",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Gate-selected action family and stance feed selectTutorStubActorialPart; the resulting register selection chooses the compact part cue and wrapper."
+      },
+      {
+        "id": "part.compact_cue.examiner",
+        "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.examiner",
+        "switching_variable": "response_configuration.actorial_part and actorial_part_label",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Gate-selected action family and stance feed selectTutorStubActorialPart; the resulting register selection chooses the compact part cue and wrapper."
+      },
+      {
+        "id": "part.compact_cue.foreperson",
+        "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.foreperson",
+        "switching_variable": "response_configuration.actorial_part and actorial_part_label",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Gate-selected action family and stance feed selectTutorStubActorialPart; the resulting register selection chooses the compact part cue and wrapper."
+      },
+      {
+        "id": "part.compact_cue.record_keeper",
+        "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.record_keeper",
+        "switching_variable": "response_configuration.actorial_part and actorial_part_label",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Gate-selected action family and stance feed selectTutorStubActorialPart; the resulting register selection chooses the compact part cue and wrapper."
+      },
+      {
+        "id": "part.compact_cue.satirist",
+        "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.satirist",
+        "switching_variable": "response_configuration.actorial_part and actorial_part_label",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Gate-selected action family and stance feed selectTutorStubActorialPart; the resulting register selection chooses the compact part cue and wrapper."
+      },
+      {
+        "id": "part.compact_cue.scene_partner",
+        "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.scene_partner",
+        "switching_variable": "response_configuration.actorial_part and actorial_part_label",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Gate-selected action family and stance feed selectTutorStubActorialPart; the resulting register selection chooses the compact part cue and wrapper."
+      },
+      {
+        "id": "part.compact_cue.skeptic",
+        "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.skeptic",
+        "switching_variable": "response_configuration.actorial_part and actorial_part_label",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Gate-selected action family and stance feed selectTutorStubActorialPart; the resulting register selection chooses the compact part cue and wrapper."
+      },
+      {
+        "id": "part.inline.scene_partner",
+        "source": "services/tutorStubFirstDraftContract.js#compactPartInstruction.scene_partner",
+        "switching_variable": "response_configuration.actorial_part and actorial_part_label",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Gate-selected action family and stance feed selectTutorStubActorialPart; the resulting register selection chooses the compact part cue and wrapper."
+      },
+      {
+        "id": "part.fallback",
+        "source": "services/tutorStubFirstDraftContract.js#compactPartInstruction.fallback",
+        "switching_variable": "response_configuration.actorial_part and actorial_part_label",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Gate-selected action family and stance feed selectTutorStubActorialPart; the resulting register selection chooses the compact part cue and wrapper.",
+        "doubt": "Reachability of an unlisted part value is not proven; ruling 060b keeps uncertain traces IN."
+      },
+      {
+        "id": "part.prop.existing",
+        "source": "services/tutorStubFirstDraftContract.js#compactPartInstruction.prop.existing",
+        "switching_variable": "scene_action_budget.saturated and dramaticReleaseFrame.requiresExhibitHandoff",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "Prop availability is fixed by scene-budget and release state; the gate decision path does not write either field."
+      },
+      {
+        "id": "part.prop.named",
+        "source": "services/tutorStubFirstDraftContract.js#compactPartInstruction.prop.named",
+        "switching_variable": "scene_action_budget.saturated and dramaticReleaseFrame.requiresExhibitHandoff",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "Prop availability is fixed by scene-budget and release state; the gate decision path does not write either field."
+      },
+      {
+        "id": "part.wrapper",
+        "source": "services/tutorStubFirstDraftContract.js#compactPartInstruction.wrapper",
+        "switching_variable": "response_configuration.actorial_part and actorial_part_label",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Gate-selected action family and stance feed selectTutorStubActorialPart; the resulting register selection chooses the compact part cue and wrapper."
+      },
+      {
+        "id": "tactic.execution.adversarial_pressure",
+        "source": "services/tutorStubFirstDraftContract.js#TACTIC_EXECUTION_CUES.adversarial_pressure",
+        "switching_variable": "response_configuration.actorial_performance.id",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The gate-selected stance feeds selectTutorStubActorialPerformance, so register selection can change which tactic execution cue renders."
+      },
+      {
+        "id": "tactic.execution.dramatic_counterpressure",
+        "source": "services/tutorStubFirstDraftContract.js#TACTIC_EXECUTION_CUES.dramatic_counterpressure",
+        "switching_variable": "response_configuration.actorial_performance.id",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The gate-selected stance feeds selectTutorStubActorialPerformance, so register selection can change which tactic execution cue renders."
+      },
+      {
+        "id": "tactic.execution.dry_counterexample",
+        "source": "services/tutorStubFirstDraftContract.js#TACTIC_EXECUTION_CUES.dry_counterexample",
+        "switching_variable": "response_configuration.actorial_performance.id",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The gate-selected stance feeds selectTutorStubActorialPerformance, so register selection can change which tactic execution cue renders."
+      },
+      {
+        "id": "tactic.execution.evidentiary_boundary",
+        "source": "services/tutorStubFirstDraftContract.js#TACTIC_EXECUTION_CUES.evidentiary_boundary",
+        "switching_variable": "response_configuration.actorial_performance.id",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The gate-selected stance feeds selectTutorStubActorialPerformance, so register selection can change which tactic execution cue renders."
+      },
+      {
+        "id": "tactic.execution.exposed_mismatch",
+        "source": "services/tutorStubFirstDraftContract.js#TACTIC_EXECUTION_CUES.exposed_mismatch",
+        "switching_variable": "response_configuration.actorial_performance.id",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The gate-selected stance feeds selectTutorStubActorialPerformance, so register selection can change which tactic execution cue renders."
+      },
+      {
+        "id": "tactic.execution.measured_testimony",
+        "source": "services/tutorStubFirstDraftContract.js#TACTIC_EXECUTION_CUES.measured_testimony",
+        "switching_variable": "response_configuration.actorial_performance.id",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The gate-selected stance feeds selectTutorStubActorialPerformance, so register selection can change which tactic execution cue renders."
+      },
+      {
+        "id": "tactic.execution.rapid_handoff",
+        "source": "services/tutorStubFirstDraftContract.js#TACTIC_EXECUTION_CUES.rapid_handoff",
+        "switching_variable": "response_configuration.actorial_performance.id",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The gate-selected stance feeds selectTutorStubActorialPerformance, so register selection can change which tactic execution cue renders."
+      },
+      {
+        "id": "tactic.execution.shared_scene_invitation",
+        "source": "services/tutorStubFirstDraftContract.js#TACTIC_EXECUTION_CUES.shared_scene_invitation",
+        "switching_variable": "response_configuration.actorial_performance.id",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The gate-selected stance feeds selectTutorStubActorialPerformance, so register selection can change which tactic execution cue renders."
+      },
+      {
+        "id": "tactic.execution.unadorned_report",
+        "source": "services/tutorStubFirstDraftContract.js#TACTIC_EXECUTION_CUES.unadorned_report",
+        "switching_variable": "response_configuration.actorial_performance.id",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The gate-selected stance feeds selectTutorStubActorialPerformance, so register selection can change which tactic execution cue renders."
+      },
+      {
+        "id": "tactic.support.3",
+        "source": "services/tutorStubFirstDraftContract.js#compactSupportInstruction.level_3",
+        "switching_variable": "response_configuration.support_level",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Support level is a policy-selected response-configuration field downstream of the gate; ruling 060b keeps the complete nonempty support cue family in."
+      },
+      {
+        "id": "tactic.support.2",
+        "source": "services/tutorStubFirstDraftContract.js#compactSupportInstruction.level_2",
+        "switching_variable": "response_configuration.support_level",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Support level is a policy-selected response-configuration field downstream of the gate; ruling 060b keeps the complete nonempty support cue family in."
+      },
+      {
+        "id": "tactic.support.1",
+        "source": "services/tutorStubFirstDraftContract.js#compactSupportInstruction.level_1",
+        "switching_variable": "response_configuration.support_level",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Support level is a policy-selected response-configuration field downstream of the gate; ruling 060b keeps the complete nonempty support cue family in."
+      },
+      {
+        "id": "tactic.support.0",
+        "source": "services/tutorStubFirstDraftContract.js#compactSupportInstruction.level_0",
+        "switching_variable": "configuration.support_level equal to zero or unset",
+        "gate_decision_path_reachable": true,
+        "verdict": "OUT",
+        "trace": "The null branch returns an empty string, so there are no instruction bytes to inject regardless of reachability."
+      },
+      {
+        "id": "tactic.source_accessibility.max_words",
+        "source": "services/tutorStubFirstDraftContract.js#compactSourceAccessibilityInstruction.max_words",
+        "switching_variable": "sourceAccessibility.effective_mode and sourceAccessibility.owner",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "Source-accessibility mode is compiled from the source policy and due-source contract, not from the gate verdict, repair policy, or register selection."
+      },
+      {
+        "id": "tactic.source_accessibility.material_tokens",
+        "source": "services/tutorStubFirstDraftContract.js#compactSourceAccessibilityInstruction.material_tokens",
+        "switching_variable": "sourceAccessibility.effective_mode and sourceAccessibility.owner",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "Source-accessibility mode is compiled from the source policy and due-source contract, not from the gate verdict, repair policy, or register selection."
+      },
+      {
+        "id": "tactic.source_accessibility.constraints",
+        "source": "services/tutorStubFirstDraftContract.js#compactSourceAccessibilityInstruction.constraints",
+        "switching_variable": "sourceAccessibility.effective_mode and sourceAccessibility.owner",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "Source-accessibility mode is compiled from the source policy and due-source contract, not from the gate verdict, repair policy, or register selection."
+      },
+      {
+        "id": "tactic.source_boundary",
+        "source": "services/tutorStubFirstDraftContract.js#compactTacticInstruction.sourceBoundary",
+        "switching_variable": "contract.evidence.active",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "Active SOURCE presence is fixed by dramatic release state before the speaking configuration; the gate path cannot create or remove due evidence."
+      },
+      {
+        "id": "tactic.delivered_boundary",
+        "source": "services/tutorStubFirstDraftContract.js#compactTacticInstruction.transition",
+        "switching_variable": "performance obligation tactic_applicability for the gate-selected actorial_performance",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The gate-selected stance changes the requested tactic; the performance compiler may replace an inapplicable selected tactic and inject this transition."
+      },
+      {
+        "id": "tactic.direction_only_rapid_handoff",
+        "source": "services/tutorStubFirstDraftContract.js#buildTutorStubFirstDraftContract.directionOnlyWithoutNewEvidence",
+        "switching_variable": "questionSupport.answerability together with gate-reachable actorial_performance.id",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Question-support state is fixed, but the gate-selected stance can choose or displace rapid_handoff, so the gate path can change whether this recast renders."
+      },
+      {
+        "id": "tactic.causal_performance",
+        "source": "services/tutorStubFirstDraftContract.js#typedCausalPerformanceInstruction",
+        "switching_variable": "writableEntryCausalContract from learner wording and committed public evidence",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "The causal-performance addition is switched by the writable-entry classifier and public evidence, neither of which the gate path can change."
+      },
+      {
+        "id": "tactic.question_boundary.handoff",
+        "source": "services/tutorStubFirstDraftContract.js#questionOwnedTacticExecution.boundary.handoff",
+        "switching_variable": "progression.handoff_contract.question_allowed",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Gate-selected action family and public_obligation_directive feed chooseHandoffMode, which sets question_allowed and selects the handoff-owned versus no-question boundary."
+      },
+      {
+        "id": "tactic.question_boundary.none",
+        "source": "services/tutorStubFirstDraftContract.js#questionOwnedTacticExecution.boundary.none",
+        "switching_variable": "progression.handoff_contract.question_allowed",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Gate-selected action family and public_obligation_directive feed chooseHandoffMode, which sets question_allowed and selects the handoff-owned versus no-question boundary."
+      },
+      {
+        "id": "tactic.question_owned.rapid_handoff",
+        "source": "services/tutorStubFirstDraftContract.js#questionOwnedTacticExecution.rapid_handoff",
+        "switching_variable": "gate-reachable actorial_performance.id and progression.handoff_contract question ownership",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The gate-selected stance changes the tactic, while gate-selected action/public-obligation state can change handoff ownership; either path can change the rendered recast."
+      },
+      {
+        "id": "tactic.question_owned.shared_scene_invitation",
+        "source": "services/tutorStubFirstDraftContract.js#questionOwnedTacticExecution.shared_scene_invitation",
+        "switching_variable": "gate-reachable actorial_performance.id and progression.handoff_contract question ownership",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The gate-selected stance changes the tactic, while gate-selected action/public-obligation state can change handoff ownership; either path can change the rendered recast."
+      },
+      {
+        "id": "tactic.question_owned.general",
+        "source": "services/tutorStubFirstDraftContract.js#questionOwnedTacticExecution.general",
+        "switching_variable": "gate-reachable actorial_performance.id and progression.handoff_contract question ownership",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The gate-selected stance changes the tactic, while gate-selected action/public-obligation state can change handoff ownership; either path can change the rendered recast."
+      },
+      {
+        "id": "stance.compact_cue.brisk",
+        "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.cues.brisk",
+        "switching_variable": "response_configuration.engagement_stance",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "An active warranted decision patches engagement_stance directly, so register selection can change the compact stance cue."
+      },
+      {
+        "id": "stance.compact_cue.charismatic",
+        "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.cues.charismatic",
+        "switching_variable": "response_configuration.engagement_stance",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "An active warranted decision patches engagement_stance directly, so register selection can change the compact stance cue."
+      },
+      {
+        "id": "stance.compact_cue.face_threat",
+        "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.cues.face_threat",
+        "switching_variable": "response_configuration.engagement_stance",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "An active warranted decision patches engagement_stance directly, so register selection can change the compact stance cue."
+      },
+      {
+        "id": "stance.compact_cue.ironic",
+        "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.cues.ironic",
+        "switching_variable": "response_configuration.engagement_stance",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "An active warranted decision patches engagement_stance directly, so register selection can change the compact stance cue."
+      },
+      {
+        "id": "stance.compact_cue.plain",
+        "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.cues.plain",
+        "switching_variable": "response_configuration.engagement_stance",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "An active warranted decision patches engagement_stance directly, so register selection can change the compact stance cue."
+      },
+      {
+        "id": "stance.compact_cue.precise",
+        "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.cues.precise",
+        "switching_variable": "response_configuration.engagement_stance",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "An active warranted decision patches engagement_stance directly, so register selection can change the compact stance cue."
+      },
+      {
+        "id": "stance.compact_cue.sarcastic",
+        "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.cues.sarcastic",
+        "switching_variable": "response_configuration.engagement_stance",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "An active warranted decision patches engagement_stance directly, so register selection can change the compact stance cue."
+      },
+      {
+        "id": "stance.compact_cue.warm",
+        "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.cues.warm",
+        "switching_variable": "response_configuration.engagement_stance",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "An active warranted decision patches engagement_stance directly, so register selection can change the compact stance cue."
+      },
+      {
+        "id": "stance.compact_cue.witnessing",
+        "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.cues.witnessing",
+        "switching_variable": "response_configuration.engagement_stance",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "An active warranted decision patches engagement_stance directly, so register selection can change the compact stance cue."
+      },
+      {
+        "id": "stance.fallback",
+        "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.fallback",
+        "switching_variable": "response_configuration.engagement_stance",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "An active warranted decision patches engagement_stance directly, so register selection can change the compact stance cue.",
+        "doubt": "Reachability of an unlisted stance value is not proven; ruling 060b keeps uncertain traces IN."
+      },
+      {
+        "id": "handoff.settled",
+        "source": "services/tutorStubFirstDraftContract.js#compactProgressionHandoffInstruction.settled",
+        "switching_variable": "conversational_completion.resolved and its prohibited settled surfaces",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "Settled-surface bookkeeping is copied from the learner-side conversational-completion frame; the gate path does not write it."
+      },
+      {
+        "id": "handoff.bridge",
+        "source": "services/tutorStubFirstDraftContract.js#compactProgressionHandoffInstruction.bridge",
+        "switching_variable": "turn_focus_contract.sibling_relation_requires_explicit_bridge",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "A gate-supplied complete public obligation forces sibling_relation_requires_explicit_bridge false, so the gate path can suppress or restore this bridge."
+      },
+      {
+        "id": "handoff.declarative_fallback",
+        "source": "services/tutorStubFirstDraftContract.js#compactProgressionHandoffInstruction.declarative_fallback",
+        "switching_variable": "absence of progression.handoff_contract.instruction under declarative question support",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "compileTutorStubTurnProgressionContract always supplies handoff_contract.instruction; the gate path cannot create the missing-instruction condition for this fallback literal."
+      },
+      {
+        "id": "handoff.public_limit",
+        "source": "services/tutorStubFirstDraftContract.js#compactProgressionHandoffInstruction.public_limit",
+        "switching_variable": "progression.handoff_contract mode and question_required",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Gate-selected action family, tactic, and public obligation feed chooseHandoffMode and question_required, so the gate path can change this handoff branch."
+      },
+      {
+        "id": "handoff.optional_question",
+        "source": "services/tutorStubFirstDraftContract.js#compactProgressionHandoffInstruction.optional_question",
+        "switching_variable": "progression.handoff_contract mode and question_required",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Gate-selected action family, tactic, and public obligation feed chooseHandoffMode and question_required, so the gate path can change this handoff branch."
+      },
+      {
+        "id": "handoff.source_question",
+        "source": "services/tutorStubFirstDraftContract.js#compactProgressionHandoffInstruction.source_question",
+        "switching_variable": "development.action_family equal to stage_next_step with active evidence",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Evidence presence is fixed, but the repair policy can select or displace stage_next_step and thereby change whether this string renders."
+      },
+      {
+        "id": "handoff.action_question",
+        "source": "services/tutorStubFirstDraftContract.js#compactProgressionHandoffInstruction.action_question",
+        "switching_variable": "gate-reachable compact_action_instruction and default handoff mode",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The repair policy selects the action family embedded in this template, and gate-selected action/public-obligation state can also change the default handoff branch."
+      },
+      {
+        "id": "handoff.bounded_choices",
+        "source": "services/tutorStubFirstDraftContract.js#buildHostPlan.bounded_choice",
+        "switching_variable": "questionSupport.modality matching bounded choice",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "The compact host plan appends this string directly from question-support modality, an upstream learner-state field the gate path cannot write."
+      },
+      {
+        "id": "handoff.clarification_invitation",
+        "source": "services/tutorStubFirstDraftContract.js#buildHostPlan.clarification_invitation",
+        "switching_variable": "questionSupport.clarificationInvitationRequired",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "The compact host plan appends this string directly from an upstream question-support field the gate path cannot write."
+      },
+      {
+        "id": "action.override.closure",
+        "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.closure",
+        "switching_variable": "dialogueClosureFrame.mandatory after adaptive-warrant inquiry-completion constraint",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The active gate constrains legacy closure with its inquiry-completion verdict, so its decision path can suppress or retain the closure override."
+      },
+      {
+        "id": "action.override.responsive_repair",
+        "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.responsive_repair",
+        "switching_variable": "questionSupport.responsiveRepairRequired",
+        "gate_decision_path_reachable": false,
+        "verdict": "OUT",
+        "trace": "Responsive repair is fixed by question-support analysis upstream of the gate; the gate path cannot write the flag."
+      },
+      {
+        "id": "action.override.active_source",
+        "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.active_source",
+        "switching_variable": "development.action_family equal to stage_next_step with active evidence",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "Evidence presence is fixed, but the gate repair policy can select or displace stage_next_step and thereby change the override."
+      },
+      {
+        "id": "action.compact_cue.answer_accountably",
+        "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.answer_accountably",
+        "switching_variable": "response_configuration.action_family",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The active gate repair policy overrides action_family directly; ruling 060b requires the whole action cue family without reachability pruning."
+      },
+      {
+        "id": "action.compact_cue.baseline_plain_response",
+        "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.baseline_plain_response",
+        "switching_variable": "response_configuration.action_family",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The active gate repair policy overrides action_family directly; ruling 060b requires the whole action cue family without reachability pruning."
+      },
+      {
+        "id": "action.compact_cue.challenge_resistance",
+        "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.challenge_resistance",
+        "switching_variable": "response_configuration.action_family",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The active gate repair policy overrides action_family directly; ruling 060b requires the whole action cue family without reachability pruning."
+      },
+      {
+        "id": "action.compact_cue.clarify_distinction",
+        "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.clarify_distinction",
+        "switching_variable": "response_configuration.action_family",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The active gate repair policy overrides action_family directly; ruling 060b requires the whole action cue family without reachability pruning."
+      },
+      {
+        "id": "action.compact_cue.clarify_term",
+        "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.clarify_term",
+        "switching_variable": "response_configuration.action_family",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The active gate repair policy overrides action_family directly; ruling 060b requires the whole action cue family without reachability pruning."
+      },
+      {
+        "id": "action.compact_cue.close_inquiry",
+        "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.close_inquiry",
+        "switching_variable": "response_configuration.action_family",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The active gate repair policy overrides action_family directly; ruling 060b requires the whole action cue family without reachability pruning."
+      },
+      {
+        "id": "action.compact_cue.compress_sayback",
+        "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.compress_sayback",
+        "switching_variable": "response_configuration.action_family",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The active gate repair policy overrides action_family directly; ruling 060b requires the whole action cue family without reachability pruning."
+      },
+      {
+        "id": "action.compact_cue.ground_in_material",
+        "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.ground_in_material",
+        "switching_variable": "response_configuration.action_family",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The active gate repair policy overrides action_family directly; ruling 060b requires the whole action cue family without reachability pruning."
+      },
+      {
+        "id": "action.compact_cue.reanchor_lived_stake",
+        "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.reanchor_lived_stake",
+        "switching_variable": "response_configuration.action_family",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The active gate repair policy overrides action_family directly; ruling 060b requires the whole action cue family without reachability pruning."
+      },
+      {
+        "id": "action.compact_cue.reanchor_public_evidence",
+        "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.reanchor_public_evidence",
+        "switching_variable": "response_configuration.action_family",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The active gate repair policy overrides action_family directly; ruling 060b requires the whole action cue family without reachability pruning."
+      },
+      {
+        "id": "action.compact_cue.receive_vulnerability",
+        "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.receive_vulnerability",
+        "switching_variable": "response_configuration.action_family",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The active gate repair policy overrides action_family directly; ruling 060b requires the whole action cue family without reachability pruning."
+      },
+      {
+        "id": "action.compact_cue.stage_next_step",
+        "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.stage_next_step",
+        "switching_variable": "response_configuration.action_family",
+        "gate_decision_path_reachable": true,
+        "verdict": "IN",
+        "trace": "The active gate repair policy overrides action_family directly; ruling 060b requires the whole action cue family without reachability pruning."
+      }
+    ]
+  },
+  "prefix_set": [
+    {
+      "id": "uptake.default",
+      "prefix": "When no narrower uptake branch applies, the compact uptake string is:"
+    },
+    {
+      "id": "opening.default_response",
+      "prefix": "When no narrower opening branch applies, the rendered opening instruction is:"
+    },
+    {
+      "id": "part.compact_cue.adversarial_teacher",
+      "prefix": "When the downstream selector carries the adversarial teacher part, its compact part cue is:"
+    },
+    {
+      "id": "part.compact_cue.advocate",
+      "prefix": "When the downstream selector carries the advocate part, its compact part cue is:"
+    },
+    {
+      "id": "part.compact_cue.authored_source",
+      "prefix": "When the downstream selector carries the authored source part, its compact part cue is:"
+    },
+    {
+      "id": "part.compact_cue.exacting_schoolmaster",
+      "prefix": "When the downstream selector carries the exacting schoolmaster part, its compact part cue is:"
+    },
+    {
+      "id": "part.compact_cue.examiner",
+      "prefix": "When the downstream selector carries the examiner part, its compact part cue is:"
+    },
+    {
+      "id": "part.compact_cue.foreperson",
+      "prefix": "When the downstream selector carries the foreperson part, its compact part cue is:"
+    },
+    {
+      "id": "part.compact_cue.record_keeper",
+      "prefix": "When the downstream selector carries the record keeper part, its compact part cue is:"
+    },
+    {
+      "id": "part.compact_cue.satirist",
+      "prefix": "When the downstream selector carries the satirist part, its compact part cue is:"
+    },
+    {
+      "id": "part.compact_cue.scene_partner",
+      "prefix": "When the downstream selector carries the scene partner part, its compact part cue is:"
+    },
+    {
+      "id": "part.compact_cue.skeptic",
+      "prefix": "When the downstream selector carries the skeptic part, its compact part cue is:"
+    },
+    {
+      "id": "part.inline.scene_partner",
+      "prefix": "When the selected part is scene partner, the live inline compact cue is:"
+    },
+    {
+      "id": "part.fallback",
+      "prefix": "When no named compact part cue is available, the compact part fallback is:"
+    },
+    {
+      "id": "part.wrapper",
+      "prefix": "For every selected part, this compact wrapper is rendered and the gate fills its named slots from the public contract:"
+    },
+    {
+      "id": "tactic.execution.adversarial_pressure",
+      "prefix": "When the compact tactic builder carries the adversarial pressure tactic, its execution cue is:"
+    },
+    {
+      "id": "tactic.execution.dramatic_counterpressure",
+      "prefix": "When the compact tactic builder carries the dramatic counterpressure tactic, its execution cue is:"
+    },
+    {
+      "id": "tactic.execution.dry_counterexample",
+      "prefix": "When the compact tactic builder carries the dry counterexample tactic, its execution cue is:"
+    },
+    {
+      "id": "tactic.execution.evidentiary_boundary",
+      "prefix": "When the compact tactic builder carries the evidentiary boundary tactic, its execution cue is:"
+    },
+    {
+      "id": "tactic.execution.exposed_mismatch",
+      "prefix": "When the compact tactic builder carries the exposed mismatch tactic, its execution cue is:"
+    },
+    {
+      "id": "tactic.execution.measured_testimony",
+      "prefix": "When the compact tactic builder carries the measured testimony tactic, its execution cue is:"
+    },
+    {
+      "id": "tactic.execution.rapid_handoff",
+      "prefix": "When the compact tactic builder carries the rapid handoff tactic, its execution cue is:"
+    },
+    {
+      "id": "tactic.execution.shared_scene_invitation",
+      "prefix": "When the compact tactic builder carries the shared scene invitation tactic, its execution cue is:"
+    },
+    {
+      "id": "tactic.execution.unadorned_report",
+      "prefix": "When the compact tactic builder carries the unadorned report tactic, its execution cue is:"
+    },
+    {
+      "id": "tactic.support.3",
+      "prefix": "When support level is three, the compact tactic support string is:"
+    },
+    {
+      "id": "tactic.support.2",
+      "prefix": "When support level is two, the compact tactic support string is:"
+    },
+    {
+      "id": "tactic.support.1",
+      "prefix": "When support level is one, the compact tactic support string is:"
+    },
+    {
+      "id": "tactic.delivered_boundary",
+      "prefix": "When the requested pressure tactic is inapplicable, the compact tactic transition is:"
+    },
+    {
+      "id": "tactic.direction_only_rapid_handoff",
+      "prefix": "When direction-only support recasts rapid handoff, the compact tactic execution string is:"
+    },
+    {
+      "id": "tactic.question_boundary.handoff",
+      "prefix": "When the handoff owns an allowed question, the compact tactic boundary is:"
+    },
+    {
+      "id": "tactic.question_boundary.none",
+      "prefix": "When the public contract forbids a question, the compact tactic boundary is:"
+    },
+    {
+      "id": "tactic.question_owned.rapid_handoff",
+      "prefix": "When rapid handoff delegates question ownership, this compact tactic template is rendered and the gate fills its named slot from the public contract:"
+    },
+    {
+      "id": "tactic.question_owned.shared_scene_invitation",
+      "prefix": "When shared-scene invitation delegates question ownership, this compact tactic template is rendered and the gate fills its named slot from the public contract:"
+    },
+    {
+      "id": "tactic.question_owned.general",
+      "prefix": "When another tactic delegates question ownership, this compact tactic template is rendered and the gate fills its named slots from the public contract:"
+    },
+    {
+      "id": "stance.compact_cue.brisk",
+      "prefix": "When the gate carries the brisk stance, its compact stance cue is:"
+    },
+    {
+      "id": "stance.compact_cue.charismatic",
+      "prefix": "When the gate carries the charismatic stance, its compact stance cue is:"
+    },
+    {
+      "id": "stance.compact_cue.face_threat",
+      "prefix": "When the gate carries the face threat stance, its compact stance cue is:"
+    },
+    {
+      "id": "stance.compact_cue.ironic",
+      "prefix": "When the gate carries the ironic stance, its compact stance cue is:"
+    },
+    {
+      "id": "stance.compact_cue.plain",
+      "prefix": "When the gate carries the plain stance, its compact stance cue is:"
+    },
+    {
+      "id": "stance.compact_cue.precise",
+      "prefix": "When the gate carries the precise stance, its compact stance cue is:"
+    },
+    {
+      "id": "stance.compact_cue.sarcastic",
+      "prefix": "When the gate carries the sarcastic stance, its compact stance cue is:"
+    },
+    {
+      "id": "stance.compact_cue.warm",
+      "prefix": "When the gate carries the warm stance, its compact stance cue is:"
+    },
+    {
+      "id": "stance.compact_cue.witnessing",
+      "prefix": "When the gate carries the witnessing stance, its compact stance cue is:"
+    },
+    {
+      "id": "stance.fallback",
+      "prefix": "When the public contract carries an unlisted stance, this compact stance fallback is rendered and the gate fills its named slot from the public contract:"
+    },
+    {
+      "id": "handoff.bridge",
+      "prefix": "When the public contract requires a sibling-relation bridge, the compact handoff addition is:"
+    },
+    {
+      "id": "handoff.public_limit",
+      "prefix": "When questions are forbidden without another special branch, the compact handoff string is:"
+    },
+    {
+      "id": "handoff.optional_question",
+      "prefix": "When a handoff question is optional, the compact handoff string is:"
+    },
+    {
+      "id": "handoff.source_question",
+      "prefix": "When active source evidence and stage-next-step require a handoff question, the compact handoff string is:"
+    },
+    {
+      "id": "handoff.action_question",
+      "prefix": "When the default handoff owns the final question, this compact handoff template is rendered and the gate fills its named slot from the public contract:"
+    },
+    {
+      "id": "action.override.closure",
+      "prefix": "When the public contract requires closure, the compact action override is:"
+    },
+    {
+      "id": "action.override.active_source",
+      "prefix": "When active source evidence carries stage-next-step, the compact action override is:"
+    },
+    {
+      "id": "action.compact_cue.answer_accountably",
+      "prefix": "When the gate carries the answer accountably action family, its compact action cue is:"
+    },
+    {
+      "id": "action.compact_cue.baseline_plain_response",
+      "prefix": "When the gate carries the baseline plain response action family, its compact action cue is:"
+    },
+    {
+      "id": "action.compact_cue.challenge_resistance",
+      "prefix": "When the gate carries the challenge resistance action family, its compact action cue is:"
+    },
+    {
+      "id": "action.compact_cue.clarify_distinction",
+      "prefix": "When the gate carries the clarify distinction action family, its compact action cue is:"
+    },
+    {
+      "id": "action.compact_cue.clarify_term",
+      "prefix": "When the gate carries the clarify term action family, its compact action cue is:"
+    },
+    {
+      "id": "action.compact_cue.close_inquiry",
+      "prefix": "When the gate carries the close inquiry action family, its compact action cue is:"
+    },
+    {
+      "id": "action.compact_cue.compress_sayback",
+      "prefix": "When the gate carries the compress sayback action family, its compact action cue is:"
+    },
+    {
+      "id": "action.compact_cue.ground_in_material",
+      "prefix": "When the gate carries the ground in material action family, its compact action cue is:"
+    },
+    {
+      "id": "action.compact_cue.reanchor_lived_stake",
+      "prefix": "When the gate carries the reanchor lived stake action family, its compact action cue is:"
+    },
+    {
+      "id": "action.compact_cue.reanchor_public_evidence",
+      "prefix": "When the gate carries the reanchor public evidence action family, its compact action cue is:"
+    },
+    {
+      "id": "action.compact_cue.receive_vulnerability",
+      "prefix": "When the gate carries the receive vulnerability action family, its compact action cue is:"
+    },
+    {
+      "id": "action.compact_cue.stage_next_step",
+      "prefix": "When the gate carries the stage next step action family, its compact action cue is:"
+    }
+  ],
+  "entries": [
+    {
+      "id": "uptake.default",
+      "source": "services/tutorStubFirstDraftContract.js#compactUptakeInstruction.default",
+      "prefix": "When no narrower uptake branch applies, the compact uptake string is:",
+      "quote": "Answer, credit, qualify, correct, or receive the learner’s concrete move; never use generic praise.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Answer, credit, qualify, correct, or receive the learner’s concrete move; never use generic praise."
+      ]
+    },
+    {
+      "id": "opening.default_response",
+      "source": "services/tutorStubFirstDraftContract.js#buildTutorStubFirstDraftContract.opening.default",
+      "prefix": "When no narrower opening branch applies, the rendered opening instruction is:",
+      "quote": "Respond to the learner’s actual contribution in the first sentence by answering, crediting, qualifying, correcting, or receiving it. Paraphrase its concrete claim or concern rather than echoing the learner’s substantive wording; do not begin with generic praise.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Respond to the learner’s actual contribution in the first sentence by answering, crediting, qualifying, correcting, or receiving it. Paraphrase its concrete claim or concern rather than echoing the learner’s substantive wording; do not begin with generic praise."
+      ]
+    },
+    {
+      "id": "part.compact_cue.adversarial_teacher",
+      "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.adversarial_teacher",
+      "prefix": "When the downstream selector carries the adversarial teacher part, its compact part cue is:",
+      "quote": "introduce a subject-native counterexample, altered example, or rival solution at one named lesson object, then require one bounded revision",
+      "template_slots": [],
+      "fixed_segments": [
+        "introduce a subject-native counterexample, altered example, or rival solution at one named lesson object, then require one bounded revision"
+      ]
+    },
+    {
+      "id": "part.compact_cue.advocate",
+      "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.advocate",
+      "prefix": "When the downstream selector carries the advocate part, its compact part cue is:",
+      "quote": "begin “My case is”, state the strongest claim the released public record carries, name what it does not yet establish, and leave the test for HANDOFF",
+      "template_slots": [],
+      "fixed_segments": [
+        "begin “My case is”, state the strongest claim the released public record carries, name what it does not yet establish, and leave the test for HANDOFF"
+      ]
+    },
+    {
+      "id": "part.compact_cue.authored_source",
+      "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.authored_source",
+      "prefix": "When the downstream selector carries the authored source part, its compact part cue is:",
+      "quote": "enter the public source directly and voice only the supplied evidence",
+      "template_slots": [],
+      "fixed_segments": [
+        "enter the public source directly and voice only the supplied evidence"
+      ]
+    },
+    {
+      "id": "part.compact_cue.exacting_schoolmaster",
+      "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.exacting_schoolmaster",
+      "prefix": "When the downstream selector carries the exacting schoolmaster part, its compact part cue is:",
+      "quote": "require one discipline-specific performance, state its criterion, and permit one precise retry",
+      "template_slots": [],
+      "fixed_segments": [
+        "require one discipline-specific performance, state its criterion, and permit one precise retry"
+      ]
+    },
+    {
+      "id": "part.compact_cue.examiner",
+      "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.examiner",
+      "prefix": "When the downstream selector carries the examiner part, its compact part cue is:",
+      "quote": "inspect named exhibit; claim no cross-exhibit match absent a public RECORD",
+      "template_slots": [],
+      "fixed_segments": [
+        "inspect named exhibit; claim no cross-exhibit match absent a public RECORD"
+      ]
+    },
+    {
+      "id": "part.compact_cue.foreperson",
+      "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.foreperson",
+      "prefix": "When the downstream selector carries the foreperson part, its compact part cue is:",
+      "quote": "gather the public supports, state the licensed finding, and close the record",
+      "template_slots": [],
+      "fixed_segments": [
+        "gather the public supports, state the licensed finding, and close the record"
+      ]
+    },
+    {
+      "id": "part.compact_cue.record_keeper",
+      "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.record_keeper",
+      "prefix": "When the downstream selector carries the record keeper part, its compact part cue is:",
+      "quote": "open, read, mark, enter, or close a public record, separating its entry from what remains unproved",
+      "template_slots": [],
+      "fixed_segments": [
+        "open, read, mark, enter, or close a public record, separating its entry from what remains unproved"
+      ]
+    },
+    {
+      "id": "part.compact_cue.satirist",
+      "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.satirist",
+      "prefix": "When the downstream selector carries the satirist part, its compact part cue is:",
+      "quote": "catch a polished claim or rote formula contradicting one named public object, expose the mismatch with a wry reversal, and leave a repair path",
+      "template_slots": [],
+      "fixed_segments": [
+        "catch a polished claim or rote formula contradicting one named public object, expose the mismatch with a wry reversal, and leave a repair path"
+      ]
+    },
+    {
+      "id": "part.compact_cue.scene_partner",
+      "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.scene_partner",
+      "prefix": "When the downstream selector carries the scene partner part, its compact part cue is:",
+      "quote": "make room beside one named public object and return its reading to the learner",
+      "template_slots": [],
+      "fixed_segments": [
+        "make room beside one named public object and return its reading to the learner"
+      ]
+    },
+    {
+      "id": "part.compact_cue.skeptic",
+      "source": "services/tutorStubFirstDraftContract.js#COMPACT_PART_CUES.skeptic",
+      "prefix": "When the downstream selector carries the skeptic part, its compact part cue is:",
+      "quote": "challenge one unsafe leap and show one fair public route through it",
+      "template_slots": [],
+      "fixed_segments": [
+        "challenge one unsafe leap and show one fair public route through it"
+      ]
+    },
+    {
+      "id": "part.inline.scene_partner",
+      "source": "services/tutorStubFirstDraftContract.js#compactPartInstruction.scene_partner",
+      "prefix": "When the selected part is scene partner, the live inline compact cue is:",
+      "quote": "place both speakers at one named public object using “you”, “we”, or “together”; a solitary “I” beside the object does not count; do not ask a question yet",
+      "template_slots": [],
+      "fixed_segments": [
+        "place both speakers at one named public object using “you”, “we”, or “together”; a solitary “I” beside the object does not count; do not ask a question yet"
+      ]
+    },
+    {
+      "id": "part.fallback",
+      "source": "services/tutorStubFirstDraftContract.js#compactPartInstruction.fallback",
+      "prefix": "When no named compact part cue is available, the compact part fallback is:",
+      "quote": "perform one concrete public action or judgment",
+      "template_slots": [],
+      "fixed_segments": [
+        "perform one concrete public action or judgment"
+      ]
+    },
+    {
+      "id": "part.wrapper",
+      "source": "services/tutorStubFirstDraftContract.js#compactPartInstruction.wrapper",
+      "prefix": "For every selected part, this compact wrapper is rendered and the gate fills its named slots from the public contract:",
+      "quote": "As {{actorial_part_label}}, without naming the role, {{compact_part_cue}}.",
+      "template_slots": [
+        "actorial_part_label",
+        "compact_part_cue"
+      ],
+      "fixed_segments": [
+        "As ",
+        ", without naming the role, ",
+        "."
+      ]
+    },
+    {
+      "id": "tactic.execution.adversarial_pressure",
+      "source": "services/tutorStubFirstDraftContract.js#TACTIC_EXECUTION_CUES.adversarial_pressure",
+      "prefix": "When the compact tactic builder carries the adversarial pressure tactic, its execution cue is:",
+      "quote": "Put direct pressure on the claim rather than the learner and name the public test that could answer it.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Put direct pressure on the claim rather than the learner and name the public test that could answer it."
+      ]
+    },
+    {
+      "id": "tactic.execution.dramatic_counterpressure",
+      "source": "services/tutorStubFirstDraftContract.js#TACTIC_EXECUTION_CUES.dramatic_counterpressure",
+      "prefix": "When the compact tactic builder carries the dramatic counterpressure tactic, its execution cue is:",
+      "quote": "Make the already-public shortcut or ready judgment identifiable, put contrary public evidence against it through the selected part, and hand the resulting concrete test back to the learner. Perform the collision; do not announce it or rely on a stock verb template.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Make the already-public shortcut or ready judgment identifiable, put contrary public evidence against it through the selected part, and hand the resulting concrete test back to the learner. Perform the collision; do not announce it or rely on a stock verb template."
+      ]
+    },
+    {
+      "id": "tactic.execution.dry_counterexample",
+      "source": "services/tutorStubFirstDraftContract.js#TACTIC_EXECUTION_CUES.dry_counterexample",
+      "prefix": "When the compact tactic builder carries the dry counterexample tactic, its execution cue is:",
+      "quote": "Use the named public object as a dry counterexample, then leave one concrete repair path.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Use the named public object as a dry counterexample, then leave one concrete repair path."
+      ]
+    },
+    {
+      "id": "tactic.execution.evidentiary_boundary",
+      "source": "services/tutorStubFirstDraftContract.js#TACTIC_EXECUTION_CUES.evidentiary_boundary",
+      "prefix": "When the compact tactic builder carries the evidentiary boundary tactic, its execution cue is:",
+      "quote": "Name the public evidence, what it supports, and the named conclusion it does not establish. Keep both conclusions explicit; use no pronoun substitute.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Name the public evidence, what it supports, and the named conclusion it does not establish. Keep both conclusions explicit; use no pronoun substitute."
+      ]
+    },
+    {
+      "id": "tactic.execution.exposed_mismatch",
+      "source": "services/tutorStubFirstDraftContract.js#TACTIC_EXECUTION_CUES.exposed_mismatch",
+      "prefix": "When the compact tactic builder carries the exposed mismatch tactic, its execution cue is:",
+      "quote": "Let the named public object expose the mismatch through the action itself rather than explaining the irony.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Let the named public object expose the mismatch through the action itself rather than explaining the irony."
+      ]
+    },
+    {
+      "id": "tactic.execution.measured_testimony",
+      "source": "services/tutorStubFirstDraftContract.js#TACTIC_EXECUTION_CUES.measured_testimony",
+      "prefix": "When the compact tactic builder carries the measured testimony tactic, its execution cue is:",
+      "quote": "Let the public words stand in the character’s voice and explicitly refuse to force a stronger judgment.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Let the public words stand in the character’s voice and explicitly refuse to force a stronger judgment."
+      ]
+    },
+    {
+      "id": "tactic.execution.rapid_handoff",
+      "source": "services/tutorStubFirstDraftContract.js#TACTIC_EXECUTION_CUES.rapid_handoff",
+      "prefix": "When the compact tactic builder carries the rapid handoff tactic, its execution cue is:",
+      "quote": "Move straight from the named public object or line to the learner, ending with the shortest useful concrete question.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Move straight from the named public object or line to the learner, ending with the shortest useful concrete question."
+      ]
+    },
+    {
+      "id": "tactic.execution.shared_scene_invitation",
+      "source": "services/tutorStubFirstDraftContract.js#TACTIC_EXECUTION_CUES.shared_scene_invitation",
+      "prefix": "When the compact tactic builder carries the shared scene invitation tactic, its execution cue is:",
+      "quote": "Make room beside a named public object for the learner and invite their reading in the same sentence or the next.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Make room beside a named public object for the learner and invite their reading in the same sentence or the next."
+      ]
+    },
+    {
+      "id": "tactic.execution.unadorned_report",
+      "source": "services/tutorStubFirstDraftContract.js#TACTIC_EXECUTION_CUES.unadorned_report",
+      "prefix": "When the compact tactic builder carries the unadorned report tactic, its execution cue is:",
+      "quote": "Use one direct first-person action or spoken line in ordinary words; do not add a theatrical preface.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Use one direct first-person action or spoken line in ordinary words; do not add a theatrical preface."
+      ]
+    },
+    {
+      "id": "tactic.support.3",
+      "source": "services/tutorStubFirstDraftContract.js#compactSupportInstruction.level_3",
+      "prefix": "When support level is three, the compact tactic support string is:",
+      "quote": "Make the public connection explicit.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Make the public connection explicit."
+      ]
+    },
+    {
+      "id": "tactic.support.2",
+      "source": "services/tutorStubFirstDraftContract.js#compactSupportInstruction.level_2",
+      "prefix": "When support level is two, the compact tactic support string is:",
+      "quote": "Give one concrete hint, leaving the judgment open.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Give one concrete hint, leaving the judgment open."
+      ]
+    },
+    {
+      "id": "tactic.support.1",
+      "source": "services/tutorStubFirstDraftContract.js#compactSupportInstruction.level_1",
+      "prefix": "When support level is one, the compact tactic support string is:",
+      "quote": "Give only a light directional cue.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Give only a light directional cue."
+      ]
+    },
+    {
+      "id": "tactic.delivered_boundary",
+      "source": "services/tutorStubFirstDraftContract.js#compactTacticInstruction.transition",
+      "prefix": "When the requested pressure tactic is inapplicable, the compact tactic transition is:",
+      "quote": "Use the delivered boundary tactic, not the requested pressure tactic.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Use the delivered boundary tactic, not the requested pressure tactic."
+      ]
+    },
+    {
+      "id": "tactic.direction_only_rapid_handoff",
+      "source": "services/tutorStubFirstDraftContract.js#buildTutorStubFirstDraftContract.directionOnlyWithoutNewEvidence",
+      "prefix": "When direction-only support recasts rapid handoff, the compact tactic execution string is:",
+      "quote": "Move straight from one already-public object or line to the present evidentiary limit. State the direction of the missing support yourself and end declaratively; do not ask the learner to name unseen evidence.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Move straight from one already-public object or line to the present evidentiary limit. State the direction of the missing support yourself and end declaratively; do not ask the learner to name unseen evidence."
+      ]
+    },
+    {
+      "id": "tactic.question_boundary.handoff",
+      "source": "services/tutorStubFirstDraftContract.js#questionOwnedTacticExecution.boundary.handoff",
+      "prefix": "When the handoff owns an allowed question, the compact tactic boundary is:",
+      "quote": "Ask no question here; HANDOFF owns it.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Ask no question here; HANDOFF owns it."
+      ]
+    },
+    {
+      "id": "tactic.question_boundary.none",
+      "source": "services/tutorStubFirstDraftContract.js#questionOwnedTacticExecution.boundary.none",
+      "prefix": "When the public contract forbids a question, the compact tactic boundary is:",
+      "quote": "Ask no question here.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Ask no question here."
+      ]
+    },
+    {
+      "id": "tactic.question_owned.rapid_handoff",
+      "source": "services/tutorStubFirstDraftContract.js#questionOwnedTacticExecution.rapid_handoff",
+      "prefix": "When rapid handoff delegates question ownership, this compact tactic template is rendered and the gate fills its named slot from the public contract:",
+      "quote": "Move straight from the named public object or line to one short declarative observation. {{question_boundary}}",
+      "template_slots": [
+        "question_boundary"
+      ],
+      "fixed_segments": [
+        "Move straight from the named public object or line to one short declarative observation. ",
+        ""
+      ]
+    },
+    {
+      "id": "tactic.question_owned.shared_scene_invitation",
+      "source": "services/tutorStubFirstDraftContract.js#questionOwnedTacticExecution.shared_scene_invitation",
+      "prefix": "When shared-scene invitation delegates question ownership, this compact tactic template is rendered and the gate fills its named slot from the public contract:",
+      "quote": "Invite shared attention to the named public object declaratively using “you”, “we”, or “together”. {{question_boundary}}",
+      "template_slots": [
+        "question_boundary"
+      ],
+      "fixed_segments": [
+        "Invite shared attention to the named public object declaratively using “you”, “we”, or “together”. ",
+        ""
+      ]
+    },
+    {
+      "id": "tactic.question_owned.general",
+      "source": "services/tutorStubFirstDraftContract.js#questionOwnedTacticExecution.general",
+      "prefix": "When another tactic delegates question ownership, this compact tactic template is rendered and the gate fills its named slots from the public contract:",
+      "quote": "{{tactic_execution}} {{question_boundary}}",
+      "template_slots": [
+        "tactic_execution",
+        "question_boundary"
+      ],
+      "fixed_segments": [
+        "",
+        " ",
+        ""
+      ]
+    },
+    {
+      "id": "stance.compact_cue.brisk",
+      "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.cues.brisk",
+      "prefix": "When the gate carries the brisk stance, its compact stance cue is:",
+      "quote": "Clip sentences; omit preface, recap, catalogue.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Clip sentences; omit preface, recap, catalogue."
+      ]
+    },
+    {
+      "id": "stance.compact_cue.charismatic",
+      "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.cues.charismatic",
+      "prefix": "When the gate carries the charismatic stance, its compact stance cue is:",
+      "quote": "Stage collision; make a decisive named challenge.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Stage collision; make a decisive named challenge."
+      ]
+    },
+    {
+      "id": "stance.compact_cue.face_threat",
+      "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.cues.face_threat",
+      "prefix": "When the gate carries the face threat stance, its compact stance cue is:",
+      "quote": "Expose the move locally; leave minimal repair.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Expose the move locally; leave minimal repair."
+      ]
+    },
+    {
+      "id": "stance.compact_cue.ironic",
+      "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.cues.ironic",
+      "prefix": "When the gate carries the ironic stance, its compact stance cue is:",
+      "quote": "Feign concession; let material expose the mismatch.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Feign concession; let material expose the mismatch."
+      ]
+    },
+    {
+      "id": "stance.compact_cue.plain",
+      "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.cues.plain",
+      "prefix": "When the gate carries the plain stance, its compact stance cue is:",
+      "quote": "Use literal words; no flourish.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Use literal words; no flourish."
+      ]
+    },
+    {
+      "id": "stance.compact_cue.precise",
+      "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.cues.precise",
+      "prefix": "When the gate carries the precise stance, its compact stance cue is:",
+      "quote": "Say “X, not Y”; name correction.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Say “X, not Y”; name correction."
+      ]
+    },
+    {
+      "id": "stance.compact_cue.sarcastic",
+      "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.cues.sarcastic",
+      "prefix": "When the gate carries the sarcastic stance, its compact stance cue is:",
+      "quote": "Mock-praise the claim; reverse it; offer repair.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Mock-praise the claim; reverse it; offer repair."
+      ]
+    },
+    {
+      "id": "stance.compact_cue.warm",
+      "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.cues.warm",
+      "prefix": "When the gate carries the warm stance, its compact stance cue is:",
+      "quote": "Invite with “we”; preserve genuine choice.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Invite with “we”; preserve genuine choice."
+      ]
+    },
+    {
+      "id": "stance.compact_cue.witnessing",
+      "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.cues.witnessing",
+      "prefix": "When the gate carries the witnessing stance, its compact stance cue is:",
+      "quote": "Reflect concern; lower pressure; leave judgment.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Reflect concern; lower pressure; leave judgment."
+      ]
+    },
+    {
+      "id": "stance.fallback",
+      "source": "services/tutorStubFirstDraftContract.js#compactStanceInstruction.fallback",
+      "prefix": "When the public contract carries an unlisted stance, this compact stance fallback is rendered and the gate fills its named slot from the public contract:",
+      "quote": "Make it visibly {{engagement_stance}}.",
+      "template_slots": [
+        "engagement_stance"
+      ],
+      "fixed_segments": [
+        "Make it visibly ",
+        "."
+      ]
+    },
+    {
+      "id": "handoff.bridge",
+      "source": "services/tutorStubFirstDraftContract.js#compactProgressionHandoffInstruction.bridge",
+      "prefix": "When the public contract requires a sibling-relation bridge, the compact handoff addition is:",
+      "quote": "Connect SOURCE to the learner’s requested relation.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Connect SOURCE to the learner’s requested relation."
+      ]
+    },
+    {
+      "id": "handoff.public_limit",
+      "source": "services/tutorStubFirstDraftContract.js#compactProgressionHandoffInstruction.public_limit",
+      "prefix": "When questions are forbidden without another special branch, the compact handoff string is:",
+      "quote": "State the current public limit through the selected action; ask no question.",
+      "template_slots": [],
+      "fixed_segments": [
+        "State the current public limit through the selected action; ask no question."
+      ]
+    },
+    {
+      "id": "handoff.optional_question",
+      "source": "services/tutorStubFirstDraftContract.js#compactProgressionHandoffInstruction.optional_question",
+      "prefix": "When a handoff question is optional, the compact handoff string is:",
+      "quote": "Carry the selected action to TURN FOCUS. HANDOFF may ask one final question there; otherwise end declaratively.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Carry the selected action to TURN FOCUS. HANDOFF may ask one final question there; otherwise end declaratively."
+      ]
+    },
+    {
+      "id": "handoff.source_question",
+      "source": "services/tutorStubFirstDraftContract.js#compactProgressionHandoffInstruction.source_question",
+      "prefix": "When active source evidence and stage-next-step require a handoff question, the compact handoff string is:",
+      "quote": "Ask one HANDOFF question about what SOURCE changes, supports, or rules out.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Ask one HANDOFF question about what SOURCE changes, supports, or rules out."
+      ]
+    },
+    {
+      "id": "handoff.action_question",
+      "source": "services/tutorStubFirstDraftContract.js#compactProgressionHandoffInstruction.action_question",
+      "prefix": "When the default handoff owns the final question, this compact handoff template is rendered and the gate fills its named slot from the public contract:",
+      "quote": "{{compact_action_instruction}} HANDOFF owns the one final question.",
+      "template_slots": [
+        "compact_action_instruction"
+      ],
+      "fixed_segments": [
+        "",
+        " HANDOFF owns the one final question."
+      ]
+    },
+    {
+      "id": "action.override.closure",
+      "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.closure",
+      "prefix": "When the public contract requires closure, the compact action override is:",
+      "quote": "State the licensed public finding and close the inquiry; ask no question.",
+      "template_slots": [],
+      "fixed_segments": [
+        "State the licensed public finding and close the inquiry; ask no question."
+      ]
+    },
+    {
+      "id": "action.override.active_source",
+      "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.active_source",
+      "prefix": "When active source evidence carries stage-next-step, the compact action override is:",
+      "quote": "Return SOURCE as one concrete question about what it changes, supports, or rules out.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Return SOURCE as one concrete question about what it changes, supports, or rules out."
+      ]
+    },
+    {
+      "id": "action.compact_cue.answer_accountably",
+      "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.answer_accountably",
+      "prefix": "When the gate carries the answer accountably action family, its compact action cue is:",
+      "quote": "Name one public way the answer could be checked or corrected.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Name one public way the answer could be checked or corrected."
+      ]
+    },
+    {
+      "id": "action.compact_cue.baseline_plain_response",
+      "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.baseline_plain_response",
+      "prefix": "When the gate carries the baseline plain response action family, its compact action cue is:",
+      "quote": "End with one compact next move grounded in the public record.",
+      "template_slots": [],
+      "fixed_segments": [
+        "End with one compact next move grounded in the public record."
+      ]
+    },
+    {
+      "id": "action.compact_cue.challenge_resistance",
+      "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.challenge_resistance",
+      "prefix": "When the gate carries the challenge resistance action family, its compact action cue is:",
+      "quote": "Offer one small public move that restores choice.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Offer one small public move that restores choice."
+      ]
+    },
+    {
+      "id": "action.compact_cue.clarify_distinction",
+      "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.clarify_distinction",
+      "prefix": "When the gate carries the clarify distinction action family, its compact action cue is:",
+      "quote": "Ask one concrete test of the distinction just stated.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Ask one concrete test of the distinction just stated."
+      ]
+    },
+    {
+      "id": "action.compact_cue.clarify_term",
+      "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.clarify_term",
+      "prefix": "When the gate carries the clarify term action family, its compact action cue is:",
+      "quote": "Return one concrete use of the clarified term; do not turn it into a proof test.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Return one concrete use of the clarified term; do not turn it into a proof test."
+      ]
+    },
+    {
+      "id": "action.compact_cue.close_inquiry",
+      "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.close_inquiry",
+      "prefix": "When the gate carries the close inquiry action family, its compact action cue is:",
+      "quote": "State the licensed public finding and close the inquiry; ask no question.",
+      "template_slots": [],
+      "fixed_segments": [
+        "State the licensed public finding and close the inquiry; ask no question."
+      ]
+    },
+    {
+      "id": "action.compact_cue.compress_sayback",
+      "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.compress_sayback",
+      "prefix": "When the gate carries the compress sayback action family, its compact action cue is:",
+      "quote": "End with the short learner-sayable formulation; do not reopen a settled step.",
+      "template_slots": [],
+      "fixed_segments": [
+        "End with the short learner-sayable formulation; do not reopen a settled step."
+      ]
+    },
+    {
+      "id": "action.compact_cue.ground_in_material",
+      "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.ground_in_material",
+      "prefix": "When the gate carries the ground in material action family, its compact action cue is:",
+      "quote": "Return the named public object for one concrete judgment.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Return the named public object for one concrete judgment."
+      ]
+    },
+    {
+      "id": "action.compact_cue.reanchor_lived_stake",
+      "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.reanchor_lived_stake",
+      "prefix": "When the gate carries the reanchor lived stake action family, its compact action cue is:",
+      "quote": "Return from the scene consequence to the live public evidence.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Return from the scene consequence to the live public evidence."
+      ]
+    },
+    {
+      "id": "action.compact_cue.reanchor_public_evidence",
+      "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.reanchor_public_evidence",
+      "prefix": "When the gate carries the reanchor public evidence action family, its compact action cue is:",
+      "quote": "End on the clue’s current limit, without testing memory.",
+      "template_slots": [],
+      "fixed_segments": [
+        "End on the clue’s current limit, without testing memory."
+      ]
+    },
+    {
+      "id": "action.compact_cue.receive_vulnerability",
+      "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.receive_vulnerability",
+      "prefix": "When the gate carries the receive vulnerability action family, its compact action cue is:",
+      "quote": "Reduce pressure and leave the next judgment with the learner.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Reduce pressure and leave the next judgment with the learner."
+      ]
+    },
+    {
+      "id": "action.compact_cue.stage_next_step",
+      "source": "services/tutorStubFirstDraftContract.js#compactActionInstruction.cues.stage_next_step",
+      "prefix": "When the gate carries the stage next step action family, its compact action cue is:",
+      "quote": "Name the next available public check; never ask for unseen evidence.",
+      "template_slots": [],
+      "fixed_segments": [
+        "Name the next available public check; never ask for unseen evidence."
+      ]
+    }
+  ],
+  "menu_text": "When no narrower uptake branch applies, the compact uptake string is:\n<verbatim>\nAnswer, credit, qualify, correct, or receive the learner’s concrete move; never use generic praise.\n</verbatim>\n\nWhen no narrower opening branch applies, the rendered opening instruction is:\n<verbatim>\nRespond to the learner’s actual contribution in the first sentence by answering, crediting, qualifying, correcting, or receiving it. Paraphrase its concrete claim or concern rather than echoing the learner’s substantive wording; do not begin with generic praise.\n</verbatim>\n\nWhen the downstream selector carries the adversarial teacher part, its compact part cue is:\n<verbatim>\nintroduce a subject-native counterexample, altered example, or rival solution at one named lesson object, then require one bounded revision\n</verbatim>\n\nWhen the downstream selector carries the advocate part, its compact part cue is:\n<verbatim>\nbegin “My case is”, state the strongest claim the released public record carries, name what it does not yet establish, and leave the test for HANDOFF\n</verbatim>\n\nWhen the downstream selector carries the authored source part, its compact part cue is:\n<verbatim>\nenter the public source directly and voice only the supplied evidence\n</verbatim>\n\nWhen the downstream selector carries the exacting schoolmaster part, its compact part cue is:\n<verbatim>\nrequire one discipline-specific performance, state its criterion, and permit one precise retry\n</verbatim>\n\nWhen the downstream selector carries the examiner part, its compact part cue is:\n<verbatim>\ninspect named exhibit; claim no cross-exhibit match absent a public RECORD\n</verbatim>\n\nWhen the downstream selector carries the foreperson part, its compact part cue is:\n<verbatim>\ngather the public supports, state the licensed finding, and close the record\n</verbatim>\n\nWhen the downstream selector carries the record keeper part, its compact part cue is:\n<verbatim>\nopen, read, mark, enter, or close a public record, separating its entry from what remains unproved\n</verbatim>\n\nWhen the downstream selector carries the satirist part, its compact part cue is:\n<verbatim>\ncatch a polished claim or rote formula contradicting one named public object, expose the mismatch with a wry reversal, and leave a repair path\n</verbatim>\n\nWhen the downstream selector carries the scene partner part, its compact part cue is:\n<verbatim>\nmake room beside one named public object and return its reading to the learner\n</verbatim>\n\nWhen the downstream selector carries the skeptic part, its compact part cue is:\n<verbatim>\nchallenge one unsafe leap and show one fair public route through it\n</verbatim>\n\nWhen the selected part is scene partner, the live inline compact cue is:\n<verbatim>\nplace both speakers at one named public object using “you”, “we”, or “together”; a solitary “I” beside the object does not count; do not ask a question yet\n</verbatim>\n\nWhen no named compact part cue is available, the compact part fallback is:\n<verbatim>\nperform one concrete public action or judgment\n</verbatim>\n\nFor every selected part, this compact wrapper is rendered and the gate fills its named slots from the public contract:\n<verbatim>\nAs {{actorial_part_label}}, without naming the role, {{compact_part_cue}}.\n</verbatim>\n\nWhen the compact tactic builder carries the adversarial pressure tactic, its execution cue is:\n<verbatim>\nPut direct pressure on the claim rather than the learner and name the public test that could answer it.\n</verbatim>\n\nWhen the compact tactic builder carries the dramatic counterpressure tactic, its execution cue is:\n<verbatim>\nMake the already-public shortcut or ready judgment identifiable, put contrary public evidence against it through the selected part, and hand the resulting concrete test back to the learner. Perform the collision; do not announce it or rely on a stock verb template.\n</verbatim>\n\nWhen the compact tactic builder carries the dry counterexample tactic, its execution cue is:\n<verbatim>\nUse the named public object as a dry counterexample, then leave one concrete repair path.\n</verbatim>\n\nWhen the compact tactic builder carries the evidentiary boundary tactic, its execution cue is:\n<verbatim>\nName the public evidence, what it supports, and the named conclusion it does not establish. Keep both conclusions explicit; use no pronoun substitute.\n</verbatim>\n\nWhen the compact tactic builder carries the exposed mismatch tactic, its execution cue is:\n<verbatim>\nLet the named public object expose the mismatch through the action itself rather than explaining the irony.\n</verbatim>\n\nWhen the compact tactic builder carries the measured testimony tactic, its execution cue is:\n<verbatim>\nLet the public words stand in the character’s voice and explicitly refuse to force a stronger judgment.\n</verbatim>\n\nWhen the compact tactic builder carries the rapid handoff tactic, its execution cue is:\n<verbatim>\nMove straight from the named public object or line to the learner, ending with the shortest useful concrete question.\n</verbatim>\n\nWhen the compact tactic builder carries the shared scene invitation tactic, its execution cue is:\n<verbatim>\nMake room beside a named public object for the learner and invite their reading in the same sentence or the next.\n</verbatim>\n\nWhen the compact tactic builder carries the unadorned report tactic, its execution cue is:\n<verbatim>\nUse one direct first-person action or spoken line in ordinary words; do not add a theatrical preface.\n</verbatim>\n\nWhen support level is three, the compact tactic support string is:\n<verbatim>\nMake the public connection explicit.\n</verbatim>\n\nWhen support level is two, the compact tactic support string is:\n<verbatim>\nGive one concrete hint, leaving the judgment open.\n</verbatim>\n\nWhen support level is one, the compact tactic support string is:\n<verbatim>\nGive only a light directional cue.\n</verbatim>\n\nWhen the requested pressure tactic is inapplicable, the compact tactic transition is:\n<verbatim>\nUse the delivered boundary tactic, not the requested pressure tactic.\n</verbatim>\n\nWhen direction-only support recasts rapid handoff, the compact tactic execution string is:\n<verbatim>\nMove straight from one already-public object or line to the present evidentiary limit. State the direction of the missing support yourself and end declaratively; do not ask the learner to name unseen evidence.\n</verbatim>\n\nWhen the handoff owns an allowed question, the compact tactic boundary is:\n<verbatim>\nAsk no question here; HANDOFF owns it.\n</verbatim>\n\nWhen the public contract forbids a question, the compact tactic boundary is:\n<verbatim>\nAsk no question here.\n</verbatim>\n\nWhen rapid handoff delegates question ownership, this compact tactic template is rendered and the gate fills its named slot from the public contract:\n<verbatim>\nMove straight from the named public object or line to one short declarative observation. {{question_boundary}}\n</verbatim>\n\nWhen shared-scene invitation delegates question ownership, this compact tactic template is rendered and the gate fills its named slot from the public contract:\n<verbatim>\nInvite shared attention to the named public object declaratively using “you”, “we”, or “together”. {{question_boundary}}\n</verbatim>\n\nWhen another tactic delegates question ownership, this compact tactic template is rendered and the gate fills its named slots from the public contract:\n<verbatim>\n{{tactic_execution}} {{question_boundary}}\n</verbatim>\n\nWhen the gate carries the brisk stance, its compact stance cue is:\n<verbatim>\nClip sentences; omit preface, recap, catalogue.\n</verbatim>\n\nWhen the gate carries the charismatic stance, its compact stance cue is:\n<verbatim>\nStage collision; make a decisive named challenge.\n</verbatim>\n\nWhen the gate carries the face threat stance, its compact stance cue is:\n<verbatim>\nExpose the move locally; leave minimal repair.\n</verbatim>\n\nWhen the gate carries the ironic stance, its compact stance cue is:\n<verbatim>\nFeign concession; let material expose the mismatch.\n</verbatim>\n\nWhen the gate carries the plain stance, its compact stance cue is:\n<verbatim>\nUse literal words; no flourish.\n</verbatim>\n\nWhen the gate carries the precise stance, its compact stance cue is:\n<verbatim>\nSay “X, not Y”; name correction.\n</verbatim>\n\nWhen the gate carries the sarcastic stance, its compact stance cue is:\n<verbatim>\nMock-praise the claim; reverse it; offer repair.\n</verbatim>\n\nWhen the gate carries the warm stance, its compact stance cue is:\n<verbatim>\nInvite with “we”; preserve genuine choice.\n</verbatim>\n\nWhen the gate carries the witnessing stance, its compact stance cue is:\n<verbatim>\nReflect concern; lower pressure; leave judgment.\n</verbatim>\n\nWhen the public contract carries an unlisted stance, this compact stance fallback is rendered and the gate fills its named slot from the public contract:\n<verbatim>\nMake it visibly {{engagement_stance}}.\n</verbatim>\n\nWhen the public contract requires a sibling-relation bridge, the compact handoff addition is:\n<verbatim>\nConnect SOURCE to the learner’s requested relation.\n</verbatim>\n\nWhen questions are forbidden without another special branch, the compact handoff string is:\n<verbatim>\nState the current public limit through the selected action; ask no question.\n</verbatim>\n\nWhen a handoff question is optional, the compact handoff string is:\n<verbatim>\nCarry the selected action to TURN FOCUS. HANDOFF may ask one final question there; otherwise end declaratively.\n</verbatim>\n\nWhen active source evidence and stage-next-step require a handoff question, the compact handoff string is:\n<verbatim>\nAsk one HANDOFF question about what SOURCE changes, supports, or rules out.\n</verbatim>\n\nWhen the default handoff owns the final question, this compact handoff template is rendered and the gate fills its named slot from the public contract:\n<verbatim>\n{{compact_action_instruction}} HANDOFF owns the one final question.\n</verbatim>\n\nWhen the public contract requires closure, the compact action override is:\n<verbatim>\nState the licensed public finding and close the inquiry; ask no question.\n</verbatim>\n\nWhen active source evidence carries stage-next-step, the compact action override is:\n<verbatim>\nReturn SOURCE as one concrete question about what it changes, supports, or rules out.\n</verbatim>\n\nWhen the gate carries the answer accountably action family, its compact action cue is:\n<verbatim>\nName one public way the answer could be checked or corrected.\n</verbatim>\n\nWhen the gate carries the baseline plain response action family, its compact action cue is:\n<verbatim>\nEnd with one compact next move grounded in the public record.\n</verbatim>\n\nWhen the gate carries the challenge resistance action family, its compact action cue is:\n<verbatim>\nOffer one small public move that restores choice.\n</verbatim>\n\nWhen the gate carries the clarify distinction action family, its compact action cue is:\n<verbatim>\nAsk one concrete test of the distinction just stated.\n</verbatim>\n\nWhen the gate carries the clarify term action family, its compact action cue is:\n<verbatim>\nReturn one concrete use of the clarified term; do not turn it into a proof test.\n</verbatim>\n\nWhen the gate carries the close inquiry action family, its compact action cue is:\n<verbatim>\nState the licensed public finding and close the inquiry; ask no question.\n</verbatim>\n\nWhen the gate carries the compress sayback action family, its compact action cue is:\n<verbatim>\nEnd with the short learner-sayable formulation; do not reopen a settled step.\n</verbatim>\n\nWhen the gate carries the ground in material action family, its compact action cue is:\n<verbatim>\nReturn the named public object for one concrete judgment.\n</verbatim>\n\nWhen the gate carries the reanchor lived stake action family, its compact action cue is:\n<verbatim>\nReturn from the scene consequence to the live public evidence.\n</verbatim>\n\nWhen the gate carries the reanchor public evidence action family, its compact action cue is:\n<verbatim>\nEnd on the clue’s current limit, without testing memory.\n</verbatim>\n\nWhen the gate carries the receive vulnerability action family, its compact action cue is:\n<verbatim>\nReduce pressure and leave the next judgment with the learner.\n</verbatim>\n\nWhen the gate carries the stage next step action family, its compact action cue is:\n<verbatim>\nName the next available public check; never ask for unseen evidence.\n</verbatim>"
+}

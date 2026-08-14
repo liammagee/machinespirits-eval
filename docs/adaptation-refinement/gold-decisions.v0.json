@@ -1,0 +1,19 @@
+{
+  "schema": "machinespirits.adaptation-refinement.gold-decisions.v0",
+  "annotator": "claude-fable-5",
+  "date": "2026-08-09",
+  "source": "gold-annotations-first-corpus.md",
+  "decisions": [
+    { "trace": "2026-07-23T11-36-45-559Z", "session": 1, "turn": 2, "revision_warranted": "register_only", "taken": "realization_only", "note": "complaint names register not strategy" },
+    { "trace": "2026-07-23T11-36-45-559Z", "session": 1, "turn": 3, "revision_warranted": "yes", "taken": "no", "note": "second identical register complaint" },
+    { "trace": "2026-07-23T11-36-45-559Z", "session": 1, "turn": 4, "revision_warranted": "yes", "taken": "in_family_repair", "note": "acknowledged repetition + released clue" },
+    { "trace": "2026-07-23T11-36-45-559Z", "session": 1, "turn": 5, "revision_warranted": "yes", "taken": "yes", "note": "family switch to clarify_term, two turns late" },
+    { "trace": "2026-07-23T11-36-45-559Z", "session": 2, "turn": 2, "revision_warranted": "no", "taken": "no", "note": "clean progress" },
+    { "trace": "2026-07-23T11-36-45-559Z", "session": 2, "turn": 3, "revision_warranted": "yes", "taken": "yes_wrong_repair", "note": "warrant arrives with learner turn; canned formula delivery" },
+    { "trace": "2026-07-24T23-19-21-031Z", "session": 1, "turn": 4, "revision_warranted": "no", "taken": "no", "note": "fault is delivery not strategy" },
+    { "trace": "2026-07-24T23-19-21-031Z", "session": 1, "turn": 5, "revision_warranted": "yes", "taken": "yes", "note": "learner stall; realization failed the revision" },
+    { "trace": "2026-07-24T23-19-21-031Z", "session": 1, "turn": 6, "revision_warranted": "no", "taken": "no", "note": "learner re-engaged" },
+    { "trace": "2026-07-24T23-19-21-031Z", "session": 1, "turn": 7, "revision_warranted": "no", "taken": "no", "note": "productive divergence — learner testing the claim" },
+    { "trace": "2026-07-24T23-19-21-031Z", "session": 1, "turn": 8, "revision_warranted": "no", "taken": "no", "note": "same plateau, session cut off" }
+  ]
+}

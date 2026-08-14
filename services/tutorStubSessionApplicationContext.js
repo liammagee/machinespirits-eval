@@ -1,3 +1,32 @@
+export const TUTOR_STUB_STANDING_PERMISSION_MENU_START = '[Standing permission menu — conditional branches]';
+export const TUTOR_STUB_STANDING_PERMISSION_MENU_END = '[End standing permission menu]';
+
+export function auditTutorStubBaseSystemPrompt({ auditTutorStubPrompt, systemPrompt, standingInstructions = null }) {
+  if (standingInstructions === null) {
+    return auditTutorStubPrompt({
+      surface: 'tutor_system',
+      systemPrompt,
+      instructionTexts: [systemPrompt],
+    });
+  }
+  const menuBlock = `${TUTOR_STUB_STANDING_PERMISSION_MENU_START}\n${standingInstructions}\n${TUTOR_STUB_STANDING_PERMISSION_MENU_END}`;
+  const menuIndex = systemPrompt.indexOf(menuBlock);
+  if (menuIndex < 0 || systemPrompt.indexOf(menuBlock, menuIndex + menuBlock.length) >= 0) {
+    throw new Error('Standing-permission prompt audit requires exactly one delimited menu block');
+  }
+  const outsideMenu = `${systemPrompt.slice(0, menuIndex)}${systemPrompt.slice(menuIndex + menuBlock.length)}`;
+  const menuBranches = standingInstructions.split(/\n\n(?=\S)/u);
+  return auditTutorStubPrompt({
+    surface: 'tutor_system_standing',
+    systemPrompt,
+    // Cross-boundary twins are lawful by construction. The menu's conditional
+    // branches are mutually exclusive, so audit each branch independently as
+    // well as the stripped surrounding prompt. A duplicate within any one
+    // branch (or outside the menu) still fails closed.
+    duplicateInstructionScopes: [[outsideMenu], ...menuBranches.map((branch) => [branch])],
+  });
+}
+
 /** Build the model, prompt, capability, and presentation context for one run. */
 export function createTutorStubSessionApplicationContext({
   CURRICULUM_PHASE_PROMPT_END,
@@ -136,6 +165,14 @@ export function createTutorStubSessionApplicationContext({
     systemPrompt = `${systemPrompt}\n\n[Prompt book — your durable role memory from prior performances. Honour its notes as craft guidance; it never overrides world rules or the release schedule.]\n${promptBookText}\n[End prompt book]`;
     console.log(`[greenroom] prompt book injected: ${promptBookText.length} chars from ${args['prompt-book-context']}`);
   }
+  let standingInstructions = null;
+  if (args['standing-instructions-file']) {
+    standingInstructions = fs.readFileSync(path.resolve(args['standing-instructions-file']), 'utf8');
+    systemPrompt = `${systemPrompt}\n\n${TUTOR_STUB_STANDING_PERMISSION_MENU_START}\n${standingInstructions}\n${TUTOR_STUB_STANDING_PERMISSION_MENU_END}`;
+    console.log(
+      `[standing-permission] menu injected: ${standingInstructions.length} chars from ${args['standing-instructions-file']}`,
+    );
+  }
   if (pointOfActionArm === 'standing_book') {
     const standingBook = tutorStubPointOfActionStandingBook();
     systemPrompt = `${systemPrompt}\n\n${standingBook}`;
@@ -151,17 +188,19 @@ export function createTutorStubSessionApplicationContext({
   const promptArchitecture = tutorStubPromptArchitecture({
     dagEnabled: Boolean(args.dag && worldBundle),
   });
-  promptArchitecture.audit.baseSystem = auditTutorStubPrompt({
-    surface: 'tutor_system',
+  promptArchitecture.audit.baseSystem = auditTutorStubBaseSystemPrompt({
+    auditTutorStubPrompt,
     systemPrompt,
-    instructionTexts: [systemPrompt],
+    standingInstructions,
   });
   promptArchitecture.audit.baseSpeakerPrivilege = auditTutorStubSpeakerPrivilege({
     world: args.dag ? worldBundle?.world || null : null,
     tutorTurn: 0,
     systemPrompt,
   });
-  if (!promptArchitecture.audit.baseSystem.ok) {
+  // Dry-run is the zero-call inspection path used by launch preflights. Let it
+  // return the failed audit as data; every live path still throws here.
+  if (!promptArchitecture.audit.baseSystem.ok && !args['dry-run']) {
     throw new Error(
       `Base prompt audit failed: ${promptArchitecture.audit.baseSystem.violations
         .map((violation) => violation.code)

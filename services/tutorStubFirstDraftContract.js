@@ -205,6 +205,9 @@ function endingCue({
   if (dialogueClosureFrame?.available) {
     return 'Continue only if the learner has not settled the public question. If this reply states or confirms the final verdict, explicitly close the inquiry instead of asking another proof question.';
   }
+  if (progression?.handoff_contract?.mode === 'answer_or_accountable_deferral') {
+    return progression.handoff_contract.instruction;
+  }
   if (progression?.handoff_contract?.question_allowed === false) {
     const boundedChoice = /bounded.*choice/u.test(String(questionSupport?.modality || ''));
     const clarification = questionSupport?.clarificationInvitationRequired === true;
@@ -304,7 +307,9 @@ function compactUptakeInstruction(contract) {
     : '';
   let instruction =
     'Answer, credit, qualify, correct, or receive the learner’s concrete move; never use generic praise.';
-  if (contract.opening?.writable_entry_requested) {
+  if (contract.progression?.public_obligation_contract?.complete === true) {
+    instruction = contract.progression.learner_uptake.instruction;
+  } else if (contract.opening?.writable_entry_requested) {
     const causalContract = contract.opening?.causal_relation_contract || null;
     const subject = oneLine(causalContract?.subject);
     const outcome = oneLine(causalContract?.outcome);
@@ -438,7 +443,9 @@ function compactProgressionHandoffInstruction(contract) {
     ? 'Connect SOURCE to the learner’s requested relation.'
     : '';
   let action;
-  if (handoff?.question_allowed === false) {
+  if (handoff?.mode === 'answer_or_accountable_deferral') {
+    action = handoff.instruction;
+  } else if (handoff?.question_allowed === false) {
     const needsDeclarativeSupport =
       /bounded.*choice/u.test(String(contract.ending?.support_modality || '')) ||
       contract.ending?.clarification_invitation_required === true;
@@ -648,10 +655,13 @@ export function buildTutorStubFirstDraftContract({
   questionSupport = null,
   dialogueClosureFrame = null,
   performanceObligationContract = null,
+  publicObligationDirective = null,
   sourceAccessibilityPolicy = 'direct_only',
   sourceAccessibilityOwner = 'performance_response',
 } = {}) {
   const configuration = responseConfiguration || {};
+  const effectivePublicObligationDirective =
+    publicObligationDirective || configuration.public_obligation_directive || null;
   const discoursePlane = responseCompositionFrame?.discourse_plane || configuration.discourse_plane || null;
   const stance = configuration.engagement_stance || 'precise';
   const actionFamily = configuration.action_family || 'clarify_distinction';
@@ -750,7 +760,11 @@ export function buildTutorStubFirstDraftContract({
     questionSupport,
     actionFamily,
     tactic,
+    publicObligationDirective: effectivePublicObligationDirective,
   });
+  if (progression.public_obligation_contract?.complete && releaseCues.length) {
+    compiledCompatibilityDecisions.push('public_obligation_precedes_due_source_handoff');
+  }
   const ownedTacticExecution = questionOwnedTacticExecution({
     tactic,
     tacticExecution,
@@ -767,11 +781,13 @@ export function buildTutorStubFirstDraftContract({
       instruction:
         discoursePlane?.plane === 'instructional_meta'
           ? 'Begin by directly acknowledging that the learner wants the explanation made easier to follow. Restate the latest tutor point in ordinary words. Do not quote the whole learner request, treat it as evidence, or advance the inquiry.'
-          : writableEntryBeforeDueEvidence
-            ? 'The learner asked what to write while new evidence is due in this reply. Begin exactly with “Write:” and supply one complete learner-sayable sentence about the pre-turn public status or evidentiary limit. It must complement the new evidence: do not state, paraphrase, preview, or summarize any PUBLIC EVIDENCE DUE NOW. Only then enact each due clue once in the development beat.'
-            : writableEntryRequested
-              ? 'The learner asked what to write. Begin exactly with “Write:” and supply one complete learner-sayable sentence licensed by the current public evidence. This direct entry is the learner uptake; only then perform the selected development beat. Do not substitute a prop action or another question for the requested sentence.'
-              : 'Respond to the learner’s actual contribution in the first sentence by answering, crediting, qualifying, correcting, or receiving it. Paraphrase its concrete claim or concern rather than echoing the learner’s substantive wording; do not begin with generic praise.',
+          : progression.public_obligation_contract?.complete
+            ? `${progression.public_obligation_contract.instruction} Put the answer or accountable deferral in the first host sentence before any PART, SOURCE, or TACTIC.`
+            : writableEntryBeforeDueEvidence
+              ? 'The learner asked what to write while new evidence is due in this reply. Begin exactly with “Write:” and supply one complete learner-sayable sentence about the pre-turn public status or evidentiary limit. It must complement the new evidence: do not state, paraphrase, preview, or summarize any PUBLIC EVIDENCE DUE NOW. Only then enact each due clue once in the development beat.'
+              : writableEntryRequested
+                ? 'The learner asked what to write. Begin exactly with “Write:” and supply one complete learner-sayable sentence licensed by the current public evidence. This direct entry is the learner uptake; only then perform the selected development beat. Do not substitute a prop action or another question for the requested sentence.'
+                : 'Respond to the learner’s actual contribution in the first sentence by answering, crediting, qualifying, correcting, or receiving it. Paraphrase its concrete claim or concern rather than echoing the learner’s substantive wording; do not begin with generic praise.',
       responsive_repair_required: questionSupport?.responsiveRepairRequired === true,
       writable_entry_requested: writableEntryRequested,
       complementary_to_due_evidence: writableEntryBeforeDueEvidence,

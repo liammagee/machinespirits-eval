@@ -1,3 +1,10 @@
+export function invalidateTutorStubWarrantGateAfterPublicTutorRewrite(state, targetKind) {
+  if (!state || targetKind !== 'tutor_response') return false;
+  const hadGate = Boolean(state.warrantGate);
+  state.warrantGate = null;
+  return hadGate;
+}
+
 export function createTutorStubCharacterControlController(dependencies) {
   const {
     C,
@@ -72,6 +79,10 @@ export function createTutorStubCharacterControlController(dependencies) {
       lastTurn.tutorOriginal = lastTurn.tutorOriginal || previousText;
       lastTurn.tutor = text;
       lastTurn.characterRestatements = [...(lastTurn.characterRestatements || []), jsonClone(record)];
+      // The pending gate outcome contains the old tutor surface. Rebuild from
+      // the rewritten committed turn before the next learner decision so live
+      // reconciliation and resume/replay observe the same public text.
+      invalidateTutorStubWarrantGateAfterPublicTutorRewrite(state, targetKind);
     } else if (state.openingRealization) {
       state.openingRealization = {
         ...state.openingRealization,

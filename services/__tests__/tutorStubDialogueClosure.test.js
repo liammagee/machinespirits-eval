@@ -5,6 +5,7 @@ import {
   advanceTutorStubDialogueClosure,
   auditTutorStubDialogueClosureResponse,
   buildTutorStubDialogueClosureFrame,
+  constrainTutorStubDialogueClosureFrameForAdaptiveWarrant,
   createTutorStubDialogueClosureLifecycle,
   deterministicTutorStubClosureResponse,
   tutorStubClosureAcknowledgement,
@@ -27,6 +28,54 @@ describe('tutor-stub dialogue closure', () => {
     assert.equal(frame.mandatory, true);
     assert.equal(frame.phase, 'grounded_closing_invitation');
     assert.equal(frame.basis, 'strict_learner_dag_grounded_and_asserted');
+  });
+
+  it('active typed completion blocks a DAG-only close while observe remains inert', () => {
+    const frame = buildTutorStubDialogueClosureFrame({
+      lifecycle: createTutorStubDialogueClosureLifecycle({ enabled: true }),
+      learnerDagModel: { assessment: { finalSecretEntailed: true, assertedSecret: true } },
+      tutorDagSnapshot: completeTutorDag(),
+    });
+    const openCompletion = {
+      status: 'open',
+      blockers: ['licensed_evidence_remains'],
+      checks: { remaining_licensed_evidence_count: 1 },
+    };
+    const observe = constrainTutorStubDialogueClosureFrameForAdaptiveWarrant(frame, {
+      mode: 'observe',
+      inquiry_completion: openCompletion,
+    });
+    const active = constrainTutorStubDialogueClosureFrameForAdaptiveWarrant(frame, {
+      mode: 'active',
+      inquiry_completion: openCompletion,
+    });
+    assert.deepEqual(observe, frame);
+    assert.equal(active.phase, 'open');
+    assert.equal(active.mandatory, false);
+    assert.equal(active.available, false);
+    assert.equal(active.constrainedBy, 'adaptive_warrant_inquiry_completion');
+  });
+
+  it('a new public obligation during final check-in reopens closure until it is reconciled', () => {
+    const lifecycle = createTutorStubDialogueClosureLifecycle({ enabled: true, allowCheckIn: true });
+    lifecycle.phase = 'awaiting_checkin';
+    lifecycle.basis = 'strict_learner_dag_grounded_and_asserted';
+    const frame = buildTutorStubDialogueClosureFrame({ lifecycle });
+    assert.equal(frame.phase, 'final_checkin_response');
+    assert.equal(frame.mandatory, true);
+
+    const constrained = constrainTutorStubDialogueClosureFrameForAdaptiveWarrant(frame, {
+      mode: 'active',
+      inquiry_completion: {
+        status: 'open',
+        blockers: ['open_public_obligation'],
+        checks: { open_public_obligation_count: 1 },
+      },
+    });
+    assert.equal(constrained.phase, 'open');
+    assert.equal(constrained.mandatory, false);
+    assert.equal(constrained.available, false);
+    assert.equal(constrained.constrainedBy, 'adaptive_warrant_inquiry_completion');
   });
 
   it('offers conversational closure when the authored DAG is public without changing strict status', () => {
@@ -249,6 +298,59 @@ describe('tutor-stub dialogue closure', () => {
 
     assert.equal(closed.ok, true);
     assert.equal(closed.closesDialogue, true);
+    assert.equal(open.ok, false);
+    assert.equal(open.verdict.explicitClosure, false);
+  });
+
+  it('recognizes the incident-record closure surfaces saved by the mechanism studies', () => {
+    const frame = buildTutorStubDialogueClosureFrame({
+      lifecycle: createTutorStubDialogueClosureLifecycle({ enabled: true }),
+      learnerDagModel: { assessment: { bottleneck: 'grounded_asserted_secret' } },
+    });
+
+    for (const text of [
+      'The incident log can now close: the public finding is complete.',
+      'The incident record is now closed: the evidence establishes the finding.',
+      'The record closes on the Wrenfold crew, not an individual worker.',
+      'The record closes here; no further clue is needed.',
+      'The record closes at crew level; there is no next clue to give.',
+      'The record closes with Wrenfold named, not an individual handler.',
+      'Dario cannot be named, so the incident is closed.',
+    ]) {
+      const audit = auditTutorStubDialogueClosureResponse({ frame, text });
+      assert.equal(audit.ok, true, text);
+      assert.equal(audit.closesDialogue, true, text);
+    }
+
+    for (const text of [
+      'The record closes in on Moth as the evidence accumulates.',
+      'The record closes in on Moth, but the inquiry remains open.',
+      'The incident is not closed while the taker remains unproved.',
+      'The incident remains open until the access record is public.',
+    ]) {
+      const audit = auditTutorStubDialogueClosureResponse({ frame, text });
+      assert.equal(audit.ok, false, text);
+      assert.equal(audit.verdict.explicitClosure, false, text);
+    }
+  });
+
+  it('recognizes a bounded pronominal close only when the record antecedent is in the same sentence', () => {
+    const frame = buildTutorStubDialogueClosureFrame({
+      lifecycle: createTutorStubDialogueClosureLifecycle({ enabled: true }),
+      learnerDagModel: { assessment: { bottleneck: 'grounded_asserted_secret' } },
+    });
+    const closed = auditTutorStubDialogueClosureResponse({
+      frame,
+      text: 'I gather these public supports into the final record and close it at the crew level.',
+    });
+    const open = auditTutorStubDialogueClosureResponse({
+      frame,
+      text: 'I keep the final record open until the crew-level finding is supported.',
+    });
+
+    assert.equal(closed.ok, true);
+    assert.equal(closed.closesDialogue, true);
+    assert.equal(closed.verdict.closureMatch, 'record and close it');
     assert.equal(open.ok, false);
     assert.equal(open.verdict.explicitClosure, false);
   });

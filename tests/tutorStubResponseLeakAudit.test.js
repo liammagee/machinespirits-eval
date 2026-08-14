@@ -139,6 +139,23 @@ test('Rowan Flat correspondence clears only after its structured dye-path fact i
   );
 });
 
+test('Foxtrot fallback keeps an exact released correspondence separate from its declarative handoff', () => {
+  const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-022-foxtrot-jukebox.yaml'));
+  const source = world.premiseById.get('p_clamp').surface;
+  const text =
+    'I look at the inquiry log; “I can confirm this: ' +
+    `${source}” That named public-record release is next.`;
+  const result = auditModel().auditTutorResponseLeak({
+    text,
+    world,
+    tutorTurn: 3,
+    learnerText: '',
+    publicPremiseIds: ['p_glare', 'p_clamp'],
+  });
+
+  assert.equal(result.ok, true, JSON.stringify(result.leaks));
+});
+
 test('the CLI binds rather than redeclares the response-leak audit', () => {
   const source = readTutorStubApplicationSource();
   assert.match(source, /createTutorStubResponseLeakAudit/u);

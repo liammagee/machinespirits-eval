@@ -20,6 +20,7 @@ test('every direct tutor-stub caller is classified and every empirical builder r
 
 test('the inventory distinguishes empirical builders from narrow product and delegated exemptions', () => {
   assert.ok(REQUIRED_ARCHIVE_BUILDERS.includes('scripts/run-tutor-stub-auto-eval.js'));
+  assert.match(DIRECT_CALLER_EXEMPTIONS['scripts/run-adaptive-warrant-baseline-study.js'], /provenance/u);
   assert.match(DIRECT_CALLER_EXEMPTIONS['services/tutorStubProcessSessionFactory.js'], /interactive/u);
   for (const relative of REQUIRED_ARCHIVE_BUILDERS) {
     assert.match(fs.readFileSync(path.join(ROOT, relative), 'utf8'), /\.\.\.requiredTutorStubArtifactArchiveArgs\(\)/u);

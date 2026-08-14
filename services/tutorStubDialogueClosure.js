@@ -1,13 +1,13 @@
 const CLOSURE_SCHEMA = 'machinespirits.tutor-stub.dialogue-closure.v1';
 
 const EXPLICIT_CLOSURE_PATTERN =
-  /\b(?:case (?:is|stands)?\s*(?:closed|settled|resolved)|close(?:d|s)? (?:the |this )?(?:case|book|inquiry|ledger|log|record)|(?:inquiry|ledger|log|record) (?:is )?(?:complete|closed|settled)|this (?:case|inquiry|ledger|log|record) is (?:complete|closed|settled)|we can (?:end|stop|close)|that (?:completes|settles|closes) (?:the|this) (?:case|inquiry|ledger|log|record)|the verdict stands)\b/iu;
+  /\b(?:case (?:is|stands)?\s*(?:closed|settled|resolved)|close(?:d|s)? (?:the |this )?(?:(?:incident|official|final) )?(?:case|book|inquiry|ledger|log|record)|(?:case|book|incident|inquiry|ledger|log|record)\b[^.!?]{0,80}\band close it\b|(?:case|book|incident|inquiry|ledger|log|record) closes(?!\s+in\b)(?:\s+(?:here|now)|\s+(?:at|on|with)\b[^.!?]{0,60})?|(?:incident|inquiry|ledger|log|record) (?:can now close|(?:is )?(?:now )?(?:complete|closed|settled))|this (?:case|incident|inquiry|ledger|log|record) is (?:now )?(?:complete|closed|settled)|we can (?:end|stop|close)|that (?:completes|settles|closes) (?:the|this) (?:case|incident|inquiry|ledger|log|record)|the verdict stands)\b/iu;
 const ANSWER_VERDICT_PATTERN = /\b(?:culprit|guilty|struck|coined|responsible|final conclusion)\b/iu;
 const AFFIRMATIVE_VERDICT_PATTERN = /\b(?:the )?verdict(?:\s+now)?\s+(?:is|stands|has been)|\bverdict\s*:/iu;
 const NEGATED_VERDICT_PATTERN =
   /\b(?:no verdict|verdict (?:is|stands|has been) (?:not|un)|cannot|can't|not yet|before (?:a|the) verdict)\b/iu;
 const NEGATED_CLOSURE_PATTERN =
-  /\b(?:cannot|can't|do not|don't|not ready to|too early to|must not)\s+(?:yet\s+)?(?:close|end|settle)\b|\b(?:case|inquiry|ledger|log|record)\s+(?:is|remains?|stands?)\s+(?:not|still)\s+(?:complete|closed|settled)\b|\b(?:case|inquiry|ledger|log|record)\s+(?:remains?|stays?|stands?)\s+open\b/iu;
+  /\b(?:cannot|can't|do not|don't|not ready to|too early to|must not)\s+(?:yet\s+)?(?:close|end|settle)\b|\b(?:case|incident|inquiry|ledger|log|record)\s+(?:is|remains?|stands?)\s+(?:not|still)\s+(?:complete|closed|settled)\b|\b(?:case|incident|inquiry|ledger|log|record)\s+(?:remains?|stays?|stands?)\s+open\b/iu;
 const CHECKIN_PATTERN =
   /\b(?:anything|any (?:step|link|part|question)|one (?:step|link|part|question)|want (?:me|us) to|need (?:me|us) to|revisit|unclear|before we close)\b/iu;
 const CLOSURE_ACKNOWLEDGEMENT_PATTERN =
@@ -105,6 +105,35 @@ export function buildTutorStubDialogueClosureFrame({
     };
   }
   return base;
+}
+
+/**
+ * In active warrant mode, make the typed completion object a hard constraint
+ * on the older DAG-only closure frame. Observe mode remains strictly inert.
+ */
+export function constrainTutorStubDialogueClosureFrameForAdaptiveWarrant(frame, decision = null) {
+  if (!frame || decision?.mode !== 'active' || !decision.inquiry_completion) return frame;
+  const completion = decision.inquiry_completion;
+  // A genuinely closed lifecycle is terminal. A final check-in is not: the
+  // learner may use it to create a new public obligation, which must be
+  // answered and reconciled before closure can become available again.
+  if (frame.phase === 'closed') return frame;
+  const constrained = {
+    ...frame,
+    adaptiveWarrantCompletion: structuredClone(completion),
+  };
+  if (completion.status === 'complete') return constrained;
+  if (frame.basis === 'strict_learner_dag_grounded_and_asserted' || frame.basis === 'authored_dag_fully_public') {
+    return {
+      ...constrained,
+      phase: 'open',
+      mandatory: false,
+      available: false,
+      basis: null,
+      constrainedBy: 'adaptive_warrant_inquiry_completion',
+    };
+  }
+  return constrained;
 }
 
 export function detectTutorStubVerdictDeclaration(text, { answerTerm = '' } = {}) {

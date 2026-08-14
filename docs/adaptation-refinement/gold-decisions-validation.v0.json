@@ -1,0 +1,20 @@
+{
+  "schema": "machinespirits.adaptation-refinement.gold-decisions.v0",
+  "annotators": ["claude-fable-5", "codex-gpt-5.6 (independent, neutral prompt: transcript + flat-record fact only)"],
+  "date": "2026-08-10",
+  "source": "fresh validation session (seed 2), both annotations written before the shadow ran on this trace",
+  "consensus_rule": "hard agreements scored; any pair involving uncertain, or a hard split, becomes uncertain",
+  "annotations": {
+    "claude": { "2": "no", "3": "no", "4": "uncertain", "5": "uncertain", "6": "yes", "7": "uncertain", "8": "uncertain" },
+    "codex": { "2": "uncertain", "3": "yes", "4": "yes", "5": "yes", "6": "yes", "7": "yes", "8": "yes" }
+  },
+  "decisions": [
+    { "trace": "2026-08-09T14-50-26-266Z", "session": 1, "turn": 2, "revision_warranted": "uncertain", "note": "claude no / codex uncertain" },
+    { "trace": "2026-08-09T14-50-26-266Z", "session": 1, "turn": 3, "revision_warranted": "uncertain", "note": "HARD SPLIT claude no / codex yes — transcript-surface progress vs record-level stasis" },
+    { "trace": "2026-08-09T14-50-26-266Z", "session": 1, "turn": 4, "revision_warranted": "uncertain", "note": "claude uncertain / codex yes" },
+    { "trace": "2026-08-09T14-50-26-266Z", "session": 1, "turn": 5, "revision_warranted": "uncertain", "note": "claude uncertain / codex yes" },
+    { "trace": "2026-08-09T14-50-26-266Z", "session": 1, "turn": 6, "revision_warranted": "yes", "note": "both yes — systematic deference, echo move, flat record" },
+    { "trace": "2026-08-09T14-50-26-266Z", "session": 1, "turn": 7, "revision_warranted": "uncertain", "note": "claude uncertain / codex yes" },
+    { "trace": "2026-08-09T14-50-26-266Z", "session": 1, "turn": 8, "revision_warranted": "uncertain", "note": "claude uncertain / codex yes" }
+  ]
+}

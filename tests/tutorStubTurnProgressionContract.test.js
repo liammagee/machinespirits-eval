@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   TUTOR_STUB_TURN_PROGRESSION_AUDIT_SCHEMA,
   TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA,
+  auditTutorStubLiveTurnProgressionV1,
   auditTutorStubTurnProgression,
   compileTutorStubTurnProgressionContract,
   deterministicTutorStubTurnProgressionHandoff,
@@ -13,6 +14,10 @@ import {
 } from '../services/tutorStubTurnProgressionContract.js';
 import { auditTutorStubQuestionSupportResponse } from '../services/tutorStubQuestionSupport.js';
 import { tutorStubSubstantiveLearnerEcho } from '../services/tutorStubResponseComposition.js';
+import {
+  composeTutorStubTerminalFallback,
+  ensureTutorStubPublicObligationFallbackOwnership,
+} from '../services/tutorStubTutorTerminalRuntime.js';
 import { buildTutorStubWorldScaffold } from '../services/tutorStubWorldScaffold.js';
 
 function composition({
@@ -29,6 +34,521 @@ function composition({
     },
   };
 }
+
+function publicObligationDirective(overrides = {}) {
+  return {
+    obligation_id: 'public-obligation-001',
+    target: {
+      kind: 'weight_or_ring_result',
+      signature: 'weight_or_ring_result:clip|shilling',
+      public_terms: ['balance', 'clipped', 'shilling', 'weighed'],
+      subject_terms: ['clip', 'shilling'],
+      required_components: [
+        {
+          id: 'weight_reading',
+          terms: ['balance', 'weight', 'weigh', 'weighing', 'reading'],
+        },
+      ],
+      source_surface: 'What did the balance show when the clipped shilling was weighed?',
+    },
+    acceptable_outcomes: ['bounded_public_answer', 'named_unavailability_with_concrete_next_step'],
+    ...overrides,
+  };
+}
+
+function obligationProgressionContract(overrides = {}) {
+  const due = 'The die register names a fresh cutting tool.';
+  return compileTutorStubTurnProgressionContract({
+    learnerText: 'What did the balance show when the clipped shilling was weighed?',
+    responseCompositionFrame: {
+      learner_move: { summary: 'The learner requests the clipped-shilling balance result.' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [due],
+      public_focus_mapping: { relationship: 'sibling' },
+    },
+    dramaticReleaseFrame: { active: true, entries: [{ surface: due }] },
+    actionFamily: 'answer_accountably',
+    tactic: 'rapid_handoff',
+    publicObligationDirective: publicObligationDirective(),
+    ...overrides,
+  });
+}
+
+test('an active public obligation owns the handoff before an unrelated due source', () => {
+  const contract = obligationProgressionContract();
+  const prompt = tutorStubTurnProgressionContractPrompt(contract);
+
+  assert.equal(contract.complete, true);
+  assert.equal(contract.public_obligation_contract.complete, true);
+  assert.equal(contract.handoff_contract.mode, 'answer_or_accountable_deferral');
+  assert.equal(contract.handoff_contract.question_allowed, false);
+  assert.equal(contract.handoff_contract.question_required, false);
+  assert.deepEqual(contract.handoff_contract.required_target_terms, ['balance', 'clipp', 'shill', 'weigh']);
+  assert.equal(contract.turn_focus_contract.sibling_relation_requires_explicit_bridge, false);
+  assert.match(prompt, /What did the balance show when the clipped shilling was weighed/iu);
+  assert.match(prompt, /Do not substitute another clue or question/iu);
+  assert.doesNotMatch(prompt, /public-obligation-001/u);
+});
+
+test('public obligation compilation preserves target identity and requires every named component', () => {
+  const directive = publicObligationDirective({
+    target: {
+      kind: 'weight_or_ring_result',
+      signature: 'weight_or_ring_result:clip|shilling',
+      public_terms: ['balance', 'reading', 'ring', 'sound', 'clipped', 'shilling'],
+      subject_terms: ['clip', 'shilling'],
+      required_components: [
+        {
+          id: 'weight_reading',
+          terms: ['balance', 'weight', 'weigh', 'weighing', 'reading'],
+        },
+        { id: 'ring_sound', terms: ['ring', 'sound'] },
+      ],
+      source_surface: 'What did the balance reading and ring sound show for the clipped shilling?',
+    },
+  });
+  const frozenDirective = structuredClone(directive);
+  const contract = obligationProgressionContract({
+    learnerText: directive.target.source_surface,
+    publicObligationDirective: directive,
+  });
+
+  assert.deepEqual(directive, frozenDirective);
+  assert.equal(contract.public_obligation_contract.complete, true);
+  assert.equal(contract.public_obligation_contract.target.signature, directive.target.signature);
+  assert.deepEqual(contract.public_obligation_contract.target.public_terms, directive.target.public_terms);
+  assert.deepEqual(contract.public_obligation_contract.target.subject_terms, directive.target.subject_terms);
+  assert.deepEqual(
+    contract.public_obligation_contract.target.required_components,
+    directive.target.required_components,
+  );
+  assert.notEqual(contract.public_obligation_contract.target.required_components, directive.target.required_components);
+
+  const partialText =
+    'The clipped shilling balance reading shows two grains less; I keep the sound of its ring in view.';
+  const partial = auditTutorStubLiveTurnProgressionV1({
+    contract,
+    text: partialText,
+    responseComposition: { segments: { uptake: partialText, development: '' } },
+  });
+  assert.equal(partial.ok, false);
+  assert.equal(partial.public_obligation.resolved, false);
+  assert.equal(partial.public_obligation.delivery.required_components_answered, false);
+  assert.deepEqual(partial.public_obligation.delivery.component_delivery, [
+    { id: 'weight_reading', answered: true },
+    { id: 'ring_sound', answered: false },
+  ]);
+  assert.ok(partial.issues.some((issue) => issue.type === 'public_obligation_unresolved'));
+
+  const completeText = 'The clipped shilling balance reading shows two grains less; the sound of its ring is dull.';
+  const complete = auditTutorStubLiveTurnProgressionV1({
+    contract,
+    text: completeText,
+    responseComposition: { segments: { uptake: completeText, development: '' } },
+  });
+  assert.equal(complete.ok, true, JSON.stringify(complete.issues));
+  assert.equal(complete.public_obligation.resolved, true);
+  assert.equal(complete.public_obligation.delivery.required_components_answered, true);
+  assert.deepEqual(complete.public_obligation.delivery.component_delivery, [
+    { id: 'weight_reading', answered: true },
+    { id: 'ring_sound', answered: true },
+  ]);
+});
+
+test('public obligation compilation keeps an empty generic target distinct from derived progression terms', () => {
+  const directive = publicObligationDirective({
+    target: {
+      kind: 'record_entry',
+      signature: 'record_entry:generic',
+      public_terms: [],
+      subject_terms: [],
+      required_components: [],
+      source_surface: 'Give me the next public record.',
+    },
+  });
+  const contract = obligationProgressionContract({
+    learnerText: directive.target.source_surface,
+    dramaticReleaseFrame: { active: false, entries: [] },
+    publicObligationDirective: directive,
+  });
+
+  assert.equal(contract.public_obligation_contract.complete, true);
+  assert.deepEqual(contract.public_obligation_contract.target.public_terms, []);
+  assert.deepEqual(contract.public_obligation_contract.target.progression_terms, ['public']);
+});
+
+test('public obligation compilation fails closed on malformed target-integrity fields', () => {
+  const directive = publicObligationDirective({
+    target: {
+      kind: 'weight_or_ring_result',
+      signature: 'comparison_result:wrong-kind',
+      public_terms: ['balance', 'clipped', 'shilling'],
+      subject_terms: 'clipped',
+      required_components: [{ id: 'weight_reading', terms: [] }],
+      source_surface: 'What did the balance show for the clipped shilling?',
+    },
+  });
+  const frozenDirective = structuredClone(directive);
+  const contract = obligationProgressionContract({ publicObligationDirective: directive });
+
+  assert.deepEqual(directive, frozenDirective);
+  assert.equal(contract.complete, false);
+  assert.equal(contract.public_obligation_contract.complete, false);
+  assert.ok(contract.public_obligation_contract.compile_issues.includes('invalid_target_signature'));
+  assert.ok(contract.public_obligation_contract.compile_issues.includes('invalid_target_subject_terms'));
+  assert.ok(contract.public_obligation_contract.compile_issues.includes('invalid_target_required_components'));
+});
+
+test('structured progression accepts an answer or accountable deferral and rejects a due-source pivot', () => {
+  const contract = obligationProgressionContract();
+  const boundedAnswer = auditTutorStubTurnProgression({
+    contract,
+    composition: composition({
+      uptake: 'The balance shows the clipped shilling weighs two grains less.',
+      response: 'The separate die register names a fresh cutting tool.',
+      handoff: 'That is the bounded balance result now on the public record.',
+    }),
+  });
+  assert.equal(boundedAnswer.ok, true, JSON.stringify(boundedAnswer.issues));
+  assert.equal(boundedAnswer.public_obligation.resolved, true);
+  assert.equal(boundedAnswer.public_obligation.outcome, 'bounded_public_answer');
+
+  const accountableDeferral = auditTutorStubTurnProgression({
+    contract,
+    composition: composition({
+      uptake:
+        'The clipped-shilling balance result is not public yet; once the weighing record is released, I can answer it.',
+      response: 'The separate die register names a fresh cutting tool.',
+      handoff: 'That named release is the concrete condition for answering the balance request.',
+    }),
+  });
+  assert.equal(accountableDeferral.ok, true, JSON.stringify(accountableDeferral.issues));
+  assert.equal(accountableDeferral.public_obligation.resolved, true);
+  assert.equal(accountableDeferral.public_obligation.outcome, 'named_unavailability_with_concrete_next_step');
+
+  const pivot = auditTutorStubTurnProgression({
+    contract,
+    composition: composition({
+      uptake: 'I open the die register beside us.',
+      response: 'The die register names a fresh cutting tool.',
+      handoff: 'What does the die mark show?',
+    }),
+  });
+  assert.equal(pivot.ok, false);
+  assert.ok(pivot.issues.some((issue) => issue.type === 'public_obligation_unresolved'));
+  assert.ok(pivot.issues.some((issue) => issue.type === 'public_obligation_replaced_by_question'));
+  assert.ok(pivot.issues.some((issue) => issue.type === 'question_forbidden_by_handoff_contract'));
+});
+
+test('live progression applies the same obligation audit while ignoring questions inside exact authored sources', () => {
+  const contract = obligationProgressionContract();
+  const authoredSource = '“Can I enter this die mark?” asks the public register.';
+  const uptake =
+    'The clipped-shilling balance result is not public yet; once the weighing record is released, I can answer it.';
+  const development = `${authoredSource} That source does not replace the balance request.`;
+  const accepted = auditTutorStubLiveTurnProgressionV1({
+    contract,
+    text: `${uptake} ${development} That named release is the concrete condition for answering the balance request.`,
+    responseComposition: { segments: { uptake, development } },
+    authoredSourceTexts: [authoredSource],
+  });
+  assert.equal(accepted.ok, true, JSON.stringify(accepted.issues));
+  assert.equal(accepted.observed.question_count, 0);
+  assert.equal(accepted.public_obligation.outcome, 'named_unavailability_with_concrete_next_step');
+
+  const pivotUptake = 'I open the die register beside us.';
+  const pivotDevelopment = 'The die register names a fresh cutting tool. What does the die mark show?';
+  const rejected = auditTutorStubLiveTurnProgressionV1({
+    contract,
+    text: `${pivotUptake} ${pivotDevelopment}`,
+    responseComposition: { segments: { uptake: pivotUptake, development: pivotDevelopment } },
+  });
+  assert.equal(rejected.ok, false);
+  assert.ok(rejected.issues.some((issue) => issue.type === 'public_obligation_unresolved'));
+  assert.ok(rejected.issues.some((issue) => issue.type === 'public_obligation_replaced_by_question'));
+});
+
+test('a required terminal question may quote a previously public multi-sentence clue', () => {
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText: 'How should that clue enter the chain?',
+    responseCompositionFrame: {
+      learner_move: { summary: 'The learner asks how the earlier clue enters the chain.' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    actionFamily: 'challenge_resistance',
+  });
+  const clue =
+    'Fresh marks score the rail, still warm. The registry matches their spacing to Moth’s retired chassis.';
+  const exactQuestion = `How does the public clue “${clue}” enter the chain you just stated?`;
+  contract.handoff_contract.question_allowed = true;
+  contract.handoff_contract.question_required = true;
+  contract.handoff_contract.question_owner = 'handoff';
+  contract.handoff_contract.terminal_if_question = true;
+  contract.handoff_contract.required_exact_question = exactQuestion;
+  contract.handoff_contract.required_target_surfaces = [];
+  contract.handoff_contract.required_target_terms = [];
+  contract.turn_focus_contract.sibling_relation_requires_explicit_bridge = false;
+  const uptake = 'I will interrupt the copying pattern and return the public judgment to you.';
+  const development = `I read the inquiry log. ${exactQuestion}`;
+  const audit = auditTutorStubLiveTurnProgressionV1({
+    contract,
+    text: `${uptake} ${development}`,
+    responseComposition: { uptake, development },
+  });
+
+  assert.equal(
+    audit.issues.some((issue) => issue.type === 'required_exact_handoff_question_missing'),
+    false,
+    JSON.stringify(audit.issues),
+  );
+  assert.equal(audit.observed.terminal_surface, exactQuestion);
+});
+
+test('structured and live progression reject an obligation answered only after an authored source', () => {
+  const contract = obligationProgressionContract();
+  const dueSource = 'The die register names a fresh cutting tool.';
+  const acknowledgement = 'You asked for the clipped shilling balance result.';
+  const lateAnswer = 'The balance shows the clipped shilling weighs two grains less.';
+
+  const structured = auditTutorStubTurnProgression({
+    contract,
+    composition: composition({
+      uptake: acknowledgement,
+      response: dueSource,
+      handoff: lateAnswer,
+    }),
+  });
+  assert.equal(structured.ok, false);
+  assert.ok(structured.issues.some((issue) => issue.type === 'public_obligation_resolved_after_source_or_handoff'));
+
+  const live = auditTutorStubLiveTurnProgressionV1({
+    contract,
+    text: `${acknowledgement} ${dueSource} ${lateAnswer}`,
+    responseComposition: {
+      segments: { uptake: acknowledgement, development: `${dueSource} ${lateAnswer}` },
+    },
+    authoredSourceTexts: [dueSource],
+  });
+  assert.equal(live.ok, false);
+  assert.ok(live.issues.some((issue) => issue.type === 'public_obligation_resolved_after_source_or_handoff'));
+
+  const developmentAnswer = auditTutorStubLiveTurnProgressionV1({
+    contract,
+    text: `${acknowledgement} I set the balance beside us. ${lateAnswer} ${dueSource}`,
+    responseComposition: {
+      segments: {
+        uptake: acknowledgement,
+        development: `I set the balance beside us. ${lateAnswer} ${dueSource}`,
+      },
+    },
+    authoredSourceTexts: [dueSource],
+  });
+  assert.equal(developmentAnswer.ok, false);
+  assert.ok(
+    developmentAnswer.issues.some((issue) => issue.type === 'public_obligation_resolved_after_source_or_handoff'),
+  );
+});
+
+test('deterministic recovery discharges an active obligation with a public-only deferral', () => {
+  const contract = obligationProgressionContract({
+    dramaticReleaseFrame: { active: false, entries: [] },
+    responseCompositionFrame: {
+      learner_move: { summary: 'The learner requests the clipped-shilling balance result.' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+  });
+  const uptake = deterministicTutorStubTurnProgressionUptake({
+    contract,
+    defaultUptake: 'I hear the point; the next public fact must answer it.',
+  });
+  const handoff = deterministicTutorStubTurnProgressionHandoff({ contract });
+  const audit = auditTutorStubTurnProgression({
+    contract,
+    composition: composition({ uptake, handoff }),
+  });
+
+  assert.doesNotMatch(handoff, /\?/u);
+  assert.match(handoff, /not public yet/iu);
+  assert.match(handoff, /once a matching public record is available/iu);
+  assert.equal(audit.public_obligation.resolved, true, JSON.stringify(audit.issues));
+  assert.equal(audit.public_obligation.outcome, 'named_unavailability_with_concrete_next_step');
+});
+
+test('deterministic recovery preserves distinct compound obligation targets', () => {
+  const directive = publicObligationDirective({
+    target: {
+      kind: 'record_entry',
+      signature: 'record_entry:fridge-access|presence|room|room-presence',
+      public_terms: [
+        'room-presence',
+        'room',
+        'presence',
+        'fridge-access',
+        'fridge',
+        'access',
+        'record',
+      ],
+      subject_terms: ['room-presence', 'room', 'presence', 'fridge-access', 'fridge', 'access'],
+      required_components: [],
+      source_surface: 'Please show the room-presence or fridge-access record.',
+    },
+  });
+  const contract = obligationProgressionContract({
+    learnerText: directive.target.source_surface,
+    dramaticReleaseFrame: { active: false, entries: [] },
+    responseCompositionFrame: {
+      learner_move: { summary: 'Requests the room-presence or fridge-access record.' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    publicObligationDirective: directive,
+  });
+  const handoff = deterministicTutorStubTurnProgressionHandoff({ contract });
+  const audit = auditTutorStubTurnProgression({
+    contract,
+    composition: composition({ uptake: handoff, handoff: '' }),
+  });
+
+  assert.match(handoff, /room-presence and fridge-access record entry/iu);
+  assert.doesNotMatch(handoff, /room-presence-room-presence|fridge-access-fridge-access/iu);
+  assert.equal(audit.ok, true, JSON.stringify(audit.issues));
+  assert.equal(audit.public_obligation.outcome, 'named_unavailability_with_concrete_next_step');
+});
+
+test('defect 9: a generic-target terminal deferral names the target and passes by construction', () => {
+  const directive = publicObligationDirective({
+    target: {
+      kind: 'public_exhibit_result',
+      signature: 'public_exhibit_result:generic_evidence_request',
+      public_terms: ['evidence'],
+      subject_terms: [],
+      required_components: [],
+      source_surface: 'generic evidence request',
+    },
+  });
+  const contract = obligationProgressionContract({
+    learnerText: 'What public evidence can we examine first?',
+    dramaticReleaseFrame: { active: false, entries: [] },
+    responseCompositionFrame: {
+      learner_move: { summary: 'The learner requests generic public evidence.' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    publicObligationDirective: directive,
+  });
+  const fallback = deterministicTutorStubTurnProgressionUptake({ contract });
+  const audit = auditTutorStubTurnProgression({
+    contract,
+    composition: composition({ uptake: fallback, entry: '', response: '', handoff: '' }),
+  });
+
+  assert.match(fallback, /generic-evidence-request/iu);
+  assert.doesNotMatch(fallback, /\?/u);
+  assert.equal(audit.ok, true, JSON.stringify(audit.issues));
+  assert.equal(audit.public_obligation.outcome, 'named_unavailability_with_concrete_next_step');
+});
+
+test('deterministic obligation handoff does not repeat a deferral already delivered in uptake', () => {
+  const contract = obligationProgressionContract({
+    dramaticReleaseFrame: { active: false, entries: [] },
+    responseCompositionFrame: {
+      learner_move: { summary: 'The learner requests the clipped-shilling balance result.' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+  });
+  const uptake = deterministicTutorStubTurnProgressionUptake({ contract });
+  const handoff = deterministicTutorStubTurnProgressionHandoff({ contract, priorPublicText: uptake });
+  const audit = auditTutorStubTurnProgression({
+    contract,
+    composition: composition({ uptake, handoff }),
+  });
+
+  assert.match(uptake, /not public yet/iu);
+  assert.doesNotMatch(handoff, /not public yet/iu);
+  assert.match(handoff, /named public-record release/iu);
+  assert.match(handoff, /is next/iu);
+  assert.equal(audit.ok, true, JSON.stringify(audit.issues));
+  assert.equal(audit.public_obligation.outcome, 'named_unavailability_with_concrete_next_step');
+});
+
+test('terminal recovery restores obligation-owned deferral before writable entry and authored source', () => {
+  const contract = obligationProgressionContract();
+  const obligationUptake = deterministicTutorStubTurnProgressionUptake({ contract });
+  const writableEntry =
+    'Write: “The public evidence does not yet establish who wiped the music core.”';
+  const authoredSource =
+    'I look at the inquiry log: Hessa was at the mess-hall rail all evening.';
+  const lateDeferral = `${writableEntry} ${authoredSource} ${obligationUptake}`;
+  const repaired = ensureTutorStubPublicObligationFallbackOwnership({
+    text: lateDeferral,
+    obligationUptake,
+    turnProgressionContract: contract,
+  });
+  const audit = auditTutorStubLiveTurnProgressionV1({
+    contract,
+    text: repaired,
+    responseComposition: {
+      segments: {
+        uptake: obligationUptake,
+        development: repaired.slice(obligationUptake.length).trim(),
+      },
+    },
+    authoredSourceTexts: [authoredSource],
+  });
+
+  assert.equal(repaired.startsWith(obligationUptake), true);
+  assert.equal(repaired.indexOf(obligationUptake, obligationUptake.length), -1);
+  assert.ok(repaired.indexOf(obligationUptake) < repaired.indexOf(authoredSource));
+  assert.equal(audit.public_obligation.resolved, true, JSON.stringify(audit.issues));
+  assert.equal(audit.public_obligation.outcome, 'named_unavailability_with_concrete_next_step');
+});
+
+test('defect 9: terminal ownership removes a composer duplicate even when the deferral is already first', () => {
+  const contract = obligationProgressionContract();
+  const obligationUptake = deterministicTutorStubTurnProgressionUptake({ contract });
+  const middle = 'I set the balance beside the clipped shilling.';
+  const repaired = ensureTutorStubPublicObligationFallbackOwnership({
+    text: `${obligationUptake} ${middle} ${obligationUptake}`,
+    obligationUptake,
+    turnProgressionContract: contract,
+  });
+
+  assert.equal(repaired, `${obligationUptake} ${middle}`);
+  assert.equal(repaired.indexOf(obligationUptake, obligationUptake.length), -1);
+});
+
+test('a configured terminal fallback keeps its family-specific uptake as the first owned sentence', () => {
+  const genericUptake = 'Yes—look for evidence that Moth contacted the music core.';
+  const configuredFallback =
+    'Instead of copying my line, choose what the public clue supports in your own words; yes—look for evidence that Moth contacted the music core. I put the inquiry log in front of us.';
+  let compositionCalls = 0;
+  const ensureFallbackComposition = (text, uptake) => {
+    compositionCalls += 1;
+    return `${uptake} ${text}`;
+  };
+
+  const owned = composeTutorStubTerminalFallback({
+    baseFallbackText: configuredFallback,
+    fallbackUptake: genericUptake,
+    fallbackOwnsComposition: true,
+    ensureFallbackComposition,
+  });
+  assert.equal(owned, configuredFallback);
+  assert.equal(compositionCalls, 0);
+  assert.match(owned, /^Instead of copying my line, choose/iu);
+
+  const unowned = composeTutorStubTerminalFallback({
+    baseFallbackText: 'I put the inquiry log in front of us.',
+    fallbackUptake: genericUptake,
+    fallbackOwnsComposition: false,
+    ensureFallbackComposition,
+  });
+  assert.equal(unowned, `${genericUptake} I put the inquiry log in front of us.`);
+  assert.equal(compositionCalls, 1);
+});
 
 test('a writable-entry turn compiles a declarative handoff on the learner requested relation', () => {
   const contract = compileTutorStubTurnProgressionContract({
@@ -725,6 +1245,13 @@ test('rapid handoff cannot take a question owned or forbidden by the handoff con
 test('typed writable requests include adding a fact to a public record without licensing ordinary echoes', () => {
   const learner = 'What should I put in the minutes about the chargers being dark during the stocktake?';
   assert.equal(tutorStubLearnerRequestsWritableEntry(learner), true);
+  for (const directedEntry of [
+    'Could you record that WF-11 shows outside crew access, while leaving who took the lunchbox unproved?',
+    'Do you want me to record that Moth had access, but that this does not show Moth wiped the core?',
+    'Should I record that Hessa had access, without treating access as proof?',
+  ]) {
+    assert.equal(tutorStubLearnerRequestsWritableEntry(directedEntry), true, directedEntry);
+  }
   assert.equal(tutorStubLearnerRequestsWritableEntry('The chargers were dark during the stocktake.'), false);
 
   const contract = compileTutorStubTurnProgressionContract({

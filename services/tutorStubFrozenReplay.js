@@ -11,7 +11,10 @@ import {
 } from './tutorStubJointPerformanceFirstDraft.js';
 import { TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA } from './tutorStubSourceAccessibilityContract.js';
 import { resolveTutorStubPublicCounterpressure } from './tutorStubCounterpressure.js';
-import { compileTutorStubPerformanceObligationContract } from './tutorStubPerformanceObligationContract.js';
+import {
+  buildTutorStubSpeakingResponseConfiguration,
+  compileTutorStubPerformanceObligationContract,
+} from './tutorStubPerformanceObligationContract.js';
 import { projectTutorStubSpeakerPublicPremise } from './tutorStubSpeakerPublicPremise.js';
 import { auditTutorStubGenerousInferenceResponse } from './tutorStubGenerousInference.js';
 import { splitTutorStubPublicWords } from './tutorStubPublicText.js';
@@ -537,18 +540,10 @@ export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world, sourceA
       due_evidence: dueEvidence,
     },
   });
-  const speakingResponseConfiguration =
-    performanceObligationContract.tactic_applicability?.applicable === false
-      ? {
-          ...clone(bundle.selectedResponseConfiguration || {}),
-          actorial_performance: clone(
-            performanceObligationContract.selection?.actorial_performance ||
-              bundle.selectedResponseConfiguration?.actorial_performance ||
-              {},
-          ),
-          speaking_transition: clone(performanceObligationContract.selection?.speaking_transition || null),
-        }
-      : clone(bundle.selectedResponseConfiguration);
+  const speakingResponseConfiguration = buildTutorStubSpeakingResponseConfiguration({
+    responseConfiguration: clone(bundle.selectedResponseConfiguration),
+    performanceObligationContract,
+  });
   const firstDraftContract = buildTutorStubFirstDraftContract({
     learnerText: bundle.learnerText,
     responseConfiguration: speakingResponseConfiguration,
@@ -705,6 +700,7 @@ export function auditTutorStubFrozenCandidate({
         text: auditedText,
         frame: bundle.frames?.dramaticRelease,
         sourceAccessibilityAudit: jointPerformanceComposition?.sourceAccessibilityAudit || null,
+        turnProgressionContract: bundle.firstDraftContract?.progression || null,
       })
     : { ok: true, active: false, issues: [] };
   const responseConfigurationAudit = guards.actorialRealization

@@ -1,3 +1,5 @@
+import { dispatchTutorStubCliBridgeRequest } from './tutorStubCliRequest.js';
+
 export function createTutorStubPromptTransport(dependencies) {
   const {
     C,
@@ -21,6 +23,7 @@ export function createTutorStubPromptTransport(dependencies) {
     streamAI,
     tutorStubCliPolicyRetryDecision,
     tutorStubPromptSurfaceForRole,
+    waitTutorStubCliPolicyRetryDelay,
     write,
   } = dependencies;
 
@@ -34,9 +37,15 @@ export function createTutorStubPromptTransport(dependencies) {
     trace = null,
     stream = null,
     cliEffort = null,
+    effort = null,
+    outputSchema = null,
+    timeoutMs = null,
+    maxStdoutBytes = null,
+    maxStderrBytes = null,
     turn = null,
     signal = null,
     historyTurns = null,
+    cliPolicyRetryCount = 0,
   }) {
     let prompt = promptInput;
     let systemPrompt = systemPromptInput;
@@ -185,13 +194,20 @@ export function createTutorStubPromptTransport(dependencies) {
                 if (phase) active.phase = `${active.basePhase || active.phase} · ${phase}`;
               }
             : null;
-        const result = await callAIWithCliBridge(
-          { provider: resolved.provider, model: resolved.model },
+        const result = await dispatchTutorStubCliBridgeRequest(callAIWithCliBridge, {
+          resolved,
           systemPrompt,
-          prompt,
+          userPrompt: prompt,
           role,
-          { messageHistory: publicMessageHistory, effort: cliEffort, onEvent, signal },
-        );
+          messageHistory: publicMessageHistory,
+          effort: effort || cliEffort,
+          onEvent,
+          signal,
+          outputSchema,
+          timeoutMs,
+          maxStdoutBytes,
+          maxStderrBytes,
+        });
         response = {
           text: result.text,
           provider: result.provider,
@@ -209,6 +225,13 @@ export function createTutorStubPromptTransport(dependencies) {
           streamedEvents: result.streamedEvents || 0,
           invalidStreamLines: result.invalidStreamLines || 0,
           outputSource: result.outputSource || null,
+          structuredOutput: result.structuredOutput === true,
+          streamEventTypeCounts: result.streamEventTypeCounts || {},
+          streamItemTypeCounts: result.streamItemTypeCounts || {},
+          structuredEventAudit: result.structuredEventAudit || null,
+          prohibitedToolEventCount: Number(result.prohibitedToolEventCount || 0),
+          modelAttestationBasis: result.modelAttestationBasis || null,
+          modelIndependentlyAttested: result.modelIndependentlyAttested === true,
         };
       } else if (shouldStream) {
         const temperature = effectiveTemperatureForModel(resolved, 0.1);
@@ -293,6 +316,7 @@ export function createTutorStubPromptTransport(dependencies) {
       response.promptAudit = promptAudit;
       return response;
     } catch (err) {
+      const retryDecision = tutorStubCliPolicyRetryDecision(err, { retryCount: cliPolicyRetryCount });
       appendTraceEvent(trace, {
         type: err?.name === 'AbortError' ? 'model_call_aborted' : 'model_call_error',
         role,
@@ -309,10 +333,40 @@ export function createTutorStubPromptTransport(dependencies) {
           promptAudit,
         },
         error: err.message,
-        ...(err?.code === 'CLI_PROVIDER_POLICY_VIOLATION'
-          ? { cliPolicyViolation: tutorStubCliPolicyRetryDecision(err, { alreadyUsed: true }) }
+        ...(err?.code === 'CLI_PROVIDER_POLICY_VIOLATION' || err?.code === 'CLI_PROVIDER_TURN_FAILED'
+          ? { cliPolicyViolation: retryDecision }
           : {}),
       });
+      if (retryDecision.retry) {
+        appendTraceEvent(trace, {
+          type: 'cli_policy_retry_decision',
+          role,
+          turn,
+          decision: retryDecision,
+          publicTranscriptChanged: false,
+        });
+        await waitTutorStubCliPolicyRetryDelay(retryDecision.delay_ms, { signal });
+        return callPromptModel({
+          prompt: promptInput,
+          messageHistory,
+          resolved,
+          systemPrompt: systemPromptInput,
+          role,
+          maxTokens,
+          trace,
+          stream,
+          cliEffort,
+          effort,
+          outputSchema,
+          timeoutMs,
+          maxStdoutBytes,
+          maxStderrBytes,
+          turn,
+          signal,
+          historyTurns,
+          cliPolicyRetryCount: cliPolicyRetryCount + 1,
+        });
+      }
       throw err;
     }
   }

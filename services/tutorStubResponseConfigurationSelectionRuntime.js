@@ -1,3 +1,43 @@
+import { ensureTutorStubWarrantGate } from './tutorStubWarrantGate.js';
+import { buildTutorStubDialogueClosureFrame } from './tutorStubDialogueClosure.js';
+import { projectAdaptiveWarrantEvidenceAvailability } from './adaptiveWarrantInquiryCompletion.js';
+import {
+  applyAdaptiveWarrantSourcePatch,
+  buildAdaptiveWarrantSelectorApplicationAudit,
+} from './adaptiveWarrantDeliveryContract.js';
+import {
+  buildTutorStubLearnerIntegrationTarget,
+  selectTutorStubActionFamily,
+} from './tutorStubResponseConfiguration.js';
+
+/**
+ * Return only a planner-authored decision-time bounded-scope contract. The
+ * current dramatic-world and world-scaffold schemas do not author a bounded
+ * proof-limit terminal, so this seam deliberately does not infer one from a
+ * turn cap, an empty due-evidence list, or ordinary conclusion readiness.
+ */
+export function projectTutorStubBoundedInquiryScopeAtDecision(state) {
+  const scope = state?.boundedInquiryScopeAtDecision || null;
+  if (!scope || scope.enabled !== true) return null;
+  const id = String(scope.id || '').trim();
+  const requiredBooleanFields = [
+    'release_scope_exhausted',
+    'terminal_outcome_asserted',
+    'evidence_integrated',
+    'proof_limit_preserved',
+  ];
+  if (!id || requiredBooleanFields.some((field) => typeof scope[field] !== 'boolean')) return null;
+  return structuredClone(scope);
+}
+
+/** Narrow, testable boundary between response selection and the live reducer. */
+export function assessTutorStubWarrantGateAtResponseSelection(warrantGate, state, decisionInput = {}) {
+  return warrantGate.assess({
+    ...decisionInput,
+    boundedInquiryScope: projectTutorStubBoundedInquiryScopeAtDecision(state),
+  });
+}
+
 export function createTutorStubResponseConfigurationSelectionRuntime(
   dependencies = {},
   selectionRuntime = {},
@@ -269,6 +309,60 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
         source: 'instructional_meta_repair',
       });
     }
+    // Adaptive warrant gate (docs/adaptation-refinement): decision-time
+    // divergence/warrant assessment. Observe mode only records; active mode
+    // overrides the action family + stance when a revision is warranted.
+    const warrantGate = ensureTutorStubWarrantGate(state);
+    let warrantGateDecision = null;
+    let warrantGatePreSource = null;
+    let warrantGatePostSource = null;
+    if (warrantGate) {
+      warrantGatePreSource = structuredClone(source);
+      const gateTurn = tutorLearnerDag?.model?.turn ?? state.turns.length + 1;
+      const releasePacingAtDecision = tutorStubReleasePacingSnapshot(state.releasePacing, state.world);
+      const preGateAction = selectTutorStubActionFamily({
+        classification,
+        tutorLearnerDag,
+        comprehension: tutorStubComprehensionFeatures(state.comprehension, { turn: gateTurn }),
+        releasePacing: releasePacingAtDecision,
+        discoursePlane,
+        world: state.world,
+      });
+      const dialogueClosureAtDecision = buildTutorStubDialogueClosureFrame({
+        lifecycle: state.dialogueClosure,
+        learnerDagModel: tutorLearnerDag?.model || null,
+        tutorDagSnapshot: state.turns.at(-1)?.tutorDag || null,
+      });
+      const learnerDagAtDecision = tutorLearnerDag?.model || tutorLearnerDag || null;
+      const integrationTargetAtDecision = buildTutorStubLearnerIntegrationTarget({
+        tutorLearnerDag: learnerDagAtDecision,
+        world: state.world,
+      });
+      const learnerDagAssessment = learnerDagAtDecision?.assessment || {};
+      warrantGateDecision = assessTutorStubWarrantGateAtResponseSelection(warrantGate, state, {
+        turn: gateTurn,
+        learnerText,
+        classification,
+        semanticEventExtraction: raw?.semanticEventExtraction || null,
+        dagModel: tutorLearnerDag?.model || null,
+        priorActionFamily: state.register?.current?.action_family || null,
+        proposedActionFamily: preGateAction.actionFamily || null,
+        dialogueClosureFrame: dialogueClosureAtDecision,
+        evidenceAvailability: projectAdaptiveWarrantEvidenceAvailability(releasePacingAtDecision, {
+          turn: gateTurn,
+        }),
+        pacingSignal: releasePacingAtDecision?.signal || null,
+        unsupportedAssertionCount: Number(learnerDagAssessment.unsupportedAssertionCount || 0),
+        activeDroppedFactCount: Number(
+          tutorLearnerDag?.model?.memoryReliability?.activeDroppedCount ||
+            tutorLearnerDag?.dagFactDropout?.activeCount ||
+            0,
+        ),
+        releasedEvidenceIntegrated: integrationTargetAtDecision?.active !== true,
+      });
+      source = applyAdaptiveWarrantSourcePatch(source, warrantGateDecision);
+      warrantGatePostSource = structuredClone(source);
+    }
     const selectedRaw = String(source.engagement_stance || source.selected_register || source.register || '').trim();
     const selectedResolution = resolveEngagementStance(selectedRaw, { fallback: 'precise' });
     const selected = selectedResolution?.register || selectedRaw;
@@ -305,6 +399,13 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
       }),
       world: state.world,
       proposedActionFamily: proposedActionFamily || null,
+      actionFamilyOverride: warrantGateDecision?.override
+        ? {
+            family: warrantGateDecision.override.action_family,
+            reason: warrantGateDecision.override.reason,
+          }
+        : null,
+      publicObligationDirective: source.public_obligation_directive || null,
       releasePacing: tutorStubReleasePacingSnapshot(state.releasePacing, state.world),
       dueEvidence: discoursePlane.freeze_clue_release
         ? []
@@ -485,6 +586,18 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
     });
     responseConfiguration.temperature_scope = temperatureSelection.scope;
     const actionFamily = responseConfiguration.action_family;
+    const legacySelectedRegister =
+      source.legacy_selected_register ||
+      selectedResolution?.legacy_selected_register ||
+      preferredLegacyRegister({ register: selected, requestType, actionFamily });
+    // The selector-application audit binds the configuration that is actually
+    // persisted. Compatibility metadata therefore has to be finalized before
+    // the digest is computed; adding it afterwards makes every otherwise
+    // correct live selection look tampered with to the study verifier.
+    responseConfiguration.compatibility = {
+      ...(responseConfiguration.compatibility || {}),
+      legacy_selected_register: legacySelectedRegister,
+    };
     const reviewerSignal = String(
       source.reviewer_signal ||
         source.register_signal ||
@@ -493,6 +606,14 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
         classification?.turn?.pedagogical_need ||
         requestType,
     );
+    const warrantGateApplication = buildAdaptiveWarrantSelectorApplicationAudit({
+      decision: warrantGateDecision,
+      preGateSource: warrantGatePreSource,
+      postGateSource: warrantGatePostSource,
+      actionFamilyOverrideInput: configurationInputs.actionFamilyOverride,
+      publicObligationDirectiveInput: configurationInputs.publicObligationDirective,
+      responseConfiguration,
+    });
     const selection = {
       schema: 'machinespirits.tutor-stub.response-configuration-selection.v5',
       register_ontology_version: getRegisterOntologyVersion(),
@@ -511,11 +632,10 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
       engagement_stance: selected,
       selected_register: selected,
       selected_mode: selected,
-      legacy_selected_register:
-        source.legacy_selected_register ||
-        selectedResolution?.legacy_selected_register ||
-        preferredLegacyRegister({ register: selected, requestType, actionFamily }),
+      legacy_selected_register: legacySelectedRegister,
       action_family: actionFamily || null,
+      warrant_gate: warrantGateDecision || null,
+      warrant_gate_application: warrantGateApplication,
       discourse_plane: structuredClone(discoursePlane),
       addressee_profile: responseConfiguration.addressee_profile,
       audience_register: responseConfiguration.audience_register,
@@ -667,7 +787,6 @@ export function createTutorStubResponseConfigurationSelectionRuntime(
       selection.warning = 'dynamic_policy_brisk_demoted';
       selection.original_register = requested;
     }
-    selection.response_configuration.compatibility.legacy_selected_register = selection.legacy_selected_register;
     state.register.history.push(selection);
     state.register.current = selection;
     return selection;

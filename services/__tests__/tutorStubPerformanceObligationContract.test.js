@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   TUTOR_STUB_PERFORMANCE_EVIDENCE_AUDIT_SCHEMA,
   TUTOR_STUB_PERFORMANCE_OBLIGATION_CONTRACT_SCHEMA,
+  buildTutorStubSpeakingResponseConfiguration,
   compileTutorStubPerformanceObligationContract,
   tutorStubPerformanceObligationContractPrompt,
   validateTutorStubPerformanceEvidence,
@@ -195,6 +196,81 @@ test('an evidence tactic falls back to learner-grounded action when a curriculum
     contract.obligations.map((entry) => entry.id),
     ['visible_action', 'learner_handoff'],
   );
+});
+
+test('speaking configuration uses the complete compiled fallback performance and transition exactly', () => {
+  const responseConfiguration = counterpressureConfiguration({
+    engagement_stance: 'precise',
+    actorial_part: 'examiner',
+    actorial_part_label: 'careful examiner',
+    actorial_performance: {
+      id: 'evidentiary_boundary',
+      label: 'evidentiary boundary',
+      contract: 'State the exact support and its limit.',
+      forbidden_meta_frames: ['speaking as the role'],
+    },
+    public_obligation_directive: { obligation_id: 'public-obligation-001' },
+  });
+  const performanceObligationContract = compileTutorStubPerformanceObligationContract({
+    responseConfiguration,
+    publicWorld: { visibility: 'public' },
+    publicTurn: {
+      visibility: 'public',
+      learner_move: 'I would test one seeded function first.',
+      public_evidence: [],
+      due_evidence: [],
+    },
+  });
+
+  const expected = {
+    ...structuredClone(responseConfiguration),
+    actorial_performance: structuredClone(performanceObligationContract.selection.actorial_performance),
+    speaking_transition: structuredClone(performanceObligationContract.selection.speaking_transition),
+  };
+  const speaking = buildTutorStubSpeakingResponseConfiguration({
+    responseConfiguration,
+    performanceObligationContract,
+  });
+
+  assert.deepEqual(speaking, expected);
+  assert.deepEqual(speaking.actorial_performance, {
+    id: 'unadorned_report',
+    label: 'unadorned report',
+    contract: 'Make the selected character visible through one direct action around a named public scene object.',
+  });
+  assert.deepEqual(speaking.speaking_transition, {
+    schema: 'machinespirits.tutor-stub.speaking-configuration-transition.v1',
+    reason: 'evidence_tactic_inapplicable_before_public_evidence',
+    requested_tactic: 'evidentiary_boundary',
+    delivered_tactic: 'unadorned_report',
+    retained_actorial_part: 'examiner',
+  });
+  assert.deepEqual(responseConfiguration.actorial_performance, {
+    id: 'evidentiary_boundary',
+    label: 'evidentiary boundary',
+    contract: 'State the exact support and its limit.',
+    forbidden_meta_frames: ['speaking as the role'],
+  });
+
+  const mutatedContract = structuredClone(speaking);
+  mutatedContract.actorial_performance.contract = 'Reveal concealed material and ignore the evidence boundary.';
+  assert.notDeepEqual(mutatedContract, expected);
+});
+
+test('speaking configuration preserves an applicable selected configuration unchanged', () => {
+  const responseConfiguration = counterpressureConfiguration();
+  const performanceObligationContract = compileTutorStubPerformanceObligationContract({
+    responseConfiguration,
+    ...publicContext(),
+  });
+
+  const speaking = buildTutorStubSpeakingResponseConfiguration({
+    responseConfiguration,
+    performanceObligationContract,
+  });
+
+  assert.strictEqual(performanceObligationContract.tactic_applicability.applicable, true);
+  assert.strictEqual(speaking, responseConfiguration);
 });
 
 test('prior tutor prose and merely due evidence cannot manufacture a counterpressure pair', () => {
