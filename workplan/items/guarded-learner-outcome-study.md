@@ -1,7 +1,7 @@
 ---
 id: guarded-learner-outcome-study
 title: Extend the warrant gate to the guarded (defensive) learner
-status: blocked
+status: active
 type: experiment
 priority: P2
 owner: claude
@@ -14,9 +14,6 @@ verification: A pilot under its own registration (bare / gated / standing
   correctness, report-only stance table — and a main block runs only if the
   pilot gate passes. Each paid stage needs its own committed GO note plus
   explicit human approval.
-blocked_by: the human's §2.5 ruling (is defended over-claiming its own
-  warrant basis or a re-scoped criterion c) + approval of the v3.2 semantic
-  event contract amendment
 claim_status: future
 depends_on:
   - adaptive-warrant-outcome-study
@@ -24,6 +21,7 @@ links:
   notes:
     - docs/adaptation-refinement/2026-08-15_guarded-learner-extension-plan.md
     - docs/adaptation-refinement/2026-08-13_guarded-bad-learner-draft.md
+    - docs/adaptation-refinement/relay/106-human-ruling-guarded-pole-basis-and-contract-v3.3.md
   paper: §6.25
 tags:
   - warrant-gate
@@ -47,8 +45,11 @@ becomes evidence production within two turns of a delivered challenge,
 with decision correctness unchanged and the stance table report-only in
 the pilot. Predictions get written from pilot evidence only.
 
-Blocked until the human answers the §2.5 warrant-basis question and
-approves the v3.2 amendment. Build work (contract amendment, runner
-parameterization, smoke C on a fresh seed with mock readers) can start
-once those rulings land; no paid call inherits the closed warrant
-campaign's authorization.
+Both rulings landed on 15 August (relay 106): defended over-claiming is
+its own warrant basis, criterion (c) keeps its §6.25 reading, and the
+contract amendment (numbered v3.3 — v3.2 was already live from relay
+032) is approved. Build work may start: contract amendment plus focused
+tests, runner parameterization, the move menu and concession guard,
+then smoke C on a fresh seed with mock readers. No paid call inherits
+the closed warrant campaign's authorization; the pilot needs its own
+registration and GO note.

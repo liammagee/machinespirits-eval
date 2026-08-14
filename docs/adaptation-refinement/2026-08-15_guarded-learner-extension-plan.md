@@ -27,7 +27,9 @@ design must absorb:
 
 ## 2. Prerequisites (build work, no paid calls)
 
-1. **Contract amendment v3.2 — three defensive events.** Declare
+1. **Contract amendment v3.3 — three defensive events.** (Earlier drafts
+   said "v3.2", but v3.2 is the live contract from relay 032; the correct
+   next version is v3.3 — see relay 106.) Declare
    `learner_overclaim_assertion`, `learner_evidence_dismissal`,
    `learner_evidence_demand` in the semantic event contract; the extractor
    prefers `learner_evidence_demand` over
@@ -35,7 +37,8 @@ design must absorb:
    the learner is defending. This fixes the smoke-B blind spot (an
    over-claiming learner read as `low_agency_deferral` on 5 of 8 turns).
    Every event→signal mapping stays unconditional; each event class must
-   be defensible from its span alone. Same review path as v3.1.
+   be defensible from its span alone. Same review path as the earlier
+   amendments.
 2. **Parameterize the persona.** The passive persona is hard-coded at
    `scripts/score-adaptive-warrant-outcome-study.js:36–69`
    (`learner_profile: 'low_agency'` in the arm table),
@@ -50,10 +53,10 @@ design must absorb:
    rescue.
 4. **Gate rules for the pole.** A defensive-stance signal (from the three
    new events) arming a sensor after N straight defended-over-claim turns,
-   licensing the same `challenge_resistance` family. The §2.5 ruling
-   question from the draft still needs the human's answer before the
-   registration is drafted: whether defended over-claiming is its own
-   warrant basis or a re-scoped criterion (c).
+   licensing the same `challenge_resistance` family. RESOLVED 15 Aug
+   (relay 106): defended over-claiming is its own warrant basis; criterion
+   (c) keeps its §6.25 reading, and every report names which basis armed
+   the sensor.
 
 ## 3. Endpoints (the part that must not be copied from v3)
 
@@ -99,5 +102,7 @@ closed and nothing here inherits its authorization.
 ## 5. What this plan does not do
 
 No registration text, no prompts, no scenario edits, no live calls. It
-amends nothing sealed. It waits on two human rulings: the §2.5 warrant
-basis question, and approval of the v3.2 contract amendment.
+amends nothing sealed. Both human rulings landed on 15 August (relay
+106): defended over-claiming is its own warrant basis, and the contract
+amendment (now numbered v3.3) is approved. Build work may start; paid
+calls still need their own GO notes.
