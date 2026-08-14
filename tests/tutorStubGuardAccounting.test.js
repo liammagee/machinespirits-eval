@@ -116,11 +116,11 @@ process.stdin.on('end', () => {
       ? 'It does not prove Verrell did it; it only confirms the town suspects him.'
       : mode === 'obligation-preserve-uptake'
         ? 'What did the public balance record show about the clipped shilling?'
-      : mode === 'obligation-writable-collision'
-        ? 'We should identify who accessed the core and when; that gives us a lead, not guilt. Show me the first log entry.'
-      : mode === 'soft-style'
-        ? 'Drop the formality. Talk to me like an equal. Stop the detective novel.'
-        : 'What should I write in the trial-book?',
+        : mode === 'obligation-writable-collision'
+          ? 'We should identify who accessed the core and when; that gives us a lead, not guilt. Show me the first log entry.'
+          : mode === 'soft-style'
+            ? 'Drop the formality. Talk to me like an equal. Stop the detective novel.'
+            : 'What should I write in the trial-book?',
     '--no-opening',
     '--no-stream',
     '--no-interim-animation',
@@ -390,7 +390,10 @@ test('an active public obligation displaces preserved non-answering uptake befor
   const progression = accounting?.finalDelivery?.audits?.liveTurnProgressionAudit;
 
   assert.equal(decision?.mode, 'active');
-  assert.equal(decision?.learner_signal?.surface, 'What did the public balance record show about the clipped shilling?');
+  assert.equal(
+    decision?.learner_signal?.surface,
+    'What did the public balance record show about the clipped shilling?',
+  );
   assert.equal(decision?.public_obligation?.speech_act?.creates_obligation, true);
   assert.ok(decision?.obligation_directive);
   assert.equal(

@@ -51,7 +51,10 @@ test('steering decomposition freezes the registered 48-dialogue balanced design 
   assert.equal(plan.status, 'passed');
   assert.equal(plan.counts.dialogues, 48);
   assert.deepEqual(plan.counts.by_condition, { gated: 24, steering_only: 24 });
-  assert.equal(Object.values(plan.counts.by_seed).every((count) => count === 4), true);
+  assert.equal(
+    Object.values(plan.counts.by_seed).every((count) => count === 4),
+    true,
+  );
   assert.equal(STEERING_DECOMPOSITION_CASES, 384);
   assert.equal(STEERING_DECOMPOSITION_DECISION_CALLS, 768);
   assert.equal(STEERING_DECOMPOSITION_AUTHORIZATION_MAXIMUM_CALLS, 788);
@@ -92,8 +95,14 @@ test('steering decomposition seed audit passes a clean root and catches register
   fs.writeFileSync(path.join(burned, 'run-plan.json'), '{"command":["--run-seed","536"]}\n');
   const failed = auditSteeringDecompositionSeedFreshness({ roots: [directory] });
   assert.equal(failed.status, 'failed');
-  assert.equal(failed.hits.some((row) => row.seed === 536 && row.kind === 'run_directory_name'), true);
-  assert.equal(failed.hits.some((row) => row.seed === 536 && row.kind === 'run_metadata'), true);
+  assert.equal(
+    failed.hits.some((row) => row.seed === 536 && row.kind === 'run_directory_name'),
+    true,
+  );
+  assert.equal(
+    failed.hits.some((row) => row.seed === 536 && row.kind === 'run_metadata'),
+    true,
+  );
 });
 
 test('steering decomposition resume excludes only its local run and automatic private mirror', (t) => {
@@ -123,8 +132,14 @@ test('steering decomposition resume excludes only its local run and automatic pr
   });
   assert.deepEqual(excludeRoots, [rootDir, mirrorRoot]);
   assert.equal(audit.status, 'failed');
-  assert.equal(audit.hits.some((row) => row.seed === 536), false);
-  assert.equal(audit.hits.some((row) => row.seed === 537), true);
+  assert.equal(
+    audit.hits.some((row) => row.seed === 536),
+    false,
+  );
+  assert.equal(
+    audit.hits.some((row) => row.seed === 537),
+    true,
+  );
 });
 
 test('zero-challenge validity guard passes a mock steering_only batch and rejects one delivered challenge', (t) => {

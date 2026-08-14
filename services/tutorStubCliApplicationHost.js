@@ -14,10 +14,7 @@ import { fileURLToPath } from 'node:url';
 
 import { call as callAI, callStream as streamAI } from '../tutor-core/services/unifiedAIProviderService.js';
 import { callAIWithCliBridge, isCliProvider, normalizeCliEffort } from './cliProviderBridge.js';
-import {
-  tutorStubCliPolicyRetryDecision,
-  waitTutorStubCliPolicyRetryDelay,
-} from './tutorStubCliPolicyRetry.js';
+import { tutorStubCliPolicyRetryDecision, waitTutorStubCliPolicyRetryDelay } from './tutorStubCliPolicyRetry.js';
 import { getProviderConfig, loadProviders, resolveModel } from './evalConfigLoader.js';
 import { captureTutorStubRunProvenance, redactTraceSecrets, tutorStubTraceDisplayPath } from './traceSchema.js';
 import { runLabellingGameCli } from './labellingGameCli.js';

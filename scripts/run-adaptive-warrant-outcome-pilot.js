@@ -320,7 +320,12 @@ export function reuseOutcomePilotReaderCollection({ collectionDir, channel } = {
         [batch.packet_path, batch.packet_sha256, 'packet'],
         [batch[files.schemaPath], batch[files.schemaSha256], 'output schema'],
       ]) {
-        if (!artifactPath || !artifactSha256 || !fs.existsSync(artifactPath) || fileSha256(artifactPath) !== artifactSha256) {
+        if (
+          !artifactPath ||
+          !artifactSha256 ||
+          !fs.existsSync(artifactPath) ||
+          fileSha256(artifactPath) !== artifactSha256
+        ) {
           throw new Error(`outcome pilot ${channel} collection ${batch.batch_id} ${label} integrity mismatch`);
         }
       }
@@ -667,8 +672,7 @@ export function renderOutcomePilotPromptConfiguration({ worldPath, condition, se
         TUTOR_STUB_EVAL_POLICY: 'dynamic',
         TUTOR_STUB_EVAL_RUN_INDEX: '1',
         TUTOR_STUB_WARRANT_GATE: configuration.warrant_gate_mode,
-        TUTOR_STUB_WARRANT_CHALLENGE_RESISTANCE:
-          configuration.warrant_challenge_resistance || 'selectable',
+        TUTOR_STUB_WARRANT_CHALLENGE_RESISTANCE: configuration.warrant_challenge_resistance || 'selectable',
       },
     }),
   );
@@ -787,12 +791,7 @@ function outcomeAnnotationCaseFingerprint({ dialogueId, turn, contentHash }) {
   );
 }
 
-export function guardOutcomeAnnotationFingerprints({
-  cases,
-  keyCases,
-  expectedCount = 144,
-  excludedCases = [],
-} = {}) {
+export function guardOutcomeAnnotationFingerprints({ cases, keyCases, expectedCount = 144, excludedCases = [] } = {}) {
   if (!Array.isArray(cases) || cases.length !== expectedCount) {
     throw new Error(`annotationCaseFingerprint guard expected ${expectedCount} cases, got ${cases?.length ?? 0}`);
   }

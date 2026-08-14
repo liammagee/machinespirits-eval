@@ -30,8 +30,7 @@ export const ADAPTIVE_WARRANT_STUDY_ENVIRONMENT_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-study-environment.v1';
 export const ADAPTIVE_WARRANT_STUDY_CLI_CONTRACT_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-study-cli-contract.v2';
-export const ADAPTIVE_WARRANT_STUDY_CLI_GUARD_ENV_KEY =
-  'MACHINESPIRITS_ADAPTIVE_WARRANT_STUDY_CLI_CONTRACT_BASE64';
+export const ADAPTIVE_WARRANT_STUDY_CLI_GUARD_ENV_KEY = 'MACHINESPIRITS_ADAPTIVE_WARRANT_STUDY_CLI_CONTRACT_BASE64';
 export const ADAPTIVE_WARRANT_STUDY_DOTENV_FILE = 'config/adaptive-warrant-study.env';
 export const ADAPTIVE_WARRANT_STABLE_DECISION_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-stable-decision.v1';
@@ -626,10 +625,7 @@ export function adaptiveWarrantStudyCliGuardEnvironment(cliContract) {
  * closes the longer parent-preflight-to-model-call mutation window while
  * remaining a local, zero-model filesystem check.
  */
-export function verifyAdaptiveWarrantStudyCliInvocation({
-  environment = process.env,
-  executable = 'codex',
-} = {}) {
+export function verifyAdaptiveWarrantStudyCliInvocation({ environment = process.env, executable = 'codex' } = {}) {
   const encoded = String(environment?.[ADAPTIVE_WARRANT_STUDY_CLI_GUARD_ENV_KEY] || '').trim();
   if (!encoded) return { enabled: false, cli_contract_sha256: null };
 

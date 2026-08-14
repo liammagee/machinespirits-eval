@@ -173,9 +173,7 @@ function semanticPublicTarget(target) {
   const publicTerms = contentTerms([targetId, ...publicIdentifierIds].join(' '))
     .filter(
       (term) =>
-        !term.startsWith('target-') &&
-        !term.startsWith('public-id-') &&
-        !['target', 'public', 'id'].includes(term),
+        !term.startsWith('target-') && !term.startsWith('public-id-') && !['target', 'public', 'id'].includes(term),
     )
     .slice(0, 16);
   const subjectTerms = targetSubjectTerms(publicTerms);

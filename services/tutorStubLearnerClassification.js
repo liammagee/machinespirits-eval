@@ -1,5 +1,4 @@
-export const TUTOR_STUB_UNANALYZED_CLASSIFICATION_SCHEMA =
-  'machinespirits.tutor-stub.learner-analysis-no-signal.v1';
+export const TUTOR_STUB_UNANALYZED_CLASSIFICATION_SCHEMA = 'machinespirits.tutor-stub.learner-analysis-no-signal.v1';
 
 export function isTutorStubUnanalyzedClassification(value) {
   return (

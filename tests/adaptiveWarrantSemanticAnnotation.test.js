@@ -461,9 +461,7 @@ test('disagreement discriminator records reader errors and blocks unresolved con
   assert.deepEqual(classified.cases[0].reader_errors, ['reader-b']);
 
   const impossibleExpected = {
-    [corpus.cases[0].sample_id]: [
-      { ...readerA.cases[0].events[0], speech_act: 'criterion_question' },
-    ],
+    [corpus.cases[0].sample_id]: [{ ...readerA.cases[0].events[0], speech_act: 'criterion_question' }],
   };
   const blocked = classifyAdaptiveWarrantSemanticDisagreements({
     consensus,
@@ -698,8 +696,7 @@ test('probe/live prompt parity fails on any byte divergence', () => {
     true,
   );
   assert.equal(
-    auditAdaptiveWarrantProbeLivePromptParity({ livePrompt: 'same bytes', probePrompt: 'same bytes\n' })
-      .byte_identical,
+    auditAdaptiveWarrantProbeLivePromptParity({ livePrompt: 'same bytes', probePrompt: 'same bytes\n' }).byte_identical,
     false,
   );
 });

@@ -66,9 +66,7 @@ function traceSummary(tracePath, corpus) {
     .filter((row) => row.type === 'tutor_first_draft_contract')
     .map((row) => ({ turn: Number(row.turn), contract: row.contract }));
   const learnerTurns = new Map(
-    rows
-      .filter((row) => row.type === 'auto_learner_turn')
-      .map((row) => [Number(row.turn), String(row.text || '')]),
+    rows.filter((row) => row.type === 'auto_learner_turn').map((row) => [Number(row.turn), String(row.text || '')]),
   );
   const tutorTurns = new Map(
     rows
@@ -134,7 +132,10 @@ function seed511SealedTraces(rootDir) {
 }
 
 function seed511FailedDrawTraces(rootDir) {
-  const traces = walkFiles(rootDir, (filePath) => filePath.endsWith('.jsonl') && path.basename(filePath) !== 'run-events.jsonl');
+  const traces = walkFiles(
+    rootDir,
+    (filePath) => filePath.endsWith('.jsonl') && path.basename(filePath) !== 'run-events.jsonl',
+  );
   assert.equal(traces.length, 2, `expected two preserved seed-511 failed draws, found ${traces.length}`);
   return traces.map((tracePath) => traceSummary(tracePath, 'seed511_failed_draw'));
 }
@@ -238,9 +239,7 @@ export function syntheticFallbackClosureTargets() {
         publicTerms: ['evidence'],
         subjectTerms: [],
         sourceSurface: 'generic evidence request',
-        requiredComponents: [
-          { id: `requested_${valueType}`, terms: [valueType], value_type: valueType },
-        ],
+        requiredComponents: [{ id: `requested_${valueType}`, terms: [valueType], value_type: valueType }],
         labelShapes: [`requested_value_type:${valueType}`],
       }),
     );
@@ -256,7 +255,8 @@ export function verifyFallbackPassClosureContract({
 } = {}) {
   const sourceProgression = firstDraftContract?.progression;
   const sourceObligation = sourceProgression?.public_obligation_contract;
-  const directive = publicObligationDirective || (sourceObligation?.active ? directiveFromCompiled(sourceObligation) : null);
+  const directive =
+    publicObligationDirective || (sourceObligation?.active ? directiveFromCompiled(sourceObligation) : null);
   if (!directive) return null;
   const compiled = compileTutorStubTurnProgressionContract({
     learnerText: learnerText || sourceProgression?.learner_uptake?.learner_surface || '',
@@ -346,8 +346,16 @@ export function runFallbackPassClosure({
     }),
   );
   assert.equal(corpusSummary.seed511_sealed.learnerTurns, 176, 'seed-511 sealed corpus must contain 22 x 8 turns');
-  assert.equal(corpusSummary.seed511_failed_draw.learnerTurns, 3, 'both seed-511 failed draws must retain all reached turns');
-  assert.equal(corpusSummary.seed512_dead_child.learnerTurns, 6, 'both seed-512 dead children must contribute three turns');
+  assert.equal(
+    corpusSummary.seed511_failed_draw.learnerTurns,
+    3,
+    'both seed-511 failed draws must retain all reached turns',
+  );
+  assert.equal(
+    corpusSummary.seed512_dead_child.learnerTurns,
+    6,
+    'both seed-512 dead children must contribute three turns',
+  );
 
   const checks = [];
   for (const trace of traces) {

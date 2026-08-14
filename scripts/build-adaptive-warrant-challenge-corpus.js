@@ -343,12 +343,13 @@ function challengeProjection(spec) {
   };
   const signals = recentSignals(spec);
   const signal = signals.at(-1);
-  const troubleTurns = spec.action_contract.status === 'defeat'
-    ? [
-        { turn: 1, defeaters: ['expected_uptake_missing'] },
-        { turn: 2, defeaters: ['expected_uptake_missing'] },
-      ]
-    : [];
+  const troubleTurns =
+    spec.action_contract.status === 'defeat'
+      ? [
+          { turn: 1, defeaters: ['expected_uptake_missing'] },
+          { turn: 2, defeaters: ['expected_uptake_missing'] },
+        ]
+      : [];
   const evidenceAvailability = {
     known: true,
     authored_release_count: spec.completion ? 3 : 4,
@@ -383,7 +384,8 @@ function challengeProjection(spec) {
     recentSignals: signals,
     troubleTurns,
     complaintTurns: [],
-    deferenceSustained: signals.length >= 3 && signals.slice(-3).every((row) => row.labels.includes('low_agency_deferral')),
+    deferenceSustained:
+      signals.length >= 3 && signals.slice(-3).every((row) => row.labels.includes('low_agency_deferral')),
     pacingSignal: spec.pacing_signal,
     actionContract,
     publicObligation,
@@ -394,7 +396,8 @@ function challengeProjection(spec) {
     signal,
     troubleTurns,
     complaintTurns: [],
-    deferenceSustained: signals.length >= 3 && signals.slice(-3).every((row) => row.labels.includes('low_agency_deferral')),
+    deferenceSustained:
+      signals.length >= 3 && signals.slice(-3).every((row) => row.labels.includes('low_agency_deferral')),
     divergence,
     strategyInForce: 'stage_next_step',
     actionContract,
@@ -512,7 +515,9 @@ function assertDesignedSupport(spec, projection) {
       projection.public_obligation?.speech_act?.kind === 'tutor_directed_public_result_request',
     learner_proposed_test: projection.public_obligation?.speech_act?.kind === 'learner_proposed_test',
     obligation_persistence: (projection.public_obligation?.obligations || []).some(
-      (row) => row.created_turn < projection.public_obligation.turn && ['open', 'overdue', 'reactivated', 'deferred'].includes(row.status),
+      (row) =>
+        row.created_turn < projection.public_obligation.turn &&
+        ['open', 'overdue', 'reactivated', 'deferred'].includes(row.status),
     ),
     obligation_resolution: (projection.public_obligation?.obligations || []).some((row) => row.status === 'satisfied'),
     inquiry_complete: projection.inquiry_completion?.status === 'complete',
@@ -529,11 +534,7 @@ function assertDesignedSupport(spec, projection) {
   }
 }
 
-export function buildAdaptiveWarrantChallengeCorpus({
-  studyId,
-  handbookSha256,
-  provenance,
-} = {}) {
+export function buildAdaptiveWarrantChallengeCorpus({ studyId, handbookSha256, provenance } = {}) {
   const design = adaptiveWarrantChallengeDesign();
   if (design.cases.length !== 24) throw new Error('targeted challenge design must contain exactly 24 cases');
   const paired = design.cases.map((spec, index) => {
@@ -572,7 +573,11 @@ export function buildAdaptiveWarrantChallengeCorpus({
     blinded: true,
     instructions:
       'Independently label all typed mechanism and six divergence fields using only the frozen handbook and public decision-time evidence. This is a diagnostic targeted challenge corpus; do not infer its private support strata, and do not treat it as a pass/fail gate sample.',
-    allowed_recommended_action_families: [...Object.keys(ADAPTIVE_WARRANT_ACTION_FAMILY_CONTRACTS), 'hold', 'uncertain'],
+    allowed_recommended_action_families: [
+      ...Object.keys(ADAPTIVE_WARRANT_ACTION_FAMILY_CONTRACTS),
+      'hold',
+      'uncertain',
+    ],
     allowed_speech_acts: [
       'tutor_directed_public_result_request',
       'learner_proposed_test',
@@ -584,7 +589,15 @@ export function buildAdaptiveWarrantChallengeCorpus({
       'other',
       'uncertain',
     ],
-    allowed_obligation_states: ['none', 'open', 'overdue', 'deferred', 'satisfied', 'withdrawn_or_transferred', 'uncertain'],
+    allowed_obligation_states: [
+      'none',
+      'open',
+      'overdue',
+      'deferred',
+      'satisfied',
+      'withdrawn_or_transferred',
+      'uncertain',
+    ],
     allowed_inquiry_states: ['complete', 'incomplete', 'uncertain'],
     allowed_primary_warrant_bases: [
       'immediate_repair',
@@ -640,11 +653,7 @@ export function buildAdaptiveWarrantChallengeCorpus({
   return { corpus, key, supportPlan, design };
 }
 
-export function writeAdaptiveWarrantChallengeCorpus({
-  outputDir,
-  provenance = null,
-  excludedCorpusPaths = [],
-} = {}) {
+export function writeAdaptiveWarrantChallengeCorpus({ outputDir, provenance = null, excludedCorpusPaths = [] } = {}) {
   const resolvedOutputDir = path.resolve(outputDir);
   if (fs.existsSync(resolvedOutputDir) && fs.readdirSync(resolvedOutputDir).length) {
     throw new Error(`targeted challenge output directory is not empty: ${resolvedOutputDir}`);
@@ -740,7 +749,7 @@ export function validateAdaptiveWarrantChallengeFreeze({ manifestPath } = {}) {
     ['private support plan', manifest.support_plan],
     ['blinded corpus', manifest.corpus],
     ['private key', manifest.key],
-    ...((manifest.zero_overlap?.excluded_corpora || []).map((binding) => ['excluded corpus', binding])),
+    ...(manifest.zero_overlap?.excluded_corpora || []).map((binding) => ['excluded corpus', binding]),
   ]) {
     if (!binding?.path || !binding?.sha256 || fileSha256(binding.path) !== binding.sha256) {
       throw new Error(`targeted challenge freeze burned by ${label} drift`);

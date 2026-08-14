@@ -24,10 +24,7 @@ import {
   buildTutorStubPublicLearnerAnalysisProviderOutputSchema,
   rewriteTutorStubPublicLearnerAnalysisPromptProfile,
 } from '../services/tutorStubPublicLearnerAnalysis.js';
-import {
-  TUTOR_STUB_CLI_REQUEST_PATH,
-  buildTutorStubCliBridgeRequest,
-} from '../services/tutorStubCliRequest.js';
+import { TUTOR_STUB_CLI_REQUEST_PATH, buildTutorStubCliBridgeRequest } from '../services/tutorStubCliRequest.js';
 import {
   ADAPTIVE_WARRANT_SEMANTIC_PREFLIGHT_SCHEMA,
   adaptiveWarrantSemanticInstrumentBindings,
@@ -407,9 +404,7 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     frozen_handbook_block_found:
       frozenHandbookParagraphs.length === TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULE_PARAGRAPHS.length,
     frozen_handbook_block_sha256: adaptiveWarrantSemanticValueSha256(frozenHandbookRules),
-    live_rule_block_sha256: adaptiveWarrantSemanticValueSha256(
-      TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULES,
-    ),
+    live_rule_block_sha256: adaptiveWarrantSemanticValueSha256(TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULES),
     exact_digest_match:
       frozenHandbookRules.length > 0 &&
       adaptiveWarrantSemanticValueSha256(frozenHandbookRules) ===
@@ -675,8 +670,9 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     }),
   });
   const compactPromptSerializationAudit = {
-    palette_json_minified:
-      !compactPromptVocabulary.engagementStancePalettePromptRows(['plain', 'precise']).includes('\n'),
+    palette_json_minified: !compactPromptVocabulary
+      .engagementStancePalettePromptRows(['plain', 'precise'])
+      .includes('\n'),
     request_type_json_minified: !compactPromptVocabulary.requestTypePromptRows().includes('\n'),
     learner_dag_json_minified: !projectTutorStubLearnerDagPromptSummary({ turn: 1 }).includes('\n'),
     prompt_limit_matches_direction_028:
@@ -720,11 +716,13 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     canonicalizes_only_declared_quote_code_points:
       semanticEventSource.includes('ADAPTIVE_WARRANT_QUOTE_PUNCTUATION_PATTERN') &&
       semanticEventSource.includes('\\u2018\\u2019\\u201c\\u201d'),
-    live_seat_uses_shared_derivation:
-      semanticEventSource.includes('deriveAdaptiveWarrantSemanticEvidenceSpan(sourceText, event.evidence_span)'),
+    live_seat_uses_shared_derivation: semanticEventSource.includes(
+      'deriveAdaptiveWarrantSemanticEvidenceSpan(sourceText, event.evidence_span)',
+    ),
     reader_seat_imports_shared_derivation:
-      readerAssemblySource.includes("import { deriveAdaptiveWarrantSemanticEvidenceSpan } from '../services/adaptiveWarrantSemanticEvents.js'") &&
-      readerAssemblySource.includes('deriveAdaptiveWarrantSemanticEvidenceSpan(learnerText, text)'),
+      readerAssemblySource.includes(
+        "import { deriveAdaptiveWarrantSemanticEvidenceSpan } from '../services/adaptiveWarrantSemanticEvents.js'",
+      ) && readerAssemblySource.includes('deriveAdaptiveWarrantSemanticEvidenceSpan(learnerText, text)'),
   };
   const modelFacingSchemaText = JSON.stringify([
     ...schemas,

@@ -425,7 +425,8 @@ export async function runAdaptiveWarrantLiveSemanticSeatAcceptancePing({
   const outputSchema = buildTutorStubPublicLearnerAnalysisProviderOutputSchema({ includeSemanticEvents: true });
   const response = await dispatchTutorStubCliBridgeRequest(callModel, {
     resolved: destination,
-    systemPrompt: 'You are a transport-only structured-output acceptance ping. Return exactly the supplied JSON template and do not use tools.',
+    systemPrompt:
+      'You are a transport-only structured-output acceptance ping. Return exactly the supplied JSON template and do not use tools.',
     userPrompt: JSON.stringify({ task: 'transport_only_never_evidence', response_template: template }),
     role: 'adaptive-warrant-live-semantic-seat-acceptance-ping',
     outputSchema,

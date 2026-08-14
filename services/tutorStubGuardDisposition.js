@@ -387,7 +387,7 @@ export function classifyTutorStubGuardIssue(issue, { allowActorialAdvisory = fal
             ? 'terminal_fallback_dramatic_form_advisory'
             : terminalFallbackStyleOverride
               ? 'terminal_fallback_style_advisory'
-            : null,
+              : null,
   };
 }
 

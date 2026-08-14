@@ -48,9 +48,7 @@ const DECISION_RUNNER_PATH = path.join(ROOT, 'scripts/run-adaptive-warrant-decis
 const DECISION_PREPARER_PATH = path.join(ROOT, 'scripts/prepare-adaptive-warrant-annotation-batches.js');
 const PRIVATE_ARCHIVE_ROOT = '/Users/lmagee/Dev/machinespirits/machinespirits-eval-private';
 
-export const STEERING_DECOMPOSITION_SEEDS = Object.freeze(
-  [536, 537, 538, 539, 540, 542, 543, 544, 545, 546, 548, 549],
-);
+export const STEERING_DECOMPOSITION_SEEDS = Object.freeze([536, 537, 538, 539, 540, 542, 543, 544, 545, 546, 548, 549]);
 export const STEERING_DECOMPOSITION_DIALOGUES = 48;
 export const STEERING_DECOMPOSITION_CASES = 384;
 export const STEERING_DECOMPOSITION_DECISION_CALLS = 768;
@@ -261,9 +259,7 @@ export function steeringDecompositionResumeSeedExclusions({
     !relativeRoot.startsWith(`..${path.sep}`) &&
     !path.isAbsolute(relativeRoot)
   ) {
-    exclusions.push(
-      path.join(path.resolve(privateArchiveRoot), 'artifacts', 'tutor-stub-live', relativeRoot),
-    );
+    exclusions.push(path.join(path.resolve(privateArchiveRoot), 'artifacts', 'tutor-stub-live', relativeRoot));
   }
   return exclusions;
 }
@@ -276,25 +272,25 @@ export function verifySteeringDecompositionManifest({ manifestPath = DEFAULT_MAN
   }
   assertExact(manifest.seeds, STEERING_DECOMPOSITION_SEEDS, 'steering-decomposition seeds');
   assertExact(manifest.conditions, ['gated', 'steering_only'], 'steering-decomposition conditions');
-  assertExact(manifest.planned_calls, {
-    generation_expected: 1300,
-    generation_cap: 1440,
-    decision_readers: 768,
-    failed_attempt_allowance: 32,
-    approximate_total: 2100,
-    absolute_cap_total: 2240,
-    counter_before: 8355,
-    ceiling: 19337,
-  }, 'steering-decomposition call plan');
+  assertExact(
+    manifest.planned_calls,
+    {
+      generation_expected: 1300,
+      generation_cap: 1440,
+      decision_readers: 768,
+      failed_attempt_allowance: 32,
+      approximate_total: 2100,
+      absolute_cap_total: 2240,
+      counter_before: 8355,
+      ceiling: 19337,
+    },
+    'steering-decomposition call plan',
+  );
   if (manifest.channels?.presence?.enabled !== false || manifest.channels?.decision?.enabled !== true) {
     throw new Error('steering decomposition must be decision-only');
   }
   const inherited = manifest.inherited_pilot_bindings;
-  if (
-    !inherited?.path ||
-    !inherited?.sha256 ||
-    fileSha256(path.resolve(ROOT, inherited.path)) !== inherited.sha256
-  ) {
+  if (!inherited?.path || !inherited?.sha256 || fileSha256(path.resolve(ROOT, inherited.path)) !== inherited.sha256) {
     throw new Error('steering-decomposition inherited pilot bindings drift');
   }
   const bindings = manifest.channels.decision.digests;
@@ -345,7 +341,8 @@ export function validateSteeringDecompositionGoNote(goNotePath) {
     throw new Error('steering decomposition refuses: reviewer note 103 is not committed at HEAD');
   }
   const onDisk = fs.readFileSync(resolved);
-  if (!committed.equals(onDisk)) throw new Error('steering decomposition refuses: reviewer note 103 has uncommitted drift');
+  if (!committed.equals(onDisk))
+    throw new Error('steering decomposition refuses: reviewer note 103 has uncommitted drift');
   const text = onDisk.toString('utf8');
   for (const required of [
     'GO',
@@ -362,7 +359,8 @@ export function validateSteeringDecompositionGoNote(goNotePath) {
     '2,240',
     '6a64b31f',
   ]) {
-    if (!text.includes(required)) throw new Error(`steering decomposition refuses: reviewer note 103 lacks ${required}`);
+    if (!text.includes(required))
+      throw new Error(`steering decomposition refuses: reviewer note 103 lacks ${required}`);
   }
   if (!/\bhuman\b.{0,80}\b(?:GO|approv(?:al|ed))\b/isu.test(text)) {
     throw new Error('steering decomposition refuses: reviewer note 103 lacks explicit human approval');
@@ -393,12 +391,9 @@ export function guardSteeringDecompositionDecisionCollection(collection = {}) {
       manifest.readers.every((reader) => reader.batches?.length === STEERING_DECOMPOSITION_CASES),
     one_case_batches:
       Array.isArray(manifest?.readers) &&
-      manifest.readers.every((reader) =>
-        reader.batches?.every((batch) => batch.required_sample_ids?.length === 1),
-      ),
+      manifest.readers.every((reader) => reader.batches?.every((batch) => batch.required_sample_ids?.length === 1)),
     planned_calls: request?.call_budget?.planned_calls === STEERING_DECOMPOSITION_DECISION_CALLS,
-    authorization_maximum:
-      request?.call_budget?.maximum_calls === STEERING_DECOMPOSITION_AUTHORIZATION_MAXIMUM_CALLS,
+    authorization_maximum: request?.call_budget?.maximum_calls === STEERING_DECOMPOSITION_AUTHORIZATION_MAXIMUM_CALLS,
   };
   return {
     status: Object.values(checks).every(Boolean) ? 'passed' : 'failed',
@@ -464,8 +459,7 @@ export function guardSteeringDecompositionAssembly({ collectionGuard, readerRun,
     frozen_cases: collectionGuard?.checks?.corpus_cases === true,
     planned_reads: collectionGuard?.checks?.planned_calls === true,
     accepted_responses: acceptanceAudit?.responses_validated === STEERING_DECOMPOSITION_DECISION_CALLS,
-    within_allowance:
-      Number(readerRun?.calls_attempted || 0) <= STEERING_DECOMPOSITION_ABSOLUTE_READER_ATTEMPT_CEILING,
+    within_allowance: Number(readerRun?.calls_attempted || 0) <= STEERING_DECOMPOSITION_ABSOLUTE_READER_ATTEMPT_CEILING,
     child_complete: readerRun?.status === 'complete',
   };
   return {
@@ -479,7 +473,10 @@ export function guardSteeringDecompositionAssembly({ collectionGuard, readerRun,
   };
 }
 
-export function buildSteeringDecompositionDryRun({ manifestPath = DEFAULT_MANIFEST, rootDir = '/tmp/steering-decomposition-dry-run' } = {}) {
+export function buildSteeringDecompositionDryRun({
+  manifestPath = DEFAULT_MANIFEST,
+  rootDir = '/tmp/steering-decomposition-dry-run',
+} = {}) {
   const guarded = verifySteeringDecompositionManifest({ manifestPath });
   const manifest = { ...guarded.manifest, interleaved_condition_assignment: guarded.assignments };
   const jobs = buildOutcomePilotJobs({ manifest, rootDir, dryRun: true, studyLabel: 'steering-decomposition' });
@@ -490,9 +487,7 @@ export function buildSteeringDecompositionDryRun({ manifestPath = DEFAULT_MANIFE
     job_count: jobs.length === STEERING_DECOMPOSITION_DIALOGUES,
     all_dry_run: jobs.every((job) => job.dryRun && job.command.includes('--dry-run')),
     steering_only_active: steeringJobs.every((job) => job.warrantGateMode === 'active'),
-    steering_only_unselectable: steeringJobs.every(
-      (job) => job.warrantChallengeResistance === 'unselectable',
-    ),
+    steering_only_unselectable: steeringJobs.every((job) => job.warrantChallengeResistance === 'unselectable'),
     gated_unchanged: gatedJobs.every(
       (job) =>
         job.warrantGateMode === 'active' &&
@@ -528,7 +523,8 @@ export function createSteeringDecompositionBudget({ checkpointPath, checkpoint =
     dialogues: [],
     quarantined_dialogues: [],
   };
-  if (state.schema !== STEERING_DECOMPOSITION_CHECKPOINT_SCHEMA) throw new Error('steering-decomposition checkpoint schema mismatch');
+  if (state.schema !== STEERING_DECOMPOSITION_CHECKPOINT_SCHEMA)
+    throw new Error('steering-decomposition checkpoint schema mismatch');
   const persist = () => {
     state.call_budget.actual.total = state.call_budget.actual.generation + state.call_budget.actual.decision_readers;
     state.updated_at = new Date().toISOString();
@@ -537,9 +533,10 @@ export function createSteeringDecompositionBudget({ checkpointPath, checkpoint =
   const reserveMany = (phase, count, event = {}) => {
     if (!['generation', 'decision_readers'].includes(phase)) throw new Error(`unknown budget phase ${phase}`);
     if (!Number.isInteger(count) || count < 0) throw new Error('reservation count must be a non-negative integer');
-    const ceiling = phase === 'generation'
-      ? STEERING_DECOMPOSITION_CALL_PLAN.generation_cap
-      : STEERING_DECOMPOSITION_ABSOLUTE_READER_ATTEMPT_CEILING;
+    const ceiling =
+      phase === 'generation'
+        ? STEERING_DECOMPOSITION_CALL_PLAN.generation_cap
+        : STEERING_DECOMPOSITION_ABSOLUTE_READER_ATTEMPT_CEILING;
     if (state.call_budget.actual[phase] + count > ceiling) {
       throw new Error(`steering-decomposition ${phase} call ceiling exceeded`);
     }
@@ -592,7 +589,9 @@ function emitSteeringDecompositionFreeze({
       turns_per_dialogue: 8,
       total_cases: STEERING_DECOMPOSITION_CASES,
     },
-    protocol: binding(path.join(ROOT, 'docs/adaptation-refinement/relay/101-reviewer-registration-steering-decomposition.md')),
+    protocol: binding(
+      path.join(ROOT, 'docs/adaptation-refinement/relay/101-reviewer-registration-steering-decomposition.md'),
+    ),
     study_plan: binding(studyPlanPath),
     source_commit: sourceCommit,
     semantic_instrument: {
@@ -638,7 +637,8 @@ export function auditSteeringDecompositionDecisionResponseContracts({
     }
   }
   const expected = STEERING_DECOMPOSITION_DECISION_CALLS;
-  if (rows.length !== expected) throw new Error(`steering-decomposition response contract audit expected ${expected}, got ${rows.length}`);
+  if (rows.length !== expected)
+    throw new Error(`steering-decomposition response contract audit expected ${expected}, got ${rows.length}`);
   const audit = {
     schema: 'machinespirits.adaptation-refinement.steering-decomposition-response-acceptance-audit.v1',
     status: 'passed',
@@ -687,19 +687,23 @@ export async function executeSteeringDecomposition({
   if (!acceptCharges) throw new Error('steering decomposition refuses: --accept-charges is required');
   const goNote = validateSteeringDecompositionGoNote(goNotePath);
   const guarded = verifySteeringDecompositionManifest({ manifestPath });
-  if (git(['status', '--porcelain'])) throw new Error('steering-decomposition launch requires a clean committed worktree');
+  if (git(['status', '--porcelain']))
+    throw new Error('steering-decomposition launch requires a clean committed worktree');
   if (!outputDir) throw new Error('steering-decomposition launch requires --out');
   if (!instrumentFreezePath) throw new Error('steering-decomposition launch requires --instrument-freeze');
   const rootDir = path.resolve(ROOT, outputDir);
   const checkpointPath = path.join(rootDir, 'steering-decomposition-checkpoint.json');
   if (fs.existsSync(rootDir) && !resume) throw new Error('steering-decomposition output exists; pass --resume');
-  if (resume && !fs.existsSync(checkpointPath)) throw new Error('--resume requires a steering-decomposition checkpoint');
+  if (resume && !fs.existsSync(checkpointPath))
+    throw new Error('--resume requires a steering-decomposition checkpoint');
   const freshness = auditSteeringDecompositionSeedFreshness({
     roots: seedFreshnessRoots,
     excludeRoots: resume ? steeringDecompositionResumeSeedExclusions({ rootDir }) : [],
   });
   if (freshness.status !== 'passed') {
-    throw new Error(`steering-decomposition seed freshness failed: ${freshness.hits.map((row) => `s${row.seed}:${row.path}`).join(', ')}`);
+    throw new Error(
+      `steering-decomposition seed freshness failed: ${freshness.hits.map((row) => `s${row.seed}:${row.path}`).join(', ')}`,
+    );
   }
 
   const sourceFreeze = readJson(path.resolve(instrumentFreezePath));
@@ -806,7 +810,10 @@ export async function executeSteeringDecomposition({
     }
     built = { corpus: readJson(freeze.corpus.path), key: readJson(freeze.key.path) };
     artifacts = { corpusPath: freeze.corpus.path, keyPath: freeze.key.path };
-    decisionCollection = reuseOutcomePilotReaderCollection({ collectionDir: decisionCollectionDir, channel: 'decision' });
+    decisionCollection = reuseOutcomePilotReaderCollection({
+      collectionDir: decisionCollectionDir,
+      channel: 'decision',
+    });
   } else {
     built = prepareOutcomeCases({
       rows,
@@ -1016,7 +1023,9 @@ async function main() {
     instrumentFreezePath: values['instrument-freeze'],
     resume: values.resume,
   });
-  process.stdout.write(`${JSON.stringify({ status: result.status, checkpoint: path.resolve(ROOT, values.out, 'steering-decomposition-checkpoint.json') })}\n`);
+  process.stdout.write(
+    `${JSON.stringify({ status: result.status, checkpoint: path.resolve(ROOT, values.out, 'steering-decomposition-checkpoint.json') })}\n`,
+  );
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {

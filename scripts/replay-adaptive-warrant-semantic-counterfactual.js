@@ -132,7 +132,9 @@ export function replayAdaptiveWarrantSemanticCounterfactual({ root, outputPath, 
         files.map((filePath) => [path.relative(resolvedRoot, filePath), sha256(fs.readFileSync(filePath))]),
       ),
       combined_sha256: sha256(
-        files.map((filePath) => `${path.relative(resolvedRoot, filePath)}\t${sha256(fs.readFileSync(filePath))}`).join('\n'),
+        files
+          .map((filePath) => `${path.relative(resolvedRoot, filePath)}\t${sha256(fs.readFileSync(filePath))}`)
+          .join('\n'),
       ),
     },
     result: {
@@ -142,9 +144,7 @@ export function replayAdaptiveWarrantSemanticCounterfactual({ root, outputPath, 
       predicted_discard_rate: completed ? discarded / completed : null,
       relaunch_threshold: ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_RATE,
       relaunch_gate:
-        completed > 0 && discarded / completed <= ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_RATE
-          ? 'pass'
-          : 'fail',
+        completed > 0 && discarded / completed <= ADAPTIVE_WARRANT_ANALYSIS_COVERAGE_HALT_RATE ? 'pass' : 'fail',
       error_code_counts: errorCodeCounts,
       residual_issue_counts: issueCounts,
     },

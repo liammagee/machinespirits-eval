@@ -77,8 +77,7 @@ export const ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT = Object.freeze({
     'One event per independent clause-level act that would change a distinct typed state; explanatory material is not a second event.',
   speaker: 'Mechanically supplied from current-turn authorship; never reader-judged.',
   speech_act: 'Reader chooses one closed act under the handbook precedence table.',
-  target_id:
-    `Reader chooses the public object, relation, or enumerated choice set that the act itself is about, never a requested value or actor. ${ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE}`,
+  target_id: `Reader chooses the public object, relation, or enumerated choice set that the act itself is about, never a requested value or actor. ${ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE}`,
   target_kind: 'Mechanically supplied from the selected target catalogue entry; never reader-judged.',
   public_identifier_ids: 'Mechanically supplied from the selected target catalogue entry; never reader-judged.',
   requested_value_types:
@@ -88,8 +87,7 @@ export const ADAPTIVE_WARRANT_SEMANTIC_READER_FIELD_CONTRACT = Object.freeze({
   action_mode: 'Mechanically supplied from the selected action-object catalogue entry; never reader-judged.',
   executor: 'Reader chooses who must perform the action; this is not the utterance speaker.',
   action: 'Mechanically supplied from the selected action-object catalogue entry; never reader-judged.',
-  action_object_id:
-    `Reader chooses the public action object licensed by the clause. ${ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE}`,
+  action_object_id: `Reader chooses the public action object licensed by the clause. ${ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE}`,
   evidence_span: 'Reader supplies one unique literal minimal clause span; offsets and order are mechanical.',
   genuinely_ambiguous:
     'True only when two complete typed readings remain after every closed rule; an ambiguous case returns zero events.',
@@ -263,7 +261,8 @@ export function auditAdaptiveWarrantLiveSemanticSchemaTotality({ schema } = {}) 
     if (evidenceSpanSchema?.type !== 'string' || evidenceSpanSchema?.properties) {
       issues.push(`${speechAct}.evidence_span must contain only the model-supplied literal quote`);
     }
-    const targetBranches = contract.target === 'catalog_or_none' ? branchByState(targetSchema, `${speechAct}.target`) : {};
+    const targetBranches =
+      contract.target === 'catalog_or_none' ? branchByState(targetSchema, `${speechAct}.target`) : {};
     const targetCatalog = contract.target === 'catalog' ? targetSchema : targetBranches.catalog;
     const targetNone = contract.target === 'none' ? targetSchema : targetBranches.none;
     if (targetCatalog) {

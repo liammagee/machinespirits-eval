@@ -291,7 +291,8 @@ function inClassification(id) {
   }
   if (id === 'opening.default_response') {
     return {
-      switching_variable: 'fallback after progression.public_obligation_contract.complete and upstream opening branches',
+      switching_variable:
+        'fallback after progression.public_obligation_contract.complete and upstream opening branches',
       trace:
         'The gate can supply public_obligation_directive, so its decision path reaches the public-obligation discriminator immediately above this fallback.',
     };
@@ -432,57 +433,357 @@ function sourceRows() {
   const stanceCues = functionObjectLiteralMap(firstDraft, 'compactStanceInstruction', 'cues');
   const actionCues = functionObjectLiteralMap(firstDraft, 'compactActionInstruction', 'cues');
   const rows = [
-    fixedRow({ id: 'uptake.default', source: `${firstDraftPath}#compactUptakeInstruction.default`, prefix: 'When no narrower uptake branch applies, the compact uptake string is:', quote: 'Answer, credit, qualify, correct, or receive the learner’s concrete move; never use generic praise.' }),
-    fixedRow({ id: 'uptake.accelerated', source: `${firstDraftPath}#compactUptakeInstruction.accelerated`, prefix: 'When the public contract records learner acceleration, the compact uptake addition is:', quote: 'Credit every warranted move; do not ask for it again.' }),
-    templateRow({ id: 'uptake.learner_move', source: `${firstDraftPath}#compactUptakeInstruction.learnerMove`, prefix: 'When the public contract carries a learner move, this compact uptake template is rendered and the gate fills its named slot from the public contract:', fixedSegments: ['Carry forward this move: ', ''], slots: ['learner_move'] }),
-    fixedRow({ id: 'uptake.writable_complementary', source: `${firstDraftPath}#compactUptakeInstruction.writable.complementary`, prefix: 'When a writable entry must precede complementary due evidence, the compact uptake string is:', quote: 'Begin exactly “Write:” with one learner-sayable pre-turn limit; do not preview or paraphrase SOURCE.' }),
-    templateRow({ id: 'uptake.writable_causal', source: `${firstDraftPath}#compactUptakeInstruction.writable.causal`, prefix: 'When the public contract carries a causal subject and outcome, this compact uptake template is rendered and the gate fills its named slots from the public contract:', fixedSegments: ['Begin exactly “Write:” with this learner-sayable sentence: “The ', ' did not cause the ', '.” Keep both named roles exact; never widen either role or change cause into prevention.'], slots: ['causal_subject', 'causal_outcome'] }),
-    fixedRow({ id: 'uptake.writable_causal_generic', source: `${firstDraftPath}#compactUptakeInstruction.writable.causal_generic`, prefix: 'When the public contract carries a causal relation without a named subject, the compact uptake string is:', quote: 'Begin exactly “Write:” with one learner-sayable sentence: the candidate was inactive while the outcome still occurred, so this rules out candidate causation. Preserve named actors and polarity; never say the candidate failed to prevent or stop the outcome.' }),
-    fixedRow({ id: 'uptake.writable_record', source: `${firstDraftPath}#compactUptakeInstruction.writable.record`, prefix: 'When a writable entry can point to a rendered public record, the compact uptake string is:', quote: 'Begin exactly “Write:” with one learner-sayable sentence saying what one numbered RECORD line says. Preserve its actors, relation, and polarity; never reverse cause or evidentiary force, and claim nothing the line does not carry.' }),
-    fixedRow({ id: 'uptake.writable_record_fallback', source: `${firstDraftPath}#compactUptakeInstruction.writable.record_fallback`, prefix: 'When a writable entry has no rendered public-record block, the compact uptake fallback is:', quote: 'Begin exactly “Write:” with one learner-sayable sentence licensed by the public record. Preserve actors, relation, and polarity; never reverse cause or evidentiary force.' }),
-    fixedRow({ id: 'uptake.responsive_repair', source: `${firstDraftPath}#compactUptakeInstruction.responsive_repair`, prefix: 'When the public contract requires responsive repair, the compact uptake string is:', quote: 'Answer the learner’s unanswered question directly before doing anything else.' }),
-    fixedRow({ id: 'opening.instructional_meta', source: `${firstDraftPath}#buildTutorStubFirstDraftContract.opening.instructional_meta`, prefix: 'When the public contract selects instructional-meta repair, its rendered opening instruction is:', quote: 'Begin by directly acknowledging that the learner wants the explanation made easier to follow. Restate the latest tutor point in ordinary words. Do not quote the whole learner request, treat it as evidence, or advance the inquiry.' }),
-    fixedRow({ id: 'opening.writable_before_due_evidence', source: `${firstDraftPath}#buildTutorStubFirstDraftContract.opening.writable_before_due_evidence`, prefix: 'When a writable entry precedes due evidence, its rendered opening instruction is:', quote: 'The learner asked what to write while new evidence is due in this reply. Begin exactly with “Write:” and supply one complete learner-sayable sentence about the pre-turn public status or evidentiary limit. It must complement the new evidence: do not state, paraphrase, preview, or summarize any PUBLIC EVIDENCE DUE NOW. Only then enact each due clue once in the development beat.' }),
-    fixedRow({ id: 'opening.writable_entry', source: `${firstDraftPath}#buildTutorStubFirstDraftContract.opening.writable_entry`, prefix: 'When a writable entry is requested without due evidence, its rendered opening instruction is:', quote: 'The learner asked what to write. Begin exactly with “Write:” and supply one complete learner-sayable sentence licensed by the current public evidence. This direct entry is the learner uptake; only then perform the selected development beat. Do not substitute a prop action or another question for the requested sentence.' }),
-    fixedRow({ id: 'opening.default_response', source: `${firstDraftPath}#buildTutorStubFirstDraftContract.opening.default`, prefix: 'When no narrower opening branch applies, the rendered opening instruction is:', quote: 'Respond to the learner’s actual contribution in the first sentence by answering, crediting, qualifying, correcting, or receiving it. Paraphrase its concrete claim or concern rather than echoing the learner’s substantive wording; do not begin with generic praise.' }),
-    ...keyedRows(partCues, { idPrefix: 'part.compact_cue', sourceConstant: 'COMPACT_PART_CUES', prefix: (key) => `When the downstream selector carries the ${key.replaceAll('_', ' ')} part, its compact part cue is:` }),
-    fixedRow({ id: 'part.inline.scene_partner', source: `${firstDraftPath}#compactPartInstruction.scene_partner`, prefix: 'When the selected part is scene partner, the live inline compact cue is:', quote: 'place both speakers at one named public object using “you”, “we”, or “together”; a solitary “I” beside the object does not count; do not ask a question yet' }),
-    fixedRow({ id: 'part.fallback', source: `${firstDraftPath}#compactPartInstruction.fallback`, prefix: 'When no named compact part cue is available, the compact part fallback is:', quote: 'perform one concrete public action or judgment' }),
-    fixedRow({ id: 'part.prop.existing', source: `${firstDraftPath}#compactPartInstruction.prop.existing`, prefix: 'When the public contract forbids a new prop, the compact part addition is:', quote: 'Use an already-named object; add no prop.' }),
-    fixedRow({ id: 'part.prop.named', source: `${firstDraftPath}#compactPartInstruction.prop.named`, prefix: 'When the public contract permits a scene object, the compact part addition is:', quote: 'Name one public scene object.' }),
-    templateRow({ id: 'part.wrapper', source: `${firstDraftPath}#compactPartInstruction.wrapper`, prefix: 'For every selected part, this compact wrapper is rendered and the gate fills its named slots from the public contract:', fixedSegments: ['As ', ', without naming the role, ', '.'], slots: ['actorial_part_label', 'compact_part_cue'] }),
-    ...keyedRows(tacticCues, { idPrefix: 'tactic.execution', sourceConstant: 'TACTIC_EXECUTION_CUES', prefix: (key) => `When the compact tactic builder carries the ${key.replaceAll('_', ' ')} tactic, its execution cue is:` }),
-    fixedRow({ id: 'tactic.support.3', source: `${firstDraftPath}#compactSupportInstruction.level_3`, prefix: 'When support level is three, the compact tactic support string is:', quote: 'Make the public connection explicit.' }),
-    fixedRow({ id: 'tactic.support.2', source: `${firstDraftPath}#compactSupportInstruction.level_2`, prefix: 'When support level is two, the compact tactic support string is:', quote: 'Give one concrete hint, leaving the judgment open.' }),
-    fixedRow({ id: 'tactic.support.1', source: `${firstDraftPath}#compactSupportInstruction.level_1`, prefix: 'When support level is one, the compact tactic support string is:', quote: 'Give only a light directional cue.' }),
-    fixedRow({ id: 'tactic.support.0', source: `${firstDraftPath}#compactSupportInstruction.level_0`, prefix: 'When support level is zero or unset, the compact tactic support string is empty:', quote: '' }),
-    templateRow({ id: 'tactic.source_accessibility.max_words', source: `${firstDraftPath}#compactSourceAccessibilityInstruction.max_words`, prefix: 'When source accessibility compensation is active, this compact template is rendered and the gate fills its named slot from the public contract:', fixedSegments: ['Immediately after SOURCE, write one unquoted statement of at most ', ' words.'], slots: ['max_words'] }),
-    templateRow({ id: 'tactic.source_accessibility.material_tokens', source: `${firstDraftPath}#compactSourceAccessibilityInstruction.material_tokens`, prefix: 'When source accessibility compensation is active, this compact template is rendered and the gate fills its named slot from the public contract:', fixedSegments: ['Reuse at least ', ' material SOURCE words in order and one source-specific anchor.'], slots: ['min_material_source_tokens'] }),
-    fixedRow({ id: 'tactic.source_accessibility.constraints', source: `${firstDraftPath}#compactSourceAccessibilityInstruction.constraints`, prefix: 'When source accessibility compensation is active, its compact constraint string is:', quote: 'Add only a, an, or the; preserve no, not, only, and may; do not copy all SOURCE or ask.' }),
-    fixedRow({ id: 'tactic.source_boundary', source: `${firstDraftPath}#compactTacticInstruction.sourceBoundary`, prefix: 'When public source evidence is active, the compact tactic prefix is:', quote: 'After SOURCE closes, make TACTIC a new unquoted sentence.' }),
-    fixedRow({ id: 'tactic.delivered_boundary', source: `${firstDraftPath}#compactTacticInstruction.transition`, prefix: 'When the requested pressure tactic is inapplicable, the compact tactic transition is:', quote: 'Use the delivered boundary tactic, not the requested pressure tactic.' }),
-    fixedRow({ id: 'tactic.direction_only_rapid_handoff', source: `${firstDraftPath}#buildTutorStubFirstDraftContract.directionOnlyWithoutNewEvidence`, prefix: 'When direction-only support recasts rapid handoff, the compact tactic execution string is:', quote: 'Move straight from one already-public object or line to the present evidentiary limit. State the direction of the missing support yourself and end declaratively; do not ask the learner to name unseen evidence.' }),
-    templateRow({ id: 'tactic.causal_performance', source: `${firstDraftPath}#typedCausalPerformanceInstruction`, prefix: 'When the public contract carries a causal subject and outcome, this tactic template is rendered and the gate fills its named slots from the public contract:', fixedSegments: ['Say “The ', ' did not cause the ', '; actual cause remains open.” Add no third clause or role change.'], slots: ['causal_subject', 'causal_outcome'] }),
-    fixedRow({ id: 'tactic.question_boundary.handoff', source: `${firstDraftPath}#questionOwnedTacticExecution.boundary.handoff`, prefix: 'When the handoff owns an allowed question, the compact tactic boundary is:', quote: 'Ask no question here; HANDOFF owns it.' }),
-    fixedRow({ id: 'tactic.question_boundary.none', source: `${firstDraftPath}#questionOwnedTacticExecution.boundary.none`, prefix: 'When the public contract forbids a question, the compact tactic boundary is:', quote: 'Ask no question here.' }),
-    templateRow({ id: 'tactic.question_owned.rapid_handoff', source: `${firstDraftPath}#questionOwnedTacticExecution.rapid_handoff`, prefix: 'When rapid handoff delegates question ownership, this compact tactic template is rendered and the gate fills its named slot from the public contract:', fixedSegments: ['Move straight from the named public object or line to one short declarative observation. ', ''], slots: ['question_boundary'] }),
-    templateRow({ id: 'tactic.question_owned.shared_scene_invitation', source: `${firstDraftPath}#questionOwnedTacticExecution.shared_scene_invitation`, prefix: 'When shared-scene invitation delegates question ownership, this compact tactic template is rendered and the gate fills its named slot from the public contract:', fixedSegments: ['Invite shared attention to the named public object declaratively using “you”, “we”, or “together”. ', ''], slots: ['question_boundary'] }),
-    templateRow({ id: 'tactic.question_owned.general', source: `${firstDraftPath}#questionOwnedTacticExecution.general`, prefix: 'When another tactic delegates question ownership, this compact tactic template is rendered and the gate fills its named slots from the public contract:', fixedSegments: ['', ' ', ''], slots: ['tactic_execution', 'question_boundary'] }),
-    ...keyedRows(stanceCues, { idPrefix: 'stance.compact_cue', sourceConstant: 'compactStanceInstruction.cues', prefix: (key) => `When the gate carries the ${key.replaceAll('_', ' ')} stance, its compact stance cue is:` }),
-    templateRow({ id: 'stance.fallback', source: `${firstDraftPath}#compactStanceInstruction.fallback`, prefix: 'When the public contract carries an unlisted stance, this compact stance fallback is rendered and the gate fills its named slot from the public contract:', fixedSegments: ['Make it visibly ', '.'], slots: ['engagement_stance'] }),
-    fixedRow({ id: 'handoff.settled', source: `${firstDraftPath}#compactProgressionHandoffInstruction.settled`, prefix: 'When the public contract names a settled surface, the compact handoff addition is:', quote: 'Do not reopen the settled point.' }),
-    fixedRow({ id: 'handoff.bridge', source: `${firstDraftPath}#compactProgressionHandoffInstruction.bridge`, prefix: 'When the public contract requires a sibling-relation bridge, the compact handoff addition is:', quote: 'Connect SOURCE to the learner’s requested relation.' }),
-    fixedRow({ id: 'handoff.declarative_fallback', source: `${firstDraftPath}#compactProgressionHandoffInstruction.declarative_fallback`, prefix: 'When declarative support has no supplied handoff instruction, the compact handoff fallback is:', quote: 'End declaratively; ask no question.' }),
-    fixedRow({ id: 'handoff.public_limit', source: `${firstDraftPath}#compactProgressionHandoffInstruction.public_limit`, prefix: 'When questions are forbidden without another special branch, the compact handoff string is:', quote: 'State the current public limit through the selected action; ask no question.' }),
-    fixedRow({ id: 'handoff.optional_question', source: `${firstDraftPath}#compactProgressionHandoffInstruction.optional_question`, prefix: 'When a handoff question is optional, the compact handoff string is:', quote: 'Carry the selected action to TURN FOCUS. HANDOFF may ask one final question there; otherwise end declaratively.' }),
-    fixedRow({ id: 'handoff.source_question', source: `${firstDraftPath}#compactProgressionHandoffInstruction.source_question`, prefix: 'When active source evidence and stage-next-step require a handoff question, the compact handoff string is:', quote: 'Ask one HANDOFF question about what SOURCE changes, supports, or rules out.' }),
-    templateRow({ id: 'handoff.action_question', source: `${firstDraftPath}#compactProgressionHandoffInstruction.action_question`, prefix: 'When the default handoff owns the final question, this compact handoff template is rendered and the gate fills its named slot from the public contract:', fixedSegments: ['', ' HANDOFF owns the one final question.'], slots: ['compact_action_instruction'] }),
-    fixedRow({ id: 'handoff.bounded_choices', source: `${firstDraftPath}#buildHostPlan.bounded_choice`, prefix: 'When question-support state requires bounded choices, the compact handoff addition is:', quote: 'Express two or three recognizable public-safe choices declaratively; do not turn the list into a question.' }),
-    fixedRow({ id: 'handoff.clarification_invitation', source: `${firstDraftPath}#buildHostPlan.clarification_invitation`, prefix: 'When question-support state requires a clarification invitation, the compact handoff addition is:', quote: 'Also say that the learner may ask for a direct explanation of one clue, connection, or term.' }),
-    fixedRow({ id: 'action.override.closure', source: `${firstDraftPath}#compactActionInstruction.closure`, prefix: 'When the public contract requires closure, the compact action override is:', quote: 'State the licensed public finding and close the inquiry; ask no question.' }),
-    fixedRow({ id: 'action.override.responsive_repair', source: `${firstDraftPath}#compactActionInstruction.responsive_repair`, prefix: 'When the public contract requires responsive repair, the compact action override is:', quote: 'End after the direct answer or one public way to check it; do not substitute another exercise.' }),
-    fixedRow({ id: 'action.override.active_source', source: `${firstDraftPath}#compactActionInstruction.active_source`, prefix: 'When active source evidence carries stage-next-step, the compact action override is:', quote: 'Return SOURCE as one concrete question about what it changes, supports, or rules out.' }),
-    ...keyedRows(actionCues, { idPrefix: 'action.compact_cue', sourceConstant: 'compactActionInstruction.cues', prefix: (key) => `When the gate carries the ${key.replaceAll('_', ' ')} action family, its compact action cue is:` }),
+    fixedRow({
+      id: 'uptake.default',
+      source: `${firstDraftPath}#compactUptakeInstruction.default`,
+      prefix: 'When no narrower uptake branch applies, the compact uptake string is:',
+      quote: 'Answer, credit, qualify, correct, or receive the learner’s concrete move; never use generic praise.',
+    }),
+    fixedRow({
+      id: 'uptake.accelerated',
+      source: `${firstDraftPath}#compactUptakeInstruction.accelerated`,
+      prefix: 'When the public contract records learner acceleration, the compact uptake addition is:',
+      quote: 'Credit every warranted move; do not ask for it again.',
+    }),
+    templateRow({
+      id: 'uptake.learner_move',
+      source: `${firstDraftPath}#compactUptakeInstruction.learnerMove`,
+      prefix:
+        'When the public contract carries a learner move, this compact uptake template is rendered and the gate fills its named slot from the public contract:',
+      fixedSegments: ['Carry forward this move: ', ''],
+      slots: ['learner_move'],
+    }),
+    fixedRow({
+      id: 'uptake.writable_complementary',
+      source: `${firstDraftPath}#compactUptakeInstruction.writable.complementary`,
+      prefix: 'When a writable entry must precede complementary due evidence, the compact uptake string is:',
+      quote: 'Begin exactly “Write:” with one learner-sayable pre-turn limit; do not preview or paraphrase SOURCE.',
+    }),
+    templateRow({
+      id: 'uptake.writable_causal',
+      source: `${firstDraftPath}#compactUptakeInstruction.writable.causal`,
+      prefix:
+        'When the public contract carries a causal subject and outcome, this compact uptake template is rendered and the gate fills its named slots from the public contract:',
+      fixedSegments: [
+        'Begin exactly “Write:” with this learner-sayable sentence: “The ',
+        ' did not cause the ',
+        '.” Keep both named roles exact; never widen either role or change cause into prevention.',
+      ],
+      slots: ['causal_subject', 'causal_outcome'],
+    }),
+    fixedRow({
+      id: 'uptake.writable_causal_generic',
+      source: `${firstDraftPath}#compactUptakeInstruction.writable.causal_generic`,
+      prefix:
+        'When the public contract carries a causal relation without a named subject, the compact uptake string is:',
+      quote:
+        'Begin exactly “Write:” with one learner-sayable sentence: the candidate was inactive while the outcome still occurred, so this rules out candidate causation. Preserve named actors and polarity; never say the candidate failed to prevent or stop the outcome.',
+    }),
+    fixedRow({
+      id: 'uptake.writable_record',
+      source: `${firstDraftPath}#compactUptakeInstruction.writable.record`,
+      prefix: 'When a writable entry can point to a rendered public record, the compact uptake string is:',
+      quote:
+        'Begin exactly “Write:” with one learner-sayable sentence saying what one numbered RECORD line says. Preserve its actors, relation, and polarity; never reverse cause or evidentiary force, and claim nothing the line does not carry.',
+    }),
+    fixedRow({
+      id: 'uptake.writable_record_fallback',
+      source: `${firstDraftPath}#compactUptakeInstruction.writable.record_fallback`,
+      prefix: 'When a writable entry has no rendered public-record block, the compact uptake fallback is:',
+      quote:
+        'Begin exactly “Write:” with one learner-sayable sentence licensed by the public record. Preserve actors, relation, and polarity; never reverse cause or evidentiary force.',
+    }),
+    fixedRow({
+      id: 'uptake.responsive_repair',
+      source: `${firstDraftPath}#compactUptakeInstruction.responsive_repair`,
+      prefix: 'When the public contract requires responsive repair, the compact uptake string is:',
+      quote: 'Answer the learner’s unanswered question directly before doing anything else.',
+    }),
+    fixedRow({
+      id: 'opening.instructional_meta',
+      source: `${firstDraftPath}#buildTutorStubFirstDraftContract.opening.instructional_meta`,
+      prefix: 'When the public contract selects instructional-meta repair, its rendered opening instruction is:',
+      quote:
+        'Begin by directly acknowledging that the learner wants the explanation made easier to follow. Restate the latest tutor point in ordinary words. Do not quote the whole learner request, treat it as evidence, or advance the inquiry.',
+    }),
+    fixedRow({
+      id: 'opening.writable_before_due_evidence',
+      source: `${firstDraftPath}#buildTutorStubFirstDraftContract.opening.writable_before_due_evidence`,
+      prefix: 'When a writable entry precedes due evidence, its rendered opening instruction is:',
+      quote:
+        'The learner asked what to write while new evidence is due in this reply. Begin exactly with “Write:” and supply one complete learner-sayable sentence about the pre-turn public status or evidentiary limit. It must complement the new evidence: do not state, paraphrase, preview, or summarize any PUBLIC EVIDENCE DUE NOW. Only then enact each due clue once in the development beat.',
+    }),
+    fixedRow({
+      id: 'opening.writable_entry',
+      source: `${firstDraftPath}#buildTutorStubFirstDraftContract.opening.writable_entry`,
+      prefix: 'When a writable entry is requested without due evidence, its rendered opening instruction is:',
+      quote:
+        'The learner asked what to write. Begin exactly with “Write:” and supply one complete learner-sayable sentence licensed by the current public evidence. This direct entry is the learner uptake; only then perform the selected development beat. Do not substitute a prop action or another question for the requested sentence.',
+    }),
+    fixedRow({
+      id: 'opening.default_response',
+      source: `${firstDraftPath}#buildTutorStubFirstDraftContract.opening.default`,
+      prefix: 'When no narrower opening branch applies, the rendered opening instruction is:',
+      quote:
+        'Respond to the learner’s actual contribution in the first sentence by answering, crediting, qualifying, correcting, or receiving it. Paraphrase its concrete claim or concern rather than echoing the learner’s substantive wording; do not begin with generic praise.',
+    }),
+    ...keyedRows(partCues, {
+      idPrefix: 'part.compact_cue',
+      sourceConstant: 'COMPACT_PART_CUES',
+      prefix: (key) =>
+        `When the downstream selector carries the ${key.replaceAll('_', ' ')} part, its compact part cue is:`,
+    }),
+    fixedRow({
+      id: 'part.inline.scene_partner',
+      source: `${firstDraftPath}#compactPartInstruction.scene_partner`,
+      prefix: 'When the selected part is scene partner, the live inline compact cue is:',
+      quote:
+        'place both speakers at one named public object using “you”, “we”, or “together”; a solitary “I” beside the object does not count; do not ask a question yet',
+    }),
+    fixedRow({
+      id: 'part.fallback',
+      source: `${firstDraftPath}#compactPartInstruction.fallback`,
+      prefix: 'When no named compact part cue is available, the compact part fallback is:',
+      quote: 'perform one concrete public action or judgment',
+    }),
+    fixedRow({
+      id: 'part.prop.existing',
+      source: `${firstDraftPath}#compactPartInstruction.prop.existing`,
+      prefix: 'When the public contract forbids a new prop, the compact part addition is:',
+      quote: 'Use an already-named object; add no prop.',
+    }),
+    fixedRow({
+      id: 'part.prop.named',
+      source: `${firstDraftPath}#compactPartInstruction.prop.named`,
+      prefix: 'When the public contract permits a scene object, the compact part addition is:',
+      quote: 'Name one public scene object.',
+    }),
+    templateRow({
+      id: 'part.wrapper',
+      source: `${firstDraftPath}#compactPartInstruction.wrapper`,
+      prefix:
+        'For every selected part, this compact wrapper is rendered and the gate fills its named slots from the public contract:',
+      fixedSegments: ['As ', ', without naming the role, ', '.'],
+      slots: ['actorial_part_label', 'compact_part_cue'],
+    }),
+    ...keyedRows(tacticCues, {
+      idPrefix: 'tactic.execution',
+      sourceConstant: 'TACTIC_EXECUTION_CUES',
+      prefix: (key) =>
+        `When the compact tactic builder carries the ${key.replaceAll('_', ' ')} tactic, its execution cue is:`,
+    }),
+    fixedRow({
+      id: 'tactic.support.3',
+      source: `${firstDraftPath}#compactSupportInstruction.level_3`,
+      prefix: 'When support level is three, the compact tactic support string is:',
+      quote: 'Make the public connection explicit.',
+    }),
+    fixedRow({
+      id: 'tactic.support.2',
+      source: `${firstDraftPath}#compactSupportInstruction.level_2`,
+      prefix: 'When support level is two, the compact tactic support string is:',
+      quote: 'Give one concrete hint, leaving the judgment open.',
+    }),
+    fixedRow({
+      id: 'tactic.support.1',
+      source: `${firstDraftPath}#compactSupportInstruction.level_1`,
+      prefix: 'When support level is one, the compact tactic support string is:',
+      quote: 'Give only a light directional cue.',
+    }),
+    fixedRow({
+      id: 'tactic.support.0',
+      source: `${firstDraftPath}#compactSupportInstruction.level_0`,
+      prefix: 'When support level is zero or unset, the compact tactic support string is empty:',
+      quote: '',
+    }),
+    templateRow({
+      id: 'tactic.source_accessibility.max_words',
+      source: `${firstDraftPath}#compactSourceAccessibilityInstruction.max_words`,
+      prefix:
+        'When source accessibility compensation is active, this compact template is rendered and the gate fills its named slot from the public contract:',
+      fixedSegments: ['Immediately after SOURCE, write one unquoted statement of at most ', ' words.'],
+      slots: ['max_words'],
+    }),
+    templateRow({
+      id: 'tactic.source_accessibility.material_tokens',
+      source: `${firstDraftPath}#compactSourceAccessibilityInstruction.material_tokens`,
+      prefix:
+        'When source accessibility compensation is active, this compact template is rendered and the gate fills its named slot from the public contract:',
+      fixedSegments: ['Reuse at least ', ' material SOURCE words in order and one source-specific anchor.'],
+      slots: ['min_material_source_tokens'],
+    }),
+    fixedRow({
+      id: 'tactic.source_accessibility.constraints',
+      source: `${firstDraftPath}#compactSourceAccessibilityInstruction.constraints`,
+      prefix: 'When source accessibility compensation is active, its compact constraint string is:',
+      quote: 'Add only a, an, or the; preserve no, not, only, and may; do not copy all SOURCE or ask.',
+    }),
+    fixedRow({
+      id: 'tactic.source_boundary',
+      source: `${firstDraftPath}#compactTacticInstruction.sourceBoundary`,
+      prefix: 'When public source evidence is active, the compact tactic prefix is:',
+      quote: 'After SOURCE closes, make TACTIC a new unquoted sentence.',
+    }),
+    fixedRow({
+      id: 'tactic.delivered_boundary',
+      source: `${firstDraftPath}#compactTacticInstruction.transition`,
+      prefix: 'When the requested pressure tactic is inapplicable, the compact tactic transition is:',
+      quote: 'Use the delivered boundary tactic, not the requested pressure tactic.',
+    }),
+    fixedRow({
+      id: 'tactic.direction_only_rapid_handoff',
+      source: `${firstDraftPath}#buildTutorStubFirstDraftContract.directionOnlyWithoutNewEvidence`,
+      prefix: 'When direction-only support recasts rapid handoff, the compact tactic execution string is:',
+      quote:
+        'Move straight from one already-public object or line to the present evidentiary limit. State the direction of the missing support yourself and end declaratively; do not ask the learner to name unseen evidence.',
+    }),
+    templateRow({
+      id: 'tactic.causal_performance',
+      source: `${firstDraftPath}#typedCausalPerformanceInstruction`,
+      prefix:
+        'When the public contract carries a causal subject and outcome, this tactic template is rendered and the gate fills its named slots from the public contract:',
+      fixedSegments: [
+        'Say “The ',
+        ' did not cause the ',
+        '; actual cause remains open.” Add no third clause or role change.',
+      ],
+      slots: ['causal_subject', 'causal_outcome'],
+    }),
+    fixedRow({
+      id: 'tactic.question_boundary.handoff',
+      source: `${firstDraftPath}#questionOwnedTacticExecution.boundary.handoff`,
+      prefix: 'When the handoff owns an allowed question, the compact tactic boundary is:',
+      quote: 'Ask no question here; HANDOFF owns it.',
+    }),
+    fixedRow({
+      id: 'tactic.question_boundary.none',
+      source: `${firstDraftPath}#questionOwnedTacticExecution.boundary.none`,
+      prefix: 'When the public contract forbids a question, the compact tactic boundary is:',
+      quote: 'Ask no question here.',
+    }),
+    templateRow({
+      id: 'tactic.question_owned.rapid_handoff',
+      source: `${firstDraftPath}#questionOwnedTacticExecution.rapid_handoff`,
+      prefix:
+        'When rapid handoff delegates question ownership, this compact tactic template is rendered and the gate fills its named slot from the public contract:',
+      fixedSegments: ['Move straight from the named public object or line to one short declarative observation. ', ''],
+      slots: ['question_boundary'],
+    }),
+    templateRow({
+      id: 'tactic.question_owned.shared_scene_invitation',
+      source: `${firstDraftPath}#questionOwnedTacticExecution.shared_scene_invitation`,
+      prefix:
+        'When shared-scene invitation delegates question ownership, this compact tactic template is rendered and the gate fills its named slot from the public contract:',
+      fixedSegments: [
+        'Invite shared attention to the named public object declaratively using “you”, “we”, or “together”. ',
+        '',
+      ],
+      slots: ['question_boundary'],
+    }),
+    templateRow({
+      id: 'tactic.question_owned.general',
+      source: `${firstDraftPath}#questionOwnedTacticExecution.general`,
+      prefix:
+        'When another tactic delegates question ownership, this compact tactic template is rendered and the gate fills its named slots from the public contract:',
+      fixedSegments: ['', ' ', ''],
+      slots: ['tactic_execution', 'question_boundary'],
+    }),
+    ...keyedRows(stanceCues, {
+      idPrefix: 'stance.compact_cue',
+      sourceConstant: 'compactStanceInstruction.cues',
+      prefix: (key) => `When the gate carries the ${key.replaceAll('_', ' ')} stance, its compact stance cue is:`,
+    }),
+    templateRow({
+      id: 'stance.fallback',
+      source: `${firstDraftPath}#compactStanceInstruction.fallback`,
+      prefix:
+        'When the public contract carries an unlisted stance, this compact stance fallback is rendered and the gate fills its named slot from the public contract:',
+      fixedSegments: ['Make it visibly ', '.'],
+      slots: ['engagement_stance'],
+    }),
+    fixedRow({
+      id: 'handoff.settled',
+      source: `${firstDraftPath}#compactProgressionHandoffInstruction.settled`,
+      prefix: 'When the public contract names a settled surface, the compact handoff addition is:',
+      quote: 'Do not reopen the settled point.',
+    }),
+    fixedRow({
+      id: 'handoff.bridge',
+      source: `${firstDraftPath}#compactProgressionHandoffInstruction.bridge`,
+      prefix: 'When the public contract requires a sibling-relation bridge, the compact handoff addition is:',
+      quote: 'Connect SOURCE to the learner’s requested relation.',
+    }),
+    fixedRow({
+      id: 'handoff.declarative_fallback',
+      source: `${firstDraftPath}#compactProgressionHandoffInstruction.declarative_fallback`,
+      prefix: 'When declarative support has no supplied handoff instruction, the compact handoff fallback is:',
+      quote: 'End declaratively; ask no question.',
+    }),
+    fixedRow({
+      id: 'handoff.public_limit',
+      source: `${firstDraftPath}#compactProgressionHandoffInstruction.public_limit`,
+      prefix: 'When questions are forbidden without another special branch, the compact handoff string is:',
+      quote: 'State the current public limit through the selected action; ask no question.',
+    }),
+    fixedRow({
+      id: 'handoff.optional_question',
+      source: `${firstDraftPath}#compactProgressionHandoffInstruction.optional_question`,
+      prefix: 'When a handoff question is optional, the compact handoff string is:',
+      quote:
+        'Carry the selected action to TURN FOCUS. HANDOFF may ask one final question there; otherwise end declaratively.',
+    }),
+    fixedRow({
+      id: 'handoff.source_question',
+      source: `${firstDraftPath}#compactProgressionHandoffInstruction.source_question`,
+      prefix:
+        'When active source evidence and stage-next-step require a handoff question, the compact handoff string is:',
+      quote: 'Ask one HANDOFF question about what SOURCE changes, supports, or rules out.',
+    }),
+    templateRow({
+      id: 'handoff.action_question',
+      source: `${firstDraftPath}#compactProgressionHandoffInstruction.action_question`,
+      prefix:
+        'When the default handoff owns the final question, this compact handoff template is rendered and the gate fills its named slot from the public contract:',
+      fixedSegments: ['', ' HANDOFF owns the one final question.'],
+      slots: ['compact_action_instruction'],
+    }),
+    fixedRow({
+      id: 'handoff.bounded_choices',
+      source: `${firstDraftPath}#buildHostPlan.bounded_choice`,
+      prefix: 'When question-support state requires bounded choices, the compact handoff addition is:',
+      quote:
+        'Express two or three recognizable public-safe choices declaratively; do not turn the list into a question.',
+    }),
+    fixedRow({
+      id: 'handoff.clarification_invitation',
+      source: `${firstDraftPath}#buildHostPlan.clarification_invitation`,
+      prefix: 'When question-support state requires a clarification invitation, the compact handoff addition is:',
+      quote: 'Also say that the learner may ask for a direct explanation of one clue, connection, or term.',
+    }),
+    fixedRow({
+      id: 'action.override.closure',
+      source: `${firstDraftPath}#compactActionInstruction.closure`,
+      prefix: 'When the public contract requires closure, the compact action override is:',
+      quote: 'State the licensed public finding and close the inquiry; ask no question.',
+    }),
+    fixedRow({
+      id: 'action.override.responsive_repair',
+      source: `${firstDraftPath}#compactActionInstruction.responsive_repair`,
+      prefix: 'When the public contract requires responsive repair, the compact action override is:',
+      quote: 'End after the direct answer or one public way to check it; do not substitute another exercise.',
+    }),
+    fixedRow({
+      id: 'action.override.active_source',
+      source: `${firstDraftPath}#compactActionInstruction.active_source`,
+      prefix: 'When active source evidence carries stage-next-step, the compact action override is:',
+      quote: 'Return SOURCE as one concrete question about what it changes, supports, or rules out.',
+    }),
+    ...keyedRows(actionCues, {
+      idPrefix: 'action.compact_cue',
+      sourceConstant: 'compactActionInstruction.cues',
+      prefix: (key) =>
+        `When the gate carries the ${key.replaceAll('_', ' ')} action family, its compact action cue is:`,
+    }),
   ];
   return rows;
 }
@@ -645,16 +946,18 @@ export function guardOutcomePilotPreparation({ worldPaths, seeds = OUTCOME_PILOT
     };
   });
   const exclusionFingerprints = new Set(
-    exclusions.flatMap((row) => [row.sha256, ...row.embedded_fingerprints]).concat(
-      OUTCOME_PILOT_DEFERENCE_SESSION_IDENTITIES.map((identity) =>
-        sha256(
-          canonicalJson({
-            schema: 'machinespirits.adaptation-refinement.archived-deference-session-identity.v1',
-            identity,
-          }),
+    exclusions
+      .flatMap((row) => [row.sha256, ...row.embedded_fingerprints])
+      .concat(
+        OUTCOME_PILOT_DEFERENCE_SESSION_IDENTITIES.map((identity) =>
+          sha256(
+            canonicalJson({
+              schema: 'machinespirits.adaptation-refinement.archived-deference-session-identity.v1',
+              identity,
+            }),
+          ),
         ),
       ),
-    ),
   );
   const duplicates = candidateFingerprints.filter(
     (fingerprint, index) => candidateFingerprints.indexOf(fingerprint) !== index,
@@ -713,9 +1016,7 @@ export function guardOutcomeStandingPermissionMenu(material) {
   const actualRows = Array.isArray(material?.entries) ? material.entries : [];
   const expectedById = new Map(expectedRows.map((row) => [row.id, row]));
   const actualById = new Map(actualRows.map((row) => [row.id, row]));
-  const duplicateIds = actualRows
-    .map((row) => row.id)
-    .filter((id, index, ids) => ids.indexOf(id) !== index);
+  const duplicateIds = actualRows.map((row) => row.id).filter((id, index, ids) => ids.indexOf(id) !== index);
   const missing = expectedRows.filter((row) => !actualById.has(row.id)).map((row) => row.id);
   const unexpected = actualRows.filter((row) => !expectedById.has(row.id)).map((row) => row.id);
   const rowChecks = expectedRows.map((expected) => {
@@ -723,16 +1024,14 @@ export function guardOutcomeStandingPermissionMenu(material) {
     return {
       id: expected.id,
       quote_bytes_match: actual?.quote === expected.quote,
-      fixed_segments_bytes_match:
-        JSON.stringify(actual?.fixed_segments) === JSON.stringify(expected.fixed_segments),
+      fixed_segments_bytes_match: JSON.stringify(actual?.fixed_segments) === JSON.stringify(expected.fixed_segments),
       template_slots_match: JSON.stringify(actual?.template_slots) === JSON.stringify(expected.template_slots),
       prefix_bytes_match: actual?.prefix === expected.prefix,
       source_location_match: actual?.source === expected.source,
     };
   });
   const renderedMatches = material?.menu_text === renderMenu(actualRows);
-  const enumerationRuleMatches =
-    JSON.stringify(material?.enumeration_rule) === JSON.stringify(expectedEnumerationRule);
+  const enumerationRuleMatches = JSON.stringify(material?.enumeration_rule) === JSON.stringify(expectedEnumerationRule);
   const pass =
     material?.schema === OUTCOME_A1_MENU_SCHEMA &&
     Object.values(sourceChecks).every((check) => check.pass) &&
