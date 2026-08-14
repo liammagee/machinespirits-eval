@@ -10,14 +10,14 @@
   },
   "standing_permission": {
     "menu_json": "docs/adaptation-refinement/outcome-study-a1/standing-permission-menu.json",
-    "menu_json_sha256": "ce8d88065fb7ce23f64a4ebc99a7b2a47615f0a453dabf8c97e27d9dfc073cb3",
+    "menu_json_sha256": "30a240eebc18a431a712a51e645660783aa070d3762e50b6ccc18bc8b8bda94a",
     "menu_text": "docs/adaptation-refinement/outcome-study-a1/standing-permission-menu.txt",
     "menu_text_sha256": "966f3aa71dbcb907cf9f98e5d873c78ef00c697d29a4e6e360519a784d8257dd",
     "entry_count": 63,
     "enumeration_rule": "Starting from tutorStubFirstDraftContractPrompt, enumerate every candidate fixed string that can flow into a rendered field from the SHA-pinned services/tutorStubFirstDraftContract.js. For each candidate, record its switching variable, whether the gate verdict, repair policy, or register selection can reach that variable, the IN/OUT verdict, and the code trace; keep uncertain traces IN with the doubt recorded. The complete 87-candidate classification is frozen at standing-permission-menu.json enumeration_rule.per_string_classification: 63 IN and 24 OUT, including tactic.support.0 as the documented null branch because support level zero renders no instruction bytes. Templates retain byte-exact fixed segments and named {{slots}}. The long buildTutorStubQuestionSupport tutorInstruction strings remain excluded because the live compact host-plan renderer does not read ending.instruction.",
     "source_sha256": {
       "services/tutorStubWarrantGate.js": "db30f563bb5107544f0f64677410f3e67cb2f0f2fbe573d4c5d66976b791fc24",
-      "services/adaptiveWarrantPolicy.js": "9edce479cca6dfde74a2a48f8321cbd3366ee0a97e4ac3e6565b656de0212c1d",
+      "services/adaptiveWarrantPolicy.js": "8e17f23bab13270b83a10597ca820b08607b42e6757640c23b70dab25bf60837",
       "services/tutorStubFirstDraftContract.js": "868c5ef7af8677a59cbf391cc0948c71cb567802e4d7d15d6f980366db707a29",
       "services/tutorStubQuestionSupport.js": "6084936a3dd7093a14b4ef76eb6914549064bf095bf7bc1c8b5e15eba168dfa3",
       "config/engagement-registers.yaml": "6284ffb82d8fe151312c05d6426f809de43addfe5275bbd5f70cbd39361a84c2"

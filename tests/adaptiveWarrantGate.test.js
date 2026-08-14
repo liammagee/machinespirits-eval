@@ -1910,6 +1910,19 @@ test('policy: sustained deference maps to challenge_resistance with a precise st
   assert.equal(policy.stance_hint, 'precise');
 });
 
+test('policy: steering_only falls through sustained deference while gated still selects challenge_resistance', () => {
+  const input = {
+    signal: classifyLearnerSignal('Would you have me note its light weight first?'),
+    warrantBasis: 'sustained_deference:3_turns',
+    strategyInForce: 'stage_next_step',
+    deferenceSustained: true,
+  };
+  const gated = recommendRepairPolicy(input);
+  const steeringOnly = recommendRepairPolicy({ ...input, challengeResistanceSelectable: false });
+  assert.equal(gated.family, 'challenge_resistance');
+  assert.equal(steeringOnly.family, 'stage_next_step');
+});
+
 test('gate: observe mode records but never overrides; active mode overrides after accumulation', () => {
   for (const mode of ['observe', 'active']) {
     const gate = createTutorStubWarrantGate({ mode });

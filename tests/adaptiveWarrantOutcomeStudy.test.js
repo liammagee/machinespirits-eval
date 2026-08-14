@@ -88,21 +88,24 @@ function turn(turnNumber, overrides = {}) {
   };
 }
 
-test('run configurations expose bare, gated, and standing-permission conditions', () => {
+test('run configurations add steering_only without changing the three inherited conditions', () => {
   assert.deepEqual(OUTCOME_STUDY_RUN_CONFIGURATIONS.map((row) => row.id), [
     'bare',
     'gated',
+    'steering_only',
     'standing_permission',
   ]);
   assert.deepEqual(OUTCOME_STUDY_RUN_CONFIGURATIONS.map((row) => row.warrant_gate_mode), [
     'observe',
     'active',
+    'active',
     'observe',
   ]);
-  assert.match(OUTCOME_STUDY_RUN_CONFIGURATIONS[2].cli_args.join(' '), /standing-instructions-file/u);
+  assert.match(OUTCOME_STUDY_RUN_CONFIGURATIONS[2].cli_args.join(' '), /warrant-challenge-resistance unselectable/u);
+  assert.match(OUTCOME_STUDY_RUN_CONFIGURATIONS[3].cli_args.join(' '), /standing-instructions-file/u);
 });
 
-test('all outcome conditions persist the same decision-time learner-signal block while only gated is active', () => {
+test('all outcome conditions persist the same decision-time learner-signal block while both study arms are active', () => {
   const decisions = OUTCOME_STUDY_RUN_CONFIGURATIONS.map((configuration) =>
     createTutorStubWarrantGate({ mode: configuration.warrant_gate_mode }).assess({
       turn: 1,
@@ -114,14 +117,15 @@ test('all outcome conditions persist the same decision-time learner-signal block
   );
   assert.deepEqual(
     decisions.map((decision) => decision.mode),
-    ['observe', 'active', 'observe'],
+    ['observe', 'active', 'active', 'observe'],
   );
   assert.ok(decisions.every((decision) => decision.learner_signal));
   assert.deepEqual(decisions[0].learner_signal, decisions[1].learner_signal);
   assert.deepEqual(decisions[1].learner_signal, decisions[2].learner_signal);
-  assert.deepEqual(Object.keys(decisions[0].learner_signal), Object.keys(decisions[2].learner_signal));
+  assert.deepEqual(decisions[2].learner_signal, decisions[3].learner_signal);
+  assert.deepEqual(Object.keys(decisions[0].learner_signal), Object.keys(decisions[3].learner_signal));
   assert.equal(decisions[0].override, null);
-  assert.equal(decisions[2].override, null);
+  assert.equal(decisions[3].override, null);
 });
 
 test('zero-call v3 decision-input replay reproduces registered sustained-deference predictions P1 and P2', () => {

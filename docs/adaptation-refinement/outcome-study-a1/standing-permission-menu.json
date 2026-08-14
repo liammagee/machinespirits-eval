@@ -2,7 +2,7 @@
   "schema": "machinespirits.adaptation-refinement.warrant-outcome-standing-permission-menu.v1",
   "source_sha256": {
     "services/tutorStubWarrantGate.js": "db30f563bb5107544f0f64677410f3e67cb2f0f2fbe573d4c5d66976b791fc24",
-    "services/adaptiveWarrantPolicy.js": "9edce479cca6dfde74a2a48f8321cbd3366ee0a97e4ac3e6565b656de0212c1d",
+    "services/adaptiveWarrantPolicy.js": "8e17f23bab13270b83a10597ca820b08607b42e6757640c23b70dab25bf60837",
     "services/tutorStubFirstDraftContract.js": "868c5ef7af8677a59cbf391cc0948c71cb567802e4d7d15d6f980366db707a29",
     "services/tutorStubQuestionSupport.js": "6084936a3dd7093a14b4ef76eb6914549064bf095bf7bc1c8b5e15eba168dfa3",
     "config/engagement-registers.yaml": "6284ffb82d8fe151312c05d6426f809de43addfe5275bbd5f70cbd39361a84c2"

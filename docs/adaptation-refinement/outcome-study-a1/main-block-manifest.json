@@ -9,7 +9,7 @@
   },
   "inherited_pilot_bindings": {
     "path": "docs/adaptation-refinement/outcome-study-a1/pilot-manifest.json",
-    "sha256": "0393f629ff142b20cb6f02773b868950b75bdca5fd715535dff2d02208910c63",
+    "sha256": "75137d3a7f057fb675e6b0e9bfcd8b35f671a96fba775ac6c6c445955a7532e6",
     "scope": "unchanged worlds, permission-seeking persona, standing-permission menu, source pins, and frozen reader instrument"
   },
   "worlds": [

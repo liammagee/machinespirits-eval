@@ -567,6 +567,7 @@ export function buildOutcomePilotJobs({ manifest, rootDir, dryRun = false, study
       profile: configuration.learner_profile,
       condition: assignment.condition,
       warrantGateMode: configuration.warrant_gate_mode,
+      warrantChallengeResistance: configuration.warrant_challenge_resistance || 'selectable',
       horizon: configuration.horizon,
       mechanismValidation: true,
       dryRun,
@@ -666,6 +667,8 @@ export function renderOutcomePilotPromptConfiguration({ worldPath, condition, se
         TUTOR_STUB_EVAL_POLICY: 'dynamic',
         TUTOR_STUB_EVAL_RUN_INDEX: '1',
         TUTOR_STUB_WARRANT_GATE: configuration.warrant_gate_mode,
+        TUTOR_STUB_WARRANT_CHALLENGE_RESISTANCE:
+          configuration.warrant_challenge_resistance || 'selectable',
       },
     }),
   );
@@ -681,8 +684,16 @@ export function preflightOutcomePilotPromptAudits({ manifest, outputPath } = {})
   if (!manifest?.worlds?.length) throw new Error('outcome prompt preflight requires frozen worlds');
   if (!outputPath) throw new Error('outcome prompt preflight requires an artifact path');
   const traceDir = path.join(path.dirname(path.resolve(outputPath)), 'prompt-audit-dry-run');
+  const conditionIds = Array.isArray(manifest.conditions)
+    ? manifest.conditions
+    : Object.keys(manifest.conditions || {});
+  const configurations = conditionIds.map((condition) => {
+    const configuration = OUTCOME_STUDY_RUN_CONFIGURATIONS.find((row) => row.id === condition);
+    if (!configuration) throw new Error(`unknown outcome prompt-preflight condition ${condition}`);
+    return configuration;
+  });
   const renders = manifest.worlds.flatMap((world) =>
-    OUTCOME_STUDY_RUN_CONFIGURATIONS.map((configuration) => {
+    configurations.map((configuration) => {
       const rendered = renderOutcomePilotPromptConfiguration({
         worldPath: world.path,
         condition: configuration.id,
@@ -988,10 +999,12 @@ export async function runOutcomeGeneration({
 }
 
 export function prepareOutcomeCases({ rows, manifest, rootDir, samplingSeed = 'outcome-pilot-frozen-order' }) {
-  const conditions = OUTCOME_STUDY_RUN_CONFIGURATIONS.map((configuration) => ({
-    id: configuration.id,
-    warrantGateMode: configuration.warrant_gate_mode,
-  }));
+  const conditionIds = [...new Set(manifest.interleaved_condition_assignment.map((row) => row.condition))];
+  const conditions = conditionIds.map((condition) => {
+    const configuration = OUTCOME_STUDY_RUN_CONFIGURATIONS.find((row) => row.id === condition);
+    if (!configuration) throw new Error(`unknown outcome case-extraction condition ${condition}`);
+    return { id: configuration.id, warrantGateMode: configuration.warrant_gate_mode };
+  });
   const built = buildBlindedAnnotationCorpus(rows, {
     studyId: path.basename(rootDir),
     samplingSeed,

@@ -16,6 +16,21 @@
  */
 
 export const ADAPTIVE_WARRANT_POLICY_SCHEMA = 'machinespirits.adaptation-refinement.repair-policy.v3';
+export const ADAPTIVE_WARRANT_CHALLENGE_RESISTANCE_MODES = Object.freeze(['selectable', 'unselectable']);
+
+export function resolveAdaptiveWarrantChallengeResistanceSelectable(
+  value = process.env.TUTOR_STUB_WARRANT_CHALLENGE_RESISTANCE,
+) {
+  const mode = String(value || 'selectable')
+    .trim()
+    .toLowerCase();
+  if (!ADAPTIVE_WARRANT_CHALLENGE_RESISTANCE_MODES.includes(mode)) {
+    throw new Error(
+      `TUTOR_STUB_WARRANT_CHALLENGE_RESISTANCE must be one of ${ADAPTIVE_WARRANT_CHALLENGE_RESISTANCE_MODES.join('|')}, got "${mode}"`,
+    );
+  }
+  return mode === 'selectable';
+}
 
 const CONTRACT_SUCCESSOR_STANCES = Object.freeze({
   answer_accountably: 'plain',
@@ -60,6 +75,7 @@ export function recommendRepairPolicy({
   publicObligation = null,
   inquiryCompletion = null,
   proposedActionFamily = null,
+  challengeResistanceSelectable = resolveAdaptiveWarrantChallengeResistanceSelectable(),
 } = {}) {
   if (warrantBasis === 'none' || warrantBasis === 'masked_by_engaged_analytic') return null;
   const primary = signal?.primary || 'neutral';
@@ -155,7 +171,7 @@ export function recommendRepairPolicy({
   // Sustained permission-framed deference with a stalled record. Catalogue:
   // challenge_resistance — "Interrupt rote compliance, answer-seeking, or low
   // agency while preserving a repair path."
-  if (deferenceSustained || primary === 'low_agency_deferral') {
+  if (challengeResistanceSelectable && (deferenceSustained || primary === 'low_agency_deferral')) {
     return policy('challenge_resistance', 'sustained permission-seeking with no record growth; hand agency back', {
       stanceHint: 'precise',
     });

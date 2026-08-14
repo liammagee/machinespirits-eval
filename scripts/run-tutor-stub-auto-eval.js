@@ -69,6 +69,7 @@ import { normalizeTutorStubPointOfActionArm } from '../services/tutorStubPointOf
 import { tutorStubStrictOriginalCandidateAccepted } from '../services/tutorStubFirstDraftCampaign.js';
 import { collectTutorPrBenchmarkReachablePaths } from '../services/tutorStubPrBenchmarkHook.js';
 import { resolveTutorStubWarrantGateMode } from '../services/tutorStubWarrantGate.js';
+import { resolveAdaptiveWarrantChallengeResistanceSelectable } from '../services/adaptiveWarrantPolicy.js';
 import { readSelectedJsonlEventsSync } from '../services/jsonlEventReader.js';
 import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
@@ -93,6 +94,10 @@ const ROOT = path.resolve(path.dirname(AUTO_EVAL_SCRIPT), '..');
 const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'codex.gpt-5-mini']);
 const DEFAULT_CODEX_MODEL_REF = 'codex.gpt-5.6-luna';
 const DEFAULT_AUTO_EVAL_MODEL_CALL_BUDGET = 120;
+
+function resolveWarrantChallengeResistance(value) {
+  return resolveAdaptiveWarrantChallengeResistanceSelectable(value) ? 'selectable' : 'unselectable';
+}
 const argvHasOption = (name) => process.argv.slice(2).some((arg) => arg === name || arg.startsWith(`${name}=`));
 const MODEL_OVERRIDE = Boolean(process.env.TUTOR_STUB_EVAL_MODEL || argvHasOption('--model'));
 const ANALYSIS_MODEL_OVERRIDE = Boolean(
@@ -133,6 +138,11 @@ const RUN_SEED_OVERRIDE = Boolean(process.env.TUTOR_STUB_EVAL_RUN_SEED || argvHa
 const WARRANT_GATE_OVERRIDE = Boolean(
   process.env.TUTOR_STUB_EVAL_WARRANT_GATE || process.env.TUTOR_STUB_WARRANT_GATE || argvHasOption('--warrant-gate'),
 );
+const WARRANT_CHALLENGE_RESISTANCE_OVERRIDE = Boolean(
+  process.env.TUTOR_STUB_EVAL_WARRANT_CHALLENGE_RESISTANCE ||
+    process.env.TUTOR_STUB_WARRANT_CHALLENGE_RESISTANCE ||
+    argvHasOption('--warrant-challenge-resistance'),
+);
 const MODEL_CALL_BUDGET_OVERRIDE = Boolean(
   process.env.TUTOR_STUB_EVAL_MODEL_CALL_BUDGET || argvHasOption('--model-call-budget'),
 );
@@ -147,6 +157,13 @@ const { values: args } = parseArgs({
     'warrant-gate': {
       type: 'string',
       default: process.env.TUTOR_STUB_EVAL_WARRANT_GATE || process.env.TUTOR_STUB_WARRANT_GATE || 'off',
+    },
+    'warrant-challenge-resistance': {
+      type: 'string',
+      default:
+        process.env.TUTOR_STUB_EVAL_WARRANT_CHALLENGE_RESISTANCE ||
+        process.env.TUTOR_STUB_WARRANT_CHALLENGE_RESISTANCE ||
+        'selectable',
     },
     'point-of-action-arm': {
       type: 'string',
@@ -269,6 +286,8 @@ Options:
   --policies <csv>           register policies to compare (default: negative,dynamic,random)
                               known: dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system,continuous_dynamical_system,continuous_empirical_dynamical_system,bland,random,negative
   --warrant-gate <mode>      adaptive warrant gate: off, observe, or active (default: off)
+  --warrant-challenge-resistance <selectable|unselectable>
+                              whether the active gate may select challenge_resistance
   --point-of-action-arm <standing_book|triggered_placebo|side_coach|compiled_constraint>
                               frozen final-stretch Step 4 arm; forwarded unchanged to every dialogue
   --model <ref>              tutor model (default: codex.gpt-5.6-luna)
@@ -10350,6 +10369,9 @@ function buildJobs({ policies, runs, traceDir, parallelism, interleavePolicies =
       traceDir: childTraceDir,
       logPath,
       warrantGateMode: resolveTutorStubWarrantGateMode(args['warrant-gate']),
+      warrantChallengeResistance: resolveWarrantChallengeResistance(
+        args['warrant-challenge-resistance'],
+      ),
       childArgs,
     });
   }
@@ -10389,6 +10411,11 @@ function buildResumePlan(summaryPath) {
   );
   const warrantGateMode = resolveTutorStubWarrantGateMode(
     WARRANT_GATE_OVERRIDE ? args['warrant-gate'] : source.config?.warrantGateMode || args['warrant-gate'],
+  );
+  const warrantChallengeResistance = resolveWarrantChallengeResistance(
+    WARRANT_CHALLENGE_RESISTANCE_OVERRIDE
+      ? args['warrant-challenge-resistance']
+      : source.config?.warrantChallengeResistance || args['warrant-challenge-resistance'],
   );
   const savedModelCallBudget = (source.results || [])
     .map((result) => {
@@ -10521,6 +10548,7 @@ function buildResumePlan(summaryPath) {
       traceDir: childTraceDir,
       logPath: path.join(traceDir, 'logs', `${key}.log`),
       warrantGateMode,
+      warrantChallengeResistance,
       childArgs: adjustedChildArgs,
       resumedFrom: {
         summary: path.relative(ROOT, resolvedSummaryPath),
@@ -10559,6 +10587,7 @@ function buildResumePlan(summaryPath) {
       traceDir,
       runSeed,
       warrantGateMode,
+      warrantChallengeResistance,
       lab: 'automated_eval',
       modelCallBudget,
       dryRun: Boolean(args['dry-run']),
@@ -10951,6 +10980,9 @@ function autoEvalConfigForState({ traceDir, configOverride = null }) {
       loopMode: normalizeTutorStubLoopMode(args['loop-mode'], { label: '--loop-mode' }),
       runSeed: normalizeTutorStubDagFactDropoutSeed(args['run-seed'], { label: '--run-seed' }),
       warrantGateMode: resolveTutorStubWarrantGateMode(args['warrant-gate']),
+      warrantChallengeResistance: resolveWarrantChallengeResistance(
+        args['warrant-challenge-resistance'],
+      ),
       dagFactDropoutSemantics: {
         eligibleFacts: 'adopted_public_premises_only',
         backgroundFactsImmune: true,
@@ -11074,6 +11106,7 @@ function runChildJob(job, { primaryHorizon = positiveInt(args['primary-horizon']
         TUTOR_STUB_EVAL_POLICY: job.policy,
         TUTOR_STUB_EVAL_RUN_INDEX: String(job.runIndex),
         TUTOR_STUB_WARRANT_GATE: job.warrantGateMode,
+        TUTOR_STUB_WARRANT_CHALLENGE_RESISTANCE: job.warrantChallengeResistance,
       },
     });
     child.stdout.pipe(log, { end: false });

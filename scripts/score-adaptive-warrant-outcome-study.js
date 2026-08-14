@@ -47,6 +47,23 @@ export const OUTCOME_STUDY_RUN_CONFIGURATIONS = Object.freeze([
     cli_args: Object.freeze(['--turns', '8', '--no-stop-on-grounded', '--warrant-gate', 'active']),
   }),
   Object.freeze({
+    id: 'steering_only',
+    warrant_gate_mode: 'active',
+    warrant_challenge_resistance: 'unselectable',
+    horizon: 8,
+    learner_profile: 'low_agency',
+    learner_analysis_prompt_profile: 'handbook_v1',
+    cli_args: Object.freeze([
+      '--turns',
+      '8',
+      '--no-stop-on-grounded',
+      '--warrant-gate',
+      'active',
+      '--warrant-challenge-resistance',
+      'unselectable',
+    ]),
+  }),
+  Object.freeze({
     id: 'standing_permission',
     warrant_gate_mode: 'observe',
     horizon: 8,
@@ -368,7 +385,7 @@ function normalizeOutcomeTurn(row) {
 }
 
 export function extractOutcomeDialogueFromTraceRows({ dialogue_id, condition, rows } = {}) {
-  if (!['bare', 'gated', 'standing_permission'].includes(condition)) {
+  if (!['bare', 'gated', 'steering_only', 'standing_permission'].includes(condition)) {
     throw new Error(`unsupported outcome condition: ${condition}`);
   }
   const turns = (rows || [])
@@ -556,6 +573,15 @@ export function scoreAdaptiveWarrantOutcomeMainBlock(input = {}) {
     measure_1_decision_correctness: decisionScore,
     dialogue_measures_2_6: dialogueScores,
     descriptive_measures_7_8: descriptive,
+  };
+}
+
+export function scoreAdaptiveWarrantSteeringDecomposition(input = {}) {
+  const score = scoreAdaptiveWarrantOutcomeMainBlock(input);
+  return {
+    ...score,
+    schema: 'machinespirits.adaptation-refinement.warrant-steering-decomposition-score.v1',
+    conditions: ['gated', 'steering_only'],
   };
 }
 
