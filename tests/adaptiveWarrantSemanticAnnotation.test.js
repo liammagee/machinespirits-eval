@@ -516,8 +516,8 @@ test('contract/catalog audit validates every speech act through the production a
     semanticCatalog: corpus.semantic_annotation_catalog,
   });
   assert.equal(audit.ok, true);
-  assert.equal(audit.speech_act_count, 15);
-  assert.equal(audit.worked_example_count, 15);
+  assert.equal(audit.speech_act_count, 18);
+  assert.equal(audit.worked_example_count, 18);
   assert.equal(
     audit.worked_examples.find((row) => row.speech_act === 'tutor_selection_request').target_id,
     'target-smoke-weather-card-choice',

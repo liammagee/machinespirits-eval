@@ -26,6 +26,42 @@ export const ADAPTIVE_WARRANT_DIVERGENCE_INTERPRETATIONS = Object.freeze([
 
 export const ADAPTIVE_WARRANT_DIVERGENCE_MAGNITUDES = Object.freeze(['none', 'low', 'moderate', 'high']);
 
+export const ADAPTIVE_WARRANT_DEFENDED_OVERCLAIM_LABEL = 'defended_overclaim';
+export const ADAPTIVE_WARRANT_DEFENDED_OVERCLAIM_DEFAULT_TURNS = 3;
+export const ADAPTIVE_WARRANT_DEFENDED_OVERCLAIM_STATE = 'sustained_defended_overclaim';
+
+/**
+ * How many straight defended over-claim turns arm the guarded-pole sensor.
+ * The pilot registration pins N; the environment override exists so the
+ * registration can set it without a code change.
+ *
+ * The live gate hands three decision-time signals to this projection (the two
+ * prior turns plus the current one), so N above 3 cannot be observed through
+ * that window and is refused here rather than failing silently.
+ */
+export function resolveAdaptiveWarrantDefendedOverclaimTurns(
+  value = process.env.TUTOR_STUB_WARRANT_DEFENDED_OVERCLAIM_TURNS,
+) {
+  if (value === undefined || value === null || String(value).trim() === '') {
+    return ADAPTIVE_WARRANT_DEFENDED_OVERCLAIM_DEFAULT_TURNS;
+  }
+  const turns = Number(String(value).trim());
+  if (!Number.isInteger(turns) || turns < 2 || turns > 3) {
+    throw new Error(`TUTOR_STUB_WARRANT_DEFENDED_OVERCLAIM_TURNS must be an integer 2 or 3, got "${value}"`);
+  }
+  return turns;
+}
+
+/** Length of the trailing run of defended over-claim signals, current turn last. */
+export function adaptiveWarrantDefendedOverclaimStreak(recentSignals = []) {
+  let streak = 0;
+  for (let index = recentSignals.length - 1; index >= 0; index -= 1) {
+    if (!recentSignals[index]?.labels?.includes(ADAPTIVE_WARRANT_DEFENDED_OVERCLAIM_LABEL)) break;
+    streak += 1;
+  }
+  return streak;
+}
+
 function row(
   dimension,
   {
@@ -168,6 +204,27 @@ function engagementRow({ signal, classification, deferenceSustained, recentSigna
     ? signal.engaged_analytic_present === true
     : signal?.primary === 'engaged_analytic' || ['steering', 'self_correcting'].includes(turn.agency);
   const deferenceCount = (recentSignals || []).filter((entry) => entry?.labels?.includes('low_agency_deferral')).length;
+  // Guarded pole (v3.3). A learner who holds an unsupported claim and pushes
+  // the burden back is not deferring and need not be inarticulate, so neither
+  // existing branch names the state. The rows below fire only on the v3.3
+  // defensive label, which no earlier corpus carries.
+  const defendedOverclaimStreak = adaptiveWarrantDefendedOverclaimStreak(recentSignals || []);
+  const defendedOverclaimTurns = resolveAdaptiveWarrantDefendedOverclaimTurns();
+  if (defendedOverclaimStreak >= defendedOverclaimTurns && !lowAgency) {
+    return row('engagement', {
+      normativeState: 'voluntary_agentive_participation',
+      descriptiveState: ADAPTIVE_WARRANT_DEFENDED_OVERCLAIM_STATE,
+      magnitude: 'high',
+      persistence: defendedOverclaimStreak,
+      interpretation: 'stalled',
+      repairWarranted: true,
+      evidence: [
+        `learner_signal:${signal?.primary || 'neutral'}`,
+        `defended_overclaim_turns:${defendedOverclaimStreak}`,
+        `defended_overclaim_threshold:${defendedOverclaimTurns}`,
+      ],
+    });
+  }
   if (analytic && !lowAgency) {
     return row('engagement', {
       normativeState: 'voluntary_agentive_participation',
@@ -176,6 +233,20 @@ function engagementRow({ signal, classification, deferenceSustained, recentSigna
     });
   }
   if (!lowAgency) {
+    if (defendedOverclaimStreak > 0) {
+      return row('engagement', {
+        normativeState: 'voluntary_agentive_participation',
+        descriptiveState: 'current_defended_overclaim',
+        magnitude: 'low',
+        persistence: defendedOverclaimStreak,
+        interpretation: 'stalled',
+        repairWarranted: false,
+        evidence: [
+          `learner_signal:${signal?.primary || 'neutral'}`,
+          `defended_overclaim_turns:${defendedOverclaimStreak}`,
+        ],
+      });
+    }
     return row('engagement', {
       normativeState: 'voluntary_agentive_participation',
       descriptiveState: 'no_public_engagement_divergence',

@@ -761,18 +761,18 @@ export function runAdaptiveWarrantSemanticBrittlenessPreflight({ outputPath, sou
     check(
       'all_event_contracts_satisfiable_by_preflight_catalog',
       syntheticContractCatalogAudit.ok === true &&
-        syntheticContractCatalogAudit.speech_act_count === 15 &&
-        syntheticContractCatalogAudit.worked_example_count === 15,
+        syntheticContractCatalogAudit.speech_act_count === 18 &&
+        syntheticContractCatalogAudit.worked_example_count === 18,
       syntheticContractCatalogAudit,
     ),
     check(
       'smoke_catalog_worked_examples_pass_production_validator',
-      smokeContractCatalogAudit.ok === true && smokeContractCatalogAudit.worked_example_count === 15,
+      smokeContractCatalogAudit.ok === true && smokeContractCatalogAudit.worked_example_count === 18,
       smokeContractCatalogAudit,
     ),
     check(
       'diagnostic_catalog_worked_examples_pass_production_validator',
-      diagnosticContractCatalogAudit.ok === true && diagnosticContractCatalogAudit.worked_example_count === 15,
+      diagnosticContractCatalogAudit.ok === true && diagnosticContractCatalogAudit.worked_example_count === 18,
       diagnosticContractCatalogAudit,
     ),
     check(
