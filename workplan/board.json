@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-14T19:06:08.843Z",
+  "generated": "2026-08-14T21:10:03.649Z",
   "counts": {
     "total": 501,
     "byStatus": {
@@ -8,8 +8,7 @@
       "dropped": 10,
       "active": 7,
       "archived": 4,
-      "triaged": 1,
-      "review": 1
+      "review": 2
     },
     "byType": {
       "research": 77,
@@ -22,49 +21,6 @@
     }
   },
   "items": [
-    {
-      "id": "refactor-poetics-browser-derivation-presentation",
-      "title": "Extract poetics-browser derivation presentation owner",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-08-10",
-      "updated": "2026-08-10",
-      "verification": "Empty and populated derivation index, live-index, live-run, and completed-run HTML remain byte-identical; direct renderer, route, desktop-parity, auth, complete hermetic root/core, risk coverage, lint, formatting, manifest, workplan-source, diff, and zero-cycle gates pass without model calls or production artifact writes.",
-      "claim_status": "planned",
-      "depends_on": [
-        "refactor-tutor-stub-auto-eval-visualization-renderer"
-      ],
-      "links": {
-        "notes": [
-          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
-          "docs/next-steps/2026-08-10-codebase-refactoring-final-r6-reconciliation.md"
-        ],
-        "code": [
-          "scripts/browse-poetics-scripts.js",
-          "tests/poeticsReportBrowser.test.js",
-          "tests/desktopRouteParity.test.js",
-          "tests/poeticsAdminAuth.test.js",
-          "config/coverage-risk-floors.json",
-          "config/hermetic-test-manifest.json"
-        ],
-        "items": [
-          "codebase-refactoring-program",
-          "refactor-tutor-stub-auto-eval-visualization-renderer"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "poetics",
-        "browser",
-        "derivation",
-        "reporting",
-        "presentation"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
     {
       "id": "adaptive-warrant-contract-redesign",
       "title": "Adaptive warrant gate: expected-uptake and policy-termination contracts",
@@ -615,6 +571,52 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
+    },
+    {
+      "id": "refactor-poetics-browser-derivation-presentation",
+      "title": "Extract poetics-browser derivation presentation owner",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-10",
+      "updated": "2026-08-10",
+      "branch": "codex/refactor-poetics-browser-derivation-presentation",
+      "verification": "Six empty and populated derivation HTML fixtures remain byte-identical; 4/4 direct renderer assertions, 42/42 focused browser/route/auth tests, 8,381/8,381 hermetic root tests, 137/137 tutor-core tests, all fifteen risk groups, lint, formatting, manifest, workplan-source, diff, and zero-cycle gates pass without model calls or production artifact writes.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-auto-eval-visualization-renderer"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
+          "docs/next-steps/2026-08-10-codebase-refactoring-final-r6-reconciliation.md"
+        ],
+        "code": [
+          "scripts/browse-poetics-scripts.js",
+          "services/poeticsDerivationPresentation.js",
+          "tests/poeticsDerivationPresentation.test.js",
+          "tests/poeticsReportBrowser.test.js",
+          "tests/desktopRouteParity.test.js",
+          "tests/poeticsAdminAuth.test.js",
+          "config/coverage-risk-floors.json",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-auto-eval-visualization-renderer"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "poetics",
+        "browser",
+        "derivation",
+        "reporting",
+        "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
