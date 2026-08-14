@@ -740,9 +740,7 @@
       "id": "concurrent-pty-ci",
       "suite": "root",
       "testPattern": "^auto mode keeps a separate editable command line while model output is generated$",
-      "environmentPresent": [
-        "CI"
-      ],
+      "environmentPresent": ["CI"],
       "owner": "tutor-stub",
       "reason": "The parallel root matrix leaves this timing-sensitive case to the dedicated PTY concurrency job.",
       "removalSlice": "dedicated test:pty:ci lane; retain until the parallel root phase has equivalent timing isolation"
@@ -751,9 +749,7 @@
       "id": "windows-pty",
       "suite": "root",
       "testPattern": "^(?:fresh mixed scenario animates while the opening learner artifacts are loading|fresh TTY scenario and profile pickers scroll with arrow keys and select with Enter|live TTY settings panel edits numeric settings with keyboard controls|Escape discards every pending TTY settings-panel change|mixed TTY uses readable profile-aware learner prompts and updates them after a profile change|a real interactive TTY remembers settings by default without an opt-in flag|a returning mixed TTY restores scenario, profile, and settings without reopening setup|editing a Tab-inserted mixed learner suggestion records hybrid authorship|empty-prompt arrow keys rate the tutor immediately without taking over cursor movement|auto mode keeps a separate editable command line while model output is generated|typing slash opens a filtered command palette and Tab completes the selection|profile palette completes the documented stress-list command|prompt shortcuts select and replace words and whole lines|/character tutor and /character learner open keyboard selectors in a TTY)$",
-      "platforms": [
-        "win32"
-      ],
+      "platforms": ["win32"],
       "owner": "tutor-stub",
       "reason": "These node-pty interaction cases are intentionally unsupported on Windows.",
       "removalSlice": "Windows PTY support decision"

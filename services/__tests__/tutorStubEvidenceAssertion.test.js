@@ -76,7 +76,7 @@ test('allows questions, requirements, conditions, and explicit non-matches', () 
 
 test('keeps a sentence after an exact quoted source outside the source correspondence', () => {
   const source =
-    'Fresh docking-clamp marks score the mess-hall ceiling rail, still warm. The maintenance registry matches their spacing and chipped left pad to Moth\'s retired courier chassis: the little drone docked there.';
+    "Fresh docking-clamp marks score the mess-hall ceiling rail, still warm. The maintenance registry matches their spacing and chipped left pad to Moth's retired courier chassis: the little drone docked there.";
   const quoted = `“I can confirm this: ${source}”`;
 
   assert.equal(

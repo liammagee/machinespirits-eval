@@ -74,11 +74,12 @@ function annotationFromKey({ corpus, key, corpusSha256, annotatorId, runId }) {
             ? 'inquiry_completion'
             : projection.warrant_basis.startsWith('inquiry_incomplete_candidate:')
               ? 'candidate_safety'
-            : projection.warrant_basis.startsWith('contract_')
-              ? 'action_contract'
-              : projection.warrant_basis.startsWith('register_') || projection.warrant_basis.startsWith('accumulated:')
-                ? 'register_or_accumulated_trouble'
-                : 'none';
+              : projection.warrant_basis.startsWith('contract_')
+                ? 'action_contract'
+                : projection.warrant_basis.startsWith('register_') ||
+                    projection.warrant_basis.startsWith('accumulated:')
+                  ? 'register_or_accumulated_trouble'
+                  : 'none';
       return {
         sample_id: publicCase.sample_id,
         speech_act: projection.public_obligation.speech_act.kind,
@@ -131,8 +132,7 @@ test('authored challenge realizes its declared diagnostic coverage without becom
   assert.ok(
     built.corpus.cases.every(
       (row) =>
-        row.normative_action_contract?.schema ===
-          'machinespirits.adaptation-refinement.action-family-contract.v1' &&
+        row.normative_action_contract?.schema === 'machinespirits.adaptation-refinement.action-family-contract.v1' &&
         row.normative_action_contract.expected_response_match === 'any' &&
         Number.isInteger(row.normative_action_contract_instance?.started_turn) &&
         Number.isInteger(row.normative_action_contract_instance?.response_count) &&
@@ -149,9 +149,13 @@ test('authored challenge realizes its declared diagnostic coverage without becom
   const proposalCases = built.key.cases.filter((row) => row.job_id.startsWith('proposal-'));
   assert.equal(proposalCases.length, 8);
   assert.ok(
-    proposalCases.every((row) => publicById.get(row.sample_id).current_learner_turn.learner.includes('answered my result request')),
+    proposalCases.every((row) =>
+      publicById.get(row.sample_id).current_learner_turn.learner.includes('answered my result request'),
+    ),
   );
-  const engagementPersistence = built.key.cases.filter((row) => ['persistence-05', 'persistence-06'].includes(row.job_id));
+  const engagementPersistence = built.key.cases.filter((row) =>
+    ['persistence-05', 'persistence-06'].includes(row.job_id),
+  );
   assert.equal(engagementPersistence.length, 2);
   assert.ok(
     engagementPersistence.every(
@@ -221,7 +225,10 @@ test('challenge freeze is gate-ineligible, drift-checked, and produces a digest-
     assert.deepEqual(firstOutputSchema.properties.reader_id.enum, ['reader-a']);
     assert.deepEqual(firstOutputSchema.properties.batch_id.enum, ['reader-a-batch-01']);
     assert.deepEqual(firstOutputSchema.properties.cases_by_sample_id.required, firstBatch.required_sample_ids);
-    assert.deepEqual(Object.keys(firstOutputSchema.properties.cases_by_sample_id.properties), firstBatch.required_sample_ids);
+    assert.deepEqual(
+      Object.keys(firstOutputSchema.properties.cases_by_sample_id.properties),
+      firstBatch.required_sample_ids,
+    );
     assert.equal(firstOutputSchema.properties.cases_by_sample_id.additionalProperties, false);
     assert.deepEqual(
       firstOutputSchema.$defs.case.properties.recommended_action_family.enum,
@@ -246,15 +253,16 @@ test('challenge freeze is gate-ineligible, drift-checked, and produces a digest-
     );
     assert.ok(
       firstPacket.instructions.some(
-        (instruction) =>
-          instruction.includes('open_obligation_source_turns') && instruction.includes('satisfied'),
+        (instruction) => instruction.includes('open_obligation_source_turns') && instruction.includes('satisfied'),
       ),
     );
     assert.ok(firstPacket.instructions.some((instruction) => instruction.includes('later reminder remains overdue')));
     assert.ok(firstPacket.instructions.some((instruction) => instruction.includes('direct result-request clause')));
     assert.ok(firstPacket.instructions.some((instruction) => instruction.includes('names no requested result')));
     assert.ok(firstPacket.instructions.some((instruction) => instruction.includes('productive pacing divergence')));
-    assert.ok(firstPacket.instructions.some((instruction) => instruction.includes('premature whole-inquiry claim is unsafe')));
+    assert.ok(
+      firstPacket.instructions.some((instruction) => instruction.includes('premature whole-inquiry claim is unsafe')),
+    );
     assert.match(firstBatch.output_schema_sha256, /^[0-9a-f]{64}$/u);
     assert.equal(
       prepared.authorizationRequest.bindings.reader_packets[0].output_schema_sha256,

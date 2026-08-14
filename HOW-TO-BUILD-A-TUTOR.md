@@ -608,3 +608,57 @@ stays priced against the simplest tutor that could sit in the chair.
    object directly before the quote): recorded, safely fallback-caught.
 6. Multi-sample transfer rates and cold-persona baselines are now
    standing instrument rules for anything that claims learning.
+
+## The gate that worked by standing there — and the wording that did nothing (2026-08-15)
+
+The permission-seeking learner was the deficit the pressure cards
+could not reach: it resists nothing, and asks leave for every move.
+The warrant gate was built for it — deterministic rules reading the
+turn classification, choosing the tutor's action family every turn
+under explicit contracts, with a sensor that arms after three
+straight deferential turns and licenses a timed challenge. Three
+arms, twenty-four eight-turn dialogues each, all pre-registered
+(§6.25): bare, gated, and standing-permission — the gate's own
+template and hint text pasted into the standing prompt, machinery
+removed.
+
+What came back rearranged the credit.
+
+1. **Wording alone is inert.** The standing-permission arm delivered
+   zero challenges in twenty-four dialogues. A standing prompt sets a
+   rate; a per-turn line sets a timing; and the rate this standing
+   grant set was zero. A licence is not a sentence the model has
+   read. It is a line machinery puts in front of the model at a
+   moment.
+
+2. **The always-on line, not the timed one, moved the learner.**
+   Gated dialogues broke deference in 19 of 24 (bare 10, standing
+   11) — but twelve of those nineteen broke in dialogues where no
+   challenge was delivered at all, and the sensor armed less often under the gate (16
+   armings against 61 bare, 53 standing) because the steering from
+   turn one prevents the very streaks that arm it. The plain per-turn
+   steering carried the conduct change; the sensor-timed challenge
+   was not the engine we had assumed. Two registered predictions
+   failed for exactly this reason (P1′: 11/24 gated dialogues with a
+   delivered challenge against a ≥80% bar; P2b: 7/19 breaks within
+   three turns of a challenge — though where a challenge did land,
+   the break followed within the window 7 times of 7).
+
+3. **The timed challenge pays a different bill.** A decomposition arm
+   (steering intact, challenge family unselectable) priced the timing
+   family on its own: decision correctness fell from 83.8% to 71.8% —
+   about twelve points, back into control range (bare 64.8%, standing
+   68.3%). The timed challenge is load-bearing for the learner
+   deciding *correctly*, not for the learner deciding at all.
+
+The build lesson joins the earlier pair. Step 6 said: a card without
+its licence is refused, and a licence without its card is never used.
+The gate adds the third leg: a licence without machinery is inert —
+and once the machinery runs, audit *which* of its parts does which
+work before crediting the clever one. The sensor was the clever part;
+the plain always-on line did the moving.
+
+Caveats as registered: one model (codex gpt-5.6-luna) in every seat,
+one persona, two worlds, eight turns, same-model dual read; no
+human-learning claim. Numbers and rulings: §6.25 and the relay ledger
+under `docs/adaptation-refinement/`.

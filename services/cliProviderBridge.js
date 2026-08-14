@@ -494,8 +494,7 @@ function auditCodexStructuredEvents(events = [], { strict = true, invalidLines =
       strict &&
       (!(ALLOWED_CODEX_EVENT_TYPES.has(rawEventType) || CODEX_FAILURE_EVENT_TYPES.has(rawEventType)) ||
         (rawEventType.startsWith('item.') && !rawItemType) ||
-        (rawItemType &&
-          !(ALLOWED_CODEX_ITEM_TYPES.has(rawItemType) || CODEX_FAILURE_ITEM_TYPES.has(rawItemType))))
+        (rawItemType && !(ALLOWED_CODEX_ITEM_TYPES.has(rawItemType) || CODEX_FAILURE_ITEM_TYPES.has(rawItemType))))
     ) {
       prohibited.push({ index, event_type: eventType, item_type: itemType || null });
     }

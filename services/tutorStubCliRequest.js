@@ -1,10 +1,7 @@
-export const TUTOR_STUB_CLI_REQUEST_PATH =
-  'machinespirits.tutor-stub.cli-request-path.v1';
+export const TUTOR_STUB_CLI_REQUEST_PATH = 'machinespirits.tutor-stub.cli-request-path.v1';
 
 function definedOptions(entries) {
-  return Object.fromEntries(
-    Object.entries(entries).filter(([, value]) => value !== undefined && value !== null),
-  );
+  return Object.fromEntries(Object.entries(entries).filter(([, value]) => value !== undefined && value !== null));
 }
 
 export function buildTutorStubCliBridgeRequest({

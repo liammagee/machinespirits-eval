@@ -61,8 +61,7 @@ function isInside(parentPath, childPath) {
 
 function completedRows(run, entry) {
   return run.batches.filter(
-    (row) =>
-      row.reader_id === entry.reader_id && row.batch_id === entry.batch_id && row.status === 'complete',
+    (row) => row.reader_id === entry.reader_id && row.batch_id === entry.batch_id && row.status === 'complete',
   );
 }
 

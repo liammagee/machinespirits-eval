@@ -152,9 +152,7 @@ function setValues(values) {
 
 export function eventTargetSlotSet(events) {
   return setValues(
-    (events || [])
-      .filter((event) => event?.target?.state === 'catalog')
-      .map((event) => event.target.target_id),
+    (events || []).filter((event) => event?.target?.state === 'catalog').map((event) => event.target.target_id),
   );
 }
 
@@ -226,9 +224,7 @@ function responseAdmissibility({ responsePath, schemaPath, batch, readerId, mani
     ) {
       return { ok: false, reason: 'packet_binding_mismatch' };
     }
-    const runBatch = run?.batches?.find(
-      (entry) => entry.reader_id === readerId && entry.batch_id === batch.batch_id,
-    );
+    const runBatch = run?.batches?.find((entry) => entry.reader_id === readerId && entry.batch_id === batch.batch_id);
     const [provider, ...modelParts] = String(run?.model || '').split('.');
     const bridgeEcho =
       runBatch?.model_attestation_basis === 'explicit_cli_model_argument_accepted_bridge_echo' &&
@@ -395,9 +391,17 @@ export function scoreSemanticReaderPresenceGate({ manifest, run, responsesRoot, 
       diff_profile: {
         counts: countDiff,
         speech_acts:
-          countDiff || !isDeepStrictEqual(left.events.map((event) => event.speech_act), right.events.map((event) => event.speech_act)),
+          countDiff ||
+          !isDeepStrictEqual(
+            left.events.map((event) => event.speech_act),
+            right.events.map((event) => event.speech_act),
+          ),
         targets:
-          countDiff || !isDeepStrictEqual(left.events.map((event) => canonical(event.target)), right.events.map((event) => canonical(event.target))),
+          countDiff ||
+          !isDeepStrictEqual(
+            left.events.map((event) => canonical(event.target)),
+            right.events.map((event) => canonical(event.target)),
+          ),
         actions:
           countDiff ||
           !isDeepStrictEqual(
@@ -419,9 +423,7 @@ export function scoreSemanticReaderPresenceGate({ manifest, run, responsesRoot, 
   const testAgreementCount = count('proposed_test_presence_agreement');
   const flagAgreementCount = count('ambiguity_flag_agreement');
   const consensusCount = count('presence_grain_consensus');
-  const goldResult = cases.filter(
-    (row) => row.consensus_non_ambiguous && row.reader_a_presence.result_request,
-  ).length;
+  const goldResult = cases.filter((row) => row.consensus_non_ambiguous && row.reader_a_presence.result_request).length;
   const goldTest = cases.filter((row) => row.consensus_non_ambiguous && row.reader_a_presence.proposed_test).length;
   const metrics = {
     total_cases: total,

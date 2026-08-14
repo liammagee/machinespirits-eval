@@ -993,9 +993,7 @@ function declarativeFallbackFocus(
       .filter(Boolean)
       .filter(
         (term, _index, terms) =>
-          !terms.some(
-            (compound) => compound !== term && compound.includes('-') && compound.split('-').includes(term),
-          ),
+          !terms.some((compound) => compound !== term && compound.includes('-') && compound.split('-').includes(term)),
       )
       .slice(0, 6);
     const kindLabel =
@@ -1009,7 +1007,7 @@ function declarativeFallbackFocus(
           ? 'assay result'
           : target.kind === 'comparison_result'
             ? 'comparison result'
-          : target.kind === 'mark_or_tool_result'
+            : target.kind === 'mark_or_tool_result'
               ? 'mark-or-tool result'
               : target.kind === 'record_entry'
                 ? (target.public_terms || []).includes('log')
@@ -1029,9 +1027,7 @@ function declarativeFallbackFocus(
       .toLowerCase()
       .split(/[\s-]+/u)
       .filter((term) => term && !['and', 'or'].includes(term));
-    const targetWords = new Set(
-      targetTerms.flatMap((term) => term.toLowerCase().split(/[\s-]+/u)).filter(Boolean),
-    );
+    const targetWords = new Set(targetTerms.flatMap((term) => term.toLowerCase().split(/[\s-]+/u)).filter(Boolean));
     const representedKindWords = kindWords.filter((term) => targetWords.has(term));
     const missingKindWords = kindWords.filter((term) => !targetWords.has(term));
     let targetLabel;
@@ -1505,8 +1501,7 @@ export function auditTutorStubLiveTurnProgressionV1({
   // first public host sentence before it. This remains narrower than the whole
   // pre-source span and therefore cannot let a late pre-source pivot discharge
   // an obligation that did not own the opening sentence.
-  const firstPreSourceSentence =
-    preSourceText === null ? null : liveSentences(oneLine(preSourceText), []).at(0) || '';
+  const firstPreSourceSentence = preSourceText === null ? null : liveSentences(oneLine(preSourceText), []).at(0) || '';
   const publicObligation = auditPublicObligationResolution({
     contract,
     text: responseText,

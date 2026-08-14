@@ -2044,9 +2044,7 @@ test('mechanism corpus freezes all 96 observe decisions and excludes active pred
         minimumTurn: 1,
         predictionBalanced: false,
       });
-      const plantedKey = overlapPreview.key.cases.find(
-        (row) => row.job_id === uniqueSourceRow.jobId && row.turn === 1,
-      );
+      const plantedKey = overlapPreview.key.cases.find((row) => row.job_id === uniqueSourceRow.jobId && row.turn === 1);
       const plantedCase = overlapPreview.corpus.cases.find((row) => row.sample_id === plantedKey.sample_id);
       const plantedExcludedPath = path.join(overlapRoot, 'planted-prior-corpus.json');
       fs.writeFileSync(

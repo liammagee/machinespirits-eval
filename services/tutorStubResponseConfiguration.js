@@ -1081,8 +1081,7 @@ function stanceVisible(
     return (
       /\b(?:if|because|means|rather than|but not|not .{0,24} but|not merely|not yet|must still|would count|distinction|exact|establish|no more|did not|does not|doesn[’']t|fails? to (?:establish|prove|show|tie)|only|limit|until|unproved)\b/iu.test(
         text,
-      ) ||
-      /\b(?:establish|prove|show|support|tie)\w*\b[^.!?]{0,90}\b(?:but\s+)?not\b/iu.test(text)
+      ) || /\b(?:establish|prove|show|support|tie)\w*\b[^.!?]{0,90}\b(?:but\s+)?not\b/iu.test(text)
     );
   if (stance === 'brisk') return metrics.wordCount <= 70 && metrics.sentenceCount <= 4;
   if (stance === 'warm') {

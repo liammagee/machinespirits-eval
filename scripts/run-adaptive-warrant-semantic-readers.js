@@ -332,9 +332,11 @@ export async function runAdaptiveWarrantSemanticReaders({
               row.quarantine_manifest_sha256 === retakes.manifestSha256,
           )
         : null;
-      const completed = replacement || run.batches.find(
-        (row) => row.reader_id === reader.reader_id && row.batch_id === batch.batch_id && row.status === 'complete',
-      );
+      const completed =
+        replacement ||
+        run.batches.find(
+          (row) => row.reader_id === reader.reader_id && row.batch_id === batch.batch_id && row.status === 'complete',
+        );
       const pendingRetake = Boolean(quarantineEntry && !replacement);
       if (completed && !pendingRetake) {
         if (!completed.response_path || fileSha256(completed.response_path) !== completed.response_sha256) {
@@ -448,9 +450,7 @@ export async function runAdaptiveWarrantSemanticReaders({
                   reviewer_authorized_retake: true,
                   retake_of_response_sha256: quarantineEntry.response_sha256,
                   quarantine_manifest_sha256: retakes.manifestSha256,
-                  ...(quarantined
-                    ? { quarantine_path: quarantined.path, quarantine_sha256: quarantined.sha256 }
-                    : {}),
+                  ...(quarantined ? { quarantine_path: quarantined.path, quarantine_sha256: quarantined.sha256 } : {}),
                 }
               : {}),
           });

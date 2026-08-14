@@ -1866,7 +1866,10 @@ test('warrant: sustained deference arms at exactly three consecutive turns and r
 
   assert.equal(assess(1, 'May I enter the first public fact?').revision_warranted, false);
   assert.equal(assess(2, 'Could I keep that entry?').revision_warranted, false);
-  assert.equal(assess(3, 'That evidence supports the timing, but the source still needs a direct test.').revision_warranted, false);
+  assert.equal(
+    assess(3, 'That evidence supports the timing, but the source still needs a direct test.').revision_warranted,
+    false,
+  );
   assert.equal(assess(4, 'May I record the timing distinction?').revision_warranted, false);
   assert.equal(assess(5, 'Could I keep the source question open?').revision_warranted, false);
   const thirdConsecutive = assess(6, 'May I write that a direct source test is still needed?');

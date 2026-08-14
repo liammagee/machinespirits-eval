@@ -6,12 +6,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 
-import {
-  validateAdaptiveWarrantSemanticReaderCatalog,
-} from '../services/adaptiveWarrantSemanticAnnotation.js';
-import {
-  normalizeAdaptiveWarrantSemanticQuotePunctuation,
-} from '../services/adaptiveWarrantSemanticEvents.js';
+import { validateAdaptiveWarrantSemanticReaderCatalog } from '../services/adaptiveWarrantSemanticAnnotation.js';
+import { normalizeAdaptiveWarrantSemanticQuotePunctuation } from '../services/adaptiveWarrantSemanticEvents.js';
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
 import { dispatchTutorStubCliBridgeRequest } from '../services/tutorStubCliRequest.js';
 import {
@@ -173,11 +169,7 @@ export function buildAdaptiveWarrantSemanticSchemaAcceptanceCorpus(sourceCommit)
   };
 }
 
-export function validateAdaptiveWarrantSemanticPingTemplateAgainstSchema(
-  value,
-  schema,
-  fieldPath = '$',
-) {
+export function validateAdaptiveWarrantSemanticPingTemplateAgainstSchema(value, schema, fieldPath = '$') {
   const errors = [];
   const visit = (candidate, node, candidatePath) => {
     if (!node || typeof node !== 'object') {
@@ -208,8 +200,7 @@ export function validateAdaptiveWarrantSemanticPingTemplateAgainstSchema(
       return;
     }
     const allowedTypes = Array.isArray(node.type) ? node.type : node.type ? [node.type] : [];
-    const actualType =
-      candidate === null ? 'null' : Array.isArray(candidate) ? 'array' : typeof candidate;
+    const actualType = candidate === null ? 'null' : Array.isArray(candidate) ? 'array' : typeof candidate;
     if (allowedTypes.length && !allowedTypes.includes(actualType)) {
       errors.push(`${candidatePath}:type_${actualType}`);
       return;

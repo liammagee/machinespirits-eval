@@ -1784,21 +1784,19 @@ export function resolveAdaptiveWarrantStudyStatus(
   if (dryRun) return rows.every((row) => row.childStatus === 'dry_run') ? 'dry_run' : 'incomplete';
   if (!rows.every((row) => row.childStatus === 'ok')) return 'incomplete';
   const coverageGuard = evaluateAdaptiveWarrantAnalysisCoverageHalt(rows);
-  const analysisValid = rows.every(
-    (row) => {
-      const unanalyzed = Number(row.learnerAnalysisUnanalyzedCount || 0);
-      const expectedCoverage = row.turnCount ? Number(((row.turnCount - unanalyzed) / row.turnCount).toFixed(3)) : null;
-      return (
-        row.turnCount === horizon &&
-        row.learnerAnalysisCallCount === row.turnCount &&
-        Number(row.learnerAnalysisErrorCount || 0) <= unanalyzed &&
-        row.learnerAnalysisPromptFailureCount === 0 &&
-        Number(row.promptAuditFailureCount || 0) === 0 &&
-        Number(row.promptAuditRecoveryCount || 0) === 0 &&
-        row.learnerAnalysisCoverage === expectedCoverage
-      );
-    },
-  );
+  const analysisValid = rows.every((row) => {
+    const unanalyzed = Number(row.learnerAnalysisUnanalyzedCount || 0);
+    const expectedCoverage = row.turnCount ? Number(((row.turnCount - unanalyzed) / row.turnCount).toFixed(3)) : null;
+    return (
+      row.turnCount === horizon &&
+      row.learnerAnalysisCallCount === row.turnCount &&
+      Number(row.learnerAnalysisErrorCount || 0) <= unanalyzed &&
+      row.learnerAnalysisPromptFailureCount === 0 &&
+      Number(row.promptAuditFailureCount || 0) === 0 &&
+      Number(row.promptAuditRecoveryCount || 0) === 0 &&
+      row.learnerAnalysisCoverage === expectedCoverage
+    );
+  });
   if (!analysisValid || coverageGuard.halt) return 'invalid_analysis';
   if (
     requireStructuredParity &&
@@ -3012,12 +3010,7 @@ export function evaluateAdaptiveWarrantDecisionGate(
   ];
   if (analysisCoverage) {
     checks.push(
-      check(
-        'learner_analysis_unanalyzed_rate',
-        analysisCoverage.unanalyzed_rate,
-        analysisCoverage.threshold,
-        'lt',
-      ),
+      check('learner_analysis_unanalyzed_rate', analysisCoverage.unanalyzed_rate, analysisCoverage.threshold, 'lt'),
     );
   }
   if (Number(metrics.transitionConsensusCases || 0) >= gate.minimum_transition_consensus_cases) {
@@ -3856,9 +3849,7 @@ function mechanismFreezeCoverageAfterLoggedDrops({
       .filter((row) => !droppedSampleIds.has(row.sample_id))
       .map((row) => Number(row.turn))
       .sort((left, right) => left - right);
-    const retainedTurns = retainedCellCases
-      .map((row) => Number(row.turn))
-      .sort((left, right) => left - right);
+    const retainedTurns = retainedCellCases.map((row) => Number(row.turn)).sort((left, right) => left - right);
     return {
       ...cell,
       cases: retainedCellCases.length,

@@ -52,7 +52,28 @@ process.stdin.on('end', () => {
   const response = input.includes('You are an automated learner')
     ? 'I would test the newest public mark before deciding.'
     : input.includes('compact up-front reviewer')
-      ? '{}'
+      ? JSON.stringify({
+          classification: {
+            turn: {
+              summary: 'The learner asks to test the newest public mark before deciding.',
+              request_type: 'stepwise_support_request',
+              discourse_move: 'claim',
+              evidence_use: 'none',
+              epistemic_stance: 'exploratory',
+              affect: 'calm',
+              agency: 'steering',
+              pedagogical_need: 'Offer one public evidence test.',
+            },
+            overall: {
+              summary: 'The learner is evidence-oriented.',
+              trajectory: 'initial evidence seeking',
+              recurring_pattern: 'none',
+              current_state: 'ready to inspect a public mark',
+              next_best_tutor_move: 'Name one public check without supplying its result.',
+            },
+          },
+          learner_record: { adopt: [], retract: [], derive: [], hypothesis: null, assert_answer: null, notes: '' },
+        })
       : 'Which public mark would you test next, and what would it show?';
   if (outputPath) fs.writeFileSync(outputPath, response);
   process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');

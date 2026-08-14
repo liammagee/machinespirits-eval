@@ -83,23 +83,27 @@ describe('tutor-stub prompt transport', () => {
     const trace = [];
     const schema = { type: 'object', properties: {}, additionalProperties: false };
     let bridgeRequest = null;
-    const transport = transportWith(async (...args) => {
-      bridgeRequest = args;
-      counters.calls += 1;
-      return {
-        text: '{}',
-        provider: 'codex',
-        model: 'gpt-test',
-        latencyMs: 1,
-        structuredOutput: true,
-        streamEventTypeCounts: { 'turn.completed': 1 },
-        streamItemTypeCounts: { agent_message: 1 },
-        structuredEventAudit: { prohibited_event_count: 0 },
-        prohibitedToolEventCount: 0,
-        modelAttestationBasis: 'explicit_cli_model_argument_accepted_bridge_echo',
-        modelIndependentlyAttested: false,
-      };
-    }, counters, trace);
+    const transport = transportWith(
+      async (...args) => {
+        bridgeRequest = args;
+        counters.calls += 1;
+        return {
+          text: '{}',
+          provider: 'codex',
+          model: 'gpt-test',
+          latencyMs: 1,
+          structuredOutput: true,
+          streamEventTypeCounts: { 'turn.completed': 1 },
+          streamItemTypeCounts: { agent_message: 1 },
+          structuredEventAudit: { prohibited_event_count: 0 },
+          prohibitedToolEventCount: 0,
+          modelAttestationBasis: 'explicit_cli_model_argument_accepted_bridge_echo',
+          modelIndependentlyAttested: false,
+        };
+      },
+      counters,
+      trace,
+    );
 
     const result = await transport.callPromptModel({
       prompt: 'public prompt',
@@ -128,19 +132,23 @@ describe('tutor-stub prompt transport', () => {
   it('delays and freshly meters an individual failed Codex turn before redispatch', async () => {
     const counters = { calls: 0, provider: 0, metered: 0, delays: [] };
     const trace = [];
-    const transport = transportWith(async () => {
-      counters.calls += 1;
-      if (counters.calls === 1) throw failedTurnError();
-      return {
-        text: 'accepted response',
-        provider: 'codex',
-        model: 'gpt-test',
-        latencyMs: 1,
-        inputTokens: 10,
-        outputTokens: 2,
-        tokenUsageAvailable: true,
-      };
-    }, counters, trace);
+    const transport = transportWith(
+      async () => {
+        counters.calls += 1;
+        if (counters.calls === 1) throw failedTurnError();
+        return {
+          text: 'accepted response',
+          provider: 'codex',
+          model: 'gpt-test',
+          latencyMs: 1,
+          inputTokens: 10,
+          outputTokens: 2,
+          tokenUsageAvailable: true,
+        };
+      },
+      counters,
+      trace,
+    );
 
     const result = await transport.callPromptModel({
       prompt: 'public prompt',
@@ -162,10 +170,14 @@ describe('tutor-stub prompt transport', () => {
   it('stops after two delayed redispatches for three consecutive failed turns', async () => {
     const counters = { calls: 0, provider: 0, metered: 0, delays: [] };
     const trace = [];
-    const transport = transportWith(async () => {
-      counters.calls += 1;
-      throw failedTurnError();
-    }, counters, trace);
+    const transport = transportWith(
+      async () => {
+        counters.calls += 1;
+        throw failedTurnError();
+      },
+      counters,
+      trace,
+    );
 
     await assert.rejects(
       () =>

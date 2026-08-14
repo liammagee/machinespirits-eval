@@ -47,9 +47,7 @@ const REQUIRED_GO_NOTE = 'docs/adaptation-refinement/relay/097a-reviewer-go-note
 const DECISION_RUNNER_PATH = path.join(ROOT, 'scripts/run-adaptive-warrant-decision-readers.js');
 const DECISION_PREPARER_PATH = path.join(ROOT, 'scripts/prepare-adaptive-warrant-annotation-batches.js');
 
-export const OUTCOME_MAIN_BLOCK_SEEDS = Object.freeze(
-  Array.from({ length: 12 }, (_unused, index) => 524 + index),
-);
+export const OUTCOME_MAIN_BLOCK_SEEDS = Object.freeze(Array.from({ length: 12 }, (_unused, index) => 524 + index));
 export const OUTCOME_MAIN_BLOCK_DIALOGUES = 72;
 export const OUTCOME_MAIN_BLOCK_CASES = 576;
 export const OUTCOME_MAIN_BLOCK_DECISION_CALLS = 1152;
@@ -72,8 +70,7 @@ export const OUTCOME_MAIN_BLOCK_CALL_PLAN = Object.freeze({
     OUTCOME_MAIN_BLOCK_DIALOGUES * OUTCOME_MAIN_BLOCK_PER_DIALOGUE_CAP +
     OUTCOME_MAIN_BLOCK_ABSOLUTE_READER_ATTEMPT_CEILING,
 });
-export const OUTCOME_MAIN_BLOCK_SCHEMA =
-  'machinespirits.adaptation-refinement.warrant-outcome-main-block-run.v1';
+export const OUTCOME_MAIN_BLOCK_SCHEMA = 'machinespirits.adaptation-refinement.warrant-outcome-main-block-run.v1';
 export const OUTCOME_MAIN_BLOCK_CHECKPOINT_SCHEMA =
   'machinespirits.adaptation-refinement.warrant-outcome-main-block-checkpoint.v1';
 
@@ -253,25 +250,25 @@ export function verifyOutcomeMainBlockManifest({ manifestPath = DEFAULT_MANIFEST
   }
   assertExact(manifest.seeds, OUTCOME_MAIN_BLOCK_SEEDS, 'main-block seeds');
   assertExact(manifest.conditions, ['bare', 'gated', 'standing_permission'], 'main-block conditions');
-  assertExact(manifest.planned_calls, {
-    generation_expected: 2000,
-    generation_cap: 2160,
-    decision_readers: 1152,
-    failed_attempt_allowance: 48,
-    approximate_total: 3200,
-    absolute_cap_total: 3360,
-    counter_before: 5274,
-    ceiling: 19337,
-  }, 'main-block call plan');
+  assertExact(
+    manifest.planned_calls,
+    {
+      generation_expected: 2000,
+      generation_cap: 2160,
+      decision_readers: 1152,
+      failed_attempt_allowance: 48,
+      approximate_total: 3200,
+      absolute_cap_total: 3360,
+      counter_before: 5274,
+      ceiling: 19337,
+    },
+    'main-block call plan',
+  );
   if (manifest.channels?.presence?.enabled !== false || manifest.channels?.decision?.enabled !== true) {
     throw new Error('outcome main block must be decision-only');
   }
   const inherited = manifest.inherited_pilot_bindings;
-  if (
-    !inherited?.path ||
-    !inherited?.sha256 ||
-    fileSha256(path.resolve(ROOT, inherited.path)) !== inherited.sha256
-  ) {
+  if (!inherited?.path || !inherited?.sha256 || fileSha256(path.resolve(ROOT, inherited.path)) !== inherited.sha256) {
     throw new Error('outcome main-block inherited pilot bindings drift');
   }
   const bindings = manifest.channels.decision.digests;
@@ -322,7 +319,8 @@ export function validateOutcomeMainBlockGoNote(goNotePath) {
     throw new Error('outcome main block refuses: reviewer note 097a is not committed at HEAD');
   }
   const onDisk = fs.readFileSync(resolved);
-  if (!committed.equals(onDisk)) throw new Error('outcome main block refuses: reviewer note 097a has uncommitted drift');
+  if (!committed.equals(onDisk))
+    throw new Error('outcome main block refuses: reviewer note 097a has uncommitted drift');
   const text = onDisk.toString('utf8');
   for (const required of ['GO', 'run-adaptive-warrant-outcome-main-block.js', '524', '535', '1,152', '48']) {
     if (!text.includes(required)) throw new Error(`outcome main block refuses: reviewer note 097a lacks ${required}`);
@@ -353,12 +351,9 @@ export function guardOutcomeMainBlockDecisionCollection(collection = {}) {
       manifest.readers.every((reader) => reader.batches?.length === OUTCOME_MAIN_BLOCK_CASES),
     one_case_batches:
       Array.isArray(manifest?.readers) &&
-      manifest.readers.every((reader) =>
-        reader.batches?.every((batch) => batch.required_sample_ids?.length === 1),
-      ),
+      manifest.readers.every((reader) => reader.batches?.every((batch) => batch.required_sample_ids?.length === 1)),
     planned_calls: request?.call_budget?.planned_calls === OUTCOME_MAIN_BLOCK_DECISION_CALLS,
-    authorization_maximum:
-      request?.call_budget?.maximum_calls === OUTCOME_MAIN_BLOCK_AUTHORIZATION_MAXIMUM_CALLS,
+    authorization_maximum: request?.call_budget?.maximum_calls === OUTCOME_MAIN_BLOCK_AUTHORIZATION_MAXIMUM_CALLS,
   };
   return {
     status: Object.values(checks).every(Boolean) ? 'passed' : 'failed',
@@ -392,9 +387,10 @@ export function createOutcomeMainBlockBudget({ checkpointPath, checkpoint = null
   const reserveMany = (phase, count, event = {}) => {
     if (!['generation', 'decision_readers'].includes(phase)) throw new Error(`unknown budget phase ${phase}`);
     if (!Number.isInteger(count) || count < 0) throw new Error('reservation count must be a non-negative integer');
-    const ceiling = phase === 'generation'
-      ? OUTCOME_MAIN_BLOCK_CALL_PLAN.generation_cap
-      : OUTCOME_MAIN_BLOCK_ABSOLUTE_READER_ATTEMPT_CEILING;
+    const ceiling =
+      phase === 'generation'
+        ? OUTCOME_MAIN_BLOCK_CALL_PLAN.generation_cap
+        : OUTCOME_MAIN_BLOCK_ABSOLUTE_READER_ATTEMPT_CEILING;
     if (state.call_budget.actual[phase] + count > ceiling) {
       throw new Error(`outcome main-block ${phase} call ceiling exceeded`);
     }
@@ -447,7 +443,9 @@ function emitOutcomeMainBlockFreeze({
       turns_per_dialogue: 8,
       total_cases: OUTCOME_MAIN_BLOCK_CASES,
     },
-    protocol: binding(path.join(ROOT, 'docs/adaptation-refinement/relay/096-reviewer-reregistration-outcome-main-block.md')),
+    protocol: binding(
+      path.join(ROOT, 'docs/adaptation-refinement/relay/096-reviewer-reregistration-outcome-main-block.md'),
+    ),
     study_plan: binding(studyPlanPath),
     source_commit: sourceCommit,
     semantic_instrument: {
@@ -493,7 +491,8 @@ export function auditOutcomeMainBlockDecisionResponseContracts({
     }
   }
   const expected = OUTCOME_MAIN_BLOCK_DECISION_CALLS;
-  if (rows.length !== expected) throw new Error(`main-block response contract audit expected ${expected}, got ${rows.length}`);
+  if (rows.length !== expected)
+    throw new Error(`main-block response contract audit expected ${expected}, got ${rows.length}`);
   const audit = {
     schema: 'machinespirits.adaptation-refinement.outcome-main-block-response-acceptance-audit.v1',
     status: 'passed',
@@ -554,7 +553,9 @@ export async function executeOutcomeMainBlock({
     excludeRoots: resume ? [rootDir] : [],
   });
   if (freshness.status !== 'passed') {
-    throw new Error(`outcome main-block seed freshness failed: ${freshness.hits.map((row) => `s${row.seed}:${row.path}`).join(', ')}`);
+    throw new Error(
+      `outcome main-block seed freshness failed: ${freshness.hits.map((row) => `s${row.seed}:${row.path}`).join(', ')}`,
+    );
   }
 
   const sourceFreeze = readJson(path.resolve(instrumentFreezePath));
@@ -649,7 +650,10 @@ export async function executeOutcomeMainBlock({
     }
     built = { corpus: readJson(freeze.corpus.path), key: readJson(freeze.key.path) };
     artifacts = { corpusPath: freeze.corpus.path, keyPath: freeze.key.path };
-    decisionCollection = reuseOutcomePilotReaderCollection({ collectionDir: decisionCollectionDir, channel: 'decision' });
+    decisionCollection = reuseOutcomePilotReaderCollection({
+      collectionDir: decisionCollectionDir,
+      channel: 'decision',
+    });
   } else {
     built = prepareOutcomeCases({
       rows,
@@ -845,7 +849,9 @@ async function main() {
     instrumentFreezePath: values['instrument-freeze'],
     resume: values.resume,
   });
-  process.stdout.write(`${JSON.stringify({ status: result.status, checkpoint: path.resolve(ROOT, values.out, 'outcome-main-block-checkpoint.json') })}\n`);
+  process.stdout.write(
+    `${JSON.stringify({ status: result.status, checkpoint: path.resolve(ROOT, values.out, 'outcome-main-block-checkpoint.json') })}\n`,
+  );
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {

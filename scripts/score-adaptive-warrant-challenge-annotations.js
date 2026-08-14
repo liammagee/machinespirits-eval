@@ -5,10 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 
-import {
-  scoreBlindedAnnotations,
-  validateBlindedAnnotationResponse,
-} from './run-adaptive-warrant-baseline-study.js';
+import { scoreBlindedAnnotations, validateBlindedAnnotationResponse } from './run-adaptive-warrant-baseline-study.js';
 import { validateAdaptiveWarrantChallengeFreeze } from './build-adaptive-warrant-challenge-corpus.js';
 import { validateAdaptiveWarrantAnnotationAuthorizationRequest } from './prepare-adaptive-warrant-annotation-batches.js';
 

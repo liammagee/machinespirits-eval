@@ -29,7 +29,11 @@ function fixture({
       { action_object_id: 'null-action', target_id: null },
     ],
   };
-  const corpus = { study_id: 'presence-fixture', cases: sampleIds.map((sample_id) => ({ sample_id })), semantic_annotation_catalog: semanticCatalog };
+  const corpus = {
+    study_id: 'presence-fixture',
+    cases: sampleIds.map((sample_id) => ({ sample_id })),
+    semantic_annotation_catalog: semanticCatalog,
+  };
   const corpusPath = path.join(root, 'corpus.json');
   fs.writeFileSync(corpusPath, `${JSON.stringify(corpus)}\n`);
   const manifest = {
@@ -38,7 +42,13 @@ function fixture({
     corpus: { path: corpusPath, sha256: sha256(corpusPath), cases },
     readers: [],
   };
-  const run = { status: 'complete', study_id: corpus.study_id, source_commit: manifest.source_commit, model: 'codex.gpt-5.6-luna', batches: [] };
+  const run = {
+    status: 'complete',
+    study_id: corpus.study_id,
+    source_commit: manifest.source_commit,
+    model: 'codex.gpt-5.6-luna',
+    batches: [],
+  };
   for (const readerId of ['semantic-reader-a', 'semantic-reader-b']) {
     const batches = [];
     for (const [index, sampleId] of sampleIds.entries()) {
@@ -85,19 +95,34 @@ function fixture({
           batch_id: { type: 'string', enum: [batchId] },
           study_id: { type: 'string', enum: [corpus.study_id] },
           corpus_sha256: { type: 'string', enum: [manifest.corpus.sha256] },
-          cases_by_sample_id: { type: 'object', required: [sampleId], properties: { [sampleId]: { $ref: '#/$defs/case' } }, additionalProperties: false },
+          cases_by_sample_id: {
+            type: 'object',
+            required: [sampleId],
+            properties: { [sampleId]: { $ref: '#/$defs/case' } },
+            additionalProperties: false,
+          },
         },
         $defs: {
           case: {
             type: 'object',
             required: ['genuinely_ambiguous', 'ambiguity_reason', 'events', 'note'],
-            properties: { genuinely_ambiguous: { type: 'boolean' }, ambiguity_reason: { type: 'string' }, events: { type: 'array' }, note: { type: 'string' } },
+            properties: {
+              genuinely_ambiguous: { type: 'boolean' },
+              ambiguity_reason: { type: 'string' },
+              events: { type: 'array' },
+              note: { type: 'string' },
+            },
             additionalProperties: false,
           },
         },
       };
       fs.writeFileSync(schemaPath, `${JSON.stringify(schema)}\n`);
-      batches.push({ batch_id: batchId, required_sample_ids: [sampleId], response_schema_path: schemaPath, expected_response_filename: responseName });
+      batches.push({
+        batch_id: batchId,
+        required_sample_ids: [sampleId],
+        response_schema_path: schemaPath,
+        expected_response_filename: responseName,
+      });
       run.batches.push({
         reader_id: readerId,
         batch_id: batchId,
@@ -181,10 +206,12 @@ test('71 of 93 consensus fails and 72 of 93 passes when other floors hold', () =
 });
 
 test('the pinned object-set extractions use different slots', () => {
-  const events = [{
-    target: { state: 'catalog', target_id: 'target-slot' },
-    requested_or_proposed_action: { state: 'catalog', action_object_id: 'catalog-action' },
-  }];
+  const events = [
+    {
+      target: { state: 'catalog', target_id: 'target-slot' },
+      requested_or_proposed_action: { state: 'catalog', action_object_id: 'catalog-action' },
+    },
+  ];
   const catalog = { action_objects: [{ action_object_id: 'catalog-action', target_id: 'bound-target' }] };
   assert.deepEqual(eventTargetSlotSet(events), ['target-slot']);
   assert.deepEqual(catalogueBindingSet(events, catalog), ['bound-target']);

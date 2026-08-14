@@ -57,7 +57,7 @@ process.stdin.on('end', () => {
   const response = input.includes('# Public-safe opening frame')
     ? 'The public inquiry is open. Which visible record should we inspect first?'
     : learnerMatch
-      ? \`PUBLIC-OBSERVATION-\${learnerMatch[1]}: \${'The visible record remains incomplete and needs one more public check. '.repeat(24)}\`
+      ? \`PUBLIC-OBSERVATION-\${learnerMatch[1]}: \${Array.from({ length: 36 }, (_, i) => \`Public check \${learnerMatch[1]}-\${String(i + 1).padStart(2, '0')} of the visible record is still open and unfinished. \`).join('')}\`
       : \`I see public observation \${tutorTurn}. Keep that visible record open while we test one bounded mark. Which public check follows at turn \${tutorTurn}?\`;
   if (outputPath) fs.writeFileSync(outputPath, response);
   process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');

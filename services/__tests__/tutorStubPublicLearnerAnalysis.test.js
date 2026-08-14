@@ -496,14 +496,10 @@ describe('strict public learner analysis', () => {
     assert.equal(resultRequest.properties.evidence_span.type, 'string');
     assert.equal('properties' in resultRequest.properties.evidence_span, false);
     assert.equal(resultRequest.properties.target.properties.state.enum[0], 'catalog');
-    const analytic = eventBranches.find(
-      (branch) => branch.properties.speech_act.enum[0] === 'analytic_contribution',
-    );
+    const analytic = eventBranches.find((branch) => branch.properties.speech_act.enum[0] === 'analytic_contribution');
     assert.equal(analytic.properties.target.anyOf.length, 2);
     assert.equal(
-      analytic.properties.target.anyOf.some(
-        (branch) => branch.properties.state.enum[0] === 'none',
-      ),
+      analytic.properties.target.anyOf.some((branch) => branch.properties.state.enum[0] === 'none'),
       true,
     );
     assert.equal('speaker' in resultRequest.properties, false);

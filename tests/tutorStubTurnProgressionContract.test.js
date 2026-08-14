@@ -278,8 +278,7 @@ test('a required terminal question may quote a previously public multi-sentence 
     },
     actionFamily: 'challenge_resistance',
   });
-  const clue =
-    'Fresh marks score the rail, still warm. The registry matches their spacing to Moth’s retired chassis.';
+  const clue = 'Fresh marks score the rail, still warm. The registry matches their spacing to Moth’s retired chassis.';
   const exactQuestion = `How does the public clue “${clue}” enter the chain you just stated?`;
   contract.handoff_contract.question_allowed = true;
   contract.handoff_contract.question_required = true;
@@ -381,15 +380,7 @@ test('deterministic recovery preserves distinct compound obligation targets', ()
     target: {
       kind: 'record_entry',
       signature: 'record_entry:fridge-access|presence|room|room-presence',
-      public_terms: [
-        'room-presence',
-        'room',
-        'presence',
-        'fridge-access',
-        'fridge',
-        'access',
-        'record',
-      ],
+      public_terms: ['room-presence', 'room', 'presence', 'fridge-access', 'fridge', 'access', 'record'],
       subject_terms: ['room-presence', 'room', 'presence', 'fridge-access', 'fridge', 'access'],
       required_components: [],
       source_surface: 'Please show the room-presence or fridge-access record.',
@@ -477,10 +468,8 @@ test('deterministic obligation handoff does not repeat a deferral already delive
 test('terminal recovery restores obligation-owned deferral before writable entry and authored source', () => {
   const contract = obligationProgressionContract();
   const obligationUptake = deterministicTutorStubTurnProgressionUptake({ contract });
-  const writableEntry =
-    'Write: “The public evidence does not yet establish who wiped the music core.”';
-  const authoredSource =
-    'I look at the inquiry log: Hessa was at the mess-hall rail all evening.';
+  const writableEntry = 'Write: “The public evidence does not yet establish who wiped the music core.”';
+  const authoredSource = 'I look at the inquiry log: Hessa was at the mess-hall rail all evening.';
   const lateDeferral = `${writableEntry} ${authoredSource} ${obligationUptake}`;
   const repaired = ensureTutorStubPublicObligationFallbackOwnership({
     text: lateDeferral,

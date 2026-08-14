@@ -149,8 +149,8 @@ const WARRANT_GATE_OVERRIDE = Boolean(
 );
 const WARRANT_CHALLENGE_RESISTANCE_OVERRIDE = Boolean(
   process.env.TUTOR_STUB_EVAL_WARRANT_CHALLENGE_RESISTANCE ||
-    process.env.TUTOR_STUB_WARRANT_CHALLENGE_RESISTANCE ||
-    argvHasOption('--warrant-challenge-resistance'),
+  process.env.TUTOR_STUB_WARRANT_CHALLENGE_RESISTANCE ||
+  argvHasOption('--warrant-challenge-resistance'),
 );
 const MODEL_CALL_BUDGET_OVERRIDE = Boolean(
   process.env.TUTOR_STUB_EVAL_MODEL_CALL_BUDGET || argvHasOption('--model-call-budget'),
@@ -6154,9 +6154,7 @@ function buildJobs({ policies, runs, traceDir, parallelism, interleavePolicies =
       traceDir: childTraceDir,
       logPath,
       warrantGateMode: resolveTutorStubWarrantGateMode(args['warrant-gate']),
-      warrantChallengeResistance: resolveWarrantChallengeResistance(
-        args['warrant-challenge-resistance'],
-      ),
+      warrantChallengeResistance: resolveWarrantChallengeResistance(args['warrant-challenge-resistance']),
       childArgs,
     });
   }
@@ -6765,9 +6763,7 @@ function autoEvalConfigForState({ traceDir, configOverride = null }) {
       loopMode: normalizeTutorStubLoopMode(args['loop-mode'], { label: '--loop-mode' }),
       runSeed: normalizeTutorStubDagFactDropoutSeed(args['run-seed'], { label: '--run-seed' }),
       warrantGateMode: resolveTutorStubWarrantGateMode(args['warrant-gate']),
-      warrantChallengeResistance: resolveWarrantChallengeResistance(
-        args['warrant-challenge-resistance'],
-      ),
+      warrantChallengeResistance: resolveWarrantChallengeResistance(args['warrant-challenge-resistance']),
       dagFactDropoutSemantics: {
         eligibleFacts: 'adopted_public_premises_only',
         backgroundFactsImmune: true,
@@ -7158,8 +7154,7 @@ async function main() {
       summaryPath: report.summaryPath,
       resumePlan: plan,
     });
-    if (aborted || failedRows || sealed.seal?.status === TUTOR_STUB_LEARNER_ANALYSIS_INCOMPLETE_STATUS)
-      process.exit(1);
+    if (aborted || failedRows || sealed.seal?.status === TUTOR_STUB_LEARNER_ANALYSIS_INCOMPLETE_STATUS) process.exit(1);
     return;
   }
 
@@ -7208,8 +7203,7 @@ async function main() {
     status: aborted || failedRows ? 'incomplete' : args['dry-run'] ? 'dry_run' : 'complete',
     summaryPath: report.summaryPath,
   });
-  if (aborted || failedRows || sealed.seal?.status === TUTOR_STUB_LEARNER_ANALYSIS_INCOMPLETE_STATUS)
-    process.exit(1);
+  if (aborted || failedRows || sealed.seal?.status === TUTOR_STUB_LEARNER_ANALYSIS_INCOMPLETE_STATUS) process.exit(1);
 }
 
 function writeSummary({

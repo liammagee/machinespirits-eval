@@ -143,8 +143,7 @@ test('Foxtrot fallback keeps an exact released correspondence separate from its 
   const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-022-foxtrot-jukebox.yaml'));
   const source = world.premiseById.get('p_clamp').surface;
   const text =
-    'I look at the inquiry log; “I can confirm this: ' +
-    `${source}” That named public-record release is next.`;
+    'I look at the inquiry log; “I can confirm this: ' + `${source}” That named public-record release is next.`;
   const result = auditModel().auditTutorResponseLeak({
     text,
     world,

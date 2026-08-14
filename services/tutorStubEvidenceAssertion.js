@@ -82,14 +82,16 @@ function oneLine(value) {
 }
 
 function clauses(value) {
-  return oneLine(value)
-    // A closing quotation mark belongs to the preceding sentence. Split after
-    // it as well, otherwise the next host sentence can be glued onto an exact
-    // authored SOURCE and change which evidence object appears to own the
-    // correspondence.
-    .split(/(?:(?<=[.!?;])|(?<=[.!?;][”"']))\s+/gu)
-    .map((part) => part.trim())
-    .filter(Boolean);
+  return (
+    oneLine(value)
+      // A closing quotation mark belongs to the preceding sentence. Split after
+      // it as well, otherwise the next host sentence can be glued onto an exact
+      // authored SOURCE and change which evidence object appears to own the
+      // correspondence.
+      .split(/(?:(?<=[.!?;])|(?<=[.!?;][”"']))\s+/gu)
+      .map((part) => part.trim())
+      .filter(Boolean)
+  );
 }
 
 function contextualizedEvidenceClauses(value) {

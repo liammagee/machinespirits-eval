@@ -23,8 +23,7 @@ import { isUnhedgedOwnVoiceClaim } from './run-adaptive-warrant-baseline-study.j
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-export const ADAPTIVE_WARRANT_OUTCOME_SCORE_SCHEMA =
-  'machinespirits.adaptation-refinement.warrant-outcome-score.v1';
+export const ADAPTIVE_WARRANT_OUTCOME_SCORE_SCHEMA = 'machinespirits.adaptation-refinement.warrant-outcome-score.v1';
 
 export const OUTCOME_STUDY_READER_OUTPUT_FORM =
   'Measure 1 reader output form: path 1. Each frozen binary decision reader reports commitment_transition_warranted (yes/no); the harness compares the logged observe-arm revision_warranted decision with two-reader consensus. The public world ground-truth source is the SHA-pinned world YAML projected into the decision packet public_inquiry_brief, and the same source is used in every condition.';
@@ -69,8 +68,7 @@ export const OUTCOME_STUDY_RUN_CONFIGURATIONS = Object.freeze([
     horizon: 8,
     learner_profile: 'low_agency',
     learner_analysis_prompt_profile: 'handbook_v1',
-    standing_instructions_file:
-      'docs/adaptation-refinement/outcome-study-a1/standing-permission-menu.json',
+    standing_instructions_file: 'docs/adaptation-refinement/outcome-study-a1/standing-permission-menu.json',
     cli_args: Object.freeze([
       '--turns',
       '8',
@@ -159,9 +157,7 @@ export function preflightOutcomePresenceChannel({ expected, observed } = {}) {
       expected: expectedValue ?? null,
       observed: observedValue ?? null,
       pass:
-        typeof expectedValue === 'string' &&
-        /^[a-f0-9]{64}$/u.test(expectedValue) &&
-        observedValue === expectedValue,
+        typeof expectedValue === 'string' && /^[a-f0-9]{64}$/u.test(expectedValue) && observedValue === expectedValue,
     };
   }
   for (const field of Object.keys(PRESENCE_CHANNEL_CAPS)) {
@@ -255,8 +251,7 @@ export function verifyOutcomeDecisionReaderRunEvidence(runRecordPath) {
       }
     }
     const prohibitedToolCountPresent =
-      Object.hasOwn(batch || {}, 'prohibited_tool_event_count') &&
-      Number.isFinite(batch.prohibited_tool_event_count);
+      Object.hasOwn(batch || {}, 'prohibited_tool_event_count') && Number.isFinite(batch.prohibited_tool_event_count);
     const registeredModelParts = String(run?.model || '').split('.');
     const modelAttestationAccepted =
       batch?.model_independently_attested === true ||
@@ -505,7 +500,11 @@ function generationTimeSemanticEvents(row) {
 
 export function describeOutcomeMeasures7And8FromStoredEvents(cases = []) {
   const rows = cases.map((row) => {
-    const acts = new Set(generationTimeSemanticEvents(row).map((event) => event?.speech_act).filter(Boolean));
+    const acts = new Set(
+      generationTimeSemanticEvents(row)
+        .map((event) => event?.speech_act)
+        .filter(Boolean),
+    );
     return {
       sample_id: row.sample_id,
       dialogue_id: row.job_id ?? row.dialogue_id ?? null,
@@ -558,10 +557,7 @@ export function scoreAdaptiveWarrantOutcomeMainBlock(input = {}) {
   const decisionPreflight = preflightOutcomeDecisionReader(input.decision_reader_preflight);
   if (decisionPreflight.status !== 'passed') throw new Error('decision-reader instrument digest preflight failed');
   const dialogueScores = (input.dialogues || []).map(scoreOutcomeDialogue);
-  const decisionScore = scoreOutcomeDecisionCases(
-    input.decision_cases || [],
-    input.decision_reader_run_record_path,
-  );
+  const decisionScore = scoreOutcomeDecisionCases(input.decision_cases || [], input.decision_reader_run_record_path);
   const descriptive = describeOutcomeMeasures7And8FromStoredEvents(input.generation_time_cases || []);
   return {
     schema: 'machinespirits.adaptation-refinement.warrant-outcome-main-block-score.v1',
@@ -591,10 +587,7 @@ export function scoreAdaptiveWarrantOutcomeStudy(input = {}) {
   const decisionPreflight = preflightOutcomeDecisionReader(input.decision_reader_preflight);
   if (decisionPreflight.status !== 'passed') throw new Error('decision-reader instrument digest preflight failed');
   const dialogueScores = (input.dialogues || []).map(scoreOutcomeDialogue);
-  const decisionScore = scoreOutcomeDecisionCases(
-    input.decision_cases || [],
-    input.decision_reader_run_record_path,
-  );
+  const decisionScore = scoreOutcomeDecisionCases(input.decision_cases || [], input.decision_reader_run_record_path);
   const presenceScore = scoreOutcomePresenceCases(input.presence_cases || []);
   return {
     schema: ADAPTIVE_WARRANT_OUTCOME_SCORE_SCHEMA,
@@ -613,7 +606,9 @@ export function scoreAdaptiveWarrantOutcomeStudy(input = {}) {
 function main() {
   const args = process.argv.slice(2);
   if (args.length !== 2 || args[0] !== '--input') {
-    throw new Error('Usage: node scripts/score-adaptive-warrant-outcome-study.js --input <prepared-zero-call-input.json>');
+    throw new Error(
+      'Usage: node scripts/score-adaptive-warrant-outcome-study.js --input <prepared-zero-call-input.json>',
+    );
   }
   const input = JSON.parse(fs.readFileSync(path.resolve(ROOT, args[1]), 'utf8'));
   process.stdout.write(`${JSON.stringify(scoreAdaptiveWarrantOutcomeStudy(input), null, 2)}\n`);

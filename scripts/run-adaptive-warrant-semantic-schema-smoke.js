@@ -153,16 +153,13 @@ export function buildAdaptiveWarrantSemanticSmokeCorpus(sourceCommit) {
           learner:
             'The canal-quay manifest establishes loading, not receipt. Enter only that bounded conclusion in the review sheet.',
         },
-        public_evidence_at_decision: [
-          'target-smoke-canal-quay-manifest is identified by public-id-smoke-canal-quay.',
-        ],
+        public_evidence_at_decision: ['target-smoke-canal-quay-manifest is identified by public-id-smoke-canal-quay.'],
       },
       {
         sample_id: 'synthetic-smoke-weather-card-selection',
         current_learner_turn: {
           turn: 2,
-          learner:
-            'Select the first weather-card comparison for me. I refuse to choose between the displayed cards.',
+          learner: 'Select the first weather-card comparison for me. I refuse to choose between the displayed cards.',
         },
         public_evidence_at_decision: ['public-id-smoke-weather-cards names the displayed weather-card comparisons.'],
       },
@@ -458,8 +455,7 @@ export async function runAdaptiveWarrantSemanticSchemaSmoke({
     disagreement_classification_complete:
       disagreementClassification.counts.total_cases === corpus.cases.length &&
       disagreementClassification.cases.every((row) => row.status !== 'unresolved_missing_preregistered_identity'),
-    no_both_defensible_contract_ambiguity:
-      disagreementClassification.counts.contract_ambiguity_cases === 0,
+    no_both_defensible_contract_ambiguity: disagreementClassification.counts.contract_ambiguity_cases === 0,
   };
   const passed = Object.values(checks).every(Boolean);
   const result = {

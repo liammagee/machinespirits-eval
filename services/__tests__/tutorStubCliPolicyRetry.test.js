@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import {
-  tutorStubCliPolicyRetryDecision,
-  waitTutorStubCliPolicyRetryDelay,
-} from '../tutorStubCliPolicyRetry.js';
+import { tutorStubCliPolicyRetryDecision, waitTutorStubCliPolicyRetryDelay } from '../tutorStubCliPolicyRetry.js';
 
 function policyError(prohibitedEvents, extraAudit = {}) {
   return {
