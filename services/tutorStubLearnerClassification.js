@@ -1,24 +1,20 @@
-export function buildTutorStubFailedClassification({ message, resolved, latencyMs = 0, usage = null } = {}) {
+export const TUTOR_STUB_UNANALYZED_CLASSIFICATION_SCHEMA =
+  'machinespirits.tutor-stub.learner-analysis-no-signal.v1';
+
+export function isTutorStubUnanalyzedClassification(value) {
+  return (
+    value?.schema === TUTOR_STUB_UNANALYZED_CLASSIFICATION_SCHEMA &&
+    value?.analysis_status === 'unanalyzed' &&
+    value?.signal?.state === 'none'
+  );
+}
+
+export function buildTutorStubFailedClassification({ code, resolved, latencyMs = 0, usage = null } = {}) {
   return {
-    error: message,
-    turn: {
-      summary: 'Classifier failed before the tutor turn.',
-      request_type: 'off_task_or_mixed',
-      discourse_move: 'unknown',
-      evidence_use: 'unknown',
-      epistemic_stance: 'unknown',
-      affect: 'unknown',
-      agency: 'unknown',
-      scores: {},
-      pedagogical_need: 'Proceed cautiously and use the learner input directly.',
-    },
-    overall: {
-      summary: 'Overall classification is unavailable because the classifier failed.',
-      trajectory: 'unknown',
-      recurring_pattern: 'unknown',
-      current_state: 'unknown',
-      next_best_tutor_move: 'Ask a focused diagnostic question.',
-    },
+    schema: TUTOR_STUB_UNANALYZED_CLASSIFICATION_SCHEMA,
+    analysis_status: 'unanalyzed',
+    signal: { state: 'none' },
+    failure_code: String(code || 'analysis_unavailable'),
     provider: resolved?.provider || null,
     model: resolved?.model || null,
     latencyMs,

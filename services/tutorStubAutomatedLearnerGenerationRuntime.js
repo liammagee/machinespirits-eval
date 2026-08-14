@@ -1,7 +1,6 @@
 import path from 'node:path';
 import { cleanTutorStubStageSpeech } from './tutorStubStageSpeech.js';
 import { mixedLearnerSuggestionMove, parseMixedLearnerArtifacts } from './mixedLearnerArtifacts.js';
-import { tutorStubCliPolicyRetryDecision } from './tutorStubCliPolicyRetry.js';
 import {
   latestTutorStubMessage as latestTutorMessage,
   tutorStubPublicMessagesForSpeaker,
@@ -338,24 +337,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
         signal,
         historyTurns: state.historyTurns,
       });
-    let raw;
-    try {
-      raw = await call();
-    } catch (error) {
-      const retryLedger = state.cliPolicyRetryLedger || (state.cliPolicyRetryLedger = {});
-      const retryKey = 'tutor_stub_auto_learner:codex_policy';
-      const decision = tutorStubCliPolicyRetryDecision(error, { alreadyUsed: retryLedger[retryKey] === true });
-      appendTraceEvent(state.trace, {
-        type: 'cli_policy_retry_decision',
-        role: 'tutor_stub_auto_learner',
-        turn: turnNumber,
-        decision,
-        publicTranscriptChanged: false,
-      });
-      if (!decision.retry) throw error;
-      retryLedger[retryKey] = true;
-      raw = await call();
-    }
+    const raw = await call();
     return {
       ...raw,
       text: applyTutorStubCorruption(state, turnNumber, cleanAutomatedLearnerReply(raw.text)),

@@ -1,0 +1,16 @@
+{
+  "schema": "machinespirits.adaptation-refinement.gold-decisions.v0",
+  "annotator": "claude-fable-5",
+  "date": "2026-08-10",
+  "source": "held-out borderline session, annotated from transcript BEFORE the shadow ran on this trace",
+  "corpus_note": "Automated low-agency learner (permission-seeking), world_005_marrick, strict DAG, 8 turns. Learner turns are deferential in form but conceptually correct; §17 item 3 borderline case.",
+  "decisions": [
+    { "trace": "2026-08-09T14-32-40-999Z", "session": 1, "turn": 2, "revision_warranted": "no", "taken": null, "note": "substantive question, session just started" },
+    { "trace": "2026-08-09T14-32-40-999Z", "session": 1, "turn": 3, "revision_warranted": "no", "taken": null, "note": "second permission frame but content correct and advancing" },
+    { "trace": "2026-08-09T14-32-40-999Z", "session": 1, "turn": 4, "revision_warranted": "uncertain", "taken": null, "note": "third consecutive permission frame; hold (progress) vs agency-handoff both defensible" },
+    { "trace": "2026-08-09T14-32-40-999Z", "session": 1, "turn": 5, "revision_warranted": "uncertain", "taken": null, "note": "deference now systematic; conceptual progress continues" },
+    { "trace": "2026-08-09T14-32-40-999Z", "session": 1, "turn": 6, "revision_warranted": "yes", "taken": null, "note": "permission frame + stalled move: re-keeps the t5 entry verbatim, no new conceptual step" },
+    { "trace": "2026-08-09T14-32-40-999Z", "session": 1, "turn": 7, "revision_warranted": "uncertain", "taken": null, "note": "progress resumed under the same deference pattern" },
+    { "trace": "2026-08-09T14-32-40-999Z", "session": 1, "turn": 8, "revision_warranted": "no", "taken": null, "note": "learner's first unhedged declarative — target behaviour arrived; hold" }
+  ]
+}

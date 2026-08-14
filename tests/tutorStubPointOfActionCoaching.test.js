@@ -7,9 +7,12 @@ import {
   applyTutorStubPointOfActionConstraint,
   auditTutorStubPointOfActionCompliance,
   buildTutorStubPointOfActionTurn,
+  displaceTutorStubPointOfAction,
+  isTutorStubPointOfActionDisplaced,
   normalizeTutorStubPointOfActionArm,
   normalizeTutorStubPointOfActionOpportunityProtocol,
   reconcileTutorStubPointOfActionHandoffEligibility,
+  tutorStubPointOfActionPrompt,
   tutorStubPointOfActionPlaceboAudit,
   tutorStubPointOfActionTargetText,
 } from '../services/tutorStubPointOfActionCoaching.js';
@@ -100,6 +103,64 @@ test('compiled constraint overrides only the typed action/release seam', () => {
   assert.equal(selection.action_family, 'answer_accountably');
   assert.equal(selection.response_configuration.action_family, 'answer_accountably');
   assert.equal(turn.compiled_constraint.suppress_new_premise, true);
+});
+
+test('final-authority displacement cancels point-of-action behavior while retaining provenance', () => {
+  const turn = buildTutorStubPointOfActionTurn({
+    ...BASE,
+    arm: 'compiled_constraint',
+    evidenceUse: 'omits_warrant',
+  });
+  const originalPrompt = turn.interruption.text;
+  const originalConstraint = structuredClone(turn.compiled_constraint);
+  const displaced = displaceTutorStubPointOfAction(turn, {
+    displacedActionFamily: 'answer_accountably',
+    desiredActionFamily: 'repair_understanding',
+  });
+
+  assert.equal(isTutorStubPointOfActionDisplaced(displaced), true);
+  assert.equal(displaced.assigned_trigger, null);
+  assert.equal(displaced.assignment_priority, null);
+  assert.equal(displaced.displaced_trigger, 'warrant_skip');
+  assert.equal(displaced.displaced_by, 'adaptive_warrant_gate_final_authority');
+  assert.equal(displaced.disposition, 'cancelled_before_tutor_output');
+  assert.equal(displaced.interruption.text, null);
+  assert.equal(displaced.compiled_constraint, null);
+  assert.equal(displaced.displacement.original_interruption.text, originalPrompt);
+  assert.deepEqual(displaced.displacement.original_compiled_constraint, originalConstraint);
+  assert.equal(displaced.displacement.desired_action_family, 'repair_understanding');
+  assert.equal(tutorStubPointOfActionPrompt(displaced), '');
+  assert.equal(auditTutorStubPointOfActionCompliance({ turn: displaced, tutorText: originalPrompt }), null);
+
+  const selection = { action_family: 'repair_understanding' };
+  assert.equal(applyTutorStubPointOfActionConstraint(selection, displaced), selection);
+
+  // Older persisted rows may carry the marker without having had their live
+  // fields cleared. All execution consumers still have to fail closed.
+  const staleDisplaced = {
+    ...turn,
+    displaced_by: 'adaptive_warrant_gate_final_authority',
+  };
+  assert.equal(tutorStubPointOfActionPrompt(staleDisplaced), '');
+  assert.equal(applyTutorStubPointOfActionConstraint(selection, staleDisplaced), selection);
+  assert.equal(auditTutorStubPointOfActionCompliance({ turn: staleDisplaced, tutorText: originalPrompt }), null);
+
+  const committee = displaceTutorStubPointOfAction(
+    buildTutorStubPointOfActionTurn({
+      ...BASE,
+      arm: 'committee',
+      turn: 16,
+      evidenceUse: 'omits_warrant',
+      opportunityProtocol: TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_PROTOCOL,
+    }),
+  );
+  assert.equal(
+    reconcileTutorStubPointOfActionHandoffEligibility(committee, {
+      handoff_contract: { mode: 'new_unresolved_check', question_allowed: true },
+    }),
+    committee,
+  );
+  assert.equal(committee.assigned_trigger, null);
 });
 
 test('compliance audit covers release, no-release, and focused-warrant cases', () => {

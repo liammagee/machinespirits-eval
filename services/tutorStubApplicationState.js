@@ -156,6 +156,11 @@ export function createTutorStubApplicationState({ launchApplicationContext, sess
         }
       : null,
     world: worldBundle?.world || null,
+    // Explicit decision-time planner projection only. No current world or
+    // scaffold schema authors a bounded proof-limit terminal, so this remains
+    // null unless an authoritative upstream component supplies the full
+    // contract for the current decision.
+    boundedInquiryScopeAtDecision: null,
     openingRealization: null,
     resumeHandoff: null,
     openingRealizer,

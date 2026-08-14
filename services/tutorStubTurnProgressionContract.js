@@ -1,11 +1,15 @@
+import { auditAdaptiveWarrantPublicObligationDelivery } from './adaptiveWarrantPublicObligationLedger.js';
+
 export const TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA = 'machinespirits.tutor-stub.turn-progression-contract.v1';
 export const TUTOR_STUB_TURN_PROGRESSION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.turn-progression-audit.v1';
 export const TUTOR_STUB_LIVE_TURN_PROGRESSION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.live-turn-progression-audit.v1';
+export const TUTOR_STUB_PUBLIC_OBLIGATION_RESOLUTION_CONTRACT_SCHEMA =
+  'machinespirits.tutor-stub.public-obligation-resolution-contract.v1';
 
 const TOKEN_PATTERN = /[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu;
 const QUESTION_PATTERN = /\?/u;
 const WRITABLE_ENTRY_PATTERN =
-  /\b(?:what|which)\b[^.!?]{0,55}\b(?:should|could|can|do)\s+i\s+(?:enter|record|say|write)\b|\b(?:give|tell|show) me\b[^.!?]{0,55}\b(?:entry|line|sentence|wording|words?)\b|\bhow (?:should|could|can|do) i (?:enter|record|say|write)\b|\b(?:what|which|how)\b[^.!?]{0,45}\b(?:should|could|can|do)\s+i\s+(?:add|include|note|put)\b[^.!?]{0,100}\bin (?:the )?(?:account|book|journal|ledger|log|minutes|notes?|record|register|trial[- ]?book)\b|\b(?:can|could|may|should|would)\s+i\s+(?:add|enter|include|note|put|record|write)\b[^.!?]{0,100}\b(?:in|into|on|to)\s+(?:the )?(?:account|book|journal|ledger|log|minutes|notes?|record|register|trial[- ]?book)\b/iu;
+  /\b(?:what|which)\b[^.!?]{0,55}\b(?:should|could|can|do)\s+i\s+(?:enter|record|say|write)\b|\b(?:give|tell|show) me\b[^.!?]{0,55}\b(?:entry|line|sentence|wording|words?)\b|\bhow (?:should|could|can|do) i (?:enter|record|say|write)\b|\b(?:what|which|how)\b[^.!?]{0,45}\b(?:should|could|can|do)\s+i\s+(?:add|include|note|put)\b[^.!?]{0,100}\bin (?:the )?(?:account|book|journal|ledger|log|minutes|notes?|record|register|trial[- ]?book)\b|\b(?:can|could|may|should|would)\s+i\s+(?:add|enter|include|note|put|record|write)\b[^.!?]{0,100}\b(?:in|into|on|to)\s+(?:the )?(?:account|book|journal|ledger|log|minutes|notes?|record|register|trial[- ]?book)\b|\b(?:(?:can|could|will|would) you\s+(?:please\s+)?|do you want me to\s+|(?:can|could|may|should|would) i\s+)(?:add|enter|include|note|put|record|write)\s+(?:that|this)\b/iu;
 const GENERIC_WRITABLE_FOCUS_PATTERN =
   /^(?:what|which|how)\b[^.!?]{0,55}\b(?:enter|record|say|write)\b(?:\s+(?:next|now|down|in the .{0,30}))?\s*\??$/iu;
 const ELLIPTICAL_OR_AFFECTIVE_SURFACE_PATTERN =
@@ -26,6 +30,7 @@ const NO_QUESTION_ACTIONS = new Set([
   'reanchor_public_evidence',
   'receive_vulnerability',
 ]);
+const PUBLIC_OBLIGATION_OUTCOMES = new Set(['bounded_public_answer', 'named_unavailability_with_concrete_next_step']);
 const liveSentenceSegmenter = new Intl.Segmenter('en', { granularity: 'sentence' });
 const FOCUS_STOP_WORDS = new Set([
   'a',
@@ -198,6 +203,94 @@ function contentTerms(value) {
   ];
 }
 
+function compilePublicObligationResolutionContract(directive = null) {
+  if (!directive) return null;
+  const obligationId = oneLine(directive.obligation_id);
+  const sourceSurface = oneLine(directive.target?.source_surface);
+  const kind = oneLine(directive.target?.kind);
+  const signature =
+    typeof directive.target?.signature === 'string' ? structuredClone(directive.target.signature) : null;
+  const subjectTerms = Array.isArray(directive.target?.subject_terms)
+    ? structuredClone(directive.target.subject_terms)
+    : [];
+  const requiredComponents = Array.isArray(directive.target?.required_components)
+    ? structuredClone(directive.target.required_components)
+    : [];
+  const directivePublicTerms = [
+    ...new Set(
+      (Array.isArray(directive.target?.public_terms) ? directive.target.public_terms : [])
+        .map((term) => oneLine(term).toLowerCase())
+        .filter(Boolean),
+    ),
+  ].slice(0, 20);
+  const progressionTerms = [
+    ...new Set(contentTerms([sourceSurface, ...directivePublicTerms].filter(Boolean).join(' '))),
+  ].slice(0, 20);
+  const acceptableOutcomes = [
+    ...new Set(
+      (Array.isArray(directive.acceptable_outcomes) ? directive.acceptable_outcomes : [])
+        .map(oneLine)
+        .filter((outcome) => PUBLIC_OBLIGATION_OUTCOMES.has(outcome)),
+    ),
+  ];
+  const compileIssues = [];
+  if (!obligationId) compileIssues.push('missing_obligation_id');
+  if (!kind) compileIssues.push('missing_target_kind');
+  if (!oneLine(signature)) compileIssues.push('missing_target_signature');
+  else if (signature !== oneLine(signature) || (kind && !signature.startsWith(`${kind}:`))) {
+    compileIssues.push('invalid_target_signature');
+  }
+  if (
+    !Array.isArray(directive.target?.subject_terms) ||
+    subjectTerms.some((term) => typeof term !== 'string' || !oneLine(term)) ||
+    new Set(subjectTerms).size !== subjectTerms.length
+  ) {
+    compileIssues.push('invalid_target_subject_terms');
+  }
+  const requiredComponentIds = requiredComponents.map((component) => oneLine(component?.id));
+  if (
+    !Array.isArray(directive.target?.required_components) ||
+    requiredComponents.some(
+      (component) =>
+        !component ||
+        typeof component !== 'object' ||
+        !oneLine(component.id) ||
+        !Array.isArray(component.terms) ||
+        component.terms.length === 0 ||
+        component.terms.some((term) => typeof term !== 'string' || !oneLine(term)) ||
+        new Set(component.terms).size !== component.terms.length,
+    ) ||
+    new Set(requiredComponentIds).size !== requiredComponentIds.length
+  ) {
+    compileIssues.push('invalid_target_required_components');
+  }
+  if (!sourceSurface) compileIssues.push('missing_public_target_surface');
+  if (!progressionTerms.length) compileIssues.push('missing_public_target_terms');
+  for (const outcome of PUBLIC_OBLIGATION_OUTCOMES) {
+    if (!acceptableOutcomes.includes(outcome)) compileIssues.push(`missing_acceptable_outcome:${outcome}`);
+  }
+  return {
+    schema: TUTOR_STUB_PUBLIC_OBLIGATION_RESOLUTION_CONTRACT_SCHEMA,
+    active: true,
+    complete: compileIssues.length === 0,
+    obligation_id: obligationId || null,
+    target: {
+      kind: kind || null,
+      signature,
+      public_terms: directivePublicTerms,
+      subject_terms: subjectTerms,
+      required_components: requiredComponents,
+      progression_terms: progressionTerms,
+      source_surface: sourceSurface || null,
+    },
+    acceptable_outcomes: acceptableOutcomes,
+    compile_issues: compileIssues,
+    instruction: sourceSurface
+      ? `Resolve the learner’s public request “${sourceSurface}” before changing topic. Give only a bounded result licensed by public evidence, or name that exact result as unavailable and state one concrete public condition for answering it. Do not substitute another clue or question.`
+      : 'Resolve the active public request before changing topic; do not substitute another clue or question.',
+  };
+}
+
 function predicateTerms(value) {
   return contentTerms(
     oneLine(value)
@@ -355,6 +448,13 @@ export function deterministicTutorStubTurnProgressionUptake({
   const fallback = oneLine(defaultUptake);
   if (contract?.schema !== TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA || contract.complete !== true) {
     return fallback;
+  }
+  // Public answer debt owns UPTAKE. Deterministic recovery cannot invent the
+  // missing result, so discharge that slot with the same named, concrete
+  // deferral used by the declarative handoff fallback before considering a
+  // generic acknowledgement of the learner's request.
+  if (contract.public_obligation_contract?.complete === true) {
+    return declarativeFallbackFocus(contract);
   }
   const focusTerms = contract.learner_uptake?.focus_terms || [];
   const acceptedMeaning = contract.learner_uptake?.accepted_meaning || '';
@@ -609,9 +709,14 @@ function chooseHandoffMode({
   assertionGap = false,
   integrationTarget = null,
   unsupportedCausalClaim = false,
+  publicObligation = null,
 } = {}) {
   if (discoursePlane?.plane === 'instructional_meta') return 'instructional_meta_repair';
   if (dialogueClosureFrame?.mandatory === true) return 'closure';
+  // A live public-result debt owns the response before a scheduled but
+  // unrelated source may own its terminal question. The source may still be
+  // delivered exactly; it cannot stand in for the requested result.
+  if (publicObligation?.complete === true) return 'answer_or_accountable_deferral';
   if (questionSupport?.responsiveRepairRequired === true) return 'direct_answer';
   if (integrationTarget?.active === true) return 'missing_relation_recovery';
   // A learner may name the right concealed answer before the public record
@@ -649,6 +754,9 @@ function handoffInstruction(contract) {
   if (handoff.mode === 'declarative_unsupported_claim') {
     return 'End declaratively at the public evidence boundary. Do not quote, confirm, deny, or paraphrase the proposed answer, and ask no question.';
   }
+  if (handoff.mode === 'answer_or_accountable_deferral') {
+    return 'The active public request owns this turn. Give its bounded public result, or name that exact result as unavailable and one concrete public condition for answering it. End declaratively; do not substitute SOURCE or ask a question.';
+  }
   const target = focus.due_surfaces.length ? 'the due SOURCE' : 'TURN FOCUS';
   const settled = handoff.prohibited_settled_surfaces.length ? ' Do not reopen the settled point.' : '';
   const bridge = focus.sibling_relation_requires_explicit_bridge
@@ -671,6 +779,7 @@ export function compileTutorStubTurnProgressionContract({
   questionSupport = null,
   actionFamily = null,
   tactic = null,
+  publicObligationDirective = null,
 } = {}) {
   const discoursePlane = responseCompositionFrame?.discourse_plane || null;
   const completion = responseCompositionFrame?.conversational_completion || null;
@@ -701,6 +810,7 @@ export function compileTutorStubTurnProgressionContract({
     responseCompositionFrame?.learner_dag?.final_secret_entailed === true &&
     responseCompositionFrame?.learner_dag?.asserted_secret !== true,
   );
+  const publicObligation = compilePublicObligationResolutionContract(publicObligationDirective);
   const handoffMode = chooseHandoffMode({
     writableEntryRequested,
     completion,
@@ -712,6 +822,7 @@ export function compileTutorStubTurnProgressionContract({
     assertionGap,
     integrationTarget,
     unsupportedCausalClaim,
+    publicObligation,
   });
   const questionAllowed = [
     'new_unresolved_check',
@@ -723,24 +834,28 @@ export function compileTutorStubTurnProgressionContract({
   const assertionGapTarget = assertionGap && questionAllowed ? oneLine(publicQuestion) : '';
   const requiredTargetSurfaces = instructionalMeta
     ? []
-    : integrationTarget
-      ? [integrationTarget.question]
-      : assertionGapTarget
-        ? [assertionGapTarget]
-        : due.length && questionAllowed
-          ? due
-          : boundedFocus.surface
-            ? [boundedFocus.surface]
-            : [];
+    : publicObligation?.complete
+      ? [publicObligation.target.source_surface]
+      : integrationTarget
+        ? [integrationTarget.question]
+        : assertionGapTarget
+          ? [assertionGapTarget]
+          : due.length && questionAllowed
+            ? due
+            : boundedFocus.surface
+              ? [boundedFocus.surface]
+              : [];
   const requiredTargetTerms = instructionalMeta
     ? []
-    : integrationTarget
-      ? contentTerms(integrationTarget.question)
-      : assertionGapTarget
-        ? contentTerms(assertionGapTarget)
-        : due.length && questionAllowed
-          ? dueTerms
-          : primaryTerms;
+    : publicObligation?.complete
+      ? publicObligation.target.progression_terms
+      : integrationTarget
+        ? contentTerms(integrationTarget.question)
+        : assertionGapTarget
+          ? contentTerms(assertionGapTarget)
+          : due.length && questionAllowed
+            ? dueTerms
+            : primaryTerms;
   const prohibitedSettledSurfaces = completion?.resolved
     ? [completion.sourceTutorQuestion, completion.acceptedMeaning].map(oneLine).filter(Boolean)
     : [];
@@ -749,10 +864,13 @@ export function compileTutorStubTurnProgressionContract({
     dramaticReleaseFrame,
     publicFocusMapping: responseCompositionFrame?.public_focus_mapping,
   });
-  const siblingBridgeRequired = due.length > 0 && focusRelation.kind === 'sibling';
+  const siblingBridgeRequired =
+    publicObligation?.complete !== true && due.length > 0 && focusRelation.kind === 'sibling';
   const contract = {
     schema: TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA,
-    complete: Boolean(focus.surface || due.length || dialogueClosureFrame?.mandatory),
+    complete:
+      Boolean(focus.surface || due.length || dialogueClosureFrame?.mandatory || publicObligation) &&
+      publicObligation?.complete !== false,
     public_only: true,
     discourse_plane: discoursePlane ? structuredClone(discoursePlane) : null,
     learner_uptake: {
@@ -770,13 +888,15 @@ export function compileTutorStubTurnProgressionContract({
         ? 'unsupported_causal_claim_boundary'
         : (completion?.resolved && completion.acceptedMeaningKind) || null,
       focus_terms: primaryTerms,
-      instruction: writableEntryRequested
-        ? 'UPTAKE must answer the wording request directly with the licensed entry; it must not substitute another question.'
-        : instructionalMeta
-          ? 'UPTAKE must answer the request for a simpler explanation directly. Treat it as a repair to the instructional dialogue, not as a proposition, clue, or proof move.'
-          : unsupportedCausalClaim
-            ? 'UPTAKE must qualify the learner’s proposed causal answer without quoting, confirming, denying, or paraphrasing it. Say only that the public evidence has not established it yet.'
-            : 'UPTAKE must visibly answer, credit, qualify, correct, or receive the learner’s actual move before development begins.',
+      instruction: instructionalMeta
+        ? 'UPTAKE must answer the request for a simpler explanation directly. Treat it as a repair to the instructional dialogue, not as a proposition, clue, or proof move.'
+        : publicObligation?.complete
+          ? `${publicObligation.instruction} Realize the answer or accountable deferral in UPTAKE before any separate development or due SOURCE.`
+          : writableEntryRequested
+            ? 'UPTAKE must answer the wording request directly with the licensed entry; it must not substitute another question.'
+            : unsupportedCausalClaim
+              ? 'UPTAKE must qualify the learner’s proposed causal answer without quoting, confirming, denying, or paraphrasing it. Say only that the public evidence has not established it yet.'
+              : 'UPTAKE must visibly answer, credit, qualify, correct, or receive the learner’s actual move before development begins.',
     },
     turn_focus_contract: {
       primary_surface: boundedFocus.surface || null,
@@ -794,13 +914,15 @@ export function compileTutorStubTurnProgressionContract({
       bridge_markers: ['before we', 'first', 'to answer', 'to connect', 'because', 'so that', 'which bears on'],
       instruction: instructionalMeta
         ? 'Keep the explanation itself as the turn focus. Restate the latest tutor point in plain contemporary English; do not advance the inquiry or reinterpret the request as evidence.'
-        : integrationTarget
-          ? `Recover this already-public relation before another verdict: “${integrationTarget.target}” Ask exactly: “${integrationTarget.question}” Do not state the target for the learner or copy their ledger formula.`
-          : unsupportedCausalClaim
-            ? 'Qualify the proposed causal answer without repeating or paraphrasing it. Keep it open until public evidence supports the missing connection.'
-            : boundedFocus.surface
-              ? `Keep the learner’s requested focus primary: “${boundedFocus.surface}”. Do not silently replace its relation with a neighbouring one.`
-              : 'Keep the current public relation primary; do not silently substitute a neighbouring relation.',
+        : publicObligation?.complete
+          ? `Keep the requested public result primary: “${publicObligation.target.source_surface}”. A scheduled SOURCE may be delivered, but it must not replace or redirect this answer-or-deferral.`
+          : integrationTarget
+            ? `Recover this already-public relation before another verdict: “${integrationTarget.target}” Ask exactly: “${integrationTarget.question}” Do not state the target for the learner or copy their ledger formula.`
+            : unsupportedCausalClaim
+              ? 'Qualify the proposed causal answer without repeating or paraphrasing it. Keep it open until public evidence supports the missing connection.'
+              : boundedFocus.surface
+                ? `Keep the learner’s requested focus primary: “${boundedFocus.surface}”. Do not silently replace its relation with a neighbouring one.`
+                : 'Keep the current public relation primary; do not silently substitute a neighbouring relation.',
     },
     handoff_contract: {
       mode: handoffMode,
@@ -819,6 +941,7 @@ export function compileTutorStubTurnProgressionContract({
       prohibited_settled_surfaces: prohibitedSettledSurfaces,
       instruction: null,
     },
+    ...(publicObligation ? { public_obligation_contract: publicObligation } : {}),
   };
   contract.handoff_contract.instruction = handoffInstruction(contract);
   return contract;
@@ -828,11 +951,16 @@ export function tutorStubTurnProgressionContractPrompt(contract = null) {
   if (contract?.schema !== TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA || contract.complete !== true) return '';
   return [
     '[Tutor-only turn progression contract]',
+    contract.public_obligation_contract?.complete
+      ? `PUBLIC OBLIGATION — ${contract.public_obligation_contract.instruction}`
+      : null,
     `UPTAKE CONTRACT — ${contract.learner_uptake.instruction}`,
     `TURN FOCUS — ${contract.turn_focus_contract.instruction}`,
     `HANDOFF CONTRACT — ${contract.handoff_contract.instruction}`,
     '[End tutor-only turn progression contract]',
-  ].join('\n');
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
 
 function declarativeFallbackFocus(
@@ -857,6 +985,76 @@ function declarativeFallbackFocus(
           .replace(/^(?:the\s+)?learner\s+cannot\s+yet\s+/iu, 'how to ')
           .replace(/^(?:the\s+)?learner\s+/iu, '')
     : selectedSurface;
+  const publicObligation = contract?.public_obligation_contract;
+  if (publicObligation?.complete === true) {
+    const target = publicObligation.target || {};
+    const subjects = (Array.isArray(target.subject_terms) ? target.subject_terms : [])
+      .map(oneLine)
+      .filter(Boolean)
+      .filter(
+        (term, _index, terms) =>
+          !terms.some(
+            (compound) => compound !== term && compound.includes('-') && compound.split('-').includes(term),
+          ),
+      )
+      .slice(0, 6);
+    const kindLabel =
+      target.kind === 'weight_or_ring_result'
+        ? (target.public_terms || []).includes('ring')
+          ? (target.public_terms || []).includes('balance')
+            ? 'balance-and-ring result'
+            : 'ring result'
+          : 'balance result'
+        : target.kind === 'material_or_assay_result'
+          ? 'assay result'
+          : target.kind === 'comparison_result'
+            ? 'comparison result'
+          : target.kind === 'mark_or_tool_result'
+              ? 'mark-or-tool result'
+              : target.kind === 'record_entry'
+                ? (target.public_terms || []).includes('log')
+                  ? 'log entry'
+                  : 'record entry'
+                : 'public result';
+    // Keep authored compounds as separate lexical targets. Joining
+    // `room-presence` and `fridge-access` with another hyphen creates one new
+    // token that cannot satisfy either original target in the delivery audit.
+    const targetTerms = subjects.length
+      ? subjects
+      : (Array.isArray(target.progression_terms) ? target.progression_terms : target.public_terms || [])
+          .map(oneLine)
+          .filter(Boolean)
+          .slice(0, 6);
+    const kindWords = kindLabel
+      .toLowerCase()
+      .split(/[\s-]+/u)
+      .filter((term) => term && !['and', 'or'].includes(term));
+    const targetWords = new Set(
+      targetTerms.flatMap((term) => term.toLowerCase().split(/[\s-]+/u)).filter(Boolean),
+    );
+    const representedKindWords = kindWords.filter((term) => targetWords.has(term));
+    const missingKindWords = kindWords.filter((term) => !targetWords.has(term));
+    let targetLabel;
+    if (representedKindWords.length === kindWords.length) {
+      // Semantic catalogue ids can already be composite public labels, for
+      // example `first-log-entry`. Do not append the kind a second time. If
+      // the only extra material is an ordinal/catalogue wrapper, prefer the
+      // plain kind label exposed by the public surface (`log entry`).
+      const meaningfulTargetWords = [...targetWords].filter(
+        (term) => !['first', 'next', 'public', 'requested', 'target', 'the'].includes(term),
+      );
+      targetLabel = meaningfulTargetWords.every((term) => kindWords.includes(term))
+        ? kindLabel
+        : targetTerms.join(' and ');
+    } else if (representedKindWords.length > 0) {
+      targetLabel = `${targetTerms.join(' and ')} ${missingKindWords.join(' ')}`;
+    } else {
+      targetLabel = targetTerms.some((term) => term.includes('-'))
+        ? `${targetTerms.join(' and ')} ${kindLabel}`
+        : [...targetTerms, kindLabel].join('-');
+    }
+    return `The ${targetLabel} is not public yet; once a matching public record is available, I can answer it.`;
+  }
   if (contract?.discourse_plane?.plane === 'instructional_meta') {
     return 'I will keep the same point and restate it in short, ordinary words before we return to the inquiry.';
   }
@@ -969,11 +1167,24 @@ export function deterministicTutorStubTurnProgressionHandoff({
   support = null,
   defaultQuestion = '',
   publicObject = '',
+  priorPublicText = '',
 } = {}) {
   if (contract?.schema !== TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA || contract.complete !== true) {
     return oneLine(defaultQuestion);
   }
   if (contract.handoff_contract?.question_allowed === false) {
+    if (contract.public_obligation_contract?.complete === true && oneLine(priorPublicText)) {
+      const priorDelivery = auditAdaptiveWarrantPublicObligationDelivery({
+        obligation: contract.public_obligation_contract,
+        tutorOutcome: { tutor_text: priorPublicText },
+      });
+      if (priorDelivery?.status === 'deferred') {
+        return 'That named public-record release is next.';
+      }
+      if (priorDelivery?.status === 'satisfied') {
+        return 'That bounded answer is the public result I will carry forward.';
+      }
+    }
     return declarativeFallbackFocus(contract, {
       clarificationInvitationRequired: support?.clarificationInvitationRequired === true,
       boundedChoiceRequired: /bounded.*choice/u.test(String(support?.modality || '')),
@@ -1003,6 +1214,98 @@ function reopensSettledPoint(question = '', surfaces = []) {
       shared >= Math.min(2, settledTerms.length) && shared / Math.min(settledTerms.length, questionTerms.length) >= 0.55
     );
   });
+}
+
+function publicObligationAuditText(text = '', authoredSourceTexts = []) {
+  const source = String(text || '');
+  const characters = source.split('');
+  for (const span of exactAuthoredSourceSpans(source, authoredSourceTexts)) {
+    for (let index = span.start; index < span.end; index += 1) {
+      if (characters[index] === '?') characters[index] = ' ';
+    }
+  }
+  return characters.join('');
+}
+
+function textBeforeFirstAuthoredSource(text = '', authoredSourceTexts = []) {
+  const source = String(text || '');
+  const firstSource = exactAuthoredSourceSpans(source, authoredSourceTexts)[0];
+  return firstSource ? source.slice(0, firstSource.start) : null;
+}
+
+function auditPublicObligationResolution({
+  contract = null,
+  text = '',
+  obligationOwnedText = null,
+  authoredSourceTexts = [],
+} = {}) {
+  const obligation = contract?.public_obligation_contract || null;
+  if (obligation?.active !== true) return null;
+  const auditedText = publicObligationAuditText(obligationOwnedText ?? text, authoredSourceTexts);
+  const wholeAuditedText = publicObligationAuditText(text, authoredSourceTexts);
+  const progressionTerms = obligation.target?.progression_terms || [];
+  const targetCoverage = coverage(progressionTerms, auditedText);
+  const targetVisible = !losesHandoffFocus(targetCoverage, progressionTerms);
+  const delivery = auditAdaptiveWarrantPublicObligationDelivery({
+    obligation,
+    tutorOutcome: { tutor_text: auditedText },
+  });
+  const deliveryResolved = ['satisfied', 'deferred'].includes(delivery?.status);
+  const resolved = obligation.complete === true && targetVisible && deliveryResolved;
+  const wholeTargetCoverage = coverage(progressionTerms, wholeAuditedText);
+  const wholeDelivery = auditAdaptiveWarrantPublicObligationDelivery({
+    obligation,
+    tutorOutcome: { tutor_text: wholeAuditedText },
+  });
+  const resolvedOnlyAfterOwnedSurface =
+    !resolved &&
+    !losesHandoffFocus(wholeTargetCoverage, progressionTerms) &&
+    ['satisfied', 'deferred'].includes(wholeDelivery?.status);
+  return {
+    active: true,
+    complete: obligation.complete === true,
+    obligation_id: obligation.obligation_id,
+    resolved,
+    outcome: resolved
+      ? delivery.status === 'satisfied'
+        ? 'bounded_public_answer'
+        : 'named_unavailability_with_concrete_next_step'
+      : null,
+    target_visible: targetVisible,
+    target_coverage: targetCoverage,
+    delivery,
+    resolution_scope: 'obligation_owned_uptake_before_source',
+    resolved_only_after_owned_surface: resolvedOnlyAfterOwnedSurface,
+  };
+}
+
+function appendPublicObligationIssues(issues, resolution, { owner, questionCount = 0 } = {}) {
+  if (!resolution?.active || resolution.resolved) return;
+  if (resolution.resolved_only_after_owned_surface) {
+    issues.push({
+      type: 'public_obligation_resolved_after_source_or_handoff',
+      owner,
+      obligation_id: resolution.obligation_id,
+      reason: 'the active public request must be answered or accountably deferred in uptake before source or handoff',
+    });
+  }
+  issues.push({
+    type: 'public_obligation_unresolved',
+    owner,
+    obligation_id: resolution.obligation_id,
+    reason:
+      'the active public request was neither answered nor deferred with a named limit and concrete next condition',
+    target_coverage: resolution.target_coverage,
+    delivery_status: resolution.delivery?.status || null,
+  });
+  if (questionCount > 0) {
+    issues.push({
+      type: 'public_obligation_replaced_by_question',
+      owner,
+      obligation_id: resolution.obligation_id,
+      reason: 'a question cannot replace the active answer-or-accountable-deferral obligation',
+    });
+  }
 }
 
 export function auditTutorStubTurnProgression({ contract = null, composition = null } = {}) {
@@ -1056,6 +1359,15 @@ export function auditTutorStubTurnProgression({ contract = null, composition = n
     ['performance_response', slots.performanceResponse],
     ['handoff', slots.handoff],
   ].filter(([, text]) => QUESTION_PATTERN.test(text));
+  const publicObligation = auditPublicObligationResolution({
+    contract,
+    text: modelText,
+    obligationOwnedText: slots.uptake,
+  });
+  appendPublicObligationIssues(issues, publicObligation, {
+    owner: 'model_owned_composition',
+    questionCount: questionSlots.length,
+  });
   const handoff = contract.handoff_contract;
   if (!handoff.question_allowed && questionSlots.length) {
     issues.push({
@@ -1095,11 +1407,12 @@ export function auditTutorStubTurnProgression({ contract = null, composition = n
     }
   }
 
-  const target = coverage(handoff.required_target_terms, slots.handoff);
+  const obligationOwnsWholeResponse = publicObligation?.active === true;
+  const target = coverage(handoff.required_target_terms, obligationOwnsWholeResponse ? modelText : slots.handoff);
   if (losesHandoffFocus(target, handoff.required_target_terms)) {
     issues.push({
       type: 'handoff_loses_turn_focus',
-      owner: 'handoff',
+      owner: obligationOwnsWholeResponse ? 'model_owned_composition' : 'handoff',
       required_target_surfaces: handoff.required_target_surfaces,
       matched_terms: target.matched,
       coverage: target.coverage,
@@ -1133,11 +1446,12 @@ export function auditTutorStubTurnProgression({ contract = null, composition = n
       matched_focus_terms: uptakeOverlap,
     },
     handoff: {
-      owner: 'handoff',
+      owner: obligationOwnsWholeResponse ? 'model_owned_composition' : 'handoff',
       mode: handoff.mode,
       question_owner: handoff.question_owner,
       target_coverage: target,
     },
+    ...(publicObligation ? { public_obligation: publicObligation } : {}),
   };
 }
 
@@ -1170,11 +1484,39 @@ export function auditTutorStubLiveTurnProgressionV1({
   const uptake = oneLine(observedComposition?.uptake);
   const development = oneLine(observedComposition?.development);
   const sentences = liveSentences(responseText, authoredSourceTexts);
-  const terminalSurface = sentences.at(-1) || '';
+  const requiredExactQuestion = oneLine(contract.handoff_contract?.required_exact_question);
+  // A required question can itself quote a previously public, multi-sentence
+  // clue. `Intl.Segmenter` sees the punctuation inside that ordinary quotation
+  // as sentence boundaries because it is not the currently released authored
+  // SOURCE. Terminality is already checked against the last host question mark;
+  // when the complete required question is the response suffix, retain that
+  // exact public span as the terminal surface instead of a quoted fragment.
+  const terminalSurface =
+    requiredExactQuestion && responseText.endsWith(requiredExactQuestion)
+      ? requiredExactQuestion
+      : sentences.at(-1) || '';
   const questionPositions = hostQuestionPositions(responseText, authoredSourceTexts);
   const questionCount = questionPositions.length;
   const uptakeQuestionCount = hostQuestionPositions(uptake, authoredSourceTexts).length;
   const developmentQuestionCount = hostQuestionPositions(development, authoredSourceTexts).length;
+  const preSourceText = textBeforeFirstAuthoredSource(responseText, authoredSourceTexts);
+  // Public-result debt is a literal delivery-order constraint, not a semantic
+  // segmentation guess. When an authored source is present, audit the actual
+  // first public host sentence before it. This remains narrower than the whole
+  // pre-source span and therefore cannot let a late pre-source pivot discharge
+  // an obligation that did not own the opening sentence.
+  const firstPreSourceSentence =
+    preSourceText === null ? null : liveSentences(oneLine(preSourceText), []).at(0) || '';
+  const publicObligation = auditPublicObligationResolution({
+    contract,
+    text: responseText,
+    obligationOwnedText: firstPreSourceSentence === null ? uptake : firstPreSourceSentence,
+    authoredSourceTexts,
+  });
+  appendPublicObligationIssues(issues, publicObligation, {
+    owner: 'whole_response',
+    questionCount,
+  });
 
   const uptakeLinkage = substantiveLearnerUptake({
     uptake,
@@ -1289,7 +1631,7 @@ export function auditTutorStubLiveTurnProgressionV1({
   // turns must still carry their focus; they just need not repeat it in the
   // sentence that ends the response.
   const closingTurn = handoff.mode === 'closure';
-  const wholeResponseOwnsFocus = closingTurn || writableEntryTurn;
+  const wholeResponseOwnsFocus = closingTurn || writableEntryTurn || publicObligation?.active === true;
   const targetSurface = wholeResponseOwnsFocus
     ? responseText
     : questionCount > 0 && handoff.question_owner === 'handoff'
@@ -1353,5 +1695,6 @@ export function auditTutorStubLiveTurnProgressionV1({
       question_owner: handoff.question_owner,
       target_coverage: target,
     },
+    ...(publicObligation ? { public_obligation: publicObligation } : {}),
   };
 }

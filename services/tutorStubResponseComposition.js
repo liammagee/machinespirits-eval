@@ -1751,6 +1751,7 @@ function configuredFallbackStance(stance) {
 }
 
 function configuredFallbackHandoff({ support = null, actionFamily = null } = {}) {
+  if (actionFamily === 'compress_sayback') return 'Can you say that public finding in one short sentence?';
   if (support?.clarificationInvitationRequired) {
     return 'Would you rather test that distinction against what is already public, hold it open for the next public fact, or ask me to clarify a word or connection?';
   }
@@ -1762,6 +1763,41 @@ function configuredFallbackHandoff({ support = null, actionFamily = null } = {})
   }
   if (actionFamily === 'close_inquiry') return 'That is enough to close the record without another demand.';
   return 'What does that let us carry forward?';
+}
+
+function configuredFallbackActionFamily(actionFamily) {
+  return (
+    {
+      clarify_distinction: 'The difference is what this evidence supports, rather than the conclusion beyond it.',
+      reanchor_lived_stake: 'You can test what this changes at the public object in front of us.',
+      reanchor_public_evidence: 'The public record stands, but the stronger claim remains open.',
+      close_inquiry: 'The public record supports that finding; this inquiry is closed.',
+    }[actionFamily] || null
+  );
+}
+
+export function configuredFallbackActionUptake(actionFamily, uptake) {
+  const publicUptake = oneLine(uptake);
+  const alreadyVisible =
+    (actionFamily === 'answer_accountably' &&
+      /\b(?:answer|because|before|check|if|unless|until|would count|could show|wrong|revise)\b|\bnot\b[^.!?]{0,90}\b(?:establish|identify|mean|place|prove|show|support|tie)\w*\b/iu.test(
+        publicUptake,
+      )) ||
+    (actionFamily === 'challenge_resistance' &&
+      /\b(?:but|instead|choose|test|stop|risk|refuse|try)\b/iu.test(publicUptake)) ||
+    (actionFamily === 'receive_vulnerability' &&
+      /\b(?:i hear|that sounds|you are naming|you've named|it makes sense|you can)\b/iu.test(publicUptake));
+  if (alreadyVisible) return publicUptake;
+  const continuation = publicUptake
+    ? `${publicUptake.charAt(0).toLowerCase()}${publicUptake.slice(1)}`
+    : 'I will keep your public point central';
+  return (
+    {
+      answer_accountably: `I will answer directly and state what would check it; ${continuation}`,
+      challenge_resistance: `Instead of copying my line, choose what the public clue supports in your own words; ${continuation}`,
+      receive_vulnerability: `I hear the concern, and you can leave the next judgment open; ${continuation}`,
+    }[actionFamily] || publicUptake
+  );
 }
 
 function configuredFallbackVariationBridge(variant) {
@@ -1892,6 +1928,7 @@ export function deterministicTutorStubConfiguredContinuationFallback({
     support,
     defaultQuestion: defaultHandoff,
     publicObject: object,
+    priorPublicText: uptake,
   });
   // The progression contract owns the terminal question. An assertion-gap
   // handoff therefore replaces the configured support question with the
@@ -1905,9 +1942,13 @@ export function deterministicTutorStubConfiguredContinuationFallback({
   const termDefinition = configuredFallbackTermDefinition({ responseConfiguration, world });
   const candidates = configuredFallbackVariantOrder({ variationKey, recentTutorTexts }).map((variant) =>
     [
-      integrationTarget?.active ? oneLine(integrationTarget.qualification) : oneLine(uptake),
+      configuredFallbackActionUptake(
+        actionFamily,
+        integrationTarget?.active ? oneLine(integrationTarget.qualification) : oneLine(uptake),
+      ),
       termDefinition,
       configuredFallbackVariationBridge(variant),
+      configuredFallbackActionFamily(actionFamily),
       integrationTarget?.active || !uptakeAlreadyPerformsRecordKeeper
         ? configuredFallbackPerformance({ part, object, tactic, diction })
         : null,

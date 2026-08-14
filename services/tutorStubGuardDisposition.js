@@ -21,7 +21,19 @@ export const TUTOR_STUB_GUARD_DISPOSITION_SCHEMA = 'machinespirits.tutor-stub.gu
 // finding — and the gap is wide, not marginal: on the 44 Phase B turns where
 // this guard was the last objector, the demotion moves 33 of them from
 // "template shipped" to "the model's own repair shipped".
-export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 7;
+// 8 (2026-08-10): two active public-obligation findings stay hard in both
+// columns. The broad live-progression family remains advisory under shadow;
+// only failing to answer/defer an active public request, or replacing it with
+// another question, regains a veto.
+// 9 (2026-08-11): an action family owned by active adaptive-warrant final
+// authority must be visible in the delivered public text. Ordinary selector
+// configuration misses remain non-vetoing; this rule is scoped to the causal
+// intervention whose delivery the mechanism study is intended to verify.
+// 10 (2026-08-12): on the deterministic terminal fallback only, selected
+// adaptive-warrant tactic visibility is advisory because the harness owns the
+// fixed safety prose. Repetition is explicitly excluded from the older broad
+// conversational accommodation and remains blocking on the last resort.
+export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 10;
 
 export const TUTOR_STUB_GUARD_BOUNDARY_POLICIES = Object.freeze({
   strict: 'strict',
@@ -66,6 +78,19 @@ const RULES = Object.freeze([
     type: 'missing_due_evidence',
     category: 'clue_transaction_integrity',
     rationale: 'A due clue must be present before its release transaction can commit.',
+  }),
+  rule({
+    guard: 'live_turn_progression_v1',
+    type: 'public_obligation_unresolved',
+    category: 'public_obligation_integrity',
+    rationale:
+      'An active learner-directed request for a public result must be answered or deferred with a named limit and concrete public next condition.',
+  }),
+  rule({
+    guard: 'live_turn_progression_v1',
+    type: 'public_obligation_replaced_by_question',
+    category: 'public_obligation_integrity',
+    rationale: 'A new tutor question cannot discharge or replace an active learner-directed public-result obligation.',
   }),
   rule({
     guard: 'live_turn_progression_v1',
@@ -253,6 +278,13 @@ const RULES = Object.freeze([
     rationale:
       'Non-actorial configuration axes were never delivery vetoes and remain report-only under the strict policy.',
   }),
+  rule({
+    guard: 'adaptive_warrant_delivery',
+    type: 'selected_action_family_not_visible',
+    category: 'causal_intervention_integrity',
+    rationale:
+      'An action family selected by active adaptive-warrant final authority must be publicly realized before the turn can count as delivered.',
+  }),
 ]);
 
 const RULES_BY_KEY = new Map(RULES.map((entry) => [entry.id, entry]));
@@ -302,6 +334,7 @@ export function classifyTutorStubGuardIssue(issue, { allowActorialAdvisory = fal
     terminalFallback &&
     resolved.known &&
     resolved.rule.category === 'conversational_integrity' &&
+    normalized.guard !== 'repetition' &&
     resolved.rule.strict === HARD;
   const terminalFallbackActorialOverride =
     terminalFallback && resolved.known && normalized.guard === 'actorial_realization' && resolved.rule.strict === HARD;
@@ -323,9 +356,18 @@ export function classifyTutorStubGuardIssue(issue, { allowActorialAdvisory = fal
     resolved.rule.category === 'dramatic_realization' &&
     resolved.rule.strict === HARD &&
     resolved.rule.shadow === ADVISORY;
+  const terminalFallbackStyleOverride =
+    terminalFallback &&
+    resolved.known &&
+    normalized.guard === 'adaptive_warrant_delivery' &&
+    normalized.type === 'selected_action_family_not_visible';
   const terminalFallbackOverride =
-    terminalFallbackConversationalOverride || terminalFallbackActorialOverride || terminalFallbackDramaticFormOverride;
+    terminalFallbackConversationalOverride ||
+    terminalFallbackActorialOverride ||
+    terminalFallbackDramaticFormOverride ||
+    terminalFallbackStyleOverride;
   const strictDisposition = actorialOverride || terminalFallbackOverride ? ADVISORY : resolved.rule.strict;
+  const shadowDisposition = terminalFallbackStyleOverride ? ADVISORY : resolved.rule.shadow;
   return {
     issue: normalized,
     known: resolved.known,
@@ -334,7 +376,7 @@ export function classifyTutorStubGuardIssue(issue, { allowActorialAdvisory = fal
     category: resolved.rule.category,
     rationale: resolved.rule.rationale,
     strictDisposition,
-    shadowDisposition: resolved.rule.shadow,
+    shadowDisposition,
     legacyOverride: actorialOverride
       ? 'allow_actorial_advisory'
       : terminalFallbackConversationalOverride
@@ -343,6 +385,8 @@ export function classifyTutorStubGuardIssue(issue, { allowActorialAdvisory = fal
           ? 'terminal_fallback_actorial_advisory'
           : terminalFallbackDramaticFormOverride
             ? 'terminal_fallback_dramatic_form_advisory'
+            : terminalFallbackStyleOverride
+              ? 'terminal_fallback_style_advisory'
             : null,
   };
 }
@@ -492,6 +536,7 @@ function auditIssueRows(guard, audit, findingsKey = 'issues') {
 /** Build one immutable view of deterministic audit findings for disposition. */
 export function tutorStubGuardIssueRows(audits = null) {
   const source = audits || {};
+  const adaptiveWarrantDelivery = source.responseConfigurationAudit?.adaptive_warrant_delivery || null;
   const rows = [
     ...auditIssueRows('leak', source.leakAudit, 'leaks'),
     ...auditIssueRows('human_scaffold', source.scaffoldAudit),
@@ -510,6 +555,16 @@ export function tutorStubGuardIssueRows(audits = null) {
   ];
   for (const [axis, audit] of Object.entries(source.responseConfigurationAudit?.axes || {})) {
     if (axis === 'actorial_part' || audit?.compatibility_alias_of || audit?.visible !== false) continue;
+    if (axis === 'action_family' && adaptiveWarrantDelivery?.active === true) {
+      rows.push({
+        guard: 'adaptive_warrant_delivery',
+        type: 'selected_action_family_not_visible',
+        selected: audit?.selected || null,
+        desired_action_family: adaptiveWarrantDelivery.desired_action_family || null,
+        reason: `active warrant final authority selected ${adaptiveWarrantDelivery.desired_action_family || audit?.selected || 'an action family'}, but the public tutor response did not visibly realize it`,
+      });
+      continue;
+    }
     rows.push({
       guard: 'response_configuration',
       type: 'axis_not_visible',

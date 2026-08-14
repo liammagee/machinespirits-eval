@@ -37,22 +37,22 @@
     {
       "file": "services/tutorStubDramaticRelease.js",
       "claim": "clue span replacement (model-voiced deliveries; t5 wedge case recorded)",
-      "sha256": "22915240bb535ebd9ce85a3734d733d8179c0b79ce0f1def5b5bf247c5b9df50"
+      "sha256": "1496f3550d403bdd84f6cd4665959671c8b62890f29de3d59b45091f46460361"
     },
     {
       "file": "services/tutorStubTutorTurnPipeline.js",
       "claim": "tutor-turn coordination and extracted runtime delegation",
-      "sha256": "ed148aa862d8da86dca1b56fc5cb461ec508530f0c569c91ac9af077264b2821"
+      "sha256": "a44765a0cd7c92a7cba4032eba1a95a3e80ec1d26180554c4900e11a33757000"
     },
     {
       "file": "services/tutorStubTutorTurnPreparation.js",
       "claim": "speaking prompt assembly; conduct-card and contract-licence slots; speaker-privilege recovery",
-      "sha256": "124e3c075eab369306801192e88c7137a8b894e5dcece17a626bbdeba078696e"
+      "sha256": "6ddd5569b337165acbb5c6fb56e44c025f43c5ea1f7f768754183c0068736a85"
     },
     {
       "file": "services/tutorStubTutorAttemptRuntime.js",
       "claim": "prompt audit/recovery; provider-attempt dispatch; Program-2 budget reservation and trace envelope",
-      "sha256": "16a861f64e414c7a66f7bb007116117b5df4aea2b89a99fed6ce8c15027546be"
+      "sha256": "a4e2f1a3655908e5bd68fb172b010b03d6139cd66462f43799a71ea356fb1dc7"
     },
     {
       "file": "services/tutorStubTutorCommitteeRuntime.js",
@@ -72,12 +72,12 @@
     {
       "file": "services/tutorStubTutorTerminalRuntime.js",
       "claim": "clue-span insertion, deterministic safety fallback, terminal audit, and rejection accounting",
-      "sha256": "5ff6bd845c7b3d40127fa62f3051e5bbeac944fab0f55f9bb9cdc58cb5c98612"
+      "sha256": "5420424887d9d10a60a5657b76af6beec2a113d8eb7c02d1985907aa73d6e282"
     },
     {
       "file": "services/tutorStubTutorDraftAudit.js",
       "claim": "delivery guard battery, dispositions, and audit trace shape",
-      "sha256": "db3f89c71bf04163fdd1e1c3398e770317cff154bffa069e5e8fe88e9e016e79"
+      "sha256": "9e5b292649d7e9ec4b2e60deb89c5f8a584f0c7cad7fda3282948f76235cfacb"
     },
     {
       "file": "services/tutorStubResponsePolicy.js",
@@ -97,7 +97,7 @@
     {
       "file": "services/tutorStubResponseConfigurationSelectionRuntime.js",
       "claim": "final response-configuration composition, precedence, and selection trace envelope",
-      "sha256": "fe035cdda0f151b7890a0159dda57a22ddcb015653234a449176b63f187c2bb0"
+      "sha256": "83455ec1401a0d4b76fe3b950f63941b934aef8839564de58ef31145161112f7"
     },
     {
       "file": "services/tutorStubWorldPromptContext.js",

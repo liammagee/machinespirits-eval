@@ -136,6 +136,27 @@ test('current release rows preserve due schedules, authored fallback, point-of-a
     }),
     [],
   );
+  assert.deepEqual(
+    projectTutorStubCurrentReleaseRows(pacing, world, 1, {
+      pointOfAction: {
+        turn: 1,
+        displaced_by: 'adaptive_warrant_gate_final_authority',
+        compiled_constraint: { suppress_new_premise: true },
+      },
+      projectPremise,
+    }),
+    [
+      {
+        id: 'p_open',
+        premise: 'p_open',
+        turn: 1,
+        via: 'tutor',
+        presentation: 'opening',
+        role: 'witness',
+        cue: 'show the mark',
+      },
+    ],
+  );
   assert.deepEqual(projectTutorStubCurrentReleaseRows(pacing, null, 1, { projectPremise }), []);
   assert.deepEqual(projectTutorStubCurrentReleaseRows(pacing, world, Number.NaN, { projectPremise }), []);
 });

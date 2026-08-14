@@ -255,14 +255,6 @@ function contractSourceId(firstDraftContract) {
  */
 export function tutorStubLiveResponseConfigurationSurface({ text = '', liveSourceActionAlignmentAudit = null } = {}) {
   const responseText = String(text || '');
-  if (liveSourceActionAlignmentAudit?.compensation_required !== true) {
-    return {
-      active: false,
-      text: responseText,
-      excluded_spans: [],
-      reason: 'ordinary_direct_only_behavior_preserved',
-    };
-  }
   const sourceSpans = (liveSourceActionAlignmentAudit.source_occurrences || [])
     .filter((row) => row?.exact_once === true && row?.spans?.length === 1)
     .map((row) => ({
@@ -270,9 +262,20 @@ export function tutorStubLiveResponseConfigurationSurface({ text = '', liveSourc
       kind: 'exact_source',
       source: row.source || null,
     }));
-  const compensationSpans = (liveSourceActionAlignmentAudit.passing_compensation_spans || [])
-    .filter((span) => span?.ok === true && span?.exact === true)
-    .map((span) => ({ ...span, kind: 'passing_compensation' }));
+  const compensationSpans =
+    liveSourceActionAlignmentAudit?.compensation_required === true
+      ? (liveSourceActionAlignmentAudit.passing_compensation_spans || [])
+          .filter((span) => span?.ok === true && span?.exact === true)
+          .map((span) => ({ ...span, kind: 'passing_compensation' }))
+      : [];
+  if (!sourceSpans.length && !compensationSpans.length) {
+    return {
+      active: false,
+      text: responseText,
+      excluded_spans: [],
+      reason: 'no_exact_source_or_passing_compensation_span',
+    };
+  }
   const excludedSpans = [...sourceSpans, ...compensationSpans]
     .filter(
       (span) =>
@@ -298,6 +301,8 @@ export function tutorStubLiveResponseConfigurationSurface({ text = '', liveSourc
       text: responseText.slice(span.start, span.end),
       offset_encoding: 'utf16_code_units',
     })),
-    reason: 'typed_live_host_axes_exclude_exact_source_and_passing_compensation',
+    reason: compensationSpans.length
+      ? 'typed_live_host_axes_exclude_exact_source_and_passing_compensation'
+      : 'typed_live_host_axes_exclude_exact_source',
   };
 }

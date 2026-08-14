@@ -6,6 +6,9 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
+import { assessAdaptiveWarrantDeliveryApplication } from '../scripts/run-adaptive-warrant-baseline-study.js';
+import { hashAdaptiveWarrantResponseConfiguration } from '../services/adaptiveWarrantDeliveryContract.js';
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UNSAFE_DRAFT = 'Edony struck the false shillings, so write her name in the trial-book.';
 const EXACT_DUE_SOURCE =
@@ -47,7 +50,7 @@ function readTraceEvents(traceDir) {
 
 // `boundaryPolicy: null` runs whatever the CLI's own default is, which is how
 // the paired test at the end reads the live regime rather than restating it.
-function runGuardFixture(mode, { boundaryPolicy = 'strict' } = {}) {
+function runGuardFixture(mode, { boundaryPolicy = 'strict', warrantGate = null } = {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), `tutor-stub-guard-${mode}-`));
   const fakeCodex = path.join(tmp, 'codex');
   fs.writeFileSync(
@@ -68,7 +71,7 @@ process.stdin.on('end', () => {
     ? ${JSON.stringify(SINGLE_PLAIN_RECOVERY)}
     : process.env.FAKE_CODEX_FIXTURE_MODE === 'soft-style'
       ? ${JSON.stringify(PLAIN_STYLE_DRAFT)}
-    : process.env.FAKE_CODEX_FIXTURE_MODE === 'preserve-uptake'
+    : ['preserve-uptake', 'obligation-preserve-uptake', 'obligation-writable-collision'].includes(process.env.FAKE_CODEX_FIXTURE_MODE)
     ? ${JSON.stringify(SAFE_UPTAKE_BROKEN_DEVELOPMENT)}
     : process.env.FAKE_CODEX_FIXTURE_MODE === 'terse-uptake'
       ? ${JSON.stringify(TERSE_UPTAKE_BROKEN_DEVELOPMENT)}
@@ -111,6 +114,10 @@ process.stdin.on('end', () => {
     '--once',
     mode === 'terse-uptake'
       ? 'It does not prove Verrell did it; it only confirms the town suspects him.'
+      : mode === 'obligation-preserve-uptake'
+        ? 'What did the public balance record show about the clipped shilling?'
+      : mode === 'obligation-writable-collision'
+        ? 'We should identify who accessed the core and when; that gives us a lead, not guilt. Show me the first log entry.'
       : mode === 'soft-style'
         ? 'Drop the formality. Talk to me like an equal. Stop the detective novel.'
         : 'What should I write in the trial-book?',
@@ -120,7 +127,17 @@ process.stdin.on('end', () => {
     '--trace-dir',
     tmp,
   ];
-  if (['tactic-repair', 'performance-advisory', 'soft-style', 'quality-only'].includes(mode)) {
+  if (
+    [
+      'tactic-repair',
+      'performance-advisory',
+      'soft-style',
+      'quality-only',
+      'registered-fallback',
+      'obligation-preserve-uptake',
+      'obligation-writable-collision',
+    ].includes(mode)
+  ) {
     cliArgs.splice(cliArgs.indexOf('--no-register-selection'), 1);
     cliArgs.push(
       '--register-policy',
@@ -141,6 +158,7 @@ process.stdin.on('end', () => {
       // Strict is the opt-in from 2026-08-07; these fixtures are written
       // against the ladder it drives.
       ...(boundaryPolicy ? { TUTOR_STUB_GUARD_POLICY: boundaryPolicy } : {}),
+      ...(warrantGate ? { TUTOR_STUB_WARRANT_GATE: warrantGate } : {}),
       FAKE_CODEX_FIXTURE_MODE: mode,
     },
   });
@@ -152,6 +170,59 @@ process.stdin.on('end', () => {
   fs.rmSync(tmp, { recursive: true, force: true });
   return { events, stdout: result.stdout };
 }
+
+test('observe gate records an inert selector application beside explicit final delivery', () => {
+  const { events } = runGuardFixture('quality-only', { boundaryPolicy: null, warrantGate: 'observe' });
+  const turn = events.find((row) => row.type === 'turn_complete')?.turnRecord;
+  const application = turn?.registerSelection?.warrant_gate_application;
+  assert.equal(turn?.warrantGateDecision?.mode, 'observe');
+  assert.equal(application?.mode, 'observe');
+  assert.equal(application?.pre_gate_source_sha256, application?.post_gate_source_sha256);
+  assert.deepEqual(application?.source_changed_fields, []);
+  assert.equal(application?.action_family_override_input, null);
+  assert.equal(application?.public_obligation_directive_input, null);
+  assert.deepEqual(application?.pre_gate_source, application?.post_gate_source);
+  assert.ok(turn?.speakingResponseConfiguration);
+  assert.deepEqual(
+    turn?.tutorGuardAccounting?.finalDelivery?.deliveryConfiguration,
+    turn?.deliveredResponseConfiguration,
+  );
+  assert.equal(
+    application?.selected_response_configuration_sha256,
+    hashAdaptiveWarrantResponseConfiguration(turn?.registerSelection?.response_configuration),
+  );
+  const assessment = assessAdaptiveWarrantDeliveryApplication({
+    decision: turn?.warrantGateDecision,
+    record: turn,
+  });
+  assert.equal(assessment.ok, true, JSON.stringify(assessment.mismatches));
+});
+
+test('observe gate proves the exact guard-recovery configuration delivered to public text', () => {
+  const { events } = runGuardFixture('tactic-repair', { warrantGate: 'observe' });
+  const turn = events.find((row) => row.type === 'turn_complete')?.turnRecord;
+  const assessment = assessAdaptiveWarrantDeliveryApplication({
+    decision: turn?.warrantGateDecision,
+    record: turn,
+  });
+  assert.equal(turn?.tutorGuardAccounting?.finalDelivery?.source, 'plain_recovery_candidate');
+  assert.equal(assessment.ok, true, JSON.stringify(assessment.mismatches));
+  assert.match(assessment.configuration_transition.kind, /plain_recovery/u);
+  assert.equal(assessment.configuration_transition.recovery_configuration_exact, true);
+});
+
+test('observe gate retains first-draft provenance through deterministic fallback', () => {
+  const { events } = runGuardFixture('registered-fallback', { warrantGate: 'observe' });
+  const turn = events.find((row) => row.type === 'turn_complete')?.turnRecord;
+  const assessment = assessAdaptiveWarrantDeliveryApplication({
+    decision: turn?.warrantGateDecision,
+    record: turn,
+  });
+  assert.equal(turn?.tutorGuardAccounting?.finalDelivery?.source, 'deterministic_fallback');
+  assert.ok(turn?.firstDraftContract);
+  assert.equal(assessment.ok, true, JSON.stringify(assessment.mismatches));
+  assert.match(assessment.configuration_transition.kind, /plain_recovery/u);
+});
 
 function assertExactRepairSpan(span, original, repaired) {
   assert.equal(original.slice(span.original.start, span.original.end), span.original.text);
@@ -308,6 +379,45 @@ test('a dramatic fallback replaces non-answering uptake with a licensed writable
   );
   assert.match(turn.responseComposition.development, /mint-yard crucible/iu);
   assert.equal(turn.responseComposition.frame.uptake.action_family, null);
+});
+
+test('an active public obligation displaces preserved non-answering uptake before the due source', () => {
+  const { events } = runGuardFixture('obligation-preserve-uptake', { warrantGate: 'active' });
+  const turn = events.find((row) => row.type === 'turn_complete')?.turnRecord;
+  const decision = turn?.warrantGateDecision;
+  const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
+  const fallback = accounting?.finalDelivery?.candidate?.text || '';
+  const progression = accounting?.finalDelivery?.audits?.liveTurnProgressionAudit;
+
+  assert.equal(decision?.mode, 'active');
+  assert.equal(decision?.learner_signal?.surface, 'What did the public balance record show about the clipped shilling?');
+  assert.equal(decision?.public_obligation?.speech_act?.creates_obligation, true);
+  assert.ok(decision?.obligation_directive);
+  assert.equal(
+    decision.obligation_directive.target?.source_surface,
+    'What did the public balance record show about the clipped shilling?',
+  );
+  assert.equal(accounting?.outcome, 'guarded_deterministic_fallback');
+  assert.match(fallback, /^The clip-balance result is not public yet/iu);
+  assert.ok(fallback.indexOf('not public yet') < fallback.indexOf(EXACT_DUE_SOURCE));
+  assert.equal(progression?.public_obligation?.resolved, true, JSON.stringify(progression?.issues));
+  assert.equal(progression?.public_obligation?.outcome, 'named_unavailability_with_concrete_next_step');
+});
+
+test('active obligation ownership survives a simultaneous writable-entry recovery path', () => {
+  const { events } = runGuardFixture('obligation-writable-collision', { warrantGate: 'active' });
+  const turn = events.find((row) => row.type === 'turn_complete')?.turnRecord;
+  const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
+  const fallback = accounting?.finalDelivery?.candidate?.text || '';
+  const progression = accounting?.finalDelivery?.audits?.liveTurnProgressionAudit;
+
+  assert.equal(turn?.warrantGateDecision?.public_obligation?.speech_act?.creates_obligation, true);
+  assert.equal(accounting?.outcome, 'guarded_deterministic_fallback');
+  assert.match(fallback, /^The log entry is not public yet/iu);
+  assert.doesNotMatch(fallback, /^Write:/u);
+  assert.ok(fallback.indexOf('not public yet') < fallback.indexOf(EXACT_DUE_SOURCE));
+  assert.equal(progression?.public_obligation?.resolved, true, JSON.stringify(progression?.issues));
+  assert.equal(progression?.public_obligation?.outcome, 'named_unavailability_with_concrete_next_step');
 });
 
 test('a fallback replaces a terse generic acknowledgement with learner-specific uptake', () => {

@@ -553,6 +553,98 @@ test('a plain advocate can answer accountably around a longer authored source qu
   assert.equal(audit.actorial_realization.ok, true);
 });
 
+test('the mechanism-study public-only deferral is a plain accountable answer', () => {
+  const uptake =
+    'The recorded-comparison result is not public yet; once a matching public record is available, I can answer it.';
+  const source =
+    '“Hessa was at the mess-hall rail all evening—arms crossed, glaring at the songbook, within reach of the jukebox.”';
+  const handoff = 'That named public-record release is next.';
+  const text = `${uptake} ${source} ${handoff}`;
+  const audit = auditTutorStubResponseConfiguration({
+    text,
+    configuration: {
+      engagement_stance: 'plain',
+      action_family: 'answer_accountably',
+      addressee_profile: 'adult_novice',
+      lexical_accessibility: 'plain',
+      scene_immersion: 'immersive',
+      actorial_part: 'record_keeper',
+      actorial_part_selection: { authored_role: 'inquiry log' },
+    },
+    world: {
+      setting: 'The mess-hall rail, songbook, and jukebox stand beside the inquiry log.',
+    },
+    composition: { uptake, development: `${source} ${handoff}` },
+  });
+
+  assert.equal(audit.axes.action_family.visible, true);
+  assert.equal(audit.axes.engagement_stance.visible, true);
+});
+
+test('action visibility excludes a long authored source from the owned next-step segment', () => {
+  const uptake =
+    'Yes: Hessa’s presence and reach show opportunity only; a hand or tool match still needs a public record.';
+  const development =
+    'I open the inquiry log and mark the warm ceiling-rail docking evidence beside Hessa’s presence; neither entry records her hand or tool. “I can confirm this: Fresh docking-clamp marks score the mess-hall ceiling rail, still warm. The maintenance registry matches their spacing and chipped left pad to Moth’s retired courier chassis: the little drone came down from the vents and docked there during the second chorus.” I place the fresh marks beside the silent core and hold the suspect list open. What does this record support about Moth’s access, and does it provide the hand-or-tool match you requested?';
+  const audit = auditTutorStubResponseConfiguration({
+    text: `${uptake} ${development}`,
+    configuration: {
+      engagement_stance: 'precise',
+      action_family: 'stage_next_step',
+      addressee_profile: 'informed_peer',
+      lexical_accessibility: 'standard',
+      scene_immersion: 'immersive',
+      actorial_part: 'record_keeper',
+      actorial_part_selection: { authored_role: 'maintenance registry' },
+    },
+    world: {
+      setting: 'The inquiry log, ceiling rail, docking marks, and silent core surround the jukebox.',
+    },
+    composition: { uptake, development },
+  });
+
+  assert.ok(audit.metrics.wordCount > 110);
+  assert.equal(audit.axes.action_family.visible, true);
+});
+
+test('the mechanism-study incident closure surfaces visibly close the inquiry', () => {
+  const configuration = {
+    engagement_stance: 'precise',
+    action_family: 'close_inquiry',
+    addressee_profile: 'informed_peer',
+    lexical_accessibility: 'standard',
+    scene_immersion: 'grounded',
+    actorial_part: 'foreperson',
+  };
+
+  for (const development of [
+    'The incident log can now close: the Wrenfold crew took Priya’s lunchbox from shelf two.',
+    'The incident record is now closed: Wrenfold took Priya’s lunchbox for the authorized inspection.',
+    'Dario cannot be named, so the incident is closed.',
+  ]) {
+    const audit = auditTutorStubResponseConfiguration({
+      text: development,
+      configuration,
+      world: testWorld(),
+      composition: { development },
+    });
+    assert.equal(audit.axes.action_family.visible, true, development);
+  }
+
+  for (const development of [
+    'The incident is not closed while the taker remains unproved.',
+    'The incident remains open until the access record is public.',
+  ]) {
+    const audit = auditTutorStubResponseConfiguration({
+      text: development,
+      configuration,
+      world: testWorld(),
+      composition: { development },
+    });
+    assert.equal(audit.axes.action_family.visible, false, development);
+  }
+});
+
 test('a conditional requirement visibly stages the next step without a question', () => {
   const base = buildTutorStubResponseConfiguration({
     engagementStance: 'precise',
@@ -3552,6 +3644,43 @@ test('presented-exhibit fallback preserves the selected part and tactic across e
       `${engagementStance} should preserve ${configuration.actorial_part}/${configuration.actorial_performance.id}: ${text}`,
     );
   }
+});
+
+test('presented-exhibit fallback realizes an active challenge in uptake before releasing the clue', () => {
+  const dueEvidence = [
+    {
+      surface: 'The badge log has Dario in the kitchen at 12:02.',
+      via: 'tutor',
+      presentation: { mode: 'presented_exhibit' },
+    },
+  ];
+  const frame = buildTutorStubDramaticReleaseFrame({ dueEvidence });
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'plain',
+    learnerText: 'Do you want me to say what the noon entries show?',
+    classification: classification({ requestType: 'conceptual_clarity_request', conceptual: 2 }),
+    tutorLearnerDag: learnerDag(),
+    dueEvidence,
+    world: testWorld(),
+  });
+  const configuration = { ...base, action_family: 'challenge_resistance' };
+  const text = deterministicTutorStubDramaticReleaseFallback({
+    frame,
+    uptake: 'Yes: you’re checking whether to state what the noon entries establish.',
+    responseConfiguration: configuration,
+    variationKey: 'active-challenge-before-release',
+    world: testWorld(),
+  });
+  const [uptake] = text.split(/(?<=[.!?])\s+/u);
+  const audit = auditTutorStubResponseConfiguration({
+    text,
+    configuration,
+    world: testWorld(),
+    composition: { uptake, development: text.slice(uptake.length).trim() },
+  });
+
+  assert.match(uptake, /Instead of copying my line, choose/iu);
+  assert.equal(audit.axes.action_family.visible, true, text);
 });
 
 test('learner-responsive action families are audited on uptake rather than clue development', () => {

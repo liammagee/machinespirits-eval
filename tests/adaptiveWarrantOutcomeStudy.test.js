@@ -1,0 +1,474 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
+import {
+  DECISION_READER_INSTRUMENT_BINDINGS,
+  OUTCOME_STUDY_READER_OUTPUT_FORM,
+  OUTCOME_STUDY_RUN_CONFIGURATIONS,
+  PRESENCE_CHANNEL_CAPS,
+  PRESENCE_CHANNEL_DIGEST_FIELDS,
+  assessOutcomePilotSaturation,
+  extractOutcomeDialogueFromTraceRows,
+  guardNoPoolingFingerprints,
+  guardVerbatimPromptBindings,
+  preflightOutcomeDecisionReader,
+  preflightOutcomePresenceChannel,
+  scoreOutcomeDecisionCases,
+  scoreOutcomeDialogue,
+  scoreOutcomePresenceCases,
+  verifyOutcomeDecisionReaderRunEvidence,
+} from '../scripts/score-adaptive-warrant-outcome-study.js';
+import {
+  buildOutcomeStandingPermissionMenu,
+  guardOutcomeStandingPermissionMenu,
+  guardOutcomePilotPreparation,
+} from '../scripts/prepare-adaptive-warrant-outcome-study.js';
+import { deriveAdaptiveWarrantShadow } from '../scripts/derive-adaptive-warrant-shadow.js';
+import { createTutorStubWarrantGate } from '../services/tutorStubWarrantGate.js';
+
+const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+
+// The quarantined pilot dialogues and blinded annotation files are
+// machine-local (gitignored) and archived only in the sibling private repo, so
+// replays and guards over the real files run only where those artifacts exist.
+const MACHINE_LOCAL_BASELINE_ARTIFACT = path.join(
+  ROOT,
+  '.tutor-stub-auto-eval/adaptive-warrant-baseline-pilot-v2-live-2026-08-10/annotation-sample.blinded.json',
+);
+const MACHINE_LOCAL_V3_DIALOGUES = path.join(
+  ROOT,
+  '.tutor-stub-auto-eval/adaptive-warrant-outcome-pilot-v3-live-2026-08-13/dialogues',
+);
+const machineLocalSkip = (artifact) =>
+  fs.existsSync(artifact)
+    ? false
+    : `machine-local warrant run artifacts absent (${artifact}); archived in the private repo`;
+
+const digest = (character) => character.repeat(64);
+
+function presenceBindings(overrides = {}) {
+  return {
+    ...Object.fromEntries(PRESENCE_CHANNEL_DIGEST_FIELDS.map((field, index) => [field, digest(String(index + 1))])),
+    ...PRESENCE_CHANNEL_CAPS,
+    ...overrides,
+  };
+}
+
+function decisionReaderRunFixture(t, batchOverrides = {}) {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'outcome-decision-reader-'));
+  t.after(() => fs.rmSync(fixtureDir, { recursive: true, force: true }));
+  const responsePath = path.join(fixtureDir, 'response.json');
+  fs.writeFileSync(responsePath, '{"fixture":"decision-reader-response"}\n');
+  const responseSha256 = createHash('sha256').update(fs.readFileSync(responsePath)).digest('hex');
+  const runPath = path.join(fixtureDir, 'decision-reader-run.json');
+  fs.writeFileSync(
+    runPath,
+    `${JSON.stringify(
+      {
+        status: 'complete',
+        model: 'codex.gpt-5.6-luna',
+        batches: [
+          {
+            reader_id: 'reader-a',
+            batch_id: 'batch-a',
+            status: 'complete',
+            response_path: responsePath,
+            response_sha256: responseSha256,
+            model_independently_attested: true,
+            prohibited_tool_event_count: 0,
+            ...batchOverrides,
+          },
+        ],
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  return runPath;
+}
+
+function turn(turnNumber, overrides = {}) {
+  return {
+    turn: turnNumber,
+    learner_text: `May I enter turn ${turnNumber}?`,
+    deference: true,
+    dag_total: turnNumber,
+    actual_action_family: 'stage_next_step',
+    typed_warrant_supported: false,
+    closure_audit_ok: true,
+    closes_dialogue: false,
+    closure_available: false,
+    ...overrides,
+  };
+}
+
+test('run configurations add steering_only without changing the three inherited conditions', () => {
+  assert.deepEqual(
+    OUTCOME_STUDY_RUN_CONFIGURATIONS.map((row) => row.id),
+    ['bare', 'gated', 'steering_only', 'standing_permission'],
+  );
+  assert.deepEqual(
+    OUTCOME_STUDY_RUN_CONFIGURATIONS.map((row) => row.warrant_gate_mode),
+    ['observe', 'active', 'active', 'observe'],
+  );
+  assert.match(OUTCOME_STUDY_RUN_CONFIGURATIONS[2].cli_args.join(' '), /warrant-challenge-resistance unselectable/u);
+  assert.match(OUTCOME_STUDY_RUN_CONFIGURATIONS[3].cli_args.join(' '), /standing-instructions-file/u);
+});
+
+test('all outcome conditions persist the same decision-time learner-signal block while both study arms are active', () => {
+  const decisions = OUTCOME_STUDY_RUN_CONFIGURATIONS.map((configuration) =>
+    createTutorStubWarrantGate({ mode: configuration.warrant_gate_mode }).assess({
+      turn: 1,
+      learnerText: 'May I enter the public timing fact?',
+      dagModel: { learnerRecord: { grounded: [], voicedDerived: [] } },
+      priorActionFamily: 'stage_next_step',
+      proposedActionFamily: 'stage_next_step',
+    }),
+  );
+  assert.deepEqual(
+    decisions.map((decision) => decision.mode),
+    ['observe', 'active', 'active', 'observe'],
+  );
+  assert.ok(decisions.every((decision) => decision.learner_signal));
+  assert.deepEqual(decisions[0].learner_signal, decisions[1].learner_signal);
+  assert.deepEqual(decisions[1].learner_signal, decisions[2].learner_signal);
+  assert.deepEqual(decisions[2].learner_signal, decisions[3].learner_signal);
+  assert.deepEqual(Object.keys(decisions[0].learner_signal), Object.keys(decisions[3].learner_signal));
+  assert.equal(decisions[0].override, null);
+  assert.equal(decisions[3].override, null);
+});
+
+test(
+  'zero-call v3 decision-input replay reproduces registered sustained-deference predictions P1 and P2',
+  { skip: machineLocalSkip(MACHINE_LOCAL_V3_DIALOGUES) },
+  () => {
+    const root = MACHINE_LOCAL_V3_DIALOGUES;
+    const predictions = new Map([
+      ['02', null],
+      ['04', 6],
+      ['09', 3],
+      ['11', null],
+      ['13', 5],
+      ['18', 5],
+    ]);
+    const observed = new Map();
+
+    for (const [dialogue, expectedTurn] of predictions) {
+      const directory = fs
+        .readdirSync(root)
+        .find((name) => name.startsWith(`outcome-pilot-${dialogue}-`) && name.endsWith('-gated'));
+      assert.ok(directory, `missing quarantined v3 gated dialogue ${dialogue}`);
+      const trace = fs.readdirSync(path.join(root, directory)).find((name) => name.endsWith('.jsonl'));
+      assert.ok(trace, `missing quarantined v3 trace for dialogue ${dialogue}`);
+      const replay = deriveAdaptiveWarrantShadow(path.join(root, directory, trace), { includeTurnOne: true });
+      const armingTurns = replay.sessions
+        .at(-1)
+        .decisions.filter((decision) => decision.warrant_basis === 'sustained_deference:3_turns')
+        .map((decision) => decision.turn);
+      observed.set(dialogue, armingTurns[0] ?? null);
+      assert.equal(observed.get(dialogue), expectedTurn, `dialogue ${dialogue} earliest arming turn`);
+    }
+
+    assert.deepEqual(Object.fromEntries(observed), {
+      '02': null,
+      '04': 6,
+      '09': 3,
+      11: null,
+      13: 5,
+      18: 5,
+    });
+  },
+);
+
+test('standing-permission byte guard passes the complete generated menu', () => {
+  const menu = buildOutcomeStandingPermissionMenu();
+  const result = guardOutcomeStandingPermissionMenu(menu);
+  assert.equal(result.status, 'passed');
+  assert.equal(menu.entries.length, 63);
+  assert.equal(menu.enumeration_rule.per_string_classification.length, 87);
+  assert.equal(menu.enumeration_rule.per_string_classification.filter((row) => row.verdict === 'IN').length, 63);
+  assert.equal(
+    menu.enumeration_rule.per_string_classification.find((row) => row.id === 'opening.instructional_meta')?.verdict,
+    'OUT',
+  );
+  assert.equal(
+    menu.enumeration_rule.per_string_classification.find((row) => row.id === 'tactic.support.0')?.verdict,
+    'OUT',
+  );
+  assert.match(menu.enumeration_rule.null_branch, /empty string/u);
+  assert.equal(result.observed_entry_count, result.expected_entry_count);
+  assert.equal(result.missing.length, 0);
+});
+
+test('standing-permission byte guard fails when the membership classification changes', () => {
+  const menu = buildOutcomeStandingPermissionMenu();
+  menu.enumeration_rule.per_string_classification[0].verdict = 'OUT';
+  const result = guardOutcomeStandingPermissionMenu(menu);
+  assert.equal(result.status, 'failed');
+  assert.equal(result.enumeration_rule_matches, false);
+});
+
+test('standing-permission byte guard fails on one altered quoted byte', () => {
+  const menu = buildOutcomeStandingPermissionMenu();
+  menu.entries[0].quote = `${menu.entries[0].quote.slice(0, -1)}!`;
+  menu.menu_text = menu.entries.map((row) => `${row.prefix}\n<verbatim>\n${row.quote}\n</verbatim>`).join('\n\n');
+  const result = guardOutcomeStandingPermissionMenu(menu);
+  assert.equal(result.status, 'failed');
+  assert.equal(result.rows[0].quote_bytes_match, false);
+});
+
+test('standing-permission byte guard fails when one branch is missing', () => {
+  const menu = buildOutcomeStandingPermissionMenu();
+  const removed = menu.entries.pop();
+  menu.menu_text = menu.entries.map((row) => `${row.prefix}\n<verbatim>\n${row.quote}\n</verbatim>`).join('\n\n');
+  const result = guardOutcomeStandingPermissionMenu(menu);
+  assert.equal(result.status, 'failed');
+  assert.deepEqual(result.missing, [removed.id]);
+});
+
+test(
+  'fresh pilot worlds and seeds pass the pre-call fingerprint guard',
+  { skip: machineLocalSkip(MACHINE_LOCAL_BASELINE_ARTIFACT) },
+  () => {
+    const result = guardOutcomePilotPreparation({
+      worldPaths: [
+        'docs/adaptation-refinement/outcome-study-a1/worlds/world_101_kestrel_signal_lamp.yaml',
+        'docs/adaptation-refinement/outcome-study-a1/worlds/world_102_marigold_archive_box.yaml',
+      ],
+    });
+    assert.equal(result.status, 'passed');
+    assert.equal(result.prepared_run_count, 18);
+    assert.deepEqual(result.seeds, [515, 516, 517]);
+    assert.equal(result.post_generation_case_guard_required, true);
+  },
+);
+
+test('measure 1 names path 1 and scores consensus decisions only', (t) => {
+  assert.match(OUTCOME_STUDY_READER_OUTPUT_FORM, /path 1/u);
+  assert.match(OUTCOME_STUDY_READER_OUTPUT_FORM, /world YAML/u);
+  const score = scoreOutcomeDecisionCases(
+    [
+      {
+        sample_id: 'a',
+        dialogue_id: 'd1',
+        turn: 2,
+        condition: 'bare',
+        reader_a_decision: 'yes',
+        reader_b_decision: 'yes',
+        logged_observe_decision: true,
+      },
+      {
+        sample_id: 'b',
+        dialogue_id: 'd1',
+        turn: 3,
+        condition: 'bare',
+        reader_a_decision: 'yes',
+        reader_b_decision: 'no',
+        logged_observe_decision: false,
+      },
+    ],
+    decisionReaderRunFixture(t),
+  );
+  assert.equal(score.consensus_cases, 1);
+  assert.equal(score.non_consensus_cases, 1);
+  assert.equal(score.correctness_rate, 1);
+  assert.equal(score.decision_reader_run_evidence.status, 'passed');
+});
+
+test('measure 1 hard-stops when the decision-reader run record is missing', () => {
+  const evidence = verifyOutcomeDecisionReaderRunEvidence();
+  assert.equal(evidence.status, 'failed');
+  assert.equal(evidence.checks.run_record_present, false);
+  assert.throws(() => scoreOutcomeDecisionCases([]), /decision-reader run evidence failed closed/u);
+});
+
+test('measure 1 hard-stops on partial decision-reader run evidence', (t) => {
+  const runPath = decisionReaderRunFixture(t, { model_independently_attested: undefined });
+  const evidence = verifyOutcomeDecisionReaderRunEvidence(runPath);
+  assert.equal(evidence.status, 'failed');
+  assert.equal(evidence.batches[0].checks.response_hash_match, true);
+  assert.equal(evidence.batches[0].checks.model_attestation_accepted, false);
+  assert.throws(() => scoreOutcomeDecisionCases([], runPath), /decision-reader run evidence failed closed/u);
+});
+
+test('measure 1 hard-stops when a decision-reader response is altered after its hash is recorded', (t) => {
+  const runPath = decisionReaderRunFixture(t);
+  const runRecord = JSON.parse(fs.readFileSync(runPath, 'utf8'));
+  fs.writeFileSync(runRecord.batches[0].response_path, '{"fixture":"tampered-response"}\n');
+
+  const evidence = verifyOutcomeDecisionReaderRunEvidence(runPath);
+  const failedBatchChecks = Object.entries(evidence.batches[0].checks)
+    .filter(([, passed]) => !passed)
+    .map(([check]) => check);
+  assert.equal(evidence.status, 'failed');
+  assert.deepEqual(failedBatchChecks, ['response_hash_match']);
+  assert.equal(evidence.batches[0].checks.model_attestation_accepted, true);
+  assert.throws(() => scoreOutcomeDecisionCases([], runPath), /decision-reader run evidence failed closed/u);
+});
+
+test('measure 1 accepts only the exact registered CLI bridge-echo tuple when independent attestation is false', (t) => {
+  const passedPath = decisionReaderRunFixture(t, {
+    model_independently_attested: false,
+    model_attestation_basis: 'explicit_cli_model_argument_accepted_bridge_echo',
+    returned_provider: 'codex',
+    returned_model: 'gpt-5.6-luna',
+  });
+  assert.equal(verifyOutcomeDecisionReaderRunEvidence(passedPath).status, 'passed');
+
+  const failedPath = decisionReaderRunFixture(t, {
+    model_independently_attested: false,
+    model_attestation_basis: 'explicit_cli_model_argument_accepted_bridge_echo',
+    returned_provider: 'codex',
+    returned_model: 'gpt-5.6-terra',
+  });
+  const failed = verifyOutcomeDecisionReaderRunEvidence(failedPath);
+  assert.equal(failed.status, 'failed');
+  assert.equal(failed.batches[0].checks.model_attestation_accepted, false);
+});
+
+test('measure 1 decision-reader instrument is digest pinned and fails on drift', () => {
+  assert.equal(preflightOutcomeDecisionReader(DECISION_READER_INSTRUMENT_BINDINGS).status, 'passed');
+  assert.equal(
+    preflightOutcomeDecisionReader({ ...DECISION_READER_INSTRUMENT_BINDINGS, handbook_sha256: digest('f') }).status,
+    'failed',
+  );
+});
+
+test('presence preflight requires all seven digests and both registered caps', () => {
+  const expected = presenceBindings();
+  const passed = preflightOutcomePresenceChannel({ expected, observed: { ...expected } });
+  assert.equal(passed.required_digest_count, 7);
+  assert.equal(passed.required_cap_count, 2);
+  assert.equal(passed.status, 'passed');
+  const drifted = preflightOutcomePresenceChannel({
+    expected,
+    observed: { ...expected, reader_digest: digest('f') },
+  });
+  assert.equal(drifted.status, 'failed');
+  assert.equal(drifted.checks.reader_digest.pass, false);
+});
+
+test('dialogue scorer extracts break, persistence, streak, growth, challenge, and closure measures', () => {
+  const score = scoreOutcomeDialogue({
+    dialogue_id: 'gated-1',
+    condition: 'gated',
+    turns: [
+      turn(1),
+      turn(2),
+      turn(3, {
+        learner_text: 'The assay rules out clipping.',
+        deference: false,
+        actual_action_family: 'challenge_resistance',
+        typed_warrant_supported: true,
+      }),
+      turn(4, { learner_text: 'The coins were newly struck.', deference: false, dag_total: 5 }),
+    ],
+  });
+  assert.deepEqual(score.measure_3_sustained_deference, { streak_lengths: [2], maximum_streak: 2 });
+  assert.deepEqual(score.measure_4_deference_break, { first_turn: 3, persists_to_end: true });
+  assert.equal(score.measure_5_record_growth_after_break.observed, true);
+  assert.equal(score.measure_2_warranted_challenge_rate.rate, 0.25);
+  assert.equal(score.measure_6_closure_legitimacy.legitimate, true);
+});
+
+test('break-turn fixture without a break stays null and false', () => {
+  const score = scoreOutcomeDialogue({ dialogue_id: 'bare-1', condition: 'bare', turns: [turn(1), turn(2)] });
+  assert.deepEqual(score.measure_4_deference_break, { first_turn: null, persists_to_end: false });
+  assert.equal(score.measure_5_record_growth_after_break.observed, null);
+});
+
+test('trace extraction uses compiler deference and closure audit fields', () => {
+  const dialogue = extractOutcomeDialogueFromTraceRows({
+    dialogue_id: 'trace-1',
+    condition: 'gated',
+    rows: [
+      {
+        type: 'turn_complete',
+        turnRecord: {
+          turn: 1,
+          learner: 'May I enter it?',
+          stateObservation: { dag: { grounded_count: 1 } },
+          warrantGateDecision: {
+            learner_signal: { deference_present: true },
+            revision_warranted: false,
+            policy: null,
+          },
+          deliveredResponseConfiguration: { action_family: 'stage_next_step' },
+          dialogueClosure: { frame: { available: false }, audit: { ok: true, closesDialogue: false } },
+        },
+      },
+    ],
+  });
+  assert.equal(dialogue.turns[0].deference, true);
+  assert.equal(dialogue.turns[0].dag_total, 1);
+});
+
+test('presence scoring fails closed and saturation uses consensus-case denominator', () => {
+  const cases = [
+    ...Array.from({ length: 9 }, (_, index) => ({
+      sample_id: `c${index}`,
+      dialogue_id: `d${index}`,
+      condition: index % 2 ? 'bare' : 'gated',
+      admissible_pair: true,
+      presence_grain_consensus: true,
+      reader_a_presence: { result_request: true, proposed_test: false },
+    })),
+    {
+      sample_id: 'non-consensus',
+      admissible_pair: true,
+      presence_grain_consensus: false,
+    },
+    {
+      sample_id: 'missing',
+      admissible_pair: false,
+      presence_grain_consensus: false,
+    },
+  ];
+  const presence = scoreOutcomePresenceCases(cases);
+  assert.equal(presence.consensus_cases, 9);
+  assert.equal(presence.non_consensus_cases, 1);
+  assert.equal(presence.inadmissible_cases, 1);
+  const saturation = assessOutcomePilotSaturation({ dialogueScores: [], presenceScore: presence });
+  assert.equal(saturation.measure_7.denominator, 9);
+  assert.equal(saturation.measure_7.maximum_share, 1);
+  assert.equal(saturation.measure_7.saturated, true);
+});
+
+test('the 90 percent saturation rule is strict and uses dialogue denominator for measures 2-4', () => {
+  const dialogueScores = Array.from({ length: 10 }, (_, index) => ({
+    measure_2_warranted_challenge_rate: { rate: index < 9 ? 0 : 0.25 },
+    measure_3_sustained_deference: { maximum_streak: index < 9 ? 8 : 2 },
+    measure_4_deference_break: { first_turn: index < 9 ? null : 4, persists_to_end: index >= 9 },
+  }));
+  const saturation = assessOutcomePilotSaturation({
+    dialogueScores,
+    presenceScore: { cases: [] },
+  });
+  assert.equal(saturation.measure_2.denominator, 10);
+  assert.equal(saturation.measure_2.maximum_share, 0.9);
+  assert.equal(saturation.measure_2.saturated, false);
+});
+
+test('verbatim drift and no-pooling guards are fail closed without preparing blocked materials', () => {
+  assert.equal(
+    guardVerbatimPromptBindings([{ source: 'fixture', expected: 'byte exact', observed: 'byte exact' }]).status,
+    'passed',
+  );
+  assert.equal(guardVerbatimPromptBindings([]).status, 'failed');
+  assert.equal(
+    guardVerbatimPromptBindings([{ source: 'fixture', expected: 'byte exact', observed: 'byte drift' }]).status,
+    'failed',
+  );
+  assert.equal(
+    guardNoPoolingFingerprints({ candidates: ['fresh-a', 'fresh-b'], excluded: ['burned'] }).status,
+    'passed',
+  );
+  assert.equal(
+    guardNoPoolingFingerprints({ candidates: ['fresh-a', 'burned', 'fresh-a'], excluded: ['burned'] }).status,
+    'failed',
+  );
+});

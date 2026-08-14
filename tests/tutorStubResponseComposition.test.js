@@ -1625,6 +1625,78 @@ test('configured fallback makes charismatic advocate counterpressure visible to 
   assert.equal(audit.transcript_visible, true);
 });
 
+test('configured fallback visibly realizes every active action family it can safely terminate', () => {
+  const world = {
+    setting: 'The inquiry log lies beside the jukebox service panel.',
+    question: 'Who wiped the music core?',
+    presentation: { public_glossary: { baseline: 'the simplest public starting point' } },
+  };
+  const families = [
+    'clarify_term',
+    'clarify_distinction',
+    'stage_next_step',
+    'answer_accountably',
+    'compress_sayback',
+    'reanchor_lived_stake',
+    'reanchor_public_evidence',
+    'ground_in_material',
+    'challenge_resistance',
+    'receive_vulnerability',
+    'close_inquiry',
+  ];
+
+  for (const actionFamily of families) {
+    const configuration = {
+      action_family: actionFamily,
+      engagement_stance: 'precise',
+      actorial_part: 'examiner',
+      unresolved_terms: actionFamily === 'clarify_term' ? ['baseline'] : [],
+    };
+    const text = deterministicTutorStubConfiguredContinuationFallback({
+      uptake: 'I hear your point about the service panel and will keep it central.',
+      responseConfiguration: configuration,
+      support: { answerability: 'direction_only_until_evidence_is_public' },
+      world,
+      learnerText: 'What should I write next?',
+    });
+    const [realizedUptake] = text.split(/(?<=[.!?])\s+/u);
+    const audit = auditTutorStubResponseConfiguration({
+      text,
+      configuration,
+      world,
+      composition: {
+        uptake: realizedUptake,
+        development: text,
+      },
+    });
+
+    assert.equal(audit.axes.action_family.visible, true, `${actionFamily}: ${text}`);
+  }
+});
+
+test('challenge-resistance fallback interrupts copying and returns public choice', () => {
+  const configuration = {
+    action_family: 'challenge_resistance',
+    engagement_stance: 'plain',
+    actorial_part: 'examiner',
+  };
+  const text = deterministicTutorStubConfiguredContinuationFallback({
+    uptake: 'Your reading of the service-panel source is the one I will answer now.',
+    responseConfiguration: configuration,
+    world: { setting: 'The inquiry log lies beside the jukebox service panel.' },
+    learnerText: 'Should I enter the service-panel source as the next line?',
+  });
+  const [realizedUptake] = text.split(/(?<=[.!?])\s+/u);
+  const audit = auditTutorStubResponseConfiguration({
+    text,
+    configuration,
+    composition: { uptake: realizedUptake, development: text.slice(realizedUptake.length).trim() },
+  });
+
+  assert.match(text, /Instead of copying my line, choose/iu);
+  assert.equal(audit.axes.action_family.visible, true);
+});
+
 test('the deterministic uptake is public, learner-specific, and action-aware', () => {
   assert.equal(
     deterministicTutorStubLearnerUptake({

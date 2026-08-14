@@ -5,11 +5,15 @@ import { describe, it } from 'node:test';
 
 import { loadWorld } from '../dramaticDerivation/world.js';
 import { tutorStubLearnerDagGrounded } from '../tutorStubDialogueClosure.js';
+import { auditAdaptiveWarrantLiveSemanticSchemaTotality } from '../adaptiveWarrantSemanticAnnotation.js';
+import { ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE } from '../adaptiveWarrantSemanticEvents.js';
 import {
   TUTOR_STUB_EVIDENCE_USE_RUBRICS,
   TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
   TUTOR_STUB_EVIDENCE_USE_RUBRIC_LEGACY,
   TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES,
+  TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULES,
+  TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES,
   TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA,
   TutorStubPublicLearnerAnalysisError,
   analyzeTutorStubPublicLearnerTurn,
@@ -69,6 +73,36 @@ function validAnalysis({ learnerRecord = {}, turn = {}, root = {} } = {}) {
     ...root,
   };
 }
+
+describe('semantic-event prompt profiles', () => {
+  it('keeps compact_v1 reproducible and ports the frozen handbook block only in handbook_v1', () => {
+    const common = {
+      learnerText: 'Show me what the public record says, then I will test the next check.',
+      topic: 'evidence reasoning',
+      world: buildTutorStubPublicLearnerAnalysisWorld(smokeWorld()),
+      tutorTurn: 1,
+      publicStagedEvidence: [],
+      includeSemanticEvents: true,
+      strictProviderEnvelope: true,
+    };
+    const compact = buildTutorStubPublicLearnerAnalysisPrompt({
+      ...common,
+      promptProfile: TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.COMPACT_V1,
+    });
+    const handbook = buildTutorStubPublicLearnerAnalysisPrompt({
+      ...common,
+      promptProfile: TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.HANDBOOK_V1,
+    });
+    assert.doesNotMatch(compact, /## Event multiplicity/u);
+    assert.equal(handbook.includes(TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULES), true);
+    assert.equal(handbook.includes(ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE), true);
+    assert.doesNotMatch(handbook, /requested_value_types and component_ids are non-empty only for request-mode acts/u);
+    assert.match(handbook, /Separate events have distinct non-overlapping spans/u);
+    assert.match(handbook, /shortest complete literal clause/u);
+    assert.ok(handbook.length <= 42000);
+    assert.ok(Math.ceil(handbook.length / 4) <= 10500);
+  });
+});
 
 function providerCompleteAnalysis() {
   return validAnalysis({
@@ -256,6 +290,8 @@ const PROVIDER_SCHEMA_KEYWORDS = new Set([
   'enum',
   'items',
   'anyOf',
+  'maxItems',
+  'minimum',
 ]);
 
 function assertCodexProviderSchema(schema, path = '$') {
@@ -411,6 +447,82 @@ describe('strict public learner analysis', () => {
     assert.match(strictPrompt, /Return every field required by the supplied provider schema/u);
     assert.match(strictPrompt, /empty arrays, null hypothesis\/assert_answer, an empty notes string/u);
     assert.doesNotMatch(strictPrompt, /Return sparse JSON: omit empty arrays/u);
+  });
+
+  it('adds a bounded semantic envelope to the existing learner-analysis seat and validates literal evidence', () => {
+    const learnerText = 'Show me the shelf-two access times.';
+    const semanticEvents = {
+      events: [
+        {
+          speech_act: 'tutor_directed_public_result_request',
+          target: {
+            state: 'catalog',
+            kind: 'record_entry',
+            target_id: 'target-shelf-two-access-record',
+            public_identifier_ids: ['public-id-shelf-two'],
+            requested_value_types: ['time'],
+            component_ids: ['access_time'],
+          },
+          requested_or_proposed_action: {
+            state: 'catalog',
+            mode: 'requested',
+            executor: 'tutor',
+            action: 'supply_public_result',
+            action_object_id: 'target-shelf-two-access-record',
+          },
+          evidence_span: learnerText,
+          confidence: 'high',
+          uncertainty: [],
+        },
+      ],
+    };
+    const analysis = validAnalysis({ root: { semantic_events: semanticEvents } });
+    assert.doesNotThrow(() =>
+      parseTutorStubPublicLearnerAnalysisStrict(JSON.stringify(analysis), {
+        includeSemanticEvents: true,
+        benchmarkLearnerText: learnerText,
+        tutorTurn: 3,
+        semanticPublicText: 'The public shelf-two record with public-id-shelf-two is available.',
+      }),
+    );
+    const provider = buildTutorStubPublicLearnerAnalysisProviderOutputSchema({ includeSemanticEvents: true });
+    assertCodexProviderSchema(provider);
+    const eventBranches = provider.properties.semantic_events.properties.events.items.anyOf;
+    assert.deepEqual(Object.keys(provider.properties.semantic_events.properties), ['events']);
+    assert.equal(eventBranches.length, 15);
+    const resultRequest = eventBranches.find(
+      (branch) => branch.properties.speech_act.enum[0] === 'tutor_directed_public_result_request',
+    );
+    assert.equal(resultRequest.properties.evidence_span.type, 'string');
+    assert.equal('properties' in resultRequest.properties.evidence_span, false);
+    assert.equal(resultRequest.properties.target.properties.state.enum[0], 'catalog');
+    const analytic = eventBranches.find(
+      (branch) => branch.properties.speech_act.enum[0] === 'analytic_contribution',
+    );
+    assert.equal(analytic.properties.target.anyOf.length, 2);
+    assert.equal(
+      analytic.properties.target.anyOf.some(
+        (branch) => branch.properties.state.enum[0] === 'none',
+      ),
+      true,
+    );
+    assert.equal('speaker' in resultRequest.properties, false);
+    assert.equal(
+      auditAdaptiveWarrantLiveSemanticSchemaTotality({ schema: provider.properties.semantic_events }).ok,
+      true,
+    );
+    const prompt = buildTutorStubPublicLearnerAnalysisPrompt({
+      learnerText,
+      topic: 'public record reasoning',
+      world: buildTutorStubPublicLearnerAnalysisWorld(smokeWorld()),
+      tutorTurn: 3,
+      publicStagedEvidence: [],
+      includeSemanticEvents: true,
+    });
+    assert.match(prompt, /# Semantic-event extraction/u);
+    assert.match(prompt, /Names, times, dates.*are value types.*not automatically targets/u);
+    assert.match(prompt, /harness derives JavaScript UTF-16 offsets mechanically/u);
+    assert.match(prompt, /Never return null or omit either field/u);
   });
 
   it('rejects fences, aliases, extra keys, wrong types, and unknown predictive labels locally', () => {

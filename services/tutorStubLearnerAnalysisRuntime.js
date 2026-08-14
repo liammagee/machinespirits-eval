@@ -1,3 +1,12 @@
+import { dispatchTutorStubLearnerAnalysisWithRetries } from './tutorStubLearnerAnalysisCoverage.js';
+
+export function resetTutorStubWarrantGateAfterLearnerAnalysisFailure(state) {
+  if (!state) return false;
+  const hadGate = Boolean(state.warrantGate);
+  state.warrantGate = null;
+  return hadGate;
+}
+
 export function createTutorStubLearnerAnalysisRuntime({
   CLASSIFIER_SYSTEM_PROMPT,
   LEARNER_RECORD_SYSTEM_PROMPT,
@@ -180,7 +189,7 @@ export function createTutorStubLearnerAnalysisRuntime({
     } catch (err) {
       if (err?.name === 'AbortError') throw err;
       return failedClassification({
-        message: err.message,
+        code: err.code || 'learner_classification_failed',
         resolved: state.classifier.resolved,
         latencyMs: Date.now() - startedAt,
       });
@@ -318,7 +327,12 @@ export function createTutorStubLearnerAnalysisRuntime({
     tutorFeedback = null,
   }) {
     const { publicStagedEvidence } = learnerPublicEvidenceState(state, tutorTurn);
-    return buildTutorStubPublicLearnerAnalysisPrompt({
+    const includeSemanticEvents = ['observe', 'active'].includes(
+      String(process.env.TUTOR_STUB_WARRANT_GATE || '')
+        .trim()
+        .toLowerCase(),
+    );
+    const promptInput = {
       learnerText,
       topic: state.topic,
       world: state.world,
@@ -343,7 +357,28 @@ export function createTutorStubLearnerAnalysisRuntime({
       dagPreflight,
       promptProfile: state.learnerAnalysisPromptProfile,
       evidenceUseRubric: state.learnerAnalysisEvidenceUseRubric,
-    });
+      includeSemanticEvents,
+      strictProviderEnvelope: includeSemanticEvents,
+    };
+    const prompt = buildTutorStubPublicLearnerAnalysisPrompt(promptInput);
+    if (includeSemanticEvents) {
+      const baselinePrompt = buildTutorStubPublicLearnerAnalysisPrompt({
+        ...promptInput,
+        includeSemanticEvents: false,
+      });
+      state.pendingLearnerAnalysisSemanticSizeAudit = {
+        schema: 'machinespirits.adaptation-refinement.semantic-event-size-audit.v1',
+        turn: tutorTurn,
+        prompt_user_chars: prompt.length,
+        baseline_prompt_user_chars: baselinePrompt.length,
+        semantic_prompt_delta_chars: prompt.length - baselinePrompt.length,
+        semantic_prompt_delta_approx_tokens: Math.ceil((prompt.length - baselinePrompt.length) / 4),
+        configured_prompt_max_chars: 56_000,
+        configured_prompt_max_approx_tokens: 14_000,
+        configured_response_max_tokens: 2_500,
+      };
+    }
+    return prompt;
   }
 
   async function extractLearnerRecordUpdate({ learnerText, state, tutorTurn, dagPreflight = null, signal = null }) {
@@ -381,6 +416,11 @@ export function createTutorStubLearnerAnalysisRuntime({
     tutorFeedback = null,
     signal = null,
   }) {
+    const includeSemanticEvents = ['observe', 'active'].includes(
+      String(process.env.TUTOR_STUB_WARRANT_GATE || '')
+        .trim()
+        .toLowerCase(),
+    );
     const effectiveDagPreflight =
       dagPreflight || learnerDagPreflightForTurn(state, tutorTurn, { traceSource: preflightSource });
     const prompt = buildCombinedLearnerAnalysisPrompt({
@@ -390,26 +430,64 @@ export function createTutorStubLearnerAnalysisRuntime({
       dagPreflight: effectiveDagPreflight,
       tutorFeedback,
     });
-    const raw = await extractTutorStubPublicLearnerAnalysis({
-      learnerText,
-      topic: state.topic,
-      world: state.world,
-      tutorTurn,
-      prompt,
+    const dispatch = () =>
+      extractTutorStubPublicLearnerAnalysis({
+        learnerText,
+        topic: state.topic,
+        world: state.world,
+        tutorTurn,
+        prompt,
+        dagPreflight: effectiveDagPreflight,
+        callModel: callPromptModel,
+        parseMode: includeSemanticEvents
+          ? TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.STRICT_BENCHMARK
+          : TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.INTERACTIVE,
+        role,
+        strictRole: includeSemanticEvents ? role : null,
+        maxTokens: includeSemanticEvents ? 2500 : Math.max(2500, state.maxTokens || 0),
+        includeSemanticEvents,
+        modelCallOptions: {
+          resolved: state.learnerDag.resolved,
+          trace: state.trace,
+          stream,
+          cliEffort: state.cliEffort,
+          signal,
+        },
+      });
+    const raw = includeSemanticEvents
+      ? await dispatchTutorStubLearnerAnalysisWithRetries({
+          dispatch,
+          turn: tutorTurn,
+          appendAttempt: (attempt) =>
+            appendTraceEvent(state.trace, {
+              type: 'learner_analysis_attempt',
+              ...attempt,
+              publicTranscriptChanged: false,
+            }),
+        })
+      : await dispatch();
+    const pendingSizeAudit = state.pendingLearnerAnalysisSemanticSizeAudit;
+    if (includeSemanticEvents && Number(pendingSizeAudit?.turn) === Number(tutorTurn)) {
+      delete state.pendingLearnerAnalysisSemanticSizeAudit;
+    }
+    return {
+      ...raw,
       dagPreflight: effectiveDagPreflight,
-      callModel: callPromptModel,
-      parseMode: TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.INTERACTIVE,
-      role,
-      maxTokens: Math.max(2500, state.maxTokens || 0),
-      modelCallOptions: {
-        resolved: state.learnerDag.resolved,
-        trace: state.trace,
-        stream,
-        cliEffort: state.cliEffort,
-        signal,
-      },
-    });
-    return { ...raw, dagPreflight: effectiveDagPreflight };
+      semanticSizeAudit: includeSemanticEvents
+        ? {
+            ...pendingSizeAudit,
+            prompt_audit: raw.promptAudit || null,
+            response_bytes: raw.semanticEventExtraction?.size_audit?.response_bytes ?? null,
+            semantic_envelope_bytes: raw.semanticEventExtraction?.size_audit?.envelope_bytes ?? null,
+            semantic_event_count: raw.semanticEventExtraction?.size_audit?.event_count ?? null,
+            passed:
+              raw.promptAudit?.ok === true &&
+              Number(raw.semanticEventExtraction?.size_audit?.response_bytes || 0) <= 12_000 &&
+              Number(raw.semanticEventExtraction?.size_audit?.envelope_bytes || 0) <= 4_096 &&
+              Number(raw.semanticEventExtraction?.size_audit?.event_count || 0) <= 4,
+          }
+        : null,
+    };
   }
 
   function classificationFromCombinedAnalysis(raw, state) {
@@ -421,7 +499,7 @@ export function createTutorStubLearnerAnalysisRuntime({
       (parsed.turn && parsed.overall ? parsed : null);
     if (!source) {
       return failedClassification({
-        message: 'Combined learner analysis did not include a classification object.',
+        code: 'combined_analysis_missing_classification',
         resolved: state.learnerDag.resolved,
         latencyMs: raw?.latencyMs || 0,
         usage: raw?.usage,
@@ -728,10 +806,26 @@ export function createTutorStubLearnerAnalysisRuntime({
       return { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy };
     } catch (err) {
       if (err?.name === 'AbortError') throw err;
+      // Combined analysis can fail after response selection has already
+      // advanced the closure-backed warrant reducer. The fallback selection
+      // is a second attempt at the same decision turn, so rebuild from the
+      // committed prefix instead of consuming that turn twice.
+      resetTutorStubWarrantGateAfterLearnerAnalysisFailure(state);
       const classification = failedClassification({
-        message: err.message,
+        code: err.code || 'combined_analysis_failed',
         resolved: state.learnerDag.resolved,
         latencyMs: Date.now() - startedAt,
+      });
+      appendTraceEvent(state.trace, {
+        type: 'learner_analysis_unanalyzed',
+        turn: tutorTurn,
+        analysisStatus: 'unanalyzed',
+        signal: { state: 'none' },
+        failure: {
+          code: err.code || 'combined_analysis_failed',
+          message: String(err.message || err),
+        },
+        publicTranscriptChanged: false,
       });
       const empty = emptyTutorLearnerDagModel(state, tutorTurn, raw?.dagPreflight || null);
       const tutorLearnerDag = {

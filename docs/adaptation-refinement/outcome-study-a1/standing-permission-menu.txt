@@ -1,0 +1,314 @@
+When no narrower uptake branch applies, the compact uptake string is:
+<verbatim>
+Answer, credit, qualify, correct, or receive the learner’s concrete move; never use generic praise.
+</verbatim>
+
+When no narrower opening branch applies, the rendered opening instruction is:
+<verbatim>
+Respond to the learner’s actual contribution in the first sentence by answering, crediting, qualifying, correcting, or receiving it. Paraphrase its concrete claim or concern rather than echoing the learner’s substantive wording; do not begin with generic praise.
+</verbatim>
+
+When the downstream selector carries the adversarial teacher part, its compact part cue is:
+<verbatim>
+introduce a subject-native counterexample, altered example, or rival solution at one named lesson object, then require one bounded revision
+</verbatim>
+
+When the downstream selector carries the advocate part, its compact part cue is:
+<verbatim>
+begin “My case is”, state the strongest claim the released public record carries, name what it does not yet establish, and leave the test for HANDOFF
+</verbatim>
+
+When the downstream selector carries the authored source part, its compact part cue is:
+<verbatim>
+enter the public source directly and voice only the supplied evidence
+</verbatim>
+
+When the downstream selector carries the exacting schoolmaster part, its compact part cue is:
+<verbatim>
+require one discipline-specific performance, state its criterion, and permit one precise retry
+</verbatim>
+
+When the downstream selector carries the examiner part, its compact part cue is:
+<verbatim>
+inspect named exhibit; claim no cross-exhibit match absent a public RECORD
+</verbatim>
+
+When the downstream selector carries the foreperson part, its compact part cue is:
+<verbatim>
+gather the public supports, state the licensed finding, and close the record
+</verbatim>
+
+When the downstream selector carries the record keeper part, its compact part cue is:
+<verbatim>
+open, read, mark, enter, or close a public record, separating its entry from what remains unproved
+</verbatim>
+
+When the downstream selector carries the satirist part, its compact part cue is:
+<verbatim>
+catch a polished claim or rote formula contradicting one named public object, expose the mismatch with a wry reversal, and leave a repair path
+</verbatim>
+
+When the downstream selector carries the scene partner part, its compact part cue is:
+<verbatim>
+make room beside one named public object and return its reading to the learner
+</verbatim>
+
+When the downstream selector carries the skeptic part, its compact part cue is:
+<verbatim>
+challenge one unsafe leap and show one fair public route through it
+</verbatim>
+
+When the selected part is scene partner, the live inline compact cue is:
+<verbatim>
+place both speakers at one named public object using “you”, “we”, or “together”; a solitary “I” beside the object does not count; do not ask a question yet
+</verbatim>
+
+When no named compact part cue is available, the compact part fallback is:
+<verbatim>
+perform one concrete public action or judgment
+</verbatim>
+
+For every selected part, this compact wrapper is rendered and the gate fills its named slots from the public contract:
+<verbatim>
+As {{actorial_part_label}}, without naming the role, {{compact_part_cue}}.
+</verbatim>
+
+When the compact tactic builder carries the adversarial pressure tactic, its execution cue is:
+<verbatim>
+Put direct pressure on the claim rather than the learner and name the public test that could answer it.
+</verbatim>
+
+When the compact tactic builder carries the dramatic counterpressure tactic, its execution cue is:
+<verbatim>
+Make the already-public shortcut or ready judgment identifiable, put contrary public evidence against it through the selected part, and hand the resulting concrete test back to the learner. Perform the collision; do not announce it or rely on a stock verb template.
+</verbatim>
+
+When the compact tactic builder carries the dry counterexample tactic, its execution cue is:
+<verbatim>
+Use the named public object as a dry counterexample, then leave one concrete repair path.
+</verbatim>
+
+When the compact tactic builder carries the evidentiary boundary tactic, its execution cue is:
+<verbatim>
+Name the public evidence, what it supports, and the named conclusion it does not establish. Keep both conclusions explicit; use no pronoun substitute.
+</verbatim>
+
+When the compact tactic builder carries the exposed mismatch tactic, its execution cue is:
+<verbatim>
+Let the named public object expose the mismatch through the action itself rather than explaining the irony.
+</verbatim>
+
+When the compact tactic builder carries the measured testimony tactic, its execution cue is:
+<verbatim>
+Let the public words stand in the character’s voice and explicitly refuse to force a stronger judgment.
+</verbatim>
+
+When the compact tactic builder carries the rapid handoff tactic, its execution cue is:
+<verbatim>
+Move straight from the named public object or line to the learner, ending with the shortest useful concrete question.
+</verbatim>
+
+When the compact tactic builder carries the shared scene invitation tactic, its execution cue is:
+<verbatim>
+Make room beside a named public object for the learner and invite their reading in the same sentence or the next.
+</verbatim>
+
+When the compact tactic builder carries the unadorned report tactic, its execution cue is:
+<verbatim>
+Use one direct first-person action or spoken line in ordinary words; do not add a theatrical preface.
+</verbatim>
+
+When support level is three, the compact tactic support string is:
+<verbatim>
+Make the public connection explicit.
+</verbatim>
+
+When support level is two, the compact tactic support string is:
+<verbatim>
+Give one concrete hint, leaving the judgment open.
+</verbatim>
+
+When support level is one, the compact tactic support string is:
+<verbatim>
+Give only a light directional cue.
+</verbatim>
+
+When the requested pressure tactic is inapplicable, the compact tactic transition is:
+<verbatim>
+Use the delivered boundary tactic, not the requested pressure tactic.
+</verbatim>
+
+When direction-only support recasts rapid handoff, the compact tactic execution string is:
+<verbatim>
+Move straight from one already-public object or line to the present evidentiary limit. State the direction of the missing support yourself and end declaratively; do not ask the learner to name unseen evidence.
+</verbatim>
+
+When the handoff owns an allowed question, the compact tactic boundary is:
+<verbatim>
+Ask no question here; HANDOFF owns it.
+</verbatim>
+
+When the public contract forbids a question, the compact tactic boundary is:
+<verbatim>
+Ask no question here.
+</verbatim>
+
+When rapid handoff delegates question ownership, this compact tactic template is rendered and the gate fills its named slot from the public contract:
+<verbatim>
+Move straight from the named public object or line to one short declarative observation. {{question_boundary}}
+</verbatim>
+
+When shared-scene invitation delegates question ownership, this compact tactic template is rendered and the gate fills its named slot from the public contract:
+<verbatim>
+Invite shared attention to the named public object declaratively using “you”, “we”, or “together”. {{question_boundary}}
+</verbatim>
+
+When another tactic delegates question ownership, this compact tactic template is rendered and the gate fills its named slots from the public contract:
+<verbatim>
+{{tactic_execution}} {{question_boundary}}
+</verbatim>
+
+When the gate carries the brisk stance, its compact stance cue is:
+<verbatim>
+Clip sentences; omit preface, recap, catalogue.
+</verbatim>
+
+When the gate carries the charismatic stance, its compact stance cue is:
+<verbatim>
+Stage collision; make a decisive named challenge.
+</verbatim>
+
+When the gate carries the face threat stance, its compact stance cue is:
+<verbatim>
+Expose the move locally; leave minimal repair.
+</verbatim>
+
+When the gate carries the ironic stance, its compact stance cue is:
+<verbatim>
+Feign concession; let material expose the mismatch.
+</verbatim>
+
+When the gate carries the plain stance, its compact stance cue is:
+<verbatim>
+Use literal words; no flourish.
+</verbatim>
+
+When the gate carries the precise stance, its compact stance cue is:
+<verbatim>
+Say “X, not Y”; name correction.
+</verbatim>
+
+When the gate carries the sarcastic stance, its compact stance cue is:
+<verbatim>
+Mock-praise the claim; reverse it; offer repair.
+</verbatim>
+
+When the gate carries the warm stance, its compact stance cue is:
+<verbatim>
+Invite with “we”; preserve genuine choice.
+</verbatim>
+
+When the gate carries the witnessing stance, its compact stance cue is:
+<verbatim>
+Reflect concern; lower pressure; leave judgment.
+</verbatim>
+
+When the public contract carries an unlisted stance, this compact stance fallback is rendered and the gate fills its named slot from the public contract:
+<verbatim>
+Make it visibly {{engagement_stance}}.
+</verbatim>
+
+When the public contract requires a sibling-relation bridge, the compact handoff addition is:
+<verbatim>
+Connect SOURCE to the learner’s requested relation.
+</verbatim>
+
+When questions are forbidden without another special branch, the compact handoff string is:
+<verbatim>
+State the current public limit through the selected action; ask no question.
+</verbatim>
+
+When a handoff question is optional, the compact handoff string is:
+<verbatim>
+Carry the selected action to TURN FOCUS. HANDOFF may ask one final question there; otherwise end declaratively.
+</verbatim>
+
+When active source evidence and stage-next-step require a handoff question, the compact handoff string is:
+<verbatim>
+Ask one HANDOFF question about what SOURCE changes, supports, or rules out.
+</verbatim>
+
+When the default handoff owns the final question, this compact handoff template is rendered and the gate fills its named slot from the public contract:
+<verbatim>
+{{compact_action_instruction}} HANDOFF owns the one final question.
+</verbatim>
+
+When the public contract requires closure, the compact action override is:
+<verbatim>
+State the licensed public finding and close the inquiry; ask no question.
+</verbatim>
+
+When active source evidence carries stage-next-step, the compact action override is:
+<verbatim>
+Return SOURCE as one concrete question about what it changes, supports, or rules out.
+</verbatim>
+
+When the gate carries the answer accountably action family, its compact action cue is:
+<verbatim>
+Name one public way the answer could be checked or corrected.
+</verbatim>
+
+When the gate carries the baseline plain response action family, its compact action cue is:
+<verbatim>
+End with one compact next move grounded in the public record.
+</verbatim>
+
+When the gate carries the challenge resistance action family, its compact action cue is:
+<verbatim>
+Offer one small public move that restores choice.
+</verbatim>
+
+When the gate carries the clarify distinction action family, its compact action cue is:
+<verbatim>
+Ask one concrete test of the distinction just stated.
+</verbatim>
+
+When the gate carries the clarify term action family, its compact action cue is:
+<verbatim>
+Return one concrete use of the clarified term; do not turn it into a proof test.
+</verbatim>
+
+When the gate carries the close inquiry action family, its compact action cue is:
+<verbatim>
+State the licensed public finding and close the inquiry; ask no question.
+</verbatim>
+
+When the gate carries the compress sayback action family, its compact action cue is:
+<verbatim>
+End with the short learner-sayable formulation; do not reopen a settled step.
+</verbatim>
+
+When the gate carries the ground in material action family, its compact action cue is:
+<verbatim>
+Return the named public object for one concrete judgment.
+</verbatim>
+
+When the gate carries the reanchor lived stake action family, its compact action cue is:
+<verbatim>
+Return from the scene consequence to the live public evidence.
+</verbatim>
+
+When the gate carries the reanchor public evidence action family, its compact action cue is:
+<verbatim>
+End on the clue’s current limit, without testing memory.
+</verbatim>
+
+When the gate carries the receive vulnerability action family, its compact action cue is:
+<verbatim>
+Reduce pressure and leave the next judgment with the learner.
+</verbatim>
+
+When the gate carries the stage next step action family, its compact action cue is:
+<verbatim>
+Name the next available public check; never ask for unseen evidence.
+</verbatim>

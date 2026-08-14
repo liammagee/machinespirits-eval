@@ -291,8 +291,80 @@ export function buildTutorStubPointOfActionTurn({
 }
 
 export function tutorStubPointOfActionPrompt(turn) {
-  if (!turn?.assigned_trigger || !turn?.interruption?.text) return '';
+  if (isTutorStubPointOfActionDisplaced(turn) || !turn?.assigned_trigger || !turn?.interruption?.text) return '';
   return turn.interruption.text;
+}
+
+export function isTutorStubPointOfActionDisplaced(turn) {
+  return Boolean(
+    turn?.displaced_by ||
+    turn?.disposition === 'cancelled_before_tutor_output' ||
+    turn?.status === 'cancelled_before_delivery' ||
+    turn?.displacement?.cancelled === true,
+  );
+}
+
+/**
+ * Cancel a nominated point-of-action intervention at the final-authority
+ * boundary. The nominated behavior remains available under `displacement` for
+ * audit/replay, while every live execution surface is cleared. Consumers also
+ * check the displacement marker so older persisted rows that retained their
+ * executable fields fail closed.
+ */
+export function displaceTutorStubPointOfAction(
+  turn,
+  {
+    displacedBy = 'adaptive_warrant_gate_final_authority',
+    displacedActionFamily = null,
+    desiredActionFamily = null,
+  } = {},
+) {
+  if (!turn) return turn;
+  const previousDisplacement = turn.displacement || null;
+  const originalAssignedTrigger =
+    previousDisplacement?.original_assigned_trigger ?? turn.assigned_trigger ?? turn.displaced_trigger ?? null;
+  const originalAssignmentPriority =
+    previousDisplacement?.original_assignment_priority ?? turn.assignment_priority ?? null;
+  const originalInterruption =
+    previousDisplacement?.original_interruption ?? (turn.interruption ? structuredClone(turn.interruption) : null);
+  const originalCompiledConstraint =
+    previousDisplacement?.original_compiled_constraint ??
+    (turn.compiled_constraint ? structuredClone(turn.compiled_constraint) : null);
+
+  return {
+    ...turn,
+    assigned_trigger: null,
+    assignment_priority: null,
+    displaced_trigger: originalAssignedTrigger,
+    displaced_by: displacedBy,
+    displaced_action_family: displacedActionFamily,
+    disposition: 'cancelled_before_tutor_output',
+    interruption: turn.interruption
+      ? {
+          ...turn.interruption,
+          kind: null,
+          text: null,
+          sha256: null,
+          token_count: 0,
+          target_token_count: 0,
+          disposition: 'cancelled_before_tutor_output',
+        }
+      : null,
+    compiled_constraint: null,
+    displacement: {
+      ...(previousDisplacement || {}),
+      cancelled: true,
+      reason: displacedBy,
+      original_assigned_trigger: originalAssignedTrigger,
+      original_assignment_priority: originalAssignmentPriority,
+      original_interruption: originalInterruption,
+      original_compiled_constraint: originalCompiledConstraint,
+      preexisting_displaced_trigger:
+        previousDisplacement?.preexisting_displaced_trigger ?? turn.displaced_trigger ?? null,
+      displaced_action_family: displacedActionFamily,
+      desired_action_family: desiredActionFamily,
+    },
+  };
 }
 
 /**
@@ -307,7 +379,9 @@ export function tutorStubPointOfActionPrompt(turn) {
  * any standing-book, placebo, side-coach, or compiled-constraint arm.
  */
 export function reconcileTutorStubPointOfActionHandoffEligibility(turn, progressionContract = null) {
-  if (!turn || !TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS.includes(turn.arm)) return turn;
+  if (!turn || isTutorStubPointOfActionDisplaced(turn) || !TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS.includes(turn.arm)) {
+    return turn;
+  }
   const questionAllowed = progressionContract?.handoff_contract?.question_allowed === true;
   const questionForbidden = progressionContract?.handoff_contract?.question_allowed === false;
   if (turn.assigned_trigger === 'warrant_skip' && questionForbidden) {
@@ -367,6 +441,7 @@ export function reconcileTutorStubPointOfActionHandoffEligibility(turn, progress
 }
 
 export function applyTutorStubPointOfActionConstraint(selection, turn) {
+  if (isTutorStubPointOfActionDisplaced(turn)) return selection;
   const constraint = turn?.compiled_constraint;
   if (!selection || !constraint) return selection;
   return {
@@ -400,7 +475,7 @@ export function auditTutorStubPointOfActionCompliance({
   realizedActionFamily = null,
   guardsPassed = true,
 } = {}) {
-  if (!turn?.assigned_trigger) return null;
+  if (isTutorStubPointOfActionDisplaced(turn) || !turn?.assigned_trigger) return null;
   const released = Number(releasedPremiseCount || 0);
   const questions = questionCount(tutorText);
   const warrantCue = WARRANT_CUE_RE.test(String(tutorText || ''));

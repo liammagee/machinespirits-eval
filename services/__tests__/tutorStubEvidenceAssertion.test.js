@@ -68,9 +68,24 @@ test('allows questions, requirements, conditions, and explicit non-matches', () 
     'I turn a shilling beneath the lens, seeking a die-flaw that can answer to this broad graver.',
     'The next safe check is a post-filing record tied to that graf.',
     'The well may tell us where to trace the water, not whom to blame.',
+    'Examine a trace linking access to the jukebox.',
   ]) {
     assert.equal(auditTutorStubEvidenceAssertions({ text }).ok, true, text);
   }
+});
+
+test('keeps a sentence after an exact quoted source outside the source correspondence', () => {
+  const source =
+    'Fresh docking-clamp marks score the mess-hall ceiling rail, still warm. The maintenance registry matches their spacing and chipped left pad to Moth\'s retired courier chassis: the little drone docked there.';
+  const quoted = `“I can confirm this: ${source}”`;
+
+  assert.equal(
+    auditTutorStubEvidenceAssertions({
+      text: `I look at the inquiry log; ${quoted} That named public-record release is next.`,
+      permittedText: source,
+    }).ok,
+    true,
+  );
 });
 
 test('does not read the to inside a hyphenated compound as tracing one exhibit to another', () => {

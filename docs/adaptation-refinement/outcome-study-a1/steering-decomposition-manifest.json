@@ -1,0 +1,80 @@
+{
+  "schema": "machinespirits.adaptation-refinement.warrant-steering-decomposition-manifest.v1",
+  "status": "prepared_hold_for_reviewer_go_103",
+  "zero_model_calls": true,
+  "authority": {
+    "registration": "docs/adaptation-refinement/relay/101-reviewer-registration-steering-decomposition.md"
+  },
+  "inherited_pilot_bindings": {
+    "path": "docs/adaptation-refinement/outcome-study-a1/main-block-manifest.json",
+    "sha256": "efdb547b57280cdc646d61892eeb82c82ae9f49909e17794b83017c154202600",
+    "scope": "096 machinery, frozen worlds, low-agency learner, decision channel, and reader pins unchanged"
+  },
+  "instrument_freeze_sha256": "6a64b31fb57fa4a60e6ef4a42414c422d9b0e2964bdf6ee8491193fc026f3c5f",
+  "worlds": [
+    {
+      "id": "world_101_kestrel_signal_lamp",
+      "path": "docs/adaptation-refinement/outcome-study-a1/worlds/world_101_kestrel_signal_lamp.yaml",
+      "sha256": "6f436cc7293cebd4970b9737b17984e0db7259bcdbff646f723e645b5cb5af10"
+    },
+    {
+      "id": "world_102_marigold_archive_box",
+      "path": "docs/adaptation-refinement/outcome-study-a1/worlds/world_102_marigold_archive_box.yaml",
+      "sha256": "33ef86c9d65eb25f7d140f9c7cc07fc5a3afd3c9ba07cdc721139235402e3c18"
+    }
+  ],
+  "seeds": [536, 537, 538, 539, 540, 542, 543, 544, 545, 546, 548, 549],
+  "conditions": ["gated", "steering_only"],
+  "assignment": {
+    "rule": "For every seed, run each condition once in each world; order is balanced by seed and world.",
+    "dialogues": 48,
+    "dialogues_per_condition": 24,
+    "dialogues_per_seed": 4,
+    "turns_per_dialogue": 8,
+    "learner_profile": "low_agency"
+  },
+  "case_extraction": {
+    "rule": "Extract one decision-turn case for every completed turn in each fixed eight-turn dialogue.",
+    "expected_case_count": 384,
+    "post_generation_annotation_case_fingerprint_guard_required": true
+  },
+  "validity_guard": {
+    "steering_only_delivered_challenge_resistance": 0,
+    "timing": "after sealed generation events and before freeze or reader preparation"
+  },
+  "channels": {
+    "decision": {
+      "enabled": true,
+      "readers": ["decision-reader-a", "decision-reader-b"],
+      "model": "codex.gpt-5.6-luna",
+      "batch_size": 1,
+      "planned_calls": 768,
+      "failed_attempt_allowance": 32,
+      "child_internal_allowance": 12,
+      "authorization_maximum_calls": 788,
+      "absolute_attempt_ceiling": 800,
+      "digests": {
+        "handbook_sha256": "5673c14b8f2a2b17c599e947c87f6d03c10df6dcdbeadcb257d882f008902003",
+        "preparation_and_assembly_sha256": "332447730054e13f02d6d8af0d5c4a58130254e08abf838b87237df62d14fb95",
+        "reader_runner_sha256": "c0a201300a66e32919d22aaac42e431f32bd1df595b582f7762928a148c2e6ad"
+      },
+      "acceptance": "Every response must pass the full deterministic assembly contract before admission."
+    },
+    "presence": {
+      "enabled": false,
+      "reason": "M7 and M8 remain report-only from stored generation-time events."
+    }
+  },
+  "planned_calls": {
+    "generation_expected": 1300,
+    "generation_cap": 1440,
+    "decision_readers": 768,
+    "failed_attempt_allowance": 32,
+    "approximate_total": 2100,
+    "absolute_cap_total": 2240,
+    "counter_before": 8355,
+    "ceiling": 19337
+  },
+  "launch_authorized": false,
+  "hold": "No generation or reader call may run before committed reviewer GO note 103 and explicit human approval."
+}

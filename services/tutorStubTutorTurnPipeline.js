@@ -6,6 +6,7 @@ import { createTutorStubTutorRepairRuntime } from './tutorStubTutorRepairRuntime
 import { createTutorStubTutorTerminalRuntime } from './tutorStubTutorTerminalRuntime.js';
 import { createTutorStubTutorTurnPreparation } from './tutorStubTutorTurnPreparation.js';
 import { TUTOR_STUB_AB_GENERIC_PLAN } from './tutorStubAbArms.js';
+import { isTutorStubPointOfActionDisplaced } from './tutorStubPointOfActionCoaching.js';
 
 export { TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS } from './tutorStubTutorTurnPreparation.js';
 
@@ -129,6 +130,7 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
     tutorStubFirstDraftContractPrompt,
     tutorStubGuardDeliveryDecision,
     tutorStubGuardIssueRows,
+    tutorStubCliPolicyRetryDecision,
     tutorStubLearnerRequestedPlainStyle,
     tutorStubLearnerSelectedToolMarkPath,
     tutorStubLiveResponseConfigurationSurface,
@@ -141,6 +143,7 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
     tutorStubTerminalFallbackFailureMessage,
     tutorStubTuningTurnAdvisory,
     tutorStubTurnFeedbackPrompt,
+    waitTutorStubCliPolicyRetryDelay,
     worldLedgerTerm,
   } = dependencies;
 
@@ -157,6 +160,8 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
     reserveProgram2ProviderBudget,
     reserveTutorStubMeteredModelCall,
     streamAI,
+    tutorStubCliPolicyRetryDecision,
+    waitTutorStubCliPolicyRetryDelay,
   });
   const bindTutorCommitteeRuntime = createTutorStubTutorCommitteeRuntime({
     PROGRAM2_COMMITTEE_SCHEMA,
@@ -513,8 +518,12 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
     try {
       const attempts = [];
       const repairsApplied = [];
+      const currentPointOfAction = state?.pointOfAction?.current || null;
       const committeeMomentActive = Boolean(
-        !passthrough && state?.committee?.enabled && state?.pointOfAction?.current?.assigned_trigger === 'warrant_skip',
+        !passthrough &&
+        state?.committee?.enabled &&
+        !isTutorStubPointOfActionDisplaced(currentPointOfAction) &&
+        currentPointOfAction?.assigned_trigger === 'warrant_skip',
       );
       let response = committeeMomentActive
         ? await invokeCommitteeFirstDraft()
@@ -673,15 +682,17 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
         }),
       );
     } catch (err) {
-      appendTraceEvent(trace, {
-        type: err?.name === 'AbortError' ? 'model_call_aborted' : 'model_call_error',
-        role: roleBase,
-        turn: tutorTurn,
-        provider: resolved.provider,
-        model: resolved.model,
-        error: err.message,
-        ...(err?.tutorFallbackFailure ? { terminalFailure: err.tutorFallbackFailure } : {}),
-      });
+      if (!err?.tutorAttemptModelCallErrorTraced) {
+        appendTraceEvent(trace, {
+          type: err?.name === 'AbortError' ? 'model_call_aborted' : 'model_call_error',
+          role: roleBase,
+          turn: tutorTurn,
+          provider: resolved.provider,
+          model: resolved.model,
+          error: err.message,
+          ...(err?.tutorFallbackFailure ? { terminalFailure: err.tutorFallbackFailure } : {}),
+        });
+      }
       throw err;
     }
   };

@@ -21,6 +21,7 @@ import {
 } from './tutorStubSurfaceAccessibility.js';
 import { TUTOR_STUB_PERFORMANCE_OBLIGATION_CONTRACT_SCHEMA } from './tutorStubPerformanceObligationContract.js';
 import { auditTutorStubEngagementOperation } from './tutorStubEngagementOperation.js';
+import { detectTutorStubVerdictDeclaration } from './tutorStubDialogueClosure.js';
 
 export { measureTutorStubSurfaceSentenceAccessibility } from './tutorStubSurfaceAccessibility.js';
 
@@ -686,6 +687,8 @@ export function buildTutorStubResponseConfiguration({
   dueEvidence = [],
   recentActorialParts = [],
   actorialPartOverride = null,
+  actionFamilyOverride = null,
+  publicObligationDirective = null,
   discoursePlane = null,
 } = {}) {
   const instructionalMetaRepair = discoursePlane?.plane === 'instructional_meta';
@@ -702,14 +705,20 @@ export function buildTutorStubResponseConfiguration({
         },
       ]
     : stanceDistribution;
-  const action = selectTutorStubActionFamily({
-    classification,
-    tutorLearnerDag,
-    comprehension,
-    releasePacing,
-    discoursePlane,
-    world,
-  });
+  // The adaptive warrant gate (docs/adaptation-refinement) may override the
+  // action family with a warranted repair policy; instructional repair keeps
+  // structural priority over the gate.
+  const action =
+    actionFamilyOverride?.family && !instructionalMetaRepair
+      ? { actionFamily: actionFamilyOverride.family, reason: actionFamilyOverride.reason || 'adaptive warrant gate' }
+      : selectTutorStubActionFamily({
+          classification,
+          tutorLearnerDag,
+          comprehension,
+          releasePacing,
+          discoursePlane,
+          world,
+        });
   const learnerIntegrationTarget = buildTutorStubLearnerIntegrationTarget({
     tutorLearnerDag,
     world,
@@ -755,6 +764,7 @@ export function buildTutorStubResponseConfiguration({
     policy,
     engagement_stance: effectiveEngagementStance,
     action_family: action.actionFamily,
+    public_obligation_directive: publicObligationDirective ? structuredClone(publicObligationDirective) : null,
     discourse_plane: discoursePlane ? structuredClone(discoursePlane) : null,
     addressee_profile: audience.audienceRegister,
     audience_register: audience.audienceRegister,
@@ -835,6 +845,7 @@ export function tutorStubResponseConfigurationPrompt(configuration, { stanceCont
   const stanceContract = oneLine(stanceContractOverride || stanceDefinition.stance_contract);
   const stanceSignature = oneLine(stanceDefinition.public_signature);
   const unresolved = configuration.unresolved_terms?.length ? configuration.unresolved_terms.join(', ') : 'none';
+  const obligation = configuration.public_obligation_directive || null;
   return [
     '[Tutor-only response configuration]',
     `Engagement stance: ${stance}. ${stanceContract}`,
@@ -844,6 +855,13 @@ export function tutorStubResponseConfigurationPrompt(configuration, { stanceCont
       configuration.action_family,
       'description',
     )}`,
+    ...(obligation
+      ? [
+          `Public learner request: answer "${oneLine(
+            obligation.target?.source_surface,
+          )}" from public evidence. If the result is not public, name that exact limit and one concrete public condition for answering it. Do not substitute an unrelated clue or question.`,
+        ]
+      : []),
     `Addressee profile: ${configuration.addressee_profile}. ${definitionContract(
       audienceDefinitions,
       configuration.addressee_profile,
@@ -1060,8 +1078,11 @@ function stanceVisible(
   }
   if (stance === 'plain') return metrics.averageSentenceWords <= 18 && metrics.wordCount <= 100;
   if (stance === 'precise')
-    return /\b(?:if|because|means|rather than|but not|not .{0,24} but|not merely|not yet|must still|would count|distinction|exact|establish|no more|did not|does not|doesn[’']t|fails? to (?:establish|prove|show|tie)|only|limit|until|unproved)\b/iu.test(
-      text,
+    return (
+      /\b(?:if|because|means|rather than|but not|not .{0,24} but|not merely|not yet|must still|would count|distinction|exact|establish|no more|did not|does not|doesn[’']t|fails? to (?:establish|prove|show|tie)|only|limit|until|unproved)\b/iu.test(
+        text,
+      ) ||
+      /\b(?:establish|prove|show|support|tie)\w*\b[^.!?]{0,90}\b(?:but\s+)?not\b/iu.test(text)
     );
   if (stance === 'brisk') return metrics.wordCount <= 70 && metrics.sentenceCount <= 4;
   if (stance === 'warm') {
@@ -1150,11 +1171,19 @@ function actionVisible(actionFamily, text, metrics, unresolvedTerms) {
       /\b(?:because|before|if|unless|until|would count|could show|test|check|wrong|revise)\b|\bnot\b[^.!?]{0,28}\b(?:convict|proof|prove|verdict)\b/iu.test(
         text,
       );
+    const accountableDeferral =
+      /\b(?:answer|comparison|entry|match|reading|record|result|test)\b[^.!?]{0,70}\bnot (?:available|public|recorded|shown)(?: yet)?\b[^.!?]{0,25}\b(?:once|until|when)\b[^.!?]{0,80}\b(?:answer|available|public|record|release)\b/iu.test(
+        text,
+      );
     const directCorrectiveAnswer =
       /\b(?:establishes?|identif(?:y|ies)|means|puts?|says?|shows?|supports?|ties?)\b[^.!?]{0,110}\b(?:but\s+)?not\b|\bnot\b[^.!?]{0,90}\b(?:establish|identify|mean|place|prove|show|support|tie)\w*\b/iu.test(
         text,
       );
-    return explicitAccount || directCorrectiveAnswer;
+    const namedMissingWarrant =
+      /\b(?:distinguish|identify|locate|name|separate|state)\w*\b[^.!?]{0,120}\b(?:missing|needed|required|unestablished|unproved|unsupported)\b[^.!?]{0,70}\b(?:evidence|link|record|result|test|warrant)\b/iu.test(
+        text,
+      );
+    return explicitAccount || accountableDeferral || directCorrectiveAnswer || namedMissingWarrant;
   }
   if (actionFamily === 'compress_sayback') return metrics.wordCount <= 85 && metrics.questionCount > 0;
   if (actionFamily === 'reanchor_lived_stake') return metrics.secondPerson && metrics.concreteSceneTermCount > 0;
@@ -1172,7 +1201,7 @@ function actionVisible(actionFamily, text, metrics, unresolvedTerms) {
     return /\b(?:i hear|that sounds|you are naming|you've named|it makes sense|you can)\b/iu.test(text);
   }
   if (actionFamily === 'close_inquiry')
-    return metrics.questionCount === 0 && /\b(?:closed|settled|conclude|therefore)\b/iu.test(text);
+    return metrics.questionCount === 0 && detectTutorStubVerdictDeclaration(text).declared;
   return metrics.wordCount <= 110;
 }
 
@@ -1965,6 +1994,7 @@ function realizationMetrics(text, world) {
     averageSentenceWords: Number((words.length / Math.max(1, sentences.length)).toFixed(2)),
     maxSentenceWords: Math.max(0, ...sentences.map((sentence) => responseWords(sentence).length)),
     questionCount: (String(text).match(/\?/gu) || []).length,
+    secondPerson: /\b(?:you|your|we|let's)\b/iu.test(text),
     concreteSceneTerms: [...new Set(sceneTerms)].slice(0, 12),
     concreteSceneTermCount: new Set(sceneTerms).size,
   };
@@ -2111,7 +2141,7 @@ export function auditTutorStubResponseConfiguration({
       invitation: /\b(?:let's|we can|try|notice|you can|start with|take)\b/iu.test(text),
       acknowledgement: /\b(?:i hear|that sounds|you are naming|you've named|it makes sense)\b/iu.test(text),
       challenge: /\b(?:but|yet|choose|risk|refuse|stop|instead)\b/iu.test(text),
-      closure: /\b(?:closed|settled|conclude|therefore)\b/iu.test(text),
+      closure: /\b(?:clos(?:e|ed|es|ing)|settled|conclude|therefore)\b/iu.test(text),
     },
   };
   // The adaptive host governs the whole utterance around any authored clue
@@ -2225,6 +2255,14 @@ export function auditTutorStubResponseConfiguration({
     performanceEntry: performanceAuditContext?.auditedSpanTexts?.[0] || '',
     performanceResponse: performanceAuditContext?.auditedSpanTexts?.[1] || '',
   });
+  const actionSegment =
+    ['answer_accountably', 'receive_vulnerability', 'challenge_resistance', 'repair_explanation'].includes(
+      configuration.action_family,
+    ) && composition?.uptake
+      ? composition.uptake
+      : composition?.development || text;
+  const actionText = tutorStubActorialHostSurface(configuration, actionSegment);
+  const actionMetrics = realizationMetrics(actionText, world);
   const axes = {
     engagement_stance: {
       selected: configuration.engagement_stance,
@@ -2242,16 +2280,7 @@ export function auditTutorStubResponseConfiguration({
     },
     action_family: {
       selected: configuration.action_family,
-      visible: actionVisible(
-        configuration.action_family,
-        ['answer_accountably', 'receive_vulnerability', 'challenge_resistance', 'repair_explanation'].includes(
-          configuration.action_family,
-        ) && composition?.uptake
-          ? composition.uptake
-          : composition?.development || text,
-        metrics,
-        unresolvedTerms,
-      ),
+      visible: actionVisible(configuration.action_family, actionText, actionMetrics, unresolvedTerms),
       evaluated_segment:
         ['answer_accountably', 'receive_vulnerability', 'challenge_resistance', 'repair_explanation'].includes(
           configuration.action_family,

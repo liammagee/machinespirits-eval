@@ -586,7 +586,7 @@ action_families:
     description: Expose the next public premise, clue, or inference step without doing it for the learner.
   answer_accountably:
     role: dag_device
-    description: Make the tutor's claim defeasible and give the learner a correction path.
+    description: Answer a concrete public learner request, or name its present public limit and a concrete next condition; otherwise make the tutor's claim defeasible and give the learner a correction path.
   compress_sayback:
     role: dag_device
     description: Turn the current state into a short say-back/check form.

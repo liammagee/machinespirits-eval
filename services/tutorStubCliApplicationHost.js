@@ -14,7 +14,10 @@ import { fileURLToPath } from 'node:url';
 
 import { call as callAI, callStream as streamAI } from '../tutor-core/services/unifiedAIProviderService.js';
 import { callAIWithCliBridge, isCliProvider, normalizeCliEffort } from './cliProviderBridge.js';
-import { tutorStubCliPolicyRetryDecision } from './tutorStubCliPolicyRetry.js';
+import {
+  tutorStubCliPolicyRetryDecision,
+  waitTutorStubCliPolicyRetryDelay,
+} from './tutorStubCliPolicyRetry.js';
 import { getProviderConfig, loadProviders, resolveModel } from './evalConfigLoader.js';
 import { captureTutorStubRunProvenance, redactTraceSecrets, tutorStubTraceDisplayPath } from './traceSchema.js';
 import { runLabellingGameCli } from './labellingGameCli.js';
@@ -1075,6 +1078,7 @@ export async function runTutorStubCliApplicationHost({
     streamAI,
     tutorStubCliPolicyRetryDecision,
     tutorStubPromptSurfaceForRole,
+    waitTutorStubCliPolicyRetryDelay,
     write: (text) => process.stdout.write(text),
   });
 
@@ -1789,7 +1793,9 @@ export async function runTutorStubCliApplicationHost({
     tutorStubFirstDraftContractPrompt,
     tutorStubGuardDeliveryDecision,
     tutorStubGuardIssueRows,
+    tutorStubCliPolicyRetryDecision,
     tutorStubLearnerRequestedPlainStyle,
+    waitTutorStubCliPolicyRetryDelay,
     tutorStubLearnerSelectedToolMarkPath,
     tutorStubLiveResponseConfigurationSurface,
     tutorStubPlainRecoveryAllowsActorialAdvisory,

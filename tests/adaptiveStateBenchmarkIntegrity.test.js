@@ -50,6 +50,74 @@ test('legacy controller identity stays out of prediction action features', () =>
   });
 });
 
+test('benchmark export excludes a warrant-displaced typed action and retains its cancellation provenance', () => {
+  const turnRecord = {
+    typedActionDecision: {
+      contract_id: 'typed-t4-diagnostic',
+      chosen_action: {
+        action_type: 'diagnostic_probe',
+        move_family: 'diagnose_elicit',
+        support_level: 'high',
+        task_id: 'cancelled-task',
+        knowledge_component: 'cancelled-component',
+        item_difficulty: 0.9,
+        register: 'warm',
+      },
+      selection_probability: 0.87,
+      delivery: {
+        delivered: false,
+        disposition: 'displaced_before_tutor_output',
+        displaced_by: 'adaptive_warrant_gate_final_authority',
+        selected_action_family: 'diagnose_elicit',
+        delivered_action_family: 'answer_accountably',
+        displaced_configuration_fields: ['response_configuration.action_family'],
+      },
+    },
+    registerSelection: {
+      policy: 'continuous_dynamical_system',
+      action_family: 'clarify_distinction',
+      selected_register: 'precise',
+      selected_probability: 0.42,
+    },
+    deliveredResponseConfiguration: {
+      policy: 'adaptive_warrant_gate',
+      action_family: 'answer_accountably',
+      support_level: 'minimal',
+      task_id: 'delivered-task',
+      knowledge_component: 'public-warrant',
+      item_difficulty: 0.35,
+      engagement_stance: 'plain',
+    },
+  };
+
+  assert.deepEqual(actionRecord(turnRecord, { task_id: 'fixture-task', item_difficulty: 0.5 }), {
+    move_family: 'answer_accountably',
+    support_level: 'minimal',
+    task_id: 'delivered-task',
+    knowledge_component: 'public-warrant',
+    item_difficulty: 0.35,
+    register: 'plain',
+    selection_probability: 0.42,
+  });
+  assert.deepEqual(actionSourceProvenance(turnRecord), {
+    schema: 'machinespirits.adaptive-state-action-source-provenance.v1',
+    source: 'delivered_response_configuration',
+    source_controller_policy: 'adaptive_warrant_gate',
+    excluded_from_prediction_features: true,
+    typed_action_cancellation: {
+      contract_id: 'typed-t4-diagnostic',
+      action_type: 'diagnostic_probe',
+      move_family: 'diagnose_elicit',
+      status: 'cancelled_before_delivery',
+      delivery_disposition: 'displaced_before_tutor_output',
+      displaced_by: 'adaptive_warrant_gate_final_authority',
+      selected_action_family: 'diagnose_elicit',
+      delivered_action_family: 'answer_accountably',
+      displaced_configuration_fields: ['response_configuration.action_family'],
+    },
+  });
+});
+
 test('fixed learner-turn horizons never source a later observation and disclose carry-forward semantics', () => {
   const selected = fixedLearnerTurnTarget([observation(1), observation(3), observation(5, { success: true })], 4);
   assert.equal(selected.horizonObservation.turn, 3);

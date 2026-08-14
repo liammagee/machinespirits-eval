@@ -4,6 +4,7 @@ import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { recordExternalApiCall } from './apiPayloadCapture.js';
+import { verifyAdaptiveWarrantStudyCliInvocation } from './adaptiveWarrantStudyIntegrity.js';
 import { normalizeTokenUsage } from './tokenUsage.js';
 
 // Model CLIs are security boundaries. Do not copy process.env into them: the
@@ -105,6 +106,18 @@ export class CliProviderPolicyError extends Error {
     this.provider = provider;
     // `audit` contains counts and allowlisted type labels only. It never holds
     // raw JSONL events, command arguments, child output, or environment data.
+    this.audit = audit;
+  }
+}
+
+export class CliProviderTurnError extends Error {
+  constructor(provider, audit) {
+    super(`${provider} CLI turn failed before producing an accepted response`);
+    this.name = 'CliProviderTurnError';
+    this.code = 'CLI_PROVIDER_TURN_FAILED';
+    this.provider = provider;
+    // Keep only protocol labels and counts. Provider error messages can echo
+    // request material and therefore must not cross this boundary.
     this.audit = audit;
   }
 }
@@ -438,6 +451,8 @@ const ALLOWED_CODEX_EVENT_TYPES = new Set([
   'turn.completed',
 ]);
 const ALLOWED_CODEX_ITEM_TYPES = new Set(['agent_message', 'reasoning']);
+const CODEX_FAILURE_EVENT_TYPES = new Set(['error', 'turn.failed']);
+const CODEX_FAILURE_ITEM_TYPES = new Set(['error']);
 const KNOWN_PROHIBITED_CODEX_TYPES = new Set([
   'command_execution',
   'file_change',
@@ -449,7 +464,14 @@ const KNOWN_PROHIBITED_CODEX_TYPES = new Set([
 
 function safeCodexTypeLabel(value, allowed) {
   const label = String(value || 'unknown');
-  if (allowed.has(label) || KNOWN_PROHIBITED_CODEX_TYPES.has(label)) return label;
+  if (
+    allowed.has(label) ||
+    CODEX_FAILURE_EVENT_TYPES.has(label) ||
+    CODEX_FAILURE_ITEM_TYPES.has(label) ||
+    KNOWN_PROHIBITED_CODEX_TYPES.has(label)
+  ) {
+    return label;
+  }
   return 'unknown';
 }
 
@@ -457,6 +479,7 @@ function auditCodexStructuredEvents(events = [], { strict = true, invalidLines =
   const eventTypeCounts = {};
   const itemTypeCounts = {};
   const prohibited = [];
+  const failures = [];
   for (const [index, event] of events.entries()) {
     const rawEventType = String(event?.type || 'unknown');
     const rawItemType = String(event?.item?.type || '');
@@ -464,11 +487,15 @@ function auditCodexStructuredEvents(events = [], { strict = true, invalidLines =
     const itemType = rawItemType ? safeCodexTypeLabel(rawItemType, ALLOWED_CODEX_ITEM_TYPES) : '';
     eventTypeCounts[eventType] = (eventTypeCounts[eventType] || 0) + 1;
     if (itemType) itemTypeCounts[itemType] = (itemTypeCounts[itemType] || 0) + 1;
+    if (CODEX_FAILURE_EVENT_TYPES.has(rawEventType) || CODEX_FAILURE_ITEM_TYPES.has(rawItemType)) {
+      failures.push({ index, event_type: eventType, item_type: itemType || null });
+    }
     if (
       strict &&
-      (!ALLOWED_CODEX_EVENT_TYPES.has(rawEventType) ||
+      (!(ALLOWED_CODEX_EVENT_TYPES.has(rawEventType) || CODEX_FAILURE_EVENT_TYPES.has(rawEventType)) ||
         (rawEventType.startsWith('item.') && !rawItemType) ||
-        (rawItemType && !ALLOWED_CODEX_ITEM_TYPES.has(rawItemType)))
+        (rawItemType &&
+          !(ALLOWED_CODEX_ITEM_TYPES.has(rawItemType) || CODEX_FAILURE_ITEM_TYPES.has(rawItemType))))
     ) {
       prohibited.push({ index, event_type: eventType, item_type: itemType || null });
     }
@@ -481,6 +508,8 @@ function auditCodexStructuredEvents(events = [], { strict = true, invalidLines =
     item_type_counts: itemTypeCounts,
     prohibited_event_count: prohibited.length,
     prohibited_events: prohibited,
+    failure_event_count: failures.length,
+    failure_events: failures,
     invalid_jsonl_line_count: Number(invalidLines),
     policy: strict ? 'strict_no_tools_allowlist' : 'observational_only',
   };
@@ -896,6 +925,7 @@ async function callCodexCli({
       if (schemaFile) args.push('--output-schema', schemaFile);
       args.push('-o', outFile, '-');
 
+      verifyAdaptiveWarrantStudyCliInvocation({ environment: process.env, executable: command });
       const child = spawnImpl(command, args, {
         stdio: ['pipe', 'pipe', 'pipe'],
         cwd: tmpDir,
@@ -972,6 +1002,10 @@ async function callCodexCli({
         });
         if (eventAudit.prohibited_event_count > 0) {
           reject(new CliProviderPolicyError('codex', eventAudit));
+          return;
+        }
+        if (eventAudit.failure_event_count > 0) {
+          reject(new CliProviderTurnError('codex', eventAudit));
           return;
         }
         if (code !== 0) {

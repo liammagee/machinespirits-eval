@@ -1,3 +1,5 @@
+import { isTutorStubUnanalyzedClassification } from './tutorStubLearnerClassification.js';
+
 export function tutorPromptSurfaceKey(value) {
   return String(value || '')
     .replace(/\s+/gu, ' ')
@@ -27,7 +29,7 @@ function compactAuditRows(rows = [], limit = 3) {
 }
 
 export function projectTutorStubLearnerClassifierContext(classification) {
-  if (!classification) return '';
+  if (!classification || isTutorStubUnanalyzedClassification(classification)) return '';
   return [
     '[Tutor-only learner classifier]',
     `This turn: ${classification.turn?.summary || 'No turn summary.'}`,

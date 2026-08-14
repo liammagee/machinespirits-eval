@@ -36,6 +36,52 @@ function wordCount(value) {
     .filter(Boolean).length;
 }
 
+test('threads a public obligation into uptake and handoff without exposing its private id', () => {
+  const unrelatedDue = 'The die register names a fresh cutting tool.';
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'What did the balance show when the clipped shilling was weighed?',
+    responseConfiguration: configuration({ action_family: 'answer_accountably' }),
+    responseCompositionFrame: {
+      learner_move: { summary: 'The learner requests the clipped-shilling balance result.' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [unrelatedDue],
+      public_focus_mapping: { relationship: 'sibling' },
+    },
+    dramaticReleaseFrame: {
+      active: true,
+      entries: [{ mode: 'presented_exhibit', surface: unrelatedDue }],
+    },
+    publicObligationDirective: {
+      obligation_id: 'public-obligation-001',
+      target: {
+        kind: 'weight_or_ring_result',
+        signature: 'weight_or_ring_result:clip|shilling',
+        public_terms: ['balance', 'clipped', 'shilling', 'weighed'],
+        subject_terms: ['clip', 'shilling'],
+        required_components: [
+          {
+            id: 'weight_reading',
+            terms: ['balance', 'weight', 'weigh', 'weighing', 'reading'],
+          },
+        ],
+        source_surface: 'What did the balance show when the clipped shilling was weighed?',
+      },
+      acceptable_outcomes: ['bounded_public_answer', 'named_unavailability_with_concrete_next_step'],
+    },
+  });
+  const prompt = tutorStubFirstDraftContractPrompt(contract);
+  const uptake = contract.host_plan.slots.find((slot) => slot.id === 'uptake');
+  const handoff = contract.host_plan.slots.find((slot) => slot.id === 'handoff');
+
+  assert.equal(contract.progression.handoff_contract.mode, 'answer_or_accountable_deferral');
+  assert.match(uptake.instruction, /answer or accountable deferral in UPTAKE/iu);
+  assert.match(handoff.instruction, /active public request owns this turn/iu);
+  assert.ok(contract.compatibility.decisions.includes('public_obligation_precedes_due_source_handoff'));
+  assert.match(prompt, /clipped shilling was weighed/iu);
+  assert.doesNotMatch(prompt, /public-obligation-001/u);
+  assert.doesNotMatch(handoff.instruction, /Ask one HANDOFF question about what SOURCE/iu);
+});
+
 test('compiles one ordered host plan with exact source between part and tactic', () => {
   const clue = 'Verrell alone draws the mint-yard crucible.';
   const contract = buildTutorStubFirstDraftContract({

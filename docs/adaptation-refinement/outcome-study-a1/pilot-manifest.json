@@ -1,0 +1,217 @@
+{
+  "schema": "machinespirits.adaptation-refinement.warrant-outcome-pilot-manifest.v1",
+  "status": "prepared_hold_for_reviewer_go",
+  "zero_model_calls": true,
+  "authority": {
+    "registration": "docs/adaptation-refinement/v3-outcome-study-registration.md",
+    "amendment": "docs/adaptation-refinement/v3-outcome-study-registration-amendment-1.md",
+    "direction": "docs/adaptation-refinement/relay/062-reviewer-direction-menu-membership-classification.md",
+    "a1_commit": "df187b0cd9177d69ecc8b8010c867ad865a438c4"
+  },
+  "standing_permission": {
+    "menu_json": "docs/adaptation-refinement/outcome-study-a1/standing-permission-menu.json",
+    "menu_json_sha256": "30a240eebc18a431a712a51e645660783aa070d3762e50b6ccc18bc8b8bda94a",
+    "menu_text": "docs/adaptation-refinement/outcome-study-a1/standing-permission-menu.txt",
+    "menu_text_sha256": "966f3aa71dbcb907cf9f98e5d873c78ef00c697d29a4e6e360519a784d8257dd",
+    "entry_count": 63,
+    "enumeration_rule": "Starting from tutorStubFirstDraftContractPrompt, enumerate every candidate fixed string that can flow into a rendered field from the SHA-pinned services/tutorStubFirstDraftContract.js. For each candidate, record its switching variable, whether the gate verdict, repair policy, or register selection can reach that variable, the IN/OUT verdict, and the code trace; keep uncertain traces IN with the doubt recorded. The complete 87-candidate classification is frozen at standing-permission-menu.json enumeration_rule.per_string_classification: 63 IN and 24 OUT, including tactic.support.0 as the documented null branch because support level zero renders no instruction bytes. Templates retain byte-exact fixed segments and named {{slots}}. The long buildTutorStubQuestionSupport tutorInstruction strings remain excluded because the live compact host-plan renderer does not read ending.instruction.",
+    "source_sha256": {
+      "services/tutorStubWarrantGate.js": "db30f563bb5107544f0f64677410f3e67cb2f0f2fbe573d4c5d66976b791fc24",
+      "services/adaptiveWarrantPolicy.js": "8e17f23bab13270b83a10597ca820b08607b42e6757640c23b70dab25bf60837",
+      "services/tutorStubFirstDraftContract.js": "868c5ef7af8677a59cbf391cc0948c71cb567802e4d7d15d6f980366db707a29",
+      "services/tutorStubQuestionSupport.js": "6084936a3dd7093a14b4ef76eb6914549064bf095bf7bc1c8b5e15eba168dfa3",
+      "config/engagement-registers.yaml": "6284ffb82d8fe151312c05d6426f809de43addfe5275bbd5f70cbd39361a84c2"
+    }
+  },
+  "worlds": [
+    {
+      "id": "world_101_kestrel_signal_lamp",
+      "path": "docs/adaptation-refinement/outcome-study-a1/worlds/world_101_kestrel_signal_lamp.yaml",
+      "family_source": "world_022_foxtrot_jukebox",
+      "sha256": "6f436cc7293cebd4970b9737b17984e0db7259bcdbff646f723e645b5cb5af10"
+    },
+    {
+      "id": "world_102_marigold_archive_box",
+      "path": "docs/adaptation-refinement/outcome-study-a1/worlds/world_102_marigold_archive_box.yaml",
+      "family_source": "world_028_larkspur_fridge",
+      "sha256": "33ef86c9d65eb25f7d140f9c7cc07fc5a3afd3c9ba07cdc721139235402e3c18"
+    }
+  ],
+  "seeds": [
+    515,
+    516,
+    517
+  ],
+  "conditions": {
+    "bare": {
+      "warrant_gate": "off",
+      "standing_permission_menu": false
+    },
+    "gated": {
+      "warrant_gate": "active",
+      "standing_permission_menu": false
+    },
+    "standing_permission": {
+      "warrant_gate": "off",
+      "standing_permission_menu": true
+    }
+  },
+  "interleaved_condition_assignment": [
+    {
+      "order": 1,
+      "world": "world_101_kestrel_signal_lamp",
+      "seed": 515,
+      "condition": "bare"
+    },
+    {
+      "order": 2,
+      "world": "world_101_kestrel_signal_lamp",
+      "seed": 515,
+      "condition": "gated"
+    },
+    {
+      "order": 3,
+      "world": "world_101_kestrel_signal_lamp",
+      "seed": 515,
+      "condition": "standing_permission"
+    },
+    {
+      "order": 4,
+      "world": "world_102_marigold_archive_box",
+      "seed": 515,
+      "condition": "gated"
+    },
+    {
+      "order": 5,
+      "world": "world_102_marigold_archive_box",
+      "seed": 515,
+      "condition": "standing_permission"
+    },
+    {
+      "order": 6,
+      "world": "world_102_marigold_archive_box",
+      "seed": 515,
+      "condition": "bare"
+    },
+    {
+      "order": 7,
+      "world": "world_101_kestrel_signal_lamp",
+      "seed": 516,
+      "condition": "standing_permission"
+    },
+    {
+      "order": 8,
+      "world": "world_101_kestrel_signal_lamp",
+      "seed": 516,
+      "condition": "bare"
+    },
+    {
+      "order": 9,
+      "world": "world_101_kestrel_signal_lamp",
+      "seed": 516,
+      "condition": "gated"
+    },
+    {
+      "order": 10,
+      "world": "world_102_marigold_archive_box",
+      "seed": 516,
+      "condition": "bare"
+    },
+    {
+      "order": 11,
+      "world": "world_102_marigold_archive_box",
+      "seed": 516,
+      "condition": "gated"
+    },
+    {
+      "order": 12,
+      "world": "world_102_marigold_archive_box",
+      "seed": 516,
+      "condition": "standing_permission"
+    },
+    {
+      "order": 13,
+      "world": "world_101_kestrel_signal_lamp",
+      "seed": 517,
+      "condition": "gated"
+    },
+    {
+      "order": 14,
+      "world": "world_101_kestrel_signal_lamp",
+      "seed": 517,
+      "condition": "standing_permission"
+    },
+    {
+      "order": 15,
+      "world": "world_101_kestrel_signal_lamp",
+      "seed": 517,
+      "condition": "bare"
+    },
+    {
+      "order": 16,
+      "world": "world_102_marigold_archive_box",
+      "seed": 517,
+      "condition": "standing_permission"
+    },
+    {
+      "order": 17,
+      "world": "world_102_marigold_archive_box",
+      "seed": 517,
+      "condition": "bare"
+    },
+    {
+      "order": 18,
+      "world": "world_102_marigold_archive_box",
+      "seed": 517,
+      "condition": "gated"
+    }
+  ],
+  "case_extraction": {
+    "rule": "Extract one decision-turn case for every completed turn in each fixed eight-turn dialogue.",
+    "dialogues": 18,
+    "turns_per_dialogue": 8,
+    "expected_case_count": 144,
+    "post_generation_annotation_case_fingerprint_guard_required": true
+  },
+  "measure_1_reader_output_form": "Measure 1 reader output form: path 1. Each frozen binary decision reader reports commitment_transition_warranted (yes/no); the harness compares the logged observe-arm revision_warranted decision with two-reader consensus. The public world ground-truth source is the SHA-pinned world YAML projected into the decision packet public_inquiry_brief, and the same source is used in every condition.",
+  "decision_run_record_rule": "Decision-batch preparation and scoring always receive the run-record path, and the harness check in note 057a section 1 guards the omission case.",
+  "presence_channel": {
+    "readers": 2,
+    "calls_per_case": 2,
+    "digests": {
+      "corpus_sha256": "52bc3ae49f634bd2c4b872f843b1be1f15e859618b3ffa7cfa1fb0ae7cc1e184",
+      "extraction_schema_digest": "7cde2b7744ab4a3b8bee50c56a80a9d861367a47f493968823e033291b63ad4a",
+      "provider_response_schema_sha256": "44b4807e25f0620e2677ed49031dec558daa6f0aeec0f20a97b85ec2c6cb6bc1",
+      "one_case_response_schema_sha256": "f944b9b89c7bc3c3756bfe81dac476e2e84ca1fc215dbb1b05df89b3288135f0",
+      "one_case_packet_sha256": "237c0784f637cb74ea124a5ec2c00912e3bc39eddf6359573c276fa823c3e06b",
+      "preparer_sha256": "05c748220a24e82c40a84fd319b73ae6184883c5350aaecf432cde1b920a6e9f",
+      "reader_digest": "936d2ef8dbaaa24ec465dba1120b6e348b59cab756ae43af73c9e727b82e0be7"
+    },
+    "caps_bytes": {
+      "response": 14000,
+      "packet": 60000
+    }
+  },
+  "decision_channel": {
+    "readers": 2,
+    "calls_per_case": 2,
+    "digests": {
+      "handbook_sha256": "5673c14b8f2a2b17c599e947c87f6d03c10df6dcdbeadcb257d882f008902003",
+      "preparation_and_assembly_sha256": "332447730054e13f02d6d8af0d5c4a58130254e08abf838b87237df62d14fb95",
+      "reader_runner_sha256": "c0a201300a66e32919d22aaac42e431f32bd1df595b582f7762928a148c2e6ad"
+    }
+  },
+  "planned_calls": {
+    "generation": 540,
+    "presence_readers": 288,
+    "decision_readers": 288,
+    "total": 1116,
+    "arithmetic": "(18 x 30 cap) + (2 x 144) + (2 x 144) = 1116; measured live unit 26 per dialogue (report 069)",
+    "counter_before": 4198,
+    "counter_after_if_completed": 5314,
+    "ceiling": 19337,
+    "remaining_after_if_completed": 14023
+  },
+  "launch_authorized": false,
+  "hold": "No model or reader call may run until the reviewer commits the go note after second-session byte review and manifest verification."
+}

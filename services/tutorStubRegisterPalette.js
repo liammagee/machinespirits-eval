@@ -64,7 +64,7 @@ export function createTutorStubRegisterPromptVocabulary({
   }
 
   function engagementStancePalettePromptRows(palette) {
-    return JSON.stringify(palette.map(engagementStanceDefinitionSummary), null, 2);
+    return JSON.stringify(palette.map(engagementStanceDefinitionSummary));
   }
 
   function requestTypePromptRows() {
@@ -75,7 +75,7 @@ export function createTutorStubRegisterPromptVocabulary({
       description: definition.description || '',
       dag_use: definition.dag_use || '',
     }));
-    return rows.length ? JSON.stringify(rows, null, 2) : 'No request-type registry is configured.';
+    return rows.length ? JSON.stringify(rows) : 'No request-type registry is configured.';
   }
 
   return Object.freeze({ engagementStanceDefinitionSummary, engagementStancePalettePromptRows, requestTypePromptRows });

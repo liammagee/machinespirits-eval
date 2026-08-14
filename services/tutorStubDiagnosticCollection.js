@@ -102,6 +102,11 @@ export function snapshotTutorStubDiagnosticTransaction(state) {
 export function restoreTutorStubDiagnosticTransaction(state, snapshot) {
   if (!state || !snapshot) throw new TypeError('diagnostic transaction restore needs state and snapshot');
   for (const key of TRANSACTIONAL_STATE_KEYS) state[key] = structuredClone(snapshot[key]);
+  // The warrant gate is a closure-backed reducer, not structured-cloneable
+  // state. Discard any mutations made by the failed attempt; the next access
+  // rebuilds it from the restored/committed public turn prefix (including a
+  // subsequently committed quarantine continuation).
+  state.warrantGate = null;
   return state;
 }
 

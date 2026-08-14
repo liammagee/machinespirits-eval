@@ -895,6 +895,11 @@ export function createTutorStubSessionOrchestration(dependencies = {}) {
     const currentReleaseSpeed = state.releasePacing?.baseSpeed ?? releaseSpeed;
     state.history = [];
     state.turns = [];
+    // The warrant reducer owns dialogue-local commitments, trouble history,
+    // and action-contract state. Never carry that closure-backed state across
+    // /reset, scenario, or workplan-module boundaries; it will be rebuilt from
+    // the new dialogue's empty committed prefix on first use.
+    state.warrantGate = null;
     state.openingRealization = null;
     state.resumeHandoff = null;
     state.coach = { pending: [], history: [] };

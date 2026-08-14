@@ -9,6 +9,7 @@
         "services/__tests__/adaptiveTutor.realLLM-jsonparse.test.js",
         "services/__tests__/adaptiveTutor.strategyRefusal.test.js",
         "services/__tests__/adaptiveTutor.superegoRevise.test.js",
+        "services/__tests__/adaptiveWarrantDivergence.test.js",
         "services/__tests__/answerSurface.test.js",
         "services/__tests__/apiMessageFormatter.test.js",
         "services/__tests__/blueprintActionContracts.test.js",
@@ -74,6 +75,7 @@
         "services/__tests__/tutorStubPerformanceAdjudication.test.js",
         "services/__tests__/tutorStubPerformanceObligationContract.test.js",
         "services/__tests__/tutorStubPolicySampler.test.js",
+        "services/__tests__/tutorStubPromptTransport.test.js",
         "services/__tests__/tutorStubPublicHistory.test.js",
         "services/__tests__/tutorStubPublicLearnerAnalysis.test.js",
         "services/__tests__/tutorStubPublicText.test.js",
@@ -85,6 +87,7 @@
         "services/__tests__/tutorStubTuning.test.js",
         "services/__tests__/tutorStubTurnFeedback.test.js",
         "services/__tests__/tutorStubTurnTiming.test.js",
+        "services/__tests__/tutorStubTutorAttemptRuntime.test.js",
         "services/__tests__/writingPadNarrativeBuilder.test.js",
         "tests/a19AdjudicationKeyedRoutes.test.js",
         "tests/a19AdjudicationPanel.test.js",
@@ -127,6 +130,17 @@
         "tests/adaptiveStateValidityV2.test.js",
         "tests/adaptiveTraceProjection.test.js",
         "tests/adaptiveTutorStoreInjection.test.js",
+        "tests/adaptiveWarrantAnnotationCollection.test.js",
+        "tests/adaptiveWarrantBaselineStudy.test.js",
+        "tests/adaptiveWarrantChallengeCorpus.test.js",
+        "tests/adaptiveWarrantFallbackPassClosure.test.js",
+        "tests/adaptiveWarrantGate.test.js",
+        "tests/adaptiveWarrantLearnerAnalysisCoverage.test.js",
+        "tests/adaptiveWarrantOutcomePilot.test.js",
+        "tests/adaptiveWarrantOutcomeStudy.test.js",
+        "tests/adaptiveWarrantSemanticAnnotation.test.js",
+        "tests/adaptiveWarrantSteeringDecomposition.test.js",
+        "tests/adaptiveWarrantStudyIntegrity.test.js",
         "tests/aggregatePoeticsPairedIncrement.test.js",
         "tests/agonEpisode.test.js",
         "tests/agonReferee.test.js",
@@ -334,6 +348,7 @@
         "tests/internalHistoryMessages.test.js",
         "tests/intervention-ledger.test.js",
         "tests/ironicQuestionFloodRedraw.test.js",
+        "tests/jsonlEventReader.test.js",
         "tests/labellingCoderArtifacts.test.js",
         "tests/labellingGameCli.test.js",
         "tests/labellingImpasseProvenance.test.js",
@@ -447,6 +462,7 @@
         "tests/scorePoeticsMissingSonnet.test.js",
         "tests/scorePoeticsPhase2.test.js",
         "tests/screenSUnderivability.test.js",
+        "tests/semanticReaderPresenceGate.test.js",
         "tests/showcasePrBenchmarkScoring.test.js",
         "tests/skillSync.test.js",
         "tests/stanceComponentContingency.test.js",
@@ -696,6 +712,14 @@
   ],
   "allowedSkips": [
     {
+      "id": "adaptive-warrant-machine-local-artifacts",
+      "suite": "root",
+      "reasonPattern": "^machine-local warrant run artifacts absent \\(.+\\); archived in the private repo$",
+      "owner": "adaptive-warrant-outcome-study",
+      "reason": "The quarantined pilot dialogues and blinded annotation files exist only on the launch machine and in the sibling private archive repo.",
+      "removalSlice": "outcome-study artifact fixture decision"
+    },
+    {
       "id": "paper-superego-private-archive",
       "suite": "root",
       "reasonPattern": "^archived corpus absent \\(.+\\); sibling private repo not checked out$",
@@ -715,7 +739,9 @@
       "id": "concurrent-pty-ci",
       "suite": "root",
       "testPattern": "^auto mode keeps a separate editable command line while model output is generated$",
-      "environmentPresent": ["CI"],
+      "environmentPresent": [
+        "CI"
+      ],
       "owner": "tutor-stub",
       "reason": "The parallel root matrix leaves this timing-sensitive case to the dedicated PTY concurrency job.",
       "removalSlice": "dedicated test:pty:ci lane; retain until the parallel root phase has equivalent timing isolation"
@@ -724,7 +750,9 @@
       "id": "windows-pty",
       "suite": "root",
       "testPattern": "^(?:fresh mixed scenario animates while the opening learner artifacts are loading|fresh TTY scenario and profile pickers scroll with arrow keys and select with Enter|live TTY settings panel edits numeric settings with keyboard controls|Escape discards every pending TTY settings-panel change|mixed TTY uses readable profile-aware learner prompts and updates them after a profile change|a real interactive TTY remembers settings by default without an opt-in flag|a returning mixed TTY restores scenario, profile, and settings without reopening setup|editing a Tab-inserted mixed learner suggestion records hybrid authorship|empty-prompt arrow keys rate the tutor immediately without taking over cursor movement|auto mode keeps a separate editable command line while model output is generated|typing slash opens a filtered command palette and Tab completes the selection|profile palette completes the documented stress-list command|prompt shortcuts select and replace words and whole lines|/character tutor and /character learner open keyboard selectors in a TTY)$",
-      "platforms": ["win32"],
+      "platforms": [
+        "win32"
+      ],
       "owner": "tutor-stub",
       "reason": "These node-pty interaction cases are intentionally unsupported on Windows.",
       "removalSlice": "Windows PTY support decision"

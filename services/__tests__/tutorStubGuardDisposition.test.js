@@ -16,6 +16,7 @@ import {
 } from '../tutorStubReleasePacing.js';
 import { auditTutorStubResponseConfiguration } from '../tutorStubResponseConfiguration.js';
 import { auditTutorStubReleaseDelivery } from '../tutorStubResponseGuard.js';
+import { createTutorStubTutorDraftAudit } from '../tutorStubTutorDraftAudit.js';
 
 const LIVE_TERMINAL_FALLBACK =
   'I hear the focus: “for a simple explanation because they are lost”; that stays at the centre of this turn. I clear a new space on the table for this point before testing its limit. I set the tool under examination and mark the claim’s limit. Keep only what the public evidence already shows. Choose one way forward: use the tool to decide for a simple explanation because they are lost, or leave that reading open until another public fact arrives; you may also ask me to unpack one word or connection.';
@@ -123,7 +124,7 @@ test('the live terminal fallback cannot exhaust delivery on optional actorial an
 
   const decision = decideTutorStubGuardDelivery(rows, { terminalFallback: true });
   assert.equal(decision.ok, true);
-  assert.equal(decision.catalogVersion, 7);
+  assert.equal(decision.catalogVersion, 10);
   assert.deepEqual(decision.hardIssues, []);
   assert.deepEqual(
     decision.advisoryIssues.map((issue) => `${issue.guard}:${issue.type}`),
@@ -140,6 +141,97 @@ test('the live terminal fallback cannot exhaust delivery on optional actorial an
     decision.dispositions.find((row) => row.issue.guard === 'actorial_realization')?.legacyOverride,
     'terminal_fallback_actorial_advisory',
   );
+});
+
+test('active adaptive-warrant final authority is hard on drafts and advisory only on the terminal fallback', () => {
+  const rows = tutorStubGuardIssueRows({
+    responseConfigurationAudit: {
+      adaptive_warrant_delivery: {
+        active: true,
+        desired_action_family: 'close_inquiry',
+      },
+      axes: {
+        engagement_stance: { visible: false, selected: 'precise' },
+        action_family: { visible: false, selected: 'close_inquiry' },
+      },
+    },
+  });
+  assert.deepEqual(
+    rows.map((row) => [row.guard, row.type, row.axis || null]),
+    [
+      ['response_configuration', 'axis_not_visible', 'engagement_stance'],
+      ['adaptive_warrant_delivery', 'selected_action_family_not_visible', null],
+    ],
+  );
+  for (const options of [{}, { boundaryPolicy: 'shadow_advisory' }]) {
+    const decision = decideTutorStubGuardDelivery(rows, options);
+    assert.equal(decision.ok, false, JSON.stringify(options));
+    assert.equal(decision.hardIssues.length, 1, JSON.stringify(options));
+    assert.equal(decision.hardIssues[0].guard, 'adaptive_warrant_delivery');
+    assert.equal(decision.dispositions.find((row) => row.issue.guard === 'adaptive_warrant_delivery').known, true);
+  }
+  const fallback = decideTutorStubGuardDelivery(rows, { terminalFallback: true });
+  assert.equal(fallback.ok, true);
+  assert.deepEqual(fallback.hardIssues, []);
+  assert.equal(
+    fallback.dispositions.find((row) => row.issue.guard === 'adaptive_warrant_delivery')?.legacyOverride,
+    'terminal_fallback_style_advisory',
+  );
+});
+
+test('draft audit carries active warrant final-authority ownership into guard disposition', () => {
+  const bindAudit = createTutorStubTutorDraftAudit({
+    appendTraceEvent() {},
+    auditTutorStubReleaseDelivery: () => ({ ok: true, missingPremises: [] }),
+    auditTutorStubResponseConfiguration: () => ({
+      axes: { action_family: { visible: false, selected: 'close_inquiry' } },
+      actorial_realization: { ok: true, issues: [], active: false },
+    }),
+    formatTutorStubResponseComposition: () => '',
+    jsonClone: structuredClone,
+    tutorStubLiveResponseConfigurationSurface: ({ text }) => ({
+      text,
+      active: false,
+      reason: null,
+      excluded_spans: [],
+    }),
+  });
+  const { auditTutorDraft } = bindAudit({
+    actorialRealizationGuardEnabled: true,
+    closureGuardEnabled: false,
+    dramaticReleaseFrame: { entries: [] },
+    dramaticReleaseGuardEnabled: false,
+    firstDraftContract: null,
+    questionSupportGuardEnabled: false,
+    repetitionGuardEnabled: false,
+    responseCompositionGuardEnabled: false,
+    scaffoldGuardEnabled: false,
+    leakGuardEnabled: false,
+    speakingResponseConfiguration: {
+      action_family: 'close_inquiry',
+      adaptive_warrant_enforcement: {
+        applied: true,
+        desired_action_family: 'close_inquiry',
+        warrant_basis: 'inquiry_complete:strict_grounded_asserted',
+        decision_kind: 'terminal_transition',
+      },
+    },
+    trace: [],
+    tutorTurn: 8,
+  });
+  const audits = auditTutorDraft({ text: 'The record supports the finding.' }, { role: 'test', attempt: 0 });
+  assert.deepEqual(audits.responseConfigurationAudit.adaptive_warrant_delivery, {
+    schema: 'machinespirits.tutor-stub.adaptive-warrant-delivery-audit-context.v1',
+    active: true,
+    desired_action_family: 'close_inquiry',
+    warrant_basis: 'inquiry_complete:strict_grounded_asserted',
+    decision_kind: 'terminal_transition',
+  });
+  const decision = decideTutorStubGuardDelivery(tutorStubGuardIssueRows(audits), {
+    boundaryPolicy: 'shadow_advisory',
+  });
+  assert.equal(decision.ok, false);
+  assert.equal(decision.hardIssues[0].guard, 'adaptive_warrant_delivery');
 });
 
 test('terminal fallback fatal messages contain only the hard issue that blocked delivery', () => {
