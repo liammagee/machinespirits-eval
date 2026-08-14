@@ -246,6 +246,28 @@ export function auditSteeringDecompositionSeedFreshness({
   };
 }
 
+export function steeringDecompositionResumeSeedExclusions({
+  rootDir,
+  repoRoot = ROOT,
+  privateArchiveRoot = PRIVATE_ARCHIVE_ROOT,
+} = {}) {
+  const resolvedRoot = path.resolve(rootDir);
+  const resolvedRepo = path.resolve(repoRoot);
+  const relativeRoot = path.relative(resolvedRepo, resolvedRoot);
+  const exclusions = [resolvedRoot];
+  if (
+    relativeRoot &&
+    relativeRoot !== '..' &&
+    !relativeRoot.startsWith(`..${path.sep}`) &&
+    !path.isAbsolute(relativeRoot)
+  ) {
+    exclusions.push(
+      path.join(path.resolve(privateArchiveRoot), 'artifacts', 'tutor-stub-live', relativeRoot),
+    );
+  }
+  return exclusions;
+}
+
 export function verifySteeringDecompositionManifest({ manifestPath = DEFAULT_MANIFEST } = {}) {
   const resolvedManifest = path.resolve(ROOT, manifestPath);
   const manifest = readJson(resolvedManifest);
@@ -674,7 +696,7 @@ export async function executeSteeringDecomposition({
   if (resume && !fs.existsSync(checkpointPath)) throw new Error('--resume requires a steering-decomposition checkpoint');
   const freshness = auditSteeringDecompositionSeedFreshness({
     roots: seedFreshnessRoots,
-    excludeRoots: resume ? [rootDir] : [],
+    excludeRoots: resume ? steeringDecompositionResumeSeedExclusions({ rootDir }) : [],
   });
   if (freshness.status !== 'passed') {
     throw new Error(`steering-decomposition seed freshness failed: ${freshness.hits.map((row) => `s${row.seed}:${row.path}`).join(', ')}`);

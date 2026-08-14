@@ -19,6 +19,7 @@ import {
   guardSteeringDecompositionDecisionCollection,
   guardSteeringDecompositionStudyPlan,
   guardSteeringOnlyZeroChallenge,
+  steeringDecompositionResumeSeedExclusions,
   verifySteeringDecompositionManifest,
 } from '../scripts/run-adaptive-warrant-steering-decomposition.js';
 
@@ -93,6 +94,37 @@ test('steering decomposition seed audit passes a clean root and catches register
   assert.equal(failed.status, 'failed');
   assert.equal(failed.hits.some((row) => row.seed === 536 && row.kind === 'run_directory_name'), true);
   assert.equal(failed.hits.some((row) => row.seed === 536 && row.kind === 'run_metadata'), true);
+});
+
+test('steering decomposition resume excludes only its local run and automatic private mirror', (t) => {
+  const directory = temporaryDirectory(t);
+  const repoRoot = path.join(directory, 'worktree');
+  const privateArchiveRoot = path.join(directory, 'private');
+  const relativeRun = path.join('.tutor-stub-auto-eval', 'live-run');
+  const rootDir = path.join(repoRoot, relativeRun);
+  const mirrorRoot = path.join(privateArchiveRoot, 'artifacts', 'tutor-stub-live', relativeRun);
+  for (const base of [rootDir, mirrorRoot]) {
+    const dialogue = path.join(base, 'dialogues', 'outcome-main-s536-gated');
+    fs.mkdirSync(dialogue, { recursive: true });
+    fs.writeFileSync(path.join(dialogue, 'run-plan.json'), '{"command":["--run-seed","536"]}\n');
+  }
+  const priorRun = path.join(privateArchiveRoot, 'prior-s537');
+  fs.mkdirSync(priorRun, { recursive: true });
+  fs.writeFileSync(path.join(priorRun, 'run-plan.json'), '{"command":["--run-seed","537"]}\n');
+
+  const excludeRoots = steeringDecompositionResumeSeedExclusions({
+    rootDir,
+    repoRoot,
+    privateArchiveRoot,
+  });
+  const audit = auditSteeringDecompositionSeedFreshness({
+    roots: [path.join(repoRoot, '.tutor-stub-auto-eval'), privateArchiveRoot],
+    excludeRoots,
+  });
+  assert.deepEqual(excludeRoots, [rootDir, mirrorRoot]);
+  assert.equal(audit.status, 'failed');
+  assert.equal(audit.hits.some((row) => row.seed === 536), false);
+  assert.equal(audit.hits.some((row) => row.seed === 537), true);
 });
 
 test('zero-challenge validity guard passes a mock steering_only batch and rejects one delivered challenge', (t) => {
