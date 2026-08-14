@@ -28,3 +28,10 @@ workplan/board.json
 *.html
 *.css
 config/stability/
+
+# Hash-frozen study tooling — these bytes are pinned by sha256 in sealed
+# manifests (steering-decomposition + main-block manifests pin the decision
+# reader runner; the v0.7.0 baseline manifest pins the terminal runtime).
+# Reformatting them breaks the provenance freeze, so prettier must skip them.
+scripts/run-adaptive-warrant-decision-readers.js
+services/tutorStubTutorTerminalRuntime.js

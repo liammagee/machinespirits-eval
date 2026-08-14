@@ -16,7 +16,11 @@ export function ensureTutorStubPublicObligationFallbackOwnership({
   // in both uptake and handoff. Keep one authoritative copy at the front and
   // remove every composer duplicate so the terminal response clears the same
   // repetition guard as an ordinary draft.
-  const remainder = fallbackText.split(ownedText).join(' ').replace(/\s+/gu, ' ').trim();
+  const remainder = fallbackText
+    .split(ownedText)
+    .join(' ')
+    .replace(/\s+/gu, ' ')
+    .trim();
   return [ownedText, remainder].filter(Boolean).join(' ');
 }
 
@@ -194,7 +198,8 @@ export function createTutorStubTutorTerminalRuntime(dependencies = {}) {
       latestEvidence: humanDiscourseFrame?.scaffoldState?.releaseState?.latestReleased || null,
       recentTutorTexts,
     };
-    const publicObligationOwnsFallback = firstDraftContract?.progression?.public_obligation_contract?.complete === true;
+    const publicObligationOwnsFallback =
+      firstDraftContract?.progression?.public_obligation_contract?.complete === true;
     const fallbackRequiresSpecificUptake =
       closureFallbackSelected ||
       publicObligationOwnsFallback ||
