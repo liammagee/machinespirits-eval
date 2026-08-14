@@ -128,3 +128,46 @@ capture the training projection, bilateral interaction engine, and mutable
 `llmRoles.js` runtime as a separately prioritized future phase. Do not keep the
 current programme open merely to chase file size or complexity in
 behavior-bearing state machines.
+
+## Accepted-macro outcome
+
+Child 131 is complete locally. The derivation index, live-index, live-run,
+completed-run, comparison, proof-DAG, learner-DAG, logic, arc, controlled
+vocabulary, and TTS presentation family now lives in
+`services/poeticsDerivationPresentation.js`. The dependency-light owner is
+2,010 lines with maximum complexity 35, while
+`scripts/browse-poetics-scripts.js` fell from 13,292 to 11,357 lines. Run
+discovery and filesystem reads, SSE/live polling, Express registration, auth,
+database ownership, application lifecycle, mutations, and model-call paths
+remain in their prior owners.
+
+Pre/post HTML is byte-identical for all six frozen fixtures:
+
+- empty derivation index: 170,928 bytes,
+  `4594e1169af63365375286315323f09a5dbfac19079de5dd1878f2bbe0ded078`;
+- populated derivation index: 176,080 bytes,
+  `a3bc2c89382a68f071a1380829da4e80c67f512ca9fc1cc39885fe80ec6d0041`;
+- empty live index: 99,758 bytes,
+  `aca2331a3270d8b63cd970c4cf1f2803a506a65bf81be288c81d7f1bdd12df65`;
+- populated live index: 100,003 bytes,
+  `6ac17f8a1122d9acd754999bd2c3b87e94fd533f0a346674cf0e2f95fb9f7b48`;
+- populated live run: 105,961 bytes,
+  `67eca01bb4cec3be6f7779a7f10b5a5d32176a6b82a7f5b6f88cec8d2a91f019`;
+- populated completed run: 184,108 bytes,
+  `40b5bac50b70d9b6e19b3273c9ef6f233f4939482174b65843b3bb1260acf2cf`.
+
+Verification passes:
+
+- 4/4 direct renderer assertions and 42/42 focused browser/route/auth tests;
+- 96.07% line, 50.70% branch, and 94.44% function coverage for the new owner;
+- clean isolated root shards at 4,676/4,676 and 3,705/3,705, zero skips;
+- 137/137 tutor-core tests and all fifteen risk-coverage groups;
+- source-only workplan, formatting, lint, synchronized manifest, diff, and
+  zero cycles across 578 files.
+
+The first parallel root-shard pass produced two unrelated transient failures;
+the named test passed 7/7 alone and shard 2 passed 3,705/3,705 when rerun in
+isolation. The first risk-coverage pass reproduced an expected sandboxed
+localhost permission failure; all fifteen groups passed with isolated loopback
+permission. No model calls, production artifact writes, or generated
+workplan-view changes occurred.

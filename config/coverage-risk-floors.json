@@ -157,6 +157,14 @@
       "floors": { "lines": 100, "branches": 100, "functions": 100 }
     },
     {
+      "id": "poetics-derivation-presentation",
+      "label": "Poetics browser derivation presentation",
+      "runner": "node",
+      "sources": ["services/poeticsDerivationPresentation.js"],
+      "tests": ["tests/poeticsDerivationPresentation.test.js", "tests/poeticsReportBrowser.test.js"],
+      "floors": { "lines": 95, "branches": 50, "functions": 94 }
+    },
+    {
       "id": "admin-auth",
       "label": "Admin routes and authentication",
       "runner": "node",
