@@ -1,19 +1,19 @@
 {
-  "generated": "2026-08-10T13:34:15.037Z",
+  "generated": "2026-08-14T19:06:08.843Z",
   "counts": {
-    "total": 497,
+    "total": 501,
     "byStatus": {
-      "done": 470,
+      "done": 472,
       "blocked": 6,
       "dropped": 10,
-      "active": 5,
+      "active": 7,
       "archived": 4,
       "triaged": 1,
       "review": 1
     },
     "byType": {
-      "research": 75,
-      "experiment": 82,
+      "research": 77,
+      "experiment": 84,
       "infra": 105,
       "maintenance": 213,
       "content": 4,
@@ -64,6 +64,68 @@
         "presentation"
       ],
       "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "adaptive-warrant-contract-redesign",
+      "title": "Adaptive warrant gate: expected-uptake and policy-termination contracts",
+      "status": "active",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-10",
+      "updated": "2026-08-10",
+      "verification": "Each action family exposes a typed expected learner response, deadline, success, defeat, and expiry/exit transition; successful repair exits and unresolved evidence requests have live/offline parity tests; a newly generated zero-overlap two-reader corpus passes a predeclared decision-quality gate before any downstream scale-up; and the next comparison controls model-draw variance through frozen-prefix replay or explicit replicated draws.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "docs/adaptation-refinement/remaining-next-steps.md",
+          "docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md",
+          "docs/adaptation-refinement/baseline-comparison-design.md"
+        ],
+        "items": [
+          "adaptive-warrant-baseline-study"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "warrant-gate",
+        "expected-uptake",
+        "counterfactual-replay"
+      ],
+      "branch": "adaptation-refinement"
+    },
+    {
+      "id": "adaptive-warrant-public-obligation-ledger-and-inquiry-termin",
+      "title": "Adaptive warrant: public obligation ledger and inquiry termination",
+      "status": "active",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-10",
+      "updated": "2026-08-11",
+      "verification": "A public-obligation ledger persists named tutor-directed requests across family changes and distinguishes them from learner-proposed tests; inquiry completion can license close_inquiry from public evidence rather than turn number; live/offline parity tests cover creation, satisfaction, expiry, and closure; a separately frozen targeted challenge is used only to diagnose and repair typed mechanism failures; and a later representative natural- prevalence two-reader corpus alone passes the predeclared decision, divergence, successor, diligent-control, support, and parity thresholds before any outcome comparison resumes. Live mechanism execution additionally requires a digest-bound authorization for a clean committed 40-character HEAD, the recursive source closure, the named destination, and the declared private prompt-payload scope; sealed children, a 64-call dialogue cap, wrapper/native CLI fingerprints, opaque blind IDs, strict V4 responses, and deterministic keyed reader-batch assembly must validate before scoring.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": [
+          "docs/adaptation-refinement/remaining-next-steps.md",
+          "docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md",
+          "docs/adaptation-refinement/gold-annotations-first-corpus.md"
+        ],
+        "items": [
+          "adaptive-warrant-contract-redesign"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "warrant-gate",
+        "commitment-ledger",
+        "inquiry-completion"
+      ],
+      "branch": "adaptation-refinement"
     },
     {
       "id": "codebase-refactoring-program",
@@ -958,6 +1020,72 @@
           460
         ]
       }
+    },
+    {
+      "id": "adaptive-warrant-baseline-study",
+      "title": "Adaptive warrant gate: paired baseline comparison",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-10",
+      "updated": "2026-08-10",
+      "verification": "Complete: 45/45 valid n=5 sessions and 360/360 learner-analysis calls; two independent primary annotations plus a zero-overlap fresh holdout are hash-frozen and scored; the candidate repair failed fresh validation and was reverted; inert-observe variance is reported; and the n=10 stop decision is recorded.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": [
+          "docs/adaptation-refinement/remaining-next-steps.md",
+          "docs/adaptation-refinement/baseline-comparison-design.md",
+          "docs/adaptation-refinement/gold-annotations-first-corpus.md",
+          "docs/adaptation-refinement/semantic-audit-and-shadow-notes.md"
+        ],
+        "items": [
+          "adaptive-warrant-contract-redesign"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "warrant-gate",
+        "baseline",
+        "decision-quality"
+      ],
+      "branch": "adaptation-refinement"
+    },
+    {
+      "id": "adaptive-warrant-outcome-study",
+      "title": "Adaptive warrant gate: pre-registered outcome study + steering/challenge decomposition",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-12",
+      "updated": "2026-08-15",
+      "verification": "Complete: main block 72/72 dialogues, 576 frozen cases, 1,152 accepted reads (ruling 100); decomposition 48/48 dialogues, 384 cases, 768 accepted reads, zero-challenge guard recount clean (ruling 105); both runs archived to the private repo with SHA-256 manifests; results folded into paper §6.25 at v3.0.288; campaign counter closed 10,459/19,337.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": [
+          "docs/adaptation-refinement/v3-outcome-study-registration.md",
+          "docs/adaptation-refinement/relay/096-reviewer-reregistration-outcome-main-block.md",
+          "docs/adaptation-refinement/relay/100-reviewer-verification-and-ruling.md",
+          "docs/adaptation-refinement/relay/104-codex-report.md",
+          "docs/adaptation-refinement/relay/105-reviewer-verification-and-ruling-steering-decomposition.md"
+        ],
+        "items": [
+          "adaptive-warrant-baseline-study",
+          "adaptive-warrant-contract-redesign"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "warrant-gate",
+        "pre-registered",
+        "decision-quality"
+      ],
+      "branch": "adaptation-refinement"
     },
     {
       "id": "admin-chat-drama-launcher-simplification",
