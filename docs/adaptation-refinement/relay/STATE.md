@@ -56,8 +56,29 @@
   `c0a20130…`, 85 focused tests passed, zero paid calls. Reviewer
   verified the build zero-call (pin shasum, HOLD run, paid-path
   refusal, manifest arithmetic).
-- **CURRENT — main block COMPLETE and VALID (ruling 100);
-  registration 101 CUT: steering/challenge decomposition.** Run
+- **CURRENT — decomposition study COMPLETE and VALID (ruling 105).
+  No further paid run authorized; next step is the paper section
+  and the fold-to-main plan.** Chain: registration 101 → build
+  report 102 (`f553b7d1`, reviewer-checked) → GO note 103
+  (`1dec824c`, human "Go" 14 Aug) → run
+  `…steering-decomposition-live-2026-08-14` → report 104
+  (`7005e640`) → ruling 105. Run closed at 2,104 calls, counter
+  **10,459/19,337**; 48/48 dialogues sealed; zero-challenge guard
+  passed (reviewer recount: 0 delivered challenges in 192
+  steering_only turns); 768/768 reader responses passed the full
+  contract, allowance unused; three technical child quarantines
+  re-taken; one benign disclosed deviation (freeze stamps repair
+  commit `8153622a`, content pins identical — watch item); archive
+  `9dcd39ef` in the private repo, SHA re-hashed. Verdicts: **P5a
+  FAIL** (steering_only 13/24 breaks, bar 15); **P5b ≤4 branch**
+  (gated 16 − steering 13 = 3: no detectable challenge effect on
+  breaks at this size); **P5c FAIL** (M1 gated 83.8% vs
+  steering_only 71.8% — gap 12 points, bar 5). Ruling 105 §4: full
+  gate replicates on fresh seeds; the challenge family is
+  load-bearing for decision correctness but not detectably for the
+  break count; no single-mechanism story is claimable — any "why"
+  needs a fresh registration.
+- **DONE — main block COMPLETE and VALID (ruling 100).** Run
   `…main-block-live-2026-08-13` closed at 3,081 calls, counter
   8,355/19,337; all 1,152 reader responses passed the full contract;
   four in-run failures ruled technical; archive sealed
@@ -66,11 +87,9 @@
   delivered); P2b FAIL (7/19 breaks within three turns of a
   challenge — 12 of 19 breaks had no challenge at all). Ruling 100
   §4: effect attributed to always-on active-gate steering, not
-  timed challenges. Registration **101** now directs the build for
-  a two-condition decomposition (gated vs steering_only, 48
-  dialogues, seeds 536–549 skipping 541/547, 384 cases, 768 reads,
-  run cap 2,240). Driver builds zero-call, reports as **102**; no
-  paid call before GO note 103 plus explicit human approval.
+  timed challenges. Registration **101** directed the decomposition
+  build (gated vs steering_only, 48 dialogues, seeds 536–549
+  skipping 541/547, 384 cases, 768 reads, run cap 2,240).
 - **DONE — GO note 097a CUT (corrected once); main-block run
   LAUNCHED.** First launch attempt refused fail-closed with zero
   calls (report 099, `71a9cd9f`): the note named only
