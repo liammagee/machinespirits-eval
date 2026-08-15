@@ -140,6 +140,23 @@ I1, on the other learner.
   transfer unless the candidates match the launch exactly — status,
   shape, persona, seeds, and the same fingerprint list in the same
   order. Nothing paid was touched.
+- **16 Aug** — the resume was armed (relay 119 at `c6ad6fb5`), the three
+  failed children were moved to `quarantine/<id>-attempt-1` intact, and
+  the command ran. It refused again at zero calls, at the next guard
+  along: `semantic brittleness preflight is stale or
+  fingerprint-mismatched`. The cause is defect ledger 22, and it is
+  entry 17's defect on the other runner: a resume before the freeze has
+  no record of the launch commit, so it compares the launch preflight
+  against head, and head had moved five commits — the burned-corpus
+  repair and four notes. Exactly one binding field differed,
+  `source_commit`; all 15 fingerprinted instrument files still hashed as
+  at launch, and git confirmed none of them changed in those five
+  commits.
+- **Repair, 16 Aug** (`PENDING`) — the resume now reads the launch stamp
+  off the run's own preflight and asks git to corroborate it: the commit
+  must be an ancestor of head, and no fingerprinted instrument file may
+  have moved between there and head. A stale preflight is still refused.
+  A first launch still writes its preflight at head.
 
 ### Invariants that held
 

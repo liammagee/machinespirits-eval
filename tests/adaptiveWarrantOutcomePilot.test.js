@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -23,6 +24,7 @@ import {
   runReaderProcesses,
   runReadersAfterFingerprintGuard,
   validateOutcomeFreezeFormForFrozenDecisionRunner,
+  resolveOutcomeResumeLaunchCommit,
   validateOutcomePilotZeroCallArtifacts,
   verifyOutcomePilotManifestBindings,
   verifyOutcomePilotReaderResumeArtifacts,
@@ -65,6 +67,7 @@ import { runAdaptiveWarrantSemanticBrittlenessPreflight } from '../scripts/run-a
 import { runAdaptiveWarrantDecisionReaders } from '../scripts/run-adaptive-warrant-decision-readers.js';
 import { runAdaptiveWarrantSemanticReaders } from '../scripts/run-adaptive-warrant-semantic-readers.js';
 import { ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA } from '../services/adaptiveWarrantSemanticAnnotation.js';
+import { ADAPTIVE_WARRANT_SEMANTIC_FINGERPRINT_PATHS } from '../services/adaptiveWarrantSemanticPreflight.js';
 import { validateAdaptiveWarrantReaderResponseContract } from '../services/adaptiveWarrantReaderRetake.js';
 import { describeOutcomeMeasures7And8FromStoredEvents } from '../scripts/score-adaptive-warrant-outcome-study.js';
 import { auditTutorStubPrompt, TUTOR_STUB_PROMPT_BUDGETS } from '../services/tutorStubPromptAudit.js';
@@ -1054,6 +1057,46 @@ test('reader resume refuses byte-drifted zero-call artifacts while fresh validat
       }),
     /stale or fingerprint-mismatched/u,
   );
+});
+
+test('a resume before the freeze takes its launch stamp from the preflight, and only when git agrees', (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'outcome-resume-stamp-'));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const preflightPath = path.join(directory, 'semantic-brittleness-preflight.json');
+  const stamped = (sourceCommit) => {
+    fs.writeFileSync(preflightPath, JSON.stringify({ bindings: { source_commit: sourceCommit } }));
+    return preflightPath;
+  };
+  const inRepo = (args) => execFileSync('git', args, { cwd: ROOT, encoding: 'utf8' }).trim();
+
+  // The last commit that touched a fingerprinted file: by construction nothing
+  // the preflight pins has moved between it and HEAD, however far HEAD travels.
+  const lastInstrumentChange = inRepo([
+    'log',
+    '-1',
+    '--format=%H',
+    '--',
+    ...ADAPTIVE_WARRANT_SEMANTIC_FINGERPRINT_PATHS,
+  ]);
+  assert.equal(
+    resolveOutcomeResumeLaunchCommit({ preflightPath: stamped(lastInstrumentChange) }),
+    lastInstrumentChange,
+  );
+
+  // One commit earlier an instrument file did move, so that stamp is stale.
+  assert.throws(
+    () =>
+      resolveOutcomeResumeLaunchCommit({ preflightPath: stamped(inRepo(['rev-parse', `${lastInstrumentChange}^`])) }),
+    /instrument files moved since the launch commit/u,
+  );
+
+  assert.throws(
+    () => resolveOutcomeResumeLaunchCommit({ preflightPath: stamped('b'.repeat(40)) }),
+    /is not an ancestor of HEAD/u,
+  );
+
+  fs.writeFileSync(preflightPath, JSON.stringify({ bindings: {} }));
+  assert.throws(() => resolveOutcomeResumeLaunchCommit({ preflightPath }), /carries no launch commit/u);
 });
 
 test('both child runners accept an older launch stamp only on resume, record the resume commit, and bound failures', async (t) => {

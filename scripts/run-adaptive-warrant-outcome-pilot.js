@@ -40,6 +40,7 @@ import {
   collectAdaptiveWarrantStudyJobResult,
 } from './run-adaptive-warrant-baseline-study.js';
 import {
+  ADAPTIVE_WARRANT_SEMANTIC_FINGERPRINT_PATHS,
   adaptiveWarrantSemanticInstrumentBindings,
   validateAdaptiveWarrantSemanticPreflightArtifact,
   validateAdaptiveWarrantSemanticSchemaAcceptanceResult,
@@ -283,6 +284,31 @@ export function verifyOutcomePilotManifestBindings({
   });
   if (preparation.status !== 'passed') throw new Error('prepared-run identity guard failed');
   return { manifest, resolvedManifest, menuGuard, preparation, shape };
+}
+
+// A launch writes the brittleness preflight at the launch commit; a resume must
+// never rewrite it (ledger 19). Before the freeze exists there is no recorded
+// launch commit to check it against, and head has moved by every repair commit
+// since — so validating at head refuses a perfectly good artifact (ledger 22).
+// The artifact's own stamp is the only record left, so it is read but not
+// trusted: git must agree the commit is in this branch's history, and that not
+// one fingerprinted instrument file moved between there and head. If any did,
+// the preflight really is stale and the refusal stands.
+export function resolveOutcomeResumeLaunchCommit({ preflightPath } = {}) {
+  const recorded = readJson(path.resolve(preflightPath))?.bindings?.source_commit;
+  if (typeof recorded !== 'string' || !/^[0-9a-f]{40}$/u.test(recorded)) {
+    throw new Error('resumed brittleness preflight carries no launch commit');
+  }
+  try {
+    git(['merge-base', '--is-ancestor', recorded, 'HEAD']);
+  } catch {
+    throw new Error(`resumed brittleness preflight launch commit ${recorded} is not an ancestor of HEAD`);
+  }
+  const moved = git(['diff', '--name-only', recorded, 'HEAD', '--', ...ADAPTIVE_WARRANT_SEMANTIC_FINGERPRINT_PATHS]);
+  if (moved) {
+    throw new Error(`instrument files moved since the launch commit ${recorded}: ${moved.split('\n').join(', ')}`);
+  }
+  return recorded;
 }
 
 export function verifyOutcomePilotReaderBindings({
@@ -1336,12 +1362,16 @@ export async function executeOutcomePilot({
       schemaAcceptancePath,
     });
   }
+  let expectedSourceCommit = reusedFreeze?.freeze.source_commit || null;
+  if (!expectedSourceCommit && resume) {
+    expectedSourceCommit = resolveOutcomeResumeLaunchCommit({ preflightPath: semanticPreflightPath });
+  }
   const readerBindings = verifyOutcomePilotReaderBindings({
     manifest: guarded.manifest,
     instrumentFreezePath,
     preflightPath: semanticPreflightPath,
     schemaAcceptancePath,
-    expectedSourceCommit: reusedFreeze?.freeze.source_commit || null,
+    expectedSourceCommit,
     reuseLaunchArtifacts: readerResume,
   });
   budget.state.status = 'generation';
