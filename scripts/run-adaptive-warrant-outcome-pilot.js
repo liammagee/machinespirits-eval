@@ -1508,7 +1508,9 @@ export async function executeOutcomePilot({
 }
 
 function usage() {
-  return `Usage:\n  node scripts/run-adaptive-warrant-outcome-pilot.js\n  node scripts/run-adaptive-warrant-outcome-pilot.js --go-note <relay-file> --accept-charges --out <dir> --instrument-freeze <natural-freeze> [--learner-profile <${OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES.join('|')}>] [--resume]\n`;
+  // --manifest and --learner-profile travel together: a non-A1 pole needs both,
+  // and the launcher refuses when they disagree.
+  return `Usage:\n  node scripts/run-adaptive-warrant-outcome-pilot.js [--manifest <pilot-manifest>]\n  node scripts/run-adaptive-warrant-outcome-pilot.js --go-note <relay-file> --accept-charges --out <dir> --instrument-freeze <natural-freeze> [--manifest <pilot-manifest>] [--learner-profile <${OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES.join('|')}>] [--resume]\n\nDefaults:\n  --manifest         ${DEFAULT_MANIFEST}\n  --learner-profile  ${OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE}\n`;
 }
 
 async function main() {
