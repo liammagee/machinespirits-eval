@@ -327,3 +327,49 @@ the frozen instrument was validated with, and is not on the launch path.
 freeze and is now wrong. It is amended, with the old value kept visible, and
 the corrected command is copied from the simulation above. Commits:
 `27bcb644` (GO note and protocol), `28c26bb1` (freeze re-seal).
+
+---
+
+## 10:06Z — the reader re-take, and why HEAD moves safely this time
+
+**The fault.** Both reader channels finished: 288 calls each, 576 readings.
+Assembly then stopped on `presence-reader-a-batch-123`. The reader's evidence
+span was `The Osprey crew took Nadia's box`; the learner turn reads
+`the Osprey crew took Nadia's box`. One capital letter.
+`deriveAdaptiveWarrantSemanticEvidenceSpan`
+(`services/adaptiveWarrantSemanticEvents.js:509`) normalises curly quotes and
+then matches exact characters, so the span is `not_literal` and
+`scripts/prepare-adaptive-warrant-semantic-annotations.js:453` throws.
+
+**How wide.** A zero-call replay of the same check over all 576 readings:
+675 spans, 674 literal, 1 not literal. A zero-call replay of the frozen
+assembly per reader: presence-reader-b, decision-reader-a and
+decision-reader-b each pass at 144 cases with no rejections. So one reading
+of 576 is bad, and the contract is not.
+
+**The fix, all zero-call.** Relay 094a already rules on this class. The
+response was moved, bytes unchanged, into `quarantine/reader-responses/`
+inside the run root, and
+`reader-response-quarantine-manifest.json` was written at the run root with
+`status: reviewer_authorized`, the 094a hash, and the enumeration
+(576 audited, 1 presence-invalid, 0 decision-invalid, allowance 10).
+`loadReviewerAuthorizedReaderRetakes` was called read-only for both channels
+and reported 1 batch to re-read on presence, 0 on decision. Batch 123 holds
+one case, so the re-take is one call.
+
+**Second stale-stamp sighting, and why it does not bite.** Committing GO note
+115 moves HEAD off `c21d023f`, the freeze's launch commit. That refused a
+launch before note 114. On reader resume the launcher reuses the freeze and
+passes `reusedFreeze.freeze.source_commit` to the binding check
+(`run-adaptive-warrant-outcome-pilot.js:1244`), so pins are compared against
+`c21d023f`, not live HEAD. The preflight is not regenerated and the
+schema-acceptance carry-over does not run: both sit inside `if (!resume)`.
+The only live-HEAD rule left is the GO note being committed at HEAD, which is
+the rule we want.
+
+**One accounting trap.** The reader reservation is `288 − already_spent`,
+which is now 0, so the launch is not refused for want of a reservation — but
+the checkpoint total also stays at 1,046 while the wire count becomes 1,047.
+Do not read the checkpoint as the wire count for this step.
+
+Commit: `b59c8097` (GO note 115).
