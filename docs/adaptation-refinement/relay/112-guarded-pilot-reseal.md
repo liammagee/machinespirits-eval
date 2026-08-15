@@ -80,6 +80,22 @@ Minting a v3.3 response schema costs **one paid call** through the
 schema-acceptance ping, whose own cap is 1. That call needs its own GO note and
 its own approval. It is not part of the pilot's 1,116.
 
+**Correction, 15 August.** The heading above is wrong, and so is the sentence
+under it. The readers at HEAD **can** name the three defensive acts: the
+preparer builds a fresh response schema per batch from the live act catalogue
+(`scripts/prepare-adaptive-warrant-semantic-annotations.js:192`), and that
+catalogue is v3.3. The acceptance artifact above is only checked for a `passed`
+status; its schema never reaches a reader.
+
+The real gap runs the other way. The readers answer under a **larger** schema
+than the provider was ever tested against, and the launcher pin meant to catch
+that compares the carried-over acceptance hash to the carried-over manifest pin
+— two numbers from the same stale seal. It passes and proves nothing. The seal
+now records `provider_response_schema_pin: inherited_unproved`
+(`auditProviderResponseSchemaPin`), and clearing it is rung 0 of the pilot GO
+note: one ping at v3.3, then a zero-call re-seal with `--schema-acceptance`.
+The slot-by-slot reading above still stands — no gate slot depends on it.
+
 **Resolved, 15 August: endpoint 5 moves to the live extractor. No call needed.**
 The warrant gate already stores a validated v3.3 semantic-event extraction on
 every decision, and it is the extraction the gate acted on, so the counts and

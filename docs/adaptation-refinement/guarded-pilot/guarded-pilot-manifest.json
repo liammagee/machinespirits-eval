@@ -357,6 +357,14 @@
         "learner_evidence_demand"
       ]
     },
+    "provider_response_schema_pin": {
+      "status": "inherited_unproved",
+      "repinned": false,
+      "inherited_sha256": "44b4807e25f0620e2677ed49031dec558daa6f0aeec0f20a97b85ec2c6cb6bc1",
+      "readers_answer_under": "a response schema built from the live act catalogue at run time",
+      "acceptance_proved": false,
+      "note": "The pinned acceptance covers the pre-v3.3 schema. Run the schema-acceptance ping at v3.3 and re-seal with --schema-acceptance to prove the provider takes the larger schema."
+    },
     "ledger_note": {
       "inherited_fields": [
         "counter_before",

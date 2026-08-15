@@ -112,28 +112,50 @@ Commit `b66ffe0d`.
 
 ---
 
-## 5. The frozen presence readers cannot name the v3.3 acts
+## 5. The frozen acceptance artifact covers a smaller schema than the readers get
 
-Machine-checked. The response schema the frozen presence readers answer under —
+Machine-checked. The pinned schema-acceptance artifact —
 
     /private/tmp/adaptive-warrant-v3-schema-ping-62e4fd0a-r47-s514/response.schema.json
     sha 44b4807e25f0620e2677ed49031dec558daa6f0aeec0f20a97b85ec2c6cb6bc1
 
-— enumerates 15 acts. Missing: `learner_overclaim_assertion`,
-`learner_evidence_dismissal`, `learner_evidence_demand`. Under that schema a
-defensive turn is pushed onto the nearest old act, which is the mislabel smoke C
-already showed.
+enumerates 15 acts. Missing: `learner_overclaim_assertion`,
+`learner_evidence_dismissal`, `learner_evidence_demand`.
 
-What it costs, slot by slot:
+**Correction to an earlier reading of mine, and to relay 112 §4.** I first wrote
+that the readers "cannot name the v3.3 acts". That is true of this artifact and
+false of the reader instrument at HEAD. The preparer builds a fresh response
+schema per batch from the live act catalogue
+(`scripts/prepare-adaptive-warrant-semantic-annotations.js:192`) and writes it as
+`${batchId}.response.schema.json`. At HEAD that catalogue is v3.3, so the readers
+**are** sent a schema that names all three defensive acts. The acceptance
+artifact is only checked for a `passed` status; its schema is never handed to a
+reader.
+
+So the real gap is the opposite way round: the readers answer under a larger
+schema than the provider was ever tested against, and the pin that is supposed to
+catch that compares two numbers carried over from the same stale seal. It passes
+and proves nothing. This is the second stale-pin defect on this branch — the
+first was the hardcoded persona in §4.
+
+Slot by slot, nothing in the gate depends on it:
 
 - gate slots (a) and (b) read the live gate trace. Unaffected.
 - gate slot (c) needs the readers to run and agree, not to name a new act.
   Unaffected.
-- registered endpoint 5, the defensive-act counts, report-only. Affected.
+- registered endpoint 5 no longer uses the readers at all — see §6.
 
-The seal records this rather than inheriting it quietly.
+**Fix.** `auditProviderResponseSchemaPin` in the seal script either re-pins from
+a schema-acceptance artifact that passed **and** was stamped at the current
+commit, or records `inherited_unproved` in the seal with the reason in words. It
+refuses a failed artifact, an artifact from another commit, and an artifact with
+no hash. The guarded manifest is re-sealed and now carries
+`reseal.provider_response_schema_pin.status = "inherited_unproved"`.
 
-Commit `b66ffe0d`.
+Clearing it costs one paid call: run the schema-acceptance ping at v3.3, then
+re-seal with `--schema-acceptance`. That is rung 0 of the GO note.
+
+Commits `b66ffe0d`, then the re-seal.
 
 ---
 
@@ -191,13 +213,16 @@ missing from this worktree, which blocked the freshness guard. They live under
 
 ## 8. Tests
 
-- `tests/adaptiveWarrantGuardedPilotReseal.test.js` — 13 tests. The A1 seal is
+- `tests/adaptiveWarrantGuardedPilotReseal.test.js` — 19 tests. The A1 seal is
   untouched and still a v3.2 seal; the guarded manifest re-pins exactly two
   digests and inherits the rest; both manifests pass the launcher guard under
   their own persona; the persona changes every prepared-run fingerprint; a
   mismatched persona is refused from both sides; an undeclared program change is
   refused; a declared non-change is refused; the drift classifier separates the
-  reflow from the real change; the response-schema gap is recorded.
+  reflow from the real change; the response-schema gap is recorded; and the
+  provider-schema pin refuses a failed artifact, a wrong-commit artifact and a
+  hashless artifact, re-pins from a good one, and otherwise says
+  `inherited_unproved` out loud.
 - `tests/adaptiveWarrantDefensiveActCounts.test.js` — 9 tests, including an end
   to end read of the real smoke C trace.
 
@@ -207,8 +232,8 @@ All pass, plus the two existing outcome suites unchanged.
 
 ## 9. What is still open
 
-- **No launch.** The pilot needs its own committed GO note and explicit
-  approval.
+- **The provider-schema pin is `inherited_unproved`.** One paid ping at v3.3 and
+  a zero-call re-seal clear it. Rung 0 of the GO note.
 - The four ledger fields inside `planned_calls` are carried over from the A1
   seal because the launcher asserts that object by value. They are flagged
   `stale: true` and must be re-read at GO time.

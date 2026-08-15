@@ -165,12 +165,77 @@ function verifyInheritedPins(base) {
   return rows.map(({ label, path: file, expected }) => ({ label, path: file, sha256: expected }));
 }
 
+/**
+ * The launcher checks `provider_response_schema_sha256` against the carried-over
+ * acceptance artifact, and nothing else. Both sides are the A1 value, so the
+ * check passes on stale bytes. It proves nothing, because the readers are not
+ * sent that schema: `prepare-adaptive-warrant-semantic-annotations.js` builds a
+ * response schema from the live act catalogue for every batch, and at v3.3 that
+ * catalogue is three acts larger than the schema the acceptance ping tested.
+ *
+ * So the pin may be re-pinned only from a fresh acceptance artifact stamped at
+ * the current commit. With no artifact the pin is inherited and the seal says
+ * plainly that provider acceptance of the v3.3 schema is unproved.
+ */
+export function auditProviderResponseSchemaPin({ acceptancePath = null, inheritedSha256 = null } = {}) {
+  if (!acceptancePath) {
+    return {
+      status: 'inherited_unproved',
+      repinned: false,
+      inherited_sha256: inheritedSha256,
+      readers_answer_under: 'a response schema built from the live act catalogue at run time',
+      acceptance_proved: false,
+      note: 'The pinned acceptance covers the pre-v3.3 schema. Run the schema-acceptance ping at v3.3 and re-seal with --schema-acceptance to prove the provider takes the larger schema.',
+    };
+  }
+  const resolved = path.resolve(ROOT, acceptancePath);
+  const artifact = readJson(resolved);
+  const head = git(['rev-parse', 'HEAD']).toString('utf8').trim();
+  if (artifact.status !== 'passed') {
+    throw new Error(`re-seal refuses: schema-acceptance artifact did not pass (${artifact.status})`);
+  }
+  if (artifact.bindings?.source_commit !== head) {
+    throw new Error('re-seal refuses: schema-acceptance artifact was not stamped at the current commit');
+  }
+  const sha = artifact.response_schema?.sha256;
+  if (!/^[0-9a-f]{64}$/u.test(sha || '')) {
+    throw new Error('re-seal refuses: schema-acceptance artifact carries no response-schema hash');
+  }
+  return {
+    status: sha === inheritedSha256 ? 'repinned_unchanged' : 'repinned',
+    repinned: true,
+    inherited_sha256: inheritedSha256,
+    current_sha256: sha,
+    acceptance_proved: true,
+    acceptance_artifact: { path: path.relative(ROOT, resolved), sha256: sha256(fs.readFileSync(resolved)) },
+  };
+}
+
+/**
+ * A re-seal that omits --frozen-response-schema would quietly write "unresolved"
+ * over a status an earlier run actually read from the artifact. That turns a
+ * recorded finding into a blank, which is the same class of defect as a stale
+ * pin. Refuse, and name the flag to re-supply.
+ */
+export function refuseFrozenSchemaAuditDowngrade({ outPath, audit }) {
+  const resolved = path.resolve(ROOT, outPath);
+  if (!fs.existsSync(resolved)) return;
+  const previous = readJson(resolved)?.reseal?.frozen_response_schema;
+  if (!previous || previous.status === 'unresolved') return;
+  if (audit.status !== 'unresolved') return;
+  throw new Error(
+    `re-seal refuses: the existing seal read the frozen response schema as "${previous.status}" from ${previous.path}; ` +
+      're-supply --frozen-response-schema <path> rather than write "unresolved" over it',
+  );
+}
+
 export function sealGuardedOutcomePilotManifest({
   basePath = GUARDED_PILOT_MANIFEST_DEFAULT_BASE,
   learnerProfile = 'overconfident',
   contractVersion = 'v3.3',
   contractChangedFiles = ['services/adaptiveWarrantSemanticEvents.js'],
   frozenResponseSchemaPath = null,
+  schemaAcceptancePath = null,
   sealedCommit = null,
 } = {}) {
   if (!OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES.includes(learnerProfile)) {
@@ -208,6 +273,13 @@ export function sealGuardedOutcomePilotManifest({
   }
 
   const responseSchemaAudit = auditFrozenResponseSchemaActCoverage(frozenResponseSchemaPath);
+  const providerSchemaPin = auditProviderResponseSchemaPin({
+    acceptancePath: schemaAcceptancePath,
+    inheritedSha256: base.presence_channel.digests.provider_response_schema_sha256,
+  });
+  if (providerSchemaPin.repinned) {
+    recomputed.provider_response_schema_sha256 = providerSchemaPin.current_sha256;
+  }
 
   const manifest = {
     ...base,
@@ -238,6 +310,7 @@ export function sealGuardedOutcomePilotManifest({
       drift,
       inherited_pins: inherited,
       frozen_response_schema: responseSchemaAudit,
+      provider_response_schema_pin: providerSchemaPin,
       // The launcher asserts planned_calls by value against a frozen literal,
       // so the four ledger fields inside it are carried over unchanged. They
       // record where the counter stood when A1 was sealed, not where it stands
@@ -256,7 +329,7 @@ export function sealGuardedOutcomePilotManifest({
     launch_authorized: false,
     hold: 'No model or reader call may run until an approved GO note for the guarded pilot is committed.',
   };
-  return { manifest, base, sealedCommit: commit, drift, responseSchemaAudit };
+  return { manifest, base, sealedCommit: commit, drift, responseSchemaAudit, providerSchemaPin };
 }
 
 function main() {
@@ -266,6 +339,7 @@ function main() {
       out: { type: 'string', default: GUARDED_PILOT_MANIFEST_DEFAULT_OUT },
       'learner-profile': { type: 'string', default: 'overconfident' },
       'frozen-response-schema': { type: 'string' },
+      'schema-acceptance': { type: 'string' },
       'dry-run': { type: 'boolean', default: false },
       help: { type: 'boolean', short: 'h' },
     },
@@ -273,7 +347,7 @@ function main() {
   });
   if (values.help) {
     process.stdout.write(
-      'Usage:\n  node scripts/seal-guarded-warrant-outcome-manifest.js [--base <a1-manifest>] [--out <path>] [--learner-profile <profile>] [--frozen-response-schema <path>] [--dry-run]\n',
+      'Usage:\n  node scripts/seal-guarded-warrant-outcome-manifest.js [--base <a1-manifest>] [--out <path>] [--learner-profile <profile>] [--frozen-response-schema <path>] [--schema-acceptance <v3.3-acceptance-artifact>] [--dry-run]\n\nWithout --schema-acceptance the provider-response-schema pin is inherited and\nthe seal records that provider acceptance of the v3.3 schema is unproved.\n',
     );
     return;
   }
@@ -281,6 +355,7 @@ function main() {
     basePath: values.base,
     learnerProfile: values['learner-profile'],
     frozenResponseSchemaPath: values['frozen-response-schema'] || null,
+    schemaAcceptancePath: values['schema-acceptance'] || null,
   });
   const summary = {
     out: values['dry-run'] ? null : path.resolve(ROOT, values.out),
@@ -288,9 +363,11 @@ function main() {
     drift: sealed.drift.map((row) => `${row.path}: ${row.drift}`),
     frozen_response_schema: sealed.responseSchemaAudit.status,
     missing_speech_acts: sealed.responseSchemaAudit.missing_speech_acts,
+    provider_response_schema_pin: sealed.providerSchemaPin.status,
   };
   if (!values['dry-run']) {
     const resolved = path.resolve(ROOT, values.out);
+    refuseFrozenSchemaAuditDowngrade({ outPath: resolved, audit: sealed.responseSchemaAudit });
     fs.mkdirSync(path.dirname(resolved), { recursive: true });
     fs.writeFileSync(resolved, `${JSON.stringify(sealed.manifest, null, 2)}\n`);
   }

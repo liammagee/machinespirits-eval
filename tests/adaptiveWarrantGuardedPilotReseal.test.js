@@ -11,7 +11,9 @@ import {
   GUARDED_PILOT_MANIFEST_DEFAULT_OUT,
   GUARDED_RESEAL_DIGEST_SOURCES,
   auditFrozenResponseSchemaActCoverage,
+  auditProviderResponseSchemaPin,
   classifyGuardedResealDrift,
+  refuseFrozenSchemaAuditDowngrade,
   sealGuardedOutcomePilotManifest,
 } from '../scripts/seal-guarded-warrant-outcome-manifest.js';
 import { verifyOutcomePilotManifestBindings } from '../scripts/run-adaptive-warrant-outcome-pilot.js';
@@ -187,6 +189,111 @@ test('the response-schema audit reports full coverage for a schema naming every 
   const audit = auditFrozenResponseSchemaActCoverage(schemaPath);
   assert.equal(audit.status, 'covers_current_contract');
   assert.deepEqual(audit.missing_speech_acts, []);
+});
+
+test('the provider-response-schema pin is inherited and marked unproved, not passed off as checked', () => {
+  const guarded = readManifest(GUARDED_PILOT_MANIFEST_DEFAULT_OUT);
+  const pin = guarded.reseal.provider_response_schema_pin;
+  assert.equal(pin.status, 'inherited_unproved');
+  assert.equal(pin.repinned, false);
+  assert.equal(pin.acceptance_proved, false);
+  // The pin must still equal the A1 value, or the launcher would refuse.
+  const base = readManifest(GUARDED_PILOT_MANIFEST_DEFAULT_BASE);
+  assert.equal(
+    guarded.presence_channel.digests.provider_response_schema_sha256,
+    base.presence_channel.digests.provider_response_schema_sha256,
+  );
+});
+
+test('with no acceptance artifact the provider-schema pin says so in words, not silence', () => {
+  const pin = auditProviderResponseSchemaPin({ inheritedSha256: 'b'.repeat(64) });
+  assert.equal(pin.status, 'inherited_unproved');
+  assert.equal(pin.acceptance_proved, false);
+  assert.equal(pin.inherited_sha256, 'b'.repeat(64));
+  assert.match(pin.readers_answer_under, /built from the live act catalogue at run time/u);
+});
+
+test('an acceptance artifact with no response-schema hash cannot re-pin the provider schema', (t) => {
+  const directory = temporaryDirectory(t);
+  const artifactPath = path.join(directory, 'acceptance.json');
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT }).toString('utf8').trim();
+  fs.writeFileSync(
+    artifactPath,
+    JSON.stringify({ status: 'passed', bindings: { source_commit: head }, response_schema: {} }),
+  );
+  assert.throws(
+    () => auditProviderResponseSchemaPin({ acceptancePath: artifactPath, inheritedSha256: 'b'.repeat(64) }),
+    /carries no response-schema hash/u,
+  );
+});
+
+test('a schema-acceptance artifact from another commit cannot re-pin the provider schema', (t) => {
+  const directory = temporaryDirectory(t);
+  const artifactPath = path.join(directory, 'acceptance.json');
+  fs.writeFileSync(
+    artifactPath,
+    JSON.stringify({
+      status: 'passed',
+      bindings: { source_commit: '0'.repeat(40) },
+      response_schema: { sha256: 'a'.repeat(64) },
+    }),
+  );
+  assert.throws(
+    () => auditProviderResponseSchemaPin({ acceptancePath: artifactPath, inheritedSha256: 'b'.repeat(64) }),
+    /not stamped at the current commit/u,
+  );
+});
+
+test('a failed schema-acceptance artifact cannot re-pin the provider schema', (t) => {
+  const directory = temporaryDirectory(t);
+  const artifactPath = path.join(directory, 'acceptance.json');
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT }).toString('utf8').trim();
+  fs.writeFileSync(
+    artifactPath,
+    JSON.stringify({
+      status: 'failed',
+      bindings: { source_commit: head },
+      response_schema: { sha256: 'a'.repeat(64) },
+    }),
+  );
+  assert.throws(
+    () => auditProviderResponseSchemaPin({ acceptancePath: artifactPath, inheritedSha256: 'b'.repeat(64) }),
+    /did not pass/u,
+  );
+});
+
+test('a passing acceptance artifact at the current commit re-pins the provider schema', (t) => {
+  const directory = temporaryDirectory(t);
+  const artifactPath = path.join(directory, 'acceptance.json');
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT }).toString('utf8').trim();
+  const fresh = 'c'.repeat(64);
+  fs.writeFileSync(
+    artifactPath,
+    JSON.stringify({ status: 'passed', bindings: { source_commit: head }, response_schema: { sha256: fresh } }),
+  );
+  const pin = auditProviderResponseSchemaPin({ acceptancePath: artifactPath, inheritedSha256: 'b'.repeat(64) });
+  assert.equal(pin.status, 'repinned');
+  assert.equal(pin.repinned, true);
+  assert.equal(pin.current_sha256, fresh);
+  assert.equal(pin.acceptance_proved, true);
+});
+
+test('a re-seal without the frozen-schema path cannot blank out a status an earlier run read', (t) => {
+  const directory = temporaryDirectory(t);
+  const outPath = path.join(directory, 'seal.json');
+  fs.writeFileSync(
+    outPath,
+    JSON.stringify({
+      reseal: { frozen_response_schema: { status: 'predates_current_contract', path: '/tmp/frozen.json' } },
+    }),
+  );
+  assert.throws(
+    () => refuseFrozenSchemaAuditDowngrade({ outPath, audit: { status: 'unresolved' } }),
+    /re-supply --frozen-response-schema/u,
+  );
+  // A resolved audit, or no earlier seal at all, passes.
+  refuseFrozenSchemaAuditDowngrade({ outPath, audit: { status: 'predates_current_contract' } });
+  refuseFrozenSchemaAuditDowngrade({ outPath: path.join(directory, 'absent.json'), audit: { status: 'unresolved' } });
 });
 
 test('the ledger fields are inherited and flagged stale rather than silently re-used', () => {

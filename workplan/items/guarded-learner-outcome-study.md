@@ -122,7 +122,28 @@ On smoke C all 8 turns are measurable: 7 over-claim assertions, 1
 evidence dismissal, 0 evidence demands. Relay 110 §3 is amended to say
 so. Patch record: `notes/2026-08-15-guarded-pilot-patches.md`.
 
-The launch stays blocked on its own GO note plus explicit approval.
+**A second stale pin found, 15 August. No paid call.** Re-computing the
+eight launcher pins for the GO note showed all eight matching — and one
+of them proving nothing. `provider_response_schema_sha256` is checked by
+comparing the carried-over schema-acceptance artifact against the
+carried-over manifest pin, two numbers from the same stale seal. The
+readers are never sent that schema: the preparer builds a response
+schema per batch from the live act catalogue, which at HEAD is v3.3. So
+the readers answer under a larger schema than the provider was ever
+tested against. This also corrects relay 112 §4 and §5 of the patch
+note, which said the readers cannot name the three defensive acts —
+they can; what is unproved is provider acceptance.
+`auditProviderResponseSchemaPin` now either re-pins from a fresh
+acceptance artifact that passed and was stamped at the current commit,
+or records `inherited_unproved` with the reason in words. The guarded
+manifest carries that record. A second guard stops a bare re-seal from
+writing `unresolved` over a frozen-schema status an earlier run read.
+
+**Spend approved by the human, 15 August: "I approve the further
+spend."** The launch still needs its own committed GO note, which adds
+a rung 0: one schema-acceptance ping at v3.3 (cap 1 call) and a
+zero-call re-seal, so the 1,116-call pilot runs against a proved
+schema.
 
 Both rulings landed on 15 August (relay 106): defended over-claiming is
 its own warrant basis, criterion (c) keeps its §6.25 reading, and the
