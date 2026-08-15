@@ -25,7 +25,7 @@ links:
     - docs/adaptation-refinement/relay/107-build-note-v3.3-contract-and-guarded-sensor.md
     - docs/adaptation-refinement/relay/108-build-report-guarded-pole-complete-smoke-c-request.md
     - docs/adaptation-refinement/relay/109-go-smoke-c-guarded-pole.md
-    - docs/adaptation-refinement/relay/110-draft-registration-guarded-pilot.md
+    - docs/adaptation-refinement/relay/110-registration-guarded-pilot.md
   paper: §6.25
 tags:
   - warrant-gate
@@ -68,13 +68,20 @@ Finding: the evidence-demand act stayed dark — demand-like turns were
 read as the older proposed-test act (neutral direction, not the smoke B
 deferral failure).
 
-**Pilot registration DRAFTED (relay 110), awaiting human review.**
-18 dialogues (3 arms x 2 worlds x 3 seeds), guarded persona, ~1,116
-calls; primary endpoint is evidence production within two turns of a
-delivered challenge; stop rules cover the dark instrument, the harmful
-deferral mislabel (terminal), and persona collapse. Seeds get pinned in
-the GO note. The pilot still needs registration approval plus its own
-GO note before any paid call.
+**Pilot REGISTERED, 15 August (relay 110), both open decisions
+answered by the human.** 18 dialogues (3 arms x 2 worlds x 3 seeds),
+guarded persona, ~1,116 calls. Primary endpoint: evidence production
+within two turns of a delivered challenge. Gate: the sensor arms in
+more than half the gated dialogues that carry a defensive stretch, no
+armed stretch is silently dropped, and reader coverage is complete. The
+primary endpoint is measured, never gated, so a null stays a finding.
+Stop rules cover the dark evidence-demand act, the deferral mislabel
+(terminal), and persona collapse.
+
+**Next paid rung: the pilot.** The design is registered; the spend is
+not. It needs a GO note quoting approval of the spend, with the three
+seeds pinned there from a fresh freshness audit. Burned at drafting:
+545, 546, 548, 549, 550.
 
 Both rulings landed on 15 August (relay 106): defended over-claiming is
 its own warrant basis, criterion (c) keeps its §6.25 reading, and the

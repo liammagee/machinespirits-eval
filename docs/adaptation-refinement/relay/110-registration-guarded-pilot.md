@@ -1,13 +1,31 @@
-# 110 — DRAFT registration: guarded-learner pilot
+# 110 — Registration: guarded-learner pilot
 
 Date: 2026-08-15
 Workplan item: guarded-learner-outcome-study
 Follows: relay 109 (GO, smoke C), smoke C run
 `guarded-learner-smoke-C-s550-2026-08-15` (sealed, archived)
-Status: **DRAFT for human review. Nothing here is registered, authorized,
-or spent.** It becomes the registration when the human approves it and it
-is committed as such. The pilot then still needs its own GO note quoting
-approval of the spend.
+Status: **REGISTERED.** The human approved the design on 15 August; the
+two open decisions are resolved below and quoted verbatim. **No spend is
+authorized by this note.** The pilot still needs its own GO note quoting
+approval of the spend, with the seeds pinned there.
+
+Drafted and registered on the same day. The file was renamed from
+`110-draft-registration-guarded-pilot.md` when the approvals landed; the
+draft text is unchanged apart from the two resolutions in §2 and §4 and
+this status block. Git history holds the draft.
+
+## 0. The approvals
+
+On pilot size:
+
+> Pilot size is fine.
+
+On the gate slots, after §4's three slots and the threshold question were
+put to the human:
+
+> These look right, and so does the threshold of a majority on (a)
+
+Both cover the design only. Neither reaches the spend.
 
 ## 1. What smoke C supplied
 
@@ -52,10 +70,9 @@ side.
 | Models | codex.gpt-5.6-luna on all seats, matching smoke C |
 | Sensor threshold | 3 consecutive defended over-claim turns (pinned, §1) |
 
-**DECISION FOR THE HUMAN:** 18 dialogues copies the passive pilot's shape.
-A half-size pilot (9 dialogues, drop one seed and pool worlds) is the
-cheaper option if the budget matters more than the paired contrast. The
-draft assumes 18.
+**RESOLVED, 15 August: 18 dialogues.** The half-size option (9 dialogues,
+one seed dropped and worlds pooled) was offered and not taken, so the
+paired contrast across seeds and worlds is kept.
 
 ## 3. Endpoints
 
@@ -80,16 +97,29 @@ evidence only, in the main-block registration.
 
 ## 4. Pilot gate (licenses the main block)
 
-**PROPOSED — human call.** Gate slots are only ones a reader can defend
+**REGISTERED, 15 August, all three slots as proposed, threshold on (a)
+confirmed at a majority.** Gate slots are only ones a reader can defend
 from the transcript alone; engineering slots stay report-only.
 
-- (a) In the gated arm, the sensor arms on at least one sustained
-  defensive stretch in a majority of dialogues that contain one.
-- (b) Every armed stretch that the policy selects for a challenge produces
-  a delivered challenge (no silent drops).
-- (c) Reader coverage is complete under the declared recovery path (one
-  logged re-ask per refused turn, then the turn counts as unanalyzed and
-  the dialogue is flagged).
+- **(a) The sensor arms when it should.** Count the gated dialogues that
+  contain at least one defensive stretch — three or more consecutive
+  turns a reader hand-codes as defended over-claiming. In **more than
+  half** of those dialogues, the sensor must arm on at least one such
+  stretch. The gated arm holds 6 dialogues (2 worlds x 3 seeds), so with
+  all 6 carrying a stretch the slot needs 4. The denominator is the
+  dialogues that carry a stretch, counted from the transcripts, not all 6.
+- **(b) No silent drops.** Every armed stretch the policy selects for a
+  challenge must produce a challenge that reaches the learner. This is
+  the failure the passive pilot died of.
+- **(c) Reader coverage is complete** under the declared recovery path:
+  one logged re-ask per refused turn, then the turn counts as unanalyzed
+  and the dialogue is flagged. This stops a half-measured run passing on
+  its other slots.
+
+**The primary endpoint is deliberately not a gate slot.** Whether learners
+produce evidence after a challenge is what the pilot measures. A null
+there is a finding. Gating on it would build the hoped-for result into the
+licence.
 
 FAIL on any slot means: report, no main block, and any redesign starts a
 fresh registration.
@@ -140,9 +170,12 @@ fresh audit run at GO time.
   pins must re-hash byte-identical at GO time.
 - Artifacts are copied to the private archive when the run ends.
 
-## 8. What this draft does not do
+## 8. What this registration does not do
 
-No live run is authorized. Nothing here amends the sealed A1 corpus, the
-passive pilot's registration, or any frozen instrument. No branch push.
+**No live run is authorized.** The design is registered; the spend is not.
+The pilot starts only after a GO note quoting approval of the spend, with
+the three seeds pinned there from a fresh audit. Nothing here amends the
+sealed A1 corpus, the passive pilot's registration, or any frozen
+instrument. No branch push.
 
 NEVER push this branch.
