@@ -152,7 +152,7 @@ I1, on the other learner.
   `source_commit`; all 15 fingerprinted instrument files still hashed as
   at launch, and git confirmed none of them changed in those five
   commits.
-- **Repair, 16 Aug** (`PENDING`) — the resume now reads the launch stamp
+- **Repair, 16 Aug** (`b89f3e29`) — the resume now reads the launch stamp
   off the run's own preflight and asks git to corroborate it: the commit
   must be an ancestor of head, and no fingerprinted instrument file may
   have moved between there and head. A stale preflight is still refused.
