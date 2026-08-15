@@ -31,6 +31,7 @@ links:
     - docs/adaptation-refinement/relay/113-go-guarded-pilot.md
     - docs/adaptation-refinement/relay/114-go-guarded-pilot-resume.md
     - docs/adaptation-refinement/relay/115-go-guarded-pilot-reader-retake.md
+    - docs/adaptation-refinement/relay/116-act-list-main-block.md
     - notes/2026-08-15-guarded-pilot-patches.md
     - notes/2026-08-15-run-protocol.md
   paper: §6.25
@@ -229,3 +230,30 @@ tests, runner parameterization, the move menu and concession guard,
 then smoke C on a fresh seed with mock readers. No paid call inherits
 the closed warrant campaign's authorization; the pilot needs its own
 registration and GO note.
+
+**Primary endpoint read, and the act list fixed, 15 August.** Zero calls
+for both. Ten challenges reached a learner, all in the gated version of
+the tutor; the two control versions delivered none, so the pilot has no
+comparison between versions on this endpoint.
+
+Relay 110 registered the endpoint but never said which speech acts count
+as a bounded evidence move. On the same 10 challenges and the same 576
+readings, two defensible lists give 3 of 10 and 9 of 10. Relay 116 fixes
+the list by a rule instead of by naming favourites: an act counts when the
+learner puts a named public record in play AND is exposed to what it says.
+Every one of the 18 acts gets exactly one place, and a test fails if any
+act sits in two bands or none.
+
+Result under the fixed list: **3 of 10 with both readers**, 4 of 10 with
+either, 2 of 7 over full reply windows. The second count (accepts a check,
+names no record) is 0 of 10, which is also the guard on choosing after
+seeing the data — the two acts most open to tuning never appear. The
+turned-down wide reading, 9 of 10, stays computed so the record shows it.
+
+Correction carried to the main block: the live gate's own uptake check
+reads 7 of 10 because it passes a confident re-assertion whenever agency
+codes as steering. It stays a control signal and must never be reported as
+the endpoint.
+
+Counter unchanged at 11,559 / 19,337, leaving 7,778. Rung 2 stays
+unauthorised. The rest of the main-block registration is unwritten.
