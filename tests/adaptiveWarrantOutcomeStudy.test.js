@@ -8,7 +8,10 @@ import path from 'node:path';
 import {
   DECISION_READER_INSTRUMENT_BINDINGS,
   OUTCOME_STUDY_READER_OUTPUT_FORM,
+  OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
   OUTCOME_STUDY_RUN_CONFIGURATIONS,
+  OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES,
+  resolveOutcomeStudyRunConfigurations,
   PRESENCE_CHANNEL_CAPS,
   PRESENCE_CHANNEL_DIGEST_FIELDS,
   assessOutcomePilotSaturation,
@@ -471,4 +474,43 @@ test('verbatim drift and no-pooling guards are fail closed without preparing blo
     guardNoPoolingFingerprints({ candidates: ['fresh-a', 'burned', 'fresh-a'], excluded: ['burned'] }).status,
     'failed',
   );
+});
+
+// The guarded extension runs the opposite learner pole through these same
+// runners. The A1 study must be unreachable from that seam.
+
+test('asking for the default learner profile returns the frozen A1 table itself', () => {
+  assert.equal(OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE, 'low_agency');
+  assert.equal(resolveOutcomeStudyRunConfigurations(), OUTCOME_STUDY_RUN_CONFIGURATIONS);
+  assert.equal(resolveOutcomeStudyRunConfigurations('low_agency'), OUTCOME_STUDY_RUN_CONFIGURATIONS);
+  assert.equal(resolveOutcomeStudyRunConfigurations(null), OUTCOME_STUDY_RUN_CONFIGURATIONS);
+});
+
+test('a second learner profile substitutes only the profile and leaves the arms alone', () => {
+  const guarded = resolveOutcomeStudyRunConfigurations('overconfident');
+  assert.notEqual(guarded, OUTCOME_STUDY_RUN_CONFIGURATIONS);
+  assert.deepEqual(
+    guarded.map((row) => row.learner_profile),
+    ['overconfident', 'overconfident', 'overconfident', 'overconfident'],
+  );
+  assert.deepEqual(
+    guarded.map((row) => row.id),
+    OUTCOME_STUDY_RUN_CONFIGURATIONS.map((row) => row.id),
+  );
+  assert.deepEqual(
+    guarded.map((row) => row.cli_args.join(' ')),
+    OUTCOME_STUDY_RUN_CONFIGURATIONS.map((row) => row.cli_args.join(' ')),
+  );
+  assert.deepEqual(
+    guarded.map((row) => row.warrant_gate_mode),
+    OUTCOME_STUDY_RUN_CONFIGURATIONS.map((row) => row.warrant_gate_mode),
+  );
+  // the frozen table is untouched by the derivation
+  assert.ok(OUTCOME_STUDY_RUN_CONFIGURATIONS.every((row) => row.learner_profile === 'low_agency'));
+});
+
+test('an unsupported learner profile is refused rather than silently defaulted', () => {
+  assert.deepEqual(OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES, ['low_agency', 'overconfident']);
+  assert.throws(() => resolveOutcomeStudyRunConfigurations('diligent'), /unsupported outcome-study learner profile/u);
+  assert.throws(() => resolveOutcomeStudyRunConfigurations('guarded'), /unsupported outcome-study learner profile/u);
 });

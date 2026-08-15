@@ -23,7 +23,9 @@ import {
   guardOutcomeStandingPermissionMenu,
 } from './prepare-adaptive-warrant-outcome-study.js';
 import {
-  OUTCOME_STUDY_RUN_CONFIGURATIONS,
+  OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
+  OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES,
+  resolveOutcomeStudyRunConfigurations,
   PRESENCE_CHANNEL_CAPS,
   extractOutcomeDialogueFromTraceRows,
   scoreAdaptiveWarrantOutcomeStudy,
@@ -498,10 +500,16 @@ function outcomeDialogueId(row, studyLabel = 'outcome-pilot') {
   return `${studyLabel}-${String(row.order).padStart(2, '0')}-${row.world}-s${row.seed}-${row.condition}`;
 }
 
-export function buildOutcomePilotJobs({ manifest, rootDir, dryRun = false, studyLabel = 'outcome-pilot' } = {}) {
+export function buildOutcomePilotJobs({
+  manifest,
+  rootDir,
+  dryRun = false,
+  studyLabel = 'outcome-pilot',
+  learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
+} = {}) {
   const worlds = new Map(manifest.worlds.map((world) => [world.id, world.path]));
   const configurations = new Map(
-    OUTCOME_STUDY_RUN_CONFIGURATIONS.map((configuration) => [configuration.id, configuration]),
+    resolveOutcomeStudyRunConfigurations(learnerProfile).map((configuration) => [configuration.id, configuration]),
   );
   return manifest.interleaved_condition_assignment.map((assignment) => {
     const configuration = configurations.get(assignment.condition);
@@ -590,8 +598,14 @@ function parseTutorStubDryRun(stdout) {
   return JSON.parse(text.slice(jsonStart));
 }
 
-export function renderOutcomePilotPromptConfiguration({ worldPath, condition, seed = 515, traceDir } = {}) {
-  const configuration = OUTCOME_STUDY_RUN_CONFIGURATIONS.find((row) => row.id === condition);
+export function renderOutcomePilotPromptConfiguration({
+  worldPath,
+  condition,
+  seed = 515,
+  traceDir,
+  learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
+} = {}) {
+  const configuration = resolveOutcomeStudyRunConfigurations(learnerProfile).find((row) => row.id === condition);
   if (!configuration) throw new Error(`unknown outcome prompt-preflight condition ${condition}`);
   const standingInstructionsIndex = configuration.cli_args.indexOf('--standing-instructions-file');
   const standingInstructionsFile =
@@ -684,7 +698,11 @@ export function renderOutcomePilotPromptConfiguration({ worldPath, condition, se
   };
 }
 
-export function preflightOutcomePilotPromptAudits({ manifest, outputPath } = {}) {
+export function preflightOutcomePilotPromptAudits({
+  manifest,
+  outputPath,
+  learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
+} = {}) {
   if (!manifest?.worlds?.length) throw new Error('outcome prompt preflight requires frozen worlds');
   if (!outputPath) throw new Error('outcome prompt preflight requires an artifact path');
   const traceDir = path.join(path.dirname(path.resolve(outputPath)), 'prompt-audit-dry-run');
@@ -692,7 +710,7 @@ export function preflightOutcomePilotPromptAudits({ manifest, outputPath } = {})
     ? manifest.conditions
     : Object.keys(manifest.conditions || {});
   const configurations = conditionIds.map((condition) => {
-    const configuration = OUTCOME_STUDY_RUN_CONFIGURATIONS.find((row) => row.id === condition);
+    const configuration = resolveOutcomeStudyRunConfigurations(learnerProfile).find((row) => row.id === condition);
     if (!configuration) throw new Error(`unknown outcome prompt-preflight condition ${condition}`);
     return configuration;
   });
@@ -703,6 +721,7 @@ export function preflightOutcomePilotPromptAudits({ manifest, outputPath } = {})
         condition: configuration.id,
         seed: manifest.seeds[0],
         traceDir,
+        learnerProfile,
       });
       return {
         condition: configuration.id,
@@ -868,6 +887,7 @@ export async function runReadersAfterFingerprintGuard({
 export function emitOutcomePilotNaturalFreeze({
   outputPath,
   studyId,
+  learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
   sourceCommit,
   corpus,
   key,
@@ -889,7 +909,7 @@ export function emitOutcomePilotNaturalFreeze({
     all_observe_decisions: true,
     sampling: {
       worlds: 2,
-      profiles: ['low_agency'],
+      profiles: [learnerProfile],
       conditions: ['bare', 'gated', 'standing_permission'],
       turns_per_dialogue: 8,
       total_cases: 144,
@@ -997,17 +1017,23 @@ export async function runOutcomeGeneration({
   return checkpoint.dialogues;
 }
 
-export function prepareOutcomeCases({ rows, manifest, rootDir, samplingSeed = 'outcome-pilot-frozen-order' }) {
+export function prepareOutcomeCases({
+  rows,
+  manifest,
+  rootDir,
+  samplingSeed = 'outcome-pilot-frozen-order',
+  learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
+}) {
   const conditionIds = [...new Set(manifest.interleaved_condition_assignment.map((row) => row.condition))];
   const conditions = conditionIds.map((condition) => {
-    const configuration = OUTCOME_STUDY_RUN_CONFIGURATIONS.find((row) => row.id === condition);
+    const configuration = resolveOutcomeStudyRunConfigurations(learnerProfile).find((row) => row.id === condition);
     if (!configuration) throw new Error(`unknown outcome case-extraction condition ${condition}`);
     return { id: configuration.id, warrantGateMode: configuration.warrant_gate_mode };
   });
   const built = buildBlindedAnnotationCorpus(rows, {
     studyId: path.basename(rootDir),
     samplingSeed,
-    profiles: ['low_agency'],
+    profiles: [learnerProfile],
     conditions,
     worlds: manifest.worlds.map((world) => world.id),
     includeAllDecisions: true,
@@ -1128,6 +1154,7 @@ export async function executeOutcomePilot({
   outputDir,
   resume = false,
   instrumentFreezePath,
+  learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
   runDialogue,
   runReaderProcess,
 } = {}) {
@@ -1159,6 +1186,7 @@ export async function executeOutcomePilot({
   const promptAuditPreflight = preflightOutcomePilotPromptAudits({
     manifest: guarded.manifest,
     outputPath: promptAuditPreflightPath,
+    learnerProfile,
   });
   const checkpoint = resume ? readJson(checkpointPath) : null;
   const budget = createOutcomePilotBudget({ checkpointPath, checkpoint });
@@ -1219,7 +1247,8 @@ export async function executeOutcomePilot({
   };
   budget.persist();
 
-  const jobs = buildOutcomePilotJobs({ manifest: guarded.manifest, rootDir });
+  budget.state.learner_profile = learnerProfile;
+  const jobs = buildOutcomePilotJobs({ manifest: guarded.manifest, rootDir, learnerProfile });
   await runOutcomeGeneration({ jobs, checkpoint: budget.state, budget, runDialogue });
   const completed = budget.state.dialogues.filter((row) => row.status === 'complete');
   if (completed.length !== 18) {
@@ -1229,7 +1258,7 @@ export async function executeOutcomePilot({
   }
 
   const rows = completed.sort((a, b) => a.order - b.order).map((row) => row.result);
-  const built = prepareOutcomeCases({ rows, manifest: guarded.manifest, rootDir });
+  const built = prepareOutcomeCases({ rows, manifest: guarded.manifest, rootDir, learnerProfile });
   const fingerprintGuard = guardOutcomeAnnotationFingerprints({
     cases: built.corpus.cases,
     keyCases: built.key.cases,
@@ -1260,6 +1289,7 @@ export async function executeOutcomePilot({
     : emitOutcomePilotNaturalFreeze({
         outputPath: freezePath,
         studyId: path.basename(rootDir),
+        learnerProfile,
         sourceCommit: git(['rev-parse', 'HEAD']),
         corpus: artifacts.corpusPath,
         key: artifacts.keyPath,
@@ -1465,7 +1495,7 @@ export async function executeOutcomePilot({
 }
 
 function usage() {
-  return `Usage:\n  node scripts/run-adaptive-warrant-outcome-pilot.js\n  node scripts/run-adaptive-warrant-outcome-pilot.js --go-note <relay-file> --accept-charges --out <dir> --instrument-freeze <natural-freeze> [--resume]\n`;
+  return `Usage:\n  node scripts/run-adaptive-warrant-outcome-pilot.js\n  node scripts/run-adaptive-warrant-outcome-pilot.js --go-note <relay-file> --accept-charges --out <dir> --instrument-freeze <natural-freeze> [--learner-profile <${OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES.join('|')}>] [--resume]\n`;
 }
 
 async function main() {
@@ -1476,6 +1506,7 @@ async function main() {
       'accept-charges': { type: 'boolean', default: false },
       out: { type: 'string' },
       'instrument-freeze': { type: 'string' },
+      'learner-profile': { type: 'string', default: OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE },
       resume: { type: 'boolean', default: false },
       help: { type: 'boolean', short: 'h' },
     },
@@ -1502,6 +1533,7 @@ async function main() {
     outputDir: values.out,
     resume: values.resume,
     instrumentFreezePath: values['instrument-freeze'],
+    learnerProfile: values['learner-profile'],
   });
   process.stdout.write(
     `${JSON.stringify({ status: result.status, checkpoint: path.resolve(ROOT, values.out, 'outcome-pilot-checkpoint.json') })}\n`,

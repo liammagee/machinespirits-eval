@@ -81,6 +81,32 @@ export const OUTCOME_STUDY_RUN_CONFIGURATIONS = Object.freeze([
   }),
 ]);
 
+/**
+ * The A1 study ran one learner pole. The guarded extension runs the opposite
+ * pole through the same runners rather than forking them, so the profile is a
+ * parameter and the frozen table above stays the A1 default. Asking for the
+ * default returns the frozen objects themselves, not copies, so no A1 artifact
+ * can move by way of this seam.
+ */
+export const OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE = 'low_agency';
+
+export const OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES = Object.freeze(['low_agency', 'overconfident']);
+
+export function resolveOutcomeStudyRunConfigurations(learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE) {
+  const profile = learnerProfile || OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE;
+  if (!OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES.includes(profile)) {
+    throw new Error(
+      `unsupported outcome-study learner profile ${profile}; expected one of ${OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES.join(', ')}`,
+    );
+  }
+  if (profile === OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE) return OUTCOME_STUDY_RUN_CONFIGURATIONS;
+  return Object.freeze(
+    OUTCOME_STUDY_RUN_CONFIGURATIONS.map((configuration) =>
+      Object.freeze({ ...configuration, learner_profile: profile }),
+    ),
+  );
+}
+
 export const PRESENCE_CHANNEL_DIGEST_FIELDS = Object.freeze([
   'corpus_sha256',
   'extraction_schema_digest',
