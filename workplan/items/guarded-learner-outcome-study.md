@@ -28,6 +28,9 @@ links:
     - docs/adaptation-refinement/relay/110-registration-guarded-pilot.md
     - docs/adaptation-refinement/relay/111-block-pilot-frozen-binding-mismatch.md
     - docs/adaptation-refinement/relay/112-guarded-pilot-reseal.md
+    - docs/adaptation-refinement/relay/113-go-guarded-pilot.md
+    - notes/2026-08-15-guarded-pilot-patches.md
+    - notes/2026-08-15-run-protocol.md
   paper: §6.25
 tags:
   - warrant-gate
@@ -144,6 +147,17 @@ spend."** The launch still needs its own committed GO note, which adds
 a rung 0: one schema-acceptance ping at v3.3 (cap 1 call) and a
 zero-call re-seal, so the 1,116-call pilot runs against a proved
 schema.
+
+**GO note committed, 15 August (relay 113). Still zero paid calls.**
+Three rungs: rung 0 the ping plus re-seal (1 call, blocks the rest),
+rung 1 the pilot (1,116 calls), rung 2 the main block (its own note).
+Counter re-read at GO time: 10,459 (relay 105) + 26 (smoke C) =
+**10,485 / 19,337**, closing at 11,602 with 7,735 left. All eight pins
+re-hash; menu guard, freshness guard and brittleness preflight all pass
+(persona `overconfident`, 18 prepared runs, 42/42 checks). The run
+protocol behind the rung ladder is written up at
+`notes/2026-08-15-run-protocol.md` so it can be repeated without
+reading the relay chain.
 
 Both rulings landed on 15 August (relay 106): defended over-claiming is
 its own warrant basis, criterion (c) keeps its §6.25 reading, and the
