@@ -286,5 +286,36 @@ burned. The registered range is now **654–665** (relay 117 §11), clean
 on both a seed-context search and report 098's run-seed metadata search,
 across this repo and the private archive.
 
+Seeds are now handed out by a tool rather than by hand.
+`config/seed-ledger.yaml` writes down every claimed range and
+`scripts/seed-ledger.js` unions it with a search of the tree; a range is
+free only when both agree. `check 530-541` fails with the owner of each
+of the twelve clashes, `check 654-665 --for "guarded-learner main
+block"` passes. A test fails when a run lands a seed the ledger does not
+carry. This is what the defect asked for: the claim was prose and the
+check was written fresh each time.
+
+**The GO note is blocked on a driver, found 15 August.** Before writing
+the note I checked that the command it would carry can run. It cannot.
+`run-adaptive-warrant-outcome-main-block.js` is welded to the passive
+block in seven places: it refuses any `--go-note` but 097a; it asserts
+seeds equal 524–535 by value; it asserts the whole call plan by value,
+including `counter_before: 5274`; it throws unless the presence channel
+is **disabled**, and the guarded block needs it on; it requires the GO
+note to contain the literal strings 524, 535, "1,152" and 48; its
+reader budget is decision-only, 1,152 against the 2,304 registered; and
+its default manifest is the A1 one. No guarded main-block manifest
+exists.
+
+The pilot driver is the better base and the arithmetic already fits: it
+takes any fresh relay note, reads seeds and worlds from `--manifest`,
+and already runs both channels. It pins 18 dialogues in two places
+(lines 196 and 1267). The guarded main block is that driver at four
+times the size — generation 2,000 + presence 1,152 + decision 1,152,
+which is relay 117 §5's plan. So the pre-GO build is: lift the 18 to a
+shape read off the manifest, seal a guarded main-block manifest, and
+prove it with a zero-call launch simulation. Relay 117 §9 named only the
+scorers as the pre-GO build and missed this.
+
 The run stays unauthorised until its own GO note quotes explicit
 approval of the spend. Counter still 11,559 / 19,337.
