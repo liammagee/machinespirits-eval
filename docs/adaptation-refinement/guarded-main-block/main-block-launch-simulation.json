@@ -83,10 +83,10 @@
       "detail": "plan 4464, actual 0"
     },
     {
-      "name": "held_go_note_refused",
-      "expectation": "the held launch note cannot launch this block yet",
+      "name": "supplied_go_note_accepted",
+      "expectation": "the supplied launch note matches this run size",
       "held": true,
-      "detail": "outcome main-block refuses: go note lacks the GO and the 4464-call scope"
+      "detail": "docs/adaptation-refinement/relay/118-go-guarded-main-block.md states GO, the 4464-call scope and seeds 654-665"
     }
   ]
 }
