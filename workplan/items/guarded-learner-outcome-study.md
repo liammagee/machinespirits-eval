@@ -350,3 +350,24 @@ simulation. Artifact: `main-block-launch-simulation.json`.
 `launch_authorized: false`. Counter unmoved at 11,559 / 19,337. The block runs
 only when its own GO note quotes explicit human approval of the ≈4,500-call
 spend.
+
+**The launch note is written and held closed.**
+`docs/adaptation-refinement/relay/118-go-guarded-main-block.md` carries the
+whole launch on one page — design, command copied from the driver's usage
+output, seeds re-checked against the ledger, budget, counter, stop rules — and
+its §1 is empty because no one has approved the spend. It is held by its own
+bytes: the launcher reads four things out of a note, and the note carries two
+of them. Filling §1 adds the other two in one edit.
+
+Why the note has to hold itself: every sealed manifest carries
+`launch_authorized: false` and a hold sentence, and the driver reads neither.
+The note bytes are the only machine lock left after `--accept-charges`.
+Recorded as defect ledger entry 20, fix deferred to its own change.
+
+The simulation can now be told which answer it must get —`--held-go-note` for
+a note that must be refused, `--go-note` for one that must launch — so the
+refusal is scored as a pass instead of a broken check. Eight checks held with
+the held note supplied. When approval lands, the flag changes and all eight
+must hold again.
+
+**Next: nothing until the human approves the spend.**

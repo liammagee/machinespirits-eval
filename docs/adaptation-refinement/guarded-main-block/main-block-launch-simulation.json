@@ -83,10 +83,10 @@
       "detail": "plan 4464, actual 0"
     },
     {
-      "name": "no_go_note_supplied",
-      "expectation": "without a GO note the block cannot launch",
+      "name": "held_go_note_refused",
+      "expectation": "the held launch note cannot launch this block yet",
       "held": true,
-      "detail": "no --go-note given; the run stays unauthorized"
+      "detail": "outcome main-block refuses: go note lacks the GO and the 4464-call scope"
     }
   ]
 }
