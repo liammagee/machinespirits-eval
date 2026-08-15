@@ -27,6 +27,7 @@ links:
     - docs/adaptation-refinement/relay/109-go-smoke-c-guarded-pole.md
     - docs/adaptation-refinement/relay/110-registration-guarded-pilot.md
     - docs/adaptation-refinement/relay/111-block-pilot-frozen-binding-mismatch.md
+    - docs/adaptation-refinement/relay/112-guarded-pilot-reseal.md
   paper: §6.25
 tags:
   - warrant-gate
@@ -92,6 +93,26 @@ so the fix is to restore the bytes and add a test that holds them. The
 A1 pilot has not been launchable from `main` since that commit. The
 approval stands unspent; a cleared block needs its own GO note.
 Recommendation on the record: re-seal a guarded manifest at v3.3.
+
+**Digest block cleared by re-seal, 15 August (relay 112).** Still zero
+calls. `scripts/seal-guarded-warrant-outcome-manifest.js` writes
+`docs/adaptation-refinement/guarded-pilot/guarded-pilot-manifest.json`,
+which re-pins exactly the two contested digests and inherits and
+re-checks every other pin. The A1 seal is untouched and still fails at
+HEAD, as a v3.2 seal should. Re-pinning is not taken on trust: each
+file behind a moved digest is parsed at the sealed commit and at HEAD
+and the two trees are compared with positions stripped, so a real
+program change must be declared on the command line. Three of the four
+files are reflow; only the v3.3 act catalogue changed. A defect was
+fixed in passing — the freshness guard hardcoded `low_agency`, so the
+guarded pole would have been fingerprinted as the passive one.
+
+One gap stays open. The frozen presence-reader response schema was
+minted before v3.3 and cannot name the three defensive acts, so
+report-only endpoint 5 must come from the live extractor or be
+dropped; gate slots (a), (b) and (c) are unaffected. Minting a v3.3
+response schema costs one paid schema-acceptance call and needs its own
+GO note.
 
 Both rulings landed on 15 August (relay 106): defended over-claiming is
 its own warrant basis, criterion (c) keeps its §6.25 reading, and the

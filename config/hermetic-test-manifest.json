@@ -136,6 +136,7 @@
         "tests/adaptiveWarrantChallengeCorpus.test.js",
         "tests/adaptiveWarrantFallbackPassClosure.test.js",
         "tests/adaptiveWarrantGate.test.js",
+        "tests/adaptiveWarrantGuardedPilotReseal.test.js",
         "tests/adaptiveWarrantLearnerAnalysisCoverage.test.js",
         "tests/adaptiveWarrantOutcomePilot.test.js",
         "tests/adaptiveWarrantOutcomeStudy.test.js",

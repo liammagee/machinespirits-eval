@@ -15,6 +15,11 @@ import { fileURLToPath } from 'node:url';
 import { parse } from 'acorn';
 import yaml from 'yaml';
 
+import {
+  OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
+  OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES,
+} from '../services/adaptiveWarrantOutcomeLearnerProfiles.js';
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export const OUTCOME_A1_MENU_SCHEMA =
@@ -904,7 +909,14 @@ function canonicalJson(value) {
   return JSON.stringify(value);
 }
 
-export function guardOutcomePilotPreparation({ worldPaths, seeds = OUTCOME_PILOT_SEEDS } = {}) {
+export function guardOutcomePilotPreparation({
+  worldPaths,
+  seeds = OUTCOME_PILOT_SEEDS,
+  learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
+} = {}) {
+  if (!OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES.includes(learnerProfile)) {
+    throw new Error(`unsupported outcome-study learner profile: ${learnerProfile}`);
+  }
   const worlds = (worldPaths || []).map((relativePath) => {
     const bytes = read(relativePath);
     const parsed = yaml.parse(bytes.toString('utf8'));
@@ -918,7 +930,7 @@ export function guardOutcomePilotPreparation({ worldPaths, seeds = OUTCOME_PILOT
         world_sha256: world.sha256,
         seed,
         condition,
-        learner_profile: 'low_agency',
+        learner_profile: learnerProfile,
         horizon: 8,
       })),
     ),
@@ -980,6 +992,7 @@ export function guardOutcomePilotPreparation({ worldPaths, seeds = OUTCOME_PILOT
     worlds,
     seeds: [...seeds],
     conditions,
+    learner_profile: learnerProfile,
     prepared_run_count: candidates.length,
     candidate_fingerprints: candidateFingerprints,
     excluded_artifacts: exclusions.map(({ embedded_fingerprints: _omitted, ...row }) => row),

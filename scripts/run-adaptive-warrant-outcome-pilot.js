@@ -143,7 +143,10 @@ export function validateOutcomePilotGoNote(goNotePath) {
   return { path: resolved, relative_path: relative, sha256: sha256(onDisk) };
 }
 
-export function verifyOutcomePilotManifestBindings({ manifestPath = DEFAULT_MANIFEST } = {}) {
+export function verifyOutcomePilotManifestBindings({
+  manifestPath = DEFAULT_MANIFEST,
+  expectedLearnerProfile = null,
+} = {}) {
   const resolvedManifest = path.resolve(ROOT, manifestPath);
   const manifest = readJson(resolvedManifest);
   if (manifest.schema !== 'machinespirits.adaptation-refinement.warrant-outcome-pilot-manifest.v1') {
@@ -197,9 +200,19 @@ export function verifyOutcomePilotManifestBindings({ manifestPath = DEFAULT_MANI
   ) {
     throw new Error('outcome pilot manifest matrix or reader cardinality mismatch');
   }
+  // A manifest that names no persona is an A1 manifest, and A1 is low_agency.
+  // The guard fingerprints the runs the manifest actually plans, so the guarded
+  // pole is checked against the burned corpora as itself, not as the passive one.
+  const manifestLearnerProfile = manifest.learner_profile || OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE;
+  if (expectedLearnerProfile && expectedLearnerProfile !== manifestLearnerProfile) {
+    throw new Error(
+      `outcome pilot refuses: learner profile ${expectedLearnerProfile} does not match the manifest persona ${manifestLearnerProfile}`,
+    );
+  }
   const preparation = guardOutcomePilotPreparation({
     worldPaths: manifest.worlds.map((world) => world.path),
     seeds: manifest.seeds,
+    learnerProfile: manifestLearnerProfile,
   });
   if (preparation.status !== 'passed') throw new Error('prepared-run identity guard failed');
   return { manifest, resolvedManifest, menuGuard, preparation };
@@ -1161,7 +1174,7 @@ export async function executeOutcomePilot({
   if (!goNotePath) throw new Error('outcome pilot refuses: --go-note is required');
   if (!acceptCharges) throw new Error('outcome pilot refuses: --accept-charges is required');
   const goNote = validateOutcomePilotGoNote(goNotePath);
-  const guarded = verifyOutcomePilotManifestBindings({ manifestPath });
+  const guarded = verifyOutcomePilotManifestBindings({ manifestPath, expectedLearnerProfile: learnerProfile });
   if (git(['status', '--porcelain'])) throw new Error('outcome pilot launch requires a clean committed worktree');
   if (!outputDir) throw new Error('outcome pilot launch requires --out');
   if (!instrumentFreezePath) throw new Error('outcome pilot launch requires --instrument-freeze');

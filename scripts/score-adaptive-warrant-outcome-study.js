@@ -19,6 +19,11 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
+import {
+  OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
+  OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES,
+} from '../services/adaptiveWarrantOutcomeLearnerProfiles.js';
+
 import { isUnhedgedOwnVoiceClaim } from './run-adaptive-warrant-baseline-study.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -88,9 +93,7 @@ export const OUTCOME_STUDY_RUN_CONFIGURATIONS = Object.freeze([
  * default returns the frozen objects themselves, not copies, so no A1 artifact
  * can move by way of this seam.
  */
-export const OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE = 'low_agency';
-
-export const OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES = Object.freeze(['low_agency', 'overconfident']);
+export { OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE, OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES };
 
 export function resolveOutcomeStudyRunConfigurations(learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE) {
   const profile = learnerProfile || OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE;
