@@ -1,0 +1,88 @@
+# Seed ledger — every run seed that is spoken for, and by whom.
+#
+# Why this file exists. Relay 117 first named seeds 530-541 for the
+# guarded-learner main block. Six of them, 530-535, already belonged to
+# the passive main block. Nothing caught it, because the proof was prose
+# and the check was a search written fresh each time.
+#
+# A search alone under-counts. The passive main block ran on 524-535, but
+# only 524, 528 and 535 appear literally anywhere on disk — the other nine
+# live inside a run plan that names a range, not each number. So a claimed
+# range must be written down here, whether or not a grep can find it.
+#
+# How to use it:
+#   node scripts/seed-ledger.js list              — what is taken, and the gaps
+#   node scripts/seed-ledger.js next --count 12   — the next free block
+#   node scripts/seed-ledger.js check 654-665     — prove a range is free (exit 1 if not)
+#
+# How to add a claim: append an entry below BEFORE the run starts, with the
+# relay note that registers it. A claim is permanent. Seeds are never reused,
+# even when a run is withdrawn — a withdrawn range stays claimed, because its
+# artifacts may already exist.
+
+version: 1
+
+claims:
+  - range: [503, 523]
+    claimed_by: adaptive warrant runs, reserve lists, drama-derivation matrix specs
+    source: docs/adaptation-refinement/relay/096a-reviewer-amendment-main-block-seeds.md
+    note: >-
+      096a names 503-521 and 523. 522 is unattested; it is held back here as
+      margin rather than handed out next to a burned block.
+
+  - range: [515, 517]
+    claimed_by: guarded-learner outcome pilot, 18 dialogues
+    source: docs/adaptation-refinement/relay/110-registration-guarded-pilot.md
+
+  - range: [524, 535]
+    claimed_by: passive main block, 72 dialogues
+    source: docs/adaptation-refinement/relay/098-codex-report.md
+    note: >-
+      Only 524, 528 and 535 appear literally on disk. This is the entry that a
+      text search would miss, and the reason the ledger is written down. It sits
+      above the withdrawn 518-529 entry on purpose: where the two overlap, the
+      run that really happened should be the owner reported.
+
+  - range: [518, 529]
+    claimed_by: passive main block, WITHDRAWN by relay 096a
+    source: docs/adaptation-refinement/relay/096a-reviewer-amendment-main-block-seeds.md
+    note: >-
+      Withdrawn, never released. The design smokes had already burned 518 and
+      519, and report 098 stopped the driver over it. A withdrawn range stays
+      claimed.
+
+  - seeds: [536, 537, 538, 539, 540, 542, 543, 544, 545, 546]
+    claimed_by: steering decomposition runs
+    source: docs/adaptation-refinement/relay/104-codex-report.md
+    note: 541 sits inside this span but belongs to drama-derivation, below.
+
+  - seeds: [541, 547, 557, 563, 569, 571, 577, 587, 593, 599, 601, 607, 613, 617, 619, 631, 641, 643, 647, 653]
+    claimed_by: drama-derivation matrix specs (prime seeds)
+    source: config/drama-derivation/matrix-specs/null-scale-mirror-refusal.yaml
+
+  - seeds: [548, 549, 550]
+    claimed_by: guarded-learner pilot smoke (550) and neighbouring smoke runs
+    source: docs/adaptation-refinement/relay/113-go-guarded-pilot.md
+
+  - seeds: [561, 600, 608, 675, 684]
+    claimed_by: found in run artifacts; owner not traced to a single note
+    source: private archive scan, 2026-08-15
+    note: >-
+      These turned up only in archived run artifacts. Claimed on sight — an
+      unexplained seed is a taken seed.
+
+  - seeds: [725, 810, 811, 890, 910, 954, 979, 999]
+    claimed_by: test fixtures, not runs
+    source: tests/adaptiveWarrantBaselineStudy.test.js, tests/tutorStubFirstDraftCampaign.test.js
+    note: >-
+      Made-up seeds inside test code. No dialogue was ever generated on them, but
+      they stay claimed: a real run on one of these would make its fixtures and
+      its artifacts collide in a search.
+
+  - range: [654, 665]
+    claimed_by: guarded-learner main block, 72 dialogues
+    source: docs/adaptation-refinement/relay/117-registration-guarded-main-block.md
+    note: >-
+      Registered by relay 117 §11 after 530-541 failed this check. Clean on both
+      a seed-context search and report 098's run-seed metadata search, across the
+      repo and the private archive.
