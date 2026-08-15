@@ -489,7 +489,7 @@ describe('strict public learner analysis', () => {
     assertCodexProviderSchema(provider);
     const eventBranches = provider.properties.semantic_events.properties.events.items.anyOf;
     assert.deepEqual(Object.keys(provider.properties.semantic_events.properties), ['events']);
-    assert.equal(eventBranches.length, 15);
+    assert.equal(eventBranches.length, 18);
     const resultRequest = eventBranches.find(
       (branch) => branch.properties.speech_act.enum[0] === 'tutor_directed_public_result_request',
     );
