@@ -22,6 +22,8 @@ links:
     - docs/adaptation-refinement/2026-08-15_guarded-learner-extension-plan.md
     - docs/adaptation-refinement/2026-08-13_guarded-bad-learner-draft.md
     - docs/adaptation-refinement/relay/106-human-ruling-guarded-pole-basis-and-contract-v3.3.md
+    - docs/adaptation-refinement/relay/107-build-note-v3.3-contract-and-guarded-sensor.md
+    - docs/adaptation-refinement/relay/108-build-report-guarded-pole-complete-smoke-c-request.md
   paper: §6.25
 tags:
   - warrant-gate
@@ -44,6 +46,22 @@ turns. The passive endpoints do not transfer: the primary conduct endpoint
 becomes evidence production within two turns of a delivered challenge,
 with decision correctness unchanged and the stance table report-only in
 the pilot. Predictions get written from pilot evidence only.
+
+**Build complete, 15 August (relay 108).** All four items landed on
+`build/guarded-learner-v3.3` in `../ms-guarded-learner`, zero paid calls:
+contract v3.3 with the three defensive acts and the preference rule
+(`124294c1`), `--learner-profile` on the three sealed runners
+(`b7a52752`), and the typed move menu plus concession guard
+(`b79c413a`). Hermetic suite 8,719 pass; the only 3 failures are
+derivation byte contracts that fail on the branch base too. All four
+sealed A1 pins and both reader-script pins re-hash byte-identical.
+
+**Blocked on approval.** Smoke C is a paid rung (~30 calls) and needs
+its own committed GO note plus explicit human approval. Relay 108 §3
+holds the command copied from the smoke B run plan, a dry-run
+confirmation, and seed 550 checked fresh by the freshness audit (7,001
+metadata files across every worktree, `/private/tmp`, and the private
+archive). Nothing has been run.
 
 Both rulings landed on 15 August (relay 106): defended over-claiming is
 its own warrant basis, criterion (c) keeps its §6.25 reading, and the

@@ -99,3 +99,8 @@ contract addition explicit.
 
 Registration follows smoke C, and the pilot needs its own committed GO note
 plus explicit human approval before any paid call.
+
+**Update, same day:** items 2 and 3 landed (`b7a52752`, `b79c413a`) and
+smoke C is written up as a request in relay 108. A fourth call site
+asserting 15 speech acts was missed here and is fixed in `b79c413a`:
+`services/__tests__/tutorStubPublicLearnerAnalysis.test.js:492`.
