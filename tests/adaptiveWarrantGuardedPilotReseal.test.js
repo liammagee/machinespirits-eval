@@ -217,10 +217,7 @@ test('an acceptance artifact with no response-schema hash cannot re-pin the prov
   const directory = temporaryDirectory(t);
   const artifactPath = path.join(directory, 'acceptance.json');
   const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT }).toString('utf8').trim();
-  fs.writeFileSync(
-    artifactPath,
-    JSON.stringify({ status: 'passed', bindings: { source_commit: head }, response_schema: {} }),
-  );
+  fs.writeFileSync(artifactPath, JSON.stringify({ status: 'passed', source_commit: head, response_schema: {} }));
   assert.throws(
     () => auditProviderResponseSchemaPin({ acceptancePath: artifactPath, inheritedSha256: 'b'.repeat(64) }),
     /carries no response-schema hash/u,
@@ -234,13 +231,13 @@ test('a schema-acceptance artifact from another commit cannot re-pin the provide
     artifactPath,
     JSON.stringify({
       status: 'passed',
-      bindings: { source_commit: '0'.repeat(40) },
+      source_commit: '0'.repeat(40),
       response_schema: { sha256: 'a'.repeat(64) },
     }),
   );
   assert.throws(
     () => auditProviderResponseSchemaPin({ acceptancePath: artifactPath, inheritedSha256: 'b'.repeat(64) }),
-    /not stamped at the current commit/u,
+    /was stamped at 0{40}, not at HEAD/u,
   );
 });
 
@@ -252,7 +249,7 @@ test('a failed schema-acceptance artifact cannot re-pin the provider schema', (t
     artifactPath,
     JSON.stringify({
       status: 'failed',
-      bindings: { source_commit: head },
+      source_commit: head,
       response_schema: { sha256: 'a'.repeat(64) },
     }),
   );
@@ -269,7 +266,7 @@ test('a passing acceptance artifact at the current commit re-pins the provider s
   const fresh = 'c'.repeat(64);
   fs.writeFileSync(
     artifactPath,
-    JSON.stringify({ status: 'passed', bindings: { source_commit: head }, response_schema: { sha256: fresh } }),
+    JSON.stringify({ status: 'passed', source_commit: head, response_schema: { sha256: fresh } }),
   );
   const pin = auditProviderResponseSchemaPin({ acceptancePath: artifactPath, inheritedSha256: 'b'.repeat(64) });
   assert.equal(pin.status, 'repinned');
@@ -277,6 +274,32 @@ test('a passing acceptance artifact at the current commit re-pins the provider s
   assert.equal(pin.current_sha256, fresh);
   assert.equal(pin.acceptance_proved, true);
 });
+
+// Reads the real A1 acceptance artifact, so the audit is written against the
+// shape the ping actually emits rather than a guessed one. It carries
+// source_commit at the top level, not under bindings.
+const A1_ACCEPTANCE_ARTIFACT = path.join(
+  ROOT,
+  '../machinespirits-eval-private/artifacts/adaptive-warrant-outcome-a1/seed-514-instrument-freeze',
+  'adaptive-warrant-v3-schema-acceptance-carryover-ed19be42-r52-s514.json',
+);
+
+test(
+  'the real A1 acceptance artifact is read, and refused because it is stamped at an older commit',
+  {
+    skip: fs.existsSync(A1_ACCEPTANCE_ARTIFACT) ? false : `private-archive artifact absent (${A1_ACCEPTANCE_ARTIFACT})`,
+  },
+  () => {
+    const artifact = JSON.parse(fs.readFileSync(A1_ACCEPTANCE_ARTIFACT, 'utf8'));
+    assert.equal(artifact.status, 'passed');
+    assert.match(artifact.source_commit, /^[0-9a-f]{40}$/u);
+    assert.equal(artifact.bindings, undefined, 'the ping writes source_commit at the top level');
+    assert.throws(
+      () => auditProviderResponseSchemaPin({ acceptancePath: A1_ACCEPTANCE_ARTIFACT, inheritedSha256: null }),
+      new RegExp(`stamped at ${artifact.source_commit}, not at HEAD`, 'u'),
+    );
+  },
+);
 
 test('a re-seal without the frozen-schema path cannot blank out a status an earlier run read', (t) => {
   const directory = temporaryDirectory(t);

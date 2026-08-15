@@ -152,8 +152,14 @@ refuses a failed artifact, an artifact from another commit, and an artifact with
 no hash. The guarded manifest is re-sealed and now carries
 `reseal.provider_response_schema_pin.status = "inherited_unproved"`.
 
-Clearing it costs one paid call: run the schema-acceptance ping at v3.3, then
-re-seal with `--schema-acceptance`. That is rung 0 of the GO note.
+The first draft of that audit read the stamp from `artifact.bindings.source_commit`
+and would have refused every real artifact. The ping writes `source_commit` at the
+top level. Caught by reading the archived A1 artifact instead of trusting the
+shape I had in mind, and a test now reads that file so the shape cannot drift
+unnoticed.
+
+Clearing the pin costs one paid call: run the schema-acceptance ping at v3.3,
+then re-seal with `--schema-acceptance`. That is rung 0 of the GO note.
 
 Commits `b66ffe0d`, then the re-seal.
 

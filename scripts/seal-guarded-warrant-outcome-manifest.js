@@ -194,8 +194,14 @@ export function auditProviderResponseSchemaPin({ acceptancePath = null, inherite
   if (artifact.status !== 'passed') {
     throw new Error(`re-seal refuses: schema-acceptance artifact did not pass (${artifact.status})`);
   }
-  if (artifact.bindings?.source_commit !== head) {
-    throw new Error('re-seal refuses: schema-acceptance artifact was not stamped at the current commit');
+  // The ping writes source_commit at the top level (see the result object in
+  // run-adaptive-warrant-semantic-schema-acceptance-ping.js); older carryover
+  // artifacts nest it under bindings.
+  const stampedAt = artifact.source_commit ?? artifact.bindings?.source_commit ?? null;
+  if (stampedAt !== head) {
+    throw new Error(
+      `re-seal refuses: schema-acceptance artifact was stamped at ${stampedAt || '(no commit)'}, not at HEAD ${head}`,
+    );
   }
   const sha = artifact.response_schema?.sha256;
   if (!/^[0-9a-f]{64}$/u.test(sha || '')) {
