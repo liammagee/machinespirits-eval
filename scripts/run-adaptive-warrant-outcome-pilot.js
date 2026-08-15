@@ -38,7 +38,13 @@ import {
   buildAdaptiveWarrantNaturalSemanticArtifacts,
   buildBlindedAnnotationCorpus,
   collectAdaptiveWarrantStudyJobResult,
+  summarizeAdaptiveWarrantTrace,
 } from './run-adaptive-warrant-baseline-study.js';
+import { verifyAdaptiveWarrantStudyChildEvidence } from '../services/adaptiveWarrantStudyIntegrity.js';
+import {
+  applyTypographicRulingToDialogue,
+  readTypographicQuoteRuling,
+} from '../services/adaptiveWarrantTypographicQuoteRuling.js';
 import {
   ADAPTIVE_WARRANT_SEMANTIC_FINGERPRINT_PATHS,
   adaptiveWarrantSemanticInstrumentBindings,
@@ -1057,8 +1063,45 @@ export function validateOutcomeFreezeFormForFrozenDecisionRunner(freeze) {
   return { status: 'passed', form: OUTCOME_PILOT_FREEZE_SCHEMA };
 }
 
+// A dialogue admitted under a committed reviewer ruling. It is not a clean
+// seal and never claims to be: the row carries the ruling, the turns the ruling
+// drops, and the coverage guard that failed.
+export const OUTCOME_RULED_COMPLETE_STATUS = 'complete_under_ruling';
+
+// A re-taken dialogue leaves more than one row under the same id: the attempt
+// that quarantined and the attempt that followed it. Counting rows would count
+// that dialogue twice, so everything downstream counts dialogue ids, and a
+// clean seal always outranks a ruling for the same id.
+function admittedDialogueRows(checkpoint) {
+  const admitted = new Map();
+  for (const row of checkpoint.dialogues || []) {
+    if (row.status !== 'complete' && row.status !== OUTCOME_RULED_COMPLETE_STATUS) continue;
+    const held = admitted.get(row.id);
+    if (held?.status === 'complete' && row.status !== 'complete') continue;
+    admitted.set(row.id, row);
+  }
+  return [...admitted.values()];
+}
+
+function dialogueCounts(checkpoint) {
+  const admitted = admittedDialogueRows(checkpoint);
+  const clean = admitted.filter((row) => row.status === 'complete');
+  const ruled = admitted.filter((row) => row.status === OUTCOME_RULED_COMPLETE_STATUS);
+  return {
+    clean,
+    ruled,
+    admitted,
+    droppedTurns: ruled.reduce(
+      (total, row) => total + (row.admitted_under_reviewer_ruling?.dropped_turns.length || 0),
+      0,
+    ),
+  };
+}
+
 function checkpointHasCompletedDialogue(checkpoint, job) {
-  return checkpoint.dialogues.some((row) => row.id === job.id && row.status === 'complete');
+  return checkpoint.dialogues.some(
+    (row) => row.id === job.id && (row.status === 'complete' || row.status === OUTCOME_RULED_COMPLETE_STATUS),
+  );
 }
 
 export function guardOutcomeDialogueLearnerAnalysisCoverage(row) {
@@ -1078,13 +1121,165 @@ export function guardOutcomeDialogueLearnerAnalysisCoverage(row) {
   };
 }
 
+/**
+ * Admit one dialogue the strict checks refused, under a committed reviewer
+ * ruling.
+ *
+ * The child sealed itself learner_analysis_incomplete, and that stays true: the
+ * tutor took that turn with no reading of the learner. The ruling does not undo
+ * it. The ruling says the reading failed for a reason the reviewer declines to
+ * count against the run — the reader quoted the learner's own words but changed
+ * a letter's case — so the dialogue keeps its other turns and the unread turn
+ * drops out of the corpus.
+ *
+ * Everything else is still checked. The child evidence must verify against its
+ * own seal, the seal must say learner_analysis_incomplete and nothing worse,
+ * the turns ruled on must be the ones the seal names, and every one of them
+ * must pass the ruling's own blind test. No dialogue is re-run: this reads the
+ * artifacts the run already paid for.
+ */
+export function admitOutcomeDialogueUnderReviewerRuling({ job, ruling } = {}) {
+  if (!ruling) return null;
+  const refuse = (reason) => ({ admitted: false, reason });
+  const evidence = verifyAdaptiveWarrantStudyChildEvidence({
+    runDir: job.jobDir,
+    expectedRunId: job.id,
+    expectedParentRunId: job.parentRunId || null,
+    expectedStatus: 'learner_analysis_incomplete',
+    expectedGitSha: job.expectedGitSha || null,
+    expectedGitDirty: typeof job.expectedGitDirty === 'boolean' ? job.expectedGitDirty : null,
+    expectedPolicySha256: job.expectedChildPolicySha256 || null,
+    completeness: true,
+  });
+  if (!evidence.ok) return refuse(`child evidence does not verify: ${evidence.errors.join('; ')}`);
+  const seal = readJson(path.join(job.jobDir, 'run-seal.json'));
+  const analysis = seal?.metadata?.learnerAnalysis || {};
+  if (seal?.status !== 'learner_analysis_incomplete' || analysis.status !== 'learner_analysis_incomplete') {
+    return refuse(`seal status ${seal?.status} is not learner_analysis_incomplete`);
+  }
+  if (Number(seal.metadata?.failed) !== 0 || Number(seal.metadata?.ok) !== 1) {
+    return refuse('seal does not report exactly one successful dialogue');
+  }
+  if (Number(analysis.publicTurnCount) !== 8) {
+    return refuse(`seal reports ${analysis.publicTurnCount} public turns, not 8`);
+  }
+  const unreadTurns = [...new Set((analysis.unanalyzed || []).map((entry) => Number(entry.turn)))].sort(
+    (a, b) => a - b,
+  );
+  const artifacts = (evidence.artifacts || []).map((artifact) => ({
+    ...artifact,
+    absolutePath: path.resolve(job.jobDir, artifact.path),
+  }));
+  const summaries = artifacts.filter((artifact) => /^auto-eval-[^/]+\.json$/u.test(artifact.path));
+  const traces = artifacts.filter(
+    (artifact) => artifact.path.endsWith('.jsonl') && artifact.path !== 'run-events.jsonl',
+  );
+  if (summaries.length !== 1 || traces.length !== 1) {
+    return refuse(`sealed child needs one summary and one trace; found ${summaries.length} and ${traces.length}`);
+  }
+  const verdict = applyTypographicRulingToDialogue({ tracePath: traces[0].absolutePath, unreadTurns });
+  if (!verdict.admitted) return { ...refuse(verdict.reason), unread_turns: unreadTurns };
+  const row = {
+    ...summarizeAdaptiveWarrantTrace({
+      tracePath: traces[0].absolutePath,
+      job,
+      childStatus: 'ok',
+      summaryPath: summaries[0].absolutePath,
+    }),
+    childEvidence: evidence,
+    error: null,
+  };
+  if (row.turnCount !== 8) return refuse(`trace holds ${row.turnCount} turns, not 8`);
+  const stillUnread = (row.learnerAnalysisUnanalyzedTurns || []).map(Number).sort((a, b) => a - b);
+  if (String(stillUnread) !== String(unreadTurns)) {
+    return refuse(`trace reports unread turns ${stillUnread.join(',')}, the seal names ${unreadTurns.join(',')}`);
+  }
+  return { admitted: true, row, dropped_turns: verdict.dropped_turns, turns: verdict.turns };
+}
+
+/**
+ * Walk the dialogues already in the checkpoint and admit the ones the ruling
+ * covers. This runs before any job is considered, so a resume never re-runs —
+ * and never re-pays for — a dialogue the reviewer has already ruled on.
+ */
+export function applyReviewerRulingToCheckpoint({
+  checkpoint,
+  jobs,
+  ruling = null,
+  admitUnderRuling = admitOutcomeDialogueUnderReviewerRuling,
+} = {}) {
+  const decisions = [];
+  if (!ruling) return decisions;
+  const jobsById = new Map(jobs.map((job) => [job.id, job]));
+
+  // A dialogue that was re-taken leaves one row per attempt under the same id,
+  // and every one of those rows points at the same directory on disk. Admitting
+  // two of them would feed the same dialogue to the corpus twice. So a dialogue
+  // that already holds a clean seal is left alone, and where several attempts
+  // quarantined only the last one is put to the ruling.
+  const alreadyAdmitted = new Set(
+    checkpoint.dialogues
+      .filter((row) => row.status === 'complete' || row.status === OUTCOME_RULED_COMPLETE_STATUS)
+      .map((row) => row.id),
+  );
+  const candidates = new Map();
+  for (const row of checkpoint.dialogues) {
+    if (row.status !== 'quarantined') continue;
+    if (alreadyAdmitted.has(row.id)) {
+      decisions.push({
+        dialogue_id: row.id,
+        admitted: false,
+        skipped: true,
+        reason: 'a later attempt at this dialogue holds a clean seal, so no ruling is needed',
+      });
+      continue;
+    }
+    if (candidates.has(row.id)) {
+      decisions.push({
+        dialogue_id: row.id,
+        admitted: false,
+        skipped: true,
+        reason: 'superseded by a later quarantined attempt at the same dialogue',
+      });
+    }
+    candidates.set(row.id, row);
+  }
+
+  for (const row of candidates.values()) {
+    const job = jobsById.get(row.id);
+    if (!job) continue;
+    const verdict = admitUnderRuling({ job, ruling });
+    decisions.push({ dialogue_id: row.id, admitted: verdict.admitted, reason: verdict.reason || null });
+    if (!verdict.admitted) continue;
+    row.status = OUTCOME_RULED_COMPLETE_STATUS;
+    row.result = verdict.row;
+    row.trace_path = verdict.row.tracePath || null;
+    row.learner_analysis_coverage_guard = guardOutcomeDialogueLearnerAnalysisCoverage(verdict.row);
+    row.admitted_under_reviewer_ruling = {
+      ruling: ruling.artifact,
+      dropped_turns: verdict.dropped_turns,
+      turns: verdict.turns,
+      admitted_at: new Date().toISOString(),
+    };
+    row.error = null;
+    checkpoint.quarantined_dialogues = (checkpoint.quarantined_dialogues || []).filter((entry) => entry.id !== row.id);
+  }
+  return decisions;
+}
+
 export async function runOutcomeGeneration({
   jobs,
   checkpoint,
   budget,
+  reviewerRuling = null,
   runDialogue = spawnLogged,
   collectJobResult = collectAdaptiveWarrantStudyJobResult,
 } = {}) {
+  const rulingDecisions = applyReviewerRulingToCheckpoint({ checkpoint, jobs, ruling: reviewerRuling });
+  if (rulingDecisions.length) {
+    checkpoint.reviewer_ruling_decisions = rulingDecisions;
+    budget.persist();
+  }
   for (const job of jobs) {
     if (checkpointHasCompletedDialogue(checkpoint, job)) continue;
     const started = new Date().toISOString();
@@ -1139,6 +1334,7 @@ export function prepareOutcomeCases({
   rootDir,
   samplingSeed = 'outcome-pilot-frozen-order',
   learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
+  expectedCaseCount = null,
 }) {
   const conditionIds = [...new Set(manifest.interleaved_condition_assignment.map((row) => row.condition))];
   const conditions = conditionIds.map((condition) => {
@@ -1155,8 +1351,14 @@ export function prepareOutcomeCases({
     includeAllDecisions: true,
     minimumTurn: 1,
   });
-  if (built.corpus.cases.length !== manifest.case_extraction.expected_case_count) {
-    throw new Error('outcome case extraction did not produce the frozen 144 cases');
+  const expected = Number.isInteger(expectedCaseCount)
+    ? expectedCaseCount
+    : manifest.case_extraction.expected_case_count;
+  if (built.corpus.cases.length !== expected) {
+    throw new Error(
+      `outcome case extraction produced ${built.corpus.cases.length} cases, expected ${expected} ` +
+        `(registered ${manifest.case_extraction.expected_case_count})`,
+    );
   }
   return built;
 }
@@ -1275,12 +1477,25 @@ export async function executeOutcomePilot({
   outputDir,
   resume = false,
   instrumentFreezePath,
+  reviewerRulingPath = null,
   learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
   runDialogue,
   runReaderProcess,
 } = {}) {
   if (!goNotePath) throw new Error('outcome pilot refuses: --go-note is required');
   if (!acceptCharges) throw new Error('outcome pilot refuses: --accept-charges is required');
+  // A reviewer ruling is a committed artifact, not a flag. The run records the
+  // file it read and that file's bytes, so the ruling can be read back later
+  // beside the dialogues it admitted.
+  const reviewerRuling = reviewerRulingPath
+    ? {
+        ...readTypographicQuoteRuling(reviewerRulingPath),
+        artifact: {
+          path: path.relative(ROOT, path.resolve(reviewerRulingPath)),
+          sha256: fileSha256(reviewerRulingPath),
+        },
+      }
+    : null;
   // On a restart the checkpoint is read here, before the guards, because the
   // prepared-identity guard may have to stand in for a burned corpus that no
   // longer exists on disk. It is read once and handed on: the file runs past
@@ -1392,20 +1607,49 @@ export async function executeOutcomePilot({
 
   budget.state.learner_profile = learnerProfile;
   const jobs = buildOutcomePilotJobs({ manifest: guarded.manifest, rootDir, learnerProfile });
-  await runOutcomeGeneration({ jobs, checkpoint: budget.state, budget, runDialogue });
-  const completed = budget.state.dialogues.filter((row) => row.status === 'complete');
-  if (completed.length !== guarded.shape.dialogues) {
+  await runOutcomeGeneration({ jobs, checkpoint: budget.state, budget, reviewerRuling, runDialogue });
+  const counts = dialogueCounts(budget.state);
+  if (counts.admitted.length !== guarded.shape.dialogues) {
     budget.state.status = 'generation_quarantine_stop';
     budget.persist();
     return budget.state;
   }
 
-  const rows = completed.sort((a, b) => a.order - b.order).map((row) => row.result);
-  const built = prepareOutcomeCases({ rows, manifest: guarded.manifest, rootDir, learnerProfile });
+  // The registered case count stands. What the ruling changes is how many of
+  // those cases this run can supply, and the checkpoint records both numbers
+  // so a reader never has to work out which one they are looking at.
+  const registeredCaseCount = guarded.manifest.case_extraction.expected_case_count;
+  const expectedCaseCount = registeredCaseCount - counts.droppedTurns;
+  if (reviewerRuling && counts.droppedTurns !== reviewerRuling.expected_dropped_turns) {
+    throw new Error(
+      `reviewer ruling expected to drop ${reviewerRuling.expected_dropped_turns} turns, the run dropped ${counts.droppedTurns}`,
+    );
+  }
+  if (!reviewerRuling && counts.droppedTurns !== 0) {
+    throw new Error('dialogues were admitted under a ruling, but no ruling was supplied');
+  }
+  budget.state.case_count = {
+    registered: registeredCaseCount,
+    ruled_turn_drops: counts.droppedTurns,
+    expected: expectedCaseCount,
+    dialogues_admitted_under_ruling: counts.ruled.map((row) => ({
+      id: row.id,
+      dropped_turns: row.admitted_under_reviewer_ruling?.dropped_turns || [],
+    })),
+  };
+
+  const rows = counts.admitted.sort((a, b) => a.order - b.order).map((row) => row.result);
+  const built = prepareOutcomeCases({
+    rows,
+    manifest: guarded.manifest,
+    rootDir,
+    learnerProfile,
+    expectedCaseCount,
+  });
   const fingerprintGuard = guardOutcomeAnnotationFingerprints({
     cases: built.corpus.cases,
     keyCases: built.key.cases,
-    expectedCount: guarded.manifest.case_extraction.expected_case_count,
+    expectedCount: expectedCaseCount,
   });
   budget.state.post_generation_fingerprint_guard = fingerprintGuard;
   budget.persist();
@@ -1604,7 +1848,7 @@ export async function executeOutcomePilot({
       logged_observe_decision: key.gate?.revision_warranted ?? key.shadow?.revision_warranted,
     };
   });
-  const dialogues = completed.map((row) =>
+  const dialogues = counts.admitted.map((row) =>
     extractOutcomeDialogueFromTraceRows({
       dialogue_id: row.id,
       condition: row.condition,
@@ -1640,7 +1884,7 @@ export async function executeOutcomePilot({
 function usage() {
   // --manifest and --learner-profile travel together: a non-A1 pole needs both,
   // and the launcher refuses when they disagree.
-  return `Usage:\n  node scripts/run-adaptive-warrant-outcome-pilot.js [--manifest <manifest>]\n  node scripts/run-adaptive-warrant-outcome-pilot.js --go-note <relay-file> --accept-charges --out <dir> --instrument-freeze <natural-freeze> [--manifest <manifest>] [--shape <${Object.keys(OUTCOME_RUN_SHAPES).join('|')}>] [--learner-profile <${OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES.join('|')}>] [--resume]\n\nDefaults:\n  --manifest         ${DEFAULT_MANIFEST}\n  --learner-profile  ${OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE}\n  --shape            read from the manifest; ${OUTCOME_DEFAULT_RUN_SHAPE.name} when the manifest names none\n`;
+  return `Usage:\n  node scripts/run-adaptive-warrant-outcome-pilot.js [--manifest <manifest>]\n  node scripts/run-adaptive-warrant-outcome-pilot.js --go-note <relay-file> --accept-charges --out <dir> --instrument-freeze <natural-freeze> [--manifest <manifest>] [--shape <${Object.keys(OUTCOME_RUN_SHAPES).join('|')}>] [--learner-profile <${OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES.join('|')}>] [--reviewer-ruling <ruling.json>] [--resume]\n\nDefaults:\n  --manifest         ${DEFAULT_MANIFEST}\n  --learner-profile  ${OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE}\n  --shape            read from the manifest; ${OUTCOME_DEFAULT_RUN_SHAPE.name} when the manifest names none\n  --reviewer-ruling  committed ruling that admits named quarantined dialogues without re-running them\n`;
 }
 
 async function main() {
@@ -1651,6 +1895,7 @@ async function main() {
       'accept-charges': { type: 'boolean', default: false },
       out: { type: 'string' },
       'instrument-freeze': { type: 'string' },
+      'reviewer-ruling': { type: 'string' },
       'learner-profile': { type: 'string', default: OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE },
       shape: { type: 'string' },
       resume: { type: 'boolean', default: false },
@@ -1680,6 +1925,7 @@ async function main() {
     outputDir: values.out,
     resume: values.resume,
     instrumentFreezePath: values['instrument-freeze'],
+    reviewerRulingPath: values['reviewer-ruling'] || null,
     learnerProfile: values['learner-profile'],
   });
   process.stdout.write(

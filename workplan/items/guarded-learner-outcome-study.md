@@ -373,4 +373,50 @@ that must be refused, `--go-note` for one that must launch — so a refusal is
 scored as a pass instead of a broken check. Eight checks held with the held
 note. Eight hold again with the armed note.
 
-**Next: start the block, then archive before anything else.**
+**Generation stopped at its designed boundary, 15–16 August (incident I2).**
+All 72 dialogues ran; 3 failed technically and the parent stopped before a
+single reader call. The run archived first, then two zero-call repairs
+cleared the resume path (defect ledger 21 and 22), then the resume re-took
+the three children, one attempt each, as relay 119 §9 allows. Two cleared —
+seeds 654 and 662, 8 turns each, sealed clean. Seed 659 quarantined a second
+time, so the §9 stop rule applies: no third attempt, and the count of 72 is
+not lowered. Parent-booked generation is 1,846; the real spend is 1,949,
+because a quarantined dialogue books zero at the parent while its child
+still pays.
+
+**The second failure was one capital letter (defect ledger 23).** The reader
+quoted the learner correctly and wrote the first letter as a capital; the
+frozen rule folds curly quote marks but compares case exactly, so it judged
+a misquote, three times, and turn 8 of that dialogue was never read.
+Run-wide: 625 reader attempts, 30 refused, 12 on the quote rule, all 12
+letter case only, exactly 1 turn left unread.
+
+**The human ruled it a pass, 16 August, and set the count at 575.** The
+ruling is a committed artifact
+(`docs/adaptation-refinement/guarded-main-block/reviewer-ruling-001-letter-case-quote.json`)
+written as a blind rule, not a named exception: a turn is forgiven only when
+every recorded attempt failed on the quote rule alone and every quote comes
+back as one unique quote with case ignored. Run over the whole block it
+admits exactly one turn and no other, and the negative control holds — turn
+3 of the same dialogue failed once too, on a different rule, and is refused.
+The unread turn stays unread and drops from the corpus, because the tutor
+did take that turn with no reading of the learner. So the block supplies
+**575 cases where 576 were registered**. The manifest keeps its 576
+untouched; the parent computes 576 − 1 and records both numbers with the
+reason. The dialogue is admitted from artifacts already on disk — nothing
+paid was re-run, and no pinned file changed.
+
+A bug in that admission pass was caught by a zero-call probe over the real
+checkpoint before any spend: the checkpoint records attempts, not dialogues,
+so the twice-quarantined seed 659 was admitted twice — 73 dialogues, 574
+cases. The corpus builder refused it rather than emit a corpus with one
+dialogue scored twice. The pass is now keyed by dialogue id (defect ledger
+24). The probe now reports 72 dialogues, 1 dropped turn, 575 cases, and the
+fingerprint guard passes.
+
+Carrying the relaxation into the rule itself is
+[warrant-quote-rule-letter-case](warrant-quote-rule-letter-case.md), blocked
+until this run closes because that file is pinned by the instrument freeze.
+
+**Next: the reader phases, which need their own GO note and their own
+approval. Archive before anything else when they end.**

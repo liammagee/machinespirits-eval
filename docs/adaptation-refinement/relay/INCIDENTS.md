@@ -157,6 +157,46 @@ I1, on the other learner.
   must be an ancestor of head, and no fingerprinted instrument file may
   have moved between there and head. A stale preflight is still refused.
   A first launch still writes its preflight at head.
+- **16 Aug, the re-take** — the resume ran and re-took all three
+  children, one attempt each, as relay 119 §9 allows. Two cleared:
+  dialogue 2 (seed 654) sealed clean at 8 turns for 27 calls, and
+  dialogue 54 (seed 662) at 8 turns for 25 calls. Dialogue 34 (seed 659)
+  ran all 8 turns and its child closed, but turn 8's reading failed all
+  three attempts again, so the child sealed `learner_analysis_incomplete`
+  and the parent quarantined it a second time. That child spent 27 calls
+  the parent books as zero. Parent-booked generation is now **1,846**;
+  the real generation spend is **1,949** — 1,846 booked, plus the 76 the
+  first round's three children spent, plus these 27. The §9 stop rule
+  applies: one re-take only, so no third attempt, and the driver's count
+  of 72 is not lowered.
+- **Diagnosis of the second failure, zero calls** — the reader quoted the
+  learner correctly and capitalised the first letter. The frozen rule
+  folds curly quote marks but compares case exactly, so it judged a
+  misquote. Defect ledger entry 23. Across the whole run: 625 reader
+  attempts, 30 refused, 12 on the quote rule, and all 12 letter case
+  only. Exactly one turn in the run was left unread by it.
+- **Reviewer ruling, 16 Aug** — the human reviewer ruled the case
+  difference a pass on the condition and declined to count the refusal
+  against the run, and set the case count at 575. The ruling is
+  committed as an artifact and written as a blind rule, not a named
+  exception: it forgives a turn only when every recorded attempt failed
+  on the quote rule alone and every quote comes back as one unique quote
+  with case ignored. Applied to the run it admits exactly one turn and
+  no other, and the negative control holds — turn 3 of the same dialogue,
+  which also failed once but on a different rule and was read on a later
+  attempt, is refused. The unread turn stays unread and drops from the
+  corpus, so the run supplies 575 cases where 576 were registered. The
+  manifest keeps its 576; the parent computes 576 − 1 and records both.
+  Nothing paid was re-run: the dialogue is admitted from the artifacts
+  already on disk.
+- **Repair, 16 Aug** — a bug in that admission pass, found by an
+  end-to-end probe over the real checkpoint before any spend. The
+  checkpoint records attempts, not dialogues, so seed 659 had two
+  quarantined rows pointing at one directory and both were admitted: 73
+  dialogues, 2 dropped turns, 574 cases. The corpus builder refused it
+  (`opaque annotation sample id collision`) rather than emit a corpus
+  with one dialogue scored twice. The pass is now keyed by dialogue id.
+  Defect ledger entry 24.
 
 ### Invariants that held
 
@@ -187,3 +227,19 @@ steps are added to them, each learned here:
    that reads absolute paths in a system temp directory can be broken
    by housekeeping with no relation to the study. Copy those files
    somewhere durable as soon as a run depends on them, not after.
+8. **Count dialogues, not checkpoint rows.** A re-taken dialogue leaves
+   one row per attempt under one id, and every one of those rows points
+   at the same directory. Any count taken over rows double-counts the
+   moment a run is resumed. This is the second time the attempt/dialogue
+   distinction has cost a repair, so treat the checkpoint as a log of
+   attempts and key every decision by id.
+9. **Prove a ruling against the whole run before applying it.** A
+   reviewer ruling is written as a rule, so it must be run blind over
+   every quarantined dialogue and the count of what it admits compared
+   against the count the ruling declares. Check the negative control too
+   — a turn that failed for a different reason must still be refused.
+   Both checks cost nothing and both were run here.
+10. **The launch simulation does not reach the reader phase.** It
+   re-runs the guard chain up to generation, so a reader-side binding
+   fault would not surface in it. A reader-phase resume needs its own
+   zero-call check of the reader bindings before the note is approved.

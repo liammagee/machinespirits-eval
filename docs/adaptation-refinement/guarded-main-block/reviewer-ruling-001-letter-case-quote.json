@@ -1,0 +1,24 @@
+{
+  "schema": "machinespirits.adaptation-refinement.typographic-quote-reviewer-ruling.v1",
+  "ruling_id": "guarded-main-block-001",
+  "ruled_by": "Liam Magee",
+  "ruled_on": "2026-08-16",
+  "run_id": "guarded-learner-main-block-2026-08-15",
+  "question": "Turn 8 of one dialogue was never read. The reader had to quote the learner word for word, and three times it quoted the learner's words but wrote the first letter as a capital where the learner used lower case. The frozen rule counted that as a misquote and refused the reading. Does that refusal fail the run?",
+  "ruling": "No. Letter case does not change which words the reader quoted, or their order, or where they sit in the learner's message. The reviewer rules this a pass on the condition and declines to count the refusal against the run.",
+  "effect": "The dialogue is admitted with its other seven turns. Turn 8 stays unread and drops out of the corpus, because the tutor did take that turn with no reading of the learner and no ruling can undo that. The run therefore supplies 575 cases where 576 were registered.",
+  "rule": "A turn qualifies only when every recorded reading attempt was refused on the literal-quote rule alone, and every quote it offered comes back as one unique quote when the frozen rule is run again with letter case ignored. The frozen rule already folds curly quote marks to straight ones, so letter case is the whole of the relaxation. Any other refusal reason, any quote that is a real misquote, any quote that then matches two places, and the turn does not qualify.",
+  "applies_to": "Any dialogue in this run whose only defect is unread turns that meet the rule. The rule names no dialogue and no turn: it is applied blind to every quarantined dialogue, and the run refuses if the count of dropped turns is not the count declared here.",
+  "expected_dropped_turns": 1,
+  "expected_case_count": 575,
+  "registered_case_count": 576,
+  "registration_untouched": "docs/adaptation-refinement/guarded-main-block/guarded-main-block-manifest.json still registers 576. This ruling does not edit it. The run records both numbers and the reason for the difference.",
+  "carry_forward": "Later evaluations should relax the quote rule itself to ignore letter case. That file is pinned by this run's instrument freeze and cannot change while the run is open, so the change lands after the run closes.",
+  "evidence": {
+    "reader_attempts_in_run": 625,
+    "attempts_refused": 30,
+    "refused_on_the_quote_rule": 12,
+    "of_those_that_were_letter_case_only": 12,
+    "turns_left_unread_across_the_whole_run": 1
+  }
+}

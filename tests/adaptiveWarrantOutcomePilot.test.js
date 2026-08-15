@@ -11,6 +11,8 @@ import {
   OUTCOME_PILOT_CHECKPOINT_SCHEMA,
   OUTCOME_PILOT_FREEZE_SCHEMA,
   OUTCOME_PILOT_PER_DIALOGUE_CAP,
+  OUTCOME_RULED_COMPLETE_STATUS,
+  applyReviewerRulingToCheckpoint,
   createOutcomePilotBudget,
   executeOutcomePilot,
   guardOutcomeAnnotationFingerprints,
@@ -1480,4 +1482,141 @@ test('the prepared-run guard fails when the seed count does not match the shape'
   assert.equal(result.run_shape, 'main-block');
   assert.equal(result.expected_prepared_run_count, 72);
   assert.equal(result.prepared_run_count, 18);
+});
+
+// --- reviewer ruling over quarantined dialogues -----------------------------
+//
+// A dialogue that was re-taken leaves one checkpoint row per attempt under the
+// same id, and every row points at the same directory on disk. These tests hold
+// the line that one dialogue can be admitted once and once only, whichever way
+// its attempts ended.
+
+const RULING_STUB = { artifact: { path: 'docs/ruling.json', sha256: 'a'.repeat(64) }, expected_dropped_turns: 1 };
+
+function rulingCheckpoint(dialogues) {
+  return {
+    dialogues,
+    quarantined_dialogues: dialogues.filter((row) => row.status === 'quarantined').map((row) => ({ id: row.id })),
+  };
+}
+
+function quarantinedRow(id, attempt) {
+  return { id, order: 1, status: 'quarantined', attempt, error: 'child seal is not complete', result: null };
+}
+
+function admitsEverything({ job }) {
+  return {
+    admitted: true,
+    dropped_turns: [8],
+    turns: [{ turn: 8, qualifies: true }],
+    row: { tracePath: `/runs/${job.id}/trace.jsonl`, turnCount: 8, learnerAnalysisUnanalyzedTurns: [8] },
+  };
+}
+
+test('two quarantined attempts at one dialogue are admitted once, not twice', () => {
+  const checkpoint = rulingCheckpoint([
+    quarantinedRow('dialogue-a', 1),
+    quarantinedRow('dialogue-a', 2),
+    { id: 'dialogue-b', order: 2, status: 'complete' },
+  ]);
+  const decisions = applyReviewerRulingToCheckpoint({
+    checkpoint,
+    jobs: [{ id: 'dialogue-a' }, { id: 'dialogue-b' }],
+    ruling: RULING_STUB,
+    admitUnderRuling: admitsEverything,
+  });
+
+  const admitted = checkpoint.dialogues.filter(
+    (row) => row.status === 'complete' || row.status === OUTCOME_RULED_COMPLETE_STATUS,
+  );
+  assert.equal(admitted.length, 2);
+  assert.equal(new Set(admitted.map((row) => row.id)).size, 2);
+  // The later attempt is the one on disk, so it is the one admitted.
+  assert.equal(checkpoint.dialogues.find((row) => row.status === OUTCOME_RULED_COMPLETE_STATUS).attempt, 2);
+  assert.equal(decisions.filter((row) => row.admitted).length, 1);
+  assert.equal(decisions.filter((row) => row.skipped).length, 1);
+  assert.match(decisions.find((row) => row.skipped).reason, /superseded by a later quarantined attempt/u);
+  assert.deepEqual(checkpoint.quarantined_dialogues, []);
+});
+
+test('a stale quarantined attempt is skipped when a later attempt already sealed clean', () => {
+  const checkpoint = rulingCheckpoint([
+    quarantinedRow('dialogue-a', 1),
+    { id: 'dialogue-a', order: 1, status: 'complete', attempt: 2 },
+  ]);
+  let consulted = 0;
+  const decisions = applyReviewerRulingToCheckpoint({
+    checkpoint,
+    jobs: [{ id: 'dialogue-a' }],
+    ruling: RULING_STUB,
+    admitUnderRuling: (input) => {
+      consulted += 1;
+      return admitsEverything(input);
+    },
+  });
+  // A dialogue that already passed is never put to the ruling at all.
+  assert.equal(consulted, 0);
+  assert.equal(decisions.length, 1);
+  assert.equal(decisions[0].skipped, true);
+  assert.match(decisions[0].reason, /clean seal/u);
+  assert.equal(checkpoint.dialogues.filter((row) => row.status === OUTCOME_RULED_COMPLETE_STATUS).length, 0);
+});
+
+test('no ruling means no admission and no change to the checkpoint', () => {
+  const checkpoint = rulingCheckpoint([quarantinedRow('dialogue-a', 1)]);
+  const decisions = applyReviewerRulingToCheckpoint({
+    checkpoint,
+    jobs: [{ id: 'dialogue-a' }],
+    ruling: null,
+    admitUnderRuling: admitsEverything,
+  });
+  assert.deepEqual(decisions, []);
+  assert.equal(checkpoint.dialogues[0].status, 'quarantined');
+});
+
+test('a refused admission leaves the dialogue quarantined and records why', () => {
+  const checkpoint = rulingCheckpoint([quarantinedRow('dialogue-a', 1)]);
+  const decisions = applyReviewerRulingToCheckpoint({
+    checkpoint,
+    jobs: [{ id: 'dialogue-a' }],
+    ruling: RULING_STUB,
+    admitUnderRuling: () => ({
+      admitted: false,
+      reason: 'turn 8: attempt 1 was also rejected for: overlapping_events',
+    }),
+  });
+  assert.equal(checkpoint.dialogues[0].status, 'quarantined');
+  assert.equal(checkpoint.quarantined_dialogues.length, 1);
+  assert.equal(decisions[0].admitted, false);
+  assert.match(decisions[0].reason, /overlapping_events/u);
+});
+
+test('a resume does not re-run a dialogue admitted under the ruling', async (t) => {
+  const directory = temporaryDirectory(t);
+  const checkpointPath = path.join(directory, 'checkpoint.json');
+  const checkpoint = {
+    schema: OUTCOME_PILOT_CHECKPOINT_SCHEMA,
+    status: 'generation',
+    call_budget: {
+      plan: { generation: 540, presence_readers: 288, decision_readers: 288, total: 1116 },
+      actual: { generation: 26, presence_readers: 0, decision_readers: 0, total: 26 },
+      delta: { generation: 514, presence_readers: 288, decision_readers: 288, total: 1090 },
+      events: [],
+    },
+    dialogues: [{ id: 'ruled-dialogue', status: OUTCOME_RULED_COMPLETE_STATUS }],
+    quarantined_dialogues: [],
+  };
+  const budget = createOutcomePilotBudget({ checkpointPath, checkpoint });
+  let launches = 0;
+  await runOutcomeGeneration({
+    jobs: [{ id: 'ruled-dialogue', command: ['false'] }],
+    checkpoint,
+    budget,
+    runDialogue: async () => {
+      launches += 1;
+      return { status: 1 };
+    },
+  });
+  assert.equal(launches, 0);
+  assert.equal(checkpoint.dialogues.length, 1);
 });
