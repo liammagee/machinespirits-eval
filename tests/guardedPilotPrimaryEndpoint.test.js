@@ -5,14 +5,16 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
-  EVIDENCE_ACTS_NARROW,
-  EVIDENCE_ACTS_WIDE,
+  EVIDENCE_ACTS,
   HOLDING_OUT_ACTS,
+  REJECTED_WIDE_ACTS,
+  SECOND_COUNT_ACTS,
   findDeliveredChallenges,
   readContractOutcome,
   RESPONSE_WINDOW_TURNS,
   scoreGuardedPilotPrimaryEndpoint,
 } from '../scripts/score-guarded-pilot-primary-endpoint.js';
+import { ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS } from '../services/adaptiveWarrantSemanticEvents.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -57,14 +59,38 @@ test('a challenge near the end of the dialogue gets a short window, and says so'
 });
 
 test('a demand for evidence is never counted as producing one', () => {
-  assert.ok(!EVIDENCE_ACTS_NARROW.includes('learner_evidence_demand'));
-  assert.ok(!EVIDENCE_ACTS_WIDE.includes('learner_evidence_demand'));
+  // relay 106 built the demand and the request to be structurally identical.
+  // They part on stance, so the demand sits with the holding-out acts.
+  assert.ok(EVIDENCE_ACTS.includes('tutor_directed_public_result_request'));
+  assert.ok(!EVIDENCE_ACTS.includes('learner_evidence_demand'));
+  assert.ok(!SECOND_COUNT_ACTS.includes('learner_evidence_demand'));
   assert.ok(HOLDING_OUT_ACTS.includes('learner_evidence_demand'));
-  // The wide reading differs from the narrow one only by these two acts.
-  assert.deepEqual(
-    EVIDENCE_ACTS_WIDE.filter((act) => !EVIDENCE_ACTS_NARROW.includes(act)),
-    ['analytic_contribution', 'criterion_question'],
-  );
+});
+
+test('relay 116 gives every act in the vocabulary exactly one place', () => {
+  // The note calls an act in two bands, or in none, a defect in itself.
+  const NEITHER = [
+    'tutor_selection_request',
+    'learner_wording_request',
+    'transfer_to_learner',
+    'repair_request',
+    'stall',
+    'register_complaint',
+    'repetition_complaint',
+    'low_agency_deferral',
+    'analytic_contribution',
+    'other',
+  ];
+  const bands = [EVIDENCE_ACTS, SECOND_COUNT_ACTS, HOLDING_OUT_ACTS, NEITHER];
+  const placed = bands.flat();
+  assert.equal(placed.length, ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS.length, 'the bands cover the whole vocabulary');
+  assert.equal(new Set(placed).size, placed.length, 'no act sits in two bands');
+  for (const act of ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS) {
+    assert.ok(placed.includes(act), `${act} has no band; relay 116 §4 must name it`);
+  }
+  // Reasoning aloud is turned down, and the turned-down reading is kept.
+  assert.ok(!EVIDENCE_ACTS.includes('analytic_contribution'));
+  assert.ok(REJECTED_WIDE_ACTS.includes('analytic_contribution'));
 });
 
 test('the gate contract is read off the turn after the challenge, and only for its own family', () => {
@@ -81,10 +107,16 @@ test('the gate contract is read off the turn after the challenge, and only for i
 test('the pilot reads the endpoint in the gated arm only', { skip: PILOT_SKIP }, () => {
   const report = scoreGuardedPilotPrimaryEndpoint(PILOT);
   assert.equal(report.measured_never_gated, true, 'a null on this endpoint is a finding, never a gate');
+  assert.equal(report.act_list_registered, true);
   assert.equal(report.summary.delivered_challenges, 10);
   assert.equal(report.arms.bare.delivered_challenges, 0);
   assert.equal(report.arms.standing_permission.delivered_challenges, 0);
-  // The narrow and wide readings disagree far too much to be reported as one number.
-  assert.ok(report.summary.both_readers_wide > report.summary.both_readers_narrow);
-  assert.equal(report.act_list_not_registered, true);
+  assert.equal(report.summary.both_readers, 3, 'the endpoint under the registered list');
+  assert.equal(report.summary.either_reader, 4);
+  // relay 116 §2 guard: neither second-count act appears, so where they sit
+  // cannot have been chosen to move this pilot's number.
+  assert.equal(report.summary.both_readers_second_count, 0);
+  // The turned-down reading stays computed, so the record shows what it was.
+  assert.equal(report.summary.both_readers_rejected_wide, 9);
+  assert.equal(report.summary.gate_contract_met, 7, 'the gate over-counts, and is never the endpoint');
 });

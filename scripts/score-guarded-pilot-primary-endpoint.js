@@ -12,9 +12,10 @@
  *
  * Zero model calls. Reads a finished run.
  *
- * The registration names no act list for "a public evidence check", so this
- * reports a narrow and a wide reading side by side and says which acts each
- * one holds. Fixing the list is work for the main-block registration.
+ * Act list: relay 116 fixes it for the main block. An act counts when the
+ * learner puts a named public record in play AND is exposed to what it says.
+ * Every one of the 18 acts in the vocabulary has a place there. The reading
+ * relay 116 turned down is still computed, so the record shows what it was.
  *
  * Usage:
  *   node scripts/score-guarded-pilot-primary-endpoint.js --run <run-dir> [--out <file>] [--json]
@@ -32,22 +33,22 @@ export const GUARDED_PILOT_PRIMARY_SCHEMA = 'machinespirits.adaptation-refinemen
 export const RESPONSE_WINDOW_TURNS = 2;
 
 /**
- * Narrow reading — the learner runs a public check, directs one, or takes a
- * result into the record. `learner_evidence_demand` is deliberately absent: by
- * the v3.3 preference rule it is the same request worn as a defensive move.
+ * The registered list (relay 116). An act counts when the learner puts a named
+ * public record in play AND is exposed to what it says. `learner_evidence_demand`
+ * fails the second test: it is the same request pushed outward, so the learner
+ * risks nothing by it.
  */
-export const EVIDENCE_ACTS_NARROW = Object.freeze([
+export const EVIDENCE_ACTS = Object.freeze([
   'learner_proposed_test',
   'tutor_directed_public_result_request',
   'learner_record_entry_request',
 ]);
 
-/** Wide reading — adds analytic work and criterion questions. */
-export const EVIDENCE_ACTS_WIDE = Object.freeze([
-  ...EVIDENCE_ACTS_NARROW,
-  'analytic_contribution',
-  'criterion_question',
-]);
+/**
+ * Second count (relay 116 §4). The learner accepts a check without naming a
+ * record. Reported beside the endpoint, never pooled into it.
+ */
+export const SECOND_COUNT_ACTS = Object.freeze(['criterion_question', 'withdrawal']);
 
 /** The opposite conduct the endpoint contrasts with. */
 export const HOLDING_OUT_ACTS = Object.freeze([
@@ -55,6 +56,13 @@ export const HOLDING_OUT_ACTS = Object.freeze([
   'learner_evidence_dismissal',
   'learner_evidence_demand',
 ]);
+
+/**
+ * Rejected at relay 116 §3, kept so the record shows what was turned down.
+ * `analytic_contribution` names no record and rode beside over-claiming in 8 of
+ * the pilot's 10 windows, so counting it would invert the endpoint.
+ */
+export const REJECTED_WIDE_ACTS = Object.freeze([...EVIDENCE_ACTS, 'analytic_contribution', 'criterion_question']);
 
 const CHALLENGE_FAMILY = 'challenge_resistance';
 const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -139,29 +147,36 @@ export function scoreGuardedPilotPrimaryEndpoint(runDir) {
         for (const act of cells.get(`${row.dialogue_id}#${turn}`) || []) acts.add(act);
       readers[readerId] = {
         acts: [...acts].sort(),
-        narrow: readingFor(acts, EVIDENCE_ACTS_NARROW),
-        wide: readingFor(acts, EVIDENCE_ACTS_WIDE),
+        registered: readingFor(acts, EVIDENCE_ACTS),
+        second_count: readingFor(acts, SECOND_COUNT_ACTS),
+        rejected_wide: readingFor(acts, REJECTED_WIDE_ACTS),
       };
     }
-    const votes = (width) => Object.values(readers).filter((row2) => row2[width].evidence.length > 0).length;
+    const votes = (band) => Object.values(readers).filter((row2) => row2[band].evidence.length > 0).length;
     return {
       ...row,
       gate_contract: readContractOutcome(dialogue, row.turn),
       readers,
-      narrow_readers_seeing_evidence: votes('narrow'),
-      wide_readers_seeing_evidence: votes('wide'),
+      readers_seeing_evidence: votes('registered'),
+      readers_seeing_second_count: votes('second_count'),
+      readers_seeing_rejected_wide: votes('rejected_wide'),
     };
   });
   const rate = (hits, total) => (total ? Number((hits / total).toFixed(3)) : null);
   const total = challenges.length;
+  // A challenge near the end of a dialogue gets a short reply window. Those
+  // stay in the denominator, and the full-window count is reported beside it.
+  const full = challenges.filter((row) => !row.censored);
   const summary = {
     delivered_challenges: total,
-    censored_windows: challenges.filter((row) => row.censored).length,
+    censored_windows: total - full.length,
     gate_contract_met: challenges.filter((row) => row.gate_contract.contract_met).length,
-    both_readers_narrow: challenges.filter((row) => row.narrow_readers_seeing_evidence === 2).length,
-    either_reader_narrow: challenges.filter((row) => row.narrow_readers_seeing_evidence >= 1).length,
-    both_readers_wide: challenges.filter((row) => row.wide_readers_seeing_evidence === 2).length,
-    either_reader_wide: challenges.filter((row) => row.wide_readers_seeing_evidence >= 1).length,
+    both_readers: challenges.filter((row) => row.readers_seeing_evidence === 2).length,
+    either_reader: challenges.filter((row) => row.readers_seeing_evidence >= 1).length,
+    both_readers_full_windows_only: full.filter((row) => row.readers_seeing_evidence === 2).length,
+    full_windows: full.length,
+    both_readers_second_count: challenges.filter((row) => row.readers_seeing_second_count === 2).length,
+    both_readers_rejected_wide: challenges.filter((row) => row.readers_seeing_rejected_wide === 2).length,
   };
   // The other two arms deliver no challenge at all, so the endpoint has no
   // denominator there. Say so rather than reporting a zero.
@@ -177,17 +192,23 @@ export function scoreGuardedPilotPrimaryEndpoint(runDir) {
     schema: GUARDED_PILOT_PRIMARY_SCHEMA,
     run_dir: resolved,
     registration: 'docs/adaptation-refinement/relay/110-registration-guarded-pilot.md#3',
+    act_list_registration: 'docs/adaptation-refinement/relay/116-act-list-main-block.md',
     measured_never_gated: true,
-    act_list_not_registered: true,
-    evidence_acts: { narrow: EVIDENCE_ACTS_NARROW, wide: EVIDENCE_ACTS_WIDE, holding_out: HOLDING_OUT_ACTS },
+    act_list_registered: true,
+    evidence_acts: {
+      registered: EVIDENCE_ACTS,
+      second_count: SECOND_COUNT_ACTS,
+      holding_out: HOLDING_OUT_ACTS,
+      rejected_wide: REJECTED_WIDE_ACTS,
+    },
     summary: {
       ...summary,
       rates: {
         gate_contract_met: rate(summary.gate_contract_met, total),
-        both_readers_narrow: rate(summary.both_readers_narrow, total),
-        either_reader_narrow: rate(summary.either_reader_narrow, total),
-        both_readers_wide: rate(summary.both_readers_wide, total),
-        either_reader_wide: rate(summary.either_reader_wide, total),
+        both_readers: rate(summary.both_readers, total),
+        either_reader: rate(summary.either_reader, total),
+        both_readers_full_windows_only: rate(summary.both_readers_full_windows_only, summary.full_windows),
+        both_readers_rejected_wide: rate(summary.both_readers_rejected_wide, total),
       },
     },
     arms: armDenominators,
@@ -201,23 +222,28 @@ function render(report) {
     'guarded pilot — primary conduct endpoint (measured, never gated)',
     `run ${report.run_dir}`,
     '',
-    `delivered challenges: ${s.delivered_challenges}; censored windows ${s.censored_windows}`,
+    `delivered challenges: ${s.delivered_challenges}; short reply windows ${s.censored_windows}`,
     '',
-    `gate contract met on the next turn : ${s.gate_contract_met}/${s.delivered_challenges}  (${s.rates.gate_contract_met})`,
-    `both readers see an evidence check : ${s.both_readers_narrow}/${s.delivered_challenges}  (${s.rates.both_readers_narrow})  narrow`,
-    `either reader sees one             : ${s.either_reader_narrow}/${s.delivered_challenges}  (${s.rates.either_reader_narrow})  narrow`,
-    `both readers, wide reading         : ${s.both_readers_wide}/${s.delivered_challenges}  (${s.rates.both_readers_wide})`,
-    `either reader, wide reading        : ${s.either_reader_wide}/${s.delivered_challenges}  (${s.rates.either_reader_wide})`,
+    `ENDPOINT, both readers      : ${s.both_readers}/${s.delivered_challenges}  (${s.rates.both_readers})`,
+    `  either reader             : ${s.either_reader}/${s.delivered_challenges}  (${s.rates.either_reader})`,
+    `  full reply windows only   : ${s.both_readers_full_windows_only}/${s.full_windows}  (${s.rates.both_readers_full_windows_only})`,
     '',
-    `narrow acts: ${report.evidence_acts.narrow.join(', ')}`,
-    `wide adds  : ${report.evidence_acts.wide.filter((act) => !report.evidence_acts.narrow.includes(act)).join(', ')}`,
+    `second count (accepts, names no record) : ${s.both_readers_second_count}/${s.delivered_challenges}`,
+    `rejected wide reading, kept on record   : ${s.both_readers_rejected_wide}/${s.delivered_challenges}  (${s.rates.both_readers_rejected_wide})`,
+    `the gate's own uptake check             : ${s.gate_contract_met}/${s.delivered_challenges}  (${s.rates.gate_contract_met})  not the endpoint`,
+    '',
+    `counts     : ${report.evidence_acts.registered.join(', ')}`,
+    `second     : ${report.evidence_acts.second_count.join(', ')}`,
+    `holding out: ${report.evidence_acts.holding_out.join(', ')}`,
     '',
     'per challenge:',
   ];
   for (const row of report.challenges) {
     lines.push(
       `  ${row.dialogue_id.replace('outcome-pilot-', '')} turn ${row.turn} -> turns ${row.response_turns.join(',')}: ` +
-        `gate ${row.gate_contract.contract_met ? 'met' : 'not met'}, readers ${row.narrow_readers_seeing_evidence}/2 narrow, ${row.wide_readers_seeing_evidence}/2 wide`,
+        `readers ${row.readers_seeing_evidence}/2` +
+        `${row.censored ? ' (short window)' : ''}` +
+        `, gate ${row.gate_contract.contract_met ? 'met' : 'not met'}`,
     );
   }
   lines.push('', 'arms:');
