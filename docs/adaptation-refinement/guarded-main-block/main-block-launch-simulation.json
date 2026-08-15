@@ -1,0 +1,92 @@
+{
+  "schema": "machinespirits.adaptation-refinement.guarded-main-block-launch-simulation.v1",
+  "zero_model_calls": true,
+  "status": "passed",
+  "manifest": {
+    "path": "docs/adaptation-refinement/guarded-main-block/guarded-main-block-manifest.json",
+    "sha256": "f7db7dc40c840aec4b8e03ef6636ca8b1da438d9b59136349a60e4d3fff92e81"
+  },
+  "run_shape": "main-block",
+  "size": {
+    "seeds": [
+      654,
+      655,
+      656,
+      657,
+      658,
+      659,
+      660,
+      661,
+      662,
+      663,
+      664,
+      665
+    ],
+    "dialogues": 72,
+    "turns_per_dialogue": 8,
+    "cases": 576,
+    "readers_per_channel": 2
+  },
+  "planned_calls": {
+    "generation": 2160,
+    "presence_readers": 1152,
+    "decision_readers": 1152,
+    "total": 4464,
+    "arithmetic": "(72 x 30 cap) + (2 x 576) + (2 x 576) = 4464; measured live unit 26 per dialogue (report 069)",
+    "counter_before": 11559,
+    "counter_after_if_completed": 16023,
+    "ceiling": 19337,
+    "remaining_after_if_completed": 3314
+  },
+  "launch_authorized": false,
+  "checks": [
+    {
+      "name": "manifest_binds_to_main_block",
+      "expectation": "the sealed manifest reads as a main-block run",
+      "held": true,
+      "detail": "72 dialogues, 576 cases, 4464 calls"
+    },
+    {
+      "name": "preparation_guard_passed",
+      "expectation": "the prepared-run identity guard passes at 72 dialogues",
+      "held": true,
+      "detail": "72 prepared runs, no duplicate and no overlap"
+    },
+    {
+      "name": "counter_arithmetic_closes",
+      "expectation": "the ledger fields add up under the campaign ceiling",
+      "held": true,
+      "detail": "11559 + 4464 = 16023, 3314 left under 19337"
+    },
+    {
+      "name": "pilot_go_note_refused",
+      "expectation": "the pilot's GO note cannot launch the main block",
+      "held": true,
+      "detail": "outcome main-block refuses: go note lacks the GO and the 4464-call scope"
+    },
+    {
+      "name": "shape_flag_mismatch_refused",
+      "expectation": "--shape pilot cannot launch a main-block manifest",
+      "held": true,
+      "detail": "outcome run refuses: --shape pilot does not match the manifest size main-block"
+    },
+    {
+      "name": "pilot_checkpoint_resume_refused",
+      "expectation": "a pilot checkpoint cannot be resumed into this run",
+      "held": true,
+      "detail": "--resume refuses: the checkpoint is a pilot run and the manifest is a main-block run"
+    },
+    {
+      "name": "budget_opens_at_zero",
+      "expectation": "the budget opens on the main-block plan with nothing spent",
+      "held": true,
+      "detail": "plan 4464, actual 0"
+    },
+    {
+      "name": "no_go_note_supplied",
+      "expectation": "without a GO note the block cannot launch",
+      "held": true,
+      "detail": "no --go-note given; the run stays unauthorized"
+    }
+  ]
+}

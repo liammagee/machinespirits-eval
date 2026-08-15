@@ -11,6 +11,7 @@ import {
   GUARDED_PILOT_MANIFEST_DEFAULT_BASE,
   GUARDED_PILOT_MANIFEST_DEFAULT_OUT,
   GUARDED_RESEAL_DIGEST_SOURCES,
+  OUTCOME_RESIZED_MANIFEST_KEYS,
   auditFrozenResponseSchemaActCoverage,
   auditProviderResponseSchemaPin,
   classifyGuardedResealDrift,
@@ -27,7 +28,12 @@ import {
   validateOutcomeFreezeFormForFrozenDecisionRunner,
   verifyOutcomePilotManifestBindings,
 } from '../scripts/run-adaptive-warrant-outcome-pilot.js';
-import { guardOutcomePilotPreparation } from '../scripts/prepare-adaptive-warrant-outcome-study.js';
+import {
+  OUTCOME_RUN_SHAPES,
+  buildOutcomeInterleavedAssignment,
+  guardOutcomePilotPreparation,
+} from '../scripts/prepare-adaptive-warrant-outcome-study.js';
+import { simulateGuardedMainBlockLaunch } from '../scripts/simulate-guarded-main-block-launch.js';
 import { adaptiveWarrantSemanticInstrumentBindings } from '../services/adaptiveWarrantSemanticPreflight.js';
 import { ADAPTIVE_WARRANT_SEMANTIC_DEFENSIVE_SPEECH_ACTS } from '../services/adaptiveWarrantSemanticEvents.js';
 
@@ -498,4 +504,121 @@ test('the freeze re-seal refuses an acceptance artifact that is not admissible f
       }),
     /no longer hashes to its recorded value/u,
   );
+});
+
+// --- Resizing a sealed manifest to the guarded main block ---
+
+test('sealing at pilot size leaves every size field exactly as the committed manifest has it', () => {
+  const sealed = sealGuardedOutcomePilotManifest({}).manifest;
+  const committed = JSON.parse(fs.readFileSync(path.resolve(ROOT, GUARDED_PILOT_MANIFEST_DEFAULT_OUT), 'utf8'));
+  for (const key of ['seeds', 'interleaved_condition_assignment', 'case_extraction', 'planned_calls']) {
+    assert.deepEqual(sealed[key], committed[key], key);
+  }
+  assert.equal('run_shape' in sealed, false);
+  assert.equal(sealed.inherits_from.unchanged.length, 8);
+  assert.equal('resized' in sealed.inherits_from, false);
+  assert.equal(sealed.reseal.ledger_note.stale, true);
+});
+
+test('the main-block seal rebuilds the five size fields and inherits the rest', () => {
+  const { manifest, base } = sealGuardedOutcomePilotManifest({
+    shape: OUTCOME_RUN_SHAPES['main-block'],
+    counterBefore: 11559,
+  });
+  assert.equal(manifest.run_shape, 'main-block');
+  assert.deepEqual(manifest.seeds, [654, 655, 656, 657, 658, 659, 660, 661, 662, 663, 664, 665]);
+  assert.equal(manifest.interleaved_condition_assignment.length, 72);
+  assert.equal(manifest.case_extraction.dialogues, 72);
+  assert.equal(manifest.case_extraction.expected_case_count, 576);
+  assert.deepEqual(manifest.planned_calls, {
+    generation: 2160,
+    presence_readers: 1152,
+    decision_readers: 1152,
+    total: 4464,
+    arithmetic: '(72 x 30 cap) + (2 x 576) + (2 x 576) = 4464; measured live unit 26 per dialogue (report 069)',
+    counter_before: 11559,
+    counter_after_if_completed: 16023,
+    ceiling: 19337,
+    remaining_after_if_completed: 3314,
+  });
+  // The size fields move out of the inherited list and into their own.
+  assert.deepEqual(manifest.inherits_from.resized, [...OUTCOME_RESIZED_MANIFEST_KEYS]);
+  for (const key of OUTCOME_RESIZED_MANIFEST_KEYS) {
+    assert.equal(manifest.inherits_from.unchanged.includes(key), false, key);
+  }
+  assert.deepEqual(manifest.inherits_from.unchanged, [
+    'worlds',
+    'conditions',
+    'standing_permission',
+    'decision_channel',
+  ]);
+  // Everything that describes the study rather than its size is untouched.
+  assert.deepEqual(manifest.worlds, base.worlds);
+  assert.deepEqual(manifest.standing_permission, base.standing_permission);
+  assert.equal(manifest.launch_authorized, false);
+  assert.equal(manifest.reseal.ledger_note.stale, false);
+  assert.equal(manifest.reseal.ledger_note.counter_read_at_reseal, 11559);
+});
+
+test('a resize without the live counter, or one that would pass the ceiling, is refused', () => {
+  assert.throws(
+    () => sealGuardedOutcomePilotManifest({ shape: OUTCOME_RUN_SHAPES['main-block'] }),
+    /needs --counter-before/u,
+  );
+  assert.throws(
+    () => sealGuardedOutcomePilotManifest({ shape: OUTCOME_RUN_SHAPES['main-block'], counterBefore: 15000 }),
+    /would pass the 19337 ceiling/u,
+  );
+});
+
+test('the rebuilt pilot condition order reproduces the frozen eighteen rows', () => {
+  const committed = JSON.parse(fs.readFileSync(path.resolve(ROOT, GUARDED_PILOT_MANIFEST_DEFAULT_OUT), 'utf8'));
+  const rebuilt = buildOutcomeInterleavedAssignment({
+    shape: OUTCOME_RUN_SHAPES.pilot,
+    worldIds: committed.worlds.map((world) => world.id),
+  });
+  assert.deepEqual(rebuilt, committed.interleaved_condition_assignment);
+});
+
+test('the main-block condition order covers every cell once and balances the three conditions', () => {
+  const committed = JSON.parse(fs.readFileSync(path.resolve(ROOT, GUARDED_PILOT_MANIFEST_DEFAULT_OUT), 'utf8'));
+  const rows = buildOutcomeInterleavedAssignment({
+    shape: OUTCOME_RUN_SHAPES['main-block'],
+    worldIds: committed.worlds.map((world) => world.id),
+  });
+  assert.equal(rows.length, 72);
+  assert.equal(new Set(rows.map((row) => `${row.world}|${row.seed}|${row.condition}`)).size, 72);
+  for (const condition of ['bare', 'gated', 'standing_permission']) {
+    assert.equal(rows.filter((row) => row.condition === condition).length, 24, condition);
+  }
+  assert.deepEqual(rows.map((row) => row.order).slice(0, 4), [1, 2, 3, 4]);
+});
+
+// --- Zero-call launch simulation for the sealed main block ---
+
+test('the launch simulation passes on the sealed main-block manifest and makes no call', () => {
+  const report = simulateGuardedMainBlockLaunch({});
+  assert.equal(report.status, 'passed');
+  assert.equal(report.zero_model_calls, true);
+  assert.equal(report.run_shape, 'main-block');
+  assert.equal(report.launch_authorized, false);
+  assert.equal(report.size.dialogues, 72);
+  assert.equal(report.size.cases, 576);
+  assert.equal(report.planned_calls.total, 4464);
+  for (const check of report.checks) assert.equal(check.held, true, check.name);
+  assert.equal(
+    report.checks.some((check) => check.name === 'no_go_note_supplied'),
+    true,
+  );
+});
+
+test('the launch simulation fails when a manifest of the wrong size is handed to it', (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'main-block-sim-'));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const pilotCopy = path.join(directory, 'pilot.json');
+  fs.copyFileSync(path.resolve(ROOT, GUARDED_PILOT_MANIFEST_DEFAULT_OUT), pilotCopy);
+  const report = simulateGuardedMainBlockLaunch({ manifestPath: pilotCopy });
+  assert.equal(report.status, 'failed');
+  assert.equal(report.run_shape, 'pilot');
+  assert.equal(report.checks.find((check) => check.name === 'manifest_binds_to_main_block').held, false);
 });

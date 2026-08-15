@@ -319,3 +319,34 @@ scorers as the pre-GO build and missed this.
 
 The run stays unauthorised until its own GO note quotes explicit
 approval of the spend. Counter still 11,559 / 19,337.
+
+**The driver is built; the GO note is now the only thing missing.** The run
+size is a value the manifest states, not a number written into the driver
+nine times. One registry holds the seed list and four per-seed constants and
+derives the rest, so the pilot's 1,116 calls and the main block's 4,464 come
+from the same arithmetic and cannot disagree. The pilot re-seal still writes
+the committed manifest field for field.
+
+Three welds went with it, each of which would have passed a wrong run
+quietly: the reader launcher read its remaining budget from a module constant
+and now reads the checkpoint's own plan; the call-plan assert compared against
+a frozen literal and now checks the four counts against the shape plus ledger
+arithmetic that must close; the fingerprint guard defaulted to 144 cases and
+now demands the count. The GO note is checked *after* the manifest, so a note
+approving 1,116 calls cannot launch a 4,464-call block.
+
+Sealed: `docs/adaptation-refinement/guarded-main-block/guarded-main-block-manifest.json`
+— 72 dialogues on seeds 654–665, 576 cases, 4,464 calls, counter 11,559 →
+16,023 under the 19,337 ceiling, 3,314 left. Same two schema pins the pilot
+seal read.
+
+Proved: `scripts/simulate-guarded-main-block-launch.js` runs the launcher's
+guard chain and stops before the first call. Eight checks held, including that
+the pilot's own GO note (113) is refused against this block and that a pilot
+checkpoint cannot be resumed into it. The two refusal checks call the
+launcher's guards rather than copies, so deleting a guard fails the
+simulation. Artifact: `main-block-launch-simulation.json`.
+
+`launch_authorized: false`. Counter unmoved at 11,559 / 19,337. The block runs
+only when its own GO note quotes explicit human approval of the ≈4,500-call
+spend.

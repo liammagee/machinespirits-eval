@@ -421,3 +421,70 @@ verdict from all three sources.
 
 Commits: `3b93db7a` (scorer, test, manifest). Report archived to the private
 repo as `gate-report.json` before the card was touched.
+
+## The run size becomes a value the manifest states
+
+The pilot driver had 18 dialogues written into it in nine places: the call
+plan, the assignment length, the case count, the reader caps, the fingerprint
+count, the GO-note scope check. To run 72 dialogues, every one of them had to
+agree with every other, by hand. That is the shape of a bug that costs money.
+
+So there is now one registry, in `scripts/prepare-adaptive-warrant-outcome-study.js`.
+It holds the seed list and four constants — 2 worlds per seed, 3 conditions per
+world, 8 turns per dialogue, 2 readers per channel — and derives the rest:
+
+    pilot       3 seeds  → 18 dialogues → 144 cases →  540 + 288 + 288 = 1116
+    main-block 12 seeds  → 72 dialogues → 576 cases → 2160 + 1152 + 1152 = 4464
+
+Nothing is written twice, so nothing can disagree with itself. The pilot shape
+reproduces the frozen manifest's numbers exactly, and the pilot re-seal still
+writes the committed file field for field — checked by a test, not by eye.
+
+**The manifest states the size; the flag only says it out loud.** The driver
+reads `run_shape` from the manifest and binds every check to it. A manifest
+that names no size is a pilot, as every sealed one is. `--shape` is optional
+and is compared against what the manifest said, so a caller who types the
+wrong one is refused rather than obeyed.
+
+**The GO note is checked after the manifest, not before.** The order matters:
+the manifest states the size, and the note is then required to state that
+size's call scope and seed range. A note approving 1,116 calls can no longer
+launch a 4,464-call block. The pilot's own note, 113, is refused against the
+main block — check `pilot_go_note_refused` in the simulation artifact.
+
+**Three welds removed that would have passed silently.** The reader launcher
+read its remaining budget from a module constant; it now reads the plan the
+checkpoint was opened with, and refuses a checkpoint that carries no plan
+rather than assuming the pilot's. The call-plan assert compared `planned_calls`
+against a frozen literal, which cannot hold for a run whose counter has moved;
+it now checks the four call counts against the shape and requires the ledger
+arithmetic to close — after = before + total, remaining = ceiling − after,
+ceiling = 19,337. The fingerprint guard defaulted to 144 cases; a 72-dialogue
+run that forgot to pass its count would have been checked against the pilot's
+number and passed. The default is gone.
+
+**Two rotation rules, not one.** The passive main block rotates conditions by
+seed index plus world index; the guarded pilot rotates by a running count of
+worlds visited. They are not the same and produce different orders. The guarded
+main block uses the pilot's rule, so the guarded arc stays internally
+consistent, and a test proves the rebuilt pilot rows are the frozen eighteen
+byte for byte.
+
+**Sealed and simulated, not launched.** `docs/adaptation-refinement/guarded-main-block/guarded-main-block-manifest.json`
+carries 72 dialogues on seeds 654–665, 576 cases, 4,464 calls, counter 11,559 →
+16,023 against the 19,337 ceiling, 3,314 left. Its two schema pins are the same
+two artifacts the pilot seal read, with the same recorded findings. Seeds
+654–665 were checked free against the working tree and the private archive
+before the seal.
+
+`scripts/simulate-guarded-main-block-launch.js` runs the launcher's guard chain
+and stops before the first call — no dialogue runner and no reader process is
+ever handed over. Eight checks, all held: the manifest binds to the main-block
+size, the preparation guard passes at 72, the counter arithmetic closes, the
+pilot GO note is refused, `--shape pilot` is refused, a pilot checkpoint cannot
+be resumed into it, the budget opens at 4,464 planned and 0 spent, and — with
+no GO note supplied — the block stays unauthorized. The two refusal checks call
+the launcher's own guards, not copies of them, so deleting a guard fails the
+simulation.
+
+`launch_authorized: false`. No call has been made and none is authorized.

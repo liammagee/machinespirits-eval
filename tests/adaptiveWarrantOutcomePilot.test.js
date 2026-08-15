@@ -29,6 +29,11 @@ import {
   writeOutcomePilotAssemblyRunView,
 } from '../scripts/run-adaptive-warrant-outcome-pilot.js';
 import {
+  OUTCOME_RUN_SHAPES,
+  guardOutcomePilotPreparation,
+  resolveOutcomeRunShape,
+} from '../scripts/prepare-adaptive-warrant-outcome-study.js';
+import {
   OUTCOME_MAIN_BLOCK_ABSOLUTE_READER_ATTEMPT_CEILING,
   OUTCOME_MAIN_BLOCK_AUTHORIZATION_MAXIMUM_CALLS,
   OUTCOME_MAIN_BLOCK_CASES,
@@ -812,8 +817,19 @@ test('annotationCaseFingerprint guard refuses a case mutated after source extrac
 test('annotationCaseFingerprint guard refuses count drift', () => {
   const corpusCase = fingerprintCase(1);
   assert.throws(
-    () => guardOutcomeAnnotationFingerprints({ cases: [corpusCase], keyCases: [fingerprintKey(corpusCase)] }),
+    () =>
+      guardOutcomeAnnotationFingerprints({
+        cases: [corpusCase],
+        keyCases: [fingerprintKey(corpusCase)],
+        expectedCount: 144,
+      }),
     /expected 144 cases, got 1/u,
+  );
+  // No default count: a 72-dialogue run checked against the pilot's 144 would
+  // pass on the wrong number, so the count must be given.
+  assert.throws(
+    () => guardOutcomeAnnotationFingerprints({ cases: [corpusCase], keyCases: [fingerprintKey(corpusCase)] }),
+    /needs the case count the manifest states/u,
   );
 });
 
@@ -887,7 +903,7 @@ test('resumed parent starts both readers fresh when neither child checkpoint exi
     decisionRunDir,
     rootDir,
     resume: true,
-    checkpoint: { call_budget: { actual: { total: 0 } } },
+    checkpoint: { call_budget: { plan: { ...OUTCOME_PILOT_CALL_PLAN }, actual: { total: 0 } } },
     budget: { reserveMany: (...args) => reservations.push(args) },
     runProcess: async (command, options) => {
       launches.push({ command, options });
@@ -922,7 +938,7 @@ test('resumed parent resumes only a child whose own checkpoint exists', async (t
     decisionRunDir,
     rootDir,
     resume: true,
-    checkpoint: { call_budget: { actual: { total: 0 } } },
+    checkpoint: { call_budget: { plan: { ...OUTCOME_PILOT_CALL_PLAN }, actual: { total: 0 } } },
     budget: { reserveMany: () => {} },
     runProcess: async (command, options) => {
       launches.push({ command, options });
@@ -1326,4 +1342,87 @@ test('generation cap covers the measured live per-dialogue unit (report 069: 26 
       OUTCOME_PILOT_CALL_PLAN.decision_readers,
   );
   assert.ok(OUTCOME_PILOT_CALL_PLAN.presence_readers >= 288);
+});
+
+// --- Run-size registry -----------------------------------------------------
+// The driver used to carry the pilot's 18 dialogues as a literal in nine
+// places. The registry replaces those literals; these tests hold both sizes to
+// their stated numbers and prove that a manifest of one size cannot be launched
+// as the other.
+
+test('the pilot shape reproduces the frozen pilot numbers exactly', () => {
+  const pilot = OUTCOME_RUN_SHAPES.pilot;
+  assert.deepEqual([...pilot.seeds], [515, 516, 517]);
+  assert.equal(pilot.dialogues, 18);
+  assert.equal(pilot.cases, 144);
+  assert.deepEqual(
+    { ...pilot.planned_calls },
+    {
+      generation: 540,
+      presence_readers: 288,
+      decision_readers: 288,
+      total: 1116,
+    },
+  );
+});
+
+test('the main-block shape is the pilot four times over on seeds 654-665', () => {
+  const main = OUTCOME_RUN_SHAPES['main-block'];
+  assert.deepEqual([...main.seeds], [654, 655, 656, 657, 658, 659, 660, 661, 662, 663, 664, 665]);
+  assert.equal(main.dialogues, 72);
+  assert.equal(main.cases, 576);
+  assert.deepEqual(
+    { ...main.planned_calls },
+    {
+      generation: 2160,
+      presence_readers: 1152,
+      decision_readers: 1152,
+      total: 4464,
+    },
+  );
+  for (const field of ['generation', 'presence_readers', 'decision_readers', 'total']) {
+    assert.equal(main.planned_calls[field], OUTCOME_RUN_SHAPES.pilot.planned_calls[field] * 4);
+  }
+});
+
+test('a manifest that names no size is a pilot, and an unknown size is refused', () => {
+  assert.equal(resolveOutcomeRunShape(null).name, 'pilot');
+  assert.equal(resolveOutcomeRunShape('main-block').name, 'main-block');
+  assert.throws(() => resolveOutcomeRunShape('half-block'), /unknown outcome run shape/u);
+});
+
+test('a main-block manifest carrying pilot counts is refused', (t) => {
+  const directory = temporaryDirectory(t);
+  const source = path.join(ROOT, 'docs/adaptation-refinement/outcome-study-a1/pilot-manifest.json');
+  const manifest = JSON.parse(fs.readFileSync(source, 'utf8'));
+  manifest.run_shape = 'main-block';
+  const manifestPath = path.join(directory, 'mislabelled-manifest.json');
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  assert.throws(() => verifyOutcomePilotManifestBindings({ manifestPath }), /main-block seeds/u);
+});
+
+test('a call plan whose counter arithmetic does not close is refused', (t) => {
+  const directory = temporaryDirectory(t);
+  const source = path.join(ROOT, 'docs/adaptation-refinement/outcome-study-a1/pilot-manifest.json');
+  const manifest = JSON.parse(fs.readFileSync(source, 'utf8'));
+  manifest.planned_calls.remaining_after_if_completed += 1;
+  const manifestPath = path.join(directory, 'open-sum-manifest.json');
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  assert.throws(() => verifyOutcomePilotManifestBindings({ manifestPath }), /counter arithmetic does not close/u);
+});
+
+test('the prepared-run guard fails when the seed count does not match the shape', () => {
+  const worldPaths = [
+    'docs/adaptation-refinement/outcome-study-a1/worlds/world_101_kestrel_signal_lamp.yaml',
+    'docs/adaptation-refinement/outcome-study-a1/worlds/world_102_marigold_archive_box.yaml',
+  ];
+  const result = guardOutcomePilotPreparation({
+    worldPaths,
+    shape: OUTCOME_RUN_SHAPES['main-block'],
+    seeds: [515, 516, 517],
+  });
+  assert.equal(result.status, 'failed');
+  assert.equal(result.run_shape, 'main-block');
+  assert.equal(result.expected_prepared_run_count, 72);
+  assert.equal(result.prepared_run_count, 18);
 });

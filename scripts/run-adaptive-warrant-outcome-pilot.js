@@ -18,9 +18,12 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import {
-  OUTCOME_PILOT_SEEDS,
+  OUTCOME_DEFAULT_RUN_SHAPE,
+  OUTCOME_PER_DIALOGUE_GENERATION_CAP,
+  OUTCOME_RUN_SHAPES,
   guardOutcomePilotPreparation,
   guardOutcomeStandingPermissionMenu,
+  resolveOutcomeRunShape,
 } from './prepare-adaptive-warrant-outcome-study.js';
 import {
   OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
@@ -63,13 +66,16 @@ export const OUTCOME_PILOT_FREEZE_SCHEMA =
 // Corrected under ruling 069a: a live 8-turn dialogue reserves ~26 low-level
 // model calls (report 069 measured unit), so generation is budgeted as a cap
 // of 30 per dialogue, not 1. Human approved the corrected budget in advance.
-export const OUTCOME_PILOT_PER_DIALOGUE_CAP = 30;
-export const OUTCOME_PILOT_CALL_PLAN = Object.freeze({
-  generation: 18 * OUTCOME_PILOT_PER_DIALOGUE_CAP,
-  presence_readers: 288,
-  decision_readers: 288,
-  total: 18 * OUTCOME_PILOT_PER_DIALOGUE_CAP + 288 + 288,
-});
+export const OUTCOME_PILOT_PER_DIALOGUE_CAP = OUTCOME_PER_DIALOGUE_GENERATION_CAP;
+// The one paid-call ceiling the whole warrant campaign runs under. Every
+// manifest states where the counter stood when it was sealed; none may plan
+// past this line.
+export const OUTCOME_CAMPAIGN_CALL_CEILING = 19337;
+// The pilot's plan is one entry in the shape registry, not a second copy of the
+// numbers. The registry derives every count from the seed list, so the pilot
+// shape still reads 540 + 288 + 288 = 1116 and the main block reads four times
+// that. Kept as a named export because the checkpoint and the tests use it.
+export const OUTCOME_PILOT_CALL_PLAN = OUTCOME_DEFAULT_RUN_SHAPE.planned_calls;
 export const OUTCOME_PILOT_READER_CONCURRENCY = 2;
 
 function readJson(filePath) {
@@ -106,17 +112,26 @@ function assertExactObject(actual, expected, label) {
 }
 
 export function printOutcomePilotPlan(manifest = null) {
-  const plan = manifest?.planned_calls || OUTCOME_PILOT_CALL_PLAN;
+  const shape = resolveOutcomeRunShape(manifest?.run_shape ?? null);
+  const plan = manifest?.planned_calls || shape.planned_calls;
   return [
-    'Adaptive-warrant outcome pilot: HOLD / zero-call plan only.',
+    `Adaptive-warrant outcome ${shape.name}: HOLD / zero-call plan only.`,
     `Entry point: ${relativeToRoot(SCRIPT_PATH)}`,
-    `Generation call cap: ${plan.generation ?? 540}; presence readers: ${plan.presence_readers ?? 288}; decision readers: ${plan.decision_readers ?? 288}; total: ${plan.total ?? 1116}.`,
+    `Dialogues: ${shape.dialogues}; seeds: ${shape.seeds[0]}-${shape.seeds[shape.seeds.length - 1]}; cases per reader: ${shape.cases}.`,
+    `Generation call cap: ${plan.generation ?? shape.planned_calls.generation}; presence readers: ${plan.presence_readers ?? shape.planned_calls.presence_readers}; decision readers: ${plan.decision_readers ?? shape.planned_calls.decision_readers}; total: ${plan.total ?? shape.planned_calls.total}.`,
     'A paid run requires --go-note <fresh committed reviewer go note> --accept-charges.',
     `The consumed note ${CONSUMED_GO_NOTE} is never accepted.`,
   ].join('\n');
 }
 
-export function validateOutcomePilotGoNote(goNotePath) {
+/** 4464 matches "4464" and "4,464", because a GO note is written for a reader. */
+function callCountPattern(total) {
+  const digits = String(total);
+  const grouped = digits.replace(/\B(?=(\d{3})+$)/gu, ',?');
+  return new RegExp(grouped, 'u');
+}
+
+export function validateOutcomePilotGoNote(goNotePath, { shape = OUTCOME_DEFAULT_RUN_SHAPE } = {}) {
   if (!goNotePath?.trim()) throw new Error('outcome pilot refuses: --go-note is required');
   const resolved = path.resolve(ROOT, goNotePath);
   const relative = relativeToRoot(resolved);
@@ -137,10 +152,41 @@ export function validateOutcomePilotGoNote(goNotePath) {
   if (!text.includes('run-adaptive-warrant-outcome-pilot.js')) {
     throw new Error('outcome pilot refuses: go note does not name the executable entry point');
   }
-  if (!/\bGO\b/u.test(text) || !/1116/u.test(text)) {
-    throw new Error('outcome pilot refuses: go note lacks the pilot GO and 1116-call scope');
+  if (!/\bGO\b/u.test(text) || !callCountPattern(shape.planned_calls.total).test(text)) {
+    throw new Error(
+      `outcome ${shape.name} refuses: go note lacks the GO and the ${shape.planned_calls.total}-call scope`,
+    );
+  }
+  if (!text.includes(String(shape.seeds[0])) || !text.includes(String(shape.seeds[shape.seeds.length - 1]))) {
+    throw new Error(
+      `outcome ${shape.name} refuses: go note does not state the seed range ${shape.seeds[0]}-${shape.seeds[shape.seeds.length - 1]}`,
+    );
   }
   return { path: resolved, relative_path: relative, sha256: sha256(onDisk) };
+}
+
+/**
+ * The size a caller typed must match the size the manifest states. Passing no
+ * --shape is allowed: the manifest is the authority, and the flag only lets a
+ * caller say out loud which run they think they are starting.
+ */
+export function assertOutcomeShapeFlag({ expectedShape, shape }) {
+  if (expectedShape && expectedShape !== shape.name) {
+    throw new Error(`outcome run refuses: --shape ${expectedShape} does not match the manifest size ${shape.name}`);
+  }
+}
+
+/**
+ * A checkpoint written by one run size must never be resumed into another: the
+ * spent-call tally and the plan inside it belong to that run. A checkpoint that
+ * names no size is a pilot's, as every one written before the registry was.
+ */
+export function assertOutcomeCheckpointShape({ checkpoint, shape }) {
+  if (!checkpoint) return;
+  const carried = checkpoint.run_shape ?? OUTCOME_DEFAULT_RUN_SHAPE.name;
+  if (carried !== shape.name) {
+    throw new Error(`--resume refuses: the checkpoint is a ${carried} run and the manifest is a ${shape.name} run`);
+  }
 }
 
 export function verifyOutcomePilotManifestBindings({
@@ -176,29 +222,45 @@ export function verifyOutcomePilotManifestBindings({
   ) {
     throw new Error('standing-permission menu byte guard failed');
   }
-  assertExactObject(manifest.seeds, OUTCOME_PILOT_SEEDS, 'pilot seeds');
+  // A manifest that names no size is a pilot manifest, as every sealed one is.
+  const shape = resolveOutcomeRunShape(manifest.run_shape ?? null);
+  assertExactObject(manifest.seeds, [...shape.seeds], `${shape.name} seeds`);
+  const plan = manifest.planned_calls || {};
   assertExactObject(
-    manifest.planned_calls,
     {
-      generation: 540,
-      presence_readers: 288,
-      decision_readers: 288,
-      total: 1116,
-      arithmetic: '(18 x 30 cap) + (2 x 144) + (2 x 144) = 1116; measured live unit 26 per dialogue (report 069)',
-      counter_before: 4198,
-      counter_after_if_completed: 5314,
-      ceiling: 19337,
-      remaining_after_if_completed: 14023,
+      generation: plan.generation,
+      presence_readers: plan.presence_readers,
+      decision_readers: plan.decision_readers,
+      total: plan.total,
     },
-    'pilot call plan',
+    { ...shape.planned_calls },
+    `${shape.name} call plan`,
   );
+  // The counter fields are not frozen by value — a later run starts from a
+  // higher counter — so they are checked for agreement with each other and with
+  // the one ceiling the campaign has. A manifest whose sums do not close is
+  // refused just as firmly as one whose call counts are wrong.
   if (
-    manifest.interleaved_condition_assignment?.length !== 18 ||
-    manifest.case_extraction?.expected_case_count !== 144 ||
-    manifest.presence_channel?.readers !== 2 ||
-    manifest.decision_channel?.readers !== 2
+    plan.ceiling !== OUTCOME_CAMPAIGN_CALL_CEILING ||
+    !Number.isInteger(plan.counter_before) ||
+    plan.counter_before < 0 ||
+    plan.counter_after_if_completed !== plan.counter_before + plan.total ||
+    plan.remaining_after_if_completed !== plan.ceiling - plan.counter_after_if_completed ||
+    plan.remaining_after_if_completed < 0 ||
+    typeof plan.arithmetic !== 'string' ||
+    !plan.arithmetic.includes(String(shape.planned_calls.total))
   ) {
-    throw new Error('outcome pilot manifest matrix or reader cardinality mismatch');
+    throw new Error(`outcome ${shape.name} call-plan counter arithmetic does not close`);
+  }
+  if (
+    manifest.interleaved_condition_assignment?.length !== shape.dialogues ||
+    manifest.case_extraction?.dialogues !== shape.dialogues ||
+    manifest.case_extraction?.turns_per_dialogue !== shape.turns_per_dialogue ||
+    manifest.case_extraction?.expected_case_count !== shape.cases ||
+    manifest.presence_channel?.readers !== shape.readers_per_channel ||
+    manifest.decision_channel?.readers !== shape.readers_per_channel
+  ) {
+    throw new Error(`outcome ${shape.name} manifest matrix or reader cardinality mismatch`);
   }
   // A manifest that names no persona is an A1 manifest, and A1 is low_agency.
   // The guard fingerprints the runs the manifest actually plans, so the guarded
@@ -211,11 +273,12 @@ export function verifyOutcomePilotManifestBindings({
   }
   const preparation = guardOutcomePilotPreparation({
     worldPaths: manifest.worlds.map((world) => world.path),
+    shape,
     seeds: manifest.seeds,
     learnerProfile: manifestLearnerProfile,
   });
   if (preparation.status !== 'passed') throw new Error('prepared-run identity guard failed');
-  return { manifest, resolvedManifest, menuGuard, preparation };
+  return { manifest, resolvedManifest, menuGuard, preparation, shape };
 }
 
 export function verifyOutcomePilotReaderBindings({
@@ -463,14 +526,19 @@ export function carryOverOutcomeSchemaAcceptance({ sourcePath, preflightPath, ou
   return result;
 }
 
-export function createOutcomePilotBudget({ checkpointPath, checkpoint = null } = {}) {
+export function createOutcomePilotBudget({
+  checkpointPath,
+  checkpoint = null,
+  shape = OUTCOME_DEFAULT_RUN_SHAPE,
+} = {}) {
   const state = checkpoint || {
     schema: OUTCOME_PILOT_CHECKPOINT_SCHEMA,
     status: 'prepared',
+    run_shape: shape.name,
     call_budget: {
-      plan: { ...OUTCOME_PILOT_CALL_PLAN },
+      plan: { ...shape.planned_calls },
       actual: { generation: 0, presence_readers: 0, decision_readers: 0, total: 0 },
-      delta: { ...OUTCOME_PILOT_CALL_PLAN },
+      delta: { ...shape.planned_calls },
       events: [],
     },
     dialogues: [],
@@ -823,7 +891,12 @@ function outcomeAnnotationCaseFingerprint({ dialogueId, turn, contentHash }) {
   );
 }
 
-export function guardOutcomeAnnotationFingerprints({ cases, keyCases, expectedCount = 144, excludedCases = [] } = {}) {
+export function guardOutcomeAnnotationFingerprints({ cases, keyCases, expectedCount, excludedCases = [] } = {}) {
+  // No default count. A caller that forgets to pass one would otherwise check a
+  // 72-dialogue run against the pilot's 144 cases and pass everything.
+  if (!Number.isInteger(expectedCount) || expectedCount <= 0) {
+    throw new Error('annotationCaseFingerprint guard needs the case count the manifest states');
+  }
   if (!Array.isArray(cases) || cases.length !== expectedCount) {
     throw new Error(`annotationCaseFingerprint guard expected ${expectedCount} cases, got ${cases?.length ?? 0}`);
   }
@@ -1083,14 +1156,18 @@ export async function runReaderProcesses({
   budget,
   runProcess = spawnLogged,
 }) {
-  const remaining = OUTCOME_PILOT_CALL_PLAN.total - checkpoint.call_budget.actual.total;
+  // Read the plan the checkpoint was opened with, not a module constant: on a
+  // resume the checkpoint on disk is the authority on how large this run is.
+  const plan = checkpoint.call_budget?.plan;
+  if (!plan) throw new Error('reader launch refused: the checkpoint carries no call plan');
+  const remaining = plan.total - checkpoint.call_budget.actual.total;
   const presenceReservation = Math.max(
     0,
-    OUTCOME_PILOT_CALL_PLAN.presence_readers - Number(checkpoint.call_budget.actual.presence_readers || 0),
+    plan.presence_readers - Number(checkpoint.call_budget.actual.presence_readers || 0),
   );
   const decisionReservation = Math.max(
     0,
-    OUTCOME_PILOT_CALL_PLAN.decision_readers - Number(checkpoint.call_budget.actual.decision_readers || 0),
+    plan.decision_readers - Number(checkpoint.call_budget.actual.decision_readers || 0),
   );
   const required = presenceReservation + decisionReservation;
   if (remaining < required)
@@ -1162,6 +1239,7 @@ export function writeOutcomePilotAssemblyRunView({ runPath, outputPath } = {}) {
 
 export async function executeOutcomePilot({
   manifestPath = DEFAULT_MANIFEST,
+  expectedShape = null,
   goNotePath,
   acceptCharges = false,
   outputDir,
@@ -1173,8 +1251,12 @@ export async function executeOutcomePilot({
 } = {}) {
   if (!goNotePath) throw new Error('outcome pilot refuses: --go-note is required');
   if (!acceptCharges) throw new Error('outcome pilot refuses: --accept-charges is required');
-  const goNote = validateOutcomePilotGoNote(goNotePath);
+  // The manifest is read first because it states the run size, and the GO note
+  // is then checked against that size: a note approving 1,116 calls can never
+  // launch the 4,464-call block by accident.
   const guarded = verifyOutcomePilotManifestBindings({ manifestPath, expectedLearnerProfile: learnerProfile });
+  assertOutcomeShapeFlag({ expectedShape, shape: guarded.shape });
+  const goNote = validateOutcomePilotGoNote(goNotePath, { shape: guarded.shape });
   if (git(['status', '--porcelain'])) throw new Error('outcome pilot launch requires a clean committed worktree');
   if (!outputDir) throw new Error('outcome pilot launch requires --out');
   if (!instrumentFreezePath) throw new Error('outcome pilot launch requires --instrument-freeze');
@@ -1202,7 +1284,8 @@ export async function executeOutcomePilot({
     learnerProfile,
   });
   const checkpoint = resume ? readJson(checkpointPath) : null;
-  const budget = createOutcomePilotBudget({ checkpointPath, checkpoint });
+  assertOutcomeCheckpointShape({ checkpoint, shape: guarded.shape });
+  const budget = createOutcomePilotBudget({ checkpointPath, checkpoint, shape: guarded.shape });
   const semanticPreflightPath = path.join(rootDir, 'semantic-brittleness-preflight.json');
   const schemaAcceptancePath = path.join(rootDir, 'semantic-schema-acceptance-carryover.json');
   const reusedFreeze = readerResume ? reuseOutcomePilotOriginalFreeze({ rootDir, checkpoint: budget.state }) : null;
@@ -1264,7 +1347,7 @@ export async function executeOutcomePilot({
   const jobs = buildOutcomePilotJobs({ manifest: guarded.manifest, rootDir, learnerProfile });
   await runOutcomeGeneration({ jobs, checkpoint: budget.state, budget, runDialogue });
   const completed = budget.state.dialogues.filter((row) => row.status === 'complete');
-  if (completed.length !== 18) {
+  if (completed.length !== guarded.shape.dialogues) {
     budget.state.status = 'generation_quarantine_stop';
     budget.persist();
     return budget.state;
@@ -1328,7 +1411,7 @@ export async function executeOutcomePilot({
         corpusRole: 'natural_prevalence',
         readerIds: ['presence-reader-a', 'presence-reader-b'],
         batchSize: 1,
-        maximumCalls: 288,
+        maximumCalls: guarded.shape.planned_calls.presence_readers,
         preflightPath: semanticPreflightPath,
         schemaAcceptancePath,
       }),
@@ -1346,7 +1429,7 @@ export async function executeOutcomePilot({
         corpusRole: 'natural_prevalence',
         readerIds: ['decision-reader-a', 'decision-reader-b'],
         batchSize: 1,
-        maxAnnotationCalls: 288,
+        maxAnnotationCalls: guarded.shape.planned_calls.decision_readers,
         preflightPath: semanticPreflightPath,
       }),
   });
@@ -1510,7 +1593,7 @@ export async function executeOutcomePilot({
 function usage() {
   // --manifest and --learner-profile travel together: a non-A1 pole needs both,
   // and the launcher refuses when they disagree.
-  return `Usage:\n  node scripts/run-adaptive-warrant-outcome-pilot.js [--manifest <pilot-manifest>]\n  node scripts/run-adaptive-warrant-outcome-pilot.js --go-note <relay-file> --accept-charges --out <dir> --instrument-freeze <natural-freeze> [--manifest <pilot-manifest>] [--learner-profile <${OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES.join('|')}>] [--resume]\n\nDefaults:\n  --manifest         ${DEFAULT_MANIFEST}\n  --learner-profile  ${OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE}\n`;
+  return `Usage:\n  node scripts/run-adaptive-warrant-outcome-pilot.js [--manifest <manifest>]\n  node scripts/run-adaptive-warrant-outcome-pilot.js --go-note <relay-file> --accept-charges --out <dir> --instrument-freeze <natural-freeze> [--manifest <manifest>] [--shape <${Object.keys(OUTCOME_RUN_SHAPES).join('|')}>] [--learner-profile <${OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES.join('|')}>] [--resume]\n\nDefaults:\n  --manifest         ${DEFAULT_MANIFEST}\n  --learner-profile  ${OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE}\n  --shape            read from the manifest; ${OUTCOME_DEFAULT_RUN_SHAPE.name} when the manifest names none\n`;
 }
 
 async function main() {
@@ -1522,6 +1605,7 @@ async function main() {
       out: { type: 'string' },
       'instrument-freeze': { type: 'string' },
       'learner-profile': { type: 'string', default: OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE },
+      shape: { type: 'string' },
       resume: { type: 'boolean', default: false },
       help: { type: 'boolean', short: 'h' },
     },
@@ -1543,6 +1627,7 @@ async function main() {
   }
   const result = await executeOutcomePilot({
     manifestPath: values.manifest,
+    expectedShape: values.shape ? resolveOutcomeRunShape(values.shape).name : null,
     goNotePath: values['go-note'],
     acceptCharges: values['accept-charges'],
     outputDir: values.out,

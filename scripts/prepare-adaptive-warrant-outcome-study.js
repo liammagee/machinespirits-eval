@@ -47,6 +47,107 @@ export const OUTCOME_A1_ENUMERATION_RULE = Object.freeze({
 });
 
 export const OUTCOME_PILOT_SEEDS = Object.freeze([515, 516, 517]);
+
+/**
+ * The guarded main block's seeds, registered by relay 117 §11 after the range
+ * first proposed there, 530-541, failed the freshness check: six of those are
+ * the passive main block's own and one is a drama-derivation seed. Frozen here
+ * for the same reason the pilot's three are — the manifest states them, and
+ * code checks the manifest rather than trusting it.
+ */
+export const OUTCOME_GUARDED_MAIN_BLOCK_SEEDS = Object.freeze(
+  Array.from({ length: 12 }, (_unused, index) => 654 + index),
+);
+
+/** Two worlds and three conditions per seed, eight turns per dialogue. */
+const OUTCOME_WORLDS_PER_SEED = 2;
+const OUTCOME_CONDITIONS_PER_WORLD = 3;
+const OUTCOME_TURNS_PER_DIALOGUE = 8;
+const OUTCOME_READERS_PER_CHANNEL = 2;
+export const OUTCOME_PER_DIALOGUE_GENERATION_CAP = 30;
+
+function buildOutcomeRunShape(name, seeds) {
+  const dialogues = seeds.length * OUTCOME_WORLDS_PER_SEED * OUTCOME_CONDITIONS_PER_WORLD;
+  const cases = dialogues * OUTCOME_TURNS_PER_DIALOGUE;
+  const readerCalls = cases * OUTCOME_READERS_PER_CHANNEL;
+  const generation = dialogues * OUTCOME_PER_DIALOGUE_GENERATION_CAP;
+  return Object.freeze({
+    name,
+    seeds,
+    dialogues,
+    turns_per_dialogue: OUTCOME_TURNS_PER_DIALOGUE,
+    cases,
+    readers_per_channel: OUTCOME_READERS_PER_CHANNEL,
+    per_dialogue_generation_cap: OUTCOME_PER_DIALOGUE_GENERATION_CAP,
+    planned_calls: Object.freeze({
+      generation,
+      presence_readers: readerCalls,
+      decision_readers: readerCalls,
+      total: generation + readerCalls + readerCalls,
+    }),
+  });
+}
+
+/**
+ * The two run sizes the outcome driver will read. Every count below is derived
+ * from the seed list, so a shape cannot disagree with itself. The pilot shape
+ * reproduces the frozen pilot manifest exactly: 18 dialogues, 144 cases,
+ * 540 + 288 + 288 = 1116 calls.
+ */
+export const OUTCOME_RUN_SHAPES = Object.freeze({
+  pilot: buildOutcomeRunShape('pilot', OUTCOME_PILOT_SEEDS),
+  'main-block': buildOutcomeRunShape('main-block', OUTCOME_GUARDED_MAIN_BLOCK_SEEDS),
+});
+
+export const OUTCOME_DEFAULT_RUN_SHAPE = OUTCOME_RUN_SHAPES.pilot;
+
+/**
+ * The order the three conditions run in, world by world and seed by seed.
+ *
+ * The rotation steps once per world visited, so no condition sits in the same
+ * slot twice running. This is the guarded pilot's own rule, and it reproduces
+ * the frozen 18 rows exactly; the passive main block used a different rule
+ * (rotation by seed index plus world index), and the two are not mixed.
+ */
+export function buildOutcomeInterleavedAssignment({ shape = OUTCOME_DEFAULT_RUN_SHAPE, worldIds } = {}) {
+  if (!Array.isArray(worldIds) || worldIds.length !== OUTCOME_WORLDS_PER_SEED) {
+    throw new Error(`interleaved assignment needs exactly ${OUTCOME_WORLDS_PER_SEED} world ids`);
+  }
+  const conditions = ['bare', 'gated', 'standing_permission'];
+  const rows = [];
+  let visit = 0;
+  for (const seed of shape.seeds) {
+    for (const world of worldIds) {
+      const rotation = visit % conditions.length;
+      visit += 1;
+      for (let offset = 0; offset < conditions.length; offset += 1) {
+        rows.push({
+          order: rows.length + 1,
+          world,
+          seed,
+          condition: conditions[(rotation + offset) % conditions.length],
+        });
+      }
+    }
+  }
+  if (rows.length !== shape.dialogues) {
+    throw new Error(`interleaved assignment produced ${rows.length} rows, not ${shape.dialogues}`);
+  }
+  return rows;
+}
+
+/** A manifest that names no shape is a pilot manifest, as every sealed one is. */
+export function resolveOutcomeRunShape(name) {
+  if (name === null || name === undefined) return OUTCOME_DEFAULT_RUN_SHAPE;
+  const shape = OUTCOME_RUN_SHAPES[name];
+  if (!shape) {
+    throw new Error(
+      `unknown outcome run shape: ${name}; expected one of ${Object.keys(OUTCOME_RUN_SHAPES).join(', ')}`,
+    );
+  }
+  return shape;
+}
+
 export const OUTCOME_PILOT_EXCLUDED_ARTIFACTS = Object.freeze([
   '.tutor-stub-auto-eval/adaptive-warrant-baseline-pilot-v2-live-2026-08-10/annotation-sample.blinded.json',
   '.tutor-stub-auto-eval/adaptive-warrant-baseline-pilot-v2-live-2026-08-10/validation-sample.blinded.json',
@@ -911,7 +1012,8 @@ function canonicalJson(value) {
 
 export function guardOutcomePilotPreparation({
   worldPaths,
-  seeds = OUTCOME_PILOT_SEEDS,
+  shape = OUTCOME_DEFAULT_RUN_SHAPE,
+  seeds = shape.seeds,
   learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
 } = {}) {
   if (!OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES.includes(learnerProfile)) {
@@ -976,10 +1078,14 @@ export function guardOutcomePilotPreparation({
   );
   const overlaps = candidateFingerprints.filter((fingerprint) => exclusionFingerprints.has(fingerprint));
   const worldIdOverlaps = exclusions.flatMap((row) => row.candidate_world_ids_present);
+  // The size comes from the shape, not from a number written here twice. A
+  // caller that hands over its own seed list must still hand over the count the
+  // shape states, so a short or long list fails rather than quietly shrinking
+  // the run.
   const pass =
-    worlds.length === 2 &&
-    seeds.length === 3 &&
-    candidates.length === 18 &&
+    worlds.length === OUTCOME_WORLDS_PER_SEED &&
+    seeds.length === shape.seeds.length &&
+    candidates.length === shape.dialogues &&
     duplicates.length === 0 &&
     overlaps.length === 0 &&
     worldIdOverlaps.length === 0;
@@ -987,6 +1093,8 @@ export function guardOutcomePilotPreparation({
     schema: 'machinespirits.adaptation-refinement.outcome-preparation-fingerprint-guard.v1',
     zero_model_calls: true,
     status: pass ? 'passed' : 'failed',
+    run_shape: shape.name,
+    expected_prepared_run_count: shape.dialogues,
     comparison_scope:
       'Pre-call prepared-run identities are compared with artifact digests and every embedded SHA-256 fingerprint in the burned corpora, the frozen seed-514 matrix, and the three registered archived-session identities. After generation, the same-source annotationCaseFingerprint guard remains mandatory before either reader channel.',
     worlds,
