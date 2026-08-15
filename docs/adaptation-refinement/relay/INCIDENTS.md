@@ -80,3 +80,78 @@ calls (19 + 30 + 27) are folded into the authoritative run total of
 (`leak:private_final_conclusion`, dialogue 25) happened once in 75
 child takes and is ruled a watch item, not a defect entry. All four
 in-run failures ruled technical class; run valid.
+
+## I2 — Guarded main-block generation stop, and a resume blocked by a temp-file cleaner (15–16 Aug 2026)
+
+Run: `guarded-learner-main-block-2026-08-15` (72 dialogues, guarded
+learner, contract v3.3, GO note 118 at `9754dcfa`). The same stop as
+I1, on the other learner.
+
+### Timeline
+
+- **13:00–20:45, 15 Aug** — generation. All 72 dialogues ran; none
+  was skipped. Three failed technically and were set aside as the run
+  went: dialogue 2 (gated, seed 654, world 101 — turn 6, three tutor
+  drafts rejected, then the deterministic fallback failed its final
+  response check with `leak:private_final_conclusion`; 5 of 8 turns,
+  seal `incomplete`, 22 calls) and dialogues 34 and 54 (seeds 659 and
+  662, both world 102 — every turn ran and the child sealed, but one
+  turn's reading failed three times with `invalid_semantic_events`;
+  27 calls each).
+- **20:45** — the parent finished the frozen job list and stopped at
+  its designed boundary (`generation_quarantine_stop`): 69 admissible,
+  3 quarantined, no freeze written, **no reader call made**.
+- **Detection:** the same first-class checkpoint status as I1, read by
+  the monitor loop within seconds.
+- **Diagnosis:** from artifacts only, no call made. The 76 calls the
+  three children spent were recovered from their own reserved-call
+  events, because a quarantined dialogue books zero at the parent.
+  Parent-booked 1,794 plus 76 unbooked is a real generation spend of
+  1,870. The recovery method was checked first against three sealed
+  dialogues, where parent and child agree exactly (26/26, 27/27,
+  28/28).
+- **Archive:** the whole 1.7 GB run directory copied to the private
+  repo and committed (`21dab05a`) before any recovery step. The
+  117 MB checkpoint is stored gzipped — over GitHub's 100 MB per-file
+  limit — and the gzip round-trips to the same sha256.
+- **Resume note written held** (relay 119, `fc51318a`): section 1
+  empty, two of the four launcher tokens withheld, so it reads
+  complete to a person and the driver refuses it.
+- **16 Aug** — the zero-call launch simulation, run against the held
+  note, refused for a reason that was not the note: `required excluded
+  artifact is missing`. macOS had emptied `/private/tmp` at midnight
+  and taken 3 of the 22 burned corpora the prepared-identity guard
+  reads. Recorded as defect ledger entry 21. The 19 survivors were
+  copied to the private repo (`a83b5e06`), all hashing exactly as the
+  main-block checkpoint recorded them at launch; the 3 lost files
+  survive only as hashes and embedded fingerprints in that checkpoint.
+
+### Invariants that held
+
+- No completed dialogue, quarantined artifact, or frozen pin was
+  edited. Nothing was deleted; the surviving corpora were **copied**,
+  not moved.
+- Every stop was zero-call: the quarantine stop spent nothing on
+  readers, and the resume blocker was found before the resume ran.
+- The held note failed closed to the machine on its own bytes, so no
+  approval could be inferred from the note existing.
+
+### What this incident adds to the I1 pattern
+
+I1's four steps — detect, diagnose, recover, disclose — all held. Three
+steps are added to them, each learned here:
+
+5. **Count the unbooked calls before writing the resume note.** A
+   quarantined dialogue books zero at the parent while its child still
+   spends. The checkpoint under-reports, and every counter written
+   from it is wrong. Recover the number from the children, and check
+   the method against sealed dialogues first.
+6. **Run the launch simulation against the held note, before the
+   approval.** It re-runs the whole guard chain at zero calls, so a
+   blocker that has nothing to do with the note surfaces while there is
+   still time to fix it. Write the simulation to a fresh artifact
+   path — never overwrite the launch's own.
+7. **Preserve every external precondition a guard reads.** A guard
+   that reads absolute paths in a system temp directory can be broken
+   by housekeeping with no relation to the study. Copy those files
+   somewhere durable as soon as a run depends on them, not after.

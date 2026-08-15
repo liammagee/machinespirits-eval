@@ -137,6 +137,36 @@ hold two rows for each of the three — one quarantined, one complete — and
 the reader phases read the complete ones. The record of the loss is not
 overwritten.
 
+**A second preparation, found at zero calls and not yet done.** The launch
+simulation was run against this note while held, to prove the driver refuses
+it. The driver did refuse — but on a different sentence than expected:
+
+    required excluded artifact is missing:
+    /private/tmp/adaptive-warrant-mechanism-live-5ddf1d28/annotation-sample.blinded.json
+
+The prepared-identity guard reads 22 already-annotated corpora and refuses
+any run whose prepared identities overlap them. Sixteen of the 22 live only
+in `/private/tmp`, and macOS emptied that directory at midnight on 16
+August. Three are gone; the directory skeletons remain. The guard runs at
+every launch and at every resume, so **the command in §7 cannot run today**,
+for a reason with no relation to this study.
+
+The 19 survivors are now copied to the private repo and committed
+(`a83b5e06`), each hashing exactly as the checkpoint recorded it when the
+guard read it at launch. The three lost files survive only as their sha256
+and embedded fingerprints inside the run checkpoint.
+
+This is defect ledger entry 21 and incident I2. It needs a repair before the
+resume: on a restart the guard should take the exclusion record the
+checkpoint already carries, rather than re-read files a housekeeping job can
+delete. That is bookkeeping, not content — the same principle the driver
+already states for run size, that the checkpoint is the authority on a
+restarted run. Incident I1 repaired three resume-path defects of this class
+before its own relaunch, each with a focused test, each committed first.
+
+**The repair is not written yet and is not authorised by this note.** It is
+a zero-call change and it must land, with its test, before the command runs.
+
 ## 7. The command
 
 Copied from relay 118 §4, with the one flag the driver's own usage output
