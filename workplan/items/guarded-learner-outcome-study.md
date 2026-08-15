@@ -29,6 +29,8 @@ links:
     - docs/adaptation-refinement/relay/111-block-pilot-frozen-binding-mismatch.md
     - docs/adaptation-refinement/relay/112-guarded-pilot-reseal.md
     - docs/adaptation-refinement/relay/113-go-guarded-pilot.md
+    - docs/adaptation-refinement/relay/114-go-guarded-pilot-resume.md
+    - docs/adaptation-refinement/relay/115-go-guarded-pilot-reader-retake.md
     - notes/2026-08-15-guarded-pilot-patches.md
     - notes/2026-08-15-run-protocol.md
   paper: §6.25
@@ -179,6 +181,45 @@ re-seal toward paying for a second ping, so the test is now ancestry
 plus schema coverage. Relay 113 §4's launch command changed — the
 `--instrument-freeze` flag now names the guarded freeze — and the note
 is amended. Rung 1 is not launched.
+
+**Rung 1 COMPLETE and the pilot gate PASSES on all three slots, 15
+August.** The run finished under relay 114 (resume) and relay 115 (one
+reviewer-authorised reader re-take, 1 call). 18 dialogues sealed, four
+readers assembling at 144 cases each with 0 rejections. Counter
+**11,559 / 19,337**, leaving 7,778. Archived to the private repo before
+any analysis. The gate had no scorer — the one in the tree belongs to
+the A1 passive study and pins its corpus hash and reader fingerprint —
+so `scripts/score-guarded-pilot-gate.js` was written (zero calls, 10
+tests) and reads a finished run:
+
+- **(a) the sensor arms when it should: PASS, 5 of 5, 3 needed.** Five
+  of the six gated dialogues carry a stretch of three or more
+  consecutive defended over-claim turns, and the sensor armed inside a
+  stretch in all five. The sixth (dialogue 13) carries no stretch — the
+  learner over-claims on 6 of 8 turns but breaks the run with an
+  analytic turn at 3 and at 6 — so it leaves the denominator, and the
+  sensor correctly stayed quiet. That is the threshold working, not
+  persona collapse.
+- **(b) no silent drops: PASS, 10 of 10.** Every challenge the policy
+  selected on a live turn was enforced and delivered as
+  `challenge_resistance` with text. The selection is read from the
+  policy, never from the enforcement, so a selection that produced no
+  enforcement at all would still count against this slot. A further 40
+  selections were made in `observe` mode, where the gate reaches nobody
+  by design; those are reported apart, not scored.
+- **(c) reader coverage complete: PASS.** Both channels `complete`, 0
+  incomplete batches, both presence readers 144 cases with 0 rejected
+  and 0 unanalyzed. The one re-read batch is
+  `presence-reader-a-batch-123`, which is why the presence channel
+  shows 289 complete rows against the decision channel's 288.
+
+Relay 112 puts slots (a) and (b) on the live trace rather than the
+readers. The scorer re-scores slot (a) on the frozen readers as well:
+PASS 4 of 5 when both readers must mark the turn, PASS 5 of 6 when
+either will do. The verdict does not turn on that ruling. Rung 2, the
+72-dialogue main block, stays unauthorised and needs its own
+registration, GO note and approval; predictions get written from pilot
+evidence only.
 
 Both rulings landed on 15 August (relay 106): defended over-claiming is
 its own warrant basis, criterion (c) keeps its §6.25 reading, and the

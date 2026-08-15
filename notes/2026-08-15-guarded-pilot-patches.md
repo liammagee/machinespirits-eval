@@ -373,3 +373,51 @@ the checkpoint total also stays at 1,046 while the wire count becomes 1,047.
 Do not read the checkpoint as the wire count for this step.
 
 Commit: `b59c8097` (GO note 115).
+
+## 12:40Z — the pilot gate had no scorer, and what writing one had to settle
+
+The re-take landed. All four readers assembled at 144 cases, 0 rejections.
+Then the gate report stopped: there was nothing to run it with. The only
+gate scorer in the tree, `scripts/score-semantic-reader-presence-gate.js`,
+belongs to the A1 passive study and pins that study's corpus hash
+(`52bc3ae4…`), reader digest (`6cb95fd8…`) and response schema. Pointing it
+at the guarded pilot would compare this run against another study's seal.
+
+So `scripts/score-guarded-pilot-gate.js` is new. Zero calls, 10 tests. Two
+decisions inside it are worth keeping on the record, because either one
+taken the easy way would have produced a PASS that means less than it looks.
+
+**Slot (b) reads the selection from the policy, not from the enforcement.**
+The trace carries three events per turn: `tutor_warrant_gate_decision` holds
+`decision.policy.family` (what the policy wants),
+`tutor_warrant_gate_final_authority` holds `applied` and
+`desired_action_family` (whether it was imposed), and
+`tutor_warrant_gate_outcome` holds `action_family` and `tutor_text` (what
+reached the learner). The enforcement event is only written when the gate
+acts — 6 of 8 turns in dialogue 04, not 8. Reading the selection from the
+enforcement would therefore skip every selection that produced no
+enforcement at all, which is exactly the silent drop the slot exists to
+catch. The denominator has to come from the policy.
+
+**Observe-mode selections are shadow, not drops.** Bare and
+standing-permission run the same gate with `mode: observe`; it selects and
+reaches nobody by design. There are 40 such selections against 10 live ones.
+Scoring them as drops would have failed the slot outright. They are counted
+and reported apart rather than filtered out of sight.
+
+**Result: PASS on all three.** (a) 5 of 5 gated dialogues that carry a
+stretch armed inside one, 3 needed. Dialogue 13 carries no stretch — the
+learner over-claims at turns 1, 2, 4, 5, 7, 8 but breaks the run with an
+analytic turn at 3 and 6 — so it leaves the denominator and its silence is
+the threshold working. (b) 10 of 10. (c) both channels complete, both
+presence readers 144 cases, 0 rejected, 0 unanalyzed; the presence channel
+shows 289 complete rows to the decision channel's 288, which is the re-read
+batch.
+
+**Slot (a) does not turn on relay 112.** That ruling puts (a) and (b) on the
+live trace. The scorer re-scores (a) on the frozen readers too: PASS 4 of 5
+when both readers must mark a turn, PASS 5 of 6 when either will do. Same
+verdict from all three sources.
+
+Commits: `3b93db7a` (scorer, test, manifest). Report archived to the private
+repo as `gate-report.json` before the card was touched.
