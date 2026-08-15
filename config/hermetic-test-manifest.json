@@ -134,6 +134,7 @@
         "tests/adaptiveWarrantAnnotationCollection.test.js",
         "tests/adaptiveWarrantBaselineStudy.test.js",
         "tests/adaptiveWarrantChallengeCorpus.test.js",
+        "tests/adaptiveWarrantDefensiveActCounts.test.js",
         "tests/adaptiveWarrantFallbackPassClosure.test.js",
         "tests/adaptiveWarrantGate.test.js",
         "tests/adaptiveWarrantGuardedPilotReseal.test.js",

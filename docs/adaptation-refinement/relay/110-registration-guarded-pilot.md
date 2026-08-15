@@ -90,7 +90,16 @@ Per the workplan card, and unchanged from it:
 4. **Guard fire count, report-only.** Engineering measure; never a gate
    slot.
 5. **Defensive-act counts per turn, report-only**, including the zero
-   count of §5.
+   count of §5. **Amended 15 August (relay 112): read from the live
+   semantic-event extraction the warrant gate stores on every decision,
+   not from the frozen presence readers.** The frozen readers answer
+   under a response schema minted before contract v3.3 and cannot name
+   the three defensive acts, so they would push a defensive turn onto
+   the nearest old act. The live extractor names all three and is the
+   same extraction the gate acted on, so the counts and the gate agree.
+   Counter: `scripts/report-adaptive-warrant-defensive-acts.js`, zero
+   calls. A turn the extractor could not read is named as unmeasured
+   rather than counted as a zero.
 
 No main-block predictions appear here. Those get written from pilot
 evidence only, in the main-block registration.

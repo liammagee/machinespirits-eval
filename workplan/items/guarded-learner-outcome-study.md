@@ -107,12 +107,22 @@ files are reflow; only the v3.3 act catalogue changed. A defect was
 fixed in passing — the freshness guard hardcoded `low_agency`, so the
 guarded pole would have been fingerprinted as the passive one.
 
-One gap stays open. The frozen presence-reader response schema was
-minted before v3.3 and cannot name the three defensive acts, so
-report-only endpoint 5 must come from the live extractor or be
-dropped; gate slots (a), (b) and (c) are unaffected. Minting a v3.3
-response schema costs one paid schema-acceptance call and needs its own
-GO note.
+**Endpoint 5 moved to the live extractor, 15 August. No paid call.**
+The frozen presence-reader response schema was minted before v3.3 and
+cannot name the three defensive acts, so a defensive turn would be
+pushed onto the nearest old act; gate slots (a), (b) and (c) never
+depended on it. Rather than spend a schema-acceptance call to mint a
+v3.3 schema, report-only endpoint 5 now reads the validated v3.3
+semantic-event extraction the warrant gate already stores on every
+decision — the same extraction the gate acted on, so the counts and the
+gate agree by construction. Counter:
+`scripts/report-adaptive-warrant-defensive-acts.js`. A turn the
+extractor cannot read is named as unmeasured, never counted as a zero.
+On smoke C all 8 turns are measurable: 7 over-claim assertions, 1
+evidence dismissal, 0 evidence demands. Relay 110 §3 is amended to say
+so. Patch record: `notes/2026-08-15-guarded-pilot-patches.md`.
+
+The launch stays blocked on its own GO note plus explicit approval.
 
 Both rulings landed on 15 August (relay 106): defended over-claiming is
 its own warrant basis, criterion (c) keeps its §6.25 reading, and the

@@ -80,6 +80,15 @@ Minting a v3.3 response schema costs **one paid call** through the
 schema-acceptance ping, whose own cap is 1. That call needs its own GO note and
 its own approval. It is not part of the pilot's 1,116.
 
+**Resolved, 15 August: endpoint 5 moves to the live extractor. No call needed.**
+The warrant gate already stores a validated v3.3 semantic-event extraction on
+every decision, and it is the extraction the gate acted on, so the counts and
+the gate agree by construction. `scripts/report-adaptive-warrant-defensive-acts.js`
+reads it. On smoke C, all 8 turns are measurable and the run holds 7 over-claim
+assertions, 1 evidence dismissal and 0 evidence demands. A turn the extractor
+could not read is named as unmeasured; it never becomes a zero. Relay 110 §3
+endpoint 5 is amended to say so.
+
 ## 5. Ledger fields are stale on purpose
 
 The launcher asserts `planned_calls` against a frozen literal, so the four
