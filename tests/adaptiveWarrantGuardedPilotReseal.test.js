@@ -26,6 +26,7 @@ import {
 } from '../scripts/seal-guarded-warrant-instrument-freeze.js';
 import {
   validateOutcomeFreezeFormForFrozenDecisionRunner,
+  validateOutcomePilotGoNote,
   verifyOutcomePilotManifestBindings,
 } from '../scripts/run-adaptive-warrant-outcome-pilot.js';
 import {
@@ -33,12 +34,15 @@ import {
   buildOutcomeInterleavedAssignment,
   guardOutcomePilotPreparation,
 } from '../scripts/prepare-adaptive-warrant-outcome-study.js';
-import { simulateGuardedMainBlockLaunch } from '../scripts/simulate-guarded-main-block-launch.js';
+import {
+  GUARDED_PILOT_GO_NOTE,
+  simulateGuardedMainBlockLaunch,
+} from '../scripts/simulate-guarded-main-block-launch.js';
 import { adaptiveWarrantSemanticInstrumentBindings } from '../services/adaptiveWarrantSemanticPreflight.js';
 import { ADAPTIVE_WARRANT_SEMANTIC_DEFENSIVE_SPEECH_ACTS } from '../services/adaptiveWarrantSemanticEvents.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-/** The main block's launch note, held closed until its approval lands (relay 118 §1). */
+/** The main block's launch note, filled and armed once its approval landed (relay 118 §1). */
 const GUARDED_MAIN_BLOCK_GO_NOTE = 'docs/adaptation-refinement/relay/118-go-guarded-main-block.md';
 
 // Same machine-local condition the pilot suite uses: the freshness guard reads
@@ -614,38 +618,42 @@ test('the launch simulation passes on the sealed main-block manifest and makes n
   );
 });
 
-test('the held launch note is refused, and the simulation scores that refusal as the pass', () => {
-  const report = simulateGuardedMainBlockLaunch({ heldGoNotePath: GUARDED_MAIN_BLOCK_GO_NOTE });
+test('the filled launch note launches the main block, and the simulation says so', () => {
+  const report = simulateGuardedMainBlockLaunch({ goNotePath: GUARDED_MAIN_BLOCK_GO_NOTE });
   assert.equal(report.status, 'passed');
-  const check = report.checks.find((entry) => entry.name === 'held_go_note_refused');
+  const check = report.checks.find((entry) => entry.name === 'supplied_go_note_accepted');
   assert.equal(check.held, true);
-  assert.match(check.detail, /lacks the GO and the 4464-call scope/u);
-  assert.equal(
-    report.checks.some((entry) => entry.name === 'supplied_go_note_accepted'),
-    false,
-  );
+  assert.match(check.detail, /4464-call scope and seeds 654-665/u);
 });
 
-test('the held note fails the accepting check, so the two flags cannot be confused', () => {
-  const report = simulateGuardedMainBlockLaunch({ goNotePath: GUARDED_MAIN_BLOCK_GO_NOTE });
-  assert.equal(report.status, 'failed');
-  assert.equal(report.checks.find((entry) => entry.name === 'supplied_go_note_accepted').held, false);
+test('the filled launch note cannot launch a pilot, and the pilot note still cannot launch this', () => {
+  const pilotShape = OUTCOME_RUN_SHAPES.pilot;
+  assert.throws(
+    () => validateOutcomePilotGoNote(GUARDED_MAIN_BLOCK_GO_NOTE, { shape: pilotShape }),
+    /lacks the GO and the 1116-call scope/u,
+  );
+  const report = simulateGuardedMainBlockLaunch({ heldGoNotePath: GUARDED_PILOT_GO_NOTE });
+  assert.equal(report.status, 'passed');
+  assert.equal(report.checks.find((entry) => entry.name === 'held_go_note_refused').held, true);
+});
+
+test('a note cannot be asked to launch and to be refused at the same time', () => {
   assert.throws(
     () =>
       simulateGuardedMainBlockLaunch({
         goNotePath: GUARDED_MAIN_BLOCK_GO_NOTE,
-        heldGoNotePath: GUARDED_MAIN_BLOCK_GO_NOTE,
+        heldGoNotePath: GUARDED_PILOT_GO_NOTE,
       }),
     /expected to launch or expected to be refused, not both/u,
   );
 });
 
-test('the held launch note withholds exactly the two tokens it says it withholds', () => {
+test('the launch note carries all four tokens the launcher reads out of it', () => {
   const text = fs.readFileSync(path.resolve(ROOT, GUARDED_MAIN_BLOCK_GO_NOTE), 'utf8');
   assert.equal(text.includes('run-adaptive-warrant-outcome-pilot.js'), true);
   assert.equal(text.includes('654') && text.includes('665'), true);
-  assert.equal(/\bGO\b/u.test(text), false);
-  assert.equal(/4,?464/u.test(text), false);
+  assert.equal(/\bGO\b/u.test(text), true);
+  assert.equal(/4,?464/u.test(text), true);
 });
 
 test('the launch simulation fails when a manifest of the wrong size is handed to it', (t) => {

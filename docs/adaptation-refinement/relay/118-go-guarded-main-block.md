@@ -1,35 +1,35 @@
-# 118 — Launch note: guarded-learner main block
+# 118 — GO: guarded-learner main block
 
 Date: 2026-08-15
 Workplan item: guarded-learner-outcome-study
 Follows: relay 113 (the pilot's launch note, used as the model), 116 (act
 list), 117 (registration), and the driver build at `80fdd69e`
-Status: **HELD. This is not yet a launch authority.** Section 1 is empty
-and the note is written so the launcher refuses it. Zero calls have been
-made and none is authorized.
+Status: **GO.** Committed before any call is made. This note was first
+sealed held, with §1 empty and two of the launcher's four tokens
+withheld; §1 was filled on the same day and the tokens went in with it.
 
-## 1. The approval — missing
+## 1. The approval
 
-No one has approved this spend. The standing rule is that a paid call
-needs two things: a committed launch note, and explicit human approval of
-that spend. Nothing carries forward — the pilot's approval reached the
-pilot and stopped there, and relay 117 said so when it sealed the
-registration.
+The human's reply, verbatim and complete:
 
-Relay 113 §1 quoted the human's words in full before the pilot ran. This
-section stays empty until the same happens here.
+> I approve the spend, fill in section 1
 
-**The edit that unblocks it.** One edit, made after the words arrive, and
-nothing else:
+"The spend" is the spend §5 sets out and relay 117 §5 registered: the
+72-dialogue guarded main block, 4,464 planned calls, absolute cap 4,800.
+Nothing else is approved by these words. The pilot's approval reached the
+pilot and stopped there; this one reaches this block and stops here.
 
-1. paste the approving words here, verbatim and complete;
-2. change the status line above to a plain go;
-3. write the plan total of §5 in digits, which is the one token this note
-   withholds (see §6).
+**What the filling edit changed**, and nothing else:
 
-Then commit, re-run the simulation in §7, and only then launch.
+1. the words above, pasted verbatim;
+2. the status line, from held to go;
+3. the plan total written in digits in §5, and the go word in this title
+   — the two tokens the held form withheld (§6).
 
-## 2. Why the note exists before the approval
+The design, the command, the seeds, the budget and the stop rules are
+byte-for-byte as they were when the note was held and read.
+
+## 2. What was built before this note
 
 Relay 117 §9 ordered the scoring build to land **before** the launch note,
 so the run is read by frozen code rather than by a hand count. That build
@@ -39,8 +39,8 @@ change to any counting rule. The driver build followed at `80fdd69e`: the
 run size is now a value the manifest states, not a number welded into the
 driver.
 
-With that done, the whole launch fits on one page. Writing it now costs
-nothing and lets the spend be approved or refused in one reading.
+With that done, the whole launch fits on one page, and the spend was
+approved or refused in one reading.
 
 ## 3. What would run
 
@@ -102,9 +102,7 @@ and carries no dialogue count and no seed.
 | generation | 2,160 | 30 per dialogue, a cap not an estimate |
 | presence readers | 1,152 | 2 readers x 576 cases |
 | decision readers | 1,152 | 2 readers x 576 cases |
-
-The plan total is the sum of those three. It is written in digits nowhere
-in this note, and §6 says why.
+| **total** | **4,464** | the number the driver enforces |
 
 **The cap absorbs the retries.** The driver refuses any call past the plan
 total, so there is no separate allowance sitting outside it. The room
@@ -127,23 +125,23 @@ The manifest's ledger fields were written from that same reading at seal
 time and are marked not stale, so the arithmetic in the manifest and the
 arithmetic here are one calculation, checked in §7.
 
-## 6. What arms this note, and what is withheld
+## 6. What arms this note
 
 The launcher reads four things out of these bytes:
 
 1. that the file names the executable entry point — §4 does;
-2. a bare go word — absent, on purpose;
-3. the plan total in digits, with or without a thousands comma — absent,
-   on purpose;
+2. a bare go word — the title has it;
+3. the plan total in digits, with or without a thousands comma — §5 has
+   4,464;
 4. the first and last seed, 654 and 665 — §3 has both.
 
-Two of the four are missing, so the launcher refuses the file. That is the
-whole safety of the held form: the note reads complete to a person and
-fails closed to the machine. The §1 edit adds both at once, with the
-approving words, in one commit.
+All four are here, so the launcher takes the file. While the note was
+held, two were missing on purpose: it read complete to a person and failed
+closed to the machine, so it could be reviewed before it could be run.
 
-This matters because the launcher's check on these bytes is the **only**
-machine lock left after `--accept-charges`. See §11.
+The check on these bytes is the **only** machine lock left after
+`--accept-charges`. See §11. The note is now open, so from here the lock
+is the human's, not the harness's.
 
 ## 7. What was checked at zero calls
 
@@ -161,24 +159,22 @@ checks, all held:
 | `--shape pilot` cannot launch this manifest | refused |
 | a pilot checkpoint cannot be resumed into this run | refused |
 | the budget opens with nothing spent | plan loaded, actual 0 |
-| this note, handed over as the launch note | refused, as §6 requires |
+| this note, handed over as the launch note | accepted for this size |
 
-The last row is the point of the held form, so the simulation is told
-which answer it must get. `--held-go-note` says the note must be refused
-and fails if the launcher would take it; `--go-note` says the opposite.
-A check that accepted either answer would pass whatever the bytes said.
-The command:
+The last row is the one that changed when §1 was filled. The simulation is
+told which answer it must get, so the check cannot pass both ways:
+`--go-note` says the note must launch and fails if the launcher refuses
+it; `--held-go-note` says the opposite, and is what the held form was
+checked with. The command that wrote the artifact:
 
 ```bash
 node scripts/simulate-guarded-main-block-launch.js \
-  --held-go-note docs/adaptation-refinement/relay/118-go-guarded-main-block.md \
+  --go-note docs/adaptation-refinement/relay/118-go-guarded-main-block.md \
   --out docs/adaptation-refinement/guarded-main-block/main-block-launch-simulation.json
 ```
 
 The artifact it writes is
 `docs/adaptation-refinement/guarded-main-block/main-block-launch-simulation.json`.
-When §1 is filled, that flag changes to `--go-note` and the same eight
-checks must all hold again.
 
 The launcher re-runs every one of these at launch. If any pin has moved
 since this note, the run refuses to start.
@@ -220,13 +216,14 @@ Interpretation stays with the reviewer.
 
 The sealed manifest carries `launch_authorized: false` and a `hold`
 sentence saying no call may run until an approved note is committed. The
-driver reads neither field. Both are prose today.
+driver reads neither field. Both are prose.
 
-So the note bytes are the only machine lock after `--accept-charges`, and
-that is why this note withholds two tokens instead of relying on the
-manifest to hold the line. Recorded as entry 20 in
+So the note bytes are the only machine lock after `--accept-charges`. That
+is why the held form withheld two of them instead of leaning on the
+manifest. Recorded as entry 20 in
 `docs/adaptation-refinement/relay/DEFECT-LEDGER.md`. The fix is small —
 refuse a manifest whose `launch_authorized` is not true — but it lands as
-its own change with its own test, not inside a launch note.
+its own change with its own test, and not while this run is live, because
+a live run is never patched.
 
 NEVER push this branch.

@@ -351,23 +351,26 @@ simulation. Artifact: `main-block-launch-simulation.json`.
 only when its own GO note quotes explicit human approval of the ≈4,500-call
 spend.
 
-**The launch note is written and held closed.**
+**The launch note is written, and the approval landed.**
 `docs/adaptation-refinement/relay/118-go-guarded-main-block.md` carries the
 whole launch on one page — design, command copied from the driver's usage
-output, seeds re-checked against the ledger, budget, counter, stop rules — and
-its §1 is empty because no one has approved the spend. It is held by its own
-bytes: the launcher reads four things out of a note, and the note carries two
-of them. Filling §1 adds the other two in one edit.
+output, seeds re-checked against the ledger, budget, counter, stop rules.
 
-Why the note has to hold itself: every sealed manifest carries
+It was sealed held first: §1 empty, and two of the four things the launcher
+reads out of a note left out on purpose, so it read complete to a person and
+failed closed to the machine. On 2026-08-15 the human wrote "I approve the
+spend, fill in section 1". Filling §1 put the other two tokens in. The design,
+the command, the seeds, the budget and the stop rules did not move.
+
+Why the note had to hold itself: every sealed manifest carries
 `launch_authorized: false` and a hold sentence, and the driver reads neither.
 The note bytes are the only machine lock left after `--accept-charges`.
-Recorded as defect ledger entry 20, fix deferred to its own change.
+Recorded as defect ledger entry 20, fix deferred to its own change — and it
+does not land while a run is live.
 
-The simulation can now be told which answer it must get —`--held-go-note` for
-a note that must be refused, `--go-note` for one that must launch — so the
-refusal is scored as a pass instead of a broken check. Eight checks held with
-the held note supplied. When approval lands, the flag changes and all eight
-must hold again.
+The simulation is told which answer it must get — `--held-go-note` for a note
+that must be refused, `--go-note` for one that must launch — so a refusal is
+scored as a pass instead of a broken check. Eight checks held with the held
+note. Eight hold again with the armed note.
 
-**Next: nothing until the human approves the spend.**
+**Next: start the block, then archive before anything else.**
