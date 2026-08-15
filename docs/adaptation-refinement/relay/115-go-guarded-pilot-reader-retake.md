@@ -100,7 +100,8 @@ Batch 123 holds one case. So the re-take is one call.
 ## 6. Scope
 
 - **One call.** The launcher's own ledger reports 1,046 of the registered
-  1,116 spent, so 70 remain. The budget is not raised.
+  1,116 spent (the launcher's own figure, 1116), so 70 remain. The budget is
+  not raised.
 - The reservation guard is spend-aware: it asks for
   `288 − already_spent` per channel, which is now 0, so the launch is not
   refused for want of a full reservation.
