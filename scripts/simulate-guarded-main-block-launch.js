@@ -15,9 +15,15 @@
  *   4. a checkpoint from the pilot cannot be resumed into it,
  *   5. the budget opens at zero calls with the 4,464-call plan.
  *
- * A GO note supplied with --go-note is checked too, and the artifact records
- * whether it would be accepted. Without one, the refusal is the finding: today
+ * A note supplied with --go-note is checked too, and the artifact records
+ * whether it would be accepted. A note supplied with --held-go-note is checked
+ * the other way round: it must be refused, which is what a launch note written
+ * before its approval is for. Without either, the refusal is the finding: today
  * nothing can launch this block.
+ *
+ * The two flags cannot both be passed. Which expectation applies is a fact
+ * about the note, not something to read off the result — a check that accepted
+ * either outcome would pass whatever the bytes said.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -66,8 +72,12 @@ export function simulateGuardedMainBlockLaunch({
   manifestPath = GUARDED_MAIN_BLOCK_MANIFEST,
   pilotGoNotePath = GUARDED_PILOT_GO_NOTE,
   goNotePath = null,
+  heldGoNotePath = null,
   learnerProfile = 'overconfident',
 } = {}) {
+  if (goNotePath && heldGoNotePath) {
+    throw new Error('simulation refuses: a note is either expected to launch or expected to be refused, not both');
+  }
   const resolvedManifest = path.resolve(ROOT, manifestPath);
   const guarded = verifyOutcomePilotManifestBindings({
     manifestPath: resolvedManifest,
@@ -123,17 +133,24 @@ export function simulateGuardedMainBlockLaunch({
     fs.rmSync(scratch, { recursive: true, force: true });
   }
 
-  const goNote = goNotePath
-    ? expectPass('supplied_go_note_accepted', 'the supplied GO note matches this run size', () => {
-        validateOutcomePilotGoNote(path.resolve(ROOT, goNotePath), { shape });
-        return `${goNotePath} states GO, the ${plan.total}-call scope and seeds ${shape.seeds[0]}-${shape.seeds.at(-1)}`;
-      })
-    : {
-        name: 'no_go_note_supplied',
-        expectation: 'without a GO note the block cannot launch',
-        held: true,
-        detail: 'no --go-note given; the run stays unauthorized',
-      };
+  let goNote;
+  if (goNotePath) {
+    goNote = expectPass('supplied_go_note_accepted', 'the supplied launch note matches this run size', () => {
+      validateOutcomePilotGoNote(path.resolve(ROOT, goNotePath), { shape });
+      return `${goNotePath} states GO, the ${plan.total}-call scope and seeds ${shape.seeds[0]}-${shape.seeds.at(-1)}`;
+    });
+  } else if (heldGoNotePath) {
+    goNote = expectRefusal('held_go_note_refused', 'the held launch note cannot launch this block yet', () =>
+      validateOutcomePilotGoNote(path.resolve(ROOT, heldGoNotePath), { shape }),
+    );
+  } else {
+    goNote = {
+      name: 'no_go_note_supplied',
+      expectation: 'without a launch note the block cannot launch',
+      held: true,
+      detail: 'no --go-note given; the run stays unauthorized',
+    };
+  }
   checks.push(goNote);
 
   return {
@@ -164,6 +181,7 @@ function main() {
       manifest: { type: 'string', default: GUARDED_MAIN_BLOCK_MANIFEST },
       'pilot-go-note': { type: 'string', default: GUARDED_PILOT_GO_NOTE },
       'go-note': { type: 'string' },
+      'held-go-note': { type: 'string' },
       out: { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
@@ -171,9 +189,13 @@ function main() {
   });
   if (values.help) {
     process.stdout.write(
-      'Usage:\n  node scripts/simulate-guarded-main-block-launch.js [--manifest <path>] [--go-note <path>] [--out <path>]\n\n' +
+      'Usage:\n  node scripts/simulate-guarded-main-block-launch.js [--manifest <path>]\n' +
+        '    [--go-note <path> | --held-go-note <path>] [--out <path>]\n\n' +
         `Runs the launcher's guard chain against a sealed ${Object.keys(OUTCOME_RUN_SHAPES).join('/')} manifest and stops\n` +
-        'before the first call. Makes no model call and needs no credentials.\n',
+        'before the first call. Makes no model call and needs no credentials.\n\n' +
+        '  --go-note       a note that must be accepted; the check fails if the launcher refuses it\n' +
+        '  --held-go-note  a note that must be refused, as a launch note written before its\n' +
+        '                  approval is; the check fails if the launcher would accept it\n',
     );
     return;
   }
@@ -181,6 +203,7 @@ function main() {
     manifestPath: values.manifest,
     pilotGoNotePath: values['pilot-go-note'],
     goNotePath: values['go-note'] || null,
+    heldGoNotePath: values['held-go-note'] || null,
   });
   if (values.out) {
     const resolved = path.resolve(ROOT, values.out);

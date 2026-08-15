@@ -38,6 +38,8 @@ import { adaptiveWarrantSemanticInstrumentBindings } from '../services/adaptiveW
 import { ADAPTIVE_WARRANT_SEMANTIC_DEFENSIVE_SPEECH_ACTS } from '../services/adaptiveWarrantSemanticEvents.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+/** The main block's launch note, held closed until its approval lands (relay 118 §1). */
+const GUARDED_MAIN_BLOCK_GO_NOTE = 'docs/adaptation-refinement/relay/118-go-guarded-main-block.md';
 
 // Same machine-local condition the pilot suite uses: the freshness guard reads
 // gitignored run artifacts that live only in the private archive.
@@ -610,6 +612,40 @@ test('the launch simulation passes on the sealed main-block manifest and makes n
     report.checks.some((check) => check.name === 'no_go_note_supplied'),
     true,
   );
+});
+
+test('the held launch note is refused, and the simulation scores that refusal as the pass', () => {
+  const report = simulateGuardedMainBlockLaunch({ heldGoNotePath: GUARDED_MAIN_BLOCK_GO_NOTE });
+  assert.equal(report.status, 'passed');
+  const check = report.checks.find((entry) => entry.name === 'held_go_note_refused');
+  assert.equal(check.held, true);
+  assert.match(check.detail, /lacks the GO and the 4464-call scope/u);
+  assert.equal(
+    report.checks.some((entry) => entry.name === 'supplied_go_note_accepted'),
+    false,
+  );
+});
+
+test('the held note fails the accepting check, so the two flags cannot be confused', () => {
+  const report = simulateGuardedMainBlockLaunch({ goNotePath: GUARDED_MAIN_BLOCK_GO_NOTE });
+  assert.equal(report.status, 'failed');
+  assert.equal(report.checks.find((entry) => entry.name === 'supplied_go_note_accepted').held, false);
+  assert.throws(
+    () =>
+      simulateGuardedMainBlockLaunch({
+        goNotePath: GUARDED_MAIN_BLOCK_GO_NOTE,
+        heldGoNotePath: GUARDED_MAIN_BLOCK_GO_NOTE,
+      }),
+    /expected to launch or expected to be refused, not both/u,
+  );
+});
+
+test('the held launch note withholds exactly the two tokens it says it withholds', () => {
+  const text = fs.readFileSync(path.resolve(ROOT, GUARDED_MAIN_BLOCK_GO_NOTE), 'utf8');
+  assert.equal(text.includes('run-adaptive-warrant-outcome-pilot.js'), true);
+  assert.equal(text.includes('654') && text.includes('665'), true);
+  assert.equal(/\bGO\b/u.test(text), false);
+  assert.equal(/4,?464/u.test(text), false);
 });
 
 test('the launch simulation fails when a manifest of the wrong size is handed to it', (t) => {

@@ -161,10 +161,25 @@ checks, all held:
 | `--shape pilot` cannot launch this manifest | refused |
 | a pilot checkpoint cannot be resumed into this run | refused |
 | the budget opens with nothing spent | plan loaded, actual 0 |
-| this note, supplied as the launch note | refused — see §6 |
+| this note, handed over as the launch note | refused, as §6 requires |
 
-The artifact is
+The last row is the point of the held form, so the simulation is told
+which answer it must get. `--held-go-note` says the note must be refused
+and fails if the launcher would take it; `--go-note` says the opposite.
+A check that accepted either answer would pass whatever the bytes said.
+The command:
+
+```bash
+node scripts/simulate-guarded-main-block-launch.js \
+  --held-go-note docs/adaptation-refinement/relay/118-go-guarded-main-block.md \
+  --out docs/adaptation-refinement/guarded-main-block/main-block-launch-simulation.json
+```
+
+The artifact it writes is
 `docs/adaptation-refinement/guarded-main-block/main-block-launch-simulation.json`.
+When §1 is filled, that flag changes to `--go-note` and the same eight
+checks must all hold again.
+
 The launcher re-runs every one of these at launch. If any pin has moved
 since this note, the run refuses to start.
 
