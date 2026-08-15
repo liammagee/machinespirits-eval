@@ -159,6 +159,27 @@ protocol behind the rung ladder is written up at
 `notes/2026-08-15-run-protocol.md` so it can be repeated without
 reading the relay chain.
 
+**Rung 0 PASSED, 15 August. One paid call. Counter now 10,486 /
+19,337.** The provider accepted the v3.3 schema: `status: passed`,
+calls 1/1/1, no prohibited tool events, model codex `gpt-5.6-luna`, and
+a response schema naming all three defensive acts. Archived to the
+private repo. The re-pin that followed then broke the launch, which is
+the check working. The manifest pin and the schema-acceptance artifact
+the instrument freeze names had been two copies of one A1 seal, so the
+launcher had been comparing a number with itself; moving one half
+turned a vacuous pass into a real failure, and the 1,116-call pilot
+would have refused to start. `seal-guarded-warrant-instrument-freeze.js`
+(new, zero calls) moves the other half from the same paid evidence and
+refuses unless the two agree. A zero-call launch simulation then put the
+result through the launcher's own `verifyOutcomePilotReaderBindings`,
+which returned `passed` on all seven checks. One rule of mine was
+dropped in the process: demanding the acceptance artifact be stamped at
+HEAD would refuse a good artifact one commit later and push a future
+re-seal toward paying for a second ping, so the test is now ancestry
+plus schema coverage. Relay 113 §4's launch command changed — the
+`--instrument-freeze` flag now names the guarded freeze — and the note
+is amended. Rung 1 is not launched.
+
 Both rulings landed on 15 August (relay 106): defended over-claiming is
 its own warrant basis, criterion (c) keeps its §6.25 reading, and the
 contract amendment (numbered v3.3 — v3.2 was already live from relay

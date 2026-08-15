@@ -3,8 +3,10 @@
 Branch `build/guarded-learner-v3.3`, worktree `../ms-guarded-learner`, off
 `origin/main` at `9da19711`. **Never push this branch.**
 
-**Zero paid calls were made on any of this.** The pilot spend approval from
-14 August is still held, not spent. A launch needs its own committed GO note.
+**Sections 1–9 cost zero paid calls.** Section 10 records the one call that
+has since been spent — the rung-0 schema-acceptance ping, approved in the
+chat and covered by the committed GO note, relay 113. The pilot spend itself
+is still held, not spent.
 
 This note records what was patched today and why, so the work can be read
 without walking the relay chain. The registration itself is relay 110; the
@@ -161,6 +163,11 @@ unnoticed.
 Clearing the pin costs one paid call: run the schema-acceptance ping at v3.3,
 then re-seal with `--schema-acceptance`. That is rung 0 of the GO note.
 
+**Superseded 15 August, see §10.** The pin is now `repinned`, not
+`inherited_unproved`. The stamped-at-the-current-commit rule described above
+was replaced: it decays after one commit. The seal now asks for ancestry plus
+schema coverage instead.
+
 Commits `b66ffe0d`, then the re-seal.
 
 ---
@@ -219,16 +226,17 @@ missing from this worktree, which blocked the freshness guard. They live under
 
 ## 8. Tests
 
-- `tests/adaptiveWarrantGuardedPilotReseal.test.js` — 19 tests. The A1 seal is
-  untouched and still a v3.2 seal; the guarded manifest re-pins exactly two
-  digests and inherits the rest; both manifests pass the launcher guard under
-  their own persona; the persona changes every prepared-run fingerprint; a
-  mismatched persona is refused from both sides; an undeclared program change is
-  refused; a declared non-change is refused; the drift classifier separates the
-  reflow from the real change; the response-schema gap is recorded; and the
-  provider-schema pin refuses a failed artifact, a wrong-commit artifact and a
-  hashless artifact, re-pins from a good one, and otherwise says
-  `inherited_unproved` out loud.
+- `tests/adaptiveWarrantGuardedPilotReseal.test.js` — **29 tests** (19 before
+  the rung-0 work, see §10). The A1 seal is untouched and still a v3.2 seal;
+  the guarded manifest re-pins the contested digests and inherits the rest;
+  both manifests pass the launcher guard under their own persona; the persona
+  changes every prepared-run fingerprint; a mismatched persona is refused from
+  both sides; an undeclared program change is refused; a declared non-change is
+  refused; the drift classifier separates the reflow from the real change; the
+  response-schema gap is recorded; and the provider-schema pin refuses a failed
+  artifact, a hashless artifact, an artifact whose commit is not an ancestor,
+  and an artifact whose accepted schema predates the current contract, re-pins
+  from a good one, and otherwise says `inherited_unproved` out loud.
 - `tests/adaptiveWarrantDefensiveActCounts.test.js` — 9 tests, including an end
   to end read of the real smoke C trace.
 
@@ -238,8 +246,8 @@ All pass, plus the two existing outcome suites unchanged.
 
 ## 9. What is still open
 
-- **The provider-schema pin is `inherited_unproved`.** One paid ping at v3.3 and
-  a zero-call re-seal clear it. Rung 0 of the GO note.
+- ~~**The provider-schema pin is `inherited_unproved`.**~~ **Cleared 15
+  August** by the rung-0 ping and re-seal. See §10.
 - The four ledger fields inside `planned_calls` are carried over from the A1
   seal because the launcher asserts that object by value. They are flagged
   `stale: true` and must be re-read at GO time.
@@ -247,3 +255,75 @@ All pass, plus the two existing outcome suites unchanged.
   `services/tutorStubPublicLearnerAnalysis.js:67` still lists the old 15-act
   vocabulary, so readers cannot apply the evidence-demand preference rule.
 - Not started: the edged-register Stage 0 build.
+
+---
+
+## 10. Rung 0: the ping, and the launch blocker it exposed
+
+**The ping passed. One call, codex `gpt-5.6-luna`, stamped at `27bcb644`.**
+The result records `status: passed`, `calls: {attempted: 1, completed: 1,
+maximum: 1}`, `prohibited_tool_event_count: 0`, and a response schema that
+names all three defensive acts and hashes
+`149171804550890f34d8d662f358762c9ae35e689343eab87df0142f30ff1a12`. So the
+provider does accept the larger v3.3 schema, which was the open question in
+§5. Archived to the private repo under
+`artifacts/guarded-learner-v33/schema-acceptance-ping/`.
+
+**Then the re-pin broke the launch, and that is the check working.** The
+launcher compares the manifest pin against the schema-acceptance artifact
+that the instrument freeze names
+(`run-adaptive-warrant-outcome-pilot.js:250`, carried over at :1224). Both
+sides were copies of the A1 seal — the same number twice — so the check had
+been passing on nothing. Re-pinning the manifest from the v3.3 ping moved
+one side only, and the two stopped agreeing: `44b4807e…` in the freeze
+against `14917180…` in the manifest. The 1,116-call pilot would have refused
+to start after the go-ahead was given. This is the same defect class as §4
+and §5, found a fourth time: **a pin proves nothing when both halves come
+from one stale seal, and re-pinning one half turns a vacuous pass into a
+real failure.**
+
+**The fix moves the other half from the same paid evidence.**
+`scripts/seal-guarded-warrant-instrument-freeze.js` (new, zero calls)
+inherits the A1 freeze, re-hashes all five inherited bindings, and replaces
+exactly one field — `semantic_instrument.schema_acceptance` — with the v3.3
+artifact. It refuses unless the artifact passes the launcher's own
+admissibility list and unless the manifest pin and the artifact already
+agree on the hash. It also copies the artifact and its response schema into
+the repo, because the A1 pair lives in `/private/tmp`, which is cleaned; a
+launch that dies on a deleted file fails for a reason with nothing to do
+with the study.
+
+**One of my own rules had to go.** The re-seal first demanded the acceptance
+artifact be stamped at HEAD exactly. That rule holds for one commit and then
+refuses a good artifact, which would push a later re-seal toward paying for
+a second ping to satisfy bookkeeping. Hash equality is not available as a
+substitute: `buildAdaptiveWarrantSemanticBatchOutputSchema`
+(`scripts/prepare-adaptive-warrant-semantic-annotations.js:192`) mints a
+schema per batch from the reader, batch, study, corpus and act catalogue, so
+two runs never produce the same bytes. The rule is now ancestry plus
+coverage — was the artifact made on this line of work, and does the schema
+it accepted name the acts the contract now carries. Both questions stay
+answerable at any later commit, and an artifact from before v3.3 fails the
+second one on its own evidence.
+
+**Proved without launching.** A zero-call simulation generated a fresh
+preflight at the new HEAD, ran `carryOverOutcomeSchemaAcceptance` from the
+new freeze, and put the result through `verifyOutcomePilotReaderBindings`:
+
+    {"status":"passed","checks":{"extraction_schema_digest":true,
+     "reader_digest":true,"semantic_preparer":true,
+     "provider_response_schema":true,"decision_preparer":true,
+     "decision_runner":true,"decision_handbook":true}}
+
+All seven, including the one that was about to refuse.
+
+**One risk checked and closed.** `scripts/score-semantic-reader-presence-gate.js`
+hardcodes the A1 registration constants, including the old provider-schema
+hash. It does not run for this pilot: nothing imports it but its own test,
+and relay 083b records that it keeps the old fingerprint on purpose, as what
+the frozen instrument was validated with, and is not on the launch path.
+
+**Consequence for the GO note.** Relay 113 §4's launch command named the A1
+freeze and is now wrong. It is amended, with the old value kept visible, and
+the corrected command is copied from the simulation above. Commits:
+`27bcb644` (GO note and protocol), `28c26bb1` (freeze re-seal).

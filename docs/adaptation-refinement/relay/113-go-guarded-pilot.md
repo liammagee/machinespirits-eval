@@ -90,21 +90,67 @@ result as `calls.maximum: 1`.
 **Rung 0 passes when** the re-seal prints
 `provider_response_schema_pin: repinned` (or `repinned_unchanged`) and the
 re-sealed manifest is committed. The seal refuses an artifact that did not
-pass, one stamped at any commit but HEAD, and one with no hash.
+pass, one with no hash, and one whose commit is not an ancestor of the
+commit being sealed.
+
+*Amended 15 August.* This paragraph first said the artifact must be stamped
+at HEAD exactly. That rule decays: it holds for one commit and then refuses
+a good artifact, which pushes a later re-seal toward paying for a second
+ping to satisfy a bookkeeping rule. The seal now asks two durable questions
+instead — was the artifact made on this line of work (ancestry), and does
+the schema it accepted name the acts the contract now carries (coverage).
+An artifact from before v3.3 fails the second question on its own evidence.
 
 **If rung 0 fails**, stop. Do not launch rung 1 on the inherited pin. Report
 what the provider returned. That result is itself worth having: it would
 mean the v3.3 schema is too large for the provider, which changes the
 instrument, not the run.
 
+### Rung 0 result — PASSED, 15 August, 1 call
+
+The provider accepted the v3.3 schema. The result artifact records
+`status: passed`, `calls: {attempted: 1, completed: 1, maximum: 1}`,
+`prohibited_tool_event_count: 0`, and a response schema naming all three
+defensive acts and hashing
+`149171804550890f34d8d662f358762c9ae35e689343eab87df0142f30ff1a12`. Model:
+codex `gpt-5.6-luna`. Archived to the private repo at
+`artifacts/guarded-learner-v33/schema-acceptance-ping/`.
+
+The re-pin then did what a working check should do: it broke. Manifest and
+freeze had been two copies of one A1 seal, so the launcher's
+provider-schema check had been comparing a number with itself. Moving one
+half turned a vacuous pass into a real failure. The other half was moved
+from the same paid evidence by
+`scripts/seal-guarded-warrant-instrument-freeze.js`, zero calls, and the
+fix was proved by running the launcher's own binding check without
+launching. See §4 for the one flag this changed.
+
 ## 4. Rung 1 — the pilot
+
+**Amended 15 August, after rung 0. One flag changed; the spend did not.**
+Rung 0 passed and the re-seal re-pinned the manifest to the v3.3 schema.
+That broke the freeze the command below first named: the A1 freeze points
+at an acceptance artifact from before v3.3, so the launcher's
+`provider_response_schema` check found the manifest and the freeze
+disagreeing and would have refused to start. The zero-call re-seal wrote a
+guarded freeze that names the v3.3 artifact, and `--instrument-freeze` now
+points at it. Every other flag is unchanged. The old value is kept here so
+the change is visible:
+
+    was: /private/tmp/adaptive-warrant-v3-matrix-live-489f2429-r38-s514/annotation-freeze-manifest-r52-presence-confirmation.json
+    now: docs/adaptation-refinement/guarded-pilot/guarded-instrument-freeze.json
+
+The corrected command below is the one a zero-call launch simulation ran:
+it carried the acceptance over from the new freeze and put it through
+`verifyOutcomePilotReaderBindings`, which returned `passed` on all seven
+checks. It is copied from that run, not composed.
 
 ```bash
 node scripts/run-adaptive-warrant-outcome-pilot.js \
   --go-note docs/adaptation-refinement/relay/113-go-guarded-pilot.md \
   --accept-charges \
   --out .tutor-stub-auto-eval/guarded-learner-pilot-2026-08-15 \
-  --instrument-freeze /private/tmp/adaptive-warrant-v3-matrix-live-489f2429-r38-s514/annotation-freeze-manifest-r52-presence-confirmation.json \
+  --instrument-freeze docs/adaptation-refinement/guarded-pilot/guarded-instrument-freeze.json \
   --manifest docs/adaptation-refinement/guarded-pilot/guarded-pilot-manifest.json \
   --learner-profile overconfident
 ```
@@ -137,7 +183,7 @@ current reading:
   (`model_call: 26` in
   `.tutor-stub-auto-eval/guarded-learner-smoke-C-s550-2026-08-15/2026-08-15T01-13-12-724Z.jsonl`)
 - opens at: **10,485 / 19,337**
-- rung 0: 1 call → 10,486
+- rung 0: 1 call, **spent 15 August** → **10,486 / 19,337**
 - rung 1: 1,116 calls → **11,602 / 19,337**, leaving **7,735**
 
 ## 6. Pins verified before this note
