@@ -342,6 +342,7 @@
         "tests/greenroomStore.test.js",
         "tests/groundingValidatorAudit.test.js",
         "tests/guardedPilotGateScore.test.js",
+        "tests/guardedPilotPrimaryEndpoint.test.js",
         "tests/hamartiaRepairDetector.test.js",
         "tests/hermeticTestRunner.test.js",
         "tests/hiddenProofDebtFailureAudit.test.js",
