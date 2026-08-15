@@ -24,6 +24,8 @@ links:
     - docs/adaptation-refinement/relay/106-human-ruling-guarded-pole-basis-and-contract-v3.3.md
     - docs/adaptation-refinement/relay/107-build-note-v3.3-contract-and-guarded-sensor.md
     - docs/adaptation-refinement/relay/108-build-report-guarded-pole-complete-smoke-c-request.md
+    - docs/adaptation-refinement/relay/109-go-smoke-c-guarded-pole.md
+    - docs/adaptation-refinement/relay/110-draft-registration-guarded-pilot.md
   paper: §6.25
 tags:
   - warrant-gate
@@ -56,12 +58,23 @@ contract v3.3 with the three defensive acts and the preference rule
 derivation byte contracts that fail on the branch base too. All four
 sealed A1 pins and both reader-script pins re-hash byte-identical.
 
-**Blocked on approval.** Smoke C is a paid rung (~30 calls) and needs
-its own committed GO note plus explicit human approval. Relay 108 §3
-holds the command copied from the smoke B run plan, a dry-run
-confirmation, and seed 550 checked fresh by the freshness audit (7,001
-metadata files across every worktree, `/private/tmp`, and the private
-archive). Nothing has been run.
+**Smoke C PASSED, 15 August (GO note relay 109, approval quoted).**
+Seed 550, 8 turns, sealed, inside the 30-call budget, archived to the
+private repo. The sensor armed at three consecutive defended over-claim
+turns (N = 3) and the gate delivered a challenge at turns 3 and 5; after
+each, the learner's bounded evidence move closed the contract and the
+gate returned to staging. The concession guard fired 0 of 8 turns.
+Finding: the evidence-demand act stayed dark — demand-like turns were
+read as the older proposed-test act (neutral direction, not the smoke B
+deferral failure).
+
+**Pilot registration DRAFTED (relay 110), awaiting human review.**
+18 dialogues (3 arms x 2 worlds x 3 seeds), guarded persona, ~1,116
+calls; primary endpoint is evidence production within two turns of a
+delivered challenge; stop rules cover the dark instrument, the harmful
+deferral mislabel (terminal), and persona collapse. Seeds get pinned in
+the GO note. The pilot still needs registration approval plus its own
+GO note before any paid call.
 
 Both rulings landed on 15 August (relay 106): defended over-claiming is
 its own warrant basis, criterion (c) keeps its §6.25 reading, and the
