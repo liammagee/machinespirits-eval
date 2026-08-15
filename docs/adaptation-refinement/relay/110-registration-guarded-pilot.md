@@ -157,8 +157,16 @@ Burned window at drafting time, by the freshness audit (zero model calls,
   which is the audit working)
 - fresh: 547, 551–575
 
-The three pilot seeds are **pinned in the GO note, not here**, from a
-fresh audit run at GO time.
+**Resolved after drafting: the pilot seeds are not free.** They are frozen
+in code as **515, 516, 517** (`scripts/prepare-adaptive-warrant-outcome-study.js:44`),
+and the pilot runner asserts the manifest matches that exact list
+(`scripts/run-adaptive-warrant-outcome-pilot.js:176`). The registration
+takes them as given. The gain is that the guarded arm draws the same
+scenarios as the passive pilot, so the two poles can be read against each
+other without a draw difference standing between them.
+
+The freshness audit above therefore governs the smoke rungs and any later
+free-seed run, not this pilot.
 
 ## 7. Pooling and provenance
 
@@ -168,6 +176,10 @@ fresh audit run at GO time.
 - The run happens on branch `build/guarded-learner-v3.3` at a commit
   recorded in the GO note. All four sealed A1 pins and both reader-script
   pins must re-hash byte-identical at GO time.
+- The pilot runner checks **two further pins** that relay 108 did not:
+  the presence channel's `extraction_schema_digest` and `reader_digest`.
+  Both fail today. Relay 111 reports why and what each one needs. **No
+  launch until they are settled.**
 - Artifacts are copied to the private archive when the run ends.
 
 ## 8. What this registration does not do

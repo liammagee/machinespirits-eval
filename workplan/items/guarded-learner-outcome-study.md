@@ -26,6 +26,7 @@ links:
     - docs/adaptation-refinement/relay/108-build-report-guarded-pole-complete-smoke-c-request.md
     - docs/adaptation-refinement/relay/109-go-smoke-c-guarded-pole.md
     - docs/adaptation-refinement/relay/110-registration-guarded-pilot.md
+    - docs/adaptation-refinement/relay/111-block-pilot-frozen-binding-mismatch.md
   paper: §6.25
 tags:
   - warrant-gate
@@ -78,10 +79,19 @@ primary endpoint is measured, never gated, so a null stays a finding.
 Stop rules cover the dark evidence-demand act, the deferral mislabel
 (terminal), and persona collapse.
 
-**Next paid rung: the pilot.** The design is registered; the spend is
-not. It needs a GO note quoting approval of the spend, with the three
-seeds pinned there from a fresh freshness audit. Burned at drafting:
-545, 546, 548, 549, 550.
+**Pilot spend approved, then BLOCKED before launch, 15 August (relay
+111).** Zero calls made. The seeds turned out to be frozen in code
+(515, 516, 517), not free, so relay 110 §6 was amended. Re-computing
+every launcher pin then found two of eight failing.
+`extraction_schema_digest` moved by design — it hashes the bytes of
+`adaptiveWarrantSemanticEvents.js`, which v3.3 changed — so a v3.3 arm
+cannot match the v3.2 pilot seal. `reader_digest` was already broken on
+`main` by a prettier pass (`e729e1a8`) that landed after the manifest
+was sealed (`a265c99b`); the diff is reflowing with no changed token,
+so the fix is to restore the bytes and add a test that holds them. The
+A1 pilot has not been launchable from `main` since that commit. The
+approval stands unspent; a cleared block needs its own GO note.
+Recommendation on the record: re-seal a guarded manifest at v3.3.
 
 Both rulings landed on 15 August (relay 106): defended over-claiming is
 its own warrant basis, criterion (c) keeps its §6.25 reading, and the
