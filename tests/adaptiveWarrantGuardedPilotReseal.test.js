@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -16,7 +17,16 @@ import {
   refuseFrozenSchemaAuditDowngrade,
   sealGuardedOutcomePilotManifest,
 } from '../scripts/seal-guarded-warrant-outcome-manifest.js';
-import { verifyOutcomePilotManifestBindings } from '../scripts/run-adaptive-warrant-outcome-pilot.js';
+import {
+  GUARDED_FREEZE_DEFAULT_BASE,
+  GUARDED_FREEZE_DEFAULT_OUT,
+  assertAcceptanceArtifactAdmissible,
+  assertManifestPinAgrees,
+} from '../scripts/seal-guarded-warrant-instrument-freeze.js';
+import {
+  validateOutcomeFreezeFormForFrozenDecisionRunner,
+  verifyOutcomePilotManifestBindings,
+} from '../scripts/run-adaptive-warrant-outcome-pilot.js';
 import { guardOutcomePilotPreparation } from '../scripts/prepare-adaptive-warrant-outcome-study.js';
 import { adaptiveWarrantSemanticInstrumentBindings } from '../services/adaptiveWarrantSemanticPreflight.js';
 import { ADAPTIVE_WARRANT_SEMANTIC_DEFENSIVE_SPEECH_ACTS } from '../services/adaptiveWarrantSemanticEvents.js';
@@ -191,18 +201,21 @@ test('the response-schema audit reports full coverage for a schema naming every 
   assert.deepEqual(audit.missing_speech_acts, []);
 });
 
-test('the provider-response-schema pin is inherited and marked unproved, not passed off as checked', () => {
+test('the provider-response-schema pin is re-pinned from a proved artifact, and leaves the A1 value', () => {
   const guarded = readManifest(GUARDED_PILOT_MANIFEST_DEFAULT_OUT);
   const pin = guarded.reseal.provider_response_schema_pin;
-  assert.equal(pin.status, 'inherited_unproved');
-  assert.equal(pin.repinned, false);
-  assert.equal(pin.acceptance_proved, false);
-  // The pin must still equal the A1 value, or the launcher would refuse.
+  assert.equal(pin.status, 'repinned');
+  assert.equal(pin.repinned, true);
+  assert.equal(pin.acceptance_proved, true);
+  assert.match(pin.acceptance_artifact.path, /^\//u, 'an artifact outside the repo is recorded absolute');
+  // The whole point of rung 0: the pin no longer equals the A1 value it used to
+  // be checked against.
   const base = readManifest(GUARDED_PILOT_MANIFEST_DEFAULT_BASE);
-  assert.equal(
+  assert.notEqual(
     guarded.presence_channel.digests.provider_response_schema_sha256,
     base.presence_channel.digests.provider_response_schema_sha256,
   );
+  assert.equal(guarded.presence_channel.digests.provider_response_schema_sha256, pin.current_sha256);
 });
 
 test('with no acceptance artifact the provider-schema pin says so in words, not silence', () => {
@@ -237,7 +250,7 @@ test('a schema-acceptance artifact from another commit cannot re-pin the provide
   );
   assert.throws(
     () => auditProviderResponseSchemaPin({ acceptancePath: artifactPath, inheritedSha256: 'b'.repeat(64) }),
-    /was stamped at 0{40}, not at HEAD/u,
+    /is not an ancestor of HEAD/u,
   );
 });
 
@@ -259,20 +272,77 @@ test('a failed schema-acceptance artifact cannot re-pin the provider schema', (t
   );
 });
 
-test('a passing acceptance artifact at the current commit re-pins the provider schema', (t) => {
+// A schema file that names every act in the current catalogue. The coverage
+// audit reads text, so the catalogue source itself is a faithful stand-in.
+function currentContractSchemaFixture(directory) {
+  const schemaPath = path.join(directory, 'response.schema.json');
+  fs.writeFileSync(schemaPath, fs.readFileSync(path.join(ROOT, 'services/adaptiveWarrantSemanticEvents.js')));
+  return schemaPath;
+}
+
+test('a passing acceptance artifact whose schema covers the contract re-pins the provider schema', (t) => {
   const directory = temporaryDirectory(t);
   const artifactPath = path.join(directory, 'acceptance.json');
   const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT }).toString('utf8').trim();
   const fresh = 'c'.repeat(64);
   fs.writeFileSync(
     artifactPath,
-    JSON.stringify({ status: 'passed', source_commit: head, response_schema: { sha256: fresh } }),
+    JSON.stringify({
+      status: 'passed',
+      source_commit: head,
+      response_schema: { sha256: fresh, path: currentContractSchemaFixture(directory) },
+    }),
   );
   const pin = auditProviderResponseSchemaPin({ acceptancePath: artifactPath, inheritedSha256: 'b'.repeat(64) });
   assert.equal(pin.status, 'repinned');
   assert.equal(pin.repinned, true);
   assert.equal(pin.current_sha256, fresh);
   assert.equal(pin.acceptance_proved, true);
+});
+
+// The stamp rule is "from this line of work", not "equal to HEAD". Demanding
+// equality would refuse a good artifact the moment the next commit landed, and
+// push a later re-seal toward spending another call for no new evidence.
+test('an ancestor commit is accepted, so a later commit does not invalidate a paid ping', (t) => {
+  const directory = temporaryDirectory(t);
+  const artifactPath = path.join(directory, 'acceptance.json');
+  const parent = execFileSync('git', ['rev-parse', 'HEAD~1'], { cwd: ROOT }).toString('utf8').trim();
+  fs.writeFileSync(
+    artifactPath,
+    JSON.stringify({
+      status: 'passed',
+      source_commit: parent,
+      response_schema: { sha256: 'c'.repeat(64), path: currentContractSchemaFixture(directory) },
+    }),
+  );
+  const pin = auditProviderResponseSchemaPin({ acceptancePath: artifactPath, inheritedSha256: 'b'.repeat(64) });
+  assert.equal(pin.status, 'repinned');
+});
+
+// The check that carries the weight. A commit stamp says when; only the schema
+// says what the provider actually accepted.
+test('an acceptance artifact whose schema predates the contract cannot re-pin, whatever its commit', (t) => {
+  const directory = temporaryDirectory(t);
+  const artifactPath = path.join(directory, 'acceptance.json');
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT }).toString('utf8').trim();
+  const schemaPath = path.join(directory, 'old.schema.json');
+  const catalogue = fs.readFileSync(path.join(ROOT, 'services/adaptiveWarrantSemanticEvents.js'), 'utf8');
+  fs.writeFileSync(
+    schemaPath,
+    ADAPTIVE_WARRANT_SEMANTIC_DEFENSIVE_SPEECH_ACTS.reduce((text, act) => text.split(act).join('x_removed'), catalogue),
+  );
+  fs.writeFileSync(
+    artifactPath,
+    JSON.stringify({
+      status: 'passed',
+      source_commit: head,
+      response_schema: { sha256: 'c'.repeat(64), path: schemaPath },
+    }),
+  );
+  assert.throws(
+    () => auditProviderResponseSchemaPin({ acceptancePath: artifactPath, inheritedSha256: 'b'.repeat(64) }),
+    /does not cover the current contract/u,
+  );
 });
 
 // Reads the real A1 acceptance artifact, so the audit is written against the
@@ -285,7 +355,7 @@ const A1_ACCEPTANCE_ARTIFACT = path.join(
 );
 
 test(
-  'the real A1 acceptance artifact is read, and refused because it is stamped at an older commit',
+  'the real A1 acceptance artifact is read, and refused on both counts',
   {
     skip: fs.existsSync(A1_ACCEPTANCE_ARTIFACT) ? false : `private-archive artifact absent (${A1_ACCEPTANCE_ARTIFACT})`,
   },
@@ -294,10 +364,16 @@ test(
     assert.equal(artifact.status, 'passed');
     assert.match(artifact.source_commit, /^[0-9a-f]{40}$/u);
     assert.equal(artifact.bindings, undefined, 'the ping writes source_commit at the top level');
+    // Its commit is off this line of work, so ancestry refuses it first.
     assert.throws(
       () => auditProviderResponseSchemaPin({ acceptancePath: A1_ACCEPTANCE_ARTIFACT, inheritedSha256: null }),
-      new RegExp(`stamped at ${artifact.source_commit}, not at HEAD`, 'u'),
+      /is not an ancestor of HEAD/u,
     );
+    // And the schema behind it would fail the second check anyway: it is the
+    // 15-act schema, which is what rung 0 was spent to replace.
+    const coverage = auditFrozenResponseSchemaActCoverage(artifact.response_schema.path);
+    assert.equal(coverage.status, 'predates_current_contract');
+    assert.deepEqual(coverage.defensive_speech_acts_missing, [...ADAPTIVE_WARRANT_SEMANTIC_DEFENSIVE_SPEECH_ACTS]);
   },
 );
 
@@ -324,4 +400,102 @@ test('the ledger fields are inherited and flagged stale rather than silently re-
   assert.equal(guarded.reseal.ledger_note.stale, true);
   assert.equal(guarded.reseal.ledger_note.re_read_at_go, true);
   assert.equal(guarded.planned_calls.total, 1116);
+});
+
+// --- the guarded instrument freeze -----------------------------------------
+//
+// Re-pinning the manifest alone would stop the pilot dead: the launcher checks
+// that pin against the acceptance artifact the freeze names, and the A1 freeze
+// names the 15-act one. These tests hold the two halves together.
+
+const GUARDED_FREEZE = path.join(ROOT, GUARDED_FREEZE_DEFAULT_OUT);
+
+function fileSha256(filePath) {
+  return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
+test('the sealed guarded freeze is the form the frozen decision runner accepts', () => {
+  const freeze = JSON.parse(fs.readFileSync(GUARDED_FREEZE, 'utf8'));
+  assert.equal(validateOutcomeFreezeFormForFrozenDecisionRunner(freeze).status, 'passed');
+  assert.equal(freeze.guarded_reseal.zero_model_calls, true);
+  assert.equal(freeze.guarded_reseal.contract_version, 'v3.3');
+});
+
+test('the freeze, the acceptance artifact and the manifest pin agree on one hash', () => {
+  const freeze = JSON.parse(fs.readFileSync(GUARDED_FREEZE, 'utf8'));
+  const acceptancePath = freeze.semantic_instrument.schema_acceptance.path;
+  assert.ok(fs.existsSync(acceptancePath), 'the freeze names an acceptance artifact that is on disk');
+  assert.equal(
+    fileSha256(acceptancePath),
+    freeze.semantic_instrument.schema_acceptance.sha256,
+    'the freeze binds the artifact by hash',
+  );
+  const acceptance = JSON.parse(fs.readFileSync(acceptancePath, 'utf8'));
+  const pinned = readManifest(GUARDED_PILOT_MANIFEST_DEFAULT_OUT).presence_channel.digests
+    .provider_response_schema_sha256;
+  // This equality is exactly the launcher's provider_response_schema check.
+  assert.equal(acceptance.response_schema.sha256, pinned);
+});
+
+test('the accepted response schema is on disk inside the repo and covers the v3.3 contract', () => {
+  const freeze = JSON.parse(fs.readFileSync(GUARDED_FREEZE, 'utf8'));
+  const acceptance = JSON.parse(fs.readFileSync(freeze.semantic_instrument.schema_acceptance.path, 'utf8'));
+  const schemaPath = acceptance.response_schema.path;
+  assert.ok(schemaPath.startsWith(ROOT), 'a /private/tmp clean must not be able to break a launch');
+  assert.equal(fileSha256(schemaPath), acceptance.response_schema.sha256, 'the copy is byte-identical');
+  assert.equal(auditFrozenResponseSchemaActCoverage(schemaPath).status, 'covers_current_contract');
+});
+
+test(
+  'the freeze inherits every other field from the A1 freeze unchanged',
+  { skip: fs.existsSync(GUARDED_FREEZE_DEFAULT_BASE) ? false : `A1 freeze absent (${GUARDED_FREEZE_DEFAULT_BASE})` },
+  () => {
+    const base = JSON.parse(fs.readFileSync(GUARDED_FREEZE_DEFAULT_BASE, 'utf8'));
+    const freeze = JSON.parse(fs.readFileSync(GUARDED_FREEZE, 'utf8'));
+    for (const key of Object.keys(base)) {
+      if (key === 'semantic_instrument') continue;
+      assert.deepEqual(freeze[key], base[key], `${key} must be inherited unchanged`);
+    }
+    assert.deepEqual(freeze.semantic_instrument.preflight, base.semantic_instrument.preflight);
+    assert.deepEqual(freeze.guarded_reseal.replaced_binding.was, base.semantic_instrument.schema_acceptance);
+  },
+);
+
+test('the freeze re-seal refuses when the manifest pin and the acceptance artifact disagree', () => {
+  assert.throws(
+    () =>
+      assertManifestPinAgrees({
+        manifest: { presence_channel: { digests: { provider_response_schema_sha256: 'a'.repeat(64) } } },
+        acceptance: { response_schema: { sha256: 'b'.repeat(64) } },
+      }),
+    /re-seal the manifest from this artifact first/u,
+  );
+});
+
+test('the freeze re-seal refuses an acceptance artifact that is not admissible for carryover', (t) => {
+  const directory = temporaryDirectory(t);
+  const schemaPath = currentContractSchemaFixture(directory);
+  const admissible = {
+    status: 'passed',
+    inferential_role: 'transport_only_permanently_excluded',
+    synthetic_case_permanently_excluded: true,
+    response_received: true,
+    calls: { attempted: 1, completed: 1, maximum: 1 },
+    prohibited_tool_event_count: 0,
+    source_commit: '0'.repeat(40),
+    response_schema: { sha256: fileSha256(schemaPath), path: schemaPath },
+  };
+  assert.equal(assertAcceptanceArtifactAdmissible(admissible).status, 'passed');
+  assert.throws(
+    () => assertAcceptanceArtifactAdmissible({ ...admissible, calls: { attempted: 2, completed: 2, maximum: 2 } }),
+    /calls not 1\/1\/1/u,
+  );
+  assert.throws(
+    () =>
+      assertAcceptanceArtifactAdmissible({
+        ...admissible,
+        response_schema: { ...admissible.response_schema, sha256: 'd'.repeat(64) },
+      }),
+    /no longer hashes to its recorded value/u,
+  );
 });

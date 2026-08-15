@@ -70,6 +70,26 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+function isAncestorCommit(candidate, descendant) {
+  try {
+    execFileSync('git', ['merge-base', '--is-ancestor', candidate, descendant], { cwd: ROOT, stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * A path inside the repo is recorded relative to it, so the seal reads the same
+ * on any checkout. A path outside the repo -- an acceptance artifact under
+ * /private/tmp, say -- is recorded absolute, because a relative path that walks
+ * out of the repo is unreadable and breaks the moment the repo moves.
+ */
+export function recordedPath(resolved) {
+  const relative = path.relative(ROOT, resolved);
+  return relative && !relative.startsWith('..') && !path.isAbsolute(relative) ? relative : resolved;
+}
+
 function strippedTree(node) {
   if (Array.isArray(node)) return node.map(strippedTree);
   if (!node || typeof node !== 'object') return node;
@@ -198,14 +218,31 @@ export function auditProviderResponseSchemaPin({ acceptancePath = null, inherite
   // run-adaptive-warrant-semantic-schema-acceptance-ping.js); older carryover
   // artifacts nest it under bindings.
   const stampedAt = artifact.source_commit ?? artifact.bindings?.source_commit ?? null;
-  if (stampedAt !== head) {
+  if (!/^[0-9a-f]{40}$/u.test(stampedAt || '')) {
+    throw new Error('re-seal refuses: schema-acceptance artifact carries no source commit');
+  }
+  // Demanding the stamp equal HEAD would decay the moment the next commit
+  // lands, and would push a later re-seal toward spending another call for no
+  // evidence. What has to hold is the thing itself: the artifact comes from
+  // this line of work, and the schema the provider accepted names the act
+  // catalogue the readers build from now. The schema cannot be compared by
+  // hash, because the preparer mints one per batch from the reader id, batch
+  // id, corpus hash, and sample ids.
+  if (stampedAt !== head && !isAncestorCommit(stampedAt, head)) {
     throw new Error(
-      `re-seal refuses: schema-acceptance artifact was stamped at ${stampedAt || '(no commit)'}, not at HEAD ${head}`,
+      `re-seal refuses: schema-acceptance artifact was stamped at ${stampedAt}, which is not an ancestor of HEAD ${head}`,
     );
   }
   const sha = artifact.response_schema?.sha256;
   if (!/^[0-9a-f]{64}$/u.test(sha || '')) {
     throw new Error('re-seal refuses: schema-acceptance artifact carries no response-schema hash');
+  }
+  const coverage = auditFrozenResponseSchemaActCoverage(artifact.response_schema?.path);
+  if (coverage.status !== 'covers_current_contract') {
+    throw new Error(
+      `re-seal refuses: the accepted response schema does not cover the current contract (${coverage.status}` +
+        `${coverage.missing_speech_acts?.length ? `, missing ${coverage.missing_speech_acts.join(', ')}` : ''})`,
+    );
   }
   return {
     status: sha === inheritedSha256 ? 'repinned_unchanged' : 'repinned',
@@ -213,7 +250,7 @@ export function auditProviderResponseSchemaPin({ acceptancePath = null, inherite
     inherited_sha256: inheritedSha256,
     current_sha256: sha,
     acceptance_proved: true,
-    acceptance_artifact: { path: path.relative(ROOT, resolved), sha256: sha256(fs.readFileSync(resolved)) },
+    acceptance_artifact: { path: recordedPath(resolved), sha256: sha256(fs.readFileSync(resolved)) },
   };
 }
 
