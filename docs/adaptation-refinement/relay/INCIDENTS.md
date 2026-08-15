@@ -119,12 +119,27 @@ I1, on the other learner.
   complete to a person and the driver refuses it.
 - **16 Aug** — the zero-call launch simulation, run against the held
   note, refused for a reason that was not the note: `required excluded
-  artifact is missing`. macOS had emptied `/private/tmp` at midnight
-  and taken 3 of the 22 burned corpora the prepared-identity guard
-  reads. Recorded as defect ledger entry 21. The 19 survivors were
-  copied to the private repo (`a83b5e06`), all hashing exactly as the
-  main-block checkpoint recorded them at launch; the 3 lost files
-  survive only as hashes and embedded fingerprints in that checkpoint.
+  artifact is missing`. Of the 22 burned corpora the prepared-identity
+  guard reads, 19 sit under `/private/tmp`, and 3 of those 19 had gone;
+  the directory skeletons remained. macOS empties that directory on a
+  schedule, by access time, and reading a file there does not refresh
+  its clock — every surviving file's access time still equals its
+  write time, so the guard's own read at launch protected nothing.
+  Recorded as defect ledger entry 21. The 19 survivors were copied to
+  the private repo (`a83b5e06`), all hashing exactly as the main-block
+  checkpoint recorded them at launch; the 3 lost files survive only as
+  hashes and embedded fingerprints in that checkpoint. The other 16
+  temp-path corpora were still there the next morning at 3.4 to 4.3
+  days old, which is close enough to the sweep to be no protection.
+- **Repair, 16 Aug** (`25c1863e`) — a restart now takes the exclusion
+  record the checkpoint wrote at launch, and only for artifacts that
+  are no longer on disk. A file still present is still read and must
+  hash to the recorded value. A first launch carries no record, so it
+  still refuses on any missing file. Because the record keeps digests
+  and not the fingerprints inside each corpus, the guard refuses the
+  transfer unless the candidates match the launch exactly — status,
+  shape, persona, seeds, and the same fingerprint list in the same
+  order. Nothing paid was touched.
 
 ### Invariants that held
 
