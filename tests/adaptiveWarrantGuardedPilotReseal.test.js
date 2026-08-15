@@ -30,7 +30,9 @@ import {
   verifyOutcomePilotManifestBindings,
 } from '../scripts/run-adaptive-warrant-outcome-pilot.js';
 import {
+  OUTCOME_PILOT_EXCLUDED_ARTIFACTS,
   OUTCOME_RUN_SHAPES,
+  absentOutcomeExcludedArtifacts,
   buildOutcomeInterleavedAssignment,
   guardOutcomePilotPreparation,
 } from '../scripts/prepare-adaptive-warrant-outcome-study.js';
@@ -54,6 +56,17 @@ const MACHINE_LOCAL_ARTIFACT = path.join(
 const MACHINE_LOCAL_ARTIFACTS_SKIP = fs.existsSync(MACHINE_LOCAL_ARTIFACT)
   ? false
   : `machine-local warrant run artifacts absent (${MACHINE_LOCAL_ARTIFACT}); archived in the private repo`;
+
+// A narrower condition, and a different one: some burned corpora sit in the
+// system temp directory, which a housekeeping job empties (defect ledger 21).
+// Once any of them is gone, a FRESH-launch guard is meant to refuse, so tests
+// that drive the fresh path here have nothing left to prove. Restart-path tests
+// must never carry this skip — standing in from the launch record is exactly
+// what they check.
+const absentBurnedCorpora = absentOutcomeExcludedArtifacts();
+const BURNED_CORPORA_SKIP = absentBurnedCorpora.length
+  ? `burned corpora absent on this machine (${absentBurnedCorpora.length} of ${OUTCOME_PILOT_EXCLUDED_ARTIFACTS.length}); a fresh launch is meant to refuse here`
+  : false;
 
 function headBindings() {
   return adaptiveWarrantSemanticInstrumentBindings({
@@ -96,7 +109,7 @@ test('the guarded manifest re-pins exactly the two contested digests and inherit
 
 test(
   'both manifests pass the launcher manifest guard, each under its own persona',
-  { skip: MACHINE_LOCAL_ARTIFACTS_SKIP },
+  { skip: MACHINE_LOCAL_ARTIFACTS_SKIP || BURNED_CORPORA_SKIP },
   () => {
     const passive = verifyOutcomePilotManifestBindings({ manifestPath: GUARDED_PILOT_MANIFEST_DEFAULT_BASE });
     const guarded = verifyOutcomePilotManifestBindings({ manifestPath: GUARDED_PILOT_MANIFEST_DEFAULT_OUT });
@@ -124,23 +137,28 @@ test('the launcher refuses a persona that does not match the manifest', () => {
   );
 });
 
-test('the persona reaches the freshness fingerprints', { skip: MACHINE_LOCAL_ARTIFACTS_SKIP }, () => {
-  const worldPaths = readManifest(GUARDED_PILOT_MANIFEST_DEFAULT_BASE).worlds.map((world) => world.path);
-  const passive = guardOutcomePilotPreparation({ worldPaths, learnerProfile: 'low_agency' });
-  const guarded = guardOutcomePilotPreparation({ worldPaths, learnerProfile: 'overconfident' });
-  assert.equal(passive.status, 'passed');
-  assert.equal(guarded.status, 'passed');
-  assert.equal(passive.learner_profile, 'low_agency');
-  assert.equal(guarded.learner_profile, 'overconfident');
-  assert.equal(passive.prepared_run_count, guarded.prepared_run_count);
-  // Every planned run hashes differently under the guarded persona, so the
-  // guarded pole is checked against the burned corpora as itself.
-  assert.equal(
-    passive.candidate_fingerprints.filter((fingerprint) => guarded.candidate_fingerprints.includes(fingerprint)).length,
-    0,
-    'the persona must change every prepared-run fingerprint',
-  );
-});
+test(
+  'the persona reaches the freshness fingerprints',
+  { skip: MACHINE_LOCAL_ARTIFACTS_SKIP || BURNED_CORPORA_SKIP },
+  () => {
+    const worldPaths = readManifest(GUARDED_PILOT_MANIFEST_DEFAULT_BASE).worlds.map((world) => world.path);
+    const passive = guardOutcomePilotPreparation({ worldPaths, learnerProfile: 'low_agency' });
+    const guarded = guardOutcomePilotPreparation({ worldPaths, learnerProfile: 'overconfident' });
+    assert.equal(passive.status, 'passed');
+    assert.equal(guarded.status, 'passed');
+    assert.equal(passive.learner_profile, 'low_agency');
+    assert.equal(guarded.learner_profile, 'overconfident');
+    assert.equal(passive.prepared_run_count, guarded.prepared_run_count);
+    // Every planned run hashes differently under the guarded persona, so the
+    // guarded pole is checked against the burned corpora as itself.
+    assert.equal(
+      passive.candidate_fingerprints.filter((fingerprint) => guarded.candidate_fingerprints.includes(fingerprint))
+        .length,
+      0,
+      'the persona must change every prepared-run fingerprint',
+    );
+  },
+);
 
 test('the re-seal refuses an unsupported persona', () => {
   assert.throws(
@@ -602,36 +620,47 @@ test('the main-block condition order covers every cell once and balances the thr
 
 // --- Zero-call launch simulation for the sealed main block ---
 
-test('the launch simulation passes on the sealed main-block manifest and makes no call', () => {
-  const report = simulateGuardedMainBlockLaunch({});
-  assert.equal(report.status, 'passed');
-  assert.equal(report.zero_model_calls, true);
-  assert.equal(report.run_shape, 'main-block');
-  assert.equal(report.launch_authorized, false);
-  assert.equal(report.size.dialogues, 72);
-  assert.equal(report.size.cases, 576);
-  assert.equal(report.planned_calls.total, 4464);
-  for (const check of report.checks) assert.equal(check.held, true, check.name);
-  assert.equal(
-    report.checks.some((check) => check.name === 'no_go_note_supplied'),
-    true,
-  );
-});
+test(
+  'the launch simulation passes on the sealed main-block manifest and makes no call',
+  { skip: BURNED_CORPORA_SKIP },
+  () => {
+    const report = simulateGuardedMainBlockLaunch({});
+    assert.equal(report.status, 'passed');
+    assert.equal(report.zero_model_calls, true);
+    assert.equal(report.run_shape, 'main-block');
+    assert.equal(report.launch_authorized, false);
+    assert.equal(report.size.dialogues, 72);
+    assert.equal(report.size.cases, 576);
+    assert.equal(report.planned_calls.total, 4464);
+    for (const check of report.checks) assert.equal(check.held, true, check.name);
+    assert.equal(
+      report.checks.some((check) => check.name === 'no_go_note_supplied'),
+      true,
+    );
+  },
+);
 
-test('the filled launch note launches the main block, and the simulation says so', () => {
-  const report = simulateGuardedMainBlockLaunch({ goNotePath: GUARDED_MAIN_BLOCK_GO_NOTE });
-  assert.equal(report.status, 'passed');
-  const check = report.checks.find((entry) => entry.name === 'supplied_go_note_accepted');
-  assert.equal(check.held, true);
-  assert.match(check.detail, /4464-call scope and seeds 654-665/u);
-});
+test(
+  'the filled launch note launches the main block, and the simulation says so',
+  { skip: BURNED_CORPORA_SKIP },
+  () => {
+    const report = simulateGuardedMainBlockLaunch({ goNotePath: GUARDED_MAIN_BLOCK_GO_NOTE });
+    assert.equal(report.status, 'passed');
+    const check = report.checks.find((entry) => entry.name === 'supplied_go_note_accepted');
+    assert.equal(check.held, true);
+    assert.match(check.detail, /4464-call scope and seeds 654-665/u);
+  },
+);
 
-test('the filled launch note cannot launch a pilot, and the pilot note still cannot launch this', () => {
+test('the filled launch note cannot launch a pilot', () => {
   const pilotShape = OUTCOME_RUN_SHAPES.pilot;
   assert.throws(
     () => validateOutcomePilotGoNote(GUARDED_MAIN_BLOCK_GO_NOTE, { shape: pilotShape }),
     /lacks the GO and the 1116-call scope/u,
   );
+});
+
+test('the pilot note still cannot launch the main block', { skip: BURNED_CORPORA_SKIP }, () => {
   const report = simulateGuardedMainBlockLaunch({ heldGoNotePath: GUARDED_PILOT_GO_NOTE });
   assert.equal(report.status, 'passed');
   assert.equal(report.checks.find((entry) => entry.name === 'held_go_note_refused').held, true);
@@ -656,13 +685,17 @@ test('the launch note carries all four tokens the launcher reads out of it', () 
   assert.equal(/4,?464/u.test(text), true);
 });
 
-test('the launch simulation fails when a manifest of the wrong size is handed to it', (t) => {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'main-block-sim-'));
-  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
-  const pilotCopy = path.join(directory, 'pilot.json');
-  fs.copyFileSync(path.resolve(ROOT, GUARDED_PILOT_MANIFEST_DEFAULT_OUT), pilotCopy);
-  const report = simulateGuardedMainBlockLaunch({ manifestPath: pilotCopy });
-  assert.equal(report.status, 'failed');
-  assert.equal(report.run_shape, 'pilot');
-  assert.equal(report.checks.find((check) => check.name === 'manifest_binds_to_main_block').held, false);
-});
+test(
+  'the launch simulation fails when a manifest of the wrong size is handed to it',
+  { skip: BURNED_CORPORA_SKIP },
+  (t) => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'main-block-sim-'));
+    t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+    const pilotCopy = path.join(directory, 'pilot.json');
+    fs.copyFileSync(path.resolve(ROOT, GUARDED_PILOT_MANIFEST_DEFAULT_OUT), pilotCopy);
+    const report = simulateGuardedMainBlockLaunch({ manifestPath: pilotCopy });
+    assert.equal(report.status, 'failed');
+    assert.equal(report.run_shape, 'pilot');
+    assert.equal(report.checks.find((check) => check.name === 'manifest_binds_to_main_block').held, false);
+  },
+);

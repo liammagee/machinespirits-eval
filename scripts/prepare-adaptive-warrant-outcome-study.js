@@ -1010,11 +1010,71 @@ function canonicalJson(value) {
   return JSON.stringify(value);
 }
 
+// Which registered burned corpora are no longer on this machine. Empty is the
+// normal state and the only state in which a first launch can run at all; a
+// non-empty list means every fresh-launch guard here refuses by design, and
+// only a restart carrying the launch record can proceed (defect ledger 21).
+export function absentOutcomeExcludedArtifacts() {
+  return OUTCOME_PILOT_EXCLUDED_ARTIFACTS.filter(
+    (artifactPath) => !fs.existsSync(path.isAbsolute(artifactPath) ? artifactPath : path.join(ROOT, artifactPath)),
+  );
+}
+
+// One artifact's contribution to the exclusion set, decided from bytes rather
+// than from a path, so the three cases below can be exercised on any machine
+// and not only on one where a file happens to be gone.
+//
+//   bytes present, no record          — read it, as every launch always has
+//   bytes present, record disagrees   — refuse: substitution is for absence,
+//                                       never for a change
+//   bytes absent, record present      — stand in from the record (restart only)
+//   bytes absent, no record           — refuse, as a first launch always has
+export function outcomeExclusionRow({ artifactPath, bytes = null, recorded = null, worldIds = [] } = {}) {
+  if (bytes === null || bytes === undefined) {
+    if (!recorded) throw new Error(`required excluded artifact is missing: ${artifactPath}`);
+    return {
+      path: artifactPath,
+      sha256: recorded.sha256,
+      embedded_fingerprint_count: recorded.embedded_fingerprint_count ?? 0,
+      // The launch record keeps each artifact's digest and the count of the
+      // fingerprints inside it, never the fingerprints themselves. A row taken
+      // from the record therefore contributes a smaller exclusion set than the
+      // file did, which is safe only under the candidate-identity check the
+      // guard applies whenever any row arrives this way.
+      embedded_fingerprints: [],
+      candidate_world_ids_present: recorded.candidate_world_ids_present ?? [],
+      source: 'checkpoint_record',
+    };
+  }
+  const digest = sha256(bytes);
+  if (recorded && recorded.sha256 !== digest) {
+    throw new Error(
+      `excluded artifact bytes changed since launch: ${artifactPath} (recorded ${recorded.sha256}, found ${digest})`,
+    );
+  }
+  const text = bytes.toString('utf8');
+  const embeddedFingerprints = [...new Set(text.match(/[a-f0-9]{64}/gu) || [])];
+  return {
+    path: artifactPath,
+    sha256: digest,
+    embedded_fingerprint_count: embeddedFingerprints.length,
+    embedded_fingerprints: embeddedFingerprints,
+    candidate_world_ids_present: worldIds.filter((worldId) => text.includes(worldId)),
+    source: 'file',
+  };
+}
+
 export function guardOutcomePilotPreparation({
   worldPaths,
   shape = OUTCOME_DEFAULT_RUN_SHAPE,
   seeds = shape.seeds,
   learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
+  // A restart hands over the record this same guard wrote at launch. It is used
+  // only for artifacts that no longer exist on disk (defect ledger 21: most of
+  // the burned corpora live in the system temp directory, and a housekeeping
+  // job with no relation to this study deletes them after about four days). A
+  // first launch never passes this, so it still refuses on any missing file.
+  recordedGuard = null,
 } = {}) {
   if (!OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES.includes(learnerProfile)) {
     throw new Error(`unsupported outcome-study learner profile: ${learnerProfile}`);
@@ -1045,19 +1105,22 @@ export function guardOutcomePilotPreparation({
       }),
     ),
   );
+  const recordedExclusions = new Map(
+    (Array.isArray(recordedGuard?.excluded_artifacts) ? recordedGuard.excluded_artifacts : [])
+      .filter((row) => typeof row?.path === 'string' && typeof row?.sha256 === 'string')
+      .map((row) => [row.path, row]),
+  );
+  const artifactsFromRecord = [];
   const exclusions = OUTCOME_PILOT_EXCLUDED_ARTIFACTS.map((artifactPath) => {
     const resolved = path.isAbsolute(artifactPath) ? artifactPath : path.join(ROOT, artifactPath);
-    if (!fs.existsSync(resolved)) throw new Error(`required excluded artifact is missing: ${artifactPath}`);
-    const bytes = fs.readFileSync(resolved);
-    const text = bytes.toString('utf8');
-    const embeddedFingerprints = [...new Set(text.match(/[a-f0-9]{64}/gu) || [])];
-    return {
-      path: artifactPath,
-      sha256: sha256(bytes),
-      embedded_fingerprint_count: embeddedFingerprints.length,
-      embedded_fingerprints: embeddedFingerprints,
-      candidate_world_ids_present: worlds.filter((world) => text.includes(world.id)).map((world) => world.id),
-    };
+    const row = outcomeExclusionRow({
+      artifactPath,
+      bytes: fs.existsSync(resolved) ? fs.readFileSync(resolved) : null,
+      recorded: recordedExclusions.get(artifactPath) || null,
+      worldIds: worlds.map((world) => world.id),
+    });
+    if (row.source === 'checkpoint_record') artifactsFromRecord.push(artifactPath);
+    return row;
   });
   const exclusionFingerprints = new Set(
     exclusions
@@ -1078,6 +1141,23 @@ export function guardOutcomePilotPreparation({
   );
   const overlaps = candidateFingerprints.filter((fingerprint) => exclusionFingerprints.has(fingerprint));
   const worldIdOverlaps = exclusions.flatMap((row) => row.candidate_world_ids_present);
+  // When any row came from the record, the exclusion set is short by the
+  // fingerprints those files held, so this guard no longer proves the
+  // candidates are clean on its own evidence. It proves something narrower and
+  // sufficient: that these candidates are the very ones the launch already
+  // tested against the complete set, and that the launch passed. A single
+  // differing identity, seed, shape or persona refuses the transfer.
+  const carriedFromRecord = artifactsFromRecord.length > 0;
+  const recordedCandidates = Array.isArray(recordedGuard?.candidate_fingerprints)
+    ? recordedGuard.candidate_fingerprints
+    : [];
+  const recordedIdentityMatch =
+    recordedGuard?.status === 'passed' &&
+    recordedGuard?.run_shape === shape.name &&
+    recordedGuard?.learner_profile === learnerProfile &&
+    canonicalJson(recordedGuard?.seeds) === canonicalJson([...seeds]) &&
+    recordedCandidates.length === candidateFingerprints.length &&
+    recordedCandidates.every((value, index) => value === candidateFingerprints[index]);
   // The size comes from the shape, not from a number written here twice. A
   // caller that hands over its own seed list must still hand over the count the
   // shape states, so a short or long list fails rather than quietly shrinking
@@ -1088,7 +1168,8 @@ export function guardOutcomePilotPreparation({
     candidates.length === shape.dialogues &&
     duplicates.length === 0 &&
     overlaps.length === 0 &&
-    worldIdOverlaps.length === 0;
+    worldIdOverlaps.length === 0 &&
+    (!carriedFromRecord || recordedIdentityMatch);
   return {
     schema: 'machinespirits.adaptation-refinement.outcome-preparation-fingerprint-guard.v1',
     zero_model_calls: true,
@@ -1106,6 +1187,12 @@ export function guardOutcomePilotPreparation({
     excluded_artifacts: exclusions.map(({ embedded_fingerprints: _omitted, ...row }) => row),
     deference_session_identities: [...OUTCOME_PILOT_DEFERENCE_SESSION_IDENTITIES],
     exclusion_fingerprint_count: exclusionFingerprints.size,
+    exclusion_source: carriedFromRecord ? 'files_and_checkpoint_record' : 'files',
+    artifacts_from_checkpoint_record: [...artifactsFromRecord],
+    recorded_candidate_identity_match: carriedFromRecord ? recordedIdentityMatch : null,
+    recorded_exclusion_fingerprint_count: carriedFromRecord
+      ? (recordedGuard?.exclusion_fingerprint_count ?? null)
+      : null,
     duplicate_candidate_fingerprints: [...new Set(duplicates)],
     overlapping_fingerprints: [...new Set(overlaps)],
     overlapping_world_ids: [...new Set(worldIdOverlaps)],

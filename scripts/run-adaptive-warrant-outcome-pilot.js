@@ -192,6 +192,9 @@ export function assertOutcomeCheckpointShape({ checkpoint, shape }) {
 export function verifyOutcomePilotManifestBindings({
   manifestPath = DEFAULT_MANIFEST,
   expectedLearnerProfile = null,
+  // Set only on a restart: the prepared-identity record this same guard wrote
+  // at launch. See guardOutcomePilotPreparation for what it may stand in for.
+  recordedGuard = null,
 } = {}) {
   const resolvedManifest = path.resolve(ROOT, manifestPath);
   const manifest = readJson(resolvedManifest);
@@ -276,6 +279,7 @@ export function verifyOutcomePilotManifestBindings({
     shape,
     seeds: manifest.seeds,
     learnerProfile: manifestLearnerProfile,
+    recordedGuard,
   });
   if (preparation.status !== 'passed') throw new Error('prepared-run identity guard failed');
   return { manifest, resolvedManifest, menuGuard, preparation, shape };
@@ -1251,10 +1255,24 @@ export async function executeOutcomePilot({
 } = {}) {
   if (!goNotePath) throw new Error('outcome pilot refuses: --go-note is required');
   if (!acceptCharges) throw new Error('outcome pilot refuses: --accept-charges is required');
+  // On a restart the checkpoint is read here, before the guards, because the
+  // prepared-identity guard may have to stand in for a burned corpus that no
+  // longer exists on disk. It is read once and handed on: the file runs past
+  // 100 MB, so a second parse would double the launch's memory for nothing.
+  // Every refusal below keeps its original order — they test the path, not this.
+  const earlyCheckpointPath = outputDir
+    ? path.join(path.resolve(ROOT, outputDir), 'outcome-pilot-checkpoint.json')
+    : null;
+  const checkpoint =
+    resume && earlyCheckpointPath && fs.existsSync(earlyCheckpointPath) ? readJson(earlyCheckpointPath) : null;
   // The manifest is read first because it states the run size, and the GO note
   // is then checked against that size: a note approving 1,116 calls can never
   // launch the 4,464-call block by accident.
-  const guarded = verifyOutcomePilotManifestBindings({ manifestPath, expectedLearnerProfile: learnerProfile });
+  const guarded = verifyOutcomePilotManifestBindings({
+    manifestPath,
+    expectedLearnerProfile: learnerProfile,
+    recordedGuard: checkpoint?.pre_call_guards?.prepared_identity ?? null,
+  });
   assertOutcomeShapeFlag({ expectedShape, shape: guarded.shape });
   const goNote = validateOutcomePilotGoNote(goNotePath, { shape: guarded.shape });
   if (git(['status', '--porcelain'])) throw new Error('outcome pilot launch requires a clean committed worktree');
@@ -1283,7 +1301,6 @@ export async function executeOutcomePilot({
     outputPath: promptAuditPreflightPath,
     learnerProfile,
   });
-  const checkpoint = resume ? readJson(checkpointPath) : null;
   assertOutcomeCheckpointShape({ checkpoint, shape: guarded.shape });
   const budget = createOutcomePilotBudget({ checkpointPath, checkpoint, shape: guarded.shape });
   const semanticPreflightPath = path.join(rootDir, 'semantic-brittleness-preflight.json');

@@ -728,6 +728,14 @@
       "removalSlice": "outcome-study artifact fixture decision"
     },
     {
+      "id": "adaptive-warrant-burned-corpora-swept",
+      "suite": "root",
+      "reasonPattern": "^burned corpora absent on this machine \\(\\d+ of \\d+\\); a fresh launch is meant to refuse here$",
+      "owner": "adaptive-warrant-outcome-study",
+      "reason": "Most registered burned corpora live under the system temp directory, which a housekeeping job empties after about four days (defect ledger 21). With any of them gone the fresh-launch guard must refuse, so tests that drive the fresh path cannot run. The restart path stands in from the launch record and its tests never carry this skip.",
+      "removalSlice": "outcome-study artifact fixture decision"
+    },
+    {
       "id": "paper-superego-private-archive",
       "suite": "root",
       "reasonPattern": "^archived corpus absent \\(.+\\); sibling private repo not checked out$",

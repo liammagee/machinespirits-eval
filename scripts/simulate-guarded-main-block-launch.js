@@ -74,14 +74,21 @@ export function simulateGuardedMainBlockLaunch({
   goNotePath = null,
   heldGoNotePath = null,
   learnerProfile = 'overconfident',
+  // The run directory of a stopped run, to simulate a restart rather than a
+  // first launch. The launcher reads the same checkpoint for the same reason.
+  resumeRunDir = null,
 } = {}) {
   if (goNotePath && heldGoNotePath) {
     throw new Error('simulation refuses: a note is either expected to launch or expected to be refused, not both');
   }
   const resolvedManifest = path.resolve(ROOT, manifestPath);
+  const resumeCheckpoint = resumeRunDir
+    ? JSON.parse(fs.readFileSync(path.join(path.resolve(ROOT, resumeRunDir), 'outcome-pilot-checkpoint.json'), 'utf8'))
+    : null;
   const guarded = verifyOutcomePilotManifestBindings({
     manifestPath: resolvedManifest,
     expectedLearnerProfile: learnerProfile,
+    recordedGuard: resumeCheckpoint?.pre_call_guards?.prepared_identity ?? null,
   });
   const shape = guarded.shape;
   const plan = guarded.manifest.planned_calls;
@@ -93,7 +100,11 @@ export function simulateGuardedMainBlockLaunch({
     }),
     expectPass('preparation_guard_passed', 'the prepared-run identity guard passes at 72 dialogues', () => {
       if (guarded.preparation.status !== 'passed') throw new Error(guarded.preparation.status);
-      return `${guarded.preparation.prepared_run_count} prepared runs, no duplicate and no overlap`;
+      const carried = guarded.preparation.artifacts_from_checkpoint_record || [];
+      const stood_in = carried.length
+        ? `; ${carried.length} burned corpora stood in from the launch record, candidates identical`
+        : '';
+      return `${guarded.preparation.prepared_run_count} prepared runs, no duplicate and no overlap${stood_in}`;
     }),
     expectPass('counter_arithmetic_closes', 'the ledger fields add up under the campaign ceiling', () => {
       if (plan.counter_after_if_completed !== plan.counter_before + plan.total)
@@ -171,6 +182,9 @@ export function simulateGuardedMainBlockLaunch({
     },
     planned_calls: plan,
     launch_authorized: guarded.manifest.launch_authorized === true,
+    simulated_as: resumeRunDir ? 'restart' : 'first launch',
+    exclusion_source: guarded.preparation.exclusion_source,
+    artifacts_from_checkpoint_record: guarded.preparation.artifacts_from_checkpoint_record || [],
     checks,
   };
 }
@@ -182,6 +196,7 @@ function main() {
       'pilot-go-note': { type: 'string', default: GUARDED_PILOT_GO_NOTE },
       'go-note': { type: 'string' },
       'held-go-note': { type: 'string' },
+      'resume-run-dir': { type: 'string' },
       out: { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
@@ -195,7 +210,10 @@ function main() {
         'before the first call. Makes no model call and needs no credentials.\n\n' +
         '  --go-note       a note that must be accepted; the check fails if the launcher refuses it\n' +
         '  --held-go-note  a note that must be refused, as a launch note written before its\n' +
-        '                  approval is; the check fails if the launcher would accept it\n',
+        '                  approval is; the check fails if the launcher would accept it\n' +
+        '  --resume-run-dir  the run directory of a stopped run, to simulate a restart: the\n' +
+        '                  identity guard then reads that checkpoint for any burned corpus\n' +
+        '                  that no longer exists on disk\n',
     );
     return;
   }
@@ -204,6 +222,7 @@ function main() {
     pilotGoNotePath: values['pilot-go-note'],
     goNotePath: values['go-note'] || null,
     heldGoNotePath: values['held-go-note'] || null,
+    resumeRunDir: values['resume-run-dir'] || null,
   });
   if (values.out) {
     const resolved = path.resolve(ROOT, values.out);

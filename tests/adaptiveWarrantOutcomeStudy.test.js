@@ -29,6 +29,9 @@ import {
   buildOutcomeStandingPermissionMenu,
   guardOutcomeStandingPermissionMenu,
   guardOutcomePilotPreparation,
+  outcomeExclusionRow,
+  absentOutcomeExcludedArtifacts,
+  OUTCOME_PILOT_EXCLUDED_ARTIFACTS,
 } from '../scripts/prepare-adaptive-warrant-outcome-study.js';
 import { deriveAdaptiveWarrantShadow } from '../scripts/derive-adaptive-warrant-shadow.js';
 import { createTutorStubWarrantGate } from '../services/tutorStubWarrantGate.js';
@@ -233,20 +236,130 @@ test('standing-permission byte guard fails when one branch is missing', () => {
   assert.deepEqual(result.missing, [removed.id]);
 });
 
+// Defect ledger 21: most burned corpora live in the system temp directory, and
+// a cleaner deletes them after about four days. A launch must still refuse when
+// one is gone; only a restart carrying the launch record may stand in for it.
+const absentBurnedCorpora = absentOutcomeExcludedArtifacts;
+
+const PILOT_WORLD_PATHS = [
+  'docs/adaptation-refinement/outcome-study-a1/worlds/world_101_kestrel_signal_lamp.yaml',
+  'docs/adaptation-refinement/outcome-study-a1/worlds/world_102_marigold_archive_box.yaml',
+];
+
 test(
   'fresh pilot worlds and seeds pass the pre-call fingerprint guard',
-  { skip: machineLocalSkip(MACHINE_LOCAL_BASELINE_ARTIFACT) },
+  {
+    skip:
+      machineLocalSkip(MACHINE_LOCAL_BASELINE_ARTIFACT) ||
+      (absentBurnedCorpora().length > 0
+        ? `burned corpora absent on this machine (${absentBurnedCorpora().length} of ${OUTCOME_PILOT_EXCLUDED_ARTIFACTS.length}); a fresh launch is meant to refuse here`
+        : false),
+  },
   () => {
-    const result = guardOutcomePilotPreparation({
-      worldPaths: [
-        'docs/adaptation-refinement/outcome-study-a1/worlds/world_101_kestrel_signal_lamp.yaml',
-        'docs/adaptation-refinement/outcome-study-a1/worlds/world_102_marigold_archive_box.yaml',
-      ],
-    });
+    const result = guardOutcomePilotPreparation({ worldPaths: PILOT_WORLD_PATHS });
     assert.equal(result.status, 'passed');
     assert.equal(result.prepared_run_count, 18);
     assert.deepEqual(result.seeds, [515, 516, 517]);
     assert.equal(result.post_generation_case_guard_required, true);
+    assert.equal(result.exclusion_source, 'files');
+    assert.deepEqual(result.artifacts_from_checkpoint_record, []);
+  },
+);
+
+test('a present excluded artifact is read, and its recorded digest must agree', () => {
+  const bytes = Buffer.from(`world_101_kestrel_signal_lamp and ${digest('a')} and ${digest('a')}\n`);
+  const fresh = outcomeExclusionRow({
+    artifactPath: 'x/sample.json',
+    bytes,
+    worldIds: ['world_101_kestrel_signal_lamp', 'world_102_marigold_archive_box'],
+  });
+  assert.equal(fresh.source, 'file');
+  assert.equal(fresh.embedded_fingerprint_count, 1, 'repeated fingerprints count once');
+  assert.deepEqual(fresh.candidate_world_ids_present, ['world_101_kestrel_signal_lamp']);
+
+  // Same bytes, same record: agreement is silent.
+  assert.doesNotThrow(() =>
+    outcomeExclusionRow({ artifactPath: 'x/sample.json', bytes, recorded: { sha256: fresh.sha256 } }),
+  );
+  // A file that is still here but no longer the file the launch read is refused
+  // outright. Standing in from the record is for absence, never for a change.
+  assert.throws(
+    () => outcomeExclusionRow({ artifactPath: 'x/sample.json', bytes, recorded: { sha256: digest('b') } }),
+    /bytes changed since launch/u,
+  );
+});
+
+test('an absent excluded artifact stands in from the launch record, and only from it', () => {
+  assert.throws(
+    () => outcomeExclusionRow({ artifactPath: 'x/gone.json', bytes: null }),
+    /required excluded artifact is missing/u,
+    'a first launch has no record, so it still refuses',
+  );
+  const carried = outcomeExclusionRow({
+    artifactPath: 'x/gone.json',
+    bytes: null,
+    recorded: {
+      path: 'x/gone.json',
+      sha256: digest('c'),
+      embedded_fingerprint_count: 4,
+      candidate_world_ids_present: [],
+    },
+  });
+  assert.equal(carried.source, 'checkpoint_record');
+  assert.equal(carried.sha256, digest('c'));
+  assert.equal(carried.embedded_fingerprint_count, 4);
+  assert.deepEqual(carried.embedded_fingerprints, [], 'the record keeps counts, never the fingerprints themselves');
+});
+
+test(
+  'a restart passes on the launch record where a corpus is gone, and refuses if the candidates moved',
+  {
+    skip:
+      absentBurnedCorpora().length === 0
+        ? 'every burned corpus is present, so nothing needs standing in for'
+        : machineLocalSkip(MACHINE_LOCAL_BASELINE_ARTIFACT),
+  },
+  () => {
+    // A launch, today, refuses: the guard reads files and one of them is gone.
+    assert.throws(
+      () => guardOutcomePilotPreparation({ worldPaths: PILOT_WORLD_PATHS }),
+      /required excluded artifact is missing/u,
+    );
+
+    // A record with rows but the wrong candidates fails closed rather than
+    // throwing, so the run stops on a reported status and not on a stack trace.
+    const rows = absentBurnedCorpora().map((artifactPath) => ({
+      path: artifactPath,
+      sha256: digest('d'),
+      embedded_fingerprint_count: 0,
+      candidate_world_ids_present: [],
+    }));
+    const mismatched = guardOutcomePilotPreparation({
+      worldPaths: PILOT_WORLD_PATHS,
+      recordedGuard: { status: 'passed', excluded_artifacts: rows, candidate_fingerprints: [digest('e')] },
+    });
+    assert.equal(mismatched.status, 'failed');
+    assert.equal(mismatched.recorded_candidate_identity_match, false);
+
+    // The same rows, under the launch's own candidates, shape and persona.
+    const resumed = guardOutcomePilotPreparation({
+      worldPaths: PILOT_WORLD_PATHS,
+      recordedGuard: {
+        status: 'passed',
+        run_shape: mismatched.run_shape,
+        learner_profile: mismatched.learner_profile,
+        seeds: mismatched.seeds,
+        excluded_artifacts: rows,
+        candidate_fingerprints: mismatched.candidate_fingerprints,
+        exclusion_fingerprint_count: 756,
+      },
+    });
+    assert.equal(resumed.status, 'passed');
+    assert.equal(resumed.exclusion_source, 'files_and_checkpoint_record');
+    assert.deepEqual(resumed.artifacts_from_checkpoint_record, absentBurnedCorpora());
+    assert.equal(resumed.recorded_candidate_identity_match, true);
+    assert.equal(resumed.recorded_exclusion_fingerprint_count, 756);
+    assert.deepEqual(resumed.candidate_fingerprints, mismatched.candidate_fingerprints);
   },
 );
 

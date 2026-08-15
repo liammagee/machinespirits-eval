@@ -29,7 +29,9 @@ import {
   writeOutcomePilotAssemblyRunView,
 } from '../scripts/run-adaptive-warrant-outcome-pilot.js';
 import {
+  OUTCOME_PILOT_EXCLUDED_ARTIFACTS,
   OUTCOME_RUN_SHAPES,
+  absentOutcomeExcludedArtifacts,
   guardOutcomePilotPreparation,
   resolveOutcomeRunShape,
 } from '../scripts/prepare-adaptive-warrant-outcome-study.js';
@@ -80,6 +82,16 @@ const MACHINE_LOCAL_ARTIFACT = path.join(
 const MACHINE_LOCAL_ARTIFACTS_SKIP = fs.existsSync(MACHINE_LOCAL_ARTIFACT)
   ? false
   : `machine-local warrant run artifacts absent (${MACHINE_LOCAL_ARTIFACT}); archived in the private repo`;
+
+// Narrower, and a different fault: burned corpora under the system temp
+// directory are swept by a housekeeping job (defect ledger 21). With any of
+// them gone a FRESH-launch guard must refuse, so tests that drive the fresh
+// path have nothing left to prove. The restart path stands in from the launch
+// record instead, and its tests must never carry this skip.
+const absentBurnedCorpora = absentOutcomeExcludedArtifacts();
+const BURNED_CORPORA_SKIP = absentBurnedCorpora.length
+  ? `burned corpora absent on this machine (${absentBurnedCorpora.length} of ${OUTCOME_PILOT_EXCLUDED_ARTIFACTS.length}); a fresh launch is meant to refuse here`
+  : false;
 
 function temporaryDirectory(t) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'outcome-pilot-harness-'));
@@ -623,7 +635,7 @@ test('manifest guard refuses a menu SHA mismatch', (t) => {
 
 test(
   'manifest guard passes on the real frozen files (menu text carries one trailing newline)',
-  { skip: MACHINE_LOCAL_ARTIFACTS_SKIP },
+  { skip: MACHINE_LOCAL_ARTIFACTS_SKIP || BURNED_CORPORA_SKIP },
   () => {
     const result = verifyOutcomePilotManifestBindings({});
     assert.equal(typeof result, 'object');
@@ -1411,7 +1423,7 @@ test('a call plan whose counter arithmetic does not close is refused', (t) => {
   assert.throws(() => verifyOutcomePilotManifestBindings({ manifestPath }), /counter arithmetic does not close/u);
 });
 
-test('the prepared-run guard fails when the seed count does not match the shape', () => {
+test('the prepared-run guard fails when the seed count does not match the shape', { skip: BURNED_CORPORA_SKIP }, () => {
   const worldPaths = [
     'docs/adaptation-refinement/outcome-study-a1/worlds/world_101_kestrel_signal_lamp.yaml',
     'docs/adaptation-refinement/outcome-study-a1/worlds/world_102_marigold_archive_box.yaml',
