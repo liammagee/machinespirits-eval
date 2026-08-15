@@ -1,17 +1,22 @@
-# 119 — resume the guarded main block after the quarantine stop
+# 119 — GO: resume the guarded main block after the quarantine stop
 
 Date: 2026-08-16
 Workplan item: guarded-learner-outcome-study
 Follows: relay 118 (the launch note), relay 114 (the pilot's resume, used as
 the model), and incident I1 in `INCIDENTS.md` (the same stop on the passive
 block)
-Status: **HELD.** Section 1 is empty and two of the four launcher tokens are
-withheld (§10). The note reads complete to a person and fails closed to the
-machine, so it can be read before it can be run.
+Status: **ARMED.** Section 1 carries the approval and the two withheld
+launcher tokens are in (§10). The note was read while held, and the repair
+§6 required landed first (`25c1863e`).
 
 ## 1. The approval
 
-_Empty until the human approves. The reply goes here verbatim and complete._
+Human reply, 16 August 2026, verbatim and complete:
+
+> Write the repair; approve the spend
+
+Two things: write the repair named in §6, and spend the envelope in §5. The
+repair landed at `25c1863e` with its tests before this note was armed.
 
 Relay 118 approved the main block and stopped there. That approval does not
 reach a resume. This note carries its own.
@@ -93,11 +98,9 @@ dialogues the parent's booked count and the child's own count agree exactly
 ## 5. Scope, and why this needs no new money
 
 The registered budget is the plan relay 117 §5 registered and relay 118 §5
-carried — two thousand one hundred and sixty generation calls, one thousand
-one hundred and fifty-two on each reader channel, four thousand four hundred
-and sixty-four in all. This note spends inside that envelope. It does not
-raise it. The driver refuses any call past the plan total, so the ceiling
-holds itself.
+carried — 2,160 generation calls, 1,152 on each reader channel, 4,464 in
+all. This note spends inside that envelope. It does not raise it. The driver
+refuses any call past the plan total, so the ceiling holds itself.
 
 | item | calls |
 |---|---:|
@@ -145,11 +148,19 @@ it. The driver did refuse — but on a different sentence than expected:
     /private/tmp/adaptive-warrant-mechanism-live-5ddf1d28/annotation-sample.blinded.json
 
 The prepared-identity guard reads 22 already-annotated corpora and refuses
-any run whose prepared identities overlap them. Sixteen of the 22 live only
-in `/private/tmp`, and macOS emptied that directory at midnight on 16
-August. Three are gone; the directory skeletons remain. The guard runs at
-every launch and at every resume, so **the command in §7 cannot run today**,
-for a reason with no relation to this study.
+any run whose prepared identities overlap them. Nineteen of the 22 live only
+in `/private/tmp`, which macOS empties on a schedule, and three of those
+nineteen are gone; the directory skeletons remain. The guard runs at every
+launch and at every resume, so **the command in §7 could not run**, for a
+reason with no relation to this study.
+
+Two sentences of an earlier draft were wrong and are corrected here. The
+count was sixteen, and it is nineteen. The draft also said the directory was
+emptied at midnight on 16 August; the other sixteen were still there that
+morning at 3.4 to 4.3 days old, so no sweep time is established. What is
+established is that reading a file there does not refresh its access time —
+every survivor's access time equals its write time — so the guard's own read
+at launch protected nothing.
 
 The 19 survivors are now copied to the private repo and committed
 (`a83b5e06`), each hashing exactly as the checkpoint recorded it when the
@@ -164,8 +175,17 @@ already states for run size, that the checkpoint is the authority on a
 restarted run. Incident I1 repaired three resume-path defects of this class
 before its own relaunch, each with a focused test, each committed first.
 
-**The repair is not written yet and is not authorised by this note.** It is
-a zero-call change and it must land, with its test, before the command runs.
+**The repair landed before this note was armed: `25c1863e`.** A restart now
+takes the exclusion record the checkpoint wrote at launch, and only for
+artifacts that are no longer on disk; a file still present is still read and
+must hash to the recorded value; a first launch carries no record, so it
+still refuses on any missing file. The record keeps digests, not the
+fingerprints inside each corpus, so the reconstructed exclusion set is
+smaller than the launch's — the guard therefore refuses the transfer unless
+the candidate set matches the launch exactly, in status, shape, persona,
+seeds, and the same fingerprint list in the same order. Three tests cover
+it, one of which drives this machine's real restart path. Nothing paid was
+touched.
 
 ## 7. The command
 
@@ -227,10 +247,12 @@ The launcher reads four things out of these bytes: that the file names the
 executable entry point (§7 does); a bare go word; the plan total in digits;
 and the first and last seed, 654 and 665 (§7 has both).
 
-Two are here. Two are withheld on purpose while this note is held — the go
-word and the plan total in digits. Filling section 1 puts them in, and that
-edit changes nothing else: not the design, not the command, not the seeds,
-not the budget, not the stop rules.
+All four are here now. Two were withheld while this note was held — the go
+word and the plan total in digits — and arming put them in: the word in the
+title, the total as 4,464 in §5. That edit changed nothing else: not the
+design, not the command, not the seeds, not the budget, not the stop rules.
+The other change made at arming is §6, which corrected two wrong sentences
+about the temp-directory sweep and recorded the repair commit.
 
 The check on these bytes is the only machine lock left after
 `--accept-charges`. The sealed manifest's `launch_authorized` field is still
