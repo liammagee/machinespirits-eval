@@ -32,6 +32,7 @@ links:
     - docs/adaptation-refinement/relay/114-go-guarded-pilot-resume.md
     - docs/adaptation-refinement/relay/115-go-guarded-pilot-reader-retake.md
     - docs/adaptation-refinement/relay/116-act-list-main-block.md
+    - docs/adaptation-refinement/relay/117-registration-guarded-main-block.md
     - notes/2026-08-15-guarded-pilot-patches.md
     - notes/2026-08-15-run-protocol.md
   paper: §6.25
@@ -257,3 +258,22 @@ the endpoint.
 
 Counter unchanged at 11,559 / 19,337, leaving 7,778. Rung 2 stays
 unauthorised. The rest of the main-block registration is unwritten.
+
+**Main-block registration sealed, 15 August (relay 117).** The human
+ruled on the three open decisions, verbatim: "1. yes. 2. yes. 3. go with
+lean, \"read it before sealing\"". So: the shadow contrast is the
+registered prediction (delivered-challenge evidence rate above the
+shadow-selected baseline, pilot 3/10 vs 2/36); 72 fresh dialogues, both
+reader channels, plan ≈4,500 calls, cap 4,800; and the pilot's decision
+correctness was read before sealing, zero calls, by grouping the frozen
+scorer's own measure-1 case list by condition — gated 28/39 (71.8%),
+standing permission 24/41 (58.5%), bare 19/37 (51.4%), overall 71/117
+matching the stored scorer exactly. The pilot disagrees with the passive
+block's old flat prediction and repeats the passive line's direction, so
+M1 registers directional: gated exceeds each control. Measured, never
+gated.
+
+Before any GO note: add a main-block shape (72/24) behind a flag to both
+pilot scorers, with tests, and verify seeds 530–541 unburned. The run
+stays unauthorised until its own GO note quotes explicit approval of the
+spend. Counter still 11,559 / 19,337.

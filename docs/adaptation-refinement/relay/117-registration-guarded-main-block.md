@@ -1,13 +1,18 @@
-# 117 — DRAFT registration: guarded-learner main block
+# 117 — Registration: guarded-learner main block
 
 Date: 2026-08-15
 Workplan item: guarded-learner-outcome-study
 Follows: relay 110 (pilot registration), relay 116 (act list), the pilot's
 gate report (PASS on all three slots) and primary-endpoint report
-Status: **DRAFT. Nothing is registered and no spend is authorized.** Three
-decisions in §2 are the human's. When they are answered, this file is
-renamed to drop "draft", the answers are quoted verbatim, and the run still
-needs its own GO note quoting approval of the spend.
+Status: **REGISTERED. Sealed 2026-08-15. Zero calls. No spend is
+authorized by this note.** The human answered the three §2 decisions in
+one ruling, quoted verbatim:
+
+> 1. yes. 2. yes. 3. go with lean, "read it before sealing"
+
+The pilot's decision correctness was read before sealing (§2, OD3). The
+72-dialogue run still needs its own GO note quoting explicit approval of
+the spend; nothing here authorizes it.
 
 ## 1. What the main block asks
 
@@ -25,28 +30,45 @@ one reply turn following — the rate was 2/36, and both hits sit in one
 dialogue. Same sensor, same learner persona, same reading; the only
 difference is whether the challenge reached the learner.
 
-## 2. The three decisions
+## 2. The three decisions, answered
 
-**OD1 — the confirmatory contrast.** I propose the shadow contrast above
-as the registered prediction, instead of making the control versions
+**OD1 — the confirmatory contrast: YES.** The shadow contrast is the
+registered prediction (P3 below), instead of making the control versions
 deliver challenges. Making controls deliver would destroy them as
 controls; the shadow gate already marks the matched moments, and the
 presence readers already cover every turn, so the baseline costs nothing.
-Lean: register the contrast (P3 below); the raw endpoint level stays
-report-only, never a number to beat.
+The raw endpoint level stays report-only, never a number to beat.
 
-**OD2 — sample and spend.** Mirror the passive main block: 72 fresh
+**OD2 — sample and spend: YES.** Mirror the passive main block: 72 fresh
 dialogues, 24 per condition, worlds 101/102, 8 turns, guarded persona.
 Both reader channels this time — the primary endpoint reads the presence
 readers, so they cannot be dropped the way the passive block dropped
 them. Plan ≈ 4,500 calls, cap 4,800 (§5). Counter opens at 11,559 of
-19,337; even at the cap it ends under 16,400. Lean: yes.
+19,337; even at the cap it ends under 16,400.
 
-**OD3 — decision correctness.** Registered as endpoint 2 (relay 110,
-unchanged from §6.25), but the pilot's value has not been read yet. It is
-a zero-call read off the pilot's decision readers. Lean: read it before
-this draft is sealed, and register the same prediction the passive block
-carried — no difference across conditions — only if the pilot agrees.
+**OD3 — decision correctness: read before sealing, as ruled.** Zero
+calls. The pilot's frozen scorer (`outcome-pilot-score.json`, measure 1)
+already computed the passive rule — two decision readers' consensus on
+`commitment_transition_warranted`, disagreements and uncertain calls
+dropped, compared with the gate's logged decision — over all 144 turns:
+**71 / 117 correct, 60.7%**, 27 non-consensus. The split below groups
+that scorer's own case list by the condition field each case carries;
+no new instrument, no new judgment.
+
+| condition | correct / consensus | rate | non-consensus |
+|---|---:|---:|---:|
+| gated | 28 / 39 | 71.8% | 9 |
+| standing permission | 24 / 41 | 58.5% | 7 |
+| bare | 19 / 37 | 51.4% | 11 |
+
+The lean said: carry the passive block's flat prediction only if the
+pilot agrees. It does not. The pilot separates in the same direction the
+passive line already established twice — passive main block 87.5 / 68.3 /
+64.8 (relay 099; relay 100 ruled the flat prediction failed) and the
+steering decomposition 83.8 vs 71.8 (relay 105). So M1 registers from
+what the pilot shows: directional, gated highest (§4). The overall level,
+60.7% against the passive block's 73.4%, says the guarded persona is
+harder to call; that is context, not a prediction.
 
 ## 3. Design
 
@@ -84,8 +106,13 @@ Predictions, written from pilot evidence only:
   can overlap, so the dialogue-level count is reported beside it, and
   shadow moments with no reply turn left (a turn-8 selection) leave the
   denominator on both sides of the contrast.
-- **M1** — decision correctness does not differ across conditions.
-  **Held open under OD3** until the pilot value is read.
+- **M1 (directional)** — decision correctness in the gated arm exceeds
+  each control arm. Registered from the pilot (§2, OD3: 71.8% gated,
+  58.5% standing permission, 51.4% bare), which repeats the direction the
+  passive main block and the steering decomposition already showed. The
+  passive block's old flat prediction is not carried — the pilot
+  disagrees with it. Measured, never gated; the overall level is
+  reported, not predicted.
 
 The endpoint level itself (pilot 0.30) is report-only. A flat or null
 contrast is a finding: it would say the guarded learner's evidence
