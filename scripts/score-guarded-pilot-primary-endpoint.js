@@ -25,7 +25,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 
-import { GUARDED_PILOT_SHAPE, readDialogueGateTrace, conditionOfDialogueId } from './score-guarded-pilot-gate.js';
+import {
+  GUARDED_PILOT_SHAPE,
+  GUARDED_SHAPES,
+  checkShape,
+  readDialogueGateTrace,
+  conditionOfDialogueId,
+} from './score-guarded-pilot-gate.js';
 
 export const GUARDED_PILOT_PRIMARY_SCHEMA = 'machinespirits.adaptation-refinement.guarded-pilot-primary-endpoint.v1';
 
@@ -68,11 +74,11 @@ const CHALLENGE_FAMILY = 'challenge_resistance';
 const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
 
 /** Acts each presence reader named, keyed `dialogue#turn`. */
-export function readPresenceActs(runDir) {
+export function readPresenceActs(runDir, shape = GUARDED_PILOT_SHAPE) {
   const key = readJson(path.join(runDir, 'annotation-key.private.json'));
   const at = new Map(key.cases.map((row) => [row.sample_id, `${row.job_id}#${row.turn}`]));
   const byReader = new Map();
-  for (const readerId of GUARDED_PILOT_SHAPE.presence_readers) {
+  for (const readerId of shape.presence_readers) {
     const cells = new Map();
     for (const row of readJson(path.join(runDir, `${readerId}.assembled.json`)).cases || []) {
       const where = at.get(row.sample_id);
@@ -109,6 +115,37 @@ export function findDeliveredChallenges(dialogues) {
   return rows;
 }
 
+/**
+ * P3's baseline (relay 117 §4): turns in the control versions where the same
+ * policy selected the challenge family but the gate, watching only, delivered
+ * nothing. A selection with no reply turn left (a turn-8 selection) leaves the
+ * denominator — on both sides of the contrast.
+ */
+export function findShadowSelections(dialogues) {
+  const rows = [];
+  for (const dialogue of dialogues) {
+    if (dialogue.condition === 'gated') continue;
+    const horizon = Math.max(...dialogue.turns.map((turn) => turn.turn));
+    for (const turn of dialogue.turns) {
+      if (turn.mode === 'active') continue;
+      if (turn.policy_action_family !== CHALLENGE_FAMILY) continue;
+      const window = [];
+      for (let step = 1; step <= RESPONSE_WINDOW_TURNS; step += 1) {
+        if (turn.turn + step <= horizon) window.push(turn.turn + step);
+      }
+      rows.push({
+        dialogue_id: dialogue.dialogue_id,
+        condition: dialogue.condition,
+        turn: turn.turn,
+        warrant_basis: turn.warrant_basis,
+        response_turns: window,
+        censored: window.length < RESPONSE_WINDOW_TURNS,
+      });
+    }
+  }
+  return rows;
+}
+
 /** The gate's own reading: did its challenge contract close on the next turn? */
 export function readContractOutcome(dialogue, challengeTurn) {
   const next = dialogue.turns.find((turn) => turn.turn === challengeTurn + 1);
@@ -127,7 +164,7 @@ function readingFor(acts, evidenceActs) {
   };
 }
 
-export function scoreGuardedPilotPrimaryEndpoint(runDir) {
+export function scoreGuardedPilotPrimaryEndpoint(runDir, { shape = GUARDED_PILOT_SHAPE } = {}) {
   const resolved = path.resolve(runDir);
   const dialoguesDir = path.join(resolved, 'dialogues');
   const dialogues = [];
@@ -137,9 +174,11 @@ export function scoreGuardedPilotPrimaryEndpoint(runDir) {
     const trace = readDialogueGateTrace(dir);
     if (trace) dialogues.push({ ...trace, condition: conditionOfDialogueId(name) });
   }
-  const byReader = readPresenceActs(resolved);
-  const challenges = findDeliveredChallenges(dialogues).map((row) => {
-    const dialogue = dialogues.find((entry) => entry.dialogue_id === row.dialogue_id);
+  const shapeProblems = checkShape(dialogues, shape);
+  const byReader = readPresenceActs(resolved, shape);
+  // One window is read the same way on both sides of the contrast: the same
+  // readers, the same act list, the same two turns.
+  const scoreWindow = (row) => {
     const readers = {};
     for (const [readerId, cells] of byReader) {
       const acts = new Set();
@@ -152,15 +191,18 @@ export function scoreGuardedPilotPrimaryEndpoint(runDir) {
         rejected_wide: readingFor(acts, REJECTED_WIDE_ACTS),
       };
     }
-    const votes = (band) => Object.values(readers).filter((row2) => row2[band].evidence.length > 0).length;
+    const votes = (band) => Object.values(readers).filter((entry) => entry[band].evidence.length > 0).length;
     return {
       ...row,
-      gate_contract: readContractOutcome(dialogue, row.turn),
       readers,
       readers_seeing_evidence: votes('registered'),
       readers_seeing_second_count: votes('second_count'),
       readers_seeing_rejected_wide: votes('rejected_wide'),
     };
+  };
+  const challenges = findDeliveredChallenges(dialogues).map((row) => {
+    const dialogue = dialogues.find((entry) => entry.dialogue_id === row.dialogue_id);
+    return { ...scoreWindow(row), gate_contract: readContractOutcome(dialogue, row.turn) };
   });
   const rate = (hits, total) => (total ? Number((hits / total).toFixed(3)) : null);
   const total = challenges.length;
@@ -178,6 +220,37 @@ export function scoreGuardedPilotPrimaryEndpoint(runDir) {
     both_readers_second_count: challenges.filter((row) => row.readers_seeing_second_count === 2).length,
     both_readers_rejected_wide: challenges.filter((row) => row.readers_seeing_rejected_wide === 2).length,
   };
+  // P3's baseline: the same reading at matched moments where the gate selected
+  // a challenge and, watching only, delivered nothing.
+  const shadow = findShadowSelections(dialogues).map(scoreWindow);
+  const shadowWithReply = shadow.filter((row) => row.response_turns.length > 0);
+  const shadowSummary = {
+    shadow_selections: shadow.length,
+    with_a_reply_turn: shadowWithReply.length,
+    both_readers: shadowWithReply.filter((row) => row.readers_seeing_evidence === 2).length,
+    either_reader: shadowWithReply.filter((row) => row.readers_seeing_evidence >= 1).length,
+    dialogues_with_a_hit: new Set(
+      shadowWithReply.filter((row) => row.readers_seeing_evidence === 2).map((row) => row.dialogue_id),
+    ).size,
+  };
+  // The registered contrast (relay 117 P3), directional and never gated. A
+  // moment with no reply turn leaves the denominator on both sides.
+  const deliveredWithReply = challenges.filter((row) => row.response_turns.length > 0);
+  const contrast = {
+    prediction: 'delivered-challenge evidence rate exceeds the shadow-selected rate',
+    delivered: {
+      moments: deliveredWithReply.length,
+      both_readers: deliveredWithReply.filter((row) => row.readers_seeing_evidence === 2).length,
+    },
+    shadow: { moments: shadowWithReply.length, both_readers: shadowSummary.both_readers },
+  };
+  contrast.delivered.rate = rate(contrast.delivered.both_readers, contrast.delivered.moments);
+  contrast.shadow.rate = rate(contrast.shadow.both_readers, contrast.shadow.moments);
+  contrast.direction_holds =
+    contrast.delivered.rate !== null && contrast.shadow.rate !== null
+      ? contrast.delivered.rate > contrast.shadow.rate
+      : null;
+
   // The other two arms deliver no challenge at all, so the endpoint has no
   // denominator there. Say so rather than reporting a zero.
   const armDenominators = {};
@@ -193,6 +266,9 @@ export function scoreGuardedPilotPrimaryEndpoint(runDir) {
     run_dir: resolved,
     registration: 'docs/adaptation-refinement/relay/110-registration-guarded-pilot.md#3',
     act_list_registration: 'docs/adaptation-refinement/relay/116-act-list-main-block.md',
+    contrast_registration: 'docs/adaptation-refinement/relay/117-registration-guarded-main-block.md#4',
+    shape: shape.name,
+    shape_problems: shapeProblems,
     measured_never_gated: true,
     act_list_registered: true,
     evidence_acts: {
@@ -211,8 +287,17 @@ export function scoreGuardedPilotPrimaryEndpoint(runDir) {
         both_readers_rejected_wide: rate(summary.both_readers_rejected_wide, total),
       },
     },
+    shadow_baseline: {
+      ...shadowSummary,
+      rates: {
+        both_readers: rate(shadowSummary.both_readers, shadowSummary.with_a_reply_turn),
+        either_reader: rate(shadowSummary.either_reader, shadowSummary.with_a_reply_turn),
+      },
+    },
+    contrast,
     arms: armDenominators,
     challenges,
+    shadow_selections: shadow,
   };
 }
 
@@ -246,6 +331,16 @@ function render(report) {
         `, gate ${row.gate_contract.contract_met ? 'met' : 'not met'}`,
     );
   }
+  const c = report.contrast;
+  const b = report.shadow_baseline;
+  lines.push(
+    '',
+    'registered contrast (relay 117 P3, directional, never gated):',
+    `  delivered challenge  : ${c.delivered.both_readers}/${c.delivered.moments}  (${c.delivered.rate})`,
+    `  shadow selection     : ${c.shadow.both_readers}/${c.shadow.moments}  (${c.shadow.rate})`,
+    `  ${b.shadow_selections - b.with_a_reply_turn} shadow selections had no reply turn and left the denominator; hits fall in ${b.dialogues_with_a_hit} dialogue(s)`,
+    `  direction ${c.direction_holds === null ? 'cannot be read' : c.direction_holds ? 'HOLDS' : 'does NOT hold'}`,
+  );
   lines.push('', 'arms:');
   for (const [arm, row] of Object.entries(report.arms)) {
     lines.push(
@@ -258,15 +353,26 @@ function render(report) {
 
 function main() {
   const { values } = parseArgs({
-    options: { run: { type: 'string' }, out: { type: 'string' }, json: { type: 'boolean' }, help: { type: 'boolean' } },
+    options: {
+      run: { type: 'string' },
+      shape: { type: 'string', default: 'pilot' },
+      out: { type: 'string' },
+      json: { type: 'boolean' },
+      help: { type: 'boolean' },
+    },
   });
   if (values.help || !values.run) {
     process.stdout.write(
-      'Usage:\n  node scripts/score-guarded-pilot-primary-endpoint.js --run <run-dir> [--out <file>] [--json]\n',
+      'Usage:\n  node scripts/score-guarded-pilot-primary-endpoint.js --run <run-dir> [--shape pilot|main-block] [--out <file>] [--json]\n',
     );
     process.exit(values.help ? 0 : 2);
   }
-  const report = scoreGuardedPilotPrimaryEndpoint(values.run);
+  const shape = GUARDED_SHAPES[values.shape];
+  if (!shape) {
+    process.stderr.write(`unknown shape "${values.shape}"; use one of: ${Object.keys(GUARDED_SHAPES).join(', ')}\n`);
+    process.exit(2);
+  }
+  const report = scoreGuardedPilotPrimaryEndpoint(values.run, { shape });
   if (values.out) {
     const resolved = path.resolve(values.out);
     fs.mkdirSync(path.dirname(resolved), { recursive: true });

@@ -263,7 +263,7 @@ unauthorised. The rest of the main-block registration is unwritten.
 ruled on the three open decisions, verbatim: "1. yes. 2. yes. 3. go with
 lean, \"read it before sealing\"". So: the shadow contrast is the
 registered prediction (delivered-challenge evidence rate above the
-shadow-selected baseline, pilot 3/10 vs 2/36); 72 fresh dialogues, both
+shadow-selected baseline, pilot 3/10 vs 2/35); 72 fresh dialogues, both
 reader channels, plan ≈4,500 calls, cap 4,800; and the pilot's decision
 correctness was read before sealing, zero calls, by grouping the frozen
 scorer's own measure-1 case list by condition — gated 28/39 (71.8%),
@@ -273,7 +273,18 @@ block's old flat prediction and repeats the passive line's direction, so
 M1 registers directional: gated exceeds each control. Measured, never
 gated.
 
-Before any GO note: add a main-block shape (72/24) behind a flag to both
-pilot scorers, with tests, and verify seeds 530–541 unburned. The run
-stays unauthorised until its own GO note quotes explicit approval of the
-spend. Counter still 11,559 / 19,337.
+Both pilot scorers now carry a main-block shape (72 dialogues, 24 gated)
+behind a `--shape` flag, with the pilot shape as the default, so the
+pilot's frozen numbers reproduce byte for byte and a run of the wrong
+size fails closed rather than scoring. The endpoint scorer also computes
+the registered P3 contrast: pilot 3/10 delivered against 2/35 shadow.
+
+The seed check failed and moved the range. Relay 117 proposed 530–541;
+six of those (530–535) are the passive main block's own seeds, and 541
+is in a drama-derivation matrix spec. Everything from 503 to 550 is
+burned. The registered range is now **654–665** (relay 117 §11), clean
+on both a seed-context search and report 098's run-seed metadata search,
+across this repo and the private archive.
+
+The run stays unauthorised until its own GO note quotes explicit
+approval of the spend. Counter still 11,559 / 19,337.

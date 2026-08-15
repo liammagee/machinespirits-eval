@@ -23,11 +23,11 @@ main block asks it with enough data to mean something:
 > evidence check, where the same moment without a challenge does not?
 
 The pilot's answer, small and directional: after the 10 delivered
-challenges, both readers saw an evidence move 3 times (3/10). At the 36
+challenges, both readers saw an evidence move 3 times (3/10). At the 35
 matched shadow moments in the two control versions — turns where the gate
 selected a challenge but, watching only, delivered nothing, with at least
-one reply turn following — the rate was 2/36, and both hits sit in one
-dialogue. Same sensor, same learner persona, same reading; the only
+one reply turn following — the rate was 2/35 (see §10), and both hits sit
+in one dialogue. Same sensor, same learner persona, same reading; the only
 difference is whether the challenge reached the learner.
 
 ## 2. The three decisions, answered
@@ -74,10 +74,11 @@ harder to call; that is context, not a prediction.
 
 - 72 fresh dialogues: 3 conditions (bare / gated / standing permission)
   x 2 worlds (101, 102) x 12 seeds.
-- Seeds: **530–541 proposed**, subject to the driver's check that none
-  appear in any diagnostic, smoke, pilot, or burned corpus. Pilot seeds
-  515–517, passive main block 518–529, and smoke seed 550 are all
-  excluded already.
+- Seeds: **654–665** (§11). The range first proposed here, 530–541,
+  failed the driver's freshness check and is withdrawn. Pilot seeds
+  515–517, passive main block 524–535, and smoke seed 550 are all
+  excluded, along with everything else from 503 to 550 and the
+  drama-derivation prime seeds above it.
 - Guarded persona unchanged from the pilot. Contract v3.3 unchanged.
 - Both reader channels, full coverage: presence and decision, two readers
   each, 576 cases per reader (72 x 8).
@@ -102,7 +103,7 @@ Predictions, written from pilot evidence only:
 - **P3 (primary, directional)** — The evidence-move rate in the two
   learner turns after a **delivered** challenge is higher than the rate
   after a **shadow-selected, not delivered** moment in the control
-  versions. Pilot 3/10 against 2/36. Counted at moment level; windows
+  versions. Pilot 3/10 against 2/35 (§10). Counted at moment level; windows
   can overlap, so the dialogue-level count is reported beside it, and
   shadow moments with no reply turn left (a turn-8 selection) leave the
   denominator on both sides of the contrast.
@@ -164,5 +165,64 @@ changes nothing in the counting rules. That build lands and is committed
 **before** the GO note, so the run is scored by frozen code. Then the
 decision-correctness instrument per OD3. Interpretation stays reserved
 to the reviewer.
+
+## 10. Correction, same day, before any main-block dialogue exists
+
+Sealed, this note said the pilot's shadow baseline was **2 / 36**. The
+scorer built in §9 computes **2 / 35**. The scorer is right and the sealed
+figure was wrong.
+
+Cause: I counted the shadow selections by hand and found four with no
+reply turn left. There are five, all at turn 8 of an 8-turn dialogue —
+dialogues 03, 07 and 16 (standing permission) and 06 and 10 (bare). Forty
+shadow selections less five empty windows leaves 35, not 36. The count
+of hits, 2, was right.
+
+What moves: nothing that is registered. P3 is directional, and the rate
+is 0.057 either way against the delivered side's 0.300. The two figures
+above are corrected in place with a pointer here; this section is the
+record of what the note said when it was sealed.
+
+How it was caught: the scorer and the hand count disagreed, and the
+scorer's count was checked against the trace turn by turn. This is why
+the build lands before the GO note — a hand-carried number in a
+registration is exactly the thing frozen code is meant to replace.
+
+## 11. Second correction, same day: the seeds are 654–665
+
+§3 named seeds **530–541** as *proposed*, subject to the freshness
+check. The check ran at zero calls, and the range failed twice over.
+
+**Why it failed.** §3 said the passive main block used seeds 518–529.
+It did not. Relay 096a withdrew 518–529 — the design smokes had already
+burned 518 and 519 — and registered **524–535**; report 098 carries the
+freshness proof for that range, and the passive block ran on it. So six
+of the twelve proposed seeds, 530 through 535, were the passive block's
+own. Separately, seed **541** sits in
+`config/drama-derivation/matrix-specs/null-scale-mirror-refusal.yaml`,
+which relay 096a had already named as in use.
+
+**The search.** Two passes over this repo (`docs/`, `config/`,
+`scripts/`, `services/`, `tests/`, `.tutor-stub-auto-eval/`) and over
+the private archive. First: collect every number sitting within twelve
+characters of the word "seed", or written as the dialogue-id form
+`sNNN`, and list them. Second: report 098's executable-metadata
+pattern — `--run-seed`, `"run_seed":`, `"seed":` — run against the
+candidate numbers. The result is that everything from 503 to 550 is
+burned, and the numbers above it are broken up by the drama-derivation
+prime seeds (557, 563, 569, 571, 577, 587, 593, 599, 601, 607, 613,
+617, 619, 631, 641, 643, 647, 653). The first clean run of twelve
+consecutive numbers is 654–665.
+
+**Registered.** The main block runs on seeds **654–665**, one dialogue
+per condition per world per seed. Both passes return nothing for all
+twelve, in both trees, and no run directory carries any of them. Two
+archive log files, `dialogue-...-s659tk.json` and
+`dialogue-...-us657s.json`, match only on a random id suffix in the
+`dialogue-<timestamp>-<random>.json` naming, not on a seed.
+
+**What moves:** the seed clause of §3, and nothing else. No main-block
+dialogue exists, and the check cost zero calls — which is the point of
+running it before the GO note rather than after the first dialogue.
 
 NEVER push this branch.

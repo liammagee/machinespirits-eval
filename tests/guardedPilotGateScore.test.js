@@ -9,6 +9,7 @@ import {
   conditionOfDialogueId,
   DEFENSIVE_STRETCH_TURNS,
   findDefensiveStretches,
+  GUARDED_MAIN_BLOCK_SHAPE,
   GUARDED_PILOT_SHAPE,
   scoreGuardedPilotGate,
   scoreNoSilentDropsSlot,
@@ -160,6 +161,7 @@ test('the condition comes off the dialogue id', () => {
 
 test('the pilot run scores against its registered shape', { skip: PILOT_SKIP }, () => {
   const report = scoreGuardedPilotGate(PILOT);
+  assert.equal(report.shape, 'pilot', 'the pilot shape stays the default, so this run scores as it always did');
   assert.deepEqual(report.shape_problems, [], 'every registered measure is present');
   assert.equal(report.dialogues.length, GUARDED_PILOT_SHAPE.dialogues);
   assert.equal(report.dialogues.filter((row) => row.condition === 'gated').length, GUARDED_PILOT_SHAPE.gated_dialogues);
@@ -170,4 +172,16 @@ test('the pilot run scores against its registered shape', { skip: PILOT_SKIP }, 
   }
   assert.equal(report.verdict, 'PASS');
   assert.equal(report.licenses_main_block, true);
+});
+
+test('a run read under the wrong shape licenses nothing', { skip: PILOT_SKIP }, () => {
+  // The main block is 72 / 24. Pointing that shape at the 18-dialogue pilot
+  // must fail closed, so a mistyped --shape cannot pass a half-sized run.
+  const report = scoreGuardedPilotGate(PILOT, { shape: GUARDED_MAIN_BLOCK_SHAPE });
+  assert.equal(report.shape, 'main-block');
+  assert.equal(report.verdict, 'UNMEASURED', 'shape problems short-circuit the verdict before any slot is read');
+  assert.equal(report.licenses_main_block, false);
+  assert.ok(report.shape_problems.some((row) => /expected 72 dialogues, found 18/.test(row)));
+  assert.ok(report.shape_problems.some((row) => /expected 24 gated dialogues, found 6/.test(row)));
+  assert.ok(report.shape_problems.some((row) => /expected 576 scored turns, found 144/.test(row)));
 });

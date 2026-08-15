@@ -22,13 +22,30 @@ import { readGateDecisions, resolveDefensiveActEventFiles } from './report-adapt
 
 export const GUARDED_PILOT_GATE_SCHEMA = 'machinespirits.adaptation-refinement.guarded-pilot-gate-report.v1';
 
-/** The shape the registration fixes: 3 arms x 2 worlds x 3 seeds, 8 turns each. */
+/** The shape the pilot registration fixes: 3 arms x 2 worlds x 3 seeds, 8 turns each. */
 export const GUARDED_PILOT_SHAPE = Object.freeze({
+  name: 'pilot',
   dialogues: 18,
   turns_per_dialogue: 8,
   turns_total: 144,
   gated_dialogues: 6,
   presence_readers: ['presence-reader-a', 'presence-reader-b'],
+});
+
+/** The main-block shape (relay 117 §3): 3 arms x 2 worlds x 12 seeds, 8 turns each. */
+export const GUARDED_MAIN_BLOCK_SHAPE = Object.freeze({
+  name: 'main-block',
+  dialogues: 72,
+  turns_per_dialogue: 8,
+  turns_total: 576,
+  gated_dialogues: 24,
+  presence_readers: ['presence-reader-a', 'presence-reader-b'],
+});
+
+/** Every shape a run may declare. A run scored under the wrong one fails shape. */
+export const GUARDED_SHAPES = Object.freeze({
+  pilot: GUARDED_PILOT_SHAPE,
+  'main-block': GUARDED_MAIN_BLOCK_SHAPE,
 });
 
 /** The sensor's registered threshold: 3 consecutive defended over-claim turns. */
@@ -208,7 +225,7 @@ export function scoreNoSilentDropsSlot(dialogues) {
  * logged re-ask per refused turn, then the turn counts as unanalyzed and its
  * dialogue is flagged.
  */
-export function scoreReaderCoverageSlot(runDir, expectedCases) {
+export function scoreReaderCoverageSlot(runDir, expectedCases, shape = GUARDED_PILOT_SHAPE) {
   const channels = [
     { channel: 'presence', dir: 'presence-readers', run: 'semantic-reader-run.json' },
     { channel: 'decision', dir: 'decision-readers', run: 'decision-reader-run.json' },
@@ -236,7 +253,7 @@ export function scoreReaderCoverageSlot(runDir, expectedCases) {
     });
   }
   const readers = [];
-  for (const readerId of GUARDED_PILOT_SHAPE.presence_readers) {
+  for (const readerId of shape.presence_readers) {
     const file = path.join(runDir, `${readerId}.assembled.json`);
     if (!fs.existsSync(file)) {
       readers.push({ reader_id: readerId, present: false });
@@ -257,7 +274,7 @@ export function scoreReaderCoverageSlot(runDir, expectedCases) {
     (row) => row.present && row.status === 'complete' && row.incomplete_batches.length === 0,
   );
   const readersOk =
-    readers.length === GUARDED_PILOT_SHAPE.presence_readers.length &&
+    readers.length === shape.presence_readers.length &&
     readers.every((row) => row.present && row.cases === expectedCases && row.rejected === 0 && row.unanalyzed === 0);
   return {
     slot: 'c',
@@ -274,13 +291,13 @@ export function scoreReaderCoverageSlot(runDir, expectedCases) {
  * readers instead of the live trace. Never a gate slot — the readers answer
  * about single turns, and relay 112 puts slots (a) and (b) on the live trace.
  */
-export function readerStretchCrossCheck(runDir, dialogues) {
+export function readerStretchCrossCheck(runDir, dialogues, shape = GUARDED_PILOT_SHAPE) {
   const keyPath = path.join(runDir, 'annotation-key.private.json');
   if (!fs.existsSync(keyPath)) return { available: false, reason: 'no annotation key in the run' };
   const key = readJson(keyPath);
   const turnOf = new Map(key.cases.map((row) => [row.sample_id, { dialogue_id: row.job_id, turn: row.turn }]));
   const marked = new Map();
-  for (const readerId of GUARDED_PILOT_SHAPE.presence_readers) {
+  for (const readerId of shape.presence_readers) {
     const file = path.join(runDir, `${readerId}.assembled.json`);
     if (!fs.existsSync(file)) return { available: false, reason: `no assembled file for ${readerId}` };
     for (const row of readJson(file).cases || []) {
@@ -333,21 +350,21 @@ export function readerStretchCrossCheck(runDir, dialogues) {
 }
 
 /** Every registered measure must be present, or the run is half-measured. */
-export function checkShape(dialogues) {
+export function checkShape(dialogues, shape = GUARDED_PILOT_SHAPE) {
   const problems = [];
-  if (dialogues.length !== GUARDED_PILOT_SHAPE.dialogues) {
-    problems.push(`expected ${GUARDED_PILOT_SHAPE.dialogues} dialogues, found ${dialogues.length}`);
+  if (dialogues.length !== shape.dialogues) {
+    problems.push(`expected ${shape.dialogues} dialogues, found ${dialogues.length}`);
   }
   const gated = dialogues.filter((d) => d.condition === 'gated').length;
-  if (gated !== GUARDED_PILOT_SHAPE.gated_dialogues) {
-    problems.push(`expected ${GUARDED_PILOT_SHAPE.gated_dialogues} gated dialogues, found ${gated}`);
+  if (gated !== shape.gated_dialogues) {
+    problems.push(`expected ${shape.gated_dialogues} gated dialogues, found ${gated}`);
   }
   let turnCount = 0;
   for (const dialogue of dialogues) {
     turnCount += dialogue.turns.length;
-    if (dialogue.turns.length !== GUARDED_PILOT_SHAPE.turns_per_dialogue) {
+    if (dialogue.turns.length !== shape.turns_per_dialogue) {
       problems.push(
-        `${dialogue.dialogue_id}: ${dialogue.turns.length} gate decisions, expected ${GUARDED_PILOT_SHAPE.turns_per_dialogue}`,
+        `${dialogue.dialogue_id}: ${dialogue.turns.length} gate decisions, expected ${shape.turns_per_dialogue}`,
       );
     }
     for (const turn of dialogue.turns) {
@@ -357,13 +374,13 @@ export function checkShape(dialogues) {
         problems.push(`${dialogue.dialogue_id} turn ${turn.turn}: no delivered action family`);
     }
   }
-  if (turnCount !== GUARDED_PILOT_SHAPE.turns_total) {
-    problems.push(`expected ${GUARDED_PILOT_SHAPE.turns_total} scored turns, found ${turnCount}`);
+  if (turnCount !== shape.turns_total) {
+    problems.push(`expected ${shape.turns_total} scored turns, found ${turnCount}`);
   }
   return problems;
 }
 
-export function scoreGuardedPilotGate(runDir) {
+export function scoreGuardedPilotGate(runDir, { shape = GUARDED_PILOT_SHAPE } = {}) {
   const resolved = path.resolve(runDir);
   const dialoguesDir = path.join(resolved, 'dialogues');
   if (!fs.existsSync(dialoguesDir)) throw new Error(`no dialogues directory under ${resolved}`);
@@ -375,10 +392,10 @@ export function scoreGuardedPilotGate(runDir) {
     if (!trace) continue;
     dialogues.push({ ...trace, condition: conditionOfDialogueId(name) });
   }
-  const shapeProblems = checkShape(dialogues);
+  const shapeProblems = checkShape(dialogues, shape);
   const slotA = scoreSensorArmingSlot(dialogues);
   const slotB = scoreNoSilentDropsSlot(dialogues);
-  const slotC = scoreReaderCoverageSlot(resolved, GUARDED_PILOT_SHAPE.turns_total);
+  const slotC = scoreReaderCoverageSlot(resolved, shape.turns_total, shape);
   const slots = [slotA, slotB, slotC];
   const verdict = shapeProblems.length
     ? 'UNMEASURED'
@@ -392,11 +409,12 @@ export function scoreGuardedPilotGate(runDir) {
     run_dir: resolved,
     registration: 'docs/adaptation-refinement/relay/110-registration-guarded-pilot.md#4',
     slot_reading: 'docs/adaptation-refinement/relay/112-guarded-pilot-reseal.md',
+    shape: shape.name,
     shape_problems: shapeProblems,
     verdict,
     licenses_main_block: verdict === 'PASS',
     slots,
-    reader_cross_check: readerStretchCrossCheck(resolved, dialogues),
+    reader_cross_check: readerStretchCrossCheck(resolved, dialogues, shape),
     dialogues: dialogues.map((d) => ({ dialogue_id: d.dialogue_id, condition: d.condition, turns: d.turns })),
   };
 }
@@ -458,6 +476,7 @@ function main() {
     ({ values: options } = parseArgs({
       options: {
         run: { type: 'string' },
+        shape: { type: 'string', default: 'pilot' },
         out: { type: 'string' },
         json: { type: 'boolean' },
         help: { type: 'boolean' },
@@ -469,13 +488,18 @@ function main() {
   }
   if (options.help || !options.run) {
     process.stdout.write(
-      'Usage:\n  node scripts/score-guarded-pilot-gate.js --run <run-dir> [--out <file>] [--json]\n',
+      'Usage:\n  node scripts/score-guarded-pilot-gate.js --run <run-dir> [--shape pilot|main-block] [--out <file>] [--json]\n',
     );
     process.exit(options.help ? 0 : 2);
   }
+  const shape = GUARDED_SHAPES[options.shape];
+  if (!shape) {
+    process.stderr.write(`unknown shape "${options.shape}"; use one of: ${Object.keys(GUARDED_SHAPES).join(', ')}\n`);
+    process.exit(2);
+  }
   let report;
   try {
-    report = scoreGuardedPilotGate(options.run);
+    report = scoreGuardedPilotGate(options.run, { shape });
   } catch (error) {
     process.stderr.write(`${error.message}\n`);
     process.exit(2);
