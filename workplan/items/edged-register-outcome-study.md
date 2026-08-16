@@ -75,6 +75,15 @@ enters a gate again without a hand-marked test set first. This repeats the
 stance-gate 2.0 finding where the manner phrase list scored 1/15 against
 readers at 19/20 and 15/15.
 
-Next step: finish the screen block, run the zero-call screen decision, then
-the corridor selector. The confirm block needs its own GO and launch
-approval.
+2026-08-16 screen block complete (draft note §2.12): 60 paid rows, all
+resolved. Seven harm-tripwire pauses, all the two words "your capacity" in
+praise of what the work builds, all ruled resume_unchanged. One cell dropped
+at the floor (0/5), one at the ceiling (5/5). Ten cells survived; the §2.3
+rule took the seven at 0.10 from .50 and left three at 4/5 unconfirmed. The
+warm router converts at 33/60 pooled — de-saturated, unlike stage 2 at .94 —
+so a corridor looks likely to exist, but no cell is kept until the confirm
+block pools it to n=12 under §2.4.
+
+Next step: the confirm block, 49 rows enqueued (109 of the 120-row cap). It
+is a separate paid stage and needs its own committed GO note plus launch
+approval with a clean-tree SHA. The corridor selector runs after it.

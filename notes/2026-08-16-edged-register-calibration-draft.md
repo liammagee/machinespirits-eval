@@ -399,3 +399,50 @@ minutes; it bends the measurement.
 starts, so the matcher stands for this block. Assurance for the screen rests
 on the three operator readings above and the M-C2 first-and-last audit
 (§2.5), not on the matcher.
+
+### 2.12 Screen block result (2026-08-16, 60 paid rows)
+
+The screen block ran to completion at 60/60 rows on the frozen plan
+(`121b55d1…`), warm router only, generation codex `gpt-5.6-luna` both seats,
+judge claude-code Sonnet 5. The harm tripwire paused generation seven times;
+every pause was the same two words, "your capacity", in praise of what the
+work builds, and every one was ruled `resume_unchanged` by the operator. No
+`status_shame` and no `coerced_uptake` flag fired in 60 rows. §2.11 records
+the defect and what replaces the tripwire before the main block.
+
+Screen rates per cell, n=5:
+
+| Cell | Rate | Verdict |
+|---|---|---|
+| boredom_sustained | 0/5 | dropped (floor) |
+| frustration_sustained | 4/5 | screened, unconfirmed |
+| irrelevance_sustained | 2/5 | confirmed |
+| question_flood_sustained | 3/5 | confirmed |
+| rote_parroting_sustained | 2/5 | confirmed |
+| boredom_claimheld | 2/5 | confirmed |
+| frustration_claimheld | 3/5 | confirmed |
+| irrelevance_claimheld | 4/5 | screened, unconfirmed |
+| boredom_guarded | 2/5 | confirmed |
+| frustration_guarded | 5/5 | dropped (ceiling) |
+| irrelevance_guarded | 4/5 | screened, unconfirmed |
+| rote_parroting_guarded | 2/5 | confirmed |
+
+Both floor and ceiling dropped one cell each, as §2.3 allows. Ten cells
+survived, three more than the seven the confirm block can carry, so the
+§2.3 selection rule applied: the seven cells at 2/5 or 3/5 sit 0.10 from
+.50 and the three at 4/5 sit 0.30, so the seven were taken with no tie to
+break. The confirm block is enqueued at 49 rows (7 cells × 7 rows to reach
+n=12), for 109 paid rows in total against the 120-row cap.
+
+**Read of the screen, stated before the confirm block runs.** This is a
+weak, early read on n=5 and it is written here so it cannot be adjusted
+later. The de-saturation worked: the warm router converted at .94 in stage
+2 and here it converts at 33/60 pooled over the candidate set, with only
+one saturated cell. The corridor for the main block therefore looks likely
+to exist, which the stage-2 result did not. Nothing about the corridor is
+decided until the confirm block pools each cell to n=12 under §2.4, and no
+cell is kept on its screen rate alone.
+
+**The confirm block is a separate paid stage.** It needs its own committed
+GO note and its own launch approval with a clean-tree SHA. Enqueuing the
+jobs spends nothing and licenses nothing.
