@@ -200,7 +200,7 @@ function reportUnconfirmedCells(state, positives) {
   }
 }
 
-function runCorridor(state, batchDir, { positives = null, label = '', partlyCounts = false } = {}) {
+function runCorridor(state, batchDir, { positives = null, label = '', partlyCounts = false, reportOnly = false } = {}) {
   const cellRows = pooledCellRows(state, { positives });
   const decision = corridorDecision(cellRows);
   if (!decision.ok) {
@@ -243,10 +243,16 @@ function runCorridor(state, batchDir, { positives = null, label = '', partlyCoun
   } else {
     reportUnconfirmedCells(state, positives);
   }
-  if (decision.killStudy) {
-    console.log('[edged-corridor] NO CELL KEPT after §2.4 + §2.5 — registered stop rule 1: the study stops here');
-    process.exitCode = 2;
+  if (!decision.killStudy) return;
+  if (reportOnly) {
+    // §2.16.1 makes this reading report-only, so it must not raise the stop
+    // signal. It saturating while the primary does not is the finding, not a
+    // verdict — see the note §2.17.
+    console.log('[edged-corridor] no cell would be kept on this reading — reported, not a stop signal');
+    return;
   }
+  console.log('[edged-corridor] NO CELL KEPT after §2.4 + §2.5 — registered stop rule 1: the study stops here');
+  process.exitCode = 2;
 }
 
 function runAuditVerdict(state, batchDir, readingsPath) {
@@ -324,6 +330,7 @@ async function main() {
       positives: revisedPositives(readingsPath, { partlyCounts: true }),
       label: 'revised-sensitivity',
       partlyCounts: true,
+      reportOnly: true,
     });
     return;
   }
