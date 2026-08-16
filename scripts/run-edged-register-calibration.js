@@ -168,8 +168,60 @@ function loadState(batchDir) {
   return state;
 }
 
-function saveState(batchDir, state) {
+function decisionKey(record) {
+  return `${record.decision}|${record.detail ?? ''}|${record.recordedAt}`;
+}
+
+// The operator records a guardrail ruling with --resume-decision in a SECOND
+// process, while this one is still alive: registered stop rule 2 stops the next
+// dialogue, it does not exit the runner. A whole-object write from memory would
+// silently discard that ruling (draft note §2.14), so every save re-reads the
+// file and carries the operator-owned fields forward.
+//
+// The split is by owner, not by field type. The operator owns `killed`,
+// `operatorDecisions`, flag resolutions, and the kill of unstarted work; the
+// runner owns attempts, completions and `rowsAttempted`. A row already
+// generated is a paid fact and is never downgraded to killed.
+function mergeOperatorFields(batchDir, state) {
+  const file = statePath(batchDir);
+  if (!fs.existsSync(file)) return state;
+  let disk;
+  try {
+    disk = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    return state; // a torn read carries nothing forward; the writer below is atomic
+  }
+  if (disk.schema !== state.schema || disk.batchId !== state.batchId) return state;
+
+  if (disk.killed) state.killed = true;
+
+  const seen = new Set((state.operatorDecisions || []).map(decisionKey));
+  for (const record of disk.operatorDecisions || []) {
+    if (seen.has(decisionKey(record))) continue;
+    state.operatorDecisions.push(record);
+    seen.add(decisionKey(record));
+  }
+
+  const ruled = new Map();
+  for (const flag of disk.guardrailFlags || []) {
+    if (flag.resolution) ruled.set(flag.ordinal, flag.resolution);
+  }
+  for (const flag of state.guardrailFlags || []) {
+    if (!flag.resolution && ruled.has(flag.ordinal)) flag.resolution = ruled.get(flag.ordinal);
+  }
+
+  const killedOrdinals = new Set(
+    (disk.jobs || []).filter((job) => job.status === 'killed_cell').map((job) => job.ordinal),
+  );
+  for (const job of state.jobs || []) {
+    if (job.status !== 'completed' && killedOrdinals.has(job.ordinal)) job.status = 'killed_cell';
+  }
+  return state;
+}
+
+export function saveState(batchDir, state) {
   fs.mkdirSync(batchDir, { recursive: true });
+  mergeOperatorFields(batchDir, state);
   const file = statePath(batchDir);
   const tmp = `${file}.tmp`;
   fs.writeFileSync(tmp, `${JSON.stringify(state, null, 2)}\n`);

@@ -7,6 +7,9 @@
 // attended-resume discipline). Everything here is zero-call pure logic.
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 import {
   EDGED_REGISTER_CALIBRATION as GRID,
@@ -25,6 +28,7 @@ import {
   checkGoNoteContent,
   enumerateRunnableJobs,
   newBatchState,
+  saveState,
   screenCellOutcomes,
   unresolvedGuardrailFlags,
 } from '../scripts/run-edged-register-calibration.js';
@@ -287,5 +291,116 @@ describe('calibration runner pure helpers', () => {
       { ordinal: 2, resolution: { decision: 'resume_unchanged' } },
     ];
     assert.equal(unresolvedGuardrailFlags(state).length, 1);
+  });
+});
+
+// §2.14: the operator records a ruling in a second process while the runner is
+// still alive. A whole-object save from the runner's stale memory used to erase
+// it. Every case below is that race, played out in one temp directory.
+describe('edged-register state save keeps an operator ruling', () => {
+  const withBatchDir = (fn) => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'edged-state-'));
+    try {
+      fn(dir);
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  };
+
+  // The runner saved, the operator then ruled on disk; `runner` is the stale
+  // in-memory copy that has never seen the ruling.
+  const raceSetup = (dir, rule) => {
+    const runner = newBatchState(buildEdgedRegisterCalibrationPlan(), 'batch-1');
+    runner.guardrailFlags = [{ ordinal: 1, scenario: runner.jobs[0].scenario, resolution: null }];
+    saveState(dir, runner);
+    const operator = JSON.parse(fs.readFileSync(path.join(dir, 'state.json'), 'utf8'));
+    rule(operator);
+    fs.writeFileSync(path.join(dir, 'state.json'), `${JSON.stringify(operator, null, 2)}\n`);
+    return runner;
+  };
+
+  const reread = (dir) => JSON.parse(fs.readFileSync(path.join(dir, 'state.json'), 'utf8'));
+
+  it('carries a resume_unchanged ruling through the runner next save', () => {
+    withBatchDir((dir) => {
+      const record = { decision: 'resume_unchanged', detail: null, recordedAt: '2026-08-17T00:00:00.000Z' };
+      const runner = raceSetup(dir, (operator) => {
+        operator.operatorDecisions.push(record);
+        operator.guardrailFlags[0].resolution = record;
+      });
+
+      runner.rowsAttempted += 1; // any ordinary runner write
+      saveState(dir, runner);
+
+      const saved = reread(dir);
+      assert.deepEqual(saved.operatorDecisions, [record]);
+      assert.deepEqual(saved.guardrailFlags[0].resolution, record);
+      assert.equal(saved.rowsAttempted, 1);
+      assert.equal(unresolvedGuardrailFlags(runner).length, 0, 'the live runner also sees the ruling');
+    });
+  });
+
+  it('carries kill_study through, and the live runner stops taking jobs', () => {
+    withBatchDir((dir) => {
+      const runner = raceSetup(dir, (operator) => {
+        operator.killed = true;
+        operator.operatorDecisions.push({
+          decision: 'kill_study',
+          detail: null,
+          recordedAt: '2026-08-17T00:00:01.000Z',
+        });
+      });
+
+      saveState(dir, runner);
+
+      assert.equal(reread(dir).killed, true);
+      assert.equal(runner.killed, true, 'takeJob() reads this and stops');
+    });
+  });
+
+  it('carries kill_cell through but never downgrades a row already generated', () => {
+    withBatchDir((dir) => {
+      const runner = raceSetup(dir, (operator) => {
+        for (const job of operator.jobs) {
+          if (job.scenario === operator.jobs[0].scenario) job.status = 'killed_cell';
+        }
+      });
+      // The runner finished one row of that cell before the ruling landed. It
+      // was paid for, so it stays completed; only unstarted work is killed.
+      runner.jobs[0].status = 'completed';
+
+      saveState(dir, runner);
+
+      const saved = reread(dir);
+      assert.equal(saved.jobs[0].status, 'completed');
+      const sameCell = saved.jobs.filter((job) => job.scenario === saved.jobs[0].scenario);
+      assert.ok(sameCell.length > 1);
+      assert.ok(sameCell.slice(1).every((job) => job.status === 'killed_cell'));
+    });
+  });
+
+  it('does not duplicate a ruling the runner already holds', () => {
+    withBatchDir((dir) => {
+      const record = { decision: 'resume_unchanged', detail: null, recordedAt: '2026-08-17T00:00:02.000Z' };
+      const runner = raceSetup(dir, (operator) => operator.operatorDecisions.push(record));
+
+      saveState(dir, runner);
+      saveState(dir, runner);
+
+      assert.deepEqual(reread(dir).operatorDecisions, [record]);
+    });
+  });
+
+  it('ignores a state file belonging to a different batch', () => {
+    withBatchDir((dir) => {
+      const runner = raceSetup(dir, (operator) => {
+        operator.batchId = 'batch-other';
+        operator.killed = true;
+      });
+
+      saveState(dir, runner);
+
+      assert.equal(reread(dir).killed, false);
+    });
   });
 });
