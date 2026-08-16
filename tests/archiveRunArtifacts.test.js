@@ -6,7 +6,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { archiveRun, resolveArchiveDir, runDirs } from '../scripts/archive-run-artifacts.js';
+import { archiveRun, ledgerPath, resolveArchiveDir, runDirs } from '../scripts/archive-run-artifacts.js';
 
 const ARCHIVE_SCRIPT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -71,7 +71,7 @@ test('check reports what is missing and writes nothing', () => {
   withTempCwd(({ dest }) => {
     const run = makeRun(process.cwd(), 'pilot-1');
     const summary = archiveRun(run, { dest, check: true });
-    assert.equal(summary.missing, 3);
+    assert.equal(summary.missing, 4, 'three artifacts plus the ledger line');
     assert.equal(summary.copied, 0);
     assert.equal(summary.packed, 0);
     assert.deepEqual(fs.readdirSync(dest), []);
@@ -87,6 +87,39 @@ test('light-only leaves the traces behind, which is what a finished run copies',
     const out = path.join(dest, 'exports', 'tutor-stub-outcome', 'pilot-1');
     assert.ok(fs.existsSync(path.join(out, 'results.jsonl')));
     assert.ok(!fs.existsSync(path.join(out, 'traces.tgz')));
+  });
+});
+
+test('archiving records a ledger line once, with the checkpoint learner profile', () => {
+  withTempCwd(({ dest }) => {
+    const run = makeRun(process.cwd(), 'pilot-1');
+    fs.writeFileSync(
+      path.join(run, 'outcome-pilot-checkpoint.json'),
+      JSON.stringify({ learner_profile: 'overconfident' }),
+    );
+
+    const first = archiveRun(run, { dest });
+    assert.equal(first.ledger, 1);
+    const text = fs.readFileSync(ledgerPath(dest), 'utf8');
+    assert.match(text, /pilot-1 \| archived \d{4}-\d{2}-\d{2} \| profile overconfident \|/u);
+
+    const again = archiveRun(run, { dest });
+    assert.equal(again.ledger, 0, 'a second pass appends nothing');
+    assert.equal(fs.readFileSync(ledgerPath(dest), 'utf8'), text);
+
+    const checked = archiveRun(run, { dest, check: true });
+    assert.equal(checked.missing, 0, 'check passes once artifacts and ledger line exist');
+  });
+});
+
+test('check flags an archived run whose ledger line is missing', () => {
+  withTempCwd(({ dest }) => {
+    const run = makeRun(process.cwd(), 'pilot-1');
+    archiveRun(run, { dest });
+    fs.rmSync(ledgerPath(dest));
+    const checked = archiveRun(run, { dest, check: true });
+    assert.equal(checked.missing, 1);
+    assert.deepEqual(checked.missingPaths, ['RUN-LEDGER.md line for pilot-1']);
   });
 });
 
@@ -122,7 +155,7 @@ test('archive CLI keeps the no-argument tutor-stub default and accepts one expli
       encoding: 'utf8',
     });
     assert.equal(defaultResult.status, 1);
-    assert.match(defaultResult.stdout, /1 run\(s\): 3 artifact\(s\) missing/u);
+    assert.match(defaultResult.stdout, /1 run\(s\): 4 artifact\(s\) missing/u);
 
     const cohort = path.join(process.cwd(), 'exports', 'learner-profile-world-deconfound', 'prospective-plan');
     fs.mkdirSync(path.join(cohort, 'traces'), { recursive: true });
@@ -133,6 +166,6 @@ test('archive CLI keeps the no-argument tutor-stub default and accepts one expli
       encoding: 'utf8',
     });
     assert.equal(cohortResult.status, 1);
-    assert.match(cohortResult.stdout, /1 run\(s\): 2 artifact\(s\) missing/u);
+    assert.match(cohortResult.stdout, /1 run\(s\): 3 artifact\(s\) missing/u);
   });
 });
