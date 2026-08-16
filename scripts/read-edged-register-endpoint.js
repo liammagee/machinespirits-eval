@@ -101,7 +101,7 @@ function loadDialogueLog(row) {
  * mean the loader silently fell back to the scenario's scripted text — the
  * defect that produced a whole reading sheet of the same learner turn.
  */
-function readWindows(state) {
+export function readWindows(state) {
   const scenariosPath = path.join(ROOT, GRID.scenarioSource);
   const scenarios = yaml.parse(fs.readFileSync(scenariosPath, 'utf8'))?.scenarios || {};
   const jobs = state.jobs.filter((job) => job.status === 'completed' && job.rowId);
