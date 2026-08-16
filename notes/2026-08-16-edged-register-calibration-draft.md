@@ -531,6 +531,23 @@ lock, so that a decision written by another process cannot be overwritten.
 Until that lands, the working rule above is the only protection, and it is a
 procedure, not a guarantee.
 
+**2026-08-17: the fix landed** (commit `8afe3863`). `saveState` now re-reads
+the file before every write and merges by owner. The operator owns `killed`,
+`operatorDecisions`, the flag resolutions, and the kill of unstarted work;
+the runner owns attempts, completions and `rowsAttempted`. A row already
+generated is a paid fact and is never downgraded to `killed_cell`.
+
+Two things worth stating about what the fix does and does not do. It is not
+the atomic write that was missing — the tmp-then-rename was already there,
+and atomicity stops a torn file, not a stale one. And because `takeJob()`
+already tests `state.killed` and `killed_cell` on every pick, merging at save
+time means a ruling recorded mid-run now also **takes effect in the live
+process**, where before `kill_study` only bit on the next launch. Five tests
+play the race out in a temp directory; four of them fail without the merge.
+
+The working rule stands anyway. It costs nothing, and a `pgrep` before a
+ruling is cheaper than trusting one merge to be right in every ordering.
+
 ## 2.15 M-C2 endpoint read — the check FAILS at 33% disagreement
 
 The registered §2.5 M-C2 read is done. The operator read the first and last
