@@ -44,3 +44,11 @@ not a decision. Work happens in the `../ms-harness-reconciliation`
 worktree on `design/harness-reconciliation`; never push without a human
 ruling. Coordinate with the live normative-contract line and the paused
 edged-register line before touching any shared service.
+
+## Log
+
+- 2026-08-16 — Added the survey note
+  (`notes/2026-08-16-harness-reconciliation-survey.md`), the boundary
+  rule (`docs/warrant-stub-dependency-rule.md`), and the claim-transfer
+  rule (`docs/harness-claim-transfer-rule.md`). The card stays active
+  until a human rules on closure.
