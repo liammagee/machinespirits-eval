@@ -1,19 +1,19 @@
 {
-  "generated": "2026-08-14T22:24:38.309Z",
+  "generated": "2026-08-16T21:52:08.372Z",
   "counts": {
-    "total": 503,
+    "total": 505,
     "byStatus": {
-      "done": 472,
+      "done": 473,
       "blocked": 6,
       "dropped": 10,
-      "active": 9,
+      "active": 10,
       "archived": 4,
       "review": 2
     },
     "byType": {
-      "research": 77,
+      "research": 78,
       "experiment": 86,
-      "infra": 105,
+      "infra": 106,
       "maintenance": 213,
       "content": 4,
       "ops": 10,
@@ -431,6 +431,39 @@
         "id-director",
         "provenance"
       ]
+    },
+    {
+      "id": "warrant-stub-dependency-boundary-rule",
+      "title": "Boundary rule: warrant modules must not import tutor-stub files",
+      "status": "active",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-16",
+      "updated": "2026-08-16",
+      "verification": "A stated one-way rule (warrant-gate, action-contract, and obligation-ledger modules never import tutor-stub files; tutor-stub may import them) is written down, and a test freezes today's violations as an allowlist that may only shrink. Any new cross-import fails the test. No existing cross-import is removed while the live warrant validation line is open, because that line fingerprints these files.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "notes/2026-08-16-harness-reconciliation-survey.md"
+        ],
+        "items": [
+          "tutor-stub-cell-reconciliation",
+          "adaptive-warrant-public-obligation-ledger-and-inquiry-termin"
+        ],
+        "code": [
+          "services/adaptiveWarrantGateCore.js",
+          "services/tutorStubWarrantGate.js"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "warrant-gate",
+        "harness",
+        "architecture"
+      ],
+      "branch": "design/harness-reconciliation"
     },
     {
       "id": "a1-human-learner-validation",
@@ -16912,6 +16945,36 @@
         "scriptorium",
         "navigation"
       ]
+    },
+    {
+      "id": "tutor-stub-cell-reconciliation",
+      "title": "Map and reconcile the tutor-stub and cell-based harnesses",
+      "status": "done",
+      "type": "research",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-16",
+      "updated": "2026-08-17",
+      "verification": "A survey note maps the two harnesses side by side (tutor, learner, run, score, adaptation, shared seams, one-world-only parts) and closes with two or three reconciliation options and their costs. No option is chosen without a human ruling; no code changes land from the survey itself.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "notes/2026-08-16-harness-reconciliation-brief.md"
+        ],
+        "code": [
+          "config/tutor-agents.yaml",
+          "services/tutorStubEdgeTimingPolicy.js",
+          "docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "cells",
+        "architecture",
+        "reconciliation"
+      ],
+      "branch": "design/harness-reconciliation"
     },
     {
       "id": "workplan-trailer-pre-push-hook",
