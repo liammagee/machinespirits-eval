@@ -6,10 +6,15 @@ Follows: relay 116 (act list and exposure test), relay 117 (P3
 registration), relay 120 (the note that dropped the channel), relay 122
 (the finding), relay 123 (the flat, saturated re-base), defect-ledger
 rows 26–27.
-Status: **DRAFT — awaiting the human ruling in §6. Zero calls. No
-spend is authorized by this note.** A paid read needs its own GO note
-with counts copied from the free dry preparation, and its own
-approval.
+Status: **SEALED 2026-08-17. Zero calls. No spend is authorized by
+this note.** The human ruled on §6, quoted verbatim:
+
+> 1 yes, 2 windows only
+
+So this late read is the registered answer to relay 117's P3, scoped
+to the delivered and shadow reply windows only. A paid read still
+needs its own GO note with counts copied from the free dry
+preparation, and its own approval.
 
 ## 1. The question — relay 117's P3, unchanged
 
