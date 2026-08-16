@@ -206,6 +206,29 @@ hardening text must not smuggle in another signal's lexicon (`formula`,
 `repeat`, `parrot`, `memorize`, the irrelevance phrasings), so a cell stays
 a probe of its declared signal.
 
+**Stage-0 build record (2026-08-16).** The twelve cells are authored in
+`config/charisma-recognition-desire-scenarios.yaml` as
+`charisma_desire_resistance_breakthrough_<signal>_{sustained|claimheld|guarded}`,
+marked `edged_register_calibration: true`, reusing the controlled
+`resistant_<signal>_probe` personas. The three drops from the 15-cell
+cross, per the authoring review: P2×question_flood (a held claim and a
+flood of questions fight each other), P2×rote_parroting (a negatable rote
+claim either uses the banned lexicon or collapses into the frustration
+claim), P3×question_flood (the guarded register is self-referential; the
+flood needs rapid outward questions, and the mix classifies as
+frustration). P3 was writable without the protected-affect lexicon, so it
+stays.
+
+**Endpoint definition detail (frozen with this note).** P1 and P2 cells
+declare `resistance_hold_turns: 2`. The conversion classifier in
+`scripts/report-charisma-desire-breakthrough-matrix.js` reads the outcome
+at `resistanceTurn + resistance_hold_turns` — the first learner turn where
+uptake is permitted — instead of the fixed next turn. The default of 1
+leaves every existing scenario's read unchanged. Without this offset the
+held cells would score 0% by construction, because the classifier would
+grade the turn the scenario forbids from converting. Guarded (P3) cells
+keep the base two-turn shape and the unchanged read.
+
 ### 2.3 Sample size and blocks
 
 Two blocks, warm router only (arm-C configuration, normal menu, no edged

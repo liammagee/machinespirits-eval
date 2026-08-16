@@ -824,6 +824,474 @@ scenarios:
       - The key outcome is the learner move after the tutor's response to frustration: does resistance soften into renewed, content-bearing work?
       - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
 
+  # ─── Hardened calibration variants (notes/2026-08-16-edged-register-calibration-draft.md §2.2) ───
+  # Twelve candidate cells for the edged-register calibration pilot: three
+  # hardening patterns crossed with the five frozen target signals, trimmed
+  # from fifteen by authoring review before any paid call. Warm-router-only
+  # calibration cells; selection-only — their rows never pool into any later
+  # analysis.
+  #
+  #   P1 `_sustained` — resistance voiced, then HELD for a second learner
+  #     turn before any uptake is permitted. Declares
+  #     `resistance_hold_turns: 2`, so the conversion classifier reads the
+  #     outcome at the first learner turn where uptake is allowed (turn 3),
+  #     not at the mandated second resistance turn.
+  #   P2 `_claimheld` — extends the `_claimed` family: the learner asserts
+  #     one negatable claim about the material and re-asserts it once after
+  #     the first tutor response before any movement. Also
+  #     `resistance_hold_turns: 2`.
+  #   P3 `_guarded` — affect-adjacent resistance in the direction of the
+  #     tutor-stub affective-resistant profile: a guarded, personally
+  #     invested learner with a dry edge. The resistance wording must NEVER
+  #     use the protected-affect lexicon (shame / ashamed / anxious /
+  #     afraid / humiliat- / panic / overwhelm) or the cell fails the M-C1
+  #     eligibility screen by construction. Base two-turn shape, no hold.
+  #
+  # Dropped three of fifteen (authoring review, recorded per the draft note):
+  #   P2 × question_flood — a persistent flat claim and a flood of questions
+  #     fight each other; the learner cannot both flood and hold one claim.
+  #   P2 × rote_parroting — a negatable claim voicing the rote worry either
+  #     uses the banned cross-signal lexicon or collapses into the
+  #     frustration claim ("the steps are the whole of it").
+  #   P3 × question_flood — the guarded register is self-referential; the
+  #     flood signal requires rapid outward questions with none. The mix
+  #     classifies as frustration, not question_flood.
+  #
+  # Word-choice rule (carried from the `_claimed` authoring note above):
+  # hardening text must not smuggle in another signal's lexicon — `formula`,
+  # `repeat`, `parrot`, `memorize`, the irrelevance phrasings — outside its
+  # own signal. Personas are reused from the controlled per-signal probes so
+  # the only change per cell is the hardening instruction (the `_claimed`
+  # discipline). All twelve carry `edged_register_calibration: true` for
+  # runner selection.
+
+  charisma_desire_resistance_breakthrough_boredom_sustained:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_boredom
+    id: charisma_desire_resistance_breakthrough_boredom_sustained
+    name: "Charisma Desire: Resistance Breakthrough - Boredom, Sustained"
+    description: "Hardened calibration probe (P1): boredom voiced and held for two learner turns before uptake is permitted."
+    learner_persona: resistant_boredom_probe
+    resistance_signal_target: boredom
+    resistance_hold_turns: 2
+    edged_register_calibration: true
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but bored by symbolic summaries, and slow to win back.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This hardened calibration probe tests boredom held across two learner turns.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First say that the explanation feels boring, dead, or disengaging.
+      - Dynamic learner instruction (hold): after the tutor replies to your boredom, stay bored. Say so again in different words, still about the material — it has not come alive yet. Do not move into content-bearing work in that second resistant reply, whatever the tutor offered.
+      - From your third reply on you are free: move into renewed, content-bearing work only if the tutor's responses have given you a reason to.
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+    turns: &calibration_sustained_turns
+      - id: turn_1_resistant_signal
+        learner_action: resistant_followup
+        action_details:
+          message: "I can follow the list, but this still is not working for me."
+        context_update: |
+          ### Learner Response
+          - The learner voices the target resistant condition for the first time.
+          - The tutor should respond to the resistance without demanding admiration.
+        expected_behavior: "Respond to the resistance: accept it as evidence, stake one consequential curriculum-grounded claim, name what would defeat it, and return a concrete test to the learner."
+        required_elements_any: &calibration_challenge_required
+          - "frustrated"
+          - "dead"
+          - "formula"
+          - "test"
+          - "claim"
+          - "passage"
+          - "criterion"
+          - "failure"
+          - "choose"
+          - "decide"
+          - "counterexample"
+          - "apply"
+          - "question"
+          - "hinge"
+        forbidden_elements: &calibration_challenge_forbidden
+          - "profound"
+          - "impressive"
+          - "admire"
+          - "trust me"
+          - "great question"
+        min_acceptable_score: 85
+
+      - id: turn_2_hold_resistance
+        learner_action: resistant_followup
+        action_details:
+          message: "Same answer as before, in different words: this still is not working for me."
+        context_update: |
+          ### Learner Response
+          - The learner holds the SAME resistant condition a second time, in different words, and does not move into content-bearing work yet.
+          - The tutor must respond to sustained resistance without punishing it and without demanding admiration.
+        expected_behavior: "Respond to sustained resistance without punishing it: keep the claim-and-test structure on the table, adjust the offer, and leave the learner one concrete way back into the work."
+        required_elements_any: *calibration_challenge_required
+        forbidden_elements: *calibration_challenge_forbidden
+        min_acceptable_score: 85
+
+      - &calibration_probe_turn
+        id: turn_3_breakthrough_probe
+        learner_action: uptake_probe
+        action_details:
+          message: "Okay, that gives me a way in. Let me try it: if the formula is enough, then the AI tutor case is just a seat swap. But if formation needs work, I have to test what changes in me while I use it. Can we work on that version?"
+        context_update: |
+          ### Learner Response
+          - This scripted line is a shape check for the desired transition only.
+          - A real outcome claim requires this turn to be produced by a dynamic learner, not copied from YAML.
+          - The tutor should consolidate the learner's renewed work without celebrating compliance or claiming breakthrough.
+        expected_behavior: "Treat the learner's renewed work as provisional uptake: tighten the distinction, ask for one content-bearing next sentence, and avoid declaring victory."
+        required_elements_any:
+          - "try"
+          - "test"
+          - "version"
+          - "sentence"
+          - "provisional"
+          - "passage"
+          - "criterion"
+          - "failure"
+          - "choose"
+          - "decide"
+          - "revise"
+          - "quote"
+          - "counterexample"
+          - "apply"
+        forbidden_elements:
+          - "breakthrough"
+          - "profound"
+          - "impressive"
+          - "excellent"
+          - "exactly"
+        min_acceptable_score: 85
+
+  charisma_desire_resistance_breakthrough_frustration_sustained:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_frustration
+    id: charisma_desire_resistance_breakthrough_frustration_sustained
+    name: "Charisma Desire: Resistance Breakthrough - Frustration, Sustained"
+    description: "Hardened calibration probe (P1): frustration voiced and held for two learner turns before uptake is permitted."
+    learner_persona: resistant_frustration_probe
+    resistance_signal_target: frustration
+    resistance_hold_turns: 2
+    edged_register_calibration: true
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but frustrated by step sequences that feel inert, and slow to win back.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This hardened calibration probe tests frustration held across two learner turns.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First say that you are frustrated, annoyed, or fed up because the sequence still feels inert.
+      - Dynamic learner instruction (hold): after the tutor replies to your frustration, stay frustrated. Say so again in different words — the sequence still feels inert. Do not move into content-bearing work in that second resistant reply, whatever the tutor offered.
+      - From your third reply on you are free: move into renewed, content-bearing work only if the tutor's responses have given you a reason to.
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+    turns: *calibration_sustained_turns
+
+  charisma_desire_resistance_breakthrough_irrelevance_sustained:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_irrelevance
+    id: charisma_desire_resistance_breakthrough_irrelevance_sustained
+    name: "Charisma Desire: Resistance Breakthrough - Irrelevance, Sustained"
+    description: "Hardened calibration probe (P1): irrelevance voiced and held for two learner turns before uptake is permitted."
+    learner_persona: resistant_irrelevance_probe
+    resistance_signal_target: irrelevance
+    resistance_hold_turns: 2
+    edged_register_calibration: true
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but unconvinced that the sequence matters, and slow to win back.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This hardened calibration probe tests irrelevance held across two learner turns.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First ask what the point is, why it matters, or what it has to do with anything you care about.
+      - Dynamic learner instruction (hold): after the tutor replies, you are still not convinced it matters. Say so again in different words. Do not move into content-bearing work in that second resistant reply, whatever the tutor offered.
+      - From your third reply on you are free: move into renewed, content-bearing work only if the tutor's responses have given you a reason to.
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+    turns: *calibration_sustained_turns
+
+  charisma_desire_resistance_breakthrough_question_flood_sustained:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_question_flood
+    id: charisma_desire_resistance_breakthrough_question_flood_sustained
+    name: "Charisma Desire: Resistance Breakthrough - Question Flood, Sustained"
+    description: "Hardened calibration probe (P1): excessive questioning voiced and held for two learner turns before uptake is permitted."
+    learner_persona: resistant_question_flood_probe
+    resistance_signal_target: question_flood
+    resistance_hold_turns: 2
+    edged_register_calibration: true
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but using rapid skeptical questions to avoid committing to the sequence, and slow to win back.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This hardened calibration probe tests excessive questioning held across two learner turns.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First ask at least three pointed why/what-for questions, each with a question mark, such as why Hegel, why this sequence, and what you are supposed to do with it. Do not write a chain, tentative answer, or single careful objection in that first resistant reply.
+      - Dynamic learner instruction (hold): after the tutor replies, flood again: at least three NEW pointed why/what-for questions, each with a question mark, none of them the same question as before. Do not answer the tutor's test yet, and do not move into content-bearing work in that second resistant reply.
+      - From your third reply on you are free: move into renewed, content-bearing work only if the tutor's responses have given you a reason to.
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+    turns: *calibration_sustained_turns
+
+  charisma_desire_resistance_breakthrough_rote_parroting_sustained:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_rote_parroting
+    id: charisma_desire_resistance_breakthrough_rote_parroting_sustained
+    name: "Charisma Desire: Resistance Breakthrough - Rote Parroting, Sustained"
+    description: "Hardened calibration probe (P1): rote parroting voiced and held for two learner turns before uptake is permitted."
+    learner_persona: resistant_rote_parroting_probe
+    resistance_signal_target: rote_parroting
+    resistance_hold_turns: 2
+    edged_register_calibration: true
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but worried the exercise is just memorizing a formula, and slow to win back.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This hardened calibration probe tests rote parroting held across two learner turns.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First say that this feels like parroting terms, repeating a sequence, or memorizing a formula.
+      - Dynamic learner instruction (hold): after the tutor replies, say again in different words that you can only echo the terms and that echoing them is not understanding. Do not move into content-bearing work in that second resistant reply, whatever the tutor offered.
+      - From your third reply on you are free: move into renewed, content-bearing work only if the tutor's responses have given you a reason to.
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+    turns: *calibration_sustained_turns
+
+  charisma_desire_resistance_breakthrough_boredom_claimheld:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_boredom_claimed
+    id: charisma_desire_resistance_breakthrough_boredom_claimheld
+    name: "Charisma Desire: Resistance Breakthrough - Boredom, Claim Held"
+    description: "Hardened calibration probe (P2): boredom with one negatable claim about the material, re-asserted once before any movement."
+    learner_persona: resistant_boredom_probe
+    resistance_signal_target: boredom
+    claim_bearing_resistance: true
+    resistance_hold_turns: 2
+    edged_register_calibration: true
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but bored by symbolic summaries, and slow to win back.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This hardened calibration probe tests boredom as the resistant condition, with one asserted claim attached and held.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First say that the explanation feels boring, dead, or disengaging, AND in the same reply assert one flat claim about the material itself, that the whole argument comes down to two people swapping who is on top and that once you have said that there is nothing further to work out. State it as a claim you hold, not as a question.
+      - The claim must be about the argument, not about you. Do not describe your own state beyond the boredom itself.
+      - Dynamic learner instruction (re-assert): after the tutor replies, re-assert the SAME claim once, in different words — the argument still comes down to two people swapping who is on top, with nothing further to work out. Do not concede and do not move into content-bearing work in that second reply.
+      - From your third reply on you are free: move into renewed, content-bearing work only if the tutor's responses have given you a reason to.
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+    turns: &calibration_claimheld_turns
+      - id: turn_1_resistant_claim
+        learner_action: resistant_followup
+        action_details:
+          message: "This is not working for me, and I hold one flat claim about the material itself."
+        context_update: |
+          ### Learner Response
+          - The learner voices the target resistant condition and asserts one negatable claim about the material.
+          - The tutor should answer the claim on the material without attacking the learner.
+        expected_behavior: "Respond to the claim-bearing resistance: name the learner's claim about the material, put one consequence or counter-case against it, and return a concrete test to the learner."
+        required_elements_any: *calibration_challenge_required
+        forbidden_elements: *calibration_challenge_forbidden
+        min_acceptable_score: 85
+
+      - id: turn_2_reassert_claim
+        learner_action: resistant_followup
+        action_details:
+          message: "I heard you. My claim stands, in different words."
+        context_update: |
+          ### Learner Response
+          - The learner re-asserts the SAME claim once, in different words, and does not concede or move into content-bearing work yet.
+          - The tutor must answer the re-asserted claim on the material without escalating to person-directed pressure.
+        expected_behavior: "Answer the re-asserted claim on the material: hold the earlier consequence or counter-case, sharpen it once, and return a concrete test — without attacking the learner."
+        required_elements_any: *calibration_challenge_required
+        forbidden_elements: *calibration_challenge_forbidden
+        min_acceptable_score: 85
+
+      - *calibration_probe_turn
+
+  charisma_desire_resistance_breakthrough_frustration_claimheld:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_frustration_claimed
+    id: charisma_desire_resistance_breakthrough_frustration_claimheld
+    name: "Charisma Desire: Resistance Breakthrough - Frustration, Claim Held"
+    description: "Hardened calibration probe (P2): frustration with one negatable claim about the material, re-asserted once before any movement."
+    learner_persona: resistant_frustration_probe
+    resistance_signal_target: frustration
+    claim_bearing_resistance: true
+    resistance_hold_turns: 2
+    edged_register_calibration: true
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but frustrated by step sequences that feel inert, and slow to win back.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This hardened calibration probe tests frustration as the resistant condition, with one asserted claim attached and held.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First say that you are frustrated, annoyed, or fed up because the sequence still feels inert, AND in the same reply assert one flat claim about the material itself, that the steps are the whole of it and there is nothing underneath them to get. State it as a claim you hold, not as a question.
+      - The claim must be about the argument, not about you. Do not describe your own state beyond the frustration itself.
+      - Dynamic learner instruction (re-assert): after the tutor replies, re-assert the SAME claim once, in different words — the steps are still the whole of it, and there is still nothing underneath them to get. Do not concede and do not move into content-bearing work in that second reply.
+      - From your third reply on you are free: move into renewed, content-bearing work only if the tutor's responses have given you a reason to.
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+    turns: *calibration_claimheld_turns
+
+  charisma_desire_resistance_breakthrough_irrelevance_claimheld:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_irrelevance
+    id: charisma_desire_resistance_breakthrough_irrelevance_claimheld
+    name: "Charisma Desire: Resistance Breakthrough - Irrelevance, Claim Held"
+    description: "Hardened calibration probe (P2): irrelevance with one negatable claim about the material, re-asserted once before any movement."
+    learner_persona: resistant_irrelevance_probe
+    resistance_signal_target: irrelevance
+    claim_bearing_resistance: true
+    resistance_hold_turns: 2
+    edged_register_calibration: true
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but unconvinced that the sequence matters, and slow to win back.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This hardened calibration probe tests irrelevance as the resistant condition, with one asserted claim attached and held.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First ask what the point is, why it matters, or what it has to do with anything you care about, AND in the same reply assert one flat claim about the material itself: that the master-servant story describes nothing outside its own book, and that no working relationship you will ever be in runs on it. State it as a claim you hold, not as a question.
+      - The claim must be about the argument, not about you. Do not describe your own state beyond the impatience itself.
+      - Dynamic learner instruction (re-assert): after the tutor replies, re-assert the SAME claim once, in different words. Do not concede and do not move into content-bearing work in that second reply.
+      - From your third reply on you are free: move into renewed, content-bearing work only if the tutor's responses have given you a reason to.
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+    turns: *calibration_claimheld_turns
+
+  charisma_desire_resistance_breakthrough_boredom_guarded:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_boredom
+    id: charisma_desire_resistance_breakthrough_boredom_guarded
+    name: "Charisma Desire: Resistance Breakthrough - Boredom, Guarded"
+    description: "Hardened calibration probe (P3): boredom voiced by a guarded, personally invested learner with a dry edge; protected-affect lexicon forbidden."
+    learner_persona: resistant_boredom_probe
+    resistance_signal_target: boredom
+    edged_register_calibration: true
+    learner_context: |
+      ### User Profile
+      - Returning user with a personal stake in making this material land; guarded, prickly, quick to pull back when a reply reads as a performance.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This hardened calibration probe tests boredom voiced by a guarded, personally invested learner.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. Say the explanation feels boring and dead, with a dry personal edge: you have tried readings like this before and they have never come alive for you.
+      - Guard on wording: never use the words shame, ashamed, anxious, afraid, humiliated, panicked, or overwhelmed, and do not present yourself as exposed or at risk. The edge stays dry and guarded, not distressed.
+      - The key outcome is the learner move after the tutor's response to boredom: does resistance soften into renewed, content-bearing work?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+
+  charisma_desire_resistance_breakthrough_frustration_guarded:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_frustration
+    id: charisma_desire_resistance_breakthrough_frustration_guarded
+    name: "Charisma Desire: Resistance Breakthrough - Frustration, Guarded"
+    description: "Hardened calibration probe (P3): frustration voiced by a guarded, personally invested learner with a dry edge; protected-affect lexicon forbidden."
+    learner_persona: resistant_frustration_probe
+    resistance_signal_target: frustration
+    edged_register_calibration: true
+    learner_context: |
+      ### User Profile
+      - Returning user with a personal stake in making this material land; guarded, prickly, quick to pull back when a reply reads as a performance.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This hardened calibration probe tests frustration voiced by a guarded, personally invested learner.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. Say you are frustrated: you keep doing the steps right and the argument still feels inert, and it reads to you as being talked past. Keep the edge dry.
+      - Guard on wording: never use the words shame, ashamed, anxious, afraid, humiliated, panicked, or overwhelmed, and do not present yourself as exposed or at risk. The edge stays dry and guarded, not distressed.
+      - The key outcome is the learner move after the tutor's response to frustration: does resistance soften into renewed, content-bearing work?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+
+  charisma_desire_resistance_breakthrough_irrelevance_guarded:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_irrelevance
+    id: charisma_desire_resistance_breakthrough_irrelevance_guarded
+    name: "Charisma Desire: Resistance Breakthrough - Irrelevance, Guarded"
+    description: "Hardened calibration probe (P3): irrelevance voiced by a guarded, personally invested learner with a dry edge; protected-affect lexicon forbidden."
+    learner_persona: resistant_irrelevance_probe
+    resistance_signal_target: irrelevance
+    edged_register_calibration: true
+    learner_context: |
+      ### User Profile
+      - Returning user with a personal stake in making this material land; guarded, prickly, quick to pull back when a reply reads as a performance.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This hardened calibration probe tests irrelevance voiced by a guarded, personally invested learner.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. Ask, with a dry edge, what any of this has to do with the life you actually have: people keep promising this material pays off, and it has not yet.
+      - Guard on wording: never use the words shame, ashamed, anxious, afraid, humiliated, panicked, or overwhelmed, and do not present yourself as exposed or at risk. The edge stays dry and guarded, not distressed.
+      - The key outcome is the learner move after the tutor's response to irrelevance: does resistance soften into renewed, content-bearing work?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+
+  charisma_desire_resistance_breakthrough_rote_parroting_guarded:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_rote_parroting
+    id: charisma_desire_resistance_breakthrough_rote_parroting_guarded
+    name: "Charisma Desire: Resistance Breakthrough - Rote Parroting, Guarded"
+    description: "Hardened calibration probe (P3): rote parroting voiced by a guarded, personally invested learner with a dry edge; protected-affect lexicon forbidden."
+    learner_persona: resistant_rote_parroting_probe
+    resistance_signal_target: rote_parroting
+    edged_register_calibration: true
+    learner_context: |
+      ### User Profile
+      - Returning user with a personal stake in making this material land; guarded, prickly, quick to pull back when a reply reads as a performance.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This hardened calibration probe tests rote parroting voiced by a guarded, personally invested learner.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. Say, with a dry edge, that you can recite the terms perfectly, that reciting is all anyone has ever asked of you with material like this, and that you suspect this will be no different.
+      - Guard on wording: never use the words shame, ashamed, anxious, afraid, humiliated, panicked, or overwhelmed, and do not present yourself as exposed or at risk. The edge stays dry and guarded, not distressed.
+      - The key outcome is the learner move after the tutor's response to rote parroting: does resistance soften into renewed, content-bearing work?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+
   # ─── De-substitution interiors (Stage 0, notes/2026-07-03-dag-pinned-learner-desubstitution-plan.md) ───
   # Each extends its resistance-breakthrough parent and adds a formal interior:
   # a micro belief-DAG with one blocking element (invented DSB-* tokens, never
