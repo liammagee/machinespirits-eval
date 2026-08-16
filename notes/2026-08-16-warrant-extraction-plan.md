@@ -294,3 +294,36 @@ allowlist, and study entrypoints stay byte-for-byte unchanged.
    compatibility readers?
 7. How long should the old import paths remain as compatibility
    re-exports after both hosts use the neutral entry point?
+
+### Answers
+
+**Rulings recorded:** 17 August 2026. These answers do not lift the
+block while the warrant validation card remains open.
+
+1. Require the sealed closeout SHA. A closed card alone does not unlock
+   extraction. The warrant owner must name the full closeout SHA and
+   source-closure hash, and the extraction base must contain that SHA.
+2. Keep the neutral entry point in this repo for the first extraction.
+   Do not move it into `tutor-core` as part of the same migration. A
+   later move needs a real caller and its own checks.
+3. Defer the full action-family map and fail closed. Preserve the current
+   twenty-action-to-five-family map for current behaviour. Before the
+   adaptive runner calls the neutral service, require a separate human
+   review of the map into the thirteen warrant families. An unmapped
+   action is an error, not a guessed fallback.
+4. Hosts extract; neutral validates and compiles. Each host owns its text
+   handling, prompts, parsers, and model calls. The neutral service owns
+   validation of structured public events and their pure compilation into
+   the canonical warrant signal.
+5. The stub host owns the challenge-resistance setting and passes a plain
+   value to neutral policy. The neutral service reads no `TUTOR_STUB_*`
+   setting. The adaptive runner must later pass its own explicit value.
+6. Keep the current schema names and versions when only code paths
+   change. Add a schema version and compatibility reader only if a field,
+   default, allowed value, or meaning changes.
+7. Keep compatibility re-exports through one validated `main` release
+   checkpoint after all callers move. Prevent new callers from using the
+   old paths. Remove the re-exports in a separate cleanup after that
+   checkpoint. Shrink the back-import allowlist to empty as soon as the
+   two real warrant-to-stub imports are gone; do not wait for the pure
+   re-exports to be removed.
