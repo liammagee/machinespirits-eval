@@ -7,7 +7,7 @@ priority: P2
 owner: claude
 source: manual
 created: 2026-08-15
-updated: 2026-08-15
+updated: 2026-08-16
 verification: A powered main block (or a registered no-corridor kill verdict)
   answers whether router-selected ironic/sarcastic delivery beats the warm
   router on post-resistance conversion, on persona-scenario cells where the
@@ -19,6 +19,7 @@ depends_on:
 links:
   notes:
     - notes/2026-08-15-edged-register-outcome-study-design.md
+    - notes/2026-08-16-edged-register-calibration-draft.md
     - notes/2026-08-09-adaptive-register-switching-prereg-draft.md
   code:
     - services/adaptiveRegisterSwitchingStage2.js
@@ -51,3 +52,10 @@ affective-resistant) are hypotheses only — that instrument was ruled
 invalid. Stage order: build (no paid calls) → calibration pilot →
 registration freeze from calibration evidence → main block. Nothing is
 registered or authorized yet.
+
+Next step: human review of
+`notes/2026-08-16-edged-register-calibration-draft.md` — a critical review
+of the design (yoke drift, missing payload seam, corridor winner's curse,
+endpoint validity, edge-eligibility screen) plus the draft calibration
+registration (12 candidate cells, screen n=5 → confirm n=12, 120-row /
+~2,400-call cap). No paid call is licensed until a GO note lands.
