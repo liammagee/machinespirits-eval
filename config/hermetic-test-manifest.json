@@ -28,6 +28,7 @@
         "services/__tests__/hyperparameters.test.js",
         "services/__tests__/idDirectorEngine.test.js",
         "services/__tests__/idDirectorModelOverride.test.js",
+        "services/__tests__/idDirectorTwoPassPayload.test.js",
         "services/__tests__/learnerConfigLoader.test.js",
         "services/__tests__/learnerInteriorGate.test.js",
         "services/__tests__/learnerPromptResolution.test.js",

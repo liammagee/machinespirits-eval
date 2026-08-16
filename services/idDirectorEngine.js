@@ -223,6 +223,49 @@ export function appendTutorMannerBlock(generatedPrompt, engagementState) {
   return `${generatedPrompt}\n\n${block}`;
 }
 
+/**
+ * Two-pass content/manner split (edged-register outcome study, arms A and B).
+ *
+ * Pass 1 asks the ego seat for a register-free content plan: the substantive
+ * moves of the turn, with no learner-facing prose and no manner block. Pass 2
+ * renders that fixed plan in the delivery register. The split exists so the
+ * yoked arm can swap the delivery register at an edge moment while the
+ * content plan stays identical — the pair then prices manner alone, not
+ * manner plus whatever content the register would have pulled with it.
+ *
+ * Runner-adapter only (generateIdDirectedSuggestion), gated by
+ * factors.two_pass_register_payload. The live chat path (runIdDirectedTurn)
+ * never reads the factor.
+ */
+export const CONTENT_PLAN_INSTRUCTION = [
+  'Plan this turn before you write it.',
+  '',
+  'Output a content plan only, not a message to the learner. Write 3 to 6',
+  'numbered lines that state the substantive moves of your reply: the claim',
+  'you stake or hold, what would show it wrong, the concrete test or task you',
+  'hand back, and the one thing you ask the learner to produce next. Use',
+  'plain, neutral wording. Do not write greetings, praise, humor, or any',
+  'learner-facing sentences. Do not mention tone, manner, or registers.',
+].join('\n');
+
+/** Pass-1 system prompt: the id-authored persona plus the plan instruction,
+ * never the manner block. */
+export function buildContentPlanPrompt(idWrittenPrompt) {
+  return `${idWrittenPrompt}\n\n${CONTENT_PLAN_INSTRUCTION}`;
+}
+
+/** Pass-2 system prompt: persona, then the fixed plan, then the manner block
+ * last (the same last-thing-read rule as the single-pass path). */
+export function buildPlanRenderPrompt(idWrittenPrompt, contentPlan, deliveryEngagementState) {
+  const planBlock = [
+    "This turn's content plan is already fixed. Realize every move in it and",
+    'add none. Write the learner-facing message that carries the plan out.',
+    '',
+    contentPlan,
+  ].join('\n');
+  return appendTutorMannerBlock(`${idWrittenPrompt}\n\n${planBlock}`, deliveryEngagementState);
+}
+
 export function __setDeps(overrides = {}) {
   if (overrides.tutorConfig) _deps.tutorConfig = overrides.tutorConfig;
   if (overrides.tutorWritingPad) _deps.tutorWritingPad = overrides.tutorWritingPad;
@@ -1864,6 +1907,10 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   const useRegisterClassifier = evalCellProfile.factors?.register_classifier === true;
   const idTuning = typeof evalCellProfile.factors?.id_tuning === 'string' ? evalCellProfile.factors.id_tuning : null;
   const witnessExemplars = evalCellProfile.factors?.witness_exemplars === true;
+  // Adapter-only seam for the edged-register outcome study (arms A and B):
+  // split the ego stage into a register-free content plan and a register
+  // rendering pass. runIdDirectedTurn never reads this factor.
+  const twoPassRegisterPayload = evalCellProfile.factors?.two_pass_register_payload === true;
   const { learnerMessage, historyExcerpt, messageHistory } = extractLearnerInputs(context);
   const curriculumContext = context?.curriculumContext || '';
   const routedEngagementState = engagementModeRouter
@@ -2015,7 +2062,6 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   }
 
   // ── Step 2: ego executes against the constructed prompt ──
-  const egoSystemPrompt = appendTutorMannerBlock(construction.generated_prompt, engagementState);
   const egoProviderConfig = cliAwareProviderConfig(
     egoCell.provider,
     _deps.tutorConfig.getProviderConfig(egoCell.provider),
@@ -2028,21 +2074,55 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       metadata: { latencyMs: Date.now() - startTime, profileName: resolvedConfig?.profileName },
     };
   }
-  const egoAgentConfig = {
+  const egoSeatConfig = (prompt) => ({
     provider: egoCell.provider,
     providerConfig: egoProviderConfig,
     model: egoCell.resolvedModel || egoProviderConfig.models?.[egoCell.model] || egoCell.model,
     hyperparameters: egoCell.hyperparameters || { temperature: 0.7, max_tokens: 4000 },
-    prompt: egoSystemPrompt,
+    prompt,
     isConfigured: egoProviderConfig.isConfigured,
-  };
+  });
+  const egoHistoryOptions = { messageHistory: messageHistory.length > 0 ? messageHistory : null };
+
+  // The register the learner-facing message is written in. Today this is
+  // always the routed-and-arm-adjusted state; the yoked delivery swap (arm B)
+  // will substitute a warm state here while the content plan stays fixed.
+  const deliveryEngagementState = engagementState;
+
+  // ── Optional pass 1: register-free content plan (two_pass_register_payload) ──
+  let contentPlan = null;
+  let contentPlanStatus = null;
+  let planResponse = null;
+  if (twoPassRegisterPayload) {
+    const planSystemPrompt = buildContentPlanPrompt(construction.generated_prompt);
+    planResponse = await _deps.callAI(
+      egoSeatConfig(planSystemPrompt),
+      planSystemPrompt,
+      learnerMessage,
+      'tutor_ego_plan',
+      egoHistoryOptions,
+    );
+    totalInputTokens += planResponse?.inputTokens || 0;
+    totalOutputTokens += planResponse?.outputTokens || 0;
+    totalCost += planResponse?.cost || 0;
+    apiCalls += 1;
+    contentPlan = (planResponse?.text || '').trim() || null;
+    contentPlanStatus = contentPlan ? 'planned' : 'empty_fallback_single_pass';
+    if (!contentPlan) {
+      console.warn('[idDirectorEngine.runnerAdapter] Empty content plan; falling back to the single-pass ego stage.');
+    }
+  }
+
+  const mannerBlockAppended = buildTutorMannerBlock(deliveryEngagementState) !== null;
+  const egoSystemPrompt = contentPlan
+    ? buildPlanRenderPrompt(construction.generated_prompt, contentPlan, deliveryEngagementState)
+    : appendTutorMannerBlock(construction.generated_prompt, deliveryEngagementState);
+  const egoAgentConfig = egoSeatConfig(egoSystemPrompt);
 
   // For multi-turn cells, pass messageHistory so the ego sees the conversation
   // context. The ego's *system prompt* is the id's authored prompt; the user
   // turn is the most recent learner message.
-  let egoResponse = await _deps.callAI(egoAgentConfig, egoSystemPrompt, learnerMessage, 'tutor_ego', {
-    messageHistory: messageHistory.length > 0 ? messageHistory : null,
-  });
+  let egoResponse = await _deps.callAI(egoAgentConfig, egoSystemPrompt, learnerMessage, 'tutor_ego', egoHistoryOptions);
   totalInputTokens += egoResponse?.inputTokens || 0;
   totalOutputTokens += egoResponse?.outputTokens || 0;
   totalCost += egoResponse?.cost || 0;
@@ -2192,63 +2272,80 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     totalOutputTokens += learnerRegister.metrics?.outputTokens || 0;
     apiCalls += 1;
   }
-  trace.push(
-    {
-      agent: 'id',
-      action: 'construct',
-      detail: JSON.stringify({
-        persona_delta: construction.persona_delta,
-        stage_directions: construction.stage_directions,
-        reasoning: construction.reasoning,
-        recognition_desire: recognitionDesire,
-        agency_return: agencyReturn,
-        agency_return_verifier: agencyReturnVerifier,
-        agency_return_verifier_mode: agencyReturnVerifierMode,
-        agency_return_charisma_floor: agencyReturnCharismaFloor,
-        agency_return_charisma_floor_mode: agencyReturnCharismaFloorMode,
-        id_output_contract: idOutputContract,
-        engagement_router_charisma_repair: engagementRouterCharismaRepair,
-        engagement_router_split_repair: engagementRouterSplitRepair,
-        engagement_router_transfer_stake_repair: engagementRouterTransferStakeRepair,
-        engagement_router_transfer_compression_repair: engagementRouterTransferCompressionRepair,
-        engagement_router_resistance_tuning: engagementRouterResistanceTuning,
-        engagement_router_resistance_owned_test: engagementRouterResistanceOwnedTest,
-        engagement_router_resistance_precision_repair: engagementRouterResistancePrecisionRepair,
-        engagement_router_resistance_generation_repair: engagementRouterResistanceGenerationRepair,
-        engagement_router_resistance_question_lock: engagementRouterResistanceQuestionLock,
-        engagement_router_resistance_commitment_probe: engagementRouterResistanceCommitmentProbe,
-        engagement_router_resistance_boredom_stake: engagementRouterResistanceBoredomStake,
-        engagement_router_resistance_glm_compact: engagementRouterResistanceGlmCompact,
-        agency_return_premature_certainty_guard: agencyReturnPrematureCertaintyGuard,
-        premature_certainty_guard: prematureCertaintyGuard,
-        engagement_mode_router: engagementModeRouter,
-        engagement_state: engagementState,
-        generated_prompt_head: egoSystemPrompt.slice(0, 320),
-        parse_status: construction.parse_status,
-        parse_failure_reason: construction.parse_failure_reason || null,
-      }),
-      metrics: {
-        provider: idCell.provider,
-        model: idCell.resolvedModel || idCell.model,
-        inputTokens: idResponse?.inputTokens || 0,
-        outputTokens: idResponse?.outputTokens || 0,
-      },
-      timestamp: new Date().toISOString(),
+  trace.push({
+    agent: 'id',
+    action: 'construct',
+    detail: JSON.stringify({
+      persona_delta: construction.persona_delta,
+      stage_directions: construction.stage_directions,
+      reasoning: construction.reasoning,
+      recognition_desire: recognitionDesire,
+      agency_return: agencyReturn,
+      agency_return_verifier: agencyReturnVerifier,
+      agency_return_verifier_mode: agencyReturnVerifierMode,
+      agency_return_charisma_floor: agencyReturnCharismaFloor,
+      agency_return_charisma_floor_mode: agencyReturnCharismaFloorMode,
+      id_output_contract: idOutputContract,
+      engagement_router_charisma_repair: engagementRouterCharismaRepair,
+      engagement_router_split_repair: engagementRouterSplitRepair,
+      engagement_router_transfer_stake_repair: engagementRouterTransferStakeRepair,
+      engagement_router_transfer_compression_repair: engagementRouterTransferCompressionRepair,
+      engagement_router_resistance_tuning: engagementRouterResistanceTuning,
+      engagement_router_resistance_owned_test: engagementRouterResistanceOwnedTest,
+      engagement_router_resistance_precision_repair: engagementRouterResistancePrecisionRepair,
+      engagement_router_resistance_generation_repair: engagementRouterResistanceGenerationRepair,
+      engagement_router_resistance_question_lock: engagementRouterResistanceQuestionLock,
+      engagement_router_resistance_commitment_probe: engagementRouterResistanceCommitmentProbe,
+      engagement_router_resistance_boredom_stake: engagementRouterResistanceBoredomStake,
+      engagement_router_resistance_glm_compact: engagementRouterResistanceGlmCompact,
+      agency_return_premature_certainty_guard: agencyReturnPrematureCertaintyGuard,
+      premature_certainty_guard: prematureCertaintyGuard,
+      engagement_mode_router: engagementModeRouter,
+      two_pass_register_payload: twoPassRegisterPayload,
+      engagement_state: engagementState,
+      generated_prompt_head: egoSystemPrompt.slice(0, 320),
+      parse_status: construction.parse_status,
+      parse_failure_reason: construction.parse_failure_reason || null,
+    }),
+    metrics: {
+      provider: idCell.provider,
+      model: idCell.resolvedModel || idCell.model,
+      inputTokens: idResponse?.inputTokens || 0,
+      outputTokens: idResponse?.outputTokens || 0,
     },
-    {
+    timestamp: new Date().toISOString(),
+  });
+  if (twoPassRegisterPayload) {
+    trace.push({
       agent: 'ego',
-      action: 'execute',
-      detail: `(generated_prompt: ${egoSystemPrompt.length} chars)`,
-      retry_reason: egoRetried ? 'empty_ego_output' : null,
+      action: 'plan',
+      detail: JSON.stringify({
+        content_plan: contentPlan,
+        content_plan_status: contentPlanStatus,
+        delivery_register: deliveryEngagementState?.selected_register || deliveryEngagementState?.selected_mode || null,
+      }),
       metrics: {
         provider: egoCell.provider,
         model: egoCell.resolvedModel || egoCell.model,
-        inputTokens: egoResponse?.inputTokens || 0,
-        outputTokens: egoResponse?.outputTokens || 0,
+        inputTokens: planResponse?.inputTokens || 0,
+        outputTokens: planResponse?.outputTokens || 0,
       },
       timestamp: new Date().toISOString(),
+    });
+  }
+  trace.push({
+    agent: 'ego',
+    action: 'execute',
+    detail: `(generated_prompt: ${egoSystemPrompt.length} chars)`,
+    retry_reason: egoRetried ? 'empty_ego_output' : null,
+    metrics: {
+      provider: egoCell.provider,
+      model: egoCell.resolvedModel || egoCell.model,
+      inputTokens: egoResponse?.inputTokens || 0,
+      outputTokens: egoResponse?.outputTokens || 0,
     },
-  );
+    timestamp: new Date().toISOString(),
+  });
 
   if (agencyVerification) {
     trace.push({
@@ -2310,6 +2407,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       engagementRegisterArm,
       routerRegisterMenu,
       engagementState,
+      twoPassRegisterPayload,
       // `generated_prompt` here is what the tutor actually received, manner
       // block and all — not the id-director's raw output. Every reader of the
       // stored trace means "the shipped prompt" by it, and before the manner
@@ -2319,7 +2417,18 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
         ...construction,
         generated_prompt: egoSystemPrompt,
         id_written_prompt: construction.generated_prompt,
-        manner_block_appended: egoSystemPrompt !== construction.generated_prompt,
+        // Not prompt inequality: under two-pass the plan block is embedded
+        // even when the register carries no manner contract.
+        manner_block_appended: mannerBlockAppended,
+        ...(twoPassRegisterPayload
+          ? {
+              two_pass_register_payload: true,
+              content_plan: contentPlan,
+              content_plan_status: contentPlanStatus,
+              delivery_register:
+                deliveryEngagementState?.selected_register || deliveryEngagementState?.selected_mode || null,
+            }
+          : {}),
       },
     },
     dialogueTrace: trace,
