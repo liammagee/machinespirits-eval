@@ -1,13 +1,13 @@
 ---
 id: tutor-stub-cell-reconciliation
 title: Map and reconcile the tutor-stub and cell-based harnesses
-status: active
+status: done
 type: research
 priority: P3
 owner: claude
 source: manual
 created: 2026-08-16
-updated: 2026-08-16
+updated: 2026-08-17
 verification: A survey note maps the two harnesses side by side (tutor,
   learner, run, score, adaptation, shared seams, one-world-only parts) and
   closes with two or three reconciliation options and their costs. No
@@ -52,3 +52,11 @@ edged-register line before touching any shared service.
   rule (`docs/warrant-stub-dependency-rule.md`), and the claim-transfer
   rule (`docs/harness-claim-transfer-rule.md`). The card stays active
   until a human rules on closure.
+- 2026-08-17 — CLOSED by human ruling. All deliverables exist: the
+  survey with three costed options, the boundary rule with its ratchet
+  test, the claim-transfer rule, and the extraction plan
+  (`notes/2026-08-16-warrant-extraction-plan.md`). The chosen path is
+  staged: transfer rule now (done), warrant-layer extraction after the
+  live warrant line closes (planned, blocked), cell wrapper only on
+  demand. Extraction work continues under the boundary-rule card and a
+  future execution card, not here.
