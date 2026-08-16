@@ -636,3 +636,24 @@ registered cap of 120, and this section licenses none of them.
 
 **Not licensed here**: any new generation, any change to the cells, any
 change to the corridor rule in §2.4 or the eligibility screen in §2.5 M-C1.
+
+### 2.16.1 How the three answers map to a conversion — fixed before the count
+
+The reader answers yes, partly, or no. §2.16 did not say which of those
+counts as a conversion, and the rule must be fixed before any per-cell
+number is seen. It is fixed here, with three rows read out of 109 and all
+three from a cell the screen already dropped.
+
+**Primary: yes only.** A conversion is a row where the learner did the task
+the tutor set. "Partly" does not count. This is the strict reading and it is
+the defensible one: for a partly row, a reader can point at the part of the
+tutor's ask that went unanswered.
+
+**Reported beside it: yes plus partly.** The same corridor rule run on the
+loose reading, to show how far the verdict depends on where that line sits.
+If the two readings keep the same cells, the corridor is not sensitive to
+the choice; if they disagree, that is a fact about these dialogues worth
+recording, and the primary still rules.
+
+The second reading from §2.16 — did the learner do fresh work of its own —
+stays a report-only number. It selects nothing.
