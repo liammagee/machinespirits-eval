@@ -200,13 +200,13 @@ function assertInlineScriptsParse(html) {
 test('derivation index renderers preserve empty and populated page bytes', () => {
   const { indexRun, live } = fixture();
   assert.deepEqual(digest(renderDerivationIndexHtml([], {}, [])), {
-    bytes: 171149,
-    hash: 'd346bc5fe1053bed63547e658e962940be840b272ebd382211c79c1514f0c44e',
+    bytes: 171172,
+    hash: '1e7e076d7d9e22f9596ff17d86f8fece7516c28d31550e424f73d30f062a8507',
   });
   const populated = renderDerivationIndexHtml([indexRun], { compare: 'fixture-run,missing' }, [live]);
   assert.deepEqual(digest(populated), {
-    bytes: 176301,
-    hash: '12f49b2bbfa0323226dfd966630670effae32f65a3db92b09626b0902e19a4c4',
+    bytes: 176324,
+    hash: '4bbb9caedf477534ccbe4a2339333fe4193cb171731ea24689ad940cdcca8f76',
   });
   assertInlineScriptsParse(populated);
 });
@@ -214,17 +214,17 @@ test('derivation index renderers preserve empty and populated page bytes', () =>
 test('live derivation renderers preserve empty, populated, and run page bytes', () => {
   const { live } = fixture();
   assert.deepEqual(digest(renderDerivationLiveIndexHtml([])), {
-    bytes: 99979,
-    hash: '7fdf6d19df05cd8c61b28f67ec38fb1b75e0f37e95ccdc19ccbb379621c2533e',
+    bytes: 100002,
+    hash: 'a6b1e391fa2ec4b2a9c3986b062ece414d79810f1a7267fb3b9ae1e5b92a4451',
   });
   assert.deepEqual(digest(renderDerivationLiveIndexHtml([live])), {
-    bytes: 100224,
-    hash: 'cb1910548df0242de48c83ff3b76e1acc94b1862f102da19a8cfe6d13cab64a3',
+    bytes: 100247,
+    hash: 'eabaa87754f305e14d554c939273185a77921f7bb519ad5464ecab35f5006016',
   });
   const run = renderDerivationLiveRunHtml(live);
   assert.deepEqual(digest(run), {
-    bytes: 106182,
-    hash: 'c5366ca095eed9d7f9442c4bf4c4ca5457effb43aac56af6a184cdb5de473e6c',
+    bytes: 106205,
+    hash: '9180ca0da24b5dc2e8500d1c6914c6fdce2bb0146e08c01126c78064d174ac69',
   });
   assertInlineScriptsParse(run);
 });
@@ -240,8 +240,8 @@ test('completed derivation renderer preserves its populated proof page byte cont
     assessment,
   });
   assert.deepEqual(digest(html), {
-    bytes: 184329,
-    hash: '0d3af6fa3db6cedd5025cdef347130b783bb559e65df07c0fcd4d83652423e21',
+    bytes: 184352,
+    hash: 'dbb2c3ad998f73f32e1dfd402904a1219461c86e7f61fc9e10f5403796bffb79',
   });
   assert.match(html, /id="authored-proof-dag"/u);
   assert.match(html, /id="learner-proof-dag"/u);
