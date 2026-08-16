@@ -1,22 +1,34 @@
-# 120 — reader phase for the guarded main block: decision channel only
+# 120 — GO: reader phase for the guarded main block, decision channel only
 
 Date: 2026-08-16
 Workplan item: guarded-learner-outcome-study
 Follows: relay 119 (the resume), relay 118 (the launch), relay 117 (the
 registration), re-registration 096 amendment 2, and incident I2 in
 `INCIDENTS.md`
-Status: **HELD.** Two launcher tokens are withheld — the bare go word and
-the plan total in digits — so these bytes cannot start a paid run. Section 1
-is empty until a human fills it. Arming puts the two tokens in and changes
-nothing else.
+Status: **ARMED.** Section 1 carries the approval and the two withheld
+launcher tokens are in (§10). The note was read while held; the M7/M8
+demotion was re-examined at the human's request and stands (the exchange is
+summarized in §1).
 
 ## 1. The approval
 
-Empty. No human has approved this spend.
+Human reply, 16 August 2026, verbatim and complete:
+
+> GO, I approve the 1,150 reader call
+
+Before approving, the human asked whether demoting M7 and M8 had been
+premature and asked for advice. The advice given: keep the demotion for this
+run — the registered ceiling fired on registered evidence; the zero-call
+description over all 575 cases shows condition gaps within noise (largest
+about 1.3 standard errors); and reversing the instrument choice between
+generation and the readers would condition it on data already seen. A small
+registered reader audit of the positive-event cases was suggested as a
+follow-up after the block closes. The human then approved this note as
+written.
 
 Relay 119 approved the resume. Generation is finished and that approval is
 spent. **A reader phase is a paid run and needs its own note and its own
-approval.**
+approval.** This note carries its own.
 
 ## 2. Where the run stands
 
@@ -113,9 +125,9 @@ lessons.
 
 ## 5. Budget
 
-Nothing here raises the registered plan. The plan total is the one relay 117
-§5 registered and relay 118 §5 carried; the digits are withheld while this
-note is held and go in at arming.
+Nothing here raises the registered plan. The plan total is **4,464 calls**,
+the one relay 117 §5 registered and relay 118 §5 carried. This note spends
+inside it and does not raise it; the driver refuses any call past the plan.
 
 | item | calls |
 |---|---:|
@@ -229,10 +241,12 @@ The launcher reads four things out of these bytes: that the file names the
 executable entry point (§7 does); a bare go word; the plan total in digits;
 and the first and last seed, 654 and 665 (§2 and §7 have both).
 
-Two of the four are here. Two are withheld — the go word and the plan total
-in digits — and arming puts them in: the word in the title, the total in §5.
-That edit will change nothing else: not the command, not the seeds, not the
-budget, not the stop rules.
+All four are here now. Two were withheld while this note was held — the go
+word and the plan total in digits — and arming put them in: the word in the
+title, the total as 4,464 in §5. The other change made at arming is §1,
+which records the approval verbatim and the M7/M8 exchange that preceded
+it. Nothing else moved: not the command, not the seeds, not the budget, not
+the stop rules.
 
 The check on these bytes is the only machine lock left after
 `--accept-charges`. The sealed manifest's `launch_authorized` field is still
