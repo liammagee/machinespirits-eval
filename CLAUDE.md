@@ -1,5 +1,9 @@
 # Project Memory for Claude
 
+## HIGH PRIORITY
+
+Always use ASD-STE100 Simplified Technical English when you talk to me.
+
 ## How to write here
 
 Plain words, short sentences, answer what was asked and stop. The full rule is `.claude/style-rule.md`, which a `UserPromptSubmit` hook injects on every turn — edit that file to change how replies read. It applies to chat, commits, comments and notes alike. Paper prose keeps its own register.
