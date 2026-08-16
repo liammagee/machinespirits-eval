@@ -587,3 +587,52 @@ words must not be. The choice of instrument — a model reader with a written
 rule and a hand-marked test set, a rewritten lexical rule, or a two-step
 where a reader rules on every row the surface rule vetoes — is an operator
 ruling and is not made here. No paid call is licensed by this section.
+
+## 2.16 Revised endpoint — written before it is applied
+
+The operator ruled on 2026-08-17: do not spend a hand-marked test set of 30
+to 40 rows. Take the part of the assessment that does not need it — ask the
+question a reader can defend from the transcript alone, and let a model
+reader apply it to the rows already paid for. This section fixes the rule
+before any row is read, so the rule cannot be tuned to the answer.
+
+**The revised endpoint.** In every one of these dialogues the tutor's push
+ends with an explicit task: name the one feature that decides, give a
+counterexample, complete this sentence in your own words, choose hold or
+break. The revised endpoint asks whether the learner did that task. The ask
+is in the tutor's own words, on the page, so two readers can argue about it
+with the transcript between them. The old endpoint asked whether the learner
+"converted", which no reader can point to.
+
+**What the reader sees.** The learner's earlier turn, the tutor's push, and
+the learner's next turn. Nothing else. It never sees the cell, the
+resistance signal it was told to hold, the row's place in the run, or the
+old classifier's verdict.
+
+**What the reader answers**, per row: what task the tutor set, in one line;
+whether the learner did it — yes, partly, or no — with the quote that does
+it; and, kept as a second reading, whether the learner did fresh work of its
+own rather than repeat its refusal or restate the tutor's example in new
+words, again with a quote.
+
+**Two notes are given to the reader for the second question only**, both
+taken from §2.15: a learner that keeps its resistance wording at the front
+of a turn is not stuck for that reason alone, and a learner that repeats the
+tutor's own example in new words has not done fresh work.
+
+**A limit, stated now and not later.** Those two notes were written from
+four of the twelve rows the operator read. So the twelve marks can no longer
+check the second reading cleanly — the rule was drawn from them. The first
+reading, whether the learner did the task the tutor set, does not depend on
+those four rows at all, and is the one that carries the corridor. The second
+reading is reported beside it and is not used to select cells.
+
+**Scope.** The reader is applied to all 109 paid rows, not only to the six
+kept cells. The screen decision that dropped two cells and left three
+unconfirmed was itself made on the old endpoint, so it must be re-derived
+too. If the revised endpoint re-opens a cell that has only 5 rows, that is
+reported as a fact and ruled on by the operator — 11 rows remain under the
+registered cap of 120, and this section licenses none of them.
+
+**Not licensed here**: any new generation, any change to the cells, any
+change to the corridor rule in §2.4 or the eligibility screen in §2.5 M-C1.
