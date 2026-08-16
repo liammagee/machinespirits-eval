@@ -5,8 +5,15 @@ Workplan item: guarded-learner-outcome-study
 Follows: relay 116 (act list), relay 117 (P3 registration), relay 120
 (reader GO), relay 121 (warranted-shift re-analysis), relay 122 (the
 finding this note answers), defect-ledger row 27.
-Status: **DRAFT — awaiting the human ruling in §5. Zero calls. No spend
-is authorized by this note.**
+Status: **SEALED 2026-08-16. Zero calls. No spend is authorized by
+this note.** The human ruled on §5, quoted verbatim:
+
+> 1. Yes. 2. Count the turn
+
+So this re-basing is the registered answer to relay 117's P3 question,
+and the act-consensus rule is list membership: a turn counts when both
+readers name an act on the registered list. The scoring script commits
+before the compute runs (§4).
 
 ## 1. The question — relay 117's P3, unchanged
 
