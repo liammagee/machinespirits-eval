@@ -163,18 +163,21 @@ export async function prepareLatePresenceRead({ runDir, frozenCheckout, handbook
     else unreadableTurns.push(turnKey); // the ruled-out unread turn has no corpus case
   }
 
-  // Per-world shards. Target mining uses ALL of the world's key cases, not
-  // only the window ones, so a shard reader never lacks a target its world's
-  // transcripts can put in play.
-  const worlds = [...new Set(windowKeyCases.map((row) => row.world))].sort();
+  // Shards per world × condition — the note-124 §4 finer grain. A per-world
+  // cut leaves the response schema over the frozen 14,000-byte cap (measured
+  // 14,811 and 16,004 bytes); the six world × condition shards fit. Target
+  // mining uses ALL of the shard's dialogues' key cases, not only the window
+  // ones, so a shard reader never lacks a target its transcripts put in play.
+  const shardKeyOf = (row) => `${row.world}--${row.condition}`;
+  const shardKeys = [...new Set(windowKeyCases.map(shardKeyOf))].sort();
   const frozenCatalog = corpus.semantic_annotation_catalog;
   fs.mkdirSync(resolvedOut, { recursive: true });
 
   const shards = [];
-  for (const world of worlds) {
-    const shardKeyCases = windowKeyCases.filter((row) => row.world === world);
-    const worldTargets = mentionedTargets(key.cases.filter((row) => row.world === world));
-    const shardCatalog = filterCatalog(frozenCatalog, worldTargets);
+  for (const shardKey of shardKeys) {
+    const shardKeyCases = windowKeyCases.filter((row) => shardKeyOf(row) === shardKey);
+    const shardTargets = mentionedTargets(key.cases.filter((row) => shardKeyOf(row) === shardKey));
+    const shardCatalog = filterCatalog(frozenCatalog, shardTargets);
     auditCatalogSubset(shardCatalog, frozenCatalog);
     // Every window case's own extraction targets must sit inside its shard.
     const shardTargetIds = new Set(shardCatalog.targets.map((row) => row.target_id));
@@ -189,7 +192,7 @@ export async function prepareLatePresenceRead({ runDir, frozenCheckout, handbook
       cases: shardKeyCases.map((row) => corpusById.get(row.sample_id)),
       semantic_annotation_catalog: shardCatalog,
     };
-    const shardDir = path.join(resolvedOut, world);
+    const shardDir = path.join(resolvedOut, shardKey);
     fs.mkdirSync(shardDir, { recursive: true });
     const shardCorpusPath = path.join(shardDir, 'corpus.blinded.json');
     fs.writeFileSync(shardCorpusPath, `${JSON.stringify(shardCorpus, null, 2)}\n`);
@@ -206,7 +209,7 @@ export async function prepareLatePresenceRead({ runDir, frozenCheckout, handbook
       schemaAcceptancePath: path.join(resolvedRun, 'semantic-schema-acceptance-carryover.json'),
     });
     shards.push({
-      world,
+      shard: shardKey,
       cases: shardKeyCases.length,
       catalog: {
         targets: shardCatalog.targets.length,
@@ -273,7 +276,7 @@ async function main() {
   );
   for (const shard of manifest.shards) {
     console.error(
-      `shard ${shard.world}: ${shard.cases} cases, ${shard.planned_calls} planned calls, ` +
+      `shard ${shard.shard}: ${shard.cases} cases, ${shard.planned_calls} planned calls, ` +
         `largest packet ${shard.size_audit.largest_packet_bytes} of ${shard.size_audit.maximum_packet_bytes}`,
     );
   }
