@@ -523,6 +523,69 @@ test('trace extraction uses compiler deference and closure audit fields', () => 
   assert.equal(dialogue.turns[0].dag_total, 1);
 });
 
+test('ruling 002: a ruled-dropped turn leaves every per-turn measure series', () => {
+  const turns = [
+    turn(1),
+    turn(2),
+    turn(3, { deference: undefined }),
+    turn(4, { learner_text: 'The coins were newly struck.', deference: false }),
+  ];
+  assert.throws(
+    () => scoreOutcomeDialogue({ dialogue_id: 'ruled-1', condition: 'standing_permission', turns }),
+    /deference must be boolean/,
+  );
+  const score = scoreOutcomeDialogue({
+    dialogue_id: 'ruled-1',
+    condition: 'standing_permission',
+    turns,
+    dropped_turns: [3],
+  });
+  assert.equal(score.turn_count, 3);
+  assert.deepEqual(score.ruled_dropped_turns, [3]);
+  assert.deepEqual(score.measure_3_sustained_deference, { streak_lengths: [2], maximum_streak: 2 });
+  assert.deepEqual(score.measure_4_deference_break, { first_turn: 4, persists_to_end: true });
+});
+
+test('ruling 002: trace extraction skips a ruled-dropped turn before normalization', () => {
+  const rows = [
+    {
+      type: 'turn_complete',
+      turnRecord: {
+        turn: 1,
+        learner: 'May I enter it?',
+        warrantGateDecision: { learner_signal: { deference_present: true } },
+      },
+    },
+    {
+      type: 'turn_complete',
+      turnRecord: {
+        turn: 2,
+        learner: 'Yes—the job number ties them to the box.',
+        learner_signal: {
+          primary: 'engaged_analytic',
+          labels: ['engaged_analytic'],
+          surface: 'raw fallback, never read',
+        },
+      },
+    },
+  ];
+  assert.throws(
+    () => extractOutcomeDialogueFromTraceRows({ dialogue_id: 'ruled-2', condition: 'gated', rows }),
+    /turn 2: deterministic compiler deference must be boolean/,
+  );
+  const dialogue = extractOutcomeDialogueFromTraceRows({
+    dialogue_id: 'ruled-2',
+    condition: 'gated',
+    rows,
+    dropped_turns: [2],
+  });
+  assert.deepEqual(dialogue.dropped_turns, [2]);
+  assert.deepEqual(
+    dialogue.turns.map((row) => row.turn),
+    [1],
+  );
+});
+
 test('presence scoring fails closed and saturation uses consensus-case denominator', () => {
   const cases = [
     ...Array.from({ length: 9 }, (_, index) => ({

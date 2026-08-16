@@ -1959,11 +1959,15 @@ export async function executeOutcomePilot({
       logged_observe_decision: key.gate?.revision_warranted ?? key.shadow?.revision_warranted,
     };
   });
+  // Reviewer ruling 002: turns a committed ruling dropped from the corpus also
+  // leave the per-turn measure series. The only source of dropped turns is the
+  // admitted row's ruling record, written under committed ruling 001.
   const dialogues = counts.admitted.map((row) =>
     extractOutcomeDialogueFromTraceRows({
       dialogue_id: row.id,
       condition: row.condition,
       rows: readJsonl(row.trace_path),
+      dropped_turns: row.admitted_under_reviewer_ruling?.dropped_turns ?? [],
     }),
   );
   // Re-registration 096, amendment 2: with the presence channel not fielded, the
