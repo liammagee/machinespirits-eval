@@ -5,9 +5,14 @@ Workplan item: guarded-learner-outcome-study
 Follows: relay 117 (main-block registration), relay 120 (reader GO), the
 main-block score under rulings 001/002, and the free event split of
 2026-08-16 (recorded in the private repo's RUN-LEDGER.md).
-Status: **DRAFT. Not sealed. Zero calls now and after sealing. No spend
-is authorized by this note.** It seals when the human rules on §5. The
-computation runs only after sealing.
+Status: **SEALED 2026-08-16. Zero calls. No spend is authorized by this
+note.** The human ruled on §5, quoted verbatim:
+
+> Answers: 1. Yes, 2: mechanism alone
+
+So the re-analysis is registered, and P-R1's direction stands from the
+mechanism argument in §3, with no pilot pre-read. The grouping script
+commits before the compute runs (§4).
 
 ## 1. The question
 
