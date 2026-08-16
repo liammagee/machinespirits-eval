@@ -16,11 +16,11 @@ import {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const profiles = YAML.parse(fs.readFileSync(path.join(ROOT, 'config', 'tutor-agents.yaml'), 'utf8')).profiles;
 
-test('the YAML source yields the exact current 209-cell canonical registry', () => {
+test('the YAML source yields the exact current 212-cell canonical registry', () => {
   const registry = createEvalProfileRegistry(profiles);
-  assert.equal(registry.canonicalCellNames.length, 209);
+  assert.equal(registry.canonicalCellNames.length, 212);
   assert.deepEqual(registry.canonicalCellNames, canonicalCellNamesFromProfiles(profiles));
-  assert.equal(new Set(registry.canonicalCellNames).size, 209);
+  assert.equal(new Set(registry.canonicalCellNames).size, 212);
   assert.ok(registry.canonicalCellNames.every((name) => name.startsWith('cell_')));
   assert.ok(Object.isFrozen(registry.canonicalCellNames));
 });
