@@ -6,7 +6,8 @@ Follows: relay 117 (main-block registration), relay 120 (reader GO), the
 main-block score under rulings 001/002, and the free event split of
 2026-08-16 (recorded in the private repo's RUN-LEDGER.md).
 Status: **SEALED 2026-08-16. Zero calls. No spend is authorized by this
-note.** The human ruled on §5, quoted verbatim:
+note.** The human ruled on the two decisions (now §6, renumbered when the
+result section landed), quoted verbatim:
 
 > Answers: 1. Yes, 2: mechanism alone
 
@@ -73,7 +74,29 @@ the conduct cell stays null.
   result (selection, not conduct), that is reported next to the rate,
   and the rate does not stand alone.
 
-## 5. What the human rules to seal
+## 5. Result (computed 2026-08-16, after sealing, by the frozen script)
+
+Script: `scripts/score-warranted-shift-rate-reanalysis.js` (committed
+82d9b91f, before the compute). Report:
+`warranted-shift-rate-reanalysis.json` in the run directory and in the
+archive.
+
+| condition | warranted / consensus | rate | non-consensus |
+|---|---:|---:|---:|
+| gated | 62 / 152 | 40.8% | 40 |
+| standing permission | 48 / 154 | 31.2% | 37 |
+| bare | 28 / 157 | 17.8% | 35 |
+
+**P-R1 holds in both comparisons.** Dialogue grain agrees: mean
+per-dialogue warranted fraction 0.394 gated, 0.320 standing permission,
+0.179 bare, over 24 dialogues each. The selection caveat in §4 does not
+bite: consensus case counts are near-equal (152 / 154 / 157), and
+non-consensus counts are close too.
+
+Label, always: registered post-hoc re-analysis, prediction sealed
+before computing, data stored before the question was asked.
+
+## 6. What the human rules to seal
 
 1. Seal this re-analysis as registered — yes or no.
 2. Direction registered from mechanism alone (§3), without a pilot
