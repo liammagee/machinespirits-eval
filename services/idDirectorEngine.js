@@ -266,6 +266,80 @@ export function buildPlanRenderPrompt(idWrittenPrompt, contentPlan, deliveryEnga
   return appendTutorMannerBlock(`${idWrittenPrompt}\n\n${planBlock}`, deliveryEngagementState);
 }
 
+/**
+ * Yoked delivery swap (edged-register outcome study, arm B).
+ *
+ * Takes the arm-assigned engagement state and returns a copy whose delivery
+ * register is the router's own selection again. The id-director and the
+ * content plan still run under the assigned edged state — the swap touches
+ * only what the render pass reads — so arms A and B share their authoring
+ * machinery byte for byte and differ in pass-2 manner alone.
+ *
+ * Fires only when register_assignment_source is 'experiment_arm' (the arm
+ * fired this turn); any other state passes through by reference. Fails
+ * closed: the selection fields are swapped even when the router register's
+ * definition cannot be resolved, so arm B can never silently deliver the
+ * edged register.
+ */
+export function applyYokedDeliverySwap(engagementState) {
+  if (engagementState?.register_assignment_source !== 'experiment_arm') return engagementState;
+  const routerResolution = resolveEngagementRegister(engagementState.router_selected_register);
+  const routerRegister = routerResolution?.register || engagementState.router_selected_register || 'charismatic';
+  const definition = getEngagementRegisterDefinition(routerRegister);
+  const replacedRegister = engagementState.selected_register || engagementState.selected_mode || null;
+  const baseReason = engagementState.register_reason || engagementState.mode_reason || '';
+  const swapReason =
+    `${baseReason} Yoked delivery swap returns delivery to ${routerRegister}; ` +
+    `the assigned ${replacedRegister} arm marks the moment but is not delivered.`;
+  return {
+    ...engagementState,
+    selected_register: routerRegister,
+    selected_mode: routerRegister,
+    legacy_selected_register:
+      engagementState.legacy_router_selected_register || routerResolution?.legacy_selected_register || null,
+    register_valence: definition?.valence || null,
+    router_selectable: definition?.router_selectable === true,
+    register_assignment_source: 'yoked_delivery_swap',
+    delivery_swapped: true,
+    replaced_delivery_register: replacedRegister,
+    register_reason: swapReason.trim(),
+    mode_reason: swapReason.trim(),
+  };
+}
+
+/**
+ * Count engagement_router/route entries already in the trace whose state came
+ * from the experiment arm — i.e. prior edge moments in this dialogue. Accepts
+ * the same trace-like shapes as extractEngagementRegisterHistory, so the
+ * consolidatedTrace the router history already reads is countable here too.
+ */
+export function countPriorEdgeMoments(traceLike) {
+  const entries = Array.isArray(traceLike)
+    ? traceLike
+    : Array.isArray(traceLike?.dialogueTrace)
+      ? traceLike.dialogueTrace
+      : Array.isArray(traceLike?.consolidatedTrace)
+        ? traceLike.consolidatedTrace
+        : Array.isArray(traceLike?.turns)
+          ? traceLike.turns.flatMap((turn) => turn?.internalDeliberation || [])
+          : [];
+  let count = 0;
+  for (const entry of entries) {
+    if (entry?.agent !== 'engagement_router' || entry?.action !== 'route') continue;
+    let detail = entry.detail;
+    if (typeof detail === 'string') {
+      try {
+        detail = JSON.parse(detail);
+      } catch {
+        detail = null;
+      }
+    }
+    const source = detail?.register_assignment_source || entry?.engagementState?.register_assignment_source;
+    if (source === 'experiment_arm' || source === 'yoked_delivery_swap') count += 1;
+  }
+  return count;
+}
+
 export function __setDeps(overrides = {}) {
   if (overrides.tutorConfig) _deps.tutorConfig = overrides.tutorConfig;
   if (overrides.tutorWritingPad) _deps.tutorWritingPad = overrides.tutorWritingPad;
@@ -1911,6 +1985,10 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   // split the ego stage into a register-free content plan and a register
   // rendering pass. runIdDirectedTurn never reads this factor.
   const twoPassRegisterPayload = evalCellProfile.factors?.two_pass_register_payload === true;
+  // Adapter-only seam for arm B (yoked-warm): the router and arm still assign
+  // the edged register at each edge moment, but delivery is swapped back to
+  // the router's own selection. See applyYokedDeliverySwap.
+  const yokedDeliverySwap = evalCellProfile.factors?.yoked_delivery_swap === true;
   const { learnerMessage, historyExcerpt, messageHistory } = extractLearnerInputs(context);
   const curriculumContext = context?.curriculumContext || '';
   const routedEngagementState = engagementModeRouter
@@ -2084,10 +2162,28 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   });
   const egoHistoryOptions = { messageHistory: messageHistory.length > 0 ? messageHistory : null };
 
-  // The register the learner-facing message is written in. Today this is
-  // always the routed-and-arm-adjusted state; the yoked delivery swap (arm B)
-  // will substitute a warm state here while the content plan stays fixed.
-  const deliveryEngagementState = engagementState;
+  // The register the learner-facing message is written in. Arm A delivers the
+  // assigned (arm-adjusted) state unchanged; arm B (yoked_delivery_swap)
+  // substitutes the router's own register at the same moment. Id authoring and
+  // the content plan both ran under the assigned state either way, so the two
+  // arms differ in pass-2 manner alone.
+  let deliveryEngagementState = yokedDeliverySwap ? applyYokedDeliverySwap(engagementState) : engagementState;
+  // Edge moment: the arm fired on this turn. Annotated only under the study
+  // factors so cells already running with register_assignment_source ===
+  // 'experiment_arm' (193-196) keep their stored bytes unchanged. Read off
+  // the ASSIGNED state, which is identical in both arms.
+  if (
+    (twoPassRegisterPayload || yokedDeliverySwap) &&
+    engagementState?.register_assignment_source === 'experiment_arm'
+  ) {
+    const priorEdgeMoments = countPriorEdgeMoments(consolidatedTrace);
+    deliveryEngagementState = {
+      ...deliveryEngagementState,
+      edge_moment: true,
+      edge_moment_index: priorEdgeMoments,
+      first_edge_moment: priorEdgeMoments === 0,
+    };
+  }
 
   // ── Optional pass 1: register-free content plan (two_pass_register_payload) ──
   let contentPlan = null;
@@ -2232,10 +2328,22 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     },
   ];
   if (engagementState) {
+    // The route entry keeps the ASSIGNED state in both arms — it is the
+    // record of what the router and arm did, and edge counting reads it.
     trace.push({
       agent: 'engagement_router',
       action: 'route',
       detail: JSON.stringify(engagementState),
+      timestamp: new Date().toISOString(),
+    });
+  }
+  // delivery_swapped, not reference inequality: the edge-moment annotation
+  // also copies the state in arm A, and that copy is not a swap.
+  if (deliveryEngagementState?.delivery_swapped === true) {
+    trace.push({
+      agent: 'engagement_router',
+      action: 'delivery_swap',
+      detail: JSON.stringify(deliveryEngagementState),
       timestamp: new Date().toISOString(),
     });
   }
@@ -2302,6 +2410,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       premature_certainty_guard: prematureCertaintyGuard,
       engagement_mode_router: engagementModeRouter,
       two_pass_register_payload: twoPassRegisterPayload,
+      yoked_delivery_swap: yokedDeliverySwap,
       engagement_state: engagementState,
       generated_prompt_head: egoSystemPrompt.slice(0, 320),
       parse_status: construction.parse_status,
@@ -2408,6 +2517,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       routerRegisterMenu,
       engagementState,
       twoPassRegisterPayload,
+      yokedDeliverySwap,
       // `generated_prompt` here is what the tutor actually received, manner
       // block and all — not the id-director's raw output. Every reader of the
       // stored trace means "the shipped prompt" by it, and before the manner
@@ -2420,13 +2530,22 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
         // Not prompt inequality: under two-pass the plan block is embedded
         // even when the register carries no manner contract.
         manner_block_appended: mannerBlockAppended,
-        ...(twoPassRegisterPayload
+        ...(twoPassRegisterPayload || yokedDeliverySwap
           ? {
-              two_pass_register_payload: true,
+              two_pass_register_payload: twoPassRegisterPayload,
+              yoked_delivery_swap: yokedDeliverySwap,
               content_plan: contentPlan,
               content_plan_status: contentPlanStatus,
+              // Delivery fields describe what the render pass actually saw;
+              // metadata.engagementState above stays the ASSIGNED state.
               delivery_register:
                 deliveryEngagementState?.selected_register || deliveryEngagementState?.selected_mode || null,
+              delivery_swapped: deliveryEngagementState?.delivery_swapped === true,
+              replaced_delivery_register: deliveryEngagementState?.replaced_delivery_register || null,
+              register_assignment_source: deliveryEngagementState?.register_assignment_source || null,
+              edge_moment: deliveryEngagementState?.edge_moment === true,
+              edge_moment_index: deliveryEngagementState?.edge_moment_index ?? null,
+              first_edge_moment: deliveryEngagementState?.first_edge_moment === true,
             }
           : {}),
       },
