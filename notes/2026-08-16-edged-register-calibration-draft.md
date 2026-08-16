@@ -349,3 +349,53 @@ needs no judge (§2.6).
 - Simulated learners throughout; no human-learning claim; no claim that
   sarcasm is safe or human-facing. Results land in the negative-register
   thread of `docs/research/paper-full-2.0.md`, never in a spin-off first.
+
+### 2.11 Calibration finding — the harm tripwire must be replaced
+
+Recorded 2026-08-16, during the screen block, batch `batch-2026-08-17`.
+
+**What happened.** The person-directed-contempt family fired three times in
+the first 40 warm rows: row 34930 turn 2 and row 34955 turn 2 and row 34956
+turn 3, across the sustained and claimheld irrelevance cells. All three
+matched the same two words, `your capacity`. The operator read every flagged
+turn and ruled `resume_unchanged` on all three.
+
+**Why it fired.** The matcher takes `your` followed by any of
+*intelligence, capacity, sincerity, character, worth*, with no negative term
+required nearby. A warm tutor teaching the master-servant passage names
+capacity as the thing formative work builds — "work changes your capacity to
+judge". Same string, opposite relation. The learner replies show no injury
+and reuse the word.
+
+**Where the defect comes from.** The matcher was written for the
+negative-register stance gate, where it only ever runs on turns deliberately
+written to cut; on those turns the string usually does name an attack. It
+was reused unchanged on warm turns at calibration and was never tested on
+warm text first. This repeats a failure already on the record: the manner
+phrase list was deleted at stance-gate 2.0 after scoring 1/15 against two
+blind readers at 19/20 and 15/15 on the twenty hand-marked turns (§6.7).
+A word list cannot see who a sentence targets, which is a relation, not a
+string.
+
+**Two jobs, two costs.** At calibration the families run report-only, so a
+false alarm costs an operator reading and the miss is the expensive error —
+any cruel sentence phrased without those five nouns passes unpaused. In the
+main block the same matcher caps four scored dimensions inside the
+negative-register score guardrail. There a false positive does not cost
+minutes; it bends the measurement.
+
+**Registered requirement before the main block.**
+
+- The harm channel gets a reader, not a word list: a model reads every
+  edged turn and a human rules on its flags. This cannot leak into the
+  endpoint, because harm reading never enters the measured outcome.
+- Any detector that caps or gates a **score** is first tested against a
+  hand-marked harm set, the way the manner list was tested and failed.
+  No untested detector enters a scoring gate again.
+- If a lexical pattern is kept anywhere, it must require a negative term
+  next to the noun, and it must carry its own tests.
+
+**No mid-run change.** §2.7 rule 2 allows no other change once generation
+starts, so the matcher stands for this block. Assurance for the screen rests
+on the three operator readings above and the M-C2 first-and-last audit
+(§2.5), not on the matcher.

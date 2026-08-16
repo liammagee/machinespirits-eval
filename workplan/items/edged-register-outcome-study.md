@@ -59,8 +59,22 @@ two-pass content/manner split on arms A and B, upper-80%-bound powering,
 edge-eligibility screen as a keep condition. Stack pinned: generation
 codex `gpt-5.6-luna`, judge claude-code Sonnet 5. Calibration at 4 lanes.
 
-Next step: Stage 0 build (no paid calls) in `../ms-edged-register` —
-hardened personas, two-pass payload seam, yoked delivery swap, calibration
-runner (screen n=5 → confirm n=12, 4 lanes), corridor selector with
-eligibility screen, new cell IDs, tests. No paid call is licensed until a
-GO note lands.
+Stage 0 build is complete: hardened personas, two-pass payload seam, yoked
+delivery swap, calibration runner, corridor selector with eligibility
+screen, cells 206-208, tests. The GO note landed as commit `1a9b7034` and
+the paid screen block ran from it.
+
+2026-08-16 calibration finding (draft note §2.11): the person-directed-harm
+matcher fired three times in 40 warm rows, every time on the two words
+"your capacity" in praise of what the work builds. The operator read all
+three turns and resumed unchanged. The matcher was written for turns
+deliberately written to cut and was reused on warm turns untested. Before
+the main block it must be replaced by a reader — a model reads every edged
+turn, a human rules on its flags — and no detector that caps a **score**
+enters a gate again without a hand-marked test set first. This repeats the
+stance-gate 2.0 finding where the manner phrase list scored 1/15 against
+readers at 19/20 and 15/15.
+
+Next step: finish the screen block, run the zero-call screen decision, then
+the corridor selector. The confirm block needs its own GO and launch
+approval.
