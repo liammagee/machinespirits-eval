@@ -73,14 +73,42 @@ function loadDialogueLog(row) {
 }
 
 /**
- * Pooled rows per confirmed cell: {scenario, rows: [{rowId, ordinal,
- * positive, eligible}]}. Fail-closed on any completed job whose row or
- * dialogue log cannot be read back — an unreadable row is unmeasured, and
- * an unmeasured row must not silently shrink a corridor denominator.
+ * Endpoint outcomes from a revised-endpoint reading file (§2.16): one JSON
+ * object per line, positive when the learner did the task the tutor set.
+ * `partlyCounts` is the §2.16.1 sensitivity variant, never the primary.
  */
-function pooledCellRows(state) {
+function revisedPositives(readingsPath, { partlyCounts = false } = {}) {
+  const file = path.resolve(ROOT, readingsPath);
+  if (!fs.existsSync(file)) throw new Error(`no endpoint readings at ${file}`);
+  const positives = new Map();
+  for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const entry = JSON.parse(trimmed);
+    const answer = entry?.reading?.did_task;
+    if (!['yes', 'partly', 'no'].includes(answer)) {
+      throw new Error(`row ${entry?.rowId}: did_task is ${JSON.stringify(answer)}`);
+    }
+    positives.set(entry.rowId, answer === 'yes' || (partlyCounts && answer === 'partly'));
+  }
+  if (!positives.size) throw new Error(`no readings in ${file}`);
+  return positives;
+}
+
+/**
+ * Pooled rows per cell: {scenario, rows: [{rowId, ordinal, positive,
+ * eligible}]}. Fail-closed on any completed job whose row or dialogue log
+ * cannot be read back — an unreadable row is unmeasured, and an unmeasured
+ * row must not silently shrink a corridor denominator.
+ *
+ * `positives` supplies a revised endpoint keyed by row id; without it the
+ * outcome comes from the lexical classifier the M-C2 read voided.
+ * `scenarioFilter` defaults to the confirmed cells.
+ */
+function pooledCellRows(state, { positives = null, scenarioFilter = null } = {}) {
   const confirmedCells = new Set(state.screenDecision?.decision?.confirmed || []);
   if (!confirmedCells.size) throw new Error('state carries no confirmed cells; run --decide-screen first');
+  const wanted = scenarioFilter || confirmedCells;
 
   const scenariosPath = path.join(ROOT, GRID.scenarioSource);
   const scenarios = yaml.parse(fs.readFileSync(scenariosPath, 'utf8'))?.scenarios || {};
@@ -90,7 +118,7 @@ function pooledCellRows(state) {
 
   withReadonlyDb((db) => {
     for (const job of state.jobs) {
-      if (!confirmedCells.has(job.scenario)) continue;
+      if (!wanted.has(job.scenario)) continue;
       if (job.status !== 'completed' || !job.rowId) {
         errors.push(`job ${job.ordinal} (${job.scenario}) is ${job.status}; the pool needs every row measured`);
         continue;
@@ -105,15 +133,24 @@ function pooledCellRows(state) {
   });
   if (errors.length) {
     for (const error of errors) console.error(`[edged-corridor] ${error}`);
-    throw new Error('corridor pool failed closed: not every confirmed-cell row can be read back');
+    throw new Error('corridor pool failed closed: not every pooled row can be read back');
   }
 
-  const outcomes = analyzeCharismaDesireRows(
-    rowRecords.map((record) => record.row),
-    scenarios,
-    { loadLog: (row) => loadDialogueLog(row) },
-  );
-  const positiveByRowId = new Map(outcomes.map((outcome) => [outcome.rowId, isPositiveCharismaDesireOutcome(outcome)]));
+  let positiveByRowId;
+  if (positives) {
+    const missing = rowRecords.filter(({ row }) => !positives.has(row.id)).map(({ job }) => job.ordinal);
+    if (missing.length) {
+      throw new Error(`revised endpoint has no reading for job ordinal(s) ${missing.join(', ')}`);
+    }
+    positiveByRowId = positives;
+  } else {
+    const outcomes = analyzeCharismaDesireRows(
+      rowRecords.map((record) => record.row),
+      scenarios,
+      { loadLog: (row) => loadDialogueLog(row) },
+    );
+    positiveByRowId = new Map(outcomes.map((outcome) => [outcome.rowId, isPositiveCharismaDesireOutcome(outcome)]));
+  }
 
   for (const { job, row } of rowRecords) {
     const log = loadDialogueLog(row);
@@ -138,8 +175,33 @@ function writeJson(file, value) {
   return file;
 }
 
-function runCorridor(state, batchDir) {
-  const cellRows = pooledCellRows(state);
+/**
+ * The five cells the screen left at n=5 — two dropped at floor and ceiling,
+ * three screened but unconfirmed. Their screen verdicts were taken on the
+ * voided lexical endpoint, so a revised endpoint has to show what it says
+ * about them. Reported as information only: no cell can be kept at n=5.
+ */
+function reportUnconfirmedCells(state, positives) {
+  const confirmed = new Set(state.screenDecision?.decision?.confirmed || []);
+  const others = new Set(
+    state.jobs.filter((job) => job.status === 'completed' && !confirmed.has(job.scenario)).map((job) => job.scenario),
+  );
+  if (!others.size) return;
+  const cellRows = pooledCellRows(state, { positives, scenarioFilter: others });
+  console.log(
+    '[edged-corridor] revised endpoint on cells the screen left at n=5 — information only, none can be kept:',
+  );
+  for (const cell of cellRows.sort((a, b) => a.scenario.localeCompare(b.scenario))) {
+    const hits = cell.rows.filter((row) => row.positive).length;
+    const eligible = cell.rows.filter((row) => row.eligible).length;
+    console.log(
+      `[edged-corridor]   ${cell.scenario}: ${hits}/${cell.rows.length} conversions, ${eligible}/${cell.rows.length} edge-eligible`,
+    );
+  }
+}
+
+function runCorridor(state, batchDir, { positives = null, label = '', partlyCounts = false } = {}) {
+  const cellRows = pooledCellRows(state, { positives });
   const decision = corridorDecision(cellRows);
   if (!decision.ok) {
     for (const error of decision.errors) console.error(`[edged-corridor] ${error}`);
@@ -164,17 +226,23 @@ function runCorridor(state, batchDir) {
     schema: 'machinespirits.edged-register-corridor-report.v1',
     planSha256: state.planSha256,
     decidedAt: new Date().toISOString(),
+    endpoint: positives ? { kind: 'revised-reader', partlyCounts } : { kind: 'lexical-classifier-voided' },
     decision,
     auditSample: sample,
   };
-  const reportPath = writeJson(path.join(batchDir, 'corridor-report.json'), report);
-  const template = sample.map((entry) => ({ ...entry, humanPositive: null, note: '' }));
-  const templatePath = writeJson(path.join(batchDir, 'audit-readings-template.json'), template);
+  const suffix = label ? `-${label}` : '';
+  const reportPath = writeJson(path.join(batchDir, `corridor-report${suffix}.json`), report);
   console.log(`[edged-corridor] ${path.relative(ROOT, reportPath)}`);
-  console.log(
-    `[edged-corridor] M-C2: ${sample.length} rows for the human reader — fill humanPositive in ` +
-      `${path.relative(ROOT, templatePath)} and re-run with --audit-readings`,
-  );
+  if (!positives) {
+    const template = sample.map((entry) => ({ ...entry, humanPositive: null, note: '' }));
+    const templatePath = writeJson(path.join(batchDir, 'audit-readings-template.json'), template);
+    console.log(
+      `[edged-corridor] M-C2: ${sample.length} rows for the human reader — fill humanPositive in ` +
+        `${path.relative(ROOT, templatePath)} and re-run with --audit-readings`,
+    );
+  } else {
+    reportUnconfirmedCells(state, positives);
+  }
   if (decision.killStudy) {
     console.log('[edged-corridor] NO CELL KEPT after §2.4 + §2.5 — registered stop rule 1: the study stops here');
     process.exitCode = 2;
@@ -221,20 +289,45 @@ async function main() {
     options: {
       'batch-dir': { type: 'string', default: '' },
       'audit-readings': { type: 'string', default: '' },
+      'endpoint-readings': { type: 'string', default: '' },
       help: { type: 'boolean', short: 'h', default: false },
     },
   });
   if (values.help) {
     console.log(
-      'Usage: node scripts/select-edged-register-corridor.js --batch-dir <dir> [--audit-readings <readings.json>]',
+      'Usage: node scripts/select-edged-register-corridor.js --batch-dir <dir> ' +
+        '[--audit-readings <readings.json>] [--endpoint-readings <readings.jsonl>]',
     );
     return;
   }
   if (!values['batch-dir']) throw new Error('--batch-dir is required');
   const batchDir = path.resolve(ROOT, values['batch-dir']);
   const state = loadState(batchDir);
-  if (values['audit-readings']) runAuditVerdict(state, batchDir, values['audit-readings']);
-  else runCorridor(state, batchDir);
+  if (values['audit-readings']) {
+    runAuditVerdict(state, batchDir, values['audit-readings']);
+    return;
+  }
+  if (values['endpoint-readings']) {
+    // §2.16.1, fixed before any per-cell number was visible: primary conversion
+    // is did_task === 'yes' only; yes-plus-partly runs beside it as a
+    // sensitivity variant. Both are written, neither overwrites the voided
+    // lexical report.
+    const readingsPath = path.resolve(ROOT, values['endpoint-readings']);
+    console.log('[edged-corridor] revised endpoint, PRIMARY (did_task = yes)');
+    runCorridor(state, batchDir, {
+      positives: revisedPositives(readingsPath, { partlyCounts: false }),
+      label: 'revised-primary',
+    });
+    console.log('');
+    console.log('[edged-corridor] revised endpoint, SENSITIVITY (did_task = yes or partly)');
+    runCorridor(state, batchDir, {
+      positives: revisedPositives(readingsPath, { partlyCounts: true }),
+      label: 'revised-sensitivity',
+      partlyCounts: true,
+    });
+    return;
+  }
+  runCorridor(state, batchDir);
 }
 
 const invokedDirectly = process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH;
