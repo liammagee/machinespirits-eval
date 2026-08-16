@@ -299,10 +299,11 @@ repo.
 
 Calibration runs on the **same stack the main block will use** — corridor
 rates are stack-specific, and a corridor measured on one stack licenses
-nothing on another. Newest CLI-served models: `codex.gpt-5.6-luna` or
-claude-code Sonnet 5, pinned in the registration. Never nemotron/kimi.
-Sonnet-class judge from the first scored row in the main block (§8.9
-standing rule); calibration itself needs no judge (§2.6).
+nothing on another. **Operator ruling 2026-08-16:** generation on codex
+`gpt-5.6-luna`; judge claude-code Sonnet 5. Pinned here and carried into
+the registration. Never nemotron/kimi. Sonnet-class judge from the first
+scored row in the main block (§8.9 standing rule); calibration itself
+needs no judge (§2.6).
 
 ### 2.10 Constraints carried forward
 
