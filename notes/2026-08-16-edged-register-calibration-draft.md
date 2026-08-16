@@ -446,3 +446,87 @@ cell is kept on its screen rate alone.
 **The confirm block is a separate paid stage.** It needs its own committed
 GO note and its own launch approval with a clean-tree SHA. Enqueuing the
 jobs spends nothing and licenses nothing.
+
+### 2.13 Confirm block result (2026-08-16, 49 paid rows) — a corridor exists
+
+The confirm block ran to completion at 49/49 rows on the same frozen plan,
+from its own GO note (`b03caee9`, plan SHA `121b55d1…`). The study spent 109
+paid rows against the 120-row cap. Four rows in `rote_parroting_sustained`
+timed out on the first attempt (codex CLI, 300 s, learner ego seat, four
+lanes stalling in one window) and all four passed on their second and last
+attempt, so no cell finished short of n=12.
+
+The harm tripwire paused generation four more times, at ordinals 67, 81, 77
+and 103, for eleven pauses across the whole study (screen: 12, 38, 39, 44,
+55, 57, 59). Every one of
+the eleven matched the same two words, "your capacity". Not one was an
+attack: the flagged turns ask the learner to show a change or to reject the
+tutor's claim ("Show that the explanation changed your capacity — or reject
+the claim by naming the formula that still carries you"; "does training
+produce compliance, or does learning reshape your capacity to judge and
+act?"). `status_shame` and `coerced_uptake` never fired in 109 rows. The
+operator ruled `resume_unchanged` on all eleven. §2.11 stands unchanged and
+is now supported by 109 rows rather than 40.
+
+Pooled result under the frozen §2.4 rule (kept = 4/12 to 8/12) plus the
+§2.5 M-C1 eligibility screen (≥70% of rows carry an edged-eligible
+resistance moment):
+
+| Cell | Conversions | Edge-eligible | Verdict |
+|---|---|---|---|
+| irrelevance_sustained | 6/12 | 11/12 | kept |
+| question_flood_sustained | 5/12 | 12/12 | kept |
+| rote_parroting_sustained | 6/12 | 12/12 | kept |
+| boredom_claimheld | 5/12 | 12/12 | kept |
+| boredom_guarded | 5/12 | 12/12 | kept |
+| rote_parroting_guarded | 7/12 | 12/12 | kept |
+| frustration_claimheld | 8/12 | 0/12 | excluded, edge-ineligible |
+
+Pooled kept-cell rate 34/72 = 0.472. Powering baseline, the upper 80%
+Clopper-Pearson bound on that rate, = 0.529.
+
+**The eligibility screen changed an outcome for the first time.**
+`frustration_claimheld` converts at 8/12, inside the corridor band, and the
+conversion rule alone would have kept it. Not one of its 12 rows carries a
+resistance moment an edged reply could act on, so the edged tutor would have
+nothing to do there and the cell cannot test the question whatever its rate.
+This is the amendment the operator approved on 2026-08-16, doing the work it
+was added for.
+
+**Read of the calibration, stated before the endpoint audit.** Written here
+so it cannot be adjusted later. Stage 2 failed because the warm control
+converted at .94 and left no room to measure a difference. The hardened
+personas removed that ceiling: six cells sit between 5/12 and 7/12, pooled
+0.472, and the powering baseline is 0.529 rather than the .94 that killed
+stage 2. The main-block question is therefore measurable in principle. It is
+not yet registered: the §2.5 M-C2 endpoint read has not run, and >20%
+disagreement between the human reader and the classifier voids these
+corridor estimates outright. Known leak G1 stands — a true-.80 cell passes
+this corridor about 20% of the time — so six kept cells does not mean six
+true corridor cells.
+
+**Nothing here licenses the main block.** Registration freezes from this
+evidence only after the endpoint read passes, and the main block needs its
+own GO note and its own launch approval.
+
+### 2.14 Recorded defect — a ruling can be lost to the runner's state write
+
+While the runner was still finishing rows in flight, an operator ruling was
+recorded with `--resume-decision`. The write appeared to succeed: the tool
+printed the decision and the state file showed zero open flags. The runner
+then exited and wrote its own stale in-memory state over that file. The
+ruling vanished and the flag reopened.
+
+Nothing was mis-scored — the ruling was re-recorded and the block resumed —
+but a ruling that silently disappears is a hazard in a study whose stop rule
+depends on rulings being recorded. Two things follow.
+
+Working rule, adopted immediately and used for every ruling since: **wait
+for the runner to exit fully before recording a ruling**, and check with
+`pgrep` rather than assuming a paused runner is a stopped one.
+
+Fix owed before the main block: the runner must not write the whole state
+file from memory on exit. It should re-read the file and merge, or hold a
+lock, so that a decision written by another process cannot be overwritten.
+Until that lands, the working rule above is the only protection, and it is a
+procedure, not a guarantee.

@@ -7,7 +7,7 @@ priority: P2
 owner: claude
 source: manual
 created: 2026-08-15
-updated: 2026-08-16
+updated: 2026-08-17
 verification: A powered main block (or a registered no-corridor kill verdict)
   answers whether router-selected ironic/sarcastic delivery beats the warm
   router on post-resistance conversion, on persona-scenario cells where the
@@ -84,6 +84,29 @@ warm router converts at 33/60 pooled — de-saturated, unlike stage 2 at .94 —
 so a corridor looks likely to exist, but no cell is kept until the confirm
 block pools it to n=12 under §2.4.
 
-Next step: the confirm block, 49 rows enqueued (109 of the 120-row cap). It
-is a separate paid stage and needs its own committed GO note plus launch
-approval with a clean-tree SHA. The corridor selector runs after it.
+2026-08-16 confirm block complete (draft note §2.13): 49 paid rows from the
+GO note at `b03caee9`, 109 rows total against the 120 cap. Four rows timed
+out once and all four passed on the retry, so no cell finished short of
+n=12. Four more harm-tripwire pauses, eleven across the study, every one the
+two words "your capacity" and none an attack; all ruled resume_unchanged.
+`status_shame` and `coerced_uptake` never fired in 109 rows.
+
+**A corridor exists.** Six cells kept: irrelevance_sustained 6/12,
+question_flood_sustained 5/12, rote_parroting_sustained 6/12,
+boredom_claimheld 5/12, boredom_guarded 5/12, rote_parroting_guarded 7/12.
+Pooled 34/72 = 0.472, powering baseline 0.529 — against the .94 that killed
+stage 2. frustration_claimheld was excluded by the edge-eligibility screen
+(0/12 eligible rows) despite converting at 8/12; the screen changed an
+outcome for the first time.
+
+Next step: the §2.5 M-C2 endpoint read — the operator marks the first and
+last row of each kept cell in `audit-readings-template.json` and the
+selector re-runs with `--audit-readings`. More than 20% disagreement with
+the classifier voids the corridor estimates. Registration freezes only after
+that read passes; the main block then needs its own GO note and launch
+approval.
+
+Owed before the main block (draft note §2.14): the runner overwrites the
+state file from memory on exit, which can silently discard a ruling recorded
+by another process. Working rule meanwhile — never record a ruling until the
+runner has fully exited.
