@@ -66,7 +66,7 @@ const OUTCOME_TURNS_PER_DIALOGUE = 8;
 const OUTCOME_READERS_PER_CHANNEL = 2;
 export const OUTCOME_PER_DIALOGUE_GENERATION_CAP = 30;
 
-function buildOutcomeRunShape(name, seeds) {
+function buildOutcomeRunShape(name, seeds, { presenceReadersFielded = true } = {}) {
   const dialogues = seeds.length * OUTCOME_WORLDS_PER_SEED * OUTCOME_CONDITIONS_PER_WORLD;
   const cases = dialogues * OUTCOME_TURNS_PER_DIALOGUE;
   const readerCalls = cases * OUTCOME_READERS_PER_CHANNEL;
@@ -79,6 +79,11 @@ function buildOutcomeRunShape(name, seeds) {
     cases,
     readers_per_channel: OUTCOME_READERS_PER_CHANNEL,
     per_dialogue_generation_cap: OUTCOME_PER_DIALOGUE_GENERATION_CAP,
+    presence_readers_fielded: presenceReadersFielded,
+    // The plan keeps its presence line even where the channel is not fielded.
+    // The plan is a ceiling, not an order to spend: the budget refuses at the
+    // total, and an unspent line leaves head room. Dropping the line here would
+    // move the sealed total, and the manifest and every go note quote it.
     planned_calls: Object.freeze({
       generation,
       presence_readers: readerCalls,
@@ -96,7 +101,14 @@ function buildOutcomeRunShape(name, seeds) {
  */
 export const OUTCOME_RUN_SHAPES = Object.freeze({
   pilot: buildOutcomeRunShape('pilot', OUTCOME_PILOT_SEEDS),
-  'main-block': buildOutcomeRunShape('main-block', OUTCOME_GUARDED_MAIN_BLOCK_SEEDS),
+  // Re-registration 096, amendment 2: the main block runs the decision channel
+  // only. The presence readers measure M7 and M8, which that amendment demotes
+  // to report only, so re-fielding them would spend about 1,200 paid calls on
+  // an instrument that carries no weight. M7 and M8 are described zero call
+  // from the stored generation-time events and labelled not reader-validated.
+  'main-block': buildOutcomeRunShape('main-block', OUTCOME_GUARDED_MAIN_BLOCK_SEEDS, {
+    presenceReadersFielded: false,
+  }),
 });
 
 export const OUTCOME_DEFAULT_RUN_SHAPE = OUTCOME_RUN_SHAPES.pilot;

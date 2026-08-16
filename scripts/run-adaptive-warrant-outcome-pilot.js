@@ -14,7 +14,7 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import {
@@ -31,6 +31,7 @@ import {
   resolveOutcomeStudyRunConfigurations,
   PRESENCE_CHANNEL_CAPS,
   extractOutcomeDialogueFromTraceRows,
+  scoreAdaptiveWarrantOutcomeMainBlock,
   scoreAdaptiveWarrantOutcomeStudy,
 } from './score-adaptive-warrant-outcome-study.js';
 import {
@@ -315,6 +316,72 @@ export function resolveOutcomeResumeLaunchCommit({ preflightPath } = {}) {
     throw new Error(`instrument files moved since the launch commit ${recorded}: ${moved.split('\n').join(', ')}`);
   }
   return recorded;
+}
+
+// The frozen batch preparers and the frozen reader runners each ask their OWN
+// checkout for head before they will believe the run's preflight, and only the
+// reader runners know about a resume. So on a resume they all refuse here, at a
+// head that moved after the launch (ledger 25). Nothing may be edited to fix
+// that: all four files are pinned by hash. Instead the reader phase runs out of
+// a second checkout parked at the launch commit. Each of those files works out
+// its own root from its own location, so the checkout it sits in decides which
+// commit it sees. Reading pinned bytes from a pinned checkout is not an edit,
+// and the digest check below proves the bytes are the frozen ones.
+// The same two preparers, taken from whichever checkout the reader phase speaks
+// from. The digest check above has already proved those bytes are the frozen
+// ones, so this only decides which copy of them runs.
+export async function loadFrozenBatchPreparers(readerRoot) {
+  if (path.resolve(readerRoot) === ROOT) {
+    return {
+      prepareDecision: prepareAdaptiveWarrantAnnotationBatches,
+      prepareSemantic: prepareAdaptiveWarrantSemanticAnnotationBatches,
+    };
+  }
+  const load = (file) => import(pathToFileURL(path.join(readerRoot, 'scripts', file)).href);
+  const [decision, semantic] = await Promise.all([
+    load('prepare-adaptive-warrant-annotation-batches.js'),
+    load('prepare-adaptive-warrant-semantic-annotations.js'),
+  ]);
+  return {
+    prepareDecision: decision.prepareAdaptiveWarrantAnnotationBatches,
+    prepareSemantic: semantic.prepareAdaptiveWarrantSemanticAnnotationBatches,
+  };
+}
+
+export function verifyOutcomePilotPinnedCheckout({ pinnedCheckout, expectedSourceCommit, manifest } = {}) {
+  const root = path.resolve(pinnedCheckout);
+  if (!fs.existsSync(path.join(root, '.git'))) {
+    throw new Error(`pinned checkout is not a git checkout: ${root}`);
+  }
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
+  if (head !== expectedSourceCommit) {
+    throw new Error(`pinned checkout is at ${head}, but the run launched at ${expectedSourceCommit}`);
+  }
+  const status = execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).trim();
+  if (status) throw new Error('pinned checkout is not clean; the frozen preparers refuse a dirty tree');
+  const files = {
+    presence_preparer: {
+      path: 'scripts/prepare-adaptive-warrant-semantic-annotations.js',
+      expected: manifest.presence_channel.digests.preparer_sha256,
+    },
+    decision_preparer: {
+      path: 'scripts/prepare-adaptive-warrant-annotation-batches.js',
+      expected: manifest.decision_channel.digests.preparation_and_assembly_sha256,
+    },
+    decision_reader_runner: {
+      path: 'scripts/run-adaptive-warrant-decision-readers.js',
+      expected: manifest.decision_channel.digests.reader_runner_sha256,
+    },
+  };
+  const digests = {};
+  for (const [role, entry] of Object.entries(files)) {
+    const observed = fileSha256(path.join(root, entry.path));
+    if (observed !== entry.expected) {
+      throw new Error(`pinned checkout ${entry.path} is ${observed}, but the manifest pins ${entry.expected}`);
+    }
+    digests[role] = observed;
+  }
+  return { root, head, clean: true, digests, status: 'passed' };
 }
 
 export function verifyOutcomePilotReaderBindings({
@@ -1386,6 +1453,8 @@ export async function runReaderProcesses({
   quarantineManifestPath = null,
   checkpoint,
   budget,
+  fieldPresence = true,
+  readerCwd = ROOT,
   runProcess = spawnLogged,
 }) {
   // Read the plan the checkpoint was opened with, not a module constant: on a
@@ -1393,10 +1462,11 @@ export async function runReaderProcesses({
   const plan = checkpoint.call_budget?.plan;
   if (!plan) throw new Error('reader launch refused: the checkpoint carries no call plan');
   const remaining = plan.total - checkpoint.call_budget.actual.total;
-  const presenceReservation = Math.max(
-    0,
-    plan.presence_readers - Number(checkpoint.call_budget.actual.presence_readers || 0),
-  );
+  // A channel the shape does not field reserves nothing and spends nothing. Its
+  // plan line stays in the ceiling as unspent head room.
+  const presenceReservation = fieldPresence
+    ? Math.max(0, plan.presence_readers - Number(checkpoint.call_budget.actual.presence_readers || 0))
+    : 0;
   const decisionReservation = Math.max(
     0,
     plan.decision_readers - Number(checkpoint.call_budget.actual.decision_readers || 0),
@@ -1413,7 +1483,7 @@ export async function runReaderProcesses({
   const decisionComplete =
     decisionChildResume && readJson(path.join(decisionRunDir, 'decision-reader-run.json')).status === 'complete';
   const launches = [];
-  if (!semanticComplete || retakeChannels.has('presence')) {
+  if (fieldPresence && (!semanticComplete || retakeChannels.has('presence'))) {
     launches.push(
       runProcess(
         [
@@ -1421,7 +1491,7 @@ export async function runReaderProcesses({
           ...(semanticChildResume ? ['--resume'] : []),
           ...(retakeChannels.has('presence') ? ['--quarantine-manifest', path.resolve(quarantineManifestPath)] : []),
         ],
-        { cwd: ROOT, logPath: path.join(rootDir, 'presence-readers-launcher.log') },
+        { cwd: readerCwd, logPath: path.join(rootDir, 'presence-readers-launcher.log') },
       ),
     );
   }
@@ -1433,7 +1503,7 @@ export async function runReaderProcesses({
           ...(decisionChildResume ? ['--resume'] : []),
           ...(retakeChannels.has('decision') ? ['--quarantine-manifest', path.resolve(quarantineManifestPath)] : []),
         ],
-        { cwd: ROOT, logPath: path.join(rootDir, 'decision-readers-launcher.log') },
+        { cwd: readerCwd, logPath: path.join(rootDir, 'decision-readers-launcher.log') },
       ),
     );
   }
@@ -1478,6 +1548,7 @@ export async function executeOutcomePilot({
   resume = false,
   instrumentFreezePath,
   reviewerRulingPath = null,
+  pinnedCheckout = null,
   learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
   runDialogue,
   runReaderProcess,
@@ -1589,6 +1660,29 @@ export async function executeOutcomePilot({
     expectedSourceCommit,
     reuseLaunchArtifacts: readerResume,
   });
+  // Which commit the reader phase must speak from. On a launch that is head; on
+  // a resume it is the commit the run opened at, and every later commit on this
+  // branch is invisible to the frozen files. The freeze below is stamped with
+  // this same commit, because the frozen reader runner refuses unless the
+  // freeze, the prepared collection, and its own checkout all name one commit.
+  const headCommit = git(['rev-parse', 'HEAD']);
+  const launchCommit = expectedSourceCommit || headCommit;
+  let pinnedCheckoutRecord = null;
+  if (launchCommit !== headCommit) {
+    if (!pinnedCheckout) {
+      throw new Error(
+        `reader phase refuses: this checkout is at ${headCommit} but the run launched at ${launchCommit}; ` +
+          'pass --pinned-checkout <worktree parked at the launch commit>',
+      );
+    }
+    pinnedCheckoutRecord = verifyOutcomePilotPinnedCheckout({
+      pinnedCheckout,
+      expectedSourceCommit: launchCommit,
+      manifest: guarded.manifest,
+    });
+  }
+  const readerRoot = pinnedCheckoutRecord?.root || ROOT;
+  const fieldPresence = guarded.shape.presence_readers_fielded !== false;
   budget.state.status = 'generation';
   budget.state.go_note = goNote;
   budget.state.manifest = { path: guarded.resolvedManifest, sha256: fileSha256(guarded.resolvedManifest) };
@@ -1596,6 +1690,8 @@ export async function executeOutcomePilot({
     menu: guarded.menuGuard,
     prepared_identity: guarded.preparation,
     frozen_readers: readerBindings,
+    channels_fielded: { decision: true, presence: fieldPresence },
+    reader_phase_commit: { launch: launchCommit, head: headCommit, pinned_checkout: pinnedCheckoutRecord },
     prompt_audit: {
       path: promptAuditPreflightPath,
       sha256: fileSha256(promptAuditPreflightPath),
@@ -1677,7 +1773,7 @@ export async function executeOutcomePilot({
         outputPath: freezePath,
         studyId: path.basename(rootDir),
         learnerProfile,
-        sourceCommit: git(['rev-parse', 'HEAD']),
+        sourceCommit: launchCommit,
         corpus: artifacts.corpusPath,
         key: artifacts.keyPath,
         annotationHandbook,
@@ -1689,31 +1785,34 @@ export async function executeOutcomePilot({
       });
   validateOutcomeFreezeFormForFrozenDecisionRunner(freeze);
 
-  const semanticCollection = prepareOrReuseOutcomePilotReaderCollection({
-    childResume: semanticChildResume,
-    collectionDir: presenceCollectionDir,
-    channel: 'presence',
-    reusedCollection: reusedSemanticCollection,
-    prepare: () =>
-      prepareAdaptiveWarrantSemanticAnnotationBatches({
-        corpusPath: artifacts.corpusPath,
-        handbookPath: semanticHandbook,
-        outputDir: presenceCollectionDir,
-        corpusRole: 'natural_prevalence',
-        readerIds: ['presence-reader-a', 'presence-reader-b'],
-        batchSize: 1,
-        maximumCalls: guarded.shape.planned_calls.presence_readers,
-        preflightPath: semanticPreflightPath,
-        schemaAcceptancePath,
-      }),
-  });
+  const { prepareDecision, prepareSemantic } = await loadFrozenBatchPreparers(readerRoot);
+  const semanticCollection = fieldPresence
+    ? prepareOrReuseOutcomePilotReaderCollection({
+        childResume: semanticChildResume,
+        collectionDir: presenceCollectionDir,
+        channel: 'presence',
+        reusedCollection: reusedSemanticCollection,
+        prepare: () =>
+          prepareSemantic({
+            corpusPath: artifacts.corpusPath,
+            handbookPath: semanticHandbook,
+            outputDir: presenceCollectionDir,
+            corpusRole: 'natural_prevalence',
+            readerIds: ['presence-reader-a', 'presence-reader-b'],
+            batchSize: 1,
+            maximumCalls: guarded.shape.planned_calls.presence_readers,
+            preflightPath: semanticPreflightPath,
+            schemaAcceptancePath,
+          }),
+      })
+    : null;
   const decisionCollection = prepareOrReuseOutcomePilotReaderCollection({
     childResume: decisionChildResume,
     collectionDir: decisionCollectionDir,
     channel: 'decision',
     reusedCollection: reusedDecisionCollection,
     prepare: () =>
-      prepareAdaptiveWarrantAnnotationBatches({
+      prepareDecision({
         corpusPath: artifacts.corpusPath,
         handbookPath: annotationHandbook,
         outputDir: decisionCollectionDir,
@@ -1724,36 +1823,40 @@ export async function executeOutcomePilot({
         preflightPath: semanticPreflightPath,
       }),
   });
-  const presenceManifest = semanticCollection.manifest;
-  if (
-    presenceManifest.size_audit?.maximum_response_bytes !== PRESENCE_CHANNEL_CAPS.response_cap ||
-    presenceManifest.size_audit?.maximum_packet_bytes !== PRESENCE_CHANNEL_CAPS.packet_cap
-  ) {
-    throw new Error(
-      `presence reader packet caps are not ${PRESENCE_CHANNEL_CAPS.response_cap}/${PRESENCE_CHANNEL_CAPS.packet_cap}`,
-    );
+  if (fieldPresence) {
+    const presenceManifest = semanticCollection.manifest;
+    if (
+      presenceManifest.size_audit?.maximum_response_bytes !== PRESENCE_CHANNEL_CAPS.response_cap ||
+      presenceManifest.size_audit?.maximum_packet_bytes !== PRESENCE_CHANNEL_CAPS.packet_cap
+    ) {
+      throw new Error(
+        `presence reader packet caps are not ${PRESENCE_CHANNEL_CAPS.response_cap}/${PRESENCE_CHANNEL_CAPS.packet_cap}`,
+      );
+    }
   }
   budget.state.status = 'readers';
   budget.state.freeze = { path: freezePath, form: freeze.schema, sha256: fileSha256(freezePath) };
   budget.persist();
   await runReaderProcesses({
-    semanticCommand: [
-      process.execPath,
-      'scripts/run-adaptive-warrant-semantic-readers.js',
-      '--manifest',
-      semanticCollection.manifestPath,
-      '--freeze-manifest',
-      freezePath,
-      '--authorization-request',
-      semanticCollection.authorizationRequestPath,
-      '--out',
-      presenceRunDir,
-      '--approved-by',
-      goNote.relative_path,
-    ],
+    semanticCommand: fieldPresence
+      ? [
+          process.execPath,
+          path.join(readerRoot, 'scripts', 'run-adaptive-warrant-semantic-readers.js'),
+          '--manifest',
+          semanticCollection.manifestPath,
+          '--freeze-manifest',
+          freezePath,
+          '--authorization-request',
+          semanticCollection.authorizationRequestPath,
+          '--out',
+          presenceRunDir,
+          '--approved-by',
+          goNote.relative_path,
+        ]
+      : null,
     decisionCommand: [
       process.execPath,
-      'scripts/run-adaptive-warrant-decision-readers.js',
+      path.join(readerRoot, 'scripts', 'run-adaptive-warrant-decision-readers.js'),
       '--manifest',
       decisionCollection.manifestPath,
       '--freeze-manifest',
@@ -1773,20 +1876,24 @@ export async function executeOutcomePilot({
     budget,
     runProcess: runReaderProcess,
     quarantineManifestPath: reviewerAuthorizedQuarantineManifest,
+    fieldPresence,
+    readerCwd: readerRoot,
   });
 
-  const presenceRunPath = path.join(presenceRunDir, 'semantic-reader-run.json');
+  const presenceRunPath = fieldPresence ? path.join(presenceRunDir, 'semantic-reader-run.json') : null;
   const decisionRunPath = path.join(decisionRunDir, 'decision-reader-run.json');
-  const presenceAssemblyRun = writeOutcomePilotAssemblyRunView({
-    runPath: presenceRunPath,
-    outputPath: path.join(rootDir, 'presence-reader-assembly-run-view.json'),
-  });
+  const presenceAssemblyRun = fieldPresence
+    ? writeOutcomePilotAssemblyRunView({
+        runPath: presenceRunPath,
+        outputPath: path.join(rootDir, 'presence-reader-assembly-run-view.json'),
+      })
+    : null;
   const decisionAssemblyRun = writeOutcomePilotAssemblyRunView({
     runPath: decisionRunPath,
     outputPath: path.join(rootDir, 'decision-reader-assembly-run-view.json'),
   });
   const assembledPresence = new Map();
-  for (const readerId of ['presence-reader-a', 'presence-reader-b']) {
+  for (const readerId of fieldPresence ? ['presence-reader-a', 'presence-reader-b'] : []) {
     const assembled = assembleAdaptiveWarrantSemanticAnnotationResponse({
       manifestPath: semanticCollection.manifestPath,
       readerId,
@@ -1810,8 +1917,12 @@ export async function executeOutcomePilot({
     assembledDecision.set(readerId, assembled.response);
   }
   const keyBySampleId = new Map(built.key.cases.map((row) => [row.sample_id, row]));
-  const presenceA = new Map(assembledPresence.get('presence-reader-a').cases.map((row) => [row.sample_id, row]));
-  const presenceB = new Map(assembledPresence.get('presence-reader-b').cases.map((row) => [row.sample_id, row]));
+  const presenceA = new Map(
+    (assembledPresence.get('presence-reader-a')?.cases || []).map((row) => [row.sample_id, row]),
+  );
+  const presenceB = new Map(
+    (assembledPresence.get('presence-reader-b')?.cases || []).map((row) => [row.sample_id, row]),
+  );
   const decisionA = new Map(assembledDecision.get('decision-reader-a').cases.map((row) => [row.sample_id, row]));
   const decisionB = new Map(assembledDecision.get('decision-reader-b').cases.map((row) => [row.sample_id, row]));
   const semanticPresence = (row) => {
@@ -1822,7 +1933,7 @@ export async function executeOutcomePilot({
       proposed_test: acts.has('learner_proposed_test'),
     };
   };
-  const presenceCases = built.corpus.cases.map((row) => {
+  const presenceCases = (fieldPresence ? built.corpus.cases : []).map((row) => {
     const key = keyBySampleId.get(row.sample_id);
     const left = semanticPresence(presenceA.get(row.sample_id));
     const right = semanticPresence(presenceB.get(row.sample_id));
@@ -1855,26 +1966,42 @@ export async function executeOutcomePilot({
       rows: readJsonl(row.trace_path),
     }),
   );
-  const presenceBindings = {
-    ...guarded.manifest.presence_channel.digests,
-    response_cap: guarded.manifest.presence_channel.caps_bytes.response,
-    packet_cap: guarded.manifest.presence_channel.caps_bytes.packet,
-  };
-  const score = scoreAdaptiveWarrantOutcomeStudy({
-    presence_preflight: { expected: presenceBindings, observed: presenceBindings },
-    decision_reader_preflight: { ...guarded.manifest.decision_channel.digests },
-    dialogues,
-    decision_cases: decisionCases,
-    presence_cases: presenceCases,
-    decision_reader_run_record_path: decisionAssemblyRun.path,
-  });
+  // Re-registration 096, amendment 2: with the presence channel not fielded, the
+  // run scores the decision channel alone, and measures 7 and 8 are described
+  // zero call from the stored generation-time events, marked not reader-validated.
+  const presenceBindings = fieldPresence
+    ? {
+        ...guarded.manifest.presence_channel.digests,
+        response_cap: guarded.manifest.presence_channel.caps_bytes.response,
+        packet_cap: guarded.manifest.presence_channel.caps_bytes.packet,
+      }
+    : null;
+  const score = fieldPresence
+    ? scoreAdaptiveWarrantOutcomeStudy({
+        presence_preflight: { expected: presenceBindings, observed: presenceBindings },
+        decision_reader_preflight: { ...guarded.manifest.decision_channel.digests },
+        dialogues,
+        decision_cases: decisionCases,
+        presence_cases: presenceCases,
+        decision_reader_run_record_path: decisionAssemblyRun.path,
+      })
+    : scoreAdaptiveWarrantOutcomeMainBlock({
+        decision_reader_preflight: { ...guarded.manifest.decision_channel.digests },
+        dialogues,
+        decision_cases: decisionCases,
+        decision_reader_run_record_path: decisionAssemblyRun.path,
+        generation_time_cases: built.key.cases,
+      });
   const scorePath = path.join(rootDir, 'outcome-pilot-score.json');
   atomicWriteJson(scorePath, score);
   budget.state.status = 'complete';
   budget.state.reader_run_records = {
-    presence: presenceRunPath,
+    ...(fieldPresence ? { presence: presenceRunPath } : {}),
     decision: decisionRunPath,
-    assembly_views: { presence: presenceAssemblyRun.path, decision: decisionAssemblyRun.path },
+    assembly_views: {
+      ...(fieldPresence ? { presence: presenceAssemblyRun.path } : {}),
+      decision: decisionAssemblyRun.path,
+    },
   };
   budget.state.score = { path: scorePath, sha256: fileSha256(scorePath) };
   budget.persist();
@@ -1884,7 +2011,7 @@ export async function executeOutcomePilot({
 function usage() {
   // --manifest and --learner-profile travel together: a non-A1 pole needs both,
   // and the launcher refuses when they disagree.
-  return `Usage:\n  node scripts/run-adaptive-warrant-outcome-pilot.js [--manifest <manifest>]\n  node scripts/run-adaptive-warrant-outcome-pilot.js --go-note <relay-file> --accept-charges --out <dir> --instrument-freeze <natural-freeze> [--manifest <manifest>] [--shape <${Object.keys(OUTCOME_RUN_SHAPES).join('|')}>] [--learner-profile <${OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES.join('|')}>] [--reviewer-ruling <ruling.json>] [--resume]\n\nDefaults:\n  --manifest         ${DEFAULT_MANIFEST}\n  --learner-profile  ${OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE}\n  --shape            read from the manifest; ${OUTCOME_DEFAULT_RUN_SHAPE.name} when the manifest names none\n  --reviewer-ruling  committed ruling, applied blind to every quarantined dialogue, that admits the ones it fits without re-running them\n`;
+  return `Usage:\n  node scripts/run-adaptive-warrant-outcome-pilot.js [--manifest <manifest>]\n  node scripts/run-adaptive-warrant-outcome-pilot.js --go-note <relay-file> --accept-charges --out <dir> --instrument-freeze <natural-freeze> [--manifest <manifest>] [--shape <${Object.keys(OUTCOME_RUN_SHAPES).join('|')}>] [--learner-profile <${OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES.join('|')}>] [--reviewer-ruling <ruling.json>] [--pinned-checkout <worktree>] [--resume]\n\nDefaults:\n  --manifest         ${DEFAULT_MANIFEST}\n  --learner-profile  ${OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE}\n  --shape            read from the manifest; ${OUTCOME_DEFAULT_RUN_SHAPE.name} when the manifest names none\n  --reviewer-ruling  committed ruling, applied blind to every quarantined dialogue, that admits the ones it fits without re-running them\n  --pinned-checkout  clean worktree parked at the commit the run launched from; required for the reader phase when this checkout has moved on\n`;
 }
 
 async function main() {
@@ -1899,6 +2026,7 @@ async function main() {
       'learner-profile': { type: 'string', default: OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE },
       shape: { type: 'string' },
       resume: { type: 'boolean', default: false },
+      'pinned-checkout': { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
     strict: true,
@@ -1927,6 +2055,7 @@ async function main() {
     instrumentFreezePath: values['instrument-freeze'],
     reviewerRulingPath: values['reviewer-ruling'] || null,
     learnerProfile: values['learner-profile'],
+    pinnedCheckout: values['pinned-checkout'] || null,
   });
   process.stdout.write(
     `${JSON.stringify({ status: result.status, checkpoint: path.resolve(ROOT, values.out, 'outcome-pilot-checkpoint.json') })}\n`,

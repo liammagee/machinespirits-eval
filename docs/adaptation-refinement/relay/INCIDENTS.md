@@ -197,6 +197,30 @@ I1, on the other learner.
   (`opaque annotation sample id collision`) rather than emit a corpus
   with one dialogue scored twice. The pass is now keyed by dialogue id.
   Defect ledger entry 24.
+- **Second repair, 16 Aug** — the same probe, carried through the whole
+  reader preamble, found the frozen tooling refuses at a moved head. The
+  two batch preparers and both reader runners each ask their own checkout
+  for `git rev-parse HEAD` and want the launch stamp on a clean tree;
+  only the reader runners know about a resume, and all four files are
+  pinned by hash, so none may be edited. The run launched at `a0de1500`
+  and head had moved to `545e32bf`. The reader phase now runs out of a
+  second checkout parked at the launch commit, passed as
+  `--pinned-checkout`. Each pinned file works out its own root from its
+  own location, so the checkout it sits in decides which commit it sees,
+  and the driver hashes all three against the manifest pins before it
+  uses them. Defect ledger entry 25.
+- **Third repair, 16 Aug** — reading re-registration 096 against the
+  driver showed the driver would have fielded the presence readers,
+  which amendment 2 does not field: they measure only M7 and M8, which
+  that amendment demotes to report-only. The run now fields the decision
+  channel alone and describes M7 and M8 zero-call from the stored
+  generation-time events, labelled not reader-validated. Reader spend
+  falls from about 2,300 to 1,150. The presence packets were over their
+  own 60,000-byte cap at this corpus size in any case (82,038 bytes),
+  because the reader catalogue and response schema grow with the corpus.
+  The sealed plan keeps its presence line, unspent: the plan is a
+  ceiling, not an order to spend, so neither the total nor the `4,464`
+  token any go note quotes has to move. Defect ledger entry 26.
 
 ### Invariants that held
 
@@ -240,6 +264,23 @@ steps are added to them, each learned here:
    — a turn that failed for a different reason must still be refused.
    Both checks cost nothing and both were run here.
 10. **The launch simulation does not reach the reader phase.** It
-   re-runs the guard chain up to generation, so a reader-side binding
-   fault would not surface in it. A reader-phase resume needs its own
-   zero-call check of the reader bindings before the note is approved.
+    re-runs the guard chain up to generation, so a reader-side binding
+    fault would not surface in it. A reader-phase resume needs its own
+    zero-call check of the reader bindings before the note is approved.
+11. **Probe the phase you have not run yet, not only the one that
+    stopped.** Three of the four repairs here came from one probe that
+    walked the whole reader preamble on the real corpus at zero calls.
+    Two of them sit past the point every earlier check stopped at, so
+    nothing before that probe could have found them. Run the probe to
+    the first paid call, not to the first guard.
+12. **Read the registration against the driver before every phase, not
+    only at design time.** Amendment 2 was written, approved and
+    committed, and the driver still fielded the channel it retires. A
+    registration binds the run only where the code reads it.
+13. **Frozen tooling and a moving head are in conflict at every
+    resume.** Pinned files ask their own checkout for the commit, so a
+    single repair commit between launch and resume breaks them, and
+    they cannot be edited to fix it. Park a second checkout at the
+    launch commit and run the frozen phase from there. Reading pinned
+    bytes out of a pinned checkout is not an edit; hash them against
+    the manifest to prove it.

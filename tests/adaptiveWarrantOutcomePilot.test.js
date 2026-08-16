@@ -17,6 +17,7 @@ import {
   executeOutcomePilot,
   guardOutcomeAnnotationFingerprints,
   guardOutcomeDialogueLearnerAnalysisCoverage,
+  loadFrozenBatchPreparers,
   preflightOutcomePilotPromptAudits,
   prepareOrReuseOutcomePilotReaderCollection,
   renderOutcomePilotPromptConfiguration,
@@ -29,6 +30,7 @@ import {
   resolveOutcomeResumeLaunchCommit,
   validateOutcomePilotZeroCallArtifacts,
   verifyOutcomePilotManifestBindings,
+  verifyOutcomePilotPinnedCheckout,
   verifyOutcomePilotReaderResumeArtifacts,
   writeOutcomePilotAssemblyRunView,
 } from '../scripts/run-adaptive-warrant-outcome-pilot.js';
@@ -1440,6 +1442,77 @@ test('the main-block shape is the pilot four times over on seeds 654-665', () =>
   for (const field of ['generation', 'presence_readers', 'decision_readers', 'total']) {
     assert.equal(main.planned_calls[field], OUTCOME_RUN_SHAPES.pilot.planned_calls[field] * 4);
   }
+});
+
+// Re-registration 096, amendment 2. The presence readers only measure M7 and M8,
+// which that amendment demotes to report only, so the main block does not field
+// them. The plan keeps its presence line: the plan is a ceiling, the sealed
+// manifest and every go note quote the total, and an unfielded channel simply
+// leaves its line unspent.
+test('the main block does not field the presence readers but keeps their plan line', () => {
+  assert.equal(OUTCOME_RUN_SHAPES.pilot.presence_readers_fielded, true);
+  assert.equal(OUTCOME_RUN_SHAPES['main-block'].presence_readers_fielded, false);
+  assert.equal(OUTCOME_RUN_SHAPES['main-block'].planned_calls.presence_readers, 1152);
+  assert.equal(OUTCOME_RUN_SHAPES['main-block'].planned_calls.total, 4464);
+});
+
+test('an unfielded presence channel launches no presence reader and reserves nothing for it', async (t) => {
+  const rootDir = temporaryDirectory(t);
+  const launches = [];
+  const reservations = [];
+  await runReaderProcesses({
+    semanticCommand: null,
+    decisionCommand: ['node', 'decision-reader'],
+    presenceRunDir: path.join(rootDir, 'presence-readers'),
+    decisionRunDir: path.join(rootDir, 'decision-readers'),
+    rootDir,
+    fieldPresence: false,
+    readerCwd: rootDir,
+    checkpoint: { call_budget: { plan: { ...OUTCOME_PILOT_CALL_PLAN }, actual: { total: 0 } } },
+    budget: { reserveMany: (...args) => reservations.push(args) },
+    runProcess: async (command, options) => {
+      launches.push({ command, options });
+      return { status: 0 };
+    },
+  });
+  assert.deepEqual(
+    launches.map((launch) => launch.command),
+    [['node', 'decision-reader']],
+  );
+  assert.deepEqual(launches[0].options.cwd, rootDir);
+  assert.deepEqual(
+    reservations.map(([channel]) => channel),
+    ['decision_readers'],
+  );
+});
+
+// Ledger 25: the frozen preparers and reader runners ask their own checkout for
+// head, so a resume at a moved head has to speak from a checkout parked at the
+// launch commit. Loading those pinned bytes is not an edit; the digest check is
+// what proves they are the frozen ones.
+test('the reader phase takes its preparers from the checkout it speaks from', async () => {
+  const here = await loadFrozenBatchPreparers(ROOT);
+  assert.equal(typeof here.prepareDecision, 'function');
+  assert.equal(typeof here.prepareSemantic, 'function');
+});
+
+test('a pinned checkout is refused when it is missing, at the wrong commit, or off the pinned bytes', (t) => {
+  const directory = temporaryDirectory(t);
+  const manifest = JSON.parse(
+    fs.readFileSync(
+      path.join(ROOT, 'docs/adaptation-refinement/guarded-main-block/guarded-main-block-manifest.json'),
+      'utf8',
+    ),
+  );
+  assert.throws(
+    () =>
+      verifyOutcomePilotPinnedCheckout({ pinnedCheckout: directory, expectedSourceCommit: '1'.repeat(40), manifest }),
+    /not a git checkout/u,
+  );
+  assert.throws(
+    () => verifyOutcomePilotPinnedCheckout({ pinnedCheckout: ROOT, expectedSourceCommit: '1'.repeat(40), manifest }),
+    /but the run launched at/u,
+  );
 });
 
 test('a manifest that names no size is a pilot, and an unknown size is refused', () => {
