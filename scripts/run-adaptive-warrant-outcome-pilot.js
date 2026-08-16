@@ -1996,6 +1996,9 @@ export async function executeOutcomePilot({
         decision_reader_run_record_path: decisionAssemblyRun.path,
         generation_time_cases: built.key.cases,
       });
+  // Run-inventory rule: the score file names its learner profile, so no
+  // cross-run comparison has to open the checkpoint to know which learner ran.
+  score.learner_profile = budget.state.learner_profile ?? null;
   const scorePath = path.join(rootDir, 'outcome-pilot-score.json');
   atomicWriteJson(scorePath, score);
   budget.state.status = 'complete';
