@@ -45,3 +45,14 @@ adds a file but does not edit any file inside the warrant line's
 fingerprinted source closure. Untangling the listed back-imports is the
 later extraction step of the staged reconciliation path and waits for
 the warrant line to close.
+
+## Log
+
+- 2026-08-16 — Rule written (`docs/warrant-stub-dependency-rule.md`) and
+  ratchet test added (`tests/warrantStubDependencyBoundary.test.js`),
+  registered in the hermetic test manifest. Only one real back-import
+  edge exists: the delivery contract imports two tutor-stub files (guard
+  recovery and the performance obligation contract); that pair is the
+  whole frozen allowlist. The other three grep matches were comments and
+  path strings, not imports. Removal waits for the warrant line to
+  close.
