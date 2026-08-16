@@ -152,6 +152,7 @@ export async function prepareLatePresenceRead({ runDir, frozenCheckout, handbook
 
   const key = readJson(path.join(resolvedRun, 'annotation-key.private.json'));
   const corpus = readJson(path.join(resolvedRun, 'annotation-sample.blinded.json'));
+  const parentFreeze = readJson(path.join(resolvedRun, 'annotation-freeze-manifest.json'));
   const keyByTurn = new Map(key.cases.map((row) => [`${row.job_id}#${row.turn}`, row]));
   const corpusById = new Map(corpus.cases.map((row) => [row.sample_id, row]));
 
@@ -197,11 +198,28 @@ export async function prepareLatePresenceRead({ runDir, frozenCheckout, handbook
     const shardCorpusPath = path.join(shardDir, 'corpus.blinded.json');
     fs.writeFileSync(shardCorpusPath, `${JSON.stringify(shardCorpus, null, 2)}\n`);
 
+    // The launch bridge: the frozen launcher verifies its freeze manifest
+    // against the collection's corpus, so each shard gets a derived freeze —
+    // the run's frozen manifest with exactly two disclosed repoints: the
+    // corpus binding moves to the shard corpus, and the handbook path moves
+    // from the dead /private/tmp location to the byte-identical archived
+    // copy (same sha256, verified above). Every other field stays identical.
+    const shardFreeze = {
+      ...parentFreeze,
+      corpus: { path: shardCorpusPath, sha256: sha256(fs.readFileSync(shardCorpusPath)), cases: shardKeyCases.length },
+      semantic_handbook: { ...parentFreeze.semantic_handbook, path: resolvedHandbook },
+    };
+    const shardFreezePath = path.join(shardDir, 'freeze-manifest.json');
+    fs.writeFileSync(shardFreezePath, `${JSON.stringify(shardFreeze, null, 2)}\n`);
+
+    // natural_prevalence: the role the frozen launcher requires under this
+    // freeze schema, and the role the pilot's presence collection used. The
+    // windows-only scope is registered in note 124 (ruling: "2 windows only").
     const collection = prepareAdaptiveWarrantSemanticAnnotationBatches({
       corpusPath: shardCorpusPath,
       handbookPath: resolvedHandbook,
       outputDir: path.join(shardDir, 'collection'),
-      corpusRole: 'targeted_challenge',
+      corpusRole: 'natural_prevalence',
       readerIds: [...READER_IDS],
       batchSize: 1,
       maximumCalls: shardKeyCases.length * READER_IDS.length,
@@ -219,6 +237,8 @@ export async function prepareLatePresenceRead({ runDir, frozenCheckout, handbook
       planned_calls: collection.authorizationRequest.call_budget.planned_calls,
       size_audit: collection.manifest.size_audit,
       collection_manifest: collection.manifestPath,
+      authorization_request: collection.authorizationRequestPath,
+      freeze_manifest: shardFreezePath,
     });
   }
 
