@@ -30,7 +30,11 @@ Every step before 7 is free and deterministic.
    per channel (the passive presence channel died at pilot for taking one
    value on >90% of cases; the overconfident block then had no
    reader-checked conduct channel at all). A channel the profile rarely uses
-   is a dead channel.
+   is a dead channel. The registration must answer one question in writing
+   before it seals: **if the mechanism works on this learner, which
+   registered number moves?** The named channel must have room to move —
+   not at floor, not at ceiling, and not pinned by the persona contract's
+   own voice rules.
 7. **GO note + explicit human approval**, then an 18-dialogue pilot; pilot
    gates rule; re-register if a channel dies; only then a main block. No
    approval carries forward between phases.
