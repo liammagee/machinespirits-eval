@@ -90,4 +90,41 @@ result is a finding, as 117 already said.
    describe the same way at list grain), or rule exact-act consensus
    instead.
 
+## 6. Result (computed 2026-08-16, after sealing, by the frozen script)
+
+Script: `scripts/score-evidence-move-rebase.js` (committed 48fc10ee,
+before the compute). Report: `evidence-move-rebase.json` in the run
+directory and in the archive.
+
+| side | evidence-move windows / windows | rate |
+|---|---:|---:|
+| delivered challenge | 47 / 66 | 71.2% |
+| shadow-selected, not delivered | 110 / 152 | 72.4% |
+
+**The inherited prediction fails.** The delivered side is not higher;
+the two sides are level. Within the shadow side the two control
+versions agree (bare 46/63, standing permission 64/89). Five delivered
+and eleven shadow moments had no reply turn and left the denominator;
+two shadow windows touched the ruled-out turn and scored on their
+remaining turn.
+
+The measure also explains itself: of 391 window turns with both tags,
+218 (55.8%) carry a listed act from both readers — matching the
+corpus-wide 330 of 575. At this grain the overconfident learner makes
+a listed act in most turns whatever the tutor does, so a two-turn
+window is nearly always a hit and the measure has no room to show a
+challenge effect. The pilot's presence instrument, with its stricter
+definitions, put the same rates at 30.0% against 5.7%. So the two
+readings differ by an order of magnitude in base rate: the decision
+readers' one-tag-per-turn speech act is a much looser net than relay
+116's exposure test. The disagreement bound is small (36 of 391 turns,
+9.2%; of the 218 both-listed turns, 204 name the same act), so reader
+noise does not carry this.
+
+Read, with the label: as a registered post-hoc re-analysis, this
+re-basing finds no challenge effect on evidence moves — and the
+instrument it had to use saturates, so it could not have found a
+modest one. The pre-registered P3 question stays open. The paper
+reports both facts under relay 122's disclosure.
+
 NEVER push this branch.
