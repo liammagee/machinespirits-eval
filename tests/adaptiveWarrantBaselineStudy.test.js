@@ -1787,6 +1787,189 @@ test('structured offline replay reconstructs turn one and exact input/ledger par
   }
 });
 
+test('live and offline replay agree on obligation creation, expiry, satisfaction, and inquiry closure', async () => {
+  const { createTutorStubWarrantGate } = await import('../services/tutorStubWarrantGate.js');
+  const { projectAdaptiveWarrantEvidenceAvailability } =
+    await import('../services/adaptiveWarrantInquiryCompletion.js');
+  const traceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'warrant-lifecycle-parity-'));
+  const tracePath = path.join(traceDir, 'trace.jsonl');
+  const gate = createTutorStubWarrantGate({ mode: 'observe' });
+  const events = [];
+  const liveDecisions = [];
+  const turns = [
+    {
+      learnerText: 'What do the balance and ring show?',
+      tutorText: 'The result is not yet recorded. What does the town verdict establish?',
+      proposedActionFamily: 'stage_next_step',
+      classification: {
+        combined: true,
+        turn: {
+          request_type: 'stepwise_support_request',
+          discourse_move: 'question',
+          evidence_use: 'none',
+          epistemic_stance: 'reflective',
+          agency: 'steering',
+        },
+      },
+      complete: false,
+    },
+    {
+      learnerText: 'The town verdict concerns access, not the coin itself.',
+      tutorText: 'The balance shows the shilling is light, and its ring sounds dull.',
+      proposedActionFamily: 'stage_next_step',
+      classification: {
+        combined: true,
+        turn: {
+          request_type: 'none',
+          discourse_move: 'claim',
+          evidence_use: 'cites_public_evidence',
+          epistemic_stance: 'grounded',
+          agency: 'steering',
+        },
+      },
+      complete: false,
+    },
+    {
+      learnerText: 'I can now use that result to close the bounded inquiry.',
+      tutorText: 'The public evidence now supports the bounded verdict, and this inquiry is closed.',
+      proposedActionFamily: 'close_inquiry',
+      classification: {
+        combined: true,
+        turn: {
+          request_type: 'none',
+          discourse_move: 'claim',
+          evidence_use: 'links_evidence_to_rule',
+          epistemic_stance: 'grounded',
+          agency: 'self_correcting',
+        },
+      },
+      complete: true,
+    },
+  ];
+
+  let priorDeliveredActionFamily = null;
+  try {
+    for (const [index, fixture] of turns.entries()) {
+      const turn = index + 1;
+      const dagModel = {
+        turn,
+        learnerRecord: {
+          grounded: Array.from({ length: turn }, (_, groundedIndex) => `f${groundedIndex + 1}`),
+          voicedDerived: [],
+        },
+        assessment: {
+          bottleneck: fixture.complete ? 'complete' : 'missing_premise',
+          unsupportedAssertionCount: 0,
+          missingPremises: [],
+          finalSecretEntailed: fixture.complete,
+          assertedSecret: fixture.complete,
+        },
+        memoryReliability: { activeDroppedCount: 0 },
+      };
+      const releasePacing = {
+        turn,
+        signal: { direction: 'steady' },
+        schedule: fixture.complete
+          ? []
+          : [{ premise: 'public_assay', authoredTurn: 3, effectiveTurn: 3, releasedTurn: null }],
+      };
+      const dialogueClosureFrame = {
+        strictGrounded: fixture.complete,
+        authoredDagSatisfied: fixture.complete,
+        mandatory: fixture.complete,
+        available: fixture.complete,
+      };
+      const decision = gate.assess({
+        turn,
+        learnerText: fixture.learnerText,
+        classification: fixture.classification,
+        dagModel,
+        priorActionFamily: priorDeliveredActionFamily,
+        proposedActionFamily: fixture.proposedActionFamily,
+        dialogueClosureFrame,
+        evidenceAvailability: projectAdaptiveWarrantEvidenceAvailability(releasePacing, { turn }),
+        pacingSignal: releasePacing.signal,
+        unsupportedAssertionCount: 0,
+        activeDroppedFactCount: 0,
+        releasedEvidenceIntegrated: true,
+      });
+      liveDecisions.push(decision);
+      const deliveredActionFamily = fixture.proposedActionFamily;
+      const deliveredResponseConfiguration = {
+        action_family: deliveredActionFamily,
+        engagement_stance: 'precise',
+        actorial_part: 'examiner',
+        actorial_performance: { id: 'evidentiary_boundary' },
+      };
+      gate.recordTurnOutcome({
+        turn,
+        actionFamily: deliveredActionFamily,
+        pacingSignal: releasePacing.signal,
+        tutorText: fixture.tutorText,
+        releasedEvidence: [],
+        deliveredResponseConfiguration,
+      });
+      events.push({
+        type: 'tutor_first_draft_contract',
+        turn,
+        contract: {
+          development: { action_family: deliveredActionFamily },
+          performance: {
+            engagement_stance: 'precise',
+            actorial_part: 'examiner',
+            tactic: 'evidentiary_boundary',
+          },
+        },
+      });
+      events.push({ type: 'auto_learner_turn', turn, text: fixture.learnerText });
+      events.push({
+        type: 'turn_complete',
+        turn,
+        turnRecord: {
+          turn,
+          learner: fixture.learnerText,
+          tutor: fixture.tutorText,
+          classification: fixture.classification,
+          tutorLearnerDagModel: dagModel,
+          stateObservation: {
+            dag: { grounded_count: dagModel.learnerRecord.grounded.length, voiced_derived_count: 0 },
+          },
+          deliveredResponseConfiguration,
+          warrantGateDecision: decision,
+          registerSelection: { warrant_gate: decision },
+          dialogueClosure: { frame: dialogueClosureFrame },
+          releasePacing,
+          dramaticRelease: { frame: { entries: [] } },
+        },
+      });
+      priorDeliveredActionFamily = deliveredActionFamily;
+    }
+
+    fs.writeFileSync(tracePath, `${events.map((event) => JSON.stringify(event)).join('\n')}\n`);
+    const offlineDecisions = deriveAdaptiveWarrantShadow(tracePath, { includeTurnOne: true }).sessions[0].decisions;
+    const lifecycleProjection = (decision) => ({
+      public_obligation: decision.public_obligation,
+      inquiry_completion: decision.inquiry_completion,
+    });
+
+    assert.deepEqual(offlineDecisions.map(lifecycleProjection), liveDecisions.map(lifecycleProjection));
+
+    const [created, expired, satisfiedAndClosed] = liveDecisions;
+    assert.equal(created.public_obligation.blocking_obligation.status, 'open');
+    assert.ok(created.public_obligation.events.some((event) => event.type === 'created'));
+    assert.equal(expired.public_obligation.blocking_obligation.status, 'overdue');
+    assert.ok(expired.public_obligation.blocking_obligation.history.some((event) => event.type === 'expired'));
+    assert.equal(satisfiedAndClosed.public_obligation.blocking_obligation, null);
+    assert.equal(satisfiedAndClosed.public_obligation.obligations[0].status, 'satisfied');
+    assert.ok(satisfiedAndClosed.public_obligation.obligations[0].history.some((event) => event.type === 'satisfied'));
+    assert.equal(satisfiedAndClosed.inquiry_completion.status, 'complete');
+    assert.equal(satisfiedAndClosed.inquiry_completion.transition.kind, 'terminal_transition');
+    assert.equal(satisfiedAndClosed.inquiry_completion.transition.recommended_action_family, 'close_inquiry');
+  } finally {
+    fs.rmSync(traceDir, { recursive: true, force: true });
+  }
+});
+
 test('annotation corpus hides condition and keeps the arm mapping in a separate key', () => {
   const rows = [
     resultRow({ profile: 'low_agency', condition: 'baseline', seed: 101 }),
