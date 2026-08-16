@@ -53,9 +53,14 @@ invalid. Stage order: build (no paid calls) → calibration pilot →
 registration freeze from calibration evidence → main block. Nothing is
 registered or authorized yet.
 
-Next step: human review of
-`notes/2026-08-16-edged-register-calibration-draft.md` — a critical review
-of the design (yoke drift, missing payload seam, corridor winner's curse,
-endpoint validity, edge-eligibility screen) plus the draft calibration
-registration (12 candidate cells, screen n=5 → confirm n=12, 120-row /
-~2,400-call cap). No paid call is licensed until a GO note lands.
+2026-08-16 operator rulings (recorded in the calibration draft note): the
+four review amendments approved — first-edge-moment A-vs-B endpoint,
+two-pass content/manner split on arms A and B, upper-80%-bound powering,
+edge-eligibility screen as a keep condition. Stack pinned: generation
+codex `gpt-5.6-luna`, judge claude-code Sonnet 5. Calibration at 4 lanes.
+
+Next step: Stage 0 build (no paid calls) in `../ms-edged-register` —
+hardened personas, two-pass payload seam, yoked delivery swap, calibration
+runner (screen n=5 → confirm n=12, 4 lanes), corridor selector with
+eligibility screen, new cell IDs, tests. No paid call is licensed until a
+GO note lands.

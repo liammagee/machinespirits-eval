@@ -3,6 +3,17 @@
 **DRAFT FOR HUMAN REVIEW.** This note licenses no paid call. Nothing here is
 registered, armed, or run. A GO note comes later and separately.
 
+**Operator rulings (2026-08-16, recorded from chat):** the four Part-1
+amendments are **approved** — the A-versus-B contrast is registered at the
+first edge moment per dialogue (§1.2); the two-pass content/manner split
+applies to arms A **and** B (§1.2); main-block powering uses the upper 80%
+bound of the pooled kept-cell rate (§1.3 G1, §2.4); the edge-eligibility
+screen is a registered keep condition (§2.5 M-C1). Calibration runs
+**four parallel lanes** (screen ≈ 90 min, confirm ≈ 70 min attended, plus
+the between-block review; lane width to be confirmed by the usual rate
+probe in the GO note). Stack pinned in §2.9. Stage 0 build (no paid
+calls) is authorized and under way.
+
 **Date:** 16 August 2026. **Basis:**
 `notes/2026-08-15-edged-register-outcome-study-design.md`,
 `workplan/items/edged-register-outcome-study.md`,
