@@ -99,12 +99,21 @@ stage 2. frustration_claimheld was excluded by the edge-eligibility screen
 (0/12 eligible rows) despite converting at 8/12; the screen changed an
 outcome for the first time.
 
-Next step: the §2.5 M-C2 endpoint read — the operator marks the first and
-last row of each kept cell in `audit-readings-template.json` and the
-selector re-runs with `--audit-readings`. More than 20% disagreement with
-the classifier voids the corridor estimates. Registration freezes only after
-that read passes; the main block then needs its own GO note and launch
-approval.
+2026-08-17 M-C2 endpoint read complete — **the check FAILS** (draft note
+§2.15). The operator read the first and last row of each kept cell blind to
+the classifier: 4 of 12 disagreements, 33.3%, against a 20% bar. The
+corridor estimates in §2.13 are void for selection and the endpoint must be
+revised before registration. Three of the four disagreements run one way —
+the learner keeps its resistance phrase at the front and does fresh work
+behind it, and the classifier vetoes on the surface phrase. The fourth runs
+the other way, so the rule is keyed to the wrong surface and misses in both
+directions. Same defect class as §2.11 and the stance-gate 2.0 finding.
+
+Next step, and it is an operator ruling: choose the revised endpoint
+instrument. Once chosen, it is applied to the same 109 paid rows — no new
+generation is needed — and the corridor is re-derived from that. Only then
+does registration freeze, and the main block still needs its own GO note and
+launch approval.
 
 Owed before the main block (draft note §2.14): the runner overwrites the
 state file from memory on exit, which can silently discard a ruling recorded

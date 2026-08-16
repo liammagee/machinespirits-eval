@@ -530,3 +530,60 @@ file from memory on exit. It should re-read the file and merge, or hold a
 lock, so that a decision written by another process cannot be overwritten.
 Until that lands, the working rule above is the only protection, and it is a
 procedure, not a guarantee.
+
+## 2.15 M-C2 endpoint read — the check FAILS at 33% disagreement
+
+The registered §2.5 M-C2 read is done. The operator read the first and last
+row of each of the six kept cells — twelve rows — one at a time, blind to
+the classifier's verdict, and answered one question per row: did the learner
+move, or stay stuck? The classifier's answer was withheld until all twelve
+were in.
+
+**Result: 4 of 12 disagreements, 33.3%. The registered bar is 20%, that is
+3 of 12. The corridor estimates in §2.13 are VOID for selection.**
+Recorded in `audit-verdict.json` with `endpointVoid: true`.
+
+| # | row | cell | machine | operator |
+|---|---|---|---|---|
+| 5 | 34940 | rote_parroting_sustained, first | converted | stuck |
+| 7 | 34944 | boredom_claimheld, first | not converted | moved |
+| 9 | 34961 | boredom_guarded, first | not converted | moved |
+| 11 | 34974 | rote_parroting_guarded, first | not converted | moved |
+
+Three of the four run the same way: the machine said no and the reader said
+yes. In all three the learner keeps its resistance phrase at the front of
+the turn — "It still feels a bit dead to me", "It still feels like repeating
+terms" — and then does new work behind it. Row 9 revises its own answer on
+fear from unsure to a defended necessary condition. Row 11 completes the
+tutor's sentence frame and then adds the defeater the tutor invited. Row 7
+gives a one-line hold with the deciding feature named from the scene. The
+classifier reads the opening phrase, judges the row still resistant, and
+vetoes the conversion. This is the same defect class as §2.11 and as the
+stance-gate 2.0 finding: a word-surface rule standing in for a reading.
+
+The fourth runs the other way. Row 5 opens with the same resistance phrase
+and then describes a student who notices a failure and revises without being
+told — the machine scored the second half high enough to call it converted;
+the reader judged the whole turn as still parroting the tutor's own example
+back. So the classifier is not simply strict. It is keyed to the wrong
+surface, and it misses in both directions.
+
+All four disagreements fall on the **first** row of a cell and none on the
+last. Six first rows, four wrong; six last rows, none wrong. With twelve
+rows this can be chance and no weight is put on it here. It is recorded so
+that a later, larger read can check it.
+
+The registered consequence is fixed and not open to interpretation: the
+endpoint is revised before registration. No conversion number from §2.13 may
+be used to pick cells or to power the main block until the revised endpoint
+is applied to the same 109 rows. The pooled 34/72 and the 0.529 powering
+baseline stand only as a record of what the lexical classifier said, not as
+a corridor.
+
+What the revision must fix is now known from evidence rather than guessed: a
+learner that keeps its resistance wording while doing fresh work must be
+readable as converted, and a learner that repeats the tutor's example in new
+words must not be. The choice of instrument — a model reader with a written
+rule and a hand-marked test set, a rewritten lexical rule, or a two-step
+where a reader rules on every row the surface rule vetoes — is an operator
+ruling and is not made here. No paid call is licensed by this section.
