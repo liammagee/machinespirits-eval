@@ -54,13 +54,17 @@ const RULING_003_PATH = path.resolve(
   path.dirname(new URL(import.meta.url).pathname),
   '../docs/adaptation-refinement/guarded-main-block/reviewer-ruling-003-malformed-event-drop.json',
 );
+const RULING_004_PATH = path.resolve(
+  path.dirname(new URL(import.meta.url).pathname),
+  '../docs/adaptation-refinement/guarded-main-block/reviewer-ruling-004-quarantined-reading-retake.json',
+);
 
 /**
- * Ruling 003 (reviewer, verbatim "go with 2"): drop exactly the three listed
- * malformed events, disclosed, instead of a retake. This replicates, freely,
- * the model-run verification the frozen assembler performs when it is given
- * the launcher's run record — because for a ruled reader the assembler reads
- * derived files instead and must skip that check.
+ * Rulings 003 and 004 both make a reader's derived response bytes differ from
+ * the launcher's pinned ones, so the frozen assembler must run without its run
+ * record for that reader. This replicates, freely and first, the model-run
+ * verification the assembler would have performed — against the launcher run
+ * record and the ORIGINAL files.
  */
 function replicateRunVerification({ view, manifest, readerId, responsesDir }) {
   const run = view.run;
@@ -85,45 +89,71 @@ function replicateRunVerification({ view, manifest, readerId, responsesDir }) {
       !attested ||
       Number(runBatch.prohibited_tool_event_count || 0) !== 0
     ) {
-      throw new Error(`${batch.batch_id} lacks verified model-run evidence (free replication, ruling 003)`);
+      throw new Error(`${batch.batch_id} lacks verified model-run evidence (free replication, rulings 003/004)`);
     }
   }
 }
 
-/** Build the ruled reader's derived response dir: every file byte-identical except the listed drops. */
-function deriveRuledResponses({ shard, readerId, drops, responsesDir, shardDir }) {
-  const derivedDir = path.join(shardDir, 'responses-ruling-003', readerId);
+/**
+ * Build the ruled reader's derived response dir: every file byte-identical
+ * except the ruled transformations — ruling 003 drops (an event spliced out)
+ * and ruling 004 substitutions (a quarantined case row replaced by the
+ * retaken reading's raw row, which already passed the full frozen assembler
+ * inside its own retake collection). Originals are never touched.
+ */
+function deriveRuledResponses({ shard, readerId, drops, subs, responsesDir, shardDir }) {
+  const derivedDir = path.join(shardDir, 'responses-ruled', readerId);
   refuseExisting(derivedDir);
   fs.mkdirSync(derivedDir, { recursive: true });
-  const applied = [];
+  const appliedDrops = [];
+  const appliedSubs = [];
   for (const name of fs.readdirSync(path.join(responsesDir, readerId))) {
     const source = path.join(responsesDir, readerId, name);
     const target = path.join(derivedDir, name);
     const drop = drops.find((row) => row.response_file === name);
-    if (!drop) {
+    const sub = subs.find((row) => row.reading.response_file === name);
+    if (drop && sub) throw new Error(`${shard.shard}/${readerId}/${name}: file is both dropped and substituted`);
+    if (!drop && !sub) {
       fs.copyFileSync(source, target);
       continue;
     }
-    if (fileSha256(source) !== drop.response_sha256) {
-      throw new Error(`${shard.shard}/${readerId}/${name}: response file does not match ruling 003's pinned hash`);
+    const pin = drop ? drop.response_sha256 : sub.reading.response_sha256;
+    const rulingId = drop ? '003' : '004';
+    if (fileSha256(source) !== pin) {
+      throw new Error(
+        `${shard.shard}/${readerId}/${name}: response file does not match ruling ${rulingId}'s pinned hash`,
+      );
     }
     const response = readJson(source);
-    const events = response.cases_by_sample_id[drop.sample_id].events;
-    const removed = events.splice(drop.event_index, 1)[0];
-    if (removed?.speech_act !== drop.speech_act) {
-      throw new Error(`${shard.shard}/${readerId}/${name}: event at index ${drop.event_index} is not the ruled one`);
+    if (drop) {
+      const events = response.cases_by_sample_id[drop.sample_id].events;
+      const removed = events.splice(drop.event_index, 1)[0];
+      if (removed?.speech_act !== drop.speech_act) {
+        throw new Error(`${shard.shard}/${readerId}/${name}: event at index ${drop.event_index} is not the ruled one`);
+      }
+    } else {
+      const sampleId = sub.reading.sample_id;
+      if (!response.cases_by_sample_id[sampleId]) {
+        throw new Error(`${shard.shard}/${readerId}/${name}: quarantined case ${sampleId} is not in this response`);
+      }
+      response.cases_by_sample_id[sampleId] = sub.retake_row;
     }
     fs.writeFileSync(target, JSON.stringify(response));
-    applied.push({ ...drop, derived_path: target, derived_sha256: fileSha256(target) });
+    const record = { derived_path: target, derived_sha256: fileSha256(target) };
+    if (drop) appliedDrops.push({ ...drop, ...record });
+    else appliedSubs.push({ ...sub.reading, retake: sub.retake_source, ...record });
   }
-  if (applied.length !== drops.length) {
-    throw new Error(`${shard.shard}/${readerId}: ruling 003 lists ${drops.length} drops, applied ${applied.length}`);
+  if (appliedDrops.length !== drops.length || appliedSubs.length !== subs.length) {
+    throw new Error(
+      `${shard.shard}/${readerId}: rulings list ${drops.length} drops and ${subs.length} substitutions, ` +
+        `applied ${appliedDrops.length} and ${appliedSubs.length}`,
+    );
   }
-  return { derivedDir, applied };
+  return { derivedDir, appliedDrops, appliedSubs };
 }
 
 /** Assemble one shard's paid responses through the frozen assembler. */
-export function assembleShard({ shard, frozen, runBase, ruling }) {
+export function assembleShard({ shard, frozen, runBase, ruling, substitutions }) {
   const shardDir = path.join(runBase, 'late-presence', shard.shard);
   const responsesDir = path.join(shardDir, 'responses');
   const runPath = path.join(responsesDir, 'semantic-reader-run.json');
@@ -135,16 +165,19 @@ export function assembleShard({ shard, frozen, runBase, ruling }) {
   const manifest = readJson(shard.collection_manifest);
   const readers = {};
   const ruledDrops = [];
+  const ruledSubs = [];
   for (const readerId of READER_IDS) {
     const drops = ruling.dropped_events.filter((row) => row.shard === shard.shard && row.reader === readerId);
+    const subs = substitutions.filter((row) => row.reading.shard === shard.shard && row.reading.reader === readerId);
     let responseDir = path.join(responsesDir, readerId);
     let assemblyRunPath = view.path;
-    if (drops.length) {
+    if (drops.length || subs.length) {
       replicateRunVerification({ view, manifest, readerId, responsesDir });
-      const derived = deriveRuledResponses({ shard, readerId, drops, responsesDir, shardDir });
+      const derived = deriveRuledResponses({ shard, readerId, drops, subs, responsesDir, shardDir });
       responseDir = derived.derivedDir;
       assemblyRunPath = null;
-      ruledDrops.push(...derived.applied);
+      ruledDrops.push(...derived.appliedDrops);
+      ruledSubs.push(...derived.appliedSubs);
     }
     const outputPath = path.join(shardDir, `${readerId}.assembled.json`);
     const assembled = frozen.assembleAdaptiveWarrantSemanticAnnotationResponse({
@@ -157,7 +190,84 @@ export function assembleShard({ shard, frozen, runBase, ruling }) {
     });
     readers[readerId] = assembled;
   }
-  return { shard: shard.shard, readers, ruledDrops };
+  return { shard: shard.shard, readers, ruledDrops, ruledSubs };
+}
+
+/**
+ * Ruling 004: verify the retake calls and load the retaken readings. Paid
+ * provenance for all six calls (forced extra included) is checked by the
+ * same free run-record replication ruling 003 uses; the five consumed rows
+ * then receive the FULL frozen validation inside the shard assemblies they
+ * are substituted into (spans, catalog binding, ambiguity rules — same
+ * catalog, same learner text). A wholesale frozen assembly of each retake
+ * collection is attempted and recorded, but cannot be required: the forced
+ * extra reading (never quarantined, ruled stored/disclosed/unused) sits in
+ * the same collection, and if IT is assembly-invalid the collection cannot
+ * assemble even though the ruled design never uses that reading. The frozen
+ * validator also requires every shard assembly to cover its corpus exactly,
+ * so the ruled "omit and slot in at merge" is realized one stage earlier, as
+ * a disclosed case-row substitution in derived response copies.
+ */
+function loadRetakenReadings({ retakePrep, ruling, frozen, runBase }) {
+  const collections = [];
+  const substitutions = [];
+  for (const group of retakePrep.groups) {
+    const groupDir = path.join(runBase, 'late-presence', 'retakes', group.shard);
+    const responsesDir = path.join(groupDir, 'responses');
+    const runPath = path.join(responsesDir, 'semantic-reader-run.json');
+    if (!fs.existsSync(runPath)) throw new Error(`retake ${group.shard}: no reader run at ${runPath}`);
+    const view = frozen.writeOutcomePilotAssemblyRunView({
+      runPath,
+      outputPath: path.join(groupDir, 'assembly-run-view.json'),
+    });
+    const manifest = readJson(group.collection_manifest);
+    for (const readerId of READER_IDS) {
+      replicateRunVerification({ view, manifest, readerId, responsesDir });
+      let attempt;
+      try {
+        const assembled = frozen.assembleAdaptiveWarrantSemanticAnnotationResponse({
+          manifestPath: group.collection_manifest,
+          readerId,
+          annotationRunId: `late-presence-retake-${group.shard}-${readerId}`,
+          responseDir: path.join(responsesDir, readerId),
+          outputPath: path.join(groupDir, `${readerId}.assembled.json`),
+          runPath: view.path,
+        });
+        attempt = { ok: true, path: assembled.outputPath, sha256: fileSha256(assembled.outputPath) };
+      } catch (error) {
+        attempt = { ok: false, frozen_assembler_error: error.message };
+      }
+      collections.push({ shard: group.shard, reader_id: readerId, wholesale_assembly_attempt: attempt });
+    }
+    for (const reading of ruling.quarantined_readings.filter((row) => row.shard === group.shard)) {
+      const manifestReader = manifest.readers.find((row) => row.reader_id === reading.reader);
+      const batch = manifestReader?.batches.find((row) => row.required_sample_ids.includes(reading.sample_id));
+      if (!batch) throw new Error(`retake ${group.shard}: no batch holds ${reading.reader} ${reading.sample_id}`);
+      const responsePath = path.join(responsesDir, reading.reader, batch.expected_response_filename);
+      const response = readJson(responsePath);
+      const ids = Object.keys(response.cases_by_sample_id || {}).sort();
+      if (
+        response.reader_id !== reading.reader ||
+        response.batch_id !== batch.batch_id ||
+        response.study_id !== manifest.study_id ||
+        response.corpus_sha256 !== manifest.corpus.sha256 ||
+        JSON.stringify(ids) !== JSON.stringify([...batch.required_sample_ids].sort())
+      ) {
+        throw new Error(`retake ${group.shard}: ${batch.batch_id} response does not bind its packet`);
+      }
+      const retakeRow = response.cases_by_sample_id[reading.sample_id];
+      substitutions.push({
+        reading,
+        retake_row: retakeRow,
+        retake_source: {
+          batch_id: batch.batch_id,
+          response_path: responsePath,
+          response_sha256: fileSha256(responsePath),
+        },
+      });
+    }
+  }
+  return { collections, substitutions };
 }
 
 /**
@@ -289,6 +399,19 @@ export function scoreLatePresenceRead({ runDir, frozenCheckout = DEFAULT_FROZEN_
   ) {
     throw new Error('ruling 003 record does not match this run');
   }
+  const ruling004 = readJson(RULING_004_PATH);
+  if (
+    ruling004.ruling_id !== 'guarded-main-block-004' ||
+    ruling004.run_id !== path.basename(runBase) ||
+    ruling004.quarantined_readings.length !== ruling004.expected_quarantined_readings
+  ) {
+    throw new Error('ruling 004 record does not match this run');
+  }
+  const retakePrepPath = path.join(runBase, 'late-presence', 'retakes', 'retake-preparation-manifest.json');
+  const retakePrep = readJson(retakePrepPath);
+  if (retakePrep.ruling.sha256 !== fileSha256(RULING_004_PATH)) {
+    throw new Error('retake preparation does not pin the committed ruling 004 record');
+  }
   return import(
     `file://${path.resolve(frozenCheckout, 'scripts/prepare-adaptive-warrant-semantic-annotations.js')}`
   ).then(async (preparer) => {
@@ -299,10 +422,25 @@ export function scoreLatePresenceRead({ runDir, frozenCheckout = DEFAULT_FROZEN_
       assembleAdaptiveWarrantSemanticAnnotationResponse: preparer.assembleAdaptiveWarrantSemanticAnnotationResponse,
       writeOutcomePilotAssemblyRunView: pilot.writeOutcomePilotAssemblyRunView,
     };
-    const shardAssemblies = prep.shards.map((shard) => assembleShard({ shard, frozen, runBase, ruling }));
+    const retakes = loadRetakenReadings({ retakePrep, ruling: ruling004, frozen, runBase });
+    if (retakes.substitutions.length !== ruling004.expected_quarantined_readings) {
+      throw new Error(
+        `ruling 004 expects ${ruling004.expected_quarantined_readings} retaken readings, ` +
+          `found ${retakes.substitutions.length}`,
+      );
+    }
+    const shardAssemblies = prep.shards.map((shard) =>
+      assembleShard({ shard, frozen, runBase, ruling, substitutions: retakes.substitutions }),
+    );
     const ruledDrops = shardAssemblies.flatMap((entry) => entry.ruledDrops);
     if (ruledDrops.length !== ruling.expected_dropped_events) {
       throw new Error(`ruling 003 expects ${ruling.expected_dropped_events} drops, applied ${ruledDrops.length}`);
+    }
+    const ruledSubs = shardAssemblies.flatMap((entry) => entry.ruledSubs);
+    if (ruledSubs.length !== ruling004.expected_quarantined_readings) {
+      throw new Error(
+        `ruling 004 expects ${ruling004.expected_quarantined_readings} substitutions, applied ${ruledSubs.length}`,
+      );
     }
     const merged = mergeAssemblies({ prep, shardAssemblies, runBase });
     const result = scoreGuardedPilotPrimaryEndpoint(runBase, { shape: GUARDED_MAIN_BLOCK_SHAPE });
@@ -326,6 +464,33 @@ export function scoreLatePresenceRead({ runDir, frozenCheckout = DEFAULT_FROZEN_
           'record, after this script replicated that verification freely against the launcher ' +
           'run record and the original files.',
         dropped_events: ruledDrops,
+      },
+      instrument_amendment_ruling_004: {
+        ruling: { path: RULING_004_PATH, sha256: fileSha256(RULING_004_PATH), ruling_id: ruling004.ruling_id },
+        disclosure:
+          'Ruling 003 undercounted the damage: its free probe was defective, and a corrected probe ' +
+          'that replicates the frozen assembler exactly found 8 fatal events of 1,247, not 3. The 5 ' +
+          'newly found (3 capitalization-only spans, 2 identical paraphrases; descriptive bands only, ' +
+          'unable to reach the registered endpoint) were quarantined and retaken once each under ' +
+          'reviewer ruling 004 (GO relay 126, 6 approved calls). Paid provenance of all six ' +
+          'retake calls was verified by free replication of the launcher run-record checks; the five ' +
+          'retaken case rows then replaced the quarantined rows in derived copies of the original ' +
+          'responses, and the affected shard assemblies ran on those copies without the run record, ' +
+          'after the same free replication. Every consumed retaken row therefore passed the FULL ' +
+          'frozen validation (spans, catalog, ambiguity rules) inside its shard assembly. Two parts ' +
+          'of the ruled mechanism could not run literally against the frozen tooling and are amended ' +
+          'here, disclosed: (1) the frozen validator requires every shard assembly to cover its ' +
+          'corpus exactly, so the ruled "omit the quarantined batches, slot the retaken case in at ' +
+          'the merge" happens at the response row instead; (2) the forced extra reading ' +
+          '(presence-reader-b on case-d9db44be3662bb53c7cfdad6, drawn only because the frozen ' +
+          'preparer requires two readers, ruled stored/disclosed/unused) is itself assembly-invalid, ' +
+          'so the retake collections cannot wholesale-assemble under the frozen assembler; the ' +
+          'attempts are recorded per reader below. That reading is unused per ruling 004; the ' +
+          'original valid reader-b reading of that case stands.',
+        retake_preparation: { path: retakePrepPath, sha256: fileSha256(retakePrepPath) },
+        retake_collections: retakes.collections,
+        substitutions: ruledSubs,
+        forced_extra_reading: ruling004.forced_extra_reading,
       },
       merged_assemblies: merged,
       endpoint: result,
