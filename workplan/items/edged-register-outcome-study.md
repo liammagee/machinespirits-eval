@@ -16,6 +16,7 @@ verification: A powered main block (or a registered no-corridor kill verdict)
 claim_status: future
 depends_on:
   - adaptive-register-switching
+  - paid-study-endpoint-runtime-preflight
 links:
   notes:
     - notes/2026-08-15-edged-register-outcome-study-design.md
@@ -51,3 +52,7 @@ affective-resistant) are hypotheses only — that instrument was ruled
 invalid. Stage order: build (no paid calls) → calibration pilot →
 registration freeze from calibration evidence → main block. Nothing is
 registered or authorized yet.
+
+2026-08-17 — Added the generic paid-study endpoint/runtime preflight as a hard
+dependency. Build work may continue without model calls, but no calibration
+pilot or later paid stage may launch until that infrastructure card is done.
