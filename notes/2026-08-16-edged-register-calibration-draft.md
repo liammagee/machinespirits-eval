@@ -802,3 +802,106 @@ picked, endpoint fixed, baseline fixed. Registration for the main block
 own registration text, its own GO note headed DRAFT FOR HUMAN REVIEW, and
 its own explicit launch approval. **No paid call is licensed by this
 section.**
+
+## Part 3 — main-block registration (DRAFT FOR HUMAN REVIEW)
+
+This part fills the §2.8 checklist. It becomes the registration when the
+operator approves it; until then nothing is frozen. **One blank remains
+and is marked. No paid call is licensed by this part.** The GO note is a
+separate, later, human-committed document, and every command and seed in
+it is copied from tool output, not composed.
+
+### 3.1 Cells, rates, counts
+
+Four cells, each measured at n=12 (5 screen rows + 7 confirm rows), all
+12/12 edge-eligible under M-C1, conversions on the revised primary
+endpoint:
+
+| cell | conversions | arm-C config |
+|---|---|---|
+| question_flood_sustained | 5/12 | cell 206 |
+| rote_parroting_sustained | 5/12 | cell 206 |
+| boredom_claimheld | 7/12 | cell 206 |
+| rote_parroting_guarded | 6/12 | cell 206 |
+
+Pooled 23/48 = 0.479. Source of record:
+`corridor-report-revised-primary.json`, sha256
+`ed9751cf17f217fbcc532646d3525c1beb95765960195c2a746c8ee5be410c07`.
+
+### 3.2 Baseline and powering
+
+Baseline **0.479**, the measured pooled rate, per operator ruling 2
+(§2.18) — a recorded deviation from §2.4's upper-bound rule, in the
+direction of a larger sample.
+
+**OPEN — the one blank in this registration: the minimum effect of
+interest.** Two candidate registrations, two-sided α = .05, power .80,
+primary contrast only:
+
+- **+20 points** (0.479 to 0.679): ~95 dialogues per version of the
+  tutor; 285 rows over three arms; ~5,700 generation calls; roughly 7
+  attended hours at 4 lanes.
+- **+15 points** (0.479 to 0.629): ~172 per version; 516 rows; ~10,300
+  calls; roughly 12.5 attended hours at 4 lanes.
+
+Rows split evenly over the four cells within each arm. The GO note
+re-computes the chosen size exactly (exact test, not the approximation
+used here) and prices the scoring calls: one endpoint-reader call per
+row, register and stance readings on arm-A edged turns, the guardrail on
+every row.
+
+### 3.3 Arms
+
+- **A — adaptive-edged**: `cell_207_id_director_edged_register_two_pass_adaptive_edged`.
+- **B — yoked-warm**: `cell_208_id_director_edged_register_yoked_warm_delivery`.
+- **C — router-warm**: `cell_206_id_director_edged_register_calibration_warm` —
+  byte-identical to the calibration arm, which is what lets the §3.1
+  rates serve as its baseline.
+
+All three are registered in `config/tutor-agents.yaml` in this worktree.
+The two-pass content/manner seam applies to A and B, with its tests, per
+the approved §1.2 amendment.
+
+### 3.4 Endpoints
+
+- **Primary**: post-resistance conversion, A versus C, pooled over the
+  four cells, exact test. Conversion = the model reader answers **yes**
+  on "did the learner do the task the tutor set" (§2.16, rule frozen at
+  `b761bbbe`, licensed by ruling 1 §2.18). Yes-plus-partly is reported
+  beside it, selecting nothing.
+- **Secondary (registered)**: A versus B at the **first edge moment per
+  dialogue** — conversion at the fold after that moment, where timing
+  and history are genuinely matched (§1.2). Whole-dialogue A-versus-B is
+  descriptive only.
+- **Gates, not endpoints**: stance-fidelity per edged register; the
+  manner-presence reader on every edged turn; stance counts never
+  differenced across gates or folds.
+- **Harm channel**: the deterministic guardrail, report-only with the
+  §2.7 pause-and-rule stop rule, resume options unchanged.
+
+### 3.5 Pins
+
+- Worktree commit at freeze: `a5e48b48` (branch
+  `design/edged-register-calibration`); the endpoint reader at blob
+  `cd44d452`, the corridor selector at blob `5455c766`, the runner at
+  blob `07b1c0d6`.
+- Calibration batch plan sha256
+  `121b55d1192e3aa0451bc906d7bd7a5100aa78c3d80068e22d6e67741669ac1e`;
+  reader output `endpoint-readings.jsonl` sha256
+  `43e45b42a98a1e14fcefdb94730a63ee2c553dfb0e298ac286c6541a2ed0936c`.
+- Stack: generation codex `gpt-5.6-luna` both seats; judge claude-code
+  Sonnet 5 from the first scored row; 4 lanes; never nemotron/kimi.
+- Seeds: enumerated against the burned ledger **at GO time** and copied,
+  not composed. Not part of this freeze.
+- The GO note re-computes every pin above and fails the launch if any
+  differs.
+
+### 3.6 Stop rules and discipline
+
+§2.7 carries forward whole: the harm-guardrail pause, the attended-run
+resume discipline, and a budget cap to be set in the GO note from the
+registered size. `npm run archive:runs` after every paid block, committed
+in the archive repo. Constraints of §2.10 bind: `face_threat` out of every
+menu, sarcasm manner-only, simulated learners, no human-facing claim;
+results land in the negative-register thread of
+`docs/research/paper-full-2.0.md` first.
