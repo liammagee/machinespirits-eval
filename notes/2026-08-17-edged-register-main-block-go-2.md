@@ -1,4 +1,4 @@
-# GO — edged-register main block (second draft, after amendment 1)
+# GO — edged-register main block (replacement, after amendments 1 and 2)
 
 **DRAFT FOR HUMAN REVIEW — NOT SIGNED. This note licenses nothing until
 the operator signs it, it is committed, and the launch is separately
@@ -16,8 +16,9 @@ latched after four rows and is abandoned, and its plan SHA no longer
 exists. Nothing from it is resumed.
 
 Registration: Part 3 of `notes/2026-08-16-edged-register-calibration-draft.md`,
-frozen at commit `4cd28242`, amended at §3.7 in commits `935b9a6f` and
-`421e491f`.
+frozen at commit `4cd28242`, amended at §3.7 (the harm reader) in commits
+`935b9a6f` and `421e491f`, and at §3.8 (this note's own gate) in
+`22dbbc31`.
 
 Main-block plan SHA-256:
 `31b7d77bfe7832a3e8b8f729753128432760ed5d7dbf151ac85c5519d52ed607`
