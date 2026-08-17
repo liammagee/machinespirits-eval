@@ -1,8 +1,7 @@
-# DRAFT FOR HUMAN REVIEW — GO, edged-register main block
+# GO — edged-register main block
 
-**This draft licenses no paid call.** It becomes a GO note only when the
-operator signs it, commits it, and starts the launch command with
-`--launch-approved` on a clean checkout. Registration: Part 3 of
+I read the draft of this note and approved the launch in chat on
+2026-08-17. Registration: Part 3 of
 `notes/2026-08-16-edged-register-calibration-draft.md`, frozen at commit
 `4cd28242`.
 
@@ -70,7 +69,7 @@ generation codex `gpt-5.6-luna` both seats, judge claude-code Sonnet 5,
 Burn set from the run search (113 runs in `evaluation_runs` with an
 `edged-register-calibration` description) and the archive repo: one
 burned batch id, `batch-2026-08-17`. Fresh batch id for this block:
-**`batch-main-2026-08-18`**. No other seed enters the design.
+**`batch-main-2026-08-17`**. No other seed enters the design.
 
 ## Commands (copied, not composed)
 
@@ -87,21 +86,21 @@ Launch, from the runner's usage line — run after this note is committed,
 with `<sha>` = `git rev-parse HEAD` on the clean checkout:
 
 ```
-node scripts/run-edged-register-calibration.js --main-block --batch-dir exports/edged-register-calibration/batch-main-2026-08-18 --go-note notes/2026-08-17-edged-register-main-block-go.md --launch-approved --expected-sha <sha>
+node scripts/run-edged-register-calibration.js --main-block --batch-dir exports/edged-register-calibration/batch-main-2026-08-17 --go-note notes/2026-08-17-edged-register-main-block-go.md --launch-approved --expected-sha <sha>
 ```
 
 Watch and rule, from the same usage line:
 
 ```
-node scripts/run-edged-register-calibration.js --status --batch-dir exports/edged-register-calibration/batch-main-2026-08-18
-node scripts/run-edged-register-calibration.js --resume-decision <resume_unchanged|kill_cell:<scenario>|kill_study> --batch-dir exports/edged-register-calibration/batch-main-2026-08-18
-node scripts/run-edged-register-calibration.js --report --batch-dir exports/edged-register-calibration/batch-main-2026-08-18
+node scripts/run-edged-register-calibration.js --status --batch-dir exports/edged-register-calibration/batch-main-2026-08-17
+node scripts/run-edged-register-calibration.js --resume-decision <resume_unchanged|kill_cell:<scenario>|kill_study> --batch-dir exports/edged-register-calibration/batch-main-2026-08-17
+node scripts/run-edged-register-calibration.js --report --batch-dir exports/edged-register-calibration/batch-main-2026-08-17
 ```
 
 After the block, before anything else:
 
 ```
-node scripts/archive-run-artifacts.js exports/edged-register-calibration/batch-main-2026-08-18
+node scripts/archive-run-artifacts.js exports/edged-register-calibration/batch-main-2026-08-17
 ```
 
 then commit in the archive repo and add the run's line to its
@@ -124,4 +123,4 @@ bounds does.
 
 GO
 
-— Liam Magee, <date>
+— Liam Magee, 2026-08-17
