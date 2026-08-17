@@ -1,7 +1,7 @@
 ---
 id: paid-study-endpoint-runtime-preflight
 title: Fail closed when a paid study cannot measure its registered endpoints
-status: triaged
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -25,6 +25,7 @@ tags:
   - preflight
   - fail-closed
   - scoring
+branch: codex/paid-study-endpoint-runtime-preflight-implementation
 ---
 
 Paper §6.26 records the defect this prevents: the guarded-learner registration
@@ -60,3 +61,17 @@ Acceptance:
 Boundary: the late P3 result and its disclosed-amendment label remain unchanged.
 This card prevents recurrence; it does not retrospectively convert §6.26 into a
 clean pre-registered result or authorize any new paid run.
+
+2026-08-17 — Implemented the reusable endpoint/runtime contract validator and
+the first production adapter on adaptive register-switching Stage 2. The
+machine-readable contract binds the registered primary and secondary measures
+to their enabled scorer/reader channels, emitted events, exact denominators,
+scenario-preserving shards, packet cap, and production result assembler. The
+zero-call preflight sends all 105 synthetic dialogues through the same five
+scenario packets and assembler used by the real report, records zero model
+calls and zero production writes, and is checked before launch authorization.
+The committed endpoint-GO certificate pins the contract and deterministic
+preflight digests without independently authorizing a paid run. Focused
+regressions fail closed for a disabled reader, missing event, packet overflow,
+split pairing group, incomplete assembly, primary-endpoint demotion, and GO
+digest drift.
