@@ -1,0 +1,63 @@
+{
+  "schema": "machinespirits.adaptation-refinement.malformed-event-drop-ruling.v1",
+  "ruling_id": "guarded-main-block-003",
+  "companion_rulings": ["guarded-main-block-001", "guarded-main-block-002"],
+  "ruled_by": "Liam Magee",
+  "ruled_on": "2026-08-17",
+  "run_id": "guarded-learner-main-block-2026-08-15",
+  "read": "late presence read (relay 124, GO relay 125, 520 calls, complete)",
+  "question": "Three of the 1,247 reader events fail the frozen assembler's catalogue check: each names the evidence-demand act but pairs it with an action object that belongs to a different target. The closed response schema permits the pairing; assembly refuses it and stops the whole batch. The malformed act sits only in the holding-out band (the descriptive opposite-conduct listing), never in the registered endpoint, the second count, or the rejected-wide band, and each affected case keeps other valid events. Retake the three readings (3 paid calls), or drop only the three malformed events, disclosed?",
+  "ruling": "Drop only the three malformed events, disclosed. The reviewer ruled, word for word: \"go with 2\". No retake.",
+  "effect": "Assembly reads derived copies of the three affected response files with the one malformed event removed from each; every other event, case, and file is byte-identical to what the reader returned. The original response files stay untouched on disk. For the three affected reader-and-shard pairs the assembler's model-run verification is replicated by a free check against the launcher's own run record before the copies are derived; every unaffected pair assembles from the original files under the assembler's own verification. The three dropped events and the derived file hashes are listed in the score file and beside every use of the result.",
+  "rule": "An assembly-invalid reader event may be dropped without a retake only when a committed ruling lists it, its response file hash, and its window, and the act it names cannot reach the registered endpoint or any gated number. The drop reaches only events listed here; assembly may soften no other check for any reason.",
+  "applies_to": "Exactly the three events listed below, and no other event in this or any run.",
+  "expected_dropped_events": 3,
+  "no_paid_calls": "Assembly and scoring run from artifacts on disk. The 520-call read is complete; deriving the copies and scoring makes no model call.",
+  "dropped_events": [
+    {
+      "shard": "world_101_kestrel_signal_lamp--gated",
+      "reader": "presence-reader-a",
+      "batch": "presence-reader-a-batch-42",
+      "response_file": "presence-reader-a-batch-42.response.json",
+      "response_sha256": "5f31a151404d16a4a59a6b3d6a9ef87aa4366e83e4bfb7d0bd09b5d8135e8b4c",
+      "sample_id": "case-8e463699bc24cadc92cfcd1a",
+      "window_turn": "outcome-pilot-67-world_101_kestrel_signal_lamp-s665-gated#4",
+      "event_index": 1,
+      "speech_act": "learner_evidence_demand",
+      "defect": "action object natural-act-8f6cf9b0b2d2a20c belongs to a different target than wiped_message_core",
+      "case_keeps": ["learner_overclaim_assertion"]
+    },
+    {
+      "shard": "world_102_marigold_archive_box--bare",
+      "reader": "presence-reader-a",
+      "batch": "presence-reader-a-batch-22",
+      "response_file": "presence-reader-a-batch-22.response.json",
+      "response_sha256": "90265fb63af64fd28a27a197585be84379712ca2728c98c8976af96963ceeb91",
+      "sample_id": "case-4cd589efb329f87e568f55ce",
+      "window_turn": "outcome-pilot-42-world_102_marigold_archive_box-s660-bare#5",
+      "event_index": 1,
+      "speech_act": "learner_evidence_demand",
+      "defect": "action object natural-act-baa1a93f343511ba belongs to a different target than p_crew",
+      "case_keeps": ["learner_evidence_dismissal"]
+    },
+    {
+      "shard": "world_102_marigold_archive_box--gated",
+      "reader": "presence-reader-b",
+      "batch": "presence-reader-b-batch-01",
+      "response_file": "presence-reader-b-batch-01.response.json",
+      "response_sha256": "c11b3b0c2d964b7ffa73c9cd99c12435648b2449473f05f6e2d479505d12d84c",
+      "sample_id": "case-a0c504f9b08c9102d37a81ee",
+      "window_turn": "outcome-pilot-04-world_102_marigold_archive_box-s654-gated#8",
+      "event_index": 2,
+      "speech_act": "learner_evidence_demand",
+      "defect": "action object natural-act-29bb256284bb7e5d belongs to a different target than lost_property_ledger",
+      "case_keeps": ["analytic_contribution", "learner_overclaim_assertion"]
+    }
+  ],
+  "evidence": {
+    "assembler_error": "requested_or_proposed_action target does not match its action object",
+    "events_checked_by_free_probe": 1247,
+    "events_invalid": 3,
+    "bands_the_act_reaches": "holding_out only — not the registered endpoint, not second_count, not rejected_wide"
+  }
+}

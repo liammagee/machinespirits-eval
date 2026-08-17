@@ -50,8 +50,80 @@ function refuseExisting(file) {
   if (fs.existsSync(file)) throw new Error(`refusing to overwrite existing file: ${file}`);
 }
 
+const RULING_003_PATH = path.resolve(
+  path.dirname(new URL(import.meta.url).pathname),
+  '../docs/adaptation-refinement/guarded-main-block/reviewer-ruling-003-malformed-event-drop.json',
+);
+
+/**
+ * Ruling 003 (reviewer, verbatim "go with 2"): drop exactly the three listed
+ * malformed events, disclosed, instead of a retake. This replicates, freely,
+ * the model-run verification the frozen assembler performs when it is given
+ * the launcher's run record — because for a ruled reader the assembler reads
+ * derived files instead and must skip that check.
+ */
+function replicateRunVerification({ view, manifest, readerId, responsesDir }) {
+  const run = view.run;
+  if (run.status !== 'complete' || run.study_id !== manifest.study_id || run.source_commit !== manifest.source_commit) {
+    throw new Error('run record is not a complete source-bound reader run');
+  }
+  const reader = manifest.readers.find((row) => row.reader_id === readerId);
+  const [provider, ...modelRest] = run.model.split('.');
+  for (const batch of reader.batches) {
+    const responsePath = path.join(responsesDir, readerId, batch.expected_response_filename);
+    const runBatch = run.batches.find((row) => row.reader_id === readerId && row.batch_id === batch.batch_id);
+    const attested =
+      runBatch?.model_independently_attested === true ||
+      (runBatch?.model_attestation_basis === 'explicit_cli_model_argument_accepted_bridge_echo' &&
+        runBatch.returned_provider === provider &&
+        runBatch.returned_model === modelRest.join('.') &&
+        runBatch.model_independently_attested === false);
+    if (
+      runBatch?.status !== 'complete' ||
+      runBatch.response_path !== responsePath ||
+      runBatch.response_sha256 !== fileSha256(responsePath) ||
+      !attested ||
+      Number(runBatch.prohibited_tool_event_count || 0) !== 0
+    ) {
+      throw new Error(`${batch.batch_id} lacks verified model-run evidence (free replication, ruling 003)`);
+    }
+  }
+}
+
+/** Build the ruled reader's derived response dir: every file byte-identical except the listed drops. */
+function deriveRuledResponses({ shard, readerId, drops, responsesDir, shardDir }) {
+  const derivedDir = path.join(shardDir, 'responses-ruling-003', readerId);
+  refuseExisting(derivedDir);
+  fs.mkdirSync(derivedDir, { recursive: true });
+  const applied = [];
+  for (const name of fs.readdirSync(path.join(responsesDir, readerId))) {
+    const source = path.join(responsesDir, readerId, name);
+    const target = path.join(derivedDir, name);
+    const drop = drops.find((row) => row.response_file === name);
+    if (!drop) {
+      fs.copyFileSync(source, target);
+      continue;
+    }
+    if (fileSha256(source) !== drop.response_sha256) {
+      throw new Error(`${shard.shard}/${readerId}/${name}: response file does not match ruling 003's pinned hash`);
+    }
+    const response = readJson(source);
+    const events = response.cases_by_sample_id[drop.sample_id].events;
+    const removed = events.splice(drop.event_index, 1)[0];
+    if (removed?.speech_act !== drop.speech_act) {
+      throw new Error(`${shard.shard}/${readerId}/${name}: event at index ${drop.event_index} is not the ruled one`);
+    }
+    fs.writeFileSync(target, JSON.stringify(response));
+    applied.push({ ...drop, derived_path: target, derived_sha256: fileSha256(target) });
+  }
+  if (applied.length !== drops.length) {
+    throw new Error(`${shard.shard}/${readerId}: ruling 003 lists ${drops.length} drops, applied ${applied.length}`);
+  }
+  return { derivedDir, applied };
+}
+
 /** Assemble one shard's paid responses through the frozen assembler. */
-export function assembleShard({ shard, frozen, runBase }) {
+export function assembleShard({ shard, frozen, runBase, ruling }) {
   const shardDir = path.join(runBase, 'late-presence', shard.shard);
   const responsesDir = path.join(shardDir, 'responses');
   const runPath = path.join(responsesDir, 'semantic-reader-run.json');
@@ -60,20 +132,32 @@ export function assembleShard({ shard, frozen, runBase }) {
     runPath,
     outputPath: path.join(shardDir, 'assembly-run-view.json'),
   });
+  const manifest = readJson(shard.collection_manifest);
   const readers = {};
+  const ruledDrops = [];
   for (const readerId of READER_IDS) {
+    const drops = ruling.dropped_events.filter((row) => row.shard === shard.shard && row.reader === readerId);
+    let responseDir = path.join(responsesDir, readerId);
+    let assemblyRunPath = view.path;
+    if (drops.length) {
+      replicateRunVerification({ view, manifest, readerId, responsesDir });
+      const derived = deriveRuledResponses({ shard, readerId, drops, responsesDir, shardDir });
+      responseDir = derived.derivedDir;
+      assemblyRunPath = null;
+      ruledDrops.push(...derived.applied);
+    }
     const outputPath = path.join(shardDir, `${readerId}.assembled.json`);
     const assembled = frozen.assembleAdaptiveWarrantSemanticAnnotationResponse({
       manifestPath: shard.collection_manifest,
       readerId,
       annotationRunId: `late-presence-${shard.shard}-${readerId}`,
-      responseDir: path.join(responsesDir, readerId),
+      responseDir,
       outputPath,
-      runPath: view.path,
+      runPath: assemblyRunPath,
     });
     readers[readerId] = assembled;
   }
-  return { shard: shard.shard, readers };
+  return { shard: shard.shard, readers, ruledDrops };
 }
 
 /**
@@ -197,6 +281,14 @@ export function scoreLatePresenceRead({ runDir, frozenCheckout = DEFAULT_FROZEN_
   const scorePath = path.join(runBase, 'late-presence', 'late-presence-score.json');
   refuseExisting(scorePath);
   for (const readerId of READER_IDS) refuseExisting(path.join(runBase, `${readerId}.assembled.json`));
+  const ruling = readJson(RULING_003_PATH);
+  if (
+    ruling.ruling_id !== 'guarded-main-block-003' ||
+    ruling.run_id !== path.basename(runBase) ||
+    ruling.dropped_events.length !== ruling.expected_dropped_events
+  ) {
+    throw new Error('ruling 003 record does not match this run');
+  }
   return import(
     `file://${path.resolve(frozenCheckout, 'scripts/prepare-adaptive-warrant-semantic-annotations.js')}`
   ).then(async (preparer) => {
@@ -207,7 +299,11 @@ export function scoreLatePresenceRead({ runDir, frozenCheckout = DEFAULT_FROZEN_
       assembleAdaptiveWarrantSemanticAnnotationResponse: preparer.assembleAdaptiveWarrantSemanticAnnotationResponse,
       writeOutcomePilotAssemblyRunView: pilot.writeOutcomePilotAssemblyRunView,
     };
-    const shardAssemblies = prep.shards.map((shard) => assembleShard({ shard, frozen, runBase }));
+    const shardAssemblies = prep.shards.map((shard) => assembleShard({ shard, frozen, runBase, ruling }));
+    const ruledDrops = shardAssemblies.flatMap((entry) => entry.ruledDrops);
+    if (ruledDrops.length !== ruling.expected_dropped_events) {
+      throw new Error(`ruling 003 expects ${ruling.expected_dropped_events} drops, applied ${ruledDrops.length}`);
+    }
     const merged = mergeAssemblies({ prep, shardAssemblies, runBase });
     const result = scoreGuardedPilotPrimaryEndpoint(runBase, { shape: GUARDED_MAIN_BLOCK_SHAPE });
     if (result.shape_problems.length) {
@@ -220,6 +316,17 @@ export function scoreLatePresenceRead({ runDir, frozenCheckout = DEFAULT_FROZEN_
       registration: 'docs/adaptation-refinement/relay/124-registration-late-presence-read.md',
       zero_model_calls_in_this_script: true,
       preparation_manifest: { path: prepPath, sha256: fileSha256(prepPath) },
+      instrument_amendment_ruling_003: {
+        ruling: { path: RULING_003_PATH, sha256: fileSha256(RULING_003_PATH), ruling_id: ruling.ruling_id },
+        disclosure:
+          'Three of 1,247 reader events failed the frozen assembler and were dropped under ' +
+          'reviewer ruling 003 ("go with 2"). All three are the evidence-demand act in the ' +
+          'holding-out band; none can reach the registered endpoint. For the three affected ' +
+          'reader+shard pairs the assembler ran on derived response copies without its run ' +
+          'record, after this script replicated that verification freely against the launcher ' +
+          'run record and the original files.',
+        dropped_events: ruledDrops,
+      },
       merged_assemblies: merged,
       endpoint: result,
       side_reports: {
