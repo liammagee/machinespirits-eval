@@ -768,3 +768,37 @@ spot check licenses the revised endpoint for selection; whether the pooled
 0.479 with baseline 0.550 is the number the main block is powered on;
 whether any of the 11 remaining rows are spent on the n=5 cells. **No paid
 call is licensed by this section.**
+
+## 2.18 Operator rulings, 2026-08-17 — calibration is closed
+
+The operator ruled on the three open questions. Recorded with no runner
+live.
+
+**Ruling 1 — the revised endpoint is licensed for selection.** The twelve-
+row spot check, 12 of 12 agreements on the yes/partly line, is accepted as
+enough. The two limits in §2.17.1 stand and travel with the study: the
+check confirmed stated answers rather than reading cold, and no pass bar
+was registered for it. The four kept cells from
+`corridor-report-revised-primary.json` are the main-block cells:
+question_flood_sustained, rote_parroting_sustained, boredom_claimheld,
+rote_parroting_guarded.
+
+**Ruling 2 — the powering baseline is the measured rate, 23/48 = 0.479.**
+This is a recorded deviation from the frozen §2.4 rule, which said use the
+upper 80% bound (0.550). The direction of the deviation is toward a larger
+sample: at a 20-point lift the measured rate asks for about 95 dialogues
+per version of the tutor against 89 at the upper bound; at 15 points, 172
+against 163 (two-sided α = .05, 80% power). The study loses nothing by the
+change except a few dialogues of cost; it is recorded here because a
+frozen rule was overridden, and the record is the point.
+
+**Ruling 3 — none of the 11 remaining rows are spent.** The five n=5
+cells stay dropped. The re-read numbers behind the ruling are in §2.17.
+The calibration closes at 109 of the 120 capped rows.
+
+**What this closes and what it does not.** Calibration is complete: cells
+picked, endpoint fixed, baseline fixed. Registration for the main block
+(§2.8) can now be frozen. It has not been. The main block still needs its
+own registration text, its own GO note headed DRAFT FOR HUMAN REVIEW, and
+its own explicit launch approval. **No paid call is licensed by this
+section.**

@@ -140,11 +140,19 @@ twelve agree. Two limits — the reader states its answer first, so this
 confirms rather than reads cold, and no bar is registered for this check
 (the 20% M-C2 bar was for the old question).
 
-Open operator rulings: whether the spot check licenses the revised endpoint
-for selection; whether 0.479 with baseline 0.550 powers the main block;
-whether any of the 11 remaining rows under the 120 cap are spent on the
-five n=5 cells the screen dropped. The main block still needs its own GO
-note and launch approval.
+2026-08-17 operator rulings — calibration CLOSED (draft note §2.18). The
+revised endpoint is licensed for selection on the 12/12 spot check, with
+its two limits recorded. The powering baseline is the measured 23/48 =
+0.479 — a recorded deviation from the frozen upper-bound rule, in the
+direction of a larger sample (about 95 dialogues per version of the tutor
+for a 20-point lift, 172 for 15 points). None of the 11 remaining capped
+rows are spent; the five n=5 cells stay dropped. Main-block cells:
+question_flood_sustained, rote_parroting_sustained, boredom_claimheld,
+rote_parroting_guarded.
+
+Next: freeze the main-block registration (§2.8), then a GO note headed
+DRAFT FOR HUMAN REVIEW, then explicit launch approval. No paid call is
+licensed yet.
 
 Owed before the main block (draft note §2.14): **fixed 2026-08-17.** The
 runner overwrote the state file from memory on exit, which could silently
