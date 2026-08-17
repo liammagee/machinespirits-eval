@@ -1,19 +1,20 @@
 {
-  "generated": "2026-08-14T22:24:38.309Z",
+  "generated": "2026-08-16T23:58:37.148Z",
   "counts": {
-    "total": 503,
+    "total": 506,
     "byStatus": {
-      "done": 472,
+      "done": 474,
       "blocked": 6,
       "dropped": 10,
       "active": 9,
+      "triaged": 1,
       "archived": 4,
       "review": 2
     },
     "byType": {
-      "research": 77,
+      "research": 79,
       "experiment": 86,
-      "infra": 105,
+      "infra": 106,
       "maintenance": 213,
       "content": 4,
       "ops": 10,
@@ -21,6 +22,35 @@
     }
   },
   "items": [
+    {
+      "id": "adaptive-warrant-fine-grain-semantic-encoding-redesign",
+      "title": "Adaptive warrant: fine-grain semantic encoding redesign",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-08-17",
+      "updated": "2026-08-17",
+      "verification": "A future redesign freezes a revised fine-grain event-identity and semantic-encoding contract before collection, then independently passes its predeclared representative two-reader agreement, support, and decision gates without pooling diagnostic or presence-only evidence.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "docs/adaptation-refinement/relay/051-reviewer-ruling-matrix-gate-fail.md",
+          "docs/adaptation-refinement/relay/054-reviewer-ruling-presence-gate-pass.md"
+        ],
+        "items": [
+          "adaptive-warrant-public-obligation-ledger-and-inquiry-termin"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "warrant-gate",
+        "semantic-encoding",
+        "fine-grain"
+      ]
+    },
     {
       "id": "adaptive-warrant-contract-redesign",
       "title": "Adaptive warrant gate: expected-uptake and policy-termination contracts",
@@ -49,37 +79,6 @@
         "warrant-gate",
         "expected-uptake",
         "counterfactual-replay"
-      ],
-      "branch": "adaptation-refinement"
-    },
-    {
-      "id": "adaptive-warrant-public-obligation-ledger-and-inquiry-termin",
-      "title": "Adaptive warrant: public obligation ledger and inquiry termination",
-      "status": "active",
-      "type": "research",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-10",
-      "updated": "2026-08-11",
-      "verification": "A public-obligation ledger persists named tutor-directed requests across family changes and distinguishes them from learner-proposed tests; inquiry completion can license close_inquiry from public evidence rather than turn number; live/offline parity tests cover creation, satisfaction, expiry, and closure; a separately frozen targeted challenge is used only to diagnose and repair typed mechanism failures; and a later representative natural- prevalence two-reader corpus alone passes the predeclared decision, divergence, successor, diligent-control, support, and parity thresholds before any outcome comparison resumes. Live mechanism execution additionally requires a digest-bound authorization for a clean committed 40-character HEAD, the recursive source closure, the named destination, and the declared private prompt-payload scope; sealed children, a 64-call dialogue cap, wrapper/native CLI fingerprints, opaque blind IDs, strict V4 responses, and deterministic keyed reader-batch assembly must validate before scoring.",
-      "claim_status": "exploratory",
-      "links": {
-        "notes": [
-          "docs/adaptation-refinement/remaining-next-steps.md",
-          "docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md",
-          "docs/adaptation-refinement/gold-annotations-first-corpus.md"
-        ],
-        "items": [
-          "adaptive-warrant-contract-redesign"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "warrant-gate",
-        "commitment-ledger",
-        "inquiry-completion"
       ],
       "branch": "adaptation-refinement"
     },
@@ -431,6 +430,39 @@
         "id-director",
         "provenance"
       ]
+    },
+    {
+      "id": "warrant-stub-dependency-boundary-rule",
+      "title": "Boundary rule: warrant modules must not import tutor-stub files",
+      "status": "active",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-16",
+      "updated": "2026-08-16",
+      "verification": "A stated one-way rule (warrant-gate, action-contract, and obligation-ledger modules never import tutor-stub files; tutor-stub may import them) is written down, and a test freezes today's violations as an allowlist that may only shrink. Any new cross-import fails the test. No existing cross-import is removed while the live warrant validation line is open, because that line fingerprints these files.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "notes/2026-08-16-harness-reconciliation-survey.md"
+        ],
+        "items": [
+          "tutor-stub-cell-reconciliation",
+          "adaptive-warrant-public-obligation-ledger-and-inquiry-termin"
+        ],
+        "code": [
+          "services/adaptiveWarrantGateCore.js",
+          "services/tutorStubWarrantGate.js"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "warrant-gate",
+        "harness",
+        "architecture"
+      ],
+      "branch": "design/harness-reconciliation"
     },
     {
       "id": "a1-human-learner-validation",
@@ -1149,6 +1181,38 @@
         "decision-quality"
       ],
       "branch": "adaptation-refinement"
+    },
+    {
+      "id": "adaptive-warrant-public-obligation-ledger-and-inquiry-termin",
+      "title": "Adaptive warrant: public obligation ledger and inquiry termination",
+      "status": "done",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-10",
+      "updated": "2026-08-17",
+      "verification": "Scope-bound closeout requires a deterministic zero-call live/offline parity regression covering obligation creation, expiry, satisfaction, and inquiry closure; committed sealed validation and recursive source provenance; an explicit record that the fine-grain semantic gate failed while the later presence-level gate passed; and green focused, workplan-source, formatting, and lint checks. Future fine-grain redesign is tracked separately and is not an extraction prerequisite.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": [
+          "docs/adaptation-refinement/remaining-next-steps.md",
+          "docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md",
+          "docs/adaptation-refinement/gold-annotations-first-corpus.md"
+        ],
+        "items": [
+          "adaptive-warrant-contract-redesign",
+          "adaptive-warrant-fine-grain-semantic-encoding-redesign"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "warrant-gate",
+        "commitment-ledger",
+        "inquiry-completion"
+      ],
+      "branch": "codex/adaptive-warrant-scope-closeout"
     },
     {
       "id": "admin-chat-drama-launcher-simplification",
@@ -16912,6 +16976,36 @@
         "scriptorium",
         "navigation"
       ]
+    },
+    {
+      "id": "tutor-stub-cell-reconciliation",
+      "title": "Map and reconcile the tutor-stub and cell-based harnesses",
+      "status": "done",
+      "type": "research",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-16",
+      "updated": "2026-08-17",
+      "verification": "A survey note maps the two harnesses side by side (tutor, learner, run, score, adaptation, shared seams, one-world-only parts) and closes with two or three reconciliation options and their costs. No option is chosen without a human ruling; no code changes land from the survey itself.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "notes/2026-08-16-harness-reconciliation-brief.md"
+        ],
+        "code": [
+          "config/tutor-agents.yaml",
+          "services/tutorStubEdgeTimingPolicy.js",
+          "docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "cells",
+        "architecture",
+        "reconciliation"
+      ],
+      "branch": "design/harness-reconciliation"
     },
     {
       "id": "workplan-trailer-pre-push-hook",

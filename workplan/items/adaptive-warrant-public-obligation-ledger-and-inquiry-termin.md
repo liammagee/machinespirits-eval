@@ -1,28 +1,21 @@
 ---
 id: adaptive-warrant-public-obligation-ledger-and-inquiry-termin
 title: "Adaptive warrant: public obligation ledger and inquiry termination"
-status: active
+status: done
 type: research
 priority: P1
 owner: codex
 source: manual
 created: 2026-08-10
-updated: 2026-08-11
-verification: A public-obligation ledger persists named tutor-directed requests
-  across family changes and distinguishes them from learner-proposed tests;
-  inquiry completion can license close_inquiry from public evidence rather than
-  turn number; live/offline parity tests cover creation, satisfaction, expiry,
-  and closure; a separately frozen targeted challenge is used only to diagnose
-  and repair typed mechanism failures; and a later representative natural-
-  prevalence two-reader corpus alone passes the predeclared decision,
-  divergence, successor, diligent-control, support, and parity thresholds
-  before any outcome comparison resumes. Live mechanism execution additionally
-  requires a digest-bound authorization for a clean committed 40-character
-  HEAD, the recursive source closure, the named destination, and the declared
-  private prompt-payload scope; sealed children, a 64-call dialogue cap,
-  wrapper/native CLI fingerprints, opaque blind IDs, strict V4 responses, and
-  deterministic keyed reader-batch assembly must validate before scoring.
-claim_status: exploratory
+updated: 2026-08-17
+verification: Scope-bound closeout requires a deterministic zero-call live/offline
+  parity regression covering obligation creation, expiry, satisfaction, and
+  inquiry closure; committed sealed validation and recursive source provenance;
+  an explicit record that the fine-grain semantic gate failed while the later
+  presence-level gate passed; and green focused, workplan-source, formatting,
+  and lint checks. Future fine-grain redesign is tracked separately and is not
+  an extraction prerequisite.
+claim_status: scope-bound
 links:
   notes:
     - docs/adaptation-refinement/remaining-next-steps.md
@@ -30,13 +23,14 @@ links:
     - docs/adaptation-refinement/gold-annotations-first-corpus.md
   items:
     - adaptive-warrant-contract-redesign
+    - adaptive-warrant-fine-grain-semantic-encoding-redesign
 tags:
   - tutor-stub
   - adaptation
   - warrant-gate
   - commitment-ledger
   - inquiry-completion
-branch: adaptation-refinement
+branch: codex/adaptive-warrant-scope-closeout
 ---
 
 The typed action-family contract gate failed on a fresh corpus because it
@@ -549,3 +543,37 @@ item remains active pending full verification, a clean pushed checkpoint, a
 fresh 24/24 execution with 192/192 parity and delivery, two fresh readers, and
 passage of the unchanged representative gate. No downstream outcome study is
 licensed.
+
+## Scope-bound closeout ruling — 2026-08-17
+
+The human ruling selects a scope-bound closeout at the validated presence
+grain. The deterministic lifecycle-parity regression passes as part of the
+140/140 focused adaptive-warrant suite; workplan tests pass 22/22, workplan
+source validation passes 506/506, and repository lint and formatting checks
+are clean. The final human ruling below closes the card. No new paid run or
+study is part of this closeout.
+
+The final drop-aware validation freeze is bound to clean commit
+`a925fb7aa152b04f90eedb28f11aac05b84b5924` and recursive source-closure
+SHA-256 `c18706a6b9c75f59570e631b8a2021c4fe40489728882c11ec5f529a01a2513b`.
+The distinct original live execution used clean commit
+`489f242931231994b3e780e72c98155989fdafaf` and recursive source-closure
+SHA-256 `05d50422ce80829bb845f41655a94b8b52b2fe7c92e0a38cb9d949f19f602447`.
+
+The fine-grain two-reader matrix gate failed under reviewer ruling 051: strict
+identity agreement and representative support did not meet the predeclared
+floors. The later presence-level confirmation gate passed every registered
+floor under reviewer ruling 054. That pass licenses only result-request,
+proposed-test, and ambiguity presence semantics; it does not rehabilitate the
+failed fine-grain encoding. Any future redesign and validation of that encoding
+is transferred to `adaptive-warrant-fine-grain-semantic-encoding-redesign` and
+is not a prerequisite for extracting this scope-bound closeout to main.
+
+2026-08-17 — Human ruling: accept the scope-bound closeout; the failed
+fine-grain semantic gate transfers to the non-blocking successor, while the
+presence-level result and 140/140 lifecycle-parity suite satisfy the revised
+verification. This closes the historical warrant-validation prerequisite only.
+Runtime extraction remains paused until the currently live guarded-learner and
+cell-path experiments have stopped and sealed their artifacts. The sealed
+validation SHA is squash-fold provenance and is not claimed as an ancestor of
+main.
