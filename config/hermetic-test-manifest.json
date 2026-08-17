@@ -299,6 +299,7 @@
         "tests/edgedRegisterCalibrationRunner.test.js",
         "tests/edgedRegisterCalibrationScenarios.test.js",
         "tests/edgedRegisterCorridor.test.js",
+        "tests/edgedRegisterMainBlock.test.js",
         "tests/engagementRegisterPragmatics.test.js",
         "tests/eval-cli-smoke.test.js",
         "tests/evalCliGenerationCommands.test.js",

@@ -1,14 +1,22 @@
 #!/usr/bin/env node
 
-// Edged-register outcome study — Stage-0 calibration runner (warm-only).
+// Edged-register outcome study — Stage-0 calibration runner (warm-only) and
+// main-block runner (three arms over the four kept cells).
 //
-// Implements the frozen calibration design in
+// Calibration implements the frozen design in
 // notes/2026-08-16-edged-register-calibration-draft.md §2.3–§2.9:
 // screen block (5 rows × 12 cells), zero-call screen decision, confirm block
 // (survivors topped up to 12 rows), 4 lanes, hard cap 120 generated rows,
 // report-only harm guardrail that pauses generation before the next dialogue,
 // and the attended-resume discipline (single resume of the exact missing
 // jobs, no --force, no widening, no model change).
+//
+// The main block implements the frozen Part 3 registration: arms A/B/C
+// (cells 207/208/206) × the four kept corridor cells, sized by the exact
+// test from the frozen 23/48 baseline and the registered +20 points, rows
+// split evenly over cells within each arm, same lanes, guardrail pause and
+// resume discipline. Endpoint conversion is read afterwards by the model
+// reader (scripts/read-edged-register-endpoint.js), not by this runner.
 //
 // No paid call leaves this runner without all three gates: a committed GO
 // note carrying the plan SHA, --launch-approved, and --expected-sha matching
@@ -27,10 +35,12 @@ import {
   EDGED_REGISTER_CALIBRATION as GRID,
   applyRowCap,
   buildEdgedRegisterCalibrationPlan,
+  buildEdgedRegisterMainBlockPlan,
   confirmTopUpJobs,
   decideScreenOutcome,
   harmGuardrailFindings,
   validateEdgedRegisterCalibrationPlan,
+  validateEdgedRegisterMainBlockPlan,
 } from '../services/edgedRegisterCalibration.js';
 import { openEvaluationDbReadonly } from '../services/evaluationDbReadonly.js';
 import {
@@ -43,6 +53,7 @@ const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(SCRIPT_PATH), '..');
 const DEFAULT_OUTPUT_DIR = 'exports/edged-register-calibration';
 const STATE_SCHEMA = 'machinespirits.edged-register-calibration-state.v1';
+const MAIN_STATE_SCHEMA = 'machinespirits.edged-register-main-block-state.v1';
 const MAX_ATTEMPTS_PER_JOB = 2; // initial run + the single attended resume
 
 // ---------------------------------------------------------------------------
@@ -59,7 +70,9 @@ export function calibrationGenerationCommand(job, { grid = GRID, batchId, attemp
     'scripts/eval-cli.js',
     'run',
     '--profiles',
-    grid.profile,
+    // Main-block jobs carry their arm's profile; calibration jobs fall back
+    // to the warm calibration arm the grid pins.
+    job.profile || grid.profile,
     '--scenario',
     job.scenario,
     '--runs',
@@ -101,6 +114,28 @@ export function newBatchState(plan, batchId) {
     operatorDecisions: [],
     killed: false,
   };
+}
+
+export function newMainBlockState(plan, batchId) {
+  return {
+    schema: MAIN_STATE_SCHEMA,
+    batchId,
+    planSha256: plan.planSha256,
+    scenarioSourceSha256: plan.scenarioSourceSha256,
+    arms: plan.arms.map((armSpec) => ({ ...armSpec })),
+    hardCapRows: plan.sizing.hardCapRows,
+    createdAt: new Date().toISOString(),
+    rowsAttempted: 0,
+    jobs: plan.mainJobs.map((job) => ({ ...job, status: 'pending', attempts: [] })),
+    guardrailFlags: [],
+    operatorDecisions: [],
+    killed: false,
+  };
+}
+
+/** Calibration states predate the per-state cap and run under the grid's 120. */
+export function stateHardCap(state) {
+  return state.hardCapRows ?? GRID.hardCapRows;
 }
 
 /**
@@ -164,7 +199,9 @@ function loadState(batchDir) {
   const file = statePath(batchDir);
   if (!fs.existsSync(file)) return null;
   const state = JSON.parse(fs.readFileSync(file, 'utf8'));
-  if (state.schema !== STATE_SCHEMA) throw new Error(`unrecognized state schema ${state.schema} at ${file}`);
+  if (state.schema !== STATE_SCHEMA && state.schema !== MAIN_STATE_SCHEMA) {
+    throw new Error(`unrecognized state schema ${state.schema} at ${file}`);
+  }
   return state;
 }
 
@@ -378,7 +415,7 @@ async function runBlock(state, batchDir, block, { lanes = GRID.generation.lanes 
 
   const takeJob = () => {
     if (paused || state.killed) return null;
-    if (state.rowsAttempted >= GRID.hardCapRows) return null;
+    if (state.rowsAttempted >= stateHardCap(state)) return null;
     while (cursor < queue.runnable.length) {
       const job = queue.runnable[cursor];
       cursor += 1;
@@ -497,7 +534,7 @@ function printStatus(state) {
   }
   console.log(`[edged-calibration] batch ${state.batchId} plan ${state.planSha256.slice(0, 12)}…`);
   for (const [key, count] of [...byKey.entries()].sort()) console.log(`[edged-calibration] ${key}: ${count}`);
-  console.log(`[edged-calibration] rows attempted ${state.rowsAttempted}/${GRID.hardCapRows}`);
+  console.log(`[edged-calibration] rows attempted ${state.rowsAttempted}/${stateHardCap(state)}`);
   const open = unresolvedGuardrailFlags(state);
   for (const flag of open) {
     const families = flag.findings.map((finding) => finding.family).join(', ');
@@ -515,7 +552,29 @@ function printStatus(state) {
   }
 }
 
+// The main block has no deterministic classifier: conversion comes from the
+// model reader afterwards. This report counts landed rows only.
+function printMainBlockReport(state) {
+  const perKey = new Map();
+  for (const job of state.jobs) {
+    if (job.status !== 'completed') continue;
+    const key = `${job.arm} ${job.scenario}`;
+    perKey.set(key, (perKey.get(key) || 0) + 1);
+  }
+  for (const [key, count] of [...perKey.entries()].sort()) {
+    console.log(`[edged-main] ${key}: ${count} completed rows`);
+  }
+  console.log(
+    '[edged-main] endpoint conversion is read afterwards by the model reader ' +
+      '(scripts/read-edged-register-endpoint.js); no deterministic classifier applies here',
+  );
+}
+
 function printReport(state) {
+  if (state.schema === MAIN_STATE_SCHEMA) {
+    printMainBlockReport(state);
+    return;
+  }
   const { positiveByRowId } = classifyCompletedRows(state, { blocks: ['screen', 'confirm'] });
   const perCell = new Map(GRID.cells.map((cell) => [cell.scenario, { rows: 0, positives: 0 }]));
   for (const job of state.jobs) {
@@ -541,8 +600,11 @@ function recordResumeDecision(state, batchDir, rawDecision) {
     );
   }
   if (decision === 'kill_cell') {
-    if (!GRID.cells.some((cell) => cell.scenario === detail)) {
-      throw new Error(`kill_cell needs a registered calibration scenario, got ${detail || '(none)'}`);
+    // Scenarios come from the batch itself, so a main-block ruling can only
+    // kill one of the four kept cells and a calibration ruling one of its 12.
+    const known = new Set(state.jobs.map((job) => job.scenario));
+    if (!known.has(detail)) {
+      throw new Error(`kill_cell needs a scenario from this batch, got ${detail || '(none)'}`);
     }
     for (const job of state.jobs) {
       if (job.scenario === detail && job.status !== 'completed') job.status = 'killed_cell';
@@ -587,6 +649,39 @@ function writeDryRunArtifact(plan, outputDir) {
   return { artifactPath, profileRegistered };
 }
 
+function writeMainBlockDryRunArtifact(plan, outputDir) {
+  const validation = validateEdgedRegisterMainBlockPlan(plan);
+  if (!validation.ok) throw new Error(validation.errors.join('; '));
+  const unregisteredProfiles = [];
+  for (const armSpec of plan.arms) {
+    try {
+      assertProfileRegistered(armSpec.profile);
+    } catch {
+      unregisteredProfiles.push(armSpec.profile);
+    }
+  }
+  const artifact = {
+    schema: 'machinespirits.edged-register-main-block-dry-run.v1',
+    modelCalls: 0,
+    paidLaunchStatus: 'locked_pending_go_note_and_clean_commit_launch',
+    validation,
+    planSha256: plan.planSha256,
+    scenarioSourceSha256: plan.scenarioSourceSha256,
+    arms: plan.arms,
+    sizing: plan.sizing,
+    unregisteredProfiles,
+    // One example per arm so the GO note copies, never composes, a command.
+    exampleGenerationCommands: plan.arms.map((armSpec) => {
+      const job = plan.mainJobs.find((candidate) => candidate.arm === armSpec.arm);
+      return calibrationGenerationCommand(job, { batchId: '<batch-id>', attempt: 1 }).join(' ');
+    }),
+  };
+  fs.mkdirSync(outputDir, { recursive: true });
+  const artifactPath = path.join(outputDir, 'plan-main-block.json');
+  fs.writeFileSync(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`);
+  return { artifactPath, unregisteredProfiles };
+}
+
 // ---------------------------------------------------------------------------
 // Entry point
 // ---------------------------------------------------------------------------
@@ -595,8 +690,10 @@ async function main() {
   const { values } = parseArgs({
     options: {
       'dry-run': { type: 'boolean', default: false },
+      'dry-run-main': { type: 'boolean', default: false },
       screen: { type: 'boolean', default: false },
       confirm: { type: 'boolean', default: false },
+      'main-block': { type: 'boolean', default: false },
       'decide-screen': { type: 'boolean', default: false },
       status: { type: 'boolean', default: false },
       report: { type: 'boolean', default: false },
@@ -612,15 +709,25 @@ async function main() {
 
   if (values.help) {
     console.log(
-      'Usage: node scripts/run-edged-register-calibration.js --dry-run | --status --batch-dir <dir> | ' +
+      'Usage: node scripts/run-edged-register-calibration.js --dry-run | --dry-run-main | ' +
+        '--status --batch-dir <dir> | ' +
         '--decide-screen --batch-dir <dir> | --report --batch-dir <dir> | ' +
         '--resume-decision <resume_unchanged|kill_cell:<scenario>|kill_study> --batch-dir <dir> | ' +
-        '(--screen|--confirm) --batch-dir <dir> --go-note <note> --launch-approved --expected-sha <commit>',
+        '(--screen|--confirm|--main-block) --batch-dir <dir> --go-note <note> --launch-approved --expected-sha <commit>',
     );
     return;
   }
 
-  const modes = ['dry-run', 'screen', 'confirm', 'decide-screen', 'status', 'report'].filter((mode) => values[mode]);
+  const modes = [
+    'dry-run',
+    'dry-run-main',
+    'screen',
+    'confirm',
+    'main-block',
+    'decide-screen',
+    'status',
+    'report',
+  ].filter((mode) => values[mode]);
   if (values['resume-decision']) modes.push('resume-decision');
   if (modes.length !== 1) throw new Error(`choose exactly one mode, got: ${modes.join(', ') || 'none'}`);
 
@@ -638,6 +745,29 @@ async function main() {
     console.log(
       '[edged-calibration] paid calibration locked; a committed GO note plus clean-commit launch is required',
     );
+    return;
+  }
+
+  if (values['dry-run-main']) {
+    const mainPlan = buildEdgedRegisterMainBlockPlan({ root: ROOT });
+    const { artifactPath, unregisteredProfiles } = writeMainBlockDryRunArtifact(
+      mainPlan,
+      path.resolve(ROOT, values['output-dir']),
+    );
+    const { sizing } = mainPlan;
+    console.log(`[edged-main] plan SHA-256 ${mainPlan.planSha256}`);
+    console.log(`[edged-main] scenario source SHA-256 ${mainPlan.scenarioSourceSha256}`);
+    console.log(
+      `[edged-main] exact-test size: ${sizing.nPerArm} rows per arm ` +
+        `(${sizing.rowsPerCellPerArm} per cell), ${sizing.plannedRows} rows over 3 arms, ` +
+        `power ${sizing.powerAtN} at baseline ${sizing.baselineRate} vs ${sizing.targetRate}`,
+    );
+    console.log(`[edged-main] ${mainPlan.mainJobs.length} main jobs, hard cap ${sizing.hardCapRows} rows`);
+    for (const profileName of unregisteredProfiles) {
+      console.log(`[edged-main] NOTE profile ${profileName} is not yet registered in tutor-agents.yaml`);
+    }
+    console.log(`[edged-main] ${path.relative(ROOT, artifactPath)}`);
+    console.log('[edged-main] paid main block locked; a committed GO note plus clean-commit launch is required');
     return;
   }
 
@@ -668,6 +798,9 @@ async function main() {
   if (values['decide-screen']) {
     const state = loadState(batchDir);
     if (!state) throw new Error(`no state at ${statePath(batchDir)}`);
+    if (state.schema !== STATE_SCHEMA) {
+      throw new Error('--decide-screen applies to a calibration batch, not the main block');
+    }
     if (state.planSha256 !== plan.planSha256) {
       throw new Error(`plan drift: state carries ${state.planSha256}, checkout builds ${plan.planSha256}`);
     }
@@ -676,26 +809,42 @@ async function main() {
   }
 
   // Paid modes from here down.
-  const validation = validateEdgedRegisterCalibrationPlan(plan);
+  const isMainBlock = values['main-block'];
+  const activePlan = isMainBlock ? buildEdgedRegisterMainBlockPlan({ root: ROOT }) : plan;
+  const validation = isMainBlock
+    ? validateEdgedRegisterMainBlockPlan(activePlan)
+    : validateEdgedRegisterCalibrationPlan(activePlan);
   if (!validation.ok) throw new Error(validation.errors.join('; '));
-  assertProfileRegistered(plan.profile);
-  assertGoNote(values['go-note'], plan.planSha256);
-  if (!values['launch-approved']) throw new Error('paid calibration blocks require --launch-approved');
+  if (isMainBlock) {
+    for (const armSpec of activePlan.arms) assertProfileRegistered(armSpec.profile);
+  } else {
+    assertProfileRegistered(activePlan.profile);
+  }
+  assertGoNote(values['go-note'], activePlan.planSha256);
+  if (!values['launch-approved']) throw new Error('paid blocks require --launch-approved');
   assertLaunchAuthorization(values['expected-sha']);
 
   let state = loadState(batchDir);
   if (values.screen) {
     if (!state) {
-      state = newBatchState(plan, path.basename(batchDir));
+      state = newBatchState(activePlan, path.basename(batchDir));
       saveState(batchDir, state);
+    }
+  } else if (isMainBlock) {
+    if (!state) {
+      state = newMainBlockState(activePlan, path.basename(batchDir));
+      saveState(batchDir, state);
+    }
+    if (state.schema !== MAIN_STATE_SCHEMA) {
+      throw new Error(`--main-block found a ${state.schema} state at ${batchDir}; use a fresh batch dir`);
     }
   } else if (!state) {
     throw new Error(`--confirm needs an existing screen batch at ${batchDir}`);
   }
-  if (state.planSha256 !== plan.planSha256) {
+  if (state.planSha256 !== activePlan.planSha256) {
     throw new Error(
-      `plan drift: state carries ${state.planSha256}, checkout builds ${plan.planSha256}; ` +
-        'no widening or model change is available mid-calibration',
+      `plan drift: state carries ${state.planSha256}, checkout builds ${activePlan.planSha256}; ` +
+        'no widening or model change is available mid-block',
     );
   }
   if (state.killed) throw new Error('the study was killed by operator decision; no further generation');
@@ -710,7 +859,9 @@ async function main() {
     throw new Error('--confirm needs the zero-call --decide-screen pass to have recorded the screen decision');
   }
 
-  const block = values.screen ? 'screen' : 'confirm';
+  let block = 'main';
+  if (values.screen) block = 'screen';
+  else if (values.confirm) block = 'confirm';
   const { paused } = await runBlock(state, batchDir, block);
   printStatus(state);
   if (paused) {

@@ -350,15 +350,338 @@ export function harmGuardrailFindings({ tutorMessage = '', postLearnerMessage = 
   return findings;
 }
 
+// ---------------------------------------------------------------------------
+// Main block (draft note Part 3, FROZEN by operator ruling 2026-08-17)
+// ---------------------------------------------------------------------------
+
+// The four cells the revised-endpoint corridor kept (§3.1), each 23/48-pooled
+// at n=12 and 12/12 edge-eligible under M-C1.
+const MAIN_BLOCK_KEPT_SCENARIOS = Object.freeze([
+  'charisma_desire_resistance_breakthrough_question_flood_sustained',
+  'charisma_desire_resistance_breakthrough_rote_parroting_sustained',
+  'charisma_desire_resistance_breakthrough_boredom_claimheld',
+  'charisma_desire_resistance_breakthrough_rote_parroting_guarded',
+]);
+
+export const EDGED_REGISTER_MAIN_BLOCK = Object.freeze({
+  schema: 'machinespirits.edged-register-main-block-plan.v1',
+  registrationNote: 'notes/2026-08-16-edged-register-calibration-draft.md',
+  scenarioSource: EDGED_REGISTER_CALIBRATION.scenarioSource,
+  cells: Object.freeze(CALIBRATION_CELLS.filter((cell) => MAIN_BLOCK_KEPT_SCENARIOS.includes(cell.scenario))),
+  arms: Object.freeze([
+    Object.freeze({
+      arm: 'A',
+      role: 'adaptive_edged',
+      profile: 'cell_207_id_director_edged_register_two_pass_adaptive_edged',
+    }),
+    Object.freeze({
+      arm: 'B',
+      role: 'yoked_warm_delivery',
+      profile: 'cell_208_id_director_edged_register_yoked_warm_delivery',
+    }),
+    // Byte-identical to the calibration arm (§3.3) — that identity is what
+    // lets the §3.1 rates serve as arm C's baseline.
+    Object.freeze({ arm: 'C', role: 'router_warm', profile: EDGED_REGISTER_CALIBRATION.profile }),
+  ]),
+  // §3.1–§3.2: pooled 23/48 on the revised primary endpoint; +20 points
+  // registered as the minimum effect of interest, two-sided α .05, power .80,
+  // sized by the exact test (the normal approximation in §3.2 is superseded
+  // here per its own text: "The GO note re-computes the chosen size exactly").
+  baseline: Object.freeze({ successes: 23, trials: 48 }),
+  powering: Object.freeze({
+    minimumEffect: 0.2,
+    alpha: 0.05,
+    power: 0.8,
+    test: 'fisher_exact_two_sided',
+  }),
+  generation: EDGED_REGISTER_CALIBRATION.generation,
+  endpoint: Object.freeze({
+    reader: 'scripts/read-edged-register-endpoint.js',
+    conversionRule: 'did_task_yes_only (frozen at b761bbbe, §2.16.1)',
+    readerCallsPerRow: 1,
+  }),
+  guardrail: EDGED_REGISTER_CALIBRATION.guardrail,
+});
+
+const LOG_FACTORIALS = [0];
+function logFactorial(n) {
+  for (let i = LOG_FACTORIALS.length; i <= n; i += 1) {
+    LOG_FACTORIALS[i] = LOG_FACTORIALS[i - 1] + Math.log(i);
+  }
+  return LOG_FACTORIALS[n];
+}
+const logChoose = (n, k) => logFactorial(n) - logFactorial(k) - logFactorial(n - k);
+
+/**
+ * Fisher's exact test, two-sided by the standard sum-of-small-probabilities
+ * rule: condition on the margin, sum every hypergeometric outcome no more
+ * probable than the observed table. Exact at these sample sizes; no special
+ * functions beyond a log-factorial table.
+ */
+export function fisherExactTwoSidedP(x1, n1, x2, n2) {
+  for (const [value, name] of [
+    [x1, 'x1'],
+    [n1, 'n1'],
+    [x2, 'x2'],
+    [n2, 'n2'],
+  ]) {
+    if (!Number.isInteger(value) || value < 0) throw new Error(`${name} must be a non-negative integer`);
+  }
+  if (x1 > n1 || x2 > n2) throw new Error(`successes exceed trials: ${x1}/${n1}, ${x2}/${n2}`);
+  const margin = x1 + x2;
+  const lowest = Math.max(0, margin - n2);
+  const highest = Math.min(n1, margin);
+  const logDenominator = logChoose(n1 + n2, margin);
+  const outcomeProbs = [];
+  for (let k = lowest; k <= highest; k += 1) {
+    outcomeProbs.push(Math.exp(logChoose(n1, k) + logChoose(n2, margin - k) - logDenominator));
+  }
+  const observed = outcomeProbs[x1 - lowest];
+  let p = 0;
+  for (const prob of outcomeProbs) {
+    if (prob <= observed * (1 + 1e-7)) p += prob;
+  }
+  return Math.min(1, p);
+}
+
+function binomialPmfRow(trials, p) {
+  const logP = Math.log(p);
+  const logQ = Math.log(1 - p);
+  const row = [];
+  for (let k = 0; k <= trials; k += 1) {
+    row.push(Math.exp(logChoose(trials, k) + k * logP + (trials - k) * logQ));
+  }
+  return row;
+}
+
+/**
+ * Exact power of the two-sided Fisher test at equal per-arm n: enumerate every
+ * (x1, x2) pair under the two true rates and sum the probability mass where
+ * the test rejects at alpha. Outcome pairs below 1e-12 joint-mass floor per
+ * factor are skipped; they cannot move the third decimal of power.
+ */
+export function fisherExactPower(nPerArm, p1, p2, alpha) {
+  if (!Number.isInteger(nPerArm) || nPerArm < 1) throw new Error(`nPerArm must be a positive integer, got ${nPerArm}`);
+  if (!(p1 > 0 && p1 < 1 && p2 > 0 && p2 < 1)) throw new Error('rates must sit strictly between 0 and 1');
+  if (!(alpha > 0 && alpha < 1)) throw new Error(`alpha must sit strictly between 0 and 1, got ${alpha}`);
+  const pmf1 = binomialPmfRow(nPerArm, p1);
+  const pmf2 = binomialPmfRow(nPerArm, p2);
+  let total = 0;
+  for (let x1 = 0; x1 <= nPerArm; x1 += 1) {
+    if (pmf1[x1] < 1e-12) continue;
+    for (let x2 = 0; x2 <= nPerArm; x2 += 1) {
+      if (pmf2[x2] < 1e-12) continue;
+      if (fisherExactTwoSidedP(x1, nPerArm, x2, nPerArm) <= alpha) total += pmf1[x1] * pmf2[x2];
+    }
+  }
+  return total;
+}
+
+const round6 = (value) => Math.round(value * 1e6) / 1e6;
+let cachedFrozenSizing = null;
+
+/**
+ * Main-block sample size from the frozen inputs (§3.2). Candidates are
+ * multiples of the cell count because rows split evenly over the four cells
+ * within each arm (frozen); the pick is the smallest such n with exact-test
+ * power at or above the registered .80. The exact-test power curve is a
+ * sawtooth, so this is a scan, not a formula.
+ */
+export function mainBlockSizing({ grid = EDGED_REGISTER_MAIN_BLOCK } = {}) {
+  if (grid === EDGED_REGISTER_MAIN_BLOCK && cachedFrozenSizing) return cachedFrozenSizing;
+  const cellCount = grid.cells.length;
+  const baselineRate = grid.baseline.successes / grid.baseline.trials;
+  const targetRate = baselineRate + grid.powering.minimumEffect;
+  if (!(targetRate < 1)) throw new Error(`target rate ${targetRate} is not below 1`);
+  let nPerArm = null;
+  let powerAtN = null;
+  for (let candidate = cellCount; candidate <= 400; candidate += cellCount) {
+    const power = fisherExactPower(candidate, baselineRate, targetRate, grid.powering.alpha);
+    if (power >= grid.powering.power) {
+      nPerArm = candidate;
+      powerAtN = power;
+      break;
+    }
+  }
+  if (!nPerArm) throw new Error('no per-arm n up to 400 reaches the registered power');
+  const powerAtNextLower =
+    nPerArm > cellCount ? fisherExactPower(nPerArm - cellCount, baselineRate, targetRate, grid.powering.alpha) : null;
+  const plannedRows = nPerArm * grid.arms.length;
+  const sizing = {
+    baselineRate: round6(baselineRate),
+    targetRate: round6(targetRate),
+    nPerArm,
+    rowsPerCellPerArm: nPerArm / cellCount,
+    plannedRows,
+    powerAtN: round6(powerAtN),
+    powerAtNextLower: powerAtNextLower === null ? null : round6(powerAtNextLower),
+    // Same headroom rule that gave calibration its 120-row cap over 109
+    // planned rows: 10% for single attended resumes, rounded up to a ten.
+    hardCapRows: Math.ceil((plannedRows * 1.1) / 10) * 10,
+  };
+  if (grid === EDGED_REGISTER_MAIN_BLOCK) cachedFrozenSizing = sizing;
+  return sizing;
+}
+
+/**
+ * Main-block jobs, repeat-major and interleaved: each consecutive dozen covers
+ * every arm-by-cell pair once, so the three versions of the tutor stay mixed
+ * over the attended hours and no arm bunches at one end of the run.
+ */
+export function mainBlockJobs(sizing, { grid = EDGED_REGISTER_MAIN_BLOCK } = {}) {
+  const jobs = [];
+  for (let repeat = 1; repeat <= sizing.rowsPerCellPerArm; repeat += 1) {
+    for (const cell of grid.cells) {
+      for (const armSpec of grid.arms) {
+        jobs.push({
+          ordinal: jobs.length + 1,
+          block: 'main',
+          scenario: cell.scenario,
+          arm: armSpec.arm,
+          profile: armSpec.profile,
+          repeat,
+        });
+      }
+    }
+  }
+  return jobs;
+}
+
+export function buildEdgedRegisterMainBlockPlan({ root = MODULE_ROOT } = {}) {
+  const grid = EDGED_REGISTER_MAIN_BLOCK;
+  const sizing = mainBlockSizing({ grid });
+  const scenarioPath = path.resolve(root, grid.scenarioSource);
+  const plan = {
+    ...grid,
+    cells: grid.cells.map((cell) => ({ ...cell })),
+    arms: grid.arms.map((armSpec) => ({ ...armSpec })),
+    baseline: { ...grid.baseline },
+    powering: { ...grid.powering },
+    generation: { ...grid.generation },
+    endpoint: { ...grid.endpoint },
+    guardrail: {
+      ...grid.guardrail,
+      families: [...grid.guardrail.families],
+      resumeOptions: [...grid.guardrail.resumeOptions],
+    },
+    sizing,
+    scenarioSourceSha256: createHash('sha256').update(fs.readFileSync(scenarioPath)).digest('hex'),
+    mainJobs: mainBlockJobs(sizing, { grid }),
+  };
+  return { ...plan, planSha256: hashEdgedRegisterCalibration(plan) };
+}
+
+export function validateEdgedRegisterMainBlockPlan(plan) {
+  const grid = EDGED_REGISTER_MAIN_BLOCK;
+  const errors = [];
+  const scenarios = (plan.cells || []).map((cell) => cell.scenario);
+  if (
+    scenarios.length !== MAIN_BLOCK_KEPT_SCENARIOS.length ||
+    MAIN_BLOCK_KEPT_SCENARIOS.some((s) => !scenarios.includes(s))
+  ) {
+    errors.push('plan cells are not exactly the four kept corridor cells (§3.1)');
+  }
+  const armLetters = (plan.arms || []).map((armSpec) => armSpec.arm);
+  if (armLetters.join('') !== 'ABC') errors.push(`arms must be A, B, C in order, found ${armLetters.join(', ')}`);
+  const profiles = new Set((plan.arms || []).map((armSpec) => armSpec.profile));
+  if (profiles.size !== 3) errors.push('the three arms do not carry three distinct profiles');
+  const armC = (plan.arms || []).find((armSpec) => armSpec.arm === 'C');
+  if (armC?.profile !== EDGED_REGISTER_CALIBRATION.profile) {
+    errors.push('arm C must be byte-identical to the calibration arm; its profile name differs');
+  }
+  if (plan.baseline?.successes !== 23 || plan.baseline?.trials !== 48) {
+    errors.push(`baseline must be the frozen 23/48 (§3.1), found ${plan.baseline?.successes}/${plan.baseline?.trials}`);
+  }
+  const { sizing } = plan;
+  if (!sizing) {
+    errors.push('plan carries no sizing');
+    return { ok: false, errors };
+  }
+  if (sizing.nPerArm % (plan.cells?.length || 4) !== 0) {
+    errors.push(`nPerArm ${sizing.nPerArm} does not split evenly over the cells`);
+  }
+  if (sizing.rowsPerCellPerArm * (plan.cells?.length || 4) !== sizing.nPerArm) {
+    errors.push('rowsPerCellPerArm does not multiply back to nPerArm');
+  }
+  if (sizing.plannedRows !== sizing.nPerArm * (plan.arms?.length || 3)) {
+    errors.push('plannedRows does not equal nPerArm times the arm count');
+  }
+  if (sizing.hardCapRows < sizing.plannedRows) {
+    errors.push(`hard cap ${sizing.hardCapRows} is below the planned ${sizing.plannedRows} rows`);
+  }
+  const baselineRate = grid.baseline.successes / grid.baseline.trials;
+  const targetRate = baselineRate + grid.powering.minimumEffect;
+  const recomputedPower = fisherExactPower(sizing.nPerArm, baselineRate, targetRate, grid.powering.alpha);
+  if (recomputedPower < grid.powering.power) {
+    errors.push(
+      `power ${recomputedPower.toFixed(4)} at n=${sizing.nPerArm} sits below the registered ${grid.powering.power}`,
+    );
+  }
+  if (sizing.nPerArm > grid.cells.length) {
+    const lowerPower = fisherExactPower(
+      sizing.nPerArm - grid.cells.length,
+      baselineRate,
+      targetRate,
+      grid.powering.alpha,
+    );
+    if (lowerPower >= grid.powering.power) {
+      errors.push(
+        `n=${sizing.nPerArm - grid.cells.length} already reaches power; the plan overshoots the minimal size`,
+      );
+    }
+  }
+  const jobs = plan.mainJobs || [];
+  if (jobs.length !== sizing.plannedRows) {
+    errors.push(`expected ${sizing.plannedRows} main jobs, found ${jobs.length}`);
+  }
+  const perArmCell = new Map();
+  jobs.forEach((job, index) => {
+    if (job.ordinal !== index + 1) errors.push(`job ordinals are not contiguous at position ${index}`);
+    if (job.block !== 'main') errors.push(`job ${job.ordinal} is not in the main block`);
+    const key = `${job.arm}/${job.scenario}`;
+    perArmCell.set(key, (perArmCell.get(key) || 0) + 1);
+  });
+  for (const armSpec of grid.arms) {
+    for (const cell of grid.cells) {
+      const count = perArmCell.get(`${armSpec.arm}/${cell.scenario}`) || 0;
+      if (count !== sizing.rowsPerCellPerArm) {
+        errors.push(
+          `arm ${armSpec.arm} × ${cell.scenario} carries ${count} jobs, expected ${sizing.rowsPerCellPerArm}`,
+        );
+      }
+    }
+  }
+  const profileByArm = new Map((plan.arms || []).map((armSpec) => [armSpec.arm, armSpec.profile]));
+  if (jobs.some((job) => job.profile !== profileByArm.get(job.arm))) {
+    errors.push('a job carries a profile that does not match its arm');
+  }
+  if (/nemotron|kimi/iu.test(JSON.stringify({ generation: plan.generation, arms: plan.arms }))) {
+    errors.push('the frozen generation stack contains a forbidden weak model');
+  }
+  if (plan.generation?.lanes !== 4) errors.push(`lanes must stay at the approved 4, found ${plan.generation?.lanes}`);
+  if (!plan.scenarioSourceSha256) errors.push('plan carries no scenario-source byte hash');
+  if (plan.endpoint?.readerCallsPerRow !== 1) {
+    errors.push('the revised endpoint prices exactly one reader call per row (§3.2)');
+  }
+  return { ok: errors.length === 0, errors };
+}
+
 export default {
   EDGED_REGISTER_CALIBRATION,
+  EDGED_REGISTER_MAIN_BLOCK,
   applyRowCap,
   buildEdgedRegisterCalibrationPlan,
+  buildEdgedRegisterMainBlockPlan,
   clopperPearsonUpperBound,
   confirmTopUpJobs,
   decideScreenOutcome,
+  fisherExactPower,
+  fisherExactTwoSidedP,
   harmGuardrailFindings,
   hashEdgedRegisterCalibration,
+  mainBlockJobs,
+  mainBlockSizing,
   pooledKeptCellBaseline,
   validateEdgedRegisterCalibrationPlan,
+  validateEdgedRegisterMainBlockPlan,
 };
