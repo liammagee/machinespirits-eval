@@ -22,15 +22,21 @@ import {
   validateAdaptiveRegisterSwitchingPlan,
 } from '../services/adaptiveRegisterSwitching.js';
 import {
-  summarizeAdaptiveRegisterSwitchingStage2,
+  armForAdaptiveRegisterProfile,
   validateAdaptiveRegisterSwitchingStage1Gate,
 } from '../services/adaptiveRegisterSwitchingStage2.js';
+import {
+  assembleAdaptiveRegisterSwitchingStage2Preflight,
+  buildAdaptiveRegisterSwitchingStage2PreflightPackets,
+  runAdaptiveRegisterSwitchingStage2EndpointPreflight,
+} from '../services/adaptiveRegisterSwitchingStage2Preflight.js';
 import { openEvaluationDbReadonly } from '../services/evaluationDbReadonly.js';
 import { calculateLearnerOverallScore } from '../services/learnerRubricEvaluator.js';
 import { resolveEngagementRegister } from '../services/engagementRegisterRegistry.js';
 import { mannerPresenceApplies } from '../services/registerMannerPresence.js';
 import { lookupMannerPresence, readMannerPresence } from '../services/registerMannerPresenceReader.js';
 import { evaluateRegisterStanceFidelity } from '../services/registerStanceFidelity.js';
+import { validatePaidStudyEndpointGoCertificate } from '../services/paidStudyEndpointPreflight.js';
 import {
   analyzeCharismaDesireRows,
   isPositiveCharismaDesireOutcome,
@@ -40,6 +46,11 @@ import { findDialogueLog } from './dump-turn-prompts.js';
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(SCRIPT_PATH), '..');
 const DEFAULT_OUTPUT_DIR = 'exports/adaptive-register-switching/stage2';
+const ENDPOINT_CONTRACT_PATH = path.join(ROOT, 'config/paid-study-endpoints/adaptive-register-switching-stage2.json');
+const ENDPOINT_GO_PATH = path.join(
+  ROOT,
+  'config/paid-study-endpoints/adaptive-register-switching-stage2.endpoint-go.json',
+);
 
 function parseJson(value, fallback) {
   if (value == null || value === '') return fallback;
@@ -241,6 +252,27 @@ export function assertStage2LaunchAuthorization(expectedSha) {
   return head;
 }
 
+export function runStage2EndpointGoPreflight() {
+  const contract = loadStage2EndpointContract();
+  const certificate = parseJson(fs.readFileSync(ENDPOINT_GO_PATH, 'utf8'), null);
+  const preflight = runAdaptiveRegisterSwitchingStage2EndpointPreflight(contract);
+  const go = validatePaidStudyEndpointGoCertificate({ certificate, contract, preflight });
+  if (!go.ok) throw new Error(`endpoint-runtime GO failed: ${go.errors.join('; ')}`);
+  return {
+    ...preflight,
+    go_certificate: {
+      path: path.relative(ROOT, ENDPOINT_GO_PATH),
+      contract_path: path.relative(ROOT, ENDPOINT_CONTRACT_PATH),
+      contract_sha256: go.contract_sha256,
+      preflight_sha256: go.preflight_sha256,
+    },
+  };
+}
+
+function loadStage2EndpointContract() {
+  return parseJson(fs.readFileSync(ENDPOINT_CONTRACT_PATH, 'utf8'), null);
+}
+
 export function loadStage1Gate(stage1ReportPath, approvedPlanSha) {
   if (!stage1ReportPath) throw new Error('--stage1-report is required for every Stage-2 mode');
   const absolute = path.resolve(ROOT, stage1ReportPath);
@@ -255,7 +287,7 @@ export function loadStage1Gate(stage1ReportPath, approvedPlanSha) {
   return { ...gate, artifactPath: absolute, artifactSha256: sha256File(absolute) };
 }
 
-function writeDryRunArtifact(plan, outputDir, stage1Gate, { launchSha = null } = {}) {
+function writeDryRunArtifact(plan, outputDir, stage1Gate, { launchSha = null, endpointPreflight = null } = {}) {
   const validation = validateAdaptiveRegisterSwitchingPlan(plan);
   if (!validation.ok) throw new Error(validation.errors.join('; '));
   const artifact = {
@@ -264,6 +296,7 @@ function writeDryRunArtifact(plan, outputDir, stage1Gate, { launchSha = null } =
     paidLaunchStatus: launchSha ? 'authorized_for_stage2_generation' : 'locked_pending_clean_commit_launch',
     stage3LaunchStatus: 'unavailable_in_this_runner',
     launchSha,
+    endpointPreflight,
     validation,
     stage1Gate,
     planSha256: plan.planSha256,
@@ -374,6 +407,8 @@ export function stage2Dialogues(runId, options = {}) {
     const sequence = learnerRubricSequence(row);
     const outcome = outcomesByRowId.get(row.id);
     return {
+      case_id: String(row.id),
+      arm: armForAdaptiveRegisterProfile(row.profile_name),
       rowId: row.id,
       runId: row.run_id,
       scenarioId: row.scenario_id,
@@ -482,7 +517,9 @@ async function runMannerRead(runId) {
 
 function runReport(runId, outputDir, stage1Gate) {
   const dialogues = stage2Dialogues(runId);
-  const report = summarizeAdaptiveRegisterSwitchingStage2(dialogues, { stage1Gate });
+  const contract = loadStage2EndpointContract();
+  const packets = buildAdaptiveRegisterSwitchingStage2PreflightPackets(dialogues);
+  const { report } = assembleAdaptiveRegisterSwitchingStage2Preflight({ packets, contract, stage1Gate });
   fs.mkdirSync(outputDir, { recursive: true });
   const jsonPath = path.join(outputDir, `${runId}.json`);
   fs.writeFileSync(jsonPath, `${JSON.stringify({ runId, report, dialogues }, null, 2)}\n`);
@@ -574,6 +611,7 @@ async function main() {
   }
 
   const launch = Boolean(values['launch-approved']);
+  const endpointPreflight = runStage2EndpointGoPreflight();
   const launchSha = launch ? assertStage2LaunchAuthorization(values['expected-sha']) : null;
   if (paidSubmodes.length && !launch) throw new Error('paid Stage-2 scoring/reading requires --launch-approved');
   if (values['score-outcomes-run']) return runOutcomeScoring(values['score-outcomes-run']);
@@ -582,7 +620,7 @@ async function main() {
 
   const plan = buildAdaptiveRegisterSwitchingPlan();
   const outputDir = path.resolve(ROOT, values['output-dir']);
-  const artifactPath = writeDryRunArtifact(plan, outputDir, stage1Gate, { launchSha });
+  const artifactPath = writeDryRunArtifact(plan, outputDir, stage1Gate, { launchSha, endpointPreflight });
   console.log(`[register-switch:stage2] approved plan SHA-256 ${plan.planSha256}`);
   console.log(
     `[register-switch:stage2] Stage-1 gate ${stage1Gate.reportDecision} from ${stage1Gate.runId}; ` +
@@ -591,6 +629,10 @@ async function main() {
   console.log(
     `[register-switch:stage2] ${plan.stage2Jobs.length} rows = ${GRID.stage2.plannedRowsPerArm}/arm, ` +
       `${GRID.stage2.repeatsPerScenario}/arm-scenario`,
+  );
+  console.log(
+    `[register-switch:stage2] endpoint preflight ${endpointPreflight.status}; ` +
+      `${endpointPreflight.registered_scale.cases} synthetic rows; digest ${endpointPreflight.preflight_sha256}`,
   );
   console.log(`[register-switch:stage2] tutor/learner stack ${GRID.generation.tutorModel}; serial parallelism 1`);
   console.log(
