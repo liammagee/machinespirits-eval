@@ -215,8 +215,10 @@ The other half of §2.11 — "a model reads every edged turn" — lands
 after the block, not inside it:
 `scripts/read-edged-register-harm-sweep.js` reads every tutor turn of
 the edged arm, match or no match, and reports the two channels apart
-(attacks the list missed, matches the reader cleared). Measured at 4
-tutor turns per row, so ≤416 calls at the planned size, 467 at the cap.
+(attacks the list missed, matches the reader cleared). Arm A holds
+exactly 104 of the 312 jobs at a measured 4 tutor turns per row, so the
+sweep is bounded at 416 calls; the 350-row cap counts attempts, not
+completed rows, and does not raise it.
 What this gives up, plainly: a confirmed attack in the edged arm is seen
 after the block rather than during it. 15 new zero-call tests; 74 across
 the five edged files. The GO note must be rewritten against the new plan

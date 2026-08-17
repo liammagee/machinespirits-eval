@@ -970,8 +970,10 @@ still never read. The other half runs **after** the block, not inside it:
 edged arm, match or no match, lists what it calls an attack for an
 operator ruling, and reports the two channels apart — attacks the list
 missed, matches the reader cleared. Arm A carries at most four tutor turns
-per dialogue (measured: 4 per row over the six abandoned rows), so the
-sweep is at most 416 calls at the planned size, 467 at the cap.
+per dialogue (measured: 4 per row over the six abandoned rows) and holds
+exactly 104 of the 312 jobs, so the sweep is bounded at **416 calls**.
+The 350-row hard cap does not raise that: the cap counts attempts, and a
+retry replaces a failed row rather than adding a completed one.
 
 **What is given up, said plainly.** A confirmed attack in the edged arm is
 now seen after the block rather than during it. The run-time screen buys
