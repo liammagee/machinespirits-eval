@@ -19,6 +19,17 @@ process.env.TZ = 'UTC';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
+// Every page carries the rail, and the rail carries a command palette built from
+// the live workplan board. That made these byte contracts hostage to repo state:
+// each merge to main is followed by a "workplan: refresh generated views
+// [skip ci]" commit, so the board moved, the bytes moved, and main went red where
+// no CI run could see it. The contract exists to freeze the RENDERER, not the
+// board, so the test pins its input instead: WORKPLAN_DIR (read per call by the
+// browser's workplanDir()) points at a fixture board that only changes when
+// someone edits it on purpose. `assertBoardIsPinned` below fails loudly if that seam
+// ever stops working, rather than letting the digests drift again.
+process.env.WORKPLAN_DIR = path.join(ROOT, 'tests/fixtures/workplan');
+
 function fixture() {
   const diagnosis = {
     group: 'fixture-group',
@@ -191,6 +202,19 @@ function digest(html) {
   };
 }
 
+// Proof that the pinned board reached the page. If the WORKPLAN_DIR seam ever
+// breaks, the palette falls back to the live board and these titles vanish — a
+// named failure instead of six drifting digests.
+function assertBoardIsPinned(html) {
+  for (const title of [
+    'Fixture active item',
+    'Fixture review item',
+    'Fixture blocked item',
+    'Fixture scriptorium item',
+  ])
+    assert.match(html, new RegExp(title, 'u'));
+}
+
 function assertInlineScriptsParse(html) {
   const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gu)].map((match) => match[1]);
   assert.ok(scripts.length > 0);
@@ -199,32 +223,36 @@ function assertInlineScriptsParse(html) {
 
 test('derivation index renderers preserve empty and populated page bytes', () => {
   const { indexRun, live } = fixture();
-  assert.deepEqual(digest(renderDerivationIndexHtml([], {}, [])), {
-    bytes: 171141,
-    hash: 'd1f083b050a9bc73dab5abc5d7e6a91ef7da596700da35be66c83fb9c33195af',
+  const empty = renderDerivationIndexHtml([], {}, []);
+  assertBoardIsPinned(empty);
+  assert.deepEqual(digest(empty), {
+    bytes: 165975,
+    hash: 'bcbe007f4f0c270fc6d668f5338eaf96a905b78a327a1cc68039d0ad0792d3f1',
   });
   const populated = renderDerivationIndexHtml([indexRun], { compare: 'fixture-run,missing' }, [live]);
   assert.deepEqual(digest(populated), {
-    bytes: 176293,
-    hash: 'b507f6413339a6f1ecb234cbec5b64d32081147e74e41f1f1191dbf39f7ed510',
+    bytes: 171127,
+    hash: '930f7841b50c3a108eb35e78613d11f876bc48f37d939e1a4f314a01a869cb17',
   });
   assertInlineScriptsParse(populated);
 });
 
 test('live derivation renderers preserve empty, populated, and run page bytes', () => {
   const { live } = fixture();
-  assert.deepEqual(digest(renderDerivationLiveIndexHtml([])), {
-    bytes: 99971,
-    hash: 'd2ee14107734b3ac52dd0853e99a356e4c26d0beec923c8b6f933d4f2f7819f1',
+  const emptyLive = renderDerivationLiveIndexHtml([]);
+  assertBoardIsPinned(emptyLive);
+  assert.deepEqual(digest(emptyLive), {
+    bytes: 94805,
+    hash: '894fccefcaa346768452020a0689c0ed5b67612e43ff869a78a48bac54b21282',
   });
   assert.deepEqual(digest(renderDerivationLiveIndexHtml([live])), {
-    bytes: 100216,
-    hash: '857db3cc870bb3fa76643c35108bc5cadf5cdab36151fb13afc4e5ca19d9a1d6',
+    bytes: 95050,
+    hash: '64b2a9343e27e97309052db7f1c5ec05f00af31d9d90bf4997702ced63cd76a5',
   });
   const run = renderDerivationLiveRunHtml(live);
   assert.deepEqual(digest(run), {
-    bytes: 106174,
-    hash: '6ce67378fe5bcebd8cbe12c11f4be14fbadc6c326b3ea60b66df9ba6646e134c',
+    bytes: 101008,
+    hash: '42d1a2fd0188ec1f0740f4b72a4ea0211312ada5455cd5e331d0e2fe2d04fd93',
   });
   assertInlineScriptsParse(run);
 });
@@ -239,9 +267,10 @@ test('completed derivation renderer preserves its populated proof page byte cont
     commentary: '# Notice\n\nThe fixture commentary holds.',
     assessment,
   });
+  assertBoardIsPinned(html);
   assert.deepEqual(digest(html), {
-    bytes: 184321,
-    hash: '8a7d5a6b0fa28a2e2412ed7785b699134f56d72c24048269b1f47367812ee1f2',
+    bytes: 179155,
+    hash: 'ba0d3e1c25fc6632929cd887ebe3ef767179478a1af1f3e4273d949a8903912a',
   });
   assert.match(html, /id="authored-proof-dag"/u);
   assert.match(html, /id="learner-proof-dag"/u);
