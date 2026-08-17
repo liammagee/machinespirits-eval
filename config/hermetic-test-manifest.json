@@ -444,6 +444,7 @@
         "tests/replayPlan25PrefixBranches.test.js",
         "tests/repositoryMetrics.test.js",
         "tests/resolveConfigModels.test.js",
+        "tests/reviewerGoNoteContent.test.js",
         "tests/riskCoverage.test.js",
         "tests/rubric-consistency.test.js",
         "tests/rubric-version-override.test.js",

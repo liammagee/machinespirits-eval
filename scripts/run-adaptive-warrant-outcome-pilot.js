@@ -39,6 +39,7 @@ import {
   validateAdaptiveWarrantSemanticPreflightArtifact,
   validateAdaptiveWarrantSemanticSchemaAcceptanceResult,
 } from '../services/adaptiveWarrantSemanticPreflight.js';
+import { assertReviewerGoNoteContent, isReviewerGoNoteFilename } from '../services/reviewerGoNoteContent.js';
 import {
   assembleAdaptiveWarrantAnnotationResponse,
   prepareAdaptiveWarrantAnnotationBatches,
@@ -110,6 +111,8 @@ export function printOutcomePilotPlan(manifest = null) {
     `Entry point: ${relativeToRoot(SCRIPT_PATH)}`,
     `Generation call cap: ${plan.generation ?? 540}; presence readers: ${plan.presence_readers ?? 288}; decision readers: ${plan.decision_readers ?? 288}; total: ${plan.total ?? 1116}.`,
     'A paid run requires --go-note <fresh committed reviewer go note> --accept-charges.',
+    'The note must be docs/adaptation-refinement/relay/<n>-reviewer-go-note-<slug>.md, titled as a GO note,',
+    'carrying no draft banner, and saying GO below its title.',
     `The consumed note ${CONSUMED_GO_NOTE} is never accepted.`,
   ].join('\n');
 }
@@ -121,6 +124,12 @@ export function validateOutcomePilotGoNote(goNotePath) {
   if (relative === CONSUMED_GO_NOTE) throw new Error('outcome pilot refuses: GO note 063a is consumed');
   if (!relative.startsWith('docs/adaptation-refinement/relay/') || !relative.endsWith('.md')) {
     throw new Error('outcome pilot refuses: --go-note must name a relay markdown file');
+  }
+  // This gate pins the relay directory, not one path, so the file name is the
+  // first thing that separates a reviewer signature from a Codex report, a
+  // direction or STATE.md — all of which used to satisfy the old GO token.
+  if (!isReviewerGoNoteFilename(relative)) {
+    throw new Error('outcome pilot refuses: --go-note must be a reviewer-go-note file, not a report or a direction');
   }
   if (!fs.existsSync(resolved)) throw new Error(`outcome pilot refuses: go note not found: ${relative}`);
   let committed;
@@ -135,8 +144,9 @@ export function validateOutcomePilotGoNote(goNotePath) {
   if (!text.includes('run-adaptive-warrant-outcome-pilot.js')) {
     throw new Error('outcome pilot refuses: go note does not name the executable entry point');
   }
-  if (!/\bGO\b/u.test(text) || !/1116/u.test(text)) {
-    throw new Error('outcome pilot refuses: go note lacks the pilot GO and 1116-call scope');
+  assertReviewerGoNoteContent(text, { label: 'go note', refusal: 'outcome pilot refuses' });
+  if (!/1116/u.test(text)) {
+    throw new Error('outcome pilot refuses: go note lacks the 1116-call scope');
   }
   return { path: resolved, relative_path: relative, sha256: sha256(onDisk) };
 }

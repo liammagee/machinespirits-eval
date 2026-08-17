@@ -39,6 +39,7 @@ import {
 } from './run-adaptive-warrant-outcome-pilot.js';
 import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
 import { validateAdaptiveWarrantReaderResponseContract } from '../services/adaptiveWarrantReaderRetake.js';
+import { assertReviewerGoNoteContent } from '../services/reviewerGoNoteContent.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
@@ -322,7 +323,11 @@ export function validateOutcomeMainBlockGoNote(goNotePath) {
   if (!committed.equals(onDisk))
     throw new Error('outcome main block refuses: reviewer note 097a has uncommitted drift');
   const text = onDisk.toString('utf8');
-  for (const required of ['GO', 'run-adaptive-warrant-outcome-main-block.js', '524', '535', '1,152', '48']) {
+  // The pinned path plus the byte check above is the gate here. The old
+  // required-substring 'GO' added nothing: it matched ALGO and GOAL as well,
+  // and a draft committed at the pinned path would carry it in its own title.
+  assertReviewerGoNoteContent(text, { label: 'reviewer note 097a', refusal: 'outcome main block refuses' });
+  for (const required of ['run-adaptive-warrant-outcome-main-block.js', '524', '535', '1,152', '48']) {
     if (!text.includes(required)) throw new Error(`outcome main block refuses: reviewer note 097a lacks ${required}`);
   }
   return { path: resolved, relative_path: REQUIRED_GO_NOTE, sha256: sha256(onDisk) };
