@@ -674,3 +674,97 @@ recording, and the primary still rules.
 
 The second reading from §2.16 — did the learner do fresh work of its own —
 stays a report-only number. It selects nothing.
+
+## 2.17 Revised endpoint applied — a corridor exists, and it hangs on one line
+
+The model reader read all 109 paid rows. No new generation, no change to the
+cells, no change to the corridor rule in §2.4 or the eligibility screen in
+§2.5 M-C1. Across the 109 rows the reader answered **yes 52, partly 47,
+no 10**.
+
+**Primary reading (yes only), the registered one. Four cells are kept.**
+
+| cell | conversions | edge-eligible | verdict |
+|---|---|---|---|
+| irrelevance_sustained | 2/12 | 11/12 | below the floor |
+| question_flood_sustained | 5/12 | 12/12 | **kept** |
+| rote_parroting_sustained | 5/12 | 12/12 | **kept** |
+| boredom_claimheld | 7/12 | 12/12 | **kept** |
+| frustration_claimheld | 5/12 | **0/12** | excluded, no edged-eligible moment |
+| boredom_guarded | 9/12 | 12/12 | above the ceiling |
+| rote_parroting_guarded | 6/12 | 12/12 | **kept** |
+
+Pooled kept-cell rate **23/48 = 0.479**; powering baseline, the upper 80%
+bound, **0.550**. Written to `corridor-report-revised-primary.json`; the
+voided lexical report is kept beside it under its own name.
+
+`frustration_claimheld` is excluded for the second time now, on a different
+endpoint, by the same measure: not one of its twelve rows carries an
+edged-eligible resistance moment. That is a fact about the cell, not about
+the instrument.
+
+**Sensitivity reading (yes or partly): the endpoint saturates and no cell is
+kept.** Every cell lands at or above the ceiling — 9/12, 10/12, 11/12,
+11/12, 12/12, 12/12, 12/12. So the corridor does not merely shift when the
+line moves; it disappears. §2.16.1 was frozen at commit `b761bbbe` before a
+single per-cell number was visible, so the choice of "yes only" was not
+tuned to this answer. That protects the process, not the finding: the study
+still rests on one line drawn inside a three-way answer, and any later
+reader of this work should see how much weight sits there. Written to
+`corridor-report-revised-sensitivity.json`. Because §2.16.1 makes this
+reading report-only, its empty verdict does not raise registered stop
+rule 1.
+
+**Cells the screen left at n=5** are re-read and reported, information only,
+because §2.16 licenses no rows to lift any of them to n=12. On the primary
+reading: `boredom_sustained` 1/5, `frustration_guarded` 5/5 but 0/5
+edge-eligible, `frustration_sustained` 2/5 and 0/5 edge-eligible,
+`irrelevance_claimheld` 1/5, `irrelevance_guarded` 4/5 with 3/5
+edge-eligible. Eleven rows remain under the registered cap of 120. Whether
+to spend any of them is an operator ruling and is not made here.
+
+### 2.17.1 Operator spot check of the reader — 12 of 12 agree
+
+The reader is now the measuring instrument, and the twelve marks in §2.15
+check the *old* question, so they cannot be reused. The operator read twelve
+rows on 2026-08-17 and agreed with the reader on every one, at both answers:
+six `yes` rows and six `partly` rows.
+
+| row | id | reader | operator |
+|---|---|---|---|
+| 1 | 34937 | partly | partly |
+| 2 | 34935 | yes | yes |
+| 3 | 34946 | partly | partly |
+| 4 | 34939 | yes | yes |
+| 5 | 34988 | partly | partly |
+| 6 | 34977 | yes | yes |
+| 7 | 34992 | partly | partly |
+| 8 | 35000 | yes | yes |
+| 9 | 35006 | partly | partly |
+| 10 | 35003 | yes | yes |
+| 11 | 35027 | partly | partly |
+| 12 | 35026 | yes | yes |
+
+The rows were drawn from the yes/partly line inside the four kept cells, six
+each way, by ordinal at a fixed spread — no row was picked by hand
+(`scripts/build-edged-register-spotcheck.js`). That line was chosen because
+it is the only thing the corridor is sensitive to: 43% of the batch reads
+`partly`, and counting it lifts the pooled rate from 0.48 to 0.92 and kills
+every cell. A random twelve would mostly have confirmed easy `yes` calls.
+
+**Two limits travel with the number.** First, the reader states its answer
+before the operator reads, so this confirms a claim rather than reading
+cold; agreement is easier to reach that way, and the design was the trade
+the operator chose over a slow blind read. Second, **no bar is registered
+for this check.** The 20% bar in §2.5 M-C2 was written for the old question
+and does not carry over. So 12 of 12 is a clean result on a weak design, and
+what it licenses is an operator ruling, not a fact this section can settle.
+
+Recorded in `endpoint-spotcheck-template.json` and
+`endpoint-spotcheck-sheet.md`.
+
+**Still open for the operator**, and nothing here decides them: whether the
+spot check licenses the revised endpoint for selection; whether the pooled
+0.479 with baseline 0.550 is the number the main block is powered on;
+whether any of the 11 remaining rows are spent on the n=5 cells. **No paid
+call is licensed by this section.**

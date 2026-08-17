@@ -109,13 +109,47 @@ behind it, and the classifier vetoes on the surface phrase. The fourth runs
 the other way, so the rule is keyed to the wrong surface and misses in both
 directions. Same defect class as §2.11 and the stance-gate 2.0 finding.
 
-Next step, and it is an operator ruling: choose the revised endpoint
-instrument. Once chosen, it is applied to the same 109 paid rows — no new
-generation is needed — and the corridor is re-derived from that. Only then
-does registration freeze, and the main block still needs its own GO note and
-launch approval.
+2026-08-17 revised endpoint written and applied (draft note §2.16, §2.17).
+The operator ruled against spending a hand-marked test set. A blind model
+reader sees the learner's earlier turn, the tutor's push and the learner's
+next turn, and answers what task the tutor set and whether the learner did
+it — a question a second reader can argue from the transcript. The
+yes/partly/no-to-conversion rule was frozen at commit `b761bbbe` before any
+per-cell number was visible: yes only is primary, yes-plus-partly is
+reported beside it. No new generation; the same 109 paid rows.
 
-Owed before the main block (draft note §2.14): the runner overwrites the
-state file from memory on exit, which can silently discard a ruling recorded
-by another process. Working rule meanwhile — never record a ruling until the
-runner has fully exited.
+Reader answers across 109 rows: yes 52, partly 47, no 10.
+
+**A corridor exists on the revised endpoint.** Four cells kept —
+question_flood_sustained 5/12, rote_parroting_sustained 5/12,
+boredom_claimheld 7/12, rote_parroting_guarded 6/12, all 12/12
+edge-eligible. Pooled 23/48 = 0.479, powering baseline 0.550. Dropped:
+irrelevance_sustained 2/12 below the floor, boredom_guarded 9/12 above the
+ceiling, frustration_claimheld excluded a second time by the
+edge-eligibility screen (0/12 eligible) on a different endpoint.
+
+**The corridor hangs on one line.** On the sensitivity reading (yes or
+partly) every cell saturates at or above the ceiling and none is kept. The
+mapping rule was frozen before the numbers, so the choice was not tuned to
+the answer, but the weight sitting on that line is a fact about the study
+and travels with it.
+
+Operator spot check of the reader (§2.17.1): twelve rows drawn by fixed
+spread from the yes/partly line inside the kept cells, six each way, all
+twelve agree. Two limits — the reader states its answer first, so this
+confirms rather than reads cold, and no bar is registered for this check
+(the 20% M-C2 bar was for the old question).
+
+Open operator rulings: whether the spot check licenses the revised endpoint
+for selection; whether 0.479 with baseline 0.550 powers the main block;
+whether any of the 11 remaining rows under the 120 cap are spent on the
+five n=5 cells the screen dropped. The main block still needs its own GO
+note and launch approval.
+
+Owed before the main block (draft note §2.14): **fixed 2026-08-17.** The
+runner overwrote the state file from memory on exit, which could silently
+discard a ruling recorded by another process. Saving now re-reads the file
+and merges the fields another process owns — rulings, guardrail
+resolutions, killed cells — before the write. Five tests cover it; four
+fail without the merge. The working rule stands anyway: never record a
+ruling until the runner has fully exited.
