@@ -1,0 +1,9 @@
+{
+  "group": "fixture-group",
+  "verdict": "grounded_anagnorisis",
+  "turnsPlayed": 2,
+  "assertedGroundedTurn": 2,
+  "learningSlope": { "d0": 2, "dFinal": 0 },
+  "releaseAdherence": { "onCue": 1, "deviations": [] },
+  "backend": { "mode": "mock" }
+}
