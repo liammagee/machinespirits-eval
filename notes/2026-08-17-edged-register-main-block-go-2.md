@@ -1,15 +1,5 @@
 # GO — edged-register main block (replacement, after amendments 1 and 2)
 
-**DRAFT FOR HUMAN REVIEW — NOT SIGNED. This note licenses nothing until
-the operator signs it, it is committed, and the launch is separately
-approved in chat.**
-
-To sign: delete this banner, replace the closing line with `GO` on a
-line of its own above your name and the date, then commit. The runner
-now refuses a note that still carries the banner, and refuses one where
-`GO` appears only inside a heading (§3.8) — so an unsigned draft cannot
-launch even by accident.
-
 This note replaces `notes/2026-08-17-edged-register-main-block-go.md`.
 That note is spent: the block it launched (`batch-main-2026-08-17`)
 latched after four rows and is abandoned, and its plan SHA no longer
@@ -191,4 +181,5 @@ yes, the A-versus-B read at the first edge moment — comes after the
 block, on the frozen rules, and needs no new approval; any call beyond
 the priced bounds does.
 
-— unsigned draft, 2026-08-17
+GO
+Liam Magee, 08/17/2026
