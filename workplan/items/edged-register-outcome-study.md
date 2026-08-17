@@ -150,9 +150,19 @@ rows are spent; the five n=5 cells stay dropped. Main-block cells:
 question_flood_sustained, rote_parroting_sustained, boredom_claimheld,
 rote_parroting_guarded.
 
-Next: freeze the main-block registration (§2.8), then a GO note headed
-DRAFT FOR HUMAN REVIEW, then explicit launch approval. No paid call is
-licensed yet.
+2026-08-17 main-block registration FROZEN (draft note Part 3, operator
+approved). Minimum effect of interest +20 points (0.479 to 0.679), ~95
+dialogues per version of the tutor, ~285 rows over three arms, roughly 7
+attended hours at 4 lanes. Arms: A = cell 207 (adaptive-edged, two-pass),
+B = cell 208 (yoked warm delivery), C = cell 206 (byte-identical to the
+calibration arm). Primary: A versus C on the model reader's yes, exact
+test. Secondary: A versus B at the first edge moment. Pins recorded in
+§3.5; the GO note re-computes them all and fails the launch on any drift.
+
+Next: the GO note, headed DRAFT FOR HUMAN REVIEW — commands copied from
+the runner's own usage output, seeds enumerated against the burned
+ledger, pins re-computed. Launch needs explicit human approval on top of
+the committed note. No paid call is licensed yet.
 
 Owed before the main block (draft note §2.14): **fixed 2026-08-17.** The
 runner overwrote the state file from memory on exit, which could silently

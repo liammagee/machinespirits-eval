@@ -805,11 +805,12 @@ section.**
 
 ## Part 3 — main-block registration (DRAFT FOR HUMAN REVIEW)
 
-This part fills the §2.8 checklist. It becomes the registration when the
-operator approves it; until then nothing is frozen. **One blank remains
-and is marked. No paid call is licensed by this part.** The GO note is a
-separate, later, human-committed document, and every command and seed in
-it is copied from tool output, not composed.
+This part fills the §2.8 checklist. **Operator ruling 2026-08-17,
+recorded with no runner live: the minimum effect of interest is +20
+points, and Part 3 is approved. The registration is FROZEN as written
+here.** No paid call is licensed by this part. The GO note is a separate,
+later, human-committed document, and every command and seed in it is
+copied from tool output, not composed.
 
 ### 3.1 Cells, rates, counts
 
@@ -834,15 +835,13 @@ Baseline **0.479**, the measured pooled rate, per operator ruling 2
 (§2.18) — a recorded deviation from §2.4's upper-bound rule, in the
 direction of a larger sample.
 
-**OPEN — the one blank in this registration: the minimum effect of
-interest.** Two candidate registrations, two-sided α = .05, power .80,
-primary contrast only:
-
-- **+20 points** (0.479 to 0.679): ~95 dialogues per version of the
-  tutor; 285 rows over three arms; ~5,700 generation calls; roughly 7
-  attended hours at 4 lanes.
-- **+15 points** (0.479 to 0.629): ~172 per version; 516 rows; ~10,300
-  calls; roughly 12.5 attended hours at 4 lanes.
+**Minimum effect of interest: +20 points** (0.479 to 0.679), registered
+by operator ruling 2026-08-17. At two-sided α = .05 and power .80 on the
+primary contrast this sizes to ~95 dialogues per version of the tutor —
+**285 rows over three arms**, ~5,700 generation calls, roughly 7 attended
+hours at 4 lanes. The alternative considered and not chosen: +15 points,
+~516 rows. For scale, the stage-2 design was built around a 35-point
+contrast, so +20 is already the finest instrument this arc has used.
 
 Rows split evenly over the four cells within each arm. The GO note
 re-computes the chosen size exactly (exact test, not the approximation
