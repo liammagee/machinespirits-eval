@@ -1,13 +1,13 @@
 {
-  "generated": "2026-08-17T13:05:08.676Z",
+  "generated": "2026-08-17T21:20:07.312Z",
   "counts": {
     "total": 509,
     "byStatus": {
-      "done": 482,
+      "done": 483,
       "blocked": 6,
       "dropped": 10,
       "active": 4,
-      "triaged": 2,
+      "triaged": 1,
       "archived": 4,
       "review": 1
     },
@@ -22,32 +22,6 @@
     }
   },
   "items": [
-    {
-      "id": "paid-study-endpoint-runtime-preflight",
-      "title": "Fail closed when a paid study cannot measure its registered endpoints",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-08-17",
-      "updated": "2026-08-17",
-      "verification": "Before any paid model call, the exact production path passes a synthetic full-scale preflight that maps every registered primary endpoint to an enabled scorer or reader, proves its required events are emitted, keeps frozen packets within their limits, preserves denominator and pairing rules through sharding, and assembles the complete corpus; negative regressions prove that each mismatch stops launch before provider initialization.",
-      "links": {
-        "paper": "§6.26",
-        "items": [
-          "guarded-learner-outcome-study",
-          "edged-register-outcome-study"
-        ]
-      },
-      "tags": [
-        "registration",
-        "paid-study",
-        "preflight",
-        "fail-closed",
-        "scoring"
-      ]
-    },
     {
       "id": "adaptive-warrant-fine-grain-semantic-encoding-redesign",
       "title": "Adaptive warrant: fine-grain semantic encoding redesign",
@@ -2309,6 +2283,33 @@
         "tutor-stub"
       ],
       "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "paid-study-endpoint-runtime-preflight",
+      "title": "Fail closed when a paid study cannot measure its registered endpoints",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-17",
+      "updated": "2026-08-17",
+      "verification": "Before any paid model call, the exact production path passes a synthetic full-scale preflight that maps every registered primary endpoint to an enabled scorer or reader, proves its required events are emitted, keeps frozen packets within their limits, preserves denominator and pairing rules through sharding, and assembles the complete corpus; negative regressions prove that each mismatch stops launch before provider initialization.",
+      "links": {
+        "paper": "§6.26",
+        "items": [
+          "guarded-learner-outcome-study",
+          "edged-register-outcome-study"
+        ]
+      },
+      "tags": [
+        "registration",
+        "paid-study",
+        "preflight",
+        "fail-closed",
+        "scoring"
+      ],
+      "branch": "codex/paid-study-endpoint-runtime-preflight-implementation"
     },
     {
       "id": "paper2-priority1-closeout",
