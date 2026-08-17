@@ -1,20 +1,20 @@
 {
-  "generated": "2026-08-16T23:58:37.148Z",
+  "generated": "2026-08-17T02:39:23.121Z",
   "counts": {
-    "total": 506,
+    "total": 507,
     "byStatus": {
       "done": 474,
       "blocked": 6,
       "dropped": 10,
       "active": 9,
-      "triaged": 1,
+      "triaged": 2,
       "archived": 4,
       "review": 2
     },
     "byType": {
       "research": 79,
       "experiment": 86,
-      "infra": 106,
+      "infra": 107,
       "maintenance": 213,
       "content": 4,
       "ops": 10,
@@ -49,6 +49,26 @@
         "warrant-gate",
         "semantic-encoding",
         "fine-grain"
+      ]
+    },
+    {
+      "id": "derivation-byte-contracts-board-refresh",
+      "title": "Stop the [skip ci] board refresh from silently breaking the derivation byte contracts",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-17",
+      "updated": "2026-08-17",
+      "verification": "A change to workplan/board.json on main can no longer make tests/poeticsDerivationPresentation.test.js fail without CI seeing it — either the refresh automation also refreshes the contracts in the same commit, or the rendered pages take their search index from a pinned fixture board so repo state cannot move the bytes.",
+      "claim_status": "methods",
+      "links": {
+        "items": "guarded-learner-outcome-study"
+      },
+      "tags": [
+        "ci",
+        "poetics"
       ]
     },
     {
