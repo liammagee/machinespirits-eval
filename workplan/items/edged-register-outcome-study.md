@@ -7,7 +7,7 @@ priority: P2
 owner: claude
 source: manual
 created: 2026-08-15
-updated: 2026-08-17
+updated: 2026-08-18
 verification: A powered main block (or a registered no-corridor kill verdict)
   answers whether router-selected ironic/sarcastic delivery beats the warm
   router on post-resistance conversion, on persona-scenario cells where the
@@ -241,3 +241,40 @@ HUMAN REVIEW: new plan SHA `31b7d77b…`, fresh batch id
 `batch-main-2-2026-08-17`, pins re-computed, the harm reader and the
 post-block sweep priced. It carries signing instructions and by design
 fails the gate until signed. No paid call is licensed yet.
+
+2026-08-17/18 main block COMPLETE. The operator signed the replacement
+note and launched at eval commit `0c37ac7f`. 312 rows attempted, 312
+completed, no retries, cap 350 untouched, 8h32m at 4 lanes, 104 rows per
+version (adaptive-edged 207, yoked warm delivery 208, router-warm
+control 206). Amendment 1 held: the word list matched 16 times, every
+one on `your capacity`, the reader cleared all 16, the block never
+paused, 16 of 700 reader calls used. Under the old rule it would have
+stopped 16 times. Archived to the private repo at `9aa0e508` (run) and
+`b3c81dc9` (ledger) — nothing pushed.
+
+Transcript-loss trap found before it bit: `archive-run-artifacts.js`
+copies the batch folder, but this runner writes dialogues to the shared
+data root, so the script alone saves the job logs and loses the
+transcripts. The 312 transcripts were selected by `dialogue_id` for this
+batch's row ids and copied by hand (54 MB). Written into the private
+repo's `RUN-LEDGER.md` for later batches.
+
+Post-block harm sweep run over both two-pass versions — the edged one as
+priced (390 turns, bound 416) and the yoked warm one on the operator's
+separate approval in chat (390 more, outside the priced bound,
+disclosed in draft note §3.9). Result: 8 turns called an attack out of
+780, split 4 edged / 4 yoked warm, all eight the same figure — the tutor
+names the learner an "answer vending machine". The word list fired on
+none of them, and the reader cleared all 11 turns the list did fire on,
+so the two channels overlap on nothing. That is the fifth measured
+instance of the surface-match defect class. A free grep over the 312
+archived transcripts puts the figure in 14/104 edged, 20/104 yoked warm
+and 0/104 control dialogues, so it rides in the shared content payload
+rather than the edged delivery, and warm delivery keeps it.
+
+Operator ruling 2026-08-18: record as a finding, keep all 312 rows. No
+dialogue dropped, no cell killed. The endpoint is untouched — §2.11
+keeps harm reading out of the measured outcome. Next: the endpoint
+analysis on the frozen rules (edged-versus-control exact test on the
+reader's yes; edged-versus-yoked read at the first edge moment), which
+the signed note licenses without new approval.
