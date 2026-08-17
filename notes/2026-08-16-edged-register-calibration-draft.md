@@ -987,3 +987,35 @@ with the reader's own words, and the post-block sweep reads the same arm
 again independently. If the sweep calls an attack on a turn the run-time
 screen cleared, that disagreement is a recorded finding about the reader,
 not a silent correction.
+
+### 3.8 Amendment 2 — the GO gate read a word, not a signature (2026-08-17)
+
+Found while writing the replacement GO note, before any launch. The
+runner's GO-note check asked two questions: does the note carry the plan
+SHA, and does the text match `\bGO\b` anywhere. The second is satisfied
+by the note's own title. A note headed **DRAFT FOR HUMAN REVIEW — NOT
+SIGNED** passed the gate.
+
+This is the same defect the study has now hit three times: a surface
+match standing in for the thing meant. The stance-gate phrase list scored
+1/15 against readers (§2.11). The conversion classifier keyed on the
+learner's opening phrase and failed M-C2 at 33% (§2.15). The harm word
+list fired 13 times on `your capacity` and never on an attack (§3.7).
+Here the token `GO` stood in for a signature.
+
+The fix is narrow and deterministic — no reader, no call:
+
+- `GO` must appear **on a line of its own**. All three signed notes end
+  that way (`2026-08-16-edged-register-confirm-block-go.md`,
+  `2026-08-17-edged-register-calibration-go.md`,
+  `2026-08-17-edged-register-main-block-go.md`); all three still pass.
+- A note carrying `DRAFT FOR HUMAN REVIEW`, `NOT SIGNED`, or `unsigned
+  draft` is refused outright. The draft banner is now load-bearing
+  rather than decorative.
+
+Both plan SHAs are unchanged — this touches the runner, not the plan.
+The runner moves to blob `429db35f`; the replacement GO note carries
+that value. Neither check replaces the human gate: the operator's
+approval in chat is still what licenses a launch, and this only stops
+the machine from accepting a document that says of itself that it is not
+ready.

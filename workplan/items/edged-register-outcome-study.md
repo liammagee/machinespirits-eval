@@ -220,6 +220,24 @@ exactly 104 of the 312 jobs at a measured 4 tutor turns per row, so the
 sweep is bounded at 416 calls; the 350-row cap counts attempts, not
 completed rows, and does not raise it.
 What this gives up, plainly: a confirmed attack in the edged arm is seen
-after the block rather than during it. 15 new zero-call tests; 74 across
-the five edged files. The GO note must be rewritten against the new plan
-SHA and a fresh batch directory. No paid call is licensed yet.
+after the block rather than during it. 15 new zero-call tests; hermetic
+suite 8801/8806 with the two known tutor-stub failures unchanged.
+
+2026-08-17 amendment 2 — the GO gate read a word, not a signature (draft
+note §3.8). Found while writing the replacement GO note, before any
+launch. The runner's check matched `\bGO\b` anywhere in the text, which
+every draft's own title carries, so a note headed DRAFT FOR HUMAN REVIEW
+— NOT SIGNED passed it. Fourth instance of the same defect class in this
+study, after the stance phrase list (§2.11), the conversion classifier
+(§2.15) and the harm word list (§3.7): a surface match standing in for
+the thing meant. Fix is deterministic and zero-call — `GO` must sit on a
+line of its own, and a note carrying its draft banner is refused. All
+three historical signed notes still pass. Both plan SHAs unchanged; the
+runner moves to blob `429db35f`.
+
+Replacement GO note drafted at
+`notes/2026-08-17-edged-register-main-block-go-2.md`, headed DRAFT FOR
+HUMAN REVIEW: new plan SHA `31b7d77b…`, fresh batch id
+`batch-main-2-2026-08-17`, pins re-computed, the harm reader and the
+post-block sweep priced. It carries signing instructions and by design
+fails the gate until signed. No paid call is licensed yet.

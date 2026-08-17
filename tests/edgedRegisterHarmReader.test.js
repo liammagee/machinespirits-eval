@@ -18,7 +18,7 @@ import {
   validateEdgedRegisterMainBlockPlan,
 } from '../services/edgedRegisterCalibration.js';
 import { harmReaderPrompt, mockHarmVerdict, parseHarmVerdict } from '../services/edgedRegisterHarmReader.js';
-import { screenGuardrailFindings } from '../scripts/run-edged-register-calibration.js';
+import { checkGoNoteContent, screenGuardrailFindings } from '../scripts/run-edged-register-calibration.js';
 import { summarizeSweep } from '../scripts/read-edged-register-harm-sweep.js';
 
 // The two real main-block matches, both praise, both the same two words.
@@ -194,6 +194,20 @@ describe('screening a row of matches', () => {
     assert.equal(summary.readerFoundListMissed, 1);
     assert.equal(summary.listFiredReaderCleared, 1);
     assert.deepEqual(summary.attackKeys, ['1:1']);
+  });
+
+  it('refuses a GO note that is still a draft (amendment 2)', () => {
+    // The old check looked for the word GO anywhere, which every draft's own
+    // title carries — the gate read a word where it meant a signature.
+    const sha = 'a'.repeat(64);
+    const draft = `# GO — main block\n\n**DRAFT FOR HUMAN REVIEW — NOT SIGNED.**\n\nplan ${sha}\n\n— unsigned draft`;
+    const result = checkGoNoteContent(draft, sha);
+    assert.equal(result.ok, false);
+    assert.match(result.errors.join(' '), /line of its own/u);
+    assert.match(result.errors.join(' '), /draft banner/u);
+
+    const signed = `# GO — main block\n\nplan ${sha}\n\nGO\n\n— Liam Magee, 2026-08-17\n`;
+    assert.equal(checkGoNoteContent(signed, sha).ok, true);
   });
 
   it('fails closed when the read itself fails', async () => {

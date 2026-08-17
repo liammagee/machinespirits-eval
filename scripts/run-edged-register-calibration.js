@@ -90,12 +90,19 @@ export function calibrationGenerationCommand(job, { grid = GRID, batchId, attemp
   ];
 }
 
+// A note that is still a draft says so at the top. Amendment 2 makes that
+// banner load-bearing instead of decorative.
+const GO_NOTE_DRAFT_MARKERS = /DRAFT FOR HUMAN REVIEW|NOT SIGNED|unsigned draft/iu;
+
 /** Content check for the GO note (the git-tracked check lives in assertGoNote). */
 export function checkGoNoteContent(content, planSha256) {
   const errors = [];
   const text = String(content || '');
   if (!text.includes(planSha256)) errors.push(`GO note does not carry the plan SHA ${planSha256}`);
-  if (!/\bGO\b/.test(text)) errors.push('GO note does not say GO');
+  // The word alone is not a signature: every draft's own title carries it.
+  // The three signed notes all end with GO on a line of its own.
+  if (!/^GO$/mu.test(text)) errors.push('GO note does not say GO on a line of its own');
+  if (GO_NOTE_DRAFT_MARKERS.test(text)) errors.push('GO note still carries its draft banner — it is not signed');
   return { ok: errors.length === 0, errors };
 }
 
