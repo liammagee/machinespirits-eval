@@ -1,20 +1,20 @@
 ---
 id: refactor-poetics-browser-derivation-presentation
 title: Extract poetics-browser derivation presentation owner
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-08-10
-updated: 2026-08-10
+updated: 2026-08-17
 branch: codex/refactor-poetics-browser-derivation-presentation
-verification: >-
-  Six empty and populated derivation HTML fixtures remain byte-identical; 4/4
-  direct renderer assertions, 42/42 focused browser/route/auth tests, 8,381/8,381
-  hermetic root tests, 137/137 tutor-core tests, all fifteen risk groups, lint,
-  formatting, manifest, workplan-source, diff, and zero-cycle gates pass without
-  model calls or production artifact writes.
+verification: Six empty and populated derivation HTML fixtures remain
+  byte-identical; 4/4 direct renderer assertions, 42/42 focused
+  browser/route/auth tests, 8,381/8,381 hermetic root tests, 137/137 tutor-core
+  tests, all fifteen risk groups, lint, formatting, manifest, workplan-source,
+  diff, and zero-cycle gates pass without model calls or production artifact
+  writes.
 claim_status: planned
 depends_on:
   - refactor-tutor-stub-auto-eval-visualization-renderer
@@ -101,3 +101,7 @@ Log:
   all fifteen risk groups, and every structural gate pass. Filesystem reads,
   Express registration, auth, live polling, persistence, mutations, and model
   paths remain in their prior owners.
+- 2026-08-17 — Closed on board review. The extraction is merged on `main`:
+  `services/poeticsDerivationPresentation.js` exists, the browser executable
+  reads 11,357 lines, and the six byte contracts hold. The one closeout audit
+  named after this child belongs to the parent programme card.
