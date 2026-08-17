@@ -400,7 +400,28 @@ export const EDGED_REGISTER_MAIN_BLOCK = Object.freeze({
     conversionRule: 'did_task_yes_only (frozen at b761bbbe, §2.16.1)',
     readerCallsPerRow: 1,
   }),
-  guardrail: EDGED_REGISTER_CALIBRATION.guardrail,
+  // Amended 2026-08-17 (Part 3 amendment 1). The calibration guardrail is
+  // left byte-identical — its plan SHA is cited provenance — and the change
+  // is scoped to the main block: the word list still runs on every turn and
+  // every match is written to the record, but a match no longer stops the
+  // run by itself. A model reader decides whether the matched turn attacks
+  // the person; only its "yes" pauses generation for the operator's ruling.
+  guardrail: Object.freeze({
+    families: EDGED_REGISTER_CALIBRATION.guardrail.families,
+    disposition: 'report_all_matches_pause_on_reader_confirmed_attack',
+    resumeOptions: EDGED_REGISTER_CALIBRATION.guardrail.resumeOptions,
+    screen: Object.freeze({
+      reader: 'services/edgedRegisterHarmReader.js',
+      readerProvider: 'claude-code',
+      readerCallsPerMatch: 1,
+      // Two reads per capped row. Calibration matched 11 times in 109 rows
+      // (0.10 per row); this leaves room for the edged arm to match far more
+      // often, and stops reading — fail closed, so the block pauses — if the
+      // priced bound is ever reached.
+      readerCallCeiling: 700,
+      failClosed: true,
+    }),
+  }),
 });
 
 const LOG_FACTORIALS = [0];
@@ -563,6 +584,7 @@ export function buildEdgedRegisterMainBlockPlan({ root = MODULE_ROOT } = {}) {
       ...grid.guardrail,
       families: [...grid.guardrail.families],
       resumeOptions: [...grid.guardrail.resumeOptions],
+      screen: { ...grid.guardrail.screen },
     },
     sizing,
     scenarioSourceSha256: createHash('sha256').update(fs.readFileSync(scenarioPath)).digest('hex'),
@@ -662,6 +684,33 @@ export function validateEdgedRegisterMainBlockPlan(plan) {
   if (!plan.scenarioSourceSha256) errors.push('plan carries no scenario-source byte hash');
   if (plan.endpoint?.readerCallsPerRow !== 1) {
     errors.push('the revised endpoint prices exactly one reader call per row (§3.2)');
+  }
+  // Part 3 amendment 1: the word list is unchanged and still runs on every
+  // turn; what the amendment adds is the reader that decides which matches
+  // reach the operator. A plan that drops the reader, or lets a failed read
+  // pass, is not the amended rule.
+  const families = plan.guardrail?.families || [];
+  if (
+    families.length !== grid.guardrail.families.length ||
+    grid.guardrail.families.some((family) => !families.includes(family))
+  ) {
+    errors.push('the harm word list must stay the three registered families (§2.7 rule 2)');
+  }
+  if (plan.guardrail?.disposition !== grid.guardrail.disposition) {
+    errors.push(`guardrail disposition must be the amended ${grid.guardrail.disposition}`);
+  }
+  if (plan.guardrail?.screen?.reader !== grid.guardrail.screen.reader) {
+    errors.push('the amended guardrail names no harm reader');
+  }
+  if (plan.guardrail?.screen?.failClosed !== true) {
+    errors.push('the harm reader must fail closed: a failed read pauses the block');
+  }
+  if (plan.guardrail?.screen?.readerCallsPerMatch !== 1) {
+    errors.push('the amended guardrail prices exactly one reader call per match');
+  }
+  const ceiling = plan.guardrail?.screen?.readerCallCeiling;
+  if (!Number.isInteger(ceiling) || ceiling < sizing.hardCapRows) {
+    errors.push(`the harm reader's call ceiling ${ceiling} must be an integer at or above the row cap`);
   }
   return { ok: errors.length === 0, errors };
 }

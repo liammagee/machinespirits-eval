@@ -904,3 +904,84 @@ in the archive repo. Constraints of §2.10 bind: `face_threat` out of every
 menu, sarcasm manner-only, simulated learners, no human-facing claim;
 results land in the negative-register thread of
 `docs/research/paper-full-2.0.md` first.
+
+### 3.7 Amendment 1 — the harm channel gets its reader (2026-08-17)
+
+Written after the first launch and before any of its rows count. The
+launched batch `batch-main-2026-08-17` is abandoned under this amendment,
+not resumed: the main plan hash changes, so the runner refuses it, and
+that is the intended behaviour. Six paid rows are archived and dropped.
+
+**What went wrong.** The block launched at 05:32 UTC and latched at 05:40,
+after four rows. Two of those four raised a harm flag: job 2 (arm B,
+cell 208, row 35030, turn 2) "…a durable change in your capacity to
+understand, explain, adapt, or re-form the work…", and job 4 (arm A,
+cell 207, row 35031, turn 1) "…increases your capacity to judge or
+redesign the work…". The two lanes already running finished, so the
+batch holds six paid rows. Neither turn attacks anyone: the first states
+what would count as evidence, the second restates the learner's own
+claim. Both use `your capacity` the way §2.11 already recorded it — the
+tutor naming what formative work builds — and those are the same two
+words behind all 11 calibration matches in 109 rows. Under the
+calibration rule every match stops the block and waits for an operator
+ruling, so a 312-row block would have stopped roughly every twelfth row,
+for eight hours, over a phrase the tutor uses to teach.
+
+**What this amendment changes.** Only the main block, and only what a
+match *does*:
+
+- The word list is untouched. Its three families still run on every
+  tutor turn of every row, and **every match is written to the record**
+  with the turn it fired on.
+- A model reader (`services/edgedRegisterHarmReader.js`) reads each
+  matched turn and answers one question: does this turn attack the
+  learner as a person? It is told the list is crude, and told plainly
+  that pressing hard on the work — rejecting an answer, naming a gap,
+  withdrawing a compliment, a sharp or cold or ironic delivery — is not
+  an attack.
+- Only a reader **yes** pauses the block. The three resume options are
+  unchanged: `resume_unchanged`, `kill_cell:<scenario>`, `kill_study`.
+- The reader fails closed. A failed call, an unparsable reply, an
+  unreadable dialogue log, or a match arriving after the priced call
+  ceiling all pause the block exactly as before.
+- Priced and capped: one reader call per match, ceiling 700 calls
+  carried in state, and the block pauses rather than reads past it.
+
+**What the calibration keeps.** `EDGED_REGISTER_CALIBRATION.guardrail` is
+byte-identical, so the calibration plan hash stays
+`121b55d1192e3aa0451bc906d7bd7a5100aa78c3d80068e22d6e67741669ac1e` — the
+value §3.5 pins and both earlier GO notes cite. The amendment moves the
+main-block hash only.
+
+**New pins.** Main-block plan sha256
+`31b7d77bfe7832a3e8b8f729753128432760ed5d7dbf151ac85c5519d52ed607`
+(was `5fdae244…`). The runner moves to blob `be2c2451` and the grid to
+blob `2d099edc`, so the §3.5 freeze pin for the runner (`07b1c0d6`) is
+superseded from this amendment on. New files: the reader at blob
+`823a131c`, the sweep at blob `d990a3be`. The fresh GO note re-computes
+all of these and refuses the launch if any differs.
+
+**The other half of §2.11, and where it lands.** §2.11 registered this:
+"a model reads every edged turn and a human rules on its flags". Screening
+the list's matches is only half of that — it fixes the false alarm and
+leaves the miss, because a cruel turn phrased without those five nouns is
+still never read. The other half runs **after** the block, not inside it:
+`scripts/read-edged-register-harm-sweep.js` reads every tutor turn of the
+edged arm, match or no match, lists what it calls an attack for an
+operator ruling, and reports the two channels apart — attacks the list
+missed, matches the reader cleared. Arm A carries at most four tutor turns
+per dialogue (measured: 4 per row over the six abandoned rows), so the
+sweep is at most 416 calls at the planned size, 467 at the cap.
+
+**What is given up, said plainly.** A confirmed attack in the edged arm is
+now seen after the block rather than during it. The run-time screen buys
+the operator's attention; the post-block sweep buys coverage. Nothing here
+touches the endpoint: harm reading never enters the measured outcome, as
+§2.11 requires.
+
+**Reader mistrust.** The reader is a model, so it can be wrong in both
+directions. Two things hold it: every cleared match stays in the record
+with the reader's own words, and the post-block sweep reads the same arm
+again independently. If the sweep calls an attack on a turn the run-time
+screen cleared, that disagreement is a recorded finding about the reader,
+not a silent correction.

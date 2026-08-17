@@ -185,3 +185,39 @@ artifact the GO note copies from (one example command per arm);
 edged-register tests pass; the two failing tutor-stub tests fail
 identically at the parent commit. Still next: the GO note, human-gated
 as above. No paid call is licensed yet.
+
+2026-08-17 first main-block launch ABANDONED, and the harm matcher
+re-registered (draft note §3.7, amendment 1). The block launched at
+05:32 UTC and latched at 05:40 after four rows: two of the four raised a
+harm flag, both on the same two words `your capacity`, neither an attack
+— one turn states what would count as evidence, the other restates the
+learner's claim. Those are the same two words behind all 11 calibration
+matches in 109 rows. Under the calibration rule a 312-row block would
+have stopped about every twelfth row, for eight hours, over a phrase the
+tutor uses to teach. Six paid rows exist and are dropped.
+
+The amendment touches the main block only and changes what a match
+*does*, never the word list. Every match still runs on every turn and is
+written to the record; a model reader
+(`services/edgedRegisterHarmReader.js`) then answers one question — does
+this turn attack the learner as a person — and only its yes pauses the
+block. The three resume options are unchanged. It fails closed on a
+failed call, an unparsable reply, an unreadable log, or a match past the
+priced ceiling of 700 reader calls. Five validator checks refuse a plan
+that drops the reader, opens the fail path, narrows the families or
+lowers the ceiling. `EDGED_REGISTER_CALIBRATION.guardrail` is
+byte-identical, so the calibration plan SHA stays `121b55d1…`; the main
+plan SHA moves to
+`31b7d77bfe7832a3e8b8f729753128432760ed5d7dbf151ac85c5519d52ed607`,
+which is why the launched batch is abandoned rather than resumed.
+
+The other half of §2.11 — "a model reads every edged turn" — lands
+after the block, not inside it:
+`scripts/read-edged-register-harm-sweep.js` reads every tutor turn of
+the edged arm, match or no match, and reports the two channels apart
+(attacks the list missed, matches the reader cleared). Measured at 4
+tutor turns per row, so ≤416 calls at the planned size, 467 at the cap.
+What this gives up, plainly: a confirmed attack in the edged arm is seen
+after the block rather than during it. 15 new zero-call tests; 74 across
+the five edged files. The GO note must be rewritten against the new plan
+SHA and a fresh batch directory. No paid call is licensed yet.

@@ -42,6 +42,7 @@ import {
   validateEdgedRegisterCalibrationPlan,
   validateEdgedRegisterMainBlockPlan,
 } from '../services/edgedRegisterCalibration.js';
+import { readHarmVerdict } from '../services/edgedRegisterHarmReader.js';
 import { openEvaluationDbReadonly } from '../services/evaluationDbReadonly.js';
 import {
   analyzeCharismaDesireRows,
@@ -128,6 +129,10 @@ export function newMainBlockState(plan, batchId) {
     rowsAttempted: 0,
     jobs: plan.mainJobs.map((job) => ({ ...job, status: 'pending', attempts: [] })),
     guardrailFlags: [],
+    // Part 3 amendment 1: the harm reader's calls are priced in the GO note,
+    // so the block counts them and stops reading at the registered ceiling.
+    harmReaderCalls: 0,
+    harmReaderCallCeiling: plan.guardrail.screen.readerCallCeiling,
     operatorDecisions: [],
     killed: false,
   };
@@ -371,10 +376,80 @@ function guardrailFindingsForRow(row) {
     const tutorMessage = turn?.suggestions?.[0]?.message || turn?.suggestion?.message || turn?.tutorMessage || '';
     const postLearnerMessage = turns[index + 1]?.learnerMessage || '';
     for (const finding of harmGuardrailFindings({ tutorMessage, postLearnerMessage })) {
-      findings.push({ ...finding, turnIndex: turn?.turnIndex ?? index });
+      findings.push({
+        ...finding,
+        turnIndex: turn?.turnIndex ?? index,
+        tutorMessage,
+        learnerBefore: turn?.learnerMessage || '',
+      });
     }
   }
   return findings;
+}
+
+/**
+ * Part 3 amendment 1 (2026-08-17): screen the word list's matches with the
+ * harm reader. Every match keeps its place in the record; only a reader
+ * "attacks the person" pauses the block. The reader fails closed — a failed
+ * or unparsable call pauses, a match the reader never saw pauses, and the
+ * block stops reading at the priced call ceiling rather than overspending.
+ *
+ * Returns the calls it made so the caller can carry the count in state.
+ */
+export async function screenGuardrailFindings(
+  findings,
+  { model, mock = false, rowId, read = readHarmVerdict, callsMade = 0, callCeiling = Infinity } = {},
+) {
+  const screened = [];
+  let pause = false;
+  let calls = 0;
+  for (const finding of findings) {
+    if (finding.family === 'guardrail_unreadable') {
+      screened.push({ ...finding, reader: null, pausedOn: true });
+      pause = true;
+      continue;
+    }
+    if (callsMade + calls >= callCeiling) {
+      screened.push({
+        family: finding.family,
+        match: finding.match,
+        turnIndex: finding.turnIndex,
+        reader: null,
+        readerError: `harm reader call ceiling ${callCeiling} reached; this match was not read`,
+        pausedOn: true,
+      });
+      pause = true;
+      continue;
+    }
+    let verdict = null;
+    let readerError = null;
+    calls += 1;
+    try {
+      verdict = await read(
+        {
+          rowId,
+          turnIndex: finding.turnIndex,
+          match: finding.match,
+          tutorMessage: finding.tutorMessage,
+          learnerBefore: finding.learnerBefore,
+        },
+        { model, mock },
+      );
+    } catch (error) {
+      readerError = error.message;
+    }
+    const pausedOn = readerError !== null || verdict?.attacksPerson === true;
+    if (pausedOn) pause = true;
+    screened.push({
+      family: finding.family,
+      match: finding.match,
+      turnIndex: finding.turnIndex,
+      reader: verdict,
+      readerError,
+      pausedOn,
+    });
+  }
+  return { screened, pause, calls };
 }
 
 // ---------------------------------------------------------------------------
@@ -401,7 +476,17 @@ function runChildToLog(command, logFile) {
   });
 }
 
-async function runBlock(state, batchDir, block, { lanes = GRID.generation.lanes } = {}) {
+async function runBlock(
+  state,
+  batchDir,
+  block,
+  { lanes = GRID.generation.lanes, harmReaderMock = process.env.EDGED_HARM_READER === 'mock' } = {},
+) {
+  // Part 3 amendment 1 (main block only): the word list still runs on every
+  // completed row, but a match is screened by the harm reader and only a
+  // reader-confirmed attack pauses. The calibration block keeps its frozen
+  // rule — every match pauses — because its plan SHA is cited provenance.
+  const screenMatches = block === 'main';
   const queue = enumerateRunnableJobs(state, block);
   if (queue.needsRuling.length) {
     const list = queue.needsRuling.map((job) => `${job.ordinal} (${job.scenario})`).join(', ');
@@ -453,15 +538,33 @@ async function runBlock(state, batchDir, block, { lanes = GRID.generation.lanes 
         job.rowId = row.id;
         const findings = guardrailFindingsForRow(row);
         if (findings.length) {
+          // Reserve this row's worst case before awaiting, so four lanes
+          // cannot each read a stale count and jointly overshoot the ceiling.
+          const reserved = screenMatches ? findings.length : 0;
+          state.harmReaderCalls = (state.harmReaderCalls || 0) + reserved;
+          const screened = screenMatches
+            ? await screenGuardrailFindings(findings, {
+                mock: harmReaderMock,
+                rowId: row.id,
+                callsMade: state.harmReaderCalls - reserved,
+                callCeiling: state.harmReaderCallCeiling ?? Infinity,
+              })
+            : { screened: findings, pause: true, calls: 0 };
+          state.harmReaderCalls += (screened.calls || 0) - reserved;
           state.guardrailFlags.push({
             ordinal: job.ordinal,
             scenario: job.scenario,
             rowId: row.id,
-            findings,
+            findings: screened.screened,
+            screened: screenMatches,
             raisedAt: new Date().toISOString(),
-            resolution: null,
+            // A match the reader cleared is written to the record and closes
+            // itself: it never reaches the operator, and the end-of-block read
+            // still sees it.
+            resolution: screened.pause ? null : 'cleared_by_harm_reader',
           });
-          paused = true; // report-only: the row stays; no new dialogue starts
+          // report-only: the row stays; a confirmed attack starts no new dialogue
+          if (screened.pause) paused = true;
         }
       } else {
         job.status = 'failed';
@@ -539,6 +642,23 @@ function printStatus(state) {
   for (const flag of open) {
     const families = flag.findings.map((finding) => finding.family).join(', ');
     console.log(`[edged-calibration] OPEN GUARDRAIL FLAG job ${flag.ordinal} (${flag.scenario}): ${families}`);
+    for (const finding of flag.findings) {
+      if (finding.readerError) console.log(`[edged-calibration]   harm read failed: ${finding.readerError}`);
+      else if (finding.reader?.attacksPerson) {
+        console.log(`[edged-calibration]   reader: ${finding.reader.reason}`);
+        if (finding.reader.quote) console.log(`[edged-calibration]   quote: ${finding.reader.quote}`);
+      }
+    }
+  }
+  // The amendment's own record: matches the reader cleared never reached the
+  // operator, and the end-of-block read still sees them.
+  const cleared = (state.guardrailFlags || []).filter((flag) => flag.resolution === 'cleared_by_harm_reader');
+  if (cleared.length) {
+    const matches = cleared.reduce((total, flag) => total + flag.findings.length, 0);
+    console.log(`[edged-calibration] harm reader cleared ${matches} word-list matches on ${cleared.length} rows`);
+  }
+  if (state.harmReaderCallCeiling) {
+    console.log(`[edged-calibration] harm reader calls ${state.harmReaderCalls || 0}/${state.harmReaderCallCeiling}`);
   }
   if (open.length) {
     console.log(
@@ -763,6 +883,11 @@ async function main() {
         `power ${sizing.powerAtN} at baseline ${sizing.baselineRate} vs ${sizing.targetRate}`,
     );
     console.log(`[edged-main] ${mainPlan.mainJobs.length} main jobs, hard cap ${sizing.hardCapRows} rows`);
+    const screen = mainPlan.guardrail.screen;
+    console.log(
+      `[edged-main] harm guardrail: ${mainPlan.guardrail.disposition}, ` +
+        `${screen.readerCallsPerMatch} reader call per match, ceiling ${screen.readerCallCeiling} calls`,
+    );
     for (const profileName of unregisteredProfiles) {
       console.log(`[edged-main] NOTE profile ${profileName} is not yet registered in tutor-agents.yaml`);
     }
