@@ -1,7 +1,7 @@
 ---
 id: pin-the-last-two-repo-state-inputs-to-the-page-byte-contract
 title: Pin the last two repo-state inputs to the page byte contracts
-status: review
+status: done
 type: infra
 priority: P2
 owner: claude
@@ -53,3 +53,7 @@ earlier card. Two artifact inputs were left: recent proof runs
 - 2026-08-17 — Proved by writing an untracked run and an untracked bundle into
   the real `exports/` and re-running: 4/4 pass. Under the old code both would
   have entered the palette and moved the bytes.
+- 2026-08-17 — Closed. PR #649 merged as `8a6ba5e0`, and main's own refresh
+  commit `1669540b` then landed on top. Both tests pass against that state
+  (7/7). All three live palette inputs — board, proof runs, replay bundles —
+  are now pinned, so the page byte contracts answer to the renderer alone.
