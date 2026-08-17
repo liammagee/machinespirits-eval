@@ -171,3 +171,17 @@ and merges the fields another process owns — rulings, guardrail
 resolutions, killed cells — before the write. Five tests cover it; four
 fail without the merge. The working rule stands anyway: never record a
 ruling until the runner has fully exited.
+
+2026-08-17 main-block runner support BUILT (commit 7df6ebf6, zero-call).
+The plan builder computes the exact-test size the registration promised:
+104 rows per version of the tutor (26 per cell, even split), 312 rows
+over three arms, power .8035 (100 gives .790 and fails), hard cap 350.
+This supersedes the ~95/~285 normal approximation above. Jobs interleave
+so every consecutive dozen covers all 12 arm-by-cell pairs. Main plan
+SHA-256 5fdae244543c7e017be4901a95db47a46095df8553df0f394813c0bd90e9d31d;
+the calibration plan SHA is unchanged. `--dry-run-main` writes the
+artifact the GO note copies from (one example command per arm);
+`--main-block` sits behind the same GO-note + clean-commit gates. 41
+edged-register tests pass; the two failing tutor-stub tests fail
+identically at the parent commit. Still next: the GO note, human-gated
+as above. No paid call is licensed yet.
