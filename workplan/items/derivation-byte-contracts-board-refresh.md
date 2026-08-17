@@ -71,3 +71,10 @@ renderer, not the board.
   commit `80c6adf6` then landed carrying the five closed cards, and the byte
   contracts held 4/4 against it. That is the first board move since the fix
   that would have turned main red under the old coupling, and it did not.
+- 2026-08-17 — Correction to the residual note above: "`exports/` is gitignored,
+  so CI always sees them empty" is wrong for the proof-run half. `exports/` is
+  ignored by default but carries force-added exceptions, and 207 files under
+  `dramatic-derivation/loop` are tracked, so CI and a fresh checkout both render
+  eight proof runs into the palette. The real exposure runs the other way — a
+  local run adds to that tracked baseline. Carried and fixed on
+  [pin-the-last-two-repo-state-inputs-to-the-page-byte-contract](pin-the-last-two-repo-state-inputs-to-the-page-byte-contract.md).

@@ -30,6 +30,18 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // ever stops working, rather than letting the digests drift again.
 process.env.WORKPLAN_DIR = path.join(ROOT, 'tests/fixtures/workplan');
 
+// The palette carries two more live inputs beside the board: recent proof runs and
+// recent replay bundles, both read from exports/. exports/ is ignored by default but
+// carries force-added exceptions, so the proof-run half was reading 207 tracked files
+// and the replay half was reading whatever a developer had run locally. Either way
+// the bytes answered to repo and disk state rather than to the renderer.
+//
+// Pin both at fixtures that hold ONE artifact each, not at an empty location: an
+// empty pin would agree with a bare checkout but would quietly drop the populated
+// palette path out of the contract altogether.
+process.env.DERIVATION_LOOP_DIR = path.join(ROOT, 'tests/fixtures/derivation-loop');
+process.env.POETICS_REPLAYS_DIR = path.join(ROOT, 'tests/fixtures/replay-bundles');
+
 function fixture() {
   const diagnosis = {
     group: 'fixture-group',
@@ -215,6 +227,16 @@ function assertBoardIsPinned(html) {
     assert.match(html, new RegExp(title, 'u'));
 }
 
+// Proof that the two exports/ pins reached the page: exactly one recent artifact of
+// each kind, the fixtures' own. More than one means the real exports/ directory was
+// read; none means the seam broke and the readers found nothing.
+function assertArtifactRecentsArePinned(html) {
+  assert.equal((html.match(/"type":"proof run"/gu) || []).length, 1);
+  assert.equal((html.match(/"type":"replay bundle"/gu) || []).length, 1);
+  assert.match(html, /fixture-proof-run/u);
+  assert.match(html, /fixture-bundle/u);
+}
+
 function assertInlineScriptsParse(html) {
   const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gu)].map((match) => match[1]);
   assert.ok(scripts.length > 0);
@@ -225,14 +247,15 @@ test('derivation index renderers preserve empty and populated page bytes', () =>
   const { indexRun, live } = fixture();
   const empty = renderDerivationIndexHtml([], {}, []);
   assertBoardIsPinned(empty);
+  assertArtifactRecentsArePinned(empty);
   assert.deepEqual(digest(empty), {
-    bytes: 165975,
-    hash: 'bcbe007f4f0c270fc6d668f5338eaf96a905b78a327a1cc68039d0ad0792d3f1',
+    bytes: 164051,
+    hash: 'a314770f1ea22c7fa1c5511303c64e0ffa82590a71faa85399ade6f69bf8424b',
   });
   const populated = renderDerivationIndexHtml([indexRun], { compare: 'fixture-run,missing' }, [live]);
   assert.deepEqual(digest(populated), {
-    bytes: 171127,
-    hash: '930f7841b50c3a108eb35e78613d11f876bc48f37d939e1a4f314a01a869cb17',
+    bytes: 169203,
+    hash: 'b13b780116dfa86b987493a9477f85f8a70a73db6a7d810ca681efa7b61d03ed',
   });
   assertInlineScriptsParse(populated);
 });
@@ -241,18 +264,19 @@ test('live derivation renderers preserve empty, populated, and run page bytes', 
   const { live } = fixture();
   const emptyLive = renderDerivationLiveIndexHtml([]);
   assertBoardIsPinned(emptyLive);
+  assertArtifactRecentsArePinned(emptyLive);
   assert.deepEqual(digest(emptyLive), {
-    bytes: 94805,
-    hash: '894fccefcaa346768452020a0689c0ed5b67612e43ff869a78a48bac54b21282',
+    bytes: 92881,
+    hash: 'e49f0441966bc02bd10ee563722dec0e96a853a2314b9c25319da8f909df23b6',
   });
   assert.deepEqual(digest(renderDerivationLiveIndexHtml([live])), {
-    bytes: 95050,
-    hash: '64b2a9343e27e97309052db7f1c5ec05f00af31d9d90bf4997702ced63cd76a5',
+    bytes: 93126,
+    hash: '8e5b7c2f1425381cacabdb792d6b18e6c3176ef84a196add011978f07e5c79a4',
   });
   const run = renderDerivationLiveRunHtml(live);
   assert.deepEqual(digest(run), {
-    bytes: 101008,
-    hash: '42d1a2fd0188ec1f0740f4b72a4ea0211312ada5455cd5e331d0e2fe2d04fd93',
+    bytes: 99084,
+    hash: '357e3a15062db1933835736c3a5084f5d3608f50246099b6e1dbbf4230050f1d',
   });
   assertInlineScriptsParse(run);
 });
@@ -268,9 +292,10 @@ test('completed derivation renderer preserves its populated proof page byte cont
     assessment,
   });
   assertBoardIsPinned(html);
+  assertArtifactRecentsArePinned(html);
   assert.deepEqual(digest(html), {
-    bytes: 179155,
-    hash: 'ba0d3e1c25fc6632929cd887ebe3ef767179478a1af1f3e4273d949a8903912a',
+    bytes: 177231,
+    hash: '8de711eed89e5a5317031c00dfc0ee1b91d395971ee884d6e083da797f190137',
   });
   assert.match(html, /id="authored-proof-dag"/u);
   assert.match(html, /id="learner-proof-dag"/u);

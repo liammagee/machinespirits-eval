@@ -24,6 +24,16 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT_DIR = path.resolve(__dirname, '../..');
 export const REPLAYS_DIR = path.join(ROOT_DIR, 'exports', 'discursive-replays');
 
+// Where the readers below actually look. POETICS_REPLAYS_DIR redirects them, and
+// it is read per call rather than at import so a caller can set it after this
+// module is already loaded (static imports are hoisted above test-file bodies).
+// This is a READ path — nothing here writes — so it needs no desktop relocation.
+// The command palette lists recent bundles on every page, which put repo state
+// inside the page byte contracts; the contract test pins this to a fixed value.
+export function resolveReplaysDir() {
+  return process.env.POETICS_REPLAYS_DIR ? path.resolve(ROOT_DIR, process.env.POETICS_REPLAYS_DIR) : REPLAYS_DIR;
+}
+
 // Gate verdict buckets in the manifest's local_gate.summary, in display order.
 export const GATE_BUCKETS = Object.freeze([
   'survivors',
@@ -125,7 +135,7 @@ function normaliseScores(rec, check) {
 
 // ── bundle discovery ──────────────────────────────────────────────────────────
 
-export function listReplayBundles({ dir = REPLAYS_DIR } = {}) {
+export function listReplayBundles({ dir = resolveReplaysDir() } = {}) {
   if (!exists(dir)) return [];
   const out = [];
   for (const name of fs.readdirSync(dir)) {
@@ -161,7 +171,7 @@ export function listReplayBundles({ dir = REPLAYS_DIR } = {}) {
 
 // ── one bundle: items with gate verdict + check summary ─────────────────────────
 
-export function readReplayBundle(name, { dir = REPLAYS_DIR } = {}) {
+export function readReplayBundle(name, { dir = resolveReplaysDir() } = {}) {
   const bundleDir = path.join(dir, name);
   const manifest = readJson(path.join(bundleDir, 'manifest.json'));
   if (!manifest) return null;
@@ -210,7 +220,7 @@ export function readReplayBundle(name, { dir = REPLAYS_DIR } = {}) {
 
 // ── one item: the original↔revised diff + check findings + revision rationale ──
 
-export function readReplayItem(name, itemId, { dir = REPLAYS_DIR } = {}) {
+export function readReplayItem(name, itemId, { dir = resolveReplaysDir() } = {}) {
   const bundleDir = path.join(dir, name);
   const manifest = readJson(path.join(bundleDir, 'manifest.json'));
   if (!manifest) return null;
@@ -357,4 +367,13 @@ export function diffStats(diff) {
   return { added, deleted, unchanged, changed: added + deleted };
 }
 
-export default { listReplayBundles, readReplayBundle, readReplayItem, lineDiff, diffStats, REPLAYS_DIR, GATE_BUCKETS };
+export default {
+  listReplayBundles,
+  readReplayBundle,
+  readReplayItem,
+  lineDiff,
+  diffStats,
+  REPLAYS_DIR,
+  resolveReplaysDir,
+  GATE_BUCKETS,
+};
