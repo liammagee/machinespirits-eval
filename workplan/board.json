@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-17T07:45:39.664Z",
+  "generated": "2026-08-17T07:56:29.049Z",
   "counts": {
     "total": 508,
     "byStatus": {
-      "done": 480,
+      "done": 481,
       "blocked": 6,
       "dropped": 10,
       "active": 5,
       "triaged": 1,
       "archived": 4,
-      "review": 2
+      "review": 1
     },
     "byType": {
       "research": 79,
@@ -576,18 +576,6 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
-      "id": "pin-the-last-two-repo-state-inputs-to-the-page-byte-contract",
-      "title": "Pin the last two repo-state inputs to the page byte contracts",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-17",
-      "updated": "2026-08-17",
-      "verification": "The derivation page byte contracts no longer move when exports/ has local content: the recent proof runs and replay bundles that ride in the command palette are read through env-overridable paths, the contract test pins both to a fixed location, and a developer with local runs on disk sees the same digests as CI."
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -14329,6 +14317,18 @@
         "guards",
         "fallible-learner"
       ]
+    },
+    {
+      "id": "pin-the-last-two-repo-state-inputs-to-the-page-byte-contract",
+      "title": "Pin the last two repo-state inputs to the page byte contracts",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-17",
+      "updated": "2026-08-17",
+      "verification": "The derivation page byte contracts no longer move when exports/ has local content: the recent proof runs and replay bundles that ride in the command palette are read through env-overridable paths, the contract test pins both to a fixed location, and a developer with local runs on disk sees the same digests as CI."
     },
     {
       "id": "point-of-action-gate-grader",
