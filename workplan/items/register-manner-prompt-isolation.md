@@ -1,13 +1,13 @@
 ---
 id: register-manner-prompt-isolation
 title: Where the edge is lost — send the flat turn's own prompt to the writer alone
-status: active
+status: done
 type: experiment
 priority: P2
 owner: claude
 source: manual
 created: 2026-08-08
-updated: 2026-08-08
+updated: 2026-08-17
 verification: The set is fixed and its plan hash printed by --dry-run before the
   first paid call. Both sides are read by the same pinned reader on the same
   versioned question over the same learner turn. The verdict is the count of
@@ -107,3 +107,6 @@ turns die on a read of the code — these cells run single-prompt, and on that
 path `extractLearnerInputs` returns an empty message history, so the tutor never
 saw them. What is left is the learner's own message, the one input this probe
 dropped. Registered as [register-manner-learner-turn](register-manner-learner-turn.md).
+
+- 2026-08-17 — Closed on board review. The probe ran and its Outcome section
+  carries the verdict; the card sat in `active` after the work ended.

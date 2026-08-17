@@ -1,19 +1,19 @@
 ---
 id: warrant-stub-dependency-boundary-rule
 title: "Boundary rule: warrant modules must not import tutor-stub files"
-status: active
+status: done
 type: infra
 priority: P2
 owner: claude
 source: manual
 created: 2026-08-16
-updated: 2026-08-16
+updated: 2026-08-17
 verification: A stated one-way rule (warrant-gate, action-contract, and
-  obligation-ledger modules never import tutor-stub files; tutor-stub may
-  import them) is written down, and a test freezes today's violations as
-  an allowlist that may only shrink. Any new cross-import fails the test.
-  No existing cross-import is removed while the live warrant validation
-  line is open, because that line fingerprints these files.
+  obligation-ledger modules never import tutor-stub files; tutor-stub may import
+  them) is written down, and a test freezes today's violations as an allowlist
+  that may only shrink. Any new cross-import fails the test. No existing
+  cross-import is removed while the live warrant validation line is open,
+  because that line fingerprints these files.
 claim_status: planned
 links:
   notes:
@@ -56,3 +56,8 @@ the warrant line to close.
   whole frozen allowlist. The other three grep matches were comments and
   path strings, not imports. Removal waits for the warrant line to
   close.
+
+- 2026-08-17 — Closed on board review. The scoped work is on `main`
+  (`docs/warrant-stub-dependency-rule.md`, `tests/warrantStubDependencyBoundary.test.js`,
+  PR #644), which is the whole of this card's verification. Untangling the one
+  frozen back-import edge stays with the later extraction step.

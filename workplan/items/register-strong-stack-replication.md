@@ -1,18 +1,18 @@
 ---
 id: register-strong-stack-replication
 title: Does the sarcastic edge survive a strong writer?
-status: active
+status: done
 type: experiment
 priority: P2
 owner: claude
 source: manual
 created: 2026-08-09
-updated: 2026-08-09
+updated: 2026-08-17
 verification: The plan is frozen and its SHA printed by --dry-run before the
   first paid call. The report is zero-call and fails closed on four registered
   measures, one of which reads the tutor stack off the dialogue traces rather
-  than off the model columns. The comparison against the parent sarcastic arm
-  is fixed in the plan before the run exists.
+  than off the model columns. The comparison against the parent sarcastic arm is
+  fixed in the plan before the run exists.
 claim_status: exploratory
 depends_on:
   - register-manner-learner-turn
@@ -142,3 +142,6 @@ post hoc on 15 rows.
 Plan hash, printed by the dry run and fixed before the first call:
 `399d618831892f0f5fced889fccf4d10de3bca75cb4654b226473b863c1955dd`.
 Apparatus tested 16/16.
+
+- 2026-08-17 — Closed on board review. The probe ran and its Outcome section
+  carries the verdict; the card sat in `active` after the work ended.
