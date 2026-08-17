@@ -1,12 +1,12 @@
 {
-  "generated": "2026-08-17T05:37:13.931Z",
+  "generated": "2026-08-17T06:04:18.283Z",
   "counts": {
     "total": 507,
     "byStatus": {
-      "done": 479,
+      "done": 480,
       "blocked": 6,
       "dropped": 10,
-      "active": 6,
+      "active": 5,
       "triaged": 1,
       "archived": 4,
       "review": 1
@@ -272,26 +272,6 @@
         "teaching",
         "externalization",
         "content-philosophy"
-      ]
-    },
-    {
-      "id": "derivation-byte-contracts-board-refresh",
-      "title": "Stop the [skip ci] board refresh from silently breaking the derivation byte contracts",
-      "status": "active",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-17",
-      "updated": "2026-08-17",
-      "verification": "A change to workplan/board.json on main can no longer make tests/poeticsDerivationPresentation.test.js fail without CI seeing it — either the refresh automation also refreshes the contracts in the same commit, or the rendered pages take their search index from a pinned fixture board so repo state cannot move the bytes.",
-      "claim_status": "methods",
-      "links": {
-        "items": "guarded-learner-outcome-study"
-      },
-      "tags": [
-        "ci",
-        "poetics"
       ]
     },
     {
@@ -12964,6 +12944,26 @@
         "testing"
       ],
       "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "derivation-byte-contracts-board-refresh",
+      "title": "Stop the [skip ci] board refresh from silently breaking the derivation byte contracts",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-17",
+      "updated": "2026-08-17",
+      "verification": "A change to workplan/board.json on main can no longer make tests/poeticsDerivationPresentation.test.js fail without CI seeing it — either the refresh automation also refreshes the contracts in the same commit, or the rendered pages take their search index from a pinned fixture board so repo state cannot move the bytes.",
+      "claim_status": "methods",
+      "links": {
+        "items": "guarded-learner-outcome-study"
+      },
+      "tags": [
+        "ci",
+        "poetics"
+      ]
     },
     {
       "id": "docs-build-default-and-regen",
