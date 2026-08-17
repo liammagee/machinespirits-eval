@@ -1,20 +1,20 @@
 {
-  "generated": "2026-08-17T07:56:29.049Z",
+  "generated": "2026-08-17T13:05:08.676Z",
   "counts": {
-    "total": 508,
+    "total": 509,
     "byStatus": {
-      "done": 481,
+      "done": 482,
       "blocked": 6,
       "dropped": 10,
-      "active": 5,
-      "triaged": 1,
+      "active": 4,
+      "triaged": 2,
       "archived": 4,
       "review": 1
     },
     "byType": {
       "research": 79,
       "experiment": 86,
-      "infra": 108,
+      "infra": 109,
       "maintenance": 213,
       "content": 4,
       "ops": 10,
@@ -22,6 +22,32 @@
     }
   },
   "items": [
+    {
+      "id": "paid-study-endpoint-runtime-preflight",
+      "title": "Fail closed when a paid study cannot measure its registered endpoints",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-17",
+      "updated": "2026-08-17",
+      "verification": "Before any paid model call, the exact production path passes a synthetic full-scale preflight that maps every registered primary endpoint to an enabled scorer or reader, proves its required events are emitted, keeps frozen packets within their limits, preserves denominator and pairing rules through sharding, and assembles the complete corpus; negative regressions prove that each mismatch stops launch before provider initialization.",
+      "links": {
+        "paper": "§6.26",
+        "items": [
+          "guarded-learner-outcome-study",
+          "edged-register-outcome-study"
+        ]
+      },
+      "tags": [
+        "registration",
+        "paid-study",
+        "preflight",
+        "fail-closed",
+        "scoring"
+      ]
+    },
     {
       "id": "adaptive-warrant-fine-grain-semantic-encoding-redesign",
       "title": "Adaptive warrant: fine-grain semantic encoding redesign",
@@ -287,7 +313,8 @@
       "verification": "A powered main block (or a registered no-corridor kill verdict) answers whether router-selected ironic/sarcastic delivery beats the warm router on post-resistance conversion, on persona-scenario cells where the warm baseline converts at 30-70%. Each paid stage runs only after its own committed GO note plus explicit human approval.",
       "claim_status": "future",
       "depends_on": [
-        "adaptive-register-switching"
+        "adaptive-register-switching",
+        "paid-study-endpoint-runtime-preflight"
       ],
       "links": {
         "notes": [
@@ -302,35 +329,6 @@
       },
       "tags": [
         "registers",
-        "adaptive",
-        "outcome"
-      ]
-    },
-    {
-      "id": "guarded-learner-outcome-study",
-      "title": "Extend the warrant gate to the guarded (defensive) learner",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-15",
-      "updated": "2026-08-15",
-      "verification": "A pilot under its own registration (bare / gated / standing arms, guarded persona) reports the registered endpoints — evidence production within two turns of a delivered challenge, decision correctness, report-only stance table — and a main block runs only if the pilot gate passes. Each paid stage needs its own committed GO note plus explicit human approval.",
-      "claim_status": "future",
-      "depends_on": [
-        "adaptive-warrant-outcome-study"
-      ],
-      "links": {
-        "notes": [
-          "docs/adaptation-refinement/2026-08-15_guarded-learner-extension-plan.md",
-          "docs/adaptation-refinement/2026-08-13_guarded-bad-learner-draft.md",
-          "docs/adaptation-refinement/relay/106-human-ruling-guarded-pole-basis-and-contract-v3.3.md"
-        ],
-        "paper": "§6.25"
-      },
-      "tags": [
-        "warrant-gate",
         "adaptive",
         "outcome"
       ]
@@ -13515,6 +13513,42 @@
       "tags": [
         "tutor-stub",
         "guards"
+      ]
+    },
+    {
+      "id": "guarded-learner-outcome-study",
+      "title": "Extend the warrant gate to the guarded (defensive) learner",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-15",
+      "updated": "2026-08-17",
+      "branch": "build/guarded-learner-v3.3",
+      "verification": "Complete on build/guarded-learner-v3.3 and folded into paper §6.26: an 18-dialogue pilot preceded a 72-dialogue main block with 575 admitted decision cases and 1,150 accepted reads; registered M1 held, the separately registered post-hoc warranted-shift result was 40.8% gated versus 31.2% standing-permission and 17.8% bare, and the late registered P3 read was 7/66 delivered versus 13/152 shadow windows under the disclosed instrument amendment label. The paper and private archive record the exact scope and provenance; no effect-size, significance, stronger causal, or human-learning claim is made.",
+      "claim_status": "scope-bound",
+      "depends_on": [
+        "adaptive-warrant-outcome-study"
+      ],
+      "links": {
+        "notes": [
+          "docs/adaptation-refinement/2026-08-15_guarded-learner-extension-plan.md",
+          "docs/adaptation-refinement/2026-08-13_guarded-bad-learner-draft.md",
+          "docs/adaptation-refinement/relay/106-human-ruling-guarded-pole-basis-and-contract-v3.3.md"
+        ],
+        "paper": "§6.26",
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/646"
+        ],
+        "items": [
+          "paid-study-endpoint-runtime-preflight"
+        ]
+      },
+      "tags": [
+        "warrant-gate",
+        "adaptive",
+        "outcome"
       ]
     },
     {
