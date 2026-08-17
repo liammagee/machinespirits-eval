@@ -2,7 +2,7 @@
 id: derivation-byte-contracts-board-refresh
 title: Stop the [skip ci] board refresh from silently breaking the derivation
   byte contracts
-status: active
+status: done
 type: infra
 priority: P2
 owner: claude
@@ -67,3 +67,7 @@ renderer, not the board.
   local runs on disk will see the same test go red for the same reason. Fixing
   it needs env overrides in two production modules; that is a wider change than
   this card names.
+- 2026-08-17 — Closed. PR #647 merged as `ac20fe9a`; main's own refresh
+  commit `80c6adf6` then landed carrying the five closed cards, and the byte
+  contracts held 4/4 against it. That is the first board move since the fix
+  that would have turned main red under the old coupling, and it did not.
