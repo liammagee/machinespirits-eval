@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Plan — review of the 3 Aug – 17 Aug 2026 roundups</title>
+  <style>
+    body { font-family: Georgia, "Times New Roman", serif; max-width: 900px; margin: 2rem auto;
+           padding: 0 1.5rem; line-height: 1.65; color: #1a1a1a; background: #fafaf8; }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; color: #444; text-transform: uppercase; letter-spacing: .06em; }
+    .item { border-left: 3px solid #aaa; padding: .5rem 1rem; margin: 1rem 0; background: #fff; }
+    .item.p1 { border-left-color: #c0392b; } .item.p2 { border-left-color: #1a5276; } .item.p3 { border-left-color: #1e8449; }
+    .item h3 { margin: 0 0 .35rem; font-size: 1.02rem; }
+    .item .row { font-size: .9rem; margin: .25rem 0; }
+    .k { font-weight: bold; color: #555; }
+    .cost { display:inline-block; font-size:.74rem; font-weight:bold; padding:.1rem .45rem; border-radius:3px; background:#1e8449; color:#fff; }
+    .cost.amber { background: #d4a017; }
+    .intro-note { font-size: .9rem; color: #555; background: #f0f0ea; border: 1px solid #ddd;
+                  padding: .6rem 1rem; border-radius: 3px; margin-bottom: 1rem; }
+    .alert { font-size: .9rem; color: #7a2e00; background: #fff4e5; border: 1px solid #e6b26a;
+             padding: .6rem 1rem; border-radius: 3px; margin-bottom: 1rem; }
+    .brake { background: #fbeee6; border: 1px solid #e0c0a0; padding: .6rem 1rem; border-radius: 3px; }
+    a { color: #1a5276; } footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+    code { font-size: .88em; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-08-17 reviews=2026-08-03,2026-08-10,2026-08-17 generator=ms-research-review -->
+
+<h1>Research Plan <small style="font-weight:normal;font-size:.85em">review of the 3 Aug – 17 Aug 2026 roundups</small></h1>
+
+<div class="alert">
+  <strong>Note on source:</strong> the 2026-08-17 roundup is not yet on <code>main</code> — it sits in
+  open PR <a href="https://github.com/liammagee/machinespirits-eval/pull/652">#652</a>
+  ("Daily research roundup: 10-17 Aug 2026"). This plan reads that PR directly. Once it merges, nothing
+  needs re-triaging.
+</div>
+
+<div class="intro-note">
+  <strong>Review → plan.</strong> 2026-08-03's papers were closed by the 2026-08-04/05 consolidation
+  pass and carry no open task. 2026-08-10's two strong papers (AgentAntibody, AgentForge) were the
+  plan two weeks ago; both still sit un-triaged in <code>workplan/inbox/</code> — nobody has picked
+  them yet, so they are not repeated here as new work but are named again below so they do not fall
+  off the list. The new material this week is the three papers in the 2026-08-17 roundup (PR #652):
+  one rhetoric paper, two agent-architecture papers. The rhetoric paper is a strong, specific fit; the
+  other two are background reading, as the roundup itself flags them. One strong new item plus one
+  light audit, below. <strong>Implement and evaluate stay human-gated</strong> (see the brake).
+</div>
+
+<h2>The plan</h2>
+
+<div class="item p1">
+  <h3>P1 · Does the suspicious superego catch a fake citation, or only a hollow one? —
+    "Learning to Persuade Exposes How Easily LLMs Abandon Correct Beliefs" (2608.11624)</h3>
+  <div class="row"><span class="k">Why:</span> the paper trains an agent to flip a target model off a
+    correct answer in one turn, using fabricated citations and false claims of authority rather than
+    real argument — over 93% success against its training target, and the tactic transfers to models it
+    never trained on. This project already has a superego built to guard the ego's output
+    (<code>prompts/tutor-superego-suspicious.md</code>, used by cells 22-33 and 93-100) and a
+    trap-scenario suite built to test whether a tutor holds up under learner pressure
+    (<code>config/adaptive-trap-scenarios.yaml</code>, cells 110-125). Neither checks for this exact
+    tactic. Read closely, the suspicious superego's checklist (contingency, evidence for claims about
+    the <em>learner</em>, no template patterns) is about whether the ego's own response is genuine — it
+    has no criterion for a learner citing a fake source or a fake expert to push the tutor off a correct
+    position. The two rubric dimensions that come closest, <code>content_accuracy</code> and
+    <code>epistemic_integrity</code> (<code>config/evaluation-rubric.yaml</code>), score the tutor's own
+    content, not its resistance to a learner's false claim. The closest existing trap scenario,
+    <code>resistance_to_insight_v1</code> (<code>config/adaptive-trap-scenarios.yaml:80</code>), tests a
+    real philosophical objection, not a fabricated one — a different case.</div>
+  <div class="row"><span class="k">Do:</span> read-only audit, no new code. Read
+    <code>tutor-superego-suspicious.md</code>'s <code>&lt;evaluation_criteria&gt;</code> and
+    <code>&lt;approval_standard&gt;</code> blocks against the paper's tactic list (fabricated citation,
+    false authority) and confirm the gap in writing. Check the eight scenarios in
+    <code>adaptive-trap-scenarios.yaml</code> for any near-miss coverage. Write up whether this is a
+    genuine gap (most likely, based on the above) and, if so, sketch — but do not build — a candidate
+    scenario (for example <code>persuasion_by_false_authority_v1</code>, modeled on
+    <code>resistance_to_insight_v1</code>'s shape) where the learner cites a fake source to push the
+    tutor off a correct position, scored on whether the tutor holds it.</div>
+  <div class="row"><span class="k">Evaluate:</span> the audit itself needs no run. If a human later
+    authorizes the new scenario, the eval would be
+    <code>node scripts/eval-cli.js run --profiles cell_93_base_dialectical_suspicious_unified_superego_nopad,cell_114_dialogue_engine_trap_baseline,cell_125_dialogue_engine_crosssuite_baseline</code>
+    against the new scenario, scored by <code>analyze-strategy-shift.js</code> /
+    <code>grade-adaptive-dialogue.js</code> for a new success criterion mirroring
+    <code>resistance_to_insight_v1</code>'s <code>tutor_engages_substantive_objection</code>: does the
+    tutor keep the correct position, or fold.
+    <span class="cost">existing data (audit)</span> <span class="cost amber">paid run (if scenario built)</span></div>
+</div>
+
+<div class="item p2">
+  <h3>P2 · Has mock adaptive-tutor output ever been read as if it were real? —
+    "Scaling Automatic Research Agents via World Models" (2608.12564)</h3>
+  <div class="row"><span class="k">Why:</span> WMRL trains research agents against a learned world
+    model instead of the real environment, and adds two correction terms so the model's imperfect
+    reward estimates do not mislead training. <code>services/adaptiveTutor/</code> has the same shape —
+    <code>ADAPTIVE_TUTOR_LLM=mock</code> swaps a deterministic stand-in for the real learner-and-tutor
+    loop during smoke tests — but nothing checks whether mock output ever crossed into a real result.</div>
+  <div class="row"><span class="k">Do:</span> read-only check, no new code. Grep the smoke scripts
+    (<code>scripts/run-adaptive-cell-smoke.js</code>, <code>run-adaptive-persistence-smoke.js</code>,
+    <code>run-langgraph-smoke.js</code>) and past run configs for any use of
+    <code>ADAPTIVE_TUTOR_LLM=mock</code> outside those three scripts. Confirm no mock-generated dialogue
+    fed the trap-suite numbers reported in <code>paper-full-2.0.md</code> §6.8.</div>
+  <div class="row"><span class="k">Evaluate:</span> query <code>data/evaluations.db</code> run metadata
+    for cells 110-125 and cross-check against the §6.8 N-counts already in the paper. No new run.
+    <span class="cost">existing data</span></div>
+</div>
+
+<h2>Backlog (named, not started)</h2>
+<ul style="font-size:.92rem;">
+  <li><strong>Still open from the 08-10 plan, not re-run here:</strong> the Writing Pad /
+    AgentAntibody check (does <code>services/memory/tutorWritingPad.js</code> accumulate like an
+    immune-memory library or overwrite each turn?) and the AgentForge role-swap audit (which
+    <code>/ms-play-tutor</code> / <code>/ms-tutor-remote</code> / id-director roles a human could stand
+    in for beyond the learner). Both sit un-triaged in <code>workplan/inbox/2026-08-10-arxiv-2608.04053.md</code>
+    and <code>...2608.04148.md</code> — named again so they stay visible, not repeated in full.</li>
+  <li><strong>From the 08-17 roundup, background by the roundup's own read:</strong> "Discovering
+    Efficient and Explainable Communication Topologies for LLM-based Multi-Agent Systems via Causal
+    Inference" (2608.12921) — tests each agent-to-agent link's causal effect on the final answer rather
+    than assuming a hand-picked topology matters. The project already runs a coarse version of this
+    informally, through the factorial ablation cells and <code>analyze:effects</code> (superego present
+    vs absent, single- vs multi-agent). No new action identified this week; worth a second look only if
+    a finer-grained, per-turn causal estimate of the superego's effect on the ego's revision becomes a
+    real question for <code>dialogueTraceAnalyzer.js</code>.</li>
+</ul>
+
+<h2>The brake</h2>
+<div class="brake">
+  Both plan items above are read-only: a prompt/config audit against already-built machinery and a
+  metadata check against the DB. No paid eval runs, no new drama generation, no rejudge spend, and
+  nothing lands in the paper without sign-off. The candidate scenario in P1 and the backlog items stay
+  the user's to authorize, given the pre-registration / single-paper discipline (<code>CLAUDE.md</code>
+  → "Paper Authoring Discipline").
+</div>
+
+<footer>Generated by <code>ms-research-review</code> · reviewed the 3 Aug – 17 Aug 2026 daily roundups
+(08-03 already closed by a prior consolidation; 08-10 still open and named in the backlog; 08-17 read
+from open PR #652) · reviewed by a human before any implementation.</footer>
+</body>
+</html>
