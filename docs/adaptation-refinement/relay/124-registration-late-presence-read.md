@@ -128,3 +128,57 @@ than composing them.
    (also re-validates the report-only M7/M8 at more cost).
 
 NEVER push this branch.
+
+---
+
+## Result (appended 2026-08-17 — the registration above is sealed and unchanged)
+
+The read ran (GO relay 125, 520 calls) and the retake ran (GO relay
+126, 6 calls). Scored through the frozen endpoint scorer by
+`scripts/score-late-presence-read.js` (commit 1d844959, zero calls).
+Score file: `$RUN/late-presence/late-presence-score.json`.
+
+**Registered contrast: delivered 7/66 (0.106) vs shadow 13/152
+(0.086). The direction holds. Per §5, P3 closes in the positive,
+with the label** — late-scored registered endpoint, disclosed
+instrument amendment. The effect is small: +2.0 points on 66
+delivered windows. It never stands in a table as the clean
+pre-registered result.
+
+Reported beside, description only:
+- Either-reader: delivered 0.183, shadow 0.171.
+- Second-count band: 3 delivered windows. Rejected-wide: 45 (0.634).
+- Shadow by condition: bare 5/63 (0.079), standing 8/89 (0.090).
+- Agreement with relay 123's decision-tag read on the same windows is
+  low: delivered 0.364, shadow 0.362. The two instruments read
+  different things; the tag grain saturates where this one does not.
+
+Disclosures that travel with every use of this result:
+1. **Ruling 003**: 3 of 1,247 reader events dropped
+   (assembly-invalid; all `learner_evidence_demand`). Its evidence
+   block miscounted the damage (3, true count 8); corrected in
+   ruling 004.
+2. **Ruling 004**: the other 5 fatal events sat in 5 readings,
+   quarantined and retaken once each (6 paid calls). All 5 retaken
+   readings assembled valid.
+3. **Mechanism amendment (assembly)**: GO 126 §6 promised derived
+   collection manifests omitting the quarantined batches. The frozen
+   validator requires every assembly to cover its manifest corpus
+   exactly, so that design cannot assemble. Instead the retaken case
+   rows substitute into derived copies of the original batch
+   responses (the ruling-003 pattern; originals untouched), and each
+   consumed row passes the full frozen per-event validation inside
+   its shard assembly.
+4. **Forced extra reading**: the preparer-forced sixth call
+   (reader-b, case-d9db44be3662bb53c7cfdad6) is itself
+   assembly-invalid (span not literal). It was ruled unused before
+   launch and stays unused; its invalidity means wholesale frozen
+   assembly of that retake collection fails, so wholesale assembly
+   stands as a recorded attempt (3 of 4 collections pass; the one
+   failure is exactly this unused reading). Paid provenance for all
+   6 calls is checked by a free replication of the assembler's
+   run-record checks.
+
+Fail-closed checks all passed: 3 drops applied, 5 substitutions
+applied, merged assemblies exactly 260 window cases per reader.
+Campaign counter: 15,083 of 19,337.
