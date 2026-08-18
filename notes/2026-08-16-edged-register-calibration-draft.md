@@ -1250,3 +1250,70 @@ not record, so that subset is selected too.
 
 Designs 1 and 2 belong together in the re-registered arm B. Design 3 is
 a separate study and is not proposed here.
+
+### 3.10.2 What the learner does differently — and a defect in the read window (2026-08-18)
+
+**The split is cleaner than §3.10.1 implied.** Correcting that entry: at
+turn 1 the design is matched. Turn 0 delivers `brisk` in all 312
+dialogues, every dialogue signals resistance at turn 1
+(`rote_parroting` ~52, `boredom` ~25, `question_flood` ~26, near-identical
+across versions), and the register then splits almost perfectly by
+version — A sharp on 104 of 104, B on 102, C `charismatic` on 104 of 104.
+So the primary is a matched turn-level contrast, not only a
+policy-level one. The confound named in §3.10.1 applies to turns 2 and 3,
+where the router adapts to what the learner just did. It does not apply
+to the first split.
+
+**A defect in the read window.** Locating each scored turn by the
+reader's own stored quote (301 of 312 rows located, 11 quotes too short
+to match) puts the scored turn at index 2 for 226 rows and index 1 for
+75. All 75 are one scenario, `rote_parroting_guarded`, and they are
+spread evenly across versions (A 26, B 25, C 24). A learner turn at
+index 1 is written before the tutor has spoken in any register other than
+`brisk`. Those rows cannot carry a tone effect, and they do not: A 0.885,
+B 0.880, C 0.875. The flat `rote_parroting_guarded` row in the §3.10
+per-scenario table was flat by construction, not by finding.
+
+**Post-hoc restriction, not promoted.** Dropping the 75 rows scored
+before the split:
+
+```
+                 n    yes  partly  no    yes-rate
+sharp menu      76     35     36    5      0.461
+sharp twin      75     44     28    3      0.587
+warm control    75     50     23    2      0.667
+exact test, sharp against warm: p = 0.0138
+```
+
+The gap widens from -0.144 to -0.206. This restriction was chosen after
+seeing the data and is **descriptive only**. The registered primary
+stands at 0.567 against 0.712, p = 0.043, on all 312 rows. Recorded
+because a quarter of the registered rows cannot answer the registered
+question, which the re-registration must fix.
+
+**What the learner does differently: it does part of the task, it does
+not refuse.** The movement is entirely between *yes* and *partly*.
+Refusals barely move — 5 rows against 2 on the restricted set, 5 against
+4 on the full block. The sharp register does not make the learner walk
+away, argue back, or shorten its reply (§3.10.1: same length, same
+question share, same rate of answering back). It makes the learner hand
+in an incomplete answer.
+
+**A reading that did not survive counting.** Reading five sharp *partly*
+quotes against five warm *yes* quotes suggested the sharp learner states
+a test but withholds the verdict — "a counterexample **would be**...",
+"my case **would count only if**..." against "I'd revise my verdict to
+hold", "I'd provisionally choose break". Counting does not support it.
+Conditional words per 100 words run 2.62 sharp, 2.09 twin, 1.88 warm —
+the right direction but small — and replies naming a verdict run 13%
+sharp, 25% twin, 12% warm, where the twin sitting highest kills the
+pattern. Written down as a rejected reading so it is not rediscovered.
+
+**What would settle it.** The reader returned one verdict for a task
+with three parts: write an original sentence or counterexample, say
+whether the case proves or breaks the claim, and name the feature that
+decides. Which part drops under the sharp register is not recoverable
+from a single yes/partly/no. A second read of the transcripts already on
+disk, scoring the three parts separately, would answer it with no new
+generation — 226 rows on the restricted set, 312 on the full block. That
+is a new priced read and needs its own approval; it is not proposed here.

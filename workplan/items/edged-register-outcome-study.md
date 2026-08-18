@@ -340,3 +340,35 @@ this, and cells 207/208 lost it by moving to the widened menu); yoke the
 content and randomise delivery alone (arm B as designed); counterfactual
 replay from one prefix, which is the only design that prices a single
 turn's tone. The first two belong in the re-registered arm B.
+
+Correction to that confound entry, and a defect in the read window,
+recorded in draft note §3.10.2, 2026-08-18. The first split turn IS
+matched: turn 0 is `brisk` in all 312 dialogues, resistance at turn 1 is
+near-identical across versions, and the register then splits by version
+almost perfectly (sharp on 104 of 104 in A, 102 of 104 in B, warm on 104
+of 104 in C). The confound applies to turns 2 and 3 only. Separately,
+locating each scored turn from the reader's own stored quote (301 of 312
+located) shows 75 rows scored at turn index 1 — all of them
+`rote_parroting_guarded`, spread evenly across versions — where the
+learner writes before any sharp register has been delivered. Those rows
+cannot carry a tone effect and score ~0.88 in every version. The
+re-registration must move that scenario's window past the split.
+
+Post-hoc restriction, descriptive only, never promoted. Dropping the 75
+pre-split rows: sharp 35/76 = 0.461, twin 44/75 = 0.587, warm 50/75 =
+0.667, exact test sharp against warm p = 0.0138. The gap widens from
+-0.144 to -0.206. The registered primary stands unchanged at 0.567
+against 0.712, p = 0.043.
+
+What the learner does differently: it hands in an incomplete answer, it
+does not refuse. The movement is between yes and partly; refusals are 5
+against 2 on the restricted set. A reading that the sharp learner states
+a test but withholds the verdict did NOT survive counting — conditional
+words run 2.62 / 2.09 / 1.88 per 100 words (right direction, small) but
+replies naming a verdict run 13% sharp, 25% twin, 12% warm, with the
+twin highest. Recorded as rejected so it is not rediscovered. Which of
+the task's three parts drops would need a second, priced read of the
+transcripts already on disk — not proposed, not approved.
+
+Both follow-ups (re-registered arm B, counterfactual replay) are handed
+to a separate session, 2026-08-18.
