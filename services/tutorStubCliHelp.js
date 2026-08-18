@@ -400,8 +400,8 @@ Interactive commands:
                          switch the role played by subsequent terminal input
   /profile               show the active suggested-learner profile
   /profile list          list the six ordinary learner profiles
-  /profile list stress   list ten specialist failure-mode profiles
-  /profile list all      list the complete v3 profile registry
+  /profile list stress   list twelve specialist failure-mode profiles
+  /profile list all      list the complete profile registry
   /profile example       show a copyable custom-profile example
   /profile <id>          switch profile and regenerate mixed artifacts
   /profile default       restore the command-line/default profile

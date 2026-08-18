@@ -1102,12 +1102,12 @@ test('qa matrix runner treats all-profile runs as explicit audits', () => {
   assert.equal(plan.policySuite, 'audit');
   assert.deepEqual(plan.policySuiteAliases, ['full', 'all']);
   assert.equal(plan.policySuiteCost, 'expensive');
-  assert.equal(plan.profiles.length, 16);
+  assert.equal(plan.profiles.length, 18);
   assert.equal(plan.policies.length, 11);
-  assert.equal(plan.expectedDialogueRows, 176);
+  assert.equal(plan.expectedDialogueRows, 198);
   assert.ok(plan.warnings.some((warning) => warning.includes('every register policy')));
   assert.ok(plan.warnings.some((warning) => warning.includes('expensive periodic audit')));
-  assert.ok(plan.warnings.some((warning) => warning.includes('176 dialogue rows')));
+  assert.ok(plan.warnings.some((warning) => warning.includes('198 dialogue rows')));
 });
 
 test('qa matrix runner expands pressure policy suite for sentinel checks', () => {
@@ -1179,6 +1179,8 @@ test('auto-eval lists stress learner profiles', () => {
   assert.match(output, /affective_resistant:/);
   assert.match(output, /counterexample_hunter:/);
   assert.match(output, /goalpost_shifter:/);
+  assert.match(output, /bored:/);
+  assert.match(output, /frame_defiant:/);
   assert.match(output, /fast_learner:/);
   assert.match(output, /slow_learner:/);
   assert.match(output, /Stress - Proof skipper/);
@@ -1250,6 +1252,14 @@ test('stress profile contracts preserve observable discrimination cues', () => {
   const goalpostPrompt = learnerProfilePrompt('goalpost_shifter');
   assert.match(goalpostPrompt, /new evidentiary standard|new acceptance condition/iu);
   assert.match(goalpostPrompt, /eventually honor that criterion/iu);
+
+  const boredPrompt = learnerProfilePrompt('bored');
+  assert.match(boredPrompt, /withholding investment|flat assent|clock-watching/iu);
+  assert.match(boredPrompt, /do not ask permission/iu);
+
+  const frameDefiantPrompt = learnerProfilePrompt('frame_defiant');
+  assert.match(frameDefiantPrompt, /standing to set the premise|jurisdiction/iu);
+  assert.match(frameDefiantPrompt, /objectionable conduct is not the profile definition/iu);
 });
 
 test('every stress profile explains its boundary against the declared nearest core profile', () => {

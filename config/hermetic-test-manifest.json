@@ -459,6 +459,7 @@
         "tests/replayPlan25PrefixBranches.test.js",
         "tests/repositoryMetrics.test.js",
         "tests/resistanceActionRegisterConservation.test.js",
+        "tests/resistantLearnerProfileContracts.test.js",
         "tests/resolveConfigModels.test.js",
         "tests/reviewerGoNoteContent.test.js",
         "tests/riskCoverage.test.js",

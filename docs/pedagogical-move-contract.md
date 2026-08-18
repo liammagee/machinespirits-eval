@@ -66,4 +66,7 @@ Only after exact shadow parity and the full conservation gate pass may a later
 PR add a live observer. Even then, legacy selection remains authoritative until
 the workplan records a separate deletion/switch decision. Bored and
 frame-defiant profile work extends the learner registry after this contract;
-it does not change `low_agency` or `overconfident`.
+it does not change `low_agency` or `overconfident`. Its public-observation and
+warrant projection is implemented in design shadow only: profile identity is
+never itself a warrant, and no register choice is present in the projected
+move.

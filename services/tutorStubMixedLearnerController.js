@@ -127,8 +127,8 @@ export function createTutorStubMixedLearnerController(dependencies) {
     const scopeConfig = {
       core: { suite: 'core', label: 'ordinary choices' },
       stress: { suite: 'stress', label: 'specialist failure modes' },
-      all: { suite: 'audit', label: 'complete v3 registry' },
-      audit: { suite: 'audit', label: 'complete v3 registry' },
+      all: { suite: 'audit', label: 'complete profile registry' },
+      audit: { suite: 'audit', label: 'complete profile registry' },
     }[
       String(listScope || 'core')
         .trim()
