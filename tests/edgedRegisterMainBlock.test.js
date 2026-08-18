@@ -345,7 +345,7 @@ describe('main-block arm filter', () => {
     assert.ok(validation.errors.some((error) => /in that order/u.test(error)));
   });
 
-  it('rejects an arm carrying another arm\'s registered profile', () => {
+  it("rejects an arm carrying another arm's registered profile", () => {
     const plan = copyOf(buildEdgedRegisterMainBlockPlan({ arms: 'B' }));
     plan.arms[0].profile = MAIN_GRID.arms[0].profile;
     plan.mainJobs.forEach((job) => {
