@@ -1,19 +1,20 @@
 {
-  "generated": "2026-08-14T22:24:38.309Z",
+  "generated": "2026-08-17T21:20:07.312Z",
   "counts": {
-    "total": 503,
+    "total": 509,
     "byStatus": {
-      "done": 472,
+      "done": 483,
       "blocked": 6,
       "dropped": 10,
-      "active": 9,
+      "active": 4,
+      "triaged": 1,
       "archived": 4,
-      "review": 2
+      "review": 1
     },
     "byType": {
-      "research": 77,
+      "research": 79,
       "experiment": 86,
-      "infra": 105,
+      "infra": 109,
       "maintenance": 213,
       "content": 4,
       "ops": 10,
@@ -21,6 +22,35 @@
     }
   },
   "items": [
+    {
+      "id": "adaptive-warrant-fine-grain-semantic-encoding-redesign",
+      "title": "Adaptive warrant: fine-grain semantic encoding redesign",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-08-17",
+      "updated": "2026-08-17",
+      "verification": "A future redesign freezes a revised fine-grain event-identity and semantic-encoding contract before collection, then independently passes its predeclared representative two-reader agreement, support, and decision gates without pooling diagnostic or presence-only evidence.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "docs/adaptation-refinement/relay/051-reviewer-ruling-matrix-gate-fail.md",
+          "docs/adaptation-refinement/relay/054-reviewer-ruling-presence-gate-pass.md"
+        ],
+        "items": [
+          "adaptive-warrant-public-obligation-ledger-and-inquiry-termin"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "warrant-gate",
+        "semantic-encoding",
+        "fine-grain"
+      ]
+    },
     {
       "id": "adaptive-warrant-contract-redesign",
       "title": "Adaptive warrant gate: expected-uptake and policy-termination contracts",
@@ -49,37 +79,6 @@
         "warrant-gate",
         "expected-uptake",
         "counterfactual-replay"
-      ],
-      "branch": "adaptation-refinement"
-    },
-    {
-      "id": "adaptive-warrant-public-obligation-ledger-and-inquiry-termin",
-      "title": "Adaptive warrant: public obligation ledger and inquiry termination",
-      "status": "active",
-      "type": "research",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-10",
-      "updated": "2026-08-11",
-      "verification": "A public-obligation ledger persists named tutor-directed requests across family changes and distinguishes them from learner-proposed tests; inquiry completion can license close_inquiry from public evidence rather than turn number; live/offline parity tests cover creation, satisfaction, expiry, and closure; a separately frozen targeted challenge is used only to diagnose and repair typed mechanism failures; and a later representative natural- prevalence two-reader corpus alone passes the predeclared decision, divergence, successor, diligent-control, support, and parity thresholds before any outcome comparison resumes. Live mechanism execution additionally requires a digest-bound authorization for a clean committed 40-character HEAD, the recursive source closure, the named destination, and the declared private prompt-payload scope; sealed children, a 64-call dialogue cap, wrapper/native CLI fingerprints, opaque blind IDs, strict V4 responses, and deterministic keyed reader-batch assembly must validate before scoring.",
-      "claim_status": "exploratory",
-      "links": {
-        "notes": [
-          "docs/adaptation-refinement/remaining-next-steps.md",
-          "docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md",
-          "docs/adaptation-refinement/gold-annotations-first-corpus.md"
-        ],
-        "items": [
-          "adaptive-warrant-contract-redesign"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "warrant-gate",
-        "commitment-ledger",
-        "inquiry-completion"
       ],
       "branch": "adaptation-refinement"
     },
@@ -288,7 +287,8 @@
       "verification": "A powered main block (or a registered no-corridor kill verdict) answers whether router-selected ironic/sarcastic delivery beats the warm router on post-resistance conversion, on persona-scenario cells where the warm baseline converts at 30-70%. Each paid stage runs only after its own committed GO note plus explicit human approval.",
       "claim_status": "future",
       "depends_on": [
-        "adaptive-register-switching"
+        "adaptive-register-switching",
+        "paid-study-endpoint-runtime-preflight"
       ],
       "links": {
         "notes": [
@@ -305,131 +305,6 @@
         "registers",
         "adaptive",
         "outcome"
-      ]
-    },
-    {
-      "id": "guarded-learner-outcome-study",
-      "title": "Extend the warrant gate to the guarded (defensive) learner",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-15",
-      "updated": "2026-08-15",
-      "verification": "A pilot under its own registration (bare / gated / standing arms, guarded persona) reports the registered endpoints — evidence production within two turns of a delivered challenge, decision correctness, report-only stance table — and a main block runs only if the pilot gate passes. Each paid stage needs its own committed GO note plus explicit human approval.",
-      "claim_status": "future",
-      "depends_on": [
-        "adaptive-warrant-outcome-study"
-      ],
-      "links": {
-        "notes": [
-          "docs/adaptation-refinement/2026-08-15_guarded-learner-extension-plan.md",
-          "docs/adaptation-refinement/2026-08-13_guarded-bad-learner-draft.md",
-          "docs/adaptation-refinement/relay/106-human-ruling-guarded-pole-basis-and-contract-v3.3.md"
-        ],
-        "paper": "§6.25"
-      },
-      "tags": [
-        "warrant-gate",
-        "adaptive",
-        "outcome"
-      ]
-    },
-    {
-      "id": "register-manner-learner-turn",
-      "title": "Does the learner's own message pull the tutor out of the register?",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-08",
-      "updated": "2026-08-08",
-      "verification": "The set is fixed and its plan hash printed by --dry-run before the first paid call. Every reply is read by the same pinned reader on the same versioned question over the same learner turn as both earlier readings. The verdict is the count of replies the reader calls edged, reported whichever way it falls.",
-      "claim_status": "exploratory",
-      "depends_on": [
-        "register-manner-prompt-isolation"
-      ],
-      "links": {
-        "scripts": [
-          "scripts/probe-register-learner-turn.js",
-          "scripts/dump-turn-prompts.js"
-        ],
-        "exports": [
-          "exports/register-prompt-isolation/full-35.json"
-        ]
-      },
-      "tags": [
-        "register",
-        "manner",
-        "id-director"
-      ]
-    },
-    {
-      "id": "register-manner-prompt-isolation",
-      "title": "Where the edge is lost — send the flat turn's own prompt to the writer alone",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-08",
-      "updated": "2026-08-08",
-      "verification": "The set is fixed and its plan hash printed by --dry-run before the first paid call. Both sides are read by the same pinned reader on the same versioned question over the same learner turn. The verdict is the count of isolated replies the reader calls edged, reported whichever way it falls.",
-      "claim_status": "exploratory",
-      "depends_on": [
-        "register-presence-hand-marked-set"
-      ],
-      "links": {
-        "scripts": [
-          "scripts/probe-register-prompt-isolation.js"
-        ],
-        "exports": [
-          "exports/negative-register-manner-presence/eval-2026-08-05-87fe3664_eval-2026-08-06-4de45d05_eval-2026-08-07-45154bac_eval-2026-08-07-e3dffab2.json"
-        ]
-      },
-      "tags": [
-        "register",
-        "manner",
-        "id-director"
-      ]
-    },
-    {
-      "id": "register-strong-stack-replication",
-      "title": "Does the sarcastic edge survive a strong writer?",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-09",
-      "updated": "2026-08-09",
-      "verification": "The plan is frozen and its SHA printed by --dry-run before the first paid call. The report is zero-call and fails closed on four registered measures, one of which reads the tutor stack off the dialogue traces rather than off the model columns. The comparison against the parent sarcastic arm is fixed in the plan before the run exists.",
-      "claim_status": "exploratory",
-      "depends_on": [
-        "register-manner-learner-turn",
-        "register-presence-hand-marked-set"
-      ],
-      "links": {
-        "notes": [
-          "notes/2026-08-09-register-strong-stack-replication-preregistration.md"
-        ],
-        "services": [
-          "services/registerStrongStackReplication.js"
-        ],
-        "scripts": [
-          "scripts/run-register-strong-stack-replication.js"
-        ],
-        "tests": [
-          "tests/registerStrongStackReplication.test.js"
-        ]
-      },
-      "tags": [
-        "register",
-        "manner",
-        "id-director",
-        "provenance"
       ]
     },
     {
@@ -632,52 +507,6 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
-    },
-    {
-      "id": "refactor-poetics-browser-derivation-presentation",
-      "title": "Extract poetics-browser derivation presentation owner",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-08-10",
-      "updated": "2026-08-10",
-      "branch": "codex/refactor-poetics-browser-derivation-presentation",
-      "verification": "Six empty and populated derivation HTML fixtures remain byte-identical; 4/4 direct renderer assertions, 42/42 focused browser/route/auth tests, 8,381/8,381 hermetic root tests, 137/137 tutor-core tests, all fifteen risk groups, lint, formatting, manifest, workplan-source, diff, and zero-cycle gates pass without model calls or production artifact writes.",
-      "claim_status": "planned",
-      "depends_on": [
-        "refactor-tutor-stub-auto-eval-visualization-renderer"
-      ],
-      "links": {
-        "notes": [
-          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
-          "docs/next-steps/2026-08-10-codebase-refactoring-final-r6-reconciliation.md"
-        ],
-        "code": [
-          "scripts/browse-poetics-scripts.js",
-          "services/poeticsDerivationPresentation.js",
-          "tests/poeticsDerivationPresentation.test.js",
-          "tests/poeticsReportBrowser.test.js",
-          "tests/desktopRouteParity.test.js",
-          "tests/poeticsAdminAuth.test.js",
-          "config/coverage-risk-floors.json",
-          "config/hermetic-test-manifest.json"
-        ],
-        "items": [
-          "codebase-refactoring-program",
-          "refactor-tutor-stub-auto-eval-visualization-renderer"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "poetics",
-        "browser",
-        "derivation",
-        "reporting",
-        "presentation"
-      ],
-      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
@@ -1149,6 +978,38 @@
         "decision-quality"
       ],
       "branch": "adaptation-refinement"
+    },
+    {
+      "id": "adaptive-warrant-public-obligation-ledger-and-inquiry-termin",
+      "title": "Adaptive warrant: public obligation ledger and inquiry termination",
+      "status": "done",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-10",
+      "updated": "2026-08-17",
+      "verification": "Scope-bound closeout requires a deterministic zero-call live/offline parity regression covering obligation creation, expiry, satisfaction, and inquiry closure; committed sealed validation and recursive source provenance; an explicit record that the fine-grain semantic gate failed while the later presence-level gate passed; and green focused, workplan-source, formatting, and lint checks. Future fine-grain redesign is tracked separately and is not an extraction prerequisite.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": [
+          "docs/adaptation-refinement/remaining-next-steps.md",
+          "docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md",
+          "docs/adaptation-refinement/gold-annotations-first-corpus.md"
+        ],
+        "items": [
+          "adaptive-warrant-contract-redesign",
+          "adaptive-warrant-fine-grain-semantic-encoding-redesign"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "warrant-gate",
+        "commitment-ledger",
+        "inquiry-completion"
+      ],
+      "branch": "codex/adaptive-warrant-scope-closeout"
     },
     {
       "id": "admin-chat-drama-launcher-simplification",
@@ -2422,6 +2283,33 @@
         "tutor-stub"
       ],
       "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "paid-study-endpoint-runtime-preflight",
+      "title": "Fail closed when a paid study cannot measure its registered endpoints",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-17",
+      "updated": "2026-08-17",
+      "verification": "Before any paid model call, the exact production path passes a synthetic full-scale preflight that maps every registered primary endpoint to an enabled scorer or reader, proves its required events are emitted, keeps frozen packets within their limits, preserves denominator and pairing rules through sharding, and assembles the complete corpus; negative regressions prove that each mismatch stops launch before provider initialization.",
+      "links": {
+        "paper": "§6.26",
+        "items": [
+          "guarded-learner-outcome-study",
+          "edged-register-outcome-study"
+        ]
+      },
+      "tags": [
+        "registration",
+        "paid-study",
+        "preflight",
+        "fail-closed",
+        "scoring"
+      ],
+      "branch": "codex/paid-study-endpoint-runtime-preflight-implementation"
     },
     {
       "id": "paper2-priority1-closeout",
@@ -4469,6 +4357,52 @@
         "paper",
         "provenance",
         "hermetic"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-poetics-browser-derivation-presentation",
+      "title": "Extract poetics-browser derivation presentation owner",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-10",
+      "updated": "2026-08-17",
+      "branch": "codex/refactor-poetics-browser-derivation-presentation",
+      "verification": "Six empty and populated derivation HTML fixtures remain byte-identical; 4/4 direct renderer assertions, 42/42 focused browser/route/auth tests, 8,381/8,381 hermetic root tests, 137/137 tutor-core tests, all fifteen risk groups, lint, formatting, manifest, workplan-source, diff, and zero-cycle gates pass without model calls or production artifact writes.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-auto-eval-visualization-renderer"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
+          "docs/next-steps/2026-08-10-codebase-refactoring-final-r6-reconciliation.md"
+        ],
+        "code": [
+          "scripts/browse-poetics-scripts.js",
+          "services/poeticsDerivationPresentation.js",
+          "tests/poeticsDerivationPresentation.test.js",
+          "tests/poeticsReportBrowser.test.js",
+          "tests/desktopRouteParity.test.js",
+          "tests/poeticsAdminAuth.test.js",
+          "config/coverage-risk-floors.json",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-auto-eval-visualization-renderer"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "poetics",
+        "browser",
+        "derivation",
+        "reporting",
+        "presentation"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -13011,6 +12945,26 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "derivation-byte-contracts-board-refresh",
+      "title": "Stop the [skip ci] board refresh from silently breaking the derivation byte contracts",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-17",
+      "updated": "2026-08-17",
+      "verification": "A change to workplan/board.json on main can no longer make tests/poeticsDerivationPresentation.test.js fail without CI seeing it — either the refresh automation also refreshes the contracts in the same commit, or the rendered pages take their search index from a pinned fixture board so repo state cannot move the bytes.",
+      "claim_status": "methods",
+      "links": {
+        "items": "guarded-learner-outcome-study"
+      },
+      "tags": [
+        "ci",
+        "poetics"
+      ]
+    },
+    {
       "id": "docs-build-default-and-regen",
       "title": "One build default, one refresh command, one PDF pruning rule",
       "status": "done",
@@ -13560,6 +13514,42 @@
       "tags": [
         "tutor-stub",
         "guards"
+      ]
+    },
+    {
+      "id": "guarded-learner-outcome-study",
+      "title": "Extend the warrant gate to the guarded (defensive) learner",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-15",
+      "updated": "2026-08-17",
+      "branch": "build/guarded-learner-v3.3",
+      "verification": "Complete on build/guarded-learner-v3.3 and folded into paper §6.26: an 18-dialogue pilot preceded a 72-dialogue main block with 575 admitted decision cases and 1,150 accepted reads; registered M1 held, the separately registered post-hoc warranted-shift result was 40.8% gated versus 31.2% standing-permission and 17.8% bare, and the late registered P3 read was 7/66 delivered versus 13/152 shadow windows under the disclosed instrument amendment label. The paper and private archive record the exact scope and provenance; no effect-size, significance, stronger causal, or human-learning claim is made.",
+      "claim_status": "scope-bound",
+      "depends_on": [
+        "adaptive-warrant-outcome-study"
+      ],
+      "links": {
+        "notes": [
+          "docs/adaptation-refinement/2026-08-15_guarded-learner-extension-plan.md",
+          "docs/adaptation-refinement/2026-08-13_guarded-bad-learner-draft.md",
+          "docs/adaptation-refinement/relay/106-human-ruling-guarded-pole-basis-and-contract-v3.3.md"
+        ],
+        "paper": "§6.26",
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/646"
+        ],
+        "items": [
+          "paid-study-endpoint-runtime-preflight"
+        ]
+      },
+      "tags": [
+        "warrant-gate",
+        "adaptive",
+        "outcome"
       ]
     },
     {
@@ -14364,6 +14354,18 @@
       ]
     },
     {
+      "id": "pin-the-last-two-repo-state-inputs-to-the-page-byte-contract",
+      "title": "Pin the last two repo-state inputs to the page byte contracts",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-17",
+      "updated": "2026-08-17",
+      "verification": "The derivation page byte contracts no longer move when exports/ has local content: the recent proof runs and replay bundles that ride in the command palette are read through env-overridable paths, the contract test pins both to a fixed location, and a developer with local runs on disk sees the same digests as CI."
+    },
+    {
       "id": "point-of-action-gate-grader",
       "title": "Grade the point-of-action gate's decisions, not just the tutor's wording",
       "status": "done",
@@ -14811,6 +14813,65 @@
       ]
     },
     {
+      "id": "register-manner-learner-turn",
+      "title": "Does the learner's own message pull the tutor out of the register?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-17",
+      "verification": "The set is fixed and its plan hash printed by --dry-run before the first paid call. Every reply is read by the same pinned reader on the same versioned question over the same learner turn as both earlier readings. The verdict is the count of replies the reader calls edged, reported whichever way it falls.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "register-manner-prompt-isolation"
+      ],
+      "links": {
+        "scripts": [
+          "scripts/probe-register-learner-turn.js",
+          "scripts/dump-turn-prompts.js"
+        ],
+        "exports": [
+          "exports/register-prompt-isolation/full-35.json"
+        ]
+      },
+      "tags": [
+        "register",
+        "manner",
+        "id-director"
+      ]
+    },
+    {
+      "id": "register-manner-prompt-isolation",
+      "title": "Where the edge is lost — send the flat turn's own prompt to the writer alone",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-17",
+      "verification": "The set is fixed and its plan hash printed by --dry-run before the first paid call. Both sides are read by the same pinned reader on the same versioned question over the same learner turn. The verdict is the count of isolated replies the reader calls edged, reported whichever way it falls.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "register-presence-hand-marked-set"
+      ],
+      "links": {
+        "scripts": [
+          "scripts/probe-register-prompt-isolation.js"
+        ],
+        "exports": [
+          "exports/negative-register-manner-presence/eval-2026-08-05-87fe3664_eval-2026-08-06-4de45d05_eval-2026-08-07-45154bac_eval-2026-08-07-e3dffab2.json"
+        ]
+      },
+      "tags": [
+        "register",
+        "manner",
+        "id-director"
+      ]
+    },
+    {
       "id": "register-mock-praise-probe",
       "title": "Does asking for the mock-compliment directly raise the manner reading?",
       "status": "done",
@@ -14899,6 +14960,43 @@
         "classifier",
         "register",
         "frontier"
+      ]
+    },
+    {
+      "id": "register-strong-stack-replication",
+      "title": "Does the sarcastic edge survive a strong writer?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-17",
+      "verification": "The plan is frozen and its SHA printed by --dry-run before the first paid call. The report is zero-call and fails closed on four registered measures, one of which reads the tutor stack off the dialogue traces rather than off the model columns. The comparison against the parent sarcastic arm is fixed in the plan before the run exists.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "register-manner-learner-turn",
+        "register-presence-hand-marked-set"
+      ],
+      "links": {
+        "notes": [
+          "notes/2026-08-09-register-strong-stack-replication-preregistration.md"
+        ],
+        "services": [
+          "services/registerStrongStackReplication.js"
+        ],
+        "scripts": [
+          "scripts/run-register-strong-stack-replication.js"
+        ],
+        "tests": [
+          "tests/registerStrongStackReplication.test.js"
+        ]
+      },
+      "tags": [
+        "register",
+        "manner",
+        "id-director",
+        "provenance"
       ]
     },
     {
@@ -15884,6 +15982,39 @@
           "upgrade-electron-builder-packaging-chain-past-audited-adviso"
         ]
       }
+    },
+    {
+      "id": "warrant-stub-dependency-boundary-rule",
+      "title": "Boundary rule: warrant modules must not import tutor-stub files",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-16",
+      "updated": "2026-08-17",
+      "verification": "A stated one-way rule (warrant-gate, action-contract, and obligation-ledger modules never import tutor-stub files; tutor-stub may import them) is written down, and a test freezes today's violations as an allowlist that may only shrink. Any new cross-import fails the test. No existing cross-import is removed while the live warrant validation line is open, because that line fingerprints these files.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "notes/2026-08-16-harness-reconciliation-survey.md"
+        ],
+        "items": [
+          "tutor-stub-cell-reconciliation",
+          "adaptive-warrant-public-obligation-ledger-and-inquiry-termin"
+        ],
+        "code": [
+          "services/adaptiveWarrantGateCore.js",
+          "services/tutorStubWarrantGate.js"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "warrant-gate",
+        "harness",
+        "architecture"
+      ],
+      "branch": "design/harness-reconciliation"
     },
     {
       "id": "workplan-board-focus-policy",
@@ -16912,6 +17043,36 @@
         "scriptorium",
         "navigation"
       ]
+    },
+    {
+      "id": "tutor-stub-cell-reconciliation",
+      "title": "Map and reconcile the tutor-stub and cell-based harnesses",
+      "status": "done",
+      "type": "research",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-16",
+      "updated": "2026-08-17",
+      "verification": "A survey note maps the two harnesses side by side (tutor, learner, run, score, adaptation, shared seams, one-world-only parts) and closes with two or three reconciliation options and their costs. No option is chosen without a human ruling; no code changes land from the survey itself.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "notes/2026-08-16-harness-reconciliation-brief.md"
+        ],
+        "code": [
+          "config/tutor-agents.yaml",
+          "services/tutorStubEdgeTimingPolicy.js",
+          "docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "cells",
+        "architecture",
+        "reconciliation"
+      ],
+      "branch": "design/harness-reconciliation"
     },
     {
       "id": "workplan-trailer-pre-push-hook",

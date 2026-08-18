@@ -13,6 +13,16 @@ import {
   validateAdaptiveRegisterSwitchingStage1Gate,
 } from '../services/adaptiveRegisterSwitchingStage2.js';
 import {
+  assembleAdaptiveRegisterSwitchingStage2Preflight,
+  buildAdaptiveRegisterSwitchingStage2PreflightPackets,
+  buildAdaptiveRegisterSwitchingStage2SyntheticCorpus,
+  runAdaptiveRegisterSwitchingStage2EndpointPreflight,
+} from '../services/adaptiveRegisterSwitchingStage2Preflight.js';
+import {
+  runPaidStudyEndpointPreflight,
+  validatePaidStudyEndpointGoCertificate,
+} from '../services/paidStudyEndpointPreflight.js';
+import {
   stage2FollowUpCommands,
   stage2GenerationCommand,
   stage2OutcomeScoringCommands,
@@ -21,6 +31,15 @@ import {
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PLAN_SHA = 'da2723e47de143305e88a9a7b26688f6f58e4958e0b310ed4d7e147cd9734845';
+const ENDPOINT_CONTRACT_PATH = path.join(ROOT, 'config/paid-study-endpoints/adaptive-register-switching-stage2.json');
+const ENDPOINT_GO_PATH = path.join(
+  ROOT,
+  'config/paid-study-endpoints/adaptive-register-switching-stage2.endpoint-go.json',
+);
+
+function readJson(filePath) {
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
 
 function stance(registerName) {
   return {
@@ -207,6 +226,72 @@ test('Stage-2 runner freezes 105 serial rows and SHA-gated attended follow-ups',
   assert.match(followUps.at(-1), /--report-run eval-test/u);
 });
 
+test('paid-study endpoint preflight exercises the full 105-row production assembler with zero calls and writes', () => {
+  const contract = readJson(ENDPOINT_CONTRACT_PATH);
+  const certificate = readJson(ENDPOINT_GO_PATH);
+  const preflight = runAdaptiveRegisterSwitchingStage2EndpointPreflight(contract);
+  const go = validatePaidStudyEndpointGoCertificate({ certificate, contract, preflight });
+
+  assert.equal(preflight.status, 'passed');
+  assert.equal(preflight.model_calls, 0);
+  assert.equal(preflight.production_writes, 0);
+  assert.equal(preflight.packet_audit.covered_cases, GRID.stage2.plannedRows);
+  assert.equal(preflight.assembly_audit.covered_cases, GRID.stage2.plannedRows);
+  assert.equal(preflight.packet_audit.packets, GRID.scenarios.length);
+  assert.ok(Object.values(preflight.assembly_audit.endpoint_status).every((status) => status === 'complete'));
+  assert.equal(go.ok, true, go.errors.join('; '));
+});
+
+test('paid-study endpoint preflight fails closed for every registered runtime mismatch', () => {
+  const baseline = readJson(ENDPOINT_CONTRACT_PATH);
+  const cases = buildAdaptiveRegisterSwitchingStage2SyntheticCorpus();
+  const run = (contract, options = {}) =>
+    runPaidStudyEndpointPreflight({
+      contract,
+      cases: options.cases || cases,
+      buildPackets: options.buildPackets || buildAdaptiveRegisterSwitchingStage2PreflightPackets,
+      assemble: options.assemble || assembleAdaptiveRegisterSwitchingStage2Preflight,
+    });
+
+  const disabledReader = structuredClone(baseline);
+  disabledReader.channels.manner_presence_reader.enabled = false;
+  assert.throws(() => run(disabledReader), /required channel manner_presence_reader is disabled/u);
+
+  const missingEventCases = structuredClone(cases);
+  delete missingEventCases[0].positiveOutcome;
+  assert.throws(() => run(baseline, { cases: missingEventCases }), /missing required event positiveOutcome/u);
+
+  const tinyPacket = structuredClone(baseline);
+  tinyPacket.runner.packet_cap_bytes = 100;
+  assert.throws(() => run(tinyPacket), /exceeds 100-byte packet cap/u);
+
+  const splitPairs = (rows) => rows.map((row) => ({ packet_id: row.case_id, case_ids: [row.case_id], cases: [row] }));
+  assert.throws(() => run(baseline, { buildPackets: splitPairs }), /sharding split pairing group/u);
+
+  const incompleteAssembler = (input) => {
+    const assembled = assembleAdaptiveRegisterSwitchingStage2Preflight(input);
+    assembled.case_ids.pop();
+    return assembled;
+  };
+  assert.throws(() => run(baseline, { assemble: incompleteAssembler }), /does not cover the synthetic corpus exactly/u);
+
+  const demotedPrimary = structuredClone(baseline);
+  demotedPrimary.endpoints[0].role = 'secondary';
+  assert.throws(() => run(demotedPrimary), /registered primary endpoint .* was disabled or demoted/u);
+});
+
+test('endpoint GO certificate fails closed on executable contract or preflight drift', () => {
+  const contract = readJson(ENDPOINT_CONTRACT_PATH);
+  const certificate = readJson(ENDPOINT_GO_PATH);
+  const preflight = runAdaptiveRegisterSwitchingStage2EndpointPreflight(contract);
+  const drifted = structuredClone(certificate);
+  drifted.preflight_sha256 = '0'.repeat(64);
+
+  const go = validatePaidStudyEndpointGoCertificate({ certificate: drifted, contract, preflight });
+  assert.equal(go.ok, false);
+  assert.match(go.errors.join('; '), /preflight digest does not match/u);
+});
+
 test('Stage-2 runner uses the read-only DB helper and has no Stage-3 or evaluation-path override', () => {
   const source = fs.readFileSync(path.join(ROOT, 'scripts/run-adaptive-register-switching-stage2.js'), 'utf8');
   assert.match(source, /openEvaluationDbReadonly/u);
@@ -215,4 +300,8 @@ test('Stage-2 runner uses the read-only DB helper and has no Stage-3 or evaluati
   assert.doesNotMatch(source, /EVAL_DB_PATH|EVAL_LOGS_DIR/u);
   assert.doesNotMatch(source, /stage3-run|launch-stage3/iu);
   assert.match(source, /Stage 3 is not authorized or available/u);
+  assert.match(
+    source,
+    /const endpointPreflight = runStage2EndpointGoPreflight\(\);\s+const launchSha = launch \? assertStage2LaunchAuthorization/su,
+  );
 });

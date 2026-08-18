@@ -1,20 +1,24 @@
 ---
 id: guarded-learner-outcome-study
 title: Extend the warrant gate to the guarded (defensive) learner
-status: active
+status: done
 type: experiment
 priority: P2
 owner: claude
 source: manual
 created: 2026-08-15
-updated: 2026-08-15
-verification: A pilot under its own registration (bare / gated / standing
-  arms, guarded persona) reports the registered endpoints — evidence
-  production within two turns of a delivered challenge, decision
-  correctness, report-only stance table — and a main block runs only if the
-  pilot gate passes. Each paid stage needs its own committed GO note plus
-  explicit human approval.
-claim_status: future
+updated: 2026-08-17
+branch: build/guarded-learner-v3.3
+verification: "Complete on build/guarded-learner-v3.3 and folded into paper
+  §6.26: an 18-dialogue pilot preceded a 72-dialogue main block with 575
+  admitted decision cases and 1,150 accepted reads; registered M1 held, the
+  separately registered post-hoc warranted-shift result was 40.8% gated versus
+  31.2% standing-permission and 17.8% bare, and the late registered P3 read was
+  7/66 delivered versus 13/152 shadow windows under the disclosed instrument
+  amendment label. The paper and private archive record the exact scope and
+  provenance; no effect-size, significance, stronger causal, or human-learning
+  claim is made."
+claim_status: scope-bound
 depends_on:
   - adaptive-warrant-outcome-study
 links:
@@ -22,34 +26,33 @@ links:
     - docs/adaptation-refinement/2026-08-15_guarded-learner-extension-plan.md
     - docs/adaptation-refinement/2026-08-13_guarded-bad-learner-draft.md
     - docs/adaptation-refinement/relay/106-human-ruling-guarded-pole-basis-and-contract-v3.3.md
-  paper: §6.25
+  paper: §6.26
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/646
+  items:
+    - paid-study-endpoint-runtime-preflight
 tags:
   - warrant-gate
   - adaptive
   - outcome
 ---
 
-The warrant arc closed on the passive pole (§6.25): the always-on steering
-line carried the deference-break change, the timed challenge family paid
-~12 points of decision correctness, and the standing wording alone
-delivered zero challenges. This card carries the same gate to the opposite
-pole — a learner who over-claims and defends instead of deferring.
+The completed arc carries the §6.25 warrant gate to the opposite learner pole:
+an overconfident learner who over-claims and defends rather than deferring. The
+build, registrations, GO notes, executable scorers, rulings, and final relay
+ledger remain on `build/guarded-learner-v3.3`; sealed run artifacts and scored
+reports remain in the private archive. Paper §6.26 is the canonical claim
+surface and PR #646 merged its final disclosed-amendment account to `main`.
 
-Plan (see the linked extension plan): amend the semantic event contract to
-v3.2 with three defensive events (over-claim assertion, evidence dismissal,
-evidence demand), thread a learner-profile argument through the sealed
-warrant runners instead of forking them, add the typed move menu plus
-concession guard, and arm the sensor on consecutive defended over-claim
-turns. The passive endpoints do not transfer: the primary conduct endpoint
-becomes evidence production within two turns of a delivered challenge,
-with decision correctness unchanged and the stance table report-only in
-the pilot. Predictions get written from pilot evidence only.
+Closeout: the registered M1 direction transferred. The post-hoc warranted-shift
+rate was highest under the live gate, while the persona's voice-pinned conduct
+channels stayed flat. The registered P3 direction closed only through a late
+presence read and must always carry the label *late-scored registered endpoint,
+disclosed instrument amendment*. Its 2-point margin is directional only. The
+arc does not support an effect-size, significance, stronger causal, or
+human-learning claim.
 
-Both rulings landed on 15 August (relay 106): defended over-claiming is
-its own warrant basis, criterion (c) keeps its §6.25 reading, and the
-contract amendment (numbered v3.3 — v3.2 was already live from relay
-032) is approved. Build work may start: contract amendment plus focused
-tests, runner parameterization, the move menu and concession guard,
-then smoke C on a fresh seed with mock readers. No paid call inherits
-the closed warrant campaign's authorization; the pilot needs its own
-registration and GO note.
+The registration/runtime mismatch that made P3 unmeasurable in the original
+main reader phase is now tracked separately by
+`paid-study-endpoint-runtime-preflight`. No further paid run is authorized by
+this closed card.

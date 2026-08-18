@@ -16,6 +16,7 @@ verification: A powered main block (or a registered no-corridor kill verdict)
 claim_status: future
 depends_on:
   - adaptive-register-switching
+  - paid-study-endpoint-runtime-preflight
 links:
   notes:
     - notes/2026-08-15-edged-register-outcome-study-design.md
@@ -90,6 +91,10 @@ out once and all four passed on the retry, so no cell finished short of
 n=12. Four more harm-tripwire pauses, eleven across the study, every one the
 two words "your capacity" and none an attack; all ruled resume_unchanged.
 `status_shame` and `coerced_uptake` never fired in 109 rows.
+
+2026-08-17 — Added the generic paid-study endpoint/runtime preflight as a hard
+dependency. Build work may continue without model calls, but no calibration
+pilot or later paid stage may launch until that infrastructure card is done.
 
 **A corridor exists.** Six cells kept: irrelevance_sustained 6/12,
 question_flood_sustained 5/12, rote_parroting_sustained 6/12,

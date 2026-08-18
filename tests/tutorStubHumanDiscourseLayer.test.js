@@ -1259,8 +1259,10 @@ test('tutor-stub interactive help exposes clarification commands', () => {
   assert.match(result.stdout, /tutor-stub capability map/u);
   assert.match(result.stdout, /active now > learner · scenario:/u);
   assert.match(result.stdout, /release notes > last 24 hours/u);
-  assert.match(result.stdout, /effect >/u);
-  assert.match(result.stdout, /look for >/u);
+  // The grouped "effect >" / "look for >" view renders only when the live
+  // 24-hour git window has a tutor-stub commit; both branches are byte-pinned
+  // in tests/tutorStubReleaseNotesPresentation.test.js.
+  assert.match(result.stdout, /effect >[\s\S]*look for >|no tutor-stub commits landed in this window/u);
   // The header names the checkout directory, which is not `machinespirits-eval`
   // in a worktree, so the expectation is computed rather than hardcoded.
   assert.ok(result.stdout.includes(`Repository metrics: ${path.basename(ROOT)}`));

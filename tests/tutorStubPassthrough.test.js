@@ -108,7 +108,10 @@ test('passthrough exposes live release notes and repository metrics without invo
   assert.equal(result.status, 0, result.stderr || result.stdout);
   const stdout = plainTerminalText(result.stdout);
   assert.match(stdout, /release notes > last 24 hours/u);
-  assert.match(stdout, /effect >/u);
+  // The grouped "effect >" view renders only when the live 24-hour git window
+  // has a tutor-stub commit; both branches are byte-pinned in
+  // tests/tutorStubReleaseNotesPresentation.test.js.
+  assert.match(stdout, /effect >|no tutor-stub commits landed in this window/u);
   // The header names the checkout directory, which is not `machinespirits-eval`
   // in a worktree, so the expectation is computed rather than hardcoded.
   assert.ok(stdout.includes(`Repository metrics: ${path.basename(ROOT)}`));

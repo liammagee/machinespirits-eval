@@ -1,0 +1,123 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-contract.v1",
+  "study_id": "adaptive-register-switching-stage2",
+  "registration": {
+    "primary_endpoint_ids": ["conversion_adaptive_vs_router_warm"]
+  },
+  "registered_scale": {
+    "cases": 105,
+    "unit": "dialogue"
+  },
+  "runner": {
+    "packet_builder": "services/adaptiveRegisterSwitchingStage2Preflight.js#buildAdaptiveRegisterSwitchingStage2PreflightPackets",
+    "result_assembler": "services/adaptiveRegisterSwitchingStage2Preflight.js#assembleAdaptiveRegisterSwitchingStage2Preflight",
+    "packet_cap_bytes": 100000,
+    "emitted_event_fields": [
+      "arm",
+      "case_id",
+      "dialogueTrace",
+      "learnerRubric.delta",
+      "learnerRubric.first",
+      "learnerRubric.last",
+      "outcomeVerdict",
+      "positiveOutcome",
+      "profileName",
+      "scenarioId",
+      "turns",
+      "tutorV22.overall"
+    ]
+  },
+  "channels": {
+    "conversion_fold": {
+      "enabled": true,
+      "implementation": "scripts/report-charisma-desire-breakthrough-matrix.js#analyzeCharismaDesireRows"
+    },
+    "learner_rubric": {
+      "enabled": true,
+      "implementation": "scripts/eval-cli.js#evaluate-learner"
+    },
+    "manner_presence_reader": {
+      "enabled": true,
+      "implementation": "services/registerMannerPresenceReader.js#readMannerPresence"
+    },
+    "register_rubric": {
+      "enabled": true,
+      "implementation": "scripts/evaluate-register-rubric.js"
+    },
+    "tutor_rubric": {
+      "enabled": true,
+      "implementation": "scripts/eval-cli.js#evaluate"
+    }
+  },
+  "endpoints": [
+    {
+      "id": "conversion_adaptive_vs_router_warm",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": [
+        "conversion_fold",
+        "learner_rubric",
+        "manner_presence_reader",
+        "register_rubric",
+        "tutor_rubric"
+      ],
+      "required_event_fields": [
+        "arm",
+        "case_id",
+        "dialogueTrace",
+        "learnerRubric.delta",
+        "outcomeVerdict",
+        "positiveOutcome",
+        "profileName",
+        "scenarioId",
+        "turns",
+        "tutorV22.overall"
+      ],
+      "denominator": {
+        "expected_cases": 70,
+        "include_arms": ["adaptive", "routerWarm"]
+      },
+      "pairing": {
+        "key_fields": ["scenarioId"],
+        "required_arm_values": ["adaptive", "routerWarm"],
+        "expected_cases_per_arm": 7
+      }
+    },
+    {
+      "id": "conversion_adaptive_vs_pinned_sarcastic",
+      "role": "secondary",
+      "enabled": true,
+      "required_channels": ["conversion_fold", "manner_presence_reader", "register_rubric"],
+      "required_event_fields": ["arm", "case_id", "outcomeVerdict", "positiveOutcome", "scenarioId", "turns"],
+      "denominator": {
+        "expected_cases": 70,
+        "include_arms": ["adaptive", "pinnedSarcastic"]
+      },
+      "pairing": {
+        "key_fields": ["scenarioId"],
+        "required_arm_values": ["adaptive", "pinnedSarcastic"],
+        "expected_cases_per_arm": 7
+      }
+    },
+    {
+      "id": "learner_rubric_change",
+      "role": "secondary",
+      "enabled": true,
+      "required_channels": ["learner_rubric"],
+      "required_event_fields": ["case_id", "learnerRubric.delta", "learnerRubric.first", "learnerRubric.last"],
+      "denominator": {
+        "expected_cases": 105
+      }
+    },
+    {
+      "id": "tutor_v22_cost_by_arm",
+      "role": "secondary",
+      "enabled": true,
+      "required_channels": ["tutor_rubric"],
+      "required_event_fields": ["case_id", "tutorV22.overall"],
+      "denominator": {
+        "expected_cases": 105
+      }
+    }
+  ]
+}

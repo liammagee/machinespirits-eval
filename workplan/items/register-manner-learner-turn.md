@@ -1,13 +1,13 @@
 ---
 id: register-manner-learner-turn
 title: Does the learner's own message pull the tutor out of the register?
-status: active
+status: done
 type: experiment
 priority: P2
 owner: claude
 source: manual
 created: 2026-08-08
-updated: 2026-08-08
+updated: 2026-08-17
 verification: The set is fixed and its plan hash printed by --dry-run before the
   first paid call. Every reply is read by the same pinned reader on the same
   versioned question over the same learner turn as both earlier readings. The
@@ -182,3 +182,6 @@ map; §8.9 gains a seventh scope condition. Paper v3.0.282 (renumbered from v3.0
 **The corrected grid is not being paid for yet.** A 15-row single-register check
 on a strong writer goes first, to see whether the edge survives before the full
 ~60-row grid is bought.
+
+- 2026-08-17 — Closed on board review. The probe ran and its Outcome section
+  carries the verdict; the card sat in `active` after the work ended.

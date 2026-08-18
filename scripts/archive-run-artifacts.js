@@ -50,6 +50,50 @@ import path from 'node:path';
 import { resolveTutorStubArtifactArchiveDirectory } from '../services/tutorStubArtifactArchive.js';
 
 const DEFAULT_ARCHIVE = path.resolve('..', 'machinespirits-eval-private');
+const LEDGER_NAME = 'RUN-LEDGER.md';
+const LEDGER_SECTION = '## Auto-recorded runs';
+
+/** The archive's run ledger: one line per archived run. */
+export function ledgerPath(dest) {
+  return path.join(dest, LEDGER_NAME);
+}
+
+/** learner_profile from a checkpoint file directly under the run, or null. */
+function runLearnerProfile(runDir) {
+  try {
+    for (const name of fs.readdirSync(runDir)) {
+      if (!/checkpoint.*\.json$/u.test(name)) continue;
+      const parsed = JSON.parse(fs.readFileSync(path.join(runDir, name), 'utf8'));
+      if (typeof parsed.learner_profile === 'string') return parsed.learner_profile;
+    }
+  } catch {
+    // a ledger line with an unknown profile still beats no line
+  }
+  return null;
+}
+
+export function ledgerHasRun(dest, runDir) {
+  const file = ledgerPath(dest);
+  if (!fs.existsSync(file)) return false;
+  return fs.readFileSync(file, 'utf8').includes(path.basename(runDir));
+}
+
+/** Append a ledger line for the run unless one names it already. */
+export function recordRunInLedger(dest, runDir) {
+  if (ledgerHasRun(dest, runDir)) return false;
+  const file = ledgerPath(dest);
+  let text = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : `# Run ledger\n`;
+  if (!text.includes(LEDGER_SECTION)) {
+    text += `\n${LEDGER_SECTION}\n\nWritten by scripts/archive-run-artifacts.js at archive time. Fill in\nstatus and paper section by hand when the run closes.\n\n`;
+  }
+  if (!text.endsWith('\n')) text += '\n';
+  const profile = runLearnerProfile(runDir) ?? 'unknown';
+  const stamp = new Date().toISOString().slice(0, 10);
+  const rel = path.relative(path.resolve('.'), runDir);
+  text += `- ${path.basename(runDir)} | archived ${stamp} | profile ${profile} | ${rel}\n`;
+  fs.writeFileSync(file, text);
+  return true;
+}
 
 /** The archive directory, or null when there is none to write to. */
 export function resolveArchiveDir(explicit) {
@@ -118,7 +162,7 @@ function dirSize(dir) {
  * Paths inside the archive mirror their path under the current directory.
  */
 export function archiveRun(runDir, { dest, lightOnly = false, check = false, onEvent } = {}) {
-  const summary = { copied: 0, packed: 0, skipped: 0, missing: 0, written: 0, missingPaths: [] };
+  const summary = { copied: 0, packed: 0, skipped: 0, missing: 0, written: 0, ledger: 0, missingPaths: [] };
   const { light, traces } = planRun(runDir, { lightOnly });
   const relTo = (file) => path.join(dest, path.relative(path.resolve('.'), file));
 
@@ -158,6 +202,19 @@ export function archiveRun(runDir, { dest, lightOnly = false, check = false, onE
     onEvent?.(`  packed   ${path.relative(dest, out)}  ${bytes(dirSize(dir))} -> ${bytes(fs.statSync(out).size)}`);
   }
 
+  // A run that is archived but absent from the ledger is invisible to the
+  // "is anything lost?" question, so the ledger line is checked like an artifact.
+  if (check) {
+    if (!ledgerHasRun(dest, runDir)) {
+      summary.missing += 1;
+      summary.missingPaths.push(`${LEDGER_NAME} line for ${path.basename(runDir)}`);
+      onEvent?.(`  missing  ${LEDGER_NAME} line for ${path.basename(runDir)}`);
+    }
+  } else if (recordRunInLedger(dest, runDir)) {
+    summary.ledger += 1;
+    onEvent?.(`  ledger   ${path.basename(runDir)} recorded in ${LEDGER_NAME}`);
+  }
+
   return summary;
 }
 
@@ -191,7 +248,7 @@ function main() {
   }
 
   const runs = opts.paths.flatMap((p) => runDirs(path.resolve(p), opts.all));
-  const total = { copied: 0, packed: 0, skipped: 0, missing: 0, written: 0 };
+  const total = { copied: 0, packed: 0, skipped: 0, missing: 0, written: 0, ledger: 0 };
   for (const runDir of runs) {
     const s = archiveRun(runDir, { ...opts, dest, onEvent: (line) => console.log(line) });
     for (const k of Object.keys(total)) total[k] += s[k];
@@ -200,7 +257,7 @@ function main() {
   console.log(
     opts.check
       ? `\n${runs.length} run(s): ${total.missing} artifact(s) missing from ${dest}, ${total.skipped} already there`
-      : `\n${runs.length} run(s): ${total.copied} file(s) copied, ${total.packed} traces archive(s) written, ${total.skipped} already there, ${bytes(total.written)} added`,
+      : `\n${runs.length} run(s): ${total.copied} file(s) copied, ${total.packed} traces archive(s) written, ${total.ledger} ledger line(s) recorded, ${total.skipped} already there, ${bytes(total.written)} added`,
   );
   if (!opts.check && (total.copied || total.packed)) {
     console.log(`commit them in ${dest} — this script does not touch its history`);

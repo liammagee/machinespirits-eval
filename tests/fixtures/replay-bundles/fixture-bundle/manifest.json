@@ -1,0 +1,10 @@
+{
+  "kind": "counterfactual_revision",
+  "created_at": "2026-01-01T00:00:00.000Z",
+  "generator": "fixture-generator",
+  "checker": "fixture-checker",
+  "claim_boundary": "counterfactual_revision_not_online_adaptation",
+  "count": 1,
+  "records": [],
+  "local_gate": { "enabled": false, "summary": {} }
+}

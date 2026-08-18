@@ -1,0 +1,46 @@
+{
+  "generated": "2026-01-01T00:00:00.000Z",
+  "counts": {
+    "total": 4,
+    "byStatus": { "active": 1, "review": 1, "blocked": 1, "triaged": 1 },
+    "byType": { "infra": 2, "experiment": 1, "research": 1 }
+  },
+  "items": [
+    {
+      "id": "fixture-active-item",
+      "title": "Fixture active item",
+      "status": "active",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "tags": ["fixture"]
+    },
+    {
+      "id": "fixture-review-item",
+      "title": "Fixture review item",
+      "status": "review",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "tags": ["fixture"]
+    },
+    {
+      "id": "fixture-blocked-item",
+      "title": "Fixture blocked item",
+      "status": "blocked",
+      "type": "research",
+      "priority": "P2",
+      "owner": "human",
+      "tags": ["fixture"]
+    },
+    {
+      "id": "scriptorium-fixture-done-item",
+      "title": "Fixture scriptorium item",
+      "status": "done",
+      "type": "infra",
+      "priority": "P0",
+      "owner": "codex",
+      "tags": ["fixture", "scriptorium"]
+    }
+  ]
+}

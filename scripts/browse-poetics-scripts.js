@@ -3268,8 +3268,21 @@ ${
 // fallback when the director declared no movements), not by parsing the
 // markdown twin. No metered surface: spawns nothing, writes nothing — safe
 // alongside the auth posture in the header note.
-const DERIVATION_LOOP_DIR = path.resolve(ROOT, 'exports/dramatic-derivation/loop');
+const DERIVATION_LOOP_DIR_DEFAULT = path.resolve(ROOT, 'exports/dramatic-derivation/loop');
 const DERIVATION_LABEL_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/; // path-traversal guard
+
+// Read per call, not at import, so a caller can redirect this after the module is
+// loaded (static imports are hoisted above test-file bodies). Always absolute:
+// path.resolve ignores its base when the override is already absolute, so the
+// traversal guard below can compare prefixes safely either way. Read path only —
+// nothing writes here, so it needs no desktop relocation. The command palette
+// lists recent runs on every page, which put repo state inside the page byte
+// contracts; the contract test pins this to a fixed value.
+function derivationLoopDir() {
+  return process.env.DERIVATION_LOOP_DIR
+    ? path.resolve(ROOT, process.env.DERIVATION_LOOP_DIR)
+    : DERIVATION_LOOP_DIR_DEFAULT;
+}
 const DERIVATION_LIVE_STALE_MS = 20 * 60 * 1000;
 
 function safeJsonForScript(value) {
@@ -3287,8 +3300,12 @@ function readJsonFile(file) {
 
 function derivationLoopRunDir(label) {
   if (!DERIVATION_LABEL_RE.test(label)) return null;
-  const dir = path.join(DERIVATION_LOOP_DIR, label);
-  return dir.startsWith(`${DERIVATION_LOOP_DIR}${path.sep}`) ? dir : null;
+  // Resolve the root ONCE and compare the joined path against that same value.
+  // Calling derivationLoopDir() twice here would let an env change between the
+  // two calls satisfy the prefix check against a root the path is not under.
+  const root = derivationLoopDir();
+  const dir = path.join(root, label);
+  return dir.startsWith(`${root}${path.sep}`) ? dir : null;
 }
 
 function derivationLiveStatus(live, mtimeMs = 0) {
@@ -3298,17 +3315,18 @@ function derivationLiveStatus(live, mtimeMs = 0) {
 }
 
 function listDerivationRuns() {
-  if (!fs.existsSync(DERIVATION_LOOP_DIR)) return [];
+  const root = derivationLoopDir();
+  if (!fs.existsSync(root)) return [];
   const runs = [];
-  for (const name of fs.readdirSync(DERIVATION_LOOP_DIR)) {
+  for (const name of fs.readdirSync(root)) {
     if (!DERIVATION_LABEL_RE.test(name)) continue;
-    const diagPath = path.join(DERIVATION_LOOP_DIR, name, 'diagnosis.json');
+    const diagPath = path.join(root, name, 'diagnosis.json');
     try {
       runs.push({
         label: name,
         mtimeMs: fs.statSync(diagPath).mtimeMs,
         diagnosis: JSON.parse(fs.readFileSync(diagPath, 'utf8')),
-        hasNotice: fs.existsSync(path.join(DERIVATION_LOOP_DIR, name, 'commentary.md')),
+        hasNotice: fs.existsSync(path.join(root, name, 'commentary.md')),
       });
     } catch {
       /* partial or corrupt run dir — not listable */
@@ -3339,9 +3357,10 @@ function readDerivationLive(label) {
 }
 
 function listDerivationLiveRuns({ includeComplete = false } = {}) {
-  if (!fs.existsSync(DERIVATION_LOOP_DIR)) return [];
+  const root = derivationLoopDir();
+  if (!fs.existsSync(root)) return [];
   const runs = [];
-  for (const name of fs.readdirSync(DERIVATION_LOOP_DIR)) {
+  for (const name of fs.readdirSync(root)) {
     if (!DERIVATION_LABEL_RE.test(name)) continue;
     const live = readDerivationLive(name);
     if (!live) continue;
@@ -11334,6 +11353,10 @@ export {
   listRuns,
   normalizeTtsRequest,
   parseTranscriptPreview,
+  // Exported for the focused guard test only — this resolves a caller-supplied run
+  // label against the loop directory and is the path-traversal boundary for
+  // /derivation/<label>, so it is worth testing directly rather than through a route.
+  derivationLoopRunDir,
   NAV,
   NAV_DRAWER_GROUPS,
   NAV_GROUPS,

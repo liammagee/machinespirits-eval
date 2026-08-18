@@ -39,6 +39,7 @@ import {
 } from './run-adaptive-warrant-outcome-pilot.js';
 import { validateAdaptiveWarrantSemanticPreflightArtifact } from '../services/adaptiveWarrantSemanticPreflight.js';
 import { validateAdaptiveWarrantReaderResponseContract } from '../services/adaptiveWarrantReaderRetake.js';
+import { assertReviewerGoNoteContent } from '../services/reviewerGoNoteContent.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
@@ -344,8 +345,11 @@ export function validateSteeringDecompositionGoNote(goNotePath) {
   if (!committed.equals(onDisk))
     throw new Error('steering decomposition refuses: reviewer note 103 has uncommitted drift');
   const text = onDisk.toString('utf8');
+  // The pinned path plus the byte check above is the gate here. The old
+  // required-substring 'GO' added nothing: it matched ALGO and GOAL as well,
+  // and a draft committed at the pinned path would carry it in its own title.
+  assertReviewerGoNoteContent(text, { label: 'reviewer note 103', refusal: 'steering decomposition refuses' });
   for (const required of [
-    'GO',
     'run-adaptive-warrant-steering-decomposition.js',
     '--accept-charges',
     '--out',

@@ -1,0 +1,10 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-go.v1",
+  "status": "endpoint_runtime_go",
+  "study_id": "adaptive-register-switching-stage2",
+  "contract_path": "config/paid-study-endpoints/adaptive-register-switching-stage2.json",
+  "contract_sha256": "3989737fb755ea81cdc272184d0fdd1d964d0e4fe949b20d6c46ff2df4b4f109",
+  "preflight_sha256": "b001f024b0c53b6bea85788879f80593e01aa1821d11761a43c5a2af08a11ea5",
+  "authorization_scope": "endpoint-runtime compatibility only; this certificate does not authorize a paid run",
+  "launch_gate": "Stage-1 PASS, explicit operator approval, exact clean commit SHA, and all existing paid-launch checks remain required"
+}
