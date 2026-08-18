@@ -278,3 +278,43 @@ keeps harm reading out of the measured outcome. Next: the endpoint
 analysis on the frozen rules (edged-versus-control exact test on the
 reader's yes; edged-versus-yoked read at the first edge moment), which
 the signed note licenses without new approval.
+
+Endpoint analysis run 2026-08-18. The registered primary — edged menu
+against warm control, exact test on the reader's yes — rejects, and it
+rejects against the study's bet: 59/104 = 0.567 for the edged version
+against 74/104 = 0.712 for the warm control, difference -0.144, two-sided
+p = 0.043. Yes-plus-partly saturates in both (0.952 against 0.962,
+p = 1.0) and selects nothing, as registered. The loss sits in two of the
+four scenarios. The block was powered against a control baseline of
+0.479 and the control converted at 0.712, so the powering basis did not
+hold.
+
+The registered secondary cannot be run. The yoked delivery swap never
+fired: 0 of 390 turns in either two-pass version carry an edge-moment
+mark or a delivery swap, and the yoked version delivered edged manner as
+often as the edged one (49% against 45%). Cause: both the swap and the
+edge mark are gated on a state stamp that only the older assigned-arm
+path writes, and cells 207/208 use the widened router menu instead, so
+the gate never opens and `yoked_delivery_swap: true` is inert. Cell 208
+ran as cell 208's twin of 207. The unit test passed because it fed the
+stamp in by hand, so nothing checked the shipped cells. Full evidence,
+cause and consequences in draft note §3.10.
+
+What this costs: the primary prices the router's register MENU, not
+delivered manner. The claim "edged delivery lowered conversion" is not
+available; "an edged-inclusive menu lowered conversion" is. The yoked
+version becomes an unplanned replicate (66/104 = 0.635 against control,
+p = 0.301; against the edged version p = 0.396). Pooling the two edged
+samples gives 125/208 = 0.601 against control, p = 0.061 — recorded as
+descriptive, not promoted to an endpoint.
+
+One descriptive reading worth keeping: the edged menu did not silence
+the learner. It produced the most new material of the three versions
+(86% against 80% warm) and the fewest completions, and all five of its
+refusals still carried new questions. The learner moved into questioning
+and open refusal rather than stopping. `fresh_work` was never registered
+and is not promoted here.
+
+Next: re-register arm B so the swap actually fires, then re-run that
+version alone (~104 dialogues). Needs a fresh GO note and operator
+sign-off on cost. Handed to a separate session 2026-08-18.

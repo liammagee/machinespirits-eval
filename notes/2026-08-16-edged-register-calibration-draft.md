@@ -1096,3 +1096,87 @@ measured outcome: §2.11 keeps harm reading out of the endpoint, and the
 run-time screen cleared no turn that the sweep then called an attack —
 the disagreement is between the reader and the word list, not between
 the reader and itself.
+
+### 3.10 The registered secondary cannot be run — arm B never swapped delivery (2026-08-18)
+
+**Finding.** The yoked delivery swap never fired in the main block. Arm B
+delivered edged manner as often as arm A. B is a second sample of A, not
+a warm-delivery control, so the §3.4 registered secondary — A versus B at
+the first edge moment — has nothing to compare and cannot be run on these
+312 rows.
+
+**Evidence, all 312 rows and 1,170 turns of `batch-main-2-2026-08-17`,
+read from `id_construction_trace`:**
+
+```
+                          edge moments   delivery swapped   delivered edged register
+A (cell 207)                 0 / 390          0 / 390       45%  sarcastic 35, ironic 10
+B (cell 208)                 0 / 390          0 / 390       49%  sarcastic 38, ironic 11
+C (cell 206)              field absent     field absent      0%  charismatic 55, brisk 27
+```
+
+No row anywhere in the evaluation DB carries `"edge_moment":true`.
+
+**Cause.** Two paths exist for putting an edged register on a turn. The
+older path lets the router pick `charismatic` and then overrides it,
+stamping `register_assignment_source: 'experiment_arm'` — cells 193–196
+use it, and 157 DB rows carry that stamp. The path this study uses widens
+the router's own menu (`router_register_menu: [ironic, sarcastic]`) so
+the router picks the edged register itself; no override runs and no stamp
+is written. Both the swap and the edge-moment annotation are gated on
+that stamp — `applyYokedDeliverySwap` returns the state unchanged unless
+`register_assignment_source === 'experiment_arm'`
+(`services/idDirectorEngine.js:285`), and the annotation block at :2177
+carries the same condition. Cells 207 and 208 never meet it, so
+`yoked_delivery_swap: true` is inert on this configuration and 208 is
+207 exactly.
+
+**Why the tests did not catch it.** `idDirectorYokedDeliverySwap.test.js`
+builds its input state with `register_assignment_source: 'experiment_arm'`
+already set (line 117). It proves the swap works *given* that
+precondition. Nothing asserted that a shipped cell produces the
+precondition. Same shape as the instrumentation-benchmark trap: verify
+the behaviour in the shipped configuration, not only in the harness.
+
+**What the primary now prices.** A-versus-C stands as frozen and is
+unaffected — the reader is blind, the rows are untouched, the rule was
+fixed at `b761bbbe`. But its content is narrower than §3.3's wording
+implies: it prices the **router's register menu**, not delivered manner
+at an assigned edge moment. The claim "edged delivery lowered
+conversion" is not yet available; "an edged-inclusive menu lowered
+conversion" is.
+
+**Readings** (conversion = reader says yes):
+
+```
+A  59/104 = 0.567   vs C 74/104 = 0.712   p = 0.043   (registered primary)
+B  66/104 = 0.635   vs C                  p = 0.301
+A vs B                                    p = 0.396   (two samples of one process)
+A+B 125/208 = 0.601 vs C                  p = 0.061   NOT REGISTERED
+```
+
+The pooled line is recorded here as an unplanned replicate and is not
+promoted to an endpoint. Both independent samples of the edged menu fell
+below the warm control; neither clears .05 when pooled.
+
+**Change without progress.** The reader's second field answers a question
+the endpoint does not: did the learner make new material, whatever the
+task verdict.
+
+```
+                new material    copies the tutor's example    "no" rows that still made new material
+A (sharp)        89/104  86%            17/104                          5 / 5
+B (copy of A)    82/104  79%            20/104                          4 / 6
+C (warm)         83/104  80%            20/104                          2 / 4
+```
+
+The edged menu did not silence the learner. It produced the most new
+material of the three and the fewest completions. Every one of arm A's
+five refusals still carried new questions. The learner moved sideways
+into questioning and open refusal rather than stopping — a change in
+conduct that the conversion endpoint scores as failure. This is
+descriptive; `fresh_work` was never registered as an endpoint and is not
+promoted to one here.
+
+**Consequence.** Arm B must be re-registered and re-run to price
+delivered manner. Nothing in this block is dropped or re-scored.
