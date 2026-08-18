@@ -401,3 +401,20 @@ not a sign the effect is spurious. The two sharp repeats both sit below
 the warm control (0.567 and 0.635 against 0.712), same direction twice.
 Reading: a small harm, unresolved, no mechanism found. Any follow-up
 must be powered off the real baseline of 0.712, not the registered 0.479.
+
+Scenario split, 2026-08-18, added to draft note §3.10.4. The pooled null
+of §3.10.3 was a mixture. Split the four scenarios and the whole endpoint
+gap sits in `boredom_claimheld` (both sharp versions 24/51 against warm
+22/26, p = 0.002); the other three are flat at p = 0.80 to 1.00. Both
+sharp versions agree inside that scenario, so the same-treatment control
+passes here. Inside it the tutor is what changed: parts set per turn 2.88
+against 2.50 (p = 0.034), parts finished per turn 1.55 against 1.85
+(p = 0.19), share finished 0.537 in both sharp versions against 0.738
+(p = 0.0063). The sharp tutor packs more demands into the turn, the
+learner does about the same amount of work, so more is left undone. The
+transcripts back this: matched learner turns look alike (median 60 words
+in all three versions, verdict word named in 50/53/55%, and not one
+learner in 226 answers the tutor's manner). Post-hoc and scenario-level —
+a lead for the fresh registration, not a result. It says the manner effect
+to price may be the tutor's own turn planning, and the bored persona is
+where to look.

@@ -1396,6 +1396,67 @@ does, only the weak and unreplicated whole-task gap. Further reads of this
 block are not worth buying; a fresh registration with a working delivery
 swap is the only design that can price delivered manner.
 
+### 3.10.4 Where the drop actually sits — one scenario, and it is the tutor that changed (2026-08-18)
+
+§3.10.3 closed on "no found difference in what the learner does". That
+reading pooled four scenarios. Split them and the pooled null turns out to
+be a mixture: three scenarios show nothing and one carries the whole
+endpoint gap.
+
+**The transcripts first.** Matched pairs at the same point of the dialogue
+— the learner has resisted, the tutor replies sharp or warm, the learner
+speaks again — look alike. After a sharp reply (row 35041, register
+`sarcastic`): "I provisionally hold the claim: the deciding feature is
+whether the patient's circumstances force the student to revise the rule
+… I would reopen the judgment." After a warm reply (row 35044, register
+`charismatic`): "I'd revise my verdict to hold, but only for the claim
+that work lets the servant recognize his own formative activity in the
+durable object." Both commit with a condition attached, both name the
+feature that would overturn them, both keep working.
+
+Surface measures on the 226 post-split turns agree. Median length 60 / 60
+/ 61 words. Naming a verdict word outright 50% / 53% / 55%. Not one
+learner in 226 answers the tutor's manner instead of the question — the
+tone is never mentioned. The learner keeps voicing the first complaint
+("I'm still a little bored…") in 8% / 9% of sharp turns against 3% of
+warm, which is 6 and 7 rows against 2 and carries nothing.
+
+**The endpoint by scenario, post-split rows.** Both sharp versions pooled
+against warm:
+
+- `boredom_claimheld` — sharp 24/51, warm 22/26, p = 0.002
+- `question_flood_sustained` — sharp 21/49, warm 11/24, p = 1.000
+- `rote_parroting_sustained` — sharp 34/51, warm 17/25, p = 1.000
+
+(`rote_parroting_guarded` scores at turn 1 for almost every row and is the
+read-window defect of §3.10.2; on all rows it is 45/52 against 22/26,
+p = 1.000.)
+
+The gap is one scenario. The two sharp versions agree inside it — 10/26
+and 14/25 — so the same-treatment control passes here, unlike the verdict
+measure of §3.10.3 that failed it.
+
+**Inside that scenario the tutor changed, not the learner.** Parts set per
+turn: sharp 2.88, warm 2.50, permutation p = 0.034. Parts finished per
+turn: sharp 1.55, warm 1.85, p = 0.19. Share finished: sharp 43/80 and
+36/67, both 0.537, against warm 48/65 = 0.738, exact p = 0.0063. The other
+two post-split scenarios match on both counts — parts set 3.14 against
+3.17 and 2.86 against 2.96, parts finished 1.55 against 1.63 and 1.65
+against 1.68, every p above 0.7.
+
+So in `boredom_claimheld` the sharp tutor packs more demands into the
+turn. The learner does about the same amount of work. A bigger share is
+left undone, and a reader asked "did the learner do the task?" says yes
+less often. The kinds that drop are naming the feature (0.767 against
+0.962, p = 0.032) and making the case (0.333 against 0.700, p = 0.066).
+
+**Standing.** Post-hoc and scenario-level; the registration pools. One
+scenario of four, 51 sharp rows against 26 warm. The parts-finished
+contrast at p = 0.19 does not rule out a small learner-side loss as well.
+This is a lead for the fresh registration, not a result: it says the
+manner effect to price may be the tutor's own turn planning under a sharp
+register, and that the bored persona is where to look.
+
 ### 3.11 Arm B re-registered — the swap fires, and what 104 rows can price (2026-08-18)
 
 Written before any arm-B row exists under the repaired seam. Every number
