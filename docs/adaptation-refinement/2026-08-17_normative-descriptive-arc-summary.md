@@ -113,6 +113,9 @@ reader calls per profile; pilot about a quarter of that.
 
 ## 7. Standing constraints
 
-Never push this branch. nemotron/kimi never defaults. The 18 pilot
-dialogues never pool into main-block tables. Frozen files are
-imported, never edited; stored artifacts are read, never edited.
+During live execution this source branch was not to be pushed. Its closed
+executable lineage is now entering the public integration programme through a
+reviewed merge; that historical prohibition still applies to the paid-run
+state and does not authorize a restart. nemotron/kimi never defaults. The 18
+pilot dialogues never pool into main-block tables. Frozen study inputs are
+imported, never edited; stored private artifacts are read, never edited.

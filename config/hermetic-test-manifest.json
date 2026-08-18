@@ -457,6 +457,7 @@
         "tests/replayDiscursiveTranscript.test.js",
         "tests/replayPlan25PrefixBranches.test.js",
         "tests/repositoryMetrics.test.js",
+        "tests/resistanceActionRegisterConservation.test.js",
         "tests/resolveConfigModels.test.js",
         "tests/reviewerGoNoteContent.test.js",
         "tests/riskCoverage.test.js",
@@ -745,6 +746,31 @@
       "owner": "adaptive-warrant-outcome-study",
       "reason": "Most registered burned corpora live under the system temp directory, which a housekeeping job empties after about four days (defect ledger 21). With any of them gone the fresh-launch guard must refuse, so tests that drive the fresh path cannot run. The restart path stands in from the launch record and its tests never carry this skip.",
       "removalSlice": "outcome-study artifact fixture decision"
+    },
+    {
+      "id": "guarded-learner-smoke-c-private-archive",
+      "suite": "root",
+      "reasonPattern": "^smoke C run absent \\(.+\\); archived in the private repo$",
+      "owner": "guarded-learner-outcome-study",
+      "reason": "The paid guarded-learner smoke-C trace remains in the private archive; the public test reads it only when that sibling artifact is present.",
+      "removalSlice": "guarded smoke-C public fixture or dedicated private-artifact lane"
+    },
+    {
+      "id": "guarded-learner-pilot-private-archive",
+      "suite": "root",
+      "reasonPattern": "^pilot run absent \\(.+\\); archived in the private repo$",
+      "owner": "guarded-learner-outcome-study",
+      "reason": "The paid guarded-learner pilot trace remains in the private archive; public scoring tests read it only when that sibling artifact is present.",
+      "removalSlice": "guarded pilot public fixture or dedicated private-artifact lane"
+    },
+    {
+      "id": "guarded-learner-a1-freeze-private-artifact",
+      "suite": "root",
+      "testPattern": "^the freeze inherits every other field from the A1 freeze unchanged$",
+      "reasonPattern": "^A1 freeze absent \\(.+\\)$",
+      "owner": "guarded-learner-outcome-study",
+      "reason": "The inherited A1 comparison freeze is a machine-local private artifact; the guarded public freeze retains its digest binding but cannot compare fields when that source file is absent.",
+      "removalSlice": "tracked synthetic A1 comparison fixture or dedicated private-artifact lane"
     },
     {
       "id": "paper-superego-private-archive",

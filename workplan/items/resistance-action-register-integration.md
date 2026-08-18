@@ -30,6 +30,7 @@ links:
     - docs/harness-claim-transfer-rule.md
     - docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md
     - notes/2026-08-16-edged-register-calibration-draft.md
+    - docs/resistance-action-register-conservation-protocol.md
 tags:
   - tutor-stub
   - cells
@@ -91,3 +92,15 @@ and explicit human approval.
   adaptation-refinement, guarded-learner, guarded-reader, and
   normative/descriptive-DAG histories. Those unique histories require explicit
   port-or-archive decisions before their worktrees can be removed.
+- 2026-08-18 — Froze the public pre-integration baseline at annotated tag
+  `experiment/resistance-action-register/pre-integration/freeze-2026-08-18`
+  (`45985541188bc935a4ef9a4893d9b65451f0fa61`), then merged the complete
+  guarded-learner executable lineage into this branch as merge commit
+  `5fa2e50e`. The two conflicts preserved main's hardened signed-GO gate and
+  completed §6.26 claim surface while adding manifest-sized guarded runs and
+  the relay provenance. Added a machine-checked conservation protocol for the
+  normative/descriptive mechanism and the `low_agency` / `overconfident`
+  result contracts. The private checkout remains intact, but HTTPS binary
+  upload failed and its draft release is explicitly marked pending; do not
+  delete the private checkout, guarded source worktree, or source branches
+  until an independently verified remote binary backup exists.
