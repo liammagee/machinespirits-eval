@@ -31,6 +31,12 @@ links:
     - docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md
     - notes/2026-08-16-edged-register-calibration-draft.md
     - docs/resistance-action-register-conservation-protocol.md
+    - docs/pedagogical-move-contract.md
+  code:
+    - services/pedagogicalMove/contract.js
+    - services/pedagogicalMove/shadow.js
+    - services/adaptiveTutor/pedagogicalMoveProjection.js
+    - services/tutorStubPedagogicalMoveProjection.js
 tags:
   - tutor-stub
   - cells
@@ -38,7 +44,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistance-action-register-integration
+branch: codex/pedagogical-move-contract
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -104,3 +110,11 @@ and explicit human approval.
   upload failed and its draft release is explicitly marked pending; do not
   delete the private checkout, guarded source worktree, or source branches
   until an independently verified remote binary backup exists.
+- 2026-08-18 — Began Phase 1 as an additive, zero-call shadow boundary. Added
+  one neutral typed `PedagogicalMove` schema, explicit and complete projections
+  for the adaptive-runner actions and tutor-stub expected-uptake families, and
+  deterministic conservation records that leave the legacy decision
+  authoritative and hard-disable consumer switching. Register, stance, tone,
+  character, audience, lexical, and scene choices are rejected from the move
+  object and remain downstream realization fields. No runtime imports either
+  projection in this phase.

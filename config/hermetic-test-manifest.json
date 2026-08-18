@@ -395,6 +395,7 @@
         "tests/packagePoeticsRun.test.js",
         "tests/paperManifestValidator.test.js",
         "tests/pedagogical-orientation-coverage.test.js",
+        "tests/pedagogicalMoveContract.test.js",
         "tests/pilot.test.js",
         "tests/pilotTutorSessionAdapter.test.js",
         "tests/plan3DagSfsAudit.test.js",
