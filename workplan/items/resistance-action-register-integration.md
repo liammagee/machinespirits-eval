@@ -32,6 +32,7 @@ links:
     - notes/2026-08-16-edged-register-calibration-draft.md
     - docs/resistance-action-register-conservation-protocol.md
     - docs/pedagogical-move-contract.md
+    - docs/tutor-stub-resistant-profile-discrimination-registration.md
   code:
     - services/pedagogicalMove/contract.js
     - services/pedagogicalMove/shadow.js
@@ -40,6 +41,8 @@ links:
     - services/resistantLearnerObservation.js
     - services/pedagogicalMove/resistantProfileWarrantShadow.js
     - scripts/tutor-stub-learner-profile-contracts.js
+    - scripts/prepare-tutor-stub-resistant-profile-discrimination.js
+    - config/tutor-stub-resistant-profile-discrimination-registration.v1.json
 tags:
   - tutor-stub
   - cells
@@ -47,7 +50,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistant-learner-profile-contracts
+branch: codex/resistant-profile-discrimination-registration
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -142,3 +145,13 @@ and explicit human approval.
   this partial clone's shallow boundary, and four fake-Codex fixtures exceeded
   their hard five-second timeout under four-way load. All four timing cases
   pass serially. No paid or live learner-profile study was run.
+- 2026-08-18 — Froze the Phase 2 discrimination protocol without authorizing a
+  live run: six profiles, one `field` treatment, safe register palette, eight
+  turns, and `n=3` produce an 18-dialogue plan. Added an executable preflight
+  that hard-checks the unchanged `low_agency` / `overconfident` contract and
+  prompt hashes, the closed historical outcome-driver registry, the new public
+  markers, exact model/DAG/budget pins, and every child command's `--dry-run`
+  guard. The analyzer can now gate only the registered new profiles, enforce
+  their declared nearest neighbours when those neighbours are present, and
+  require the pooled cosine gate at the same time. No model call is authorized
+  or made by this step.

@@ -1,7 +1,14 @@
 # Process: two new resistant learners — bored, and defiant on principle
 
-Status: design note, no registration yet. Written 2026-08-16. Nothing here
-authorizes a paid call.
+Status: design note, written 2026-08-16. Nothing here authorizes a paid call.
+
+**Integration amendment, 2026-08-18.** Steps 3 and 5 below are superseded for
+the current programme: the historical outcome-study driver remains frozen to
+`low_agency` and `overconfident`. The two new profiles first enter a separate
+tutor-stub discrimination protocol at
+`docs/tutor-stub-resistant-profile-discrimination-registration.md`; they are
+not added to, or smoked through, the closed outcome driver. Any later outcome
+study would need a new driver surface and a separately approved registration.
 
 ## The process, in order
 

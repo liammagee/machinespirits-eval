@@ -139,6 +139,18 @@ move, switch a consumer, choose a register, authorize a paid call, or establish
 that either new profile is empirically discriminating. Those claims require a
 later registered study.
 
+The zero-call protocol for that next gate is now frozen at
+`docs/tutor-stub-resistant-profile-discrimination-registration.md`, with its
+machine authority in
+`config/tutor-stub-resistant-profile-discrimination-registration.v1.json`.
+It specifies 18 equal-horizon dialogues: six profiles (`diligent`,
+`low_agency`, `bored`, `skeptical`, `low_trust_skeptic`, and
+`frame_defiant`) under one `field` treatment, the safe register palette, and
+three repeats. The analyzer must enforce both the pooled cosine gate and the
+new profiles' declared nearest-neighbour gates. This registration and its dry
+plan remain engineering evidence only; no live trace for the two new profiles
+has been generated.
+
 ## Evidence So Far
 
 Historical checks showed weak separation:

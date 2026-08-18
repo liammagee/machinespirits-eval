@@ -75,6 +75,7 @@
     "program2:phase5f:analyze": "node scripts/analyze-program2-live-pilot-5f.mjs",
     "tutor:stub:remote": "node scripts/tutor-stub-remote.js",
     "tutor:stub:qa": "node scripts/run-tutor-stub-qa-matrix.js",
+    "tutor:stub:resistant-profile-preflight": "node scripts/prepare-tutor-stub-resistant-profile-discrimination.js",
     "tutor:stub:abm-panel": "node scripts/run-tutor-stub-abm-panel.js",
     "tutor:stub:ingest": "node scripts/ingest-tutor-stub-auto-evals.js",
     "tutor:stub:backfill-failures": "node scripts/backfill-tutor-stub-turn-failures.js",
