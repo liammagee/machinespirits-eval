@@ -773,6 +773,15 @@
       "removalSlice": "tracked synthetic A1 comparison fixture or dedicated private-artifact lane"
     },
     {
+      "id": "guarded-learner-a1-acceptance-private-archive",
+      "suite": "root",
+      "testPattern": "^the real A1 acceptance artifact is refused on ancestry and reports its detached schema as unresolved$",
+      "reasonPattern": "^private-archive artifact absent \\(.+\\)$",
+      "owner": "guarded-learner-outcome-study",
+      "reason": "The public CI checkout has no sibling private archive, so it cannot inspect the real A1 schema-acceptance artifact; when present, the test still verifies both ancestry refusal and unresolved detached-schema reporting.",
+      "removalSlice": "tracked synthetic A1 acceptance fixture or dedicated private-artifact lane"
+    },
+    {
       "id": "paper-superego-private-archive",
       "suite": "root",
       "reasonPattern": "^archived corpus absent \\(.+\\); sibling private repo not checked out$",
