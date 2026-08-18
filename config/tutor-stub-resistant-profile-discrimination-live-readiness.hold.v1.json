@@ -1,0 +1,152 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-profile-live-readiness-hold.v1",
+  "status": "HOLD",
+  "studyId": "tutor-stub-resistant-profile-discrimination-v1",
+  "preparedAt": "2026-08-19",
+  "source": {
+    "preparedFromCommit": "8de5787f95995c12d657f07dcaedaca66205efe7",
+    "launchCommit": null,
+    "launchRequirement": "After this packet merges, a future GO note must pin the exact clean origin/main commit used for launch."
+  },
+  "registration": {
+    "path": "config/tutor-stub-resistant-profile-discrimination-registration.v1.json",
+    "sha256": "e6581e6cbfe9589b825589318c2b5b523b03ef1b8587ec31fec5b87ff69249ac"
+  },
+  "endpoint": {
+    "contractPath": "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json",
+    "certificatePath": "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.endpoint-go.json",
+    "contractSha256": "a7776585313e15f265440a30412b0505317597454615b83880e69d300bd2bab3",
+    "preflightSha256": "06ec5af028e79f2d38517e33992d59bdcf8401a19bba9be3c5eb86678ecd862b",
+    "authorizationScope": "endpoint-runtime compatibility only"
+  },
+  "routeVerification": {
+    "status": "pending_explicit_approval",
+    "artifact": null,
+    "requestedModels": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna"
+    },
+    "observedModels": null,
+    "requirement": "A fresh bounded route canary must record observed provider/model identities before a GO note can be written."
+  },
+  "destination": {
+    "artifactRoot": ".tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19",
+    "mustNotExistBeforeLaunch": true,
+    "productionDatabaseWrites": false,
+    "privateArchiveUploadRequiredForLaunch": false
+  },
+  "payload": {
+    "scope": "Repository-authored world_005_marrick content, tutor and automated learner prompts, classifier prompts, and generated automated dialogue context only.",
+    "humanSubjectData": false,
+    "privateArchiveData": false,
+    "trainingReuseStatus": "not_applicable"
+  },
+  "budget": {
+    "dialogues": 18,
+    "maximumAttemptsPerDialogue": 48,
+    "maximumPlannedModelAttempts": 864,
+    "parallelism": 3,
+    "resumeOrRetryAuthority": "none; a technical failure requires review and a new sealed artifact root"
+  },
+  "authorization": {
+    "goNote": null,
+    "explicitHumanApproval": false,
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false
+  },
+  "blockers": [
+    "merge this readiness packet and select the exact clean origin/main launch commit",
+    "run a fresh bounded endpoint/model-route canary under explicit approval and record observed identities",
+    "write and commit a study-specific GO note binding the registration, endpoint preflight, route artifact, launch commit, destination, payload scope, and 864-attempt ceiling",
+    "obtain explicit human approval for that exact GO note and model-call spend"
+  ],
+  "proposedCommands": {
+    "preflight": ["npm", "run", "tutor:stub:resistant-profile-live-readiness"],
+    "live": [
+      "node",
+      "scripts/run-tutor-stub-qa-matrix.js",
+      "--policies",
+      "field",
+      "--profiles",
+      "diligent,low_agency,bored,skeptical,low_trust_skeptic,frame_defiant",
+      "--runs",
+      "3",
+      "--run-seed",
+      "20260818",
+      "--turns",
+      "8",
+      "--safety-turns",
+      "8",
+      "--model",
+      "codex.gpt-5.6-luna",
+      "--analysis-model",
+      "codex.gpt-5.6-luna",
+      "--auto-learner-model",
+      "codex.gpt-5.6-luna",
+      "--model-call-budget",
+      "48",
+      "--world",
+      "world_005_marrick",
+      "--dag-mode",
+      "strict_dag",
+      "--register-palette",
+      "safe",
+      "--register-overlay-threshold",
+      "0.7",
+      "--release-speed",
+      "1",
+      "--cli-effort",
+      "low",
+      "--history-turns",
+      "4",
+      "--max-tokens",
+      "4096",
+      "--parallelism",
+      "3",
+      "--progress-interval",
+      "30",
+      "--trace-dir",
+      ".tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19",
+      "--no-html-report",
+      "--no-memory-summary",
+      "--no-analyze"
+    ],
+    "analyze": [
+      "node",
+      "scripts/analyze-tutor-stub-profile-discrimination.js",
+      "--trace-root",
+      ".tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19",
+      "--write-compacted",
+      ".tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/compacted-traces",
+      "--target-average-cosine",
+      "0.85",
+      "--target-max-to-control",
+      "0.9",
+      "--control-profile",
+      "diligent",
+      "--gate-profiles",
+      "bored,frame_defiant",
+      "--require-pooled",
+      "--required-traces",
+      "18",
+      "--required-profiles",
+      "diligent,low_agency,bored,skeptical,low_trust_skeptic,frame_defiant",
+      "--required-runs-per-profile",
+      "3",
+      "--required-turns",
+      "8",
+      "--required-policies",
+      "field",
+      "--required-tutor-model",
+      "codex.gpt-5.6-luna",
+      "--required-analysis-model",
+      "codex.gpt-5.6-luna",
+      "--required-learner-model",
+      "codex.gpt-5.6-luna",
+      "--json",
+      "--out",
+      ".tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/profile-discrimination.json"
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-go.v1",
+  "status": "endpoint_runtime_go",
+  "study_id": "tutor-stub-resistant-profile-discrimination-v1",
+  "contract_path": "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json",
+  "contract_sha256": "a7776585313e15f265440a30412b0505317597454615b83880e69d300bd2bab3",
+  "preflight_sha256": "06ec5af028e79f2d38517e33992d59bdcf8401a19bba9be3c5eb86678ecd862b",
+  "authorization_scope": "endpoint-runtime compatibility only; this certificate does not authorize a model call or live study",
+  "launch_gate": "Fresh model-route verification, an exact clean post-merge main commit, a committed study GO note, and explicit human approval remain required"
+}
