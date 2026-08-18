@@ -1317,3 +1317,265 @@ from a single yes/partly/no. A second read of the transcripts already on
 disk, scoring the three parts separately, would answer it with no new
 generation — 226 rows on the restricted set, 312 on the full block. That
 is a new priced read and needs its own approval; it is not proposed here.
+
+### 3.11 Arm B re-registered — the swap fires, and what 104 rows can price (2026-08-18)
+
+Written before any arm-B row exists under the repaired seam. Every number
+below comes from rows already paid for, or from a free dry run. Nothing
+here licenses generation.
+
+**The seam is repaired.** Commit `cf86bb57`. The gate asked who assigned
+the register when it needed to ask which register was selected.
+`isEdgeMomentState()` now tests the selected register against the
+**default** router-selectable menu — `plain, precise, brisk, warm,
+witnessing, charismatic`. A register the default menu does not admit is on
+the turn only because this study put it there, whichever path put it
+there. The swap also needs a warm counterfactual. On the assigned-arm path
+that is the router's own recorded pick. On the widened-menu path the
+router's pick *is* the edged register, so the counterfactual is re-derived
+by calling the same registered `selectResistanceRegister` with the
+un-widened menu, which returns `charismatic` for every resistance signal
+in these scenarios.
+
+Cells 193–196 keep their bytes: the swap is still called only under
+`factors.yoked_delivery_swap`, the annotation still needs
+`two_pass_register_payload` or `yoked_delivery_swap`, and none of those
+factors appear on 193–197. Arm A keeps its bytes too — nothing outside
+`idDirectorEngine.js` reads `edge_moment`, `first_edge_moment` or
+`delivery_swapped`, and `buildTutorMannerBlock` reads the register
+contract and nothing else. Arm A gains three trace fields and no prompt
+bytes. The new tests drive the shipped cell 207 and 208 configs out of
+`config/tutor-agents.yaml` with no factor injection. Reverting
+`isEdgeMomentState` to the stamp-only rule fails three of the four.
+Hermetic suite: 690 files, 8811 tests, 2 failures, both reproduced on a
+stashed tree and unrelated.
+
+**What arm B now is.** `cell_208_id_director_edged_register_yoked_warm_delivery`
+as shipped, unchanged in YAML. The router still widens its own menu and
+still picks the edged register. The id persona is still authored under the
+edged state, and pass 1 still writes the register-free content plan. Only
+pass 2 changes: the delivery register becomes `charismatic`, and the turn
+is stamped `delivery_swapped: true` with the replaced register recorded.
+So the three arms decompose as:
+
+```
+A (207)  edged state → register-free content plan → edged manner
+B (208)  edged state → register-free content plan → warm manner
+C (206)  warm state  → single pass              → warm manner
+```
+
+A minus B is delivered manner and nothing else. B minus C is **not** a
+clean contrast — arm C is single-pass by the §1.2 amendment, so B and C
+differ in architecture as well as in the state the id was authored under.
+Only A-versus-B is registered here.
+
+**Why B stays on the widened-menu path.** §3.10.1 recommended designs 1
+and 2 together. Design 2 is what is built above. Design 1 — fix the
+precondition, then assign — cannot be had by moving B to the assigned-arm
+path, because that path fires wherever the router *would* have picked
+`charismatic`, which is a different and larger set of moments than the
+widened menu fires on. Moving B there would un-yoke it from the frozen arm
+A, which is the one thing arm B exists to be matched to. Design 1's
+operative property is that the trigger is fixed and identical across arms.
+That property holds here by construction — both arms run the same
+deterministic router on the same menu — and it is measured, not assumed.
+
+**Every dialogue has exactly one edge moment, and it is turn 1.** Read
+from `id_construction_trace` over all 312 rows of `batch-main-2-2026-08-17`:
+
+```
+                first edge moment        register at turn 1
+A (cell 207)    104/104 at turn 1        sarcastic 78, ironic 26
+B (cell 208)    102/104 at turn 1        sarcastic 75, ironic 27, charismatic 2
+                (1 at turn 2, 1 at turn 3)
+C (cell 206)    none                     charismatic 104
+```
+
+This matches §3.10.2's correction and states it as a per-dialogue fact:
+the first edge moment is not scattered, it is the first tutor reply after
+the learner's scripted resistance, in every dialogue of both edged arms.
+
+**Where the endpoint reader looks, stated exactly.** The reader's window is
+fixed by the scenario YAML, not by the data. It reads the learner turn at
+the resistance turn, the tutor reply at that same turn, and the learner
+turn at `resistance turn + resistance_hold_turns`. The resistance turn is
+1 in all 312 dialogues. So the **tutor turn the reader shows is the first
+edge moment**, in all 104 arm-A dialogues, with no change to the reader
+and no re-reading of arm A. The scored learner reply, though, sits a
+variable distance away:
+
+| scenario | `hold_turns` | scored turn | register on the turn it answers (arm A) |
+|---|---|---|---|
+| `rote_parroting_guarded` | 1 | 2 | edged 26/26 |
+| `rote_parroting_sustained` | 2 | 3 | edged 9/26 |
+| `boredom_claimheld` | 2 | 3 | edged 11/26 |
+| `question_flood_sustained` | 2 | 3 | edged 6/26 |
+
+**A correction to §3.10.2.** That entry located the same split — 75 rows
+at one index, all of them `rote_parroting_guarded` — and read it as a
+defect: "a learner turn at index 1 is written before the tutor has spoken
+in any register other than `brisk`", so "those rows cannot carry a tone
+effect". The register trace says the opposite. On those 75 rows the tutor
+turn the scored reply answers is edged in 26 of 26 arm-A dialogues and
+`charismatic` in 26 of 26 arm-C dialogues. It is never `brisk`. The
+guarded rows are the only rows in the block where the scored reply answers
+the sharp turn directly, with no tutor turn in between. The three long
+scenarios are the muddy ones: their scored reply answers the turn-2 tutor
+reply, which the router had already moved off the edged register in 52 of
+78 arm-A dialogues.
+
+This matters because §3.10.2's post-hoc restriction drops exactly those 75
+rows. Its arithmetic stands; its reading does not. Split the block the
+other way and the registered difference sits entirely where the endpoint
+is furthest from the edge:
+
+```
+                                    A        C        exact test
+endpoint at the edged turn       23/26    22/26      p = 1.00
+  (rote_parroting_guarded)       0.885    0.846
+endpoint two turns later         36/78    52/78      p = 0.015
+  (the other three)              0.462    0.667
+```
+
+Both cuts are post-hoc and descriptive. Neither is promoted. The
+registered primary stands at 59/104 against 74/104, p = 0.043, on all 312
+rows. What the split does establish, before any new row is bought, is that
+the position of the scored reply is a live design variable, and the
+re-registration has to choose one.
+
+**The choice, and why the scenarios stay as they are.** Three options were
+priced.
+
+1. Set `resistance_hold_turns: 1` on all four scenarios, so every scored
+   reply answers the edged turn directly. Rejected. It changes the
+   scenario source SHA and it changes arm A, so the frozen arm A could no
+   longer serve as the comparator and the block would cost 208 rows, not
+   104. Worse, the one scenario already running at `hold_turns: 1`
+   converts at 0.846 to 0.885 in **all three arms** — at or above the
+   ceiling that dropped `boredom_guarded` at the screen. Moving the other
+   three there would most likely move them to the ceiling too, where no
+   contrast can show.
+2. Register the secondary on `rote_parroting_guarded` alone, the one clean
+   single-moment contrast. Rejected as a primary: 26 dialogues per arm
+   carries no power at all.
+3. Keep the scenarios and register the **whole-dialogue** A-versus-B
+   contrast. Chosen.
+
+**Amendment 3 to §3.4 — the A-versus-B secondary becomes a whole-dialogue
+contrast.** §3.4 registered A-versus-B "at the first edge moment per
+dialogue" and made whole-dialogue A-versus-B descriptive only. That
+wording was written when the swap was believed to fire once. With the
+swap repaired it fires at **every** edge moment, so arm B is warm
+delivery throughout the dialogue against arm A's edged delivery
+throughout, on a shared content plan. The whole-dialogue reading is now
+the contrast that matches the manipulation. The first-edge-moment reading
+survives as the `rote_parroting_guarded` subset, reported beside it and
+powered for nothing.
+
+This amendment is made on a structural fact — where the reader's window
+sits relative to the edge moment — which is knowable from config and
+trace, with no arm-B outcome in existence. It is not an endpoint chosen
+after seeing an answer. It is recorded here, before the run, as §3.8
+requires.
+
+**Endpoint rule, quoted verbatim from §3.4 and unchanged:**
+
+> **Primary**: post-resistance conversion, A versus C, pooled over the
+> four cells, exact test. Conversion = the model reader answers **yes**
+> on "did the learner do the task the tutor set" (§2.16, rule frozen at
+> `b761bbbe`, licensed by ruling 1 §2.18). Yes-plus-partly is reported
+> beside it, selecting nothing.
+
+The A-versus-C primary is not re-run and not re-scored. The re-registered
+arm B is scored on that same conversion rule, by the same reader, at the
+same window, with the same yes-only primary and yes-plus-partly reported
+beside it.
+
+**Count and allocation.** ~104 dialogues, **one version**, four scenarios
+× 26. Confirmed against the runner's own free dry run: "exact-test size:
+104 rows per arm (26 per cell)". The comparator is the frozen arm A —
+cell 207, 104 rows, `batch-main-2-2026-08-17` — which is re-read from disk
+and not re-generated. Dialogues with no edge moment at turn 1 (2 of 104 in
+the block just run) stay in the whole-dialogue contrast, because a
+policy that sometimes does not fire is part of the policy; they are
+excluded from the guarded subset reading and their count is reported.
+
+**Powering, recomputed against the observed rates.** §3.2's basis did not
+hold. It sized the block at 104 per arm for power 0.803 on a +20-point
+effect from a baseline of 0.479. The warm control converted at **0.712**,
+not 0.479, and the realised A-versus-C gap was **14.5 points** — below the
+registered minimum effect of interest. Exact Fisher power, full
+enumeration, two-sided α = .05:
+
+| contrast | n per arm | difference | power |
+|---|---|---|---|
+| B recovers fully to the warm control's rate (0.567 → 0.712) | 104 | 14.5 pts | **0.54** |
+| B recovers half of it (0.567 → 0.635) | 104 | 6.8 pts | 0.14 |
+| the registered minimum effect of interest (0.567 → 0.767) | 104 | 20.0 pts | 0.84 |
+| smallest difference reaching power 0.80 | 104 | ~19.3 pts | 0.80 |
+| full recovery, at the size that would power it | ~190 | 14.5 pts | 0.81 |
+
+Against the frozen arm A at 59/104, the test clears p < .05 only if the
+new arm B reaches **74 of 104** — which is arm C's own count, to the row.
+Warm delivery has to recover the entire A-versus-C difference, or the
+block reads null.
+
+Two further figures set the scale. The block just run contained two arms
+that were the same process, and they differed by 6.8 points — 59/104
+against 66/104, p = 0.396. The difference this block is built to detect,
+14.5 points, is about twice that noise. And the whole A-versus-C
+difference is 15 rows; A-versus-B asks only for delivery's share of those
+15.
+
+**So the size is right for the effect that was registered and wrong for
+the effect the data now suggests.** 104 per arm is not an arbitrary
+number — it is what a +20-point effect buys. The effect on offer is
+14.5 points at most, and delivered manner can only be part of it.
+
+**Verdict rule, fixed now.** A result below 74/104 is recorded as
+**underpowered, not as evidence that delivered manner does not matter**.
+The report must state the observed rate, the exact p, and the power the
+block had against the observed A-versus-C gap. A null here licenses no
+claim about manner. Only a result at or above 74/104 licenses the claim
+that warm delivery recovers conversion, and that claim is bounded to
+simulated learners, this stack, and these four scenarios.
+
+**Report-only, registered here so it is not chosen later.** Three
+readings, none of them endpoints, none of them selecting anything.
+
+- `rote_parroting_guarded` alone, A against B, the one contrast where the
+  scored reply answers the edged turn directly (26 per arm).
+- The vending-machine figure. §3.9 explained it by "the two-pass versions
+  share one content payload and differ only in delivery, so the name rides
+  in the shared content, and warm delivery keeps it". The second half of
+  that sentence is void — there was no warm delivery. The observation
+  stands (14 of 104 arm A, 20 of 104 its twin, 0 of 104 control) and now
+  makes a prediction: if the figure rides in the content plan, the
+  repaired arm B still produces it under warm delivery; if it rides in the
+  manner, it stops.
+- The harm guardrail on every row and the §3.7 reader on every match, with
+  the §2.7 pause-and-rule stop rule unchanged.
+
+**Limits carried into the GO note.** Three, all stated before the run.
+
+1. **The arms are not concurrent.** Arm A ran on 2026-08-17; arm B would
+   run later. Randomisation between them is lost, and only the pinned
+   stack stands in for it. Any drift in the generation model between the
+   two dates is a rival explanation for whatever the block shows.
+2. **The yoke is policy-level after turn 1.** At turn 1 the manipulation
+   is matched in fact (104/104 against 102/104, same signals). After it,
+   the transcripts diverge and the router reads a different conversation.
+   §1.2 said this and it is still true. Only counterfactual replay —
+   §3.10.1 design 3, still unbuilt and still not proposed — removes it.
+3. **The runner cannot launch one arm.** `EDGED_REGISTER_MAIN_BLOCK` fixes
+   three arms and `validateMainPlan` fails unless they are exactly A, B, C
+   in order; there is no arm selector among the runner's flags. A
+   single-arm block needs a registered change to the runner, which moves
+   the blob pinned in §3.5. **This is unbuilt. No launch is possible until
+   it lands and its pin is re-registered.**
+
+**Not licensed here**: any generation; any change to cells 193–208 in
+`config/tutor-agents.yaml`; any change to the endpoint reader, the
+conversion rule frozen at `b761bbbe`, the corridor rule in §2.4, or the
+eligibility screen in §2.5 M-C1; any re-scoring of the 312 rows already
+read.
