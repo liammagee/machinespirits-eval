@@ -16,6 +16,14 @@ import {
   TUTOR_STUB_STRESS_SCHEDULE_SCHEMA,
 } from './tutorStubStressSchedule.js';
 import { assertTutorStubTurnAttemptCurrent } from './tutorStubTurnAttempt.js';
+import {
+  GUARDED_LEARNER_MOVE_SCHEMA,
+  auditGuardedLearnerDraft,
+  countGuardedLearnerGroundedChallenges,
+  guardedLearnerMoveDirective,
+  guardedLearnerRedraftInstruction,
+  selectGuardedLearnerMove,
+} from './tutorStubGuardedLearnerMoves.js';
 
 const AUTO_LEARNER_SYSTEM_PROMPT = [
   'You are an automated learner in an experimental tutoring dialogue.',
@@ -279,11 +287,35 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     return corrupted;
   }
 
+  // Guarded (defensive) learner pole. Opt-in with
+  // TUTOR_STUB_GUARDED_LEARNER_MOVES=1, so no existing study changes: the
+  // menu picks one typed move per turn and the guard rejects a draft that
+  // folds or asks permission before the schedule allows it. Both are
+  // deterministic and cost no model call. See tutorStubGuardedLearnerMoves.js.
+  const GUARDED_LEARNER_MOVES_ENABLED = /^(?:1|true|on|yes)$/iu.test(
+    String(env.TUTOR_STUB_GUARDED_LEARNER_MOVES || ''),
+  );
+
+  function guardedLearnerActive(profile) {
+    return GUARDED_LEARNER_MOVES_ENABLED && automatedLearnerProfileId(profile) === 'overconfident';
+  }
+
+  function guardedLearnerMoveForTurn({ state, profile, turnNumber }) {
+    if (!guardedLearnerActive(profile)) return null;
+    const priorMoves = Array.isArray(state.guardedLearnerMoves) ? state.guardedLearnerMoves : [];
+    const groundedChallengeCount = countGuardedLearnerGroundedChallenges(state.turns || []);
+    const move = selectGuardedLearnerMove({ turnNumber, groundedChallengeCount, priorMoves });
+    return { move, groundedChallengeCount, priorMoves };
+  }
+
   function buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback = '' }) {
     const hasTutorMessage = Boolean(latestTutorMessage(state));
+    const guarded = guardedLearnerMoveForTurn({ state, profile, turnNumber });
     return [
       automatedLearnerProfileRuntime({ state, profile, turnNumber }),
       '',
+      guarded ? guardedLearnerMoveDirective(guarded.move) : null,
+      guarded ? '' : null,
       '# Public scene',
       '',
       publicWorldSummary(state.world),
@@ -504,11 +536,80 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     return { generated: candidate, precomputedRaw: raw, repaired: repairs > 0, passed };
   }
 
+  /**
+   * Deterministic persona guard for the guarded pole. Re-derives the same move
+   * the prompt carried, reads the draft as text, and redrafts at most once. No
+   * model call is made by the check itself, so a fire costs one extra learner
+   * turn and nothing else. Both outcomes are traced, so a reader counts fires
+   * rather than inferring them. Records the move so the next turn's cooldown
+   * and fold-once rules can see it.
+   */
+  async function enforceGuardedLearnerConcessionGuard({
+    state,
+    resolved,
+    profile,
+    turnNumber,
+    generated,
+    cliEffort = null,
+    signal = null,
+    isCurrent = null,
+  }) {
+    assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
+    const selection = guardedLearnerMoveForTurn({ state, profile, turnNumber });
+    if (!selection || !generated.text) return { generated, repaired: false, move: null, passed: null };
+
+    const { move, groundedChallengeCount } = selection;
+    let candidate = generated;
+    let audit = auditGuardedLearnerDraft({ text: candidate.text, move, groundedChallengeCount });
+    if (audit.status === 'rejected') {
+      appendTraceEvent(state.trace, {
+        type: 'guarded_learner_guard_fired',
+        schema: GUARDED_LEARNER_MOVE_SCHEMA,
+        turn: turnNumber,
+        move,
+        groundedChallengeCount,
+        reasons: audit.reasons,
+        draft: candidate.text,
+      });
+      const repaired = await generateAutomatedLearnerTurn({
+        state,
+        resolved,
+        profile,
+        turnNumber,
+        adherenceFeedback: guardedLearnerRedraftInstruction(audit),
+        stream: { enabled: false, interim: state.interim },
+        cliEffort,
+        signal,
+      });
+      assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
+      if (repaired.text) {
+        candidate = repaired;
+        audit = auditGuardedLearnerDraft({ text: candidate.text, move, groundedChallengeCount });
+      }
+    }
+    const repaired = candidate !== generated;
+    appendTraceEvent(state.trace, {
+      type: 'guarded_learner_move',
+      schema: GUARDED_LEARNER_MOVE_SCHEMA,
+      turn: turnNumber,
+      move,
+      groundedChallengeCount,
+      passed: audit.status === 'passed',
+      repaired,
+      reasons: audit.reasons,
+    });
+    if (!Array.isArray(state.guardedLearnerMoves)) state.guardedLearnerMoves = [];
+    state.guardedLearnerMoves.push(move);
+    return { generated: candidate, repaired, move, passed: audit.status === 'passed' };
+  }
+
   return {
     automatedLearnerCorruptionEnabled,
     automatedLearnerProfileId,
     buildMixedLearnerArtifactsPrompt,
     deterministicAutomatedLearnerFallback,
+    enforceGuardedLearnerConcessionGuard,
+    guardedLearnerActive,
     enforceAutomatedLearnerProfile,
     generateAutomatedLearnerTurn,
     generateMixedLearnerArtifacts,

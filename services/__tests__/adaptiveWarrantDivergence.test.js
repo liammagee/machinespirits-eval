@@ -2,8 +2,11 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  ADAPTIVE_WARRANT_DEFENDED_OVERCLAIM_STATE,
   ADAPTIVE_WARRANT_DIVERGENCE_DIMENSIONS,
+  adaptiveWarrantDefendedOverclaimStreak,
   projectAdaptiveWarrantDivergence,
+  resolveAdaptiveWarrantDefendedOverclaimTurns,
 } from '../adaptiveWarrantDivergence.js';
 
 function byDimension(rows, dimension) {
@@ -118,4 +121,65 @@ test('pacing, epistemic safety, and strategy exhaustion remain separate axes', (
   assert.equal(byDimension(rows, 'epistemic').magnitude, 'high');
   assert.equal(byDimension(rows, 'strategy_exhaustion').interpretation, 'stalled');
   assert.equal(byDimension(rows, 'strategy_exhaustion').repair_warranted, true);
+});
+
+// v3.3 guarded pole. The streak helper is the whole sensor, so it is tested on
+// its own before the row it feeds.
+
+function defendedSignal() {
+  return { primary: 'defended_overclaim', labels: ['defended_overclaim'] };
+}
+
+function deferentialSignal() {
+  return { primary: 'low_agency_deferral', labels: ['low_agency_deferral'] };
+}
+
+test('the defended over-claim streak counts only the unbroken run at the end', () => {
+  assert.equal(adaptiveWarrantDefendedOverclaimStreak([]), 0);
+  assert.equal(adaptiveWarrantDefendedOverclaimStreak([defendedSignal()]), 1);
+  assert.equal(adaptiveWarrantDefendedOverclaimStreak([defendedSignal(), defendedSignal(), defendedSignal()]), 3);
+  assert.equal(adaptiveWarrantDefendedOverclaimStreak([defendedSignal(), deferentialSignal(), defendedSignal()]), 1);
+  assert.equal(adaptiveWarrantDefendedOverclaimStreak([defendedSignal(), defendedSignal(), deferentialSignal()]), 0);
+});
+
+test('the defended over-claim threshold resolves to 3 and refuses values the gate cannot supply', () => {
+  assert.equal(resolveAdaptiveWarrantDefendedOverclaimTurns(undefined), 3);
+  assert.equal(resolveAdaptiveWarrantDefendedOverclaimTurns(''), 3);
+  assert.equal(resolveAdaptiveWarrantDefendedOverclaimTurns('2'), 2);
+  assert.equal(resolveAdaptiveWarrantDefendedOverclaimTurns('3'), 3);
+  assert.throws(() => resolveAdaptiveWarrantDefendedOverclaimTurns('1'), /defended_overclaim/i);
+  assert.throws(() => resolveAdaptiveWarrantDefendedOverclaimTurns('4'), /defended_overclaim/i);
+  assert.throws(() => resolveAdaptiveWarrantDefendedOverclaimTurns('two'), /defended_overclaim/i);
+});
+
+test('a sustained defended over-claim run names its own engagement state', () => {
+  const recentSignals = [defendedSignal(), defendedSignal(), defendedSignal()];
+  const rows = projectAdaptiveWarrantDivergence({
+    signal: recentSignals[2],
+    recentSignals,
+  });
+  const engagement = byDimension(rows, 'engagement');
+  assert.equal(engagement.descriptive_state, ADAPTIVE_WARRANT_DEFENDED_OVERCLAIM_STATE);
+  assert.equal(engagement.magnitude, 'high');
+  assert.equal(engagement.repair_warranted, true);
+  assert.equal(engagement.persistence, 3);
+});
+
+test('the passive pole is unchanged by the guarded branch', () => {
+  const recentSignals = [deferentialSignal(), deferentialSignal(), deferentialSignal()];
+  const rows = projectAdaptiveWarrantDivergence({
+    signal: recentSignals[2],
+    recentSignals,
+    deferenceSustained: true,
+  });
+  const engagement = byDimension(rows, 'engagement');
+  assert.equal(engagement.descriptive_state, 'sustained_low_agency_deferral');
+  assert.equal(engagement.repair_warranted, true);
+});
+
+test('a defended turn that also defers keeps the deferential engagement reading', () => {
+  const mixed = { primary: 'low_agency_deferral', labels: ['low_agency_deferral', 'defended_overclaim'] };
+  const rows = projectAdaptiveWarrantDivergence({ signal: mixed, recentSignals: [mixed] });
+  const engagement = byDimension(rows, 'engagement');
+  assert.equal(engagement.descriptive_state, 'current_low_agency_or_resistance');
 });

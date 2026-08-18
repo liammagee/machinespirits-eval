@@ -18,6 +18,8 @@ import { parseArgs } from 'node:util';
 
 import {
   DECISION_READER_INSTRUMENT_BINDINGS,
+  OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
+  OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES,
   extractOutcomeDialogueFromTraceRows,
   scoreAdaptiveWarrantOutcomeMainBlock,
 } from './score-adaptive-warrant-outcome-study.js';
@@ -136,7 +138,11 @@ export function buildOutcomeMainBlockAssignments({ seeds = OUTCOME_MAIN_BLOCK_SE
   return assignments;
 }
 
-export function guardOutcomeMainBlockStudyPlan({ manifest, assignments } = {}) {
+export function guardOutcomeMainBlockStudyPlan({
+  manifest,
+  assignments,
+  learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
+} = {}) {
   const conditions = ['bare', 'gated', 'standing_permission'];
   const counts = Object.fromEntries(
     conditions.map((condition) => [condition, assignments.filter((row) => row.condition === condition).length]),
@@ -152,7 +158,7 @@ export function guardOutcomeMainBlockStudyPlan({ manifest, assignments } = {}) {
     per_condition: Object.values(counts).every((count) => count === 24),
     per_seed: Object.values(seedCounts).every((count) => count === 6),
     turns: manifest.assignment?.turns_per_dialogue === 8,
-    learner_profile: manifest.assignment?.learner_profile === 'low_agency',
+    learner_profile: manifest.assignment?.learner_profile === learnerProfile,
     case_count: manifest.case_extraction?.expected_case_count === OUTCOME_MAIN_BLOCK_CASES,
   };
   return {
@@ -243,7 +249,10 @@ export function auditOutcomeMainBlockSeedFreshness({
   };
 }
 
-export function verifyOutcomeMainBlockManifest({ manifestPath = DEFAULT_MANIFEST } = {}) {
+export function verifyOutcomeMainBlockManifest({
+  manifestPath = DEFAULT_MANIFEST,
+  learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
+} = {}) {
   const resolvedManifest = path.resolve(ROOT, manifestPath);
   const manifest = readJson(resolvedManifest);
   if (manifest.schema !== 'machinespirits.adaptation-refinement.warrant-outcome-main-block-manifest.v1') {
@@ -286,7 +295,7 @@ export function verifyOutcomeMainBlockManifest({ manifestPath = DEFAULT_MANIFEST
     }
   }
   const assignments = buildOutcomeMainBlockAssignments({ seeds: manifest.seeds });
-  const studyPlanGuard = guardOutcomeMainBlockStudyPlan({ manifest, assignments });
+  const studyPlanGuard = guardOutcomeMainBlockStudyPlan({ manifest, assignments, learnerProfile });
   if (studyPlanGuard.status !== 'passed') throw new Error('outcome main-block study-plan guard failed');
   return { manifest, resolvedManifest, assignments, studyPlanGuard };
 }
@@ -424,6 +433,7 @@ export function shouldReuseOutcomeMainBlockLaunchArtifacts({ resume = false, rea
 function emitOutcomeMainBlockFreeze({
   outputPath,
   studyId,
+  learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
   sourceCommit,
   corpusPath,
   keyPath,
@@ -443,7 +453,7 @@ function emitOutcomeMainBlockFreeze({
     all_observe_decisions: true,
     sampling: {
       worlds: 2,
-      profiles: ['low_agency'],
+      profiles: [learnerProfile],
       conditions: ['bare', 'gated', 'standing_permission'],
       turns_per_dialogue: 8,
       total_cases: OUTCOME_MAIN_BLOCK_CASES,
@@ -539,13 +549,14 @@ export async function executeOutcomeMainBlock({
   outputDir,
   instrumentFreezePath,
   resume = false,
+  learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
   runDialogue,
   runReaderProcess = spawnLogged,
   seedFreshnessRoots,
 } = {}) {
   if (!acceptCharges) throw new Error('outcome main block refuses: --accept-charges is required');
   const goNote = validateOutcomeMainBlockGoNote(goNotePath);
-  const guarded = verifyOutcomeMainBlockManifest({ manifestPath });
+  const guarded = verifyOutcomeMainBlockManifest({ manifestPath, learnerProfile });
   if (git(['status', '--porcelain'])) throw new Error('outcome main-block launch requires a clean committed worktree');
   if (!outputDir) throw new Error('outcome main-block launch requires --out');
   if (!instrumentFreezePath) throw new Error('outcome main-block launch requires --instrument-freeze');
@@ -584,6 +595,7 @@ export async function executeOutcomeMainBlock({
     preflightOutcomePilotPromptAudits({
       manifest: { ...guarded.manifest, interleaved_condition_assignment: guarded.assignments },
       outputPath: promptAuditPath,
+      learnerProfile,
     });
     execFileSync(
       process.execPath,
@@ -625,10 +637,12 @@ export async function executeOutcomeMainBlock({
     ...guarded.manifest,
     interleaved_condition_assignment: guarded.assignments,
   };
+  budget.state.learner_profile = learnerProfile;
   const jobs = buildOutcomePilotJobs({
     manifest: runtimeManifest,
     rootDir,
     studyLabel: 'outcome-main',
+    learnerProfile,
   });
   await runOutcomeGeneration({ jobs, checkpoint: budget.state, budget, runDialogue });
   const completed = budget.state.dialogues.filter((row) => row.status === 'complete');
@@ -665,6 +679,7 @@ export async function executeOutcomeMainBlock({
       manifest: runtimeManifest,
       rootDir,
       samplingSeed: 'outcome-main-block-frozen-order',
+      learnerProfile,
     });
     const fingerprintGuard = guardOutcomeAnnotationFingerprints({
       cases: built.corpus.cases,
@@ -686,6 +701,7 @@ export async function executeOutcomeMainBlock({
     freeze = emitOutcomeMainBlockFreeze({
       outputPath: freezePath,
       studyId: path.basename(rootDir),
+      learnerProfile,
       sourceCommit: launchCommit,
       corpusPath: artifacts.corpusPath,
       keyPath: artifacts.keyPath,
@@ -821,7 +837,7 @@ export async function executeOutcomeMainBlock({
 }
 
 function usage() {
-  return `Usage:\n  node scripts/run-adaptive-warrant-outcome-main-block.js\n  node scripts/run-adaptive-warrant-outcome-main-block.js --go-note ${REQUIRED_GO_NOTE} --accept-charges --out <fresh-dir> --instrument-freeze <freeze> [--resume]\n`;
+  return `Usage:\n  node scripts/run-adaptive-warrant-outcome-main-block.js\n  node scripts/run-adaptive-warrant-outcome-main-block.js --go-note ${REQUIRED_GO_NOTE} --accept-charges --out <fresh-dir> --instrument-freeze <freeze> [--learner-profile <${OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES.join('|')}>] [--resume]\n`;
 }
 
 async function main() {
@@ -832,6 +848,7 @@ async function main() {
       'accept-charges': { type: 'boolean', default: false },
       out: { type: 'string' },
       'instrument-freeze': { type: 'string' },
+      'learner-profile': { type: 'string', default: OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE },
       resume: { type: 'boolean', default: false },
       help: { type: 'boolean', short: 'h' },
     },
@@ -842,7 +859,10 @@ async function main() {
     return;
   }
   if (!values['accept-charges']) {
-    const guarded = verifyOutcomeMainBlockManifest({ manifestPath: values.manifest });
+    const guarded = verifyOutcomeMainBlockManifest({
+      manifestPath: values.manifest,
+      learnerProfile: values['learner-profile'],
+    });
     process.stdout.write(`${printOutcomeMainBlockPlan(guarded.manifest)}\n`);
     return;
   }
@@ -853,6 +873,7 @@ async function main() {
     outputDir: values.out,
     instrumentFreezePath: values['instrument-freeze'],
     resume: values.resume,
+    learnerProfile: values['learner-profile'],
   });
   process.stdout.write(
     `${JSON.stringify({ status: result.status, checkpoint: path.resolve(ROOT, values.out, 'outcome-main-block-checkpoint.json') })}\n`,

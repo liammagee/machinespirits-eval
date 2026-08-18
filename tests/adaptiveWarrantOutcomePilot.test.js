@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -10,10 +11,13 @@ import {
   OUTCOME_PILOT_CHECKPOINT_SCHEMA,
   OUTCOME_PILOT_FREEZE_SCHEMA,
   OUTCOME_PILOT_PER_DIALOGUE_CAP,
+  OUTCOME_RULED_COMPLETE_STATUS,
+  applyReviewerRulingToCheckpoint,
   createOutcomePilotBudget,
   executeOutcomePilot,
   guardOutcomeAnnotationFingerprints,
   guardOutcomeDialogueLearnerAnalysisCoverage,
+  loadFrozenBatchPreparers,
   preflightOutcomePilotPromptAudits,
   prepareOrReuseOutcomePilotReaderCollection,
   renderOutcomePilotPromptConfiguration,
@@ -23,11 +27,20 @@ import {
   runReaderProcesses,
   runReadersAfterFingerprintGuard,
   validateOutcomeFreezeFormForFrozenDecisionRunner,
+  resolveOutcomeResumeLaunchCommit,
   validateOutcomePilotZeroCallArtifacts,
   verifyOutcomePilotManifestBindings,
+  verifyOutcomePilotPinnedCheckout,
   verifyOutcomePilotReaderResumeArtifacts,
   writeOutcomePilotAssemblyRunView,
 } from '../scripts/run-adaptive-warrant-outcome-pilot.js';
+import {
+  OUTCOME_PILOT_EXCLUDED_ARTIFACTS,
+  OUTCOME_RUN_SHAPES,
+  absentOutcomeExcludedArtifacts,
+  guardOutcomePilotPreparation,
+  resolveOutcomeRunShape,
+} from '../scripts/prepare-adaptive-warrant-outcome-study.js';
 import {
   OUTCOME_MAIN_BLOCK_ABSOLUTE_READER_ATTEMPT_CEILING,
   OUTCOME_MAIN_BLOCK_AUTHORIZATION_MAXIMUM_CALLS,
@@ -58,6 +71,7 @@ import { runAdaptiveWarrantSemanticBrittlenessPreflight } from '../scripts/run-a
 import { runAdaptiveWarrantDecisionReaders } from '../scripts/run-adaptive-warrant-decision-readers.js';
 import { runAdaptiveWarrantSemanticReaders } from '../scripts/run-adaptive-warrant-semantic-readers.js';
 import { ADAPTIVE_WARRANT_SEMANTIC_BATCH_RESPONSE_SCHEMA } from '../services/adaptiveWarrantSemanticAnnotation.js';
+import { ADAPTIVE_WARRANT_SEMANTIC_FINGERPRINT_PATHS } from '../services/adaptiveWarrantSemanticPreflight.js';
 import { validateAdaptiveWarrantReaderResponseContract } from '../services/adaptiveWarrantReaderRetake.js';
 import { describeOutcomeMeasures7And8FromStoredEvents } from '../scripts/score-adaptive-warrant-outcome-study.js';
 import { auditTutorStubPrompt, TUTOR_STUB_PROMPT_BUDGETS } from '../services/tutorStubPromptAudit.js';
@@ -75,6 +89,16 @@ const MACHINE_LOCAL_ARTIFACT = path.join(
 const MACHINE_LOCAL_ARTIFACTS_SKIP = fs.existsSync(MACHINE_LOCAL_ARTIFACT)
   ? false
   : `machine-local warrant run artifacts absent (${MACHINE_LOCAL_ARTIFACT}); archived in the private repo`;
+
+// Narrower, and a different fault: burned corpora under the system temp
+// directory are swept by a housekeeping job (defect ledger 21). With any of
+// them gone a FRESH-launch guard must refuse, so tests that drive the fresh
+// path have nothing left to prove. The restart path stands in from the launch
+// record instead, and its tests must never carry this skip.
+const absentBurnedCorpora = absentOutcomeExcludedArtifacts();
+const BURNED_CORPORA_SKIP = absentBurnedCorpora.length
+  ? `burned corpora absent on this machine (${absentBurnedCorpora.length} of ${OUTCOME_PILOT_EXCLUDED_ARTIFACTS.length}); a fresh launch is meant to refuse here`
+  : false;
 
 function temporaryDirectory(t) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'outcome-pilot-harness-'));
@@ -618,7 +642,7 @@ test('manifest guard refuses a menu SHA mismatch', (t) => {
 
 test(
   'manifest guard passes on the real frozen files (menu text carries one trailing newline)',
-  { skip: MACHINE_LOCAL_ARTIFACTS_SKIP },
+  { skip: MACHINE_LOCAL_ARTIFACTS_SKIP || BURNED_CORPORA_SKIP },
   () => {
     const result = verifyOutcomePilotManifestBindings({});
     assert.equal(typeof result, 'object');
@@ -812,8 +836,19 @@ test('annotationCaseFingerprint guard refuses a case mutated after source extrac
 test('annotationCaseFingerprint guard refuses count drift', () => {
   const corpusCase = fingerprintCase(1);
   assert.throws(
-    () => guardOutcomeAnnotationFingerprints({ cases: [corpusCase], keyCases: [fingerprintKey(corpusCase)] }),
+    () =>
+      guardOutcomeAnnotationFingerprints({
+        cases: [corpusCase],
+        keyCases: [fingerprintKey(corpusCase)],
+        expectedCount: 144,
+      }),
     /expected 144 cases, got 1/u,
+  );
+  // No default count: a 72-dialogue run checked against the pilot's 144 would
+  // pass on the wrong number, so the count must be given.
+  assert.throws(
+    () => guardOutcomeAnnotationFingerprints({ cases: [corpusCase], keyCases: [fingerprintKey(corpusCase)] }),
+    /needs the case count the manifest states/u,
   );
 });
 
@@ -887,7 +922,7 @@ test('resumed parent starts both readers fresh when neither child checkpoint exi
     decisionRunDir,
     rootDir,
     resume: true,
-    checkpoint: { call_budget: { actual: { total: 0 } } },
+    checkpoint: { call_budget: { plan: { ...OUTCOME_PILOT_CALL_PLAN }, actual: { total: 0 } } },
     budget: { reserveMany: (...args) => reservations.push(args) },
     runProcess: async (command, options) => {
       launches.push({ command, options });
@@ -922,7 +957,7 @@ test('resumed parent resumes only a child whose own checkpoint exists', async (t
     decisionRunDir,
     rootDir,
     resume: true,
-    checkpoint: { call_budget: { actual: { total: 0 } } },
+    checkpoint: { call_budget: { plan: { ...OUTCOME_PILOT_CALL_PLAN }, actual: { total: 0 } } },
     budget: { reserveMany: () => {} },
     runProcess: async (command, options) => {
       launches.push({ command, options });
@@ -1026,6 +1061,46 @@ test('reader resume refuses byte-drifted zero-call artifacts while fresh validat
       }),
     /stale or fingerprint-mismatched/u,
   );
+});
+
+test('a resume before the freeze takes its launch stamp from the preflight, and only when git agrees', (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'outcome-resume-stamp-'));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const preflightPath = path.join(directory, 'semantic-brittleness-preflight.json');
+  const stamped = (sourceCommit) => {
+    fs.writeFileSync(preflightPath, JSON.stringify({ bindings: { source_commit: sourceCommit } }));
+    return preflightPath;
+  };
+  const inRepo = (args) => execFileSync('git', args, { cwd: ROOT, encoding: 'utf8' }).trim();
+
+  // The last commit that touched a fingerprinted file: by construction nothing
+  // the preflight pins has moved between it and HEAD, however far HEAD travels.
+  const lastInstrumentChange = inRepo([
+    'log',
+    '-1',
+    '--format=%H',
+    '--',
+    ...ADAPTIVE_WARRANT_SEMANTIC_FINGERPRINT_PATHS,
+  ]);
+  assert.equal(
+    resolveOutcomeResumeLaunchCommit({ preflightPath: stamped(lastInstrumentChange) }),
+    lastInstrumentChange,
+  );
+
+  // One commit earlier an instrument file did move, so that stamp is stale.
+  assert.throws(
+    () =>
+      resolveOutcomeResumeLaunchCommit({ preflightPath: stamped(inRepo(['rev-parse', `${lastInstrumentChange}^`])) }),
+    /instrument files moved since the launch commit/u,
+  );
+
+  assert.throws(
+    () => resolveOutcomeResumeLaunchCommit({ preflightPath: stamped('b'.repeat(40)) }),
+    /is not an ancestor of HEAD/u,
+  );
+
+  fs.writeFileSync(preflightPath, JSON.stringify({ bindings: {} }));
+  assert.throws(() => resolveOutcomeResumeLaunchCommit({ preflightPath }), /carries no launch commit/u);
 });
 
 test('both child runners accept an older launch stamp only on resume, record the resume commit, and bound failures', async (t) => {
@@ -1326,4 +1401,295 @@ test('generation cap covers the measured live per-dialogue unit (report 069: 26 
       OUTCOME_PILOT_CALL_PLAN.decision_readers,
   );
   assert.ok(OUTCOME_PILOT_CALL_PLAN.presence_readers >= 288);
+});
+
+// --- Run-size registry -----------------------------------------------------
+// The driver used to carry the pilot's 18 dialogues as a literal in nine
+// places. The registry replaces those literals; these tests hold both sizes to
+// their stated numbers and prove that a manifest of one size cannot be launched
+// as the other.
+
+test('the pilot shape reproduces the frozen pilot numbers exactly', () => {
+  const pilot = OUTCOME_RUN_SHAPES.pilot;
+  assert.deepEqual([...pilot.seeds], [515, 516, 517]);
+  assert.equal(pilot.dialogues, 18);
+  assert.equal(pilot.cases, 144);
+  assert.deepEqual(
+    { ...pilot.planned_calls },
+    {
+      generation: 540,
+      presence_readers: 288,
+      decision_readers: 288,
+      total: 1116,
+    },
+  );
+});
+
+test('the main-block shape is the pilot four times over on seeds 654-665', () => {
+  const main = OUTCOME_RUN_SHAPES['main-block'];
+  assert.deepEqual([...main.seeds], [654, 655, 656, 657, 658, 659, 660, 661, 662, 663, 664, 665]);
+  assert.equal(main.dialogues, 72);
+  assert.equal(main.cases, 576);
+  assert.deepEqual(
+    { ...main.planned_calls },
+    {
+      generation: 2160,
+      presence_readers: 1152,
+      decision_readers: 1152,
+      total: 4464,
+    },
+  );
+  for (const field of ['generation', 'presence_readers', 'decision_readers', 'total']) {
+    assert.equal(main.planned_calls[field], OUTCOME_RUN_SHAPES.pilot.planned_calls[field] * 4);
+  }
+});
+
+// Re-registration 096, amendment 2. The presence readers only measure M7 and M8,
+// which that amendment demotes to report only, so the main block does not field
+// them. The plan keeps its presence line: the plan is a ceiling, the sealed
+// manifest and every go note quote the total, and an unfielded channel simply
+// leaves its line unspent.
+test('the main block does not field the presence readers but keeps their plan line', () => {
+  assert.equal(OUTCOME_RUN_SHAPES.pilot.presence_readers_fielded, true);
+  assert.equal(OUTCOME_RUN_SHAPES['main-block'].presence_readers_fielded, false);
+  assert.equal(OUTCOME_RUN_SHAPES['main-block'].planned_calls.presence_readers, 1152);
+  assert.equal(OUTCOME_RUN_SHAPES['main-block'].planned_calls.total, 4464);
+});
+
+test('an unfielded presence channel launches no presence reader and reserves nothing for it', async (t) => {
+  const rootDir = temporaryDirectory(t);
+  const launches = [];
+  const reservations = [];
+  await runReaderProcesses({
+    semanticCommand: null,
+    decisionCommand: ['node', 'decision-reader'],
+    presenceRunDir: path.join(rootDir, 'presence-readers'),
+    decisionRunDir: path.join(rootDir, 'decision-readers'),
+    rootDir,
+    fieldPresence: false,
+    readerCwd: rootDir,
+    checkpoint: { call_budget: { plan: { ...OUTCOME_PILOT_CALL_PLAN }, actual: { total: 0 } } },
+    budget: { reserveMany: (...args) => reservations.push(args) },
+    runProcess: async (command, options) => {
+      launches.push({ command, options });
+      return { status: 0 };
+    },
+  });
+  assert.deepEqual(
+    launches.map((launch) => launch.command),
+    [['node', 'decision-reader']],
+  );
+  assert.deepEqual(launches[0].options.cwd, rootDir);
+  assert.deepEqual(
+    reservations.map(([channel]) => channel),
+    ['decision_readers'],
+  );
+});
+
+// Ledger 25: the frozen preparers and reader runners ask their own checkout for
+// head, so a resume at a moved head has to speak from a checkout parked at the
+// launch commit. Loading those pinned bytes is not an edit; the digest check is
+// what proves they are the frozen ones.
+test('the reader phase takes its preparers from the checkout it speaks from', async () => {
+  const here = await loadFrozenBatchPreparers(ROOT);
+  assert.equal(typeof here.prepareDecision, 'function');
+  assert.equal(typeof here.prepareSemantic, 'function');
+});
+
+test('a pinned checkout is refused when it is missing, at the wrong commit, or off the pinned bytes', (t) => {
+  const directory = temporaryDirectory(t);
+  const manifest = JSON.parse(
+    fs.readFileSync(
+      path.join(ROOT, 'docs/adaptation-refinement/guarded-main-block/guarded-main-block-manifest.json'),
+      'utf8',
+    ),
+  );
+  assert.throws(
+    () =>
+      verifyOutcomePilotPinnedCheckout({ pinnedCheckout: directory, expectedSourceCommit: '1'.repeat(40), manifest }),
+    /not a git checkout/u,
+  );
+  assert.throws(
+    () => verifyOutcomePilotPinnedCheckout({ pinnedCheckout: ROOT, expectedSourceCommit: '1'.repeat(40), manifest }),
+    /but the run launched at/u,
+  );
+});
+
+test('a manifest that names no size is a pilot, and an unknown size is refused', () => {
+  assert.equal(resolveOutcomeRunShape(null).name, 'pilot');
+  assert.equal(resolveOutcomeRunShape('main-block').name, 'main-block');
+  assert.throws(() => resolveOutcomeRunShape('half-block'), /unknown outcome run shape/u);
+});
+
+test('a main-block manifest carrying pilot counts is refused', (t) => {
+  const directory = temporaryDirectory(t);
+  const source = path.join(ROOT, 'docs/adaptation-refinement/outcome-study-a1/pilot-manifest.json');
+  const manifest = JSON.parse(fs.readFileSync(source, 'utf8'));
+  manifest.run_shape = 'main-block';
+  const manifestPath = path.join(directory, 'mislabelled-manifest.json');
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  assert.throws(() => verifyOutcomePilotManifestBindings({ manifestPath }), /main-block seeds/u);
+});
+
+test('a call plan whose counter arithmetic does not close is refused', (t) => {
+  const directory = temporaryDirectory(t);
+  const source = path.join(ROOT, 'docs/adaptation-refinement/outcome-study-a1/pilot-manifest.json');
+  const manifest = JSON.parse(fs.readFileSync(source, 'utf8'));
+  manifest.planned_calls.remaining_after_if_completed += 1;
+  const manifestPath = path.join(directory, 'open-sum-manifest.json');
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  assert.throws(() => verifyOutcomePilotManifestBindings({ manifestPath }), /counter arithmetic does not close/u);
+});
+
+test('the prepared-run guard fails when the seed count does not match the shape', { skip: BURNED_CORPORA_SKIP }, () => {
+  const worldPaths = [
+    'docs/adaptation-refinement/outcome-study-a1/worlds/world_101_kestrel_signal_lamp.yaml',
+    'docs/adaptation-refinement/outcome-study-a1/worlds/world_102_marigold_archive_box.yaml',
+  ];
+  const result = guardOutcomePilotPreparation({
+    worldPaths,
+    shape: OUTCOME_RUN_SHAPES['main-block'],
+    seeds: [515, 516, 517],
+  });
+  assert.equal(result.status, 'failed');
+  assert.equal(result.run_shape, 'main-block');
+  assert.equal(result.expected_prepared_run_count, 72);
+  assert.equal(result.prepared_run_count, 18);
+});
+
+// --- reviewer ruling over quarantined dialogues -----------------------------
+//
+// A dialogue that was re-taken leaves one checkpoint row per attempt under the
+// same id, and every row points at the same directory on disk. These tests hold
+// the line that one dialogue can be admitted once and once only, whichever way
+// its attempts ended.
+
+const RULING_STUB = { artifact: { path: 'docs/ruling.json', sha256: 'a'.repeat(64) }, expected_dropped_turns: 1 };
+
+function rulingCheckpoint(dialogues) {
+  return {
+    dialogues,
+    quarantined_dialogues: dialogues.filter((row) => row.status === 'quarantined').map((row) => ({ id: row.id })),
+  };
+}
+
+function quarantinedRow(id, attempt) {
+  return { id, order: 1, status: 'quarantined', attempt, error: 'child seal is not complete', result: null };
+}
+
+function admitsEverything({ job }) {
+  return {
+    admitted: true,
+    dropped_turns: [8],
+    turns: [{ turn: 8, qualifies: true }],
+    row: { tracePath: `/runs/${job.id}/trace.jsonl`, turnCount: 8, learnerAnalysisUnanalyzedTurns: [8] },
+  };
+}
+
+test('two quarantined attempts at one dialogue are admitted once, not twice', () => {
+  const checkpoint = rulingCheckpoint([
+    quarantinedRow('dialogue-a', 1),
+    quarantinedRow('dialogue-a', 2),
+    { id: 'dialogue-b', order: 2, status: 'complete' },
+  ]);
+  const decisions = applyReviewerRulingToCheckpoint({
+    checkpoint,
+    jobs: [{ id: 'dialogue-a' }, { id: 'dialogue-b' }],
+    ruling: RULING_STUB,
+    admitUnderRuling: admitsEverything,
+  });
+
+  const admitted = checkpoint.dialogues.filter(
+    (row) => row.status === 'complete' || row.status === OUTCOME_RULED_COMPLETE_STATUS,
+  );
+  assert.equal(admitted.length, 2);
+  assert.equal(new Set(admitted.map((row) => row.id)).size, 2);
+  // The later attempt is the one on disk, so it is the one admitted.
+  assert.equal(checkpoint.dialogues.find((row) => row.status === OUTCOME_RULED_COMPLETE_STATUS).attempt, 2);
+  assert.equal(decisions.filter((row) => row.admitted).length, 1);
+  assert.equal(decisions.filter((row) => row.skipped).length, 1);
+  assert.match(decisions.find((row) => row.skipped).reason, /superseded by a later quarantined attempt/u);
+  assert.deepEqual(checkpoint.quarantined_dialogues, []);
+});
+
+test('a stale quarantined attempt is skipped when a later attempt already sealed clean', () => {
+  const checkpoint = rulingCheckpoint([
+    quarantinedRow('dialogue-a', 1),
+    { id: 'dialogue-a', order: 1, status: 'complete', attempt: 2 },
+  ]);
+  let consulted = 0;
+  const decisions = applyReviewerRulingToCheckpoint({
+    checkpoint,
+    jobs: [{ id: 'dialogue-a' }],
+    ruling: RULING_STUB,
+    admitUnderRuling: (input) => {
+      consulted += 1;
+      return admitsEverything(input);
+    },
+  });
+  // A dialogue that already passed is never put to the ruling at all.
+  assert.equal(consulted, 0);
+  assert.equal(decisions.length, 1);
+  assert.equal(decisions[0].skipped, true);
+  assert.match(decisions[0].reason, /clean seal/u);
+  assert.equal(checkpoint.dialogues.filter((row) => row.status === OUTCOME_RULED_COMPLETE_STATUS).length, 0);
+});
+
+test('no ruling means no admission and no change to the checkpoint', () => {
+  const checkpoint = rulingCheckpoint([quarantinedRow('dialogue-a', 1)]);
+  const decisions = applyReviewerRulingToCheckpoint({
+    checkpoint,
+    jobs: [{ id: 'dialogue-a' }],
+    ruling: null,
+    admitUnderRuling: admitsEverything,
+  });
+  assert.deepEqual(decisions, []);
+  assert.equal(checkpoint.dialogues[0].status, 'quarantined');
+});
+
+test('a refused admission leaves the dialogue quarantined and records why', () => {
+  const checkpoint = rulingCheckpoint([quarantinedRow('dialogue-a', 1)]);
+  const decisions = applyReviewerRulingToCheckpoint({
+    checkpoint,
+    jobs: [{ id: 'dialogue-a' }],
+    ruling: RULING_STUB,
+    admitUnderRuling: () => ({
+      admitted: false,
+      reason: 'turn 8: attempt 1 was also rejected for: overlapping_events',
+    }),
+  });
+  assert.equal(checkpoint.dialogues[0].status, 'quarantined');
+  assert.equal(checkpoint.quarantined_dialogues.length, 1);
+  assert.equal(decisions[0].admitted, false);
+  assert.match(decisions[0].reason, /overlapping_events/u);
+});
+
+test('a resume does not re-run a dialogue admitted under the ruling', async (t) => {
+  const directory = temporaryDirectory(t);
+  const checkpointPath = path.join(directory, 'checkpoint.json');
+  const checkpoint = {
+    schema: OUTCOME_PILOT_CHECKPOINT_SCHEMA,
+    status: 'generation',
+    call_budget: {
+      plan: { generation: 540, presence_readers: 288, decision_readers: 288, total: 1116 },
+      actual: { generation: 26, presence_readers: 0, decision_readers: 0, total: 26 },
+      delta: { generation: 514, presence_readers: 288, decision_readers: 288, total: 1090 },
+      events: [],
+    },
+    dialogues: [{ id: 'ruled-dialogue', status: OUTCOME_RULED_COMPLETE_STATUS }],
+    quarantined_dialogues: [],
+  };
+  const budget = createOutcomePilotBudget({ checkpointPath, checkpoint });
+  let launches = 0;
+  await runOutcomeGeneration({
+    jobs: [{ id: 'ruled-dialogue', command: ['false'] }],
+    checkpoint,
+    budget,
+    runDialogue: async () => {
+      launches += 1;
+      return { status: 1 };
+    },
+  });
+  assert.equal(launches, 0);
+  assert.equal(checkpoint.dialogues.length, 1);
 });
