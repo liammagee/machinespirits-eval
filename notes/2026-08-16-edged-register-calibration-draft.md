@@ -1444,18 +1444,44 @@ two post-split scenarios match on both counts — parts set 3.14 against
 3.17 and 2.86 against 2.96, parts finished 1.55 against 1.63 and 1.65
 against 1.68, every p above 0.7.
 
-So in `boredom_claimheld` the sharp tutor packs more demands into the
-turn. The learner does about the same amount of work. A bigger share is
-left undone, and a reader asked "did the learner do the task?" says yes
-less often. The kinds that drop are naming the feature (0.767 against
-0.962, p = 0.032) and making the case (0.333 against 0.700, p = 0.066).
+A bigger share is left undone, and a reader asked "did the learner do the
+task?" says yes less often. The kinds that drop are naming the feature
+(0.767 against 0.962, p = 0.032) and making the case (0.333 against 0.700,
+p = 0.066).
+
+**Correction to the paragraph above — the sharp tutor does not pack more
+in; the warm tutor eases off.** Compare each version against itself across
+scenarios. The sharp tutor asks for the same amount everywhere: 2.88 parts
+in the bored scenario against 3.00 in its other two, permutation p = 0.44.
+The warm tutor drops its ask only with the bored learner: 2.50 against
+3.06 elsewhere, p = 0.0053. The kind it drops is making the case — 0.38
+per turn in the bored scenario against 1.04 in the other two. So the
+demand gap of 2.88 against 2.50 is the warm tutor lightening, not the
+sharp tutor loading up. The heading of that paragraph is wrong and stands
+corrected here.
+
+**Why the gap opens in this scenario and nowhere else.** The endpoint by
+version, post-split rows: sharp menu 0.385 / 0.333 / 0.654 and sharp twin
+0.560 / 0.520 / 0.680 across bored, question flood and rote parroting; the
+warm control runs 0.846 / 0.458 / 0.680. The bored scenario is the warm
+tutor's best by a wide margin, while it is middling for both sharp
+versions. The gap opens because warm does unusually well there, not
+because sharp does unusually badly. The delivered register does not
+explain it — `sarcastic` fires in the bored scenario and in rote parroting
+alike, and rote parroting is flat.
+
+**What the demand count cannot explain.** The sharp twin sets 2.68 parts
+against the warm control's 2.50 — near enough the same ask — and its
+learner still finishes 0.537 of them against 0.738. So a lighter ask is
+not the whole account; with a matched ask the twin's learner still
+finishes less.
 
 **Standing.** Post-hoc and scenario-level; the registration pools. One
 scenario of four, 51 sharp rows against 26 warm. The parts-finished
 contrast at p = 0.19 does not rule out a small learner-side loss as well.
-This is a lead for the fresh registration, not a result: it says the
-manner effect to price may be the tutor's own turn planning under a sharp
-register, and that the bored persona is where to look.
+This is a lead for the fresh registration, not a result. What it points at
+is the warm tutor's own move — reading boredom and lightening the ask —
+and the bored persona is where to look.
 
 ### 3.11 Arm B re-registered — the swap fires, and what 104 rows can price (2026-08-18)
 

@@ -418,3 +418,16 @@ learner in 226 answers the tutor's manner). Post-hoc and scenario-level —
 a lead for the fresh registration, not a result. It says the manner effect
 to price may be the tutor's own turn planning, and the bored persona is
 where to look.
+
+Correction, same day, §3.10.4. "The sharp tutor packs more in" is wrong.
+Compared against itself across scenarios, the sharp tutor asks the same
+everywhere (2.88 bored against 3.00 elsewhere, p = 0.44); the warm tutor
+eases off only with the bored learner (2.50 against 3.06, p = 0.0053),
+dropping the make-the-case demand from 1.04 to 0.38 per turn. The endpoint
+by version shows the same shape: the bored scenario is the warm tutor's
+best (0.846 against 0.458 and 0.680), and middling for both sharp
+versions. So the gap opens because warm does unusually well there. The
+delivered register does not explain it — sarcastic fires in the bored
+scenario and in rote parroting alike, and rote is flat. The demand count
+is not the whole account either: the sharp twin sets 2.68 parts against
+warm 2.50 and its learner still finishes 0.537 against 0.738.
