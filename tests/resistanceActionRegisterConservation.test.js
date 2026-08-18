@@ -72,6 +72,10 @@ test('the guarded schema evidence is checkout-portable and hash-bound', () => {
 
 test('the integration programme keeps register downstream of action and authorizes no paid call', () => {
   const card = read('workplan/items/resistance-action-register-integration.md');
+  const contract = read('docs/pedagogical-move-contract.md');
   assert.match(card, /pedagogical action -> compatible register/u);
   assert.match(card, /No paid call is authorized by this card/u);
+  assert.match(contract, /PedagogicalMove -> register\/character realization/u);
+  assert.match(contract, /consumer_switch_authorized: false/u);
+  assert.match(contract, /Neither projection is imported by a live runtime/u);
 });
