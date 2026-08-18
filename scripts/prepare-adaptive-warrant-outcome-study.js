@@ -15,6 +15,11 @@ import { fileURLToPath } from 'node:url';
 import { parse } from 'acorn';
 import yaml from 'yaml';
 
+import {
+  OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
+  OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES,
+} from '../services/adaptiveWarrantOutcomeLearnerProfiles.js';
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export const OUTCOME_A1_MENU_SCHEMA =
@@ -42,6 +47,119 @@ export const OUTCOME_A1_ENUMERATION_RULE = Object.freeze({
 });
 
 export const OUTCOME_PILOT_SEEDS = Object.freeze([515, 516, 517]);
+
+/**
+ * The guarded main block's seeds, registered by relay 117 §11 after the range
+ * first proposed there, 530-541, failed the freshness check: six of those are
+ * the passive main block's own and one is a drama-derivation seed. Frozen here
+ * for the same reason the pilot's three are — the manifest states them, and
+ * code checks the manifest rather than trusting it.
+ */
+export const OUTCOME_GUARDED_MAIN_BLOCK_SEEDS = Object.freeze(
+  Array.from({ length: 12 }, (_unused, index) => 654 + index),
+);
+
+/** Two worlds and three conditions per seed, eight turns per dialogue. */
+const OUTCOME_WORLDS_PER_SEED = 2;
+const OUTCOME_CONDITIONS_PER_WORLD = 3;
+const OUTCOME_TURNS_PER_DIALOGUE = 8;
+const OUTCOME_READERS_PER_CHANNEL = 2;
+export const OUTCOME_PER_DIALOGUE_GENERATION_CAP = 30;
+
+function buildOutcomeRunShape(name, seeds, { presenceReadersFielded = true } = {}) {
+  const dialogues = seeds.length * OUTCOME_WORLDS_PER_SEED * OUTCOME_CONDITIONS_PER_WORLD;
+  const cases = dialogues * OUTCOME_TURNS_PER_DIALOGUE;
+  const readerCalls = cases * OUTCOME_READERS_PER_CHANNEL;
+  const generation = dialogues * OUTCOME_PER_DIALOGUE_GENERATION_CAP;
+  return Object.freeze({
+    name,
+    seeds,
+    dialogues,
+    turns_per_dialogue: OUTCOME_TURNS_PER_DIALOGUE,
+    cases,
+    readers_per_channel: OUTCOME_READERS_PER_CHANNEL,
+    per_dialogue_generation_cap: OUTCOME_PER_DIALOGUE_GENERATION_CAP,
+    presence_readers_fielded: presenceReadersFielded,
+    // The plan keeps its presence line even where the channel is not fielded.
+    // The plan is a ceiling, not an order to spend: the budget refuses at the
+    // total, and an unspent line leaves head room. Dropping the line here would
+    // move the sealed total, and the manifest and every go note quote it.
+    planned_calls: Object.freeze({
+      generation,
+      presence_readers: readerCalls,
+      decision_readers: readerCalls,
+      total: generation + readerCalls + readerCalls,
+    }),
+  });
+}
+
+/**
+ * The two run sizes the outcome driver will read. Every count below is derived
+ * from the seed list, so a shape cannot disagree with itself. The pilot shape
+ * reproduces the frozen pilot manifest exactly: 18 dialogues, 144 cases,
+ * 540 + 288 + 288 = 1116 calls.
+ */
+export const OUTCOME_RUN_SHAPES = Object.freeze({
+  pilot: buildOutcomeRunShape('pilot', OUTCOME_PILOT_SEEDS),
+  // Re-registration 096, amendment 2: the main block runs the decision channel
+  // only. The presence readers measure M7 and M8, which that amendment demotes
+  // to report only, so re-fielding them would spend about 1,200 paid calls on
+  // an instrument that carries no weight. M7 and M8 are described zero call
+  // from the stored generation-time events and labelled not reader-validated.
+  'main-block': buildOutcomeRunShape('main-block', OUTCOME_GUARDED_MAIN_BLOCK_SEEDS, {
+    presenceReadersFielded: false,
+  }),
+});
+
+export const OUTCOME_DEFAULT_RUN_SHAPE = OUTCOME_RUN_SHAPES.pilot;
+
+/**
+ * The order the three conditions run in, world by world and seed by seed.
+ *
+ * The rotation steps once per world visited, so no condition sits in the same
+ * slot twice running. This is the guarded pilot's own rule, and it reproduces
+ * the frozen 18 rows exactly; the passive main block used a different rule
+ * (rotation by seed index plus world index), and the two are not mixed.
+ */
+export function buildOutcomeInterleavedAssignment({ shape = OUTCOME_DEFAULT_RUN_SHAPE, worldIds } = {}) {
+  if (!Array.isArray(worldIds) || worldIds.length !== OUTCOME_WORLDS_PER_SEED) {
+    throw new Error(`interleaved assignment needs exactly ${OUTCOME_WORLDS_PER_SEED} world ids`);
+  }
+  const conditions = ['bare', 'gated', 'standing_permission'];
+  const rows = [];
+  let visit = 0;
+  for (const seed of shape.seeds) {
+    for (const world of worldIds) {
+      const rotation = visit % conditions.length;
+      visit += 1;
+      for (let offset = 0; offset < conditions.length; offset += 1) {
+        rows.push({
+          order: rows.length + 1,
+          world,
+          seed,
+          condition: conditions[(rotation + offset) % conditions.length],
+        });
+      }
+    }
+  }
+  if (rows.length !== shape.dialogues) {
+    throw new Error(`interleaved assignment produced ${rows.length} rows, not ${shape.dialogues}`);
+  }
+  return rows;
+}
+
+/** A manifest that names no shape is a pilot manifest, as every sealed one is. */
+export function resolveOutcomeRunShape(name) {
+  if (name === null || name === undefined) return OUTCOME_DEFAULT_RUN_SHAPE;
+  const shape = OUTCOME_RUN_SHAPES[name];
+  if (!shape) {
+    throw new Error(
+      `unknown outcome run shape: ${name}; expected one of ${Object.keys(OUTCOME_RUN_SHAPES).join(', ')}`,
+    );
+  }
+  return shape;
+}
+
 export const OUTCOME_PILOT_EXCLUDED_ARTIFACTS = Object.freeze([
   '.tutor-stub-auto-eval/adaptive-warrant-baseline-pilot-v2-live-2026-08-10/annotation-sample.blinded.json',
   '.tutor-stub-auto-eval/adaptive-warrant-baseline-pilot-v2-live-2026-08-10/validation-sample.blinded.json',
@@ -904,7 +1022,75 @@ function canonicalJson(value) {
   return JSON.stringify(value);
 }
 
-export function guardOutcomePilotPreparation({ worldPaths, seeds = OUTCOME_PILOT_SEEDS } = {}) {
+// Which registered burned corpora are no longer on this machine. Empty is the
+// normal state and the only state in which a first launch can run at all; a
+// non-empty list means every fresh-launch guard here refuses by design, and
+// only a restart carrying the launch record can proceed (defect ledger 21).
+export function absentOutcomeExcludedArtifacts() {
+  return OUTCOME_PILOT_EXCLUDED_ARTIFACTS.filter(
+    (artifactPath) => !fs.existsSync(path.isAbsolute(artifactPath) ? artifactPath : path.join(ROOT, artifactPath)),
+  );
+}
+
+// One artifact's contribution to the exclusion set, decided from bytes rather
+// than from a path, so the three cases below can be exercised on any machine
+// and not only on one where a file happens to be gone.
+//
+//   bytes present, no record          — read it, as every launch always has
+//   bytes present, record disagrees   — refuse: substitution is for absence,
+//                                       never for a change
+//   bytes absent, record present      — stand in from the record (restart only)
+//   bytes absent, no record           — refuse, as a first launch always has
+export function outcomeExclusionRow({ artifactPath, bytes = null, recorded = null, worldIds = [] } = {}) {
+  if (bytes === null || bytes === undefined) {
+    if (!recorded) throw new Error(`required excluded artifact is missing: ${artifactPath}`);
+    return {
+      path: artifactPath,
+      sha256: recorded.sha256,
+      embedded_fingerprint_count: recorded.embedded_fingerprint_count ?? 0,
+      // The launch record keeps each artifact's digest and the count of the
+      // fingerprints inside it, never the fingerprints themselves. A row taken
+      // from the record therefore contributes a smaller exclusion set than the
+      // file did, which is safe only under the candidate-identity check the
+      // guard applies whenever any row arrives this way.
+      embedded_fingerprints: [],
+      candidate_world_ids_present: recorded.candidate_world_ids_present ?? [],
+      source: 'checkpoint_record',
+    };
+  }
+  const digest = sha256(bytes);
+  if (recorded && recorded.sha256 !== digest) {
+    throw new Error(
+      `excluded artifact bytes changed since launch: ${artifactPath} (recorded ${recorded.sha256}, found ${digest})`,
+    );
+  }
+  const text = bytes.toString('utf8');
+  const embeddedFingerprints = [...new Set(text.match(/[a-f0-9]{64}/gu) || [])];
+  return {
+    path: artifactPath,
+    sha256: digest,
+    embedded_fingerprint_count: embeddedFingerprints.length,
+    embedded_fingerprints: embeddedFingerprints,
+    candidate_world_ids_present: worldIds.filter((worldId) => text.includes(worldId)),
+    source: 'file',
+  };
+}
+
+export function guardOutcomePilotPreparation({
+  worldPaths,
+  shape = OUTCOME_DEFAULT_RUN_SHAPE,
+  seeds = shape.seeds,
+  learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
+  // A restart hands over the record this same guard wrote at launch. It is used
+  // only for artifacts that no longer exist on disk (defect ledger 21: most of
+  // the burned corpora live in the system temp directory, and a housekeeping
+  // job with no relation to this study deletes them after about four days). A
+  // first launch never passes this, so it still refuses on any missing file.
+  recordedGuard = null,
+} = {}) {
+  if (!OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES.includes(learnerProfile)) {
+    throw new Error(`unsupported outcome-study learner profile: ${learnerProfile}`);
+  }
   const worlds = (worldPaths || []).map((relativePath) => {
     const bytes = read(relativePath);
     const parsed = yaml.parse(bytes.toString('utf8'));
@@ -918,7 +1104,7 @@ export function guardOutcomePilotPreparation({ worldPaths, seeds = OUTCOME_PILOT
         world_sha256: world.sha256,
         seed,
         condition,
-        learner_profile: 'low_agency',
+        learner_profile: learnerProfile,
         horizon: 8,
       })),
     ),
@@ -931,19 +1117,22 @@ export function guardOutcomePilotPreparation({ worldPaths, seeds = OUTCOME_PILOT
       }),
     ),
   );
+  const recordedExclusions = new Map(
+    (Array.isArray(recordedGuard?.excluded_artifacts) ? recordedGuard.excluded_artifacts : [])
+      .filter((row) => typeof row?.path === 'string' && typeof row?.sha256 === 'string')
+      .map((row) => [row.path, row]),
+  );
+  const artifactsFromRecord = [];
   const exclusions = OUTCOME_PILOT_EXCLUDED_ARTIFACTS.map((artifactPath) => {
     const resolved = path.isAbsolute(artifactPath) ? artifactPath : path.join(ROOT, artifactPath);
-    if (!fs.existsSync(resolved)) throw new Error(`required excluded artifact is missing: ${artifactPath}`);
-    const bytes = fs.readFileSync(resolved);
-    const text = bytes.toString('utf8');
-    const embeddedFingerprints = [...new Set(text.match(/[a-f0-9]{64}/gu) || [])];
-    return {
-      path: artifactPath,
-      sha256: sha256(bytes),
-      embedded_fingerprint_count: embeddedFingerprints.length,
-      embedded_fingerprints: embeddedFingerprints,
-      candidate_world_ids_present: worlds.filter((world) => text.includes(world.id)).map((world) => world.id),
-    };
+    const row = outcomeExclusionRow({
+      artifactPath,
+      bytes: fs.existsSync(resolved) ? fs.readFileSync(resolved) : null,
+      recorded: recordedExclusions.get(artifactPath) || null,
+      worldIds: worlds.map((world) => world.id),
+    });
+    if (row.source === 'checkpoint_record') artifactsFromRecord.push(artifactPath);
+    return row;
   });
   const exclusionFingerprints = new Set(
     exclusions
@@ -964,27 +1153,58 @@ export function guardOutcomePilotPreparation({ worldPaths, seeds = OUTCOME_PILOT
   );
   const overlaps = candidateFingerprints.filter((fingerprint) => exclusionFingerprints.has(fingerprint));
   const worldIdOverlaps = exclusions.flatMap((row) => row.candidate_world_ids_present);
+  // When any row came from the record, the exclusion set is short by the
+  // fingerprints those files held, so this guard no longer proves the
+  // candidates are clean on its own evidence. It proves something narrower and
+  // sufficient: that these candidates are the very ones the launch already
+  // tested against the complete set, and that the launch passed. A single
+  // differing identity, seed, shape or persona refuses the transfer.
+  const carriedFromRecord = artifactsFromRecord.length > 0;
+  const recordedCandidates = Array.isArray(recordedGuard?.candidate_fingerprints)
+    ? recordedGuard.candidate_fingerprints
+    : [];
+  const recordedIdentityMatch =
+    recordedGuard?.status === 'passed' &&
+    recordedGuard?.run_shape === shape.name &&
+    recordedGuard?.learner_profile === learnerProfile &&
+    canonicalJson(recordedGuard?.seeds) === canonicalJson([...seeds]) &&
+    recordedCandidates.length === candidateFingerprints.length &&
+    recordedCandidates.every((value, index) => value === candidateFingerprints[index]);
+  // The size comes from the shape, not from a number written here twice. A
+  // caller that hands over its own seed list must still hand over the count the
+  // shape states, so a short or long list fails rather than quietly shrinking
+  // the run.
   const pass =
-    worlds.length === 2 &&
-    seeds.length === 3 &&
-    candidates.length === 18 &&
+    worlds.length === OUTCOME_WORLDS_PER_SEED &&
+    seeds.length === shape.seeds.length &&
+    candidates.length === shape.dialogues &&
     duplicates.length === 0 &&
     overlaps.length === 0 &&
-    worldIdOverlaps.length === 0;
+    worldIdOverlaps.length === 0 &&
+    (!carriedFromRecord || recordedIdentityMatch);
   return {
     schema: 'machinespirits.adaptation-refinement.outcome-preparation-fingerprint-guard.v1',
     zero_model_calls: true,
     status: pass ? 'passed' : 'failed',
+    run_shape: shape.name,
+    expected_prepared_run_count: shape.dialogues,
     comparison_scope:
       'Pre-call prepared-run identities are compared with artifact digests and every embedded SHA-256 fingerprint in the burned corpora, the frozen seed-514 matrix, and the three registered archived-session identities. After generation, the same-source annotationCaseFingerprint guard remains mandatory before either reader channel.',
     worlds,
     seeds: [...seeds],
     conditions,
+    learner_profile: learnerProfile,
     prepared_run_count: candidates.length,
     candidate_fingerprints: candidateFingerprints,
     excluded_artifacts: exclusions.map(({ embedded_fingerprints: _omitted, ...row }) => row),
     deference_session_identities: [...OUTCOME_PILOT_DEFERENCE_SESSION_IDENTITIES],
     exclusion_fingerprint_count: exclusionFingerprints.size,
+    exclusion_source: carriedFromRecord ? 'files_and_checkpoint_record' : 'files',
+    artifacts_from_checkpoint_record: [...artifactsFromRecord],
+    recorded_candidate_identity_match: carriedFromRecord ? recordedIdentityMatch : null,
+    recorded_exclusion_fingerprint_count: carriedFromRecord
+      ? (recordedGuard?.exclusion_fingerprint_count ?? null)
+      : null,
     duplicate_candidate_fingerprints: [...new Set(duplicates)],
     overlapping_fingerprints: [...new Set(overlaps)],
     overlapping_world_ids: [...new Set(worldIdOverlaps)],

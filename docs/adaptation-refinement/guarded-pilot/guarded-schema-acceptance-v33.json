@@ -1,0 +1,48 @@
+{
+  "schema": "machinespirits.adaptation-refinement.semantic-schema-acceptance-result.v1",
+  "inferential_role": "transport_only_permanently_excluded",
+  "synthetic_case_permanently_excluded": true,
+  "source_commit": "27bcb644b691991f8e3a15b1e970904c2c29d48f",
+  "preflight": {
+    "path": "/private/tmp/guarded-schema-ping-v33/preflight.json",
+    "sha256": "b161ed5db4a4d07117a3bdba59b4e40cc15cc8d42068a9d6fa1a942f1e27e902"
+  },
+  "response_schema": {
+    "path": "/Users/lmagee/Dev/machinespirits/ms-guarded-learner/docs/adaptation-refinement/guarded-pilot/guarded-response-schema-v33.json",
+    "sha256": "149171804550890f34d8d662f358762c9ae35e689343eab87df0142f30ff1a12"
+  },
+  "destination": "OpenAI Codex CLI (ChatGPT-account route)",
+  "model": "codex.gpt-5.6-luna",
+  "calls": {
+    "attempted": 1,
+    "completed": 1,
+    "maximum": 1
+  },
+  "response_received": true,
+  "prohibited_tool_event_count": 0,
+  "status": "passed",
+  "strict_parse_succeeded": true,
+  "validator_accepted": true,
+  "canonical_value_match": true,
+  "first_differing_field_path": null,
+  "structured_output": true,
+  "returned_provider": "codex",
+  "returned_model": "gpt-5.6-luna",
+  "raw_response": {
+    "path": "/private/tmp/guarded-schema-ping-v33/run/schema-acceptance.response.raw.txt",
+    "sha256": "ffd3469c76d4d4f9cdcd8cb18aefa785ce4d56e735faccaa4da8796185a0f43f"
+  },
+  "response": {
+    "path": "/private/tmp/guarded-schema-ping-v33/run/schema-acceptance.response.json",
+    "sha256": "44636afde47d4be7994a78dc4d2f06c0f70eaba0e0c29cfd190aef2cba425501"
+  },
+  "derived_from": {
+    "schema": "machinespirits.adaptation-refinement.guarded-acceptance-repoint.v1",
+    "reason": "Only response_schema.path is re-pointed, from /private/tmp to a copy inside the repo. The bytes and the hash are unchanged.",
+    "original_result": {
+      "path": "/private/tmp/guarded-schema-ping-v33/run/schema-acceptance-result.json",
+      "sha256": "f5fa86f8359994d4ec37c24907c8a6d11cb612bdd7125ea2a46a84da844b8eeb"
+    },
+    "original_response_schema_path": "/private/tmp/guarded-schema-ping-v33/prepare/response.schema.json"
+  }
+}

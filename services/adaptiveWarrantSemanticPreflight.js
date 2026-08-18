@@ -34,6 +34,11 @@ const FINGERPRINT_FILES = Object.freeze({
   corpus_builder: 'scripts/build-adaptive-warrant-v3-semantic-diagnostic.js',
 });
 
+// The paths whose bytes the bindings pin. A resumed run asks git whether any
+// of these moved between the launch commit and head; nothing else in the tree
+// can change what the preflight tested.
+export const ADAPTIVE_WARRANT_SEMANTIC_FINGERPRINT_PATHS = Object.freeze(Object.values(FINGERPRINT_FILES));
+
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
 }

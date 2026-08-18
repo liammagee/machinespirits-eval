@@ -1,0 +1,2517 @@
+{
+  "schema": "machinespirits.adaptation-refinement.warrant-mechanism-validation-freeze.v1",
+  "study_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+  "status": "frozen",
+  "frozen_at": "2026-08-12T11:29:07.180Z",
+  "newly_generated_dialogues": true,
+  "prediction_balanced_diagnostic_sample": false,
+  "all_observe_decisions": true,
+  "sampling": {
+    "worlds": [
+      "world_022_foxtrot_jukebox",
+      "world_028_larkspur_fridge"
+    ],
+    "profiles": [
+      "diligent",
+      "low_agency",
+      "answer_seeking",
+      "counterexample_hunter",
+      "goalpost_shifter",
+      "fast_learner"
+    ],
+    "conditions": [
+      "instrumented"
+    ],
+    "turns_per_dialogue": 8,
+    "total_cases": 93
+  },
+  "dropped_overlap_cases": [
+    {
+      "sample_id": "case-c4119d73cc8d49ee86d86cf9",
+      "fingerprint": "5f1763f3d7c86001df7d62d2012b8df9c7088a43a9e91b314ce4db04057e9f10",
+      "matched_corpus_id": "adaptive-warrant-mechanism-live-5ddf1d28",
+      "matched_corpus_path": "/private/tmp/adaptive-warrant-mechanism-live-5ddf1d28/annotation-sample.blinded.json",
+      "world": "world_028_larkspur_fridge",
+      "learner_profile": "low_agency",
+      "condition": "instrumented",
+      "decision_turn": 1
+    },
+    {
+      "sample_id": "case-d4bcf08b8b956c869c4e7556",
+      "fingerprint": "134e8551443cfda8f14902acf44a8ba392345e50db27489901e233cc73320212",
+      "matched_corpus_id": "adaptive-warrant-v3-matrix-live-36d2e63f",
+      "matched_corpus_path": "/private/tmp/adaptive-warrant-v3-matrix-live-36d2e63f/annotation-sample.blinded.json",
+      "world": "world_022_foxtrot_jukebox",
+      "learner_profile": "low_agency",
+      "condition": "instrumented",
+      "decision_turn": 1
+    },
+    {
+      "sample_id": "case-d4bcf08b8b956c869c4e7556",
+      "fingerprint": "134e8551443cfda8f14902acf44a8ba392345e50db27489901e233cc73320212",
+      "matched_corpus_id": "adaptive-warrant-v3-matrix-live-d72931bf-s504",
+      "matched_corpus_path": "/private/tmp/adaptive-warrant-v3-matrix-live-d72931bf-s504/annotation-sample.blinded.json",
+      "world": "world_022_foxtrot_jukebox",
+      "learner_profile": "low_agency",
+      "condition": "instrumented",
+      "decision_turn": 1
+    }
+  ],
+  "zero_overlap": {
+    "source_fingerprint_schema": "machinespirits.adaptation-refinement.annotation-source-fingerprint.v1",
+    "projection_fingerprint_schema": "machinespirits.adaptation-refinement.annotation-projection-fingerprint.v1",
+    "excluded_corpora": [
+      {
+        "path": "/private/tmp/adaptive-warrant-r38-clean.3qX3iW/.tutor-stub-auto-eval/adaptive-warrant-baseline-pilot-v2-live-2026-08-10/annotation-sample.blinded.json",
+        "sha256": "c8f470ba6fd199c62564ac4ead5973d492c0efc7b5e81b6e184aa01459d42ea3"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-r38-clean.3qX3iW/.tutor-stub-auto-eval/adaptive-warrant-baseline-pilot-v2-live-2026-08-10/validation-sample.blinded.json",
+        "sha256": "e8d2df91d3ab6c73191f7f8417f53b99645bab340af272379411671f4409ad9e"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-r38-clean.3qX3iW/.tutor-stub-auto-eval/adaptive-warrant-contract-validation-v1-live-2026-08-10/annotation-sample.blinded.json",
+        "sha256": "8ad4e43d8619894cba5793d0e09406dd60ab332d43c38310badbae8454938117"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-mechanism-live-5ddf1d28/annotation-sample.blinded.json",
+        "sha256": "4714330a9f55e27fd0f945bfa938c2ada0d98106f070f833897ebb676080eec6"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-v3-semantic-diagnostic-3ba68de5/annotation-sample.blinded.json",
+        "sha256": "7243a71eafa8492c1a02e330fe6b64df038c7e630fc4fb15b46e3f9278360cad"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-v3-semantic-diagnostic-d2bf37c7/annotation-sample.blinded.json",
+        "sha256": "c3ac31428999a4f20e9b2a47bad17a83fe9f4493d58b9c0ff9bb6cf766583355"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-v3-semantic-diagnostic-7df153d9/annotation-sample.blinded.json",
+        "sha256": "748764301420ac37061f80251446b3edf3cf2ecb6d12682e1706afad1e4781fa"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-v3-semantic-diagnostic-225a7b07/annotation-sample.blinded.json",
+        "sha256": "9eec0174af26564d44fc6dfbb4f95179f281b7163540ad28c3667a0011c87df5"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-v3-record-entry-supplement-006-225a7b07/annotation-sample.blinded.json",
+        "sha256": "eeb70692cfd5d9bd7c968899fe664de775ceb70fbb89ccdd43a65dc770dffb01"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-v3-matrix-live-36d2e63f/annotation-sample.blinded.json",
+        "sha256": "34cc549453d7d9d5f6f57c39b263a14e5115b1b46852a204d6ab966df72c882f"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-v3-matrix-live-d72931bf-s504/annotation-sample.blinded.json",
+        "sha256": "4493b79cc4063af9772859af7a3230d99a39c4a0957c1d432f463272ec00428b"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-v3-matrix-live-a4529e79-s505/annotation-sample.blinded.json",
+        "sha256": "1a49405f3ea421876f8686ea35769aeb6e1def33221ee6cff691ca0106662761"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-v3-matrix-live-fe2d7a2f-s506/annotation-sample.blinded.json",
+        "sha256": "8a79177566616911389c5150e9c06d499bc9c76e9c257e70ff0e0ed32da00766"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-v3-matrix-live-bc707cd0-s507/annotation-sample.blinded.json",
+        "sha256": "f7cdd3ce44505fe89b3340625f451c54cc17c3510f29cbdbccb6549f01d5d3d3"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-v3-matrix-live-0897d030-s508/annotation-sample.blinded.json",
+        "sha256": "4f57f4a3c9195b91092200d5b9f99f2522e24b58c21f981621f25aea4a4f3bd7"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-v3-handbook-probe-96bada6e-luna/diagnostic-probe.json",
+        "sha256": "cedd48f131ce97c58b53aeee7448a8aa7e53c7bfd59256964dfab7fe42e8b1c2"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-v3-handbook-probe-39757d4e-sonnet/diagnostic-probe.json",
+        "sha256": "a4400a167244db95469fe34689aac83b73c7d4a4c09de8486cefb191a414b42a"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-v3-handbook-probe-2e90d863-s508-luna/diagnostic-probe.json",
+        "sha256": "010a57ed55fc29743ad11b51426ca8b1106432c1d37724ffb6525458f77bfb66"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-v3-handbook-probe-6cbbb8c3-s509-luna/diagnostic-probe.json",
+        "sha256": "fba36f07c1072212980ff9651dc0dd1e58b5cf848710d0bd842d7a05f3cb5a2b"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-v3-handbook-probe-e34fb6de-s509-luna-block2/diagnostic-probe.json",
+        "sha256": "c789cab113376633c40028ce80514356de4de42c554ec3a23bd8ed63a08a51ab"
+      },
+      {
+        "path": "/private/tmp/adaptive-warrant-v3-handbook-probe-e34fb6de-s509-luna-block3/diagnostic-probe.json",
+        "sha256": "4211a2b3195366ab4971183d5c7d96794c09a77436361ea542d3b85b110ef29b"
+      }
+    ],
+    "matched_overlap_count": 3,
+    "dropped_case_count": 2,
+    "verified_overlap_count": 0
+  },
+  "decision_gate": {
+    "schema": "machinespirits.adaptation-refinement.warrant-decision-gate.v3",
+    "sampling_role": "representative_natural_prevalence_only",
+    "rare_state_policy": "separate_gate_ineligible_targeted_diagnostic",
+    "minimum_raw_annotator_agreement": 0.8,
+    "minimum_scored_consensus_cases": 12,
+    "minimum_consensus_positive_cases": 2,
+    "minimum_consensus_negative_cases": 6,
+    "minimum_precision": 0.7,
+    "minimum_recall": 0.7,
+    "minimum_accuracy": 0.75,
+    "minimum_transition_consensus_cases": 2,
+    "minimum_transition_accuracy": 0.7,
+    "minimum_diligent_consensus_negative_cases": 1,
+    "maximum_diligent_false_positive_rate": 0.25,
+    "required_live_shadow_agreement": 1,
+    "minimum_mechanism_hard_consensus_rate": 0.75,
+    "minimum_obligation_lifecycle_accuracy": 0.8,
+    "maximum_proposed_test_false_obligation_rate": 0.1,
+    "minimum_inquiry_completion_precision": 0.9,
+    "minimum_inquiry_completion_recall": 0.75,
+    "minimum_commitment_transition_accuracy": 0.75,
+    "minimum_candidate_override_accuracy": 0.75,
+    "minimum_primary_warrant_basis_accuracy": 0.75,
+    "maximum_closure_safety_violations": 0,
+    "minimum_structured_parity_comparisons": 1,
+    "minimum_structured_parity_comparisons_per_mode": 1,
+    "maximum_structured_parity_mismatches": 0,
+    "minimum_divergence_dimension_consensus_rate": 0.75,
+    "minimum_divergence_nonaligned_cases_per_dimension": 2,
+    "minimum_divergence_interpretation_macro_f1": 0.7,
+    "minimum_divergence_magnitude_accuracy": 0.7,
+    "minimum_divergence_persistence_accuracy": 0.7,
+    "minimum_divergence_joint_accuracy": 0.65
+  },
+  "protocol": {
+    "path": "/private/tmp/adaptive-warrant-r43-clean-a925/docs/adaptation-refinement/baseline-comparison-design.md",
+    "sha256": "59fc52451e08aeec93488941625dbef8a5d9b46a301ba8c4225804a30f7908f0"
+  },
+  "study_plan": {
+    "path": "/private/tmp/adaptive-warrant-v3-matrix-live-489f2429-r38-s514/study-plan.json",
+    "sha256": "be7f40bd7cf1873d8e3675c0fffe0f4f132fc0cb4986f1653911442323c2fa5a"
+  },
+  "projection_schemas": {
+    "annotation_corpus": "machinespirits.adaptation-refinement.warrant-annotation-corpus.v4",
+    "live_warrant_gate": "machinespirits.tutor-stub.warrant-gate.v5",
+    "decision_input": "machinespirits.adaptation-refinement.warrant-decision-input.v2",
+    "structured_parity": "structured_v1"
+  },
+  "coverage": {
+    "expected_turns_per_dialogue": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "expected_dialogues": 24,
+    "observed_dialogues": 24,
+    "exact_dialogue_coverage": true,
+    "learner_analysis": {
+      "schema": "machinespirits.adaptation-refinement.warrant-analysis-coverage-summary.v1",
+      "threshold": 0.15,
+      "minimum_turns": 10,
+      "analysis_turns": 192,
+      "analyzed_turns": 187,
+      "unanalyzed_turns": 5,
+      "unanalyzed_rate": 0.026042,
+      "coverage": 0.973958,
+      "gate_ruling": "within_registered_coverage",
+      "by_condition": {
+        "intervening": {
+          "analysis_turns": 96,
+          "analyzed_turns": 92,
+          "unanalyzed_turns": 4
+        },
+        "instrumented": {
+          "analysis_turns": 96,
+          "analyzed_turns": 95,
+          "unanalyzed_turns": 1
+        }
+      },
+      "dialogues": [
+        {
+          "job_id": "world_028_larkspur_fridge-goalpost_shifter-intervening-r1-s514",
+          "world": "world_028_larkspur_fridge",
+          "profile": "goalpost_shifter",
+          "condition": "intervening",
+          "analysis_turns": 8,
+          "analyzed_turns": 8,
+          "unanalyzed_turns": 0,
+          "unanalyzed_turn_numbers": [],
+          "unanalyzed_rate": 0,
+          "coverage": 1
+        },
+        {
+          "job_id": "world_028_larkspur_fridge-fast_learner-instrumented-r1-s514",
+          "world": "world_028_larkspur_fridge",
+          "profile": "fast_learner",
+          "condition": "instrumented",
+          "analysis_turns": 8,
+          "analyzed_turns": 8,
+          "unanalyzed_turns": 0,
+          "unanalyzed_turn_numbers": [],
+          "unanalyzed_rate": 0,
+          "coverage": 1
+        },
+        {
+          "job_id": "world_022_foxtrot_jukebox-low_agency-intervening-r1-s514",
+          "world": "world_022_foxtrot_jukebox",
+          "profile": "low_agency",
+          "condition": "intervening",
+          "analysis_turns": 8,
+          "analyzed_turns": 7,
+          "unanalyzed_turns": 1,
+          "unanalyzed_turn_numbers": [
+            7
+          ],
+          "unanalyzed_rate": 0.125,
+          "coverage": 0.875
+        },
+        {
+          "job_id": "world_028_larkspur_fridge-low_agency-instrumented-r1-s514",
+          "world": "world_028_larkspur_fridge",
+          "profile": "low_agency",
+          "condition": "instrumented",
+          "analysis_turns": 8,
+          "analyzed_turns": 8,
+          "unanalyzed_turns": 0,
+          "unanalyzed_turn_numbers": [],
+          "unanalyzed_rate": 0,
+          "coverage": 1
+        },
+        {
+          "job_id": "world_028_larkspur_fridge-answer_seeking-instrumented-r1-s514",
+          "world": "world_028_larkspur_fridge",
+          "profile": "answer_seeking",
+          "condition": "instrumented",
+          "analysis_turns": 8,
+          "analyzed_turns": 8,
+          "unanalyzed_turns": 0,
+          "unanalyzed_turn_numbers": [],
+          "unanalyzed_rate": 0,
+          "coverage": 1
+        },
+        {
+          "job_id": "world_022_foxtrot_jukebox-fast_learner-intervening-r1-s514",
+          "world": "world_022_foxtrot_jukebox",
+          "profile": "fast_learner",
+          "condition": "intervening",
+          "analysis_turns": 8,
+          "analyzed_turns": 8,
+          "unanalyzed_turns": 0,
+          "unanalyzed_turn_numbers": [],
+          "unanalyzed_rate": 0,
+          "coverage": 1
+        },
+        {
+          "job_id": "world_028_larkspur_fridge-diligent-instrumented-r1-s514",
+          "world": "world_028_larkspur_fridge",
+          "profile": "diligent",
+          "condition": "instrumented",
+          "analysis_turns": 8,
+          "analyzed_turns": 8,
+          "unanalyzed_turns": 0,
+          "unanalyzed_turn_numbers": [],
+          "unanalyzed_rate": 0,
+          "coverage": 1
+        },
+        {
+          "job_id": "world_022_foxtrot_jukebox-fast_learner-instrumented-r1-s514",
+          "world": "world_022_foxtrot_jukebox",
+          "profile": "fast_learner",
+          "condition": "instrumented",
+          "analysis_turns": 8,
+          "analyzed_turns": 8,
+          "unanalyzed_turns": 0,
+          "unanalyzed_turn_numbers": [],
+          "unanalyzed_rate": 0,
+          "coverage": 1
+        },
+        {
+          "job_id": "world_028_larkspur_fridge-fast_learner-intervening-r1-s514",
+          "world": "world_028_larkspur_fridge",
+          "profile": "fast_learner",
+          "condition": "intervening",
+          "analysis_turns": 8,
+          "analyzed_turns": 8,
+          "unanalyzed_turns": 0,
+          "unanalyzed_turn_numbers": [],
+          "unanalyzed_rate": 0,
+          "coverage": 1
+        },
+        {
+          "job_id": "world_022_foxtrot_jukebox-goalpost_shifter-intervening-r1-s514",
+          "world": "world_022_foxtrot_jukebox",
+          "profile": "goalpost_shifter",
+          "condition": "intervening",
+          "analysis_turns": 8,
+          "analyzed_turns": 8,
+          "unanalyzed_turns": 0,
+          "unanalyzed_turn_numbers": [],
+          "unanalyzed_rate": 0,
+          "coverage": 1
+        },
+        {
+          "job_id": "world_028_larkspur_fridge-goalpost_shifter-instrumented-r1-s514",
+          "world": "world_028_larkspur_fridge",
+          "profile": "goalpost_shifter",
+          "condition": "instrumented",
+          "analysis_turns": 8,
+          "analyzed_turns": 8,
+          "unanalyzed_turns": 0,
+          "unanalyzed_turn_numbers": [],
+          "unanalyzed_rate": 0,
+          "coverage": 1
+        },
+        {
+          "job_id": "world_022_foxtrot_jukebox-counterexample_hunter-instrumented-r1-s514",
+          "world": "world_022_foxtrot_jukebox",
+          "profile": "counterexample_hunter",
+          "condition": "instrumented",
+          "analysis_turns": 8,
+          "analyzed_turns": 8,
+          "unanalyzed_turns": 0,
+          "unanalyzed_turn_numbers": [],
+          "unanalyzed_rate": 0,
+          "coverage": 1
+        },
+        {
+          "job_id": "world_022_foxtrot_jukebox-low_agency-instrumented-r1-s514",
+          "world": "world_022_foxtrot_jukebox",
+          "profile": "low_agency",
+          "condition": "instrumented",
+          "analysis_turns": 8,
+          "analyzed_turns": 8,
+          "unanalyzed_turns": 0,
+          "unanalyzed_turn_numbers": [],
+          "unanalyzed_rate": 0,
+          "coverage": 1
+        },
+        {
+          "job_id": "world_022_foxtrot_jukebox-goalpost_shifter-instrumented-r1-s514",
+          "world": "world_022_foxtrot_jukebox",
+          "profile": "goalpost_shifter",
+          "condition": "instrumented",
+          "analysis_turns": 8,
+          "analyzed_turns": 8,
+          "unanalyzed_turns": 0,
+          "unanalyzed_turn_numbers": [],
+          "unanalyzed_rate": 0,
+          "coverage": 1
+        },
+        {
+          "job_id": "world_028_larkspur_fridge-counterexample_hunter-intervening-r1-s514",
+          "world": "world_028_larkspur_fridge",
+          "profile": "counterexample_hunter",
+          "condition": "intervening",
+          "analysis_turns": 8,
+          "analyzed_turns": 7,
+          "unanalyzed_turns": 1,
+          "unanalyzed_turn_numbers": [
+            5
+          ],
+          "unanalyzed_rate": 0.125,
+          "coverage": 0.875
+        },
+        {
+          "job_id": "world_028_larkspur_fridge-diligent-intervening-r1-s514",
+          "world": "world_028_larkspur_fridge",
+          "profile": "diligent",
+          "condition": "intervening",
+          "analysis_turns": 8,
+          "analyzed_turns": 7,
+          "unanalyzed_turns": 1,
+          "unanalyzed_turn_numbers": [
+            4
+          ],
+          "unanalyzed_rate": 0.125,
+          "coverage": 0.875
+        },
+        {
+          "job_id": "world_028_larkspur_fridge-counterexample_hunter-instrumented-r1-s514",
+          "world": "world_028_larkspur_fridge",
+          "profile": "counterexample_hunter",
+          "condition": "instrumented",
+          "analysis_turns": 8,
+          "analyzed_turns": 7,
+          "unanalyzed_turns": 1,
+          "unanalyzed_turn_numbers": [
+            4
+          ],
+          "unanalyzed_rate": 0.125,
+          "coverage": 0.875
+        },
+        {
+          "job_id": "world_028_larkspur_fridge-answer_seeking-intervening-r1-s514",
+          "world": "world_028_larkspur_fridge",
+          "profile": "answer_seeking",
+          "condition": "intervening",
+          "analysis_turns": 8,
+          "analyzed_turns": 7,
+          "unanalyzed_turns": 1,
+          "unanalyzed_turn_numbers": [
+            7
+          ],
+          "unanalyzed_rate": 0.125,
+          "coverage": 0.875
+        },
+        {
+          "job_id": "world_022_foxtrot_jukebox-counterexample_hunter-intervening-r1-s514",
+          "world": "world_022_foxtrot_jukebox",
+          "profile": "counterexample_hunter",
+          "condition": "intervening",
+          "analysis_turns": 8,
+          "analyzed_turns": 8,
+          "unanalyzed_turns": 0,
+          "unanalyzed_turn_numbers": [],
+          "unanalyzed_rate": 0,
+          "coverage": 1
+        },
+        {
+          "job_id": "world_022_foxtrot_jukebox-diligent-intervening-r1-s514",
+          "world": "world_022_foxtrot_jukebox",
+          "profile": "diligent",
+          "condition": "intervening",
+          "analysis_turns": 8,
+          "analyzed_turns": 8,
+          "unanalyzed_turns": 0,
+          "unanalyzed_turn_numbers": [],
+          "unanalyzed_rate": 0,
+          "coverage": 1
+        },
+        {
+          "job_id": "world_022_foxtrot_jukebox-answer_seeking-instrumented-r1-s514",
+          "world": "world_022_foxtrot_jukebox",
+          "profile": "answer_seeking",
+          "condition": "instrumented",
+          "analysis_turns": 8,
+          "analyzed_turns": 8,
+          "unanalyzed_turns": 0,
+          "unanalyzed_turn_numbers": [],
+          "unanalyzed_rate": 0,
+          "coverage": 1
+        },
+        {
+          "job_id": "world_022_foxtrot_jukebox-answer_seeking-intervening-r1-s514",
+          "world": "world_022_foxtrot_jukebox",
+          "profile": "answer_seeking",
+          "condition": "intervening",
+          "analysis_turns": 8,
+          "analyzed_turns": 8,
+          "unanalyzed_turns": 0,
+          "unanalyzed_turn_numbers": [],
+          "unanalyzed_rate": 0,
+          "coverage": 1
+        },
+        {
+          "job_id": "world_028_larkspur_fridge-low_agency-intervening-r1-s514",
+          "world": "world_028_larkspur_fridge",
+          "profile": "low_agency",
+          "condition": "intervening",
+          "analysis_turns": 8,
+          "analyzed_turns": 8,
+          "unanalyzed_turns": 0,
+          "unanalyzed_turn_numbers": [],
+          "unanalyzed_rate": 0,
+          "coverage": 1
+        },
+        {
+          "job_id": "world_022_foxtrot_jukebox-diligent-instrumented-r1-s514",
+          "world": "world_022_foxtrot_jukebox",
+          "profile": "diligent",
+          "condition": "instrumented",
+          "analysis_turns": 8,
+          "analyzed_turns": 8,
+          "unanalyzed_turns": 0,
+          "unanalyzed_turn_numbers": [],
+          "unanalyzed_rate": 0,
+          "coverage": 1
+        }
+      ]
+    },
+    "cells": [
+      {
+        "world": "world_022_foxtrot_jukebox",
+        "profile": "diligent",
+        "condition": "instrumented",
+        "warrant_gate_mode": "observe",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_022_foxtrot_jukebox-diligent-instrumented-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_022_foxtrot_jukebox",
+        "profile": "diligent",
+        "condition": "intervening",
+        "warrant_gate_mode": "active",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_022_foxtrot_jukebox-diligent-intervening-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_022_foxtrot_jukebox",
+        "profile": "low_agency",
+        "condition": "instrumented",
+        "warrant_gate_mode": "observe",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_022_foxtrot_jukebox-low_agency-instrumented-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_022_foxtrot_jukebox",
+        "profile": "low_agency",
+        "condition": "intervening",
+        "warrant_gate_mode": "active",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_022_foxtrot_jukebox-low_agency-intervening-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [
+              7
+            ],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_022_foxtrot_jukebox",
+        "profile": "answer_seeking",
+        "condition": "instrumented",
+        "warrant_gate_mode": "observe",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_022_foxtrot_jukebox-answer_seeking-instrumented-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_022_foxtrot_jukebox",
+        "profile": "answer_seeking",
+        "condition": "intervening",
+        "warrant_gate_mode": "active",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_022_foxtrot_jukebox-answer_seeking-intervening-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_022_foxtrot_jukebox",
+        "profile": "counterexample_hunter",
+        "condition": "instrumented",
+        "warrant_gate_mode": "observe",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_022_foxtrot_jukebox-counterexample_hunter-instrumented-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_022_foxtrot_jukebox",
+        "profile": "counterexample_hunter",
+        "condition": "intervening",
+        "warrant_gate_mode": "active",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_022_foxtrot_jukebox-counterexample_hunter-intervening-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_022_foxtrot_jukebox",
+        "profile": "goalpost_shifter",
+        "condition": "instrumented",
+        "warrant_gate_mode": "observe",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_022_foxtrot_jukebox-goalpost_shifter-instrumented-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_022_foxtrot_jukebox",
+        "profile": "goalpost_shifter",
+        "condition": "intervening",
+        "warrant_gate_mode": "active",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_022_foxtrot_jukebox-goalpost_shifter-intervening-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_022_foxtrot_jukebox",
+        "profile": "fast_learner",
+        "condition": "instrumented",
+        "warrant_gate_mode": "observe",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_022_foxtrot_jukebox-fast_learner-instrumented-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_022_foxtrot_jukebox",
+        "profile": "fast_learner",
+        "condition": "intervening",
+        "warrant_gate_mode": "active",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_022_foxtrot_jukebox-fast_learner-intervening-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_028_larkspur_fridge",
+        "profile": "diligent",
+        "condition": "instrumented",
+        "warrant_gate_mode": "observe",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_028_larkspur_fridge-diligent-instrumented-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_028_larkspur_fridge",
+        "profile": "diligent",
+        "condition": "intervening",
+        "warrant_gate_mode": "active",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_028_larkspur_fridge-diligent-intervening-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [
+              4
+            ],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_028_larkspur_fridge",
+        "profile": "low_agency",
+        "condition": "instrumented",
+        "warrant_gate_mode": "observe",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_028_larkspur_fridge-low_agency-instrumented-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_028_larkspur_fridge",
+        "profile": "low_agency",
+        "condition": "intervening",
+        "warrant_gate_mode": "active",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_028_larkspur_fridge-low_agency-intervening-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_028_larkspur_fridge",
+        "profile": "answer_seeking",
+        "condition": "instrumented",
+        "warrant_gate_mode": "observe",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_028_larkspur_fridge-answer_seeking-instrumented-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_028_larkspur_fridge",
+        "profile": "answer_seeking",
+        "condition": "intervening",
+        "warrant_gate_mode": "active",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_028_larkspur_fridge-answer_seeking-intervening-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [
+              7
+            ],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_028_larkspur_fridge",
+        "profile": "counterexample_hunter",
+        "condition": "instrumented",
+        "warrant_gate_mode": "observe",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_028_larkspur_fridge-counterexample_hunter-instrumented-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [
+              4
+            ],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_028_larkspur_fridge",
+        "profile": "counterexample_hunter",
+        "condition": "intervening",
+        "warrant_gate_mode": "active",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_028_larkspur_fridge-counterexample_hunter-intervening-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [
+              5
+            ],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_028_larkspur_fridge",
+        "profile": "goalpost_shifter",
+        "condition": "instrumented",
+        "warrant_gate_mode": "observe",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_028_larkspur_fridge-goalpost_shifter-instrumented-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_028_larkspur_fridge",
+        "profile": "goalpost_shifter",
+        "condition": "intervening",
+        "warrant_gate_mode": "active",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_028_larkspur_fridge-goalpost_shifter-intervening-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_028_larkspur_fridge",
+        "profile": "fast_learner",
+        "condition": "instrumented",
+        "warrant_gate_mode": "observe",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_028_larkspur_fridge-fast_learner-instrumented-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      },
+      {
+        "world": "world_028_larkspur_fridge",
+        "profile": "fast_learner",
+        "condition": "intervening",
+        "warrant_gate_mode": "active",
+        "expected_dialogues": 1,
+        "observed_dialogues": 1,
+        "exact": true,
+        "dialogues": [
+          {
+            "job_id": "world_028_larkspur_fridge-fast_learner-intervening-r1-s514",
+            "seed": 514,
+            "analysis_turns": 8,
+            "unanalyzed_turns": [],
+            "expected_analyzed_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "decision_turns": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ],
+            "exact_turn_coverage": true,
+            "structured_parity_comparisons": 8,
+            "structured_parity_mismatches": 0
+          }
+        ]
+      }
+    ],
+    "annotation": {
+      "arm": "instrumented",
+      "expected_cases": 93,
+      "observed_cases": 93,
+      "exact": true,
+      "active_cases": 0,
+      "turns": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "cells": [
+        {
+          "world": "world_022_foxtrot_jukebox",
+          "profile": "diligent",
+          "condition": "instrumented",
+          "cases": 8,
+          "turns": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "expected_cases": 8,
+          "exact": true
+        },
+        {
+          "world": "world_022_foxtrot_jukebox",
+          "profile": "low_agency",
+          "condition": "instrumented",
+          "cases": 7,
+          "turns": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "expected_cases": 7,
+          "exact": true
+        },
+        {
+          "world": "world_022_foxtrot_jukebox",
+          "profile": "answer_seeking",
+          "condition": "instrumented",
+          "cases": 8,
+          "turns": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "expected_cases": 8,
+          "exact": true
+        },
+        {
+          "world": "world_022_foxtrot_jukebox",
+          "profile": "counterexample_hunter",
+          "condition": "instrumented",
+          "cases": 8,
+          "turns": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "expected_cases": 8,
+          "exact": true
+        },
+        {
+          "world": "world_022_foxtrot_jukebox",
+          "profile": "goalpost_shifter",
+          "condition": "instrumented",
+          "cases": 8,
+          "turns": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "expected_cases": 8,
+          "exact": true
+        },
+        {
+          "world": "world_022_foxtrot_jukebox",
+          "profile": "fast_learner",
+          "condition": "instrumented",
+          "cases": 8,
+          "turns": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "expected_cases": 8,
+          "exact": true
+        },
+        {
+          "world": "world_028_larkspur_fridge",
+          "profile": "diligent",
+          "condition": "instrumented",
+          "cases": 8,
+          "turns": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "expected_cases": 8,
+          "exact": true
+        },
+        {
+          "world": "world_028_larkspur_fridge",
+          "profile": "low_agency",
+          "condition": "instrumented",
+          "cases": 7,
+          "turns": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "expected_cases": 7,
+          "exact": true
+        },
+        {
+          "world": "world_028_larkspur_fridge",
+          "profile": "answer_seeking",
+          "condition": "instrumented",
+          "cases": 8,
+          "turns": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "expected_cases": 8,
+          "exact": true
+        },
+        {
+          "world": "world_028_larkspur_fridge",
+          "profile": "counterexample_hunter",
+          "condition": "instrumented",
+          "cases": 7,
+          "turns": [
+            1,
+            2,
+            3,
+            5,
+            6,
+            7,
+            8
+          ],
+          "expected_cases": 7,
+          "exact": true
+        },
+        {
+          "world": "world_028_larkspur_fridge",
+          "profile": "goalpost_shifter",
+          "condition": "instrumented",
+          "cases": 8,
+          "turns": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "expected_cases": 8,
+          "exact": true
+        },
+        {
+          "world": "world_028_larkspur_fridge",
+          "profile": "fast_learner",
+          "condition": "instrumented",
+          "cases": 8,
+          "turns": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "expected_cases": 8,
+          "exact": true
+        }
+      ]
+    }
+  },
+  "structured_parity": {
+    "comparisons": 192,
+    "comparisons_by_mode": {
+      "observe": 96,
+      "active": 96
+    },
+    "mismatches": 0
+  },
+  "execution_evidence": {
+    "schema": "machinespirits.adaptation-refinement.warrant-study-execution-evidence.v1",
+    "row_count": 24,
+    "rows_sha256": "28d494e5a5e54cee1d9e76e26768ed42e90305ad5efc31380db9eccd20d08514",
+    "rows": [
+      {
+        "job_id": "world_028_larkspur_fridge-goalpost_shifter-intervening-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_028_larkspur_fridge-goalpost_shifter-intervening-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "79ccb94e9d55aebd857b25e1d4b65f849830369972d6755a7f4fd50f3d89539d",
+        "child_seal_sha256": "195ce7a934fbe6ea236b7afdd963e6a0e2129eb0b88965b16cb4a00f30f1bbc4",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "2e96a2503e0734c2aa74c1825f82c9d53537bad767e1aba78245456961132f1c",
+        "summary_artifact": "auto-eval-2026-08-12T10-15-35-405Z.json",
+        "trace_artifact": "2026-08-12T10-08-39-893Z.jsonl",
+        "semantic_row_sha256": "e2708ba3612412f1a9936cb72ec6519f81f13feeeced3ed14064ab6391389aab"
+      },
+      {
+        "job_id": "world_028_larkspur_fridge-fast_learner-instrumented-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_028_larkspur_fridge-fast_learner-instrumented-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "9f3f88264d1b284b384baa581d59500ee6ce38b61570ab1b0786da82fb0ccf70",
+        "child_seal_sha256": "4381dce36f3c9ceb004299e8e9495bb6e0f1397966aabeba7737e18665465f06",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "c670f12a99f9827c1f2f1fb6e4ec251c3a81e82cb26ee8532748c5eb80f3210c",
+        "summary_artifact": "auto-eval-2026-08-12T10-15-15-351Z.json",
+        "trace_artifact": "2026-08-12T10-08-40-397Z.jsonl",
+        "semantic_row_sha256": "785c9999e8ab708712b580be684983cbc3c4a8710d58c7cc26ba219226d1d4e0"
+      },
+      {
+        "job_id": "world_022_foxtrot_jukebox-low_agency-intervening-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_022_foxtrot_jukebox-low_agency-intervening-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "0b57bce66c91edb7cd830ba48caf3cfd92cb3d4ac7c261183129242c086a34fc",
+        "child_seal_sha256": "923da5697ddccb625790670f6801086ac78e7ebc722558e1e0b84708775aa319",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "d60f8c4f5b9a6a9938d8abc9f44e942dadfc65fe3fa4752ce6b10c8af31d44a7",
+        "summary_artifact": "auto-eval-2026-08-12T10-14-47-373Z.json",
+        "trace_artifact": "2026-08-12T10-08-40-899Z.jsonl",
+        "semantic_row_sha256": "d6306131d6cfd6b375482f45f2e8ad7fb116954bf4d79a5d92ce20474f61b35a"
+      },
+      {
+        "job_id": "world_028_larkspur_fridge-low_agency-instrumented-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_028_larkspur_fridge-low_agency-instrumented-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "b133e7e712a1ec1d67ce78282b56eb1fdd8fe9def1cac255545e04046987463d",
+        "child_seal_sha256": "2a6ad8a67e1ae16f4c150c61888913977b4b4296f887df2d30f998001182484b",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "575549ff7992a22d045bcfd915d7fd235b4ae9bfb59ae39f70846cfd2add4bd3",
+        "summary_artifact": "auto-eval-2026-08-12T10-14-38-261Z.json",
+        "trace_artifact": "2026-08-12T10-08-41-449Z.jsonl",
+        "semantic_row_sha256": "59cf3921df93e760f6ae6ee51cb7fc8c809942662984b866bc82b201632b6c11"
+      },
+      {
+        "job_id": "world_028_larkspur_fridge-answer_seeking-instrumented-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_028_larkspur_fridge-answer_seeking-instrumented-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "3c35365c290da4fd6484dfa086887a48b107bb090b3ead674f66746c9e87b3df",
+        "child_seal_sha256": "cefe64d33da71b9a8c06488c9fada912341ad0dd053fca55940f3a6445459dd6",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "5f72cc14b8bbe2f5b3c08b433d3cc9f9361b5558dd5331893e60eea8549de215",
+        "summary_artifact": "auto-eval-2026-08-12T10-14-51-043Z.json",
+        "trace_artifact": "2026-08-12T10-08-41-992Z.jsonl",
+        "semantic_row_sha256": "834188740c3650e5de1434a79fbc17cc13c4155ec50f177766e755492a2ddfad"
+      },
+      {
+        "job_id": "world_022_foxtrot_jukebox-fast_learner-intervening-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_022_foxtrot_jukebox-fast_learner-intervening-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "e1188277d157e1ccefd565386c10eee0ad54707dbdd40b5c9b01a3f68a84d084",
+        "child_seal_sha256": "844c1f447295410de08f689209521768dba41647e0cbbc3b47259d73661e2bbd",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "7aff0b9a58eb92fd76fb4bb75f0758f3032138a9e564e1f7fa778ba4f37de047",
+        "summary_artifact": "auto-eval-2026-08-12T10-16-28-774Z.json",
+        "trace_artifact": "2026-08-12T10-08-42-546Z.jsonl",
+        "semantic_row_sha256": "f5e75979ba6f3630936d6dab5f4681d3d9f3a71ffad5ecaed0edeadd5e040a8d"
+      },
+      {
+        "job_id": "world_028_larkspur_fridge-diligent-instrumented-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_028_larkspur_fridge-diligent-instrumented-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "57bbd4123ff9d4959b1c82bd2ca1458856b13a8a81df522f29902ce263d77cca",
+        "child_seal_sha256": "8dad58fe7111a5a599fc3308e3495dad0acd1bb87ed09a9e3e6ced943e6ff22a",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "a758abe95b0413ac7bf8382a67e9b53fdd35bc5763c0965a27042acb439d396c",
+        "summary_artifact": "auto-eval-2026-08-12T10-21-01-946Z.json",
+        "trace_artifact": "2026-08-12T10-14-40-203Z.jsonl",
+        "semantic_row_sha256": "c9c4a42d631970bcd0ddf0562cea613f645e9c1896ae207107e8bca319e3d4ed"
+      },
+      {
+        "job_id": "world_022_foxtrot_jukebox-fast_learner-instrumented-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_022_foxtrot_jukebox-fast_learner-instrumented-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "ed69dbc555bc42658531cb6ffebe818e741ea5741f6bc242521887f2acd67950",
+        "child_seal_sha256": "b50c706c04ffdd3f6f11dae6c40148851d643667f42b02308eb41468463f2f3c",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "a77ce78e489a070048cb9ce934b8b14fc365ac6e9fb03a5a4c44a169265863dc",
+        "summary_artifact": "auto-eval-2026-08-12T10-21-07-370Z.json",
+        "trace_artifact": "2026-08-12T10-14-49-156Z.jsonl",
+        "semantic_row_sha256": "6b5dc44a5c2e92e6e2fb283d7711b01316274d17d9f67ed39ff5972f299df10b"
+      },
+      {
+        "job_id": "world_028_larkspur_fridge-fast_learner-intervening-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_028_larkspur_fridge-fast_learner-intervening-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "c4147db394cc817b1a8d0d5fc5afeb42e106cae8a40e1e16017dcc510e401275",
+        "child_seal_sha256": "73dacd528ebfe6aac65a1e2e181cd69236da1b6ee263ade491032a6882388686",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "5f9f11b0cefcaf4f8b363c756ca5b3f2a854e3699988f7f121da381f541f6423",
+        "summary_artifact": "auto-eval-2026-08-12T10-21-37-455Z.json",
+        "trace_artifact": "2026-08-12T10-14-52-803Z.jsonl",
+        "semantic_row_sha256": "b26284639aabfc13049fbdf36c19393e71a8146df657c6f5108264649f021b83"
+      },
+      {
+        "job_id": "world_022_foxtrot_jukebox-goalpost_shifter-intervening-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_022_foxtrot_jukebox-goalpost_shifter-intervening-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "48194e4163118da16ab4f61a12bdcb01bc82026051e1f13424551cc2a003ae21",
+        "child_seal_sha256": "2015c2df564798dec12128dc7089e4d1eee8d9b03b33a9e82fc8e579d964737e",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "86eb02c9c20ad1af1b996ac642b9827a55d4e8d1aec469997afa4934e8ee7ed8",
+        "summary_artifact": "auto-eval-2026-08-12T10-22-07-290Z.json",
+        "trace_artifact": "2026-08-12T10-15-17-290Z.jsonl",
+        "semantic_row_sha256": "1547096d0eff1043c2e8dc658836c6a5c2be99cff34b9293a89d7c29a4921178"
+      },
+      {
+        "job_id": "world_028_larkspur_fridge-goalpost_shifter-instrumented-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_028_larkspur_fridge-goalpost_shifter-instrumented-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "8db5d4eb66f97c8dfbc9e34ac14a3a7332d38bb0dde186dda3046cbbc587a4cd",
+        "child_seal_sha256": "d268050c87ba2b7ee44c6b4835feb39a70412c4da5138acf4e0d070859f35f8d",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "b9136fe8b7644ca89c621eee336b4627405846011663755f11b2ab9684bb6a8d",
+        "summary_artifact": "auto-eval-2026-08-12T10-22-52-828Z.json",
+        "trace_artifact": "2026-08-12T10-15-37-394Z.jsonl",
+        "semantic_row_sha256": "496f660956fefcf0c9b53d8daa23d37c911ee51e683e090c7508bf4e80609017"
+      },
+      {
+        "job_id": "world_022_foxtrot_jukebox-counterexample_hunter-instrumented-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_022_foxtrot_jukebox-counterexample_hunter-instrumented-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "855d62c79c861379f160683b1edc39ca716e3638aa09a4072da73500753a9d83",
+        "child_seal_sha256": "d5c4400292aca29e7a1fcf3fd9ef31f5d8a1a9e759f8942b8b926114835593c8",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "a8952058ff3fb85171fcb4f32330b81ec2c674f594ea4d15525fadd5f5ebcdeb",
+        "summary_artifact": "auto-eval-2026-08-12T10-22-58-735Z.json",
+        "trace_artifact": "2026-08-12T10-16-31-747Z.jsonl",
+        "semantic_row_sha256": "f9c5046a178d41511855d512567ee095dcb8aa881bb928484bdb59bc87d072b8"
+      },
+      {
+        "job_id": "world_022_foxtrot_jukebox-low_agency-instrumented-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_022_foxtrot_jukebox-low_agency-instrumented-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "b52b4a27ddc7cc10ee79a5fffd81fd9a920f32d40807ee9647f78ec2c06372a4",
+        "child_seal_sha256": "7d9e5d6b689338ad25a9c5da398e4948d18857e09f323a27b9f8f3626487e9d2",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "adf2deb22ebf6a5785d52fa8a3fec68b63831ee88e9d0a714033bfb6f2ca077d",
+        "summary_artifact": "auto-eval-2026-08-12T10-27-43-846Z.json",
+        "trace_artifact": "2026-08-12T10-21-03-847Z.jsonl",
+        "semantic_row_sha256": "71ffb31735c860fdaf506328a203d3e6a7e838fca168fd0a8d5a657a69fe5912"
+      },
+      {
+        "job_id": "world_022_foxtrot_jukebox-goalpost_shifter-instrumented-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_022_foxtrot_jukebox-goalpost_shifter-instrumented-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "52f9f774e3845bc0ff0dcbf1df5e3cb519539b35018512ba25fed5885d2e1fdf",
+        "child_seal_sha256": "b3713b420b2d725a4dbdbdcb101805896a9baf479facd36cb9d20df1901b8eab",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "5a588f1370c5f3babf05226f2e844e7502bf3a96715093f67085b158d71c6f5a",
+        "summary_artifact": "auto-eval-2026-08-12T10-28-09-479Z.json",
+        "trace_artifact": "2026-08-12T10-21-09-118Z.jsonl",
+        "semantic_row_sha256": "ce4f9dc03c1ba4b0da8f9d6486a53e6684297445859c4e896a27271826d29c00"
+      },
+      {
+        "job_id": "world_028_larkspur_fridge-counterexample_hunter-intervening-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_028_larkspur_fridge-counterexample_hunter-intervening-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "78f201a43dacf8480e968e3f893cec3f35e4812a70b8e6dfc472d7962f24ee14",
+        "child_seal_sha256": "ee360b7f862062db77694a04d1f22e4f17ff0d1335db5771fca3a2362d926f10",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "e2eab4630dfe2d6316946272cd18937b6bf1f879325704bffb6eeeb7d07da43c",
+        "summary_artifact": "auto-eval-2026-08-12T10-28-02-812Z.json",
+        "trace_artifact": "2026-08-12T10-21-39-919Z.jsonl",
+        "semantic_row_sha256": "de79fa560fe60cb3769b8df53d95ba62f46d728e8ba51b36acf886fee69e820f"
+      },
+      {
+        "job_id": "world_028_larkspur_fridge-diligent-intervening-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_028_larkspur_fridge-diligent-intervening-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "7d5234f839632978744c43de18d5cbf54da2b2c61758977f8b59d6793cd29ec6",
+        "child_seal_sha256": "888593a2381e6e5f33f2cfc84b94f3abf75e368afe51a36cb020ccfe897ed092",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "ada3e163566bd6b9b9065b39e02a55879730ea5dbc9762cded7fb63d7802b52c",
+        "summary_artifact": "auto-eval-2026-08-12T10-28-50-477Z.json",
+        "trace_artifact": "2026-08-12T10-22-09-237Z.jsonl",
+        "semantic_row_sha256": "03327a5f647164f1974ff257fb03d4f35227afc78b7e89abe93e4c66b85e4721"
+      },
+      {
+        "job_id": "world_028_larkspur_fridge-counterexample_hunter-instrumented-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_028_larkspur_fridge-counterexample_hunter-instrumented-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "3e114332fffbf17c37b06ab156aabc778d1d9d1fa0d9d5d170d24f20a2f8274b",
+        "child_seal_sha256": "a8f57593085c5f0a87f62b25e93102b8fc76f4260cebba2bdf1a9d69c6b4938a",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "ac7260b464ad0423a1a6fb54381771fe308f5a7916be1116bd493644695a6203",
+        "summary_artifact": "auto-eval-2026-08-12T10-29-38-254Z.json",
+        "trace_artifact": "2026-08-12T10-22-54-783Z.jsonl",
+        "semantic_row_sha256": "b27d890ad7e716e6d94e57d8d3856356a76c316af8f78afe2f47a6031246faa2"
+      },
+      {
+        "job_id": "world_028_larkspur_fridge-answer_seeking-intervening-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_028_larkspur_fridge-answer_seeking-intervening-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "d5bad8a0a787fbb0e56cb6794a682484fef2ca73b6b80b1680a12ad7c817e36c",
+        "child_seal_sha256": "3736fbe4f146f5c167091e2acd8f13a01576c803bf218e26b6cbd1e95b8178c0",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "5b113c66343b7fac15763e704dcb155e1ef92e25dac72dd99f9df99c912df584",
+        "summary_artifact": "auto-eval-2026-08-12T10-29-47-472Z.json",
+        "trace_artifact": "2026-08-12T10-23-00-530Z.jsonl",
+        "semantic_row_sha256": "e5b2da590fce9e6dadf6da70d40e108c4784186de982addba0147f907192679e"
+      },
+      {
+        "job_id": "world_022_foxtrot_jukebox-counterexample_hunter-intervening-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_022_foxtrot_jukebox-counterexample_hunter-intervening-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "b5d4e94bdb8c62048dc873387adb3eab6934d24c0f1ba0bf7c7b3d4f82a3b0d5",
+        "child_seal_sha256": "3ba205de65fd11a4474638369c15736b8a26644afdc7cec8ba45ebb9b6e73874",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "64a4341af20b6363ec396b25b74a7a0299dd146adcae38a6462f7191def8ea5a",
+        "summary_artifact": "auto-eval-2026-08-12T10-34-53-659Z.json",
+        "trace_artifact": "2026-08-12T10-27-45-931Z.jsonl",
+        "semantic_row_sha256": "ed8b7c4deb3529ce72d4029d94651984d1a4ff017b1321e6a5ab616f496d95d6"
+      },
+      {
+        "job_id": "world_022_foxtrot_jukebox-diligent-intervening-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_022_foxtrot_jukebox-diligent-intervening-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "45d79a61371bd751beacd39ed738ab4db341adeaf25f603ce14a264b17bcea42",
+        "child_seal_sha256": "17624cfc7063b60157904c95abcfb121cf41bd90eff021fca26abbe78d62aaac",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "44d3c5362d72385d63c85eba4f6cefeb488eee2acfccc53f77cde30e755f2930",
+        "summary_artifact": "auto-eval-2026-08-12T10-34-53-375Z.json",
+        "trace_artifact": "2026-08-12T10-28-05-144Z.jsonl",
+        "semantic_row_sha256": "ac4f051d3038797485b6938f75c7885f714b0aa01e9ed65bf5af7162da702d28"
+      },
+      {
+        "job_id": "world_022_foxtrot_jukebox-answer_seeking-instrumented-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_022_foxtrot_jukebox-answer_seeking-instrumented-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "a09d9688fc812dba3eb1356a76d256b603a20ff1fbb8c038a4c5df795966b85c",
+        "child_seal_sha256": "50b594b74db427f124107eb07f03261bd78023df3285e70d8b748524a4b77c71",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "b61b3c2dd7347773eef0e556224c42cfa81a78f8b713baf81a6a0a853264e5e7",
+        "summary_artifact": "auto-eval-2026-08-12T10-34-25-379Z.json",
+        "trace_artifact": "2026-08-12T10-28-11-494Z.jsonl",
+        "semantic_row_sha256": "eba6a3e569c148f9a717ba6a76711818963eedcf8e3734d902d33bb6e5f57fb7"
+      },
+      {
+        "job_id": "world_022_foxtrot_jukebox-answer_seeking-intervening-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_022_foxtrot_jukebox-answer_seeking-intervening-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "e27d408979bb7b420f3b6b8bb981f05782fef951002f1a6579e42cf969d5c0c9",
+        "child_seal_sha256": "36b962a1b8372f02133bb726e9f20aa1dfa705830f22c60bdd4dbcd4a4b4ccd9",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "bd2a074d521678f35b15dcaeed3f16bd46d4575b440bf490fc44fa1bea2f9d82",
+        "summary_artifact": "auto-eval-2026-08-12T10-35-38-531Z.json",
+        "trace_artifact": "2026-08-12T10-28-52-942Z.jsonl",
+        "semantic_row_sha256": "6348334cf8f8da2ec974384b82ca84e60ebf86cc0f800dbd3cf3b4298a072d9c"
+      },
+      {
+        "job_id": "world_028_larkspur_fridge-low_agency-intervening-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_028_larkspur_fridge-low_agency-intervening-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "56e30e0e0b68c8c172ccf9097a45ca160a86e7d2aca680096b60015ec10bd071",
+        "child_seal_sha256": "6c1fec4eea68bdfebb6a44b81ae9ed835ddbe14bbb22881bf72df133a1099586",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "857d37819096d539b5af31a7e19fcdc3184b0a3c16aaf2f2073abfffcc06faf8",
+        "summary_artifact": "auto-eval-2026-08-12T10-36-29-297Z.json",
+        "trace_artifact": "2026-08-12T10-29-40-364Z.jsonl",
+        "semantic_row_sha256": "55bed0d967f13dca440bb9d6aab15d6fed267d720e9434e5ebfecffc9ba25f22"
+      },
+      {
+        "job_id": "world_022_foxtrot_jukebox-diligent-instrumented-r1-s514",
+        "child_status": "ok",
+        "child_evidence_ok": true,
+        "child_run_id": "world_022_foxtrot_jukebox-diligent-instrumented-r1-s514",
+        "child_parent_run_id": "adaptive-warrant-v3-matrix-live-489f2429-r38-s514",
+        "child_plan_sha256": "96410ea8e3f24b53d2359d2ad0a4661b98ee385f1ef4087af633711fd51d17b9",
+        "child_seal_sha256": "2956aa0650355dd8233a21526f44ebbbc5617ff250f17cc776cb8d21723b5dc7",
+        "child_event_count": 9,
+        "sealed_artifacts_sha256": "ad4d64be6bbd0c1cda9b172a83f4612ef0cc71c7d41f7ea8b180ef56fe02721e",
+        "summary_artifact": "auto-eval-2026-08-12T10-35-45-617Z.json",
+        "trace_artifact": "2026-08-12T10-29-49-439Z.jsonl",
+        "semantic_row_sha256": "80a3fe6f54734e02f214744454a245ef9b9c0065875c7c8274af5cacf46fde51"
+      }
+    ]
+  },
+  "source_commit": "ed19be428abdaa07055ccaa8f957d22cb8f86920",
+  "semantic_instrument": {
+    "preflight": {
+      "path": "/private/tmp/adaptive-warrant-v3-preflight-ed19be42-r52-s514.json",
+      "sha256": "fc11c9a11bd6f20acfa062ca022281eb6aa1c6d870981e67e840a2061729260c"
+    },
+    "schema_acceptance": {
+      "path": "/Users/lmagee/Dev/machinespirits/ms-guarded-learner/docs/adaptation-refinement/guarded-pilot/guarded-schema-acceptance-v33.json",
+      "sha256": "308463d7b5aea59e8e2d310631e45df5a250c5bc93d98a5068df2d80137c5641"
+    }
+  },
+  "annotation_handbook": {
+    "path": "/private/tmp/adaptive-warrant-v3-matrix-live-489f2429-r38-s514/annotation-handbook.md",
+    "sha256": "5673c14b8f2a2b17c599e947c87f6d03c10df6dcdbeadcb257d882f008902003"
+  },
+  "semantic_handbook": {
+    "path": "/private/tmp/adaptive-warrant-v3-matrix-live-489f2429-r38-s514/semantic-annotation-handbook.md",
+    "sha256": "0a8e0d29ee870ea9eef1c74dee880c50665f4315950989a42b5bf35e63aa558b"
+  },
+  "semantic_predictions": {
+    "path": "/private/tmp/adaptive-warrant-v3-matrix-live-489f2429-r38-s514/semantic-predictions.private.json",
+    "sha256": "3654a89b1099455327d595d644931904b57be326fccab1e0ab69c1eefae69758"
+  },
+  "corpus": {
+    "path": "/private/tmp/adaptive-warrant-v3-matrix-live-489f2429-r38-s514/annotation-sample.blinded.json",
+    "sha256": "52bc3ae49f634bd2c4b872f843b1be1f15e859618b3ffa7cfa1fb0ae7cc1e184",
+    "cases": 93
+  },
+  "key": {
+    "path": "/private/tmp/adaptive-warrant-v3-matrix-live-489f2429-r38-s514/annotation-key.private.json",
+    "sha256": "5c54de8f54b5ef25331cdf053140de9ce4d55a915ec9915c152320ee86f0a883"
+  },
+  "provenance": {
+    "gitCommit": "a925fb7aa152b04f90eedb28f11aac05b84b5924",
+    "gitBranch": "",
+    "gitStatus": "",
+    "sourceFileCount": 343,
+    "dependencyPolicy": {
+      "explicitAuthoritiesAndResources": true,
+      "recursiveStaticLocalImports": true,
+      "importRoots": [
+        "scripts/run-adaptive-warrant-baseline-study.js",
+        "scripts/derive-adaptive-warrant-shadow.js",
+        "scripts/run-tutor-stub-auto-eval.js",
+        "scripts/tutor-stub.js"
+      ]
+    },
+    "childPolicySha256": "b36d88a4d997d68fbcfe3daa98a20adf7e136c91b3b08e98d8be58a2c4fe9950",
+    "files": {
+      "config/adaptive-warrant-study.env": "fcf36359f2bee15305360b8de38280d94d75a08c7bc57c2809a3af5c8623cafd",
+      "config/drama-derivation/world-005-marrick.yaml": "38f1e5106dbca611a993bf2987f1a812330609927c84b0e17c281c292a201d03",
+      "config/drama-derivation/world-022-foxtrot-jukebox.yaml": "220ec1b8ad6fac7031b30c96dcd57eec76a4e2184d7ff4ead135924acf27c15b",
+      "config/drama-derivation/world-028-larkspur-fridge.yaml": "8cb7149e73109b8dc33828321f6ce1034d137f0614a078110ba1c4105b693963",
+      "config/engagement-registers.yaml": "6284ffb82d8fe151312c05d6426f809de43addfe5275bbd5f70cbd39361a84c2",
+      "config/providers.yaml": "fe0c86fa91f4443fc4d55f6f3d5b39cf7df9fff5c3284096429cb3908335b326",
+      "config/stability/baseline-v0.7.0.json": "3b4a887d2bae390439054b639ec4fe7f069c7da961a427ce9895ba4bb65296c8",
+      "config/tutor-instances.yaml": "85ef58ee91aeb18b8c6c02f1b4a350f95985843e9a56faabdcb5b2bd4de729cf",
+      "docs/adaptation-refinement/2026-08-09_living-research-log.md": "dbca07fe0a79d4f880ba11067a33ebeb539a4151368e654c48955eb18a15493f",
+      "docs/adaptation-refinement/README_adaptation-design-session.md": "44e61ff30c4dc1bc0da1c44ec52ab29e4415a456882ffdb39ed093a9cb4135ea",
+      "docs/adaptation-refinement/baseline-comparison-design.md": "59fc52451e08aeec93488941625dbef8a5d9b46a301ba8c4225804a30f7908f0",
+      "docs/adaptation-refinement/gold-annotations-first-corpus.md": "99dab0c04eb2d5201b1dfcb761d11b322eec9e6930e878ee3b58545b42c7e494",
+      "docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md": "95a4eb72fa2175edcf82429b7c2e81053d3b68e63f2c40427bdafcfab34f8680",
+      "docs/adaptation-refinement/remaining-next-steps.md": "219e49716ea68b2f34c435cb37586a72963e0cfd941d1d7ca475001c3720492e",
+      "docs/adaptation-refinement/semantic-audit-and-shadow-notes.md": "40fb75ebb03f8773859ff6849b8bbd7eb7bce40cbbc323e55d1d6946981bb4b8",
+      "docs/adaptation-refinement/v3-semantic-extraction-design.md": "118618033a9fb43e00158bc110924884f2cbc0771d7910d1e38b80962309f411",
+      "prompts/tutors/dramatic-detective.md": "b5b1e0f34a4a28f64189242bd7f985ba31991eba5a2d0d48d3d42090ff09cd0a",
+      "scripts/build-adaptive-warrant-v3-semantic-diagnostic.js": "594b1f7f339e3e35a9e64f43163773b0594cea629ade16a018e1621b23fc59e8",
+      "scripts/derive-adaptive-warrant-shadow.js": "95d58f952b84d43adfa7f089ef1ada3bd04f8a0d7e090a3736092d20d9183dd0",
+      "scripts/prepare-adaptive-warrant-annotation-batches.js": "f23d3b1619734091e9b5ac9a37501c8a64f07c1cbf240e62e9b8e7eb43a767fc",
+      "scripts/prepare-adaptive-warrant-semantic-annotations.js": "e78d73c151787d11870a32cff0dd0f24e2366fa0e0cc5d3dac73cece6f8be9e6",
+      "scripts/probe-adaptive-warrant-live-semantic-seat.js": "a67a6bdef8d68fc865eef27824d074c282aef8984b71290cfd3c2322ef96d444",
+      "scripts/repository-metrics.js": "c4c3585c67ce3b85477b3165343983363ea377e0a1512b032453a75d8cf4e739",
+      "scripts/run-adaptive-warrant-baseline-study.js": "51f87241d1f1e42c78d39950ce4a47cb1fb0e48e9bfa34721a42b498e7c91482",
+      "scripts/run-adaptive-warrant-decision-readers.js": "1eb6be9d4cf2d802ff2bcb16394fdd0f99952d10a3ff62456ebc79ad42346116",
+      "scripts/run-adaptive-warrant-semantic-brittleness-preflight.js": "c4e87503b2801b391e413dac365cded80403704e991605e0382e1a4855215fe7",
+      "scripts/run-adaptive-warrant-semantic-readers.js": "5a008b1cc923eb870f41311d063b9baf8147755c5569bc7e3bf18542bb3bfbb1",
+      "scripts/run-adaptive-warrant-semantic-schema-acceptance-ping.js": "8243bd53e42450d657ce855df99fd5e4191e6fbae59741ad18c83ca8db8de13c",
+      "scripts/run-adaptive-warrant-semantic-schema-smoke.js": "7e28871c25bcc8e58d68bae97654d6d129a6326cd752a397ce2cd43354fbd750",
+      "scripts/run-tutor-stub-auto-eval.js": "e71ca0e01449b058e77706286469e829f809d0d05ec764f1ebfa9daf9e2924b7",
+      "scripts/tutor-stub-learner-profile-contracts.js": "ba8a3488313f44f7e2cb34ce1d6588eef4b7193911552c5d811f93ba5cb927d0",
+      "scripts/tutor-stub.js": "074c13071545b3c9840b8758bd0d7e7561c73420f5f13f6f554f3c4a8809d94b",
+      "services/__tests__/tutorStubDiagnosticCollection.test.js": "fd3e6f878c6f5830568003c646db539172c443887d763cdf3c1f054cc64fef75",
+      "services/__tests__/tutorStubDialogueClosure.test.js": "b719344eaa129d75a4f3f60260ae97da91fb5aa0c4577bc311b601ac46846948",
+      "services/__tests__/tutorStubGuardDisposition.test.js": "fa2da71fc868300f6d89ae4b5d24c2630643457d82a705f8d5f6ca104aecb1a3",
+      "services/adaptiveTutor/actionPolicy.js": "9d222262c1797f65fe096eaba6251b35d82ab3649eb46367a40dc4a209592648",
+      "services/adaptiveTutor/adaptationContract.js": "35f24ac2a5415e5d71354c38dac49c2499237cf533b39f64d9f4b5d7788ed5ed",
+      "services/adaptiveTutor/difficultyAwareBelief.js": "a089dc6dece781154b539300d2213f85227ccc4eaf29f8492e352142a2e320bb",
+      "services/adaptiveTutor/interventionLedger.js": "54afad1e49904b8ece938d4076d570a315f8846e48f935b6cf0102b074155b87",
+      "services/adaptiveTutor/outcomeObserver.js": "2cef13cb624f4322f9ba185ab92d11d2d8346ac057e85be95df9e3c6022e8f90",
+      "services/adaptiveTutor/scaffoldLifecycle.js": "7ed361335f1fac8e96e4b6f5b0de48a8d7faf89241f42b507a6cf905c1b52f78",
+      "services/adaptiveTutor/tutorStubActionAdapter.js": "f1ccf417f2e658774c8de55cafac2dcb55195e3ddedbc809b7d04999305ad0ff",
+      "services/adaptiveTutor/tutorStubStateAdapter.js": "070d1fbc7ee903332c37a4fec0fb9e40e1f0571a17bfca36a50c84972f77e87f",
+      "services/adaptiveWarrantActionContracts.js": "c43c9c7d514f9b0c0675dc656577be526e520ce31017ac8f5bddb09d70f42ba6",
+      "services/adaptiveWarrantDeliveryContract.js": "57fbf7df87818984729a04199f5fb9e24612647bb5491b1e8e9ccb191d62bbb9",
+      "services/adaptiveWarrantDivergence.js": "f12db46295ca91302659675d876ac9b300f8936bfe972c3c407c5450ea536725",
+      "services/adaptiveWarrantGateCore.js": "66f02508ad3fa5435f07e8ddc96359bc1145f4f69d0726af44bd73bf6574b622",
+      "services/adaptiveWarrantInquiryCompletion.js": "61e7f88f40afc1f515fabd94e2e1478d3eacd5b3ac23c92830cdc2ec0f8e1838",
+      "services/adaptiveWarrantPolicy.js": "9edce479cca6dfde74a2a48f8321cbd3366ee0a97e4ac3e6565b656de0212c1d",
+      "services/adaptiveWarrantPublicObligationLedger.js": "0214a8361a2735b6e53b70837158193cf2271e304136d01cc8c182a504c4c6d7",
+      "services/adaptiveWarrantSemanticAnnotation.js": "a4869583ce219a2f13bffbd85e694b3f9b71b8b336961a1daf1c95d9ab74033b",
+      "services/adaptiveWarrantSemanticEvents.js": "9bdea2332900d89421cb07467f0ab2c13db049d792f530a9d698b1b5bb0d121f",
+      "services/adaptiveWarrantSemanticPreflight.js": "286b0b2a88e9bb5371c1ea1aab5d5257ea20fdc3c49490071fac0aaabba2b38e",
+      "services/adaptiveWarrantStudyIntegrity.js": "c88edc79f58e20e0b9ec5a1e9bd387d0cadfffc706983405a1351b4ce9662c8f",
+      "services/apiPayloadCapture.js": "9de6e6a563a4862a92051fcf20429ed7270b752457bfe0d178b852ed08acaeda",
+      "services/cliProviderBridge.js": "bdd197e55e403ccaafa7662613da08a3b82d5ef772f865aa05c9a892d7595ce1",
+      "services/curriculum/curriculumCompiler.js": "3aafe7e8e8f902637b1f0fcd7ff5814f9bcf4916f929af9e2c5173f990d97e9c",
+      "services/curriculum/tutorStubCurriculum.js": "3e37a4b8bb9b88d49a1d6507f59564f6ccf2fcd27b785dadebc3ad43293fdc44",
+      "services/curriculum/tutorStubCurriculumCatalogPresentation.js": "08aa7fba02f0e8b67501f16d39d0875f87dc977694af7b88c31788123054490f",
+      "services/curriculum/tutorStubCurriculumProgressPresentation.js": "767c24b0b399947a839427ad1b673ddd87f72c659a5b5957e233bfd955cd816d",
+      "services/curriculum/tutorStubCurriculumRuntime.js": "ee72ebc58729dbf5b551bfa42c9f53b872fc45f666cb1b4eed56c8ae9960756b",
+      "services/curriculum/workplanCurriculum.js": "7b6fa138f09c05fdb04d540e045cfefbd730094e8719874c3e56ccfbb34eb2ea",
+      "services/deterministicExperimentSampler.js": "d54619998b2c8a8b2a25c5d5c55b6aa19eacb7ca89d0a06d412515e5f6a30f80",
+      "services/dramaticDerivation/answerSurface.js": "dea5112c030cf51ab45210ceeb62d8b44e498a058d2c314ff1f3ea869c496302",
+      "services/dramaticDerivation/beliefDesire.js": "0a8aeb241170a9062cde623456e8964b842d1e4578ad0e43d1ff384e006fcc15",
+      "services/dramaticDerivation/chainer.js": "026c6f855815d3ca825d1aae28e9e115551d83f62e61c50a9b8ed0e2edcee809",
+      "services/dramaticDerivation/learnerDag.js": "2130bda78f3b6bde07bcdafcae6cbaa8cc5f6b3978a4c77e1404e5161b31cec3",
+      "services/dramaticDerivation/proxyDagMemory.js": "5f415b45f0f5b3201fab906c807abd89d07fe013b6cfc4d33f01d1dffe022093",
+      "services/dramaticDerivation/world.js": "d734f770567fc596d58508204faad91954f5df845ff99b7ede9052492351ab38",
+      "services/engagementRegisterRegistry.js": "5fb91d3e70e59dbcb7ee3768d1c50adf13b8fec5058b13b16d94fe279fc3ce7b",
+      "services/evalConfigLoader.js": "f71a1b4c7155937f31bae57750f0a396348d2dcf751d425ddab89faf03ad28a1",
+      "services/experimentRunArtifacts.js": "1acd6b85b41110dd70de7b3a44d4a01f8ffb7d7d68b47790277593a5ee96fa67",
+      "services/humanCodingStore.js": "508cfe36e025dc05021e04fa811b98a12ac5c67ad9f03e8a13600661a72e67da",
+      "services/jsonlEventReader.js": "75f916b3a24e20ced3897108963ff1468762e4cec27280d786a2dfe3d062e43e",
+      "services/labellingCoderIdentity.js": "7a5f340e3488eb654dd0f5b2a0c53b109956b3222293af65971949ccd5806c0c",
+      "services/labellingGameCli.js": "2db415edf5c378dea70afd68ca5ff9bc8ed176b2c33d99cb9df59dff5274772f",
+      "services/labellingGameStore.js": "88c41697874baaa6111c608048762046853003fabc0c46e00bb12b702a843799",
+      "services/labellingImpasseProvenance.js": "af60dbc6f5d835b9bd8f8164a05dedbe976a12bfc51ae9dc13a203fdb6efb83a",
+      "services/machineSpiritsHouseStyle.js": "e66eb840561e050cfbdd292c7937b1c0e7ce206f6904b8106e04e0a945205823",
+      "services/mixedLearnerArtifacts.js": "67f3fd989ccaf25fc60dd76532c31994d56995d4c98431448aa4378e417813b6",
+      "services/program2CommitteeEngine.js": "4c45b7daef614c668c8457bbc0e997006ec00107a298dc480351f647d2eb2cb7",
+      "services/program2ExperimentSafety.js": "8e8a76a6ca17311e2051d757bbfdf09d5f1a93681609ab4634d6eca432ad9808",
+      "services/resistanceSignalGate.js": "2b8f687928201e9d036c3bee5b8a5a5a2bd286f31a06719b98d9dd0f9e45eb66",
+      "services/tokenUsage.js": "d5d06fdbf82634ceeecd6ae4fb0e1812155137b3efa69f159c27191514907273",
+      "services/traceSchema.js": "967c6329e3fcd89b9d305733112a73174f6f97be4c2b01a0ae51866ed587079f",
+      "services/tutorPrBenchmarkRubric.js": "b77a5ce1e331e5945226cc28ff49d4ccf1c71bd96aaca50d56d095444e47f186",
+      "services/tutorStubAbArms.js": "7d198d7ed476567aae8d13f8539e70c898bd7fb200313f48b7f6ffcb4e57ec8b",
+      "services/tutorStubAdaptiveResponsePolicyRuntime.js": "3a8a418c572528a3a86e9fe2d809abc98ff97f76ab90ca8836c8d8ea5a319abe",
+      "services/tutorStubApplicationState.js": "e7628a67e95d30f09896b3e33710bab31994f348beb6d08f4dde3dd30e410b47",
+      "services/tutorStubApplicationTraceContext.js": "6f2dbfa44a3406a5407a101363df4696178fba26a49b145273be1d0b7de79be4",
+      "services/tutorStubArtifactArchive.js": "e17500f90ef9deb72deaa030b1a3cf034d6ce4502f40016163d8c623188c4281",
+      "services/tutorStubAutomatedLearnerGenerationRuntime.js": "40c707dc467ea17c07ab9f7e77aa9a28050e8970b6f150c20b79443f30c49094",
+      "services/tutorStubCapabilities.js": "979f458216fb9a1efa25dac0557d1956c09a4e61f85cec8eddc6ae1ffde55802",
+      "services/tutorStubCardForce.js": "914fd103c0f8b9265af582aa6086b028b83c05354e1e34c0f32537ac6fd3efa9",
+      "services/tutorStubCharacterAdaptationAudit.js": "c525a031be97c546ba5f852c2edae9db004899a4156166f557b35f1fac9c1c01",
+      "services/tutorStubCharacterControlController.js": "3f21550d68aa4dee38d539e191cf13c85239b057169ac38fc0c9f2d0c96683fc",
+      "services/tutorStubCharacterRestatement.js": "f5ebdb6cf42d4f67724b0f5224c36f182e6e7c3f260d7d8bc6ad63a212840d65",
+      "services/tutorStubClarificationTranslationRuntime.js": "cfd6694afd14dd794421ba228a3c2c1ab6917d60d8b8165ba2fbe6115923171d",
+      "services/tutorStubCliApplicationHost.js": "1fc2429961fe6fd71cca6c21a7af17940e8dc65fa1e8b280e8501e5829e771e2",
+      "services/tutorStubCliArguments.js": "7178eb48834276cf16bf788bae46a7474703bc1e1d106e9b4d76f5e7739c67ab",
+      "services/tutorStubCliDirector.js": "ed214bac3d9788a365ddc0f0cbfacdaf872866cf699bb06a761e8ff546686dbb",
+      "services/tutorStubCliHelp.js": "e7c1efb189699e6c068b5c971eb3d4e75ecabf74ac59a8cd610d0b2fd4fd187b",
+      "services/tutorStubCliParsing.js": "55aefb18389ef8aed8078e1c9d5509a338e5e9183d8193c39e3b00f7ebcb05d2",
+      "services/tutorStubCliPolicyRetry.js": "8ecd27593477438136828ea365632327a7e769c4df102d4a94536b5d5040b212",
+      "services/tutorStubCliRequest.js": "24699e9dbe9fe9ae5b6042e956ffdaeec8872040e58fb567bc3a799a2292e643",
+      "services/tutorStubCliTheme.js": "e37d89ff3215648ce064d951c156bdbc02b44cee63c2e165ddaaafa3e487d99f",
+      "services/tutorStubClipboard.js": "32c6616d70ca559ce95bf0fc643f73a2aaa64ca2d3e53c23dd46e5dcd8a03ced",
+      "services/tutorStubCloseoutProjection.js": "93dc836fc83e04e03b83fe659095ac0475a5a67c86ec1006212f5a411fd01481",
+      "services/tutorStubCloseoutReportPresentation.js": "edd443bb2015e44c3cade4c4789a751121fcae2f2516b1fa7a619d07759cd669",
+      "services/tutorStubCommandRegistry.js": "6025fd109bd20a6faac18bd97dbd83d1773e94d9c9ff28f3e15b76a9ce008cf6",
+      "services/tutorStubCommandRuntime.js": "8a4a7e04f164bcd362f166a0acf503e3a0be79cf33557f18e8acfed4ef4c0c61",
+      "services/tutorStubCompactSpeakingPrompt.js": "a1a6c0aa242c73877d62ae1a26b6d9eee5453f3bcd37e90576224bd0c77271eb",
+      "services/tutorStubCompositePartOwnership.js": "deb0e261754db5ac9333f572eb73cd5c30b06d0919e89c678a97feab782cc1f0",
+      "services/tutorStubComprehensionState.js": "66f16ce531c2a728ab89ff58b9934ff505292e08014d3d145835856eba1fcdb4",
+      "services/tutorStubConclusionAssertion.js": "3c995d36a4979bf07ff5202ff9ba19db9ea4fbb4de3d3cfd95fab5699b1997f6",
+      "services/tutorStubConcurrentTerminal.js": "86504932dab482153dd068715de46da6c79ca3f27613da31580d237bdbc85fdb",
+      "services/tutorStubContinuousRegister.js": "7909e721e751ea4cf1af83d4693ca148d58090d430b56fb4805ee056681244ca",
+      "services/tutorStubConversationalCompletion.js": "929de78837642a53a707ab1264a6e4dcb8afab960dfd3764989d5d6aa55c2e34",
+      "services/tutorStubCounterpressure.js": "918c0a075e4bc52d593affb758fe4a42d6ab8f7bbe1df2acf343d29883696539",
+      "services/tutorStubCurriculumTranslation.js": "9b6ea1f91da742a8e9c9846db162d846e21ebf6603f9abb8885db9edff2cb01c",
+      "services/tutorStubDagFactDropout.js": "ee3965a1780d785228aa0582e14cab24fdf3e1a7ecbe913641c82e5e5cda6ffb",
+      "services/tutorStubDagFeatures.js": "ab776db94f5a2046712acaea992a224c3d5f82c3120ab5ad93752f07f6d10a6d",
+      "services/tutorStubDagSnapshotPresentation.js": "f436ca858e566606ff016c00bee4740828acf7f5a105050eea4a5203ab6f4e0a",
+      "services/tutorStubDebugIdentity.js": "ce23c90152731dcc614cd39aa2937930ebf9ca34449d2fec3deb579f7a4d74e5",
+      "services/tutorStubDebugReportRuntime.js": "e2655289a6356de949d051d3e56842c96467042e8480c1b6040a806df6fb3868",
+      "services/tutorStubDevelopmentSpeakerTransport.js": "c2030e0c3c4a78ce442949d12138ba4c80cd934a36681b0f1005efd9bcc57c7f",
+      "services/tutorStubDiagnosticCollection.js": "2fb25d868c7018f473060f789a6cd4fb13446041ce9c4dcf8beaf63e9170b058",
+      "services/tutorStubDialogueClosure.js": "52a9f773e5cd58041eae5e2d459a6e027cfd1391bccd72c5ee4588bcefb00cce",
+      "services/tutorStubDialogueSettingsPresentation.js": "35787c11830efa145b510e561c62fdda3ff5c9189b90b3045174ef9f4e711f34",
+      "services/tutorStubDirectorGuidance.js": "6ef257e714906395c19c56a6d5f3d21d6bdc775c24ccac898534ad95a6cb17ea",
+      "services/tutorStubDirectorPresentation.js": "cb4c8446c9a9416f1522b8ae4129b5e793eacde79110cc9ff530d8fa9af4ddd4",
+      "services/tutorStubDiscoursePlane.js": "1fa187f01c2a72b704d1d69632cb4272fed8f36f108243cdb92e93729ab331fc",
+      "services/tutorStubDramaticRelease.js": "1496f3550d403bdd84f6cd4665959671c8b62890f29de3d59b45091f46460361",
+      "services/tutorStubDueSourceRenderer.js": "c94e2f8dd394aeeccad6f2def07f3813ce966e113161ed2935a6c2d77bfff186",
+      "services/tutorStubEngagementOperation.js": "a9f7dff5fa115e5b147e7e8adfda02f88d2f26be2d416ad026f9e5bac0d74dcc",
+      "services/tutorStubEvalIntegrity.js": "629b3c5cd984952e876a706c1f77680ca02dea6e845612d54d3a997f51972281",
+      "services/tutorStubEvidenceAssertion.js": "8e9732a28f06e5b13ca04ad2e85bd357e63a8af595061f0d874fb46a8a2eed9c",
+      "services/tutorStubExplanatoryDebug.js": "befce62c00e3666543df1bfd4fad31ebd181300bd17bd1808ad7be98597a4cf2",
+      "services/tutorStubFactModel.js": "d872b56700805cadbeb7891e3156600f4368627fbfbd6684a087f74ccf34f390",
+      "services/tutorStubFeatureMap.js": "510d0062e0149adce9f2c2c84513b4e5859d0636343e1316cfbe4b1eafef9cd4",
+      "services/tutorStubFeedbackLearning.js": "d0b2b0bbe107d26bcd9419486f3430f9e969a6c304d61eaa22e832e40fd73ab0",
+      "services/tutorStubFeedbackTuningController.js": "d8d2f290b8f6b5343b0878b4fe81cf322446a7bea2f82e7064a7fe1277d7e355",
+      "services/tutorStubFieldPresentation.js": "31d8bee07b73650cf3453d467d5dc833d99e808b138f2f7b0ccbe53811a39357",
+      "services/tutorStubFieldTrajectory.js": "2707e85c647ab73ae6c69ee4beb2af3aa1d3e7352ea6be5611d983bd343c3779",
+      "services/tutorStubFieldTurnProjection.js": "609f54c2863131cf77822d4065b7909f2b0d884d2e3bbd8e75b65c514bb631f8",
+      "services/tutorStubFirstDraftCampaign.js": "8148dc1ff688ad1d6af58c8becdc8acb897ef566ea812898575b205f986948da",
+      "services/tutorStubFirstDraftContract.js": "868c5ef7af8677a59cbf391cc0948c71cb567802e4d7d15d6f980366db707a29",
+      "services/tutorStubFrozenReplay.js": "f03a98953afe92cdabfa74f8ce604bc2759919ad1a8db3d53c3873b10639ef1c",
+      "services/tutorStubGenerousInference.js": "75da9f24b25d2150753f15c00ffb9748d04ca4a864d3346294dc3f076a5448f0",
+      "services/tutorStubGuardAttemptProjection.js": "8869b4b84aaec6e1a8c7370fb0cee87adbc91d275e4387f799152d0943c3f3ae",
+      "services/tutorStubGuardDisposition.js": "5bafde3ee2f287de36c04ba952650b3b701646768f6d684d7377f293f7917bd9",
+      "services/tutorStubGuardRecovery.js": "a33b294efefc746ec3ec09dcbbbcc6ade8fb87c5fe8602c1278a5fec2dcb4085",
+      "services/tutorStubGuardSpanProjection.js": "e34e4d37836ae56b7dd63bb02aa8a15315e0a6fee1b3d172ec3f9117255087d1",
+      "services/tutorStubHumanDiscourseConfig.js": "e86468ef82d4ff172fdf84e1227d63a53c387c70a0ce6f4976684b874622da6e",
+      "services/tutorStubInteractionModePresentation.js": "30de5b09cc876b9201db97fcafbd17eafb1a928dc4b9a1170fdebf5e25e97e24",
+      "services/tutorStubInteractiveApplicationComposition.js": "bc3f171cef598bf364b7446c093a3ae093b49a8fd23c8a2e8b70784920b8fb33",
+      "services/tutorStubInteractiveAutomationController.js": "33fc37f279731985137fb953682a9dc5be21690ff11875b3c85ffa3e75f8fcf0",
+      "services/tutorStubInteractiveCommandComposition.js": "ef72dc088f87ed0a255314ce8f7f242ccceca1744e18baba5b999e9817d1d5fa",
+      "services/tutorStubInteractiveDialogueController.js": "1c13545b0d0ab8ba75aba0c2070076d80da4f72e993f18b8a11177b6bb83dd5f",
+      "services/tutorStubInteractiveDirectorController.js": "1918a2de1646ae616be1770177d27c93b79cbcc489596f5f41d3129884b2d4f7",
+      "services/tutorStubInteractiveHelp.js": "add859ca79813267a1082e24b36bdf1e6ae33237755445768d0c764164990b36",
+      "services/tutorStubInteractiveInputPresentation.js": "5dba3247fdbd809c3f4b0f72e8b218274d2744866a64b2c09e599f1a69693856",
+      "services/tutorStubInteractiveLearnerRuntime.js": "1306d20b41e711e42f0f1005c77dc6bd909bf7c87a911761cb230cf1546552dd",
+      "services/tutorStubInteractiveSessionController.js": "c0addcb276e0f117b8f2115e93b7525ab6ca2df9895cc77b60c20cd90a924cf3",
+      "services/tutorStubInteractiveTurnController.js": "bd1d67e1bc744f7f4d4d556185ca0527f6b740a54999de8311f9ab4afc7fe1a2",
+      "services/tutorStubInterimController.js": "7a817adc18ef6a4fb830c5ddf55753d797e3a1233713ce6fce1de90f7a67c83b",
+      "services/tutorStubInterimPresentation.js": "b87a588b6681a8c88102b123b38aeed5763881202ad99c4aeaf3e3804cb9062b",
+      "services/tutorStubJointPerformanceFirstDraft.js": "5483c370900bc5303583d130a1fe9378675f6b243cde44e4cbc1209cf42bfb54",
+      "services/tutorStubJson.js": "4cc043bd187219f2ec5002355d9474b876725637df4473ebb50ec3b5deba8384",
+      "services/tutorStubLabs.js": "45668a759729574d1019aeaedaab5c61e023b42862634a816a8bdabf68d087eb",
+      "services/tutorStubLastSettings.js": "55aaa18c5127a6577d5ad73ab6e76b065d3b54b1d17178cbd38fb8c7059c11c5",
+      "services/tutorStubLaunchApplicationContext.js": "09645a683f06564bbabee78c556d30bce698031e02ed6830ca26a965612eb6f2",
+      "services/tutorStubLaunchMode.js": "70fe7b6d8b0c761e4eaf2ecdd644b95ff8b6f06c08247d4cf8c94534c7d5a1f8",
+      "services/tutorStubLaunchPresentation.js": "e8ebbfe18787b2b56e0fb9c1750ceda38ff04676a4a6ba71ad43f13bdcaa89c8",
+      "services/tutorStubLaunchRuntime.js": "cde117cbdd0c6991bc825b0a3db71cd85203720c00476d0c2ae472e3edb47f03",
+      "services/tutorStubLaunchSummaryPresentation.js": "05addba9ed6c28d2908c31515c2e47e7a427f3e6a0445f8b85587374d0f4d44a",
+      "services/tutorStubLearnerAdvance.js": "73ce2ed2dd120fc6fa7ffed9ecc4398c992d8165a1df792acdc29b8c7aee7e6b",
+      "services/tutorStubLearnerAnalysisRuntime.js": "856cfd019c2d5b163fe720fdb6702403f6e3de59674074794cd15906b452da48",
+      "services/tutorStubLearnerClassification.js": "66b4fe087ab30c088bf37c4b7ef3026ae54b238a75a781697b8dbfc257f32203",
+      "services/tutorStubLearnerClassificationPresentation.js": "c0fbde7fcbb4f3381cad90ccd8382cc3cda7325ffa170a122ab4ae179d81d2f8",
+      "services/tutorStubLearnerDagPresentation.js": "9eb957b072495902ed51de9a0a93f5200cd9e22bde6023598ef364b95c8ba3d6",
+      "services/tutorStubLearnerDagRestoration.js": "e7ac355959f3a6bed85f5eccccb171b03c7cffb0bb74ddcc5d4a2f9737c135c4",
+      "services/tutorStubLearnerDagState.js": "592465519007369b3d4a6948983f97a366a232bb411bc6a07addfcd2d4ae3549",
+      "services/tutorStubLearnerEvidenceRuntime.js": "4806564bde3c544216695dcc9000ed83f3b22d7bb7919b91fe3b82a7e4a09392",
+      "services/tutorStubLearnerResponseProvenance.js": "a5b4e75663b5a7e7ea2ba41b6fa2fc97a0b846dc3767e3315afcc2817ca2d43e",
+      "services/tutorStubLearningSummary.js": "919caa68af98c3d2f6b025c05546bcbfbdbf38003e2051263f9a622df51c65a5",
+      "services/tutorStubLearningSummaryHtml.js": "7316018168682c0e5c4bb069c6b9a63a6819c004b132dac27835d94fe06ab47e",
+      "services/tutorStubLightAdaptation.js": "c7d2657ea8480f574b12b30e9db218b02988ab9376aa1535977acd8fd8beaa97",
+      "services/tutorStubLineSelection.js": "d5dd125bd501257cf8c26c74ae40b61b2a98782d5704271f86214cc9f9dec529",
+      "services/tutorStubLiveFirstDraftAudit.js": "b9c0bb5eeb532fb26014ddee8df7901d9fc540a7e45f8244e4c42f5cbd04a93b",
+      "services/tutorStubLiveSettingsController.js": "b7c516115c35a80eac81bea0293c53ba2d73f2fabdeb88edbd7d1e3105ac2a97",
+      "services/tutorStubMannerSwitch.js": "2faaf0dcb4af5611c418f0fbaab6510bb73ae97e2d4e3659b2f66a2bd162192b",
+      "services/tutorStubMixedLearnerController.js": "cbd2038f5306189a629ba200aa3315d2a3b3cd38d6c823bca1bba62db2c6cac9",
+      "services/tutorStubModelChoicePresentation.js": "946c3922fc2e39ba5017981239b472bb7cdeb69e7733df6a96e3af97c102b64e",
+      "services/tutorStubModelPickerController.js": "bde63974754562f967b1a5bbf6875f64b99d352b05fee0c2a9c596f18b27a010",
+      "services/tutorStubModelTemperature.js": "fc416b0876d2aef396fd72d79c171f1ef108ef81fe2e7fe32866a9992637b48d",
+      "services/tutorStubNonInteractiveApplication.js": "ce50a1006d8181118084febd5f289f66d2158efd8b54d0e90c191574bf61d8eb",
+      "services/tutorStubObservedAudits.js": "9f7fb2f9a4aa3c9359503cd0d9911615b458376c5531cddfc3b107f11225f1c4",
+      "services/tutorStubOpening.js": "2da2114e6c6040c19eb96b7551689a046e8f0c0739308b3ffc60425e653d2cad",
+      "services/tutorStubOpeningRuntime.js": "453244d3b2e96bbcd3ef531434fb1e456166a082f8f3d11be346cbc0ac538eb1",
+      "services/tutorStubPerformanceAdjudication.js": "daa376335a7624e79509403c04470c3c944dc0e8c218575a1e73db6ae6e10d9f",
+      "services/tutorStubPerformanceControlController.js": "10ae2ba9c0b1481d87807e6e58083188cb88f1efef5e321e0660c86753e861b2",
+      "services/tutorStubPerformanceObligationContract.js": "762642fddc19823f63e2c098df5e472e6777b12221c7272d867bce3bce78ec80",
+      "services/tutorStubPickerPresentation.js": "d6b367411207f592b3633e2ae2fcc4b84ade396d9947e5e447621407f679da81",
+      "services/tutorStubPointOfActionCoaching.js": "b69bd833551582cf0fa0e3e259590769c6dbe072ef93cf1f18151f873ecd7ccb",
+      "services/tutorStubPolicySampler.js": "2256bcb868ca52caa8e0d32801f43573e41e095d02cc9cbc79c220948ff0cfbb",
+      "services/tutorStubPrBenchmark.js": "3327618ecd4da4235c99976f80733f59b21704e4176a4bf7cdab71bafc3196b8",
+      "services/tutorStubPrBenchmarkComparison.js": "92a3ccd223255cf3df22b6ebf022e8b857872da96a1eb27948faef2139f63275",
+      "services/tutorStubPrBenchmarkHook.js": "24fe445b2bc24735e1498ba60c003b997e878cb71a4e21ce7e3a6b3735082786",
+      "services/tutorStubPromptAudit.js": "1fca7215f63d032b88b93107361036fdfd2930cd7eb493a3237f42eabfdffe4f",
+      "services/tutorStubPromptBlocks.js": "ae3dee1a6554d2dde6a3e2176818932955d92cba421e8be834175e10679f3a0e",
+      "services/tutorStubPromptSizeReport.js": "75381b0c5bb68b675d3d632ea8782c720d3da24f130cfb26df0c5205e0699379",
+      "services/tutorStubPromptTransport.js": "8bd61940a6c52a9fe2621a277d5acd62e68219ef83c30c3a398fc8e5bec5a902",
+      "services/tutorStubProofCommandPresentation.js": "647944ca5195363b4c1b8fe3951132177b6d62a5094b6ae035c00334a2abcb83",
+      "services/tutorStubProofDebt.js": "87c9ec84de330422f90268f89bec6b139c7c6b1bb6001d45f94e8575aedd63ab",
+      "services/tutorStubPublicEvidence.js": "c62d575f485b5024fb2c7a1dab572ba2a43c2e64e94a4d6cf9b3c6da7067f80a",
+      "services/tutorStubPublicHistory.js": "19f0bed94c1c5c405e165e00fb33ac0b0ef7e3c5076c95c242822195911f127f",
+      "services/tutorStubPublicLearnerAnalysis.js": "95cca9bff8a9a01d6650a96812f6c12a62e61a05977c7b2b66d45d731bf9972e",
+      "services/tutorStubPublicPresentationRuntime.js": "371b38df4dd79343bff13fe27e74cc32021e76f2e41cfbf6b548cc4af2fbf574",
+      "services/tutorStubPublicProvenance.js": "6711f69a585a012d549ff9d23feaee1be8b54c69a03a20f674e54f9531323096",
+      "services/tutorStubPublicText.js": "95a0d4b1e2d4e25044369b6bfdc378bda8734de99bc76f9c059474dbd3fb833e",
+      "services/tutorStubQuestionSupport.js": "6084936a3dd7093a14b4ef76eb6914549064bf095bf7bc1c8b5e15eba168dfa3",
+      "services/tutorStubQuietDetector.js": "de4980e4961030e31ae87ce29a7580069740418280f23b435f552710ab9b0a43",
+      "services/tutorStubRecoveryAccountingRuntime.js": "fd5b60a41e7df99fd31b4bf28c33ea2aaed1c4df8fedfaccd1569fb532f105d2",
+      "services/tutorStubRegisterEmpiricalPrior.js": "93415f3d35ee99d45538d542b069186e60d39313dc027253e9dd55326dd42f41",
+      "services/tutorStubRegisterHistoryProjection.js": "9bc0179bf2700929509baa677738ae05500b6160d7b2c7004a37d37f6a56b7e8",
+      "services/tutorStubRegisterPalette.js": "de4142636025b2529ed70982511eab196d07ca65e6d15d3d3f24c4c70acff116",
+      "services/tutorStubRegisterPolicy.js": "fa04f7f92a6dd75998c92a026b682aae8823c7c1f98e97718ba945aa3a3653b2",
+      "services/tutorStubRegisterPolicyComposition.js": "1c21d527761d89f76d9effbb1286ae58da3d03214b25d35d6cbba905c8993163",
+      "services/tutorStubRegisterPragmatics.js": "d2a5d4d47c13ebda8e7ecce52e39aaced51bea2162569d7b9aee86ff1281c4cf",
+      "services/tutorStubRegisterStateRestoration.js": "864e3713b234df3241b615a45f0178fba85afd96ece69de84db51ca9071e9b8c",
+      "services/tutorStubRegisterTemperature.js": "5f9b24630f071c774f5d4c3c4c9a2b7d6b88b83b46b8dd14b8d4e71321c25efa",
+      "services/tutorStubReleaseNotes.js": "abe5ea0443a86176e8cf690dc1f05183e138569dcf02eeb94a96b47b5b41cae1",
+      "services/tutorStubReleaseNotesPresentation.js": "ac674b8da78d47e0193ffc99c6728548faca78805b3fd45bfc842e833cb6fa1c",
+      "services/tutorStubReleasePacing.js": "0940332bb908ba4d84257d15f7374ed871ef6575e5871e8f02dc167bfb2af186",
+      "services/tutorStubReplyFeatures.js": "a95d0f29be94323d0bd25233bfa259b12640843f3c4637dcce4fb6e212c4b0cb",
+      "services/tutorStubRequestedEntryCausality.js": "24ac54fb696193ef06593e8de02fff8437cb3f5d30d5f81fd783dbf4d41ee955",
+      "services/tutorStubResponseComposition.js": "a157d40940ac0ba1d2d937e7f88cbea412e4a3015bc284903f3ec338919cb385",
+      "services/tutorStubResponseConfiguration.js": "ed29a9e6c03cd6c5f2e57be8df58ab3e40f331adb47ae161e640cdfa9d5c7d94",
+      "services/tutorStubResponseConfigurationPresentation.js": "08caaa58f1e251b732904b348061a06d0a8e48acec1a88d027d49d5c53294f34",
+      "services/tutorStubResponseConfigurationSelectionRuntime.js": "b68c4013975722d6872ac2a34d48062bff400631323c777c11e8590126d95499",
+      "services/tutorStubResponseContractSchemas.js": "d0a0abe06f032930b57435f9ca0da7c853bb31fe7c5f2943c917b79c877f537f",
+      "services/tutorStubResponseDetails.js": "b129e3d9f68cc43e21402a2a4dee35d49d64da4a0bc6b4c1f73939e9df4db821",
+      "services/tutorStubResponseGuard.js": "673f5fd2255155066016580280b609a27d4f82634d7737a8844af5bd132850f4",
+      "services/tutorStubResponseLeakAudit.js": "0bfc13ff03230e98edb01ea978191a14da992c417d794a4e91d3ec10212b849f",
+      "services/tutorStubResponsePolicy.js": "a0b29dbcbdcd93c30f4858597b03f99135fa71ba76f57d70fefcbd6d8214e9f4",
+      "services/tutorStubResponsePolicyContext.js": "b93c96c6f7ee073430a64768f1466e5c2d6e5aaef54aafb75805acf15fdf5bed",
+      "services/tutorStubResponsePolicySelectionRuntime.js": "471dc3065dfff6d28178250d9058f51770702d314d69675862627db593cde5da",
+      "services/tutorStubResumeHandoff.js": "584d7441c9145b4f1963eecd51df61457be5566013a4320ec7ec51a2b4fe567c",
+      "services/tutorStubRoleVisibility.js": "e6caffcbce1ca9c9c15b577e866e04a12285f559056a5dc78720c469e6c8257b",
+      "services/tutorStubScaffoldState.js": "d2c046641171d7b2742b04fa5dde6b7425e332c2fca39c6709247bb88500b4dc",
+      "services/tutorStubScenarioController.js": "d1008061241b95c955b8d6840149186f2082a299e070edcfa4dfb2d3b8ebc4f5",
+      "services/tutorStubSceneDiction.js": "038d32260c59788d2b86db5efb08de393f197b77f10f7521f968a15c6fc37d83",
+      "services/tutorStubSelfCorrectionDisclosure.js": "a415826630fa27d75cfe338803a36fe65d5981851a763f6c126b8cd0466ba8d7",
+      "services/tutorStubSessionApplicationContext.js": "c132acd4f4649154f4d5a7fe9655f67084ac29d1726dade2a078d36ed21a341d",
+      "services/tutorStubSessionApplicationRuntime.js": "30f04775c6ff247073bca804128abc60e03c6e816a83fae74223858d74fdcef3",
+      "services/tutorStubSessionOrchestration.js": "f0b1f1bb2814919b365edf0b9493f459b165617140a35ede173cc776275dbf5e",
+      "services/tutorStubSessionRecipe.js": "cd665455ea85f96d78c2f6d3d01b490ec943e64e73f7fc0b07678b6ef0277617",
+      "services/tutorStubSessionRpc.js": "cefaab00927168c49deca79bcfc24cb6959158e6a93bf422fe6a029e8c0a60d0",
+      "services/tutorStubSessionRuntime.js": "41635943c91a121af3c47ca2afd0467c9d0c683fe261e213fedede09358bbf9e",
+      "services/tutorStubSessionStateRuntime.js": "a922b1922e2c0c454fe3bc467973991c6615c0069cf50d2185b36fbb862ba72b",
+      "services/tutorStubSessionStatusPresentation.js": "783ddcc400965db86a110ae6398c65d044869d1301e0bdb6e51ddd4b9d9818ed",
+      "services/tutorStubSideArcState.js": "a9b2962d428156ac4f13177a60a0a452f8df95d1eb0f575f8b6f6cfc9b23d9f0",
+      "services/tutorStubSourceAccessibilityContract.js": "ebc9b778bdf63a5bb628e830a54be22d08b02cc13812c93be06cf39451c829e5",
+      "services/tutorStubSpeakerPublicPremise.js": "1f97e42fbe44e2e80da0e726ccb1c8572a35d422677f8e865a2d7722f96db197",
+      "services/tutorStubStageSpeech.js": "fe3a7d01facd4189f919e2fcd4df4aad6f777d69af5060f9a7440fdd1a8d1bad",
+      "services/tutorStubStressSchedule.js": "5e88acef8e9ea2c5574d3e1c2e0e93a279cc3b68cdaeb88e472fe42892776cff",
+      "services/tutorStubStrictDagAuditState.js": "a60a0b74101c478015c1e80fb5832b51c8ed356918e543dc029e65b9f02f9c19",
+      "services/tutorStubSurfaceAccessibility.js": "761ffdf441fcdd692bdc6c4c927018ee5bd4d09a34f8ed34a76511d9a5e23cf5",
+      "services/tutorStubTechnicalAnalysisPresentation.js": "8d7bf798eed6bb9f70997820bd424b67752a502d597f8c9427c2c6a58762e26f",
+      "services/tutorStubTechnicalDebugPresentation.js": "7f90c8385c84955c0d2638c96c27969f1e817b338a27b0a1d127b31757359321",
+      "services/tutorStubTerminalHost.js": "60b7b918d4d8bb91e9045c578a758a281390995b63ef82ffb2ca45677b658754",
+      "services/tutorStubTextProjection.js": "497af35e1bb9fdc30912c4a2fa0b0a8e23629479b39c16e4e47c63c81cd17603",
+      "services/tutorStubTraceRuntime.js": "db025e4f5b30f76d8d14a6048662cef50afcc9bfd053ccd5fb00c9eb5254b1e2",
+      "services/tutorStubTrainingReuse.js": "8382eb5eb6e53bb73d92d4079d0596004d1e345bc8d5734305f75680a74166c2",
+      "services/tutorStubTrainingReusePresentation.js": "40a17912e16f9357864fed5e09875ec2d524db4b5ea1655e598f344d32397e5a",
+      "services/tutorStubTranscriptHtml.js": "b6e4af8bb76c3b099af6989f504688cdb56fe34cede8c719f1fea798a1695d91",
+      "services/tutorStubTuning.js": "ad1e9a97f36a427c0580a54ee7932be38bc3334362ff7af0ae47d87a16b25f2c",
+      "services/tutorStubTurnAnalysisPresentation.js": "4d160d8c0beacb2c6a83fd060e771154f2ea5f041545871fd2d6af2b37e3d686",
+      "services/tutorStubTurnAttempt.js": "61c50fd241c2668ee016f05cf1636107d21612c7850659e987c9e1ad01666bcb",
+      "services/tutorStubTurnFailureBackfill.js": "c7a2c4e7afe930031dd7dd1f5c1037febc918b6a6556652e80225f8b318c5171",
+      "services/tutorStubTurnFeedback.js": "72de4a33660f2bfcdde7a86309f04841dc055ccfe39c2efd6ac5773feb4fa572",
+      "services/tutorStubTurnOrchestration.js": "41f05cf1a3fb4609e1c6cd1f440a8d26a25d319168842edc5a5e6fd0ef5f5057",
+      "services/tutorStubTurnProgressionContract.js": "f0bf946a9a37d2ec848dca9de85f211da5be007bd45b788a0d435cf735894cd9",
+      "services/tutorStubTurnTiming.js": "ee4a7278c5af923c13c7a7a2ecc07711de60e6b9acc604f68ad390d31c8993df",
+      "services/tutorStubTutorAttemptRuntime.js": "a4e2f1a3655908e5bd68fb172b010b03d6139cd66462f43799a71ea356fb1dc7",
+      "services/tutorStubTutorCommitteeRuntime.js": "fbac7cc76687c709c96633a0e62329f743047637b1a300d7feb9d94d4259112f",
+      "services/tutorStubTutorDeliveryRuntime.js": "1863417dee483bf54093fa7f848757ea1470b95b725a7dc7a2713f9dabb407da",
+      "services/tutorStubTutorDraftAudit.js": "9e5b292649d7e9ec4b2e60deb89c5f8a584f0c7cad7fda3282948f76235cfacb",
+      "services/tutorStubTutorInstance.js": "eab79d24a517139bee68d0af715ef54e327c178f4effd613fa4a95962355ed39",
+      "services/tutorStubTutorPromptContext.js": "91ebed1d297e5f46c9d0de27da09f9c5c238e462433dbae56c9da03f1237eaf4",
+      "services/tutorStubTutorRepairRuntime.js": "b259faa7bdfd3025a3ee6dcdd94631e6ff9ad070bd9e0a2f5fee1bc35a574b86",
+      "services/tutorStubTutorTerminalRuntime.js": "5420424887d9d10a60a5657b76af6beec2a113d8eb7c02d1985907aa73d6e282",
+      "services/tutorStubTutorTurnPipeline.js": "ed2a8742b01ad1d05191b721d0f60bfa0f9409f9f3113aab2c8e315a7ccf886c",
+      "services/tutorStubTutorTurnPreparation.js": "8350ac43d4483081d9a581cdfacb29780812c783ea1b3219726ed9683f54e453",
+      "services/tutorStubTypedActionPlanningRuntime.js": "72c80e1229f0db7a1c8bc87ba722066a77e3b80c5d027d2c0c30a86fed87aa5a",
+      "services/tutorStubTypedActionRestoration.js": "cd9d48aa6d575d423af06e1e451d72aa52a97b27070d135ebc81ae50756b6506",
+      "services/tutorStubVoiceBridge.js": "517ddf0cd8b82baa8a7eff4e10d5291d02a1f191cb224cdc871f9e0f9b35b365",
+      "services/tutorStubVoiceController.js": "4d7757e90e2363f7ddb19ccc712c365c9b9ef4edc98f234829394deba509ad5b",
+      "services/tutorStubWarrantGate.js": "db30f563bb5107544f0f64677410f3e67cb2f0f2fbe573d4c5d66976b791fc24",
+      "services/tutorStubWarrantPremiseAudit.js": "b292d8ede7c00828873a930c8bccf3b96372ebb4dee7affc5abc0c6246b5253c",
+      "services/tutorStubWorldPresentation.js": "02df801cd8c1edbe4bad5445ada48e39fe127520541833553b57b0f1b3daab96",
+      "services/tutorStubWorldPromptContext.js": "cf26365d90e4ac9a5da50c363b052e3cd0dfc28996b1f0faaa883417c7aba43a",
+      "services/tutorStubWorldScaffold.js": "06ae8ca5d8aa5bb170a7a47305e6b6dd8e634cb5d5d47fc43a899b8f5b9183a0",
+      "tests/adaptiveStateBenchmarkIntegrity.test.js": "c735074451fffec2baa12bef45f035bf47a0ac2f6f6bd6ba3010e6b777185f29",
+      "tests/adaptiveWarrantAnnotationCollection.test.js": "f6cad726da81a2658bf0d552cee0c56fe6d5685a8125e5f5a5bd6c6f574943b5",
+      "tests/adaptiveWarrantBaselineStudy.test.js": "b674029a8cf5affd939bcda806b13bee05b6d86c3b8a1ab30bca115d4f1ebd90",
+      "tests/adaptiveWarrantGate.test.js": "096ee89bba5f48e688ef5c713f663ee2c0e6c07f7c52f92c25adc01a282d046e",
+      "tests/adaptiveWarrantSemanticAnnotation.test.js": "2842b628e8711b2ae7896e29b035040083c32ce18824986e3fa76d57134ab61c",
+      "tests/adaptiveWarrantStudyIntegrity.test.js": "45d72c60fb08309ee4b60c37042f6671742aa98c65348d43ca1bbf59364760d8",
+      "tests/tutorStubAutoEvalEvidence.test.js": "e60445f54b5bf4090c57a62dda9295fcb04fb143ce316f69ea96141f4057f833",
+      "tests/tutorStubFirstDraftContract.test.js": "3cd8e1069e3d460363b2af868ee9c3fd8128293299b0e0f0764cf02f08727028",
+      "tests/tutorStubGuardAccounting.test.js": "bb89320334d1a9a0176a5299021e293240f68f6541e92ec4ae4e3bac4cd11b95",
+      "tests/tutorStubGuardDisposition.test.js": "6babb2f5f674b5ecd915b7bf48dff7bf595e28bb4b43de7085b2bfefaa3b69fe",
+      "tests/tutorStubLearnerAnalysisRuntime.test.js": "e55e0d5f0301fc8350cd16407324bdb1318388906dd3056d6383899f0fbf62f6",
+      "tests/tutorStubPointOfActionCoaching.test.js": "e3bf9723986897e15a4694821d3f24fd455e999ae852cd8e5e9780143cb7e57f",
+      "tests/tutorStubReleasePacing.test.js": "f88b7caa5989f3e9dca1fef771a1e874922079e8ad37b6203361dfc86a6dd56e",
+      "tests/tutorStubResponseConfigurationPresentation.test.js": "901c120d0ebd472876a319827509902724c80de0a08f1612282a8744e898efaa",
+      "tests/tutorStubTurnProgressionContract.test.js": "7ac6ba43418bfa51cf38703d80b2c8f16bf73122ef48ac0634855b377edf32c9",
+      "tests/tutorStubTypedActionRestoration.test.js": "db5d9de3194a1fae9871687a1cb58e236033ea67c11275b7bc90197fdb8ab9fa",
+      "tutor-core/index.js": "b43486980cdeeac05dd3613d5fd11ae443b0ee017e2c8f3adf4e65b10df23352",
+      "tutor-core/services/aiConfigService.js": "9558e6c8e5b7b3ef1c39494a3f4cbf431f52aad6d114ca21923b35429e9c9f69",
+      "tutor-core/services/aiService.js": "4e952a7918f8287046171a11f7d8f7402394e568f26a53a2345c5a65d9478097",
+      "tutor-core/services/configLoaderBase.js": "4b116bed9ac0eb189065147df25e70d9836d097bb8eec3db67580bd0a92e5bab",
+      "tutor-core/services/dbService.js": "d1e1d88c38f5099ec3a52f60abb3ada9cdaad30166c9b44c167ce89ff7920866",
+      "tutor-core/services/dialecticalEngine.js": "2e2dec0c3aee6244859f988a903fa7a12e1fec19348d0bcf8c7c83cf0f59d051",
+      "tutor-core/services/dialogueLogDirectories.js": "a478a542e653c49998686192bb8643c2e18604abdcba15045073f50112e325e4",
+      "tutor-core/services/dialogueLogService.js": "bb8259dfc580e933a0ee9ac82126a8a2bd2c1a2b6da4cf8e02fa49b22d013318",
+      "tutor-core/services/dialogueLoggingState.js": "af2d8f3e2743d3206fc544c4395c112be020e8451e69d4d6389d8853a6bc8353",
+      "tutor-core/services/externalAIProvider.js": "ccf0da807a42bd1d3893b05fd654d817846d9e51277ac9e656dee406204efd54",
+      "tutor-core/services/learnerIntegrationService.js": "04505c9f85dd425048c07026f218abed07571b3cb90b6b0a47e36d871798f524",
+      "tutor-core/services/memoryDynamicsService.js": "5d2d2a0ae439f3c828808f02dc5d08def68351b382695b69a868dd1a70f3845e",
+      "tutor-core/services/modelResolver.js": "19b84109cb6f9dab4fea2146688792fc910b88cca5140bbc1b1d929aaab2396c",
+      "tutor-core/services/monitoringService.js": "b10edd978470390c93ff3c26cf48627ea20245ba582cb86744d50cf8412058f3",
+      "tutor-core/services/pricingConfig.js": "0704f0d201508dfae6b36cbfebd5eaaad713fb07c935c15b22ddf4dd98bc9727",
+      "tutor-core/services/recognitionGamificationService.js": "4e4e110631c9b02cbc89cfacc34197174235b9f3aac8137f3acea81b75c6fc4a",
+      "tutor-core/services/recognitionOrchestrator.js": "11f9c0e2505026fadd86da469903e4ca4d79fcb652e6f46fbc07b07a1ec3d5aa",
+      "tutor-core/services/sseStreamParser.js": "eced2a75c63b0be1f15e27d81045b31f9e33707feff2077395829009f31f0351",
+      "tutor-core/services/tutorApiService.js": "5e8db53b53813612d42aeab416e002f0209a6648ddee1b3c75d51469fb57205a",
+      "tutor-core/services/tutorConfigLoader.js": "d4494294af884f37b07458889a3f29121fcddc96e46ebf57a3f984ccaf89fab1",
+      "tutor-core/services/tutorDialogueEngine.js": "f216e9964b96412e29fbff216acc1c8a72c974de7e498e6e371f9cb93438a914",
+      "tutor-core/services/unifiedAIProviderService.js": "6428dc03c26cd107105e3e42636347f7b148ca9be0df696754602838c9dc1547",
+      "tutor-core/services/writingPadService.js": "2faef8e90403812ddd329d3fa61225d68db1879c76cc64e718c73f3e3a81bfdc"
+    },
+    "combinedSha256": "c18706a6b9c75f59570e631b8a2021c4fe40489728882c11ec5f529a01a2513b"
+  },
+  "semantic_transport_rebind": {
+    "authority": "docs/adaptation-refinement/relay/052-reviewer-direction-presence-gate-confirmation.md",
+    "original_source_commit": "4c33e6dfa9c45a50cf3a15b7661908d007796703",
+    "repair_commit": "ed19be428abdaa07055ccaa8f957d22cb8f86920",
+    "corpus_and_semantic_surfaces_byte_identical": true,
+    "new_model_calls": 0
+  },
+  "guarded_reseal": {
+    "schema": "machinespirits.adaptation-refinement.guarded-instrument-freeze-reseal.v1",
+    "zero_model_calls": true,
+    "contract_version": "v3.3",
+    "reason": "The A1 freeze names a schema-acceptance artifact minted before v3.3. The guarded manifest is re-pinned from a v3.3 acceptance ping, so the freeze is re-pointed at the same artifact. Every other field is inherited unchanged.",
+    "inherits_from": {
+      "freeze": "/private/tmp/adaptive-warrant-v3-matrix-live-489f2429-r38-s514/annotation-freeze-manifest-r52-presence-confirmation.json",
+      "sha256": "6a64b31fb57fa4a60e6ef4a42414c422d9b0e2964bdf6ee8491193fc026f3c5f",
+      "source_commit": "ed19be428abdaa07055ccaa8f957d22cb8f86920"
+    },
+    "replaced_binding": {
+      "field": "semantic_instrument.schema_acceptance",
+      "was": {
+        "path": "/private/tmp/adaptive-warrant-v3-schema-acceptance-carryover-ed19be42-r52-s514.json",
+        "sha256": "59e3a6b05ebad416ece70160b59e1efe255d773421243a7d980db6be261073d8"
+      }
+    },
+    "provider_response_schema_sha256": "149171804550890f34d8d662f358762c9ae35e689343eab87df0142f30ff1a12",
+    "acceptance_source_commit": "27bcb644b691991f8e3a15b1e970904c2c29d48f"
+  }
+}

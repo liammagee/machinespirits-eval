@@ -19,6 +19,11 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
+import {
+  OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
+  OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES,
+} from '../services/adaptiveWarrantOutcomeLearnerProfiles.js';
+
 import { isUnhedgedOwnVoiceClaim } from './run-adaptive-warrant-baseline-study.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -88,9 +93,7 @@ export const OUTCOME_STUDY_RUN_CONFIGURATIONS = Object.freeze([
  * default returns the frozen objects themselves, not copies, so no A1 artifact
  * can move by way of this seam.
  */
-export const OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE = 'low_agency';
-
-export const OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES = Object.freeze(['low_agency', 'overconfident']);
+export { OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE, OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES };
 
 export function resolveOutcomeStudyRunConfigurations(learnerProfile = OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE) {
   const profile = learnerProfile || OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE;
@@ -405,20 +408,30 @@ function normalizeOutcomeTurn(row) {
   };
 }
 
-export function extractOutcomeDialogueFromTraceRows({ dialogue_id, condition, rows } = {}) {
+// dropped_turns: turn numbers a committed reviewer ruling removed from the corpus
+// (ruling 002, docs/adaptation-refinement/guarded-main-block/reviewer-ruling-002-
+// unread-turn-measure-series.json). A dropped turn was never read, so it carries no
+// validated learner signal and must leave every per-turn measure series entirely.
+export function extractOutcomeDialogueFromTraceRows({ dialogue_id, condition, rows, dropped_turns = [] } = {}) {
   if (!['bare', 'gated', 'steering_only', 'standing_permission'].includes(condition)) {
     throw new Error(`unsupported outcome condition: ${condition}`);
   }
+  const dropped = new Set((dropped_turns || []).map(Number));
   const turns = (rows || [])
     .filter((row) => row?.type === 'turn_complete' && row.turnRecord)
+    .filter((row) => !dropped.has(Number(row.turnRecord.turn)))
     .map((row) => normalizeOutcomeTurn(row.turnRecord))
     .sort((left, right) => left.turn - right.turn);
   if (!turns.length) throw new Error(`${dialogue_id}: no turn_complete rows`);
-  return { dialogue_id, condition, turns };
+  return { dialogue_id, condition, turns, dropped_turns: [...dropped].sort((a, b) => a - b) };
 }
 
 export function scoreOutcomeDialogue(dialogue) {
-  const turns = [...(dialogue.turns || [])].map(normalizeOutcomeTurn).sort((a, b) => a.turn - b.turn);
+  const dropped = new Set((dialogue.dropped_turns || []).map(Number));
+  const turns = [...(dialogue.turns || [])]
+    .filter((row) => !dropped.has(Number(row.turn)))
+    .map(normalizeOutcomeTurn)
+    .sort((a, b) => a.turn - b.turn);
   if (!turns.length) throw new Error(`${dialogue.dialogue_id}: no turns`);
   const challengeTurns = turns.filter((row) => row.actual_action_family === 'challenge_resistance');
   const warrantedChallenges = challengeTurns.filter((row) => row.typed_warrant_supported);
@@ -438,6 +451,7 @@ export function scoreOutcomeDialogue(dialogue) {
     dialogue_id: dialogue.dialogue_id,
     condition: dialogue.condition,
     turn_count: turns.length,
+    ruled_dropped_turns: [...dropped].sort((a, b) => a - b),
     measure_2_warranted_challenge_rate: {
       warranted_challenge_turns: warrantedChallenges.length,
       challenge_turns: challengeTurns.length,

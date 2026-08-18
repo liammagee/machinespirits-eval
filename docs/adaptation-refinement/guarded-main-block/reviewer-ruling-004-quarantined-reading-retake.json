@@ -1,0 +1,90 @@
+{
+  "schema": "machinespirits.adaptation-refinement.quarantined-reading-retake-ruling.v1",
+  "ruling_id": "guarded-main-block-004",
+  "companion_rulings": ["guarded-main-block-001", "guarded-main-block-002", "guarded-main-block-003"],
+  "ruled_by": "Liam Magee",
+  "ruled_on": "2026-08-17",
+  "run_id": "guarded-learner-main-block-2026-08-15",
+  "read": "late presence read (relay 124, GO relay 125, 520 calls, complete)",
+  "correction_to_ruling_003_evidence": "Ruling 003's evidence block says a free probe checked all 1,247 events and found 3 invalid. That count was wrong. The probe loaded the span checker from the wrong module and a fallback guard made the miss silent, so no evidence span was checked. A corrected probe that replicates the frozen assembler exactly finds 8 fatal events: the 3 ruled on in ruling 003 plus the 5 not-literal spans quarantined here. The 3 dropped events of ruling 003 stand unchanged.",
+  "question": "Five reader events across 5 readings (3 cases) fail the frozen assembler's literal-span check. Three are a capitalization difference only; two are a paraphrase, identical from both readers. All 5 acts sit in the descriptive bands only and cannot reach the registered endpoint or the second count. Drop the 5 events disclosed, or retake the 5 readings (5 paid calls)?",
+  "ruling": "Retake the 5 quarantined readings. The reviewer chose the retake in chat (\"seems cheap to go for option 1\", then \"GO, write the note\") and the paid calls wait for explicit approval of the GO note (relay 126).",
+  "effect": "Each quarantined reading is re-taken once: the same frozen reader re-reads the same blinded case through a fresh single-reader collection built by the committed retake preparer from the shard's own corpus and catalog, launched by the frozen launcher under its own approval. At assembly, the original shard collection assembles with the quarantined batches omitted through a derived collection manifest (original untouched, omission disclosed), the retake collections assemble under full frozen verification, and the merge slots each retaken case into the quarantined case's place. The merge still requires each reader's case set to equal the 260 window cases exactly.",
+  "rule": "One retake per quarantined reading (note 120). If a retaken reading is again assembly-invalid, there is no second retake: the pair falls to a disclosed drop ruling.",
+  "applies_to": "Exactly the five readings listed below, and no other reading in this or any run.",
+  "expected_quarantined_readings": 5,
+  "paid_calls": 6,
+  "forced_extra_reading": "The frozen preparer requires exactly two readers per collection, so the standing-permission retake collection also draws a presence-reader-b reading of case-d9db44be3662bb53c7cfdad6 — a reading that was never quarantined. That extra reading replaces nothing: the original valid reader-b reading of that case stands, and the extra response is stored and disclosed but unused. This rule is fixed here, before launch.",
+  "quarantined_readings": [
+    {
+      "shard": "world_102_marigold_archive_box--gated",
+      "reader": "presence-reader-a",
+      "batch": "presence-reader-a-batch-12",
+      "response_file": "presence-reader-a-batch-12.response.json",
+      "response_sha256": "316c2e3b148974a03bc9ece47c0783d20d7a2c4379db1f24085355bde2788bb9",
+      "sample_id": "case-9af7fe5437530e0c515045a6",
+      "window_turn": "outcome-pilot-22-world_102_marigold_archive_box-s657-gated#8",
+      "event_index": 0,
+      "speech_act": "learner_overclaim_assertion",
+      "defect": "span not literal: reader quoted \"The Osprey crew took Nadia’s box\"; learner wrote \"the Osprey crew took Nadia’s box\" (capitalization only)"
+    },
+    {
+      "shard": "world_102_marigold_archive_box--gated",
+      "reader": "presence-reader-b",
+      "batch": "presence-reader-b-batch-12",
+      "response_file": "presence-reader-b-batch-12.response.json",
+      "response_sha256": "159164aa3ec00d7aa9059f6bfaf2257c0c8fd4a1339f1d8cf7ae96e636e6f73a",
+      "sample_id": "case-9af7fe5437530e0c515045a6",
+      "window_turn": "outcome-pilot-22-world_102_marigold_archive_box-s657-gated#8",
+      "event_index": 0,
+      "speech_act": "learner_overclaim_assertion",
+      "defect": "span not literal: reader quoted \"The Osprey crew took Nadia’s box\"; learner wrote \"the Osprey crew took Nadia’s box\" (capitalization only)"
+    },
+    {
+      "shard": "world_102_marigold_archive_box--standing_permission",
+      "reader": "presence-reader-a",
+      "batch": "presence-reader-a-batch-44",
+      "response_file": "presence-reader-a-batch-44.response.json",
+      "response_sha256": "20a0baf0f4c124bb983ba05f7f703d19f7c5118bde35223738ab3460c74e1680",
+      "sample_id": "case-d9db44be3662bb53c7cfdad6",
+      "window_turn": "outcome-pilot-66-world_102_marigold_archive_box-s664-standing_permission#8",
+      "event_index": 0,
+      "speech_act": "analytic_contribution",
+      "defect": "span not literal: reader quoted \"The Osprey job number and shelf photo tie them to Nadia’s box\"; learner wrote \"the Osprey job number and shelf photo tie them to Nadia’s box\" (capitalization only)"
+    },
+    {
+      "shard": "world_102_marigold_archive_box--standing_permission",
+      "reader": "presence-reader-a",
+      "batch": "presence-reader-a-batch-47",
+      "response_file": "presence-reader-a-batch-47.response.json",
+      "response_sha256": "08abb5594c0e7eb14d54794fc209ced78ab9dfa6c56159600140e3f6b14262ad",
+      "sample_id": "case-d849e8a730e9bc901654512c",
+      "window_turn": "outcome-pilot-70-world_102_marigold_archive_box-s665-standing_permission#6",
+      "event_index": 1,
+      "speech_act": "learner_overclaim_assertion",
+      "defect": "span not literal: reader quoted \"Felix still took the box\"; learner wrote \"Felix still took it\" (paraphrase)"
+    },
+    {
+      "shard": "world_102_marigold_archive_box--standing_permission",
+      "reader": "presence-reader-b",
+      "batch": "presence-reader-b-batch-47",
+      "response_file": "presence-reader-b-batch-47.response.json",
+      "response_sha256": "d9b59b451a1179023215c26e15fc8d139ec9a79405750198b0f27728cc62e77b",
+      "sample_id": "case-d849e8a730e9bc901654512c",
+      "window_turn": "outcome-pilot-70-world_102_marigold_archive_box-s665-standing_permission#6",
+      "event_index": 1,
+      "speech_act": "learner_overclaim_assertion",
+      "defect": "span not literal: reader quoted \"Felix still took the box\"; learner wrote \"Felix still took it\" (paraphrase)"
+    }
+  ],
+  "evidence": {
+    "assembler_error_class": "span is not literal",
+    "corrected_probe": "replicates the frozen assembler's per-event order exactly: span text validity, literal/unique derivation from the frozen span deriver, then event materialization against the shard catalog",
+    "events_checked": 1247,
+    "events_fatal_total": 8,
+    "events_fatal_ruled_003": 3,
+    "events_fatal_quarantined_here": 5,
+    "non_fatal_rejections": 0,
+    "bands_the_acts_reach": "holding_out and rejected_wide only — not the registered endpoint, not second_count"
+  }
+}
