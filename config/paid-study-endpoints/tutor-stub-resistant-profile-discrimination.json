@@ -1,0 +1,108 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-contract.v1",
+  "study_id": "tutor-stub-resistant-profile-discrimination-v1",
+  "registration": {
+    "primary_endpoint_ids": ["pooled_profile_discrimination", "bored_contract_gate", "frame_defiant_contract_gate"],
+    "control_profile": "diligent",
+    "gate_profiles": ["bored", "frame_defiant"],
+    "required_profiles": ["diligent", "low_agency", "bored", "skeptical", "low_trust_skeptic", "frame_defiant"],
+    "required_runs_per_profile": 3,
+    "required_turns": 8,
+    "required_policies": ["field"],
+    "required_models": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna"
+    },
+    "target_average_pairwise_cosine": 0.85,
+    "target_max_similarity_to_control": 0.9
+  },
+  "registered_scale": {
+    "cases": 18,
+    "unit": "dialogue"
+  },
+  "runner": {
+    "packet_builder": "services/tutorStubResistantProfileDiscriminationPreflight.js#buildTutorStubResistantProfileDiscriminationPreflightPackets",
+    "result_assembler": "scripts/analyze-tutor-stub-profile-discrimination.js#buildTutorStubProfileDiscriminationReport",
+    "packet_cap_bytes": 100000,
+    "emitted_event_fields": [
+      "arm",
+      "case_id",
+      "final.bestPathCoverage",
+      "final.missingPremiseCount",
+      "run.analysisModel",
+      "run.learnerModel",
+      "run.model",
+      "run.policy",
+      "run.profile",
+      "turns"
+    ]
+  },
+  "channels": {
+    "profile_discrimination_analyzer": {
+      "enabled": true,
+      "implementation": "scripts/analyze-tutor-stub-profile-discrimination.js#buildTutorStubProfileDiscriminationReport"
+    },
+    "resistant_observation_markers": {
+      "enabled": true,
+      "implementation": "services/resistantLearnerObservation.js#resistantLearnerObservationMarkers"
+    },
+    "learner_profile_contract": {
+      "enabled": true,
+      "implementation": "scripts/tutor-stub-learner-profile-contracts.js#learnerProfileContract"
+    }
+  },
+  "endpoints": [
+    {
+      "id": "pooled_profile_discrimination",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": ["profile_discrimination_analyzer"],
+      "required_event_fields": [
+        "arm",
+        "case_id",
+        "final.bestPathCoverage",
+        "final.missingPremiseCount",
+        "run.analysisModel",
+        "run.learnerModel",
+        "run.model",
+        "run.policy",
+        "run.profile",
+        "turns"
+      ],
+      "denominator": {
+        "expected_cases": 18
+      }
+    },
+    {
+      "id": "bored_contract_gate",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": [
+        "profile_discrimination_analyzer",
+        "resistant_observation_markers",
+        "learner_profile_contract"
+      ],
+      "required_event_fields": ["arm", "case_id", "run.profile", "turns"],
+      "denominator": {
+        "expected_cases": 3,
+        "include_arms": ["bored"]
+      }
+    },
+    {
+      "id": "frame_defiant_contract_gate",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": [
+        "profile_discrimination_analyzer",
+        "resistant_observation_markers",
+        "learner_profile_contract"
+      ],
+      "required_event_fields": ["arm", "case_id", "run.profile", "turns"],
+      "denominator": {
+        "expected_cases": 3,
+        "include_arms": ["frame_defiant"]
+      }
+    }
+  ]
+}

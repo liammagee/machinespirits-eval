@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: manual
 created: 2026-08-18
-updated: 2026-08-18
+updated: 2026-08-19
 verification: >-
   Bored and frame-defiant learner contracts pass discrimination and
   observability gates; the shared runtime selects a warranted pedagogical action
@@ -33,6 +33,7 @@ links:
     - docs/resistance-action-register-conservation-protocol.md
     - docs/pedagogical-move-contract.md
     - docs/tutor-stub-resistant-profile-discrimination-registration.md
+    - docs/tutor-stub-resistant-profile-discrimination-live-readiness-hold.md
   code:
     - services/pedagogicalMove/contract.js
     - services/pedagogicalMove/shadow.js
@@ -42,7 +43,12 @@ links:
     - services/pedagogicalMove/resistantProfileWarrantShadow.js
     - scripts/tutor-stub-learner-profile-contracts.js
     - scripts/prepare-tutor-stub-resistant-profile-discrimination.js
+    - scripts/check-tutor-stub-resistant-profile-live-readiness.js
+    - services/tutorStubResistantProfileDiscriminationPreflight.js
     - config/tutor-stub-resistant-profile-discrimination-registration.v1.json
+    - config/tutor-stub-resistant-profile-discrimination-live-readiness.hold.v1.json
+    - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json
+    - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.endpoint-go.json
 tags:
   - tutor-stub
   - cells
@@ -50,7 +56,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistant-profile-discrimination-registration
+branch: codex/resistant-profile-live-readiness-hold
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -155,3 +161,14 @@ and explicit human approval.
   their declared nearest neighbours when those neighbours are present, and
   require the pooled cosine gate at the same time. No model call is authorized
   or made by this step.
+- 2026-08-19 — Prepared the Phase 2 live-readiness packet under an explicit
+  HOLD. A reusable paid-study endpoint contract now sends all 18 synthetic
+  dialogues through the production discrimination analyzer and completes the
+  pooled, bored-contract, and frame-defiant-contract co-primary endpoints with
+  zero model calls and zero production writes. The committed endpoint
+  certificate authorizes endpoint-runtime compatibility only. The exact live
+  and analysis commands, fresh ignored artifact root, automated-only payload,
+  864-attempt ceiling, and preparation-base commit are machine-checked, while
+  the post-merge launch SHA, fresh observed model route, study GO note, and
+  explicit human spend approval remain unset blockers. No canary or live run
+  was performed.

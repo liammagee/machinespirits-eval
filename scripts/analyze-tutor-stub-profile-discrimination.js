@@ -893,7 +893,7 @@ function modelAssembly(role, counts, requiredModel, requiredTraces) {
   };
 }
 
-function buildReport(compactedTraces, args, compactedWrites) {
+export function buildTutorStubProfileDiscriminationReport(compactedTraces, args, compactedWrites = []) {
   const byProfile = new Map();
   for (const trace of compactedTraces) {
     const profile = trace.run?.profile || 'unknown';
@@ -1319,7 +1319,7 @@ function main() {
     }
   }
 
-  const report = buildReport(compactedTraces, args, compactedWrites);
+  const report = buildTutorStubProfileDiscriminationReport(compactedTraces, args, compactedWrites);
   const output = args.json ? `${JSON.stringify(report, null, 2)}\n` : formatMarkdown(report);
 
   if (args.out) {
@@ -1330,9 +1330,12 @@ function main() {
   }
 }
 
-try {
-  main();
-} catch (error) {
-  console.error(`error: ${error.message}`);
-  process.exit(1);
+const invokedDirectly = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (invokedDirectly) {
+  try {
+    main();
+  } catch (error) {
+    console.error(`error: ${error.message}`);
+    process.exit(1);
+  }
 }
