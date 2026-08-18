@@ -795,7 +795,9 @@ function writeMainBlockDryRunArtifact(plan, outputDir) {
     planSha256: plan.planSha256,
     scenarioSourceSha256: plan.scenarioSourceSha256,
     arms: plan.arms,
+    armSelection: plan.armSelection || null,
     sizing: plan.sizing,
+    harmReaderCallCeiling: plan.guardrail.screen.readerCallCeiling,
     unregisteredProfiles,
     // One example per arm so the GO note copies, never composes, a command.
     exampleGenerationCommands: plan.arms.map((armSpec) => {
@@ -804,7 +806,12 @@ function writeMainBlockDryRunArtifact(plan, outputDir) {
     }),
   };
   fs.mkdirSync(outputDir, { recursive: true });
-  const artifactPath = path.join(outputDir, 'plan-main-block.json');
+  // A subset writes beside the full plan, never over it: a signed GO note
+  // cites the full artefact, and a subset dry run must not replace it.
+  const artifactName = plan.armSelection
+    ? `plan-main-block-${plan.armSelection.requested.join('').toLowerCase()}.json`
+    : 'plan-main-block.json';
+  const artifactPath = path.join(outputDir, artifactName);
   fs.writeFileSync(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`);
   return { artifactPath, unregisteredProfiles };
 }
@@ -829,6 +836,7 @@ async function main() {
       'launch-approved': { type: 'boolean', default: false },
       'expected-sha': { type: 'string', default: '' },
       'resume-decision': { type: 'string', default: '' },
+      arms: { type: 'string', default: '' },
       'output-dir': { type: 'string', default: DEFAULT_OUTPUT_DIR },
       help: { type: 'boolean', short: 'h', default: false },
     },
@@ -840,7 +848,8 @@ async function main() {
         '--status --batch-dir <dir> | ' +
         '--decide-screen --batch-dir <dir> | --report --batch-dir <dir> | ' +
         '--resume-decision <resume_unchanged|kill_cell:<scenario>|kill_study> --batch-dir <dir> | ' +
-        '(--screen|--confirm|--main-block) --batch-dir <dir> --go-note <note> --launch-approved --expected-sha <commit>',
+        '(--screen|--confirm|--main-block) --batch-dir <dir> --go-note <note> --launch-approved --expected-sha <commit>\n' +
+        '       (--dry-run-main|--main-block) [--arms A|B|C or a comma list; default all three]',
     );
     return;
   }
@@ -876,7 +885,7 @@ async function main() {
   }
 
   if (values['dry-run-main']) {
-    const mainPlan = buildEdgedRegisterMainBlockPlan({ root: ROOT });
+    const mainPlan = buildEdgedRegisterMainBlockPlan({ root: ROOT, arms: values.arms });
     const { artifactPath, unregisteredProfiles } = writeMainBlockDryRunArtifact(
       mainPlan,
       path.resolve(ROOT, values['output-dir']),
@@ -886,9 +895,17 @@ async function main() {
     console.log(`[edged-main] scenario source SHA-256 ${mainPlan.scenarioSourceSha256}`);
     console.log(
       `[edged-main] exact-test size: ${sizing.nPerArm} rows per arm ` +
-        `(${sizing.rowsPerCellPerArm} per cell), ${sizing.plannedRows} rows over 3 arms, ` +
+        `(${sizing.rowsPerCellPerArm} per cell), ${sizing.plannedRows} rows over ` +
+        `${mainPlan.arms.length} arm${mainPlan.arms.length === 1 ? '' : 's'} ` +
+        `(${mainPlan.arms.map((armSpec) => armSpec.arm).join('')}), ` +
         `power ${sizing.powerAtN} at baseline ${sizing.baselineRate} vs ${sizing.targetRate}`,
     );
+    if (mainPlan.armSelection) {
+      console.log(
+        `[edged-main] SUBSET of the registered block: ${mainPlan.armSelection.requested.join(', ')} of ` +
+          `${mainPlan.armSelection.registered.join(', ')} — ${mainPlan.armSelection.randomisationNote}`,
+      );
+    }
     console.log(`[edged-main] ${mainPlan.mainJobs.length} main jobs, hard cap ${sizing.hardCapRows} rows`);
     const screen = mainPlan.guardrail.screen;
     console.log(
@@ -942,7 +959,10 @@ async function main() {
 
   // Paid modes from here down.
   const isMainBlock = values['main-block'];
-  const activePlan = isMainBlock ? buildEdgedRegisterMainBlockPlan({ root: ROOT }) : plan;
+  if (values.arms && !isMainBlock && !values['dry-run-main']) {
+    throw new Error('--arms applies to the main block only');
+  }
+  const activePlan = isMainBlock ? buildEdgedRegisterMainBlockPlan({ root: ROOT, arms: values.arms }) : plan;
   const validation = isMainBlock
     ? validateEdgedRegisterMainBlockPlan(activePlan)
     : validateEdgedRegisterCalibrationPlan(activePlan);

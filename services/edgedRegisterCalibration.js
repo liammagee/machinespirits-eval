@@ -568,8 +568,61 @@ export function mainBlockJobs(sizing, { grid = EDGED_REGISTER_MAIN_BLOCK } = {})
   return jobs;
 }
 
-export function buildEdgedRegisterMainBlockPlan({ root = MODULE_ROOT } = {}) {
-  const grid = EDGED_REGISTER_MAIN_BLOCK;
+/** The three registered arms, in the order the plan lists them. */
+export const MAIN_BLOCK_ARM_LETTERS = Object.freeze(EDGED_REGISTER_MAIN_BLOCK.arms.map((armSpec) => armSpec.arm));
+
+/**
+ * Read an arm selection off the command line.
+ *
+ * The full three-arm block stays the default, and a caller that asks for all
+ * three by name gets the frozen plan back byte for byte — the plan SHA cited
+ * in a signed GO note must not move because a flag exists. A selection is
+ * always returned in the plan's own order, so `--arms C,A` and `--arms A,C`
+ * are one block, not two.
+ */
+export function parseMainBlockArmSelection(raw) {
+  if (raw === null || raw === undefined || String(raw).trim() === '') return [...MAIN_BLOCK_ARM_LETTERS];
+  const asked = String(raw)
+    .split(',')
+    .map((part) => part.trim().toUpperCase())
+    .filter((part) => part !== '');
+  if (asked.length === 0) throw new Error('--arms was given no arm letters');
+  const unknown = asked.filter((letter) => !MAIN_BLOCK_ARM_LETTERS.includes(letter));
+  if (unknown.length > 0) {
+    throw new Error(`--arms knows only ${MAIN_BLOCK_ARM_LETTERS.join(', ')}; found ${unknown.join(', ')}`);
+  }
+  const seen = new Set();
+  for (const letter of asked) {
+    if (seen.has(letter)) throw new Error(`--arms names ${letter} twice`);
+    seen.add(letter);
+  }
+  return MAIN_BLOCK_ARM_LETTERS.filter((letter) => seen.has(letter));
+}
+
+const isFullArmSelection = (arms) =>
+  arms.length === MAIN_BLOCK_ARM_LETTERS.length && MAIN_BLOCK_ARM_LETTERS.every((letter) => arms.includes(letter));
+
+/**
+ * Build the main-block plan, over all three arms or over a named subset.
+ *
+ * A subset changes what is bought, not what was registered: the per-arm size
+ * stays the 104 rows the exact test picked, and only the row total, the cap
+ * and the harm reader's ceiling follow the arm count down. A subset plan
+ * carries `armSelection` and therefore hashes to its own SHA, so a signed
+ * note for the full block cannot launch a subset and a subset batch cannot be
+ * resumed as the full block. A subset also loses the randomisation between
+ * the arms it drops; that is a registration matter, and the field is written
+ * into the plan so the record says which arms were bought.
+ */
+export function buildEdgedRegisterMainBlockPlan({ root = MODULE_ROOT, arms = null } = {}) {
+  const selection = Array.isArray(arms) ? parseMainBlockArmSelection(arms.join(',')) : parseMainBlockArmSelection(arms);
+  const full = isFullArmSelection(selection);
+  const grid = full
+    ? EDGED_REGISTER_MAIN_BLOCK
+    : {
+        ...EDGED_REGISTER_MAIN_BLOCK,
+        arms: EDGED_REGISTER_MAIN_BLOCK.arms.filter((armSpec) => selection.includes(armSpec.arm)),
+      };
   const sizing = mainBlockSizing({ grid });
   const scenarioPath = path.resolve(root, grid.scenarioSource);
   const plan = {
@@ -584,12 +637,26 @@ export function buildEdgedRegisterMainBlockPlan({ root = MODULE_ROOT } = {}) {
       ...grid.guardrail,
       families: [...grid.guardrail.families],
       resumeOptions: [...grid.guardrail.resumeOptions],
-      screen: { ...grid.guardrail.screen },
+      screen: {
+        ...grid.guardrail.screen,
+        // The frozen 700 is two reads per capped row (§3.7). Deriving it keeps
+        // the full plan byte-identical — 350 × 2 — and keeps the same rule on
+        // a smaller block instead of leaving it a three-arm ceiling.
+        readerCallCeiling: sizing.hardCapRows * 2,
+      },
     },
     sizing,
     scenarioSourceSha256: createHash('sha256').update(fs.readFileSync(scenarioPath)).digest('hex'),
     mainJobs: mainBlockJobs(sizing, { grid }),
   };
+  if (!full) {
+    plan.armSelection = {
+      requested: [...selection],
+      registered: [...MAIN_BLOCK_ARM_LETTERS],
+      subset: true,
+      randomisationNote: 'arms dropped here are not randomised against the arms bought here',
+    };
+  }
   return { ...plan, planSha256: hashEdgedRegisterCalibration(plan) };
 }
 
@@ -603,13 +670,44 @@ export function validateEdgedRegisterMainBlockPlan(plan) {
   ) {
     errors.push('plan cells are not exactly the four kept corridor cells (§3.1)');
   }
-  const armLetters = (plan.arms || []).map((armSpec) => armSpec.arm);
-  if (armLetters.join('') !== 'ABC') errors.push(`arms must be A, B, C in order, found ${armLetters.join(', ')}`);
-  const profiles = new Set((plan.arms || []).map((armSpec) => armSpec.profile));
-  if (profiles.size !== 3) errors.push('the three arms do not carry three distinct profiles');
-  const armC = (plan.arms || []).find((armSpec) => armSpec.arm === 'C');
-  if (armC?.profile !== EDGED_REGISTER_CALIBRATION.profile) {
-    errors.push('arm C must be byte-identical to the calibration arm; its profile name differs');
+  const planArms = plan.arms || [];
+  const armLetters = planArms.map((armSpec) => armSpec.arm);
+  // A subset is allowed; scrambling, repeating or inventing an arm is not.
+  const orderedSubset = MAIN_BLOCK_ARM_LETTERS.filter((letter) => armLetters.includes(letter));
+  if (armLetters.length === 0) {
+    errors.push('plan carries no arms');
+  } else if (armLetters.join('') !== orderedSubset.join('')) {
+    errors.push(
+      `arms must be a subset of ${MAIN_BLOCK_ARM_LETTERS.join(', ')} in that order, found ${armLetters.join(', ')}`,
+    );
+  }
+  const profiles = new Set(planArms.map((armSpec) => armSpec.profile));
+  if (profiles.size !== planArms.length) errors.push('two arms carry the same profile');
+  // Every arm kept must carry the profile it was registered with, arm C's
+  // byte-identity with the calibration arm included (§3.3).
+  const registeredProfileByArm = new Map(EDGED_REGISTER_MAIN_BLOCK.arms.map((a) => [a.arm, a.profile]));
+  for (const armSpec of planArms) {
+    const registered = registeredProfileByArm.get(armSpec.arm);
+    if (registered && armSpec.profile !== registered) {
+      errors.push(`arm ${armSpec.arm} carries ${armSpec.profile}, registered as ${registered}`);
+    }
+  }
+  // The subset marker and the arms must agree, in both directions. Without
+  // this a hand-edited full plan could drop an arm and keep the frozen SHA's
+  // shape, or a subset could hide that it dropped one.
+  const isFull = armLetters.length === MAIN_BLOCK_ARM_LETTERS.length;
+  if (isFull && plan.armSelection) {
+    errors.push('a full three-arm plan must not carry an armSelection marker');
+  }
+  if (!isFull) {
+    const marker = plan.armSelection;
+    if (!marker || marker.subset !== true) {
+      errors.push('a plan over fewer than three arms must carry armSelection.subset = true');
+    } else if ((marker.requested || []).join('') !== armLetters.join('')) {
+      errors.push(
+        `armSelection.requested ${(marker.requested || []).join(', ')} does not match the plan's arms ${armLetters.join(', ')}`,
+      );
+    }
   }
   if (plan.baseline?.successes !== 23 || plan.baseline?.trials !== 48) {
     errors.push(`baseline must be the frozen 23/48 (§3.1), found ${plan.baseline?.successes}/${plan.baseline?.trials}`);
@@ -663,7 +761,7 @@ export function validateEdgedRegisterMainBlockPlan(plan) {
     const key = `${job.arm}/${job.scenario}`;
     perArmCell.set(key, (perArmCell.get(key) || 0) + 1);
   });
-  for (const armSpec of grid.arms) {
+  for (const armSpec of planArms) {
     for (const cell of grid.cells) {
       const count = perArmCell.get(`${armSpec.arm}/${cell.scenario}`) || 0;
       if (count !== sizing.rowsPerCellPerArm) {
@@ -718,6 +816,8 @@ export function validateEdgedRegisterMainBlockPlan(plan) {
 export default {
   EDGED_REGISTER_CALIBRATION,
   EDGED_REGISTER_MAIN_BLOCK,
+  MAIN_BLOCK_ARM_LETTERS,
+  parseMainBlockArmSelection,
   applyRowCap,
   buildEdgedRegisterCalibrationPlan,
   buildEdgedRegisterMainBlockPlan,

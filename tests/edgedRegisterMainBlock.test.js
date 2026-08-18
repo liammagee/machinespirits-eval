@@ -12,12 +12,14 @@ import assert from 'node:assert/strict';
 import {
   EDGED_REGISTER_CALIBRATION as GRID,
   EDGED_REGISTER_MAIN_BLOCK as MAIN_GRID,
+  MAIN_BLOCK_ARM_LETTERS,
   buildEdgedRegisterCalibrationPlan,
   buildEdgedRegisterMainBlockPlan,
   fisherExactPower,
   fisherExactTwoSidedP,
   mainBlockJobs,
   mainBlockSizing,
+  parseMainBlockArmSelection,
   validateEdgedRegisterMainBlockPlan,
 } from '../services/edgedRegisterCalibration.js';
 import {
@@ -204,5 +206,165 @@ describe('runner main-block support', () => {
     assert.equal(runnable.length, 311);
     assert.equal(needsRuling.length, 1);
     assert.equal(needsRuling[0].ordinal, state.jobs[0].ordinal);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Arm filter (§3.11). The three-arm block is what the signed note bought, so
+// the filter has one hard duty above every other: asking for no subset, or
+// asking for all three by name, must give back the frozen plan byte for byte.
+// ---------------------------------------------------------------------------
+
+// The SHA in notes/2026-08-17-edged-register-main-block-go-2.md, signed and
+// launched as batch-main-2-2026-08-17. If this test fails, a signed note is
+// pointing at a plan that no longer exists.
+const FROZEN_MAIN_PLAN_SHA = '31b7d77bfe7832a3e8b8f729753128432760ed5d7dbf151ac85c5519d52ed607';
+
+describe('main-block arm filter', () => {
+  it('the default plan is the frozen three-arm plan and carries no subset marker', () => {
+    const plan = buildEdgedRegisterMainBlockPlan();
+    assert.equal(plan.planSha256, FROZEN_MAIN_PLAN_SHA);
+    assert.equal(plan.armSelection, undefined);
+    assert.deepEqual(
+      plan.arms.map((armSpec) => armSpec.arm),
+      ['A', 'B', 'C'],
+    );
+    assert.equal(validateEdgedRegisterMainBlockPlan(plan).ok, true);
+  });
+
+  it('naming all three arms is the frozen plan, not a fork of it', () => {
+    for (const asked of ['A,B,C', 'C,B,A', ' a , b , c ']) {
+      const plan = buildEdgedRegisterMainBlockPlan({ arms: asked });
+      assert.equal(plan.planSha256, FROZEN_MAIN_PLAN_SHA, `--arms ${asked} forked the frozen plan`);
+      assert.equal(plan.armSelection, undefined);
+    }
+  });
+
+  it('the frozen harm ceiling of 700 is two reads per capped row', () => {
+    const plan = buildEdgedRegisterMainBlockPlan();
+    assert.equal(plan.sizing.hardCapRows, 350);
+    assert.equal(plan.guardrail.screen.readerCallCeiling, 700);
+    assert.equal(plan.guardrail.screen.readerCallCeiling, plan.sizing.hardCapRows * 2);
+  });
+
+  it('one arm plans 104 rows, its own cap, its own ceiling and its own SHA', () => {
+    const plan = buildEdgedRegisterMainBlockPlan({ arms: 'B' });
+    assert.deepEqual(
+      plan.arms.map((armSpec) => armSpec.arm),
+      ['B'],
+    );
+    assert.equal(plan.arms[0].profile, 'cell_208_id_director_edged_register_yoked_warm_delivery');
+    assert.equal(plan.sizing.plannedRows, 104);
+    assert.equal(plan.sizing.hardCapRows, 120);
+    assert.equal(plan.guardrail.screen.readerCallCeiling, 240);
+    assert.equal(plan.mainJobs.length, 104);
+    assert.notEqual(plan.planSha256, FROZEN_MAIN_PLAN_SHA);
+    assert.equal(validateEdgedRegisterMainBlockPlan(plan).ok, true);
+  });
+
+  it('the registered per-arm size never moves with the arm count', () => {
+    for (const asked of ['A', 'A,B', 'A,B,C']) {
+      const { sizing } = buildEdgedRegisterMainBlockPlan({ arms: asked });
+      assert.equal(sizing.nPerArm, 104, `--arms ${asked} changed the per-arm size`);
+      assert.equal(sizing.rowsPerCellPerArm, 26);
+      assert.equal(sizing.baselineRate, 0.479167);
+    }
+  });
+
+  it('a subset says so in the plan, with the arms it dropped', () => {
+    const plan = buildEdgedRegisterMainBlockPlan({ arms: 'A,B' });
+    assert.equal(plan.armSelection.subset, true);
+    assert.deepEqual(plan.armSelection.requested, ['A', 'B']);
+    assert.deepEqual(plan.armSelection.registered, ['A', 'B', 'C']);
+    assert.match(plan.armSelection.randomisationNote, /not randomised/u);
+  });
+
+  it('the order asked for does not make a second block', () => {
+    const forward = buildEdgedRegisterMainBlockPlan({ arms: 'A,C' });
+    const backward = buildEdgedRegisterMainBlockPlan({ arms: 'C,A' });
+    assert.equal(forward.planSha256, backward.planSha256);
+    assert.deepEqual(
+      forward.arms.map((armSpec) => armSpec.arm),
+      ['A', 'C'],
+    );
+  });
+
+  it('every subset gets a distinct SHA, so no note can launch the wrong one', () => {
+    const shas = ['A', 'B', 'C', 'A,B', 'A,C', 'B,C', 'A,B,C'].map(
+      (asked) => buildEdgedRegisterMainBlockPlan({ arms: asked }).planSha256,
+    );
+    assert.equal(new Set(shas).size, shas.length);
+  });
+
+  it('a job never carries an arm the plan dropped', () => {
+    const plan = buildEdgedRegisterMainBlockPlan({ arms: 'B' });
+    assert.ok(plan.mainJobs.every((job) => job.arm === 'B'));
+    assert.ok(plan.mainJobs.every((job) => job.profile === plan.arms[0].profile));
+    const perCell = new Map();
+    for (const job of plan.mainJobs) perCell.set(job.scenario, (perCell.get(job.scenario) || 0) + 1);
+    assert.equal(perCell.size, 4);
+    assert.ok([...perCell.values()].every((count) => count === 26));
+  });
+
+  it('refuses an unknown, repeated or empty arm letter', () => {
+    assert.throws(() => parseMainBlockArmSelection('D'), /knows only/u);
+    assert.throws(() => parseMainBlockArmSelection('A,A'), /twice/u);
+    assert.throws(() => parseMainBlockArmSelection(','), /no arm letters/u);
+    assert.deepEqual(parseMainBlockArmSelection(''), [...MAIN_BLOCK_ARM_LETTERS]);
+    assert.deepEqual(parseMainBlockArmSelection(null), [...MAIN_BLOCK_ARM_LETTERS]);
+  });
+
+  it('rejects a subset that hides that it is one', () => {
+    const plan = copyOf(buildEdgedRegisterMainBlockPlan({ arms: 'A,B' }));
+    delete plan.armSelection;
+    const validation = validateEdgedRegisterMainBlockPlan(plan);
+    assert.equal(validation.ok, false);
+    assert.ok(validation.errors.some((error) => /armSelection\.subset/u.test(error)));
+  });
+
+  it('rejects a subset whose marker disagrees with its arms', () => {
+    const plan = copyOf(buildEdgedRegisterMainBlockPlan({ arms: 'A,B' }));
+    plan.armSelection.requested = ['A', 'C'];
+    const validation = validateEdgedRegisterMainBlockPlan(plan);
+    assert.equal(validation.ok, false);
+    assert.ok(validation.errors.some((error) => /does not match/u.test(error)));
+  });
+
+  it('rejects a full plan wearing a subset marker', () => {
+    const plan = copyOf(buildEdgedRegisterMainBlockPlan());
+    plan.armSelection = { requested: ['A', 'B', 'C'], subset: true };
+    const validation = validateEdgedRegisterMainBlockPlan(plan);
+    assert.equal(validation.ok, false);
+  });
+
+  it('rejects scrambled arm order', () => {
+    const plan = copyOf(buildEdgedRegisterMainBlockPlan());
+    plan.arms = [plan.arms[2], plan.arms[0], plan.arms[1]];
+    const validation = validateEdgedRegisterMainBlockPlan(plan);
+    assert.equal(validation.ok, false);
+    assert.ok(validation.errors.some((error) => /in that order/u.test(error)));
+  });
+
+  it('rejects an arm carrying another arm\'s registered profile', () => {
+    const plan = copyOf(buildEdgedRegisterMainBlockPlan({ arms: 'B' }));
+    plan.arms[0].profile = MAIN_GRID.arms[0].profile;
+    plan.mainJobs.forEach((job) => {
+      job.profile = MAIN_GRID.arms[0].profile;
+    });
+    const validation = validateEdgedRegisterMainBlockPlan(plan);
+    assert.equal(validation.ok, false);
+    assert.ok(validation.errors.some((error) => /registered as/u.test(error)));
+  });
+
+  it('a subset batch state carries its own cap, jobs and harm ceiling', () => {
+    const plan = buildEdgedRegisterMainBlockPlan({ arms: 'B' });
+    const state = newMainBlockState(plan, 'batch-arm-b');
+    assert.equal(state.hardCapRows, 120);
+    assert.equal(stateHardCap(state), 120);
+    assert.equal(state.harmReaderCallCeiling, 240);
+    assert.equal(state.jobs.length, 104);
+    assert.equal(state.planSha256, plan.planSha256);
+    const { runnable } = enumerateRunnableJobs(state, 'main');
+    assert.equal(runnable.length, 104);
   });
 });
