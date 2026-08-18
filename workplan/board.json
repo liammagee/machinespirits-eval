@@ -1,19 +1,19 @@
 {
-  "generated": "2026-08-17T21:20:07.312Z",
+  "generated": "2026-08-18T06:42:16.854Z",
   "counts": {
-    "total": 509,
+    "total": 510,
     "byStatus": {
       "done": 483,
       "blocked": 6,
       "dropped": 10,
-      "active": 4,
+      "active": 5,
       "triaged": 1,
       "archived": 4,
       "review": 1
     },
     "byType": {
       "research": 79,
-      "experiment": 86,
+      "experiment": 87,
       "infra": 109,
       "maintenance": 213,
       "content": 4,
@@ -283,7 +283,7 @@
       "owner": "claude",
       "source": "manual",
       "created": "2026-08-15",
-      "updated": "2026-08-15",
+      "updated": "2026-08-18",
       "verification": "A powered main block (or a registered no-corridor kill verdict) answers whether router-selected ironic/sarcastic delivery beats the warm router on post-resistance conversion, on persona-scenario cells where the warm baseline converts at 30-70%. Each paid stage runs only after its own committed GO note plus explicit human approval.",
       "claim_status": "future",
       "depends_on": [
@@ -293,6 +293,7 @@
       "links": {
         "notes": [
           "notes/2026-08-15-edged-register-outcome-study-design.md",
+          "notes/2026-08-16-edged-register-calibration-draft.md",
           "notes/2026-08-09-adaptive-register-switching-prereg-draft.md"
         ],
         "code": [
@@ -305,6 +306,38 @@
         "registers",
         "adaptive",
         "outcome"
+      ]
+    },
+    {
+      "id": "edged-register-stub-dag-replication",
+      "title": "Re-ask the edged-register question inside the tutor-stub proof-DAG harness",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-08-18",
+      "updated": "2026-08-18",
+      "verification": "One stub-harness block contrasts a sharp delivery policy against the warm policy on the same worlds and the same proof-DAG, with completion taken from the DAG rather than from a model reader, and reports whether the sharp policy changes how much of the proof debt the learner discharges. A null is a result. Any paid stage runs only after its own committed GO note and explicit human approval.",
+      "claim_status": "planned",
+      "depends_on": [
+        "edged-register-outcome-study"
+      ],
+      "links": {
+        "notes": [
+          "notes/2026-08-16-edged-register-calibration-draft.md"
+        ],
+        "items": [
+          "edged-register-outcome-study",
+          "tutor-stub-headroom-contrast",
+          "refactor-tutor-stub-register-palette",
+          "tutor-stub-fallback-register-and-uptake-guard"
+        ]
+      },
+      "tags": [
+        "registers",
+        "tutor-stub",
+        "proof-dag"
       ]
     },
     {
