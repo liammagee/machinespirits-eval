@@ -82,3 +82,12 @@ and explicit human approval.
 - 2026-08-18 — Programme accepted for restart after a read-only logic and
   feasibility review. Phase 0 begins with workplan reconciliation and safe
   branch/worktree cleanup.
+- 2026-08-18 — Phase 0 safe cleanup completed: advanced the stable checkout to
+  current `origin/main`; removed seven clean, contained stale worktree
+  directories; retired 51 contained local branches and 20 contained remote
+  branches over HTTPS; closed the edged-register study scope-bound; and closed
+  the failed warrant-contract gate as a negative result. Retained, without
+  modification, the active Program-2 and Course 479 worktrees plus the unique
+  adaptation-refinement, guarded-learner, guarded-reader, and
+  normative/descriptive-DAG histories. Those unique histories require explicit
+  port-or-archive decisions before their worktrees can be removed.
