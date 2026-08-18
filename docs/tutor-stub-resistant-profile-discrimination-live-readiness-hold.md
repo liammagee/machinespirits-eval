@@ -1,7 +1,7 @@
 # Resistant Learner Profile Discrimination — Live Readiness HOLD
 
 **Prepared:** 19 August 2026.
-**Status:** **HOLD. No endpoint canary, model call, or live run is authorized.**
+**Status:** **HOLD. No route canary, model call, or live run is authorized.**
 **Workplan item:** `resistance-action-register-integration`.
 
 The machine-readable authority for this note is
@@ -17,6 +17,20 @@ full-scale 18-dialogue synthetic corpus through the production discrimination
 analyzer, verifies all three registered endpoints, reconstructs the proposed
 live and analysis commands, and confirms that the fresh destination does not
 exist. It reports zero model calls and zero production writes.
+
+The bounded route-canary request is now prepared at
+`config/tutor-stub-resistant-profile-route-canary-request.v1.json`. Its default
+command is also zero-call and zero-write:
+
+```bash
+npm run tutor:stub:resistant-profile-route-canary -- --json
+```
+
+The request pins the final HOLD bytes, route executable, shared CLI bridge,
+model resolver, provider configuration, and frozen registration. It covers the
+single `codex.gpt-5.6-luna` CLI route shared by the tutor, analysis, and learner
+roles, with low effort, structured output, a hard ceiling of one call, and no
+retry or resume authority. It does not include an authorization artifact.
 
 ## What is ready
 
@@ -51,10 +65,12 @@ cannot authorize spend.
    which the study would run. The preparation base
    `8de5787f95995c12d657f07dcaedaca66205efe7` is recorded for provenance but is
    not a launch SHA.
-2. With explicit approval, run one fresh bounded route canary and record the
-   observed provider/model identity for the requested Luna route. Requested
-   identity is intent; observed identity is authoritative. No prior canary or
-   authorization carries forward.
+2. With explicit approval for exactly one Luna model call, create and commit a
+   request-digest-bound authorization, then run the prepared route canary with
+   `--execute --authorization <path> --accept-one-model-call`. The result will
+   record the provider/model identity echoed after the explicit CLI model
+   argument. This is route evidence, not independent server-side attestation.
+   No prior canary or authorization carries forward.
 3. Write and commit a study-specific GO note binding the registration digest,
    endpoint contract and preflight digests, route artifact, exact launch SHA,
    artifact destination, payload scope, and 864-attempt ceiling.

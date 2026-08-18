@@ -22,6 +22,10 @@
   "routeVerification": {
     "status": "pending_explicit_approval",
     "artifact": null,
+    "canaryRequest": "config/tutor-stub-resistant-profile-route-canary-request.v1.json",
+    "canaryAuthorization": null,
+    "maximumModelCalls": 1,
+    "retryOrResumeAuthority": "none",
     "requestedModels": {
       "tutor": "codex.gpt-5.6-luna",
       "analysis": "codex.gpt-5.6-luna",

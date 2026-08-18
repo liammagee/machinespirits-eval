@@ -77,6 +77,7 @@
     "tutor:stub:qa": "node scripts/run-tutor-stub-qa-matrix.js",
     "tutor:stub:resistant-profile-preflight": "node scripts/prepare-tutor-stub-resistant-profile-discrimination.js",
     "tutor:stub:resistant-profile-live-readiness": "node scripts/check-tutor-stub-resistant-profile-live-readiness.js",
+    "tutor:stub:resistant-profile-route-canary": "node scripts/run-tutor-stub-resistant-profile-route-canary.js",
     "tutor:stub:abm-panel": "node scripts/run-tutor-stub-abm-panel.js",
     "tutor:stub:ingest": "node scripts/ingest-tutor-stub-auto-evals.js",
     "tutor:stub:backfill-failures": "node scripts/backfill-tutor-stub-turn-failures.js",

@@ -44,9 +44,12 @@ links:
     - scripts/tutor-stub-learner-profile-contracts.js
     - scripts/prepare-tutor-stub-resistant-profile-discrimination.js
     - scripts/check-tutor-stub-resistant-profile-live-readiness.js
+    - scripts/run-tutor-stub-resistant-profile-route-canary.js
     - services/tutorStubResistantProfileDiscriminationPreflight.js
+    - services/tutorStubResistantProfileRouteCanary.js
     - config/tutor-stub-resistant-profile-discrimination-registration.v1.json
     - config/tutor-stub-resistant-profile-discrimination-live-readiness.hold.v1.json
+    - config/tutor-stub-resistant-profile-route-canary-request.v1.json
     - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json
     - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.endpoint-go.json
 tags:
@@ -56,7 +59,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistant-profile-live-readiness-hold
+branch: codex/resistant-profile-route-canary-hold
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -172,3 +175,11 @@ and explicit human approval.
   the post-merge launch SHA, fresh observed model route, study GO note, and
   explicit human spend approval remain unset blockers. No canary or live run
   was performed.
+- 2026-08-19 — Prepared a one-call Luna route-canary path while retaining HOLD.
+  The sealed request covers the shared tutor, analysis, and learner CLI route,
+  pins the final HOLD and executable source closure, defaults to zero calls and
+  zero writes, and requires a separate committed request-bound human
+  authorization plus an explicit execution flag. A successful result will
+  record that the explicit CLI model argument was accepted and echoed; it will
+  not misstate that evidence as independent server-side model attestation. No
+  authorization artifact was created and no model call or live run occurred.

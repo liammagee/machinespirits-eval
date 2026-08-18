@@ -218,8 +218,35 @@ function main() {
   assertion(
     checks,
     'route-verification-pending',
-    hold.routeVerification.status === 'pending_explicit_approval' && hold.routeVerification.artifact === null,
-    'no endpoint/model route canary has been run or inherited',
+    hold.routeVerification.status === 'pending_explicit_approval' &&
+      hold.routeVerification.artifact === null &&
+      hold.routeVerification.canaryAuthorization === null &&
+      hold.routeVerification.maximumModelCalls === 1 &&
+      hold.routeVerification.retryOrResumeAuthority === 'none',
+    'one bounded route canary is prepared, but no canary, authorization, retry, or inherited artifact exists',
+  );
+  const routeCanaryPlan = JSON.parse(
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/run-tutor-stub-resistant-profile-route-canary.js',
+        '--request',
+        hold.routeVerification.canaryRequest,
+        '--json',
+      ],
+      { cwd: ROOT, encoding: 'utf8' },
+    ),
+  );
+  assertion(
+    checks,
+    'route-canary-zero-call-plan',
+    routeCanaryPlan.status === 'HOLD' &&
+      routeCanaryPlan.mode === 'dry-run' &&
+      routeCanaryPlan.modelCalls === 0 &&
+      routeCanaryPlan.artifactWrites === 0 &&
+      routeCanaryPlan.maximumModelCalls === 1 &&
+      routeCanaryPlan.liveStudyAuthorized === false,
+    'the sealed canary defaults to zero calls and zero writes and cannot authorize the live study',
   );
   assertion(
     checks,
@@ -251,6 +278,7 @@ function main() {
     checks,
     blockers: hold.blockers,
     endpointPreflight,
+    routeCanaryPlan,
     proposedCommands: hold.proposedCommands,
   };
   const output = args.json ? `${JSON.stringify(report, null, 2)}\n` : formatMarkdown(report);
