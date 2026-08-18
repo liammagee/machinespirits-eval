@@ -372,3 +372,21 @@ transcripts already on disk — not proposed, not approved.
 
 Both follow-ups (re-registered arm B, counterfactual replay) are handed
 to a separate session, 2026-08-18.
+
+Second read of the 312 archived transcripts, done 2026-08-18, recorded in
+draft note §3.10.3. A blind reader split the tutor's task into its parts
+and judged each part on its own. Result is null and it weakens the
+headline. The sharp tutor does not ask for more (2.94 parts against 2.94,
+p = 1.00), so "partly" is not a longer task. No kind of part drops. The
+one measure that looked like an answer — stating a verdict, sharp 0.300
+against warm 0.508, p = 0.025 post-split — fails its own control, because
+the two same-treatment repeats differ at p = 0.011, wider than the claim.
+Cells 207 and 208 differ only by the dead `yoked_delivery_swap` flag, so
+the block ran the sharp condition twice; pooling both repeats gives the
+primary at 0.601 against 0.712, p = 0.061, and every part-level measure
+null (p = 0.13 to 0.83). The registered A-against-C test stands as
+registered at p = 0.043, but the effect showed in one repeat of two.
+Further reads of this block are not worth buying. Only a fresh
+registration with a working delivery swap can price delivered manner.
+Reader script `scripts/read-edged-register-task-parts.js`; sheet
+`task-parts-readings.jsonl` in the batch directory.
