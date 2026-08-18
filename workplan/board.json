@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-18T11:33:48.225Z",
+  "generated": "2026-08-18T12:07:11.516Z",
   "counts": {
     "total": 512,
     "byStatus": {
@@ -270,7 +270,14 @@
           "docs/harness-claim-transfer-rule.md",
           "docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md",
           "notes/2026-08-16-edged-register-calibration-draft.md",
-          "docs/resistance-action-register-conservation-protocol.md"
+          "docs/resistance-action-register-conservation-protocol.md",
+          "docs/pedagogical-move-contract.md"
+        ],
+        "code": [
+          "services/pedagogicalMove/contract.js",
+          "services/pedagogicalMove/shadow.js",
+          "services/adaptiveTutor/pedagogicalMoveProjection.js",
+          "services/tutorStubPedagogicalMoveProjection.js"
         ]
       },
       "tags": [
@@ -281,7 +288,7 @@
         "learner-profiles",
         "registers"
       ],
-      "branch": "codex/resistance-action-register-integration"
+      "branch": "codex/pedagogical-move-contract"
     },
     {
       "id": "edged-register-stub-dag-replication",
