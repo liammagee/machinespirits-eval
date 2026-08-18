@@ -1318,6 +1318,70 @@ disk, scoring the three parts separately, would answer it with no new
 generation — 226 rows on the restricted set, 312 on the full block. That
 is a new priced read and needs its own approval; it is not proposed here.
 
+### 3.10.3 Second read: the task split into parts — null, and the primary weakens (2026-08-18)
+
+The frozen reader returns one verdict for a task the tutor usually sets in
+several parts, so it cannot say which part the learner dropped. A second
+reader was run over the same 312 windows, same reader model as the frozen
+sheet, blind to version. It lists the parts the tutor set, tags each
+(make a case, state a verdict, name the deciding feature, revise a claim,
+other) and says whether the learner did that part. All 312 rows read, no
+failures. Sheet: `task-parts-readings.jsonl` in the batch directory.
+Script: `scripts/read-edged-register-task-parts.js`.
+
+**The sharp tutor does not ask for more.** 2.94 parts per row against 2.94
+warm, p = 1.00; post-split 2.99 against 2.87, p = 0.37. This kills the
+reading that "partly" meant a longer task. Whatever the endpoint gap is,
+it is not the tutor setting extra work.
+
+**The new reader agrees with the frozen one.** Mean share of parts finished
+runs 0.757 where the frozen reader said yes, 0.377 where it said partly,
+0.000 where it said no.
+
+**Cells 207 and 208 differ by one dead flag, so the block ran the sharp
+condition twice.** The only factor separating them is
+`yoked_delivery_swap`, which never fired (§3.10). Version B is therefore
+a repeat of version A, not a third condition — which makes it a free check
+on every measure.
+
+**Every part-level measure is null once both repeats are used.**
+
+```
+                          sharp (both repeats)   warm control    p
+parts finished, all rows       0.599                0.608      0.830
+parts finished, post-split     0.535                0.600      0.133
+all parts finished, all rows   0.293                0.308      0.794
+all parts finished, post-split 0.219                0.293      0.250
+```
+
+No kind of part separates. Stating a verdict looked like the answer —
+post-split, sharp menu 18/60 = 0.300 against warm 30/59 = 0.508, p =
+0.0254 — but it fails its own control: the two same-treatment repeats
+differ at p = 0.0111 (18/60 against 34/64), a wider gap than the one being
+claimed, and pooled the measure gives p = 0.27. The delivered register at
+that moment was near-identical in the two repeats (sarcastic 52 / ironic
+24 against sarcastic 47 / ironic 26). Treated as noise.
+
+**The primary weakens under its own repeat.** The registered test is A
+against C and stands as registered: 0.567 against 0.712, p = 0.043. But
+the repeat did not reproduce it — B against C gives 0.635 against 0.712,
+p = 0.301 — and pooling both repeats, which is the correct handling once B
+is not a separate condition, gives 125/208 = 0.601 against 0.712, p =
+0.061. The effect appeared in one repeat of two. This does not overturn
+the registration, which was frozen before the data; it is recorded as a
+limit on how far the result travels.
+
+**The rejected reading stays rejected.** §3.10.2 wrote off "the sharp
+learner states a test but withholds the verdict" because counting did not
+support it. The part-level read appeared to revive it and then failed the
+same-treatment control. It is rejected on stronger evidence, not revived.
+
+**What this read settles.** The learner does not drop a particular part of
+the task after a sharp reply. There is no found difference in what it
+does, only the weak and unreplicated whole-task gap. Further reads of this
+block are not worth buying; a fresh registration with a working delivery
+swap is the only design that can price delivered manner.
+
 ### 3.11 Arm B re-registered — the swap fires, and what 104 rows can price (2026-08-18)
 
 Written before any arm-B row exists under the repaired seam. Every number
@@ -1633,67 +1697,3 @@ block bought with `--arms B` is not randomised against the arm A rows of
 operator ruled for the full three-arm re-run (§3.11, route 2). The filter
 exists for the case where that ruling is later revisited, and it does not
 revisit it.
-
-### 3.10.3 Second read: the task split into parts — null, and the primary weakens (2026-08-18)
-
-The frozen reader returns one verdict for a task the tutor usually sets in
-several parts, so it cannot say which part the learner dropped. A second
-reader was run over the same 312 windows, same reader model as the frozen
-sheet, blind to version. It lists the parts the tutor set, tags each
-(make a case, state a verdict, name the deciding feature, revise a claim,
-other) and says whether the learner did that part. All 312 rows read, no
-failures. Sheet: `task-parts-readings.jsonl` in the batch directory.
-Script: `scripts/read-edged-register-task-parts.js`.
-
-**The sharp tutor does not ask for more.** 2.94 parts per row against 2.94
-warm, p = 1.00; post-split 2.99 against 2.87, p = 0.37. This kills the
-reading that "partly" meant a longer task. Whatever the endpoint gap is,
-it is not the tutor setting extra work.
-
-**The new reader agrees with the frozen one.** Mean share of parts finished
-runs 0.757 where the frozen reader said yes, 0.377 where it said partly,
-0.000 where it said no.
-
-**Cells 207 and 208 differ by one dead flag, so the block ran the sharp
-condition twice.** The only factor separating them is
-`yoked_delivery_swap`, which never fired (§3.10). Version B is therefore
-a repeat of version A, not a third condition — which makes it a free check
-on every measure.
-
-**Every part-level measure is null once both repeats are used.**
-
-```
-                          sharp (both repeats)   warm control    p
-parts finished, all rows       0.599                0.608      0.830
-parts finished, post-split     0.535                0.600      0.133
-all parts finished, all rows   0.293                0.308      0.794
-all parts finished, post-split 0.219                0.293      0.250
-```
-
-No kind of part separates. Stating a verdict looked like the answer —
-post-split, sharp menu 18/60 = 0.300 against warm 30/59 = 0.508, p =
-0.0254 — but it fails its own control: the two same-treatment repeats
-differ at p = 0.0111 (18/60 against 34/64), a wider gap than the one being
-claimed, and pooled the measure gives p = 0.27. The delivered register at
-that moment was near-identical in the two repeats (sarcastic 52 / ironic
-24 against sarcastic 47 / ironic 26). Treated as noise.
-
-**The primary weakens under its own repeat.** The registered test is A
-against C and stands as registered: 0.567 against 0.712, p = 0.043. But
-the repeat did not reproduce it — B against C gives 0.635 against 0.712,
-p = 0.301 — and pooling both repeats, which is the correct handling once B
-is not a separate condition, gives 125/208 = 0.601 against 0.712, p =
-0.061. The effect appeared in one repeat of two. This does not overturn
-the registration, which was frozen before the data; it is recorded as a
-limit on how far the result travels.
-
-**The rejected reading stays rejected.** §3.10.2 wrote off "the sharp
-learner states a test but withholds the verdict" because counting did not
-support it. The part-level read appeared to revive it and then failed the
-same-treatment control. It is rejected on stronger evidence, not revived.
-
-**What this read settles.** The learner does not drop a particular part of
-the task after a sharp reply. There is no found difference in what it
-does, only the weak and unreplicated whole-task gap. Further reads of this
-block are not worth buying; a fresh registration with a working delivery
-swap is the only design that can price delivered manner.
