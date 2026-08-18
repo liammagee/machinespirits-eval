@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-18T14:00:11.553Z",
+  "generated": "2026-08-18T14:27:56.249Z",
   "counts": {
     "total": 512,
     "byStatus": {
@@ -252,7 +252,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-08-18",
-      "updated": "2026-08-18",
+      "updated": "2026-08-19",
       "verification": "Bored and frame-defiant learner contracts pass discrimination and observability gates; the shared runtime selects a warranted pedagogical action before a compatible tonal register; irony and sarcasm remain opt-in and guard-bounded; and a registered proof-DAG crossed study reports action-fit, register, same-treatment, and downstream outcome results before any claim is transferred back to the cell harness.",
       "claim_status": "planned",
       "links": {
@@ -272,7 +272,8 @@
           "notes/2026-08-16-edged-register-calibration-draft.md",
           "docs/resistance-action-register-conservation-protocol.md",
           "docs/pedagogical-move-contract.md",
-          "docs/tutor-stub-resistant-profile-discrimination-registration.md"
+          "docs/tutor-stub-resistant-profile-discrimination-registration.md",
+          "docs/tutor-stub-resistant-profile-discrimination-live-readiness-hold.md"
         ],
         "code": [
           "services/pedagogicalMove/contract.js",
@@ -283,7 +284,12 @@
           "services/pedagogicalMove/resistantProfileWarrantShadow.js",
           "scripts/tutor-stub-learner-profile-contracts.js",
           "scripts/prepare-tutor-stub-resistant-profile-discrimination.js",
-          "config/tutor-stub-resistant-profile-discrimination-registration.v1.json"
+          "scripts/check-tutor-stub-resistant-profile-live-readiness.js",
+          "services/tutorStubResistantProfileDiscriminationPreflight.js",
+          "config/tutor-stub-resistant-profile-discrimination-registration.v1.json",
+          "config/tutor-stub-resistant-profile-discrimination-live-readiness.hold.v1.json",
+          "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json",
+          "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.endpoint-go.json"
         ]
       },
       "tags": [
@@ -294,7 +300,7 @@
         "learner-profiles",
         "registers"
       ],
-      "branch": "codex/resistant-profile-discrimination-registration"
+      "branch": "codex/resistant-profile-live-readiness-hold"
     },
     {
       "id": "edged-register-stub-dag-replication",
