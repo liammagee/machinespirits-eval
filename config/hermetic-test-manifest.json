@@ -638,6 +638,7 @@
         "tests/tutorStubResistantProfileDiscriminationRegistration.test.js",
         "tests/tutorStubResistantProfileLiveReadiness.test.js",
         "tests/tutorStubResistantProfileRouteCanary.test.js",
+        "tests/tutorStubResistantProfileStudyGoRequest.test.js",
         "tests/tutorStubResponseComposition.test.js",
         "tests/tutorStubResponseConfigurationPresentation.test.js",
         "tests/tutorStubResponseContractLeaves.test.js",
