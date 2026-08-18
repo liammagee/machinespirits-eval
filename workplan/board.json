@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-18T23:33:11.823Z",
+  "generated": "2026-08-18T23:58:18.401Z",
   "counts": {
     "total": 512,
     "byStatus": {
@@ -273,7 +273,8 @@
           "docs/resistance-action-register-conservation-protocol.md",
           "docs/pedagogical-move-contract.md",
           "docs/tutor-stub-resistant-profile-discrimination-registration.md",
-          "docs/tutor-stub-resistant-profile-discrimination-live-readiness-hold.md"
+          "docs/tutor-stub-resistant-profile-discrimination-live-readiness-hold.md",
+          "docs/tutor-stub-resistant-profile-discrimination-study-go-request.md"
         ],
         "code": [
           "services/pedagogicalMove/contract.js",
@@ -293,6 +294,8 @@
           "config/tutor-stub-resistant-profile-route-canary-request.v1.json",
           "config/tutor-stub-resistant-profile-route-canary-authorization.consumed.v1.json",
           "config/tutor-stub-resistant-profile-route-canary-result.v1.json",
+          "config/tutor-stub-resistant-profile-discrimination-study-go-request.v1.json",
+          "scripts/check-tutor-stub-resistant-profile-study-go-request.js",
           "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json",
           "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.endpoint-go.json"
         ]
@@ -305,7 +308,7 @@
         "learner-profiles",
         "registers"
       ],
-      "branch": "codex/resistant-profile-route-canary-authorized"
+      "branch": "codex/resistant-profile-study-go-preparation"
     },
     {
       "id": "edged-register-stub-dag-replication",
