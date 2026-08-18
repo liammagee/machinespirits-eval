@@ -1579,3 +1579,57 @@ readings, none of them endpoints, none of them selecting anything.
 conversion rule frozen at `b761bbbe`, the corridor rule in §2.4, or the
 eligibility screen in §2.5 M-C1; any re-scoring of the 312 rows already
 read.
+
+#### 3.11.1 The runner can now plan a named subset of arms (2026-08-18)
+
+§3.11 listed three limits. Limit 3 — "the runner cannot launch one arm" —
+is cleared by commit `666c4edf`. The other two stand.
+
+The runner takes `--arms`, default all three. A subset keeps the
+registered 104 rows per arm; only the row total, the row cap and the harm
+reader's ceiling follow the arm count down.
+
+The filter's one hard duty is to leave the frozen block alone. Asking for
+no subset, or asking for all three arms by name in any order, returns the
+plan byte for byte — `31b7d77bfe7832a3e8b8f729753128432760ed5d7dbf151ac85c5519d52ed607`,
+the SHA the signed note of 2026-08-17 cites. A test pins that string, so
+adding the flag cannot orphan a note that is already signed.
+
+The harm ceiling is now derived rather than written down: two reads per
+capped row, which is what the frozen 700 always was (350 × 2). The full
+plan keeps 700; a one-arm block gets 240 instead of inheriting a
+three-arm ceiling.
+
+A subset carries an `armSelection` field and therefore hashes to its own
+SHA. Three things follow, and all three are wanted. A note signed for the
+full block cannot launch a subset. A subset batch cannot be resumed as
+the full block. And the plan itself records which arms were bought, with
+the sentence that the dropped arms are not randomised against the arms
+kept — so limit 1 of §3.11 is written into the artefact, not only into
+this note.
+
+The validator now refuses a subset that hides that it is one, a full plan
+wearing the subset marker, arms out of registered order, and an arm
+carrying another arm's registered profile. 16 tests. Hermetic suite: 690
+files, 8827 tests, **2 failures**, both pre-existing and both confirmed
+by running each file on its own. Running the whole suite under load fails
+40-odd more tutor-stub tests; those clear when the files run alone, and
+none of them touch this study.
+
+**Pins moved by this commit**, for the next GO note to disclose:
+
+| Pin | Before | After |
+|---|---|---|
+| Runner blob | `429db35f` | `bdba47dc` |
+| Grid blob (`edgedRegisterCalibration.js`) | `2d099edc` | `8549de70` |
+
+Both plan SHAs are unchanged. The runner's own `--dry-run-main` line now
+names the arms it planned — "312 rows over 3 arms (ABC)" — so any note
+quoting that output must re-copy it.
+
+**Still not licensed.** This is tooling, not a registration. A single-arm
+block bought with `--arms B` is not randomised against the arm A rows of
+`batch-main-2-2026-08-17`, and the plan says so in its own words. The
+operator ruled for the full three-arm re-run (§3.11, route 2). The filter
+exists for the case where that ruling is later revisited, and it does not
+revisit it.
