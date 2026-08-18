@@ -79,7 +79,7 @@ test('resistant-profile endpoint preflight fails closed on channel, event, packe
   assert.throws(() => run(baseline, { assemble: incompleteAssembler }), /did not complete bored_contract_gate/u);
 });
 
-test('live-readiness checker validates the exact command while retaining HOLD and making no call', () => {
+test('live-readiness checker validates the exact command and consumed canary while retaining study HOLD', () => {
   const report = JSON.parse(
     execFileSync(process.execPath, ['scripts/check-tutor-stub-resistant-profile-live-readiness.js', '--json'], {
       cwd: ROOT,
@@ -89,9 +89,12 @@ test('live-readiness checker validates the exact command while retaining HOLD an
 
   assert.equal(report.status, 'HOLD');
   assert.equal(report.packetValid, true);
-  assert.equal(report.readyForAuthorizationRequest, true);
+  assert.equal(report.readyForAuthorizationRequest, false);
+  assert.equal(report.routeVerificationPassed, true);
+  assert.equal(report.readyForStudyGoPreparation, true);
   assert.equal(report.liveRunAuthorized, false);
   assert.equal(report.modelCalls, 0);
+  assert.equal(report.recordedRouteCanaryModelCalls, 1);
   assert.equal(report.productionWrites, 0);
   assert.equal(report.endpointPreflight.registered_scale.cases, 18);
   assert.ok(!report.proposedCommands.live.includes('--dry-run'));
@@ -101,6 +104,22 @@ test('live-readiness checker validates the exact command while retaining HOLD an
     '.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19',
   );
   assert.ok(report.blockers.some((blocker) => /explicit human approval/u.test(blocker)));
+  assert.equal(report.routeCanaryResult.status, 'passed');
+  assert.equal(report.routeCanaryResult.modelCalls, 1);
+  assert.equal(report.routeCanaryResult.observed.provider, 'codex');
+  assert.equal(report.routeCanaryResult.observed.model, 'gpt-5.6-luna');
+  assert.equal(report.routeCanaryResult.observed.prohibitedToolEventCount, 0);
+  assert.equal(report.routeCanaryResult.observed.modelIndependentlyAttested, false);
+  assert.equal(
+    report.routeCanaryResult.sourceArtifactSha256,
+    'a2989dfb48438b7153928244a20ef42f698122b6edb3062fdfecca41ca1ac55f',
+  );
+  assert.equal(report.routeCanaryResult.authorizationConsumption.status, 'CONSUMED_AFTER_ONE_CALL');
+  assert.match(report.routeCanaryResult.authorizationConsumptionSha256, /^[0-9a-f]{64}$/u);
+  assert.equal(
+    fs.existsSync(path.join(ROOT, 'config/tutor-stub-resistant-profile-route-canary-authorization.v1.json')),
+    false,
+  );
 });
 
 test('live-readiness checker refuses a drifted HOLD packet before authorization', () => {
@@ -115,6 +134,27 @@ test('live-readiness checker refuses a drifted HOLD packet before authorization'
         execFileSync(
           process.execPath,
           ['scripts/check-tutor-stub-resistant-profile-live-readiness.js', '--hold', driftedPath, '--json'],
+          { cwd: ROOT, encoding: 'utf8', stdio: 'pipe' },
+        ),
+      /Command failed/u,
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('live-readiness checker refuses a drifted committed route result', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'resistant-profile-route-result-'));
+  try {
+    const result = readJson(path.join(ROOT, 'config/tutor-stub-resistant-profile-route-canary-result.v1.json'));
+    result.observed.model = 'gpt-5.6-sol';
+    const driftedPath = path.join(tmp, 'drifted-result.json');
+    fs.writeFileSync(driftedPath, `${JSON.stringify(result, null, 2)}\n`);
+    assert.throws(
+      () =>
+        execFileSync(
+          process.execPath,
+          ['scripts/check-tutor-stub-resistant-profile-live-readiness.js', '--route-result', driftedPath, '--json'],
           { cwd: ROOT, encoding: 'utf8', stdio: 'pipe' },
         ),
       /Command failed/u,

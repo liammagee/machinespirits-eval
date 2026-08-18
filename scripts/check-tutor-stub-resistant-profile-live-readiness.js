@@ -19,12 +19,14 @@ const DEFAULT_HOLD = path.join(
   'config',
   'tutor-stub-resistant-profile-discrimination-live-readiness.hold.v1.json',
 );
+const DEFAULT_ROUTE_RESULT = path.join(ROOT, 'config', 'tutor-stub-resistant-profile-route-canary-result.v1.json');
 
 function parseArgs(argv) {
-  const args = { hold: DEFAULT_HOLD, json: false, out: '' };
+  const args = { hold: DEFAULT_HOLD, routeResult: DEFAULT_ROUTE_RESULT, json: false, out: '' };
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index];
     if (token === '--hold') args.hold = path.resolve(argv[++index] || '');
+    else if (token === '--route-result') args.routeResult = path.resolve(argv[++index] || '');
     else if (token === '--json') args.json = true;
     else if (token === '--out') args.out = path.resolve(argv[++index] || '');
     else if (token === '--help' || token === '-h') {
@@ -33,6 +35,7 @@ function parseArgs(argv) {
 
 Options:
   --hold <json>  committed HOLD packet (default: config v1)
+  --route-result <json>  committed one-call route result (default: config v1)
   --json         emit machine-readable report
   --out <file>   write the report instead of stdout
 
@@ -96,7 +99,8 @@ function formatMarkdown(report) {
     `Status: **${report.status}**`,
     `Packet valid: **${report.packetValid ? 'yes' : 'no'}**`,
     `Live run authorized: **${report.liveRunAuthorized ? 'yes' : 'no'}**`,
-    `Model calls made: **${report.modelCalls}**`,
+    `Model calls made by this check: **${report.modelCalls}**`,
+    `Recorded route-canary calls: **${report.recordedRouteCanaryModelCalls}**`,
     '',
     '## Checks',
     '',
@@ -217,13 +221,13 @@ function main() {
   );
   assertion(
     checks,
-    'route-verification-pending',
+    'immutable-pre-canary-hold',
     hold.routeVerification.status === 'pending_explicit_approval' &&
       hold.routeVerification.artifact === null &&
       hold.routeVerification.canaryAuthorization === null &&
       hold.routeVerification.maximumModelCalls === 1 &&
       hold.routeVerification.retryOrResumeAuthority === 'none',
-    'one bounded route canary is prepared, but no canary, authorization, retry, or inherited artifact exists',
+    'the original pre-canary HOLD remains byte-stable and grants no inherited authorization or retry',
   );
   const routeCanaryPlan = JSON.parse(
     execFileSync(
@@ -248,6 +252,60 @@ function main() {
       routeCanaryPlan.liveStudyAuthorized === false,
     'the sealed canary defaults to zero calls and zero writes and cannot authorize the live study',
   );
+  const routeCanaryResult = readJson(args.routeResult);
+  const routeAuthorizationConsumptionPath = path.join(ROOT, routeCanaryResult.authorizationConsumption?.path || '');
+  const routeAuthorizationConsumption = readJson(routeAuthorizationConsumptionPath);
+  const routeAuthorization = routeAuthorizationConsumption.approvedAuthorization?.content;
+  assertion(
+    checks,
+    'route-canary-request-binding',
+    routeCanaryResult.request?.path === hold.routeVerification.canaryRequest &&
+      sha256File(path.join(ROOT, routeCanaryResult.request.path)) === routeCanaryResult.request.sha256,
+    `route result binds request ${routeCanaryResult.request?.sha256}`,
+  );
+  assertion(
+    checks,
+    'route-canary-authorization-binding',
+    routeAuthorizationConsumption.schema ===
+      'machinespirits.tutor-stub.resistant-profile-route-canary-authorization-consumption.v1' &&
+      routeAuthorizationConsumption.status === 'CONSUMED_AFTER_ONE_CALL' &&
+      routeAuthorizationConsumption.approvedAuthorization?.path === routeCanaryResult.authorization?.path &&
+      routeAuthorizationConsumption.approvedAuthorization?.sha256 === routeCanaryResult.authorization?.sha256 &&
+      routeAuthorizationConsumption.execution?.head === routeCanaryResult.executionHead &&
+      routeAuthorizationConsumption.execution?.modelCallsConsumed === 1 &&
+      routeAuthorizationConsumption.execution?.sourceArtifactSha256 === routeCanaryResult.sourceArtifactSha256 &&
+      routeAuthorizationConsumption.retryOrResumeAuthority === 'none' &&
+      routeAuthorizationConsumption.liveStudyAuthorized === false &&
+      routeAuthorization?.schema === 'machinespirits.tutor-stub.resistant-profile-route-canary-authorization.v1' &&
+      routeAuthorization.status === 'APPROVED_FOR_ONE_ROUTE_CANARY_CALL' &&
+      routeAuthorization.request?.sha256 === routeCanaryResult.request.sha256 &&
+      routeAuthorization.scope?.maximumModelCalls === 1 &&
+      routeAuthorization.scope?.liveStudyAuthorized === false &&
+      routeAuthorization.approval?.explicitOneModelCall === true &&
+      !fs.existsSync(path.join(ROOT, routeCanaryResult.authorization?.path || '')),
+    `authorization ${routeCanaryResult.authorization?.sha256} is preserved only inside a non-executable consumed record`,
+  );
+  assertion(
+    checks,
+    'route-canary-result',
+    routeCanaryResult.schema === 'machinespirits.tutor-stub.resistant-profile-route-canary-result.v1' &&
+      routeCanaryResult.status === 'passed' &&
+      routeCanaryResult.studyId === hold.studyId &&
+      routeCanaryResult.modelCalls === 1 &&
+      routeCanaryResult.retryOrResumeAuthority === 'none' &&
+      routeCanaryResult.requested?.modelRef === 'codex.gpt-5.6-luna' &&
+      JSON.stringify(routeCanaryResult.requested?.roles) === JSON.stringify(['tutor', 'analysis', 'learner']) &&
+      routeCanaryResult.observed?.provider === 'codex' &&
+      routeCanaryResult.observed?.model === 'gpt-5.6-luna' &&
+      routeCanaryResult.observed?.effort === 'low' &&
+      routeCanaryResult.observed?.structuredOutput === true &&
+      routeCanaryResult.observed?.prohibitedToolEventCount === 0 &&
+      routeCanaryResult.observed?.modelAttestationBasis === 'explicit_cli_model_argument_accepted_bridge_echo' &&
+      routeCanaryResult.observed?.modelIndependentlyAttested === false &&
+      /^[0-9a-f]{40}$/u.test(routeCanaryResult.executionHead || '') &&
+      /^[0-9a-f]{64}$/u.test(routeCanaryResult.sourceArtifactSha256 || ''),
+    'one call passed on the requested Luna CLI route with no prohibited tool event and no independent-attestation claim',
+  );
   assertion(
     checks,
     'source-launch-pin-pending',
@@ -261,24 +319,39 @@ function main() {
       hold.authorization.explicitHumanApproval === false &&
       hold.authorization.modelCallsAuthorized === false &&
       hold.authorization.liveRunAuthorized === false,
-    'no GO note, approval, model call, or live run is authorized',
+    'no study GO note, study approval, study model call, or live run is authorized',
   );
+
+  const remainingBlockers = [
+    'select the exact clean origin/main launch commit',
+    'write and commit a study-specific GO note binding the registration, endpoint preflight, committed route result, launch commit, destination, payload scope, and 864-attempt ceiling',
+    'obtain explicit human approval for that exact GO note and model-call spend',
+  ];
 
   const report = {
     schema: 'machinespirits.tutor-stub.resistant-profile-live-readiness-report.v1',
     status: 'HOLD',
     packetValid: true,
-    readyForAuthorizationRequest: true,
+    readyForAuthorizationRequest: false,
+    routeVerificationPassed: true,
+    readyForStudyGoPreparation: true,
     liveRunAuthorized: false,
     modelCalls: 0,
+    recordedRouteCanaryModelCalls: routeCanaryResult.modelCalls,
     productionWrites: 0,
     holdPacket: path.relative(ROOT, args.hold),
     currentHead: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim(),
     worktreeDirty: Boolean(execFileSync('git', ['status', '--porcelain'], { cwd: ROOT, encoding: 'utf8' }).trim()),
     checks,
-    blockers: hold.blockers,
+    blockers: remainingBlockers,
     endpointPreflight,
     routeCanaryPlan,
+    routeCanaryResult: {
+      path: path.relative(ROOT, args.routeResult),
+      sha256: sha256File(args.routeResult),
+      ...routeCanaryResult,
+      authorizationConsumptionSha256: sha256File(routeAuthorizationConsumptionPath),
+    },
     proposedCommands: hold.proposedCommands,
   };
   const output = args.json ? `${JSON.stringify(report, null, 2)}\n` : formatMarkdown(report);

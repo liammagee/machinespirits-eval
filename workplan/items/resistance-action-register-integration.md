@@ -50,7 +50,8 @@ links:
     - config/tutor-stub-resistant-profile-discrimination-registration.v1.json
     - config/tutor-stub-resistant-profile-discrimination-live-readiness.hold.v1.json
     - config/tutor-stub-resistant-profile-route-canary-request.v1.json
-    - config/tutor-stub-resistant-profile-route-canary-authorization.v1.json
+    - config/tutor-stub-resistant-profile-route-canary-authorization.consumed.v1.json
+    - config/tutor-stub-resistant-profile-route-canary-result.v1.json
     - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json
     - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.endpoint-go.json
 tags:
@@ -189,3 +190,17 @@ and explicit human approval.
   authorization bound to the request digest, low effort, fresh create-once
   artifact root, one-call ceiling, and no retry or resume authority. This does
   not authorize the 18-dialogue live study or any of its 864 planned attempts.
+- 2026-08-19 — Consumed the one-call authorization successfully at commit
+  `04edc89f943e380bf5fc88bf2d84b93c8c1a805c`. The route returned structured
+  `ROUTE_OK` through `codex` / `gpt-5.6-luna` at low effort with zero prohibited
+  tool events and Codex CLI `0.147.0`. The ignored execution-artifact digest is
+  `a2989dfb48438b7153928244a20ef42f698122b6edb3062fdfecca41ca1ac55f`;
+  the promoted config-record digest is
+  `c68ee936441504fdb514f97537aaf87915c734b43da82f7d81136c40c6918623`,
+  and the non-executable authorization-consumption record is
+  `1ec23bf81df7678050e5383fbda9ab913979b9b93b24fb1944b59002c6eeefb2`.
+  It records bridge echo of the explicit CLI model argument, not independent
+  server attestation. The executable authorization was removed at HEAD and its
+  exact digest and approval evidence were preserved in a non-executable
+  consumed record, preventing fresh-clone replay. Retry/resume remains
+  forbidden, and the 18-dialogue / 864-attempt live study remains on HOLD.
