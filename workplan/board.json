@@ -1,18 +1,18 @@
 {
-  "generated": "2026-08-18T06:42:16.854Z",
+  "generated": "2026-08-18T07:44:16.687Z",
   "counts": {
-    "total": 510,
+    "total": 511,
     "byStatus": {
-      "done": 483,
+      "done": 485,
       "blocked": 6,
       "dropped": 10,
-      "active": 5,
       "triaged": 1,
+      "active": 4,
       "archived": 4,
       "review": 1
     },
     "byType": {
-      "research": 79,
+      "research": 80,
       "experiment": 87,
       "infra": 109,
       "maintenance": 213,
@@ -50,37 +50,6 @@
         "semantic-encoding",
         "fine-grain"
       ]
-    },
-    {
-      "id": "adaptive-warrant-contract-redesign",
-      "title": "Adaptive warrant gate: expected-uptake and policy-termination contracts",
-      "status": "active",
-      "type": "research",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-10",
-      "updated": "2026-08-10",
-      "verification": "Each action family exposes a typed expected learner response, deadline, success, defeat, and expiry/exit transition; successful repair exits and unresolved evidence requests have live/offline parity tests; a newly generated zero-overlap two-reader corpus passes a predeclared decision-quality gate before any downstream scale-up; and the next comparison controls model-draw variance through frozen-prefix replay or explicit replicated draws.",
-      "claim_status": "planned",
-      "links": {
-        "notes": [
-          "docs/adaptation-refinement/remaining-next-steps.md",
-          "docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md",
-          "docs/adaptation-refinement/baseline-comparison-design.md"
-        ],
-        "items": [
-          "adaptive-warrant-baseline-study"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "warrant-gate",
-        "expected-uptake",
-        "counterfactual-replay"
-      ],
-      "branch": "adaptation-refinement"
     },
     {
       "id": "codebase-refactoring-program",
@@ -275,38 +244,43 @@
       ]
     },
     {
-      "id": "edged-register-outcome-study",
-      "title": "Edged-register outcome study on a de-saturated baseline",
+      "id": "resistance-action-register-integration",
+      "title": "Integrate resistance diagnosis, pedagogical action, and tonal register across tutor harnesses",
       "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "claude",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
       "source": "manual",
-      "created": "2026-08-15",
+      "created": "2026-08-18",
       "updated": "2026-08-18",
-      "verification": "A powered main block (or a registered no-corridor kill verdict) answers whether router-selected ironic/sarcastic delivery beats the warm router on post-resistance conversion, on persona-scenario cells where the warm baseline converts at 30-70%. Each paid stage runs only after its own committed GO note plus explicit human approval.",
-      "claim_status": "future",
-      "depends_on": [
-        "adaptive-register-switching",
-        "paid-study-endpoint-runtime-preflight"
-      ],
+      "verification": "Bored and frame-defiant learner contracts pass discrimination and observability gates; the shared runtime selects a warranted pedagogical action before a compatible tonal register; irony and sarcasm remain opt-in and guard-bounded; and a registered proof-DAG crossed study reports action-fit, register, same-treatment, and downstream outcome results before any claim is transferred back to the cell harness.",
+      "claim_status": "planned",
       "links": {
-        "notes": [
-          "notes/2026-08-15-edged-register-outcome-study-design.md",
-          "notes/2026-08-16-edged-register-calibration-draft.md",
-          "notes/2026-08-09-adaptive-register-switching-prereg-draft.md"
+        "items": [
+          "tutor-stub-cell-reconciliation",
+          "adaptive-causality-repertoire",
+          "adaptive-warrant-public-obligation-ledger-and-inquiry-termin",
+          "guarded-learner-outcome-study",
+          "adaptive-register-switching",
+          "edged-register-outcome-study",
+          "edged-register-stub-dag-replication"
         ],
-        "code": [
-          "services/adaptiveRegisterSwitchingStage2.js",
-          "scripts/run-adaptive-register-switching-stage2.js",
-          "services/tutorStubEdgeTimingPolicy.js"
+        "notes": [
+          "notes/2026-08-16-harness-reconciliation-survey.md",
+          "docs/harness-claim-transfer-rule.md",
+          "docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md",
+          "notes/2026-08-16-edged-register-calibration-draft.md"
         ]
       },
       "tags": [
-        "registers",
-        "adaptive",
-        "outcome"
-      ]
+        "tutor-stub",
+        "cells",
+        "adaptation",
+        "resistance",
+        "learner-profiles",
+        "registers"
+      ],
+      "branch": "codex/resistance-action-register-integration"
     },
     {
       "id": "edged-register-stub-dag-replication",
@@ -329,6 +303,7 @@
         ],
         "items": [
           "edged-register-outcome-study",
+          "resistance-action-register-integration",
           "tutor-stub-headroom-contrast",
           "refactor-tutor-stub-register-palette",
           "tutor-stub-fallback-register-and-uptake-guard"
@@ -975,6 +950,39 @@
         "warrant-gate",
         "baseline",
         "decision-quality"
+      ],
+      "branch": "adaptation-refinement"
+    },
+    {
+      "id": "adaptive-warrant-contract-redesign",
+      "title": "Adaptive warrant gate: expected-uptake and policy-termination contracts",
+      "status": "done",
+      "type": "research",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-10",
+      "updated": "2026-08-18",
+      "verification": "Typed lifecycle contracts were implemented for all 13 action families and exercised with live/offline checks; the fresh two-reader gate failed its predeclared decision-quality thresholds, the downstream comparison stopped, and the missing public-obligation and inquiry semantics transferred to the separately completed scope-bound successor without a policy-validity claim for this card.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": [
+          "docs/adaptation-refinement/remaining-next-steps.md",
+          "docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md",
+          "docs/adaptation-refinement/baseline-comparison-design.md"
+        ],
+        "items": [
+          "adaptive-warrant-baseline-study",
+          "adaptive-warrant-public-obligation-ledger-and-inquiry-termin",
+          "resistance-action-register-integration"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "warrant-gate",
+        "expected-uptake",
+        "counterfactual-replay"
       ],
       "branch": "adaptation-refinement"
     },
@@ -13138,6 +13146,47 @@
         "images"
       ],
       "milestone": "paper-2-0"
+    },
+    {
+      "id": "edged-register-outcome-study",
+      "title": "Edged-register outcome study on a de-saturated baseline",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-15",
+      "updated": "2026-08-18",
+      "verification": "The registered 312-row block, two planned reads, same-treatment control, power check, scenario split, and merged closeout report establish the scope-bound result: an edged-inclusive menu did not improve conversion, the delivery-only secondary was invalid because its swap never fired, and the unresolved bored-learner lead transfers to the proof-DAG replication card.",
+      "claim_status": "scope-bound",
+      "depends_on": [
+        "adaptive-register-switching",
+        "paid-study-endpoint-runtime-preflight"
+      ],
+      "links": {
+        "prs": [
+          656
+        ],
+        "notes": [
+          "notes/2026-08-15-edged-register-outcome-study-design.md",
+          "notes/2026-08-16-edged-register-calibration-draft.md",
+          "notes/2026-08-09-adaptive-register-switching-prereg-draft.md"
+        ],
+        "code": [
+          "services/adaptiveRegisterSwitchingStage2.js",
+          "scripts/run-adaptive-register-switching-stage2.js",
+          "services/tutorStubEdgeTimingPolicy.js"
+        ],
+        "items": [
+          "edged-register-stub-dag-replication",
+          "resistance-action-register-integration"
+        ]
+      },
+      "tags": [
+        "registers",
+        "adaptive",
+        "outcome"
+      ]
     },
     {
       "id": "environment-grounded-automated-prompt-optimization-for-llm-g",
