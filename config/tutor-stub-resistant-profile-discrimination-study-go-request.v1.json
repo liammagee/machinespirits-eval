@@ -1,0 +1,137 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-profile-discrimination-study-go-request.v1",
+  "status": "HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL",
+  "studyId": "tutor-stub-resistant-profile-discrimination-v1",
+  "workplanItem": "resistance-action-register-integration",
+  "preparedAt": "2026-08-18T23:40:30Z",
+  "claimBoundary": "This study can establish only whether the bored and frame_defiant automated learner contracts produce discriminable public behavior in the tutor-stub harness. It cannot establish tutor-action efficacy, register efficacy, human learning, or transfer to the cell harness.",
+  "authorization": {
+    "explicitHumanApproval": null,
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "approvalMustBindRequestSha256": true,
+    "approvalMustNameMaximumPlannedModelAttempts": 864
+  },
+  "source": {
+    "launchCommit": "f95e245c8ef9dab1b9b3da374508f6efd6e90006",
+    "launchTree": "a3caa5d171726575dd84cef3c92333d01c8b7ee7",
+    "selectedFrom": "origin/main",
+    "selectedAt": "2026-08-18T23:40:30Z",
+    "requirements": {
+      "headMustEqualLaunchCommit": true,
+      "checkoutMustBeClean": true,
+      "detachedLaunchWorktree": true
+    },
+    "closure": [
+      {
+        "path": "scripts/run-tutor-stub-qa-matrix.js",
+        "sha256": "0ddc5f07577d070775b363e79666ba3a5805fa79c268b1f61c9a804be3806ae8"
+      },
+      {
+        "path": "scripts/run-tutor-stub-auto-eval.js",
+        "sha256": "2a1357da998f0e05aa5e43707d73a3d3d5202c78eb399a7410d883e8bf4c5a61"
+      },
+      {
+        "path": "scripts/analyze-tutor-stub-profile-discrimination.js",
+        "sha256": "27ed3c3419454b7ca7af990a01705564605f6e6d2e4621bb4f9f2c8adc409b42"
+      },
+      {
+        "path": "scripts/tutor-stub.js",
+        "sha256": "5a7136af62db78962b253955b2fdf99ddcc87ba1c6bbbecffdb78902d0df8344"
+      },
+      {
+        "path": "scripts/tutor-stub-learner-profile-contracts.js",
+        "sha256": "0b6a6858d5e371667ad1e5b56a9cef282ad86c08e9a05310347ef79fd719e9bc"
+      },
+      {
+        "path": "services/resistantLearnerObservation.js",
+        "sha256": "d3feca462dcf1f28199448e33ce5db1c927ce88dc9dfde5f3a920bc57abbb4ec"
+      },
+      {
+        "path": "config/drama-derivation/world-005-marrick.yaml",
+        "sha256": "38f1e5106dbca611a993bf2987f1a812330609927c84b0e17c281c292a201d03"
+      },
+      {
+        "path": "config/providers.yaml",
+        "sha256": "fe0c86fa91f4443fc4d55f6f3d5b39cf7df9fff5c3284096429cb3908335b326"
+      }
+    ]
+  },
+  "bindings": {
+    "registration": {
+      "path": "config/tutor-stub-resistant-profile-discrimination-registration.v1.json",
+      "sha256": "e6581e6cbfe9589b825589318c2b5b523b03ef1b8587ec31fec5b87ff69249ac"
+    },
+    "liveReadinessHold": {
+      "path": "config/tutor-stub-resistant-profile-discrimination-live-readiness.hold.v1.json",
+      "sha256": "d8a07d3593576b5c1ea9f868d333de386588bc9d4576567a6812c60f56f7c91c"
+    },
+    "endpoint": {
+      "contractPath": "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json",
+      "contractFileSha256": "66da86384f895a80b2078062b211f85104ed1d560f3b43c4ccf8e96642e88347",
+      "contractCanonicalSha256": "a7776585313e15f265440a30412b0505317597454615b83880e69d300bd2bab3",
+      "certificatePath": "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.endpoint-go.json",
+      "certificateFileSha256": "b6cdbb05d3e06beabeded5eebfe1e6e139f907362143373b0cee0d6a5d6f229d",
+      "preflightSha256": "06ec5af028e79f2d38517e33992d59bdcf8401a19bba9be3c5eb86678ecd862b",
+      "authorizationScope": "endpoint-runtime compatibility only"
+    },
+    "routeCanary": {
+      "resultPath": "config/tutor-stub-resistant-profile-route-canary-result.v1.json",
+      "resultSha256": "c68ee936441504fdb514f97537aaf87915c734b43da82f7d81136c40c6918623",
+      "authorizationConsumptionPath": "config/tutor-stub-resistant-profile-route-canary-authorization.consumed.v1.json",
+      "authorizationConsumptionSha256": "1ec23bf81df7678050e5383fbda9ab913979b9b93b24fb1944b59002c6eeefb2",
+      "sourceArtifactSha256": "a2989dfb48438b7153928244a20ef42f698122b6edb3062fdfecca41ca1ac55f",
+      "executionHead": "04edc89f943e380bf5fc88bf2d84b93c8c1a805c",
+      "observedProvider": "codex",
+      "observedModel": "gpt-5.6-luna",
+      "observedEffort": "low",
+      "attestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+      "modelIndependentlyAttested": false
+    },
+    "commands": {
+      "source": "bindings.liveReadinessHold.path#proposedCommands",
+      "liveArraySha256": "e63de48b23e667320cb13d22813e4da203b3ffa84ff6061f6a2e81343bcd697e",
+      "analyzeArraySha256": "b77f61edbceffaf093437f96ce3e5285471be8a5291653a7b71ba6e01d826568"
+    }
+  },
+  "design": {
+    "profiles": ["diligent", "low_agency", "bored", "skeptical", "low_trust_skeptic", "frame_defiant"],
+    "policies": ["field"],
+    "runsPerProfile": 3,
+    "dialogues": 18,
+    "turnsPerDialogue": 8,
+    "world": "world_005_marrick",
+    "models": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna"
+    },
+    "cliEffort": "low",
+    "parallelism": 3
+  },
+  "destination": {
+    "artifactRoot": ".tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19",
+    "createOnce": true,
+    "mustNotExistBeforeLaunch": true,
+    "productionDatabaseWrites": false
+  },
+  "payload": {
+    "scope": "Repository-authored world_005_marrick content, tutor and automated learner prompts, classifier prompts, and generated automated dialogue context only.",
+    "humanSubjectData": false,
+    "privateArchiveData": false,
+    "trainingReuseStatus": "not_applicable"
+  },
+  "budget": {
+    "dialogues": 18,
+    "maximumAttemptsPerDialogue": 48,
+    "maximumPlannedModelAttempts": 864,
+    "parallelism": 3,
+    "retryOrResumeAuthority": "none"
+  },
+  "stoppingRules": [
+    "A technical failure stops the study and does not authorize a retry or resume.",
+    "A retry requires review, a new request, separate explicit approval, and a new sealed artifact root.",
+    "The live command may run once only from the exact clean launch commit and create-once destination.",
+    "The existing low_agency and overconfident evidence remains read-only and is neither rejudged nor pooled."
+  ]
+}

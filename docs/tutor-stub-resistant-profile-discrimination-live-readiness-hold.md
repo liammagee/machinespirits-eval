@@ -1,7 +1,8 @@
 # Resistant Learner Profile Discrimination — Live Readiness HOLD
 
 **Prepared:** 19 August 2026.
-**Status:** **HOLD. The one-call route canary passed; no live study is authorized.**
+**Status:** **HOLD. The one-call route canary passed and a study GO request is
+prepared; no live study is authorized.**
 **Workplan item:** `resistance-action-register-integration`.
 
 The machine-readable authority for this note is
@@ -77,18 +78,24 @@ The committed `endpoint_runtime_go` certificate means only that the registered
 endpoints are executable at their full scale. It is not a study GO note and
 cannot authorize spend.
 
+The non-executable study request is
+`config/tutor-stub-resistant-profile-discrimination-study-go-request.v1.json`.
+It selects launch commit `f95e245c8ef9dab1b9b3da374508f6efd6e90006`
+and binds the frozen packet, source closure, route result, destination, payload,
+commands, and ceiling. Validate it with
+`npm run tutor:stub:resistant-profile-study-go -- --json`; the command prints
+the exact request SHA and approval statement while making zero calls and zero
+production writes.
+
 ## What still blocks launch
 
-1. Select the exact clean `origin/main` commit from which the study would run.
-   The preparation base
-   `8de5787f95995c12d657f07dcaedaca66205efe7` is recorded for provenance but is
-   not a launch SHA.
-2. Write and commit a study-specific GO note binding the registration digest,
-   endpoint contract and preflight digests, route artifact, exact launch SHA,
-   artifact destination, payload scope, and 864-attempt ceiling.
-3. Obtain explicit human approval for that exact GO note and spend.
+1. Merge the non-executable study request through required CI.
+2. Obtain explicit human approval for that exact committed request SHA and its
+   864-attempt spend ceiling.
+3. Record that approval in a separate one-shot execution authorization, then
+   re-run the zero-call gate against the exact clean detached launch checkout.
 
-Until all three steps are satisfied, do not run the `proposedCommands.live`
+Until all three remaining steps are satisfied, do not run the `proposedCommands.live`
 array in the machine packet. A technical failure after authorization stops the
 run; it does not license a resume or retry. Any retry needs review and a new
 sealed artifact root. The existing `low_agency` and `overconfident` results

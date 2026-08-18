@@ -34,6 +34,7 @@ links:
     - docs/pedagogical-move-contract.md
     - docs/tutor-stub-resistant-profile-discrimination-registration.md
     - docs/tutor-stub-resistant-profile-discrimination-live-readiness-hold.md
+    - docs/tutor-stub-resistant-profile-discrimination-study-go-request.md
   code:
     - services/pedagogicalMove/contract.js
     - services/pedagogicalMove/shadow.js
@@ -52,6 +53,8 @@ links:
     - config/tutor-stub-resistant-profile-route-canary-request.v1.json
     - config/tutor-stub-resistant-profile-route-canary-authorization.consumed.v1.json
     - config/tutor-stub-resistant-profile-route-canary-result.v1.json
+    - config/tutor-stub-resistant-profile-discrimination-study-go-request.v1.json
+    - scripts/check-tutor-stub-resistant-profile-study-go-request.js
     - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json
     - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.endpoint-go.json
 tags:
@@ -61,7 +64,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistant-profile-route-canary-authorized
+branch: codex/resistant-profile-study-go-preparation
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -204,3 +207,13 @@ and explicit human approval.
   exact digest and approval evidence were preserved in a non-executable
   consumed record, preventing fresh-clone replay. Retry/resume remains
   forbidden, and the 18-dialogue / 864-attempt live study remains on HOLD.
+- 2026-08-19 — Selected clean `origin/main` commit
+  `f95e245c8ef9dab1b9b3da374508f6efd6e90006` as the proposed detached launch
+  source and prepared a non-executable, digest-bound study GO request. The
+  request pins the source tree and critical executable closure, frozen
+  registration, endpoint certificate and full-scale preflight, consumed route
+  result, exact live and analysis command arrays, create-once destination,
+  repository-authored payload, and 864-attempt no-retry ceiling. Its validator
+  reruns the zero-call readiness packet and makes zero model calls and zero
+  production writes. Both authorization booleans remain false pending explicit
+  human approval of the committed request SHA and spend ceiling.
