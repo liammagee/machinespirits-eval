@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-18T12:07:11.516Z",
+  "generated": "2026-08-18T12:56:08.505Z",
   "counts": {
     "total": 512,
     "byStatus": {
@@ -277,7 +277,10 @@
           "services/pedagogicalMove/contract.js",
           "services/pedagogicalMove/shadow.js",
           "services/adaptiveTutor/pedagogicalMoveProjection.js",
-          "services/tutorStubPedagogicalMoveProjection.js"
+          "services/tutorStubPedagogicalMoveProjection.js",
+          "services/resistantLearnerObservation.js",
+          "services/pedagogicalMove/resistantProfileWarrantShadow.js",
+          "scripts/tutor-stub-learner-profile-contracts.js"
         ]
       },
       "tags": [
@@ -288,7 +291,7 @@
         "learner-profiles",
         "registers"
       ],
-      "branch": "codex/pedagogical-move-contract"
+      "branch": "codex/resistant-learner-profile-contracts"
     },
     {
       "id": "edged-register-stub-dag-replication",
