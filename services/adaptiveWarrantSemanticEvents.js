@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto';
 
 export const ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-extraction.v3.2';
+  'machinespirits.adaptation-refinement.semantic-event-extraction.v3.3';
 export const ADAPTIVE_WARRANT_SEMANTIC_VALIDATION_SCHEMA =
-  'machinespirits.adaptation-refinement.semantic-event-validation.v3.2';
+  'machinespirits.adaptation-refinement.semantic-event-validation.v3.3';
 export const ADAPTIVE_WARRANT_SEMANTIC_SIGNAL_SCHEMA =
   'machinespirits.adaptation-refinement.semantic-engagement-signal.v1';
 export const ADAPTIVE_WARRANT_SEMANTIC_UNSPECIFIED_ID = 'unspecified';
@@ -35,6 +35,12 @@ export const ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS = Object.freeze([
   'register_complaint',
   'repetition_complaint',
   'low_agency_deferral',
+  // v3.3 defensive acts (relay 106). The passive pole reads a learner who hands
+  // agency back; the guarded pole reads one who holds a claim the public record
+  // does not support and pushes the burden outward.
+  'learner_overclaim_assertion',
+  'learner_evidence_dismissal',
+  'learner_evidence_demand',
   'analytic_contribution',
   'other',
 ]);
@@ -141,6 +147,22 @@ export const ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS = Object.freeze({
   register_complaint: Object.freeze({ target: 'none', action: 'none' }),
   repetition_complaint: Object.freeze({ target: 'none', action: 'none' }),
   low_agency_deferral: Object.freeze({ target: 'none', action: 'none' }),
+  // The learner states a conclusion as settled. Whether the public record
+  // supports it is not a contract question — the reader marks the act, the
+  // epistemic layer judges the support.
+  learner_overclaim_assertion: Object.freeze({ target: 'catalog_or_none', action: 'none' }),
+  // The learner rejects a piece of already-public evidence without replacing it.
+  learner_evidence_dismissal: Object.freeze({ target: 'catalog_or_none', action: 'none' }),
+  // Structurally identical to tutor_directed_public_result_request on purpose:
+  // the two acts differ only in the stance the span rides on, so the preference
+  // rule below can swap the label without changing any other slot.
+  learner_evidence_demand: Object.freeze({
+    target: 'catalog',
+    action: 'catalog',
+    mode: 'requested',
+    operation: 'supply_public_result',
+    executors: Object.freeze(['tutor', 'joint', 'unspecified']),
+  }),
   analytic_contribution: Object.freeze({ target: 'catalog_or_none', action: 'none' }),
   other: Object.freeze({ target: 'catalog_or_none', action: 'none' }),
 });
@@ -151,9 +173,23 @@ export const ADAPTIVE_WARRANT_SEMANTIC_REQUEST_SPEECH_ACTS = Object.freeze([
   'learner_record_entry_request',
   'learner_wording_request',
   'repair_request',
+  'learner_evidence_demand',
 ]);
 
 const REQUEST_SPEECH_ACTS = new Set(ADAPTIVE_WARRANT_SEMANTIC_REQUEST_SPEECH_ACTS);
+
+/**
+ * v3.3 defensive engagement label. Ordered after low_agency_deferral in
+ * ENGAGEMENT_PRECEDENCE so no passive-pole turn can change its primary label:
+ * a turn that carries any deferential act keeps that reading.
+ */
+export const ADAPTIVE_WARRANT_SEMANTIC_DEFENDED_OVERCLAIM_LABEL = 'defended_overclaim';
+
+export const ADAPTIVE_WARRANT_SEMANTIC_DEFENSIVE_SPEECH_ACTS = Object.freeze([
+  'learner_overclaim_assertion',
+  'learner_evidence_dismissal',
+  'learner_evidence_demand',
+]);
 
 const VALUE_TYPE_SURFACES = Object.freeze({
   name: Object.freeze(['name', 'names', 'named', 'attendant', 'courier']),
@@ -299,6 +335,7 @@ const ENGAGEMENT_PRECEDENCE = Object.freeze([
   'register_complaint',
   'repetition_complaint',
   'low_agency_deferral',
+  ADAPTIVE_WARRANT_SEMANTIC_DEFENDED_OVERCLAIM_LABEL,
   'engaged_analytic',
   'neutral',
 ]);
@@ -655,6 +692,10 @@ function engagementContribution(event) {
     case 'learner_record_entry_request':
     case 'tutor_directed_public_result_request':
       return 'low_agency_deferral';
+    case 'learner_overclaim_assertion':
+    case 'learner_evidence_dismissal':
+    case 'learner_evidence_demand':
+      return ADAPTIVE_WARRANT_SEMANTIC_DEFENDED_OVERCLAIM_LABEL;
     case 'analytic_contribution':
     case 'learner_proposed_test':
     case 'criterion_question':
@@ -664,21 +705,52 @@ function engagementContribution(event) {
   }
 }
 
+function spanKey(event) {
+  return `${Number(event?.evidence_span?.start) || 0}:${String(event?.evidence_span?.text || '')}`;
+}
+
+/**
+ * v3.3 preference rule (relay 106). One span can support both readings: a
+ * demand for a public result and the deferential request for the same result
+ * are the same words. When the span rides on a defended claim — the same turn
+ * carries an over-claim assertion — it reads as the demand. Without that
+ * claim the deferential reading stands, so no passive-pole turn moves.
+ */
+function applyDefendedOverclaimPreference(contributions) {
+  const defendedTurn = contributions.some((row) => row.speech_act === 'learner_overclaim_assertion');
+  if (!defendedTurn) return contributions;
+  const demandSpans = new Set(
+    contributions.filter((row) => row.speech_act === 'learner_evidence_demand').map((row) => row.span_key),
+  );
+  if (!demandSpans.size) return contributions;
+  return contributions.filter(
+    (row) =>
+      !(
+        row.label === 'low_agency_deferral' &&
+        demandSpans.has(row.span_key) &&
+        row.speech_act !== 'low_agency_deferral'
+      ),
+  );
+}
+
 /** Compile accepted and uncertain events without consulting the source text (rejected events never contribute). */
 export function compileAdaptiveWarrantSemanticSignal(validation) {
-  const contributions = [];
+  const collected = [];
   for (const [eventIndex, event] of (validation?.events || []).entries()) {
     const status = event?.validation?.status;
     if (status !== 'accepted' && status !== 'uncertain') continue;
     const label = engagementContribution(event);
     if (!label) continue;
-    contributions.push({
+    collected.push({
       label,
+      speech_act: event.speech_act,
+      span_key: spanKey(event),
       start: Number(event.evidence_span?.start) || 0,
       event_index: eventIndex,
       event_id: event.event_id,
     });
   }
+  const contributions = applyDefendedOverclaimPreference(collected);
   contributions.sort(
     (left, right) =>
       ENGAGEMENT_PRECEDENCE.indexOf(left.label) - ENGAGEMENT_PRECEDENCE.indexOf(right.label) ||

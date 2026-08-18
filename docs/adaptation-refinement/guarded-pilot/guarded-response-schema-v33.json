@@ -1,0 +1,3160 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "classification",
+    "learner_record",
+    "semantic_events"
+  ],
+  "properties": {
+    "classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "turn",
+        "overall"
+      ],
+      "properties": {
+        "turn": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "summary",
+            "request_type",
+            "discourse_move",
+            "evidence_use",
+            "epistemic_stance",
+            "affect",
+            "agency",
+            "scores",
+            "pedagogical_need"
+          ],
+          "properties": {
+            "summary": {
+              "type": "string"
+            },
+            "request_type": {
+              "type": "string",
+              "enum": [
+                "conceptual_clarity_request",
+                "stepwise_support_request",
+                "authority_refusal_or_status_challenge",
+                "plain_language_request",
+                "plain_simplification_followup",
+                "transfer_demand_or_named_material",
+                "vulnerability_or_moral_exposure",
+                "resistance_or_low_agency",
+                "answer_seeking_or_overreach",
+                "off_task_or_mixed"
+              ]
+            },
+            "discourse_move": {
+              "type": "string",
+              "enum": [
+                "question",
+                "claim",
+                "hypothesis",
+                "inference",
+                "evidence_adoption",
+                "challenge",
+                "repair_request",
+                "affective_signal",
+                "answer_seeking",
+                "metacognitive_reflection",
+                "off_task"
+              ]
+            },
+            "evidence_use": {
+              "type": "string",
+              "enum": [
+                "none",
+                "repeats_setup",
+                "cites_public_evidence",
+                "omits_warrant",
+                "links_evidence_to_rule",
+                "overleaps_evidence",
+                "distorts_public_evidence",
+                "revises_from_evidence"
+              ]
+            },
+            "epistemic_stance": {
+              "type": "string",
+              "enum": [
+                "receptive",
+                "confused",
+                "exploratory",
+                "overconfident",
+                "resistant",
+                "answer_seeking",
+                "reflective",
+                "grounded"
+              ]
+            },
+            "affect": {
+              "type": "string"
+            },
+            "agency": {
+              "type": "string",
+              "enum": [
+                "passive",
+                "complying",
+                "attempting",
+                "steering",
+                "self_correcting"
+              ]
+            },
+            "scores": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "conceptual_engagement",
+                "epistemic_readiness"
+              ],
+              "properties": {
+                "conceptual_engagement": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "score",
+                    "reason"
+                  ],
+                  "properties": {
+                    "score": {
+                      "type": "number"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "epistemic_readiness": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "score",
+                    "reason"
+                  ],
+                  "properties": {
+                    "score": {
+                      "type": "number"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "pedagogical_need": {
+              "type": "string"
+            }
+          }
+        },
+        "overall": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "summary",
+            "trajectory",
+            "recurring_pattern",
+            "current_state",
+            "next_best_tutor_move"
+          ],
+          "properties": {
+            "summary": {
+              "type": "string"
+            },
+            "trajectory": {
+              "type": "string"
+            },
+            "recurring_pattern": {
+              "type": "string"
+            },
+            "current_state": {
+              "type": "string"
+            },
+            "next_best_tutor_move": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "learner_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "adopt",
+        "retract",
+        "derive",
+        "hypothesis",
+        "assert_answer",
+        "human_discourse",
+        "notes"
+      ],
+      "properties": {
+        "adopt": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "retract": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "derive": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "hypothesis": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "assert_answer": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "human_discourse": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "proof_status",
+            "provisional_claims",
+            "implied_warrants",
+            "missing_warrants",
+            "implied_public_premises",
+            "suppressed_or_private_premises",
+            "common_sense_bridges",
+            "illicit_hidden_premises",
+            "proof_debt_candidates",
+            "side_arc"
+          ],
+          "properties": {
+            "proof_status": {
+              "type": "string",
+              "enum": [
+                "strict_proof",
+                "provisional_scaffold",
+                "side_arc",
+                "hidden_premise_risk",
+                "unclear"
+              ]
+            },
+            "provisional_claims": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "surface",
+                      "text",
+                      "claim",
+                      "premise",
+                      "warrant_needed",
+                      "missing_warrant",
+                      "reason",
+                      "note",
+                      "severity",
+                      "source"
+                    ],
+                    "properties": {
+                      "surface": {
+                        "type": "string"
+                      },
+                      "text": {
+                        "type": "string"
+                      },
+                      "claim": {
+                        "type": "string"
+                      },
+                      "premise": {
+                        "type": "string"
+                      },
+                      "warrant_needed": {
+                        "type": "string"
+                      },
+                      "missing_warrant": {
+                        "type": "string"
+                      },
+                      "reason": {
+                        "type": "string"
+                      },
+                      "note": {
+                        "type": "string"
+                      },
+                      "severity": {
+                        "type": "string"
+                      },
+                      "source": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "implied_warrants": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "surface",
+                      "text",
+                      "claim",
+                      "premise",
+                      "warrant_needed",
+                      "missing_warrant",
+                      "reason",
+                      "note",
+                      "severity",
+                      "source"
+                    ],
+                    "properties": {
+                      "surface": {
+                        "type": "string"
+                      },
+                      "text": {
+                        "type": "string"
+                      },
+                      "claim": {
+                        "type": "string"
+                      },
+                      "premise": {
+                        "type": "string"
+                      },
+                      "warrant_needed": {
+                        "type": "string"
+                      },
+                      "missing_warrant": {
+                        "type": "string"
+                      },
+                      "reason": {
+                        "type": "string"
+                      },
+                      "note": {
+                        "type": "string"
+                      },
+                      "severity": {
+                        "type": "string"
+                      },
+                      "source": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "missing_warrants": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "surface",
+                      "text",
+                      "claim",
+                      "premise",
+                      "warrant_needed",
+                      "missing_warrant",
+                      "reason",
+                      "note",
+                      "severity",
+                      "source"
+                    ],
+                    "properties": {
+                      "surface": {
+                        "type": "string"
+                      },
+                      "text": {
+                        "type": "string"
+                      },
+                      "claim": {
+                        "type": "string"
+                      },
+                      "premise": {
+                        "type": "string"
+                      },
+                      "warrant_needed": {
+                        "type": "string"
+                      },
+                      "missing_warrant": {
+                        "type": "string"
+                      },
+                      "reason": {
+                        "type": "string"
+                      },
+                      "note": {
+                        "type": "string"
+                      },
+                      "severity": {
+                        "type": "string"
+                      },
+                      "source": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "implied_public_premises": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "surface",
+                      "text",
+                      "claim",
+                      "premise",
+                      "warrant_needed",
+                      "missing_warrant",
+                      "reason",
+                      "note",
+                      "severity",
+                      "source"
+                    ],
+                    "properties": {
+                      "surface": {
+                        "type": "string"
+                      },
+                      "text": {
+                        "type": "string"
+                      },
+                      "claim": {
+                        "type": "string"
+                      },
+                      "premise": {
+                        "type": "string"
+                      },
+                      "warrant_needed": {
+                        "type": "string"
+                      },
+                      "missing_warrant": {
+                        "type": "string"
+                      },
+                      "reason": {
+                        "type": "string"
+                      },
+                      "note": {
+                        "type": "string"
+                      },
+                      "severity": {
+                        "type": "string"
+                      },
+                      "source": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "suppressed_or_private_premises": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "surface",
+                      "text",
+                      "claim",
+                      "premise",
+                      "warrant_needed",
+                      "missing_warrant",
+                      "reason",
+                      "note",
+                      "severity",
+                      "source"
+                    ],
+                    "properties": {
+                      "surface": {
+                        "type": "string"
+                      },
+                      "text": {
+                        "type": "string"
+                      },
+                      "claim": {
+                        "type": "string"
+                      },
+                      "premise": {
+                        "type": "string"
+                      },
+                      "warrant_needed": {
+                        "type": "string"
+                      },
+                      "missing_warrant": {
+                        "type": "string"
+                      },
+                      "reason": {
+                        "type": "string"
+                      },
+                      "note": {
+                        "type": "string"
+                      },
+                      "severity": {
+                        "type": "string"
+                      },
+                      "source": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "common_sense_bridges": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "surface",
+                      "text",
+                      "claim",
+                      "premise",
+                      "warrant_needed",
+                      "missing_warrant",
+                      "reason",
+                      "note",
+                      "severity",
+                      "source"
+                    ],
+                    "properties": {
+                      "surface": {
+                        "type": "string"
+                      },
+                      "text": {
+                        "type": "string"
+                      },
+                      "claim": {
+                        "type": "string"
+                      },
+                      "premise": {
+                        "type": "string"
+                      },
+                      "warrant_needed": {
+                        "type": "string"
+                      },
+                      "missing_warrant": {
+                        "type": "string"
+                      },
+                      "reason": {
+                        "type": "string"
+                      },
+                      "note": {
+                        "type": "string"
+                      },
+                      "severity": {
+                        "type": "string"
+                      },
+                      "source": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "illicit_hidden_premises": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "surface",
+                      "text",
+                      "claim",
+                      "premise",
+                      "warrant_needed",
+                      "missing_warrant",
+                      "reason",
+                      "note",
+                      "severity",
+                      "source"
+                    ],
+                    "properties": {
+                      "surface": {
+                        "type": "string"
+                      },
+                      "text": {
+                        "type": "string"
+                      },
+                      "claim": {
+                        "type": "string"
+                      },
+                      "premise": {
+                        "type": "string"
+                      },
+                      "warrant_needed": {
+                        "type": "string"
+                      },
+                      "missing_warrant": {
+                        "type": "string"
+                      },
+                      "reason": {
+                        "type": "string"
+                      },
+                      "note": {
+                        "type": "string"
+                      },
+                      "severity": {
+                        "type": "string"
+                      },
+                      "source": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "proof_debt_candidates": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "surface",
+                      "text",
+                      "claim",
+                      "premise",
+                      "warrant_needed",
+                      "missing_warrant",
+                      "reason",
+                      "note",
+                      "severity",
+                      "source"
+                    ],
+                    "properties": {
+                      "surface": {
+                        "type": "string"
+                      },
+                      "text": {
+                        "type": "string"
+                      },
+                      "claim": {
+                        "type": "string"
+                      },
+                      "premise": {
+                        "type": "string"
+                      },
+                      "warrant_needed": {
+                        "type": "string"
+                      },
+                      "missing_warrant": {
+                        "type": "string"
+                      },
+                      "reason": {
+                        "type": "string"
+                      },
+                      "note": {
+                        "type": "string"
+                      },
+                      "severity": {
+                        "type": "string"
+                      },
+                      "source": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "side_arc": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "detected",
+                "type",
+                "reason",
+                "return_target"
+              ],
+              "properties": {
+                "detected": {
+                  "type": "boolean"
+                },
+                "type": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "enum": [
+                    "clarification",
+                    "vocabulary",
+                    "affective",
+                    "trust",
+                    "off_path",
+                    null
+                  ]
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "return_target": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "semantic_events": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "events"
+      ],
+      "properties": {
+        "events": {
+          "type": "array",
+          "maxItems": 4,
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "speech_act",
+                  "target",
+                  "requested_or_proposed_action",
+                  "evidence_span",
+                  "confidence",
+                  "uncertainty"
+                ],
+                "properties": {
+                  "speech_act": {
+                    "type": "string",
+                    "enum": [
+                      "tutor_directed_public_result_request"
+                    ]
+                  },
+                  "target": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state",
+                      "kind",
+                      "target_id",
+                      "public_identifier_ids",
+                      "requested_value_types",
+                      "component_ids"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "catalog"
+                        ]
+                      },
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "material_or_assay_result",
+                          "weight_or_ring_result",
+                          "comparison_result",
+                          "mark_or_tool_result",
+                          "record_entry",
+                          "public_exhibit_result",
+                          "other"
+                        ]
+                      },
+                      "target_id": {
+                        "type": "string"
+                      },
+                      "public_identifier_ids": {
+                        "type": "array",
+                        "maxItems": 6,
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "requested_value_types": {
+                        "type": "array",
+                        "maxItems": 4,
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "name",
+                            "time",
+                            "date",
+                            "weight",
+                            "sound",
+                            "material",
+                            "match_status",
+                            "record_text",
+                            "other"
+                          ]
+                        }
+                      },
+                      "component_ids": {
+                        "type": "array",
+                        "maxItems": 4,
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "requested_or_proposed_action": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state",
+                      "mode",
+                      "executor",
+                      "action",
+                      "action_object_id"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "catalog"
+                        ]
+                      },
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "requested"
+                        ]
+                      },
+                      "executor": {
+                        "type": "string",
+                        "enum": [
+                          "tutor",
+                          "joint",
+                          "unspecified"
+                        ]
+                      },
+                      "action": {
+                        "type": "string",
+                        "enum": [
+                          "supply_public_result"
+                        ]
+                      },
+                      "action_object_id": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "evidence_span": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  },
+                  "uncertainty": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ambiguous_speech_act",
+                        "ambiguous_executor",
+                        "ambiguous_target",
+                        "ambiguous_value_type",
+                        "ambiguous_multiplicity",
+                        "referent_not_public",
+                        "span_not_literal",
+                        "insufficient_context"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "speech_act",
+                  "target",
+                  "requested_or_proposed_action",
+                  "evidence_span",
+                  "confidence",
+                  "uncertainty"
+                ],
+                "properties": {
+                  "speech_act": {
+                    "type": "string",
+                    "enum": [
+                      "learner_proposed_test"
+                    ]
+                  },
+                  "target": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state",
+                      "kind",
+                      "target_id",
+                      "public_identifier_ids",
+                      "requested_value_types",
+                      "component_ids"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "catalog"
+                        ]
+                      },
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "material_or_assay_result",
+                          "weight_or_ring_result",
+                          "comparison_result",
+                          "mark_or_tool_result",
+                          "record_entry",
+                          "public_exhibit_result",
+                          "other"
+                        ]
+                      },
+                      "target_id": {
+                        "type": "string"
+                      },
+                      "public_identifier_ids": {
+                        "type": "array",
+                        "maxItems": 6,
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "requested_value_types": {
+                        "type": "array",
+                        "maxItems": 4,
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "name",
+                            "time",
+                            "date",
+                            "weight",
+                            "sound",
+                            "material",
+                            "match_status",
+                            "record_text",
+                            "other"
+                          ]
+                        }
+                      },
+                      "component_ids": {
+                        "type": "array",
+                        "maxItems": 4,
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "requested_or_proposed_action": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state",
+                      "mode",
+                      "executor",
+                      "action",
+                      "action_object_id"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "catalog"
+                        ]
+                      },
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "proposed"
+                        ]
+                      },
+                      "executor": {
+                        "type": "string",
+                        "enum": [
+                          "learner",
+                          "joint",
+                          "unspecified"
+                        ]
+                      },
+                      "action": {
+                        "type": "string",
+                        "enum": [
+                          "perform_public_test"
+                        ]
+                      },
+                      "action_object_id": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "evidence_span": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  },
+                  "uncertainty": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ambiguous_speech_act",
+                        "ambiguous_executor",
+                        "ambiguous_target",
+                        "ambiguous_value_type",
+                        "ambiguous_multiplicity",
+                        "referent_not_public",
+                        "span_not_literal",
+                        "insufficient_context"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "speech_act",
+                  "target",
+                  "requested_or_proposed_action",
+                  "evidence_span",
+                  "confidence",
+                  "uncertainty"
+                ],
+                "properties": {
+                  "speech_act": {
+                    "type": "string",
+                    "enum": [
+                      "criterion_question"
+                    ]
+                  },
+                  "target": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state",
+                      "kind",
+                      "target_id",
+                      "public_identifier_ids",
+                      "requested_value_types",
+                      "component_ids"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "catalog"
+                        ]
+                      },
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "material_or_assay_result",
+                          "weight_or_ring_result",
+                          "comparison_result",
+                          "mark_or_tool_result",
+                          "record_entry",
+                          "public_exhibit_result",
+                          "other"
+                        ]
+                      },
+                      "target_id": {
+                        "type": "string"
+                      },
+                      "public_identifier_ids": {
+                        "type": "array",
+                        "maxItems": 6,
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "requested_value_types": {
+                        "type": "array",
+                        "maxItems": 4,
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "name",
+                            "time",
+                            "date",
+                            "weight",
+                            "sound",
+                            "material",
+                            "match_status",
+                            "record_text",
+                            "other"
+                          ]
+                        }
+                      },
+                      "component_ids": {
+                        "type": "array",
+                        "maxItems": 4,
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "requested_or_proposed_action": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "none"
+                        ]
+                      }
+                    }
+                  },
+                  "evidence_span": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  },
+                  "uncertainty": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ambiguous_speech_act",
+                        "ambiguous_executor",
+                        "ambiguous_target",
+                        "ambiguous_value_type",
+                        "ambiguous_multiplicity",
+                        "referent_not_public",
+                        "span_not_literal",
+                        "insufficient_context"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "speech_act",
+                  "target",
+                  "requested_or_proposed_action",
+                  "evidence_span",
+                  "confidence",
+                  "uncertainty"
+                ],
+                "properties": {
+                  "speech_act": {
+                    "type": "string",
+                    "enum": [
+                      "tutor_selection_request"
+                    ]
+                  },
+                  "target": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state",
+                      "kind",
+                      "target_id",
+                      "public_identifier_ids",
+                      "requested_value_types",
+                      "component_ids"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "catalog"
+                        ]
+                      },
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "material_or_assay_result",
+                          "weight_or_ring_result",
+                          "comparison_result",
+                          "mark_or_tool_result",
+                          "record_entry",
+                          "public_exhibit_result",
+                          "other"
+                        ]
+                      },
+                      "target_id": {
+                        "type": "string"
+                      },
+                      "public_identifier_ids": {
+                        "type": "array",
+                        "maxItems": 6,
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "requested_value_types": {
+                        "type": "array",
+                        "maxItems": 4,
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "name",
+                            "time",
+                            "date",
+                            "weight",
+                            "sound",
+                            "material",
+                            "match_status",
+                            "record_text",
+                            "other"
+                          ]
+                        }
+                      },
+                      "component_ids": {
+                        "type": "array",
+                        "maxItems": 4,
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "requested_or_proposed_action": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state",
+                      "mode",
+                      "executor",
+                      "action",
+                      "action_object_id"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "catalog"
+                        ]
+                      },
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "requested"
+                        ]
+                      },
+                      "executor": {
+                        "type": "string",
+                        "enum": [
+                          "tutor"
+                        ]
+                      },
+                      "action": {
+                        "type": "string",
+                        "enum": [
+                          "select_next_step"
+                        ]
+                      },
+                      "action_object_id": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "evidence_span": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  },
+                  "uncertainty": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ambiguous_speech_act",
+                        "ambiguous_executor",
+                        "ambiguous_target",
+                        "ambiguous_value_type",
+                        "ambiguous_multiplicity",
+                        "referent_not_public",
+                        "span_not_literal",
+                        "insufficient_context"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "speech_act",
+                  "target",
+                  "requested_or_proposed_action",
+                  "evidence_span",
+                  "confidence",
+                  "uncertainty"
+                ],
+                "properties": {
+                  "speech_act": {
+                    "type": "string",
+                    "enum": [
+                      "learner_record_entry_request"
+                    ]
+                  },
+                  "target": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state",
+                      "kind",
+                      "target_id",
+                      "public_identifier_ids",
+                      "requested_value_types",
+                      "component_ids"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "catalog"
+                        ]
+                      },
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "material_or_assay_result",
+                          "weight_or_ring_result",
+                          "comparison_result",
+                          "mark_or_tool_result",
+                          "record_entry",
+                          "public_exhibit_result",
+                          "other"
+                        ]
+                      },
+                      "target_id": {
+                        "type": "string"
+                      },
+                      "public_identifier_ids": {
+                        "type": "array",
+                        "maxItems": 6,
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "requested_value_types": {
+                        "type": "array",
+                        "maxItems": 4,
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "name",
+                            "time",
+                            "date",
+                            "weight",
+                            "sound",
+                            "material",
+                            "match_status",
+                            "record_text",
+                            "other"
+                          ]
+                        }
+                      },
+                      "component_ids": {
+                        "type": "array",
+                        "maxItems": 4,
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "requested_or_proposed_action": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state",
+                      "mode",
+                      "executor",
+                      "action",
+                      "action_object_id"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "catalog"
+                        ]
+                      },
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "requested"
+                        ]
+                      },
+                      "executor": {
+                        "type": "string",
+                        "enum": [
+                          "tutor",
+                          "joint",
+                          "unspecified"
+                        ]
+                      },
+                      "action": {
+                        "type": "string",
+                        "enum": [
+                          "record_public_claim"
+                        ]
+                      },
+                      "action_object_id": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "evidence_span": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  },
+                  "uncertainty": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ambiguous_speech_act",
+                        "ambiguous_executor",
+                        "ambiguous_target",
+                        "ambiguous_value_type",
+                        "ambiguous_multiplicity",
+                        "referent_not_public",
+                        "span_not_literal",
+                        "insufficient_context"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "speech_act",
+                  "target",
+                  "requested_or_proposed_action",
+                  "evidence_span",
+                  "confidence",
+                  "uncertainty"
+                ],
+                "properties": {
+                  "speech_act": {
+                    "type": "string",
+                    "enum": [
+                      "learner_wording_request"
+                    ]
+                  },
+                  "target": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "none"
+                        ]
+                      }
+                    }
+                  },
+                  "requested_or_proposed_action": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state",
+                      "mode",
+                      "executor",
+                      "action",
+                      "action_object_id"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "catalog"
+                        ]
+                      },
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "requested"
+                        ]
+                      },
+                      "executor": {
+                        "type": "string",
+                        "enum": [
+                          "tutor"
+                        ]
+                      },
+                      "action": {
+                        "type": "string",
+                        "enum": [
+                          "explain_wording"
+                        ]
+                      },
+                      "action_object_id": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "evidence_span": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  },
+                  "uncertainty": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ambiguous_speech_act",
+                        "ambiguous_executor",
+                        "ambiguous_target",
+                        "ambiguous_value_type",
+                        "ambiguous_multiplicity",
+                        "referent_not_public",
+                        "span_not_literal",
+                        "insufficient_context"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "speech_act",
+                  "target",
+                  "requested_or_proposed_action",
+                  "evidence_span",
+                  "confidence",
+                  "uncertainty"
+                ],
+                "properties": {
+                  "speech_act": {
+                    "type": "string",
+                    "enum": [
+                      "withdrawal"
+                    ]
+                  },
+                  "target": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "state",
+                          "kind",
+                          "target_id",
+                          "public_identifier_ids",
+                          "requested_value_types",
+                          "component_ids"
+                        ],
+                        "properties": {
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "catalog"
+                            ]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "material_or_assay_result",
+                              "weight_or_ring_result",
+                              "comparison_result",
+                              "mark_or_tool_result",
+                              "record_entry",
+                              "public_exhibit_result",
+                              "other"
+                            ]
+                          },
+                          "target_id": {
+                            "type": "string"
+                          },
+                          "public_identifier_ids": {
+                            "type": "array",
+                            "maxItems": 6,
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "requested_value_types": {
+                            "type": "array",
+                            "maxItems": 4,
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "name",
+                                "time",
+                                "date",
+                                "weight",
+                                "sound",
+                                "material",
+                                "match_status",
+                                "record_text",
+                                "other"
+                              ]
+                            }
+                          },
+                          "component_ids": {
+                            "type": "array",
+                            "maxItems": 4,
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "state"
+                        ],
+                        "properties": {
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "none"
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "requested_or_proposed_action": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state",
+                      "mode",
+                      "executor",
+                      "action",
+                      "action_object_id"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "catalog"
+                        ]
+                      },
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "requested"
+                        ]
+                      },
+                      "executor": {
+                        "type": "string",
+                        "enum": [
+                          "learner"
+                        ]
+                      },
+                      "action": {
+                        "type": "string",
+                        "enum": [
+                          "withdraw_request"
+                        ]
+                      },
+                      "action_object_id": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "evidence_span": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  },
+                  "uncertainty": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ambiguous_speech_act",
+                        "ambiguous_executor",
+                        "ambiguous_target",
+                        "ambiguous_value_type",
+                        "ambiguous_multiplicity",
+                        "referent_not_public",
+                        "span_not_literal",
+                        "insufficient_context"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "speech_act",
+                  "target",
+                  "requested_or_proposed_action",
+                  "evidence_span",
+                  "confidence",
+                  "uncertainty"
+                ],
+                "properties": {
+                  "speech_act": {
+                    "type": "string",
+                    "enum": [
+                      "transfer_to_learner"
+                    ]
+                  },
+                  "target": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "state",
+                          "kind",
+                          "target_id",
+                          "public_identifier_ids",
+                          "requested_value_types",
+                          "component_ids"
+                        ],
+                        "properties": {
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "catalog"
+                            ]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "material_or_assay_result",
+                              "weight_or_ring_result",
+                              "comparison_result",
+                              "mark_or_tool_result",
+                              "record_entry",
+                              "public_exhibit_result",
+                              "other"
+                            ]
+                          },
+                          "target_id": {
+                            "type": "string"
+                          },
+                          "public_identifier_ids": {
+                            "type": "array",
+                            "maxItems": 6,
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "requested_value_types": {
+                            "type": "array",
+                            "maxItems": 4,
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "name",
+                                "time",
+                                "date",
+                                "weight",
+                                "sound",
+                                "material",
+                                "match_status",
+                                "record_text",
+                                "other"
+                              ]
+                            }
+                          },
+                          "component_ids": {
+                            "type": "array",
+                            "maxItems": 4,
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "state"
+                        ],
+                        "properties": {
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "none"
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "requested_or_proposed_action": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state",
+                      "mode",
+                      "executor",
+                      "action",
+                      "action_object_id"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "catalog"
+                        ]
+                      },
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "proposed"
+                        ]
+                      },
+                      "executor": {
+                        "type": "string",
+                        "enum": [
+                          "learner"
+                        ]
+                      },
+                      "action": {
+                        "type": "string",
+                        "enum": [
+                          "perform_public_test"
+                        ]
+                      },
+                      "action_object_id": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "evidence_span": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  },
+                  "uncertainty": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ambiguous_speech_act",
+                        "ambiguous_executor",
+                        "ambiguous_target",
+                        "ambiguous_value_type",
+                        "ambiguous_multiplicity",
+                        "referent_not_public",
+                        "span_not_literal",
+                        "insufficient_context"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "speech_act",
+                  "target",
+                  "requested_or_proposed_action",
+                  "evidence_span",
+                  "confidence",
+                  "uncertainty"
+                ],
+                "properties": {
+                  "speech_act": {
+                    "type": "string",
+                    "enum": [
+                      "repair_request"
+                    ]
+                  },
+                  "target": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "none"
+                        ]
+                      }
+                    }
+                  },
+                  "requested_or_proposed_action": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state",
+                      "mode",
+                      "executor",
+                      "action",
+                      "action_object_id"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "catalog"
+                        ]
+                      },
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "requested"
+                        ]
+                      },
+                      "executor": {
+                        "type": "string",
+                        "enum": [
+                          "tutor"
+                        ]
+                      },
+                      "action": {
+                        "type": "string",
+                        "enum": [
+                          "explain_wording"
+                        ]
+                      },
+                      "action_object_id": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "evidence_span": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  },
+                  "uncertainty": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ambiguous_speech_act",
+                        "ambiguous_executor",
+                        "ambiguous_target",
+                        "ambiguous_value_type",
+                        "ambiguous_multiplicity",
+                        "referent_not_public",
+                        "span_not_literal",
+                        "insufficient_context"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "speech_act",
+                  "target",
+                  "requested_or_proposed_action",
+                  "evidence_span",
+                  "confidence",
+                  "uncertainty"
+                ],
+                "properties": {
+                  "speech_act": {
+                    "type": "string",
+                    "enum": [
+                      "stall"
+                    ]
+                  },
+                  "target": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "none"
+                        ]
+                      }
+                    }
+                  },
+                  "requested_or_proposed_action": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "none"
+                        ]
+                      }
+                    }
+                  },
+                  "evidence_span": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  },
+                  "uncertainty": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ambiguous_speech_act",
+                        "ambiguous_executor",
+                        "ambiguous_target",
+                        "ambiguous_value_type",
+                        "ambiguous_multiplicity",
+                        "referent_not_public",
+                        "span_not_literal",
+                        "insufficient_context"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "speech_act",
+                  "target",
+                  "requested_or_proposed_action",
+                  "evidence_span",
+                  "confidence",
+                  "uncertainty"
+                ],
+                "properties": {
+                  "speech_act": {
+                    "type": "string",
+                    "enum": [
+                      "register_complaint"
+                    ]
+                  },
+                  "target": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "none"
+                        ]
+                      }
+                    }
+                  },
+                  "requested_or_proposed_action": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "none"
+                        ]
+                      }
+                    }
+                  },
+                  "evidence_span": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  },
+                  "uncertainty": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ambiguous_speech_act",
+                        "ambiguous_executor",
+                        "ambiguous_target",
+                        "ambiguous_value_type",
+                        "ambiguous_multiplicity",
+                        "referent_not_public",
+                        "span_not_literal",
+                        "insufficient_context"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "speech_act",
+                  "target",
+                  "requested_or_proposed_action",
+                  "evidence_span",
+                  "confidence",
+                  "uncertainty"
+                ],
+                "properties": {
+                  "speech_act": {
+                    "type": "string",
+                    "enum": [
+                      "repetition_complaint"
+                    ]
+                  },
+                  "target": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "none"
+                        ]
+                      }
+                    }
+                  },
+                  "requested_or_proposed_action": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "none"
+                        ]
+                      }
+                    }
+                  },
+                  "evidence_span": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  },
+                  "uncertainty": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ambiguous_speech_act",
+                        "ambiguous_executor",
+                        "ambiguous_target",
+                        "ambiguous_value_type",
+                        "ambiguous_multiplicity",
+                        "referent_not_public",
+                        "span_not_literal",
+                        "insufficient_context"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "speech_act",
+                  "target",
+                  "requested_or_proposed_action",
+                  "evidence_span",
+                  "confidence",
+                  "uncertainty"
+                ],
+                "properties": {
+                  "speech_act": {
+                    "type": "string",
+                    "enum": [
+                      "low_agency_deferral"
+                    ]
+                  },
+                  "target": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "none"
+                        ]
+                      }
+                    }
+                  },
+                  "requested_or_proposed_action": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "none"
+                        ]
+                      }
+                    }
+                  },
+                  "evidence_span": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  },
+                  "uncertainty": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ambiguous_speech_act",
+                        "ambiguous_executor",
+                        "ambiguous_target",
+                        "ambiguous_value_type",
+                        "ambiguous_multiplicity",
+                        "referent_not_public",
+                        "span_not_literal",
+                        "insufficient_context"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "speech_act",
+                  "target",
+                  "requested_or_proposed_action",
+                  "evidence_span",
+                  "confidence",
+                  "uncertainty"
+                ],
+                "properties": {
+                  "speech_act": {
+                    "type": "string",
+                    "enum": [
+                      "learner_overclaim_assertion"
+                    ]
+                  },
+                  "target": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "state",
+                          "kind",
+                          "target_id",
+                          "public_identifier_ids",
+                          "requested_value_types",
+                          "component_ids"
+                        ],
+                        "properties": {
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "catalog"
+                            ]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "material_or_assay_result",
+                              "weight_or_ring_result",
+                              "comparison_result",
+                              "mark_or_tool_result",
+                              "record_entry",
+                              "public_exhibit_result",
+                              "other"
+                            ]
+                          },
+                          "target_id": {
+                            "type": "string"
+                          },
+                          "public_identifier_ids": {
+                            "type": "array",
+                            "maxItems": 6,
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "requested_value_types": {
+                            "type": "array",
+                            "maxItems": 4,
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "name",
+                                "time",
+                                "date",
+                                "weight",
+                                "sound",
+                                "material",
+                                "match_status",
+                                "record_text",
+                                "other"
+                              ]
+                            }
+                          },
+                          "component_ids": {
+                            "type": "array",
+                            "maxItems": 4,
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "state"
+                        ],
+                        "properties": {
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "none"
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "requested_or_proposed_action": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "none"
+                        ]
+                      }
+                    }
+                  },
+                  "evidence_span": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  },
+                  "uncertainty": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ambiguous_speech_act",
+                        "ambiguous_executor",
+                        "ambiguous_target",
+                        "ambiguous_value_type",
+                        "ambiguous_multiplicity",
+                        "referent_not_public",
+                        "span_not_literal",
+                        "insufficient_context"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "speech_act",
+                  "target",
+                  "requested_or_proposed_action",
+                  "evidence_span",
+                  "confidence",
+                  "uncertainty"
+                ],
+                "properties": {
+                  "speech_act": {
+                    "type": "string",
+                    "enum": [
+                      "learner_evidence_dismissal"
+                    ]
+                  },
+                  "target": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "state",
+                          "kind",
+                          "target_id",
+                          "public_identifier_ids",
+                          "requested_value_types",
+                          "component_ids"
+                        ],
+                        "properties": {
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "catalog"
+                            ]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "material_or_assay_result",
+                              "weight_or_ring_result",
+                              "comparison_result",
+                              "mark_or_tool_result",
+                              "record_entry",
+                              "public_exhibit_result",
+                              "other"
+                            ]
+                          },
+                          "target_id": {
+                            "type": "string"
+                          },
+                          "public_identifier_ids": {
+                            "type": "array",
+                            "maxItems": 6,
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "requested_value_types": {
+                            "type": "array",
+                            "maxItems": 4,
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "name",
+                                "time",
+                                "date",
+                                "weight",
+                                "sound",
+                                "material",
+                                "match_status",
+                                "record_text",
+                                "other"
+                              ]
+                            }
+                          },
+                          "component_ids": {
+                            "type": "array",
+                            "maxItems": 4,
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "state"
+                        ],
+                        "properties": {
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "none"
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "requested_or_proposed_action": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "none"
+                        ]
+                      }
+                    }
+                  },
+                  "evidence_span": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  },
+                  "uncertainty": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ambiguous_speech_act",
+                        "ambiguous_executor",
+                        "ambiguous_target",
+                        "ambiguous_value_type",
+                        "ambiguous_multiplicity",
+                        "referent_not_public",
+                        "span_not_literal",
+                        "insufficient_context"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "speech_act",
+                  "target",
+                  "requested_or_proposed_action",
+                  "evidence_span",
+                  "confidence",
+                  "uncertainty"
+                ],
+                "properties": {
+                  "speech_act": {
+                    "type": "string",
+                    "enum": [
+                      "learner_evidence_demand"
+                    ]
+                  },
+                  "target": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state",
+                      "kind",
+                      "target_id",
+                      "public_identifier_ids",
+                      "requested_value_types",
+                      "component_ids"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "catalog"
+                        ]
+                      },
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "material_or_assay_result",
+                          "weight_or_ring_result",
+                          "comparison_result",
+                          "mark_or_tool_result",
+                          "record_entry",
+                          "public_exhibit_result",
+                          "other"
+                        ]
+                      },
+                      "target_id": {
+                        "type": "string"
+                      },
+                      "public_identifier_ids": {
+                        "type": "array",
+                        "maxItems": 6,
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "requested_value_types": {
+                        "type": "array",
+                        "maxItems": 4,
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "name",
+                            "time",
+                            "date",
+                            "weight",
+                            "sound",
+                            "material",
+                            "match_status",
+                            "record_text",
+                            "other"
+                          ]
+                        }
+                      },
+                      "component_ids": {
+                        "type": "array",
+                        "maxItems": 4,
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "requested_or_proposed_action": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state",
+                      "mode",
+                      "executor",
+                      "action",
+                      "action_object_id"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "catalog"
+                        ]
+                      },
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "requested"
+                        ]
+                      },
+                      "executor": {
+                        "type": "string",
+                        "enum": [
+                          "tutor",
+                          "joint",
+                          "unspecified"
+                        ]
+                      },
+                      "action": {
+                        "type": "string",
+                        "enum": [
+                          "supply_public_result"
+                        ]
+                      },
+                      "action_object_id": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "evidence_span": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  },
+                  "uncertainty": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ambiguous_speech_act",
+                        "ambiguous_executor",
+                        "ambiguous_target",
+                        "ambiguous_value_type",
+                        "ambiguous_multiplicity",
+                        "referent_not_public",
+                        "span_not_literal",
+                        "insufficient_context"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "speech_act",
+                  "target",
+                  "requested_or_proposed_action",
+                  "evidence_span",
+                  "confidence",
+                  "uncertainty"
+                ],
+                "properties": {
+                  "speech_act": {
+                    "type": "string",
+                    "enum": [
+                      "analytic_contribution"
+                    ]
+                  },
+                  "target": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "state",
+                          "kind",
+                          "target_id",
+                          "public_identifier_ids",
+                          "requested_value_types",
+                          "component_ids"
+                        ],
+                        "properties": {
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "catalog"
+                            ]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "material_or_assay_result",
+                              "weight_or_ring_result",
+                              "comparison_result",
+                              "mark_or_tool_result",
+                              "record_entry",
+                              "public_exhibit_result",
+                              "other"
+                            ]
+                          },
+                          "target_id": {
+                            "type": "string"
+                          },
+                          "public_identifier_ids": {
+                            "type": "array",
+                            "maxItems": 6,
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "requested_value_types": {
+                            "type": "array",
+                            "maxItems": 4,
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "name",
+                                "time",
+                                "date",
+                                "weight",
+                                "sound",
+                                "material",
+                                "match_status",
+                                "record_text",
+                                "other"
+                              ]
+                            }
+                          },
+                          "component_ids": {
+                            "type": "array",
+                            "maxItems": 4,
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "state"
+                        ],
+                        "properties": {
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "none"
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "requested_or_proposed_action": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "none"
+                        ]
+                      }
+                    }
+                  },
+                  "evidence_span": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  },
+                  "uncertainty": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ambiguous_speech_act",
+                        "ambiguous_executor",
+                        "ambiguous_target",
+                        "ambiguous_value_type",
+                        "ambiguous_multiplicity",
+                        "referent_not_public",
+                        "span_not_literal",
+                        "insufficient_context"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "speech_act",
+                  "target",
+                  "requested_or_proposed_action",
+                  "evidence_span",
+                  "confidence",
+                  "uncertainty"
+                ],
+                "properties": {
+                  "speech_act": {
+                    "type": "string",
+                    "enum": [
+                      "other"
+                    ]
+                  },
+                  "target": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "state",
+                          "kind",
+                          "target_id",
+                          "public_identifier_ids",
+                          "requested_value_types",
+                          "component_ids"
+                        ],
+                        "properties": {
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "catalog"
+                            ]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "material_or_assay_result",
+                              "weight_or_ring_result",
+                              "comparison_result",
+                              "mark_or_tool_result",
+                              "record_entry",
+                              "public_exhibit_result",
+                              "other"
+                            ]
+                          },
+                          "target_id": {
+                            "type": "string"
+                          },
+                          "public_identifier_ids": {
+                            "type": "array",
+                            "maxItems": 6,
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "requested_value_types": {
+                            "type": "array",
+                            "maxItems": 4,
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "name",
+                                "time",
+                                "date",
+                                "weight",
+                                "sound",
+                                "material",
+                                "match_status",
+                                "record_text",
+                                "other"
+                              ]
+                            }
+                          },
+                          "component_ids": {
+                            "type": "array",
+                            "maxItems": 4,
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "state"
+                        ],
+                        "properties": {
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "none"
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "requested_or_proposed_action": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "state"
+                    ],
+                    "properties": {
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "none"
+                        ]
+                      }
+                    }
+                  },
+                  "evidence_span": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  },
+                  "uncertainty": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ambiguous_speech_act",
+                        "ambiguous_executor",
+                        "ambiguous_target",
+                        "ambiguous_value_type",
+                        "ambiguous_multiplicity",
+                        "referent_not_public",
+                        "span_not_literal",
+                        "insufficient_context"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

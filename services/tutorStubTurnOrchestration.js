@@ -127,6 +127,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
     currentReleaseRows,
     deterministicAutomatedLearnerFallback,
     enforceAutomatedLearnerProfile,
+    enforceGuardedLearnerConcessionGuard,
     findTutorStubFeedbackTargetTurn,
     generateAutomatedLearnerTurn,
     jsonClone,
@@ -1418,6 +1419,18 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         } finally {
           stopInterimAnimation(state);
         }
+        const guarded = await enforceGuardedLearnerConcessionGuard({
+          state,
+          resolved: autoLearnerResolved,
+          profile: autoLearnerProfile,
+          turnNumber,
+          generated,
+          cliEffort,
+          signal,
+          isCurrent,
+        });
+        assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
+        generated = guarded.generated;
         const enforced = await enforceAutomatedLearnerProfile({
           state,
           resolved: autoLearnerResolved,

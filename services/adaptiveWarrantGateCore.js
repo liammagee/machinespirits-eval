@@ -11,7 +11,12 @@
 
 import { createHash } from 'node:crypto';
 
-import { recommendRepairPolicy } from './adaptiveWarrantPolicy.js';
+import { ADAPTIVE_WARRANT_DEFENDED_OVERCLAIM_STATE } from './adaptiveWarrantDivergence.js';
+import {
+  ADAPTIVE_WARRANT_POLICY_SCHEMA,
+  recommendRepairPolicy,
+  resolveAdaptiveWarrantChallengeResistanceSelectable,
+} from './adaptiveWarrantPolicy.js';
 
 export const ADAPTIVE_WARRANT_CORE_SCHEMA = 'machinespirits.adaptation-refinement.warrant-core.v3';
 export const ADAPTIVE_WARRANT_DECISION_INPUT_SCHEMA = 'machinespirits.adaptation-refinement.warrant-decision-input.v2';
@@ -192,6 +197,38 @@ export function classifyLearnerSignal(text) {
  *  - inquiryCompletion: structural whole-inquiry terminal assessment
  *  - proposedActionFamily: builder candidate, used only for hard safety vetoes
  */
+/**
+ * Guarded-pole basis (v3.3, relay 106). The engagement divergence row names the
+ * sustained state; the basis reports the observed run of turns, as the
+ * accumulated-trouble basis does. The registration pins the threshold.
+ */
+export function adaptiveWarrantDefendedOverclaimBasis(divergence = []) {
+  const engagement = divergence.find((row) => row.dimension === 'engagement') || null;
+  if (engagement?.descriptive_state !== ADAPTIVE_WARRANT_DEFENDED_OVERCLAIM_STATE) return null;
+  return `sustained_defended_overclaim:${Math.max(2, Number(engagement.persistence) || 0)}_turns`;
+}
+
+/**
+ * The pinned policy map reaches challenge_resistance through sustained
+ * deference. Defended over-claiming is the opposite conduct with the same
+ * warranted answer — hand agency back — so it selects the same family here,
+ * under the same selectability switch, and reports its own ground.
+ */
+function defendedOverclaimPolicy({ strategyInForce = null } = {}) {
+  if (!resolveAdaptiveWarrantChallengeResistanceSelectable()) return null;
+  return {
+    schema: ADAPTIVE_WARRANT_POLICY_SCHEMA,
+    family: 'challenge_resistance',
+    decision_kind: 'pedagogical_commitment_transition',
+    review: strategyInForce === 'challenge_resistance' ? 'persist_with_adjustment' : 'switch',
+    from_family: strategyInForce,
+    rationale: 'claim held against the public record across turns; require the evidence before it stands',
+    stance_hint: 'precise',
+    register_revision: false,
+    obligation_directive: null,
+  };
+}
+
 export function evaluateWarrant({
   signal,
   signalConsumed = false,
@@ -217,6 +254,7 @@ export function evaluateWarrant({
   const contractSuccess = actionContract?.status === 'success';
   const immediate = !signalConsumed && (signal?.primary === 'repair_request' || signal?.primary === 'stall');
   const registerEscalation = complaintTurns.length >= REGISTER_ESCALATION_THRESHOLD;
+  const defendedOverclaimBasis = adaptiveWarrantDefendedOverclaimBasis(divergence);
   const accumulated = !contractSuccess && !masked && troubleTurns.length >= ACCUMULATED_TROUBLE_THRESHOLD;
   const revisionWarranted =
     immediate ||
@@ -226,6 +264,7 @@ export function evaluateWarrant({
     priorityContractRevision ||
     registerEscalation ||
     deferenceSustained === true ||
+    Boolean(defendedOverclaimBasis) ||
     accumulated ||
     contractRevision;
   const registerRevisionWarranted = complaintTurns.length >= 1;
@@ -243,15 +282,19 @@ export function evaluateWarrant({
               ? `register_escalation:${complaintTurns.length}_complaints`
               : deferenceSustained === true
                 ? 'sustained_deference:3_turns'
-                : accumulated
-                  ? `accumulated:${troubleTurns.length}_trouble_turns`
-                  : contractRevision
-                    ? `contract_${actionContract.status}:${strategyInForce}:${actionContract.reason}`
-                    : masked && troubleTurns.length >= ACCUMULATED_TROUBLE_THRESHOLD
-                      ? 'masked_by_engaged_analytic'
-                      : 'none';
-  const policy = revisionWarranted
-    ? recommendRepairPolicy({
+                : defendedOverclaimBasis
+                  ? defendedOverclaimBasis
+                  : accumulated
+                    ? `accumulated:${troubleTurns.length}_trouble_turns`
+                    : contractRevision
+                      ? `contract_${actionContract.status}:${strategyInForce}:${actionContract.reason}`
+                      : masked && troubleTurns.length >= ACCUMULATED_TROUBLE_THRESHOLD
+                        ? 'masked_by_engaged_analytic'
+                        : 'none';
+  const policy = !revisionWarranted
+    ? null
+    : (warrantBasis === defendedOverclaimBasis ? defendedOverclaimPolicy({ strategyInForce }) : null) ||
+      recommendRepairPolicy({
         signal,
         warrantBasis,
         divergence,
@@ -261,8 +304,7 @@ export function evaluateWarrant({
         publicObligation,
         inquiryCompletion,
         proposedActionFamily,
-      })
-    : null;
+      });
   return {
     schema: ADAPTIVE_WARRANT_CORE_SCHEMA,
     masked,

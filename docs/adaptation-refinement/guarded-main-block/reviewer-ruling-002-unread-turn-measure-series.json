@@ -1,0 +1,22 @@
+{
+  "schema": "machinespirits.adaptation-refinement.unread-turn-measure-exclusion-ruling.v1",
+  "ruling_id": "guarded-main-block-002",
+  "companion_ruling": "guarded-main-block-001",
+  "ruled_by": "Liam Magee",
+  "ruled_on": "2026-08-16",
+  "run_id": "guarded-learner-main-block-2026-08-15",
+  "question": "Ruling 001 admitted one dialogue and dropped its unread turn 8 from the corpus, and the case count honoured that. But the scorer's per-turn measures still walked all eight turns. Turn 8 has no validated reading, so it has no deference value, and the scorer stopped with an error after all paid work was complete. Does the unread turn also drop out of the per-turn measure series?",
+  "ruling": "Yes. The reviewer ruled, word for word: \"I rule the unread turn out of the deference series as well.\" The unread turn drops out of every per-turn measure series for its dialogue. No value is invented for a turn no reader ever read.",
+  "effect": "The scorer skips ruled-dropped turns before it computes any per-turn measure: the deference streak, the deference break, the challenge and warrant counts, record growth, and the closure checks. The affected dialogue is scored on its seven read turns with no hole in the series. Nothing else changes: 575 cases, all reader responses, and every stored artifact stay exactly as they are on disk.",
+  "rule": "A turn that a committed reviewer ruling drops from the corpus is also dropped from every per-turn measure series of its dialogue. The exclusion reaches only turns listed in a committed ruling's dropped-turns record; the scorer may skip no other turn for any reason.",
+  "applies_to": "Turn 8 of dialogue outcome-pilot-34-world_102_marigold_archive_box-s659-standing_permission, the one turn ruling 001 dropped, and any later run scored with the same code under a committed ruling of this kind.",
+  "expected_dropped_turns": 1,
+  "no_paid_calls": "Scoring re-runs from artifacts on disk. The reader run record is complete and the call reservation is spent to zero, so the resume makes no model call.",
+  "evidence": {
+    "scorer_error": "turn 8: deterministic compiler deference must be boolean",
+    "turn_8_learner_signal": "raw fallback shape with no deference_present field, because the gate never read the turn",
+    "turns_with_non_boolean_deference_across_all_72_dialogues": 1,
+    "turn_8_tutor_action_family": "stage_next_step",
+    "turn_8_gate_decision": "empty — dropping the turn loses no challenge or warrant datum"
+  }
+}

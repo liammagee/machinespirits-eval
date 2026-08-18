@@ -8,7 +8,10 @@ import path from 'node:path';
 import {
   DECISION_READER_INSTRUMENT_BINDINGS,
   OUTCOME_STUDY_READER_OUTPUT_FORM,
+  OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE,
   OUTCOME_STUDY_RUN_CONFIGURATIONS,
+  OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES,
+  resolveOutcomeStudyRunConfigurations,
   PRESENCE_CHANNEL_CAPS,
   PRESENCE_CHANNEL_DIGEST_FIELDS,
   assessOutcomePilotSaturation,
@@ -26,6 +29,9 @@ import {
   buildOutcomeStandingPermissionMenu,
   guardOutcomeStandingPermissionMenu,
   guardOutcomePilotPreparation,
+  outcomeExclusionRow,
+  absentOutcomeExcludedArtifacts,
+  OUTCOME_PILOT_EXCLUDED_ARTIFACTS,
 } from '../scripts/prepare-adaptive-warrant-outcome-study.js';
 import { deriveAdaptiveWarrantShadow } from '../scripts/derive-adaptive-warrant-shadow.js';
 import { createTutorStubWarrantGate } from '../services/tutorStubWarrantGate.js';
@@ -230,20 +236,130 @@ test('standing-permission byte guard fails when one branch is missing', () => {
   assert.deepEqual(result.missing, [removed.id]);
 });
 
+// Defect ledger 21: most burned corpora live in the system temp directory, and
+// a cleaner deletes them after about four days. A launch must still refuse when
+// one is gone; only a restart carrying the launch record may stand in for it.
+const absentBurnedCorpora = absentOutcomeExcludedArtifacts;
+
+const PILOT_WORLD_PATHS = [
+  'docs/adaptation-refinement/outcome-study-a1/worlds/world_101_kestrel_signal_lamp.yaml',
+  'docs/adaptation-refinement/outcome-study-a1/worlds/world_102_marigold_archive_box.yaml',
+];
+
 test(
   'fresh pilot worlds and seeds pass the pre-call fingerprint guard',
-  { skip: machineLocalSkip(MACHINE_LOCAL_BASELINE_ARTIFACT) },
+  {
+    skip:
+      machineLocalSkip(MACHINE_LOCAL_BASELINE_ARTIFACT) ||
+      (absentBurnedCorpora().length > 0
+        ? `burned corpora absent on this machine (${absentBurnedCorpora().length} of ${OUTCOME_PILOT_EXCLUDED_ARTIFACTS.length}); a fresh launch is meant to refuse here`
+        : false),
+  },
   () => {
-    const result = guardOutcomePilotPreparation({
-      worldPaths: [
-        'docs/adaptation-refinement/outcome-study-a1/worlds/world_101_kestrel_signal_lamp.yaml',
-        'docs/adaptation-refinement/outcome-study-a1/worlds/world_102_marigold_archive_box.yaml',
-      ],
-    });
+    const result = guardOutcomePilotPreparation({ worldPaths: PILOT_WORLD_PATHS });
     assert.equal(result.status, 'passed');
     assert.equal(result.prepared_run_count, 18);
     assert.deepEqual(result.seeds, [515, 516, 517]);
     assert.equal(result.post_generation_case_guard_required, true);
+    assert.equal(result.exclusion_source, 'files');
+    assert.deepEqual(result.artifacts_from_checkpoint_record, []);
+  },
+);
+
+test('a present excluded artifact is read, and its recorded digest must agree', () => {
+  const bytes = Buffer.from(`world_101_kestrel_signal_lamp and ${digest('a')} and ${digest('a')}\n`);
+  const fresh = outcomeExclusionRow({
+    artifactPath: 'x/sample.json',
+    bytes,
+    worldIds: ['world_101_kestrel_signal_lamp', 'world_102_marigold_archive_box'],
+  });
+  assert.equal(fresh.source, 'file');
+  assert.equal(fresh.embedded_fingerprint_count, 1, 'repeated fingerprints count once');
+  assert.deepEqual(fresh.candidate_world_ids_present, ['world_101_kestrel_signal_lamp']);
+
+  // Same bytes, same record: agreement is silent.
+  assert.doesNotThrow(() =>
+    outcomeExclusionRow({ artifactPath: 'x/sample.json', bytes, recorded: { sha256: fresh.sha256 } }),
+  );
+  // A file that is still here but no longer the file the launch read is refused
+  // outright. Standing in from the record is for absence, never for a change.
+  assert.throws(
+    () => outcomeExclusionRow({ artifactPath: 'x/sample.json', bytes, recorded: { sha256: digest('b') } }),
+    /bytes changed since launch/u,
+  );
+});
+
+test('an absent excluded artifact stands in from the launch record, and only from it', () => {
+  assert.throws(
+    () => outcomeExclusionRow({ artifactPath: 'x/gone.json', bytes: null }),
+    /required excluded artifact is missing/u,
+    'a first launch has no record, so it still refuses',
+  );
+  const carried = outcomeExclusionRow({
+    artifactPath: 'x/gone.json',
+    bytes: null,
+    recorded: {
+      path: 'x/gone.json',
+      sha256: digest('c'),
+      embedded_fingerprint_count: 4,
+      candidate_world_ids_present: [],
+    },
+  });
+  assert.equal(carried.source, 'checkpoint_record');
+  assert.equal(carried.sha256, digest('c'));
+  assert.equal(carried.embedded_fingerprint_count, 4);
+  assert.deepEqual(carried.embedded_fingerprints, [], 'the record keeps counts, never the fingerprints themselves');
+});
+
+test(
+  'a restart passes on the launch record where a corpus is gone, and refuses if the candidates moved',
+  {
+    skip:
+      absentBurnedCorpora().length === 0
+        ? 'every burned corpus is present, so nothing needs standing in for'
+        : machineLocalSkip(MACHINE_LOCAL_BASELINE_ARTIFACT),
+  },
+  () => {
+    // A launch, today, refuses: the guard reads files and one of them is gone.
+    assert.throws(
+      () => guardOutcomePilotPreparation({ worldPaths: PILOT_WORLD_PATHS }),
+      /required excluded artifact is missing/u,
+    );
+
+    // A record with rows but the wrong candidates fails closed rather than
+    // throwing, so the run stops on a reported status and not on a stack trace.
+    const rows = absentBurnedCorpora().map((artifactPath) => ({
+      path: artifactPath,
+      sha256: digest('d'),
+      embedded_fingerprint_count: 0,
+      candidate_world_ids_present: [],
+    }));
+    const mismatched = guardOutcomePilotPreparation({
+      worldPaths: PILOT_WORLD_PATHS,
+      recordedGuard: { status: 'passed', excluded_artifacts: rows, candidate_fingerprints: [digest('e')] },
+    });
+    assert.equal(mismatched.status, 'failed');
+    assert.equal(mismatched.recorded_candidate_identity_match, false);
+
+    // The same rows, under the launch's own candidates, shape and persona.
+    const resumed = guardOutcomePilotPreparation({
+      worldPaths: PILOT_WORLD_PATHS,
+      recordedGuard: {
+        status: 'passed',
+        run_shape: mismatched.run_shape,
+        learner_profile: mismatched.learner_profile,
+        seeds: mismatched.seeds,
+        excluded_artifacts: rows,
+        candidate_fingerprints: mismatched.candidate_fingerprints,
+        exclusion_fingerprint_count: 756,
+      },
+    });
+    assert.equal(resumed.status, 'passed');
+    assert.equal(resumed.exclusion_source, 'files_and_checkpoint_record');
+    assert.deepEqual(resumed.artifacts_from_checkpoint_record, absentBurnedCorpora());
+    assert.equal(resumed.recorded_candidate_identity_match, true);
+    assert.equal(resumed.recorded_exclusion_fingerprint_count, 756);
+    assert.deepEqual(resumed.candidate_fingerprints, mismatched.candidate_fingerprints);
   },
 );
 
@@ -407,6 +523,69 @@ test('trace extraction uses compiler deference and closure audit fields', () => 
   assert.equal(dialogue.turns[0].dag_total, 1);
 });
 
+test('ruling 002: a ruled-dropped turn leaves every per-turn measure series', () => {
+  const turns = [
+    turn(1),
+    turn(2),
+    turn(3, { deference: undefined }),
+    turn(4, { learner_text: 'The coins were newly struck.', deference: false }),
+  ];
+  assert.throws(
+    () => scoreOutcomeDialogue({ dialogue_id: 'ruled-1', condition: 'standing_permission', turns }),
+    /deference must be boolean/,
+  );
+  const score = scoreOutcomeDialogue({
+    dialogue_id: 'ruled-1',
+    condition: 'standing_permission',
+    turns,
+    dropped_turns: [3],
+  });
+  assert.equal(score.turn_count, 3);
+  assert.deepEqual(score.ruled_dropped_turns, [3]);
+  assert.deepEqual(score.measure_3_sustained_deference, { streak_lengths: [2], maximum_streak: 2 });
+  assert.deepEqual(score.measure_4_deference_break, { first_turn: 4, persists_to_end: true });
+});
+
+test('ruling 002: trace extraction skips a ruled-dropped turn before normalization', () => {
+  const rows = [
+    {
+      type: 'turn_complete',
+      turnRecord: {
+        turn: 1,
+        learner: 'May I enter it?',
+        warrantGateDecision: { learner_signal: { deference_present: true } },
+      },
+    },
+    {
+      type: 'turn_complete',
+      turnRecord: {
+        turn: 2,
+        learner: 'Yes—the job number ties them to the box.',
+        learner_signal: {
+          primary: 'engaged_analytic',
+          labels: ['engaged_analytic'],
+          surface: 'raw fallback, never read',
+        },
+      },
+    },
+  ];
+  assert.throws(
+    () => extractOutcomeDialogueFromTraceRows({ dialogue_id: 'ruled-2', condition: 'gated', rows }),
+    /turn 2: deterministic compiler deference must be boolean/,
+  );
+  const dialogue = extractOutcomeDialogueFromTraceRows({
+    dialogue_id: 'ruled-2',
+    condition: 'gated',
+    rows,
+    dropped_turns: [2],
+  });
+  assert.deepEqual(dialogue.dropped_turns, [2]);
+  assert.deepEqual(
+    dialogue.turns.map((row) => row.turn),
+    [1],
+  );
+});
+
 test('presence scoring fails closed and saturation uses consensus-case denominator', () => {
   const cases = [
     ...Array.from({ length: 9 }, (_, index) => ({
@@ -471,4 +650,43 @@ test('verbatim drift and no-pooling guards are fail closed without preparing blo
     guardNoPoolingFingerprints({ candidates: ['fresh-a', 'burned', 'fresh-a'], excluded: ['burned'] }).status,
     'failed',
   );
+});
+
+// The guarded extension runs the opposite learner pole through these same
+// runners. The A1 study must be unreachable from that seam.
+
+test('asking for the default learner profile returns the frozen A1 table itself', () => {
+  assert.equal(OUTCOME_STUDY_DEFAULT_LEARNER_PROFILE, 'low_agency');
+  assert.equal(resolveOutcomeStudyRunConfigurations(), OUTCOME_STUDY_RUN_CONFIGURATIONS);
+  assert.equal(resolveOutcomeStudyRunConfigurations('low_agency'), OUTCOME_STUDY_RUN_CONFIGURATIONS);
+  assert.equal(resolveOutcomeStudyRunConfigurations(null), OUTCOME_STUDY_RUN_CONFIGURATIONS);
+});
+
+test('a second learner profile substitutes only the profile and leaves the arms alone', () => {
+  const guarded = resolveOutcomeStudyRunConfigurations('overconfident');
+  assert.notEqual(guarded, OUTCOME_STUDY_RUN_CONFIGURATIONS);
+  assert.deepEqual(
+    guarded.map((row) => row.learner_profile),
+    ['overconfident', 'overconfident', 'overconfident', 'overconfident'],
+  );
+  assert.deepEqual(
+    guarded.map((row) => row.id),
+    OUTCOME_STUDY_RUN_CONFIGURATIONS.map((row) => row.id),
+  );
+  assert.deepEqual(
+    guarded.map((row) => row.cli_args.join(' ')),
+    OUTCOME_STUDY_RUN_CONFIGURATIONS.map((row) => row.cli_args.join(' ')),
+  );
+  assert.deepEqual(
+    guarded.map((row) => row.warrant_gate_mode),
+    OUTCOME_STUDY_RUN_CONFIGURATIONS.map((row) => row.warrant_gate_mode),
+  );
+  // the frozen table is untouched by the derivation
+  assert.ok(OUTCOME_STUDY_RUN_CONFIGURATIONS.every((row) => row.learner_profile === 'low_agency'));
+});
+
+test('an unsupported learner profile is refused rather than silently defaulted', () => {
+  assert.deepEqual(OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES, ['low_agency', 'overconfident']);
+  assert.throws(() => resolveOutcomeStudyRunConfigurations('diligent'), /unsupported outcome-study learner profile/u);
+  assert.throws(() => resolveOutcomeStudyRunConfigurations('guarded'), /unsupported outcome-study learner profile/u);
 });

@@ -401,9 +401,9 @@ test('live semantic extraction is paraphrase-invariant and contrast-sensitive at
   );
 });
 
-test('V3.2 encodability closure gives every speech act a valid no-catalogue-item encoding', () => {
-  assert.equal(ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA.endsWith('.v3.2'), true);
-  assert.equal(ADAPTIVE_WARRANT_SEMANTIC_VALIDATION_SCHEMA.endsWith('.v3.2'), true);
+test('V3.3 encodability closure gives every speech act a valid no-catalogue-item encoding', () => {
+  assert.equal(ADAPTIVE_WARRANT_SEMANTIC_EXTRACTION_SCHEMA.endsWith('.v3.3'), true);
+  assert.equal(ADAPTIVE_WARRANT_SEMANTIC_VALIDATION_SCHEMA.endsWith('.v3.3'), true);
   for (const speechAct of ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACTS) {
     const contract = ADAPTIVE_WARRANT_SEMANTIC_SPEECH_ACT_CONTRACTS[speechAct];
     const learnerText = `No catalogue item is named for ${speechAct}.`;
@@ -433,7 +433,7 @@ test('V3.2 encodability closure gives every speech act a valid no-catalogue-item
   }
 });
 
-test('V3.2 generated and live handbook prose states the exact slot-local sentinel rule', () => {
+test('V3.3 generated and live handbook prose states the exact slot-local sentinel rule', () => {
   assert.equal(adaptiveWarrantSemanticReaderHandbook().includes(ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE), true);
   assert.equal(
     TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_HANDBOOK_RULES.includes(ADAPTIVE_WARRANT_SEMANTIC_SENTINEL_RULE),
@@ -449,7 +449,7 @@ test('V3.2 generated and live handbook prose states the exact slot-local sentine
   );
 });
 
-test('V3.2 applies the sentinel per slot, normalizes forbidden slots, and still rejects empty IDs', () => {
+test('V3.3 applies the sentinel per slot, normalizes forbidden slots, and still rejects empty IDs', () => {
   const learnerText = 'What public evidence can we examine first?';
   const accepted = semanticExtraction(learnerText, [
     semanticEvent({
@@ -645,7 +645,7 @@ test('every blocking-obligation target the semantic ledger can emit closes under
   }
 });
 
-test('V3.2 permits slot-local unspecified and descriptive value sets on non-request acts', () => {
+test('V3.3 permits slot-local unspecified and descriptive value sets on non-request acts', () => {
   const learnerText = 'Does the seal match?';
   const sentinel = semanticExtraction(learnerText, [
     semanticEvent({
@@ -2715,4 +2715,257 @@ test('gate mode resolution rejects unknown values', () => {
   assert.equal(resolveTutorStubWarrantGateMode('observe'), 'observe');
   assert.equal(resolveTutorStubWarrantGateMode(''), 'off');
   assert.throws(() => resolveTutorStubWarrantGateMode('sometimes'));
+});
+
+// ---------------------------------------------------------------------------
+// v3.3 guarded pole (relay 106). The passive pole reads a learner who hands
+// agency back; these acts read one who holds a claim the public record does not
+// support. The tests below pair each act with the near-miss span it must stay
+// separable from, because the sensor is only defensible if a passive turn can
+// never arm it.
+// ---------------------------------------------------------------------------
+
+const CATALOG_TARGET = {
+  kind: 'other',
+  target_id: 'unspecified',
+  public_identifier_ids: [],
+  requested_value_types: [],
+  component_ids: [],
+};
+
+const SUPPLY_RESULT_ACTION = {
+  mode: 'requested',
+  executor: 'tutor',
+  action: 'supply_public_result',
+  action_object_id: 'unspecified',
+};
+
+function defensiveTurn(learnerText, events) {
+  const validation = semanticExtraction(learnerText, events);
+  return { validation, signal: compileAdaptiveWarrantSemanticSignal(validation) };
+}
+
+test('V3.3 each defensive act encodes validly and contributes the defended_overclaim label', () => {
+  const overclaimText = 'The seal is fifteenth-century. That much is settled.';
+  const overclaim = defensiveTurn(overclaimText, [
+    semanticEvent({
+      learnerText: overclaimText,
+      eventId: 'overclaim-1',
+      speechAct: 'learner_overclaim_assertion',
+      span: 'That much is settled.',
+    }),
+  ]);
+  assert.equal(overclaim.validation.extraction_status, 'accepted');
+  assert.equal(overclaim.signal.primary, 'defended_overclaim');
+
+  const dismissalText = 'The weight reading proves nothing about the seal.';
+  const dismissal = defensiveTurn(dismissalText, [
+    semanticEvent({
+      learnerText: dismissalText,
+      eventId: 'dismissal-1',
+      speechAct: 'learner_evidence_dismissal',
+      span: 'proves nothing about the seal',
+    }),
+  ]);
+  assert.equal(dismissal.validation.extraction_status, 'accepted');
+  assert.equal(dismissal.signal.primary, 'defended_overclaim');
+
+  const demandText = 'Give me the ring result before I answer that.';
+  const demand = defensiveTurn(demandText, [
+    semanticEvent({
+      learnerText: demandText,
+      eventId: 'demand-1',
+      speechAct: 'learner_evidence_demand',
+      span: 'Give me the ring result',
+      target: CATALOG_TARGET,
+      action: SUPPLY_RESULT_ACTION,
+    }),
+  ]);
+  assert.equal(demand.validation.extraction_status, 'accepted');
+  assert.equal(demand.signal.primary, 'defended_overclaim');
+});
+
+test('V3.3 the near-miss span for each defensive act keeps its passive-pole reading', () => {
+  // Same words, no defended claim behind them: the reader marks the deferential
+  // request and the turn stays low_agency_deferral, so the guarded sensor
+  // cannot be armed by a passive learner.
+  const requestText = 'May I have the ring result before I answer?';
+  const request = defensiveTurn(requestText, [
+    semanticEvent({
+      learnerText: requestText,
+      eventId: 'near-miss-request',
+      speechAct: 'tutor_directed_public_result_request',
+      span: 'May I have the ring result',
+      target: CATALOG_TARGET,
+      action: SUPPLY_RESULT_ACTION,
+    }),
+  ]);
+  assert.equal(request.signal.primary, 'low_agency_deferral');
+  assert.equal(request.signal.labels.includes('defended_overclaim'), false);
+
+  // A hedged claim is analytic work, not an over-claim.
+  const hedgedText = 'I think the seal might be fifteenth-century, but the weight does not support it yet.';
+  const hedged = defensiveTurn(hedgedText, [
+    semanticEvent({
+      learnerText: hedgedText,
+      eventId: 'near-miss-hedge',
+      speechAct: 'analytic_contribution',
+      span: 'the weight does not support it yet',
+    }),
+  ]);
+  assert.equal(hedged.signal.primary, 'engaged_analytic');
+  assert.equal(hedged.signal.labels.includes('defended_overclaim'), false);
+
+  // Naming a piece of evidence as unsettled is a criterion question, not a
+  // dismissal of it.
+  const criterionText = 'What would the weight reading have to show to settle the date?';
+  const criterion = defensiveTurn(criterionText, [
+    semanticEvent({
+      learnerText: criterionText,
+      eventId: 'near-miss-criterion',
+      speechAct: 'criterion_question',
+      span: 'What would the weight reading have to show',
+      target: CATALOG_TARGET,
+    }),
+  ]);
+  assert.equal(criterion.signal.primary, 'engaged_analytic');
+  assert.equal(criterion.signal.labels.includes('defended_overclaim'), false);
+});
+
+test('V3.3 preference rule reads a demand span as the demand only when it rides on a defended claim', () => {
+  const learnerText = 'The seal is fifteenth-century. Give me the ring result.';
+  const demandSpan = 'Give me the ring result';
+
+  const ridingOnAClaim = defensiveTurn(learnerText, [
+    semanticEvent({
+      learnerText,
+      eventId: 'preference-claim',
+      speechAct: 'learner_overclaim_assertion',
+      span: 'The seal is fifteenth-century',
+    }),
+    semanticEvent({
+      learnerText,
+      eventId: 'preference-demand',
+      speechAct: 'learner_evidence_demand',
+      span: demandSpan,
+      target: CATALOG_TARGET,
+      action: SUPPLY_RESULT_ACTION,
+    }),
+    semanticEvent({
+      learnerText,
+      eventId: 'preference-deferential-reading',
+      speechAct: 'tutor_directed_public_result_request',
+      span: demandSpan,
+      target: CATALOG_TARGET,
+      action: SUPPLY_RESULT_ACTION,
+    }),
+  ]);
+  assert.equal(ridingOnAClaim.signal.primary, 'defended_overclaim');
+  assert.equal(ridingOnAClaim.signal.labels.includes('low_agency_deferral'), false);
+
+  // Without the claim the deferential reading of the same span stands.
+  const withoutTheClaim = defensiveTurn(learnerText, [
+    semanticEvent({
+      learnerText,
+      eventId: 'preference-deferential-alone',
+      speechAct: 'tutor_directed_public_result_request',
+      span: demandSpan,
+      target: CATALOG_TARGET,
+      action: SUPPLY_RESULT_ACTION,
+    }),
+  ]);
+  assert.equal(withoutTheClaim.signal.primary, 'low_agency_deferral');
+});
+
+test('V3.3 a turn that also defers keeps its deferential primary label', () => {
+  const learnerText = 'The seal is fifteenth-century. May I write that in the record?';
+  const mixed = defensiveTurn(learnerText, [
+    semanticEvent({
+      learnerText,
+      eventId: 'mixed-claim',
+      speechAct: 'learner_overclaim_assertion',
+      span: 'The seal is fifteenth-century',
+    }),
+    semanticEvent({
+      learnerText,
+      eventId: 'mixed-deferral',
+      speechAct: 'low_agency_deferral',
+      span: 'May I write that in the record?',
+    }),
+  ]);
+  assert.equal(mixed.signal.primary, 'low_agency_deferral');
+  assert.equal(mixed.signal.labels.includes('defended_overclaim'), true);
+});
+
+function defendedOverclaimSignal(index) {
+  const learnerText = `The seal is fifteenth-century, and reading ${index} changes nothing.`;
+  return defensiveTurn(learnerText, [
+    semanticEvent({
+      learnerText,
+      eventId: `streak-${index}`,
+      speechAct: 'learner_overclaim_assertion',
+      span: 'The seal is fifteenth-century',
+    }),
+  ]).signal;
+}
+
+test('V3.3 three straight defended over-claim turns arm the warrant on the challenge family', () => {
+  const recentSignals = [defendedOverclaimSignal(1), defendedOverclaimSignal(2), defendedOverclaimSignal(3)];
+  const divergence = projectAdaptiveWarrantDivergence({
+    turn: 3,
+    dagGrowth: 0,
+    turnsSinceDagGrowth: 1,
+    signal: recentSignals[2],
+    recentSignals,
+  });
+  const engagement = divergence.find((row) => row.dimension === 'engagement');
+  assert.equal(engagement.descriptive_state, 'sustained_defended_overclaim');
+  assert.equal(engagement.persistence, 3);
+  assert.equal(engagement.repair_warranted, true);
+
+  const warrant = evaluateWarrant({ signal: recentSignals[2], divergence, strategyInForce: 'stage_next_step' });
+  assert.equal(warrant.revision_warranted, true);
+  assert.equal(warrant.warrant_basis, 'sustained_defended_overclaim:3_turns');
+  assert.equal(warrant.policy.family, 'challenge_resistance');
+  assert.equal(warrant.decision_kind, 'pedagogical_commitment_transition');
+});
+
+test('V3.3 two defended over-claim turns do not arm the warrant', () => {
+  const recentSignals = [defendedOverclaimSignal(1), defendedOverclaimSignal(2)];
+  const divergence = projectAdaptiveWarrantDivergence({
+    turn: 2,
+    dagGrowth: 0,
+    turnsSinceDagGrowth: 1,
+    signal: recentSignals[1],
+    recentSignals,
+  });
+  const engagement = divergence.find((row) => row.dimension === 'engagement');
+  assert.equal(engagement.descriptive_state, 'current_defended_overclaim');
+  assert.equal(engagement.repair_warranted, false);
+
+  const warrant = evaluateWarrant({ signal: recentSignals[1], divergence, strategyInForce: 'stage_next_step' });
+  assert.equal(warrant.warrant_basis, 'none');
+  assert.equal(warrant.revision_warranted, false);
+});
+
+test('V3.3 the guarded basis reports its own ground and never displaces sustained deference', () => {
+  const deferential = { primary: 'low_agency_deferral', labels: ['low_agency_deferral'] };
+  const recentSignals = [deferential, deferential, deferential];
+  const divergence = projectAdaptiveWarrantDivergence({
+    turn: 3,
+    dagGrowth: 0,
+    turnsSinceDagGrowth: 1,
+    signal: deferential,
+    recentSignals,
+    deferenceSustained: true,
+  });
+  const warrant = evaluateWarrant({
+    signal: deferential,
+    divergence,
+    deferenceSustained: true,
+    strategyInForce: 'stage_next_step',
+  });
+  assert.equal(warrant.warrant_basis, 'sustained_deference:3_turns');
+  assert.equal(warrant.policy.family, 'challenge_resistance');
+  assert.equal(warrant.policy.rationale.includes('permission-seeking'), true);
 });
