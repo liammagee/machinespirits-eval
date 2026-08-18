@@ -1,0 +1,22 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-profile-route-canary-authorization.v1",
+  "status": "APPROVED_FOR_ONE_ROUTE_CANARY_CALL",
+  "studyId": "tutor-stub-resistant-profile-discrimination-v1",
+  "request": {
+    "path": "config/tutor-stub-resistant-profile-route-canary-request.v1.json",
+    "sha256": "1894a474be77a5fedfc20a7238852231fd0a539f92c4d89d923cd80679f857d2"
+  },
+  "scope": {
+    "maximumModelCalls": 1,
+    "modelRef": "codex.gpt-5.6-luna",
+    "effort": "low",
+    "artifactRoot": ".tutor-stub-auto-eval/resistant-profile-discrimination-v1-route-canary-2026-08-19",
+    "liveStudyAuthorized": false
+  },
+  "approval": {
+    "explicitOneModelCall": true,
+    "approvedBy": "human",
+    "approvedAt": "2026-08-18T23:20:32.000Z",
+    "evidence": "User message: I approve one Luna route-canary model call"
+  }
+}

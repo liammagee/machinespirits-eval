@@ -50,6 +50,7 @@ links:
     - config/tutor-stub-resistant-profile-discrimination-registration.v1.json
     - config/tutor-stub-resistant-profile-discrimination-live-readiness.hold.v1.json
     - config/tutor-stub-resistant-profile-route-canary-request.v1.json
+    - config/tutor-stub-resistant-profile-route-canary-authorization.v1.json
     - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json
     - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.endpoint-go.json
 tags:
@@ -59,7 +60,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistant-profile-route-canary-hold
+branch: codex/resistant-profile-route-canary-authorized
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -183,3 +184,8 @@ and explicit human approval.
   record that the explicit CLI model argument was accepted and echoed; it will
   not misstate that evidence as independent server-side model attestation. No
   authorization artifact was created and no model call or live run occurred.
+- 2026-08-19 — Received explicit human approval for exactly one
+  `codex.gpt-5.6-luna` route-canary call. Sealed that authority into a committed
+  authorization bound to the request digest, low effort, fresh create-once
+  artifact root, one-call ceiling, and no retry or resume authority. This does
+  not authorize the 18-dialogue live study or any of its 864 planned attempts.
