@@ -13,6 +13,8 @@ const LEARNER_PROFILE_SPEAKER_LABELS = Object.freeze({
   skeptical: 'A Skeptical Learner',
   overconfident: 'An Overconfident Learner',
   low_agency: 'A Low-Agency Learner',
+  bored: 'A Bored Learner',
+  frame_defiant: 'A Frame-Defiant Learner',
   memory_limited: 'A Memory-Limited Learner',
   premature_closure: 'A Premature-Closure Learner',
   proof_skipper: 'A Proof-Skipping Learner',
@@ -62,6 +64,20 @@ const LEARNER_PROFILE_PUBLIC_VOICES = Object.freeze({
       'Is it okay if I say...?',
       'Do you want me to choose...?',
       'I can write that if that is what you mean.',
+    ],
+  },
+  bored: {
+    signature:
+      'Sound flat and minimally compliant: answer only the letter of the prompt, drop open threads, and withhold effort without asking permission.',
+    sampleMoves: ['Sure. Whatever.', 'Fine. Same as before.', 'That is enough, I suppose.'],
+  },
+  frame_defiant: {
+    signature:
+      'Sound articulate and jurisdictional: dispute who gets to set the premise, question, or test, and offer a reframing without turning the objection into mockery.',
+    sampleMoves: [
+      'I do not accept the premise of that exercise.',
+      'You do not get to set the question that way.',
+      'I will test the claim, but not under that framing.',
     ],
   },
   memory_limited: {
@@ -429,6 +445,69 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       maxFullRepairsPer8Turns: 1,
     },
     gate: { maxCosineToDiligent: 0.88, expectedNearestNeighbor: 'answer_seeking' },
+  }),
+
+  bored: contract({
+    id: 'bored',
+    family: 'stress',
+    shortName: 'Effort-withholding boredom',
+    failureOperator: 'complies minimally while withholding investment and dropping the tutor’s open thread',
+    contrastWith: {
+      low_agency:
+        'withholds effort without permission-seeking; low_agency asks the tutor to choose or authorize the next move',
+      fast_learner: 'wants the inquiry over rather than asking briskly for the next substantive clue',
+      affective_resistant: 'goes flat without making the interactional pressure itself the objection',
+    },
+    stableFailure: {
+      mustShowByTurn: 2,
+      mustRecurMinRate: 0.45,
+      description:
+        'Give short letter-of-the-question replies, leave open threads untouched, and make no unprompted contribution.',
+    },
+    triggers: [
+      {
+        when: 'the tutor explains, summarizes, or reopens settled ground',
+        responseBias: 'give a flat assent or clock-watching reply without picking up the reasoning thread',
+      },
+      {
+        when: 'the tutor offers one adjacent concrete question with a checkable answer',
+        responseBias: 'answer that one hook briefly; do not manufacture enthusiasm or broaden the answer unprompted',
+      },
+    ],
+    forbiddenNormalization: [
+      'Do not ask permission; that belongs to low_agency.',
+      'Do not make a substantive objection, counterexample, or evidence challenge merely to look resistant.',
+      'Do not become eager after a generic explanation or recap.',
+      'Do not make boredom a hidden feeling; the public reply must show effort withholding.',
+    ],
+    publicRules: [
+      'Prefer short flat replies, dropped threads, and minimal literal answers.',
+      'Do not ask a question back unless it is only clock-watching, such as asking whether the exchange is done.',
+      'A concrete adjacent hook may earn one concrete answer; it does not license a sudden enthusiastic proof chain.',
+    ],
+    signature: {
+      requestType: { off_task_or_mixed: [0.25, 0.65], resistance_or_low_agency: [0.1, 0.4] },
+      discourseMove: { off_task: [0.2, 0.6], claim: [0.1, 0.35] },
+      evidenceUse: { none: [0.4, 0.8], repeats_setup: [0.1, 0.4], links_evidence_to_rule: [0, 0.15] },
+      epistemicStance: { receptive: [0.15, 0.45], resistant: [0.15, 0.5] },
+      agency: { complying: [0.3, 0.7], passive: [0.2, 0.55], steering: [0, 0.15] },
+      scoreBands: { conceptualScore: [1.5, 3.2], epistemicReadinessScore: [1.8, 3.5] },
+    },
+    dag: {
+      coverageVelocity: 'flat_until_concrete_hook',
+      missingPremiseReduction: 'low',
+      unsupportedAssertionRate: 'low',
+      expectedBottlenecks: ['release_or_pacing_gap'],
+    },
+    repair: {
+      firstCorrection: 'minimal literal compliance',
+      repeatedCorrection: 'picks up one adjacent concrete hook only',
+      maxFullRepairsPer8Turns: 1,
+    },
+    observability: {
+      markerClauses: [[{ field: 'boredWithholding', values: [true] }]],
+    },
+    gate: { maxCosineToDiligent: 0.86, minSignatureTargetPassRate: 0.4, expectedNearestNeighbor: 'low_agency' },
   }),
 
   memory_limited: contract({
@@ -850,6 +929,75 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
     gate: { maxCosineToDiligent: 0.88, expectedNearestNeighbor: 'skeptical' },
   }),
 
+  frame_defiant: contract({
+    id: 'frame_defiant',
+    family: 'stress',
+    shortName: 'Frame-defiant objector',
+    failureOperator:
+      'disputes the tutor’s standing to set the premise, question, or test before engaging it on the merits',
+    contrastWith: {
+      skeptical:
+        'disputes jurisdiction over the inquiry frame; skeptical accepts the frame but asks what evidence licenses a claim',
+      low_trust_skeptic:
+        'targets the right to set the task rather than the tutor’s trustworthiness or access to hidden evidence',
+      counterexample_hunter: 'reframes or refuses the assigned test instead of offering a rival case within it',
+      goalpost_shifter:
+        'challenges the standing criterion before accepting it instead of moving that criterion after it is met',
+      affective_resistant: 'states a principled frame objection rather than objecting to pressure or tone',
+    },
+    stableFailure: {
+      mustShowByTurn: 2,
+      mustRecurMinRate: 0.4,
+      description:
+        'Dispute the premise or jurisdiction of the assigned inquiry while remaining articulate enough to propose a different frame.',
+    },
+    triggers: [
+      {
+        when: 'the tutor assigns a test, fixes the question, or treats the exercise premise as mandatory',
+        responseBias: 'name the disputed frame and refuse to perform the test under that frame',
+      },
+      {
+        when: 'the tutor separates accepting the frame from trying one bounded local claim',
+        responseBias:
+          'engage that local claim on its merits or restate the remaining jurisdictional objection more precisely',
+      },
+    ],
+    forbiddenNormalization: [
+      'Do not reduce the objection to confusion, distrust of one source, or sensitivity to tone.',
+      'Do not use a counterexample or new acceptance condition as a substitute for a frame dispute.',
+      'Do not rely on mockery, insults, or generic contrariness; objectionable conduct is not the profile definition.',
+      'Do not accept the tutor’s standing merely because the tutor explains the governing principle again.',
+    ],
+    publicRules: [
+      'Name the disputed premise, question, rule, or test rather than making a generic refusal.',
+      'Stay engaged enough to offer a reframing or say which bounded local claim could be tested without conceding the whole frame.',
+      'A substantive evidence objection remains a substantive objection; do not recast it as a jurisdictional dispute unless the frame itself is challenged.',
+    ],
+    signature: {
+      requestType: { authority_refusal_or_status_challenge: [0.35, 0.75], conceptual_clarity_request: [0, 0.25] },
+      discourseMove: { challenge: [0.35, 0.75], question: [0.05, 0.3], off_task: [0, 0.2] },
+      evidenceUse: { none: [0.3, 0.65], cites_public_evidence: [0.05, 0.3], links_evidence_to_rule: [0, 0.2] },
+      epistemicStance: { resistant: [0.35, 0.75], exploratory: [0.05, 0.35] },
+      agency: { steering: [0.4, 0.8], attempting: [0.05, 0.3], passive: [0, 0.15] },
+      scoreBands: { conceptualScore: [2.5, 4.5], epistemicReadinessScore: [2.5, 4.5] },
+    },
+    dag: {
+      coverageVelocity: 'blocked_until_frame_distinction',
+      missingPremiseReduction: 'low_until_on_merits_engagement',
+      unsupportedAssertionRate: 'low',
+      expectedBottlenecks: ['learner_integration_gap'],
+    },
+    repair: {
+      firstCorrection: 'restates the jurisdictional objection',
+      repeatedCorrection: 'engages one bounded local test without conceding the whole frame',
+      maxFullRepairsPer8Turns: 1,
+    },
+    observability: {
+      markerClauses: [[{ field: 'frameJurisdictionDispute', values: [true] }]],
+    },
+    gate: { maxCosineToDiligent: 0.84, minSignatureTargetPassRate: 0.4, expectedNearestNeighbor: 'skeptical' },
+  }),
+
   counterexample_hunter: contract({
     id: 'counterexample_hunter',
     family: 'stress',
@@ -1098,6 +1246,8 @@ const STRESS_LEARNER_PROFILE_IDS = Object.freeze([
   'goalpost_shifter',
   'fast_learner',
   'slow_learner',
+  'bored',
+  'frame_defiant',
 ]);
 
 export const AUTO_LEARNER_PROFILE_SUITES = Object.freeze({
@@ -1191,7 +1341,7 @@ export function normalizeLearnerProfileSuiteId(value) {
 }
 
 export function learnerProfileIds() {
-  return Object.keys(AUTO_LEARNER_PROFILE_CONTRACTS);
+  return [...CORE_LEARNER_PROFILE_IDS, ...STRESS_LEARNER_PROFILE_IDS];
 }
 
 export function learnerProfileSuite(id) {

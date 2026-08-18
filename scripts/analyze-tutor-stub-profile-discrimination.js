@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+import { resistantLearnerObservationMarkers } from '../services/resistantLearnerObservation.js';
 import { learnerProfileContract } from './tutor-stub-learner-profile-contracts.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -343,6 +344,10 @@ function compactTurn(turn, args, { stimulusTutor = '', stimulusRegister = null }
   const classifier = turn.classification?.turn || {};
   const register = turn.registerSelection || {};
   const efficacy = turn.previousRegisterEfficacy || {};
+  const resistantMarkers = resistantLearnerObservationMarkers({
+    learnerText: turn.learner,
+    classification: classifier,
+  });
   const compact = {
     turn: asNumber(turn.turn),
     classifier: {
@@ -394,6 +399,7 @@ function compactTurn(turn, args, { stimulusTutor = '', stimulusRegister = null }
       learnerAcceleration: Boolean(
         turn.learnerAdvance?.accelerated || turn.tutorLearnerDagUpdate?.advance?.accelerated,
       ),
+      ...resistantMarkers,
     },
   };
   if (args.includeText) {
@@ -670,8 +676,8 @@ function summarizeSignatureAdherence(profile, turns) {
 }
 
 function markerGroupMatches(turn, group) {
-  if (group.field === 'explicitRecollection') {
-    return (group.values || []).includes(Boolean(turn.markers?.explicitRecollection));
+  if (Object.hasOwn(turn.markers || {}, group.field)) {
+    return (group.values || []).includes(turn.markers[group.field]);
   }
   const value = turn.classifier?.[group.field];
   return (group.values || []).includes(value);

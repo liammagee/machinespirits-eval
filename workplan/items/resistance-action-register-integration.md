@@ -37,6 +37,9 @@ links:
     - services/pedagogicalMove/shadow.js
     - services/adaptiveTutor/pedagogicalMoveProjection.js
     - services/tutorStubPedagogicalMoveProjection.js
+    - services/resistantLearnerObservation.js
+    - services/pedagogicalMove/resistantProfileWarrantShadow.js
+    - scripts/tutor-stub-learner-profile-contracts.js
 tags:
   - tutor-stub
   - cells
@@ -44,7 +47,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/pedagogical-move-contract
+branch: codex/resistant-learner-profile-contracts
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -118,3 +121,24 @@ and explicit human approval.
   character, audience, lexical, and scene choices are rejected from the move
   object and remain downstream realization fields. No runtime imports either
   projection in this phase.
+- 2026-08-18 — Began Phase 2 from the exact post-merge `origin/main`. Added
+  additive v4 `bored` and `frame_defiant` learner contracts plus deterministic
+  public-observation markers. Boredom means effort-withholding without
+  permission-seeking or a content-bearing contribution; frame defiance means a
+  jurisdictional objection to the premise, question, rule, or test, not
+  skepticism, counterexample hunting, goalpost movement, pressure complaint,
+  or mockery. A design-only warrant projects matching evidence into a typed
+  `PedagogicalMove`, but profile identity alone licenses nothing and runtime
+  selection, consumer switching, tonal realization, model calls, and empirical
+  claims remain unauthorized. The old outcome-study profile list stays frozen
+  to `low_agency` and `overconfident`, whose contract and prompt hashes are
+  pinned by regression tests.
+- 2026-08-18 — Phase 2 implementation gates passed: the eight changed and
+  boundary-relevant root files pass hermetically at concurrency 1 (102/102),
+  tutor-core passes 137/137, and lint, formatter, workplan-source, skill-sync,
+  test-manifest, and ref-governance checks are clean. A recorded full-root run
+  reached 8,996/9,018 passes with 17 registered private-artifact skips and five
+  unrelated infrastructure failures: one history test cannot traverse beyond
+  this partial clone's shallow boundary, and four fake-Codex fixtures exceeded
+  their hard five-second timeout under four-way load. All four timing cases
+  pass serially. No paid or live learner-profile study was run.

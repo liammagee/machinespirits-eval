@@ -58,7 +58,9 @@ factorial set:
   `false_memory`, `affective_resistant`);
 - `stress`: targeted failure-mode probes (`premature_closure`,
   `proof_skipper`, `false_memory`, `contradiction_keeper`,
-  `affective_resistant`, `low_trust_skeptic`);
+  `affective_resistant`, `low_trust_skeptic`, `counterexample_hunter`,
+  `goalpost_shifter`, `bored`, `frame_defiant`, `fast_learner`, and
+  `slow_learner`);
 - `audit`: expensive all-profile sweep. The older `all` spelling is still
   accepted as an alias, but it should not be used for routine policy
   comparisons.
@@ -71,8 +73,8 @@ periodic full-library check.
 
 The human mixed-learner interface applies the same separation without exposing
 evaluation-suite machinery: `/profile list` shows the six ordinary/core choices,
-`/profile list stress` shows the six specialist failure modes, and `/profile
-list all` shows the complete v3 registry.
+`/profile list stress` shows the twelve specialist failure modes, and `/profile
+list all` shows the complete v4 registry of eighteen profiles.
 
 Policy suites follow the same convention:
 
@@ -109,6 +111,33 @@ Initial gate:
 
 - average pairwise cosine below `0.85`;
 - max similarity to `diligent` below `0.90`.
+
+## Phase 2 resistant-profile extension (design only)
+
+The `bored` and `frame_defiant` contracts extend the v4 registry without
+changing the established `low_agency` or `overconfident` contracts. Their
+serialized contracts and rendered behavior prompts are pinned by SHA-256
+regression tests, and the historical outcome-study driver remains closed to
+exactly those two established profile IDs.
+
+The new profiles add deterministic behavior-only markers during compact-trace
+construction:
+
+- `boredWithholding` requires public flatness, clock-watching, or explicit
+  boredom without permission-seeking or a content-bearing contribution;
+- `frameJurisdictionDispute` requires a public dispute about who may set the
+  premise, question, exercise, rule, or test. Evidence skepticism, source
+  distrust, counterexamples, goalpost movement, pressure complaints, and
+  mockery do not satisfy it.
+
+These markers support zero-call observability gates. A separate design-shadow
+warrant can project a matched public observation into a typed pedagogical move:
+one adjacent concrete discriminating question for boredom, or a bounded test
+of the distinction between frame consent and local merits for frame defiance.
+Profile identity alone licenses nothing. The shadow cannot select a runtime
+move, switch a consumer, choose a register, authorize a paid call, or establish
+that either new profile is empirically discriminating. Those claims require a
+later registered study.
 
 ## Evidence So Far
 

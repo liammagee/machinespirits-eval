@@ -444,7 +444,7 @@ process.stdin.on('end', () => {
         if (!browsedStressProfiles && plain.includes('learner profile [diligent] >')) {
           browsedStressProfiles = true;
           child.stdin.write('stress\n');
-        } else if (!acceptedDefault && plain.includes('learner profiles > specialist failure modes (10)')) {
+        } else if (!acceptedDefault && plain.includes('learner profiles > specialist failure modes (12)')) {
           acceptedDefault = true;
           child.stdin.write('\n');
         } else if (!acceptedTemperature && plain.includes('teaching-style range [0.15; recommended] >')) {
@@ -486,7 +486,7 @@ process.stdin.on('end', () => {
     const tutorIndex = plain.indexOf('tutor >');
     assert.ok(pickerIndex >= 0, plain);
     assert.match(plain, /learner profile \[diligent\] >/u);
-    assert.match(plain, /learner profiles > specialist failure modes \(10\)/u);
+    assert.match(plain, /learner profiles > specialist failure modes \(12\)/u);
     assert.match(plain, /proof_skipper: Stress - Proof skipper/u);
     assert.ok((plain.match(/learner profile \[diligent\] >/gu) || []).length >= 2, plain);
     // Model selection was removed from first-run setup (2026-07-12): profile
@@ -1626,9 +1626,9 @@ test('mixed tutor-stub separates stress profiles from the ordinary interactive l
   );
 
   assert.equal(result.status, 0);
-  assert.match(result.stdout, /learner profiles > specialist failure modes \(10\)/u);
+  assert.match(result.stdout, /learner profiles > specialist failure modes \(12\)/u);
   assert.match(result.stdout, /premature_closure:/u);
-  assert.match(result.stdout, /learner profiles > complete v3 registry \(16\)/u);
+  assert.match(result.stdout, /learner profiles > complete profile registry \(18\)/u);
   assert.match(result.stdout, /answer_seeking:/u);
   assert.match(result.stdout, /low_trust_skeptic:/u);
   assert.match(result.stdout, /fast_learner:/u);

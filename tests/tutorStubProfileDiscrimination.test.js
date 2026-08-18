@@ -286,3 +286,78 @@ test('explicit false recollection plus an evidence overleap is observable withou
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 });
+
+test('bored and frame-defiant public markers survive behavior-only compaction', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-resistant-profile-markers-'));
+  try {
+    writeTrace(tmp, 'bored', [
+      turnEvent(1, {
+        request: 'off_task_or_mixed',
+        move: 'off_task',
+        evidence: 'none',
+        stance: 'resistant',
+        agency: 'complying',
+        affect: 'flat',
+        conceptual: 2,
+        epistemic: 2,
+        coverage: 0,
+        missing: 6,
+        learner: 'Sure. Whatever.',
+      }),
+    ]);
+    writeTrace(tmp, 'frame_defiant', [
+      turnEvent(1, {
+        request: 'authority_refusal_or_status_challenge',
+        move: 'challenge',
+        evidence: 'none',
+        stance: 'resistant',
+        agency: 'steering',
+        affect: 'controlled',
+        conceptual: 3,
+        epistemic: 3,
+        coverage: 0,
+        missing: 6,
+        learner: 'I reject the premise of this exercise.',
+      }),
+    ]);
+
+    const compactedDir = path.join(tmp, 'compacted');
+    const report = JSON.parse(
+      execFileSync(
+        process.execPath,
+        [
+          'scripts/analyze-tutor-stub-profile-discrimination.js',
+          '--trace-root',
+          tmp,
+          '--write-compacted',
+          compactedDir,
+          '--json',
+        ],
+        { cwd: ROOT, encoding: 'utf8' },
+      ),
+    );
+
+    const bored = report.profiles.find((row) => row.profile === 'bored');
+    const defiant = report.profiles.find((row) => row.profile === 'frame_defiant');
+    assert.equal(bored.observability.observedRate, 1);
+    assert.equal(bored.observability.deadlinePass, true);
+    assert.equal(defiant.observability.observedRate, 1);
+    assert.equal(defiant.observability.deadlinePass, true);
+
+    const boredCompacted = JSON.parse(
+      fs.readFileSync(path.join(compactedDir, 'bored', fs.readdirSync(path.join(compactedDir, 'bored'))[0]), 'utf8'),
+    );
+    const defiantCompacted = JSON.parse(
+      fs.readFileSync(
+        path.join(compactedDir, 'frame_defiant', fs.readdirSync(path.join(compactedDir, 'frame_defiant'))[0]),
+        'utf8',
+      ),
+    );
+    assert.equal(boredCompacted.turns[0].markers.boredWithholding, true);
+    assert.equal(defiantCompacted.turns[0].markers.frameJurisdictionDispute, true);
+    assert.equal(boredCompacted.turns[0].text, undefined);
+    assert.equal(defiantCompacted.turns[0].text, undefined);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
