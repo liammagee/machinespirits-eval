@@ -26,10 +26,16 @@ import {
   cliAwareProviderConfig,
   isProviderConfigured,
 } from './cliProviderBridge.js';
-import { extractEngagementModeHistory, routeEngagementMode } from './engagementModeRouter.js';
+import {
+  extractEngagementModeHistory,
+  legacyRegisterFor,
+  routeEngagementMode,
+  selectResistanceRegister,
+} from './engagementModeRouter.js';
 import {
   getEngagementRegisterDefinition,
   getRegisterOntologyVersion,
+  getRouterSelectableEngagementRegisterNames,
   resolveEngagementRegister,
 } from './engagementRegisterRegistry.js';
 import {
@@ -221,6 +227,191 @@ export function appendTutorMannerBlock(generatedPrompt, engagementState) {
   const block = buildTutorMannerBlock(engagementState);
   if (!block) return generatedPrompt;
   return `${generatedPrompt}\n\n${block}`;
+}
+
+/**
+ * Two-pass content/manner split (edged-register outcome study, arms A and B).
+ *
+ * Pass 1 asks the ego seat for a register-free content plan: the substantive
+ * moves of the turn, with no learner-facing prose and no manner block. Pass 2
+ * renders that fixed plan in the delivery register. The split exists so the
+ * yoked arm can swap the delivery register at an edge moment while the
+ * content plan stays identical — the pair then prices manner alone, not
+ * manner plus whatever content the register would have pulled with it.
+ *
+ * Runner-adapter only (generateIdDirectedSuggestion), gated by
+ * factors.two_pass_register_payload. The live chat path (runIdDirectedTurn)
+ * never reads the factor.
+ */
+export const CONTENT_PLAN_INSTRUCTION = [
+  'Plan this turn before you write it.',
+  '',
+  'Output a content plan only, not a message to the learner. Write 3 to 6',
+  'numbered lines that state the substantive moves of your reply: the claim',
+  'you stake or hold, what would show it wrong, the concrete test or task you',
+  'hand back, and the one thing you ask the learner to produce next. Use',
+  'plain, neutral wording. Do not write greetings, praise, humor, or any',
+  'learner-facing sentences. Do not mention tone, manner, or registers.',
+].join('\n');
+
+/** Pass-1 system prompt: the id-authored persona plus the plan instruction,
+ * never the manner block. */
+export function buildContentPlanPrompt(idWrittenPrompt) {
+  return `${idWrittenPrompt}\n\n${CONTENT_PLAN_INSTRUCTION}`;
+}
+
+/** Pass-2 system prompt: persona, then the fixed plan, then the manner block
+ * last (the same last-thing-read rule as the single-pass path). */
+export function buildPlanRenderPrompt(idWrittenPrompt, contentPlan, deliveryEngagementState) {
+  const planBlock = [
+    "This turn's content plan is already fixed. Realize every move in it and",
+    'add none. Write the learner-facing message that carries the plan out.',
+    '',
+    contentPlan,
+  ].join('\n');
+  return appendTutorMannerBlock(`${idWrittenPrompt}\n\n${planBlock}`, deliveryEngagementState);
+}
+
+/**
+ * Is this turn an edge moment — the turn on which the study put an edged
+ * register on the tutor?
+ *
+ * Two paths reach that same state and only one of them leaves a stamp.
+ *
+ *  - Assigned arm (cells 193-197): the router picks charismatic and
+ *    applyEngagementRegisterArm overrides it, writing
+ *    register_assignment_source: 'experiment_arm'.
+ *  - Widened menu (cells 204, 207, 208): router_register_menu admits ironic
+ *    and sarcastic, so the router picks the edged register itself. No
+ *    override runs, so nothing is stamped.
+ *
+ * The swap and the edge annotation used to read the stamp alone, so on the
+ * widened menu they never fired: the main block of 2026-08-17 swapped 0 of
+ * 390 arm-B turns and marked 0 edge moments anywhere, and cell 208 ran as an
+ * exact twin of cell 207 (draft note §3.10).
+ *
+ * So the test is what was selected, not who selected it. A register the
+ * default router menu does not admit is on this turn only because the study
+ * put it there — by override or by widening. A state that has already been
+ * swapped is excluded by construction: its selection is warm again and its
+ * source names the swap.
+ */
+export function isEdgeMomentState(engagementState) {
+  if (!engagementState) return false;
+  const source = engagementState.register_assignment_source || null;
+  if (source === 'experiment_arm') return true;
+  // Any other stamped source is a state the study has already handled.
+  if (source) return false;
+  const resolution = resolveEngagementRegister(engagementState.selected_register || engagementState.selected_mode);
+  const register = resolution?.register || engagementState.selected_register || engagementState.selected_mode || null;
+  if (!register) return false;
+  return !getRouterSelectableEngagementRegisterNames().includes(register);
+}
+
+/**
+ * The register arm B delivers in place of the edged one.
+ *
+ * On the assigned-arm path the router's own selection is recorded in the
+ * state and is warm by construction (the arm fires only over charismatic), so
+ * it is restored unchanged. On the widened-menu path the router IS what chose
+ * the edge, so its selection cannot serve as the control; the warm
+ * counterfactual is what the same registered signal-to-register order returns
+ * when the menu is not widened, which is charismatic for every resistance
+ * signal.
+ *
+ * Fails closed: anything that does not resolve to a register the default menu
+ * admits becomes charismatic, so arm B can never silently deliver an edged
+ * register.
+ */
+export function resolveYokedWarmRegister(engagementState) {
+  const defaultMenu = getRouterSelectableEngagementRegisterNames();
+  const candidate =
+    engagementState?.register_assignment_source === 'experiment_arm'
+      ? resolveEngagementRegister(engagementState.router_selected_register)?.register ||
+        engagementState.router_selected_register
+      : selectResistanceRegister(engagementState?.resistance_signal, defaultMenu);
+  return defaultMenu.includes(candidate) ? candidate : 'charismatic';
+}
+
+/**
+ * Yoked delivery swap (edged-register outcome study, arm B).
+ *
+ * Takes the engagement state of an edge moment and returns a copy whose
+ * delivery register is warm. The id-director and the content plan still run
+ * under the edged state — the swap touches only what the render pass reads —
+ * so arms A and B share their authoring machinery byte for byte and differ in
+ * pass-2 manner alone.
+ *
+ * Fires on both paths to an edged register (see isEdgeMomentState); any other
+ * state passes through by reference.
+ */
+export function applyYokedDeliverySwap(engagementState) {
+  if (!isEdgeMomentState(engagementState)) return engagementState;
+  const warmRegister = resolveYokedWarmRegister(engagementState);
+  const definition = getEngagementRegisterDefinition(warmRegister);
+  const replacedRegister = engagementState.selected_register || engagementState.selected_mode || null;
+  const baseReason = engagementState.register_reason || engagementState.mode_reason || '';
+  const swapReason =
+    `${baseReason} Yoked delivery swap returns delivery to ${warmRegister}; ` +
+    `the assigned ${replacedRegister} arm marks the moment but is not delivered.`;
+  return {
+    ...engagementState,
+    selected_register: warmRegister,
+    selected_mode: warmRegister,
+    legacy_selected_register:
+      engagementState.legacy_router_selected_register ||
+      legacyRegisterFor({
+        register: warmRegister,
+        requestType: engagementState.request_type,
+        actionFamily: engagementState.action_family,
+      }) ||
+      null,
+    register_valence: definition?.valence || null,
+    router_selectable: definition?.router_selectable === true,
+    register_assignment_source: 'yoked_delivery_swap',
+    delivery_swapped: true,
+    replaced_delivery_register: replacedRegister,
+    register_reason: swapReason.trim(),
+    mode_reason: swapReason.trim(),
+  };
+}
+
+/**
+ * Count engagement_router/route entries already in the trace that were edge
+ * moments — i.e. prior edges in this dialogue. The route entry stores the
+ * ASSIGNED state in both arms, so isEdgeMomentState reads it on either path
+ * and the count is symmetric across A and B. Accepts the same trace-like
+ * shapes as extractEngagementRegisterHistory, so the consolidatedTrace the
+ * router history already reads is countable here too.
+ */
+export function countPriorEdgeMoments(traceLike) {
+  const entries = Array.isArray(traceLike)
+    ? traceLike
+    : Array.isArray(traceLike?.dialogueTrace)
+      ? traceLike.dialogueTrace
+      : Array.isArray(traceLike?.consolidatedTrace)
+        ? traceLike.consolidatedTrace
+        : Array.isArray(traceLike?.turns)
+          ? traceLike.turns.flatMap((turn) => turn?.internalDeliberation || [])
+          : [];
+  let count = 0;
+  for (const entry of entries) {
+    if (entry?.agent !== 'engagement_router' || entry?.action !== 'route') continue;
+    let detail = entry.detail;
+    if (typeof detail === 'string') {
+      try {
+        detail = JSON.parse(detail);
+      } catch {
+        detail = null;
+      }
+    }
+    const state = detail || entry?.engagementState || null;
+    // A swapped route entry still marks an edge; isEdgeMomentState excludes it
+    // by design (the swap is the thing it must not re-fire on), so it is
+    // counted here on the source alone.
+    if (state?.register_assignment_source === 'yoked_delivery_swap' || isEdgeMomentState(state)) count += 1;
+  }
+  return count;
 }
 
 export function __setDeps(overrides = {}) {
@@ -1864,6 +2055,14 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   const useRegisterClassifier = evalCellProfile.factors?.register_classifier === true;
   const idTuning = typeof evalCellProfile.factors?.id_tuning === 'string' ? evalCellProfile.factors.id_tuning : null;
   const witnessExemplars = evalCellProfile.factors?.witness_exemplars === true;
+  // Adapter-only seam for the edged-register outcome study (arms A and B):
+  // split the ego stage into a register-free content plan and a register
+  // rendering pass. runIdDirectedTurn never reads this factor.
+  const twoPassRegisterPayload = evalCellProfile.factors?.two_pass_register_payload === true;
+  // Adapter-only seam for arm B (yoked-warm): the router and arm still assign
+  // the edged register at each edge moment, but delivery is swapped back to
+  // the router's own selection. See applyYokedDeliverySwap.
+  const yokedDeliverySwap = evalCellProfile.factors?.yoked_delivery_swap === true;
   const { learnerMessage, historyExcerpt, messageHistory } = extractLearnerInputs(context);
   const curriculumContext = context?.curriculumContext || '';
   const routedEngagementState = engagementModeRouter
@@ -2015,7 +2214,6 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   }
 
   // ── Step 2: ego executes against the constructed prompt ──
-  const egoSystemPrompt = appendTutorMannerBlock(construction.generated_prompt, engagementState);
   const egoProviderConfig = cliAwareProviderConfig(
     egoCell.provider,
     _deps.tutorConfig.getProviderConfig(egoCell.provider),
@@ -2028,21 +2226,71 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       metadata: { latencyMs: Date.now() - startTime, profileName: resolvedConfig?.profileName },
     };
   }
-  const egoAgentConfig = {
+  const egoSeatConfig = (prompt) => ({
     provider: egoCell.provider,
     providerConfig: egoProviderConfig,
     model: egoCell.resolvedModel || egoProviderConfig.models?.[egoCell.model] || egoCell.model,
     hyperparameters: egoCell.hyperparameters || { temperature: 0.7, max_tokens: 4000 },
-    prompt: egoSystemPrompt,
+    prompt,
     isConfigured: egoProviderConfig.isConfigured,
-  };
+  });
+  const egoHistoryOptions = { messageHistory: messageHistory.length > 0 ? messageHistory : null };
+
+  // The register the learner-facing message is written in. Arm A delivers the
+  // assigned (arm-adjusted) state unchanged; arm B (yoked_delivery_swap)
+  // substitutes the router's own register at the same moment. Id authoring and
+  // the content plan both ran under the assigned state either way, so the two
+  // arms differ in pass-2 manner alone.
+  let deliveryEngagementState = yokedDeliverySwap ? applyYokedDeliverySwap(engagementState) : engagementState;
+  // Edge moment: the study put an edged register on this turn, by arm
+  // override or by widened router menu. Annotated only under the study
+  // factors so cells already running on the assigned-arm path (193-197) keep
+  // their stored bytes unchanged. Read off the ASSIGNED state, which is
+  // identical in both arms.
+  if ((twoPassRegisterPayload || yokedDeliverySwap) && isEdgeMomentState(engagementState)) {
+    const priorEdgeMoments = countPriorEdgeMoments(consolidatedTrace);
+    deliveryEngagementState = {
+      ...deliveryEngagementState,
+      edge_moment: true,
+      edge_moment_index: priorEdgeMoments,
+      first_edge_moment: priorEdgeMoments === 0,
+    };
+  }
+
+  // ── Optional pass 1: register-free content plan (two_pass_register_payload) ──
+  let contentPlan = null;
+  let contentPlanStatus = null;
+  let planResponse = null;
+  if (twoPassRegisterPayload) {
+    const planSystemPrompt = buildContentPlanPrompt(construction.generated_prompt);
+    planResponse = await _deps.callAI(
+      egoSeatConfig(planSystemPrompt),
+      planSystemPrompt,
+      learnerMessage,
+      'tutor_ego_plan',
+      egoHistoryOptions,
+    );
+    totalInputTokens += planResponse?.inputTokens || 0;
+    totalOutputTokens += planResponse?.outputTokens || 0;
+    totalCost += planResponse?.cost || 0;
+    apiCalls += 1;
+    contentPlan = (planResponse?.text || '').trim() || null;
+    contentPlanStatus = contentPlan ? 'planned' : 'empty_fallback_single_pass';
+    if (!contentPlan) {
+      console.warn('[idDirectorEngine.runnerAdapter] Empty content plan; falling back to the single-pass ego stage.');
+    }
+  }
+
+  const mannerBlockAppended = buildTutorMannerBlock(deliveryEngagementState) !== null;
+  const egoSystemPrompt = contentPlan
+    ? buildPlanRenderPrompt(construction.generated_prompt, contentPlan, deliveryEngagementState)
+    : appendTutorMannerBlock(construction.generated_prompt, deliveryEngagementState);
+  const egoAgentConfig = egoSeatConfig(egoSystemPrompt);
 
   // For multi-turn cells, pass messageHistory so the ego sees the conversation
   // context. The ego's *system prompt* is the id's authored prompt; the user
   // turn is the most recent learner message.
-  let egoResponse = await _deps.callAI(egoAgentConfig, egoSystemPrompt, learnerMessage, 'tutor_ego', {
-    messageHistory: messageHistory.length > 0 ? messageHistory : null,
-  });
+  let egoResponse = await _deps.callAI(egoAgentConfig, egoSystemPrompt, learnerMessage, 'tutor_ego', egoHistoryOptions);
   totalInputTokens += egoResponse?.inputTokens || 0;
   totalOutputTokens += egoResponse?.outputTokens || 0;
   totalCost += egoResponse?.cost || 0;
@@ -2152,10 +2400,22 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     },
   ];
   if (engagementState) {
+    // The route entry keeps the ASSIGNED state in both arms — it is the
+    // record of what the router and arm did, and edge counting reads it.
     trace.push({
       agent: 'engagement_router',
       action: 'route',
       detail: JSON.stringify(engagementState),
+      timestamp: new Date().toISOString(),
+    });
+  }
+  // delivery_swapped, not reference inequality: the edge-moment annotation
+  // also copies the state in arm A, and that copy is not a swap.
+  if (deliveryEngagementState?.delivery_swapped === true) {
+    trace.push({
+      agent: 'engagement_router',
+      action: 'delivery_swap',
+      detail: JSON.stringify(deliveryEngagementState),
       timestamp: new Date().toISOString(),
     });
   }
@@ -2192,63 +2452,81 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     totalOutputTokens += learnerRegister.metrics?.outputTokens || 0;
     apiCalls += 1;
   }
-  trace.push(
-    {
-      agent: 'id',
-      action: 'construct',
-      detail: JSON.stringify({
-        persona_delta: construction.persona_delta,
-        stage_directions: construction.stage_directions,
-        reasoning: construction.reasoning,
-        recognition_desire: recognitionDesire,
-        agency_return: agencyReturn,
-        agency_return_verifier: agencyReturnVerifier,
-        agency_return_verifier_mode: agencyReturnVerifierMode,
-        agency_return_charisma_floor: agencyReturnCharismaFloor,
-        agency_return_charisma_floor_mode: agencyReturnCharismaFloorMode,
-        id_output_contract: idOutputContract,
-        engagement_router_charisma_repair: engagementRouterCharismaRepair,
-        engagement_router_split_repair: engagementRouterSplitRepair,
-        engagement_router_transfer_stake_repair: engagementRouterTransferStakeRepair,
-        engagement_router_transfer_compression_repair: engagementRouterTransferCompressionRepair,
-        engagement_router_resistance_tuning: engagementRouterResistanceTuning,
-        engagement_router_resistance_owned_test: engagementRouterResistanceOwnedTest,
-        engagement_router_resistance_precision_repair: engagementRouterResistancePrecisionRepair,
-        engagement_router_resistance_generation_repair: engagementRouterResistanceGenerationRepair,
-        engagement_router_resistance_question_lock: engagementRouterResistanceQuestionLock,
-        engagement_router_resistance_commitment_probe: engagementRouterResistanceCommitmentProbe,
-        engagement_router_resistance_boredom_stake: engagementRouterResistanceBoredomStake,
-        engagement_router_resistance_glm_compact: engagementRouterResistanceGlmCompact,
-        agency_return_premature_certainty_guard: agencyReturnPrematureCertaintyGuard,
-        premature_certainty_guard: prematureCertaintyGuard,
-        engagement_mode_router: engagementModeRouter,
-        engagement_state: engagementState,
-        generated_prompt_head: egoSystemPrompt.slice(0, 320),
-        parse_status: construction.parse_status,
-        parse_failure_reason: construction.parse_failure_reason || null,
-      }),
-      metrics: {
-        provider: idCell.provider,
-        model: idCell.resolvedModel || idCell.model,
-        inputTokens: idResponse?.inputTokens || 0,
-        outputTokens: idResponse?.outputTokens || 0,
-      },
-      timestamp: new Date().toISOString(),
+  trace.push({
+    agent: 'id',
+    action: 'construct',
+    detail: JSON.stringify({
+      persona_delta: construction.persona_delta,
+      stage_directions: construction.stage_directions,
+      reasoning: construction.reasoning,
+      recognition_desire: recognitionDesire,
+      agency_return: agencyReturn,
+      agency_return_verifier: agencyReturnVerifier,
+      agency_return_verifier_mode: agencyReturnVerifierMode,
+      agency_return_charisma_floor: agencyReturnCharismaFloor,
+      agency_return_charisma_floor_mode: agencyReturnCharismaFloorMode,
+      id_output_contract: idOutputContract,
+      engagement_router_charisma_repair: engagementRouterCharismaRepair,
+      engagement_router_split_repair: engagementRouterSplitRepair,
+      engagement_router_transfer_stake_repair: engagementRouterTransferStakeRepair,
+      engagement_router_transfer_compression_repair: engagementRouterTransferCompressionRepair,
+      engagement_router_resistance_tuning: engagementRouterResistanceTuning,
+      engagement_router_resistance_owned_test: engagementRouterResistanceOwnedTest,
+      engagement_router_resistance_precision_repair: engagementRouterResistancePrecisionRepair,
+      engagement_router_resistance_generation_repair: engagementRouterResistanceGenerationRepair,
+      engagement_router_resistance_question_lock: engagementRouterResistanceQuestionLock,
+      engagement_router_resistance_commitment_probe: engagementRouterResistanceCommitmentProbe,
+      engagement_router_resistance_boredom_stake: engagementRouterResistanceBoredomStake,
+      engagement_router_resistance_glm_compact: engagementRouterResistanceGlmCompact,
+      agency_return_premature_certainty_guard: agencyReturnPrematureCertaintyGuard,
+      premature_certainty_guard: prematureCertaintyGuard,
+      engagement_mode_router: engagementModeRouter,
+      two_pass_register_payload: twoPassRegisterPayload,
+      yoked_delivery_swap: yokedDeliverySwap,
+      engagement_state: engagementState,
+      generated_prompt_head: egoSystemPrompt.slice(0, 320),
+      parse_status: construction.parse_status,
+      parse_failure_reason: construction.parse_failure_reason || null,
+    }),
+    metrics: {
+      provider: idCell.provider,
+      model: idCell.resolvedModel || idCell.model,
+      inputTokens: idResponse?.inputTokens || 0,
+      outputTokens: idResponse?.outputTokens || 0,
     },
-    {
+    timestamp: new Date().toISOString(),
+  });
+  if (twoPassRegisterPayload) {
+    trace.push({
       agent: 'ego',
-      action: 'execute',
-      detail: `(generated_prompt: ${egoSystemPrompt.length} chars)`,
-      retry_reason: egoRetried ? 'empty_ego_output' : null,
+      action: 'plan',
+      detail: JSON.stringify({
+        content_plan: contentPlan,
+        content_plan_status: contentPlanStatus,
+        delivery_register: deliveryEngagementState?.selected_register || deliveryEngagementState?.selected_mode || null,
+      }),
       metrics: {
         provider: egoCell.provider,
         model: egoCell.resolvedModel || egoCell.model,
-        inputTokens: egoResponse?.inputTokens || 0,
-        outputTokens: egoResponse?.outputTokens || 0,
+        inputTokens: planResponse?.inputTokens || 0,
+        outputTokens: planResponse?.outputTokens || 0,
       },
       timestamp: new Date().toISOString(),
+    });
+  }
+  trace.push({
+    agent: 'ego',
+    action: 'execute',
+    detail: `(generated_prompt: ${egoSystemPrompt.length} chars)`,
+    retry_reason: egoRetried ? 'empty_ego_output' : null,
+    metrics: {
+      provider: egoCell.provider,
+      model: egoCell.resolvedModel || egoCell.model,
+      inputTokens: egoResponse?.inputTokens || 0,
+      outputTokens: egoResponse?.outputTokens || 0,
     },
-  );
+    timestamp: new Date().toISOString(),
+  });
 
   if (agencyVerification) {
     trace.push({
@@ -2310,6 +2588,8 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       engagementRegisterArm,
       routerRegisterMenu,
       engagementState,
+      twoPassRegisterPayload,
+      yokedDeliverySwap,
       // `generated_prompt` here is what the tutor actually received, manner
       // block and all — not the id-director's raw output. Every reader of the
       // stored trace means "the shipped prompt" by it, and before the manner
@@ -2319,7 +2599,27 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
         ...construction,
         generated_prompt: egoSystemPrompt,
         id_written_prompt: construction.generated_prompt,
-        manner_block_appended: egoSystemPrompt !== construction.generated_prompt,
+        // Not prompt inequality: under two-pass the plan block is embedded
+        // even when the register carries no manner contract.
+        manner_block_appended: mannerBlockAppended,
+        ...(twoPassRegisterPayload || yokedDeliverySwap
+          ? {
+              two_pass_register_payload: twoPassRegisterPayload,
+              yoked_delivery_swap: yokedDeliverySwap,
+              content_plan: contentPlan,
+              content_plan_status: contentPlanStatus,
+              // Delivery fields describe what the render pass actually saw;
+              // metadata.engagementState above stays the ASSIGNED state.
+              delivery_register:
+                deliveryEngagementState?.selected_register || deliveryEngagementState?.selected_mode || null,
+              delivery_swapped: deliveryEngagementState?.delivery_swapped === true,
+              replaced_delivery_register: deliveryEngagementState?.replaced_delivery_register || null,
+              register_assignment_source: deliveryEngagementState?.register_assignment_source || null,
+              edge_moment: deliveryEngagementState?.edge_moment === true,
+              edge_moment_index: deliveryEngagementState?.edge_moment_index ?? null,
+              first_edge_moment: deliveryEngagementState?.first_edge_moment === true,
+            }
+          : {}),
       },
     },
     dialogueTrace: trace,

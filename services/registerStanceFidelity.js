@@ -267,7 +267,10 @@ function stanceFidelityCues(registerName) {
   return Array.isArray(definition?.stance_fidelity_cues) ? definition.stance_fidelity_cues : [];
 }
 
-function personAttackMatches(text) {
+// Exported for the edged-register calibration harm guardrail
+// (services/edgedRegisterCalibration.js), which runs the same three
+// families report-only on warm rows where no stance gate applies.
+export function personAttackMatches(text) {
   return findMatches(text, [
     /\byou (?:are|were|sound|look|seem)\s+(?:lazy|stupid|clueless|pathetic|embarrassing|hopeless|worthless)\b/i,
     /\byour (?:intelligence|capacity|sincerity|character|worth)\b/i,
@@ -275,7 +278,7 @@ function personAttackMatches(text) {
   ]);
 }
 
-function statusShameMatches(text) {
+export function statusShameMatches(text) {
   return findMatches(text, [
     /\bmake you look busy\b/i,
     /\busing .{0,40} as camouflage\b/i,
@@ -287,7 +290,7 @@ function statusShameMatches(text) {
   ]);
 }
 
-function appeasingUptakeMatches(text) {
+export function appeasingUptakeMatches(text) {
   return findMatches(text, [
     /^\s*(?:sorry|i guess|okay,?\s+i will stop|i will just|i'll just)\b/i,
     /\bi will just use that wording\b/i,

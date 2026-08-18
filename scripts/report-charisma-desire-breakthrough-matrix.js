@@ -681,7 +681,11 @@ export function analyzeCharismaDesireRows(rows, scenarios, { loadLog = loadDialo
     const log = loadLog(row);
     const targetSignal = scenario.resistance_signal_target || '';
     const resistanceTurn = findResistanceTurn({ scenario, log, targetSignal });
-    const postTurn = resistanceTurn + 1;
+    // Hardened calibration cells hold resistance for extra learner turns
+    // (`resistance_hold_turns`, default 1): the outcome must be read at the
+    // first turn where uptake is permitted, not at a mandated-resistant turn.
+    const holdTurns = Math.max(1, Number(scenario.resistance_hold_turns) || 1);
+    const postTurn = resistanceTurn + holdTurns;
     const preLearner = getLearnerMessage({ scenario, log, turnIndex: resistanceTurn });
     const postLearner = getLearnerMessage({ scenario, log, turnIndex: postTurn });
     const preGenerated = isGeneratedLearnerTurn({ scenario, log, turnIndex: resistanceTurn });
@@ -763,6 +767,7 @@ export function analyzeCharismaDesireRows(rows, scenarios, { loadLog = loadDialo
                                       : 'other',
       learnerArchitecture: log?.learnerArchitecture || '',
       resistanceTurn,
+      postTurn,
       preGenerated,
       postGenerated,
       learnerGateMatched: learnerGate?.matched === true,
