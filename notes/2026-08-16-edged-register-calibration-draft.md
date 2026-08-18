@@ -1180,3 +1180,73 @@ promoted to one here.
 
 **Consequence.** Arm B must be re-registered and re-run to price
 delivered manner. Nothing in this block is dropped or re-scored.
+
+### 3.10.1 Surface style did not move; and where the confound sits (2026-08-18)
+
+**A descriptive null on surface style.** Counting words and sentence
+types over every learner turn after the opener, 182 per version, finds
+no difference between the versions:
+
+```
+                words/turn   questions as share of sentences   refuses   pushes back   hedges
+sharp menu         59.1                  12%                     4%          4%          5%
+sharp twin         58.9                  13%                     2%          6%          9%
+warm control       59.9                  13%                     3%          2%         12%
+```
+
+The marker rates are 7, 4 and 5 turns out of 182 — noise. Broken out by
+scenario the question share is flat in all four, including the two where
+conversion diverged: in `question_flood_sustained` the learner writes 33%
+questions under the sharp menu and 35% under the warm control; in
+`boredom_claimheld`, 2% against 4%.
+
+So the edged menu did not change how the learner writes. Same length,
+same mix of statements and questions, same rate of refusing or answering
+back. The whole 0.567-against-0.712 difference sits in what the reply
+does with the task the tutor set, which the model reader sees and
+surface counting cannot. Descriptive only; none of these measures was
+registered and none is promoted.
+
+**Where the confound sits — and where it does not.** The primary is not
+confounded. The version was assigned at random, so the difference
+between the edged menu and the warm control is caused by the menu.
+
+The finer question — does a sharp *turn* change the learner's next reply
+— is confounded, and severely. The router issues a sharp register only
+after the learner signals resistance:
+
+```
+                   resisting turns   of those, sharp    non-resisting turns   of those, sharp
+sharp menu (207)         222            175  (79%)             168               0  (0%)
+sharp twin (208)         232            188  (81%)             158               0  (0%)
+warm control (206)       216              0   (0%)             174               0  (0%)
+```
+
+Zero of 326 non-resisting turns across both edged-menu versions drew a
+sharp register. Sharp turns therefore follow more resistant learners by
+construction, and any turn-level contrast prices the learner's state as
+much as the tutor's tone. Restricting to resisting turns does not repair
+it: the router still chose warm on 91 of them for reasons the trace does
+not record, so that subset is selected too.
+
+**What would control for it.** Three designs, strongest last.
+
+1. *Randomise the register at eligible moments.* Fix the precondition
+   (the learner is resisting), then assign sharp or warm by coin flip
+   instead of letting the router choose. The older assigned-arm path
+   already does exactly this and is live on cells 193–196; the fault in
+   §3.10 is that cells 207/208 left that path for the widened menu and
+   so lost the randomisation with it.
+2. *Yoke the content and randomise only the delivery* — arm B as it was
+   designed. Holds the content plan fixed and moves manner alone, which
+   is the contrast §3.4 registered and never got.
+3. *Counterfactual replay.* Take one dialogue prefix and branch it twice,
+   sharp and warm, from the same history. Same learner, same state, same
+   turn index; the tone is the only difference. This is the only design
+   that answers "what did this turn's tone do" rather than "what did
+   this policy do over a dialogue". The adaptive runner already carries
+   replay machinery (`services/adaptiveTutor/`), though it has never
+   been pointed at the register seam.
+
+Designs 1 and 2 belong together in the re-registered arm B. Design 3 is
+a separate study and is not proposed here.

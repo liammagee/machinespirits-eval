@@ -318,3 +318,25 @@ and is not promoted here.
 Next: re-register arm B so the swap actually fires, then re-run that
 version alone (~104 dialogues). Needs a fresh GO note and operator
 sign-off on cost. Handed to a separate session 2026-08-18.
+
+Surface-style check on the 312 archived transcripts, free, 2026-08-18.
+Null: the edged menu did not change how the learner writes. Words per
+turn 59.1 sharp against 59.9 warm; questions as a share of sentences 12%
+against 13%; refusing, answering back and hedging all within noise (7, 4
+and 5 turns out of 182). Flat in all four scenarios, including the two
+where conversion diverged. The measured conversion difference lives in
+what the reply does with the task, not in its surface. Descriptive only,
+never registered, not promoted.
+
+Confound, recorded in draft note §3.10.1. The primary is clean — the
+version was randomised. The turn-level question is not: the router
+issues a sharp register ONLY after the learner signals resistance (0 of
+326 non-resisting turns across both edged versions drew one), so sharp
+turns follow more resistant learners by construction. Restricting to
+resisting turns does not repair it — the router still chose warm on 91
+of them for unrecorded reasons. Three fixes named: randomise the
+register at eligible moments (the older assigned-arm path already does
+this, and cells 207/208 lost it by moving to the widened menu); yoke the
+content and randomise delivery alone (arm B as designed); counterfactual
+replay from one prefix, which is the only design that prices a single
+turn's tone. The first two belong in the re-registered arm B.
