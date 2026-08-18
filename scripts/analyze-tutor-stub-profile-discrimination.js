@@ -80,6 +80,14 @@ function parseArgs(argv) {
     targetAverageCosine: 0.85,
     targetMaxToControl: 0.9,
     controlProfile: 'diligent',
+    gateProfiles: [],
+    requirePooled: false,
+    requiredTraces: null,
+    requiredProfiles: [],
+    requiredRunsPerProfile: null,
+    requiredTurns: null,
+    requiredPolicies: [],
+    requiredModels: { tutor: '', analysis: '', learner: '' },
   };
 
   for (let i = 0; i < argv.length; i++) {
@@ -94,6 +102,10 @@ function parseArgs(argv) {
     }
     if (token === '--include-text') {
       args.includeText = true;
+      continue;
+    }
+    if (token === '--require-pooled') {
+      args.requirePooled = true;
       continue;
     }
     if (token === '--trace-root') {
@@ -132,6 +144,45 @@ function parseArgs(argv) {
       args.controlProfile = String(argv[++i] || '').trim() || 'diligent';
       continue;
     }
+    if (token === '--gate-profiles') {
+      args.gateProfiles = String(argv[++i] || '')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean);
+      continue;
+    }
+    if (token === '--required-traces') {
+      args.requiredTraces = positiveIntArg(argv[++i], '--required-traces');
+      continue;
+    }
+    if (token === '--required-profiles') {
+      args.requiredProfiles = csvArg(argv[++i]);
+      continue;
+    }
+    if (token === '--required-runs-per-profile') {
+      args.requiredRunsPerProfile = positiveIntArg(argv[++i], '--required-runs-per-profile');
+      continue;
+    }
+    if (token === '--required-turns') {
+      args.requiredTurns = positiveIntArg(argv[++i], '--required-turns');
+      continue;
+    }
+    if (token === '--required-policies') {
+      args.requiredPolicies = csvArg(argv[++i]);
+      continue;
+    }
+    if (token === '--required-tutor-model') {
+      args.requiredModels.tutor = String(argv[++i] || '').trim();
+      continue;
+    }
+    if (token === '--required-analysis-model') {
+      args.requiredModels.analysis = String(argv[++i] || '').trim();
+      continue;
+    }
+    if (token === '--required-learner-model') {
+      args.requiredModels.learner = String(argv[++i] || '').trim();
+      continue;
+    }
     if (token.startsWith('--')) {
       throw new Error(`Unknown option: ${token}`);
     }
@@ -145,6 +196,19 @@ function numberArg(value, name) {
   const number = Number(value);
   if (!Number.isFinite(number)) throw new Error(`${name} must be a number`);
   return number;
+}
+
+function positiveIntArg(value, name) {
+  const number = Number(value);
+  if (!Number.isInteger(number) || number < 1) throw new Error(`${name} must be a positive integer`);
+  return number;
+}
+
+function csvArg(value) {
+  return String(value || '')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 }
 
 function printUsage() {
@@ -162,6 +226,17 @@ Options:
   --target-average-cosine <n>    Gate threshold for average pairwise cosine (default: 0.85)
   --target-max-to-control <n>    Gate threshold for max similarity to control profile (default: 0.90)
   --control-profile <id>         Control profile for max-to-control gate (default: diligent)
+  --gate-profiles <csv>          Apply contract-conditioned gates only to these profiles
+  --require-pooled               Require the pooled cosine gate as well as conditioned gates
+  --required-traces <n>          Require exactly n complete trace rows
+  --required-profiles <csv>      Require this exact profile set
+  --required-runs-per-profile <n>
+                                 Require exactly n traces for every required profile
+  --required-turns <n>           Require exactly n turns in every trace
+  --required-policies <csv>      Require this exact policy set
+  --required-tutor-model <id>    Require one observed tutor model identity
+  --required-analysis-model <id> Require one observed analysis model identity
+  --required-learner-model <id>  Require one observed learner model identity
   --json                         Print JSON instead of Markdown
   --out <file>                   Write report to file
 `);
@@ -783,6 +858,41 @@ function summarizeProfile(profile, traces) {
   };
 }
 
+function nearestMatchedPolicyNeighbor(profile, policyPairwise, pooledPairwise) {
+  const matchedRows = policyPairwise.filter((pair) => pair.a === profile || pair.b === profile);
+  const rows = matchedRows.length
+    ? matchedRows
+    : pooledPairwise.filter((pair) => pair.a === profile || pair.b === profile);
+  const byNeighbor = new Map();
+  for (const row of rows) {
+    const neighbor = row.a === profile ? row.b : row.a;
+    if (!byNeighbor.has(neighbor)) byNeighbor.set(neighbor, []);
+    byNeighbor.get(neighbor).push(row.cosine);
+  }
+  const candidates = [...byNeighbor.entries()]
+    .map(([profileId, similarities]) => ({ profile: profileId, cosine: round(mean(similarities)) }))
+    .filter((candidate) => Number.isFinite(candidate.cosine))
+    .sort((left, right) => right.cosine - left.cosine || left.profile.localeCompare(right.profile));
+  return candidates[0] || null;
+}
+
+function sameSet(actual, expected) {
+  return (
+    actual.length === expected.length &&
+    [...actual].sort().every((value, index) => value === [...expected].sort()[index])
+  );
+}
+
+function modelAssembly(role, counts, requiredModel, requiredTraces) {
+  if (!requiredModel) return { role, requiredModel: null, observed: counts, pass: true };
+  return {
+    role,
+    requiredModel,
+    observed: counts,
+    pass: Object.keys(counts).length === 1 && counts[requiredModel] === requiredTraces,
+  };
+}
+
 function buildReport(compactedTraces, args, compactedWrites) {
   const byProfile = new Map();
   for (const trace of compactedTraces) {
@@ -799,6 +909,10 @@ function buildReport(compactedTraces, args, compactedWrites) {
   }
 
   const profiles = [...profileVectors.keys()];
+  const missingGateProfiles = args.gateProfiles.filter((profile) => !profiles.includes(profile));
+  if (missingGateProfiles.length) {
+    throw new Error(`Gate profiles missing from evidence: ${missingGateProfiles.join(', ')}`);
+  }
   const pairwise = [];
   for (let i = 0; i < profiles.length; i++) {
     for (let j = i + 1; j < profiles.length; j++) {
@@ -869,12 +983,56 @@ function buildReport(compactedTraces, args, compactedWrites) {
     ? round(Math.max(...policyControlPairs.map((pair) => pair.cosine).filter(Number.isFinite)))
     : null;
 
+  const observedModels = {
+    tutor: observedModelCounts(compactedTraces, 'model', 'modelRef'),
+    analysis: observedModelCounts(compactedTraces, 'analysisModel', 'analysisModelRef'),
+    learner: observedModelCounts(compactedTraces, 'learnerModel', 'learnerModelRef'),
+  };
+  const requiredTraceCount = args.requiredTraces ?? compactedTraces.length;
+  const traceCountPass = args.requiredTraces == null || compactedTraces.length === args.requiredTraces;
+  const profileSetPass = !args.requiredProfiles.length || sameSet(profiles, args.requiredProfiles);
+  const runsPerProfile = Object.fromEntries(
+    [...byProfile.entries()]
+      .map(([profile, traces]) => [profile, traces.length])
+      .sort((a, b) => a[0].localeCompare(b[0])),
+  );
+  const runsPerProfilePass =
+    args.requiredRunsPerProfile == null ||
+    (args.requiredProfiles.length > 0 &&
+      args.requiredProfiles.every((profile) => runsPerProfile[profile] === args.requiredRunsPerProfile));
+  const turnsPass =
+    args.requiredTurns == null || compactedTraces.every((trace) => (trace.turns || []).length === args.requiredTurns);
+  const policySetPass = !args.requiredPolicies.length || sameSet(policies, args.requiredPolicies);
+  const modelChecks = Object.entries(observedModels).map(([role, counts]) =>
+    modelAssembly(role, counts, args.requiredModels[role], requiredTraceCount),
+  );
+  const assemblyRequired = Boolean(
+    args.requiredTraces != null ||
+    args.requiredProfiles.length ||
+    args.requiredRunsPerProfile != null ||
+    args.requiredTurns != null ||
+    args.requiredPolicies.length ||
+    Object.values(args.requiredModels).some(Boolean),
+  );
+  const assemblyPass = Boolean(
+    traceCountPass &&
+    profileSetPass &&
+    runsPerProfilePass &&
+    turnsPass &&
+    policySetPass &&
+    modelChecks.every((check) => check.pass),
+  );
+
   const averagePass = averagePairwiseCosine != null && averagePairwiseCosine <= args.targetAverageCosine;
   const controlPass = maxSimilarityToControl == null ? null : maxSimilarityToControl <= args.targetMaxToControl;
   const pooledPass = Boolean(averagePass && (controlPass === true || controlPass == null));
 
   const conditionedProfileGates = profileSummaries
-    .filter((profile) => profile.profile !== args.controlProfile)
+    .filter(
+      (profile) =>
+        profile.profile !== args.controlProfile &&
+        (!args.gateProfiles.length || args.gateProfiles.includes(profile.profile)),
+    )
     .map((profile) => {
       const contract = learnerProfileContract(profile.profile);
       const observability = contract?.observabilityContract;
@@ -896,6 +1054,12 @@ function buildReport(compactedTraces, args, compactedWrites) {
         profile.signatureAdherence?.passRate != null &&
         profile.signatureAdherence.passRate >= minSignatureTargetPassRate;
       const observabilityPass = profile.observability?.pass === true;
+      const expectedNearestNeighbor = contract.discriminationGate?.expectedNearestNeighbor || null;
+      const nearestNeighbor = nearestMatchedPolicyNeighbor(profile.profile, policyPairwise, pairwise);
+      const nearestNeighborEvaluable = Boolean(expectedNearestNeighbor && profiles.includes(expectedNearestNeighbor));
+      const nearestNeighborPass = expectedNearestNeighbor
+        ? nearestNeighborEvaluable && nearestNeighbor?.profile === expectedNearestNeighbor
+        : null;
       return {
         profile: profile.profile,
         eligiblePolicies,
@@ -907,14 +1071,21 @@ function buildReport(compactedTraces, args, compactedWrites) {
         minSignatureTargetPassRate,
         signaturePass,
         observabilityPass,
-        pass: Boolean(cosinePass && signaturePass && observabilityPass),
+        expectedNearestNeighbor,
+        observedNearestNeighbor: nearestNeighbor?.profile || null,
+        observedNearestNeighborCosine: nearestNeighbor?.cosine ?? null,
+        nearestNeighborEvaluable,
+        nearestNeighborPass,
+        pass: Boolean(cosinePass && signaturePass && observabilityPass && nearestNeighborPass !== false),
       };
     })
     .filter(Boolean);
   const conditionedPass = conditionedProfileGates.length
     ? conditionedProfileGates.every((profile) => profile.pass)
     : null;
-  const primaryPass = conditionedPass == null ? pooledPass : conditionedPass;
+  const conditionedPrimary = conditionedPass == null ? pooledPass : conditionedPass;
+  const behavioralPass = args.requirePooled ? Boolean(pooledPass && conditionedPrimary) : conditionedPrimary;
+  const primaryPass = Boolean(behavioralPass && (!assemblyRequired || assemblyPass));
 
   return {
     schema: 'machinespirits.tutor-stub.profile-discrimination.v3',
@@ -934,16 +1105,15 @@ function buildReport(compactedTraces, args, compactedWrites) {
         'dagMissingMovement',
         'fieldScoreMovement',
       ],
+      gateProfiles: args.gateProfiles,
+      requirePooled: args.requirePooled,
+      assemblyRequired,
     },
     summary: {
       traces: compactedTraces.length,
       profiles: profiles.length,
       turns: compactedTraces.reduce((sum, trace) => sum + (trace.turns || []).length, 0),
-      observedModels: {
-        tutor: observedModelCounts(compactedTraces, 'model', 'modelRef'),
-        analysis: observedModelCounts(compactedTraces, 'analysisModel', 'analysisModelRef'),
-        learner: observedModelCounts(compactedTraces, 'learnerModel', 'learnerModelRef'),
-      },
+      observedModels,
       averagePairwiseCosine,
       maxPairwiseCosine: Number.isFinite(maxPairwiseCosine) ? maxPairwiseCosine : null,
       controlProfile: args.controlProfile,
@@ -952,7 +1122,14 @@ function buildReport(compactedTraces, args, compactedWrites) {
       maxPolicySimilarityToControl,
     },
     gate: {
-      mode: conditionedPass == null ? 'pooled' : 'contract_conditioned',
+      mode:
+        conditionedPass == null
+          ? 'pooled'
+          : args.requirePooled
+            ? 'contract_conditioned_plus_pooled'
+            : 'contract_conditioned',
+      selectedProfiles: args.gateProfiles,
+      requirePooled: args.requirePooled,
       targetAverageCosine: args.targetAverageCosine,
       targetMaxToControl: args.targetMaxToControl,
       averagePass,
@@ -962,6 +1139,25 @@ function buildReport(compactedTraces, args, compactedWrites) {
         averagePass,
         controlPass,
         pass: pooledPass,
+      },
+      assembly: {
+        required: assemblyRequired,
+        pass: assemblyPass,
+        requiredTraces: args.requiredTraces,
+        observedTraces: compactedTraces.length,
+        traceCountPass,
+        requiredProfiles: args.requiredProfiles,
+        observedProfiles: profiles,
+        profileSetPass,
+        requiredRunsPerProfile: args.requiredRunsPerProfile,
+        observedRunsPerProfile: runsPerProfile,
+        runsPerProfilePass,
+        requiredTurns: args.requiredTurns,
+        turnsPass,
+        requiredPolicies: args.requiredPolicies,
+        observedPolicies: policies,
+        policySetPass,
+        models: modelChecks,
       },
       conditioned: {
         pass: conditionedPass,
@@ -1011,6 +1207,11 @@ function formatMarkdown(report) {
   lines.push(`- Matched-policy macro average cosine: ${report.summary.macroAveragePolicyPairwiseCosine ?? 'n/a'}`);
   lines.push(`- Matched-policy max similarity to control: ${report.summary.maxPolicySimilarityToControl ?? 'n/a'}`);
   lines.push(`- Primary gate: ${report.gate.pass ? 'pass' : 'fail'} (${report.gate.mode})`);
+  if (report.gate.assembly.required) {
+    lines.push(
+      `- Assembly gate: ${report.gate.assembly.pass ? 'pass' : 'fail'} (${report.gate.assembly.observedTraces}/${report.gate.assembly.requiredTraces} traces; profile set ${report.gate.assembly.profileSetPass ? 'pass' : 'fail'}; runs/profile ${report.gate.assembly.runsPerProfilePass ? 'pass' : 'fail'}; horizon ${report.gate.assembly.turnsPass ? 'pass' : 'fail'}; policies ${report.gate.assembly.policySetPass ? 'pass' : 'fail'}; model roles ${report.gate.assembly.models.every((model) => model.pass) ? 'pass' : 'fail'})`,
+    );
+  }
   lines.push(
     `- Pooled diagnostic: ${report.gate.pooled.pass ? 'pass' : 'fail'} (average <= ${report.gate.targetAverageCosine}; max-to-control <= ${report.gate.targetMaxToControl})`,
   );
@@ -1033,14 +1234,14 @@ function formatMarkdown(report) {
   lines.push('');
   if (report.gate.conditioned.profiles.length) {
     lines.push(
-      '| Profile | Probe policies | Max cosine to control | Target | Signature pass rate | Failure recurrence | Result |',
+      '| Profile | Probe policies | Max cosine to control | Target | Expected nearest | Observed nearest | Signature pass rate | Failure recurrence | Result |',
     );
-    lines.push('| --- | --- | ---: | ---: | ---: | --- | --- |');
+    lines.push('| --- | --- | ---: | ---: | --- | --- | ---: | --- | --- |');
     for (const profile of report.gate.conditioned.profiles) {
       const summary = report.profiles.find((row) => row.profile === profile.profile);
       const observability = summary?.observability;
       lines.push(
-        `| ${profile.profile} | ${profile.observedPolicies.join(', ') || 'none'} | ${profile.maxProbeSimilarity ?? 'n/a'} | <= ${profile.targetMaxCosine} | ${profile.signatureTargetPassRate ?? 'n/a'} | ${observability ? `${observability.observedRate} (target ${observability.targetRate})` : 'n/a'} | ${profile.pass ? 'pass' : 'fail'} |`,
+        `| ${profile.profile} | ${profile.observedPolicies.join(', ') || 'none'} | ${profile.maxProbeSimilarity ?? 'n/a'} | <= ${profile.targetMaxCosine} | ${profile.expectedNearestNeighbor || 'n/a'} | ${profile.observedNearestNeighbor ? `${profile.observedNearestNeighbor} (${profile.observedNearestNeighborCosine})` : 'n/a'} | ${profile.signatureTargetPassRate ?? 'n/a'} | ${observability ? `${observability.observedRate} (target ${observability.targetRate})` : 'n/a'} | ${profile.pass ? 'pass' : 'fail'} |`,
       );
     }
   } else {

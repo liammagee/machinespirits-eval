@@ -1,0 +1,97 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-profile-discrimination-registration.v1",
+  "status": "frozen_zero_call_protocol",
+  "workplanItem": "resistance-action-register-integration",
+  "frozenAt": "2026-08-18",
+  "claimBoundary": "This pilot can establish only whether the bored and frame_defiant automated learner contracts produce discriminable public behavior in the tutor-stub harness. It cannot establish tutor-action efficacy, register efficacy, human learning, or transfer to the cell harness.",
+  "authorization": {
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "requiredBeforeLiveRun": [
+      "committed registration and executable preflight",
+      "fresh endpoint and model-route verification",
+      "committed GO note",
+      "explicit human approval of the model-call spend"
+    ]
+  },
+  "preservation": {
+    "baselineTag": "experiment/resistance-action-register/pre-integration/freeze-2026-08-18",
+    "baselineCommit": "45985541188bc935a4ef9a4893d9b65451f0fa61",
+    "outcomeStudySupportedProfiles": ["low_agency", "overconfident"],
+    "protectedProfiles": {
+      "low_agency": {
+        "contractSha256": "0e710bd0b2711c4acd086e0ce4f98728d0a9e82a07458a1bb25f942cfab905aa",
+        "promptSha256": "fe2ab5b3a1b07d4c48ad7daf72a2df37c727cee9b6efde638e24b7463d280e2e"
+      },
+      "overconfident": {
+        "contractSha256": "e5ff5c3342331fc24d212f7405e287afa87ca93e6b83a940fa9287d84f62214e",
+        "promptSha256": "639350f5c440b617b67cd6d354e3d583620b9a48a4b16287f01ec8ef6840a1a3"
+      }
+    },
+    "historicalEvidenceMode": "read_only_no_rejudge_no_pool_no_rewrite"
+  },
+  "design": {
+    "profiles": ["diligent", "low_agency", "bored", "skeptical", "low_trust_skeptic", "frame_defiant"],
+    "newProfiles": ["bored", "frame_defiant"],
+    "controlProfile": "diligent",
+    "expectedNearestNeighbors": {
+      "bored": "low_agency",
+      "frame_defiant": "skeptical"
+    },
+    "policies": ["field"],
+    "registerPalette": "safe",
+    "runsPerCell": 3,
+    "expectedDialogues": 18,
+    "world": "world_005_marrick",
+    "turns": "8",
+    "safetyTurns": 8,
+    "dagMode": "strict_dag",
+    "runSeed": 20260818,
+    "models": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna"
+    },
+    "cliEffort": "low",
+    "historyTurns": 4,
+    "maxTokens": 4096,
+    "modelCallBudgetPerDialogue": 48,
+    "maxPlannedModelAttempts": 864,
+    "parallelism": 3,
+    "progressIntervalSeconds": 30,
+    "releaseSpeed": 1,
+    "registerOverlayThreshold": 0.7,
+    "dryRunArtifactRoot": ".test-tmp/resistant-profile-discrimination-v1-dry-2026-08-18"
+  },
+  "gates": {
+    "assembly": {
+      "requiredDialogues": 18,
+      "requiredProfiles": 6,
+      "requiredRunsPerProfile": 3,
+      "observedModelRolesMustMatchPins": true
+    },
+    "pooled": {
+      "averagePairwiseCosineMax": 0.85,
+      "maxSimilarityToDiligent": 0.9
+    },
+    "profiles": {
+      "bored": {
+        "expectedNearestNeighbor": "low_agency",
+        "maxCosineToDiligent": 0.86,
+        "marker": "boredWithholding",
+        "mustShowByTurn": 2,
+        "minimumMarkerRate": 0.45,
+        "minimumSignatureTargetPassRate": 0.4
+      },
+      "frame_defiant": {
+        "expectedNearestNeighbor": "skeptical",
+        "maxCosineToDiligent": 0.84,
+        "marker": "frameJurisdictionDispute",
+        "mustShowByTurn": 2,
+        "minimumMarkerRate": 0.4,
+        "minimumSignatureTargetPassRate": 0.4
+      }
+    },
+    "decisionRule": "Both new-profile contract gates and the pooled gate must pass. A failure for one profile is not rescued by the other profile or by pooled averages. Technical failure is quarantined and rerun only under a new sealed artifact root; a behavioral failure sends that profile back to contract revision."
+  }
+}

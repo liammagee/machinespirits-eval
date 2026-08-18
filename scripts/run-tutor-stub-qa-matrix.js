@@ -68,7 +68,12 @@ const { values: args } = parseArgs({
         process.env.TUTOR_STUB_AUTO_LEARNER_MODEL ||
         'codex.gpt-5.6-luna',
     },
+    'model-call-budget': {
+      type: 'string',
+      default: process.env.TUTOR_STUB_EVAL_MODEL_CALL_BUDGET || '120',
+    },
     world: { type: 'string', default: process.env.TUTOR_STUB_EVAL_WORLD || 'world_005_marrick' },
+    'dag-mode': { type: 'string', default: process.env.TUTOR_STUB_EVAL_DAG_MODE || 'strict_dag' },
     'trace-dir': { type: 'string', default: '' },
     parallelism: { type: 'string', default: process.env.TUTOR_STUB_EVAL_PARALLELISM || '6' },
     'progress-interval': { type: 'string', default: process.env.TUTOR_STUB_EVAL_PROGRESS_INTERVAL || '30' },
@@ -144,6 +149,10 @@ Options:
   --turns <n|until-grounded>
   --safety-turns <n>     runaway guard for until-grounded (default: 120)
   --parallelism <n>      child dialogues per learner-profile auto-eval (default: 6)
+  --model-call-budget <n>
+                         finite model-call cap forwarded to each dialogue (default: 120)
+  --dag-mode <mode>      strict_dag, human_scaffold, or defeasible_human_scaffold
+                         (default: strict_dag)
   --trace-dir <path>     New QA artifact root; live plans are create-once
                          (default: .tutor-stub-auto-eval/qa-matrix-<timestamp>)
   --from-dir <path>      build only consolidated QA reports from existing summaries;
@@ -291,12 +300,16 @@ function autoEvalArgsForProfile({ profile, traceDir, indexRoot, policies, parent
     args['analysis-model'],
     '--auto-learner-model',
     args['auto-learner-model'],
+    '--model-call-budget',
+    String(positiveInt(args['model-call-budget'], '--model-call-budget')),
     '--auto-learner-profile-id',
     profile,
     '--parent-run-id',
     parentRunId,
     '--world',
     args.world,
+    '--dag-mode',
+    args['dag-mode'],
     '--trace-dir',
     traceDir,
     '--index-root',
@@ -414,15 +427,22 @@ function buildPlan({ rootDir = qaRootDir() } = {}) {
     safetyTurns: positiveInt(args['safety-turns'], '--safety-turns'),
     interleavePolicies: Boolean(args['interleave-policies']),
     pressureTurns: args['pressure-turns'] || null,
+    registerPalette: args['register-palette'],
     registerOverlayThreshold: normalizeTutorStubRegisterOverlayThreshold(args['register-overlay-threshold'], {
       label: '--register-overlay-threshold',
     }),
     releaseSpeed: normalizeTutorStubReleaseSpeed(args['release-speed'], { label: '--release-speed' }),
+    cliEffort: args['cli-effort'],
+    maxTokens: positiveInt(args['max-tokens'], '--max-tokens'),
+    historyTurns: positiveInt(args['history-turns'], '--history-turns'),
     parallelism: positiveInt(args.parallelism, '--parallelism'),
+    progressIntervalSeconds: positiveInt(args['progress-interval'], '--progress-interval'),
     model: args.model,
     analysisModel: args['analysis-model'],
     autoLearnerModel: args['auto-learner-model'],
+    modelCallBudget: positiveInt(args['model-call-budget'], '--model-call-budget'),
     world: args.world,
+    dagMode: args['dag-mode'],
     expectedDialogueRows: profiles.length * policies.length * runs,
     warnings: buildPlanWarnings({ policySuite, profileSuite, profiles, policies, runs }),
     outputs: {
@@ -459,12 +479,20 @@ function qaDesign(plan) {
     safetyTurns: plan.safetyTurns,
     interleavePolicies: plan.interleavePolicies,
     pressureTurns: plan.pressureTurns,
+    registerPalette: plan.registerPalette,
+    registerOverlayThreshold: plan.registerOverlayThreshold,
     releaseSpeed: plan.releaseSpeed,
+    cliEffort: plan.cliEffort,
+    maxTokens: plan.maxTokens,
+    historyTurns: plan.historyTurns,
     parallelism: plan.parallelism,
+    progressIntervalSeconds: plan.progressIntervalSeconds,
     model: plan.model,
     analysisModel: plan.analysisModel,
     autoLearnerModel: plan.autoLearnerModel,
+    modelCallBudget: plan.modelCallBudget,
     world: plan.world,
+    dagMode: plan.dagMode,
     warnings: plan.warnings,
   };
 }
@@ -742,6 +770,9 @@ function renderPlanMarkdown(plan) {
     `Expected dialogue rows: ${plan.expectedDialogueRows}`,
     `Primary horizon: learner turn ${plan.primaryHorizon}`,
     `Minimum effect: ${plan.minimumEffect}`,
+    `DAG mode: ${plan.dagMode}`,
+    `Register palette: ${plan.registerPalette}`,
+    `Model-call budget per dialogue: ${plan.modelCallBudget}`,
     `QA gates: ${JSON.stringify(plan.qaThresholds)}`,
     `Dry run: ${plan.dryRun ? 'yes' : 'no'}`,
     '',
