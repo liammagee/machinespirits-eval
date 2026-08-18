@@ -390,3 +390,14 @@ Further reads of this block are not worth buying. Only a fresh
 registration with a working delivery swap can price delivered manner.
 Reader script `scripts/read-edged-register-task-parts.js`; sheet
 `task-parts-readings.jsonl` in the batch directory.
+
+Power check, 2026-08-18, added to draft note §3.10.3. The block cannot
+resolve the effect it saw. Against the observed control rate of 0.712,
+one repeat of 104 against 104 catches a 20-point drop at 80% power and
+both repeats together catch 17 points; the observed drops are 14.5, 7.7
+and 11.1 pooled. Power against the pooled observed drop is 48%. So one
+repeat clearing .05 and the other not is what a half-powered block does,
+not a sign the effect is spurious. The two sharp repeats both sit below
+the warm control (0.567 and 0.635 against 0.712), same direction twice.
+Reading: a small harm, unresolved, no mechanism found. Any follow-up
+must be powered off the real baseline of 0.712, not the registered 0.479.

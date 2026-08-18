@@ -1371,6 +1371,20 @@ is not a separate condition, gives 125/208 = 0.601 against 0.712, p =
 the registration, which was frozen before the data; it is recorded as a
 limit on how far the result travels.
 
+**The block was underpowered, so the split repeats are expected, not
+damning.** Against the observed control rate of 0.712, one repeat of 104
+against 104 can catch a 20-point drop at 80% power, and both repeats
+together (208 against 104) can catch 17 points. The observed drops are
+14.5 points for the first repeat, 7.7 for the second and 11.1 pooled —
+all below what the block can reliably catch. Power against the pooled
+observed drop is 48%. A study with 48% power catches its own effect about
+half the time, so one repeat clearing .05 and the other not is the
+predicted behaviour, not evidence that the effect is spurious. This
+corrects the framing above: the effect showing in one repeat of two is a
+limit on precision, not a sign of fragility. The registration's powering
+basis in §2.18 assumed a baseline of 0.479; the warm control came in at
+0.712, and at that baseline the block cannot resolve drops of this size.
+
 **The rejected reading stays rejected.** §3.10.2 wrote off "the sharp
 learner states a test but withholds the verdict" because counting did not
 support it. The part-level read appeared to revive it and then failed the
