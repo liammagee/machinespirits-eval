@@ -637,6 +637,7 @@
         "tests/tutorStubRequestedEntryCausality.test.js",
         "tests/tutorStubResistantProfileDiscriminationRegistration.test.js",
         "tests/tutorStubResistantProfileLiveReadiness.test.js",
+        "tests/tutorStubResistantProfileRouteCanary.test.js",
         "tests/tutorStubResponseComposition.test.js",
         "tests/tutorStubResponseConfigurationPresentation.test.js",
         "tests/tutorStubResponseContractLeaves.test.js",

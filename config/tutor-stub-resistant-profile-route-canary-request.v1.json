@@ -1,0 +1,74 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-profile-route-canary-request.v1",
+  "status": "HOLD_PENDING_EXPLICIT_APPROVAL",
+  "studyId": "tutor-stub-resistant-profile-discrimination-v1",
+  "preparedAt": "2026-08-19",
+  "route": {
+    "modelRef": "codex.gpt-5.6-luna",
+    "provider": "codex",
+    "model": "gpt-5.6-luna",
+    "roles": ["tutor", "analysis", "learner"],
+    "effort": "low",
+    "timeoutMs": 120000,
+    "maxStdoutBytes": 1048576,
+    "maxStderrBytes": 262144
+  },
+  "scope": {
+    "maximumModelCalls": 1,
+    "retryOrResumeAuthority": "none",
+    "liveStudyAuthorized": false
+  },
+  "payload": {
+    "scope": "Repository-authored constant route-status prompt only.",
+    "humanSubjectData": false,
+    "privateArchiveData": false,
+    "trainingReuseStatus": "not_applicable"
+  },
+  "prompt": {
+    "system": "Return the single requested route-status object.",
+    "user": "Confirm this model route by returning ROUTE_OK.",
+    "outputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "route_status": {
+          "type": "string",
+          "enum": ["ROUTE_OK"]
+        }
+      },
+      "required": ["route_status"]
+    }
+  },
+  "artifactRoot": ".tutor-stub-auto-eval/resistant-profile-discrimination-v1-route-canary-2026-08-19",
+  "sourceClosure": [
+    {
+      "path": "services/tutorStubResistantProfileRouteCanary.js",
+      "sha256": "e08ea4801856490cda184d9aba7df338d4131412150002815086104ef9e39897"
+    },
+    {
+      "path": "scripts/run-tutor-stub-resistant-profile-route-canary.js",
+      "sha256": "9b47db6404e07d10101971828d83a5406382c23cc857d8b91b0589e5186bbdec"
+    },
+    {
+      "path": "services/cliProviderBridge.js",
+      "sha256": "b79813ab95476b6591578817c03de1ccad874263d20b8f2e258ab58d858b063b"
+    },
+    {
+      "path": "services/evalConfigLoader.js",
+      "sha256": "f71a1b4c7155937f31bae57750f0a396348d2dcf751d425ddab89faf03ad28a1"
+    },
+    {
+      "path": "config/providers.yaml",
+      "sha256": "fe0c86fa91f4443fc4d55f6f3d5b39cf7df9fff5c3284096429cb3908335b326"
+    },
+    {
+      "path": "config/tutor-stub-resistant-profile-discrimination-registration.v1.json",
+      "sha256": "e6581e6cbfe9589b825589318c2b5b523b03ef1b8587ec31fec5b87ff69249ac"
+    },
+    {
+      "path": "config/tutor-stub-resistant-profile-discrimination-live-readiness.hold.v1.json",
+      "sha256": "d8a07d3593576b5c1ea9f868d333de386588bc9d4576567a6812c60f56f7c91c"
+    }
+  ],
+  "authorization": null
+}
