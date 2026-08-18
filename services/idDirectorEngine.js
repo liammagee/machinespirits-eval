@@ -26,10 +26,16 @@ import {
   cliAwareProviderConfig,
   isProviderConfigured,
 } from './cliProviderBridge.js';
-import { extractEngagementModeHistory, routeEngagementMode } from './engagementModeRouter.js';
+import {
+  extractEngagementModeHistory,
+  legacyRegisterFor,
+  routeEngagementMode,
+  selectResistanceRegister,
+} from './engagementModeRouter.js';
 import {
   getEngagementRegisterDefinition,
   getRegisterOntologyVersion,
+  getRouterSelectableEngagementRegisterNames,
   resolveEngagementRegister,
 } from './engagementRegisterRegistry.js';
 import {
@@ -267,36 +273,99 @@ export function buildPlanRenderPrompt(idWrittenPrompt, contentPlan, deliveryEnga
 }
 
 /**
+ * Is this turn an edge moment — the turn on which the study put an edged
+ * register on the tutor?
+ *
+ * Two paths reach that same state and only one of them leaves a stamp.
+ *
+ *  - Assigned arm (cells 193-197): the router picks charismatic and
+ *    applyEngagementRegisterArm overrides it, writing
+ *    register_assignment_source: 'experiment_arm'.
+ *  - Widened menu (cells 204, 207, 208): router_register_menu admits ironic
+ *    and sarcastic, so the router picks the edged register itself. No
+ *    override runs, so nothing is stamped.
+ *
+ * The swap and the edge annotation used to read the stamp alone, so on the
+ * widened menu they never fired: the main block of 2026-08-17 swapped 0 of
+ * 390 arm-B turns and marked 0 edge moments anywhere, and cell 208 ran as an
+ * exact twin of cell 207 (draft note §3.10).
+ *
+ * So the test is what was selected, not who selected it. A register the
+ * default router menu does not admit is on this turn only because the study
+ * put it there — by override or by widening. A state that has already been
+ * swapped is excluded by construction: its selection is warm again and its
+ * source names the swap.
+ */
+export function isEdgeMomentState(engagementState) {
+  if (!engagementState) return false;
+  const source = engagementState.register_assignment_source || null;
+  if (source === 'experiment_arm') return true;
+  // Any other stamped source is a state the study has already handled.
+  if (source) return false;
+  const resolution = resolveEngagementRegister(engagementState.selected_register || engagementState.selected_mode);
+  const register = resolution?.register || engagementState.selected_register || engagementState.selected_mode || null;
+  if (!register) return false;
+  return !getRouterSelectableEngagementRegisterNames().includes(register);
+}
+
+/**
+ * The register arm B delivers in place of the edged one.
+ *
+ * On the assigned-arm path the router's own selection is recorded in the
+ * state and is warm by construction (the arm fires only over charismatic), so
+ * it is restored unchanged. On the widened-menu path the router IS what chose
+ * the edge, so its selection cannot serve as the control; the warm
+ * counterfactual is what the same registered signal-to-register order returns
+ * when the menu is not widened, which is charismatic for every resistance
+ * signal.
+ *
+ * Fails closed: anything that does not resolve to a register the default menu
+ * admits becomes charismatic, so arm B can never silently deliver an edged
+ * register.
+ */
+export function resolveYokedWarmRegister(engagementState) {
+  const defaultMenu = getRouterSelectableEngagementRegisterNames();
+  const candidate =
+    engagementState?.register_assignment_source === 'experiment_arm'
+      ? resolveEngagementRegister(engagementState.router_selected_register)?.register ||
+        engagementState.router_selected_register
+      : selectResistanceRegister(engagementState?.resistance_signal, defaultMenu);
+  return defaultMenu.includes(candidate) ? candidate : 'charismatic';
+}
+
+/**
  * Yoked delivery swap (edged-register outcome study, arm B).
  *
- * Takes the arm-assigned engagement state and returns a copy whose delivery
- * register is the router's own selection again. The id-director and the
- * content plan still run under the assigned edged state — the swap touches
- * only what the render pass reads — so arms A and B share their authoring
- * machinery byte for byte and differ in pass-2 manner alone.
+ * Takes the engagement state of an edge moment and returns a copy whose
+ * delivery register is warm. The id-director and the content plan still run
+ * under the edged state — the swap touches only what the render pass reads —
+ * so arms A and B share their authoring machinery byte for byte and differ in
+ * pass-2 manner alone.
  *
- * Fires only when register_assignment_source is 'experiment_arm' (the arm
- * fired this turn); any other state passes through by reference. Fails
- * closed: the selection fields are swapped even when the router register's
- * definition cannot be resolved, so arm B can never silently deliver the
- * edged register.
+ * Fires on both paths to an edged register (see isEdgeMomentState); any other
+ * state passes through by reference.
  */
 export function applyYokedDeliverySwap(engagementState) {
-  if (engagementState?.register_assignment_source !== 'experiment_arm') return engagementState;
-  const routerResolution = resolveEngagementRegister(engagementState.router_selected_register);
-  const routerRegister = routerResolution?.register || engagementState.router_selected_register || 'charismatic';
-  const definition = getEngagementRegisterDefinition(routerRegister);
+  if (!isEdgeMomentState(engagementState)) return engagementState;
+  const warmRegister = resolveYokedWarmRegister(engagementState);
+  const definition = getEngagementRegisterDefinition(warmRegister);
   const replacedRegister = engagementState.selected_register || engagementState.selected_mode || null;
   const baseReason = engagementState.register_reason || engagementState.mode_reason || '';
   const swapReason =
-    `${baseReason} Yoked delivery swap returns delivery to ${routerRegister}; ` +
+    `${baseReason} Yoked delivery swap returns delivery to ${warmRegister}; ` +
     `the assigned ${replacedRegister} arm marks the moment but is not delivered.`;
   return {
     ...engagementState,
-    selected_register: routerRegister,
-    selected_mode: routerRegister,
+    selected_register: warmRegister,
+    selected_mode: warmRegister,
     legacy_selected_register:
-      engagementState.legacy_router_selected_register || routerResolution?.legacy_selected_register || null,
+      engagementState.legacy_router_selected_register ||
+      legacyRegisterFor({
+        register: warmRegister,
+        requestType: engagementState.request_type,
+        actionFamily: engagementState.action_family,
+      }) ||
+      null,
     register_valence: definition?.valence || null,
     router_selectable: definition?.router_selectable === true,
     register_assignment_source: 'yoked_delivery_swap',
@@ -308,10 +377,12 @@ export function applyYokedDeliverySwap(engagementState) {
 }
 
 /**
- * Count engagement_router/route entries already in the trace whose state came
- * from the experiment arm — i.e. prior edge moments in this dialogue. Accepts
- * the same trace-like shapes as extractEngagementRegisterHistory, so the
- * consolidatedTrace the router history already reads is countable here too.
+ * Count engagement_router/route entries already in the trace that were edge
+ * moments — i.e. prior edges in this dialogue. The route entry stores the
+ * ASSIGNED state in both arms, so isEdgeMomentState reads it on either path
+ * and the count is symmetric across A and B. Accepts the same trace-like
+ * shapes as extractEngagementRegisterHistory, so the consolidatedTrace the
+ * router history already reads is countable here too.
  */
 export function countPriorEdgeMoments(traceLike) {
   const entries = Array.isArray(traceLike)
@@ -334,8 +405,11 @@ export function countPriorEdgeMoments(traceLike) {
         detail = null;
       }
     }
-    const source = detail?.register_assignment_source || entry?.engagementState?.register_assignment_source;
-    if (source === 'experiment_arm' || source === 'yoked_delivery_swap') count += 1;
+    const state = detail || entry?.engagementState || null;
+    // A swapped route entry still marks an edge; isEdgeMomentState excludes it
+    // by design (the swap is the thing it must not re-fire on), so it is
+    // counted here on the source alone.
+    if (state?.register_assignment_source === 'yoked_delivery_swap' || isEdgeMomentState(state)) count += 1;
   }
   return count;
 }
@@ -2168,14 +2242,12 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   // the content plan both ran under the assigned state either way, so the two
   // arms differ in pass-2 manner alone.
   let deliveryEngagementState = yokedDeliverySwap ? applyYokedDeliverySwap(engagementState) : engagementState;
-  // Edge moment: the arm fired on this turn. Annotated only under the study
-  // factors so cells already running with register_assignment_source ===
-  // 'experiment_arm' (193-196) keep their stored bytes unchanged. Read off
-  // the ASSIGNED state, which is identical in both arms.
-  if (
-    (twoPassRegisterPayload || yokedDeliverySwap) &&
-    engagementState?.register_assignment_source === 'experiment_arm'
-  ) {
+  // Edge moment: the study put an edged register on this turn, by arm
+  // override or by widened router menu. Annotated only under the study
+  // factors so cells already running on the assigned-arm path (193-197) keep
+  // their stored bytes unchanged. Read off the ASSIGNED state, which is
+  // identical in both arms.
+  if ((twoPassRegisterPayload || yokedDeliverySwap) && isEdgeMomentState(engagementState)) {
     const priorEdgeMoments = countPriorEdgeMoments(consolidatedTrace);
     deliveryEngagementState = {
       ...deliveryEngagementState,

@@ -138,7 +138,12 @@ function canonicalRequestType(signal) {
   return signal || 'off_task_or_mixed';
 }
 
-function legacyRegisterFor({ register, requestType, actionFamily }) {
+/**
+ * The legacy `*_challenge` style label for a register. Exported because the
+ * yoked delivery swap re-labels a state after replacing its register, and a
+ * second copy of this map would be a second thing to keep in step.
+ */
+export function legacyRegisterFor({ register, requestType, actionFamily }) {
   if (register === 'ironic') return 'ironic_challenge';
   if (register === 'sarcastic') return 'sarcastic_challenge';
   if (register === 'face_threat') return 'face_threat_challenge';

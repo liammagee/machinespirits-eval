@@ -294,3 +294,135 @@ describe('yoked delivery swap in generateIdDirectedSuggestion', () => {
     assert.ok(!result.dialogueTrace.some((t) => t.action === 'delivery_swap'));
   });
 });
+
+// ── Shipped-configuration checks ──────────────────────────────────────────
+//
+// Everything above builds its own factors on top of a minimal cell, and every
+// one of those hand-built states carries register_assignment_source:
+// 'experiment_arm'. That is the assigned-arm path. Cells 207 and 208 take the
+// other one — they widen the router's menu instead of overriding its choice —
+// and the whole main block of 2026-08-17 ran with the swap inert because
+// nothing here drove the shipped YAML (draft note §3.10).
+//
+// So these read config/tutor-agents.yaml and nothing else: no factor is
+// injected, no state is hand-built. If a factor is dropped from a cell, or
+// the gate goes back to reading the stamp, they fail.
+
+const ARM_A_CELL = 'cell_207_id_director_edged_register_two_pass_adaptive_edged';
+const ARM_B_CELL = 'cell_208_id_director_edged_register_yoked_warm_delivery';
+
+// "boring" and "worksheet" are boredom patterns and nothing else: no
+// frustration, irrelevance, rote or question-flood lexicon, no transfer,
+// authority, vulnerability, plain or scaffolding pattern, fewer than three
+// question marks. Boredom prefers sarcastic, which the widened menu admits,
+// so the router's own choice is edged and deterministic.
+const BOREDOM_CONTEXT = {
+  learnerContext: 'LEARNER: This is boring. It is just a worksheet.',
+  curriculumContext: '',
+  simulationsContext: '',
+  messageHistory: [],
+};
+
+describe('shipped edged-register outcome-study cells', () => {
+  test('cell 208 as shipped swaps delivery to warm at the edge moment', async () => {
+    const calls = scriptedDeps();
+    const result = await generateIdDirectedSuggestion(
+      BOREDOM_CONTEXT,
+      { profileName: ARM_B_CELL },
+      getTutorProfile(ARM_B_CELL),
+    );
+
+    assert.equal(result.success, true);
+    assert.equal(result.metadata.yokedDeliverySwap, true, 'the shipped cell must carry factors.yoked_delivery_swap');
+
+    // The widened-menu path, stated so a later reading of this test knows
+    // which one it is exercising: the ROUTER picked the edged register and
+    // nothing stamped the state.
+    const st = result.metadata.engagementState;
+    assert.equal(st.selected_register, 'sarcastic');
+    assert.equal(st.router_selected_register, 'sarcastic', 'the router itself chose the edge');
+    assert.equal(st.register_assignment_source, undefined, 'the widened-menu path writes no assignment stamp');
+    assert.equal(st.resistance_signal, 'boredom');
+
+    // The swap fires anyway, and delivers the register the un-widened menu
+    // would have chosen for this same signal.
+    const idc = result.metadata.idConstruction;
+    assert.equal(idc.delivery_swapped, true, 'THE CHECK THAT WAS MISSING: the shipped cell must swap delivery');
+    assert.equal(idc.delivery_register, 'charismatic');
+    assert.equal(idc.replaced_delivery_register, 'sarcastic');
+    assert.equal(idc.register_assignment_source, 'yoked_delivery_swap');
+    assert.equal(idc.edge_moment, true);
+    assert.equal(idc.edge_moment_index, 0);
+    assert.equal(idc.first_edge_moment, true);
+
+    // The id and the plan ran under the edged state; only the render is warm.
+    assert.ok(calls[0].userPrompt.includes('"selected_register": "sarcastic"'), 'the id authors under the edge');
+    assert.ok(!calls[1].systemPrompt.includes(MANNER_HEADER), 'plan pass never sees a manner block');
+    const render = calls[2].systemPrompt;
+    assert.ok(render.includes(`${MANNER_HEADER} (charismatic)`), 'render manner is warm');
+    assert.ok(!render.includes(`${MANNER_HEADER} (sarcastic)`), 'the edged manner is not delivered');
+
+    const swapEntry = result.dialogueTrace.find((t) => t.action === 'delivery_swap');
+    assert.ok(swapEntry, 'the swap is recorded in the trace');
+    assert.equal(JSON.parse(swapEntry.detail).selected_register, 'charismatic');
+  });
+
+  test('cell 207 as shipped marks the edge and delivers it', async () => {
+    const calls = scriptedDeps();
+    const result = await generateIdDirectedSuggestion(
+      BOREDOM_CONTEXT,
+      { profileName: ARM_A_CELL },
+      getTutorProfile(ARM_A_CELL),
+    );
+
+    assert.equal(result.metadata.yokedDeliverySwap, false);
+    assert.ok(calls[2].systemPrompt.includes(`${MANNER_HEADER} (sarcastic)`), 'arm A delivers the edged manner');
+
+    const idc = result.metadata.idConstruction;
+    assert.equal(idc.delivery_swapped, false);
+    assert.equal(idc.delivery_register, 'sarcastic');
+    assert.equal(idc.edge_moment, true, 'the edge is marked on the widened-menu path too');
+    assert.equal(idc.first_edge_moment, true);
+    assert.ok(!result.dialogueTrace.some((t) => t.action === 'delivery_swap'));
+  });
+
+  test('the shipped arms differ in delivered manner and in nothing else', async () => {
+    const armA = scriptedDeps();
+    await generateIdDirectedSuggestion(BOREDOM_CONTEXT, { profileName: ARM_A_CELL }, getTutorProfile(ARM_A_CELL));
+    __resetDeps();
+    const armB = scriptedDeps();
+    await generateIdDirectedSuggestion(BOREDOM_CONTEXT, { profileName: ARM_B_CELL }, getTutorProfile(ARM_B_CELL));
+
+    // Same authoring machinery: the id seat and the register-free plan pass
+    // see identical bytes. This is what makes the pair yoked.
+    assert.equal(armA[0].systemPrompt, armB[0].systemPrompt);
+    assert.equal(armA[0].userPrompt, armB[0].userPrompt);
+    assert.equal(armA[1].systemPrompt, armB[1].systemPrompt);
+
+    // And they are not twins: the render pass differs, which is the whole
+    // contrast. Cell 208 ran as an exact copy of 207 for 390 turns because
+    // nothing asserted this.
+    assert.notEqual(armA[2].systemPrompt, armB[2].systemPrompt, 'arm B must not deliver arm A byte for byte');
+    assert.ok(armA[2].systemPrompt.includes(`${MANNER_HEADER} (sarcastic)`));
+    assert.ok(armB[2].systemPrompt.includes(`${MANNER_HEADER} (charismatic)`));
+  });
+
+  test('cell 208 leaves a non-edge turn alone', async () => {
+    scriptedDeps();
+    const result = await generateIdDirectedSuggestion(
+      NEUTRAL_CONTEXT,
+      { profileName: ARM_B_CELL },
+      getTutorProfile(ARM_B_CELL),
+    );
+
+    const st = result.metadata.engagementState;
+    assert.ok(
+      !['ironic', 'sarcastic'].includes(st.selected_register),
+      `a neutral message must not route to an edged register (got ${st.selected_register})`,
+    );
+    const idc = result.metadata.idConstruction;
+    assert.equal(idc.delivery_swapped, false);
+    assert.equal(idc.edge_moment, false);
+    assert.equal(idc.delivery_register, st.selected_register, 'delivery follows the router untouched');
+  });
+});
