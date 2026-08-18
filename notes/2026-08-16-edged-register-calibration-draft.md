@@ -1476,6 +1476,28 @@ learner still finishes 0.537 of them against 0.738. So a lighter ask is
 not the whole account; with a matched ask the twin's learner still
 finishes less.
 
+**What the twin's shortfall is made of.** Split its parts by kind and
+adjust for the mix. If the twin finished each kind of demand at the warm
+control's rate for that kind, its own mix of demands would give 0.754 —
+above the warm control's own 0.738. So the mix explains nothing; the whole
+gap sits inside the kinds. Per kind, twin against warm: making the case
+3/15 = 0.200 against 7/10 = 0.700 (p = 0.034); naming the feature 19/24 =
+0.792 against 25/26 = 0.962 (p = 0.093); stating the verdict 11/21 = 0.524
+against 13/25 = 0.520 (p = 1.000). Both sharp versions agree on the first
+two — making the case 0.467 and 0.200 against 0.700, naming the feature
+0.750 and 0.792 against 0.962 — and disagree on the third, which is the
+measure §3.10.3 already threw out. Pooled over both sharp versions in this
+scenario: making the case 10/30 = 0.333 against 0.700, p = 0.066; naming
+the feature 46/60 = 0.767 against 0.962, p = 0.032.
+
+Reading: after a sharp reply the learner still says where it stands, but
+supplies less of the backing — the case for the position and the feature
+that would settle it. Hold this loosely. Five kinds were tested in one
+scenario of four, and making the case rests on 15, 15 and 10 parts. The
+reader also saw the tutor's sharp text inside the window, so it may be
+marking down a case that follows a sarcastic prompt rather than a weaker
+case. Nothing here separates those two.
+
 **Standing.** Post-hoc and scenario-level; the registration pools. One
 scenario of four, 51 sharp rows against 26 warm. The parts-finished
 contrast at p = 0.19 does not rule out a small learner-side loss as well.

@@ -431,3 +431,15 @@ delivered register does not explain it — sarcastic fires in the bored
 scenario and in rote parroting alike, and rote is flat. The demand count
 is not the whole account either: the sharp twin sets 2.68 parts against
 warm 2.50 and its learner still finishes 0.537 against 0.738.
+
+Handed off, 2026-08-18. The surviving lead — the sharp learner supplies
+less backing, making the case 0.333 against 0.700 and naming the deciding
+feature 0.767 against 0.962, while stating its position at the same rate —
+rests on a reader that could see the tutor's sharp text in the window. The
+mix of demands does not explain it: adjusted to the warm control's own
+per-kind rates, the sharp twin's mix would give 0.754 against warm's own
+0.738, so the whole gap sits inside the kinds. This design cannot separate
+"the learner argued less" from "the reader marked the argument down". New
+card `edged-register-stub-dag-replication` re-asks the question in the
+tutor-stub harness, where completion is checked against the proof-DAG.
+Do not buy a third read of batch-main-2.
