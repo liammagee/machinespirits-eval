@@ -1,20 +1,21 @@
 ---
 id: adaptive-warrant-contract-redesign
 title: "Adaptive warrant gate: expected-uptake and policy-termination contracts"
-status: active
+status: done
 type: research
 priority: P1
 owner: codex
 source: manual
 created: 2026-08-10
-updated: 2026-08-10
-verification: Each action family exposes a typed expected learner response,
-  deadline, success, defeat, and expiry/exit transition; successful repair exits
-  and unresolved evidence requests have live/offline parity tests; a newly
-  generated zero-overlap two-reader corpus passes a predeclared decision-quality
-  gate before any downstream scale-up; and the next comparison controls
-  model-draw variance through frozen-prefix replay or explicit replicated draws.
-claim_status: planned
+updated: 2026-08-18
+verification: >-
+  Typed lifecycle contracts were implemented for all 13 action
+  families and exercised with live/offline checks; the fresh two-reader gate
+  failed its predeclared decision-quality thresholds, the downstream comparison
+  stopped, and the missing public-obligation and inquiry semantics transferred
+  to the separately completed scope-bound successor without a policy-validity
+  claim for this card.
+claim_status: scope-bound
 links:
   notes:
     - docs/adaptation-refinement/remaining-next-steps.md
@@ -22,6 +23,8 @@ links:
     - docs/adaptation-refinement/baseline-comparison-design.md
   items:
     - adaptive-warrant-baseline-study
+    - adaptive-warrant-public-obligation-ledger-and-inquiry-termin
+    - resistance-action-register-integration
 tags:
   - tutor-stub
   - adaptation
@@ -53,6 +56,9 @@ stochastic movement cannot be mistaken for an intervention effect.
   downstream comparison was stopped. A post-freeze offline turn-1 priming bug
   was fixed and regression-tested without altering the frozen score.
 - 2026-08-10 — Error audit moved the next architectural work to the successor
-  public-obligation-ledger/inquiry-termination card. This item stays active
-  because its verification required a passing fresh gate; the implementation
-  exists, but the policy is not decision-valid.
+  public-obligation-ledger/inquiry-termination card. The implementation exists,
+  but the policy is not decision-valid under this failed gate.
+- 2026-08-18 — Board reconciliation closes this card as a negative,
+  scope-bound result rather than leaving a failed passage criterion permanently
+  active. No passing-gate or downstream-effect claim is added; future
+  composition work belongs to `resistance-action-register-integration`.

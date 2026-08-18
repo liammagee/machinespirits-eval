@@ -22,6 +22,7 @@ links:
     - notes/2026-08-16-edged-register-calibration-draft.md
   items:
     - edged-register-outcome-study
+    - resistance-action-register-integration
     - tutor-stub-headroom-contrast
     - refactor-tutor-stub-register-palette
     - tutor-stub-fallback-register-and-uptake-guard
