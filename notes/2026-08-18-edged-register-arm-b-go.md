@@ -74,43 +74,39 @@ The A-versus-C primary is already read and is not re-run and not
 re-scored. Arm B is read by the same reader, at the same window, on the
 same conversion rule, with the same yes-only primary.
 
-## The launch blocker — read this before anything else
+## The route ruling — read this before anything else
 
-**The runner cannot plan a single-arm block.** `EDGED_REGISTER_MAIN_BLOCK`
-in `services/edgedRegisterCalibration.js` fixes three arms, and
-`validateMainPlan` fails unless the arm letters spell exactly `ABC` over
-three distinct profiles. There is no arm selector among the runner's
-flags — its own usage line, copied below, shows every mode it has.
+Two routes were priced. **The operator ruled route 2 on 2026-08-18.**
+This note licenses route 2 and nothing else.
 
-So there are two routes, and the operator must pick one.
+**Route 1 — arm B alone, 104 rows.** When this note was first drafted the
+runner could not plan one arm, and route 1 was blocked by code that did
+not exist. That is no longer true: commit `666c4edf` added `--arms`, and
+`--arms B` plans a 104-row single-arm block today. The full block still
+hashes to the same plan SHA, and a subset hashes to its own, so the two
+cannot be confused. See §3.11.1 of the draft note.
 
-**Route 1 — arm B alone, 104 rows.** Needs a registered change to the
-runner: an arm filter that keeps the plan SHA meaningful while planning
-one arm. That change is **unbuilt**. It moves the runner blob, which is
-pinned in §3.5, so it needs its own disclosure and its own tests before
-any launch. Cost after it lands: ~104 rows, about 2h51m at 4 lanes by the
-last block's own measured pace.
+So route 1 is now buildable, and it is still not the choice.
 
-**Route 2 — re-run the whole main block, 312 rows.** Needs no code
-change at all. The shipped `--main-block` mode plans it today, on the
-same plan SHA. Cost: 312 rows, about 8h32m at 4 lanes — the last block's
-measured time, for the identical plan.
-
-Route 2 also removes a limit that Route 1 cannot. Under Route 1 the arms
-are not concurrent: arm A ran on 2026-08-17 and arm B would run later, so
+**Route 2 — the whole main block, 312 rows.** Under route 1 the arms are
+not concurrent: arm A ran on 2026-08-17 and arm B would run later, so
 randomisation between them is lost and only the pinned stack stands in
 for it. Any drift in the generation model between the two dates is a
-rival explanation. Route 2 draws all three arms in one interleaved block,
-so A, B and C are randomised against each other again.
+rival explanation for any gap found. Route 2 draws A, B and C in one
+interleaved block, so the three arms are randomised against each other
+again. The runner's own subset plan says the same thing in its own words:
+arms dropped are not randomised against arms kept.
 
-**Recommendation: Route 2.** It costs three times the rows and buys a
-clean contrast with no unbuilt tooling in front of it. Route 1 is cheaper
-but pays for it twice — once in code that does not exist, once in a
-confound that cannot be removed afterwards.
+That confound is the whole argument. It does not weaken now that the
+tooling exists — the tooling was the cheaper of the two costs, and it is
+the one that has been paid.
 
-Everything below is written for Route 2. If the operator picks Route 1,
-this note is not the licence for it; that route needs the runner change
-first, and then its own note.
+**Ruled: route 2.** 312 rows, about 8h32m at 4 lanes — the last block's
+measured time, for the identical plan. Cost: three times the rows of
+route 1, for a contrast that needs no stack-drift caveat.
+
+Everything below is written for route 2. Route 1 is not licensed by this
+note and would need its own.
 
 ## Powering, recomputed against the observed rates
 
@@ -158,8 +154,8 @@ claim about manner.
 |---|---|---|---|
 | Endpoint reader blob | `cd44d452` | `cd44d452` | unchanged |
 | Corridor selector blob | `5455c766` | `5455c766` | unchanged |
-| Runner blob | `429db35f` | `429db35f` | unchanged since the last block |
-| Grid blob (`edgedRegisterCalibration.js`) | `2d099edc` | `2d099edc` | unchanged |
+| Runner blob | `429db35f` | `bdba47dc` | **changed — the arm filter** |
+| Grid blob (`edgedRegisterCalibration.js`) | `2d099edc` | `8549de70` | **changed — the arm filter** |
 | Harm reader blob | `823a131c` | `823a131c` | unchanged |
 | Harm sweep blob | `d990a3be` | `d990a3be` | unchanged |
 | Calibration plan sha256 | `121b55d1…` | `121b55d1…` | unchanged |
@@ -191,15 +187,20 @@ block that ran without a working arm B). Fresh batch id for this block:
 
 ## Budget cap and priced calls
 
-Copied from the runner's own `--dry-run-main` output, run today at
-`fe13bbb6`:
+Copied from the runner's own `--dry-run-main` output, re-run at
+`a4858de6` after the arm filter landed:
 
 > [edged-main] plan SHA-256 31b7d77bfe7832a3e8b8f729753128432760ed5d7dbf151ac85c5519d52ed607
 > [edged-main] scenario source SHA-256 e1fc711a1cf16917614e85aaf6d2fd7d27a51a3be53baeb3d650e3899f29a4fe
-> [edged-main] exact-test size: 104 rows per arm (26 per cell), 312 rows over 3 arms, power 0.803487 at baseline 0.479167 vs 0.679167
+> [edged-main] exact-test size: 104 rows per arm (26 per cell), 312 rows over 3 arms (ABC), power 0.803487 at baseline 0.479167 vs 0.679167
 > [edged-main] 312 main jobs, hard cap 350 rows
 > [edged-main] harm guardrail: report_all_matches_pause_on_reader_confirmed_attack, 1 reader call per match, ceiling 700 calls
+> [edged-main] exports/edged-register-calibration/plan-main-block.json
 > [edged-main] paid main block locked; a committed GO note plus clean-commit launch is required
+
+The line now names the arms it planned — `(ABC)`. The plan SHA is
+unchanged by the arm filter, which is the point of that flag: this is the
+same registered block as before, byte for byte.
 
 The power figure in that line is the runner's frozen sizing, computed on
 §3.2's 0.479 baseline. **It is stale.** The live power is the 0.54 in the
@@ -249,7 +250,11 @@ The runner's full usage line, copied from `--help`:
 
 ```
 Usage: node scripts/run-edged-register-calibration.js --dry-run | --dry-run-main | --status --batch-dir <dir> | --decide-screen --batch-dir <dir> | --report --batch-dir <dir> | --resume-decision <resume_unchanged|kill_cell:<scenario>|kill_study> --batch-dir <dir> | (--screen|--confirm|--main-block) --batch-dir <dir> --go-note <note> --launch-approved --expected-sha <commit>
+       (--dry-run-main|--main-block) [--arms A|B|C or a comma list; default all three]
 ```
+
+The second line is new since the last note. **`--arms` is not used
+here.** Route 2 is the full block, which is what the flag defaults to.
 
 The arm-B generation command the runner will issue, copied from
 `exports/edged-register-calibration/plan-main-block.json` (the absolute
@@ -337,15 +342,16 @@ about the reader, not a silent correction.
 Any change to cells 193–208 in `config/tutor-agents.yaml`. Any change to
 the endpoint reader, the conversion rule frozen at `b761bbbe`, the
 corridor rule in §2.4, or the eligibility screen in §2.5 M-C1. Any
-re-scoring of the 312 rows already read. Route 1, and the runner change
-it needs. Any call beyond the bounds priced above.
+re-scoring of the 312 rows already read. Route 1 — the `--arms` flag now
+exists, and this note still does not license a subset block. Any call
+beyond the bounds priced above.
 
 ## How to turn this note into a licence
 
 The runner enforces every step. Nothing here is a courtesy.
 
-1. Rule on Route 1 against Route 2. If Route 1, stop — this note does not
-   cover it.
+1. Check the route. This note is route 2, the full 312-row block, as
+   ruled on 2026-08-18. Do not pass `--arms`; a subset is not covered.
 2. Delete the banner on line 1 of this file. The gate rejects the note
    while it is there, and the phrase appears exactly once.
 3. Add a signature block at the end: the word that licenses the launch,
