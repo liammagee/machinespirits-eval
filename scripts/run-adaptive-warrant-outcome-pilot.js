@@ -171,9 +171,7 @@ export function validateOutcomePilotGoNote(goNotePath, { shape = OUTCOME_DEFAULT
   }
   assertReviewerGoNoteContent(text, { label: 'go note', refusal: 'outcome pilot refuses' });
   if (!callCountPattern(shape.planned_calls.total).test(text)) {
-    throw new Error(
-      `outcome ${shape.name} refuses: go note lacks the ${shape.planned_calls.total}-call scope`,
-    );
+    throw new Error(`outcome ${shape.name} refuses: go note lacks the ${shape.planned_calls.total}-call scope`);
   }
   if (!text.includes(String(shape.seeds[0])) || !text.includes(String(shape.seeds[shape.seeds.length - 1]))) {
     throw new Error(
