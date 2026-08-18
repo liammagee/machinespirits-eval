@@ -1,23 +1,26 @@
 ---
 id: edged-register-outcome-study
 title: Edged-register outcome study on a de-saturated baseline
-status: active
+status: done
 type: experiment
 priority: P2
 owner: claude
 source: manual
 created: 2026-08-15
 updated: 2026-08-18
-verification: A powered main block (or a registered no-corridor kill verdict)
-  answers whether router-selected ironic/sarcastic delivery beats the warm
-  router on post-resistance conversion, on persona-scenario cells where the
-  warm baseline converts at 30-70%. Each paid stage runs only after its own
-  committed GO note plus explicit human approval.
-claim_status: future
+verification: >-
+  The registered 312-row block, two planned reads, same-treatment
+  control, power check, scenario split, and merged closeout report establish the
+  scope-bound result: an edged-inclusive menu did not improve conversion, the
+  delivery-only secondary was invalid because its swap never fired, and the
+  unresolved bored-learner lead transfers to the proof-DAG replication card.
+claim_status: scope-bound
 depends_on:
   - adaptive-register-switching
   - paid-study-endpoint-runtime-preflight
 links:
+  prs:
+    - 656
   notes:
     - notes/2026-08-15-edged-register-outcome-study-design.md
     - notes/2026-08-16-edged-register-calibration-draft.md
@@ -26,6 +29,9 @@ links:
     - services/adaptiveRegisterSwitchingStage2.js
     - scripts/run-adaptive-register-switching-stage2.js
     - services/tutorStubEdgeTimingPolicy.js
+  items:
+    - edged-register-stub-dag-replication
+    - resistance-action-register-integration
 tags:
   - registers
   - adaptive
@@ -448,3 +454,9 @@ per-kind rates, the sharp twin's mix would give 0.754 against warm's own
 card `edged-register-stub-dag-replication` re-asks the question in the
 tutor-stub harness, where completion is checked against the proof-DAG.
 Do not buy a third read of batch-main-2.
+
+2026-08-18 — Board closeout after PR #656 merged. The registered primary
+remains as reported, while the same-treatment repeat and 48% achieved power
+prevent a delivered-manner claim. The card closes scope-bound; the proof-DAG
+replication and the parent resistance/action/register programme own any new
+empirical work.
