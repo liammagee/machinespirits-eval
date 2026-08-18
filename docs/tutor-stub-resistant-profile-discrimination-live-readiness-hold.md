@@ -1,7 +1,7 @@
 # Resistant Learner Profile Discrimination — Live Readiness HOLD
 
 **Prepared:** 19 August 2026.
-**Status:** **HOLD. No route canary, model call, or live run is authorized.**
+**Status:** **HOLD. The one-call route canary passed; no live study is authorized.**
 **Workplan item:** `resistance-action-register-integration`.
 
 The machine-readable authority for this note is
@@ -16,9 +16,10 @@ It validates the frozen registration and protected-profile hashes, sends a
 full-scale 18-dialogue synthetic corpus through the production discrimination
 analyzer, verifies all three registered endpoints, reconstructs the proposed
 live and analysis commands, and confirms that the fresh destination does not
-exist. It reports zero model calls and zero production writes.
+exist. The checker itself makes zero model calls and zero production writes;
+it separately validates the one recorded route-canary call below.
 
-The bounded route-canary request is now prepared at
+The bounded route-canary request is at
 `config/tutor-stub-resistant-profile-route-canary-request.v1.json`. Its default
 command is also zero-call and zero-write:
 
@@ -30,7 +31,24 @@ The request pins the final HOLD bytes, route executable, shared CLI bridge,
 model resolver, provider configuration, and frozen registration. It covers the
 single `codex.gpt-5.6-luna` CLI route shared by the tutor, analysis, and learner
 roles, with low effort, structured output, a hard ceiling of one call, and no
-retry or resume authority. It does not include an authorization artifact.
+retry or resume authority. The separately committed authorization was consumed
+by exactly one call. Its approved bytes are preserved only inside
+`config/tutor-stub-resistant-profile-route-canary-authorization.consumed.v1.json`;
+the executable authorization path is absent at HEAD, so a fresh clone cannot
+reuse it. The consumed record has SHA-256
+`1ec23bf81df7678050e5383fbda9ab913979b9b93b24fb1944b59002c6eeefb2`
+and does not authorize the study.
+
+The committed result is
+`config/tutor-stub-resistant-profile-route-canary-result.v1.json`; it pins the
+ignored execution artifact at SHA-256
+`a2989dfb48438b7153928244a20ef42f698122b6edb3062fdfecca41ca1ac55f`.
+The promoted config record itself has SHA-256
+`c68ee936441504fdb514f97537aaf87915c734b43da82f7d81136c40c6918623`.
+It records a passing `codex` / `gpt-5.6-luna` route at low effort, structured
+output, zero prohibited tool events, and Codex CLI `0.147.0`. Its attestation
+basis is explicitly limited: the CLI model argument was accepted and echoed by
+the bridge; server-side model identity was not independently attested.
 
 ## What is ready
 
@@ -61,22 +79,16 @@ cannot authorize spend.
 
 ## What still blocks launch
 
-1. Merge this packet, then select the exact clean `origin/main` commit from
-   which the study would run. The preparation base
+1. Select the exact clean `origin/main` commit from which the study would run.
+   The preparation base
    `8de5787f95995c12d657f07dcaedaca66205efe7` is recorded for provenance but is
    not a launch SHA.
-2. With explicit approval for exactly one Luna model call, create and commit a
-   request-digest-bound authorization, then run the prepared route canary with
-   `--execute --authorization <path> --accept-one-model-call`. The result will
-   record the provider/model identity echoed after the explicit CLI model
-   argument. This is route evidence, not independent server-side attestation.
-   No prior canary or authorization carries forward.
-3. Write and commit a study-specific GO note binding the registration digest,
+2. Write and commit a study-specific GO note binding the registration digest,
    endpoint contract and preflight digests, route artifact, exact launch SHA,
    artifact destination, payload scope, and 864-attempt ceiling.
-4. Obtain explicit human approval for that exact GO note and spend.
+3. Obtain explicit human approval for that exact GO note and spend.
 
-Until all four steps are satisfied, do not run the `proposedCommands.live`
+Until all three steps are satisfied, do not run the `proposedCommands.live`
 array in the machine packet. A technical failure after authorization stops the
 run; it does not license a resume or retry. Any retry needs review and a new
 sealed artifact root. The existing `low_agency` and `overconfident` results
