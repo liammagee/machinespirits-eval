@@ -7,12 +7,6 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
-import {
-  hashPaidStudyEndpointValue,
-  validatePaidStudyEndpointGoCertificate,
-} from '../services/paidStudyEndpointPreflight.js';
-import { runTutorStubFrameRefuserOpportunityEndpointPreflight } from '../services/tutorStubResistanceAxisDiscriminationPreflight.js';
-
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_REQUEST = path.join(
   ROOT,
@@ -56,6 +50,22 @@ function sha256File(filePath) {
 
 function sha256Json(value) {
   return sha256(JSON.stringify(value));
+}
+
+function canonicalJson(value) {
+  if (Array.isArray(value)) return value.map(canonicalJson);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map((key) => [key, canonicalJson(value[key])]),
+    );
+  }
+  return value;
+}
+
+function sha256CanonicalJson(value) {
+  return sha256(JSON.stringify(canonicalJson(value)));
 }
 
 function assertion(checks, name, condition, detail) {
@@ -190,24 +200,28 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   if (isFrameRefuserOpportunity) {
     const contract = readJson(rootPath(endpoint.contractPath));
     const certificate = readJson(rootPath(endpoint.certificatePath));
-    const preflight = runTutorStubFrameRefuserOpportunityEndpointPreflight(contract);
-    const endpointGo = validatePaidStudyEndpointGoCertificate({ certificate, contract, preflight });
     assertion(
       checks,
       'opportunity-endpoint-contract-binding',
       sha256File(rootPath(endpoint.contractPath)) === endpoint.contractFileSha256 &&
-        hashPaidStudyEndpointValue(contract) === endpoint.contractCanonicalSha256,
+        sha256CanonicalJson(contract) === endpoint.contractCanonicalSha256 &&
+        contract.study_id === request.studyId &&
+        contract.registered_scale?.cases === 6 &&
+        contract.registration?.registration_path === request.bindings.registration.path &&
+        contract.registration?.registration_sha256 === request.bindings.registration.sha256,
       'the six-case executable endpoint contract remains file- and runtime-bound',
     );
     assertion(
       checks,
       'opportunity-endpoint-certificate-binding',
       sha256File(rootPath(endpoint.certificatePath)) === endpoint.certificateFileSha256 &&
-        preflight.preflight_sha256 === endpoint.preflightSha256 &&
-        preflight.model_calls === 0 &&
-        preflight.production_writes === 0 &&
-        endpointGo.ok === true,
-      'the six-case endpoint certificate and zero-call preflight remain pinned',
+        certificate.schema === 'machinespirits.paid-study-endpoint-go.v1' &&
+        certificate.status === 'endpoint_runtime_go' &&
+        certificate.study_id === contract.study_id &&
+        certificate.contract_path === endpoint.contractPath &&
+        certificate.contract_sha256 === endpoint.contractCanonicalSha256 &&
+        certificate.preflight_sha256 === endpoint.preflightSha256,
+      'the six-case endpoint certificate and previously executed zero-call preflight remain pinned',
     );
   } else {
     validateFileBinding(checks, 'readiness-hold-binding', request.bindings.liveReadinessHold);

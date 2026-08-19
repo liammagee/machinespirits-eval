@@ -94,7 +94,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/frame-refuser-opportunity-study-go
+branch: codex/frame-refuser-go-validator-deps
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -521,3 +521,15 @@ and explicit human approval.
   request remains local and unapproved until this validator is merged, because
   its launch-source closure must pin a commit that actually contains the
   validator branch. No model call or production write was made.
+- 2026-08-19 — The first metadata-only GO-request PR was closed after the
+  focused authorization lane exposed a clean-checkout dependency defect: the
+  validator imported the full endpoint-preflight runtime and therefore
+  required the uninstalled `yaml` package before it could inspect any request.
+  Removed that top-level runtime dependency and now validate the already-
+  certified endpoint through its raw and canonical contract digests,
+  registration binding, study/scale identity, endpoint-GO certificate, and
+  preflight digest. The existing seven-test authorization contract passes in a
+  worktree with no `node_modules`, so the focused lane remains fast and
+  dependency-free. The executable preflight itself remains separately tested
+  and certified; no skip, workflow change, canary, model call, or production
+  write was introduced.
