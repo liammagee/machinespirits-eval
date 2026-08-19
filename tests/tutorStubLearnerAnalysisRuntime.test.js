@@ -101,9 +101,12 @@ test('learner-analysis fallback discards an uncommitted warrant reduction before
   assert.equal(state.warrantGate, null);
 
   const source = fs.readFileSync(path.join(ROOT, 'services/tutorStubLearnerAnalysisRuntime.js'), 'utf8');
-  const catchStart = source.indexOf('} catch (err) {');
-  const reset = source.indexOf('resetTutorStubWarrantGateAfterLearnerAnalysisFailure(state);', catchStart);
-  const fallbackSelection = source.indexOf('normalizeResponseConfigurationSelection(null', catchStart);
+  const reset = source.indexOf('resetTutorStubWarrantGateAfterLearnerAnalysisFailure(state);');
+  const catchStart = source.lastIndexOf('} catch (err) {', reset);
+  const fallbackSelection = source.indexOf(
+    'normalizeTutorStubResponseConfigurationWithActionBeforeRegisterShadow(',
+    catchStart,
+  );
   assert.ok(catchStart >= 0 && reset > catchStart && fallbackSelection > reset);
   assert.match(source, /learner_analysis_unanalyzed/u);
   assert.match(source, /STRICT_BENCHMARK/u);

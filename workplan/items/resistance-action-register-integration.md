@@ -46,6 +46,7 @@ links:
     - services/pedagogicalMove/shadow.js
     - services/adaptiveTutor/pedagogicalMoveProjection.js
     - services/tutorStubPedagogicalMoveProjection.js
+    - services/tutorStubActionBeforeRegisterShadow.js
     - services/resistantLearnerObservation.js
     - scripts/analyze-tutor-stub-profile-discrimination.js
     - services/resistantLearnerAxisObservation.js
@@ -83,7 +84,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistance-axis-heldout-result
+branch: codex/action-before-register-shadow
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -436,3 +437,16 @@ and explicit human approval.
   cells; the earlier v4 negative remains unchanged. Phase 2's instrument gate
   is complete, and the next phase is the shadow action-before-register runtime
   integration under the frozen conservation protocol.
+- 2026-08-19 — Implemented the Phase 3 action-before-register boundary as a
+  live, non-authoritative shadow tracer. Each analyzed learner turn now records
+  public resistance axes, a warrant, and a typed `PedagogicalMove` candidate
+  before the unchanged response-configuration normalizer chooses a register;
+  it then records later legacy action overrides, register compatibility, and
+  audit-observed public realization. Effort withholding provisionally maps to
+  one adjacent discriminating question and frame-jurisdiction dispute to one
+  bounded distinction test. Sarcasm and irony remain opt-in design hypotheses,
+  respectively, and fail compatibility under comprehension repair, protected
+  affect, uptake, missing opt-in, or a mismatched move. The legacy action/
+  register path remains authoritative, public output is unchanged, consumer
+  switching and outcome claims remain unauthorized, and no model call was
+  made.

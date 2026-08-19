@@ -86,7 +86,7 @@ test('the neutral contract imports no host and admits no realization field', () 
   assert.throws(() => validatePedagogicalMove({ ...move, character: 'satirist' }), /downstream realization field/u);
 });
 
-test('Phase 1 has no live caller for either host projection', () => {
+test('the live shadow tracer is the only tutor-stub projection caller and the adaptive projection remains offline', () => {
   const roots = ['services', 'scripts', 'routes'];
   const projectionImport =
     /from\s+['"][^'"]*(?:adaptiveTutor\/pedagogicalMoveProjection|tutorStubPedagogicalMoveProjection)\.js['"]/u;
@@ -106,7 +106,7 @@ test('Phase 1 has no live caller for either host projection', () => {
     }
   };
   roots.forEach((root) => visit(path.join(ROOT, root)));
-  assert.deepEqual(callers, []);
+  assert.deepEqual(callers, ['services/tutorStubActionBeforeRegisterShadow.js']);
 });
 
 test('the adaptive action map is exact, typed, and does not promote a family label', () => {
