@@ -59,6 +59,9 @@ links:
     - config/tutor-stub-resistance-axis-heldout-study-go-request.v1.json
     - config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.json
     - config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.endpoint-go.json
+    - config/tutor-stub-frame-refuser-opportunity-registration.v1.json
+    - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.json
+    - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.endpoint-go.json
     - services/pedagogicalMove/resistantProfileWarrantShadow.js
     - scripts/tutor-stub-learner-profile-contracts.js
     - scripts/prepare-tutor-stub-resistant-profile-discrimination.js
@@ -91,7 +94,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/frame-refuser-opportunity-gate
+branch: codex/frame-refuser-opportunity-study-auth
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -495,3 +498,17 @@ and explicit human approval.
   jurisdictional refusal without evidence-bearing uptake. The uncommitted live
   executor remains isolated and unpublished; no model call or study launch was
   made.
+- 2026-08-19 — Froze the replacement six-dialogue opportunity gate under HOLD:
+  three prospective `frame_refuser` targets and three new `frame_defiant`
+  nearest-neighbour controls, all at eight turns under the unchanged Marrick,
+  field-policy, strict-DAG, and Luna pins. The executable zero-call endpoint
+  preflight sends realistic trace JSONL through the public observer and the
+  production prefix extractor. It requires refusal by turn 2, excludes
+  protected or content-bearing trigger states, requires three distinct target
+  prefix hashes, and requires productive content-bearing frame disputes with
+  zero refusal leakage in controls. The old five-axis instrument is unchanged;
+  this gate tests treatment opportunity only, not tutor or register efficacy.
+  Endpoint-runtime compatibility is certified with zero model calls and zero
+  production writes. A clean post-merge source, create-once destination,
+  digest-bound GO request, and explicit approval of the 288-attempt ceiling
+  remain required before any live execution.

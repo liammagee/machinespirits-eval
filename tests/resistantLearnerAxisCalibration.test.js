@@ -12,9 +12,13 @@ import {
   observeResistantLearnerAxes,
 } from '../services/resistantLearnerAxisObservation.js';
 import {
+  assembleTutorStubFrameRefuserOpportunityPreflight,
   assembleTutorStubResistanceAxisPreflight,
+  buildTutorStubFrameRefuserOpportunityPreflightPackets,
+  buildTutorStubFrameRefuserOpportunitySyntheticCorpus,
   buildTutorStubResistanceAxisPreflightPackets,
   buildTutorStubResistanceAxisSyntheticCorpus,
+  runTutorStubFrameRefuserOpportunityEndpointPreflight,
   runTutorStubResistanceAxisEndpointPreflight,
 } from '../services/tutorStubResistanceAxisDiscriminationPreflight.js';
 import { validatePaidStudyEndpointGoCertificate } from '../services/paidStudyEndpointPreflight.js';
@@ -244,4 +248,50 @@ test('registered held-out verdict fails a primary recurrence without making the 
   assert.equal(assembled.endpoint_status.bored_effort_investment_gate, 'complete');
   assert.equal(assembled.report.pass, false);
   assert.equal(assembled.report.gate.coPrimary.find((row) => row.profile === 'bored').pass, false);
+});
+
+test('frame-refuser opportunity endpoint requires three eligible prefixes and keeps productive defiance separate', () => {
+  const contract = JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.json'), 'utf8'),
+  );
+  const certificate = JSON.parse(
+    fs.readFileSync(
+      path.join(ROOT, 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.endpoint-go.json'),
+      'utf8',
+    ),
+  );
+  const preflight = runTutorStubFrameRefuserOpportunityEndpointPreflight(contract);
+  const endpointGo = validatePaidStudyEndpointGoCertificate({ certificate, contract, preflight });
+  assert.equal(preflight.status, 'passed');
+  assert.equal(preflight.model_calls, 0);
+  assert.equal(preflight.production_writes, 0);
+  assert.equal(endpointGo.ok, true, endpointGo.errors.join('; '));
+
+  const cases = buildTutorStubFrameRefuserOpportunitySyntheticCorpus();
+  const assembled = assembleTutorStubFrameRefuserOpportunityPreflight({
+    packets: buildTutorStubFrameRefuserOpportunityPreflightPackets(cases),
+    contract,
+  });
+  assert.equal(assembled.report.pass, true);
+  assert.equal(assembled.report.gate.target.every((row) => row.pass), true);
+  assert.equal(assembled.report.gate.control.every((row) => row.pass), true);
+  assert.equal(assembled.report.gate.distinctPrefixes.observed, 3);
+  assert.equal(assembled.report.gate.tutorEfficacyTested, false);
+  assert.equal(assembled.report.gate.registerEfficacyTested, false);
+
+  const firstTarget = cases.find((row) => row.profile === 'frame_refuser');
+  firstTarget.traceEvents.find((event) => event.type === 'turn_complete').turnRecord.classification.turn = {
+    request_type: 'authority_refusal_or_status_challenge',
+    discourse_move: 'hypothesis',
+    evidence_use: 'links_evidence_to_rule',
+    epistemic_stance: 'resistant',
+    agency: 'steering',
+  };
+  const failed = assembleTutorStubFrameRefuserOpportunityPreflight({
+    packets: buildTutorStubFrameRefuserOpportunityPreflightPackets(cases),
+    contract,
+  });
+  assert.equal(failed.report.pass, false);
+  assert.equal(failed.report.gate.target.find((row) => row.caseId === firstTarget.case_id).pass, false);
+  assert.equal(failed.endpoint_status.frame_refuser_treatment_opportunity, 'complete');
 });
