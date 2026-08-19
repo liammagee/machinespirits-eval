@@ -1,7 +1,7 @@
 ---
 id: shorten-full-ci-critical-path
 title: Shorten the full-CI critical path
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -71,3 +71,18 @@ Log:
   the clean hosted full matrix remains the merge gate.
 - 2026-08-19 — Implementation committed and opened as draft PR #695; moved to
   review pending the hosted full-CI and browser-surface result.
+- 2026-08-19 — PR #695 passed every required hosted check and merged to `main`
+  as `e3f25548157c5894d67691378701585d33dd6a29`. On the PR run, blobless
+  classifier checkout took 7s versus 14s on the PR #690 comparison run, and the
+  complete classifier job took 12s versus 19s. The merge-triggered CI run
+  `32292268722` passed in 3m49s overall; validation `32292268729`, browser
+  surface `32292268666`, workplan `32292268719`, and commit-link `32292268667`
+  also passed. The post-merge classifier checkout varied to 13s, so the measured
+  gain is real but runner/network-sensitive rather than a guaranteed wall-time
+  reduction.
+- 2026-08-19 — Post-merge root steps remained 2m04s–2m27s and all four standard
+  Node shards passed. Because the matched three-way benchmark saved only 6.05s
+  while increasing aggregate root runner time and adding checkout/install/queue
+  overhead, no further shard expansion or rebalance is justified by the current
+  evidence. Card closed; additional CI tuning requires a fresh repeated profile,
+  not continuation of this branch.
