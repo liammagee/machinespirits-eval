@@ -24,11 +24,6 @@ export const RESISTANT_LEARNER_AXIS_DEFINITIONS = Object.freeze([
     marker: 'frameJurisdictionDispute',
     observedState: 'jurisdiction_disputed',
   }),
-  Object.freeze({
-    axis: 'frame_participation',
-    marker: 'frameJurisdictionRefusal',
-    observedState: 'local_test_refused_without_uptake',
-  }),
 ]);
 
 const TUTOR_CHOICE_DEFERENCE_PATTERNS = Object.freeze([
@@ -83,8 +78,6 @@ export function observeResistantLearnerAxes({ learnerText = '', classification =
     registered.observations.find((row) => row.type === 'bored_effort_withholding')?.evidence_span || null;
   const registeredFrameEvidence =
     registered.observations.find((row) => row.type === 'frame_jurisdiction_dispute')?.evidence_span || null;
-  const frameRefusalEvidence =
-    registered.observations.find((row) => row.type === 'frame_jurisdiction_refusal')?.evidence_span || null;
   const tutorChoiceEvidence = firstEvidence(text, TUTOR_CHOICE_DEFERENCE_PATTERNS);
   const warrantChallengeEvidence = /\?/u.test(text) ? firstEvidence(text, EVIDENTIAL_WARRANT_CHALLENGE_PATTERNS) : null;
   const authorityDistrustEvidence = firstEvidence(text, AUTHORITY_EPISTEMIC_DISTRUST_PATTERNS);
@@ -96,9 +89,6 @@ export function observeResistantLearnerAxes({ learnerText = '', classification =
     evidential_orientation: warrantChallengeEvidence ? axis('warrant_challenged', warrantChallengeEvidence) : axis(),
     epistemic_trust: authorityDistrustEvidence ? axis('authority_distrusted', authorityDistrustEvidence) : axis(),
     frame_legitimacy: frameEvidence ? axis('jurisdiction_disputed', frameEvidence) : axis(),
-    frame_participation: frameRefusalEvidence
-      ? axis('local_test_refused_without_uptake', frameRefusalEvidence)
-      : axis(),
   };
 
   return {
@@ -117,6 +107,5 @@ export function resistantLearnerAxisMarkers(input = {}) {
     evidentialWarrantChallenge: result.axes.evidential_orientation.state === 'warrant_challenged',
     authorityEpistemicDistrust: result.axes.epistemic_trust.state === 'authority_distrusted',
     frameJurisdictionDispute: result.axes.frame_legitimacy.state === 'jurisdiction_disputed',
-    frameJurisdictionRefusal: result.axes.frame_participation.state === 'local_test_refused_without_uptake',
   };
 }

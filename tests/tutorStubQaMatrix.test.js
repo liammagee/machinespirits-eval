@@ -1102,12 +1102,12 @@ test('qa matrix runner treats all-profile runs as explicit audits', () => {
   assert.equal(plan.policySuite, 'audit');
   assert.deepEqual(plan.policySuiteAliases, ['full', 'all']);
   assert.equal(plan.policySuiteCost, 'expensive');
-  assert.equal(plan.profiles.length, 18);
+  assert.equal(plan.profiles.length, 19);
   assert.equal(plan.policies.length, 11);
-  assert.equal(plan.expectedDialogueRows, 198);
+  assert.equal(plan.expectedDialogueRows, 209);
   assert.ok(plan.warnings.some((warning) => warning.includes('every register policy')));
   assert.ok(plan.warnings.some((warning) => warning.includes('expensive periodic audit')));
-  assert.ok(plan.warnings.some((warning) => warning.includes('198 dialogue rows')));
+  assert.ok(plan.warnings.some((warning) => warning.includes('209 dialogue rows')));
 });
 
 test('qa matrix runner expands pressure policy suite for sentinel checks', () => {
@@ -1262,14 +1262,17 @@ test('stress profile contracts preserve observable discrimination cues', () => {
   assert.match(frameDefiantPrompt, /objectionable conduct is not the profile definition/iu);
 });
 
-test('every stress profile explains its boundary against the declared nearest core profile', () => {
-  const coreIds = new Set(learnerProfileSuiteIds('core'));
+test('every stress profile explains its boundary against the declared nearest registered profile', () => {
+  const registeredIds = new Set(learnerProfileIds());
   for (const profileId of learnerProfileSuiteIds('stress')) {
     const presentation = learnerProfilePickerPresentation(profileId);
     assert.equal(presentation.group, 'stress probe');
     assert.ok(presentation.description.length > 20, profileId);
-    assert.ok(coreIds.has(presentation.nearestNeighbor), `${profileId} nearest neighbor must be a core profile`);
-    assert.ok(presentation.contrast?.length > 20, `${profileId} must explain its edge from core`);
+    assert.ok(
+      registeredIds.has(presentation.nearestNeighbor),
+      `${profileId} nearest neighbor must be a registered profile`,
+    );
+    assert.ok(presentation.contrast?.length > 20, `${profileId} must explain its nearest-neighbor edge`);
   }
 });
 

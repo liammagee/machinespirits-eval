@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { detectTutorStubEdgeTimingSignal } from './tutorStubEdgeTimingPolicy.js';
+import { createResistantProfileMoveShadow } from './pedagogicalMove/resistantProfileWarrantShadow.js';
 import { beginTutorStubActionBeforeRegisterShadow } from './tutorStubActionBeforeRegisterShadow.js';
 import { tutorStubFirstDraftContractPrompt } from './tutorStubFirstDraftContract.js';
 import { extractTutorStubFrozenTurn, refreshTutorStubFrozenFirstDraftRequest } from './tutorStubFrozenReplay.js';
@@ -338,14 +339,16 @@ function triggerFromTurnRecord(record, profile) {
   const learnerText = record?.learner || '';
   const classification = record?.classification || null;
   const shadow = observeResistanceAxis({ learnerText, classification });
-  const timing = detectTutorStubEdgeTimingSignal({ learnerText, classification, tutorLearnerDag: null });
-  const matchesRegisteredCohort =
+  const profileShadow =
     profile === 'frame_refuser'
-      ? shadow.observation?.axes?.frame_participation?.state === 'local_test_refused_without_uptake'
-      : shadow.resistance_kind === profile;
+      ? createResistantProfileMoveShadow({ profileId: profile, learnerText, classification })
+      : null;
+  const timing = detectTutorStubEdgeTimingSignal({ learnerText, classification, tutorLearnerDag: null });
+  const matchesRegisteredCohort = profileShadow?.warrant?.status === 'licensed' || shadow.resistance_kind === profile;
+  const cohortWarrant = profileShadow?.warrant || shadow.warrant;
   return {
     eligible:
-      shadow.warrant.status === 'licensed' &&
+      cohortWarrant.status === 'licensed' &&
       matchesRegisteredCohort &&
       timing.comprehensionRepair !== true &&
       timing.protectedAffect !== true &&
@@ -353,6 +356,7 @@ function triggerFromTurnRecord(record, profile) {
     learnerText,
     classification,
     shadow,
+    cohortObservation: profileShadow?.observation || shadow.observation,
     timing,
   };
 }
@@ -406,7 +410,7 @@ export function extractTutorStubResistanceActionRegisterPrefix({
     trigger_turn_id: trigger.turnId,
     trigger_learner_text: trigger.learnerText,
     trigger_classification: clone(trigger.classification),
-    trigger_observation: clone(trigger.shadow.observation),
+    trigger_observation: clone(trigger.cohortObservation),
     source_trace: path.resolve(tracePath),
     source_trace_sha256: sha256(source),
     prefix_trace_sha256: sha256(prefixSource),
