@@ -31,10 +31,11 @@ tags:
 ---
 
 Small research-authority and workplan changes are paying nearly the same CI and
-agent-process cost as runtime changes. Preserve literal approval boundaries such
-as `no retry or resume authority`, but stop turning a one-dialogue replacement
-into new schemas, validators, broad local suites, repeated canaries, or multiple
-PRs unless diagnosis establishes a real code defect.
+agent-process cost as runtime changes. Historical artifacts retain their literal
+scope, but future runs now have standing bounded technical retry/resume authority.
+Stop turning a failed dialogue into new schemas, validators, broad local suites,
+repeated canaries, approvals, or multiple PRs unless diagnosis establishes a real
+code defect or recovery would exceed the original authorization.
 
 Acceptance:
 
@@ -46,8 +47,10 @@ Acceptance:
   each cost as integrity-critical, compatibility-critical, or optional ceremony.
 - Define the shortest defensible replacement path when no code defect exists:
   preserve the failed attempt, pin the same source/profile/seed/configuration and
-  one-dialogue budget, use a fresh destination, reuse the existing authorization
-  mechanism, run narrow checks, obtain explicit approval, execute once, and stop.
+  original budget, use a fresh non-overwriting destination, reuse the existing
+  authorization and recovery mechanism, run narrow checks, and resume only the
+  missing/failed unit. Do not require another approval or PR within the standing
+  authority; stop on repeated failure or any source/model/scope/budget change.
 - Add no governance schema, bespoke validator, npm alias, or extra PR unless a
   repeated failure class demonstrates that the existing mechanism is inadequate.
 - Prototype fail-closed CI classification so workplan/docs/authorization-metadata
@@ -89,6 +92,13 @@ Benchmark log:
   This sum is not elapsed human time because some runs overlap, and PR timestamps
   do not include pre-PR diagnosis or authoring, but it is a useful lower-bound
   process-cost baseline.
+- 2026-08-18 — Traced `no retry or resume authority` to the agent-prepared GO
+  request in commit `95aa5fb851` / PR #665; it was not a standing `AGENTS.md`
+  rule. The user now grants bounded technical retry/resume authority for future
+  runs inside the original source/model/study/configuration/data/budget envelope.
+  Historical sealed requests remain unchanged, but future technical recovery
+  should use existing machinery and narrow checks without a fresh approval or
+  authorization-only PR.
 
 Initial optimization hypotheses:
 
@@ -98,7 +108,8 @@ Initial optimization hypotheses:
    smaller Node 20 compatibility lane unless runtime-sensitive paths change.
 3. Skip Electron binary download in every non-packaged job if focused tests
    prove the binary is unnecessary there.
-4. Keep transient one-dialogue replacement authority to one existing artifact,
-   one narrow validation set, one approval sentence, and normally one PR.
+4. Exercise standing bounded technical recovery through the existing artifact
+   and narrow validation set, without another approval sentence or PR when the
+   original authorization envelope is unchanged.
 5. Rewrite repo agent instructions around proportional verification and explicit
    stopping conditions, while leaving paid-call authority literal and strict.
