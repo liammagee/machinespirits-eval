@@ -841,8 +841,14 @@ test('CI shards both supported Node versions, caches npm downloads, and avoids u
   assert.match(workflow, /^concurrency:\n {2}group: .*github\.workflow.*github\.ref/mu);
   assert.match(workflow, /^ {2}test-contract:\n {4}name: Hermetic test contract$/mu);
   assert.match(workflow, /^ {8}run: npm run test:manifest$/mu);
-  assert.match(workflow, /^ {2}test:\n {4}needs: test-contract$/mu);
-  assert.match(workflow, /^ {2}pty-concurrency:\n {4}name: PTY \/ loopback concurrency\n {4}needs: test-contract$/mu);
+  assert.match(workflow, /^ {2}test:\n {4}needs: \[classify, test-contract\]$/mu);
+  assert.match(
+    workflow,
+    /^ {2}pty-concurrency:\n {4}name: PTY \/ loopback concurrency\n {4}needs: \[classify, test-contract\]$/mu,
+  );
+  assert.equal(workflow.match(/needs\.classify\.outputs\.full_required == 'true'/gu)?.length, 4);
+  assert.match(workflow, /^ {2}ELECTRON_SKIP_BINARY_DOWNLOAD: "1"$/mu);
+  assert.match(workflow, /^ {2}focused:\n {4}name: Focused authored-metadata checks$/mu);
   assert.match(workflow, /^ {6}fail-fast: false$/mu);
   assert.match(workflow, /^ {8}node-version: \[20, 22\]\n {8}shard: \[1, 2\]$/mu);
   assert.match(workflow, /npm run test:root -- --shard=\$\{\{ matrix\.shard \}\}\/2 --quiet/u);
