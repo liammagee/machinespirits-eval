@@ -144,8 +144,7 @@ function frameOpportunityClassification(contentBearing) {
 }
 
 function frameOpportunityEvents(profile, run) {
-  const learner =
-    profile === 'frame_refuser' ? FRAME_REFUSALS[run - 1] : PRODUCTIVE_FRAME_DISPUTES[run - 1];
+  const learner = profile === 'frame_refuser' ? FRAME_REFUSALS[run - 1] : PRODUCTIVE_FRAME_DISPUTES[run - 1];
   const firstClassification = frameOpportunityClassification(profile === 'frame_defiant');
   const events = [
     {
@@ -230,18 +229,16 @@ export function assembleTutorStubFrameRefuserOpportunityPreflight({ packets, con
       fs.writeFileSync(tracePath, `${row.traceEvents.map((event) => JSON.stringify(event)).join('\n')}\n`);
       return readTutorStubResistanceAxisTrace(tracePath);
     });
-    const report = buildFrameRefuserOpportunityReport(
-      traces,
-      analyzerArgs(contract),
-      registrationBinding(contract),
-    );
+    const report = buildFrameRefuserOpportunityReport(traces, analyzerArgs(contract), registrationBinding(contract));
     return {
       case_ids: cases.map((row) => row.case_id),
       endpoint_status: {
-        frame_refuser_treatment_opportunity:
-          report.gate.target.every((row) => typeof row.pass === 'boolean') ? 'complete' : 'incomplete',
-        frame_defiant_productive_control:
-          report.gate.control.every((row) => typeof row.pass === 'boolean') ? 'complete' : 'incomplete',
+        frame_refuser_treatment_opportunity: report.gate.target.every((row) => typeof row.pass === 'boolean')
+          ? 'complete'
+          : 'incomplete',
+        frame_defiant_productive_control: report.gate.control.every((row) => typeof row.pass === 'boolean')
+          ? 'complete'
+          : 'incomplete',
         distinct_public_prefix_assembly:
           typeof report.gate.distinctPrefixes.pass === 'boolean' ? 'complete' : 'incomplete',
       },

@@ -273,8 +273,14 @@ test('frame-refuser opportunity endpoint requires three eligible prefixes and ke
     contract,
   });
   assert.equal(assembled.report.pass, true);
-  assert.equal(assembled.report.gate.target.every((row) => row.pass), true);
-  assert.equal(assembled.report.gate.control.every((row) => row.pass), true);
+  assert.equal(
+    assembled.report.gate.target.every((row) => row.pass),
+    true,
+  );
+  assert.equal(
+    assembled.report.gate.control.every((row) => row.pass),
+    true,
+  );
   assert.equal(assembled.report.gate.distinctPrefixes.observed, 3);
   assert.equal(assembled.report.gate.tutorEfficacyTested, false);
   assert.equal(assembled.report.gate.registerEfficacyTested, false);

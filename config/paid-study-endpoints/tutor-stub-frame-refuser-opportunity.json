@@ -88,11 +88,7 @@
       "id": "frame_defiant_productive_control",
       "role": "primary",
       "enabled": true,
-      "required_channels": [
-        "opportunity_analyzer",
-        "public_resistance_observer",
-        "opportunity_registration"
-      ],
+      "required_channels": ["opportunity_analyzer", "public_resistance_observer", "opportunity_registration"],
       "required_event_fields": [
         "arm",
         "case_id",
@@ -113,11 +109,7 @@
       "id": "distinct_public_prefix_assembly",
       "role": "primary",
       "enabled": true,
-      "required_channels": [
-        "opportunity_analyzer",
-        "production_prefix_extractor",
-        "opportunity_registration"
-      ],
+      "required_channels": ["opportunity_analyzer", "production_prefix_extractor", "opportunity_registration"],
       "required_event_fields": [
         "arm",
         "case_id",
