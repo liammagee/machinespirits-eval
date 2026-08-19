@@ -61,9 +61,40 @@ function rootPath(relativePath) {
   return path.join(ROOT, relativePath);
 }
 
+function bindingPath(binding) {
+  return path.isAbsolute(binding.path) ? binding.path : rootPath(binding.path);
+}
+
 function validateFileBinding(checks, name, binding) {
-  const observed = sha256File(rootPath(binding.path));
+  const observed = sha256File(bindingPath(binding));
   assertion(checks, name, observed === binding.sha256, `${binding.path} remains ${binding.sha256}`);
+}
+
+function validateMachineLocalFileBinding(checks, name, binding) {
+  const filePath = bindingPath(binding);
+  if (!fs.existsSync(filePath)) {
+    checks.push({
+      name,
+      pass: false,
+      detail: `${binding.path} is unavailable on this machine`,
+    });
+    return false;
+  }
+  validateFileBinding(checks, name, binding);
+  return true;
+}
+
+function commandArg(command, flag) {
+  const index = command.indexOf(flag);
+  return index === -1 ? null : command[index + 1];
+}
+
+function commandArgs(command, flag) {
+  const values = [];
+  for (let index = 0; index < command.length; index += 1) {
+    if (command[index] === flag) values.push(command[index + 1]);
+  }
+  return values;
 }
 
 function sourceCommitAudit(source) {
@@ -202,28 +233,154 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     'the one consumed Luna route call remains exactly bound and is not independently attested',
   );
 
+  const isReplacement = request.replacement?.type === 'fresh_profile_cohort_replacement';
+  const commandSource = request.bindings.commands.source;
+  const liveCommand = commandSource === 'commands' ? request.commands?.live : hold.proposedCommands.live;
+  const analyzeCommand = commandSource === 'commands' ? request.commands?.analyze : hold.proposedCommands.analyze;
+  assertion(
+    checks,
+    'command-source',
+    (commandSource === 'commands' && isReplacement) ||
+      commandSource === 'bindings.liveReadinessHold.path#proposedCommands',
+    `command source is ${commandSource}`,
+  );
   assertion(
     checks,
     'live-command-binding',
-    sha256Json(hold.proposedCommands.live) === request.bindings.commands.liveArraySha256,
+    Array.isArray(liveCommand) && sha256Json(liveCommand) === request.bindings.commands.liveArraySha256,
     `live command array remains ${request.bindings.commands.liveArraySha256}`,
   );
   assertion(
     checks,
     'analysis-command-binding',
-    sha256Json(hold.proposedCommands.analyze) === request.bindings.commands.analyzeArraySha256,
+    Array.isArray(analyzeCommand) && sha256Json(analyzeCommand) === request.bindings.commands.analyzeArraySha256,
     `analysis command array remains ${request.bindings.commands.analyzeArraySha256}`,
   );
-  assertion(
-    checks,
-    'design-binding',
-    request.design.dialogues === hold.budget.dialogues &&
-      request.design.parallelism === hold.budget.parallelism &&
-      request.budget.maximumAttemptsPerDialogue === hold.budget.maximumAttemptsPerDialogue &&
-      request.budget.maximumPlannedModelAttempts === hold.budget.maximumPlannedModelAttempts &&
-      request.budget.retryOrResumeAuthority === 'none',
-    '18 dialogues, parallelism 3, and the 864-attempt no-retry ceiling remain frozen',
-  );
+
+  let priorArtifactsAvailable = true;
+  if (isReplacement) {
+    const retained = request.replacement.retainedPriorTraces;
+    const excluded = request.replacement.excludedPriorTraces;
+    const retainedProfiles = [...new Set(retained.map((entry) => entry.profile))].sort();
+    const retainedRunsByProfile = Object.fromEntries(
+      retainedProfiles.map((profile) => [
+        profile,
+        retained
+          .filter((entry) => entry.profile === profile)
+          .map((entry) => entry.run)
+          .sort((left, right) => left - right)
+          .join(','),
+      ]),
+    );
+    assertion(
+      checks,
+      'replacement-design-binding',
+      request.design.profiles.join(',') === 'frame_defiant' &&
+        request.design.dialogues === 3 &&
+        request.design.runsPerProfile === 3 &&
+        request.design.parallelism === 3 &&
+        request.budget.dialogues === 3 &&
+        request.budget.maximumAttemptsPerDialogue === 48 &&
+        request.budget.maximumPlannedModelAttempts === 144 &&
+        request.budget.retryOrResumeAuthority === 'none',
+      'three fresh frame_defiant dialogues and the 144-attempt no-retry ceiling remain frozen',
+    );
+    assertion(
+      checks,
+      'replacement-trace-partition',
+      retained.length === 15 &&
+        excluded.length === 3 &&
+        request.replacement.retainedTraceCount === 15 &&
+        request.replacement.excludedTraceCount === 3 &&
+        request.replacement.freshTraceCount === 3 &&
+        request.replacement.finalAnalysisTraceCount === 18 &&
+        retainedProfiles.join(',') === 'bored,diligent,low_agency,low_trust_skeptic,skeptical' &&
+        Object.values(retainedRunsByProfile).every((runs) => runs === '1,2,3') &&
+        excluded.every((entry) => entry.profile === 'frame_defiant') &&
+        excluded
+          .map((entry) => entry.run)
+          .sort((left, right) => left - right)
+          .join(',') === '1,2,3' &&
+        request.replacement.priorFrameDefiantTracesReused === false &&
+        request.replacement.priorDialoguesResumed === false,
+      '15 unaffected traces are retained and all three prior frame_defiant traces are excluded',
+    );
+    validateFileBinding(checks, 'prior-request-binding', {
+      path: request.replacement.priorRequestPath,
+      sha256: request.replacement.priorRequestSha256,
+    });
+    for (const [name, binding] of [
+      ['prior-run-plan-binding', request.replacement.priorRunPlan],
+      ['prior-qa-plan-binding', request.replacement.priorQaPlan],
+      ...retained.map((entry) => [`retained-trace-${entry.profile}-r${entry.run}`, entry]),
+      ...excluded.map((entry) => [`excluded-trace-${entry.profile}-r${entry.run}`, entry]),
+    ]) {
+      priorArtifactsAvailable = validateMachineLocalFileBinding(checks, name, binding) && priorArtifactsAvailable;
+    }
+    assertion(
+      checks,
+      'replacement-live-command-shape',
+      liveCommand[0] === 'node' &&
+        liveCommand[1] === 'scripts/run-tutor-stub-qa-matrix.js' &&
+        commandArg(liveCommand, '--profiles') === 'frame_defiant' &&
+        commandArg(liveCommand, '--policies') === 'field' &&
+        commandArg(liveCommand, '--runs') === '3' &&
+        commandArg(liveCommand, '--run-seed') === '20260818' &&
+        commandArg(liveCommand, '--turns') === '8' &&
+        commandArg(liveCommand, '--safety-turns') === '8' &&
+        commandArg(liveCommand, '--model-call-budget') === '48' &&
+        commandArg(liveCommand, '--model') === request.design.models.tutor &&
+        commandArg(liveCommand, '--analysis-model') === request.design.models.analysis &&
+        commandArg(liveCommand, '--auto-learner-model') === request.design.models.learner &&
+        commandArg(liveCommand, '--world') === request.design.world &&
+        commandArg(liveCommand, '--dag-mode') === 'strict_dag' &&
+        commandArg(liveCommand, '--register-palette') === 'safe' &&
+        commandArg(liveCommand, '--register-overlay-threshold') === '0.7' &&
+        commandArg(liveCommand, '--release-speed') === '1' &&
+        commandArg(liveCommand, '--cli-effort') === request.design.cliEffort &&
+        commandArg(liveCommand, '--history-turns') === '4' &&
+        commandArg(liveCommand, '--max-tokens') === '4096' &&
+        commandArg(liveCommand, '--parallelism') === '3' &&
+        commandArg(liveCommand, '--trace-dir') === request.destination.artifactRoot &&
+        liveCommand.includes('--no-html-report') &&
+        liveCommand.includes('--no-memory-summary') &&
+        liveCommand.includes('--no-analyze') &&
+        !liveCommand.includes('--keep-going'),
+      'the fresh three-dialogue command preserves the frozen runtime configuration',
+    );
+    const retainedTracePaths = retained.map((entry) => entry.path);
+    const analysisTracePaths = commandArgs(analyzeCommand, '--trace');
+    assertion(
+      checks,
+      'replacement-analysis-command-shape',
+      analyzeCommand[0] === 'node' &&
+        analyzeCommand[1] === 'scripts/analyze-tutor-stub-profile-discrimination.js' &&
+        JSON.stringify(analysisTracePaths) === JSON.stringify(retainedTracePaths) &&
+        excluded.every((entry) => !analysisTracePaths.includes(entry.path)) &&
+        commandArg(analyzeCommand, '--trace-root') === request.destination.artifactRoot &&
+        commandArg(analyzeCommand, '--required-traces') === '18' &&
+        commandArg(analyzeCommand, '--required-profiles') === request.design.analysisProfiles.join(',') &&
+        commandArg(analyzeCommand, '--required-runs-per-profile') === '3' &&
+        commandArg(analyzeCommand, '--required-turns') === '8' &&
+        commandArg(analyzeCommand, '--required-policies') === 'field' &&
+        commandArg(analyzeCommand, '--required-tutor-model') === request.design.models.tutor &&
+        commandArg(analyzeCommand, '--required-analysis-model') === request.design.models.analysis &&
+        commandArg(analyzeCommand, '--required-learner-model') === request.design.models.learner &&
+        analyzeCommand.includes('--require-pooled'),
+      'the analysis combines only the 15 pinned prior traces with the fresh sealed root',
+    );
+  } else {
+    assertion(
+      checks,
+      'design-binding',
+      request.design.dialogues === hold.budget.dialogues &&
+        request.design.parallelism === hold.budget.parallelism &&
+        request.budget.maximumAttemptsPerDialogue === hold.budget.maximumAttemptsPerDialogue &&
+        request.budget.maximumPlannedModelAttempts === hold.budget.maximumPlannedModelAttempts &&
+        request.budget.retryOrResumeAuthority === 'none',
+      '18 dialogues, parallelism 3, and the 864-attempt no-retry ceiling remain frozen',
+    );
+  }
   assertion(
     checks,
     'payload-boundary',
@@ -243,8 +400,9 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
 
   const requestSha256 = sha256File(requestPath);
   const exactApprovalStatement =
-    `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one 18-dialogue Luna study, ` +
-    'with a hard ceiling of 864 model attempts and no retry or resume authority.';
+    `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one ` +
+    `${request.design.dialogues}-dialogue Luna ${isReplacement ? 'replacement study' : 'study'}, ` +
+    `with a hard ceiling of ${request.budget.maximumPlannedModelAttempts} model attempts and no retry or resume authority.`;
 
   return {
     schema: 'machinespirits.tutor-stub.resistant-profile-discrimination-study-go-request-report.v1',
@@ -255,7 +413,8 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     launchTree: request.source.launchTree,
     sourceCommitObjectAvailable: sourceAudit.available,
     packetValid: true,
-    readyForExplicitHumanApproval: true,
+    readyForExplicitHumanApproval: !isReplacement || priorArtifactsAvailable,
+    priorArtifactsAvailable,
     explicitHumanApproval: false,
     modelCallsAuthorized: false,
     liveRunAuthorized: false,

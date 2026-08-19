@@ -54,6 +54,7 @@ links:
     - config/tutor-stub-resistant-profile-route-canary-authorization.consumed.v1.json
     - config/tutor-stub-resistant-profile-route-canary-result.v1.json
     - config/tutor-stub-resistant-profile-discrimination-study-go-request.v1.json
+    - config/tutor-stub-frame-defiant-replacement-study-go-request.v1.json
     - scripts/check-tutor-stub-resistant-profile-study-go-request.js
     - services/tutorStubAutomatedLearnerGenerationRuntime.js
     - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json
@@ -65,7 +66,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistant-profile-study-reauthorization
+branch: codex/frame-defiant-replacement-study-request
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -235,3 +236,23 @@ and explicit human approval.
   is on HOLD pending a new digest-bound human approval; it adds the repaired
   runtime file to the source closure and retains the 864-attempt/no-resume
   ceiling without repeating the passing route canary.
+- 2026-08-19 — The approved replacement execution completed 17 of 18 planned
+  dialogues and stopped at the frozen boundary when `frame_defiant` run 1
+  exhausted its 48-call ceiling. The failure was not a network or provider
+  error: the deterministic observation matcher rejected semantically valid
+  jurisdictional objections, causing 13 unnecessary repair requests in the
+  failed dialogue; the two completed `frame_defiant` dialogues incurred seven
+  and eight repairs. No registered analysis was run and no partial result was
+  promoted. PR #671 broadened only the frame-jurisdiction matcher, added
+  transcript-derived positive and negative controls, replayed all 28 prior
+  repair-triggering drafts with 28/28 recognized, and merged after all required
+  GitHub checks passed at `6dbec4cb49a47eca415f77e2324be57a6e1d6f45`.
+- 2026-08-19 — Prepared a minimal fresh-cohort replacement under HOLD. It pins
+  the repaired merge commit, repeats only three `frame_defiant` dialogues with
+  a 144-attempt ceiling, and freezes the final analysis to the 15 exact
+  unaffected prior traces plus the three fresh traces. All three original
+  `frame_defiant` traces are SHA-pinned but explicitly excluded, preventing
+  within-profile source mixing. The passing Luna route canary is reused, the
+  destination is new and create-once, retry/resume authority remains absent,
+  and no model call is authorized by this preparation. The frozen request
+  digest is `0e022c64ef109b9631cbb544ba0b3c47baee61c44d477a45b4481efaa94e0f35`.
