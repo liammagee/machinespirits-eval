@@ -83,7 +83,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistance-axis-heldout-go
+branch: codex/resistance-axis-heldout-result
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -419,3 +419,20 @@ and explicit human approval.
   destination, attempt ceiling, recovery boundary, or interpretation. The
   prior request digest was never approved or consumed; the replacement remains
   on HOLD for a fresh exact digest-bound human approval.
+- 2026-08-19 — The approved prospective resistance-axis held-out study passed
+  its registered instrument gate at launch commit
+  `c302d917da59c3608d6e0d654fc313b13eadb12f`. All 18/18 Luna dialogues and
+  144/144 learner turns were sealed; 458 reserved model calls completed with
+  zero failed calls and no recovery. Bored effort withholding was
+  `18/24 = 0.750` against the `0.45` minimum, and frame-jurisdiction dispute
+  was `14/24 = 0.583` against the `0.40` minimum. Both appeared by turn 2 in
+  every dialogue and each had a `0.000` maximum non-target rate against the
+  `0.20` ceiling. The diagnostic controls remained non-decisional as
+  registered. The report at SHA-256
+  `714f69f489297c571ff4157ce0269e6d3f68ccac485453b53d05cc09d5908c75`
+  therefore freezes `bored` and `frame_defiant` as usable simulated learner
+  instruments. This is not evidence that the tutor adapts effectively, that a
+  tonal register improves outcomes, or that the result transfers to humans or
+  cells; the earlier v4 negative remains unchanged. Phase 2's instrument gate
+  is complete, and the next phase is the shadow action-before-register runtime
+  integration under the frozen conservation protocol.
