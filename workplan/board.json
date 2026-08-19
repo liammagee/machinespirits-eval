@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-19T04:58:29.266Z",
+  "generated": "2026-08-19T05:08:41.307Z",
   "counts": {
     "total": 514,
     "byStatus": {
@@ -310,7 +310,8 @@
           "docs/tutor-stub-resistant-profile-discrimination-registration.md",
           "docs/tutor-stub-resistant-profile-discrimination-live-readiness-hold.md",
           "docs/tutor-stub-resistant-profile-discrimination-study-go-request.md",
-          "docs/tutor-stub-resistant-profile-measurement-recheck-study-go-request.md"
+          "docs/tutor-stub-resistant-profile-measurement-recheck-study-go-request.md",
+          "docs/tutor-stub-resistant-profile-measurement-recheck-technical-recovery-study-go-request.md"
         ],
         "code": [
           "services/pedagogicalMove/contract.js",
@@ -333,6 +334,7 @@
           "config/tutor-stub-resistant-profile-discrimination-study-go-request.v1.json",
           "config/tutor-stub-frame-defiant-replacement-study-go-request.v1.json",
           "config/tutor-stub-resistant-profile-measurement-recheck-study-go-request.v1.json",
+          "config/tutor-stub-resistant-profile-measurement-recheck-technical-recovery-study-go-request.v1.json",
           "scripts/check-tutor-stub-resistant-profile-study-go-request.js",
           "services/tutorStubAutomatedLearnerGenerationRuntime.js",
           "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json",
@@ -347,7 +349,7 @@
         "learner-profiles",
         "registers"
       ],
-      "branch": "codex/resistant-profile-measurement-recheck-request"
+      "branch": "codex/resistant-profile-measurement-recheck-technical-recovery"
     },
     {
       "id": "edged-register-stub-dag-replication",
