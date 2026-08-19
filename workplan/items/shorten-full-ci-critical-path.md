@@ -1,7 +1,7 @@
 ---
 id: shorten-full-ci-critical-path
 title: Shorten the full-CI critical path
-status: active
+status: review
 type: infra
 priority: P1
 owner: codex
@@ -11,6 +11,8 @@ updated: 2026-08-19
 verification: "Required history-aware workflow jobs pass with blobless checkout; focused classifier and workflow contract tests pass; a matched local two-way versus three-way root-shard benchmark records the critical-path and runner-cost tradeoff, and only adopts three shards if the measured gain justifies two additional runners."
 branch: codex/shorten-full-ci-critical-path
 links:
+  prs:
+    - 695
   items:
     - optimize-ci-agent-iteration-loop
     - optimize-hermetic-test-suite
@@ -67,3 +69,5 @@ Log:
   every selected file still reported, and the other four measured shards passed.
   This is not attributed to either sharding layout or the workflow-only diff;
   the clean hosted full matrix remains the merge gate.
+- 2026-08-19 — Implementation committed and opened as draft PR #695; moved to
+  review pending the hosted full-CI and browser-surface result.
