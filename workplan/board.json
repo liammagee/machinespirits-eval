@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-19T02:54:53.465Z",
+  "generated": "2026-08-19T04:12:16.360Z",
   "counts": {
     "total": 513,
     "byStatus": {
@@ -310,7 +310,7 @@
         "learner-profiles",
         "registers"
       ],
-      "branch": "codex/frame-defiant-study-closeout"
+      "branch": "codex/resistant-profile-measurement-audit"
     },
     {
       "id": "edged-register-stub-dag-replication",
