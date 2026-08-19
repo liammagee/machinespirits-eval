@@ -7,6 +7,7 @@ import {
   finalizeTutorStubActionBeforeRegisterShadow,
   normalizeTutorStubResponseConfigurationWithActionBeforeRegisterShadow,
 } from '../services/tutorStubActionBeforeRegisterShadow.js';
+import { observeResistantLearnerTurn } from '../services/resistantLearnerObservation.js';
 
 function classification(overrides = {}) {
   return {
@@ -120,9 +121,11 @@ test('held-out public axes preserve broad frame defiance while exposing the nest
   });
   assert.equal(frame.resistance_axis_shadow.warrant.status, 'licensed');
   assert.equal(frame.resistance_axis_shadow.resistance_kind, 'frame_defiant');
-  assert.equal(
-    frame.resistance_axis_shadow.observation.axes.frame_participation.state,
-    'local_test_refused_without_uptake',
+  assert.ok(
+    observeResistantLearnerTurn({
+      learnerText: 'I do not accept the premise of your test.',
+      classification: classification({ request_type: 'authority_refusal_or_status_challenge' }),
+    }).observations.some((observation) => observation.type === 'frame_jurisdiction_refusal'),
   );
   assert.equal(frame.shadow_move_candidate.move_type, 'test_bounded_distinction');
 
@@ -139,7 +142,18 @@ test('held-out public axes preserve broad frame defiance while exposing the nest
   });
   assert.equal(productiveFrame.resistance_axis_shadow.warrant.status, 'licensed');
   assert.equal(productiveFrame.resistance_axis_shadow.resistance_kind, 'frame_defiant');
-  assert.equal(productiveFrame.resistance_axis_shadow.observation.axes.frame_participation.state, 'not_observed');
+  assert.equal(
+    observeResistantLearnerTurn({
+      learnerText:
+        'I reject the frame, but the public assay still supports testing whether this mark came from the same die.',
+      classification: classification({
+        request_type: 'authority_refusal_or_status_challenge',
+        discourse_move: 'hypothesis',
+        evidence_use: 'links_evidence_to_rule',
+      }),
+    }).observations.some((observation) => observation.type === 'frame_jurisdiction_refusal'),
+    false,
+  );
   assert.equal(productiveFrame.shadow_move_candidate.move_type, 'test_bounded_distinction');
 
   const ambiguous = beginTutorStubActionBeforeRegisterShadow({

@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { detectTutorStubEdgeTimingSignal } from './tutorStubEdgeTimingPolicy.js';
-import { createResistantProfileMoveShadow } from './pedagogicalMove/resistantProfileWarrantShadow.js';
+import { observeResistantLearnerTurn } from './resistantLearnerObservation.js';
 import { beginTutorStubActionBeforeRegisterShadow } from './tutorStubActionBeforeRegisterShadow.js';
 import { tutorStubFirstDraftContractPrompt } from './tutorStubFirstDraftContract.js';
 import { extractTutorStubFrozenTurn, refreshTutorStubFrozenFirstDraftRequest } from './tutorStubFrozenReplay.js';
@@ -339,16 +339,15 @@ function triggerFromTurnRecord(record, profile) {
   const learnerText = record?.learner || '';
   const classification = record?.classification || null;
   const shadow = observeResistanceAxis({ learnerText, classification });
-  const profileShadow =
-    profile === 'frame_refuser'
-      ? createResistantProfileMoveShadow({ profileId: profile, learnerText, classification })
-      : null;
+  const profileObservation =
+    profile === 'frame_refuser' ? observeResistantLearnerTurn({ learnerText, classification }) : null;
   const timing = detectTutorStubEdgeTimingSignal({ learnerText, classification, tutorLearnerDag: null });
-  const matchesRegisteredCohort = profileShadow?.warrant?.status === 'licensed' || shadow.resistance_kind === profile;
-  const cohortWarrant = profileShadow?.warrant || shadow.warrant;
+  const matchesRegisteredCohort =
+    profileObservation?.observations?.some((observation) => observation.type === 'frame_jurisdiction_refusal') ||
+    shadow.resistance_kind === profile;
   return {
     eligible:
-      cohortWarrant.status === 'licensed' &&
+      shadow.warrant.status === 'licensed' &&
       matchesRegisteredCohort &&
       timing.comprehensionRepair !== true &&
       timing.protectedAffect !== true &&
@@ -356,7 +355,7 @@ function triggerFromTurnRecord(record, profile) {
     learnerText,
     classification,
     shadow,
-    cohortObservation: profileShadow?.observation || shadow.observation,
+    cohortObservation: profileObservation || shadow.observation,
     timing,
   };
 }
