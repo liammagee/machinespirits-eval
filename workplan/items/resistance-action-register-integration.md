@@ -41,6 +41,7 @@ links:
     - docs/tutor-stub-resistance-axis-heldout-registration.md
     - docs/tutor-stub-resistance-axis-heldout-live-readiness-hold.md
     - docs/tutor-stub-resistance-axis-heldout-study-go-request.md
+    - docs/tutor-stub-resistance-action-register-crossed-registration.md
   code:
     - services/pedagogicalMove/contract.js
     - services/pedagogicalMove/shadow.js
@@ -77,6 +78,7 @@ links:
     - services/tutorStubAutomatedLearnerGenerationRuntime.js
     - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json
     - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.endpoint-go.json
+    - config/tutor-stub-resistance-action-register-crossed-registration.v1.json
 tags:
   - tutor-stub
   - cells
@@ -84,7 +86,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/action-before-register-shadow
+branch: codex/resistance-crossed-registration
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -450,3 +452,16 @@ and explicit human approval.
   register path remains authoritative, public output is unchanged, consumer
   switching and outcome claims remain unauthorized, and no model call was
   made.
+- 2026-08-19 — Froze the Phase 4 proof-DAG crossed design under HOLD. At the
+  first eligible public bored or frame-defiant signal, exact-prefix branches
+  cross matched versus swapped typed moves, plain/warm/edged realization, and
+  independent A/B same-treatment repeats. Edged realization follows the
+  assigned move (sarcasm for the discriminating question, irony for the bounded
+  distinction), never the learner label; face threat and protected conditions
+  remain excluded. The primary endpoint is deterministic profile-specific
+  recovery, followed by proof-DAG outcomes and realization fidelity. The
+  current shadow path is not executable authority, and the main block remains
+  unsized. A separate 24-dialogue matched-action plain/warm baseline pilot must
+  measure recovery and repeat drift before a prospective main-block amendment
+  freezes numeric gates, sample size, endpoint, command, destination, and
+  budget. No model call, pilot, GO request, or consumer switch is authorized.

@@ -1,0 +1,228 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-action-register-crossed-registration.v1",
+  "status": "frozen_design_hold",
+  "workplanItem": "resistance-action-register-integration",
+  "frozenAt": "2026-08-19",
+  "claimBoundary": "This design can test, in the tutor-stub proof-DAG harness, whether a public resistance signal is followed by a better-matched pedagogical move and whether an edged realization changes that move's effect. It cannot establish human learning, deployed-tutor efficacy, general register benefit, or transfer to the cell harness.",
+  "authorization": {
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "baselinePilotAuthorized": false,
+    "mainBlockAuthorized": false,
+    "goRequestPrepared": false,
+    "requiredBeforeAnyModelCall": [
+      "study-only action and register intervention runtime with the legacy path still default-authoritative",
+      "zero-call executable dry run and endpoint preflight",
+      "pinned clean origin/main source and dependency closure",
+      "create-once destination and exact model-attempt ceiling",
+      "committed digest-bound GO request",
+      "explicit human approval of the exact request digest and ceiling"
+    ]
+  },
+  "preservation": {
+    "baselineTag": "experiment/resistance-action-register/pre-integration/freeze-2026-08-18",
+    "baselineCommit": "45985541188bc935a4ef9a4893d9b65451f0fa61",
+    "phase3ShadowMergeCommit": "a53ac6ab996e30dee41fef4ac99eb9e53b7e613b",
+    "protectedProfiles": ["low_agency", "overconfident"],
+    "protectedResultMode": "read_only_no_rerun_no_rescore_no_pool_no_rewrite",
+    "priorNegativeResultRemainsAuthoritative": true,
+    "consumerSwitchAuthorized": false
+  },
+  "instrumentGate": {
+    "sourceStudy": "tutor-stub-resistance-axis-heldout-v1",
+    "sourceCommit": "c302d917da59c3608d6e0d654fc313b13eadb12f",
+    "reportSha256": "714f69f489297c571ff4157ce0269e6d3f68ccac485453b53d05cc09d5908c75",
+    "profiles": {
+      "bored": {
+        "axis": "effort_investment",
+        "marker": "effortWithholding",
+        "observedRate": "18/24",
+        "maximumNonTargetRate": 0
+      },
+      "frame_defiant": {
+        "axis": "frame_legitimacy",
+        "marker": "frameJurisdictionDispute",
+        "observedRate": "14/24",
+        "maximumNonTargetRate": 0
+      }
+    },
+    "interpretation": "usable_simulated_learner_instruments_not_tutor_efficacy"
+  },
+  "design": {
+    "form": "triggered_counterfactual_prefix_replay",
+    "world": "world_005_marrick",
+    "dagMode": "strict_dag",
+    "profiles": ["bored", "frame_defiant"],
+    "trigger": {
+      "timing": "first_eligible_public_resistance_observation",
+      "profileIdentityMayTrigger": false,
+      "requiredSingleAxisStates": {
+        "bored": "effort_investment.withheld",
+        "frame_defiant": "frame_legitimacy.jurisdiction_disputed"
+      },
+      "failClosedWhenBothAxesFire": true,
+      "protectedExclusions": ["comprehension_repair", "protected_affect", "content_bearing_uptake_already_visible"],
+      "noEligibleTriggerDisposition": "retain_as_trigger_yield_diagnostic_not_a_treatment_unit"
+    },
+    "pairing": {
+      "unit": "exact_public_dialogue_prefix_at_trigger",
+      "heldConstant": [
+        "learner_profile",
+        "world",
+        "public_history",
+        "public_evidence",
+        "proof_dag_state",
+        "authored_release_state",
+        "model_route",
+        "prompt_and_runtime_source",
+        "pre_trigger_trace"
+      ],
+      "branchOnlyAfterTrigger": true,
+      "validOutputsMayNotBeSelectedOrRerolled": true
+    },
+    "factors": {
+      "actionFit": {
+        "levels": ["matched", "mismatched"],
+        "assignments": {
+          "bored": {
+            "matched": "ask_discriminating_question",
+            "mismatched": "test_bounded_distinction"
+          },
+          "frame_defiant": {
+            "matched": "test_bounded_distinction",
+            "mismatched": "ask_discriminating_question"
+          }
+        },
+        "mismatchRule": "swap_the_two_registered_moves_without_inventing_a_third_move"
+      },
+      "realization": {
+        "levels": ["plain", "warm", "edged"],
+        "plain": "plain",
+        "warm": "warm",
+        "edgedByAssignedMove": {
+          "ask_discriminating_question": "sarcastic",
+          "test_bounded_distinction": "ironic"
+        },
+        "edgeFollowsAssignedMoveNotLearnerProfile": true,
+        "faceThreatExcluded": true,
+        "oneTutorTurnOnly": true,
+        "revertAfterUptake": true
+      },
+      "replicationBlock": {
+        "levels": ["A", "B"],
+        "meaning": "independent same-treatment repeats from the same frozen prefix",
+        "poolingBeforeStabilityGate": false
+      }
+    },
+    "factorialCells": 24,
+    "intervention": {
+      "durationTutorTurns": 1,
+      "studyOnlyOptIn": true,
+      "applicationOrder": [
+        "public_observation",
+        "warrant",
+        "assigned_typed_pedagogical_move",
+        "assigned_compatible_register",
+        "public_realization"
+      ],
+      "legacyDefaultOutsideStudy": true,
+      "safetyOverride": "replace_edged_realization_with_plain_record_nonadherence_never_reroll"
+    },
+    "outcomeHorizon": {
+      "boredTargetTurns": 1,
+      "frameDefiantTargetTurns": 2,
+      "commonPostTriggerLearnerTurns": 2,
+      "terminalDagFollowupThroughTurn": 8
+    }
+  },
+  "measurement": {
+    "primaryEndpoint": {
+      "id": "profile_specific_resistance_recovery",
+      "type": "binary_per_treatment_dialogue",
+      "definitions": {
+        "bored": "content-bearing answer to the adjacent concrete question within one learner turn, without permission seeking or mere assent",
+        "frame_defiant": "engagement with the bounded test on its merits or a more precise frame dispute within two learner turns"
+      },
+      "source": "public_axis_observation_and_typed_move_expected_uptake",
+      "modelJudge": false
+    },
+    "secondaryEndpoints": [
+      "proof_dag_debt_delta_at_two_learner_turns",
+      "new_supported_public_premises_at_two_learner_turns",
+      "grounded_closure_by_turn_8",
+      "turns_to_grounded_closure",
+      "action_realization_fidelity",
+      "register_realization_fidelity",
+      "protected_condition_and_safety_override_rate"
+    ],
+    "treatmentFidelity": {
+      "minimumActionVisibility": 0.9,
+      "minimumRegisterVisibility": 0.9,
+      "primaryAnalysis": "intention_to_treat",
+      "perProtocolAnalysis": "secondary_only",
+      "failedFidelityDisposition": "fail_interpretability_gate_not_rerun"
+    }
+  },
+  "estimands": {
+    "diagnosisFidelity": "registered trigger specificity by profile before treatment",
+    "actionFit": "matched minus mismatched recovery under the non-edged plain and warm realizations, equally weighted by profile and reported separately by realization",
+    "edgeEffect": "edged minus plain and edged minus warm recovery within matched action, reported as two separate contrasts",
+    "interaction": "change in the matched-minus-mismatched contrast under edged versus non-edged realization",
+    "sameTreatmentDrift": "absolute A-versus-B difference for each otherwise identical profile-action-register treatment"
+  },
+  "decisionOrder": [
+    "complete assembly and trigger specificity",
+    "action and register realization fidelity",
+    "same-treatment stability",
+    "action-fit contrast",
+    "edged-versus-plain and edged-versus-warm contrasts",
+    "interaction and downstream proof-DAG outcomes"
+  ],
+  "decisionRules": {
+    "actionCannotBeRescuedByRegister": true,
+    "edgeBenefitRequiresConsistencyAgainstPlainAndWarm": true,
+    "sameTreatmentInstabilityBlocksTreatmentClaim": true,
+    "nullOrNegativeClosesHypothesisWithoutTuning": true,
+    "multiplicity": "Holm correction across the frozen action-fit and two edge contrasts",
+    "effectSizeAndStabilityThresholds": "pending_prospective_baseline_amendment_before_main_generation"
+  },
+  "baselinePilot": {
+    "status": "planned_not_executable",
+    "purpose": "measure actual matched-action plain and warm recovery plus same-treatment drift before sizing the main factorial",
+    "profiles": ["bored", "frame_defiant"],
+    "conditions": ["matched_plain", "matched_warm"],
+    "prefixesPerProfile": 3,
+    "sameTreatmentRepeats": 2,
+    "expectedTreatmentDialogues": 24,
+    "freshPrefixes": true,
+    "excludedFromMainConfirmatoryAnalysis": true,
+    "modelAttemptCeiling": null,
+    "destination": null,
+    "interpretationUse": "power_and_stability_design_only"
+  },
+  "mainBlock": {
+    "status": "not_yet_registered_for_execution",
+    "freshPrefixesRequired": true,
+    "factorialCells": 24,
+    "sampleSizePerCell": null,
+    "modelAttemptCeiling": null,
+    "destination": null,
+    "requiredProspectiveAmendment": "freeze sample size, effect-size floor, same-treatment tolerance, exact command, budget, destination, and endpoint certificate after the baseline pilot and before viewing any main-block outcome"
+  },
+  "runtimeReadiness": {
+    "currentPhase3Path": "shadow_only_non_authoritative",
+    "missingBeforeDryRun": [
+      "study-only typed move assignment at the frozen trigger",
+      "move-to-host-action realization mapping for both registered moves",
+      "post-action register assignment for plain, warm, sarcasm, and irony",
+      "exact-prefix branch runner with independent repeat identities",
+      "registered endpoint assembler and zero-call synthetic preflight"
+    ],
+    "newGovernanceToolingRequired": false
+  },
+  "transfer": {
+    "homeWorld": "tutor_stub",
+    "cellHarnessClaimAuthorized": false,
+    "requiredForTransfer": "reproduce_or_rescore_through_docs/harness-claim-transfer-rule.md_or_state_explicit_home_world_limit"
+  }
+}
