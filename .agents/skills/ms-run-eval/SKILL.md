@@ -15,9 +15,17 @@ Run an evaluation pipeline. The user will specify which cells and how many runs.
    - Options: `--scenario <id>`, `--cluster <name>`, `--parallelism N`, `--live`, `--transcript`
 
 2. **Pre-flight checks**:
-   - Verify cells exist: `grep "$CELL_NAME" config/tutor-agents.yaml`
-   - Check model availability: `node scripts/test-rate-limit.js <model-alias>`
-   - Confirm with user before starting (runs cost API credits)
+   - Run `node scripts/eval-cli.js validate-config`; canonical `cell_*` names are
+     derived from `config/tutor-agents.yaml`, not maintained in a second list.
+   - Resolve model references from `config/providers.yaml`. For a new exploratory
+     run, use a current `provider.alias`; for a reproduction, registered study, or
+     resumed run, preserve the recorded model exactly even if a newer model exists.
+   - `node scripts/test-rate-limit.js <openrouter-alias>` is a small paid
+     OpenRouter availability probe. Do not use it for `codex.*`, `claude-code.*`,
+     or other providers.
+   - An explicit request that names the cells, run count, model route, and spend
+     ceiling is approval to start. Ask only when one of those boundaries is
+     missing or would require a substantive assumption.
 
 3. **Run generation** (skip rubric for speed):
    ```bash
@@ -52,7 +60,9 @@ Run an evaluation pipeline. The user will specify which cells and how many runs.
 - CLI uses `--runs` NOT `--repeats`
 - Score column: `tutor_first_turn_score` (Turn 0). `overall_score` is deprecated alias.
 - Multi-turn runs also have `tutor_last_turn_score` (last turn) and `tutor_development_score`.
-- Always confirm cell names and run count with user before executing
+- Do not copy a model name from an old skill example or historical run into a new
+  run. Read `config/providers.yaml` and the current run/study contract.
 - For incomplete runs, use `/ms-resume-run` or: `node scripts/eval-cli.js resume <runId>`
-- New cells need registration in `EVAL_ONLY_PROFILES` array in `services/evaluationRunner.js`
+- New canonical cells are registered once in `config/tutor-agents.yaml`; the
+  profile registry derives them automatically.
 - **NEVER use `--force` on runs with multiple judge models** — it silently destroys cross-judge data

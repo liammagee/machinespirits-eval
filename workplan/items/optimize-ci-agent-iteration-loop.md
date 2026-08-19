@@ -18,6 +18,7 @@ links:
     - 670
     - 671
     - 672
+    - 678
   items:
     - expedite-ci-expensive-boundaries
     - local-ci-parity-runner
@@ -45,6 +46,10 @@ Acceptance:
 - Audit `AGENTS.md`, applicable agent skills, the PR template, workplan rules,
   study-authorization instructions, and workflow path/job conditions. Classify
   each cost as integrity-critical, compatibility-critical, or optional ceremony.
+- Make active skills resolve current model/backend names from the repository
+  registry while preserving exact model pins for reproductions and registered
+  studies; remove stale commands, duplicate confirmations, and unconditional
+  next-step/checklist behavior.
 - Define the shortest defensible replacement path when no code defect exists:
   preserve the failed attempt, pin the same source/profile/seed/configuration and
   original budget, use a fresh non-overwriting destination, reuse the existing
@@ -112,8 +117,17 @@ Benchmark log:
   contained no Electron package or binary. The PR template and generated PR body
   were reduced from checkbox ceremony to four routing/evidence fields, and
   `AGENTS.md` now gives a concrete proportional-verification stopping rule.
-  Hosted timing remains to be measured after this workflow-changing PR lands;
-  this PR itself correctly classifies as full CI.
+  The workflow-changing PR correctly classified itself as full CI and passed in
+  5m20s end to end; its four root shards completed in 2m48s-4m37s, consistent
+  with the pre-change full-path baseline while leaving the post-merge focused
+  path available for low-risk follow-up PRs.
+- 2026-08-18 — Audited repo-local skill entrypoints against the current runtime
+  and provider registry. Found stale manual `EVAL_ONLY_PROFILES` instructions,
+  obsolete destructive resume guidance, hard-coded model lists, repeated paid
+  approval prompts, and Codex-facing substitutions that changed valid
+  `claude` backend flags into invalid `Codex` flags. Updated the skills to derive
+  cells/models from current config, preserve pinned experimental models, reuse
+  standing bounded recovery authority, and stop after proportionate checks.
 
 Initial optimization hypotheses:
 

@@ -1,6 +1,6 @@
 ---
 name: ms-add-cell
-description: Add a new cell to config/tutor-agents.yaml following the cell-discipline rules in AGENTS.md. Walks through ID allocation, YAML registration, EVAL_ONLY_PROFILES registration, naming-rule check, and smoke verification. Use when the user wants to add a new factorial cell.
+description: Add a new cell to config/tutor-agents.yaml following the cell-discipline rules in AGENTS.md, then validate derived registration, naming, dispatch, and smoke behavior. Use when the user wants to add a new factorial cell.
 argument-hint: "<cell-name-suffix> <architecture-knobs>"
 ---
 
@@ -24,7 +24,9 @@ grep -nE "name:\s*cell_<N>_" config/tutor-agents.yaml || echo "cell_<N>_ is free
 
 ### 2. Decide the cell's architecture
 
-Confirm with the user before writing. Cross-reference the architecture table from AGENTS.md:
+Cross-reference the architecture table from AGENTS.md and the nearest current
+cell before writing. Ask only if the requested architecture leaves a material
+factor ambiguous:
 
 | `multi_agent_tutor` | `superego:` | Implication |
 |---|---|---|
@@ -56,17 +58,19 @@ Find the right insertion point — keep related cells contiguous (e.g. cell-fami
 grep -nE "name:\s*cell_<NEAREST_NEIGHBOR>_" config/tutor-agents.yaml
 ```
 
-Edit `config/tutor-agents.yaml` and add the new block. Confirm the edit with the user before applying.
+Edit `config/tutor-agents.yaml` and add the new block. A user request to add the
+cell authorizes this edit; do not pause for a second confirmation.
 
-### 5. Register in EVAL_ONLY_PROFILES
+### 5. Validate derived registration
 
-The canonical cell-name list is the `EVAL_ONLY_PROFILES` array in `services/evaluationRunner.js` (~line 100). Without registration, `resolveEvalProfile()` silently maps the cell to the default profile.
+Canonical `cell_*` names are derived directly from `config/tutor-agents.yaml` by
+`services/evalProfileRegistry.js`. Do not edit `EVAL_ONLY_PROFILES`; it is a
+compatibility export assembled from the derived cells plus explicit legacy
+aliases. Validate the registry and prompt dispatch instead:
 
 ```bash
-grep -nE 'EVAL_ONLY_PROFILES|cell_' services/evaluationRunner.js | head -40
+node scripts/eval-cli.js validate-config
 ```
-
-Add the new cell name to the array. Confirm the edit with the user.
 
 ### 6. Reference a valid scenario
 
@@ -82,10 +86,8 @@ grep -nE "scenario:|scenarios:" config/tutor-agents.yaml | grep -A2 "cell_<N>_"
 ### 7. Run the focused tests
 
 ```bash
-node --test tests/profileRegistry.test.js tests/dialecticalNamingRule.test.js
+node --test tests/evaluationRunner.test.js tests/regression-bug-007.test.js tests/factorial-design.test.js
 ```
-
-(Substitute the actual test names if different — grep for `dialectical` and `EVAL_ONLY_PROFILES` in `tests/` to find them.)
 
 ### 8. Smoke the new cell with no paid API calls
 
@@ -105,7 +107,8 @@ NOTE: `--dry-run` on adaptive cells writes the prod DB (only `llmMode=mock` chan
 
 ### 9. Audit before committing
 
-Run the `cell-config-auditor` subagent on the diff:
+Run the registered `cell-config-auditor` on the diff. It is a read-only,
+cell-specific check required by AGENTS.md; do not add a broader review loop:
 
 ```text
 Agent({ subagent_type: "cell-config-auditor", prompt: "Audit the new cell_<N>_<name> entry in config/tutor-agents.yaml and its EVAL_ONLY_PROFILES registration" })
@@ -113,8 +116,11 @@ Agent({ subagent_type: "cell-config-auditor", prompt: "Audit the new cell_<N>_<n
 
 ## Critical rules
 
-- **Never skip step 5** (EVAL_ONLY_PROFILES registration). The run will succeed silently with the default profile and contaminate downstream analysis.
+- **Register canonical cells only in `config/tutor-agents.yaml`.** Never add a
+  second manual list; `validate-config` must prove derived registration and
+  prompt dispatch.
 - **Never invent a cell ID without grepping** — the highest documented number in AGENTS.md lags behind reality.
 - **Never use `dialectical` in the name for a non-dialectical-suspicious cell** — the test will fail.
 - **Never `--force` resume a run on a cell that ran under the wrong profile**; clean up first, then re-run.
-- Confirm each YAML / source edit with the user before applying.
+- Once the user has asked to add the cell, ask again only for unresolved
+  architecture or paid-run choices, not for each file edit.

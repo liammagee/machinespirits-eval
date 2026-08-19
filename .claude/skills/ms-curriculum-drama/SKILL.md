@@ -58,9 +58,13 @@ Notes:
 - `compile:drama` `--source` is `curriculum` (default) or `rhetorical_dramatic_plan` (`--from-rhetorical-plans`). Compiled drama ids are `D_AF<N>_CURRICULUM[_ADAPTIVE]`.
 - Re-running a compile is the correct way to refresh a stale `curriculum/*.yaml` after editing the source — the outputs are generated, not hand-maintained.
 
-## 2. Generate — cost ladder, never skip a rung
+## 2. Generate — use the cheapest rung that answers the current question
 
-The generator is `scripts/generate-pedagogical-dramas.js`. Always climb **dry-run → mock → attended real**, and select a single drama with `--only` while iterating.
+The generator is `scripts/generate-pedagogical-dramas.js`. Use dry-run for
+routing/spec changes, mock for transcript plumbing changes, and attended real
+for an authorized model-backed result. A passing rung does not need to be
+repeated when neither its boundary nor the relevant inputs changed. Select one
+drama with `--only` while iterating.
 
 ```bash
 # (i) dry-run — routing/shuffle/persona/turn-plan shape, no writes, no LLM (FREE)
@@ -76,7 +80,7 @@ node scripts/generate-pedagogical-dramas.js --mock --force \
   --writing-pad-dir exports/curriculum-light-drama/writing-pad \
   --key exports/curriculum-light-drama/key.yaml
 
-# (iii) attended real — PAID. Confirm with the user before spending; run in background for multi-drama.
+# (iii) attended real — PAID; run in background for multi-drama.
 node scripts/generate-pedagogical-dramas.js --force \
   --spec curriculum/ai-foundations.rhetorical-dramas.yaml --only D_AF11_CURRICULUM_ADAPTIVE \
   --generator claude --model sonnet --claude-persistent-workers \
@@ -88,7 +92,9 @@ Generation flags worth knowing (verify against the arg parser, don't guess):
 - `--generator claude|codex|agy` — `claude` = Max-plan CLI (attended); `codex` = the production-batch default. They draw on **separate quota pools** — switching changes which drains. `--model` sets the alias (e.g. `sonnet`); `--effort low|medium|high|xhigh|max` (claude only).
 - `--claude-persistent-workers` reuses workers across dramas; `--role-map "tutor=claude,learner=claude,director=claude"` for mixed casts.
 - `--paired-adaptation-arms <arm,...>` for contrastive arms (e.g. `routine,peripeteia`); `--affective-adaptation-policy none|procedural_sensitive` (drama spec may already set this — the flag overrides).
-- A paid run is **attended and human-gated** (see the project's paid-run discipline): confirm scope, prefer one drama first, watch quota.
+- A paid run is **attended and human-gated**: an explicit request with model,
+  scope, and ceiling is the gate. Ask only for a missing boundary; prefer one
+  drama first when the request has not already fixed a larger registered slice.
 
 ## 3. Render (optional) — transcript → HTML dialog
 
@@ -115,7 +121,11 @@ Give: which compile steps ran and what they wrote (file + count, e.g. "6 rhetori
 
 ## Critical rules
 - **Compile first, then run.** Don't generate against a hand-edited drama spec when the curriculum source changed — recompile.
-- **Cost ladder, every time.** dry-run → mock → (confirm) → real. Default `--generator` choice matters: don't switch claude↔codex unasked (separate quotas).
+- **Use each cost rung when its boundary changed.** Do not repeat a passing
+  dry-run or mock canary solely as ceremony. An explicit request that defines
+  the paid run's model, scope, and ceiling authorizes the real rung; ask only
+  when one of those boundaries is missing. Do not switch backends in a pinned
+  experiment.
 - **One loop at a time.** Honour §0; the live AF11 loop must not be doubled.
 - **World spec ≠ evaluator; no empirical claims here.** Independent outcome/quality analysis stays required; findings live in the paper.
 - **Generated files are generated.** Refresh `curriculum/ai-foundations.*.yaml` by recompiling, not by hand-editing the outputs.

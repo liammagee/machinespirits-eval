@@ -1,7 +1,7 @@
 ---
 name: ms-tutor-remote
 description: Play a real tutor-stub session from chat — including Codex on the web or mobile, where there is no terminal. You are the learner; Codex relays each turn to the actual tutor-stub CLI running headlessly. Use to sit a tutoring drama from a phone, demo a world, or feel a tutor's behaviour without a TTY.
-argument-hint: "[world id or description, e.g. world_001_nocturne | --lab mixed_drafting | --model Codex.opus]"
+argument-hint: "[world id or description, e.g. world_001_nocturne | --lab mixed_drafting | --model claude-code.opus]"
 ---
 
 The user wants to **be the learner** in a live tutor-stub session. You are the
@@ -22,10 +22,10 @@ node scripts/tutor-stub-remote.js worlds
 ```
 
 Defaults that need no argument: lab `pure_chat`, tutor `dramatic-detective@v1`,
-model `Codex.sonnet-5`.
+model `claude-code.sonnet-5`.
 
 **Do not change the model default without being asked.** It routes through the
-Codex CLI bridge, which is the only provider guaranteed to have
+Claude Code CLI bridge, which is the only provider guaranteed to have
 credentials in a cloud container. Catalog defaults point at `codex.*`, which
 will fail there.
 

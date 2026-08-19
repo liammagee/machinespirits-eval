@@ -229,8 +229,11 @@ The script `scripts/analyze-judge-reliability.js` implements this correctly by h
 - Database: `data/evaluations.db` (SQLite)
 - DB tutor score column: `tutor_first_turn_score` (Turn 0 score; `overall_score` is deprecated alias)
 - Always filter by `judge_model` when querying — runs can have rows from multiple judges
-- `evaluate --force` only processes rows with NULL scores
-- `rejudge` without `--judge` defaults to Sonnet 4.5, not Opus
+- `evaluate --force` re-scores matching rows and can overwrite judge-specific
+  results; without `--force`, `evaluate` selects successful rows missing scores
+- `rejudge` without `--judge` resolves the current `judge.model` from
+  `config/evaluation-rubric.yaml`; preserve an explicit historical judge pin
+  rather than substituting whatever that alias resolves to today
 - Rejudge creates new rows by default; `--overwrite` replaces
 - **Legacy cell names**: Early runs used shorthand `cell_1`, later runs use canonical `cell_1_base_single_unified`. Both coexist in the DB. Analysis scripts should match on prefix or use `LIKE 'cell_1%'` when querying across runs.
 - **Rubric version columns**: `tutor_rubric_version`, `learner_rubric_version`, `dialogue_rubric_version`, `deliberation_rubric_version` — auto-resolved from YAML `version:` fields at write time. `"1.0"` = original rubric (14 tutor dimensions). `"2.0"` = v2 rubric overhaul (Feb 26). `"2.1"` = public-only output scoring + deliberation rubric (Feb 27). `"2.2"` = literature-informed redesign (Feb 28): consolidates 14 → 8 tutor dimensions using GuideEval P→O→E decomposition, adds `content_accuracy`, removes `learner_growth`. `"3.0"` = prospective PCA-informed measurement suite: tutor-turn quality is the 1–10 general factor plus 1–5 content accuracy, with separate tutor-trajectory, learner-change, encounter, and deliberation instruments. v3.0 is opt-in under `config/rubrics/v3.0/`; v2.2 remains active. Versioned rubrics live in `config/rubrics/v{X.Y}/`; active rubrics are in `config/`. **Do NOT retroactively score historical data under a newer rubric version** — this creates cross-version contamination that invalidates within-run comparisons.
@@ -254,19 +257,24 @@ The script `scripts/analyze-judge-reliability.js` implements this correctly by h
 
 ### Resuming Incomplete Runs
 
-When a run has empty/failed attempts (`suggestions = '[]'`, NULL `overall_score`):
-1. Clean out empty rows first:
-   ```bash
-   sqlite3 data/evaluations.db "DELETE FROM evaluation_results WHERE run_id = '<runId>' AND overall_score IS NULL AND suggestions = '[]'"
-   ```
+When a run has empty/failed attempts (`success = false`, empty suggestions, or a
+missing planned attempt), preserve those rows as part of the run record. The
+attempt-aware resume runtime excludes failed rows from completion and fills only
+the corresponding missing attempt indexes; do not delete failures merely to make
+resume work.
+
+1. Inspect the exact run id and its stored metadata/model overrides.
 2. Resume generation (skip-rubric) and judge in parallel:
    ```bash
    node scripts/eval-cli.js resume <runId> --skip-rubric
-   node scripts/eval-cli.js evaluate <runId> --force --follow
+   node scripts/eval-cli.js evaluate <runId> --follow
    ```
 - `resume` detects missing attempts from the original run plan and re-runs only those
+- `resume --force` only bypasses the live-PID guard and can create duplicate
+  workers; use it only after proving the recorded process is stale
 - `--skip-rubric` generates without judging (matching the typical two-phase workflow)
-- `evaluate --force --follow` polls and judges each new row as it lands
+- `evaluate --follow` polls and judges each new unscored row as it lands; use
+  `evaluate --force` only for an explicitly requested destructive re-score
 - `resume` accepts: `--parallelism N`, `--verbose`, `--force`, `--skip-rubric`
 
 ## Scripts Reference
