@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-19T05:08:41.307Z",
+  "generated": "2026-08-19T05:22:19.298Z",
   "counts": {
     "total": 514,
     "byStatus": {
@@ -253,7 +253,7 @@
       "source": "manual",
       "created": "2026-08-18",
       "updated": "2026-08-18",
-      "branch": "codex/ci-agent-loop-benchmark",
+      "branch": "codex/ci-focused-fast-path",
       "verification": "A reproducible PR and Actions timing baseline identifies agent-side and CI-side delay; instruction and workflow changes remove redundant authorization ceremony and low-risk full-matrix runs without weakening research authority, fail-closed runtime coverage, or required workplan/ref checks; follow-up hosted PRs demonstrate the reduced latency.",
       "links": {
         "prs": [
