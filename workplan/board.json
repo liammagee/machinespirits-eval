@@ -1,20 +1,20 @@
 {
-  "generated": "2026-08-19T22:29:14.469Z",
+  "generated": "2026-08-19T23:25:22.213Z",
   "counts": {
-    "total": 518,
+    "total": 519,
     "byStatus": {
       "done": 490,
       "blocked": 7,
       "dropped": 10,
       "triaged": 1,
+      "review": 3,
       "active": 4,
-      "archived": 4,
-      "review": 2
+      "archived": 4
     },
     "byType": {
       "research": 80,
       "experiment": 87,
-      "infra": 114,
+      "infra": 115,
       "maintenance": 215,
       "content": 4,
       "ops": 10,
@@ -337,7 +337,7 @@
         "learner-profiles",
         "registers"
       ],
-      "branch": "codex/frame-refuser-opportunity-study-go"
+      "branch": "codex/frame-refuser-go-validator-deps"
     },
     {
       "id": "edged-register-stub-dag-replication",
@@ -599,6 +599,35 @@
         "warrant-gate",
         "adaptive",
         "instrument"
+      ]
+    },
+    {
+      "id": "add-validator-only-ci-profile",
+      "title": "Add a fail-closed validator-only CI profile",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-19",
+      "updated": "2026-08-19",
+      "verification": "The exact PR #700 file set selects validator-only CI and runs its registered test plus targeted lint/format; the PR #699 file set and every mixed or unknown runtime path select full CI; policy/workflow contract tests and hosted full CI pass.",
+      "branch": "codex/add-validator-only-ci-profile",
+      "links": {
+        "prs": [
+          699,
+          700
+        ],
+        "items": [
+          "shorten-full-ci-critical-path",
+          "upgrade-github-actions-node-runtime"
+        ]
+      },
+      "tags": [
+        "ci",
+        "latency",
+        "validation",
+        "developer-experience"
       ]
     },
     {

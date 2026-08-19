@@ -7,7 +7,9 @@ import test from 'node:test';
 import {
   classifyCiChanges,
   pathAllowsFocusedCi,
+  pathAllowsValidatorOnlyCi,
   pathRequiresValidationFramework,
+  selectValidatorOnlyCi,
   validateFocusedChanges,
 } from '../scripts/ci-change-policy.js';
 
@@ -33,6 +35,7 @@ test('runtime, dependency, workflow, database, evaluator, and tutor paths fail c
     'data/schema.sql',
     'routes/evalRoutes.js',
     'scripts/ci-change-policy.js',
+    'scripts/check-unregistered-validator.js',
     'services/evaluationStore.js',
     'tests/ciChangePolicy.test.js',
     'tutor-core/services/dialogueEngine.js',
@@ -41,6 +44,37 @@ test('runtime, dependency, workflow, database, evaluator, and tutor paths fail c
   ]) {
     assert.equal(pathAllowsFocusedCi(file), false, file);
     assert.equal(classifyCiChanges({ changedFiles: [file] }).profile, 'full', file);
+  }
+});
+
+test('the registered study-GO validator and its paired test use validator-only CI', () => {
+  const changedFiles = [
+    'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
+    'tests/tutorStubResistantProfileStudyGoRequest.test.js',
+    'workplan/items/resistance-action-register-integration.md',
+  ];
+  const result = classifyCiChanges({ changedFiles });
+  assert.equal(result.profile, 'validator-only');
+  assert.equal(result.fullRequired, false);
+  assert.deepEqual(result.validatorPaths, changedFiles.slice(0, 2));
+  assert.deepEqual(result.validatorTests, ['tests/tutorStubResistantProfileStudyGoRequest.test.js']);
+  assert.equal(pathAllowsValidatorOnlyCi(changedFiles[0]), true);
+  assert.equal(pathAllowsValidatorOnlyCi(changedFiles[1]), true);
+  assert.deepEqual(selectValidatorOnlyCi([changedFiles[0]]).tests, result.validatorTests);
+  assert.deepEqual(selectValidatorOnlyCi([changedFiles[1]]).tests, result.validatorTests);
+});
+
+test('validator-only CI fails closed when a runtime, endpoint, or unregistered validator is mixed in', () => {
+  const registered = 'scripts/check-tutor-stub-resistant-profile-study-go-request.js';
+  for (const widenedPath of [
+    'services/tutorStubResistanceAxisDiscriminationPreflight.js',
+    'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.json',
+    'scripts/check-unregistered-validator.js',
+  ]) {
+    const result = classifyCiChanges({ changedFiles: [registered, widenedPath] });
+    assert.equal(result.profile, 'full', widenedPath);
+    assert.equal(result.fullRequired, true, widenedPath);
+    assert.deepEqual(result.validatorTests, [], widenedPath);
   }
 });
 
@@ -107,6 +141,10 @@ test('workflows expose the classifier and focused gate without retired runtime f
   assert.match(ci, /node scripts\/ci-change-policy\.js/u);
   assert.match(ci, /needs\.classify\.outputs\.full_required == 'true'/u);
   assert.match(ci, /--validate-focused/u);
+  assert.match(ci, /^ {2}validator-only:\n {4}name: Focused validator checks$/mu);
+  assert.match(ci, /needs\.classify\.outputs\.validator_required == 'true'/u);
+  assert.match(ci, /node --test \$VALIDATOR_TESTS/u);
+  assert.match(ci, /\.\/node_modules\/\.bin\/eslint \$VALIDATOR_PATHS/u);
   assert.doesNotMatch(ci, /ELECTRON_/u);
   assert.match(validation, /needs\.classify\.outputs\.validation_required == 'true'/u);
   assert.doesNotMatch(validation, /ELECTRON_/u);

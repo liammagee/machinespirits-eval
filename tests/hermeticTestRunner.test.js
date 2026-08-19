@@ -841,7 +841,7 @@ test('CI shards both supported Node versions, caches npm downloads, and avoids u
   assert.match(workflow, /^concurrency:\n {2}group: .*github\.workflow.*github\.ref/mu);
   assert.match(workflow, /^ {2}test-contract:\n {4}name: Hermetic test contract\n {4}runs-on: ubuntu-latest$/mu);
   assert.match(workflow, /^ {8}run: npm run test:manifest$/mu);
-  for (const lane of ['focused', 'lint', 'test', 'pty-concurrency', 'risk-coverage']) {
+  for (const lane of ['focused', 'validator-only', 'lint', 'test', 'pty-concurrency', 'risk-coverage']) {
     assert.match(
       workflow,
       new RegExp(`^ {2}${lane}:\\n(?: {4}name: [^\\n]+\\n)? {4}needs: \\[classify, test-contract\\]$`, 'mu'),
@@ -855,12 +855,13 @@ test('CI shards both supported Node versions, caches npm downloads, and avoids u
   assert.equal(workflow.match(/needs\.classify\.outputs\.full_required == 'true'/gu)?.length, 4);
   assert.doesNotMatch(workflow, /ELECTRON_/u);
   assert.match(workflow, /^ {2}focused:\n {4}name: Focused authored-metadata checks$/mu);
+  assert.match(workflow, /^ {2}validator-only:\n {4}name: Focused validator checks$/mu);
   assert.match(workflow, /^ {6}fail-fast: false$/mu);
   assert.match(workflow, /^ {8}node-version: \[22, 24\]\n {8}shard: \[1, 2\]$/mu);
   assert.match(workflow, /npm run test:root -- --shard=\$\{\{ matrix\.shard \}\}\/2 --quiet/u);
   assert.match(workflow, /^ {8}if: matrix\.shard == 1\n {8}run: npm run test:core -- --quiet$/mu);
-  assert.equal(workflow.match(/cache: npm/gu)?.length, 4);
-  assert.equal(workflow.match(/^ {6}- run: npm ci$/gmu)?.length, 4);
+  assert.equal(workflow.match(/cache: npm/gu)?.length, 5);
+  assert.equal(workflow.match(/^ {6}- run: npm ci$/gmu)?.length, 5);
   assert.doesNotMatch(workflow, /npm ci --omit=optional/u);
   assert.doesNotMatch(workflow, /lfs: true/u);
 

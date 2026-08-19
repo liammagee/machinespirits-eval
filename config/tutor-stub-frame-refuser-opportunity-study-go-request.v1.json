@@ -3,7 +3,7 @@
   "status": "HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL",
   "studyId": "tutor-stub-frame-refuser-opportunity-v1",
   "workplanItem": "resistance-action-register-integration",
-  "preparedAt": "2026-08-19T22:31:00Z",
+  "preparedAt": "2026-08-19T23:29:48Z",
   "claimBoundary": "This six-dialogue gate can establish only whether frame_refuser supplies three distinct, early, guard-eligible public prefixes while new frame_defiant controls remain productive jurisdiction disputes without refusal leakage. It cannot establish tutor adaptation, pedagogical-move efficacy, register efficacy, learning outcomes, human validity, or transfer to the cell harness.",
   "authorization": {
     "explicitHumanApproval": null,
@@ -13,11 +13,11 @@
     "approvalMustNameMaximumPlannedModelAttempts": 288
   },
   "source": {
-    "launchCommit": "13c293afec274f7223d0ec14410f1db9b6975699",
-    "launchTree": "3b0ac7438061e7fe58ec8919c358d5c0d7dfaf4b",
+    "launchCommit": "9e2a3eaf5cfc5e8ace28b0412649902c1219b496",
+    "launchTree": "ec53d02e0bb7c0df70e03ab913c080610117eb8d",
     "registrationMergeCommit": "4ab15260ba3c8bf3a18a2c18f19a49dd0a2d3221",
     "selectedFrom": "origin/main",
-    "selectedAt": "2026-08-19T22:31:00Z",
+    "selectedAt": "2026-08-19T23:29:48Z",
     "requirements": {
       "headMustEqualLaunchCommit": true,
       "checkoutMustBeClean": true,
@@ -46,7 +46,7 @@
       },
       {
         "path": "scripts/check-tutor-stub-resistant-profile-study-go-request.js",
-        "sha256": "3a2bdba99bb9f25c3f7ee64e2f7cf5c237200e43e565771ee0a834e89a1cc27b"
+        "sha256": "c65285b683d3f1f1331405b8bde06c4b617758d7d1766c0e60ec34973c6fa2e5"
       },
       {
         "path": "services/tutorStubAutomatedLearnerGenerationRuntime.js",

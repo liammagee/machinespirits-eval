@@ -522,14 +522,29 @@ and explicit human approval.
   request remains local and unapproved until this validator is merged, because
   its launch-source closure must pin a commit that actually contains the
   validator branch. No model call or production write was made.
-- 2026-08-19 — Prepared the final non-executable GO request from clean merged
-  launch source `13c293afec274f7223d0ec14410f1db9b6975699`. It binds the
-  six-dialogue target/control design, exact live and analysis commands, the
-  existing consumed Luna route result, fresh create-once destination, complete
-  executable source closure, 288-attempt ceiling, and bounded recovery for
-  missing or technically failed units only. The zero-call validator reports
-  request SHA-256
-  `16c4cc4c6d51839c6b7508abf826c796ade8f6aa9a1638189abd17865012a8a4`
-  and ready-for-approval status, while both authorization booleans remain
-  false. No model call, live run, or production write was made; execution
-  remains blocked on explicit approval of that exact digest and ceiling.
+- 2026-08-19 — The first metadata-only GO-request PR was closed after the
+  focused authorization lane exposed a clean-checkout dependency defect: the
+  validator imported the full endpoint-preflight runtime and therefore
+  required the uninstalled `yaml` package before it could inspect any request.
+  Removed that top-level runtime dependency and now validate the already-
+  certified endpoint through its raw and canonical contract digests,
+  registration binding, study/scale identity, endpoint-GO certificate, and
+  preflight digest. The existing seven-test authorization contract passes in a
+  worktree with no `node_modules`, so the focused lane remains fast and
+  dependency-free. The executable preflight itself remains separately tested
+  and certified; no skip, workflow change, canary, model call, or production
+  write was introduced.
+- 2026-08-19 — Superseded the obsolete pre-fix request after PR #702 merged.
+  The final non-executable GO request now pins technical launch source
+  `9e2a3eaf5cfc5e8ace28b0412649902c1219b496` and tree
+  `ec53d02e0bb7c0df70e03ab913c080610117eb8d`, including the corrected
+  dependency-free validator in its complete executable source closure. It
+  preserves the six-dialogue target/control design, exact live and analysis
+  commands, existing consumed Luna route result, fresh create-once destination,
+  288-attempt ceiling, and bounded recovery for missing or technically failed
+  units only. The zero-call validator reports request SHA-256
+  `ca832a863764748dde496166ee2f9e7793cb97a582d22564c085bacece005b84`;
+  it reports ready-for-approval status while both authorization booleans remain
+  false. No model call, live run, study output, or production write was made;
+  execution remains blocked on explicit approval of that exact digest and
+  ceiling.
