@@ -197,7 +197,7 @@ test('axis heldout request gates bored and frame axes while low trust remains di
   assert.equal(report.liveRunAuthorized, false);
   assert.equal(report.modelCalls, 0);
   assert.equal(report.productionWrites, 0);
-  assert.equal(report.launchCommit, '23ccba13b5a09dec56132cce129f7fd3958b5075');
+  assert.equal(report.launchCommit, 'c302d917da59c3608d6e0d654fc313b13eadb12f');
   assert.equal(report.budget.maximumPlannedModelAttempts, 864);
   assert.equal(report.budget.retryOrResumeAuthority, 'bounded_technical_recovery');
   assert.deepEqual(request.measurement.coPrimaryProfiles, ['bored', 'frame_defiant']);

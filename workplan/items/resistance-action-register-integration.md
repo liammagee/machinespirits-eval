@@ -411,3 +411,11 @@ and explicit human approval.
   technically failed units under an otherwise identical envelope; no valid
   output may be rerun. The request remains on HOLD for exact digest-bound human
   approval.
+- 2026-08-19 — PR #687 intentionally changed the durable Node runtime boundary
+  after the held-out GO request was prepared, so the package closure failed
+  closed on merged `main` as designed. Re-pinned the still-unapproved request
+  to merge commit `c302d917da59c3608d6e0d654fc313b13eadb12f` and its Node 22/24
+  package closure without changing the registered design, models, seed,
+  destination, attempt ceiling, recovery boundary, or interpretation. The
+  prior request digest was never approved or consumed; the replacement remains
+  on HOLD for a fresh exact digest-bound human approval.
