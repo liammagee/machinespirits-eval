@@ -7,29 +7,17 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
+import {
+  classifySurfaceAcceptance,
+  packageManifestAtRef,
+  pathTriggersSurfaceAcceptance,
+} from './tutor-stub-surface-ci-policy.js';
+
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_BASE = 'origin/main';
 const DEFAULT_HEAD = 'HEAD';
 const VALID_PROFILES = new Set(['full', 'quick', 'node-tests']);
 const VALID_SURFACE_MODES = new Set(['auto', 'always', 'never']);
-const SURFACE_PATHS = [
-  '.github/workflows/tutor-stub-surface-acceptance.yml',
-  'desktop/',
-  'electron-builder.yml',
-  'fixtures/tutor-stub-surface-acceptance/',
-  'package.json',
-  'package-lock.json',
-  'public/tutor/',
-  'routes/tutorStubSessionRoutes.js',
-  'scripts/run-tutor-stub-surface-acceptance.mjs',
-  'scripts/tutor-stub-acceptance-server.mjs',
-  'scripts/tutor-stub.js',
-  'services/cliProviderBridge.js',
-  'services/evalSurfaces.js',
-  'services/tutorStubProcessSessionFactory.js',
-  'services/tutorStubSessionHost.js',
-  'services/tutorStubSurfaceAcceptanceContract.js',
-];
 
 const HELP = `Usage: npm run ci:local -- [options]
 
@@ -141,9 +129,7 @@ function lane(id, label, commands, profiles = ['full']) {
   return { id, label, commands, profiles };
 }
 
-export function pathTriggersSurfaceAcceptance(file) {
-  return SURFACE_PATHS.some((candidate) => (candidate.endsWith('/') ? file.startsWith(candidate) : file === candidate));
-}
+export { pathTriggersSurfaceAcceptance };
 
 function node20ContainerCommand(projectRoot) {
   const copyAndRun = [
@@ -281,7 +267,10 @@ export async function changedFilesForRange(base, head, projectRoot = PROJECT_ROO
   ].sort();
 }
 
-export function buildLocalCiPlan(options, { projectRoot = PROJECT_ROOT, changedFiles = [] } = {}) {
+export function buildLocalCiPlan(
+  options,
+  { projectRoot = PROJECT_ROOT, changedFiles = [], surfaceRequired = null } = {},
+) {
   const catalog = localCiLaneCatalog(options, projectRoot);
   const known = new Set(catalog.map((entry) => entry.id));
   for (const id of [...options.lanes, ...options.skip]) {
@@ -294,14 +283,15 @@ export function buildLocalCiPlan(options, { projectRoot = PROJECT_ROOT, changedF
   if (!options.install) selected.delete('install');
   if (options.includeNode20) selected.add('node20');
 
-  const surfaceRequired =
+  const resolvedSurfaceRequired =
     options.surface === 'always' ||
-    (options.surface === 'auto' && changedFiles.some((file) => pathTriggersSurfaceAcceptance(file)));
+    (options.surface === 'auto' &&
+      (surfaceRequired ?? changedFiles.some((file) => pathTriggersSurfaceAcceptance(file))));
   const surfaceExplicit = options.lanes.includes('surface');
   selected.delete('surface');
   if (
     options.surface !== 'never' &&
-    (surfaceExplicit || (!options.lanes.length && surfaceRequired && options.profile === 'full'))
+    (surfaceExplicit || (!options.lanes.length && resolvedSurfaceRequired && options.profile === 'full'))
   ) {
     selected.add('surface');
   }
@@ -477,7 +467,28 @@ async function main() {
   }
 
   const changedFiles = await changedFilesForRange(options.base, options.head);
-  const plan = buildLocalCiPlan(options, { changedFiles });
+  let surfaceRequired = false;
+  if (options.surface === 'auto') {
+    const packageChanged = changedFiles.includes('package.json');
+    let baseManifest = null;
+    if (packageChanged) {
+      try {
+        baseManifest = packageManifestAtRef(options.base);
+      } catch {
+        // Missing comparison metadata fails closed into the packaged surface lane.
+      }
+    }
+    const classification = classifySurfaceAcceptance({
+      changedFiles,
+      baseManifest,
+      headManifest: packageChanged
+        ? JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'package.json'), 'utf8'))
+        : null,
+    });
+    surfaceRequired = classification.required;
+    console.log(`local-ci: surface=${classification.required ? 'required' : 'skipped'} (${classification.reason})`);
+  }
+  const plan = buildLocalCiPlan(options, { changedFiles, surfaceRequired });
   if (plan.length === 0) throw new Error('Local CI plan selected no lanes');
 
   if (options.profile === 'full' && Number(process.versions.node.split('.')[0]) !== 22) {

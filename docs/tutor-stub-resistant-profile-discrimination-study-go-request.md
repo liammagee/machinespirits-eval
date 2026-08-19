@@ -11,7 +11,7 @@ It is deliberately non-executable: both authorization booleans remain false,
 and the validator below makes zero model calls and zero production writes.
 
 ```bash
-npm run tutor:stub:resistant-profile-study-go -- --json
+node scripts/check-tutor-stub-resistant-profile-study-go-request.js --json
 ```
 
 ## Exact study requested

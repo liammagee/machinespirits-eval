@@ -91,7 +91,7 @@ Validate the registration, protected hashes, marker smoke cases, and exact QA
 command expansion without writing an artifact:
 
 ```bash
-npm run tutor:stub:resistant-profile-preflight
+node scripts/prepare-tutor-stub-resistant-profile-discrimination.js
 ```
 
 Then execute the printed orchestration dry run. Every child command carries

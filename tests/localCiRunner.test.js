@@ -13,6 +13,10 @@ import {
   pathTriggersSurfaceAcceptance,
 } from '../scripts/run-local-ci.js';
 import { nativeRebuildPlan } from '../scripts/rebuild-node-native-modules.js';
+import {
+  classifySurfaceAcceptance,
+  packageManifestChangeRequiresSurfaceAcceptance,
+} from '../scripts/tutor-stub-surface-ci-policy.js';
 
 function displays(plan) {
   return plan.flatMap((lane) => lane.commands.map(displayCommand));
@@ -116,6 +120,64 @@ test('surface acceptance uses the same path family and can add isolated Node 20 
   });
   assert.equal(
     docsOnly.some((lane) => lane.id === 'surface'),
+    false,
+  );
+});
+
+test('surface acceptance skips unrelated package scripts but fails closed for runtime and acceptance changes', () => {
+  const baseManifest = {
+    name: '@machinespirits/eval',
+    type: 'module',
+    dependencies: { yaml: '2.9.0' },
+    scripts: {
+      'desktop:pack': 'desktop/node_modules/.bin/electron-builder --dir',
+      'tutor:stub:qa': 'node scripts/run-tutor-stub-qa-matrix.js',
+    },
+  };
+  const unrelatedScript = {
+    ...baseManifest,
+    scripts: { ...baseManifest.scripts, 'one-off:validator': 'node scripts/check-once.js' },
+  };
+  assert.equal(packageManifestChangeRequiresSurfaceAcceptance(baseManifest, unrelatedScript), false);
+  assert.deepEqual(
+    classifySurfaceAcceptance({ changedFiles: ['package.json'], baseManifest, headManifest: unrelatedScript }),
+    { required: false, reason: 'package.json change is unrelated scripts only' },
+  );
+
+  const relevantScript = {
+    ...baseManifest,
+    scripts: { ...baseManifest.scripts, 'desktop:pack': 'electron-builder --dir --config alternate.yml' },
+  };
+  assert.equal(packageManifestChangeRequiresSurfaceAcceptance(baseManifest, relevantScript), true);
+  assert.equal(
+    packageManifestChangeRequiresSurfaceAcceptance(baseManifest, {
+      ...baseManifest,
+      scripts: { ...baseManifest.scripts, postinstall: 'node scripts/configure-runtime.js' },
+    }),
+    true,
+  );
+  assert.equal(
+    classifySurfaceAcceptance({ changedFiles: ['package.json'], baseManifest, headManifest: relevantScript }).required,
+    true,
+  );
+  assert.equal(
+    classifySurfaceAcceptance({
+      changedFiles: ['package.json'],
+      baseManifest,
+      headManifest: { ...baseManifest, dependencies: { yaml: '2.10.0' } },
+    }).required,
+    true,
+  );
+  assert.equal(classifySurfaceAcceptance({ changedFiles: ['package-lock.json'] }).required, true);
+  assert.equal(classifySurfaceAcceptance({ changedFiles: ['package.json'] }).required, true);
+
+  const scriptOnlyPlan = buildLocalCiPlan(parseLocalCiArgs(['--no-install']), {
+    projectRoot: '/repo',
+    changedFiles: ['package.json'],
+    surfaceRequired: false,
+  });
+  assert.equal(
+    scriptOnlyPlan.some((lane) => lane.id === 'surface'),
     false,
   );
 });
