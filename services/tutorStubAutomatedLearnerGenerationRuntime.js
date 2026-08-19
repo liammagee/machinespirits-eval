@@ -24,6 +24,7 @@ import {
   guardedLearnerRedraftInstruction,
   selectGuardedLearnerMove,
 } from './tutorStubGuardedLearnerMoves.js';
+import { resistantLearnerObservationMarkers } from './resistantLearnerObservation.js';
 
 const AUTO_LEARNER_SYSTEM_PROMPT = [
   'You are an automated learner in an experimental tutoring dialogue.',
@@ -119,6 +120,10 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
 
   function automatedLearnerMarkerValue(turn, field) {
     const classifier = turn?.classification?.turn || {};
+    const resistantMarkers = resistantLearnerObservationMarkers({
+      learnerText: turn?.learner,
+      classification: turn?.classification,
+    });
     const fields = {
       requestType: classifier.request_type,
       discourseMove: classifier.discourse_move,
@@ -126,6 +131,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       epistemicStance: classifier.epistemic_stance,
       agency: classifier.agency,
       explicitRecollection: explicitRecollectionFrame(turn?.learner),
+      ...resistantMarkers,
     };
     return fields[field] ?? null;
   }

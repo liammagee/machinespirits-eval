@@ -8,6 +8,11 @@ import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContrac
 import { fileURLToPath } from 'node:url';
 
 import { createTutorStubAutomatedLearnerGenerationRuntime } from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
+import {
+  learnerProfileContract,
+  learnerProfileIds,
+  learnerProfilePrompt,
+} from '../scripts/tutor-stub-learner-profile-contracts.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -50,6 +55,97 @@ test('entrypoint delegates automated learner generation rather than retaining lo
   assert.doesNotMatch(cliSource, /async function generateMixedLearnerArtifacts/u);
   assert.match(runtimeSource, /async function generateAutomatedLearnerTurn/u);
   assert.match(runtimeSource, /async function enforceAutomatedLearnerProfile/u);
+});
+
+test('runtime adherence accepts the derived bored and frame-defiant public markers without repair calls', async () => {
+  const cases = [
+    {
+      profile: 'bored',
+      text: 'Sure. Whatever.',
+      classification: {
+        request_type: 'off_task_or_mixed',
+        discourse_move: 'off_task',
+        evidence_use: 'none',
+        epistemic_stance: 'resistant',
+        agency: 'complying',
+      },
+    },
+    {
+      profile: 'frame_defiant',
+      text: 'I reject the premise of this exercise. You do not get to set the question that way.',
+      classification: {
+        request_type: 'authority_refusal_or_status_challenge',
+        discourse_move: 'challenge',
+        evidence_use: 'none',
+        epistemic_stance: 'resistant',
+        agency: 'steering',
+      },
+    },
+  ];
+
+  for (const row of cases) {
+    const trace = [];
+    let analysisCalls = 0;
+    let repairCalls = 0;
+    const runtime = createTutorStubAutomatedLearnerGenerationRuntime({
+      appendTraceEvent: (target, event) => target.push(event),
+      callPromptModel: async () => {
+        repairCalls += 1;
+        return { text: 'unexpected repair' };
+      },
+      classificationFromCombinedAnalysis: (raw) => raw.classification,
+      env: {},
+      extractCombinedLearnerAnalysis: async () => {
+        analysisCalls += 1;
+        return { classification: { turn: row.classification } };
+      },
+      learnerProfileContract,
+      learnerProfileIds,
+      learnerProfilePrompt,
+      negativeFloorRegisters: [],
+    });
+    const state = {
+      trace,
+      turns: [],
+      history: [],
+      register: { policy: 'field' },
+      classifier: { enabled: true },
+      learnerDag: { enabled: true },
+      world: {},
+      interim: null,
+    };
+
+    const result = await runtime.enforceAutomatedLearnerProfile({
+      state,
+      resolved: {},
+      profile: row.profile,
+      turnNumber: 2,
+      generated: { text: row.text },
+    });
+
+    assert.equal(result.passed, true, row.profile);
+    assert.equal(result.repaired, false, row.profile);
+    assert.equal(analysisCalls, 1, row.profile);
+    assert.equal(repairCalls, 0, row.profile);
+    assert.deepEqual(
+      trace.filter((event) => event.type === 'auto_learner_profile_repair_requested'),
+      [],
+      row.profile,
+    );
+    assert.deepEqual(
+      trace.find((event) => event.type === 'auto_learner_profile_adherence'),
+      {
+        type: 'auto_learner_profile_adherence',
+        turn: 2,
+        profile: row.profile,
+        required: true,
+        passed: true,
+        repaired: false,
+        repairAttempts: 0,
+      },
+      row.profile,
+    );
+  }
 });
 
 function turnEvent(
