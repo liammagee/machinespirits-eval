@@ -1,7 +1,7 @@
 ---
 id: expedite-ci-expensive-boundaries
 title: Gate expensive CI boundaries and avoid incidental Electron packaging
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -11,6 +11,8 @@ updated: 2026-08-18
 branch: codex/ci-boundary-gating
 verification: "Classifier tests prove unrelated package scripts skip the macOS job while runtime, dependency, lockfile, desktop, shared-surface, and workflow changes run it; focused CI/workflow tests and workplan source validation pass, then one hosted PR confirms the classified job behavior."
 links:
+  prs:
+    - 666
   items:
     - local-ci-parity-runner
     - automate-browser-and-packaged-electron-tutor-stub-acceptance
@@ -65,3 +67,10 @@ Log:
   from `run-local-ci.js` to `tutor-stub-surface-ci-policy.js`. Move the
   source-inventory exemption with its owner and rerun the focused audit plus
   the exact shard before updating the PR.
+- 2026-08-18 — Closed explicitly after the repair: PR #666 merged with every
+  hosted check green, including both formerly failing shard-2 jobs, the
+  classifier, and the full packaged-Electron lane. The classifier's focused
+  tests already prove the unrelated scripts-only skip case and the fail-closed
+  runtime/dependency cases. A future incidental manifest PR may provide an
+  additional production observation, but it is not required to retain this
+  completed item or its implementation context.
