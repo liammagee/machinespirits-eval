@@ -1017,8 +1017,7 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
     contrastWith: {
       frame_defiant:
         'withholds the local evidence work entirely; frame_defiant disputes the wider frame while still offering a reframing, bounded test, or content-bearing contribution',
-      bored:
-        'names a jurisdictional objection; bored withholds effort without disputing who may set the inquiry frame',
+      bored: 'names a jurisdictional objection; bored withholds effort without disputing who may set the inquiry frame',
       skeptical:
         'refuses the assigned inquiry rather than accepting it provisionally and asking what evidence licenses a claim',
       affective_resistant: 'objects to the inquiry frame rather than pressure, tone, or exposed affect',
@@ -1032,7 +1031,8 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
     triggers: [
       {
         when: 'the tutor fixes a question or assigns a test as the next required move',
-        responseBias: 'name the disputed frame and refuse both the assigned test and an evidence-bearing answer under it',
+        responseBias:
+          'name the disputed frame and refuse both the assigned test and an evidence-bearing answer under it',
       },
       {
         when: 'the tutor acknowledges the right to reject the wider frame and offers one bounded local distinction',

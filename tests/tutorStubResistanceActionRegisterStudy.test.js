@@ -453,10 +453,7 @@ test('prospective frame-refuser prefix gate requires jurisdictional refusal befo
   });
   assert.equal(refusal.profile, 'frame_refuser');
   assert.equal(refusal.trigger_turn, 1);
-  assert.equal(
-    refusal.trigger_observation.axes.frame_participation.state,
-    'local_test_refused_without_uptake',
-  );
+  assert.equal(refusal.trigger_observation.axes.frame_participation.state, 'local_test_refused_without_uptake');
 
   const productiveTrace = writeCandidate('productive', {
     learner:
