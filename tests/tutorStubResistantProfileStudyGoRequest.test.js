@@ -24,6 +24,11 @@ const MEASUREMENT_RECHECK_RECOVERY_REQUEST_PATH = path.join(
   'config',
   'tutor-stub-resistant-profile-measurement-recheck-technical-recovery-study-go-request.v1.json',
 );
+const AXIS_HELDOUT_REQUEST_PATH = path.join(
+  ROOT,
+  'config',
+  'tutor-stub-resistance-axis-heldout-study-go-request.v1.json',
+);
 
 function checkRequest(requestPath) {
   return JSON.parse(
@@ -165,5 +170,31 @@ test('technical recovery request preserves failures and permits only bounded mis
   assert.equal(request.technicalRecovery.recoveryBoundary.maximumTotalStudyAttemptsUnchanged, 864);
   assert.match(request.destination.artifactRoot, /technical-recovery/u);
   assert.match(report.exactApprovalStatement, new RegExp(report.requestSha256, 'u'));
+  assert.match(report.exactApprovalStatement, /bounded technical recovery authority for missing or failed units only/u);
+});
+
+test('axis heldout request gates bored and frame axes while low trust remains diagnostic-only', () => {
+  const report = checkRequest(AXIS_HELDOUT_REQUEST_PATH);
+  const request = JSON.parse(fs.readFileSync(AXIS_HELDOUT_REQUEST_PATH, 'utf8'));
+
+  assert.equal(report.packetValid, true);
+  assert.equal(report.readyForExplicitHumanApproval, true);
+  assert.equal(report.explicitHumanApproval, false);
+  assert.equal(report.modelCallsAuthorized, false);
+  assert.equal(report.liveRunAuthorized, false);
+  assert.equal(report.modelCalls, 0);
+  assert.equal(report.productionWrites, 0);
+  assert.equal(report.launchCommit, '23ccba13b5a09dec56132cce129f7fd3958b5075');
+  assert.equal(report.budget.maximumPlannedModelAttempts, 864);
+  assert.equal(report.budget.retryOrResumeAuthority, 'bounded_technical_recovery');
+  assert.deepEqual(request.measurement.coPrimaryProfiles, ['bored', 'frame_defiant']);
+  assert.deepEqual(request.measurement.diagnosticProfiles, ['low_agency', 'skeptical', 'low_trust_skeptic']);
+  assert.equal(request.measurement.epistemicTrustRole, 'descriptive_only_no_threshold_no_pass_contribution');
+  assert.equal(request.axisHeldout.priorResultRewritten, false);
+  assert.equal(request.axisHeldout.historicalEvidencePooled, false);
+  assert.match(report.requestSha256, /^[0-9a-f]{64}$/u);
+  assert.match(report.exactApprovalStatement, new RegExp(report.requestSha256, 'u'));
+  assert.match(report.exactApprovalStatement, /one 18-dialogue Luna study/u);
+  assert.match(report.exactApprovalStatement, /hard ceiling of 864 model attempts/u);
   assert.match(report.exactApprovalStatement, /bounded technical recovery authority for missing or failed units only/u);
 });

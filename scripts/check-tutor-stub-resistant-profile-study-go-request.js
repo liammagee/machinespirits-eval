@@ -182,10 +182,19 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
 
   const hold = readJson(rootPath(request.bindings.liveReadinessHold.path));
   const readiness = JSON.parse(
-    execFileSync(process.execPath, ['scripts/check-tutor-stub-resistant-profile-live-readiness.js', '--json'], {
-      cwd: ROOT,
-      encoding: 'utf8',
-    }),
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/check-tutor-stub-resistant-profile-live-readiness.js',
+        '--hold',
+        request.bindings.liveReadinessHold.path,
+        '--json',
+      ],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+      },
+    ),
   );
   assertion(
     checks,
@@ -237,13 +246,14 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   const isFreshMeasurementRecheck = request.recheck?.type === 'fresh_full_cohort_measurement_recheck';
   const isTechnicalRecovery =
     request.technicalRecovery?.type === 'fresh_destination_after_pre_model_dependency_failure';
+  const isAxisHeldout = request.axisHeldout?.type === 'prospective_resistance_axis_heldout';
   const commandSource = request.bindings.commands.source;
   const liveCommand = commandSource === 'commands' ? request.commands?.live : hold.proposedCommands.live;
   const analyzeCommand = commandSource === 'commands' ? request.commands?.analyze : hold.proposedCommands.analyze;
   assertion(
     checks,
     'command-source',
-    (commandSource === 'commands' && (isReplacement || isFreshMeasurementRecheck)) ||
+    (commandSource === 'commands' && (isReplacement || isFreshMeasurementRecheck || isAxisHeldout)) ||
       commandSource === 'bindings.liveReadinessHold.path#proposedCommands',
     `command source is ${commandSource}`,
   );
@@ -371,6 +381,117 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         commandArg(analyzeCommand, '--required-learner-model') === request.design.models.learner &&
         analyzeCommand.includes('--require-pooled'),
       'the analysis combines only the 15 pinned prior traces with the fresh sealed root',
+    );
+  } else if (isAxisHeldout) {
+    const registered = readJson(rootPath(request.bindings.registration.path));
+    const expectedProfiles = 'diligent,low_agency,bored,skeptical,low_trust_skeptic,frame_defiant';
+    const analysisShell = analyzeCommand[2] || '';
+    assertion(
+      checks,
+      'axis-heldout-design-binding',
+      request.design.profiles.join(',') === expectedProfiles &&
+        request.design.dialogues === 18 &&
+        request.design.runsPerProfile === 3 &&
+        request.design.runSeed === 20260819 &&
+        request.design.parallelism === 3 &&
+        request.budget.dialogues === 18 &&
+        request.budget.maximumAttemptsPerDialogue === 48 &&
+        request.budget.maximumPlannedModelAttempts === 864 &&
+        request.budget.retryOrResumeAuthority === 'bounded_technical_recovery',
+      'six fresh three-run profile cohorts and the 864-attempt bounded-recovery ceiling remain frozen',
+    );
+    assertion(
+      checks,
+      'axis-heldout-evidence-boundary',
+      request.axisHeldout.priorArtifactsReused === false &&
+        request.axisHeldout.priorResultRewritten === false &&
+        request.axisHeldout.historicalEvidencePooled === false &&
+        request.axisHeldout.calibrationUsedForThresholdDesignOnly === true &&
+        request.axisHeldout.registeredNegativeReportSha256 === registered.preservation.registeredNegativeReportSha256,
+      'prior traces and negative results remain read-only, unpooled calibration inputs',
+    );
+    const recovery = request.axisHeldout.recoveryBoundary;
+    assertion(
+      checks,
+      'axis-heldout-bounded-recovery-authority',
+      recovery.sameLaunchSource === true &&
+        recovery.sameModelProviderRoute === true &&
+        recovery.sameProfilesPoliciesSeedConfigurationAndRubric === true &&
+        recovery.samePayloadAndDataScope === true &&
+        recovery.freshNonOverwritingDestinationForRecoveredUnits === true &&
+        recovery.rerunValidOutputs === false &&
+        recovery.selectAmongOutcomes === false &&
+        recovery.maximumTotalStudyAttemptsUnchanged === 864,
+      'technical recovery is limited to missing or failed units under the unchanged design and ceiling',
+    );
+    assertion(
+      checks,
+      'axis-heldout-measurement-binding',
+      request.measurement.reportSchema === 'machinespirits.tutor-stub.resistance-axis-discrimination.v1' &&
+        request.measurement.coPrimaryProfiles.join(',') === 'bored,frame_defiant' &&
+        request.measurement.diagnosticProfiles.join(',') === 'low_agency,skeptical,low_trust_skeptic' &&
+        request.measurement.epistemicTrustRole === 'descriptive_only_no_threshold_no_pass_contribution' &&
+        registered.gates.profiles.bored.axis === 'effort_investment' &&
+        registered.gates.profiles.bored.minimumObservedRate === 0.45 &&
+        registered.gates.profiles.frame_defiant.axis === 'frame_legitimacy' &&
+        registered.gates.profiles.frame_defiant.minimumObservedRate === 0.4 &&
+        registered.gates.epistemicTrustRole === 'descriptive_only_no_threshold_no_pass_contribution',
+      'bored effort and frame legitimacy are primary while low trust remains descriptive-only',
+    );
+    assertion(
+      checks,
+      'axis-heldout-live-command-shape',
+      liveCommand[0] === 'node' &&
+        liveCommand[1] === 'scripts/run-tutor-stub-qa-matrix.js' &&
+        commandArg(liveCommand, '--profiles') === expectedProfiles &&
+        commandArg(liveCommand, '--policies') === 'field' &&
+        commandArg(liveCommand, '--runs') === '3' &&
+        commandArg(liveCommand, '--run-seed') === '20260819' &&
+        commandArg(liveCommand, '--turns') === '8' &&
+        commandArg(liveCommand, '--safety-turns') === '8' &&
+        commandArg(liveCommand, '--model-call-budget') === '48' &&
+        commandArg(liveCommand, '--model') === request.design.models.tutor &&
+        commandArg(liveCommand, '--analysis-model') === request.design.models.analysis &&
+        commandArg(liveCommand, '--auto-learner-model') === request.design.models.learner &&
+        commandArg(liveCommand, '--world') === request.design.world &&
+        commandArg(liveCommand, '--dag-mode') === 'strict_dag' &&
+        commandArg(liveCommand, '--register-palette') === 'safe' &&
+        commandArg(liveCommand, '--register-overlay-threshold') === '0.7' &&
+        commandArg(liveCommand, '--release-speed') === '1' &&
+        commandArg(liveCommand, '--cli-effort') === request.design.cliEffort &&
+        commandArg(liveCommand, '--history-turns') === '4' &&
+        commandArg(liveCommand, '--max-tokens') === '4096' &&
+        commandArg(liveCommand, '--parallelism') === '3' &&
+        commandArg(liveCommand, '--trace-dir') === request.destination.artifactRoot &&
+        liveCommand.includes('--no-html-report') &&
+        liveCommand.includes('--no-memory-summary') &&
+        liveCommand.includes('--no-analyze') &&
+        !liveCommand.includes('--keep-going'),
+      'the fresh 18-dialogue command preserves the registered axis-study runtime',
+    );
+    assertion(
+      checks,
+      'axis-heldout-analysis-command-shape',
+      analyzeCommand.length === 3 &&
+        analyzeCommand[0] === 'zsh' &&
+        analyzeCommand[1] === '-lc' &&
+        analysisShell.includes('/*/traces/*/*.jsonl') &&
+        analysisShell.includes('trace_args+=(--trace "$trace")') &&
+        analysisShell.includes('scripts/analyze-tutor-stub-resistance-axis-calibration.js') &&
+        analysisShell.includes('--registration config/tutor-stub-resistance-axis-heldout-registration.v1.json') &&
+        analysisShell.includes('--required-traces 18') &&
+        analysisShell.includes(`--required-profiles ${expectedProfiles}`) &&
+        analysisShell.includes('--required-runs-per-profile 3') &&
+        analysisShell.includes('--required-turns 8') &&
+        analysisShell.includes('--required-policies field') &&
+        analysisShell.includes(`--required-tutor-model ${request.design.models.tutor}`) &&
+        analysisShell.includes(`--required-analysis-model ${request.design.models.analysis}`) &&
+        analysisShell.includes(`--required-learner-model ${request.design.models.learner}`) &&
+        !analysisShell.includes('--require-pooled') &&
+        !analysisShell.includes('target-average-cosine') &&
+        !analysisShell.includes('nearest-neighbor') &&
+        analysisShell.includes(`--out "$artifact_root/resistance-axis-discrimination.json"`),
+      'the analysis selects exact dialogue traces and excludes the failed pooled and nearest-neighbour geometry',
     );
   } else if (isFreshMeasurementRecheck) {
     const registered = readJson(rootPath(request.bindings.registration.path));
@@ -576,9 +697,10 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   );
 
   const requestSha256 = sha256File(requestPath);
-  const recoveryAuthorityClause = isTechnicalRecovery
-    ? 'bounded technical recovery authority for missing or failed units only.'
-    : 'no retry or resume authority.';
+  const recoveryAuthorityClause =
+    isTechnicalRecovery || request.budget.retryOrResumeAuthority === 'bounded_technical_recovery'
+      ? 'bounded technical recovery authority for missing or failed units only.'
+      : 'no retry or resume authority.';
   const exactApprovalStatement =
     `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one ` +
     `${request.design.dialogues}-dialogue Luna ${isReplacement ? 'replacement study' : 'study'}, ` +

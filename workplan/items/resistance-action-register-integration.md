@@ -40,6 +40,7 @@ links:
     - docs/tutor-stub-resistant-profile-measurement-recheck-technical-recovery-study-go-request.md
     - docs/tutor-stub-resistance-axis-heldout-registration.md
     - docs/tutor-stub-resistance-axis-heldout-live-readiness-hold.md
+    - docs/tutor-stub-resistance-axis-heldout-study-go-request.md
   code:
     - services/pedagogicalMove/contract.js
     - services/pedagogicalMove/shadow.js
@@ -52,6 +53,7 @@ links:
     - services/tutorStubResistanceAxisDiscriminationPreflight.js
     - config/tutor-stub-resistance-axis-heldout-registration.v1.json
     - config/tutor-stub-resistance-axis-heldout-live-readiness.hold.v1.json
+    - config/tutor-stub-resistance-axis-heldout-study-go-request.v1.json
     - config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.json
     - config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.endpoint-go.json
     - services/pedagogicalMove/resistantProfileWarrantShadow.js
@@ -81,7 +83,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistance-axis-heldout-registration
+branch: codex/resistance-axis-heldout-go
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -396,3 +398,16 @@ and explicit human approval.
   low-trust diagnostic across 18 synthetic dialogues with zero model calls and
   zero production writes. The readiness packet remains HOLD pending a clean
   post-merge launch SHA, digest-bound GO request, and explicit human approval.
+- 2026-08-19 — PR #685 merged the prospective held-out registration and
+  portable endpoint preflight at
+  `23ccba13b5a09dec56132cce129f7fd3958b5075` after every required GitHub check
+  passed. Prepared a separate non-executable GO request pinned to that exact
+  source. It freezes the six-profile, seed-`20260819`, 18-dialogue Luna design,
+  exact-trace analyzer, create-once destination, and 864-attempt ceiling.
+  Bored effort investment and frame legitimacy remain the only co-primary
+  endpoints; low-agency, skeptical, and low-trust cohorts remain controls, and
+  epistemic trust cannot contribute to the verdict. The passing route canary is
+  reused without another call. Bounded recovery may cover only missing or
+  technically failed units under an otherwise identical envelope; no valid
+  output may be rerun. The request remains on HOLD for exact digest-bound human
+  approval.
