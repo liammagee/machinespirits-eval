@@ -216,7 +216,7 @@ export function assembleTutorStubResistantProfileDiscriminationPreflight({ packe
       summary?.observability &&
       Number.isFinite(gate.maxProbeSimilarity) &&
       Number.isFinite(gate.signatureTargetPassRate) &&
-      gate.nearestNeighborEvaluable === true,
+      typeof gate.nearestNeighborEvaluable === 'boolean',
     );
   };
   const endpointStatus = {

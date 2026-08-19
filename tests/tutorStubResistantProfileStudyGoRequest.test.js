@@ -14,6 +14,11 @@ const REPLACEMENT_REQUEST_PATH = path.join(
   'config',
   'tutor-stub-frame-defiant-replacement-study-go-request.v1.json',
 );
+const MEASUREMENT_RECHECK_REQUEST_PATH = path.join(
+  ROOT,
+  'config',
+  'tutor-stub-resistant-profile-measurement-recheck-study-go-request.v1.json',
+);
 
 function checkRequest(requestPath) {
   return JSON.parse(
@@ -53,7 +58,7 @@ test('approved study request remains bound to its launch source and fails closed
     { cwd: ROOT, encoding: 'utf8' },
   );
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /source-closure-services\/resistantLearnerObservation\.js/u);
+  assert.match(result.stderr, /source-closure-scripts\/analyze-tutor-stub-profile-discrimination\.js/u);
 });
 
 test('study GO request fails closed on a drifted source binding', () => {
@@ -75,26 +80,54 @@ test('study GO request fails closed on a drifted source binding', () => {
   }
 });
 
-test('frame-defiant replacement request freezes three fresh traces and the exact prior-trace partition', () => {
-  const report = checkRequest(REPLACEMENT_REQUEST_PATH);
+test('consumed frame-defiant replacement request remains frozen and fails closed after source drift', () => {
+  const requestBytes = fs.readFileSync(REPLACEMENT_REQUEST_PATH);
   const request = JSON.parse(fs.readFileSync(REPLACEMENT_REQUEST_PATH, 'utf8'));
+
+  assert.equal(
+    crypto.createHash('sha256').update(requestBytes).digest('hex'),
+    '0e022c64ef109b9631cbb544ba0b3c47baee61c44d477a45b4481efaa94e0f35',
+  );
+  assert.equal(request.source.launchCommit, '6dbec4cb49a47eca415f77e2324be57a6e1d6f45');
+  assert.equal(request.budget.maximumPlannedModelAttempts, 144);
+  assert.equal(request.budget.retryOrResumeAuthority, 'none');
+  assert.equal(request.replacement.retainedPriorTraces.length, 15);
+  assert.equal(request.replacement.excludedPriorTraces.length, 3);
+  assert.ok(request.replacement.excludedPriorTraces.every((entry) => entry.profile === 'frame_defiant'));
+
+  const result = spawnSync(
+    process.execPath,
+    ['scripts/check-tutor-stub-resistant-profile-study-go-request.js', '--request', REPLACEMENT_REQUEST_PATH, '--json'],
+    { cwd: ROOT, encoding: 'utf8' },
+  );
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /source-closure-scripts\/analyze-tutor-stub-profile-discrimination\.js/u);
+});
+
+test('fresh measurement recheck freezes a new 18-dialogue cohort without rewriting prior evidence', () => {
+  const report = checkRequest(MEASUREMENT_RECHECK_REQUEST_PATH);
+  const request = JSON.parse(fs.readFileSync(MEASUREMENT_RECHECK_REQUEST_PATH, 'utf8'));
 
   assert.equal(report.status, 'HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL');
   assert.equal(report.packetValid, true);
+  assert.equal(report.readyForExplicitHumanApproval, true);
   assert.equal(report.explicitHumanApproval, false);
   assert.equal(report.modelCallsAuthorized, false);
   assert.equal(report.liveRunAuthorized, false);
   assert.equal(report.modelCalls, 0);
   assert.equal(report.productionWrites, 0);
-  assert.equal(report.launchCommit, '6dbec4cb49a47eca415f77e2324be57a6e1d6f45');
-  assert.equal(report.budget.maximumPlannedModelAttempts, 144);
+  assert.equal(report.launchCommit, '0f7ff1b3d0e1ca0146a519f06914f3d6e1cdcd4d');
+  assert.equal(report.budget.maximumPlannedModelAttempts, 864);
   assert.equal(report.budget.retryOrResumeAuthority, 'none');
-  assert.equal(request.replacement.retainedPriorTraces.length, 15);
-  assert.equal(request.replacement.excludedPriorTraces.length, 3);
-  assert.ok(request.replacement.excludedPriorTraces.every((entry) => entry.profile === 'frame_defiant'));
-  assert.equal(report.readyForExplicitHumanApproval, report.priorArtifactsAvailable);
+  assert.equal(request.recheck.priorArtifactsReused, false);
+  assert.equal(request.recheck.priorResultRewritten, false);
+  assert.equal(request.recheck.thresholdsChanged, false);
+  assert.equal(request.recheck.priorCanonicalReport.sha256, '06d7bbc49df46e2f20ebeb3eb0141dba975825ce10bf33eef0e0dc15540ec32c');
+  assert.equal(request.measurement.reportSchema, 'machinespirits.tutor-stub.profile-discrimination.v4');
+  assert.equal(request.measurement.nearestNeighborAnchorMinimumSignatureTargetPassRate, 0.4);
+  assert.doesNotMatch(request.commands.analyze[2], /--trace-root/u);
   assert.match(report.requestSha256, /^[0-9a-f]{64}$/u);
   assert.match(report.exactApprovalStatement, new RegExp(report.requestSha256, 'u'));
-  assert.match(report.exactApprovalStatement, /one 3-dialogue Luna replacement study/u);
-  assert.match(report.exactApprovalStatement, /hard ceiling of 144 model attempts/u);
+  assert.match(report.exactApprovalStatement, /one 18-dialogue Luna study/u);
+  assert.match(report.exactApprovalStatement, /hard ceiling of 864 model attempts/u);
 });

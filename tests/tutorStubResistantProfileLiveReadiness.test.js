@@ -45,6 +45,12 @@ test('resistant-profile endpoint preflight completes all co-primary endpoints at
     bored_contract_gate: 'complete',
     frame_defiant_contract_gate: 'complete',
   });
+  const cases = buildTutorStubResistantProfileDiscriminationSyntheticCorpus();
+  const assembled = assembleTutorStubResistantProfileDiscriminationPreflight({
+    packets: buildTutorStubResistantProfileDiscriminationPreflightPackets(cases),
+    contract,
+  });
+  assert.ok(assembled.report.gate.conditioned.profiles.every((row) => row.nearestNeighborEvaluable === false));
   assert.equal(endpointGo.ok, true, endpointGo.errors.join('; '));
 });
 

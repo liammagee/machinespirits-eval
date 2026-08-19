@@ -234,13 +234,14 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   );
 
   const isReplacement = request.replacement?.type === 'fresh_profile_cohort_replacement';
+  const isFreshMeasurementRecheck = request.recheck?.type === 'fresh_full_cohort_measurement_recheck';
   const commandSource = request.bindings.commands.source;
   const liveCommand = commandSource === 'commands' ? request.commands?.live : hold.proposedCommands.live;
   const analyzeCommand = commandSource === 'commands' ? request.commands?.analyze : hold.proposedCommands.analyze;
   assertion(
     checks,
     'command-source',
-    (commandSource === 'commands' && isReplacement) ||
+    (commandSource === 'commands' && (isReplacement || isFreshMeasurementRecheck)) ||
       commandSource === 'bindings.liveReadinessHold.path#proposedCommands',
     `command source is ${commandSource}`,
   );
@@ -368,6 +369,113 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         commandArg(analyzeCommand, '--required-learner-model') === request.design.models.learner &&
         analyzeCommand.includes('--require-pooled'),
       'the analysis combines only the 15 pinned prior traces with the fresh sealed root',
+    );
+  } else if (isFreshMeasurementRecheck) {
+    const registered = readJson(rootPath(request.bindings.registration.path));
+    const expectedProfiles = 'diligent,low_agency,bored,skeptical,low_trust_skeptic,frame_defiant';
+    const analysisShell = analyzeCommand[2] || '';
+    assertion(
+      checks,
+      'measurement-recheck-design-binding',
+      request.design.profiles.join(',') === expectedProfiles &&
+        request.design.dialogues === 18 &&
+        request.design.runsPerProfile === 3 &&
+        request.design.parallelism === 3 &&
+        request.budget.dialogues === 18 &&
+        request.budget.maximumAttemptsPerDialogue === 48 &&
+        request.budget.maximumPlannedModelAttempts === 864 &&
+        request.budget.retryOrResumeAuthority === 'none',
+      'six fresh three-run profile cohorts and the 864-attempt no-retry ceiling remain frozen',
+    );
+    assertion(
+      checks,
+      'measurement-recheck-boundary',
+      request.recheck.priorArtifactsReused === false &&
+        request.recheck.priorDialoguesResumed === false &&
+        request.recheck.priorResultRewritten === false &&
+        request.recheck.thresholdsChanged === false &&
+        request.recheck.prospectiveExactTraceReplay.modelCalls === 0,
+      'the new cohort neither reuses old traces nor rewrites the registered negative result or thresholds',
+    );
+    validateFileBinding(checks, 'measurement-recheck-prior-request-binding', {
+      path: request.recheck.priorRequestPath,
+      sha256: request.recheck.priorRequestSha256,
+    });
+    const priorReport = request.recheck.priorCanonicalReport;
+    if (fs.existsSync(bindingPath(priorReport))) {
+      validateFileBinding(checks, 'measurement-recheck-prior-report-binding', priorReport);
+    } else {
+      assertion(
+        checks,
+        'measurement-recheck-prior-report-digest',
+        /^[0-9a-f]{64}$/u.test(priorReport.sha256) && priorReport.result === 'failed_registered_co_primary_gate',
+        'the machine-local canonical report is unavailable here; its negative result and digest remain frozen',
+      );
+    }
+    assertion(
+      checks,
+      'measurement-recheck-instrument',
+      request.measurement.reportSchema === 'machinespirits.tutor-stub.profile-discrimination.v4' &&
+        request.measurement.behaviorVectorMarkers.join(',') ===
+          'explicitRecollection,learnerAcceleration,boredWithholding,frameJurisdictionDispute' &&
+        request.measurement.nearestNeighborAnchorMinimumSignatureTargetPassRate === 0.4 &&
+        registered.gates.profiles.bored.minimumSignatureTargetPassRate === 0.4 &&
+        registered.gates.profiles.frame_defiant.minimumSignatureTargetPassRate === 0.4 &&
+        request.measurement.analysisTraceSelection === 'exact_profile_trace_files_only' &&
+        request.measurement.analysisSelectorExcludesRunEvents === true,
+      'analyzer v4, both resistant markers, and the unchanged 0.40 anchor floor remain explicit',
+    );
+    assertion(
+      checks,
+      'measurement-recheck-live-command-shape',
+      liveCommand[0] === 'node' &&
+        liveCommand[1] === 'scripts/run-tutor-stub-qa-matrix.js' &&
+        commandArg(liveCommand, '--profiles') === expectedProfiles &&
+        commandArg(liveCommand, '--policies') === 'field' &&
+        commandArg(liveCommand, '--runs') === '3' &&
+        commandArg(liveCommand, '--run-seed') === '20260818' &&
+        commandArg(liveCommand, '--turns') === '8' &&
+        commandArg(liveCommand, '--safety-turns') === '8' &&
+        commandArg(liveCommand, '--model-call-budget') === '48' &&
+        commandArg(liveCommand, '--model') === request.design.models.tutor &&
+        commandArg(liveCommand, '--analysis-model') === request.design.models.analysis &&
+        commandArg(liveCommand, '--auto-learner-model') === request.design.models.learner &&
+        commandArg(liveCommand, '--world') === request.design.world &&
+        commandArg(liveCommand, '--dag-mode') === 'strict_dag' &&
+        commandArg(liveCommand, '--register-palette') === 'safe' &&
+        commandArg(liveCommand, '--register-overlay-threshold') === '0.7' &&
+        commandArg(liveCommand, '--release-speed') === '1' &&
+        commandArg(liveCommand, '--cli-effort') === request.design.cliEffort &&
+        commandArg(liveCommand, '--history-turns') === '4' &&
+        commandArg(liveCommand, '--max-tokens') === '4096' &&
+        commandArg(liveCommand, '--parallelism') === '3' &&
+        commandArg(liveCommand, '--trace-dir') === request.destination.artifactRoot &&
+        liveCommand.includes('--no-html-report') &&
+        liveCommand.includes('--no-memory-summary') &&
+        liveCommand.includes('--no-analyze') &&
+        !liveCommand.includes('--keep-going'),
+      'the fresh 18-dialogue command preserves the frozen runtime configuration',
+    );
+    assertion(
+      checks,
+      'measurement-recheck-analysis-command-shape',
+      analyzeCommand.length === 3 &&
+        analyzeCommand[0] === 'zsh' &&
+        analyzeCommand[1] === '-lc' &&
+        analysisShell.includes('/*/traces/*/*.jsonl') &&
+        analysisShell.includes('trace_args+=(--trace "$trace")') &&
+        !analysisShell.includes('--trace-root') &&
+        analysisShell.includes('--required-traces 18') &&
+        analysisShell.includes(`--required-profiles ${expectedProfiles}`) &&
+        analysisShell.includes('--required-runs-per-profile 3') &&
+        analysisShell.includes('--required-turns 8') &&
+        analysisShell.includes('--required-policies field') &&
+        analysisShell.includes(`--required-tutor-model ${request.design.models.tutor}`) &&
+        analysisShell.includes(`--required-analysis-model ${request.design.models.analysis}`) &&
+        analysisShell.includes(`--required-learner-model ${request.design.models.learner}`) &&
+        analysisShell.includes('--require-pooled') &&
+        analysisShell.includes(`--out "$artifact_root/profile-discrimination.json"`),
+      'the analysis selects only exact dialogue traces and retains every registered assembly gate',
     );
   } else {
     assertion(
