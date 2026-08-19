@@ -34,6 +34,7 @@ jobs:
           # The push range starts at the previous tip, which a shallow clone
           # would not have.
           fetch-depth: 0
+          filter: blob:none
 
       - uses: actions/setup-node@v4
         with:
