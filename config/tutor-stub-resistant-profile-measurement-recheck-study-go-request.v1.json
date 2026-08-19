@@ -1,0 +1,242 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-profile-discrimination-study-go-request.v1",
+  "status": "HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL",
+  "studyId": "tutor-stub-resistant-profile-discrimination-v2-measurement-recheck",
+  "workplanItem": "resistance-action-register-integration",
+  "preparedAt": "2026-08-19T04:17:37Z",
+  "claimBoundary": "This fresh-cohort measurement recheck can establish only whether the bored and frame_defiant automated learner contracts produce discriminable public behavior under the prospective v4 observer and analyzer in the tutor-stub harness. It cannot rewrite the prior negative result or establish tutor-action efficacy, register efficacy, human learning, or transfer to the cell harness.",
+  "authorization": {
+    "explicitHumanApproval": null,
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "approvalMustBindRequestSha256": true,
+    "approvalMustNameMaximumPlannedModelAttempts": 864
+  },
+  "source": {
+    "launchCommit": "0f7ff1b3d0e1ca0146a519f06914f3d6e1cdcd4d",
+    "launchTree": "95e3bd7b5fae4d015f5481e70b651376d0e5b82d",
+    "measurementAuditMergeCommit": "4a01ea0d5f58eacd33349405536ec130792e58eb",
+    "selectedFrom": "origin/main",
+    "selectedAt": "2026-08-19T04:17:37Z",
+    "requirements": {
+      "headMustEqualLaunchCommit": true,
+      "checkoutMustBeClean": true,
+      "detachedLaunchWorktree": true
+    },
+    "closure": [
+      {
+        "path": "scripts/run-tutor-stub-qa-matrix.js",
+        "sha256": "0ddc5f07577d070775b363e79666ba3a5805fa79c268b1f61c9a804be3806ae8"
+      },
+      {
+        "path": "scripts/run-tutor-stub-auto-eval.js",
+        "sha256": "2a1357da998f0e05aa5e43707d73a3d3d5202c78eb399a7410d883e8bf4c5a61"
+      },
+      {
+        "path": "scripts/analyze-tutor-stub-profile-discrimination.js",
+        "sha256": "bc85fb41734ee8576958890f02b6c4e8885cbe758c09704f4547b3d4ba2c5774"
+      },
+      {
+        "path": "scripts/tutor-stub.js",
+        "sha256": "5a7136af62db78962b253955b2fdf99ddcc87ba1c6bbbecffdb78902d0df8344"
+      },
+      {
+        "path": "scripts/tutor-stub-learner-profile-contracts.js",
+        "sha256": "0b6a6858d5e371667ad1e5b56a9cef282ad86c08e9a05310347ef79fd719e9bc"
+      },
+      {
+        "path": "services/tutorStubAutomatedLearnerGenerationRuntime.js",
+        "sha256": "10462583030e4b5f823006f539c2308cd32c323128b6449c601afa6e170f0763"
+      },
+      {
+        "path": "services/resistantLearnerObservation.js",
+        "sha256": "a9bd59f2294dbe7d46eef0d964695cf36903224b5fe9d688a90fa2d86ef69ba3"
+      },
+      {
+        "path": "config/drama-derivation/world-005-marrick.yaml",
+        "sha256": "38f1e5106dbca611a993bf2987f1a812330609927c84b0e17c281c292a201d03"
+      },
+      {
+        "path": "config/providers.yaml",
+        "sha256": "fe0c86fa91f4443fc4d55f6f3d5b39cf7df9fff5c3284096429cb3908335b326"
+      }
+    ]
+  },
+  "recheck": {
+    "type": "fresh_full_cohort_measurement_recheck",
+    "reason": "The prospective observer and analyzer repair passed focused tests and an exact zero-call replay, but the replay correctly failed closed because the historical anchor profiles did not meet their unchanged 0.40 signature floor. Fresh behavior from all six profiles is required to evaluate the registered nearest-neighbor claims.",
+    "priorRequestPath": "config/tutor-stub-frame-defiant-replacement-study-go-request.v1.json",
+    "priorRequestSha256": "0e022c64ef109b9631cbb544ba0b3c47baee61c44d477a45b4481efaa94e0f35",
+    "priorCanonicalReport": {
+      "path": "/Users/lmagee/Dev/machinespirits/ms-frame-defiant-replacement-study/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-frame-defiant-replacement-live-2026-08-19/profile-discrimination.exact-traces.json",
+      "sha256": "06d7bbc49df46e2f20ebeb3eb0141dba975825ce10bf33eef0e0dc15540ec32c",
+      "schema": "machinespirits.tutor-stub.profile-discrimination.v3",
+      "result": "failed_registered_co_primary_gate"
+    },
+    "prospectiveExactTraceReplay": {
+      "reportSha256": "d3522fc29928cf60e682c996f8099f029012ecb21433d35f9c0ca4ebc87c0f8f",
+      "schema": "machinespirits.tutor-stub.profile-discrimination.v4",
+      "result": "failed_closed_anchor_viability",
+      "modelCalls": 0
+    },
+    "priorArtifactsReused": false,
+    "priorDialoguesResumed": false,
+    "priorResultRewritten": false,
+    "thresholdsChanged": false
+  },
+  "measurement": {
+    "reportSchema": "machinespirits.tutor-stub.profile-discrimination.v4",
+    "behaviorVectorMarkers": [
+      "explicitRecollection",
+      "learnerAcceleration",
+      "boredWithholding",
+      "frameJurisdictionDispute"
+    ],
+    "nearestNeighborAnchorMinimumSignatureTargetPassRate": 0.4,
+    "analysisTraceSelection": "exact_profile_trace_files_only",
+    "analysisSelectorExcludesRunEvents": true
+  },
+  "bindings": {
+    "registration": {
+      "path": "config/tutor-stub-resistant-profile-discrimination-registration.v1.json",
+      "sha256": "e6581e6cbfe9589b825589318c2b5b523b03ef1b8587ec31fec5b87ff69249ac"
+    },
+    "liveReadinessHold": {
+      "path": "config/tutor-stub-resistant-profile-discrimination-live-readiness.hold.v1.json",
+      "sha256": "d8a07d3593576b5c1ea9f868d333de386588bc9d4576567a6812c60f56f7c91c"
+    },
+    "endpoint": {
+      "contractPath": "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json",
+      "contractFileSha256": "66da86384f895a80b2078062b211f85104ed1d560f3b43c4ccf8e96642e88347",
+      "contractCanonicalSha256": "a7776585313e15f265440a30412b0505317597454615b83880e69d300bd2bab3",
+      "certificatePath": "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.endpoint-go.json",
+      "certificateFileSha256": "b6cdbb05d3e06beabeded5eebfe1e6e139f907362143373b0cee0d6a5d6f229d",
+      "preflightSha256": "06ec5af028e79f2d38517e33992d59bdcf8401a19bba9be3c5eb86678ecd862b",
+      "authorizationScope": "endpoint-runtime compatibility only"
+    },
+    "routeCanary": {
+      "resultPath": "config/tutor-stub-resistant-profile-route-canary-result.v1.json",
+      "resultSha256": "c68ee936441504fdb514f97537aaf87915c734b43da82f7d81136c40c6918623",
+      "authorizationConsumptionPath": "config/tutor-stub-resistant-profile-route-canary-authorization.consumed.v1.json",
+      "authorizationConsumptionSha256": "1ec23bf81df7678050e5383fbda9ab913979b9b93b24fb1944b59002c6eeefb2",
+      "sourceArtifactSha256": "a2989dfb48438b7153928244a20ef42f698122b6edb3062fdfecca41ca1ac55f",
+      "executionHead": "04edc89f943e380bf5fc88bf2d84b93c8c1a805c",
+      "observedProvider": "codex",
+      "observedModel": "gpt-5.6-luna",
+      "observedEffort": "low",
+      "attestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+      "modelIndependentlyAttested": false
+    },
+    "commands": {
+      "source": "commands",
+      "liveArraySha256": "27a0ae0ed580843f8a50c771bbe304865c1094d2c8bbb9707ccdfdbd843b0d94",
+      "analyzeArraySha256": "5235da7cee583e1230b7c8084e7f0948333eea01acef737aab92a6a7c57f4f5d"
+    }
+  },
+  "design": {
+    "profiles": [
+      "diligent",
+      "low_agency",
+      "bored",
+      "skeptical",
+      "low_trust_skeptic",
+      "frame_defiant"
+    ],
+    "policies": [
+      "field"
+    ],
+    "runsPerProfile": 3,
+    "dialogues": 18,
+    "turnsPerDialogue": 8,
+    "world": "world_005_marrick",
+    "models": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna"
+    },
+    "cliEffort": "low",
+    "parallelism": 3
+  },
+  "destination": {
+    "artifactRoot": ".tutor-stub-auto-eval/resistant-profile-discrimination-v2-measurement-recheck-live-2026-08-19",
+    "createOnce": true,
+    "mustNotExistBeforeLaunch": true,
+    "productionDatabaseWrites": false
+  },
+  "commands": {
+    "live": [
+      "node",
+      "scripts/run-tutor-stub-qa-matrix.js",
+      "--policies",
+      "field",
+      "--profiles",
+      "diligent,low_agency,bored,skeptical,low_trust_skeptic,frame_defiant",
+      "--runs",
+      "3",
+      "--run-seed",
+      "20260818",
+      "--turns",
+      "8",
+      "--safety-turns",
+      "8",
+      "--model",
+      "codex.gpt-5.6-luna",
+      "--analysis-model",
+      "codex.gpt-5.6-luna",
+      "--auto-learner-model",
+      "codex.gpt-5.6-luna",
+      "--model-call-budget",
+      "48",
+      "--world",
+      "world_005_marrick",
+      "--dag-mode",
+      "strict_dag",
+      "--register-palette",
+      "safe",
+      "--register-overlay-threshold",
+      "0.7",
+      "--release-speed",
+      "1",
+      "--cli-effort",
+      "low",
+      "--history-turns",
+      "4",
+      "--max-tokens",
+      "4096",
+      "--parallelism",
+      "3",
+      "--progress-interval",
+      "30",
+      "--trace-dir",
+      ".tutor-stub-auto-eval/resistant-profile-discrimination-v2-measurement-recheck-live-2026-08-19",
+      "--no-html-report",
+      "--no-memory-summary",
+      "--no-analyze"
+    ],
+    "analyze": [
+      "zsh",
+      "-lc",
+      "set -euo pipefail; artifact_root='.tutor-stub-auto-eval/resistant-profile-discrimination-v2-measurement-recheck-live-2026-08-19'; trace_args=(); for trace in \"$artifact_root\"/*/traces/*/*.jsonl; do [[ -f \"$trace\" ]] || continue; trace_args+=(--trace \"$trace\"); done; node scripts/analyze-tutor-stub-profile-discrimination.js \"${trace_args[@]}\" --write-compacted \"$artifact_root/compacted-traces\" --target-average-cosine 0.85 --target-max-to-control 0.9 --control-profile diligent --gate-profiles bored,frame_defiant --require-pooled --required-traces 18 --required-profiles diligent,low_agency,bored,skeptical,low_trust_skeptic,frame_defiant --required-runs-per-profile 3 --required-turns 8 --required-policies field --required-tutor-model codex.gpt-5.6-luna --required-analysis-model codex.gpt-5.6-luna --required-learner-model codex.gpt-5.6-luna --json --out \"$artifact_root/profile-discrimination.json\""
+    ]
+  },
+  "payload": {
+    "scope": "Repository-authored world_005_marrick content, tutor and automated learner prompts, classifier prompts, and generated automated dialogue context only.",
+    "humanSubjectData": false,
+    "privateArchiveData": false,
+    "trainingReuseStatus": "not_applicable"
+  },
+  "budget": {
+    "dialogues": 18,
+    "maximumAttemptsPerDialogue": 48,
+    "maximumPlannedModelAttempts": 864,
+    "parallelism": 3,
+    "retryOrResumeAuthority": "none"
+  },
+  "stoppingRules": [
+    "A technical failure stops the study and does not authorize a retry or resume.",
+    "A retry requires review, a new request, separate explicit approval, and a new sealed artifact root.",
+    "The live command may run once only from the exact clean launch commit and create-once destination.",
+    "The prior registered negative result and canonical report remain read-only and are neither rewritten nor pooled.",
+    "The existing low_agency and overconfident evidence remains read-only and is neither rejudged nor pooled."
+  ]
+}

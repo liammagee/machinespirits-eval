@@ -35,6 +35,7 @@ links:
     - docs/tutor-stub-resistant-profile-discrimination-registration.md
     - docs/tutor-stub-resistant-profile-discrimination-live-readiness-hold.md
     - docs/tutor-stub-resistant-profile-discrimination-study-go-request.md
+    - docs/tutor-stub-resistant-profile-measurement-recheck-study-go-request.md
   code:
     - services/pedagogicalMove/contract.js
     - services/pedagogicalMove/shadow.js
@@ -55,6 +56,7 @@ links:
     - config/tutor-stub-resistant-profile-route-canary-result.v1.json
     - config/tutor-stub-resistant-profile-discrimination-study-go-request.v1.json
     - config/tutor-stub-frame-defiant-replacement-study-go-request.v1.json
+    - config/tutor-stub-resistant-profile-measurement-recheck-study-go-request.v1.json
     - scripts/check-tutor-stub-resistant-profile-study-go-request.js
     - services/tutorStubAutomatedLearnerGenerationRuntime.js
     - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json
@@ -66,7 +68,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistant-profile-measurement-audit
+branch: codex/resistant-profile-measurement-recheck-request
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -289,3 +291,16 @@ and explicit human approval.
   failure at the anchor-validity boundary. The canonical report remains the
   formal Phase 2 negative result; no retry, resume, model call, or retrospective
   threshold change occurred.
+- 2026-08-19 — PR #674 merged the prospective v4 measurement audit at
+  `4a01ea0d5f58eacd33349405536ec130792e58eb`; the serialized workplan refresh
+  advanced `origin/main` to `0f7ff1b3d0e1ca0146a519f06914f3d6e1cdcd4d`.
+  Prepared a non-executable fresh-cohort recheck request pinned to that exact
+  source: all six profiles are regenerated as 18 Luna dialogues with the
+  unchanged 864-attempt ceiling, no retry/resume, no prior-trace reuse, and a
+  create-once destination. The analyzer command selects only exact dialogue
+  trace paths, excluding the `run-events.jsonl` files that contaminated the
+  prior recursive selector. The passing route canary is reused with no new
+  call. The endpoint preflight retains its certified digest after correcting
+  endpoint completeness to require an emitted boolean anchor-evaluability
+  field, not a favorable value. The request remains on HOLD pending its own
+  committed digest-bound approval.
