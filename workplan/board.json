@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-19T01:24:57.007Z",
+  "generated": "2026-08-19T02:12:58.428Z",
   "counts": {
     "total": 513,
     "byStatus": {
-      "done": 485,
+      "done": 486,
       "blocked": 7,
       "dropped": 10,
       "triaged": 1,
       "active": 4,
       "archived": 4,
-      "review": 2
+      "review": 1
     },
     "byType": {
       "research": 80,
@@ -571,30 +571,6 @@
         "warrant-gate",
         "adaptive",
         "instrument"
-      ]
-    },
-    {
-      "id": "expedite-ci-expensive-boundaries",
-      "title": "Gate expensive CI boundaries and avoid incidental Electron packaging",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-18",
-      "updated": "2026-08-18",
-      "branch": "codex/ci-boundary-gating",
-      "verification": "Classifier tests prove unrelated package scripts skip the macOS job while runtime, dependency, lockfile, desktop, shared-surface, and workflow changes run it; focused CI/workflow tests and workplan source validation pass, then one hosted PR confirms the classified job behavior.",
-      "links": {
-        "items": [
-          "local-ci-parity-runner",
-          "automate-browser-and-packaged-electron-tutor-stub-acceptance"
-        ]
-      },
-      "tags": [
-        "ci",
-        "electron",
-        "developer-experience"
       ]
     },
     {
@@ -1709,6 +1685,33 @@
         ],
         "notes": "docs/tutor-stub-cli.md"
       }
+    },
+    {
+      "id": "expedite-ci-expensive-boundaries",
+      "title": "Gate expensive CI boundaries and avoid incidental Electron packaging",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-18",
+      "updated": "2026-08-18",
+      "branch": "codex/ci-boundary-gating",
+      "verification": "Classifier tests prove unrelated package scripts skip the macOS job while runtime, dependency, lockfile, desktop, shared-surface, and workflow changes run it; focused CI/workflow tests and workplan source validation pass, then one hosted PR confirms the classified job behavior.",
+      "links": {
+        "prs": [
+          666
+        ],
+        "items": [
+          "local-ci-parity-runner",
+          "automate-browser-and-packaged-electron-tutor-stub-acceptance"
+        ]
+      },
+      "tags": [
+        "ci",
+        "electron",
+        "developer-experience"
+      ]
     },
     {
       "id": "field-planner-acts-safe-promotion-gate",
