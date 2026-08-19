@@ -524,3 +524,48 @@ co-primary endpoints. Low-agency, skeptical, and low-trust profiles remain
 comparison controls; epistemic distrust is reported descriptively without a
 threshold or pass/fail contribution. This decision does not reinterpret the
 frozen negative studies or strengthen the low-trust contract.
+
+## Prospective resistance-axis instrument gate
+
+The registered held-out study passed on 2026-08-19. It used the exact
+six-profile, three-run, eight-turn Luna design at launch commit
+`c302d917da59c3608d6e0d654fc313b13eadb12f`, under the approved request digest
+`99a12f902ee4589a922524589e32c890bc458a96fa355c408c14ca4c7d1a22e0`. The
+sealed assembly contains 18/18 dialogues and 144/144 learner turns. Its 458
+model-call reservations all have corresponding completed calls, with no failed
+call and no technical recovery.
+
+Both registered co-primary endpoints passed independently:
+
+- `bored` showed effort withholding on `18/24 = 0.750` eligible turns against
+  the `0.45` minimum, met the by-turn-2 deadline in all three dialogues, and
+  had a maximum non-target rate of `0.000` against the `0.20` ceiling.
+- `frame_defiant` showed a frame-jurisdiction dispute on `14/24 = 0.583`
+  eligible turns against the `0.40` minimum, met the by-turn-2 deadline in all
+  three dialogues, and had a maximum non-target rate of `0.000` against the
+  `0.20` ceiling.
+
+The comparison controls also retained their expected descriptive structure:
+`low_agency` showed tutor-choice deference on `22/24 = 0.917` turns,
+`skeptical` showed evidential-warrant challenge on `21/24 = 0.875`, and
+`low_trust_skeptic` showed evidential-warrant challenge on `18/24 = 0.750`
+plus authority distrust on `4/24 = 0.167`. As registered, none of these
+diagnostics contributed to the pass verdict and epistemic trust remained
+descriptive-only.
+
+The canonical local report is
+`.tutor-stub-auto-eval/resistance-axis-heldout-v1-live-2026-08-19/resistance-axis-discrimination.json`
+at SHA-256
+`714f69f489297c571ff4157ce0269e6d3f68ccac485453b53d05cc09d5908c75`.
+It records `authority: prospective_registered_endpoint`, complete assembly,
+and `pass: true`; it also records `changesRegisteredResult: false` and
+`priorRegisteredResultRewritten: false`. The earlier registered v4 negative
+result therefore remains authoritative for its own design.
+
+This pass freezes `bored` and `frame_defiant` as usable simulated learner
+instruments for the next programme phase. It means that the intended public
+resistance states can be produced and distinguished under this registered
+design. It does **not** show that any tutor response improves adaptation or
+learning, that an edged register helps, that the result transfers to humans,
+or that it transfers to the cell harness. Those claims require the subsequent
+action-before-register intervention and its existing claim-transfer boundary.
