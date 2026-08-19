@@ -36,7 +36,8 @@ the protected `low_agency` and `overconfident` evidence is not rejudged.
 ## Frozen execution
 
 - Launch source: clean detached commit
-  `23ccba13b5a09dec56132cce129f7fd3958b5075`, the merged registration source.
+  `c302d917da59c3608d6e0d654fc313b13eadb12f`, the merged registration source
+  plus the supported Node LTS runtime boundary.
 - Design: six profiles, one `field` policy, three runs per profile, seed
   `20260819`, eight turns, 18 dialogues.
 - Models: `codex.gpt-5.6-luna` for tutor, analysis, and learner at low effort.

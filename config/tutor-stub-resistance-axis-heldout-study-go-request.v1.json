@@ -13,11 +13,11 @@
     "approvalMustNameMaximumPlannedModelAttempts": 864
   },
   "source": {
-    "launchCommit": "23ccba13b5a09dec56132cce129f7fd3958b5075",
-    "launchTree": "1167d4fd305c0de9eb704972be2682068bf495e7",
+    "launchCommit": "c302d917da59c3608d6e0d654fc313b13eadb12f",
+    "launchTree": "b664bbe810402ede5c88fc8d37ec4b5745559aa3",
     "registrationMergeCommit": "23ccba13b5a09dec56132cce129f7fd3958b5075",
     "selectedFrom": "origin/main",
-    "selectedAt": "2026-08-19T15:26:33Z",
+    "selectedAt": "2026-08-19T15:50:18Z",
     "requirements": {
       "headMustEqualLaunchCommit": true,
       "checkoutMustBeClean": true,
@@ -66,11 +66,11 @@
       },
       {
         "path": "package.json",
-        "sha256": "f801977785fa1ea9cd7bc83f8ca999c21045ac66dd492f3d84ebe66c7ee1caed"
+        "sha256": "47b5786f1941293a0b1f55d1966b9072883b2856301e6288d3f5b998f99f76bd"
       },
       {
         "path": "package-lock.json",
-        "sha256": "00d1b0775dd81302a5aca6853f5592e1780a1f03476858f249a41ececc5763ed"
+        "sha256": "1e2e69ec6bd667236ae9205841ca287b578f2e06006bcfad8e44c79691a24532"
       }
     ]
   },
