@@ -122,7 +122,10 @@ test('fresh measurement recheck freezes a new 18-dialogue cohort without rewriti
   assert.equal(request.recheck.priorArtifactsReused, false);
   assert.equal(request.recheck.priorResultRewritten, false);
   assert.equal(request.recheck.thresholdsChanged, false);
-  assert.equal(request.recheck.priorCanonicalReport.sha256, '06d7bbc49df46e2f20ebeb3eb0141dba975825ce10bf33eef0e0dc15540ec32c');
+  assert.equal(
+    request.recheck.priorCanonicalReport.sha256,
+    '06d7bbc49df46e2f20ebeb3eb0141dba975825ce10bf33eef0e0dc15540ec32c',
+  );
   assert.equal(request.measurement.reportSchema, 'machinespirits.tutor-stub.profile-discrimination.v4');
   assert.equal(request.measurement.nearestNeighborAnchorMinimumSignatureTargetPassRate, 0.4);
   assert.doesNotMatch(request.commands.analyze[2], /--trace-root/u);

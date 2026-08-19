@@ -134,17 +134,8 @@
     }
   },
   "design": {
-    "profiles": [
-      "diligent",
-      "low_agency",
-      "bored",
-      "skeptical",
-      "low_trust_skeptic",
-      "frame_defiant"
-    ],
-    "policies": [
-      "field"
-    ],
+    "profiles": ["diligent", "low_agency", "bored", "skeptical", "low_trust_skeptic", "frame_defiant"],
+    "policies": ["field"],
     "runsPerProfile": 3,
     "dialogues": 18,
     "turnsPerDialogue": 8,
