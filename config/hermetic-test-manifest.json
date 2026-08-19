@@ -182,6 +182,7 @@
         "tests/chat-cells-api.test.js",
         "tests/checkpointE2E.test.js",
         "tests/checkpointResume.test.js",
+        "tests/ciChangePolicy.test.js",
         "tests/cliBridgeDialogueEngine.test.js",
         "tests/cliFailureExitCode.test.js",
         "tests/configOverrideBoundary.test.js",
