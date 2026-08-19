@@ -55,6 +55,7 @@ links:
     - config/tutor-stub-resistant-profile-route-canary-result.v1.json
     - config/tutor-stub-resistant-profile-discrimination-study-go-request.v1.json
     - scripts/check-tutor-stub-resistant-profile-study-go-request.js
+    - services/tutorStubAutomatedLearnerGenerationRuntime.js
     - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json
     - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.endpoint-go.json
 tags:
@@ -64,7 +65,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistant-profile-study-go-preparation
+branch: codex/resistant-profile-study-reauthorization
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -217,3 +218,20 @@ and explicit human approval.
   reruns the zero-call readiness packet and makes zero model calls and zero
   production writes. Both authorization booleans remain false pending explicit
   human approval of the committed request SHA and spend ceiling.
+- 2026-08-19 — The first approved 18-dialogue execution stopped on its frozen
+  technical-failure boundary after 287 model calls: six control dialogues
+  completed, one bored dialogue exhausted its 48-call ceiling, two concurrent
+  bored dialogues were interrupted, and nine dialogues never started. The
+  registered analysis was not run, no partial result was promoted, and the
+  consumed authorization grants no retry or resume.
+- 2026-08-19 — Diagnosed the failure as a runtime wiring defect: the `bored`
+  and `frame_defiant` contracts required derived public markers that the
+  adherence matcher could not read. PR #667 connected the existing
+  deterministic observation markers and added a focused zero-repair regression
+  for both profiles; every GitHub check passed before merge at
+  `ae940515978030c7f9db1ea72c4c42a647034272`. A new detached worktree now pins
+  that exact repaired source, preserves the old stopped artifacts separately,
+  and has a fresh create-once destination. A replacement non-executable request
+  is on HOLD pending a new digest-bound human approval; it adds the repaired
+  runtime file to the source closure and retains the 864-attempt/no-resume
+  ceiling without repeating the passing route canary.
