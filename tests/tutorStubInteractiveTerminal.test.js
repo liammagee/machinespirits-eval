@@ -326,7 +326,7 @@ test(
         } else if (!commandSubmitted && plain.includes('A Diligent Learner > /profile list stress')) {
           commandSubmitted = true;
           terminal.write('\r');
-        } else if (!requestedExit && plain.includes('learner profiles > specialist failure modes (12)')) {
+        } else if (!requestedExit && plain.includes('learner profiles > specialist failure modes (13)')) {
           requestedExit = true;
           terminal.write('/quit\r');
         }
@@ -341,7 +341,7 @@ test(
     const plain = plainTerminalText(terminalOutput);
     assert.match(plain, /1 match for \/profile list s/u);
     assert.match(plain, /A Diligent Learner > \/profile list stress/u);
-    assert.match(plain, /learner profiles > specialist failure modes \(12\)/u);
+    assert.match(plain, /learner profiles > specialist failure modes \(13\)/u);
     assert.doesNotMatch(plain, /unknown learner profile/u);
   },
 );

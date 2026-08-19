@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { detectTutorStubEdgeTimingSignal } from './tutorStubEdgeTimingPolicy.js';
+import { observeResistantLearnerTurn } from './resistantLearnerObservation.js';
 import { beginTutorStubActionBeforeRegisterShadow } from './tutorStubActionBeforeRegisterShadow.js';
 import { tutorStubFirstDraftContractPrompt } from './tutorStubFirstDraftContract.js';
 import { extractTutorStubFrozenTurn, refreshTutorStubFrozenFirstDraftRequest } from './tutorStubFrozenReplay.js';
@@ -21,6 +22,7 @@ export const TUTOR_STUB_RESISTANCE_ACTION_REGISTER_REGISTRATION_SCHEMA =
   'machinespirits.tutor-stub.resistance-action-register-crossed-registration.v1';
 
 const STUDY_PROFILES = Object.freeze(['bored', 'frame_defiant']);
+const PREFIX_PROFILES = Object.freeze([...STUDY_PROFILES, 'frame_refuser']);
 const ACTION_FITS = Object.freeze(['matched', 'mismatched']);
 const REALIZATIONS = Object.freeze(['plain', 'warm', 'edged']);
 const REPEATS = Object.freeze(['A', 'B']);
@@ -337,17 +339,23 @@ function triggerFromTurnRecord(record, profile) {
   const learnerText = record?.learner || '';
   const classification = record?.classification || null;
   const shadow = observeResistanceAxis({ learnerText, classification });
+  const profileObservation =
+    profile === 'frame_refuser' ? observeResistantLearnerTurn({ learnerText, classification }) : null;
   const timing = detectTutorStubEdgeTimingSignal({ learnerText, classification, tutorLearnerDag: null });
+  const matchesRegisteredCohort =
+    profileObservation?.observations?.some((observation) => observation.type === 'frame_jurisdiction_refusal') ||
+    shadow.resistance_kind === profile;
   return {
     eligible:
       shadow.warrant.status === 'licensed' &&
-      shadow.resistance_kind === profile &&
+      matchesRegisteredCohort &&
       timing.comprehensionRepair !== true &&
       timing.protectedAffect !== true &&
       timing.phase !== 'uptake',
     learnerText,
     classification,
     shadow,
+    cohortObservation: profileObservation || shadow.observation,
     timing,
   };
 }
@@ -357,7 +365,7 @@ export function extractTutorStubResistanceActionRegisterPrefix({
   profile,
   requireFrozenBundle = true,
 } = {}) {
-  const normalizedProfile = exactLevel(profile, STUDY_PROFILES, 'prefix profile');
+  const normalizedProfile = exactLevel(profile, PREFIX_PROFILES, 'prefix profile');
   const source = fs.readFileSync(tracePath, 'utf8');
   const events = parseTrace(source);
   const completed = events.filter((event) => event.type === 'turn_complete' && event.turnRecord);
@@ -401,7 +409,7 @@ export function extractTutorStubResistanceActionRegisterPrefix({
     trigger_turn_id: trigger.turnId,
     trigger_learner_text: trigger.learnerText,
     trigger_classification: clone(trigger.classification),
-    trigger_observation: clone(trigger.shadow.observation),
+    trigger_observation: clone(trigger.cohortObservation),
     source_trace: path.resolve(tracePath),
     source_trace_sha256: sha256(source),
     prefix_trace_sha256: sha256(prefixSource),

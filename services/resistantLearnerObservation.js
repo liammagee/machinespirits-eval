@@ -5,6 +5,7 @@ export const RESISTANT_LEARNER_OBSERVATION_SCHEMA = 'machinespirits.resistant-le
 export const RESISTANT_LEARNER_OBSERVATION_TYPES = Object.freeze([
   'bored_effort_withholding',
   'frame_jurisdiction_dispute',
+  'frame_jurisdiction_refusal',
 ]);
 
 const BORED_EXPLICIT_PATTERNS = Object.freeze([
@@ -40,7 +41,7 @@ const FRAME_JURISDICTION_PATTERNS = Object.freeze([
   /\bi (?:do not|don't) accept (?:your|the tutor['’]s|their) (?:authority|standing|right)\b/iu,
   /\bi (?:do not|don't) accept your (?:fixing|setting|defining|choosing) (?:the |this |that )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\bi (?:do not|don't) concede (?:your|the tutor['’]s|their) (?:authority|standing|right)\b/iu,
-  /\bi reject (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?)\b/iu,
+  /\bi reject (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\bi reject (?:the )?jurisdiction of (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\bi dispute (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\bi dispute (?:your|the tutor['’]s|their) (?:authority|standing|right)\b/iu,
@@ -160,21 +161,38 @@ export function observeResistantLearnerTurn({ learnerText = '', classification =
   const frameEvidence = firstEvidence(text, FRAME_JURISDICTION_PATTERNS);
   if (frameEvidence) {
     const turn = classifierTurn(classification);
+    const carriesContent = contentBearing(classification);
     observations.push(
       observation('frame_jurisdiction_dispute', frameEvidence, text, {
         target: 'inquiry_frame_or_tutor_standing',
         jurisdictional: true,
+        content_bearing: carriesContent,
         classifier_request_type: turn.request_type || null,
         classifier_discourse_move: turn.discourse_move || null,
       }),
     );
+    if (!carriesContent) {
+      observations.push(
+        observation('frame_jurisdiction_refusal', frameEvidence, text, {
+          target: 'inquiry_frame_or_tutor_standing',
+          jurisdictional: true,
+          local_test_or_evidence_withheld: true,
+          content_bearing: false,
+          classifier_request_type: turn.request_type || null,
+          classifier_discourse_move: turn.discourse_move || null,
+        }),
+      );
+    }
   }
+
+  const hasBoredObservation = observations.some((row) => row.type === 'bored_effort_withholding');
+  const hasFrameObservation = observations.some((row) => row.type.startsWith('frame_jurisdiction_'));
 
   return {
     schema: RESISTANT_LEARNER_OBSERVATION_SCHEMA,
     observations,
     defeated,
-    ambiguous: observations.length > 1,
+    ambiguous: hasBoredObservation && hasFrameObservation,
   };
 }
 
@@ -183,5 +201,6 @@ export function resistantLearnerObservationMarkers(input = {}) {
   return {
     boredWithholding: result.observations.some((row) => row.type === 'bored_effort_withholding'),
     frameJurisdictionDispute: result.observations.some((row) => row.type === 'frame_jurisdiction_dispute'),
+    frameJurisdictionRefusal: result.observations.some((row) => row.type === 'frame_jurisdiction_refusal'),
   };
 }

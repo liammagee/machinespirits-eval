@@ -7,6 +7,7 @@ import {
   finalizeTutorStubActionBeforeRegisterShadow,
   normalizeTutorStubResponseConfigurationWithActionBeforeRegisterShadow,
 } from '../services/tutorStubActionBeforeRegisterShadow.js';
+import { observeResistantLearnerTurn } from '../services/resistantLearnerObservation.js';
 
 function classification(overrides = {}) {
   return {
@@ -101,7 +102,7 @@ test('the typed shadow decision executes before the legacy register normalizer w
   assert.equal(runtimeState.register.history.at(-1), result);
 });
 
-test('held-out public axes license bored and frame-defiant moves without profile identity', () => {
+test('held-out public axes preserve broad frame defiance while exposing the nested refusal opportunity', () => {
   const bored = beginTutorStubActionBeforeRegisterShadow({
     state: state(),
     classification: classification(),
@@ -119,7 +120,41 @@ test('held-out public axes license bored and frame-defiant moves without profile
     learnerText: 'I do not accept the premise of your test.',
   });
   assert.equal(frame.resistance_axis_shadow.warrant.status, 'licensed');
+  assert.equal(frame.resistance_axis_shadow.resistance_kind, 'frame_defiant');
+  assert.ok(
+    observeResistantLearnerTurn({
+      learnerText: 'I do not accept the premise of your test.',
+      classification: classification({ request_type: 'authority_refusal_or_status_challenge' }),
+    }).observations.some((observation) => observation.type === 'frame_jurisdiction_refusal'),
+  );
   assert.equal(frame.shadow_move_candidate.move_type, 'test_bounded_distinction');
+
+  const productiveFrame = beginTutorStubActionBeforeRegisterShadow({
+    state: state(),
+    classification: classification({
+      request_type: 'authority_refusal_or_status_challenge',
+      discourse_move: 'hypothesis',
+      evidence_use: 'links_evidence_to_rule',
+    }),
+    tutorLearnerDag: { model: { turn: 1, assessment: {} } },
+    learnerText:
+      'I reject the frame, but the public assay still supports testing whether this mark came from the same die.',
+  });
+  assert.equal(productiveFrame.resistance_axis_shadow.warrant.status, 'licensed');
+  assert.equal(productiveFrame.resistance_axis_shadow.resistance_kind, 'frame_defiant');
+  assert.equal(
+    observeResistantLearnerTurn({
+      learnerText:
+        'I reject the frame, but the public assay still supports testing whether this mark came from the same die.',
+      classification: classification({
+        request_type: 'authority_refusal_or_status_challenge',
+        discourse_move: 'hypothesis',
+        evidence_use: 'links_evidence_to_rule',
+      }),
+    }).observations.some((observation) => observation.type === 'frame_jurisdiction_refusal'),
+    false,
+  );
+  assert.equal(productiveFrame.shadow_move_candidate.move_type, 'test_bounded_distinction');
 
   const ambiguous = beginTutorStubActionBeforeRegisterShadow({
     state: state(),
@@ -205,7 +240,7 @@ test('negative registers are opt-in, move-specific, and suppressed under protect
   );
 });
 
-test('frame defiance admits experimental irony only and later action overrides remain explicit', () => {
+test('frame defiance retains experimental irony while content-bearing defiance closes the edge', () => {
   const shadow = beginTutorStubActionBeforeRegisterShadow({
     state: state({ enabled: false }),
     classification: classification({ request_type: 'authority_refusal_or_status_challenge' }),
@@ -222,9 +257,34 @@ test('frame defiance admits experimental irony only and later action overrides r
     classification: classification({ request_type: 'authority_refusal_or_status_challenge' }),
   });
   const record = finalized.action_before_register_shadow;
+  assert.equal(record.resistance_axis_shadow.resistance_kind, 'frame_defiant');
   assert.equal(record.finalization.register_compatibility.compatible, true);
   assert.equal(record.finalization.register_compatibility.reason, 'experimental_frame_irony_pair');
   assert.equal(record.finalization.legacy_action_changed_after_pre_register, false);
+
+  const productiveClassification = classification({
+    request_type: 'authority_refusal_or_status_challenge',
+    discourse_move: 'hypothesis',
+    evidence_use: 'links_evidence_to_rule',
+  });
+  const productiveText =
+    'I reject the frame, but the public assay still supports testing whether this mark came from the same die.';
+  const productiveShadow = beginTutorStubActionBeforeRegisterShadow({
+    state: state({ enabled: false }),
+    classification: productiveClassification,
+    learnerText: productiveText,
+  });
+  const productiveFinalized = finalizeTutorStubActionBeforeRegisterShadow({
+    state: state({ enabled: false }),
+    selection: selectionFor(productiveShadow, { register: 'ironic', policy: 'negative' }),
+    learnerText: productiveText,
+    classification: productiveClassification,
+  });
+  assert.equal(productiveShadow.resistance_axis_shadow.resistance_kind, 'frame_defiant');
+  assert.equal(
+    productiveFinalized.action_before_register_shadow.finalization.register_compatibility.reason,
+    'uptake_suppresses_edged_register',
+  );
 
   const overridden = finalizeTutorStubActionBeforeRegisterShadow({
     state: state({ enabled: false }),

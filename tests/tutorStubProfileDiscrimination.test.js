@@ -57,7 +57,7 @@ test('entrypoint delegates automated learner generation rather than retaining lo
   assert.match(runtimeSource, /async function enforceAutomatedLearnerProfile/u);
 });
 
-test('runtime adherence accepts the derived bored and frame-defiant public markers without repair calls', async () => {
+test('runtime adherence accepts bored, frame-defiant, and frame-refuser public markers without repair calls', async () => {
   const cases = [
     {
       profile: 'bored',
@@ -73,6 +73,17 @@ test('runtime adherence accepts the derived bored and frame-defiant public marke
     {
       profile: 'frame_defiant',
       text: 'I reject the premise of this exercise. You do not get to set the question that way.',
+      classification: {
+        request_type: 'authority_refusal_or_status_challenge',
+        discourse_move: 'challenge',
+        evidence_use: 'none',
+        epistemic_stance: 'resistant',
+        agency: 'steering',
+      },
+    },
+    {
+      profile: 'frame_refuser',
+      text: 'I reject that test, and I will not answer inside it.',
       classification: {
         request_type: 'authority_refusal_or_status_challenge',
         discourse_move: 'challenge',
@@ -383,7 +394,7 @@ test('explicit false recollection plus an evidence overleap is observable withou
   }
 });
 
-test('bored and frame-defiant public markers survive behavior-only compaction', () => {
+test('bored, frame-defiant, and frame-refuser public markers survive behavior-only compaction', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-resistant-profile-markers-'));
   try {
     writeTrace(tmp, 'bored', [
@@ -416,6 +427,21 @@ test('bored and frame-defiant public markers survive behavior-only compaction', 
         learner: 'I reject the premise of this exercise.',
       }),
     ]);
+    writeTrace(tmp, 'frame_refuser', [
+      turnEvent(1, {
+        request: 'authority_refusal_or_status_challenge',
+        move: 'challenge',
+        evidence: 'none',
+        stance: 'resistant',
+        agency: 'steering',
+        affect: 'controlled',
+        conceptual: 2,
+        epistemic: 2,
+        coverage: 0,
+        missing: 6,
+        learner: 'I reject that test, and I will not answer inside it.',
+      }),
+    ]);
 
     const compactedDir = path.join(tmp, 'compacted');
     const report = JSON.parse(
@@ -435,10 +461,13 @@ test('bored and frame-defiant public markers survive behavior-only compaction', 
 
     const bored = report.profiles.find((row) => row.profile === 'bored');
     const defiant = report.profiles.find((row) => row.profile === 'frame_defiant');
+    const refuser = report.profiles.find((row) => row.profile === 'frame_refuser');
     assert.equal(bored.observability.observedRate, 1);
     assert.equal(bored.observability.deadlinePass, true);
     assert.equal(defiant.observability.observedRate, 1);
     assert.equal(defiant.observability.deadlinePass, true);
+    assert.equal(refuser.observability.observedRate, 1);
+    assert.equal(refuser.observability.deadlinePass, true);
 
     const boredCompacted = JSON.parse(
       fs.readFileSync(path.join(compactedDir, 'bored', fs.readdirSync(path.join(compactedDir, 'bored'))[0]), 'utf8'),
@@ -449,10 +478,18 @@ test('bored and frame-defiant public markers survive behavior-only compaction', 
         'utf8',
       ),
     );
+    const refuserCompacted = JSON.parse(
+      fs.readFileSync(
+        path.join(compactedDir, 'frame_refuser', fs.readdirSync(path.join(compactedDir, 'frame_refuser'))[0]),
+        'utf8',
+      ),
+    );
     assert.equal(boredCompacted.turns[0].markers.boredWithholding, true);
     assert.equal(defiantCompacted.turns[0].markers.frameJurisdictionDispute, true);
+    assert.equal(refuserCompacted.turns[0].markers.frameJurisdictionRefusal, true);
     assert.equal(boredCompacted.turns[0].text, undefined);
     assert.equal(defiantCompacted.turns[0].text, undefined);
+    assert.equal(refuserCompacted.turns[0].text, undefined);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

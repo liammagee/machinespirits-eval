@@ -30,16 +30,6 @@ const AXIS_HELDOUT_REQUEST_PATH = path.join(
   'tutor-stub-resistance-axis-heldout-study-go-request.v1.json',
 );
 
-function checkRequest(requestPath) {
-  return JSON.parse(
-    execFileSync(
-      process.execPath,
-      ['scripts/check-tutor-stub-resistant-profile-study-go-request.js', '--request', requestPath, '--json'],
-      { cwd: ROOT, encoding: 'utf8' },
-    ),
-  );
-}
-
 test('approved study request remains bound to its launch source and fails closed after source drift', () => {
   const requestBytes = fs.readFileSync(REQUEST_PATH);
   const request = JSON.parse(requestBytes.toString('utf8'));
@@ -114,21 +104,19 @@ test('consumed frame-defiant replacement request remains frozen and fails closed
   assert.match(result.stderr, /source-closure-scripts\/analyze-tutor-stub-profile-discrimination\.js/u);
 });
 
-test('fresh measurement recheck freezes a new 18-dialogue cohort without rewriting prior evidence', () => {
-  const report = checkRequest(MEASUREMENT_RECHECK_REQUEST_PATH);
-  const request = JSON.parse(fs.readFileSync(MEASUREMENT_RECHECK_REQUEST_PATH, 'utf8'));
+test('consumed measurement recheck remains bound to its 18-dialogue launch source and fails closed after drift', () => {
+  const requestBytes = fs.readFileSync(MEASUREMENT_RECHECK_REQUEST_PATH);
+  const request = JSON.parse(requestBytes.toString('utf8'));
 
-  assert.equal(report.status, 'HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL');
-  assert.equal(report.packetValid, true);
-  assert.equal(report.readyForExplicitHumanApproval, true);
-  assert.equal(report.explicitHumanApproval, false);
-  assert.equal(report.modelCallsAuthorized, false);
-  assert.equal(report.liveRunAuthorized, false);
-  assert.equal(report.modelCalls, 0);
-  assert.equal(report.productionWrites, 0);
-  assert.equal(report.launchCommit, '0f7ff1b3d0e1ca0146a519f06914f3d6e1cdcd4d');
-  assert.equal(report.budget.maximumPlannedModelAttempts, 864);
-  assert.equal(report.budget.retryOrResumeAuthority, 'none');
+  assert.equal(
+    crypto.createHash('sha256').update(requestBytes).digest('hex'),
+    'c2176e17c403824c0566ccb86d167fad21c56be405291025f09f233c3a8ea26d',
+  );
+  assert.equal(request.source.launchCommit, '0f7ff1b3d0e1ca0146a519f06914f3d6e1cdcd4d');
+  assert.equal(request.authorization.modelCallsAuthorized, false);
+  assert.equal(request.authorization.liveRunAuthorized, false);
+  assert.equal(request.budget.maximumPlannedModelAttempts, 864);
+  assert.equal(request.budget.retryOrResumeAuthority, 'none');
   assert.equal(request.recheck.priorArtifactsReused, false);
   assert.equal(request.recheck.priorResultRewritten, false);
   assert.equal(request.recheck.thresholdsChanged, false);
@@ -139,13 +127,22 @@ test('fresh measurement recheck freezes a new 18-dialogue cohort without rewriti
   assert.equal(request.measurement.reportSchema, 'machinespirits.tutor-stub.profile-discrimination.v4');
   assert.equal(request.measurement.nearestNeighborAnchorMinimumSignatureTargetPassRate, 0.4);
   assert.doesNotMatch(request.commands.analyze[2], /--trace-root/u);
-  assert.match(report.requestSha256, /^[0-9a-f]{64}$/u);
-  assert.match(report.exactApprovalStatement, new RegExp(report.requestSha256, 'u'));
-  assert.match(report.exactApprovalStatement, /one 18-dialogue Luna study/u);
-  assert.match(report.exactApprovalStatement, /hard ceiling of 864 model attempts/u);
+
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
+      '--request',
+      MEASUREMENT_RECHECK_REQUEST_PATH,
+      '--json',
+    ],
+    { cwd: ROOT, encoding: 'utf8' },
+  );
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /source-closure-scripts\/tutor-stub-learner-profile-contracts\.js/u);
 });
 
-test('consumed technical recovery request remains frozen and fails closed after package drift', () => {
+test('consumed technical recovery request remains frozen and fails closed after current source drift', () => {
   const requestBytes = fs.readFileSync(MEASUREMENT_RECHECK_RECOVERY_REQUEST_PATH);
   const request = JSON.parse(requestBytes.toString('utf8'));
 
@@ -183,10 +180,10 @@ test('consumed technical recovery request remains frozen and fails closed after 
     { cwd: ROOT, encoding: 'utf8' },
   );
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /source-closure-package\.json/u);
+  assert.match(result.stderr, /source-closure-scripts\/tutor-stub-learner-profile-contracts\.js/u);
 });
 
-test('consumed axis heldout request remains frozen and fails closed after package drift', () => {
+test('consumed axis heldout request remains frozen and fails closed after current source drift', () => {
   const requestBytes = fs.readFileSync(AXIS_HELDOUT_REQUEST_PATH);
   const request = JSON.parse(requestBytes.toString('utf8'));
 
@@ -216,5 +213,5 @@ test('consumed axis heldout request remains frozen and fails closed after packag
     { cwd: ROOT, encoding: 'utf8' },
   );
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /source-closure-package\.json/u);
+  assert.match(result.stderr, /source-closure-scripts\/tutor-stub-learner-profile-contracts\.js/u);
 });

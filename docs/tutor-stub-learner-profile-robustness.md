@@ -569,3 +569,32 @@ design. It does **not** show that any tutor response improves adaptation or
 learning, that an edged register helps, that the result transfers to humans,
 or that it transfers to the cell harness. Those claims require the subsequent
 action-before-register intervention and its existing claim-transfer boundary.
+
+## Prospective treatment-opportunity correction
+
+The held-out instrument pass above remains valid: `frame_defiant` reliably
+produces a visible jurisdictional dispute. A later zero-call source-prefix
+audit asked a different question: whether that dispute occurs before the
+learner has already supplied the outcome that the proposed tutor treatment is
+meant to produce. It did not. All three held-out frame-defiant source dialogues
+already contained an evidence-bearing contribution, bounded test, or on-merits
+engagement at the first eligible dispute. The action/register protocol's
+protected uptake exclusion therefore admitted `0/3` frame-defiant treatment
+prefixes. This does not negate the instrument result; it means productive frame
+defiance is a poor treatment-opportunity cohort for that endpoint.
+
+Prospectively, `frame_defiant` is retained as a productive-disagreement,
+no-intervention diagnostic. The separate `frame_refuser` stress profile names
+the missing treatment opportunity: a learner publicly disputes the tutor's
+standing to set the premise, question, or test while withholding any case
+evidence, rival test, or bounded on-merits answer. The existing public observer
+continues to emit `frameJurisdictionDispute` for both behaviors and adds the
+narrower `frameJurisdictionRefusal` marker only when the same classified turn
+contains no content-bearing uptake. This nested marker preserves all earlier
+frame-defiant results while making the prospective treatment gate explicit.
+
+`frame_refuser` is not yet a validated paid-study instrument. Before replacing
+the frame-defiant cohort in the crossed study, a prospective held-out gate must
+show three distinct public prefixes with the refusal marker, no protected
+uptake at the trigger, and no non-target leakage. Until then, the prior frozen
+crossed registration remains on HOLD and makes no tutor-efficacy claim.

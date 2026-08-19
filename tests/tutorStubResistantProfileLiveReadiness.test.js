@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -30,7 +30,7 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
-test('resistant-profile endpoint preflight completes all co-primary endpoints at full scale with zero calls', () => {
+test('historical resistant-profile endpoint certificate fails closed after the public observer evolves', () => {
   const contract = readJson(CONTRACT_PATH);
   const certificate = readJson(CERTIFICATE_PATH);
   const preflight = runTutorStubResistantProfileDiscriminationEndpointPreflight(contract);
@@ -52,7 +52,8 @@ test('resistant-profile endpoint preflight completes all co-primary endpoints at
     contract,
   });
   assert.ok(assembled.report.gate.conditioned.profiles.every((row) => row.nearestNeighborEvaluable === false));
-  assert.equal(endpointGo.ok, true, endpointGo.errors.join('; '));
+  assert.equal(endpointGo.ok, false);
+  assert.ok(endpointGo.errors.some((error) => /preflight digest does not match/u.test(error)));
 });
 
 test('resistant-profile endpoint preflight fails closed on channel, event, packet, and assembly drift', () => {
@@ -86,47 +87,15 @@ test('resistant-profile endpoint preflight fails closed on channel, event, packe
   assert.throws(() => run(baseline, { assemble: incompleteAssembler }), /did not complete bored_contract_gate/u);
 });
 
-test('live-readiness checker validates the exact command and consumed canary while retaining study HOLD', () => {
-  const report = JSON.parse(
-    execFileSync(process.execPath, ['scripts/check-tutor-stub-resistant-profile-live-readiness.js', '--json'], {
-      cwd: ROOT,
-      encoding: 'utf8',
-    }),
+test('historical resistant-profile readiness HOLD fails closed after the public observer evolves', () => {
+  const result = spawnSync(
+    process.execPath,
+    ['scripts/check-tutor-stub-resistant-profile-live-readiness.js', '--json'],
+    { cwd: ROOT, encoding: 'utf8' },
   );
 
-  assert.equal(report.status, 'HOLD');
-  assert.equal(report.packetValid, true);
-  assert.equal(report.readyForAuthorizationRequest, false);
-  assert.equal(report.routeVerificationPassed, true);
-  assert.equal(report.readyForStudyGoPreparation, true);
-  assert.equal(report.liveRunAuthorized, false);
-  assert.equal(report.modelCalls, 0);
-  assert.equal(report.recordedRouteCanaryModelCalls, 1);
-  assert.equal(report.productionWrites, 0);
-  assert.equal(report.endpointPreflight.registered_scale.cases, 18);
-  assert.ok(!report.proposedCommands.live.includes('--dry-run'));
-  assert.ok(!report.proposedCommands.live.includes('--no-ledger'));
-  assert.equal(
-    report.proposedCommands.live[report.proposedCommands.live.indexOf('--trace-dir') + 1],
-    '.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19',
-  );
-  assert.ok(report.blockers.some((blocker) => /explicit human approval/u.test(blocker)));
-  assert.equal(report.routeCanaryResult.status, 'passed');
-  assert.equal(report.routeCanaryResult.modelCalls, 1);
-  assert.equal(report.routeCanaryResult.observed.provider, 'codex');
-  assert.equal(report.routeCanaryResult.observed.model, 'gpt-5.6-luna');
-  assert.equal(report.routeCanaryResult.observed.prohibitedToolEventCount, 0);
-  assert.equal(report.routeCanaryResult.observed.modelIndependentlyAttested, false);
-  assert.equal(
-    report.routeCanaryResult.sourceArtifactSha256,
-    'a2989dfb48438b7153928244a20ef42f698122b6edb3062fdfecca41ca1ac55f',
-  );
-  assert.equal(report.routeCanaryResult.authorizationConsumption.status, 'CONSUMED_AFTER_ONE_CALL');
-  assert.match(report.routeCanaryResult.authorizationConsumptionSha256, /^[0-9a-f]{64}$/u);
-  assert.equal(
-    fs.existsSync(path.join(ROOT, 'config/tutor-stub-resistant-profile-route-canary-authorization.v1.json')),
-    false,
-  );
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /endpoint GO preflight digest does not match the executable preflight/u);
 });
 
 test('axis held-out readiness reuses the consumed route with low trust diagnostic-only', () => {
