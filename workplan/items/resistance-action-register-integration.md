@@ -38,6 +38,8 @@ links:
     - docs/tutor-stub-resistant-profile-discrimination-study-go-request.md
     - docs/tutor-stub-resistant-profile-measurement-recheck-study-go-request.md
     - docs/tutor-stub-resistant-profile-measurement-recheck-technical-recovery-study-go-request.md
+    - docs/tutor-stub-resistance-axis-heldout-registration.md
+    - docs/tutor-stub-resistance-axis-heldout-live-readiness-hold.md
   code:
     - services/pedagogicalMove/contract.js
     - services/pedagogicalMove/shadow.js
@@ -47,6 +49,11 @@ links:
     - scripts/analyze-tutor-stub-profile-discrimination.js
     - services/resistantLearnerAxisObservation.js
     - scripts/analyze-tutor-stub-resistance-axis-calibration.js
+    - services/tutorStubResistanceAxisDiscriminationPreflight.js
+    - config/tutor-stub-resistance-axis-heldout-registration.v1.json
+    - config/tutor-stub-resistance-axis-heldout-live-readiness.hold.v1.json
+    - config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.json
+    - config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.endpoint-go.json
     - services/pedagogicalMove/resistantProfileWarrantShadow.js
     - scripts/tutor-stub-learner-profile-contracts.js
     - scripts/prepare-tutor-stub-resistant-profile-discrimination.js
@@ -74,7 +81,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistant-profile-axis-calibration-ci-fix
+branch: codex/resistance-axis-heldout-registration
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -378,3 +385,14 @@ and explicit human approval.
   `bc85fb41734ee8576958890f02b6c4e8885cbe758c09704f4547b3d4ba2c5774`;
   the standalone analyzer reads raw turns and binds its calibration to the
   unchanged frozen negative report without altering its gate.
+- 2026-08-19 — Adopted the diagnostic-control interpretation. A prospective
+  held-out registration now makes bored effort withholding and frame
+  legitimacy the only co-primary endpoints; low-agency, skeptical, and
+  low-trust profiles remain comparison controls, and epistemic distrust is
+  descriptive-only with no threshold or verdict contribution. The fresh
+  six-profile x three-run plan uses seed `20260819`, the same safe `field`
+  treatment and Luna route, and an unchanged 864-attempt ceiling. The generic
+  paid-study endpoint preflight completes both primary endpoints plus the
+  low-trust diagnostic across 18 synthetic dialogues with zero model calls and
+  zero production writes. The readiness packet remains HOLD pending a clean
+  post-merge launch SHA, digest-bound GO request, and explicit human approval.

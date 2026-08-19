@@ -19,6 +19,14 @@ therefore reports those five public axes separately, without changing the old
 result. Any fresh held-out study must freeze axis-specific hypotheses and
 thresholds before execution.
 
+**Held-out amendment, 2026-08-19.** The prospective study now freezes two
+co-primary axis endpoints only: bored effort withholding and frame-legitimacy
+dispute. `low_agency`, `skeptical`, and `low_trust_skeptic` remain comparison
+controls. Low-trust authority distrust is descriptive-only because it appeared
+on `5/24` calibration turns; it has no threshold and cannot affect the verdict.
+The machine registration is
+`config/tutor-stub-resistance-axis-heldout-registration.v1.json`.
+
 ## The process, in order
 
 Every step before 7 is free and deterministic.

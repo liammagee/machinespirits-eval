@@ -1,0 +1,130 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-profile-live-readiness-hold.v1",
+  "status": "HOLD",
+  "studyId": "tutor-stub-resistance-axis-heldout-v1",
+  "preparedAt": "2026-08-19",
+  "source": {
+    "preparedFromCommit": "de3b83941c3fa2a563233c251312255410f84f5b",
+    "launchCommit": null,
+    "launchRequirement": "After this packet merges, the GO request must pin the exact clean origin/main commit used for launch."
+  },
+  "registration": {
+    "path": "config/tutor-stub-resistance-axis-heldout-registration.v1.json",
+    "sha256": "63ae6b1f1bd90667a4ce1a0ea310e21e7d1fcadd8e3cf61c4c43552d43ff666d"
+  },
+  "endpoint": {
+    "contractPath": "config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.json",
+    "certificatePath": "config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.endpoint-go.json",
+    "contractSha256": "37b84754af9e58c2d0fe11c4fee2103fba5ba93fd1410be3dfab9087cc08c70f",
+    "preflightSha256": "5a28cdedd01f2275d75ec7c518373282913372de8af596d5160aa7b89daafa41",
+    "authorizationScope": "endpoint-runtime compatibility only"
+  },
+  "routeVerification": {
+    "status": "reused_consumed_route_result",
+    "artifact": "config/tutor-stub-resistant-profile-route-canary-result.v1.json",
+    "reusedFromStudyId": "tutor-stub-resistant-profile-discrimination-v1",
+    "canaryRequest": "config/tutor-stub-resistant-profile-route-canary-request.v1.json",
+    "canaryAuthorization": null,
+    "maximumNewModelCalls": 0,
+    "retryOrResumeAuthority": "none",
+    "requestedModels": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna"
+    },
+    "reuseBasis": "The provider, model, effort, roles, bridge, payload class, and prohibited-tool boundary are unchanged; the consumed result is route evidence only and carries no study authorization."
+  },
+  "destination": {
+    "artifactRoot": ".tutor-stub-auto-eval/resistance-axis-heldout-v1-live-2026-08-19",
+    "mustNotExistBeforeLaunch": true,
+    "productionDatabaseWrites": false,
+    "privateArchiveUploadRequiredForLaunch": false
+  },
+  "payload": {
+    "scope": "Repository-authored world_005_marrick content, tutor and automated learner prompts, classifier prompts, and generated automated dialogue context only.",
+    "humanSubjectData": false,
+    "privateArchiveData": false,
+    "trainingReuseStatus": "not_applicable"
+  },
+  "budget": {
+    "dialogues": 18,
+    "maximumAttemptsPerDialogue": 48,
+    "maximumPlannedModelAttempts": 864,
+    "parallelism": 3,
+    "resumeOrRetryAuthority": "bounded technical recovery under the standing policy; valid outputs may not be rerun"
+  },
+  "authorization": {
+    "goNote": null,
+    "explicitHumanApproval": false,
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false
+  },
+  "blockers": [
+    "merge this readiness packet and select the exact clean origin/main launch commit",
+    "write and commit a study-specific GO request binding the registration, endpoint preflight, consumed route result, launch commit, destination, payload scope, and 864-attempt ceiling",
+    "obtain explicit human approval for that exact GO request and model-attempt ceiling"
+  ],
+  "proposedCommands": {
+    "preflight": [
+      "node",
+      "scripts/check-tutor-stub-resistant-profile-live-readiness.js",
+      "--hold",
+      "config/tutor-stub-resistance-axis-heldout-live-readiness.hold.v1.json",
+      "--json"
+    ],
+    "live": [
+      "node",
+      "scripts/run-tutor-stub-qa-matrix.js",
+      "--policies",
+      "field",
+      "--profiles",
+      "diligent,low_agency,bored,skeptical,low_trust_skeptic,frame_defiant",
+      "--runs",
+      "3",
+      "--run-seed",
+      "20260819",
+      "--turns",
+      "8",
+      "--safety-turns",
+      "8",
+      "--model",
+      "codex.gpt-5.6-luna",
+      "--analysis-model",
+      "codex.gpt-5.6-luna",
+      "--auto-learner-model",
+      "codex.gpt-5.6-luna",
+      "--model-call-budget",
+      "48",
+      "--world",
+      "world_005_marrick",
+      "--dag-mode",
+      "strict_dag",
+      "--register-palette",
+      "safe",
+      "--register-overlay-threshold",
+      "0.7",
+      "--release-speed",
+      "1",
+      "--cli-effort",
+      "low",
+      "--history-turns",
+      "4",
+      "--max-tokens",
+      "4096",
+      "--parallelism",
+      "3",
+      "--progress-interval",
+      "30",
+      "--trace-dir",
+      ".tutor-stub-auto-eval/resistance-axis-heldout-v1-live-2026-08-19",
+      "--no-html-report",
+      "--no-memory-summary",
+      "--no-analyze"
+    ],
+    "analyze": [
+      "zsh",
+      "-lc",
+      "set -euo pipefail; artifact_root='.tutor-stub-auto-eval/resistance-axis-heldout-v1-live-2026-08-19'; trace_args=(); for trace in \"$artifact_root\"/*/traces/*/*.jsonl; do [[ -f \"$trace\" ]] || continue; trace_args+=(--trace \"$trace\"); done; node scripts/analyze-tutor-stub-resistance-axis-calibration.js \"${trace_args[@]}\" --registration config/tutor-stub-resistance-axis-heldout-registration.v1.json --required-traces 18 --required-profiles diligent,low_agency,bored,skeptical,low_trust_skeptic,frame_defiant --required-runs-per-profile 3 --required-turns 8 --required-policies field --required-tutor-model codex.gpt-5.6-luna --required-analysis-model codex.gpt-5.6-luna --required-learner-model codex.gpt-5.6-luna --json --out \"$artifact_root/resistance-axis-discrimination.json\""
+    ]
+  }
+}

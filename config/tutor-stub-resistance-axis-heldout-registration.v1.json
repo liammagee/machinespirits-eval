@@ -1,0 +1,114 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-axis-discrimination-registration.v1",
+  "status": "frozen_zero_call_protocol",
+  "workplanItem": "resistance-action-register-integration",
+  "frozenAt": "2026-08-19",
+  "claimBoundary": "This held-out study can establish only whether bored effort withholding and frame-defiant jurisdiction disputes recur specifically under the prospective public-axis measurement. It cannot establish tutor-action efficacy, register efficacy, human learning, or transfer to the cell harness.",
+  "authorization": {
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "requiredBeforeLiveRun": [
+      "committed registration and executable zero-call preflight",
+      "committed endpoint-runtime certificate",
+      "pinned clean origin/main launch commit and create-once destination",
+      "committed GO request",
+      "explicit human approval of the exact request digest and model-attempt ceiling"
+    ]
+  },
+  "preservation": {
+    "baselineTag": "experiment/resistance-action-register/pre-integration/freeze-2026-08-18",
+    "baselineCommit": "45985541188bc935a4ef9a4893d9b65451f0fa61",
+    "outcomeStudySupportedProfiles": ["low_agency", "overconfident"],
+    "protectedProfiles": {
+      "low_agency": {
+        "contractSha256": "0e710bd0b2711c4acd086e0ce4f98728d0a9e82a07458a1bb25f942cfab905aa",
+        "promptSha256": "fe2ab5b3a1b07d4c48ad7daf72a2df37c727cee9b6efde638e24b7463d280e2e"
+      },
+      "overconfident": {
+        "contractSha256": "e5ff5c3342331fc24d212f7405e287afa87ca93e6b83a940fa9287d84f62214e",
+        "promptSha256": "639350f5c440b617b67cd6d354e3d583620b9a48a4b16287f01ec8ef6840a1a3"
+      }
+    },
+    "historicalEvidenceMode": "read_only_no_rejudge_no_pool_no_rewrite",
+    "registeredNegativeReportSha256": "39b8c107eedd5c48cfd2a6aca79ec9a9503ffc07391555d53f254a73bbe2e6d3",
+    "calibrationUse": "threshold_design_only_not_scored_or_pooled"
+  },
+  "design": {
+    "profiles": ["diligent", "low_agency", "bored", "skeptical", "low_trust_skeptic", "frame_defiant"],
+    "newProfiles": ["bored", "frame_defiant"],
+    "controlProfile": "diligent",
+    "policies": ["field"],
+    "registerPalette": "safe",
+    "runsPerCell": 3,
+    "expectedDialogues": 18,
+    "world": "world_005_marrick",
+    "turns": "8",
+    "safetyTurns": 8,
+    "dagMode": "strict_dag",
+    "runSeed": 20260819,
+    "models": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna"
+    },
+    "cliEffort": "low",
+    "historyTurns": 4,
+    "maxTokens": 4096,
+    "modelCallBudgetPerDialogue": 48,
+    "maxPlannedModelAttempts": 864,
+    "parallelism": 3,
+    "progressIntervalSeconds": 30,
+    "releaseSpeed": 1,
+    "registerOverlayThreshold": 0.7,
+    "dryRunArtifactRoot": ".test-tmp/resistance-axis-heldout-v1-dry-2026-08-19"
+  },
+  "measurement": {
+    "reportSchema": "machinespirits.tutor-stub.resistance-axis-discrimination.v1",
+    "observerSchema": "machinespirits.resistant-learner-axis-observation.v1",
+    "observerAuthority": "calibration_only_implementation_frozen_by_registration",
+    "axes": [
+      "effort_investment",
+      "learner_authorship",
+      "evidential_orientation",
+      "epistemic_trust",
+      "frame_legitimacy"
+    ],
+    "calibrationEvidence": {
+      "sourceTurns": 144,
+      "boredEffortWithholding": "16/24",
+      "frameDefiantFrameDispute": "22/24",
+      "lowTrustAuthorityDistrust": "5/24"
+    }
+  },
+  "gates": {
+    "assembly": {
+      "requiredDialogues": 18,
+      "requiredProfiles": 6,
+      "requiredRunsPerProfile": 3,
+      "requiredTurns": 8,
+      "requiredPolicies": ["field"],
+      "observedModelRolesMustMatchPins": true
+    },
+    "coPrimaryProfiles": ["bored", "frame_defiant"],
+    "profiles": {
+      "bored": {
+        "axis": "effort_investment",
+        "marker": "effortWithholding",
+        "minimumObservedRate": 0.45,
+        "mustShowByTurn": 2,
+        "maximumNonTargetRate": 0.2
+      },
+      "frame_defiant": {
+        "axis": "frame_legitimacy",
+        "marker": "frameJurisdictionDispute",
+        "minimumObservedRate": 0.4,
+        "mustShowByTurn": 2,
+        "maximumNonTargetRate": 0.2
+      }
+    },
+    "diagnosticProfiles": ["low_agency", "skeptical", "low_trust_skeptic"],
+    "diagnosticAxes": ["learner_authorship", "evidential_orientation", "epistemic_trust"],
+    "epistemicTrustRole": "descriptive_only_no_threshold_no_pass_contribution",
+    "decisionRule": "Both co-primary profile-specific axis gates must pass independently with complete assembly. Low-agency, skeptical, and low-trust profiles are comparison controls only; epistemic trust is reported descriptively and cannot rescue or fail either primary endpoint. No pooled cosine or nearest-neighbour result contributes to the decision."
+  }
+}

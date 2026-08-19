@@ -1,0 +1,114 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-contract.v1",
+  "study_id": "tutor-stub-resistance-axis-heldout-v1",
+  "registration": {
+    "registration_path": "config/tutor-stub-resistance-axis-heldout-registration.v1.json",
+    "registration_sha256": "63ae6b1f1bd90667a4ce1a0ea310e21e7d1fcadd8e3cf61c4c43552d43ff666d",
+    "primary_endpoint_ids": ["bored_effort_investment_gate", "frame_legitimacy_gate"],
+    "diagnostic_endpoint_ids": ["low_trust_epistemic_trust_diagnostic"],
+    "required_profiles": ["diligent", "low_agency", "bored", "skeptical", "low_trust_skeptic", "frame_defiant"],
+    "required_runs_per_profile": 3,
+    "required_turns": 8,
+    "required_policies": ["field"],
+    "required_models": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna"
+    }
+  },
+  "registered_scale": {
+    "cases": 18,
+    "unit": "dialogue"
+  },
+  "runner": {
+    "packet_builder": "services/tutorStubResistanceAxisDiscriminationPreflight.js#buildTutorStubResistanceAxisPreflightPackets",
+    "result_assembler": "scripts/analyze-tutor-stub-resistance-axis-calibration.js#buildResistanceAxisDiscriminationReport",
+    "packet_cap_bytes": 100000,
+    "emitted_event_fields": [
+      "arm",
+      "case_id",
+      "models.analysis",
+      "models.learner",
+      "models.tutor",
+      "policy",
+      "profile",
+      "turns"
+    ]
+  },
+  "channels": {
+    "resistance_axis_analyzer": {
+      "enabled": true,
+      "implementation": "scripts/analyze-tutor-stub-resistance-axis-calibration.js#buildResistanceAxisDiscriminationReport"
+    },
+    "resistance_axis_observer": {
+      "enabled": true,
+      "implementation": "services/resistantLearnerAxisObservation.js#resistantLearnerAxisMarkers"
+    },
+    "axis_registration": {
+      "enabled": true,
+      "implementation": "config/tutor-stub-resistance-axis-heldout-registration.v1.json"
+    }
+  },
+  "endpoints": [
+    {
+      "id": "bored_effort_investment_gate",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": ["resistance_axis_analyzer", "resistance_axis_observer", "axis_registration"],
+      "required_event_fields": [
+        "arm",
+        "case_id",
+        "models.analysis",
+        "models.learner",
+        "models.tutor",
+        "policy",
+        "profile",
+        "turns"
+      ],
+      "denominator": {
+        "expected_cases": 3,
+        "include_arms": ["bored"]
+      }
+    },
+    {
+      "id": "frame_legitimacy_gate",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": ["resistance_axis_analyzer", "resistance_axis_observer", "axis_registration"],
+      "required_event_fields": [
+        "arm",
+        "case_id",
+        "models.analysis",
+        "models.learner",
+        "models.tutor",
+        "policy",
+        "profile",
+        "turns"
+      ],
+      "denominator": {
+        "expected_cases": 3,
+        "include_arms": ["frame_defiant"]
+      }
+    },
+    {
+      "id": "low_trust_epistemic_trust_diagnostic",
+      "role": "diagnostic",
+      "enabled": true,
+      "required_channels": ["resistance_axis_analyzer", "resistance_axis_observer", "axis_registration"],
+      "required_event_fields": [
+        "arm",
+        "case_id",
+        "models.analysis",
+        "models.learner",
+        "models.tutor",
+        "policy",
+        "profile",
+        "turns"
+      ],
+      "denominator": {
+        "expected_cases": 3,
+        "include_arms": ["low_trust_skeptic"]
+      }
+    }
+  ]
+}

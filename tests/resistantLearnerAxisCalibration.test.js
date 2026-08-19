@@ -11,6 +11,13 @@ import {
   RESISTANT_LEARNER_AXIS_DEFINITIONS,
   observeResistantLearnerAxes,
 } from '../services/resistantLearnerAxisObservation.js';
+import {
+  assembleTutorStubResistanceAxisPreflight,
+  buildTutorStubResistanceAxisPreflightPackets,
+  buildTutorStubResistanceAxisSyntheticCorpus,
+  runTutorStubResistanceAxisEndpointPreflight,
+} from '../services/tutorStubResistanceAxisDiscriminationPreflight.js';
+import { validatePaidStudyEndpointGoCertificate } from '../services/paidStudyEndpointPreflight.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -162,4 +169,79 @@ test('standalone calibration binds an unchanged negative report and emits no rep
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
   }
+});
+
+test('registered held-out endpoint gates bored and frame axes while low trust stays diagnostic-only', () => {
+  const contract = JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.json'), 'utf8'),
+  );
+  const certificate = JSON.parse(
+    fs.readFileSync(
+      path.join(ROOT, 'config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.endpoint-go.json'),
+      'utf8',
+    ),
+  );
+  const preflight = runTutorStubResistanceAxisEndpointPreflight(contract);
+  const endpointGo = validatePaidStudyEndpointGoCertificate({ certificate, contract, preflight });
+  assert.equal(preflight.status, 'passed');
+  assert.equal(preflight.model_calls, 0);
+  assert.equal(preflight.production_writes, 0);
+  assert.equal(endpointGo.ok, true, endpointGo.errors.join('; '));
+
+  const cases = buildTutorStubResistanceAxisSyntheticCorpus();
+  for (const row of cases.filter((entry) => entry.profile === 'low_trust_skeptic')) {
+    for (const turn of row.turns) turn.markers.authorityEpistemicDistrust = false;
+  }
+  const assembled = assembleTutorStubResistanceAxisPreflight({
+    packets: buildTutorStubResistanceAxisPreflightPackets(cases),
+    contract,
+  });
+  assert.equal(assembled.report.pass, true);
+  assert.equal(
+    assembled.report.gate.coPrimary.every((row) => row.pass),
+    true,
+  );
+  const lowTrust = assembled.report.gate.diagnostics.find((row) => row.profile === 'low_trust_skeptic');
+  assert.equal(lowTrust.axes.epistemic_trust, 0);
+  assert.equal(lowTrust.contributesToPass, false);
+  assert.equal(assembled.report.gate.epistemicTrustContributesToPass, false);
+});
+
+test('axis registration reuses the zero-call plan without the failed cosine gate', () => {
+  const report = JSON.parse(
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/prepare-tutor-stub-resistant-profile-discrimination.js',
+        '--registration',
+        'config/tutor-stub-resistance-axis-heldout-registration.v1.json',
+        '--json',
+      ],
+      { cwd: ROOT, encoding: 'utf8' },
+    ),
+  );
+  assert.equal(report.pass, true);
+  assert.equal(report.authorization.modelCallsAuthorized, false);
+  assert.equal(report.plan.runSeed, 20260819);
+  assert.equal(report.plan.expectedDialogueRows, 18);
+  assert.equal(report.commands.analyze[0], 'zsh');
+  assert.match(report.commands.analyze[2], /analyze-tutor-stub-resistance-axis-calibration\.js/u);
+  assert.doesNotMatch(report.commands.analyze[2], /--require-pooled/u);
+});
+
+test('registered held-out verdict fails a primary recurrence without making the endpoint incomplete', () => {
+  const contract = JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.json'), 'utf8'),
+  );
+  const cases = buildTutorStubResistanceAxisSyntheticCorpus();
+  for (const row of cases.filter((entry) => entry.profile === 'bored')) {
+    for (const turn of row.turns) turn.markers.effortWithholding = false;
+  }
+  const assembled = assembleTutorStubResistanceAxisPreflight({
+    packets: buildTutorStubResistanceAxisPreflightPackets(cases),
+    contract,
+  });
+  assert.equal(assembled.endpoint_status.bored_effort_investment_gate, 'complete');
+  assert.equal(assembled.report.pass, false);
+  assert.equal(assembled.report.gate.coPrimary.find((row) => row.profile === 'bored').pass, false);
 });
