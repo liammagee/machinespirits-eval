@@ -31,7 +31,7 @@ export function buildTutorStubResistanceAxisSyntheticCorpus() {
       return {
         case_id: `${profile}:field:${run}`,
         arm: profile,
-        file: path.join(ROOT, 'synthetic-zero-call', profile, 'traces', `field-r${run}`, 'trace.jsonl'),
+        file: path.join('synthetic-zero-call', profile, 'traces', `field-r${run}`, 'trace.jsonl'),
         profile,
         policy: 'field',
         models: { tutor: MODEL, analysis: MODEL, learner: MODEL },

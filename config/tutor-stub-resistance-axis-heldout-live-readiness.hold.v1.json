@@ -16,7 +16,7 @@
     "contractPath": "config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.json",
     "certificatePath": "config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.endpoint-go.json",
     "contractSha256": "37b84754af9e58c2d0fe11c4fee2103fba5ba93fd1410be3dfab9087cc08c70f",
-    "preflightSha256": "fdfdbb06574e52106b3bd8b4911ec1c752d3b1574c3304efddb10c6517dd985a",
+    "preflightSha256": "5a28cdedd01f2275d75ec7c518373282913372de8af596d5160aa7b89daafa41",
     "authorizationScope": "endpoint-runtime compatibility only"
   },
   "routeVerification": {

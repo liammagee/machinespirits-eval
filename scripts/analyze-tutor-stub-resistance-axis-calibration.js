@@ -187,6 +187,10 @@ function countBy(rows, selector) {
   return Object.fromEntries(Object.entries(counts).sort((left, right) => left[0].localeCompare(right[0])));
 }
 
+function reportPath(file) {
+  return path.isAbsolute(file) ? path.relative(ROOT, file) : file;
+}
+
 function modelCheck(role, traces, requiredModel) {
   const observed = countBy(traces, (trace) => trace.models[role] || 'unknown');
   return {
@@ -282,7 +286,7 @@ export function buildResistanceAxisCalibrationReport(traces, args) {
     changesRegisteredResult: false,
     pass: null,
     input: {
-      traces: traces.map((trace) => path.relative(ROOT, trace.file)),
+      traces: traces.map((trace) => reportPath(trace.file)),
       axisDefinitions: RESISTANT_LEARNER_AXIS_DEFINITIONS,
     },
     integrity: {
