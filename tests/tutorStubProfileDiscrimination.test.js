@@ -296,7 +296,7 @@ test('profile discrimination analyzer writes compacted traces and cosine report'
       ),
     );
 
-    assert.equal(report.schema, 'machinespirits.tutor-stub.profile-discrimination.v3');
+    assert.equal(report.schema, 'machinespirits.tutor-stub.profile-discrimination.v4');
     assert.equal(report.summary.profiles, 2);
     assert.equal(report.summary.traces, 2);
     assert.deepEqual(report.summary.observedModels, {

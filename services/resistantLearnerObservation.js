@@ -14,7 +14,20 @@ const BORED_EXPLICIT_PATTERNS = Object.freeze([
 
 const BORED_FLAT_PATTERNS = Object.freeze([
   /^\s*(?:fine|sure|right|okay|ok|whatever|as you like|if you say so)(?:\b|[.,!])/iu,
+  /(?:^|[.!?]\s+)(?:fine|sure|right|okay|ok|whatever|as you like|if you say so)[.!]?\s*$/iu,
   /\b(?:are we done|can we (?:skip|finish|move on)|what(?:'s| is) left)\b/iu,
+]);
+
+const SUBSTANTIVE_EXPANSION_PATTERNS = Object.freeze([
+  /\b(?:because|therefore|thus|hence)\b/iu,
+  /\b(?:which|that|this)\s+(?:means|shows|proves|establishes)\b/iu,
+  /\bso\s+(?:we|i)\s+(?:can|should|know|conclude)\b/iu,
+  /\bif\b.{0,100}\bthen\b/iu,
+]);
+
+const ADJACENT_HOOK_PATTERNS = Object.freeze([
+  /\?/u,
+  /\b(?:answer|attend to|check|choose|compare|examine|identify|mark|name|record|say|state|test|write)\b/iu,
 ]);
 
 const PERMISSION_SEEKING_PATTERNS = Object.freeze([
@@ -25,6 +38,8 @@ const PERMISSION_SEEKING_PATTERNS = Object.freeze([
 const FRAME_JURISDICTION_PATTERNS = Object.freeze([
   /\bi (?:do not|don't) accept (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?)\b/iu,
   /\bi (?:do not|don't) accept (?:your|the tutor['’]s|their) (?:authority|standing|right)\b/iu,
+  /\bi (?:do not|don't) accept your (?:fixing|setting|defining|choosing) (?:the |this |that )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
+  /\bi (?:do not|don't) concede (?:your|the tutor['’]s|their) (?:authority|standing|right)\b/iu,
   /\bi reject (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?)\b/iu,
   /\bi reject (?:the )?jurisdiction of (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\bi dispute (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
@@ -69,6 +84,22 @@ function contentBearing(classification) {
   return CONTENT_BEARING_MOVES.has(turn.discourse_move) || CONTENT_BEARING_EVIDENCE.has(turn.evidence_use);
 }
 
+function wordCount(text) {
+  return String(text || '').match(/[\p{L}\p{N}]+(?:['’_-][\p{L}\p{N}]+)*/gu)?.length || 0;
+}
+
+function hasAdjacentHook(tutorText) {
+  const text = String(tutorText || '').trim();
+  return Boolean(text && ADJACENT_HOOK_PATTERNS.some((pattern) => pattern.test(text)));
+}
+
+function minimalFlatCompliance(text, flatEvidence) {
+  if (!flatEvidence || wordCount(text) > 18) return false;
+  if (SUBSTANTIVE_EXPANSION_PATTERNS.some((pattern) => pattern.test(text))) return false;
+  if (/\?/u.test(text) && !BORED_FLAT_PATTERNS[2].test(text)) return false;
+  return true;
+}
+
 function observation(type, evidenceSpan, text, features) {
   return {
     schema: RESISTANT_LEARNER_OBSERVATION_SCHEMA,
@@ -79,7 +110,7 @@ function observation(type, evidenceSpan, text, features) {
   };
 }
 
-export function observeResistantLearnerTurn({ learnerText = '', classification = null } = {}) {
+export function observeResistantLearnerTurn({ learnerText = '', classification = null, tutorText = '' } = {}) {
   const text = String(learnerText || '').trim();
   const observations = [];
   const defeated = [];
@@ -93,11 +124,16 @@ export function observeResistantLearnerTurn({ learnerText = '', classification =
   }
 
   const permissionEvidence = firstEvidence(text, PERMISSION_SEEKING_PATTERNS);
-  const boredEvidence = firstEvidence(text, BORED_EXPLICIT_PATTERNS) || firstEvidence(text, BORED_FLAT_PATTERNS);
+  const explicitBoredEvidence = firstEvidence(text, BORED_EXPLICIT_PATTERNS);
+  const flatBoredEvidence = firstEvidence(text, BORED_FLAT_PATTERNS);
+  const boredEvidence = explicitBoredEvidence || flatBoredEvidence;
   if (boredEvidence) {
+    const carriesContent = contentBearing(classification);
+    const minimalFlatReply = minimalFlatCompliance(text, flatBoredEvidence);
+    const adjacentHookPresent = hasAdjacentHook(tutorText);
     const defeatReasons = [];
     if (permissionEvidence) defeatReasons.push('permission_seeking');
-    if (contentBearing(classification)) defeatReasons.push('content_bearing_contribution');
+    if (carriesContent && !minimalFlatReply) defeatReasons.push('content_bearing_contribution');
     if (defeatReasons.length) {
       defeated.push({
         type: 'bored_effort_withholding',
@@ -109,9 +145,12 @@ export function observeResistantLearnerTurn({ learnerText = '', classification =
       observations.push(
         observation('bored_effort_withholding', boredEvidence, text, {
           effort: 'withheld',
-          compliance: 'letter_only_or_clock_watching',
+          compliance: minimalFlatReply && adjacentHookPresent ? 'adjacent_hook_only' : 'letter_only_or_clock_watching',
           permission_seeking: false,
-          content_bearing: false,
+          content_bearing: carriesContent,
+          minimal_flat_reply: minimalFlatReply,
+          adjacent_hook_present: adjacentHookPresent,
+          unprompted_expansion: false,
           classifier_request_type: turn.request_type || null,
         }),
       );

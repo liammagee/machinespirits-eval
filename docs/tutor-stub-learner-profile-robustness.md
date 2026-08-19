@@ -124,7 +124,9 @@ The new profiles add deterministic behavior-only markers during compact-trace
 construction:
 
 - `boredWithholding` requires public flatness, clock-watching, or explicit
-  boredom without permission-seeking or a content-bearing contribution;
+  boredom without permission-seeking or an expanded contribution. One short
+  literal answer to an adjacent concrete hook remains compatible with the
+  marker;
 - `frameJurisdictionDispute` requires a public dispute about who may set the
   premise, question, exercise, rule, or test. Evidence skepticism, source
   distrust, counterexamples, goalpost movement, pressure complaints, and
@@ -148,8 +150,8 @@ It specifies 18 equal-horizon dialogues: six profiles (`diligent`,
 `frame_defiant`) under one `field` treatment, the safe register palette, and
 three repeats. The analyzer must enforce both the pooled cosine gate and the
 new profiles' declared nearest-neighbour gates. This registration and its dry
-plan remain engineering evidence only; no live trace for the two new profiles
-has been generated.
+plan were engineering evidence only at registration time; the later bounded
+execution and its post-hoc instrument audit are recorded below.
 
 ## Evidence So Far
 
@@ -427,3 +429,31 @@ matrix where:
 Once the sentinel passes, run the `core` or `frontier` QA matrix and treat
 policy effects as more credible because they survived realistic learner
 variation. Reserve `audit` for periodic full-library checks.
+
+## Phase 2 resistant-profile result and instrument audit
+
+The registered 18-dialogue Luna study did not pass its co-primary conditioned
+gate. That failure remains the authoritative study result. A later zero-call,
+turn-level engineering audit found two prospective measurement defects; it
+does not retrospectively change the result or any frozen threshold.
+
+- The `bored` contract permits one brief literal answer to an adjacent concrete
+  hook, but the observer formerly rejected any flat reply that the generic
+  classifier called content-bearing. Recompacting the exact 18 source traces
+  with the corrected prospective observer recognizes all 24 bored turns,
+  including minimal direct answers and terminal flat cues, while still
+  rejecting expanded inference chains and permission seeking.
+- The behavior vector now includes the existing `boredWithholding` and
+  `frameJurisdictionDispute` public markers instead of using them only for the
+  recurrence gate.
+- A declared nearest-neighbour result is now evaluable only when both the
+  expected anchor and any different observed-nearest anchor meet the target
+  profile's unchanged signature floor. On the frozen corpus `low_agency`,
+  `skeptical`, and `low_trust_skeptic` miss the `0.40` floor, so both new-profile
+  nearest-neighbour results correctly fail closed as unevaluable.
+
+The prospective replay preserves the 18/18 assembly and pooled pass, repairs
+the boredom observability mismatch, and leaves the overall result failed at
+the anchor-validity boundary. A fresh study may be registered only after this
+instrument change is merged and pinned; the old authorization, traces, and
+canonical report cannot be retried, resumed, or rewritten.

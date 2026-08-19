@@ -118,11 +118,12 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     );
   }
 
-  function automatedLearnerMarkerValue(turn, field) {
+  function automatedLearnerMarkerValue(turn, field, tutorText = '') {
     const classifier = turn?.classification?.turn || {};
     const resistantMarkers = resistantLearnerObservationMarkers({
       learnerText: turn?.learner,
       classification: turn?.classification,
+      tutorText,
     });
     const fields = {
       requestType: classifier.request_type,
@@ -136,8 +137,10 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     return fields[field] ?? null;
   }
 
-  function automatedLearnerMarkerMatches(turn, clause) {
-    return clause.every((group) => (group.values || []).includes(automatedLearnerMarkerValue(turn, group.field)));
+  function automatedLearnerMarkerMatches(turn, clause, tutorText = '') {
+    return clause.every((group) =>
+      (group.values || []).includes(automatedLearnerMarkerValue(turn, group.field, tutorText)),
+    );
   }
 
   function publicTutorPressure(text) {
@@ -169,15 +172,19 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     const completedTurns = state.turns || [];
     const openingTutor = state.history?.[0]?.role === 'assistant' ? state.history[0].content : '';
     const priorTurns = policyEligible
-      ? completedTurns.filter((turn, index) => {
-          if (observability.eligibility !== 'public_tutor_pressure') return true;
-          const stimulus = index === 0 ? openingTutor : completedTurns[index - 1]?.tutor;
-          const stimulusSelection = index === 0 ? null : completedTurns[index - 1]?.registerSelection;
-          return publicTutorPressure(stimulus) || negativeRegisterPressure(stimulusSelection);
-        })
+      ? completedTurns
+          .map((turn, index) => ({
+            turn,
+            stimulusTutor: index === 0 ? openingTutor : completedTurns[index - 1]?.tutor || '',
+            stimulusSelection: index === 0 ? null : completedTurns[index - 1]?.registerSelection,
+          }))
+          .filter(({ stimulusTutor, stimulusSelection }) => {
+            if (observability.eligibility !== 'public_tutor_pressure') return true;
+            return publicTutorPressure(stimulusTutor) || negativeRegisterPressure(stimulusSelection);
+          })
       : [];
-    const observed = priorTurns.filter((turn) =>
-      clauses.some((clause) => clause.length && automatedLearnerMarkerMatches(turn, clause)),
+    const observed = priorTurns.filter(({ turn, stimulusTutor }) =>
+      clauses.some((clause) => clause.length && automatedLearnerMarkerMatches(turn, clause, stimulusTutor)),
     ).length;
     const mustShowByTurn = Number(observability.mustShowByTurn || 0);
     const targetRate = Number(observability.minEligibleRate || 0);
@@ -454,8 +461,9 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     if (!runtime?.requiredNow) return true;
     const classification = classificationFromCombinedAnalysis(raw, state);
     const syntheticTurn = { learner: text, classification };
+    const tutorText = latestTutorMessage(state);
     return (runtime.observability.markerClauses || []).some(
-      (clause) => clause.length > 0 && automatedLearnerMarkerMatches(syntheticTurn, clause),
+      (clause) => clause.length > 0 && automatedLearnerMarkerMatches(syntheticTurn, clause, tutorText),
     );
   }
 

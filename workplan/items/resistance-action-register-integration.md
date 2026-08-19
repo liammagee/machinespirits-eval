@@ -66,7 +66,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/frame-defiant-study-closeout
+branch: codex/resistant-profile-measurement-audit
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -275,3 +275,17 @@ and explicit human approval.
   registers, human learning, or transfer to the cell harness. The canonical
   local report digest is
   `06d7bbc49df46e2f20ebeb3eb0141dba975825ce10bf33eef0e0dc15540ec32c`.
+- 2026-08-19 — Completed the zero-call turn-level examination without changing
+  the registered result. The prospective observer now treats a short flat
+  literal answer as boredom-compatible even when the generic classifier calls
+  it content-bearing, recognizes terminal flat cues, and keeps permission
+  seeking or expanded reasoning defeated. Exact-trace replay recognizes 24/24
+  bored turns and 15/24 frame-jurisdiction turns, while the unchanged
+  observability thresholds pass. The discrimination vector now contains both
+  resistant-profile markers, and nearest-neighbour evaluation fails closed
+  unless the expected and observed anchors meet the unchanged `0.40` signature
+  floor. On the frozen corpus `low_agency`, `skeptical`, and
+  `low_trust_skeptic` do not, so the prospective replay remains an overall
+  failure at the anchor-validity boundary. The canonical report remains the
+  formal Phase 2 negative result; no retry, resume, model call, or retrospective
+  threshold change occurred.
