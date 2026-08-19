@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-19T15:04:36.466Z",
+  "generated": "2026-08-19T15:25:47.033Z",
   "counts": {
     "total": 514,
     "byStatus": {
@@ -277,7 +277,9 @@
           "docs/tutor-stub-resistant-profile-discrimination-live-readiness-hold.md",
           "docs/tutor-stub-resistant-profile-discrimination-study-go-request.md",
           "docs/tutor-stub-resistant-profile-measurement-recheck-study-go-request.md",
-          "docs/tutor-stub-resistant-profile-measurement-recheck-technical-recovery-study-go-request.md"
+          "docs/tutor-stub-resistant-profile-measurement-recheck-technical-recovery-study-go-request.md",
+          "docs/tutor-stub-resistance-axis-heldout-registration.md",
+          "docs/tutor-stub-resistance-axis-heldout-live-readiness-hold.md"
         ],
         "code": [
           "services/pedagogicalMove/contract.js",
@@ -288,6 +290,11 @@
           "scripts/analyze-tutor-stub-profile-discrimination.js",
           "services/resistantLearnerAxisObservation.js",
           "scripts/analyze-tutor-stub-resistance-axis-calibration.js",
+          "services/tutorStubResistanceAxisDiscriminationPreflight.js",
+          "config/tutor-stub-resistance-axis-heldout-registration.v1.json",
+          "config/tutor-stub-resistance-axis-heldout-live-readiness.hold.v1.json",
+          "config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.json",
+          "config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.endpoint-go.json",
           "services/pedagogicalMove/resistantProfileWarrantShadow.js",
           "scripts/tutor-stub-learner-profile-contracts.js",
           "scripts/prepare-tutor-stub-resistant-profile-discrimination.js",
@@ -318,7 +325,7 @@
         "learner-profiles",
         "registers"
       ],
-      "branch": "codex/resistant-profile-axis-calibration-ci-fix"
+      "branch": "codex/resistance-axis-heldout-registration"
     },
     {
       "id": "edged-register-stub-dag-replication",
