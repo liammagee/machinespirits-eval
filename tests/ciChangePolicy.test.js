@@ -110,4 +110,14 @@ test('workflows expose the classifier and focused gate without retired runtime f
   assert.doesNotMatch(ci, /ELECTRON_/u);
   assert.match(validation, /needs\.classify\.outputs\.validation_required == 'true'/u);
   assert.doesNotMatch(validation, /ELECTRON_/u);
+
+  for (const workflow of [
+    ci,
+    validation,
+    fs.readFileSync(path.resolve('.github/workflows/tutor-stub-surface-acceptance.yml'), 'utf8'),
+    fs.readFileSync(path.resolve('.github/workflows/workplan-validate.yml'), 'utf8'),
+    fs.readFileSync(path.resolve('.github/workflows/workplan-commit-trailer.yml'), 'utf8'),
+  ]) {
+    assert.match(workflow, /fetch-depth: 0\n {10}filter: blob:none/u);
+  }
 });
