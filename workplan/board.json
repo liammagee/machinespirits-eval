@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-19T09:00:37.648Z",
+  "generated": "2026-08-19T09:23:32.097Z",
   "counts": {
     "total": 514,
     "byStatus": {
@@ -322,6 +322,8 @@
           "services/tutorStubPedagogicalMoveProjection.js",
           "services/resistantLearnerObservation.js",
           "scripts/analyze-tutor-stub-profile-discrimination.js",
+          "services/resistantLearnerAxisObservation.js",
+          "scripts/analyze-tutor-stub-resistance-axis-calibration.js",
           "services/pedagogicalMove/resistantProfileWarrantShadow.js",
           "scripts/tutor-stub-learner-profile-contracts.js",
           "scripts/prepare-tutor-stub-resistant-profile-discrimination.js",
@@ -352,7 +354,7 @@
         "learner-profiles",
         "registers"
       ],
-      "branch": "codex/resistant-profile-axis-calibration"
+      "branch": "codex/resistant-profile-axis-calibration-ci-fix"
     },
     {
       "id": "edged-register-stub-dag-replication",
