@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-19T19:19:00.145Z",
+  "generated": "2026-08-19T21:32:59.502Z",
   "counts": {
     "total": 517,
     "byStatus": {
-      "done": 489,
+      "done": 490,
       "blocked": 7,
       "dropped": 10,
       "triaged": 1,
       "active": 4,
       "archived": 4,
-      "review": 2
+      "review": 1
     },
     "byType": {
       "research": 80,
@@ -638,35 +638,6 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
-      "id": "shorten-full-ci-critical-path",
-      "title": "Shorten the full-CI critical path",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-19",
-      "updated": "2026-08-19",
-      "verification": "Required history-aware workflow jobs pass with blobless checkout; focused classifier and workflow contract tests pass; a matched local two-way versus three-way root-shard benchmark records the critical-path and runner-cost tradeoff, and only adopts three shards if the measured gain justifies two additional runners.",
-      "branch": "codex/shorten-full-ci-critical-path",
-      "links": {
-        "prs": [
-          695
-        ],
-        "items": [
-          "optimize-ci-agent-iteration-loop",
-          "optimize-hermetic-test-suite",
-          "decommission-electron-desktop-target"
-        ]
-      },
-      "tags": [
-        "ci",
-        "latency",
-        "testing",
-        "developer-experience"
-      ]
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -10626,6 +10597,35 @@
       ],
       "branch": "codex/ux-enhancements",
       "milestone": "desktop-app"
+    },
+    {
+      "id": "shorten-full-ci-critical-path",
+      "title": "Shorten the full-CI critical path",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-19",
+      "updated": "2026-08-19",
+      "verification": "Required history-aware workflow jobs pass with blobless checkout; focused classifier and workflow contract tests pass; a matched local two-way versus three-way root-shard benchmark records the critical-path and runner-cost tradeoff, and only adopts three shards if the measured gain justifies two additional runners.",
+      "branch": "codex/shorten-full-ci-critical-path",
+      "links": {
+        "prs": [
+          695
+        ],
+        "items": [
+          "optimize-ci-agent-iteration-loop",
+          "optimize-hermetic-test-suite",
+          "decommission-electron-desktop-target"
+        ]
+      },
+      "tags": [
+        "ci",
+        "latency",
+        "testing",
+        "developer-experience"
+      ]
     },
     {
       "id": "shrinkage-probes",
