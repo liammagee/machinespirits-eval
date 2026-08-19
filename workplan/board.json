@@ -1,7 +1,7 @@
 {
-  "generated": "2026-08-19T21:49:28.914Z",
+  "generated": "2026-08-19T22:02:09.652Z",
   "counts": {
-    "total": 517,
+    "total": 518,
     "byStatus": {
       "done": 490,
       "blocked": 7,
@@ -9,13 +9,13 @@
       "triaged": 1,
       "active": 4,
       "archived": 4,
-      "review": 1
+      "review": 2
     },
     "byType": {
       "research": 80,
       "experiment": 87,
       "infra": 114,
-      "maintenance": 214,
+      "maintenance": 215,
       "content": 4,
       "ops": 10,
       "paper": 8
@@ -638,6 +638,30 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "upgrade-github-actions-node-runtime",
+      "title": "Upgrade GitHub Actions to the current JavaScript runtime",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-19",
+      "updated": "2026-08-19",
+      "verification": "Every repository workflow uses actions/checkout@v7 and actions/setup-node@v7 where applicable; focused workflow-policy, format, and workplan checks pass; hosted CI completes without the deprecated Node 20 action-runtime warning.",
+      "branch": "codex/upgrade-github-actions-node-runtime",
+      "links": {
+        "items": [
+          "shorten-full-ci-critical-path",
+          "decommission-electron-desktop-target"
+        ]
+      },
+      "tags": [
+        "ci",
+        "github-actions",
+        "maintenance"
+      ]
     },
     {
       "id": "adaptive-eval-immutable-provenance",
