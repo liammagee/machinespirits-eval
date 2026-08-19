@@ -20,7 +20,7 @@ export const REQUIRED_ARCHIVE_BUILDERS = Object.freeze([
 ]);
 
 export const DIRECT_CALLER_EXEMPTIONS = Object.freeze({
-  'scripts/run-local-ci.js': 'source-path inventory only; it never launches tutor-stub',
+  'scripts/tutor-stub-surface-ci-policy.js': 'source-path inventory only; it never launches tutor-stub',
   'scripts/run-adaptive-warrant-baseline-study.js':
     'source-provenance inventory only; it launches run-tutor-stub-auto-eval.js, where required archival is enforced',
   'scripts/run-adaptive-warrant-outcome-pilot.js':

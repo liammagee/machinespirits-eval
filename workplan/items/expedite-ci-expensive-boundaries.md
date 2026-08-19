@@ -59,3 +59,9 @@ Log:
   modifies the workflow/classifier boundary itself, that PR should run the full
   packaged lane once; a later unrelated scripts-only manifest change is the
   skip-path confirmation.
+- 2026-08-18 — PR #666's first hosted run passed the new classifier and full
+  packaged-Electron lane, but both Node-version shard-2 jobs caught a stale
+  artifact-lifecycle inventory exemption after the tutor-stub path list moved
+  from `run-local-ci.js` to `tutor-stub-surface-ci-policy.js`. Move the
+  source-inventory exemption with its owner and rerun the focused audit plus
+  the exact shard before updating the PR.
