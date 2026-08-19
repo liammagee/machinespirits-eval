@@ -630,6 +630,7 @@
         "tests/tutorStubRemoteDriver.test.js",
         "tests/tutorStubReportingUx.test.js",
         "tests/tutorStubRequestedEntryCausality.test.js",
+        "tests/tutorStubResistanceActionRegisterStudy.test.js",
         "tests/tutorStubResistantProfileDiscriminationRegistration.test.js",
         "tests/tutorStubResistantProfileLiveReadiness.test.js",
         "tests/tutorStubResistantProfileRouteCanary.test.js",
