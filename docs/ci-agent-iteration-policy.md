@@ -11,7 +11,7 @@ boundary a change can affect. Unknown or mixed changes always use full CI.
 | Digest, provenance, and existing study validator | Integrity-critical | The bound authorization or research artifact changes | Unrelated docs or runtime work |
 | Ref/version registry checks | Integrity-critical | Managed refs, archive refs, or their registry change | Ref impact is `N/A` |
 | Root hermetic tests and risk coverage | Compatibility-critical | Runtime, database, evaluator, tutor/learner, test, or unknown paths change | Allowlisted authored metadata only |
-| Node 20/22 matrix | Compatibility-critical | Runtime or dependency compatibility can change | Allowlisted authored metadata only |
+| Node 22/24 matrix | Compatibility-critical | Runtime or dependency compatibility can change | Allowlisted authored metadata only |
 | Packaged Electron acceptance | Compatibility-critical | Desktop, lockfile, runtime package metadata, or shared tutor surface changes | Root-only docs, workplan, and unrelated script metadata |
 | New schema, validator, canary, or npm alias | Optional ceremony by default | A repeated failure exposes a missing durable contract | A one-off authorization or recovery already has a validator |
 | Additional approval or authorization-only PR | Optional ceremony inside standing recovery authority | Recovery changes source, model, scope, seed/configuration, data, budget, or interpretation | A technical retry/resume stays inside the original envelope |

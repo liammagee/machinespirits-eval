@@ -89,9 +89,9 @@ npm run test:root -- --quiet --report-dir .test-tmp/hermetic-profile
 
 Use a different report directory for each concurrently isolated run. The
 production database and dialogue logs remain isolated in a separate temporary
-root and are still removed after the run. Node 22 records file wall time plus
-aggregate test duration; Node 20 labels its aggregate-duration fallback because
-that runtime does not emit a file-scoped completion summary.
+root and are still removed after the run. Supported Node versions record file
+wall time plus aggregate test duration; the reporter retains a labelled
+aggregate-duration fallback for historical runtimes without file summaries.
 
 To calibrate this machine's root-test worker count without weakening hermetic
 selection or file accounting, add a bounded Node concurrency value:
@@ -151,19 +151,19 @@ and `--offline` are passed to a required full local gate. A failure after draft
 creation leaves the draft URL in the error output rather than presenting an
 unadmitted PR as ready.
 
-## Node 20 parity
+## Node 24 parity
 
-The host uses Node 22. Add GitHub's second runtime through a disposable Docker
+The host uses Node 22. Add GitHub's second LTS runtime through a disposable Docker
 filesystem:
 
 ```bash
-npm run ci:local -- --node20-container
+npm run ci:local -- --node24-container
 # or only that lane
-npm run ci:local:node20
+npm run ci:local:node24
 ```
 
 The checkout is mounted read-only, copied without `.git`, dependencies, test
-reports, or coverage output, and tested inside `node:20-bookworm`. Container
+reports, or coverage output, and tested inside `node:24-bookworm`. Container
 dependencies never become root-owned files in the host checkout. Pulling the
 image requires network access the first time.
 

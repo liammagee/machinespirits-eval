@@ -50,7 +50,6 @@ jobs:
 
   test-contract:
     name: Hermetic test contract
-    needs: classify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -67,7 +66,7 @@ jobs:
 
   focused:
     name: Focused authored-metadata checks
-    needs: classify
+    needs: [classify, test-contract]
     if: needs.classify.outputs.full_required != 'true'
     runs-on: ubuntu-latest
     steps:
@@ -94,7 +93,7 @@ jobs:
         run: node --test tests/tutorStubResistantProfileStudyGoRequest.test.js
 
   lint:
-    needs: classify
+    needs: [classify, test-contract]
     if: needs.classify.outputs.full_required == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -129,7 +128,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [20, 22]
+        node-version: [22, 24]
         shard: [1, 2]
     steps:
       - uses: actions/checkout@v4
@@ -175,7 +174,7 @@ jobs:
         run: npm run test:lifecycle:ci
 
   risk-coverage:
-    needs: classify
+    needs: [classify, test-contract]
     if: needs.classify.outputs.full_required == 'true'
     runs-on: ubuntu-latest
     steps:

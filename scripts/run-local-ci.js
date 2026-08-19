@@ -30,7 +30,7 @@ Selection:
   --lane <id[,id]>      Run only named lanes (repeatable)
   --skip <id[,id]>      Omit named lanes (repeatable)
   --surface <mode>      auto (default), always, or never
-  --node20-container    Add isolated Node 20 root/core parity through Docker
+  --node24-container    Add isolated Node 24 root/core parity through Docker
 
 Execution:
   --no-install          Reuse installed dependencies instead of npm ci
@@ -66,7 +66,7 @@ export function parseLocalCiArgs(argv = []) {
     install: true,
     offline: false,
     keepGoing: false,
-    includeNode20: false,
+    includeNode24: false,
     base: DEFAULT_BASE,
     head: DEFAULT_HEAD,
     prBodyFile: null,
@@ -107,7 +107,7 @@ export function parseLocalCiArgs(argv = []) {
     else if (argument === '--no-install') options.install = false;
     else if (argument === '--offline') options.offline = true;
     else if (argument === '--keep-going') options.keepGoing = true;
-    else if (argument === '--node20-container') options.includeNode20 = true;
+    else if (argument === '--node24-container') options.includeNode24 = true;
     else if (argument === '--dry-run') options.dryRun = true;
     else if (argument === '--list') options.list = true;
     else if (argument === '--help' || argument === '-h') options.help = true;
@@ -131,14 +131,14 @@ function lane(id, label, commands, profiles = ['full']) {
 
 export { pathTriggersSurfaceAcceptance };
 
-function node20ContainerCommand(projectRoot) {
+function node24ContainerCommand(projectRoot) {
   const copyAndRun = [
     'set -eu',
     'mkdir -p /tmp/machinespirits-eval',
     'tar -C /source --exclude=.git --exclude=node_modules --exclude=desktop/node_modules --exclude=.test-tmp --exclude=coverage -cf - . | tar -C /tmp/machinespirits-eval -xf -',
     'cd /tmp/machinespirits-eval',
     'npm ci',
-    'node scripts/run-local-ci.js --profile node-tests --no-install --offline --report-dir /tmp/local-ci-node20',
+    'node scripts/run-local-ci.js --profile node-tests --no-install --offline --report-dir /tmp/local-ci-node24',
   ].join(' && ');
   return {
     program: 'docker',
@@ -148,7 +148,7 @@ function node20ContainerCommand(projectRoot) {
       '--init',
       '--mount',
       `type=bind,src=${projectRoot},dst=/source,readonly`,
-      'node:20-bookworm',
+      'node:24-bookworm',
       'bash',
       '-lc',
       copyAndRun,
@@ -227,7 +227,7 @@ export function localCiLaneCatalog(options, projectRoot = PROJECT_ROOT) {
       npm('tutor:stub:acceptance:packaged'),
       npm('native:rebuild:node', [], { always: true }),
     ]),
-    lane('node20', 'Isolated Node 20 root/core parity', [node20ContainerCommand(projectRoot)], []),
+    lane('node24', 'Isolated Node 24 root/core parity', [node24ContainerCommand(projectRoot)], []),
   ];
 }
 
@@ -281,7 +281,7 @@ export function buildLocalCiPlan(
     ? new Set(options.lanes)
     : new Set(catalog.filter((entry) => entry.profiles.includes(options.profile)).map((entry) => entry.id));
   if (!options.install) selected.delete('install');
-  if (options.includeNode20) selected.add('node20');
+  if (options.includeNode24) selected.add('node24');
 
   const resolvedSurfaceRequired =
     options.surface === 'always' ||

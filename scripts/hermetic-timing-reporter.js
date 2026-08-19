@@ -33,10 +33,10 @@ function timingLine(file, timing, summaryDurationMs = null) {
  * files actually ran — and, when a run stalls, the set of files with no line here
  * is exactly the set still holding the runner open. The end-of-stream flush
  * cannot say that second thing, because a stalled run never reaches the end of
- * its stream; it is here because `test:summary` arrived in Node 22 and this
- * project still supports Node 20, where the whole report necessarily comes at
- * the end. On Node 20 a completed run is still accounted for exactly; a stalled
- * one just cannot be narrowed to a file.
+ * its stream; it is here because `test:summary` arrived in Node 22 while the
+ * reporter still accepts historical Node 20 event streams, where the whole
+ * report necessarily comes at the end. A completed legacy run is still
+ * accounted for exactly; a stalled one just cannot be narrowed to a file.
  */
 export default async function* hermeticTimingReporter(source) {
   const files = new Map();
