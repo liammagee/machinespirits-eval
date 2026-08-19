@@ -235,6 +235,8 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
 
   const isReplacement = request.replacement?.type === 'fresh_profile_cohort_replacement';
   const isFreshMeasurementRecheck = request.recheck?.type === 'fresh_full_cohort_measurement_recheck';
+  const isTechnicalRecovery =
+    request.technicalRecovery?.type === 'fresh_destination_after_pre_model_dependency_failure';
   const commandSource = request.bindings.commands.source;
   const liveCommand = commandSource === 'commands' ? request.commands?.live : hold.proposedCommands.live;
   const analyzeCommand = commandSource === 'commands' ? request.commands?.analyze : hold.proposedCommands.analyze;
@@ -374,6 +376,9 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     const registered = readJson(rootPath(request.bindings.registration.path));
     const expectedProfiles = 'diligent,low_agency,bored,skeptical,low_trust_skeptic,frame_defiant';
     const analysisShell = analyzeCommand[2] || '';
+    const retryBoundaryValid = isTechnicalRecovery
+      ? request.budget.retryOrResumeAuthority === 'bounded_technical_recovery'
+      : request.budget.retryOrResumeAuthority === 'none';
     assertion(
       checks,
       'measurement-recheck-design-binding',
@@ -384,8 +389,10 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         request.budget.dialogues === 18 &&
         request.budget.maximumAttemptsPerDialogue === 48 &&
         request.budget.maximumPlannedModelAttempts === 864 &&
-        request.budget.retryOrResumeAuthority === 'none',
-      'six fresh three-run profile cohorts and the 864-attempt no-retry ceiling remain frozen',
+        retryBoundaryValid,
+      isTechnicalRecovery
+        ? 'six fresh three-run profile cohorts and the 864-attempt bounded-recovery ceiling remain frozen'
+        : 'six fresh three-run profile cohorts and the 864-attempt no-retry ceiling remain frozen',
     );
     assertion(
       checks,
@@ -397,6 +404,68 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         request.recheck.prospectiveExactTraceReplay.modelCalls === 0,
       'the new cohort neither reuses old traces nor rewrites the registered negative result or thresholds',
     );
+    if (isTechnicalRecovery) {
+      validateFileBinding(checks, 'measurement-recheck-recovery-prior-request-binding', {
+        path: request.technicalRecovery.priorRequestPath,
+        sha256: request.technicalRecovery.priorRequestSha256,
+      });
+      const dependency = request.technicalRecovery.dependencyPreparation;
+      const excluded = request.technicalRecovery.excludedUnplannedSmoke;
+      const recovery = request.technicalRecovery.recoveryBoundary;
+      const sourceClosure = Object.fromEntries(request.source.closure.map((entry) => [entry.path, entry.sha256]));
+      assertion(
+        checks,
+        'measurement-recheck-technical-recovery-basis',
+        request.technicalRecovery.priorInvocation.outcome === 'technical_failure_before_model_call' &&
+          request.technicalRecovery.priorInvocation.errorCode === 'ERR_MODULE_NOT_FOUND' &&
+          request.technicalRecovery.priorInvocation.missingPackage === 'yaml' &&
+          request.technicalRecovery.priorInvocation.completedModelCalls === 0 &&
+          request.technicalRecovery.priorInvocation.reservedModelCalls === 0 &&
+          request.technicalRecovery.priorInvocation.artifactDestinationCreated === false &&
+          request.technicalRecovery.priorInvocation.reused === false &&
+          request.technicalRecovery.priorInvocation.resumed === false,
+        'the consumed request failed before any model call or requested artifact creation',
+      );
+      assertion(
+        checks,
+        'measurement-recheck-dependency-preparation',
+        dependency.packageJsonSha256 === sourceClosure['package.json'] &&
+          dependency.packageLockSha256 === sourceClosure['package-lock.json'] &&
+          dependency.installedYamlVersion === '2.9.0' &&
+          dependency.modelCalls === 0 &&
+          dependency.productionWrites === 0,
+        'the compatible dependency tree and safe zero-call module-load check are source-bound',
+      );
+      assertion(
+        checks,
+        'measurement-recheck-excluded-unplanned-smoke',
+        excluded.profile === 'diligent' &&
+          excluded.policies.join(',') === 'bland,dynamic,state,field,trajectory,dynamical_system' &&
+          excluded.runSeed === 20260711 &&
+          excluded.completedModelCalls === 29 &&
+          excluded.interruptedReservations === 6 &&
+          excluded.completedTrials === 0 &&
+          excluded.artifactPreserved === true &&
+          excluded.reused === false &&
+          excluded.resumed === false &&
+          excluded.analyzed === false &&
+          excluded.eligibleForStudyAssembly === false,
+        'the unplanned default-run artifacts are preserved but excluded from recovery and study assembly',
+      );
+      assertion(
+        checks,
+        'measurement-recheck-bounded-recovery-authority',
+        recovery.sameLaunchSource === true &&
+          recovery.sameModelProviderRoute === true &&
+          recovery.sameProfilesPoliciesSeedConfigurationAndRubric === true &&
+          recovery.samePayloadAndDataScope === true &&
+          recovery.freshNonOverwritingDestination === true &&
+          recovery.rerunValidOutputs === false &&
+          recovery.selectAmongOutcomes === false &&
+          recovery.maximumTotalStudyAttemptsUnchanged === 864,
+        'technical recovery is limited to missing or failed units under the unchanged design and ceiling',
+      );
+    }
     validateFileBinding(checks, 'measurement-recheck-prior-request-binding', {
       path: request.recheck.priorRequestPath,
       sha256: request.recheck.priorRequestSha256,
@@ -507,10 +576,13 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   );
 
   const requestSha256 = sha256File(requestPath);
+  const recoveryAuthorityClause = isTechnicalRecovery
+    ? 'bounded technical recovery authority for missing or failed units only.'
+    : 'no retry or resume authority.';
   const exactApprovalStatement =
     `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one ` +
     `${request.design.dialogues}-dialogue Luna ${isReplacement ? 'replacement study' : 'study'}, ` +
-    `with a hard ceiling of ${request.budget.maximumPlannedModelAttempts} model attempts and no retry or resume authority.`;
+    `with a hard ceiling of ${request.budget.maximumPlannedModelAttempts} model attempts and ${recoveryAuthorityClause}`;
 
   return {
     schema: 'machinespirits.tutor-stub.resistant-profile-discrimination-study-go-request-report.v1',

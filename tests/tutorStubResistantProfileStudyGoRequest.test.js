@@ -19,6 +19,11 @@ const MEASUREMENT_RECHECK_REQUEST_PATH = path.join(
   'config',
   'tutor-stub-resistant-profile-measurement-recheck-study-go-request.v1.json',
 );
+const MEASUREMENT_RECHECK_RECOVERY_REQUEST_PATH = path.join(
+  ROOT,
+  'config',
+  'tutor-stub-resistant-profile-measurement-recheck-technical-recovery-study-go-request.v1.json',
+);
 
 function checkRequest(requestPath) {
   return JSON.parse(
@@ -133,4 +138,32 @@ test('fresh measurement recheck freezes a new 18-dialogue cohort without rewriti
   assert.match(report.exactApprovalStatement, new RegExp(report.requestSha256, 'u'));
   assert.match(report.exactApprovalStatement, /one 18-dialogue Luna study/u);
   assert.match(report.exactApprovalStatement, /hard ceiling of 864 model attempts/u);
+});
+
+test('technical recovery request preserves failures and permits only bounded missing-unit recovery', () => {
+  const report = checkRequest(MEASUREMENT_RECHECK_RECOVERY_REQUEST_PATH);
+  const request = JSON.parse(fs.readFileSync(MEASUREMENT_RECHECK_RECOVERY_REQUEST_PATH, 'utf8'));
+
+  assert.equal(report.packetValid, true);
+  assert.equal(report.readyForExplicitHumanApproval, true);
+  assert.equal(report.modelCalls, 0);
+  assert.equal(report.productionWrites, 0);
+  assert.equal(report.launchCommit, '0f7ff1b3d0e1ca0146a519f06914f3d6e1cdcd4d');
+  assert.equal(report.budget.maximumPlannedModelAttempts, 864);
+  assert.equal(report.budget.retryOrResumeAuthority, 'bounded_technical_recovery');
+  assert.equal(
+    request.technicalRecovery.priorRequestSha256,
+    'c2176e17c403824c0566ccb86d167fad21c56be405291025f09f233c3a8ea26d',
+  );
+  assert.equal(request.technicalRecovery.priorInvocation.completedModelCalls, 0);
+  assert.equal(request.technicalRecovery.priorInvocation.artifactDestinationCreated, false);
+  assert.equal(request.technicalRecovery.dependencyPreparation.modelCalls, 0);
+  assert.equal(request.technicalRecovery.excludedUnplannedSmoke.completedModelCalls, 29);
+  assert.equal(request.technicalRecovery.excludedUnplannedSmoke.interruptedReservations, 6);
+  assert.equal(request.technicalRecovery.excludedUnplannedSmoke.eligibleForStudyAssembly, false);
+  assert.equal(request.technicalRecovery.recoveryBoundary.rerunValidOutputs, false);
+  assert.equal(request.technicalRecovery.recoveryBoundary.maximumTotalStudyAttemptsUnchanged, 864);
+  assert.match(request.destination.artifactRoot, /technical-recovery/u);
+  assert.match(report.exactApprovalStatement, new RegExp(report.requestSha256, 'u'));
+  assert.match(report.exactApprovalStatement, /bounded technical recovery authority for missing or failed units only/u);
 });
