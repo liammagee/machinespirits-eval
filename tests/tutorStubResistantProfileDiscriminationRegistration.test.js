@@ -61,7 +61,42 @@ function compactedTurn(turn, profile) {
     epistemicStance: ['grounded'],
     agency: ['self_correcting'],
   };
-  const sequence = profile === 'diligent' ? diligentSequence : boredSequence;
+  const lowAgencySequence = {
+    requestType: [
+      'stepwise_support_request',
+      'stepwise_support_request',
+      'resistance_or_low_agency',
+      'other',
+      'stepwise_support_request',
+      'stepwise_support_request',
+      'resistance_or_low_agency',
+      'other',
+    ],
+    discourseMove: [
+      'question',
+      'repair_request',
+      'question',
+      'claim',
+      'question',
+      'repair_request',
+      'question',
+      'claim',
+    ],
+    evidenceUse: ['none', 'repeats_setup', 'none', 'links_evidence_to_rule', 'repeats_setup', 'none', 'other', 'other'],
+    epistemicStance: [
+      'confused',
+      'receptive',
+      'confused',
+      'exploratory',
+      'receptive',
+      'confused',
+      'receptive',
+      'exploratory',
+    ],
+    agency: ['passive', 'complying', 'passive', 'attempting', 'complying', 'passive', 'complying', 'attempting'],
+  };
+  const sequence =
+    profile === 'diligent' ? diligentSequence : profile === 'low_agency' ? lowAgencySequence : boredSequence;
   const at = (field) => sequence[field][(turn - 1) % sequence[field].length];
   return {
     turn,
@@ -160,6 +195,8 @@ test('profile analyzer enforces an evaluable declared nearest neighbor and the p
     assert.equal(bored.observedNearestNeighbor, 'low_agency');
     assert.equal(bored.nearestNeighborEvaluable, true);
     assert.equal(bored.nearestNeighborPass, true);
+    assert.equal(bored.nearestNeighborAnchors[0].profile, 'low_agency');
+    assert.equal(bored.nearestNeighborAnchors[0].pass, true);
     assert.equal(report.gate.pass, true);
 
     fs.rmSync(path.join(tmp, 'low_agency'), { recursive: true, force: true });
@@ -183,6 +220,53 @@ test('profile analyzer enforces an evaluable declared nearest neighbor and the p
     assert.equal(boredWithoutNeighbor.nearestNeighborEvaluable, false);
     assert.equal(boredWithoutNeighbor.nearestNeighborPass, false);
     assert.equal(missingNeighbor.gate.pass, false);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('profile analyzer fails nearest-neighbor evaluation closed when the expected anchor misses the same signature floor', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'resistant-profile-anchor-viability-'));
+  try {
+    writeCompacted(tmp, 'diligent');
+    writeCompacted(tmp, 'low_agency');
+    writeCompacted(tmp, 'bored');
+    const lowAgencyPath = path.join(tmp, 'low_agency', 'field-low_agency.compact-trace.json');
+    const lowAgency = JSON.parse(fs.readFileSync(lowAgencyPath, 'utf8'));
+    for (const turn of lowAgency.turns) {
+      turn.classifier = {
+        ...turn.classifier,
+        requestType: 'other',
+        discourseMove: 'claim',
+        evidenceUse: 'overleaps_evidence',
+        epistemicStance: 'grounded',
+        agency: 'steering',
+        conceptualScore: 5,
+        epistemicReadinessScore: 5,
+      };
+    }
+    fs.writeFileSync(lowAgencyPath, `${JSON.stringify(lowAgency)}\n`);
+
+    const report = JSON.parse(
+      execFileSync(
+        process.execPath,
+        [
+          'scripts/analyze-tutor-stub-profile-discrimination.js',
+          '--compacted-root',
+          tmp,
+          '--gate-profiles',
+          'bored',
+          '--json',
+        ],
+        { cwd: ROOT, encoding: 'utf8' },
+      ),
+    );
+    const bored = report.gate.conditioned.profiles.find((profile) => profile.profile === 'bored');
+    const expectedAnchor = bored.nearestNeighborAnchors.find((anchor) => anchor.profile === 'low_agency');
+    assert.equal(expectedAnchor.pass, false);
+    assert.equal(bored.nearestNeighborEvaluable, false);
+    assert.equal(bored.nearestNeighborPass, false);
+    assert.equal(report.gate.pass, false);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

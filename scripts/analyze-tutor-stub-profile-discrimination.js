@@ -66,6 +66,12 @@ const VECTOR_FIELDS = [
   'reasoningSpan',
   'learningPace',
 ];
+const VECTOR_MARKERS = [
+  ['explicitRecollection', 1],
+  ['learnerAcceleration', 1],
+  ['boredWithholding', 1],
+  ['frameJurisdictionDispute', 1],
+];
 
 function parseArgs(argv) {
   const args = {
@@ -422,6 +428,7 @@ function compactTurn(turn, args, { stimulusTutor = '', stimulusRegister = null }
   const resistantMarkers = resistantLearnerObservationMarkers({
     learnerText: turn.learner,
     classification: classifier,
+    tutorText: stimulusTutor,
   });
   const compact = {
     turn: asNumber(turn.turn),
@@ -642,13 +649,10 @@ function vectorForTrace(compacted) {
     if (Number.isFinite(conceptual)) addVector(vector, `conceptualScore:${conceptual}`, 0.5);
     const epistemic = turn.classifier?.epistemicReadinessScore;
     if (Number.isFinite(epistemic)) addVector(vector, `epistemicReadinessScore:${epistemic}`, 0.5);
-    if (turn.markers?.explicitRecollection) {
-      addVector(vector, 'marker:explicitRecollection');
-      addVector(vector, `phase:${phase}:marker:explicitRecollection`, 0.4);
-    }
-    if (turn.markers?.learnerAcceleration) {
-      addVector(vector, 'marker:learnerAcceleration');
-      addVector(vector, `phase:${phase}:marker:learnerAcceleration`, 0.5);
+    for (const [marker, weight] of VECTOR_MARKERS) {
+      if (!turn.markers?.[marker]) continue;
+      addVector(vector, `marker:${marker}`, weight);
+      addVector(vector, `phase:${phase}:marker:${marker}`, marker === 'learnerAcceleration' ? 0.5 : 0.4);
     }
 
     addCategorical(vector, 'dag:bottleneck', turn.dag?.bottleneck, 0.35);
@@ -1056,7 +1060,30 @@ export function buildTutorStubProfileDiscriminationReport(compactedTraces, args,
       const observabilityPass = profile.observability?.pass === true;
       const expectedNearestNeighbor = contract.discriminationGate?.expectedNearestNeighbor || null;
       const nearestNeighbor = nearestMatchedPolicyNeighbor(profile.profile, policyPairwise, pairwise);
-      const nearestNeighborEvaluable = Boolean(expectedNearestNeighbor && profiles.includes(expectedNearestNeighbor));
+      const anchorProfileIds = [expectedNearestNeighbor, nearestNeighbor?.profile].filter(
+        (profileId, index, values) => profileId && values.indexOf(profileId) === index,
+      );
+      const nearestNeighborAnchors = anchorProfileIds.map((profileId) => {
+        const anchor = profileSummaries.find((summary) => summary.profile === profileId);
+        const signatureTargetPassRate = anchor?.signatureAdherence?.passRate ?? null;
+        return {
+          profile: profileId,
+          roles: [
+            profileId === expectedNearestNeighbor ? 'expected' : null,
+            profileId === nearestNeighbor?.profile ? 'observed' : null,
+          ].filter(Boolean),
+          signatureTargetPassRate,
+          minimumSignatureTargetPassRate: minSignatureTargetPassRate,
+          pass: signatureTargetPassRate != null && signatureTargetPassRate >= minSignatureTargetPassRate,
+        };
+      });
+      const nearestNeighborEvaluable = Boolean(
+        expectedNearestNeighbor &&
+        profiles.includes(expectedNearestNeighbor) &&
+        nearestNeighbor &&
+        nearestNeighborAnchors.length > 0 &&
+        nearestNeighborAnchors.every((anchor) => anchor.pass),
+      );
       const nearestNeighborPass = expectedNearestNeighbor
         ? nearestNeighborEvaluable && nearestNeighbor?.profile === expectedNearestNeighbor
         : null;
@@ -1074,6 +1101,7 @@ export function buildTutorStubProfileDiscriminationReport(compactedTraces, args,
         expectedNearestNeighbor,
         observedNearestNeighbor: nearestNeighbor?.profile || null,
         observedNearestNeighborCosine: nearestNeighbor?.cosine ?? null,
+        nearestNeighborAnchors,
         nearestNeighborEvaluable,
         nearestNeighborPass,
         pass: Boolean(cosinePass && signaturePass && observabilityPass && nearestNeighborPass !== false),
@@ -1088,7 +1116,7 @@ export function buildTutorStubProfileDiscriminationReport(compactedTraces, args,
   const primaryPass = Boolean(behavioralPass && (!assemblyRequired || assemblyPass));
 
   return {
-    schema: 'machinespirits.tutor-stub.profile-discrimination.v3',
+    schema: 'machinespirits.tutor-stub.profile-discrimination.v4',
     generatedAt: new Date().toISOString(),
     input: {
       traceRoot: args.traceRoot || null,
@@ -1097,6 +1125,7 @@ export function buildTutorStubProfileDiscriminationReport(compactedTraces, args,
       compactedWrites,
       vectorFields: [
         ...VECTOR_FIELDS,
+        ...VECTOR_MARKERS.map(([marker]) => `marker:${marker}`),
         'conceptualScore',
         'epistemicReadinessScore',
         'phase',
@@ -1234,14 +1263,20 @@ function formatMarkdown(report) {
   lines.push('');
   if (report.gate.conditioned.profiles.length) {
     lines.push(
-      '| Profile | Probe policies | Max cosine to control | Target | Expected nearest | Observed nearest | Signature pass rate | Failure recurrence | Result |',
+      '| Profile | Probe policies | Max cosine to control | Target | Expected nearest | Observed nearest | Anchor viability | Signature pass rate | Failure recurrence | Result |',
     );
-    lines.push('| --- | --- | ---: | ---: | --- | --- | ---: | --- | --- |');
+    lines.push('| --- | --- | ---: | ---: | --- | --- | --- | ---: | --- | --- |');
     for (const profile of report.gate.conditioned.profiles) {
       const summary = report.profiles.find((row) => row.profile === profile.profile);
       const observability = summary?.observability;
+      const anchorViability = profile.nearestNeighborAnchors
+        .map(
+          (anchor) =>
+            `${anchor.profile} ${anchor.signatureTargetPassRate ?? 'n/a'}/${anchor.minimumSignatureTargetPassRate} ${anchor.pass ? 'pass' : 'fail'}`,
+        )
+        .join('; ');
       lines.push(
-        `| ${profile.profile} | ${profile.observedPolicies.join(', ') || 'none'} | ${profile.maxProbeSimilarity ?? 'n/a'} | <= ${profile.targetMaxCosine} | ${profile.expectedNearestNeighbor || 'n/a'} | ${profile.observedNearestNeighbor ? `${profile.observedNearestNeighbor} (${profile.observedNearestNeighborCosine})` : 'n/a'} | ${profile.signatureTargetPassRate ?? 'n/a'} | ${observability ? `${observability.observedRate} (target ${observability.targetRate})` : 'n/a'} | ${profile.pass ? 'pass' : 'fail'} |`,
+        `| ${profile.profile} | ${profile.observedPolicies.join(', ') || 'none'} | ${profile.maxProbeSimilarity ?? 'n/a'} | <= ${profile.targetMaxCosine} | ${profile.expectedNearestNeighbor || 'n/a'} | ${profile.observedNearestNeighbor ? `${profile.observedNearestNeighbor} (${profile.observedNearestNeighborCosine})` : 'n/a'} | ${anchorViability || 'n/a'} | ${profile.signatureTargetPassRate ?? 'n/a'} | ${observability ? `${observability.observedRate} (target ${observability.targetRate})` : 'n/a'} | ${profile.pass ? 'pass' : 'fail'} |`,
       );
     }
   } else {

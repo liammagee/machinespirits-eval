@@ -115,6 +115,45 @@ test('bored effort-withholding is public and distinct from low agency or content
   });
   assert.equal(substantive.observations.length, 0);
   assert.deepEqual(substantive.defeated[0].reasons, ['content_bearing_contribution']);
+
+  const minimalAdjacentAnswer = observeResistantLearnerTurn({
+    learnerText: 'Fine. It is light and rings wrong.',
+    tutorText: 'Attend to what this single coin shows before naming any hand.',
+    classification: classification({
+      discourseMove: 'evidence_adoption',
+      evidenceUse: 'cites_public_evidence',
+      epistemicStance: 'receptive',
+      agency: 'complying',
+    }),
+  });
+  assert.equal(minimalAdjacentAnswer.observations[0].type, 'bored_effort_withholding');
+  assert.equal(minimalAdjacentAnswer.observations[0].features.compliance, 'adjacent_hook_only');
+  assert.equal(minimalAdjacentAnswer.observations[0].features.content_bearing, true);
+
+  const terminalFlatCue = observeResistantLearnerTurn({
+    learnerText: 'It shows only that the metal needs testing. Fine.',
+    tutorText: 'Does this verdict show who struck it, or only that the metal needs testing?',
+    classification: classification({
+      discourseMove: 'metacognitive_reflection',
+      evidenceUse: 'links_evidence_to_rule',
+      epistemicStance: 'reflective',
+      agency: 'complying',
+    }),
+  });
+  assert.equal(terminalFlatCue.observations[0].type, 'bored_effort_withholding');
+
+  const expandedAnswer = observeResistantLearnerTurn({
+    learnerText: 'Fine. The assay mark rules out Verrell because the cut proves another graver made it.',
+    tutorText: 'What does the assay mark establish?',
+    classification: classification({
+      discourseMove: 'inference',
+      evidenceUse: 'links_evidence_to_rule',
+      epistemicStance: 'grounded',
+      agency: 'steering',
+    }),
+  });
+  assert.equal(expandedAnswer.observations.length, 0);
+  assert.deepEqual(expandedAnswer.defeated[0].reasons, ['content_bearing_contribution']);
 });
 
 test('frame defiance is jurisdictional and excludes nearby objection types', () => {
@@ -130,6 +169,8 @@ test('frame defiance is jurisdictional and excludes nearby objection types', () 
   assert.equal(defiant.observations[0].features.jurisdictional, true);
 
   const observedVariants = [
+    'I do not accept your fixing the question as whose hand before the assay begins.',
+    'I do not concede your authority to make that test decide the trial.',
     'You do not get to fix the question by naming a culprit before the assay begins.',
     'You do not get to set even the balance and touchstone as the governing test without my assent; I will examine a coin, but not under a frame that makes your chosen marks decisive.',
     'You do not get to set that link as the trial’s question merely by presenting sole access; I dispute the frame before accepting what it can establish.',
