@@ -11,6 +11,7 @@ import {
   createResistantProfileMoveShadow,
 } from '../services/pedagogicalMove/resistantProfileWarrantShadow.js';
 import {
+  RESISTANT_LEARNER_AXIS_NAMES,
   observeResistantLearnerTurn,
   resistantLearnerObservationMarkers,
 } from '../services/resistantLearnerObservation.js';
@@ -156,6 +157,77 @@ test('bored effort-withholding is public and distinct from low agency or content
   assert.deepEqual(expandedAnswer.defeated[0].reasons, ['content_bearing_contribution']);
 });
 
+test('orthogonal public axes distinguish resistance kind from generic classifier agency', () => {
+  assert.deepEqual(RESISTANT_LEARNER_AXIS_NAMES, [
+    'effort_investment',
+    'learner_authorship',
+    'evidential_orientation',
+    'epistemic_trust',
+    'frame_legitimacy',
+  ]);
+
+  const lowAgencyExamples = [
+    'Which part of the coin would you like me to examine first?',
+    'Can you choose which part of the blank I should examine first?',
+    'May I wait for the die evidence before naming whose hand struck them?',
+  ];
+  for (const learnerText of lowAgencyExamples) {
+    const observed = observeResistantLearnerTurn({
+      learnerText,
+      classification: classification({
+        requestType: 'stepwise_support_request',
+        discourseMove: 'question',
+        evidenceUse: 'cites_public_evidence',
+        epistemicStance: 'receptive',
+        agency: 'steering',
+      }),
+    });
+    assert.equal(observed.axes.learner_authorship.state, 'deferred_to_tutor', learnerText);
+  }
+
+  const bored = observeResistantLearnerTurn({
+    learnerText: 'Fine. Same as before.',
+    classification: classification({ agency: 'complying' }),
+  });
+  assert.equal(bored.axes.effort_investment.state, 'withheld');
+  assert.equal(bored.axes.learner_authorship.state, 'not_observed');
+
+  const skeptical = observeResistantLearnerTurn({
+    learnerText: 'What public evidence links this die flaw to the striking hand?',
+    classification: classification({ discourseMove: 'challenge', agency: 'steering' }),
+  });
+  assert.equal(skeptical.axes.evidential_orientation.state, 'warrant_challenged');
+  assert.equal(skeptical.axes.epistemic_trust.state, 'not_observed');
+
+  const lowTrust = observeResistantLearnerTurn({
+    learnerText: 'What public evidence ties it to Verrell rather than your assumption?',
+    classification: classification({ discourseMove: 'challenge', agency: 'steering' }),
+  });
+  assert.equal(lowTrust.axes.evidential_orientation.state, 'warrant_challenged');
+  assert.equal(lowTrust.axes.epistemic_trust.state, 'authority_distrusted');
+
+  const frameDefiant = observeResistantLearnerTurn({
+    learnerText: 'I reject your framing; you do not get to make this evidence decide the striking hand.',
+    classification: classification({ discourseMove: 'challenge', agency: 'steering' }),
+  });
+  assert.equal(frameDefiant.axes.frame_legitimacy.state, 'jurisdiction_disputed');
+  assert.equal(frameDefiant.axes.epistemic_trust.state, 'not_observed');
+
+  const ordinaryInference = observeResistantLearnerTurn({
+    learnerText: 'The die flaw links the blank to this graver, so I would test that match next.',
+    classification: classification({
+      discourseMove: 'inference',
+      evidenceUse: 'links_evidence_to_rule',
+      epistemicStance: 'grounded',
+      agency: 'steering',
+    }),
+  });
+  assert.equal(
+    Object.values(ordinaryInference.axes).every((axis) => axis.state === 'not_observed'),
+    true,
+  );
+});
+
 test('frame defiance is jurisdictional and excludes nearby objection types', () => {
   const defiant = observeResistantLearnerTurn({
     learnerText: 'I reject the premise of this exercise. You do not get to set the question that way.',
@@ -181,6 +253,9 @@ test('frame defiance is jurisdictional and excludes nearby objection types', () 
     'You do not get to install the crucible’s testimony as the question I must test; what evidence may examine that distinction without accepting your frame?',
     'You do not get to define the correction for this assay; I reject the jurisdiction of the frame that makes your testimony the measure.',
     'You do not get to declare the striker’s hand unproved as the assay’s settled frame; I reject that framing.',
+    'I will not accept the town’s verdict as the assay’s governing frame until its authority is established.',
+    'I will test the graver’s die-flaw, but not under your authority to decide what it proves.',
+    'You do not get to make that evidence decide the striking hand; first establish why your test governs.',
   ];
   for (const learnerText of observedVariants) {
     assert.equal(
