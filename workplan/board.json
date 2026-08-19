@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-19T01:24:19.651Z",
+  "generated": "2026-08-19T01:24:57.007Z",
   "counts": {
     "total": 513,
     "byStatus": {
@@ -296,6 +296,7 @@
           "config/tutor-stub-resistant-profile-route-canary-result.v1.json",
           "config/tutor-stub-resistant-profile-discrimination-study-go-request.v1.json",
           "scripts/check-tutor-stub-resistant-profile-study-go-request.js",
+          "services/tutorStubAutomatedLearnerGenerationRuntime.js",
           "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json",
           "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.endpoint-go.json"
         ]
@@ -308,7 +309,7 @@
         "learner-profiles",
         "registers"
       ],
-      "branch": "codex/resistant-profile-study-go-preparation"
+      "branch": "codex/resistant-profile-study-reauthorization"
     },
     {
       "id": "edged-register-stub-dag-replication",
