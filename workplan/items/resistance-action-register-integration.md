@@ -70,7 +70,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistant-profile-measurement-recheck-technical-recovery
+branch: codex/resistant-profile-measurement-recheck-result
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -325,3 +325,25 @@ and explicit human approval.
   recovery may address only missing or technically failed units and may never
   rerun valid outputs or select among outcomes. The frozen request digest is
   `34e78c0753c1da34fd9fbc8865bb69a437adf383ad2867c24c2458ab869fdbab`.
+- 2026-08-19 — Consumed the exact digest-bound approval for the technical-
+  recovery request. The single initial invocation completed and sealed all
+  18/18 fresh Luna dialogues (six profiles x three runs, 144 turns) using 462
+  model attempts against the 864-attempt ceiling, with zero model-call errors
+  and no retry or resume. The frozen v4 analysis accepted the complete assembly
+  and passed the pooled gate (mean pairwise cosine `0.678`; maximum similarity
+  to diligent `0.784`) but failed the registered co-primary conditioned gate.
+  Bored passed its own signature (`0.429`), recurrence/turn-2 observability
+  (`0.667`), and cosine bounds, but its expected `low_agency` anchor failed the
+  unchanged `0.40` signature floor at `0.167`, so nearest-neighbour evaluation
+  failed closed; diligent was the observed nearest neighbour. Frame defiance
+  likewise passed its own signature (`0.467`), observability (`0.542`), and
+  cosine bounds, and both anchors were viable, but diligent rather than
+  skeptical was its observed nearest neighbour. This is a valid negative
+  measurement result, not a technical failure: do not rerun, change thresholds,
+  or advance to the action/register intervention before a zero-call turn-level
+  examination resolves whether the anchor contracts or the registered
+  nearest-neighbour hypotheses are mis-specified. The ignored local report is
+  `.tutor-stub-auto-eval/resistant-profile-discrimination-v3-measurement-recheck-technical-recovery-live-2026-08-19/profile-discrimination.json`
+  with SHA-256
+  `39b8c107eedd5c48cfd2a6aca79ec9a9503ffc07391555d53f254a73bbe2e6d3`;
+  the 181 MB artifact tree remains local and was not uploaded.
