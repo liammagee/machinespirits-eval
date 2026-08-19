@@ -7,14 +7,6 @@ export const RESISTANT_LEARNER_OBSERVATION_TYPES = Object.freeze([
   'frame_jurisdiction_dispute',
 ]);
 
-export const RESISTANT_LEARNER_AXIS_NAMES = Object.freeze([
-  'effort_investment',
-  'learner_authorship',
-  'evidential_orientation',
-  'epistemic_trust',
-  'frame_legitimacy',
-]);
-
 const BORED_EXPLICIT_PATTERNS = Object.freeze([
   /\b(?:bored|boring|dull|deadening|not interested)\b/iu,
   /\b(?:do not|don't) care\b/iu,
@@ -43,30 +35,6 @@ const PERMISSION_SEEKING_PATTERNS = Object.freeze([
   /\bif that is what you (?:want|mean)\b/iu,
 ]);
 
-const TUTOR_CHOICE_DEFERENCE_PATTERNS = Object.freeze([
-  /\b(?:is it (?:all right|okay|ok)|may i|am i allowed|do you want me to|would you like me to|should i|shall i)\b/iu,
-  /\b(?:can|could|would|will) you (?:choose|pick|decide|tell me|have me)\b/iu,
-  /\bwhat (?:would|do) you (?:want|have) me to\b/iu,
-  /\bwhich\b.{0,80}\bwould you like me to\b/iu,
-  /\bchoose (?:the )?(?:next|step|one|which)\b.{0,60}\bfor me\b/iu,
-  /\bis (?:that|this) the (?:line|entry|claim|distinction|wording) you want\b/iu,
-]);
-
-const EVIDENTIAL_WARRANT_CHALLENGE_PATTERNS = Object.freeze([
-  /\b(?:what|which)\b.{0,120}\b(?:evidence|test|mark|result|rule|warrant|observation|record)\b/iu,
-  /\b(?:what|why|how)\b.{0,120}\b(?:show|support|establish|prove|connect|link|tie|follow|identify|count as|make .{0,40} enough)\b/iu,
-  /\bwhat makes\b.{0,100}\b(?:follow|enough|establish|prove)\b/iu,
-]);
-
-const AUTHORITY_EPISTEMIC_DISTRUST_PATTERNS = Object.freeze([
-  /\b(?:your|the tutor['’]s) (?:assumption|answer|claim)\b/iu,
-  /\b(?:hidden evidence|smuggl(?:e|ed|ing)|answer-shaped framing)\b/iu,
-  /\b(?:you are|you['’]re) (?:assuming|pushing me toward|steering me toward)\b/iu,
-  /\b(?:the town|you) (?:merely|already) (?:assumes?|suspects?)\b/iu,
-  /\brather than (?:merely )?(?:your|the town['’]s) (?:assumption|suspicion|verdict)\b/iu,
-  /\bbeyond your framing\b/iu,
-]);
-
 const FRAME_JURISDICTION_PATTERNS = Object.freeze([
   /\bi (?:do not|don't) accept (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?)\b/iu,
   /\bi (?:do not|don't) accept (?:your|the tutor['’]s|their) (?:authority|standing|right)\b/iu,
@@ -83,12 +51,6 @@ const FRAME_JURISDICTION_PATTERNS = Object.freeze([
   /\bwhy should i (?:accept|answer|play along with|submit to) (?:the |this |your )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\bbut not under (?:the |this |that |your |a )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\bi (?:will not|won't)\b.{0,80}\bunder (?:the |this |that |your |a )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
-  /\bi (?:will not|won't|do not|don't) accept\b.{0,120}\b(?:authority|standing|governing (?:frame|question|test)|frame you have not established)\b/iu,
-  /\bi (?:do not|don't) accept\b.{0,120}\b(?:your framing|your frame|as authority)\b/iu,
-  /\bnot under (?:your|the tutor['’]s) authority\b/iu,
-  /\b(?:do not|don't|will not|won't) grant (?:it|that|this|your .{0,40}) authority\b/iu,
-  /\byou (?:do not|don't) get to (?:make|require)\b.{0,140}\b(?:the measure of|decide|settle|answer|governing (?:link|measure|question|test))\b/iu,
-  /\b(?:first )?establish why\b.{0,100}\b(?:standing|authority|govern|measure)\b/iu,
   /\byour (?:test|question|exercise|task) assumes (?:the |that |this )/iu,
   /\bthe question is (?:loaded|rigged|not yours to ask)\b/iu,
   /\bthat is not your call\b/iu,
@@ -148,20 +110,6 @@ function observation(type, evidenceSpan, text, features) {
   };
 }
 
-function axis(state = 'not_observed', evidenceSpan = null) {
-  return { state, evidence_span: evidenceSpan };
-}
-
-function unobservedAxes() {
-  return {
-    effort_investment: axis(),
-    learner_authorship: axis(),
-    evidential_orientation: axis(),
-    epistemic_trust: axis(),
-    frame_legitimacy: axis(),
-  };
-}
-
 export function observeResistantLearnerTurn({ learnerText = '', classification = null, tutorText = '' } = {}) {
   const text = String(learnerText || '').trim();
   const observations = [];
@@ -172,7 +120,6 @@ export function observeResistantLearnerTurn({ learnerText = '', classification =
       observations,
       defeated,
       ambiguous: false,
-      axes: unobservedAxes(),
     };
   }
 
@@ -222,24 +169,12 @@ export function observeResistantLearnerTurn({ learnerText = '', classification =
       }),
     );
   }
-  const effortEvidence = observations.find((row) => row.type === 'bored_effort_withholding')?.evidence_span || null;
-  const tutorChoiceEvidence = firstEvidence(text, TUTOR_CHOICE_DEFERENCE_PATTERNS);
-  const warrantChallengeEvidence = /\?/u.test(text) ? firstEvidence(text, EVIDENTIAL_WARRANT_CHALLENGE_PATTERNS) : null;
-  const authorityDistrustEvidence = firstEvidence(text, AUTHORITY_EPISTEMIC_DISTRUST_PATTERNS);
-  const axes = {
-    effort_investment: effortEvidence ? axis('withheld', effortEvidence) : axis(),
-    learner_authorship: tutorChoiceEvidence ? axis('deferred_to_tutor', tutorChoiceEvidence) : axis(),
-    evidential_orientation: warrantChallengeEvidence ? axis('warrant_challenged', warrantChallengeEvidence) : axis(),
-    epistemic_trust: authorityDistrustEvidence ? axis('authority_distrusted', authorityDistrustEvidence) : axis(),
-    frame_legitimacy: frameEvidence ? axis('jurisdiction_disputed', frameEvidence) : axis(),
-  };
 
   return {
     schema: RESISTANT_LEARNER_OBSERVATION_SCHEMA,
     observations,
     defeated,
     ambiguous: observations.length > 1,
-    axes,
   };
 }
 
@@ -247,10 +182,6 @@ export function resistantLearnerObservationMarkers(input = {}) {
   const result = observeResistantLearnerTurn(input);
   return {
     boredWithholding: result.observations.some((row) => row.type === 'bored_effort_withholding'),
-    effortWithholding: result.axes.effort_investment.state === 'withheld',
-    tutorChoiceDeference: result.axes.learner_authorship.state === 'deferred_to_tutor',
-    evidentialWarrantChallenge: result.axes.evidential_orientation.state === 'warrant_challenged',
-    authorityEpistemicDistrust: result.axes.epistemic_trust.state === 'authority_distrusted',
     frameJurisdictionDispute: result.observations.some((row) => row.type === 'frame_jurisdiction_dispute'),
   };
 }

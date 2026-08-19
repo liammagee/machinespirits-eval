@@ -477,7 +477,9 @@ skeptic and low-trust skeptic remained nearly collinear under the generic
 vector. This supports a prospective measurement correction, not a
 reinterpretation of either negative result.
 
-The analyzer therefore now emits five additive, orthogonal public axes:
+A separate zero-call calibration analyzer,
+`scripts/analyze-tutor-stub-resistance-axis-calibration.js`, therefore emits
+five orthogonal public axes from raw traces:
 
 - `effort_investment`: public effort withholding;
 - `learner_authorship`: public deference of the next choice to the tutor;
@@ -486,15 +488,16 @@ The analyzer therefore now emits five additive, orthogonal public axes:
   contribution; and
 - `frame_legitimacy`: dispute over who may set the question, test, or frame.
 
-These axes are `calibration_only`: they do not change the registered `v4`
-cosine or conditioned gate, produce no replacement pass/fail verdict, and
-report old compacted traces without the new marker fields as incomplete rather
-than zero. They remain upstream of the typed pedagogical-move boundary. A
-future held-out discrimination study would need a new frozen axis hypothesis
-and thresholds; profile identity still cannot select either a move or a tonal
-register.
+These axes are `calibration_only`: the standalone analyzer does not modify or
+import the frozen `v4` production analyzer, does not change its cosine or
+conditioned gate, and produces no replacement pass/fail verdict. It consumes
+raw traces rather than treating historical compacted traces as if they already
+contained the new axes. The axes remain upstream of the typed pedagogical-move
+boundary. A future held-out discrimination study would need a new frozen axis
+hypothesis and thresholds; profile identity still cannot select either a move
+or a tonal register.
 
-Recompaction of the exact frozen `144` turns with this prospective observer is
+Analysis of the exact frozen `144` raw turns with this prospective observer is
 complete and leaves the registered gate failed. The calibration rates are:
 
 | Profile | Effort withholding | Tutor-choice deference | Warrant challenge | Authority distrust | Frame dispute |

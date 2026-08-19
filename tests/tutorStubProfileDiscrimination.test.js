@@ -309,16 +309,6 @@ test('profile discrimination analyzer writes compacted traces and cosine report'
     assert.equal(report.gate.mode, 'contract_conditioned');
     assert.equal(report.gate.conditioned.profiles[0].profile, 'proof_skipper');
     assert.equal(report.profiles.find((profile) => profile.profile === 'proof_skipper').observability.observedRate, 1);
-    assert.equal(report.resistanceAxisCalibration.authority, 'calibration_only');
-    assert.equal(report.resistanceAxisCalibration.changesRegisteredResult, false);
-    assert.equal(report.resistanceAxisCalibration.pass, null);
-    assert.equal(report.resistanceAxisCalibration.complete, true);
-    assert.deepEqual(
-      report.resistanceAxisCalibration.profileSignatures
-        .find((row) => row.profile === 'low_trust_skeptic')
-        .expectedObserved.map((axis) => axis.axis),
-      ['evidential_orientation', 'epistemic_trust'],
-    );
 
     const compactedFiles = fs.readdirSync(path.join(compactedDir, 'diligent'));
     assert.equal(compactedFiles.length, 1);
@@ -329,25 +319,6 @@ test('profile discrimination analyzer writes compacted traces and cosine report'
     assert.equal(compacted.run.learnerModel, 'gpt-5.5');
     assert.equal(compacted.turns[0].classifier.discourseMove, 'metacognitive_reflection');
     assert.equal(compacted.turns[0].text, undefined);
-
-    const oldCompacted = structuredClone(compacted);
-    for (const turn of oldCompacted.turns) {
-      delete turn.markers.effortWithholding;
-      delete turn.markers.tutorChoiceDeference;
-      delete turn.markers.evidentialWarrantChallenge;
-      delete turn.markers.authorityEpistemicDistrust;
-    }
-    const oldCompactedFile = path.join(tmp, 'old.compact-trace.json');
-    fs.writeFileSync(oldCompactedFile, `${JSON.stringify(oldCompacted)}\n`);
-    const oldReport = JSON.parse(
-      execFileSync(
-        process.execPath,
-        ['scripts/analyze-tutor-stub-profile-discrimination.js', '--compacted', oldCompactedFile, '--json'],
-        { cwd: ROOT, encoding: 'utf8' },
-      ),
-    );
-    assert.equal(oldReport.resistanceAxisCalibration.complete, false);
-    assert.equal(oldReport.resistanceAxisCalibration.profiles[0].axes.learner_authorship.observedRate, null);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -468,9 +439,6 @@ test('bored and frame-defiant public markers survive behavior-only compaction', 
     assert.equal(bored.observability.deadlinePass, true);
     assert.equal(defiant.observability.observedRate, 1);
     assert.equal(defiant.observability.deadlinePass, true);
-    assert.equal(bored.resistanceAxes.axes.effort_investment.observedRate, 1);
-    assert.equal(defiant.resistanceAxes.axes.frame_legitimacy.observedRate, 1);
-    assert.equal(report.resistanceAxisCalibration.complete, true);
 
     const boredCompacted = JSON.parse(
       fs.readFileSync(path.join(compactedDir, 'bored', fs.readdirSync(path.join(compactedDir, 'bored'))[0]), 'utf8'),
@@ -482,10 +450,7 @@ test('bored and frame-defiant public markers survive behavior-only compaction', 
       ),
     );
     assert.equal(boredCompacted.turns[0].markers.boredWithholding, true);
-    assert.equal(boredCompacted.turns[0].markers.effortWithholding, true);
-    assert.equal(boredCompacted.turns[0].markers.tutorChoiceDeference, false);
     assert.equal(defiantCompacted.turns[0].markers.frameJurisdictionDispute, true);
-    assert.equal(defiantCompacted.turns[0].markers.authorityEpistemicDistrust, false);
     assert.equal(boredCompacted.turns[0].text, undefined);
     assert.equal(defiantCompacted.turns[0].text, undefined);
   } finally {

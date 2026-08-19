@@ -45,6 +45,8 @@ links:
     - services/tutorStubPedagogicalMoveProjection.js
     - services/resistantLearnerObservation.js
     - scripts/analyze-tutor-stub-profile-discrimination.js
+    - services/resistantLearnerAxisObservation.js
+    - scripts/analyze-tutor-stub-resistance-axis-calibration.js
     - services/pedagogicalMove/resistantProfileWarrantShadow.js
     - scripts/tutor-stub-learner-profile-contracts.js
     - scripts/prepare-tutor-stub-resistant-profile-discrimination.js
@@ -72,7 +74,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistant-profile-axis-calibration
+branch: codex/resistant-profile-axis-calibration-ci-fix
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -358,10 +360,21 @@ and explicit human approval.
   effort investment, learner authorship/deference, evidential orientation,
   epistemic trust, and frame legitimacy. The calibration layer cannot change
   the registered `v4` gate or either frozen negative result, and it remains
-  upstream of typed pedagogical moves and all tonal registers. Exact
-  recompaction of the frozen 144 turns left the registered gate failed and the
+  upstream of typed pedagogical moves and all tonal registers. Exact raw-trace
+  analysis of the frozen 144 turns left the registered gate failed and the
   frozen report hash unchanged. It observed bored effort withholding on
   `16/24`, low-agency tutor-choice deference on `23/24`, skeptical and
   low-trust warrant challenge on `23/24` each, low-trust authority distrust on
   `5/24`, and frame-defiant jurisdiction dispute on `22/24`. These are
   calibration rates, not a replacement endpoint or pass verdict.
+- 2026-08-19 — The first calibration PR exposed an integrity error immediately
+  after merge: adding fields to the production observer and discrimination
+  analyzer changed two SHA-pinned executable inputs, so the frozen endpoint and
+  study-request validators correctly failed four CI tests. The correction is
+  now isolated in new calibration-only observer and analyzer files. The two
+  registered production inputs are restored byte-for-byte at SHA-256
+  `a9bd59f2294dbe7d46eef0d964695cf36903224b5fe9d688a90fa2d86ef69ba3`
+  and
+  `bc85fb41734ee8576958890f02b6c4e8885cbe758c09704f4547b3d4ba2c5774`;
+  the standalone analyzer reads raw turns and binds its calibration to the
+  unchanged frozen negative report without altering its gate.
