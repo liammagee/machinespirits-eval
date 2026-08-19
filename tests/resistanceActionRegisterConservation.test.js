@@ -77,5 +77,6 @@ test('the integration programme keeps register downstream of action and authoriz
   assert.match(card, /No paid call is authorized by this card/u);
   assert.match(contract, /PedagogicalMove -> register\/character realization/u);
   assert.match(contract, /consumer_switch_authorized: false/u);
-  assert.match(contract, /Neither projection is imported by a live runtime/u);
+  assert.match(contract, /tutor-stub projection is\s+now imported only by/u);
+  assert.match(contract, /Existing\s+response-configuration selection remains authoritative/u);
 });

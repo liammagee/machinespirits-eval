@@ -1,8 +1,11 @@
 import { createPedagogicalMove } from './contract.js';
 import { observeResistantLearnerTurn } from '../resistantLearnerObservation.js';
+import { observeResistantLearnerAxes } from '../resistantLearnerAxisObservation.js';
 
 export const RESISTANT_PROFILE_WARRANT_SCHEMA = 'machinespirits.resistant-profile-move-warrant.v1';
 export const RESISTANT_PROFILE_MOVE_SHADOW_SCHEMA = 'machinespirits.resistant-profile-move-shadow.v1';
+export const RESISTANT_AXIS_WARRANT_SCHEMA = 'machinespirits.resistant-axis-move-warrant.v1';
+export const RESISTANT_AXIS_MOVE_SHADOW_SCHEMA = 'machinespirits.resistant-axis-move-shadow.v1';
 
 export const RESISTANT_PROFILE_MOVE_CONTRACTS = Object.freeze({
   bored: Object.freeze({
@@ -61,7 +64,16 @@ function warrant(profileId, contract, observationResult) {
   };
 }
 
-function projectMove(profileId, contract, moveWarrant) {
+function projectMove(
+  profileId,
+  contract,
+  moveWarrant,
+  {
+    sourceSchema = RESISTANT_PROFILE_WARRANT_SCHEMA,
+    mappingVersion = RESISTANT_PROFILE_MOVE_SHADOW_SCHEMA,
+    host = 'resistant_learner_profile_shadow',
+  } = {},
+) {
   if (moveWarrant.status !== 'licensed') return null;
   return createPedagogicalMove({
     moveType: contract.primary_move_type,
@@ -79,11 +91,11 @@ function projectMove(profileId, contract, moveWarrant) {
     responsibilityOwner: 'shared',
     compatibility: { action_type: null, action_family: null },
     provenance: {
-      host: 'resistant_learner_profile_shadow',
+      host,
       source_action: profileId,
-      source_schema: RESISTANT_PROFILE_WARRANT_SCHEMA,
+      source_schema: sourceSchema,
       source_version: '1.0',
-      mapping_version: RESISTANT_PROFILE_MOVE_SHADOW_SCHEMA,
+      mapping_version: mappingVersion,
     },
   });
 }
@@ -102,5 +114,73 @@ export function createResistantProfileMoveShadow({ profileId, learnerText = '', 
     observation,
     warrant: moveWarrant,
     projected_move: projectMove(profileId, contract, moveWarrant),
+  };
+}
+
+const RESISTANT_AXIS_CANDIDATES = Object.freeze([
+  Object.freeze({
+    resistance_kind: 'bored',
+    axis: 'effort_investment',
+    observed_state: 'withheld',
+  }),
+  Object.freeze({
+    resistance_kind: 'frame_defiant',
+    axis: 'frame_legitimacy',
+    observed_state: 'jurisdiction_disputed',
+  }),
+]);
+
+/**
+ * Project the held-out public resistance axes into the same design-only move
+ * contracts without consulting learner profile identity. Multiple matching
+ * axes fail closed: a compound signal needs an explicit precedence ruling,
+ * not an accidental first-match decision.
+ */
+export function createResistantAxisMoveShadow({ learnerText = '', classification = null } = {}) {
+  const observation = observeResistantLearnerAxes({ learnerText, classification });
+  const candidates = RESISTANT_AXIS_CANDIDATES.filter(
+    (candidate) => observation.axes[candidate.axis]?.state === candidate.observed_state,
+  );
+  const licensedCandidate = candidates.length === 1 ? candidates[0] : null;
+  const resistanceKind = licensedCandidate?.resistance_kind || null;
+  const contract = resistanceKind ? RESISTANT_PROFILE_MOVE_CONTRACTS[resistanceKind] : null;
+  const basis = licensedCandidate
+    ? {
+        axis: licensedCandidate.axis,
+        observed_state: licensedCandidate.observed_state,
+        evidence_span: observation.axes[licensedCandidate.axis]?.evidence_span || null,
+      }
+    : null;
+  const moveWarrant = {
+    schema: RESISTANT_AXIS_WARRANT_SCHEMA,
+    status: licensedCandidate ? 'licensed' : 'not_licensed',
+    resistance_kind: resistanceKind,
+    basis,
+    ambiguity_blocks_license: candidates.length > 1,
+    candidate_axes: candidates.map(({ resistance_kind, axis, observed_state }) => ({
+      resistance_kind,
+      axis,
+      observed_state,
+    })),
+    primary_move_type: contract?.primary_move_type || null,
+    forbidden_move_types: contract ? [...contract.forbidden_move_types] : [],
+  };
+
+  return {
+    schema: RESISTANT_AXIS_MOVE_SHADOW_SCHEMA,
+    authority: 'design_shadow',
+    runtime_selection_authorized: false,
+    consumer_switch_authorized: false,
+    profile_identity_used: false,
+    resistance_kind: resistanceKind,
+    observation,
+    warrant: moveWarrant,
+    projected_move: contract
+      ? projectMove(resistanceKind, contract, moveWarrant, {
+          sourceSchema: RESISTANT_AXIS_WARRANT_SCHEMA,
+          mappingVersion: RESISTANT_AXIS_MOVE_SHADOW_SCHEMA,
+          host: 'resistant_learner_axis_shadow',
+        })
+      : null,
   };
 }

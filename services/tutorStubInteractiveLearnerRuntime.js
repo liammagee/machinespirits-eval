@@ -1,3 +1,5 @@
+import { normalizeTutorStubResponseConfigurationWithActionBeforeRegisterShadow } from './tutorStubActionBeforeRegisterShadow.js';
+
 export function createTutorStubInteractiveLearnerRuntime(dependencies) {
   const {
     C,
@@ -382,13 +384,17 @@ export function createTutorStubInteractiveLearnerRuntime(dependencies) {
         recordTrace: false,
       });
       evaluatePendingRegisterEfficacy(speculativeState, tutorLearnerDag, classification);
-      let registerSelection = normalizeResponseConfigurationSelection(registerSelectionFromCombinedAnalysis(raw), {
-        state: speculativeState,
-        classification,
-        tutorLearnerDag,
-        raw,
-        learnerText: entry.answer,
-      });
+      let registerSelection = normalizeTutorStubResponseConfigurationWithActionBeforeRegisterShadow(
+        normalizeResponseConfigurationSelection,
+        registerSelectionFromCombinedAnalysis(raw),
+        {
+          state: speculativeState,
+          classification,
+          tutorLearnerDag,
+          raw,
+          learnerText: entry.answer,
+        },
+      );
       registerSelection = applyConversationalCompletionForLearnerTurn(
         speculativeState,
         registerSelection,

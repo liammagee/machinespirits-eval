@@ -1,4 +1,5 @@
 import { dispatchTutorStubLearnerAnalysisWithRetries } from './tutorStubLearnerAnalysisCoverage.js';
+import { normalizeTutorStubResponseConfigurationWithActionBeforeRegisterShadow } from './tutorStubActionBeforeRegisterShadow.js';
 
 export function resetTutorStubWarrantGateAfterLearnerAnalysisFailure(state) {
   if (!state) return false;
@@ -785,13 +786,17 @@ export function createTutorStubLearnerAnalysisRuntime({
         classification,
         tutorFeedback,
       );
-      let registerSelection = normalizeResponseConfigurationSelection(registerSelectionFromCombinedAnalysis(raw), {
-        state,
-        classification,
-        tutorLearnerDag,
-        raw,
-        learnerText,
-      });
+      let registerSelection = normalizeTutorStubResponseConfigurationWithActionBeforeRegisterShadow(
+        normalizeResponseConfigurationSelection,
+        registerSelectionFromCombinedAnalysis(raw),
+        {
+          state,
+          classification,
+          tutorLearnerDag,
+          raw,
+          learnerText,
+        },
+      );
       registerSelection = applyConversationalCompletionForLearnerTurn(
         state,
         registerSelection,
@@ -859,13 +864,17 @@ export function createTutorStubLearnerAnalysisRuntime({
         classification,
         tutorFeedback,
       );
-      let registerSelection = normalizeResponseConfigurationSelection(null, {
-        state,
-        classification,
-        tutorLearnerDag,
-        raw: null,
-        learnerText,
-      });
+      let registerSelection = normalizeTutorStubResponseConfigurationWithActionBeforeRegisterShadow(
+        normalizeResponseConfigurationSelection,
+        null,
+        {
+          state,
+          classification,
+          tutorLearnerDag,
+          raw: null,
+          learnerText,
+        },
+      );
       registerSelection = applyConversationalCompletionForLearnerTurn(
         state,
         registerSelection,
@@ -937,13 +946,17 @@ export function createTutorStubLearnerAnalysisRuntime({
       classification,
       tutorFeedback,
     );
-    let registerSelection = normalizeResponseConfigurationSelection(null, {
-      state,
-      classification,
-      tutorLearnerDag,
-      raw: null,
-      learnerText,
-    });
+    let registerSelection = normalizeTutorStubResponseConfigurationWithActionBeforeRegisterShadow(
+      normalizeResponseConfigurationSelection,
+      null,
+      {
+        state,
+        classification,
+        tutorLearnerDag,
+        raw: null,
+        learnerText,
+      },
+    );
     registerSelection = applyConversationalCompletionForLearnerTurn(
       state,
       registerSelection,

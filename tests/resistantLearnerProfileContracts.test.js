@@ -263,7 +263,7 @@ test('public evidence licenses typed moves only in a non-authoritative shadow', 
   assert.equal(ambiguous.warrant.status, 'not_licensed');
 });
 
-test('the resistant-profile warrant shadow has no live runtime caller', () => {
+test('the action-before-register tracer is the only live resistant-warrant caller', () => {
   const importPattern = /from\s+['"][^'"]*resistantProfileWarrantShadow\.js['"]/u;
   const callers = [];
   const visit = (directory) => {
@@ -277,5 +277,5 @@ test('the resistant-profile warrant shadow has no live runtime caller', () => {
     }
   };
   ['services', 'scripts', 'routes'].forEach((root) => visit(path.join(ROOT, root)));
-  assert.deepEqual(callers, []);
+  assert.deepEqual(callers, ['services/tutorStubActionBeforeRegisterShadow.js']);
 });

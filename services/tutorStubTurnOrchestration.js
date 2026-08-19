@@ -10,6 +10,10 @@ import {
 } from './tutorStubWarrantGate.js';
 import { constrainTutorStubDialogueClosureFrameForAdaptiveWarrant } from './tutorStubDialogueClosure.js';
 import { displaceTutorStubPointOfAction } from './tutorStubPointOfActionCoaching.js';
+import {
+  completeTutorStubActionBeforeRegisterShadow,
+  finalizeTutorStubActionBeforeRegisterShadow,
+} from './tutorStubActionBeforeRegisterShadow.js';
 
 export function reconcileTutorStubTypedActionWithWarrant({
   state,
@@ -580,6 +584,22 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         enforcement: warrantFinalAuthority,
       });
     }
+    registerSelection = finalizeTutorStubActionBeforeRegisterShadow({
+      state,
+      selection: registerSelection,
+      learnerText,
+      classification,
+      tutorLearnerDag,
+    });
+    if (registerSelection?.action_before_register_shadow) {
+      appendTraceEvent(state.trace, {
+        type: 'tutor_action_before_register_shadow_selected',
+        turn: tutorTurn,
+        turnId,
+        shadow: jsonClone(registerSelection.action_before_register_shadow),
+        publicTranscriptChanged: false,
+      });
+    }
     const tutorFeedback = learnerInput?.tutorFeedback || null;
     const feedbackTargetTurn = findTutorStubFeedbackTargetTurn({
       feedback: tutorFeedback,
@@ -716,6 +736,22 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         configurationTransition: response.responseConfigurationTransition || null,
         selectedAudit: selectedResponseConfigurationAudit,
         audit: responseConfigurationAudit,
+      });
+    }
+    registerSelection = completeTutorStubActionBeforeRegisterShadow({
+      state,
+      selection: registerSelection,
+      deliveredConfiguration: deliveredResponseConfiguration,
+      responseConfigurationAudit,
+    });
+    const actionBeforeRegisterShadow = registerSelection?.action_before_register_shadow || null;
+    if (actionBeforeRegisterShadow) {
+      appendTraceEvent(state.trace, {
+        type: 'tutor_action_before_register_shadow_realization',
+        turn: tutorTurn,
+        turnId,
+        shadow: jsonClone(actionBeforeRegisterShadow),
+        publicTranscriptChanged: false,
       });
     }
 
@@ -956,6 +992,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       closureCheckIn: dialogueClosureFrame.phase === 'final_checkin_response',
       pointOfAction: state.pointOfAction?.current || null,
       registerSelection,
+      actionBeforeRegisterShadow: jsonClone(actionBeforeRegisterShadow),
       preFinalWarrantSelection,
       warrantGateDecision: jsonClone(registerSelection?.warrant_gate || null),
       inquiryCompletion: jsonClone(registerSelection?.warrant_gate?.inquiry_completion || null),

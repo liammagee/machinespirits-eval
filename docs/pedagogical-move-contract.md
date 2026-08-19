@@ -1,6 +1,6 @@
 # Shared Pedagogical-Move Contract
 
-Status: Phase 1 shadow boundary, 2026-08-18.
+Status: Phase 3 live shadow tracer, 2026-08-19.
 Workplan item: `resistance-action-register-integration`.
 No model call, study run, runtime switch, or empirical claim is authorized by
 this contract.
@@ -43,11 +43,39 @@ The two maps are explicit even where labels look similar. Consolidating two
 move types later requires a reviewed semantic ruling; spelling or family
 membership is not evidence of equivalence.
 
-## Phase 1 authority
+## Phase 3 shadow authority
 
-Neither projection is imported by a live runtime. Shadow records retain the
-complete legacy decision and conservation context, mark `authority: legacy`,
-and hard-code `consumer_switch_authorized: false`.
+The adaptive-runner projection remains offline. The tutor-stub projection is
+now imported only by `services/tutorStubActionBeforeRegisterShadow.js`, whose
+live observer executes a typed-move projection before the existing response-
+configuration normalizer chooses a register. The observer does not feed the
+move back into selection, prompts, guards, repairs, or public output. Existing
+response-configuration selection remains authoritative, and every record
+hard-codes `runtime_selection_authorized: false`,
+`consumer_switch_authorized: false`, and `changes_public_output: false`.
+
+The live trace records five ordered stages:
+
+1. deterministic public observation;
+2. a warrant or legacy-selector preview;
+3. a typed `PedagogicalMove` candidate;
+4. the independently selected legacy register and any later action-family
+   override; and
+5. the audit-observed public realization of the delivered legacy action and
+   register.
+
+For the two held-out resistant instruments, public effort withholding licenses
+`ask_discriminating_question`, while a public frame-jurisdiction dispute
+licenses `test_bounded_distinction`. Profile identity is never consulted. If
+both axes fire, the warrant fails closed. When neither fires, the tracer uses
+the existing action-family projection as its shadow candidate.
+
+Register compatibility is diagnostic only. Sarcasm is provisionally compatible
+with the boredom move and irony with the frame-defiance move only when a
+negative, random, edge-timing, or explicit-register policy opted into an edged
+register. Edged registers are incompatible during comprehension repair or
+protected affect, after uptake, or when paired with another move. This mapping
+is a design hypothesis for the later crossed experiment, not an outcome claim.
 
 The conserved context covers:
 
@@ -62,14 +90,15 @@ rewrite a trace, alter a historical result, or license switching a consumer.
 
 ## Next boundary
 
-Only after exact shadow parity and the full conservation gate pass may a later
-PR add a live observer. Even then, legacy selection remains authoritative until
-the workplan records a separate deletion/switch decision. Bored and
-frame-defiant profile work extends the learner registry after this contract;
-it does not change `low_agency` or `overconfident`. Its public-observation and
-warrant projection is implemented in design shadow only: profile identity is
-never itself a warrant, and no register choice is present in the projected
-move.
+The live observer does not authorize a consumer switch. After the conservation
+gate passes, exact shadow traces can be used to freeze the crossed causal study
+that tests matched versus mismatched action, warm/plain versus edged
+realization, and same-treatment repeat. Only that registered experiment can
+test whether a matched move or tonal realization improves an outcome.
+
+Bored and frame-defiant profile work extends the learner registry; it does not
+change `low_agency` or `overconfident`. Profile identity is never itself a
+warrant, and no register choice is present in the projected move.
 
 Prospective resistant-profile measurement may separately report public axes
 for effort investment, learner authorship/deference, evidential orientation,

@@ -1,6 +1,6 @@
 # Resistance–Action–Register Conservation Protocol
 
-Status: active integration guard, 2026-08-18.
+Status: active integration guard, 2026-08-19.
 Workplan item: `resistance-action-register-integration`.
 
 This protocol protects the established tutor-stub results while resistance
@@ -82,6 +82,14 @@ logic, action selection, or register realization follows these gates:
 7. Never re-run, re-score, or rewrite an established result to make it fit the
    new abstraction. A changed instrument or outcome requires a new registration
    and a new result surface.
+
+The Phase 3 live observer is inside these bounds. It runs the typed projection
+before register normalization, then records the final legacy action/register
+pair and its public audit. It cannot select or replace either value, and any
+later action-family override is preserved as an explicit mismatch rather than
+being backfilled into the earlier move. The `low_agency` and `overconfident`
+fixtures remain the conservation authority; the held-out bored and frame-
+defiant axes add prospective shadow warrants without changing those fixtures.
 
 ## Required local gate
 
