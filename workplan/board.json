@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-19T22:02:09.652Z",
+  "generated": "2026-08-19T22:15:19.587Z",
   "counts": {
     "total": 518,
     "byStatus": {
@@ -299,6 +299,9 @@
           "config/tutor-stub-resistance-axis-heldout-study-go-request.v1.json",
           "config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.json",
           "config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.endpoint-go.json",
+          "config/tutor-stub-frame-refuser-opportunity-registration.v1.json",
+          "config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.json",
+          "config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.endpoint-go.json",
           "services/pedagogicalMove/resistantProfileWarrantShadow.js",
           "scripts/tutor-stub-learner-profile-contracts.js",
           "scripts/prepare-tutor-stub-resistant-profile-discrimination.js",
@@ -334,7 +337,7 @@
         "learner-profiles",
         "registers"
       ],
-      "branch": "codex/frame-refuser-opportunity-gate"
+      "branch": "codex/frame-refuser-opportunity-study-auth"
     },
     {
       "id": "edged-register-stub-dag-replication",
