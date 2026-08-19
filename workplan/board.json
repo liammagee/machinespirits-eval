@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-19T15:39:35.060Z",
+  "generated": "2026-08-19T15:43:02.370Z",
   "counts": {
-    "total": 514,
+    "total": 515,
     "byStatus": {
-      "done": 487,
+      "done": 488,
       "blocked": 7,
       "dropped": 10,
       "triaged": 1,
@@ -14,7 +14,7 @@
     "byType": {
       "research": 80,
       "experiment": 87,
-      "infra": 112,
+      "infra": 113,
       "maintenance": 213,
       "content": 4,
       "ops": 10,
@@ -2387,6 +2387,31 @@
       ],
       "milestone": "human-pilot-prep",
       "branch": "codex/make-pilot-state-writes-atomic"
+    },
+    {
+      "id": "modernize-ci-node-lts-matrix",
+      "title": "Replace EOL Node 20 CI with the supported LTS matrix",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-19",
+      "updated": "2026-08-19",
+      "verification": "The full hosted workflow passes two root shards on Node 22 and Node 24, the hermetic contract starts independently of classification, local parity targets Node 24, package/runtime declarations agree on Node >=22.12, and the resulting hosted critical path is compared with PR #683's four-shard baseline.",
+      "branch": "agent/modernize-ci-node-lts",
+      "links": {
+        "items": [
+          "optimize-ci-agent-iteration-loop",
+          "local-ci-parity-runner"
+        ]
+      },
+      "tags": [
+        "ci",
+        "node",
+        "developer-experience",
+        "latency"
+      ]
     },
     {
       "id": "optimize-ci-agent-iteration-loop",
