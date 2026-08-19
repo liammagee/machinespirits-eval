@@ -62,6 +62,7 @@ links:
     - config/tutor-stub-frame-refuser-opportunity-registration.v1.json
     - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.json
     - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.endpoint-go.json
+    - config/tutor-stub-frame-refuser-opportunity-study-go-request.v1.json
     - services/pedagogicalMove/resistantProfileWarrantShadow.js
     - scripts/tutor-stub-learner-profile-contracts.js
     - scripts/prepare-tutor-stub-resistant-profile-discrimination.js
@@ -94,7 +95,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/frame-refuser-opportunity-study-go
+branch: codex/frame-refuser-opportunity-go-request
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -521,3 +522,14 @@ and explicit human approval.
   request remains local and unapproved until this validator is merged, because
   its launch-source closure must pin a commit that actually contains the
   validator branch. No model call or production write was made.
+- 2026-08-19 — Prepared the final non-executable GO request from clean merged
+  launch source `13c293afec274f7223d0ec14410f1db9b6975699`. It binds the
+  six-dialogue target/control design, exact live and analysis commands, the
+  existing consumed Luna route result, fresh create-once destination, complete
+  executable source closure, 288-attempt ceiling, and bounded recovery for
+  missing or technically failed units only. The zero-call validator reports
+  request SHA-256
+  `16c4cc4c6d51839c6b7508abf826c796ade8f6aa9a1638189abd17865012a8a4`
+  and ready-for-approval status, while both authorization booleans remain
+  false. No model call, live run, or production write was made; execution
+  remains blocked on explicit approval of that exact digest and ceiling.
