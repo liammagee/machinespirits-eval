@@ -3,7 +3,7 @@
   "status": "HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL",
   "studyId": "tutor-stub-resistant-profile-discrimination-v1",
   "workplanItem": "resistance-action-register-integration",
-  "preparedAt": "2026-08-18T23:40:30Z",
+  "preparedAt": "2026-08-19T01:21:43Z",
   "claimBoundary": "This study can establish only whether the bored and frame_defiant automated learner contracts produce discriminable public behavior in the tutor-stub harness. It cannot establish tutor-action efficacy, register efficacy, human learning, or transfer to the cell harness.",
   "authorization": {
     "explicitHumanApproval": null,
@@ -13,10 +13,10 @@
     "approvalMustNameMaximumPlannedModelAttempts": 864
   },
   "source": {
-    "launchCommit": "f95e245c8ef9dab1b9b3da374508f6efd6e90006",
-    "launchTree": "a3caa5d171726575dd84cef3c92333d01c8b7ee7",
+    "launchCommit": "ae940515978030c7f9db1ea72c4c42a647034272",
+    "launchTree": "8d2b84e986a96fe6b3caf283d57c0839f31cb921",
     "selectedFrom": "origin/main",
-    "selectedAt": "2026-08-18T23:40:30Z",
+    "selectedAt": "2026-08-19T01:21:43Z",
     "requirements": {
       "headMustEqualLaunchCommit": true,
       "checkoutMustBeClean": true,
@@ -44,6 +44,10 @@
         "sha256": "0b6a6858d5e371667ad1e5b56a9cef282ad86c08e9a05310347ef79fd719e9bc"
       },
       {
+        "path": "services/tutorStubAutomatedLearnerGenerationRuntime.js",
+        "sha256": "65679ee135c94cc8a2c91a97ebf223584f72eda374f7463b140f2d193a90abd8"
+      },
+      {
         "path": "services/resistantLearnerObservation.js",
         "sha256": "d3feca462dcf1f28199448e33ce5db1c927ce88dc9dfde5f3a920bc57abbb4ec"
       },
@@ -56,6 +60,17 @@
         "sha256": "fe0c86fa91f4443fc4d55f6f3d5b39cf7df9fff5c3284096429cb3908335b326"
       }
     ]
+  },
+  "replacement": {
+    "priorRequestSha256": "8fe73f401ccea68f73a2b9ad0087eda9b5c89913a2602d61e22cb5c7ebe51b3a",
+    "priorExecutionStatus": "stopped_on_technical_failure_no_retry",
+    "priorLaunchCommit": "f95e245c8ef9dab1b9b3da374508f6efd6e90006",
+    "reviewedFailure": "The automated-learner adherence matcher did not expose the boredWithholding or frameJurisdictionDispute public markers, forcing repeated repairs until the bored arm exhausted its per-dialogue budget.",
+    "repairPullRequest": 667,
+    "repairMergeCommit": "ae940515978030c7f9db1ea72c4c42a647034272",
+    "priorArtifactsReused": false,
+    "priorDialoguesResumed": false,
+    "sealedRootBasis": "The create-once relative artifact root is evaluated inside a new detached launch worktree; no artifact from the stopped worktree is copied, pooled, retried, or resumed."
   },
   "bindings": {
     "registration": {
