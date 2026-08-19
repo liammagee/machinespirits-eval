@@ -25,7 +25,7 @@ The bounded route-canary request is at
 command is also zero-call and zero-write:
 
 ```bash
-npm run tutor:stub:resistant-profile-route-canary -- --json
+node scripts/run-tutor-stub-resistant-profile-route-canary.js --json
 ```
 
 The request pins the final HOLD bytes, route executable, shared CLI bridge,
@@ -83,7 +83,7 @@ The non-executable study request is
 It selects launch commit `f95e245c8ef9dab1b9b3da374508f6efd6e90006`
 and binds the frozen packet, source closure, route result, destination, payload,
 commands, and ceiling. Validate it with
-`npm run tutor:stub:resistant-profile-study-go -- --json`; the command prints
+`node scripts/check-tutor-stub-resistant-profile-study-go-request.js --json`; the command prints
 the exact request SHA and approval statement while making zero calls and zero
 production writes.
 

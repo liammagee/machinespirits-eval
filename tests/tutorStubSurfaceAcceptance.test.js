@@ -13,6 +13,7 @@ import {
   assertTutorStubSurfaceAcceptanceContract,
   assertTutorStubSurfacePrivateProjection,
 } from '../services/tutorStubSurfaceAcceptanceContract.js';
+import { SURFACE_ACCEPTANCE_PATHS } from '../scripts/tutor-stub-surface-ci-policy.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURE = path.join(ROOT, 'fixtures', 'tutor-stub-surface-acceptance');
@@ -182,6 +183,12 @@ test('named commands and CI run the shared scenario without forced exit or paid 
   );
   assert.match(workflow, /npm run tutor:stub:acceptance:web/u);
   assert.match(workflow, /npm run tutor:stub:acceptance:packaged/u);
+  assert.match(workflow, /Classify packaged-surface impact/u);
+  assert.match(workflow, /node scripts\/tutor-stub-surface-ci-policy\.js/u);
+  assert.match(workflow, /needs\.classify\.outputs\.surface_required == 'true'/u);
+  for (const triggerPath of SURFACE_ACCEPTANCE_PATHS) {
+    assert.ok(workflow.includes(`- "${triggerPath}"`), `workflow is missing surface trigger ${triggerPath}`);
+  }
   assert.match(workflow, /if: failure\(\)/u);
   assert.doesNotMatch(workflow, /test-force-exit/u);
   assert.match(desktopMain, /import\('\.\/tutorStubAcceptanceScenario\.mjs'\)/u);

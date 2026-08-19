@@ -23,7 +23,11 @@ The default `full` profile:
 7. runs content and paper-claim smoke validation;
 8. checks workplan source, tests, generated-view exclusion, and commit links;
 9. runs web plus packaged-Electron surface acceptance when the changed paths
-   match that workflow's trigger family.
+   match that workflow's trigger family. A `package.json` edit that changes
+   only unrelated npm scripts is classified out before Electron is installed;
+   runtime metadata, dependencies, lockfiles, desktop files, acceptance
+   commands, and shared tutor-surface files still fail closed into the full
+   packaged lane.
 
 The surface lane restores root native modules to the Node ABI before the web
 check and as an always-run cleanup after Electron packaging. Repeated local
@@ -36,6 +40,21 @@ consumer install.
 Every executed command, duration, exit code, source SHA, and lane outcome is
 written to `.test-tmp/local-ci/<timestamp>/summary.{json,md}`. The directory is
 ignored. A failed command stops the run unless `--keep-going` is supplied.
+
+## Expensive CI boundaries
+
+Treat `package.json`, lockfiles, `desktop/**`, `electron-builder.yml`, and
+workflow files as expensive boundaries. Before changing one, inspect the
+workflows whose `paths:` filters include it. Do not add an npm alias for a
+one-off or narrowly scoped validator; call its script directly with `node`.
+Package scripts are for durable developer entry points whose stable command is
+worth the extra CI they trigger.
+
+The hosted tutor-surface workflow still starts for any `package.json` change so
+GitHub records the classification. Its dependency-free classifier skips the
+macOS job for unrelated scripts-only diffs, while ambiguity or any runtime
+surface change runs the complete Electron acceptance. Manual dispatch always
+runs it.
 
 ## Faster and offline forms
 
