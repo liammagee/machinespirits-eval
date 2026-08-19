@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-19T17:34:19.603Z",
+  "generated": "2026-08-19T18:05:27.005Z",
   "counts": {
     "total": 516,
     "byStatus": {
@@ -319,7 +319,11 @@
           "services/tutorStubAutomatedLearnerGenerationRuntime.js",
           "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json",
           "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.endpoint-go.json",
-          "config/tutor-stub-resistance-action-register-crossed-registration.v1.json"
+          "config/tutor-stub-resistance-action-register-crossed-registration.v1.json",
+          "services/tutorStubResistanceActionRegisterStudy.js",
+          "services/tutorStubResistanceActionRegisterPreflight.js",
+          "scripts/run-tutor-stub-resistance-action-register-crossed.js",
+          "config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.json"
         ]
       },
       "tags": [
@@ -330,7 +334,7 @@
         "learner-profiles",
         "registers"
       ],
-      "branch": "codex/resistance-crossed-registration"
+      "branch": "codex/resistance-crossed-runtime"
     },
     {
       "id": "edged-register-stub-dag-replication",
