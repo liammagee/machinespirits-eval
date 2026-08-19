@@ -186,28 +186,35 @@ test('consumed technical recovery request remains frozen and fails closed after 
   assert.match(result.stderr, /source-closure-package\.json/u);
 });
 
-test('axis heldout request gates bored and frame axes while low trust remains diagnostic-only', () => {
-  const report = checkRequest(AXIS_HELDOUT_REQUEST_PATH);
-  const request = JSON.parse(fs.readFileSync(AXIS_HELDOUT_REQUEST_PATH, 'utf8'));
+test('consumed axis heldout request remains frozen and fails closed after package drift', () => {
+  const requestBytes = fs.readFileSync(AXIS_HELDOUT_REQUEST_PATH);
+  const request = JSON.parse(requestBytes.toString('utf8'));
 
-  assert.equal(report.packetValid, true);
-  assert.equal(report.readyForExplicitHumanApproval, true);
-  assert.equal(report.explicitHumanApproval, false);
-  assert.equal(report.modelCallsAuthorized, false);
-  assert.equal(report.liveRunAuthorized, false);
-  assert.equal(report.modelCalls, 0);
-  assert.equal(report.productionWrites, 0);
-  assert.equal(report.launchCommit, 'c302d917da59c3608d6e0d654fc313b13eadb12f');
-  assert.equal(report.budget.maximumPlannedModelAttempts, 864);
-  assert.equal(report.budget.retryOrResumeAuthority, 'bounded_technical_recovery');
+  assert.equal(
+    crypto.createHash('sha256').update(requestBytes).digest('hex'),
+    'b52aa74bb5980229f85d6d6c8e857c59de72ba22f9e4d7be377eb17fe278b4ee',
+  );
+  assert.equal(request.source.launchCommit, 'c302d917da59c3608d6e0d654fc313b13eadb12f');
+  assert.equal(request.authorization.modelCallsAuthorized, false);
+  assert.equal(request.authorization.liveRunAuthorized, false);
+  assert.equal(request.budget.maximumPlannedModelAttempts, 864);
+  assert.equal(request.budget.retryOrResumeAuthority, 'bounded_technical_recovery');
   assert.deepEqual(request.measurement.coPrimaryProfiles, ['bored', 'frame_defiant']);
   assert.deepEqual(request.measurement.diagnosticProfiles, ['low_agency', 'skeptical', 'low_trust_skeptic']);
   assert.equal(request.measurement.epistemicTrustRole, 'descriptive_only_no_threshold_no_pass_contribution');
   assert.equal(request.axisHeldout.priorResultRewritten, false);
   assert.equal(request.axisHeldout.historicalEvidencePooled, false);
-  assert.match(report.requestSha256, /^[0-9a-f]{64}$/u);
-  assert.match(report.exactApprovalStatement, new RegExp(report.requestSha256, 'u'));
-  assert.match(report.exactApprovalStatement, /one 18-dialogue Luna study/u);
-  assert.match(report.exactApprovalStatement, /hard ceiling of 864 model attempts/u);
-  assert.match(report.exactApprovalStatement, /bounded technical recovery authority for missing or failed units only/u);
+
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
+      '--request',
+      AXIS_HELDOUT_REQUEST_PATH,
+      '--json',
+    ],
+    { cwd: ROOT, encoding: 'utf8' },
+  );
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /source-closure-package\.json/u);
 });
