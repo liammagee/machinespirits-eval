@@ -71,6 +71,7 @@ const VECTOR_MARKERS = [
   ['learnerAcceleration', 1],
   ['boredWithholding', 1],
   ['frameJurisdictionDispute', 1],
+  ['frameJurisdictionRefusal', 1],
 ];
 
 function parseArgs(argv) {

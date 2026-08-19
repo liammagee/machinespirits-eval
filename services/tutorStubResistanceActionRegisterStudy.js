@@ -21,6 +21,7 @@ export const TUTOR_STUB_RESISTANCE_ACTION_REGISTER_REGISTRATION_SCHEMA =
   'machinespirits.tutor-stub.resistance-action-register-crossed-registration.v1';
 
 const STUDY_PROFILES = Object.freeze(['bored', 'frame_defiant']);
+const PREFIX_PROFILES = Object.freeze([...STUDY_PROFILES, 'frame_refuser']);
 const ACTION_FITS = Object.freeze(['matched', 'mismatched']);
 const REALIZATIONS = Object.freeze(['plain', 'warm', 'edged']);
 const REPEATS = Object.freeze(['A', 'B']);
@@ -338,10 +339,14 @@ function triggerFromTurnRecord(record, profile) {
   const classification = record?.classification || null;
   const shadow = observeResistanceAxis({ learnerText, classification });
   const timing = detectTutorStubEdgeTimingSignal({ learnerText, classification, tutorLearnerDag: null });
+  const matchesRegisteredCohort =
+    profile === 'frame_refuser'
+      ? shadow.observation?.axes?.frame_participation?.state === 'local_test_refused_without_uptake'
+      : shadow.resistance_kind === profile;
   return {
     eligible:
       shadow.warrant.status === 'licensed' &&
-      shadow.resistance_kind === profile &&
+      matchesRegisteredCohort &&
       timing.comprehensionRepair !== true &&
       timing.protectedAffect !== true &&
       timing.phase !== 'uptake',
@@ -357,7 +362,7 @@ export function extractTutorStubResistanceActionRegisterPrefix({
   profile,
   requireFrozenBundle = true,
 } = {}) {
-  const normalizedProfile = exactLevel(profile, STUDY_PROFILES, 'prefix profile');
+  const normalizedProfile = exactLevel(profile, PREFIX_PROFILES, 'prefix profile');
   const source = fs.readFileSync(tracePath, 'utf8');
   const events = parseTrace(source);
   const completed = events.filter((event) => event.type === 'turn_complete' && event.turnRecord);

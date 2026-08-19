@@ -46,6 +46,27 @@ export const RESISTANT_PROFILE_MOVE_CONTRACTS = Object.freeze({
     ]),
     expected_state_delta: Object.freeze({ on_merits_engagement: 0.2, frame_dispute_precision: 0.2 }),
   }),
+  frame_refuser: Object.freeze({
+    observation_type: 'frame_jurisdiction_refusal',
+    primary_move_type: 'test_bounded_distinction',
+    target: Object.freeze({
+      kind: 'refused_inquiry_frame',
+      reference: null,
+      axes: Object.freeze(['frame_consent', 'local_claim_merits', 'refusal_rights']),
+    }),
+    expected_uptake: Object.freeze({
+      required_signals: Object.freeze(['engages_local_test_on_its_merits', 'restates_frame_dispute_more_precisely']),
+      forbidden_signals: Object.freeze(['mere_compliance', 'escalation_without_a_public_issue']),
+      match: 'any',
+      deadline_turns: 2,
+    }),
+    forbidden_move_types: Object.freeze([
+      'acknowledge_affect_and_redirect',
+      'challenge_to_agentive_evidence_move',
+      'explain_governing_principle',
+    ]),
+    expected_state_delta: Object.freeze({ on_merits_engagement: 0.2, frame_dispute_precision: 0.2 }),
+  }),
 });
 
 function warrant(profileId, contract, observationResult) {

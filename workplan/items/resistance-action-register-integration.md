@@ -9,12 +9,13 @@ source: manual
 created: 2026-08-18
 updated: 2026-08-19
 verification: >-
-  Bored and frame-defiant learner contracts pass discrimination and
-  observability gates; the shared runtime selects a warranted pedagogical action
-  before a compatible tonal register; irony and sarcasm remain opt-in and
-  guard-bounded; and a registered proof-DAG crossed study reports action-fit,
-  register, same-treatment, and downstream outcome results before any claim is
-  transferred back to the cell harness.
+  Bored and frame-refuser learner contracts pass treatment-opportunity,
+  discrimination, and observability gates while productive frame defiance
+  remains a no-intervention diagnostic; the shared runtime selects a warranted
+  pedagogical action before a compatible tonal register; irony and sarcasm
+  remain opt-in and guard-bounded; and a registered proof-DAG crossed study
+  reports action-fit, register, same-treatment, and downstream outcome results
+  before any claim is transferred back to the cell harness.
 claim_status: planned
 links:
   items:
@@ -90,7 +91,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistance-crossed-runtime
+branch: codex/frame-refuser-opportunity-gate
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -111,8 +112,9 @@ as the action itself:
    and branches. Port or archive unique historical inputs before deleting them.
 1. Define the shared typed boundary between resistance observation, warranted
    action, register compatibility, realization fidelity, and public outcome.
-2. Normalize a bored learner and a frame-defiant learner into the tutor-stub
-   profile-contract, observability, and zero-call discrimination machinery.
+2. Normalize a bored learner and a nonconstructive frame-refusing learner into
+   the tutor-stub profile-contract, observability, and zero-call discrimination
+   machinery. Retain productive frame defiance as a no-intervention diagnostic.
    Treat counterexample hunting, goalpost shifting, mockery, and substantive
    objection as distinct observable behaviours rather than one moralized
    `objectionable` trait.
@@ -482,3 +484,14 @@ and explicit human approval.
   study flags, and model-backed execution remains on HOLD pending a separately
   pinned prefix manifest, route, budget, create-once destination, launch
   wrapper, digest-bound GO request, and explicit human approval.
+- 2026-08-19 — A zero-call audit of the prospective held-out source traces
+  found that the frozen baseline could not be assembled honestly: the three
+  bored traces supplied only two unique public prefixes, while all three
+  frame-defiant traces already contained evidence-bearing or bounded-test
+  uptake at the first jurisdictional objection and were therefore excluded by
+  the registered uptake guard. The human accepted the prospective correction:
+  preserve that guard, retain productive frame defiance as a no-intervention
+  diagnostic, and add a distinct `frame_refuser` instrument for a precise
+  jurisdictional refusal without evidence-bearing uptake. The uncommitted live
+  executor remains isolated and unpublished; no model call or study launch was
+  made.

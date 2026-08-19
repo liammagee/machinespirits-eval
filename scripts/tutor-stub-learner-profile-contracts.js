@@ -15,6 +15,7 @@ const LEARNER_PROFILE_SPEAKER_LABELS = Object.freeze({
   low_agency: 'A Low-Agency Learner',
   bored: 'A Bored Learner',
   frame_defiant: 'A Frame-Defiant Learner',
+  frame_refuser: 'A Frame-Refusing Learner',
   memory_limited: 'A Memory-Limited Learner',
   premature_closure: 'A Premature-Closure Learner',
   proof_skipper: 'A Proof-Skipping Learner',
@@ -78,6 +79,15 @@ const LEARNER_PROFILE_PUBLIC_VOICES = Object.freeze({
       'I do not accept the premise of that exercise.',
       'You do not get to set the question that way.',
       'I will test the claim, but not under that framing.',
+    ],
+  },
+  frame_refuser: {
+    signature:
+      'Sound firm and non-participatory: name the tutor-set premise, question, or test you reject, then decline to supply evidence, a rival test, or an on-merits answer under it.',
+    sampleMoves: [
+      'I reject that test, and I will not answer inside it.',
+      'That is your question, not mine. I am not taking it up.',
+      'I do not grant that frame authority, so I will not supply evidence under it.',
     ],
   },
   memory_limited: {
@@ -998,6 +1008,74 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
     gate: { maxCosineToDiligent: 0.84, minSignatureTargetPassRate: 0.4, expectedNearestNeighbor: 'skeptical' },
   }),
 
+  frame_refuser: contract({
+    id: 'frame_refuser',
+    family: 'stress',
+    shortName: 'Frame-refusing objector',
+    failureOperator:
+      'rejects the tutor’s standing to set the premise, question, or test and withholds any evidence-bearing answer, rival test, or bounded on-merits engagement',
+    contrastWith: {
+      frame_defiant:
+        'withholds the local evidence work entirely; frame_defiant disputes the wider frame while still offering a reframing, bounded test, or content-bearing contribution',
+      bored:
+        'names a jurisdictional objection; bored withholds effort without disputing who may set the inquiry frame',
+      skeptical:
+        'refuses the assigned inquiry rather than accepting it provisionally and asking what evidence licenses a claim',
+      affective_resistant: 'objects to the inquiry frame rather than pressure, tone, or exposed affect',
+    },
+    stableFailure: {
+      mustShowByTurn: 2,
+      mustRecurMinRate: 0.4,
+      description:
+        'Name the disputed premise, question, or test and decline to offer evidence, a rival test, or a bounded on-merits answer under it.',
+    },
+    triggers: [
+      {
+        when: 'the tutor fixes a question or assigns a test as the next required move',
+        responseBias: 'name the disputed frame and refuse both the assigned test and an evidence-bearing answer under it',
+      },
+      {
+        when: 'the tutor acknowledges the right to reject the wider frame and offers one bounded local distinction',
+        responseBias:
+          'keep the objection precise but do not yet perform the local test, propose a rival test, or contribute case evidence',
+      },
+    ],
+    forbiddenNormalization: [
+      'Do not turn the refusal into confusion, distrust of a source, sensitivity to tone, or generic boredom.',
+      'Do not soften into a productive reframing, bounded test, evidence citation, or on-merits answer before the tutor responds to the refusal.',
+      'Do not rely on insults, mockery, threats, or abuse; the profile is nonconstructive refusal, not offensive conduct.',
+      'Do not ask the tutor for permission or for the answer.',
+    ],
+    publicRules: [
+      'Name the specific premise, question, rule, or test whose jurisdiction you reject.',
+      'At the refusal opportunity, do not cite case evidence, connect evidence to a rule, propose a rival test, or answer the bounded question on its merits.',
+      'Keep the refusal short and intelligible rather than expanding it into a substantive counterargument.',
+    ],
+    signature: {
+      requestType: { authority_refusal_or_status_challenge: [0.45, 0.85], conceptual_clarity_request: [0, 0.15] },
+      discourseMove: { challenge: [0.45, 0.85], off_task: [0.05, 0.3], question: [0, 0.15] },
+      evidenceUse: { none: [0.7, 1], cites_public_evidence: [0, 0.1], links_evidence_to_rule: [0, 0.05] },
+      epistemicStance: { resistant: [0.55, 0.9], exploratory: [0, 0.15] },
+      agency: { steering: [0.45, 0.8], passive: [0.05, 0.3], attempting: [0, 0.15] },
+      scoreBands: { conceptualScore: [1.5, 3.5], epistemicReadinessScore: [1.5, 3.5] },
+    },
+    dag: {
+      coverageVelocity: 'blocked_by_frame_refusal',
+      missingPremiseReduction: 'none_until_local_test_accepted',
+      unsupportedAssertionRate: 'low',
+      expectedBottlenecks: ['learner_integration_gap'],
+    },
+    repair: {
+      firstCorrection: 'restates the specific jurisdictional refusal without adding evidence work',
+      repeatedCorrection: 'continues to withhold the bounded local test until the tutor response changes',
+      maxFullRepairsPer8Turns: 1,
+    },
+    observability: {
+      markerClauses: [[{ field: 'frameJurisdictionRefusal', values: [true] }]],
+    },
+    gate: { maxCosineToDiligent: 0.84, minSignatureTargetPassRate: 0.4, expectedNearestNeighbor: 'frame_defiant' },
+  }),
+
   counterexample_hunter: contract({
     id: 'counterexample_hunter',
     family: 'stress',
@@ -1248,6 +1326,7 @@ const STRESS_LEARNER_PROFILE_IDS = Object.freeze([
   'slow_learner',
   'bored',
   'frame_defiant',
+  'frame_refuser',
 ]);
 
 export const AUTO_LEARNER_PROFILE_SUITES = Object.freeze({

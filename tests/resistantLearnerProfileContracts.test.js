@@ -44,11 +44,13 @@ function classification({
   };
 }
 
-test('bored and frame-defiant extend the stress registry without altering the frozen outcome-study registry', () => {
+test('bored, frame-defiant, and frame-refuser extend the stress registry without altering the frozen outcome-study registry', () => {
   assert.ok(learnerProfileIds().includes('bored'));
   assert.ok(learnerProfileIds().includes('frame_defiant'));
+  assert.ok(learnerProfileIds().includes('frame_refuser'));
   assert.ok(learnerProfileSuiteIds('stress').includes('bored'));
   assert.ok(learnerProfileSuiteIds('stress').includes('frame_defiant'));
+  assert.ok(learnerProfileSuiteIds('stress').includes('frame_refuser'));
   assert.deepEqual(OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES, ['low_agency', 'overconfident']);
 
   const bored = learnerProfileContractSummary('bored');
@@ -64,6 +66,15 @@ test('bored and frame-defiant extend the stress registry without altering the fr
     [{ field: 'frameJurisdictionDispute', values: [true] }],
   ]);
   assert.match(learnerProfilePrompt('frame_defiant'), /objectionable conduct is not the profile definition/iu);
+
+  const refuser = learnerProfileContractSummary('frame_refuser');
+  assert.equal(refuser.family, 'stress');
+  assert.equal(refuser.discriminationGate.expectedNearestNeighbor, 'frame_defiant');
+  assert.deepEqual(refuser.observabilityContract.markerClauses, [
+    [{ field: 'frameJurisdictionRefusal', values: [true] }],
+  ]);
+  assert.match(learnerProfilePrompt('frame_refuser'), /withholds any evidence-bearing answer/iu);
+  assert.match(learnerProfilePrompt('frame_refuser'), /not offensive conduct/iu);
 });
 
 test('the protected learner contracts and prompts retain their pre-Phase-2 hashes', () => {
@@ -167,6 +178,30 @@ test('frame defiance is jurisdictional and excludes nearby objection types', () 
   });
   assert.equal(defiant.observations[0].type, 'frame_jurisdiction_dispute');
   assert.equal(defiant.observations[0].features.jurisdictional, true);
+  assert.equal(
+    resistantLearnerObservationMarkers({
+      learnerText: 'I reject the premise of this exercise. You do not get to set the question that way.',
+      classification: classification({
+        requestType: 'authority_refusal_or_status_challenge',
+        discourseMove: 'challenge',
+        agency: 'steering',
+      }),
+    }).frameJurisdictionRefusal,
+    true,
+  );
+
+  const productiveDefiance = resistantLearnerObservationMarkers({
+    learnerText:
+      'I reject the frame, but the public assay still supports testing whether this mark came from the same die.',
+    classification: classification({
+      requestType: 'authority_refusal_or_status_challenge',
+      discourseMove: 'hypothesis',
+      evidenceUse: 'links_evidence_to_rule',
+      agency: 'steering',
+    }),
+  });
+  assert.equal(productiveDefiance.frameJurisdictionDispute, true);
+  assert.equal(productiveDefiance.frameJurisdictionRefusal, false);
 
   const observedVariants = [
     'I do not accept your fixing the question as whose hand before the assay begins.',
@@ -245,6 +280,19 @@ test('public evidence licenses typed moves only in a non-authoritative shadow', 
   assert.equal(defiant.warrant.status, 'licensed');
   assert.equal(defiant.projected_move.move_type, 'test_bounded_distinction');
   assert.ok(defiant.projected_move.constraints.forbidden_moves.includes('acknowledge_affect_and_redirect'));
+
+  const refuser = createResistantProfileMoveShadow({
+    profileId: 'frame_refuser',
+    learnerText: 'I reject the premise of your test, and I will not answer inside it.',
+    classification: classification({
+      requestType: 'authority_refusal_or_status_challenge',
+      discourseMove: 'challenge',
+      agency: 'steering',
+    }),
+  });
+  assert.equal(refuser.observation.ambiguous, false);
+  assert.equal(refuser.warrant.status, 'licensed');
+  assert.equal(refuser.projected_move.move_type, 'test_bounded_distinction');
 
   const profileOnly = createResistantProfileMoveShadow({
     profileId: 'bored',

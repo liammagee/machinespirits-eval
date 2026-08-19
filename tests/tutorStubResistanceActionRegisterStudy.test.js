@@ -413,6 +413,75 @@ test('prefix extractor stops before the first eligible trigger and baseline plan
   }
 });
 
+test('prospective frame-refuser prefix gate requires jurisdictional refusal before content-bearing uptake', (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'frame-refuser-prefix-'));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+
+  const writeCandidate = (name, { learner, classification }) => {
+    const tracePath = path.join(directory, `${name}.jsonl`);
+    const events = [
+      { type: 'run_start', runId: name, metadata: { world: { id: 'world_005_marrick' } } },
+      { type: 'auto_learner_turn', turn: 1, text: learner },
+      {
+        type: 'turn_complete',
+        turn: 1,
+        turnId: `${name}:t1`,
+        turnRecord: { turnId: `${name}:t1`, learner, tutor: 'legacy response', classification },
+      },
+      { type: 'run_end', reason: 'test' },
+    ];
+    fs.writeFileSync(tracePath, `${events.map((event) => JSON.stringify(event)).join('\n')}\n`);
+    return tracePath;
+  };
+
+  const refusalTrace = writeCandidate('refusal', {
+    learner: 'I reject that test, and I will not answer inside it.',
+    classification: {
+      turn: {
+        request_type: 'authority_refusal_or_status_challenge',
+        discourse_move: 'challenge',
+        evidence_use: 'none',
+        epistemic_stance: 'resistant',
+        agency: 'steering',
+      },
+    },
+  });
+  const refusal = extractTutorStubResistanceActionRegisterPrefix({
+    tracePath: refusalTrace,
+    profile: 'frame_refuser',
+    requireFrozenBundle: false,
+  });
+  assert.equal(refusal.profile, 'frame_refuser');
+  assert.equal(refusal.trigger_turn, 1);
+  assert.equal(
+    refusal.trigger_observation.axes.frame_participation.state,
+    'local_test_refused_without_uptake',
+  );
+
+  const productiveTrace = writeCandidate('productive', {
+    learner:
+      'I reject the frame, but the public assay still supports testing whether this mark came from the same die.',
+    classification: {
+      turn: {
+        request_type: 'authority_refusal_or_status_challenge',
+        discourse_move: 'hypothesis',
+        evidence_use: 'links_evidence_to_rule',
+        epistemic_stance: 'resistant',
+        agency: 'steering',
+      },
+    },
+  });
+  assert.throws(
+    () =>
+      extractTutorStubResistanceActionRegisterPrefix({
+        tracePath: productiveTrace,
+        profile: 'frame_refuser',
+        requireFrozenBundle: false,
+      }),
+    /no eligible frame_refuser resistance trigger/u,
+  );
+});
+
 test('deterministic endpoint implements the two registered recovery horizons', () => {
   const bored = scoreTutorStubResistanceRecovery({
     profile: 'bored',
