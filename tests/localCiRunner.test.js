@@ -31,7 +31,7 @@ test('local CI arguments expose bounded profiles and explicit parity switches', 
     '--no-install',
     '--offline',
     '--keep-going',
-    '--node20-container',
+    '--node24-container',
     '--surface=never',
     '--base',
     'upstream/main',
@@ -43,12 +43,13 @@ test('local CI arguments expose bounded profiles and explicit parity switches', 
   assert.equal(options.install, false);
   assert.equal(options.offline, true);
   assert.equal(options.keepGoing, true);
-  assert.equal(options.includeNode20, true);
+  assert.equal(options.includeNode24, true);
   assert.equal(options.surface, 'never');
   assert.equal(options.base, 'upstream/main');
   assert.equal(options.head, 'topic');
   assert.throws(() => parseLocalCiArgs(['--profile=imaginary']), /Unknown local CI profile/u);
   assert.throws(() => parseLocalCiArgs(['--surface=maybe']), /Unknown surface mode/u);
+  assert.throws(() => parseLocalCiArgs(['--node20-container']), /Unknown local CI option/u);
 });
 
 test('local CI keeps npm cache and logs outside the source tree', () => {
@@ -87,31 +88,31 @@ test('full local CI plan covers the data-independent GitHub command contract', (
   }
 });
 
-test('surface acceptance uses the same path family and can add isolated Node 20 parity', () => {
+test('surface acceptance uses the same path family and can add isolated Node 24 parity', () => {
   assert.equal(pathTriggersSurfaceAcceptance('package.json'), true);
   assert.equal(pathTriggersSurfaceAcceptance('desktop/main.js'), true);
   assert.equal(pathTriggersSurfaceAcceptance('docs/local-ci.md'), false);
 
-  const options = parseLocalCiArgs(['--no-install', '--node20-container']);
+  const options = parseLocalCiArgs(['--no-install', '--node24-container']);
   const plan = buildLocalCiPlan(options, { projectRoot: '/repo', changedFiles: ['package.json'] });
   assert.ok(plan.some((lane) => lane.id === 'surface'));
-  const node20 = plan.find((lane) => lane.id === 'node20');
-  assert.ok(node20);
-  assert.equal(node20.commands[0].program, 'docker');
-  assert.match(displayCommand(node20.commands[0]), /node:20-bookworm/u);
-  assert.match(displayCommand(node20.commands[0]), /type=bind,src=\/repo,dst=\/source,readonly/u);
+  const node24 = plan.find((lane) => lane.id === 'node24');
+  assert.ok(node24);
+  assert.equal(node24.commands[0].program, 'docker');
+  assert.match(displayCommand(node24.commands[0]), /node:24-bookworm/u);
+  assert.match(displayCommand(node24.commands[0]), /type=bind,src=\/repo,dst=\/source,readonly/u);
 
   const surface = plan.find((lane) => lane.id === 'surface');
   assert.equal(displays([surface]).filter((command) => command === 'npm run native:rebuild:node').length, 2);
   assert.equal(surface.commands.at(-1).always, true);
 
-  const node20Only = buildLocalCiPlan(
-    parseLocalCiArgs(['--lane=node20', '--node20-container', '--no-install', '--offline']),
+  const node24Only = buildLocalCiPlan(
+    parseLocalCiArgs(['--lane=node24', '--node24-container', '--no-install', '--offline']),
     { projectRoot: '/repo', changedFiles: ['package.json'] },
   );
   assert.deepEqual(
-    node20Only.map((lane) => lane.id),
-    ['node20'],
+    node24Only.map((lane) => lane.id),
+    ['node24'],
   );
 
   const docsOnly = buildLocalCiPlan(parseLocalCiArgs(['--no-install']), {
@@ -229,9 +230,10 @@ test('npm and workflow integration expose local and manual recovery entry points
   assert.equal(manifest.scripts['ci:local'], 'node scripts/run-local-ci.js');
   assert.equal(manifest.scripts['ci:local:quick'], 'node scripts/run-local-ci.js --profile quick --no-install');
   assert.equal(
-    manifest.scripts['ci:local:node20'],
-    'node scripts/run-local-ci.js --lane node20 --node20-container --no-install --offline',
+    manifest.scripts['ci:local:node24'],
+    'node scripts/run-local-ci.js --lane node24 --node24-container --no-install --offline',
   );
+  assert.equal(manifest.scripts['ci:local:node20'], undefined);
   assert.equal(manifest.scripts['native:rebuild:node'], 'node scripts/rebuild-node-native-modules.js');
   const rebuild = nativeRebuildPlan({
     projectRoot: '/repo',

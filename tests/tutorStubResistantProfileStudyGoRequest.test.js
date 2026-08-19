@@ -145,17 +145,19 @@ test('fresh measurement recheck freezes a new 18-dialogue cohort without rewriti
   assert.match(report.exactApprovalStatement, /hard ceiling of 864 model attempts/u);
 });
 
-test('technical recovery request preserves failures and permits only bounded missing-unit recovery', () => {
-  const report = checkRequest(MEASUREMENT_RECHECK_RECOVERY_REQUEST_PATH);
-  const request = JSON.parse(fs.readFileSync(MEASUREMENT_RECHECK_RECOVERY_REQUEST_PATH, 'utf8'));
+test('consumed technical recovery request remains frozen and fails closed after package drift', () => {
+  const requestBytes = fs.readFileSync(MEASUREMENT_RECHECK_RECOVERY_REQUEST_PATH);
+  const request = JSON.parse(requestBytes.toString('utf8'));
 
-  assert.equal(report.packetValid, true);
-  assert.equal(report.readyForExplicitHumanApproval, true);
-  assert.equal(report.modelCalls, 0);
-  assert.equal(report.productionWrites, 0);
-  assert.equal(report.launchCommit, '0f7ff1b3d0e1ca0146a519f06914f3d6e1cdcd4d');
-  assert.equal(report.budget.maximumPlannedModelAttempts, 864);
-  assert.equal(report.budget.retryOrResumeAuthority, 'bounded_technical_recovery');
+  assert.equal(
+    crypto.createHash('sha256').update(requestBytes).digest('hex'),
+    '34e78c0753c1da34fd9fbc8865bb69a437adf383ad2867c24c2458ab869fdbab',
+  );
+  assert.equal(request.source.launchCommit, '0f7ff1b3d0e1ca0146a519f06914f3d6e1cdcd4d');
+  assert.equal(request.authorization.modelCallsAuthorized, false);
+  assert.equal(request.authorization.liveRunAuthorized, false);
+  assert.equal(request.budget.maximumPlannedModelAttempts, 864);
+  assert.equal(request.budget.retryOrResumeAuthority, 'bounded_technical_recovery');
   assert.equal(
     request.technicalRecovery.priorRequestSha256,
     'c2176e17c403824c0566ccb86d167fad21c56be405291025f09f233c3a8ea26d',
@@ -169,8 +171,19 @@ test('technical recovery request preserves failures and permits only bounded mis
   assert.equal(request.technicalRecovery.recoveryBoundary.rerunValidOutputs, false);
   assert.equal(request.technicalRecovery.recoveryBoundary.maximumTotalStudyAttemptsUnchanged, 864);
   assert.match(request.destination.artifactRoot, /technical-recovery/u);
-  assert.match(report.exactApprovalStatement, new RegExp(report.requestSha256, 'u'));
-  assert.match(report.exactApprovalStatement, /bounded technical recovery authority for missing or failed units only/u);
+
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
+      '--request',
+      MEASUREMENT_RECHECK_RECOVERY_REQUEST_PATH,
+      '--json',
+    ],
+    { cwd: ROOT, encoding: 'utf8' },
+  );
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /source-closure-package\.json/u);
 });
 
 test('axis heldout request gates bored and frame axes while low trust remains diagnostic-only', () => {

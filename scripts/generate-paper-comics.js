@@ -1601,7 +1601,7 @@ ${cards}
 
 async function callOpenAIImageGeneration(prompt, opts, apiKey) {
   if (typeof fetch !== 'function') {
-    throw new Error('This script needs Node.js fetch support; use Node 20+');
+    throw new Error('This script needs the supported Node.js runtime; use Node 22.12+');
   }
 
   const body = {

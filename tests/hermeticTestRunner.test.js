@@ -839,8 +839,14 @@ test('the concurrent PTY skip is discharged by a dedicated natural-teardown CI l
 test('CI shards both supported Node versions, caches npm downloads, and avoids unneeded LFS checkout', () => {
   const workflow = fs.readFileSync(path.resolve('.github/workflows/test.yml'), 'utf8');
   assert.match(workflow, /^concurrency:\n {2}group: .*github\.workflow.*github\.ref/mu);
-  assert.match(workflow, /^ {2}test-contract:\n {4}name: Hermetic test contract$/mu);
+  assert.match(workflow, /^ {2}test-contract:\n {4}name: Hermetic test contract\n {4}runs-on: ubuntu-latest$/mu);
   assert.match(workflow, /^ {8}run: npm run test:manifest$/mu);
+  for (const lane of ['focused', 'lint', 'test', 'pty-concurrency', 'risk-coverage']) {
+    assert.match(
+      workflow,
+      new RegExp(`^ {2}${lane}:\\n(?: {4}name: [^\\n]+\\n)? {4}needs: \\[classify, test-contract\\]$`, 'mu'),
+    );
+  }
   assert.match(workflow, /^ {2}test:\n {4}needs: \[classify, test-contract\]$/mu);
   assert.match(
     workflow,
@@ -850,7 +856,7 @@ test('CI shards both supported Node versions, caches npm downloads, and avoids u
   assert.match(workflow, /^ {2}ELECTRON_SKIP_BINARY_DOWNLOAD: "1"$/mu);
   assert.match(workflow, /^ {2}focused:\n {4}name: Focused authored-metadata checks$/mu);
   assert.match(workflow, /^ {6}fail-fast: false$/mu);
-  assert.match(workflow, /^ {8}node-version: \[20, 22\]\n {8}shard: \[1, 2\]$/mu);
+  assert.match(workflow, /^ {8}node-version: \[22, 24\]\n {8}shard: \[1, 2\]$/mu);
   assert.match(workflow, /npm run test:root -- --shard=\$\{\{ matrix\.shard \}\}\/2 --quiet/u);
   assert.match(workflow, /^ {8}if: matrix\.shard == 1\n {8}run: npm run test:core -- --quiet$/mu);
   assert.equal(workflow.match(/cache: npm/gu)?.length, 4);
@@ -860,7 +866,7 @@ test('CI shards both supported Node versions, caches npm downloads, and avoids u
 
   const packageManifest = JSON.parse(fs.readFileSync(path.resolve('package.json'), 'utf8'));
   const desktopManifest = JSON.parse(fs.readFileSync(path.resolve('desktop/package.json'), 'utf8'));
-  assert.equal(packageManifest.engines.node, '>=20.0.0');
+  assert.equal(packageManifest.engines.node, '>=22.12.0');
   assert.equal(packageManifest.devDependencies.electron, undefined);
   assert.equal(packageManifest.optionalDependencies, undefined);
   assert.equal(desktopManifest.engines.node, '>=22.12.0');
@@ -869,9 +875,13 @@ test('CI shards both supported Node versions, caches npm downloads, and avoids u
   assert.equal(packageManifest.scripts['desktop:install'], 'npm ci --prefix desktop');
   assert.match(packageManifest.scripts['desktop:dev'], /^desktop\/node_modules\/\.bin\/electron /u);
   const rootLock = JSON.parse(fs.readFileSync(path.resolve('package-lock.json'), 'utf8'));
+  assert.equal(rootLock.packages[''].engines.node, packageManifest.engines.node);
   for (const desktopOnlyPackage of ['electron', '@electron/rebuild', 'electron-builder', 'temp']) {
     assert.equal(rootLock.packages[`node_modules/${desktopOnlyPackage}`], undefined);
   }
+
+  const publishWorkflow = fs.readFileSync(path.resolve('.github/workflows/publish.yml'), 'utf8');
+  assert.match(publishWorkflow, /^ {10}node-version: 22$/mu);
 
   const validationWorkflow = fs.readFileSync(path.resolve('.github/workflows/validate.yml'), 'utf8');
   assert.match(validationWorkflow, /npm run content:validate/u);
