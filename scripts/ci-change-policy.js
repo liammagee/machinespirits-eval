@@ -29,6 +29,16 @@ const FOCUSED_PATH_PREFIXES = [
 
 const STUDY_GO_METADATA_PATH = /^config\/[^/]*study-go-request[^/]*\.json$/u;
 
+const VALIDATOR_ONLY_GROUPS = [
+  {
+    paths: new Set([
+      'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
+      'tests/tutorStubResistantProfileStudyGoRequest.test.js',
+    ]),
+    tests: ['tests/tutorStubResistantProfileStudyGoRequest.test.js'],
+  },
+];
+
 export function pathAllowsFocusedCi(file) {
   return (
     FOCUSED_EXACT_PATHS.has(file) ||
@@ -41,6 +51,22 @@ export function pathRequiresValidationFramework(file) {
   return file.startsWith('docs/research/');
 }
 
+export function pathAllowsValidatorOnlyCi(file) {
+  return VALIDATOR_ONLY_GROUPS.some((group) => group.paths.has(file));
+}
+
+export function selectValidatorOnlyCi(changedFiles) {
+  if (!Array.isArray(changedFiles) || changedFiles.length === 0) return null;
+  const validatorPaths = changedFiles.filter((file) => !pathAllowsFocusedCi(file));
+  if (validatorPaths.length === 0 || validatorPaths.some((file) => !pathAllowsValidatorOnlyCi(file))) return null;
+
+  const selectedGroups = VALIDATOR_ONLY_GROUPS.filter((group) => validatorPaths.some((file) => group.paths.has(file)));
+  return {
+    paths: [...new Set(validatorPaths)].sort(),
+    tests: [...new Set(selectedGroups.flatMap((group) => group.tests))].sort(),
+  };
+}
+
 export function classifyCiChanges({ changedFiles, forceFull = false }) {
   if (forceFull) {
     return {
@@ -48,6 +74,8 @@ export function classifyCiChanges({ changedFiles, forceFull = false }) {
       fullRequired: true,
       validationRequired: true,
       authorizationRequired: false,
+      validatorPaths: [],
+      validatorTests: [],
       reason: 'manual workflow dispatch',
     };
   }
@@ -57,7 +85,22 @@ export function classifyCiChanges({ changedFiles, forceFull = false }) {
       fullRequired: true,
       validationRequired: true,
       authorizationRequired: false,
+      validatorPaths: [],
+      validatorTests: [],
       reason: 'no changed files could be classified',
+    };
+  }
+
+  const validatorOnly = selectValidatorOnlyCi(changedFiles);
+  if (validatorOnly) {
+    return {
+      profile: 'validator-only',
+      fullRequired: false,
+      validationRequired: changedFiles.some(pathRequiresValidationFramework),
+      authorizationRequired: changedFiles.some((file) => STUDY_GO_METADATA_PATH.test(file)),
+      validatorPaths: validatorOnly.paths,
+      validatorTests: validatorOnly.tests,
+      reason: `allowlisted validator-only change: ${validatorOnly.paths.join(', ')}`,
     };
   }
 
@@ -68,6 +111,8 @@ export function classifyCiChanges({ changedFiles, forceFull = false }) {
       fullRequired: true,
       validationRequired: true,
       authorizationRequired: false,
+      validatorPaths: [],
+      validatorTests: [],
       reason: `full CI boundary changed: ${fullPaths.join(', ')}`,
     };
   }
@@ -77,6 +122,8 @@ export function classifyCiChanges({ changedFiles, forceFull = false }) {
     fullRequired: false,
     validationRequired: changedFiles.some(pathRequiresValidationFramework),
     authorizationRequired: changedFiles.some((file) => STUDY_GO_METADATA_PATH.test(file)),
+    validatorPaths: [],
+    validatorTests: [],
     reason: `focused authored metadata only: ${changedFiles.join(', ')}`,
   };
 }
@@ -105,6 +152,8 @@ export function classifyCiRange({ base, head, projectRoot = PROJECT_ROOT, forceF
       fullRequired: true,
       validationRequired: true,
       authorizationRequired: false,
+      validatorPaths: [],
+      validatorTests: [],
       reason: 'change range could not be classified',
     };
   }
@@ -152,7 +201,7 @@ function main() {
   if (args.githubOutput) {
     fs.appendFileSync(
       args.githubOutput,
-      `profile=${result.profile}\nfull_required=${result.fullRequired}\nvalidation_required=${result.validationRequired}\nauthorization_required=${result.authorizationRequired}\n`,
+      `profile=${result.profile}\nfull_required=${result.fullRequired}\nvalidation_required=${result.validationRequired}\nauthorization_required=${result.authorizationRequired}\nvalidator_required=${result.validatorTests.length > 0}\nvalidator_tests=${result.validatorTests.join(' ')}\nvalidator_paths=${result.validatorPaths.join(' ')}\n`,
     );
   }
   console.log(JSON.stringify(result));
