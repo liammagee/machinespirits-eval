@@ -288,6 +288,7 @@ test('frame-refuser opportunity request validates six dialogues without a new ca
   const request = {
     schema: 'machinespirits.tutor-stub.resistant-profile-discrimination-study-go-request.v1',
     status: 'HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL',
+    studyId: 'tutor-stub-frame-refuser-opportunity-v1',
     authorization: {
       explicitHumanApproval: null,
       modelCallsAuthorized: false,
