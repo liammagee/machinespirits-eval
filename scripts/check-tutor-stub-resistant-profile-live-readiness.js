@@ -12,6 +12,7 @@ import {
   validatePaidStudyEndpointGoCertificate,
 } from '../services/paidStudyEndpointPreflight.js';
 import { runTutorStubResistantProfileDiscriminationEndpointPreflight } from '../services/tutorStubResistantProfileDiscriminationPreflight.js';
+import { runTutorStubResistanceAxisEndpointPreflight } from '../services/tutorStubResistanceAxisDiscriminationPreflight.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_HOLD = path.join(
@@ -87,6 +88,13 @@ function expectedLiveCommands(preflight, liveArtifactRoot) {
   return { live, analyze };
 }
 
+function runEndpointPreflight(contract) {
+  if (contract.study_id === 'tutor-stub-resistance-axis-heldout-v1') {
+    return runTutorStubResistanceAxisEndpointPreflight(contract);
+  }
+  return runTutorStubResistantProfileDiscriminationEndpointPreflight(contract);
+}
+
 function shellQuote(value) {
   const raw = String(value);
   return /^[A-Za-z0-9_./:=,<>-]+$/u.test(raw) ? raw : `'${raw.replaceAll("'", "'\\''")}'`;
@@ -136,10 +144,11 @@ function main() {
 
   const registrationPath = path.join(ROOT, hold.registration.path);
   const preparation = JSON.parse(
-    execFileSync(process.execPath, ['scripts/prepare-tutor-stub-resistant-profile-discrimination.js', '--json'], {
-      cwd: ROOT,
-      encoding: 'utf8',
-    }),
+    execFileSync(
+      process.execPath,
+      ['scripts/prepare-tutor-stub-resistant-profile-discrimination.js', '--registration', registrationPath, '--json'],
+      { cwd: ROOT, encoding: 'utf8' },
+    ),
   );
   assertion(checks, 'registration-preflight', preparation.pass === true, 'frozen protocol preflight passes');
   assertion(
@@ -158,7 +167,7 @@ function main() {
 
   const endpointContract = readJson(path.join(ROOT, hold.endpoint.contractPath));
   const endpointCertificate = readJson(path.join(ROOT, hold.endpoint.certificatePath));
-  const endpointPreflight = runTutorStubResistantProfileDiscriminationEndpointPreflight(endpointContract);
+  const endpointPreflight = runEndpointPreflight(endpointContract);
   const endpointGo = validatePaidStudyEndpointGoCertificate({
     certificate: endpointCertificate,
     contract: endpointContract,
@@ -219,15 +228,23 @@ function main() {
     hold.payload.humanSubjectData === false && hold.payload.trainingReuseStatus === 'not_applicable',
     'payload is repository-authored automated-study material; training reuse is not applicable',
   );
+  const reusesConsumedRoute = hold.routeVerification.status === 'reused_consumed_route_result';
   assertion(
     checks,
-    'immutable-pre-canary-hold',
-    hold.routeVerification.status === 'pending_explicit_approval' &&
-      hold.routeVerification.artifact === null &&
-      hold.routeVerification.canaryAuthorization === null &&
-      hold.routeVerification.maximumModelCalls === 1 &&
-      hold.routeVerification.retryOrResumeAuthority === 'none',
-    'the original pre-canary HOLD remains byte-stable and grants no inherited authorization or retry',
+    'route-hold-boundary',
+    reusesConsumedRoute
+      ? hold.routeVerification.artifact === path.relative(ROOT, args.routeResult) &&
+          hold.routeVerification.maximumNewModelCalls === 0 &&
+          hold.routeVerification.canaryAuthorization === null &&
+          hold.routeVerification.retryOrResumeAuthority === 'none'
+      : hold.routeVerification.status === 'pending_explicit_approval' &&
+          hold.routeVerification.artifact === null &&
+          hold.routeVerification.canaryAuthorization === null &&
+          hold.routeVerification.maximumModelCalls === 1 &&
+          hold.routeVerification.retryOrResumeAuthority === 'none',
+    reusesConsumedRoute
+      ? 'the consumed Luna route result is reused with zero new calls and no inherited study authority'
+      : 'the original pre-canary HOLD remains byte-stable and grants no inherited authorization or retry',
   );
   const routeCanaryPlan = JSON.parse(
     execFileSync(
@@ -290,7 +307,7 @@ function main() {
     'route-canary-result',
     routeCanaryResult.schema === 'machinespirits.tutor-stub.resistant-profile-route-canary-result.v1' &&
       routeCanaryResult.status === 'passed' &&
-      routeCanaryResult.studyId === hold.studyId &&
+      routeCanaryResult.studyId === (hold.routeVerification.reusedFromStudyId || hold.studyId) &&
       routeCanaryResult.modelCalls === 1 &&
       routeCanaryResult.retryOrResumeAuthority === 'none' &&
       routeCanaryResult.requested?.modelRef === 'codex.gpt-5.6-luna' &&

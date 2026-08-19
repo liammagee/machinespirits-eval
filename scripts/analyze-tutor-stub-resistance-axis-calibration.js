@@ -52,6 +52,7 @@ function parseArgs(argv) {
   const args = {
     traces: [],
     out: '',
+    registration: '',
     registeredReport: '',
     requiredRegisteredReportSha256: '',
     requiredTraces: null,
@@ -66,6 +67,7 @@ function parseArgs(argv) {
     if (token === '--json') continue;
     if (token === '--trace') args.traces.push(path.resolve(argv[++index] || ''));
     else if (token === '--out') args.out = path.resolve(argv[++index] || '');
+    else if (token === '--registration') args.registration = path.resolve(argv[++index] || '');
     else if (token === '--registered-report') args.registeredReport = path.resolve(argv[++index] || '');
     else if (token === '--required-registered-report-sha256') {
       args.requiredRegisteredReportSha256 = String(argv[++index] || '')
@@ -87,6 +89,7 @@ function parseArgs(argv) {
   node scripts/analyze-tutor-stub-resistance-axis-calibration.js --trace <file>... [options]
 
 Options:
+  --registration <file>                       Freeze a prospective held-out axis gate
   --registered-report <file>                 Bind calibration to an immutable registered report
   --required-registered-report-sha256 <hex>  Require the registered report's exact SHA-256
   --required-traces <n>
@@ -194,6 +197,20 @@ function modelCheck(role, traces, requiredModel) {
   };
 }
 
+function registrationResult(registrationPath) {
+  if (!registrationPath) return null;
+  const bytes = fs.readFileSync(registrationPath);
+  const registration = JSON.parse(bytes.toString('utf8'));
+  if (registration.schema !== 'machinespirits.tutor-stub.resistance-axis-discrimination-registration.v1') {
+    throw new Error(`unsupported registration schema: ${registration.schema}`);
+  }
+  return {
+    path: path.relative(ROOT, registrationPath),
+    sha256: crypto.createHash('sha256').update(bytes).digest('hex'),
+    registration,
+  };
+}
+
 function registeredResult(args) {
   if (!args.registeredReport) return null;
   const bytes = fs.readFileSync(args.registeredReport);
@@ -286,9 +303,87 @@ export function buildResistanceAxisCalibrationReport(traces, args) {
   };
 }
 
+function rateForProfileAxis(profileSummaries, profile, axis) {
+  return profileSummaries.find((row) => row.profile === profile)?.axes?.[axis]?.observedRate ?? null;
+}
+
+export function buildResistanceAxisDiscriminationReport(traces, args, registrationBinding) {
+  const calibration = buildResistanceAxisCalibrationReport(traces, args);
+  const registration = registrationBinding.registration;
+  const coPrimary = registration.gates.coPrimaryProfiles.map((profile) => {
+    const gate = registration.gates.profiles[profile];
+    const observedRate = rateForProfileAxis(calibration.profiles, profile, gate.axis);
+    const targetTraces = traces.filter((trace) => trace.profile === profile);
+    const deadlinePass =
+      targetTraces.length > 0 &&
+      targetTraces.every((trace) =>
+        trace.turns.some((turn) => turn.turn <= gate.mustShowByTurn && turn.markers[gate.marker] === true),
+      );
+    const nonTargetRates = calibration.profiles
+      .filter((row) => row.profile !== profile)
+      .map((row) => ({ profile: row.profile, observedRate: row.axes[gate.axis].observedRate }));
+    const maximumNonTargetRate = nonTargetRates.length
+      ? Math.max(...nonTargetRates.map((row) => row.observedRate))
+      : null;
+    const ratePass = Number.isFinite(observedRate) && observedRate >= gate.minimumObservedRate;
+    const specificityPass = Number.isFinite(maximumNonTargetRate) && maximumNonTargetRate <= gate.maximumNonTargetRate;
+    return {
+      profile,
+      role: 'co_primary',
+      axis: gate.axis,
+      marker: gate.marker,
+      observedRate,
+      minimumObservedRate: gate.minimumObservedRate,
+      ratePass,
+      mustShowByTurn: gate.mustShowByTurn,
+      deadlinePass,
+      maximumNonTargetRate,
+      maximumAllowedNonTargetRate: gate.maximumNonTargetRate,
+      nonTargetRates,
+      specificityPass,
+      pass: ratePass && deadlinePass && specificityPass,
+    };
+  });
+  const diagnostics = registration.gates.diagnosticProfiles.map((profile) => ({
+    profile,
+    role: 'diagnostic_control',
+    axes: Object.fromEntries(
+      registration.gates.diagnosticAxes.map((axis) => [axis, rateForProfileAxis(calibration.profiles, profile, axis)]),
+    ),
+    contributesToPass: false,
+  }));
+  const assemblyPass = calibration.integrity.assembly.pass;
+  const pass = assemblyPass && coPrimary.every((row) => row.pass);
+  return {
+    ...calibration,
+    schema: 'machinespirits.tutor-stub.resistance-axis-discrimination.v1',
+    authority: 'prospective_registered_endpoint',
+    pass,
+    registration: {
+      path: registrationBinding.path,
+      sha256: registrationBinding.sha256,
+      decisionRule: registration.gates.decisionRule,
+    },
+    changesRegisteredResult: false,
+    priorRegisteredResultRewritten: false,
+    gate: {
+      mode: 'co_primary_axes_with_diagnostic_controls',
+      assembly: calibration.integrity.assembly,
+      coPrimary,
+      diagnostics,
+      epistemicTrustContributesToPass: false,
+      pass,
+    },
+  };
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
-  const report = buildResistanceAxisCalibrationReport(args.traces.map(readTrace), args);
+  const traces = args.traces.map(readTrace);
+  const binding = registrationResult(args.registration);
+  const report = binding
+    ? buildResistanceAxisDiscriminationReport(traces, args, binding)
+    : buildResistanceAxisCalibrationReport(traces, args);
   if (!report.integrity.pass) throw new Error('calibration integrity checks failed');
   const output = `${JSON.stringify(report, null, 2)}\n`;
   if (args.out) {

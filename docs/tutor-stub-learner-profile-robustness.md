@@ -516,3 +516,11 @@ profiles challenge warrants, while low trust adds an authority-distrust signal
 on only `5/24` turns. Whether that additional signal is sufficiently recurrent
 for a new held-out contract is an interpretation and design decision that must
 precede any fresh authorization.
+
+That decision is now resolved prospectively: `low_trust_skeptic` remains a
+nested diagnostic/control rather than a co-primary profile gate. The registered
+held-out study uses only bored effort withholding and frame legitimacy as
+co-primary endpoints. Low-agency, skeptical, and low-trust profiles remain
+comparison controls; epistemic distrust is reported descriptively without a
+threshold or pass/fail contribution. This decision does not reinterpret the
+frozen negative studies or strengthen the low-trust contract.

@@ -1,0 +1,10 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-go.v1",
+  "status": "endpoint_runtime_go",
+  "study_id": "tutor-stub-resistance-axis-heldout-v1",
+  "contract_path": "config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.json",
+  "contract_sha256": "37b84754af9e58c2d0fe11c4fee2103fba5ba93fd1410be3dfab9087cc08c70f",
+  "preflight_sha256": "fdfdbb06574e52106b3bd8b4911ec1c752d3b1574c3304efddb10c6517dd985a",
+  "authorization_scope": "endpoint-runtime compatibility only; this certificate does not authorize a model call or live study",
+  "launch_gate": "An exact clean post-merge main commit, a create-once destination, a committed study GO request, and explicit human approval remain required"
+}

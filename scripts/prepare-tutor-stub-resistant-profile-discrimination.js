@@ -8,6 +8,10 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 import { OUTCOME_STUDY_SUPPORTED_LEARNER_PROFILES } from '../services/adaptiveWarrantOutcomeLearnerProfiles.js';
+import {
+  RESISTANT_LEARNER_AXIS_DEFINITIONS,
+  resistantLearnerAxisMarkers,
+} from '../services/resistantLearnerAxisObservation.js';
 import { resistantLearnerObservationMarkers } from '../services/resistantLearnerObservation.js';
 import { learnerProfileContract, learnerProfilePrompt } from './tutor-stub-learner-profile-contracts.js';
 
@@ -236,6 +240,75 @@ function validateNewProfileContracts(registration, checks) {
   );
 }
 
+function validateAxisRegistration(registration, checks) {
+  for (const profileId of registration.design.newProfiles) {
+    assertion(
+      checks,
+      `${profileId}-contract-present`,
+      Boolean(learnerProfileContract(profileId)),
+      `${profileId} contract exists`,
+    );
+  }
+  assertion(
+    checks,
+    'axis-registry',
+    equal(
+      registration.measurement.axes,
+      RESISTANT_LEARNER_AXIS_DEFINITIONS.map((definition) => definition.axis),
+    ),
+    'the five orthogonal public axes are frozen in registry order',
+  );
+  assertion(
+    checks,
+    'axis-co-primary-boundary',
+    equal(registration.gates.coPrimaryProfiles, ['bored', 'frame_defiant']) &&
+      registration.gates.profiles.bored.axis === 'effort_investment' &&
+      registration.gates.profiles.frame_defiant.axis === 'frame_legitimacy' &&
+      registration.gates.profiles.bored.minimumObservedRate === 0.45 &&
+      registration.gates.profiles.frame_defiant.minimumObservedRate === 0.4 &&
+      registration.gates.profiles.bored.maximumNonTargetRate === 0.2 &&
+      registration.gates.profiles.frame_defiant.maximumNonTargetRate === 0.2,
+    'only bored effort and frame legitimacy are co-primary, with frozen recurrence and specificity bounds',
+  );
+  assertion(
+    checks,
+    'axis-diagnostic-control-boundary',
+    equal(registration.gates.diagnosticProfiles, ['low_agency', 'skeptical', 'low_trust_skeptic']) &&
+      registration.gates.epistemicTrustRole === 'descriptive_only_no_threshold_no_pass_contribution',
+    'low trust is diagnostic-only and epistemic trust cannot affect the verdict',
+  );
+  const bored = resistantLearnerAxisMarkers({
+    learnerText: 'Sure. Whatever.',
+    classification: { discourse_move: 'off_task', evidence_use: 'none', agency: 'complying' },
+  });
+  const lowAgency = resistantLearnerAxisMarkers({
+    learnerText: 'Can you choose which part I should test first?',
+    classification: { discourse_move: 'question', evidence_use: 'none', agency: 'steering' },
+  });
+  const skeptical = resistantLearnerAxisMarkers({
+    learnerText: 'What public evidence links this flaw to the striking hand?',
+    classification: { discourse_move: 'question', evidence_use: 'cites_public_evidence', agency: 'steering' },
+  });
+  const lowTrust = resistantLearnerAxisMarkers({
+    learnerText: 'What public evidence ties it to Verrell rather than your assumption?',
+    classification: { discourse_move: 'question', evidence_use: 'cites_public_evidence', agency: 'steering' },
+  });
+  const frame = resistantLearnerAxisMarkers({
+    learnerText: 'I reject the premise. You do not get to set the question that way.',
+    classification: { discourse_move: 'challenge', evidence_use: 'none', agency: 'steering' },
+  });
+  assertion(
+    checks,
+    'axis-public-marker-smoke',
+    bored.effortWithholding === true &&
+      lowAgency.tutorChoiceDeference === true &&
+      skeptical.evidentialWarrantChallenge === true &&
+      lowTrust.authorityEpistemicDistrust === true &&
+      frame.frameJurisdictionDispute === true,
+    'each public axis has a deterministic positive control',
+  );
+}
+
 function validatePlan(registration, plan, checks) {
   const design = registration.design;
   assertion(checks, 'qa-plan-dry-run', plan.dryRun === true, 'QA plan and every child remain in dry-run mode');
@@ -328,10 +401,13 @@ function main() {
   const registration = JSON.parse(registrationText);
   const checks = [];
 
+  const axisRegistration =
+    registration.schema === 'machinespirits.tutor-stub.resistance-axis-discrimination-registration.v1';
   assertion(
     checks,
     'registration-schema',
-    registration.schema === 'machinespirits.tutor-stub.resistant-profile-discrimination-registration.v1',
+    axisRegistration ||
+      registration.schema === 'machinespirits.tutor-stub.resistant-profile-discrimination-registration.v1',
     registration.schema,
   );
   assertion(
@@ -347,7 +423,8 @@ function main() {
     registration.preservation.historicalEvidenceMode,
   );
   validateProtectedProfiles(registration, checks);
-  validateNewProfileContracts(registration, checks);
+  if (axisRegistration) validateAxisRegistration(registration, checks);
+  else validateNewProfileContracts(registration, checks);
 
   const traceDir = args.traceDir || registration.design.dryRunArtifactRoot;
   const qaArgs = buildQaArgs(registration, traceDir);
@@ -371,42 +448,48 @@ function main() {
     plan,
     commands: {
       dryRun: ['node', 'scripts/run-tutor-stub-qa-matrix.js', ...qaArgs],
-      analyze: [
-        'node',
-        'scripts/analyze-tutor-stub-profile-discrimination.js',
-        '--trace-root',
-        liveRoot,
-        '--write-compacted',
-        `${liveRoot}/compacted-traces`,
-        '--target-average-cosine',
-        String(registration.gates.pooled.averagePairwiseCosineMax),
-        '--target-max-to-control',
-        String(registration.gates.pooled.maxSimilarityToDiligent),
-        '--control-profile',
-        registration.design.controlProfile,
-        '--gate-profiles',
-        registration.design.newProfiles.join(','),
-        '--require-pooled',
-        '--required-traces',
-        String(registration.gates.assembly.requiredDialogues),
-        '--required-profiles',
-        registration.design.profiles.join(','),
-        '--required-runs-per-profile',
-        String(registration.gates.assembly.requiredRunsPerProfile),
-        '--required-turns',
-        registration.design.turns,
-        '--required-policies',
-        registration.design.policies.join(','),
-        '--required-tutor-model',
-        registration.design.models.tutor,
-        '--required-analysis-model',
-        registration.design.models.analysis,
-        '--required-learner-model',
-        registration.design.models.learner,
-        '--json',
-        '--out',
-        `${liveRoot}/profile-discrimination.json`,
-      ],
+      analyze: axisRegistration
+        ? [
+            'zsh',
+            '-lc',
+            `set -euo pipefail; artifact_root='${liveRoot}'; trace_args=(); for trace in "$artifact_root"/*/traces/*/*.jsonl; do [[ -f "$trace" ]] || continue; trace_args+=(--trace "$trace"); done; node scripts/analyze-tutor-stub-resistance-axis-calibration.js "\${trace_args[@]}" --registration ${path.relative(ROOT, args.registration)} --required-traces ${registration.gates.assembly.requiredDialogues} --required-profiles ${registration.design.profiles.join(',')} --required-runs-per-profile ${registration.gates.assembly.requiredRunsPerProfile} --required-turns ${registration.gates.assembly.requiredTurns} --required-policies ${registration.gates.assembly.requiredPolicies.join(',')} --required-tutor-model ${registration.design.models.tutor} --required-analysis-model ${registration.design.models.analysis} --required-learner-model ${registration.design.models.learner} --json --out "$artifact_root/resistance-axis-discrimination.json"`,
+          ]
+        : [
+            'node',
+            'scripts/analyze-tutor-stub-profile-discrimination.js',
+            '--trace-root',
+            liveRoot,
+            '--write-compacted',
+            `${liveRoot}/compacted-traces`,
+            '--target-average-cosine',
+            String(registration.gates.pooled.averagePairwiseCosineMax),
+            '--target-max-to-control',
+            String(registration.gates.pooled.maxSimilarityToDiligent),
+            '--control-profile',
+            registration.design.controlProfile,
+            '--gate-profiles',
+            registration.design.newProfiles.join(','),
+            '--require-pooled',
+            '--required-traces',
+            String(registration.gates.assembly.requiredDialogues),
+            '--required-profiles',
+            registration.design.profiles.join(','),
+            '--required-runs-per-profile',
+            String(registration.gates.assembly.requiredRunsPerProfile),
+            '--required-turns',
+            registration.design.turns,
+            '--required-policies',
+            registration.design.policies.join(','),
+            '--required-tutor-model',
+            registration.design.models.tutor,
+            '--required-analysis-model',
+            registration.design.models.analysis,
+            '--required-learner-model',
+            registration.design.models.learner,
+            '--json',
+            '--out',
+            `${liveRoot}/profile-discrimination.json`,
+          ],
     },
   };
 
