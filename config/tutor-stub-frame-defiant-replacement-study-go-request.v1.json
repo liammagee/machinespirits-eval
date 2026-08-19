@@ -1,0 +1,408 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-profile-discrimination-study-go-request.v1",
+  "status": "HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL",
+  "studyId": "tutor-stub-resistant-profile-discrimination-v1-frame-defiant-replacement",
+  "workplanItem": "resistance-action-register-integration",
+  "preparedAt": "2026-08-19T02:29:28Z",
+  "claimBoundary": "This replacement can restore the registered 18-dialogue discrimination cohort only by combining the 15 exact unaffected traces from the prior execution with three fresh frame_defiant traces. It can establish only whether the bored and frame_defiant automated learner contracts produce discriminable public behavior in the tutor-stub harness. It cannot establish tutor-action efficacy, register efficacy, human learning, or transfer to the cell harness.",
+  "authorization": {
+    "explicitHumanApproval": null,
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "approvalMustBindRequestSha256": true,
+    "approvalMustNameMaximumPlannedModelAttempts": 144
+  },
+  "source": {
+    "launchCommit": "6dbec4cb49a47eca415f77e2324be57a6e1d6f45",
+    "launchTree": "c26a7770f69962d43e14f5859136e4916a887846",
+    "selectedFrom": "origin/main",
+    "selectedAt": "2026-08-19T02:29:28Z",
+    "requirements": {
+      "headMustEqualLaunchCommit": true,
+      "checkoutMustBeClean": true,
+      "detachedLaunchWorktree": true
+    },
+    "closure": [
+      {
+        "path": "scripts/run-tutor-stub-qa-matrix.js",
+        "sha256": "0ddc5f07577d070775b363e79666ba3a5805fa79c268b1f61c9a804be3806ae8"
+      },
+      {
+        "path": "scripts/run-tutor-stub-auto-eval.js",
+        "sha256": "2a1357da998f0e05aa5e43707d73a3d3d5202c78eb399a7410d883e8bf4c5a61"
+      },
+      {
+        "path": "scripts/analyze-tutor-stub-profile-discrimination.js",
+        "sha256": "27ed3c3419454b7ca7af990a01705564605f6e6d2e4621bb4f9f2c8adc409b42"
+      },
+      {
+        "path": "scripts/tutor-stub.js",
+        "sha256": "5a7136af62db78962b253955b2fdf99ddcc87ba1c6bbbecffdb78902d0df8344"
+      },
+      {
+        "path": "scripts/tutor-stub-learner-profile-contracts.js",
+        "sha256": "0b6a6858d5e371667ad1e5b56a9cef282ad86c08e9a05310347ef79fd719e9bc"
+      },
+      {
+        "path": "services/tutorStubAutomatedLearnerGenerationRuntime.js",
+        "sha256": "65679ee135c94cc8a2c91a97ebf223584f72eda374f7463b140f2d193a90abd8"
+      },
+      {
+        "path": "services/resistantLearnerObservation.js",
+        "sha256": "b9ced53ab9d8f468a4ccccda671e130db6037b46724a6a6e433506851966c6d5"
+      },
+      {
+        "path": "config/drama-derivation/world-005-marrick.yaml",
+        "sha256": "38f1e5106dbca611a993bf2987f1a812330609927c84b0e17c281c292a201d03"
+      },
+      {
+        "path": "config/providers.yaml",
+        "sha256": "fe0c86fa91f4443fc4d55f6f3d5b39cf7df9fff5c3284096429cb3908335b326"
+      }
+    ]
+  },
+  "replacement": {
+    "type": "fresh_profile_cohort_replacement",
+    "priorRequestPath": "config/tutor-stub-resistant-profile-discrimination-study-go-request.v1.json",
+    "priorRequestSha256": "ac077d68e3f64c6f49b298bb12cbb5af79ac3d5d6ef8ce0476cb45c2044d2dbb",
+    "priorLaunchCommit": "ae940515978030c7f9db1ea72c4c42a647034272",
+    "priorArtifactRoot": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19",
+    "priorRunPlan": {
+      "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/run-plan.json",
+      "sha256": "5f69f6c76e3592a92657fe0dcee587e84a327f85a5619bfd322792840c966d09"
+    },
+    "priorQaPlan": {
+      "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/qa-plan.json",
+      "sha256": "1367dba273855247875522294582dfc36aefd24fbb0971bbce09d00f63d2d150"
+    },
+    "priorExecutionStatus": "stopped_on_frame_defiant_r1_model_call_budget_exhaustion_no_retry",
+    "reviewedFailure": "The frame_defiant adherence matcher rejected semantically valid jurisdictional objections, causing repeated learner repairs. Run 1 reached the 48-call ceiling; runs 2 and 3 completed but also incurred 7 and 8 unnecessary repairs.",
+    "repairPullRequest": 671,
+    "repairMergeCommit": "6dbec4cb49a47eca415f77e2324be57a6e1d6f45",
+    "repairScope": [
+      "services/resistantLearnerObservation.js",
+      "tests/resistantLearnerProfileContracts.test.js",
+      "tests/tutorStubResistantProfileStudyGoRequest.test.js"
+    ],
+    "sourceIsolationRationale": "The executable runtime change broadens only deterministic frame-jurisdiction observation matching. The 15 retained profiles do not require frameJurisdictionDispute adherence, so their completed public traces remain unchanged inputs. All three prior frame_defiant traces are excluded to prevent within-profile source mixing.",
+    "retainedPriorTraces": [
+      {
+        "profile": "diligent",
+        "run": 1,
+        "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/diligent/traces/field-r1/2026-08-19T01-29-20-569Z.jsonl",
+        "sha256": "02833478106a5a29db8927e1dcb3b3342ff3bd4a8aa5c20cb2253d8ab188a3a0"
+      },
+      {
+        "profile": "diligent",
+        "run": 2,
+        "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/diligent/traces/field-r2/2026-08-19T01-29-20-591Z.jsonl",
+        "sha256": "000893d2b95dda34d13521e1fb9256b0324273ed200ebf0eaa9754dced9ebcbc"
+      },
+      {
+        "profile": "diligent",
+        "run": 3,
+        "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/diligent/traces/field-r3/2026-08-19T01-29-20-619Z.jsonl",
+        "sha256": "c18f01c6b8c8400a66ef49d4da6884a528eb98fffe574d8bb4e2d042880a06ca"
+      },
+      {
+        "profile": "low_agency",
+        "run": 1,
+        "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/low_agency/traces/field-r1/2026-08-19T01-33-02-959Z.jsonl",
+        "sha256": "e74a7377cea262402f9a9a5f0a0b5a3c7df3fb286164421a203bf17419330cd6"
+      },
+      {
+        "profile": "low_agency",
+        "run": 2,
+        "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/low_agency/traces/field-r2/2026-08-19T01-33-02-969Z.jsonl",
+        "sha256": "501ece410715e26bef97f68365fa56ec7e178a4cadae4ed48283ce26e0878ada"
+      },
+      {
+        "profile": "low_agency",
+        "run": 3,
+        "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/low_agency/traces/field-r3/2026-08-19T01-33-02-994Z.jsonl",
+        "sha256": "d8613abe534d4d83fc0d70a8b2f618a4f73dea591d2e4bceedaa54a7aa6e0b54"
+      },
+      {
+        "profile": "bored",
+        "run": 1,
+        "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/bored/traces/field-r1/2026-08-19T01-37-07-102Z.jsonl",
+        "sha256": "78e4f3f9faa244959be7e8185d02a02850b0309a4c155cb56de01eecd5e378b7"
+      },
+      {
+        "profile": "bored",
+        "run": 2,
+        "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/bored/traces/field-r2/2026-08-19T01-37-07-127Z.jsonl",
+        "sha256": "f811ce951ceb9beb6666ebfa5ed099fdc520d83ea27deb6f643c74a8b36edc36"
+      },
+      {
+        "profile": "bored",
+        "run": 3,
+        "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/bored/traces/field-r3/2026-08-19T01-37-07-165Z.jsonl",
+        "sha256": "a13ce82d6d9d9c48fb100f84139edafcaffed794f1a612a91a46437a5b022107"
+      },
+      {
+        "profile": "skeptical",
+        "run": 1,
+        "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/skeptical/traces/field-r1/2026-08-19T01-43-31-009Z.jsonl",
+        "sha256": "8a5dea5f7fd5a69b4951241d3edbb0c5cfd4f8f5cbe7b1ff7e8e967d64e469ff"
+      },
+      {
+        "profile": "skeptical",
+        "run": 2,
+        "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/skeptical/traces/field-r2/2026-08-19T01-43-31-013Z.jsonl",
+        "sha256": "b47e6f2a82636bcf4ca1dae0a4d5afce012e3de9b7412a32dd7fbb498a706642"
+      },
+      {
+        "profile": "skeptical",
+        "run": 3,
+        "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/skeptical/traces/field-r3/2026-08-19T01-43-31-042Z.jsonl",
+        "sha256": "d5556365af027946a115c8d781e17df6c920ec07f99efedfc4efaaf21ae4ff02"
+      },
+      {
+        "profile": "low_trust_skeptic",
+        "run": 1,
+        "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/low_trust_skeptic/traces/field-r1/2026-08-19T01-47-20-131Z.jsonl",
+        "sha256": "30ff4864636a2e6044c1d0d7428f11eb34c0c504f8007ca2fa894c674796a63a"
+      },
+      {
+        "profile": "low_trust_skeptic",
+        "run": 2,
+        "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/low_trust_skeptic/traces/field-r2/2026-08-19T01-47-20-135Z.jsonl",
+        "sha256": "2d15f2290a9385acda0eb6ef92d895c65d25269aeaf20d47760cc69361d3f188"
+      },
+      {
+        "profile": "low_trust_skeptic",
+        "run": 3,
+        "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/low_trust_skeptic/traces/field-r3/2026-08-19T01-47-20-161Z.jsonl",
+        "sha256": "2b70259cbbc2cc302e63068a7e3e048a2cae0bdac25e61652680fe9931e4e5fc"
+      }
+    ],
+    "excludedPriorTraces": [
+      {
+        "profile": "frame_defiant",
+        "run": 1,
+        "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/frame_defiant/traces/field-r1/2026-08-19T01-51-12-191Z.jsonl",
+        "sha256": "2fb3dbf39eed1e918ad6518fd2d57c9fd3b8620486fe62915e1f276c3e9f36e9",
+        "reason": "incomplete after model-call budget exhaustion"
+      },
+      {
+        "profile": "frame_defiant",
+        "run": 2,
+        "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/frame_defiant/traces/field-r2/2026-08-19T01-51-12-207Z.jsonl",
+        "sha256": "2258782c395443f5dda26f9cdda8164abefee3dfa3ef98125611119bfb262647",
+        "reason": "excluded to prevent within-profile source mixing"
+      },
+      {
+        "profile": "frame_defiant",
+        "run": 3,
+        "path": "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/frame_defiant/traces/field-r3/2026-08-19T01-51-12-243Z.jsonl",
+        "sha256": "84458695013afb323b1aa4a93f8dc41a46a06b3069b650cbe79267514e9fa1b1",
+        "reason": "excluded to prevent within-profile source mixing"
+      }
+    ],
+    "retainedTraceCount": 15,
+    "excludedTraceCount": 3,
+    "freshTraceCount": 3,
+    "finalAnalysisTraceCount": 18,
+    "priorArtifactsReused": true,
+    "priorFrameDefiantTracesReused": false,
+    "priorDialoguesResumed": false
+  },
+  "bindings": {
+    "registration": {
+      "path": "config/tutor-stub-resistant-profile-discrimination-registration.v1.json",
+      "sha256": "e6581e6cbfe9589b825589318c2b5b523b03ef1b8587ec31fec5b87ff69249ac"
+    },
+    "liveReadinessHold": {
+      "path": "config/tutor-stub-resistant-profile-discrimination-live-readiness.hold.v1.json",
+      "sha256": "d8a07d3593576b5c1ea9f868d333de386588bc9d4576567a6812c60f56f7c91c"
+    },
+    "endpoint": {
+      "contractPath": "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json",
+      "contractFileSha256": "66da86384f895a80b2078062b211f85104ed1d560f3b43c4ccf8e96642e88347",
+      "contractCanonicalSha256": "a7776585313e15f265440a30412b0505317597454615b83880e69d300bd2bab3",
+      "certificatePath": "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.endpoint-go.json",
+      "certificateFileSha256": "b6cdbb05d3e06beabeded5eebfe1e6e139f907362143373b0cee0d6a5d6f229d",
+      "preflightSha256": "06ec5af028e79f2d38517e33992d59bdcf8401a19bba9be3c5eb86678ecd862b",
+      "authorizationScope": "endpoint-runtime compatibility only"
+    },
+    "routeCanary": {
+      "resultPath": "config/tutor-stub-resistant-profile-route-canary-result.v1.json",
+      "resultSha256": "c68ee936441504fdb514f97537aaf87915c734b43da82f7d81136c40c6918623",
+      "authorizationConsumptionPath": "config/tutor-stub-resistant-profile-route-canary-authorization.consumed.v1.json",
+      "authorizationConsumptionSha256": "1ec23bf81df7678050e5383fbda9ab913979b9b93b24fb1944b59002c6eeefb2",
+      "sourceArtifactSha256": "a2989dfb48438b7153928244a20ef42f698122b6edb3062fdfecca41ca1ac55f",
+      "executionHead": "04edc89f943e380bf5fc88bf2d84b93c8c1a805c",
+      "observedProvider": "codex",
+      "observedModel": "gpt-5.6-luna",
+      "observedEffort": "low",
+      "attestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+      "modelIndependentlyAttested": false
+    },
+    "commands": {
+      "source": "commands",
+      "liveArraySha256": "834f3b0f2c542a56291b77916254ff4c0a39f1ac8a269488b42a5cce7dc4f1b0",
+      "analyzeArraySha256": "42cd47a32089a6e49091d26496a4c5acca45984c71d48327c3386eef7627a292"
+    }
+  },
+  "design": {
+    "profiles": ["frame_defiant"],
+    "analysisProfiles": ["diligent", "low_agency", "bored", "skeptical", "low_trust_skeptic", "frame_defiant"],
+    "policies": ["field"],
+    "runsPerProfile": 3,
+    "dialogues": 3,
+    "turnsPerDialogue": 8,
+    "world": "world_005_marrick",
+    "models": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna"
+    },
+    "cliEffort": "low",
+    "parallelism": 3
+  },
+  "destination": {
+    "artifactRoot": ".tutor-stub-auto-eval/resistant-profile-discrimination-v1-frame-defiant-replacement-live-2026-08-19",
+    "createOnce": true,
+    "mustNotExistBeforeLaunch": true,
+    "productionDatabaseWrites": false
+  },
+  "payload": {
+    "scope": "Repository-authored world_005_marrick content, tutor and automated learner prompts, classifier prompts, 15 pinned prior automated traces, and three fresh generated automated dialogue contexts only.",
+    "humanSubjectData": false,
+    "privateArchiveData": false,
+    "trainingReuseStatus": "not_applicable"
+  },
+  "budget": {
+    "dialogues": 3,
+    "maximumAttemptsPerDialogue": 48,
+    "maximumPlannedModelAttempts": 144,
+    "parallelism": 3,
+    "retryOrResumeAuthority": "none"
+  },
+  "commands": {
+    "live": [
+      "node",
+      "scripts/run-tutor-stub-qa-matrix.js",
+      "--policies",
+      "field",
+      "--profiles",
+      "frame_defiant",
+      "--runs",
+      "3",
+      "--run-seed",
+      "20260818",
+      "--turns",
+      "8",
+      "--safety-turns",
+      "8",
+      "--model",
+      "codex.gpt-5.6-luna",
+      "--analysis-model",
+      "codex.gpt-5.6-luna",
+      "--auto-learner-model",
+      "codex.gpt-5.6-luna",
+      "--model-call-budget",
+      "48",
+      "--world",
+      "world_005_marrick",
+      "--dag-mode",
+      "strict_dag",
+      "--register-palette",
+      "safe",
+      "--register-overlay-threshold",
+      "0.7",
+      "--release-speed",
+      "1",
+      "--cli-effort",
+      "low",
+      "--history-turns",
+      "4",
+      "--max-tokens",
+      "4096",
+      "--parallelism",
+      "3",
+      "--progress-interval",
+      "30",
+      "--trace-dir",
+      ".tutor-stub-auto-eval/resistant-profile-discrimination-v1-frame-defiant-replacement-live-2026-08-19",
+      "--no-html-report",
+      "--no-memory-summary",
+      "--no-analyze"
+    ],
+    "analyze": [
+      "node",
+      "scripts/analyze-tutor-stub-profile-discrimination.js",
+      "--trace",
+      "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/diligent/traces/field-r1/2026-08-19T01-29-20-569Z.jsonl",
+      "--trace",
+      "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/diligent/traces/field-r2/2026-08-19T01-29-20-591Z.jsonl",
+      "--trace",
+      "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/diligent/traces/field-r3/2026-08-19T01-29-20-619Z.jsonl",
+      "--trace",
+      "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/low_agency/traces/field-r1/2026-08-19T01-33-02-959Z.jsonl",
+      "--trace",
+      "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/low_agency/traces/field-r2/2026-08-19T01-33-02-969Z.jsonl",
+      "--trace",
+      "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/low_agency/traces/field-r3/2026-08-19T01-33-02-994Z.jsonl",
+      "--trace",
+      "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/bored/traces/field-r1/2026-08-19T01-37-07-102Z.jsonl",
+      "--trace",
+      "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/bored/traces/field-r2/2026-08-19T01-37-07-127Z.jsonl",
+      "--trace",
+      "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/bored/traces/field-r3/2026-08-19T01-37-07-165Z.jsonl",
+      "--trace",
+      "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/skeptical/traces/field-r1/2026-08-19T01-43-31-009Z.jsonl",
+      "--trace",
+      "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/skeptical/traces/field-r2/2026-08-19T01-43-31-013Z.jsonl",
+      "--trace",
+      "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/skeptical/traces/field-r3/2026-08-19T01-43-31-042Z.jsonl",
+      "--trace",
+      "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/low_trust_skeptic/traces/field-r1/2026-08-19T01-47-20-131Z.jsonl",
+      "--trace",
+      "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/low_trust_skeptic/traces/field-r2/2026-08-19T01-47-20-135Z.jsonl",
+      "--trace",
+      "/Users/lmagee/Dev/machinespirits/ms-resistant-profile-study-replacement/.tutor-stub-auto-eval/resistant-profile-discrimination-v1-live-2026-08-19/low_trust_skeptic/traces/field-r3/2026-08-19T01-47-20-161Z.jsonl",
+      "--trace-root",
+      ".tutor-stub-auto-eval/resistant-profile-discrimination-v1-frame-defiant-replacement-live-2026-08-19",
+      "--write-compacted",
+      ".tutor-stub-auto-eval/resistant-profile-discrimination-v1-frame-defiant-replacement-live-2026-08-19/compacted-traces",
+      "--target-average-cosine",
+      "0.85",
+      "--target-max-to-control",
+      "0.9",
+      "--control-profile",
+      "diligent",
+      "--gate-profiles",
+      "bored,frame_defiant",
+      "--require-pooled",
+      "--required-traces",
+      "18",
+      "--required-profiles",
+      "diligent,low_agency,bored,skeptical,low_trust_skeptic,frame_defiant",
+      "--required-runs-per-profile",
+      "3",
+      "--required-turns",
+      "8",
+      "--required-policies",
+      "field",
+      "--required-tutor-model",
+      "codex.gpt-5.6-luna",
+      "--required-analysis-model",
+      "codex.gpt-5.6-luna",
+      "--required-learner-model",
+      "codex.gpt-5.6-luna",
+      "--json",
+      "--out",
+      ".tutor-stub-auto-eval/resistant-profile-discrimination-v1-frame-defiant-replacement-live-2026-08-19/profile-discrimination.json"
+    ]
+  },
+  "stoppingRules": [
+    "A technical failure stops the replacement and does not authorize a retry or resume.",
+    "A further retry requires review, a new request, separate explicit approval, and a new sealed artifact root.",
+    "The live command may run once only from the exact clean launch commit and create-once destination.",
+    "All three prior frame_defiant traces are excluded from the final analysis.",
+    "The final analysis may combine only the 15 SHA-pinned retained traces with the three fresh traces from the sealed replacement root.",
+    "The existing low_agency and overconfident outcome evidence remains read-only and is neither rejudged nor pooled."
+  ]
+}
