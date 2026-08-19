@@ -1,0 +1,135 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-contract.v1",
+  "study_id": "tutor-stub-resistance-action-register-baseline-v1",
+  "registration": {
+    "registration_path": "config/tutor-stub-resistance-action-register-crossed-registration.v1.json",
+    "registration_sha256": "8e2e2a6c5fde795b668d2a9ecc81a527e29a0d970aaf419badde5fb037fa87e7",
+    "primary_endpoint_ids": ["profile_specific_resistance_recovery"],
+    "required_profiles": ["bored", "frame_defiant"],
+    "required_prefixes_per_profile": 3,
+    "required_action_fits": ["matched"],
+    "required_realizations": ["plain", "warm"],
+    "required_repeats": ["A", "B"]
+  },
+  "registered_scale": {
+    "cases": 24,
+    "unit": "triggered_counterfactual_treatment_dialogue"
+  },
+  "runner": {
+    "packet_builder": "services/tutorStubResistanceActionRegisterPreflight.js#buildTutorStubResistanceActionRegisterPreflightPackets",
+    "result_assembler": "services/tutorStubResistanceActionRegisterPreflight.js#assembleTutorStubResistanceActionRegisterPreflight",
+    "packet_cap_bytes": 200000,
+    "emitted_event_fields": [
+      "action_fit",
+      "arm",
+      "assigned_register",
+      "case_id",
+      "fidelity.action_visible",
+      "fidelity.protected_condition",
+      "fidelity.register_visible",
+      "fidelity.safety_override",
+      "outcome.grounded_closure_by_turn_8",
+      "outcome.new_supported_public_premises",
+      "outcome.proof_debt_delta",
+      "outcome.recovered",
+      "pedagogical_move",
+      "prefix_id",
+      "profile",
+      "public_prefix_sha256",
+      "realization",
+      "trigger.profile_identity_used",
+      "trigger.single_axis"
+    ]
+  },
+  "channels": {
+    "deterministic_resistance_recovery": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceActionRegisterStudy.js#scoreTutorStubResistanceRecovery"
+    },
+    "proof_dag_outcomes": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceActionRegisterPreflight.js#assembleTutorStubResistanceActionRegisterPreflight"
+    },
+    "treatment_fidelity": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceActionRegisterPreflight.js#assembleTutorStubResistanceActionRegisterPreflight"
+    },
+    "public_trigger_observer": {
+      "enabled": true,
+      "implementation": "services/pedagogicalMove/resistantProfileWarrantShadow.js#createResistantAxisMoveShadow"
+    },
+    "frozen_registration": {
+      "enabled": true,
+      "implementation": "config/tutor-stub-resistance-action-register-crossed-registration.v1.json"
+    }
+  },
+  "endpoints": [
+    {
+      "id": "profile_specific_resistance_recovery",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": ["deterministic_resistance_recovery", "frozen_registration"],
+      "required_event_fields": ["arm", "case_id", "outcome.recovered", "prefix_id", "profile", "realization"],
+      "denominator": { "expected_cases": 24 },
+      "pairing": {
+        "key_fields": ["prefix_id", "profile", "action_fit", "realization"],
+        "required_arm_values": ["A", "B"],
+        "expected_cases_per_arm": 1
+      }
+    },
+    {
+      "id": "proof_dag_debt_delta_at_two_learner_turns",
+      "role": "secondary",
+      "enabled": true,
+      "required_channels": ["proof_dag_outcomes", "frozen_registration"],
+      "required_event_fields": ["case_id", "outcome.proof_debt_delta"],
+      "denominator": { "expected_cases": 24 }
+    },
+    {
+      "id": "new_supported_public_premises_at_two_learner_turns",
+      "role": "secondary",
+      "enabled": true,
+      "required_channels": ["proof_dag_outcomes", "frozen_registration"],
+      "required_event_fields": ["case_id", "outcome.new_supported_public_premises"],
+      "denominator": { "expected_cases": 24 }
+    },
+    {
+      "id": "grounded_closure_by_turn_8",
+      "role": "secondary",
+      "enabled": true,
+      "required_channels": ["proof_dag_outcomes", "frozen_registration"],
+      "required_event_fields": ["case_id", "outcome.grounded_closure_by_turn_8"],
+      "denominator": { "expected_cases": 24 }
+    },
+    {
+      "id": "turns_to_grounded_closure",
+      "role": "secondary",
+      "enabled": true,
+      "required_channels": ["proof_dag_outcomes", "frozen_registration"],
+      "required_event_fields": ["case_id", "outcome.grounded_closure_by_turn_8"],
+      "denominator": { "expected_cases": 24 }
+    },
+    {
+      "id": "action_register_fidelity_and_safety",
+      "role": "interpretability_gate",
+      "enabled": true,
+      "required_channels": ["treatment_fidelity", "frozen_registration"],
+      "required_event_fields": [
+        "case_id",
+        "fidelity.action_visible",
+        "fidelity.protected_condition",
+        "fidelity.register_visible",
+        "fidelity.safety_override"
+      ],
+      "denominator": { "expected_cases": 24 }
+    },
+    {
+      "id": "trigger_specificity_and_assembly",
+      "role": "interpretability_gate",
+      "enabled": true,
+      "required_channels": ["public_trigger_observer", "frozen_registration"],
+      "required_event_fields": ["case_id", "trigger.profile_identity_used", "trigger.single_axis"],
+      "denominator": { "expected_cases": 24 }
+    }
+  ]
+}

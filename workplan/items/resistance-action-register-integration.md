@@ -79,6 +79,10 @@ links:
     - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json
     - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.endpoint-go.json
     - config/tutor-stub-resistance-action-register-crossed-registration.v1.json
+    - services/tutorStubResistanceActionRegisterStudy.js
+    - services/tutorStubResistanceActionRegisterPreflight.js
+    - scripts/run-tutor-stub-resistance-action-register-crossed.js
+    - config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.json
 tags:
   - tutor-stub
   - cells
@@ -86,7 +90,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistance-crossed-registration
+branch: codex/resistance-crossed-runtime
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -465,3 +469,16 @@ and explicit human approval.
   measure recovery and repeat drift before a prospective main-block amendment
   freezes numeric gates, sample size, endpoint, command, destination, and
   budget. No model call, pilot, GO request, or consumer switch is authorized.
+- 2026-08-19 — Implemented the study-only Phase 4 treatment seam and exact-
+  prefix branch planner without changing ordinary tutor behavior. The harness
+  starts from a recorded frozen speaking-turn bundle, preserves and hashes the
+  public prefix, assigns the typed pedagogical move before its compatible
+  register, and overlays only the frozen branch's speaking contract; the
+  byte-pinned legacy contract builder remains unchanged. The 24-case matched-
+  action plain/warm baseline endpoint preflight completes profile-specific
+  recovery, proof-DAG outcomes, closure timing, trigger specificity, and
+  treatment-fidelity assembly with zero model calls and zero production
+  writes. The runner has no live execution mode, the standard tutor CLI has no
+  study flags, and model-backed execution remains on HOLD pending a separately
+  pinned prefix manifest, route, budget, create-once destination, launch
+  wrapper, digest-bound GO request, and explicit human approval.
