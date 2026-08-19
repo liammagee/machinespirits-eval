@@ -1,14 +1,13 @@
 ---
 id: optimize-ci-agent-iteration-loop
 title: Reduce agent iteration and CI feedback latency
-status: active
+status: done
 type: infra
 priority: P1
 owner: codex
 source: manual
 created: 2026-08-18
-updated: 2026-08-18
-branch: codex/ci-focused-fast-path
+updated: 2026-08-19
 verification: "A reproducible PR and Actions timing baseline identifies agent-side and CI-side delay; instruction and workflow changes remove redundant authorization ceremony and low-risk full-matrix runs without weakening research authority, fail-closed runtime coverage, or required workplan/ref checks; follow-up hosted PRs demonstrate the reduced latency."
 links:
   prs:
@@ -19,6 +18,7 @@ links:
     - 671
     - 672
     - 678
+    - 680
   items:
     - expedite-ci-expensive-boundaries
     - local-ci-parity-runner
@@ -128,6 +128,12 @@ Benchmark log:
   `claude` backend flags into invalid `Codex` flags. Updated the skills to derive
   cells/models from current config, preserve pinned experimental models, reuse
   standing bounded recovery authority, and stop after proportionate checks.
+- 2026-08-19 — The first post-merge focused follow-up, PR #680, passed all
+  required checks in 56s end to end (05:28:19Z–05:29:15Z), versus the 4m58s
+  baseline: an approximately 81% reduction. Focused authored-metadata checks
+  took 23s and the hermetic contract 14s; dependency installation, Electron,
+  the Node matrix, lint, risk coverage, and PTY coverage were correctly skipped.
+  All workflows on the resulting main merge passed, exceeding the 50% target.
 
 Initial optimization hypotheses:
 
