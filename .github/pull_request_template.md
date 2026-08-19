@@ -6,7 +6,7 @@ Workplan item: <id or N/A>
 
 Ref impact: <N/A | repository release | paper checkpoint | experiment checkpoint | archive snapshot>
 
-CI boundary impact: <none | list package, lockfile, desktop, Electron, or workflow boundaries inspected>
+CI boundary impact: <none | list package, lockfile, browser-surface, or workflow boundaries inspected>
 
 ## Verification
 

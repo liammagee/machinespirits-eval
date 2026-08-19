@@ -1,9 +1,9 @@
-#!/usr/bin/env electron
+#!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { app, BrowserWindow } from 'electron';
+import { chromium } from 'playwright-core';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SERVER = path.join(ROOT, 'scripts', 'browse-poetics-scripts.js');
@@ -53,7 +53,7 @@ function parseArgs(argv) {
 }
 
 function usage() {
-  return `Usage: electron scripts/scriptorium-ux-smoke.mjs [--port 3466] [--no-start] [--base URL] [--routes /,/browse] [--out outputs/scriptorium-ux-smoke]`;
+  return `Usage: node scripts/scriptorium-ux-smoke.mjs [--port 3466] [--no-start] [--base URL] [--routes /,/browse] [--out outputs/scriptorium-ux-smoke]`;
 }
 
 function sleep(ms) {
@@ -77,13 +77,15 @@ async function waitForServer(base, timeoutMs = 20000) {
 }
 
 function startServer(args) {
-  const runtime = process.env.SCRIPTORIUM_UX_SMOKE_SERVER_RUNTIME === 'electron' ? 'electron' : 'node';
-  const command = runtime === 'electron' ? process.execPath : process.env.NODE_BINARY || 'node';
-  const child = spawn(command, [SERVER, '--port', String(args.port), '--host', args.host, '--no-open'], {
-    cwd: ROOT,
-    env: { ...process.env, ...(runtime === 'electron' ? { ELECTRON_RUN_AS_NODE: '1' } : {}) },
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
+  const child = spawn(
+    process.env.NODE_BINARY || process.execPath,
+    [SERVER, '--port', String(args.port), '--host', args.host, '--no-open'],
+    {
+      cwd: ROOT,
+      env: process.env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    },
+  );
   child.stdout.on('data', (chunk) => process.stdout.write(chunk));
   child.stderr.on('data', (chunk) => process.stderr.write(chunk));
   return child;
@@ -122,30 +124,22 @@ async function pageStatus(url) {
   return response.status;
 }
 
-async function auditRoute(win, base, route, viewport, outDir) {
+async function auditRoute(page, base, route, viewport, outDir) {
   const url = new URL(route, base).toString();
   const consoleErrors = [];
-  const onConsole = (_event, level, message) => {
-    if (
-      level >= 2 &&
-      !/Failed to load resource.*favicon/i.test(message) &&
-      !/Electron Security Warning/i.test(message)
-    ) {
+  const onConsole = (entry) => {
+    const message = entry.text();
+    if (['warning', 'error'].includes(entry.type()) && !/Failed to load resource.*favicon/i.test(message)) {
       consoleErrors.push(message);
     }
   };
-  win.webContents.on('console-message', onConsole);
-  win.setSize(viewport.width, viewport.height);
-  const domReady = new Promise((resolve) => win.webContents.once('dom-ready', resolve));
-  const loadFailed = new Promise((resolve) =>
-    win.webContents.once('did-fail-load', (_event, code, description) => resolve(new Error(`${code} ${description}`))),
-  );
-  const loadTimeout = sleep(8000).then(() => new Error('dom-ready timeout'));
-  win.loadURL(url).catch((error) => consoleErrors.push(error.message || String(error)));
-  const loadResult = await Promise.race([domReady.then(() => null), loadFailed, loadTimeout]);
-  if (loadResult instanceof Error) consoleErrors.push(loadResult.message);
+  page.on('console', onConsole);
+  await page.setViewportSize({ width: viewport.width, height: viewport.height });
+  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 8000 }).catch((error) => {
+    consoleErrors.push(error.message || String(error));
+  });
   await sleep(250);
-  const metrics = await win.webContents.executeJavaScript(`
+  const metrics = await page.evaluate(`
 (() => {
   const visible = (el) => {
     const style = getComputedStyle(el);
@@ -188,8 +182,8 @@ async function auditRoute(win, base, route, viewport, outDir) {
 })()
 `);
   const screenshot = path.join(outDir, slug(route, viewport.name));
-  await win.webContents.capturePage().then((image) => fs.writeFileSync(screenshot, image.toPNG()));
-  win.webContents.off('console-message', onConsole);
+  await page.screenshot({ path: screenshot, fullPage: true });
+  page.off('console', onConsole);
   return {
     route,
     viewport,
@@ -216,30 +210,27 @@ async function main() {
   fs.mkdirSync(runDir, { recursive: true });
 
   let server = null;
+  let browser = null;
   let failed = false;
   if (args.start) server = startServer(args);
   try {
     await waitForServer(args.base);
-    await app.whenReady();
-    const win = new BrowserWindow({
-      show: false,
-      width: 1366,
-      height: 900,
-      webPreferences: {
-        contextIsolation: true,
-        nodeIntegration: false,
-        sandbox: true,
-      },
-    });
-    win.webContents.setMaxListeners(64);
+    const launchOptions = process.env.CHROME_PATH
+      ? { executablePath: process.env.CHROME_PATH }
+      : { channel: process.env.PLAYWRIGHT_CHROME_CHANNEL || 'chrome' };
+    browser = await chromium.launch({ ...launchOptions, headless: true });
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    page.setMaxListeners(64);
     const results = [];
     for (const route of args.routes) {
       for (const viewport of VIEWPORTS) {
         console.log(`audit ${route} · ${viewport.name}`);
-        results.push(await auditRoute(win, args.base, route, viewport, runDir));
+        results.push(await auditRoute(page, args.base, route, viewport, runDir));
       }
     }
-    win.destroy();
+    await browser.close();
+    browser = null;
     const jsonPath = path.join(runDir, 'report.json');
     const htmlPath = path.join(runDir, 'report.html');
     fs.writeFileSync(jsonPath, JSON.stringify({ base: args.base, results }, null, 2));
@@ -274,18 +265,13 @@ async function main() {
       process.exitCode = 1;
     }
   } finally {
+    await browser?.close();
     if (server) server.kill('SIGTERM');
-    await app.quit();
     if (failed) process.exit(1);
   }
 }
 
-main().catch(async (error) => {
+main().catch((error) => {
   console.error(error?.stack || String(error));
   process.exitCode = 1;
-  try {
-    await app.quit();
-  } catch {
-    // ignore shutdown errors
-  }
 });

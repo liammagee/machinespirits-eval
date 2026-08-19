@@ -47,7 +47,8 @@ design systems, defect ledger) is the techne doc
 - Analysis scripts — `scripts/ANALYSIS-SCRIPTS.md` (registry) with
   `docs/analysis-toolkit-guide.md` (workflow).
 - Local CI and Actions-outage fallback — `docs/local-ci.md`.
-- UX, web and desktop — `desktop/ARCHITECTURE.md`: one UI codebase.
+- UX and web surfaces — `public/`, `routes/`, and
+  `scripts/browse-poetics-scripts.js`.
 - Prose — `.claude/style-rule.md`.
 
 ## Live work
@@ -66,11 +67,9 @@ One Express route table (`services/evalSurfaces.js`), three hosts:
   transcripts, board, doc views, `/admin` job launcher. Reading pages are
   public; the shared eval surfaces carry the same guard as the standalone
   server when credentials are set.
-- `npm run desktop:dev` — the Electron app, same routes on an ephemeral
-  loopback port (route parity is test-enforced).
 - `npm run subject-explorer` — the subject-explorer surface alone, port 4505,
   loopback by default behind the shared guard (also mounted at `/subject` on
-  all three hosts above).
+  the shared hosts above).
 
 ## Regeneration
 

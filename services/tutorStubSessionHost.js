@@ -49,7 +49,7 @@ export class TutorStubSessionHostError extends Error {
  * Owns multiple importable tutor-stub runtimes for non-terminal transports.
  *
  * The injected factory remains the only place that constructs tutor behavior.
- * A web or Electron host can therefore reuse the real engine, while tests can
+ * A web or remote host can therefore reuse the real engine, while tests can
  * inject a fake provider without teaching this control plane how tutoring works.
  * Runtime snapshots returned by the factory must be presentation-safe.
  */

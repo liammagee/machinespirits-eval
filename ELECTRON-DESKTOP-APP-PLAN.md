@@ -1,5 +1,10 @@
 # Electron Desktop App — Technical Specification & Plan
 
+> **Historical record:** the Electron distribution target was retired on
+> 2026-08-19. Scriptorium continues as the browser-served Express application;
+> this document describes the former desktop implementation and is not an
+> active development contract.
+
 **Status:** Phases 0–6 implemented on `claude/electron-desktop-app` — see `desktop/README.md` (run/build/use) and `desktop/ARCHITECTURE.md` (sync contract). Remaining Phase 6 items (Developer-ID notarization, auto-update, Windows/Linux) are account-/infra-gated and documented as a recipe in `desktop/README.md`.
 **Date:** 2026-06-22
 **Branch:** `claude/electron-desktop-app`

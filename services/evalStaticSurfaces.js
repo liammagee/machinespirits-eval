@@ -15,7 +15,7 @@
  * second copy.
  */
 export const STATIC_SURFACES = [
-  ['/tutor', 'public/tutor'], // shared browser + Electron tutor-stub session studio
+  ['/tutor', 'public/tutor'], // browser tutor-stub session studio
   ['/pilot', 'public/pilot'], // participant-facing human-learner pilot UI
   ['/pilot-admin', 'public/pilot-admin'], // operator dashboard (token-gated API)
   ['/adjudication', 'public/adjudication'], // A19 blinded human-adjudication forms

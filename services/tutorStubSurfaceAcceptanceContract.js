@@ -37,17 +37,10 @@ export function assertTutorStubSurfaceAcceptanceContract(result, expectedContrac
   if (differences.length) {
     throw new Error(`tutor-stub surface acceptance contract failed:\n- ${differences.join('\n- ')}`);
   }
-  if (!['web', 'packaged-electron'].includes(result.host?.kind)) {
+  if (result.host?.kind !== 'web') {
     throw new Error(`unexpected tutor-stub surface host: ${result.host?.kind || 'missing'}`);
   }
-  if (result.host.kind === 'packaged-electron') {
-    if (result.host.authRequired !== true || result.host.unauthenticatedStatus !== 401) {
-      throw new Error('packaged Electron acceptance must prove the per-launch loopback credential boundary');
-    }
-    if (result.host.cspPresent !== true) {
-      throw new Error('packaged Electron acceptance must prove the renderer CSP boundary');
-    }
-  } else if (result.host.authRequired !== false || result.host.unauthenticatedStatus !== 200) {
+  if (result.host.authRequired !== false || result.host.unauthenticatedStatus !== 200) {
     throw new Error('web acceptance must prove the loopback-only, credential-free development posture');
   }
   return result;

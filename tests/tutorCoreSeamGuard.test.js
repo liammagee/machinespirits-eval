@@ -1,7 +1,6 @@
 // GUARD: tutor-core must stay re-extractable. Every relative import inside
 // tutor-core/** must resolve to a path that is still inside tutor-core/, and
-// no import may use an eval-repo specifier. The desktop sync contract test
-// enforces the same one-way rule for desktop/; this is the tutor-core twin.
+// no import may use an eval-repo specifier.
 // Rationale + standalone proof: TUTOR-CORE-SEAM-CHECK.md.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

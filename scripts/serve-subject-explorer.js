@@ -3,7 +3,7 @@
  *   npm run subject-explorer          (node scripts/serve-subject-explorer.js [port])
  * Mounts ONLY the subject-explorer routes — no eval DB, no poetics stack — so
  * the surface can be developed and verified in isolation. The same
- * mountSubjectExplorer(app) call also drops it into the main web/electron app.
+ * mountSubjectExplorer(app) call also mounts it in the main web app.
  *
  * Perimeter matches the real servers (services/httpBasicAuth.js): loopback by
  * default; a public bind is opt-in via HOST / SUBJECT_EXPLORER_HOST and

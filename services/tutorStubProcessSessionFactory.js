@@ -264,16 +264,9 @@ export function tutorStubProcessCommandLine(root, specification, traceDir) {
   return args;
 }
 
-export function tutorStubProcessWorkingDirectory(root) {
-  const asarIndex = String(root || '').indexOf('.asar');
-  if (asarIndex < 0) return root;
-  return path.dirname(root.slice(0, asarIndex + '.asar'.length));
-}
-
-export function tutorStubProcessEnvironment(env, { electronRunAsNode = false } = {}) {
+export function tutorStubProcessEnvironment(env) {
   return {
     ...env,
-    ...(electronRunAsNode ? { ELECTRON_RUN_AS_NODE: '1' } : {}),
     TUTOR_STUB_SUMMARY_OPEN: '0',
     TUTOR_STUB_TRANSCRIPT_OPEN: '0',
     TUTOR_STUB_VOICE_OPEN: '0',
@@ -537,7 +530,6 @@ export function createTutorStubProcessSessionFactory({
   commandAdmission = null,
   spawnProcess = spawn,
   executable = process.execPath,
-  electronRunAsNode = Boolean(process.versions.electron),
 } = {}) {
   if (!root) throw new Error('tutor-stub process session factory requires root');
   const traceRoot = traceRootForFactory(root, traceDir);
@@ -601,8 +593,8 @@ export function createTutorStubProcessSessionFactory({
         const sessionTraceDir = tutorStubProcessSessionTraceDirectory(traceRoot, specification.id);
         const args = tutorStubProcessCommandLine(root, specification, sessionTraceDir);
         child = spawnProcess(executable, args, {
-          cwd: tutorStubProcessWorkingDirectory(root),
-          env: tutorStubProcessEnvironment(env, { electronRunAsNode }),
+          cwd: root,
+          env: tutorStubProcessEnvironment(env),
           stdio: ['ignore', 'pipe', 'pipe', 'pipe', 'pipe'],
           detached: process.platform !== 'win32',
         });

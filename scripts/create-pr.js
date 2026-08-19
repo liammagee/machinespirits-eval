@@ -159,7 +159,7 @@ export function hasHostedCiChecks(checks = []) {
   return checks.some((check) => {
     if (HOSTED_WORKFLOWS.has(String(check.workflowName || ''))) return true;
     const label = String(check.name || check.context || '');
-    return /^(?:Node (?:20|22) shard [12]\/2|Lint, cycles, and format|Risk-based coverage|Workplan validation|Validation Framework|Shared web and packaged Electron)/u.test(
+    return /^(?:Node (?:20|22) shard [12]\/2|Lint, cycles, and format|Risk-based coverage|Workplan validation|Validation Framework|Browser tutor surface)/u.test(
       label,
     );
   });

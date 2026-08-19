@@ -7644,7 +7644,7 @@ const PROJECT_HISTORY = [
     when: '2026-06-24',
     tag: 'shipped',
     title: 'The instrument &amp; build-out',
-    body: 'The research surfaces themselves: the Electron desktop Scriptorium (web-equivalent by construction), this project-management board + timeline, and the literature-triage pipeline. These shipped as the dated milestones shown above.',
+    body: 'The research surfaces themselves: the browser-served Scriptorium, this project-management board + timeline, and the literature-triage pipeline. These shipped as the dated milestones shown above.',
   },
 ];
 

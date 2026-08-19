@@ -144,9 +144,8 @@ the Scriptorium desktop app), backed by the **same write path as the CLI**:
   **GitHub** panel (open PRs, releases/tags, recent commits) for the `origin` repo via
   the `gh` CLI. Items link to their `branch` on GitHub; add/edit milestones inline.
 
-`milestones.yaml` is the source of truth for milestones (manage from `/timeline` or by
-hand). All web writes need the repo on disk — a packaged desktop app's board is
-read-only.
+`milestones.yaml` is the source of truth for milestones (manage from `/timeline`
+or by hand). All web writes need the repo on disk.
 
 ## The surfaces (the contract)
 

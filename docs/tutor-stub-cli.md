@@ -54,7 +54,7 @@ list. Palette and completion entries are globally alphabetical; `/help` keeps
 its semantic groups and alphabetizes the commands within each group.
 
 The underlying command and capability registries remain frozen catalogs, so
-tests and future web or Electron adapters can inspect every supported command
+tests and future web or remote adapters can inspect every supported command
 without starting a model-backed session.
 
 Each command also declares transport effects. The registry marks terminal
@@ -255,8 +255,8 @@ POST /api/tutor-stub/sessions/:sessionId/finalize
 ```
 
 `services/tutorStubProcessSessionFactory.js` is the default real host in the
-shared eval-surface mounter, so both the standalone web server and the
-poetics/Electron server expose this API. Each HTTP session lazily starts the
+shared eval-surface mounter, so both the standalone and poetics web servers
+expose this API. Each HTTP session lazily starts the
 actual tutor-stub CLI engine and controls its importable runtime over a private
 versioned RPC channel. Dedicated file descriptors carry JSON frames; terminal
 stdout and stderr remain diagnostics and can never be mistaken for protocol
@@ -278,8 +278,7 @@ Session creation accepts an allowlisted configuration: `id`, `mode`, `model`,
 ```
 
 The factory disables terminal-only presentation effects, keeps trace writes in
-`TUTOR_STUB_TRACE_DIR`, and closes child sessions with the host. The Electron
-path resolver relocates this trace directory below `userData`. Slash commands
+`TUTOR_STUB_TRACE_DIR`, and closes child sessions with the host. Slash commands
 remain rejected by default on the HTTP transport: several registered commands
 open terminal pickers, browsers, voice devices, or relaunch the CLI. The shared
 host admits only the structured `/module`, `/next`, and `/progress` adapters;
@@ -381,7 +380,7 @@ impasse judgments are stored as structured per-rater JSON sidecars.
 ## Curriculum workbench and course runner
 
 Canonical multi-module curricula can run in both the terminal and the shared
-browser/Electron tutor studio. The studio catalogue exposes only the course
+browser tutor studio. The studio catalogue exposes only the course
 title, artifact hash, module titles, essential questions, and public progress;
 private verifier text, misconception probes, mastery gates, learner-turn text,
 and answer material remain in the server process.
@@ -941,7 +940,7 @@ replacement. Use `--allow-malformed` only after inspecting the affected trace.
 `scripts/tutor-stub-remote.js` drives a real session from anywhere that cannot
 attach a TTY — a Claude Code web or mobile session, a CI job, a plain shell
 script. It is a client for the `/api/tutor-stub` transport, so the tutor is the
-same `--session-rpc` child process the web and Electron surfaces use; the script
+same `--session-rpc` child process the web surface uses; the script
 only tracks the server process and the current session id between commands.
 
 ```bash

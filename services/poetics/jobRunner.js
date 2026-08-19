@@ -27,10 +27,9 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT_DIR = path.resolve(__dirname, '../..');
-// Exports root is overridable via EVAL_EXPORTS_DIR (the Electron desktop app
-// relocates it into the user-data dir, the same way EVAL_DB_PATH / EVAL_LOGS_DIR
-// relocate the DB + logs). Defaults to <repo>/exports for the web servers + CLI,
-// so behaviour is unchanged when the env var is unset.
+// Exports root is overridable via EVAL_EXPORTS_DIR, the same way EVAL_DB_PATH /
+// EVAL_LOGS_DIR relocate the DB + logs. Defaults to <repo>/exports for the web
+// servers + CLI, so behaviour is unchanged when the env var is unset.
 const EXPORTS_ROOT = process.env.EVAL_EXPORTS_DIR || path.join(ROOT_DIR, 'exports');
 const LOG_DIR = path.join(EXPORTS_ROOT, '.poetics-job-logs');
 

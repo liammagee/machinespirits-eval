@@ -43,8 +43,8 @@ export function presenceReaderLabel({ provider, model } = {}) {
 }
 
 /**
- * Under `exports/` by default, which the desktop app already relocates via
- * `EVAL_EXPORTS_DIR`, so this adds no new writable store to `desktop/paths.js`.
+ * Under `exports/` by default and relocatable through `EVAL_EXPORTS_DIR`, so
+ * tests and alternate hosts can keep the cache outside the source tree.
  * `REGISTER_PRESENCE_CACHE_DIR` overrides it outright for hermetic runs.
  */
 export function presenceCacheDir(env = process.env) {

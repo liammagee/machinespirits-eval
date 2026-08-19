@@ -127,7 +127,7 @@ function listPublicModelAliases() {
 }
 
 /**
- * Build the browser-safe projection used by the shared web/Electron tutor UI.
+ * Build the browser-safe projection used by the shared tutor UI.
  * It deliberately omits world secrets and premise graphs, tutor prompts and
  * policy packs, resolved model IDs, provider endpoints, key names, and keys.
  */

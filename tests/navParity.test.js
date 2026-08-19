@@ -16,7 +16,7 @@
 //
 // Self-hermetic: relocates every writable store into a temp dir BEFORE importing
 // the app, so importing the monolith never touches the real DB/logs (same pattern
-// as desktopRouteParity.test.js). Importing does not start a server — the listen
+// as the browser acceptance tests). Importing does not start a server — the listen
 // is behind a main-module guard.
 
 import { test, before } from 'node:test';
