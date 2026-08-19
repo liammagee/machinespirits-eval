@@ -66,7 +66,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/frame-defiant-replacement-study-request
+branch: codex/frame-defiant-study-closeout
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -256,3 +256,22 @@ and explicit human approval.
   destination is new and create-once, retry/resume authority remains absent,
   and no model call is authorized by this preparation. The frozen request
   digest is `0e022c64ef109b9631cbb544ba0b3c47baee61c44d477a45b4481efaa94e0f35`.
+- 2026-08-19 — Consumed the one-shot advance authorization for that exact
+  request without creating an authorization commit, as the human explicitly
+  directed. All three fresh `frame_defiant` dialogues completed at source
+  `6dbec4cb49a47eca415f77e2324be57a6e1d6f45`: 24/24 turns, 76/144 model
+  attempts, zero profile-repair requests, and no retry or resume. The frozen
+  analysis command's recursive `--trace-root` also admitted two `run-events`
+  files as unknown traces; a zero-call correction replaced only that selector
+  with the three exact fresh trace paths and retained the 15 pinned prior
+  traces and every registered threshold. The corrected 18-dialogue assembly
+  passed, as did the pooled discrimination gate (mean pairwise cosine `0.633`;
+  maximum similarity to diligent `0.865`). The registered co-primary gate did
+  not pass: bored recurrence was `10/24 = 0.417` against the `0.45` minimum,
+  despite meeting the turn-2 deadline in all runs; and `frame_defiant` was
+  observable but nearest `low_trust_skeptic` (`0.629`) rather than the expected
+  `skeptical`. This is the Phase 2 negative result. It does not authorize a
+  threshold change, another paid run, or claims about tutor-action efficacy,
+  registers, human learning, or transfer to the cell harness. The canonical
+  local report digest is
+  `06d7bbc49df46e2f20ebeb3eb0141dba975825ce10bf33eef0e0dc15540ec32c`.
