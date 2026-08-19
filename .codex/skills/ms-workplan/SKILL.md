@@ -1,7 +1,7 @@
 ---
 name: ms-workplan
 description: Read, capture, triage and update project work on the workplan board (workplan/ folder + scripts/workplan.js)
-argument-hint: <request, e.g. "what's active", "capture: <idea>", "what's blocked on budget">
+argument-hint: '<request, e.g. "what is active", "capture: <idea>", "what is blocked on budget">'
 ---
 
 Route the user's request (`$ARGUMENTS`) to the workplan board. The board lives in
@@ -60,5 +60,6 @@ playbook is in `workplan/playbook/`.
 - For research/paper items, keep `claim_status` in sync with the atlas
   (`docs/research/atlas/atlas.yaml`).
 
-After acting, suggest the next step (triage new inbox items or run
-`wp:source-check`; render only for a local dashboard refresh or on `main`).
+After acting, run `npm run wp:source-check` if item sources changed, then stop.
+Mention another step only when a concrete unresolved dependency remains; do not
+turn a routine board update into a new checklist, card, PR, or approval loop.

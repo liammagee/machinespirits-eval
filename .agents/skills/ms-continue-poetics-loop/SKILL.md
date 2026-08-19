@@ -39,10 +39,13 @@ If tests fail, STOP and report — do not run the loop on a broken contract.
 ### 3. Run exactly one bounded loop
 
 ```bash
-npm run poetics:adaptation-loop -- --max-iterations 3 --required-passes 2 --skip-existing-scores --generator Codex
+npm run poetics:adaptation-loop -- --max-iterations 3 --required-passes 2 --skip-existing-scores --generator claude
 ```
 
-`--generator Codex` routes generation through the Codex CLI (Max-plan, attended) instead of the production-batch default (`codex`). Override to `--generator codex` only if explicitly asked — the two CLIs use separate quota pools and a switch changes which one drains.
+`--generator claude` routes generation through the Claude Code CLI instead of
+`codex exec`. Preserve the backend pinned by the current handoff or
+authorization; do not translate provider names to the agent currently running
+this skill.
 
 This may take a long time (multiple iterations × generation + critic-panel scoring). Stream output. The loop writes a stamp like `phase2-adaptation-recognition-loop-<TIMESTAMP>Z` and persists status to `exports/<stamp>-loop-status.{md,json}`.
 
