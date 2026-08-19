@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-19T05:53:08.271Z",
+  "generated": "2026-08-19T09:00:37.648Z",
   "counts": {
     "total": 514,
     "byStatus": {
@@ -308,6 +308,7 @@
           "notes/2026-08-16-edged-register-calibration-draft.md",
           "docs/resistance-action-register-conservation-protocol.md",
           "docs/pedagogical-move-contract.md",
+          "docs/tutor-stub-learner-profile-robustness.md",
           "docs/tutor-stub-resistant-profile-discrimination-registration.md",
           "docs/tutor-stub-resistant-profile-discrimination-live-readiness-hold.md",
           "docs/tutor-stub-resistant-profile-discrimination-study-go-request.md",
@@ -320,6 +321,7 @@
           "services/adaptiveTutor/pedagogicalMoveProjection.js",
           "services/tutorStubPedagogicalMoveProjection.js",
           "services/resistantLearnerObservation.js",
+          "scripts/analyze-tutor-stub-profile-discrimination.js",
           "services/pedagogicalMove/resistantProfileWarrantShadow.js",
           "scripts/tutor-stub-learner-profile-contracts.js",
           "scripts/prepare-tutor-stub-resistant-profile-discrimination.js",
@@ -350,7 +352,7 @@
         "learner-profiles",
         "registers"
       ],
-      "branch": "codex/resistant-profile-measurement-recheck-result"
+      "branch": "codex/resistant-profile-axis-calibration"
     },
     {
       "id": "edged-register-stub-dag-replication",
