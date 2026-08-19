@@ -7,6 +7,12 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
+import {
+  hashPaidStudyEndpointValue,
+  validatePaidStudyEndpointGoCertificate,
+} from '../services/paidStudyEndpointPreflight.js';
+import { runTutorStubFrameRefuserOpportunityEndpointPreflight } from '../services/tutorStubResistanceAxisDiscriminationPreflight.js';
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_REQUEST = path.join(
   ROOT,
@@ -139,6 +145,7 @@ function formatMarkdown(report) {
 export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = DEFAULT_REQUEST } = {}) {
   const request = readJson(requestPath);
   const checks = [];
+  const isFrameRefuserOpportunity = request.opportunityGate?.type === 'prospective_frame_refuser_treatment_opportunity';
 
   assertion(
     checks,
@@ -178,50 +185,73 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   });
 
   validateFileBinding(checks, 'registration-binding', request.bindings.registration);
-  validateFileBinding(checks, 'readiness-hold-binding', request.bindings.liveReadinessHold);
-
-  const hold = readJson(rootPath(request.bindings.liveReadinessHold.path));
-  const readiness = JSON.parse(
-    execFileSync(
-      process.execPath,
-      [
-        'scripts/check-tutor-stub-resistant-profile-live-readiness.js',
-        '--hold',
-        request.bindings.liveReadinessHold.path,
-        '--json',
-      ],
-      {
-        cwd: ROOT,
-        encoding: 'utf8',
-      },
-    ),
-  );
-  assertion(
-    checks,
-    'live-readiness',
-    readiness.packetValid === true &&
-      readiness.routeVerificationPassed === true &&
-      readiness.readyForStudyGoPreparation === true &&
-      readiness.modelCalls === 0 &&
-      readiness.productionWrites === 0,
-    'the full readiness packet and consumed route canary remain valid with zero new calls and writes',
-  );
-
   const endpoint = request.bindings.endpoint;
-  assertion(
-    checks,
-    'endpoint-contract-file-binding',
-    sha256File(rootPath(endpoint.contractPath)) === endpoint.contractFileSha256 &&
-      endpoint.contractCanonicalSha256 === hold.endpoint.contractSha256,
-    'the endpoint contract file and canonical runtime binding remain pinned',
-  );
-  assertion(
-    checks,
-    'endpoint-certificate-file-binding',
-    sha256File(rootPath(endpoint.certificatePath)) === endpoint.certificateFileSha256 &&
-      endpoint.preflightSha256 === hold.endpoint.preflightSha256,
-    'the endpoint certificate and full-scale preflight remain pinned',
-  );
+  let hold = null;
+  if (isFrameRefuserOpportunity) {
+    const contract = readJson(rootPath(endpoint.contractPath));
+    const certificate = readJson(rootPath(endpoint.certificatePath));
+    const preflight = runTutorStubFrameRefuserOpportunityEndpointPreflight(contract);
+    const endpointGo = validatePaidStudyEndpointGoCertificate({ certificate, contract, preflight });
+    assertion(
+      checks,
+      'opportunity-endpoint-contract-binding',
+      sha256File(rootPath(endpoint.contractPath)) === endpoint.contractFileSha256 &&
+        hashPaidStudyEndpointValue(contract) === endpoint.contractCanonicalSha256,
+      'the six-case executable endpoint contract remains file- and runtime-bound',
+    );
+    assertion(
+      checks,
+      'opportunity-endpoint-certificate-binding',
+      sha256File(rootPath(endpoint.certificatePath)) === endpoint.certificateFileSha256 &&
+        preflight.preflight_sha256 === endpoint.preflightSha256 &&
+        preflight.model_calls === 0 &&
+        preflight.production_writes === 0 &&
+        endpointGo.ok === true,
+      'the six-case endpoint certificate and zero-call preflight remain pinned',
+    );
+  } else {
+    validateFileBinding(checks, 'readiness-hold-binding', request.bindings.liveReadinessHold);
+    hold = readJson(rootPath(request.bindings.liveReadinessHold.path));
+    const readiness = JSON.parse(
+      execFileSync(
+        process.execPath,
+        [
+          'scripts/check-tutor-stub-resistant-profile-live-readiness.js',
+          '--hold',
+          request.bindings.liveReadinessHold.path,
+          '--json',
+        ],
+        {
+          cwd: ROOT,
+          encoding: 'utf8',
+        },
+      ),
+    );
+    assertion(
+      checks,
+      'live-readiness',
+      readiness.packetValid === true &&
+        readiness.routeVerificationPassed === true &&
+        readiness.readyForStudyGoPreparation === true &&
+        readiness.modelCalls === 0 &&
+        readiness.productionWrites === 0,
+      'the full readiness packet and consumed route canary remain valid with zero new calls and writes',
+    );
+    assertion(
+      checks,
+      'endpoint-contract-file-binding',
+      sha256File(rootPath(endpoint.contractPath)) === endpoint.contractFileSha256 &&
+        endpoint.contractCanonicalSha256 === hold.endpoint.contractSha256,
+      'the endpoint contract file and canonical runtime binding remain pinned',
+    );
+    assertion(
+      checks,
+      'endpoint-certificate-file-binding',
+      sha256File(rootPath(endpoint.certificatePath)) === endpoint.certificateFileSha256 &&
+        endpoint.preflightSha256 === hold.endpoint.preflightSha256,
+      'the endpoint certificate and full-scale preflight remain pinned',
+    );
+  }
 
   const route = request.bindings.routeCanary;
   const routeResult = readJson(rootPath(route.resultPath));
@@ -253,7 +283,8 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   assertion(
     checks,
     'command-source',
-    (commandSource === 'commands' && (isReplacement || isFreshMeasurementRecheck || isAxisHeldout)) ||
+    (commandSource === 'commands' &&
+      (isReplacement || isFreshMeasurementRecheck || isAxisHeldout || isFrameRefuserOpportunity)) ||
       commandSource === 'bindings.liveReadinessHold.path#proposedCommands',
     `command source is ${commandSource}`,
   );
@@ -381,6 +412,115 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         commandArg(analyzeCommand, '--required-learner-model') === request.design.models.learner &&
         analyzeCommand.includes('--require-pooled'),
       'the analysis combines only the 15 pinned prior traces with the fresh sealed root',
+    );
+  } else if (isFrameRefuserOpportunity) {
+    const registered = readJson(rootPath(request.bindings.registration.path));
+    const expectedProfiles = 'frame_refuser,frame_defiant';
+    const analysisShell = analyzeCommand[2] || '';
+    assertion(
+      checks,
+      'frame-refuser-opportunity-design-binding',
+      request.design.profiles.join(',') === expectedProfiles &&
+        request.design.dialogues === 6 &&
+        request.design.runsPerProfile === 3 &&
+        request.design.runSeed === 20260820 &&
+        request.design.parallelism === 3 &&
+        request.budget.dialogues === 6 &&
+        request.budget.maximumAttemptsPerDialogue === 48 &&
+        request.budget.maximumPlannedModelAttempts === 288 &&
+        request.budget.retryOrResumeAuthority === 'bounded_technical_recovery',
+      'two fresh three-run cohorts and the 288-attempt bounded-recovery ceiling remain frozen',
+    );
+    assertion(
+      checks,
+      'frame-refuser-opportunity-evidence-boundary',
+      request.opportunityGate.priorArtifactsReused === false &&
+        request.opportunityGate.priorResultRewritten === false &&
+        request.opportunityGate.historicalEvidencePooled === false &&
+        request.opportunityGate.tutorEfficacyTested === false &&
+        request.opportunityGate.registerEfficacyTested === false &&
+        request.opportunityGate.heldoutAxisReportSha256 === registered.preservation.heldoutAxisReportSha256,
+      'the passed heldout instrument and prior negative result remain read-only while efficacy stays untested',
+    );
+    const recovery = request.opportunityGate.recoveryBoundary;
+    assertion(
+      checks,
+      'frame-refuser-opportunity-bounded-recovery-authority',
+      recovery.sameLaunchSource === true &&
+        recovery.sameModelProviderRoute === true &&
+        recovery.sameProfilesPoliciesSeedConfigurationAndMeasurement === true &&
+        recovery.samePayloadAndDataScope === true &&
+        recovery.freshNonOverwritingDestinationForRecoveredUnits === true &&
+        recovery.rerunValidOutputs === false &&
+        recovery.selectAmongOutcomes === false &&
+        recovery.maximumTotalStudyAttemptsUnchanged === 288,
+      'technical recovery is limited to missing or failed units under the unchanged opportunity gate and ceiling',
+    );
+    assertion(
+      checks,
+      'frame-refuser-opportunity-measurement-binding',
+      request.measurement.reportSchema === 'machinespirits.tutor-stub.frame-refuser-opportunity-gate.v1' &&
+        request.measurement.targetProfile === 'frame_refuser' &&
+        request.measurement.controlProfile === 'frame_defiant' &&
+        request.measurement.mustShowByTurn === 2 &&
+        request.measurement.requiredDistinctTargetPrefixes === 3 &&
+        registered.gates.targetProfile === 'frame_refuser' &&
+        registered.gates.controlProfile === 'frame_defiant' &&
+        registered.gates.mustShowByTurn === 2 &&
+        registered.gates.requiredDistinctTargetPrefixes === 3,
+      'three early refusal prefixes and productive frame-defiant controls remain the only decision gate',
+    );
+    assertion(
+      checks,
+      'frame-refuser-opportunity-live-command-shape',
+      liveCommand[0] === 'node' &&
+        liveCommand[1] === 'scripts/run-tutor-stub-qa-matrix.js' &&
+        commandArg(liveCommand, '--profiles') === expectedProfiles &&
+        commandArg(liveCommand, '--policies') === 'field' &&
+        commandArg(liveCommand, '--runs') === '3' &&
+        commandArg(liveCommand, '--run-seed') === '20260820' &&
+        commandArg(liveCommand, '--turns') === '8' &&
+        commandArg(liveCommand, '--safety-turns') === '8' &&
+        commandArg(liveCommand, '--model-call-budget') === '48' &&
+        commandArg(liveCommand, '--model') === request.design.models.tutor &&
+        commandArg(liveCommand, '--analysis-model') === request.design.models.analysis &&
+        commandArg(liveCommand, '--auto-learner-model') === request.design.models.learner &&
+        commandArg(liveCommand, '--world') === request.design.world &&
+        commandArg(liveCommand, '--dag-mode') === 'strict_dag' &&
+        commandArg(liveCommand, '--register-palette') === 'safe' &&
+        commandArg(liveCommand, '--register-overlay-threshold') === '0.7' &&
+        commandArg(liveCommand, '--release-speed') === '1' &&
+        commandArg(liveCommand, '--cli-effort') === request.design.cliEffort &&
+        commandArg(liveCommand, '--history-turns') === '4' &&
+        commandArg(liveCommand, '--max-tokens') === '4096' &&
+        commandArg(liveCommand, '--parallelism') === '3' &&
+        commandArg(liveCommand, '--trace-dir') === request.destination.artifactRoot &&
+        liveCommand.includes('--no-html-report') &&
+        liveCommand.includes('--no-memory-summary') &&
+        liveCommand.includes('--no-analyze') &&
+        !liveCommand.includes('--keep-going'),
+      'the six-dialogue command preserves the registered opportunity-gate runtime',
+    );
+    assertion(
+      checks,
+      'frame-refuser-opportunity-analysis-command-shape',
+      analyzeCommand.length === 3 &&
+        analyzeCommand[0] === 'zsh' &&
+        analyzeCommand[1] === '-lc' &&
+        analysisShell.includes('/*/traces/*/*.jsonl') &&
+        analysisShell.includes('trace_args+=(--trace "$trace")') &&
+        analysisShell.includes('scripts/analyze-tutor-stub-resistance-axis-calibration.js') &&
+        analysisShell.includes('--registration config/tutor-stub-frame-refuser-opportunity-registration.v1.json') &&
+        analysisShell.includes('--required-traces 6') &&
+        analysisShell.includes(`--required-profiles ${expectedProfiles}`) &&
+        analysisShell.includes('--required-runs-per-profile 3') &&
+        analysisShell.includes('--required-turns 8') &&
+        analysisShell.includes('--required-policies field') &&
+        analysisShell.includes(`--required-tutor-model ${request.design.models.tutor}`) &&
+        analysisShell.includes(`--required-analysis-model ${request.design.models.analysis}`) &&
+        analysisShell.includes(`--required-learner-model ${request.design.models.learner}`) &&
+        analysisShell.includes(`--out "$artifact_root/frame-refuser-opportunity-gate.json"`),
+      'the analysis selects the six exact profile traces and emits only the registered opportunity gate',
     );
   } else if (isAxisHeldout) {
     const registered = readJson(rootPath(request.bindings.registration.path));

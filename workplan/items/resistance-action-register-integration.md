@@ -94,7 +94,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/frame-refuser-opportunity-study-auth
+branch: codex/frame-refuser-opportunity-study-go
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -512,3 +512,12 @@ and explicit human approval.
   production writes. A clean post-merge source, create-once destination,
   digest-bound GO request, and explicit approval of the 288-attempt ceiling
   remain required before any live execution.
+- 2026-08-19 — Extended the existing resistant-profile GO-request validator
+  narrowly for the six-dialogue `frame_refuser` opportunity design. A generated
+  zero-call fixture proves the validator checks the exact target/control
+  profiles, seed, commands, endpoint certificate, route result, three-prefix
+  measurement, 288-attempt ceiling, and bounded technical-recovery boundary
+  without adding a schema, checker, canary, or package command. The final GO
+  request remains local and unapproved until this validator is merged, because
+  its launch-source closure must pin a commit that actually contains the
+  validator branch. No model call or production write was made.
