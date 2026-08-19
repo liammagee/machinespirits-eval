@@ -129,6 +129,33 @@ test('frame defiance is jurisdictional and excludes nearby objection types', () 
   assert.equal(defiant.observations[0].type, 'frame_jurisdiction_dispute');
   assert.equal(defiant.observations[0].features.jurisdictional, true);
 
+  const observedVariants = [
+    'You do not get to fix the question by naming a culprit before the assay begins.',
+    'You do not get to set even the balance and touchstone as the governing test without my assent; I will examine a coin, but not under a frame that makes your chosen marks decisive.',
+    'You do not get to set that link as the trial’s question merely by presenting sole access; I dispute the frame before accepting what it can establish.',
+    'You do not get to make alloy-matching the governing test merely by proposing it; I dispute your authority to decide what these coins establish.',
+    'I will test the bounded claim, but not under that framing.',
+    'I do not accept your authority to make the coins’ metal the compulsory first test; what ground permits that examination to govern the question?',
+    'You do not get to set the assay’s starting test merely by placing the coins before me; I will not examine them under a frame you have imposed.',
+    'You do not get to install the crucible’s testimony as the question I must test; what evidence may examine that distinction without accepting your frame?',
+    'You do not get to define the correction for this assay; I reject the jurisdiction of the frame that makes your testimony the measure.',
+    'You do not get to declare the striker’s hand unproved as the assay’s settled frame; I reject that framing.',
+  ];
+  for (const learnerText of observedVariants) {
+    assert.equal(
+      resistantLearnerObservationMarkers({
+        learnerText,
+        classification: classification({
+          requestType: 'authority_refusal_or_status_challenge',
+          discourseMove: 'challenge',
+          agency: 'steering',
+        }),
+      }).frameJurisdictionDispute,
+      true,
+      learnerText,
+    );
+  }
+
   const nearMisses = [
     'Why does that conclusion follow from the mark?',
     'Why should I trust that source?',
@@ -136,6 +163,11 @@ test('frame defiance is jurisdictional and excludes nearby objection types', () 
     'Maybe, but we would also need a second assay.',
     'Listen to you talking like the ledger again.',
     'You are pushing me toward your answer.',
+    'I dispute your conclusion because the graver does not appear on the coin.',
+    'You cannot decide who struck the coin from this clue alone.',
+    'That test does not establish the alloy source.',
+    'You do not get to decide that conclusion from this clue alone.',
+    'You do not get to set the coin on that assay stone.',
   ];
   for (const learnerText of nearMisses) {
     assert.equal(

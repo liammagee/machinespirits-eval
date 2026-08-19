@@ -23,11 +23,19 @@ const PERMISSION_SEEKING_PATTERNS = Object.freeze([
 ]);
 
 const FRAME_JURISDICTION_PATTERNS = Object.freeze([
-  /\bi (?:do not|don't) accept (?:the |this |your )?(?:premise|frame|framing|question|exercise|rules?)\b/iu,
-  /\bi reject (?:the |this |your )?(?:premise|frame|framing|question|exercise|rules?)\b/iu,
-  /\byou (?:do not|don't) get to (?:set|define|decide|choose) (?:the |this |my |our )?(?:frame|question|exercise|rules?|test|task)\b/iu,
+  /\bi (?:do not|don't) accept (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?)\b/iu,
+  /\bi (?:do not|don't) accept (?:your|the tutor['’]s|their) (?:authority|standing|right)\b/iu,
+  /\bi reject (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?)\b/iu,
+  /\bi reject (?:the )?jurisdiction of (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
+  /\bi dispute (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
+  /\bi dispute (?:your|the tutor['’]s|their) (?:authority|standing|right)\b/iu,
+  /\byou (?:do not|don't) get to (?:set|define|decide|choose|fix) (?:the |this |my |our )?(?:frame|question|exercise|rules?|test|task)\b/iu,
+  /\byou (?:do not|don't) get to (?:set|define|decide|choose|fix|make|declare|treat|impose)\b.{0,120}\b(?:as\s+)?(?:the\s+)?(?:governing|controlling|decisive)\s+(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
+  /\byou (?:do not|don't) get to (?:set|define|decide|choose|fix|make|declare|treat|impose|install)\b.{0,120}\b(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\bwho (?:says|gave you the right to) (?:set|define|decide|choose) (?:the |this |my |our )?(?:frame|question|exercise|rules?|test|task)\b/iu,
   /\bwhy should i (?:accept|answer|play along with|submit to) (?:the |this |your )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
+  /\bbut not under (?:the |this |that |your |a )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
+  /\bi (?:will not|won't)\b.{0,80}\bunder (?:the |this |that |your |a )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\byour (?:test|question|exercise|task) assumes (?:the |that |this )/iu,
   /\bthe question is (?:loaded|rigged|not yours to ask)\b/iu,
   /\bthat is not your call\b/iu,
