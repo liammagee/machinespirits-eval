@@ -1,20 +1,20 @@
 {
-  "generated": "2026-08-19T04:25:00.570Z",
+  "generated": "2026-08-19T04:58:29.266Z",
   "counts": {
-    "total": 513,
+    "total": 514,
     "byStatus": {
       "done": 486,
       "blocked": 7,
       "dropped": 10,
       "triaged": 1,
-      "active": 4,
+      "active": 5,
       "archived": 4,
       "review": 1
     },
     "byType": {
       "research": 80,
       "experiment": 87,
-      "infra": 111,
+      "infra": 112,
       "maintenance": 213,
       "content": 4,
       "ops": 10,
@@ -241,6 +241,41 @@
         "teaching",
         "externalization",
         "content-philosophy"
+      ]
+    },
+    {
+      "id": "optimize-ci-agent-iteration-loop",
+      "title": "Reduce agent iteration and CI feedback latency",
+      "status": "active",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-18",
+      "updated": "2026-08-18",
+      "branch": "codex/ci-agent-loop-benchmark",
+      "verification": "A reproducible PR and Actions timing baseline identifies agent-side and CI-side delay; instruction and workflow changes remove redundant authorization ceremony and low-risk full-matrix runs without weakening research authority, fail-closed runtime coverage, or required workplan/ref checks; follow-up hosted PRs demonstrate the reduced latency.",
+      "links": {
+        "prs": [
+          665,
+          666,
+          669,
+          670,
+          671,
+          672
+        ],
+        "items": [
+          "expedite-ci-expensive-boundaries",
+          "local-ci-parity-runner",
+          "resistance-action-register-integration"
+        ]
+      },
+      "tags": [
+        "ci",
+        "agents",
+        "developer-experience",
+        "latency",
+        "governance"
       ]
     },
     {
