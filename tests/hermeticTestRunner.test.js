@@ -853,7 +853,7 @@ test('CI shards both supported Node versions, caches npm downloads, and avoids u
     /^ {2}pty-concurrency:\n {4}name: PTY \/ loopback concurrency\n {4}needs: \[classify, test-contract\]$/mu,
   );
   assert.equal(workflow.match(/needs\.classify\.outputs\.full_required == 'true'/gu)?.length, 4);
-  assert.match(workflow, /^ {2}ELECTRON_SKIP_BINARY_DOWNLOAD: "1"$/mu);
+  assert.doesNotMatch(workflow, /ELECTRON_/u);
   assert.match(workflow, /^ {2}focused:\n {4}name: Focused authored-metadata checks$/mu);
   assert.match(workflow, /^ {6}fail-fast: false$/mu);
   assert.match(workflow, /^ {8}node-version: \[22, 24\]\n {8}shard: \[1, 2\]$/mu);
@@ -865,15 +865,13 @@ test('CI shards both supported Node versions, caches npm downloads, and avoids u
   assert.doesNotMatch(workflow, /lfs: true/u);
 
   const packageManifest = JSON.parse(fs.readFileSync(path.resolve('package.json'), 'utf8'));
-  const desktopManifest = JSON.parse(fs.readFileSync(path.resolve('desktop/package.json'), 'utf8'));
   assert.equal(packageManifest.engines.node, '>=22.12.0');
   assert.equal(packageManifest.devDependencies.electron, undefined);
+  assert.equal(packageManifest.devDependencies['playwright-core'], '^1.62.1');
   assert.equal(packageManifest.optionalDependencies, undefined);
-  assert.equal(desktopManifest.engines.node, '>=22.12.0');
-  assert.equal(desktopManifest.devDependencies.electron, '^43.2.0');
-  assert.equal(desktopManifest.devDependencies['@electron/rebuild'], '^4.2.0');
-  assert.equal(packageManifest.scripts['desktop:install'], 'npm ci --prefix desktop');
-  assert.match(packageManifest.scripts['desktop:dev'], /^desktop\/node_modules\/\.bin\/electron /u);
+  assert.equal(packageManifest.scripts['desktop:install'], undefined);
+  assert.equal(packageManifest.scripts['desktop:dev'], undefined);
+  assert.equal(fs.existsSync(path.resolve('desktop')), false);
   const rootLock = JSON.parse(fs.readFileSync(path.resolve('package-lock.json'), 'utf8'));
   assert.equal(rootLock.packages[''].engines.node, packageManifest.engines.node);
   for (const desktopOnlyPackage of ['electron', '@electron/rebuild', 'electron-builder', 'temp']) {

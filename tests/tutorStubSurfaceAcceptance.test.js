@@ -22,30 +22,18 @@ function expectedContract() {
   return JSON.parse(fs.readFileSync(path.join(FIXTURE, 'expected-contract.json'), 'utf8'));
 }
 
-function resultFor(host) {
+function resultFor() {
   return {
     schema: TUTOR_STUB_SURFACE_ACCEPTANCE_SCHEMA,
-    host:
-      host === 'web'
-        ? { kind: 'web', authRequired: false, unauthenticatedStatus: 200, cspPresent: false }
-        : {
-            kind: 'packaged-electron',
-            authRequired: true,
-            unauthenticatedStatus: 401,
-            cspPresent: true,
-          },
+    host: { kind: 'web', authRequired: false, unauthenticatedStatus: 200, cspPresent: false },
     contract: expectedContract(),
   };
 }
 
-test('the same stable acceptance contract validates for web and packaged Electron hosts', () => {
-  assert.equal(assertTutorStubSurfaceAcceptanceContract(resultFor('web'), expectedContract()).host.kind, 'web');
-  assert.equal(
-    assertTutorStubSurfaceAcceptanceContract(resultFor('packaged-electron'), expectedContract()).host.kind,
-    'packaged-electron',
-  );
+test('the stable acceptance contract validates the browser-served host', () => {
+  assert.equal(assertTutorStubSurfaceAcceptanceContract(resultFor(), expectedContract()).host.kind, 'web');
 
-  const broken = resultFor('web');
+  const broken = resultFor();
   broken.contract.lifecycle.lateResultSuppressed = false;
   assert.throws(
     () => assertTutorStubSurfaceAcceptanceContract(broken, expectedContract()),
@@ -169,21 +157,20 @@ test('an expected host interrupt presents a bounded conflict instead of an inter
 test('named commands and CI run the shared scenario without forced exit or paid providers', () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
   const workflow = fs.readFileSync(path.join(ROOT, '.github/workflows/tutor-stub-surface-acceptance.yml'), 'utf8');
-  const desktopMain = fs.readFileSync(path.join(ROOT, 'desktop/main.js'), 'utf8');
-  const webRunner = fs.readFileSync(path.join(ROOT, 'desktop/tutorStubAcceptanceRunner.mjs'), 'utf8');
+  const browserScenario = fs.readFileSync(
+    path.join(ROOT, 'scripts/tutor-stub-surface-acceptance-scenario.mjs'),
+    'utf8',
+  );
   const fakeProvider = fs.readFileSync(path.join(FIXTURE, 'fake-codex.mjs'), 'utf8');
 
   assert.equal(
     manifest.scripts['tutor:stub:acceptance:web'],
     'node scripts/run-tutor-stub-surface-acceptance.mjs --host web',
   );
-  assert.equal(
-    manifest.scripts['tutor:stub:acceptance:packaged'],
-    'node scripts/run-tutor-stub-surface-acceptance.mjs --host packaged-electron',
-  );
+  assert.equal(manifest.scripts['tutor:stub:acceptance:packaged'], undefined);
   assert.match(workflow, /npm run tutor:stub:acceptance:web/u);
-  assert.match(workflow, /npm run tutor:stub:acceptance:packaged/u);
-  assert.match(workflow, /Classify packaged-surface impact/u);
+  assert.doesNotMatch(workflow, /Electron|desktop:|macos-/u);
+  assert.match(workflow, /Classify browser-surface impact/u);
   assert.match(workflow, /node scripts\/tutor-stub-surface-ci-policy\.js/u);
   assert.match(workflow, /needs\.classify\.outputs\.surface_required == 'true'/u);
   for (const triggerPath of SURFACE_ACCEPTANCE_PATHS) {
@@ -191,8 +178,7 @@ test('named commands and CI run the shared scenario without forced exit or paid 
   }
   assert.match(workflow, /if: failure\(\)/u);
   assert.doesNotMatch(workflow, /test-force-exit/u);
-  assert.match(desktopMain, /import\('\.\/tutorStubAcceptanceScenario\.mjs'\)/u);
-  assert.match(webRunner, /runTutorStubSurfaceAcceptance/u);
+  assert.match(browserScenario, /playwright-core/u);
   assert.match(fakeProvider, /ACCEPTANCE_DELAYED_TUTOR_RESULT/u);
   assert.doesNotMatch(fakeProvider, /https?:\/\//u);
 });

@@ -70,7 +70,7 @@ export function remoteAdmissibleCommands(commands = TUTOR_STUB_NORMAL_SLASH_COMM
 /**
  * The session pointer is developer-facing state for this script only; the
  * served stack never opens it, so it is deliberately absent from
- * desktop/paths.js. The env override exists so tests can isolate it.
+ * the host environment. The env override exists so tests can isolate it.
  */
 export function resolveRemoteStateDir(env = process.env) {
   return env.TUTOR_STUB_REMOTE_STATE_DIR || path.join(ROOT, '.tutor-stub-remote');

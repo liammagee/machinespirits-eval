@@ -40,9 +40,9 @@ test('the reader is pinned, and to a different family from the writer', () => {
 /**
  * Nesting the cache under `exports/` means it inherits the relocation the
  * desktop app already applies to that directory, so this adds no new writable
- * store to `desktop/paths.js` and cannot crash the packaged read-only app.
+ * store to the runtime host and remains relocatable in isolated tests.
  */
-test('the cache lives under the exports directory the desktop app already relocates', () => {
+test('the cache lives under the relocatable exports directory', () => {
   assert.equal(presenceCacheDir({ EVAL_EXPORTS_DIR: '/tmp/exp' }), '/tmp/exp/register-manner-presence');
   assert.equal(presenceCacheDir({ REGISTER_PRESENCE_CACHE_DIR: '/tmp/pin', EVAL_EXPORTS_DIR: '/tmp/exp' }), '/tmp/pin');
   assert.match(presenceCacheDir({}), /exports\/register-manner-presence$/);

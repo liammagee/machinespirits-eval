@@ -8,9 +8,9 @@ import { fileURLToPath } from 'node:url';
 
 import {
   TUTOR_STUB_SURFACE_PRIVATE_PROJECTION_SCHEMA,
-  assertTutorStubSurfaceAcceptanceContract,
   assertTutorStubSurfacePrivateProjection,
 } from '../services/tutorStubSurfaceAcceptanceContract.js';
+import { runTutorStubSurfaceAcceptance } from './tutor-stub-surface-acceptance-scenario.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURE_DIR = path.join(ROOT, 'fixtures', 'tutor-stub-surface-acceptance');
@@ -26,8 +26,8 @@ function parseArgs(argv) {
     else if (token === '--help' || token === '-h') args.help = true;
     else throw new Error(`unknown argument: ${token}`);
   }
-  if (!args.help && !['web', 'packaged-electron'].includes(args.host)) {
-    throw new Error('--host must be web or packaged-electron');
+  if (!args.help && args.host !== 'web') {
+    throw new Error('--host must be web');
   }
   if (!Number.isInteger(args.timeoutMs) || args.timeoutMs < 10_000) {
     throw new Error('--timeout-ms must be an integer of at least 10000');
@@ -36,7 +36,7 @@ function parseArgs(argv) {
 }
 
 function usage() {
-  return `Usage: node scripts/run-tutor-stub-surface-acceptance.mjs --host <web|packaged-electron> [--artifact-dir DIR] [--timeout-ms 120000]`;
+  return `Usage: node scripts/run-tutor-stub-surface-acceptance.mjs --host web [--artifact-dir DIR] [--timeout-ms 120000]`;
 }
 
 function runDirectory(root, host) {
@@ -114,7 +114,6 @@ function acceptanceEnvironment(runDir) {
     TUTOR_STUB_ACCEPTANCE_ARTIFACT_DIR: runDir,
     TUTOR_STUB_ACCEPTANCE_RESULT: paths.result,
     TUTOR_STUB_ACCEPTANCE_EXPECTED_CONTRACT: path.join(FIXTURE_DIR, 'expected-contract.json'),
-    TUTOR_STUB_ACCEPTANCE_USER_DATA: path.join(runtimeDir, 'electron-user-data'),
     ACCEPTANCE_PRIVATE_PROMPT_CANARY: privatePromptCanary,
     ACCEPTANCE_CREDENTIAL_CANARY: credentialCanary,
     OPENAI_API_KEY: credentialCanary,
@@ -164,24 +163,6 @@ async function stopWebServer(child) {
   return result.code === 0 && result.signal === null;
 }
 
-function packagedExecutable() {
-  const output = path.join(ROOT, 'dist-desktop');
-  if (process.platform === 'darwin') {
-    for (const directory of fs.existsSync(output) ? fs.readdirSync(output).sort() : []) {
-      if (!directory.startsWith('mac')) continue;
-      const candidate = path.join(output, directory, 'Scriptorium.app', 'Contents', 'MacOS', 'Scriptorium');
-      if (fs.existsSync(candidate)) return candidate;
-    }
-  }
-  const candidates = [
-    path.join(output, 'linux-unpacked', 'scriptorium'),
-    path.join(output, 'win-unpacked', 'Scriptorium.exe'),
-  ];
-  const candidate = candidates.find((entry) => fs.existsSync(entry));
-  if (candidate) return candidate;
-  throw new Error('packaged Scriptorium executable not found; run npm run desktop:pack first');
-}
-
 function readProviderEvents(providerLog) {
   if (!fs.existsSync(providerLog)) return [];
   return fs
@@ -227,48 +208,34 @@ async function main() {
   const { env, paths, privatePromptCanary } = acceptanceEnvironment(runDir);
   const hostLog = path.join(runDir, `${args.host}.log`);
   let serverChild = null;
-  let hostChild = null;
   let serverShutdownGraceful = null;
 
   try {
-    if (args.host === 'web') {
-      const server = await startWebServer(env, hostLog);
-      serverChild = server.child;
-      const electron = path.join(ROOT, 'desktop', 'node_modules', '.bin', 'electron');
-      if (!fs.existsSync(electron)) throw new Error('desktop Electron runtime missing; run npm run desktop:install');
-      hostChild = spawnLogged(electron, [path.join(ROOT, 'desktop', 'tutorStubAcceptanceRunner.mjs')], {
-        env: { ...env, TUTOR_STUB_ACCEPTANCE_BASE_URL: server.baseUrl },
-        logPath: hostLog,
-      });
-    } else {
-      hostChild = spawnLogged(packagedExecutable(), [], {
-        env: { ...env, MS_TUTOR_STUB_ACCEPTANCE: '1', MS_DESKTOP_TOKEN: '1', MS_HOME: '/tutor' },
-        logPath: hostLog,
-      });
-    }
-
-    const hostExit = await waitForExit(hostChild, args.timeoutMs, `${args.host} acceptance host`);
-    if (args.host === 'web') {
-      serverShutdownGraceful = await stopWebServer(serverChild);
-      serverChild = null;
-    } else {
-      serverShutdownGraceful = true;
-    }
-    if (hostExit.code !== 0 || hostExit.signal !== null) {
-      throw new Error(`acceptance host failed: ${JSON.stringify(hostExit)}`);
-    }
+    const server = await startWebServer(env, hostLog);
+    serverChild = server.child;
+    const result = await runTutorStubSurfaceAcceptance({
+      baseUrl: server.baseUrl,
+      hostKind: 'web',
+      artifactDir: runDir,
+      expectedContract,
+      httpHeaders: {},
+      authRequired: false,
+      credentialCanary: env.ACCEPTANCE_CREDENTIAL_CANARY,
+      privatePromptCanary: env.ACCEPTANCE_PRIVATE_PROMPT_CANARY,
+      providerEventPath: paths.providerLog,
+      traceRootPath: env.TUTOR_STUB_TRACE_DIR,
+    });
+    fs.writeFileSync(paths.result, `${JSON.stringify(result, null, 2)}\n`, 'utf8');
+    serverShutdownGraceful = await stopWebServer(serverChild);
+    serverChild = null;
     if (!serverShutdownGraceful) throw new Error('acceptance server did not shut down gracefully');
     if (!fs.existsSync(paths.result)) throw new Error('acceptance host did not write result.json');
 
-    const result = assertTutorStubSurfaceAcceptanceContract(
-      JSON.parse(fs.readFileSync(paths.result, 'utf8')),
-      expectedContract,
-    );
     const providerEvents = readProviderEvents(paths.providerLog);
     result.privateProjection = privateProjection(providerEvents, { privatePromptCanary });
     result.runtime = {
       elapsedMs: Date.now() - startedAt,
-      hostExit,
+      hostExit: { code: 0, signal: null },
       serverShutdownGraceful,
       paidModelCalls: 0,
     };
@@ -276,7 +243,6 @@ async function main() {
     console.log(`\nPASS ${args.host} tutor-stub surface acceptance`);
     console.log(`artifacts: ${path.relative(ROOT, runDir)}`);
   } catch (error) {
-    await terminateChild(hostChild, `${args.host} host`);
     await terminateChild(serverChild, 'web server');
     fs.writeFileSync(
       path.join(runDir, 'orchestrator-failure.json'),

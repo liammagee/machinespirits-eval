@@ -10,14 +10,13 @@ const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 
 
 export const SURFACE_ACCEPTANCE_PATHS = [
   '.github/workflows/tutor-stub-surface-acceptance.yml',
-  'desktop/**',
-  'electron-builder.yml',
   'fixtures/tutor-stub-surface-acceptance/**',
   'package.json',
   'package-lock.json',
   'public/tutor/**',
   'routes/tutorStubSessionRoutes.js',
   'scripts/run-tutor-stub-surface-acceptance.mjs',
+  'scripts/tutor-stub-surface-acceptance-scenario.mjs',
   'scripts/tutor-stub-acceptance-server.mjs',
   'scripts/tutor-stub-surface-ci-policy.js',
   'scripts/tutor-stub.js',
@@ -38,12 +37,8 @@ const SURFACE_ACCEPTANCE_PACKAGE_SCRIPTS = [
   'postprepare',
   'prepack',
   'postpack',
-  'desktop:install',
-  'desktop:rebuild',
-  'desktop:pack',
-  'native:rebuild:node',
+  'scriptorium:ux-smoke',
   'tutor:stub:acceptance:web',
-  'tutor:stub:acceptance:packaged',
 ];
 
 function stableJson(value) {

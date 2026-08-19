@@ -20,19 +20,15 @@ import {
   tutorStubProcessCommandLine,
   tutorStubProcessEnvironment,
   tutorStubProcessSessionTraceDirectory,
-  tutorStubProcessWorkingDirectory,
 } from '../services/tutorStubProcessSessionFactory.js';
 import { TUTOR_STUB_SESSION_RPC_SCHEMA, TUTOR_STUB_SESSION_RPC_VERSION } from '../services/tutorStubSessionRpc.js';
 import { tutorStubCommandTransportAdmission } from '../services/tutorStubCommandRegistry.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-test('packaged Electron launches the tutor child as Node outside the asar working directory', () => {
-  const packagedRoot = '/Applications/Scriptorium.app/Contents/Resources/app.asar';
-  assert.equal(tutorStubProcessWorkingDirectory(packagedRoot), '/Applications/Scriptorium.app/Contents/Resources');
-  assert.deepEqual(tutorStubProcessEnvironment({ API_KEY: 'server-only' }, { electronRunAsNode: true }), {
+test('web tutor child processes suppress terminal-only output launchers', () => {
+  assert.deepEqual(tutorStubProcessEnvironment({ API_KEY: 'server-only' }), {
     API_KEY: 'server-only',
-    ELECTRON_RUN_AS_NODE: '1',
     TUTOR_STUB_SUMMARY_OPEN: '0',
     TUTOR_STUB_TRANSCRIPT_OPEN: '0',
     TUTOR_STUB_VOICE_OPEN: '0',

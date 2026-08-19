@@ -30,7 +30,7 @@ export const DIRECT_CALLER_EXEMPTIONS = Object.freeze({
   'scripts/run-tutor-stub-qa-matrix.js': 'launches run-tutor-stub-auto-eval.js, where required archival is enforced',
   'scripts/tutor-stub-remote.js': 'launches the web server; product sessions are interactive and opt in separately',
   'services/tutorStubProcessSessionFactory.js':
-    'interactive web/Electron session infrastructure; product sessions remain opt-in',
+    'interactive web session infrastructure; product sessions remain opt-in',
 });
 
 function sourceFiles(directory) {

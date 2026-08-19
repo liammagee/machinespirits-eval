@@ -29,7 +29,7 @@ test('runtime, dependency, workflow, database, evaluator, and tutor paths fail c
     '.github/workflows/test.yml',
     'package.json',
     'package-lock.json',
-    'desktop/main.js',
+    'scripts/tutor-stub-surface-acceptance-scenario.mjs',
     'data/schema.sql',
     'routes/evalRoutes.js',
     'scripts/ci-change-policy.js',
@@ -101,13 +101,13 @@ test('focused validation parses changed JSON and rejects malformed or widened ch
   }
 });
 
-test('workflows expose the classifier, focused gate, and Electron download boundary', () => {
+test('workflows expose the classifier and focused gate without retired runtime flags', () => {
   const ci = fs.readFileSync(path.resolve('.github/workflows/test.yml'), 'utf8');
   const validation = fs.readFileSync(path.resolve('.github/workflows/validate.yml'), 'utf8');
   assert.match(ci, /node scripts\/ci-change-policy\.js/u);
   assert.match(ci, /needs\.classify\.outputs\.full_required == 'true'/u);
   assert.match(ci, /--validate-focused/u);
-  assert.match(ci, /ELECTRON_SKIP_BINARY_DOWNLOAD: "1"/u);
+  assert.doesNotMatch(ci, /ELECTRON_/u);
   assert.match(validation, /needs\.classify\.outputs\.validation_required == 'true'/u);
-  assert.match(validation, /ELECTRON_SKIP_BINARY_DOWNLOAD: "1"/u);
+  assert.doesNotMatch(validation, /ELECTRON_/u);
 });

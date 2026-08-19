@@ -26,10 +26,9 @@
  * The pool is MERGED, not clobbered: entries whose source text is already gone
  * are preserved so the durable snapshots accumulate.
  *
- * DB access is via the `sqlite3` CLI (not better-sqlite3) on purpose: this
- * checkout's better-sqlite3 is frequently rebuilt for Electron's ABI (see
- * CLAUDE.md), which breaks plain `node`. The CLI sidesteps the native-module
- * dance and is already the documented way to poke data/evaluations.db.
+ * DB access is via the `sqlite3` CLI (not better-sqlite3) to keep this utility
+ * independent of the process-native binding. The CLI is already the documented
+ * way to inspect data/evaluations.db.
  *
  * Usage:
  *   node scripts/build-drama-showcase.js [options]
@@ -52,7 +51,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-// Path resolution only — DB access stays on the sqlite3 CLI (Electron-ABI worktrees).
+// Path resolution only — DB access stays on the sqlite3 CLI.
 import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 
 const __filename = fileURLToPath(import.meta.url);

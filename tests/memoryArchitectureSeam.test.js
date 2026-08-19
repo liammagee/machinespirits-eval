@@ -81,7 +81,7 @@ test('services/memory/ stores do not import tutor-core/ (eval pads stay standalo
 });
 
 test('the rich learner-memory reserve stays quarantined from production runtime imports', () => {
-  const productionRoots = ['services', 'routes', 'public', 'desktop', 'tutor-core'];
+  const productionRoots = ['services', 'routes', 'public', 'tutor-core'];
   const offenders = [];
   for (const root of productionRoots) {
     for (const file of collectSources(path.join(ROOT, root))) {

@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { BrowserWindow } from 'electron';
+import { chromium } from 'playwright-core';
 
 import {
   TUTOR_STUB_SURFACE_ACCEPTANCE_SCHEMA,
@@ -29,16 +29,16 @@ async function withTimeout(promise, timeoutMs, label) {
   }
 }
 
-async function evaluate(win, expression) {
-  return win.webContents.executeJavaScript(expression, true);
+async function evaluate(page, expression) {
+  return page.evaluate(expression);
 }
 
-async function waitFor(win, expression, label, timeoutMs = DEFAULT_TIMEOUT_MS) {
+async function waitFor(page, expression, label, timeoutMs = DEFAULT_TIMEOUT_MS) {
   const deadline = Date.now() + timeoutMs;
   let lastError = null;
   while (Date.now() < deadline) {
     try {
-      if (await evaluate(win, expression)) return;
+      if (await evaluate(page, expression)) return;
     } catch (error) {
       lastError = error;
     }
@@ -56,30 +56,24 @@ async function waitForFileText(filePath, expectedText, label, timeoutMs = DEFAUL
   throw new Error(`${label} did not appear in ${path.basename(filePath)}`);
 }
 
-async function dispatchKey(win, { key, code = key, virtualKeyCode, modifiers = 0, text = '' }) {
-  const event = { key, code, windowsVirtualKeyCode: virtualKeyCode, nativeVirtualKeyCode: virtualKeyCode, modifiers };
-  await win.webContents.debugger.sendCommand('Input.dispatchKeyEvent', {
-    ...event,
-    type: text ? 'keyDown' : 'rawKeyDown',
-    ...(text ? { text, unmodifiedText: text } : {}),
-  });
-  await win.webContents.debugger.sendCommand('Input.dispatchKeyEvent', { ...event, type: 'keyUp' });
+async function dispatchKey(page, { key, modifiers = 0 }) {
+  await page.keyboard.press(modifiers === 2 ? `Control+${key}` : key);
 }
 
-async function keyboardActivate(win, id) {
+async function keyboardActivate(page, id) {
   const selector = JSON.stringify(`#${id}`);
   const focused = await evaluate(
-    win,
+    page,
     `(() => { const control = document.querySelector(${selector}); if (!control) throw new Error('missing ${id}'); control.focus(); return document.activeElement === control; })()`,
   );
   if (!focused) throw new Error(`could not keyboard-focus ${id}`);
-  await dispatchKey(win, { key: 'Enter', virtualKeyCode: 13, text: '\r' });
+  await dispatchKey(page, { key: 'Enter' });
 }
 
-async function keyboardSendMessage(win, text) {
+async function keyboardSendMessage(page, text) {
   const value = JSON.stringify(text);
   const focused = await evaluate(
-    win,
+    page,
     `(() => {
       const input = document.querySelector('#message-input');
       input.value = ${value};
@@ -89,17 +83,17 @@ async function keyboardSendMessage(win, text) {
     })()`,
   );
   if (!focused) throw new Error('could not keyboard-focus message input');
-  await dispatchKey(win, { key: 'Enter', virtualKeyCode: 13, modifiers: 2 });
+  await dispatchKey(page, { key: 'Enter', modifiers: 2 });
 }
 
-async function keyboardEscape(win) {
-  await dispatchKey(win, { key: 'Escape', virtualKeyCode: 27 });
+async function keyboardEscape(page) {
+  await dispatchKey(page, { key: 'Escape' });
 }
 
-async function selectSafeFixture(win, { resume = '' } = {}) {
+async function selectSafeFixture(page, { resume = '' } = {}) {
   const resumeValue = JSON.stringify(resume);
   await evaluate(
-    win,
+    page,
     `(() => {
       const set = (id, value) => {
         const control = document.querySelector('#' + id);
@@ -162,32 +156,20 @@ async function requestJson(baseUrl, pathname, { method = 'GET', headers = {}, bo
   return { status: response.status, payload, headers: Object.fromEntries(response.headers) };
 }
 
-function downloadTo(win, targetPath) {
+function downloadTo(page, targetPath) {
   return withTimeout(
-    new Promise((resolve, reject) => {
-      const onDownload = (_event, item) => {
-        item.setSavePath(targetPath);
-        item.once('done', (_doneEvent, state) => {
-          if (state === 'completed') resolve(targetPath);
-          else reject(new Error(`public trace download ended in state ${state}`));
-        });
-      };
-      win.webContents.session.once('will-download', onDownload);
+    page.waitForEvent('download').then(async (download) => {
+      await download.saveAs(targetPath);
+      return targetPath;
     }),
     DEFAULT_TIMEOUT_MS,
     'public trace download',
   );
 }
 
-async function writeScreenshot(win, filePath) {
-  if (!win || win.isDestroyed()) return;
-  const image = await win.webContents.capturePage();
-  fs.writeFileSync(filePath, image.toPNG());
-}
-
-function consoleMessage(args) {
-  if (args[0] && typeof args[0] === 'object') return String(args[0].message || '');
-  return String(args[2] || args[0] || '');
+async function writeScreenshot(page, filePath) {
+  if (!page || page.isClosed()) return;
+  await page.screenshot({ path: filePath, fullPage: true });
 }
 
 export async function runTutorStubSurfaceAcceptance({
@@ -205,57 +187,45 @@ export async function runTutorStubSurfaceAcceptance({
   if (!baseUrl) throw new Error('tutor-stub surface acceptance requires baseUrl');
   if (!providerEventPath) throw new Error('tutor-stub surface acceptance requires providerEventPath');
   if (!traceRootPath) throw new Error('tutor-stub surface acceptance requires traceRootPath');
-  if (!['web', 'packaged-electron'].includes(hostKind)) {
+  if (hostKind !== 'web') {
     throw new Error(`unsupported tutor-stub surface acceptance host: ${hostKind || 'missing'}`);
   }
   fs.mkdirSync(artifactDir, { recursive: true });
   const trace = [];
   const record = (action, details = {}) => trace.push({ at: new Date().toISOString(), action, ...details });
   const consoleEvents = [];
-  const win = new BrowserWindow({
-    show: false,
-    width: 1280,
-    height: 900,
-    paintWhenInitiallyHidden: true,
-    webPreferences: {
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: true,
-      backgroundThrottling: false,
-    },
+  const launchOptions = process.env.CHROME_PATH
+    ? { executablePath: process.env.CHROME_PATH }
+    : { channel: process.env.PLAYWRIGHT_CHROME_CHANNEL || 'chrome' };
+  const browser = await chromium.launch({ ...launchOptions, headless: true });
+  const context = await browser.newContext({
+    viewport: { width: 1280, height: 900 },
+    acceptDownloads: true,
   });
-  win.webContents.on('console-message', (...args) => {
-    const message = consoleMessage(args);
-    if (message && !/Electron Security Warning/iu.test(message)) consoleEvents.push(message);
-  });
-  win.webContents.on('did-fail-load', (_event, code, description, url) => {
-    record('did-fail-load', { code, description, url });
+  const page = await context.newPage();
+  page.on('console', (message) => consoleEvents.push(message.text()));
+  page.on('requestfailed', (request) => {
+    record('request-failed', { url: request.url(), error: request.failure()?.errorText || 'unknown' });
   });
 
   try {
     const tutorUrl = new URL('/tutor', baseUrl).toString();
-    await withTimeout(win.loadURL(tutorUrl), DEFAULT_TIMEOUT_MS, 'load shared tutor surface');
-    // Chromium does not expose a stable DevTools target for an uncommitted
-    // about:blank renderer. Attach only after the real loopback document has
-    // loaded; media-feature emulation updates matchMedia and CSS live.
-    win.webContents.debugger.attach('1.3');
-    await win.webContents.debugger.sendCommand('Emulation.setEmulatedMedia', {
-      media: '',
-      features: [
-        { name: 'prefers-reduced-motion', value: 'reduce' },
-        { name: 'forced-colors', value: 'active' },
-      ],
-    });
+    await withTimeout(
+      page.goto(tutorUrl, { waitUntil: 'domcontentloaded' }),
+      DEFAULT_TIMEOUT_MS,
+      'load shared tutor surface',
+    );
+    await page.emulateMedia({ reducedMotion: 'reduce', forcedColors: 'active' });
     record('media-emulation-ready');
     await waitFor(
-      win,
+      page,
       `document.querySelector('#app-status')?.textContent.includes('Ready.')`,
       'tutor catalogue readiness',
     );
     record('surface-ready', { url: tutorUrl });
 
     const accessibility = await evaluate(
-      win,
+      page,
       `(() => {
         const status = document.querySelector('#app-status');
         const transcript = document.querySelector('#transcript');
@@ -279,7 +249,7 @@ export async function runTutorStubSurfaceAcceptance({
     );
 
     const rendererCsp = await evaluate(
-      win,
+      page,
       `fetch(location.href).then((response) => response.headers.get('content-security-policy') || '')`,
     );
     const authenticatedPage = await fetch(tutorUrl, { headers: httpHeaders });
@@ -298,11 +268,11 @@ export async function runTutorStubSurfaceAcceptance({
       crossOriginStatus: foreign.status,
     });
 
-    await selectSafeFixture(win);
-    await keyboardActivate(win, 'start-button');
-    await waitFor(win, `document.querySelector('#session-panel')?.hidden === false`, 'session creation');
+    await selectSafeFixture(page);
+    await keyboardActivate(page, 'start-button');
+    await waitFor(page, `document.querySelector('#session-panel')?.hidden === false`, 'session creation');
     const firstSessionId = await evaluate(
-      win,
+      page,
       `document.querySelector('#session-meta').textContent.split(' · ')[0].trim()`,
     );
     const created = await requestJson(baseUrl, `/api/tutor-stub/sessions/${encodeURIComponent(firstSessionId)}`, {
@@ -313,9 +283,9 @@ export async function runTutorStubSurfaceAcceptance({
     }
     record('session-created', { sessionId: firstSessionId });
 
-    await keyboardSendMessage(win, 'Can we compare the public assay marks?');
+    await keyboardSendMessage(page, 'Can we compare the public assay marks?');
     await waitFor(
-      win,
+      page,
       `document.querySelector('#app-status')?.textContent === 'Tutor response complete.' && document.querySelector('#transcript')?.textContent.includes(${JSON.stringify(COMPLETED_REPLY)})`,
       'keyboard learner turn',
     );
@@ -330,42 +300,42 @@ export async function runTutorStubSurfaceAcceptance({
     }
     record('learner-turn-completed');
 
-    await withTimeout(win.reload(), DEFAULT_TIMEOUT_MS, 'reload tutor surface');
+    await withTimeout(page.reload(), DEFAULT_TIMEOUT_MS, 'reload tutor surface');
     await waitFor(
-      win,
+      page,
       `document.querySelector('#app-status')?.textContent === 'Session reconnected from its public projection.'`,
       'session reconnection',
     );
     const reconnectedId = await evaluate(
-      win,
+      page,
       `document.querySelector('#session-meta').textContent.split(' · ')[0].trim()`,
     );
     if (reconnectedId !== firstSessionId) throw new Error('page reload reconnected to a different session');
     record('session-reconnected');
 
-    await keyboardSendMessage(win, '/status');
+    await keyboardSendMessage(page, '/status');
     await waitFor(
-      win,
+      page,
       `document.querySelector('#app-status')?.textContent === '/status complete.' && document.querySelector('#transcript')?.textContent.includes('session status >') && document.querySelector('#transcript')?.textContent.includes('speaker model:')`,
       'HTTP status command',
     );
-    const statusCommandOutput = await evaluate(win, `document.querySelector('#transcript')?.textContent || ''`);
+    const statusCommandOutput = await evaluate(page, `document.querySelector('#transcript')?.textContent || ''`);
     const statusCommandPlain = !statusCommandOutput.includes('\u001b') && !statusCommandOutput.includes('\r');
     record('status-command-completed', { plainText: statusCommandPlain });
 
-    await keyboardSendMessage(win, '/help');
+    await keyboardSendMessage(page, '/help');
     await waitFor(
-      win,
+      page,
       `document.querySelector('#app-status')?.textContent === '/help complete.' && document.querySelector('#transcript')?.textContent.includes('passthrough commands')`,
       'HTTP help command',
     );
-    const helpCommandOutput = await evaluate(win, `document.querySelector('#transcript')?.textContent || ''`);
+    const helpCommandOutput = await evaluate(page, `document.querySelector('#transcript')?.textContent || ''`);
     const helpCommandPlain = !helpCommandOutput.includes('\u001b') && !helpCommandOutput.includes('\r');
     record('help-command-completed', { plainText: helpCommandPlain });
 
-    await keyboardSendMessage(win, '/settings');
+    await keyboardSendMessage(page, '/settings');
     await waitFor(
-      win,
+      page,
       `document.querySelector('#app-status')?.textContent.startsWith('Command failed:')`,
       'terminal-only command rejection',
     );
@@ -384,25 +354,25 @@ export async function runTutorStubSurfaceAcceptance({
     });
 
     const publicExportPath = path.join(artifactDir, 'public-session.json');
-    const publicDownload = downloadTo(win, publicExportPath);
-    await keyboardActivate(win, 'export-button');
+    const publicDownload = downloadTo(page, publicExportPath);
+    await keyboardActivate(page, 'export-button');
     await publicDownload;
     const publicExportText = fs.readFileSync(publicExportPath, 'utf8');
     const publicExport = JSON.parse(publicExportText);
     record('public-trace-exported', { file: path.basename(publicExportPath) });
 
-    await keyboardActivate(win, 'end-button');
+    await keyboardActivate(page, 'end-button');
     await waitFor(
-      win,
+      page,
       `document.querySelector('#app-status')?.textContent === 'Session ended. You can start another safe lab.'`,
       'source session finalization',
     );
     const resumeRunId = await waitForTraceRunId(traceRootPath);
-    await selectSafeFixture(win, { resume: resumeRunId });
-    await keyboardActivate(win, 'start-button');
-    await waitFor(win, `document.querySelector('#session-panel')?.hidden === false`, 'saved trace resume');
+    await selectSafeFixture(page, { resume: resumeRunId });
+    await keyboardActivate(page, 'start-button');
+    await waitFor(page, `document.querySelector('#session-panel')?.hidden === false`, 'saved trace resume');
     const resumedSessionId = await evaluate(
-      win,
+      page,
       `document.querySelector('#session-meta').textContent.split(' · ')[0].trim()`,
     );
     const resumed = await requestJson(baseUrl, `/api/tutor-stub/sessions/${encodeURIComponent(resumedSessionId)}`, {
@@ -417,9 +387,9 @@ export async function runTutorStubSurfaceAcceptance({
     }
     record('saved-trace-resumed', { runId: resumeRunId });
 
-    await keyboardActivate(win, 'reset-button');
+    await keyboardActivate(page, 'reset-button');
     await waitFor(
-      win,
+      page,
       `document.querySelector('#app-status')?.textContent === 'Dialogue reset. The same lab and session controls remain active.'`,
       'dialogue reset',
     );
@@ -435,19 +405,19 @@ export async function runTutorStubSurfaceAcceptance({
     }
     record('dialogue-reset');
 
-    await keyboardSendMessage(win, `${DELAY_MARKER} hold this reply until interrupted.`);
-    await waitFor(win, `document.querySelector('#stop-button')?.disabled === false`, 'interrupt control');
+    await keyboardSendMessage(page, `${DELAY_MARKER} hold this reply until interrupted.`);
+    await waitFor(page, `document.querySelector('#stop-button')?.disabled === false`, 'interrupt control');
     await waitForFileText(providerEventPath, '"requestId":"delayed-turn"', 'delayed provider request');
-    await keyboardEscape(win);
+    await keyboardEscape(page);
     await waitFor(
-      win,
+      page,
       `document.querySelector('#setup-panel')?.hidden === false && document.querySelector('#app-status')?.textContent.startsWith('Session stopped.')`,
       'keyboard interruption',
     );
     await sleep(1_250);
     const afterInterrupt = await requestJson(baseUrl, '/api/tutor-stub/sessions', { headers: httpHeaders });
     const lateResultAbsent = await evaluate(
-      win,
+      page,
       `!document.documentElement.textContent.includes(${JSON.stringify(DELAYED_REPLY)})`,
     );
     if (afterInterrupt.payload?.count !== 0 || !lateResultAbsent) {
@@ -455,19 +425,19 @@ export async function runTutorStubSurfaceAcceptance({
     }
     record('session-interrupted');
 
-    await selectSafeFixture(win);
-    await keyboardActivate(win, 'start-button');
-    await waitFor(win, `document.querySelector('#session-panel')?.hidden === false`, 'fresh session creation');
+    await selectSafeFixture(page);
+    await keyboardActivate(page, 'start-button');
+    await waitFor(page, `document.querySelector('#session-panel')?.hidden === false`, 'fresh session creation');
     const freshSessionId = await evaluate(
-      win,
+      page,
       `document.querySelector('#session-meta').textContent.split(' · ')[0].trim()`,
     );
     if (!freshSessionId || [firstSessionId, resumedSessionId].includes(freshSessionId)) {
       throw new Error('fresh session id was not fresh');
     }
-    await keyboardActivate(win, 'end-button');
+    await keyboardActivate(page, 'end-button');
     await waitFor(
-      win,
+      page,
       `document.querySelector('#app-status')?.textContent === 'Session ended. You can start another safe lab.'`,
       'fresh session finalization',
     );
@@ -476,7 +446,7 @@ export async function runTutorStubSurfaceAcceptance({
     record('fresh-session-finalized');
 
     const browserText = await evaluate(
-      win,
+      page,
       `JSON.stringify({ html: document.documentElement.outerHTML, localStorage: { ...localStorage }, sessionStorage: { ...sessionStorage } })`,
     );
     const credentialCanaryAbsent =
@@ -539,8 +509,7 @@ export async function runTutorStubSurfaceAcceptance({
       schema: TUTOR_STUB_SURFACE_ACCEPTANCE_SCHEMA,
       host: {
         kind: hostKind,
-        electron: process.versions.electron || null,
-        chromium: process.versions.chrome || null,
+        chromium: browser.version(),
         authRequired,
         unauthenticatedStatus: unauthenticated.status,
         cspPresent: Boolean(csp),
@@ -553,7 +522,7 @@ export async function runTutorStubSurfaceAcceptance({
       },
     };
     assertTutorStubSurfaceAcceptanceContract(result, expectedContract);
-    await writeScreenshot(win, path.join(artifactDir, 'final.png'));
+    await writeScreenshot(page, path.join(artifactDir, 'final.png'));
     fs.writeFileSync(
       path.join(artifactDir, 'browser-trace.json'),
       `${JSON.stringify({ trace, console: consoleEvents }, null, 2)}\n`,
@@ -562,7 +531,7 @@ export async function runTutorStubSurfaceAcceptance({
   } catch (error) {
     record('acceptance-failed', { message: error?.message || String(error) });
     try {
-      await writeScreenshot(win, path.join(artifactDir, 'failure.png'));
+      await writeScreenshot(page, path.join(artifactDir, 'failure.png'));
     } catch {
       // The structured failure below remains available if capture itself fails.
     }
@@ -572,8 +541,7 @@ export async function runTutorStubSurfaceAcceptance({
     );
     throw error;
   } finally {
-    if (win.webContents.debugger.isAttached()) win.webContents.debugger.detach();
-    if (!win.isDestroyed()) win.destroy();
+    await browser.close();
   }
 }
 

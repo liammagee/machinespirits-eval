@@ -12,7 +12,6 @@ import {
   parseLocalCiArgs,
   pathTriggersSurfaceAcceptance,
 } from '../scripts/run-local-ci.js';
-import { nativeRebuildPlan } from '../scripts/rebuild-node-native-modules.js';
 import {
   classifySurfaceAcceptance,
   packageManifestChangeRequiresSurfaceAcceptance,
@@ -90,7 +89,7 @@ test('full local CI plan covers the data-independent GitHub command contract', (
 
 test('surface acceptance uses the same path family and can add isolated Node 24 parity', () => {
   assert.equal(pathTriggersSurfaceAcceptance('package.json'), true);
-  assert.equal(pathTriggersSurfaceAcceptance('desktop/main.js'), true);
+  assert.equal(pathTriggersSurfaceAcceptance('scripts/tutor-stub-surface-acceptance-scenario.mjs'), true);
   assert.equal(pathTriggersSurfaceAcceptance('docs/local-ci.md'), false);
 
   const options = parseLocalCiArgs(['--no-install', '--node24-container']);
@@ -103,8 +102,7 @@ test('surface acceptance uses the same path family and can add isolated Node 24 
   assert.match(displayCommand(node24.commands[0]), /type=bind,src=\/repo,dst=\/source,readonly/u);
 
   const surface = plan.find((lane) => lane.id === 'surface');
-  assert.equal(displays([surface]).filter((command) => command === 'npm run native:rebuild:node').length, 2);
-  assert.equal(surface.commands.at(-1).always, true);
+  assert.deepEqual(displays([surface]), ['npm run tutor:stub:acceptance:web']);
 
   const node24Only = buildLocalCiPlan(
     parseLocalCiArgs(['--lane=node24', '--node24-container', '--no-install', '--offline']),
@@ -131,7 +129,7 @@ test('surface acceptance skips unrelated package scripts but fails closed for ru
     type: 'module',
     dependencies: { yaml: '2.9.0' },
     scripts: {
-      'desktop:pack': 'desktop/node_modules/.bin/electron-builder --dir',
+      'tutor:stub:acceptance:web': 'node scripts/run-tutor-stub-surface-acceptance.mjs --host web',
       'tutor:stub:qa': 'node scripts/run-tutor-stub-qa-matrix.js',
     },
   };
@@ -147,7 +145,10 @@ test('surface acceptance skips unrelated package scripts but fails closed for ru
 
   const relevantScript = {
     ...baseManifest,
-    scripts: { ...baseManifest.scripts, 'desktop:pack': 'electron-builder --dir --config alternate.yml' },
+    scripts: {
+      ...baseManifest.scripts,
+      'tutor:stub:acceptance:web': 'node scripts/run-tutor-stub-surface-acceptance.mjs --host browser',
+    },
   };
   assert.equal(packageManifestChangeRequiresSurfaceAcceptance(baseManifest, relevantScript), true);
   assert.equal(
@@ -234,25 +235,7 @@ test('npm and workflow integration expose local and manual recovery entry points
     'node scripts/run-local-ci.js --lane node24 --node24-container --no-install --offline',
   );
   assert.equal(manifest.scripts['ci:local:node20'], undefined);
-  assert.equal(manifest.scripts['native:rebuild:node'], 'node scripts/rebuild-node-native-modules.js');
-  const rebuild = nativeRebuildPlan({
-    projectRoot: '/repo',
-    nodeGypPath: '/npm/node-gyp.js',
-    nodePath: '/node',
-    npmPath: '/npm',
-  });
-  assert.deepEqual(rebuild[0], {
-    label: 'better-sqlite3',
-    program: '/npm',
-    args: ['rebuild', 'better-sqlite3'],
-    cwd: '/repo',
-  });
-  assert.deepEqual(rebuild[1], {
-    label: 'node-pty',
-    program: '/node',
-    args: ['/npm/node-gyp.js', 'rebuild', '--release'],
-    cwd: '/repo/node_modules/node-pty',
-  });
+  assert.equal(manifest.scripts['native:rebuild:node'], undefined);
   const workflow = fs.readFileSync(path.resolve('.github/workflows/test.yml'), 'utf8');
   assert.match(workflow, /^ {2}workflow_dispatch: \{\}$/mu);
 });

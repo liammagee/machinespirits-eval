@@ -34,7 +34,7 @@ const DATA_DIR = path.join(ROOT_DIR, 'data');
 
 const dbPath = process.env.EVAL_DB_PATH || path.join(DATA_DIR, 'evaluations.db');
 // Create the directory we actually use (honours EVAL_DB_PATH). Avoids mkdir on a
-// read-only location — e.g. inside an Electron asar — when the DB is relocated.
+// read-only location when the DB is relocated.
 fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 const db = new Database(dbPath);
 db.pragma('journal_mode = WAL');

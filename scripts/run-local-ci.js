@@ -135,7 +135,7 @@ function node24ContainerCommand(projectRoot) {
   const copyAndRun = [
     'set -eu',
     'mkdir -p /tmp/machinespirits-eval',
-    'tar -C /source --exclude=.git --exclude=node_modules --exclude=desktop/node_modules --exclude=.test-tmp --exclude=coverage -cf - . | tar -C /tmp/machinespirits-eval -xf -',
+    'tar -C /source --exclude=.git --exclude=node_modules --exclude=.test-tmp --exclude=coverage -cf - . | tar -C /tmp/machinespirits-eval -xf -',
     'cd /tmp/machinespirits-eval',
     'npm ci',
     'node scripts/run-local-ci.js --profile node-tests --no-install --offline --report-dir /tmp/local-ci-node24',
@@ -218,15 +218,7 @@ export function localCiLaneCatalog(options, projectRoot = PROJECT_ROOT) {
       ['full', 'quick'],
     ),
     lane('workplan', 'Workplan source, diff, and link checks', workplanCommands, ['full', 'quick']),
-    lane('surface', 'Shared web and packaged Electron acceptance', [
-      npm('desktop:install'),
-      npm('native:rebuild:node'),
-      npm('tutor:stub:acceptance:web'),
-      npm('desktop:rebuild'),
-      npm('desktop:pack'),
-      npm('tutor:stub:acceptance:packaged'),
-      npm('native:rebuild:node', [], { always: true }),
-    ]),
+    lane('surface', 'Browser tutor-surface acceptance', [npm('tutor:stub:acceptance:web')]),
     lane('node24', 'Isolated Node 24 root/core parity', [node24ContainerCommand(projectRoot)], []),
   ];
 }
