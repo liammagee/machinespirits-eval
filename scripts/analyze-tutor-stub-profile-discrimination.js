@@ -73,6 +73,49 @@ const VECTOR_MARKERS = [
   ['frameJurisdictionDispute', 1],
 ];
 
+const RESISTANCE_AXIS_MARKERS = Object.freeze([
+  Object.freeze({ axis: 'effort_investment', marker: 'effortWithholding', observedState: 'withheld' }),
+  Object.freeze({ axis: 'learner_authorship', marker: 'tutorChoiceDeference', observedState: 'deferred_to_tutor' }),
+  Object.freeze({
+    axis: 'evidential_orientation',
+    marker: 'evidentialWarrantChallenge',
+    observedState: 'warrant_challenged',
+  }),
+  Object.freeze({
+    axis: 'epistemic_trust',
+    marker: 'authorityEpistemicDistrust',
+    observedState: 'authority_distrusted',
+  }),
+  Object.freeze({
+    axis: 'frame_legitimacy',
+    marker: 'frameJurisdictionDispute',
+    observedState: 'jurisdiction_disputed',
+  }),
+]);
+
+const PROFILE_AXIS_HYPOTHESES = Object.freeze({
+  bored: Object.freeze({
+    expectedObservedAxes: Object.freeze(['effort_investment']),
+    expectedAbsentAxes: Object.freeze(['learner_authorship', 'frame_legitimacy']),
+  }),
+  low_agency: Object.freeze({
+    expectedObservedAxes: Object.freeze(['learner_authorship']),
+    expectedAbsentAxes: Object.freeze(['effort_investment', 'frame_legitimacy']),
+  }),
+  skeptical: Object.freeze({
+    expectedObservedAxes: Object.freeze(['evidential_orientation']),
+    expectedAbsentAxes: Object.freeze(['epistemic_trust', 'frame_legitimacy']),
+  }),
+  low_trust_skeptic: Object.freeze({
+    expectedObservedAxes: Object.freeze(['evidential_orientation', 'epistemic_trust']),
+    expectedAbsentAxes: Object.freeze(['frame_legitimacy']),
+  }),
+  frame_defiant: Object.freeze({
+    expectedObservedAxes: Object.freeze(['frame_legitimacy']),
+    expectedAbsentAxes: Object.freeze(['learner_authorship']),
+  }),
+});
+
 function parseArgs(argv) {
   const args = {
     traceRoot: '',
@@ -754,6 +797,26 @@ function summarizeSignatureAdherence(profile, turns) {
   };
 }
 
+function summarizeResistanceAxes(turns) {
+  const axes = {};
+  for (const definition of RESISTANCE_AXIS_MARKERS) {
+    const eligibleTurns = turns.filter((turn) => typeof turn.markers?.[definition.marker] === 'boolean');
+    const observedTurns = eligibleTurns.filter((turn) => turn.markers[definition.marker] === true);
+    axes[definition.axis] = {
+      marker: definition.marker,
+      observedState: definition.observedState,
+      eligibleTurns: eligibleTurns.length,
+      observedTurns: observedTurns.length,
+      observedRate: round(eligibleTurns.length ? observedTurns.length / eligibleTurns.length : null),
+      complete: eligibleTurns.length === turns.length,
+    };
+  }
+  return {
+    complete: Object.values(axes).every((axis) => axis.complete),
+    axes,
+  };
+}
+
 function markerGroupMatches(turn, group) {
   if (Object.hasOwn(turn.markers || {}, group.field)) {
     return (group.values || []).includes(turn.markers[group.field]);
@@ -857,8 +920,43 @@ function summarizeProfile(profile, traces) {
     agency: countBy(turns, (turn) => turn.classifier?.agency),
     affect: countBy(turns, (turn) => turn.classifier?.affect),
     affectClass: countBy(turns, (turn) => turn.classifier?.affectClass),
+    resistanceAxes: summarizeResistanceAxes(turns),
     signatureAdherence,
     observability,
+  };
+}
+
+function buildResistanceAxisCalibration(profileSummaries) {
+  const profiles = profileSummaries.map((profile) => ({
+    profile: profile.profile,
+    turns: profile.turns,
+    complete: profile.resistanceAxes.complete,
+    axes: profile.resistanceAxes.axes,
+  }));
+  const profileSignatures = Object.entries(PROFILE_AXIS_HYPOTHESES).map(([profileId, hypothesis]) => {
+    const target = profiles.find((profile) => profile.profile === profileId) || null;
+    const rates = (axes) =>
+      axes.map((axis) => ({
+        axis,
+        observedRate: target?.axes?.[axis]?.observedRate ?? null,
+      }));
+    const expectedObserved = rates(hypothesis.expectedObservedAxes);
+    const expectedAbsent = rates(hypothesis.expectedAbsentAxes);
+    return {
+      profile: profileId,
+      expectedObserved,
+      expectedAbsent,
+      evaluable: [...expectedObserved, ...expectedAbsent].every((axis) => Number.isFinite(axis.observedRate)),
+    };
+  });
+  return {
+    authority: 'calibration_only',
+    changesRegisteredResult: false,
+    pass: null,
+    complete: profiles.every((profile) => profile.complete),
+    axes: RESISTANCE_AXIS_MARKERS.map((definition) => ({ ...definition })),
+    profiles,
+    profileSignatures,
   };
 }
 
@@ -1114,6 +1212,7 @@ export function buildTutorStubProfileDiscriminationReport(compactedTraces, args,
   const conditionedPrimary = conditionedPass == null ? pooledPass : conditionedPass;
   const behavioralPass = args.requirePooled ? Boolean(pooledPass && conditionedPrimary) : conditionedPrimary;
   const primaryPass = Boolean(behavioralPass && (!assemblyRequired || assemblyPass));
+  const resistanceAxisCalibration = buildResistanceAxisCalibration(profileSummaries);
 
   return {
     schema: 'machinespirits.tutor-stub.profile-discrimination.v4',
@@ -1134,6 +1233,7 @@ export function buildTutorStubProfileDiscriminationReport(compactedTraces, args,
         'dagMissingMovement',
         'fieldScoreMovement',
       ],
+      calibrationAxisMarkers: RESISTANCE_AXIS_MARKERS.map((definition) => definition.marker),
       gateProfiles: args.gateProfiles,
       requirePooled: args.requirePooled,
       assemblyRequired,
@@ -1194,6 +1294,7 @@ export function buildTutorStubProfileDiscriminationReport(compactedTraces, args,
       },
     },
     profiles: profileSummaries,
+    resistanceAxisCalibration,
     pairwise,
     policySummaries,
     policyPairwise,
@@ -1256,6 +1357,31 @@ function formatMarkdown(report) {
     lines.push(
       `| ${profile.profile} | ${profile.traces} | ${profile.turns} | ${profile.meanFinalCoverage ?? ''} | ${profile.meanMissingPremises ?? ''} | ${profile.meanConceptualScore ?? ''} | ${profile.meanEpistemicReadinessScore ?? ''} | ${profile.signatureAdherence?.passRate ?? 'n/a'} | ${profile.observability?.observedRate ?? 'n/a'} | ${profile.observability ? `${profile.observability.runsMeetingDeadline}/${profile.observability.eligibleTraces}` : 'n/a'} | ${formatObjectCounts(profile.evidenceUse, 2)} | ${formatObjectCounts(profile.epistemicStance, 2)} | ${formatObjectCounts(profile.agency, 2)} |`,
     );
+  }
+  lines.push('');
+
+  lines.push('## Orthogonal Resistance-Axis Calibration');
+  lines.push('');
+  lines.push(
+    `This section is calibration only, does not change the registered result, and is ${report.resistanceAxisCalibration.complete ? 'complete' : 'incomplete'} for these traces.`,
+  );
+  lines.push('');
+  lines.push(
+    '| Profile | Effort withholding | Tutor-choice deference | Warrant challenge | Authority distrust | Frame dispute |',
+  );
+  lines.push('| --- | ---: | ---: | ---: | ---: | ---: |');
+  for (const profile of report.resistanceAxisCalibration.profiles) {
+    const rate = (axis) => profile.axes?.[axis]?.observedRate ?? 'n/a';
+    lines.push(
+      `| ${profile.profile} | ${rate('effort_investment')} | ${rate('learner_authorship')} | ${rate('evidential_orientation')} | ${rate('epistemic_trust')} | ${rate('frame_legitimacy')} |`,
+    );
+  }
+  lines.push('');
+  lines.push('| Profile signature | Expected observed axes (rate) | Expected absent axes (rate) |');
+  lines.push('| --- | --- | --- |');
+  for (const signature of report.resistanceAxisCalibration.profileSignatures) {
+    const rates = (axes) => axes.map((axis) => `${axis.axis} (${axis.observedRate ?? 'n/a'})`).join(', ');
+    lines.push(`| ${signature.profile} | ${rates(signature.expectedObserved)} | ${rates(signature.expectedAbsent)} |`);
   }
   lines.push('');
 

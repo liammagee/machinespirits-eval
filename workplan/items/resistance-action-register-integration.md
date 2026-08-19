@@ -32,6 +32,7 @@ links:
     - notes/2026-08-16-edged-register-calibration-draft.md
     - docs/resistance-action-register-conservation-protocol.md
     - docs/pedagogical-move-contract.md
+    - docs/tutor-stub-learner-profile-robustness.md
     - docs/tutor-stub-resistant-profile-discrimination-registration.md
     - docs/tutor-stub-resistant-profile-discrimination-live-readiness-hold.md
     - docs/tutor-stub-resistant-profile-discrimination-study-go-request.md
@@ -43,6 +44,7 @@ links:
     - services/adaptiveTutor/pedagogicalMoveProjection.js
     - services/tutorStubPedagogicalMoveProjection.js
     - services/resistantLearnerObservation.js
+    - scripts/analyze-tutor-stub-profile-discrimination.js
     - services/pedagogicalMove/resistantProfileWarrantShadow.js
     - scripts/tutor-stub-learner-profile-contracts.js
     - scripts/prepare-tutor-stub-resistant-profile-discrimination.js
@@ -70,7 +72,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistant-profile-measurement-recheck-result
+branch: codex/resistant-profile-axis-calibration
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -347,3 +349,19 @@ and explicit human approval.
   with SHA-256
   `39b8c107eedd5c48cfd2a6aca79ec9a9503ffc07391555d53f254a73bbe2e6d3`;
   the 181 MB artifact tree remains local and was not uploaded.
+- 2026-08-19 — The required zero-call turn examination found a measurement-
+  design mismatch rather than a missing learner character: generic classifier
+  geometry labelled many visibly deferential `low_agency` questions as
+  `steering`, mixed bored effort-withholding with competent evidence use, and
+  left evidence skepticism and authority distrust nearly collinear. Completed
+  an additive prospective correction that reports five orthogonal public axes:
+  effort investment, learner authorship/deference, evidential orientation,
+  epistemic trust, and frame legitimacy. The calibration layer cannot change
+  the registered `v4` gate or either frozen negative result, and it remains
+  upstream of typed pedagogical moves and all tonal registers. Exact
+  recompaction of the frozen 144 turns left the registered gate failed and the
+  frozen report hash unchanged. It observed bored effort withholding on
+  `16/24`, low-agency tutor-choice deference on `23/24`, skeptical and
+  low-trust warrant challenge on `23/24` each, low-trust authority distrust on
+  `5/24`, and frame-defiant jurisdiction dispute on `22/24`. These are
+  calibration rates, not a replacement endpoint or pass verdict.

@@ -457,3 +457,59 @@ the boredom observability mismatch, and leaves the overall result failed at
 the anchor-validity boundary. A fresh study may be registered only after this
 instrument change is merged and pinned; the old authorization, traces, and
 canonical report cannot be retried, resumed, or rewritten.
+
+The subsequent fresh 18-dialogue measurement recheck was technically complete
+(`144` turns, `462` model attempts, no retry or resume) and again produced a
+valid negative result. Bored passed its own signature, recurrence, and cosine
+bounds, but its expected `low_agency` anchor failed the unchanged signature
+floor (`0.167` versus `0.40`) and diligent was nearest. Frame defiance passed
+its own signature, recurrence, and cosine bounds, but diligent rather than
+skeptical was nearest. The frozen report remains authoritative at SHA-256
+`39b8c107eedd5c48cfd2a6aca79ec9a9503ffc07391555d53f254a73bbe2e6d3`.
+
+An exact-turn, zero-call examination found that the registered geometry was
+mixing distinct resistance questions. In particular, `low_agency` turns often
+publicly asked the tutor to choose the next object or authorize the next move
+while the generic participation classifier labelled the same turn `steering`.
+Frame-defiant turns visibly disputed jurisdiction, bored turns visibly
+withheld effort but sometimes supplied competent evidence, and the evidence
+skeptic and low-trust skeptic remained nearly collinear under the generic
+vector. This supports a prospective measurement correction, not a
+reinterpretation of either negative result.
+
+The analyzer therefore now emits five additive, orthogonal public axes:
+
+- `effort_investment`: public effort withholding;
+- `learner_authorship`: public deference of the next choice to the tutor;
+- `evidential_orientation`: challenge to an evidence-to-claim warrant;
+- `epistemic_trust`: public distrust of the tutor's or authority's epistemic
+  contribution; and
+- `frame_legitimacy`: dispute over who may set the question, test, or frame.
+
+These axes are `calibration_only`: they do not change the registered `v4`
+cosine or conditioned gate, produce no replacement pass/fail verdict, and
+report old compacted traces without the new marker fields as incomplete rather
+than zero. They remain upstream of the typed pedagogical-move boundary. A
+future held-out discrimination study would need a new frozen axis hypothesis
+and thresholds; profile identity still cannot select either a move or a tonal
+register.
+
+Recompaction of the exact frozen `144` turns with this prospective observer is
+complete and leaves the registered gate failed. The calibration rates are:
+
+| Profile | Effort withholding | Tutor-choice deference | Warrant challenge | Authority distrust | Frame dispute |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| diligent | 0/24 | 1/24 | 3/24 | 0/24 | 0/24 |
+| bored | 16/24 | 0/24 | 0/24 | 0/24 | 0/24 |
+| low_agency | 0/24 | 23/24 | 1/24 | 0/24 | 0/24 |
+| skeptical | 0/24 | 0/24 | 23/24 | 0/24 | 0/24 |
+| low_trust_skeptic | 0/24 | 0/24 | 23/24 | 5/24 | 0/24 |
+| frame_defiant | 0/24 | 0/24 | 2/24 | 0/24 | 22/24 |
+
+This is useful calibration evidence, not a new endpoint. It confirms strong
+public separation for boredom, tutor-choice deference, and frame legitimacy.
+It also shows the intended nested structure of skepticism: both skeptical
+profiles challenge warrants, while low trust adds an authority-distrust signal
+on only `5/24` turns. Whether that additional signal is sufficiently recurrent
+for a new held-out contract is an interpretation and design decision that must
+precede any fresh authorization.

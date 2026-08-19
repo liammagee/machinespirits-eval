@@ -10,6 +10,15 @@ tutor-stub discrimination protocol at
 not added to, or smoked through, the closed outcome driver. Any later outcome
 study would need a new driver surface and a separately approved registration.
 
+**Measurement amendment, 2026-08-19.** The nearest-neighbour contracts below
+remain the immutable design used by the completed negative studies. They are
+not the prospective measurement recommendation. Exact-turn examination showed
+that generic participation geometry conflates effort, authorship/deference,
+evidence skepticism, authority trust, and frame legitimacy. New calibration
+therefore reports those five public axes separately, without changing the old
+result. Any fresh held-out study must freeze axis-specific hypotheses and
+thresholds before execution.
+
 ## The process, in order
 
 Every step before 7 is free and deterministic.

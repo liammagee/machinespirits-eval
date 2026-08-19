@@ -70,3 +70,9 @@ it does not change `low_agency` or `overconfident`. Its public-observation and
 warrant projection is implemented in design shadow only: profile identity is
 never itself a warrant, and no register choice is present in the projected
 move.
+
+Prospective resistant-profile measurement may separately report public axes
+for effort investment, learner authorship/deference, evidential orientation,
+epistemic trust, and frame legitimacy. Those axes are observations upstream of
+the warrant. They are neither profile IDs nor move types, cannot directly
+select a move, and cannot select sarcasm, irony, or any other register.
