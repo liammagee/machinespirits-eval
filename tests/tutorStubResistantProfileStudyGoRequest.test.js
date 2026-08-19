@@ -213,5 +213,5 @@ test('consumed axis heldout request remains frozen and fails closed after curren
     { cwd: ROOT, encoding: 'utf8' },
   );
   assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /source-closure-scripts\/tutor-stub-learner-profile-contracts\.js/u);
+  assert.match(result.stderr, /source-closure-scripts\/analyze-tutor-stub-resistance-axis-calibration\.js/u);
 });
