@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-19T17:22:23.844Z",
+  "generated": "2026-08-19T17:34:19.603Z",
   "counts": {
     "total": 516,
     "byStatus": {
-      "done": 488,
+      "done": 489,
       "blocked": 7,
       "dropped": 10,
       "triaged": 1,
       "active": 4,
-      "review": 2,
-      "archived": 4
+      "archived": 4,
+      "review": 1
     },
     "byType": {
       "research": 80,
@@ -592,34 +592,6 @@
         "warrant-gate",
         "adaptive",
         "instrument"
-      ]
-    },
-    {
-      "id": "decommission-electron-desktop-target",
-      "title": "Retire the Electron desktop distribution target",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-08-19",
-      "updated": "2026-08-19",
-      "verification": "Electron, electron-builder, the desktop runtime, and packaged-desktop CI are absent; Scriptorium remains available through the browser; the real-browser tutor and UX acceptance paths run against system Chrome; focused runtime, CI-policy, package, and workplan checks pass.",
-      "branch": "codex/decommission-electron",
-      "links": {
-        "items": [
-          "expedite-ci-expensive-boundaries",
-          "optimize-hermetic-test-suite",
-          "automate-browser-and-packaged-electron-tutor-stub-acceptance",
-          "tutor-stub-unified-session-surface"
-        ]
-      },
-      "tags": [
-        "ci",
-        "electron",
-        "scriptorium",
-        "maintenance",
-        "browser"
       ]
     },
     {
@@ -1609,6 +1581,37 @@
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
+    },
+    {
+      "id": "decommission-electron-desktop-target",
+      "title": "Retire the Electron desktop distribution target",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-19",
+      "updated": "2026-08-19",
+      "verification": "Electron, electron-builder, the desktop runtime, and packaged-desktop CI are absent; Scriptorium remains available through the browser; the real-browser tutor and UX acceptance paths run against system Chrome; focused runtime, CI-policy, package, and workplan checks pass.",
+      "branch": "codex/electron-removal-ci-benchmark",
+      "links": {
+        "prs": [
+          690
+        ],
+        "items": [
+          "expedite-ci-expensive-boundaries",
+          "optimize-hermetic-test-suite",
+          "automate-browser-and-packaged-electron-tutor-stub-acceptance",
+          "tutor-stub-unified-session-surface"
+        ]
+      },
+      "tags": [
+        "ci",
+        "electron",
+        "scriptorium",
+        "maintenance",
+        "browser"
+      ]
     },
     {
       "id": "dialogue-conclusion-answer-recognition",
