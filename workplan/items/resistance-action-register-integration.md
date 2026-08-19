@@ -36,6 +36,7 @@ links:
     - docs/tutor-stub-resistant-profile-discrimination-live-readiness-hold.md
     - docs/tutor-stub-resistant-profile-discrimination-study-go-request.md
     - docs/tutor-stub-resistant-profile-measurement-recheck-study-go-request.md
+    - docs/tutor-stub-resistant-profile-measurement-recheck-technical-recovery-study-go-request.md
   code:
     - services/pedagogicalMove/contract.js
     - services/pedagogicalMove/shadow.js
@@ -57,6 +58,7 @@ links:
     - config/tutor-stub-resistant-profile-discrimination-study-go-request.v1.json
     - config/tutor-stub-frame-defiant-replacement-study-go-request.v1.json
     - config/tutor-stub-resistant-profile-measurement-recheck-study-go-request.v1.json
+    - config/tutor-stub-resistant-profile-measurement-recheck-technical-recovery-study-go-request.v1.json
     - scripts/check-tutor-stub-resistant-profile-study-go-request.js
     - services/tutorStubAutomatedLearnerGenerationRuntime.js
     - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json
@@ -68,7 +70,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistant-profile-measurement-recheck-request
+branch: codex/resistant-profile-measurement-recheck-technical-recovery
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -304,3 +306,22 @@ and explicit human approval.
   endpoint completeness to require an emitted boolean anchor-evaluability
   field, not a favorable value. The request remains on HOLD pending its own
   committed digest-bound approval.
+- 2026-08-19 — The approved measurement-recheck request at digest
+  `c2176e17c403824c0566ccb86d167fad21c56be405291025f09f233c3a8ea26d`
+  was invoked once and failed before any model call because its detached
+  worktree had no installed `yaml` dependency. The requested artifact root was
+  never created. During the subsequent dependency check, importing the
+  executable QA runner mistakenly started its default matrix; it was stopped
+  after 29 completed Luna calls and six interrupted reservations, with zero
+  completed trials. The 3.6 MB artifact tree is preserved separately and is
+  excluded from reuse, resume, analysis, and every study assembly.
+- 2026-08-19 — PR #677 merged the standing bounded technical-recovery policy
+  at `1f07f5719637424bda5729d7a7047038044b7c79`. Prepared a replacement HOLD
+  request pinned to the unchanged `0f7ff1b3d0e1ca0146a519f06914f3d6e1cdcd4d`
+  runtime, with package and lockfile hashes added to the source closure, a
+  dependency-complete detached checkout, a safe zero-call import check, and a
+  fresh create-once destination. The registered design, six profiles, seed,
+  models, thresholds, and 864-attempt total ceiling remain unchanged; bounded
+  recovery may address only missing or technically failed units and may never
+  rerun valid outputs or select among outcomes. The frozen request digest is
+  `34e78c0753c1da34fd9fbc8865bb69a437adf383ad2867c24c2458ab869fdbab`.
