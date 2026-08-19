@@ -22,9 +22,41 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+env:
+  ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+
 jobs:
+  classify:
+    name: Classify validation impact
+    runs-on: ubuntu-latest
+    outputs:
+      validation_required: ${{ steps.manual.outputs.validation_required || steps.changes.outputs.validation_required }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Force validation for manual dispatch
+        id: manual
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "validation_required=true" >> "$GITHUB_OUTPUT"
+
+      - name: Classify changed paths
+        id: changes
+        if: github.event_name != 'workflow_dispatch'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: >-
+          node scripts/ci-change-policy.js
+          --base "$BASE_SHA"
+          --head "$HEAD_SHA"
+          --github-output "$GITHUB_OUTPUT"
+
   validate:
     name: Validation framework (CI-safe checks)
+    needs: classify
+    if: needs.classify.outputs.validation_required == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -42,3 +74,20 @@ jobs:
 
       - name: Paper claim validation — provable discourse (smoke)
         run: npm run paper:provable-discourse:smoke
+
+  result:
+    name: Validation result
+    if: always()
+    needs: [classify, validate]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require selected validation to pass
+        env:
+          CLASSIFY_RESULT: ${{ needs.classify.result }}
+          VALIDATE_RESULT: ${{ needs.validate.result }}
+        run: |
+          test "$CLASSIFY_RESULT" = "success"
+          case "$VALIDATE_RESULT" in
+            success|skipped) ;;
+            *) echo "Selected validation lane did not pass: $VALIDATE_RESULT" >&2; exit 1 ;;
+          esac

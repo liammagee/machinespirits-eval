@@ -124,31 +124,17 @@ export function buildDefaultPrBody({ title, workplan, refImpact = 'N/A' }) {
 
 - ${title}
 
-## Workplan
-
-- [x] Linked workplan item: ${workplan}
-- [x] Updated the item status/branch for this PR
-- [x] Ran \`npm run wp:source-check\`; generated board views are not included
-
 Workplan item: ${workplan}
-
-## Ref and version governance
 
 Ref impact: ${refImpact}
 
-- [x] Classified this PR's ref/version impact
-- [ ] If managed versions or archive refs changed, refreshed \`docs/ref-status.md\` and ran \`npm run refs:check\`
-- [x] Any managed tag will be created only after merge on validated \`main\`
+CI boundary impact: pending
 
 ## Verification
 
-- [ ] Local PR admission gate passed
+- Local PR admission gate: pending
 
-Tutor PR benchmark:
-
-- [ ] N/A — this PR cannot affect tutor generation or its audits
-- [ ] Ran \`npm run tutor:stub:pr-benchmark\` manually or via the installed pre-push hook
-- Terminal status / local report path: pending
+Tutor PR benchmark: pending
 `;
 }
 
@@ -198,10 +184,10 @@ ${EVIDENCE_END}`;
 }
 
 function markQuickAdmissionPassed(body, sourceSha) {
-  return body.replace(
-    '- [ ] Local PR admission gate passed',
-    `- [x] Local PR admission gate passed (quick profile, source \`${sourceSha}\`)`,
-  );
+  const passed = `- Local PR admission gate: **PASS** (quick profile, source \`${sourceSha}\`)`;
+  return body
+    .replace('- [ ] Local PR admission gate passed', passed)
+    .replace('- Local PR admission gate: pending', passed);
 }
 
 export function assertLocalCiReport(report, { sourceSha, profile }) {

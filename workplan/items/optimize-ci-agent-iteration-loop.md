@@ -8,7 +8,7 @@ owner: codex
 source: manual
 created: 2026-08-18
 updated: 2026-08-18
-branch: codex/ci-agent-loop-benchmark
+branch: codex/ci-focused-fast-path
 verification: "A reproducible PR and Actions timing baseline identifies agent-side and CI-side delay; instruction and workflow changes remove redundant authorization ceremony and low-risk full-matrix runs without weakening research authority, fail-closed runtime coverage, or required workplan/ref checks; follow-up hosted PRs demonstrate the reduced latency."
 links:
   prs:
@@ -99,6 +99,21 @@ Benchmark log:
   Historical sealed requests remain unchanged, but future technical recovery
   should use existing machinery and narrow checks without a fresh approval or
   authorization-only PR.
+- 2026-08-18 — Implemented the fail-closed hosted classifier documented in
+  `docs/ci-agent-iteration-policy.md`. Allowlisted docs/workplan/agent text and
+  named authorization metadata now select a no-install focused lane; unknown,
+  mixed, runtime, dependency, lockfile, workflow, database, evaluator, test, and
+  tutor/learner changes retain full CI. Research prose retains the independent
+  validation framework, and workplan/link checks remain independent for every
+  PR. Manual dispatch always forces full CI.
+- 2026-08-18 — Set `ELECTRON_SKIP_BINARY_DOWNLOAD=1` in the root CI and
+  validation workflows while leaving packaged Electron acceptance unchanged.
+  A fresh root `npm ci` with that boundary completed locally in 8.36s and
+  contained no Electron package or binary. The PR template and generated PR body
+  were reduced from checkbox ceremony to four routing/evidence fields, and
+  `AGENTS.md` now gives a concrete proportional-verification stopping rule.
+  Hosted timing remains to be measured after this workflow-changing PR lands;
+  this PR itself correctly classifies as full CI.
 
 Initial optimization hypotheses:
 

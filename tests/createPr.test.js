@@ -202,7 +202,7 @@ test('auto mode uses hosted CI without duplicating the full local suite', async 
   const outcome = await orchestratePrCreation(makeOptions(), { deps: harness.deps, knownItems: knownItems() });
   assert.deepEqual(harness.ciProfiles, ['quick']);
   assert.deepEqual(harness.events, ['ci:quick', 'push', 'create', 'ready']);
-  assert.match(harness.createdBody, /\[x\] Local PR admission gate passed/u);
+  assert.match(harness.createdBody, /Local PR admission gate: \*\*PASS\*\*/u);
   assert.equal(outcome.hostedChecksAttached, true);
   assert.equal(outcome.fallbackUsed, false);
   assert.equal(outcome.isDraft, false);

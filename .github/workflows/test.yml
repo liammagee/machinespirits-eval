@@ -11,9 +11,46 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+env:
+  # The root dependency graph does not need an Electron runtime. Keep binary
+  # downloads exclusive to tutor-stub-surface-acceptance.yml.
+  ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+
 jobs:
+  classify:
+    name: Classify CI impact
+    runs-on: ubuntu-latest
+    outputs:
+      full_required: ${{ steps.manual.outputs.full_required || steps.changes.outputs.full_required }}
+      profile: ${{ steps.manual.outputs.profile || steps.changes.outputs.profile }}
+      authorization_required: ${{ steps.changes.outputs.authorization_required }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Force full CI for manual dispatch
+        id: manual
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "profile=full" >> "$GITHUB_OUTPUT"
+          echo "full_required=true" >> "$GITHUB_OUTPUT"
+
+      - name: Classify changed paths
+        id: changes
+        if: github.event_name != 'workflow_dispatch'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: >-
+          node scripts/ci-change-policy.js
+          --base "$BASE_SHA"
+          --head "$HEAD_SHA"
+          --github-output "$GITHUB_OUTPUT"
+
   test-contract:
     name: Hermetic test contract
+    needs: classify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,7 +65,37 @@ jobs:
       - name: Reject skill-local tool preapprovals
         run: npm run skills:permissions:check
 
+  focused:
+    name: Focused authored-metadata checks
+    needs: classify
+    if: needs.classify.outputs.full_required != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate the allowlisted change set and changed JSON
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: >-
+          node scripts/ci-change-policy.js
+          --base "$BASE_SHA"
+          --head "$HEAD_SHA"
+          --validate-focused
+
+      - name: Run the existing study-GO authorization contract
+        if: needs.classify.outputs.authorization_required == 'true'
+        run: node --test tests/tutorStubResistantProfileStudyGoRequest.test.js
+
   lint:
+    needs: classify
+    if: needs.classify.outputs.full_required == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -56,7 +123,8 @@ jobs:
       - run: npm run format:check
 
   test:
-    needs: test-contract
+    needs: [classify, test-contract]
+    if: needs.classify.outputs.full_required == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -85,7 +153,8 @@ jobs:
 
   pty-concurrency:
     name: PTY / loopback concurrency
-    needs: test-contract
+    needs: [classify, test-contract]
+    if: needs.classify.outputs.full_required == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -106,6 +175,8 @@ jobs:
         run: npm run test:lifecycle:ci
 
   risk-coverage:
+    needs: classify
+    if: needs.classify.outputs.full_required == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -127,3 +198,28 @@ jobs:
           name: risk-coverage
           path: coverage/risk
           if-no-files-found: error
+
+  result:
+    name: CI result
+    if: always()
+    needs: [classify, test-contract, focused, lint, test, pty-concurrency, risk-coverage]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every selected lane to pass
+        env:
+          CLASSIFY_RESULT: ${{ needs.classify.result }}
+          CONTRACT_RESULT: ${{ needs.test-contract.result }}
+          FOCUSED_RESULT: ${{ needs.focused.result }}
+          LINT_RESULT: ${{ needs.lint.result }}
+          TEST_RESULT: ${{ needs.test.result }}
+          PTY_RESULT: ${{ needs.pty-concurrency.result }}
+          COVERAGE_RESULT: ${{ needs.risk-coverage.result }}
+        run: |
+          for result in \
+            "$CLASSIFY_RESULT" "$CONTRACT_RESULT" "$FOCUSED_RESULT" \
+            "$LINT_RESULT" "$TEST_RESULT" "$PTY_RESULT" "$COVERAGE_RESULT"; do
+            case "$result" in
+              success|skipped) ;;
+              *) echo "Selected CI lane did not pass: $result" >&2; exit 1 ;;
+            esac
+          done
