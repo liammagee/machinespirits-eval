@@ -9,6 +9,8 @@ import {
   RESISTANT_LEARNER_AXIS_DEFINITIONS,
   resistantLearnerAxisMarkers,
 } from '../services/resistantLearnerAxisObservation.js';
+import { observeResistantLearnerTurn } from '../services/resistantLearnerObservation.js';
+import { extractTutorStubResistanceActionRegisterPrefix } from '../services/tutorStubResistanceActionRegisterStudy.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -141,7 +143,7 @@ function inferPolicy(file, firstTurn) {
   return match ? match[1] : parent;
 }
 
-function readTrace(file) {
+export function readTutorStubResistanceAxisTrace(file) {
   const events = readJsonl(file);
   const start = events.find((event) => event.type === 'run_start') || {};
   const metadata = start.metadata || {};
@@ -151,6 +153,7 @@ function readTrace(file) {
     .map((event) => event.turnRecord)
     .sort((left, right) => Number(left.turn || 0) - Number(right.turn || 0));
   return {
+    caseId: start.runId || metadata.runId || null,
     file,
     profile: inferProfile(file, metadata),
     policy: inferPolicy(file, turns[0]),
@@ -159,14 +162,20 @@ function readTrace(file) {
       analysis: metadata.classifier?.modelRef || null,
       learner: metadata.autoLearner?.modelRef || null,
     },
-    turns: turns.map((turn, index) => ({
-      turn: Number(turn.turn),
-      markers: resistantLearnerAxisMarkers({
+    turns: turns.map((turn, index) => {
+      const observationInput = {
         learnerText: turn.learner,
         classification: turn.classification?.turn || {},
         tutorText: index === 0 ? opening : turns[index - 1]?.tutor || '',
-      }),
-    })),
+      };
+      return {
+        turn: Number(turn.turn),
+        learnerText: turn.learner || '',
+        classification: turn.classification || null,
+        markers: resistantLearnerAxisMarkers(observationInput),
+        publicObservation: observeResistantLearnerTurn(observationInput),
+      };
+    }),
   };
 }
 
@@ -205,13 +214,132 @@ function registrationResult(registrationPath) {
   if (!registrationPath) return null;
   const bytes = fs.readFileSync(registrationPath);
   const registration = JSON.parse(bytes.toString('utf8'));
-  if (registration.schema !== 'machinespirits.tutor-stub.resistance-axis-discrimination-registration.v1') {
+  if (
+    ![
+      'machinespirits.tutor-stub.resistance-axis-discrimination-registration.v1',
+      'machinespirits.tutor-stub.frame-refuser-opportunity-registration.v1',
+    ].includes(registration.schema)
+  ) {
     throw new Error(`unsupported registration schema: ${registration.schema}`);
   }
   return {
     path: path.relative(ROOT, registrationPath),
     sha256: crypto.createHash('sha256').update(bytes).digest('hex'),
     registration,
+  };
+}
+
+function hasObservation(turn, type, predicate = () => true) {
+  return Boolean(turn?.publicObservation?.observations?.some((row) => row.type === type && predicate(row)));
+}
+
+function frameRefuserPrefix(trace, mustShowByTurn) {
+  try {
+    const prefix = extractTutorStubResistanceActionRegisterPrefix({
+      tracePath: trace.file,
+      profile: 'frame_refuser',
+      requireFrozenBundle: false,
+    });
+    return {
+      pass: prefix.trigger_turn <= mustShowByTurn,
+      triggerTurn: prefix.trigger_turn,
+      publicPrefixSha256: prefix.public_prefix_sha256,
+      sourceTraceSha256: prefix.source_trace_sha256,
+      reason: prefix.trigger_turn <= mustShowByTurn ? 'eligible_refusal_prefix' : 'eligible_prefix_after_deadline',
+    };
+  } catch (error) {
+    return {
+      pass: false,
+      triggerTurn: null,
+      publicPrefixSha256: null,
+      sourceTraceSha256: null,
+      reason: error.message,
+    };
+  }
+}
+
+export function buildFrameRefuserOpportunityReport(traces, args, registrationBinding) {
+  const calibration = buildResistanceAxisCalibrationReport(traces, args);
+  const registration = registrationBinding.registration;
+  const targetProfile = registration.gates.targetProfile;
+  const controlProfile = registration.gates.controlProfile;
+  const mustShowByTurn = registration.gates.mustShowByTurn;
+  const targetRows = traces
+    .filter((trace) => trace.profile === targetProfile)
+    .map((trace) => {
+      const refusalByDeadline = trace.turns.some(
+        (turn) => turn.turn <= mustShowByTurn && hasObservation(turn, 'frame_jurisdiction_refusal'),
+      );
+      const prefix = frameRefuserPrefix(trace, mustShowByTurn);
+      return {
+        caseId: trace.caseId,
+        trace: reportPath(trace.file),
+        refusalByDeadline,
+        eligiblePrefix: prefix,
+        protectedAndUptakeGuardPass: prefix.pass,
+        pass: refusalByDeadline && prefix.pass,
+      };
+    });
+  const controlRows = traces
+    .filter((trace) => trace.profile === controlProfile)
+    .map((trace) => {
+      const productiveDisputeByDeadline = trace.turns.some(
+        (turn) =>
+          turn.turn <= mustShowByTurn &&
+          hasObservation(turn, 'frame_jurisdiction_dispute', (row) => row.features?.content_bearing === true) &&
+          !hasObservation(turn, 'frame_jurisdiction_refusal'),
+      );
+      const refusalLeakage = trace.turns.some((turn) => hasObservation(turn, 'frame_jurisdiction_refusal'));
+      return {
+        caseId: trace.caseId,
+        trace: reportPath(trace.file),
+        productiveDisputeByDeadline,
+        refusalLeakage,
+        pass: productiveDisputeByDeadline && !refusalLeakage,
+      };
+    });
+  const prefixHashes = targetRows.map((row) => row.eligiblePrefix.publicPrefixSha256).filter(Boolean);
+  const distinctPrefixes = {
+    required: registration.gates.requiredDistinctTargetPrefixes,
+    observed: new Set(prefixHashes).size,
+    hashes: prefixHashes,
+    pass:
+      prefixHashes.length === targetRows.length &&
+      new Set(prefixHashes).size >= registration.gates.requiredDistinctTargetPrefixes,
+  };
+  const assemblyPass = calibration.integrity.assembly.pass;
+  const pass =
+    assemblyPass &&
+    targetRows.length > 0 &&
+    targetRows.every((row) => row.pass) &&
+    controlRows.length > 0 &&
+    controlRows.every((row) => row.pass) &&
+    distinctPrefixes.pass;
+  return {
+    ...calibration,
+    schema: 'machinespirits.tutor-stub.frame-refuser-opportunity-gate.v1',
+    authority: 'prospective_instrument_opportunity_gate',
+    pass,
+    registration: {
+      path: registrationBinding.path,
+      sha256: registrationBinding.sha256,
+      decisionRule: registration.gates.decisionRule,
+    },
+    changesRegisteredResult: false,
+    priorRegisteredResultRewritten: false,
+    gate: {
+      mode: 'frame_refuser_opportunity_with_productive_frame_defiant_control',
+      assembly: calibration.integrity.assembly,
+      targetProfile,
+      controlProfile,
+      mustShowByTurn,
+      target: targetRows,
+      control: controlRows,
+      distinctPrefixes,
+      tutorEfficacyTested: false,
+      registerEfficacyTested: false,
+      pass,
+    },
   };
 }
 
@@ -383,11 +511,14 @@ export function buildResistanceAxisDiscriminationReport(traces, args, registrati
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
-  const traces = args.traces.map(readTrace);
+  const traces = args.traces.map(readTutorStubResistanceAxisTrace);
   const binding = registrationResult(args.registration);
-  const report = binding
-    ? buildResistanceAxisDiscriminationReport(traces, args, binding)
-    : buildResistanceAxisCalibrationReport(traces, args);
+  const report =
+    binding?.registration?.schema === 'machinespirits.tutor-stub.frame-refuser-opportunity-registration.v1'
+      ? buildFrameRefuserOpportunityReport(traces, args, binding)
+      : binding
+        ? buildResistanceAxisDiscriminationReport(traces, args, binding)
+        : buildResistanceAxisCalibrationReport(traces, args);
   if (!report.integrity.pass) throw new Error('calibration integrity checks failed');
   const output = `${JSON.stringify(report, null, 2)}\n`;
   if (args.out) {

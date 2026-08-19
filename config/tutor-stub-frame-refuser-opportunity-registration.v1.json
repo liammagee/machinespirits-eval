@@ -1,0 +1,88 @@
+{
+  "schema": "machinespirits.tutor-stub.frame-refuser-opportunity-registration.v1",
+  "status": "frozen_zero_call_protocol",
+  "workplanItem": "resistance-action-register-integration",
+  "frozenAt": "2026-08-19",
+  "claimBoundary": "This six-dialogue gate can establish only whether frame_refuser supplies three distinct, early, guard-eligible public prefixes while prospective frame_defiant controls remain productive jurisdiction disputes without refusal leakage. It cannot establish tutor adaptation, pedagogical-move efficacy, register efficacy, learning outcomes, human validity, or transfer to the cell harness.",
+  "authorization": {
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "requiredBeforeLiveRun": [
+      "committed registration and executable zero-call endpoint preflight",
+      "committed endpoint-runtime certificate",
+      "pinned clean post-merge origin/main launch commit and create-once destination",
+      "committed digest-bound GO request",
+      "explicit human approval of the exact request digest and 288-attempt ceiling"
+    ]
+  },
+  "preservation": {
+    "baselineTag": "experiment/resistance-action-register/pre-integration/freeze-2026-08-18",
+    "baselineCommit": "45985541188bc935a4ef9a4893d9b65451f0fa61",
+    "protectedOutcomeProfiles": ["low_agency", "overconfident"],
+    "heldoutAxisReportSha256": "714f69f489297c571ff4157ce0269e6d3f68ccac485453b53d05cc09d5908c75",
+    "priorNegativeResult": "authoritative_unchanged",
+    "frozenFiveAxisObserver": "unchanged_no_sixth_axis",
+    "productiveFrameDefiance": "nearest_neighbour_control_not_treatment_opportunity"
+  },
+  "design": {
+    "profiles": ["frame_refuser", "frame_defiant"],
+    "targetProfile": "frame_refuser",
+    "controlProfile": "frame_defiant",
+    "policies": ["field"],
+    "registerPalette": "safe",
+    "runsPerProfile": 3,
+    "expectedDialogues": 6,
+    "world": "world_005_marrick",
+    "turns": 8,
+    "safetyTurns": 8,
+    "dagMode": "strict_dag",
+    "runSeed": 20260820,
+    "models": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna"
+    },
+    "cliEffort": "low",
+    "historyTurns": 4,
+    "maxTokens": 4096,
+    "modelCallBudgetPerDialogue": 48,
+    "maxPlannedModelAttempts": 288,
+    "parallelism": 3,
+    "progressIntervalSeconds": 30,
+    "releaseSpeed": 1,
+    "registerOverlayThreshold": 0.7
+  },
+  "measurement": {
+    "reportSchema": "machinespirits.tutor-stub.frame-refuser-opportunity-gate.v1",
+    "publicObserverSchema": "machinespirits.resistant-learner-observation.v1",
+    "prefixSchema": "machinespirits.tutor-stub.resistance-action-register-prefix.v1",
+    "targetObservation": "frame_jurisdiction_refusal",
+    "controlObservation": "frame_jurisdiction_dispute_with_content_bearing_true",
+    "prefixExtractor": "services/tutorStubResistanceActionRegisterStudy.js#extractTutorStubResistanceActionRegisterPrefix",
+    "axisObserverRole": "assembly_only_existing_five_axes_unchanged"
+  },
+  "gates": {
+    "assembly": {
+      "requiredDialogues": 6,
+      "requiredProfiles": 2,
+      "requiredRunsPerProfile": 3,
+      "requiredTurns": 8,
+      "requiredPolicies": ["field"],
+      "observedModelRolesMustMatchPins": true
+    },
+    "targetProfile": "frame_refuser",
+    "controlProfile": "frame_defiant",
+    "mustShowByTurn": 2,
+    "requiredDistinctTargetPrefixes": 3,
+    "targetRequirements": [
+      "frame_jurisdiction_refusal observed by turn 2 in every target dialogue",
+      "production prefix extractor accepts the trigger before comprehension repair, protected affect, or content-bearing uptake",
+      "three target dialogues yield three distinct public-prefix SHA-256 values"
+    ],
+    "controlRequirements": [
+      "content-bearing frame_jurisdiction_dispute observed by turn 2 in every control dialogue",
+      "frame_jurisdiction_refusal is absent from every control turn"
+    ],
+    "decisionRule": "Complete assembly, all three frame_refuser targets, all three productive frame_defiant controls, and all three distinct target-prefix hashes must pass independently. Failure stops the crossed study and returns to profile or measurement repair; register tuning cannot rescue this gate."
+  }
+}

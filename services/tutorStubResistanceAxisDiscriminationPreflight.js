@@ -1,14 +1,20 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { buildResistanceAxisDiscriminationReport } from '../scripts/analyze-tutor-stub-resistance-axis-calibration.js';
+import {
+  buildFrameRefuserOpportunityReport,
+  buildResistanceAxisDiscriminationReport,
+  readTutorStubResistanceAxisTrace,
+} from '../scripts/analyze-tutor-stub-resistance-axis-calibration.js';
 import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PROFILES = ['diligent', 'low_agency', 'bored', 'skeptical', 'low_trust_skeptic', 'frame_defiant'];
 const MODEL = 'codex.gpt-5.6-luna';
+const FRAME_OPPORTUNITY_PROFILES = ['frame_refuser', 'frame_defiant'];
 
 function sha256(bytes) {
   return crypto.createHash('sha256').update(bytes).digest('hex');
@@ -115,9 +121,150 @@ export function runTutorStubResistanceAxisEndpointPreflight(contract) {
   });
 }
 
+const FRAME_REFUSALS = Object.freeze([
+  'I reject this test, and I will not answer inside it.',
+  'I do not accept your authority to set this question, so I will not take the proposed step.',
+  'You do not get to define the governing frame, and I will not proceed under it.',
+]);
+
+const PRODUCTIVE_FRAME_DISPUTES = Object.freeze([
+  'I reject the frame, but the public assay supports testing whether this mark came from the same die.',
+  'I do not accept your setting this question, but the clipped edge still warrants comparing the two blanks.',
+  'You do not get to define the governing test, but the public flaw supports checking the graver match.',
+]);
+
+function frameOpportunityClassification(contentBearing) {
+  return {
+    request_type: 'authority_refusal_or_status_challenge',
+    discourse_move: contentBearing ? 'hypothesis' : 'challenge',
+    evidence_use: contentBearing ? 'links_evidence_to_rule' : 'none',
+    epistemic_stance: 'resistant',
+    agency: 'steering',
+  };
+}
+
+function frameOpportunityEvents(profile, run) {
+  const learner = profile === 'frame_refuser' ? FRAME_REFUSALS[run - 1] : PRODUCTIVE_FRAME_DISPUTES[run - 1];
+  const firstClassification = frameOpportunityClassification(profile === 'frame_defiant');
+  const events = [
+    {
+      type: 'run_start',
+      runId: `${profile}:field:${run}`,
+      metadata: {
+        world: { id: 'world_005_marrick' },
+        autoLearner: { profileId: profile, modelRef: MODEL },
+        modelRef: MODEL,
+        classifier: { modelRef: MODEL },
+      },
+    },
+  ];
+  for (let turn = 1; turn <= 8; turn += 1) {
+    const turnLearner = turn === 1 ? learner : `The public comparison remains available at step ${turn}.`;
+    const classification =
+      turn === 1
+        ? firstClassification
+        : {
+            request_type: 'synthetic',
+            discourse_move: 'inference',
+            evidence_use: 'links_evidence_to_rule',
+            epistemic_stance: 'engaged',
+            agency: 'steering',
+          };
+    events.push({
+      type: 'turn_complete',
+      turn,
+      turnId: `${profile}:field:${run}:t${turn}`,
+      turnRecord: {
+        turn,
+        turnId: `${profile}:field:${run}:t${turn}`,
+        learner: turnLearner,
+        tutor: 'Continue with the nearest public comparison.',
+        classification: { turn: classification },
+        registerSelection: { policy: 'field' },
+      },
+    });
+  }
+  events.push({ type: 'run_end', reason: 'synthetic_zero_call_preflight' });
+  return events;
+}
+
+export function buildTutorStubFrameRefuserOpportunitySyntheticCorpus() {
+  return FRAME_OPPORTUNITY_PROFILES.flatMap((profile) =>
+    Array.from({ length: 3 }, (_, index) => {
+      const run = index + 1;
+      return {
+        case_id: `${profile}:field:${run}`,
+        arm: profile,
+        profile,
+        policy: 'field',
+        models: { tutor: MODEL, analysis: MODEL, learner: MODEL },
+        turns: 8,
+        traceEvents: frameOpportunityEvents(profile, run),
+      };
+    }),
+  );
+}
+
+export function buildTutorStubFrameRefuserOpportunityPreflightPackets(cases) {
+  return FRAME_OPPORTUNITY_PROFILES.map((profile) => {
+    const rows = cases.filter((row) => row.profile === profile);
+    return {
+      schema: 'machinespirits.tutor-stub.frame-refuser-opportunity-preflight-packet.v1',
+      packet_id: profile,
+      case_ids: rows.map((row) => row.case_id),
+      cases: rows,
+    };
+  });
+}
+
+export function assembleTutorStubFrameRefuserOpportunityPreflight({ packets, contract }) {
+  const cases = packets.flatMap((packet) => packet.cases);
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'frame-refuser-opportunity-preflight-'));
+  try {
+    const traces = cases.map((row, index) => {
+      const run = (index % 3) + 1;
+      const directory = path.join(temporary, row.profile, 'traces', `field-r${run}`);
+      fs.mkdirSync(directory, { recursive: true });
+      const tracePath = path.join(directory, 'trace.jsonl');
+      fs.writeFileSync(tracePath, `${row.traceEvents.map((event) => JSON.stringify(event)).join('\n')}\n`);
+      return readTutorStubResistanceAxisTrace(tracePath);
+    });
+    const report = buildFrameRefuserOpportunityReport(traces, analyzerArgs(contract), registrationBinding(contract));
+    return {
+      case_ids: cases.map((row) => row.case_id),
+      endpoint_status: {
+        frame_refuser_treatment_opportunity: report.gate.target.every((row) => typeof row.pass === 'boolean')
+          ? 'complete'
+          : 'incomplete',
+        frame_defiant_productive_control: report.gate.control.every((row) => typeof row.pass === 'boolean')
+          ? 'complete'
+          : 'incomplete',
+        distinct_public_prefix_assembly:
+          typeof report.gate.distinctPrefixes.pass === 'boolean' ? 'complete' : 'incomplete',
+      },
+      report,
+    };
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+}
+
+export function runTutorStubFrameRefuserOpportunityEndpointPreflight(contract) {
+  return runPaidStudyEndpointPreflight({
+    contract,
+    cases: buildTutorStubFrameRefuserOpportunitySyntheticCorpus(),
+    buildPackets: buildTutorStubFrameRefuserOpportunityPreflightPackets,
+    assemble: assembleTutorStubFrameRefuserOpportunityPreflight,
+  });
+}
+
 export default {
+  assembleTutorStubFrameRefuserOpportunityPreflight,
   assembleTutorStubResistanceAxisPreflight,
+  buildTutorStubFrameRefuserOpportunityPreflightPackets,
+  buildTutorStubFrameRefuserOpportunitySyntheticCorpus,
   buildTutorStubResistanceAxisPreflightPackets,
   buildTutorStubResistanceAxisSyntheticCorpus,
+  runTutorStubFrameRefuserOpportunityEndpointPreflight,
   runTutorStubResistanceAxisEndpointPreflight,
 };

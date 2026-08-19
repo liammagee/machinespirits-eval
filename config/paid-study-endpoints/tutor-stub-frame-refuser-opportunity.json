@@ -1,0 +1,130 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-contract.v1",
+  "study_id": "tutor-stub-frame-refuser-opportunity-v1",
+  "registration": {
+    "registration_path": "config/tutor-stub-frame-refuser-opportunity-registration.v1.json",
+    "registration_sha256": "0e00b9d4e23c5e6d737646c375375cac8ca295b4a089a7a35b868af7ab796cc4",
+    "primary_endpoint_ids": [
+      "frame_refuser_treatment_opportunity",
+      "frame_defiant_productive_control",
+      "distinct_public_prefix_assembly"
+    ],
+    "required_profiles": ["frame_refuser", "frame_defiant"],
+    "required_runs_per_profile": 3,
+    "required_turns": 8,
+    "required_policies": ["field"],
+    "required_models": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna"
+    }
+  },
+  "registered_scale": {
+    "cases": 6,
+    "unit": "dialogue"
+  },
+  "runner": {
+    "packet_builder": "services/tutorStubResistanceAxisDiscriminationPreflight.js#buildTutorStubFrameRefuserOpportunityPreflightPackets",
+    "result_assembler": "scripts/analyze-tutor-stub-resistance-axis-calibration.js#buildFrameRefuserOpportunityReport",
+    "packet_cap_bytes": 100000,
+    "emitted_event_fields": [
+      "arm",
+      "case_id",
+      "models.analysis",
+      "models.learner",
+      "models.tutor",
+      "policy",
+      "profile",
+      "traceEvents",
+      "turns"
+    ]
+  },
+  "channels": {
+    "opportunity_analyzer": {
+      "enabled": true,
+      "implementation": "scripts/analyze-tutor-stub-resistance-axis-calibration.js#buildFrameRefuserOpportunityReport"
+    },
+    "public_resistance_observer": {
+      "enabled": true,
+      "implementation": "services/resistantLearnerObservation.js#observeResistantLearnerTurn"
+    },
+    "production_prefix_extractor": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceActionRegisterStudy.js#extractTutorStubResistanceActionRegisterPrefix"
+    },
+    "opportunity_registration": {
+      "enabled": true,
+      "implementation": "config/tutor-stub-frame-refuser-opportunity-registration.v1.json"
+    }
+  },
+  "endpoints": [
+    {
+      "id": "frame_refuser_treatment_opportunity",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": [
+        "opportunity_analyzer",
+        "public_resistance_observer",
+        "production_prefix_extractor",
+        "opportunity_registration"
+      ],
+      "required_event_fields": [
+        "arm",
+        "case_id",
+        "models.analysis",
+        "models.learner",
+        "models.tutor",
+        "policy",
+        "profile",
+        "traceEvents",
+        "turns"
+      ],
+      "denominator": {
+        "expected_cases": 3,
+        "include_arms": ["frame_refuser"]
+      }
+    },
+    {
+      "id": "frame_defiant_productive_control",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": ["opportunity_analyzer", "public_resistance_observer", "opportunity_registration"],
+      "required_event_fields": [
+        "arm",
+        "case_id",
+        "models.analysis",
+        "models.learner",
+        "models.tutor",
+        "policy",
+        "profile",
+        "traceEvents",
+        "turns"
+      ],
+      "denominator": {
+        "expected_cases": 3,
+        "include_arms": ["frame_defiant"]
+      }
+    },
+    {
+      "id": "distinct_public_prefix_assembly",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": ["opportunity_analyzer", "production_prefix_extractor", "opportunity_registration"],
+      "required_event_fields": [
+        "arm",
+        "case_id",
+        "models.analysis",
+        "models.learner",
+        "models.tutor",
+        "policy",
+        "profile",
+        "traceEvents",
+        "turns"
+      ],
+      "denominator": {
+        "expected_cases": 3,
+        "include_arms": ["frame_refuser"]
+      }
+    }
+  ]
+}
