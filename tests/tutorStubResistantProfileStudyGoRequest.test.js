@@ -30,7 +30,7 @@ test('study GO request binds the frozen packet and remains non-executable before
   assert.equal(report.liveRunAuthorized, false);
   assert.equal(report.modelCalls, 0);
   assert.equal(report.productionWrites, 0);
-  assert.equal(report.launchCommit, 'f95e245c8ef9dab1b9b3da374508f6efd6e90006');
+  assert.equal(report.launchCommit, 'ae940515978030c7f9db1ea72c4c42a647034272');
   assert.equal(report.budget.maximumPlannedModelAttempts, 864);
   assert.equal(report.budget.retryOrResumeAuthority, 'none');
   assert.match(report.requestSha256, /^[0-9a-f]{64}$/u);
