@@ -1,13 +1,13 @@
 {
-  "generated": "2026-08-19T09:23:32.097Z",
+  "generated": "2026-08-19T15:04:36.466Z",
   "counts": {
     "total": 514,
     "byStatus": {
-      "done": 486,
+      "done": 487,
       "blocked": 7,
       "dropped": 10,
       "triaged": 1,
-      "active": 5,
+      "active": 4,
       "archived": 4,
       "review": 1
     },
@@ -241,42 +241,6 @@
         "teaching",
         "externalization",
         "content-philosophy"
-      ]
-    },
-    {
-      "id": "optimize-ci-agent-iteration-loop",
-      "title": "Reduce agent iteration and CI feedback latency",
-      "status": "active",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-18",
-      "updated": "2026-08-18",
-      "branch": "codex/ci-focused-fast-path",
-      "verification": "A reproducible PR and Actions timing baseline identifies agent-side and CI-side delay; instruction and workflow changes remove redundant authorization ceremony and low-risk full-matrix runs without weakening research authority, fail-closed runtime coverage, or required workplan/ref checks; follow-up hosted PRs demonstrate the reduced latency.",
-      "links": {
-        "prs": [
-          665,
-          666,
-          669,
-          670,
-          671,
-          672,
-          678
-        ],
-        "items": [
-          "expedite-ci-expensive-boundaries",
-          "local-ci-parity-runner",
-          "resistance-action-register-integration"
-        ]
-      },
-      "tags": [
-        "ci",
-        "agents",
-        "developer-experience",
-        "latency",
-        "governance"
       ]
     },
     {
@@ -2414,6 +2378,42 @@
       ],
       "milestone": "human-pilot-prep",
       "branch": "codex/make-pilot-state-writes-atomic"
+    },
+    {
+      "id": "optimize-ci-agent-iteration-loop",
+      "title": "Reduce agent iteration and CI feedback latency",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-18",
+      "updated": "2026-08-19",
+      "verification": "A reproducible PR and Actions timing baseline identifies agent-side and CI-side delay; instruction and workflow changes remove redundant authorization ceremony and low-risk full-matrix runs without weakening research authority, fail-closed runtime coverage, or required workplan/ref checks; follow-up hosted PRs demonstrate the reduced latency.",
+      "links": {
+        "prs": [
+          665,
+          666,
+          669,
+          670,
+          671,
+          672,
+          678,
+          680
+        ],
+        "items": [
+          "expedite-ci-expensive-boundaries",
+          "local-ci-parity-runner",
+          "resistance-action-register-integration"
+        ]
+      },
+      "tags": [
+        "ci",
+        "agents",
+        "developer-experience",
+        "latency",
+        "governance"
+      ]
     },
     {
       "id": "optimize-hermetic-test-suite",
