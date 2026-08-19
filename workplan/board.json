@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-19T17:19:01.561Z",
+  "generated": "2026-08-19T17:22:23.844Z",
   "counts": {
     "total": 516,
     "byStatus": {
@@ -280,7 +280,8 @@
           "docs/tutor-stub-resistant-profile-measurement-recheck-technical-recovery-study-go-request.md",
           "docs/tutor-stub-resistance-axis-heldout-registration.md",
           "docs/tutor-stub-resistance-axis-heldout-live-readiness-hold.md",
-          "docs/tutor-stub-resistance-axis-heldout-study-go-request.md"
+          "docs/tutor-stub-resistance-axis-heldout-study-go-request.md",
+          "docs/tutor-stub-resistance-action-register-crossed-registration.md"
         ],
         "code": [
           "services/pedagogicalMove/contract.js",
@@ -317,7 +318,8 @@
           "scripts/check-tutor-stub-resistant-profile-study-go-request.js",
           "services/tutorStubAutomatedLearnerGenerationRuntime.js",
           "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json",
-          "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.endpoint-go.json"
+          "config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.endpoint-go.json",
+          "config/tutor-stub-resistance-action-register-crossed-registration.v1.json"
         ]
       },
       "tags": [
@@ -328,7 +330,7 @@
         "learner-profiles",
         "registers"
       ],
-      "branch": "codex/action-before-register-shadow"
+      "branch": "codex/resistance-crossed-registration"
     },
     {
       "id": "edged-register-stub-dag-replication",
