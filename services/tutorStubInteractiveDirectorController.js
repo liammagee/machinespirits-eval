@@ -103,10 +103,10 @@ export function createTutorStubInteractiveDirectorController(dependencies) {
         behavior: oneLine(definitions[id]?.contract, { max: 220 }),
         selectable: true,
       })),
+      learnerProfileSelectionAvailable: mixedLearner.enabled,
       learnerProfiles: learnerProfileIds().map((id) => ({
         id,
         description: learnerProfileDescription(id),
-        selectableInCurrentSession: mixedLearner.enabled,
       })),
       returnToScene: {
         automaticAfterAnswer: true,
