@@ -10,6 +10,27 @@ import { fileURLToPath } from 'node:url';
 import { validateTutorStubResistantProfileStudyGoRequest } from '../scripts/check-tutor-stub-resistant-profile-study-go-request.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const FRAME_REFUSER_OPPORTUNITY_CRITICAL_SOURCE_CLOSURE = [
+  'scripts/run-tutor-stub-qa-matrix.js',
+  'scripts/run-tutor-stub-auto-eval.js',
+  'scripts/analyze-tutor-stub-resistance-axis-calibration.js',
+  'scripts/tutor-stub.js',
+  'scripts/tutor-stub-learner-profile-contracts.js',
+  'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
+  'services/tutorStubAutomatedLearnerGenerationRuntime.js',
+  'services/resistantLearnerObservation.js',
+  'services/resistantLearnerAxisObservation.js',
+  'services/tutorStubResistanceActionRegisterStudy.js',
+  'services/tutorStubActionBeforeRegisterShadow.js',
+  'services/pedagogicalMove/resistantProfileWarrantShadow.js',
+  'services/tutorStubEdgeTimingPolicy.js',
+  'services/tutorStubResistanceAxisDiscriminationPreflight.js',
+  'services/paidStudyEndpointPreflight.js',
+  'config/drama-derivation/world-005-marrick.yaml',
+  'config/providers.yaml',
+  'package.json',
+  'package-lock.json',
+];
 const REQUEST_PATH = path.join(ROOT, 'config', 'tutor-stub-resistant-profile-discrimination-study-go-request.v1.json');
 const REPLACEMENT_REQUEST_PATH = path.join(
   ROOT,
@@ -248,6 +269,7 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
     const registrationPath = fixture.registrationPath;
     const endpointPath = fixture.endpointPath;
     const certificatePath = fixture.certificatePath;
+    const registration = JSON.parse(fs.readFileSync(path.join(ROOT, registrationPath), 'utf8'));
     const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, certificatePath), 'utf8'));
     const artifactRoot = `.test-tmp/frame-refuser-opportunity-request-test-${fixture.version}-${process.pid}`;
     const live = [
@@ -311,7 +333,14 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
         modelCallsAuthorized: false,
         liveRunAuthorized: false,
       },
-      source: { launchCommit, launchTree, closure: [] },
+      source: {
+        launchCommit,
+        launchTree,
+        closure: FRAME_REFUSER_OPPORTUNITY_CRITICAL_SOURCE_CLOSURE.map((closurePath) => ({
+          path: closurePath,
+          sha256: digest(path.join(ROOT, closurePath)),
+        })),
+      },
       opportunityGate: {
         type: 'prospective_frame_refuser_treatment_opportunity',
         priorArtifactsReused: false,
@@ -337,6 +366,17 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
         controlProfile: 'frame_defiant',
         mustShowByTurn: 2,
         requiredDistinctTargetPrefixes: 3,
+        targetObservation: registration.measurement.targetObservation,
+        controlObservation: registration.measurement.controlObservation,
+        ...(fixture.version === 'v2'
+          ? {
+              controlParticipationForms: registration.measurement.controlParticipationForms,
+              refusalRule: registration.measurement.refusalRule,
+            }
+          : {}),
+        analysisTraceSelection: 'exact_profile_trace_files_only',
+        analysisSelectorExcludesRunEvents: true,
+        frozenFiveAxisObserverChanged: false,
       },
       bindings: {
         registration: { path: registrationPath, sha256: digest(path.join(ROOT, registrationPath)) },
@@ -409,5 +449,74 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
     assert.equal(report.productionWrites, 0);
     assert.equal(report.budget.maximumPlannedModelAttempts, 288);
     assert.match(report.exactApprovalStatement, /6-dialogue Luna study/u);
+
+    const invalidRequests = [
+      {
+        name: 'empty-source-closure',
+        mutate(value) {
+          value.source.closure = [];
+        },
+        pattern: /frame-refuser-opportunity-source-closure/u,
+      },
+      {
+        name: 'missing-source-closure',
+        mutate(value) {
+          delete value.source.closure;
+        },
+        pattern: /frame-refuser-opportunity-source-closure/u,
+      },
+      {
+        name: 'incomplete-critical-source-closure',
+        mutate(value) {
+          value.source.closure = value.source.closure.slice(1);
+        },
+        pattern: /frame-refuser-opportunity-critical-source-closure/u,
+      },
+      {
+        name: 'mismatched-control-observation',
+        mutate(value) {
+          value.measurement.controlObservation = 'wrong_control_semantics';
+        },
+        pattern: /frame-refuser-opportunity-measurement-binding/u,
+      },
+      {
+        name: 'mismatched-target-observation',
+        mutate(value) {
+          value.measurement.targetObservation = 'wrong_target_semantics';
+        },
+        pattern: /frame-refuser-opportunity-measurement-binding/u,
+      },
+    ];
+    if (fixture.version === 'v2') {
+      invalidRequests.push(
+        {
+          name: 'mismatched-refusal-rule',
+          mutate(value) {
+            value.measurement.refusalRule = 'wrong_refusal_semantics';
+          },
+          pattern: /frame-refuser-opportunity-measurement-binding/u,
+        },
+        {
+          name: 'mismatched-control-participation-forms',
+          mutate(value) {
+            value.measurement.controlParticipationForms = ['content_bearing_contribution'];
+          },
+          pattern: /frame-refuser-opportunity-measurement-binding/u,
+        },
+      );
+    }
+    for (const invalid of invalidRequests) {
+      const invalidRequest = structuredClone(request);
+      invalid.mutate(invalidRequest);
+      const invalidPath = path.join(temporary, `${fixture.version}-${invalid.name}.json`);
+      fs.writeFileSync(invalidPath, `${JSON.stringify(invalidRequest, null, 2)}\n`);
+      const invalidResult = spawnSync(
+        process.execPath,
+        ['scripts/check-tutor-stub-resistant-profile-study-go-request.js', '--request', invalidPath, '--json'],
+        { cwd: ROOT, encoding: 'utf8' },
+      );
+      assert.notEqual(invalidResult.status, 0, `${fixture.version} ${invalid.name} must fail closed`);
+      assert.match(invalidResult.stderr, invalid.pattern);
+    }
   }
 });

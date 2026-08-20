@@ -14,6 +14,28 @@ const DEFAULT_REQUEST = path.join(
   'tutor-stub-resistant-profile-discrimination-study-go-request.v1.json',
 );
 
+const FRAME_REFUSER_OPPORTUNITY_CRITICAL_SOURCE_CLOSURE = Object.freeze([
+  'scripts/run-tutor-stub-qa-matrix.js',
+  'scripts/run-tutor-stub-auto-eval.js',
+  'scripts/analyze-tutor-stub-resistance-axis-calibration.js',
+  'scripts/tutor-stub.js',
+  'scripts/tutor-stub-learner-profile-contracts.js',
+  'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
+  'services/tutorStubAutomatedLearnerGenerationRuntime.js',
+  'services/resistantLearnerObservation.js',
+  'services/resistantLearnerAxisObservation.js',
+  'services/tutorStubResistanceActionRegisterStudy.js',
+  'services/tutorStubActionBeforeRegisterShadow.js',
+  'services/pedagogicalMove/resistantProfileWarrantShadow.js',
+  'services/tutorStubEdgeTimingPolicy.js',
+  'services/tutorStubResistanceAxisDiscriminationPreflight.js',
+  'services/paidStudyEndpointPreflight.js',
+  'config/drama-derivation/world-005-marrick.yaml',
+  'config/providers.yaml',
+  'package.json',
+  'package-lock.json',
+]);
+
 function parseArgs(argv) {
   const args = { request: DEFAULT_REQUEST, json: false };
   for (let index = 0; index < argv.length; index += 1) {
@@ -185,7 +207,24 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   );
 
   const sourceAudit = sourceCommitAudit(request.source);
-  for (const entry of request.source.closure) {
+  const sourceClosure = request.source.closure;
+  if (isFrameRefuserOpportunity) {
+    assertion(
+      checks,
+      'frame-refuser-opportunity-source-closure',
+      Array.isArray(sourceClosure) && sourceClosure.length > 0,
+      'the opportunity request must bind a non-empty critical executable source closure',
+    );
+    const closurePaths = sourceClosure.map((entry) => entry?.path);
+    assertion(
+      checks,
+      'frame-refuser-opportunity-critical-source-closure',
+      new Set(closurePaths).size === closurePaths.length &&
+        FRAME_REFUSER_OPPORTUNITY_CRITICAL_SOURCE_CLOSURE.every((entry) => closurePaths.includes(entry)),
+      'launch, analyzer, observer, runtime, prefix, preflight, validator, world, route, and dependency files remain bound',
+    );
+  }
+  for (const entry of sourceClosure) {
     validateFileBinding(checks, `source-closure-${entry.path}`, entry);
   }
   checks.push({
@@ -489,11 +528,21 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         request.measurement.controlProfile === 'frame_defiant' &&
         request.measurement.mustShowByTurn === 2 &&
         request.measurement.requiredDistinctTargetPrefixes === 3 &&
+        request.measurement.targetObservation === registered.measurement.targetObservation &&
+        request.measurement.controlObservation === registered.measurement.controlObservation &&
+        request.measurement.analysisTraceSelection === 'exact_profile_trace_files_only' &&
+        request.measurement.analysisSelectorExcludesRunEvents === true &&
+        request.measurement.frozenFiveAxisObserverChanged === false &&
+        (registrationVersion === 1 ||
+          (request.measurement.refusalRule === registered.measurement.refusalRule &&
+            Array.isArray(request.measurement.controlParticipationForms) &&
+            request.measurement.controlParticipationForms.join(',') ===
+              registered.measurement.controlParticipationForms.join(','))) &&
         registered.gates.targetProfile === 'frame_refuser' &&
         registered.gates.controlProfile === 'frame_defiant' &&
         registered.gates.mustShowByTurn === 2 &&
         registered.gates.requiredDistinctTargetPrefixes === 3,
-      'three early refusal prefixes and productive frame-defiant controls remain the only decision gate',
+      'request-level target, control, refusal, trace-selection, and gate semantics match the selected registration',
     );
     assertion(
       checks,

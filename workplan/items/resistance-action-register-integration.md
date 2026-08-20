@@ -601,18 +601,23 @@ and explicit human approval.
   observer, production analyzer, and prefix extractor at target/control trigger
   turns `2,1,1` and `1,2,1`; all three treatment prefixes are distinct, all
   three controls preserve contract-licensed participation without refusal
-  leakage, and exhausted control adherence is classified as the existing typed
-  technical failure with no public candidate. The versioned endpoint contract
+  leakage, and the preflight invokes the production typed-throw wiring for
+  exhausted control adherence and confirms that it exposes no public candidate.
+  The versioned endpoint contract
   has file SHA-256
-  `116e887caa20f577d54484bb5e711c047382dffd871f3cc314021dd6346878c3`
+  `28560adbc08af33ac14307ea796fbe3dcf5777889cc59b0859268c1abf2c8779`
   and canonical SHA-256
-  `5967c808ab833ad41a4f1c87787b309ec366f8acadf1a8df6234e44f19f9786e`;
+  `32ba20d27edcbaaa87059e027a31453cf782f86d86c6d5091b48364788505a9c`;
   its zero-call/zero-production-write preflight SHA-256 is
-  `0e00fa72e756f802c986f761076fa9a47b23bdede7cf071888c7e82cce136339`,
+  `8e9a77d3da4c6c2107debec727d727f7bda36e972be9161dd76cdfdbc7e2ed1b`,
   and its endpoint certificate file SHA-256 is
-  `0362c61fb65359c81994ce328e223f3c684d6e9f5189f6643a8a0714ea65f2fe`.
-  The dependency-free GO validator accepts a future v2 request while retaining
-  historical v1 semantics and digests. No v2 GO request exists; the registration
-  remains `prospective_zero_call_repair_hold` with `goRequestPrepared=false`
-  and both authorization booleans false. No model call, study output, paper
-  claim, or production write was made by this readiness work.
+  `c9a9899f0f2d56a87f16cc4f2f9f1b0bb7437a8aeeef8bdd4e3e2b6bd9c30de2`.
+  The dependency-free GO validator accepts a future v2 request only when its
+  nonempty 19-file critical executable closure is complete and its target,
+  version-specific control/refusal, trace-selection, and five-axis measurement
+  semantics match the bound registration; empty, missing, incomplete, or
+  mismatched requests fail closed. Historical v1 semantics and artifact digests
+  remain unchanged. No v2 GO request exists; the registration remains
+  `prospective_zero_call_repair_hold` with `goRequestPrepared=false` and both
+  authorization booleans false. No model call, study output, paper claim, or
+  production write was made by this readiness work.

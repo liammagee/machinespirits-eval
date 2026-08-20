@@ -32,6 +32,19 @@ import {
 
 export { FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE, classifyFrameDefiantAdherenceExhaustion };
 
+export function throwFrameDefiantAdherenceExhaustion({ profile, repairAttempts }) {
+  const exhaustion = classifyFrameDefiantAdherenceExhaustion({ profile, repairAttempts });
+  const error = new Error(
+    `frame_defiant adherence exhausted after ${repairAttempts} repair attempts; refusing to publish an invalid control turn`,
+  );
+  error.code = exhaustion.code;
+  error.profile = exhaustion.profile;
+  error.repairAttempts = exhaustion.repairAttempts;
+  error.disposition = exhaustion.disposition;
+  error.publishPublicCandidate = exhaustion.publishPublicCandidate;
+  throw error;
+}
+
 const AUTO_LEARNER_SYSTEM_PROMPT = [
   'You are an automated learner in an experimental tutoring dialogue.',
   'You see only the public transcript and the latest tutor message.',
@@ -568,13 +581,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
         repairAttempts: exhaustion.repairAttempts,
         disposition: exhaustion.disposition,
       });
-      const error = new Error(
-        `frame_defiant adherence exhausted after ${repairs} repair attempts; refusing to publish an invalid control turn`,
-      );
-      error.code = exhaustion.code;
-      error.profile = exhaustion.profile;
-      error.repairAttempts = exhaustion.repairAttempts;
-      throw error;
+      throwFrameDefiantAdherenceExhaustion({ profile: runtime.profileId, repairAttempts: repairs });
     }
     return { generated: candidate, precomputedRaw: raw, repaired: repairs > 0, passed };
   }

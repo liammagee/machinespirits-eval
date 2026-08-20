@@ -57,9 +57,9 @@
       "enabled": true,
       "implementation": "config/tutor-stub-frame-refuser-opportunity-registration.v2.json"
     },
-    "adherence_exhaustion_classifier": {
+    "adherence_exhaustion_typed_throw": {
       "enabled": true,
-      "implementation": "services/resistantLearnerObservation.js#classifyFrameDefiantAdherenceExhaustion"
+      "implementation": "services/tutorStubAutomatedLearnerGenerationRuntime.js#throwFrameDefiantAdherenceExhaustion"
     }
   },
   "endpoints": [
@@ -135,7 +135,7 @@
       "id": "frame_defiant_adherence_exhaustion_typed_failure",
       "role": "diagnostic",
       "enabled": true,
-      "required_channels": ["adherence_exhaustion_classifier"],
+      "required_channels": ["adherence_exhaustion_typed_throw"],
       "required_event_fields": ["adherenceExhaustionAudit", "arm", "case_id", "profile"],
       "denominator": {
         "expected_cases": 3,

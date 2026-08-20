@@ -13,8 +13,8 @@ import {
 import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
 import {
   FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE,
-  classifyFrameDefiantAdherenceExhaustion,
-} from './resistantLearnerObservation.js';
+  throwFrameDefiantAdherenceExhaustion,
+} from './tutorStubAutomatedLearnerGenerationRuntime.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PROFILES = ['diligent', 'low_agency', 'bored', 'skeptical', 'low_trust_skeptic', 'frame_defiant'];
@@ -291,10 +291,21 @@ function prospectiveFrameOpportunityEvents(profile, run) {
 
 function frameDefiantAdherenceExhaustionAudit(profile) {
   if (profile !== 'frame_defiant') return { applicable: false, classification: null };
-  return {
-    applicable: true,
-    classification: classifyFrameDefiantAdherenceExhaustion({ profile, repairAttempts: 2 }),
-  };
+  try {
+    throwFrameDefiantAdherenceExhaustion({ profile, repairAttempts: 2 });
+  } catch (error) {
+    return {
+      applicable: true,
+      classification: {
+        code: error.code,
+        profile: error.profile,
+        repairAttempts: error.repairAttempts,
+        disposition: error.disposition,
+        publishPublicCandidate: error.publishPublicCandidate,
+      },
+    };
+  }
+  throw new Error('frame_defiant adherence exhaustion diagnostic did not throw');
 }
 
 export function buildTutorStubFrameRefuserOpportunitySyntheticCorpus() {
