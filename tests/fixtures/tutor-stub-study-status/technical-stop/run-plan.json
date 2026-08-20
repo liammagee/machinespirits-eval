@@ -1,0 +1,92 @@
+{
+  "schema": "machinespirits.experiment-run-plan.v1",
+  "runId": "six-unit-technical-stop",
+  "createdAt": "2026-08-20T12:00:00.000Z",
+  "runner": "scripts/run-tutor-stub-qa-matrix.js",
+  "provenance": {
+    "git": {
+      "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "branch": "fixture",
+      "dirty": false
+    }
+  },
+  "models": {
+    "tutor": {
+      "requested": "codex.gpt-5.6-luna",
+      "resolved": "codex/gpt-5.6-luna",
+      "observed": null
+    },
+    "analyzer": {
+      "requested": "codex.gpt-5.6-luna",
+      "resolved": "codex/gpt-5.6-luna",
+      "observed": null
+    },
+    "learner": {
+      "requested": "codex.gpt-5.6-luna",
+      "resolved": "codex/gpt-5.6-luna",
+      "observed": null
+    }
+  },
+  "jobs": [
+    {
+      "id": "unit-1",
+      "ordinal": 1,
+      "profile": "frame_refuser",
+      "policy": "field",
+      "repeat": 1,
+      "artifactRoot": "{run_dir}/frame_refuser",
+      "plannedTurns": 8,
+      "modelCallBudget": 48
+    },
+    {
+      "id": "unit-2",
+      "ordinal": 2,
+      "profile": "frame_refuser",
+      "policy": "bland",
+      "repeat": 2,
+      "artifactRoot": "{run_dir}/frame_refuser",
+      "plannedTurns": 8,
+      "modelCallBudget": 48
+    },
+    {
+      "id": "unit-3",
+      "ordinal": 3,
+      "profile": "frame_refuser",
+      "policy": "field",
+      "repeat": 3,
+      "artifactRoot": "{run_dir}/frame_refuser",
+      "plannedTurns": 8,
+      "modelCallBudget": 48
+    },
+    {
+      "id": "unit-4",
+      "ordinal": 4,
+      "profile": "frame_refuser",
+      "policy": "bland",
+      "repeat": 4,
+      "artifactRoot": "{run_dir}/frame_refuser",
+      "plannedTurns": 8,
+      "modelCallBudget": 48
+    },
+    {
+      "id": "unit-5",
+      "ordinal": 5,
+      "profile": "frame_refuser",
+      "policy": "field",
+      "repeat": 5,
+      "artifactRoot": "{run_dir}/frame_refuser",
+      "plannedTurns": 8,
+      "modelCallBudget": 48
+    },
+    {
+      "id": "unit-6",
+      "ordinal": 6,
+      "profile": "frame_refuser",
+      "policy": "bland",
+      "repeat": 6,
+      "artifactRoot": "{run_dir}/frame_refuser",
+      "plannedTurns": 8,
+      "modelCallBudget": 48
+    }
+  ]
+}

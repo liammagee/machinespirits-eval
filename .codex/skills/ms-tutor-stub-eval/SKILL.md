@@ -112,3 +112,43 @@ Read only the references needed for the current mode:
    world/profile/policies, seeds/runs, output paths, completed/failed units, and
    whether the result is technical, incomplete, or interpretable. Stop when the
    requested gate is met.
+
+## Long-running study status
+
+Before launch, after each cohort or other meaningful milestone, at every
+technical stop, before and after any recovery, and before analysis, send a
+plain-language block in this form:
+
+```text
+State: RUNNING | PAUSED | BLOCKED | ANALYZING | COMPLETE
+Model activity: active | inactive | not verifiable
+Units: complete / active / failed / missing
+Turns: completed / planned
+Calls: reserved / completed / failed / hard ceiling
+Repairs or recovery: counts and affected units
+Last verified event: timestamp and evidence source
+Current issue: plain-language description
+Next safe action: action plus stopping condition
+Human decision required: yes/no
+```
+
+Translate activity labels into concrete meaning: “investigating” must say what
+evidence is being read, “monitoring” must say which event or artifact would
+count as change, and “defining” must name the unfinished output. Report
+configuration drift and distinguish provider-call failures from local budget or
+runtime stops. If activity cannot be verified from process or provider
+evidence, say `not verifiable`; timestamps alone do not prove a model call is
+running. When nothing material changed, send the same block with `no material
+change`. A worker sends this block to its coordinator, and the coordinator
+relays it in plain language rather than forwarding an internal event name.
+
+For a zero-call filesystem snapshot, use:
+
+```bash
+node scripts/report-tutor-stub-study-status.js <qa-artifact-root>
+node scripts/report-tutor-stub-study-status.js <qa-artifact-root> --json
+```
+
+This reporter reads plans, events, traces, budgets, and seals only. It does not
+prove live process or provider activity and must not be used as recovery
+authority.

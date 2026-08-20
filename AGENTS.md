@@ -2,6 +2,19 @@
 
 Documentation entry point: `DOCS.md` (layers, authorities, web surfaces, regeneration, deploy).
 
+## Long-running work transparency
+
+For long-running work, report every stage change and at least every 60–90 seconds. Never leave a vague gerund such as “defining,” “investigating,” or “monitoring” unexplained. Each status block must state:
+
+- whether model activity is active, inactive, or not verifiable;
+- complete, active, failed, and missing units; completed/planned turns; calls reserved, completed, failed, and the hard ceiling;
+- repairs, recovery activity, and any observed configuration drift;
+- the current blocker or uncertainty in plain language;
+- the next action and its stopping condition; and
+- explicitly whether human input is required.
+
+When nothing material changed, report “no material change” instead of going silent. Workers must send this structured status to their coordinator, and the coordinator must relay it to the user in plain language.
+
 ## Core Architecture
 
 ### Bilateral Ego-Superego Architecture
