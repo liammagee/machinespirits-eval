@@ -1,0 +1,354 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-profile-discrimination-study-go-request.v1",
+  "status": "HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL",
+  "studyId": "tutor-stub-resistance-action-register-frame-refuser-baseline-v2",
+  "authorization": {
+    "explicitHumanApproval": null,
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "standingAuthorizationAttachmentSha256": "4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b"
+  },
+  "source": {
+    "launchCommit": "9732c15c8475a2c8e4ecaaf41dd270d00db0d50b",
+    "launchTree": "a0b7a24d8be0fa276a923666a01b0551bf718f79",
+    "requirements": {
+      "headMustEqualLaunchCommit": true,
+      "checkoutMustBeClean": true,
+      "detachedLaunchWorktree": true
+    },
+    "closure": [
+      {
+        "path": "scripts/run-tutor-stub-resistance-action-register-crossed.js",
+        "sha256": "cf81cf8d1c6ab8adecd700f6fb8549dae8f99b0daee7766bb83faa56d9ffaced"
+      },
+      {
+        "path": "scripts/analyze-tutor-stub-resistance-action-register-baseline.js",
+        "sha256": "1c4f37ff635cc09432b4726a8f39440ab2b23171fd3ccab96a84887132622935"
+      },
+      {
+        "path": "scripts/tutor-stub.js",
+        "sha256": "5a7136af62db78962b253955b2fdf99ddcc87ba1c6bbbecffdb78902d0df8344"
+      },
+      {
+        "path": "scripts/check-tutor-stub-resistant-profile-study-go-request.js",
+        "sha256": "4fcccef11d5dc18c03505e5557c09654b027f80dee06414071e18f22bdec8060"
+      },
+      {
+        "path": "scripts/package-tutor-stub-resistant-profile-study-go-request.js",
+        "sha256": "536184a66e5e47730acdd0fe1e6e83c39b21c66d02ebef16944beab6418b1ad4"
+      },
+      {
+        "path": "services/tutorStubResistanceActionRegisterExecution.js",
+        "sha256": "057dbf64aaf045e72dc085269d5c547bbff3e27db77026d163ea448c3d07be8e"
+      },
+      {
+        "path": "services/tutorStubResistanceActionRegisterStudy.js",
+        "sha256": "2c24e8b40ee36836a2153bc410e76299a058fc3d29ececc655ee72baec9a0198"
+      },
+      {
+        "path": "services/tutorStubResistanceActionRegisterPreflight.js",
+        "sha256": "7d9f1f7408b3248be35f2a5101bfd11ac265f58d4a3dee0b6183a081fc946324"
+      },
+      {
+        "path": "services/paidStudyEndpointPreflight.js",
+        "sha256": "6a099d3d43269288f3b0ab4565c10b4d286a6aa433796742f087681a1d7ad79a"
+      },
+      {
+        "path": "services/tutorStubTurnOrchestration.js",
+        "sha256": "8445d85b4a4f0b6c0e224cae37e8b1049e313956ac7c5fc9ec539cfa97f7edcd"
+      },
+      {
+        "path": "services/tutorStubCliApplicationHost.js",
+        "sha256": "538e227d1a3d45afb273623e4d8521951539458d192f38695dc5ff74debf6eed"
+      },
+      {
+        "path": "services/tutorStubCliArguments.js",
+        "sha256": "b0276d39417b045950d9d068802d035de5b72ac78decc2cad3b0f62b4204adae"
+      },
+      {
+        "path": "services/tutorStubNonInteractiveApplication.js",
+        "sha256": "ce50a1006d8181118084febd5f289f66d2158efd8b54d0e90c191574bf61d8eb"
+      },
+      {
+        "path": "services/tutorStubApplicationState.js",
+        "sha256": "e7628a67e95d30f09896b3e33710bab31994f348beb6d08f4dde3dd30e410b47"
+      },
+      {
+        "path": "services/tutorStubApplicationTraceContext.js",
+        "sha256": "77dbd695886f43d8b98b8c391a82cf783f842804b3bb010c99a1f9b1e6cdbfc3"
+      },
+      {
+        "path": "services/tutorStubReleasePacing.js",
+        "sha256": "0940332bb908ba4d84257d15f7374ed871ef6575e5871e8f02dc167bfb2af186"
+      },
+      {
+        "path": "services/tutorStubAutomatedLearnerGenerationRuntime.js",
+        "sha256": "baab8a0b49cce3ff78f6677786f935818f77f04c5463fb99e21108246dc599c2"
+      },
+      {
+        "path": "services/tutorStubLearnerAnalysisRuntime.js",
+        "sha256": "14ea65c776a3041acbf9bb58600270d666ef5e851d93c89e441651fb67e415a8"
+      },
+      {
+        "path": "services/tutorStubPublicLearnerAnalysis.js",
+        "sha256": "5ea240613cc42f3e46e54ad15b8f3f267cf10821a65fb4954cf5b3c6054f2073"
+      },
+      {
+        "path": "services/resistantLearnerObservation.js",
+        "sha256": "e6c0cfbe6d3e69ebae18a3941476cd1b269f88e058e189bf79aee5bb4272017a"
+      },
+      {
+        "path": "services/tutorStubActionBeforeRegisterShadow.js",
+        "sha256": "0edb29235d1e60133499cb0f42f23cf5ccbca964f4991d03378d52d3a8bd05ee"
+      },
+      {
+        "path": "services/tutorStubCliPolicyRetry.js",
+        "sha256": "8ecd27593477438136828ea365632327a7e769c4df102d4a94536b5d5040b212"
+      },
+      {
+        "path": "services/tutorStubPromptTransport.js",
+        "sha256": "135c334c0cdf133cf235a39951b468c36d399023e727de7c7f1085d9d4fa2584"
+      },
+      {
+        "path": "services/tutorStubTutorAttemptRuntime.js",
+        "sha256": "a4e2f1a3655908e5bd68fb172b010b03d6139cd66462f43799a71ea356fb1dc7"
+      },
+      {
+        "path": "services/tutorStubTraceRuntime.js",
+        "sha256": "db025e4f5b30f76d8d14a6048662cef50afcc9bfd053ccd5fb00c9eb5254b1e2"
+      },
+      {
+        "path": "services/tutorStubLabs.js",
+        "sha256": "45668a759729574d1019aeaedaab5c61e023b42862634a816a8bdabf68d087eb"
+      },
+      {
+        "path": "services/tutorStubArtifactArchive.js",
+        "sha256": "e17500f90ef9deb72deaa030b1a3cf034d6ce4502f40016163d8c623188c4281"
+      },
+      {
+        "path": "config/drama-derivation/world-005-marrick.yaml",
+        "sha256": "38f1e5106dbca611a993bf2987f1a812330609927c84b0e17c281c292a201d03"
+      },
+      {
+        "path": "config/providers.yaml",
+        "sha256": "fe0c86fa91f4443fc4d55f6f3d5b39cf7df9fff5c3284096429cb3908335b326"
+      },
+      {
+        "path": "package.json",
+        "sha256": "cc63281906982683d8628a6d6bc2273b0aeed49baf5d789a132efac7f98c0e15"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "74306cc482c33b3c8f0f4e0f67daf612287e386f5686d5ff9fa4c97683229117"
+      }
+    ]
+  },
+  "actionRegisterBaselineAnalysis": {
+    "type": "sealed_frame_refuser_action_register_baseline_analysis_only_v1",
+    "sealedInputs": {
+      "priorRequest": {
+        "path": "config/tutor-stub-resistance-action-register-baseline-study-go-request.v4.json",
+        "sha256": "a2bf1d15de24f358518569ac5af7a3ddcfa78150aa4d89a7c038490f912f8806"
+      },
+      "traceSourceCommit": "58aa961600368fa98387942572c187a1896aae3f",
+      "traceSourceTree": "de5e05836b867bac5fa9071d845aefbb6d21abd0",
+      "batchA": {
+        "artifactRoot": ".tutor-stub-auto-eval/resistance-action-register-baseline-v2-second-successor-live-2026-08-20-a",
+        "artifactRootManifestSha256": "54565be283273d852bf36004f55ff276dd11fb6be785300b2c6e5631172d2add",
+        "privateArchiveManifestSha256": "e60cb5cbccf5b49d45c80f9266194403190b7c5c0737ea3bcd4a4fb6c24b4950",
+        "batchPlanSha256": "604a9567916f716df7812bff08d9a509ce2f93b298c3045792dec5f159899112",
+        "batchResultSha256": "c0d07d64e5d6d3604fbdb53c6abcf05508f75214eb7f8053cb5c4ff0adefff73",
+        "batchSealSha256": "04dca756801c3f7df8994b3190957f2bb3e3b23ea375a06bd2c6c5693e98196a",
+        "reservations": 36,
+        "completed": 36,
+        "providerErrors": 0,
+        "aborted": 0,
+        "traces": [
+          {
+            "jobId": "frame_refuser-v4-r1-t1__matched_plain_A",
+            "sha256": "481101593b977ba1a25bc8d1dbb120ccfb09a0d609c2d6d271cdd1fe0a7d6c74"
+          },
+          {
+            "jobId": "frame_refuser-v4-r1-t1__matched_warm_A",
+            "sha256": "b876fab7d707784168540eaba74c50b529062277cb76cabca97c65bdec9046f7"
+          },
+          {
+            "jobId": "frame_refuser-v4-r2-t1__matched_plain_A",
+            "sha256": "d1e756962a794a6110c0589b4d7eadabf0f65e135b5757cfd963e9919e744581"
+          },
+          {
+            "jobId": "frame_refuser-v4-r2-t1__matched_warm_A",
+            "sha256": "15223bf2fd74c8cdd4082a812005cbb08f51806ae242787efa3d2fee261c43ef"
+          },
+          {
+            "jobId": "frame_refuser-v4-r3-t1__matched_plain_A",
+            "sha256": "883330168aea699d1e8a2ca7d56a139fec59f4353691921ec5c5531bb7daf9ac"
+          },
+          {
+            "jobId": "frame_refuser-v4-r3-t1__matched_warm_A",
+            "sha256": "49b172e0724948c17aa02b24c26610fe75f086fa65d4f2d028dd0ce7c63b4c47"
+          }
+        ]
+      },
+      "batchB": {
+        "artifactRoot": ".tutor-stub-auto-eval/resistance-action-register-baseline-v2-second-successor-live-2026-08-20-b",
+        "artifactRootManifestSha256": "71e1ca7267f6b3ff561357bb48b4cac172c84b2f37d8d86dc4f63db5d0437c33",
+        "privateArchiveManifestSha256": "e673f376f405d5692e7b26e998c233a481e00817dbd4bac6a5a6512d80d2f9d1",
+        "batchPlanSha256": "39ff10a256eac09e527ec961eb5cf9c42523d25a6cf4d32a1606241f020ff29d",
+        "batchResultSha256": "cfca0047b91d9d17c30e2702e70423debafe868d03a5053863fad30de72f8244",
+        "batchSealSha256": "6c1d3e90b4d60a7e4a1a88a3c3b3fc303d825d53b1f8c2f737b0436fb317698f",
+        "reservations": 40,
+        "completed": 40,
+        "providerErrors": 0,
+        "aborted": 0,
+        "traces": [
+          {
+            "jobId": "frame_refuser-v4-r1-t1__matched_plain_B",
+            "sha256": "d6ae48dca1bd9a24fec4901ec9b512b329937d5ecbe4537f4452a2c0cfc986f8"
+          },
+          {
+            "jobId": "frame_refuser-v4-r1-t1__matched_warm_B",
+            "sha256": "0f1242ef4327f34fc881b31ef2db95a326455ea7807e1dfcee123ddafec1cb09"
+          },
+          {
+            "jobId": "frame_refuser-v4-r2-t1__matched_plain_B",
+            "sha256": "c196b46055bed2c0a36753f415349ab621e3f55bfc94870fd8bd7fb8f0555fad"
+          },
+          {
+            "jobId": "frame_refuser-v4-r2-t1__matched_warm_B",
+            "sha256": "0376f7e52ecfa60a6d457399291dffb3ac82ae3812221b5ca6ea99f9aa96dff1"
+          },
+          {
+            "jobId": "frame_refuser-v4-r3-t1__matched_plain_B",
+            "sha256": "1f34e17fb14e94e2365b515796c19fe5263a254b7a34c67b96e5ec1de32596a6"
+          },
+          {
+            "jobId": "frame_refuser-v4-r3-t1__matched_warm_B",
+            "sha256": "99a1e5f749dd84f30542d3ee1b9cc07d472ad7df0bc73ebf019fd3f9d568d379"
+          }
+        ]
+      },
+      "combinedArtifactManifestSha256": "a9157ce7aff357a8c6c704327b5806c3a7dcf55ebdf54b623a775846c641822b",
+      "combinedPrivateArchiveManifestSha256": "88a65c82da36c36b68e94ee0114b7fc5b429eee523212b43384f724a04817c17",
+      "reservations": 76,
+      "completed": 76,
+      "providerErrors": 0,
+      "aborted": 0,
+      "technicalRecoveryRuns": 0,
+      "programmeLedgerBefore": 185,
+      "programmeLedgerAfterMaximum": 185,
+      "programmeCeiling": 1200
+    },
+    "priorAnalyzerInvocation": {
+      "invokedOnce": true,
+      "exitCode": 1,
+      "reportProduced": false,
+      "failureClass": "deterministic_provenance_compatibility_defect"
+    },
+    "modelUnitRerunsPermitted": false,
+    "liveCommandsPermitted": false,
+    "recoveryCommandsPermitted": false,
+    "analyzerInvocationsPermitted": 1,
+    "inputMutationPermitted": false,
+    "poolingPermitted": false,
+    "outcomeSelectionPermitted": false,
+    "inputView": {
+      "mode": "read_only_symlink_view",
+      "relativeBatchRootsPreserved": true,
+      "sourceBatchRootsRemainImmutable": true,
+      "requireObservedManifestHashesBeforeAnalysis": true,
+      "modelCallsPermitted": false,
+      "evidenceMutationPermitted": false
+    }
+  },
+  "design": {
+    "dialogues": 12,
+    "analysisOnly": true,
+    "modelCalls": 0,
+    "validUnitReruns": false,
+    "outcomeSelection": false
+  },
+  "budget": {
+    "maximumPlannedModelAttempts": 0,
+    "programmeLedgerBefore": 185,
+    "programmeLedgerAfterMaximum": 185,
+    "programmeCeiling": 1200,
+    "retryOrResumeAuthority": "none"
+  },
+  "measurement": {
+    "reportSchema": "machinespirits.tutor-stub.resistance-action-register-baseline-report.v2",
+    "primaryOutcome": "profile_specific_resistance_recovery_by_two_post_trigger_learner_turns",
+    "repeatEndpoint": "same_treatment_repeat_stability",
+    "combinedTwelveCellAnalysisRequired": true,
+    "analysisTraceSelection": "exact_prebound_batch_result_traces_only",
+    "partialBatchAnalysisPermitted": false,
+    "v4OutcomesExcluded": true,
+    "claimBoundary": "calibration_only_no_tutor_or_register_efficacy_claim"
+  },
+  "bindings": {
+    "registration": {
+      "path": "config/tutor-stub-resistance-action-register-crossed-registration.v2.json",
+      "sha256": "4e8fa84320ba54743920fa5bb0d9228656cd6bb80ca4ba9fe68470c2ed7658e2"
+    },
+    "prefixBundle": {
+      "path": "config/tutor-stub-resistance-action-register-v4-public-prefixes.v1.json",
+      "sha256": "d538287e4ce1661703518b86b0b1181b6e6edf05ea727bf49029ce453844a2c8"
+    },
+    "endpoint": {
+      "contractPath": "config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.v2.json",
+      "contractFileSha256": "cbf2864d7fe7502fc4196866561ad8c5790202e59c7b27a270054a7f680a6cb6",
+      "contractCanonicalSha256": "2c6835ce8e71a21c2eed6a2bc05eadfa0751abecb8ed7a66123a22184a7428ff",
+      "certificatePath": "config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.v2.endpoint-go.json",
+      "certificateFileSha256": "ae2d558370dc20f0eb54eebbbf88035ea1f9b788d5d528f32f1909c1973cc33b",
+      "preflightSha256": "2f032fe1c25d6e25a2023bd279a8fc1ecb009a49960ef21d3dc7651861252ee2"
+    },
+    "routeCanary": {
+      "resultPath": "config/tutor-stub-resistant-profile-route-canary-result.v1.json",
+      "resultSha256": "c68ee936441504fdb514f97537aaf87915c734b43da82f7d81136c40c6918623",
+      "authorizationConsumptionPath": "config/tutor-stub-resistant-profile-route-canary-authorization.consumed.v1.json",
+      "authorizationConsumptionSha256": "1ec23bf81df7678050e5383fbda9ab913979b9b93b24fb1944b59002c6eeefb2",
+      "sourceArtifactSha256": "a2989dfb48438b7153928244a20ef42f698122b6edb3062fdfecca41ca1ac55f",
+      "executionHead": "04edc89f943e380bf5fc88bf2d84b93c8c1a805c",
+      "observedProvider": "codex",
+      "observedModel": "gpt-5.6-luna",
+      "observedEffort": "low",
+      "attestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+      "modelIndependentlyAttested": false
+    },
+    "commands": {
+      "source": "commands",
+      "analyzeArraySha256": "93310ef8b676fbe31875ae47e3e8e09a12625a875fe9d5cf064faad54c64f876"
+    }
+  },
+  "commands": {
+    "analyze": [
+      "node",
+      "scripts/analyze-tutor-stub-resistance-action-register-baseline.js",
+      "--batch-a",
+      ".tutor-stub-auto-eval/resistance-action-register-baseline-v2-second-successor-live-2026-08-20-a",
+      "--batch-b",
+      ".tutor-stub-auto-eval/resistance-action-register-baseline-v2-second-successor-live-2026-08-20-b",
+      "--registration",
+      "config/tutor-stub-resistance-action-register-crossed-registration.v2.json",
+      "--prefix-bundle",
+      "config/tutor-stub-resistance-action-register-v4-public-prefixes.v1.json",
+      "--expected-analysis-source-commit",
+      "9732c15c8475a2c8e4ecaaf41dd270d00db0d50b",
+      "--expected-trace-source-commit",
+      "58aa961600368fa98387942572c187a1896aae3f",
+      "--out",
+      ".tutor-stub-auto-eval/resistance-action-register-baseline-v2-second-successor-analysis-only-2026-08-20-combined.json",
+      "--json"
+    ]
+  },
+  "payload": {
+    "humanSubjectData": false,
+    "privateArchiveData": false,
+    "trainingReuseStatus": "not_applicable"
+  },
+  "destination": {
+    "combinedReport": ".tutor-stub-auto-eval/resistance-action-register-baseline-v2-second-successor-analysis-only-2026-08-20-combined.json",
+    "combinedReportCreateOnce": true,
+    "mustNotExistBeforeAnalysis": true
+  }
+}
