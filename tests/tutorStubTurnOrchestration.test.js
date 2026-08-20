@@ -253,7 +253,7 @@ test('registered action/register production enforcement preserves the third lear
     state,
     openingEnabled: false,
     autoLearnerResolved: { provider: 'test', model: 'test' },
-    autoLearnerProfile: { id: 'frame_refuser' },
+    autoLearnerProfile: 'frame_refuser',
     autoTurns: 3,
     autoSafetyTurns: 3,
     autoStopOnGrounded: false,
@@ -272,6 +272,8 @@ test('registered action/register production enforcement preserves the third lear
   const outcome = events.find((event) => event.type === 'resistance_action_register_outcome_learner_turn');
   assert.equal(outcome.turn, 3);
   assert.equal(outcome.horizonIndex, 2);
+  assert.equal(outcome.classification.turn.discourse_move, 'evidence_adoption');
+  assert.deepEqual(outcome.tutorLearnerDag.model.metrics, { missingPremiseCount: 2, groundedCount: 7 });
   assert.equal(outcome.tutorReplyGenerated, false);
   assert.equal(events.at(-1).type, 'auto_learner_run_end');
 });
