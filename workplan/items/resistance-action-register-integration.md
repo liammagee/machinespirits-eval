@@ -1674,3 +1674,45 @@ and explicit human approval.
   calls and zero production writes. The request remains literal
   `HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL` with null approval and false model/live
   authority; a new exact digest-bound approval is required before launch.
+- 2026-08-20 — Closed the boredom proof-DAG successor confirmation as a
+  **categorical instrument failure with no scientific verdict**. The exact
+  approved request
+  `config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v2.json`
+  at SHA-256
+  `476db5ea5d2bdb9a3bc9a1d3df5b0c5e0d3a641cbd1883129e4fe0f583037310`
+  ran only at source `c2bc7b1bcc79b32c48e9b47290d9354c92a44647`
+  (tree `cdf9ffdd22863f0f22f49c9711bee052186ba76b`). Batch 1 sealed
+  4/4 dialogues at 39 reservations and 39 completed Luna calls. Batch 2
+  stopped with 2/4 dialogues complete and two registered
+  `TUTOR_STUB_BOREDOM_PROOF_DAG_TRIGGER_MISSING` substantive failures at 32
+  reservations and 32 completed calls. Total accounting is 71 reservations,
+  71 completed calls, zero provider failures, and zero aborted calls; the
+  programme ledger is `290/4539`. Batches 3–9, recovery, the combined
+  analyzer, confirmation report, and statistical test never ran.
+
+  Exact production replay shows an incompatible observer/timing composition,
+  not a warm-versus-plain outcome. `Fine. Is this trial nearly done?` received
+  a licensed boredom observation but the generic timing guard suppressed the
+  intervention as `content_bearing_uptake_already_visible`. Conversely,
+  `Sure. We could examine the delivery ledger.` received a lexical boredom
+  observation from `Sure` even though the remainder supplied genuine
+  content-bearing uptake. This creates both false suppression and false
+  triggering at the registered action-before-register boundary. Same-source
+  recovery cannot repair a systematic measurement/runtime incompatibility and
+  was not attempted.
+
+  The complete partial cohort is durably archived on private feature branch
+  `codex/boredom-proof-dag-confirmation-v2-incomplete-archive` at commit
+  `5833e54cac9b2e2e88847630c0c61c700c765bb4`. Batch-1 live/private inventory
+  digests are `b3eeb3bb…` / `d9958cf8…`; Batch-2 digests are `35aca4d9…` /
+  `2b9457e7…`; all eight gzip mirrors decompress byte-identically to their
+  source traces. Batch 1 is sealed; Batch 2's two completed manifests are
+  sealed and its two substantive-failure manifests remain correctly unsealed.
+  Every dialogue and outcome is diagnostic-only and excluded from reuse,
+  pooling, replacement, selection, confirmation analysis, and empirical
+  claims. The boredom confirmation branch of this programme therefore ends in
+  categorical instrument failure: it establishes neither a warm/plain effect
+  nor a null. No further boredom model calls or successor request are licensed
+  by this closeout. Any future restart would be a new programme boundary after
+  an independently validated compositional boredom observer and trigger-timing
+  contract, not a continuation of this confirmation.
