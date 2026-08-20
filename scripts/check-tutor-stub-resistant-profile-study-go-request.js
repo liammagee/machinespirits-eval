@@ -429,8 +429,19 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     );
   } else if (isFrameRefuserOpportunity) {
     const registered = readJson(rootPath(request.bindings.registration.path));
+    const registrationVersion = registered.version ?? 1;
     const expectedProfiles = 'frame_refuser,frame_defiant';
     const analysisShell = analyzeCommand[2] || '';
+    assertion(
+      checks,
+      'frame-refuser-opportunity-registration-semantics',
+      (registrationVersion === 1 &&
+        registered.measurement.controlObservation === 'frame_jurisdiction_dispute_with_content_bearing_true') ||
+        (registrationVersion === 2 &&
+          registered.measurement.controlObservation ===
+            'frame_jurisdiction_dispute_with_contract_licensed_participation'),
+      `opportunity registration version ${registrationVersion} keeps its declared observer semantics`,
+    );
     assertion(
       checks,
       'frame-refuser-opportunity-design-binding',
@@ -524,7 +535,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         analysisShell.includes('/*/traces/*/*.jsonl') &&
         analysisShell.includes('trace_args+=(--trace "$trace")') &&
         analysisShell.includes('scripts/analyze-tutor-stub-resistance-axis-calibration.js') &&
-        analysisShell.includes('--registration config/tutor-stub-frame-refuser-opportunity-registration.v1.json') &&
+        analysisShell.includes(`--registration ${request.bindings.registration.path}`) &&
         analysisShell.includes('--required-traces 6') &&
         analysisShell.includes(`--required-profiles ${expectedProfiles}`) &&
         analysisShell.includes('--required-runs-per-profile 3') &&

@@ -218,7 +218,7 @@ test('consumed axis heldout request remains frozen and fails closed after curren
   assert.match(result.stderr, /source-closure-scripts\/analyze-tutor-stub-resistance-axis-calibration\.js/u);
 });
 
-test('frame-refuser opportunity request validates six dialogues without a new canary or model call', (t) => {
+test('frame-refuser opportunity requests validate historical v1 and prospective v2 without a new model call', (t) => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'frame-refuser-opportunity-go-'));
   t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
   const digest = (filePath) => crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
@@ -228,167 +228,186 @@ test('frame-refuser opportunity request validates six dialogues without a new ca
     cwd: ROOT,
     encoding: 'utf8',
   }).trim();
-  const registrationPath = 'config/tutor-stub-frame-refuser-opportunity-registration.v1.json';
-  const endpointPath = 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.json';
-  const certificatePath = 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.endpoint-go.json';
-  const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, certificatePath), 'utf8'));
-  const artifactRoot = `.test-tmp/frame-refuser-opportunity-request-test-${process.pid}`;
-  const live = [
-    'node',
-    'scripts/run-tutor-stub-qa-matrix.js',
-    '--policies',
-    'field',
-    '--profiles',
-    'frame_refuser,frame_defiant',
-    '--runs',
-    '3',
-    '--run-seed',
-    '20260820',
-    '--turns',
-    '8',
-    '--safety-turns',
-    '8',
-    '--model',
-    'codex.gpt-5.6-luna',
-    '--analysis-model',
-    'codex.gpt-5.6-luna',
-    '--auto-learner-model',
-    'codex.gpt-5.6-luna',
-    '--model-call-budget',
-    '48',
-    '--world',
-    'world_005_marrick',
-    '--dag-mode',
-    'strict_dag',
-    '--register-palette',
-    'safe',
-    '--register-overlay-threshold',
-    '0.7',
-    '--release-speed',
-    '1',
-    '--cli-effort',
-    'low',
-    '--history-turns',
-    '4',
-    '--max-tokens',
-    '4096',
-    '--parallelism',
-    '3',
-    '--trace-dir',
-    artifactRoot,
-    '--no-html-report',
-    '--no-memory-summary',
-    '--no-analyze',
+  const fixtures = [
+    {
+      version: 'v1',
+      studyId: 'tutor-stub-frame-refuser-opportunity-v1',
+      registrationPath: 'config/tutor-stub-frame-refuser-opportunity-registration.v1.json',
+      endpointPath: 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.json',
+      certificatePath: 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.endpoint-go.json',
+    },
+    {
+      version: 'v2',
+      studyId: 'tutor-stub-frame-refuser-opportunity-v2',
+      registrationPath: 'config/tutor-stub-frame-refuser-opportunity-registration.v2.json',
+      endpointPath: 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.json',
+      certificatePath: 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.endpoint-go.json',
+    },
   ];
-  const analyze = [
-    'zsh',
-    '-lc',
-    `set -euo pipefail; artifact_root='${artifactRoot}'; trace_args=(); for trace in "$artifact_root"/*/traces/*/*.jsonl; do [[ -f "$trace" ]] || continue; trace_args+=(--trace "$trace"); done; node scripts/analyze-tutor-stub-resistance-axis-calibration.js "${'${trace_args[@]}'}" --registration ${registrationPath} --required-traces 6 --required-profiles frame_refuser,frame_defiant --required-runs-per-profile 3 --required-turns 8 --required-policies field --required-tutor-model codex.gpt-5.6-luna --required-analysis-model codex.gpt-5.6-luna --required-learner-model codex.gpt-5.6-luna --json --out "$artifact_root/frame-refuser-opportunity-gate.json"`,
-  ];
-  const request = {
-    schema: 'machinespirits.tutor-stub.resistant-profile-discrimination-study-go-request.v1',
-    status: 'HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL',
-    studyId: 'tutor-stub-frame-refuser-opportunity-v1',
-    authorization: {
-      explicitHumanApproval: null,
-      modelCallsAuthorized: false,
-      liveRunAuthorized: false,
-    },
-    source: { launchCommit, launchTree, closure: [] },
-    opportunityGate: {
-      type: 'prospective_frame_refuser_treatment_opportunity',
-      priorArtifactsReused: false,
-      priorResultRewritten: false,
-      historicalEvidencePooled: false,
-      tutorEfficacyTested: false,
-      registerEfficacyTested: false,
-      heldoutAxisReportSha256: '714f69f489297c571ff4157ce0269e6d3f68ccac485453b53d05cc09d5908c75',
-      recoveryBoundary: {
-        sameLaunchSource: true,
-        sameModelProviderRoute: true,
-        sameProfilesPoliciesSeedConfigurationAndMeasurement: true,
-        samePayloadAndDataScope: true,
-        freshNonOverwritingDestinationForRecoveredUnits: true,
-        rerunValidOutputs: false,
-        selectAmongOutcomes: false,
-        maximumTotalStudyAttemptsUnchanged: 288,
-      },
-    },
-    measurement: {
-      reportSchema: 'machinespirits.tutor-stub.frame-refuser-opportunity-gate.v1',
-      targetProfile: 'frame_refuser',
-      controlProfile: 'frame_defiant',
-      mustShowByTurn: 2,
-      requiredDistinctTargetPrefixes: 3,
-    },
-    bindings: {
-      registration: { path: registrationPath, sha256: digest(path.join(ROOT, registrationPath)) },
-      endpoint: {
-        contractPath: endpointPath,
-        contractFileSha256: digest(path.join(ROOT, endpointPath)),
-        contractCanonicalSha256: certificate.contract_sha256,
-        certificatePath,
-        certificateFileSha256: digest(path.join(ROOT, certificatePath)),
-        preflightSha256: certificate.preflight_sha256,
-      },
-      routeCanary: {
-        resultPath: 'config/tutor-stub-resistant-profile-route-canary-result.v1.json',
-        resultSha256: 'c68ee936441504fdb514f97537aaf87915c734b43da82f7d81136c40c6918623',
-        authorizationConsumptionPath: 'config/tutor-stub-resistant-profile-route-canary-authorization.consumed.v1.json',
-        authorizationConsumptionSha256: '1ec23bf81df7678050e5383fbda9ab913979b9b93b24fb1944b59002c6eeefb2',
-        sourceArtifactSha256: 'a2989dfb48438b7153928244a20ef42f698122b6edb3062fdfecca41ca1ac55f',
-        executionHead: '04edc89f943e380bf5fc88bf2d84b93c8c1a805c',
-        observedProvider: 'codex',
-        observedModel: 'gpt-5.6-luna',
-        observedEffort: 'low',
-        attestationBasis: 'explicit_cli_model_argument_accepted_bridge_echo',
-        modelIndependentlyAttested: false,
-      },
-      commands: {
-        source: 'commands',
-        liveArraySha256: commandDigest(live),
-        analyzeArraySha256: commandDigest(analyze),
-      },
-    },
-    commands: { live, analyze },
-    design: {
-      profiles: ['frame_refuser', 'frame_defiant'],
-      dialogues: 6,
-      runsPerProfile: 3,
-      runSeed: 20260820,
-      world: 'world_005_marrick',
-      models: {
-        tutor: 'codex.gpt-5.6-luna',
-        analysis: 'codex.gpt-5.6-luna',
-        learner: 'codex.gpt-5.6-luna',
-      },
-      cliEffort: 'low',
-      parallelism: 3,
-    },
-    budget: {
-      dialogues: 6,
-      maximumAttemptsPerDialogue: 48,
-      maximumPlannedModelAttempts: 288,
-      retryOrResumeAuthority: 'bounded_technical_recovery',
-    },
-    payload: {
-      humanSubjectData: false,
-      privateArchiveData: false,
-      trainingReuseStatus: 'not_applicable',
-    },
-    destination: {
+  for (const fixture of fixtures) {
+    const registrationPath = fixture.registrationPath;
+    const endpointPath = fixture.endpointPath;
+    const certificatePath = fixture.certificatePath;
+    const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, certificatePath), 'utf8'));
+    const artifactRoot = `.test-tmp/frame-refuser-opportunity-request-test-${fixture.version}-${process.pid}`;
+    const live = [
+      'node',
+      'scripts/run-tutor-stub-qa-matrix.js',
+      '--policies',
+      'field',
+      '--profiles',
+      'frame_refuser,frame_defiant',
+      '--runs',
+      '3',
+      '--run-seed',
+      '20260820',
+      '--turns',
+      '8',
+      '--safety-turns',
+      '8',
+      '--model',
+      'codex.gpt-5.6-luna',
+      '--analysis-model',
+      'codex.gpt-5.6-luna',
+      '--auto-learner-model',
+      'codex.gpt-5.6-luna',
+      '--model-call-budget',
+      '48',
+      '--world',
+      'world_005_marrick',
+      '--dag-mode',
+      'strict_dag',
+      '--register-palette',
+      'safe',
+      '--register-overlay-threshold',
+      '0.7',
+      '--release-speed',
+      '1',
+      '--cli-effort',
+      'low',
+      '--history-turns',
+      '4',
+      '--max-tokens',
+      '4096',
+      '--parallelism',
+      '3',
+      '--trace-dir',
       artifactRoot,
-      createOnce: true,
-      mustNotExistBeforeLaunch: true,
-    },
-  };
-  const requestPath = path.join(temporary, 'request.json');
-  fs.writeFileSync(requestPath, `${JSON.stringify(request, null, 2)}\n`);
-  const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath });
-  assert.equal(report.packetValid, true);
-  assert.equal(report.readyForExplicitHumanApproval, true);
-  assert.equal(report.modelCalls, 0);
-  assert.equal(report.productionWrites, 0);
-  assert.equal(report.budget.maximumPlannedModelAttempts, 288);
-  assert.match(report.exactApprovalStatement, /6-dialogue Luna study/u);
+      '--no-html-report',
+      '--no-memory-summary',
+      '--no-analyze',
+    ];
+    const analyze = [
+      'zsh',
+      '-lc',
+      `set -euo pipefail; artifact_root='${artifactRoot}'; trace_args=(); for trace in "$artifact_root"/*/traces/*/*.jsonl; do [[ -f "$trace" ]] || continue; trace_args+=(--trace "$trace"); done; node scripts/analyze-tutor-stub-resistance-axis-calibration.js "${'${trace_args[@]}'}" --registration ${registrationPath} --required-traces 6 --required-profiles frame_refuser,frame_defiant --required-runs-per-profile 3 --required-turns 8 --required-policies field --required-tutor-model codex.gpt-5.6-luna --required-analysis-model codex.gpt-5.6-luna --required-learner-model codex.gpt-5.6-luna --json --out "$artifact_root/frame-refuser-opportunity-gate.json"`,
+    ];
+    const request = {
+      schema: 'machinespirits.tutor-stub.resistant-profile-discrimination-study-go-request.v1',
+      status: 'HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL',
+      studyId: fixture.studyId,
+      authorization: {
+        explicitHumanApproval: null,
+        modelCallsAuthorized: false,
+        liveRunAuthorized: false,
+      },
+      source: { launchCommit, launchTree, closure: [] },
+      opportunityGate: {
+        type: 'prospective_frame_refuser_treatment_opportunity',
+        priorArtifactsReused: false,
+        priorResultRewritten: false,
+        historicalEvidencePooled: false,
+        tutorEfficacyTested: false,
+        registerEfficacyTested: false,
+        heldoutAxisReportSha256: '714f69f489297c571ff4157ce0269e6d3f68ccac485453b53d05cc09d5908c75',
+        recoveryBoundary: {
+          sameLaunchSource: true,
+          sameModelProviderRoute: true,
+          sameProfilesPoliciesSeedConfigurationAndMeasurement: true,
+          samePayloadAndDataScope: true,
+          freshNonOverwritingDestinationForRecoveredUnits: true,
+          rerunValidOutputs: false,
+          selectAmongOutcomes: false,
+          maximumTotalStudyAttemptsUnchanged: 288,
+        },
+      },
+      measurement: {
+        reportSchema: 'machinespirits.tutor-stub.frame-refuser-opportunity-gate.v1',
+        targetProfile: 'frame_refuser',
+        controlProfile: 'frame_defiant',
+        mustShowByTurn: 2,
+        requiredDistinctTargetPrefixes: 3,
+      },
+      bindings: {
+        registration: { path: registrationPath, sha256: digest(path.join(ROOT, registrationPath)) },
+        endpoint: {
+          contractPath: endpointPath,
+          contractFileSha256: digest(path.join(ROOT, endpointPath)),
+          contractCanonicalSha256: certificate.contract_sha256,
+          certificatePath,
+          certificateFileSha256: digest(path.join(ROOT, certificatePath)),
+          preflightSha256: certificate.preflight_sha256,
+        },
+        routeCanary: {
+          resultPath: 'config/tutor-stub-resistant-profile-route-canary-result.v1.json',
+          resultSha256: 'c68ee936441504fdb514f97537aaf87915c734b43da82f7d81136c40c6918623',
+          authorizationConsumptionPath:
+            'config/tutor-stub-resistant-profile-route-canary-authorization.consumed.v1.json',
+          authorizationConsumptionSha256: '1ec23bf81df7678050e5383fbda9ab913979b9b93b24fb1944b59002c6eeefb2',
+          sourceArtifactSha256: 'a2989dfb48438b7153928244a20ef42f698122b6edb3062fdfecca41ca1ac55f',
+          executionHead: '04edc89f943e380bf5fc88bf2d84b93c8c1a805c',
+          observedProvider: 'codex',
+          observedModel: 'gpt-5.6-luna',
+          observedEffort: 'low',
+          attestationBasis: 'explicit_cli_model_argument_accepted_bridge_echo',
+          modelIndependentlyAttested: false,
+        },
+        commands: {
+          source: 'commands',
+          liveArraySha256: commandDigest(live),
+          analyzeArraySha256: commandDigest(analyze),
+        },
+      },
+      commands: { live, analyze },
+      design: {
+        profiles: ['frame_refuser', 'frame_defiant'],
+        dialogues: 6,
+        runsPerProfile: 3,
+        runSeed: 20260820,
+        world: 'world_005_marrick',
+        models: {
+          tutor: 'codex.gpt-5.6-luna',
+          analysis: 'codex.gpt-5.6-luna',
+          learner: 'codex.gpt-5.6-luna',
+        },
+        cliEffort: 'low',
+        parallelism: 3,
+      },
+      budget: {
+        dialogues: 6,
+        maximumAttemptsPerDialogue: 48,
+        maximumPlannedModelAttempts: 288,
+        retryOrResumeAuthority: 'bounded_technical_recovery',
+      },
+      payload: {
+        humanSubjectData: false,
+        privateArchiveData: false,
+        trainingReuseStatus: 'not_applicable',
+      },
+      destination: {
+        artifactRoot,
+        createOnce: true,
+        mustNotExistBeforeLaunch: true,
+      },
+    };
+    const requestPath = path.join(temporary, `${fixture.version}-request.json`);
+    fs.writeFileSync(requestPath, `${JSON.stringify(request, null, 2)}\n`);
+    const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath });
+    assert.equal(report.packetValid, true);
+    assert.equal(report.readyForExplicitHumanApproval, true);
+    assert.equal(report.modelCalls, 0);
+    assert.equal(report.productionWrites, 0);
+    assert.equal(report.budget.maximumPlannedModelAttempts, 288);
+    assert.match(report.exactApprovalStatement, /6-dialogue Luna study/u);
+  }
 });
