@@ -140,6 +140,78 @@ const RESISTANCE_ACTION_REGISTER_STOPPED_V2_REQUEST = Object.freeze({
   outcomeSelectionPermitted: false,
 });
 
+const RESISTANCE_ACTION_REGISTER_STOPPED_V3_REQUEST = Object.freeze({
+  requestRevision: 4,
+  request: Object.freeze({
+    path: 'config/tutor-stub-resistance-action-register-baseline-study-go-request.v3.json',
+    sha256: '568782ec4df4453f4c7e08d6f26afbfe8174bd33a134c6057c65bb9f9b71315d',
+  }),
+  disposition: 'consumed_stopped_wholly_excluded',
+  partialBatch: Object.freeze({
+    batch: 'A',
+    artifactRoot: '.tutor-stub-auto-eval/resistance-action-register-baseline-v2-successor-live-2026-08-20-a',
+    artifactRootManifestSha256: '0db1496cdab580b2094f536aa1b66276bd7eab8548963341d99914065277e8bd',
+    privateArchiveManifestSha256: 'bf15bc3e9f5187f768a2cbff5c3db2d4dcf1ef9f52ece632c8e967ff6a6ffadf',
+    reservations: 33,
+    completed: 30,
+    interrupted: 3,
+    providerErrors: 0,
+    traces: Object.freeze([
+      Object.freeze({
+        jobId: 'frame_refuser-v4-r1-t1__matched_plain_A',
+        path: 'jobs/frame_refuser-v4-r1-t1__matched_plain_A/traces/2026-08-20T12-49-26-800Z.jsonl',
+        sha256: 'f4fc7c7ca95dc43a2ac01b3bb295a7e3ab7d307a9a39140a664edf6648f7928b',
+      }),
+      Object.freeze({
+        jobId: 'frame_refuser-v4-r1-t1__matched_warm_A',
+        path: 'jobs/frame_refuser-v4-r1-t1__matched_warm_A/traces/2026-08-20T12-49-26-789Z.jsonl',
+        sha256: '7a7a6718e08c52cc05fbcc66033d5fdb58f775bcfbe132fff7a26495a3579d39',
+      }),
+      Object.freeze({
+        jobId: 'frame_refuser-v4-r2-t1__matched_plain_A',
+        path: 'jobs/frame_refuser-v4-r2-t1__matched_plain_A/traces/2026-08-20T12-49-26-791Z.jsonl',
+        sha256: '466ccc9626a401cd146e197214ade34b2cc87bb1bbe5623823b6bc53e909d88c',
+      }),
+      Object.freeze({
+        jobId: 'frame_refuser-v4-r2-t1__matched_warm_A',
+        path: 'jobs/frame_refuser-v4-r2-t1__matched_warm_A/traces/2026-08-20T12-50-10-377Z.jsonl',
+        sha256: 'b6cb0c5fec92c2c83ce0318e7c48da1fd43d63c00012d4f652f82d766eb0f14a',
+      }),
+      Object.freeze({
+        jobId: 'frame_refuser-v4-r3-t1__matched_plain_A',
+        path: 'jobs/frame_refuser-v4-r3-t1__matched_plain_A/traces/2026-08-20T12-50-15-601Z.jsonl',
+        sha256: '72c16ea8e715fc888785f49ebadaed5525d962a1590295a0402399ad298fc002',
+      }),
+      Object.freeze({
+        jobId: 'frame_refuser-v4-r3-t1__matched_warm_A',
+        path: 'jobs/frame_refuser-v4-r3-t1__matched_warm_A/traces/2026-08-20T12-50-20-317Z.jsonl',
+        sha256: '35394468d9c2b839524645bffccb758c9578a0d32be7d181cca267eeebd898f5',
+      }),
+    ]),
+  }),
+  batchBStarted: false,
+  combinedAnalyzerRan: false,
+  combinedResultProduced: false,
+  sealProduced: false,
+  recoveryPermitted: false,
+  reusePermitted: false,
+  poolingPermitted: false,
+  outcomeSelectionPermitted: false,
+});
+
+const RESISTANCE_ACTION_REGISTER_SUCCESSOR_BY_REVISION = Object.freeze({
+  [RESISTANCE_ACTION_REGISTER_STOPPED_V2_REQUEST.requestRevision]: Object.freeze({
+    stoppedExecution: RESISTANCE_ACTION_REGISTER_STOPPED_V2_REQUEST,
+    programmeLedgerBefore: 76,
+    programmeLedgerAfterMaximum: 544,
+  }),
+  [RESISTANCE_ACTION_REGISTER_STOPPED_V3_REQUEST.requestRevision]: Object.freeze({
+    stoppedExecution: RESISTANCE_ACTION_REGISTER_STOPPED_V3_REQUEST,
+    programmeLedgerBefore: 109,
+    programmeLedgerAfterMaximum: 577,
+  }),
+});
+
 function parseArgs(argv) {
   const args = { request: DEFAULT_REQUEST, json: false };
   for (let index = 0; index < argv.length; index += 1) {
@@ -664,7 +736,10 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   } else if (isActionRegisterBaseline) {
     const registered = readJson(rootPath(request.bindings.registration.path));
     const gate = request.actionRegisterBaseline;
-    const isSuccessor = gate.requestRevision === RESISTANCE_ACTION_REGISTER_STOPPED_V2_REQUEST.requestRevision;
+    const successor = RESISTANCE_ACTION_REGISTER_SUCCESSOR_BY_REVISION[gate.requestRevision] ?? null;
+    const isSuccessor = successor !== null;
+    const programmeLedgerBefore = successor?.programmeLedgerBefore ?? 45;
+    const programmeLedgerAfterMaximum = successor?.programmeLedgerAfterMaximum ?? 513;
     const liveA = liveCommand?.[0];
     const liveB = liveCommand?.[1];
     assertion(
@@ -694,18 +769,18 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         request.budget.maximumAttemptsPerDialogue === 39 &&
         request.budget.maximumAttemptsPerBatch === 234 &&
         request.budget.maximumPlannedModelAttempts === 468 &&
-        request.budget.programmeLedgerBefore === (isSuccessor ? 76 : 45) &&
-        request.budget.programmeLedgerAfterMaximum === (isSuccessor ? 544 : 513) &&
+        request.budget.programmeLedgerBefore === programmeLedgerBefore &&
+        request.budget.programmeLedgerAfterMaximum === programmeLedgerAfterMaximum &&
         request.budget.programmeCeiling === 1200 &&
         request.budget.retryOrResumeAuthority === 'bounded_technical_recovery',
-      `two 234-cap batches remain below the cumulative ${isSuccessor ? 544 : 513}-of-1200 maximum`,
+      `two 234-cap batches remain below the cumulative ${programmeLedgerAfterMaximum}-of-1200 maximum`,
     );
     assertion(
       checks,
       'action-register-baseline-request-revision',
       (gate.requestRevision === undefined && gate.priorStoppedExecution === undefined) ||
         (isSuccessor && gate.priorStoppedExecution !== undefined),
-      'the original request remains revision-compatible and only revision 3 may bind the stopped predecessor',
+      'the original request remains revision-compatible and only registered successor revisions may bind a stopped predecessor',
     );
     if (isSuccessor) {
       assertion(
@@ -716,7 +791,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
             requestRevision: gate.requestRevision,
             ...gate.priorStoppedExecution,
           }),
-        ) === JSON.stringify(canonicalJson(RESISTANCE_ACTION_REGISTER_STOPPED_V2_REQUEST)),
+        ) === JSON.stringify(canonicalJson(successor.stoppedExecution)),
         'the consumed request, stopped partial A, private archive, six traces, attempt accounting, and total exclusion remain exact',
       );
       validateFileBinding(
