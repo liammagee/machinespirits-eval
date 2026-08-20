@@ -1182,6 +1182,78 @@ and explicit human approval.
   programme amendment that changes the ceiling or narrows the scientific scope
   and claim; until then, the defensible disposition is calibration complete,
   efficacy unresolved, and zero further model calls.
+- 2026-08-20 — Consolidated the boredom action-before-register evidence on an
+  isolated zero-call track. The prospective held-out instrument remains the
+  strongest detection result: report `714f69f4…`, `18/24 = 0.750` bored
+  effort-withholding turns, detection by T2
+  in all three bored dialogues, maximum non-target rate `0.000`, `458/458`
+  completed reservations, and zero provider failures. The earlier action test
+  remains useful but narrower: archived raw traces
+  `5c27a5c6…` support the registered `5/5` matched discriminating-question
+  conduct versus `0/5` mismatched settled-record reopening and qd-v2 shadow
+  detection `10/10`, but the run used one world, a dirty source checkout, a
+  small sample, and a subjective ruled-conduct endpoint. Its per-row tags file
+  survives only as ignored local bytes (`0d8d8e89…`), not a durable archive;
+  the narrow automatic tag is `3/5` versus `0/5`, while the broader
+  predeclared single-adjudicator ruling supplies `5/5` versus `0/5`. The
+  held-out governance provenance also has a frozen discrepancy: request
+  `99a12f90…` pins clean source `23ccba13…`, while the c302-repinned request
+  hashes `b52aa74b…`; all 18 preserved traces report `23ccba13…`. Relevant
+  registration/observer/analyzer bytes are identical and raw replay reproduces
+  the endpoint, but the public narrative must not combine those request/source
+  identifiers. Neither result is pooled into a new endpoint.
+
+  Froze a prospective boredom register-only proof-DAG design under HOLD. It
+  generates 36 distinct fresh bored prefixes across six strict-DAG worlds,
+  six per world. A frozen `20260820` assignment seed ranks the six independent
+  slots in each world by SHA-256 and assigns the first three to plain and the
+  remaining three to warm; the assignment-manifest digest is
+  `4e256dfa…`, and the assigned realization stays hidden until after the public
+  observer selects the boredom-appropriate `ask_discriminating_question`
+  action. The 18 dialogues per arm are analyzed once after all nine batch
+  seals. The primary is the existing bored recovery endpoint exactly as
+  implemented: content-bearing engagement on the **first** post-trigger learner
+  turn (`deadline_turns: 1`). A predeclared two-sided exact conditional blocked
+  score test conditions on the six world success totals and the 3/3 allocation;
+  it sums conditional score probabilities no greater than the observed score
+  probability. This replaces the invalid pooled-Fisher draft and respects the
+  actual assignment mechanism. The excluded calibration rates `1/6` plain
+  versus `4/6` warm are used only for sizing: exact blocked power is `0.7948`
+  with 17 per arm (one 2/2 world and five 3/3 worlds) and `0.8165` with 18 per
+  arm (six 3/3 worlds), so 18 per arm is the minimum. An exact-prefix paired
+  alternative is not smaller: the observed paired discordance `4/6` warm-only
+  versus `1/6` plain-only needs 28 pairs for 80% exact McNemar power and a
+  2,856-attempt ceiling. The selected blocked-independent design is therefore
+  the smallest powered option at 2,160 attempts.
+
+  Objective proof progress remains a fixed-sequence key secondary measured by
+  the second post-trigger learner turn. The deterministic endpoint recomputes,
+  rather than trusts, the registered composite: at least one new supported
+  public premise, positive best-path coverage delta, negative proof-debt delta,
+  and zero unsupported public claims. It may be tested with the same exact
+  blocked procedure only after the recovery endpoint rejects; no independent
+  80% power claim is made for that secondary. The zero-call assembler now also
+  fails closed on a non-Boolean recovery result, a one-turn recovery-horizon
+  mismatch, any arm/seed/batch/assignment-manifest drift, or a contradictory
+  proof-progress Boolean. Prior held-out, historical action, and 12-dialogue
+  calibration outcomes are excluded from analysis, and there is no interim
+  interpretation, valid-output rerun, or outcome selection.
+
+  Hard accounting is six base calls through the fresh T2 boredom prefix, six
+  post-trigger base calls, one cumulative two-call learner repair, and six
+  tutor-guard recovery calls. With at most three charged dispatches per planned
+  call, that is `20 × 3 = 60` reservations per dialogue and
+  `36 × 60 = 2,160` maximum attempts. Nine four-dialogue batches are capped at
+  240 each. From the
+  standing ledger `185/1200`, this boredom study alone requires a programme
+  ceiling of `2,345`, an amendment of `+1,145`. If the
+  separate 2,160-attempt frame-refusal confirmation is also reserved, the
+  smallest combined ceiling is `4,505`, an amendment of `+3,305` from 1,200
+  (or `+2,160` above its proposed 2,345 ceiling). This readiness work consumes
+  zero attempts and creates no live executor, analyzer, GO request, or launch
+  authority. The next boundary is a reviewed production executor/analyzer and
+  request validator, merged clean source, explicit ceiling amendment, and an
+  exact digest-bound HOLD request plus human authorization.
 - 2026-08-20 — Prepared the prospective zero-call readiness layer for the
   smallest properly powered confirmation of the calibration signal. The
   design is deliberately narrower than the crossed efficacy programme: 36
