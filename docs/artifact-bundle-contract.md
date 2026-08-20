@@ -49,6 +49,10 @@ an archive member missing from the manifest, an extra archive member, or any
 byte-count or digest mismatch. The manifest path is the stable repository
 identity; the archive supplied to a command may live elsewhere locally.
 
+Version 1 deliberately accepts only canonical POSIX or GNU-compatible USTAR
+regular-file headers with conventional 10 KiB tar-record padding. Links,
+special files, PAX/GNU extension records, and other tar layouts fail closed.
+
 ## Explicit-local commands
 
 All commands are deterministic and make zero model calls.

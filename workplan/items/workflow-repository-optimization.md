@@ -223,3 +223,17 @@ Log:
   remain tracked until that tested consumer can materialize or read the
   verified bundle. The six `P3–P8.book.md` files are outside the archive and
   outside the removal candidate set.
+- 2026-08-20 — Completed Wave 3B's non-destructive production drill from the
+  combined branch on current `main`. The tracked 9,492,826-byte archive
+  verified at SHA-256
+  `d5c5c5e7315c52d84652b4e35d47b998f449f6241f71660fb8f02eb8fe5d2434`;
+  first fetch atomically published its digest-addressed cache object, a second
+  fetch returned a verified cache hit, and create-once restore reproduced all
+  26 files / 61,350,499 bytes byte for byte. The retained drill is
+  `/private/tmp/ms-wave3b-production-drill.LPNClL`. The focused artifact and
+  existing Step 4 consumer cohort passed 29/29 alongside manifest, workplan,
+  lint, formatting, and diff checks. Three new no-smudge worktrees measured
+  263,400 KiB each versus 769,396–769,408 KiB for comparable hydrated retained
+  worktrees, avoiding roughly 494 MiB of LFS hydration per new worker. No
+  payload, external store, model call, worktree, generated view, or history was
+  moved, removed, invoked, or rewritten.
