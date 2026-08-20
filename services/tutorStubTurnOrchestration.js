@@ -1455,6 +1455,9 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       }
       const turnNumber = state.turns.length + 1;
       const turnId = turnDebugId(state, turnNumber);
+      const registeredFinalLearnerOnly =
+        state.resistanceActionRegisterStudy?.final_learner_without_tutor_reply === true &&
+        turnNumber === Number(autoTurns);
       let precomputedRaw =
         turnNumber === 1 ? state.resistanceActionRegisterStudy?.trigger_precomputed_raw || null : null;
       let learnerResponseProvenance = nextLearnerText
@@ -1511,6 +1514,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
           profile: autoLearnerProfile,
           turnNumber,
           generated,
+          precomputeFinalLearnerAnalysis: registeredFinalLearnerOnly,
           cliEffort,
           signal,
           isCurrent,
@@ -1591,9 +1595,6 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         provenance: jsonClone(learnerResponseProvenance),
       };
 
-      const registeredFinalLearnerOnly =
-        state.resistanceActionRegisterStudy?.final_learner_without_tutor_reply === true &&
-        turnNumber === Number(autoTurns);
       if (registeredFinalLearnerOnly) {
         if (!precomputedRaw?.dagPreflight) {
           throw new Error('registered final learner outcome requires the already-generated public analysis preflight');

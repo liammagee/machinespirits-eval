@@ -4,7 +4,13 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
+import { createTutorStubAutomatedLearnerGenerationRuntime } from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
 import { createTutorStubTurnOrchestration } from '../services/tutorStubTurnOrchestration.js';
+import {
+  learnerProfileContract,
+  learnerProfileIds,
+  learnerProfilePrompt,
+} from '../scripts/tutor-stub-learner-profile-contracts.js';
 
 const ORCHESTRATION_SOURCE = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -117,14 +123,49 @@ test('every turn-completion path stamps the reply, including the ones no unit te
   }
 });
 
-test('registered action/register horizon records the third learner turn without generating a terminal tutor reply', async () => {
+test('registered action/register production enforcement preserves the third learner analysis without a terminal tutor reply', async () => {
   const events = [];
   let tutorCalls = 0;
-  let analyses = 0;
+  let precomputedAnalyses = 0;
+  let outcomeAnalyses = 0;
+  const finalRawAnalysis = {
+    classification: {
+      turn: {
+        request_type: 'bounded_test_response',
+        discourse_move: 'evidence_adoption',
+        evidence_use: 'links_evidence_to_rule',
+        epistemic_stance: 'grounded',
+        agency: 'attempting',
+      },
+    },
+    dagPreflight: { publicOnly: true, contentSha256: 'final-t3-preflight' },
+  };
+  const generationRuntime = createTutorStubAutomatedLearnerGenerationRuntime({
+    appendTraceEvent(_trace, event) {
+      events.push(event);
+    },
+    callPromptModel() {
+      throw new Error('zero-call orchestration regression');
+    },
+    classificationFromCombinedAnalysis: (raw) => raw.classification,
+    env: {},
+    extractCombinedLearnerAnalysis: async ({ learnerText, tutorTurn, preflightSource }) => {
+      precomputedAnalyses += 1;
+      assert.equal(learnerText, 'The bounded public comparison is testable without granting the wider frame.');
+      assert.equal(tutorTurn, 3);
+      assert.equal(preflightSource, 'registered_final_learner_outcome');
+      return finalRawAnalysis;
+    },
+    learnerProfileContract,
+    learnerProfileIds,
+    learnerProfilePrompt,
+    negativeFloorRegisters: [],
+  });
   const orchestration = createTutorStubTurnOrchestration({
     C: { brightBlue: '', bold: '', reset: '' },
-    analyzeLearnerTurn: async () => {
-      analyses += 1;
+    analyzeLearnerTurn: async (_learnerText, _state, { precomputedRaw }) => {
+      outcomeAnalyses += 1;
+      assert.equal(precomputedRaw, finalRawAnalysis);
       return {
         classification: { turn: { discourse_move: 'evidence_adoption' } },
         tutorLearnerDag: { model: { metrics: { missingPremiseCount: 2, groundedCount: 7 } } },
@@ -135,19 +176,14 @@ test('registered action/register horizon records the third learner turn without 
       events.push(event);
     },
     assertTutorStubTurnAttemptCurrent() {},
-    automatedLearnerProfileId: () => 'frame_refuser',
+    automatedLearnerProfileId: generationRuntime.automatedLearnerProfileId,
     callTutor: async () => {
       tutorCalls += 1;
       return { text: 'must not be called' };
     },
     createTutorStubLearnerResponseProvenance: (value) => value,
-    enforceAutomatedLearnerProfile: async ({ generated }) => ({
-      generated,
-      repaired: false,
-      passed: true,
-      precomputedRaw: { dagPreflight: { publicOnly: true } },
-    }),
-    enforceGuardedLearnerConcessionGuard: async ({ generated }) => ({ generated }),
+    enforceAutomatedLearnerProfile: generationRuntime.enforceAutomatedLearnerProfile,
+    enforceGuardedLearnerConcessionGuard: generationRuntime.enforceGuardedLearnerConcessionGuard,
     generateAutomatedLearnerTurn: async () => ({
       text: 'The bounded public comparison is testable without granting the wider frame.',
       provider: 'test',
@@ -165,9 +201,44 @@ test('registered action/register horizon records the third learner turn without 
   });
   const state = {
     trace: null,
-    turns: [{ turn: 1 }, { turn: 2 }],
-    history: [],
+    turns: [
+      {
+        turn: 1,
+        learner:
+          'I reject your demand that we choose a matter or term on your framing, and I will not supply evidence or an answer under it.',
+        tutor: 'Try the bounded public comparison once.',
+        classification: {
+          turn: {
+            request_type: 'authority_refusal_or_status_challenge',
+            discourse_move: 'challenge',
+            evidence_use: 'none',
+            epistemic_stance: 'resistant',
+            agency: 'steering',
+          },
+        },
+      },
+      {
+        turn: 2,
+        learner:
+          'I reject your question as the governing test, and I will not name a hand or supply evidence under it.',
+        tutor: 'Apply only the local distinction to the public marks.',
+        classification: {
+          turn: {
+            request_type: 'authority_refusal_or_status_challenge',
+            discourse_move: 'challenge',
+            evidence_use: 'none',
+            epistemic_stance: 'resistant',
+            agency: 'steering',
+          },
+        },
+      },
+    ],
+    history: [{ role: 'assistant', content: 'Test one bounded distinction in the public record.' }],
     interim: null,
+    classifier: { enabled: true },
+    learnerDag: { enabled: true },
+    register: { policy: 'field' },
+    world: {},
     resistanceActionRegisterStudy: {
       enabled: true,
       final_learner_without_tutor_reply: true,
@@ -190,7 +261,13 @@ test('registered action/register horizon records the third learner turn without 
 
   assert.equal(result.reason, 'registered_outcome_horizon_complete');
   assert.equal(tutorCalls, 0);
-  assert.equal(analyses, 1);
+  assert.equal(precomputedAnalyses, 1);
+  assert.equal(outcomeAnalyses, 1);
+  assert.equal(
+    events.some((event) => event.type === 'auto_learner_profile_adherence'),
+    false,
+    'the final analysis must survive after the profile recurrence requirement is already satisfied',
+  );
   assert.equal(state.history.at(-1).role, 'user');
   const outcome = events.find((event) => event.type === 'resistance_action_register_outcome_learner_turn');
   assert.equal(outcome.turn, 3);

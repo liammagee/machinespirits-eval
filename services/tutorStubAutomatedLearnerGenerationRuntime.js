@@ -231,7 +231,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
   const automatedLearnerTraceMetadata = Object.freeze(
     observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4 ? { observationSemantics } : {},
   );
-
   function cleanAutomatedLearnerReply(text) {
     const cleaned = String(text || '')
       .replace(/^```(?:text|markdown)?/iu, '')
@@ -240,7 +239,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       .trim();
     return cleanTutorStubStageSpeech(cleaned, { voice: 'learner' });
   }
-
   function deterministicAutomatedLearnerFallback({ state }) {
     const latestTutor =
       [...(state.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
@@ -249,7 +247,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     }
     return 'What public evidence should I test first?';
   }
-
   function automatedLearnerSystemPrompt(profile) {
     return [
       AUTO_LEARNER_SYSTEM_PROMPT,
@@ -261,7 +258,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       'Apply this behavior brief to every public learner turn. Never quote or describe it.',
     ].join('\n');
   }
-
   function mixedLearnerArtifactsSystemPrompt(profile) {
     return [
       'You generate a paired learner answer and non-revealing clue for an experimental tutoring dialogue.',
@@ -279,7 +275,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       'Never quote or name the private behavior brief. The profile_signal may explain only visible response behavior in plain language. Return one JSON object only.',
     ].join('\n');
   }
-
   function automatedLearnerProfileId(profile) {
     const value = String(profile || '').trim();
     const directId = value.toLowerCase().replace(/-/gu, '_');
@@ -289,19 +284,16 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     const legacyMatch = value.match(/simulating this automated learner profile:\s*([a-z0-9_-]+)/iu);
     return legacyMatch ? legacyMatch[1].toLowerCase().replace(/-/gu, '_') : null;
   }
-
   function resolveAutomatedLearnerProfile(profile) {
     const value = String(profile || '').trim();
     const profileId = value.toLowerCase().replace(/-/gu, '_');
     return learnerProfileIds().includes(profileId) ? learnerProfilePrompt(profileId) : value;
   }
-
   function explicitRecollectionFrame(text) {
     return /\b(?:(?:we|i)\s+(?:already\s+)?(?:saw|read|heard|recorded|remember(?:ed)?|recall(?:ed)?)|the\s+(?:record|trial-book|book)\s+(?:already\s+)?(?:said|showed|recorded|proved))\b/iu.test(
       String(text || ''),
     );
   }
-
   function automatedLearnerMarkerValue(turn, field, tutorText = '') {
     const classifier = turn?.classification?.turn || {};
     const resistantMarkers = resistantLearnerObservationMarkers({
@@ -321,7 +313,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     };
     return fields[field] ?? null;
   }
-
   function automatedLearnerMarkerMatches(turn, clause, tutorText = '') {
     return clause.every((group) =>
       (group.values || []).includes(automatedLearnerMarkerValue(turn, group.field, tutorText)),
@@ -651,7 +642,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       (clause) => clause.length > 0 && automatedLearnerMarkerMatches(syntheticTurn, clause, tutorText),
     );
   }
-
   function automatedLearnerRepairInstruction(profileId) {
     if (profileId === 'answer_seeking') {
       return 'Keep seeking supplied wording, but respond to the current public clue. Either ask for the next line using one concrete clue term, or copy part of the line just offered as a tentative entry. Do not repeat an earlier learner sentence verbatim.';
@@ -677,6 +667,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     profile,
     turnNumber,
     generated,
+    precomputeFinalLearnerAnalysis = false,
     cliEffort = null,
     signal = null,
     isCurrent = null,
@@ -698,6 +689,17 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       return { generated, precomputedRaw: null, repaired: false, passed: null };
     }
     if (!runtime?.requiredNow || !canPreclassify || !generated.text) {
+      const precomputedRaw =
+        precomputeFinalLearnerAnalysis && canPreclassify && generated.text
+          ? await extractCombinedLearnerAnalysis({
+              learnerText: generated.text,
+              state,
+              tutorTurn: turnNumber,
+              preflightSource: 'registered_final_learner_outcome',
+              signal,
+            })
+          : null;
+      if (precomputedRaw) assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
       if (frameOpportunityV4Profile && turnNumber === 2 && runtime?.observed > 0) {
         appendTraceEvent(state.trace, {
           type: 'auto_learner_profile_adherence',
@@ -709,9 +711,9 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
           repairAttempts: 0,
           cumulativeQualifiedByTurn: 1,
         });
-        return { generated, precomputedRaw: null, repaired: false, passed: true };
+        return { generated, precomputedRaw, repaired: false, passed: true };
       }
-      return { generated, precomputedRaw: null, repaired: false, passed: null };
+      return { generated, precomputedRaw, repaired: false, passed: null };
     }
 
     const prospectiveV3 = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV3;
