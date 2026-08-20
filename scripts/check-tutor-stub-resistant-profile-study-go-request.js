@@ -139,6 +139,8 @@ const BOREDOM_ACTION_REGISTER_PROOF_DAG_V1_CRITICAL_SOURCE_CLOSURE = Object.free
   'services/tutorStubSessionRecipe.js',
   'services/tutorStubReleasePacing.js',
   'services/tutorStubAutomatedLearnerGenerationRuntime.js',
+  'services/mixedLearnerArtifacts.js',
+  'services/tutorStubStageSpeech.js',
   'services/tutorStubLearnerAnalysisRuntime.js',
   'services/tutorStubPublicLearnerAnalysis.js',
   'services/resistantLearnerObservation.js',

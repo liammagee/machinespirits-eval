@@ -39,6 +39,8 @@ const CLOSURE = [
   'services/tutorStubSessionRecipe.js',
   'services/tutorStubReleasePacing.js',
   'services/tutorStubAutomatedLearnerGenerationRuntime.js',
+  'services/mixedLearnerArtifacts.js',
+  'services/tutorStubStageSpeech.js',
   'services/tutorStubLearnerAnalysisRuntime.js',
   'services/tutorStubPublicLearnerAnalysis.js',
   'services/resistantLearnerObservation.js',
