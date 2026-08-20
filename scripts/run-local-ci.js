@@ -7,7 +7,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
-import { classifyCiChanges } from './ci-change-policy.js';
+import { classifyCiChanges, fullCiClassification } from './ci-change-policy.js';
 import {
   classifySurfaceAcceptance,
   packageManifestAtRef,
@@ -133,13 +133,44 @@ function lane(id, label, commands, profiles = ['full']) {
 
 export { pathTriggersSurfaceAcceptance };
 
-export function resolveLocalCiProfile(options, changedFiles) {
-  const classification = classifyCiChanges({ changedFiles });
+export function resolveLocalCiProfile(options, changedFiles, { collectionOk = true, errors = [] } = {}) {
+  const classification = collectionOk
+    ? classifyCiChanges({ changedFiles })
+    : fullCiClassification(`local changed-file collection failed: ${errors.join('; ') || 'unknown git error'}`);
   return {
     requestedProfile: options.profile,
     profile: options.profile === 'auto' ? classification.profile : options.profile,
     classification,
   };
+}
+
+export function classifyLocalSurfaceRequirement({
+  surfaceMode,
+  base,
+  changedFileResult,
+  projectRoot = PROJECT_ROOT,
+  readBaseManifest = packageManifestAtRef,
+  readHeadManifest = () => JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8')),
+}) {
+  if (surfaceMode === 'always') return { required: true, reason: 'surface validation explicitly required' };
+  if (surfaceMode === 'never') return { required: false, reason: 'surface validation explicitly disabled' };
+  if (!changedFileResult.ok) {
+    return { required: true, reason: 'changed-file collection failed; surface impact is unknown' };
+  }
+
+  const changedFiles = changedFileResult.changedFiles;
+  const packageChanged = changedFiles.includes('package.json');
+  let baseManifest = null;
+  let headManifest = null;
+  if (packageChanged) {
+    try {
+      baseManifest = readBaseManifest(base, projectRoot);
+      headManifest = readHeadManifest();
+    } catch {
+      return { required: true, reason: 'package comparison metadata is unavailable' };
+    }
+  }
+  return classifySurfaceAcceptance({ changedFiles, baseManifest, headManifest });
 }
 
 function node24ContainerCommand(projectRoot) {
@@ -303,20 +334,25 @@ function gitOutput(args, projectRoot) {
 }
 
 export async function changedFilesForRange(base, head, projectRoot = PROJECT_ROOT) {
-  const outputs = await Promise.all([
-    gitOutput(['diff', '--name-only', `${base}...${head}`], projectRoot),
-    gitOutput(['diff', '--name-only'], projectRoot),
-    gitOutput(['diff', '--cached', '--name-only'], projectRoot),
-    gitOutput(['ls-files', '--others', '--exclude-standard'], projectRoot),
-  ]);
-  return [
-    ...new Set(
-      outputs
-        .flatMap((output) => output.split('\n'))
-        .map((file) => file.trim())
-        .filter(Boolean),
-    ),
-  ].sort();
+  const queries = [
+    ['range', ['diff', '--name-only', '-z', `${base}...${head}`]],
+    ['unstaged', ['diff', '--name-only', '-z']],
+    ['staged', ['diff', '--cached', '--name-only', '-z']],
+    ['untracked', ['ls-files', '--others', '--exclude-standard', '-z']],
+  ];
+  const results = await Promise.allSettled(queries.map(([, args]) => gitOutput(args, projectRoot)));
+  const changedFiles = new Set();
+  const errors = [];
+  for (let index = 0; index < results.length; index += 1) {
+    const result = results[index];
+    const [label] = queries[index];
+    if (result.status === 'rejected') {
+      errors.push(`${label}: ${result.reason.message}`);
+      continue;
+    }
+    for (const file of result.value.split('\0').filter(Boolean)) changedFiles.add(file);
+  }
+  return { ok: errors.length === 0, changedFiles: [...changedFiles].sort(), errors };
 }
 
 export function buildLocalCiPlan(
@@ -524,26 +560,19 @@ async function main() {
     return;
   }
 
-  const changedFiles = await changedFilesForRange(options.base, options.head);
-  const selection = resolveLocalCiProfile(options, changedFiles);
+  const changedFileResult = await changedFilesForRange(options.base, options.head);
+  const changedFiles = changedFileResult.changedFiles;
+  const selection = resolveLocalCiProfile(options, changedFiles, {
+    collectionOk: changedFileResult.ok,
+    errors: changedFileResult.errors,
+  });
   const resolvedOptions = { ...options, profile: selection.profile };
   let surfaceRequired = false;
   if (options.surface === 'auto') {
-    const packageChanged = changedFiles.includes('package.json');
-    let baseManifest = null;
-    if (packageChanged) {
-      try {
-        baseManifest = packageManifestAtRef(options.base);
-      } catch {
-        // Missing comparison metadata fails closed into the packaged surface lane.
-      }
-    }
-    const classification = classifySurfaceAcceptance({
-      changedFiles,
-      baseManifest,
-      headManifest: packageChanged
-        ? JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'package.json'), 'utf8'))
-        : null,
+    const classification = classifyLocalSurfaceRequirement({
+      surfaceMode: options.surface,
+      base: options.base,
+      changedFileResult,
     });
     surfaceRequired = classification.required;
     console.log(`local-ci: surface=${classification.required ? 'required' : 'skipped'} (${classification.reason})`);
@@ -571,7 +600,12 @@ async function main() {
     return;
   }
 
-  const sourceSha = await gitOutput(['rev-parse', options.head], PROJECT_ROOT);
+  let sourceSha = 'unresolved';
+  try {
+    sourceSha = await gitOutput(['rev-parse', options.head], PROJECT_ROOT);
+  } catch {
+    // A full plan remains runnable and its range-dependent checks fail closed.
+  }
   const { report } = await executeLocalCiPlan(plan, resolvedOptions, { sourceSha });
   if (report.status !== 'passed') process.exitCode = 1;
 }

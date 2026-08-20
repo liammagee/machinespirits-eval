@@ -17,6 +17,10 @@ metadata selects the focused allowlist/JSON checks, a registered validator
 change selects its exact test and lint/format paths, and research prose also
 selects the validation framework. Runtime, dependency, workflow, mixed,
 unknown, and unclassifiable changes fail closed to `full`.
+If any committed-range, staged, unstaged, or untracked Git query fails, `auto`
+also selects `full` and conservatively requires tutor-surface validation.
+Focused validation checks committed and dirty diffs for whitespace errors,
+including a no-index check for untracked files.
 
 When `auto` selects `full` (or `--profile full` is explicit), the runner:
 

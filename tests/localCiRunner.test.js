@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -6,6 +7,8 @@ import test from 'node:test';
 
 import {
   buildLocalCiPlan,
+  changedFilesForRange,
+  classifyLocalSurfaceRequirement,
   displayCommand,
   executeLocalCiPlan,
   localCiEnvironment,
@@ -20,6 +23,24 @@ import {
 
 function displays(plan) {
   return plan.flatMap((lane) => lane.commands.map(displayCommand));
+}
+
+function git(projectRoot, args) {
+  return execFileSync('git', args, { cwd: projectRoot, encoding: 'utf8' }).trim();
+}
+
+function createGitFixture() {
+  const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'local-ci-git-'));
+  git(projectRoot, ['init', '--quiet']);
+  git(projectRoot, ['config', 'user.email', 'ci-test@example.invalid']);
+  git(projectRoot, ['config', 'user.name', 'CI Test']);
+  fs.mkdirSync(path.join(projectRoot, 'docs'), { recursive: true });
+  fs.mkdirSync(path.join(projectRoot, 'workplan/items'), { recursive: true });
+  fs.writeFileSync(path.join(projectRoot, 'docs/base.md'), 'base\n');
+  fs.writeFileSync(path.join(projectRoot, 'workplan/items/unstaged.md'), 'base\n');
+  git(projectRoot, ['add', '.']);
+  git(projectRoot, ['commit', '--quiet', '-m', 'base']);
+  return projectRoot;
 }
 
 function buildAutoPlan(changedFiles, argv = []) {
@@ -148,6 +169,101 @@ test('automatic local CI preserves fail-closed selection and research validation
   const selection = resolveLocalCiProfile(explicitFull, ['docs/local-ci.md']);
   assert.equal(selection.profile, 'full');
   assert.equal(selection.classification.profile, 'focused');
+});
+
+test('local change collection unions committed, staged, unstaged, and untracked paths', async () => {
+  const projectRoot = createGitFixture();
+  try {
+    const base = git(projectRoot, ['rev-parse', 'HEAD']);
+    fs.mkdirSync(path.join(projectRoot, 'services'), { recursive: true });
+    fs.writeFileSync(path.join(projectRoot, 'services/evaluationStore.js'), 'export const runtime = true;\n');
+    git(projectRoot, ['add', 'services/evaluationStore.js']);
+    git(projectRoot, ['commit', '--quiet', '-m', 'runtime']);
+    fs.writeFileSync(path.join(projectRoot, 'docs/staged.md'), 'staged\n');
+    git(projectRoot, ['add', 'docs/staged.md']);
+    fs.writeFileSync(path.join(projectRoot, 'workplan/items/unstaged.md'), 'changed\n');
+    fs.writeFileSync(path.join(projectRoot, 'docs/untracked.md'), 'untracked\n');
+
+    const result = await changedFilesForRange(base, 'HEAD', projectRoot);
+    assert.equal(result.ok, true);
+    assert.deepEqual(result.errors, []);
+    assert.deepEqual(result.changedFiles, [
+      'docs/staged.md',
+      'docs/untracked.md',
+      'services/evaluationStore.js',
+      'workplan/items/unstaged.md',
+    ]);
+  } finally {
+    fs.rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('local change collection failure is explicit and forces full CI plus surface validation', async () => {
+  const projectRoot = createGitFixture();
+  try {
+    fs.writeFileSync(path.join(projectRoot, 'docs/staged.md'), 'staged\n');
+    git(projectRoot, ['add', 'docs/staged.md']);
+    fs.writeFileSync(path.join(projectRoot, 'workplan/items/unstaged.md'), 'changed\n');
+    fs.writeFileSync(path.join(projectRoot, 'docs/untracked.md'), 'untracked\n');
+
+    const result = await changedFilesForRange('missing-base', 'HEAD', projectRoot);
+    assert.equal(result.ok, false);
+    assert.match(result.errors.join('\n'), /^range:/mu);
+    assert.deepEqual(result.changedFiles, ['docs/staged.md', 'docs/untracked.md', 'workplan/items/unstaged.md']);
+
+    const options = parseLocalCiArgs([]);
+    const selection = resolveLocalCiProfile(options, result.changedFiles, {
+      collectionOk: result.ok,
+      errors: result.errors,
+    });
+    assert.equal(selection.profile, 'full');
+    assert.match(selection.classification.reason, /collection failed/u);
+    const surface = classifyLocalSurfaceRequirement({
+      surfaceMode: 'auto',
+      base: 'missing-base',
+      changedFileResult: result,
+      projectRoot,
+    });
+    assert.deepEqual(surface, {
+      required: true,
+      reason: 'changed-file collection failed; surface impact is unknown',
+    });
+    const resolvedOptions = { ...options, profile: selection.profile };
+    const plan = buildLocalCiPlan(resolvedOptions, {
+      projectRoot,
+      changedFiles: result.changedFiles,
+      surfaceRequired: surface.required,
+      classification: selection.classification,
+    });
+    assert.equal(
+      plan.some((lane) => lane.id === 'node-tests'),
+      true,
+    );
+    assert.equal(
+      plan.some((lane) => lane.id === 'surface'),
+      true,
+    );
+
+    const explicitFull = resolveLocalCiProfile(parseLocalCiArgs(['--profile=full']), result.changedFiles, {
+      collectionOk: result.ok,
+      errors: result.errors,
+    });
+    assert.equal(explicitFull.profile, 'full');
+  } finally {
+    fs.rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('missing package comparison metadata conservatively requires surface validation', () => {
+  const result = classifyLocalSurfaceRequirement({
+    surfaceMode: 'auto',
+    base: 'HEAD',
+    changedFileResult: { ok: true, changedFiles: ['package.json'], errors: [] },
+    readBaseManifest: () => {
+      throw new Error('missing manifest');
+    },
+  });
+  assert.deepEqual(result, { required: true, reason: 'package comparison metadata is unavailable' });
 });
 
 test('local CI keeps npm cache and logs outside the source tree', () => {

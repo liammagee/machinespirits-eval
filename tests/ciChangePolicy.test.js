@@ -11,8 +11,25 @@ import {
   pathAllowsValidatorOnlyCi,
   pathRequiresValidationFramework,
   selectValidatorOnlyCi,
+  validateChangedPath,
   validateFocusedChanges,
 } from '../scripts/ci-change-policy.js';
+
+function git(projectRoot, args) {
+  return execFileSync('git', args, { cwd: projectRoot, encoding: 'utf8' }).trim();
+}
+
+function createGitFixture() {
+  const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'ci-change-policy-git-'));
+  git(projectRoot, ['init', '--quiet']);
+  git(projectRoot, ['config', 'user.email', 'ci-test@example.invalid']);
+  git(projectRoot, ['config', 'user.name', 'CI Test']);
+  fs.mkdirSync(path.join(projectRoot, 'docs'), { recursive: true });
+  fs.writeFileSync(path.join(projectRoot, 'docs/tracked.md'), 'base\n');
+  git(projectRoot, ['add', '.']);
+  git(projectRoot, ['commit', '--quiet', '-m', 'base']);
+  return projectRoot;
+}
 
 test('focused CI is allowlisted to authored metadata and workplan surfaces', () => {
   for (const file of [
@@ -89,6 +106,20 @@ test('unknown, empty, and mixed change sets use full CI', () => {
   assert.equal(classifyCiChanges({ changedFiles: ['AGENTS.md'], forceFull: true }).reason, 'manual workflow dispatch');
 });
 
+test('changed paths reject absolute, traversal, empty, and non-canonical forms', () => {
+  for (const file of [
+    '',
+    '/tmp/docs.md',
+    'C:\\tmp\\docs.md',
+    './docs/local-ci.md',
+    'docs//local-ci.md',
+    'docs/../services/evaluationStore.js',
+  ]) {
+    assert.throws(() => validateChangedPath(file), /changed path/u, file || '<empty>');
+    assert.equal(classifyCiChanges({ changedFiles: [file] }).profile, 'full', file || '<empty>');
+  }
+});
+
 test('research prose keeps the validation framework without allocating runtime tests', () => {
   const result = classifyCiChanges({ changedFiles: ['docs/research/paper-full-2.0.md'] });
   assert.equal(result.profile, 'focused');
@@ -136,22 +167,119 @@ test('focused validation parses changed JSON and rejects malformed or widened ch
   }
 });
 
-test('focused validation CLI accepts the local runner changed-file union', () => {
-  const output = execFileSync(
-    process.execPath,
-    [
-      'scripts/ci-change-policy.js',
+test('classifier CLI unions the committed range with supplemental paths and fails closed on missing refs', () => {
+  const projectRoot = createGitFixture();
+  const script = path.resolve('scripts/ci-change-policy.js');
+  try {
+    const base = git(projectRoot, ['rev-parse', 'HEAD']);
+    fs.mkdirSync(path.join(projectRoot, 'services'), { recursive: true });
+    fs.writeFileSync(path.join(projectRoot, 'services/evaluationStore.js'), 'export const runtime = true;\n');
+    git(projectRoot, ['add', 'services/evaluationStore.js']);
+    git(projectRoot, ['commit', '--quiet', '-m', 'runtime']);
+    const head = git(projectRoot, ['rev-parse', 'HEAD']);
+    fs.writeFileSync(path.join(projectRoot, 'docs/supplemental.md'), 'supplemental\n');
+
+    const common = [
+      script,
+      '--project-root',
+      projectRoot,
       '--base',
-      'HEAD',
+      base,
       '--head',
-      'HEAD',
+      head,
       '--changed-file',
-      'docs/local-ci.md',
-      '--validate-focused',
-    ],
-    { encoding: 'utf8' },
-  );
-  assert.equal(JSON.parse(output).profile, 'focused');
+      'docs/supplemental.md',
+    ];
+    const result = JSON.parse(execFileSync(process.execPath, common, { encoding: 'utf8' }));
+    assert.equal(result.profile, 'full');
+    assert.match(result.reason, /services\/evaluationStore\.js/u);
+
+    const missingRange = JSON.parse(
+      execFileSync(
+        process.execPath,
+        [
+          script,
+          '--project-root',
+          projectRoot,
+          '--base',
+          'missing-base',
+          '--head',
+          head,
+          '--changed-file',
+          'docs/supplemental.md',
+        ],
+        { encoding: 'utf8' },
+      ),
+    );
+    assert.equal(missingRange.profile, 'full');
+    assert.match(missingRange.reason, /range could not be classified/u);
+    const missingMetadata = JSON.parse(
+      execFileSync(
+        process.execPath,
+        [script, '--project-root', projectRoot, '--changed-file', 'docs/supplemental.md'],
+        { encoding: 'utf8' },
+      ),
+    );
+    assert.equal(missingMetadata.profile, 'full');
+    assert.match(missingMetadata.reason, /base and head are required/u);
+    assert.throws(
+      () =>
+        execFileSync(process.execPath, [
+          script,
+          '--project-root',
+          projectRoot,
+          '--base',
+          'missing-base',
+          '--head',
+          head,
+          '--changed-file',
+          'docs/supplemental.md',
+          '--validate-focused',
+        ]),
+      /focused validation refused/u,
+    );
+
+    for (const invalid of ['', path.join(projectRoot, 'docs/supplemental.md'), 'docs/../services/evaluationStore.js']) {
+      assert.throws(
+        () =>
+          execFileSync(
+            process.execPath,
+            [script, '--project-root', projectRoot, '--base', base, '--head', head, '--changed-file', invalid],
+            { encoding: 'utf8' },
+          ),
+        /changed path|changed-file/u,
+      );
+    }
+  } finally {
+    fs.rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('focused validation checks whitespace in staged, unstaged, and untracked paths', () => {
+  for (const state of ['staged', 'unstaged', 'untracked']) {
+    const projectRoot = createGitFixture();
+    try {
+      const file = state === 'untracked' ? 'docs/untracked.md' : 'docs/tracked.md';
+      fs.writeFileSync(path.join(projectRoot, file), 'trailing whitespace \n');
+      if (state === 'staged') git(projectRoot, ['add', file]);
+      assert.throws(
+        () =>
+          validateFocusedChanges({
+            changedFiles: [file],
+            projectRoot,
+            base: 'HEAD',
+            head: 'HEAD',
+          }),
+        undefined,
+        state,
+      );
+    } finally {
+      fs.rmSync(projectRoot, { recursive: true, force: true });
+    }
+  }
+});
+
+test('manual full classifier mode does not require range metadata', () => {
   assert.equal(
     JSON.parse(execFileSync(process.execPath, ['scripts/ci-change-policy.js', '--force-full'], { encoding: 'utf8' }))
       .profile,
