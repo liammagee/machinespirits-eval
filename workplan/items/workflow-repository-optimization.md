@@ -7,8 +7,8 @@ priority: P1
 owner: codex
 source: manual
 created: 2026-08-19
-updated: 2026-08-19
-branch: codex/workflow-coordination-safety
+updated: 2026-08-20
+branch: codex/workflow-go-request-packager
 verification: >-
   Reproducible before/after measurements show that local and hosted CI select
   the same fail-closed profiles, avoid measured orchestration and test delays,
@@ -168,3 +168,16 @@ Log:
   both were repaired before the first push, and re-review returned no blockers.
   The five benchmark/rubric/calibration suites pass 32/32 alongside manifest,
   workplan, ESLint, Prettier, cycle, and diff checks. No model call was made.
+- 2026-08-20 — Added the later deterministic template-to-GO-request
+  materializer without changing the existing validator, consumed requests,
+  package metadata, or execution authority. Three explicit inputs bind an
+  authored HOLD template, full launch commit, and one create-once request. The
+  command fills mechanical source and repository-binding proofs, validates the
+  generated request in an isolated no-`node_modules` tree, and emits a stdout
+  digest summary rather than a second proof artifact. Against PR #707, the
+  controlled mechanics comparison reduced 12 operator-issued command groups to
+  one; separate outputs reproduced the committed request byte for byte at
+  SHA-256
+  `2c77c131c2803e4af37eea3c8cbfb38e2ba423d645ab98739d661c5778c22c04`.
+  It claims protected-file equality, not whole-checkout cleanliness; zero model
+  calls and zero production writes were made.

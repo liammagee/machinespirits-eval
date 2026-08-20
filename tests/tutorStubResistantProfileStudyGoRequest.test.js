@@ -8,6 +8,11 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { validateTutorStubResistantProfileStudyGoRequest } from '../scripts/check-tutor-stub-resistant-profile-study-go-request.js';
+import {
+  GO_REQUEST_PACKAGE_MARKERS,
+  goRequestFileSha256Marker,
+  resolveTutorStubGoRequestOutput,
+} from '../scripts/package-tutor-stub-resistant-profile-study-go-request.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FRAME_REFUSER_OPPORTUNITY_CRITICAL_SOURCE_CLOSURE = [
@@ -52,6 +57,12 @@ const AXIS_HELDOUT_REQUEST_PATH = path.join(
   'config',
   'tutor-stub-resistance-axis-heldout-study-go-request.v1.json',
 );
+const FRAME_REFUSER_V2_REQUEST_PATH = path.join(
+  ROOT,
+  'config',
+  'tutor-stub-frame-refuser-opportunity-study-go-request.v2.json',
+);
+const GO_REQUEST_PACKAGE_SCRIPT = 'scripts/package-tutor-stub-resistant-profile-study-go-request.js';
 
 test('approved study request remains bound to its launch source and fails closed after source drift', () => {
   const requestBytes = fs.readFileSync(REQUEST_PATH);
@@ -519,4 +530,252 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
       assert.match(invalidResult.stderr, invalid.pattern);
     }
   }
+});
+
+function replaceJsonFieldWithMarker(source, key, value, marker) {
+  const expected = `${JSON.stringify(key)}: ${JSON.stringify(value)}`;
+  const count = source.split(expected).length - 1;
+  assert.equal(count, 1, `expected one ${key}=${JSON.stringify(value)} field while constructing the fixture template`);
+  return source.replace(expected, `${JSON.stringify(key)}: ${JSON.stringify(marker)}`);
+}
+
+function frameRefuserV2TemplateText() {
+  const request = JSON.parse(fs.readFileSync(FRAME_REFUSER_V2_REQUEST_PATH, 'utf8'));
+  let source = fs.readFileSync(FRAME_REFUSER_V2_REQUEST_PATH, 'utf8');
+  source = replaceJsonFieldWithMarker(
+    source,
+    'launchCommit',
+    request.source.launchCommit,
+    GO_REQUEST_PACKAGE_MARKERS.sourceCommit,
+  );
+  source = replaceJsonFieldWithMarker(
+    source,
+    'launchTree',
+    request.source.launchTree,
+    GO_REQUEST_PACKAGE_MARKERS.sourceTree,
+  );
+  for (const entry of request.source.closure) {
+    source = replaceJsonFieldWithMarker(source, 'sha256', entry.sha256, goRequestFileSha256Marker(entry.path));
+  }
+  source = replaceJsonFieldWithMarker(
+    source,
+    'sha256',
+    request.bindings.registration.sha256,
+    goRequestFileSha256Marker(request.bindings.registration.path),
+  );
+  source = replaceJsonFieldWithMarker(
+    source,
+    'contractFileSha256',
+    request.bindings.endpoint.contractFileSha256,
+    goRequestFileSha256Marker(request.bindings.endpoint.contractPath),
+  );
+  source = replaceJsonFieldWithMarker(
+    source,
+    'contractCanonicalSha256',
+    request.bindings.endpoint.contractCanonicalSha256,
+    GO_REQUEST_PACKAGE_MARKERS.endpointCanonicalSha256,
+  );
+  source = replaceJsonFieldWithMarker(
+    source,
+    'certificateFileSha256',
+    request.bindings.endpoint.certificateFileSha256,
+    goRequestFileSha256Marker(request.bindings.endpoint.certificatePath),
+  );
+  source = replaceJsonFieldWithMarker(
+    source,
+    'preflightSha256',
+    request.bindings.endpoint.preflightSha256,
+    GO_REQUEST_PACKAGE_MARKERS.endpointPreflightSha256,
+  );
+  source = replaceJsonFieldWithMarker(
+    source,
+    'resultSha256',
+    request.bindings.routeCanary.resultSha256,
+    goRequestFileSha256Marker(request.bindings.routeCanary.resultPath),
+  );
+  source = replaceJsonFieldWithMarker(
+    source,
+    'authorizationConsumptionSha256',
+    request.bindings.routeCanary.authorizationConsumptionSha256,
+    goRequestFileSha256Marker(request.bindings.routeCanary.authorizationConsumptionPath),
+  );
+  for (const [key, marker] of [
+    ['sourceArtifactSha256', GO_REQUEST_PACKAGE_MARKERS.routeSourceArtifactSha256],
+    ['executionHead', GO_REQUEST_PACKAGE_MARKERS.routeExecutionHead],
+    ['observedProvider', GO_REQUEST_PACKAGE_MARKERS.routeProvider],
+    ['observedModel', GO_REQUEST_PACKAGE_MARKERS.routeModel],
+    ['observedEffort', GO_REQUEST_PACKAGE_MARKERS.routeEffort],
+    ['attestationBasis', GO_REQUEST_PACKAGE_MARKERS.routeAttestationBasis],
+    ['modelIndependentlyAttested', GO_REQUEST_PACKAGE_MARKERS.routeModelIndependentlyAttested],
+  ]) {
+    source = replaceJsonFieldWithMarker(source, key, request.bindings.routeCanary[key], marker);
+  }
+  source = replaceJsonFieldWithMarker(
+    source,
+    'requestSha256',
+    request.opportunityGate.historicalOpportunityV1.requestSha256,
+    goRequestFileSha256Marker(request.opportunityGate.historicalOpportunityV1.requestPath),
+  );
+  source = replaceJsonFieldWithMarker(
+    source,
+    'liveArraySha256',
+    request.bindings.commands.liveArraySha256,
+    GO_REQUEST_PACKAGE_MARKERS.liveCommandSha256,
+  );
+  return replaceJsonFieldWithMarker(
+    source,
+    'analyzeArraySha256',
+    request.bindings.commands.analyzeArraySha256,
+    GO_REQUEST_PACKAGE_MARKERS.analyzeCommandSha256,
+  );
+}
+
+test('GO request packaging materializes the approved request bytes deterministically without granting authority', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'go-request-package-'));
+  const templatePath = path.join(temporary, 'authored-hold-template.json');
+  const first = path.join(ROOT, 'config', `.test-packaged-go-request-${process.pid}-1.json`);
+  const second = path.join(ROOT, 'config', `.test-packaged-go-request-${process.pid}-2.json`);
+  t.after(() => {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(first, { force: true });
+    fs.rmSync(second, { force: true });
+  });
+  fs.writeFileSync(templatePath, frameRefuserV2TemplateText());
+  const request = JSON.parse(fs.readFileSync(FRAME_REFUSER_V2_REQUEST_PATH, 'utf8'));
+  const args = [
+    GO_REQUEST_PACKAGE_SCRIPT,
+    '--template',
+    templatePath,
+    '--launch-commit',
+    request.source.launchCommit,
+    '--json',
+  ];
+  const run = (output) =>
+    spawnSync(process.execPath, [...args, '--out', output], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      env: { ...process.env, NODE_PATH: '', OPENROUTER_API_KEY: 'must-not-be-used-by-zero-call-packager' },
+    });
+
+  const firstRun = run(first);
+  assert.equal(firstRun.status, 0, firstRun.stderr);
+  const report = JSON.parse(firstRun.stdout);
+  const expectedBytes = fs.readFileSync(FRAME_REFUSER_V2_REQUEST_PATH);
+  const firstBytes = fs.readFileSync(first);
+  assert.equal(fs.statSync(first).mode & 0o777, 0o644, 'tracked request output should use ordinary non-secret mode');
+  assert.deepEqual(
+    firstBytes,
+    expectedBytes,
+    'the authored template must reproduce the committed v2 request byte-for-byte',
+  );
+  assert.equal(report.status, 'PACKAGED_HOLD_REQUIRES_EXPLICIT_HUMAN_APPROVAL');
+  assert.equal(report.requestSha256, '2c77c131c2803e4af37eea3c8cbfb38e2ba423d645ab98739d661c5778c22c04');
+  assert.equal(report.launchCommit, request.source.launchCommit);
+  assert.equal(report.launchTree, request.source.launchTree);
+  assert.equal(report.sourceClosureFiles, 19);
+  assert.equal(report.repositoryBindingFiles, 6);
+  assert.equal(report.protectedWorktreeBytesMatchLaunchCommit, true);
+  assert.equal(report.fullCheckoutCleanlinessClaimed, false);
+  assert.deepEqual(report.isolatedReplay, {
+    nodeModulesPresent: false,
+    packetValid: true,
+    readyForExplicitHumanApproval: true,
+    checksPassed: report.isolatedReplay.checksPassed,
+    modelCalls: 0,
+    productionWrites: 0,
+    exactApprovalStatement: report.authorizationBoundary.exactApprovalStatement,
+  });
+  assert.ok(Number.isInteger(report.isolatedReplay.checksPassed) && report.isolatedReplay.checksPassed > 0);
+  assert.deepEqual(report.effects, {
+    requestFilesWritten: 1,
+    proofArtifactsWritten: 0,
+    modelCalls: 0,
+    productionWrites: 0,
+  });
+  assert.equal(report.authorizationBoundary.explicitHumanApproval, null);
+  assert.equal(report.authorizationBoundary.modelCallsAuthorized, false);
+  assert.equal(report.authorizationBoundary.liveRunAuthorized, false);
+  assert.match(report.authorizationBoundary.disposition, /not authorization/u);
+
+  const secondRun = run(second);
+  assert.equal(secondRun.status, 0, secondRun.stderr);
+  assert.deepEqual(fs.readFileSync(second), firstBytes, 'identical inputs must produce byte-identical requests');
+
+  const beforeOverwriteAttempt = crypto.createHash('sha256').update(firstBytes).digest('hex');
+  const overwrite = run(first);
+  assert.equal(overwrite.status, 2);
+  assert.match(overwrite.stderr, /refusing to overwrite existing request/u);
+  assert.equal(
+    crypto.createHash('sha256').update(fs.readFileSync(first)).digest('hex'),
+    beforeOverwriteAttempt,
+    'failed duplicate packaging must leave the first request untouched',
+  );
+});
+
+test('GO request packaging fails closed on incomplete authority, source, marker, and path inputs', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'go-request-package-fail-'));
+  const templatePath = path.join(temporary, 'authored-hold-template.json');
+  const unauthorizedTemplatePath = path.join(temporary, 'unauthorized-template.json');
+  const unresolvedTemplatePath = path.join(temporary, 'unresolved-template.json');
+  const output = path.join(ROOT, 'config', `.test-packaged-go-request-${process.pid}-fail.json`);
+  t.after(() => {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(output, { force: true });
+  });
+  const templateText = frameRefuserV2TemplateText();
+  fs.writeFileSync(templatePath, templateText);
+  const request = JSON.parse(fs.readFileSync(FRAME_REFUSER_V2_REQUEST_PATH, 'utf8'));
+  const run = (args) =>
+    spawnSync(process.execPath, [GO_REQUEST_PACKAGE_SCRIPT, ...args], { cwd: ROOT, encoding: 'utf8' });
+
+  const missing = run(['--template', templatePath, '--out', output]);
+  assert.equal(missing.status, 2);
+  assert.match(missing.stderr, /--launch-commit is required/u);
+  assert.equal(fs.existsSync(output), false);
+
+  const abbreviatedSource = run([
+    '--template',
+    templatePath,
+    '--launch-commit',
+    request.source.launchCommit.slice(0, 12),
+    '--out',
+    output,
+  ]);
+  assert.equal(abbreviatedSource.status, 2);
+  assert.match(abbreviatedSource.stderr, /explicit full commit oid/u);
+  assert.equal(fs.existsSync(output), false);
+
+  const unauthorized = JSON.parse(templateText);
+  unauthorized.authorization.modelCallsAuthorized = true;
+  fs.writeFileSync(unauthorizedTemplatePath, `${JSON.stringify(unauthorized, null, 2)}\n`);
+  const unauthorizedRun = run([
+    '--template',
+    unauthorizedTemplatePath,
+    '--launch-commit',
+    request.source.launchCommit,
+    '--out',
+    output,
+  ]);
+  assert.equal(unauthorizedRun.status, 2);
+  assert.match(unauthorizedRun.stderr, /literal HOLD/u);
+  assert.equal(fs.existsSync(output), false);
+
+  fs.writeFileSync(
+    unresolvedTemplatePath,
+    templateText.replace('"status":', '"extra": "__GO_REQUEST_PACKAGE__:unknown",\n  "status":'),
+  );
+  const unresolved = run([
+    '--template',
+    unresolvedTemplatePath,
+    '--launch-commit',
+    request.source.launchCommit,
+    '--out',
+    output,
+  ]);
+  assert.equal(unresolved.status, 2);
+  assert.match(unresolved.stderr, /unknown or unresolved packaging marker/u);
+  assert.equal(fs.existsSync(output), false);
+
+  assert.throws(() => resolveTutorStubGoRequestOutput(path.join(ROOT, '..', 'escaped-request.json')), /inside/u);
+  assert.throws(() => resolveTutorStubGoRequestOutput('nested/../escaped-request.json'), /canonical/u);
 });

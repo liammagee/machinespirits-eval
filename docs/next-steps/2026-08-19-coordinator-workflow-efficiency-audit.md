@@ -110,6 +110,26 @@ This is the next bounded implementation tranche.
 These additions do not authorize deleting worktrees or artifacts, moving
 evidence to another store, rewriting history, or launching another study.
 
+## Request-packaging mechanics follow-up
+
+The later tranche now has one create-once template-to-request command. In a
+controlled mechanics comparison against PR #707—not a timing or throughput
+claim—it replaces 12 operator-issued Git/hash/validation command groups with
+one explicit invocation of
+`scripts/package-tutor-stub-resistant-profile-study-go-request.js`.
+
+The regression fixture reproduces PR #707's committed v2 request byte for byte
+at SHA-256
+`2c77c131c2803e4af37eea3c8cbfb38e2ba423d645ab98739d661c5778c22c04`.
+Two separate create-once outputs are identical; the command writes one request,
+no separate proof artifact, and reports zero model calls and zero production
+writes. Its isolated replay copies only the bound Git blobs, contains no
+`node_modules`, and validates the actual generated request path.
+
+Packaging proves the protected source and binding bytes against the launch
+commit, not whole-checkout cleanliness. The request retains the stronger clean,
+detached, exact-HEAD requirement as a separate future execution gate.
+
 ## Success conditions
 
 The coordination changes are successful when a representative relevant push
