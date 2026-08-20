@@ -157,8 +157,13 @@ const RESISTANT_AXIS_CANDIDATES = Object.freeze([
  * axes fail closed: a compound signal needs an explicit precedence ruling,
  * not an accidental first-match decision.
  */
-export function createResistantAxisMoveShadow({ learnerText = '', classification = null } = {}) {
-  const observation = observeResistantLearnerAxes({ learnerText, classification });
+export function createResistantAxisMoveShadow({
+  learnerText = '',
+  classification = null,
+  tutorLearnerDag = null,
+  semantics,
+} = {}) {
+  const observation = observeResistantLearnerAxes({ learnerText, classification, tutorLearnerDag, semantics });
   const candidates = RESISTANT_AXIS_CANDIDATES.filter(
     (candidate) => observation.axes[candidate.axis]?.state === candidate.observed_state,
   );

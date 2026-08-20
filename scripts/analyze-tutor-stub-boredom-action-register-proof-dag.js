@@ -15,14 +15,17 @@ import {
   loadTutorStubBoredomProofDagStudy,
 } from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
 import { createTutorStubResistanceAxisShadow } from '../services/tutorStubActionBeforeRegisterShadow.js';
-import { scoreTutorStubResistanceRecovery } from '../services/tutorStubResistanceActionRegisterStudy.js';
+import {
+  scoreTutorStubResistanceRecovery,
+  tutorStubResistanceActionRegisterTreatmentEligibility,
+} from '../services/tutorStubResistanceActionRegisterStudy.js';
 import {
   buildTutorStubBoredomProofDagBatchPlan,
   buildTutorStubBoredomProofDagRecoveryJob,
 } from './run-tutor-stub-boredom-action-register-proof-dag.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v1.json';
+const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v2.json';
 const BATCH_IDS = Object.freeze(Array.from({ length: 9 }, (_, index) => `execution_batch_${index + 1}`));
 
 function sha256(value) {
@@ -350,7 +353,7 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan)
     metadata?.experiment?.policy !== 'field' ||
     metadata?.experiment?.repeat !== job.assignment_index ||
     metadata?.experiment?.jobId !== job.id ||
-    metadata?.autoLearner?.observationSemantics !== 'prospective_v4' ||
+    metadata?.autoLearner?.observationSemantics !== 'prospective_v7' ||
     metadata?.autoLearner?.maxTurns !== 4 ||
     metadata?.autoLearner?.profileId !== 'bored' ||
     metadata?.autoLearner?.modelRef !== 'codex.gpt-5.6-luna' ||
@@ -448,6 +451,8 @@ function analyzeTrace(batch, resultRow, loaded) {
   const triggerShadow = createTutorStubResistanceAxisShadow({
     learnerText: trigger?.learner,
     classification: trigger?.classification,
+    tutorLearnerDag: trigger?.tutorLearnerDagModel,
+    semantics: loaded.registration.design.observationSemantics,
   });
   const earlierEligible = completed
     .filter((event) => Number(event.turn) < triggerTurn)
@@ -456,8 +461,26 @@ function analyzeTrace(batch, resultRow, loaded) {
         createTutorStubResistanceAxisShadow({
           learnerText: event.turnRecord.learner,
           classification: event.turnRecord.classification,
+          tutorLearnerDag: event.turnRecord.tutorLearnerDagModel,
+          semantics: loaded.registration.design.observationSemantics,
         }).resistance_kind === 'bored',
     );
+  const triggerEligibility = trigger
+    ? tutorStubResistanceActionRegisterTreatmentEligibility({
+        runtime: {
+          consumed: false,
+          profile: 'bored',
+          dynamic_boredom_proof_dag: true,
+          registration: {
+            design: { trigger: { observationSemantics: loaded.registration.design.observationSemantics } },
+          },
+          proof_dag_registration: loaded.registration,
+        },
+        learnerText: trigger.learner,
+        classification: trigger.classification,
+        tutorLearnerDag: trigger.tutorLearnerDagModel,
+      })
+    : null;
   if (
     !trigger ||
     !postOne ||
@@ -465,6 +488,8 @@ function analyzeTrace(batch, resultRow, loaded) {
     triggerShadow.resistance_kind !== 'bored' ||
     triggerShadow.warrant?.status !== 'licensed' ||
     triggerShadow.profile_identity_used !== false ||
+    triggerEligibility?.eligible !== true ||
+    triggerEligibility?.boredom_compositional_precedence?.generic_uptake_override_allowed !== false ||
     earlierEligible ||
     interventions[0].triggerTurn !== triggerTurn ||
     interventions[0].triggerLearnerSha256 !== triggerHash ||

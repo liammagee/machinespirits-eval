@@ -18,6 +18,10 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v1.json';
 const ENDPOINT = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v1.json';
 const CERTIFICATE = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v1.endpoint-go.json';
+const REGISTRATION_V2 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v2.json';
+const ENDPOINT_V2 = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v2.json';
+const CERTIFICATE_V2 = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v2.endpoint-go.json';
+const CONSUMED_REQUEST_V2 = 'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v2.json';
 const CALIBRATION_REQUEST = 'config/tutor-stub-resistance-action-register-baseline-analysis-go-request.v1.json';
 const CONSUMED_REQUEST = 'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v1.json';
 const STOPPED_EXECUTION = Object.freeze({
@@ -72,6 +76,65 @@ const STOPPED_EXECUTION = Object.freeze({
   poolingPermitted: false,
   outcomeSelectionPermitted: false,
 });
+const STOPPED_EXECUTION_V2 = Object.freeze({
+  request: Object.freeze({
+    path: CONSUMED_REQUEST_V2,
+    sha256: '476db5ea5d2bdb9a3bc9a1d3df5b0c5e0d3a641cbd1883129e4fe0f583037310',
+  }),
+  predecessorRequest: Object.freeze({
+    path: CONSUMED_REQUEST,
+    sha256: '0972e76083a7a89592a25d55820527e2b061afad0fdf72036f08790dd61dfe61',
+  }),
+  launchSource: Object.freeze({
+    commit: 'c2bc7b1bcc79b32c48e9b47290d9354c92a44647',
+    tree: 'cdf9ffdd22863f0f22f49c9711bee052186ba76b',
+  }),
+  privateArchiveBranch: 'codex/boredom-proof-dag-confirmation-v2-incomplete-archive',
+  privateArchiveCommit: '5833e54cac9b2e2e88847630c0c61c700c765bb4',
+  accounting: Object.freeze({ reservations: 71, completed: 71, providerErrors: 0, aborted: 0 }),
+  batch1: Object.freeze({
+    status: 'sealed_complete',
+    dialoguesComplete: 4,
+    planSha256: 'a90c3bf1dc4b2f85fc0ba455a03696840040b9e3f7cab43723586eb6675e6257',
+    resultSha256: 'e0abf503f21e063a48aa7167e06f5eb64b8e680fc5a3200747874c520e233eea',
+    sealSha256: '318e9bbe7f91bbdbcbed546bb5d8039cd3a0e692e4f1af0a93e1da4bab33bc48',
+    liveInventorySha256: 'b3eeb3bb9361d9912c8d2d106d5beb5561d9561bf9cde213853c6eb6e5713d7a',
+    privateInventorySha256: 'd9958cf8ba562b6bcc3ae14a5dce22540027409f24595b1c18add83dc111a675',
+  }),
+  batch2: Object.freeze({
+    status: 'stopped_incomplete',
+    dialoguesComplete: 2,
+    substantiveFailures: 2,
+    planSha256: '9bb84d2d142e93f37dceb21c773c3a5d367d57db483547f8216abd7a463a94ed',
+    resultSha256: '37658d100fe3c4899fda44b729d8d0c36903164cf8634a6c699303489fe6a41c',
+    sealProduced: false,
+    liveInventorySha256: '35aca4d938b865d9f635884b40157f5f5ea04e8ee879870f08ea1ed44ec6e1e2',
+    privateInventorySha256: '2b9457e7a6a8f34a2c74b3d06b102242c578d496e19521bf4f92c4ac5ca4e6b9',
+  }),
+  traceSha256: Object.freeze([
+    '615b6b58e329638285024a34b5c66eac4883bd76d98d58715fc6a9b5e5c01c02',
+    'a4c666878724d537f3b960be1b5d153a02ef2eaf873475781e9100427f6f8a40',
+    'd87db7fdb9656b9840abe7e35c5fb6045f579e8bb09cd3a5f64d3e9b8a2503fc',
+    '354c0149d2e94e92d2d4d21a0de9ae853f3d1bee14d0a3b09b2e33e5fc8e17bd',
+    '100eb9e43df72eee19aa973ef81e1eecdc8029be81021bd19ba88a2ca1c32f09',
+    '0a9de6bdf7e36b1f031372c981c37bb6216778acef6a1c8f1e2c3b15f7974c3f',
+    '00da8fe46cf830c2284883be43fef23f47b7c89d1ddb0140dac3ffaab5fb5d3d',
+    'f3594107f431fe87b46c8fadaf2b6c4ad0ec4705ce3f42f6fbad1a4dcddc8dea',
+  ]),
+  batches3Through9Started: false,
+  recoveryRan: false,
+  combinedAnalyzerRan: false,
+  reportProduced: false,
+  scientificVerdict: 'none_categorical_instrument_failure',
+  reusePermitted: false,
+  resumePermitted: false,
+  retryPermitted: false,
+  replacementPermitted: false,
+  poolingPermitted: false,
+  analysisPermitted: false,
+  outcomeSelectionPermitted: false,
+  confirmationCreditPermitted: false,
+});
 const CLOSURE = [
   'scripts/run-tutor-stub-boredom-action-register-proof-dag.js',
   'scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js',
@@ -118,6 +181,7 @@ const CLOSURE = [
   'package.json',
   'package-lock.json',
 ];
+const CLOSURE_V2 = [...CLOSURE, 'services/resistantLearnerAxisObservation.js'];
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -331,6 +395,46 @@ function buildRequest({ destinationSuffix }) {
   };
 }
 
+function buildRequestV2({ destinationSuffix }) {
+  const request = buildRequest({ destinationSuffix: `v2-${destinationSuffix}` });
+  const registration = JSON.parse(fs.readFileSync(path.join(ROOT, REGISTRATION_V2), 'utf8'));
+  const contract = JSON.parse(fs.readFileSync(path.join(ROOT, ENDPOINT_V2), 'utf8'));
+  const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, CERTIFICATE_V2), 'utf8'));
+  request.studyId = contract.study_id;
+  request.authorization.programmeCeilingOperationalSafeguard = 5000;
+  request.source.closure = CLOSURE_V2.map((repoPath) => ({ path: repoPath, sha256: fileSha256(repoPath) }));
+  request.boredomActionRegisterProofDag.requestRevision = 3;
+  request.boredomActionRegisterProofDag.priorStoppedExecution = structuredClone(STOPPED_EXECUTION_V2);
+  request.boredomActionRegisterProofDag.recoveryBoundary.programmeCeilingUnchanged = 5000;
+  request.design.worlds = registration.design.worlds;
+  request.design.assignmentManifestSha256 = registration.design.randomization.assignmentManifestSha256;
+  request.design.runSeedBase = registration.design.freshPrefixGeneration.seedBase;
+  request.budget.programmeLedgerBefore = 290;
+  request.budget.programmeCeilingBefore = 5000;
+  request.budget.programmeCeilingAfter = 5000;
+  request.budget.programmeLedgerAfterBoredomMaximum = 2450;
+  request.budget.programmeReservedAfterBothMaximum = 4610;
+  request.bindings.registration = { path: REGISTRATION_V2, sha256: fileSha256(REGISTRATION_V2) };
+  request.bindings.endpoint = {
+    contractPath: ENDPOINT_V2,
+    contractFileSha256: fileSha256(ENDPOINT_V2),
+    contractCanonicalSha256: sha256(JSON.stringify(canonicalJson(contract))),
+    certificatePath: CERTIFICATE_V2,
+    certificateFileSha256: fileSha256(CERTIFICATE_V2),
+    preflightSha256: certificate.preflight_sha256,
+  };
+  request.commands.live = request.commands.live.map((command) =>
+    command.map((value) => (value === REGISTRATION ? REGISTRATION_V2 : value)),
+  );
+  request.commands.analyze = request.commands.analyze.map((value) =>
+    value === REGISTRATION ? REGISTRATION_V2 : value,
+  );
+  request.bindings.commands.liveArraySha256 = commandSha256(request.commands.live);
+  request.bindings.commands.recoveryArraySha256 = commandSha256(request.commands.recovery);
+  request.bindings.commands.analyzeArraySha256 = commandSha256(request.commands.analyze);
+  return request;
+}
+
 function templateText(request) {
   const template = structuredClone(request);
   template.source.launchCommit = GO_REQUEST_PACKAGE_MARKERS.sourceCommit;
@@ -354,11 +458,19 @@ function templateText(request) {
   route.modelIndependentlyAttested = GO_REQUEST_PACKAGE_MARKERS.routeModelIndependentlyAttested;
   template.boredomActionRegisterProofDag.calibrationSizingEvidence.analysisRequest.sha256 =
     goRequestFileSha256Marker(CALIBRATION_REQUEST);
-  template.boredomActionRegisterProofDag.priorStoppedExecution.request.sha256 =
-    goRequestFileSha256Marker(CONSUMED_REQUEST);
+  template.boredomActionRegisterProofDag.priorStoppedExecution.request.sha256 = goRequestFileSha256Marker(
+    template.boredomActionRegisterProofDag.priorStoppedExecution.request.path,
+  );
   template.bindings.commands.liveArraySha256 = GO_REQUEST_PACKAGE_MARKERS.liveCommandSha256;
   template.bindings.commands.recoveryArraySha256 = GO_REQUEST_PACKAGE_MARKERS.recoveryCommandSha256;
   template.bindings.commands.analyzeArraySha256 = GO_REQUEST_PACKAGE_MARKERS.analyzeCommandSha256;
+  return `${JSON.stringify(template, null, 2)}\n`;
+}
+
+function templateTextV2(request) {
+  const template = JSON.parse(templateText(request));
+  template.boredomActionRegisterProofDag.priorStoppedExecution.predecessorRequest.sha256 =
+    goRequestFileSha256Marker(CONSUMED_REQUEST);
   return `${JSON.stringify(template, null, 2)}\n`;
 }
 
@@ -421,6 +533,60 @@ test('boredom proof-DAG GO validator and packager bind scientific design separat
     const invalid = structuredClone(request);
     mutate(invalid);
     const invalidPath = path.join(temporary, `invalid-${crypto.randomUUID()}.json`);
+    fs.writeFileSync(invalidPath, `${JSON.stringify(invalid, null, 2)}\n`);
+    assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
+  }
+});
+
+test('prospective-v7 successor packaging binds the categorical failure and complete executable closure', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-v2-go-'));
+  const output = `.tutor-stub-auto-eval/.test-boredom-proof-dag-v2-go-${process.pid}.json`;
+  t.after(() => {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(path.join(ROOT, output), { force: true });
+  });
+  assert.equal(fileSha256(CONSUMED_REQUEST_V2), STOPPED_EXECUTION_V2.request.sha256);
+  const request = buildRequestV2({ destinationSuffix: process.pid });
+  const requestPath = path.join(temporary, 'request.json');
+  fs.writeFileSync(requestPath, `${JSON.stringify(request, null, 2)}\n`);
+  const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath });
+  assert.equal(report.packetValid, true);
+  assert.equal(report.modelCalls, 0);
+  assert.equal(report.productionWrites, 0);
+  assert.equal(report.budget.programmeLedgerBefore, 290);
+  assert.equal(report.budget.programmeLedgerAfterBoredomMaximum, 2450);
+  assert.equal(report.budget.programmeReservedAfterBothMaximum, 4610);
+  assert.match(report.exactApprovalStatement, /5,000-attempt cumulative programme safeguard/u);
+
+  const templatePath = path.join(temporary, 'template.json');
+  fs.writeFileSync(templatePath, templateTextV2(request));
+  fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
+  const packageReport = packageTutorStubResistantProfileStudyGoRequest({
+    templatePath,
+    launchCommit: request.source.launchCommit,
+    outputPath: output,
+  });
+  assert.equal(packageReport.sourceClosureFiles, CLOSURE_V2.length);
+  assert.equal(packageReport.isolatedReplay.packetValid, true);
+  assert.equal(packageReport.effects.modelCalls, 0);
+  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), fs.readFileSync(requestPath));
+
+  for (const mutate of [
+    (value) => {
+      value.boredomActionRegisterProofDag.priorStoppedExecution.accounting.reservations = 70;
+    },
+    (value) => {
+      value.boredomActionRegisterProofDag.priorStoppedExecution.analysisPermitted = true;
+    },
+    (value) => {
+      value.source.closure = value.source.closure.filter(
+        (entry) => entry.path !== 'services/resistantLearnerAxisObservation.js',
+      );
+    },
+  ]) {
+    const invalid = structuredClone(request);
+    mutate(invalid);
+    const invalidPath = path.join(temporary, `invalid-v2-${crypto.randomUUID()}.json`);
     fs.writeFileSync(invalidPath, `${JSON.stringify(invalid, null, 2)}\n`);
     assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
   }

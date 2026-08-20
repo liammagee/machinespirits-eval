@@ -14,8 +14,8 @@ import { loadTutorStubBoredomProofDagStudy } from '../services/tutorStubBoredomA
 import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v1.json';
-const ENDPOINT = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v1.json';
+const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v2.json';
+const ENDPOINT = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v2.json';
 const PER_DIALOGUE_CAP = 60;
 const PER_BATCH_CAP = 240;
 const BATCH_SIZE = 4;
@@ -218,7 +218,7 @@ function childCommand({ loaded, job, destination, modelCallBudget = PER_DIALOGUE
     ],
     cwd: ROOT,
     env: {
-      TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS: 'prospective_v4',
+      TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS: 'prospective_v7',
       TUTOR_STUB_REMEMBER_SETTINGS: '0',
     },
     job_root: jobRoot,

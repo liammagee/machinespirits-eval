@@ -86,6 +86,9 @@ test('prospective v4 through v6 carry their analyzer-required semantics stamp th
   assert.deepEqual(createRuntime('prospective_v6').automatedLearnerTraceMetadata, {
     observationSemantics: 'prospective_v6',
   });
+  assert.deepEqual(createRuntime('prospective_v7').automatedLearnerTraceMetadata, {
+    observationSemantics: 'prospective_v7',
+  });
 
   const hostSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCliApplicationHost.js'), 'utf8');
   const traceContextSource = fs.readFileSync(

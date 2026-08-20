@@ -68,6 +68,7 @@ const RESISTANCE_ACTION_REGISTER_BASELINE_V2_CRITICAL_SOURCE_CLOSURE = Object.fr
   'services/tutorStubLearnerAnalysisRuntime.js',
   'services/tutorStubPublicLearnerAnalysis.js',
   'services/resistantLearnerObservation.js',
+  'services/resistantLearnerAxisObservation.js',
   'services/tutorStubActionBeforeRegisterShadow.js',
   'services/tutorStubCliPolicyRetry.js',
   'services/tutorStubPromptTransport.js',
@@ -164,6 +165,11 @@ const BOREDOM_ACTION_REGISTER_PROOF_DAG_V1_CRITICAL_SOURCE_CLOSURE = Object.free
   'config/providers.yaml',
   'package.json',
   'package-lock.json',
+]);
+
+const BOREDOM_ACTION_REGISTER_PROOF_DAG_V2_CRITICAL_SOURCE_CLOSURE = Object.freeze([
+  ...BOREDOM_ACTION_REGISTER_PROOF_DAG_V1_CRITICAL_SOURCE_CLOSURE,
+  'services/resistantLearnerAxisObservation.js',
 ]);
 
 const RESISTANCE_ACTION_REGISTER_STOPPED_V2_REQUEST = Object.freeze({
@@ -446,6 +452,67 @@ const BOREDOM_PROOF_DAG_STOPPED_V1_REQUEST = Object.freeze({
   outcomeSelectionPermitted: false,
 });
 
+const BOREDOM_PROOF_DAG_STOPPED_V2_REQUEST = Object.freeze({
+  requestRevision: 3,
+  request: Object.freeze({
+    path: 'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v2.json',
+    sha256: '476db5ea5d2bdb9a3bc9a1d3df5b0c5e0d3a641cbd1883129e4fe0f583037310',
+  }),
+  predecessorRequest: Object.freeze({
+    path: 'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v1.json',
+    sha256: '0972e76083a7a89592a25d55820527e2b061afad0fdf72036f08790dd61dfe61',
+  }),
+  launchSource: Object.freeze({
+    commit: 'c2bc7b1bcc79b32c48e9b47290d9354c92a44647',
+    tree: 'cdf9ffdd22863f0f22f49c9711bee052186ba76b',
+  }),
+  privateArchiveBranch: 'codex/boredom-proof-dag-confirmation-v2-incomplete-archive',
+  privateArchiveCommit: '5833e54cac9b2e2e88847630c0c61c700c765bb4',
+  accounting: Object.freeze({ reservations: 71, completed: 71, providerErrors: 0, aborted: 0 }),
+  batch1: Object.freeze({
+    status: 'sealed_complete',
+    dialoguesComplete: 4,
+    planSha256: 'a90c3bf1dc4b2f85fc0ba455a03696840040b9e3f7cab43723586eb6675e6257',
+    resultSha256: 'e0abf503f21e063a48aa7167e06f5eb64b8e680fc5a3200747874c520e233eea',
+    sealSha256: '318e9bbe7f91bbdbcbed546bb5d8039cd3a0e692e4f1af0a93e1da4bab33bc48',
+    liveInventorySha256: 'b3eeb3bb9361d9912c8d2d106d5beb5561d9561bf9cde213853c6eb6e5713d7a',
+    privateInventorySha256: 'd9958cf8ba562b6bcc3ae14a5dce22540027409f24595b1c18add83dc111a675',
+  }),
+  batch2: Object.freeze({
+    status: 'stopped_incomplete',
+    dialoguesComplete: 2,
+    substantiveFailures: 2,
+    planSha256: '9bb84d2d142e93f37dceb21c773c3a5d367d57db483547f8216abd7a463a94ed',
+    resultSha256: '37658d100fe3c4899fda44b729d8d0c36903164cf8634a6c699303489fe6a41c',
+    sealProduced: false,
+    liveInventorySha256: '35aca4d938b865d9f635884b40157f5f5ea04e8ee879870f08ea1ed44ec6e1e2',
+    privateInventorySha256: '2b9457e7a6a8f34a2c74b3d06b102242c578d496e19521bf4f92c4ac5ca4e6b9',
+  }),
+  traceSha256: Object.freeze([
+    '615b6b58e329638285024a34b5c66eac4883bd76d98d58715fc6a9b5e5c01c02',
+    'a4c666878724d537f3b960be1b5d153a02ef2eaf873475781e9100427f6f8a40',
+    'd87db7fdb9656b9840abe7e35c5fb6045f579e8bb09cd3a5f64d3e9b8a2503fc',
+    '354c0149d2e94e92d2d4d21a0de9ae853f3d1bee14d0a3b09b2e33e5fc8e17bd',
+    '100eb9e43df72eee19aa973ef81e1eecdc8029be81021bd19ba88a2ca1c32f09',
+    '0a9de6bdf7e36b1f031372c981c37bb6216778acef6a1c8f1e2c3b15f7974c3f',
+    '00da8fe46cf830c2284883be43fef23f47b7c89d1ddb0140dac3ffaab5fb5d3d',
+    'f3594107f431fe87b46c8fadaf2b6c4ad0ec4705ce3f42f6fbad1a4dcddc8dea',
+  ]),
+  batches3Through9Started: false,
+  recoveryRan: false,
+  combinedAnalyzerRan: false,
+  reportProduced: false,
+  scientificVerdict: 'none_categorical_instrument_failure',
+  reusePermitted: false,
+  resumePermitted: false,
+  retryPermitted: false,
+  replacementPermitted: false,
+  poolingPermitted: false,
+  analysisPermitted: false,
+  outcomeSelectionPermitted: false,
+  confirmationCreditPermitted: false,
+});
+
 function parseArgs(argv) {
   const args = { request: DEFAULT_REQUEST, json: false };
   for (let index = 0; index < argv.length; index += 1) {
@@ -609,6 +676,8 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   const isBoredomActionRegisterProofDag =
     request.boredomActionRegisterProofDag?.type ===
     'prospective_boredom_matched_action_warm_plain_proof_dag_confirmation_v1';
+  const isBoredomActionRegisterProofDagV2 =
+    isBoredomActionRegisterProofDag && request.boredomActionRegisterProofDag?.requestRevision === 3;
 
   assertion(
     checks,
@@ -665,7 +734,9 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     const closurePaths = sourceClosure.map((entry) => entry?.path);
     const registrationVersion = readJson(bindingPath(request.bindings.registration)).version ?? 1;
     const requiredCriticalSourceClosure = isBoredomActionRegisterProofDag
-      ? BOREDOM_ACTION_REGISTER_PROOF_DAG_V1_CRITICAL_SOURCE_CLOSURE
+      ? isBoredomActionRegisterProofDagV2
+        ? BOREDOM_ACTION_REGISTER_PROOF_DAG_V2_CRITICAL_SOURCE_CLOSURE
+        : BOREDOM_ACTION_REGISTER_PROOF_DAG_V1_CRITICAL_SOURCE_CLOSURE
       : isActionRegisterConfirmation
         ? RESISTANCE_ACTION_REGISTER_CONFIRMATION_V1_CRITICAL_SOURCE_CLOSURE
         : isActionRegisterBaseline || isActionRegisterAnalysisOnly
@@ -745,7 +816,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       assertion(
         checks,
         'boredom-action-register-proof-dag-endpoint-readiness-binding',
-        endpointRegistration.version === 1 &&
+        endpointRegistration.version === (isBoredomActionRegisterProofDagV2 ? 2 : 1) &&
           contract.runner?.live_batch_executor ===
             'scripts/run-tutor-stub-boredom-action-register-proof-dag.js#runTutorStubBoredomProofDagBatch' &&
           contract.runner?.live_batch_recovery_executor ===
@@ -759,7 +830,8 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
           contract.runner?.batch_contract?.maximum_model_attempt_reservations_per_dialogue === 60 &&
           contract.runner?.batch_contract?.maximum_model_attempt_reservations_per_batch === 240 &&
           contract.runner?.batch_contract?.combined_maximum_model_attempt_reservations === 2160 &&
-          contract.runner?.batch_contract?.programme_ceiling_if_frame_refusal_confirmation_also_reserved === 4539 &&
+          contract.runner?.batch_contract?.programme_ceiling_if_frame_refusal_confirmation_also_reserved ===
+            (isBoredomActionRegisterProofDagV2 ? 5000 : 4539) &&
           contract.runner?.batch_contract?.combined_analysis_only === true &&
           contract.runner?.batch_contract?.interim_analysis === false &&
           contract.runner?.batch_contract?.valid_unit_reruns === false &&
@@ -769,6 +841,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
             'objective_proof_progress_by_two_turns',
             'randomized_register_assembly',
             'action_register_fidelity_and_safety',
+            ...(isBoredomActionRegisterProofDagV2 ? ['compositional_boredom_observer_timing'] : []),
           ].every((id) => endpointIds.includes(id)),
         'the boredom 36-case endpoint binds fresh triggers, exact blocked analysis, recovery, proof progress, and all hard caps',
       );
@@ -1119,13 +1192,18 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   } else if (isBoredomActionRegisterProofDag) {
     const registered = readJson(rootPath(request.bindings.registration.path));
     const gate = request.boredomActionRegisterProofDag;
-    const isSuccessor = gate.requestRevision === BOREDOM_PROOF_DAG_STOPPED_V1_REQUEST.requestRevision;
+    const stoppedBinding = isBoredomActionRegisterProofDagV2
+      ? BOREDOM_PROOF_DAG_STOPPED_V2_REQUEST
+      : BOREDOM_PROOF_DAG_STOPPED_V1_REQUEST;
+    const isSuccessor = gate.requestRevision === stoppedBinding.requestRevision;
     const batchDestinations = request.destination.batches;
     const registeredWorlds = registered.design?.worlds || [];
     assertion(
       checks,
       'boredom-proof-dag-design-binding',
-      registered.version === 1 &&
+      registered.version === (isBoredomActionRegisterProofDagV2 ? 2 : 1) &&
+        registered.design?.observationSemantics ===
+          (isBoredomActionRegisterProofDagV2 ? 'prospective_v7' : 'prospective_bored_effort_withholding') &&
         request.design.profiles.join(',') === 'bored' &&
         request.design.dialogues === 36 &&
         request.design.dialoguesPerArm === 18 &&
@@ -1150,7 +1228,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       'boredom-proof-dag-request-revision',
       (gate.requestRevision === undefined && gate.priorStoppedExecution === undefined) ||
         (isSuccessor && gate.priorStoppedExecution !== undefined),
-      'the original request remains revision-compatible and only revision 2 may bind the stopped zero-call predecessor',
+      'the original request remains compatible; revisions 2 and 3 bind their exact stopped predecessors',
     );
     if (isSuccessor) {
       assertion(
@@ -1161,10 +1239,17 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
             requestRevision: gate.requestRevision,
             ...gate.priorStoppedExecution,
           }),
-        ) === JSON.stringify(canonicalJson(BOREDOM_PROOF_DAG_STOPPED_V1_REQUEST)),
-        'the consumed request, stopped Batch 1, private archive, four traces, zero-call accounting, and total exclusion remain exact',
+        ) === JSON.stringify(canonicalJson(stoppedBinding)),
+        'the consumed request, preserved stopped batches, traces, accounting, and total exclusion remain exact',
       );
       validateFileBinding(checks, 'boredom-proof-dag-consumed-request-binding', gate.priorStoppedExecution.request);
+      if (isBoredomActionRegisterProofDagV2) {
+        validateFileBinding(
+          checks,
+          'boredom-proof-dag-predecessor-request-binding',
+          gate.priorStoppedExecution.predecessorRequest,
+        );
+      }
     }
     assertion(
       checks,
@@ -1185,10 +1270,19 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         gate.validUnitRerunsPermitted === false &&
         gate.outcomeSelectionPermitted === false &&
         (!isSuccessor ||
-          (gate.priorStoppedExecution.recoveryPermitted === false &&
-            gate.priorStoppedExecution.reusePermitted === false &&
-            gate.priorStoppedExecution.poolingPermitted === false &&
-            gate.priorStoppedExecution.outcomeSelectionPermitted === false)),
+          (isBoredomActionRegisterProofDagV2
+            ? gate.priorStoppedExecution.retryPermitted === false &&
+              gate.priorStoppedExecution.resumePermitted === false &&
+              gate.priorStoppedExecution.reusePermitted === false &&
+              gate.priorStoppedExecution.replacementPermitted === false &&
+              gate.priorStoppedExecution.poolingPermitted === false &&
+              gate.priorStoppedExecution.analysisPermitted === false &&
+              gate.priorStoppedExecution.outcomeSelectionPermitted === false &&
+              gate.priorStoppedExecution.confirmationCreditPermitted === false
+            : gate.priorStoppedExecution.recoveryPermitted === false &&
+              gate.priorStoppedExecution.reusePermitted === false &&
+              gate.priorStoppedExecution.poolingPermitted === false &&
+              gate.priorStoppedExecution.outcomeSelectionPermitted === false)),
       'held-out detection, historical action-fit, and the 12-dialogue calibration remain excluded from confirmation outcomes',
     );
     validateFileBinding(
@@ -1213,13 +1307,13 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         request.budget.dialoguesPerBatch === 4 &&
         request.budget.maximumAttemptsPerBatch === 240 &&
         request.budget.maximumPlannedModelAttempts === 2160 &&
-        request.budget.programmeLedgerBefore === 219 &&
-        request.budget.programmeCeilingBefore === 2379 &&
+        request.budget.programmeLedgerBefore === (isBoredomActionRegisterProofDagV2 ? 290 : 219) &&
+        request.budget.programmeCeilingBefore === (isBoredomActionRegisterProofDagV2 ? 5000 : 2379) &&
         request.budget.frameRefusalConfirmationReservedAttempts === 2160 &&
         request.budget.programmeOperationalSafeguardIncrement === 2160 &&
-        request.budget.programmeCeilingAfter === 4539 &&
-        request.budget.programmeLedgerAfterBoredomMaximum === 2379 &&
-        request.budget.programmeReservedAfterBothMaximum === 4539 &&
+        request.budget.programmeCeilingAfter === (isBoredomActionRegisterProofDagV2 ? 5000 : 4539) &&
+        request.budget.programmeLedgerAfterBoredomMaximum === (isBoredomActionRegisterProofDagV2 ? 2450 : 2379) &&
+        request.budget.programmeReservedAfterBothMaximum === (isBoredomActionRegisterProofDagV2 ? 4610 : 4539) &&
         request.budget.attemptAccountingRole === 'operational_execution_safeguard_only' &&
         request.budget.retryOrResumeAuthority === 'bounded_technical_recovery',
       'the exact blocked test needs 18 per arm; attempt counts separately bind 60 per dialogue, 2160 for boredom, and 4539 as the cumulative operational safeguard',
@@ -1237,7 +1331,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         recovery.maximumAttemptsPerDialogueUnchanged === 60 &&
         recovery.maximumAttemptsPerBatchUnchanged === 240 &&
         recovery.maximumTotalStudyAttemptsUnchanged === 2160 &&
-        recovery.programmeCeilingUnchanged === 4539,
+        recovery.programmeCeilingUnchanged === (isBoredomActionRegisterProofDagV2 ? 5000 : 4539),
       'bounded recovery may fill only missing or failed units under every unchanged protected input and cap',
     );
     assertion(
@@ -2404,7 +2498,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       ? 'bounded technical recovery authority for missing or failed units only.'
       : 'no retry or resume authority.';
   const exactApprovalStatement = isBoredomActionRegisterProofDag
-    ? `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one 36-dialogue Luna boredom matched-action warm-versus-plain proof-DAG confirmation with 18 dialogues per arm, one predeclared two-sided exact conditional blocked analysis with fixed-sequence proof-progress testing, no interim analysis, no reuse or pooling of prior dialogues or outcomes, a 2,160-attempt study safeguard and 4,539-attempt cumulative programme safeguard while both powered confirmations remain reserved, and bounded technical recovery authority for missing or failed units only within unchanged protected inputs and safeguards.`
+    ? `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one 36-dialogue Luna boredom matched-action warm-versus-plain proof-DAG confirmation with 18 dialogues per arm, one predeclared two-sided exact conditional blocked analysis with fixed-sequence proof-progress testing, no interim analysis, no reuse or pooling of prior dialogues or outcomes, a 2,160-attempt study safeguard and ${isBoredomActionRegisterProofDagV2 ? '5,000' : '4,539'}-attempt cumulative programme safeguard while both powered confirmations remain reserved, and bounded technical recovery authority for missing or failed units only within unchanged protected inputs and safeguards.`
     : isActionRegisterConfirmation
       ? isActionRegisterConfirmationV4
         ? `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1 and V3 confirmation blocks, and bounded technical recovery authority for missing or failed units only within the unchanged 5,000-attempt programme ceiling.`

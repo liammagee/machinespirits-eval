@@ -28,7 +28,7 @@ import {
 } from '../scripts/tutor-stub-learner-profile-contracts.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v1.json';
+const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v2.json';
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -106,7 +106,7 @@ function dagModel({ progressed }) {
 function syntheticTrace({ job, plan, recovered, progressed }) {
   const triggerTurn = job.assignment_index % 2 === 0 ? 2 : 1;
   const outcomeTurn = triggerTurn + 2;
-  const triggerText = `Whatever. I have no interest in working through this proof ${job.id}.`;
+  const triggerText = `Whatever. I will not work through this proof ${job.id}.`;
   const triggerSha = sha256(triggerText);
   const recoveryText = 'The public mark supports the left branch, so I will test that premise next.';
   const nonRecoveryText = 'Fine. Whatever you say.';
@@ -165,7 +165,7 @@ function syntheticTrace({ job, plan, recovered, progressed }) {
           jobId: job.id,
         },
         autoLearner: {
-          observationSemantics: 'prospective_v4',
+          observationSemantics: 'prospective_v7',
           maxTurns: 4,
           profileId: 'bored',
           modelRef: 'codex.gpt-5.6-luna',
@@ -346,7 +346,7 @@ test('boredom proof-DAG study configuration holds treatment dormant until one pu
   const applied = applyTutorStubResistanceActionRegisterStudyIntervention({
     selection,
     state,
-    learnerText: 'Whatever. I have no interest in working through this proof.',
+    learnerText: 'Whatever. I will not work through this proof.',
     classification: boredClassification(),
     tutorLearnerDag: { model: { turn: 2 } },
   });
@@ -372,7 +372,7 @@ test('boredom proof-DAG launch verifies the resolved production learner profile 
       throw new Error('profile-id launch validation must not call a model');
     },
     classificationFromCombinedAnalysis() {},
-    env: { TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS: 'prospective_v4' },
+    env: { TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS: 'prospective_v7' },
     extractCombinedLearnerAnalysis() {},
     learnerProfileContract,
     learnerProfileIds,
@@ -395,7 +395,7 @@ test('boredom proof-DAG launch verifies the resolved production learner profile 
     appendTraceEvent(_trace, event) {
       events.push(event);
     },
-    observationSemantics: 'prospective_v4',
+    observationSemantics: 'prospective_v7',
   });
   assert.equal(configured.loaded.sha256, loaded.sha256);
   assert.equal(configured.job.id, plan.jobs[0].id);
@@ -410,7 +410,7 @@ test('boredom proof-DAG launch verifies the resolved production learner profile 
         autoLearnerProfileId: 'diligent',
         autoTurns: Number(args['auto-turns']),
         appendTraceEvent() {},
-        observationSemantics: 'prospective_v4',
+        observationSemantics: 'prospective_v7',
       }),
     /launch pins or remaining 60-attempt ceiling drifted/u,
   );

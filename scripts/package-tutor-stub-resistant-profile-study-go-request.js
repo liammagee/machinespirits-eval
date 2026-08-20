@@ -282,6 +282,7 @@ function assertMaterializedStructure({
   priorConfirmationV3Request,
   priorCeilingBoundRequest,
   priorBoredomRequest,
+  priorBoredomPredecessorRequest,
   prefixBundle,
   liveCommandSha256,
   recoveryCommandSha256,
@@ -378,6 +379,11 @@ function assertMaterializedStructure({
     const prior = request.boredomActionRegisterProofDag?.priorStoppedExecution?.request;
     assertComputedValue(prior?.path, priorBoredomRequest.path, 'prior stopped boredom request path');
     assertComputedValue(prior?.sha256, priorBoredomRequest.sha256, 'prior stopped boredom request digest');
+  }
+  if (priorBoredomPredecessorRequest) {
+    const prior = request.boredomActionRegisterProofDag?.priorStoppedExecution?.predecessorRequest;
+    assertComputedValue(prior?.path, priorBoredomPredecessorRequest.path, 'prior boredom predecessor request path');
+    assertComputedValue(prior?.sha256, priorBoredomPredecessorRequest.sha256, 'prior boredom predecessor digest');
   }
   if (prefixBundle) {
     assertComputedValue(request.bindings?.prefixBundle?.path, prefixBundle.path, 'prefix bundle path');
@@ -581,6 +587,24 @@ function materializeTemplate({ templateText, template, launchCommit }) {
       replacements,
     );
   }
+  const priorBoredomPredecessorRequestPath =
+    template.boredomActionRegisterProofDag?.priorStoppedExecution?.predecessorRequest?.path;
+  const priorBoredomPredecessorRequest = priorBoredomPredecessorRequestPath
+    ? materializeRepoFile({
+        launchCommit,
+        repoPath: priorBoredomPredecessorRequestPath,
+        label: 'prior boredom predecessor request',
+        files,
+      })
+    : null;
+  if (priorBoredomPredecessorRequest) {
+    requireMarker(
+      templateText,
+      goRequestFileSha256Marker(priorBoredomPredecessorRequest.path),
+      priorBoredomPredecessorRequest.sha256,
+      replacements,
+    );
+  }
   const prefixBundlePath = template.bindings?.prefixBundle?.path;
   const prefixBundle = prefixBundlePath
     ? materializeRepoFile({
@@ -628,6 +652,7 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     priorConfirmationV3Request,
     priorCeilingBoundRequest,
     priorBoredomRequest,
+    priorBoredomPredecessorRequest,
     prefixBundle,
     liveCommandSha256,
     recoveryCommandSha256,

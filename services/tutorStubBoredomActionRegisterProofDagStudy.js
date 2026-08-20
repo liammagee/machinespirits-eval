@@ -230,6 +230,7 @@ function runtimeRegistrationAdapter(registration, world) {
     design: {
       world,
       dagMode: registration.design.dagMode,
+      trigger: { observationSemantics: registration.design.observationSemantics },
       profiles: ['bored'],
       factors: {
         actionFit: {
@@ -377,7 +378,7 @@ export function configureTutorStubBoredomProofDagFromCli({
     args['dag-mode'] !== 'strict_dag' ||
     args['register-policy'] !== 'field' ||
     args['register-palette'] !== 'plain,warm' ||
-    observationSemantics !== 'prospective_v4'
+    observationSemantics !== loaded.registration.design.observationSemantics
   ) {
     throw new Error('boredom proof-DAG launch pins or remaining 60-attempt ceiling drifted');
   }

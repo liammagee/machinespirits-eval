@@ -43,6 +43,7 @@ export const RESISTANT_LEARNER_OBSERVATION_SEMANTICS = Object.freeze({
   prospectiveV4: 'prospective_v4',
   prospectiveV5: 'prospective_v5',
   prospectiveV6: 'prospective_v6',
+  prospectiveV7: 'prospective_v7',
 });
 
 export const RESISTANT_LEARNER_OBSERVATION_TYPES = Object.freeze([
@@ -60,6 +61,22 @@ const BORED_FLAT_PATTERNS = Object.freeze([
   /^\s*(?:fine|sure|right|okay|ok|whatever|as you like|if you say so)(?:\b|[.,!])/iu,
   /(?:^|[.!?]\s+)(?:fine|sure|right|okay|ok|whatever|as you like|if you say so)[.!]?\s*$/iu,
   /\b(?:are we done|can we (?:skip|finish|move on)|what(?:'s| is) left)\b/iu,
+]);
+
+// V7 is opt-in and boredom-specific. It composes cue, withdrawal, and uptake
+// evidence before licensing the public observation, so a generic timing
+// heuristic cannot later reverse an already-made semantic decision.
+const BORED_ACTIONABLE_WITHDRAWAL_PATTERNS_V7 = Object.freeze([
+  /\b(?:are we done|is (?:this|the) (?:trial|exercise|task|lesson) nearly done|how much longer|can we (?:skip|finish|move on)|what(?:'s| is) left)\b/iu,
+  /\b(?:i (?:will not|won't|do not|don't|cannot|can't|refuse to|decline to)|i am not going to)\b[^.!?;]{0,100}\b(?:answer|calculate|check|compare|continue|examine|inspect|reason|record|test|work|work through)\b/iu,
+  /\b(?:stop|skip|end|finish) (?:this|the) (?:trial|exercise|task|lesson|question)\b/iu,
+]);
+
+const BORED_PRODUCTIVE_UPTAKE_PATTERNS_V7 = Object.freeze([
+  /\b(?:i|we) (?:can|could|will|would|should|might) (?!not\b)(?:answer|calculate|check|compare|examine|inspect|record|test|trace|use|weigh)\b[^.!?;]{0,140}/iu,
+  /\b(?:i accept|i acknowledge|agreed|that makes sense)\b[^.!?;]{0,140}\b(?:action|answer|authority|evidence|question|record|test|step)\b/iu,
+  /\b(?:because|therefore|thus|hence)\b/iu,
+  /\b(?:which|what)\b[^.!?;]{0,100}\b(?:evidence|feature|ledger|mark|premise|record|result|test)\b/iu,
 ]);
 
 const SUBSTANTIVE_EXPANSION_PATTERNS = Object.freeze([
@@ -325,6 +342,54 @@ function contentBearing(classification) {
   return CONTENT_BEARING_MOVES.has(turn.discourse_move) || CONTENT_BEARING_EVIDENCE.has(turn.evidence_use);
 }
 
+function learnerAdvanceCount(tutorLearnerDag) {
+  return Number(
+    tutorLearnerDag?.advance?.supportedMoveCount ?? tutorLearnerDag?.model?.learnerAdvance?.supportedMoveCount ?? 0,
+  );
+}
+
+export function classifyBoredomEffortWithholdingComposition({
+  learnerText = '',
+  classification = null,
+  tutorLearnerDag = null,
+} = {}) {
+  const text = String(learnerText || '').trim();
+  const permissionEvidence = firstEvidence(text, PERMISSION_SEEKING_PATTERNS);
+  const explicitBoredEvidence = firstEvidence(text, BORED_EXPLICIT_PATTERNS);
+  const flatBoredEvidence = firstEvidence(text, BORED_FLAT_PATTERNS);
+  const withdrawalEvidence = firstEvidence(text, BORED_ACTIONABLE_WITHDRAWAL_PATTERNS_V7);
+  const cueEvidence = explicitBoredEvidence || flatBoredEvidence || withdrawalEvidence;
+  const lexicalProductive = firstEvidence(text, BORED_PRODUCTIVE_UPTAKE_PATTERNS_V7);
+  const classifierProductive = contentBearing(classification);
+  const dagProductive = learnerAdvanceCount(tutorLearnerDag) > 0;
+  const productiveUptake = Boolean(lexicalProductive || classifierProductive || dagProductive);
+  const actionableWithdrawal = Boolean(withdrawalEvidence);
+  let disposition = 'negative_no_boredom_cue';
+  if (permissionEvidence) disposition = 'negative_permission_seeking';
+  else if (actionableWithdrawal && productiveUptake) disposition = 'ambiguous_withdrawal_and_productive_uptake';
+  else if (productiveUptake) disposition = 'negative_productive_uptake_precedes_cue';
+  else if (cueEvidence && actionableWithdrawal) disposition = 'positive_actionable_withdrawal_without_uptake';
+  else if (cueEvidence) disposition = 'negative_boredom_without_actionable_withdrawal';
+  return {
+    schema: 'machinespirits.resistant-learner.boredom-effort-composition.v1',
+    precedence_rule:
+      'productive_uptake_defeats_cue; actionable_withdrawal_without_productive_uptake_licenses; mixed_withdrawal_and_uptake_fails_closed',
+    disposition,
+    cue_evidence: cueEvidence,
+    explicit_boredom_evidence: explicitBoredEvidence,
+    flat_cue_evidence: flatBoredEvidence,
+    actionable_withdrawal: actionableWithdrawal,
+    actionable_withdrawal_evidence: withdrawalEvidence,
+    productive_uptake: productiveUptake,
+    productive_uptake_evidence: lexicalProductive,
+    classifier_content_bearing: classifierProductive,
+    supported_move_count: learnerAdvanceCount(tutorLearnerDag),
+    permission_seeking: Boolean(permissionEvidence),
+    licensed: disposition === 'positive_actionable_withdrawal_without_uptake',
+    ambiguous: disposition === 'ambiguous_withdrawal_and_productive_uptake',
+  };
+}
+
 function conditionalBoundedParticipationNegated(text, evidence) {
   if (!evidence || !/\bif you (?:propose|offer|name)\b/iu.test(evidence)) return false;
   const evidenceIndex = text.indexOf(evidence);
@@ -352,7 +417,8 @@ export function classifyFrameJurisdictionParticipation({
   const prospectiveV4 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
   const prospectiveV5 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5;
   const prospectiveV6 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6;
-  const expandedProspective = prospectiveV3 || prospectiveV4 || prospectiveV5 || prospectiveV6;
+  const prospectiveV7 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7;
+  const expandedProspective = prospectiveV3 || prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7;
   const explicitReframe = firstEvidence(
     text,
     expandedProspective ? FRAME_EXPLICIT_REFRAME_PATTERNS_V3 : FRAME_EXPLICIT_REFRAME_PATTERNS,
@@ -362,7 +428,7 @@ export function classifyFrameJurisdictionParticipation({
     expandedProspective ? FRAME_BOUNDED_LOCAL_TEST_PATTERNS_V3 : FRAME_BOUNDED_LOCAL_TEST_PATTERNS,
   );
   const boundedLocalTest =
-    (prospectiveV4 || prospectiveV5 || prospectiveV6) &&
+    (prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7) &&
     conditionalBoundedParticipationNegated(text, boundedLocalTestCandidate)
       ? null
       : boundedLocalTestCandidate;
@@ -372,7 +438,7 @@ export function classifyFrameJurisdictionParticipation({
   if (carriesContent) participation.push({ kind: 'content_bearing_contribution', evidence_span: null });
   const explicitWithholding = firstEvidence(
     text,
-    prospectiveV6
+    prospectiveV6 || prospectiveV7
       ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V6
       : prospectiveV4 || prospectiveV5
         ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V4
@@ -419,6 +485,7 @@ export function observeResistantLearnerTurn({
   learnerText = '',
   classification = null,
   tutorText = '',
+  tutorLearnerDag = null,
   semantics = RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2,
 } = {}) {
   if (!Object.values(RESISTANT_LEARNER_OBSERVATION_SEMANTICS).includes(semantics)) {
@@ -436,11 +503,35 @@ export function observeResistantLearnerTurn({
     };
   }
 
+  const prospectiveV7 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7;
+  const boredomComposition = prospectiveV7
+    ? classifyBoredomEffortWithholdingComposition({ learnerText: text, classification, tutorLearnerDag })
+    : null;
   const permissionEvidence = firstEvidence(text, PERMISSION_SEEKING_PATTERNS);
   const explicitBoredEvidence = firstEvidence(text, BORED_EXPLICIT_PATTERNS);
   const flatBoredEvidence = firstEvidence(text, BORED_FLAT_PATTERNS);
-  const boredEvidence = explicitBoredEvidence || flatBoredEvidence;
-  if (boredEvidence) {
+  const boredEvidence = boredomComposition?.cue_evidence || explicitBoredEvidence || flatBoredEvidence;
+  if (prospectiveV7 && boredomComposition) {
+    if (boredomComposition.licensed) {
+      const turn = classifierTurn(classification);
+      observations.push(
+        observation('bored_effort_withholding', boredEvidence, text, {
+          effort: 'withheld',
+          compliance: 'actionable_withdrawal_without_productive_uptake',
+          content_bearing: false,
+          classifier_request_type: turn.request_type || null,
+          composition: boredomComposition,
+        }),
+      );
+    } else if (boredEvidence || boredomComposition.ambiguous) {
+      defeated.push({
+        type: 'bored_effort_withholding',
+        evidence_span: boredEvidence,
+        reasons: [boredomComposition.disposition],
+        composition: boredomComposition,
+      });
+    }
+  } else if (boredEvidence) {
     const carriesContent = contentBearing(classification);
     const minimalFlatReply = minimalFlatCompliance(text, flatBoredEvidence);
     const adjacentHookPresent = hasAdjacentHook(tutorText);
@@ -475,13 +566,14 @@ export function observeResistantLearnerTurn({
   const prospectiveV4 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
   const prospectiveV5 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5;
   const prospectiveV6 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6;
+  const expandedV6 = prospectiveV6 || prospectiveV7;
   const acceptedAuthority =
-    prospectiveV4 || prospectiveV5 || prospectiveV6 ? firstEvidence(text, FRAME_ACCEPTED_AUTHORITY_PATTERNS_V4) : null;
+    prospectiveV4 || prospectiveV5 || expandedV6 ? firstEvidence(text, FRAME_ACCEPTED_AUTHORITY_PATTERNS_V4) : null;
   const meritsOnly =
-    prospectiveV4 || prospectiveV5 || prospectiveV6 ? firstEvidence(text, FRAME_MERITS_ONLY_PATTERNS_V4) : null;
+    prospectiveV4 || prospectiveV5 || expandedV6 ? firstEvidence(text, FRAME_MERITS_ONLY_PATTERNS_V4) : null;
   const framePatterns = legacySemantics
     ? FRAME_JURISDICTION_PATTERNS_V1
-    : prospectiveV6
+    : expandedV6
       ? FRAME_JURISDICTION_PATTERNS_V6
       : prospectiveV5
         ? FRAME_JURISDICTION_PATTERNS_V5
@@ -491,10 +583,10 @@ export function observeResistantLearnerTurn({
             ? FRAME_JURISDICTION_PATTERNS_V3
             : FRAME_JURISDICTION_PATTERNS_V2;
   const candidateFrameEvidence = firstEvidence(text, framePatterns);
-  const v6AuthorityObjectMeritsOnly = prospectiveV6
+  const v6AuthorityObjectMeritsOnly = expandedV6
     ? firstEvidence(text, FRAME_AUTHORITY_OBJECT_MERITS_ONLY_PATTERNS_V6)
     : null;
-  const v6AuthorityObjectExplicitFrameRationale = prospectiveV6
+  const v6AuthorityObjectExplicitFrameRationale = expandedV6
     ? firstEvidence(text, FRAME_AUTHORITY_OBJECT_EXPLICIT_FRAME_RATIONALE_PATTERNS_V6)
     : null;
   const explicitJurisdictionCandidate = Boolean(
@@ -510,10 +602,7 @@ export function observeResistantLearnerTurn({
     acceptedIndex >= 0 && candidateIndex >= acceptedIndex && candidateIndex < acceptedIndex + acceptedAuthority.length;
   const frameEvidence =
     (meritsOnly && !explicitJurisdictionCandidate) ||
-    (prospectiveV6 &&
-      candidateFrameEvidence &&
-      v6AuthorityObjectMeritsOnly &&
-      !v6AuthorityObjectExplicitFrameRationale) ||
+    (expandedV6 && candidateFrameEvidence && v6AuthorityObjectMeritsOnly && !v6AuthorityObjectExplicitFrameRationale) ||
     acceptedAuthorityContainsCandidate
       ? null
       : candidateFrameEvidence;
@@ -585,7 +674,10 @@ export function observeResistantLearnerTurn({
     schema: RESISTANT_LEARNER_OBSERVATION_SCHEMA,
     observations,
     defeated,
-    ambiguous: hasBoredObservation && hasFrameObservation,
+    ambiguous: Boolean(
+      (hasBoredObservation && hasFrameObservation) || (prospectiveV7 && boredomComposition?.ambiguous),
+    ),
+    ...(prospectiveV7 ? { boredom_composition: boredomComposition } : {}),
   };
 }
 
