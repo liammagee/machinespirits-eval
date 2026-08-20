@@ -1624,8 +1624,9 @@ and explicit human approval.
   produced successor HOLD request
   `config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v2.json`
   at SHA-256
-  `9605a6dc277008fc028e59cffe0cc8e345d7400021c97f244db6438f81767001`.
-  It pins tree `6b0eec420f95bc73294defea493b5e2d503be80b`, 44 critical
+  `476db5ea5d2bdb9a3bc9a1d3df5b0c5e0d3a641cbd1883129e4fe0f583037310`.
+  It pins source `c2bc7b1bcc79b32c48e9b47290d9354c92a44647`, tree
+  `cdf9ffdd22863f0f22f49c9711bee052186ba76b`, 44 critical
   source files, seven repository bindings, and the exact revision-2 stopped
   predecessor exclusion. Its nine batch roots and one combined-report path are
   wholly fresh and absent; the design remains the registered 36-dialogue,
