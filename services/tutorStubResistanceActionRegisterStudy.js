@@ -45,8 +45,22 @@ function isV4Registration(registration) {
   );
 }
 
+function isV5Registration(registration) {
+  return (
+    registration?.schema === TUTOR_STUB_RESISTANCE_ACTION_REGISTER_REGISTRATION_SCHEMA && registration?.version === 5
+  );
+}
+
+function isConfirmationSuccessorRegistration(registration) {
+  return isV4Registration(registration) || isV5Registration(registration);
+}
+
 function usesProspectiveV4Observation(registration) {
-  return isV2Registration(registration) || isV3Registration(registration) || isV4Registration(registration);
+  return (
+    isV2Registration(registration) ||
+    isV3Registration(registration) ||
+    isConfirmationSuccessorRegistration(registration)
+  );
 }
 
 function registeredLevels(registration, key, fallback) {
@@ -183,7 +197,7 @@ function normalizeRegistration(registration) {
   if (registration.design?.diagnosticProfile !== 'frame_defiant') {
     throw new Error('v2 registration must retain frame_defiant as diagnostic-only');
   }
-  const requiredObservationSemantics = isV4Registration(registration)
+  const requiredObservationSemantics = isConfirmationSuccessorRegistration(registration)
     ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5
     : RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
   if (registration.design?.trigger?.observationSemantics !== requiredObservationSemantics) {
@@ -260,7 +274,7 @@ function normalizeRegistration(registration) {
     }
     return registration;
   }
-  if (isV4Registration(registration)) {
+  if (isConfirmationSuccessorRegistration(registration)) {
     const blocks = registration.design?.factors?.confirmationBlock?.blocks;
     const calibration = registration.preservation?.calibration;
     const stopped = registration.preservation?.stoppedConfirmationV1;
@@ -305,14 +319,17 @@ function normalizeRegistration(registration) {
       readiness?.combinedPlannedRoleCalls !== 720 ||
       readiness?.combinedMaximumModelAttemptReservations !== 2160 ||
       readiness?.programmeLedgerAfterMaximum?.reservedAttempts !== 2379 ||
-      readiness?.programmeLedgerAfterMaximum?.ceiling !== 2379 ||
-      readiness?.programmeLedgerAfterMaximum?.remaining !== 0 ||
+      readiness?.programmeLedgerAfterMaximum?.ceiling !== (isV5Registration(registration) ? 5000 : 2379) ||
+      readiness?.programmeLedgerAfterMaximum?.remaining !== (isV5Registration(registration) ? 2621 : 0) ||
+      (isV5Registration(registration) &&
+        readiness?.attemptAccountingRole !==
+          'operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective') ||
       registration.authorization?.programmeLedgerBeforeThisConfirmation?.reservedAttempts !== 219 ||
       registration.authorization?.programmeLedgerBeforeThisConfirmation?.ceiling !== 2345 ||
       registration.authorization?.programmeLedgerBeforeThisConfirmation?.remaining !== 2126 ||
       registration.authorization?.requiredCeilingAmendment?.from !== 2345 ||
-      registration.authorization?.requiredCeilingAmendment?.to !== 2379 ||
-      registration.authorization?.requiredCeilingAmendment?.increase !== 34
+      registration.authorization?.requiredCeilingAmendment?.to !== (isV5Registration(registration) ? 5000 : 2379) ||
+      registration.authorization?.requiredCeilingAmendment?.increase !== (isV5Registration(registration) ? 2655 : 34)
     ) {
       throw new Error('v4 successor confirmation design, exclusions, power, or hard-attempt arithmetic drifted');
     }
@@ -497,7 +514,7 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
     : observeResistanceAxis({ learnerText, classification });
   const timing = detectTutorStubEdgeTimingSignal({ learnerText, classification, tutorLearnerDag });
   const confirmationObserverFirstRefusal =
-    isV4Registration(runtime.registration) &&
+    isConfirmationSuccessorRegistration(runtime.registration) &&
     runtime.dynamic_confirmation === true &&
     v4Refusal?.features?.content_bearing === false &&
     v4Refusal?.features?.contract_licensed_participation === false &&
@@ -524,7 +541,7 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
     reasons,
     shadow,
     timing,
-    ...(isV4Registration(runtime.registration)
+    ...(isConfirmationSuccessorRegistration(runtime.registration)
       ? { confirmation_observer_first_refusal: confirmationObserverFirstRefusal }
       : {}),
   };

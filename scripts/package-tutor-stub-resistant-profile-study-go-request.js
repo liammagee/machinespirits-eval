@@ -20,9 +20,15 @@ const SUPPORTED_ACTION_REGISTER_CONFIRMATION = 'prospective_frame_refuser_warm_p
 const SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG =
   'prospective_boredom_matched_action_warm_plain_proof_dag_confirmation_v1';
 const SUPPORTED_ACTION_REGISTER_CONFIRMATION_SUCCESSOR = 'prospective_frame_refuser_warm_plain_confirmation_v2';
+const SUPPORTED_ACTION_REGISTER_CONFIRMATION_OPERATIONAL_CEILING =
+  'prospective_frame_refuser_warm_plain_confirmation_v3';
 
 function isSupportedActionRegisterConfirmation(value) {
-  return [SUPPORTED_ACTION_REGISTER_CONFIRMATION, SUPPORTED_ACTION_REGISTER_CONFIRMATION_SUCCESSOR].includes(value);
+  return [
+    SUPPORTED_ACTION_REGISTER_CONFIRMATION,
+    SUPPORTED_ACTION_REGISTER_CONFIRMATION_SUCCESSOR,
+    SUPPORTED_ACTION_REGISTER_CONFIRMATION_OPERATIONAL_CEILING,
+  ].includes(value);
 }
 
 export const GO_REQUEST_PACKAGE_MARKERS = Object.freeze({
@@ -200,7 +206,10 @@ function requireHoldBoundary(template) {
     throw new Error('template must remain a literal HOLD with no encoded human approval or execution authority');
   }
   if (
-    template.actionRegisterConfirmation?.type === SUPPORTED_ACTION_REGISTER_CONFIRMATION_SUCCESSOR &&
+    [
+      SUPPORTED_ACTION_REGISTER_CONFIRMATION_SUCCESSOR,
+      SUPPORTED_ACTION_REGISTER_CONFIRMATION_OPERATIONAL_CEILING,
+    ].includes(template.actionRegisterConfirmation?.type) &&
     (template.authorization?.standingAuthorizationAttachmentSha256 !==
       '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b' ||
       template.authorization?.programmeCeilingAmendmentAuthorized !== false)
@@ -267,6 +276,7 @@ function assertMaterializedStructure({
   routeConsumption,
   historicalRequest,
   priorConfirmationRequest,
+  priorCeilingBoundRequest,
   prefixBundle,
   liveCommandSha256,
   recoveryCommandSha256,
@@ -348,6 +358,11 @@ function assertMaterializedStructure({
     const prior = request.actionRegisterConfirmation?.priorIncompleteConfirmation?.request;
     assertComputedValue(prior?.path, priorConfirmationRequest.path, 'prior incomplete confirmation request path');
     assertComputedValue(prior?.sha256, priorConfirmationRequest.sha256, 'prior incomplete confirmation request digest');
+  }
+  if (priorCeilingBoundRequest) {
+    const prior = request.actionRegisterConfirmation?.supersededCeilingBoundRequest?.request;
+    assertComputedValue(prior?.path, priorCeilingBoundRequest.path, 'superseded ceiling-bound request path');
+    assertComputedValue(prior?.sha256, priorCeilingBoundRequest.sha256, 'superseded ceiling-bound request digest');
   }
   if (prefixBundle) {
     assertComputedValue(request.bindings?.prefixBundle?.path, prefixBundle.path, 'prefix bundle path');
@@ -498,6 +513,24 @@ function materializeTemplate({ templateText, template, launchCommit }) {
       replacements,
     );
   }
+  const priorCeilingBoundRequestPath =
+    template.actionRegisterConfirmation?.supersededCeilingBoundRequest?.request?.path;
+  const priorCeilingBoundRequest = priorCeilingBoundRequestPath
+    ? materializeRepoFile({
+        launchCommit,
+        repoPath: priorCeilingBoundRequestPath,
+        label: 'superseded ceiling-bound confirmation request',
+        files,
+      })
+    : null;
+  if (priorCeilingBoundRequest) {
+    requireMarker(
+      templateText,
+      goRequestFileSha256Marker(priorCeilingBoundRequest.path),
+      priorCeilingBoundRequest.sha256,
+      replacements,
+    );
+  }
   const prefixBundlePath = template.bindings?.prefixBundle?.path;
   const prefixBundle = prefixBundlePath
     ? materializeRepoFile({
@@ -542,6 +575,7 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     routeConsumption,
     historicalRequest,
     priorConfirmationRequest,
+    priorCeilingBoundRequest,
     prefixBundle,
     liveCommandSha256,
     recoveryCommandSha256,
