@@ -223,6 +223,7 @@ older context:
 
 ## Conventions, in one breath
 
-Capture in `inbox/`, commit source in `items/`, let `main` publish the generated
-views, link everything, copy nothing, and let every item say how it will prove
-it's done. The playbook holds the rest.
+Capture in `inbox/`, commit source in `items/`, let the CLI and Scriptorium
+derive live views, use `wp:render` only for ignored local exports, link
+everything, copy nothing, and let every item say how it will prove it's done.
+The playbook holds the rest.
