@@ -7,6 +7,7 @@ import { TUTOR_PR_BENCHMARK_REAUDIT_SCHEMA } from './tutorStubPrBenchmarkCompari
 
 export const TUTOR_PR_BENCHMARK_HOOK_MARKER = '# machinespirits:tutor-pr-benchmark-hook:v1';
 export const TUTOR_PR_BENCHMARK_HOOK_SIDECAR = 'pre-push.machinespirits-before-tutor-pr-benchmark';
+export const TUTOR_PR_BENCHMARK_HOOK_LIVE_AUTHORIZATION_ENV = 'TUTOR_PR_BENCHMARK_HOOK_LIVE_AUTHORIZATION';
 const HOOK_ENFORCEMENT = new Set(['report_only', 'blocking']);
 const HOOK_REPORT_SCOPES = new Set(['git_common', 'worktree']);
 const CACHEABLE_REPORT_STATUSES = new Set(['pass', 'fail', 'blocked', 'budget_exhausted']);
@@ -14,6 +15,57 @@ const ATTRIBUTABLE_REPORT_STATUSES = new Set(['pass', 'fail']);
 const JAVASCRIPT_EXTENSIONS = new Set(['.js', '.mjs']);
 const WORLD_DIRECTORY = 'config/drama-derivation';
 const WORLD_FILE_PATTERN = /^world-.*\.yaml$/u;
+
+export function tutorPrBenchmarkHookLiveAuthorizationToken({ headOid, preset, maxCalls }) {
+  const sha = String(headOid || '').trim();
+  const selectedPreset = String(preset || '').trim();
+  const ceiling = Number(maxCalls);
+  if (!/^[0-9a-f]{40,64}$/iu.test(sha)) throw new Error('live authorization requires the full Git HEAD oid');
+  if (!selectedPreset || selectedPreset.includes(':')) {
+    throw new Error('live authorization requires a colon-free benchmark preset');
+  }
+  if (!Number.isSafeInteger(ceiling) || ceiling <= 0) {
+    throw new Error('live authorization requires a positive integer call ceiling');
+  }
+  return `${sha}:${selectedPreset}:${ceiling}`;
+}
+
+export function requireTutorPrBenchmarkHookLiveAuthorization({ authorization, headOid, preset, maxCalls }) {
+  const expected = tutorPrBenchmarkHookLiveAuthorizationToken({ headOid, preset, maxCalls });
+  if (String(authorization || '').trim() !== expected) {
+    throw new Error(
+      `fresh model calls are not authorized for ${headOid}; zero model calls made; expected ${TUTOR_PR_BENCHMARK_HOOK_LIVE_AUTHORIZATION_ENV}=${expected}`,
+    );
+  }
+  return { headOid, preset, maxCalls, token: expected };
+}
+
+export function runTutorPrBenchmarkHookAuthorizedLaunch({
+  authorization,
+  headOid,
+  plan,
+  cachedReport = null,
+  enforcement,
+  reportPath = null,
+  launch,
+}) {
+  if (cachedReport?.status === 'fail' && classifyTutorPrBenchmarkHookReport(cachedReport, enforcement) === 'block') {
+    throw new Error(
+      `cached quality failure blocks this push; zero model calls made${reportPath ? `; inspect ${reportPath}` : ''}; use a reasoned TUTOR_PR_BENCHMARK_HOOK_BYPASS only when necessary`,
+    );
+  }
+  if (plan?.status !== 'ready' || !Number.isSafeInteger(plan?.plannedCalls) || plan.plannedCalls > plan.maxCalls) {
+    throw new Error(`benchmark plan is not ready (${plan?.status || 'missing'}); zero model calls made`);
+  }
+  requireTutorPrBenchmarkHookLiveAuthorization({
+    authorization,
+    headOid,
+    preset: plan.preset,
+    maxCalls: plan.maxCalls,
+  });
+  if (typeof launch !== 'function') throw new Error('authorized benchmark launch callback is required');
+  return launch();
+}
 
 function stringList(value, label) {
   if (!Array.isArray(value) || value.length === 0 || value.some((item) => !String(item || '').trim())) {

@@ -154,6 +154,31 @@ pushing the same commit again reuses a valid `pass` report, or a valid `fail`
 report while in report-only calibration mode, only when its recorded SHA
 matches.
 
+Installation is not standing authority for fresh model calls. When a relevant
+exact-commit report is absent, the hook stops before model launch, reports that
+zero calls were made, and prints both the zero-call plan command and the exact
+transient authorization token for that HEAD, preset, and call ceiling. Inspect
+the plan first:
+
+```bash
+npm run tutor:stub:pr-benchmark -- --preset strong --print-plan
+```
+
+Then make the attended push with the exact token printed by the hook, for
+example:
+
+```bash
+TUTOR_PR_BENCHMARK_HOOK_LIVE_AUTHORIZATION=<full-head-sha>:strong:6 git push
+```
+
+The token goes stale on the next commit. Missing, boolean-only, stale-SHA,
+wrong-preset, and wrong-ceiling values all block with zero model calls even
+while quality enforcement is `report_only`. Cached exact-commit passes and
+report-only quality failures, plus zero-call re-audits, do not need fresh live
+authorization. Under blocking enforcement, a cached quality failure blocks
+without rerunning. A cached technical `blocked` report may retry only under a
+fresh exact token.
+
 World specs are scoped to what the selected preset actually replays. Every case
 names one authored world, so a `config/drama-derivation/world-*.yaml` whose
 declared `id` is not among those worlds cannot change any job's input, and the

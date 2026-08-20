@@ -8,13 +8,14 @@ owner: codex
 source: manual
 created: 2026-08-19
 updated: 2026-08-19
-branch: codex/workflow-repository-optimization
+branch: codex/workflow-coordination-safety
 verification: >-
   Reproducible before/after measurements show that local and hosted CI select
   the same fail-closed profiles, avoid measured orchestration and test delays,
-  and preserve required coverage; later repository-state tranches retain
-  restorable evidence and authoritative workplan sources without destructive
-  cleanup or history rewriting.
+  preserve required coverage, and make zero model calls from a relevant
+  pre-push hook without fresh explicit authority; later repository-state
+  tranches retain restorable evidence and authoritative workplan sources
+  without destructive cleanup or history rewriting.
 links:
   items:
     - optimize-ci-agent-iteration-loop
@@ -24,6 +25,11 @@ links:
     - add-validator-only-ci-profile
     - optimize-local-node-execution
     - codebase-refactoring-program
+    - tutor-pr-frozen-prefix-benchmark
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/705
+  notes:
+    - docs/next-steps/2026-08-19-coordinator-workflow-efficiency-audit.md
 tags:
   - ci
   - latency
@@ -40,9 +46,16 @@ task worktrees, and accumulated local artifacts. Close those measured gaps as
 four outcome waves without reopening completed slices or manufacturing repair
 PRs.
 
-Current authorization covers Wave 0 and Wave 1 only. It does not authorize
+The initial authorization covered Wave 0 and Wave 1 only. It did not authorize
 deleting worktrees or artifacts, selecting or writing an external artifact
 store, rewriting Git history, or implementing later waves.
+
+The 2026-08-19 live coordinator audit adds a bounded Wave 2A authorization:
+record the audit and make model-backed pre-push execution require fresh,
+explicit, attended authority. Keep path classification, deterministic checks,
+cached reports, hard ceilings, and the reasoned bypass intact. Skill routing,
+request packaging, artifact movement, repository truncation, and dead-code
+separation remain later work unless separately authorized.
 
 Wave 1 acceptance:
 
@@ -61,6 +74,10 @@ Wave 1 acceptance:
 
 Later planned waves:
 
+- Make coordinator publication review-first and milestone-reported; split the
+  oversized tutor-stub skill into a short router plus task-specific references,
+  and package digest-bound requests through one deterministic zero-call proof
+  command.
 - Stop committing generated workplan views while keeping every consumer able
   to render current source items.
 - Define a checksummed artifact fetch/verify/restore boundary before moving any
@@ -126,3 +143,28 @@ Log:
   `node --test tests/localCiRunner.test.js tests/ciChangePolicy.test.js` (using
   `npx --yes node@24` for the Node 24 parity run). The repair remains on this
   outcome branch for a same-PR hosted rerun.
+- 2026-08-19 — PR #705 merged Wave 0/1 at
+  `9b91e670b83f0133027604e6e544d50518063ed8` after 14 successful hosted checks.
+  The final implementation aligns local and hosted fail-closed classification,
+  preserves NUL-delimited Git paths and drained child output, and removes the
+  measured lazy-fetch test delay. No additional cherry-pick is required.
+- 2026-08-19 — Audited the live `Verify resistance programme` coordinator at a
+  fixed 107-minute snapshot: 246 activity items, 103 waits, 51 progress
+  messages, 27 direct commands, and 10 subordinate tasks. The task produced a
+  real study result and two implementation merges, but reviews after initial
+  publication, repeated skill reads, short polling, and low-risk duplicate
+  reviewers added avoidable cost. A shared pre-push hook also made six
+  model-backed benchmark calls without fresh per-push approval. The linked
+  audit defines Wave 2A authorization safety and later routing/packaging work;
+  it does not authorize another study or destructive repository changes.
+- 2026-08-19 — Implemented the Wave 2A live-call boundary before publication.
+  A fresh benchmark launch now requires one transient token bound to the full
+  HEAD oid, selected preset, and configured call ceiling; missing, boolean,
+  stale-SHA, wrong-preset, and wrong-ceiling values make zero calls. Cached
+  passes and report-only failures remain zero-call, a cached failure under
+  blocking enforcement cannot spend again, and a cached technical block may
+  retry only with a fresh exact token. The first independent review caught the
+  missing executable launch-seam assertion and the cached-blocking rerun path;
+  both were repaired before the first push, and re-review returned no blockers.
+  The five benchmark/rubric/calibration suites pass 32/32 alongside manifest,
+  workplan, ESLint, Prettier, cycle, and diff checks. No model call was made.
