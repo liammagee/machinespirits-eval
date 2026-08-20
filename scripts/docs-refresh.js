@@ -1,16 +1,16 @@
 /**
- * docs-refresh.js — one verb for the cheap generated-doc views.
+ * docs-refresh.js — one verb for cheap source and generated-doc checks.
  *   npm run docs:refresh [-- --arc]
  *
  * Runs every fast, local, no-API regeneration step and then reports what
- * changed, so "are the generated views current?" is one command instead of
- * four. Steps:
+ * changed, so "are the tracked docs and source-derived views current?" is one
+ * command instead of four. Steps:
  *
  *   1. refs:render          — rewrites docs/ref-status.md (tracked; commit it)
  *   2. atlas:validate       — checks atlas.yaml against the paper (no writes)
  *   3. workplan             — validate item sources and prove the board can be
  *                             rendered in memory; local export files are
- *                             ignored and produced only by explicit wp:render
+ *                             ignored and optional
  *   4. --arc (opt-in)       — poetics:arc-html; excluded by default because it
  *                             stamps generated_at and dirties the tree on
  *                             every run even with no content change

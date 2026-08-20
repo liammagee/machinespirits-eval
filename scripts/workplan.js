@@ -416,10 +416,10 @@ function cmdTriage(argv) {
   autoRender(f);
 }
 
-// Shared write core: read an item, mutate its frontmatter, stamp `updated`, write,
-// and (by default) re-render the board. The CLI `set`, drag-and-drop, and the
-// board's edit form all funnel through this so items/, board.json, and the
-// dashboard never disagree. Throws on a missing item.
+// Shared write core: read an item, mutate its frontmatter, stamp `updated`, and
+// optionally refresh local compatibility exports. Browser mutations disable
+// that export and rebuild their source-derived process cache instead. Throws on
+// a missing item.
 function writeItem(id, mutate, render) {
   const p = paths();
   const file = path.join(p.items, `${id}.md`);
