@@ -18,21 +18,28 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v3.json';
 const SUCCESSOR_REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v4.json';
 const OPERATIONAL_CEILING_REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v5.json';
+const OBSERVER_REPAIR_REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v6.json';
 const ENDPOINT = 'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v1.json';
 const SUCCESSOR_ENDPOINT = 'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v2.json';
 const OPERATIONAL_CEILING_ENDPOINT =
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v3.json';
+const OBSERVER_REPAIR_ENDPOINT =
+  'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v4.json';
 const CERTIFICATE =
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v1.endpoint-go.json';
 const SUCCESSOR_CERTIFICATE =
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v2.endpoint-go.json';
 const OPERATIONAL_CEILING_CERTIFICATE =
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v3.endpoint-go.json';
+const OBSERVER_REPAIR_CERTIFICATE =
+  'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v4.endpoint-go.json';
 const CALIBRATION_REQUEST = 'config/tutor-stub-resistance-action-register-baseline-analysis-go-request.v1.json';
 const INCOMPLETE_CONFIRMATION_REQUEST =
   'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v1.json';
 const SUPERSEDED_CEILING_BOUND_REQUEST =
   'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v2.json';
+const INCOMPLETE_CONFIRMATION_V3_REQUEST =
+  'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v3.json';
 const CLOSURE = [
   'scripts/run-tutor-stub-resistance-action-register-confirmation.js',
   'scripts/analyze-tutor-stub-resistance-action-register-confirmation.js',
@@ -95,21 +102,31 @@ function commandSha256(value) {
   return sha256(JSON.stringify(value));
 }
 
-function buildRequest({ destinationSuffix, successor = false, operationalCeiling = false }) {
+function buildRequest({ destinationSuffix, successor = false, operationalCeiling = false, observerRepair = false }) {
   const launchCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const launchTree = execFileSync('git', ['rev-parse', 'HEAD^{tree}'], { cwd: ROOT, encoding: 'utf8' }).trim();
-  const isSuccessor = successor || operationalCeiling;
-  const registrationPath = operationalCeiling
-    ? OPERATIONAL_CEILING_REGISTRATION
-    : successor
-      ? SUCCESSOR_REGISTRATION
-      : REGISTRATION;
-  const endpointPath = operationalCeiling ? OPERATIONAL_CEILING_ENDPOINT : successor ? SUCCESSOR_ENDPOINT : ENDPOINT;
-  const certificatePath = operationalCeiling
-    ? OPERATIONAL_CEILING_CERTIFICATE
-    : successor
-      ? SUCCESSOR_CERTIFICATE
-      : CERTIFICATE;
+  const isSuccessor = successor || operationalCeiling || observerRepair;
+  const registrationPath = observerRepair
+    ? OBSERVER_REPAIR_REGISTRATION
+    : operationalCeiling
+      ? OPERATIONAL_CEILING_REGISTRATION
+      : successor
+        ? SUCCESSOR_REGISTRATION
+        : REGISTRATION;
+  const endpointPath = observerRepair
+    ? OBSERVER_REPAIR_ENDPOINT
+    : operationalCeiling
+      ? OPERATIONAL_CEILING_ENDPOINT
+      : successor
+        ? SUCCESSOR_ENDPOINT
+        : ENDPOINT;
+  const certificatePath = observerRepair
+    ? OBSERVER_REPAIR_CERTIFICATE
+    : operationalCeiling
+      ? OPERATIONAL_CEILING_CERTIFICATE
+      : successor
+        ? SUCCESSOR_CERTIFICATE
+        : CERTIFICATE;
   const registration = JSON.parse(fs.readFileSync(path.join(ROOT, registrationPath), 'utf8'));
   const contract = JSON.parse(fs.readFileSync(path.join(ROOT, endpointPath), 'utf8'));
   const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, certificatePath), 'utf8'));
@@ -182,9 +199,11 @@ function buildRequest({ destinationSuffix, successor = false, operationalCeiling
     actionRegisterConfirmation: {
       type: successor
         ? 'prospective_frame_refuser_warm_plain_confirmation_v2'
-        : operationalCeiling
-          ? 'prospective_frame_refuser_warm_plain_confirmation_v3'
-          : 'prospective_frame_refuser_warm_plain_confirmation_v1',
+        : observerRepair
+          ? 'prospective_frame_refuser_warm_plain_confirmation_v4'
+          : operationalCeiling
+            ? 'prospective_frame_refuser_warm_plain_confirmation_v3'
+            : 'prospective_frame_refuser_warm_plain_confirmation_v1',
       calibrationSizingEvidence: {
         analysisRequest: { path: CALIBRATION_REQUEST, sha256: fileSha256(CALIBRATION_REQUEST) },
         reportSha256: '42021a390338cd556386efc96d8f00b35655a411627908a10248dba1e473a3a5',
@@ -222,7 +241,7 @@ function buildRequest({ destinationSuffix, successor = false, operationalCeiling
             },
           }
         : {}),
-      ...(operationalCeiling
+      ...(operationalCeiling || observerRepair
         ? {
             supersededCeilingBoundRequest: {
               request: {
@@ -234,6 +253,41 @@ function buildRequest({ destinationSuffix, successor = false, operationalCeiling
               productionWrites: 0,
               destinationsUsed: false,
               outcomesAvailable: false,
+            },
+          }
+        : {}),
+      ...(observerRepair
+        ? {
+            priorIncompleteConfirmationV3: {
+              request: {
+                path: INCOMPLETE_CONFIRMATION_V3_REQUEST,
+                sha256: fileSha256(INCOMPLETE_CONFIRMATION_V3_REQUEST),
+              },
+              sourceCommit: 'c9f6d57b867376e94384e9efe99ccf8a79ca9195',
+              sourceTree: '48c5fb51714948ea3911baed159aa731aacc9c05',
+              batchPlanSha256: 'd04038ddb0c9e2c676ede89c198ee666195c91e45808d91dba8e3a5060e13e35',
+              privateArchiveBranch: 'codex/resistance-action-register-confirmation-v3-incomplete-archive',
+              privateArchiveCommit: '6f3e8f84079787abe1b0829be65be742c5983988',
+              localInventorySha256: '83428e7d86df598b5794e3890e62e91e48dddea46514e6a0cd4d4123340c7493',
+              liveMirrorInventorySha256: 'ce29fe1cef61b564b09d413b0b6782e2661a4ccff732b97c815d72deec72dae3',
+              reservations: 36,
+              completedCalls: 35,
+              providerFailures: 0,
+              coordinatorInterruptedReservations: 1,
+              traceSha256: {
+                s1: '39b9ec3e4a4be5552aef03ca9b06b1302e4c561b15401863ab53d8a7b7cc228b',
+                s2: 'e2ddd2e5c15d757878ede5cc01b62e5deadde74626ebea0491726c870b61b0fe',
+                s3: 'e414034894d3ef1050b970695547ac13a13c26a3b3b36d72d7aed8593d6b1763',
+                s4: '4d7d6076c514de118ca90636aa4a17a890d2025535083e131b6e787e6f9cf727',
+              },
+              reused: false,
+              pooled: false,
+              outcomeSelected: false,
+              excludedFromSuccessor: true,
+              blocksAfterFirstLaunched: false,
+              recoveryRun: false,
+              analyzerRun: false,
+              reportWritten: false,
             },
           }
         : {}),
@@ -250,7 +304,7 @@ function buildRequest({ destinationSuffix, successor = false, operationalCeiling
         maximumAttemptsPerDialogueUnchanged: 60,
         maximumAttemptsPerBatchUnchanged: 240,
         maximumTotalStudyAttemptsUnchanged: 2160,
-        programmeCeilingUnchanged: operationalCeiling ? 5000 : successor ? 2379 : 2345,
+        programmeCeilingUnchanged: operationalCeiling || observerRepair ? 5000 : successor ? 2379 : 2345,
       },
     },
     design: {
@@ -285,12 +339,12 @@ function buildRequest({ destinationSuffix, successor = false, operationalCeiling
       dialoguesPerBatch: 4,
       maximumAttemptsPerBatch: 240,
       maximumPlannedModelAttempts: 2160,
-      programmeLedgerBefore: isSuccessor ? 219 : 185,
-      programmeCeilingBefore: isSuccessor ? 2345 : 1200,
-      programmeCeilingAmendment: operationalCeiling ? 2655 : successor ? 34 : 1145,
-      programmeCeilingAfter: operationalCeiling ? 5000 : successor ? 2379 : 2345,
-      programmeLedgerAfterMaximum: isSuccessor ? 2379 : 2345,
-      ...(operationalCeiling
+      programmeLedgerBefore: observerRepair ? 255 : isSuccessor ? 219 : 185,
+      programmeCeilingBefore: observerRepair ? 5000 : isSuccessor ? 2345 : 1200,
+      programmeCeilingAmendment: observerRepair ? 0 : operationalCeiling ? 2655 : successor ? 34 : 1145,
+      programmeCeilingAfter: operationalCeiling || observerRepair ? 5000 : successor ? 2379 : 2345,
+      programmeLedgerAfterMaximum: observerRepair ? 2415 : isSuccessor ? 2379 : 2345,
+      ...(operationalCeiling || observerRepair
         ? {
             attemptAccountingRole: 'operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective',
           }
@@ -362,6 +416,10 @@ function templateText(request) {
     goRequestFileSha256Marker(CALIBRATION_REQUEST);
   if (template.actionRegisterConfirmation.priorIncompleteConfirmation) {
     const prior = template.actionRegisterConfirmation.priorIncompleteConfirmation.request;
+    prior.sha256 = goRequestFileSha256Marker(prior.path);
+  }
+  if (template.actionRegisterConfirmation.priorIncompleteConfirmationV3) {
+    const prior = template.actionRegisterConfirmation.priorIncompleteConfirmationV3.request;
     prior.sha256 = goRequestFileSha256Marker(prior.path);
   }
   if (template.actionRegisterConfirmation.supersededCeilingBoundRequest) {
@@ -589,5 +647,81 @@ test('operational-ceiling confirmation GO validator preserves the powered design
       /standing authority|ceiling amendment/u,
     );
     assert.equal(fs.existsSync(path.join(ROOT, invalidOutput)), false);
+  }
+});
+
+test('observer-repair successor binds the incomplete V3 block and unchanged 5000 safeguard', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'confirmation-observer-repair-go-request-'));
+  const output = `.tutor-stub-auto-eval/.test-confirmation-observer-repair-go-request-${process.pid}.json`;
+  t.after(() => {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(path.join(ROOT, output), { force: true });
+  });
+  assert.equal(
+    fileSha256(INCOMPLETE_CONFIRMATION_REQUEST),
+    '16f93e48f0b19fe23f0b91dabc9ac318f210ecbba6fbe954d76677d43fb78554',
+  );
+  assert.equal(
+    fileSha256(SUPERSEDED_CEILING_BOUND_REQUEST),
+    '94973232d87e812b947981f85c12345bb413302dd54bad87b1f478c0a356b34b',
+  );
+  assert.equal(
+    fileSha256(INCOMPLETE_CONFIRMATION_V3_REQUEST),
+    'e3df720358cc597e686f0007bfc1ce1a5d0b4a11273a725ce87b484d20c3fec9',
+  );
+
+  const request = buildRequest({
+    destinationSuffix: `observer-repair-${process.pid}`,
+    observerRepair: true,
+  });
+  const requestPath = path.join(temporary, 'request.json');
+  fs.writeFileSync(requestPath, `${JSON.stringify(request, null, 2)}\n`);
+  const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath });
+  assert.equal(report.packetValid, true);
+  assert.equal(report.modelCalls, 0);
+  assert.equal(report.productionWrites, 0);
+  assert.equal(report.budget.maximumPlannedModelAttempts, 2160);
+  assert.equal(report.budget.programmeLedgerBefore, 255);
+  assert.equal(report.budget.programmeLedgerAfterMaximum, 2415);
+  assert.equal(report.budget.programmeCeilingAfter, 5000);
+  assert.match(report.exactApprovalStatement, /unchanged 5,000-attempt programme ceiling/u);
+  assert.match(report.exactApprovalStatement, /incomplete V1 and V3 confirmation blocks/u);
+
+  const templatePath = path.join(temporary, 'template.json');
+  fs.writeFileSync(templatePath, templateText(request));
+  fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
+  const packageReport = packageTutorStubResistantProfileStudyGoRequest({
+    templatePath,
+    launchCommit: request.source.launchCommit,
+    outputPath: output,
+  });
+  assert.equal(packageReport.sourceClosureFiles, CLOSURE.length);
+  assert.equal(packageReport.repositoryBindingFiles, 9);
+  assert.equal(packageReport.isolatedReplay.packetValid, true);
+  assert.equal(packageReport.effects.modelCalls, 0);
+  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), fs.readFileSync(requestPath));
+
+  for (const mutation of [
+    (value) => {
+      value.actionRegisterConfirmation.priorIncompleteConfirmationV3.reused = true;
+    },
+    (value) => {
+      value.actionRegisterConfirmation.priorIncompleteConfirmationV3.reservations = 35;
+    },
+    (value) => {
+      value.actionRegisterConfirmation.priorIncompleteConfirmationV3.request.sha256 = '0'.repeat(64);
+    },
+    (value) => {
+      value.budget.programmeLedgerBefore = 254;
+    },
+    (value) => {
+      value.budget.programmeLedgerAfterMaximum = 2414;
+    },
+  ]) {
+    const invalid = structuredClone(request);
+    mutation(invalid);
+    const invalidPath = path.join(temporary, `invalid-${crypto.randomUUID()}.json`);
+    fs.writeFileSync(invalidPath, `${JSON.stringify(invalid, null, 2)}\n`);
+    assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
   }
 });
