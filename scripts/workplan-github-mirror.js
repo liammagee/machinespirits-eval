@@ -86,7 +86,7 @@ function issueBody(item) {
     '',
     `Mirrors \`workplan/items/${item.id}.md\` for GitHub visibility.`,
     '',
-    `Source of truth: edit \`workplan/items/${item.id}.md\`, then run \`npm run wp:render\`.`,
+    `Source of truth: edit \`workplan/items/${item.id}.md\`, then run \`npm run wp:source-check\`.`,
     '',
     `Status: \`${item.status}\``,
     `Priority: \`${item.priority}\``,

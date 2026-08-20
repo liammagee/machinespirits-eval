@@ -134,9 +134,9 @@
             with the analysis toolkit guide) and research. <code>docs/research/paper-full-2.0.md</code>
             is canonical for every empirical claim; <code>paper-full.md</code> is the legacy 1.0; the
             atlas is a generated projection of the paper.</li>
-            <li><strong><code>workplan/</code>.</strong> 397 schema-checked item files as source of
-            truth; <code>BOARD.md</code> and <code>board.json</code> are generated views written only
-            by the CI job on main. At 91% done the board is more archive than queue.</li>
+            <li><strong><code>workplan/</code>.</strong> 520 schema-checked item files as source of
+            truth; the CLI and Scriptorium build board data from them on demand.
+            <code>BOARD.md</code> and <code>board.json</code> are optional ignored local exports.</li>
             <li><strong><code>notes/</code>.</strong> 296 files of design history — no frontmatter,
             loose <code>Date:</code> lines. <code>notes/poetics/</code> is the biggest and also hosts
             the techne design system itself; daily notes are HTML research roundups with their own
@@ -228,8 +228,8 @@
           <h2 class="s__h">From source to <em>site</em>.</h2>
           <p>Each generated view has exactly one writer, but the writers are scattered:</p>
           <ul>
-            <li><strong>Board views</strong> — <code>scripts/workplan.js render</code>; on main only
-            the serialized CI job commits them, and feature branches must not.</li>
+            <li><strong>Board view</strong> — the Scriptorium and CLI read <code>workplan/items/</code>
+            directly; <code>scripts/workplan.js render</code> writes optional ignored local exports.</li>
             <li><strong>Reference status</strong> — <code>npm run refs:render</code> writes
             <code>docs/ref-status.md</code>; <code>refs:check</code> fails when stale.</li>
             <li><strong>Paper</strong> — <code>docs/research/build.sh</code> (pandoc + xelatex);
@@ -356,9 +356,9 @@
             frozen, generated or note, and the declarations are current.</li>
             <li><strong>No unguarded doors.</strong> Every listener binds loopback by default and
             shares the one auth perimeter.</li>
-            <li><strong>One refresh verb.</strong> A single command rebuilds the generated views and
-            says what changed; deploy stays human-gated.</li>
-            <li><strong>Tested seams.</strong> The token mirror, the route parity, the board views
+            <li><strong>One refresh verb.</strong> A single command validates source-derived views,
+            refreshes tracked projections, and says what changed; deploy stays human-gated.</li>
+            <li><strong>Tested seams.</strong> The token mirror, the route parity, direct board source,
             and the reference status all fail loudly when they drift — no sync-by-comment.</li>
           </ul>
         </div>

@@ -36,7 +36,7 @@ import {
   updateItem,
   addItem,
   deleteItem,
-  renderBoard,
+  buildWorkplanBoard,
   validateDependencies,
   loadMilestones,
   upsertMilestone,
@@ -1734,25 +1734,24 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     if (!fs.existsSync(notePath)) return res.status(404).type('text').send('model-upgrade note not found');
     res.type('html').sendFile(notePath);
   });
-  // GET /board is the LIVE development board: a read-only render of the workplan
-  // (workplan/items/, via the generated workplan/board.json). Regenerate with
-  // `npm run wp:render`. The project's historical arc now lives in the Project
+  // GET /board is the LIVE development board, built directly from
+  // workplan/items/. The project's historical arc now lives in the Project
   // history band on /timeline. Originates no claims — durable results live in
   // /summary + the paper; workplan/items/ is the source of truth.
   app.get('/board', (req, res) => res.type('html').send(renderWorkplanBoardHtml(req.query || {})));
   app.get('/api/workplan', (_req, res) => res.json(readWorkplanBoard()));
-  // Explicit refresh from disk: regenerate BOARD.md + board.json from
-  // workplan/items/*.md, then let the board page reload against fresh artifacts.
+  // Explicit refresh from disk: discard the process cache and rebuild directly
+  // from workplan/items/*.md. Generated board files are not required or written.
   adminRouter.post('/api/workplan/refresh', (_req, res) => {
     try {
-      const counts = renderBoard();
-      return res.json({ ok: true, counts, board: readWorkplanBoard() });
+      const board = refreshWorkplanBoard();
+      return res.json({ ok: true, counts: board.counts, board });
     } catch (err) {
       return res.status(500).json({ error: err.message });
     }
   });
   // Drag-and-drop from /board: move an item to a new lane (status). Writes the
-  // item file + re-renders board.json via the shared workplan setItemField(). In a
+  // item file and rebuilds the in-process source projection. In a
   // read-only context (e.g. a packaged app whose workplan/ is inside the asar) the
   // write throws and we return 500 so the UI can revert.
   adminRouter.post('/api/workplan/move', (req, res) => {
@@ -1762,7 +1761,9 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       return res.status(400).json({ error: `invalid status: ${status}` });
     }
     try {
-      const fm = setItemField(String(id), 'status', String(status));
+      const { result: fm } = mutateWorkplanBoard(() =>
+        setItemField(String(id), 'status', String(status), { render: false }),
+      );
       return res.json({ ok: true, id: fm.id, status: fm.status, updated: fm.updated });
     } catch (err) {
       const code = /no item/.test(err.message) ? 404 : 500;
@@ -1781,17 +1782,22 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       if (depErr) return res.status(400).json({ error: depErr });
     }
     try {
-      const fm = addItem({
-        title: b.title,
-        type: b.type,
-        priority: b.priority,
-        owner: b.owner,
-        status: b.status,
-        verification: b.verification,
-        depends_on: b.depends_on,
-        milestone: b.milestone,
-        body: b.body,
-      });
+      const { result: fm } = mutateWorkplanBoard(() =>
+        addItem(
+          {
+            title: b.title,
+            type: b.type,
+            priority: b.priority,
+            owner: b.owner,
+            status: b.status,
+            verification: b.verification,
+            depends_on: b.depends_on,
+            milestone: b.milestone,
+            body: b.body,
+          },
+          { render: false },
+        ),
+      );
       return res.json({ ok: true, id: fm.id, status: fm.status });
     } catch (err) {
       return res.status(500).json({ error: err.message });
@@ -1811,17 +1817,23 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
       if (depErr) return res.status(400).json({ error: depErr });
     }
     try {
-      const fm = updateItem(String(b.id), {
-        title: b.title,
-        type: b.type,
-        priority: b.priority,
-        owner: b.owner,
-        status: b.status,
-        verification: b.verification,
-        blocked_by: b.blocked_by,
-        depends_on: b.depends_on,
-        milestone: b.milestone,
-      });
+      const { result: fm } = mutateWorkplanBoard(() =>
+        updateItem(
+          String(b.id),
+          {
+            title: b.title,
+            type: b.type,
+            priority: b.priority,
+            owner: b.owner,
+            status: b.status,
+            verification: b.verification,
+            blocked_by: b.blocked_by,
+            depends_on: b.depends_on,
+            milestone: b.milestone,
+          },
+          { render: false },
+        ),
+      );
       return res.json({ ok: true, id: fm.id, status: fm.status });
     } catch (err) {
       const code = /no item/.test(err.message) ? 404 : 500;
@@ -1833,7 +1845,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     const id = req.body && req.body.id;
     if (!id) return res.status(400).json({ error: 'id is required' });
     try {
-      deleteItem(String(id));
+      mutateWorkplanBoard(() => deleteItem(String(id), { render: false }));
       return res.json({ ok: true, id: String(id) });
     } catch (err) {
       const code = /no item/.test(err.message) ? 404 : 500;
@@ -2601,7 +2613,7 @@ function commandPaletteData(active = '') {
       });
     }
   } catch {
-    /* board may not be rendered yet */
+    /* workplan source may be unavailable */
   }
 
   return commands;
@@ -4787,7 +4799,7 @@ function renderDashboardHtml(stats = {}) {
     ],
     [
       'The development board',
-      'A read-only rendering of TODO.md: every tracked item as a filterable status × theme grid. Originates no claims — the source stays in TODO.md.',
+      'A read-only rendering of the live workplan: every tracked item as a filterable status × theme grid. Originates no claims — the source stays in workplan/items/.',
       '/board',
     ],
   ];
@@ -4827,7 +4839,7 @@ function renderDashboardHtml(stats = {}) {
             </a>`,
           )
           .join('')
-      : '<div class="road-empty">No Scriptorium UX workplan items in board.json.</div>';
+      : '<div class="road-empty">No Scriptorium UX items in the workplan.</div>';
 
   return `${pageHead({
     title: 'machine spirits · poetics scriptorium',
@@ -5095,7 +5107,7 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'learning (to live) 
   <div class="ops">${opsHtml}</div>
 
   <h2 class="section">Review Loop</h2>
-  <p class="section__sub">The evidence loop stays anchored in the generated workplan: find the case, label or adjudicate it, then move the related item through <code>workplan/items/</code> on the live board.</p>
+  <p class="section__sub">The evidence loop stays anchored in the live workplan: find the case, label or adjudicate it, then move the related item through <code>workplan/items/</code> on the live board.</p>
   <div class="review-loop" aria-label="Review workflow entry points">
     <a class="review-step" href="/browse?queue=flagged"><span class="review-step__k">1 · evidence</span><span class="review-step__t">${fmt(s.openFlags)} open flag${s.openFlags === 1 ? '' : 's'}</span><span class="review-step__d">Open flagged scripts with critic context, labels, and the public transcript.</span><span class="review-step__go">review flags →</span></a>
     <a class="review-step" href="/browse?mode=label&amp;queue=flagged"><span class="review-step__k">2 · blind label</span><span class="review-step__t">${fmt(s.labels)} human labels</span><span class="review-step__d">Label cases without critic scores or held-out keys visible.</span><span class="review-step__go">start labelling →</span></a>
@@ -5104,7 +5116,7 @@ ${railHtml({ active: 'home', brand: 'machine spirits', sub: 'learning (to live) 
   </div>
   <div class="roadmap" aria-labelledby="roadmapTitle">
     <div class="roadmap__head">
-      <div class="roadmap__title" id="roadmapTitle">Scriptorium UX roadmap · from board.json</div>
+      <div class="roadmap__title" id="roadmapTitle">Scriptorium UX roadmap · from workplan items</div>
       <div class="roadmap__counts" aria-label="Scriptorium UX workplan counts">
         <span>open ${fmt(uxCounts.open)}</span><span>active ${fmt(uxCounts.active)}</span><span>review ${fmt(uxCounts.review)}</span><span>done ${fmt(uxCounts.done)}</span>
       </div>
@@ -6730,23 +6742,69 @@ function loadPoeticsRubric() {
   return YAML.parse(raw) || {};
 }
 
-// The live development board, read from the generated workplan/board.json
-// (source of truth: workplan/items/, regenerated by `npm run wp:render`).
+// The live development board is built directly from workplan/items/. Keep one
+// projection per WORKPLAN_DIR for this process: the browser touches the board on
+// many pages (rail command palette, dashboard, roadmap, board, and timeline), and
+// parsing hundreds of item documents separately for every renderer is wasteful.
+// Explicit refreshes and every browser mutation rebuild this cache.
 function workplanDir() {
   return process.env.WORKPLAN_DIR ? path.resolve(process.env.WORKPLAN_DIR) : path.resolve(ROOT, 'workplan');
 }
 
-function readWorkplanBoard() {
-  const f = path.join(workplanDir(), 'board.json');
-  const empty = { generated: null, counts: { total: 0, byStatus: {}, byType: {} }, items: [] };
+const workplanBoardCache = new Map();
+
+function emptyWorkplanBoard() {
+  return { generated: null, counts: { total: 0, byStatus: {}, byType: {} }, items: [] };
+}
+
+function hasWorkplanItemSource(dir) {
+  try {
+    return fs.statSync(path.join(dir, 'items')).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+function readFallbackWorkplanBoard(dir) {
+  const f = path.join(dir, 'board.json');
+  const empty = emptyWorkplanBoard();
   if (!fs.existsSync(f)) {
-    return { ...empty, __error: 'workplan/board.json not found — run `npm run wp:render`' };
+    return { ...empty, __error: 'workplan items/ and board.json are both unavailable' };
   }
   try {
     return JSON.parse(fs.readFileSync(f, 'utf8'));
   } catch (err) {
     return { ...empty, __error: 'could not parse workplan/board.json: ' + err.message };
   }
+}
+
+function buildBrowserWorkplanBoard(dir) {
+  if (!hasWorkplanItemSource(dir)) return readFallbackWorkplanBoard(dir);
+  try {
+    return buildWorkplanBoard({ generated: new Date().toISOString() });
+  } catch (err) {
+    return { ...emptyWorkplanBoard(), __error: 'could not build workplan/items/: ' + err.message };
+  }
+}
+
+function readWorkplanBoard() {
+  const dir = workplanDir();
+  if (!workplanBoardCache.has(dir)) workplanBoardCache.set(dir, buildBrowserWorkplanBoard(dir));
+  return workplanBoardCache.get(dir);
+}
+
+function refreshWorkplanBoard() {
+  const dir = workplanDir();
+  workplanBoardCache.delete(dir);
+  return readWorkplanBoard();
+}
+
+function mutateWorkplanBoard(mutation) {
+  const dir = workplanDir();
+  workplanBoardCache.delete(dir);
+  const result = mutation();
+  workplanBoardCache.delete(dir);
+  return { result, board: readWorkplanBoard() };
 }
 
 // Validate the enum-constrained fields of a workplan add/update payload (only the
@@ -7159,7 +7217,7 @@ ${railHtml({
   } catch (_e) {}
 })();
   // Persist lane collapse state in the browser. This only changes presentation;
-  // item status and generated board data stay untouched.
+  // item status and the cached source projection stay untouched.
   (function () {
     var key = 'machinespirits.workplan.collapsedLanes.v1';
     function read() {
@@ -7787,7 +7845,7 @@ function renderTimelineHtml({ items = [], milestones = [], github = {}, generate
 <body>
 ${railHtml({ active: 'timeline', brand: 'project timeline', sub: 'milestones, dependencies & live GitHub activity', hint: orientBand('timeline', 'milestones with target dates + progress, linked to GitHub', 'edit items + deps on the board') })}
 <main>
-  <div class="blurb">Milestones from <code>workplan/milestones.yaml</code> (items reference them via <code>milestone:</code>), with live GitHub activity for ${repoHeader}.${generated ? ' Board generated ' + e(generated) + '.' : ''} <a href="#project-history">Project history</a> is below. <button class="chip" id="ms-new">+ new milestone</button></div>
+  <div class="blurb">Milestones from <code>workplan/milestones.yaml</code> (items reference them via <code>milestone:</code>), with live GitHub activity for ${repoHeader}.${generated ? ' Board loaded ' + e(generated) + '.' : ''} <a href="#project-history">Project history</a> is below. <button class="chip" id="ms-new">+ new milestone</button></div>
   <div class="tl-grid">
     <div class="tl-left"><div id="tl-controls"></div><div id="tl-viz"></div><div id="tl-detail"></div><noscript>${msCards}</noscript>${unscheduled.length ? `<div class="tl-note">${unscheduled.length} item${unscheduled.length > 1 ? 's' : ''} not assigned to a milestone — assign on the <a href="/board">board</a>.</div>` : ''}</div>
     <aside class="tl-right"><div class="tl-panel"><h4>GitHub · ${repoHeader}</h4>${ghErr}<h5>Open PRs</h5><ul class="tl-list">${prRows}</ul><h5>Releases / tags</h5><ul class="tl-list">${relRows}</ul><h5>Recent commits</h5><ul class="tl-list">${commitRows}</ul></div></aside>
@@ -8343,7 +8401,7 @@ ${railHtml({
   </div>
   <a class="workbench__card" href="/admin/runs?kind=replay&amp;mock=1&amp;dryRun=1"><span class="workbench__t">make a replay</span><span class="workbench__d">Open the launcher with a free mock/dry-run replay path selected.</span><span class="workbench__go">launch replay →</span></a>
   <a class="workbench__card" href="/browse?queue=flagged"><span class="workbench__t">source cases</span><span class="workbench__d">Find flagged scripts that might deserve a counterfactual pass.</span><span class="workbench__go">open flags →</span></a>
-  <a class="workbench__card" href="/board?tag=evidence"><span class="workbench__t">connect work</span><span class="workbench__d">Move replay follow-up through the generated workplan, not a parallel tracker.</span><span class="workbench__go">open board →</span></a>
+  <a class="workbench__card" href="/board?tag=evidence"><span class="workbench__t">connect work</span><span class="workbench__d">Move replay follow-up through the live workplan, not a parallel tracker.</span><span class="workbench__go">open board →</span></a>
 </section>
 <div class="controls">
   <label>bundle <select id="bundleSel"></select></label>
@@ -11371,6 +11429,8 @@ export {
   renderDerivationRunHtml,
   renderOntologyHtml,
   renderRubricHtml,
+  readWorkplanBoard,
+  refreshWorkplanBoard,
   renderWorkplanBoardHtml,
   renderScriptoriumHome,
   saveBrowserLabel,

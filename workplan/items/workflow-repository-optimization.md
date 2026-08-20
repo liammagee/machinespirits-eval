@@ -8,7 +8,7 @@ owner: codex
 source: manual
 created: 2026-08-19
 updated: 2026-08-20
-branch: codex/workflow-context-packaging
+branch: codex/workplan-source-integration
 verification: >-
   Reproducible before/after measurements show that local and hosted CI select
   the same fail-closed profiles, avoid measured orchestration and test delays,
@@ -29,6 +29,7 @@ links:
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/705
     - https://github.com/liammagee/machinespirits-eval/pull/708
+    - https://github.com/liammagee/machinespirits-eval/pull/709
   notes:
     - docs/next-steps/2026-08-19-coordinator-workflow-efficiency-audit.md
 tags:
@@ -191,3 +192,16 @@ Log:
   human play, new model-backed auto-eval, technical recovery, existing-artifact
   analysis, and prompt/world editing without finding a routing or authority
   defect. Both Wave 2B slices were reviewed locally before the first push.
+- 2026-08-20 — Implemented Wave 3A from base
+  `80f623ef9a28eed7772d831fab56b771d76384e3`. The 520 item files are now the
+  direct source for the CLI and Scriptorium board, timeline, dashboard,
+  roadmap, and command palette; the long-lived browser caches one projection
+  per workplan and rebuilds it after explicit refresh or mutation. The two
+  root views remain reproducible only as ignored local exports, their 782,866
+  tracked bytes are removed without rewriting history, CI rejects any
+  reintroduction, and the main-only renderer workflow is removed. This ends a
+  measured run of 52 renderer-bot commits and 19,522 changed lines since
+  2026-08-17 (24.5% of main commits in that interval). The completed R6
+  refactoring parent is also closed after all 131 linked children reached done;
+  subsequent repository hygiene remains on this card. No worktree, local
+  export, external artifact, or model-backed run was removed or invoked.

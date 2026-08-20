@@ -14,20 +14,58 @@ let oldUser;
 let oldPass;
 let oldParticipantUser;
 let oldParticipantPass;
+let oldWorkplanDir;
 let app;
 let poeticsApp;
 let server;
 let baseUrl;
+const workplanDir = path.join(tmp, 'workplan');
+
+function workplanItem({ id, title, status = 'active' }) {
+  return `---
+id: ${id}
+title: ${title}
+status: ${status}
+type: maintenance
+priority: P1
+owner: codex
+source: manual
+created: 2026-08-20
+updated: 2026-08-20
+verification: browser source projection stays current
+tags:
+  - scriptorium
+  - ux
+---
+
+Browser fixture.
+`;
+}
 
 before(async () => {
   oldUser = process.env.POETICS_AUTH_USER;
   oldPass = process.env.POETICS_AUTH_PASS;
   oldParticipantUser = process.env.POETICS_PARTICIPANT_USER;
   oldParticipantPass = process.env.POETICS_PARTICIPANT_PASS;
+  oldWorkplanDir = process.env.WORKPLAN_DIR;
   process.env.POETICS_AUTH_USER = 'admin';
   process.env.POETICS_AUTH_PASS = 'secret';
   process.env.POETICS_PARTICIPANT_USER = 'participant';
   process.env.POETICS_PARTICIPANT_PASS = 'participant-secret';
+  process.env.WORKPLAN_DIR = workplanDir;
+  fs.mkdirSync(path.join(workplanDir, 'items'), { recursive: true });
+  fs.writeFileSync(
+    path.join(workplanDir, 'items', 'source-api-item.md'),
+    workplanItem({ id: 'source-api-item', title: 'Source API item' }),
+  );
+  fs.writeFileSync(
+    path.join(workplanDir, 'board.json'),
+    JSON.stringify({
+      generated: '2000-01-01T00:00:00.000Z',
+      counts: { total: 1, byStatus: { done: 1 }, byType: { maintenance: 1 } },
+      items: [{ id: 'stale-api-item', title: 'Stale API item', status: 'done', type: 'maintenance' }],
+    }),
+  );
   ({ createPoeticsBrowserApp } = await import('../scripts/browse-poetics-scripts.js'));
   app = express();
   poeticsApp = createPoeticsBrowserApp({ dbPath, host: '0.0.0.0' });
@@ -49,6 +87,8 @@ after(async () => {
   else process.env.POETICS_PARTICIPANT_USER = oldParticipantUser;
   if (oldParticipantPass == null) delete process.env.POETICS_PARTICIPANT_PASS;
   else process.env.POETICS_PARTICIPANT_PASS = oldParticipantPass;
+  if (oldWorkplanDir == null) delete process.env.WORKPLAN_DIR;
+  else process.env.WORKPLAN_DIR = oldWorkplanDir;
 });
 
 function request(pathname, { method = 'GET', user, pass, body } = {}) {
@@ -132,6 +172,93 @@ test('admin tool pages require Basic Auth', async () => {
   const chatAllowed = await request('/admin/chat/', { user: 'admin', pass: 'secret' });
   assert.equal(chatAllowed.status, 302);
   assert.equal(chatAllowed.headers.location, '/poetics/tutor?mode=research');
+});
+
+test('workplan API stays source-derived through refresh and every browser mutation', async () => {
+  const initial = await request('/api/workplan');
+  assert.equal(initial.status, 200, initial.body);
+  assert.deepEqual(
+    JSON.parse(initial.body).items.map((item) => item.id),
+    ['source-api-item'],
+    'items source outranks stale board.json',
+  );
+
+  fs.rmSync(path.join(workplanDir, 'board.json'));
+  const refreshed = await request('/admin/api/workplan/refresh', {
+    method: 'POST',
+    user: 'admin',
+    pass: 'secret',
+  });
+  assert.equal(refreshed.status, 200, refreshed.body);
+  assert.equal(JSON.parse(refreshed.body).board.items[0].id, 'source-api-item');
+
+  const moved = await request('/admin/api/workplan/move', {
+    method: 'POST',
+    user: 'admin',
+    pass: 'secret',
+    body: { id: 'source-api-item', status: 'review' },
+  });
+  assert.equal(moved.status, 200, moved.body);
+  assert.equal(JSON.parse(moved.body).status, 'review');
+  assert.equal(JSON.parse((await request('/api/workplan')).body).items[0].status, 'review');
+
+  const added = await request('/admin/api/workplan/add', {
+    method: 'POST',
+    user: 'admin',
+    pass: 'secret',
+    body: {
+      title: 'Browser added item',
+      type: 'maintenance',
+      priority: 'P2',
+      owner: 'codex',
+      status: 'active',
+      verification: 'browser mutation is source-derived',
+    },
+  });
+  assert.equal(added.status, 200, added.body);
+  const addedId = JSON.parse(added.body).id;
+  assert.ok(JSON.parse((await request('/api/workplan')).body).items.some((item) => item.id === addedId));
+
+  const updated = await request('/admin/api/workplan/update', {
+    method: 'POST',
+    user: 'admin',
+    pass: 'secret',
+    body: { id: addedId, title: 'Browser updated item' },
+  });
+  assert.equal(updated.status, 200, updated.body);
+  assert.equal(
+    JSON.parse((await request('/api/workplan')).body).items.find((item) => item.id === addedId).title,
+    'Browser updated item',
+  );
+
+  const deleted = await request('/admin/api/workplan/delete', {
+    method: 'POST',
+    user: 'admin',
+    pass: 'secret',
+    body: { id: addedId },
+  });
+  assert.equal(deleted.status, 200, deleted.body);
+  assert.equal(
+    JSON.parse((await request('/api/workplan')).body).items.some((item) => item.id === addedId),
+    false,
+  );
+
+  const boardPage = await request('/board?focus=all');
+  assert.equal(boardPage.status, 200, boardPage.body);
+  assert.match(boardPage.body, /Source API item/u);
+  assert.doesNotMatch(boardPage.body, /Stale API item/u);
+  const home = await request('/');
+  assert.equal(home.status, 200, home.body);
+  assert.match(home.body, /Source API item/u);
+  assert.match(home.body, /1 open item on the board/u);
+
+  const timeline = await request('/timeline');
+  assert.equal(timeline.status, 200, timeline.body);
+  assert.match(timeline.body, /Source API item/u);
+  assert.doesNotMatch(timeline.body, /Stale API item/u);
+
+  assert.equal(fs.existsSync(path.join(workplanDir, 'BOARD.md')), false);
+  assert.equal(fs.existsSync(path.join(workplanDir, 'board.json')), false);
 });
 
 test('shared tutor shell and process API require the administrator role', async () => {

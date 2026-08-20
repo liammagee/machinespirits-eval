@@ -3,20 +3,22 @@
  * workplan.js — the CLI surface for the project's working board (workplan/).
  *
  * Source of truth: workplan/items/<slug>.md (markdown + YAML frontmatter).
- * BOARD.md and board.json are GENERATED here and must never be hand-edited.
+ * BOARD.md and board.json are optional GENERATED compatibility exports. The
+ * source-derived board returned by buildWorkplanBoard() never reads them.
  * Contract + schema + playbook: workplan/README.md.
  *
  * Commands:
  *   list [--status S] [--type T] [--owner O] [--priority P] [--blocked] [--json]
+ *   summary                  # concise source-derived lane counts
  *   show <id>
  *   add [--inbox] --title "…" [--type T] [--priority P] [--owner O] [--source S] [--verification "…"]
  *   triage <inbox-file> [--type T] [--priority P] [--owner O] [--verification "…"]
  *   set <id> <field> <value> [--owner O] [--branch B]
  *   validate                 # frontmatter ⇄ schema/item.schema.json (exit 1 on failure)
  *   render                   # regenerate BOARD.md + board.json
- *   check                    # validate items and verify generated board files are current
- *   check --source-only      # validate source items without requiring generated views to change
- *   check-generated-pr       # reject generated board views in feature PR diffs
+ *   check                    # validate items and deterministic in-memory rendering
+ *   check --source-only      # same source contract, with feature-branch wording
+ *   check-generated-pr       # allow removal, reject generated-view reintroduction
  *   ingest [--todo] [--daily]# pull open TODO.md items + daily-notes actions → inbox/
  *
  * Paths are env-overridable for hermetic tests:
@@ -175,17 +177,30 @@ function flags(argv) {
   return out;
 }
 
+function normalizeGeneratedViewPath(file) {
+  return String(file).replaceAll('\\', '/').replace(/^\.\//, '');
+}
+
 export function findGeneratedViewChanges(changedPaths) {
   const generated = new Set(GENERATED_WORKPLAN_VIEWS);
-  const normalized = changedPaths.map((file) => String(file).replaceAll('\\', '/').replace(/^\.\//, ''));
+  const normalized = changedPaths.map(normalizeGeneratedViewPath);
   return [...new Set(normalized)].filter((file) => generated.has(file)).sort();
 }
 
-export function generatedViewPolicy(changedPaths, { allow = false } = {}) {
-  const changes = findGeneratedViewChanges(changedPaths);
+export function generatedViewPolicy(changes) {
+  const entries = changes.map((change) =>
+    typeof change === 'string'
+      ? { status: 'M', path: normalizeGeneratedViewPath(change) }
+      : { status: String(change.status || ''), path: normalizeGeneratedViewPath(change.path) },
+  );
+  const generated = new Set(GENERATED_WORKPLAN_VIEWS);
+  const relevant = entries.filter((entry) => generated.has(entry.path));
+  const blocked = relevant.filter((entry) => entry.status !== 'D').map((entry) => entry.path);
+  const deletions = relevant.filter((entry) => entry.status === 'D').map((entry) => entry.path);
   return {
-    changes,
-    allowed: changes.length === 0 || allow,
+    changes: [...new Set(blocked)].sort(),
+    deletions: [...new Set(deletions)].sort(),
+    allowed: blocked.length === 0,
   };
 }
 
@@ -229,6 +244,14 @@ function cmdList(argv) {
     }
   }
   console.log('');
+}
+
+function cmdSummary() {
+  const { counts } = buildWorkplanBoard();
+  const lanes = LIFECYCLE.filter((status) => counts.byStatus[status])
+    .map((status) => `${status} ${counts.byStatus[status]}`)
+    .join(' · ');
+  console.log(`${counts.total} items${lanes ? ` · ${lanes}` : ''}`);
 }
 
 function cmdShow(argv) {
@@ -393,10 +416,10 @@ function cmdTriage(argv) {
   autoRender(f);
 }
 
-// Shared write core: read an item, mutate its frontmatter, stamp `updated`, write,
-// and (by default) re-render the board. The CLI `set`, drag-and-drop, and the
-// board's edit form all funnel through this so items/, board.json, and the
-// dashboard never disagree. Throws on a missing item.
+// Shared write core: read an item, mutate its frontmatter, stamp `updated`, and
+// optionally refresh local compatibility exports. Browser mutations disable
+// that export and rebuild their source-derived process cache instead. Throws on
+// a missing item.
 function writeItem(id, mutate, render) {
   const p = paths();
   const file = path.join(p.items, `${id}.md`);
@@ -524,6 +547,16 @@ function buildBoardCore() {
   };
 }
 
+/**
+ * Build the current board directly from workplan/items under the lazily
+ * resolved WORKPLAN_DIR. The optional generated value is caller-owned so a
+ * live consumer can use a stable cache stamp and a file renderer can bind an
+ * explicit timestamp without reading a previous generated snapshot.
+ */
+export function buildWorkplanBoard({ generated = null } = {}) {
+  return { generated, ...buildBoardCore() };
+}
+
 function sameBoardCore(a, b) {
   return JSON.stringify({ counts: a.counts, items: a.items }) === JSON.stringify({ counts: b.counts, items: b.items });
 }
@@ -566,8 +599,7 @@ function boardMarkdown(board) {
 }
 
 function buildBoardDocuments(generated) {
-  const core = buildBoardCore();
-  const board = { generated, ...core };
+  const board = buildWorkplanBoard({ generated });
   return {
     board,
     json: JSON.stringify(board, null, 2) + '\n',
@@ -584,12 +616,11 @@ function generatedTimestampForRender(p, core) {
 
 export function renderBoard() {
   const p = paths();
-  const core = buildBoardCore();
-  const generated = generatedTimestampForRender(p, core);
-  const board = { generated, ...core };
+  const board = buildWorkplanBoard();
+  board.generated = generatedTimestampForRender(p, board);
   fs.writeFileSync(p.boardJson, JSON.stringify(board, null, 2) + '\n');
   fs.writeFileSync(p.boardMd, boardMarkdown(board));
-  return core.counts;
+  return board.counts;
 }
 
 function cmdCheck(argv = []) {
@@ -600,43 +631,26 @@ function cmdCheck(argv = []) {
   if (validation.failures.length) errors.push('fix invalid item frontmatter');
 
   const sourceOnly = Boolean(f['source-only']);
-  if (sourceOnly) {
-    const expected = buildBoardDocuments(process.env.WORKPLAN_RENDERED_AT || 'source-only-check');
-    JSON.parse(expected.json);
-    if (errors.length) {
-      console.log('');
-      for (const e of errors) console.log(`workplan source check: ${e}`);
-      process.exit(1);
-    }
-    console.log(`\nworkplan source check passed (${expected.board.counts.total} items; generated views not inspected)`);
-    return;
-  }
-
-  const p = paths();
-  const actualBoard = readBoardJson(p.boardJson);
-  if (!actualBoard) {
-    errors.push(`${rel(p.boardJson)} is missing or invalid; run npm run wp:render`);
-  }
-  const generated =
-    actualBoard && actualBoard.generated ? actualBoard.generated : process.env.WORKPLAN_RENDERED_AT || '';
+  const generated = process.env.WORKPLAN_RENDERED_AT || 'deterministic-workplan-check';
   const expected = buildBoardDocuments(generated);
-  if (!fs.existsSync(p.boardJson) || fs.readFileSync(p.boardJson, 'utf8') !== expected.json) {
-    errors.push(`${rel(p.boardJson)} is stale; run npm run wp:render`);
+  const parsed = JSON.parse(expected.json);
+  if (!sameBoardCore(parsed, expected.board) || parsed.generated !== generated) {
+    errors.push('source items did not survive deterministic JSON rendering');
   }
-  if (!fs.existsSync(p.boardMd) || fs.readFileSync(p.boardMd, 'utf8') !== expected.markdown) {
-    errors.push(`${rel(p.boardMd)} is stale; run npm run wp:render`);
+  if (boardMarkdown(parsed) !== expected.markdown) {
+    errors.push('source items did not survive deterministic Markdown rendering');
   }
 
   if (errors.length) {
+    const label = sourceOnly ? 'workplan source check' : 'workplan check';
     console.log('');
-    for (const e of errors) console.log(`workplan check: ${e}`);
+    for (const e of errors) console.log(`${label}: ${e}`);
     process.exit(1);
   }
-  console.log(`\nworkplan check passed (${expected.board.counts.total} items)`);
-}
-
-function envAllowsGeneratedViews() {
-  return ['1', 'true', 'yes'].includes(String(process.env.WORKPLAN_ALLOW_GENERATED_CHANGES || '').toLowerCase());
+  const label = sourceOnly ? 'workplan source check' : 'workplan check';
+  console.log(
+    `\n${label} passed (${expected.board.counts.total} items; source renders deterministically; generated views not required)`,
+  );
 }
 
 function cmdCheckGeneratedPr(argv = []) {
@@ -647,7 +661,16 @@ function cmdCheckGeneratedPr(argv = []) {
 
   const result = spawnSync(
     'git',
-    ['diff', '--name-only', '--diff-filter=ACDMRTUXB', `${base}...${head}`, '--', ...GENERATED_WORKPLAN_VIEWS],
+    [
+      'diff',
+      '--name-status',
+      '-z',
+      '--no-renames',
+      '--diff-filter=ACDMRTUXB',
+      `${base}...${head}`,
+      '--',
+      ...GENERATED_WORKPLAN_VIEWS,
+    ],
     { cwd: ROOT, encoding: 'utf8' },
   );
   if (result.error) {
@@ -657,30 +680,29 @@ function cmdCheckGeneratedPr(argv = []) {
     fail(`could not inspect PR diff (${String(result.stderr || '').trim() || `git exited ${result.status}`})`);
   }
 
-  const changedPaths = result.stdout
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean);
-  const policy = generatedViewPolicy(changedPaths, {
-    allow: Boolean(f.allow) || envAllowsGeneratedViews(),
-  });
+  const tokens = result.stdout.split('\0').filter(Boolean);
+  if (tokens.length % 2 !== 0) fail('could not parse generated-view diff');
+  const changes = [];
+  for (let index = 0; index < tokens.length; index += 2) {
+    changes.push({ status: tokens[index], path: tokens[index + 1] });
+  }
+  const policy = generatedViewPolicy(changes);
   if (!policy.allowed) {
     fail(
       [
-        'feature PRs must not modify generated workplan views:',
+        'generated workplan views must remain untracked:',
         ...policy.changes.map((file) => `  - ${file}`),
         '',
-        'Commit only workplan/items/*.md (and other source files), then discard these generated-view changes.',
-        'The serialized main-only renderer refreshes both files after merge.',
-        'For an exceptional renderer migration, add the workplan-generated-update label to the PR.',
+        'Commit only workplan/items/*.md (and other authored source files).',
+        'Use npm run wp:render only for local compatibility exports; do not add those outputs to Git.',
       ].join('\n'),
     );
   }
 
-  if (policy.changes.length) {
-    console.log(`generated workplan view exception accepted: ${policy.changes.join(', ')}`);
+  if (policy.deletions.length) {
+    console.log(`generated workplan view removal accepted: ${policy.deletions.join(', ')}`);
   } else {
-    console.log('generated workplan view check passed (feature PR is source-only)');
+    console.log('generated workplan view check passed (no tracked outputs introduced)');
   }
 }
 
@@ -690,9 +712,9 @@ function cmdRender() {
   console.log(`rendered ${rel(p.boardMd)} + ${rel(p.boardJson)} (${c.total} items)`);
 }
 
-// Mutating commands (add/triage/set) call this so BOARD.md + board.json — and the
-// dashboard that reads board.json — never drift from items/. Pass --no-render to
-// skip it in batch scripts.
+// Mutating CLI commands retain the historical local compatibility exports.
+// Source-derived consumers do not depend on these files; pass --no-render to
+// skip the optional export work in batch scripts.
 function autoRender(f) {
   if (f && f['no-render']) return;
   const c = renderBoard();
@@ -905,6 +927,7 @@ function cmdIngest(argv) {
 const USAGE = `workplan — the project working board (see workplan/README.md)
 
   list [--status S|--type T|--owner O|--priority P|--blocked] [--json]
+  summary
   show <id>
   add [--inbox] --title "…" [--type T --priority P --owner O --source S --verification "…"]
   triage <inbox-file> [--type T --priority P --owner O --verification "…"]
@@ -920,6 +943,8 @@ function main() {
   switch (cmd) {
     case 'list':
       return cmdList(argv);
+    case 'summary':
+      return cmdSummary();
     case 'show':
       return cmdShow(argv);
     case 'add':

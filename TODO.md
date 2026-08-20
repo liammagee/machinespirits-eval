@@ -1,6 +1,6 @@
 # Future Development TODO Archive
 
-> **CURRENT TODO SOURCE OF TRUTH:** live work is tracked in [`workplan/`](workplan/). Edit or add one card under [`workplan/items/`](workplan/items/), then regenerate [`workplan/BOARD.md`](workplan/BOARD.md) and [`workplan/board.json`](workplan/board.json) with `node scripts/workplan.js render && node scripts/workplan.js validate`. `workplan/BOARD.md` is the canonical human-readable board view.
+> **CURRENT TODO SOURCE OF TRUTH:** live work is tracked in [`workplan/`](workplan/). Edit or add one card under [`workplan/items/`](workplan/items/), then run `npm run wp:source-check`. Use `node scripts/workplan.js summary`, the list commands, or the Scriptorium `/board` view to read the current queue; `npm run wp:render` is an optional ignored local export.
 >
 > **ARCHIVE STATUS:** this file is no longer the working board. It remains historical design context for older A/B/C/D/E/F roadmap entries. Do not append new live todos here; create or update a workplan item and link back to this file only as provenance.
 

@@ -71,6 +71,11 @@ coverage/
 .nyc_output/
 .test-tmp/
 
+# Workplan views are local/export projections of workplan/items/. They remain
+# reproducible through `npm run wp:render` but are never versioned.
+/workplan/BOARD.md
+/workplan/board.json
+
 # Temp files
 tmp/
 temp/

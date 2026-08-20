@@ -25,8 +25,8 @@ Ground rules:
 ```bash
 DAYS=14   # override from arguments
 
-# Board (generated header carries counts + timestamp; items/ is source of truth)
-sed -n '2,7p' workplan/BOARD.md
+# Board (built directly from item sources)
+node scripts/workplan.js summary
 node scripts/workplan.js list --status active
 node scripts/workplan.js list --status review
 node scripts/workplan.js list --blocked
@@ -37,8 +37,8 @@ git log --since="$DAYS days ago" --oneline | wc -l
 git log --since="$DAYS days ago" --oneline --grep="Merge pull request" | wc -l
 git log --since="$DAYS days ago" --no-merges --format=%s | grep -oE '^[a-z]+' | sort | uniq -c | sort -rn | head -8
 
-# Direct-to-main work: first-parent, non-merge commits that are neither the
-# serialized board renderer nor workplan card maintenance (both sanctioned).
+# Direct-to-main work: first-parent, non-merge commits other than workplan card
+# maintenance.
 # `wp:pr-link` only runs on pull_request events, so these skipped the
 # card-link check — they are unlinked, not necessarily ungoverned.
 git log --first-parent --since="$DAYS days ago" --no-merges --format="%h %s" | grep -vE " (workplan:|chore\(workplan\):)"
@@ -93,11 +93,12 @@ Score each pass / warn / fail with one line of evidence.
   outside the codebase (IRB, human coders, corpus growth, a killed prerequisite).
   An engineering blocker hiding in the blocked lane, or a blocked card untouched
   for >30 days with no note: warn.
-- **R5 — Green and fresh.** Latest main CI runs green; `BOARD.md` generated
-  timestamp within ~48h of the last merge; renders happen on main only. Before
-  blaming a red lane on the PR under it, check whether main's own latest run is
-  red the same way — some checks compare a committed generated file against live
-  repo state, so an action taken outside any PR turns every open PR red at once.
+- **R5 — Green and fresh.** Latest main CI runs green; `npm run wp:check`
+  validates current item sources and in-memory renderability; the ignored board
+  exports are absent from `git ls-files`. Before blaming a red lane on the PR
+  under it, check whether main's own latest run is red the same way — some checks
+  compare a committed generated file against live repo state, so an action taken
+  outside any PR turns every open PR red at once.
   `docs/ref-status.md` is the known instance: pushing a tag by hand makes
   `npm run refs:check` fail on every branch until someone runs
   `npm run refs:render` and commits. Report a repo-wide red as one finding with
@@ -108,14 +109,14 @@ Score each pass / warn / fail with one line of evidence.
 - **R7 — Standing disciplines hold.** Spot-check, don't exhaustively audit: rubric
   changes are versioned (new version id / relabel, never in-place edits); the
   nemotron/kimi default warning is still wired (`services/stackDefaultWarning.js`);
-  generated views carry the GENERATED header and only renderer commits touch them.
+  workplan views remain untracked and current board reads derive from `items/`.
 
 ## 3. Deep mode (only when `$ARGUMENTS` contains "deep")
 
 Additionally run the deterministic validators and fold their verdicts into R2/R5:
 
 ```bash
-npm run wp:check          # on main; use npm run wp:source-check on a feature branch
+npm run wp:check          # item validity + in-memory board renderability
 node scripts/eval-cli.js validate-config
 npm run provenance:validate
 node scripts/validate-paper-manifest.js
