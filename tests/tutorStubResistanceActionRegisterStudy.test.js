@@ -172,11 +172,6 @@ function syntheticLiveTrace({ job, plan, bundleSha256, fidelity = {}, modelCallB
               'register-palette': 'plain,warm',
               'eval-repeat': job.treatment.repeat === 'A' ? '1' : '2',
               'eval-job-id': job.id,
-              'resistance-action-register-job': job.id,
-              'resistance-action-register-registration':
-                'config/tutor-stub-resistance-action-register-crossed-registration.v2.json',
-              'resistance-action-register-prefix-bundle':
-                'config/tutor-stub-resistance-action-register-v4-public-prefixes.v1.json',
               'no-opening': true,
               'no-auto-stop-on-grounded': true,
             },
@@ -1444,6 +1439,28 @@ test('v2 combined analyzer fails closed on missing fidelity, runtime drift, and 
       }),
     /violates its observed Luna route, runtime, horizon, or semantics pins/u,
   );
+
+  for (const [field, driftedValue] of [
+    ['jobId', 'unregistered-job'],
+    ['registrationSha256', '0'.repeat(64)],
+    ['prefixBundleSha256', 'f'.repeat(64)],
+  ]) {
+    const executionProvenanceDrift = makePair(`execution-provenance-${field}`);
+    mutateSyntheticBatchTrace(executionProvenanceDrift.batchA, executionProvenanceDrift.planA.jobs[0].id, (events) => {
+      const start = events.find((event) => event.type === 'resistance_action_register_execution_start');
+      start[field] = driftedValue;
+      return events;
+    });
+    assert.throws(
+      () =>
+        analyzeTutorStubResistanceActionRegisterBaseline({
+          batchA: executionProvenanceDrift.batchA,
+          batchB: executionProvenanceDrift.batchB,
+          expectedSourceCommit: executionProvenanceDrift.planA.source.commit,
+        }),
+      /violates exact-prefix, horizon, provenance, or budget constraints/u,
+    );
+  }
 
   const dirtyTrace = makePair('dirty-trace');
   mutateSyntheticBatchTrace(dirtyTrace.batchA, dirtyTrace.planA.jobs[0].id, (events) => {

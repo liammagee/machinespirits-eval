@@ -1075,3 +1075,22 @@ and explicit human approval.
   authorization booleans false. The result remains calibration-only: no
   matched-versus-mismatched, edged-register, interaction, tutor-efficacy,
   learning, human-validity, or transfer claim is licensed.
+- 2026-08-20 — The revision-4 request merged through PR #731 and its two fresh
+  batches completed and sealed: A used `36/36` reservations/completions and B
+  used `40/40`, with zero provider failures or aborted calls and no unit-level
+  technical recovery. The combined programme ledger is `185/1200`. The exact
+  registered analyzer then failed closed before writing a report because it
+  required three action/register CLI arguments inside the session-recipe
+  option projection even though the recipe whitelist never records those
+  arguments. All 12 traces instead carry the same exact job, registration, and
+  prefix-bundle provenance in the dedicated
+  `resistance_action_register_execution_start` event, which the analyzer
+  already checks. Both sealed batch roots, their result hashes, and all durable
+  private mirrors remain immutable; no model unit may be rerun and no efficacy
+  interpretation exists. The zero-call compatibility repair removes only the
+  impossible redundant recipe-option assertions, makes the synthetic fixture
+  reproduce the production recipe shape, and adds negative mutations proving
+  that job, registration, and prefix-bundle drift still fail closed at the
+  execution-start boundary. A fresh source-pinned analysis-only request must
+  bind the corrected analyzer and these exact sealed inputs before analysis is
+  attempted again.
