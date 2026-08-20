@@ -123,6 +123,7 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
   const finalRows = new Map(result.results.map((row) => [row.job_id, row]));
   const reservationsByJob = new Map();
   const finalTraceBudgetByJob = new Map();
+  let usedReservationsBeforeRecovery = 0;
   const loaded = loadTutorStubResistanceActionRegisterConfirmation({
     registrationPath: path.resolve(ROOT, plan.source.registration_path),
   });
@@ -132,6 +133,7 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
       throw new Error(`confirmation batch ${plan.batch_id} initial unit ${job.id} contains alternative traces`);
     }
     const initialReservations = reservationCount(job.command?.trace_dir);
+    usedReservationsBeforeRecovery += initialReservations;
     const initialRow = initialById.get(job.id);
     const finalRow = finalRows.get(job.id);
     if (initialValidIds.includes(job.id)) {
@@ -174,6 +176,7 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
   if (
     [...reservationsByJob.values()].some((value) => value > 60) ||
     total > 240 ||
+    recoveryPlan.used_reservations_before_recovery !== usedReservationsBeforeRecovery ||
     result.observed_model_attempt_reservations !== total ||
     seal.observed_model_attempt_reservations !== total ||
     JSON.stringify(result.observed_model_attempt_reservations_by_job) !==
