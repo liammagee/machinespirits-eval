@@ -8,7 +8,7 @@ owner: codex
 source: manual
 created: 2026-08-19
 updated: 2026-08-20
-branch: codex/artifact-bundle-contract
+branch: codex/greenroom-bundle-removal
 verification: >-
   Reproducible before/after measurements show that local and hosted CI select
   the same fail-closed profiles, avoid measured orchestration and test delays,
@@ -31,6 +31,7 @@ links:
     - https://github.com/liammagee/machinespirits-eval/pull/708
     - https://github.com/liammagee/machinespirits-eval/pull/709
     - https://github.com/liammagee/machinespirits-eval/pull/712
+    - https://github.com/liammagee/machinespirits-eval/pull/714
   notes:
     - docs/next-steps/2026-08-19-coordinator-workflow-efficiency-audit.md
 tags:
@@ -237,3 +238,18 @@ Log:
   worktrees, avoiding roughly 494 MiB of LFS hydration per new worker. No
   payload, external store, model call, worktree, generated view, or history was
   moved, removed, invoked, or rewritten.
+- 2026-08-20 — PR #714 merged the Wave 3B artifact boundary as
+  `0836f03e76a9c1327c0632e5593de6a664e1e98d`. The Git-tracked Green Room
+  `raw-bundle.tar.gz` and `raw-bundle-manifest.json` are the durable replicated
+  source; no external store was selected.
+- 2026-08-20 — Prepared Wave 3C's exact current-tree deduplication slice only
+  after independently proving all 26 tracked candidates against their manifest
+  byte counts and SHA-256 digests, the archive's exact member set, and
+  byte-identical extracted members. The export root measured 46 tracked paths /
+  71,060,298 logical bytes before and 20 paths / 9,709,799 bytes after: an exact
+  reduction of 26 paths / 61,350,499 bytes. The tracked archive, manifest,
+  reports, placebo notes, eight transcripts, and six P3–P8 book markdown files
+  remain. This isolated slice changes no consumer code or tests; outcome
+  integration must keep the verified restoration consumer and hosted checks
+  green. No cache, retained drill, local artifact, worktree, LFS configuration,
+  or Git history was deleted or rewritten.
