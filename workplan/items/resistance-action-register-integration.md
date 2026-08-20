@@ -1779,3 +1779,43 @@ and explicit human approval.
   V4 exclusion. This readiness change creates no GO request, destination,
   model call, analysis output, or scientific claim; registration remains
   prospective HOLD with all authorization booleans false.
+- 2026-08-20 — Prepared the wholly fresh prospective-V7 confirmation HOLD
+  request
+  `config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v5.json`
+  at SHA-256
+  `d209cd7d647f1a35c48d1920444e5648ba72aca5d8f46cb211a2c81ec9f197fb`.
+  The deterministic package pins the merged repair source/tree
+  `02560d4fbef7a0e75da89e3c4e9a6b02fbcc0238` /
+  `e5e570772b29b368eacc571e17bb702cc8bf3631`, all 35 critical
+  source-closure files, and all 10 repository bindings. It binds registration
+  V7, endpoint/certificate V5 and its zero-call preflight, the previously
+  consumed Luna-low route attestation, the calibration sizing evidence, and
+  the exact excluded incomplete V1, V3, and V4 confirmation records.
+
+  Nine block destinations and the combined-report path use the wholly fresh
+  create-once prefix
+  `.tutor-stub-auto-eval/confirmation-test-warm-plain-v7-successor-2026-08-20`.
+  The live, bounded-recovery, and one-shot combined-analyzer commands are
+  prebound to those destinations, the exact source, registration V7, four-way
+  execution parallelism, and the fixed nine-block analysis unit. The design
+  remains 36 fresh independent dialogues, 18 warm and 18 plain, with Luna low
+  for tutor, learner, and analysis roles; 20 planned role calls per dialogue;
+  at most three charged reservations per planned call; hard ceilings of 60 per
+  dialogue, 240 per block, and 2160 for the study; and an operational
+  programme ledger of `293 -> 2453 / 5000`. Recovery is limited to missing or
+  classified technical failures within the same pins and ceilings. Valid
+  outputs may not be rerun, pooled, replaced, or selected, and no interim
+  analysis is permitted.
+
+  The request's only registered inference is the predeclared two-sided Fisher
+  exact comparison of frame-refuser recovery under matched warm versus plain
+  realization by the two-post-trigger-turn horizon. It does not license a
+  recurrence, broader efficacy, learning, transfer, human-subject, or cell
+  claim. All V4 Block-1 outcomes remain excluded inputs with no scientific
+  verdict. Dependency-free deterministic packaging and isolated replay passed
+  71 checks with zero model calls and zero production writes. The JSON retains
+  literal `HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL`, null approval, and false
+  model/live authorization fields for validator compatibility; external
+  programme authority is instead bound to the exact 181-byte standing message
+  at SHA-256
+  `538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce`.
