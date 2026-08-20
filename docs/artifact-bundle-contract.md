@@ -161,6 +161,18 @@ rather than assume expanded manifest members exist in a checkout, with
 The six small `performances/P3.book.md` through `performances/P8.book.md` files
 are not archive members and remain tracked.
 
+The zero-call census also runs against the restored root:
+
+```bash
+node scripts/census-guard-template-rate.js \
+  <restore-root>/exports/greenroom-gate1-2026-07-12 \
+  --quiet
+```
+
+Its expected provenance stamp is `legacy format, 10 trace files; pre-catalog;
+314 turns; 6% template; 89% model as written`. This command reads the restored
+traces without calling a model or writing a result.
+
 `scripts/greenroom-gate1-score.js` is a historical/manual model-backed
 consumer of the same raw performances and may overwrite the closed Gate 1
 reports. It is not part of migration verification and must not be run merely to
