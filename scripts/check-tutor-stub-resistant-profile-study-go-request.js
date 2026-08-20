@@ -392,6 +392,60 @@ const RESISTANCE_ACTION_REGISTER_SEALED_V4_ANALYSIS = Object.freeze({
   programmeCeiling: 1200,
 });
 
+const BOREDOM_PROOF_DAG_STOPPED_V1_REQUEST = Object.freeze({
+  requestRevision: 2,
+  request: Object.freeze({
+    path: 'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v1.json',
+    sha256: '0972e76083a7a89592a25d55820527e2b061afad0fdf72036f08790dd61dfe61',
+  }),
+  launchSource: Object.freeze({
+    commit: '1771eb3eaa8ab80a42c716e0e0079f62e63b608f',
+    tree: '114ab3cf90fd806647db1e19f26fa72cd47f9426',
+  }),
+  stoppedBatch: 'execution_batch_1',
+  artifactRoot: '.tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v1-live-2026-08-20-batch-1',
+  artifactRootManifestSha256: '9f6efec5665554a9b63062c4e2994051d3ed37abf140cfef05ae5649faa69895',
+  privateArchiveRoot:
+    'artifacts/tutor-stub-live/.tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v1-live-2026-08-20-batch-1',
+  privateArchiveManifestSha256: '0158271a157e57af7babf108fc2c57c5e495e3fb5a1194c2b2b409bf34147087',
+  batchPlanSha256: '7407e34fdc652bf2dcd1a926d685e891c473939abc84601d7b7eddba6a6a7e2d',
+  batchResultSha256: '41298a4bf7f1ba32028cfe9ff4f97928d2c5bbb7d8d8ca04264f8226658d3d40',
+  reservations: 0,
+  completed: 0,
+  providerErrors: 0,
+  interrupted: 0,
+  traces: Object.freeze([
+    Object.freeze({
+      jobId: 'bored-confirm-w1-d1',
+      path: 'jobs/bored-confirm-w1-d1/traces/2026-08-20T21-18-13-146Z.jsonl',
+      sha256: 'a9b2718152597199b858939508c677c7951dd3efa63365e994be166cf11bb209',
+    }),
+    Object.freeze({
+      jobId: 'bored-confirm-w1-d2',
+      path: 'jobs/bored-confirm-w1-d2/traces/2026-08-20T21-18-13-170Z.jsonl',
+      sha256: '5b74dfe63db4cf09669edc67d90e8fb9c320c6dadc19323e7e14cf122abc9ec5',
+    }),
+    Object.freeze({
+      jobId: 'bored-confirm-w1-d4',
+      path: 'jobs/bored-confirm-w1-d4/traces/2026-08-20T21-18-13-151Z.jsonl',
+      sha256: '42b2111ed62652d4a60c7c06ca825126549cb98b5747a45db14ec7076687dcf0',
+    }),
+    Object.freeze({
+      jobId: 'bored-confirm-w1-d5',
+      path: 'jobs/bored-confirm-w1-d5/traces/2026-08-20T21-18-13-162Z.jsonl',
+      sha256: '75a3b5c49249d5eeab6681627c545805d6d67a31b00494c78e37eccdb1e3314c',
+    }),
+  ]),
+  batches2Through9Started: false,
+  combinedAnalyzerRan: false,
+  combinedResultProduced: false,
+  sealProduced: false,
+  recoveryPermitted: false,
+  reusePermitted: false,
+  poolingPermitted: false,
+  outcomeSelectionPermitted: false,
+});
+
 function parseArgs(argv) {
   const args = { request: DEFAULT_REQUEST, json: false };
   for (let index = 0; index < argv.length; index += 1) {
@@ -1054,6 +1108,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   } else if (isBoredomActionRegisterProofDag) {
     const registered = readJson(rootPath(request.bindings.registration.path));
     const gate = request.boredomActionRegisterProofDag;
+    const isSuccessor = gate.requestRevision === BOREDOM_PROOF_DAG_STOPPED_V1_REQUEST.requestRevision;
     const batchDestinations = request.destination.batches;
     const registeredWorlds = registered.design?.worlds || [];
     assertion(
@@ -1081,6 +1136,27 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     );
     assertion(
       checks,
+      'boredom-proof-dag-request-revision',
+      (gate.requestRevision === undefined && gate.priorStoppedExecution === undefined) ||
+        (isSuccessor && gate.priorStoppedExecution !== undefined),
+      'the original request remains revision-compatible and only revision 2 may bind the stopped zero-call predecessor',
+    );
+    if (isSuccessor) {
+      assertion(
+        checks,
+        'boredom-proof-dag-stopped-exclusion-binding',
+        JSON.stringify(
+          canonicalJson({
+            requestRevision: gate.requestRevision,
+            ...gate.priorStoppedExecution,
+          }),
+        ) === JSON.stringify(canonicalJson(BOREDOM_PROOF_DAG_STOPPED_V1_REQUEST)),
+        'the consumed request, stopped Batch 1, private archive, four traces, zero-call accounting, and total exclusion remain exact',
+      );
+      validateFileBinding(checks, 'boredom-proof-dag-consumed-request-binding', gate.priorStoppedExecution.request);
+    }
+    assertion(
+      checks,
       'boredom-proof-dag-evidence-separation',
       gate.calibrationSizingEvidence?.analysisRequest?.path ===
         'config/tutor-stub-resistance-action-register-baseline-analysis-go-request.v1.json' &&
@@ -1096,7 +1172,12 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         gate.priorOutcomesPooled === false &&
         gate.interimAnalysisPermitted === false &&
         gate.validUnitRerunsPermitted === false &&
-        gate.outcomeSelectionPermitted === false,
+        gate.outcomeSelectionPermitted === false &&
+        (!isSuccessor ||
+          (gate.priorStoppedExecution.recoveryPermitted === false &&
+            gate.priorStoppedExecution.reusePermitted === false &&
+            gate.priorStoppedExecution.poolingPermitted === false &&
+            gate.priorStoppedExecution.outcomeSelectionPermitted === false)),
       'held-out detection, historical action-fit, and the 12-dialogue calibration remain excluded from confirmation outcomes',
     );
     validateFileBinding(

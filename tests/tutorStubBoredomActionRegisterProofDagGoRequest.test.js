@@ -19,6 +19,59 @@ const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-regist
 const ENDPOINT = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v1.json';
 const CERTIFICATE = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v1.endpoint-go.json';
 const CALIBRATION_REQUEST = 'config/tutor-stub-resistance-action-register-baseline-analysis-go-request.v1.json';
+const CONSUMED_REQUEST = 'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v1.json';
+const STOPPED_EXECUTION = Object.freeze({
+  request: Object.freeze({
+    path: CONSUMED_REQUEST,
+    sha256: '0972e76083a7a89592a25d55820527e2b061afad0fdf72036f08790dd61dfe61',
+  }),
+  launchSource: Object.freeze({
+    commit: '1771eb3eaa8ab80a42c716e0e0079f62e63b608f',
+    tree: '114ab3cf90fd806647db1e19f26fa72cd47f9426',
+  }),
+  stoppedBatch: 'execution_batch_1',
+  artifactRoot: '.tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v1-live-2026-08-20-batch-1',
+  artifactRootManifestSha256: '9f6efec5665554a9b63062c4e2994051d3ed37abf140cfef05ae5649faa69895',
+  privateArchiveRoot:
+    'artifacts/tutor-stub-live/.tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v1-live-2026-08-20-batch-1',
+  privateArchiveManifestSha256: '0158271a157e57af7babf108fc2c57c5e495e3fb5a1194c2b2b409bf34147087',
+  batchPlanSha256: '7407e34fdc652bf2dcd1a926d685e891c473939abc84601d7b7eddba6a6a7e2d',
+  batchResultSha256: '41298a4bf7f1ba32028cfe9ff4f97928d2c5bbb7d8d8ca04264f8226658d3d40',
+  reservations: 0,
+  completed: 0,
+  providerErrors: 0,
+  interrupted: 0,
+  traces: Object.freeze([
+    Object.freeze({
+      jobId: 'bored-confirm-w1-d1',
+      path: 'jobs/bored-confirm-w1-d1/traces/2026-08-20T21-18-13-146Z.jsonl',
+      sha256: 'a9b2718152597199b858939508c677c7951dd3efa63365e994be166cf11bb209',
+    }),
+    Object.freeze({
+      jobId: 'bored-confirm-w1-d2',
+      path: 'jobs/bored-confirm-w1-d2/traces/2026-08-20T21-18-13-170Z.jsonl',
+      sha256: '5b74dfe63db4cf09669edc67d90e8fb9c320c6dadc19323e7e14cf122abc9ec5',
+    }),
+    Object.freeze({
+      jobId: 'bored-confirm-w1-d4',
+      path: 'jobs/bored-confirm-w1-d4/traces/2026-08-20T21-18-13-151Z.jsonl',
+      sha256: '42b2111ed62652d4a60c7c06ca825126549cb98b5747a45db14ec7076687dcf0',
+    }),
+    Object.freeze({
+      jobId: 'bored-confirm-w1-d5',
+      path: 'jobs/bored-confirm-w1-d5/traces/2026-08-20T21-18-13-162Z.jsonl',
+      sha256: '75a3b5c49249d5eeab6681627c545805d6d67a31b00494c78e37eccdb1e3314c',
+    }),
+  ]),
+  batches2Through9Started: false,
+  combinedAnalyzerRan: false,
+  combinedResultProduced: false,
+  sealProduced: false,
+  recoveryPermitted: false,
+  reusePermitted: false,
+  poolingPermitted: false,
+  outcomeSelectionPermitted: false,
+});
 const CLOSURE = [
   'scripts/run-tutor-stub-boredom-action-register-proof-dag.js',
   'scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js',
@@ -165,6 +218,8 @@ function buildRequest({ destinationSuffix }) {
     },
     boredomActionRegisterProofDag: {
       type: 'prospective_boredom_matched_action_warm_plain_proof_dag_confirmation_v1',
+      requestRevision: 2,
+      priorStoppedExecution: structuredClone(STOPPED_EXECUTION),
       calibrationSizingEvidence: {
         analysisRequest: { path: CALIBRATION_REQUEST, sha256: fileSha256(CALIBRATION_REQUEST) },
         reportSha256: '42021a390338cd556386efc96d8f00b35655a411627908a10248dba1e473a3a5',
@@ -299,6 +354,8 @@ function templateText(request) {
   route.modelIndependentlyAttested = GO_REQUEST_PACKAGE_MARKERS.routeModelIndependentlyAttested;
   template.boredomActionRegisterProofDag.calibrationSizingEvidence.analysisRequest.sha256 =
     goRequestFileSha256Marker(CALIBRATION_REQUEST);
+  template.boredomActionRegisterProofDag.priorStoppedExecution.request.sha256 =
+    goRequestFileSha256Marker(CONSUMED_REQUEST);
   template.bindings.commands.liveArraySha256 = GO_REQUEST_PACKAGE_MARKERS.liveCommandSha256;
   template.bindings.commands.recoveryArraySha256 = GO_REQUEST_PACKAGE_MARKERS.recoveryCommandSha256;
   template.bindings.commands.analyzeArraySha256 = GO_REQUEST_PACKAGE_MARKERS.analyzeCommandSha256;
@@ -312,6 +369,7 @@ test('boredom proof-DAG GO validator and packager bind scientific design separat
     fs.rmSync(temporary, { recursive: true, force: true });
     fs.rmSync(path.join(ROOT, output), { force: true });
   });
+  assert.equal(fileSha256(CONSUMED_REQUEST), '0972e76083a7a89592a25d55820527e2b061afad0fdf72036f08790dd61dfe61');
   const request = buildRequest({ destinationSuffix: process.pid });
   const requestPath = path.join(temporary, 'request.json');
   fs.writeFileSync(requestPath, `${JSON.stringify(request, null, 2)}\n`);
@@ -349,6 +407,15 @@ test('boredom proof-DAG GO validator and packager bind scientific design separat
     (value) => {
       value.commands.analyze.splice(2, 2);
       value.bindings.commands.analyzeArraySha256 = commandSha256(value.commands.analyze);
+    },
+    (value) => {
+      value.boredomActionRegisterProofDag.priorStoppedExecution.artifactRootManifestSha256 = '0'.repeat(64);
+    },
+    (value) => {
+      value.boredomActionRegisterProofDag.priorStoppedExecution.traces[0].sha256 = '0'.repeat(64);
+    },
+    (value) => {
+      value.boredomActionRegisterProofDag.priorStoppedExecution.reusePermitted = true;
     },
   ]) {
     const invalid = structuredClone(request);
