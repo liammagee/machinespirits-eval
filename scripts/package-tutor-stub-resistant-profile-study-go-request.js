@@ -17,6 +17,8 @@ const SUPPORTED_OPPORTUNITY = 'prospective_frame_refuser_treatment_opportunity';
 const SUPPORTED_ACTION_REGISTER_BASELINE = 'prospective_frame_refuser_action_register_baseline_v2';
 const SUPPORTED_ACTION_REGISTER_ANALYSIS_ONLY = 'sealed_frame_refuser_action_register_baseline_analysis_only_v1';
 const SUPPORTED_ACTION_REGISTER_CONFIRMATION = 'prospective_frame_refuser_warm_plain_confirmation_v1';
+const SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG =
+  'prospective_boredom_matched_action_warm_plain_proof_dag_confirmation_v1';
 
 export const GO_REQUEST_PACKAGE_MARKERS = Object.freeze({
   sourceCommit: `${MARKER_PREFIX}source.commit`,
@@ -177,10 +179,11 @@ function requireHoldBoundary(template) {
     template.opportunityGate?.type !== SUPPORTED_OPPORTUNITY &&
     template.actionRegisterBaseline?.type !== SUPPORTED_ACTION_REGISTER_BASELINE &&
     template.actionRegisterBaselineAnalysis?.type !== SUPPORTED_ACTION_REGISTER_ANALYSIS_ONLY &&
-    template.actionRegisterConfirmation?.type !== SUPPORTED_ACTION_REGISTER_CONFIRMATION
+    template.actionRegisterConfirmation?.type !== SUPPORTED_ACTION_REGISTER_CONFIRMATION &&
+    template.boredomActionRegisterProofDag?.type !== SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG
   ) {
     throw new Error(
-      'the packager supports only frame-refuser opportunity, action/register baseline, sealed analysis-only, or warm/plain confirmation HOLD templates',
+      'the packager supports only frame-refuser opportunity, action/register baseline, sealed analysis-only, frame-refuser confirmation, or boredom proof-DAG confirmation HOLD templates',
     );
   }
   if (
@@ -312,7 +315,8 @@ function assertMaterializedStructure({
     const priorRequest =
       request.actionRegisterBaseline?.priorStoppedExecution?.request ??
       request.actionRegisterBaselineAnalysis?.sealedInputs?.priorRequest ??
-      request.actionRegisterConfirmation?.calibrationSizingEvidence?.analysisRequest;
+      request.actionRegisterConfirmation?.calibrationSizingEvidence?.analysisRequest ??
+      request.boredomActionRegisterProofDag?.calibrationSizingEvidence?.analysisRequest;
     assertComputedValue(
       historical?.requestPath ?? priorRequest?.path,
       historicalRequest.path,
@@ -336,7 +340,8 @@ function assertMaterializedStructure({
   }
   if (
     request.actionRegisterBaseline?.type === SUPPORTED_ACTION_REGISTER_BASELINE ||
-    request.actionRegisterConfirmation?.type === SUPPORTED_ACTION_REGISTER_CONFIRMATION
+    request.actionRegisterConfirmation?.type === SUPPORTED_ACTION_REGISTER_CONFIRMATION ||
+    request.boredomActionRegisterProofDag?.type === SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG
   ) {
     assertComputedValue(
       request.bindings?.commands?.recoveryArraySha256,
@@ -437,7 +442,8 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     template.opportunityGate?.historicalOpportunityV1?.requestPath ??
     template.actionRegisterBaseline?.priorStoppedExecution?.request?.path ??
     template.actionRegisterBaselineAnalysis?.sealedInputs?.priorRequest?.path ??
-    template.actionRegisterConfirmation?.calibrationSizingEvidence?.analysisRequest?.path;
+    template.actionRegisterConfirmation?.calibrationSizingEvidence?.analysisRequest?.path ??
+    template.boredomActionRegisterProofDag?.calibrationSizingEvidence?.analysisRequest?.path;
   const historicalRequest = historicalRequestPath
     ? materializeRepoFile({
         launchCommit,
@@ -471,7 +477,8 @@ function materializeTemplate({ templateText, template, launchCommit }) {
   const liveCommandSha256 = isAnalysisOnly ? null : sha256(JSON.stringify(template.commands?.live));
   const recoveryCommandSha256 =
     template.actionRegisterBaseline?.type === SUPPORTED_ACTION_REGISTER_BASELINE ||
-    template.actionRegisterConfirmation?.type === SUPPORTED_ACTION_REGISTER_CONFIRMATION
+    template.actionRegisterConfirmation?.type === SUPPORTED_ACTION_REGISTER_CONFIRMATION ||
+    template.boredomActionRegisterProofDag?.type === SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG
       ? sha256(JSON.stringify(template.commands?.recovery))
       : null;
   const analyzeCommandSha256 = sha256(JSON.stringify(template.commands?.analyze));
@@ -549,7 +556,10 @@ function assertDestinationAbsent(request, root = ROOT) {
       throw new Error(`request destination already exists: ${request.destination.combinedReport}`);
     return destinations;
   }
-  if (request.actionRegisterConfirmation?.type === SUPPORTED_ACTION_REGISTER_CONFIRMATION) {
+  if (
+    request.actionRegisterConfirmation?.type === SUPPORTED_ACTION_REGISTER_CONFIRMATION ||
+    request.boredomActionRegisterProofDag?.type === SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG
+  ) {
     const destinations = request.destination?.batches?.map((entry) => entry?.artifactRoot) || [];
     if (destinations.length !== 9 || new Set(destinations).size !== 9 || destinations.some((value) => !value)) {
       throw new Error('confirmation request requires nine distinct batch destinations');

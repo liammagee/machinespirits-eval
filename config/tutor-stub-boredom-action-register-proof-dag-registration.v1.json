@@ -17,11 +17,9 @@
     },
     "thisReadinessConsumesProgrammeHeadroom": false,
     "requiredBeforeAnyModelCall": [
-      "merge the reviewed zero-call registration, deterministic proof-DAG scorer, live source-prefix and paired-branch executor, analyzer, and request validator",
-      "freeze a clean post-merge source and complete executable source closure",
-      "adopt an explicit programme ceiling of at least 2345 attempts for this boredom study alone, or at least 4505 attempts if the separately proposed 2160-attempt frame-refusal confirmation is also reserved",
+      "merge the reviewed zero-call production executor, combined analyzer, request validator, and complete executable source closure",
       "prepare a fresh digest-bound HOLD request with nine absent create-once batch destinations and one absent combined-report destination",
-      "obtain explicit human authorization of the exact request digest, 2160-attempt study ceiling, and amended cumulative programme ceiling"
+      "complete blocking review of the exact request digest and verify it matches the standing human authorization of the future request path and digest, 2160-attempt study cap, 4505-attempt cumulative ceiling, and bounded technical recovery boundary"
     ]
   },
   "evidence": {
@@ -319,9 +317,9 @@
     "boundedTechnicalRecovery": "missing_or_failed_units_only_within_unchanged_per_unit_batch_study_and_programme_caps",
     "validUnitReruns": false,
     "outcomeSelection": false,
-    "liveExecutorAvailable": false,
-    "combinedAnalyzerAvailable": false,
-    "requestValidatorAvailable": false,
-    "remainingGap": "production fresh-prefix and paired-branch executor, deterministic proof-DAG combined analyzer, request validator and packager, merged source closure, ceiling amendment, digest-bound HOLD request, and explicit human authorization"
+    "liveExecutorAvailable": true,
+    "combinedAnalyzerAvailable": true,
+    "requestValidatorAvailable": true,
+    "remainingGap": "reviewed merged source closure, fresh digest-bound HOLD request, exact request blocking review, and prelaunch verification against the standing authorization"
   }
 }

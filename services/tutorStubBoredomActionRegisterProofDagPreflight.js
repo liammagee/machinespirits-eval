@@ -378,9 +378,9 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
     registration?.design?.noReuseOrPooling?.interimAnalysis !== false ||
     execution.validUnitReruns !== false ||
     execution.outcomeSelection !== false ||
-    execution.liveExecutorAvailable !== false ||
-    execution.combinedAnalyzerAvailable !== false ||
-    execution.requestValidatorAvailable !== false
+    execution.liveExecutorAvailable !== true ||
+    execution.combinedAnalyzerAvailable !== true ||
+    execution.requestValidatorAvailable !== true
   ) {
     errors.push('no-reuse, no-selection, or zero-call readiness boundary drifted');
   }
@@ -630,9 +630,9 @@ export function runTutorStubBoredomProofDagEndpointPreflight({ contract, registr
       hard_study_attempt_ceiling: 2160,
       required_programme_ceiling_study_alone: 2345,
       required_programme_ceiling_with_frame_refusal_reservation: 4505,
-      live_executor_available: false,
-      combined_analyzer_available: false,
-      request_validator_available: false,
+      live_executor_available: true,
+      combined_analyzer_available: true,
+      request_validator_available: true,
       model_calls: 0,
       production_writes: 0,
     },

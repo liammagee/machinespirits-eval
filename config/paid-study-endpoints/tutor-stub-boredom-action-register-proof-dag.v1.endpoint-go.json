@@ -3,8 +3,8 @@
   "status": "endpoint_runtime_go",
   "study_id": "tutor-stub-boredom-action-register-proof-dag-v1",
   "contract_path": "config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v1.json",
-  "contract_sha256": "78bfb2589ba732b16c5abfe17bdb77df2d98355c0850edaa7c728115388c3af4",
-  "preflight_sha256": "a7bb86e2164c469e722740e146a56eac39f0e999c4df924c9cbbf724a1b7df1a",
-  "authorization_scope": "Deterministic endpoint and power readiness only; this certificate authorizes no model call, live study, request preparation, or programme-headroom consumption.",
-  "launch_gate": "A reviewed production executor and analyzer, merged source closure, explicit programme ceiling amendment, fresh create-once destinations, digest-bound HOLD request, blocking request review, and exact human authorization remain required."
+  "contract_sha256": "89364f8fc4527e3aeb8f71a707d5b60336e967681b36f5e9c6a506cec915c3ec",
+  "preflight_sha256": "ea22fa972148607e2c1d25a2c61fd58b8ebf653f76cd805a3a0a9db5d66b45fe",
+  "authorization_scope": "Deterministic production executor, endpoint, analyzer, power, and request-validator readiness only; this certificate authorizes no model call, live study, request preparation, or programme-headroom consumption.",
+  "launch_gate": "A reviewed merged source closure, fresh digest-bound HOLD request, exact request blocking review, absent create-once destinations, and prelaunch verification against the standing human authorization remain required."
 }

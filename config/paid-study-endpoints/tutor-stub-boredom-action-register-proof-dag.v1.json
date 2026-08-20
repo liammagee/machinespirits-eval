@@ -3,7 +3,7 @@
   "study_id": "tutor-stub-boredom-action-register-proof-dag-v1",
   "registration": {
     "registration_path": "config/tutor-stub-boredom-action-register-proof-dag-registration.v1.json",
-    "registration_sha256": "36339ac3b186c69f09a2e15fd3ec2d97a6f0d11f67c20415a7e0993703dbd562",
+    "registration_sha256": "110381f50b388dae11649611ebef027c22764a4a649fda52019f4197acc4a367",
     "primary_endpoint_ids": ["profile_specific_resistance_recovery"],
     "key_secondary_endpoint_id": "objective_proof_progress_by_two_turns",
     "required_profile": "bored",
@@ -25,6 +25,34 @@
     "packet_builder": "services/tutorStubBoredomActionRegisterProofDagPreflight.js#buildTutorStubBoredomProofDagPackets",
     "result_assembler": "services/tutorStubBoredomActionRegisterProofDagPreflight.js#assembleTutorStubBoredomProofDagPreflight",
     "production_preflight": "services/tutorStubBoredomActionRegisterProofDagPreflight.js#runTutorStubBoredomProofDagEndpointPreflight",
+    "live_batch_executor": "scripts/run-tutor-stub-boredom-action-register-proof-dag.js#runTutorStubBoredomProofDagBatch",
+    "live_batch_recovery_executor": "scripts/run-tutor-stub-boredom-action-register-proof-dag.js#recoverTutorStubBoredomProofDagBatch",
+    "combined_analyzer": "scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js#analyzeTutorStubBoredomProofDag",
+    "batch_contract": {
+      "required_batches": [
+        "execution_batch_1",
+        "execution_batch_2",
+        "execution_batch_3",
+        "execution_batch_4",
+        "execution_batch_5",
+        "execution_batch_6",
+        "execution_batch_7",
+        "execution_batch_8",
+        "execution_batch_9"
+      ],
+      "dialogues_per_batch": 4,
+      "plain_per_batch": 2,
+      "warm_per_batch": 2,
+      "maximum_model_attempt_reservations_per_dialogue": 60,
+      "maximum_model_attempt_reservations_per_batch": 240,
+      "combined_maximum_model_attempt_reservations": 2160,
+      "programme_ceiling_if_frame_refusal_confirmation_also_reserved": 4505,
+      "combined_analysis_only": true,
+      "interim_analysis": false,
+      "valid_unit_reruns": false,
+      "outcome_selection": false,
+      "bounded_technical_recovery": "missing_or_failed_units_only_within_unchanged_60_per_dialogue_240_per_batch_2160_study_and_4505_programme_caps"
+    },
     "packet_cap_bytes": 100000,
     "emitted_event_fields": [
       "arm",
