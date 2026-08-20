@@ -23,6 +23,7 @@ import { analyzeTutorStubResistanceActionRegisterConfirmation } from '../scripts
 import {
   buildTutorStubResistanceActionRegisterConfirmationBatchPlan,
   buildTutorStubResistanceActionRegisterConfirmationRecoveryJob,
+  classifyTutorStubResistanceActionRegisterConfirmationChildFailure,
   selectTutorStubResistanceActionRegisterConfirmationRecoveryCandidates,
 } from '../scripts/run-tutor-stub-resistance-action-register-confirmation.js';
 
@@ -468,13 +469,28 @@ test('confirmation recovery admits only missing or classified technical failures
   };
   assert.throws(
     () => selectTutorStubResistanceActionRegisterConfirmationRecoveryCandidates({ plan, initial: substantive }),
-    /refuses substantive or unclassified failure/u,
+    /refuses nontechnical or unclassified failure/u,
   );
   const unclassified = structuredClone(technical);
   delete unclassified.results[1].failure;
   assert.throws(
     () => selectTutorStubResistanceActionRegisterConfirmationRecoveryCandidates({ plan, initial: unclassified }),
-    /refuses substantive or unclassified failure/u,
+    /refuses nontechnical or unclassified failure/u,
+  );
+  const signaledComplete = structuredClone(technical);
+  signaledComplete.results[1].failure = classifyTutorStubResistanceActionRegisterConfirmationChildFailure({
+    events: [{ type: 'resistance_action_register_outcome_learner_turn', turn: 4 }],
+    signal: 'SIGTERM',
+  });
+  assert.deepEqual(signaledComplete.results[1].failure, {
+    category: 'completed_output_nonrecoverable',
+    code: 'TUTOR_STUB_CONFIRMATION_TERMINAL_OUTCOME_ALREADY_RECORDED',
+    disposition: 'manual_validity_review_required_no_rerun',
+    recoverable: false,
+  });
+  assert.throws(
+    () => selectTutorStubResistanceActionRegisterConfirmationRecoveryCandidates({ plan, initial: signaledComplete }),
+    /refuses nontechnical or unclassified failure/u,
   );
 });
 

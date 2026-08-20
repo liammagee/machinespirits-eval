@@ -76,15 +76,25 @@ function traceResult(command) {
   return { trace: path.relative(ROOT, traces[0]), trace_sha256: sha256(source), trace_bytes: source.length };
 }
 
-function classifyFailedChild(trace, signal) {
-  let events = [];
-  try {
-    events = trace ? readJsonLines(path.resolve(ROOT, trace.trace)) : [];
-  } catch {
+export function classifyTutorStubResistanceActionRegisterConfirmationChildFailure({
+  events = [],
+  signal = null,
+  traceReadable = true,
+} = {}) {
+  if (!traceReadable) {
     return {
       category: 'unclassified_nonrecoverable',
       code: 'TUTOR_STUB_CONFIRMATION_FAILURE_TRACE_UNREADABLE',
       disposition: 'manual_review_required_no_recovery',
+      recoverable: false,
+    };
+  }
+  if (!Array.isArray(events)) throw new Error('confirmation child failure classification requires trace events');
+  if (events.some((event) => event.type === 'resistance_action_register_outcome_learner_turn')) {
+    return {
+      category: 'completed_output_nonrecoverable',
+      code: 'TUTOR_STUB_CONFIRMATION_TERMINAL_OUTCOME_ALREADY_RECORDED',
+      disposition: 'manual_validity_review_required_no_rerun',
       recoverable: false,
     };
   }
@@ -135,6 +145,19 @@ function classifyFailedChild(trace, signal) {
     disposition: 'manual_review_required_no_recovery',
     recoverable: false,
   };
+}
+
+function classifyFailedChild(trace, signal) {
+  try {
+    const events = trace ? readJsonLines(path.resolve(ROOT, trace.trace)) : [];
+    return classifyTutorStubResistanceActionRegisterConfirmationChildFailure({ events, signal });
+  } catch {
+    return classifyTutorStubResistanceActionRegisterConfirmationChildFailure({
+      events: [],
+      signal,
+      traceReadable: false,
+    });
+  }
 }
 
 function reservationCountInDirectory(directory) {
@@ -380,7 +403,7 @@ export function selectTutorStubResistanceActionRegisterConfirmationRecoveryCandi
       continue;
     }
     if (row.failure?.category !== 'technical_recoverable' || row.failure?.recoverable !== true) {
-      throw new Error(`confirmation recovery refuses substantive or unclassified failure ${job.id}`);
+      throw new Error(`confirmation recovery refuses nontechnical or unclassified failure ${job.id}`);
     }
     missing.push(job);
   }
