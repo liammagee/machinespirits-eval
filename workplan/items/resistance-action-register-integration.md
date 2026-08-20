@@ -1653,3 +1653,24 @@ and explicit human approval.
   authorizes no model call. A separate literal-HOLD request must bind the
   merged source, wholly fresh nine-batch/report destinations, and a new exact
   digest-bound approval before any successor launch.
+- 2026-08-20 — After compatibility PR #749 merged at
+  `8d18480e8e531ae7b4ac4e5c63e8de82628aea9f`, the deterministic packager
+  produced the prospective-V6 successor HOLD request
+  `config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v4.json`
+  at SHA-256
+  `8c25d6afcae9b9c5689f3130664048c63d303a440412af7f4ba138a6a9337aab`.
+  It pins launch tree `adadcbff0502d0df15e777d8cebe1d7d5daa5011`,
+  all 35 critical source files, nine repository bindings, registration V6,
+  endpoint/certificate V4, and the exact V1 and V3 incomplete-block exclusions.
+  The nine batch roots and one combined-report path are wholly fresh and absent
+  across all registered worktrees. The scientific design remains fixed at 36
+  fresh independent dialogues, 18 warm and 18 plain, with one predeclared
+  two-sided Fisher exact analysis, no interim analysis, and no reuse or pooling
+  of the 12 calibration dialogues or either incomplete confirmation block.
+  Attempts remain operational safeguards only: the study ceiling is `2160`,
+  the programme ledger is `255 -> 2415 / 5000`, and bounded technical recovery
+  is limited to missing or failed units without valid-output reruns or outcome
+  selection. Isolated dependency-free replay passed 69 checks with zero model
+  calls and zero production writes. The request remains literal
+  `HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL` with null approval and false model/live
+  authority; a new exact digest-bound approval is required before launch.
