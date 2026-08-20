@@ -15,6 +15,7 @@ const HOLD_STATUS = 'HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL';
 const MARKER_PREFIX = '__GO_REQUEST_PACKAGE__:';
 const SUPPORTED_OPPORTUNITY = 'prospective_frame_refuser_treatment_opportunity';
 const SUPPORTED_ACTION_REGISTER_BASELINE = 'prospective_frame_refuser_action_register_baseline_v2';
+const SUPPORTED_ACTION_REGISTER_ANALYSIS_ONLY = 'sealed_frame_refuser_action_register_baseline_analysis_only_v1';
 
 export const GO_REQUEST_PACKAGE_MARKERS = Object.freeze({
   sourceCommit: `${MARKER_PREFIX}source.commit`,
@@ -173,9 +174,12 @@ function requireHoldBoundary(template) {
   if (template.schema !== REQUEST_SCHEMA) throw new Error(`unsupported request schema: ${template.schema}`);
   if (
     template.opportunityGate?.type !== SUPPORTED_OPPORTUNITY &&
-    template.actionRegisterBaseline?.type !== SUPPORTED_ACTION_REGISTER_BASELINE
+    template.actionRegisterBaseline?.type !== SUPPORTED_ACTION_REGISTER_BASELINE &&
+    template.actionRegisterBaselineAnalysis?.type !== SUPPORTED_ACTION_REGISTER_ANALYSIS_ONLY
   ) {
-    throw new Error('the packager supports only frame-refuser opportunity or action/register baseline HOLD templates');
+    throw new Error(
+      'the packager supports only frame-refuser opportunity, action/register baseline, or sealed analysis-only HOLD templates',
+    );
   }
   if (
     template.status !== HOLD_STATUS ||
@@ -303,7 +307,9 @@ function assertMaterializedStructure({
 
   const historical = request.opportunityGate?.historicalOpportunityV1;
   if (historicalRequest) {
-    const priorRequest = request.actionRegisterBaseline?.priorStoppedExecution?.request;
+    const priorRequest =
+      request.actionRegisterBaseline?.priorStoppedExecution?.request ??
+      request.actionRegisterBaselineAnalysis?.sealedInputs?.priorRequest;
     assertComputedValue(
       historical?.requestPath ?? priorRequest?.path,
       historicalRequest.path,
@@ -319,7 +325,12 @@ function assertMaterializedStructure({
     assertComputedValue(request.bindings?.prefixBundle?.path, prefixBundle.path, 'prefix bundle path');
     assertComputedValue(request.bindings?.prefixBundle?.sha256, prefixBundle.sha256, 'prefix bundle digest');
   }
-  assertComputedValue(request.bindings?.commands?.liveArraySha256, liveCommandSha256, 'live command digest');
+  if (request.actionRegisterBaselineAnalysis?.type === SUPPORTED_ACTION_REGISTER_ANALYSIS_ONLY) {
+    assertComputedValue(request.commands?.live, undefined, 'absent analysis-only live command');
+    assertComputedValue(request.bindings?.commands?.liveArraySha256, undefined, 'absent analysis-only live digest');
+  } else {
+    assertComputedValue(request.bindings?.commands?.liveArraySha256, liveCommandSha256, 'live command digest');
+  }
   if (request.actionRegisterBaseline?.type === SUPPORTED_ACTION_REGISTER_BASELINE) {
     assertComputedValue(
       request.bindings?.commands?.recoveryArraySha256,
@@ -418,7 +429,8 @@ function materializeTemplate({ templateText, template, launchCommit }) {
 
   const historicalRequestPath =
     template.opportunityGate?.historicalOpportunityV1?.requestPath ??
-    template.actionRegisterBaseline?.priorStoppedExecution?.request?.path;
+    template.actionRegisterBaseline?.priorStoppedExecution?.request?.path ??
+    template.actionRegisterBaselineAnalysis?.sealedInputs?.priorRequest?.path;
   const historicalRequest = historicalRequestPath
     ? materializeRepoFile({
         launchCommit,
@@ -448,13 +460,16 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     requireMarker(templateText, goRequestFileSha256Marker(prefixBundle.path), prefixBundle.sha256, replacements);
   }
 
-  const liveCommandSha256 = sha256(JSON.stringify(template.commands?.live));
+  const isAnalysisOnly = template.actionRegisterBaselineAnalysis?.type === SUPPORTED_ACTION_REGISTER_ANALYSIS_ONLY;
+  const liveCommandSha256 = isAnalysisOnly ? null : sha256(JSON.stringify(template.commands?.live));
   const recoveryCommandSha256 =
     template.actionRegisterBaseline?.type === SUPPORTED_ACTION_REGISTER_BASELINE
       ? sha256(JSON.stringify(template.commands?.recovery))
       : null;
   const analyzeCommandSha256 = sha256(JSON.stringify(template.commands?.analyze));
-  requireMarker(templateText, GO_REQUEST_PACKAGE_MARKERS.liveCommandSha256, liveCommandSha256, replacements);
+  if (liveCommandSha256) {
+    requireMarker(templateText, GO_REQUEST_PACKAGE_MARKERS.liveCommandSha256, liveCommandSha256, replacements);
+  }
   if (recoveryCommandSha256) {
     requireMarker(templateText, GO_REQUEST_PACKAGE_MARKERS.recoveryCommandSha256, recoveryCommandSha256, replacements);
   }
@@ -497,6 +512,17 @@ export function resolveTutorStubGoRequestOutput(outputPath) {
 }
 
 function assertDestinationAbsent(request, root = ROOT) {
+  if (request.actionRegisterBaselineAnalysis?.type === SUPPORTED_ACTION_REGISTER_ANALYSIS_ONLY) {
+    const report = path.resolve(root, canonicalRepoPath(request.destination?.combinedReport, 'combined report'));
+    const relative = path.relative(root, report);
+    if (!relative || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+      throw new Error('combined report must remain inside the repository');
+    }
+    if (fs.existsSync(report)) {
+      throw new Error(`request destination already exists: ${request.destination.combinedReport}`);
+    }
+    return request.destination.combinedReport;
+  }
   if (request.actionRegisterBaseline?.type === SUPPORTED_ACTION_REGISTER_BASELINE) {
     const destinations = [request.destination?.batchA?.artifactRoot, request.destination?.batchB?.artifactRoot];
     if (destinations.some((value) => !value) || destinations[0] === destinations[1]) {

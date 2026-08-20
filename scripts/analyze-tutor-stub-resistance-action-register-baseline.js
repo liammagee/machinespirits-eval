@@ -58,9 +58,9 @@ function traceFilesInDirectory(directory) {
   return fs.readdirSync(directory).filter((name) => name.endsWith('.jsonl'));
 }
 
-function exactTraceDirectory(resultRow, command, label) {
+function exactTraceDirectory(resultRow, command, label, traceSourceRoot = ROOT) {
   if (!resultRow.trace || !command?.trace_dir) throw new Error(`${label} lacks its registered trace path`);
-  const tracePath = path.resolve(ROOT, resultRow.trace);
+  const tracePath = path.resolve(traceSourceRoot, resultRow.trace);
   const traceDirectory = path.resolve(command.trace_dir);
   if (path.dirname(tracePath) !== traceDirectory)
     throw new Error(`${label} trace escaped its registered job directory`);
@@ -71,7 +71,17 @@ function exactTraceDirectory(resultRow, command, label) {
   return traceDirectory;
 }
 
-function auditRecovery({ absolute, plan, initial, result, seal, planPath, initialResultPath, resultPath }) {
+function auditRecovery({
+  absolute,
+  traceSourceRoot,
+  plan,
+  initial,
+  result,
+  seal,
+  planPath,
+  initialResultPath,
+  resultPath,
+}) {
   const initialRows = Array.isArray(initial.results) ? initial.results : [];
   const initialById = new Map(initialRows.map((row) => [row.job_id, row]));
   const planIds = plan.jobs.map((job) => job.id);
@@ -135,7 +145,7 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
     const initialRow = initialById.get(job.id);
     const finalRow = finalRows.get(job.id);
     if (initialValidIds.includes(job.id)) {
-      exactTraceDirectory(initialRow, job.command, `initial valid unit ${job.id}`);
+      exactTraceDirectory(initialRow, job.command, `initial valid unit ${job.id}`, traceSourceRoot);
       if (
         finalRow?.origin !== 'initial_valid_unit' ||
         finalRow.trace !== initialRow.trace ||
@@ -162,7 +172,7 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
     if (JSON.stringify(recoveryJob) !== JSON.stringify(expectedRecoveryJob)) {
       throw new Error(`batch ${plan.repeat} recovery command drifted for ${job.id}`);
     }
-    exactTraceDirectory(recoveryRow, recoveryJob?.command, `recovered unit ${job.id}`);
+    exactTraceDirectory(recoveryRow, recoveryJob?.command, `recovered unit ${job.id}`, traceSourceRoot);
     const recoveryReservations = reservationCountInDirectory(recoveryJob.command.trace_dir);
     if (
       recoveryJob.recovery?.prior_model_attempt_reservations !== initialReservations ||
@@ -198,7 +208,16 @@ function parseArgs(argv) {
       continue;
     }
     if (
-      ['--batch-a', '--batch-b', '--registration', '--prefix-bundle', '--out', '--expected-source-commit'].includes(arg)
+      [
+        '--batch-a',
+        '--batch-b',
+        '--registration',
+        '--prefix-bundle',
+        '--out',
+        '--expected-source-commit',
+        '--expected-analysis-source-commit',
+        '--expected-trace-source-commit',
+      ].includes(arg)
     ) {
       const value = argv[index + 1];
       if (!value || value.startsWith('--')) throw new Error(`${arg} requires a value`);
@@ -211,7 +230,19 @@ function parseArgs(argv) {
   return options;
 }
 
-function exactBatch(root, expectedRepeat, expectedSourceCommit) {
+function rebasePlanRoot(value, fromRoot, toRoot) {
+  if (Array.isArray(value)) return value.map((entry) => rebasePlanRoot(entry, fromRoot, toRoot));
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, rebasePlanRoot(entry, fromRoot, toRoot)]),
+    );
+  }
+  if (typeof value !== 'string') return value;
+  if (value === fromRoot) return toRoot;
+  return value.startsWith(`${fromRoot}${path.sep}`) ? `${toRoot}${value.slice(fromRoot.length)}` : value;
+}
+
+function exactBatch(root, expectedRepeat, expectedTraceSourceCommit, expectedTraceSourceTree) {
   const absolute = path.resolve(ROOT, root);
   const planPath = path.join(absolute, 'batch-plan.json');
   const initialResultPath = path.join(absolute, 'batch-result.json');
@@ -222,11 +253,38 @@ function exactBatch(root, expectedRepeat, expectedSourceCommit) {
     if (!fs.existsSync(required)) throw new Error(`combined analysis refuses partial batch: missing ${required}`);
   }
   const plan = readJson(planPath);
-  const registeredPlan = buildTutorStubResistanceActionRegisterBatchPlan({
+  const traceSourceRoots = [...new Set(plan.jobs?.map((job) => job.command?.cwd).filter(Boolean) || [])];
+  if (traceSourceRoots.length !== 1 || !path.isAbsolute(traceSourceRoots[0])) {
+    throw new Error(`batch ${expectedRepeat} does not bind one absolute trace-source checkout`);
+  }
+  const traceSourceRoot = traceSourceRoots[0];
+  const observedTraceSourceCommit = execFileSync('git', ['rev-parse', 'HEAD'], {
+    cwd: traceSourceRoot,
+    encoding: 'utf8',
+  }).trim();
+  const observedTraceSourceTree = execFileSync('git', ['rev-parse', 'HEAD^{tree}'], {
+    cwd: traceSourceRoot,
+    encoding: 'utf8',
+  }).trim();
+  const observedTraceSourceStatus = execFileSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
+    cwd: traceSourceRoot,
+    encoding: 'utf8',
+  }).trim();
+  if (
+    observedTraceSourceCommit !== expectedTraceSourceCommit ||
+    observedTraceSourceTree !== expectedTraceSourceTree ||
+    observedTraceSourceStatus !== '' ||
+    fs.realpathSync(absolute) !== fs.realpathSync(path.resolve(traceSourceRoot, plan.destination))
+  ) {
+    throw new Error(`batch ${expectedRepeat} does not resolve to its exact trace-source checkout and tree`);
+  }
+  const currentRegisteredPlan = buildTutorStubResistanceActionRegisterBatchPlan({
     repeat: expectedRepeat,
     destination: absolute,
-    expectedSourceCommit,
   });
+  const registeredPlan = rebasePlanRoot(currentRegisteredPlan, ROOT, traceSourceRoot);
+  registeredPlan.source.commit = expectedTraceSourceCommit;
+  registeredPlan.source.tree = expectedTraceSourceTree;
   const initial = readJson(initialResultPath);
   const result = readJson(resultPath);
   const seal = readJson(sealPath);
@@ -256,7 +314,7 @@ function exactBatch(root, expectedRepeat, expectedSourceCommit) {
   if (JSON.stringify(plan) !== JSON.stringify(registeredPlan)) {
     throw new Error(`batch ${expectedRepeat} plan or command drifted from the registered live execution plan`);
   }
-  if (expectedSourceCommit && plan.source?.commit !== expectedSourceCommit) {
+  if (plan.source?.commit !== expectedTraceSourceCommit || plan.source?.tree !== expectedTraceSourceTree) {
     throw new Error(`batch ${expectedRepeat} source commit does not match the GO request`);
   }
   const planJobs = new Map(plan.jobs.map((job) => [job.id, job]));
@@ -269,6 +327,7 @@ function exactBatch(root, expectedRepeat, expectedSourceCommit) {
   if (resultPath === finalResultPath) {
     ({ recoveredIds, reservationsByJob, finalTraceBudgetsByJob } = auditRecovery({
       absolute,
+      traceSourceRoot,
       plan,
       initial,
       result,
@@ -288,6 +347,7 @@ function exactBatch(root, expectedRepeat, expectedSourceCommit) {
             result.results.find((row) => row.job_id === job.id),
             job.command,
             `unit ${job.id}`,
+            traceSourceRoot,
           ),
         ),
       ]),
@@ -297,7 +357,17 @@ function exactBatch(root, expectedRepeat, expectedSourceCommit) {
   if ([...reservationsByJob.values()].some((count) => count > 39)) {
     throw new Error(`batch ${expectedRepeat} contains a dialogue above its 39-reservation ceiling`);
   }
-  return { absolute, plan, result, seal, planJobs, recoveredIds, reservationsByJob, finalTraceBudgetsByJob };
+  return {
+    absolute,
+    traceSourceRoot,
+    plan,
+    result,
+    seal,
+    planJobs,
+    recoveredIds,
+    reservationsByJob,
+    finalTraceBudgetsByJob,
+  };
 }
 
 function metric(model, field) {
@@ -406,7 +476,7 @@ function analyzeTrace({ batch, resultRow, loaded }) {
   if (JSON.stringify(registeredJobWithoutCommand) !== JSON.stringify(registeredJob)) {
     throw new Error(`batch plan job ${job.id} drifted from the frozen registration and prefix bundle`);
   }
-  const tracePath = path.resolve(ROOT, resultRow.trace);
+  const tracePath = path.resolve(batch.traceSourceRoot, resultRow.trace);
   const source = fs.readFileSync(tracePath);
   if (sha256(source) !== resultRow.trace_sha256) throw new Error(`trace digest drift for ${job.id}`);
   const events = readTrace(tracePath);
@@ -576,26 +646,35 @@ export function analyzeTutorStubResistanceActionRegisterBaseline({
   registrationPath = REGISTRATION,
   prefixBundlePath = PREFIX_BUNDLE,
   expectedSourceCommit,
+  expectedAnalysisSourceCommit = expectedSourceCommit,
+  expectedTraceSourceCommit = expectedSourceCommit,
 } = {}) {
   if (!batchA || !batchB || path.resolve(ROOT, batchA) === path.resolve(ROOT, batchB)) {
     throw new Error('combined analysis requires two distinct prebound batch destinations');
   }
   const currentSourceCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
-  const currentSourceTree = execFileSync('git', ['rev-parse', 'HEAD^{tree}'], { cwd: ROOT, encoding: 'utf8' }).trim();
-  if (!expectedSourceCommit || currentSourceCommit !== expectedSourceCommit) {
+  if (!expectedAnalysisSourceCommit || currentSourceCommit !== expectedAnalysisSourceCommit) {
     throw new Error('combined analysis source checkout does not match the expected GO-request commit');
   }
+  if (!expectedTraceSourceCommit) throw new Error('combined analysis requires an exact trace-source commit');
+  const expectedTraceSourceTree = execFileSync('git', ['rev-parse', `${expectedTraceSourceCommit}^{tree}`], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  }).trim();
   const loaded = loadTutorStubResistanceActionRegisterPrefixBundle({
     registrationPath: path.resolve(ROOT, registrationPath),
     bundlePath: path.resolve(ROOT, prefixBundlePath),
   });
   const expectedRegistrationPath = path.relative(ROOT, loaded.registration.path);
   const expectedPrefixBundlePath = path.relative(ROOT, loaded.path);
-  const batches = [exactBatch(batchA, 'A', expectedSourceCommit), exactBatch(batchB, 'B', expectedSourceCommit)];
+  const batches = [
+    exactBatch(batchA, 'A', expectedTraceSourceCommit, expectedTraceSourceTree),
+    exactBatch(batchB, 'B', expectedTraceSourceCommit, expectedTraceSourceTree),
+  ];
   if (
     batches[0].plan.source.commit !== batches[1].plan.source.commit ||
     batches[0].plan.source.tree !== batches[1].plan.source.tree ||
-    batches[0].plan.source.tree !== currentSourceTree ||
+    batches[0].plan.source.tree !== expectedTraceSourceTree ||
     batches.some(
       (batch) =>
         batch.plan.source.registration_path !== expectedRegistrationPath ||
@@ -716,19 +795,23 @@ export function analyzeTutorStubResistanceActionRegisterBaseline({
 }
 
 function usage() {
-  return 'Usage: node scripts/analyze-tutor-stub-resistance-action-register-baseline.js --batch-a <root> --batch-b <root> --expected-source-commit <sha> [--out <fresh.json>] [--json]';
+  return 'Usage: node scripts/analyze-tutor-stub-resistance-action-register-baseline.js --batch-a <root> --batch-b <root> (--expected-source-commit <sha> | --expected-analysis-source-commit <sha> --expected-trace-source-commit <sha>) [--out <fresh.json>] [--json]';
 }
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) return void console.log(usage());
-  if (!args['batch-a'] || !args['batch-b'] || !args['expected-source-commit']) throw new Error(usage());
+  const legacySource = args['expected-source-commit'];
+  const analysisSource = args['expected-analysis-source-commit'] || legacySource;
+  const traceSource = args['expected-trace-source-commit'] || legacySource;
+  if (!args['batch-a'] || !args['batch-b'] || !analysisSource || !traceSource) throw new Error(usage());
   const report = analyzeTutorStubResistanceActionRegisterBaseline({
     batchA: args['batch-a'],
     batchB: args['batch-b'],
     registrationPath: args.registration,
     prefixBundlePath: args['prefix-bundle'],
-    expectedSourceCommit: args['expected-source-commit'],
+    expectedAnalysisSourceCommit: analysisSource,
+    expectedTraceSourceCommit: traceSource,
   });
   if (args.out) fs.writeFileSync(path.resolve(ROOT, args.out), `${JSON.stringify(report, null, 2)}\n`, { flag: 'wx' });
   if (args.json || !args.out) console.log(JSON.stringify(report, null, 2));
