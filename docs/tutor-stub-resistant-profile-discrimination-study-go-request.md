@@ -72,3 +72,32 @@ modification of the existing `low_agency` and `overconfident` evidence.
 
 Until that exact approval is received and recorded, do not execute the live
 command. This document itself is not approval.
+
+## Deterministic request packaging
+
+Keep human and scientific choices literal in an authored HOLD template and use
+the packaging markers exposed by the script for mechanical commit, tree, file,
+route, endpoint, and command digests. Materialize a new request with one
+zero-model-call command; all inputs are mandatory, the launch commit must be a
+full OID, and the output must not already exist.
+
+```bash
+node scripts/package-tutor-stub-resistant-profile-study-go-request.js \
+  --template /path/to/authored-hold-template.json \
+  --launch-commit a12e20337def73dbb06a27f2a1d12028b064b31c \
+  --out config/new-resistant-profile-study-go-request.json \
+  --json
+```
+
+The command fills only the marked mechanical fields, checks the protected
+working-tree bytes against the launch Git blobs, proves the study destination
+is absent, and runs the existing focused validator against the generated
+request in an isolated tree with no `node_modules`. It opens the request with
+create-once semantics and emits the request digest and validation summary on
+stdout; it does not create a second proof artifact.
+
+This protected-file proof is deliberately narrower than a whole-checkout
+cleanliness claim. A future live launch still requires `HEAD` to equal the
+pinned launch commit in a clean, detached worktree. The stdout summary contains
+the validator's exact approval sentence for a human to supply separately;
+neither the command nor the request records approval or authorizes a model call.
