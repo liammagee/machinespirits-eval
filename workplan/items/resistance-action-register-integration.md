@@ -1094,3 +1094,28 @@ and explicit human approval.
   execution-start boundary. A fresh source-pinned analysis-only request must
   bind the corrected analyzer and these exact sealed inputs before analysis is
   attempted again.
+- 2026-08-20 — The analyzer provenance compatibility repair merged through PR
+  #732 at `662827fbe57176b71cd238193a4154074a263238`. The GO validator and
+  deterministic packager now support a distinct sealed analysis-only HOLD
+  request: it must bind consumed request `a2bf1d15…`, the original trace-source
+  commit `58aa9616…`, both batch plans/results/seals, both local and required
+  private archive inventories, all 12 exact trace hashes, `76/76/0/0` attempt
+  accounting, zero technical recovery runs, and the unchanged `185/1200`
+  programme ledger. The request contains no live or recovery command, grants a
+  hard ceiling of zero new model attempts, permits exactly one corrected
+  analyzer invocation, forbids input mutation, rerun, pooling, and outcome
+  selection, and requires a fresh create-once combined-report path. Because the
+  sealed ignored roots live in the original exact-source worktree, the request
+  also requires a same-relative-path, read-only symlink view in the corrected
+  detached analysis worktree; the source roots remain immutable and both
+  observed manifests must be reverified before analysis. The
+  calibration-only estimand and no-efficacy claim boundary remain unchanged.
+  The analyzer now accepts separate exact pins for its corrected analysis
+  checkout and the immutable trace-source checkout: the former must equal the
+  current detached HEAD, while both sealed plans and their originating clean
+  worktree must equal the historical trace commit/tree. Legacy requests retain
+  their single-source argument unchanged. A composed zero-call regression
+  proves the dual-source read-only view and rejects either source pin drifting.
+  This compatibility step creates no analysis request, report, model call, or
+  interpretation; the next artifact must pin its own merged source and pass an
+  isolated dependency-free zero-call replay before the sealed analyzer can run.

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -1335,6 +1336,75 @@ test('v2 combined analyzer refuses partial assembly and completes all 12 exact c
   );
   assert.equal(report.summary.stable_repeat_pairs, 6);
   assert.match(report.claim_boundary, /does not establish matched-versus-mismatched action efficacy/u);
+});
+
+test('v2 combined analyzer separates corrected analysis source from immutable trace source', (t) => {
+  const traceSourceRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'action-register-trace-source-'));
+  const relativeStem = `.tutor-stub-auto-eval/action-register-dual-source-${process.pid}`;
+  const viewA = path.join(ROOT, `${relativeStem}-a`);
+  const viewB = path.join(ROOT, `${relativeStem}-b`);
+  t.after(() => {
+    fs.rmSync(viewA, { recursive: true, force: true });
+    fs.rmSync(viewB, { recursive: true, force: true });
+    fs.rmSync(traceSourceRoot, { recursive: true, force: true });
+  });
+  execFileSync('git', ['clone', '--quiet', '--shared', '--no-checkout', ROOT, traceSourceRoot], {
+    env: { ...process.env, GIT_LFS_SKIP_SMUDGE: '1' },
+  });
+  const analysisSourceCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const traceSourceCommit = execFileSync('git', ['rev-parse', 'HEAD^'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const traceSourceTree = execFileSync('git', ['rev-parse', `${traceSourceCommit}^{tree}`], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  }).trim();
+  execFileSync('git', ['checkout', '--quiet', '--detach', traceSourceCommit], {
+    cwd: traceSourceRoot,
+    env: { ...process.env, GIT_LFS_SKIP_SMUDGE: '1' },
+  });
+  const relocatePlan = (plan) => {
+    const relocated = JSON.parse(JSON.stringify(plan).replaceAll(ROOT, traceSourceRoot));
+    relocated.source.commit = traceSourceCommit;
+    relocated.source.tree = traceSourceTree;
+    return relocated;
+  };
+  const planA = relocatePlan(buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'A', destination: viewA }));
+  const planB = relocatePlan(buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'B', destination: viewB }));
+  const sourceA = path.join(traceSourceRoot, `${relativeStem}-a`);
+  const sourceB = path.join(traceSourceRoot, `${relativeStem}-b`);
+  writeSyntheticBatch(sourceA, planA);
+  writeSyntheticBatch(sourceB, planB);
+  fs.mkdirSync(path.dirname(viewA), { recursive: true });
+  fs.symlinkSync(sourceA, viewA, 'dir');
+  fs.symlinkSync(sourceB, viewB, 'dir');
+
+  const report = analyzeTutorStubResistanceActionRegisterBaseline({
+    batchA: viewA,
+    batchB: viewB,
+    expectedAnalysisSourceCommit: analysisSourceCommit,
+    expectedTraceSourceCommit: traceSourceCommit,
+  });
+  assert.equal(report.status, 'complete_registered_baseline');
+  assert.equal(report.assembly.dialogues, 12);
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: viewA,
+        batchB: viewB,
+        expectedAnalysisSourceCommit: traceSourceCommit,
+        expectedTraceSourceCommit: traceSourceCommit,
+      }),
+    /analysis source checkout does not match/u,
+  );
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: viewA,
+        batchB: viewB,
+        expectedAnalysisSourceCommit: analysisSourceCommit,
+        expectedTraceSourceCommit: analysisSourceCommit,
+      }),
+    /exact trace-source checkout and tree|source commit does not match/u,
+  );
 });
 
 test('v2 combined analyzer reads treatment fidelity and fails its interpretability gate without rerunning', (t) => {

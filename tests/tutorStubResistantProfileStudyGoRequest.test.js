@@ -232,6 +232,7 @@ function protectedPackagerRepoPaths(request) {
     request.bindings.routeCanary.authorizationConsumptionPath,
     request.opportunityGate?.historicalOpportunityV1?.requestPath,
     request.actionRegisterBaseline?.priorStoppedExecution?.request?.path,
+    request.actionRegisterBaselineAnalysis?.sealedInputs?.priorRequest?.path,
   ].filter(Boolean);
 }
 
@@ -1316,6 +1317,254 @@ test('future V2 action/register HOLD requests bind both live batches and one com
   }
 });
 
+test('sealed action/register analysis-only request binds completed batches and authorizes no model call', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'action-register-analysis-only-'));
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const digest = (filePath) => crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+  const commandDigest = (command) => crypto.createHash('sha256').update(JSON.stringify(command)).digest('hex');
+  const launchCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const launchTree = execFileSync('git', ['rev-parse', 'HEAD^{tree}'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const registrationPath = 'config/tutor-stub-resistance-action-register-crossed-registration.v2.json';
+  const prefixBundlePath = 'config/tutor-stub-resistance-action-register-v4-public-prefixes.v1.json';
+  const endpointPath = 'config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.v2.json';
+  const certificatePath =
+    'config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.v2.endpoint-go.json';
+  const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, certificatePath), 'utf8'));
+  const route = JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'config/tutor-stub-frame-refuser-opportunity-study-go-request.v4.json'), 'utf8'),
+  ).bindings.routeCanary;
+  const combinedReport = `.tutor-stub-auto-eval/action-register-analysis-only-${process.pid}.json`;
+  const sealedInputs = {
+    priorRequest: {
+      path: 'config/tutor-stub-resistance-action-register-baseline-study-go-request.v4.json',
+      sha256: 'a2bf1d15de24f358518569ac5af7a3ddcfa78150aa4d89a7c038490f912f8806',
+    },
+    traceSourceCommit: '58aa961600368fa98387942572c187a1896aae3f',
+    traceSourceTree: 'de5e05836b867bac5fa9071d845aefbb6d21abd0',
+    batchA: {
+      artifactRoot: '.tutor-stub-auto-eval/resistance-action-register-baseline-v2-second-successor-live-2026-08-20-a',
+      artifactRootManifestSha256: '54565be283273d852bf36004f55ff276dd11fb6be785300b2c6e5631172d2add',
+      privateArchiveManifestSha256: 'e60cb5cbccf5b49d45c80f9266194403190b7c5c0737ea3bcd4a4fb6c24b4950',
+      batchPlanSha256: '604a9567916f716df7812bff08d9a509ce2f93b298c3045792dec5f159899112',
+      batchResultSha256: 'c0d07d64e5d6d3604fbdb53c6abcf05508f75214eb7f8053cb5c4ff0adefff73',
+      batchSealSha256: '04dca756801c3f7df8994b3190957f2bb3e3b23ea375a06bd2c6c5693e98196a',
+      reservations: 36,
+      completed: 36,
+      providerErrors: 0,
+      aborted: 0,
+      traces: [
+        ['frame_refuser-v4-r1-t1__matched_plain_A', '481101593b977ba1a25bc8d1dbb120ccfb09a0d609c2d6d271cdd1fe0a7d6c74'],
+        ['frame_refuser-v4-r1-t1__matched_warm_A', 'b876fab7d707784168540eaba74c50b529062277cb76cabca97c65bdec9046f7'],
+        ['frame_refuser-v4-r2-t1__matched_plain_A', 'd1e756962a794a6110c0589b4d7eadabf0f65e135b5757cfd963e9919e744581'],
+        ['frame_refuser-v4-r2-t1__matched_warm_A', '15223bf2fd74c8cdd4082a812005cbb08f51806ae242787efa3d2fee261c43ef'],
+        ['frame_refuser-v4-r3-t1__matched_plain_A', '883330168aea699d1e8a2ca7d56a139fec59f4353691921ec5c5531bb7daf9ac'],
+        ['frame_refuser-v4-r3-t1__matched_warm_A', '49b172e0724948c17aa02b24c26610fe75f086fa65d4f2d028dd0ce7c63b4c47'],
+      ].map(([jobId, sha256]) => ({ jobId, sha256 })),
+    },
+    batchB: {
+      artifactRoot: '.tutor-stub-auto-eval/resistance-action-register-baseline-v2-second-successor-live-2026-08-20-b',
+      artifactRootManifestSha256: '71e1ca7267f6b3ff561357bb48b4cac172c84b2f37d8d86dc4f63db5d0437c33',
+      privateArchiveManifestSha256: 'e673f376f405d5692e7b26e998c233a481e00817dbd4bac6a5a6512d80d2f9d1',
+      batchPlanSha256: '39ff10a256eac09e527ec961eb5cf9c42523d25a6cf4d32a1606241f020ff29d',
+      batchResultSha256: 'cfca0047b91d9d17c30e2702e70423debafe868d03a5053863fad30de72f8244',
+      batchSealSha256: '6c1d3e90b4d60a7e4a1a88a3c3b3fc303d825d53b1f8c2f737b0436fb317698f',
+      reservations: 40,
+      completed: 40,
+      providerErrors: 0,
+      aborted: 0,
+      traces: [
+        ['frame_refuser-v4-r1-t1__matched_plain_B', 'd6ae48dca1bd9a24fec4901ec9b512b329937d5ecbe4537f4452a2c0cfc986f8'],
+        ['frame_refuser-v4-r1-t1__matched_warm_B', '0f1242ef4327f34fc881b31ef2db95a326455ea7807e1dfcee123ddafec1cb09'],
+        ['frame_refuser-v4-r2-t1__matched_plain_B', 'c196b46055bed2c0a36753f415349ab621e3f55bfc94870fd8bd7fb8f0555fad'],
+        ['frame_refuser-v4-r2-t1__matched_warm_B', '0376f7e52ecfa60a6d457399291dffb3ac82ae3812221b5ca6ea99f9aa96dff1'],
+        ['frame_refuser-v4-r3-t1__matched_plain_B', '1f34e17fb14e94e2365b515796c19fe5263a254b7a34c67b96e5ec1de32596a6'],
+        ['frame_refuser-v4-r3-t1__matched_warm_B', '99a1e5f749dd84f30542d3ee1b9cc07d472ad7df0bc73ebf019fd3f9d568d379'],
+      ].map(([jobId, sha256]) => ({ jobId, sha256 })),
+    },
+    combinedArtifactManifestSha256: 'a9157ce7aff357a8c6c704327b5806c3a7dcf55ebdf54b623a775846c641822b',
+    combinedPrivateArchiveManifestSha256: '88a65c82da36c36b68e94ee0114b7fc5b429eee523212b43384f724a04817c17',
+    reservations: 76,
+    completed: 76,
+    providerErrors: 0,
+    aborted: 0,
+    technicalRecoveryRuns: 0,
+    programmeLedgerBefore: 185,
+    programmeLedgerAfterMaximum: 185,
+    programmeCeiling: 1200,
+  };
+  const analyze = [
+    'node',
+    'scripts/analyze-tutor-stub-resistance-action-register-baseline.js',
+    '--batch-a',
+    sealedInputs.batchA.artifactRoot,
+    '--batch-b',
+    sealedInputs.batchB.artifactRoot,
+    '--registration',
+    registrationPath,
+    '--prefix-bundle',
+    prefixBundlePath,
+    '--expected-analysis-source-commit',
+    launchCommit,
+    '--expected-trace-source-commit',
+    sealedInputs.traceSourceCommit,
+    '--out',
+    combinedReport,
+    '--json',
+  ];
+  const request = {
+    schema: 'machinespirits.tutor-stub.resistant-profile-discrimination-study-go-request.v1',
+    status: 'HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL',
+    studyId: 'tutor-stub-resistance-action-register-frame-refuser-baseline-v2',
+    authorization: {
+      explicitHumanApproval: null,
+      modelCallsAuthorized: false,
+      liveRunAuthorized: false,
+      standingAuthorizationAttachmentSha256: '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b',
+    },
+    source: {
+      launchCommit,
+      launchTree,
+      requirements: { headMustEqualLaunchCommit: true, checkoutMustBeClean: true, detachedLaunchWorktree: true },
+      closure: RESISTANCE_ACTION_REGISTER_BASELINE_V2_CRITICAL_SOURCE_CLOSURE.map((entry) => ({
+        path: entry,
+        sha256: digest(path.join(ROOT, entry)),
+      })),
+    },
+    actionRegisterBaselineAnalysis: {
+      type: 'sealed_frame_refuser_action_register_baseline_analysis_only_v1',
+      sealedInputs,
+      priorAnalyzerInvocation: {
+        invokedOnce: true,
+        exitCode: 1,
+        reportProduced: false,
+        failureClass: 'deterministic_provenance_compatibility_defect',
+      },
+      modelUnitRerunsPermitted: false,
+      liveCommandsPermitted: false,
+      recoveryCommandsPermitted: false,
+      analyzerInvocationsPermitted: 1,
+      inputMutationPermitted: false,
+      poolingPermitted: false,
+      outcomeSelectionPermitted: false,
+      inputView: {
+        mode: 'read_only_symlink_view',
+        relativeBatchRootsPreserved: true,
+        sourceBatchRootsRemainImmutable: true,
+        requireObservedManifestHashesBeforeAnalysis: true,
+        modelCallsPermitted: false,
+        evidenceMutationPermitted: false,
+      },
+    },
+    design: { dialogues: 12, analysisOnly: true, modelCalls: 0, validUnitReruns: false, outcomeSelection: false },
+    budget: {
+      maximumPlannedModelAttempts: 0,
+      programmeLedgerBefore: 185,
+      programmeLedgerAfterMaximum: 185,
+      programmeCeiling: 1200,
+      retryOrResumeAuthority: 'none',
+    },
+    measurement: {
+      reportSchema: 'machinespirits.tutor-stub.resistance-action-register-baseline-report.v2',
+      primaryOutcome: 'profile_specific_resistance_recovery_by_two_post_trigger_learner_turns',
+      repeatEndpoint: 'same_treatment_repeat_stability',
+      combinedTwelveCellAnalysisRequired: true,
+      analysisTraceSelection: 'exact_prebound_batch_result_traces_only',
+      partialBatchAnalysisPermitted: false,
+      v4OutcomesExcluded: true,
+      claimBoundary: 'calibration_only_no_tutor_or_register_efficacy_claim',
+    },
+    bindings: {
+      registration: { path: registrationPath, sha256: digest(path.join(ROOT, registrationPath)) },
+      prefixBundle: { path: prefixBundlePath, sha256: digest(path.join(ROOT, prefixBundlePath)) },
+      endpoint: {
+        contractPath: endpointPath,
+        contractFileSha256: digest(path.join(ROOT, endpointPath)),
+        contractCanonicalSha256: certificate.contract_sha256,
+        certificatePath,
+        certificateFileSha256: digest(path.join(ROOT, certificatePath)),
+        preflightSha256: certificate.preflight_sha256,
+      },
+      routeCanary: route,
+      commands: { source: 'commands', analyzeArraySha256: commandDigest(analyze) },
+    },
+    commands: { analyze },
+    payload: { humanSubjectData: false, privateArchiveData: false, trainingReuseStatus: 'not_applicable' },
+    destination: { combinedReport, combinedReportCreateOnce: true, mustNotExistBeforeAnalysis: true },
+  };
+  const requestPath = path.join(temporary, 'analysis-only-request.json');
+  fs.writeFileSync(requestPath, `${JSON.stringify(request, null, 2)}\n`);
+  const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath });
+  assert.equal(report.packetValid, true);
+  assert.equal(report.modelCalls, 0);
+  assert.equal(report.productionWrites, 0);
+  assert.equal(report.budget.maximumPlannedModelAttempts, 0);
+
+  const templatePath = path.join(temporary, 'analysis-only-template.json');
+  fs.writeFileSync(templatePath, actionRegisterBaselineTemplateText(request));
+  const protectedRoot = createProtectedPackagerCheckout(t, request, 'action-register-analysis-only');
+  const output = `config/.test-action-register-analysis-only-${process.pid}.json`;
+  const packaged = spawnSync(
+    process.execPath,
+    [GO_REQUEST_PACKAGE_SCRIPT, '--template', templatePath, '--launch-commit', launchCommit, '--out', output, '--json'],
+    {
+      cwd: protectedRoot,
+      encoding: 'utf8',
+      env: { ...process.env, GIT_NO_LAZY_FETCH: '1', NODE_PATH: '', OPENROUTER_API_KEY: 'must-not-be-used' },
+    },
+  );
+  assert.equal(packaged.status, 0, packaged.stderr);
+  const packageReport = JSON.parse(packaged.stdout);
+  assert.equal(packageReport.sourceClosureFiles, 31);
+  assert.equal(packageReport.repositoryBindingFiles, 7);
+  assert.equal(packageReport.isolatedReplay.packetValid, true);
+  assert.equal(packageReport.effects.modelCalls, 0);
+  assert.deepEqual(fs.readFileSync(path.join(protectedRoot, output)), fs.readFileSync(requestPath));
+
+  for (const invalid of [
+    {
+      name: 'changed-sealed-trace',
+      mutate(value) {
+        value.actionRegisterBaselineAnalysis.sealedInputs.batchB.traces[5].sha256 = '0'.repeat(64);
+      },
+      pattern: /action-register-analysis-only-sealed-input-binding/u,
+    },
+    {
+      name: 'live-command-added',
+      mutate(value) {
+        value.commands.live = ['node', 'scripts/run-tutor-stub-resistance-action-register-crossed.js'];
+      },
+      pattern: /analysis-only-no-live-command/u,
+    },
+    {
+      name: 'model-budget-added',
+      mutate(value) {
+        value.budget.maximumPlannedModelAttempts = 1;
+      },
+      pattern: /action-register-analysis-only-budget-binding/u,
+    },
+    {
+      name: 'trace-source-drift',
+      mutate(value) {
+        value.actionRegisterBaselineAnalysis.sealedInputs.traceSourceCommit = launchCommit;
+      },
+      pattern: /action-register-analysis-only-sealed-input-binding/u,
+    },
+    {
+      name: 'mutable-input-view',
+      mutate(value) {
+        value.actionRegisterBaselineAnalysis.inputView.evidenceMutationPermitted = true;
+      },
+      pattern: /action-register-analysis-only-boundary/u,
+    },
+  ]) {
+    const mutated = structuredClone(request);
+    invalid.mutate(mutated);
+    const invalidPath = path.join(temporary, `${invalid.name}.json`);
+    fs.writeFileSync(invalidPath, `${JSON.stringify(mutated, null, 2)}\n`);
+    assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }), invalid.pattern);
+  }
+});
+
 function replaceJsonFieldWithMarker(source, key, value, marker) {
   const expected = `${JSON.stringify(key)}: ${JSON.stringify(value)}`;
   const count = source.split(expected).length - 1;
@@ -1351,12 +1600,14 @@ function actionRegisterBaselineTemplateText(request) {
     source = replaceJsonFieldWithMarker(source, 'sha256', binding.sha256, goRequestFileSha256Marker(binding.path));
   }
   const priorStoppedRequest = request.actionRegisterBaseline?.priorStoppedExecution?.request;
-  if (priorStoppedRequest) {
+  const priorAnalysisRequest = request.actionRegisterBaselineAnalysis?.sealedInputs?.priorRequest;
+  const priorRequest = priorStoppedRequest ?? priorAnalysisRequest;
+  if (priorRequest) {
     source = replaceJsonFieldWithMarker(
       source,
       'sha256',
-      priorStoppedRequest.sha256,
-      goRequestFileSha256Marker(priorStoppedRequest.path),
+      priorRequest.sha256,
+      goRequestFileSha256Marker(priorRequest.path),
     );
   }
   source = replaceJsonFieldWithMarker(
@@ -1406,18 +1657,22 @@ function actionRegisterBaselineTemplateText(request) {
   ]) {
     source = replaceJsonFieldWithMarker(source, key, request.bindings.routeCanary[key], marker);
   }
-  source = replaceJsonFieldWithMarker(
-    source,
-    'liveArraySha256',
-    request.bindings.commands.liveArraySha256,
-    GO_REQUEST_PACKAGE_MARKERS.liveCommandSha256,
-  );
-  source = replaceJsonFieldWithMarker(
-    source,
-    'recoveryArraySha256',
-    request.bindings.commands.recoveryArraySha256,
-    GO_REQUEST_PACKAGE_MARKERS.recoveryCommandSha256,
-  );
+  if (request.bindings.commands.liveArraySha256) {
+    source = replaceJsonFieldWithMarker(
+      source,
+      'liveArraySha256',
+      request.bindings.commands.liveArraySha256,
+      GO_REQUEST_PACKAGE_MARKERS.liveCommandSha256,
+    );
+  }
+  if (request.bindings.commands.recoveryArraySha256) {
+    source = replaceJsonFieldWithMarker(
+      source,
+      'recoveryArraySha256',
+      request.bindings.commands.recoveryArraySha256,
+      GO_REQUEST_PACKAGE_MARKERS.recoveryCommandSha256,
+    );
+  }
   return replaceJsonFieldWithMarker(
     source,
     'analyzeArraySha256',
