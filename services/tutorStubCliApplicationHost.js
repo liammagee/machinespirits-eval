@@ -2334,7 +2334,6 @@ export async function runTutorStubCliApplicationHost({
         throw new Error('resistance action/register first message must exactly equal the registered frozen trigger');
       }
     }
-
     const resistanceActionRegisterConfirmationArgs = [
       args['resistance-action-register-confirmation-registration'],
       args['resistance-action-register-confirmation-job'],
@@ -2376,6 +2375,7 @@ export async function runTutorStubCliApplicationHost({
         state,
         root: ROOT,
         autoLearnerEnabled,
+        autoLearnerProfileId: automatedLearnerProfileId(args['auto-learner-profile']),
         autoTurns,
         appendTraceEvent,
         observationSemantics: process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS,
