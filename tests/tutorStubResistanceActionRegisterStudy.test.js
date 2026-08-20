@@ -82,7 +82,7 @@ function writeJson(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
-function syntheticLiveTrace({ job, plan, bundleSha256 }) {
+function syntheticLiveTrace({ job, plan, bundleSha256, fidelity = {}, modelCallBudget = 39 }) {
   const prefix = JSON.parse(fs.readFileSync(PREFIX_BUNDLE_V2_PATH, 'utf8')).prefixes.find(
     (candidate) => candidate.id === job.prefix_id,
   );
@@ -104,8 +104,76 @@ function syntheticLiveTrace({ job, plan, bundleSha256 }) {
       agency: 'attempting',
     },
   };
+  const route = {
+    ref: 'codex.gpt-5.6-luna',
+    provider: 'codex',
+    model: 'gpt-5.6-luna',
+    cli: true,
+  };
+  const observedCalls = [
+    ['tutor_stub_tutor', 1],
+    ['tutor_stub_auto_learner', 2],
+    ['tutor_stub_learner_analysis', 2],
+    ['tutor_stub_tutor', 2],
+    ['tutor_stub_auto_learner', 3],
+    ['tutor_stub_learner_analysis', 3],
+  ].flatMap(([role, turn]) => [
+    { type: 'model_call_budget_reserved', role, turn },
+    { type: 'model_call', role, turn, provider: 'codex', model: 'gpt-5.6-luna' },
+  ]);
   return [
-    { type: 'run_start', metadata: { provenance: { git: { commit: plan.source.commit } } } },
+    {
+      type: 'run_start',
+      metadata: {
+        provenance: { git: { sha: plan.source.commit, dirty: false } },
+        lab: { admission: { modelCallBudget } },
+        sessionRecipe: {
+          schema: 'machinespirits.tutor-stub.session-recipe.v1',
+          config: {
+            identity: {
+              models: {
+                classifier: route,
+                learner: route,
+                reasoning: route,
+                tutor: route,
+              },
+            },
+            options: {
+              'cli-effort': 'low',
+              'run-seed': '20260820',
+              'auto-turns': '3',
+              'model-call-budget': String(modelCallBudget),
+              'dag-mode': 'strict_dag',
+              'register-policy': 'field',
+              'register-palette': 'plain,warm',
+              'eval-repeat': job.treatment.repeat === 'A' ? '1' : '2',
+              'eval-job-id': job.id,
+              'resistance-action-register-job': job.id,
+              'resistance-action-register-registration':
+                'config/tutor-stub-resistance-action-register-crossed-registration.v2.json',
+              'resistance-action-register-prefix-bundle':
+                'config/tutor-stub-resistance-action-register-v4-public-prefixes.v1.json',
+              'no-opening': true,
+              'no-auto-stop-on-grounded': true,
+            },
+            world: { id: 'world_005_marrick' },
+            experiment: {
+              runSeed: 20260820,
+              profile: 'frame_refuser',
+              policy: 'field',
+              repeat: job.treatment.repeat === 'A' ? 1 : 2,
+              jobId: job.id,
+            },
+            autoLearner: {
+              observationSemantics: 'prospective_v4',
+              maxTurns: 3,
+              profileId: 'frame_refuser',
+              modelRef: 'codex.gpt-5.6-luna',
+            },
+          },
+        },
+      },
+    },
     {
       type: 'resistance_action_register_execution_start',
       jobId: job.id,
@@ -115,11 +183,11 @@ function syntheticLiveTrace({ job, plan, bundleSha256 }) {
       prefixBundleSha256: bundleSha256,
       registrationSha256: plan.source.registration_sha256,
     },
-    { type: 'model_call_budget_reserved', role: 'tutor', turn: 1 },
     {
       type: 'resistance_action_register_intervention_applied',
       turn: 1,
       intervention: {
+        status: 'applied',
         assignment: {
           action_fit: 'matched',
           pedagogical_move: 'test_bounded_distinction',
@@ -131,6 +199,7 @@ function syntheticLiveTrace({ job, plan, bundleSha256 }) {
         safety_override: { applied: false },
       },
     },
+    ...observedCalls,
     {
       type: 'turn_complete',
       turn: 1,
@@ -138,6 +207,22 @@ function syntheticLiveTrace({ job, plan, bundleSha256 }) {
         learner: prefix.trigger_learner_text,
         classification: triggerClassification,
         tutorLearnerDagModel: { metrics: { missingPremiseCount: 6, groundedCount: 4 } },
+        ...(fidelity.omitResponseAudit
+          ? {}
+          : {
+              responseConfigurationAudit: {
+                axes: {
+                  action_family: {
+                    selected: job.treatment.host_action_family,
+                    visible: fidelity.actionVisible ?? true,
+                  },
+                  engagement_stance: {
+                    selected: job.treatment.register,
+                    visible: fidelity.registerVisible ?? true,
+                  },
+                },
+              },
+            }),
       },
     },
     {
@@ -159,12 +244,17 @@ function syntheticLiveTrace({ job, plan, bundleSha256 }) {
   ];
 }
 
-function writeSyntheticBatch(root, plan) {
+function writeSyntheticBatch(root, plan, { fidelityByJob = {} } = {}) {
   fs.mkdirSync(root, { recursive: true });
   const results = plan.jobs.map((job) => {
     fs.mkdirSync(job.command.trace_dir, { recursive: true });
     const tracePath = path.join(job.command.trace_dir, 'trace.jsonl');
-    const trace = syntheticLiveTrace({ job, plan, bundleSha256: plan.source.prefix_bundle_sha256 });
+    const trace = syntheticLiveTrace({
+      job,
+      plan,
+      bundleSha256: plan.source.prefix_bundle_sha256,
+      fidelity: fidelityByJob[job.id],
+    });
     fs.writeFileSync(tracePath, `${trace.map((event) => JSON.stringify(event)).join('\n')}\n`);
     return {
       job_id: job.id,
@@ -199,6 +289,25 @@ function writeSyntheticBatch(root, plan) {
     valid_unit_reruns: false,
     outcome_selection: false,
   });
+}
+
+function mutateSyntheticBatchTrace(root, jobId, mutateEvents) {
+  const resultPath = path.join(root, 'batch-result.json');
+  const sealPath = path.join(root, 'batch-seal.json');
+  const result = JSON.parse(fs.readFileSync(resultPath, 'utf8'));
+  const row = result.results.find((candidate) => candidate.job_id === jobId);
+  const events = fs
+    .readFileSync(row.trace, 'utf8')
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+  const mutated = mutateEvents(events);
+  fs.writeFileSync(row.trace, `${mutated.map((event) => JSON.stringify(event)).join('\n')}\n`);
+  row.trace_sha256 = fileSha256(row.trace);
+  writeJson(resultPath, result);
+  const seal = JSON.parse(fs.readFileSync(sealPath, 'utf8'));
+  seal.result_sha256 = fileSha256(resultPath);
+  writeJson(sealPath, seal);
 }
 
 function writeSyntheticRecoveredBatch(root, plan, recoveredJobId) {
@@ -246,6 +355,7 @@ function writeSyntheticRecoveredBatch(root, plan, recoveredJobId) {
     job: originalJob,
     plan,
     bundleSha256: plan.source.prefix_bundle_sha256,
+    modelCallBudget: 38,
   });
   fs.writeFileSync(recoveredTracePath, `${recoveredTrace.map((event) => JSON.stringify(event)).join('\n')}\n`);
   const recoveryJob = {
@@ -277,7 +387,7 @@ function writeSyntheticRecoveredBatch(root, plan, recoveredJobId) {
     source: plan.source,
     original_plan_sha256: fileSha256(planPath),
     original_result_sha256: fileSha256(initialResultPath),
-    used_reservations_before_recovery: 6,
+    used_reservations_before_recovery: 31,
     hard_ceiling: 234,
     valid_unit_ids_excluded: plan.jobs
       .filter((job) => job.id !== recoveredJobId)
@@ -294,7 +404,7 @@ function writeSyntheticRecoveredBatch(root, plan, recoveredJobId) {
   finalRows.push({ ...recoveredRow, origin: 'bounded_technical_recovery_missing_or_failed_unit' });
   finalRows.sort((a, b) => a.job_id.localeCompare(b.job_id));
   const finalResultPath = path.join(root, 'batch-final-result.json');
-  const reservationsByJob = Object.fromEntries(plan.jobs.map((job) => [job.id, job.id === recoveredJobId ? 2 : 1]));
+  const reservationsByJob = Object.fromEntries(plan.jobs.map((job) => [job.id, job.id === recoveredJobId ? 7 : 6]));
   writeJson(finalResultPath, {
     schema: 'machinespirits.tutor-stub.resistance-action-register-live-batch-result.v1',
     batch_id: plan.batch_id,
@@ -303,7 +413,7 @@ function writeSyntheticRecoveredBatch(root, plan, recoveredJobId) {
     completed_dialogues: 6,
     failed_or_missing_dialogues: 0,
     maximum_model_attempt_reservations: 234,
-    observed_model_attempt_reservations: 7,
+    observed_model_attempt_reservations: 37,
     observed_model_attempt_reservations_by_job: reservationsByJob,
     technical_recovery_used: true,
     recovery_unit_ids: [recoveredJobId],
@@ -321,7 +431,7 @@ function writeSyntheticRecoveredBatch(root, plan, recoveredJobId) {
     recovery_result_sha256: fileSha256(recoveryResultPath),
     dialogues: 6,
     hard_ceiling: 234,
-    observed_model_attempt_reservations: 7,
+    observed_model_attempt_reservations: 37,
     observed_model_attempt_reservations_by_job: reservationsByJob,
     valid_unit_reruns: false,
     outcome_selection: false,
@@ -1181,8 +1291,21 @@ test('v2 combined analyzer refuses partial assembly and completes all 12 exact c
   assert.equal(report.status, 'complete_registered_baseline');
   assert.equal(report.assembly.dialogues, 12);
   assert.equal(report.assembly.exact_cells, 12);
-  assert.deepEqual(report.assembly.reservations_by_batch, { batch_A: 6, batch_B: 6 });
+  assert.deepEqual(report.assembly.reservations_by_batch, { batch_A: 36, batch_B: 36 });
   assert.equal(report.endpoint_status.same_treatment_repeat_stability, 'complete');
+  assert.equal(report.endpoint_status.action_register_fidelity_and_safety, 'complete');
+  assert.deepEqual(report.summary.treatment_fidelity, {
+    status: 'complete',
+    action_visibility_rate: 1,
+    action_visibility_minimum: 0.9,
+    register_visibility_rate: 1,
+    register_visibility_minimum: 0.9,
+    primary_analysis: 'intention_to_treat',
+    failed_disposition: 'fail_interpretability_gate_not_rerun',
+    protected_condition_rate: 0,
+    safety_override_rate: 0,
+    valid_unit_rerun_authorized: false,
+  });
   assert.equal(
     report.rows.every((row) => row.outcome.recovered),
     true,
@@ -1193,6 +1316,109 @@ test('v2 combined analyzer refuses partial assembly and completes all 12 exact c
   );
   assert.equal(report.summary.stable_repeat_pairs, 6);
   assert.match(report.claim_boundary, /does not establish matched-versus-mismatched action efficacy/u);
+});
+
+test('v2 combined analyzer reads treatment fidelity and fails its interpretability gate without rerunning', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'resistance-action-register-fidelity-'));
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const batchA = path.join(temporary, 'batch-a');
+  const batchB = path.join(temporary, 'batch-b');
+  const planA = buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'A', destination: batchA });
+  const planB = buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'B', destination: batchB });
+  writeSyntheticBatch(batchA, planA, {
+    fidelityByJob: { [planA.jobs[0].id]: { actionVisible: false } },
+  });
+  writeSyntheticBatch(batchB, planB, {
+    fidelityByJob: { [planB.jobs[0].id]: { actionVisible: false } },
+  });
+
+  const report = analyzeTutorStubResistanceActionRegisterBaseline({
+    batchA,
+    batchB,
+    expectedSourceCommit: planA.source.commit,
+  });
+  assert.equal(report.endpoint_status.action_register_fidelity_and_safety, 'failed_interpretability_gate_not_rerun');
+  assert.equal(report.summary.treatment_fidelity.action_visibility_rate, 10 / 12);
+  assert.equal(report.summary.treatment_fidelity.register_visibility_rate, 1);
+  assert.equal(report.summary.treatment_fidelity.valid_unit_rerun_authorized, false);
+  assert.equal(report.interpretation_status, 'interpretability_gate_failed_no_rerun_or_efficacy_interpretation');
+});
+
+test('v2 combined analyzer fails closed on missing fidelity, runtime drift, and alternative traces', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'resistance-action-register-integrity-'));
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const makePair = (label) => {
+    const batchA = path.join(temporary, `${label}-batch-a`);
+    const batchB = path.join(temporary, `${label}-batch-b`);
+    const planA = buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'A', destination: batchA });
+    const planB = buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'B', destination: batchB });
+    writeSyntheticBatch(batchA, planA);
+    writeSyntheticBatch(batchB, planB);
+    return { batchA, batchB, planA, planB };
+  };
+
+  const missingFidelity = makePair('missing-fidelity');
+  mutateSyntheticBatchTrace(missingFidelity.batchA, missingFidelity.planA.jobs[0].id, (events) => {
+    const trigger = events.find((event) => event.type === 'turn_complete' && event.turn === 1);
+    delete trigger.turnRecord.responseConfigurationAudit;
+    return events;
+  });
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: missingFidelity.batchA,
+        batchB: missingFidelity.batchB,
+        expectedSourceCommit: missingFidelity.planA.source.commit,
+      }),
+    /lacks typed action\/register visibility evidence/u,
+  );
+
+  const runtimeDrift = makePair('runtime-drift');
+  mutateSyntheticBatchTrace(runtimeDrift.batchA, runtimeDrift.planA.jobs[0].id, (events) => {
+    const start = events.find((event) => event.type === 'run_start');
+    start.metadata.sessionRecipe.config.options['cli-effort'] = 'medium';
+    return events;
+  });
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: runtimeDrift.batchA,
+        batchB: runtimeDrift.batchB,
+        expectedSourceCommit: runtimeDrift.planA.source.commit,
+      }),
+    /violates its observed Luna route, runtime, horizon, or semantics pins/u,
+  );
+
+  const planDrift = makePair('plan-drift');
+  const planPath = path.join(planDrift.batchA, 'batch-plan.json');
+  const sealPath = path.join(planDrift.batchA, 'batch-seal.json');
+  const driftedPlan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
+  driftedPlan.jobs[0].treatment.register = 'warm';
+  writeJson(planPath, driftedPlan);
+  const driftedSeal = JSON.parse(fs.readFileSync(sealPath, 'utf8'));
+  driftedSeal.plan_sha256 = fileSha256(planPath);
+  writeJson(sealPath, driftedSeal);
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: planDrift.batchA,
+        batchB: planDrift.batchB,
+        expectedSourceCommit: planDrift.planA.source.commit,
+      }),
+    /drifted from the frozen registration and prefix bundle/u,
+  );
+
+  const alternatives = makePair('alternatives');
+  fs.writeFileSync(path.join(alternatives.planA.jobs[0].command.trace_dir, 'alternative.jsonl'), '');
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: alternatives.batchA,
+        batchB: alternatives.batchB,
+        expectedSourceCommit: alternatives.planA.source.commit,
+      }),
+    /exactly its one selected trace; alternatives are forbidden/u,
+  );
 });
 
 test('v2 combined analyzer admits only bounded missing-unit recovery under unchanged dialogue and batch caps', (t) => {
@@ -1211,12 +1437,12 @@ test('v2 combined analyzer admits only bounded missing-unit recovery under uncha
     batchB,
     expectedSourceCommit: planA.source.commit,
   });
-  assert.deepEqual(report.assembly.reservations_by_batch, { batch_A: 7, batch_B: 6 });
+  assert.deepEqual(report.assembly.reservations_by_batch, { batch_A: 37, batch_B: 36 });
   assert.deepEqual(
     report.rows.filter((row) => row.execution.technical_recovery_used).map((row) => row.case_id),
     [recoveredJobId],
   );
-  assert.equal(report.rows.find((row) => row.case_id === recoveredJobId).execution.model_attempt_reservations, 2);
+  assert.equal(report.rows.find((row) => row.case_id === recoveredJobId).execution.model_attempt_reservations, 7);
 
   const recoveryPlan = JSON.parse(fs.readFileSync(recovery.recoveryPlanPath, 'utf8'));
   recoveryPlan.valid_unit_ids_excluded.pop();

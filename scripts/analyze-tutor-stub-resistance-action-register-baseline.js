@@ -3,9 +3,13 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-import { loadTutorStubResistanceActionRegisterPrefixBundle } from '../services/tutorStubResistanceActionRegisterExecution.js';
+import {
+  loadTutorStubResistanceActionRegisterPrefixBundle,
+  resolveTutorStubResistanceActionRegisterExecutionJob,
+} from '../services/tutorStubResistanceActionRegisterExecution.js';
 import { scoreTutorStubResistanceRecovery } from '../services/tutorStubResistanceActionRegisterStudy.js';
 import { observeResistantLearnerTurn } from '../services/resistantLearnerObservation.js';
 
@@ -40,11 +44,14 @@ function sameIds(actual, expected) {
 
 function reservationCountInDirectory(directory) {
   if (!directory || !fs.existsSync(directory)) return 0;
-  return fs
-    .readdirSync(directory)
-    .filter((name) => name.endsWith('.jsonl'))
+  return traceFilesInDirectory(directory)
     .flatMap((name) => readTrace(path.join(directory, name)))
     .filter((event) => event.type === 'model_call_budget_reserved').length;
+}
+
+function traceFilesInDirectory(directory) {
+  if (!directory || !fs.existsSync(directory)) return [];
+  return fs.readdirSync(directory).filter((name) => name.endsWith('.jsonl'));
 }
 
 function exactTraceDirectory(resultRow, command, label) {
@@ -53,6 +60,10 @@ function exactTraceDirectory(resultRow, command, label) {
   const traceDirectory = path.resolve(command.trace_dir);
   if (path.dirname(tracePath) !== traceDirectory)
     throw new Error(`${label} trace escaped its registered job directory`);
+  const traceFiles = traceFilesInDirectory(traceDirectory);
+  if (traceFiles.length !== 1 || path.resolve(traceDirectory, traceFiles[0]) !== tracePath) {
+    throw new Error(`${label} must contain exactly its one selected trace; alternatives are forbidden`);
+  }
   return traceDirectory;
 }
 
@@ -106,7 +117,12 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
   const recoveryRows = new Map(recoveryResult.results.map((row) => [row.job_id, row]));
   const finalRows = new Map(result.results.map((row) => [row.job_id, row]));
   const reservationsByJob = new Map();
+  const finalTraceBudgetsByJob = new Map();
   for (const job of plan.jobs) {
+    const initialTraceFiles = traceFilesInDirectory(job.command?.trace_dir);
+    if (initialTraceFiles.length > 1) {
+      throw new Error(`batch ${plan.repeat} initial unit ${job.id} contains alternative traces`);
+    }
     const initialReservations = reservationCountInDirectory(job.command?.trace_dir);
     const initialRow = initialById.get(job.id);
     const finalRow = finalRows.get(job.id);
@@ -120,6 +136,7 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
         throw new Error(`batch ${plan.repeat} rewrote an initially valid unit ${job.id}`);
       }
       reservationsByJob.set(job.id, initialReservations);
+      finalTraceBudgetsByJob.set(job.id, 39);
       continue;
     }
     const recoveryJob = recoveryJobs.get(job.id);
@@ -136,6 +153,7 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
       throw new Error(`batch ${plan.repeat} recovery budget or final-row provenance drifted for ${job.id}`);
     }
     reservationsByJob.set(job.id, initialReservations + recoveryReservations);
+    finalTraceBudgetsByJob.set(job.id, recoveryJob.recovery.remaining_model_attempt_reservations);
   }
   const observedReservations = [...reservationsByJob.values()].reduce((sum, count) => sum + count, 0);
   if (
@@ -147,7 +165,7 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
   ) {
     throw new Error(`batch ${plan.repeat} recovery exceeded or misreported its unchanged reservation ceiling`);
   }
-  return { recoveredIds: new Set(missingOrFailedIds), reservationsByJob };
+  return { recoveredIds: new Set(missingOrFailedIds), reservationsByJob, finalTraceBudgetsByJob };
 }
 
 function parseArgs(argv) {
@@ -204,7 +222,8 @@ function exactBatch(root, expectedRepeat, expectedSourceCommit) {
     plan.budget?.maximum_model_attempt_reservations !== 234 ||
     plan.budget?.maximum_model_attempt_reservations_per_dialogue !== 39 ||
     seal.valid_unit_reruns !== false ||
-    seal.outcome_selection !== false
+    seal.outcome_selection !== false ||
+    path.resolve(ROOT, plan.destination) !== absolute
   ) {
     throw new Error(`batch ${expectedRepeat} is incomplete, unsealed, over budget, or selection-contaminated`);
   }
@@ -217,8 +236,9 @@ function exactBatch(root, expectedRepeat, expectedSourceCommit) {
   }
   let recoveredIds = new Set();
   let reservationsByJob;
+  let finalTraceBudgetsByJob;
   if (resultPath === finalResultPath) {
-    ({ recoveredIds, reservationsByJob } = auditRecovery({
+    ({ recoveredIds, reservationsByJob, finalTraceBudgetsByJob } = auditRecovery({
       absolute,
       plan,
       initial,
@@ -243,11 +263,12 @@ function exactBatch(root, expectedRepeat, expectedSourceCommit) {
         ),
       ]),
     );
+    finalTraceBudgetsByJob = new Map(plan.jobs.map((job) => [job.id, 39]));
   }
   if ([...reservationsByJob.values()].some((count) => count > 39)) {
     throw new Error(`batch ${expectedRepeat} contains a dialogue above its 39-reservation ceiling`);
   }
-  return { absolute, plan, result, seal, planJobs, recoveredIds, reservationsByJob };
+  return { absolute, plan, result, seal, planJobs, recoveredIds, reservationsByJob, finalTraceBudgetsByJob };
 }
 
 function metric(model, field) {
@@ -255,9 +276,88 @@ function metric(model, field) {
   return Number.isFinite(Number(value)) ? Number(value) : null;
 }
 
+function assertObservedRuntime({ runStart, events, job, batch, finalTraceBudget }) {
+  const metadata = runStart?.metadata;
+  const recipe = metadata?.sessionRecipe;
+  const config = recipe?.config;
+  const options = config?.options;
+  const models = config?.identity?.models;
+  const requiredModels = ['classifier', 'learner', 'reasoning', 'tutor'];
+  const routePinned = requiredModels.every(
+    (role) => models?.[role]?.provider === 'codex' && models?.[role]?.model === 'gpt-5.6-luna',
+  );
+  const observedModelCalls = events.filter((event) => event.type === 'model_call');
+  const observedModelAttemptEvents = events.filter((event) =>
+    ['model_call', 'model_call_error', 'model_call_aborted'].includes(event.type),
+  );
+  const requiredRoleTurns = [
+    ['tutor_stub_tutor', 1],
+    ['tutor_stub_tutor', 2],
+    ['tutor_stub_auto_learner', 2],
+    ['tutor_stub_auto_learner', 3],
+    ['tutor_stub_learner_analysis', 2],
+    ['tutor_stub_learner_analysis', 3],
+  ];
+  const observedRequiredCalls = requiredRoleTurns.every(([role, turn]) =>
+    observedModelCalls.some((event) => event.role === role && Number(event.turn) === turn),
+  );
+  const allObservedCallsPinned = observedModelAttemptEvents.every(
+    (event) => event.provider === 'codex' && event.model === 'gpt-5.6-luna',
+  );
+  const unexpectedFrozenPrefixCalls = observedModelAttemptEvents.some(
+    (event) =>
+      event.role === 'tutor_stub_opening' ||
+      (Number(event.turn) === 1 && ['tutor_stub_auto_learner', 'tutor_stub_learner_analysis'].includes(event.role)),
+  );
+  if (
+    recipe?.schema !== 'machinespirits.tutor-stub.session-recipe.v1' ||
+    metadata?.provenance?.git?.sha !== batch.plan.source.commit ||
+    config?.world?.id !== 'world_005_marrick' ||
+    config?.experiment?.runSeed !== 20260820 ||
+    config?.experiment?.profile !== 'frame_refuser' ||
+    config?.experiment?.policy !== 'field' ||
+    config?.experiment?.repeat !== (job.treatment.repeat === 'A' ? 1 : 2) ||
+    config?.experiment?.jobId !== job.id ||
+    config?.autoLearner?.observationSemantics !== 'prospective_v4' ||
+    config?.autoLearner?.maxTurns !== 3 ||
+    config?.autoLearner?.profileId !== 'frame_refuser' ||
+    config?.autoLearner?.modelRef !== 'codex.gpt-5.6-luna' ||
+    metadata?.lab?.admission?.modelCallBudget !== finalTraceBudget ||
+    options?.['cli-effort'] !== 'low' ||
+    options?.['run-seed'] !== '20260820' ||
+    options?.['auto-turns'] !== '3' ||
+    options?.['model-call-budget'] !== String(finalTraceBudget) ||
+    options?.['dag-mode'] !== 'strict_dag' ||
+    options?.['register-policy'] !== 'field' ||
+    options?.['register-palette'] !== 'plain,warm' ||
+    options?.['eval-repeat'] !== (job.treatment.repeat === 'A' ? '1' : '2') ||
+    options?.['eval-job-id'] !== job.id ||
+    options?.['resistance-action-register-job'] !== job.id ||
+    options?.['resistance-action-register-registration'] !== REGISTRATION ||
+    options?.['resistance-action-register-prefix-bundle'] !== PREFIX_BUNDLE ||
+    options?.['no-opening'] !== true ||
+    options?.['no-auto-stop-on-grounded'] !== true ||
+    routePinned !== true ||
+    observedRequiredCalls !== true ||
+    allObservedCallsPinned !== true ||
+    unexpectedFrozenPrefixCalls
+  ) {
+    throw new Error(`trace ${job.id} violates its observed Luna route, runtime, horizon, or semantics pins`);
+  }
+  return {
+    successfulModelCalls: observedModelCalls.length,
+    modelAttemptEvents: observedModelAttemptEvents.length,
+  };
+}
+
 function analyzeTrace({ batch, resultRow, loaded }) {
   const job = batch.planJobs.get(resultRow.job_id);
   if (!job) throw new Error(`result ${resultRow.job_id} is not in its frozen batch plan`);
+  const registeredJob = resolveTutorStubResistanceActionRegisterExecutionJob({ loaded, jobId: job.id }).job;
+  const registeredProjection = ({ command: _command, ...value }) => value;
+  if (JSON.stringify(registeredProjection(job)) !== JSON.stringify(registeredProjection(registeredJob))) {
+    throw new Error(`batch plan job ${job.id} drifted from the frozen registration and prefix bundle`);
+  }
   const tracePath = path.resolve(ROOT, resultRow.trace);
   const source = fs.readFileSync(tracePath);
   if (sha256(source) !== resultRow.trace_sha256) throw new Error(`trace digest drift for ${job.id}`);
@@ -269,6 +369,7 @@ function analyzeTrace({ batch, resultRow, loaded }) {
   const outcome = events.filter((event) => event.type === 'resistance_action_register_outcome_learner_turn');
   const reservations = events.filter((event) => event.type === 'model_call_budget_reserved');
   const totalReservations = batch.reservationsByJob.get(job.id);
+  const finalTraceBudget = batch.finalTraceBudgetsByJob.get(job.id);
   const prefix = loaded.bundle.prefixes.find((candidate) => candidate.id === job.prefix_id);
   const trigger = completed.find((event) => Number(event.turn) === 1)?.turnRecord;
   const postOne = completed.find((event) => Number(event.turn) === 2)?.turnRecord;
@@ -289,13 +390,17 @@ function analyzeTrace({ batch, resultRow, loaded }) {
     start.prefixBundleSha256 !== loaded.sha256 ||
     start.registrationSha256 !== loaded.registration.sha256 ||
     start.jobId !== job.id ||
-    start.batchId !== job.treatment.batch_id ||
-    runStart.metadata?.provenance?.git?.commit !== batch.plan.source.commit
+    start.batchId !== job.treatment.batch_id
   ) {
     throw new Error(`trace ${job.id} violates exact-prefix, horizon, provenance, or budget constraints`);
   }
+  const observedRuntime = assertObservedRuntime({ runStart, events, job, batch, finalTraceBudget });
+  if (observedRuntime.modelAttemptEvents > reservations.length) {
+    throw new Error(`trace ${job.id} contains unreserved observed model calls`);
+  }
   const assignment = interventions[0].intervention?.assignment;
   if (
+    interventions[0].intervention?.status !== 'applied' ||
     assignment?.action_fit !== 'matched' ||
     assignment?.pedagogical_move !== 'test_bounded_distinction' ||
     assignment?.realization !== job.treatment.realization ||
@@ -305,6 +410,29 @@ function analyzeTrace({ batch, resultRow, loaded }) {
     interventions[0].turn !== 1
   ) {
     throw new Error(`trace ${job.id} did not deliver its prebound one-turn action/register treatment`);
+  }
+  const responseAudit = trigger.responseConfigurationAudit;
+  const actionVisible = responseAudit?.axes?.action_family?.visible;
+  const registerVisible = responseAudit?.axes?.engagement_stance?.visible;
+  const safetyOverride = interventions[0].intervention?.safety_override || null;
+  const expectedDeliveredRegister =
+    safetyOverride?.applied === true ? safetyOverride.delivered_register : assignment.register;
+  if (
+    typeof actionVisible !== 'boolean' ||
+    typeof registerVisible !== 'boolean' ||
+    typeof safetyOverride?.applied !== 'boolean' ||
+    responseAudit?.axes?.action_family?.selected !== job.treatment.host_action_family ||
+    responseAudit?.axes?.engagement_stance?.selected !== expectedDeliveredRegister
+  ) {
+    throw new Error(`trace ${job.id} lacks typed action/register visibility evidence on its treatment turn`);
+  }
+  const protectedCondition = [
+    'comprehension_repair',
+    'protected_affect',
+    'content_bearing_uptake_already_visible',
+  ].includes(safetyOverride?.reason);
+  if (protectedCondition !== (safetyOverride.applied === true)) {
+    throw new Error(`trace ${job.id} has inconsistent protected-condition and safety-override provenance`);
   }
   const observation = observeResistantLearnerTurn({
     learnerText: trigger.learner,
@@ -351,16 +479,18 @@ function analyzeTrace({ batch, resultRow, loaded }) {
       new_supported_public_premises: Math.max(0, finalGrounded - initialGrounded),
     },
     fidelity: {
-      action_visible: true,
-      register_visible: true,
-      safety_override: interventions[0].intervention?.safety_override?.applied === true,
-      protected_condition: false,
+      action_visible: actionVisible,
+      register_visible: registerVisible,
+      safety_override: safetyOverride?.applied === true,
+      protected_condition: protectedCondition,
     },
     execution: {
       trace: resultRow.trace,
       trace_sha256: resultRow.trace_sha256,
       model_attempt_reservations: totalReservations,
       final_trace_model_attempt_reservations: reservations.length,
+      final_trace_observed_model_calls: observedRuntime.successfulModelCalls,
+      final_trace_observed_model_attempt_events: observedRuntime.modelAttemptEvents,
       technical_recovery_used: batch.recoveredIds.has(job.id),
       tutor_turns: 2,
       post_trigger_learner_turns: 2,
@@ -378,17 +508,27 @@ export function analyzeTutorStubResistanceActionRegisterBaseline({
   if (!batchA || !batchB || path.resolve(ROOT, batchA) === path.resolve(ROOT, batchB)) {
     throw new Error('combined analysis requires two distinct prebound batch destinations');
   }
+  const currentSourceCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const currentSourceTree = execFileSync('git', ['rev-parse', 'HEAD^{tree}'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  if (!expectedSourceCommit || currentSourceCommit !== expectedSourceCommit) {
+    throw new Error('combined analysis source checkout does not match the expected GO-request commit');
+  }
   const loaded = loadTutorStubResistanceActionRegisterPrefixBundle({
     registrationPath: path.resolve(ROOT, registrationPath),
     bundlePath: path.resolve(ROOT, prefixBundlePath),
   });
+  const expectedRegistrationPath = path.relative(ROOT, loaded.registration.path);
+  const expectedPrefixBundlePath = path.relative(ROOT, loaded.path);
   const batches = [exactBatch(batchA, 'A', expectedSourceCommit), exactBatch(batchB, 'B', expectedSourceCommit)];
   if (
     batches[0].plan.source.commit !== batches[1].plan.source.commit ||
     batches[0].plan.source.tree !== batches[1].plan.source.tree ||
+    batches[0].plan.source.tree !== currentSourceTree ||
     batches.some(
       (batch) =>
+        batch.plan.source.registration_path !== expectedRegistrationPath ||
         batch.plan.source.registration_sha256 !== loaded.registration.sha256 ||
+        batch.plan.source.prefix_bundle_path !== expectedPrefixBundlePath ||
         batch.plan.source.prefix_bundle_sha256 !== loaded.sha256,
     )
   ) {
@@ -434,6 +574,18 @@ export function analyzeTutorStubResistanceActionRegisterBaseline({
       };
     }),
   );
+  const treatmentFidelity = loaded.registration.registration.measurement?.treatmentFidelity;
+  const actionVisibilityRate = rows.filter((row) => row.fidelity.action_visible).length / rows.length;
+  const registerVisibilityRate = rows.filter((row) => row.fidelity.register_visible).length / rows.length;
+  const actionVisibilityMinimum = treatmentFidelity?.minimumActionVisibility;
+  const registerVisibilityMinimum = treatmentFidelity?.minimumRegisterVisibility;
+  const fidelityGatePassed =
+    Number.isFinite(actionVisibilityMinimum) &&
+    Number.isFinite(registerVisibilityMinimum) &&
+    actionVisibilityRate >= actionVisibilityMinimum &&
+    registerVisibilityRate >= registerVisibilityMinimum &&
+    treatmentFidelity?.failedFidelityDisposition === 'fail_interpretability_gate_not_rerun';
+  const fidelityGateStatus = fidelityGatePassed ? 'complete' : 'failed_interpretability_gate_not_rerun';
   return {
     schema: 'machinespirits.tutor-stub.resistance-action-register-baseline-report.v2',
     status: 'complete_registered_baseline',
@@ -455,7 +607,7 @@ export function analyzeTutorStubResistanceActionRegisterBaseline({
       same_treatment_repeat_stability: 'complete',
       proof_dag_debt_delta_at_two_learner_turns: 'complete',
       new_supported_public_premises_at_two_learner_turns: 'complete',
-      action_register_fidelity_and_safety: 'complete',
+      action_register_fidelity_and_safety: fidelityGateStatus,
       trigger_specificity_and_assembly: 'complete',
     },
     rows,
@@ -470,7 +622,22 @@ export function analyzeTutorStubResistanceActionRegisterBaseline({
       ),
       stable_repeat_pairs: repeatPairs.filter((row) => row.stable).length,
       repeat_pairs: repeatPairs,
+      treatment_fidelity: {
+        status: fidelityGateStatus,
+        action_visibility_rate: actionVisibilityRate,
+        action_visibility_minimum: actionVisibilityMinimum,
+        register_visibility_rate: registerVisibilityRate,
+        register_visibility_minimum: registerVisibilityMinimum,
+        primary_analysis: treatmentFidelity?.primaryAnalysis || null,
+        failed_disposition: treatmentFidelity?.failedFidelityDisposition || null,
+        protected_condition_rate: rows.filter((row) => row.fidelity.protected_condition).length / rows.length,
+        safety_override_rate: rows.filter((row) => row.fidelity.safety_override).length / rows.length,
+        valid_unit_rerun_authorized: false,
+      },
     },
+    interpretation_status: fidelityGatePassed
+      ? 'registered_baseline_interpretable_within_claim_boundary'
+      : 'interpretability_gate_failed_no_rerun_or_efficacy_interpretation',
     claim_boundary:
       'This matched-action plain/warm baseline may calibrate frame-refuser recovery rates, warm-versus-plain descriptive separation, and same-treatment repeat stability for later prospective sizing. It does not establish matched-versus-mismatched action efficacy, edged-register efficacy, an action-by-register interaction, general tutor efficacy, learning, human validity, or cell-harness transfer.',
   };
