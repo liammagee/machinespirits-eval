@@ -1,16 +1,18 @@
 ---
 id: upgrade-github-actions-node-runtime
 title: Upgrade GitHub Actions to the current JavaScript runtime
-status: review
+status: done
 type: maintenance
 priority: P2
 owner: codex
 source: review
 created: 2026-08-19
-updated: 2026-08-19
+updated: 2026-08-20
 verification: "Every repository workflow uses actions/checkout@v7 and actions/setup-node@v7 where applicable; focused workflow-policy, format, and workplan checks pass; hosted CI completes without the deprecated Node 20 action-runtime warning."
 branch: codex/upgrade-github-actions-node-runtime
 links:
+  prs:
+    - 698
   items:
     - shorten-full-ci-critical-path
     - decommission-electron-desktop-target
@@ -46,3 +48,7 @@ Log:
   settings. Workflow YAML parsing, CI-policy and hermetic/surface contract tests,
   changed-file formatting, and source-only workplan validation pass; moved to
   review for the workflow-selected hosted lanes and warning check.
+- 2026-08-20 — PR #698 merged the action-runtime upgrade as
+  `bb7ec2eb0db25cab3184a6c3bbaaba54346d99cc` after every applicable hosted
+  browser, validation, lint, Node 22/24, PTY, and risk-coverage check passed.
+  The supported action majors are live on `main`, so this card is done.

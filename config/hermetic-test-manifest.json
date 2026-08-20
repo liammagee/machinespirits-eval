@@ -166,6 +166,7 @@
         "tests/api-routes.test.js",
         "tests/apiPayloadCapture.test.js",
         "tests/applicationShutdown.test.js",
+        "tests/artifactBundle.test.js",
         "tests/archiveRunArtifacts.test.js",
         "tests/blindOptionAdjudication.test.js",
         "tests/buildDramaShowcase.test.js",

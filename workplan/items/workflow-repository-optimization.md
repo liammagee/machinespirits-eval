@@ -8,7 +8,7 @@ owner: codex
 source: manual
 created: 2026-08-19
 updated: 2026-08-20
-branch: codex/workplan-source-integration
+branch: codex/artifact-bundle-contract
 verification: >-
   Reproducible before/after measurements show that local and hosted CI select
   the same fail-closed profiles, avoid measured orchestration and test delays,
@@ -30,6 +30,7 @@ links:
     - https://github.com/liammagee/machinespirits-eval/pull/705
     - https://github.com/liammagee/machinespirits-eval/pull/708
     - https://github.com/liammagee/machinespirits-eval/pull/709
+    - https://github.com/liammagee/machinespirits-eval/pull/712
   notes:
     - docs/next-steps/2026-08-19-coordinator-workflow-efficiency-audit.md
 tags:
@@ -205,3 +206,34 @@ Log:
   refactoring parent is also closed after all 131 linked children reached done;
   subsequent repository hygiene remains on this card. No worktree, local
   export, external artifact, or model-backed run was removed or invoked.
+- 2026-08-20 — PR #712 merged Wave 3A as
+  `768081d1ddc686c5db181ab8641fc251f900fda8`; all four post-merge `main`
+  workflows passed and the removed renderer did not run. The artifact and
+  stale-code tranches remain open on this card.
+- 2026-08-20 — Started Wave 3B from merge commit `768081d1` as a
+  non-destructive artifact-boundary slice. It will version the existing Green
+  Room Gate 1 raw-bundle manifest, add explicit-local fetch/cache/verify and
+  create-once restore tooling, document the contract, and run one retained
+  production drill. This start does not claim the drill or tranche complete
+  and does not authorize selecting a remote store, moving or untracking
+  evidence, deleting any local copy, rewriting history, or making model calls.
+- 2026-08-20 — Recorded the Wave 3C migration gate before any payload change:
+  `scripts/analyze-step4-trigger-density.js::greenroomSources()` still reads
+  expanded P1–P8 performance and trace files directly, so all 26 raw members
+  remain tracked until that tested consumer can materialize or read the
+  verified bundle. The six `P3–P8.book.md` files are outside the archive and
+  outside the removal candidate set.
+- 2026-08-20 — Completed Wave 3B's non-destructive production drill from the
+  combined branch on current `main`. The tracked 9,492,826-byte archive
+  verified at SHA-256
+  `d5c5c5e7315c52d84652b4e35d47b998f449f6241f71660fb8f02eb8fe5d2434`;
+  first fetch atomically published its digest-addressed cache object, a second
+  fetch returned a verified cache hit, and create-once restore reproduced all
+  26 files / 61,350,499 bytes byte for byte. The retained drill is
+  `/private/tmp/ms-wave3b-production-drill.LPNClL`. The focused artifact and
+  existing Step 4 consumer cohort passed 29/29 alongside manifest, workplan,
+  lint, formatting, and diff checks. Three new no-smudge worktrees measured
+  263,400 KiB each versus 769,396–769,408 KiB for comparable hydrated retained
+  worktrees, avoiding roughly 494 MiB of LFS hydration per new worker. No
+  payload, external store, model call, worktree, generated view, or history was
+  moved, removed, invoked, or rewritten.
