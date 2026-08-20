@@ -57,8 +57,19 @@ function isV6Registration(registration) {
   );
 }
 
+function isV7Registration(registration) {
+  return (
+    registration?.schema === TUTOR_STUB_RESISTANCE_ACTION_REGISTER_REGISTRATION_SCHEMA && registration?.version === 7
+  );
+}
+
 function isConfirmationSuccessorRegistration(registration) {
-  return isV4Registration(registration) || isV5Registration(registration) || isV6Registration(registration);
+  return (
+    isV4Registration(registration) ||
+    isV5Registration(registration) ||
+    isV6Registration(registration) ||
+    isV7Registration(registration)
+  );
 }
 
 function usesProspectiveV4Observation(registration) {
@@ -189,11 +200,13 @@ function normalizeRegistration(registration) {
     if (registration.design?.factorialCells !== 24) throw new Error('registration must retain 24 factorial cells');
     return registration;
   }
+  const requiredStandingAuthorizationAttachmentSha256 = isV7Registration(registration)
+    ? '538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce'
+    : '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b';
   if (
     registration.authorization?.baselinePilotAuthorized !== false ||
     registration.authorization?.goRequestPrepared !== false ||
-    registration.authorization?.standingAuthorizationAttachmentSha256 !==
-      '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b'
+    registration.authorization?.standingAuthorizationAttachmentSha256 !== requiredStandingAuthorizationAttachmentSha256
   ) {
     throw new Error('prospective registration must remain on HOLD with the standing authorization attachment bound');
   }
@@ -204,9 +217,11 @@ function normalizeRegistration(registration) {
     throw new Error('v2 registration must retain frame_defiant as diagnostic-only');
   }
   const requiredObservationSemantics = isConfirmationSuccessorRegistration(registration)
-    ? isV6Registration(registration)
-      ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6
-      : RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5
+    ? isV7Registration(registration)
+      ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7
+      : isV6Registration(registration)
+        ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6
+        : RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5
     : RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
   if (registration.design?.trigger?.observationSemantics !== requiredObservationSemantics) {
     throw new Error(`prospective registration must use ${requiredObservationSemantics} observation semantics`);
@@ -287,6 +302,7 @@ function normalizeRegistration(registration) {
     const calibration = registration.preservation?.calibration;
     const stopped = registration.preservation?.stoppedConfirmationV1;
     const stoppedV3 = registration.preservation?.stoppedConfirmationV3;
+    const stoppedV4 = registration.preservation?.stoppedConfirmationV4;
     const sizing = registration.measurement?.confirmatoryTest?.powering;
     const readiness = registration.executionReadiness;
     if (
@@ -317,8 +333,8 @@ function normalizeRegistration(registration) {
       stopped?.completedCalls !== 34 ||
       stopped?.providerFailures !== 0 ||
       stopped?.excludedFromSuccessor !== true ||
-      (isV6Registration(registration) &&
-        (registration.design?.randomization?.masterSeed !== 20260823 ||
+      ((isV6Registration(registration) || isV7Registration(registration)) &&
+        (registration.design?.randomization?.masterSeed !== (isV7Registration(registration) ? 20260824 : 20260823) ||
           registration.design?.trigger?.priorIncompleteConfirmationV3ConsumedAsInputs !== false ||
           stoppedV3?.requestSha256 !== 'e3df720358cc597e686f0007bfc1ce1a5d0b4a11273a725ce87b484d20c3fec9' ||
           stoppedV3?.sourceCommit !== 'c9f6d57b867376e94384e9efe99ccf8a79ca9195' ||
@@ -335,6 +351,64 @@ function normalizeRegistration(registration) {
           stoppedV3?.outcomeSelected !== false ||
           registration.confirmation?.priorIncompleteConfirmationV3DialoguesReused !== 0 ||
           registration.confirmation?.priorIncompleteConfirmationV3DialoguesPooled !== 0)) ||
+      (isV7Registration(registration) &&
+        (registration.design?.randomization?.masterSeed !== 20260824 ||
+          registration.design?.trigger?.priorIncompleteConfirmationV4ConsumedAsInputs !== false ||
+          stoppedV4?.requestSha256 !== '8c25d6afcae9b9c5689f3130664048c63d303a440412af7f4ba138a6a9337aab' ||
+          stoppedV4?.sourceCommit !== '8d18480e8e531ae7b4ac4e5c63e8de82628aea9f' ||
+          stoppedV4?.sourceTree !== 'adadcbff0502d0df15e777d8cebe1d7d5daa5011' ||
+          stoppedV4?.batchPlanSha256 !== '388ee1df888d69f8cf2a63f6330e799092c3cc827a0e23c0913886ef9bb57591' ||
+          stoppedV4?.batchResultSha256 !== '1d957f5bf8707f5ce2150a8e3576ad4ab2440f7e1e8a1f43a064e863de001636' ||
+          stoppedV4?.privateArchiveBranch !== 'codex/resistance-action-register-confirmation-v4-incomplete-archive' ||
+          stoppedV4?.privateArchiveCommit !== '05eb01179a437c4a7723a831639b1d7126a338e2' ||
+          stoppedV4?.privateArchiveTree !== 'e978a6761c6d8978084fd5d574758d75e3fb6d4d' ||
+          stoppedV4?.privateArchiveBase !== 'b36f25a295f23250f95d0ca6539123f12cc6a6af' ||
+          stoppedV4?.localInventoryFiles !== 18 ||
+          stoppedV4?.localInventoryBytes !== 7_845_834 ||
+          stoppedV4?.localInventorySha256 !== 'd4585b41981d6ac4d4d6e44a6fccc253f792221f5e2c3f87fd7ec5d42c16eafe' ||
+          stoppedV4?.liveMirrorInventoryFiles !== 8 ||
+          stoppedV4?.liveMirrorInventoryBytes !== 922_685 ||
+          stoppedV4?.liveMirrorInventorySha256 !== '7545452e100a2cfc1b59c17e6da8c1a5196eb7fc5d272cd60556c7462cb524fa' ||
+          stoppedV4?.privateArchiveInventoryFiles !== 16 ||
+          stoppedV4?.privateArchiveInventoryBytes !== 3_216_802 ||
+          stoppedV4?.privateArchiveInventorySha256 !==
+            '5f913668777b7bd5111d575eec49daca71a05b7f03f4a7e4281bc285a943845b' ||
+          stoppedV4?.ledgerSha256 !== '2b3bf3f416edafdd21777219f7031afef7cfef75e8adebc843c4cc16576ba1b7' ||
+          stoppedV4?.dialoguesPlanned !== 36 ||
+          stoppedV4?.dialoguesStarted !== 4 ||
+          stoppedV4?.dialoguesComplete !== 2 ||
+          stoppedV4?.dialoguesSubstantiveFailure !== 2 ||
+          stoppedV4?.reservedAttempts !== 38 ||
+          stoppedV4?.completedCalls !== 38 ||
+          stoppedV4?.providerFailures !== 0 ||
+          stoppedV4?.abortedCalls !== 0 ||
+          stoppedV4?.interruptedCalls !== 0 ||
+          JSON.stringify(stoppedV4?.traceSha256) !==
+            JSON.stringify({
+              s1: '5d17d885bdad4e4b1ffe3b2a63a2e81f70c334eb9aafe1a5add649ebe1b8ac6c',
+              s2: '7a9bd37991410c35f868f26fb63dc002d7aabdb64849a42220a1df8e50928942',
+              s3: '14235461410868bba4e2a2bed2a7e24022dd4eadbe655b05835f0170da8ca3c3',
+              s4: 'a211ea656bc458aaa3e31f6552d65e65b67a9f428ed6388d6006af057d8164ee',
+            }) ||
+          JSON.stringify(stoppedV4?.compressedTraceSha256) !==
+            JSON.stringify({
+              s1: 'a438528c8e5526038667e6f24cb0d080884b994acd3a6d4eebb293f3778dde75',
+              s2: '3ef7bc055efe5410b77495e8e98d5d319e9cb4c76bab220e918748798e695dc5',
+              s3: '549ab0a561951676a322e0ed8c4d8987ab79ac17190a0ef17e26b7423f319a45',
+              s4: 'e5e4a872cbfd68dd7f5b633be6d018da1b97392b07c3433b51e6bccfd4f29dd3',
+            }) ||
+          stoppedV4?.block2Through9Started !== false ||
+          stoppedV4?.recoveryRun !== false ||
+          stoppedV4?.analyzerRun !== false ||
+          stoppedV4?.reportWritten !== false ||
+          stoppedV4?.resultProduced !== false ||
+          stoppedV4?.sealProduced !== false ||
+          stoppedV4?.excludedFromSuccessor !== true ||
+          stoppedV4?.reused !== false ||
+          stoppedV4?.pooled !== false ||
+          stoppedV4?.outcomeSelected !== false ||
+          registration.confirmation?.priorIncompleteConfirmationV4DialoguesReused !== 0 ||
+          registration.confirmation?.priorIncompleteConfirmationV4DialoguesPooled !== 0)) ||
       sizing?.test !== 'fisher_exact_two_sided' ||
       sizing?.alpha !== 0.05 ||
       sizing?.targetPower !== 0.8 ||
@@ -345,30 +419,50 @@ function normalizeRegistration(registration) {
       readiness?.combinedDialogues !== 36 ||
       readiness?.combinedPlannedRoleCalls !== 720 ||
       readiness?.combinedMaximumModelAttemptReservations !== 2160 ||
-      readiness?.programmeLedgerAfterMaximum?.reservedAttempts !== (isV6Registration(registration) ? 2415 : 2379) ||
+      readiness?.programmeLedgerAfterMaximum?.reservedAttempts !==
+        (isV7Registration(registration) ? 2453 : isV6Registration(registration) ? 2415 : 2379) ||
       readiness?.programmeLedgerAfterMaximum?.ceiling !==
-        (isV5Registration(registration) || isV6Registration(registration) ? 5000 : 2379) ||
+        (isV5Registration(registration) || isV6Registration(registration) || isV7Registration(registration)
+          ? 5000
+          : 2379) ||
       readiness?.programmeLedgerAfterMaximum?.remaining !==
-        (isV6Registration(registration) ? 2585 : isV5Registration(registration) ? 2621 : 0) ||
-      ((isV5Registration(registration) || isV6Registration(registration)) &&
+        (isV7Registration(registration)
+          ? 2547
+          : isV6Registration(registration)
+            ? 2585
+            : isV5Registration(registration)
+              ? 2621
+              : 0) ||
+      ((isV5Registration(registration) || isV6Registration(registration) || isV7Registration(registration)) &&
         (readiness?.attemptAccountingRole !==
           'operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective' ||
           registration.preservation?.supersedesRegistrationPath !==
-            (isV6Registration(registration)
-              ? 'config/tutor-stub-resistance-action-register-crossed-registration.v5.json'
-              : 'config/tutor-stub-resistance-action-register-crossed-registration.v4.json') ||
+            (isV7Registration(registration)
+              ? 'config/tutor-stub-resistance-action-register-crossed-registration.v6.json'
+              : isV6Registration(registration)
+                ? 'config/tutor-stub-resistance-action-register-crossed-registration.v5.json'
+                : 'config/tutor-stub-resistance-action-register-crossed-registration.v4.json') ||
           registration.authorization?.requiredCeilingAmendment?.authorized !== false)) ||
       registration.authorization?.programmeLedgerBeforeThisConfirmation?.reservedAttempts !==
-        (isV6Registration(registration) ? 255 : 219) ||
+        (isV7Registration(registration) ? 293 : isV6Registration(registration) ? 255 : 219) ||
       registration.authorization?.programmeLedgerBeforeThisConfirmation?.ceiling !==
-        (isV6Registration(registration) ? 5000 : 2345) ||
+        (isV6Registration(registration) || isV7Registration(registration) ? 5000 : 2345) ||
       registration.authorization?.programmeLedgerBeforeThisConfirmation?.remaining !==
-        (isV6Registration(registration) ? 4745 : 2126) ||
-      registration.authorization?.requiredCeilingAmendment?.from !== (isV6Registration(registration) ? 5000 : 2345) ||
+        (isV7Registration(registration) ? 4707 : isV6Registration(registration) ? 4745 : 2126) ||
+      registration.authorization?.requiredCeilingAmendment?.from !==
+        (isV6Registration(registration) || isV7Registration(registration) ? 5000 : 2345) ||
       registration.authorization?.requiredCeilingAmendment?.to !==
-        (isV6Registration(registration) ? 5000 : isV5Registration(registration) ? 5000 : 2379) ||
+        (isV6Registration(registration) || isV7Registration(registration)
+          ? 5000
+          : isV5Registration(registration)
+            ? 5000
+            : 2379) ||
       registration.authorization?.requiredCeilingAmendment?.increase !==
-        (isV6Registration(registration) ? 0 : isV5Registration(registration) ? 2655 : 34)
+        (isV6Registration(registration) || isV7Registration(registration)
+          ? 0
+          : isV5Registration(registration)
+            ? 2655
+            : 34)
     ) {
       throw new Error('successor confirmation design, exclusions, power, or hard-attempt arithmetic drifted');
     }
@@ -750,6 +844,7 @@ function triggerFromTurnRecord(
   const prospectiveV4 = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
   const prospectiveV5 = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5;
   const prospectiveV6 = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6;
+  const prospectiveV7 = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7;
   const observationProfiles = legacySemantics ? ['frame_refuser'] : ['frame_refuser', 'frame_defiant'];
   const profileObservation = observationProfiles.includes(profile)
     ? observeResistantLearnerTurn({ learnerText, classification, semantics: observationSemantics })
@@ -769,7 +864,7 @@ function triggerFromTurnRecord(
         !frameRefusal) ||
       (!profileObservation && shadow.resistance_kind === profile);
   const warrantLicensed =
-    prospectiveV3 || prospectiveV4 || prospectiveV5 || prospectiveV6
+    prospectiveV3 || prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7
       ? Boolean(frameDispute)
       : shadow.warrant.status === 'licensed';
   return {

@@ -19,12 +19,15 @@ const REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-regis
 const SUCCESSOR_REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v4.json';
 const OPERATIONAL_CEILING_REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v5.json';
 const OBSERVER_REPAIR_REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v6.json';
+const OBSERVER_REPAIR_V7_REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v7.json';
 const ENDPOINT = 'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v1.json';
 const SUCCESSOR_ENDPOINT = 'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v2.json';
 const OPERATIONAL_CEILING_ENDPOINT =
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v3.json';
 const OBSERVER_REPAIR_ENDPOINT =
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v4.json';
+const OBSERVER_REPAIR_V7_ENDPOINT =
+  'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v5.json';
 const CERTIFICATE =
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v1.endpoint-go.json';
 const SUCCESSOR_CERTIFICATE =
@@ -33,6 +36,8 @@ const OPERATIONAL_CEILING_CERTIFICATE =
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v3.endpoint-go.json';
 const OBSERVER_REPAIR_CERTIFICATE =
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v4.endpoint-go.json';
+const OBSERVER_REPAIR_V7_CERTIFICATE =
+  'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v5.endpoint-go.json';
 const CALIBRATION_REQUEST = 'config/tutor-stub-resistance-action-register-baseline-analysis-go-request.v1.json';
 const INCOMPLETE_CONFIRMATION_REQUEST =
   'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v1.json';
@@ -40,6 +45,8 @@ const SUPERSEDED_CEILING_BOUND_REQUEST =
   'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v2.json';
 const INCOMPLETE_CONFIRMATION_V3_REQUEST =
   'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v3.json';
+const INCOMPLETE_CONFIRMATION_V4_REQUEST =
+  'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v4.json';
 const CLOSURE = [
   'scripts/run-tutor-stub-resistance-action-register-confirmation.js',
   'scripts/analyze-tutor-stub-resistance-action-register-confirmation.js',
@@ -102,31 +109,43 @@ function commandSha256(value) {
   return sha256(JSON.stringify(value));
 }
 
-function buildRequest({ destinationSuffix, successor = false, operationalCeiling = false, observerRepair = false }) {
+function buildRequest({
+  destinationSuffix,
+  successor = false,
+  operationalCeiling = false,
+  observerRepair = false,
+  observerRepairV7 = false,
+}) {
   const launchCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const launchTree = execFileSync('git', ['rev-parse', 'HEAD^{tree}'], { cwd: ROOT, encoding: 'utf8' }).trim();
-  const isSuccessor = successor || operationalCeiling || observerRepair;
-  const registrationPath = observerRepair
-    ? OBSERVER_REPAIR_REGISTRATION
-    : operationalCeiling
-      ? OPERATIONAL_CEILING_REGISTRATION
-      : successor
-        ? SUCCESSOR_REGISTRATION
-        : REGISTRATION;
-  const endpointPath = observerRepair
-    ? OBSERVER_REPAIR_ENDPOINT
-    : operationalCeiling
-      ? OPERATIONAL_CEILING_ENDPOINT
-      : successor
-        ? SUCCESSOR_ENDPOINT
-        : ENDPOINT;
-  const certificatePath = observerRepair
-    ? OBSERVER_REPAIR_CERTIFICATE
-    : operationalCeiling
-      ? OPERATIONAL_CEILING_CERTIFICATE
-      : successor
-        ? SUCCESSOR_CERTIFICATE
-        : CERTIFICATE;
+  const isSuccessor = successor || operationalCeiling || observerRepair || observerRepairV7;
+  const registrationPath = observerRepairV7
+    ? OBSERVER_REPAIR_V7_REGISTRATION
+    : observerRepair
+      ? OBSERVER_REPAIR_REGISTRATION
+      : operationalCeiling
+        ? OPERATIONAL_CEILING_REGISTRATION
+        : successor
+          ? SUCCESSOR_REGISTRATION
+          : REGISTRATION;
+  const endpointPath = observerRepairV7
+    ? OBSERVER_REPAIR_V7_ENDPOINT
+    : observerRepair
+      ? OBSERVER_REPAIR_ENDPOINT
+      : operationalCeiling
+        ? OPERATIONAL_CEILING_ENDPOINT
+        : successor
+          ? SUCCESSOR_ENDPOINT
+          : ENDPOINT;
+  const certificatePath = observerRepairV7
+    ? OBSERVER_REPAIR_V7_CERTIFICATE
+    : observerRepair
+      ? OBSERVER_REPAIR_CERTIFICATE
+      : operationalCeiling
+        ? OPERATIONAL_CEILING_CERTIFICATE
+        : successor
+          ? SUCCESSOR_CERTIFICATE
+          : CERTIFICATE;
   const registration = JSON.parse(fs.readFileSync(path.join(ROOT, registrationPath), 'utf8'));
   const contract = JSON.parse(fs.readFileSync(path.join(ROOT, endpointPath), 'utf8'));
   const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, certificatePath), 'utf8'));
@@ -187,7 +206,9 @@ function buildRequest({ destinationSuffix, successor = false, operationalCeiling
       explicitHumanApproval: null,
       modelCallsAuthorized: false,
       liveRunAuthorized: false,
-      standingAuthorizationAttachmentSha256: '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b',
+      standingAuthorizationAttachmentSha256: observerRepairV7
+        ? '538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce'
+        : '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b',
       programmeCeilingAmendmentAuthorized: false,
     },
     source: {
@@ -199,11 +220,13 @@ function buildRequest({ destinationSuffix, successor = false, operationalCeiling
     actionRegisterConfirmation: {
       type: successor
         ? 'prospective_frame_refuser_warm_plain_confirmation_v2'
-        : observerRepair
-          ? 'prospective_frame_refuser_warm_plain_confirmation_v4'
-          : operationalCeiling
-            ? 'prospective_frame_refuser_warm_plain_confirmation_v3'
-            : 'prospective_frame_refuser_warm_plain_confirmation_v1',
+        : observerRepairV7
+          ? 'prospective_frame_refuser_warm_plain_confirmation_v5'
+          : observerRepair
+            ? 'prospective_frame_refuser_warm_plain_confirmation_v4'
+            : operationalCeiling
+              ? 'prospective_frame_refuser_warm_plain_confirmation_v3'
+              : 'prospective_frame_refuser_warm_plain_confirmation_v1',
       calibrationSizingEvidence: {
         analysisRequest: { path: CALIBRATION_REQUEST, sha256: fileSha256(CALIBRATION_REQUEST) },
         reportSha256: '42021a390338cd556386efc96d8f00b35655a411627908a10248dba1e473a3a5',
@@ -241,7 +264,7 @@ function buildRequest({ destinationSuffix, successor = false, operationalCeiling
             },
           }
         : {}),
-      ...(operationalCeiling || observerRepair
+      ...(operationalCeiling || observerRepair || observerRepairV7
         ? {
             supersededCeilingBoundRequest: {
               request: {
@@ -256,7 +279,7 @@ function buildRequest({ destinationSuffix, successor = false, operationalCeiling
             },
           }
         : {}),
-      ...(observerRepair
+      ...(observerRepair || observerRepairV7
         ? {
             priorIncompleteConfirmationV3: {
               request: {
@@ -291,6 +314,65 @@ function buildRequest({ destinationSuffix, successor = false, operationalCeiling
             },
           }
         : {}),
+      ...(observerRepairV7
+        ? {
+            priorIncompleteConfirmationV4: {
+              request: {
+                path: INCOMPLETE_CONFIRMATION_V4_REQUEST,
+                sha256: fileSha256(INCOMPLETE_CONFIRMATION_V4_REQUEST),
+              },
+              sourceCommit: '8d18480e8e531ae7b4ac4e5c63e8de82628aea9f',
+              sourceTree: 'adadcbff0502d0df15e777d8cebe1d7d5daa5011',
+              batchPlanSha256: '388ee1df888d69f8cf2a63f6330e799092c3cc827a0e23c0913886ef9bb57591',
+              batchResultSha256: '1d957f5bf8707f5ce2150a8e3576ad4ab2440f7e1e8a1f43a064e863de001636',
+              privateArchiveBranch: 'codex/resistance-action-register-confirmation-v4-incomplete-archive',
+              privateArchiveCommit: '05eb01179a437c4a7723a831639b1d7126a338e2',
+              privateArchiveTree: 'e978a6761c6d8978084fd5d574758d75e3fb6d4d',
+              privateArchiveBase: 'b36f25a295f23250f95d0ca6539123f12cc6a6af',
+              localInventoryFiles: 18,
+              localInventoryBytes: 7_845_834,
+              localInventorySha256: 'd4585b41981d6ac4d4d6e44a6fccc253f792221f5e2c3f87fd7ec5d42c16eafe',
+              liveMirrorInventoryFiles: 8,
+              liveMirrorInventoryBytes: 922_685,
+              liveMirrorInventorySha256: '7545452e100a2cfc1b59c17e6da8c1a5196eb7fc5d272cd60556c7462cb524fa',
+              privateArchiveInventoryFiles: 16,
+              privateArchiveInventoryBytes: 3_216_802,
+              privateArchiveInventorySha256: '5f913668777b7bd5111d575eec49daca71a05b7f03f4a7e4281bc285a943845b',
+              ledgerSha256: '2b3bf3f416edafdd21777219f7031afef7cfef75e8adebc843c4cc16576ba1b7',
+              dialoguesPlanned: 36,
+              dialoguesStarted: 4,
+              dialoguesComplete: 2,
+              dialoguesSubstantiveFailure: 2,
+              reservations: 38,
+              completedCalls: 38,
+              providerFailures: 0,
+              abortedCalls: 0,
+              interruptedCalls: 0,
+              traceSha256: {
+                s1: '5d17d885bdad4e4b1ffe3b2a63a2e81f70c334eb9aafe1a5add649ebe1b8ac6c',
+                s2: '7a9bd37991410c35f868f26fb63dc002d7aabdb64849a42220a1df8e50928942',
+                s3: '14235461410868bba4e2a2bed2a7e24022dd4eadbe655b05835f0170da8ca3c3',
+                s4: 'a211ea656bc458aaa3e31f6552d65e65b67a9f428ed6388d6006af057d8164ee',
+              },
+              compressedTraceSha256: {
+                s1: 'a438528c8e5526038667e6f24cb0d080884b994acd3a6d4eebb293f3778dde75',
+                s2: '3ef7bc055efe5410b77495e8e98d5d319e9cb4c76bab220e918748798e695dc5',
+                s3: '549ab0a561951676a322e0ed8c4d8987ab79ac17190a0ef17e26b7423f319a45',
+                s4: 'e5e4a872cbfd68dd7f5b633be6d018da1b97392b07c3433b51e6bccfd4f29dd3',
+              },
+              reused: false,
+              pooled: false,
+              outcomeSelected: false,
+              excludedFromSuccessor: true,
+              blocksAfterFirstLaunched: false,
+              recoveryRun: false,
+              analyzerRun: false,
+              reportWritten: false,
+              resultProduced: false,
+              sealProduced: false,
+            },
+          }
+        : {}),
       interimAnalysisPermitted: false,
       validUnitRerunsPermitted: false,
       outcomeSelectionPermitted: false,
@@ -304,7 +386,8 @@ function buildRequest({ destinationSuffix, successor = false, operationalCeiling
         maximumAttemptsPerDialogueUnchanged: 60,
         maximumAttemptsPerBatchUnchanged: 240,
         maximumTotalStudyAttemptsUnchanged: 2160,
-        programmeCeilingUnchanged: operationalCeiling || observerRepair ? 5000 : successor ? 2379 : 2345,
+        programmeCeilingUnchanged:
+          operationalCeiling || observerRepair || observerRepairV7 ? 5000 : successor ? 2379 : 2345,
       },
     },
     design: {
@@ -339,12 +422,13 @@ function buildRequest({ destinationSuffix, successor = false, operationalCeiling
       dialoguesPerBatch: 4,
       maximumAttemptsPerBatch: 240,
       maximumPlannedModelAttempts: 2160,
-      programmeLedgerBefore: observerRepair ? 255 : isSuccessor ? 219 : 185,
-      programmeCeilingBefore: observerRepair ? 5000 : isSuccessor ? 2345 : 1200,
-      programmeCeilingAmendment: observerRepair ? 0 : operationalCeiling ? 2655 : successor ? 34 : 1145,
-      programmeCeilingAfter: operationalCeiling || observerRepair ? 5000 : successor ? 2379 : 2345,
-      programmeLedgerAfterMaximum: observerRepair ? 2415 : isSuccessor ? 2379 : 2345,
-      ...(operationalCeiling || observerRepair
+      programmeLedgerBefore: observerRepairV7 ? 293 : observerRepair ? 255 : isSuccessor ? 219 : 185,
+      programmeCeilingBefore: observerRepair || observerRepairV7 ? 5000 : isSuccessor ? 2345 : 1200,
+      programmeCeilingAmendment:
+        observerRepair || observerRepairV7 ? 0 : operationalCeiling ? 2655 : successor ? 34 : 1145,
+      programmeCeilingAfter: operationalCeiling || observerRepair || observerRepairV7 ? 5000 : successor ? 2379 : 2345,
+      programmeLedgerAfterMaximum: observerRepairV7 ? 2453 : observerRepair ? 2415 : isSuccessor ? 2379 : 2345,
+      ...(operationalCeiling || observerRepair || observerRepairV7
         ? {
             attemptAccountingRole: 'operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective',
           }
@@ -420,6 +504,10 @@ function templateText(request) {
   }
   if (template.actionRegisterConfirmation.priorIncompleteConfirmationV3) {
     const prior = template.actionRegisterConfirmation.priorIncompleteConfirmationV3.request;
+    prior.sha256 = goRequestFileSha256Marker(prior.path);
+  }
+  if (template.actionRegisterConfirmation.priorIncompleteConfirmationV4) {
+    const prior = template.actionRegisterConfirmation.priorIncompleteConfirmationV4.request;
     prior.sha256 = goRequestFileSha256Marker(prior.path);
   }
   if (template.actionRegisterConfirmation.supersededCeilingBoundRequest) {
@@ -716,6 +804,80 @@ test('observer-repair successor binds the incomplete V3 block and unchanged 5000
     },
     (value) => {
       value.budget.programmeLedgerAfterMaximum = 2414;
+    },
+  ]) {
+    const invalid = structuredClone(request);
+    mutation(invalid);
+    const invalidPath = path.join(temporary, `invalid-${crypto.randomUUID()}.json`);
+    fs.writeFileSync(invalidPath, `${JSON.stringify(invalid, null, 2)}\n`);
+    assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
+  }
+});
+
+test('prospective-v7 future request binds the stopped V4 block and 293-to-2453 programme ledger', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'confirmation-v7-go-request-'));
+  const output = `.tutor-stub-auto-eval/.test-confirmation-v7-go-request-${process.pid}.json`;
+  t.after(() => {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(path.join(ROOT, output), { force: true });
+  });
+  assert.equal(
+    fileSha256(INCOMPLETE_CONFIRMATION_V4_REQUEST),
+    '8c25d6afcae9b9c5689f3130664048c63d303a440412af7f4ba138a6a9337aab',
+  );
+
+  const request = buildRequest({
+    destinationSuffix: `observer-repair-v7-${process.pid}`,
+    observerRepairV7: true,
+  });
+  const requestPath = path.join(temporary, 'request.json');
+  fs.writeFileSync(requestPath, `${JSON.stringify(request, null, 2)}\n`);
+  const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath });
+  assert.equal(report.packetValid, true);
+  assert.equal(report.modelCalls, 0);
+  assert.equal(report.productionWrites, 0);
+  assert.equal(report.budget.maximumPlannedModelAttempts, 2160);
+  assert.equal(report.budget.programmeLedgerBefore, 293);
+  assert.equal(report.budget.programmeLedgerAfterMaximum, 2453);
+  assert.equal(report.budget.programmeCeilingAfter, 5000);
+  assert.match(report.exactApprovalStatement, /538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce/u);
+  assert.match(report.exactApprovalStatement, /incomplete V1, V3, or V4 confirmation blocks/u);
+
+  const templatePath = path.join(temporary, 'template.json');
+  fs.writeFileSync(templatePath, templateText(request));
+  fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
+  const packageReport = packageTutorStubResistantProfileStudyGoRequest({
+    templatePath,
+    launchCommit: request.source.launchCommit,
+    outputPath: output,
+  });
+  assert.equal(packageReport.sourceClosureFiles, CLOSURE.length);
+  assert.equal(packageReport.repositoryBindingFiles, 10);
+  assert.equal(packageReport.isolatedReplay.packetValid, true);
+  assert.equal(packageReport.effects.modelCalls, 0);
+  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), fs.readFileSync(requestPath));
+
+  for (const mutation of [
+    (value) => {
+      value.authorization.standingAuthorizationAttachmentSha256 = '0'.repeat(64);
+    },
+    (value) => {
+      value.actionRegisterConfirmation.priorIncompleteConfirmationV4.completedCalls = 37;
+    },
+    (value) => {
+      value.actionRegisterConfirmation.priorIncompleteConfirmationV4.traceSha256.s2 = '0'.repeat(64);
+    },
+    (value) => {
+      value.actionRegisterConfirmation.priorIncompleteConfirmationV4.privateArchiveCommit = '0'.repeat(40);
+    },
+    (value) => {
+      value.actionRegisterConfirmation.priorIncompleteConfirmationV4.blocksAfterFirstLaunched = true;
+    },
+    (value) => {
+      value.budget.programmeLedgerBefore = 292;
+    },
+    (value) => {
+      value.budget.programmeLedgerAfterMaximum = 2452;
     },
   ]) {
     const invalid = structuredClone(request);

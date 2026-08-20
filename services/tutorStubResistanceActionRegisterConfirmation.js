@@ -38,8 +38,8 @@ function clone(value) {
 }
 
 function assertConfirmationRegistration(registration) {
-  if (![3, 4, 5, 6].includes(registration?.version)) {
-    throw new Error('confirmation requires a registered V3, V4, V5, or V6 action/register confirmation design');
+  if (![3, 4, 5, 6, 7].includes(registration?.version)) {
+    throw new Error('confirmation requires a registered V3, V4, V5, V6, or V7 action/register confirmation design');
   }
   return registration;
 }
@@ -64,7 +64,8 @@ export function buildTutorStubResistanceActionRegisterConfirmationPlan({ registr
       globalIndex += 1;
       const assignment = assignments[slot];
       const realization = assignment.realization;
-      const confirmationRevision = frozen.version >= 6 ? 'v3-' : frozen.version >= 4 ? 'v2-' : '';
+      const confirmationRevision =
+        frozen.version >= 7 ? 'v4-' : frozen.version >= 6 ? 'v3-' : frozen.version >= 4 ? 'v2-' : '';
       jobs.push({
         id: `frame_refuser-confirmation-${confirmationRevision}${block.id}-s${slot + 1}`,
         block_id: block.id,
