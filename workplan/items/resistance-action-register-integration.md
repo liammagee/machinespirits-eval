@@ -60,6 +60,7 @@ links:
     - config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.json
     - config/paid-study-endpoints/tutor-stub-resistance-axis-heldout.endpoint-go.json
     - config/tutor-stub-frame-refuser-opportunity-registration.v1.json
+    - config/tutor-stub-frame-refuser-opportunity-registration.v2.json
     - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.json
     - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.endpoint-go.json
     - config/tutor-stub-frame-refuser-opportunity-study-go-request.v1.json
@@ -95,7 +96,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/frame-refuser-opportunity-go-request
+branch: codex/frame-defiant-control-repair
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -548,3 +549,37 @@ and explicit human approval.
   false. No model call, live run, study output, or production write was made;
   execution remains blocked on explicit approval of that exact digest and
   ceiling.
+- 2026-08-19 — The registered six-dialogue opportunity run remains an
+  authoritative FAIL at report SHA-256
+  `a95e5d650a0c5e74ab532c13019f7d9dcd8edf8163475bd8056801e86845d1d9`:
+  all three `frame_refuser` targets supplied distinct early eligible prefixes,
+  while the v1 control rule scored `frame_defiant` `0/3`. Transcript review
+  showed that all three controls offered a licensed reframe or bounded local
+  test by turn 2; in run 2 the adherence matcher rejected the original bounded-
+  test draft and its generic repair rewrote productive disagreement into
+  explicit non-participation. The frozen run, request, report, thresholds,
+  roles, five-axis topology, and claim boundary are unchanged.
+- 2026-08-19 — Registered a prospective zero-call control repair under HOLD,
+  preserving the same 3+3, turn-2, Luna, 48-attempt-per-dialogue and 288-total
+  design. Frame defiance now requires a jurisdiction dispute plus an explicit
+  reframe, rival or bounded local test, or content-bearing contribution;
+  refusal requires affirmative withholding of all those forms, so a missing
+  generic classifier label cannot create refusal. The adherence repair keeps
+  bounded participation rather than converting it into frame-refuser-style
+  withdrawal, and the production prefix extractor rejects those productive
+  control turns as `frame_refuser` triggers. Transcript-derived deterministic
+  replay classifies runs 1 and 3 plus run 2's pre-repair draft coherently while
+  preserving all three target refusals. This repair prepares no GO request,
+  authorizes no model call, and does not establish tutor, action, register,
+  learning, human-validity, or transfer efficacy.
+- 2026-08-19 — Closed two prospective-repair review defects without changing
+  the frozen study. The opportunity analyzer now dispatches the unversioned v1
+  registration through the exact legacy observer and prefix semantics, while
+  version 2 alone selects contract-licensed participation. A digest-bound
+  replay of all six immutable traces reproduces target trigger turns `2,1,1`,
+  all three v1 control failures, three distinct prefixes, and the failed verdict
+  at the unchanged report SHA-256. Separately, exhausted `frame_defiant`
+  adherence repair now raises a typed technical failure rather than returning a
+  frame-refuser-style control turn. Deterministic tests cover an intermediate
+  explicit-refusal repair, successful productive repair, and two-attempt
+  exhaustion. No study output or authorization boundary changed.

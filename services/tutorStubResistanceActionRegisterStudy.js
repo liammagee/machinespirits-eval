@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { detectTutorStubEdgeTimingSignal } from './tutorStubEdgeTimingPolicy.js';
-import { observeResistantLearnerTurn } from './resistantLearnerObservation.js';
+import { RESISTANT_LEARNER_OBSERVATION_SEMANTICS, observeResistantLearnerTurn } from './resistantLearnerObservation.js';
 import { beginTutorStubActionBeforeRegisterShadow } from './tutorStubActionBeforeRegisterShadow.js';
 import { tutorStubFirstDraftContractPrompt } from './tutorStubFirstDraftContract.js';
 import { extractTutorStubFrozenTurn, refreshTutorStubFrozenFirstDraftRequest } from './tutorStubFrozenReplay.js';
@@ -335,16 +335,33 @@ function parseTrace(source) {
     .map((line) => JSON.parse(line));
 }
 
-function triggerFromTurnRecord(record, profile) {
+function triggerFromTurnRecord(
+  record,
+  profile,
+  observationSemantics = RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2,
+) {
   const learnerText = record?.learner || '';
   const classification = record?.classification || null;
   const shadow = observeResistanceAxis({ learnerText, classification });
-  const profileObservation =
-    profile === 'frame_refuser' ? observeResistantLearnerTurn({ learnerText, classification }) : null;
+  const legacySemantics = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.legacyV1;
+  const observationProfiles = legacySemantics ? ['frame_refuser'] : ['frame_refuser', 'frame_defiant'];
+  const profileObservation = observationProfiles.includes(profile)
+    ? observeResistantLearnerTurn({ learnerText, classification, semantics: observationSemantics })
+    : null;
   const timing = detectTutorStubEdgeTimingSignal({ learnerText, classification, tutorLearnerDag: null });
-  const matchesRegisteredCohort =
-    profileObservation?.observations?.some((observation) => observation.type === 'frame_jurisdiction_refusal') ||
-    shadow.resistance_kind === profile;
+  const frameDispute = profileObservation?.observations?.find(
+    (observation) => observation.type === 'frame_jurisdiction_dispute',
+  );
+  const frameRefusal = profileObservation?.observations?.some(
+    (observation) => observation.type === 'frame_jurisdiction_refusal',
+  );
+  const matchesRegisteredCohort = legacySemantics
+    ? frameRefusal || shadow.resistance_kind === profile
+    : (profile === 'frame_refuser' && frameRefusal) ||
+      (profile === 'frame_defiant' &&
+        frameDispute?.features?.contract_licensed_participation === true &&
+        !frameRefusal) ||
+      (!profileObservation && shadow.resistance_kind === profile);
   return {
     eligible:
       shadow.warrant.status === 'licensed' &&
@@ -364,6 +381,7 @@ export function extractTutorStubResistanceActionRegisterPrefix({
   tracePath,
   profile,
   requireFrozenBundle = true,
+  observationSemantics = RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2,
 } = {}) {
   const normalizedProfile = exactLevel(profile, PREFIX_PROFILES, 'prefix profile');
   const source = fs.readFileSync(tracePath, 'utf8');
@@ -371,7 +389,7 @@ export function extractTutorStubResistanceActionRegisterPrefix({
   const completed = events.filter((event) => event.type === 'turn_complete' && event.turnRecord);
   let trigger = null;
   for (const event of completed) {
-    const candidate = triggerFromTurnRecord(event.turnRecord, normalizedProfile);
+    const candidate = triggerFromTurnRecord(event.turnRecord, normalizedProfile, observationSemantics);
     if (candidate.eligible) {
       trigger = { ...candidate, turn: Number(event.turn), turnId: event.turnId || event.turnRecord?.turnId || null };
       break;

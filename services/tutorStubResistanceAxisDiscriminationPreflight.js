@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import {
   buildFrameRefuserOpportunityReport,
   buildResistanceAxisDiscriminationReport,
+  frameRefuserOpportunityObservationSemantics,
   readTutorStubResistanceAxisTrace,
 } from '../scripts/analyze-tutor-stub-resistance-axis-calibration.js';
 import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
@@ -221,15 +222,17 @@ export function assembleTutorStubFrameRefuserOpportunityPreflight({ packets, con
   const cases = packets.flatMap((packet) => packet.cases);
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'frame-refuser-opportunity-preflight-'));
   try {
+    const binding = registrationBinding(contract);
+    const observationSemantics = frameRefuserOpportunityObservationSemantics(binding.registration);
     const traces = cases.map((row, index) => {
       const run = (index % 3) + 1;
       const directory = path.join(temporary, row.profile, 'traces', `field-r${run}`);
       fs.mkdirSync(directory, { recursive: true });
       const tracePath = path.join(directory, 'trace.jsonl');
       fs.writeFileSync(tracePath, `${row.traceEvents.map((event) => JSON.stringify(event)).join('\n')}\n`);
-      return readTutorStubResistanceAxisTrace(tracePath);
+      return readTutorStubResistanceAxisTrace(tracePath, { observationSemantics });
     });
-    const report = buildFrameRefuserOpportunityReport(traces, analyzerArgs(contract), registrationBinding(contract));
+    const report = buildFrameRefuserOpportunityReport(traces, analyzerArgs(contract), binding);
     return {
       case_ids: cases.map((row) => row.case_id),
       endpoint_status: {
