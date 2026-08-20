@@ -1,0 +1,10 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-go.v1",
+  "status": "endpoint_runtime_go",
+  "study_id": "tutor-stub-resistance-action-register-frame-refuser-warm-plain-confirmation-v2",
+  "contract_path": "config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v2.json",
+  "contract_sha256": "757c1e8c0d87cf09ad6727907c6449ffad9ece1a430eed03657b4ed5176bb75c",
+  "preflight_sha256": "1da0573ca3c1d13ab127edfa843b29768d4bf083e2bbdd348089ae711a70f713",
+  "authorization_scope": "Endpoint-runtime compatibility only; this certificate authorizes no model call, batch, analysis, programme-ceiling change, or reuse of the incomplete V1 confirmation block.",
+  "launch_gate": "A clean post-merge source and committed digest-bound HOLD request must bind 36 wholly fresh independent dialogues in nine balanced create-once batches, prospective_v5 observer-first trigger eligibility, the sole two-sided Fisher analysis, the unchanged 2160-attempt confirmation envelope, complete exclusion of the incomplete V1 block, and explicit human amendment of the programme ceiling from 2345 to exactly 2379."
+}

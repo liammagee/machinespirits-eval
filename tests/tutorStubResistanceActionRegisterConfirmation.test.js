@@ -14,7 +14,14 @@ import {
   loadTutorStubResistanceActionRegisterConfirmation,
   runTutorStubResistanceActionRegisterConfirmationPreflight,
 } from '../services/tutorStubResistanceActionRegisterConfirmation.js';
-import { applyTutorStubResistanceActionRegisterStudyIntervention } from '../services/tutorStubResistanceActionRegisterStudy.js';
+import {
+  applyTutorStubResistanceActionRegisterStudyIntervention,
+  tutorStubResistanceActionRegisterTreatmentEligibility,
+} from '../services/tutorStubResistanceActionRegisterStudy.js';
+import {
+  RESISTANT_LEARNER_OBSERVATION_SEMANTICS,
+  observeResistantLearnerTurn,
+} from '../services/resistantLearnerObservation.js';
 import {
   hashPaidStudyEndpointValue,
   validatePaidStudyEndpointGoCertificate,
@@ -36,6 +43,15 @@ const ENDPOINT = path.join(
 const CERTIFICATE = path.join(
   ROOT,
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v1.endpoint-go.json',
+);
+const REGISTRATION_V4 = path.join(ROOT, 'config/tutor-stub-resistance-action-register-crossed-registration.v4.json');
+const ENDPOINT_V2 = path.join(
+  ROOT,
+  'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v2.json',
+);
+const CERTIFICATE_V2 = path.join(
+  ROOT,
+  'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v2.endpoint-go.json',
 );
 
 function sha256(value) {
@@ -173,7 +189,7 @@ function syntheticTrace({ job, plan, triggerTurn, recovered, safetyOverrideReaso
           jobId: job.id,
         },
         autoLearner: {
-          observationSemantics: 'prospective_v4',
+          observationSemantics: job.command.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS,
           maxTurns: 4,
           profileId: 'frame_refuser',
           modelRef: 'codex.gpt-5.6-luna',
@@ -443,6 +459,88 @@ test('V3 registration predeclares the minimum powered fresh 18-per-arm confirmat
   assert.equal(loaded.registration.authorization.requiredCeilingAmendment.to, 2345);
 });
 
+test('V4 successor freezes the failed trigger corpus and admits only observer-qualified nonparticipatory refusal', () => {
+  const loaded = loadTutorStubResistanceActionRegisterConfirmation({ registrationPath: REGISTRATION_V4 });
+  assert.equal(loaded.plan.jobs.length, 36);
+  assert.equal(loaded.plan.jobs.filter((job) => job.treatment.realization === 'plain').length, 18);
+  assert.equal(loaded.plan.jobs.filter((job) => job.treatment.realization === 'warm').length, 18);
+  assert.equal(loaded.registration.authorization.programmeLedgerBeforeThisConfirmation.reservedAttempts, 219);
+  assert.deepEqual(loaded.registration.authorization.requiredCeilingAmendment, {
+    from: 2345,
+    to: 2379,
+    increase: 34,
+    basis: '219 already reserved plus the unchanged exact 2160-reservation hard fresh confirmation envelope',
+    authorized: false,
+  });
+  assert.equal(loaded.registration.preservation.stoppedConfirmationV1.excludedFromSuccessor, true);
+  assert.equal(
+    loaded.registration.preservation.stoppedConfirmationV1.privateArchiveCommit,
+    '4604cc31920913e10b3e04565bf3d70def7c112e',
+  );
+  assert.ok(loaded.plan.jobs.every((job) => job.id.startsWith('frame_refuser-confirmation-v2-')));
+  assert.equal(new Set(loaded.plan.jobs.map((job) => job.run_seed)).size, 36);
+
+  const t1 =
+    'I reject the premise that Verrell’s guilt is the question to settle before the assay; I will not supply evidence or answer under that frame.';
+  const t2 =
+    'I do not grant your proposed reading of the trial-book authority, so I will not examine its pages or supply an evidence-bearing entry under it.';
+  const resistant = {
+    turn: {
+      summary: 'Rejects premature guilt framing and declines to answer without evidence.',
+      request_type: 'authority_refusal_or_status_challenge',
+      discourse_move: 'challenge',
+      evidence_use: 'none',
+      epistemic_stance: 'reflective',
+      affect: 'guarded',
+      agency: 'steering',
+      learner_advance: { supportedMoveCount: 0 },
+    },
+  };
+  const runtime = {
+    registration: loaded.registration,
+    profile: 'frame_refuser',
+    consumed: false,
+    dynamic_confirmation: true,
+  };
+  const t1Eligibility = tutorStubResistanceActionRegisterTreatmentEligibility({
+    runtime,
+    learnerText: t1,
+    classification: resistant,
+    tutorLearnerDag: { model: { turn: 1 }, advance: { supportedMoveCount: 0 } },
+  });
+  assert.equal(t1Eligibility.eligible, true);
+  assert.equal(t1Eligibility.timing.phase, 'uptake');
+  assert.equal(t1Eligibility.confirmation_observer_first_refusal, true);
+  assert.deepEqual(t1Eligibility.reasons, []);
+
+  const t2Observation = observeResistantLearnerTurn({
+    learnerText: t2,
+    classification: resistant,
+    semantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5,
+  });
+  assert.equal(t2Observation.ambiguous, false);
+  assert.ok(t2Observation.observations.some((row) => row.type === 'frame_jurisdiction_refusal'));
+  assert.equal(
+    observeResistantLearnerTurn({
+      learnerText: t2,
+      classification: resistant,
+      semantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4,
+    }).observations.length,
+    0,
+  );
+
+  const productive = tutorStubResistanceActionRegisterTreatmentEligibility({
+    runtime,
+    learnerText:
+      'Now I see why the trial-book entry matters; I can examine its pages and supply an evidence-bearing entry.',
+    classification: classification(true),
+    tutorLearnerDag: { model: { turn: 1 }, advance: { supportedMoveCount: 1 } },
+  });
+  assert.equal(productive.eligible, false);
+  assert.ok(productive.reasons.includes('no_single_axis_public_warrant'));
+  assert.ok(productive.reasons.includes('content_bearing_uptake_already_visible'));
+});
+
 test('confirmation recovery admits only missing or classified technical failures and refuses substantive outcomes', () => {
   const plan = { jobs: [{ id: 'valid' }, { id: 'failed' }, { id: 'missing' }] };
   const technical = {
@@ -509,6 +607,24 @@ test('V3 endpoint and certificate pass zero-call readiness with calibration excl
   assert.equal(preflight.confirmation_readiness_audit.minimum_n_per_arm, 18);
   assert.equal(preflight.confirmation_readiness_audit.calibration_dialogues_reused_or_pooled, 0);
   assert.equal(certificate.contract_sha256, hashPaidStudyEndpointValue(contract));
+  assert.equal(validation.ok, true, validation.errors.join('; '));
+});
+
+test('V4 successor endpoint and certificate pass zero-call readiness with the incomplete V1 block excluded', () => {
+  const loaded = loadTutorStubResistanceActionRegisterConfirmation({ registrationPath: REGISTRATION_V4 });
+  const contract = JSON.parse(fs.readFileSync(ENDPOINT_V2, 'utf8'));
+  const certificate = JSON.parse(fs.readFileSync(CERTIFICATE_V2, 'utf8'));
+  const preflight = runTutorStubResistanceActionRegisterConfirmationPreflight({
+    contract,
+    registration: loaded.registration,
+  });
+  const validation = validatePaidStudyEndpointGoCertificate({ certificate, contract, preflight });
+  assert.equal(preflight.status, 'passed');
+  assert.equal(preflight.model_calls, 0);
+  assert.equal(preflight.production_writes, 0);
+  assert.equal(preflight.confirmation_readiness_audit.programme_ceiling_required, 2379);
+  assert.equal(loaded.registration.preservation.stoppedConfirmationV1.reused, false);
+  assert.equal(loaded.registration.preservation.stoppedConfirmationV1.pooled, false);
   assert.equal(validation.ok, true, validation.errors.join('; '));
 });
 
@@ -726,4 +842,36 @@ test('combined confirmation analyzer accepts only all nine sealed fresh batches 
       }),
     /alternatives are forbidden/u,
   );
+});
+
+test('V4 successor analyzer composes the prospective-v5 trigger path over 36 wholly fresh traces', (t) => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'resistance-confirmation-v4-'));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const loaded = loadTutorStubResistanceActionRegisterConfirmation({ registrationPath: REGISTRATION_V4 });
+  const recoveryByJob = new Map(loaded.plan.jobs.map((job, index) => [job.id, index % 3 !== 0]));
+  const roots = [];
+  for (let index = 0; index < 9; index += 1) {
+    const blockId = `block_${String(index + 1).padStart(2, '0')}`;
+    const root = path.join(temp, blockId);
+    const plan = buildTutorStubResistanceActionRegisterConfirmationBatchPlan({
+      registrationPath: path.relative(ROOT, REGISTRATION_V4),
+      batchId: blockId,
+      destination: root,
+      expectedSourceCommit: head,
+    });
+    fs.mkdirSync(root, { recursive: true });
+    writeSyntheticBatch(root, plan, recoveryByJob);
+    roots.push(root);
+  }
+  const report = analyzeTutorStubResistanceActionRegisterConfirmation({
+    batchRoots: roots,
+    registrationPath: path.relative(ROOT, REGISTRATION_V4),
+    expectedSourceCommit: head,
+  });
+  assert.equal(report.assembly.dialogues, 36);
+  assert.equal(report.assembly.calibration_dialogues_reused, 0);
+  assert.equal(report.primary_analysis.test, 'fisher_exact_two_sided');
+  assert.equal(report.rows.length, 36);
+  assert.ok(report.rows.every((row) => row.execution.technical_recovery_used === false));
 });

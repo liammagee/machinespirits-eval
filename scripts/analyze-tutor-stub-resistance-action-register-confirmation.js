@@ -306,7 +306,7 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
   };
 }
 
-function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan) {
+function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan, loaded) {
   const runStart = events.find((event) => event.type === 'run_start');
   const metadata = runStart?.metadata;
   const recipe = metadata?.sessionRecipe;
@@ -366,7 +366,7 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan)
     metadata?.experiment?.policy !== 'field' ||
     metadata?.experiment?.repeat !== job.assignment_index ||
     metadata?.experiment?.jobId !== job.id ||
-    metadata?.autoLearner?.observationSemantics !== 'prospective_v4' ||
+    metadata?.autoLearner?.observationSemantics !== loaded.registration.design.trigger.observationSemantics ||
     metadata?.autoLearner?.maxTurns !== 4 ||
     metadata?.autoLearner?.profileId !== 'frame_refuser' ||
     metadata?.autoLearner?.modelRef !== 'codex.gpt-5.6-luna' ||
@@ -455,12 +455,13 @@ function analyzeTrace(batch, resultRow, loaded) {
   const observation = observeResistantLearnerTurn({
     learnerText: trigger?.learner,
     classification: trigger?.classification,
-    semantics: 'prospective_v4',
+    semantics: loaded.registration.design.trigger.observationSemantics,
   });
   const eligibilityRuntime = {
     registration: loaded.registration,
     profile: 'frame_refuser',
     consumed: false,
+    dynamic_confirmation: true,
   };
   const triggerEligibility = tutorStubResistanceActionRegisterTreatmentEligibility({
     runtime: eligibilityRuntime,
@@ -522,7 +523,14 @@ function analyzeTrace(batch, resultRow, loaded) {
   ) {
     throw new Error(`confirmation trace ${job.id} lacks adherent typed action/register visibility evidence`);
   }
-  const observed = assertAttemptEnvelope(events, job, outcomeTurn, batch.finalTraceBudgetByJob.get(job.id), batch.plan);
+  const observed = assertAttemptEnvelope(
+    events,
+    job,
+    outcomeTurn,
+    batch.finalTraceBudgetByJob.get(job.id),
+    batch.plan,
+    loaded,
+  );
   const recovery = scoreTutorStubResistanceRecovery({
     profile: 'frame_refuser',
     triggerLearnerText: trigger.learner,

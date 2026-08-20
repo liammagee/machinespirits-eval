@@ -16,10 +16,16 @@ import {
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v3.json';
+const SUCCESSOR_REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v4.json';
 const ENDPOINT = 'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v1.json';
+const SUCCESSOR_ENDPOINT = 'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v2.json';
 const CERTIFICATE =
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v1.endpoint-go.json';
+const SUCCESSOR_CERTIFICATE =
+  'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v2.endpoint-go.json';
 const CALIBRATION_REQUEST = 'config/tutor-stub-resistance-action-register-baseline-analysis-go-request.v1.json';
+const INCOMPLETE_CONFIRMATION_REQUEST =
+  'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v1.json';
 const CLOSURE = [
   'scripts/run-tutor-stub-resistance-action-register-confirmation.js',
   'scripts/analyze-tutor-stub-resistance-action-register-confirmation.js',
@@ -82,12 +88,15 @@ function commandSha256(value) {
   return sha256(JSON.stringify(value));
 }
 
-function buildRequest({ destinationSuffix }) {
+function buildRequest({ destinationSuffix, successor = false }) {
   const launchCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const launchTree = execFileSync('git', ['rev-parse', 'HEAD^{tree}'], { cwd: ROOT, encoding: 'utf8' }).trim();
-  const registration = JSON.parse(fs.readFileSync(path.join(ROOT, REGISTRATION), 'utf8'));
-  const contract = JSON.parse(fs.readFileSync(path.join(ROOT, ENDPOINT), 'utf8'));
-  const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, CERTIFICATE), 'utf8'));
+  const registrationPath = successor ? SUCCESSOR_REGISTRATION : REGISTRATION;
+  const endpointPath = successor ? SUCCESSOR_ENDPOINT : ENDPOINT;
+  const certificatePath = successor ? SUCCESSOR_CERTIFICATE : CERTIFICATE;
+  const registration = JSON.parse(fs.readFileSync(path.join(ROOT, registrationPath), 'utf8'));
+  const contract = JSON.parse(fs.readFileSync(path.join(ROOT, endpointPath), 'utf8'));
+  const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, certificatePath), 'utf8'));
   const route = JSON.parse(
     fs.readFileSync(path.join(ROOT, 'config/tutor-stub-frame-refuser-opportunity-study-go-request.v4.json'), 'utf8'),
   ).bindings.routeCanary;
@@ -104,7 +113,7 @@ function buildRequest({ destinationSuffix }) {
     'scripts/run-tutor-stub-resistance-action-register-confirmation.js',
     '--live-batch',
     '--registration',
-    REGISTRATION,
+    registrationPath,
     '--batch',
     block.id,
     '--destination',
@@ -130,7 +139,7 @@ function buildRequest({ destinationSuffix }) {
     'scripts/analyze-tutor-stub-resistance-action-register-confirmation.js',
     ...destinations.flatMap(({ artifactRoot }) => ['--batch', artifactRoot]),
     '--registration',
-    REGISTRATION,
+    registrationPath,
     '--expected-source-commit',
     launchCommit,
     '--out',
@@ -155,7 +164,9 @@ function buildRequest({ destinationSuffix }) {
       closure: CLOSURE.map((repoPath) => ({ path: repoPath, sha256: fileSha256(repoPath) })),
     },
     actionRegisterConfirmation: {
-      type: 'prospective_frame_refuser_warm_plain_confirmation_v1',
+      type: successor
+        ? 'prospective_frame_refuser_warm_plain_confirmation_v2'
+        : 'prospective_frame_refuser_warm_plain_confirmation_v1',
       calibrationSizingEvidence: {
         analysisRequest: { path: CALIBRATION_REQUEST, sha256: fileSha256(CALIBRATION_REQUEST) },
         reportSha256: '42021a390338cd556386efc96d8f00b35655a411627908a10248dba1e473a3a5',
@@ -169,6 +180,30 @@ function buildRequest({ destinationSuffix }) {
       },
       calibrationDialoguesReused: false,
       calibrationDialoguesPooled: false,
+      ...(successor
+        ? {
+            priorIncompleteConfirmation: {
+              request: {
+                path: INCOMPLETE_CONFIRMATION_REQUEST,
+                sha256: fileSha256(INCOMPLETE_CONFIRMATION_REQUEST),
+              },
+              privateArchiveBranch: 'codex/resistance-action-register-confirmation-v1-incomplete-archive',
+              privateArchiveCommit: '4604cc31920913e10b3e04565bf3d70def7c112e',
+              localInventorySha256: '4b7345dd69e6d700b7216f1af7a4b315fdcb7aae5161248610000e592c1f7a1f',
+              liveMirrorInventorySha256: '8f530416c8b24ff809486c6638ed329b6ab03593931f85768befe6ef1972a361',
+              reservations: 34,
+              completedCalls: 34,
+              providerFailures: 0,
+              reused: false,
+              pooled: false,
+              outcomeSelected: false,
+              excludedFromSuccessor: true,
+              blocksAfterFirstLaunched: false,
+              analyzerRun: false,
+              reportWritten: false,
+            },
+          }
+        : {}),
       interimAnalysisPermitted: false,
       validUnitRerunsPermitted: false,
       outcomeSelectionPermitted: false,
@@ -182,7 +217,7 @@ function buildRequest({ destinationSuffix }) {
         maximumAttemptsPerDialogueUnchanged: 60,
         maximumAttemptsPerBatchUnchanged: 240,
         maximumTotalStudyAttemptsUnchanged: 2160,
-        programmeCeilingUnchanged: 2345,
+        programmeCeilingUnchanged: successor ? 2379 : 2345,
       },
     },
     design: {
@@ -195,7 +230,7 @@ function buildRequest({ destinationSuffix }) {
       outcomeHorizonLearnerTurns: 2,
       blocks,
       world: 'world_005_marrick',
-      runSeed: 20260821,
+      runSeed: registration.design.randomization.masterSeed,
       parallelism: 4,
       models: { tutor: 'codex.gpt-5.6-luna', analysis: 'codex.gpt-5.6-luna', learner: 'codex.gpt-5.6-luna' },
       cliEffort: 'low',
@@ -217,11 +252,11 @@ function buildRequest({ destinationSuffix }) {
       dialoguesPerBatch: 4,
       maximumAttemptsPerBatch: 240,
       maximumPlannedModelAttempts: 2160,
-      programmeLedgerBefore: 185,
-      programmeCeilingBefore: 1200,
-      programmeCeilingAmendment: 1145,
-      programmeCeilingAfter: 2345,
-      programmeLedgerAfterMaximum: 2345,
+      programmeLedgerBefore: successor ? 219 : 185,
+      programmeCeilingBefore: successor ? 2345 : 1200,
+      programmeCeilingAmendment: successor ? 34 : 1145,
+      programmeCeilingAfter: successor ? 2379 : 2345,
+      programmeLedgerAfterMaximum: successor ? 2379 : 2345,
       retryOrResumeAuthority: 'bounded_technical_recovery',
     },
     measurement: {
@@ -236,13 +271,13 @@ function buildRequest({ destinationSuffix }) {
       claimBoundary: 'confirmation_of_frame_refuser_matched_action_warm_versus_plain_recovery_only',
     },
     bindings: {
-      registration: { path: REGISTRATION, sha256: fileSha256(REGISTRATION) },
+      registration: { path: registrationPath, sha256: fileSha256(registrationPath) },
       endpoint: {
-        contractPath: ENDPOINT,
-        contractFileSha256: fileSha256(ENDPOINT),
+        contractPath: endpointPath,
+        contractFileSha256: fileSha256(endpointPath),
         contractCanonicalSha256: sha256(JSON.stringify(canonicalJson(contract))),
-        certificatePath: CERTIFICATE,
-        certificateFileSha256: fileSha256(CERTIFICATE),
+        certificatePath,
+        certificateFileSha256: fileSha256(certificatePath),
         preflightSha256: certificate.preflight_sha256,
       },
       routeCanary: route,
@@ -287,6 +322,10 @@ function templateText(request) {
   route.modelIndependentlyAttested = GO_REQUEST_PACKAGE_MARKERS.routeModelIndependentlyAttested;
   template.actionRegisterConfirmation.calibrationSizingEvidence.analysisRequest.sha256 =
     goRequestFileSha256Marker(CALIBRATION_REQUEST);
+  if (template.actionRegisterConfirmation.priorIncompleteConfirmation) {
+    const prior = template.actionRegisterConfirmation.priorIncompleteConfirmation.request;
+    prior.sha256 = goRequestFileSha256Marker(prior.path);
+  }
   template.bindings.commands.liveArraySha256 = GO_REQUEST_PACKAGE_MARKERS.liveCommandSha256;
   template.bindings.commands.recoveryArraySha256 = GO_REQUEST_PACKAGE_MARKERS.recoveryCommandSha256;
   template.bindings.commands.analyzeArraySha256 = GO_REQUEST_PACKAGE_MARKERS.analyzeCommandSha256;
@@ -335,6 +374,85 @@ test('confirmation GO validator and packager bind the exact powered ceiling amen
     (value) => {
       value.commands.analyze.splice(2, 2);
       value.bindings.commands.analyzeArraySha256 = commandSha256(value.commands.analyze);
+    },
+  ]) {
+    const invalid = structuredClone(request);
+    mutation(invalid);
+    const invalidPath = path.join(temporary, `invalid-${crypto.randomUUID()}.json`);
+    fs.writeFileSync(invalidPath, `${JSON.stringify(invalid, null, 2)}\n`);
+    assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
+  }
+});
+
+test('successor confirmation GO validator binds the incomplete V1 exclusion and exact 2379 ceiling', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'confirmation-successor-go-request-'));
+  const output = `.tutor-stub-auto-eval/.test-confirmation-successor-go-request-${process.pid}.json`;
+  t.after(() => {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(path.join(ROOT, output), { force: true });
+  });
+  const request = buildRequest({ destinationSuffix: `successor-${process.pid}`, successor: true });
+  const requestPath = path.join(temporary, 'request.json');
+  fs.writeFileSync(requestPath, `${JSON.stringify(request, null, 2)}\n`);
+  const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath });
+  assert.equal(report.packetValid, true);
+  assert.equal(report.modelCalls, 0);
+  assert.equal(report.productionWrites, 0);
+  assert.equal(report.budget.maximumPlannedModelAttempts, 2160);
+  assert.match(report.exactApprovalStatement, /ceiling from 2,345 to 2,379 model attempts/u);
+  assert.match(report.exactApprovalStatement, /incomplete V1 confirmation block/u);
+
+  const templatePath = path.join(temporary, 'template.json');
+  fs.writeFileSync(templatePath, templateText(request));
+  fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
+  const packageReport = packageTutorStubResistantProfileStudyGoRequest({
+    templatePath,
+    launchCommit: request.source.launchCommit,
+    outputPath: output,
+  });
+  assert.equal(packageReport.sourceClosureFiles, CLOSURE.length);
+  assert.equal(packageReport.repositoryBindingFiles, 7);
+  assert.equal(packageReport.isolatedReplay.packetValid, true);
+  assert.equal(packageReport.effects.modelCalls, 0);
+  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), fs.readFileSync(requestPath));
+
+  for (const mutation of [
+    (value) => {
+      value.authorization.standingAuthorizationAttachmentSha256 = '0'.repeat(64);
+    },
+    (value) => {
+      value.authorization.programmeCeilingAmendmentAuthorized = true;
+    },
+  ]) {
+    const invalid = structuredClone(request);
+    mutation(invalid);
+    const invalidPath = path.join(temporary, `invalid-authority-${crypto.randomUUID()}.json`);
+    fs.writeFileSync(invalidPath, `${JSON.stringify(invalid, null, 2)}\n`);
+    assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
+    const invalidTemplatePath = path.join(temporary, `invalid-authority-template-${crypto.randomUUID()}.json`);
+    fs.writeFileSync(invalidTemplatePath, templateText(invalid));
+    const invalidOutput = `.tutor-stub-auto-eval/.test-confirmation-successor-invalid-${crypto.randomUUID()}.json`;
+    assert.throws(
+      () =>
+        packageTutorStubResistantProfileStudyGoRequest({
+          templatePath: invalidTemplatePath,
+          launchCommit: request.source.launchCommit,
+          outputPath: invalidOutput,
+        }),
+      /standing authority|ceiling amendment/u,
+    );
+    assert.equal(fs.existsSync(path.join(ROOT, invalidOutput)), false);
+  }
+
+  for (const mutation of [
+    (value) => {
+      value.actionRegisterConfirmation.priorIncompleteConfirmation.reused = true;
+    },
+    (value) => {
+      value.actionRegisterConfirmation.priorIncompleteConfirmation.reservations = 33;
+    },
+    (value) => {
+      value.budget.programmeCeilingAfter = 2378;
     },
   ]) {
     const invalid = structuredClone(request);

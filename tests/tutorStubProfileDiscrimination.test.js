@@ -50,7 +50,7 @@ test('automated-learner generation runtime owns profile resolution and corruptio
   assert.equal(runtime.automatedLearnerCorruptionEnabled(1), false);
 });
 
-test('prospective v4 alone carries the analyzer-required semantics stamp through the production trace seam', () => {
+test('prospective v4 and v5 carry their analyzer-required semantics stamp through the production trace seam', () => {
   const createRuntime = (semantics) =>
     createTutorStubAutomatedLearnerGenerationRuntime({
       appendTraceEvent() {},
@@ -75,6 +75,9 @@ test('prospective v4 alone carries the analyzer-required semantics stamp through
   assert.deepEqual(createRuntime('prospective_v3').automatedLearnerTraceMetadata, {});
   assert.deepEqual(createRuntime('prospective_v4').automatedLearnerTraceMetadata, {
     observationSemantics: 'prospective_v4',
+  });
+  assert.deepEqual(createRuntime('prospective_v5').automatedLearnerTraceMetadata, {
+    observationSemantics: 'prospective_v5',
   });
 
   const hostSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCliApplicationHost.js'), 'utf8');
