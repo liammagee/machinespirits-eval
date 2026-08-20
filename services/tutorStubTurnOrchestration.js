@@ -1515,6 +1515,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
           turnNumber,
           generated,
           precomputeFinalLearnerAnalysis: registeredFinalLearnerOnly,
+          registeredPostTriggerCandidate: registeredFinalLearnerOnly,
           cliEffort,
           signal,
           isCurrent,
