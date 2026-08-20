@@ -1,0 +1,10 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-go.v1",
+  "status": "endpoint_runtime_go",
+  "study_id": "tutor-stub-resistance-action-register-frame-refuser-warm-plain-confirmation-v4",
+  "contract_path": "config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v4.json",
+  "contract_sha256": "580a4f68cf9e39e8b1e0856d653c0a726485c389701e9cc9fa6e7aa5a04029c2",
+  "preflight_sha256": "c55086274f5b9e679b180e3167b4a1d56f6361c76afb283771b576c4ed3ac7d6",
+  "authorization_scope": "Endpoint-runtime compatibility only; this certificate authorizes no model call, batch, analysis, programme-ceiling change, reuse of the 12 calibration dialogues, or reuse of the incomplete V1 or V3 confirmation blocks.",
+  "launch_gate": "A clean post-merge source and committed digest-bound HOLD request must bind 36 wholly fresh independent dialogues in nine balanced create-once batches, prospective_v6 observer-first trigger eligibility, the sole two-sided Fisher analysis, the unchanged 2160-attempt confirmation envelope, complete exclusion of the calibration dialogues and incomplete V1 and V3 blocks, and explicit human approval under the unchanged 5000-attempt operational programme safeguard. Model-attempt accounting is an execution safeguard only, not a scientific endpoint or design objective."
+}

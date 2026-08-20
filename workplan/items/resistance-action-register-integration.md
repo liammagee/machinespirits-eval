@@ -1539,3 +1539,42 @@ and explicit human approval.
   isolated dependency-free validation pass `67` checks at zero calls/writes.
   The request remains HOLD with null approval and false live/model authority;
   launch requires its new exact digest-bound approval sentence.
+- 2026-08-20 — Closed the powered frame-refuser confirmation V3 as incomplete
+  with no verdict after the first four-dialogue block reached a registered
+  substantive adherence stop. Request
+  `e3df720358cc597e686f0007bfc1ce1a5d0b4a11273a725ce87b484d20c3fec9`
+  consumed `36` reservations and completed `35` Luna calls with zero provider
+  failures; one in-flight reservation was interrupted by the coordinator stop.
+  Two dialogues completed, one stopped on typed frame-refuser adherence
+  exhaustion, and one was interrupted. Blocks 2–9, recovery, the combined
+  analyzer, and the confirmation report never ran. Programme accounting is
+  therefore `255/5000`. Every V3 Block-1 dialogue, assignment, prefix, and
+  outcome is excluded from successor reuse, pooling, selection, and credit.
+
+  The incomplete evidence is durably archived on private feature branch
+  `codex/resistance-action-register-confirmation-v3-incomplete-archive` at
+  commit `6f3e8f84079787abe1b0829be65be742c5983988`. The local run-root inventory is
+  `83428e7d86df598b5794e3890e62e91e48dddea46514e6a0cd4d4123340c7493`;
+  the required live-mirror inventory is
+  `ce29fe1cef61b564b09d413b0b6782e2661a4ccff732b97c815d72deec72dae3`.
+  All four mirror payloads decompress byte-identically to the source traces.
+  The failed original and repaired public candidates both reject authority to
+  the bounded assay object and explicitly withhold examination and evidence,
+  but frozen `prospective_v5` emits no observation for either. This is an
+  observer false negative rather than provider failure or genuine learner
+  nonconformance, so same-source recovery is forbidden.
+
+  Added opt-in `prospective_v6` semantics without changing V1–V5 dispatch. The
+  V6 matcher recognizes bounded inquiry objects in authority-denial
+  constructions and the `neither … nor …` withholding form. The two exact
+  failed drafts are immutable positive regressions alongside productive,
+  accepted-authority, non-inquiry-authority, negated-withholding, and
+  withholding-without-jurisdiction contrasts. Registration V6 and endpoint
+  contract/certificate V4 preserve the powered design—36 wholly fresh
+  independent dialogues, 18 warm and 18 plain, nine balanced blocks, one final
+  two-sided Fisher exact test, no interim analysis, and the same `2160` hard
+  study envelope—while binding complete exclusion of both incomplete
+  confirmation blocks. The fresh-envelope maximum is `255 + 2160 = 2415`
+  under the already effective `5000` operational safeguard. All artifacts
+  remain zero-call HOLD readiness; no successor request or live authority is
+  created by this repair.
