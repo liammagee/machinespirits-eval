@@ -77,7 +77,7 @@ function classification(recovered) {
       };
 }
 
-function syntheticTrace({ job, plan, triggerTurn, recovered }) {
+function syntheticTrace({ job, plan, triggerTurn, recovered, safetyOverrideReason = null }) {
   const outcomeTurn = triggerTurn + 2;
   const triggerText =
     'I reject your authority to set this bounded test, and I will not supply evidence or answer within it.';
@@ -112,7 +112,10 @@ function syntheticTrace({ job, plan, triggerTurn, recovered }) {
               responseConfigurationAudit: {
                 axes: {
                   action_family: { selected: 'clarify_distinction', visible: true },
-                  engagement_stance: { selected: job.treatment.register, visible: true },
+                  engagement_stance: {
+                    selected: safetyOverrideReason ? 'plain' : job.treatment.register,
+                    visible: true,
+                  },
                 },
               },
             }
@@ -178,7 +181,7 @@ function syntheticTrace({ job, plan, triggerTurn, recovered }) {
       triggerTurn,
       triggerLearnerSha256: triggerSha,
       intervention: {
-        status: 'applied',
+        status: safetyOverrideReason ? 'safety_override_nonadherent' : 'applied',
         assignment: {
           action_fit: 'matched',
           pedagogical_move: 'test_bounded_distinction',
@@ -188,10 +191,10 @@ function syntheticTrace({ job, plan, triggerTurn, recovered }) {
           batch_id: job.block_id,
         },
         safety_override: {
-          applied: false,
+          applied: Boolean(safetyOverrideReason),
           assigned_register: job.treatment.register,
-          delivered_register: job.treatment.register,
-          reason: null,
+          delivered_register: safetyOverrideReason ? 'plain' : job.treatment.register,
+          reason: safetyOverrideReason,
         },
       },
     },
@@ -212,10 +215,16 @@ function syntheticTrace({ job, plan, triggerTurn, recovered }) {
   ];
 }
 
-function writeTraceResult({ job, plan, recovered, traceDirectory }) {
+function writeTraceResult({ job, plan, recovered, traceDirectory, safetyOverrideReason = null }) {
   fs.mkdirSync(traceDirectory, { recursive: true });
   const tracePath = path.join(traceDirectory, `${job.id}.jsonl`);
-  const source = `${syntheticTrace({ job, plan, triggerTurn: job.slot % 2 === 0 ? 2 : 1, recovered })
+  const source = `${syntheticTrace({
+    job,
+    plan,
+    triggerTurn: job.slot % 2 === 0 ? 2 : 1,
+    recovered,
+    safetyOverrideReason,
+  })
     .map((event) => JSON.stringify(event))
     .join('\n')}\n`;
   fs.writeFileSync(tracePath, source);
@@ -242,7 +251,7 @@ function traceReservations(tracePath) {
     .filter((event) => event.type === 'model_call_budget_reserved').length;
 }
 
-function writeSyntheticBatch(root, plan, recoveryByJob, { recoverJobId = null } = {}) {
+function writeSyntheticBatch(root, plan, recoveryByJob, { recoverJobId = null, safetyOverrideJobId = null } = {}) {
   fs.mkdirSync(path.join(root, 'jobs'), { recursive: true });
   writeJson(path.join(root, 'batch-plan.json'), plan);
   const results = [];
@@ -257,6 +266,7 @@ function writeSyntheticBatch(root, plan, recoveryByJob, { recoverJobId = null } 
         plan,
         recovered: recoveryByJob.get(job.id),
         traceDirectory: job.command.trace_dir,
+        safetyOverrideReason: job.id === safetyOverrideJobId ? 'comprehension_repair' : null,
       }),
     );
   }
@@ -308,6 +318,7 @@ function writeSyntheticBatch(root, plan, recoveryByJob, { recoverJobId = null } 
       plan,
       recovered: recoveryByJob.get(recoverJobId),
       traceDirectory: recoveryJob.command.trace_dir,
+      safetyOverrideReason: recoverJobId === safetyOverrideJobId ? 'comprehension_repair' : null,
     });
     recoveryRow.transcript = path.relative(ROOT, recoveryJob.command.transcript);
     const recoveryResultPath = path.join(recoveryRoot, 'recovery-result.json');
@@ -461,6 +472,7 @@ test('combined confirmation analyzer accepts only all nine sealed fresh batches 
     fs.mkdirSync(root, { recursive: true });
     writeSyntheticBatch(root, plan, recoveryByJob, {
       recoverJobId: index === 0 ? plan.jobs[0].id : null,
+      safetyOverrideJobId: index === 1 ? plan.jobs.find((job) => job.treatment.realization === 'warm').id : null,
     });
     roots.push(root);
   }
@@ -476,6 +488,14 @@ test('combined confirmation analyzer accepts only all nine sealed fresh batches 
   assert.equal(report.primary_analysis.p_value, fisherExactTwoSidedP(13, 18, 4, 18));
   assert.equal(report.primary_analysis.test, 'fisher_exact_two_sided');
   assert.equal(report.rows.filter((row) => row.execution.technical_recovery_used).length, 1);
+  const protectedRow = report.rows.find((row) => row.fidelity.protected_condition);
+  assert.equal(protectedRow.realization, 'warm');
+  assert.deepEqual(protectedRow.fidelity, {
+    action_visible: true,
+    register_visible: false,
+    safety_override: true,
+    protected_condition: true,
+  });
 
   const firstTraceDir = path.join(roots[1], 'jobs', loaded.plan.jobs[4].id, 'traces');
   fs.writeFileSync(path.join(firstTraceDir, 'alternative.jsonl'), '{}\n');

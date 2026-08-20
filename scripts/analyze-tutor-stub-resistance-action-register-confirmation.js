@@ -419,7 +419,6 @@ function analyzeTrace(batch, resultRow, loaded) {
     startEvent.registrationSha256 !== loaded.sha256 ||
     startEvent.freshIndependentDialogue !== true ||
     startEvent.calibrationDialogueReused !== false ||
-    intervention?.status !== 'applied' ||
     assignment?.action_fit !== 'matched' ||
     assignment?.pedagogical_move !== 'test_bounded_distinction' ||
     assignment?.realization !== job.treatment.realization ||
