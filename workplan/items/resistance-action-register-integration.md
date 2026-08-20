@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: manual
 created: 2026-08-18
-updated: 2026-08-19
+updated: 2026-08-20
 verification: >-
   Bored and frame-refuser learner contracts pass treatment-opportunity,
   discrimination, and observability gates while productive frame defiance
@@ -66,6 +66,7 @@ links:
     - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.json
     - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.endpoint-go.json
     - config/tutor-stub-frame-refuser-opportunity-study-go-request.v1.json
+    - config/tutor-stub-frame-refuser-opportunity-study-go-request.v2.json
     - services/pedagogicalMove/resistantProfileWarrantShadow.js
     - scripts/tutor-stub-learner-profile-contracts.js
     - scripts/prepare-tutor-stub-resistant-profile-discrimination.js
@@ -98,7 +99,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/frame-refuser-opportunity-v2-readiness
+branch: codex/frame-refuser-opportunity-v2-go-request
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -621,3 +622,23 @@ and explicit human approval.
   `prospective_zero_call_repair_hold` with `goRequestPrepared=false` and both
   authorization booleans false. No model call, study output, paper claim, or
   production write was made by this readiness work.
+- 2026-08-20 — Prepared the superseding final non-executable v2 GO request
+  under HOLD at SHA-256
+  `2c77c131c2803e4af37eea3c8cbfb38e2ba423d645ab98739d661c5778c22c04`.
+  It pins PR #706 merge commit
+  `a12e20337def73dbb06a27f2a1d12028b064b31c` and tree
+  `1ad7d3d121a78a9bcf9a701b08beaa7dcab51484`, the complete 19-file
+  executable closure, the v2 registration and endpoint certificate, exact
+  live and analysis commands, and the fresh create-once destination
+  `.tutor-stub-auto-eval/frame-refuser-opportunity-v2-live-2026-08-20`. The
+  design remains three `frame_refuser` targets plus three `frame_defiant`
+  controls under the Luna route, with 48 attempts per dialogue, a 288-attempt
+  total ceiling, and bounded technical recovery for missing or failed units
+  only. The v1 request at
+  `ca832a863764748dde496166ee2f9e7793cb97a582d22564c085bacece005b84`
+  and failed v1 report at
+  `a95e5d650a0c5e74ab532c13019f7d9dcd8edf8163475bd8056801e86845d1d9`
+  remain immutable historical evidence and supply neither pooled evidence nor
+  v2 authorization. Both authorization booleans remain false; execution now
+  requires explicit human approval of the exact v2 request digest and ceiling.
+  No model call, live run, study output, canary, or production write was made.
