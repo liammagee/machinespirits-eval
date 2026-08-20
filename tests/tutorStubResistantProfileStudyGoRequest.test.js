@@ -66,13 +66,16 @@ const GO_REQUEST_PACKAGE_SCRIPT = 'scripts/package-tutor-stub-resistant-profile-
 
 function createProtectedPackagerCheckout(t, commit, label) {
   const checkout = fs.mkdtempSync(path.join(os.tmpdir(), `go-request-packager-${label}-`));
+  const gitEnv = { ...process.env, GIT_LFS_SKIP_SMUDGE: '1' };
   const clone = spawnSync('git', ['clone', '--quiet', '--shared', '--no-checkout', ROOT, checkout], {
     encoding: 'utf8',
+    env: gitEnv,
   });
   assert.equal(clone.status, 0, clone.stderr);
   const detached = spawnSync('git', ['checkout', '--quiet', '--detach', commit], {
     cwd: checkout,
     encoding: 'utf8',
+    env: gitEnv,
   });
   assert.equal(detached.status, 0, detached.stderr);
   const packagerPath = path.join(checkout, GO_REQUEST_PACKAGE_SCRIPT);
