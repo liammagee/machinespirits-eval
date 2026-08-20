@@ -95,3 +95,24 @@ Log:
   output-triggered interactive-direction experiment was discarded because its
   roughly 1.4% change was within measurement noise; production behavior and
   the remaining real-process contracts were left unchanged.
+- 2026-08-19 — Reproduced Wave 1 on Node 22.22.3 and Git 2.46.2 from base
+  `bdaa32db4aa61ef0ebd25299cd81e5499ace08b9`. The trailer-hook timing command
+  was `/usr/bin/time -p node --test
+  tests/workplanTrailerPrePushHook.test.js`; two base runs were 2.68 and 2.56
+  seconds, the isolated worker's two after runs were 1.88 and 1.75 seconds, and
+  coordinator after runs were 1.78 and 1.78 seconds. The focused timings were
+  dependency-ready lane timings, not default fresh-install timings, using
+  `node scripts/run-local-ci.js --base 6d0241fcc63bc54097fbb04266922101d55b5ed6
+  --head e168833fcb73ac04becf7d2aa2f1a28ccf99c705 --lane validator-only
+  --no-install --offline --surface never` for PR #700 and the same command with
+  base `054f6bfbe3796f3e3df49c85f6a005e0fdfe3bac`, head
+  `c0087c0a709dccea5d8fb83a2a0bce05650078e1`, and lane `focused` for PR #701.
+  Root shard 2 passed with 4,053 passed and 7 registered skips. Root shard 1's single
+  `writingPadNarrativeBuilder` failure (4,969 passed, 11 registered skips) and
+  tutor-core's single `writingPadInternalPathDelivery` failure (136 passed)
+  reproduced on the untouched base; retained reports are under
+  `.test-tmp/wave1-root-shard1-rerun/`, `.test-tmp/wave1-core-rerun/`, and the
+  test worker's `.test-tmp/wave1-base-core/`. The latest full hosted `main`
+  baseline, Actions run 32313112912, passed both root shards, tutor-core, and
+  risk coverage on Node 22 and 24. Those unrelated local baseline failures were
+  recorded but not repaired in this PR.
