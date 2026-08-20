@@ -619,6 +619,12 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
           jobId: state.resistanceActionRegisterStudy.job_id,
           batchId: state.resistanceActionRegisterStudy.batch_id,
           prefixId: state.resistanceActionRegisterStudy.prefix_id,
+          ...(state.resistanceActionRegisterStudy.dynamic_confirmation === true
+            ? {
+                triggerTurn: state.resistanceActionRegisterStudy.trigger_turn || tutorTurn,
+                triggerLearnerSha256: state.resistanceActionRegisterStudy.trigger_learner_sha256 || null,
+              }
+            : {}),
           intervention: jsonClone(intervention),
           publicTranscriptChanged: false,
         });
@@ -1455,9 +1461,34 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       }
       const turnNumber = state.turns.length + 1;
       const turnId = turnDebugId(state, turnNumber);
+      if (
+        state.resistanceActionRegisterStudy?.dynamic_confirmation === true &&
+        state.resistanceActionRegisterStudy?.consumed !== true &&
+        turnNumber > Number(state.resistanceActionRegisterStudy?.maximum_trigger_turn)
+      ) {
+        appendTraceEvent(state.trace, {
+          type: 'resistance_action_register_confirmation_substantive_failure',
+          turn: turnNumber,
+          code: 'TUTOR_STUB_RESISTANCE_ACTION_REGISTER_CONFIRMATION_TRIGGER_MISSING',
+          disposition: 'substantive_registered_failure_stop_no_replacement',
+          publicTranscriptChanged: false,
+        });
+        const error = new Error(
+          'fresh frame_refuser confirmation did not produce its registered jurisdictional trigger by turn 2',
+        );
+        error.code = 'TUTOR_STUB_RESISTANCE_ACTION_REGISTER_CONFIRMATION_TRIGGER_MISSING';
+        error.substantiveStudyFailure = true;
+        throw error;
+      }
+      const registeredOutcomeTurn =
+        state.resistanceActionRegisterStudy?.dynamic_confirmation === true &&
+        state.resistanceActionRegisterStudy?.consumed === true
+          ? Number(state.resistanceActionRegisterStudy.trigger_turn) +
+            Number(state.resistanceActionRegisterStudy.outcome_horizon_learner_turns)
+          : Number(autoTurns);
       const registeredFinalLearnerOnly =
         state.resistanceActionRegisterStudy?.final_learner_without_tutor_reply === true &&
-        turnNumber === Number(autoTurns);
+        turnNumber === registeredOutcomeTurn;
       let precomputedRaw =
         turnNumber === 1 ? state.resistanceActionRegisterStudy?.trigger_precomputed_raw || null : null;
       let learnerResponseProvenance = nextLearnerText
@@ -1614,6 +1645,12 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
           jobId: state.resistanceActionRegisterStudy.job_id,
           batchId: state.resistanceActionRegisterStudy.batch_id,
           prefixId: state.resistanceActionRegisterStudy.prefix_id,
+          ...(state.resistanceActionRegisterStudy.dynamic_confirmation === true
+            ? {
+                triggerTurn: state.resistanceActionRegisterStudy.trigger_turn || null,
+                triggerLearnerSha256: state.resistanceActionRegisterStudy.trigger_learner_sha256 || null,
+              }
+            : {}),
           learnerText: nextLearnerText,
           classification: jsonClone(finalAnalysis.classification),
           tutorLearnerDag: jsonClone(finalAnalysis.tutorLearnerDag),

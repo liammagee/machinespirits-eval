@@ -101,6 +101,8 @@ export function parseTutorStubCliArguments({
       'resistance-action-register-registration': { type: 'string', default: '' },
       'resistance-action-register-prefix-bundle': { type: 'string', default: '' },
       'resistance-action-register-job': { type: 'string', default: '' },
+      'resistance-action-register-confirmation-registration': { type: 'string', default: '' },
+      'resistance-action-register-confirmation-job': { type: 'string', default: '' },
       'no-auto-stop-on-grounded': { type: 'boolean', default: false },
       'mixed-learner': { type: 'boolean', default: stub.mixedLearner },
       'mixed-tutor-prefetch-policy': { type: 'string', default: stub.mixedTutorPrefetchPolicy },
