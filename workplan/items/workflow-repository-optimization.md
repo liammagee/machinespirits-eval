@@ -8,7 +8,7 @@ owner: codex
 source: manual
 created: 2026-08-19
 updated: 2026-08-20
-branch: codex/feature-tracker-archive
+branch: codex/sonnet-evidence-archive
 verification: >-
   Reproducible before/after measurements show that local and hosted CI select
   the same fail-closed profiles, avoid measured orchestration and test delays,
@@ -34,6 +34,7 @@ links:
     - https://github.com/liammagee/machinespirits-eval/pull/714
     - https://github.com/liammagee/machinespirits-eval/pull/717
     - https://github.com/liammagee/machinespirits-eval/pull/719
+    - https://github.com/liammagee/machinespirits-eval/pull/720
   notes:
     - docs/next-steps/2026-08-19-coordinator-workflow-efficiency-audit.md
     - docs/next-steps/2026-08-20-stale-code-disposition.md
@@ -308,3 +309,19 @@ Log:
   remote peer, so no off-machine replica is claimed. The frozen legacy private
   Git repository, Git history, worktrees, databases, model routes, and
   unrelated artifacts remain untouched.
+- 2026-08-20 — PR #720 merged Wave 4B as
+  `546ea4a0ce11d9d08f51c001fa41a785f5489b83`. Wave 4C then externalized the
+  repository's only three LFS working-tree objects: 517,482,703 bytes of
+  historical Sonnet register-confirmatory auto-eval reports that the canonical
+  zero-call final analysis no longer reads. The create-once private USTAR bundle
+  is 59,584,797 bytes at SHA-256
+  `d0b18d83a515ebf21ae1fda5e0f806bb94f3e7115431a1ca37f085cab32dae50`;
+  its public/private manifests are byte-identical, its checksum sidecar passes,
+  and retained clean-room restore
+  `/private/tmp/ms-sonnet-evidence-restore.whGqja` reproduced all three files and
+  their original LFS OIDs before the pointers were untracked. The separate
+  234,149,200-byte source-run archive remains the analysis input, and all
+  compact QA, lineage, selection, bootstrap, discrimination, and final-analysis
+  artifacts remain tracked. LFS caches and remote objects, Git history, the
+  frozen legacy private Git repository, worktrees, databases, model routes, and
+  unrelated artifacts remain untouched; no off-machine replica is claimed.

@@ -1,0 +1,29 @@
+{
+  "schema": "machinespirits.artifact-bundle-manifest.v1",
+  "createdAt": "2026-08-20T06:55:04Z",
+  "note": "Exact historical Sonnet register-confirmatory auto-eval reports externalized from Git LFS after the final analysis moved to the separate source-run archive and compact tracked outputs.",
+  "archive": {
+    "path": "archives/register-confirmatory-sonnet5-reports-2026-07-13.tar.gz",
+    "format": "tar.gz",
+    "root": "exports/register-confirmatory-evidence/sonnet5-n5-block-b",
+    "bytes": 59584797,
+    "sha256": "d0b18d83a515ebf21ae1fda5e0f806bb94f3e7115431a1ca37f085cab32dae50"
+  },
+  "files": [
+    {
+      "file": "diligent-auto-eval.json",
+      "bytes": 150258544,
+      "sha256": "34fe2f32715c7fdef541fb51860c0c99cbbe8ad035c8823f2b308992410ff843"
+    },
+    {
+      "file": "false_memory-auto-eval.json",
+      "bytes": 180400171,
+      "sha256": "aa20bf412822c37c8322a2a1b39e2d30b88ca1b40951bc977ef0ed50ae5ec8e8"
+    },
+    {
+      "file": "proof_skipper-auto-eval.json",
+      "bytes": 186823988,
+      "sha256": "7e6ea3055ffaea16084c47b05999d97156a87b86bf05a7cc29e2138b6e4de6fc"
+    }
+  ]
+}
