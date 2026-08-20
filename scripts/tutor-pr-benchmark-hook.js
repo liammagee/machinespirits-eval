@@ -20,8 +20,11 @@ import {
   parseTutorPrBenchmarkPrePushInput,
   partitionTutorPrBenchmarkRelevance,
   resolveTutorPrBenchmarkReportRoot,
+  runTutorPrBenchmarkHookAuthorizedLaunch,
   selectNearestTutorPrBenchmarkBaseline,
   summarizeTutorPrBenchmarkWorldCoverage,
+  tutorPrBenchmarkHookLiveAuthorizationToken,
+  TUTOR_PR_BENCHMARK_HOOK_LIVE_AUTHORIZATION_ENV,
   uninstallTutorPrBenchmarkPrePushHook,
   validateTutorPrBenchmarkHookConfig,
 } from '../services/tutorStubPrBenchmarkHook.js';
@@ -242,14 +245,44 @@ function prePush() {
     });
     return;
   }
-  console.error(
-    `tutor PR benchmark hook: running ${hookConfig.preset} preset for ${relevant.paths.length} relevant path(s) at ${headOid.slice(0, 12)}`,
-  );
-  const result = spawnSync(
-    process.execPath,
-    ['scripts/run-tutor-pr-benchmark.js', '--preset', hookConfig.preset, '--out', reportDir],
-    { cwd: ROOT, stdio: 'inherit' },
-  );
+  const expectedAuthorization = tutorPrBenchmarkHookLiveAuthorizationToken({
+    headOid,
+    preset: hookConfig.preset,
+    maxCalls: plan.maxCalls,
+  });
+  const cachedQualityFailureBlocks = cached?.status === 'fail' && cachedDisposition === 'block';
+  if (
+    !cachedQualityFailureBlocks &&
+    String(process.env[TUTOR_PR_BENCHMARK_HOOK_LIVE_AUTHORIZATION_ENV] || '').trim() !== expectedAuthorization
+  ) {
+    console.error(
+      `tutor PR benchmark hook: blocked before model launch; zero model calls made; plan is ${plan.plannedCalls} call(s) with ceiling ${plan.maxCalls}`,
+    );
+    console.error(
+      `tutor PR benchmark hook: inspect with npm run tutor:stub:pr-benchmark -- --preset ${hookConfig.preset} --print-plan`,
+    );
+    console.error(
+      `tutor PR benchmark hook: authorize this attended push with ${TUTOR_PR_BENCHMARK_HOOK_LIVE_AUTHORIZATION_ENV}=${expectedAuthorization} git push`,
+    );
+  }
+  const result = runTutorPrBenchmarkHookAuthorizedLaunch({
+    authorization: process.env[TUTOR_PR_BENCHMARK_HOOK_LIVE_AUTHORIZATION_ENV],
+    headOid,
+    plan,
+    cachedReport: cached,
+    enforcement: hookConfig.enforcement,
+    reportPath,
+    launch: () => {
+      console.error(
+        `tutor PR benchmark hook: live authorization accepted; running ${hookConfig.preset} preset for ${relevant.paths.length} relevant path(s) at ${headOid.slice(0, 12)}`,
+      );
+      return spawnSync(
+        process.execPath,
+        ['scripts/run-tutor-pr-benchmark.js', '--preset', hookConfig.preset, '--out', reportDir],
+        { cwd: ROOT, stdio: 'inherit' },
+      );
+    },
+  });
   if (result.error) throw result.error;
   const completed = loadCachedTutorPrBenchmarkReport(reportPath, headOid);
   const completedDisposition = classifyTutorPrBenchmarkHookReport(completed, hookConfig.enforcement);

@@ -22,8 +22,11 @@ import {
   parseTutorPrBenchmarkPrePushInput,
   partitionTutorPrBenchmarkRelevance,
   resolveTutorPrBenchmarkReportRoot,
+  runTutorPrBenchmarkHookAuthorizedLaunch,
   selectNearestTutorPrBenchmarkBaseline,
   summarizeTutorPrBenchmarkWorldCoverage,
+  tutorPrBenchmarkHookLiveAuthorizationToken,
+  TUTOR_PR_BENCHMARK_HOOK_LIVE_AUTHORIZATION_ENV,
   TUTOR_PR_BENCHMARK_HOOK_MARKER,
   TUTOR_PR_BENCHMARK_HOOK_SIDECAR,
   uninstallTutorPrBenchmarkPrePushHook,
@@ -272,6 +275,95 @@ test('report-only enforcement warns on quality failure but blocks incomplete ver
   assert.equal(classifyTutorPrBenchmarkHookReport({ status: 'blocked' }, 'report_only'), 'block');
   assert.equal(classifyTutorPrBenchmarkHookReport({ status: 'budget_exhausted' }, 'report_only'), 'block');
   assert.equal(classifyTutorPrBenchmarkHookReport(null, 'report_only'), 'block');
+});
+
+test('fresh model calls require a transient authorization bound to exact HEAD, preset, and ceiling', () => {
+  const headOid = 'a'.repeat(40);
+  const plan = { preset: 'strong', plannedCalls: 6, maxCalls: 6, status: 'ready' };
+  const input = { headOid, preset: plan.preset, maxCalls: plan.maxCalls };
+  const token = tutorPrBenchmarkHookLiveAuthorizationToken(input);
+  assert.equal(token, `${headOid}:strong:6`);
+  assert.equal(TUTOR_PR_BENCHMARK_HOOK_LIVE_AUTHORIZATION_ENV, 'TUTOR_PR_BENCHMARK_HOOK_LIVE_AUTHORIZATION');
+
+  let launches = 0;
+  const launch = () => {
+    launches += 1;
+    return 'launched';
+  };
+
+  for (const authorization of [
+    undefined,
+    '1',
+    `${'b'.repeat(40)}:strong:6`,
+    `${headOid}:smoke:6`,
+    `${headOid}:strong:12`,
+  ]) {
+    assert.throws(
+      () =>
+        runTutorPrBenchmarkHookAuthorizedLaunch({
+          authorization,
+          headOid,
+          plan,
+          enforcement: 'report_only',
+          launch,
+        }),
+      /fresh model calls are not authorized.*zero model calls made/u,
+    );
+  }
+  assert.equal(launches, 0);
+
+  assert.equal(
+    runTutorPrBenchmarkHookAuthorizedLaunch({
+      authorization: token,
+      headOid,
+      plan,
+      enforcement: 'report_only',
+      launch,
+    }),
+    'launched',
+  );
+  assert.equal(launches, 1);
+
+  assert.throws(
+    () =>
+      runTutorPrBenchmarkHookAuthorizedLaunch({
+        authorization: token,
+        headOid,
+        plan,
+        cachedReport: { status: 'fail' },
+        enforcement: 'blocking',
+        reportPath: '/reports/head/report.json',
+        launch,
+      }),
+    /cached quality failure blocks.*zero model calls made.*report\.json.*reasoned/u,
+  );
+  assert.equal(launches, 1, 'a cached quality failure must never spend again under blocking enforcement');
+
+  assert.equal(
+    runTutorPrBenchmarkHookAuthorizedLaunch({
+      authorization: token,
+      headOid,
+      plan,
+      cachedReport: { status: 'blocked' },
+      enforcement: 'report_only',
+      launch,
+    }),
+    'launched',
+    'a technical blocked report may retry only under a fresh exact authorization',
+  );
+  assert.equal(launches, 2);
+  assert.throws(
+    () => tutorPrBenchmarkHookLiveAuthorizationToken({ ...input, headOid: 'abc123' }),
+    /full Git HEAD oid/u,
+  );
+  assert.throws(
+    () => tutorPrBenchmarkHookLiveAuthorizationToken({ ...input, preset: 'strong:expanded' }),
+    /colon-free benchmark preset/u,
+  );
+  assert.throws(
+    () => tutorPrBenchmarkHookLiveAuthorizationToken({ ...input, maxCalls: 0 }),
+    /positive integer call ceiling/u,
+  );
 });
 
 test('baseline selection reads the cached hook reports and prefers the nearest ancestor', () => {
