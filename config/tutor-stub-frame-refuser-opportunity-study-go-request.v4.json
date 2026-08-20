@@ -1,0 +1,415 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-profile-discrimination-study-go-request.v1",
+  "status": "HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL",
+  "studyId": "tutor-stub-frame-refuser-opportunity-v4",
+  "workplanItem": "resistance-action-register-integration",
+  "preparedAt": "2026-08-20T05:48:32Z",
+  "claimBoundary": "This fresh six-dialogue T1-T2 gate can establish only whether frame_refuser supplies three distinct, early, guard-eligible public prefixes while prospective-v4 frame_defiant controls remain productive jurisdiction disputes without refusal leakage. It cannot establish eight-turn recurrence, tutor adaptation, pedagogical-move efficacy, register efficacy, learning outcomes, human validity, or transfer to the cell harness.",
+  "authorization": {
+    "explicitHumanApproval": null,
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "approvalMustBindRequestSha256": true,
+    "approvalMustNameMaximumPlannedModelAttempts": 234
+  },
+  "source": {
+    "launchCommit": "76f51c7ee3a16bde42fc3bb06e0452f294f115a0",
+    "launchTree": "9e38418a1115d2acbbcc9f5b36d5130e0e2aee57",
+    "registrationMergeCommit": "76f51c7ee3a16bde42fc3bb06e0452f294f115a0",
+    "readinessMergeCommit": "76f51c7ee3a16bde42fc3bb06e0452f294f115a0",
+    "selectedFrom": "origin/main",
+    "selectedAt": "2026-08-20T05:48:32Z",
+    "requirements": {
+      "headMustEqualLaunchCommit": true,
+      "checkoutMustBeClean": true,
+      "detachedLaunchWorktree": true
+    },
+    "closure": [
+      {
+        "path": "scripts/run-tutor-stub-qa-matrix.js",
+        "sha256": "0ddc5f07577d070775b363e79666ba3a5805fa79c268b1f61c9a804be3806ae8"
+      },
+      {
+        "path": "scripts/run-tutor-stub-auto-eval.js",
+        "sha256": "2a1357da998f0e05aa5e43707d73a3d3d5202c78eb399a7410d883e8bf4c5a61"
+      },
+      {
+        "path": "scripts/analyze-tutor-stub-resistance-axis-calibration.js",
+        "sha256": "e48c0555da2560093d944f3fe81850699e96c5fcbbdee141a61906742b7ea810"
+      },
+      {
+        "path": "scripts/tutor-stub.js",
+        "sha256": "5a7136af62db78962b253955b2fdf99ddcc87ba1c6bbbecffdb78902d0df8344"
+      },
+      {
+        "path": "scripts/tutor-stub-learner-profile-contracts.js",
+        "sha256": "6198a0e909bc45de9c343216228bf2f5eec2c5bb876e43a9ed1bce8c27684372"
+      },
+      {
+        "path": "scripts/check-tutor-stub-resistant-profile-study-go-request.js",
+        "sha256": "a6e81eec5e7958acbbf94fb901672d1a2f174ab15b1a295e7baef2d9c784e41e"
+      },
+      {
+        "path": "services/tutorStubAutomatedLearnerGenerationRuntime.js",
+        "sha256": "2e10c1f16e0a42a42b02428a1afdcbe29b591171085906bd770fcba9be9e6449"
+      },
+      {
+        "path": "services/resistantLearnerObservation.js",
+        "sha256": "e6c0cfbe6d3e69ebae18a3941476cd1b269f88e058e189bf79aee5bb4272017a"
+      },
+      {
+        "path": "services/resistantLearnerAxisObservation.js",
+        "sha256": "0abd0dd8fea0286d28a96dbbe513f3e1fd6b2dbaffd6e91e8e20b3f0a4aba530"
+      },
+      {
+        "path": "services/tutorStubResistanceActionRegisterStudy.js",
+        "sha256": "9382b13533c1e95ccaeb9b00c29825aa6b5cdd3b94ec6e2a49664dc466ba44ee"
+      },
+      {
+        "path": "services/tutorStubActionBeforeRegisterShadow.js",
+        "sha256": "0edb29235d1e60133499cb0f42f23cf5ccbca964f4991d03378d52d3a8bd05ee"
+      },
+      {
+        "path": "services/pedagogicalMove/resistantProfileWarrantShadow.js",
+        "sha256": "4e4a3e3aea4d049380e7a0f0ace7cd4435913fcee937fa07b87cce3f7c8868d0"
+      },
+      {
+        "path": "services/tutorStubEdgeTimingPolicy.js",
+        "sha256": "2bbe0482a5503fa15b4a79639451bfb3cddff026c784b8a776756d2f239e680c"
+      },
+      {
+        "path": "services/tutorStubResistanceAxisDiscriminationPreflight.js",
+        "sha256": "4e4eec9bfcab5b4fe9c75d8b46e4a8cbf34e9e2bad91e1c5d8948d06cd6f415f"
+      },
+      {
+        "path": "services/paidStudyEndpointPreflight.js",
+        "sha256": "6a099d3d43269288f3b0ab4565c10b4d286a6aa433796742f087681a1d7ad79a"
+      },
+      {
+        "path": "config/drama-derivation/world-005-marrick.yaml",
+        "sha256": "38f1e5106dbca611a993bf2987f1a812330609927c84b0e17c281c292a201d03"
+      },
+      {
+        "path": "config/providers.yaml",
+        "sha256": "fe0c86fa91f4443fc4d55f6f3d5b39cf7df9fff5c3284096429cb3908335b326"
+      },
+      {
+        "path": "package.json",
+        "sha256": "cc63281906982683d8628a6d6bc2273b0aeed49baf5d789a132efac7f98c0e15"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "74306cc482c33b3c8f0f4e0f67daf612287e386f5686d5ff9fa4c97683229117"
+      },
+      {
+        "path": "services/tutorStubCliPolicyRetry.js",
+        "sha256": "8ecd27593477438136828ea365632327a7e769c4df102d4a94536b5d5040b212"
+      },
+      {
+        "path": "services/tutorStubPromptTransport.js",
+        "sha256": "8bd61940a6c52a9fe2621a277d5acd62e68219ef83c30c3a398fc8e5bec5a902"
+      },
+      {
+        "path": "services/tutorStubTutorAttemptRuntime.js",
+        "sha256": "a4e2f1a3655908e5bd68fb172b010b03d6139cd66462f43799a71ea356fb1dc7"
+      },
+      {
+        "path": "services/tutorStubTraceRuntime.js",
+        "sha256": "db025e4f5b30f76d8d14a6048662cef50afcc9bfd053ccd5fb00c9eb5254b1e2"
+      },
+      {
+        "path": "services/tutorStubLabs.js",
+        "sha256": "45668a759729574d1019aeaedaab5c61e023b42862634a816a8bdabf68d087eb"
+      },
+      {
+        "path": "services/tutorStubApplicationTraceContext.js",
+        "sha256": "77dbd695886f43d8b98b8c391a82cf783f842804b3bb010c99a1f9b1e6cdbfc3"
+      },
+      {
+        "path": "services/tutorStubCliApplicationHost.js",
+        "sha256": "4b8a4277e642d14b6e2151379587ffe323029182244f1b15d0f3e81c4cefc394"
+      }
+    ]
+  },
+  "opportunityGate": {
+    "type": "prospective_frame_refuser_treatment_opportunity",
+    "reason": "The v1 gate established three distinct early frame_refuser prefixes but failed its prospective frame_defiant control. V2 and V3 then stopped incomplete without registered verdicts. This fresh V4 gate restores the original T1-T2 opportunity horizon under prospective-v4 compositional observation, cumulative T2 qualification, one fail-before-call repair, and a retry-aware 234-reservation hard ceiling while preserving productive frame defiance as the nearest-neighbour no-intervention control.",
+    "priorArtifactsReused": false,
+    "priorResultRewritten": false,
+    "historicalEvidencePooled": false,
+    "tutorEfficacyTested": false,
+    "registerEfficacyTested": false,
+    "heldoutAxisReportSha256": "714f69f489297c571ff4157ce0269e6d3f68ccac485453b53d05cc09d5908c75",
+    "historicalOpportunityV1": {
+      "requestPath": "config/tutor-stub-frame-refuser-opportunity-study-go-request.v1.json",
+      "requestSha256": "ca832a863764748dde496166ee2f9e7793cb97a582d22564c085bacece005b84",
+      "reportSha256": "a95e5d650a0c5e74ab532c13019f7d9dcd8edf8163475bd8056801e86845d1d9",
+      "verdict": "FAIL",
+      "disposition": "immutable_historical_evidence_not_authorization_not_reused_not_pooled"
+    },
+    "historicalOpportunityV2": {
+      "requestPath": "config/tutor-stub-frame-refuser-opportunity-study-go-request.v2.json",
+      "requestSha256": "2c77c131c2803e4af37eea3c8cbfb38e2ba423d645ab98739d661c5778c22c04",
+      "launchCommit": "a12e20337def73dbb06a27f2a1d12028b064b31c",
+      "artifactRoot": ".tutor-stub-auto-eval/frame-refuser-opportunity-v2-live-2026-08-20",
+      "archive": {
+        "repositoryScope": "private_archive_branch_not_private_main",
+        "branch": "codex/frame-refuser-v2-incomplete-archive",
+        "commit": "1fefbb64800586360f2f31f8b5a6a94c8e02860a",
+        "files": 41,
+        "missingFiles": 0,
+        "qaPlanSha256": "0062bb57bc7226c9536b1560fffe129c1d31d65d1f2355d1ba65b146cb0c7eb4",
+        "parentRunPlanSha256": "31e80d707b17f91864f284ba0fd2e06308a43e3bc133b203ca2783049426d269",
+        "target": {
+          "runPlanSha256": "61276e787c9794571a2704dd446700efeb1ed0ebd647599b5c40dc417feb51b8",
+          "runSealSha256": "6d2bccb6fb0a079d8f6575a1c71be94771c25b126ee778588f73d218008a0c86",
+          "inventorySha256": "6b2a3afa9ff45b9dd9cfc2daa3dcbcfa4329f40df4cb371f30594da2ef4c10e4"
+        },
+        "control": {
+          "runPlanSha256": "0a966338af089cb90ac9fc7762d49616d7eca2074d6a735d1017d4d64f8a696f",
+          "runSealSha256": "6360b65ce58b0d31012f5b3fd7ea679c155cd3f80dd4609e17586003d6d0015b",
+          "inventorySha256": "8de1cec60f96e20e91255ec0b88141c1aa381a0fffb1e1dc7b52d3ff72eb5e39"
+        }
+      },
+      "maximumPlannedModelAttempts": 288,
+      "completedModelAttempts": 180,
+      "providerFailures": 0,
+      "targetCohort": {
+        "complete": false,
+        "completedDialogues": 2,
+        "failedDialogueRun": 1,
+        "failedDialogueCompletedTurns": 7,
+        "failedDialoguePlannedTurns": 8,
+        "failedDialogueAttempts": 48,
+        "failedDialogueAdherenceRepairs": 12
+      },
+      "controlCohort": {
+        "complete": true,
+        "completedDialogues": 3,
+        "completedModelAttempts": 76
+      },
+      "analyzerExecuted": false,
+      "gateReportCreated": false,
+      "verdict": null,
+      "outcome": "incomplete_no_registered_verdict",
+      "unusedAttemptsAreReusableAuthorization": false,
+      "artifactsReused": false,
+      "dialoguesResumed": false,
+      "historicalEvidencePooled": false,
+      "disposition": "diagnostic_only_excluded_from_v3_inference_and_authorization"
+    },
+    "recoveryBoundary": {
+      "sameLaunchSource": true,
+      "sameModelProviderRoute": true,
+      "sameProfilesPoliciesSeedConfigurationAndMeasurement": true,
+      "samePayloadAndDataScope": true,
+      "freshNonOverwritingDestinationForRecoveredUnits": true,
+      "rerunValidOutputs": false,
+      "selectAmongOutcomes": false,
+      "maximumTotalStudyAttemptsUnchanged": 234
+    },
+    "historicalOpportunityV3": {
+      "requestPath": "config/tutor-stub-frame-refuser-opportunity-study-go-request.v3.json",
+      "requestSha256": "2cbe95ba7ec713888e5ed6c405b4856bdfb021be962d771a7578b9d62dc998f2",
+      "launchCommit": "1d27d87953e125bedd8ec3b3c1336714d1e2601f",
+      "reservedModelAttempts": 65,
+      "completedModelAttempts": 64,
+      "providerFailures": 0,
+      "interruptedCalls": 1,
+      "controlsStarted": false,
+      "analyzerExecuted": false,
+      "gateReportCreated": false,
+      "verdict": null,
+      "outcome": "incomplete_no_registered_verdict",
+      "unusedAttempts": 223,
+      "unusedAttemptsTransferable": false,
+      "artifactsReused": false,
+      "historicalEvidencePooled": false,
+      "descriptiveEvidenceScope": "target_t1_t2_partial_only_no_registered_verdict",
+      "disposition": "diagnostic_only_excluded_from_v4_inference_and_authorization"
+    }
+  },
+  "measurement": {
+    "reportSchema": "machinespirits.tutor-stub.frame-refuser-opportunity-gate.v1",
+    "targetProfile": "frame_refuser",
+    "controlProfile": "frame_defiant",
+    "mustShowByTurn": 2,
+    "requiredDistinctTargetPrefixes": 3,
+    "targetObservation": "frame_jurisdiction_refusal",
+    "controlObservation": "frame_jurisdiction_dispute_with_contract_licensed_participation",
+    "controlParticipationForms": ["explicit_reframe", "bounded_local_test", "content_bearing_contribution"],
+    "refusalRule": "explicit_withholding_without_contract_licensed_participation",
+    "observationSemantics": "prospective_v4",
+    "jurisdictionRule": "compositional_authority_or_standing_or_right_over_a_bounded_inquiry_object",
+    "productiveParticipationPrecedesWithholding": true,
+    "typedExhaustionDiagnostics": [
+      "TUTOR_STUB_FRAME_REFUSER_ADHERENCE_EXHAUSTED",
+      "TUTOR_STUB_FRAME_DEFIANT_ADHERENCE_EXHAUSTED"
+    ],
+    "analysisTraceSelection": "exact_profile_trace_files_only",
+    "analysisSelectorExcludesRunEvents": true,
+    "frozenFiveAxisObserverChanged": false
+  },
+  "repairAdmission": {
+    "semantics": "prospective_v4_t1_t2_deferred_full_repair_envelope",
+    "maxFullRepairsPerT1T2": 1,
+    "repairDecisionTurn": 2,
+    "repairsAtTurn1": 0,
+    "modelCallBudgetPerDialogue": 39,
+    "baseCalls": 7,
+    "callsPerFullRepair": 2,
+    "permittedRepairCalls": 2,
+    "requiredTutorGuardReserve": 4,
+    "plannedWorstCaseCalls": 13,
+    "plannedRoleCallsTotal": 78,
+    "transportRetryLimitPerPlannedCall": 2,
+    "maximumReservationsPerPlannedCall": 3,
+    "maximumModelAttemptReservationsPerDialogue": 39,
+    "maximumModelAttemptReservationsTotal": 234,
+    "technicalRetryHeadroomReservationsPerDialogue": 26,
+    "reservationHeadroom": 0,
+    "boundedRecoveryConditionalOnUnusedCeiling": true,
+    "failBeforeUnadmittedRepairCall": true,
+    "turn1QualificationRequired": false,
+    "nonqualifyingCandidateMayBePublishedAtT1": true,
+    "invalidCandidateMayBePublishedAtOrAfterT2": false
+  },
+  "bindings": {
+    "registration": {
+      "path": "config/tutor-stub-frame-refuser-opportunity-registration.v4.json",
+      "sha256": "3e57478d44d8d83302ed65d216a8c0e2b6e25d215181f820ae7cc2a19c0b8734"
+    },
+    "endpoint": {
+      "contractPath": "config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v4.json",
+      "contractFileSha256": "811a2ca8f88b61a932b406a5b625a160ee82a7073466a071f7632bbada695105",
+      "contractCanonicalSha256": "0ed678d0e09b01f6a22de53f1c11f0c493f3cdf6a036e6fa953d87689081b366",
+      "certificatePath": "config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v4.endpoint-go.json",
+      "certificateFileSha256": "1d92008da867b5b322264bffd2d56b38f4dfa7c91787de33f489fded788bfd61",
+      "preflightSha256": "78c2cbfab419bd02617e94cd7f1d22f2a860e9afc874001ef72f9524a8fb214f",
+      "authorizationScope": "endpoint-runtime compatibility only"
+    },
+    "routeCanary": {
+      "resultPath": "config/tutor-stub-resistant-profile-route-canary-result.v1.json",
+      "resultSha256": "c68ee936441504fdb514f97537aaf87915c734b43da82f7d81136c40c6918623",
+      "authorizationConsumptionPath": "config/tutor-stub-resistant-profile-route-canary-authorization.consumed.v1.json",
+      "authorizationConsumptionSha256": "1ec23bf81df7678050e5383fbda9ab913979b9b93b24fb1944b59002c6eeefb2",
+      "sourceArtifactSha256": "a2989dfb48438b7153928244a20ef42f698122b6edb3062fdfecca41ca1ac55f",
+      "executionHead": "04edc89f943e380bf5fc88bf2d84b93c8c1a805c",
+      "observedProvider": "codex",
+      "observedModel": "gpt-5.6-luna",
+      "observedEffort": "low",
+      "attestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+      "modelIndependentlyAttested": false
+    },
+    "commands": {
+      "source": "commands",
+      "liveArraySha256": "702221defeffed541d6a71cac965fd0d2938486117454972ca962348686f4a86",
+      "analyzeArraySha256": "449d44af1a0e4fcf04051dc76f4c903a11a1acea16b4c5a9f7621c52879aa8b9"
+    }
+  },
+  "commands": {
+    "live": [
+      "env",
+      "TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS=prospective_v4",
+      "node",
+      "scripts/run-tutor-stub-qa-matrix.js",
+      "--policies",
+      "field",
+      "--profiles",
+      "frame_refuser,frame_defiant",
+      "--runs",
+      "3",
+      "--run-seed",
+      "20260820",
+      "--turns",
+      "2",
+      "--safety-turns",
+      "2",
+      "--model",
+      "codex.gpt-5.6-luna",
+      "--analysis-model",
+      "codex.gpt-5.6-luna",
+      "--auto-learner-model",
+      "codex.gpt-5.6-luna",
+      "--model-call-budget",
+      "39",
+      "--world",
+      "world_005_marrick",
+      "--dag-mode",
+      "strict_dag",
+      "--register-palette",
+      "safe",
+      "--register-overlay-threshold",
+      "0.7",
+      "--release-speed",
+      "1",
+      "--cli-effort",
+      "low",
+      "--history-turns",
+      "4",
+      "--max-tokens",
+      "4096",
+      "--parallelism",
+      "3",
+      "--progress-interval",
+      "30",
+      "--trace-dir",
+      ".tutor-stub-auto-eval/frame-refuser-opportunity-v4-live-2026-08-20",
+      "--no-html-report",
+      "--no-memory-summary",
+      "--no-analyze"
+    ],
+    "analyze": [
+      "zsh",
+      "-lc",
+      "set -euo pipefail; artifact_root=\".tutor-stub-auto-eval/frame-refuser-opportunity-v4-live-2026-08-20\"; trace_args=(); for trace in \"$artifact_root\"/*/traces/*/*.jsonl; do [[ -f \"$trace\" ]] || continue; trace_args+=(--trace \"$trace\"); done; node scripts/analyze-tutor-stub-resistance-axis-calibration.js \"${trace_args[@]}\" --registration config/tutor-stub-frame-refuser-opportunity-registration.v4.json --required-traces 6 --required-profiles frame_refuser,frame_defiant --required-runs-per-profile 3 --required-turns 2 --required-policies field --required-tutor-model codex.gpt-5.6-luna --required-analysis-model codex.gpt-5.6-luna --required-learner-model codex.gpt-5.6-luna --json --out \"$artifact_root/frame-refuser-opportunity-gate.json\""
+    ]
+  },
+  "design": {
+    "profiles": ["frame_refuser", "frame_defiant"],
+    "policies": ["field"],
+    "runsPerProfile": 3,
+    "runSeed": 20260820,
+    "dialogues": 6,
+    "turnsPerDialogue": 2,
+    "world": "world_005_marrick",
+    "dagMode": "strict_dag",
+    "registerPalette": "safe",
+    "models": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna"
+    },
+    "cliEffort": "low",
+    "parallelism": 3,
+    "plannedRoleCallsPerDialogue": 13,
+    "plannedRoleCallsTotal": 78
+  },
+  "destination": {
+    "artifactRoot": ".tutor-stub-auto-eval/frame-refuser-opportunity-v4-live-2026-08-20",
+    "createOnce": true,
+    "mustNotExistBeforeLaunch": true,
+    "productionDatabaseWrites": false
+  },
+  "payload": {
+    "scope": "Repository-authored world_005_marrick content, tutor and automated learner prompts, classifier prompts, and generated automated dialogue context only.",
+    "humanSubjectData": false,
+    "privateArchiveData": false,
+    "trainingReuseStatus": "not_applicable"
+  },
+  "budget": {
+    "dialogues": 6,
+    "maximumAttemptsPerDialogue": 39,
+    "maximumPlannedModelAttempts": 234,
+    "parallelism": 3,
+    "retryOrResumeAuthority": "bounded_technical_recovery"
+  },
+  "stoppingRules": [
+    "A substantive failure stops the study and requires interpretation before any further call.",
+    "Bounded technical recovery may address only missing or technically failed units while source, route, profiles, policy, seed, configuration, measurement, payload, the 234-attempt batch ceiling, and unused room under the 1200-attempt programme ceiling remain unchanged.",
+    "Valid outputs may not be rerun, pooled across V1-V3, or selected among; recovered units must use a fresh non-overwriting destination or checkpoint.",
+    "The live command may run once only from the exact clean launch commit and create-once destination.",
+    "The V1 failed result and V2-V3 incomplete executions remain immutable historical evidence and are neither reused, resumed, authorization for V4, nor pooled into the V4 gate.",
+    "The passed five-axis instrument result, earlier negative results, and protected low_agency and overconfident evidence remain read-only and are neither rejudged nor pooled."
+  ]
+}
