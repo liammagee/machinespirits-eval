@@ -373,7 +373,6 @@ function writeSyntheticRecoveredBatch(root, plan, recoveredJobId) {
     destination: recoveryRoot,
     priorModelAttemptReservations: 1,
   });
-  const recoveryJobRoot = recoveryJob.command.job_root;
   const recoveryTraceDir = recoveryJob.command.trace_dir;
   fs.mkdirSync(recoveryTraceDir, { recursive: true });
   recoveredTracePath = path.join(recoveryTraceDir, 'trace.jsonl');
