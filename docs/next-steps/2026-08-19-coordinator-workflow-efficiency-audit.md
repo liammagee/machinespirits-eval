@@ -110,6 +110,17 @@ This is the next bounded implementation tranche.
 These additions do not authorize deleting worktrees or artifacts, moving
 evidence to another store, rewriting history, or launching another study.
 
+## Skill-routing follow-up
+
+The mandatory tutor-stub entrypoint is now a 114-line / 6,423-byte router,
+down from 1,162 lines / 78,014 bytes (90.2% / 91.8%). Authority, safety,
+recovery, provenance, and stopping rules stay always loaded. Five selective
+references preserve the original detailed procedures byte for byte. A typical
+existing-artifact analysis now loads 291 lines instead of 1,162; an automated
+run loads 493 including defaults, prompt safety, and recovery; the largest
+human route loads 918. Independent forward tests found no lost route or
+weakened authorization boundary.
+
 ## Request-packaging mechanics follow-up
 
 The later tranche now has one create-once template-to-request command. In a

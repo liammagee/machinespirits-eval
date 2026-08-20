@@ -8,7 +8,7 @@ owner: codex
 source: manual
 created: 2026-08-19
 updated: 2026-08-20
-branch: codex/workflow-go-request-packager
+branch: codex/workflow-context-packaging
 verification: >-
   Reproducible before/after measurements show that local and hosted CI select
   the same fail-closed profiles, avoid measured orchestration and test delays,
@@ -28,6 +28,7 @@ links:
     - tutor-pr-frozen-prefix-benchmark
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/705
+    - https://github.com/liammagee/machinespirits-eval/pull/708
   notes:
     - docs/next-steps/2026-08-19-coordinator-workflow-efficiency-audit.md
 tags:
@@ -181,3 +182,12 @@ Log:
   `2c77c131c2803e4af37eea3c8cbfb38e2ba423d645ab98739d661c5778c22c04`.
   It claims protected-file equality, not whole-checkout cleanliness; zero model
   calls and zero production writes were made.
+- 2026-08-20 — Refactored the Codex-only tutor-stub evaluation skill before
+  publication. Its always-loaded entrypoint fell from 1,162 lines / 78,014
+  bytes to 114 lines / 6,423 bytes (90.2% / 91.8% reductions). Authority,
+  public-evidence safety, frozen technical recovery, provenance, and stopping
+  rules remain in the router; five mode-specific references preserve every
+  original detailed procedure byte for byte. Independent forward tests covered
+  human play, new model-backed auto-eval, technical recovery, existing-artifact
+  analysis, and prompt/world editing without finding a routing or authority
+  defect. Both Wave 2B slices were reviewed locally before the first push.
