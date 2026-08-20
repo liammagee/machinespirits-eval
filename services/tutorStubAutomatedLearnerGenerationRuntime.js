@@ -37,6 +37,8 @@ const AUTO_LEARNER_SYSTEM_PROMPT = [
   'Keep the reply concise: usually one sentence, one question, or one warranted evidence claim.',
 ].join('\n');
 
+export const FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE = 'TUTOR_STUB_FRAME_DEFIANT_ADHERENCE_EXHAUSTED';
+
 export function createTutorStubAutomatedLearnerGenerationRuntime({
   appendTraceEvent,
   callPromptModel,
@@ -550,6 +552,22 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       repaired: repairs > 0,
       repairAttempts: repairs,
     });
+    if (runtime.profileId === 'frame_defiant' && !passed) {
+      appendTraceEvent(state.trace, {
+        type: 'auto_learner_profile_adherence_exhausted',
+        turn: turnNumber,
+        profile: runtime.profileId,
+        repairAttempts: repairs,
+        disposition: 'technical_failure_no_public_candidate',
+      });
+      const error = new Error(
+        `frame_defiant adherence exhausted after ${repairs} repair attempts; refusing to publish an invalid control turn`,
+      );
+      error.code = FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE;
+      error.profile = runtime.profileId;
+      error.repairAttempts = repairs;
+      throw error;
+    }
     return { generated: candidate, precomputedRaw: raw, repaired: repairs > 0, passed };
   }
 

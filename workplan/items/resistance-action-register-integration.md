@@ -572,3 +572,14 @@ and explicit human approval.
   preserving all three target refusals. This repair prepares no GO request,
   authorizes no model call, and does not establish tutor, action, register,
   learning, human-validity, or transfer efficacy.
+- 2026-08-19 — Closed two prospective-repair review defects without changing
+  the frozen study. The opportunity analyzer now dispatches the unversioned v1
+  registration through the exact legacy observer and prefix semantics, while
+  version 2 alone selects contract-licensed participation. A digest-bound
+  replay of all six immutable traces reproduces target trigger turns `2,1,1`,
+  all three v1 control failures, three distinct prefixes, and the failed verdict
+  at the unchanged report SHA-256. Separately, exhausted `frame_defiant`
+  adherence repair now raises a typed technical failure rather than returning a
+  frame-refuser-style control turn. Deterministic tests cover an intermediate
+  explicit-refusal repair, successful productive repair, and two-attempt
+  exhaustion. No study output or authorization boundary changed.

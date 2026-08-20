@@ -7,7 +7,10 @@ import test from 'node:test';
 import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 import { fileURLToPath } from 'node:url';
 
-import { createTutorStubAutomatedLearnerGenerationRuntime } from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
+import {
+  FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE,
+  createTutorStubAutomatedLearnerGenerationRuntime,
+} from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
 import {
   learnerProfileContract,
   learnerProfileIds,
@@ -214,6 +217,141 @@ test('frame-defiant adherence repair preserves bounded participation instead of 
   assert.match(repairPrompts[0], /explicit alternative framing/iu);
   assert.match(repairPrompts[0], /Do not withdraw from local participation/iu);
   assert.doesNotMatch(repairPrompts[0], /continue to withhold the bounded local test/iu);
+});
+
+test('frame-defiant adherence rejects an explicit-refusal repair before accepting productive participation', async () => {
+  const trace = [];
+  const explicitRefusal =
+    'You do not get to dictate that the coin is the proper test; I will not enter the assay under a question you have fixed for me.';
+  const productiveDraft =
+    'I do not accept that you get to set the coin as the compulsory test; if you propose one bounded feature to examine, name it, and I will consider whether that test is properly framed.';
+  const repairs = [explicitRefusal, productiveDraft];
+  const runtime = createTutorStubAutomatedLearnerGenerationRuntime({
+    appendTraceEvent: (target, event) => target.push(event),
+    callPromptModel: async () => ({ text: repairs.shift() }),
+    classificationFromCombinedAnalysis: (raw) => raw.classification,
+    env: {},
+    extractCombinedLearnerAnalysis: async () => ({
+      classification: {
+        turn: {
+          request_type: 'authority_refusal_or_status_challenge',
+          discourse_move: 'challenge',
+          evidence_use: 'none',
+          epistemic_stance: 'resistant',
+          agency: 'steering',
+        },
+      },
+    }),
+    learnerProfileContract,
+    learnerProfileIds,
+    learnerProfilePrompt,
+    negativeFloorRegisters: [],
+  });
+  const state = {
+    trace,
+    turns: [],
+    history: [],
+    register: { policy: 'field' },
+    classifier: { enabled: true },
+    learnerDag: { enabled: true },
+    world: {},
+    interim: null,
+  };
+  const result = await runtime.enforceAutomatedLearnerProfile({
+    state,
+    resolved: {},
+    profile: 'frame_defiant',
+    turnNumber: 2,
+    generated: { text: 'I reject the premise of this exercise. You do not get to set the question that way.' },
+  });
+
+  assert.equal(result.passed, true);
+  assert.equal(result.generated.text, productiveDraft);
+  assert.equal(result.repaired, true);
+  assert.equal(repairs.length, 0);
+  assert.deepEqual(
+    trace.filter((event) => event.type === 'auto_learner_profile_repair_requested').map((event) => event.attempt),
+    [1, 2],
+  );
+  assert.equal(
+    trace.some((event) => event.type === 'auto_learner_profile_adherence_exhausted'),
+    false,
+  );
+});
+
+test('frame-defiant adherence exhaustion fails closed instead of publishing a refusal', async () => {
+  const trace = [];
+  let repairCalls = 0;
+  const explicitRefusal =
+    'You do not get to dictate that the coin is the proper test; I will not enter the assay under a question you have fixed for me.';
+  const runtime = createTutorStubAutomatedLearnerGenerationRuntime({
+    appendTraceEvent: (target, event) => target.push(event),
+    callPromptModel: async () => {
+      repairCalls += 1;
+      return { text: explicitRefusal };
+    },
+    classificationFromCombinedAnalysis: (raw) => raw.classification,
+    env: {},
+    extractCombinedLearnerAnalysis: async () => ({
+      classification: {
+        turn: {
+          request_type: 'authority_refusal_or_status_challenge',
+          discourse_move: 'challenge',
+          evidence_use: 'none',
+          epistemic_stance: 'resistant',
+          agency: 'steering',
+        },
+      },
+    }),
+    learnerProfileContract,
+    learnerProfileIds,
+    learnerProfilePrompt,
+    negativeFloorRegisters: [],
+  });
+  const state = {
+    trace,
+    turns: [],
+    history: [],
+    register: { policy: 'field' },
+    classifier: { enabled: true },
+    learnerDag: { enabled: true },
+    world: {},
+    interim: null,
+  };
+
+  await assert.rejects(
+    runtime.enforceAutomatedLearnerProfile({
+      state,
+      resolved: {},
+      profile: 'frame_defiant',
+      turnNumber: 2,
+      generated: { text: 'I reject the premise of this exercise. You do not get to set the question that way.' },
+    }),
+    (error) => {
+      assert.equal(error.code, FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE);
+      assert.equal(error.profile, 'frame_defiant');
+      assert.equal(error.repairAttempts, 2);
+      assert.match(error.message, /refusing to publish an invalid control turn/iu);
+      return true;
+    },
+  );
+  assert.equal(repairCalls, 2);
+  assert.deepEqual(trace.at(-2), {
+    type: 'auto_learner_profile_adherence',
+    turn: 2,
+    profile: 'frame_defiant',
+    required: true,
+    passed: false,
+    repaired: true,
+    repairAttempts: 2,
+  });
+  assert.deepEqual(trace.at(-1), {
+    type: 'auto_learner_profile_adherence_exhausted',
+    turn: 2,
+    profile: 'frame_defiant',
+    repairAttempts: 2,
+    disposition: 'technical_failure_no_public_candidate',
+  });
 });
 
 function turnEvent(

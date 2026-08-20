@@ -605,10 +605,15 @@ an explicit reframe, a rival or bounded local test, or an actual content-bearing
 contribution. A refusal requires explicit withholding of all three
 participation forms; absence of a generic classifier label alone cannot create
 refusal. The frame-defiant adherence repair must preserve the reframe or local
-test and cannot rewrite it as frame-refuser-style withdrawal. Zero-call replay
-classifies all three originally submitted control drafts as productive while
-leaving the frozen v1 report and failed verdict unchanged. The prospective v2
-registration retains the same `3+3` design, five-axis topology, turn-2
-deadline, thresholds, and claim boundary. It does not authorize a new live
-gate, prepare a GO request, or establish tutor efficacy; those remain later
-prospective steps.
+test and cannot rewrite it as frame-refuser-style withdrawal. If two repair
+attempts still fail that contract, the runtime now raises a technical
+adherence-exhaustion error instead of publishing the invalid control turn.
+Zero-call replay classifies all three originally submitted control drafts as
+productive while leaving the frozen v1 report and failed verdict unchanged.
+The analyzer dispatches the frozen v1 registration through its original
+observer and prefix semantics and fails closed if a digest-bound replay differs
+from that report; only the version-2 registration selects the prospective
+participation rule. The prospective v2 registration retains the same `3+3`
+design, five-axis topology, turn-2 deadline, thresholds, and claim boundary. It
+does not authorize a new live gate, prepare a GO request, or establish tutor
+efficacy; those remain later prospective steps.

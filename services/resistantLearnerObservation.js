@@ -2,6 +2,11 @@ import crypto from 'node:crypto';
 
 export const RESISTANT_LEARNER_OBSERVATION_SCHEMA = 'machinespirits.resistant-learner-observation.v1';
 
+export const RESISTANT_LEARNER_OBSERVATION_SEMANTICS = Object.freeze({
+  legacyV1: 'legacy_v1',
+  prospectiveV2: 'prospective_v2',
+});
+
 export const RESISTANT_LEARNER_OBSERVATION_TYPES = Object.freeze([
   'bored_effort_withholding',
   'frame_jurisdiction_dispute',
@@ -36,25 +41,18 @@ const PERMISSION_SEEKING_PATTERNS = Object.freeze([
   /\bif that is what you (?:want|mean)\b/iu,
 ]);
 
-const FRAME_JURISDICTION_PATTERNS = Object.freeze([
+const FRAME_JURISDICTION_PATTERNS_V1 = Object.freeze([
   /\bi (?:do not|don't) accept (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?)\b/iu,
   /\bi (?:do not|don't) accept (?:your|the tutor['’]s|their) (?:authority|standing|right)\b/iu,
   /\bi (?:do not|don't) accept your (?:fixing|setting|defining|choosing) (?:the |this |that )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
-  /\bi (?:do not|don't) accept (?:your|the tutor['’]s|their) right to (?:fix|set|define|choose|dictate)\b.{0,120}\b(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
-  /\bi (?:do not|don't) accept that (?:you|the tutor|they) (?:get|gets) to (?:fix|set|define|choose|dictate)\b.{0,120}\b(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
-  /\bi (?:do not|don't) accept that\b.{0,100}\b(?:verdict|accusation) (?:fixes|sets|defines|chooses|dictates)\b.{0,100}\b(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\bi (?:do not|don't) concede (?:your|the tutor['’]s|their) (?:authority|standing|right)\b/iu,
   /\bi reject (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
-  /\bi reject your (?:demand|question)\b.{0,120}\b(?:frame|framing|governing (?:frame|question|test))\b/iu,
-  /\bi reject your standing to (?:set|fix|define|choose|dictate)\b.{0,120}\b(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
-  /\bi reject\b.{0,80}\btest as (?:your |the )?governing (?:frame|question|test)\b/iu,
   /\bi reject (?:the )?jurisdiction of (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\bi dispute (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\bi dispute (?:your|the tutor['’]s|their) (?:authority|standing|right)\b/iu,
   /\byou (?:do not|don't) get to (?:set|define|decide|choose|fix) (?:the |this |my |our )?(?:frame|question|exercise|rules?|test|task)\b/iu,
   /\byou (?:do not|don't) get to (?:set|define|decide|choose|fix|make|declare|treat|impose)\b.{0,120}\b(?:as\s+)?(?:the\s+)?(?:governing|controlling|decisive)\s+(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\byou (?:do not|don't) get to (?:set|define|decide|choose|fix|make|declare|treat|impose|install)\b.{0,120}\b(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
-  /\byou (?:do not|don't) get to dictate\b.{0,120}\b(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\bwho (?:says|gave you the right to) (?:set|define|decide|choose) (?:the |this |my |our )?(?:frame|question|exercise|rules?|test|task)\b/iu,
   /\bwhy should i (?:accept|answer|play along with|submit to) (?:the |this |your )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\bbut not under (?:the |this |that |your |a )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
@@ -62,6 +60,17 @@ const FRAME_JURISDICTION_PATTERNS = Object.freeze([
   /\byour (?:test|question|exercise|task) assumes (?:the |that |this )/iu,
   /\bthe question is (?:loaded|rigged|not yours to ask)\b/iu,
   /\bthat is not your call\b/iu,
+]);
+
+const FRAME_JURISDICTION_PATTERNS_V2 = Object.freeze([
+  ...FRAME_JURISDICTION_PATTERNS_V1,
+  /\bi (?:do not|don't) accept (?:your|the tutor['’]s|their) right to (?:fix|set|define|choose|dictate)\b.{0,120}\b(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
+  /\bi (?:do not|don't) accept that (?:you|the tutor|they) (?:get|gets) to (?:fix|set|define|choose|dictate)\b.{0,120}\b(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
+  /\bi (?:do not|don't) accept that\b.{0,100}\b(?:verdict|accusation) (?:fixes|sets|defines|chooses|dictates)\b.{0,100}\b(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
+  /\bi reject your (?:demand|question)\b.{0,120}\b(?:frame|framing|governing (?:frame|question|test))\b/iu,
+  /\bi reject your standing to (?:set|fix|define|choose|dictate)\b.{0,120}\b(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
+  /\bi reject\b.{0,80}\btest as (?:your |the )?governing (?:frame|question|test)\b/iu,
+  /\byou (?:do not|don't) get to dictate\b.{0,120}\b(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
 ]);
 
 const FRAME_EXPLICIT_REFRAME_PATTERNS = Object.freeze([
@@ -155,7 +164,15 @@ function observation(type, evidenceSpan, text, features) {
   };
 }
 
-export function observeResistantLearnerTurn({ learnerText = '', classification = null, tutorText = '' } = {}) {
+export function observeResistantLearnerTurn({
+  learnerText = '',
+  classification = null,
+  tutorText = '',
+  semantics = RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2,
+} = {}) {
+  if (!Object.values(RESISTANT_LEARNER_OBSERVATION_SEMANTICS).includes(semantics)) {
+    throw new Error(`unsupported resistant-learner observation semantics: ${semantics}`);
+  }
   const text = String(learnerText || '').trim();
   const observations = [];
   const defeated = [];
@@ -202,39 +219,69 @@ export function observeResistantLearnerTurn({ learnerText = '', classification =
     }
   }
 
-  const frameEvidence = firstEvidence(text, FRAME_JURISDICTION_PATTERNS);
+  const legacySemantics = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.legacyV1;
+  const frameEvidence = firstEvidence(
+    text,
+    legacySemantics ? FRAME_JURISDICTION_PATTERNS_V1 : FRAME_JURISDICTION_PATTERNS_V2,
+  );
   if (frameEvidence) {
     const turn = classifierTurn(classification);
-    const frameSemantics = classifyFrameJurisdictionParticipation({ learnerText: text, classification });
-    observations.push(
-      observation('frame_jurisdiction_dispute', frameEvidence, text, {
-        target: 'inquiry_frame_or_tutor_standing',
-        jurisdictional: true,
-        content_bearing: frameSemantics.content_bearing,
-        contract_licensed_participation: frameSemantics.contract_licensed_participation,
-        participation_kinds: frameSemantics.participation.map((row) => row.kind),
-        participation_evidence: frameSemantics.participation,
-        explicit_withholding: frameSemantics.explicit_withholding,
-        explicit_withholding_evidence: frameSemantics.explicit_withholding_evidence,
-        classifier_request_type: turn.request_type || null,
-        classifier_discourse_move: turn.discourse_move || null,
-      }),
-    );
-    if (frameSemantics.explicit_withholding && !frameSemantics.contract_licensed_participation) {
-      observations.push(
-        observation('frame_jurisdiction_refusal', frameEvidence, text, {
+    const frameSemantics = legacySemantics
+      ? {
+          contract_licensed_participation: false,
+          participation: [],
+          explicit_withholding: false,
+          explicit_withholding_evidence: null,
+          content_bearing: contentBearing(classification),
+        }
+      : classifyFrameJurisdictionParticipation({ learnerText: text, classification });
+    const disputeFeatures = legacySemantics
+      ? {
           target: 'inquiry_frame_or_tutor_standing',
           jurisdictional: true,
-          local_test_or_evidence_withheld: true,
           content_bearing: frameSemantics.content_bearing,
-          contract_licensed_participation: false,
-          participation_kinds: [],
-          explicit_withholding: true,
+          classifier_request_type: turn.request_type || null,
+          classifier_discourse_move: turn.discourse_move || null,
+        }
+      : {
+          target: 'inquiry_frame_or_tutor_standing',
+          jurisdictional: true,
+          content_bearing: frameSemantics.content_bearing,
+          contract_licensed_participation: frameSemantics.contract_licensed_participation,
+          participation_kinds: frameSemantics.participation.map((row) => row.kind),
+          participation_evidence: frameSemantics.participation,
+          explicit_withholding: frameSemantics.explicit_withholding,
           explicit_withholding_evidence: frameSemantics.explicit_withholding_evidence,
           classifier_request_type: turn.request_type || null,
           classifier_discourse_move: turn.discourse_move || null,
-        }),
-      );
+        };
+    observations.push(observation('frame_jurisdiction_dispute', frameEvidence, text, disputeFeatures));
+    if (
+      (legacySemantics && !frameSemantics.content_bearing) ||
+      (!legacySemantics && frameSemantics.explicit_withholding && !frameSemantics.contract_licensed_participation)
+    ) {
+      const refusalFeatures = legacySemantics
+        ? {
+            target: 'inquiry_frame_or_tutor_standing',
+            jurisdictional: true,
+            local_test_or_evidence_withheld: true,
+            content_bearing: false,
+            classifier_request_type: turn.request_type || null,
+            classifier_discourse_move: turn.discourse_move || null,
+          }
+        : {
+            target: 'inquiry_frame_or_tutor_standing',
+            jurisdictional: true,
+            local_test_or_evidence_withheld: true,
+            content_bearing: frameSemantics.content_bearing,
+            contract_licensed_participation: false,
+            participation_kinds: [],
+            explicit_withholding: true,
+            explicit_withholding_evidence: frameSemantics.explicit_withholding_evidence,
+            classifier_request_type: turn.request_type || null,
+            classifier_discourse_move: turn.discourse_move || null,
+          };
+      observations.push(observation('frame_jurisdiction_refusal', frameEvidence, text, refusalFeatures));
     }
   }
 

@@ -9,10 +9,15 @@ import {
   RESISTANT_LEARNER_AXIS_DEFINITIONS,
   resistantLearnerAxisMarkers,
 } from '../services/resistantLearnerAxisObservation.js';
-import { observeResistantLearnerTurn } from '../services/resistantLearnerObservation.js';
+import {
+  RESISTANT_LEARNER_OBSERVATION_SEMANTICS,
+  observeResistantLearnerTurn,
+} from '../services/resistantLearnerObservation.js';
 import { extractTutorStubResistanceActionRegisterPrefix } from '../services/tutorStubResistanceActionRegisterStudy.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+export const FROZEN_FRAME_REFUSER_OPPORTUNITY_V1_REPORT_SHA256 =
+  'a95e5d650a0c5e74ab532c13019f7d9dcd8edf8163475bd8056801e86845d1d9';
 
 export const RESISTANT_PROFILE_AXIS_SIGNATURES = Object.freeze({
   bored: Object.freeze({
@@ -143,7 +148,10 @@ function inferPolicy(file, firstTurn) {
   return match ? match[1] : parent;
 }
 
-export function readTutorStubResistanceAxisTrace(file) {
+export function readTutorStubResistanceAxisTrace(
+  file,
+  { observationSemantics = RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2 } = {},
+) {
   const events = readJsonl(file);
   const start = events.find((event) => event.type === 'run_start') || {};
   const metadata = start.metadata || {};
@@ -162,6 +170,7 @@ export function readTutorStubResistanceAxisTrace(file) {
       analysis: metadata.classifier?.modelRef || null,
       learner: metadata.autoLearner?.modelRef || null,
     },
+    observationSemantics,
     turns: turns.map((turn, index) => {
       const observationInput = {
         learnerText: turn.learner,
@@ -172,8 +181,8 @@ export function readTutorStubResistanceAxisTrace(file) {
         turn: Number(turn.turn),
         learnerText: turn.learner || '',
         classification: turn.classification || null,
-        markers: resistantLearnerAxisMarkers(observationInput),
-        publicObservation: observeResistantLearnerTurn(observationInput),
+        markers: resistantLearnerAxisMarkers({ ...observationInput, semantics: observationSemantics }),
+        publicObservation: observeResistantLearnerTurn({ ...observationInput, semantics: observationSemantics }),
       };
     }),
   };
@@ -229,6 +238,23 @@ function registrationResult(registrationPath) {
   };
 }
 
+export function frameRefuserOpportunityObservationSemantics(registration) {
+  if (registration?.schema !== 'machinespirits.tutor-stub.frame-refuser-opportunity-registration.v1') {
+    throw new Error('frame-refuser opportunity semantics require the opportunity registration schema');
+  }
+  const version = registration.version ?? 1;
+  const controlObservation = registration.measurement?.controlObservation;
+  if (version === 1 && controlObservation === 'frame_jurisdiction_dispute_with_content_bearing_true') {
+    return RESISTANT_LEARNER_OBSERVATION_SEMANTICS.legacyV1;
+  }
+  if (version === 2 && controlObservation === 'frame_jurisdiction_dispute_with_contract_licensed_participation') {
+    return RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2;
+  }
+  throw new Error(
+    `unsupported frame-refuser opportunity semantics: version=${version}, controlObservation=${controlObservation}`,
+  );
+}
+
 function hasObservation(turn, type, predicate = () => true) {
   return Boolean(turn?.publicObservation?.observations?.some((row) => row.type === type && predicate(row)));
 }
@@ -242,12 +268,13 @@ function productiveFrameDefiance(turn, measurementRule) {
   });
 }
 
-function frameRefuserPrefix(trace, mustShowByTurn) {
+function frameRefuserPrefix(trace, mustShowByTurn, observationSemantics) {
   try {
     const prefix = extractTutorStubResistanceActionRegisterPrefix({
       tracePath: trace.file,
       profile: 'frame_refuser',
       requireFrozenBundle: false,
+      observationSemantics,
     });
     return {
       pass: prefix.trigger_turn <= mustShowByTurn,
@@ -267,6 +294,54 @@ function frameRefuserPrefix(trace, mustShowByTurn) {
   }
 }
 
+function legacyOpportunityGateProjection(gate) {
+  return {
+    target: gate.target.map((row) => ({
+      caseId: row.caseId,
+      refusalByDeadline: row.refusalByDeadline,
+      triggerTurn: row.eligiblePrefix.triggerTurn,
+      publicPrefixSha256: row.eligiblePrefix.publicPrefixSha256,
+      sourceTraceSha256: row.eligiblePrefix.sourceTraceSha256,
+      protectedAndUptakeGuardPass: row.protectedAndUptakeGuardPass,
+      pass: row.pass,
+    })),
+    control: gate.control.map((row) => ({
+      caseId: row.caseId,
+      productiveDisputeByDeadline: row.productiveDisputeByDeadline,
+      refusalLeakage: row.refusalLeakage,
+      pass: row.pass,
+    })),
+    distinctPrefixes: gate.distinctPrefixes,
+    pass: gate.pass,
+  };
+}
+
+function compareFrozenLegacyOpportunityGate(args, gate) {
+  if (!args.registeredReport) return null;
+  const bytes = fs.readFileSync(args.registeredReport);
+  const sha256 = crypto.createHash('sha256').update(bytes).digest('hex');
+  if (sha256 !== FROZEN_FRAME_REFUSER_OPPORTUNITY_V1_REPORT_SHA256) {
+    return {
+      pass: false,
+      expectedReportSha256: FROZEN_FRAME_REFUSER_OPPORTUNITY_V1_REPORT_SHA256,
+      observedReportSha256: sha256,
+      semanticProjectionMatches: false,
+      reason: 'frozen_v1_report_digest_mismatch',
+    };
+  }
+  const frozen = JSON.parse(bytes.toString('utf8'));
+  const semanticProjectionMatches =
+    JSON.stringify(legacyOpportunityGateProjection(gate)) ===
+    JSON.stringify(legacyOpportunityGateProjection(frozen.gate));
+  return {
+    pass: semanticProjectionMatches,
+    expectedReportSha256: FROZEN_FRAME_REFUSER_OPPORTUNITY_V1_REPORT_SHA256,
+    observedReportSha256: sha256,
+    semanticProjectionMatches,
+    reason: semanticProjectionMatches ? 'frozen_v1_semantics_preserved' : 'frozen_v1_semantic_replay_drift',
+  };
+}
+
 export function buildFrameRefuserOpportunityReport(traces, args, registrationBinding) {
   const calibration = buildResistanceAxisCalibrationReport(traces, args);
   const registration = registrationBinding.registration;
@@ -274,13 +349,12 @@ export function buildFrameRefuserOpportunityReport(traces, args, registrationBin
   const controlProfile = registration.gates.controlProfile;
   const mustShowByTurn = registration.gates.mustShowByTurn;
   const controlMeasurement = registration.measurement.controlObservation;
-  if (
-    ![
-      'frame_jurisdiction_dispute_with_content_bearing_true',
-      'frame_jurisdiction_dispute_with_contract_licensed_participation',
-    ].includes(controlMeasurement)
-  ) {
-    throw new Error(`unsupported frame-defiant control measurement: ${controlMeasurement}`);
+  const observationSemantics = frameRefuserOpportunityObservationSemantics(registration);
+  const traceSemantics = [...new Set(traces.map((trace) => trace.observationSemantics).filter(Boolean))];
+  if (traceSemantics.length > 1 || (traceSemantics.length === 1 && traceSemantics[0] !== observationSemantics)) {
+    throw new Error(
+      `trace observation semantics do not match registration: expected ${observationSemantics}, observed ${traceSemantics.join(',')}`,
+    );
   }
   const targetRows = traces
     .filter((trace) => trace.profile === targetProfile)
@@ -288,7 +362,7 @@ export function buildFrameRefuserOpportunityReport(traces, args, registrationBin
       const refusalByDeadline = trace.turns.some(
         (turn) => turn.turn <= mustShowByTurn && hasObservation(turn, 'frame_jurisdiction_refusal'),
       );
-      const prefix = frameRefuserPrefix(trace, mustShowByTurn);
+      const prefix = frameRefuserPrefix(trace, mustShowByTurn, observationSemantics);
       return {
         caseId: trace.caseId,
         trace: reportPath(trace.file),
@@ -339,6 +413,27 @@ export function buildFrameRefuserOpportunityReport(traces, args, registrationBin
     controlRows.length > 0 &&
     controlRows.every((row) => row.pass) &&
     distinctPrefixes.pass;
+  const gate = {
+    mode: 'frame_refuser_opportunity_with_productive_frame_defiant_control',
+    assembly: calibration.integrity.assembly,
+    targetProfile,
+    controlProfile,
+    mustShowByTurn,
+    target: targetRows,
+    control: controlRows,
+    distinctPrefixes,
+    tutorEfficacyTested: false,
+    registerEfficacyTested: false,
+    pass,
+  };
+  const legacyReplay =
+    observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.legacyV1
+      ? compareFrozenLegacyOpportunityGate(args, gate)
+      : null;
+  if (legacyReplay) {
+    calibration.integrity.legacyReplay = legacyReplay;
+    calibration.integrity.pass = calibration.integrity.pass && legacyReplay.pass;
+  }
   return {
     ...calibration,
     schema: 'machinespirits.tutor-stub.frame-refuser-opportunity-gate.v1',
@@ -347,23 +442,12 @@ export function buildFrameRefuserOpportunityReport(traces, args, registrationBin
     registration: {
       path: registrationBinding.path,
       sha256: registrationBinding.sha256,
+      observationSemantics,
       decisionRule: registration.gates.decisionRule,
     },
     changesRegisteredResult: false,
     priorRegisteredResultRewritten: false,
-    gate: {
-      mode: 'frame_refuser_opportunity_with_productive_frame_defiant_control',
-      assembly: calibration.integrity.assembly,
-      targetProfile,
-      controlProfile,
-      mustShowByTurn,
-      target: targetRows,
-      control: controlRows,
-      distinctPrefixes,
-      tutorEfficacyTested: false,
-      registerEfficacyTested: false,
-      pass,
-    },
+    gate,
   };
 }
 
@@ -535,8 +619,12 @@ export function buildResistanceAxisDiscriminationReport(traces, args, registrati
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
-  const traces = args.traces.map(readTutorStubResistanceAxisTrace);
   const binding = registrationResult(args.registration);
+  const observationSemantics =
+    binding?.registration?.schema === 'machinespirits.tutor-stub.frame-refuser-opportunity-registration.v1'
+      ? frameRefuserOpportunityObservationSemantics(binding.registration)
+      : RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2;
+  const traces = args.traces.map((trace) => readTutorStubResistanceAxisTrace(trace, { observationSemantics }));
   const report =
     binding?.registration?.schema === 'machinespirits.tutor-stub.frame-refuser-opportunity-registration.v1'
       ? buildFrameRefuserOpportunityReport(traces, args, binding)
