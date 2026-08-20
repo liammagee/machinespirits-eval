@@ -1,0 +1,352 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-profile-discrimination-study-go-request.v1",
+  "status": "HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL",
+  "studyId": "tutor-stub-resistance-action-register-frame-refuser-baseline-v2",
+  "authorization": {
+    "explicitHumanApproval": null,
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "standingAuthorizationAttachmentSha256": "4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b"
+  },
+  "source": {
+    "launchCommit": "b347b61233ed4b41ab7d0397debf61fce07df177",
+    "launchTree": "9d96975e64ac680b0210b5742abd0ea634c50f55",
+    "requirements": {
+      "headMustEqualLaunchCommit": true,
+      "checkoutMustBeClean": true,
+      "detachedLaunchWorktree": true
+    },
+    "closure": [
+      {
+        "path": "scripts/run-tutor-stub-resistance-action-register-crossed.js",
+        "sha256": "cf81cf8d1c6ab8adecd700f6fb8549dae8f99b0daee7766bb83faa56d9ffaced"
+      },
+      {
+        "path": "scripts/analyze-tutor-stub-resistance-action-register-baseline.js",
+        "sha256": "9d2a79ce0b42c044ab102d316e42e98a95408aa0cd41f4c231bdd7aea6c42415"
+      },
+      {
+        "path": "scripts/tutor-stub.js",
+        "sha256": "5a7136af62db78962b253955b2fdf99ddcc87ba1c6bbbecffdb78902d0df8344"
+      },
+      {
+        "path": "scripts/check-tutor-stub-resistant-profile-study-go-request.js",
+        "sha256": "967a2935d88cb14e23907cee6d813eeeb222dee2ee74c03953e1160eca4c2cb2"
+      },
+      {
+        "path": "scripts/package-tutor-stub-resistant-profile-study-go-request.js",
+        "sha256": "18bf0c686474d4edd9d97e31e598b62e5c7a8e11dc4b0fb6132e5885ff530bbb"
+      },
+      {
+        "path": "services/tutorStubResistanceActionRegisterExecution.js",
+        "sha256": "057dbf64aaf045e72dc085269d5c547bbff3e27db77026d163ea448c3d07be8e"
+      },
+      {
+        "path": "services/tutorStubResistanceActionRegisterStudy.js",
+        "sha256": "2c24e8b40ee36836a2153bc410e76299a058fc3d29ececc655ee72baec9a0198"
+      },
+      {
+        "path": "services/tutorStubResistanceActionRegisterPreflight.js",
+        "sha256": "7d9f1f7408b3248be35f2a5101bfd11ac265f58d4a3dee0b6183a081fc946324"
+      },
+      {
+        "path": "services/paidStudyEndpointPreflight.js",
+        "sha256": "6a099d3d43269288f3b0ab4565c10b4d286a6aa433796742f087681a1d7ad79a"
+      },
+      {
+        "path": "services/tutorStubTurnOrchestration.js",
+        "sha256": "875df4f8f88d09bff29bcd1681400d4026957eb8922ed0437f64d2fb12141028"
+      },
+      {
+        "path": "services/tutorStubCliApplicationHost.js",
+        "sha256": "538e227d1a3d45afb273623e4d8521951539458d192f38695dc5ff74debf6eed"
+      },
+      {
+        "path": "services/tutorStubCliArguments.js",
+        "sha256": "b0276d39417b045950d9d068802d035de5b72ac78decc2cad3b0f62b4204adae"
+      },
+      {
+        "path": "services/tutorStubNonInteractiveApplication.js",
+        "sha256": "ce50a1006d8181118084febd5f289f66d2158efd8b54d0e90c191574bf61d8eb"
+      },
+      {
+        "path": "services/tutorStubApplicationState.js",
+        "sha256": "e7628a67e95d30f09896b3e33710bab31994f348beb6d08f4dde3dd30e410b47"
+      },
+      {
+        "path": "services/tutorStubApplicationTraceContext.js",
+        "sha256": "77dbd695886f43d8b98b8c391a82cf783f842804b3bb010c99a1f9b1e6cdbfc3"
+      },
+      {
+        "path": "services/tutorStubReleasePacing.js",
+        "sha256": "0940332bb908ba4d84257d15f7374ed871ef6575e5871e8f02dc167bfb2af186"
+      },
+      {
+        "path": "services/tutorStubAutomatedLearnerGenerationRuntime.js",
+        "sha256": "2e10c1f16e0a42a42b02428a1afdcbe29b591171085906bd770fcba9be9e6449"
+      },
+      {
+        "path": "services/tutorStubLearnerAnalysisRuntime.js",
+        "sha256": "14ea65c776a3041acbf9bb58600270d666ef5e851d93c89e441651fb67e415a8"
+      },
+      {
+        "path": "services/tutorStubPublicLearnerAnalysis.js",
+        "sha256": "5ea240613cc42f3e46e54ad15b8f3f267cf10821a65fb4954cf5b3c6054f2073"
+      },
+      {
+        "path": "services/resistantLearnerObservation.js",
+        "sha256": "e6c0cfbe6d3e69ebae18a3941476cd1b269f88e058e189bf79aee5bb4272017a"
+      },
+      {
+        "path": "services/tutorStubActionBeforeRegisterShadow.js",
+        "sha256": "0edb29235d1e60133499cb0f42f23cf5ccbca964f4991d03378d52d3a8bd05ee"
+      },
+      {
+        "path": "services/tutorStubCliPolicyRetry.js",
+        "sha256": "8ecd27593477438136828ea365632327a7e769c4df102d4a94536b5d5040b212"
+      },
+      {
+        "path": "services/tutorStubPromptTransport.js",
+        "sha256": "135c334c0cdf133cf235a39951b468c36d399023e727de7c7f1085d9d4fa2584"
+      },
+      {
+        "path": "services/tutorStubTutorAttemptRuntime.js",
+        "sha256": "a4e2f1a3655908e5bd68fb172b010b03d6139cd66462f43799a71ea356fb1dc7"
+      },
+      {
+        "path": "services/tutorStubTraceRuntime.js",
+        "sha256": "db025e4f5b30f76d8d14a6048662cef50afcc9bfd053ccd5fb00c9eb5254b1e2"
+      },
+      {
+        "path": "services/tutorStubLabs.js",
+        "sha256": "45668a759729574d1019aeaedaab5c61e023b42862634a816a8bdabf68d087eb"
+      },
+      {
+        "path": "services/tutorStubArtifactArchive.js",
+        "sha256": "e17500f90ef9deb72deaa030b1a3cf034d6ce4502f40016163d8c623188c4281"
+      },
+      {
+        "path": "config/drama-derivation/world-005-marrick.yaml",
+        "sha256": "38f1e5106dbca611a993bf2987f1a812330609927c84b0e17c281c292a201d03"
+      },
+      {
+        "path": "config/providers.yaml",
+        "sha256": "fe0c86fa91f4443fc4d55f6f3d5b39cf7df9fff5c3284096429cb3908335b326"
+      },
+      {
+        "path": "package.json",
+        "sha256": "cc63281906982683d8628a6d6bc2273b0aeed49baf5d789a132efac7f98c0e15"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "74306cc482c33b3c8f0f4e0f67daf612287e386f5686d5ff9fa4c97683229117"
+      }
+    ]
+  },
+  "actionRegisterBaseline": {
+    "type": "prospective_frame_refuser_action_register_baseline_v2",
+    "v4RequestSha256": "0c14c51ae8625e6f5db301c9328b8f3182a8dbcd0b6b5a9dd610db85064ee0ab",
+    "v4ReportSha256": "771076330d58ec8818182a1924e3ea8dd2c8e54bdc1c9f32a822e491f405b431",
+    "v4PrivateArchiveCommit": "e5eb71f22f0c36f6e286272caf5b041e71d8e2ba",
+    "v4PrefixesConsumedAsFrozenInputsOnly": true,
+    "v4OutcomesPooled": false,
+    "interimInterpretationPermitted": false,
+    "outcomeSelectionPermitted": false,
+    "validUnitRerunsPermitted": false,
+    "matchedVersusMismatchedEfficacyTested": false,
+    "edgedRegisterEfficacyTested": false,
+    "artifactArchivePolicyRequired": true,
+    "claimBoundary": "calibration_only_recovery_plain_warm_descriptive_separation_and_repeat_stability_no_efficacy",
+    "recoveryBoundary": {
+      "sameLaunchSource": true,
+      "sameRegistrationPrefixBundleModelsSeedAndMeasurement": true,
+      "missingOrFailedUnitsOnly": true,
+      "rerunValidOutputs": false,
+      "selectAmongOutcomes": false,
+      "freshNonOverwritingRecoveryDestinationWithinBatchRoot": true,
+      "exactRecoveryCommandsPrebound": true,
+      "maximumAttemptsPerBatchUnchanged": 234,
+      "maximumCombinedAttemptsUnchanged": 468,
+      "programmeCeilingUnchanged": 1200
+    }
+  },
+  "design": {
+    "profiles": ["frame_refuser"],
+    "dialogues": 12,
+    "prefixes": 3,
+    "realizations": ["plain", "warm"],
+    "repeats": ["A", "B"],
+    "actionFit": "matched",
+    "pedagogicalMove": "test_bounded_distinction",
+    "outcomeHorizonLearnerTurns": 2,
+    "runSeed": 20260820,
+    "parallelism": 3,
+    "models": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna"
+    },
+    "cliEffort": "low"
+  },
+  "budget": {
+    "dialogues": 12,
+    "dialoguesPerBatch": 6,
+    "plannedRoleCallsPerBatch": 78,
+    "plannedRoleCallsCombined": 156,
+    "reservationsPerPlannedCall": 3,
+    "maximumAttemptsPerDialogue": 39,
+    "maximumAttemptsPerBatch": 234,
+    "maximumPlannedModelAttempts": 468,
+    "programmeLedgerBefore": 45,
+    "programmeLedgerAfterMaximum": 513,
+    "programmeCeiling": 1200,
+    "retryOrResumeAuthority": "bounded_technical_recovery"
+  },
+  "measurement": {
+    "reportSchema": "machinespirits.tutor-stub.resistance-action-register-baseline-report.v2",
+    "primaryOutcome": "profile_specific_resistance_recovery_by_two_post_trigger_learner_turns",
+    "repeatEndpoint": "same_treatment_repeat_stability",
+    "combinedTwelveCellAnalysisRequired": true,
+    "analysisTraceSelection": "exact_prebound_batch_result_traces_only",
+    "partialBatchAnalysisPermitted": false,
+    "v4OutcomesExcluded": true,
+    "safetyOverrideHandling": "retain_itt_as_nonadherent_without_assigned_register_fidelity_credit",
+    "interpretationBoundary": "calibration_only_no_matched_mismatched_edged_interaction_learning_human_or_transfer_claim"
+  },
+  "bindings": {
+    "registration": {
+      "path": "config/tutor-stub-resistance-action-register-crossed-registration.v2.json",
+      "sha256": "4e8fa84320ba54743920fa5bb0d9228656cd6bb80ca4ba9fe68470c2ed7658e2"
+    },
+    "prefixBundle": {
+      "path": "config/tutor-stub-resistance-action-register-v4-public-prefixes.v1.json",
+      "sha256": "d538287e4ce1661703518b86b0b1181b6e6edf05ea727bf49029ce453844a2c8"
+    },
+    "endpoint": {
+      "contractPath": "config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.v2.json",
+      "contractFileSha256": "cbf2864d7fe7502fc4196866561ad8c5790202e59c7b27a270054a7f680a6cb6",
+      "contractCanonicalSha256": "2c6835ce8e71a21c2eed6a2bc05eadfa0751abecb8ed7a66123a22184a7428ff",
+      "certificatePath": "config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.v2.endpoint-go.json",
+      "certificateFileSha256": "ae2d558370dc20f0eb54eebbbf88035ea1f9b788d5d528f32f1909c1973cc33b",
+      "preflightSha256": "2f032fe1c25d6e25a2023bd279a8fc1ecb009a49960ef21d3dc7651861252ee2"
+    },
+    "routeCanary": {
+      "resultPath": "config/tutor-stub-resistant-profile-route-canary-result.v1.json",
+      "resultSha256": "c68ee936441504fdb514f97537aaf87915c734b43da82f7d81136c40c6918623",
+      "authorizationConsumptionPath": "config/tutor-stub-resistant-profile-route-canary-authorization.consumed.v1.json",
+      "authorizationConsumptionSha256": "1ec23bf81df7678050e5383fbda9ab913979b9b93b24fb1944b59002c6eeefb2",
+      "sourceArtifactSha256": "a2989dfb48438b7153928244a20ef42f698122b6edb3062fdfecca41ca1ac55f",
+      "executionHead": "04edc89f943e380bf5fc88bf2d84b93c8c1a805c",
+      "observedProvider": "codex",
+      "observedModel": "gpt-5.6-luna",
+      "observedEffort": "low",
+      "attestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+      "modelIndependentlyAttested": false
+    },
+    "commands": {
+      "source": "commands",
+      "liveArraySha256": "766fd82cffbe16e8d0b1935b416271700cf16c22b971c71048bdad50f8994576",
+      "recoveryArraySha256": "bbdf1ef01e57a4194958f0d0b66930f8022fe1681ad9094178c6d67939731103",
+      "analyzeArraySha256": "1a7a9e883845bb4347802a8f4e2386cd5e8a5834c0a087afae40e326747f65ca"
+    }
+  },
+  "commands": {
+    "live": [
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-crossed.js",
+        "--live-batch",
+        "--batch",
+        "A",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-baseline-v2-live-2026-08-20-a",
+        "--registration",
+        "config/tutor-stub-resistance-action-register-crossed-registration.v2.json",
+        "--prefix-bundle",
+        "config/tutor-stub-resistance-action-register-v4-public-prefixes.v1.json",
+        "--parallelism",
+        "3",
+        "--expected-source-commit",
+        "b347b61233ed4b41ab7d0397debf61fce07df177"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-crossed.js",
+        "--live-batch",
+        "--batch",
+        "B",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-baseline-v2-live-2026-08-20-b",
+        "--registration",
+        "config/tutor-stub-resistance-action-register-crossed-registration.v2.json",
+        "--prefix-bundle",
+        "config/tutor-stub-resistance-action-register-v4-public-prefixes.v1.json",
+        "--parallelism",
+        "3",
+        "--expected-source-commit",
+        "b347b61233ed4b41ab7d0397debf61fce07df177"
+      ]
+    ],
+    "recovery": [
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-crossed.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-baseline-v2-live-2026-08-20-a",
+        "--expected-source-commit",
+        "b347b61233ed4b41ab7d0397debf61fce07df177",
+        "--parallelism",
+        "3"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-crossed.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-baseline-v2-live-2026-08-20-b",
+        "--expected-source-commit",
+        "b347b61233ed4b41ab7d0397debf61fce07df177",
+        "--parallelism",
+        "3"
+      ]
+    ],
+    "analyze": [
+      "node",
+      "scripts/analyze-tutor-stub-resistance-action-register-baseline.js",
+      "--batch-a",
+      ".tutor-stub-auto-eval/resistance-action-register-baseline-v2-live-2026-08-20-a",
+      "--batch-b",
+      ".tutor-stub-auto-eval/resistance-action-register-baseline-v2-live-2026-08-20-b",
+      "--registration",
+      "config/tutor-stub-resistance-action-register-crossed-registration.v2.json",
+      "--prefix-bundle",
+      "config/tutor-stub-resistance-action-register-v4-public-prefixes.v1.json",
+      "--expected-source-commit",
+      "b347b61233ed4b41ab7d0397debf61fce07df177",
+      "--out",
+      ".tutor-stub-auto-eval/resistance-action-register-baseline-v2-live-2026-08-20-combined.json",
+      "--json"
+    ]
+  },
+  "payload": {
+    "scope": "Repository-authored world_005_marrick content, exact frozen public V4 prefixes, tutor and automated learner prompts, classifier prompts, and generated automated dialogue context only.",
+    "humanSubjectData": false,
+    "privateArchiveData": false,
+    "trainingReuseStatus": "not_applicable"
+  },
+  "destination": {
+    "batchA": {
+      "artifactRoot": ".tutor-stub-auto-eval/resistance-action-register-baseline-v2-live-2026-08-20-a",
+      "createOnce": true,
+      "mustNotExistBeforeLaunch": true
+    },
+    "batchB": {
+      "artifactRoot": ".tutor-stub-auto-eval/resistance-action-register-baseline-v2-live-2026-08-20-b",
+      "createOnce": true,
+      "mustNotExistBeforeLaunch": true
+    },
+    "combinedReport": ".tutor-stub-auto-eval/resistance-action-register-baseline-v2-live-2026-08-20-combined.json",
+    "combinedReportCreateOnce": true
+  }
+}

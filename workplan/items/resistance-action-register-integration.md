@@ -906,3 +906,33 @@ and explicit human approval.
   supplies baseline sizing evidence only—not matched-versus-mismatched action,
   edged-register, interaction, tutor-efficacy, learning, human-validity, or
   cell-transfer evidence.
+- 2026-08-20 — Packaged the prospective V2 action/register baseline HOLD request
+  at
+  `config/tutor-stub-resistance-action-register-baseline-study-go-request.v2.json`
+  with SHA-256
+  `b28f62240e82301fed77f4690b59eaf6df2fac3c7e4812f053071efb89135c1c`.
+  It pins merged PR #724 source
+  `b347b61233ed4b41ab7d0397debf61fce07df177` and tree
+  `9d96975e64ac680b0210b5742abd0ea634c50f55`, the exact 31-file executable
+  closure, registration, public V4-prefix bundle, endpoint contract and
+  certificate, zero-call preflight, consumed Luna-low route result, two exact
+  initial commands, two conditional bounded-recovery commands, and one combined
+  analyzer command. The prebound A/B batches use distinct absent create-once
+  roots, each contain three exact prefixes crossed with plain and warm
+  realizations of the fixed `test_bounded_distinction` action, and retain hard
+  ceilings of 39 reservations per dialogue, 234 per batch, and 468 combined.
+  Both batches must complete before interpretation; valid units cannot be rerun,
+  V4 outcomes cannot be pooled, outcomes cannot be selected, and typed safety
+  overrides remain ITT nonadherence without assigned-register fidelity credit.
+  The standing authorization attachment is
+  `4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b`;
+  the current programme ledger is `45/1200`, with a fully consumed request
+  reaching at most `513/1200`. The request deliberately preserves literal
+  `HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL`, null approval, and both authorization
+  booleans false for validator compatibility; the external standing authority
+  is not rewritten into those frozen execution fields. Packaging and isolated
+  dependency-free validation passed 56 checks with zero model calls and zero
+  production writes. This remains calibration-only evidence for recovery,
+  descriptive warm-versus-plain separation, and same-treatment repeat drift;
+  it cannot license matched-versus-mismatched, edged-register, interaction,
+  tutor-efficacy, learning, human-validity, or cell-transfer claims.
