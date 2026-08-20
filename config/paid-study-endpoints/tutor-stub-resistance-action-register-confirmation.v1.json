@@ -1,0 +1,155 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-contract.v1",
+  "study_id": "tutor-stub-resistance-action-register-frame-refuser-warm-plain-confirmation-v1",
+  "registration": {
+    "registration_path": "config/tutor-stub-resistance-action-register-crossed-registration.v3.json",
+    "registration_sha256": "cc803b9f05c38bfc5d77d36a117ee3426b5ef2cbf531f714ba8ada4786c14df4",
+    "primary_endpoint_ids": ["profile_specific_resistance_recovery", "fisher_exact_two_sided_confirmation"],
+    "required_profiles": ["frame_refuser"],
+    "required_action_fits": ["matched"],
+    "required_realizations": ["plain", "warm"],
+    "required_observation_semantics": "prospective_v4"
+  },
+  "registered_scale": {
+    "cases": 36,
+    "unit": "fresh_independent_online_triggered_dialogue",
+    "execution_batches": 9,
+    "cases_per_execution_batch": 4,
+    "plain_cases": 18,
+    "warm_cases": 18,
+    "combined_analysis_required": true
+  },
+  "runner": {
+    "packet_builder": "services/tutorStubResistanceActionRegisterConfirmation.js#buildTutorStubResistanceActionRegisterConfirmationPackets",
+    "result_assembler": "services/tutorStubResistanceActionRegisterConfirmation.js#assembleTutorStubResistanceActionRegisterConfirmationPreflight",
+    "live_batch_executor": "scripts/run-tutor-stub-resistance-action-register-confirmation.js#runTutorStubResistanceActionRegisterConfirmationBatch",
+    "live_batch_recovery_executor": "scripts/run-tutor-stub-resistance-action-register-confirmation.js#recoverTutorStubResistanceActionRegisterConfirmationBatch",
+    "combined_analyzer": "scripts/analyze-tutor-stub-resistance-action-register-confirmation.js#analyzeTutorStubResistanceActionRegisterConfirmation",
+    "batch_contract": {
+      "required_batches": [
+        "block_01",
+        "block_02",
+        "block_03",
+        "block_04",
+        "block_05",
+        "block_06",
+        "block_07",
+        "block_08",
+        "block_09"
+      ],
+      "dialogues_per_batch": 4,
+      "plain_per_batch": 2,
+      "warm_per_batch": 2,
+      "maximum_model_attempt_reservations_per_dialogue": 60,
+      "maximum_model_attempt_reservations_per_batch": 240,
+      "combined_maximum_model_attempt_reservations": 2160,
+      "programme_ceiling_after_maximum": 2345,
+      "combined_analysis_only": true,
+      "artifact_archive_policy": "required",
+      "valid_unit_reruns": false,
+      "outcome_selection": false,
+      "bounded_technical_recovery": "missing_or_failed_units_only_within_unchanged_60_per_dialogue_240_per_batch_2160_confirmation_and_2345_programme_caps"
+    },
+    "packet_cap_bytes": 300000,
+    "emitted_event_fields": [
+      "block_id",
+      "case_id",
+      "fidelity.action_visible",
+      "fidelity.protected_condition",
+      "fidelity.register_visible",
+      "fidelity.safety_override",
+      "outcome.recovered",
+      "profile",
+      "realization",
+      "trigger.profile_identity_used",
+      "trigger.single_axis",
+      "trigger.turn"
+    ]
+  },
+  "channels": {
+    "deterministic_resistance_recovery": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceActionRegisterStudy.js#scoreTutorStubResistanceRecovery"
+    },
+    "fisher_exact_two_sided_confirmation": {
+      "enabled": true,
+      "implementation": "scripts/analyze-tutor-stub-resistance-action-register-confirmation.js#analyzeTutorStubResistanceActionRegisterConfirmation"
+    },
+    "fresh_independent_online_trigger": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceActionRegisterConfirmation.js#configureTutorStubResistanceActionRegisterConfirmationExecution"
+    },
+    "treatment_fidelity": {
+      "enabled": true,
+      "implementation": "scripts/analyze-tutor-stub-resistance-action-register-confirmation.js#analyzeTutorStubResistanceActionRegisterConfirmation"
+    },
+    "combined_fail_closed_analysis": {
+      "enabled": true,
+      "implementation": "scripts/analyze-tutor-stub-resistance-action-register-confirmation.js#analyzeTutorStubResistanceActionRegisterConfirmation"
+    },
+    "bounded_technical_recovery": {
+      "enabled": true,
+      "implementation": "scripts/run-tutor-stub-resistance-action-register-confirmation.js#recoverTutorStubResistanceActionRegisterConfirmationBatch"
+    },
+    "frozen_registration": {
+      "enabled": true,
+      "implementation": "config/tutor-stub-resistance-action-register-crossed-registration.v3.json"
+    }
+  },
+  "endpoints": [
+    {
+      "id": "profile_specific_resistance_recovery",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": [
+        "deterministic_resistance_recovery",
+        "fresh_independent_online_trigger",
+        "combined_fail_closed_analysis",
+        "frozen_registration"
+      ],
+      "required_event_fields": ["case_id", "block_id", "outcome.recovered", "profile", "realization", "trigger.turn"],
+      "denominator": { "expected_cases": 36 }
+    },
+    {
+      "id": "fisher_exact_two_sided_confirmation",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": [
+        "fisher_exact_two_sided_confirmation",
+        "combined_fail_closed_analysis",
+        "frozen_registration"
+      ],
+      "required_event_fields": ["case_id", "outcome.recovered", "realization"],
+      "denominator": { "expected_cases": 36 },
+      "test": {
+        "type": "fisher_exact_two_sided",
+        "alpha": 0.05,
+        "plain_n": 18,
+        "warm_n": 18,
+        "interim_analysis": false
+      }
+    },
+    {
+      "id": "action_register_fidelity_and_safety",
+      "role": "interpretability_gate",
+      "enabled": true,
+      "required_channels": ["treatment_fidelity", "frozen_registration"],
+      "required_event_fields": [
+        "case_id",
+        "fidelity.action_visible",
+        "fidelity.register_visible",
+        "fidelity.safety_override",
+        "fidelity.protected_condition"
+      ],
+      "denominator": { "expected_cases": 36 }
+    },
+    {
+      "id": "fresh_independent_assembly",
+      "role": "interpretability_gate",
+      "enabled": true,
+      "required_channels": ["fresh_independent_online_trigger", "combined_fail_closed_analysis", "frozen_registration"],
+      "required_event_fields": ["case_id", "block_id", "trigger.single_axis", "trigger.profile_identity_used"],
+      "denominator": { "expected_cases": 36 }
+    }
+  ]
+}

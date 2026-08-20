@@ -1182,3 +1182,46 @@ and explicit human approval.
   programme amendment that changes the ceiling or narrows the scientific scope
   and claim; until then, the defensible disposition is calibration complete,
   efficacy unresolved, and zero further model calls.
+- 2026-08-20 — Prepared the prospective zero-call readiness layer for the
+  smallest properly powered confirmation of the calibration signal. The
+  design is deliberately narrower than the crossed efficacy programme: 36
+  wholly fresh independent frame-refuser dialogues, 18 assigned warm and 18
+  assigned plain, all receiving the same registered matched
+  `test_bounded_distinction` action after the first eligible public
+  prospective-v4 refusal by T2. Nine predeclared transport blocks contain four
+  dialogues each (two warm, two plain); blocks cannot be interpreted or
+  selected, and the sole analysis occurs only after all nine batches seal. The
+  primary endpoint remains deterministic two-post-trigger resistance recovery,
+  tested once with a predeclared two-sided Fisher exact test at alpha `0.05`.
+  The 12 calibration dialogues (`1/6` plain versus `4/6` warm; report SHA-256
+  `42021a390338cd556386efc96d8f00b35655a411627908a10248dba1e473a3a5`)
+  are sizing evidence only: they are not reused as prefixes or dialogues,
+  pooled, reanalyzed, or eligible for outcome selection. Exact repository power
+  is `0.796776592585303` at 17 per arm and `0.8388687257645503` at 18 per arm,
+  making 18 the minimum registered arm size at or above 80% power.
+
+  The earlier `39`-reservation calibration cap cannot be reused for a fresh
+  online-triggered dialogue. A by-T2 trigger plus two post-trigger learner
+  turns can run to public learner T4, giving a worst-case planned envelope of
+  one opening, four learner calls, four learner analyses, three tutor calls,
+  one full learner repair (two calls), and six tutor-guard recovery calls: 20
+  planned role calls. With the registered original call plus two charged CLI
+  redispatches, the hard cap is therefore `20 × 3 = 60` reservations per
+  dialogue, `4 × 60 = 240` per transport block, and `36 × 60 = 2160` for the
+  confirmation. The programme has already consumed 185 reservations, so the
+  smallest ceiling preserving the entire fixed hard envelope is exactly
+  `185 + 2160 = 2345`: an amendment of `+1145` from 1200. Bounded technical
+  recovery remains missing/failed-only, non-overwriting, and conditional on
+  actual unused room below the unchanged 60/dialogue, 240/block, 2160/study,
+  and 2345/programme caps; valid outputs cannot be rerun or selected.
+
+  The new V3 registration, runtime trigger path, nine-block executor, sealed
+  combined analyzer, endpoint contract/certificate, and future GO-request
+  validator/packager remain HOLD-only and make zero model calls. A future
+  digest-bound request must preserve the exact 18+18 allocation, Fisher rule,
+  no-interim boundary, calibration exclusion, Luna-low route, clean source,
+  fresh create-once roots, and the explicit 1200-to-2345 ceiling amendment.
+  Confirmation can support only the frame-refuser matched-action warm-versus-
+  plain recovery contrast; it cannot establish matched-versus-mismatched,
+  edged-register, interaction, general tutor efficacy, learning, human
+  validity, or cell-harness transfer.

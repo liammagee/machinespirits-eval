@@ -447,3 +447,136 @@ test('registered action/register final candidate receives the one prospective-v4
   assert.equal(outcome.learnerText, repairedCandidate);
   assert.equal(outcome.tutorReplyGenerated, false);
 });
+
+test('fresh confirmation ends exactly two learner turns after a dynamic turn-2 trigger without a terminal tutor call', async () => {
+  const events = [];
+  let tutorCalls = 0;
+  const generated = {
+    text: 'I will test the bounded public mark without granting the wider frame.',
+    provider: 'codex',
+    model: 'gpt-5.6-luna',
+    latencyMs: 0,
+    usage: null,
+  };
+  const precomputedRaw = {
+    dagPreflight: { computedBeforeModelCall: true, publicOnly: true, turn: 4, contentSha256: 'a'.repeat(64) },
+  };
+  const orchestration = createTutorStubTurnOrchestration({
+    C: { brightBlue: '', bold: '', reset: '' },
+    analyzeLearnerTurn: async (_text, _state, options) => {
+      assert.equal(options.precomputedRaw, precomputedRaw);
+      return {
+        classification: { turn: { discourse_move: 'evidence_adoption' } },
+        tutorLearnerDag: { model: { metrics: { missingPremiseCount: 3, groundedCount: 6 } } },
+        previousRegisterEfficacy: null,
+      };
+    },
+    appendTraceEvent(_trace, event) {
+      events.push(event);
+    },
+    assertTutorStubTurnAttemptCurrent() {},
+    automatedLearnerProfileId: () => 'frame_refuser',
+    callTutor: async () => {
+      tutorCalls += 1;
+      return { text: 'must not be called' };
+    },
+    createTutorStubLearnerResponseProvenance: (value) => value,
+    enforceAutomatedLearnerProfile: async () => ({
+      generated,
+      precomputedRaw,
+      repaired: false,
+      passed: true,
+    }),
+    enforceGuardedLearnerConcessionGuard: async ({ generated: candidate }) => ({ generated: candidate }),
+    generateAutomatedLearnerTurn: async () => generated,
+    jsonClone: (value) => (value == null ? value : JSON.parse(JSON.stringify(value))),
+    learnerProfileSpeakerLabel: () => 'learner',
+    printTurnDebugLine() {},
+    printWithConcurrentTerminal: (state, action) => action(state),
+    startInterimAnimation() {},
+    stopInterimAnimation() {},
+    turnDebugId: (_state, turn) => `t${turn}`,
+  });
+  const state = {
+    trace: null,
+    turns: [{ turn: 1 }, { turn: 2 }, { turn: 3 }],
+    history: [{ role: 'assistant', content: 'Opening' }],
+    interim: null,
+    classifier: { enabled: true },
+    learnerDag: { enabled: true },
+    register: { policy: 'field' },
+    world: {},
+    resistanceActionRegisterStudy: {
+      enabled: true,
+      dynamic_confirmation: true,
+      consumed: true,
+      trigger_turn: 2,
+      trigger_learner_sha256: 'b'.repeat(64),
+      maximum_trigger_turn: 2,
+      final_learner_without_tutor_reply: true,
+      outcome_horizon_learner_turns: 2,
+      job_id: 'confirmation-job',
+      batch_id: 'block_01',
+      prefix_id: null,
+    },
+  };
+  const result = await orchestration.runAutomatedLearnerDialogue({
+    state,
+    openingEnabled: false,
+    autoLearnerResolved: { provider: 'codex', model: 'gpt-5.6-luna' },
+    autoLearnerProfile: 'frame_refuser',
+    autoTurns: 4,
+    autoSafetyTurns: 4,
+    autoStopOnGrounded: false,
+  });
+  assert.equal(result.reason, 'registered_outcome_horizon_complete');
+  assert.equal(tutorCalls, 0);
+  const outcome = events.find((event) => event.type === 'resistance_action_register_outcome_learner_turn');
+  assert.equal(outcome.turn, 4);
+  assert.equal(outcome.triggerTurn, 2);
+  assert.equal(outcome.triggerLearnerSha256, 'b'.repeat(64));
+  assert.equal(outcome.tutorReplyGenerated, false);
+});
+
+test('fresh confirmation fails substantively before a third learner call when no trigger exists by turn 2', async () => {
+  let learnerCalls = 0;
+  const orchestration = createTutorStubTurnOrchestration({
+    appendTraceEvent() {},
+    assertTutorStubTurnAttemptCurrent() {},
+    automatedLearnerProfileId: () => 'frame_refuser',
+    learnerProfileSpeakerLabel: () => 'learner',
+    generateAutomatedLearnerTurn: async () => {
+      learnerCalls += 1;
+      return { text: 'must not be called' };
+    },
+    turnDebugId: (_state, turn) => `t${turn}`,
+  });
+  const state = {
+    trace: null,
+    turns: [{ turn: 1 }, { turn: 2 }],
+    history: [{ role: 'assistant', content: 'Opening' }],
+    resistanceActionRegisterStudy: {
+      enabled: true,
+      dynamic_confirmation: true,
+      consumed: false,
+      maximum_trigger_turn: 2,
+      final_learner_without_tutor_reply: true,
+      outcome_horizon_learner_turns: 2,
+    },
+  };
+  await assert.rejects(
+    orchestration.runAutomatedLearnerDialogue({
+      state,
+      openingEnabled: false,
+      autoLearnerResolved: { provider: 'codex', model: 'gpt-5.6-luna' },
+      autoLearnerProfile: 'frame_refuser',
+      autoTurns: 4,
+      autoSafetyTurns: 4,
+      autoStopOnGrounded: false,
+    }),
+    (error) =>
+      error.code === 'TUTOR_STUB_RESISTANCE_ACTION_REGISTER_CONFIRMATION_TRIGGER_MISSING' &&
+      error.substantiveStudyFailure === true,
+  );
+  assert.equal(learnerCalls, 0);
+});

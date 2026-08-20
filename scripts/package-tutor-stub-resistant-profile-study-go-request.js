@@ -16,6 +16,7 @@ const MARKER_PREFIX = '__GO_REQUEST_PACKAGE__:';
 const SUPPORTED_OPPORTUNITY = 'prospective_frame_refuser_treatment_opportunity';
 const SUPPORTED_ACTION_REGISTER_BASELINE = 'prospective_frame_refuser_action_register_baseline_v2';
 const SUPPORTED_ACTION_REGISTER_ANALYSIS_ONLY = 'sealed_frame_refuser_action_register_baseline_analysis_only_v1';
+const SUPPORTED_ACTION_REGISTER_CONFIRMATION = 'prospective_frame_refuser_warm_plain_confirmation_v1';
 
 export const GO_REQUEST_PACKAGE_MARKERS = Object.freeze({
   sourceCommit: `${MARKER_PREFIX}source.commit`,
@@ -175,10 +176,11 @@ function requireHoldBoundary(template) {
   if (
     template.opportunityGate?.type !== SUPPORTED_OPPORTUNITY &&
     template.actionRegisterBaseline?.type !== SUPPORTED_ACTION_REGISTER_BASELINE &&
-    template.actionRegisterBaselineAnalysis?.type !== SUPPORTED_ACTION_REGISTER_ANALYSIS_ONLY
+    template.actionRegisterBaselineAnalysis?.type !== SUPPORTED_ACTION_REGISTER_ANALYSIS_ONLY &&
+    template.actionRegisterConfirmation?.type !== SUPPORTED_ACTION_REGISTER_CONFIRMATION
   ) {
     throw new Error(
-      'the packager supports only frame-refuser opportunity, action/register baseline, or sealed analysis-only HOLD templates',
+      'the packager supports only frame-refuser opportunity, action/register baseline, sealed analysis-only, or warm/plain confirmation HOLD templates',
     );
   }
   if (
@@ -309,7 +311,8 @@ function assertMaterializedStructure({
   if (historicalRequest) {
     const priorRequest =
       request.actionRegisterBaseline?.priorStoppedExecution?.request ??
-      request.actionRegisterBaselineAnalysis?.sealedInputs?.priorRequest;
+      request.actionRegisterBaselineAnalysis?.sealedInputs?.priorRequest ??
+      request.actionRegisterConfirmation?.calibrationSizingEvidence?.analysisRequest;
     assertComputedValue(
       historical?.requestPath ?? priorRequest?.path,
       historicalRequest.path,
@@ -331,7 +334,10 @@ function assertMaterializedStructure({
   } else {
     assertComputedValue(request.bindings?.commands?.liveArraySha256, liveCommandSha256, 'live command digest');
   }
-  if (request.actionRegisterBaseline?.type === SUPPORTED_ACTION_REGISTER_BASELINE) {
+  if (
+    request.actionRegisterBaseline?.type === SUPPORTED_ACTION_REGISTER_BASELINE ||
+    request.actionRegisterConfirmation?.type === SUPPORTED_ACTION_REGISTER_CONFIRMATION
+  ) {
     assertComputedValue(
       request.bindings?.commands?.recoveryArraySha256,
       recoveryCommandSha256,
@@ -430,7 +436,8 @@ function materializeTemplate({ templateText, template, launchCommit }) {
   const historicalRequestPath =
     template.opportunityGate?.historicalOpportunityV1?.requestPath ??
     template.actionRegisterBaseline?.priorStoppedExecution?.request?.path ??
-    template.actionRegisterBaselineAnalysis?.sealedInputs?.priorRequest?.path;
+    template.actionRegisterBaselineAnalysis?.sealedInputs?.priorRequest?.path ??
+    template.actionRegisterConfirmation?.calibrationSizingEvidence?.analysisRequest?.path;
   const historicalRequest = historicalRequestPath
     ? materializeRepoFile({
         launchCommit,
@@ -463,7 +470,8 @@ function materializeTemplate({ templateText, template, launchCommit }) {
   const isAnalysisOnly = template.actionRegisterBaselineAnalysis?.type === SUPPORTED_ACTION_REGISTER_ANALYSIS_ONLY;
   const liveCommandSha256 = isAnalysisOnly ? null : sha256(JSON.stringify(template.commands?.live));
   const recoveryCommandSha256 =
-    template.actionRegisterBaseline?.type === SUPPORTED_ACTION_REGISTER_BASELINE
+    template.actionRegisterBaseline?.type === SUPPORTED_ACTION_REGISTER_BASELINE ||
+    template.actionRegisterConfirmation?.type === SUPPORTED_ACTION_REGISTER_CONFIRMATION
       ? sha256(JSON.stringify(template.commands?.recovery))
       : null;
   const analyzeCommandSha256 = sha256(JSON.stringify(template.commands?.analyze));
@@ -533,6 +541,24 @@ function assertDestinationAbsent(request, root = ROOT) {
       const relative = path.relative(root, absolute);
       if (!relative || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
         throw new Error('batch destination must remain inside the repository');
+      }
+      if (fs.existsSync(absolute)) throw new Error(`request destination already exists: ${artifactRoot}`);
+    }
+    const report = path.resolve(root, canonicalRepoPath(request.destination?.combinedReport, 'combined report'));
+    if (fs.existsSync(report))
+      throw new Error(`request destination already exists: ${request.destination.combinedReport}`);
+    return destinations;
+  }
+  if (request.actionRegisterConfirmation?.type === SUPPORTED_ACTION_REGISTER_CONFIRMATION) {
+    const destinations = request.destination?.batches?.map((entry) => entry?.artifactRoot) || [];
+    if (destinations.length !== 9 || new Set(destinations).size !== 9 || destinations.some((value) => !value)) {
+      throw new Error('confirmation request requires nine distinct batch destinations');
+    }
+    for (const artifactRoot of destinations) {
+      const absolute = path.resolve(root, canonicalRepoPath(artifactRoot, 'confirmation batch destination'));
+      const relative = path.relative(root, absolute);
+      if (!relative || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+        throw new Error('confirmation batch destination must remain inside the repository');
       }
       if (fs.existsSync(absolute)) throw new Error(`request destination already exists: ${artifactRoot}`);
     }
