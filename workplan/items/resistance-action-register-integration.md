@@ -1297,3 +1297,29 @@ and explicit human approval.
   plain recovery contrast; it cannot establish matched-versus-mismatched,
   edged-register, interaction, general tutor efficacy, learning, human
   validity, or cell-harness transfer.
+- 2026-08-20 — The powered confirmation readiness layer merged through PR #736
+  at `1f3e15f88c305a3ca3589471bffd687f28278acc` (tree
+  `cd7f2e9b2f5bbe5086dc049559494b7a709bee6d`). Prepared the zero-call HOLD
+  request
+  `config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v1.json`
+  at SHA-256
+  `16f93e48f0b19fe23f0b91dabc9ac318f210ecbba6fbe954d76677d43fb78554`.
+  It binds that exact source and its 35-file closure, 36 wholly fresh
+  independent dialogues in nine seeded balanced blocks, 18 warm and 18 plain,
+  the existing registered recovery endpoint, one final two-sided Fisher exact
+  test at alpha `0.05`, and no interim analysis. The 12 calibration dialogues
+  and report `42021a39…` remain excluded sizing inputs only: they cannot be
+  reused, pooled, reanalyzed, or selected into confirmation.
+
+  The hard envelope is `60` reservations per dialogue, `240` per block, and
+  `2160` for the confirmation. With `185` attempts already consumed, the
+  smallest defensible programme ceiling is exactly `2345`, an increase of
+  `1145` over the standing `1200`. The request remains literal
+  `HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL`, with null approval and both live/model
+  authorization booleans false. Bounded technical recovery is missing/failed
+  only within the unchanged pins and ceilings; substantive or unclassified
+  failures stop, terminal valid outputs cannot be rerun, and no outcome
+  selection is allowed. Validation and deterministic packaging make zero model
+  calls and zero production writes. Launch requires the request's exact
+  digest-bound sentence amending the programme ceiling; until that sentence is
+  supplied, no live batch or analyzer may run.
