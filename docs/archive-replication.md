@@ -31,6 +31,13 @@ treat them as one folder:
   DB via SQLite's online `.backup` API (safe while in use, does not touch the source)
   into `snapshots/`, and Syncthing carries those static files. We never sync the live
   DB itself.
+- **Checksummed historical bundles → `archives/`.** Public repository manifests
+  identify each archive and every restored member; `scripts/artifact-bundle.js`
+  verifies and restores an explicitly supplied local archive. The bundle,
+  manifest sidecar, and SHA-256 sidecar are eligible to sync as immutable files.
+  Local placement does not by itself prove an off-machine copy: confirm that a
+  remote device is configured, connected, and up to date before treating the
+  Syncthing folder as replicated.
 - **`.stignore`** keeps Syncthing off the live DBs and their WAL/SHM sidecars.
 
 ## Historical private Git archive policy
@@ -50,6 +57,9 @@ Policy:
   `~/.machinespirits-data/snapshots`.
 - **Use Syncthing plus DB snapshots for replication.** This is the supported
   recovery path for another machine.
+- **Keep repository-history bundles under `~/.machinespirits-data/archives`.**
+  Their public manifests remain in the source repository; the frozen legacy
+  private Git repository is not a destination for new bundles.
 - **Reopen private-repo migration only as a separate, explicit maintenance
   project.** Git LFS migration or history rewrite is justified only if clone
   size or hosting policy becomes a material problem, and it should be scheduled

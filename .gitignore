@@ -87,6 +87,10 @@ results/
 *.csv
 *.xlsx
 
+# Historical one-shot feature-tracker evidence lives in the checksummed private
+# archive; restore it explicitly through scripts/artifact-bundle.js when needed.
+/outputs/feature-user-story-tracker/
+
 # Local compressed archives produced by scripts/package-poetics-run.js.
 # Commit the manifest in config/poetics-calibration/runs/, not the bulk bundle.
 artifacts/poetics-runs/

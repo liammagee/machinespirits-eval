@@ -1,6 +1,6 @@
 # Artifact bundle contract
 
-Status: Wave 3C current-tree deduplication boundary, 2026-08-20.
+Status: Wave 4B tracked/private-archive boundary, 2026-08-20.
 
 PR [#714](https://github.com/liammagee/machinespirits-eval/pull/714)
 established a verifiable and restorable evidence-bundle boundary before any
@@ -61,7 +61,7 @@ The archive object contains:
 
 | Field | Contract |
 | --- | --- |
-| `path` | POSIX repository-relative identity of the archive; it is not a transport locator |
+| `path` | POSIX storage-root-relative identity of the archive; Git-tracked bundles use the repository root and private bundles use the canonical data root. It is not a transport locator. |
 | `format` | `tar.gz` for this version |
 | `root` | The one repository-relative root permitted for every archive member |
 | `bytes` | Exact compressed byte length |
@@ -185,6 +185,48 @@ Any later proposal to move or untrack the archive or manifest must name and
 verify another durable replicated source and receive separate approval. A
 cache, restored tree, retained drill, or local worktree is not a replacement
 for the tracked source of record.
+
+## Private-archive specimen: feature/user-story tracker
+
+Wave 4B applies the same manifest and verifier to a historical output whose
+one-shot builders were retired in PR #719. Unlike the Green Room specimen, the
+archive object is intentionally outside Git in the canonical Syncthing-backed
+data root; the public manifest remains tracked so a checkout can verify and
+restore an explicitly supplied copy.
+
+- public manifest:
+  `config/artifact-bundles/feature-user-story-tracker-2026-06-23.manifest.json`;
+- canonical local archive:
+  `~/.machinespirits-data/archives/feature-user-story-tracker-2026-06-23.tar.gz`;
+- sidecars in the same private directory: `.manifest.json` and
+  `.tar.gz.sha256`;
+- archive size: 11,402,705 bytes;
+- archive SHA-256:
+  `e7454fe3d6fabb57a90d31d2808684137391b2a1950e1603c82283f39861b24d`;
+- restorable payload: exactly 27 files and 12,161,060 bytes under
+  `outputs/feature-user-story-tracker`.
+
+Verify and restore it without network or model calls:
+
+```bash
+MANIFEST=config/artifact-bundles/feature-user-story-tracker-2026-06-23.manifest.json
+ARCHIVE="$HOME/.machinespirits-data/archives/feature-user-story-tracker-2026-06-23.tar.gz"
+RESTORE_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/feature-user-story-tracker-restore.XXXXXX")"
+
+node scripts/artifact-bundle.js verify --manifest "$MANIFEST" --archive "$ARCHIVE"
+node scripts/artifact-bundle.js restore \
+  --manifest "$MANIFEST" \
+  --archive "$ARCHIVE" \
+  --out "$RESTORE_ROOT"
+```
+
+The original 27 repository copies are ignored and untracked only after the
+private archive, checksum sidecar, byte-identical manifest copy, and retained
+clean-room restore all passed. The archive lives under the Syncthing-managed
+root described in `docs/archive-replication.md`, but the publication-time client
+had no configured remote peer; this proves the local archive and restore, not an
+off-machine replica. The frozen legacy private Git repository remains untouched.
+Git history is unchanged.
 
 No history rewrite is part of this contract, so it cannot reduce historical Git
 pack size. No archive or restore operation licenses evidence for training or
