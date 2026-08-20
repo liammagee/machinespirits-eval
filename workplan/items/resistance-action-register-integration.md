@@ -1619,6 +1619,23 @@ and explicit human approval.
   authorizes no calls; a separately packaged HOLD successor must use wholly
   fresh nine-batch and combined-report destinations and pass a new digest-bound
   blocking review before launch.
+- 2026-08-20 — After compatibility PR #746 merged at
+  `70be98fb7525dc0b78fe640311df52d934c5b8b6`, the deterministic packager
+  produced successor HOLD request
+  `config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v2.json`
+  at SHA-256
+  `476db5ea5d2bdb9a3bc9a1d3df5b0c5e0d3a641cbd1883129e4fe0f583037310`.
+  It pins source `c2bc7b1bcc79b32c48e9b47290d9354c92a44647`, tree
+  `cdf9ffdd22863f0f22f49c9711bee052186ba76b`, 44 critical
+  source files, seven repository bindings, and the exact revision-2 stopped
+  predecessor exclusion. Its nine batch roots and one combined-report path are
+  wholly fresh and absent; the design remains the registered 36-dialogue,
+  18-per-arm blocked confirmation with the same predeclared analysis and claim
+  boundary. The request retains `HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL`, null
+  approval, and false model/live authority; deterministic validation passes 72
+  checks at zero model calls and zero production writes. The prior approval for
+  request v1 does not transfer: this exact v2 path and digest require a new
+  approval sentence before any launch.
 - 2026-08-20 — After the prospective-V6 frame-refuser observer repair merged
   in PR #747, the existing confirmation request validator and deterministic
   packager still stopped at request revision V3. They could not truthfully bind
