@@ -101,6 +101,7 @@ function materializeProtectedPackagerBlobs(request, commit, gitEnv) {
 
 function createProtectedPackagerCheckout(t, request, label, commit = request.source.launchCommit) {
   const checkout = fs.mkdtempSync(path.join(os.tmpdir(), `go-request-packager-${label}-`));
+  t.after(() => fs.rmSync(checkout, { recursive: true, force: true }));
   const gitEnv = { ...process.env, GIT_LFS_SKIP_SMUDGE: '1' };
   const protectedBlobs = materializeProtectedPackagerBlobs(request, commit, gitEnv);
   const clone = spawnSync('git', ['clone', '--quiet', '--shared', '--no-checkout', ROOT, checkout], {
@@ -126,7 +127,6 @@ function createProtectedPackagerCheckout(t, request, label, commit = request.sou
   const packagerPath = path.join(checkout, GO_REQUEST_PACKAGE_SCRIPT);
   fs.mkdirSync(path.dirname(packagerPath), { recursive: true });
   fs.copyFileSync(path.join(ROOT, GO_REQUEST_PACKAGE_SCRIPT), packagerPath);
-  t.after(() => fs.rmSync(checkout, { recursive: true, force: true }));
   return checkout;
 }
 
