@@ -12,6 +12,7 @@ import {
 } from '../services/tutorStubFirstDraftContract.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
+  assembleTutorStubResistanceActionRegisterPreflight,
   buildTutorStubResistanceActionRegisterPreflightPackets,
   buildTutorStubResistanceActionRegisterSyntheticCorpus,
   runTutorStubResistanceActionRegisterEndpointPreflight,
@@ -151,6 +152,7 @@ test('study-only intervention assigns the typed action before its compatible reg
     'public_realization',
   ]);
   assert.equal(applied.resistance_action_register_intervention.profile_identity_triggered, false);
+  assert.equal(Object.hasOwn(applied.resistance_action_register_intervention.assignment, 'batch_id'), false);
   assert.equal(state.resistanceActionRegisterStudy.consumed, true);
   assert.equal(state.register.current, applied);
 
@@ -439,6 +441,7 @@ test('prefix extractor stops before the first eligible trigger and baseline plan
       'warm:B',
     ]);
     assert.ok(jobs.every((job) => job.public_prefix_sha256 === prefix.public_prefix_sha256));
+    assert.ok(jobs.every((job) => !Object.hasOwn(job.treatment, 'batch_id')));
   }
 });
 
@@ -573,6 +576,7 @@ test('full 24-case production endpoint preflight passes with zero calls and writ
   const contract = JSON.parse(fs.readFileSync(ENDPOINT_PATH, 'utf8'));
   const cases = buildTutorStubResistanceActionRegisterSyntheticCorpus(loaded.registration);
   const packets = buildTutorStubResistanceActionRegisterPreflightPackets(cases);
+  const assembled = assembleTutorStubResistanceActionRegisterPreflight({ packets, contract });
   const preflight = runTutorStubResistanceActionRegisterEndpointPreflight({
     contract,
     registration: loaded.registration,
@@ -590,6 +594,8 @@ test('full 24-case production endpoint preflight passes with zero calls and writ
   assert.equal(valueSha256(cases), '9f081a1204b1e1f4e661df322da2e4e96d7e2ca60c822aea3dba58adcb51eb89');
   assert.equal(valueSha256(packets), '09cdb48af0e7b343db872269e834ce497ec7fb4cd19fd6b77e46c3cd05c56b34');
   assert.equal(preflight.preflight_sha256, '00a178cbc344bed48d5689679c160fc3eddbf0d1c8be8ec5d2c14ba4faff9e11');
+  assert.equal(Object.hasOwn(assembled.report, 'recovery_by_realization_and_repeat'), false);
+  assert.equal(Object.hasOwn(assembled.report, 'same_treatment_repeat_drift'), false);
 });
 
 test('historical v1 resistance action/register artifacts retain exact byte digests', () => {
