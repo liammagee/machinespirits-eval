@@ -1,19 +1,20 @@
 ---
 id: add-validator-only-ci-profile
 title: Add a fail-closed validator-only CI profile
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
 source: review
 created: 2026-08-19
-updated: 2026-08-19
+updated: 2026-08-20
 verification: "The exact PR #700 file set selects validator-only CI and runs its registered test plus targeted lint/format; the PR #699 file set and every mixed or unknown runtime path select full CI; policy/workflow contract tests and hosted full CI pass."
 branch: codex/add-validator-only-ci-profile
 links:
   prs:
     - 699
     - 700
+    - 703
   items:
     - shorten-full-ci-critical-path
     - upgrade-github-actions-node-runtime
@@ -59,3 +60,7 @@ Log:
   contracts, manifest synchronization, YAML parsing, formatting, and workplan
   source validation pass; moved to review for the workflow-selected hosted full
   suite.
+- 2026-08-20 — PR #703 merged the validator-only profile as
+  `abddffd60f223ea06aa1e80f76639e6aa202e67b` after the complete hosted suite
+  passed. The registered narrow lane and fail-closed full fallbacks satisfy the
+  acceptance contract, so this card is done.

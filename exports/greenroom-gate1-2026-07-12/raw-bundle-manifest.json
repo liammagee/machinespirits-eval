@@ -1,6 +1,14 @@
 {
+  "schema": "machinespirits.artifact-bundle-manifest.v1",
   "createdAt": "2026-07-12T05:57:03.575Z",
   "note": "raw run payloads; bundle is the archive of record, per the evidence-bundle convention",
+  "archive": {
+    "path": "exports/greenroom-gate1-2026-07-12/raw-bundle.tar.gz",
+    "format": "tar.gz",
+    "root": "exports/greenroom-gate1-2026-07-12",
+    "bytes": 9492826,
+    "sha256": "d5c5c5e7315c52d84652b4e35d47b998f449f6241f71660fb8f02eb8fe5d2434"
+  },
   "files": [
     {
       "file": "performances/P1.json",
