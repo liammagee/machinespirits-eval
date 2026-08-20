@@ -3,8 +3,8 @@
   "status": "endpoint_runtime_go",
   "study_id": "tutor-stub-boredom-action-register-proof-dag-v1",
   "contract_path": "config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v1.json",
-  "contract_sha256": "c886ba9965b503ce1ff8955b7e92ee2046e776e95ff7e8127755d1274eafab44",
-  "preflight_sha256": "5a1035eb82c5c35fab6cd78ed63953ab039b2d75c1c09e5bda5a77ddc7fb73a6",
+  "contract_sha256": "07fc501095e6f863b48b0183619c279cd9c0549a0854ee52dec8c04e980622ce",
+  "preflight_sha256": "daba0f1cbb87e8899c953ef4ae67a378cd29bcc19e24d0388b3e1c1814725add",
   "authorization_scope": "Deterministic endpoint and power readiness only; this certificate authorizes no model call, live study, request preparation, or programme-headroom consumption.",
   "launch_gate": "A reviewed production executor and analyzer, merged source closure, explicit programme ceiling amendment, fresh create-once destinations, digest-bound HOLD request, blocking request review, and exact human authorization remain required."
 }

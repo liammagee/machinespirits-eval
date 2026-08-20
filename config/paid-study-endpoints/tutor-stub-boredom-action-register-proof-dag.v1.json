@@ -3,7 +3,7 @@
   "study_id": "tutor-stub-boredom-action-register-proof-dag-v1",
   "registration": {
     "registration_path": "config/tutor-stub-boredom-action-register-proof-dag-registration.v1.json",
-    "registration_sha256": "be6fcdcb1fbc97bd459b87fcb95888c7782c2b3bdd564a45757b4e78a653a9ce",
+    "registration_sha256": "5fa04152c4888f1b7c1a38c06dc9cd064652781cb8343cff7502c17544d996f3",
     "primary_endpoint_ids": ["profile_specific_resistance_recovery"],
     "key_secondary_endpoint_id": "objective_proof_progress_by_two_turns",
     "required_profile": "bored",
@@ -28,6 +28,8 @@
     "packet_cap_bytes": 100000,
     "emitted_event_fields": [
       "arm",
+      "assignment_manifest_sha256",
+      "assignment_rank_sha256",
       "case_id",
       "fidelity.action_visible",
       "fidelity.protected_condition",
@@ -38,10 +40,12 @@
       "outcome.proof_debt_delta",
       "outcome.proof_progress_by_two_turns",
       "outcome.recovered",
+      "outcome.recovery_deadline_turns",
       "outcome.unsupported_public_claims",
       "pedagogical_move",
       "prefix_id",
       "realization",
+      "seed",
       "trigger.observed_by_turn",
       "trigger.profile",
       "trigger.profile_identity_used",
@@ -59,7 +63,7 @@
     },
     "exact_analysis": {
       "enabled": true,
-      "implementation": "services/fisherExact.js#fisherExactTwoSided"
+      "implementation": "services/tutorStubBoredomActionRegisterProofDagPreflight.js#exactBlockedScorePValue"
     },
     "fresh_prefix_assembly": {
       "enabled": true,
@@ -82,11 +86,15 @@
       "required_channels": ["registered_recovery", "exact_analysis", "fresh_prefix_assembly", "frozen_registration"],
       "required_event_fields": [
         "arm",
+        "assignment_manifest_sha256",
+        "assignment_rank_sha256",
         "case_id",
         "outcome.recovered",
+        "outcome.recovery_deadline_turns",
         "pedagogical_move",
         "prefix_id",
         "realization",
+        "seed",
         "world"
       ],
       "denominator": { "expected_cases": 36 }
@@ -103,13 +111,17 @@
       ],
       "required_event_fields": [
         "arm",
+        "assignment_manifest_sha256",
+        "assignment_rank_sha256",
         "case_id",
         "outcome.best_path_coverage_delta",
         "outcome.new_supported_public_premises",
         "outcome.proof_debt_delta",
         "outcome.proof_progress_by_two_turns",
         "outcome.unsupported_public_claims",
-        "prefix_id"
+        "prefix_id",
+        "seed",
+        "world"
       ],
       "denominator": { "expected_cases": 36 }
     },
@@ -120,9 +132,12 @@
       "required_channels": ["fresh_prefix_assembly", "frozen_registration"],
       "required_event_fields": [
         "arm",
+        "assignment_manifest_sha256",
+        "assignment_rank_sha256",
         "case_id",
         "prefix_id",
         "realization",
+        "seed",
         "trigger.observed_by_turn",
         "trigger.profile",
         "trigger.profile_identity_used",

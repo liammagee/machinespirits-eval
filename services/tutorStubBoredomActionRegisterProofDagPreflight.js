@@ -1,13 +1,14 @@
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
-import { fisherExactTwoSided } from './fisherExact.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const BOREDOM_PROOF_DAG_REGISTRATION_PATH =
   'config/tutor-stub-boredom-action-register-proof-dag-registration.v1.json';
+const BLOCKED_POWER_CACHE = new Map();
 
 function choose(n, k) {
   if (!Number.isInteger(n) || !Number.isInteger(k) || k < 0 || k > n) return 0;
@@ -24,6 +25,190 @@ function binomialLowerTail(n, k, probability) {
   let result = 0;
   for (let index = 0; index <= k; index += 1) result += binomialProbability(n, index, probability);
   return result;
+}
+
+function factorial(value) {
+  let result = 1;
+  for (let index = 2; index <= value; index += 1) result *= index;
+  return result;
+}
+
+function hypergeometricProbability({ plainN, warmN, totalSuccesses, warmSuccesses }) {
+  const plainSuccesses = totalSuccesses - warmSuccesses;
+  if (warmSuccesses < 0 || warmSuccesses > warmN || plainSuccesses < 0 || plainSuccesses > plainN) {
+    return 0;
+  }
+  return (choose(warmN, warmSuccesses) * choose(plainN, plainSuccesses)) / choose(warmN + plainN, totalSuccesses);
+}
+
+function exactConditionalScoreDistribution(blocks, cache = new Map()) {
+  const ordered = [...blocks].sort(
+    (left, right) =>
+      left.plainN - right.plainN || left.warmN - right.warmN || left.totalSuccesses - right.totalSuccesses,
+  );
+  const key = ordered.map((row) => `${row.plainN}:${row.warmN}:${row.totalSuccesses}`).join('|');
+  if (cache.has(key)) return cache.get(key);
+  let distribution = new Map([[0, 1]]);
+  for (const block of ordered) {
+    const next = new Map();
+    const minimum = Math.max(0, block.totalSuccesses - block.plainN);
+    const maximum = Math.min(block.warmN, block.totalSuccesses);
+    for (const [priorSuccesses, priorMass] of distribution.entries()) {
+      for (let warmSuccesses = minimum; warmSuccesses <= maximum; warmSuccesses += 1) {
+        const totalWarmSuccesses = priorSuccesses + warmSuccesses;
+        const mass =
+          priorMass *
+          hypergeometricProbability({
+            plainN: block.plainN,
+            warmN: block.warmN,
+            totalSuccesses: block.totalSuccesses,
+            warmSuccesses,
+          });
+        next.set(totalWarmSuccesses, (next.get(totalWarmSuccesses) || 0) + mass);
+      }
+    }
+    distribution = next;
+  }
+  cache.set(key, distribution);
+  return distribution;
+}
+
+export function exactBlockedScorePValue(blocks, { distributionCache = new Map() } = {}) {
+  if (
+    !Array.isArray(blocks) ||
+    blocks.length < 1 ||
+    blocks.some(
+      (row) =>
+        !Number.isInteger(row.plainN) ||
+        !Number.isInteger(row.warmN) ||
+        row.plainN < 1 ||
+        row.warmN < 1 ||
+        !Number.isInteger(row.plainSuccesses) ||
+        !Number.isInteger(row.warmSuccesses) ||
+        row.plainSuccesses < 0 ||
+        row.plainSuccesses > row.plainN ||
+        row.warmSuccesses < 0 ||
+        row.warmSuccesses > row.warmN,
+    )
+  ) {
+    throw new Error('invalid exact blocked score-test inputs');
+  }
+  const normalized = blocks.map((row) => ({
+    plainN: row.plainN,
+    warmN: row.warmN,
+    totalSuccesses: row.plainSuccesses + row.warmSuccesses,
+  }));
+  const observedWarmSuccesses = blocks.reduce((sum, row) => sum + row.warmSuccesses, 0);
+  const distribution = exactConditionalScoreDistribution(normalized, distributionCache);
+  const observedMass = distribution.get(observedWarmSuccesses) || 0;
+  return [...distribution.values()].reduce(
+    (sum, mass) => sum + (mass <= observedMass + Number.EPSILON * 8 ? mass : 0),
+    0,
+  );
+}
+
+function buildEqualBlockAlternativeStates({ blocks, perArm, plainRecoveryRate, warmRecoveryRate }) {
+  const categories = [];
+  for (let plainSuccesses = 0; plainSuccesses <= perArm; plainSuccesses += 1) {
+    for (let warmSuccesses = 0; warmSuccesses <= perArm; warmSuccesses += 1) {
+      categories.push({
+        plainSuccesses,
+        warmSuccesses,
+        totalSuccesses: plainSuccesses + warmSuccesses,
+        mass:
+          binomialProbability(perArm, plainSuccesses, plainRecoveryRate) *
+          binomialProbability(perArm, warmSuccesses, warmRecoveryRate),
+      });
+    }
+  }
+  const states = [];
+  const selected = [];
+  function visit(startIndex) {
+    if (selected.length === blocks) {
+      const counts = new Map();
+      let mass = 1;
+      let warmSuccesses = 0;
+      const totals = [];
+      for (const index of selected) {
+        counts.set(index, (counts.get(index) || 0) + 1);
+        const category = categories[index];
+        mass *= category.mass;
+        warmSuccesses += category.warmSuccesses;
+        totals.push(category.totalSuccesses);
+      }
+      let multiplicity = factorial(blocks);
+      for (const count of counts.values()) multiplicity /= factorial(count);
+      states.push({
+        blocks: totals
+          .sort((left, right) => left - right)
+          .map((totalSuccesses) => ({
+            plainN: perArm,
+            warmN: perArm,
+            totalSuccesses,
+          })),
+        mass: mass * multiplicity,
+        warmSuccesses,
+      });
+      return;
+    }
+    for (let index = startIndex; index < categories.length; index += 1) {
+      selected.push(index);
+      visit(index);
+      selected.pop();
+    }
+  }
+  visit(0);
+  return states;
+}
+
+export function exactBlockedScorePower({ perArmByWorld, plainRecoveryRate, warmRecoveryRate, alpha = 0.05 }) {
+  if (
+    !Array.isArray(perArmByWorld) ||
+    perArmByWorld.length < 1 ||
+    perArmByWorld.some((value) => !Number.isInteger(value) || value < 1) ||
+    !(plainRecoveryRate > 0 && plainRecoveryRate < 1) ||
+    !(warmRecoveryRate > 0 && warmRecoveryRate < 1) ||
+    !(alpha > 0 && alpha < 1)
+  ) {
+    throw new Error('invalid exact blocked score-test power inputs');
+  }
+  const cacheKey = JSON.stringify({ perArmByWorld, plainRecoveryRate, warmRecoveryRate, alpha });
+  if (BLOCKED_POWER_CACHE.has(cacheKey)) return BLOCKED_POWER_CACHE.get(cacheKey);
+  const groups = new Map();
+  for (const perArm of perArmByWorld) groups.set(perArm, (groups.get(perArm) || 0) + 1);
+  const groupedStates = [...groups.entries()].map(([perArm, blocks]) =>
+    buildEqualBlockAlternativeStates({ blocks, perArm, plainRecoveryRate, warmRecoveryRate }),
+  );
+  const distributionCache = new Map();
+  const pValueCache = new Map();
+  let power = 0;
+  function combine(groupIndex, blocks, warmSuccesses, mass) {
+    if (groupIndex === groupedStates.length) {
+      const ordered = [...blocks].sort(
+        (left, right) =>
+          left.plainN - right.plainN || left.warmN - right.warmN || left.totalSuccesses - right.totalSuccesses,
+      );
+      const key = `${ordered.map((row) => `${row.plainN}:${row.warmN}:${row.totalSuccesses}`).join('|')}#${warmSuccesses}`;
+      let pValue = pValueCache.get(key);
+      if (pValue === undefined) {
+        const distribution = exactConditionalScoreDistribution(ordered, distributionCache);
+        const observedMass = distribution.get(warmSuccesses) || 0;
+        pValue = [...distribution.values()].reduce(
+          (sum, value) => sum + (value <= observedMass + Number.EPSILON * 8 ? value : 0),
+          0,
+        );
+        pValueCache.set(key, pValue);
+      }
+      if (pValue <= alpha + Number.EPSILON * 8) power += mass;
+      return;
+    }
+    for (const state of groupedStates[groupIndex]) {
+      combine(groupIndex + 1, [...blocks, ...state.blocks], warmSuccesses + state.warmSuccesses, mass * state.mass);
+    }
+  }
+  combine(0, [], 0, 1);
+  BLOCKED_POWER_CACHE.set(cacheKey, power);
+  return power;
 }
 
 export function exactTwoSidedMcNemarPValue(warmOnly, plainOnly) {
@@ -61,30 +246,6 @@ export function exactMcNemarPower({ pairs, warmOnlyProbability, plainOnlyProbabi
       }
     }
     power += binomialProbability(pairs, discordant, discordanceProbability) * rejection;
-  }
-  return power;
-}
-
-export function exactFisherPower({ perArm, plainRecoveryRate, warmRecoveryRate, alpha = 0.05 }) {
-  if (
-    !Number.isInteger(perArm) ||
-    perArm < 1 ||
-    !(plainRecoveryRate > 0 && plainRecoveryRate < 1) ||
-    !(warmRecoveryRate > 0 && warmRecoveryRate < 1) ||
-    !(alpha > 0 && alpha < 1)
-  ) {
-    throw new Error('invalid exact Fisher power inputs');
-  }
-  let power = 0;
-  for (let plainSuccesses = 0; plainSuccesses <= perArm; plainSuccesses += 1) {
-    const plainMass = binomialProbability(perArm, plainSuccesses, plainRecoveryRate);
-    for (let warmSuccesses = 0; warmSuccesses <= perArm; warmSuccesses += 1) {
-      if (
-        fisherExactTwoSided(plainSuccesses, perArm - plainSuccesses, warmSuccesses, perArm - warmSuccesses) <= alpha
-      ) {
-        power += plainMass * binomialProbability(perArm, warmSuccesses, warmRecoveryRate);
-      }
-    }
   }
   return power;
 }
@@ -129,18 +290,19 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   }
   if (
     registration?.measurement?.primaryEndpoint?.id !== 'profile_specific_resistance_recovery' ||
-    registration?.measurement?.primaryEndpoint?.analysis !== 'two_sided_fisher_exact' ||
+    registration?.measurement?.primaryEndpoint?.deadlinePostTriggerLearnerTurns !== 1 ||
+    registration?.measurement?.primaryEndpoint?.analysis !== 'two_sided_exact_conditional_blocked_score_test' ||
     registration?.measurement?.keySecondaryEndpoint?.id !== 'objective_proof_progress_by_two_turns'
   ) {
     errors.push('registered recovery and objective proof-progress endpoints drifted');
   }
-  const powerAt17 = exactFisherPower({
-    perArm: 17,
+  const powerAt17 = exactBlockedScorePower({
+    perArmByWorld: [2, 3, 3, 3, 3, 3],
     plainRecoveryRate: 1 / 6,
     warmRecoveryRate: 4 / 6,
   });
-  const powerAt18 = exactFisherPower({
-    perArm: 18,
+  const powerAt18 = exactBlockedScorePower({
+    perArmByWorld: [3, 3, 3, 3, 3, 3],
     plainRecoveryRate: 1 / 6,
     warmRecoveryRate: 4 / 6,
   });
@@ -156,11 +318,11 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   });
   if (
     power.minimumPerArm !== 18 ||
-    Math.abs(power.powerAt17PerArm - powerAt17) > 1e-12 ||
-    Math.abs(power.powerAt18PerArm - powerAt18) > 1e-12 ||
+    Math.abs(power.powerAt17PerArm - powerAt17) > 1e-10 ||
+    Math.abs(power.powerAt18PerArm - powerAt18) > 1e-10 ||
     !(powerAt17 < 0.8 && powerAt18 >= 0.8)
   ) {
-    errors.push('exact Fisher power proof does not establish 18 per arm as the minimum');
+    errors.push('exact blocked score-test power proof does not establish 18 per arm as the minimum');
   }
   if (
     power.designChoiceAudit?.pairedExactMcNemarMinimumPairs !== 28 ||
@@ -168,7 +330,7 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
     Math.abs(power.designChoiceAudit?.pairedPowerAt28 - pairedPowerAt28) > 1e-12 ||
     !(pairedPowerAt27 < 0.8 && pairedPowerAt28 >= 0.8) ||
     power.designChoiceAudit?.pairedHardAttemptCeiling !== 2856 ||
-    power.designChoiceAudit?.selectedIndependentFisherHardAttemptCeiling !== 2160
+    power.designChoiceAudit?.selectedIndependentBlockedHardAttemptCeiling !== 2160
   ) {
     errors.push('independent-versus-paired smallest-design audit drifted');
   }
@@ -203,6 +365,14 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
     errors.push('programme ceiling amendment arithmetic drifted');
   }
   if (
+    registration?.design?.randomization?.algorithm !== 'sha256_rank_within_world' ||
+    registration?.design?.randomization?.assignmentSeed !== 20260820 ||
+    registration?.design?.randomization?.assignmentManifestSha256 !==
+      '4e256dfa65054747a5d6d1ac82d1aecb42f7c98f158cb76e686f24c37d71ef94'
+  ) {
+    errors.push('randomization assignment drifted');
+  }
+  if (
     registration?.design?.noReuseOrPooling?.priorOutcomesPooled !== false ||
     registration?.design?.noReuseOrPooling?.priorTwelveCalibrationDialoguesReused !== false ||
     registration?.design?.noReuseOrPooling?.interimAnalysis !== false ||
@@ -217,28 +387,66 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   return { ok: errors.length === 0, errors, powerAt17, powerAt18 };
 }
 
+function assignmentManifestSha256(rows) {
+  return crypto.createHash('sha256').update(JSON.stringify(rows)).digest('hex');
+}
+
+export function buildTutorStubBoredomProofDagAssignments(registration) {
+  const assignmentSeed = registration.design.randomization.assignmentSeed;
+  const manifest = registration.design.worlds.flatMap((world) => {
+    const ranked = Array.from({ length: 6 }, (_, dialogueIndex) => ({
+      world,
+      dialogue_index: dialogueIndex + 1,
+      assignment_rank_sha256: crypto
+        .createHash('sha256')
+        .update(`${assignmentSeed}:${world}:${dialogueIndex + 1}`)
+        .digest('hex'),
+    })).sort((left, right) => left.assignment_rank_sha256.localeCompare(right.assignment_rank_sha256));
+    const realizationByDialogue = new Map(
+      ranked.map((row, index) => [row.dialogue_index, index < 3 ? 'plain' : 'warm']),
+    );
+    return ranked
+      .map((row) => ({ ...row, realization: realizationByDialogue.get(row.dialogue_index) }))
+      .sort((left, right) => left.dialogue_index - right.dialogue_index);
+  });
+  const digest = assignmentManifestSha256(manifest);
+  if (digest !== registration.design.randomization.assignmentManifestSha256) {
+    throw new Error('predeclared boredom register assignment manifest drifted');
+  }
+  return { digest, manifest };
+}
+
 export function buildTutorStubBoredomProofDagPlan(registration) {
   const validation = validateTutorStubBoredomProofDagRegistration(registration);
   if (!validation.ok) throw new Error(validation.errors.join('; '));
-  const jobs = registration.design.worlds.flatMap((world, worldIndex) =>
-    Array.from({ length: 6 }, (_, dialogueIndex) => {
-      const ordinal = worldIndex * 6 + dialogueIndex;
-      const realization = ordinal % 2 === 0 ? 'plain' : 'warm';
-      return {
-        id: `bored-confirm-w${worldIndex + 1}-d${dialogueIndex + 1}__${realization}`,
-        type: 'fresh_bored_register_confirmation_dialogue',
-        world,
-        seed: registration.design.freshPrefixGeneration.seedBase + ordinal + 1,
-        maximum_trigger_turn: 2,
-        pedagogical_move: 'ask_discriminating_question',
-        realization,
-        maximum_model_attempt_reservations: 60,
-        batch_id: `execution_batch_${Math.floor(ordinal / 4) + 1}`,
-      };
-    }),
-  );
+  const assignments = buildTutorStubBoredomProofDagAssignments(registration);
+  const candidates = assignments.manifest.map((row) => {
+    const worldIndex = registration.design.worlds.indexOf(row.world);
+    const ordinal = worldIndex * 6 + row.dialogue_index - 1;
+    return {
+      id: `bored-confirm-w${worldIndex + 1}-d${row.dialogue_index}`,
+      type: 'fresh_bored_register_confirmation_dialogue',
+      world: row.world,
+      seed: registration.design.freshPrefixGeneration.seedBase + ordinal + 1,
+      maximum_trigger_turn: 2,
+      pedagogical_move: 'ask_discriminating_question',
+      realization: row.realization,
+      assignment_rank_sha256: row.assignment_rank_sha256,
+      assignment_manifest_sha256: assignments.digest,
+      maximum_model_attempt_reservations: 60,
+    };
+  });
+  const plain = candidates.filter((row) => row.realization === 'plain');
+  const warm = candidates.filter((row) => row.realization === 'warm');
+  const jobs = Array.from({ length: 9 }, (_, batchIndex) => {
+    const batchId = `execution_batch_${batchIndex + 1}`;
+    return [plain[batchIndex * 2], warm[batchIndex * 2], plain[batchIndex * 2 + 1], warm[batchIndex * 2 + 1]].map(
+      (row) => ({ ...row, batch_id: batchId }),
+    );
+  }).flat();
   return {
     schema: 'machinespirits.tutor-stub.boredom-action-register-proof-dag-plan.v1',
+    assignment_manifest_sha256: assignments.digest,
     jobs,
     batches: Array.from({ length: 9 }, (_, index) => ({
       id: `execution_batch_${index + 1}`,
@@ -265,11 +473,16 @@ export function buildTutorStubBoredomProofDagSyntheticCases(registration) {
       batch_id: job.batch_id,
       prefix_id: `${job.id}:fresh-prefix`,
       world: job.world,
+      seed: job.seed,
       pedagogical_move: job.pedagogical_move,
       realization: job.realization,
+      assignment_rank_sha256: job.assignment_rank_sha256,
+      assignment_manifest_sha256: job.assignment_manifest_sha256,
       trigger: { profile: 'bored', observed_by_turn: 2, profile_identity_used: false },
       outcome: {
         recovered,
+        recovery_deadline_turns: 1,
+        recovery_observed_turn: recovered ? 1 : null,
         proof_progress_by_two_turns: recovered,
         new_supported_public_premises: recovered ? 1 : 0,
         best_path_coverage_delta: recovered ? 0.1 : 0,
@@ -279,6 +492,19 @@ export function buildTutorStubBoredomProofDagSyntheticCases(registration) {
       fidelity: { action_visible: true, register_visible: true, safety_override: false, protected_condition: false },
     };
   });
+}
+
+export function objectiveProofProgressByTwoTurns(outcome) {
+  return Boolean(
+    Number.isInteger(outcome?.new_supported_public_premises) &&
+    outcome.new_supported_public_premises >= 1 &&
+    Number.isFinite(outcome?.best_path_coverage_delta) &&
+    outcome.best_path_coverage_delta > 0 &&
+    Number.isFinite(outcome?.proof_debt_delta) &&
+    outcome.proof_debt_delta < 0 &&
+    Number.isInteger(outcome?.unsupported_public_claims) &&
+    outcome.unsupported_public_claims === 0,
+  );
 }
 
 export function buildTutorStubBoredomProofDagPackets(cases) {
@@ -294,24 +520,45 @@ export function buildTutorStubBoredomProofDagPackets(cases) {
 }
 
 export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
+  const registration = loadTutorStubBoredomProofDagRegistration();
+  const plan = buildTutorStubBoredomProofDagPlan(registration);
+  const expectedById = new Map(plan.jobs.map((row) => [row.id, row]));
   const plain = cases.filter((row) => row.arm === 'plain');
   const warm = cases.filter((row) => row.arm === 'warm');
   const plainSuccesses = plain.filter((row) => row.outcome.recovered).length;
   const warmSuccesses = warm.filter((row) => row.outcome.recovered).length;
   const distinctPrefixes = new Set(cases.map((row) => row.prefix_id)).size;
-  const balancedWorlds = [...new Set(cases.map((row) => row.world))].every((world) => {
-    const rows = cases.filter((row) => row.world === world);
-    return (
-      rows.filter((row) => row.arm === 'plain').length === 3 && rows.filter((row) => row.arm === 'warm').length === 3
-    );
-  });
+  const exactPlanFidelity =
+    cases.length === plan.jobs.length &&
+    new Set(cases.map((row) => row.case_id)).size === plan.jobs.length &&
+    cases.every((row) => {
+      const expected = expectedById.get(row.case_id);
+      return Boolean(
+        expected &&
+        row.arm === expected.realization &&
+        row.realization === expected.realization &&
+        row.world === expected.world &&
+        row.seed === expected.seed &&
+        row.batch_id === expected.batch_id &&
+        row.pedagogical_move === expected.pedagogical_move &&
+        row.assignment_rank_sha256 === expected.assignment_rank_sha256 &&
+        row.assignment_manifest_sha256 === plan.assignment_manifest_sha256,
+      );
+    });
+  const recovery = cases.every(
+    (row) =>
+      typeof row.outcome?.recovered === 'boolean' &&
+      row.outcome.recovery_deadline_turns === 1 &&
+      (row.outcome.recovered ? row.outcome.recovery_observed_turn === 1 : row.outcome.recovery_observed_turn === null),
+  );
   const objective = cases.every(
     (row) =>
       typeof row.outcome.proof_progress_by_two_turns === 'boolean' &&
       Number.isInteger(row.outcome.new_supported_public_premises) &&
       Number.isFinite(row.outcome.best_path_coverage_delta) &&
       Number.isFinite(row.outcome.proof_debt_delta) &&
-      Number.isInteger(row.outcome.unsupported_public_claims),
+      Number.isInteger(row.outcome.unsupported_public_claims) &&
+      row.outcome.proof_progress_by_two_turns === objectiveProofProgressByTwoTurns(row.outcome),
   );
   const fidelity = cases.every(
     (row) =>
@@ -320,28 +567,42 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
       row.fidelity.safety_override === false &&
       row.fidelity.protected_condition === false,
   );
+  const blocks = registration.design.worlds.map((world) => {
+    const rows = cases.filter((row) => row.world === world);
+    const worldPlain = rows.filter((row) => row.arm === 'plain');
+    const worldWarm = rows.filter((row) => row.arm === 'warm');
+    return {
+      world,
+      plainN: worldPlain.length,
+      warmN: worldWarm.length,
+      plainSuccesses: worldPlain.filter((row) => row.outcome.recovered).length,
+      warmSuccesses: worldWarm.filter((row) => row.outcome.recovered).length,
+    };
+  });
+  const endpointStatus = {
+    profile_specific_resistance_recovery:
+      exactPlanFidelity && recovery && plain.length === 18 && warm.length === 18 ? 'complete' : 'incomplete',
+    objective_proof_progress_by_two_turns: exactPlanFidelity && objective ? 'complete' : 'incomplete',
+    randomized_register_assembly: exactPlanFidelity && distinctPrefixes === 36 ? 'complete' : 'incomplete',
+    action_register_fidelity_and_safety: exactPlanFidelity && fidelity ? 'complete' : 'incomplete',
+  };
   return {
     case_ids: cases.map((row) => row.case_id),
-    endpoint_status: {
-      profile_specific_resistance_recovery: plain.length === 18 && warm.length === 18 ? 'complete' : 'incomplete',
-      objective_proof_progress_by_two_turns: objective ? 'complete' : 'incomplete',
-      randomized_register_assembly: distinctPrefixes === 36 && balancedWorlds ? 'complete' : 'incomplete',
-      action_register_fidelity_and_safety: fidelity ? 'complete' : 'incomplete',
-    },
+    endpoint_status: endpointStatus,
     report: {
       schema: 'machinespirits.tutor-stub.boredom-action-register-proof-dag-preflight-report.v1',
-      status: 'synthetic_endpoint_complete',
+      status: Object.values(endpointStatus).every((status) => status === 'complete')
+        ? 'synthetic_endpoint_complete'
+        : 'synthetic_endpoint_incomplete',
       distinct_fresh_prefixes: distinctPrefixes,
       plain_dialogues: plain.length,
       warm_dialogues: warm.length,
       plain_successes: plainSuccesses,
       warm_successes: warmSuccesses,
-      exact_two_sided_fisher_p: fisherExactTwoSided(
-        plainSuccesses,
-        plain.length - plainSuccesses,
-        warmSuccesses,
-        warm.length - warmSuccesses,
-      ),
+      exact_two_sided_conditional_blocked_score_p: exactBlockedScorePValue(blocks),
+      blocks,
+      exact_plan_fidelity: exactPlanFidelity,
+      recovery_endpoint_deadline_turns: 1,
       rows: cases,
       contract_study_id: contract.study_id,
     },
@@ -378,13 +639,16 @@ export function runTutorStubBoredomProofDagEndpointPreflight({ contract, registr
 
 export default {
   assembleTutorStubBoredomProofDagPreflight,
+  buildTutorStubBoredomProofDagAssignments,
   buildTutorStubBoredomProofDagPackets,
   buildTutorStubBoredomProofDagPlan,
   buildTutorStubBoredomProofDagSyntheticCases,
-  exactFisherPower,
+  exactBlockedScorePValue,
+  exactBlockedScorePower,
   exactMcNemarPower,
   exactTwoSidedMcNemarPValue,
   loadTutorStubBoredomProofDagRegistration,
   runTutorStubBoredomProofDagEndpointPreflight,
+  objectiveProofProgressByTwoTurns,
   validateTutorStubBoredomProofDagRegistration,
 };

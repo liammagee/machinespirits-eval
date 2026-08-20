@@ -9,12 +9,15 @@ import {
   buildTutorStubBoredomProofDagPlan,
   buildTutorStubBoredomProofDagSyntheticCases,
   assembleTutorStubBoredomProofDagPreflight,
-  exactFisherPower,
+  exactBlockedScorePValue,
+  exactBlockedScorePower,
   exactMcNemarPower,
   loadTutorStubBoredomProofDagRegistration,
+  objectiveProofProgressByTwoTurns,
   runTutorStubBoredomProofDagEndpointPreflight,
   validateTutorStubBoredomProofDagRegistration,
 } from '../services/tutorStubBoredomActionRegisterProofDagPreflight.js';
+import { scoreTutorStubResistanceRecovery } from '../services/tutorStubResistanceActionRegisterStudy.js';
 import {
   hashPaidStudyEndpointValue,
   validatePaidStudyEndpointGoCertificate,
@@ -67,13 +70,21 @@ test('boredom evidence is frozen with exact provenance and explicit limitations'
   assert.equal(heldout.outcomesPooledIntoThisStudy, false);
 });
 
-test('18 fresh dialogues per arm are the minimum under the predeclared exact Fisher alternative', () => {
-  const power17 = exactFisherPower({ perArm: 17, plainRecoveryRate: 1 / 6, warmRecoveryRate: 4 / 6 });
-  const power18 = exactFisherPower({ perArm: 18, plainRecoveryRate: 1 / 6, warmRecoveryRate: 4 / 6 });
+test('18 fresh dialogues per arm are the minimum under the predeclared exact blocked alternative', () => {
+  const power17 = exactBlockedScorePower({
+    perArmByWorld: [2, 3, 3, 3, 3, 3],
+    plainRecoveryRate: 1 / 6,
+    warmRecoveryRate: 4 / 6,
+  });
+  const power18 = exactBlockedScorePower({
+    perArmByWorld: [3, 3, 3, 3, 3, 3],
+    plainRecoveryRate: 1 / 6,
+    warmRecoveryRate: 4 / 6,
+  });
   assert.ok(power17 < 0.8);
   assert.ok(power18 >= 0.8);
-  assert.ok(Math.abs(power17 - 0.796776592585303) < 1e-12);
-  assert.ok(Math.abs(power18 - 0.8388687257645503) < 1e-12);
+  assert.ok(Math.abs(power17 - 0.7947641958186097) < 1e-10);
+  assert.ok(Math.abs(power18 - 0.8164905471625752) < 1e-10);
   const paired27 = exactMcNemarPower({ pairs: 27, warmOnlyProbability: 4 / 6, plainOnlyProbability: 1 / 6 });
   const paired28 = exactMcNemarPower({ pairs: 28, warmOnlyProbability: 4 / 6, plainOnlyProbability: 1 / 6 });
   assert.ok(paired27 < 0.8);
@@ -91,6 +102,8 @@ test('plan isolates register across 36 distinct fresh dialogues and nine balance
   assert.equal(plan.jobs.length, 36);
   assert.equal(new Set(plan.jobs.map((row) => row.id)).size, 36);
   assert.equal(new Set(plan.jobs.map((row) => row.seed)).size, 36);
+  assert.equal(plan.assignment_manifest_sha256, registration.design.randomization.assignmentManifestSha256);
+  assert.equal(new Set(plan.jobs.map((row) => row.assignment_rank_sha256)).size, 36);
   assert.equal(plan.jobs.filter((row) => row.realization === 'plain').length, 18);
   assert.equal(plan.jobs.filter((row) => row.realization === 'warm').length, 18);
   assert.ok(plan.jobs.every((row) => row.pedagogical_move === 'ask_discriminating_question'));
@@ -104,6 +117,38 @@ test('plan isolates register across 36 distinct fresh dialogues and nine balance
   assert.ok(plan.batches.every((batch) => batch.cases === 4 && batch.plain === 2 && batch.warm === 2));
   assert.ok(plan.batches.every((batch) => batch.ceiling <= 288));
   assert.equal(plan.total_maximum_model_attempt_reservations, 2160);
+  const driftedSeed = structuredClone(registration);
+  driftedSeed.design.randomization.assignmentSeed += 1;
+  assert.throws(() => buildTutorStubBoredomProofDagPlan(driftedSeed), /randomization assignment drifted/u);
+});
+
+test('primary endpoint preserves the existing one-turn bored recovery horizon', () => {
+  const secondTurnOnly = scoreTutorStubResistanceRecovery({
+    profile: 'bored',
+    postLearnerTurns: [
+      {
+        learnerText: 'I do not know.',
+        classification: { turn: { discourse_move: 'uncertainty', evidence_use: 'none' } },
+      },
+      {
+        learnerText: 'The clipped edge supports the die-mark comparison.',
+        classification: { turn: { discourse_move: 'inference', evidence_use: 'links_evidence_to_rule' } },
+      },
+    ],
+  });
+  const firstTurn = scoreTutorStubResistanceRecovery({
+    profile: 'bored',
+    postLearnerTurns: [
+      {
+        learnerText: 'The clipped edge supports the die-mark comparison.',
+        classification: { turn: { discourse_move: 'inference', evidence_use: 'links_evidence_to_rule' } },
+      },
+    ],
+  });
+  assert.equal(secondTurnOnly.recovered, false);
+  assert.equal(secondTurnOnly.deadline_turns, 1);
+  assert.equal(firstTurn.recovered, true);
+  assert.equal(firstTurn.observed_turn, 1);
 });
 
 test('attempt arithmetic and ceiling amendments fail closed', () => {
@@ -143,6 +188,8 @@ test('endpoint preflight completes randomized recovery, objective proof progress
   assert.equal(assembled.report.warm_dialogues, 18);
   assert.equal(assembled.report.plain_successes, 3);
   assert.equal(assembled.report.warm_successes, 12);
+  assert.equal(assembled.report.recovery_endpoint_deadline_turns, 1);
+  assert.ok(assembled.report.exact_two_sided_conditional_blocked_score_p <= 1);
   for (const endpoint of contract.endpoints) assert.equal(assembled.endpoint_status[endpoint.id], 'complete');
   const certificate = readJson(CERTIFICATE_PATH);
   const certificateValidation = validatePaidStudyEndpointGoCertificate({ contract, preflight, certificate });
@@ -150,6 +197,51 @@ test('endpoint preflight completes randomized recovery, objective proof progress
   assert.equal(certificate.status, 'endpoint_runtime_go');
   assert.match(certificate.authorization_scope, /authorizes no model call/u);
   assert.equal(certificate.contract_sha256, hashPaidStudyEndpointValue(contract));
+});
+
+test('objective composite, recovery Boolean, and exact randomized plan fail closed', () => {
+  const registration = loadTutorStubBoredomProofDagRegistration({ root: ROOT });
+  const contract = readJson(CONTRACT_PATH);
+  const cases = buildTutorStubBoredomProofDagSyntheticCases(registration);
+  assert.equal(objectiveProofProgressByTwoTurns(cases[0].outcome), cases[0].outcome.proof_progress_by_two_turns);
+
+  const contradictory = structuredClone(cases);
+  contradictory[0].outcome.proof_progress_by_two_turns = true;
+  contradictory[0].outcome.new_supported_public_premises = 0;
+  contradictory[0].outcome.best_path_coverage_delta = 0;
+  contradictory[0].outcome.proof_debt_delta = 0;
+  contradictory[0].outcome.unsupported_public_claims = 99;
+  assert.equal(
+    assembleTutorStubBoredomProofDagPreflight({ cases: contradictory, contract }).endpoint_status
+      .objective_proof_progress_by_two_turns,
+    'incomplete',
+  );
+
+  const invalidRecovery = structuredClone(cases);
+  invalidRecovery[0].outcome.recovered = 'yes';
+  assert.equal(
+    assembleTutorStubBoredomProofDagPreflight({ cases: invalidRecovery, contract }).endpoint_status
+      .profile_specific_resistance_recovery,
+    'incomplete',
+  );
+
+  const driftedPlan = structuredClone(cases);
+  driftedPlan[0].arm = driftedPlan[0].arm === 'plain' ? 'warm' : 'plain';
+  assert.equal(
+    assembleTutorStubBoredomProofDagPreflight({ cases: driftedPlan, contract }).endpoint_status
+      .randomized_register_assembly,
+    'incomplete',
+  );
+
+  const nullBlocks = [
+    { plainN: 3, warmN: 3, plainSuccesses: 3, warmSuccesses: 0 },
+    { plainN: 3, warmN: 3, plainSuccesses: 2, warmSuccesses: 0 },
+    { plainN: 3, warmN: 3, plainSuccesses: 2, warmSuccesses: 1 },
+    { plainN: 3, warmN: 3, plainSuccesses: 2, warmSuccesses: 1 },
+    { plainN: 3, warmN: 3, plainSuccesses: 2, warmSuccesses: 1 },
+    { plainN: 3, warmN: 3, plainSuccesses: 1, warmSuccesses: 2 },
+  ];
+  assert.ok(Math.abs(exactBlockedScorePValue(nullBlocks) - 0.060811125) < 1e-12);
 });
 
 test('readiness is not a live executor or authorization surface', () => {

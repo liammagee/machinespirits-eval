@@ -1205,23 +1205,37 @@ and explicit human approval.
 
   Froze a prospective boredom register-only proof-DAG design under HOLD. It
   generates 36 distinct fresh bored prefixes across six strict-DAG worlds,
-  six per world, and assigns each independent dialogue to plain or warm under
-  a predeclared within-world 3/3 block. The register is applied only after the
-  public observer selects the boredom-appropriate
-  `ask_discriminating_question` action. The 18 dialogues per arm are analyzed
-  once, after all nine batch seals, with the existing two-turn profile-specific
-  recovery endpoint and a predeclared two-sided Fisher exact test at alpha
-  `0.05`. The excluded calibration rates `1/6` plain versus `4/6` warm are used
-  only for sizing: exact power is `0.7968` at 17 per arm and `0.8389` at 18, so
-  18 per arm is the minimum. An exact-prefix paired alternative is not smaller:
-  the observed paired discordance `4/6` warm-only versus `1/6` plain-only needs
-  28 pairs for 80% exact McNemar power and a 2,856-attempt ceiling. The selected
-  blocked-independent design is therefore the smallest powered option at
-  2,160 attempts. Objective proof progress is a fixed-sequence key secondary
-  requiring a new supported public premise, positive best-path coverage,
-  reduced proof debt, and zero unsupported public claims. It may be tested only
-  after the recovery endpoint rejects; no independent 80% power claim is made
-  for that secondary. Prior held-out, historical action, and 12-dialogue
+  six per world. A frozen `20260820` assignment seed ranks the six independent
+  slots in each world by SHA-256 and assigns the first three to plain and the
+  remaining three to warm; the assignment-manifest digest is
+  `4e256dfa…`, and the assigned realization stays hidden until after the public
+  observer selects the boredom-appropriate `ask_discriminating_question`
+  action. The 18 dialogues per arm are analyzed once after all nine batch
+  seals. The primary is the existing bored recovery endpoint exactly as
+  implemented: content-bearing engagement on the **first** post-trigger learner
+  turn (`deadline_turns: 1`). A predeclared two-sided exact conditional blocked
+  score test conditions on the six world success totals and the 3/3 allocation;
+  it sums conditional score probabilities no greater than the observed score
+  probability. This replaces the invalid pooled-Fisher draft and respects the
+  actual assignment mechanism. The excluded calibration rates `1/6` plain
+  versus `4/6` warm are used only for sizing: exact blocked power is `0.7948`
+  with 17 per arm (one 2/2 world and five 3/3 worlds) and `0.8165` with 18 per
+  arm (six 3/3 worlds), so 18 per arm is the minimum. An exact-prefix paired
+  alternative is not smaller: the observed paired discordance `4/6` warm-only
+  versus `1/6` plain-only needs 28 pairs for 80% exact McNemar power and a
+  2,856-attempt ceiling. The selected blocked-independent design is therefore
+  the smallest powered option at 2,160 attempts.
+
+  Objective proof progress remains a fixed-sequence key secondary measured by
+  the second post-trigger learner turn. The deterministic endpoint recomputes,
+  rather than trusts, the registered composite: at least one new supported
+  public premise, positive best-path coverage delta, negative proof-debt delta,
+  and zero unsupported public claims. It may be tested with the same exact
+  blocked procedure only after the recovery endpoint rejects; no independent
+  80% power claim is made for that secondary. The zero-call assembler now also
+  fails closed on a non-Boolean recovery result, a one-turn recovery-horizon
+  mismatch, any arm/seed/batch/assignment-manifest drift, or a contradictory
+  proof-progress Boolean. Prior held-out, historical action, and 12-dialogue
   calibration outcomes are excluded from analysis, and there is no interim
   interpretation, valid-output rerun, or outcome selection.
 

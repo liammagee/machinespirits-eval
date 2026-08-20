@@ -4,7 +4,7 @@
   "status": "prospective_zero_call_readiness_hold",
   "workplanItem": "resistance-action-register-integration",
   "frozenAt": "2026-08-20",
-  "registeredQuestion": "After a publicly observed bored effort-withholding prefix has selected the fixed boredom-appropriate discriminating-question action, does warm rather than plain realization improve the existing two-turn resistance-recovery endpoint, and does any improvement reach objective public proof-DAG progress?",
+  "registeredQuestion": "After a publicly observed bored effort-withholding prefix has selected the fixed boredom-appropriate discriminating-question action, does warm rather than plain realization improve the existing one-turn bored resistance-recovery endpoint, and does any improvement reach objective public proof-DAG progress by two turns?",
   "claimBoundary": "This blocked-randomized simulated-learner study can establish only a warm-versus-plain register effect after the boredom-appropriate action has already been selected, at the registered two-post-trigger-learner-turn horizon and in the six predeclared proof-DAG worlds. It cannot re-estimate boredom detection, matched-versus-mismatched action efficacy, edged or sarcastic realization, an action-by-register interaction, general tutor efficacy, durable learning, human validity, or transfer to the cell harness.",
   "authorization": {
     "modelCallsAuthorized": false,
@@ -159,7 +159,12 @@
     "randomization": {
       "independentUnit": "fresh_distinct_bored_public_prefix_dialogue",
       "dialogues": 36,
-      "assignment": "predeclared_blocked_by_world_before_generation_hidden_until_action_selection",
+      "assignment": "predeclared_seeded_sha256_rank_blocked_by_world_before_generation_hidden_until_action_selection",
+      "algorithm": "sha256_rank_within_world",
+      "assignmentSeed": 20260820,
+      "assignmentManifestSha256": "4e256dfa65054747a5d6d1ac82d1aecb42f7c98f158cb76e686f24c37d71ef94",
+      "tieBreak": "dialogue_index_ascending",
+      "assignmentHiddenUntilAfterActionSelection": true,
       "plainDialogues": 18,
       "warmDialogues": 18,
       "plainPerWorld": 3,
@@ -199,10 +204,13 @@
     "primaryEndpoint": {
       "id": "profile_specific_resistance_recovery",
       "existingImplementation": "services/tutorStubResistanceActionRegisterStudy.js#scoreTutorStubResistanceRecovery",
-      "definition": "Within two post-trigger learner turns, the bored learner engages the fixed discriminating question on its merits with content-bearing evidence use.",
+      "definition": "On the first post-trigger learner turn, the bored learner engages the fixed discriminating question on its merits with content-bearing evidence use.",
+      "deadlinePostTriggerLearnerTurns": 1,
       "unit": "fresh_independent_dialogue",
       "estimand": "warm_minus_plain_recovery_probability_blocked_equally_over_six_worlds",
-      "analysis": "two_sided_fisher_exact",
+      "analysis": "two_sided_exact_conditional_blocked_score_test",
+      "conditioning": "condition_on_each_world_success_total_and_the_predeclared_three_plain_three_warm_allocation",
+      "twoSidedRule": "sum_conditional_score_probabilities_no_greater_than_the_observed_score_probability",
       "alpha": 0.05,
       "intentionToTreat": true,
       "modelJudge": false
@@ -210,7 +218,7 @@
     "keySecondaryEndpoint": {
       "id": "objective_proof_progress_by_two_turns",
       "definition": "By the second post-trigger learner turn, the deterministic public proof-DAG scorer records at least one new supported public premise, positive best-path coverage delta, negative proof-debt delta, and zero unsupported public claims.",
-      "analysis": "two_sided_fisher_exact_only_after_primary_rejects_under_fixed_sequence_gatekeeping",
+      "analysis": "two_sided_exact_conditional_blocked_score_test_only_after_primary_rejects_under_fixed_sequence_gatekeeping",
       "alpha": 0.05,
       "familywiseErrorControl": "fixed_sequence_primary_then_key_secondary",
       "modelJudge": false,
@@ -232,14 +240,14 @@
     },
     "claimSeparation": {
       "calibrationUse": "sample_size_and_fixed_action_motivation_only",
-      "confirmationUse": "fresh_18_pair_primary_and_key_secondary_results_only",
+      "confirmationUse": "fresh_18_per_arm_primary_and_key_secondary_results_only",
       "calibrationAndConfirmationMayNotBePooled": true,
       "proofProgressSuperiorityClaimRequiresBothFixedSequenceTests": true,
       "recoveryOnlyClaimIfPrimaryPassesAndKeySecondaryDoesNot": "register_affects_recovery_but_objective_proof_progress_superiority_not_established"
     }
   },
   "power": {
-    "test": "two_sided_fisher_exact",
+    "test": "two_sided_exact_conditional_blocked_score_test",
     "alpha": 0.05,
     "targetPower": 0.8,
     "alternative": {
@@ -249,8 +257,8 @@
       "source": "excluded_12_dialogue_calibration_1_of_6_plain_versus_4_of_6_warm_used_for_sizing_only"
     },
     "minimumPerArm": 18,
-    "powerAt17PerArm": 0.796776592585303,
-    "powerAt18PerArm": 0.8388687257645503,
+    "powerAt17PerArm": 0.7947641958186097,
+    "powerAt18PerArm": 0.8164905471625752,
     "scope": "primary_recovery_endpoint_only",
     "designChoiceAudit": {
       "observedCalibrationPairedTable": {
@@ -261,8 +269,8 @@
       "pairedPowerAt27": 0.7983670167301511,
       "pairedPowerAt28": 0.8166088496475903,
       "pairedHardAttemptCeiling": 2856,
-      "selectedIndependentFisherHardAttemptCeiling": 2160,
-      "reason": "At the observed discordance pattern, exact-prefix pairing needs 28 sources and 56 continuations; blocked independent randomization needs 36 sources and one continuation each, so it is the smaller defensible powered design."
+      "selectedIndependentBlockedHardAttemptCeiling": 2160,
+      "reason": "At the observed discordance pattern, exact-prefix pairing needs 28 sources and 56 continuations; the exact conditional blocked design is below 80% at 17 per arm and reaches 80% at 18 per arm, using 36 sources and one continuation each, so it is the smaller defensible powered design."
     }
   },
   "executionReadiness": {
