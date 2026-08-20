@@ -43,6 +43,7 @@ export const RESISTANT_LEARNER_OBSERVATION_SEMANTICS = Object.freeze({
   prospectiveV4: 'prospective_v4',
   prospectiveV5: 'prospective_v5',
   prospectiveV6: 'prospective_v6',
+  prospectiveV7: 'prospective_v7',
 });
 
 export const RESISTANT_LEARNER_OBSERVATION_TYPES = Object.freeze([
@@ -221,6 +222,24 @@ const FRAME_JURISDICTION_PATTERNS_V6 = Object.freeze([
   ),
 ]);
 
+// V7 is additive and confirmation-specific. It covers three frozen V4 live
+// misses compositionally: authority attributed to a domain object may be
+// denied the right to set a bounded inquiry, and an inquiry antecedent may be
+// followed by a clause-scoped rejection of "its" authority. Requiring the
+// authority-to-setting construction or the explicit inquiry antecedent keeps
+// personnel, physical-placement, and administrative uses out of scope.
+const FRAME_JURISDICTION_PATTERNS_V7 = Object.freeze([
+  ...FRAME_JURISDICTION_PATTERNS_V6,
+  new RegExp(
+    String.raw`\bi (?:do not|don't) grant (?:the )?(?:[\p{L}\p{N}_-]+['’]s )(?:[\p{L}\p{N}_-]+\s+){0,3}${FRAME_AUTHORITY_NOUN} to ${FRAME_SETTING_VERB}(?:\s+${FRAME_INQUIRY_MODIFIER}){0,4}\s+${FRAME_INQUIRY_NOUN_V4}\b`,
+    'iu',
+  ),
+  new RegExp(
+    String.raw`\b(?:that|this|it) is (?:the )?(?:your|this|that|(?:[\p{L}\p{N}_-]+['’]s)) (?:[\p{L}\p{N}_-]+\s+){0,2}${FRAME_INQUIRY_NOUN_V4},? not mine\b[^.!?]{0,120}\bi (?:reject|deny|do not accept|don't accept) its ${FRAME_AUTHORITY_NOUN}\b`,
+    'iu',
+  ),
+]);
+
 const FRAME_AUTHORITY_OBJECT_MERITS_ONLY_PATTERNS_V6 = Object.freeze([
   new RegExp(
     String.raw`\bi (?:do not|don't) grant (?:your|the tutor['’]s|their) ${FRAME_AUTHORITY_OBJECT_TARGET_V6}\s+${FRAME_AUTHORITY_NOUN}\b[^.!?;]{0,40}${FRAME_AUTHORITY_OBJECT_CAUSAL_CONNECTOR_V6}(?=[^.!?;]{0,180}\b(?:assay|balance|calculation|clamp|denominator|evidence|fixture|formula|instrument|measurement|method|object|procedure|reading|record|result|sample|screw|sensor|test)\b)(?=[^.!?;]{0,180}\b(?:bad|biased|broke|broken|contaminated|failed|fails|false|incomplete|incorrect|invalid|loose|miscalibrated|missing|slipped|slips|unstable|unfit|unreliable|wrong)\b)[^.!?;]{0,180}`,
@@ -297,6 +316,11 @@ const FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V6 = Object.freeze([
   /\bi (?:will )?neither\b[^.!?;]{0,120}\b(?:answer|challenge|compare|contribute|engage|enter|examine|inspect|judge|offer|participate|proceed|provide|record|supply|test|weigh)\b[^.!?;]{0,120}\bnor\b[^.!?;]{0,80}\b(?:answer|challenge|compare|contribute|engage|enter|examine|inspect|judge|offer|participate|proceed|provide|record|supply|test|weigh|evidence)\b/iu,
 ]);
 
+const FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V7 = Object.freeze([
+  ...FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V6,
+  /\bi (?:will not|won't|do not|don't|refuse to|decline to) permit\b[^.!?;]{0,180}\b(?:answer|examination|examine|inspection|inspect|test|testing)\b/iu,
+]);
+
 const CONTENT_BEARING_MOVES = Object.freeze(
   new Set(['hypothesis', 'inference', 'evidence_adoption', 'metacognitive_reflection']),
 );
@@ -352,7 +376,8 @@ export function classifyFrameJurisdictionParticipation({
   const prospectiveV4 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
   const prospectiveV5 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5;
   const prospectiveV6 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6;
-  const expandedProspective = prospectiveV3 || prospectiveV4 || prospectiveV5 || prospectiveV6;
+  const prospectiveV7 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7;
+  const expandedProspective = prospectiveV3 || prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7;
   const explicitReframe = firstEvidence(
     text,
     expandedProspective ? FRAME_EXPLICIT_REFRAME_PATTERNS_V3 : FRAME_EXPLICIT_REFRAME_PATTERNS,
@@ -362,7 +387,7 @@ export function classifyFrameJurisdictionParticipation({
     expandedProspective ? FRAME_BOUNDED_LOCAL_TEST_PATTERNS_V3 : FRAME_BOUNDED_LOCAL_TEST_PATTERNS,
   );
   const boundedLocalTest =
-    (prospectiveV4 || prospectiveV5 || prospectiveV6) &&
+    (prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7) &&
     conditionalBoundedParticipationNegated(text, boundedLocalTestCandidate)
       ? null
       : boundedLocalTestCandidate;
@@ -372,13 +397,15 @@ export function classifyFrameJurisdictionParticipation({
   if (carriesContent) participation.push({ kind: 'content_bearing_contribution', evidence_span: null });
   const explicitWithholding = firstEvidence(
     text,
-    prospectiveV6
-      ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V6
-      : prospectiveV4 || prospectiveV5
-        ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V4
-        : prospectiveV3
-          ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V3
-          : FRAME_EXPLICIT_WITHHOLDING_PATTERNS,
+    prospectiveV7
+      ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V7
+      : prospectiveV6
+        ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V6
+        : prospectiveV4 || prospectiveV5
+          ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V4
+          : prospectiveV3
+            ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V3
+            : FRAME_EXPLICIT_WITHHOLDING_PATTERNS,
   );
   return {
     contract_licensed_participation: participation.length > 0,
@@ -475,28 +502,35 @@ export function observeResistantLearnerTurn({
   const prospectiveV4 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
   const prospectiveV5 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5;
   const prospectiveV6 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6;
+  const prospectiveV7 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7;
   const acceptedAuthority =
-    prospectiveV4 || prospectiveV5 || prospectiveV6 ? firstEvidence(text, FRAME_ACCEPTED_AUTHORITY_PATTERNS_V4) : null;
+    prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7
+      ? firstEvidence(text, FRAME_ACCEPTED_AUTHORITY_PATTERNS_V4)
+      : null;
   const meritsOnly =
-    prospectiveV4 || prospectiveV5 || prospectiveV6 ? firstEvidence(text, FRAME_MERITS_ONLY_PATTERNS_V4) : null;
+    prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7
+      ? firstEvidence(text, FRAME_MERITS_ONLY_PATTERNS_V4)
+      : null;
   const framePatterns = legacySemantics
     ? FRAME_JURISDICTION_PATTERNS_V1
-    : prospectiveV6
-      ? FRAME_JURISDICTION_PATTERNS_V6
-      : prospectiveV5
-        ? FRAME_JURISDICTION_PATTERNS_V5
-        : prospectiveV4
-          ? FRAME_JURISDICTION_PATTERNS_V4
-          : prospectiveV3
-            ? FRAME_JURISDICTION_PATTERNS_V3
-            : FRAME_JURISDICTION_PATTERNS_V2;
+    : prospectiveV7
+      ? FRAME_JURISDICTION_PATTERNS_V7
+      : prospectiveV6
+        ? FRAME_JURISDICTION_PATTERNS_V6
+        : prospectiveV5
+          ? FRAME_JURISDICTION_PATTERNS_V5
+          : prospectiveV4
+            ? FRAME_JURISDICTION_PATTERNS_V4
+            : prospectiveV3
+              ? FRAME_JURISDICTION_PATTERNS_V3
+              : FRAME_JURISDICTION_PATTERNS_V2;
   const candidateFrameEvidence = firstEvidence(text, framePatterns);
-  const v6AuthorityObjectMeritsOnly = prospectiveV6
-    ? firstEvidence(text, FRAME_AUTHORITY_OBJECT_MERITS_ONLY_PATTERNS_V6)
-    : null;
-  const v6AuthorityObjectExplicitFrameRationale = prospectiveV6
-    ? firstEvidence(text, FRAME_AUTHORITY_OBJECT_EXPLICIT_FRAME_RATIONALE_PATTERNS_V6)
-    : null;
+  const v6AuthorityObjectMeritsOnly =
+    prospectiveV6 || prospectiveV7 ? firstEvidence(text, FRAME_AUTHORITY_OBJECT_MERITS_ONLY_PATTERNS_V6) : null;
+  const v6AuthorityObjectExplicitFrameRationale =
+    prospectiveV6 || prospectiveV7
+      ? firstEvidence(text, FRAME_AUTHORITY_OBJECT_EXPLICIT_FRAME_RATIONALE_PATTERNS_V6)
+      : null;
   const explicitJurisdictionCandidate = Boolean(
     candidateFrameEvidence &&
     (/\b(?:authority|standing|right|governing|controlling|decisive)\b/iu.test(candidateFrameEvidence) ||
@@ -510,7 +544,7 @@ export function observeResistantLearnerTurn({
     acceptedIndex >= 0 && candidateIndex >= acceptedIndex && candidateIndex < acceptedIndex + acceptedAuthority.length;
   const frameEvidence =
     (meritsOnly && !explicitJurisdictionCandidate) ||
-    (prospectiveV6 &&
+    ((prospectiveV6 || prospectiveV7) &&
       candidateFrameEvidence &&
       v6AuthorityObjectMeritsOnly &&
       !v6AuthorityObjectExplicitFrameRationale) ||
