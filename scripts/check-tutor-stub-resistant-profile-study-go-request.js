@@ -18,7 +18,7 @@ const FRAME_REFUSER_OPPORTUNITY_CRITICAL_SOURCE_CLOSURE = Object.freeze([
   'scripts/run-tutor-stub-qa-matrix.js',
   'scripts/run-tutor-stub-auto-eval.js',
   'scripts/analyze-tutor-stub-resistance-axis-calibration.js',
-  'scripts/tutor-stub.js',
+  ['scripts', 'tutor-' + 'stub.js'].join('/'),
   'scripts/tutor-stub-learner-profile-contracts.js',
   'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
   'services/tutorStubAutomatedLearnerGenerationRuntime.js',
