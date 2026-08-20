@@ -277,6 +277,7 @@ function assertMaterializedStructure({
   historicalRequest,
   priorConfirmationRequest,
   priorCeilingBoundRequest,
+  priorBoredomRequest,
   prefixBundle,
   liveCommandSha256,
   recoveryCommandSha256,
@@ -363,6 +364,11 @@ function assertMaterializedStructure({
     const prior = request.actionRegisterConfirmation?.supersededCeilingBoundRequest?.request;
     assertComputedValue(prior?.path, priorCeilingBoundRequest.path, 'superseded ceiling-bound request path');
     assertComputedValue(prior?.sha256, priorCeilingBoundRequest.sha256, 'superseded ceiling-bound request digest');
+  }
+  if (priorBoredomRequest) {
+    const prior = request.boredomActionRegisterProofDag?.priorStoppedExecution?.request;
+    assertComputedValue(prior?.path, priorBoredomRequest.path, 'prior stopped boredom request path');
+    assertComputedValue(prior?.sha256, priorBoredomRequest.sha256, 'prior stopped boredom request digest');
   }
   if (prefixBundle) {
     assertComputedValue(request.bindings?.prefixBundle?.path, prefixBundle.path, 'prefix bundle path');
@@ -531,6 +537,23 @@ function materializeTemplate({ templateText, template, launchCommit }) {
       replacements,
     );
   }
+  const priorBoredomRequestPath = template.boredomActionRegisterProofDag?.priorStoppedExecution?.request?.path;
+  const priorBoredomRequest = priorBoredomRequestPath
+    ? materializeRepoFile({
+        launchCommit,
+        repoPath: priorBoredomRequestPath,
+        label: 'prior stopped boredom request',
+        files,
+      })
+    : null;
+  if (priorBoredomRequest) {
+    requireMarker(
+      templateText,
+      goRequestFileSha256Marker(priorBoredomRequest.path),
+      priorBoredomRequest.sha256,
+      replacements,
+    );
+  }
   const prefixBundlePath = template.bindings?.prefixBundle?.path;
   const prefixBundle = prefixBundlePath
     ? materializeRepoFile({
@@ -576,6 +599,7 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     historicalRequest,
     priorConfirmationRequest,
     priorCeilingBoundRequest,
+    priorBoredomRequest,
     prefixBundle,
     liveCommandSha256,
     recoveryCommandSha256,

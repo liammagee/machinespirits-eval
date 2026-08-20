@@ -1567,3 +1567,16 @@ and explicit human approval.
   id-to-prompt-to-id path. After review and merge, a new HOLD request must bind
   the repaired source and wholly fresh create-once batch/report destinations;
   the consumed request and its zero-call artifacts remain immutable.
+- 2026-08-20 — After the stable-profile-id repair merged in PR #745, the
+  existing boredom proof-DAG request validator still understood only the
+  original request shape and could not truthfully bind the consumed zero-call
+  Batch 1 as excluded predecessor evidence. A narrow revision-2 compatibility
+  extension now preserves the original request bytes and accepts a successor
+  only when it binds request `0972e760…`, launch source `1771eb3e…`, local
+  inventory `9f6efec5…`, private inventory `0158271a…`, both batch file
+  digests, all four exact two-event trace digests, zero reservations/calls,
+  absent later batches/analyzer/report/seal, and false recovery/reuse/pooling/
+  outcome-selection flags. This compatibility change prepares no request and
+  authorizes no calls; a separately packaged HOLD successor must use wholly
+  fresh nine-batch and combined-report destinations and pass a new digest-bound
+  blocking review before launch.
