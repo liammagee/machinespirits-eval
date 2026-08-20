@@ -155,8 +155,8 @@ measurements above. The drill deliberately has no cleanup step.
 
 Wave 3C was separately approved only after the Wave 3B boundary and production
 drill passed. `scripts/analyze-step4-trigger-density.js::greenroomSources()` is
-the live raw-payload consumer: it must materialize the verified tracked bundle
-rather than assume expanded manifest members exist in a checkout, with
+the live raw-payload consumer: it reads requested files from the fully verified
+tracked bundle rather than assuming expanded manifest members exist, with
 `tests/analyzeStep4TriggerDensity.test.js` retaining that regression boundary.
 The six small `performances/P3.book.md` through `performances/P8.book.md` files
 are not archive members and remain tracked.

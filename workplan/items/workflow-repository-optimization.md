@@ -8,7 +8,7 @@ owner: codex
 source: manual
 created: 2026-08-19
 updated: 2026-08-20
-branch: codex/greenroom-bundle-removal
+branch: codex/greenroom-bundle-migration
 verification: >-
   Reproducible before/after measurements show that local and hosted CI select
   the same fail-closed profiles, avoid measured orchestration and test delays,
@@ -253,3 +253,19 @@ Log:
   integration must keep the verified restoration consumer and hosted checks
   green. No cache, retained drill, local artifact, worktree, LFS configuration,
   or Git history was deleted or rewritten.
+- 2026-08-20 — Integrated Wave 3C on current `main`
+  `76f51c7ee3a16bde42fc3bb06e0452f294f115a0`. The Step 4 consumer keeps the
+  complete expanded set as a verified fast path when supplied explicitly, but
+  a normal thinned checkout now verifies the complete tracked archive before
+  returning any requested performance or trace buffer and writes no expanded
+  files. With all 26 candidates absent, the focused artifact/consumer cohort
+  passed 31/31 and the full frozen 68-trace `--check` remained byte-identical
+  with zero model calls. A retained clean-room restore at
+  `/private/tmp/ms-wave3c-integration-restore.qQWlDA` reproduced all 26 files /
+  61,350,499 bytes byte for byte and reproduced the published guard census:
+  10 legacy traces, pre-catalog, 314 turns, 6% template, and 89% model as
+  written. Three sequential full-audit timings averaged 1.970 seconds with the
+  expanded fast path and 2.017 seconds through the archive, a 0.047-second
+  (2.4%) tradeoff for removing 58.508 MiB from each current checkout. History,
+  LFS objects, the archive, manifest, reports, books, transcripts, existing
+  caches, retained drills, and all worktrees remain retained.

@@ -54,8 +54,9 @@ function parseArgs(argv) {
 
 Replays the selected Step 2 and Green Room traces without model calls. If an
 ignored Step 2 trace is absent, the script reads it from the verified archive
-named by the final Step 2 manifest. --check compares the replay with the
-tracked JSON and Markdown outputs.`);
+named by the final Step 2 manifest. Green Room inputs use a complete expanded
+set when present and otherwise come from the fully verified tracked raw bundle.
+--check compares the replay with the tracked JSON and Markdown outputs.`);
       process.exit(0);
     } else throw new Error(`Unknown option: ${token}`);
   }
