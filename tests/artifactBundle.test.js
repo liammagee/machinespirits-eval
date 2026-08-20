@@ -11,6 +11,7 @@ import { gzipSync } from 'node:zlib';
 import {
   artifactBundleCachePath,
   fetchArtifactBundle,
+  readArtifactBundleFiles,
   restoreArtifactBundle,
   verifyArtifactBundle,
 } from '../scripts/artifact-bundle.js';
@@ -151,6 +152,25 @@ test('verify, fetch, and restore preserve a digest-addressed, exact artifact bun
   assert.equal(verification.files, 2);
   assert.equal(verification.archiveBytes, fixture.archive.length);
   assert.equal(verification.restoredBytes, 11);
+
+  const read = readArtifactBundleFiles({
+    manifestPath: fixture.manifestPath,
+    archivePath: fixture.archivePath,
+    files: ['nested/beta.bin', 'alpha.txt'],
+  });
+  assert.deepEqual([...read.buffers.keys()], ['nested/beta.bin', 'alpha.txt']);
+  assert.deepEqual(read.buffers.get('nested/beta.bin'), Buffer.from([0, 1, 2, 3, 255]));
+  assert.deepEqual(read.buffers.get('alpha.txt'), Buffer.from('alpha\n'));
+  assert.equal(read.manifest.archive.sha256, fixture.manifest.archive.sha256);
+  assert.throws(
+    () =>
+      readArtifactBundleFiles({
+        manifestPath: fixture.manifestPath,
+        archivePath: fixture.archivePath,
+        files: ['not-in-manifest.txt'],
+      }),
+    /not present in the artifact bundle manifest/u,
+  );
 
   const cacheDir = path.join(fixture.directory, 'cache');
   const fetched = fetchArtifactBundle({
