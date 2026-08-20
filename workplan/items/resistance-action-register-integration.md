@@ -1369,3 +1369,39 @@ and explicit human approval.
   requires an explicit `2345`-to-`2379` ceiling amendment and approval of that
   new request digest; the already consumed V1 approval cannot authorize the
   changed source, observation semantics, destination set, or programme cap.
+- 2026-08-20 — The zero-call confirmation repair merged through PR #739 at
+  `55becdc57340413469d937b5701c48d9911e52f9` (tree
+  `a53e9da7cb280b45e8bf0b52eaa5b57bcd773f89`). Blocking runtime and symmetry
+  reviews cleared the prospective V5 observer, the confirmation-only
+  observer-first eligibility seam, exact production-predicate analyzer replay,
+  mirrored typed frame-refuser/frame-defiant exhaustion, and unchanged V1–V4
+  behavior. Focused tests, the dependency-free packager replay, workplan,
+  formatting, lint, and the full selected CI matrix passed. No model/provider
+  call or production study write occurred during repair. The private archive's
+  ancillary tree-SHA transcription was corrected without rewriting its
+  original evidence commit; feature-branch head is
+  `ce9bd26f78fe5c52744fd7fe06fa2c7e65e02d53`.
+
+  Prepared the wholly fresh successor HOLD request
+  `config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v2.json`
+  at SHA-256
+  `94973232d87e812b947981f85c12345bb413302dd54bad87b1f478c0a356b34b`.
+  It binds the merged repair source and its exact 35-file closure, registration
+  V4, endpoint/certificate V2, Luna-low route, nine new create-once block
+  roots, and one new combined report. The design remains 36 wholly fresh
+  independent dialogues, 18 warm and 18 plain, with one final predeclared
+  two-sided Fisher exact test and no interim analysis. The 12 calibration
+  dialogues remain sizing-only, and all four partial V1 block dialogues are
+  hash-bound diagnostic evidence excluded from reuse, pooling, selection, and
+  credit.
+
+  The hard confirmation envelope is unchanged at `60` attempts per dialogue,
+  `240` per block, and `2160` total. With `219` attempts consumed, preserving
+  that full envelope requires the smallest defensible programme ceiling of
+  `2379`, exactly `+34` over the authorized `2345`. The request remains literal
+  `HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL`: approval is null, live/model
+  authorization is false, and the programme-ceiling amendment is explicitly
+  unauthorized in the artifact. Deterministic packaging and direct validation
+  pass at zero calls/writes. Launch requires the request's exact digest-bound
+  `2345`-to-`2379` amendment sentence; until supplied, no batch, recovery, or
+  analyzer may run.
