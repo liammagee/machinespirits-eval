@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-20T01:30:21.531Z",
+  "generated": "2026-08-20T01:57:25.638Z",
   "counts": {
     "total": 520,
     "byStatus": {
@@ -354,8 +354,8 @@
       "source": "manual",
       "created": "2026-08-19",
       "updated": "2026-08-19",
-      "branch": "codex/workflow-repository-optimization",
-      "verification": "Reproducible before/after measurements show that local and hosted CI select the same fail-closed profiles, avoid measured orchestration and test delays, and preserve required coverage; later repository-state tranches retain restorable evidence and authoritative workplan sources without destructive cleanup or history rewriting.",
+      "branch": "codex/workflow-coordination-safety",
+      "verification": "Reproducible before/after measurements show that local and hosted CI select the same fail-closed profiles, avoid measured orchestration and test delays, preserve required coverage, and make zero model calls from a relevant pre-push hook without fresh explicit authority; later repository-state tranches retain restorable evidence and authoritative workplan sources without destructive cleanup or history rewriting.",
       "links": {
         "items": [
           "optimize-ci-agent-iteration-loop",
@@ -364,7 +364,14 @@
           "shorten-full-ci-critical-path",
           "add-validator-only-ci-profile",
           "optimize-local-node-execution",
-          "codebase-refactoring-program"
+          "codebase-refactoring-program",
+          "tutor-pr-frozen-prefix-benchmark"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/705"
+        ],
+        "notes": [
+          "docs/next-steps/2026-08-19-coordinator-workflow-efficiency-audit.md"
         ]
       },
       "tags": [
