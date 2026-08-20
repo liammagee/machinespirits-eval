@@ -14,7 +14,7 @@ import {
   TUTOR_STUB_BOREDOM_PROOF_DAG_EXECUTION_START,
   loadTutorStubBoredomProofDagStudy,
 } from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
-import { createResistantAxisMoveShadow } from '../services/pedagogicalMove/resistantProfileWarrantShadow.js';
+import { createTutorStubResistanceAxisShadow } from '../services/tutorStubActionBeforeRegisterShadow.js';
 import { scoreTutorStubResistanceRecovery } from '../services/tutorStubResistanceActionRegisterStudy.js';
 import {
   buildTutorStubBoredomProofDagBatchPlan,
@@ -445,7 +445,7 @@ function analyzeTrace(batch, resultRow, loaded) {
   const postOne = completed.find((event) => Number(event.turn) === triggerTurn + 1)?.turnRecord;
   const postTwo = outcomes[0];
   const triggerHash = sha256(String(trigger?.learner || ''));
-  const triggerShadow = createResistantAxisMoveShadow({
+  const triggerShadow = createTutorStubResistanceAxisShadow({
     learnerText: trigger?.learner,
     classification: trigger?.classification,
   });
@@ -453,7 +453,7 @@ function analyzeTrace(batch, resultRow, loaded) {
     .filter((event) => Number(event.turn) < triggerTurn)
     .some(
       (event) =>
-        createResistantAxisMoveShadow({
+        createTutorStubResistanceAxisShadow({
           learnerText: event.turnRecord.learner,
           classification: event.turnRecord.classification,
         }).resistance_kind === 'bored',

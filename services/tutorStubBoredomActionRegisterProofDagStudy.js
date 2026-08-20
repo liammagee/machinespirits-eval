@@ -6,9 +6,212 @@ import {
   buildTutorStubBoredomProofDagPlan,
   validateTutorStubBoredomProofDagRegistration,
 } from './tutorStubBoredomActionRegisterProofDagPreflight.js';
+import { TUTOR_STUB_CLI_POLICY_RETRY_DELAYS_MS } from './tutorStubCliPolicyRetry.js';
+import { assertTutorStubTurnAttemptCurrent } from './tutorStubTurnAttempt.js';
 
 export const TUTOR_STUB_BOREDOM_PROOF_DAG_EXECUTION_START =
   'resistance_action_register_boredom_proof_dag_execution_start';
+export const BOREDOM_PROOF_DAG_ADHERENCE_EXHAUSTED_CODE = 'TUTOR_STUB_BOREDOM_PROOF_DAG_ADHERENCE_EXHAUSTED';
+
+const BOREDOM_PROOF_DAG_PLANNED_WORST_CASE_CALLS = 20;
+const BOREDOM_PROOF_DAG_MODEL_CALL_BUDGET = 60;
+const MAX_RESERVATIONS_PER_PLANNED_CALL = 1 + TUTOR_STUB_CLI_POLICY_RETRY_DELAYS_MS.length;
+
+export function buildTutorStubBoredomProofDagRepairBudgetDiagnostic({ maxFullRepairsByT2 = 1 } = {}) {
+  return {
+    turns: 4,
+    repairDecisionTurn: 2,
+    maxFullRepairsByT2,
+    callsPerFullRepair: 2,
+    plannedWorstCaseCalls: BOREDOM_PROOF_DAG_PLANNED_WORST_CASE_CALLS,
+    maximumReservationsPerPlannedCall: MAX_RESERVATIONS_PER_PLANNED_CALL,
+    maximumModelAttemptReservations: BOREDOM_PROOF_DAG_MODEL_CALL_BUDGET,
+    ready:
+      maxFullRepairsByT2 === 1 &&
+      BOREDOM_PROOF_DAG_PLANNED_WORST_CASE_CALLS * MAX_RESERVATIONS_PER_PLANNED_CALL ===
+        BOREDOM_PROOF_DAG_MODEL_CALL_BUDGET,
+  };
+}
+
+export function admitTutorStubBoredomProofDagFullRepair({ state, profile, turnNumber, contract } = {}) {
+  if (profile !== 'bored') return { applicable: false, admitted: true, reason: 'profile_not_bored' };
+  const maxFullRepairsByT2 = Number(contract?.repairModel?.maxFullRepairsPer8Turns);
+  const diagnostic = buildTutorStubBoredomProofDagRepairBudgetDiagnostic({ maxFullRepairsByT2 });
+  if (!diagnostic.ready) {
+    return { applicable: true, admitted: false, reason: 'registered_boredom_repair_budget_not_ready', diagnostic };
+  }
+  const current = state?.boredomProofDagRepairAdmission || { used: 0, history: [] };
+  const admitted = turnNumber === 2 && current.used < maxFullRepairsByT2;
+  const result = {
+    applicable: true,
+    admitted,
+    profile,
+    turn: turnNumber,
+    usedBefore: current.used,
+    usedAfter: admitted ? current.used + 1 : current.used,
+    reason:
+      turnNumber !== 2
+        ? 'repair_deferred_until_boredom_t2_candidate'
+        : admitted
+          ? 'within_boredom_trigger_repair_envelope'
+          : 'boredom_trigger_repair_envelope_exhausted',
+    diagnostic,
+  };
+  if (state) {
+    state.boredomProofDagRepairAdmission = { used: result.usedAfter, history: [...current.history, result] };
+  }
+  return result;
+}
+
+export function throwTutorStubBoredomProofDagAdherenceExhaustion({ repairAttempts }) {
+  const error = new Error(
+    `bored proof-DAG trigger adherence exhausted after ${repairAttempts} repair attempts; refusing to publish an invalid source prefix`,
+  );
+  error.code = BOREDOM_PROOF_DAG_ADHERENCE_EXHAUSTED_CODE;
+  error.profile = 'bored';
+  error.repairAttempts = repairAttempts;
+  error.disposition = 'substantive_boredom_trigger_nonadherence_stop_no_replacement';
+  error.publishPublicCandidate = false;
+  throw error;
+}
+
+export function createTutorStubBoredomProofDagLearnerRuntime({
+  appendTraceEvent,
+  automatedLearnerDraftMatchesRuntime,
+  extractCombinedLearnerAnalysis,
+  generateAutomatedLearnerTurn,
+} = {}) {
+  return async function enforceTutorStubBoredomProofDagLearnerProfile({
+    state,
+    resolved,
+    profile,
+    runtime,
+    turnNumber,
+    generated,
+    precomputeFinalLearnerAnalysis = false,
+    cliEffort = null,
+    signal = null,
+    isCurrent = null,
+  } = {}) {
+    const applicable =
+      state.resistanceActionRegisterStudy?.dynamic_boredom_proof_dag === true && runtime?.profileId === 'bored';
+    if (!applicable) return null;
+    const canPreclassify = Boolean(state.classifier.enabled && state.learnerDag.enabled && state.world);
+    assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
+    if (state.resistanceActionRegisterStudy?.consumed === true) {
+      const precomputedRaw =
+        precomputeFinalLearnerAnalysis && canPreclassify && generated.text
+          ? await extractCombinedLearnerAnalysis({
+              learnerText: generated.text,
+              state,
+              tutorTurn: turnNumber,
+              preflightSource: 'registered_final_learner_outcome',
+              signal,
+            })
+          : null;
+      if (precomputedRaw) assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
+      return { generated, precomputedRaw, repaired: false, passed: null };
+    }
+    if (turnNumber < 2) {
+      appendTraceEvent(state.trace, {
+        type: 'auto_learner_profile_adherence_deferred',
+        turn: turnNumber,
+        profile: runtime.profileId,
+        decisionTurn: 2,
+        repairRequested: false,
+        typedExhaustionEvaluated: false,
+        study: 'boredom_proof_dag_confirmation',
+      });
+      return { generated, precomputedRaw: null, repaired: false, passed: null };
+    }
+    if (!runtime.requiredNow || !canPreclassify || !generated.text) {
+      const precomputedRaw =
+        precomputeFinalLearnerAnalysis && canPreclassify && generated.text
+          ? await extractCombinedLearnerAnalysis({
+              learnerText: generated.text,
+              state,
+              tutorTurn: turnNumber,
+              preflightSource: 'registered_final_learner_outcome',
+              signal,
+            })
+          : null;
+      if (precomputedRaw) assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
+      return { generated, precomputedRaw, repaired: false, passed: null };
+    }
+
+    let candidate = generated;
+    let raw = null;
+    let passed = false;
+    let repairs = 0;
+    while (repairs <= 1) {
+      raw = await extractCombinedLearnerAnalysis({
+        learnerText: candidate.text,
+        state,
+        tutorTurn: turnNumber,
+        preflightSource: 'automated_learner_profile_adherence',
+        signal,
+      });
+      assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
+      passed = automatedLearnerDraftMatchesRuntime({ text: candidate.text, raw, state, runtime });
+      if (passed || repairs === 1) break;
+      const admission = admitTutorStubBoredomProofDagFullRepair({
+        state,
+        profile: runtime.profileId,
+        turnNumber,
+        contract: runtime.contract,
+      });
+      appendTraceEvent(state.trace, {
+        type: 'auto_learner_profile_repair_admission',
+        turn: turnNumber,
+        profile: runtime.profileId,
+        ...admission,
+      });
+      if (!admission.admitted) break;
+      appendTraceEvent(state.trace, {
+        type: 'auto_learner_profile_repair_requested',
+        turn: turnNumber,
+        profile: runtime.profileId,
+        attempt: repairs + 1,
+        failureOperator: runtime.contract.intent.failureOperator,
+        draft: candidate.text,
+      });
+      const repaired = await generateAutomatedLearnerTurn({
+        state,
+        resolved,
+        profile,
+        turnNumber,
+        adherenceFeedback: `Your previous draft was too normalized and did not visibly perform the required failure operator (${runtime.contract.intent.failureOperator}). Rewrite the learner turn. Make the required failure public and unmistakable without repairing it in the same turn. Keep it natural and concise.`,
+        stream: { enabled: false, interim: state.interim },
+        cliEffort,
+        signal,
+      });
+      assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
+      if (repaired.text) candidate = repaired;
+      repairs += 1;
+    }
+    appendTraceEvent(state.trace, {
+      type: 'auto_learner_profile_adherence',
+      turn: turnNumber,
+      profile: runtime.profileId,
+      required: true,
+      passed,
+      repaired: repairs > 0,
+      repairAttempts: repairs,
+    });
+    if (!passed) {
+      const repairAttempts = Math.max(repairs, Number(state?.boredomProofDagRepairAdmission?.used || 0));
+      appendTraceEvent(state.trace, {
+        type: 'auto_learner_profile_adherence_exhausted',
+        turn: turnNumber,
+        profile: 'bored',
+        repairAttempts,
+        disposition: 'substantive_boredom_trigger_nonadherence_stop_no_replacement',
+      });
+      throwTutorStubBoredomProofDagAdherenceExhaustion({ repairAttempts });
+    }
+    return { generated: candidate, precomputedRaw: raw, repaired: repairs > 0, passed };
+  };
+}
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');

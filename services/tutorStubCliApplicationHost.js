@@ -570,7 +570,6 @@ import {
 import { configureTutorStubResistanceActionRegisterConfirmationFromCli } from './tutorStubResistanceActionRegisterConfirmation.js';
 import { configureTutorStubBoredomProofDagFromCli } from './tutorStubBoredomActionRegisterProofDagStudy.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from './tutorStubResistanceActionRegisterStudy.js';
-
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
 const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'codex.gpt-5-mini']);

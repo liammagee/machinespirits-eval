@@ -8,15 +8,17 @@ import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContrac
 import { fileURLToPath } from 'node:url';
 
 import {
-  BOREDOM_PROOF_DAG_ADHERENCE_EXHAUSTED_CODE,
   FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE,
   FRAME_REFUSER_ADHERENCE_EXHAUSTED_CODE,
   TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV,
-  buildTutorStubBoredomProofDagRepairBudgetDiagnostic,
   buildTutorStubFrameOpportunityV3RepairBudgetDiagnostic,
   buildTutorStubFrameOpportunityV4RepairBudgetDiagnostic,
   createTutorStubAutomatedLearnerGenerationRuntime,
 } from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
+import {
+  BOREDOM_PROOF_DAG_ADHERENCE_EXHAUSTED_CODE,
+  buildTutorStubBoredomProofDagRepairBudgetDiagnostic,
+} from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
 import {
   learnerProfileContract,
   learnerProfileIds,
