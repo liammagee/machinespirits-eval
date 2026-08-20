@@ -1027,3 +1027,22 @@ and explicit human approval.
   tutor calls. No successor request or live authority is created by this
   source repair; after guarded merge, a fresh source-pinned request must bind
   wholly new A/B/report destinations and the `109→577/1200` ceiling.
+- 2026-08-20 — The registered-horizon repair merged through PR #729 at
+  `4b771726c00ecfab201557911aa21ac4108aa0bf`. A successor request still needs a
+  version-compatible stopped-execution binding because revision 3 remains the
+  immutable record of the earlier `31/28/3` stop and `76→544/1200` ledger.
+  Revision 4 therefore binds the consumed revision-3 request
+  `568782ec4df4453f4c7e08d6f26afbfe8174bd33a134c6057c65bb9f9b71315d`,
+  the second partial-A root inventory
+  `0db1496cdab580b2094f536aa1b66276bd7eab8548963341d99914065277e8bd`,
+  its required private-archive mirror inventory
+  `bf15bc3e9f5187f768a2cbff5c3db2d4dcf1ef9f52ece632c8e967ff6a6ffadf`,
+  and the six exact trace hashes `f4fc7c7c…`, `7a7a6718…`, `466ccc96…`,
+  `b6cb0c5f…`, `72c16ea8…`, and `35394468…`. Those bytes account for 33
+  reservations, 30 completed calls, three interrupted reservations, zero
+  provider errors, and no batch B, analyzer, result, or seal. They remain
+  wholly excluded from recovery, reuse, pooling, selection, and
+  interpretation. Existing legacy and revision-3 request validation remains
+  unchanged; only revision 4 may carry this second stopped record and the
+  `109→577/1200` ledger. This compatibility step creates no GO request and no
+  live authority.
