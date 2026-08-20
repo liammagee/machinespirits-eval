@@ -78,3 +78,20 @@ Log:
   with LFS smudging disabled; its initial size was 263,844 KiB versus roughly
   751 MiB for ordinary hydrated worktrees. No worktree, artifact, or history
   was removed.
+- 2026-08-19 — Integrated the isolated CI slice. Local CI now defaults to the
+  hosted fail-closed change classifier while preserving explicit legacy
+  profiles. Historical PR shapes classify as expected: PR #699 full, PR #700
+  validator-only, and PR #701 focused; mixed, runtime, and unknown changes
+  remain full. With dependencies already installed, the representative
+  validator-only and focused lanes completed in 1.64 seconds and 1.07 seconds,
+  respectively. Hosted workflow topology was intentionally unchanged because
+  no safe bootstrap-only reduction survived review.
+- 2026-08-19 — Integrated the isolated slow-test slice. Setting
+  `GIT_NO_LAZY_FETCH=1` only in the trailer-hook test subprocess prevents its
+  deliberately unreachable object ID from causing partial-clone network
+  waits. Two comparable runs improved from 2.68 and 2.56 seconds (2.62-second
+  mean) to 1.88 and 1.75 seconds (1.815-second mean), a 30.7% reduction, while
+  preserving all 11 assertions and the 51-test affected cohort. An
+  output-triggered interactive-direction experiment was discarded because its
+  roughly 1.4% change was within measurement noise; production behavior and
+  the remaining real-process contracts were left unchanged.
