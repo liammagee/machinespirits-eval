@@ -188,7 +188,7 @@ test('endpoint preflight completes randomized recovery, objective proof progress
   assert.equal(assembled.report.warm_dialogues, 18);
   assert.equal(assembled.report.plain_successes, 3);
   assert.equal(assembled.report.warm_successes, 12);
-  assert.equal(assembled.report.recovery_endpoint_deadline_turns, 1);
+  assert.equal(assembled.report.deadline_turns, 1);
   assert.ok(assembled.report.exact_two_sided_conditional_blocked_score_p <= 1);
   for (const endpoint of contract.endpoints) assert.equal(assembled.endpoint_status[endpoint.id], 'complete');
   const certificate = readJson(CERTIFICATE_PATH);
@@ -221,6 +221,13 @@ test('objective composite, recovery Boolean, and exact randomized plan fail clos
   invalidRecovery[0].outcome.recovered = 'yes';
   assert.equal(
     assembleTutorStubBoredomProofDagPreflight({ cases: invalidRecovery, contract }).endpoint_status
+      .profile_specific_resistance_recovery,
+    'incomplete',
+  );
+  const missingObservedTurn = structuredClone(cases);
+  delete missingObservedTurn[0].outcome.observed_turn;
+  assert.equal(
+    assembleTutorStubBoredomProofDagPreflight({ cases: missingObservedTurn, contract }).endpoint_status
       .profile_specific_resistance_recovery,
     'incomplete',
   );

@@ -481,8 +481,8 @@ export function buildTutorStubBoredomProofDagSyntheticCases(registration) {
       trigger: { profile: 'bored', observed_by_turn: 2, profile_identity_used: false },
       outcome: {
         recovered,
-        recovery_deadline_turns: 1,
-        recovery_observed_turn: recovered ? 1 : null,
+        deadline_turns: 1,
+        observed_turn: recovered ? 1 : null,
         proof_progress_by_two_turns: recovered,
         new_supported_public_premises: recovered ? 1 : 0,
         best_path_coverage_delta: recovered ? 0.1 : 0,
@@ -548,8 +548,9 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
   const recovery = cases.every(
     (row) =>
       typeof row.outcome?.recovered === 'boolean' &&
-      row.outcome.recovery_deadline_turns === 1 &&
-      (row.outcome.recovered ? row.outcome.recovery_observed_turn === 1 : row.outcome.recovery_observed_turn === null),
+      row.outcome.deadline_turns === 1 &&
+      Object.hasOwn(row.outcome, 'observed_turn') &&
+      (row.outcome.recovered ? row.outcome.observed_turn === 1 : row.outcome.observed_turn === null),
   );
   const objective = cases.every(
     (row) =>
@@ -602,7 +603,7 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
       exact_two_sided_conditional_blocked_score_p: exactBlockedScorePValue(blocks),
       blocks,
       exact_plan_fidelity: exactPlanFidelity,
-      recovery_endpoint_deadline_turns: 1,
+      deadline_turns: 1,
       rows: cases,
       contract_study_id: contract.study_id,
     },
