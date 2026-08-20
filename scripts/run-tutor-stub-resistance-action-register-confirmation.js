@@ -114,7 +114,10 @@ function classifyFailedChild(trace, signal) {
     };
   }
   const exhaustedTransport = events.some(
-    (event) => event.type === 'model_call_error' && event.cliPolicyViolation?.reason === 'call_retry_limit_reached',
+    (event) =>
+      event.type === 'model_call_error' &&
+      event.cliPolicyViolation?.reason === 'call_retry_limit_reached' &&
+      Number(event.cliPolicyViolation?.audit?.prohibited_event_count || 0) === 0,
   );
   if (signal || exhaustedTransport) {
     return {
