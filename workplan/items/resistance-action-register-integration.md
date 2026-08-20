@@ -74,6 +74,7 @@ links:
     - config/tutor-stub-frame-refuser-opportunity-study-go-request.v1.json
     - config/tutor-stub-frame-refuser-opportunity-study-go-request.v2.json
     - config/tutor-stub-frame-refuser-opportunity-study-go-request.v3.json
+    - config/tutor-stub-frame-refuser-opportunity-study-go-request.v4.json
     - services/pedagogicalMove/resistantProfileWarrantShadow.js
     - scripts/tutor-stub-learner-profile-contracts.js
     - scripts/prepare-tutor-stub-resistant-profile-discrimination.js
@@ -95,10 +96,13 @@ links:
     - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.json
     - config/paid-study-endpoints/tutor-stub-resistant-profile-discrimination.endpoint-go.json
     - config/tutor-stub-resistance-action-register-crossed-registration.v1.json
+    - config/tutor-stub-resistance-action-register-crossed-registration.v2.json
     - services/tutorStubResistanceActionRegisterStudy.js
     - services/tutorStubResistanceActionRegisterPreflight.js
     - scripts/run-tutor-stub-resistance-action-register-crossed.js
     - config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.json
+    - config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.v2.json
+    - config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.v2.endpoint-go.json
 tags:
   - tutor-stub
   - cells
@@ -106,7 +110,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/frame-refuser-opportunity-v4-readiness
+branch: codex/resistance-action-register-efficacy-readiness
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -814,3 +818,49 @@ and explicit human approval.
   they do not replace or restate the external standing authorization. Packaging
   and isolated dependency-free replay made zero model calls and zero production
   writes.
+- 2026-08-20 — Closed the prospective-v4 T1-T2 opportunity gate as a PASS at
+  report SHA-256
+  `771076330d58ec8818182a1924e3ea8dd2c8e54bdc1c9f32a822e491f405b431`
+  under approved request
+  `0c14c51ae8625e6f5db301c9328b8f3182a8dbcd0b6b5a9dd610db85064ee0ab`.
+  All six dialogues completed in 45 charged reservations and 45 model calls,
+  with zero provider failures and zero recovery attempts. All three
+  `frame_refuser` targets yielded distinct, guard-eligible T1 public-prefix
+  hashes; all three `frame_defiant` controls made productive disputes without
+  refusal leakage. The cumulative standing-authority ledger is now `45/1200`.
+  This establishes treatment opportunity only. It supplies no tutor,
+  pedagogical-action, register, learning, human-validity, or cell-transfer
+  efficacy result, and no V4 outcome is pooled into the next experiment.
+- 2026-08-20 — Froze the smallest post-opportunity zero-call readiness repair
+  as prospective crossed-registration V2. The first baseline tranche uses the
+  three exact V4 `frame_refuser` public prefixes only as frozen counterfactual
+  inputs, holds the matched `test_bounded_distinction` action fixed, and crosses
+  warm treatment against plain reference with independent same-treatment
+  repeats A and B. `frame_defiant` remains a no-intervention diagnostic. A and
+  B are prebound six-dialogue batches of the same 12-dialogue baseline, not
+  alternative outcomes: both must complete before one combined analysis, with
+  no interim interpretation, selection, pooling, valid-unit rerun, or batch-
+  only result. Each batch plans 78 role calls and is hard-capped at 234 charged
+  reservations; the combined maximum is 468, which would move the programme
+  ledger from `45/1200` to at most `513/1200`. This tranche measures only
+  two-turn frame-refuser recovery, the descriptive warm-minus-plain baseline,
+  and A-versus-B repeat drift for later prospective sizing. It does not include
+  a mismatched action or edged realization and cannot complete the later
+  factorial or license an efficacy conclusion. The registration file SHA-256
+  is `4e8fa84320ba54743920fa5bb0d9228656cd6bb80ca4ba9fe68470c2ed7658e2`;
+  the endpoint contract has file SHA-256
+  `410dd60d4e0f1005deeb8214f4ab1eb2615fa04d967aa84cd77f03f8822816aa`
+  and canonical SHA-256
+  `fc7f454e483d00d66d614ea9725f4a1fe148b4150df6c4b4afb7c25393967883`;
+  the zero-call preflight SHA-256 is
+  `6e4bed90ad029ade3bcc5b4fc556a59cc3172a2e4b05f6e9fa63934f2607e734`;
+  and the endpoint-certificate file SHA-256 is
+  `98800a5b8e9b353a84cc1338ccd215260b5766a941a7a1e6fb9c02094618ac48`.
+  The standing authorization attachment remains
+  `4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b`,
+  but this readiness registration remains on HOLD: all authorization booleans
+  are false, no GO request exists, and live execution is unavailable until
+  portable frozen-prefix inputs, the exact-prefix continuation executor,
+  combined analyzer, future-request validation, two create-once destinations,
+  and a clean-source HOLD request bind both batches. Preparation and preflight
+  made zero model calls and zero production writes.

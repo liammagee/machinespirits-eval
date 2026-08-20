@@ -1,0 +1,149 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-contract.v1",
+  "study_id": "tutor-stub-resistance-action-register-frame-refuser-baseline-v2",
+  "registration": {
+    "registration_path": "config/tutor-stub-resistance-action-register-crossed-registration.v2.json",
+    "registration_sha256": "4e8fa84320ba54743920fa5bb0d9228656cd6bb80ca4ba9fe68470c2ed7658e2",
+    "primary_endpoint_ids": ["profile_specific_resistance_recovery", "same_treatment_repeat_stability"],
+    "required_profiles": ["frame_refuser"],
+    "diagnostic_profile": "frame_defiant_no_intervention",
+    "required_prefixes_per_profile": 3,
+    "required_action_fits": ["matched"],
+    "required_realizations": ["plain", "warm"],
+    "required_repeats": ["A", "B"],
+    "required_observation_semantics": "prospective_v4"
+  },
+  "registered_scale": {
+    "cases": 12,
+    "unit": "triggered_counterfactual_treatment_dialogue",
+    "execution_batches": 2,
+    "cases_per_execution_batch": 6,
+    "combined_analysis_required": true
+  },
+  "runner": {
+    "packet_builder": "services/tutorStubResistanceActionRegisterPreflight.js#buildTutorStubResistanceActionRegisterPreflightPackets",
+    "result_assembler": "services/tutorStubResistanceActionRegisterPreflight.js#assembleTutorStubResistanceActionRegisterPreflight",
+    "packet_cap_bytes": 200000,
+    "emitted_event_fields": [
+      "action_fit",
+      "arm",
+      "assigned_register",
+      "batch_id",
+      "case_id",
+      "fidelity.action_visible",
+      "fidelity.protected_condition",
+      "fidelity.register_visible",
+      "fidelity.safety_override",
+      "outcome.new_supported_public_premises",
+      "outcome.proof_debt_delta",
+      "outcome.recovered",
+      "pedagogical_move",
+      "prefix_id",
+      "profile",
+      "public_prefix_sha256",
+      "realization",
+      "trigger.profile_identity_used",
+      "trigger.single_axis"
+    ]
+  },
+  "channels": {
+    "deterministic_resistance_recovery": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceActionRegisterStudy.js#scoreTutorStubResistanceRecovery"
+    },
+    "same_treatment_repeat_stability": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceActionRegisterPreflight.js#assembleTutorStubResistanceActionRegisterPreflight"
+    },
+    "proof_dag_outcomes": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceActionRegisterPreflight.js#assembleTutorStubResistanceActionRegisterPreflight"
+    },
+    "treatment_fidelity": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceActionRegisterPreflight.js#assembleTutorStubResistanceActionRegisterPreflight"
+    },
+    "public_trigger_observer": {
+      "enabled": true,
+      "implementation": "services/resistantLearnerObservation.js#observeResistantLearnerTurn(prospective_v4)"
+    },
+    "frozen_registration": {
+      "enabled": true,
+      "implementation": "config/tutor-stub-resistance-action-register-crossed-registration.v2.json"
+    }
+  },
+  "endpoints": [
+    {
+      "id": "profile_specific_resistance_recovery",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": ["deterministic_resistance_recovery", "frozen_registration"],
+      "required_event_fields": [
+        "arm",
+        "batch_id",
+        "case_id",
+        "outcome.recovered",
+        "prefix_id",
+        "profile",
+        "realization"
+      ],
+      "denominator": { "expected_cases": 12 },
+      "pairing": {
+        "key_fields": ["prefix_id", "profile", "action_fit", "realization"],
+        "required_arm_values": ["A", "B"],
+        "expected_cases_per_arm": 1
+      }
+    },
+    {
+      "id": "same_treatment_repeat_stability",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": ["same_treatment_repeat_stability", "frozen_registration"],
+      "required_event_fields": ["arm", "case_id", "outcome.recovered", "prefix_id", "realization"],
+      "denominator": { "expected_cases": 12 },
+      "pairing": {
+        "key_fields": ["prefix_id", "profile", "action_fit", "realization"],
+        "required_arm_values": ["A", "B"],
+        "expected_cases_per_arm": 1
+      }
+    },
+    {
+      "id": "proof_dag_debt_delta_at_two_learner_turns",
+      "role": "secondary",
+      "enabled": true,
+      "required_channels": ["proof_dag_outcomes", "frozen_registration"],
+      "required_event_fields": ["case_id", "outcome.proof_debt_delta"],
+      "denominator": { "expected_cases": 12 }
+    },
+    {
+      "id": "new_supported_public_premises_at_two_learner_turns",
+      "role": "secondary",
+      "enabled": true,
+      "required_channels": ["proof_dag_outcomes", "frozen_registration"],
+      "required_event_fields": ["case_id", "outcome.new_supported_public_premises"],
+      "denominator": { "expected_cases": 12 }
+    },
+    {
+      "id": "action_register_fidelity_and_safety",
+      "role": "interpretability_gate",
+      "enabled": true,
+      "required_channels": ["treatment_fidelity", "frozen_registration"],
+      "required_event_fields": [
+        "case_id",
+        "fidelity.action_visible",
+        "fidelity.protected_condition",
+        "fidelity.register_visible",
+        "fidelity.safety_override"
+      ],
+      "denominator": { "expected_cases": 12 }
+    },
+    {
+      "id": "trigger_specificity_and_assembly",
+      "role": "interpretability_gate",
+      "enabled": true,
+      "required_channels": ["public_trigger_observer", "frozen_registration"],
+      "required_event_fields": ["case_id", "trigger.profile_identity_used", "trigger.single_axis"],
+      "denominator": { "expected_cases": 12 }
+    }
+  ]
+}

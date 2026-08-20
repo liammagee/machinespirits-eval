@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -10,7 +11,16 @@ import {
   tutorStubFirstDraftContractPrompt,
 } from '../services/tutorStubFirstDraftContract.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
-import { runTutorStubResistanceActionRegisterEndpointPreflight } from '../services/tutorStubResistanceActionRegisterPreflight.js';
+import {
+  assembleTutorStubResistanceActionRegisterPreflight,
+  buildTutorStubResistanceActionRegisterPreflightPackets,
+  buildTutorStubResistanceActionRegisterSyntheticCorpus,
+  runTutorStubResistanceActionRegisterEndpointPreflight,
+} from '../services/tutorStubResistanceActionRegisterPreflight.js';
+import {
+  hashPaidStudyEndpointValue,
+  validatePaidStudyEndpointGoCertificate,
+} from '../services/paidStudyEndpointPreflight.js';
 import {
   applyTutorStubResistanceActionRegisterSafetyOverride,
   applyTutorStubResistanceActionRegisterStudyIntervention,
@@ -30,6 +40,26 @@ const ENDPOINT_PATH = path.join(
   ROOT,
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.json',
 );
+const REGISTRATION_V2_PATH = path.join(
+  ROOT,
+  'config/tutor-stub-resistance-action-register-crossed-registration.v2.json',
+);
+const ENDPOINT_V2_PATH = path.join(
+  ROOT,
+  'config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.v2.json',
+);
+const ENDPOINT_GO_V2_PATH = path.join(
+  ROOT,
+  'config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.v2.endpoint-go.json',
+);
+
+function fileSha256(filePath) {
+  return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
+function valueSha256(value) {
+  return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
+}
 
 function loadedRegistration() {
   return loadTutorStubResistanceActionRegisterRegistration(REGISTRATION_PATH);
@@ -122,6 +152,7 @@ test('study-only intervention assigns the typed action before its compatible reg
     'public_realization',
   ]);
   assert.equal(applied.resistance_action_register_intervention.profile_identity_triggered, false);
+  assert.equal(Object.hasOwn(applied.resistance_action_register_intervention.assignment, 'batch_id'), false);
   assert.equal(state.resistanceActionRegisterStudy.consumed, true);
   assert.equal(state.register.current, applied);
 
@@ -410,6 +441,7 @@ test('prefix extractor stops before the first eligible trigger and baseline plan
       'warm:B',
     ]);
     assert.ok(jobs.every((job) => job.public_prefix_sha256 === prefix.public_prefix_sha256));
+    assert.ok(jobs.every((job) => !Object.hasOwn(job.treatment, 'batch_id')));
   }
 });
 
@@ -542,6 +574,9 @@ test('deterministic endpoint implements the two registered recovery horizons', (
 test('full 24-case production endpoint preflight passes with zero calls and writes', () => {
   const loaded = loadedRegistration();
   const contract = JSON.parse(fs.readFileSync(ENDPOINT_PATH, 'utf8'));
+  const cases = buildTutorStubResistanceActionRegisterSyntheticCorpus(loaded.registration);
+  const packets = buildTutorStubResistanceActionRegisterPreflightPackets(cases);
+  const assembled = assembleTutorStubResistanceActionRegisterPreflight({ packets, contract });
   const preflight = runTutorStubResistanceActionRegisterEndpointPreflight({
     contract,
     registration: loaded.registration,
@@ -554,6 +589,287 @@ test('full 24-case production endpoint preflight passes with zero calls and writ
   assert.equal(preflight.packet_audit.covered_cases, 24);
   assert.equal(preflight.packet_audit.packets, 6);
   assert.ok(Object.values(preflight.assembly_audit.endpoint_status).every((status) => status === 'complete'));
+  assert.equal(readiness.status, 'passed_hold');
+  assert.equal(readiness.live_execution_available, false);
+  assert.equal(valueSha256(cases), '9f081a1204b1e1f4e661df322da2e4e96d7e2ca60c822aea3dba58adcb51eb89');
+  assert.equal(valueSha256(packets), '09cdb48af0e7b343db872269e834ce497ec7fb4cd19fd6b77e46c3cd05c56b34');
+  assert.equal(preflight.preflight_sha256, '00a178cbc344bed48d5689679c160fc3eddbf0d1c8be8ec5d2c14ba4faff9e11');
+  assert.equal(Object.hasOwn(assembled.report, 'recovery_by_realization_and_repeat'), false);
+  assert.equal(Object.hasOwn(assembled.report, 'same_treatment_repeat_drift'), false);
+});
+
+test('historical v1 resistance action/register artifacts retain exact byte digests', () => {
+  assert.equal(fileSha256(REGISTRATION_PATH), '8e2e2a6c5fde795b668d2a9ecc81a527e29a0d970aaf419badde5fb037fa87e7');
+  assert.equal(fileSha256(ENDPOINT_PATH), '3f82e6b70f037ecff8422a13fde0728d8e974d37537c6e570764df8cc47ed309');
+});
+
+test('v2 admits a prospective-v4 frame refusal into the fixed matched action and warm realization', () => {
+  const loaded = loadTutorStubResistanceActionRegisterRegistration(REGISTRATION_V2_PATH);
+  const study = createTutorStubResistanceActionRegisterStudyRuntime({
+    registration: loaded.registration,
+    registrationPath: path.relative(ROOT, loaded.path),
+    registrationSha256: loaded.sha256,
+    profile: 'frame_refuser',
+    actionFit: 'matched',
+    realization: 'warm',
+    repeat: 'A',
+  });
+  const selection = baseSelection();
+  const state = stateWith(study, selection);
+  const applied = applyTutorStubResistanceActionRegisterStudyIntervention({
+    selection,
+    state,
+    learnerText: 'I reject your right to set this question, and I will not answer within it.',
+    classification: {
+      turn: {
+        request_type: 'authority_refusal_or_status_challenge',
+        discourse_move: 'challenge',
+        evidence_use: 'none',
+        epistemic_stance: 'resistant',
+        agency: 'steering',
+      },
+    },
+    tutorLearnerDag: { model: { turn: 1 } },
+  });
+
+  assert.equal(applied.source, 'resistance_action_register_study_intervention');
+  assert.equal(applied.selected_register, 'warm');
+  assert.equal(applied.resistance_action_register_intervention.public_trigger.resistance_kind, 'frame_refuser');
+  assert.equal(applied.resistance_action_register_intervention.assignment.action_fit, 'matched');
+  assert.equal(applied.resistance_action_register_intervention.assignment.pedagogical_move, 'test_bounded_distinction');
+  assert.equal(applied.resistance_action_register_intervention.assignment.batch_id, 'batch_A');
+});
+
+test('v2 keeps productive frame defiance diagnostic-only and does not consume treatment', () => {
+  const loaded = loadTutorStubResistanceActionRegisterRegistration(REGISTRATION_V2_PATH);
+  const study = createTutorStubResistanceActionRegisterStudyRuntime({
+    registration: loaded.registration,
+    profile: 'frame_refuser',
+    actionFit: 'matched',
+    realization: 'plain',
+    repeat: 'B',
+  });
+  const selection = baseSelection();
+  const state = stateWith(study, selection);
+  const unchanged = applyTutorStubResistanceActionRegisterStudyIntervention({
+    selection,
+    state,
+    learnerText:
+      'I reject your authority to define the question, but name one bounded public test and I will examine it.',
+    classification: {
+      turn: {
+        request_type: 'authority_refusal_or_status_challenge',
+        discourse_move: 'challenge',
+        evidence_use: 'none',
+        epistemic_stance: 'resistant',
+        agency: 'steering',
+      },
+    },
+  });
+
+  assert.equal(unchanged, selection);
+  assert.equal(study.consumed, false);
+  assert.ok(study.history[0].reasons.includes('no_single_axis_public_warrant'));
+  assert.throws(
+    () =>
+      createTutorStubResistanceActionRegisterStudyRuntime({
+        registration: loaded.registration,
+        profile: 'frame_defiant',
+        actionFit: 'matched',
+        realization: 'plain',
+        repeat: 'A',
+      }),
+    /study profile must be one of frame_refuser/u,
+  );
+});
+
+test('v2 frame-refuser recovery requires bounded merits engagement or a more precise public dispute within two turns', () => {
+  const merits = scoreTutorStubResistanceRecovery({
+    profile: 'frame_refuser',
+    triggerLearnerText: 'I reject your test and will not answer within it.',
+    postLearnerTurns: [
+      {
+        learnerText: 'The bounded die-mark comparison is worth testing against the clipped edge.',
+        classification: {
+          turn: {
+            discourse_move: 'evidence_adoption',
+            evidence_use: 'cites_public_evidence',
+            epistemic_stance: 'exploratory',
+          },
+        },
+      },
+    ],
+  });
+  const continuedRefusal = scoreTutorStubResistanceRecovery({
+    profile: 'frame_refuser',
+    triggerLearnerText: 'I reject your test and will not answer within it.',
+    postLearnerTurns: [
+      {
+        learnerText: 'No. I still will not answer.',
+        classification: {
+          turn: {
+            discourse_move: 'refusal',
+            evidence_use: 'none',
+            epistemic_stance: 'resistant',
+          },
+        },
+      },
+      {
+        learnerText: 'I refuse.',
+        classification: {
+          turn: {
+            discourse_move: 'refusal',
+            evidence_use: 'none',
+            epistemic_stance: 'resistant',
+          },
+        },
+      },
+    ],
+  });
+  const authorityQuestion = scoreTutorStubResistanceRecovery({
+    profile: 'frame_refuser',
+    triggerLearnerText: 'I reject your test and will not answer within it.',
+    postLearnerTurns: [
+      {
+        learnerText: 'Why should I accept your authority?',
+        classification: {
+          turn: {
+            discourse_move: 'question',
+            evidence_use: 'none',
+            epistemic_stance: 'exploratory',
+          },
+        },
+      },
+    ],
+  });
+  const reflectiveRefusal = scoreTutorStubResistanceRecovery({
+    profile: 'frame_refuser',
+    triggerLearnerText: 'I reject your test and will not answer within it.',
+    postLearnerTurns: [
+      {
+        learnerText: 'I reject your authority to define this test, and I will not test it.',
+        classification: {
+          turn: {
+            discourse_move: 'challenge',
+            evidence_use: 'none',
+            epistemic_stance: 'reflective',
+          },
+        },
+      },
+    ],
+  });
+
+  assert.equal(merits.recovered, true);
+  assert.equal(merits.deadline_turns, 2);
+  assert.equal(continuedRefusal.recovered, false);
+  assert.equal(authorityQuestion.recovered, false);
+  assert.equal(reflectiveRefusal.recovered, false);
+});
+
+test('v2 baseline plan binds three prefixes to two six-dialogue repeat batches without a factorial arm', () => {
+  const registration = loadTutorStubResistanceActionRegisterRegistration(REGISTRATION_V2_PATH).registration;
+  const prefixBindings = registration.design.trigger.frozenPrefixSource.prefixes;
+  const prefixes = prefixBindings.map((binding) => ({
+    schema: TUTOR_STUB_RESISTANCE_ACTION_REGISTER_PREFIX_SCHEMA,
+    id: binding.id,
+    profile: 'frame_refuser',
+    world: 'world_005_marrick',
+    trigger_turn: binding.triggerTurn,
+    trigger_turn_id: `${binding.id}:trigger`,
+    trigger_learner_text: 'I reject your right to set this question, and I will not answer within it.',
+    trigger_classification: {
+      turn: {
+        request_type: 'authority_refusal_or_status_challenge',
+        discourse_move: 'challenge',
+        evidence_use: 'none',
+        epistemic_stance: 'resistant',
+      },
+    },
+    observation_semantics: 'prospective_v4',
+    source_trace_sha256: binding.sourceTraceSha256,
+    prefix_trace_sha256: binding.sourceTraceSha256,
+    public_prefix_sha256: binding.publicPrefixSha256,
+    prior_turn_count: 0,
+  }));
+  const plan = buildTutorStubResistanceActionRegisterPlan({ registration, prefixes, stage: 'baseline' });
+
+  assert.equal(plan.jobs.length, 12);
+  assert.equal(plan.model_calls, 0);
+  assert.equal(plan.production_writes, 0);
+  assert.deepEqual([...new Set(plan.jobs.map((job) => job.treatment.action_fit))], ['matched']);
+  assert.deepEqual([...new Set(plan.jobs.map((job) => job.treatment.pedagogical_move))], ['test_bounded_distinction']);
+  assert.deepEqual([...new Set(plan.jobs.map((job) => job.treatment.realization))].sort(), ['plain', 'warm']);
+  assert.equal(plan.jobs.filter((job) => job.treatment.batch_id === 'batch_A').length, 6);
+  assert.equal(plan.jobs.filter((job) => job.treatment.batch_id === 'batch_B').length, 6);
+  assert.throws(
+    () => buildTutorStubResistanceActionRegisterPlan({ registration, prefixes, stage: 'factorial' }),
+    /does not authorize a factorial stage/u,
+  );
+  const driftedPrefix = structuredClone(prefixes);
+  driftedPrefix[0].source_trace_sha256 = 'f'.repeat(64);
+  assert.throws(
+    () => buildTutorStubResistanceActionRegisterPlan({ registration, prefixes: driftedPrefix, stage: 'baseline' }),
+    /does not match the frozen prospective-v4 source binding/u,
+  );
+});
+
+test('v2 registration fails closed on prefix, assignment, and reservation drift', (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'resistance-registration-v2-'));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const registration = JSON.parse(fs.readFileSync(REGISTRATION_V2_PATH, 'utf8'));
+  const rejects = (name, mutate, pattern) => {
+    const candidate = structuredClone(registration);
+    mutate(candidate);
+    const filePath = path.join(directory, `${name}.json`);
+    fs.writeFileSync(filePath, `${JSON.stringify(candidate, null, 2)}\n`);
+    assert.throws(() => loadTutorStubResistanceActionRegisterRegistration(filePath), pattern);
+  };
+
+  rejects(
+    'missing-prefix',
+    (candidate) => candidate.design.trigger.frozenPrefixSource.prefixes.pop(),
+    /three distinct V4 target prefixes/u,
+  );
+  rejects(
+    'mismatched-action',
+    (candidate) => {
+      candidate.design.factors.actionFit.assignments.frame_refuser.matched = 'ask_discriminating_question';
+    },
+    /matched move at test_bounded_distinction/u,
+  );
+  rejects(
+    'batch-ceiling',
+    (candidate) => {
+      candidate.executionReadiness.batches[0].maximumModelAttemptReservations = 235;
+    },
+    /two six-dialogue batches capped at 234/u,
+  );
+});
+
+test('v2 endpoint proves the combined 12-case baseline and its two-repeat stability with zero calls and writes', () => {
+  const loaded = loadTutorStubResistanceActionRegisterRegistration(REGISTRATION_V2_PATH);
+  const contract = JSON.parse(fs.readFileSync(ENDPOINT_V2_PATH, 'utf8'));
+  const certificate = JSON.parse(fs.readFileSync(ENDPOINT_GO_V2_PATH, 'utf8'));
+  const preflight = runTutorStubResistanceActionRegisterEndpointPreflight({
+    contract,
+    registration: loaded.registration,
+  });
+  const readiness = runTutorStubResistanceActionRegisterZeroCall({
+    registrationPath: path.relative(ROOT, REGISTRATION_V2_PATH),
+    endpointContractPath: path.relative(ROOT, ENDPOINT_V2_PATH),
+  });
+  const certificateValidation = validatePaidStudyEndpointGoCertificate({ certificate, contract, preflight });
+
+  assert.equal(contract.registration.registration_sha256, loaded.sha256);
+  assert.equal(preflight.status, 'passed');
+  assert.equal(preflight.model_calls, 0);
+  assert.equal(preflight.production_writes, 0);
+  assert.equal(preflight.registered_scale.cases, 12);
+  assert.equal(preflight.packet_audit.packets, 3);
+  assert.equal(preflight.packet_audit.covered_cases, 12);
+  assert.equal(preflight.assembly_audit.endpoint_status.same_treatment_repeat_stability, 'complete');
+  assert.equal(certificate.contract_sha256, hashPaidStudyEndpointValue(contract));
+  assert.equal(certificateValidation.ok, true, certificateValidation.errors.join('; '));
   assert.equal(readiness.status, 'passed_hold');
   assert.equal(readiness.live_execution_available, false);
 });

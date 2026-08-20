@@ -77,6 +77,8 @@ export function buildTutorStubResistanceActionRegisterPrefixPlan({ registration,
     extractTutorStubResistanceActionRegisterPrefix({
       tracePath: repoPath(source.trace, `prefix trace ${source.trace}`),
       profile: source.profile,
+      observationSemantics:
+        manifest.observationSemantics || registration.design?.trigger?.observationSemantics || undefined,
     }),
   );
   const plan = buildTutorStubResistanceActionRegisterPlan({
