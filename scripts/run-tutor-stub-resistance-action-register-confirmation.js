@@ -76,8 +76,18 @@ function traceResult(command) {
   return { trace: path.relative(ROOT, traces[0]), trace_sha256: sha256(source), trace_bytes: source.length };
 }
 
-function classifyFailedChild(trace) {
-  const events = trace ? readJsonLines(path.resolve(ROOT, trace.trace)) : [];
+function classifyFailedChild(trace, signal) {
+  let events = [];
+  try {
+    events = trace ? readJsonLines(path.resolve(ROOT, trace.trace)) : [];
+  } catch {
+    return {
+      category: 'unclassified_nonrecoverable',
+      code: 'TUTOR_STUB_CONFIRMATION_FAILURE_TRACE_UNREADABLE',
+      disposition: 'manual_review_required_no_recovery',
+      recoverable: false,
+    };
+  }
   const triggerFailure = events.find(
     (event) => event.type === 'resistance_action_register_confirmation_substantive_failure',
   );
@@ -103,11 +113,24 @@ function classifyFailedChild(trace) {
       recoverable: false,
     };
   }
+  const exhaustedTransport = events.some(
+    (event) => event.type === 'model_call_error' && event.cliPolicyViolation?.reason === 'call_retry_limit_reached',
+  );
+  if (signal || exhaustedTransport) {
+    return {
+      category: 'technical_recoverable',
+      code: signal
+        ? 'TUTOR_STUB_CONFIRMATION_CHILD_INTERRUPTED'
+        : 'TUTOR_STUB_CONFIRMATION_CODEX_TRANSPORT_RETRY_EXHAUSTED',
+      disposition: 'bounded_missing_or_failed_unit_recovery_eligible',
+      recoverable: true,
+    };
+  }
   return {
-    category: 'technical_recoverable',
-    code: 'TUTOR_STUB_CONFIRMATION_CHILD_TECHNICAL_FAILURE',
-    disposition: 'bounded_missing_or_failed_unit_recovery_eligible',
-    recoverable: true,
+    category: 'unclassified_nonrecoverable',
+    code: 'TUTOR_STUB_CONFIRMATION_CHILD_FAILURE_UNCLASSIFIED',
+    disposition: 'manual_review_required_no_recovery',
+    recoverable: false,
   };
 }
 
@@ -318,7 +341,7 @@ async function runChild(planJob) {
         signal,
         ...trace,
         trace_error: traceError,
-        failure: complete ? null : classifyFailedChild(trace),
+        failure: complete ? null : classifyFailedChild(trace, signal),
         stdout: path.relative(ROOT, stdoutPath),
         stderr: path.relative(ROOT, stderrPath),
         transcript: path.relative(ROOT, command.transcript),

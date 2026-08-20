@@ -387,7 +387,12 @@ function assignedRegister(registration, move, realization) {
   return register;
 }
 
-function treatmentEligibility({ runtime, learnerText, classification, tutorLearnerDag }) {
+export function tutorStubResistanceActionRegisterTreatmentEligibility({
+  runtime,
+  learnerText,
+  classification,
+  tutorLearnerDag,
+}) {
   const semantics = runtime.registration?.design?.trigger?.observationSemantics;
   const v4Observation = usesProspectiveV4Observation(runtime.registration)
     ? observeResistantLearnerTurn({ learnerText, classification, semantics })
@@ -434,7 +439,12 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
 } = {}) {
   const runtime = state?.resistanceActionRegisterStudy;
   if (!selection || !runtime?.enabled) return selection;
-  const eligibility = treatmentEligibility({ runtime, learnerText, classification, tutorLearnerDag });
+  const eligibility = tutorStubResistanceActionRegisterTreatmentEligibility({
+    runtime,
+    learnerText,
+    classification,
+    tutorLearnerDag,
+  });
   if (!eligibility.eligible) {
     runtime.history.push({
       turn: decisionTurn(state, tutorLearnerDag),

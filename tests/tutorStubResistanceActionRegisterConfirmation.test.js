@@ -590,11 +590,60 @@ test('combined confirmation analyzer accepts only all nine sealed fresh batches 
     safety_override: true,
     protected_condition: true,
   });
+  assert.equal(report.treatment_fidelity.protected_condition_count, 1);
+  assert.equal(report.treatment_fidelity.protected_condition_rate, 1 / 36);
+  assert.equal(report.treatment_fidelity.safety_override_count, 1);
+  assert.equal(report.treatment_fidelity.safety_override_rate, 1 / 36);
+
+  const recoveredInitialResultPath = path.join(roots[0], 'batch-result.json');
+  const recoveredInitialResultBefore = fs.readFileSync(recoveredInitialResultPath);
+  const recoveredInitialResult = readJson(recoveredInitialResultPath);
+  recoveredInitialResult.results.find((row) => row.status === 'failed').failure = {
+    category: 'substantive_registered_failure',
+    code: 'TUTOR_STUB_RESISTANCE_ACTION_REGISTER_CONFIRMATION_TRIGGER_MISSING',
+    recoverable: false,
+  };
+  writeJson(recoveredInitialResultPath, recoveredInitialResult);
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterConfirmation({
+        batchRoots: roots,
+        registrationPath: path.relative(ROOT, REGISTRATION),
+        expectedSourceCommit: head,
+      }),
+    /technically recoverable incomplete result/u,
+  );
+  fs.writeFileSync(recoveredInitialResultPath, recoveredInitialResultBefore);
 
   const mutationRoot = roots[2];
   const mutationPlan = readJson(path.join(mutationRoot, 'batch-plan.json'));
   const turnTwoTriggerJob = mutationPlan.jobs.find((job) => job.slot === 2);
   let restore = mutateSealedBatchTrace(mutationRoot, turnTwoTriggerJob.id, (events) =>
+    events.map((event) =>
+      event.type === 'turn_complete' && event.turn === 1
+        ? {
+            ...event,
+            turnRecord: {
+              ...event.turnRecord,
+              learner:
+                'I reject your authority to set this bounded test, but I am ashamed and overwhelmed and need plain language.',
+              classification: classification(false),
+            },
+          }
+        : event,
+    ),
+  );
+  assert.equal(
+    analyzeTutorStubResistanceActionRegisterConfirmation({
+      batchRoots: roots,
+      registrationPath: path.relative(ROOT, REGISTRATION),
+      expectedSourceCommit: head,
+    }).assembly.dialogues,
+    36,
+  );
+  restore();
+
+  restore = mutateSealedBatchTrace(mutationRoot, turnTwoTriggerJob.id, (events) =>
     events.map((event) =>
       event.type === 'turn_complete' && event.turn === 1
         ? {

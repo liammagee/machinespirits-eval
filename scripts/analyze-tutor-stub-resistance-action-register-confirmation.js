@@ -12,6 +12,7 @@ import {
   loadTutorStubResistanceActionRegisterConfirmation,
   scoreTutorStubResistanceRecovery,
 } from '../services/tutorStubResistanceActionRegisterConfirmation.js';
+import { tutorStubResistanceActionRegisterTreatmentEligibility } from '../services/tutorStubResistanceActionRegisterStudy.js';
 import {
   buildTutorStubResistanceActionRegisterConfirmationBatchPlan,
   buildTutorStubResistanceActionRegisterConfirmationRecoveryJob,
@@ -82,9 +83,16 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
     initial.status !== 'incomplete' ||
     initialRows.length > 4 ||
     initialById.size !== initialRows.length ||
-    initialRows.some((row) => !planIds.includes(row.job_id) || !['complete', 'failed'].includes(row.status))
+    initialRows.some((row) => !planIds.includes(row.job_id) || !['complete', 'failed'].includes(row.status)) ||
+    initialRows.some(
+      (row) =>
+        row.status === 'failed' &&
+        (row.failure?.category !== 'technical_recoverable' || row.failure?.recoverable !== true),
+    )
   ) {
-    throw new Error(`confirmation batch ${plan.batch_id} recovery lacks one preserved incomplete initial result`);
+    throw new Error(
+      `confirmation batch ${plan.batch_id} recovery lacks one preserved technically recoverable incomplete result`,
+    );
   }
   const initialValidIds = initialRows.filter((row) => row.status === 'complete').map((row) => row.job_id);
   const missingOrFailedIds = planIds.filter((id) => initialById.get(id)?.status !== 'complete');
@@ -449,22 +457,35 @@ function analyzeTrace(batch, resultRow, loaded) {
     classification: trigger?.classification,
     semantics: 'prospective_v4',
   });
+  const eligibilityRuntime = {
+    registration: loaded.registration,
+    profile: 'frame_refuser',
+    consumed: false,
+  };
+  const triggerEligibility = tutorStubResistanceActionRegisterTreatmentEligibility({
+    runtime: eligibilityRuntime,
+    learnerText: trigger?.learner,
+    classification: trigger?.classification,
+    tutorLearnerDag: trigger?.tutorLearnerDagModel,
+  });
   const earlierEligible = completed
     .filter((event) => Number(event.turn) < triggerTurn)
-    .some((event) => {
-      const prior = observeResistantLearnerTurn({
-        learnerText: event.turnRecord.learner,
-        classification: event.turnRecord.classification,
-        semantics: 'prospective_v4',
-      });
-      return prior.observations?.some((row) => row.type === 'frame_jurisdiction_refusal');
-    });
+    .some(
+      (event) =>
+        tutorStubResistanceActionRegisterTreatmentEligibility({
+          runtime: eligibilityRuntime,
+          learnerText: event.turnRecord.learner,
+          classification: event.turnRecord.classification,
+          tutorLearnerDag: event.turnRecord.tutorLearnerDagModel,
+        }).eligible,
+    );
   if (
     !trigger ||
     !postOne ||
     !postTwo ||
     observation.ambiguous !== false ||
     !observation.observations?.some((row) => row.type === 'frame_jurisdiction_refusal') ||
+    triggerEligibility.eligible !== true ||
     earlierEligible ||
     interventions[0].triggerTurn !== triggerTurn ||
     interventions[0].triggerLearnerSha256 !== triggerHash ||
@@ -613,6 +634,8 @@ export function analyzeTutorStubResistanceActionRegisterConfirmation({
   const warmRate = warmRecovered / 18;
   const actionVisibility = rows.filter((row) => row.fidelity.action_visible).length / 36;
   const registerVisibility = rows.filter((row) => row.fidelity.register_visible).length / 36;
+  const protectedConditionCount = rows.filter((row) => row.fidelity.protected_condition).length;
+  const safetyOverrideCount = rows.filter((row) => row.fidelity.safety_override).length;
   const fidelity = loaded.registration.measurement.treatmentFidelity;
   const fidelityPassed =
     actionVisibility >= fidelity.minimumActionVisibility && registerVisibility >= fidelity.minimumRegisterVisibility;
@@ -657,6 +680,10 @@ export function analyzeTutorStubResistanceActionRegisterConfirmation({
       status: fidelityPassed ? 'complete' : 'failed_interpretability_gate_not_rerun',
       action_visibility_rate: actionVisibility,
       register_visibility_rate: registerVisibility,
+      protected_condition_count: protectedConditionCount,
+      protected_condition_rate: protectedConditionCount / 36,
+      safety_override_count: safetyOverrideCount,
+      safety_override_rate: safetyOverrideCount / 36,
       action_visibility_minimum: fidelity.minimumActionVisibility,
       register_visibility_minimum: fidelity.minimumRegisterVisibility,
       primary_analysis: 'intention_to_treat',
