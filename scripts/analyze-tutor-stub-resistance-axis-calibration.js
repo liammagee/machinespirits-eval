@@ -233,6 +233,15 @@ function hasObservation(turn, type, predicate = () => true) {
   return Boolean(turn?.publicObservation?.observations?.some((row) => row.type === type && predicate(row)));
 }
 
+function productiveFrameDefiance(turn, measurementRule) {
+  return hasObservation(turn, 'frame_jurisdiction_dispute', (row) => {
+    if (measurementRule === 'frame_jurisdiction_dispute_with_contract_licensed_participation') {
+      return row.features?.contract_licensed_participation === true;
+    }
+    return row.features?.content_bearing === true;
+  });
+}
+
 function frameRefuserPrefix(trace, mustShowByTurn) {
   try {
     const prefix = extractTutorStubResistanceActionRegisterPrefix({
@@ -264,6 +273,15 @@ export function buildFrameRefuserOpportunityReport(traces, args, registrationBin
   const targetProfile = registration.gates.targetProfile;
   const controlProfile = registration.gates.controlProfile;
   const mustShowByTurn = registration.gates.mustShowByTurn;
+  const controlMeasurement = registration.measurement.controlObservation;
+  if (
+    ![
+      'frame_jurisdiction_dispute_with_content_bearing_true',
+      'frame_jurisdiction_dispute_with_contract_licensed_participation',
+    ].includes(controlMeasurement)
+  ) {
+    throw new Error(`unsupported frame-defiant control measurement: ${controlMeasurement}`);
+  }
   const targetRows = traces
     .filter((trace) => trace.profile === targetProfile)
     .map((trace) => {
@@ -283,19 +301,25 @@ export function buildFrameRefuserOpportunityReport(traces, args, registrationBin
   const controlRows = traces
     .filter((trace) => trace.profile === controlProfile)
     .map((trace) => {
-      const productiveDisputeByDeadline = trace.turns.some(
+      const productiveTurn = trace.turns.find(
         (turn) =>
           turn.turn <= mustShowByTurn &&
-          hasObservation(turn, 'frame_jurisdiction_dispute', (row) => row.features?.content_bearing === true) &&
+          productiveFrameDefiance(turn, controlMeasurement) &&
           !hasObservation(turn, 'frame_jurisdiction_refusal'),
       );
       const refusalLeakage = trace.turns.some((turn) => hasObservation(turn, 'frame_jurisdiction_refusal'));
+      const dispute = productiveTurn?.publicObservation?.observations?.find(
+        (row) => row.type === 'frame_jurisdiction_dispute',
+      );
       return {
         caseId: trace.caseId,
         trace: reportPath(trace.file),
-        productiveDisputeByDeadline,
+        controlMeasurement,
+        productiveDisputeByDeadline: Boolean(productiveTurn),
+        productiveTurn: productiveTurn?.turn ?? null,
+        participationKinds: dispute?.features?.participation_kinds || [],
         refusalLeakage,
-        pass: productiveDisputeByDeadline && !refusalLeakage,
+        pass: Boolean(productiveTurn) && !refusalLeakage,
       };
     });
   const prefixHashes = targetRows.map((row) => row.eligiblePrefix.publicPrefixSha256).filter(Boolean);

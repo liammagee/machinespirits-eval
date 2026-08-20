@@ -40,14 +40,21 @@ const FRAME_JURISDICTION_PATTERNS = Object.freeze([
   /\bi (?:do not|don't) accept (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?)\b/iu,
   /\bi (?:do not|don't) accept (?:your|the tutor['’]s|their) (?:authority|standing|right)\b/iu,
   /\bi (?:do not|don't) accept your (?:fixing|setting|defining|choosing) (?:the |this |that )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
+  /\bi (?:do not|don't) accept (?:your|the tutor['’]s|their) right to (?:fix|set|define|choose|dictate)\b.{0,120}\b(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
+  /\bi (?:do not|don't) accept that (?:you|the tutor|they) (?:get|gets) to (?:fix|set|define|choose|dictate)\b.{0,120}\b(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
+  /\bi (?:do not|don't) accept that\b.{0,100}\b(?:verdict|accusation) (?:fixes|sets|defines|chooses|dictates)\b.{0,100}\b(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\bi (?:do not|don't) concede (?:your|the tutor['’]s|their) (?:authority|standing|right)\b/iu,
   /\bi reject (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
+  /\bi reject your (?:demand|question)\b.{0,120}\b(?:frame|framing|governing (?:frame|question|test))\b/iu,
+  /\bi reject your standing to (?:set|fix|define|choose|dictate)\b.{0,120}\b(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
+  /\bi reject\b.{0,80}\btest as (?:your |the )?governing (?:frame|question|test)\b/iu,
   /\bi reject (?:the )?jurisdiction of (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\bi dispute (?:the |this |that |your )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\bi dispute (?:your|the tutor['’]s|their) (?:authority|standing|right)\b/iu,
   /\byou (?:do not|don't) get to (?:set|define|decide|choose|fix) (?:the |this |my |our )?(?:frame|question|exercise|rules?|test|task)\b/iu,
   /\byou (?:do not|don't) get to (?:set|define|decide|choose|fix|make|declare|treat|impose)\b.{0,120}\b(?:as\s+)?(?:the\s+)?(?:governing|controlling|decisive)\s+(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\byou (?:do not|don't) get to (?:set|define|decide|choose|fix|make|declare|treat|impose|install)\b.{0,120}\b(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
+  /\byou (?:do not|don't) get to dictate\b.{0,120}\b(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\bwho (?:says|gave you the right to) (?:set|define|decide|choose) (?:the |this |my |our )?(?:frame|question|exercise|rules?|test|task)\b/iu,
   /\bwhy should i (?:accept|answer|play along with|submit to) (?:the |this |your )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
   /\bbut not under (?:the |this |that |your |a )?(?:premise|frame|framing|question|exercise|rules?|test|task)\b/iu,
@@ -55,6 +62,24 @@ const FRAME_JURISDICTION_PATTERNS = Object.freeze([
   /\byour (?:test|question|exercise|task) assumes (?:the |that |this )/iu,
   /\bthe question is (?:loaded|rigged|not yours to ask)\b/iu,
   /\bthat is not your call\b/iu,
+]);
+
+const FRAME_EXPLICIT_REFRAME_PATTERNS = Object.freeze([
+  /\blet us (?:first )?agree\b.{0,140}\b(?:matter|premise|frame|question|record|evidence|test|tested)\b/iu,
+  /\blet us (?:instead |first )?(?:ask|begin|start)\b.{0,140}\b(?:matter|premise|frame|question|record|evidence|test)\b/iu,
+]);
+
+const FRAME_BOUNDED_LOCAL_TEST_PATTERNS = Object.freeze([
+  /\blet us (?:first )?(?:examine|test|compare|check)\b.{0,160}/iu,
+  /\bwhat public (?:matter|record|evidence|clue|feature)\b.{0,100}\b(?:examine|test|compare|check)\b/iu,
+  /\bi will (?:first )?(?:examine|test|compare|check)\b.{0,160}/iu,
+  /\bi will consider\b.{0,100}\b(?:claim|distinction|evidence|feature|question|record|test)\b/iu,
+  /\bif you (?:propose|offer|name)\b.{0,100}\b(?:bounded|local)\b.{0,100}\b(?:claim|distinction|feature|test)\b/iu,
+]);
+
+const FRAME_EXPLICIT_WITHHOLDING_PATTERNS = Object.freeze([
+  /\bi (?:will not|won't|do not|don't|refuse to|decline to) (?:answer|cite|compare|contribute|engage|enter|examine|inspect|name|offer|participate|perform|proceed|provide|supply|take|test)\b/iu,
+  /\bi (?:withhold|am withholding)\b.{0,100}\b(?:answer|evidence|test|participation|contribution)\b/iu,
 ]);
 
 const CONTENT_BEARING_MOVES = Object.freeze(
@@ -83,6 +108,25 @@ function classifierTurn(classification) {
 function contentBearing(classification) {
   const turn = classifierTurn(classification);
   return CONTENT_BEARING_MOVES.has(turn.discourse_move) || CONTENT_BEARING_EVIDENCE.has(turn.evidence_use);
+}
+
+export function classifyFrameJurisdictionParticipation({ learnerText = '', classification = null } = {}) {
+  const text = String(learnerText || '').trim();
+  const participation = [];
+  const explicitReframe = firstEvidence(text, FRAME_EXPLICIT_REFRAME_PATTERNS);
+  const boundedLocalTest = firstEvidence(text, FRAME_BOUNDED_LOCAL_TEST_PATTERNS);
+  const carriesContent = contentBearing(classification);
+  if (explicitReframe) participation.push({ kind: 'explicit_reframe', evidence_span: explicitReframe });
+  if (boundedLocalTest) participation.push({ kind: 'bounded_local_test', evidence_span: boundedLocalTest });
+  if (carriesContent) participation.push({ kind: 'content_bearing_contribution', evidence_span: null });
+  const explicitWithholding = firstEvidence(text, FRAME_EXPLICIT_WITHHOLDING_PATTERNS);
+  return {
+    contract_licensed_participation: participation.length > 0,
+    participation,
+    explicit_withholding: Boolean(explicitWithholding),
+    explicit_withholding_evidence: explicitWithholding,
+    content_bearing: carriesContent,
+  };
 }
 
 function wordCount(text) {
@@ -161,23 +205,32 @@ export function observeResistantLearnerTurn({ learnerText = '', classification =
   const frameEvidence = firstEvidence(text, FRAME_JURISDICTION_PATTERNS);
   if (frameEvidence) {
     const turn = classifierTurn(classification);
-    const carriesContent = contentBearing(classification);
+    const frameSemantics = classifyFrameJurisdictionParticipation({ learnerText: text, classification });
     observations.push(
       observation('frame_jurisdiction_dispute', frameEvidence, text, {
         target: 'inquiry_frame_or_tutor_standing',
         jurisdictional: true,
-        content_bearing: carriesContent,
+        content_bearing: frameSemantics.content_bearing,
+        contract_licensed_participation: frameSemantics.contract_licensed_participation,
+        participation_kinds: frameSemantics.participation.map((row) => row.kind),
+        participation_evidence: frameSemantics.participation,
+        explicit_withholding: frameSemantics.explicit_withholding,
+        explicit_withholding_evidence: frameSemantics.explicit_withholding_evidence,
         classifier_request_type: turn.request_type || null,
         classifier_discourse_move: turn.discourse_move || null,
       }),
     );
-    if (!carriesContent) {
+    if (frameSemantics.explicit_withholding && !frameSemantics.contract_licensed_participation) {
       observations.push(
         observation('frame_jurisdiction_refusal', frameEvidence, text, {
           target: 'inquiry_frame_or_tutor_standing',
           jurisdictional: true,
           local_test_or_evidence_withheld: true,
-          content_bearing: false,
+          content_bearing: frameSemantics.content_bearing,
+          contract_licensed_participation: false,
+          participation_kinds: [],
+          explicit_withholding: true,
+          explicit_withholding_evidence: frameSemantics.explicit_withholding_evidence,
           classifier_request_type: turn.request_type || null,
           classifier_discourse_move: turn.discourse_move || null,
         }),
@@ -198,9 +251,11 @@ export function observeResistantLearnerTurn({ learnerText = '', classification =
 
 export function resistantLearnerObservationMarkers(input = {}) {
   const result = observeResistantLearnerTurn(input);
+  const frameDispute = result.observations.find((row) => row.type === 'frame_jurisdiction_dispute');
   return {
     boredWithholding: result.observations.some((row) => row.type === 'bored_effort_withholding'),
-    frameJurisdictionDispute: result.observations.some((row) => row.type === 'frame_jurisdiction_dispute'),
+    frameJurisdictionDispute: Boolean(frameDispute),
+    frameJurisdictionParticipation: frameDispute?.features?.contract_licensed_participation === true,
     frameJurisdictionRefusal: result.observations.some((row) => row.type === 'frame_jurisdiction_refusal'),
   };
 }

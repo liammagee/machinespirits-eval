@@ -480,6 +480,9 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     if (profileId === 'affective_resistant') {
       return "Object to the tutor's pressure only. Do not add a clue, public-record line, warrant, inference, or useful evidence step in the same turn.";
     }
+    if (profileId === 'frame_defiant') {
+      return 'Preserve the jurisdictional objection and include one licensed participation form: an explicit alternative framing, one rival or bounded local test, or an actual content-bearing contribution. Do not withdraw from local participation, refuse to answer or inspect, or rewrite the turn as frame-refuser-style non-participation.';
+    }
     return 'Make the required failure public and unmistakable without repairing it in the same turn.';
   }
 

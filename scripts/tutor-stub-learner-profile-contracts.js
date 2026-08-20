@@ -1003,7 +1003,12 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       maxFullRepairsPer8Turns: 1,
     },
     observability: {
-      markerClauses: [[{ field: 'frameJurisdictionDispute', values: [true] }]],
+      markerClauses: [
+        [
+          { field: 'frameJurisdictionDispute', values: [true] },
+          { field: 'frameJurisdictionParticipation', values: [true] },
+        ],
+      ],
     },
     gate: { maxCosineToDiligent: 0.84, minSignatureTargetPassRate: 0.4, expectedNearestNeighbor: 'skeptical' },
   }),

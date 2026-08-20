@@ -339,12 +339,22 @@ function triggerFromTurnRecord(record, profile) {
   const learnerText = record?.learner || '';
   const classification = record?.classification || null;
   const shadow = observeResistanceAxis({ learnerText, classification });
-  const profileObservation =
-    profile === 'frame_refuser' ? observeResistantLearnerTurn({ learnerText, classification }) : null;
+  const profileObservation = ['frame_refuser', 'frame_defiant'].includes(profile)
+    ? observeResistantLearnerTurn({ learnerText, classification })
+    : null;
   const timing = detectTutorStubEdgeTimingSignal({ learnerText, classification, tutorLearnerDag: null });
+  const frameDispute = profileObservation?.observations?.find(
+    (observation) => observation.type === 'frame_jurisdiction_dispute',
+  );
+  const frameRefusal = profileObservation?.observations?.some(
+    (observation) => observation.type === 'frame_jurisdiction_refusal',
+  );
   const matchesRegisteredCohort =
-    profileObservation?.observations?.some((observation) => observation.type === 'frame_jurisdiction_refusal') ||
-    shadow.resistance_kind === profile;
+    (profile === 'frame_refuser' && frameRefusal) ||
+    (profile === 'frame_defiant' &&
+      frameDispute?.features?.contract_licensed_participation === true &&
+      !frameRefusal) ||
+    (!profileObservation && shadow.resistance_kind === profile);
   return {
     eligible:
       shadow.warrant.status === 'licensed' &&

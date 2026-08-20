@@ -121,11 +121,12 @@ test('held-out public axes preserve broad frame defiance while exposing the nest
   });
   assert.equal(frame.resistance_axis_shadow.warrant.status, 'licensed');
   assert.equal(frame.resistance_axis_shadow.resistance_kind, 'frame_defiant');
-  assert.ok(
+  assert.equal(
     observeResistantLearnerTurn({
       learnerText: 'I do not accept the premise of your test.',
       classification: classification({ request_type: 'authority_refusal_or_status_challenge' }),
     }).observations.some((observation) => observation.type === 'frame_jurisdiction_refusal'),
+    false,
   );
   assert.equal(frame.shadow_move_candidate.move_type, 'test_bounded_distinction');
 
