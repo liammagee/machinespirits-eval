@@ -1,0 +1,706 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-profile-discrimination-study-go-request.v1",
+  "status": "HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL",
+  "studyId": "tutor-stub-resistance-action-register-frame-refuser-warm-plain-confirmation-v3",
+  "authorization": {
+    "explicitHumanApproval": null,
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "standingAuthorizationAttachmentSha256": "4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b",
+    "programmeCeilingAmendmentAuthorized": false
+  },
+  "source": {
+    "launchCommit": "c9f6d57b867376e94384e9efe99ccf8a79ca9195",
+    "launchTree": "48c5fb51714948ea3911baed159aa731aacc9c05",
+    "requirements": {
+      "headMustEqualLaunchCommit": true,
+      "checkoutMustBeClean": true,
+      "detachedLaunchWorktree": true
+    },
+    "closure": [
+      {
+        "path": "scripts/run-tutor-stub-resistance-action-register-confirmation.js",
+        "sha256": "c9de6b00d313560735e877724453add3e6758b895098d13defbd295119f31b9c"
+      },
+      {
+        "path": "scripts/analyze-tutor-stub-resistance-action-register-confirmation.js",
+        "sha256": "9cce9667503546734eae4a2071266a07d3df862633b782c22bceeaf4959da43d"
+      },
+      {
+        "path": "scripts/tutor-stub.js",
+        "sha256": "5a7136af62db78962b253955b2fdf99ddcc87ba1c6bbbecffdb78902d0df8344"
+      },
+      {
+        "path": "scripts/check-tutor-stub-resistant-profile-study-go-request.js",
+        "sha256": "1ed5f764478e33e33884e0c8950291c4f921e7339397015ac7aad08858310e2a"
+      },
+      {
+        "path": "scripts/package-tutor-stub-resistant-profile-study-go-request.js",
+        "sha256": "bf3c921e33603183cda5bb2549194d5ccb65456f5876df8de77c13febcb631b8"
+      },
+      {
+        "path": "services/tutorStubResistanceActionRegisterConfirmation.js",
+        "sha256": "6ad91815d3cb157d3eb015345a97d4ad8b7af4abe910df8e6bd83bb8c40a7939"
+      },
+      {
+        "path": "services/tutorStubResistanceActionRegisterStudy.js",
+        "sha256": "871cc85c0b008fcfd5b3feea0b5e55ac5a44950babae4b5a9460b98149820457"
+      },
+      {
+        "path": "services/paidStudyEndpointPreflight.js",
+        "sha256": "6a099d3d43269288f3b0ab4565c10b4d286a6aa433796742f087681a1d7ad79a"
+      },
+      {
+        "path": "services/edgedRegisterCalibration.js",
+        "sha256": "dc4dc4a72aa4c282d9fff9f0637dfbebdc182e1cca4658762ff2adfd4b883c37"
+      },
+      {
+        "path": "services/tutorStubTurnOrchestration.js",
+        "sha256": "32290d64bdb09d5b20647fdf6b3f7247d5c40d2144eb72c2c8ce1042b3f03caf"
+      },
+      {
+        "path": "services/tutorStubCliApplicationHost.js",
+        "sha256": "f8349fc3d94fb3fb65e09017bbf1650db039bf31a7471a1a60da5d0b1d61d1f1"
+      },
+      {
+        "path": "services/tutorStubCliArguments.js",
+        "sha256": "1ce135ff75b37d0ac4708f9e02f475f78f06b68054b9b02994bd4260abbb38be"
+      },
+      {
+        "path": "services/tutorStubNonInteractiveApplication.js",
+        "sha256": "ce50a1006d8181118084febd5f289f66d2158efd8b54d0e90c191574bf61d8eb"
+      },
+      {
+        "path": "services/tutorStubApplicationState.js",
+        "sha256": "e7628a67e95d30f09896b3e33710bab31994f348beb6d08f4dde3dd30e410b47"
+      },
+      {
+        "path": "services/tutorStubApplicationTraceContext.js",
+        "sha256": "77dbd695886f43d8b98b8c391a82cf783f842804b3bb010c99a1f9b1e6cdbfc3"
+      },
+      {
+        "path": "services/tutorStubSessionRecipe.js",
+        "sha256": "4e1ce36f118c9e5e271caa1d4eed645e879a4bdd7de9a388722afa44903fbc55"
+      },
+      {
+        "path": "services/tutorStubReleasePacing.js",
+        "sha256": "0940332bb908ba4d84257d15f7374ed871ef6575e5871e8f02dc167bfb2af186"
+      },
+      {
+        "path": "services/tutorStubAutomatedLearnerGenerationRuntime.js",
+        "sha256": "865b4130e7e048baf7ba0b8008e731c4b79a9638f3f0923614db74c8ebc1395c"
+      },
+      {
+        "path": "services/tutorStubLearnerAnalysisRuntime.js",
+        "sha256": "14ea65c776a3041acbf9bb58600270d666ef5e851d93c89e441651fb67e415a8"
+      },
+      {
+        "path": "services/tutorStubPublicLearnerAnalysis.js",
+        "sha256": "5ea240613cc42f3e46e54ad15b8f3f267cf10821a65fb4954cf5b3c6054f2073"
+      },
+      {
+        "path": "services/resistantLearnerObservation.js",
+        "sha256": "48b9f7dc3d8bf301982360167a944113c79d8e4dd2b5431a112c73d78cd14999"
+      },
+      {
+        "path": "services/tutorStubActionBeforeRegisterShadow.js",
+        "sha256": "7e18a989bfb7a8ad8cd4c9a723e50927a479c0adc7897a6a8ffb3c64370c52d4"
+      },
+      {
+        "path": "services/tutorStubRegisterPragmatics.js",
+        "sha256": "d2a5d4d47c13ebda8e7ecce52e39aaced51bea2162569d7b9aee86ff1281c4cf"
+      },
+      {
+        "path": "services/tutorStubResponsePolicy.js",
+        "sha256": "a0b29dbcbdcd93c30f4858597b03f99135fa71ba76f57d70fefcbd6d8214e9f4"
+      },
+      {
+        "path": "services/tutorStubEdgeTimingPolicy.js",
+        "sha256": "2bbe0482a5503fa15b4a79639451bfb3cddff026c784b8a776756d2f239e680c"
+      },
+      {
+        "path": "services/tutorStubCliPolicyRetry.js",
+        "sha256": "8ecd27593477438136828ea365632327a7e769c4df102d4a94536b5d5040b212"
+      },
+      {
+        "path": "services/tutorStubPromptTransport.js",
+        "sha256": "135c334c0cdf133cf235a39951b468c36d399023e727de7c7f1085d9d4fa2584"
+      },
+      {
+        "path": "services/tutorStubTutorAttemptRuntime.js",
+        "sha256": "a4e2f1a3655908e5bd68fb172b010b03d6139cd66462f43799a71ea356fb1dc7"
+      },
+      {
+        "path": "services/tutorStubTraceRuntime.js",
+        "sha256": "db025e4f5b30f76d8d14a6048662cef50afcc9bfd053ccd5fb00c9eb5254b1e2"
+      },
+      {
+        "path": "services/tutorStubLabs.js",
+        "sha256": "45668a759729574d1019aeaedaab5c61e023b42862634a816a8bdabf68d087eb"
+      },
+      {
+        "path": "services/tutorStubArtifactArchive.js",
+        "sha256": "e17500f90ef9deb72deaa030b1a3cf034d6ce4502f40016163d8c623188c4281"
+      },
+      {
+        "path": "config/drama-derivation/world-005-marrick.yaml",
+        "sha256": "38f1e5106dbca611a993bf2987f1a812330609927c84b0e17c281c292a201d03"
+      },
+      {
+        "path": "config/providers.yaml",
+        "sha256": "fe0c86fa91f4443fc4d55f6f3d5b39cf7df9fff5c3284096429cb3908335b326"
+      },
+      {
+        "path": "package.json",
+        "sha256": "cc63281906982683d8628a6d6bc2273b0aeed49baf5d789a132efac7f98c0e15"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "74306cc482c33b3c8f0f4e0f67daf612287e386f5686d5ff9fa4c97683229117"
+      }
+    ]
+  },
+  "actionRegisterConfirmation": {
+    "type": "prospective_frame_refuser_warm_plain_confirmation_v3",
+    "calibrationSizingEvidence": {
+      "analysisRequest": {
+        "path": "config/tutor-stub-resistance-action-register-baseline-analysis-go-request.v1.json",
+        "sha256": "965aca0ad1f61d2f43891c162861180016d79a8afa5c090ace0e3e88a436e0dd"
+      },
+      "reportSha256": "42021a390338cd556386efc96d8f00b35655a411627908a10248dba1e473a3a5",
+      "privateArchiveCommit": "0857363dabb4445052159b8218acaed13d921949",
+      "dialogues": 12,
+      "plainRecovered": 1,
+      "plainTotal": 6,
+      "warmRecovered": 4,
+      "warmTotal": 6,
+      "usedForSizingOnly": true
+    },
+    "calibrationDialoguesReused": false,
+    "calibrationDialoguesPooled": false,
+    "interimAnalysisPermitted": false,
+    "validUnitRerunsPermitted": false,
+    "outcomeSelectionPermitted": false,
+    "recoveryBoundary": {
+      "sameLaunchSource": true,
+      "sameRegistrationModelsSeedsMeasurementAndArmAssignment": true,
+      "missingOrFailedUnitsOnly": true,
+      "freshNonOverwritingRecoveryCheckpoint": true,
+      "rerunValidOutputs": false,
+      "selectAmongOutcomes": false,
+      "maximumAttemptsPerDialogueUnchanged": 60,
+      "maximumAttemptsPerBatchUnchanged": 240,
+      "maximumTotalStudyAttemptsUnchanged": 2160,
+      "programmeCeilingUnchanged": 5000
+    },
+    "priorIncompleteConfirmation": {
+      "request": {
+        "path": "config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v1.json",
+        "sha256": "16f93e48f0b19fe23f0b91dabc9ac318f210ecbba6fbe954d76677d43fb78554"
+      },
+      "privateArchiveBranch": "codex/resistance-action-register-confirmation-v1-incomplete-archive",
+      "privateArchiveCommit": "4604cc31920913e10b3e04565bf3d70def7c112e",
+      "localInventorySha256": "4b7345dd69e6d700b7216f1af7a4b315fdcb7aae5161248610000e592c1f7a1f",
+      "liveMirrorInventorySha256": "8f530416c8b24ff809486c6638ed329b6ab03593931f85768befe6ef1972a361",
+      "reservations": 34,
+      "completedCalls": 34,
+      "providerFailures": 0,
+      "reused": false,
+      "pooled": false,
+      "outcomeSelected": false,
+      "excludedFromSuccessor": true,
+      "blocksAfterFirstLaunched": false,
+      "analyzerRun": false,
+      "reportWritten": false
+    },
+    "supersededCeilingBoundRequest": {
+      "request": {
+        "path": "config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v2.json",
+        "sha256": "94973232d87e812b947981f85c12345bb413302dd54bad87b1f478c0a356b34b"
+      },
+      "supersededWithoutExecution": true,
+      "modelCalls": 0,
+      "productionWrites": 0,
+      "destinationsUsed": false,
+      "outcomesAvailable": false
+    }
+  },
+  "design": {
+    "profiles": ["frame_refuser"],
+    "dialogues": 36,
+    "dialoguesPerArm": 18,
+    "realizations": ["plain", "warm"],
+    "freshIndependentDialogues": true,
+    "triggerMustShowByTurn": 2,
+    "outcomeHorizonLearnerTurns": 2,
+    "blocks": [
+      {
+        "id": "block_01",
+        "dialogues": 4,
+        "plain": 2,
+        "warm": 2
+      },
+      {
+        "id": "block_02",
+        "dialogues": 4,
+        "plain": 2,
+        "warm": 2
+      },
+      {
+        "id": "block_03",
+        "dialogues": 4,
+        "plain": 2,
+        "warm": 2
+      },
+      {
+        "id": "block_04",
+        "dialogues": 4,
+        "plain": 2,
+        "warm": 2
+      },
+      {
+        "id": "block_05",
+        "dialogues": 4,
+        "plain": 2,
+        "warm": 2
+      },
+      {
+        "id": "block_06",
+        "dialogues": 4,
+        "plain": 2,
+        "warm": 2
+      },
+      {
+        "id": "block_07",
+        "dialogues": 4,
+        "plain": 2,
+        "warm": 2
+      },
+      {
+        "id": "block_08",
+        "dialogues": 4,
+        "plain": 2,
+        "warm": 2
+      },
+      {
+        "id": "block_09",
+        "dialogues": 4,
+        "plain": 2,
+        "warm": 2
+      }
+    ],
+    "world": "world_005_marrick",
+    "runSeed": 20260822,
+    "parallelism": 4,
+    "models": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna"
+    },
+    "cliEffort": "low"
+  },
+  "power": {
+    "test": "fisher_exact_two_sided",
+    "alpha": 0.05,
+    "calibrationPlainRate": 0.16666666666666666,
+    "calibrationWarmRate": 0.6666666666666666,
+    "powerAt17PerArm": 0.796776592585303,
+    "powerAt18PerArm": 0.8388687257645503,
+    "minimumNPerArmAtOrAbove80Percent": 18
+  },
+  "budget": {
+    "dialogues": 36,
+    "plannedRoleCallsPerDialogue": 20,
+    "maximumReservationsPerPlannedCall": 3,
+    "maximumAttemptsPerDialogue": 60,
+    "dialoguesPerBatch": 4,
+    "maximumAttemptsPerBatch": 240,
+    "maximumPlannedModelAttempts": 2160,
+    "programmeLedgerBefore": 219,
+    "programmeCeilingBefore": 2345,
+    "programmeCeilingAmendment": 2655,
+    "programmeCeilingAfter": 5000,
+    "programmeLedgerAfterMaximum": 2379,
+    "retryOrResumeAuthority": "bounded_technical_recovery",
+    "attemptAccountingRole": "operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective"
+  },
+  "measurement": {
+    "reportSchema": "machinespirits.tutor-stub.resistance-action-register-confirmation-report.v1",
+    "primaryOutcome": "profile_specific_resistance_recovery_by_two_post_trigger_learner_turns",
+    "primaryTest": "fisher_exact_two_sided",
+    "alpha": 0.05,
+    "oneCombinedThirtySixDialogueAnalysisRequired": true,
+    "interimAnalysisPermitted": false,
+    "analysisTraceSelection": "exact_prebound_batch_result_traces_only",
+    "calibrationDialoguesReusedOrPooled": 0,
+    "claimBoundary": "confirmation_of_frame_refuser_matched_action_warm_versus_plain_recovery_only"
+  },
+  "bindings": {
+    "registration": {
+      "path": "config/tutor-stub-resistance-action-register-crossed-registration.v5.json",
+      "sha256": "4a1d7a745dd4ec62b93ce7397147f0d78a1b188ff576908ba4a56326c3636bf9"
+    },
+    "endpoint": {
+      "contractPath": "config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v3.json",
+      "contractFileSha256": "14c284998fc8a54cdb38b33c4e9aadde22e673cfb59db5b0b812da3cea88445a",
+      "contractCanonicalSha256": "d3e336987f7b5e432e993a37660e1b7e39e96c8e9a93ff20ad04bddb5d61589c",
+      "certificatePath": "config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v3.endpoint-go.json",
+      "certificateFileSha256": "e55bdcf5c5fbbf33a5130243eadbcb41fde0217af2c0f7e2d90e7d4f6d1e0d29",
+      "preflightSha256": "aeabbcf8f0006e73efd7b13bc3ade6e0e972fef1bd9e9f2ebe0498842fd4a056"
+    },
+    "routeCanary": {
+      "resultPath": "config/tutor-stub-resistant-profile-route-canary-result.v1.json",
+      "resultSha256": "c68ee936441504fdb514f97537aaf87915c734b43da82f7d81136c40c6918623",
+      "authorizationConsumptionPath": "config/tutor-stub-resistant-profile-route-canary-authorization.consumed.v1.json",
+      "authorizationConsumptionSha256": "1ec23bf81df7678050e5383fbda9ab913979b9b93b24fb1944b59002c6eeefb2",
+      "sourceArtifactSha256": "a2989dfb48438b7153928244a20ef42f698122b6edb3062fdfecca41ca1ac55f",
+      "executionHead": "04edc89f943e380bf5fc88bf2d84b93c8c1a805c",
+      "observedProvider": "codex",
+      "observedModel": "gpt-5.6-luna",
+      "observedEffort": "low",
+      "attestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+      "modelIndependentlyAttested": false
+    },
+    "commands": {
+      "source": "commands",
+      "liveArraySha256": "72462307e5ec2edd0b9d1745a22adcbc25953c8a0325cd6833a0cf4d33a8eb49",
+      "recoveryArraySha256": "08aa38e480b18143b0e387dd99cc3df7b0f906710fd1892b86a56eec51df9cbb",
+      "analyzeArraySha256": "389921b0578d08d6f34ba7a8192e0283f89a317ebb84d6c58f3e61f12f775ce6"
+    }
+  },
+  "commands": {
+    "live": [
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-confirmation.js",
+        "--live-batch",
+        "--registration",
+        "config/tutor-stub-resistance-action-register-crossed-registration.v5.json",
+        "--batch",
+        "block_01",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_01",
+        "--parallelism",
+        "4",
+        "--expected-source-commit",
+        "c9f6d57b867376e94384e9efe99ccf8a79ca9195"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-confirmation.js",
+        "--live-batch",
+        "--registration",
+        "config/tutor-stub-resistance-action-register-crossed-registration.v5.json",
+        "--batch",
+        "block_02",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_02",
+        "--parallelism",
+        "4",
+        "--expected-source-commit",
+        "c9f6d57b867376e94384e9efe99ccf8a79ca9195"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-confirmation.js",
+        "--live-batch",
+        "--registration",
+        "config/tutor-stub-resistance-action-register-crossed-registration.v5.json",
+        "--batch",
+        "block_03",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_03",
+        "--parallelism",
+        "4",
+        "--expected-source-commit",
+        "c9f6d57b867376e94384e9efe99ccf8a79ca9195"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-confirmation.js",
+        "--live-batch",
+        "--registration",
+        "config/tutor-stub-resistance-action-register-crossed-registration.v5.json",
+        "--batch",
+        "block_04",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_04",
+        "--parallelism",
+        "4",
+        "--expected-source-commit",
+        "c9f6d57b867376e94384e9efe99ccf8a79ca9195"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-confirmation.js",
+        "--live-batch",
+        "--registration",
+        "config/tutor-stub-resistance-action-register-crossed-registration.v5.json",
+        "--batch",
+        "block_05",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_05",
+        "--parallelism",
+        "4",
+        "--expected-source-commit",
+        "c9f6d57b867376e94384e9efe99ccf8a79ca9195"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-confirmation.js",
+        "--live-batch",
+        "--registration",
+        "config/tutor-stub-resistance-action-register-crossed-registration.v5.json",
+        "--batch",
+        "block_06",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_06",
+        "--parallelism",
+        "4",
+        "--expected-source-commit",
+        "c9f6d57b867376e94384e9efe99ccf8a79ca9195"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-confirmation.js",
+        "--live-batch",
+        "--registration",
+        "config/tutor-stub-resistance-action-register-crossed-registration.v5.json",
+        "--batch",
+        "block_07",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_07",
+        "--parallelism",
+        "4",
+        "--expected-source-commit",
+        "c9f6d57b867376e94384e9efe99ccf8a79ca9195"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-confirmation.js",
+        "--live-batch",
+        "--registration",
+        "config/tutor-stub-resistance-action-register-crossed-registration.v5.json",
+        "--batch",
+        "block_08",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_08",
+        "--parallelism",
+        "4",
+        "--expected-source-commit",
+        "c9f6d57b867376e94384e9efe99ccf8a79ca9195"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-confirmation.js",
+        "--live-batch",
+        "--registration",
+        "config/tutor-stub-resistance-action-register-crossed-registration.v5.json",
+        "--batch",
+        "block_09",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_09",
+        "--parallelism",
+        "4",
+        "--expected-source-commit",
+        "c9f6d57b867376e94384e9efe99ccf8a79ca9195"
+      ]
+    ],
+    "recovery": [
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-confirmation.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_01",
+        "--expected-source-commit",
+        "c9f6d57b867376e94384e9efe99ccf8a79ca9195",
+        "--parallelism",
+        "4"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-confirmation.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_02",
+        "--expected-source-commit",
+        "c9f6d57b867376e94384e9efe99ccf8a79ca9195",
+        "--parallelism",
+        "4"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-confirmation.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_03",
+        "--expected-source-commit",
+        "c9f6d57b867376e94384e9efe99ccf8a79ca9195",
+        "--parallelism",
+        "4"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-confirmation.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_04",
+        "--expected-source-commit",
+        "c9f6d57b867376e94384e9efe99ccf8a79ca9195",
+        "--parallelism",
+        "4"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-confirmation.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_05",
+        "--expected-source-commit",
+        "c9f6d57b867376e94384e9efe99ccf8a79ca9195",
+        "--parallelism",
+        "4"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-confirmation.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_06",
+        "--expected-source-commit",
+        "c9f6d57b867376e94384e9efe99ccf8a79ca9195",
+        "--parallelism",
+        "4"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-confirmation.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_07",
+        "--expected-source-commit",
+        "c9f6d57b867376e94384e9efe99ccf8a79ca9195",
+        "--parallelism",
+        "4"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-confirmation.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_08",
+        "--expected-source-commit",
+        "c9f6d57b867376e94384e9efe99ccf8a79ca9195",
+        "--parallelism",
+        "4"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-resistance-action-register-confirmation.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_09",
+        "--expected-source-commit",
+        "c9f6d57b867376e94384e9efe99ccf8a79ca9195",
+        "--parallelism",
+        "4"
+      ]
+    ],
+    "analyze": [
+      "node",
+      "scripts/analyze-tutor-stub-resistance-action-register-confirmation.js",
+      "--batch",
+      ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_01",
+      "--batch",
+      ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_02",
+      "--batch",
+      ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_03",
+      "--batch",
+      ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_04",
+      "--batch",
+      ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_05",
+      "--batch",
+      ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_06",
+      "--batch",
+      ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_07",
+      "--batch",
+      ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_08",
+      "--batch",
+      ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_09",
+      "--registration",
+      "config/tutor-stub-resistance-action-register-crossed-registration.v5.json",
+      "--expected-source-commit",
+      "c9f6d57b867376e94384e9efe99ccf8a79ca9195",
+      "--out",
+      ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-combined.json",
+      "--json"
+    ]
+  },
+  "payload": {
+    "humanSubjectData": false,
+    "privateArchiveData": false,
+    "trainingReuseStatus": "not_applicable"
+  },
+  "destination": {
+    "batches": [
+      {
+        "block": "block_01",
+        "artifactRoot": ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_01",
+        "createOnce": true,
+        "mustNotExistBeforeLaunch": true
+      },
+      {
+        "block": "block_02",
+        "artifactRoot": ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_02",
+        "createOnce": true,
+        "mustNotExistBeforeLaunch": true
+      },
+      {
+        "block": "block_03",
+        "artifactRoot": ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_03",
+        "createOnce": true,
+        "mustNotExistBeforeLaunch": true
+      },
+      {
+        "block": "block_04",
+        "artifactRoot": ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_04",
+        "createOnce": true,
+        "mustNotExistBeforeLaunch": true
+      },
+      {
+        "block": "block_05",
+        "artifactRoot": ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_05",
+        "createOnce": true,
+        "mustNotExistBeforeLaunch": true
+      },
+      {
+        "block": "block_06",
+        "artifactRoot": ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_06",
+        "createOnce": true,
+        "mustNotExistBeforeLaunch": true
+      },
+      {
+        "block": "block_07",
+        "artifactRoot": ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_07",
+        "createOnce": true,
+        "mustNotExistBeforeLaunch": true
+      },
+      {
+        "block": "block_08",
+        "artifactRoot": ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_08",
+        "createOnce": true,
+        "mustNotExistBeforeLaunch": true
+      },
+      {
+        "block": "block_09",
+        "artifactRoot": ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-block_09",
+        "createOnce": true,
+        "mustNotExistBeforeLaunch": true
+      }
+    ],
+    "combinedReport": ".tutor-stub-auto-eval/resistance-action-register-warm-plain-confirmation-v3-live-2026-08-20-combined.json",
+    "combinedReportCreateOnce": true,
+    "mustNotExistBeforeAnalysis": true
+  }
+}

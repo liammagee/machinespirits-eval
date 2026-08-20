@@ -1512,3 +1512,30 @@ and explicit human approval.
   digest-bound approval sentence, including the `2160` study safeguard and the
   corrected `4539` cumulative safeguard; no live batch begins before that
   sentence is supplied.
+- 2026-08-20 — Merged the zero-call operational-ceiling compatibility layer
+  through PR #743 at `c9f6d57b867376e94384e9efe99ccf8a79ca9195`
+  (tree `48c5fb51714948ea3911baed159aa731aacc9c05`). Registration V5
+  and endpoint/certificate V3 preserve the full scientific design—36 wholly
+  fresh dialogues, 18 warm and 18 plain, nine balanced blocks, the existing
+  two-turn recovery endpoint, and one predeclared two-sided Fisher exact
+  analysis with no interim analysis—while treating attempt accounting only as
+  an operational safeguard. The confirmation itself remains capped at `2160`
+  attempts and can move the programme ledger only from `219` to `2379`; the
+  amended programme safeguard is `5000`, leaving `2621` beyond the complete
+  study envelope. Blocking review and all selected CI passed with zero model
+  calls.
+
+  Prepared the new literal-HOLD request
+  `config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v3.json`
+  at SHA-256
+  `e3df720358cc597e686f0007bfc1ce1a5d0b4a11273a725ce87b484d20c3fec9`.
+  It pins the merged compatibility source, exact 35-file closure, eight
+  repository bindings, V5 registration, V3 endpoint/certificate, Luna-low
+  route, nine wholly new create-once block roots, and one new combined report.
+  The 12 calibration dialogues and incomplete V1 confirmation block remain
+  excluded from reuse, pooling, selection, and confirmation credit. The
+  earlier V2 request `94973232…` is preserved as unexecuted superseded
+  metadata with zero calls, writes, used destinations, or outcomes. Direct and
+  isolated dependency-free validation pass `67` checks at zero calls/writes.
+  The request remains HOLD with null approval and false live/model authority;
+  launch requires its new exact digest-bound approval sentence.
