@@ -11,7 +11,11 @@ import {
   tutorStubFirstDraftContractPrompt,
 } from '../services/tutorStubFirstDraftContract.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
-import { runTutorStubResistanceActionRegisterEndpointPreflight } from '../services/tutorStubResistanceActionRegisterPreflight.js';
+import {
+  buildTutorStubResistanceActionRegisterPreflightPackets,
+  buildTutorStubResistanceActionRegisterSyntheticCorpus,
+  runTutorStubResistanceActionRegisterEndpointPreflight,
+} from '../services/tutorStubResistanceActionRegisterPreflight.js';
 import {
   hashPaidStudyEndpointValue,
   validatePaidStudyEndpointGoCertificate,
@@ -50,6 +54,10 @@ const ENDPOINT_GO_V2_PATH = path.join(
 
 function fileSha256(filePath) {
   return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
+function valueSha256(value) {
+  return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 }
 
 function loadedRegistration() {
@@ -563,6 +571,8 @@ test('deterministic endpoint implements the two registered recovery horizons', (
 test('full 24-case production endpoint preflight passes with zero calls and writes', () => {
   const loaded = loadedRegistration();
   const contract = JSON.parse(fs.readFileSync(ENDPOINT_PATH, 'utf8'));
+  const cases = buildTutorStubResistanceActionRegisterSyntheticCorpus(loaded.registration);
+  const packets = buildTutorStubResistanceActionRegisterPreflightPackets(cases);
   const preflight = runTutorStubResistanceActionRegisterEndpointPreflight({
     contract,
     registration: loaded.registration,
@@ -577,6 +587,9 @@ test('full 24-case production endpoint preflight passes with zero calls and writ
   assert.ok(Object.values(preflight.assembly_audit.endpoint_status).every((status) => status === 'complete'));
   assert.equal(readiness.status, 'passed_hold');
   assert.equal(readiness.live_execution_available, false);
+  assert.equal(valueSha256(cases), '9f081a1204b1e1f4e661df322da2e4e96d7e2ca60c822aea3dba58adcb51eb89');
+  assert.equal(valueSha256(packets), '09cdb48af0e7b343db872269e834ce497ec7fb4cd19fd6b77e46c3cd05c56b34');
+  assert.equal(preflight.preflight_sha256, '00a178cbc344bed48d5689679c160fc3eddbf0d1c8be8ec5d2c14ba4faff9e11');
 });
 
 test('historical v1 resistance action/register artifacts retain exact byte digests', () => {
@@ -707,10 +720,44 @@ test('v2 frame-refuser recovery requires bounded merits engagement or a more pre
       },
     ],
   });
+  const authorityQuestion = scoreTutorStubResistanceRecovery({
+    profile: 'frame_refuser',
+    triggerLearnerText: 'I reject your test and will not answer within it.',
+    postLearnerTurns: [
+      {
+        learnerText: 'Why should I accept your authority?',
+        classification: {
+          turn: {
+            discourse_move: 'question',
+            evidence_use: 'none',
+            epistemic_stance: 'exploratory',
+          },
+        },
+      },
+    ],
+  });
+  const reflectiveRefusal = scoreTutorStubResistanceRecovery({
+    profile: 'frame_refuser',
+    triggerLearnerText: 'I reject your test and will not answer within it.',
+    postLearnerTurns: [
+      {
+        learnerText: 'I reject your authority to define this test, and I will not test it.',
+        classification: {
+          turn: {
+            discourse_move: 'challenge',
+            evidence_use: 'none',
+            epistemic_stance: 'reflective',
+          },
+        },
+      },
+    ],
+  });
 
   assert.equal(merits.recovered, true);
   assert.equal(merits.deadline_turns, 2);
   assert.equal(continuedRefusal.recovered, false);
+  assert.equal(authorityQuestion.recovered, false);
+  assert.equal(reflectiveRefusal.recovered, false);
 });
 
 test('v2 baseline plan binds three prefixes to two six-dialogue repeat batches without a factorial arm', () => {

@@ -68,6 +68,12 @@ const CONTENT_BEARING_EVIDENCE = new Set(['cites_public_evidence', 'links_eviden
 const PERMISSION_SEEKING = /\b(?:is it (?:okay|ok)|may i|am i allowed|do you want me to|should i)\b/iu;
 const MERE_ASSENT = /^\s*(?:yes|yeah|yep|okay|ok|sure|fine|right|whatever|if you say so)[.!]?\s*$/iu;
 const FRAME_ISSUE = /\b(?:evidence|warrant|premise|frame|question|rule|test|standard|authority|standing|criterion)\b/iu;
+const BOUNDED_PUBLIC_MERITS =
+  /\b(?:bounded|local|public|evidence|exhibit|record|mark|feature|distinction|comparison|criterion|assay|source|claim|premise)\b/iu;
+const EXPLICIT_CONTINUED_WITHHOLDING =
+  /\b(?:will not|won't|refuse|decline)\b.{0,100}\b(?:answer|test|examine|engage|consider|respond|participate|record)\b/iu;
+const CONDITIONAL_PUBLIC_BOUNDARY =
+  /\b(?:unless|until|only if|provided that|so long as)\b.{0,140}\b(?:public|evidence|exhibit|record|mark|feature|distinction|comparison|criterion|assay|source|claim|premise)\b/iu;
 const FIRST_DRAFT_BLOCK =
   /(?:\[Tutor-only first-draft performance contract\][\s\S]*?\[End tutor-only first-draft performance contract\]|\[Tutor-only host plan\][\s\S]*?\[End tutor-only host plan\])/u;
 
@@ -379,7 +385,9 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
       action_fit: runtime.action_fit,
       realization: runtime.realization,
       repeat: runtime.repeat,
-      batch_id: runtime.registration.design?.factors?.replicationBlock?.batchAssignment?.[runtime.repeat] || null,
+      ...(runtime.registration.design?.factors?.replicationBlock?.batchAssignment?.[runtime.repeat]
+        ? { batch_id: runtime.registration.design.factors.replicationBlock.batchAssignment[runtime.repeat] }
+        : {}),
       pedagogical_move: moveType,
       host_action_family: hostAction,
       register,
@@ -765,7 +773,9 @@ export function buildTutorStubResistanceActionRegisterPlan({ registration, prefi
         action_fit: condition.actionFit,
         realization: condition.realization,
         repeat: condition.repeat,
-        batch_id: frozen.design?.factors?.replicationBlock?.batchAssignment?.[condition.repeat] || null,
+        ...(frozen.design?.factors?.replicationBlock?.batchAssignment?.[condition.repeat]
+          ? { batch_id: frozen.design.factors.replicationBlock.batchAssignment[condition.repeat] }
+          : {}),
         pedagogical_move: move,
         host_action_family: MOVE_TO_HOST_ACTION[move],
         register,
@@ -810,6 +820,17 @@ function meritsEngagement(turn) {
   );
 }
 
+function frameRefuserMeritsEngagement(turn, text) {
+  if (EXPLICIT_CONTINUED_WITHHOLDING.test(text)) return false;
+  return Boolean(
+    CONTENT_BEARING_EVIDENCE.has(turn.evidence_use) ||
+    (BOUNDED_PUBLIC_MERITS.test(text) &&
+      (CONTENT_BEARING_MOVES.has(turn.discourse_move) ||
+        (['challenge', 'question'].includes(turn.discourse_move) &&
+          ['grounded', 'exploratory', 'reflective'].includes(turn.epistemic_stance)))),
+  );
+}
+
 export function scoreTutorStubResistanceRecovery({ profile, triggerLearnerText = '', postLearnerTurns = [] } = {}) {
   const normalizedProfile = exactLevel(profile, PREFIX_PROFILES, 'outcome profile');
   const rows = Array.isArray(postLearnerTurns) ? postLearnerTurns : [];
@@ -832,17 +853,22 @@ export function scoreTutorStubResistanceRecovery({ profile, triggerLearnerText =
     const text = String(row.learnerText || row.text || '').trim();
     const turn = classificationTurn(row.classification);
     const axis = observeResistanceAxis({ learnerText: text, classification: row.classification });
+    const strictFrameRefuser = normalizedProfile === 'frame_refuser';
+    const engagedMerits = strictFrameRefuser ? frameRefuserMeritsEngagement(turn, text) : meritsEngagement(turn);
     const preciseDispute =
       axis.resistance_kind === 'frame_defiant' &&
       FRAME_ISSUE.test(text) &&
+      (!strictFrameRefuser ||
+        (BOUNDED_PUBLIC_MERITS.test(text) &&
+          (!EXPLICIT_CONTINUED_WITHHOLDING.test(text) || CONDITIONAL_PUBLIC_BOUNDARY.test(text)))) &&
       text.split(/\s+/u).length > Math.max(6, String(triggerLearnerText).split(/\s+/u).length / 2);
-    if (meritsEngagement(turn) || preciseDispute) {
+    if (engagedMerits || preciseDispute) {
       return {
         profile: normalizedProfile,
         recovered: true,
         deadline_turns: 2,
         observed_turn: index + 1,
-        reason: meritsEngagement(turn) ? 'engaged_bounded_test_on_merits' : 'frame_dispute_became_more_precise',
+        reason: engagedMerits ? 'engaged_bounded_test_on_merits' : 'frame_dispute_became_more_precise',
       };
     }
   }

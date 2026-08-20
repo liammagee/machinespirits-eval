@@ -125,7 +125,7 @@ export function buildTutorStubResistanceActionRegisterSyntheticCorpus(registrati
     return {
       case_id: job.id,
       arm: job.treatment.repeat,
-      batch_id: job.treatment.batch_id || `repeat-${job.treatment.repeat}`,
+      ...(job.treatment.batch_id ? { batch_id: job.treatment.batch_id } : {}),
       prefix_id: job.prefix_id,
       public_prefix_sha256: job.public_prefix_sha256,
       profile: job.treatment.profile,
@@ -194,6 +194,9 @@ export function assembleTutorStubResistanceActionRegisterPreflight({ packets, co
       ),
     ]),
   );
+  const hasRepeatStabilityEndpoint = contract.endpoints.some(
+    (endpoint) => endpoint.id === 'same_treatment_repeat_stability',
+  );
   const repeatStabilityComplete =
     rows.every((row) => typeof row.outcome.recovered === 'boolean') &&
     Object.values(recoveryByRealizationAndRepeat).every(
@@ -205,7 +208,7 @@ export function assembleTutorStubResistanceActionRegisterPreflight({ packets, co
       profile_specific_resistance_recovery: complete((row) => typeof row.outcome.recovered === 'boolean')
         ? 'complete'
         : 'incomplete',
-      ...(contract.endpoints.some((endpoint) => endpoint.id === 'same_treatment_repeat_stability')
+      ...(hasRepeatStabilityEndpoint
         ? { same_treatment_repeat_stability: repeatStabilityComplete ? 'complete' : 'incomplete' }
         : {}),
       proof_dag_debt_delta_at_two_learner_turns: complete((row) => Number.isFinite(row.outcome.proof_debt_delta))
@@ -245,13 +248,17 @@ export function assembleTutorStubResistanceActionRegisterPreflight({ packets, co
       status: 'synthetic_endpoint_complete',
       rows,
       recovery_rate: rows.filter((row) => row.outcome.recovered).length / rows.length,
-      recovery_by_realization_and_repeat: recoveryByRealizationAndRepeat,
-      same_treatment_repeat_drift: Object.fromEntries(
-        Object.entries(recoveryByRealizationAndRepeat).map(([realization, rates]) => [
-          realization,
-          Math.abs(rates.A - rates.B),
-        ]),
-      ),
+      ...(hasRepeatStabilityEndpoint
+        ? {
+            recovery_by_realization_and_repeat: recoveryByRealizationAndRepeat,
+            same_treatment_repeat_drift: Object.fromEntries(
+              Object.entries(recoveryByRealizationAndRepeat).map(([realization, rates]) => [
+                realization,
+                Math.abs(rates.A - rates.B),
+              ]),
+            ),
+          }
+        : {}),
     },
   };
 }
