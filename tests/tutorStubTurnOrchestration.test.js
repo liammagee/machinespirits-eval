@@ -116,3 +116,85 @@ test('every turn-completion path stamps the reply, including the ones no unit te
     );
   }
 });
+
+test('registered action/register horizon records the third learner turn without generating a terminal tutor reply', async () => {
+  const events = [];
+  let tutorCalls = 0;
+  let analyses = 0;
+  const orchestration = createTutorStubTurnOrchestration({
+    C: { brightBlue: '', bold: '', reset: '' },
+    analyzeLearnerTurn: async () => {
+      analyses += 1;
+      return {
+        classification: { turn: { discourse_move: 'evidence_adoption' } },
+        tutorLearnerDag: { model: { metrics: { missingPremiseCount: 2, groundedCount: 7 } } },
+        previousRegisterEfficacy: null,
+      };
+    },
+    appendTraceEvent(_trace, event) {
+      events.push(event);
+    },
+    assertTutorStubTurnAttemptCurrent() {},
+    automatedLearnerProfileId: () => 'frame_refuser',
+    callTutor: async () => {
+      tutorCalls += 1;
+      return { text: 'must not be called' };
+    },
+    createTutorStubLearnerResponseProvenance: (value) => value,
+    enforceAutomatedLearnerProfile: async ({ generated }) => ({
+      generated,
+      repaired: false,
+      passed: true,
+      precomputedRaw: { dagPreflight: { publicOnly: true } },
+    }),
+    enforceGuardedLearnerConcessionGuard: async ({ generated }) => ({ generated }),
+    generateAutomatedLearnerTurn: async () => ({
+      text: 'The bounded public comparison is testable without granting the wider frame.',
+      provider: 'test',
+      model: 'test',
+      latencyMs: 0,
+      usage: null,
+    }),
+    jsonClone: (value) => (value == null ? value : JSON.parse(JSON.stringify(value))),
+    learnerProfileSpeakerLabel: () => 'learner',
+    printTurnDebugLine() {},
+    printWithConcurrentTerminal: (state, action) => action(state),
+    startInterimAnimation() {},
+    stopInterimAnimation() {},
+    turnDebugId: (_state, turn) => `t${turn}`,
+  });
+  const state = {
+    trace: null,
+    turns: [{ turn: 1 }, { turn: 2 }],
+    history: [],
+    interim: null,
+    resistanceActionRegisterStudy: {
+      enabled: true,
+      final_learner_without_tutor_reply: true,
+      outcome_horizon_learner_turns: 2,
+      job_id: 'job-1',
+      batch_id: 'batch_A',
+      prefix_id: 'prefix-1',
+    },
+  };
+
+  const result = await orchestration.runAutomatedLearnerDialogue({
+    state,
+    openingEnabled: false,
+    autoLearnerResolved: { provider: 'test', model: 'test' },
+    autoLearnerProfile: { id: 'frame_refuser' },
+    autoTurns: 3,
+    autoSafetyTurns: 3,
+    autoStopOnGrounded: false,
+  });
+
+  assert.equal(result.reason, 'registered_outcome_horizon_complete');
+  assert.equal(tutorCalls, 0);
+  assert.equal(analyses, 1);
+  assert.equal(state.history.at(-1).role, 'user');
+  const outcome = events.find((event) => event.type === 'resistance_action_register_outcome_learner_turn');
+  assert.equal(outcome.turn, 3);
+  assert.equal(outcome.horizonIndex, 2);
+  assert.equal(outcome.tutorReplyGenerated, false);
+  assert.equal(events.at(-1).type, 'auto_learner_run_end');
+});

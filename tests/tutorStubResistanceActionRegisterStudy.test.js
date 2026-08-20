@@ -12,6 +12,10 @@ import {
 } from '../services/tutorStubFirstDraftContract.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
+  acknowledgeTutorStubOpeningRelease,
+  createTutorStubReleasePacingState,
+} from '../services/tutorStubReleasePacing.js';
+import {
   assembleTutorStubResistanceActionRegisterPreflight,
   buildTutorStubResistanceActionRegisterPreflightPackets,
   buildTutorStubResistanceActionRegisterSyntheticCorpus,
@@ -32,7 +36,18 @@ import {
   scoreTutorStubResistanceRecovery,
   TUTOR_STUB_RESISTANCE_ACTION_REGISTER_PREFIX_SCHEMA,
 } from '../services/tutorStubResistanceActionRegisterStudy.js';
-import { runTutorStubResistanceActionRegisterZeroCall } from '../scripts/run-tutor-stub-resistance-action-register-crossed.js';
+import {
+  configureTutorStubResistanceActionRegisterExecution,
+  loadTutorStubResistanceActionRegisterPrefixBundle,
+  validateTutorStubResistanceActionRegisterPrefixBundle,
+} from '../services/tutorStubResistanceActionRegisterExecution.js';
+import {
+  assertTutorStubResistanceActionRegisterCleanSource,
+  buildTutorStubResistanceActionRegisterBatchPlan,
+  buildTutorStubResistanceActionRegisterRecoveryJob,
+  runTutorStubResistanceActionRegisterZeroCall,
+} from '../scripts/run-tutor-stub-resistance-action-register-crossed.js';
+import { analyzeTutorStubResistanceActionRegisterBaseline } from '../scripts/analyze-tutor-stub-resistance-action-register-baseline.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION_PATH = path.join(ROOT, 'config/tutor-stub-resistance-action-register-crossed-registration.v1.json');
@@ -52,6 +67,10 @@ const ENDPOINT_GO_V2_PATH = path.join(
   ROOT,
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.v2.endpoint-go.json',
 );
+const PREFIX_BUNDLE_V2_PATH = path.join(
+  ROOT,
+  'config/tutor-stub-resistance-action-register-v4-public-prefixes.v1.json',
+);
 
 function fileSha256(filePath) {
   return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
@@ -59,6 +78,378 @@ function fileSha256(filePath) {
 
 function valueSha256(value) {
   return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
+}
+
+function writeJson(filePath, value) {
+  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function syntheticLiveTrace({ job, plan, bundleSha256, fidelity = {}, modelCallBudget = 39 }) {
+  const prefix = JSON.parse(fs.readFileSync(PREFIX_BUNDLE_V2_PATH, 'utf8')).prefixes.find(
+    (candidate) => candidate.id === job.prefix_id,
+  );
+  const triggerClassification = {
+    turn: {
+      request_type: 'authority_refusal_or_status_challenge',
+      discourse_move: 'challenge',
+      evidence_use: 'none',
+      epistemic_stance: 'resistant',
+      agency: 'steering',
+    },
+  };
+  const recoveryClassification = {
+    turn: {
+      request_type: 'conceptual_clarity_request',
+      discourse_move: 'evidence_adoption',
+      evidence_use: 'cites_public_evidence',
+      epistemic_stance: 'exploratory',
+      agency: 'attempting',
+    },
+  };
+  const route = {
+    ref: 'codex.gpt-5.6-luna',
+    provider: 'codex',
+    model: 'gpt-5.6-luna',
+    cli: true,
+  };
+  const observedCalls = [
+    ['tutor_stub_tutor', 1],
+    ['tutor_stub_auto_learner', 2],
+    ['tutor_stub_learner_analysis', 2],
+    ['tutor_stub_tutor', 2],
+    ['tutor_stub_auto_learner', 3],
+    ['tutor_stub_learner_analysis', 3],
+  ].flatMap(([role, turn]) => [
+    { type: 'model_call_budget_reserved', role, turn },
+    {
+      type: 'model_call',
+      role,
+      turn,
+      provider: 'codex',
+      model: 'gpt-5.6-luna',
+      response: { effort: 'low' },
+    },
+  ]);
+  const safetyOverrideReason = fidelity.safetyOverrideReason || null;
+  return [
+    {
+      type: 'run_start',
+      metadata: {
+        provenance: { git: { sha: plan.source.commit, dirty: false } },
+        lab: { admission: { modelCallBudget } },
+        experiment: {
+          runSeed: 20260820,
+          profile: 'frame_refuser',
+          policy: 'field',
+          repeat: job.treatment.repeat === 'A' ? 1 : 2,
+          jobId: job.id,
+        },
+        autoLearner: {
+          observationSemantics: 'prospective_v4',
+          maxTurns: 3,
+          profileId: 'frame_refuser',
+          modelRef: 'codex.gpt-5.6-luna',
+        },
+        sessionRecipe: {
+          schema: 'machinespirits.tutor-stub.session-recipe.v1',
+          config: {
+            identity: {
+              models: {
+                classifier: route,
+                learner: route,
+                reasoning: route,
+                tutor: route,
+              },
+              world: { id: 'world_005_marrick' },
+            },
+            options: {
+              'cli-effort': 'low',
+              'run-seed': '20260820',
+              'auto-turns': '3',
+              'model-call-budget': String(modelCallBudget),
+              'dag-mode': 'strict_dag',
+              'register-policy': 'field',
+              'register-palette': 'plain,warm',
+              'eval-repeat': job.treatment.repeat === 'A' ? '1' : '2',
+              'eval-job-id': job.id,
+              'resistance-action-register-job': job.id,
+              'resistance-action-register-registration':
+                'config/tutor-stub-resistance-action-register-crossed-registration.v2.json',
+              'resistance-action-register-prefix-bundle':
+                'config/tutor-stub-resistance-action-register-v4-public-prefixes.v1.json',
+              'no-opening': true,
+              'no-auto-stop-on-grounded': true,
+            },
+          },
+        },
+      },
+    },
+    {
+      type: 'resistance_action_register_execution_start',
+      jobId: job.id,
+      batchId: job.treatment.batch_id,
+      prefixId: job.prefix_id,
+      publicPrefixSha256: job.public_prefix_sha256,
+      prefixBundleSha256: bundleSha256,
+      registrationSha256: plan.source.registration_sha256,
+    },
+    {
+      type: 'resistance_action_register_intervention_applied',
+      turn: 1,
+      intervention: {
+        status: safetyOverrideReason ? 'safety_override_nonadherent' : 'applied',
+        assignment: {
+          action_fit: 'matched',
+          pedagogical_move: 'test_bounded_distinction',
+          realization: job.treatment.realization,
+          register: job.treatment.register,
+          repeat: job.treatment.repeat,
+          batch_id: job.treatment.batch_id,
+        },
+        safety_override: safetyOverrideReason
+          ? {
+              applied: true,
+              assigned_register: job.treatment.register,
+              delivered_register: 'plain',
+              reason: safetyOverrideReason,
+            }
+          : { applied: false, assigned_register: job.treatment.register, delivered_register: job.treatment.register },
+      },
+    },
+    ...observedCalls,
+    {
+      type: 'turn_complete',
+      turn: 1,
+      turnRecord: {
+        learner: prefix.trigger_learner_text,
+        classification: triggerClassification,
+        tutorLearnerDagModel: { metrics: { missingPremiseCount: 6, groundedCount: 4 } },
+        ...(fidelity.omitResponseAudit
+          ? {}
+          : {
+              responseConfigurationAudit: {
+                axes: {
+                  action_family: {
+                    selected: job.treatment.host_action_family,
+                    visible: fidelity.actionVisible ?? true,
+                  },
+                  engagement_stance: {
+                    selected: safetyOverrideReason ? 'plain' : job.treatment.register,
+                    visible: fidelity.registerVisible ?? true,
+                  },
+                },
+              },
+            }),
+      },
+    },
+    {
+      type: 'turn_complete',
+      turn: 2,
+      turnRecord: {
+        learner: 'I will test the bounded public die-mark distinction against the clipped edge.',
+        classification: recoveryClassification,
+      },
+    },
+    {
+      type: 'resistance_action_register_outcome_learner_turn',
+      turn: 3,
+      learnerText: 'The public comparison can proceed without granting the wider frame.',
+      classification: recoveryClassification,
+      tutorLearnerDag: { model: { metrics: { missingPremiseCount: 5, groundedCount: 5 } } },
+      tutorReplyGenerated: false,
+    },
+  ];
+}
+
+function writeSyntheticBatch(root, plan, { fidelityByJob = {} } = {}) {
+  fs.mkdirSync(root, { recursive: true });
+  const results = plan.jobs.map((job) => {
+    fs.mkdirSync(job.command.trace_dir, { recursive: true });
+    const tracePath = path.join(job.command.trace_dir, 'trace.jsonl');
+    const trace = syntheticLiveTrace({
+      job,
+      plan,
+      bundleSha256: plan.source.prefix_bundle_sha256,
+      fidelity: fidelityByJob[job.id],
+    });
+    fs.writeFileSync(tracePath, `${trace.map((event) => JSON.stringify(event)).join('\n')}\n`);
+    return {
+      job_id: job.id,
+      status: 'complete',
+      trace: tracePath,
+      trace_sha256: fileSha256(tracePath),
+    };
+  });
+  const result = {
+    schema: 'machinespirits.tutor-stub.resistance-action-register-live-batch-result.v1',
+    batch_id: plan.batch_id,
+    repeat: plan.repeat,
+    status: 'complete',
+    completed_dialogues: 6,
+    failed_or_missing_dialogues: 0,
+    maximum_model_attempt_reservations: 234,
+    results,
+  };
+  const planPath = path.join(root, 'batch-plan.json');
+  const resultPath = path.join(root, 'batch-result.json');
+  writeJson(planPath, plan);
+  writeJson(resultPath, result);
+  writeJson(path.join(root, 'batch-seal.json'), {
+    schema: 'machinespirits.tutor-stub.resistance-action-register-live-batch-seal.v1',
+    status: 'sealed_complete',
+    batch_id: plan.batch_id,
+    repeat: plan.repeat,
+    plan_sha256: fileSha256(planPath),
+    result_sha256: fileSha256(resultPath),
+    dialogues: 6,
+    hard_ceiling: 234,
+    valid_unit_reruns: false,
+    outcome_selection: false,
+  });
+}
+
+function mutateSyntheticBatchTrace(root, jobId, mutateEvents) {
+  const resultPath = path.join(root, 'batch-result.json');
+  const sealPath = path.join(root, 'batch-seal.json');
+  const result = JSON.parse(fs.readFileSync(resultPath, 'utf8'));
+  const row = result.results.find((candidate) => candidate.job_id === jobId);
+  const events = fs
+    .readFileSync(row.trace, 'utf8')
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+  const mutated = mutateEvents(events);
+  fs.writeFileSync(row.trace, `${mutated.map((event) => JSON.stringify(event)).join('\n')}\n`);
+  row.trace_sha256 = fileSha256(row.trace);
+  writeJson(resultPath, result);
+  const seal = JSON.parse(fs.readFileSync(sealPath, 'utf8'));
+  seal.result_sha256 = fileSha256(resultPath);
+  writeJson(sealPath, seal);
+}
+
+function writeSyntheticRecoveredBatch(root, plan, recoveredJobId) {
+  fs.mkdirSync(root, { recursive: true });
+  const initialResults = [];
+  const finalRows = [];
+  let recoveredTracePath = null;
+  for (const job of plan.jobs) {
+    fs.mkdirSync(job.command.trace_dir, { recursive: true });
+    const tracePath = path.join(job.command.trace_dir, 'trace.jsonl');
+    if (job.id === recoveredJobId) {
+      fs.writeFileSync(
+        tracePath,
+        `${JSON.stringify({ type: 'model_call_budget_reserved', role: 'learner', turn: 2 })}\n`,
+      );
+      initialResults.push({ job_id: job.id, status: 'failed', exit_code: 1 });
+      continue;
+    }
+    const trace = syntheticLiveTrace({ job, plan, bundleSha256: plan.source.prefix_bundle_sha256 });
+    fs.writeFileSync(tracePath, `${trace.map((event) => JSON.stringify(event)).join('\n')}\n`);
+    const row = { job_id: job.id, status: 'complete', trace: tracePath, trace_sha256: fileSha256(tracePath) };
+    initialResults.push(row);
+    finalRows.push({ ...row, origin: 'initial_valid_unit' });
+  }
+  const planPath = path.join(root, 'batch-plan.json');
+  const initialResultPath = path.join(root, 'batch-result.json');
+  writeJson(planPath, plan);
+  writeJson(initialResultPath, {
+    schema: 'machinespirits.tutor-stub.resistance-action-register-live-batch-result.v1',
+    batch_id: plan.batch_id,
+    repeat: plan.repeat,
+    status: 'incomplete',
+    completed_dialogues: 5,
+    failed_or_missing_dialogues: 1,
+    maximum_model_attempt_reservations: 234,
+    results: initialResults,
+  });
+  const originalJob = plan.jobs.find((job) => job.id === recoveredJobId);
+  const recoveryRoot = path.join(root, 'recoveries', 'recovery-001');
+  const loaded = loadTutorStubResistanceActionRegisterPrefixBundle({
+    registrationPath: REGISTRATION_V2_PATH,
+    bundlePath: PREFIX_BUNDLE_V2_PATH,
+  });
+  const recoveryJob = buildTutorStubResistanceActionRegisterRecoveryJob({
+    loaded,
+    job: originalJob,
+    destination: recoveryRoot,
+    priorModelAttemptReservations: 1,
+  });
+  const recoveryTraceDir = recoveryJob.command.trace_dir;
+  fs.mkdirSync(recoveryTraceDir, { recursive: true });
+  recoveredTracePath = path.join(recoveryTraceDir, 'trace.jsonl');
+  const recoveredTrace = syntheticLiveTrace({
+    job: originalJob,
+    plan,
+    bundleSha256: plan.source.prefix_bundle_sha256,
+    modelCallBudget: 38,
+  });
+  fs.writeFileSync(recoveredTracePath, `${recoveredTrace.map((event) => JSON.stringify(event)).join('\n')}\n`);
+  const recoveryPlanPath = path.join(recoveryRoot, 'recovery-plan.json');
+  const recoveryResultPath = path.join(recoveryRoot, 'recovery-result.json');
+  const recoveredRow = {
+    job_id: recoveredJobId,
+    status: 'complete',
+    trace: recoveredTracePath,
+    trace_sha256: fileSha256(recoveredTracePath),
+  };
+  writeJson(recoveryPlanPath, {
+    schema: 'machinespirits.tutor-stub.resistance-action-register-live-batch-recovery-plan.v1',
+    status: 'planned_missing_or_failed_only',
+    batch_id: plan.batch_id,
+    repeat: plan.repeat,
+    source: plan.source,
+    original_plan_sha256: fileSha256(planPath),
+    original_result_sha256: fileSha256(initialResultPath),
+    used_reservations_before_recovery: 31,
+    hard_ceiling: 234,
+    valid_unit_ids_excluded: plan.jobs
+      .filter((job) => job.id !== recoveredJobId)
+      .map((job) => job.id)
+      .sort(),
+    jobs: [recoveryJob],
+  });
+  writeJson(recoveryResultPath, {
+    schema: 'machinespirits.tutor-stub.resistance-action-register-live-batch-recovery-result.v1',
+    batch_id: plan.batch_id,
+    repeat: plan.repeat,
+    results: [recoveredRow],
+  });
+  finalRows.push({ ...recoveredRow, origin: 'bounded_technical_recovery_missing_or_failed_unit' });
+  finalRows.sort((a, b) => a.job_id.localeCompare(b.job_id));
+  const finalResultPath = path.join(root, 'batch-final-result.json');
+  const reservationsByJob = Object.fromEntries(plan.jobs.map((job) => [job.id, job.id === recoveredJobId ? 7 : 6]));
+  writeJson(finalResultPath, {
+    schema: 'machinespirits.tutor-stub.resistance-action-register-live-batch-result.v1',
+    batch_id: plan.batch_id,
+    repeat: plan.repeat,
+    status: 'complete',
+    completed_dialogues: 6,
+    failed_or_missing_dialogues: 0,
+    maximum_model_attempt_reservations: 234,
+    observed_model_attempt_reservations: 37,
+    observed_model_attempt_reservations_by_job: reservationsByJob,
+    technical_recovery_used: true,
+    recovery_unit_ids: [recoveredJobId],
+    results: finalRows,
+  });
+  const sealPath = path.join(root, 'batch-seal.json');
+  writeJson(sealPath, {
+    schema: 'machinespirits.tutor-stub.resistance-action-register-live-batch-seal.v1',
+    status: 'sealed_complete',
+    batch_id: plan.batch_id,
+    repeat: plan.repeat,
+    plan_sha256: fileSha256(planPath),
+    result_sha256: fileSha256(finalResultPath),
+    recovery_plan_sha256: fileSha256(recoveryPlanPath),
+    recovery_result_sha256: fileSha256(recoveryResultPath),
+    dialogues: 6,
+    hard_ceiling: 234,
+    observed_model_attempt_reservations: 37,
+    observed_model_attempt_reservations_by_job: reservationsByJob,
+    valid_unit_reruns: false,
+    outcome_selection: false,
+  });
+  return { recoveryPlanPath, sealPath, recoveredJobId };
 }
 
 function loadedRegistration() {
@@ -813,6 +1204,424 @@ test('v2 baseline plan binds three prefixes to two six-dialogue repeat batches w
   );
 });
 
+test('v2 public prefix bundle reproduces all three registered hashes and seeds one exact execution job', () => {
+  const loaded = loadTutorStubResistanceActionRegisterPrefixBundle({
+    bundlePath: PREFIX_BUNDLE_V2_PATH,
+    registrationPath: REGISTRATION_V2_PATH,
+  });
+  assert.equal(loaded.bundle.prefixes.length, 3);
+  assert.equal(
+    loaded.bundle.provenance.v4_report_sha256,
+    '771076330d58ec8818182a1924e3ea8dd2c8e54bdc1c9f32a822e491f405b431',
+  );
+  assert.equal(loaded.bundle.provenance.private_archive_commit, 'e5eb71f22f0c36f6e286272caf5b041e71d8e2ba');
+
+  const events = [];
+  const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-005-marrick.yaml'));
+  const state = {
+    history: [],
+    turns: [],
+    world,
+    releasePacing: createTutorStubReleasePacingState({ world, speed: 1 }),
+    trace: { enabled: false },
+  };
+  const configured = configureTutorStubResistanceActionRegisterExecution({
+    state,
+    loaded,
+    jobId: 'frame_refuser-v4-r1-t1__matched_warm_A',
+    appendTraceEvent: (_trace, event) => events.push(event),
+    acknowledgeTutorStubOpeningRelease,
+  });
+  assert.equal(configured.job.treatment.pedagogical_move, 'test_bounded_distinction');
+  assert.equal(configured.job.treatment.register, 'warm');
+  assert.equal(state.history.length, 1);
+  assert.equal(state.history[0].content, loaded.bundle.prefixes[0].opening_text);
+  assert.equal(state.resistanceActionRegisterStudy.trigger_precomputed_raw.dagPreflight.publicOnly, true);
+  assert.equal(state.resistanceActionRegisterStudy.final_learner_without_tutor_reply, true);
+  assert.deepEqual(
+    events.map((event) => event.type),
+    ['resistance_action_register_execution_start', 'tutor_opening'],
+  );
+
+  const drifted = structuredClone(loaded.bundle);
+  drifted.prefixes[0].trigger_learner_text += ' drift';
+  assert.throws(
+    () =>
+      validateTutorStubResistanceActionRegisterPrefixBundle({
+        bundle: drifted,
+        registration: loaded.registration.registration,
+        registrationSha256: loaded.registration.sha256,
+      }),
+    /public bytes do not reproduce/u,
+  );
+});
+
+test('v2 execution prebinds exactly six unique jobs in each 234-cap create-once batch', () => {
+  const temporary = path.join(os.tmpdir(), `resistance-action-register-preflight-${process.pid}`);
+  const a = buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'A', destination: `${temporary}-a` });
+  const b = buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'B', destination: `${temporary}-b` });
+  for (const [plan, repeat] of [
+    [a, 'A'],
+    [b, 'B'],
+  ]) {
+    assert.equal(plan.repeat, repeat);
+    assert.equal(plan.jobs.length, 6);
+    assert.equal(new Set(plan.jobs.map((job) => `${job.prefix_id}:${job.treatment.realization}`)).size, 6);
+    assert.equal(plan.budget.maximum_model_attempt_reservations_per_dialogue, 39);
+    assert.equal(plan.budget.maximum_model_attempt_reservations, 234);
+    assert.ok(plan.jobs.every((job) => job.command.args.includes('--acknowledge-research-use')));
+    assert.ok(
+      plan.jobs.every((job) =>
+        job.command.args.some(
+          (value, index) => value === '--artifact-archive' && job.command.args[index + 1] === 'required',
+        ),
+      ),
+    );
+    assert.ok(plan.jobs.every((job) => job.command.args.includes('--expected-source-commit') === false));
+    assert.ok(
+      plan.jobs.every((job) => job.command.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS === 'prospective_v4'),
+    );
+  }
+  assert.notEqual(a.destination, b.destination);
+  assert.throws(
+    () => assertTutorStubResistanceActionRegisterCleanSource(' M services/drift.js'),
+    /requires a clean source checkout/u,
+  );
+});
+
+test('v2 combined analyzer refuses partial assembly and completes all 12 exact cells only after both seals', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'resistance-action-register-analysis-'));
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const batchA = path.join(temporary, 'batch-a');
+  const batchB = path.join(temporary, 'batch-b');
+  const planA = buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'A', destination: batchA });
+  const planB = buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'B', destination: batchB });
+  writeSyntheticBatch(batchA, planA);
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA,
+        batchB,
+        expectedSourceCommit: planA.source.commit,
+      }),
+    /refuses partial batch/u,
+  );
+  writeSyntheticBatch(batchB, planB);
+  const report = analyzeTutorStubResistanceActionRegisterBaseline({
+    batchA,
+    batchB,
+    expectedSourceCommit: planA.source.commit,
+  });
+  assert.equal(report.status, 'complete_registered_baseline');
+  assert.equal(report.assembly.dialogues, 12);
+  assert.equal(report.assembly.exact_cells, 12);
+  assert.deepEqual(report.assembly.reservations_by_batch, { batch_A: 36, batch_B: 36 });
+  assert.equal(report.endpoint_status.same_treatment_repeat_stability, 'complete');
+  assert.equal(report.endpoint_status.action_register_fidelity_and_safety, 'complete');
+  assert.deepEqual(report.summary.treatment_fidelity, {
+    status: 'complete',
+    action_visibility_rate: 1,
+    action_visibility_minimum: 0.9,
+    register_visibility_rate: 1,
+    register_visibility_minimum: 0.9,
+    primary_analysis: 'intention_to_treat',
+    failed_disposition: 'fail_interpretability_gate_not_rerun',
+    protected_condition_rate: 0,
+    safety_override_rate: 0,
+    valid_unit_rerun_authorized: false,
+  });
+  assert.equal(
+    report.rows.every((row) => row.outcome.recovered),
+    true,
+  );
+  assert.equal(
+    report.rows.every((row) => row.execution.technical_recovery_used === false),
+    true,
+  );
+  assert.equal(report.summary.stable_repeat_pairs, 6);
+  assert.match(report.claim_boundary, /does not establish matched-versus-mismatched action efficacy/u);
+});
+
+test('v2 combined analyzer reads treatment fidelity and fails its interpretability gate without rerunning', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'resistance-action-register-fidelity-'));
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const batchA = path.join(temporary, 'batch-a');
+  const batchB = path.join(temporary, 'batch-b');
+  const planA = buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'A', destination: batchA });
+  const planB = buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'B', destination: batchB });
+  writeSyntheticBatch(batchA, planA, {
+    fidelityByJob: { [planA.jobs[0].id]: { actionVisible: false } },
+  });
+  writeSyntheticBatch(batchB, planB, {
+    fidelityByJob: { [planB.jobs[0].id]: { actionVisible: false } },
+  });
+
+  const report = analyzeTutorStubResistanceActionRegisterBaseline({
+    batchA,
+    batchB,
+    expectedSourceCommit: planA.source.commit,
+  });
+  assert.equal(report.endpoint_status.action_register_fidelity_and_safety, 'failed_interpretability_gate_not_rerun');
+  assert.equal(report.summary.treatment_fidelity.action_visibility_rate, 10 / 12);
+  assert.equal(report.summary.treatment_fidelity.register_visibility_rate, 1);
+  assert.equal(report.summary.treatment_fidelity.valid_unit_rerun_authorized, false);
+  assert.equal(report.interpretation_status, 'interpretability_gate_failed_no_rerun_or_efficacy_interpretation');
+});
+
+test('v2 combined analyzer retains a protected safety override ITT without crediting assigned-register fidelity', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'resistance-action-register-safety-'));
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const batchA = path.join(temporary, 'batch-a');
+  const batchB = path.join(temporary, 'batch-b');
+  const planA = buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'A', destination: batchA });
+  const planB = buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'B', destination: batchB });
+  const overrideJob = planA.jobs.find((job) => job.treatment.register === 'warm');
+  writeSyntheticBatch(batchA, planA, {
+    fidelityByJob: { [overrideJob.id]: { safetyOverrideReason: 'protected_affect' } },
+  });
+  writeSyntheticBatch(batchB, planB);
+
+  const report = analyzeTutorStubResistanceActionRegisterBaseline({
+    batchA,
+    batchB,
+    expectedSourceCommit: planA.source.commit,
+  });
+  const row = report.rows.find((candidate) => candidate.case_id === overrideJob.id);
+  assert.deepEqual(row.fidelity, {
+    action_visible: true,
+    register_visible: false,
+    safety_override: true,
+    protected_condition: true,
+  });
+  assert.equal(report.summary.treatment_fidelity.register_visibility_rate, 11 / 12);
+  assert.equal(report.summary.treatment_fidelity.protected_condition_rate, 1 / 12);
+  assert.equal(report.summary.treatment_fidelity.safety_override_rate, 1 / 12);
+  assert.equal(report.endpoint_status.action_register_fidelity_and_safety, 'complete');
+  assert.equal(report.summary.treatment_fidelity.valid_unit_rerun_authorized, false);
+});
+
+test('v2 combined analyzer fails closed on missing fidelity, runtime drift, and alternative traces', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'resistance-action-register-integrity-'));
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const makePair = (label) => {
+    const batchA = path.join(temporary, `${label}-batch-a`);
+    const batchB = path.join(temporary, `${label}-batch-b`);
+    const planA = buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'A', destination: batchA });
+    const planB = buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'B', destination: batchB });
+    writeSyntheticBatch(batchA, planA);
+    writeSyntheticBatch(batchB, planB);
+    return { batchA, batchB, planA, planB };
+  };
+
+  const missingFidelity = makePair('missing-fidelity');
+  mutateSyntheticBatchTrace(missingFidelity.batchA, missingFidelity.planA.jobs[0].id, (events) => {
+    const trigger = events.find((event) => event.type === 'turn_complete' && event.turn === 1);
+    delete trigger.turnRecord.responseConfigurationAudit;
+    return events;
+  });
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: missingFidelity.batchA,
+        batchB: missingFidelity.batchB,
+        expectedSourceCommit: missingFidelity.planA.source.commit,
+      }),
+    /lacks typed action\/register visibility evidence/u,
+  );
+
+  const runtimeDrift = makePair('runtime-drift');
+  mutateSyntheticBatchTrace(runtimeDrift.batchA, runtimeDrift.planA.jobs[0].id, (events) => {
+    const start = events.find((event) => event.type === 'run_start');
+    start.metadata.sessionRecipe.config.options['cli-effort'] = 'medium';
+    return events;
+  });
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: runtimeDrift.batchA,
+        batchB: runtimeDrift.batchB,
+        expectedSourceCommit: runtimeDrift.planA.source.commit,
+      }),
+    /violates its observed Luna route, runtime, horizon, or semantics pins/u,
+  );
+
+  const dirtyTrace = makePair('dirty-trace');
+  mutateSyntheticBatchTrace(dirtyTrace.batchA, dirtyTrace.planA.jobs[0].id, (events) => {
+    const start = events.find((event) => event.type === 'run_start');
+    start.metadata.provenance.git.dirty = true;
+    return events;
+  });
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: dirtyTrace.batchA,
+        batchB: dirtyTrace.batchB,
+        expectedSourceCommit: dirtyTrace.planA.source.commit,
+      }),
+    /violates its observed Luna route, runtime, horizon, or semantics pins/u,
+  );
+
+  const effortDrift = makePair('effort-drift');
+  mutateSyntheticBatchTrace(effortDrift.batchA, effortDrift.planA.jobs[0].id, (events) => {
+    const call = events.find((event) => event.type === 'model_call');
+    call.response.effort = 'medium';
+    return events;
+  });
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: effortDrift.batchA,
+        batchB: effortDrift.batchB,
+        expectedSourceCommit: effortDrift.planA.source.commit,
+      }),
+    /violates its observed Luna route, runtime, horizon, or semantics pins/u,
+  );
+
+  const outOfEnvelope = makePair('out-of-envelope');
+  mutateSyntheticBatchTrace(outOfEnvelope.batchA, outOfEnvelope.planA.jobs[0].id, (events) => {
+    events.push(
+      { type: 'model_call_budget_reserved', role: 'tutor_stub_tutor', turn: 3 },
+      {
+        type: 'model_call',
+        role: 'tutor_stub_tutor',
+        turn: 3,
+        provider: 'codex',
+        model: 'gpt-5.6-luna',
+        response: { effort: 'low' },
+      },
+    );
+    return events;
+  });
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: outOfEnvelope.batchA,
+        batchB: outOfEnvelope.batchB,
+        expectedSourceCommit: outOfEnvelope.planA.source.commit,
+      }),
+    /violates its observed Luna route, runtime, horizon, or semantics pins/u,
+  );
+
+  const loneReservation = makePair('lone-reservation');
+  mutateSyntheticBatchTrace(loneReservation.batchA, loneReservation.planA.jobs[0].id, (events) => {
+    events.push({ type: 'model_call_budget_reserved', role: 'tutor_stub_tutor', turn: 3 });
+    return events;
+  });
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: loneReservation.batchA,
+        batchB: loneReservation.batchB,
+        expectedSourceCommit: loneReservation.planA.source.commit,
+      }),
+    /model-attempt reservations do not match its observed attempt envelope/u,
+  );
+
+  const planDrift = makePair('plan-drift');
+  const planPath = path.join(planDrift.batchA, 'batch-plan.json');
+  const sealPath = path.join(planDrift.batchA, 'batch-seal.json');
+  const driftedPlan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
+  driftedPlan.jobs[0].treatment.register = 'warm';
+  writeJson(planPath, driftedPlan);
+  const driftedSeal = JSON.parse(fs.readFileSync(sealPath, 'utf8'));
+  driftedSeal.plan_sha256 = fileSha256(planPath);
+  writeJson(sealPath, driftedSeal);
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: planDrift.batchA,
+        batchB: planDrift.batchB,
+        expectedSourceCommit: planDrift.planA.source.commit,
+      }),
+    /plan or command drifted from the registered live execution plan/u,
+  );
+
+  const commandDrift = makePair('command-drift');
+  const commandPlanPath = path.join(commandDrift.batchA, 'batch-plan.json');
+  const commandSealPath = path.join(commandDrift.batchA, 'batch-seal.json');
+  const commandPlan = JSON.parse(fs.readFileSync(commandPlanPath, 'utf8'));
+  commandPlan.jobs[0].command.env.TUTOR_STUB_REMEMBER_SETTINGS = '1';
+  writeJson(commandPlanPath, commandPlan);
+  const commandSeal = JSON.parse(fs.readFileSync(commandSealPath, 'utf8'));
+  commandSeal.plan_sha256 = fileSha256(commandPlanPath);
+  writeJson(commandSealPath, commandSeal);
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: commandDrift.batchA,
+        batchB: commandDrift.batchB,
+        expectedSourceCommit: commandDrift.planA.source.commit,
+      }),
+    /plan or command drifted from the registered live execution plan/u,
+  );
+
+  const alternatives = makePair('alternatives');
+  fs.writeFileSync(path.join(alternatives.planA.jobs[0].command.trace_dir, 'alternative.jsonl'), '');
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: alternatives.batchA,
+        batchB: alternatives.batchB,
+        expectedSourceCommit: alternatives.planA.source.commit,
+      }),
+    /exactly its one selected trace; alternatives are forbidden/u,
+  );
+});
+
+test('v2 combined analyzer admits only bounded missing-unit recovery under unchanged dialogue and batch caps', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'resistance-action-register-recovery-'));
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const batchA = path.join(temporary, 'batch-a');
+  const batchB = path.join(temporary, 'batch-b');
+  const planA = buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'A', destination: batchA });
+  const planB = buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'B', destination: batchB });
+  const recoveredJobId = planA.jobs[0].id;
+  const recovery = writeSyntheticRecoveredBatch(batchA, planA, recoveredJobId);
+  writeSyntheticBatch(batchB, planB);
+
+  const report = analyzeTutorStubResistanceActionRegisterBaseline({
+    batchA,
+    batchB,
+    expectedSourceCommit: planA.source.commit,
+  });
+  assert.deepEqual(report.assembly.reservations_by_batch, { batch_A: 37, batch_B: 36 });
+  assert.deepEqual(
+    report.rows.filter((row) => row.execution.technical_recovery_used).map((row) => row.case_id),
+    [recoveredJobId],
+  );
+  assert.equal(report.rows.find((row) => row.case_id === recoveredJobId).execution.model_attempt_reservations, 7);
+
+  const recoveryPlan = JSON.parse(fs.readFileSync(recovery.recoveryPlanPath, 'utf8'));
+  recoveryPlan.jobs[0].command.env.TUTOR_STUB_REMEMBER_SETTINGS = '1';
+  writeJson(recovery.recoveryPlanPath, recoveryPlan);
+  const seal = JSON.parse(fs.readFileSync(recovery.sealPath, 'utf8'));
+  seal.recovery_plan_sha256 = fileSha256(recovery.recoveryPlanPath);
+  writeJson(recovery.sealPath, seal);
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA,
+        batchB,
+        expectedSourceCommit: planA.source.commit,
+      }),
+    /recovery command drifted/u,
+  );
+  recoveryPlan.jobs[0].command.env.TUTOR_STUB_REMEMBER_SETTINGS = '0';
+  recoveryPlan.valid_unit_ids_excluded.pop();
+  writeJson(recovery.recoveryPlanPath, recoveryPlan);
+  seal.recovery_plan_sha256 = fileSha256(recovery.recoveryPlanPath);
+  writeJson(recovery.sealPath, seal);
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA,
+        batchB,
+        expectedSourceCommit: planA.source.commit,
+      }),
+    /reran a valid unit or drifted/u,
+  );
+});
+
 test('v2 registration fails closed on prefix, assignment, and reservation drift', (t) => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'resistance-registration-v2-'));
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
@@ -871,5 +1680,5 @@ test('v2 endpoint proves the combined 12-case baseline and its two-repeat stabil
   assert.equal(certificate.contract_sha256, hashPaidStudyEndpointValue(contract));
   assert.equal(certificateValidation.ok, true, certificateValidation.errors.join('; '));
   assert.equal(readiness.status, 'passed_hold');
-  assert.equal(readiness.live_execution_available, false);
+  assert.equal(readiness.live_execution_available, true);
 });

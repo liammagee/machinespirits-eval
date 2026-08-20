@@ -103,6 +103,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
     applyTutorStubComprehensionResponse,
     applyTutorStubConversationalCompletionSelection,
     applyTutorStubPointOfActionConstraint,
+    applyTutorStubResistanceActionRegisterStudyIntervention,
     assertTutorStubTurnAttemptCurrent,
     auditTutorResponseLeak,
     auditTutorStubFeedbackAdaptation,
@@ -599,6 +600,29 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         shadow: jsonClone(registerSelection.action_before_register_shadow),
         publicTranscriptChanged: false,
       });
+    }
+    if (state.resistanceActionRegisterStudy?.enabled) {
+      const beforeStudySelection = registerSelection;
+      registerSelection = applyTutorStubResistanceActionRegisterStudyIntervention({
+        selection: registerSelection,
+        state,
+        learnerText,
+        classification,
+        tutorLearnerDag,
+      });
+      if (registerSelection !== beforeStudySelection) {
+        const intervention = registerSelection?.resistance_action_register_intervention || null;
+        appendTraceEvent(state.trace, {
+          type: 'resistance_action_register_intervention_applied',
+          turn: tutorTurn,
+          turnId,
+          jobId: state.resistanceActionRegisterStudy.job_id,
+          batchId: state.resistanceActionRegisterStudy.batch_id,
+          prefixId: state.resistanceActionRegisterStudy.prefix_id,
+          intervention: jsonClone(intervention),
+          publicTranscriptChanged: false,
+        });
+      }
     }
     const tutorFeedback = learnerInput?.tutorFeedback || null;
     const feedbackTargetTurn = findTutorStubFeedbackTargetTurn({
@@ -1431,14 +1455,27 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       }
       const turnNumber = state.turns.length + 1;
       const turnId = turnDebugId(state, turnNumber);
-      let precomputedRaw = null;
+      let precomputedRaw =
+        turnNumber === 1 ? state.resistanceActionRegisterStudy?.trigger_precomputed_raw || null : null;
       let learnerResponseProvenance = nextLearnerText
-        ? createTutorStubLearnerResponseProvenance({
-            authorship: 'human',
-            origin: 'launch_first_message',
-            inputMethod: 'command_line_argument',
-            humanInLoop: true,
-          })
+        ? state.resistanceActionRegisterStudy?.enabled
+          ? createTutorStubLearnerResponseProvenance({
+              authorship: 'ai',
+              origin: 'registered_public_prefix_bundle',
+              inputMethod: 'frozen_public_replay',
+              humanInLoop: false,
+              modelRef: 'codex.gpt-5.6-luna',
+              provider: 'codex',
+              model: 'gpt-5.6-luna',
+              learnerProfileId: automatedLearnerProfileId(autoLearnerProfile),
+              automation: { frozenPreTreatmentInput: true },
+            })
+          : createTutorStubLearnerResponseProvenance({
+              authorship: 'human',
+              origin: 'launch_first_message',
+              inputMethod: 'command_line_argument',
+              humanInLoop: true,
+            })
         : null;
       if (!nextLearnerText) {
         startInterimAnimation(state, 'calling auto learner', { tutorTurn: turnNumber });
@@ -1553,6 +1590,39 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         coalescedBeforeTutorReply: false,
         provenance: jsonClone(learnerResponseProvenance),
       };
+
+      const registeredFinalLearnerOnly =
+        state.resistanceActionRegisterStudy?.final_learner_without_tutor_reply === true &&
+        turnNumber === Number(autoTurns);
+      if (registeredFinalLearnerOnly) {
+        if (!precomputedRaw?.dagPreflight) {
+          throw new Error('registered final learner outcome requires the already-generated public analysis preflight');
+        }
+        const finalAnalysis = await analyzeLearnerTurn(nextLearnerText, state, {
+          precomputedRaw,
+          signal,
+          isCurrent,
+        });
+        assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
+        state.history.push({ role: 'user', content: nextLearnerText });
+        appendTraceEvent(state.trace, {
+          type: 'resistance_action_register_outcome_learner_turn',
+          turn: turnNumber,
+          horizonIndex: Number(state.resistanceActionRegisterStudy.outcome_horizon_learner_turns),
+          jobId: state.resistanceActionRegisterStudy.job_id,
+          batchId: state.resistanceActionRegisterStudy.batch_id,
+          prefixId: state.resistanceActionRegisterStudy.prefix_id,
+          learnerText: nextLearnerText,
+          classification: jsonClone(finalAnalysis.classification),
+          tutorLearnerDag: jsonClone(finalAnalysis.tutorLearnerDag),
+          previousRegisterEfficacy: jsonClone(finalAnalysis.previousRegisterEfficacy),
+          learnerResponseProvenance: jsonClone(learnerResponseProvenance),
+          tutorReplyGenerated: false,
+        });
+        reason = 'registered_outcome_horizon_complete';
+        nextLearnerText = '';
+        break;
+      }
 
       const diagnosticCollection = state.loopMode === TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE;
       const transaction = diagnosticCollection ? snapshotTutorStubDiagnosticTransaction(state) : null;

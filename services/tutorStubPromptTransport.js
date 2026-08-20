@@ -330,6 +330,7 @@ export function createTutorStubPromptTransport(dependencies) {
           messageHistory: publicMessageHistory,
           messages: requestMessages,
           maxTokens,
+          cliEffort,
           promptAudit,
         },
         error: err.message,
