@@ -295,7 +295,7 @@ function templateText(request) {
 
 test('confirmation GO validator and packager bind the exact powered ceiling amendment without executing', (t) => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'confirmation-go-request-'));
-  const output = `config/.test-confirmation-go-request-${process.pid}.json`;
+  const output = `.tutor-stub-auto-eval/.test-confirmation-go-request-${process.pid}.json`;
   t.after(() => {
     fs.rmSync(temporary, { recursive: true, force: true });
     fs.rmSync(path.join(ROOT, output), { force: true });
@@ -313,6 +313,7 @@ test('confirmation GO validator and packager bind the exact powered ceiling amen
 
   const templatePath = path.join(temporary, 'template.json');
   fs.writeFileSync(templatePath, templateText(request));
+  fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
   const packageReport = packageTutorStubResistantProfileStudyGoRequest({
     templatePath,
     launchCommit: request.source.launchCommit,
