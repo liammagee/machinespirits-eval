@@ -40,10 +40,8 @@ export {
   classifyFrameDefiantAdherenceExhaustion,
   classifyFrameRefuserAdherenceExhaustion,
 };
-
 export const TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV =
   'TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS';
-
 const FRAME_OPPORTUNITY_V3_TURNS = 8;
 const FRAME_OPPORTUNITY_V3_MODEL_CALL_BUDGET = 48;
 const FRAME_OPPORTUNITY_V3_BASE_CALLS = 1 + FRAME_OPPORTUNITY_V3_TURNS * 3;
@@ -60,7 +58,6 @@ const FRAME_OPPORTUNITY_V4_PLANNED_WORST_CASE_CALLS =
   FRAME_OPPORTUNITY_V4_TUTOR_GUARD_RESERVE;
 const FRAME_OPPORTUNITY_V4_MODEL_CALL_BUDGET =
   FRAME_OPPORTUNITY_V4_PLANNED_WORST_CASE_CALLS * FRAME_OPPORTUNITY_V4_MAX_RESERVATIONS_PER_PLANNED_CALL;
-
 export function buildTutorStubFrameOpportunityV3RepairBudgetDiagnostic({
   maxFullRepairsPer8Turns = 1,
   modelCallBudget = FRAME_OPPORTUNITY_V3_MODEL_CALL_BUDGET,
@@ -81,7 +78,6 @@ export function buildTutorStubFrameOpportunityV3RepairBudgetDiagnostic({
     ready: maxFullRepairsPer8Turns === 1 && worstCaseRequiredCalls <= modelCallBudget,
   };
 }
-
 export function admitTutorStubFrameOpportunityV3FullRepair({ state, profile, turnNumber, contract } = {}) {
   if (!['frame_refuser', 'frame_defiant'].includes(profile)) {
     return { applicable: false, admitted: true, reason: 'profile_not_in_frame_opportunity_v3' };
@@ -111,7 +107,6 @@ export function admitTutorStubFrameOpportunityV3FullRepair({ state, profile, tur
   }
   return result;
 }
-
 export function buildTutorStubFrameOpportunityV4RepairBudgetDiagnostic({
   maxFullRepairsPerT1T2 = 1,
   modelCallBudget = FRAME_OPPORTUNITY_V4_MODEL_CALL_BUDGET,
@@ -144,7 +139,6 @@ export function buildTutorStubFrameOpportunityV4RepairBudgetDiagnostic({
       maximumModelAttemptReservations === 39,
   };
 }
-
 export function admitTutorStubFrameOpportunityV4FullRepair({ state, profile, turnNumber, contract } = {}) {
   if (!['frame_refuser', 'frame_defiant'].includes(profile)) {
     return { applicable: false, admitted: true, reason: 'profile_not_in_frame_opportunity_v4' };
@@ -179,7 +173,6 @@ export function admitTutorStubFrameOpportunityV4FullRepair({ state, profile, tur
   }
   return result;
 }
-
 export function throwFrameDefiantAdherenceExhaustion({ profile, repairAttempts }) {
   const exhaustion = classifyFrameDefiantAdherenceExhaustion({ profile, repairAttempts });
   const error = new Error(
@@ -192,7 +185,6 @@ export function throwFrameDefiantAdherenceExhaustion({ profile, repairAttempts }
   error.publishPublicCandidate = exhaustion.publishPublicCandidate;
   throw error;
 }
-
 export function throwFrameRefuserAdherenceExhaustion({ profile, repairAttempts }) {
   const exhaustion = classifyFrameRefuserAdherenceExhaustion({ profile, repairAttempts });
   const error = new Error(
@@ -205,7 +197,6 @@ export function throwFrameRefuserAdherenceExhaustion({ profile, repairAttempts }
   error.publishPublicCandidate = exhaustion.publishPublicCandidate;
   throw error;
 }
-
 const AUTO_LEARNER_SYSTEM_PROMPT = [
   'You are an automated learner in an experimental tutoring dialogue.',
   'You see only the public transcript and the latest tutor message.',
@@ -216,7 +207,6 @@ const AUTO_LEARNER_SYSTEM_PROMPT = [
   'Reply as the learner only. No role label, no analysis, no JSON.',
   'Keep the reply concise: usually one sentence, one question, or one warranted evidence claim.',
 ].join('\n');
-
 export function createTutorStubAutomatedLearnerGenerationRuntime({
   appendTraceEvent,
   callPromptModel,
