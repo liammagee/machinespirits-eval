@@ -513,6 +513,7 @@
         "tests/tutorStubAutoEvalEvidence.test.js",
         "tests/tutorStubAutoEvalReportAssets.test.js",
         "tests/tutorStubAutoEvalVisualizationReport.test.js",
+        "tests/tutorStubBoredomActionRegisterProofDagReadiness.test.js",
         "tests/tutorStubCanonicalActorialRealization.test.js",
         "tests/tutorStubCapabilities.test.js",
         "tests/tutorStubCardForce.test.js",
