@@ -116,3 +116,13 @@ Log:
   baseline, Actions run 32313112912, passed both root shards, tutor-core, and
   risk coverage on Node 22 and 24. Those unrelated local baseline failures were
   recorded but not repaired in this PR.
+- 2026-08-19 — The first hosted PR run, Actions run 32317822501, exposed a
+  branch-attributable process-lifecycle race in the new local Git collector:
+  both Node 22 and 24 shard 1 could receive the child `exit` event before its
+  stdout pipe delivered the final NUL-delimited paths. The other two root
+  shards and every non-root gate passed. Resolving on `close` instead preserves
+  all buffered stdout and stderr. The focused classifier/local-runner contract
+  then passed 26 of 26 tests on local Node 22.22.3 and Node 24.19.0 with
+  `node --test tests/localCiRunner.test.js tests/ciChangePolicy.test.js` (using
+  `npx --yes node@24` for the Node 24 parity run). The repair remains on this
+  outcome branch for a same-PR hosted rerun.

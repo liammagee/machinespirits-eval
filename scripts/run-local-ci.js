@@ -326,7 +326,8 @@ function gitOutput(args, projectRoot, { trim = true } = {}) {
       stderr += chunk;
     });
     child.once('error', reject);
-    child.once('exit', (code) => {
+    // `exit` can precede the final stdout/stderr data; `close` waits for both pipes.
+    child.once('close', (code) => {
       if (code === 0) resolve(trim ? stdout.trim() : stdout);
       else reject(new Error(`git ${args.join(' ')} failed: ${stderr.trim()}`));
     });
