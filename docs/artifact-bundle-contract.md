@@ -1,10 +1,16 @@
 # Artifact bundle contract
 
-Status: Wave 3B non-destructive boundary, 2026-08-20.
+Status: Wave 3C current-tree deduplication boundary, 2026-08-20.
 
-This contract makes a tracked evidence bundle verifiable and restorable before
-any later proposal to move or untrack its payload. It is transport-neutral: an
-operator supplies an explicit local archive path, and
+PR [#714](https://github.com/liammagee/machinespirits-eval/pull/714)
+established a verifiable and restorable evidence-bundle boundary before any
+payload change. Wave 3C now removes only the redundant expanded manifest
+members from the current tree. The Git-tracked archive and manifest remain the
+durable replicated source: every complete Git clone receives both objects and
+can verify or restore the payload without selecting an external store.
+
+The runtime remains transport-neutral: an operator supplies an explicit local
+archive path, and
 `scripts/artifact-bundle.js` verifies, caches, or restores only that file. The
 script does not resolve URLs, choose an external store, authenticate to a
 service, or infer a source from machine state.
@@ -18,12 +24,31 @@ The first production specimen is the Green Room Gate 1 raw bundle:
 - archive size: 9,492,826 bytes;
 - archive SHA-256:
   `d5c5c5e7315c52d84652b4e35d47b998f449f6241f71660fb8f02eb8fe5d2434`;
-- restored payload: exactly 26 files and 61,350,499 uncompressed bytes under
+- restorable payload: exactly 26 files and 61,350,499 uncompressed bytes under
   `exports/greenroom-gate1-2026-07-12`.
 
-The archive and its expanded files remain tracked in this tranche. Establishing
-this boundary does not authorize moving, untracking, overwriting, or deleting
-either copy.
+The archive and manifest remain tracked. The 26 expanded members do not: each
+was independently matched to its manifest byte count and SHA-256 and to the
+corresponding byte-identical archive member before its explicit removal. This
+does not authorize moving or untracking the archive or manifest, deleting any
+other local copy, or changing the bundle's provenance or access class.
+
+## Current-tree measurement
+
+The measurement counts Git-tracked paths and their exact logical working-tree
+bytes under `exports/greenroom-gate1-2026-07-12` at the Wave 3C base and after
+the explicit manifest-derived deletion:
+
+| State | Tracked paths | Logical bytes |
+| --- | ---: | ---: |
+| Before | 46 | 71,060,298 |
+| After | 20 | 9,709,799 |
+| Reduction | 26 | 61,350,499 |
+
+The 20 retained paths are the archive, its manifest, the two Gate 1 reports,
+the original Gate 1 manifest, placebo notes, eight transcript books, and the
+six `performances/P3.book.md` through `performances/P8.book.md` files. The
+reduction is checkout deduplication only: historical Git objects are unchanged.
 
 ## Manifest v1
 
@@ -126,21 +151,40 @@ The drill passes only when both archive verifications and the post-restore
 26-file verification pass, with the exact compressed and uncompressed
 measurements above. The drill deliberately has no cleanup step.
 
-## Migration and deletion boundary
+## Wave 3C consumer boundary
 
-This contract is a prerequisite, not migration authority. A later proposal to
-remove tracked payloads must separately prove every paper, script, test, and
-runtime consumer against a restored tree; name the durable replicated source;
-and receive explicit approval before moving, untracking, or deleting anything.
-The first concrete Wave 3C gate is
-`scripts/analyze-step4-trigger-density.js::greenroomSources()`: it currently
-reads the P1–P8 performance JSON and eight trace files directly from the
-expanded repository tree, with coverage in
-`tests/analyzeStep4TriggerDensity.test.js`. Those 26 raw members must remain
-tracked until that consumer can materialize or read the verified bundle through
-this boundary. The six small `performances/P3.book.md` through
-`performances/P8.book.md` files are not archive members and are not migration
-candidates.
+Wave 3C was separately approved only after the Wave 3B boundary and production
+drill passed. `scripts/analyze-step4-trigger-density.js::greenroomSources()` is
+the live raw-payload consumer: it reads requested files from the fully verified
+tracked bundle rather than assuming expanded manifest members exist, with
+`tests/analyzeStep4TriggerDensity.test.js` retaining that regression boundary.
+The six small `performances/P3.book.md` through `performances/P8.book.md` files
+are not archive members and remain tracked.
+
+The zero-call census also runs against the restored root:
+
+```bash
+node scripts/census-guard-template-rate.js \
+  <restore-root>/exports/greenroom-gate1-2026-07-12 \
+  --quiet
+```
+
+Its expected provenance stamp is `legacy format, 10 trace files; pre-catalog;
+314 turns; 6% template; 89% model as written`. This command reads the restored
+traces without calling a model or writing a result.
+
+`scripts/greenroom-gate1-score.js` is a historical/manual model-backed
+consumer of the same raw performances and may overwrite the closed Gate 1
+reports. It is not part of migration verification and must not be run merely to
+test this boundary. For deliberate reuse, first restore the verified bundle to
+an explicit `<restore-root>`, then pass
+`<restore-root>/exports/greenroom-gate1-2026-07-12` as `--gate-dir`; the script
+header records that route without changing executable behavior.
+
+Any later proposal to move or untrack the archive or manifest must name and
+verify another durable replicated source and receive separate approval. A
+cache, restored tree, retained drill, or local worktree is not a replacement
+for the tracked source of record.
 
 No history rewrite is part of this contract, so it cannot reduce historical Git
 pack size. No archive or restore operation licenses evidence for training or

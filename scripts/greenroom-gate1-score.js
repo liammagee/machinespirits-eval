@@ -9,9 +9,12 @@
  * identically (notional issue point = median session index) as the base-rate
  * drift control.
  *
+ * Restore the verified raw bundle before using this historical/manual scorer,
+ * then pass the restored Gate 1 directory as --gate-dir.
+ *
  * Usage:
  *   node scripts/greenroom-gate1-score.js \
- *     --gate-dir exports/greenroom-gate1-2026-07-12 \
+ *     --gate-dir <restore-root>/exports/greenroom-gate1-2026-07-12 \
  *     --profile marrick-ps-a \
  *     --order P1,P2,P3,P4,P5,P6,P7,P8 \
  *     [--placebo <notes.json>] [--judge claude-code.haiku] [--dry-run]

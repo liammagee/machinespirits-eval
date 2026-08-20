@@ -311,6 +311,27 @@ export function verifyArtifactBundle({ manifestPath, archivePath } = {}) {
   return publicVerification(inspectArtifactBundle({ manifestPath, archivePath }));
 }
 
+export function readArtifactBundleFiles({ manifestPath, archivePath, files } = {}) {
+  if (!Array.isArray(files) || files.length === 0) {
+    throw new Error('files must be a non-empty array of manifest-relative paths');
+  }
+  const inspection = inspectArtifactBundle({ manifestPath, archivePath });
+  const entries = new Map(inspection.entries.map((entry) => [entry.file, entry]));
+  const buffers = new Map();
+  for (const [index, requested] of files.entries()) {
+    const file = validateRelativePath(requested, `files[${index}]`);
+    if (buffers.has(file)) throw new Error(`Duplicate requested artifact bundle file: ${file}`);
+    const entry = entries.get(file);
+    if (!entry) throw new Error(`Requested file is not present in the artifact bundle manifest: ${file}`);
+    buffers.set(file, Buffer.from(entry.content));
+  }
+  return {
+    ...publicVerification(inspection),
+    manifest: inspection.manifest,
+    buffers,
+  };
+}
+
 function cachePathForManifest(manifest, cacheDir) {
   return path.join(path.resolve(cacheDir), 'sha256', `${manifest.archive.sha256}.tar.gz`);
 }

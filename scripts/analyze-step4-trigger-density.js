@@ -8,13 +8,13 @@ import process from 'node:process';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
+import { readArtifactBundleFiles, readArtifactBundleManifest } from './artifact-bundle.js';
 import { buildDynamicalSystemState } from '../services/tutorStubRegisterPolicy.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ROWS_FILE = 'exports/register-confirmatory-evidence/final/primary-endpoint-rows.json';
 const FINAL_MANIFEST = 'config/adaptive-tutor-evidence/tutor-stub-register-confirmatory-final-analysis.manifest.json';
 const GREENROOM_DIR = 'exports/greenroom-gate1-2026-07-12';
-const GREENROOM_MANIFEST = `${GREENROOM_DIR}/raw-bundle-manifest.json`;
 const OUTPUT_DIR = 'exports/tutor-stub-step4-trigger-audit';
 const OUTPUT_JSON = `${OUTPUT_DIR}/trigger-density.json`;
 const OUTPUT_MD = `${OUTPUT_DIR}/trigger-density.md`;
@@ -54,8 +54,9 @@ function parseArgs(argv) {
 
 Replays the selected Step 2 and Green Room traces without model calls. If an
 ignored Step 2 trace is absent, the script reads it from the verified archive
-named by the final Step 2 manifest. --check compares the replay with the
-tracked JSON and Markdown outputs.`);
+named by the final Step 2 manifest. Green Room inputs use a complete expanded
+set when present and otherwise come from the fully verified tracked raw bundle.
+--check compares the replay with the tracked JSON and Markdown outputs.`);
       process.exit(0);
     } else throw new Error(`Unknown option: ${token}`);
   }
@@ -121,26 +122,75 @@ function step2Sources() {
   });
 }
 
-function greenroomSources() {
-  const manifest = readJson(GREENROOM_MANIFEST);
-  const hashes = new Map(manifest.files.map((entry) => [entry.file, entry.sha256]));
+function isRegularFile(file) {
+  try {
+    const stat = fs.lstatSync(file);
+    return stat.isFile() && !stat.isSymbolicLink();
+  } catch (error) {
+    if (error?.code === 'ENOENT') return false;
+    throw error;
+  }
+}
+
+function checkedGreenroomBuffer(buffers, entries, relative) {
+  const entry = entries.get(relative);
+  if (!entry) throw new Error(`Green Room file is not present in the raw-bundle manifest: ${relative}`);
+  const buffer = buffers.get(relative);
+  if (!buffer) throw new Error(`Green Room file was not materialized from a verified source: ${relative}`);
+  if (buffer.length !== entry.bytes) {
+    throw new Error(`Green Room file byte-count mismatch: ${relative}`);
+  }
+  const actual = sha256(buffer);
+  if (actual !== entry.sha256) throw new Error(`Green Room file SHA-256 mismatch: ${relative}`);
+  return { buffer, sha256: actual };
+}
+
+function greenroomSources({ root = ROOT, greenroomDir = GREENROOM_DIR } = {}) {
+  const manifestPath = path.join(root, greenroomDir, 'raw-bundle-manifest.json');
+  let { manifest } = readArtifactBundleManifest(manifestPath);
+  if (manifest.archive.root !== greenroomDir) {
+    throw new Error(`Green Room archive root mismatch: ${manifest.archive.root} != ${greenroomDir}`);
+  }
+  const performanceFiles = Array.from({ length: 8 }, (_, index) => `performances/P${index + 1}.json`);
+  const requestedFiles = [
+    ...performanceFiles,
+    ...manifest.files.filter((entry) => entry.file.startsWith('traces/')).map((entry) => entry.file),
+  ];
+  const expandedRoot = path.join(root, greenroomDir);
+  const allExpandedFilesPresent = manifest.files.every((entry) => isRegularFile(path.join(expandedRoot, entry.file)));
+  let buffers;
+  if (allExpandedFilesPresent) {
+    buffers = new Map(requestedFiles.map((relative) => [relative, fs.readFileSync(path.join(expandedRoot, relative))]));
+  } else {
+    const read = readArtifactBundleFiles({
+      manifestPath,
+      archivePath: path.join(root, manifest.archive.path),
+      files: requestedFiles,
+    });
+    if (read.manifest.archive.root !== greenroomDir) {
+      throw new Error(`Green Room archive root mismatch: ${read.manifest.archive.root} != ${greenroomDir}`);
+    }
+    manifest = read.manifest;
+    buffers = read.buffers;
+  }
+  const entries = new Map(manifest.files.map((entry) => [entry.file, entry]));
   return Array.from({ length: 8 }, (_, index) => {
     const run = `P${index + 1}`;
-    const performance = readJson(`${GREENROOM_DIR}/performances/${run}.json`);
+    const performanceRelative = `performances/${run}.json`;
+    const performanceBuffer = checkedGreenroomBuffer(buffers, entries, performanceRelative).buffer;
+    const performance = JSON.parse(performanceBuffer.toString('utf8'));
     const relative = `traces/${path.basename(performance.trace)}`;
-    const trace = `${GREENROOM_DIR}/${relative}`;
-    const buffer = fs.readFileSync(path.join(ROOT, trace));
-    const actual = sha256(buffer);
-    if (actual !== hashes.get(relative)) throw new Error(`Green Room trace SHA-256 mismatch: ${trace}`);
+    const trace = `${greenroomDir}/${relative}`;
+    const verified = checkedGreenroomBuffer(buffers, entries, relative);
     return {
       family: 'greenroom-sonnet',
       profile: 'proof_skipper',
       condition: run === 'P1' || run === 'P2' ? 'bare' : 'standing_book',
       run,
       trace,
-      traceSha256: actual,
+      traceSha256: verified.sha256,
       source: trace,
-      buffer,
+      buffer: verified.buffer,
     };
   });
 }
@@ -490,4 +540,4 @@ function main() {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
 
-export { buildAudit, renderMarkdown };
+export { buildAudit, greenroomSources, renderMarkdown };
