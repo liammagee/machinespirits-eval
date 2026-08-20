@@ -79,6 +79,63 @@ const RESISTANCE_ACTION_REGISTER_BASELINE_V2_CRITICAL_SOURCE_CLOSURE = [
   'package.json',
   'package-lock.json',
 ];
+const RESISTANCE_ACTION_REGISTER_STOPPED_V2_REQUEST = {
+  request: {
+    path: 'config/tutor-stub-resistance-action-register-baseline-study-go-request.v2.json',
+    sha256: 'b28f62240e82301fed77f4690b59eaf6df2fac3c7e4812f053071efb89135c1c',
+  },
+  disposition: 'consumed_stopped_wholly_excluded',
+  partialBatch: {
+    batch: 'A',
+    artifactRoot: '.tutor-stub-auto-eval/resistance-action-register-baseline-v2-live-2026-08-20-a',
+    artifactRootManifestSha256: '6eec7d2edc8664833d56cf8a66aa6bf6a272ec04981d18fb3550b02ad6a6ea10',
+    privateArchiveManifestSha256: 'd3c15b61a5bfffbc6fa9faa344e03776ea110c068f72157d4466c53930f5248b',
+    reservations: 31,
+    completed: 28,
+    interrupted: 3,
+    providerErrors: 0,
+    traces: [
+      {
+        jobId: 'frame_refuser-v4-r1-t1__matched_plain_A',
+        path: 'jobs/frame_refuser-v4-r1-t1__matched_plain_A/traces/2026-08-20T08-54-55-423Z.jsonl',
+        sha256: 'd3bda6c8439ba8a918ce1c8ae473892186469ebd43c29aa5d7811e736875b81d',
+      },
+      {
+        jobId: 'frame_refuser-v4-r1-t1__matched_warm_A',
+        path: 'jobs/frame_refuser-v4-r1-t1__matched_warm_A/traces/2026-08-20T08-54-55-418Z.jsonl',
+        sha256: '72725d86b767b9e330356f20481ef3a9b6971d697835591d7c40275bc1bba258',
+      },
+      {
+        jobId: 'frame_refuser-v4-r2-t1__matched_plain_A',
+        path: 'jobs/frame_refuser-v4-r2-t1__matched_plain_A/traces/2026-08-20T08-54-55-418Z.jsonl',
+        sha256: '0eb633edef1d67d29dd2c18e2f54db993151982e03b140fff3e263854d866822',
+      },
+      {
+        jobId: 'frame_refuser-v4-r2-t1__matched_warm_A',
+        path: 'jobs/frame_refuser-v4-r2-t1__matched_warm_A/traces/2026-08-20T08-55-34-985Z.jsonl',
+        sha256: 'e92c93e5cf6410bb54561bee9ed8a9e58cf5dded3cb0d6b00b82371337b3aa3c',
+      },
+      {
+        jobId: 'frame_refuser-v4-r3-t1__matched_plain_A',
+        path: 'jobs/frame_refuser-v4-r3-t1__matched_plain_A/traces/2026-08-20T08-55-37-146Z.jsonl',
+        sha256: '1a2fab9e2a1a32bbba2a0a481a5c4df9c6804824a10b404c30803bfb22590b4d',
+      },
+      {
+        jobId: 'frame_refuser-v4-r3-t1__matched_warm_A',
+        path: 'jobs/frame_refuser-v4-r3-t1__matched_warm_A/traces/2026-08-20T08-55-46-896Z.jsonl',
+        sha256: '769756881993f7f3115c794531c68187dc72d1a559a3dd12e4fa7df1aad44aea',
+      },
+    ],
+  },
+  batchBStarted: false,
+  combinedAnalyzerRan: false,
+  combinedResultProduced: false,
+  sealProduced: false,
+  recoveryPermitted: false,
+  reusePermitted: false,
+  poolingPermitted: false,
+  outcomeSelectionPermitted: false,
+};
 const REQUEST_PATH = path.join(ROOT, 'config', 'tutor-stub-resistant-profile-discrimination-study-go-request.v1.json');
 const REPLACEMENT_REQUEST_PATH = path.join(
   ROOT,
@@ -117,6 +174,7 @@ function protectedPackagerRepoPaths(request) {
     request.bindings.routeCanary.resultPath,
     request.bindings.routeCanary.authorizationConsumptionPath,
     request.opportunityGate?.historicalOpportunityV1?.requestPath,
+    request.actionRegisterBaseline?.priorStoppedExecution?.request?.path,
   ].filter(Boolean);
 }
 
@@ -768,6 +826,11 @@ test('future V2 action/register HOLD requests bind both live batches and one com
   t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
   const digest = (filePath) => crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
   const commandDigest = (command) => crypto.createHash('sha256').update(JSON.stringify(command)).digest('hex');
+  assert.equal(
+    digest(path.join(ROOT, RESISTANCE_ACTION_REGISTER_STOPPED_V2_REQUEST.request.path)),
+    RESISTANCE_ACTION_REGISTER_STOPPED_V2_REQUEST.request.sha256,
+    'the consumed stopped request must retain its exact historical bytes',
+  );
   const launchCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const launchTree = execFileSync('git', ['show', '-s', '--format=%T', launchCommit], {
     cwd: ROOT,
@@ -819,6 +882,17 @@ test('future V2 action/register HOLD requests bind both live batches and one com
     combinedReport,
     '--json',
   ];
+  const recovery = [batchA, batchB].map((destination) => [
+    'node',
+    'scripts/run-tutor-stub-resistance-action-register-crossed.js',
+    '--recover-batch',
+    '--destination',
+    destination,
+    '--expected-source-commit',
+    launchCommit,
+    '--parallelism',
+    '3',
+  ]);
   const request = {
     schema: 'machinespirits.tutor-stub.resistant-profile-discrimination-study-go-request.v1',
     status: 'HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL',
@@ -910,10 +984,11 @@ test('future V2 action/register HOLD requests bind both live batches and one com
       commands: {
         source: 'commands',
         liveArraySha256: commandDigest(live),
+        recoveryArraySha256: commandDigest(recovery),
         analyzeArraySha256: commandDigest(analyze),
       },
     },
-    commands: { live, analyze },
+    commands: { live, recovery, analyze },
     payload: { humanSubjectData: false, privateArchiveData: false, trainingReuseStatus: 'not_applicable' },
     destination: {
       batchA: { artifactRoot: batchA, createOnce: true, mustNotExistBeforeLaunch: true },
@@ -966,6 +1041,110 @@ test('future V2 action/register HOLD requests bind both live batches and one com
     () => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }),
     /frame-refuser-opportunity-critical-source-closure/u,
   );
+
+  const successor = structuredClone(request);
+  successor.actionRegisterBaseline.requestRevision = 3;
+  successor.actionRegisterBaseline.priorStoppedExecution = structuredClone(
+    RESISTANCE_ACTION_REGISTER_STOPPED_V2_REQUEST,
+  );
+  successor.budget.programmeLedgerBefore = 76;
+  successor.budget.programmeLedgerAfterMaximum = 544;
+  const successorBatchA = `${batchA}-successor`;
+  const successorBatchB = `${batchB}-successor`;
+  const successorCombinedReport = `${combinedReport}.successor.json`;
+  successor.destination.batchA.artifactRoot = successorBatchA;
+  successor.destination.batchB.artifactRoot = successorBatchB;
+  successor.destination.combinedReport = successorCombinedReport;
+  successor.commands.live[0][successor.commands.live[0].indexOf('--destination') + 1] = successorBatchA;
+  successor.commands.live[1][successor.commands.live[1].indexOf('--destination') + 1] = successorBatchB;
+  successor.commands.recovery[0][successor.commands.recovery[0].indexOf('--destination') + 1] = successorBatchA;
+  successor.commands.recovery[1][successor.commands.recovery[1].indexOf('--destination') + 1] = successorBatchB;
+  successor.commands.analyze[successor.commands.analyze.indexOf('--batch-a') + 1] = successorBatchA;
+  successor.commands.analyze[successor.commands.analyze.indexOf('--batch-b') + 1] = successorBatchB;
+  successor.commands.analyze[successor.commands.analyze.indexOf('--out') + 1] = successorCombinedReport;
+  successor.bindings.commands.liveArraySha256 = commandDigest(successor.commands.live);
+  successor.bindings.commands.recoveryArraySha256 = commandDigest(successor.commands.recovery);
+  successor.bindings.commands.analyzeArraySha256 = commandDigest(successor.commands.analyze);
+  const successorPath = path.join(temporary, 'successor-request.json');
+  fs.writeFileSync(successorPath, `${JSON.stringify(successor, null, 2)}\n`);
+  const successorReport = validateTutorStubResistantProfileStudyGoRequest({ requestPath: successorPath });
+  assert.equal(successorReport.packetValid, true);
+  assert.equal(successorReport.budget.programmeLedgerBefore, 76);
+  assert.equal(successorReport.budget.programmeLedgerAfterMaximum, 544);
+
+  const successorTemplatePath = path.join(temporary, 'action-register-successor-template.json');
+  fs.writeFileSync(successorTemplatePath, actionRegisterBaselineTemplateText(successor));
+  const successorProtectedRoot = createProtectedPackagerCheckout(t, successor, 'action-register-v2-successor');
+  const successorOutput = `config/.test-action-register-successor-go-request-${process.pid}.json`;
+  const successorPackaged = spawnSync(
+    process.execPath,
+    [
+      GO_REQUEST_PACKAGE_SCRIPT,
+      '--template',
+      successorTemplatePath,
+      '--launch-commit',
+      launchCommit,
+      '--out',
+      successorOutput,
+      '--json',
+    ],
+    {
+      cwd: successorProtectedRoot,
+      encoding: 'utf8',
+      env: { ...process.env, GIT_NO_LAZY_FETCH: '1', NODE_PATH: '', OPENROUTER_API_KEY: 'must-not-be-used' },
+    },
+  );
+  assert.equal(successorPackaged.status, 0, successorPackaged.stderr);
+  const successorPackageReport = JSON.parse(successorPackaged.stdout);
+  assert.equal(successorPackageReport.repositoryBindingFiles, 7);
+  assert.equal(successorPackageReport.isolatedReplay.nodeModulesPresent, false);
+  assert.equal(successorPackageReport.effects.modelCalls, 0);
+  assert.deepEqual(
+    fs.readFileSync(path.join(successorProtectedRoot, successorOutput)),
+    fs.readFileSync(successorPath),
+    'successor packager must reproduce the exact stopped-exclusion HOLD request bytes',
+  );
+
+  for (const invalid of [
+    {
+      name: 'wrong-successor-ledger',
+      mutate(value) {
+        value.budget.programmeLedgerBefore = 45;
+      },
+      pattern: /action-register-baseline-budget-binding/u,
+    },
+    {
+      name: 'changed-stopped-trace',
+      mutate(value) {
+        value.actionRegisterBaseline.priorStoppedExecution.partialBatch.traces[0].sha256 = '0'.repeat(64);
+      },
+      pattern: /action-register-successor-stopped-exclusion-binding/u,
+    },
+    {
+      name: 'stopped-unit-reuse',
+      mutate(value) {
+        value.actionRegisterBaseline.priorStoppedExecution.reusePermitted = true;
+      },
+      pattern: /action-register-successor-stopped-exclusion-binding/u,
+    },
+    {
+      name: 'recovery-command-drift',
+      mutate(value) {
+        value.commands.recovery[0].push('--keep-going');
+        value.bindings.commands.recoveryArraySha256 = commandDigest(value.commands.recovery);
+      },
+      pattern: /action-register-baseline-recovery-commands/u,
+    },
+  ]) {
+    const invalidSuccessor = structuredClone(successor);
+    invalid.mutate(invalidSuccessor);
+    const invalidSuccessorPath = path.join(temporary, `${invalid.name}.json`);
+    fs.writeFileSync(invalidSuccessorPath, `${JSON.stringify(invalidSuccessor, null, 2)}\n`);
+    assert.throws(
+      () => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidSuccessorPath }),
+      invalid.pattern,
+    );
+  }
 });
 
 function replaceJsonFieldWithMarker(source, key, value, marker) {
@@ -1001,6 +1180,15 @@ function actionRegisterBaselineTemplateText(request) {
   }
   for (const binding of [request.bindings.registration, request.bindings.prefixBundle]) {
     source = replaceJsonFieldWithMarker(source, 'sha256', binding.sha256, goRequestFileSha256Marker(binding.path));
+  }
+  const priorStoppedRequest = request.actionRegisterBaseline?.priorStoppedExecution?.request;
+  if (priorStoppedRequest) {
+    source = replaceJsonFieldWithMarker(
+      source,
+      'sha256',
+      priorStoppedRequest.sha256,
+      goRequestFileSha256Marker(priorStoppedRequest.path),
+    );
   }
   source = replaceJsonFieldWithMarker(
     source,
@@ -1054,6 +1242,12 @@ function actionRegisterBaselineTemplateText(request) {
     'liveArraySha256',
     request.bindings.commands.liveArraySha256,
     GO_REQUEST_PACKAGE_MARKERS.liveCommandSha256,
+  );
+  source = replaceJsonFieldWithMarker(
+    source,
+    'recoveryArraySha256',
+    request.bindings.commands.recoveryArraySha256,
+    GO_REQUEST_PACKAGE_MARKERS.recoveryCommandSha256,
   );
   return replaceJsonFieldWithMarker(
     source,

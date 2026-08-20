@@ -950,3 +950,24 @@ and explicit human approval.
   human-validity, or cell-transfer claim is licensed. A successor request must
   use a new merged source and fresh create-once destinations after the narrow
   runtime repair is validated; none is prepared or authorized here.
+- 2026-08-20 — Kept successor-request preparation on HOLD after the runtime
+  repair because the source-closed GO validator at PR #726 merge
+  `6809530c422fe2beb4579eaba14f9e6c54f34a74` can validate only the original
+  `45→513/1200` ledger and does not bind the stopped partial execution. The
+  existing validator and deterministic packager now support a version-compatible
+  revision-3 successor only when it records `76→544/1200`, binds the consumed
+  request at SHA-256
+  `b28f62240e82301fed77f4690b59eaf6df2fac3c7e4812f053071efb89135c1c`,
+  binds partial-A root manifest
+  `6eec7d2edc8664833d56cf8a66aa6bf6a272ec04981d18fb3550b02ad6a6ea10`
+  and private-archive manifest
+  `d3c15b61a5bfffbc6fa9faa344e03776ea110c068f72157d4466c53930f5248b`,
+  and preserves the exact six stopped trace hashes, 31 charged reservations,
+  28 completed attempts, three interrupted attempts, zero provider errors, no
+  batch B, analyzer, result, or seal, and false recovery, reuse, pooling, and
+  outcome-selection permissions. Recovery-command arrays are now source-bound
+  and validated as exactly as the initial and combined-analysis commands. The
+  historical consumed request bytes remain unchanged. This compatibility step
+  makes zero model calls and creates no successor request; after it merges, a
+  fresh HOLD request must pin that merged source and wholly new create-once A/B
+  destinations before any launch can be considered.

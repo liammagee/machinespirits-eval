@@ -29,6 +29,7 @@ export const GO_REQUEST_PACKAGE_MARKERS = Object.freeze({
   routeAttestationBasis: `${MARKER_PREFIX}route.attestation-basis`,
   routeModelIndependentlyAttested: `${MARKER_PREFIX}route.model-independently-attested`,
   liveCommandSha256: `${MARKER_PREFIX}commands.live.sha256`,
+  recoveryCommandSha256: `${MARKER_PREFIX}commands.recovery.sha256`,
   analyzeCommandSha256: `${MARKER_PREFIX}commands.analyze.sha256`,
 });
 
@@ -243,6 +244,7 @@ function assertMaterializedStructure({
   historicalRequest,
   prefixBundle,
   liveCommandSha256,
+  recoveryCommandSha256,
   analyzeCommandSha256,
 }) {
   assertComputedValue(request.source?.launchCommit, launchCommit, 'source launch commit');
@@ -301,14 +303,30 @@ function assertMaterializedStructure({
 
   const historical = request.opportunityGate?.historicalOpportunityV1;
   if (historicalRequest) {
-    assertComputedValue(historical?.requestPath, historicalRequest.path, 'historical request path');
-    assertComputedValue(historical?.requestSha256, historicalRequest.sha256, 'historical request digest');
+    const priorRequest = request.actionRegisterBaseline?.priorStoppedExecution?.request;
+    assertComputedValue(
+      historical?.requestPath ?? priorRequest?.path,
+      historicalRequest.path,
+      'historical request path',
+    );
+    assertComputedValue(
+      historical?.requestSha256 ?? priorRequest?.sha256,
+      historicalRequest.sha256,
+      'historical request digest',
+    );
   }
   if (prefixBundle) {
     assertComputedValue(request.bindings?.prefixBundle?.path, prefixBundle.path, 'prefix bundle path');
     assertComputedValue(request.bindings?.prefixBundle?.sha256, prefixBundle.sha256, 'prefix bundle digest');
   }
   assertComputedValue(request.bindings?.commands?.liveArraySha256, liveCommandSha256, 'live command digest');
+  if (request.actionRegisterBaseline?.type === SUPPORTED_ACTION_REGISTER_BASELINE) {
+    assertComputedValue(
+      request.bindings?.commands?.recoveryArraySha256,
+      recoveryCommandSha256,
+      'recovery command digest',
+    );
+  }
   assertComputedValue(request.bindings?.commands?.analyzeArraySha256, analyzeCommandSha256, 'analyze command digest');
 }
 
@@ -398,12 +416,14 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     requireMarker(templateText, marker, value, replacements);
   }
 
-  const historicalRequestPath = template.opportunityGate?.historicalOpportunityV1?.requestPath;
+  const historicalRequestPath =
+    template.opportunityGate?.historicalOpportunityV1?.requestPath ??
+    template.actionRegisterBaseline?.priorStoppedExecution?.request?.path;
   const historicalRequest = historicalRequestPath
     ? materializeRepoFile({
         launchCommit,
         repoPath: historicalRequestPath,
-        label: 'historical opportunity request',
+        label: 'historical request',
         files,
       })
     : null;
@@ -429,8 +449,15 @@ function materializeTemplate({ templateText, template, launchCommit }) {
   }
 
   const liveCommandSha256 = sha256(JSON.stringify(template.commands?.live));
+  const recoveryCommandSha256 =
+    template.actionRegisterBaseline?.type === SUPPORTED_ACTION_REGISTER_BASELINE
+      ? sha256(JSON.stringify(template.commands?.recovery))
+      : null;
   const analyzeCommandSha256 = sha256(JSON.stringify(template.commands?.analyze));
   requireMarker(templateText, GO_REQUEST_PACKAGE_MARKERS.liveCommandSha256, liveCommandSha256, replacements);
+  if (recoveryCommandSha256) {
+    requireMarker(templateText, GO_REQUEST_PACKAGE_MARKERS.recoveryCommandSha256, recoveryCommandSha256, replacements);
+  }
   requireMarker(templateText, GO_REQUEST_PACKAGE_MARKERS.analyzeCommandSha256, analyzeCommandSha256, replacements);
 
   const requestText = replaceMarkers(templateText, replacements);
@@ -448,6 +475,7 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     historicalRequest,
     prefixBundle,
     liveCommandSha256,
+    recoveryCommandSha256,
     analyzeCommandSha256,
   });
   return {
