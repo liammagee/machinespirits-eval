@@ -18,6 +18,8 @@ import {
   buildTutorStubFrameRefuserOpportunitySyntheticCorpus,
   buildTutorStubFrameRefuserOpportunityV2PreflightPackets,
   buildTutorStubFrameRefuserOpportunityV2SyntheticCorpus,
+  buildTutorStubFrameRefuserOpportunityV3PreflightPackets,
+  buildTutorStubFrameRefuserOpportunityV3SyntheticCorpus,
   buildTutorStubResistanceAxisPreflightPackets,
   buildTutorStubResistanceAxisSyntheticCorpus,
   runTutorStubFrameRefuserOpportunityEndpointPreflight,
@@ -380,6 +382,134 @@ test('prospective v2 opportunity endpoint executes repaired semantics and typed 
     contract,
   });
   assert.equal(rejectedAudit.endpoint_status.frame_defiant_adherence_exhaustion_typed_failure, 'incomplete');
+});
+
+test('prospective v3 opportunity endpoint executes production observer, prefix, exhaustion, and budget seams', () => {
+  const contract = JSON.parse(
+    fs.readFileSync(
+      path.join(ROOT, 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v3.json'),
+      'utf8',
+    ),
+  );
+  const certificate = JSON.parse(
+    fs.readFileSync(
+      path.join(ROOT, 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v3.endpoint-go.json'),
+      'utf8',
+    ),
+  );
+  const preflight = runTutorStubFrameRefuserOpportunityEndpointPreflight(contract);
+  const endpointGo = validatePaidStudyEndpointGoCertificate({ certificate, contract, preflight });
+  assert.equal(preflight.status, 'passed');
+  assert.equal(preflight.model_calls, 0);
+  assert.equal(preflight.production_writes, 0);
+  assert.equal(endpointGo.ok, true, endpointGo.errors.join('; '));
+  assert.deepEqual(preflight.assembly_audit.endpoint_status, {
+    frame_refuser_treatment_opportunity: 'complete',
+    frame_defiant_productive_control: 'complete',
+    distinct_public_prefix_assembly: 'complete',
+    frame_defiant_adherence_exhaustion_typed_failure: 'complete',
+    frame_refuser_adherence_exhaustion_typed_failure: 'complete',
+    prospective_v3_observer_matrix: 'complete',
+    prospective_v3_repair_budget_readiness: 'complete',
+  });
+
+  const cases = buildTutorStubFrameRefuserOpportunityV3SyntheticCorpus();
+  const assembled = assembleTutorStubFrameRefuserOpportunityPreflight({
+    packets: buildTutorStubFrameRefuserOpportunityV3PreflightPackets(cases),
+    contract,
+  });
+  assert.equal(assembled.report.pass, true);
+  assert.equal(
+    assembled.report.registration.observationSemantics,
+    RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV3,
+  );
+  assert.deepEqual(
+    assembled.report.gate.target.map((row) => row.eligiblePrefix.triggerTurn),
+    [2, 1, 1],
+  );
+  assert.equal(assembled.report.gate.distinctPrefixes.observed, 3);
+  assert.deepEqual(
+    assembled.report.gate.control.map((row) => ({
+      productiveTurn: row.productiveTurn,
+      participationKinds: row.participationKinds,
+      refusalLeakage: row.refusalLeakage,
+    })),
+    [
+      { productiveTurn: 1, participationKinds: ['bounded_local_test'], refusalLeakage: false },
+      { productiveTurn: 2, participationKinds: ['explicit_reframe'], refusalLeakage: false },
+      { productiveTurn: 1, participationKinds: ['bounded_local_test'], refusalLeakage: false },
+    ],
+  );
+  assert.equal(cases[0].observerMatrixAudit.pass, true);
+  assert.equal(cases[0].observerMatrixAudit.cases, 30);
+  assert.equal(cases[0].observerMatrixAudit.observedV2FalseNegativeDrafts, 15);
+  assert.deepEqual(cases[0].repairBudgetAudit, {
+    turns: 8,
+    modelCallBudget: 48,
+    baseCalls: 25,
+    maxFullRepairsPer8Turns: 1,
+    callsPerFullRepair: 2,
+    permittedRepairCalls: 2,
+    requiredTutorGuardReserve: 16,
+    worstCaseRequiredCalls: 43,
+    headroom: 5,
+    ready: true,
+  });
+  assert.equal(
+    assembled.adherence_exhaustion_audit.every(
+      (row) =>
+        row.applicable === true &&
+        row.classification.repairAttempts === 1 &&
+        row.classification.disposition === 'technical_failure_no_public_candidate' &&
+        row.classification.publishPublicCandidate === false,
+    ),
+    true,
+  );
+  assert.deepEqual([...new Set(assembled.adherence_exhaustion_audit.map((row) => row.classification.code))].sort(), [
+    'TUTOR_STUB_FRAME_DEFIANT_ADHERENCE_EXHAUSTED',
+    'TUTOR_STUB_FRAME_REFUSER_ADHERENCE_EXHAUSTED',
+  ]);
+
+  const registration = JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'config/tutor-stub-frame-refuser-opportunity-registration.v3.json'), 'utf8'),
+  );
+  assert.throws(
+    () =>
+      frameRefuserOpportunityObservationSemantics({
+        ...registration,
+        measurement: { ...registration.measurement, productiveParticipationPrecedesWithholding: false },
+      }),
+    /unsupported frame-refuser opportunity semantics/u,
+  );
+
+  cases.find((row) => row.profile === 'frame_defiant').adherenceExhaustionAudit.classification.profile = 'wrong';
+  const missingTypedAudit = assembleTutorStubFrameRefuserOpportunityPreflight({
+    packets: buildTutorStubFrameRefuserOpportunityV3PreflightPackets(cases),
+    contract,
+  });
+  assert.equal(missingTypedAudit.endpoint_status.frame_defiant_adherence_exhaustion_typed_failure, 'incomplete');
+});
+
+test('frozen v1 and v2 opportunity artifacts retain their exact byte digests', () => {
+  const expected = {
+    'config/tutor-stub-frame-refuser-opportunity-registration.v1.json':
+      '0e00b9d4e23c5e6d737646c375375cac8ca295b4a089a7a35b868af7ab796cc4',
+    'config/tutor-stub-frame-refuser-opportunity-registration.v2.json':
+      'f99cc889b013a28a6adff5fe5e31ec17b0ea44059c5f2eb6736674b2147f3e1b',
+    'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.json':
+      '491818181863ccbb011fbaa6639eee0dbcb6197adc08789ad293a9490e907051',
+    'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.json':
+      '28560adbc08af33ac14307ea796fbe3dcf5777889cc59b0859268c1abf2c8779',
+  };
+  for (const [relativePath, digest] of Object.entries(expected)) {
+    assert.equal(
+      crypto
+        .createHash('sha256')
+        .update(fs.readFileSync(path.join(ROOT, relativePath)))
+        .digest('hex'),
+      digest,
+    );
+  }
 });
 
 test('frozen v1 opportunity replay dispatch preserves the six-trace legacy classification', () => {

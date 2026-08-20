@@ -239,6 +239,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   if (isFrameRefuserOpportunity) {
     const contract = readJson(rootPath(endpoint.contractPath));
     const certificate = readJson(rootPath(endpoint.certificatePath));
+    const endpointRegistration = readJson(rootPath(request.bindings.registration.path));
     assertion(
       checks,
       'opportunity-endpoint-contract-binding',
@@ -262,6 +263,24 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         certificate.preflight_sha256 === endpoint.preflightSha256,
       'the six-case endpoint certificate and previously executed zero-call preflight remain pinned',
     );
+    if (endpointRegistration.version === 3) {
+      const endpointIds = contract.endpoints?.map((row) => row.id) || [];
+      assertion(
+        checks,
+        'frame-refuser-opportunity-v3-endpoint-readiness-binding',
+        contract.runner?.packet_builder ===
+          'services/tutorStubResistanceAxisDiscriminationPreflight.js#buildTutorStubFrameRefuserOpportunityV3PreflightPackets' &&
+          contract.runner?.emitted_event_fields?.includes('observerMatrixAudit') &&
+          contract.runner?.emitted_event_fields?.includes('repairBudgetAudit') &&
+          [
+            'frame_defiant_adherence_exhaustion_typed_failure',
+            'frame_refuser_adherence_exhaustion_typed_failure',
+            'prospective_v3_observer_matrix',
+            'prospective_v3_repair_budget_readiness',
+          ].every((id) => endpointIds.includes(id)),
+        'the v3 endpoint binds both typed failures, the production observer matrix, and deterministic repair readiness',
+      );
+    }
   } else {
     validateFileBinding(checks, 'readiness-hold-binding', request.bindings.liveReadinessHold);
     hold = readJson(rootPath(request.bindings.liveReadinessHold.path));
@@ -478,7 +497,13 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         registered.measurement.controlObservation === 'frame_jurisdiction_dispute_with_content_bearing_true') ||
         (registrationVersion === 2 &&
           registered.measurement.controlObservation ===
-            'frame_jurisdiction_dispute_with_contract_licensed_participation'),
+            'frame_jurisdiction_dispute_with_contract_licensed_participation') ||
+        (registrationVersion === 3 &&
+          registered.measurement.observationSemantics === 'prospective_v3' &&
+          registered.measurement.controlObservation ===
+            'frame_jurisdiction_dispute_with_contract_licensed_participation' &&
+          registered.measurement.refusalRule === 'explicit_withholding_without_contract_licensed_participation' &&
+          registered.measurement.productiveParticipationPrecedesWithholding === true),
       `opportunity registration version ${registrationVersion} keeps its declared observer semantics`,
     );
     assertion(
@@ -537,18 +562,46 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
           (request.measurement.refusalRule === registered.measurement.refusalRule &&
             Array.isArray(request.measurement.controlParticipationForms) &&
             request.measurement.controlParticipationForms.join(',') ===
-              registered.measurement.controlParticipationForms.join(','))) &&
+              registered.measurement.controlParticipationForms.join(',') &&
+            (registrationVersion !== 3 ||
+              (request.measurement.observationSemantics === registered.measurement.observationSemantics &&
+                request.measurement.jurisdictionRule === registered.measurement.jurisdictionRule &&
+                request.measurement.productiveParticipationPrecedesWithholding ===
+                  registered.measurement.productiveParticipationPrecedesWithholding)))) &&
         registered.gates.targetProfile === 'frame_refuser' &&
         registered.gates.controlProfile === 'frame_defiant' &&
         registered.gates.mustShowByTurn === 2 &&
         registered.gates.requiredDistinctTargetPrefixes === 3,
       'request-level target, control, refusal, trace-selection, and gate semantics match the selected registration',
     );
+    if (registrationVersion === 3) {
+      assertion(
+        checks,
+        'frame-refuser-opportunity-v3-repair-admission-binding',
+        JSON.stringify(canonicalJson(request.repairAdmission)) ===
+          JSON.stringify(canonicalJson(registered.repairAdmission)) &&
+          request.repairAdmission.maxFullRepairsPer8Turns === 1 &&
+          request.repairAdmission.modelCallBudgetPerDialogue === 48 &&
+          request.repairAdmission.baseCalls === 25 &&
+          request.repairAdmission.callsPerFullRepair === 2 &&
+          request.repairAdmission.permittedRepairCalls === 2 &&
+          request.repairAdmission.requiredTutorGuardReserve === 16 &&
+          request.repairAdmission.worstCaseRequiredCalls === 43 &&
+          request.repairAdmission.headroom === 5 &&
+          request.repairAdmission.failBeforeUnadmittedRepairCall === true &&
+          request.repairAdmission.invalidCandidateMayBePublished === false,
+        'the request exactly binds the registered one-repair, 43-of-48 fail-before-call envelope',
+      );
+    }
+    const liveCommandOffset = registrationVersion === 3 ? 2 : 0;
     assertion(
       checks,
       'frame-refuser-opportunity-live-command-shape',
-      liveCommand[0] === 'node' &&
-        liveCommand[1] === 'scripts/run-tutor-stub-qa-matrix.js' &&
+      (registrationVersion !== 3 ||
+        (liveCommand[0] === 'env' &&
+          liveCommand[1] === 'TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS=prospective_v3')) &&
+        liveCommand[liveCommandOffset] === 'node' &&
+        liveCommand[liveCommandOffset + 1] === 'scripts/run-tutor-stub-qa-matrix.js' &&
         commandArg(liveCommand, '--profiles') === expectedProfiles &&
         commandArg(liveCommand, '--policies') === 'field' &&
         commandArg(liveCommand, '--runs') === '3' &&

@@ -26,16 +26,97 @@ import {
 } from './tutorStubGuardedLearnerMoves.js';
 import {
   FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE,
+  FRAME_REFUSER_ADHERENCE_EXHAUSTED_CODE,
+  RESISTANT_LEARNER_OBSERVATION_SEMANTICS,
   classifyFrameDefiantAdherenceExhaustion,
+  classifyFrameRefuserAdherenceExhaustion,
   resistantLearnerObservationMarkers,
 } from './resistantLearnerObservation.js';
 
-export { FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE, classifyFrameDefiantAdherenceExhaustion };
+export {
+  FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE,
+  FRAME_REFUSER_ADHERENCE_EXHAUSTED_CODE,
+  classifyFrameDefiantAdherenceExhaustion,
+  classifyFrameRefuserAdherenceExhaustion,
+};
+
+export const TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV =
+  'TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS';
+
+const FRAME_OPPORTUNITY_V3_TURNS = 8;
+const FRAME_OPPORTUNITY_V3_MODEL_CALL_BUDGET = 48;
+const FRAME_OPPORTUNITY_V3_BASE_CALLS = 1 + FRAME_OPPORTUNITY_V3_TURNS * 3;
+const FRAME_OPPORTUNITY_V3_CALLS_PER_FULL_REPAIR = 2;
+const FRAME_OPPORTUNITY_V3_TUTOR_GUARD_RESERVE = FRAME_OPPORTUNITY_V3_TURNS * 2;
+
+export function buildTutorStubFrameOpportunityV3RepairBudgetDiagnostic({
+  maxFullRepairsPer8Turns = 1,
+  modelCallBudget = FRAME_OPPORTUNITY_V3_MODEL_CALL_BUDGET,
+} = {}) {
+  const permittedRepairCalls = maxFullRepairsPer8Turns * FRAME_OPPORTUNITY_V3_CALLS_PER_FULL_REPAIR;
+  const worstCaseRequiredCalls =
+    FRAME_OPPORTUNITY_V3_BASE_CALLS + permittedRepairCalls + FRAME_OPPORTUNITY_V3_TUTOR_GUARD_RESERVE;
+  return {
+    turns: FRAME_OPPORTUNITY_V3_TURNS,
+    modelCallBudget,
+    baseCalls: FRAME_OPPORTUNITY_V3_BASE_CALLS,
+    maxFullRepairsPer8Turns,
+    callsPerFullRepair: FRAME_OPPORTUNITY_V3_CALLS_PER_FULL_REPAIR,
+    permittedRepairCalls,
+    requiredTutorGuardReserve: FRAME_OPPORTUNITY_V3_TUTOR_GUARD_RESERVE,
+    worstCaseRequiredCalls,
+    headroom: modelCallBudget - worstCaseRequiredCalls,
+    ready: maxFullRepairsPer8Turns === 1 && worstCaseRequiredCalls <= modelCallBudget,
+  };
+}
+
+export function admitTutorStubFrameOpportunityV3FullRepair({ state, profile, turnNumber, contract } = {}) {
+  if (!['frame_refuser', 'frame_defiant'].includes(profile)) {
+    return { applicable: false, admitted: true, reason: 'profile_not_in_frame_opportunity_v3' };
+  }
+  const maxFullRepairsPer8Turns = Number(contract?.repairModel?.maxFullRepairsPer8Turns);
+  const diagnostic = buildTutorStubFrameOpportunityV3RepairBudgetDiagnostic({ maxFullRepairsPer8Turns });
+  if (!diagnostic.ready) {
+    return { applicable: true, admitted: false, reason: 'registered_repair_budget_not_ready', diagnostic };
+  }
+  const current = state?.frameOpportunityV3RepairAdmission || { used: 0, history: [] };
+  const admitted = current.used < maxFullRepairsPer8Turns;
+  const result = {
+    applicable: true,
+    admitted,
+    profile,
+    turn: turnNumber,
+    usedBefore: current.used,
+    usedAfter: admitted ? current.used + 1 : current.used,
+    reason: admitted ? 'within_cumulative_repair_envelope' : 'cumulative_repair_envelope_exhausted',
+    diagnostic,
+  };
+  if (state) {
+    state.frameOpportunityV3RepairAdmission = {
+      used: result.usedAfter,
+      history: [...current.history, result],
+    };
+  }
+  return result;
+}
 
 export function throwFrameDefiantAdherenceExhaustion({ profile, repairAttempts }) {
   const exhaustion = classifyFrameDefiantAdherenceExhaustion({ profile, repairAttempts });
   const error = new Error(
     `frame_defiant adherence exhausted after ${repairAttempts} repair attempts; refusing to publish an invalid control turn`,
+  );
+  error.code = exhaustion.code;
+  error.profile = exhaustion.profile;
+  error.repairAttempts = exhaustion.repairAttempts;
+  error.disposition = exhaustion.disposition;
+  error.publishPublicCandidate = exhaustion.publishPublicCandidate;
+  throw error;
+}
+
+export function throwFrameRefuserAdherenceExhaustion({ profile, repairAttempts }) {
+  const exhaustion = classifyFrameRefuserAdherenceExhaustion({ profile, repairAttempts });
+  const error = new Error(
+    `frame_refuser adherence exhausted after ${repairAttempts} repair attempts; refusing to publish an invalid target turn`,
   );
   error.code = exhaustion.code;
   error.profile = exhaustion.profile;
@@ -67,6 +148,17 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
   learnerProfilePrompt,
   negativeFloorRegisters,
 }) {
+  const requestedObservationSemantics = String(
+    env[TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV] || '',
+  ).trim();
+  if (
+    requestedObservationSemantics &&
+    !Object.values(RESISTANT_LEARNER_OBSERVATION_SEMANTICS).includes(requestedObservationSemantics)
+  ) {
+    throw new Error(`unsupported automated-learner observation semantics: ${requestedObservationSemantics}`);
+  }
+  const observationSemantics = requestedObservationSemantics || RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2;
+
   function cleanAutomatedLearnerReply(text) {
     const cleaned = String(text || '')
       .replace(/^```(?:text|markdown)?/iu, '')
@@ -143,6 +235,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       learnerText: turn?.learner,
       classification: turn?.classification,
       tutorText,
+      semantics: observationSemantics,
     });
     const fields = {
       requestType: classifier.request_type,
@@ -522,7 +615,9 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       return { generated, precomputedRaw: null, repaired: false, passed: null };
     }
 
-    const maxRepairs = 2;
+    const prospectiveV3 = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV3;
+    const frameOpportunityV3Profile = prospectiveV3 && ['frame_refuser', 'frame_defiant'].includes(runtime.profileId);
+    const maxRepairs = frameOpportunityV3Profile ? 1 : 2;
     let candidate = generated;
     let raw = null;
     let passed = false;
@@ -538,6 +633,21 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
       passed = automatedLearnerDraftMatchesRuntime({ text: candidate.text, raw, state, runtime });
       if (passed || repairs === maxRepairs) break;
+      if (frameOpportunityV3Profile) {
+        const admission = admitTutorStubFrameOpportunityV3FullRepair({
+          state,
+          profile: runtime.profileId,
+          turnNumber,
+          contract: runtime.contract,
+        });
+        appendTraceEvent(state.trace, {
+          type: 'auto_learner_profile_repair_admission',
+          turn: turnNumber,
+          profile: runtime.profileId,
+          ...admission,
+        });
+        if (!admission.admitted) break;
+      }
       appendTraceEvent(state.trace, {
         type: 'auto_learner_profile_repair_requested',
         turn: turnNumber,
@@ -569,11 +679,16 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       repaired: repairs > 0,
       repairAttempts: repairs,
     });
-    if (runtime.profileId === 'frame_defiant' && !passed) {
-      const exhaustion = classifyFrameDefiantAdherenceExhaustion({
-        profile: runtime.profileId,
-        repairAttempts: repairs,
-      });
+    const typedExhaustionRequired =
+      runtime.profileId === 'frame_defiant' || (prospectiveV3 && runtime.profileId === 'frame_refuser');
+    if (typedExhaustionRequired && !passed) {
+      const repairAttempts = frameOpportunityV3Profile
+        ? Math.max(repairs, Number(state?.frameOpportunityV3RepairAdmission?.used || 0))
+        : repairs;
+      const exhaustion =
+        runtime.profileId === 'frame_defiant'
+          ? classifyFrameDefiantAdherenceExhaustion({ profile: runtime.profileId, repairAttempts })
+          : classifyFrameRefuserAdherenceExhaustion({ profile: runtime.profileId, repairAttempts });
       appendTraceEvent(state.trace, {
         type: 'auto_learner_profile_adherence_exhausted',
         turn: turnNumber,
@@ -581,7 +696,12 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
         repairAttempts: exhaustion.repairAttempts,
         disposition: exhaustion.disposition,
       });
-      throwFrameDefiantAdherenceExhaustion({ profile: runtime.profileId, repairAttempts: repairs });
+      if (runtime.profileId === 'frame_defiant') {
+        throwFrameDefiantAdherenceExhaustion({ profile: runtime.profileId, repairAttempts });
+      }
+      if (prospectiveV3) {
+        throwFrameRefuserAdherenceExhaustion({ profile: runtime.profileId, repairAttempts });
+      }
     }
     return { generated: candidate, precomputedRaw: raw, repaired: repairs > 0, passed };
   }

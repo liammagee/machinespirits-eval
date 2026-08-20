@@ -64,6 +64,27 @@ const FRAME_REFUSER_V2_REQUEST_PATH = path.join(
 );
 const GO_REQUEST_PACKAGE_SCRIPT = 'scripts/package-tutor-stub-resistant-profile-study-go-request.js';
 
+function createProtectedPackagerCheckout(t, commit, label) {
+  const checkout = fs.mkdtempSync(path.join(os.tmpdir(), `go-request-packager-${label}-`));
+  const gitEnv = { ...process.env, GIT_LFS_SKIP_SMUDGE: '1' };
+  const clone = spawnSync('git', ['clone', '--quiet', '--shared', '--no-checkout', ROOT, checkout], {
+    encoding: 'utf8',
+    env: gitEnv,
+  });
+  assert.equal(clone.status, 0, clone.stderr);
+  const detached = spawnSync('git', ['checkout', '--quiet', '--detach', commit], {
+    cwd: checkout,
+    encoding: 'utf8',
+    env: gitEnv,
+  });
+  assert.equal(detached.status, 0, detached.stderr);
+  const packagerPath = path.join(checkout, GO_REQUEST_PACKAGE_SCRIPT);
+  fs.mkdirSync(path.dirname(packagerPath), { recursive: true });
+  fs.copyFileSync(path.join(ROOT, GO_REQUEST_PACKAGE_SCRIPT), packagerPath);
+  t.after(() => fs.rmSync(checkout, { recursive: true, force: true }));
+  return checkout;
+}
+
 test('approved study request remains bound to its launch source and fails closed after source drift', () => {
   const requestBytes = fs.readFileSync(REQUEST_PATH);
   const request = JSON.parse(requestBytes.toString('utf8'));
@@ -250,7 +271,25 @@ test('consumed axis heldout request remains frozen and fails closed after curren
   assert.match(result.stderr, /source-closure-scripts\/analyze-tutor-stub-resistance-axis-calibration\.js/u);
 });
 
-test('frame-refuser opportunity requests validate historical v1 and prospective v2 without a new model call', (t) => {
+test('consumed frame-refuser v1 and v2 requests retain their exact approval digests', () => {
+  const expected = {
+    'config/tutor-stub-frame-refuser-opportunity-study-go-request.v1.json':
+      'ca832a863764748dde496166ee2f9e7793cb97a582d22564c085bacece005b84',
+    'config/tutor-stub-frame-refuser-opportunity-study-go-request.v2.json':
+      '2c77c131c2803e4af37eea3c8cbfb38e2ba423d645ab98739d661c5778c22c04',
+  };
+  for (const [relativePath, digest] of Object.entries(expected)) {
+    assert.equal(
+      crypto
+        .createHash('sha256')
+        .update(fs.readFileSync(path.join(ROOT, relativePath)))
+        .digest('hex'),
+      digest,
+    );
+  }
+});
+
+test('frame-refuser opportunity requests validate historical v1 and prospective v2/v3 without a new model call', (t) => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'frame-refuser-opportunity-go-'));
   t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
   const digest = (filePath) => crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
@@ -275,6 +314,13 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
       endpointPath: 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.json',
       certificatePath: 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.endpoint-go.json',
     },
+    {
+      version: 'v3',
+      studyId: 'tutor-stub-frame-refuser-opportunity-v3',
+      registrationPath: 'config/tutor-stub-frame-refuser-opportunity-registration.v3.json',
+      endpointPath: 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v3.json',
+      certificatePath: 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v3.endpoint-go.json',
+    },
   ];
   for (const fixture of fixtures) {
     const registrationPath = fixture.registrationPath;
@@ -284,6 +330,7 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
     const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, certificatePath), 'utf8'));
     const artifactRoot = `.test-tmp/frame-refuser-opportunity-request-test-${fixture.version}-${process.pid}`;
     const live = [
+      ...(fixture.version === 'v3' ? ['env', 'TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS=prospective_v3'] : []),
       'node',
       'scripts/run-tutor-stub-qa-matrix.js',
       '--policies',
@@ -379,10 +426,18 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
         requiredDistinctTargetPrefixes: 3,
         targetObservation: registration.measurement.targetObservation,
         controlObservation: registration.measurement.controlObservation,
-        ...(fixture.version === 'v2'
+        ...(fixture.version === 'v2' || fixture.version === 'v3'
           ? {
               controlParticipationForms: registration.measurement.controlParticipationForms,
               refusalRule: registration.measurement.refusalRule,
+            }
+          : {}),
+        ...(fixture.version === 'v3'
+          ? {
+              observationSemantics: registration.measurement.observationSemantics,
+              jurisdictionRule: registration.measurement.jurisdictionRule,
+              productiveParticipationPrecedesWithholding:
+                registration.measurement.productiveParticipationPrecedesWithholding,
             }
           : {}),
         analysisTraceSelection: 'exact_profile_trace_files_only',
@@ -420,6 +475,7 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
         },
       },
       commands: { live, analyze },
+      ...(fixture.version === 'v3' ? { repairAdmission: registration.repairAdmission } : {}),
       design: {
         profiles: ['frame_refuser', 'frame_defiant'],
         dialogues: 6,
@@ -498,7 +554,7 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
         pattern: /frame-refuser-opportunity-measurement-binding/u,
       },
     ];
-    if (fixture.version === 'v2') {
+    if (fixture.version === 'v2' || fixture.version === 'v3') {
       invalidRequests.push(
         {
           name: 'mismatched-refusal-rule',
@@ -513,6 +569,53 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
             value.measurement.controlParticipationForms = ['content_bearing_contribution'];
           },
           pattern: /frame-refuser-opportunity-measurement-binding/u,
+        },
+      );
+    }
+    if (fixture.version === 'v3') {
+      invalidRequests.push(
+        {
+          name: 'mismatched-observation-semantics',
+          mutate(value) {
+            value.measurement.observationSemantics = 'prospective_v2';
+          },
+          pattern: /frame-refuser-opportunity-measurement-binding/u,
+        },
+        {
+          name: 'mismatched-jurisdiction-rule',
+          mutate(value) {
+            value.measurement.jurisdictionRule = 'unregistered_rule';
+          },
+          pattern: /frame-refuser-opportunity-measurement-binding/u,
+        },
+        {
+          name: 'disabled-productive-precedence',
+          mutate(value) {
+            value.measurement.productiveParticipationPrecedesWithholding = false;
+          },
+          pattern: /frame-refuser-opportunity-measurement-binding/u,
+        },
+        {
+          name: 'expanded-repair-cap',
+          mutate(value) {
+            value.repairAdmission.maxFullRepairsPer8Turns = 2;
+          },
+          pattern: /frame-refuser-opportunity-v3-repair-admission-binding/u,
+        },
+        {
+          name: 'invalid-candidate-publication',
+          mutate(value) {
+            value.repairAdmission.invalidCandidateMayBePublished = true;
+          },
+          pattern: /frame-refuser-opportunity-v3-repair-admission-binding/u,
+        },
+        {
+          name: 'missing-runtime-semantics-binding',
+          mutate(value) {
+            value.commands.live = value.commands.live.slice(2);
+            value.bindings.commands.liveArraySha256 = commandDigest(value.commands.live);
+          },
+          pattern: /frame-refuser-opportunity-live-command-shape/u,
         },
       );
     }
@@ -640,15 +743,14 @@ function frameRefuserV2TemplateText() {
 test('GO request packaging materializes the approved request bytes deterministically without granting authority', (t) => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'go-request-package-'));
   const templatePath = path.join(temporary, 'authored-hold-template.json');
-  const first = path.join(ROOT, 'config', `.test-packaged-go-request-${process.pid}-1.json`);
-  const second = path.join(ROOT, 'config', `.test-packaged-go-request-${process.pid}-2.json`);
-  t.after(() => {
-    fs.rmSync(temporary, { recursive: true, force: true });
-    fs.rmSync(first, { force: true });
-    fs.rmSync(second, { force: true });
-  });
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
   fs.writeFileSync(templatePath, frameRefuserV2TemplateText());
   const request = JSON.parse(fs.readFileSync(FRAME_REFUSER_V2_REQUEST_PATH, 'utf8'));
+  const protectedRoot = createProtectedPackagerCheckout(t, request.source.launchCommit, 'historical');
+  const firstOutput = `config/.test-packaged-go-request-${process.pid}-1.json`;
+  const secondOutput = `config/.test-packaged-go-request-${process.pid}-2.json`;
+  const first = path.join(protectedRoot, firstOutput);
+  const second = path.join(protectedRoot, secondOutput);
   const args = [
     GO_REQUEST_PACKAGE_SCRIPT,
     '--template',
@@ -659,12 +761,12 @@ test('GO request packaging materializes the approved request bytes deterministic
   ];
   const run = (output) =>
     spawnSync(process.execPath, [...args, '--out', output], {
-      cwd: ROOT,
+      cwd: protectedRoot,
       encoding: 'utf8',
       env: { ...process.env, NODE_PATH: '', OPENROUTER_API_KEY: 'must-not-be-used-by-zero-call-packager' },
     });
 
-  const firstRun = run(first);
+  const firstRun = run(firstOutput);
   assert.equal(firstRun.status, 0, firstRun.stderr);
   const report = JSON.parse(firstRun.stdout);
   const expectedBytes = fs.readFileSync(FRAME_REFUSER_V2_REQUEST_PATH);
@@ -704,12 +806,12 @@ test('GO request packaging materializes the approved request bytes deterministic
   assert.equal(report.authorizationBoundary.liveRunAuthorized, false);
   assert.match(report.authorizationBoundary.disposition, /not authorization/u);
 
-  const secondRun = run(second);
+  const secondRun = run(secondOutput);
   assert.equal(secondRun.status, 0, secondRun.stderr);
   assert.deepEqual(fs.readFileSync(second), firstBytes, 'identical inputs must produce byte-identical requests');
 
   const beforeOverwriteAttempt = crypto.createHash('sha256').update(firstBytes).digest('hex');
-  const overwrite = run(first);
+  const overwrite = run(firstOutput);
   assert.equal(overwrite.status, 2);
   assert.match(overwrite.stderr, /refusing to overwrite existing request/u);
   assert.equal(
@@ -726,21 +828,20 @@ test('GO request packaging fails closed on incomplete authority, source, marker,
   const unresolvedTemplatePath = path.join(temporary, 'unresolved-template.json');
   const misplacedSourceTemplatePath = path.join(temporary, 'misplaced-source-template.json');
   const misplacedBindingTemplatePath = path.join(temporary, 'misplaced-binding-template.json');
-  const output = path.join(ROOT, 'config', `.test-packaged-go-request-${process.pid}-fail.json`);
-  t.after(() => {
-    fs.rmSync(temporary, { recursive: true, force: true });
-    fs.rmSync(output, { force: true });
-  });
+  const output = `config/.test-packaged-go-request-${process.pid}-fail.json`;
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
   const templateText = frameRefuserV2TemplateText();
   fs.writeFileSync(templatePath, templateText);
   const request = JSON.parse(fs.readFileSync(FRAME_REFUSER_V2_REQUEST_PATH, 'utf8'));
-  const run = (args) =>
-    spawnSync(process.execPath, [GO_REQUEST_PACKAGE_SCRIPT, ...args], { cwd: ROOT, encoding: 'utf8' });
+  const protectedRoot = createProtectedPackagerCheckout(t, request.source.launchCommit, 'negative-historical');
+  const outputAt = (root) => path.join(root, output);
+  const run = (args, root = protectedRoot) =>
+    spawnSync(process.execPath, [GO_REQUEST_PACKAGE_SCRIPT, ...args], { cwd: root, encoding: 'utf8' });
 
   const missing = run(['--template', templatePath, '--out', output]);
   assert.equal(missing.status, 2);
   assert.match(missing.stderr, /--launch-commit is required/u);
-  assert.equal(fs.existsSync(output), false);
+  assert.equal(fs.existsSync(outputAt(protectedRoot)), false);
 
   const abbreviatedSource = run([
     '--template',
@@ -752,7 +853,7 @@ test('GO request packaging fails closed on incomplete authority, source, marker,
   ]);
   assert.equal(abbreviatedSource.status, 2);
   assert.match(abbreviatedSource.stderr, /explicit full commit oid/u);
-  assert.equal(fs.existsSync(output), false);
+  assert.equal(fs.existsSync(outputAt(protectedRoot)), false);
 
   const unauthorized = JSON.parse(templateText);
   unauthorized.authorization.modelCallsAuthorized = true;
@@ -767,9 +868,10 @@ test('GO request packaging fails closed on incomplete authority, source, marker,
   ]);
   assert.equal(unauthorizedRun.status, 2);
   assert.match(unauthorizedRun.stderr, /literal HOLD/u);
-  assert.equal(fs.existsSync(output), false);
+  assert.equal(fs.existsSync(outputAt(protectedRoot)), false);
 
   const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const currentRoot = createProtectedPackagerCheckout(t, head, 'negative-current');
   let misplacedSource = moveMarkerToIgnoredField(
     templateText,
     GO_REQUEST_PACKAGE_MARKERS.sourceCommit,
@@ -783,10 +885,13 @@ test('GO request packaging fails closed on incomplete authority, source, marker,
     'ignoredSourceTreeMarker',
   );
   fs.writeFileSync(misplacedSourceTemplatePath, misplacedSource);
-  const misplacedSourceRun = run(['--template', misplacedSourceTemplatePath, '--launch-commit', head, '--out', output]);
+  const misplacedSourceRun = run(
+    ['--template', misplacedSourceTemplatePath, '--launch-commit', head, '--out', output],
+    currentRoot,
+  );
   assert.equal(misplacedSourceRun.status, 2);
   assert.match(misplacedSourceRun.stderr, /materialized source launch commit does not match/u);
-  assert.equal(fs.existsSync(output), false);
+  assert.equal(fs.existsSync(outputAt(currentRoot)), false);
 
   const registrationMarker = goRequestFileSha256Marker(request.bindings.registration.path);
   const misplacedBinding = moveMarkerToIgnoredField(
@@ -806,7 +911,7 @@ test('GO request packaging fails closed on incomplete authority, source, marker,
   ]);
   assert.equal(misplacedBindingRun.status, 2);
   assert.match(misplacedBindingRun.stderr, /materialized registration digest does not match/u);
-  assert.equal(fs.existsSync(output), false);
+  assert.equal(fs.existsSync(outputAt(protectedRoot)), false);
 
   fs.writeFileSync(
     unresolvedTemplatePath,
@@ -822,7 +927,7 @@ test('GO request packaging fails closed on incomplete authority, source, marker,
   ]);
   assert.equal(unresolved.status, 2);
   assert.match(unresolved.stderr, /unknown or unresolved packaging marker/u);
-  assert.equal(fs.existsSync(output), false);
+  assert.equal(fs.existsSync(outputAt(protectedRoot)), false);
 
   assert.throws(() => resolveTutorStubGoRequestOutput(path.join(ROOT, '..', 'escaped-request.json')), /inside/u);
   assert.throws(() => resolveTutorStubGoRequestOutput('nested/../escaped-request.json'), /canonical/u);
