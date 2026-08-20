@@ -1159,6 +1159,7 @@ export async function runTutorStubCliApplicationHost({
   const {
     automatedLearnerCorruptionEnabled,
     automatedLearnerProfileId,
+    automatedLearnerTraceMetadata,
     buildMixedLearnerArtifactsPrompt,
     deterministicAutomatedLearnerFallback,
     enforceAutomatedLearnerProfile,
@@ -2247,6 +2248,7 @@ export async function runTutorStubCliApplicationHost({
       appendTraceEvent,
       args,
       automatedLearnerProfileId,
+      automatedLearnerTraceMetadata,
       cliPresentation,
       createInterimState,
       createTraceState,

@@ -12,6 +12,7 @@ import {
   FRAME_REFUSER_ADHERENCE_EXHAUSTED_CODE,
   TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV,
   buildTutorStubFrameOpportunityV3RepairBudgetDiagnostic,
+  buildTutorStubFrameOpportunityV4RepairBudgetDiagnostic,
   createTutorStubAutomatedLearnerGenerationRuntime,
 } from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
 import {
@@ -47,6 +48,42 @@ test('automated-learner generation runtime owns profile resolution and corruptio
   assert.equal(runtime.resolveAutomatedLearnerProfile('diligent'), 'profile:diligent');
   assert.equal(runtime.automatedLearnerCorruptionEnabled(2), true);
   assert.equal(runtime.automatedLearnerCorruptionEnabled(1), false);
+});
+
+test('prospective v4 alone carries the analyzer-required semantics stamp through the production trace seam', () => {
+  const createRuntime = (semantics) =>
+    createTutorStubAutomatedLearnerGenerationRuntime({
+      appendTraceEvent() {},
+      callPromptModel() {
+        throw new Error('zero-call trace metadata test');
+      },
+      classificationFromCombinedAnalysis() {
+        throw new Error('zero-call trace metadata test');
+      },
+      env: semantics ? { [TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV]: semantics } : {},
+      extractCombinedLearnerAnalysis() {
+        throw new Error('zero-call trace metadata test');
+      },
+      learnerProfileContract,
+      learnerProfileIds,
+      learnerProfilePrompt,
+      negativeFloorRegisters: [],
+    });
+
+  assert.deepEqual(createRuntime(null).automatedLearnerTraceMetadata, {});
+  assert.deepEqual(createRuntime('prospective_v2').automatedLearnerTraceMetadata, {});
+  assert.deepEqual(createRuntime('prospective_v3').automatedLearnerTraceMetadata, {});
+  assert.deepEqual(createRuntime('prospective_v4').automatedLearnerTraceMetadata, {
+    observationSemantics: 'prospective_v4',
+  });
+
+  const hostSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCliApplicationHost.js'), 'utf8');
+  const traceContextSource = fs.readFileSync(
+    path.join(ROOT, 'services', 'tutorStubApplicationTraceContext.js'),
+    'utf8',
+  );
+  assert.ok((hostSource.match(/automatedLearnerTraceMetadata/gu) || []).length >= 2);
+  assert.match(traceContextSource, /\.\.\.automatedLearnerTraceMetadata/u);
 });
 
 test('entrypoint delegates automated learner generation rather than retaining local implementations', () => {
@@ -584,6 +621,223 @@ test('prospective v3 repair readiness proves the 48-call worst case while v2 ref
   assert.equal(result.passed, false);
   assert.equal(result.repaired, true);
   assert.equal(repairCalls, 2);
+});
+
+test('prospective v4 defers all adherence repair and exhaustion decisions until the T2 candidate', async () => {
+  const normalized = 'I will simply answer the question as asked.';
+  for (const profile of ['frame_refuser', 'frame_defiant']) {
+    const trace = [];
+    let analysisCalls = 0;
+    let repairCalls = 0;
+    const runtime = createTutorStubAutomatedLearnerGenerationRuntime({
+      appendTraceEvent: (target, event) => target.push(event),
+      callPromptModel: async () => {
+        repairCalls += 1;
+        return { text: normalized };
+      },
+      classificationFromCombinedAnalysis: (raw) => raw.classification,
+      env: { [TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV]: 'prospective_v4' },
+      extractCombinedLearnerAnalysis: async () => {
+        analysisCalls += 1;
+        return {
+          classification: {
+            turn: {
+              request_type: 'conceptual_clarity_request',
+              discourse_move: 'answer',
+              evidence_use: 'none',
+              epistemic_stance: 'engaged',
+              agency: 'attempting',
+            },
+          },
+        };
+      },
+      learnerProfileContract,
+      learnerProfileIds,
+      learnerProfilePrompt,
+      negativeFloorRegisters: [],
+    });
+    const state = {
+      trace,
+      turns: [],
+      history: [],
+      register: { policy: 'field' },
+      classifier: { enabled: true },
+      learnerDag: { enabled: true },
+      world: {},
+      interim: null,
+    };
+    const result = await runtime.enforceAutomatedLearnerProfile({
+      state,
+      resolved: {},
+      profile,
+      turnNumber: 1,
+      generated: { text: normalized },
+    });
+    assert.equal(result.generated.text, normalized, profile);
+    assert.equal(result.passed, null, profile);
+    assert.equal(result.repaired, false, profile);
+    assert.equal(analysisCalls, 0, profile);
+    assert.equal(repairCalls, 0, profile);
+    assert.deepEqual(trace, [
+      {
+        type: 'auto_learner_profile_adherence_deferred',
+        turn: 1,
+        profile,
+        decisionTurn: 2,
+        repairRequested: false,
+        typedExhaustionEvaluated: false,
+      },
+    ]);
+  }
+});
+
+test('prospective v4 evaluates cumulative T1-T2 qualification and admits at most one failed T2 repair', async () => {
+  const normalized = 'I will simply answer the question as asked.';
+  const classification = {
+    turn: {
+      request_type: 'authority_refusal_or_status_challenge',
+      discourse_move: 'challenge',
+      evidence_use: 'none',
+      epistemic_stance: 'resistant',
+      agency: 'steering',
+    },
+  };
+  const valid = {
+    frame_refuser:
+      'I reject the authority of your proposed baseline as the governing standard, and I will not answer under it.',
+    frame_defiant:
+      'I reject your authority over the whole agenda, but I will assess one bounded claim without accepting the wider frame.',
+  };
+  const makeRuntime = ({ repairText = normalized } = {}) => {
+    const trace = [];
+    const counters = { analysis: 0, repair: 0 };
+    const runtime = createTutorStubAutomatedLearnerGenerationRuntime({
+      appendTraceEvent: (target, event) => target.push(event),
+      callPromptModel: async () => {
+        counters.repair += 1;
+        return { text: repairText };
+      },
+      classificationFromCombinedAnalysis: (raw) => raw.classification,
+      env: { [TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV]: 'prospective_v4' },
+      extractCombinedLearnerAnalysis: async () => {
+        counters.analysis += 1;
+        return { classification };
+      },
+      learnerProfileContract,
+      learnerProfileIds,
+      learnerProfilePrompt,
+      negativeFloorRegisters: [],
+    });
+    return { runtime, trace, counters };
+  };
+  const stateWithT1 = (learner) => ({
+    trace: [],
+    turns: [{ turn: 1, learner, tutor: 'Opening question.', classification, registerSelection: { policy: 'field' } }],
+    history: [],
+    register: { policy: 'field' },
+    classifier: { enabled: true },
+    learnerDag: { enabled: true },
+    world: {},
+    interim: null,
+  });
+
+  for (const profile of ['frame_refuser', 'frame_defiant']) {
+    const priorQualified = makeRuntime();
+    const priorState = stateWithT1(valid[profile]);
+    priorState.trace = priorQualified.trace;
+    const priorResult = await priorQualified.runtime.enforceAutomatedLearnerProfile({
+      state: priorState,
+      resolved: {},
+      profile,
+      turnNumber: 2,
+      generated: { text: normalized },
+    });
+    assert.equal(priorResult.passed, true, profile);
+    assert.deepEqual(priorQualified.counters, { analysis: 0, repair: 0 }, profile);
+
+    const t2Qualified = makeRuntime();
+    const t2State = stateWithT1(normalized);
+    t2State.trace = t2Qualified.trace;
+    const t2Result = await t2Qualified.runtime.enforceAutomatedLearnerProfile({
+      state: t2State,
+      resolved: {},
+      profile,
+      turnNumber: 2,
+      generated: { text: valid[profile] },
+    });
+    assert.equal(t2Result.passed, true, profile);
+    assert.deepEqual(t2Qualified.counters, { analysis: 1, repair: 0 }, profile);
+
+    const repaired = makeRuntime({ repairText: valid[profile] });
+    const repairedState = stateWithT1(normalized);
+    repairedState.trace = repaired.trace;
+    const repairedResult = await repaired.runtime.enforceAutomatedLearnerProfile({
+      state: repairedState,
+      resolved: {},
+      profile,
+      turnNumber: 2,
+      generated: { text: normalized },
+    });
+    assert.equal(repairedResult.passed, true, profile);
+    assert.equal(repairedResult.repaired, true, profile);
+    assert.deepEqual(repaired.counters, { analysis: 2, repair: 1 }, profile);
+    assert.equal(
+      repaired.trace.some((event) => event.type === 'auto_learner_profile_adherence_exhausted'),
+      false,
+      profile,
+    );
+
+    const exhausted = makeRuntime();
+    const exhaustedState = stateWithT1(normalized);
+    exhaustedState.trace = exhausted.trace;
+    await assert.rejects(
+      exhausted.runtime.enforceAutomatedLearnerProfile({
+        state: exhaustedState,
+        resolved: {},
+        profile,
+        turnNumber: 2,
+        generated: { text: normalized },
+      }),
+      (error) => {
+        assert.equal(
+          error.code,
+          profile === 'frame_refuser' ? FRAME_REFUSER_ADHERENCE_EXHAUSTED_CODE : FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE,
+        );
+        assert.equal(error.repairAttempts, 1);
+        return true;
+      },
+    );
+    assert.deepEqual(exhausted.counters, { analysis: 2, repair: 1 }, profile);
+    assert.equal(
+      exhausted.trace.filter((event) => event.type === 'auto_learner_profile_repair_requested').length,
+      1,
+      profile,
+    );
+  }
+});
+
+test('prospective v4 budget proof binds planned role calls and charged CLI retry reservations', () => {
+  assert.deepEqual(buildTutorStubFrameOpportunityV4RepairBudgetDiagnostic(), {
+    turns: 2,
+    modelCallBudget: 39,
+    baseCalls: 7,
+    maxFullRepairsPerT1T2: 1,
+    repairDecisionTurn: 2,
+    repairsAtTurn1: 0,
+    callsPerFullRepair: 2,
+    permittedRepairCalls: 2,
+    requiredTutorGuardReserve: 4,
+    plannedWorstCaseCalls: 13,
+    transportRetryLimitPerPlannedCall: 2,
+    maximumReservationsPerPlannedCall: 3,
+    maximumModelAttemptReservations: 39,
+    technicalRetryHeadroomReservations: 26,
+    reservationHeadroom: 0,
+    ready: true,
+  });
+  assert.equal(buildTutorStubFrameOpportunityV4RepairBudgetDiagnostic({ maxFullRepairsPerT1T2: 2 }).ready, false);
+  assert.equal(buildTutorStubFrameOpportunityV4RepairBudgetDiagnostic({ modelCallBudget: 13 }).ready, false);
+  assert.equal(buildTutorStubFrameOpportunityV4RepairBudgetDiagnostic({ modelCallBudget: 40 }).ready, false);
 });
 
 function turnEvent(

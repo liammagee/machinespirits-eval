@@ -36,6 +36,16 @@ const FRAME_REFUSER_OPPORTUNITY_CRITICAL_SOURCE_CLOSURE = [
   'package.json',
   'package-lock.json',
 ];
+const FRAME_REFUSER_OPPORTUNITY_V4_CRITICAL_SOURCE_CLOSURE = [
+  ...FRAME_REFUSER_OPPORTUNITY_CRITICAL_SOURCE_CLOSURE,
+  'services/tutorStubCliPolicyRetry.js',
+  'services/tutorStubPromptTransport.js',
+  'services/tutorStubTutorAttemptRuntime.js',
+  'services/tutorStubTraceRuntime.js',
+  'services/tutorStubLabs.js',
+  'services/tutorStubApplicationTraceContext.js',
+  'services/tutorStubCliApplicationHost.js',
+];
 const REQUEST_PATH = path.join(ROOT, 'config', 'tutor-stub-resistant-profile-discrimination-study-go-request.v1.json');
 const REPLACEMENT_REQUEST_PATH = path.join(
   ROOT,
@@ -316,12 +326,14 @@ test('consumed axis heldout request remains frozen and fails closed after curren
   assert.match(result.stderr, /source-closure-scripts\/analyze-tutor-stub-resistance-axis-calibration\.js/u);
 });
 
-test('consumed frame-refuser v1 and v2 requests retain their exact approval digests', () => {
+test('consumed frame-refuser v1, v2, and v3 requests retain their exact approval digests', () => {
   const expected = {
     'config/tutor-stub-frame-refuser-opportunity-study-go-request.v1.json':
       'ca832a863764748dde496166ee2f9e7793cb97a582d22564c085bacece005b84',
     'config/tutor-stub-frame-refuser-opportunity-study-go-request.v2.json':
       '2c77c131c2803e4af37eea3c8cbfb38e2ba423d645ab98739d661c5778c22c04',
+    'config/tutor-stub-frame-refuser-opportunity-study-go-request.v3.json':
+      '2cbe95ba7ec713888e5ed6c405b4856bdfb021be962d771a7578b9d62dc998f2',
   };
   for (const [relativePath, digest] of Object.entries(expected)) {
     assert.equal(
@@ -334,7 +346,7 @@ test('consumed frame-refuser v1 and v2 requests retain their exact approval dige
   }
 });
 
-test('frame-refuser opportunity requests validate historical v1 and prospective v2/v3 without a new model call', (t) => {
+test('frame-refuser opportunity requests validate historical v1 and prospective v2/v3/v4 without a new model call', (t) => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'frame-refuser-opportunity-go-'));
   t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
   const digest = (filePath) => crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
@@ -366,6 +378,13 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
       endpointPath: 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v3.json',
       certificatePath: 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v3.endpoint-go.json',
     },
+    {
+      version: 'v4',
+      studyId: 'tutor-stub-frame-refuser-opportunity-v4',
+      registrationPath: 'config/tutor-stub-frame-refuser-opportunity-registration.v4.json',
+      endpointPath: 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v4.json',
+      certificatePath: 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v4.endpoint-go.json',
+    },
   ];
   for (const fixture of fixtures) {
     const registrationPath = fixture.registrationPath;
@@ -375,7 +394,9 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
     const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, certificatePath), 'utf8'));
     const artifactRoot = `.test-tmp/frame-refuser-opportunity-request-test-${fixture.version}-${process.pid}`;
     const live = [
-      ...(fixture.version === 'v3' ? ['env', 'TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS=prospective_v3'] : []),
+      ...(fixture.version === 'v3' || fixture.version === 'v4'
+        ? ['env', `TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS=prospective_${fixture.version}`]
+        : []),
       'node',
       'scripts/run-tutor-stub-qa-matrix.js',
       '--policies',
@@ -387,9 +408,9 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
       '--run-seed',
       '20260820',
       '--turns',
-      '8',
+      fixture.version === 'v4' ? '2' : '8',
       '--safety-turns',
-      '8',
+      fixture.version === 'v4' ? '2' : '8',
       '--model',
       'codex.gpt-5.6-luna',
       '--analysis-model',
@@ -397,7 +418,7 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
       '--auto-learner-model',
       'codex.gpt-5.6-luna',
       '--model-call-budget',
-      '48',
+      fixture.version === 'v4' ? '39' : '48',
       '--world',
       'world_005_marrick',
       '--dag-mode',
@@ -425,7 +446,7 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
     const analyze = [
       'zsh',
       '-lc',
-      `set -euo pipefail; artifact_root='${artifactRoot}'; trace_args=(); for trace in "$artifact_root"/*/traces/*/*.jsonl; do [[ -f "$trace" ]] || continue; trace_args+=(--trace "$trace"); done; node scripts/analyze-tutor-stub-resistance-axis-calibration.js "${'${trace_args[@]}'}" --registration ${registrationPath} --required-traces 6 --required-profiles frame_refuser,frame_defiant --required-runs-per-profile 3 --required-turns 8 --required-policies field --required-tutor-model codex.gpt-5.6-luna --required-analysis-model codex.gpt-5.6-luna --required-learner-model codex.gpt-5.6-luna --json --out "$artifact_root/frame-refuser-opportunity-gate.json"`,
+      `set -euo pipefail; artifact_root='${artifactRoot}'; trace_args=(); for trace in "$artifact_root"/*/traces/*/*.jsonl; do [[ -f "$trace" ]] || continue; trace_args+=(--trace "$trace"); done; node scripts/analyze-tutor-stub-resistance-axis-calibration.js "${'${trace_args[@]}'}" --registration ${registrationPath} --required-traces 6 --required-profiles frame_refuser,frame_defiant --required-runs-per-profile 3 --required-turns ${fixture.version === 'v4' ? 2 : 8} --required-policies field --required-tutor-model codex.gpt-5.6-luna --required-analysis-model codex.gpt-5.6-luna --required-learner-model codex.gpt-5.6-luna --json --out "$artifact_root/frame-refuser-opportunity-gate.json"`,
     ];
     const request = {
       schema: 'machinespirits.tutor-stub.resistant-profile-discrimination-study-go-request.v1',
@@ -439,7 +460,10 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
       source: {
         launchCommit,
         launchTree,
-        closure: FRAME_REFUSER_OPPORTUNITY_CRITICAL_SOURCE_CLOSURE.map((closurePath) => ({
+        closure: (fixture.version === 'v4'
+          ? FRAME_REFUSER_OPPORTUNITY_V4_CRITICAL_SOURCE_CLOSURE
+          : FRAME_REFUSER_OPPORTUNITY_CRITICAL_SOURCE_CLOSURE
+        ).map((closurePath) => ({
           path: closurePath,
           sha256: digest(path.join(ROOT, closurePath)),
         })),
@@ -460,7 +484,7 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
           freshNonOverwritingDestinationForRecoveredUnits: true,
           rerunValidOutputs: false,
           selectAmongOutcomes: false,
-          maximumTotalStudyAttemptsUnchanged: 288,
+          maximumTotalStudyAttemptsUnchanged: fixture.version === 'v4' ? 234 : 288,
         },
       },
       measurement: {
@@ -471,13 +495,13 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
         requiredDistinctTargetPrefixes: 3,
         targetObservation: registration.measurement.targetObservation,
         controlObservation: registration.measurement.controlObservation,
-        ...(fixture.version === 'v2' || fixture.version === 'v3'
+        ...(fixture.version === 'v2' || fixture.version === 'v3' || fixture.version === 'v4'
           ? {
               controlParticipationForms: registration.measurement.controlParticipationForms,
               refusalRule: registration.measurement.refusalRule,
             }
           : {}),
-        ...(fixture.version === 'v3'
+        ...(fixture.version === 'v3' || fixture.version === 'v4'
           ? {
               observationSemantics: registration.measurement.observationSemantics,
               jurisdictionRule: registration.measurement.jurisdictionRule,
@@ -520,7 +544,9 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
         },
       },
       commands: { live, analyze },
-      ...(fixture.version === 'v3' ? { repairAdmission: registration.repairAdmission } : {}),
+      ...(fixture.version === 'v3' || fixture.version === 'v4'
+        ? { repairAdmission: registration.repairAdmission }
+        : {}),
       design: {
         profiles: ['frame_refuser', 'frame_defiant'],
         dialogues: 6,
@@ -534,11 +560,12 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
         },
         cliEffort: 'low',
         parallelism: 3,
+        ...(fixture.version === 'v4' ? { plannedRoleCallsPerDialogue: 13, plannedRoleCallsTotal: 78 } : {}),
       },
       budget: {
         dialogues: 6,
-        maximumAttemptsPerDialogue: 48,
-        maximumPlannedModelAttempts: 288,
+        maximumAttemptsPerDialogue: fixture.version === 'v4' ? 39 : 48,
+        maximumPlannedModelAttempts: fixture.version === 'v4' ? 234 : 288,
         retryOrResumeAuthority: 'bounded_technical_recovery',
       },
       payload: {
@@ -559,7 +586,7 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
     assert.equal(report.readyForExplicitHumanApproval, true);
     assert.equal(report.modelCalls, 0);
     assert.equal(report.productionWrites, 0);
-    assert.equal(report.budget.maximumPlannedModelAttempts, 288);
+    assert.equal(report.budget.maximumPlannedModelAttempts, fixture.version === 'v4' ? 234 : 288);
     assert.match(report.exactApprovalStatement, /6-dialogue Luna study/u);
 
     const invalidRequests = [
@@ -599,7 +626,7 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
         pattern: /frame-refuser-opportunity-measurement-binding/u,
       },
     ];
-    if (fixture.version === 'v2' || fixture.version === 'v3') {
+    if (fixture.version === 'v2' || fixture.version === 'v3' || fixture.version === 'v4') {
       invalidRequests.push(
         {
           name: 'mismatched-refusal-rule',
@@ -617,7 +644,7 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
         },
       );
     }
-    if (fixture.version === 'v3') {
+    if (fixture.version === 'v3' || fixture.version === 'v4') {
       invalidRequests.push(
         {
           name: 'mismatched-observation-semantics',
@@ -643,16 +670,18 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
         {
           name: 'expanded-repair-cap',
           mutate(value) {
-            value.repairAdmission.maxFullRepairsPer8Turns = 2;
+            if (fixture.version === 'v4') value.repairAdmission.maxFullRepairsPerT1T2 = 2;
+            else value.repairAdmission.maxFullRepairsPer8Turns = 2;
           },
-          pattern: /frame-refuser-opportunity-v3-repair-admission-binding/u,
+          pattern: new RegExp(`frame-refuser-opportunity-${fixture.version}-repair-admission-binding`, 'u'),
         },
         {
           name: 'invalid-candidate-publication',
           mutate(value) {
-            value.repairAdmission.invalidCandidateMayBePublished = true;
+            if (fixture.version === 'v4') value.repairAdmission.invalidCandidateMayBePublishedAtOrAfterT2 = true;
+            else value.repairAdmission.invalidCandidateMayBePublished = true;
           },
-          pattern: /frame-refuser-opportunity-v3-repair-admission-binding/u,
+          pattern: new RegExp(`frame-refuser-opportunity-${fixture.version}-repair-admission-binding`, 'u'),
         },
         {
           name: 'missing-runtime-semantics-binding',
@@ -663,6 +692,26 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
           pattern: /frame-refuser-opportunity-live-command-shape/u,
         },
       );
+      if (fixture.version === 'v4') {
+        invalidRequests.push(
+          {
+            name: 'expanded-transport-retry-multiplicity',
+            mutate(value) {
+              value.repairAdmission.transportRetryLimitPerPlannedCall = 3;
+            },
+            pattern: /frame-refuser-opportunity-v4-repair-admission-binding/u,
+          },
+          {
+            name: 'missing-v4-retry-source-closure',
+            mutate(value) {
+              value.source.closure = value.source.closure.filter(
+                (entry) => entry.path !== 'services/tutorStubCliPolicyRetry.js',
+              );
+            },
+            pattern: /frame-refuser-opportunity-critical-source-closure/u,
+          },
+        );
+      }
     }
     for (const invalid of invalidRequests) {
       const invalidRequest = structuredClone(request);

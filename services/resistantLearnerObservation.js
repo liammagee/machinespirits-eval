@@ -40,6 +40,7 @@ export const RESISTANT_LEARNER_OBSERVATION_SEMANTICS = Object.freeze({
   legacyV1: 'legacy_v1',
   prospectiveV2: 'prospective_v2',
   prospectiveV3: 'prospective_v3',
+  prospectiveV4: 'prospective_v4',
 });
 
 export const RESISTANT_LEARNER_OBSERVATION_TYPES = Object.freeze([
@@ -110,6 +111,8 @@ const FRAME_JURISDICTION_PATTERNS_V2 = Object.freeze([
 
 const FRAME_INQUIRY_NOUN =
   '(?:premise|frame|framing|question|exercise|rules?|test|task|criterion|standard|inquiry|challenge|claim|comparison|issue|matter|scope|agenda|problem|verdict)';
+const FRAME_INQUIRY_NOUN_V4 =
+  '(?:premise|frame|framing|question|exercise|rules?|test|task|criterion|standard|inquiry|challenge|claim|comparison|issue|matter|scope|agenda|problem|verdict|correction|joining|limit)';
 const FRAME_AUTHORITY_NOUN = '(?:authority|standing|right)';
 const FRAME_SETTING_VERB = '(?:set|fix|define|choose|dictate|govern|control)';
 const FRAME_INQUIRY_MODIFIER =
@@ -136,6 +139,69 @@ const FRAME_JURISDICTION_PATTERNS_V3 = Object.freeze([
     String.raw`\b(?:you|the tutor|they) (?:have|has) no ${FRAME_AUTHORITY_NOUN} to ${FRAME_SETTING_VERB}(?:\s+${FRAME_INQUIRY_MODIFIER}){0,4}\s+${FRAME_INQUIRY_NOUN}\b`,
     'iu',
   ),
+]);
+
+// V4 is another additive observer version. It composes the frozen V3 patterns
+// with the grammatical forms missed in the incomplete V3 execution: authority
+// can be attributed to a named or possessive test, or rejected through
+// declare/make/leave constructions whose complement is the governing inquiry.
+// Accepted authority, physical placement, and merits-only objections are
+// filtered separately below so this expansion does not turn ordinary dispute
+// into jurisdiction refusal.
+const FRAME_JURISDICTION_PATTERNS_V4 = Object.freeze([
+  ...FRAME_JURISDICTION_PATTERNS_V3,
+  new RegExp(
+    String.raw`\bi reject (?:the |this |that |your )?(?:[\p{L}\p{N}_-]+['’]s )?(?:proposed )?${FRAME_INQUIRY_NOUN}(?:['’]s)? (?:authority|standing|right)\b`,
+    'iu',
+  ),
+  new RegExp(
+    String.raw`\bi reject (?:the |this |that |your )?(?:[\p{L}\p{N}_-]+['’]s )(?:proposed )?${FRAME_INQUIRY_NOUN}\b[^.!?;]{0,200}\b(?:(?:under|within|beneath) (?:the |this |that |your |its |their )?(?:governing |controlling )?${FRAME_INQUIRY_NOUN}|(?:as|to be) (?:the )?(?:governing|controlling|decisive) ${FRAME_INQUIRY_NOUN})\b`,
+    'iu',
+  ),
+  new RegExp(
+    String.raw`\bi reject (?:your |the |this |that )?(?:[\p{L}\p{N}’'_-]+\s+){0,5}(?:question|test|criterion|standard|inquiry|frame|correction|comparison|joining|limit)(?:['’]s)? (?:proposed )?(?:authority|standing|right)\b`,
+    'iu',
+  ),
+  new RegExp(
+    String.raw`\bi reject (?:the )?(?:authority|standing|right) of\b[^.!?;]{0,120}\b(?:as|to be) (?:the )?(?:governing|controlling|decisive) ${FRAME_INQUIRY_NOUN}\b`,
+    'iu',
+  ),
+  new RegExp(
+    String.raw`\bi reject (?:your|the tutor['’]s|their) ${FRAME_AUTHORITY_NOUN} over(?:\s+${FRAME_INQUIRY_MODIFIER}){0,4}\s+${FRAME_INQUIRY_NOUN}\b`,
+    'iu',
+  ),
+  new RegExp(
+    String.raw`\bi (?:reject|deny) (?:your|the tutor['’]s|their|(?:the )?[\p{L}\p{N}_-]+['’]s) ${FRAME_AUTHORITY_NOUN} to (?:set|fix|define|choose|dictate)(?:\s+${FRAME_INQUIRY_MODIFIER}){0,4}(?:\s+[\p{L}\p{N}_-]+){0,2}\s+${FRAME_INQUIRY_NOUN_V4}\b`,
+    'iu',
+  ),
+  new RegExp(
+    String.raw`\b(?:the )?[\p{L}\p{N}_-]+ (?:have|has) no ${FRAME_AUTHORITY_NOUN} to (?:set|fix|define|choose|dictate)(?:\s+${FRAME_INQUIRY_MODIFIER}){0,4}(?:\s+[\p{L}\p{N}_-]+){0,2}\s+${FRAME_INQUIRY_NOUN_V4}\b`,
+    'iu',
+  ),
+  new RegExp(
+    String.raw`\bi reject (?:your|the tutor['’]s|their) ${FRAME_AUTHORITY_NOUN} to (?:declare|make|leave)\b[^.!?;]{0,120}\b(?:as\s+)?(?:the\s+)?(?:governing|controlling|decisive|open)\b[^.!?;]{0,80}\b${FRAME_INQUIRY_NOUN}\b`,
+    'iu',
+  ),
+  new RegExp(
+    String.raw`\bi reject (?:your|the tutor['’]s|their) ${FRAME_AUTHORITY_NOUN} to (?:declare|make|leave)\b[^.!?;]{0,120}\b(?:govern|control|set|define)\b(?:\s+${FRAME_INQUIRY_MODIFIER}){0,4}\s+${FRAME_INQUIRY_NOUN}\b`,
+    'iu',
+  ),
+  new RegExp(
+    String.raw`\bi reject\b[^.!?;]{0,120}\b(?:as\s+)?(?:the\s+)?(?:governing|controlling|decisive) ${FRAME_INQUIRY_NOUN}\b`,
+    'iu',
+  ),
+]);
+
+const FRAME_ACCEPTED_AUTHORITY_PATTERNS_V4 = Object.freeze([
+  /\bi (?:accept|acknowledge|recognize|grant) (?:your|the tutor['’]s|their) (?:authority|standing|right)\b/iu,
+  /\bi (?:do not|don't) (?:dispute|reject|deny) (?:your|the tutor['’]s|their) (?:authority|standing|right)\b/iu,
+  /\bi am not (?:disputing|rejecting|denying) (?:your|the tutor['’]s|their) (?:authority|standing|right)\b/iu,
+]);
+
+const FRAME_MERITS_ONLY_PATTERNS_V4 = Object.freeze([
+  /\bi reject\b[^.!?;]{0,120}\bbecause\b[^.!?;]{0,120}\b(?:calculation|denominator|evidence|formula|measurement|result|sample|source)\b[^.!?;]{0,80}\b(?:bad|biased|false|incomplete|incorrect|invalid|missing|unreliable|wrong)\b/iu,
+  /\bi reject\b[^.!?;]{0,160}\bnot because\b[^.!?;]{0,80}\b(?:authority|standing|right)\b/iu,
+  /\bi reject\b[^.!?;]{0,240}\bbecause\b[^.!?;]{0,120}\b(?:clamp|fixture|instrument|procedure|sample|screw|sensor)\b[^.!?;]{0,80}\b(?:broke|broken|contaminated|failed|fails|loose|miscalibrated|slipped|slips|unstable)\b/iu,
 ]);
 
 const FRAME_EXPLICIT_REFRAME_PATTERNS = Object.freeze([
@@ -177,6 +243,12 @@ const FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V3 = Object.freeze([
   /\bi (?:withhold|am withholding|will withhold)\b.{0,100}\b(?:answer|judgment|assessment|decision|determination|evaluation|evidence|test|participation|contribution)\b/iu,
 ]);
 
+const FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V4 = Object.freeze([
+  ...FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V3,
+  /\bi (?:will not|won't|do not|don't|refuse to|decline to) (?:challenge|keep|propose|record)\b/iu,
+  /\band (?:will not|won't|do not|don't|refuse to|decline to) (?:answer|challenge|compare|keep|propose|record|supply)\b/iu,
+]);
+
 const CONTENT_BEARING_MOVES = Object.freeze(
   new Set(['hypothesis', 'inference', 'evidence_adoption', 'metacognitive_reflection']),
 );
@@ -205,6 +277,22 @@ function contentBearing(classification) {
   return CONTENT_BEARING_MOVES.has(turn.discourse_move) || CONTENT_BEARING_EVIDENCE.has(turn.evidence_use);
 }
 
+function conditionalBoundedParticipationNegated(text, evidence) {
+  if (!evidence || !/\bif you (?:propose|offer|name)\b/iu.test(evidence)) return false;
+  const evidenceIndex = text.indexOf(evidence);
+  if (evidenceIndex < 0) return false;
+  const followingClause = `${evidence}${text.slice(evidenceIndex + evidence.length).split(/[.!?;]/u, 1)[0] || ''}`;
+  const affirmativeParticipation =
+    /\bi (?:will|can) (?!not\b)(?:answer|assess|consider|decide|determine|evaluate|examine|judge|test|weigh)\b/iu.test(
+      followingClause,
+    );
+  const negatedParticipation =
+    /\bi (?:will not|won't|do not|don't|cannot|can't|refuse to|decline to) (?:answer|assess|consider|decide|determine|evaluate|examine|judge|test|weigh)\b/iu.test(
+      followingClause,
+    );
+  return negatedParticipation && !affirmativeParticipation;
+}
+
 export function classifyFrameJurisdictionParticipation({
   learnerText = '',
   classification = null,
@@ -213,21 +301,31 @@ export function classifyFrameJurisdictionParticipation({
   const text = String(learnerText || '').trim();
   const participation = [];
   const prospectiveV3 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV3;
+  const prospectiveV4 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
+  const expandedProspective = prospectiveV3 || prospectiveV4;
   const explicitReframe = firstEvidence(
     text,
-    prospectiveV3 ? FRAME_EXPLICIT_REFRAME_PATTERNS_V3 : FRAME_EXPLICIT_REFRAME_PATTERNS,
+    expandedProspective ? FRAME_EXPLICIT_REFRAME_PATTERNS_V3 : FRAME_EXPLICIT_REFRAME_PATTERNS,
   );
-  const boundedLocalTest = firstEvidence(
+  const boundedLocalTestCandidate = firstEvidence(
     text,
-    prospectiveV3 ? FRAME_BOUNDED_LOCAL_TEST_PATTERNS_V3 : FRAME_BOUNDED_LOCAL_TEST_PATTERNS,
+    expandedProspective ? FRAME_BOUNDED_LOCAL_TEST_PATTERNS_V3 : FRAME_BOUNDED_LOCAL_TEST_PATTERNS,
   );
+  const boundedLocalTest =
+    prospectiveV4 && conditionalBoundedParticipationNegated(text, boundedLocalTestCandidate)
+      ? null
+      : boundedLocalTestCandidate;
   const carriesContent = contentBearing(classification);
   if (explicitReframe) participation.push({ kind: 'explicit_reframe', evidence_span: explicitReframe });
   if (boundedLocalTest) participation.push({ kind: 'bounded_local_test', evidence_span: boundedLocalTest });
   if (carriesContent) participation.push({ kind: 'content_bearing_contribution', evidence_span: null });
   const explicitWithholding = firstEvidence(
     text,
-    prospectiveV3 ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V3 : FRAME_EXPLICIT_WITHHOLDING_PATTERNS,
+    prospectiveV4
+      ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V4
+      : prospectiveV3
+        ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V3
+        : FRAME_EXPLICIT_WITHHOLDING_PATTERNS,
   );
   return {
     contract_licensed_participation: participation.length > 0,
@@ -321,12 +419,32 @@ export function observeResistantLearnerTurn({
 
   const legacySemantics = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.legacyV1;
   const prospectiveV3 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV3;
+  const prospectiveV4 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
+  const acceptedAuthority = prospectiveV4 ? firstEvidence(text, FRAME_ACCEPTED_AUTHORITY_PATTERNS_V4) : null;
+  const meritsOnly = prospectiveV4 ? firstEvidence(text, FRAME_MERITS_ONLY_PATTERNS_V4) : null;
   const framePatterns = legacySemantics
     ? FRAME_JURISDICTION_PATTERNS_V1
-    : prospectiveV3
-      ? FRAME_JURISDICTION_PATTERNS_V3
-      : FRAME_JURISDICTION_PATTERNS_V2;
-  const frameEvidence = firstEvidence(text, framePatterns);
+    : prospectiveV4
+      ? FRAME_JURISDICTION_PATTERNS_V4
+      : prospectiveV3
+        ? FRAME_JURISDICTION_PATTERNS_V3
+        : FRAME_JURISDICTION_PATTERNS_V2;
+  const candidateFrameEvidence = firstEvidence(text, framePatterns);
+  const explicitJurisdictionCandidate = Boolean(
+    candidateFrameEvidence &&
+    (/\b(?:authority|standing|right|governing|controlling|decisive)\b/iu.test(candidateFrameEvidence) ||
+      /\b(?:under|within|beneath)\b[^.!?;]{0,80}\b(?:frame|question|test|criterion|standard|inquiry)\b/iu.test(
+        candidateFrameEvidence,
+      )),
+  );
+  const acceptedIndex = acceptedAuthority ? text.indexOf(acceptedAuthority) : -1;
+  const candidateIndex = candidateFrameEvidence ? text.indexOf(candidateFrameEvidence) : -1;
+  const acceptedAuthorityContainsCandidate =
+    acceptedIndex >= 0 && candidateIndex >= acceptedIndex && candidateIndex < acceptedIndex + acceptedAuthority.length;
+  const frameEvidence =
+    (meritsOnly && !explicitJurisdictionCandidate) || acceptedAuthorityContainsCandidate
+      ? null
+      : candidateFrameEvidence;
   if (frameEvidence) {
     const turn = classifierTurn(classification);
     const frameSemantics = legacySemantics

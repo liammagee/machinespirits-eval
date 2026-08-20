@@ -15,7 +15,10 @@ import {
   observeResistantLearnerTurn,
   resistantLearnerObservationMarkers,
 } from '../services/resistantLearnerObservation.js';
-import { FRAME_REFUSER_V2_FALSE_NEGATIVE_REPAIR_DRAFTS } from '../services/tutorStubResistanceAxisDiscriminationPreflight.js';
+import {
+  FRAME_REFUSER_V2_FALSE_NEGATIVE_REPAIR_DRAFTS,
+  FRAME_REFUSER_V3_MISSED_DRAFTS,
+} from '../services/tutorStubResistanceAxisDiscriminationPreflight.js';
 import {
   learnerProfileContract,
   learnerProfileContractSummary,
@@ -388,6 +391,137 @@ test('prospective v3 recognizes the frozen refuser misses while preserving produ
     });
     assert.equal(markers.frameJurisdictionDispute, false, learnerText);
     assert.equal(markers.frameJurisdictionRefusal, false, learnerText);
+  }
+});
+
+test('prospective v4 recognizes all frozen v3 misses without changing v3 dispatch or near-miss precedence', () => {
+  const v3 = RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV3;
+  const v4 = RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
+  assert.equal(FRAME_REFUSER_V3_MISSED_DRAFTS.length, 13);
+  assert.equal(FRAME_REFUSER_V3_MISSED_DRAFTS.filter((row) => row.causalAdherenceFailure).length, 4);
+  for (const row of FRAME_REFUSER_V3_MISSED_DRAFTS) {
+    const input = {
+      learnerText: row.learnerText,
+      classification: classification({
+        requestType: 'authority_refusal_or_status_challenge',
+        discourseMove: 'challenge',
+        evidenceUse: 'none',
+        agency: 'steering',
+      }),
+    };
+    const frozenV3 = resistantLearnerObservationMarkers({ ...input, semantics: v3 });
+    const repairedV4 = resistantLearnerObservationMarkers({ ...input, semantics: v4 });
+    assert.equal(frozenV3.frameJurisdictionRefusal, false, row.id);
+    assert.equal(repairedV4.frameJurisdictionDispute, true, row.id);
+    assert.equal(repairedV4.frameJurisdictionParticipation, false, row.id);
+    assert.equal(repairedV4.frameJurisdictionRefusal, true, row.id);
+  }
+
+  const cases = [
+    {
+      learnerText:
+        'I accept your authority generally, but I reject your right to set this test and will not answer within it.',
+      expected: [true, false, true],
+    },
+    {
+      learnerText:
+        'I reject your authority to set this question, but I accept your right to ask for evidence without fixing the frame.',
+      expected: [true, false, false],
+    },
+    {
+      learnerText:
+        'I accept your right to ask for evidence generally; nevertheless, I reject your authority to set this test and will not answer within it.',
+      expected: [true, false, true],
+    },
+    {
+      learnerText:
+        'Although I accept your right to ask for evidence, I reject your authority to set this test and will not answer within it.',
+      expected: [true, false, true],
+    },
+    {
+      learnerText: 'I accept your authority to set the question, although I disagree with the likely answer.',
+      expected: [false, false, false],
+    },
+    {
+      learnerText: 'I do not dispute your right to define this test, and I will answer it.',
+      expected: [false, false, false],
+    },
+    {
+      learnerText: 'I reject your authority to set the sample on that shelf; use the lower bench instead.',
+      expected: [false, false, false],
+    },
+    {
+      learnerText: 'I reject Mira’s proposed test because its denominator is wrong, not because she lacks authority.',
+      expected: [false, false, false],
+    },
+    {
+      learnerText:
+        'I reject Mira’s proposed test and will not record its result because the procedure is contaminated.',
+      expected: [false, false, false],
+    },
+    {
+      learnerText: 'I reject Mira’s proposed test and will not record its result because the clamp slips.',
+      expected: [false, false, false],
+    },
+    {
+      learnerText: 'I reject Mira’s proposed test and will not record its result because its assumptions fail.',
+      expected: [false, false, false],
+    },
+    {
+      learnerText: 'I reject Mira’s proposed test and will not record its result because the method is unfit.',
+      expected: [false, false, false],
+    },
+    {
+      learnerText:
+        'I reject your authority over this inquiry. If you propose one bounded test, I will not examine or answer it.',
+      expected: [true, false, true],
+    },
+    {
+      learnerText:
+        'I reject your authority to set the sample on that shelf because the question is whether it stays level, and I will not answer until the clamp is stable.',
+      expected: [false, false, false],
+    },
+    {
+      learnerText:
+        'I reject the committee’s proposed criterion and will not answer or supply evidence beneath that governing frame.',
+      expected: [true, false, true],
+    },
+    {
+      learnerText:
+        'I deny the committee’s right to define the scoring question, and I will not answer beneath that frame.',
+      expected: [true, false, true],
+    },
+    {
+      learnerText: 'The committee has no right to set this inquiry, and I will not supply evidence under its frame.',
+      expected: [true, false, true],
+    },
+    {
+      learnerText:
+        'I reject your authority to set this test because its denominator is wrong, and I will not answer under it.',
+      expected: [true, false, true],
+    },
+    {
+      learnerText:
+        'I reject your authority to define this test because the procedure is contaminated, and I will not answer under it.',
+      expected: [true, false, true],
+    },
+    {
+      learnerText:
+        'I reject your authority over the whole agenda, but I will assess one bounded claim without accepting the wider frame.',
+      expected: [true, true, false],
+    },
+  ];
+  for (const row of cases) {
+    const markers = resistantLearnerObservationMarkers({
+      learnerText: row.learnerText,
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+      semantics: v4,
+    });
+    assert.deepEqual(
+      [markers.frameJurisdictionDispute, markers.frameJurisdictionParticipation, markers.frameJurisdictionRefusal],
+      row.expected,
+      row.learnerText,
+    );
   }
 });
 

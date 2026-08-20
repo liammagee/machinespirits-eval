@@ -14,6 +14,7 @@ export function createTutorStubApplicationTraceContext({
     appendTraceEvent,
     args,
     autoLearnerEnabled,
+    automatedLearnerTraceMetadata,
     autoSafetyTurns,
     autoStopOnGrounded,
     autoTurns,
@@ -251,6 +252,7 @@ export function createTutorStubApplicationTraceContext({
             stopOnGrounded: autoStopOnGrounded,
             profileId: automatedLearnerProfileId(args['auto-learner-profile']),
             profile: args['auto-learner-profile'],
+            ...automatedLearnerTraceMetadata,
           }
         : { enabled: false },
       mixedLearner: mixedLearnerEnabled

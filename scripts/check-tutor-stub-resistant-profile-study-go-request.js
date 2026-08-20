@@ -36,6 +36,17 @@ const FRAME_REFUSER_OPPORTUNITY_CRITICAL_SOURCE_CLOSURE = Object.freeze([
   'package-lock.json',
 ]);
 
+const FRAME_REFUSER_OPPORTUNITY_V4_CRITICAL_SOURCE_CLOSURE = Object.freeze([
+  ...FRAME_REFUSER_OPPORTUNITY_CRITICAL_SOURCE_CLOSURE,
+  'services/tutorStubCliPolicyRetry.js',
+  'services/tutorStubPromptTransport.js',
+  'services/tutorStubTutorAttemptRuntime.js',
+  'services/tutorStubTraceRuntime.js',
+  'services/tutorStubLabs.js',
+  'services/tutorStubApplicationTraceContext.js',
+  'services/tutorStubCliApplicationHost.js',
+]);
+
 function parseArgs(argv) {
   const args = { request: DEFAULT_REQUEST, json: false };
   for (let index = 0; index < argv.length; index += 1) {
@@ -216,12 +227,19 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       'the opportunity request must bind a non-empty critical executable source closure',
     );
     const closurePaths = sourceClosure.map((entry) => entry?.path);
+    const registrationVersion = readJson(bindingPath(request.bindings.registration)).version ?? 1;
+    const requiredCriticalSourceClosure =
+      registrationVersion === 4
+        ? FRAME_REFUSER_OPPORTUNITY_V4_CRITICAL_SOURCE_CLOSURE
+        : FRAME_REFUSER_OPPORTUNITY_CRITICAL_SOURCE_CLOSURE;
     assertion(
       checks,
       'frame-refuser-opportunity-critical-source-closure',
       new Set(closurePaths).size === closurePaths.length &&
-        FRAME_REFUSER_OPPORTUNITY_CRITICAL_SOURCE_CLOSURE.every((entry) => closurePaths.includes(entry)),
-      'launch, analyzer, observer, runtime, prefix, preflight, validator, world, route, and dependency files remain bound',
+        requiredCriticalSourceClosure.every((entry) => closurePaths.includes(entry)),
+      registrationVersion === 4
+        ? 'launch, analyzer, observer, runtime provenance, retry transport, metering, prefix, preflight, validator, world, route, and dependency files remain bound'
+        : 'launch, analyzer, observer, runtime, prefix, preflight, validator, world, route, and dependency files remain bound',
     );
   }
   for (const entry of sourceClosure) {
@@ -279,6 +297,26 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
             'prospective_v3_repair_budget_readiness',
           ].every((id) => endpointIds.includes(id)),
         'the v3 endpoint binds both typed failures, the production observer matrix, and deterministic repair readiness',
+      );
+    } else if (endpointRegistration.version === 4) {
+      const endpointIds = contract.endpoints?.map((row) => row.id) || [];
+      assertion(
+        checks,
+        'frame-refuser-opportunity-v4-endpoint-readiness-binding',
+        contract.runner?.packet_builder ===
+          'services/tutorStubResistanceAxisDiscriminationPreflight.js#buildTutorStubFrameRefuserOpportunityV4PreflightPackets' &&
+          contract.registration?.required_turns === 2 &&
+          contract.runner?.emitted_event_fields?.includes('observerMatrixAudit') &&
+          contract.runner?.emitted_event_fields?.includes('repairBudgetAudit') &&
+          contract.runner?.emitted_event_fields?.includes('deferredAdherenceAudit') &&
+          [
+            'frame_defiant_adherence_exhaustion_typed_failure',
+            'frame_refuser_adherence_exhaustion_typed_failure',
+            'prospective_v4_observer_matrix',
+            'prospective_v4_t1_t2_repair_budget_readiness',
+            'prospective_v4_t1_t2_deferred_adherence',
+          ].every((id) => endpointIds.includes(id)),
+        'the v4 endpoint binds the T1-T2 gate, both typed failures, observer matrix, deferred admission, and reservation-aware repair readiness',
       );
     }
   } else {
@@ -503,9 +541,19 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
           registered.measurement.controlObservation ===
             'frame_jurisdiction_dispute_with_contract_licensed_participation' &&
           registered.measurement.refusalRule === 'explicit_withholding_without_contract_licensed_participation' &&
+          registered.measurement.productiveParticipationPrecedesWithholding === true) ||
+        (registrationVersion === 4 &&
+          registered.measurement.observationSemantics === 'prospective_v4' &&
+          registered.measurement.controlObservation ===
+            'frame_jurisdiction_dispute_with_contract_licensed_participation' &&
+          registered.measurement.refusalRule === 'explicit_withholding_without_contract_licensed_participation' &&
           registered.measurement.productiveParticipationPrecedesWithholding === true),
       `opportunity registration version ${registrationVersion} keeps its declared observer semantics`,
     );
+    const v4 = registrationVersion === 4;
+    const maximumAttemptsPerDialogue = v4 ? 39 : 48;
+    const maximumPlannedModelAttempts = v4 ? 234 : 288;
+    const requiredTurns = v4 ? 2 : 8;
     assertion(
       checks,
       'frame-refuser-opportunity-design-binding',
@@ -515,10 +563,13 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         request.design.runSeed === 20260820 &&
         request.design.parallelism === 3 &&
         request.budget.dialogues === 6 &&
-        request.budget.maximumAttemptsPerDialogue === 48 &&
-        request.budget.maximumPlannedModelAttempts === 288 &&
+        request.budget.maximumAttemptsPerDialogue === maximumAttemptsPerDialogue &&
+        request.budget.maximumPlannedModelAttempts === maximumPlannedModelAttempts &&
+        (!v4 || (request.design.plannedRoleCallsPerDialogue === 13 && request.design.plannedRoleCallsTotal === 78)) &&
         request.budget.retryOrResumeAuthority === 'bounded_technical_recovery',
-      'two fresh three-run cohorts and the 288-attempt bounded-recovery ceiling remain frozen',
+      v4
+        ? 'two fresh three-run T1-T2 cohorts bind 78 planned role calls and the 234-reservation bounded-recovery ceiling'
+        : 'two fresh three-run cohorts and the 288-attempt bounded-recovery ceiling remain frozen',
     );
     assertion(
       checks,
@@ -542,7 +593,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         recovery.freshNonOverwritingDestinationForRecoveredUnits === true &&
         recovery.rerunValidOutputs === false &&
         recovery.selectAmongOutcomes === false &&
-        recovery.maximumTotalStudyAttemptsUnchanged === 288,
+        recovery.maximumTotalStudyAttemptsUnchanged === maximumPlannedModelAttempts,
       'technical recovery is limited to missing or failed units under the unchanged opportunity gate and ceiling',
     );
     assertion(
@@ -563,7 +614,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
             Array.isArray(request.measurement.controlParticipationForms) &&
             request.measurement.controlParticipationForms.join(',') ===
               registered.measurement.controlParticipationForms.join(',') &&
-            (registrationVersion !== 3 ||
+            (![3, 4].includes(registrationVersion) ||
               (request.measurement.observationSemantics === registered.measurement.observationSemantics &&
                 request.measurement.jurisdictionRule === registered.measurement.jurisdictionRule &&
                 request.measurement.productiveParticipationPrecedesWithholding ===
@@ -592,23 +643,53 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
           request.repairAdmission.invalidCandidateMayBePublished === false,
         'the request exactly binds the registered one-repair, 43-of-48 fail-before-call envelope',
       );
+    } else if (registrationVersion === 4) {
+      assertion(
+        checks,
+        'frame-refuser-opportunity-v4-repair-admission-binding',
+        JSON.stringify(canonicalJson(request.repairAdmission)) ===
+          JSON.stringify(canonicalJson(registered.repairAdmission)) &&
+          request.repairAdmission.maxFullRepairsPerT1T2 === 1 &&
+          request.repairAdmission.repairDecisionTurn === 2 &&
+          request.repairAdmission.repairsAtTurn1 === 0 &&
+          request.repairAdmission.modelCallBudgetPerDialogue === 39 &&
+          request.repairAdmission.baseCalls === 7 &&
+          request.repairAdmission.callsPerFullRepair === 2 &&
+          request.repairAdmission.permittedRepairCalls === 2 &&
+          request.repairAdmission.requiredTutorGuardReserve === 4 &&
+          request.repairAdmission.plannedWorstCaseCalls === 13 &&
+          request.repairAdmission.plannedRoleCallsTotal === 78 &&
+          request.repairAdmission.transportRetryLimitPerPlannedCall === 2 &&
+          request.repairAdmission.maximumReservationsPerPlannedCall === 3 &&
+          request.repairAdmission.maximumModelAttemptReservationsPerDialogue === 39 &&
+          request.repairAdmission.maximumModelAttemptReservationsTotal === 234 &&
+          request.repairAdmission.technicalRetryHeadroomReservationsPerDialogue === 26 &&
+          request.repairAdmission.reservationHeadroom === 0 &&
+          request.repairAdmission.boundedRecoveryConditionalOnUnusedCeiling === true &&
+          request.repairAdmission.failBeforeUnadmittedRepairCall === true &&
+          request.repairAdmission.turn1QualificationRequired === false &&
+          request.repairAdmission.nonqualifyingCandidateMayBePublishedAtT1 === true &&
+          request.repairAdmission.invalidCandidateMayBePublishedAtOrAfterT2 === false,
+        'the request binds one deferred T2 repair, 13 planned role calls, and the 39-per-dialogue/234-total retry-aware hard ceiling',
+      );
     }
-    const liveCommandOffset = registrationVersion === 3 ? 2 : 0;
+    const liveCommandOffset = registrationVersion >= 3 ? 2 : 0;
+    const requiredSemantics = v4 ? 'prospective_v4' : 'prospective_v3';
     assertion(
       checks,
       'frame-refuser-opportunity-live-command-shape',
-      (registrationVersion !== 3 ||
+      (registrationVersion < 3 ||
         (liveCommand[0] === 'env' &&
-          liveCommand[1] === 'TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS=prospective_v3')) &&
+          liveCommand[1] === `TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS=${requiredSemantics}`)) &&
         liveCommand[liveCommandOffset] === 'node' &&
         liveCommand[liveCommandOffset + 1] === 'scripts/run-tutor-stub-qa-matrix.js' &&
         commandArg(liveCommand, '--profiles') === expectedProfiles &&
         commandArg(liveCommand, '--policies') === 'field' &&
         commandArg(liveCommand, '--runs') === '3' &&
         commandArg(liveCommand, '--run-seed') === '20260820' &&
-        commandArg(liveCommand, '--turns') === '8' &&
-        commandArg(liveCommand, '--safety-turns') === '8' &&
-        commandArg(liveCommand, '--model-call-budget') === '48' &&
+        commandArg(liveCommand, '--turns') === String(requiredTurns) &&
+        commandArg(liveCommand, '--safety-turns') === String(requiredTurns) &&
+        commandArg(liveCommand, '--model-call-budget') === String(maximumAttemptsPerDialogue) &&
         commandArg(liveCommand, '--model') === request.design.models.tutor &&
         commandArg(liveCommand, '--analysis-model') === request.design.models.analysis &&
         commandArg(liveCommand, '--auto-learner-model') === request.design.models.learner &&
@@ -641,7 +722,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         analysisShell.includes('--required-traces 6') &&
         analysisShell.includes(`--required-profiles ${expectedProfiles}`) &&
         analysisShell.includes('--required-runs-per-profile 3') &&
-        analysisShell.includes('--required-turns 8') &&
+        analysisShell.includes(`--required-turns ${requiredTurns}`) &&
         analysisShell.includes('--required-policies field') &&
         analysisShell.includes(`--required-tutor-model ${request.design.models.tutor}`) &&
         analysisShell.includes(`--required-analysis-model ${request.design.models.analysis}`) &&
