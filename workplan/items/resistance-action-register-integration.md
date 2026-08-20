@@ -1479,3 +1479,36 @@ and explicit human approval.
   literal-HOLD V3 request must bind a fresh destination set, preserve the V2
   request as unexecuted superseded metadata, pass deterministic validation,
   and receive its own exact digest-bound approval before any launch.
+- 2026-08-20 — Prepared the powered boredom proof-DAG confirmation as a
+  deterministic zero-call HOLD request at
+  `config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v1.json`,
+  SHA-256
+  `0972e76083a7a89592a25d55820527e2b061afad0fdf72036f08790dd61dfe61`.
+  The packet pins merged readiness source
+  `1771eb3eaa8ab80a42c716e0e0079f62e63b608f` / tree
+  `114ab3cf90fd806647db1e19f26fa72cd47f9426`, all `44` critical source
+  files, the registered endpoint/certificate and Luna-low route, nine fresh
+  create-once batch roots, their recovery commands, and one fresh combined
+  report. Direct and isolated dependency-free validation pass `69` checks at
+  zero model calls and zero production writes.
+
+  The scientific design is unchanged: `36` wholly fresh independent boredom
+  dialogues (`18` warm, `18` plain), reproducible `3+3` blocked assignment in
+  each of six worlds, the fixed boredom-appropriate action, the existing
+  one-turn recovery endpoint, the two-turn objective proof-progress secondary,
+  one predeclared two-sided exact conditional blocked analysis with fixed
+  sequence, no interim analysis, and no reuse or pooling of the `12`
+  calibration dialogues. Attempt accounting remains an operational safeguard,
+  not a scientific objective: `60` per dialogue, `240` per four-dialogue
+  batch, `2160` for this study, and `4539` cumulatively while both powered
+  confirmations remain fully reserved from the actual `219`-attempt ledger.
+  Bounded recovery is limited to missing or machine-verified failed units under
+  unchanged protected inputs and caps; valid terminal outputs cannot be rerun
+  or selected among.
+
+  The request is still literal `HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL` with null
+  approval and both execution booleans false. Packaging, review, PR, CI, and
+  merge do not authorize a launch. The final boundary is the request's exact
+  digest-bound approval sentence, including the `2160` study safeguard and the
+  corrected `4539` cumulative safeguard; no live batch begins before that
+  sentence is supplied.

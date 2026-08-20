@@ -255,7 +255,7 @@ test('objective composite, recovery Boolean, and exact randomized plan fail clos
   assert.ok(Math.abs(exactBlockedScorePValue(nullBlocks) - 0.060811125) < 1e-12);
 });
 
-test('production readiness remains a HOLD and is not an authorization surface', () => {
+test('production readiness and the prepared request remain HOLD-only authorization boundaries', () => {
   const registration = loadTutorStubBoredomProofDagRegistration({ root: ROOT });
   assert.equal(registration.authorization.modelCallsAuthorized, false);
   assert.equal(registration.authorization.liveRunAuthorized, false);
@@ -269,8 +269,11 @@ test('production readiness remains a HOLD and is not an authorization surface', 
   assert.equal(registration.executionReadiness.liveExecutorAvailable, true);
   assert.equal(registration.executionReadiness.combinedAnalyzerAvailable, true);
   assert.equal(registration.executionReadiness.requestValidatorAvailable, true);
-  assert.equal(
-    fs.existsSync(path.join(ROOT, 'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v1.json')),
-    false,
-  );
+  const requestPath = path.join(ROOT, 'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v1.json');
+  assert.equal(fs.existsSync(requestPath), true);
+  const request = JSON.parse(fs.readFileSync(requestPath, 'utf8'));
+  assert.equal(request.status, 'HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL');
+  assert.equal(request.authorization.explicitHumanApproval, null);
+  assert.equal(request.authorization.modelCallsAuthorized, false);
+  assert.equal(request.authorization.liveRunAuthorized, false);
 });
