@@ -971,3 +971,40 @@ and explicit human approval.
   makes zero model calls and creates no successor request; after it merges, a
   fresh HOLD request must pin that merged source and wholly new create-once A/B
   destinations before any launch can be considered.
+- 2026-08-20 — Packaged the revision-3 successor action/register baseline HOLD
+  request at
+  `config/tutor-stub-resistance-action-register-baseline-study-go-request.v3.json`
+  with SHA-256
+  `568782ec4df4453f4c7e08d6f26afbfe8174bd33a134c6057c65bb9f9b71315d`.
+  It pins PR #727 merge
+  `c3fe3cc19c6964e1c93233fe3b5156398d373ddf` and tree
+  `b8c7fa6d00a9fef2a6cadc50b6fd424dcad693fc`, the complete 31-file
+  executable closure, the unchanged V2 registration, public V4-prefix bundle,
+  endpoint contract and certificate, zero-call preflight, consumed Luna-low
+  route result, exact initial and bounded-recovery commands, and one combined
+  analyzer command. Fresh A/B create-once roots are
+  `.tutor-stub-auto-eval/resistance-action-register-baseline-v2-successor-live-2026-08-20-a`
+  and
+  `.tutor-stub-auto-eval/resistance-action-register-baseline-v2-successor-live-2026-08-20-b`;
+  the combined report is separately create-once and all three destinations are
+  absent. The request binds consumed predecessor
+  `b28f62240e82301fed77f4690b59eaf6df2fac3c7e4812f053071efb89135c1c`,
+  partial-A root manifest
+  `6eec7d2edc8664833d56cf8a66aa6bf6a272ec04981d18fb3550b02ad6a6ea10`,
+  private-archive manifest
+  `d3c15b61a5bfffbc6fa9faa344e03776ea110c068f72157d4466c53930f5248b`,
+  and all six exact stopped trace hashes as excluded provenance: 31 charged
+  reservations, 28 completed attempts, three interrupted attempts, zero
+  provider errors, no batch B, analyzer, combined result, or seal, and no
+  recovery, reuse, pooling, or outcome selection from the stopped cohort. The
+  fresh two-batch ceiling remains 39 reservations per dialogue, 234 per batch,
+  and 468 combined, moving the standing programme ledger from `76/1200` to at
+  most `544/1200`. The standing authorization attachment remains
+  `4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b`;
+  the request itself preserves literal `HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL`,
+  null approval, and both authorization booleans false. Deterministic packaging
+  and isolated dependency-free replay passed 61 checks with zero model calls
+  and zero production writes. This remains a calibration-only baseline for
+  recovery, descriptive warm-versus-plain separation, and same-treatment
+  repeat stability; it licenses no matched-versus-mismatched, edged-register,
+  interaction, tutor-efficacy, learning, human-validity, or transfer claim.
