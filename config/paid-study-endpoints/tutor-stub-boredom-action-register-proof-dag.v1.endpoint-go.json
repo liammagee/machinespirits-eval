@@ -3,8 +3,8 @@
   "status": "endpoint_runtime_go",
   "study_id": "tutor-stub-boredom-action-register-proof-dag-v1",
   "contract_path": "config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v1.json",
-  "contract_sha256": "89364f8fc4527e3aeb8f71a707d5b60336e967681b36f5e9c6a506cec915c3ec",
-  "preflight_sha256": "ea22fa972148607e2c1d25a2c61fd58b8ebf653f76cd805a3a0a9db5d66b45fe",
+  "contract_sha256": "0ec4bc68772b1672d89e81c1a1be9b9d841c8b37956d1f6392eea523485a1696",
+  "preflight_sha256": "9c2d64972fbd08c7b45a1ea88c5b6aabe32596386cea8e3270a3b888117ae8bf",
   "authorization_scope": "Deterministic production executor, endpoint, analyzer, power, and request-validator readiness only; this certificate authorizes no model call, live study, request preparation, or programme-headroom consumption.",
-  "launch_gate": "A reviewed merged source closure, fresh digest-bound HOLD request, exact request blocking review, absent create-once destinations, and prelaunch verification against the standing human authorization remain required."
+  "launch_gate": "A reviewed merged source closure, fresh digest-bound HOLD request, exact request blocking review, absent create-once destinations, and prelaunch verification of the 2160-study and 4539-programme operational safeguards remain required."
 }

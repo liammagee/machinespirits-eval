@@ -11,15 +11,15 @@
     "liveRunAuthorized": false,
     "goRequestPrepared": false,
     "programmeLedgerBeforeStudy": {
-      "reservedAttempts": 185,
-      "ceiling": 1200,
-      "remaining": 1015
+      "reservedAttempts": 219,
+      "ceiling": 2379,
+      "remaining": 2160
     },
     "thisReadinessConsumesProgrammeHeadroom": false,
     "requiredBeforeAnyModelCall": [
       "merge the reviewed zero-call production executor, combined analyzer, request validator, and complete executable source closure",
       "prepare a fresh digest-bound HOLD request with nine absent create-once batch destinations and one absent combined-report destination",
-      "complete blocking review of the exact request digest and verify it matches the standing human authorization of the future request path and digest, 2160-attempt study cap, 4505-attempt cumulative ceiling, and bounded technical recovery boundary"
+      "complete blocking review of the exact request digest and explicitly bind the 2160-attempt study safeguard, 4539-attempt cumulative operational safeguard while both powered confirmations remain reserved, and bounded technical recovery boundary"
     ]
   },
   "evidence": {
@@ -301,19 +301,19 @@
     },
     "hardStudyAttemptCeiling": 2160,
     "programmeCeilingForThisStudyAlone": {
-      "ledgerBefore": 185,
+      "ledgerBefore": 219,
       "studyMaximum": 2160,
-      "requiredCeiling": 2345,
-      "amendmentAboveCurrent1200": 1145
+      "requiredCeiling": 2379,
+      "incrementAboveCurrentLedger": 2160
     },
     "programmeCeilingIfFrameRefusalConfirmationAlsoReserved": {
-      "ledgerBefore": 185,
+      "ledgerBefore": 219,
       "frameRefusalMaximum": 2160,
       "boredomMaximum": 2160,
-      "requiredCeiling": 4505,
-      "amendmentAboveCurrent1200": 3305,
-      "incrementAboveProposed2345FrameRefusalCeiling": 2160
+      "requiredCeiling": 4539,
+      "incrementAboveFrameRefusalSuccessorCeiling": 2160
     },
+    "attemptAccountingRole": "operational_execution_safeguard_only_not_scientific_endpoint_design_objective_or_sample_size_constraint",
     "boundedTechnicalRecovery": "missing_or_failed_units_only_within_unchanged_per_unit_batch_study_and_programme_caps",
     "validUnitReruns": false,
     "outcomeSelection": false,

@@ -153,7 +153,7 @@ function buildRequest({ destinationSuffix }) {
       liveRunAuthorized: false,
       standingAuthorizationAttachmentSha256: '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b',
       standingAuthorizationIncludesFutureRequestDigest: true,
-      programmeCeilingAmendmentAuthorizedExternally: 4505,
+      programmeCeilingOperationalSafeguard: 4539,
     },
     source: {
       launchCommit,
@@ -186,7 +186,7 @@ function buildRequest({ destinationSuffix }) {
         maximumAttemptsPerDialogueUnchanged: 60,
         maximumAttemptsPerBatchUnchanged: 240,
         maximumTotalStudyAttemptsUnchanged: 2160,
-        programmeCeilingUnchanged: 4505,
+        programmeCeilingUnchanged: 4539,
       },
     },
     design: {
@@ -224,13 +224,14 @@ function buildRequest({ destinationSuffix }) {
       dialoguesPerBatch: 4,
       maximumAttemptsPerBatch: 240,
       maximumPlannedModelAttempts: 2160,
-      programmeLedgerBefore: 185,
-      programmeCeilingBefore: 1200,
+      programmeLedgerBefore: 219,
+      programmeCeilingBefore: 2379,
       frameRefusalConfirmationReservedAttempts: 2160,
-      programmeCeilingAmendment: 3305,
-      programmeCeilingAfter: 4505,
-      programmeLedgerAfterBoredomMaximum: 2345,
-      programmeReservedAfterBothMaximum: 4505,
+      programmeOperationalSafeguardIncrement: 2160,
+      programmeCeilingAfter: 4539,
+      programmeLedgerAfterBoredomMaximum: 2379,
+      programmeReservedAfterBothMaximum: 4539,
+      attemptAccountingRole: 'operational_execution_safeguard_only',
       retryOrResumeAuthority: 'bounded_technical_recovery',
     },
     measurement: {
@@ -302,7 +303,7 @@ function templateText(request) {
   return `${JSON.stringify(template, null, 2)}\n`;
 }
 
-test('boredom proof-DAG GO validator and packager bind the exact 2160 and 4505 ceilings without executing', (t) => {
+test('boredom proof-DAG GO validator and packager bind scientific design separately from operational safeguards', (t) => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-go-'));
   const output = `.tutor-stub-auto-eval/.test-boredom-proof-dag-go-${process.pid}.json`;
   t.after(() => {
@@ -317,8 +318,9 @@ test('boredom proof-DAG GO validator and packager bind the exact 2160 and 4505 c
   assert.equal(report.modelCalls, 0);
   assert.equal(report.productionWrites, 0);
   assert.equal(report.budget.maximumPlannedModelAttempts, 2160);
-  assert.equal(report.budget.programmeCeilingAfter, 4505);
-  assert.match(report.exactApprovalStatement, /cumulative resistance-action-register programme ceiling of 4,505/u);
+  assert.equal(report.budget.programmeCeilingAfter, 4539);
+  assert.equal(report.budget.attemptAccountingRole, 'operational_execution_safeguard_only');
+  assert.match(report.exactApprovalStatement, /4,539-attempt cumulative programme safeguard/u);
   assert.match(report.exactApprovalStatement, /exact conditional blocked analysis/u);
 
   const templatePath = path.join(temporary, 'template.json');
@@ -337,7 +339,7 @@ test('boredom proof-DAG GO validator and packager bind the exact 2160 and 4505 c
 
   for (const mutate of [
     (value) => {
-      value.budget.programmeCeilingAfter = 4504;
+      value.budget.programmeCeilingAfter = 4538;
     },
     (value) => {
       value.boredomActionRegisterProofDag.priorOutcomesPooled = true;

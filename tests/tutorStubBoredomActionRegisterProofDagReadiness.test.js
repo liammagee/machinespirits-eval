@@ -156,10 +156,12 @@ test('attempt arithmetic and ceiling amendments fail closed', () => {
   assert.equal(registration.executionReadiness.dialogue.oneCumulativeFullLearnerRepairCalls, 2);
   assert.equal(registration.executionReadiness.dialogue.maximumReservations, 36 * 20 * 3);
   assert.equal(registration.executionReadiness.hardStudyAttemptCeiling, 2160);
-  assert.equal(185 + 2160, 2345);
-  assert.equal(2345 - 1200, 1145);
-  assert.equal(185 + 2160 + 2160, 4505);
-  assert.equal(4505 - 1200, 3305);
+  assert.equal(219 + 2160, 2379);
+  assert.equal(219 + 2160 + 2160, 4539);
+  assert.equal(
+    registration.executionReadiness.attemptAccountingRole,
+    'operational_execution_safeguard_only_not_scientific_endpoint_design_objective_or_sample_size_constraint',
+  );
   const drifted = structuredClone(registration);
   drifted.executionReadiness.hardStudyAttemptCeiling = 2159;
   assert.equal(validateTutorStubBoredomProofDagRegistration(drifted).ok, false);

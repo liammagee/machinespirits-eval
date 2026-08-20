@@ -1400,3 +1400,21 @@ and explicit human approval.
   requires an explicit `2345`-to-`2379` ceiling amendment and approval of that
   new request digest; the already consumed V1 approval cannot authorize the
   changed source, observation semantics, destination set, or programme cap.
+- 2026-08-20 — Reconciled the boredom confirmation with the parallel
+  frame-refusal closeout before publication. The earlier `4505` calculation
+  was correct at a `185`-attempt ledger, but the stopped frame-refusal block
+  subsequently consumed `34` attempts and moved the ledger to `219` while its
+  scientifically required wholly fresh `2160`-attempt successor remained
+  reserved. Preserving both powered 18-per-arm designs therefore requires the
+  operational safeguard `219 + 2160 + 2160 = 4539`; the boredom study alone
+  reaches at most `2379`.
+
+  Attempt counts are execution safeguards only. They are not endpoints,
+  estimands, power targets, design objectives, or reasons to reduce the 36
+  fresh dialogues, six-world blocked allocation, fixed-sequence analysis, or
+  independent replication requirement. The registration, endpoint, runner,
+  future-request validator, and tests now bind `60` per dialogue, `240` per
+  batch, `2160` for the boredom study, and `4539` cumulatively while both
+  powered confirmations remain reserved. The request remains unprepared and
+  literal HOLD; zero model calls or programme attempts were consumed by this
+  reconciliation.

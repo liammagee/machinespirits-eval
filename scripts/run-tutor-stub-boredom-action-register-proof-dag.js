@@ -293,7 +293,7 @@ export function buildTutorStubBoredomProofDagBatchPlan({
       maximum_model_attempt_reservations_per_dialogue: PER_DIALOGUE_CAP,
       maximum_model_attempt_reservations: PER_BATCH_CAP,
       study_maximum_model_attempt_reservations: 2160,
-      programme_ceiling: 4505,
+      programme_ceiling: 4539,
       enlarges_ceiling: false,
     },
     destination: path.relative(ROOT, absoluteDestination),

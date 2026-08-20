@@ -3,7 +3,7 @@
   "study_id": "tutor-stub-boredom-action-register-proof-dag-v1",
   "registration": {
     "registration_path": "config/tutor-stub-boredom-action-register-proof-dag-registration.v1.json",
-    "registration_sha256": "110381f50b388dae11649611ebef027c22764a4a649fda52019f4197acc4a367",
+    "registration_sha256": "72f293cee1e364818bd6baa30a36df2d908af8d3c9f6df664731039d09d8e0a8",
     "primary_endpoint_ids": ["profile_specific_resistance_recovery"],
     "key_secondary_endpoint_id": "objective_proof_progress_by_two_turns",
     "required_profile": "bored",
@@ -46,12 +46,12 @@
       "maximum_model_attempt_reservations_per_dialogue": 60,
       "maximum_model_attempt_reservations_per_batch": 240,
       "combined_maximum_model_attempt_reservations": 2160,
-      "programme_ceiling_if_frame_refusal_confirmation_also_reserved": 4505,
+      "programme_ceiling_if_frame_refusal_confirmation_also_reserved": 4539,
       "combined_analysis_only": true,
       "interim_analysis": false,
       "valid_unit_reruns": false,
       "outcome_selection": false,
-      "bounded_technical_recovery": "missing_or_failed_units_only_within_unchanged_60_per_dialogue_240_per_batch_2160_study_and_4505_programme_caps"
+      "bounded_technical_recovery": "missing_or_failed_units_only_within_unchanged_60_per_dialogue_240_per_batch_2160_study_and_4539_programme_caps"
     },
     "packet_cap_bytes": 100000,
     "emitted_event_fields": [

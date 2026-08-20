@@ -695,7 +695,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
           contract.runner?.batch_contract?.maximum_model_attempt_reservations_per_dialogue === 60 &&
           contract.runner?.batch_contract?.maximum_model_attempt_reservations_per_batch === 240 &&
           contract.runner?.batch_contract?.combined_maximum_model_attempt_reservations === 2160 &&
-          contract.runner?.batch_contract?.programme_ceiling_if_frame_refusal_confirmation_also_reserved === 4505 &&
+          contract.runner?.batch_contract?.programme_ceiling_if_frame_refusal_confirmation_also_reserved === 4539 &&
           contract.runner?.batch_contract?.combined_analysis_only === true &&
           contract.runner?.batch_contract?.interim_analysis === false &&
           contract.runner?.batch_contract?.valid_unit_reruns === false &&
@@ -1108,15 +1108,16 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         request.budget.dialoguesPerBatch === 4 &&
         request.budget.maximumAttemptsPerBatch === 240 &&
         request.budget.maximumPlannedModelAttempts === 2160 &&
-        request.budget.programmeLedgerBefore === 185 &&
-        request.budget.programmeCeilingBefore === 1200 &&
+        request.budget.programmeLedgerBefore === 219 &&
+        request.budget.programmeCeilingBefore === 2379 &&
         request.budget.frameRefusalConfirmationReservedAttempts === 2160 &&
-        request.budget.programmeCeilingAmendment === 3305 &&
-        request.budget.programmeCeilingAfter === 4505 &&
-        request.budget.programmeLedgerAfterBoredomMaximum === 2345 &&
-        request.budget.programmeReservedAfterBothMaximum === 4505 &&
+        request.budget.programmeOperationalSafeguardIncrement === 2160 &&
+        request.budget.programmeCeilingAfter === 4539 &&
+        request.budget.programmeLedgerAfterBoredomMaximum === 2379 &&
+        request.budget.programmeReservedAfterBothMaximum === 4539 &&
+        request.budget.attemptAccountingRole === 'operational_execution_safeguard_only' &&
         request.budget.retryOrResumeAuthority === 'bounded_technical_recovery',
-      'the exact blocked test needs 18 per arm and binds 60 per dialogue, 2160 for boredom, and 4505 cumulatively with both confirmations reserved',
+      'the exact blocked test needs 18 per arm; attempt counts separately bind 60 per dialogue, 2160 for boredom, and 4539 as the cumulative operational safeguard',
     );
     const recovery = gate.recoveryBoundary;
     assertion(
@@ -1131,7 +1132,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         recovery.maximumAttemptsPerDialogueUnchanged === 60 &&
         recovery.maximumAttemptsPerBatchUnchanged === 240 &&
         recovery.maximumTotalStudyAttemptsUnchanged === 2160 &&
-        recovery.programmeCeilingUnchanged === 4505,
+        recovery.programmeCeilingUnchanged === 4539,
       'bounded recovery may fill only missing or failed units under every unchanged protected input and cap',
     );
     assertion(
@@ -2201,7 +2202,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       ? 'bounded technical recovery authority for missing or failed units only.'
       : 'no retry or resume authority.';
   const exactApprovalStatement = isBoredomActionRegisterProofDag
-    ? `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one 36-dialogue Luna boredom matched-action warm-versus-plain proof-DAG confirmation with 18 dialogues per arm, a hard ceiling of 2,160 model attempts, one predeclared two-sided exact conditional blocked analysis with fixed-sequence proof-progress testing, no interim analysis, no reuse or pooling of prior dialogues or outcomes, a cumulative resistance-action-register programme ceiling of 4,505 attempts while both confirmations remain reserved, and bounded technical recovery authority for missing or failed units only within unchanged protected inputs and caps.`
+    ? `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one 36-dialogue Luna boredom matched-action warm-versus-plain proof-DAG confirmation with 18 dialogues per arm, one predeclared two-sided exact conditional blocked analysis with fixed-sequence proof-progress testing, no interim analysis, no reuse or pooling of prior dialogues or outcomes, a 2,160-attempt study safeguard and 4,539-attempt cumulative programme safeguard while both powered confirmations remain reserved, and bounded technical recovery authority for missing or failed units only within unchanged protected inputs and safeguards.`
     : isActionRegisterConfirmation
       ? isActionRegisterConfirmationSuccessor
         ? `I amend the resistance-action-register programme ceiling from 2,345 to 2,379 model attempts and approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1 confirmation block, and bounded technical recovery authority for missing or failed units only within the unchanged 2,379-attempt programme ceiling.`
