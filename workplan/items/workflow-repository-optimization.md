@@ -281,3 +281,15 @@ Log:
   one-offs, and the exported/tested recognition orchestrator remain in place;
   no artifact, cache, worktree, external store, model call, or Git history was
   removed, written, invoked, or rewritten.
+- 2026-08-20 — Re-synchronized Wave 4A after PR #718 advanced `main`, retaining
+  its V4 request and resistance-card update. Against current `main`
+  `c6e4211d`, the exact outcome is four fewer tracked paths and 189,762 fewer
+  tracked bytes; executable source falls by five files / 4,325 lines. Contract,
+  lint, shard 2 (4,091 pass / 7 registered skips), concurrency, validation,
+  workplan, manifest, formatting, and diff checks pass. Shard 1 reproduces the
+  already-recorded `writingPadNarrativeBuilder` local baseline failure while
+  passing 4,999 tests with 11 registered skips; tutor-core reproduces its paired
+  `writingPadInternalPathDelivery` local baseline failure while passing 136
+  tests. Neither surface differs from `main`; hosted full CI remains the
+  publication gate. Reports are retained under `.test-tmp/wave4-*` and
+  `.test-tmp/local-ci/2026-08-20T06-01-46-574Z/`.
