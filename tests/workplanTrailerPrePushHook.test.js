@@ -26,7 +26,7 @@ function runHook(input, env = {}) {
     cwd: ROOT,
     input,
     encoding: 'utf8',
-    env: { ...process.env, ...env },
+    env: { ...process.env, GIT_NO_LAZY_FETCH: '1', ...env },
   });
 }
 

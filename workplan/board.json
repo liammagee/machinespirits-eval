@@ -1,20 +1,20 @@
 {
-  "generated": "2026-08-20T00:41:27.633Z",
+  "generated": "2026-08-20T01:02:54.733Z",
   "counts": {
-    "total": 519,
+    "total": 520,
     "byStatus": {
       "done": 490,
       "blocked": 7,
       "dropped": 10,
       "triaged": 1,
       "review": 3,
-      "active": 4,
+      "active": 5,
       "archived": 4
     },
     "byType": {
       "research": 80,
       "experiment": 87,
-      "infra": 115,
+      "infra": 116,
       "maintenance": 215,
       "content": 4,
       "ops": 10,
@@ -340,6 +340,37 @@
         "registers"
       ],
       "branch": "codex/frame-defiant-control-repair"
+    },
+    {
+      "id": "workflow-repository-optimization",
+      "title": "Close the remaining workflow and repository optimization gaps",
+      "status": "active",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-19",
+      "updated": "2026-08-19",
+      "branch": "codex/workflow-repository-optimization",
+      "verification": "Reproducible before/after measurements show that local and hosted CI select the same fail-closed profiles, avoid measured orchestration and test delays, and preserve required coverage; later repository-state tranches retain restorable evidence and authoritative workplan sources without destructive cleanup or history rewriting.",
+      "links": {
+        "items": [
+          "optimize-ci-agent-iteration-loop",
+          "local-ci-parity-runner",
+          "local-ci-pr-creation-gate",
+          "shorten-full-ci-critical-path",
+          "add-validator-only-ci-profile",
+          "optimize-local-node-execution",
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "ci",
+        "latency",
+        "developer-experience",
+        "worktrees",
+        "repository-hygiene"
+      ]
     },
     {
       "id": "edged-register-stub-dag-replication",
