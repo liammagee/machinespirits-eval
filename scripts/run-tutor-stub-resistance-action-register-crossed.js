@@ -301,6 +301,13 @@ export function buildTutorStubResistanceActionRegisterBatchPlan({
   const absoluteDestination = path.resolve(destination);
   const sourceCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const sourceTree = execFileSync('git', ['rev-parse', 'HEAD^{tree}'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const sourceStatus = execFileSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  }).trim();
+  if (sourceStatus) {
+    throw new Error('resistance action/register live batch requires a clean source checkout');
+  }
   if (expectedSourceCommit && expectedSourceCommit !== sourceCommit) {
     throw new Error(`live source drift: expected ${expectedSourceCommit}, found ${sourceCommit}`);
   }

@@ -12,6 +12,7 @@ import {
 } from '../services/tutorStubResistanceActionRegisterExecution.js';
 import { scoreTutorStubResistanceRecovery } from '../services/tutorStubResistanceActionRegisterStudy.js';
 import { observeResistantLearnerTurn } from '../services/resistantLearnerObservation.js';
+import { buildTutorStubResistanceActionRegisterBatchPlan } from './run-tutor-stub-resistance-action-register-crossed.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v2.json';
@@ -201,6 +202,11 @@ function exactBatch(root, expectedRepeat, expectedSourceCommit) {
     if (!fs.existsSync(required)) throw new Error(`combined analysis refuses partial batch: missing ${required}`);
   }
   const plan = readJson(planPath);
+  const registeredPlan = buildTutorStubResistanceActionRegisterBatchPlan({
+    repeat: expectedRepeat,
+    destination: absolute,
+    expectedSourceCommit,
+  });
   const initial = readJson(initialResultPath);
   const result = readJson(resultPath);
   const seal = readJson(sealPath);
@@ -226,6 +232,9 @@ function exactBatch(root, expectedRepeat, expectedSourceCommit) {
     path.resolve(ROOT, plan.destination) !== absolute
   ) {
     throw new Error(`batch ${expectedRepeat} is incomplete, unsealed, over budget, or selection-contaminated`);
+  }
+  if (JSON.stringify(plan) !== JSON.stringify(registeredPlan)) {
+    throw new Error(`batch ${expectedRepeat} plan or command drifted from the registered live execution plan`);
   }
   if (expectedSourceCommit && plan.source?.commit !== expectedSourceCommit) {
     throw new Error(`batch ${expectedRepeat} source commit does not match the GO request`);
@@ -290,6 +299,7 @@ function assertObservedRuntime({ runStart, events, job, batch, finalTraceBudget 
   const observedModelAttemptEvents = events.filter((event) =>
     ['model_call', 'model_call_error', 'model_call_aborted'].includes(event.type),
   );
+  const failedModelAttemptEvents = observedModelAttemptEvents.filter((event) => event.type !== 'model_call');
   const requiredRoleTurns = [
     ['tutor_stub_tutor', 1],
     ['tutor_stub_tutor', 2],
@@ -304,14 +314,33 @@ function assertObservedRuntime({ runStart, events, job, batch, finalTraceBudget 
   const allObservedCallsPinned = observedModelAttemptEvents.every(
     (event) => event.provider === 'codex' && event.model === 'gpt-5.6-luna',
   );
-  const unexpectedFrozenPrefixCalls = observedModelAttemptEvents.some(
-    (event) =>
-      event.role === 'tutor_stub_opening' ||
-      (Number(event.turn) === 1 && ['tutor_stub_auto_learner', 'tutor_stub_learner_analysis'].includes(event.role)),
+  const successfulEffortPinned = observedModelCalls.every((event) => event.response?.effort === 'low');
+  const failedEffortPinned = failedModelAttemptEvents.every(
+    (event) => event.request?.cliEffort === 'low' || event.request?.config?.cliEffort === 'low',
   );
+  const allowedTutorRoles = new Set([
+    'tutor_stub_tutor',
+    'tutor_stub_tutor_actorial_part_repair',
+    'tutor_stub_tutor_clue_insertion',
+    'tutor_stub_tutor_composition_repair',
+    'tutor_stub_tutor_fallback',
+    'tutor_stub_tutor_plain_recovery',
+    'tutor_stub_tutor_question_support_repair',
+    'tutor_stub_tutor_recovery',
+    'tutor_stub_tutor_self_correction',
+    'tutor_stub_tutor_source_voice_repair',
+  ]);
+  const allowedObservedAttempt = (event) => {
+    const turn = Number(event.turn);
+    if (event.role === 'tutor_stub_auto_learner') return turn === 2 || turn === 3;
+    if (event.role === 'tutor_stub_learner_analysis') return turn === 2 || turn === 3;
+    return allowedTutorRoles.has(event.role) && (turn === 1 || turn === 2);
+  };
+  const observedAttemptEnvelopePinned = observedModelAttemptEvents.every(allowedObservedAttempt);
   if (
     recipe?.schema !== 'machinespirits.tutor-stub.session-recipe.v1' ||
     metadata?.provenance?.git?.sha !== batch.plan.source.commit ||
+    metadata?.provenance?.git?.dirty !== false ||
     config?.identity?.world?.id !== 'world_005_marrick' ||
     metadata?.experiment?.runSeed !== 20260820 ||
     metadata?.experiment?.profile !== 'frame_refuser' ||
@@ -340,7 +369,9 @@ function assertObservedRuntime({ runStart, events, job, batch, finalTraceBudget 
     routePinned !== true ||
     observedRequiredCalls !== true ||
     allObservedCallsPinned !== true ||
-    unexpectedFrozenPrefixCalls
+    successfulEffortPinned !== true ||
+    failedEffortPinned !== true ||
+    observedAttemptEnvelopePinned !== true
   ) {
     throw new Error(`trace ${job.id} violates its observed Luna route, runtime, horizon, or semantics pins`);
   }
@@ -354,8 +385,8 @@ function analyzeTrace({ batch, resultRow, loaded }) {
   const job = batch.planJobs.get(resultRow.job_id);
   if (!job) throw new Error(`result ${resultRow.job_id} is not in its frozen batch plan`);
   const registeredJob = resolveTutorStubResistanceActionRegisterExecutionJob({ loaded, jobId: job.id }).job;
-  const registeredProjection = ({ command: _command, ...value }) => value;
-  if (JSON.stringify(registeredProjection(job)) !== JSON.stringify(registeredProjection(registeredJob))) {
+  const { command: _command, ...registeredJobWithoutCommand } = job;
+  if (JSON.stringify(registeredJobWithoutCommand) !== JSON.stringify(registeredJob)) {
     throw new Error(`batch plan job ${job.id} drifted from the frozen registration and prefix bundle`);
   }
   const tracePath = path.resolve(ROOT, resultRow.trace);
@@ -399,8 +430,23 @@ function analyzeTrace({ batch, resultRow, loaded }) {
     throw new Error(`trace ${job.id} contains unreserved observed model calls`);
   }
   const assignment = interventions[0].intervention?.assignment;
+  const interventionStatus = interventions[0].intervention?.status;
+  const safetyOverride = interventions[0].intervention?.safety_override || null;
+  const protectedCondition = [
+    'comprehension_repair',
+    'protected_affect',
+    'content_bearing_uptake_already_visible',
+  ].includes(safetyOverride?.reason);
+  const appliedAdherent =
+    interventionStatus === 'applied' && safetyOverride?.applied === false && safetyOverride?.reason == null;
+  const safetyOverrideNonadherent =
+    interventionStatus === 'safety_override_nonadherent' &&
+    safetyOverride?.applied === true &&
+    protectedCondition &&
+    safetyOverride?.assigned_register === assignment?.register &&
+    safetyOverride?.delivered_register === 'plain';
   if (
-    interventions[0].intervention?.status !== 'applied' ||
+    (!appliedAdherent && !safetyOverrideNonadherent) ||
     assignment?.action_fit !== 'matched' ||
     assignment?.pedagogical_move !== 'test_bounded_distinction' ||
     assignment?.realization !== job.treatment.realization ||
@@ -413,25 +459,20 @@ function analyzeTrace({ batch, resultRow, loaded }) {
   }
   const responseAudit = trigger.responseConfigurationAudit;
   const actionVisible = responseAudit?.axes?.action_family?.visible;
-  const registerVisible = responseAudit?.axes?.engagement_stance?.visible;
-  const safetyOverride = interventions[0].intervention?.safety_override || null;
+  const deliveredRegisterVisible = responseAudit?.axes?.engagement_stance?.visible;
+  const registerVisible = safetyOverrideNonadherent ? false : deliveredRegisterVisible;
   const expectedDeliveredRegister =
     safetyOverride?.applied === true ? safetyOverride.delivered_register : assignment.register;
   if (
     typeof actionVisible !== 'boolean' ||
-    typeof registerVisible !== 'boolean' ||
+    typeof deliveredRegisterVisible !== 'boolean' ||
     typeof safetyOverride?.applied !== 'boolean' ||
     responseAudit?.axes?.action_family?.selected !== job.treatment.host_action_family ||
     responseAudit?.axes?.engagement_stance?.selected !== expectedDeliveredRegister
   ) {
     throw new Error(`trace ${job.id} lacks typed action/register visibility evidence on its treatment turn`);
   }
-  const protectedCondition = [
-    'comprehension_repair',
-    'protected_affect',
-    'content_bearing_uptake_already_visible',
-  ].includes(safetyOverride?.reason);
-  if (protectedCondition !== (safetyOverride.applied === true)) {
+  if (protectedCondition !== safetyOverrideNonadherent) {
     throw new Error(`trace ${job.id} has inconsistent protected-condition and safety-override provenance`);
   }
   const observation = observeResistantLearnerTurn({

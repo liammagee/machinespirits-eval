@@ -119,8 +119,16 @@ function syntheticLiveTrace({ job, plan, bundleSha256, fidelity = {}, modelCallB
     ['tutor_stub_learner_analysis', 3],
   ].flatMap(([role, turn]) => [
     { type: 'model_call_budget_reserved', role, turn },
-    { type: 'model_call', role, turn, provider: 'codex', model: 'gpt-5.6-luna' },
+    {
+      type: 'model_call',
+      role,
+      turn,
+      provider: 'codex',
+      model: 'gpt-5.6-luna',
+      response: { effort: 'low' },
+    },
   ]);
+  const safetyOverrideReason = fidelity.safetyOverrideReason || null;
   return [
     {
       type: 'run_start',
@@ -187,7 +195,7 @@ function syntheticLiveTrace({ job, plan, bundleSha256, fidelity = {}, modelCallB
       type: 'resistance_action_register_intervention_applied',
       turn: 1,
       intervention: {
-        status: 'applied',
+        status: safetyOverrideReason ? 'safety_override_nonadherent' : 'applied',
         assignment: {
           action_fit: 'matched',
           pedagogical_move: 'test_bounded_distinction',
@@ -196,7 +204,14 @@ function syntheticLiveTrace({ job, plan, bundleSha256, fidelity = {}, modelCallB
           repeat: job.treatment.repeat,
           batch_id: job.treatment.batch_id,
         },
-        safety_override: { applied: false },
+        safety_override: safetyOverrideReason
+          ? {
+              applied: true,
+              assigned_register: job.treatment.register,
+              delivered_register: 'plain',
+              reason: safetyOverrideReason,
+            }
+          : { applied: false, assigned_register: job.treatment.register, delivered_register: job.treatment.register },
       },
     },
     ...observedCalls,
@@ -217,7 +232,7 @@ function syntheticLiveTrace({ job, plan, bundleSha256, fidelity = {}, modelCallB
                     visible: fidelity.actionVisible ?? true,
                   },
                   engagement_stance: {
-                    selected: job.treatment.register,
+                    selected: safetyOverrideReason ? 'plain' : job.treatment.register,
                     visible: fidelity.registerVisible ?? true,
                   },
                 },
@@ -1263,6 +1278,16 @@ test('v2 execution prebinds exactly six unique jobs in each 234-cap create-once 
     );
   }
   assert.notEqual(a.destination, b.destination);
+  const dirtyMarker = path.join(ROOT, `RESISTANCE_ACTION_REGISTER_DIRTY_GUARD_${process.pid}`);
+  fs.writeFileSync(dirtyMarker, 'dirty source guard\n');
+  try {
+    assert.throws(
+      () => buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'A', destination: `${temporary}-dirty` }),
+      /requires a clean source checkout/u,
+    );
+  } finally {
+    fs.rmSync(dirtyMarker, { force: true });
+  }
 });
 
 test('v2 combined analyzer refuses partial assembly and completes all 12 exact cells only after both seals', (t) => {
@@ -1344,6 +1369,38 @@ test('v2 combined analyzer reads treatment fidelity and fails its interpretabili
   assert.equal(report.interpretation_status, 'interpretability_gate_failed_no_rerun_or_efficacy_interpretation');
 });
 
+test('v2 combined analyzer retains a protected safety override ITT without crediting assigned-register fidelity', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'resistance-action-register-safety-'));
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const batchA = path.join(temporary, 'batch-a');
+  const batchB = path.join(temporary, 'batch-b');
+  const planA = buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'A', destination: batchA });
+  const planB = buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'B', destination: batchB });
+  const overrideJob = planA.jobs.find((job) => job.treatment.register === 'warm');
+  writeSyntheticBatch(batchA, planA, {
+    fidelityByJob: { [overrideJob.id]: { safetyOverrideReason: 'protected_affect' } },
+  });
+  writeSyntheticBatch(batchB, planB);
+
+  const report = analyzeTutorStubResistanceActionRegisterBaseline({
+    batchA,
+    batchB,
+    expectedSourceCommit: planA.source.commit,
+  });
+  const row = report.rows.find((candidate) => candidate.case_id === overrideJob.id);
+  assert.deepEqual(row.fidelity, {
+    action_visible: true,
+    register_visible: false,
+    safety_override: true,
+    protected_condition: true,
+  });
+  assert.equal(report.summary.treatment_fidelity.register_visibility_rate, 11 / 12);
+  assert.equal(report.summary.treatment_fidelity.protected_condition_rate, 1 / 12);
+  assert.equal(report.summary.treatment_fidelity.safety_override_rate, 1 / 12);
+  assert.equal(report.endpoint_status.action_register_fidelity_and_safety, 'complete');
+  assert.equal(report.summary.treatment_fidelity.valid_unit_rerun_authorized, false);
+});
+
 test('v2 combined analyzer fails closed on missing fidelity, runtime drift, and alternative traces', (t) => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'resistance-action-register-integrity-'));
   t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
@@ -1389,6 +1446,63 @@ test('v2 combined analyzer fails closed on missing fidelity, runtime drift, and 
     /violates its observed Luna route, runtime, horizon, or semantics pins/u,
   );
 
+  const dirtyTrace = makePair('dirty-trace');
+  mutateSyntheticBatchTrace(dirtyTrace.batchA, dirtyTrace.planA.jobs[0].id, (events) => {
+    const start = events.find((event) => event.type === 'run_start');
+    start.metadata.provenance.git.dirty = true;
+    return events;
+  });
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: dirtyTrace.batchA,
+        batchB: dirtyTrace.batchB,
+        expectedSourceCommit: dirtyTrace.planA.source.commit,
+      }),
+    /violates its observed Luna route, runtime, horizon, or semantics pins/u,
+  );
+
+  const effortDrift = makePair('effort-drift');
+  mutateSyntheticBatchTrace(effortDrift.batchA, effortDrift.planA.jobs[0].id, (events) => {
+    const call = events.find((event) => event.type === 'model_call');
+    call.response.effort = 'medium';
+    return events;
+  });
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: effortDrift.batchA,
+        batchB: effortDrift.batchB,
+        expectedSourceCommit: effortDrift.planA.source.commit,
+      }),
+    /violates its observed Luna route, runtime, horizon, or semantics pins/u,
+  );
+
+  const outOfEnvelope = makePair('out-of-envelope');
+  mutateSyntheticBatchTrace(outOfEnvelope.batchA, outOfEnvelope.planA.jobs[0].id, (events) => {
+    events.push(
+      { type: 'model_call_budget_reserved', role: 'tutor_stub_tutor', turn: 3 },
+      {
+        type: 'model_call',
+        role: 'tutor_stub_tutor',
+        turn: 3,
+        provider: 'codex',
+        model: 'gpt-5.6-luna',
+        response: { effort: 'low' },
+      },
+    );
+    return events;
+  });
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: outOfEnvelope.batchA,
+        batchB: outOfEnvelope.batchB,
+        expectedSourceCommit: outOfEnvelope.planA.source.commit,
+      }),
+    /violates its observed Luna route, runtime, horizon, or semantics pins/u,
+  );
+
   const planDrift = makePair('plan-drift');
   const planPath = path.join(planDrift.batchA, 'batch-plan.json');
   const sealPath = path.join(planDrift.batchA, 'batch-seal.json');
@@ -1405,7 +1519,26 @@ test('v2 combined analyzer fails closed on missing fidelity, runtime drift, and 
         batchB: planDrift.batchB,
         expectedSourceCommit: planDrift.planA.source.commit,
       }),
-    /drifted from the frozen registration and prefix bundle/u,
+    /plan or command drifted from the registered live execution plan/u,
+  );
+
+  const commandDrift = makePair('command-drift');
+  const commandPlanPath = path.join(commandDrift.batchA, 'batch-plan.json');
+  const commandSealPath = path.join(commandDrift.batchA, 'batch-seal.json');
+  const commandPlan = JSON.parse(fs.readFileSync(commandPlanPath, 'utf8'));
+  commandPlan.jobs[0].command.env.TUTOR_STUB_REMEMBER_SETTINGS = '1';
+  writeJson(commandPlanPath, commandPlan);
+  const commandSeal = JSON.parse(fs.readFileSync(commandSealPath, 'utf8'));
+  commandSeal.plan_sha256 = fileSha256(commandPlanPath);
+  writeJson(commandSealPath, commandSeal);
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: commandDrift.batchA,
+        batchB: commandDrift.batchB,
+        expectedSourceCommit: commandDrift.planA.source.commit,
+      }),
+    /plan or command drifted from the registered live execution plan/u,
   );
 
   const alternatives = makePair('alternatives');
