@@ -1,21 +1,22 @@
 ---
 id: workflow-repository-optimization
 title: Close the remaining workflow and repository optimization gaps
-status: active
+status: done
 type: infra
 priority: P1
 owner: codex
 source: manual
 created: 2026-08-19
 updated: 2026-08-20
-branch: codex/sonnet-evidence-archive
+branch: codex/workflow-optimization-closeout
 verification: >-
   Reproducible before/after measurements show that local and hosted CI select
   the same fail-closed profiles, avoid measured orchestration and test delays,
   preserve required coverage, and make zero model calls from a relevant
   pre-push hook without fresh explicit authority; later repository-state
   tranches retain restorable evidence and authoritative workplan sources
-  without destructive cleanup or history rewriting.
+  without history rewriting, and merged-worktree retirement preserves unique
+  ignored evidence before reclaiming measured local disk.
 links:
   items:
     - optimize-ci-agent-iteration-loop
@@ -35,6 +36,7 @@ links:
     - https://github.com/liammagee/machinespirits-eval/pull/717
     - https://github.com/liammagee/machinespirits-eval/pull/719
     - https://github.com/liammagee/machinespirits-eval/pull/720
+    - https://github.com/liammagee/machinespirits-eval/pull/722
   notes:
     - docs/next-steps/2026-08-19-coordinator-workflow-efficiency-audit.md
     - docs/next-steps/2026-08-20-stale-code-disposition.md
@@ -342,3 +344,23 @@ Log:
   artifact-bundle and register-confirmatory focused suites pass 32/32. Hosted
   full CI remains the publication gate; no baseline repair was folded into this
   evidence-only tranche.
+- 2026-08-20 — PR #722 merged Wave 4C as
+  `cb9c65849aa825cfa35da202cf1f43955d570383`; all four post-merge `main`
+  workflows passed. The authorized closeout then retired 42 clean worktrees
+  whose unchanged HEADs were ancestors of that exact `main`, reclaiming
+  29,643,136 KiB (28.27 GiB). Before removal, 756 unique ignored evidence,
+  report, database, and small export files were copied into the create-once
+  private archive
+  `~/.machinespirits-data/archives/merged-worktree-artifacts-2026-08-20.tar.gz`.
+  Its 172,753,739 bytes verify at SHA-256
+  `2bf4d60489dfc5d9f94606afacf72b6811276695db4314b35710ae4bc83e9b62`;
+  the bundled and external per-file manifests pass 756/756 hashes after a
+  clean-room restore. Rebuildable dependencies, coverage, bytecode caches,
+  empty logs, and ignored generated workplan views were deliberately not
+  archived. The 18 non-ancestor worktrees and two ancestor worktrees with new
+  tracked or untracked changes were not targeted and remain registered.
+  Allocated archive cost is 168,708 KiB, so direct net reclamation is about
+  28.11 GiB; filesystem free space increased from 145 GiB to 173 GiB. No
+  branch, tag, Git history, remote artifact, model route, or model call was
+  deleted, rewritten, or invoked. All linked optimization cards are done, so
+  this programme is closed rather than extended into low-yield cleanup.
