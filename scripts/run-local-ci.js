@@ -314,7 +314,7 @@ export function localCiLaneCatalog(
   ];
 }
 
-function gitOutput(args, projectRoot) {
+function gitOutput(args, projectRoot, { trim = true } = {}) {
   return new Promise((resolve, reject) => {
     const child = spawn('git', args, { cwd: projectRoot, encoding: 'utf8', shell: false });
     let stdout = '';
@@ -327,7 +327,7 @@ function gitOutput(args, projectRoot) {
     });
     child.once('error', reject);
     child.once('exit', (code) => {
-      if (code === 0) resolve(stdout.trim());
+      if (code === 0) resolve(trim ? stdout.trim() : stdout);
       else reject(new Error(`git ${args.join(' ')} failed: ${stderr.trim()}`));
     });
   });
@@ -340,7 +340,7 @@ export async function changedFilesForRange(base, head, projectRoot = PROJECT_ROO
     ['staged', ['diff', '--cached', '--name-only', '-z']],
     ['untracked', ['ls-files', '--others', '--exclude-standard', '-z']],
   ];
-  const results = await Promise.allSettled(queries.map(([, args]) => gitOutput(args, projectRoot)));
+  const results = await Promise.allSettled(queries.map(([, args]) => gitOutput(args, projectRoot, { trim: false })));
   const changedFiles = new Set();
   const errors = [];
   for (let index = 0; index < results.length; index += 1) {

@@ -120,6 +120,29 @@ test('changed paths reject absolute, traversal, empty, and non-canonical forms',
   }
 });
 
+test('classifier preserves a committed leading-whitespace path and fails closed', () => {
+  const projectRoot = createGitFixture();
+  const script = path.resolve('scripts/ci-change-policy.js');
+  try {
+    const base = git(projectRoot, ['rev-parse', 'HEAD']);
+    const file = ' docs/runtime.md';
+    fs.mkdirSync(path.dirname(path.join(projectRoot, file)), { recursive: true });
+    fs.writeFileSync(path.join(projectRoot, file), 'runtime\n');
+    git(projectRoot, ['add', '--', file]);
+    git(projectRoot, ['commit', '--quiet', '-m', 'leading whitespace path']);
+    const head = git(projectRoot, ['rev-parse', 'HEAD']);
+    const args = [script, '--project-root', projectRoot, '--base', base, '--head', head];
+
+    const result = JSON.parse(execFileSync(process.execPath, args, { encoding: 'utf8' }));
+    assert.equal(result.profile, 'full');
+    assert.match(result.reason, /invalid changed path/u);
+    assert.match(result.reason, / docs\/runtime\.md/u);
+    assert.throws(() => execFileSync(process.execPath, [...args, '--validate-focused']), /changed path/u);
+  } finally {
+    fs.rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('research prose keeps the validation framework without allocating runtime tests', () => {
   const result = classifyCiChanges({ changedFiles: ['docs/research/paper-full-2.0.md'] });
   assert.equal(result.profile, 'focused');

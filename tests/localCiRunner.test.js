@@ -198,6 +198,30 @@ test('local change collection unions committed, staged, unstaged, and untracked 
   }
 });
 
+test('local change collection preserves a committed leading-whitespace path', async () => {
+  const projectRoot = createGitFixture();
+  try {
+    const base = git(projectRoot, ['rev-parse', 'HEAD']);
+    const file = ' docs/runtime.md';
+    fs.mkdirSync(path.dirname(path.join(projectRoot, file)), { recursive: true });
+    fs.writeFileSync(path.join(projectRoot, file), 'runtime\n');
+    git(projectRoot, ['add', '--', file]);
+    git(projectRoot, ['commit', '--quiet', '-m', 'leading whitespace path']);
+
+    const result = await changedFilesForRange(base, 'HEAD', projectRoot);
+    assert.equal(result.ok, true);
+    assert.deepEqual(result.changedFiles, [file]);
+    const selection = resolveLocalCiProfile(parseLocalCiArgs([]), result.changedFiles, {
+      collectionOk: result.ok,
+      errors: result.errors,
+    });
+    assert.equal(selection.profile, 'full');
+    assert.match(selection.classification.reason, /invalid changed path/u);
+  } finally {
+    fs.rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
 test('local change collection failure is explicit and forces full CI plus surface validation', async () => {
   const projectRoot = createGitFixture();
   try {

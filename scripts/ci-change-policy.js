@@ -144,12 +144,13 @@ export function classifyCiChanges({ changedFiles, forceFull = false }) {
   };
 }
 
-function git(args, projectRoot = PROJECT_ROOT) {
-  return execFileSync('git', args, { cwd: projectRoot, encoding: 'utf8' }).trim();
+function git(args, projectRoot = PROJECT_ROOT, { trim = true } = {}) {
+  const output = execFileSync('git', args, { cwd: projectRoot, encoding: 'utf8' });
+  return trim ? output.trim() : output;
 }
 
 export function changedFilesBetween(base, head, projectRoot = PROJECT_ROOT) {
-  const output = git(['diff', '--name-only', '-z', `${base}...${head}`], projectRoot);
+  const output = git(['diff', '--name-only', '-z', `${base}...${head}`], projectRoot, { trim: false });
   return output ? output.split('\0').filter(Boolean) : [];
 }
 
@@ -171,7 +172,7 @@ export function classifyCiRange({ base, head, projectRoot = PROJECT_ROOT, forceF
 }
 
 function checkUntrackedWhitespace(changedFiles, projectRoot) {
-  const output = git(['ls-files', '--others', '--exclude-standard', '-z'], projectRoot);
+  const output = git(['ls-files', '--others', '--exclude-standard', '-z'], projectRoot, { trim: false });
   const untracked = new Set(output.split('\0').filter(Boolean));
   for (const file of changedFiles.filter((entry) => untracked.has(entry))) {
     try {
