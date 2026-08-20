@@ -1,0 +1,10 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-go.v1",
+  "status": "endpoint_runtime_go",
+  "study_id": "tutor-stub-resistance-action-register-frame-refuser-baseline-v2",
+  "contract_path": "config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.v2.json",
+  "contract_sha256": "fc7f454e483d00d66d614ea9725f4a1fe148b4150df6c4b4afb7c25393967883",
+  "preflight_sha256": "6e4bed90ad029ade3bcc5b4fc556a59cc3172a2e4b05f6e9fa63934f2607e734",
+  "authorization_scope": "Endpoint-runtime compatibility only; this certificate does not authorize a model call, either six-dialogue batch, or the combined baseline.",
+  "launch_gate": "Portable frozen-prefix inputs, an exact-prefix live continuation executor, a combined analyzer, future-request validation, two fresh create-once destinations, a clean post-merge source, and one committed HOLD request binding both batches and the 468-reservation combined ceiling remain required."
+}

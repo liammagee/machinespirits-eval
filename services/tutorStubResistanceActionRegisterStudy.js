@@ -27,6 +27,22 @@ const ACTION_FITS = Object.freeze(['matched', 'mismatched']);
 const REALIZATIONS = Object.freeze(['plain', 'warm', 'edged']);
 const REPEATS = Object.freeze(['A', 'B']);
 
+function isV2Registration(registration) {
+  return (
+    registration?.schema === TUTOR_STUB_RESISTANCE_ACTION_REGISTER_REGISTRATION_SCHEMA && registration?.version === 2
+  );
+}
+
+function registeredLevels(registration, key, fallback) {
+  const levels = registration?.design?.factors?.[key]?.levels;
+  return Array.isArray(levels) && levels.length ? levels : fallback;
+}
+
+function registeredProfiles(registration) {
+  const profiles = registration?.design?.profiles;
+  return Array.isArray(profiles) && profiles.length ? profiles : STUDY_PROFILES;
+}
+
 const MOVE_TO_HOST_ACTION = Object.freeze({
   ask_discriminating_question: 'stage_next_step',
   test_bounded_distinction: 'clarify_distinction',
@@ -108,9 +124,13 @@ function normalizeRegistration(registration) {
   if (registration?.schema !== TUTOR_STUB_RESISTANCE_ACTION_REGISTER_REGISTRATION_SCHEMA) {
     throw new Error(`registration schema must be ${TUTOR_STUB_RESISTANCE_ACTION_REGISTER_REGISTRATION_SCHEMA}`);
   }
-  if (registration.status !== 'frozen_design_hold') throw new Error('registration must remain frozen_design_hold');
+  const expectedStatus = isV2Registration(registration) ? 'prospective_zero_call_readiness_hold' : 'frozen_design_hold';
+  if (registration.status !== expectedStatus) throw new Error(`registration must remain ${expectedStatus}`);
   if (registration.authorization?.modelCallsAuthorized !== false) {
     throw new Error('registration must not authorize model calls');
+  }
+  if (registration.authorization?.liveRunAuthorized !== false) {
+    throw new Error('registration must not authorize a live run');
   }
   if (registration.design?.intervention?.studyOnlyOptIn !== true) {
     throw new Error('registration must require a study-only opt-in intervention');
@@ -121,7 +141,97 @@ function normalizeRegistration(registration) {
   if (registration.design?.world !== 'world_005_marrick' || registration.design?.dagMode !== 'strict_dag') {
     throw new Error('registration must remain pinned to strict-DAG world_005_marrick');
   }
-  if (registration.design?.factorialCells !== 24) throw new Error('registration must retain 24 factorial cells');
+  if (!isV2Registration(registration)) {
+    if (registration.design?.factorialCells !== 24) throw new Error('registration must retain 24 factorial cells');
+    return registration;
+  }
+  if (
+    registration.authorization?.baselinePilotAuthorized !== false ||
+    registration.authorization?.goRequestPrepared !== false ||
+    registration.authorization?.standingAuthorizationAttachmentSha256 !==
+      '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b'
+  ) {
+    throw new Error('v2 registration must remain on HOLD with the standing authorization attachment bound');
+  }
+  if (JSON.stringify(registration.design?.profiles) !== JSON.stringify(['frame_refuser'])) {
+    throw new Error('v2 registration must retain frame_refuser as its only treatment profile');
+  }
+  if (registration.design?.diagnosticProfile !== 'frame_defiant') {
+    throw new Error('v2 registration must retain frame_defiant as diagnostic-only');
+  }
+  if (registration.design?.trigger?.observationSemantics !== RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4) {
+    throw new Error('v2 registration must use prospective_v4 observation semantics');
+  }
+  const frozenPrefixes = registration.design?.trigger?.frozenPrefixSource?.prefixes;
+  if (
+    registration.design?.trigger?.frozenPrefixSource?.gateReportSha256 !==
+      '771076330d58ec8818182a1924e3ea8dd2c8e54bdc1c9f32a822e491f405b431' ||
+    !Array.isArray(frozenPrefixes) ||
+    frozenPrefixes.length !== 3 ||
+    new Set(frozenPrefixes.map((prefix) => prefix.sourceTraceSha256)).size !== 3 ||
+    new Set(frozenPrefixes.map((prefix) => prefix.publicPrefixSha256)).size !== 3 ||
+    frozenPrefixes.some(
+      (prefix) =>
+        prefix.triggerTurn !== 1 ||
+        !/^[a-f0-9]{64}$/u.test(prefix.sourceTraceSha256) ||
+        !/^[a-f0-9]{64}$/u.test(prefix.publicPrefixSha256),
+    )
+  ) {
+    throw new Error('v2 registration must bind three distinct V4 target prefixes and the passing gate report');
+  }
+  if (JSON.stringify(registration.design?.factors?.actionFit?.levels) !== JSON.stringify(['matched'])) {
+    throw new Error('v2 registration must hold action fit fixed at matched');
+  }
+  if (registration.design?.factors?.actionFit?.assignments?.frame_refuser?.matched !== 'test_bounded_distinction') {
+    throw new Error('v2 registration must hold the frame_refuser matched move at test_bounded_distinction');
+  }
+  if (JSON.stringify(registration.design?.factors?.realization?.levels) !== JSON.stringify(['plain', 'warm'])) {
+    throw new Error('v2 registration must retain the plain/warm baseline comparison');
+  }
+  if (JSON.stringify(registration.design?.factors?.replicationBlock?.levels) !== JSON.stringify(REPEATS)) {
+    throw new Error('v2 registration must retain A/B same-treatment repeats');
+  }
+  if (registration.baselinePilot?.expectedTreatmentDialogues !== 12) {
+    throw new Error('v2 registration must retain 12 baseline treatment dialogues');
+  }
+  const batches = registration.executionReadiness?.batches;
+  if (
+    !Array.isArray(batches) ||
+    batches.length !== 2 ||
+    batches.some((batch) => batch.dialogues !== 6 || batch.maximumModelAttemptReservations !== 234)
+  ) {
+    throw new Error('v2 registration must retain two six-dialogue batches capped at 234 reservations each');
+  }
+  if (registration.executionReadiness?.combinedMaximumModelAttemptReservations !== 468) {
+    throw new Error('v2 registration must retain the combined 468-reservation baseline ceiling');
+  }
+  if (
+    registration.executionReadiness?.plannedRoleCallsPerDialogue !== 13 ||
+    registration.executionReadiness?.maximumReservationsPerPlannedCall !== 3 ||
+    registration.executionReadiness?.maximumModelAttemptReservationsPerDialogue !== 39 ||
+    registration.executionReadiness?.combinedPlannedRoleCalls !== 156 ||
+    batches.some(
+      (batch, index) =>
+        batch.id !== `batch_${REPEATS[index]}` ||
+        batch.repeat !== REPEATS[index] ||
+        batch.plannedRoleCalls !== 78 ||
+        batch.destination !== null,
+    )
+  ) {
+    throw new Error('v2 registration budget arithmetic or fixed batch assignment drifted');
+  }
+  const ledgerBefore = registration.authorization?.programmeLedgerBeforeThisBaseline;
+  const ledgerAfter = registration.executionReadiness?.programmeLedgerAfterMaximum;
+  if (
+    ledgerBefore?.reservedAttempts !== 45 ||
+    ledgerBefore?.ceiling !== 1200 ||
+    ledgerBefore?.remaining !== 1155 ||
+    ledgerAfter?.reservedAttempts !== 513 ||
+    ledgerAfter?.ceiling !== 1200 ||
+    ledgerAfter?.remaining !== 687
+  ) {
+    throw new Error('v2 registration programme ledger must remain 45/1200 before and 513/1200 after maximum');
+  }
   return registration;
 }
 
@@ -146,10 +256,14 @@ export function createTutorStubResistanceActionRegisterStudyRuntime({
   repeat,
 } = {}) {
   const frozen = normalizeRegistration(registration);
-  const normalizedProfile = exactLevel(profile, STUDY_PROFILES, 'study profile');
-  const normalizedActionFit = exactLevel(actionFit, ACTION_FITS, 'action fit');
-  const normalizedRealization = exactLevel(realization, REALIZATIONS, 'realization');
-  const normalizedRepeat = exactLevel(repeat, REPEATS, 'repeat');
+  const normalizedProfile = exactLevel(profile, registeredProfiles(frozen), 'study profile');
+  const normalizedActionFit = exactLevel(actionFit, registeredLevels(frozen, 'actionFit', ACTION_FITS), 'action fit');
+  const normalizedRealization = exactLevel(
+    realization,
+    registeredLevels(frozen, 'realization', REALIZATIONS),
+    'realization',
+  );
+  const normalizedRepeat = exactLevel(repeat, registeredLevels(frozen, 'replicationBlock', REPEATS), 'repeat');
   return {
     schema: TUTOR_STUB_RESISTANCE_ACTION_REGISTER_STUDY_SCHEMA,
     enabled: true,
@@ -185,7 +299,26 @@ function assignedRegister(registration, move, realization) {
 }
 
 function treatmentEligibility({ runtime, learnerText, classification, tutorLearnerDag }) {
-  const shadow = observeResistanceAxis({ learnerText, classification });
+  const semantics = runtime.registration?.design?.trigger?.observationSemantics;
+  const v4Observation = isV2Registration(runtime.registration)
+    ? observeResistantLearnerTurn({ learnerText, classification, semantics })
+    : null;
+  const v4Refusal = v4Observation?.observations?.find(
+    (observation) => observation.type === 'frame_jurisdiction_refusal',
+  );
+  const shadow = v4Observation
+    ? {
+        resistance_kind: v4Refusal ? 'frame_refuser' : null,
+        observation: v4Observation,
+        warrant: {
+          status: v4Refusal && v4Observation.ambiguous === false ? 'licensed' : 'not_licensed',
+          required_observation_type: 'frame_jurisdiction_refusal',
+          basis: clone(v4Refusal || null),
+          ambiguity_blocks_license: v4Observation.ambiguous === true,
+          primary_move_type: v4Refusal ? 'test_bounded_distinction' : null,
+        },
+      }
+    : observeResistanceAxis({ learnerText, classification });
   const timing = detectTutorStubEdgeTimingSignal({ learnerText, classification, tutorLearnerDag });
   const reasons = [];
   if (runtime.consumed) reasons.push('study_intervention_already_consumed');
@@ -246,6 +379,7 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
       action_fit: runtime.action_fit,
       realization: runtime.realization,
       repeat: runtime.repeat,
+      batch_id: runtime.registration.design?.factors?.replicationBlock?.batchAssignment?.[runtime.repeat] || null,
       pedagogical_move: moveType,
       host_action_family: hostAction,
       register,
@@ -561,11 +695,19 @@ export function prepareTutorStubResistanceActionRegisterFrozenBranch({
 
 function conditionsForStage(registration, stage) {
   if (stage === 'baseline') {
-    return ['plain', 'warm'].flatMap((realization) =>
-      REPEATS.map((repeat) => ({ actionFit: 'matched', realization, repeat })),
+    const baselineRealizations = isV2Registration(registration)
+      ? registeredLevels(registration, 'realization', ['plain', 'warm'])
+      : ['plain', 'warm'];
+    return baselineRealizations.flatMap((realization) =>
+      registeredLevels(registration, 'replicationBlock', REPEATS).map((repeat) => ({
+        actionFit: 'matched',
+        realization,
+        repeat,
+      })),
     );
   }
   if (stage === 'factorial') {
+    if (isV2Registration(registration)) throw new Error('v2 registration does not authorize a factorial stage');
     return ACTION_FITS.flatMap((actionFit) =>
       REALIZATIONS.flatMap((realization) => REPEATS.map((repeat) => ({ actionFit, realization, repeat }))),
     );
@@ -575,17 +717,18 @@ function conditionsForStage(registration, stage) {
 
 export function buildTutorStubResistanceActionRegisterPlan({ registration, prefixes, stage = 'baseline' } = {}) {
   const frozen = normalizeRegistration(registration);
+  const profiles = registeredProfiles(frozen);
   if (!Array.isArray(prefixes) || !prefixes.length) throw new Error('study plan requires frozen prefixes');
   const expectedPerProfile = stage === 'baseline' ? frozen.baselinePilot.prefixesPerProfile : null;
   for (const prefix of prefixes) {
     if (prefix?.schema !== TUTOR_STUB_RESISTANCE_ACTION_REGISTER_PREFIX_SCHEMA) {
       throw new Error(`prefix ${prefix?.id || '(unnamed)'} has an unsupported schema`);
     }
-    exactLevel(prefix.profile, STUDY_PROFILES, 'prefix profile');
+    exactLevel(prefix.profile, profiles, 'prefix profile');
     if (prefix.world !== frozen.design.world) throw new Error(`prefix ${prefix.id} is not from ${frozen.design.world}`);
   }
   if (expectedPerProfile) {
-    for (const profile of STUDY_PROFILES) {
+    for (const profile of profiles) {
       const count = prefixes.filter((prefix) => prefix.profile === profile).length;
       if (count !== expectedPerProfile) {
         throw new Error(`baseline requires ${expectedPerProfile} fresh ${profile} prefixes; found ${count}`);
@@ -605,6 +748,7 @@ export function buildTutorStubResistanceActionRegisterPlan({ registration, prefi
         action_fit: condition.actionFit,
         realization: condition.realization,
         repeat: condition.repeat,
+        batch_id: frozen.design?.factors?.replicationBlock?.batchAssignment?.[condition.repeat] || null,
         pedagogical_move: move,
         host_action_family: MOVE_TO_HOST_ACTION[move],
         register,
@@ -650,7 +794,7 @@ function meritsEngagement(turn) {
 }
 
 export function scoreTutorStubResistanceRecovery({ profile, triggerLearnerText = '', postLearnerTurns = [] } = {}) {
-  const normalizedProfile = exactLevel(profile, STUDY_PROFILES, 'outcome profile');
+  const normalizedProfile = exactLevel(profile, PREFIX_PROFILES, 'outcome profile');
   const rows = Array.isArray(postLearnerTurns) ? postLearnerTurns : [];
   if (normalizedProfile === 'bored') {
     const first = rows[0] || {};

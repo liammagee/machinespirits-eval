@@ -5,14 +5,19 @@ import {
 } from './tutorStubResistanceActionRegisterStudy.js';
 import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
 
-const PROFILES = ['bored', 'frame_defiant'];
+const LEGACY_PROFILES = ['bored', 'frame_defiant'];
+
+function registrationProfiles(registration) {
+  const profiles = registration?.design?.profiles;
+  return Array.isArray(profiles) && profiles.length ? profiles : LEGACY_PROFILES;
+}
 
 function hash(char) {
   return String(char).repeat(64);
 }
 
-function syntheticPrefixes() {
-  return PROFILES.flatMap((profile, profileIndex) =>
+function syntheticPrefixes(registration) {
+  return registrationProfiles(registration).flatMap((profile, profileIndex) =>
     Array.from({ length: 3 }, (_, index) => ({
       schema: TUTOR_STUB_RESISTANCE_ACTION_REGISTER_PREFIX_SCHEMA,
       id: `${profile}:prefix:${index + 1}`,
@@ -23,7 +28,9 @@ function syntheticPrefixes() {
       trigger_learner_text:
         profile === 'bored'
           ? 'Sure. Whatever.'
-          : 'I reject the premise of this exercise. You do not get to set the question that way.',
+          : profile === 'frame_refuser'
+            ? 'I reject your right to set this question, and I will not answer within it.'
+            : 'I reject the premise of this exercise. You do not get to set the question that way.',
       trigger_observation: { synthetic: true, profile },
       source_trace: `synthetic-zero-call/${profile}/prefix-${index + 1}.jsonl`,
       source_trace_sha256: hash(String(profileIndex + 1)),
@@ -100,7 +107,7 @@ function postLearnerTurns(profile, repeat) {
 export function buildTutorStubResistanceActionRegisterSyntheticCorpus(registration) {
   const plan = buildTutorStubResistanceActionRegisterPlan({
     registration,
-    prefixes: syntheticPrefixes(),
+    prefixes: syntheticPrefixes(registration),
     stage: 'baseline',
   });
   return plan.jobs.map((job, index) => {
@@ -113,6 +120,7 @@ export function buildTutorStubResistanceActionRegisterSyntheticCorpus(registrati
     return {
       case_id: job.id,
       arm: job.treatment.repeat,
+      batch_id: job.treatment.batch_id || `repeat-${job.treatment.repeat}`,
       prefix_id: job.prefix_id,
       public_prefix_sha256: job.public_prefix_sha256,
       profile: job.treatment.profile,
@@ -170,12 +178,31 @@ export function assembleTutorStubResistanceActionRegisterPreflight({ packets, co
     },
   }));
   const complete = (predicate) => rows.length === contract.registered_scale.cases && rows.every(predicate);
+  const recoveryByRealizationAndRepeat = Object.fromEntries(
+    [...new Set(rows.map((row) => row.realization))].map((realization) => [
+      realization,
+      Object.fromEntries(
+        [...new Set(rows.map((row) => row.arm))].map((repeat) => {
+          const selected = rows.filter((row) => row.realization === realization && row.arm === repeat);
+          return [repeat, selected.filter((row) => row.outcome.recovered).length / selected.length];
+        }),
+      ),
+    ]),
+  );
+  const repeatStabilityComplete =
+    rows.every((row) => typeof row.outcome.recovered === 'boolean') &&
+    Object.values(recoveryByRealizationAndRepeat).every(
+      (rates) => Number.isFinite(rates.A) && Number.isFinite(rates.B),
+    );
   return {
     case_ids: rows.map((row) => row.case_id),
     endpoint_status: {
       profile_specific_resistance_recovery: complete((row) => typeof row.outcome.recovered === 'boolean')
         ? 'complete'
         : 'incomplete',
+      ...(contract.endpoints.some((endpoint) => endpoint.id === 'same_treatment_repeat_stability')
+        ? { same_treatment_repeat_stability: repeatStabilityComplete ? 'complete' : 'incomplete' }
+        : {}),
       proof_dag_debt_delta_at_two_learner_turns: complete((row) => Number.isFinite(row.outcome.proof_debt_delta))
         ? 'complete'
         : 'incomplete',
@@ -213,6 +240,13 @@ export function assembleTutorStubResistanceActionRegisterPreflight({ packets, co
       status: 'synthetic_endpoint_complete',
       rows,
       recovery_rate: rows.filter((row) => row.outcome.recovered).length / rows.length,
+      recovery_by_realization_and_repeat: recoveryByRealizationAndRepeat,
+      same_treatment_repeat_drift: Object.fromEntries(
+        Object.entries(recoveryByRealizationAndRepeat).map(([realization, rates]) => [
+          realization,
+          Math.abs(rates.A - rates.B),
+        ]),
+      ),
     },
   };
 }

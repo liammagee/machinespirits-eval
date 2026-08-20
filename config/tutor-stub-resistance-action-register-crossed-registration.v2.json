@@ -1,0 +1,260 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-action-register-crossed-registration.v1",
+  "version": 2,
+  "status": "prospective_zero_call_readiness_hold",
+  "workplanItem": "resistance-action-register-integration",
+  "frozenAt": "2026-08-20",
+  "registeredQuestion": "Across the three frozen prospective-v4 frame-refuser prefixes, with the matched pedagogical action held fixed, what are the plain and warm two-turn resistance-recovery rates and how much do those rates drift across independent same-treatment repeats A and B?",
+  "claimBoundary": "This matched-action plain/warm baseline can calibrate frame-refuser recovery rates, warm-versus-plain descriptive separation, and same-treatment repeat stability for later prospective sizing. It cannot establish matched-versus-mismatched action efficacy, edged-register efficacy, an action-by-register interaction, general tutor efficacy, learning, human validity, or transfer to the cell harness.",
+  "authorization": {
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "baselinePilotAuthorized": false,
+    "goRequestPrepared": false,
+    "standingAuthorizationAttachmentSha256": "4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b",
+    "programmeLedgerBeforeThisBaseline": {
+      "reservedAttempts": 45,
+      "ceiling": 1200,
+      "remaining": 1155
+    },
+    "requiredBeforeAnyModelCall": [
+      "portable create-once frozen-prefix inputs and a live exact-prefix continuation executor",
+      "an executable combined-baseline analyzer and GO-request validator support",
+      "pinned clean post-merge origin/main source and complete executable source closure",
+      "two absent create-once batch destinations and exact launch and analysis commands",
+      "committed HOLD request binding both batches as one analysis unit and the 468-reservation combined ceiling",
+      "standing authorization validated against the exact merged request digest and current cumulative programme ledger"
+    ]
+  },
+  "preservation": {
+    "supersedesRegistrationPath": "config/tutor-stub-resistance-action-register-crossed-registration.v1.json",
+    "supersedesRegistrationSha256": "8e2e2a6c5fde795b668d2a9ecc81a527e29a0d970aaf419badde5fb037fa87e7",
+    "supersedesEndpointPath": "config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.json",
+    "supersedesEndpointSha256": "3f82e6b70f037ecff8422a13fde0728d8e974d37537c6e570764df8cc47ed309",
+    "priorV1Artifacts": "immutable_historical_design_not_reinterpreted",
+    "baselineTag": "experiment/resistance-action-register/pre-integration/freeze-2026-08-18",
+    "baselineCommit": "45985541188bc935a4ef9a4893d9b65451f0fa61",
+    "protectedProfiles": ["low_agency", "overconfident"],
+    "protectedResultMode": "read_only_no_rerun_no_rescore_no_pool_no_rewrite",
+    "priorNegativeResultRemainsAuthoritative": true,
+    "consumerSwitchAuthorized": false,
+    "v4Opportunity": {
+      "requestSha256": "0c14c51ae8625e6f5db301c9328b8f3182a8dbcd0b6b5a9dd610db85064ee0ab",
+      "reportSha256": "771076330d58ec8818182a1924e3ea8dd2c8e54bdc1c9f32a822e491f405b431",
+      "result": "PASS",
+      "dialogues": "6/6",
+      "reservations": "45/234",
+      "providerFailures": 0,
+      "recoveryAttempts": 0,
+      "permittedUse": "three exact frame_refuser public prefixes as frozen counterfactual inputs only",
+      "excludedUse": "no V4 outcome, control outcome, opportunity verdict, or call record enters a baseline endpoint or efficacy estimate",
+      "historicalEvidencePooled": false
+    }
+  },
+  "design": {
+    "stage": "frame_refuser_matched_action_plain_warm_baseline",
+    "form": "triggered_counterfactual_prefix_replay",
+    "world": "world_005_marrick",
+    "dagMode": "strict_dag",
+    "profiles": ["frame_refuser"],
+    "treatmentProfile": "frame_refuser",
+    "diagnosticProfile": "frame_defiant",
+    "diagnosticDisposition": "no_intervention_no_treatment_unit_no_outcome_pooling",
+    "trigger": {
+      "observationSemantics": "prospective_v4",
+      "timing": "frozen_first_eligible_frame_jurisdiction_refusal",
+      "requiredObservation": "frame_jurisdiction_refusal",
+      "profileIdentityMayTrigger": false,
+      "protectedExclusions": ["comprehension_repair", "protected_affect", "content_bearing_uptake_already_visible"],
+      "frozenPrefixSource": {
+        "study": "tutor-stub-frame-refuser-opportunity-v4",
+        "gateReportSha256": "771076330d58ec8818182a1924e3ea8dd2c8e54bdc1c9f32a822e491f405b431",
+        "prefixes": [
+          {
+            "id": "frame_refuser-v4-r1-t1",
+            "triggerTurn": 1,
+            "sourceTraceSha256": "ac1b1da2bde641e6736ae01ba7507c13e265247c3b8de351bca1249fe60f9b4f",
+            "publicPrefixSha256": "c33503cb498648ea2578c3073926a56397dde5816cbac54b6e000732e90a4a07"
+          },
+          {
+            "id": "frame_refuser-v4-r2-t1",
+            "triggerTurn": 1,
+            "sourceTraceSha256": "349f867fef41c647a7d98818e6b3702d1b13943f354e6ec8a1286723b19ec4fb",
+            "publicPrefixSha256": "8a0bec3075c707b57d45ac93a73b264ec20d749f3313a69ef33e8a374880960d"
+          },
+          {
+            "id": "frame_refuser-v4-r3-t1",
+            "triggerTurn": 1,
+            "sourceTraceSha256": "a95408ad302b3750750c71585a6bc14466316ea9b9e5f9a559c348cfb2a14cfe",
+            "publicPrefixSha256": "5f8fd63815f82fd0859da844a24231cef26e9f284a891780c038c88cd3065394"
+          }
+        ]
+      }
+    },
+    "pairing": {
+      "unit": "exact_public_dialogue_prefix_at_trigger",
+      "heldConstant": [
+        "frame_refuser_profile_contract",
+        "world",
+        "public_history",
+        "public_evidence",
+        "proof_dag_state",
+        "authored_release_state",
+        "model_route",
+        "prompt_and_runtime_source",
+        "pre_trigger_trace",
+        "matched_pedagogical_action"
+      ],
+      "branchOnlyAfterTrigger": true,
+      "validOutputsMayNotBeSelectedOrRerolled": true
+    },
+    "factors": {
+      "actionFit": {
+        "levels": ["matched"],
+        "assignments": {
+          "frame_refuser": {
+            "matched": "test_bounded_distinction"
+          }
+        },
+        "fixedForBaseline": true,
+        "mismatchedActionAbsent": true
+      },
+      "realization": {
+        "levels": ["plain", "warm"],
+        "plain": "plain",
+        "warm": "warm",
+        "referenceLevel": "plain",
+        "treatmentLevel": "warm",
+        "edgedRealizationAbsent": true,
+        "oneTutorTurnOnly": true,
+        "revertAfterUptake": true
+      },
+      "replicationBlock": {
+        "levels": ["A", "B"],
+        "meaning": "A and B are independent same-treatment continuations from each identical frozen prefix, not alternative outcomes and not a best-of-two selection surface.",
+        "batchAssignment": {
+          "A": "batch_A",
+          "B": "batch_B"
+        },
+        "poolingBeforeBothBatchesComplete": false,
+        "interimInterpretationOrSelection": false
+      }
+    },
+    "intervention": {
+      "durationTutorTurns": 1,
+      "studyOnlyOptIn": true,
+      "applicationOrder": [
+        "public_observation",
+        "warrant",
+        "assigned_typed_pedagogical_move",
+        "assigned_compatible_register",
+        "public_realization"
+      ],
+      "legacyDefaultOutsideStudy": true,
+      "safetyOverride": "record_protected_condition_as_nonadherent_never_reroll"
+    },
+    "outcomeHorizon": {
+      "frameRefuserTargetTurns": 2,
+      "commonPostTriggerLearnerTurns": 2,
+      "terminalDagFollowup": "not_part_of_this_baseline"
+    }
+  },
+  "measurement": {
+    "primaryEndpoints": [
+      {
+        "id": "profile_specific_resistance_recovery",
+        "type": "binary_per_treatment_dialogue",
+        "definition": "Within two post-trigger learner turns, the learner either engages the bounded test on its merits or states a more precise jurisdictional condition grounded in the public issue.",
+        "modelJudge": false
+      },
+      {
+        "id": "same_treatment_repeat_stability",
+        "type": "absolute_A_minus_B_recovery_rate_difference_by_realization",
+        "definition": "For plain and warm separately, compare the three-prefix recovery rate in batch A with the same three-prefix recovery rate in batch B; no outcome may be selected between repeats.",
+        "modelJudge": false
+      }
+    ],
+    "descriptiveTreatmentControlContrast": {
+      "treatment": "matched_test_bounded_distinction_realized_warm",
+      "control": "matched_test_bounded_distinction_realized_plain",
+      "estimand": "warm_minus_plain_two_turn_recovery_rate_equally_weighted_over_the_three_frozen_prefixes_and_two_repeats",
+      "interpretation": "baseline_calibration_only_not_register_efficacy"
+    },
+    "secondaryEndpoints": [
+      "proof_dag_debt_delta_at_two_learner_turns",
+      "new_supported_public_premises_at_two_learner_turns",
+      "action_realization_fidelity",
+      "register_realization_fidelity",
+      "protected_condition_and_safety_override_rate"
+    ],
+    "treatmentFidelity": {
+      "minimumActionVisibility": 0.9,
+      "minimumRegisterVisibility": 0.9,
+      "primaryAnalysis": "intention_to_treat",
+      "failedFidelityDisposition": "fail_interpretability_gate_not_rerun"
+    },
+    "batchCombinationRule": "Both predeclared batches must complete under identical pins before one combined 12-dialogue endpoint assembly. Batch A may not be interpreted before batch B, and neither batch may be selected, discarded, rerun, or reported as the experiment result by itself."
+  },
+  "baselinePilot": {
+    "status": "deterministic_readiness_only_not_executable",
+    "purpose": "calibrate matched-action plain/warm recovery and repeat drift before prospectively sizing the later matched/mismatched and edged factorial",
+    "profiles": ["frame_refuser"],
+    "conditions": ["matched_plain", "matched_warm"],
+    "prefixesPerProfile": 3,
+    "sameTreatmentRepeats": 2,
+    "expectedTreatmentDialogues": 12,
+    "freshPrefixes": false,
+    "frozenV4PrefixesConsumedAsInputs": true,
+    "v4OutcomesConsumed": false,
+    "excludedFromLaterConfirmatoryAnalysis": true,
+    "interpretationUse": "prospective_power_stability_and_threshold_design_only"
+  },
+  "executionReadiness": {
+    "modelRoute": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna",
+      "effort": "low"
+    },
+    "plannedRoleCallsPerDialogue": 13,
+    "maximumReservationsPerPlannedCall": 3,
+    "maximumModelAttemptReservationsPerDialogue": 39,
+    "batches": [
+      {
+        "id": "batch_A",
+        "repeat": "A",
+        "dialogues": 6,
+        "plannedRoleCalls": 78,
+        "maximumModelAttemptReservations": 234,
+        "destination": null
+      },
+      {
+        "id": "batch_B",
+        "repeat": "B",
+        "dialogues": 6,
+        "plannedRoleCalls": 78,
+        "maximumModelAttemptReservations": 234,
+        "destination": null
+      }
+    ],
+    "combinedDialogues": 12,
+    "combinedPlannedRoleCalls": 156,
+    "combinedMaximumModelAttemptReservations": 468,
+    "programmeLedgerAfterMaximum": {
+      "reservedAttempts": 513,
+      "ceiling": 1200,
+      "remaining": 687
+    },
+    "boundedTechnicalRecovery": "conditional_on_actual_unused_room_within_the_relevant_234_batch_cap_and_the_1200_programme_cap_missing_or_failed_units_only",
+    "validUnitReruns": false,
+    "outcomeSelection": false,
+    "currentLiveExecutionAvailable": false,
+    "remainingGap": "portable frozen-prefix inputs, exact-prefix live continuation, combined analyzer, future-request validation, create-once destinations, and a pinned HOLD request"
+  },
+  "laterFactorial": {
+    "status": "not_yet_sized_or_registered_for_execution",
+    "requiredFactors": ["matched_versus_mismatched_action", "plain_warm_versus_edged_realization"],
+    "baselineDoesNotCompleteFactorial": true,
+    "requiredProspectiveAmendment": "After the complete baseline is analyzed only for sizing and stability, freeze sample size, effect-size floor, repeat-stability tolerance, exact commands, budget, destinations, and endpoint certificate before any factorial generation."
+  }
+}
