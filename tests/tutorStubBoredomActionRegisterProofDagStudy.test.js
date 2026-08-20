@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 
 import { analyzeTutorStubBoredomProofDag } from '../scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js';
 import {
+  assertTutorStubBoredomProofDagRecoveryBudget,
   buildTutorStubBoredomProofDagBatchPlan,
   classifyTutorStubBoredomProofDagChildFailure,
   selectTutorStubBoredomProofDagRecoveryCandidates,
@@ -391,6 +392,24 @@ test('boredom proof-DAG recovery selects only absent or trace-proven technical u
         initial: { results: [] },
       }),
     /refuses nontechnical or unclassified partial failure/u,
+  );
+
+  assert.equal(
+    assertTutorStubBoredomProofDagRecoveryBudget({
+      missing: [{ id: 'missing' }],
+      initialReservations: { valid: 60, missing: 0 },
+      usedBefore: 60,
+    }),
+    true,
+  );
+  assert.throws(
+    () =>
+      assertTutorStubBoredomProofDagRecoveryBudget({
+        missing: [{ id: 'missing' }],
+        initialReservations: { valid: 0, missing: 60 },
+        usedBefore: 60,
+      }),
+    /no room under the unchanged caps/u,
   );
 });
 

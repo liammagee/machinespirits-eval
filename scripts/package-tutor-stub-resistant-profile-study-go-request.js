@@ -19,6 +19,11 @@ const SUPPORTED_ACTION_REGISTER_ANALYSIS_ONLY = 'sealed_frame_refuser_action_reg
 const SUPPORTED_ACTION_REGISTER_CONFIRMATION = 'prospective_frame_refuser_warm_plain_confirmation_v1';
 const SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG =
   'prospective_boredom_matched_action_warm_plain_proof_dag_confirmation_v1';
+const SUPPORTED_ACTION_REGISTER_CONFIRMATION_SUCCESSOR = 'prospective_frame_refuser_warm_plain_confirmation_v2';
+
+function isSupportedActionRegisterConfirmation(value) {
+  return [SUPPORTED_ACTION_REGISTER_CONFIRMATION, SUPPORTED_ACTION_REGISTER_CONFIRMATION_SUCCESSOR].includes(value);
+}
 
 export const GO_REQUEST_PACKAGE_MARKERS = Object.freeze({
   sourceCommit: `${MARKER_PREFIX}source.commit`,
@@ -179,7 +184,7 @@ function requireHoldBoundary(template) {
     template.opportunityGate?.type !== SUPPORTED_OPPORTUNITY &&
     template.actionRegisterBaseline?.type !== SUPPORTED_ACTION_REGISTER_BASELINE &&
     template.actionRegisterBaselineAnalysis?.type !== SUPPORTED_ACTION_REGISTER_ANALYSIS_ONLY &&
-    template.actionRegisterConfirmation?.type !== SUPPORTED_ACTION_REGISTER_CONFIRMATION &&
+    !isSupportedActionRegisterConfirmation(template.actionRegisterConfirmation?.type) &&
     template.boredomActionRegisterProofDag?.type !== SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG
   ) {
     throw new Error(
@@ -193,6 +198,16 @@ function requireHoldBoundary(template) {
     template.authorization?.liveRunAuthorized !== false
   ) {
     throw new Error('template must remain a literal HOLD with no encoded human approval or execution authority');
+  }
+  if (
+    template.actionRegisterConfirmation?.type === SUPPORTED_ACTION_REGISTER_CONFIRMATION_SUCCESSOR &&
+    (template.authorization?.standingAuthorizationAttachmentSha256 !==
+      '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b' ||
+      template.authorization?.programmeCeilingAmendmentAuthorized !== false)
+  ) {
+    throw new Error(
+      'successor confirmation template must bind the standing authority and keep its ceiling amendment unauthorized',
+    );
   }
   if (
     template.source?.requirements?.headMustEqualLaunchCommit !== true ||
@@ -251,6 +266,7 @@ function assertMaterializedStructure({
   routeResult,
   routeConsumption,
   historicalRequest,
+  priorConfirmationRequest,
   prefixBundle,
   liveCommandSha256,
   recoveryCommandSha256,
@@ -328,6 +344,11 @@ function assertMaterializedStructure({
       'historical request digest',
     );
   }
+  if (priorConfirmationRequest) {
+    const prior = request.actionRegisterConfirmation?.priorIncompleteConfirmation?.request;
+    assertComputedValue(prior?.path, priorConfirmationRequest.path, 'prior incomplete confirmation request path');
+    assertComputedValue(prior?.sha256, priorConfirmationRequest.sha256, 'prior incomplete confirmation request digest');
+  }
   if (prefixBundle) {
     assertComputedValue(request.bindings?.prefixBundle?.path, prefixBundle.path, 'prefix bundle path');
     assertComputedValue(request.bindings?.prefixBundle?.sha256, prefixBundle.sha256, 'prefix bundle digest');
@@ -340,7 +361,7 @@ function assertMaterializedStructure({
   }
   if (
     request.actionRegisterBaseline?.type === SUPPORTED_ACTION_REGISTER_BASELINE ||
-    request.actionRegisterConfirmation?.type === SUPPORTED_ACTION_REGISTER_CONFIRMATION ||
+    isSupportedActionRegisterConfirmation(request.actionRegisterConfirmation?.type) ||
     request.boredomActionRegisterProofDag?.type === SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG
   ) {
     assertComputedValue(
@@ -460,6 +481,23 @@ function materializeTemplate({ templateText, template, launchCommit }) {
       replacements,
     );
   }
+  const priorConfirmationRequestPath = template.actionRegisterConfirmation?.priorIncompleteConfirmation?.request?.path;
+  const priorConfirmationRequest = priorConfirmationRequestPath
+    ? materializeRepoFile({
+        launchCommit,
+        repoPath: priorConfirmationRequestPath,
+        label: 'prior incomplete confirmation request',
+        files,
+      })
+    : null;
+  if (priorConfirmationRequest) {
+    requireMarker(
+      templateText,
+      goRequestFileSha256Marker(priorConfirmationRequest.path),
+      priorConfirmationRequest.sha256,
+      replacements,
+    );
+  }
   const prefixBundlePath = template.bindings?.prefixBundle?.path;
   const prefixBundle = prefixBundlePath
     ? materializeRepoFile({
@@ -477,7 +515,7 @@ function materializeTemplate({ templateText, template, launchCommit }) {
   const liveCommandSha256 = isAnalysisOnly ? null : sha256(JSON.stringify(template.commands?.live));
   const recoveryCommandSha256 =
     template.actionRegisterBaseline?.type === SUPPORTED_ACTION_REGISTER_BASELINE ||
-    template.actionRegisterConfirmation?.type === SUPPORTED_ACTION_REGISTER_CONFIRMATION ||
+    isSupportedActionRegisterConfirmation(template.actionRegisterConfirmation?.type) ||
     template.boredomActionRegisterProofDag?.type === SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG
       ? sha256(JSON.stringify(template.commands?.recovery))
       : null;
@@ -503,6 +541,7 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     routeResult,
     routeConsumption,
     historicalRequest,
+    priorConfirmationRequest,
     prefixBundle,
     liveCommandSha256,
     recoveryCommandSha256,
@@ -557,7 +596,7 @@ function assertDestinationAbsent(request, root = ROOT) {
     return destinations;
   }
   if (
-    request.actionRegisterConfirmation?.type === SUPPORTED_ACTION_REGISTER_CONFIRMATION ||
+    isSupportedActionRegisterConfirmation(request.actionRegisterConfirmation?.type) ||
     request.boredomActionRegisterProofDag?.type === SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG
   ) {
     const destinations = request.destination?.batches?.map((entry) => entry?.artifactRoot) || [];

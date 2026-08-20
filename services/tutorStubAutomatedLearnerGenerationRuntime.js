@@ -297,9 +297,10 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     throw new Error(`unsupported automated-learner observation semantics: ${requestedObservationSemantics}`);
   }
   const observationSemantics = requestedObservationSemantics || RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2;
-  const automatedLearnerTraceMetadata = Object.freeze(
-    observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4 ? { observationSemantics } : {},
-  );
+  const boundedFrameOpportunitySemantics =
+    observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4 ||
+    observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5;
+  const automatedLearnerTraceMetadata = Object.freeze(boundedFrameOpportunitySemantics ? { observationSemantics } : {});
   function cleanAutomatedLearnerReply(text) {
     const cleaned = String(text || '')
       .replace(/^```(?:text|markdown)?/iu, '')
@@ -585,7 +586,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       'Write only speech the learner could say aloud inside the scene. Address the other speaker as "you"; never refer to "the tutor", "the learner", "the dialogue", or "the prompt".',
     ].join('\n');
   }
-
   async function generateAutomatedLearnerTurn({
     state,
     resolved,
@@ -732,8 +732,8 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
     const runtime = automatedLearnerProfileRuntimeState({ state, profile, turnNumber });
     const canPreclassify = Boolean(state.classifier.enabled && state.learnerDag.enabled && state.world);
-    const prospectiveV4 = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
-    const frameOpportunityV4Profile = prospectiveV4 && ['frame_refuser', 'frame_defiant'].includes(runtime?.profileId);
+    const frameOpportunityV4Profile =
+      boundedFrameOpportunitySemantics && ['frame_refuser', 'frame_defiant'].includes(runtime?.profileId);
     const boredomProofDagProfile =
       state.resistanceActionRegisterStudy?.dynamic_boredom_proof_dag === true && runtime?.profileId === 'bored';
     if (boredomProofDagProfile && state.resistanceActionRegisterStudy?.consumed === true) {
@@ -877,7 +877,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     const typedExhaustionRequired =
       boredomProofDagProfile ||
       runtime.profileId === 'frame_defiant' ||
-      ((prospectiveV3 || prospectiveV4) && runtime.profileId === 'frame_refuser');
+      ((prospectiveV3 || boundedFrameOpportunitySemantics) && runtime.profileId === 'frame_refuser');
     if (typedExhaustionRequired && !passed) {
       if (boredomProofDagProfile) {
         const admittedRepairs = Number(state?.boredomProofDagRepairAdmission?.used || 0);
@@ -909,7 +909,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       if (runtime.profileId === 'frame_defiant') {
         throwFrameDefiantAdherenceExhaustion({ profile: runtime.profileId, repairAttempts });
       }
-      if (prospectiveV3 || prospectiveV4) {
+      if (prospectiveV3 || boundedFrameOpportunitySemantics) {
         throwFrameRefuserAdherenceExhaustion({ profile: runtime.profileId, repairAttempts });
       }
     }

@@ -41,6 +41,7 @@ export const RESISTANT_LEARNER_OBSERVATION_SEMANTICS = Object.freeze({
   prospectiveV2: 'prospective_v2',
   prospectiveV3: 'prospective_v3',
   prospectiveV4: 'prospective_v4',
+  prospectiveV5: 'prospective_v5',
 });
 
 export const RESISTANT_LEARNER_OBSERVATION_TYPES = Object.freeze([
@@ -192,6 +193,15 @@ const FRAME_JURISDICTION_PATTERNS_V4 = Object.freeze([
   ),
 ]);
 
+// V5 is confirmation-specific and additive. It preserves V1-V4 dispatch while
+// covering a frozen production miss in which the learner denies authority to a
+// proposed reading of a named record rather than denying authority to the
+// inquiry noun directly.
+const FRAME_JURISDICTION_PATTERNS_V5 = Object.freeze([
+  ...FRAME_JURISDICTION_PATTERNS_V4,
+  /\bi (?:do not|don't) grant (?:your|the tutor['’]s|their) (?:proposed )?(?:reading|interpretation|account) of\b[^.!?;]{0,140}\b(?:authority|standing|right)\b/iu,
+]);
+
 const FRAME_ACCEPTED_AUTHORITY_PATTERNS_V4 = Object.freeze([
   /\bi (?:accept|acknowledge|recognize|grant) (?:your|the tutor['’]s|their) (?:authority|standing|right)\b/iu,
   /\bi (?:do not|don't) (?:dispute|reject|deny) (?:your|the tutor['’]s|their) (?:authority|standing|right)\b/iu,
@@ -302,7 +312,8 @@ export function classifyFrameJurisdictionParticipation({
   const participation = [];
   const prospectiveV3 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV3;
   const prospectiveV4 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
-  const expandedProspective = prospectiveV3 || prospectiveV4;
+  const prospectiveV5 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5;
+  const expandedProspective = prospectiveV3 || prospectiveV4 || prospectiveV5;
   const explicitReframe = firstEvidence(
     text,
     expandedProspective ? FRAME_EXPLICIT_REFRAME_PATTERNS_V3 : FRAME_EXPLICIT_REFRAME_PATTERNS,
@@ -312,7 +323,7 @@ export function classifyFrameJurisdictionParticipation({
     expandedProspective ? FRAME_BOUNDED_LOCAL_TEST_PATTERNS_V3 : FRAME_BOUNDED_LOCAL_TEST_PATTERNS,
   );
   const boundedLocalTest =
-    prospectiveV4 && conditionalBoundedParticipationNegated(text, boundedLocalTestCandidate)
+    (prospectiveV4 || prospectiveV5) && conditionalBoundedParticipationNegated(text, boundedLocalTestCandidate)
       ? null
       : boundedLocalTestCandidate;
   const carriesContent = contentBearing(classification);
@@ -321,7 +332,7 @@ export function classifyFrameJurisdictionParticipation({
   if (carriesContent) participation.push({ kind: 'content_bearing_contribution', evidence_span: null });
   const explicitWithholding = firstEvidence(
     text,
-    prospectiveV4
+    prospectiveV4 || prospectiveV5
       ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V4
       : prospectiveV3
         ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V3
@@ -420,15 +431,19 @@ export function observeResistantLearnerTurn({
   const legacySemantics = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.legacyV1;
   const prospectiveV3 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV3;
   const prospectiveV4 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
-  const acceptedAuthority = prospectiveV4 ? firstEvidence(text, FRAME_ACCEPTED_AUTHORITY_PATTERNS_V4) : null;
-  const meritsOnly = prospectiveV4 ? firstEvidence(text, FRAME_MERITS_ONLY_PATTERNS_V4) : null;
+  const prospectiveV5 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5;
+  const acceptedAuthority =
+    prospectiveV4 || prospectiveV5 ? firstEvidence(text, FRAME_ACCEPTED_AUTHORITY_PATTERNS_V4) : null;
+  const meritsOnly = prospectiveV4 || prospectiveV5 ? firstEvidence(text, FRAME_MERITS_ONLY_PATTERNS_V4) : null;
   const framePatterns = legacySemantics
     ? FRAME_JURISDICTION_PATTERNS_V1
-    : prospectiveV4
-      ? FRAME_JURISDICTION_PATTERNS_V4
-      : prospectiveV3
-        ? FRAME_JURISDICTION_PATTERNS_V3
-        : FRAME_JURISDICTION_PATTERNS_V2;
+    : prospectiveV5
+      ? FRAME_JURISDICTION_PATTERNS_V5
+      : prospectiveV4
+        ? FRAME_JURISDICTION_PATTERNS_V4
+        : prospectiveV3
+          ? FRAME_JURISDICTION_PATTERNS_V3
+          : FRAME_JURISDICTION_PATTERNS_V2;
   const candidateFrameEvidence = firstEvidence(text, framePatterns);
   const explicitJurisdictionCandidate = Boolean(
     candidateFrameEvidence &&

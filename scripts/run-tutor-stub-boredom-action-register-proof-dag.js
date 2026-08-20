@@ -415,6 +415,19 @@ export function selectTutorStubBoredomProofDagRecoveryCandidates({ plan, initial
   return { valid, missing };
 }
 
+export function assertTutorStubBoredomProofDagRecoveryBudget({ missing, initialReservations, usedBefore } = {}) {
+  if (!Array.isArray(missing) || !initialReservations || !Number.isInteger(usedBefore) || usedBefore < 0) {
+    throw new Error('boredom proof-DAG recovery budget audit requires candidates and observed reservations');
+  }
+  if (
+    usedBefore >= PER_BATCH_CAP ||
+    missing.some((job) => Number(initialReservations[job.id] || 0) >= PER_DIALOGUE_CAP)
+  ) {
+    throw new Error('boredom proof-DAG recovery has no room under the unchanged caps');
+  }
+  return true;
+}
+
 function sealBatch(destination, plan, result, recovery = {}) {
   const seal = {
     schema: 'machinespirits.tutor-stub.boredom-action-register-proof-dag-live-batch-seal.v1',
@@ -502,9 +515,7 @@ export async function recoverTutorStubBoredomProofDagBatch({
     plan.jobs.map((job) => [job.id, reservationCountInDirectory(job.command.trace_dir)]),
   );
   const usedBefore = Object.values(initialReservations).reduce((sum, value) => sum + value, 0);
-  if (usedBefore >= PER_BATCH_CAP || Object.values(initialReservations).some((value) => value >= PER_DIALOGUE_CAP)) {
-    throw new Error('boredom proof-DAG recovery has no room under the unchanged caps');
-  }
+  assertTutorStubBoredomProofDagRecoveryBudget({ missing, initialReservations, usedBefore });
   const { loaded, plan: registered } = registeredPlan(plan.source.registration_path);
   if (loaded.sha256 !== plan.source.registration_sha256) throw new Error('boredom proof-DAG registration drifted');
   const registeredById = new Map(registered.jobs.map((job) => [job.id, job]));
