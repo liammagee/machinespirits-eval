@@ -74,6 +74,7 @@ const RESISTANCE_ACTION_REGISTER_BASELINE_V2_CRITICAL_SOURCE_CLOSURE = Object.fr
   'services/tutorStubTutorAttemptRuntime.js',
   'services/tutorStubTraceRuntime.js',
   'services/tutorStubLabs.js',
+  'services/tutorStubArtifactArchive.js',
   'config/drama-derivation/world-005-marrick.yaml',
   'config/providers.yaml',
   'package.json',

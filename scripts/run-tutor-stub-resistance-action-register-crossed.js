@@ -15,6 +15,7 @@ import {
 } from '../services/tutorStubResistanceActionRegisterStudy.js';
 import { loadTutorStubResistanceActionRegisterPrefixBundle } from '../services/tutorStubResistanceActionRegisterExecution.js';
 import { runTutorStubResistanceActionRegisterEndpointPreflight } from '../services/tutorStubResistanceActionRegisterPreflight.js';
+import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -210,6 +211,7 @@ function childCommand({ loaded, job, destination, modelCallBudget = PER_DIALOGUE
     '--lab',
     'automated_eval',
     '--acknowledge-research-use',
+    ...requiredTutorStubArtifactArchiveArgs(),
     '--model-call-budget',
     String(modelCallBudget),
     '--all-models',
@@ -332,9 +334,7 @@ export function buildTutorStubResistanceActionRegisterBatchPlan({
     cwd: ROOT,
     encoding: 'utf8',
   }).trim();
-  if (sourceStatus) {
-    throw new Error('resistance action/register live batch requires a clean source checkout');
-  }
+  assertTutorStubResistanceActionRegisterCleanSource(sourceStatus);
   if (expectedSourceCommit && expectedSourceCommit !== sourceCommit) {
     throw new Error(`live source drift: expected ${expectedSourceCommit}, found ${sourceCommit}`);
   }
@@ -367,6 +367,12 @@ export function buildTutorStubResistanceActionRegisterBatchPlan({
       outcome_selection: false,
     },
   };
+}
+
+export function assertTutorStubResistanceActionRegisterCleanSource(sourceStatus) {
+  if (String(sourceStatus || '').trim()) {
+    throw new Error('resistance action/register live batch requires a clean source checkout');
+  }
 }
 
 function traceResult(command) {
@@ -533,12 +539,12 @@ export async function recoverTutorStubResistanceActionRegisterBatch({
     plan.source?.commit !== expectedSourceCommit ||
     currentSourceCommit !== expectedSourceCommit ||
     plan.source?.tree !== currentSourceTree ||
-    currentSourceStatus ||
     initial.status !== 'incomplete' ||
     plan.budget?.maximum_model_attempt_reservations !== PER_BATCH_CAP
   ) {
     throw new Error('batch recovery source, status, or ceiling drifted');
   }
+  assertTutorStubResistanceActionRegisterCleanSource(currentSourceStatus);
   const registeredJobIds = new Set(plan.jobs?.map((job) => job.id) || []);
   if (
     registeredJobIds.size !== BATCH_SIZE ||

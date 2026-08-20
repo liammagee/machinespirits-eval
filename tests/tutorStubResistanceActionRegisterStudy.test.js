@@ -42,6 +42,7 @@ import {
   validateTutorStubResistanceActionRegisterPrefixBundle,
 } from '../services/tutorStubResistanceActionRegisterExecution.js';
 import {
+  assertTutorStubResistanceActionRegisterCleanSource,
   buildTutorStubResistanceActionRegisterBatchPlan,
   buildTutorStubResistanceActionRegisterRecoveryJob,
   runTutorStubResistanceActionRegisterZeroCall,
@@ -1269,22 +1270,23 @@ test('v2 execution prebinds exactly six unique jobs in each 234-cap create-once 
     assert.equal(plan.budget.maximum_model_attempt_reservations_per_dialogue, 39);
     assert.equal(plan.budget.maximum_model_attempt_reservations, 234);
     assert.ok(plan.jobs.every((job) => job.command.args.includes('--acknowledge-research-use')));
+    assert.ok(
+      plan.jobs.every((job) =>
+        job.command.args.some(
+          (value, index) => value === '--artifact-archive' && job.command.args[index + 1] === 'required',
+        ),
+      ),
+    );
     assert.ok(plan.jobs.every((job) => job.command.args.includes('--expected-source-commit') === false));
     assert.ok(
       plan.jobs.every((job) => job.command.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS === 'prospective_v4'),
     );
   }
   assert.notEqual(a.destination, b.destination);
-  const dirtyMarker = path.join(ROOT, `RESISTANCE_ACTION_REGISTER_DIRTY_GUARD_${process.pid}`);
-  fs.writeFileSync(dirtyMarker, 'dirty source guard\n');
-  try {
-    assert.throws(
-      () => buildTutorStubResistanceActionRegisterBatchPlan({ repeat: 'A', destination: `${temporary}-dirty` }),
-      /requires a clean source checkout/u,
-    );
-  } finally {
-    fs.rmSync(dirtyMarker, { force: true });
-  }
+  assert.throws(
+    () => assertTutorStubResistanceActionRegisterCleanSource(' M services/drift.js'),
+    /requires a clean source checkout/u,
+  );
 });
 
 test('v2 combined analyzer refuses partial assembly and completes all 12 exact cells only after both seals', (t) => {

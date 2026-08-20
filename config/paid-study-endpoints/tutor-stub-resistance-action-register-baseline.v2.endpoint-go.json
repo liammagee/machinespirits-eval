@@ -3,8 +3,8 @@
   "status": "endpoint_runtime_go",
   "study_id": "tutor-stub-resistance-action-register-frame-refuser-baseline-v2",
   "contract_path": "config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.v2.json",
-  "contract_sha256": "dd273b25998fb41da840f06ddc9073e43b096d4e5742d33fc2e902a845b16660",
-  "preflight_sha256": "16d52836d19af04bca2f6f7a8aab12ad2bd60142d1dac8c51e85163da41dd57f",
+  "contract_sha256": "2c6835ce8e71a21c2eed6a2bc05eadfa0751abecb8ed7a66123a22184a7428ff",
+  "preflight_sha256": "2f032fe1c25d6e25a2023bd279a8fc1ecb009a49960ef21d3dc7651861252ee2",
   "authorization_scope": "Endpoint-runtime compatibility only; this certificate does not authorize a model call, either six-dialogue batch, or the combined baseline.",
-  "launch_gate": "A clean post-merge source and one committed HOLD request binding both fresh create-once batch destinations, the 234-per-batch and 468-combined reservation ceilings, exact live/analyze commands, full source closure, and standing authorization remain required."
+  "launch_gate": "A clean post-merge source and one committed HOLD request binding both fresh create-once batch destinations, the required durable artifact archive, the 234-per-batch and 468-combined reservation ceilings, exact live/analyze commands, full source closure, and standing authorization remain required."
 }

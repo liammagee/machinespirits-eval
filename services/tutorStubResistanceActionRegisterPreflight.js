@@ -305,6 +305,7 @@ export function runTutorStubResistanceActionRegisterEndpointPreflight({ contract
     batch.maximum_model_attempt_reservations_per_batch !== 234 ||
     batch.combined_maximum_model_attempt_reservations !== 468 ||
     batch.combined_analysis_only !== true ||
+    batch.artifact_archive_policy !== 'required' ||
     batch.valid_unit_reruns !== false ||
     batch.outcome_selection !== false ||
     batch.bounded_technical_recovery !==
@@ -324,6 +325,7 @@ export function runTutorStubResistanceActionRegisterEndpointPreflight({ contract
       maximum_model_attempt_reservations_per_batch: 234,
       combined_maximum_model_attempt_reservations: 468,
       combined_analysis_required: true,
+      artifact_archive_policy: 'required',
       bounded_technical_recovery: 'missing_or_failed_units_only_under_unchanged_caps',
       partial_or_interim_interpretation_permitted: false,
       model_calls: 0,

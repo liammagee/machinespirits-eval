@@ -888,14 +888,15 @@ and explicit human approval.
   requires all 12 exact prefix-by-realization-by-repeat cells before reporting
   the registered recovery, repeat-stability, proof-DAG, and fidelity endpoints.
   The V2 endpoint canonical SHA-256 is
-  `dd273b25998fb41da840f06ddc9073e43b096d4e5742d33fc2e902a845b16660`,
+  `2c6835ce8e71a21c2eed6a2bc05eadfa0751abecb8ed7a66123a22184a7428ff`,
   its zero-call preflight SHA-256 is
-  `16d52836d19af04bca2f6f7a8aab12ad2bd60142d1dac8c51e85163da41dd57f`,
+  `2f032fe1c25d6e25a2023bd279a8fc1ecb009a49960ef21d3dc7651861252ee2`,
   its contract file SHA-256 is
-  `8298a5e6b03ba3ae6face88a625d48776664136473f1a88252a8dd48a6c51e43`,
+  `cbf2864d7fe7502fc4196866561ad8c5790202e59c7b27a270054a7f680a6cb6`,
   and its endpoint-certificate file SHA-256 is
-  `064813cdfd35fc0b3533793fd276d4395f43f46d924151030b4174bb4e1b485a`.
-  Future HOLD requests must bind the full 30-file executable closure, both
+  `ae2d558370dc20f0eb54eebbbf88035ea1f9b788d5d528f32f1909c1973cc33b`.
+  Every live or recovery child requires the durable tutor-stub artifact archive;
+  future HOLD requests must bind the full 31-file executable closure, both
   absent create-once batch roots, the one combined report destination, the
   exact two live commands and combined-analysis command, and the unchanged
   registration, prefix bundle, endpoint, certificate, source, models, seed,

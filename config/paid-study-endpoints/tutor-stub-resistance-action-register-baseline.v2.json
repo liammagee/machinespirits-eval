@@ -35,6 +35,7 @@
       "maximum_model_attempt_reservations_per_batch": 234,
       "combined_maximum_model_attempt_reservations": 468,
       "combined_analysis_only": true,
+      "artifact_archive_policy": "required",
       "valid_unit_reruns": false,
       "outcome_selection": false,
       "bounded_technical_recovery": "missing_or_failed_units_only_within_unchanged_39_per_dialogue_and_234_per_batch_caps"
