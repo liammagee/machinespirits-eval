@@ -33,6 +33,16 @@ function isV2Registration(registration) {
   );
 }
 
+function isV3Registration(registration) {
+  return (
+    registration?.schema === TUTOR_STUB_RESISTANCE_ACTION_REGISTER_REGISTRATION_SCHEMA && registration?.version === 3
+  );
+}
+
+function usesProspectiveV4Observation(registration) {
+  return isV2Registration(registration) || isV3Registration(registration);
+}
+
 function registeredLevels(registration, key, fallback) {
   const levels = registration?.design?.factors?.[key]?.levels;
   return Array.isArray(levels) && levels.length ? levels : fallback;
@@ -130,7 +140,9 @@ function normalizeRegistration(registration) {
   if (registration?.schema !== TUTOR_STUB_RESISTANCE_ACTION_REGISTER_REGISTRATION_SCHEMA) {
     throw new Error(`registration schema must be ${TUTOR_STUB_RESISTANCE_ACTION_REGISTER_REGISTRATION_SCHEMA}`);
   }
-  const expectedStatus = isV2Registration(registration) ? 'prospective_zero_call_readiness_hold' : 'frozen_design_hold';
+  const expectedStatus = usesProspectiveV4Observation(registration)
+    ? 'prospective_zero_call_readiness_hold'
+    : 'frozen_design_hold';
   if (registration.status !== expectedStatus) throw new Error(`registration must remain ${expectedStatus}`);
   if (registration.authorization?.modelCallsAuthorized !== false) {
     throw new Error('registration must not authorize model calls');
@@ -147,7 +159,7 @@ function normalizeRegistration(registration) {
   if (registration.design?.world !== 'world_005_marrick' || registration.design?.dagMode !== 'strict_dag') {
     throw new Error('registration must remain pinned to strict-DAG world_005_marrick');
   }
-  if (!isV2Registration(registration)) {
+  if (!usesProspectiveV4Observation(registration)) {
     if (registration.design?.factorialCells !== 24) throw new Error('registration must retain 24 factorial cells');
     return registration;
   }
@@ -157,7 +169,7 @@ function normalizeRegistration(registration) {
     registration.authorization?.standingAuthorizationAttachmentSha256 !==
       '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b'
   ) {
-    throw new Error('v2 registration must remain on HOLD with the standing authorization attachment bound');
+    throw new Error('prospective registration must remain on HOLD with the standing authorization attachment bound');
   }
   if (JSON.stringify(registration.design?.profiles) !== JSON.stringify(['frame_refuser'])) {
     throw new Error('v2 registration must retain frame_refuser as its only treatment profile');
@@ -167,6 +179,77 @@ function normalizeRegistration(registration) {
   }
   if (registration.design?.trigger?.observationSemantics !== RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4) {
     throw new Error('v2 registration must use prospective_v4 observation semantics');
+  }
+  if (isV3Registration(registration)) {
+    const blocks = registration.design?.factors?.confirmationBlock?.blocks;
+    const calibration = registration.preservation?.calibration;
+    const sizing = registration.measurement?.confirmatoryTest?.powering;
+    const readiness = registration.executionReadiness;
+    if (
+      registration.design?.stage !== 'frame_refuser_matched_action_plain_warm_confirmation' ||
+      registration.design?.form !== 'fresh_independent_online_triggered_dialogues' ||
+      registration.design?.trigger?.eligibleByTurn !== 2 ||
+      registration.design?.trigger?.freshDialogueRequired !== true ||
+      registration.design?.trigger?.calibrationPrefixesConsumedAsInputs !== false ||
+      registration.design?.factors?.actionFit?.assignments?.frame_refuser?.matched !== 'test_bounded_distinction' ||
+      JSON.stringify(registration.design?.factors?.actionFit?.levels) !== JSON.stringify(['matched']) ||
+      JSON.stringify(registration.design?.factors?.realization?.levels) !== JSON.stringify(['plain', 'warm']) ||
+      !Array.isArray(blocks) ||
+      blocks.length !== 9 ||
+      blocks.some(
+        (block, index) =>
+          block.id !== `block_${String(index + 1).padStart(2, '0')}` ||
+          block.dialogues !== 4 ||
+          block.plain !== 2 ||
+          block.warm !== 2,
+      ) ||
+      calibration?.reportSha256 !== '42021a390338cd556386efc96d8f00b35655a411627908a10248dba1e473a3a5' ||
+      calibration?.dialogues !== 12 ||
+      calibration?.plainRecovered !== 1 ||
+      calibration?.warmRecovered !== 4 ||
+      calibration?.pooledIntoConfirmation !== false ||
+      sizing?.test !== 'fisher_exact_two_sided' ||
+      sizing?.alpha !== 0.05 ||
+      sizing?.targetPower !== 0.8 ||
+      sizing?.plainCalibrationRate !== 1 / 6 ||
+      sizing?.warmCalibrationRate !== 4 / 6 ||
+      sizing?.minimumNPerArm !== 18 ||
+      sizing?.powerAt17PerArm !== 0.796776592585303 ||
+      sizing?.powerAt18PerArm !== 0.8388687257645503 ||
+      readiness?.plannedRoleCallsPerDialogue !== 20 ||
+      readiness?.maximumReservationsPerPlannedCall !== 3 ||
+      readiness?.maximumModelAttemptReservationsPerDialogue !== 60 ||
+      readiness?.combinedDialogues !== 36 ||
+      readiness?.combinedPlannedRoleCalls !== 720 ||
+      readiness?.combinedMaximumModelAttemptReservations !== 2160 ||
+      readiness?.programmeLedgerAfterMaximum?.reservedAttempts !== 2345 ||
+      readiness?.programmeLedgerAfterMaximum?.ceiling !== 2345 ||
+      readiness?.programmeLedgerAfterMaximum?.remaining !== 0 ||
+      registration.authorization?.programmeLedgerBeforeThisConfirmation?.reservedAttempts !== 185 ||
+      registration.authorization?.programmeLedgerBeforeThisConfirmation?.ceiling !== 1200 ||
+      registration.authorization?.programmeLedgerBeforeThisConfirmation?.remaining !== 1015 ||
+      registration.authorization?.requiredCeilingAmendment?.from !== 1200 ||
+      registration.authorization?.requiredCeilingAmendment?.to !== 2345 ||
+      registration.authorization?.requiredCeilingAmendment?.increase !== 1145
+    ) {
+      throw new Error('v3 confirmation design, calibration separation, power, or hard-attempt arithmetic drifted');
+    }
+    const batches = readiness?.batches;
+    if (
+      !Array.isArray(batches) ||
+      batches.length !== 9 ||
+      batches.some(
+        (batch, index) =>
+          batch.id !== blocks[index].id ||
+          batch.dialogues !== 4 ||
+          batch.plannedRoleCalls !== 80 ||
+          batch.maximumModelAttemptReservations !== 240 ||
+          batch.destination !== null,
+      )
+    ) {
+      throw new Error('v3 confirmation must retain nine balanced four-dialogue batches capped at 240 each');
+    }
+    return registration;
   }
   const frozenPrefixes = registration.design?.trigger?.frozenPrefixSource?.prefixes;
   if (
@@ -304,9 +387,14 @@ function assignedRegister(registration, move, realization) {
   return register;
 }
 
-function treatmentEligibility({ runtime, learnerText, classification, tutorLearnerDag }) {
+export function tutorStubResistanceActionRegisterTreatmentEligibility({
+  runtime,
+  learnerText,
+  classification,
+  tutorLearnerDag,
+}) {
   const semantics = runtime.registration?.design?.trigger?.observationSemantics;
-  const v4Observation = isV2Registration(runtime.registration)
+  const v4Observation = usesProspectiveV4Observation(runtime.registration)
     ? observeResistantLearnerTurn({ learnerText, classification, semantics })
     : null;
   const v4Refusal = v4Observation?.observations?.find(
@@ -351,7 +439,12 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
 } = {}) {
   const runtime = state?.resistanceActionRegisterStudy;
   if (!selection || !runtime?.enabled) return selection;
-  const eligibility = treatmentEligibility({ runtime, learnerText, classification, tutorLearnerDag });
+  const eligibility = tutorStubResistanceActionRegisterTreatmentEligibility({
+    runtime,
+    learnerText,
+    classification,
+    tutorLearnerDag,
+  });
   if (!eligibility.eligible) {
     runtime.history.push({
       turn: decisionTurn(state, tutorLearnerDag),
@@ -385,9 +478,11 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
       action_fit: runtime.action_fit,
       realization: runtime.realization,
       repeat: runtime.repeat,
-      ...(runtime.registration.design?.factors?.replicationBlock?.batchAssignment?.[runtime.repeat]
-        ? { batch_id: runtime.registration.design.factors.replicationBlock.batchAssignment[runtime.repeat] }
-        : {}),
+      ...(runtime.batch_id
+        ? { batch_id: runtime.batch_id }
+        : runtime.registration.design?.factors?.replicationBlock?.batchAssignment?.[runtime.repeat]
+          ? { batch_id: runtime.registration.design.factors.replicationBlock.batchAssignment[runtime.repeat] }
+          : {}),
       pedagogical_move: moveType,
       host_action_family: hostAction,
       register,
@@ -434,6 +529,11 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
     resistance_action_register_intervention: intervention,
   };
   runtime.consumed = true;
+  if (runtime.dynamic_confirmation === true) {
+    runtime.trigger_turn = turn;
+    runtime.trigger_learner_text = String(learnerText || '');
+    runtime.trigger_learner_sha256 = sha256(runtime.trigger_learner_text);
+  }
   runtime.history.push(clone(intervention));
   if (state?.register?.history?.at(-1) === selection) state.register.history[state.register.history.length - 1] = next;
   if (state?.register) state.register.current = next;

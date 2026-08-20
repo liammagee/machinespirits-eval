@@ -81,6 +81,44 @@ const RESISTANCE_ACTION_REGISTER_BASELINE_V2_CRITICAL_SOURCE_CLOSURE = Object.fr
   'package-lock.json',
 ]);
 
+const RESISTANCE_ACTION_REGISTER_CONFIRMATION_V1_CRITICAL_SOURCE_CLOSURE = Object.freeze([
+  'scripts/run-tutor-stub-resistance-action-register-confirmation.js',
+  'scripts/analyze-tutor-stub-resistance-action-register-confirmation.js',
+  ['scripts', 'tutor-' + 'stub.js'].join('/'),
+  'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
+  'scripts/package-tutor-stub-resistant-profile-study-go-request.js',
+  'services/tutorStubResistanceActionRegisterConfirmation.js',
+  'services/tutorStubResistanceActionRegisterStudy.js',
+  'services/paidStudyEndpointPreflight.js',
+  'services/edgedRegisterCalibration.js',
+  'services/tutorStubTurnOrchestration.js',
+  'services/tutorStubCliApplicationHost.js',
+  'services/tutorStubCliArguments.js',
+  'services/tutorStubNonInteractiveApplication.js',
+  'services/tutorStubApplicationState.js',
+  'services/tutorStubApplicationTraceContext.js',
+  'services/tutorStubSessionRecipe.js',
+  'services/tutorStubReleasePacing.js',
+  'services/tutorStubAutomatedLearnerGenerationRuntime.js',
+  'services/tutorStubLearnerAnalysisRuntime.js',
+  'services/tutorStubPublicLearnerAnalysis.js',
+  'services/resistantLearnerObservation.js',
+  'services/tutorStubActionBeforeRegisterShadow.js',
+  'services/tutorStubRegisterPragmatics.js',
+  'services/tutorStubResponsePolicy.js',
+  'services/tutorStubEdgeTimingPolicy.js',
+  'services/tutorStubCliPolicyRetry.js',
+  'services/tutorStubPromptTransport.js',
+  'services/tutorStubTutorAttemptRuntime.js',
+  'services/tutorStubTraceRuntime.js',
+  'services/tutorStubLabs.js',
+  'services/tutorStubArtifactArchive.js',
+  'config/drama-derivation/world-005-marrick.yaml',
+  'config/providers.yaml',
+  'package.json',
+  'package-lock.json',
+]);
+
 const RESISTANCE_ACTION_REGISTER_STOPPED_V2_REQUEST = Object.freeze({
   requestRevision: 3,
   request: Object.freeze({
@@ -453,6 +491,8 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     request.actionRegisterBaseline?.type === 'prospective_frame_refuser_action_register_baseline_v2';
   const isActionRegisterAnalysisOnly =
     request.actionRegisterBaselineAnalysis?.type === 'sealed_frame_refuser_action_register_baseline_analysis_only_v1';
+  const isActionRegisterConfirmation =
+    request.actionRegisterConfirmation?.type === 'prospective_frame_refuser_warm_plain_confirmation_v1';
 
   assertion(
     checks,
@@ -483,7 +523,12 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
 
   const sourceAudit = sourceCommitAudit(request.source);
   const sourceClosure = request.source.closure;
-  if (isFrameRefuserOpportunity || isActionRegisterBaseline || isActionRegisterAnalysisOnly) {
+  if (
+    isFrameRefuserOpportunity ||
+    isActionRegisterBaseline ||
+    isActionRegisterAnalysisOnly ||
+    isActionRegisterConfirmation
+  ) {
     assertion(
       checks,
       'frame-refuser-opportunity-source-closure',
@@ -492,8 +537,9 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     );
     const closurePaths = sourceClosure.map((entry) => entry?.path);
     const registrationVersion = readJson(bindingPath(request.bindings.registration)).version ?? 1;
-    const requiredCriticalSourceClosure =
-      isActionRegisterBaseline || isActionRegisterAnalysisOnly
+    const requiredCriticalSourceClosure = isActionRegisterConfirmation
+      ? RESISTANCE_ACTION_REGISTER_CONFIRMATION_V1_CRITICAL_SOURCE_CLOSURE
+      : isActionRegisterBaseline || isActionRegisterAnalysisOnly
         ? RESISTANCE_ACTION_REGISTER_BASELINE_V2_CRITICAL_SOURCE_CLOSURE
         : registrationVersion === 4
           ? FRAME_REFUSER_OPPORTUNITY_V4_CRITICAL_SOURCE_CLOSURE
@@ -503,11 +549,13 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       'frame-refuser-opportunity-critical-source-closure',
       new Set(closurePaths).size === closurePaths.length &&
         requiredCriticalSourceClosure.every((entry) => closurePaths.includes(entry)),
-      isActionRegisterBaseline || isActionRegisterAnalysisOnly
-        ? 'exact-prefix executor, combined analyzer, runtime intervention, retry metering, validator, route, world, and dependency files remain bound'
-        : registrationVersion === 4
-          ? 'launch, analyzer, observer, runtime provenance, retry transport, metering, prefix, preflight, validator, world, route, and dependency files remain bound'
-          : 'launch, analyzer, observer, runtime, prefix, preflight, validator, world, route, and dependency files remain bound',
+      isActionRegisterConfirmation
+        ? 'fresh confirmation executor, combined Fisher analyzer, dynamic trigger runtime, retry metering, validator, route, world, and dependency files remain bound'
+        : isActionRegisterBaseline || isActionRegisterAnalysisOnly
+          ? 'exact-prefix executor, combined analyzer, runtime intervention, retry metering, validator, route, world, and dependency files remain bound'
+          : registrationVersion === 4
+            ? 'launch, analyzer, observer, runtime provenance, retry transport, metering, prefix, preflight, validator, world, route, and dependency files remain bound'
+            : 'launch, analyzer, observer, runtime, prefix, preflight, validator, world, route, and dependency files remain bound',
     );
   }
   for (const entry of sourceClosure) {
@@ -522,11 +570,20 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   validateFileBinding(checks, 'registration-binding', request.bindings.registration);
   const endpoint = request.bindings.endpoint;
   let hold = null;
-  if (isFrameRefuserOpportunity || isActionRegisterBaseline || isActionRegisterAnalysisOnly) {
+  if (
+    isFrameRefuserOpportunity ||
+    isActionRegisterBaseline ||
+    isActionRegisterAnalysisOnly ||
+    isActionRegisterConfirmation
+  ) {
     const contract = readJson(rootPath(endpoint.contractPath));
     const certificate = readJson(rootPath(endpoint.certificatePath));
     const endpointRegistration = readJson(rootPath(request.bindings.registration.path));
-    const expectedEndpointCases = isActionRegisterBaseline || isActionRegisterAnalysisOnly ? 12 : 6;
+    const expectedEndpointCases = isActionRegisterConfirmation
+      ? 36
+      : isActionRegisterBaseline || isActionRegisterAnalysisOnly
+        ? 12
+        : 6;
     assertion(
       checks,
       'opportunity-endpoint-contract-binding',
@@ -550,7 +607,37 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         certificate.preflight_sha256 === endpoint.preflightSha256,
       `the ${expectedEndpointCases}-case endpoint certificate and zero-call preflight remain pinned`,
     );
-    if (isActionRegisterBaseline || isActionRegisterAnalysisOnly) {
+    if (isActionRegisterConfirmation) {
+      const endpointIds = contract.endpoints?.map((row) => row.id) || [];
+      assertion(
+        checks,
+        'action-register-confirmation-endpoint-readiness-binding',
+        endpointRegistration.version === 3 &&
+          contract.runner?.live_batch_executor ===
+            'scripts/run-tutor-stub-resistance-action-register-confirmation.js#runTutorStubResistanceActionRegisterConfirmationBatch' &&
+          contract.runner?.live_batch_recovery_executor ===
+            'scripts/run-tutor-stub-resistance-action-register-confirmation.js#recoverTutorStubResistanceActionRegisterConfirmationBatch' &&
+          contract.runner?.combined_analyzer ===
+            'scripts/analyze-tutor-stub-resistance-action-register-confirmation.js#analyzeTutorStubResistanceActionRegisterConfirmation' &&
+          contract.runner?.batch_contract?.required_batches?.length === 9 &&
+          contract.runner?.batch_contract?.dialogues_per_batch === 4 &&
+          contract.runner?.batch_contract?.maximum_model_attempt_reservations_per_dialogue === 60 &&
+          contract.runner?.batch_contract?.maximum_model_attempt_reservations_per_batch === 240 &&
+          contract.runner?.batch_contract?.combined_maximum_model_attempt_reservations === 2160 &&
+          contract.runner?.batch_contract?.combined_analysis_only === true &&
+          contract.runner?.batch_contract?.valid_unit_reruns === false &&
+          contract.runner?.batch_contract?.outcome_selection === false &&
+          contract.runner?.batch_contract?.bounded_technical_recovery ===
+            'missing_or_failed_units_only_within_unchanged_60_per_dialogue_240_per_batch_2160_confirmation_and_2345_programme_caps' &&
+          [
+            'profile_specific_resistance_recovery',
+            'fisher_exact_two_sided_confirmation',
+            'action_register_fidelity_and_safety',
+            'fresh_independent_assembly',
+          ].every((id) => endpointIds.includes(id)),
+        'the 36-case endpoint binds fresh dynamic triggering, exact recovery, one Fisher analysis, and the 60/240/2160 ceilings',
+      );
+    } else if (isActionRegisterBaseline || isActionRegisterAnalysisOnly) {
       const prefixBundle = request.bindings.prefixBundle;
       validateFileBinding(checks, 'action-register-prefix-bundle-binding', prefixBundle);
       assertion(
@@ -695,7 +782,8 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         isAxisHeldout ||
         isFrameRefuserOpportunity ||
         isActionRegisterBaseline ||
-        isActionRegisterAnalysisOnly)) ||
+        isActionRegisterAnalysisOnly ||
+        isActionRegisterConfirmation)) ||
       commandSource === 'bindings.liveReadinessHold.path#proposedCommands',
     `command source is ${commandSource}`,
   );
@@ -727,7 +815,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       recoveryCommand === undefined && request.bindings.commands.recoveryArraySha256 === undefined,
       'the analysis-only request contains no recovery command or recovery-command digest',
     );
-  } else if (isActionRegisterBaseline) {
+  } else if (isActionRegisterBaseline || isActionRegisterConfirmation) {
     assertion(
       checks,
       'recovery-command-binding',
@@ -847,6 +935,172 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         commandArg(analyzeCommand, '--required-learner-model') === request.design.models.learner &&
         analyzeCommand.includes('--require-pooled'),
       'the analysis combines only the 15 pinned prior traces with the fresh sealed root',
+    );
+  } else if (isActionRegisterConfirmation) {
+    const registered = readJson(rootPath(request.bindings.registration.path));
+    const gate = request.actionRegisterConfirmation;
+    const blocks = request.design.blocks;
+    const batchDestinations = request.destination.batches;
+    assertion(
+      checks,
+      'action-register-confirmation-design-binding',
+      registered.version === 3 &&
+        request.design.profiles.join(',') === 'frame_refuser' &&
+        request.design.dialogues === 36 &&
+        request.design.dialoguesPerArm === 18 &&
+        request.design.realizations.join(',') === 'plain,warm' &&
+        request.design.freshIndependentDialogues === true &&
+        request.design.triggerMustShowByTurn === 2 &&
+        request.design.outcomeHorizonLearnerTurns === 2 &&
+        request.design.models.tutor === 'codex.gpt-5.6-luna' &&
+        request.design.models.analysis === 'codex.gpt-5.6-luna' &&
+        request.design.models.learner === 'codex.gpt-5.6-luna' &&
+        request.design.cliEffort === 'low' &&
+        Array.isArray(blocks) &&
+        blocks.length === 9 &&
+        new Set(blocks.map((block) => block.id)).size === 9 &&
+        blocks.every((block) => block.dialogues === 4 && block.plain === 2 && block.warm === 2),
+      'the confirmation is 36 fresh dynamic-trigger dialogues, 18 per arm, in nine balanced blocks',
+    );
+    assertion(
+      checks,
+      'action-register-confirmation-calibration-separation',
+      gate.calibrationSizingEvidence?.analysisRequest?.path ===
+        'config/tutor-stub-resistance-action-register-baseline-analysis-go-request.v1.json' &&
+        gate.calibrationSizingEvidence?.analysisRequest?.sha256 ===
+          '965aca0ad1f61d2f43891c162861180016d79a8afa5c090ace0e3e88a436e0dd' &&
+        gate.calibrationSizingEvidence?.reportSha256 ===
+          '42021a390338cd556386efc96d8f00b35655a411627908a10248dba1e473a3a5' &&
+        gate.calibrationSizingEvidence?.privateArchiveCommit === '0857363dabb4445052159b8218acaed13d921949' &&
+        gate.calibrationSizingEvidence?.dialogues === 12 &&
+        gate.calibrationSizingEvidence?.plainRecovered === 1 &&
+        gate.calibrationSizingEvidence?.plainTotal === 6 &&
+        gate.calibrationSizingEvidence?.warmRecovered === 4 &&
+        gate.calibrationSizingEvidence?.warmTotal === 6 &&
+        gate.calibrationSizingEvidence?.usedForSizingOnly === true &&
+        gate.calibrationDialoguesReused === false &&
+        gate.calibrationDialoguesPooled === false &&
+        gate.interimAnalysisPermitted === false &&
+        gate.validUnitRerunsPermitted === false &&
+        gate.outcomeSelectionPermitted === false,
+      'the 12 calibration dialogues are frozen sizing evidence only and cannot enter the confirmation analysis',
+    );
+    validateFileBinding(
+      checks,
+      'action-register-confirmation-calibration-request-binding',
+      gate.calibrationSizingEvidence.analysisRequest,
+    );
+    assertion(
+      checks,
+      'action-register-confirmation-power-and-budget',
+      request.power.test === 'fisher_exact_two_sided' &&
+        request.power.alpha === 0.05 &&
+        request.power.calibrationPlainRate === 1 / 6 &&
+        request.power.calibrationWarmRate === 4 / 6 &&
+        request.power.powerAt17PerArm === 0.796776592585303 &&
+        request.power.powerAt18PerArm === 0.8388687257645503 &&
+        request.power.minimumNPerArmAtOrAbove80Percent === 18 &&
+        request.budget.dialogues === 36 &&
+        request.budget.plannedRoleCallsPerDialogue === 20 &&
+        request.budget.maximumReservationsPerPlannedCall === 3 &&
+        request.budget.maximumAttemptsPerDialogue === 60 &&
+        request.budget.dialoguesPerBatch === 4 &&
+        request.budget.maximumAttemptsPerBatch === 240 &&
+        request.budget.maximumPlannedModelAttempts === 2160 &&
+        request.budget.programmeLedgerBefore === 185 &&
+        request.budget.programmeCeilingBefore === 1200 &&
+        request.budget.programmeCeilingAmendment === 1145 &&
+        request.budget.programmeCeilingAfter === 2345 &&
+        request.budget.programmeLedgerAfterMaximum === 2345 &&
+        request.budget.retryOrResumeAuthority === 'bounded_technical_recovery',
+      '20 planned calls times three charged attempts gives 60 per dialogue, 2160 total, and the exact 185-to-2345 programme boundary',
+    );
+    const recovery = gate.recoveryBoundary;
+    assertion(
+      checks,
+      'action-register-confirmation-recovery-boundary',
+      recovery.sameLaunchSource === true &&
+        recovery.sameRegistrationModelsSeedsMeasurementAndArmAssignment === true &&
+        recovery.missingOrFailedUnitsOnly === true &&
+        recovery.freshNonOverwritingRecoveryCheckpoint === true &&
+        recovery.rerunValidOutputs === false &&
+        recovery.selectAmongOutcomes === false &&
+        recovery.maximumAttemptsPerDialogueUnchanged === 60 &&
+        recovery.maximumAttemptsPerBatchUnchanged === 240 &&
+        recovery.maximumTotalStudyAttemptsUnchanged === 2160 &&
+        recovery.programmeCeilingUnchanged === 2345,
+      'bounded recovery may fill only missing or failed units under every unchanged confirmation cap',
+    );
+    assertion(
+      checks,
+      'action-register-confirmation-measurement-binding',
+      request.measurement.reportSchema ===
+        'machinespirits.tutor-stub.resistance-action-register-confirmation-report.v1' &&
+        request.measurement.primaryOutcome ===
+          'profile_specific_resistance_recovery_by_two_post_trigger_learner_turns' &&
+        request.measurement.primaryTest === 'fisher_exact_two_sided' &&
+        request.measurement.alpha === 0.05 &&
+        request.measurement.oneCombinedThirtySixDialogueAnalysisRequired === true &&
+        request.measurement.interimAnalysisPermitted === false &&
+        request.measurement.analysisTraceSelection === 'exact_prebound_batch_result_traces_only' &&
+        request.measurement.calibrationDialoguesReusedOrPooled === 0 &&
+        request.measurement.claimBoundary ===
+          'confirmation_of_frame_refuser_matched_action_warm_versus_plain_recovery_only',
+      'one predeclared Fisher analysis tests only the fresh warm-versus-plain recovery contrast',
+    );
+    const exactLive = (command, block, destination) =>
+      Array.isArray(command) &&
+      command[0] === 'node' &&
+      command[1] === 'scripts/run-tutor-stub-resistance-action-register-confirmation.js' &&
+      command.includes('--live-batch') &&
+      commandArg(command, '--batch') === block &&
+      commandArg(command, '--destination') === destination &&
+      commandArg(command, '--registration') === request.bindings.registration.path &&
+      commandArg(command, '--parallelism') === '4' &&
+      commandArg(command, '--expected-source-commit') === request.source.launchCommit;
+    assertion(
+      checks,
+      'action-register-confirmation-live-commands',
+      Array.isArray(liveCommand) &&
+        liveCommand.length === 9 &&
+        Array.isArray(batchDestinations) &&
+        batchDestinations.length === 9 &&
+        new Set(batchDestinations.map((entry) => entry.artifactRoot)).size === 9 &&
+        liveCommand.every((command, index) =>
+          exactLive(command, blocks[index].id, batchDestinations[index].artifactRoot),
+        ),
+      'nine live commands are prebound to the nine balanced create-once block roots',
+    );
+    const expectedRecovery = batchDestinations.map(({ artifactRoot }) => [
+      'node',
+      'scripts/run-tutor-stub-resistance-action-register-confirmation.js',
+      '--recover-batch',
+      '--destination',
+      artifactRoot,
+      '--expected-source-commit',
+      request.source.launchCommit,
+      '--parallelism',
+      '4',
+    ]);
+    assertion(
+      checks,
+      'action-register-confirmation-recovery-commands',
+      JSON.stringify(recoveryCommand) === JSON.stringify(expectedRecovery),
+      'recovery commands preserve every block root, source, and hard cap without rerunning valid outputs',
+    );
+    assertion(
+      checks,
+      'action-register-confirmation-analysis-command',
+      Array.isArray(analyzeCommand) &&
+        analyzeCommand[0] === 'node' &&
+        analyzeCommand[1] === 'scripts/analyze-tutor-stub-resistance-action-register-confirmation.js' &&
+        JSON.stringify(commandArgs(analyzeCommand, '--batch')) ===
+          JSON.stringify(batchDestinations.map((entry) => entry.artifactRoot)) &&
+        commandArg(analyzeCommand, '--registration') === request.bindings.registration.path &&
+        commandArg(analyzeCommand, '--expected-source-commit') === request.source.launchCommit &&
+        commandArg(analyzeCommand, '--out') === request.destination.combinedReport &&
+        analyzeCommand.includes('--json'),
+      'the sole analyzer requires all nine sealed roots and writes one fresh combined report',
     );
   } else if (isActionRegisterAnalysisOnly) {
     const registered = readJson(rootPath(request.bindings.registration.path));
@@ -1632,6 +1886,25 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         !fs.existsSync(rootPath(request.destination.combinedReport)),
       `${destinations.map((row) => row.artifactRoot).join(' and ')} do not exist`,
     );
+  } else if (isActionRegisterConfirmation) {
+    const destinations = request.destination.batches;
+    assertion(
+      checks,
+      'fresh-destination',
+      Array.isArray(destinations) &&
+        destinations.length === 9 &&
+        new Set(destinations.map((destination) => destination?.artifactRoot)).size === 9 &&
+        destinations.every(
+          (destination) =>
+            destination?.createOnce === true &&
+            destination?.mustNotExistBeforeLaunch === true &&
+            !fs.existsSync(rootPath(destination.artifactRoot)),
+        ) &&
+        request.destination.combinedReportCreateOnce === true &&
+        request.destination.mustNotExistBeforeAnalysis === true &&
+        !fs.existsSync(rootPath(request.destination.combinedReport)),
+      'all nine confirmation roots and the combined report are fresh and absent',
+    );
   } else {
     assertion(
       checks,
@@ -1648,10 +1921,11 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     isTechnicalRecovery || request.budget.retryOrResumeAuthority === 'bounded_technical_recovery'
       ? 'bounded technical recovery authority for missing or failed units only.'
       : 'no retry or resume authority.';
-  const exactApprovalStatement =
-    `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one ` +
-    `${request.design.dialogues}-dialogue Luna ${isReplacement ? 'replacement study' : isActionRegisterAnalysisOnly ? 'sealed action/register baseline analysis' : isActionRegisterBaseline ? 'action/register baseline' : 'study'}, ` +
-    `with a hard ceiling of ${request.budget.maximumPlannedModelAttempts} model attempts and ${recoveryAuthorityClause}`;
+  const exactApprovalStatement = isActionRegisterConfirmation
+    ? `I amend the resistance-action-register programme ceiling from 1,200 to 2,345 model attempts and approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues, and bounded technical recovery authority for missing or failed units only within the unchanged 2,345-attempt programme ceiling.`
+    : `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one ` +
+      `${request.design.dialogues}-dialogue Luna ${isReplacement ? 'replacement study' : isActionRegisterAnalysisOnly ? 'sealed action/register baseline analysis' : isActionRegisterBaseline ? 'action/register baseline' : 'study'}, ` +
+      `with a hard ceiling of ${request.budget.maximumPlannedModelAttempts} model attempts and ${recoveryAuthorityClause}`;
 
   return {
     schema: 'machinespirits.tutor-stub.resistant-profile-discrimination-study-go-request-report.v1',

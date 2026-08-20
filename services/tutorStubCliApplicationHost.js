@@ -567,6 +567,7 @@ import {
   configureTutorStubResistanceActionRegisterExecution,
   loadTutorStubResistanceActionRegisterPrefixBundle,
 } from './tutorStubResistanceActionRegisterExecution.js';
+import { configureTutorStubResistanceActionRegisterConfirmationFromCli } from './tutorStubResistanceActionRegisterConfirmation.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from './tutorStubResistanceActionRegisterStudy.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -2332,6 +2333,31 @@ export async function runTutorStubCliApplicationHost({
       if (String(sessionApplicationContext.firstMessage || '').trim() !== configured.prefix.trigger_learner_text) {
         throw new Error('resistance action/register first message must exactly equal the registered frozen trigger');
       }
+    }
+
+    const resistanceActionRegisterConfirmationArgs = [
+      args['resistance-action-register-confirmation-registration'],
+      args['resistance-action-register-confirmation-job'],
+    ];
+    if (resistanceActionRegisterArgs.some(Boolean) && resistanceActionRegisterConfirmationArgs.some(Boolean)) {
+      throw new Error('baseline replay and fresh confirmation execution modes are mutually exclusive');
+    }
+    if (
+      resistanceActionRegisterConfirmationArgs.some(Boolean) &&
+      !resistanceActionRegisterConfirmationArgs.every(Boolean)
+    ) {
+      throw new Error('fresh action/register confirmation requires registration and job together');
+    }
+    if (resistanceActionRegisterConfirmationArgs.every(Boolean)) {
+      configureTutorStubResistanceActionRegisterConfirmationFromCli({
+        args,
+        state,
+        root: ROOT,
+        autoLearnerEnabled,
+        autoTurns,
+        appendTraceEvent,
+        observationSemantics: process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS,
+      });
     }
 
     const {
