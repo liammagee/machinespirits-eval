@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { generatedViewPolicy } from '../scripts/workplan.js';
+import { buildWorkplanBoard, generatedViewPolicy } from '../scripts/workplan.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CLI = path.join(ROOT, 'scripts', 'workplan.js');
@@ -122,25 +122,68 @@ test('render preserves generated timestamp when board content is unchanged', () 
   writeItem(dir, 'sample-good', GOOD);
   const r1 = run(dir, ['render'], { WORKPLAN_RENDERED_AT: '2026-06-23T00:00:00.000Z' });
   assert.equal(r1.status, 0, r1.stdout + r1.stderr);
+  const firstJson = fs.readFileSync(path.join(dir, 'board.json'), 'utf8');
+  const firstMarkdown = fs.readFileSync(path.join(dir, 'BOARD.md'), 'utf8');
   const first = JSON.parse(fs.readFileSync(path.join(dir, 'board.json'), 'utf8'));
   const r2 = run(dir, ['render']);
   assert.equal(r2.status, 0, r2.stdout + r2.stderr);
+  assert.equal(fs.readFileSync(path.join(dir, 'board.json'), 'utf8'), firstJson);
+  assert.equal(fs.readFileSync(path.join(dir, 'BOARD.md'), 'utf8'), firstMarkdown);
   const second = JSON.parse(fs.readFileSync(path.join(dir, 'board.json'), 'utf8'));
   assert.equal(second.generated, first.generated);
 });
 
-test('check passes only when generated board files match items', () => {
+test('check validates source rendering without creating or requiring generated views', () => {
   const dir = makeBoard();
   writeItem(dir, 'sample-good', GOOD);
-  const r1 = run(dir, ['render'], { WORKPLAN_RENDERED_AT: '2026-06-23T00:00:00.000Z' });
-  assert.equal(r1.status, 0, r1.stdout + r1.stderr);
+  assert.equal(fs.existsSync(path.join(dir, 'board.json')), false);
+  assert.equal(fs.existsSync(path.join(dir, 'BOARD.md')), false);
   const ok = run(dir, ['check']);
   assert.equal(ok.status, 0, ok.stdout + ok.stderr);
-  writeItem(dir, 'sample-good', { ...GOOD, title: 'Changed title' });
-  const stale = run(dir, ['check']);
-  assert.equal(stale.status, 1);
-  assert.match(stale.stdout, /board\.json.*stale/);
-  assert.match(stale.stdout, /BOARD\.md.*stale/);
+  assert.match(ok.stdout, /source renders deterministically; generated views not required/);
+  assert.equal(fs.existsSync(path.join(dir, 'board.json')), false);
+  assert.equal(fs.existsSync(path.join(dir, 'BOARD.md')), false);
+});
+
+test('source-derived board ignores stale compatibility exports', () => {
+  const dir = makeBoard();
+  writeItem(dir, 'sample-good', GOOD);
+  fs.writeFileSync(
+    path.join(dir, 'board.json'),
+    JSON.stringify({ generated: 'stale', counts: { total: 99 }, items: [{ id: 'stale-only' }] }),
+  );
+  fs.writeFileSync(path.join(dir, 'BOARD.md'), '# stale\n');
+
+  const previous = process.env.WORKPLAN_DIR;
+  process.env.WORKPLAN_DIR = dir;
+  try {
+    const board = buildWorkplanBoard({ generated: 'fixed-source-stamp' });
+    assert.equal(board.generated, 'fixed-source-stamp');
+    assert.equal(board.counts.total, 1);
+    assert.deepEqual(
+      board.items.map((item) => item.id),
+      ['sample-good'],
+    );
+  } finally {
+    if (previous === undefined) delete process.env.WORKPLAN_DIR;
+    else process.env.WORKPLAN_DIR = previous;
+  }
+
+  const checked = run(dir, ['check']);
+  assert.equal(checked.status, 0, checked.stdout + checked.stderr);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'board.json'), 'utf8')).generated, 'stale');
+  assert.equal(fs.readFileSync(path.join(dir, 'BOARD.md'), 'utf8'), '# stale\n');
+});
+
+test('summary reports concise source-derived lane counts without rendering files', () => {
+  const dir = makeBoard();
+  writeItem(dir, 'sample-good', GOOD);
+  writeItem(dir, 'sample-active', { ...GOOD, id: 'sample-active', status: 'active' });
+  const result = run(dir, ['summary']);
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.equal(result.stdout, '2 items · triaged 1 · active 1\n');
+  assert.equal(fs.existsSync(path.join(dir, 'board.json')), false);
+  assert.equal(fs.existsSync(path.join(dir, 'BOARD.md')), false);
 });
 
 test('source-only check validates items without requiring generated views', () => {
@@ -148,7 +191,7 @@ test('source-only check validates items without requiring generated views', () =
   writeItem(dir, 'sample-good', GOOD);
   const missingViews = run(dir, ['check', '--source-only']);
   assert.equal(missingViews.status, 0, missingViews.stdout + missingViews.stderr);
-  assert.match(missingViews.stdout, /source check passed.*generated views not inspected/);
+  assert.match(missingViews.stdout, /source check passed.*generated views not required/);
 
   writeItem(dir, 'sample-bad', { ...GOOD, id: 'sample-bad', priority: 'P9' });
   const invalidSource = run(dir, ['check', '--source-only']);
@@ -156,21 +199,30 @@ test('source-only check validates items without requiring generated views', () =
   assert.match(invalidSource.stdout, /priority="P9" not in/);
 });
 
-test('generated-view PR policy rejects aggregate files unless explicitly allowed', () => {
+test('generated-view PR policy allows removal but rejects additions and reintroductions', () => {
   const sourceOnly = generatedViewPolicy(['workplan/items/sample-good.md', 'scripts/workplan.js']);
-  assert.deepEqual(sourceOnly, { changes: [], allowed: true });
+  assert.deepEqual(sourceOnly, { changes: [], deletions: [], allowed: true });
 
   const generated = generatedViewPolicy([
-    './workplan/board.json',
-    'workplan/board.json',
-    'workplan/items/sample-good.md',
-    'workplan/BOARD.md',
+    { status: 'A', path: './workplan/board.json' },
+    { status: 'M', path: 'workplan/BOARD.md' },
+    { status: 'M', path: 'workplan/items/sample-good.md' },
   ]);
   assert.deepEqual(generated, {
     changes: ['workplan/BOARD.md', 'workplan/board.json'],
+    deletions: [],
     allowed: false,
   });
-  assert.equal(generatedViewPolicy(generated.changes, { allow: true }).allowed, true);
+
+  const removal = generatedViewPolicy([
+    { status: 'D', path: 'workplan/BOARD.md' },
+    { status: 'D', path: 'workplan/board.json' },
+  ]);
+  assert.deepEqual(removal, {
+    changes: [],
+    deletions: ['workplan/BOARD.md', 'workplan/board.json'],
+    allowed: true,
+  });
 });
 
 test('ingest --daily skips self-work captures by arxiv id', () => {
