@@ -64,9 +64,45 @@ const FRAME_REFUSER_V2_REQUEST_PATH = path.join(
 );
 const GO_REQUEST_PACKAGE_SCRIPT = 'scripts/package-tutor-stub-resistant-profile-study-go-request.js';
 
-function createProtectedPackagerCheckout(t, commit, label) {
+function protectedPackagerRepoPaths(request) {
+  return [
+    ...request.source.closure.map((entry) => entry.path),
+    request.bindings.registration.path,
+    request.bindings.endpoint.contractPath,
+    request.bindings.endpoint.certificatePath,
+    request.bindings.routeCanary.resultPath,
+    request.bindings.routeCanary.authorizationConsumptionPath,
+    request.opportunityGate.historicalOpportunityV1.requestPath,
+  ];
+}
+
+function materializeProtectedPackagerBlobs(request, commit, gitEnv) {
+  return [...new Set(protectedPackagerRepoPaths(request))].map((repoPath) => {
+    const listed = spawnSync('git', ['ls-tree', '-z', commit, '--', repoPath], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      env: gitEnv,
+    });
+    assert.equal(listed.status, 0, listed.stderr);
+    const records = listed.stdout.split('\0').filter(Boolean);
+    assert.equal(records.length, 1, `${repoPath} must resolve to one protected launch blob`);
+    const match = records[0].match(/^([0-7]{6}) ([^ ]+) ([0-9a-f]{40,64})\t([\s\S]+)$/u);
+    assert.ok(match && match[2] === 'blob' && match[4] === repoPath, `${repoPath} must be a Git blob`);
+    const oid = match[3];
+    const materialized = spawnSync('git', ['cat-file', 'blob', oid], {
+      cwd: ROOT,
+      env: gitEnv,
+      stdio: ['ignore', 'ignore', 'pipe'],
+    });
+    assert.equal(materialized.status, 0, String(materialized.stderr || ''));
+    return { repoPath, oid };
+  });
+}
+
+function createProtectedPackagerCheckout(t, request, label, commit = request.source.launchCommit) {
   const checkout = fs.mkdtempSync(path.join(os.tmpdir(), `go-request-packager-${label}-`));
   const gitEnv = { ...process.env, GIT_LFS_SKIP_SMUDGE: '1' };
+  const protectedBlobs = materializeProtectedPackagerBlobs(request, commit, gitEnv);
   const clone = spawnSync('git', ['clone', '--quiet', '--shared', '--no-checkout', ROOT, checkout], {
     encoding: 'utf8',
     env: gitEnv,
@@ -78,6 +114,15 @@ function createProtectedPackagerCheckout(t, commit, label) {
     env: gitEnv,
   });
   assert.equal(detached.status, 0, detached.stderr);
+  const offlineGitEnv = { ...gitEnv, GIT_NO_LAZY_FETCH: '1' };
+  for (const { repoPath, oid } of protectedBlobs) {
+    const available = spawnSync('git', ['cat-file', '-e', oid], {
+      cwd: checkout,
+      encoding: 'utf8',
+      env: offlineGitEnv,
+    });
+    assert.equal(available.status, 0, `${repoPath} (${oid}) must remain available without lazy fetching`);
+  }
   const packagerPath = path.join(checkout, GO_REQUEST_PACKAGE_SCRIPT);
   fs.mkdirSync(path.dirname(packagerPath), { recursive: true });
   fs.copyFileSync(path.join(ROOT, GO_REQUEST_PACKAGE_SCRIPT), packagerPath);
@@ -746,7 +791,7 @@ test('GO request packaging materializes the approved request bytes deterministic
   t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
   fs.writeFileSync(templatePath, frameRefuserV2TemplateText());
   const request = JSON.parse(fs.readFileSync(FRAME_REFUSER_V2_REQUEST_PATH, 'utf8'));
-  const protectedRoot = createProtectedPackagerCheckout(t, request.source.launchCommit, 'historical');
+  const protectedRoot = createProtectedPackagerCheckout(t, request, 'historical');
   const firstOutput = `config/.test-packaged-go-request-${process.pid}-1.json`;
   const secondOutput = `config/.test-packaged-go-request-${process.pid}-2.json`;
   const first = path.join(protectedRoot, firstOutput);
@@ -763,7 +808,12 @@ test('GO request packaging materializes the approved request bytes deterministic
     spawnSync(process.execPath, [...args, '--out', output], {
       cwd: protectedRoot,
       encoding: 'utf8',
-      env: { ...process.env, NODE_PATH: '', OPENROUTER_API_KEY: 'must-not-be-used-by-zero-call-packager' },
+      env: {
+        ...process.env,
+        GIT_NO_LAZY_FETCH: '1',
+        NODE_PATH: '',
+        OPENROUTER_API_KEY: 'must-not-be-used-by-zero-call-packager',
+      },
     });
 
   const firstRun = run(firstOutput);
@@ -833,10 +883,14 @@ test('GO request packaging fails closed on incomplete authority, source, marker,
   const templateText = frameRefuserV2TemplateText();
   fs.writeFileSync(templatePath, templateText);
   const request = JSON.parse(fs.readFileSync(FRAME_REFUSER_V2_REQUEST_PATH, 'utf8'));
-  const protectedRoot = createProtectedPackagerCheckout(t, request.source.launchCommit, 'negative-historical');
+  const protectedRoot = createProtectedPackagerCheckout(t, request, 'negative-historical');
   const outputAt = (root) => path.join(root, output);
   const run = (args, root = protectedRoot) =>
-    spawnSync(process.execPath, [GO_REQUEST_PACKAGE_SCRIPT, ...args], { cwd: root, encoding: 'utf8' });
+    spawnSync(process.execPath, [GO_REQUEST_PACKAGE_SCRIPT, ...args], {
+      cwd: root,
+      encoding: 'utf8',
+      env: { ...process.env, GIT_NO_LAZY_FETCH: '1' },
+    });
 
   const missing = run(['--template', templatePath, '--out', output]);
   assert.equal(missing.status, 2);
@@ -871,7 +925,7 @@ test('GO request packaging fails closed on incomplete authority, source, marker,
   assert.equal(fs.existsSync(outputAt(protectedRoot)), false);
 
   const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
-  const currentRoot = createProtectedPackagerCheckout(t, head, 'negative-current');
+  const currentRoot = createProtectedPackagerCheckout(t, request, 'negative-current', head);
   let misplacedSource = moveMarkerToIgnoredField(
     templateText,
     GO_REQUEST_PACKAGE_MARKERS.sourceCommit,
