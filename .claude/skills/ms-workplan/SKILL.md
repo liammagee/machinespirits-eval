@@ -38,23 +38,22 @@ playbook is in `workplan/playbook/`.
   ```bash
   node scripts/workplan.js ingest    # TODO.md open items + notes/daily-notes actions -> inbox/
   ```
-- **`add`/`triage`/`set` auto-render** `BOARD.md` + `board.json` for the local
-  dashboard. On feature branches, prefer `--no-render` and commit source files
-  only; if the views were refreshed locally, leave their diffs out of the PR:
+- **`add`/`triage`/`set` write item sources.** Their compatibility export can
+  be skipped with `--no-render`; the Scriptorium reads item sources directly.
+  Commit source files only:
   ```bash
-  npm run wp:source-check                         # feature-branch validation
+  npm run wp:source-check                         # validate authored sources
   node scripts/workplan.js set <id> status active --no-render
-  npm run wp:render                               # local/main rendering only
-  npm run wp:check                                # strict source + generated check
+  node scripts/workplan.js summary                # concise current counts
+  npm run wp:render                               # optional ignored local export
+  npm run wp:check                                # source + in-memory renderability
   ```
 
 ## Conventions to enforce
-- `items/` is the source of truth; `BOARD.md` / `board.json` are generated —
-  never hand-edit them.
-- Feature PRs must not commit `BOARD.md` / `board.json`; the serialized
-  main-only renderer publishes them after merge. The
-  `workplan-generated-update` label is reserved for deliberate renderer
-  migrations.
+- `items/` is the source of truth. `BOARD.md` / `board.json` are ignored local
+  exports; never hand-edit, stage, or force-add them.
+- Feature PRs commit item/source files only. CI rejects reintroduction of the
+  derived views, and no post-merge renderer advances `main`.
 - Link, don't copy: point at the paper §, the note, the export, the run, the PR.
 - Every item needs a `verification` line before it can reach `done`.
 - For research/paper items, keep `claim_status` in sync with the atlas

@@ -13,20 +13,20 @@ without re-deriving the design history those other files hold.
 
 ## The one rule
 
-**`workplan/` is the todo system; `items/` is the write source;
-`BOARD.md` is the generated readable board.** Everything else is either a
-derived view, historical context, or a cross-link. Concretely:
+**`workplan/` is the todo system; `items/` is the only tracked write source;
+board views are built from it on demand.** Everything else is either a derived
+view, historical context, or a cross-link. Concretely:
 
 - One work item = one markdown file in `items/` with YAML frontmatter.
   Merge-friendly (two agents can add items on two branches without conflict),
   diffable, greppable.
-- `BOARD.md` is the canonical human-readable board and `board.json` is the
-  dashboard/machine view. Both are **generated** from `items/` by
-  `scripts/workplan.js render`. Never hand-edit them.
+- The CLI and Scriptorium build the current human and machine board directly
+  from `items/`. `scripts/workplan.js render` can still export `BOARD.md` and
+  `board.json` for local compatibility, but both files are ignored and never
+  authoritative. Never hand-edit, stage, or force-add them.
 - Feature PRs commit workplan **source only**: `items/*.md`, `milestones.yaml`,
-  schema/tooling, or other authored files. They do not commit `BOARD.md` or
-  `board.json`. PR CI enforces this, then one serialized workflow on `main`
-  regenerates and commits both views after merge.
+  schema/tooling, or other authored files. PR CI validates source and in-memory
+  renderability and rejects any reintroduction of `BOARD.md` or `board.json`.
 - We **link, never copy.** An item points at the paper §, the `notes/` design
   doc, the `exports/` report, the run IDs, the atlas module, the PR. It does not
   restate them. `TODO.md` and `notes/` stay design history and rationale; they
@@ -60,8 +60,8 @@ an export, stop and link to it instead.
 ```
 workplan/
   README.md            ← this file: the contract every surface follows
-  BOARD.md             ← generated rollup (human-readable). Do not edit.
-  board.json           ← generated rollup (machine / dashboard). Do not edit.
+  BOARD.md             ← optional ignored local export (human-readable)
+  board.json           ← optional ignored local export (machine-readable)
   schema/
     item.schema.json   ← JSON Schema for item frontmatter (the CLI validates against it)
   items/
@@ -138,7 +138,8 @@ the Scriptorium desktop app), backed by the **same write path as the CLI**:
   use the focus controls or `?focus=all` / `?focus=settled` for history. Drag a
   card between lanes to change its status; click a card to edit every field
   (including **milestone** and **depends on**); the lane **+** adds an item;
-  **Delete** removes one. Writes land in `items/` and re-render `board.json`.
+  **Delete** removes one. Writes land in `items/`; the process-local board cache
+  is invalidated immediately.
 - **`/timeline`** — milestones from `milestones.yaml` (id, title, target date, status,
   optional git `tag`) with a progress bar over each milestone's items, plus a live
   **GitHub** panel (open PRs, releases/tags, recent commits) for the `origin` repo via
@@ -155,19 +156,17 @@ Everyone reads this README first, then:
    and edit item files directly — they're plain markdown. Set `owner` to
    yourself and `branch` when you pick one up. On feature branches, use
    `--no-render` with mutating CLI commands when practical, run
-   `npm run wp:source-check`, and leave `BOARD.md` / `board.json` out of the
-   commit. Local UI/CLI auto-renders are working views only; discard those two
-   diffs before opening the PR. Follow the playbook; if you deviate, say so in
-   the item log.
+   `npm run wp:source-check`. Optional local `BOARD.md` / `board.json` exports
+   remain ignored. Follow the playbook; if you deviate, say so in the item log.
 
 2. **CLI (`scripts/workplan.js`).** The programmatic surface:
    `list`, `show <id>`, `add`, `triage <inbox-file>`, `set <id> <field> <value>`,
-   `validate` (frontmatter ⇄ schema), `check` (validate items and prove the
-   generated board files are current), `check --source-only` (validate authored
-   source without inspecting generated files), `check-generated-pr` (enforce
-   source-only PRs), `render` (regenerate `BOARD.md` + `board.json`), and
-   `ingest` (pull from `TODO.md` + `notes/daily-notes/`). Wired into
-   `npm run wp:*`.
+   `validate` (frontmatter ⇄ schema), `check` (validate items and prove an
+   in-memory board can be rendered), `check --source-only` (the compatible
+   source-validation alias), `check-generated-pr` (reject tracked derived
+   views), `summary` (concise live counts), `render` (write optional ignored
+   `BOARD.md` + `board.json` exports), and `ingest` (pull from `TODO.md` +
+   `notes/daily-notes/`). Wired into `npm run wp:*`.
 
 3. **Skill (`/ms-workplan`).** The conversational entry. Routes a request
    ("what's active?", "capture this", "what's blocked on budget?") to the right
@@ -186,15 +185,10 @@ Everyone reads this README first, then:
 
 5. **GitHub.** GitHub is an integration surface, not the source of truth.
    `.github/workflows/workplan-validate.yml` runs `npm run wp:source-check`,
-   rejects generated workplan views in feature PRs, runs `npm run wp:test`, and
-   checks the PR's workplan link. The exceptional
-   `workplan-generated-update` label explicitly permits generated diffs for a
-   renderer migration; routine feature work must not use it. After merge,
-   `.github/workflows/workplan-render-main.yml` serializes renders on `main`,
-   runs the strict `npm run wp:check`, and commits only `BOARD.md` plus
-   `board.json` as `github-actions[bot]`. The repository must allow that
-   workflow's `contents: write` token to push its generated-only commit. The PR template requests
-   `Workplan item: <id or N/A>`. If its placeholder is left untouched, the
+   rejects tracked derived views, runs `npm run wp:test`, and checks the PR's
+   workplan link. No post-merge renderer advances `main`; item-source commits
+   are complete workplan updates. The PR template requests `Workplan item: <id
+   or N/A>`. If its placeholder is left untouched, the
    validator accepts only an exact, unique match between the PR head branch and
    an item's `branch:` field; explicit unknown ids and ambiguous branches still
    fail. PR-body edits rerun this check. The validator lives at
@@ -204,10 +198,10 @@ Everyone reads this README first, then:
    workflow input or local command passes `--apply`. Those issues carry a
    `<!-- workplan-id: ... -->` marker and point back to the item file.
 
-6. **Scriptorium dashboard.** Reads the generated `board.json` and serves the
-   editable `/board` plus the GitHub-aware `/timeline` when running from a repo
-   checkout. Mutations still go through the same item-file write path as the CLI,
-   so the dashboard, generated board, and item files stay aligned.
+6. **Scriptorium dashboard.** Builds and caches board data from `items/`, and
+   serves the editable `/board` plus the GitHub-aware `/timeline` when running
+   from a repo checkout. Refresh rebuilds from disk; mutations use the same
+   item-file write path as the CLI and invalidate the cache immediately.
 
 ## How this relates to what already exists
 

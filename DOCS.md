@@ -24,8 +24,9 @@ design systems, defect ledger) is the techne doc
    `docs/research/paper-full.md` is the legacy Paper 1.0. The atlas under
    `docs/research/atlas/` and `docs/ref-status.md` are generated.
 4. **`workplan/`** — the live board. `workplan/items/*.md` is the source of
-   truth; `BOARD.md` / `board.json` are generated views written only by CI on
-   main. Contract: `workplan/README.md`.
+   truth; the CLI and Scriptorium build board data directly from those files.
+   `BOARD.md` / `board.json` are ignored, explicit local exports. Contract:
+   `workplan/README.md`.
 5. **`notes/`** — dated working notes and design history, plus the techne HTML
    doc system in `notes/poetics/` (`TECHNE-DOCS.md` is its convention).
    `notes/daily-notes/README.md` governs research roundups. Two generated
@@ -53,8 +54,9 @@ design systems, defect ledger) is the techne doc
 
 ## Live work
 
-The board is the queue: `workplan/BOARD.md` (generated view) over
-`workplan/items/`. The most recent arc's living log is
+The board is the queue: use `node scripts/workplan.js summary`, the list
+commands, or the Scriptorium `/board` view over `workplan/items/`. The most
+recent arc's living log is
 `notes/2026-08-03-adaptive-causality-living-log.md`; earlier arcs live in
 their closed root plans and the paper.
 
@@ -74,13 +76,13 @@ One Express route table (`services/evalSurfaces.js`), three hosts:
 ## Regeneration
 
 One verb for the cheap views: `npm run docs:refresh` — renders the reference
-status, validates the atlas manifest, renders the board views on main (source-
-check only on branches, where the generated views are CI-owned), and reports
-what changed. `-- --arc` adds the arc regions (excluded by default: timestamp
-churn). Each view's own writer, for when you want just one:
+status, validates the atlas manifest, validates workplan source and in-memory
+renderability, and reports tracked output changes. `-- --arc` adds the arc
+regions (excluded by default: timestamp churn). Each view's own writer, for
+when you want just one:
 
-- Board views — `node scripts/workplan.js render` (CI commits them on main;
-  feature branches must not).
+- Board export — `node scripts/workplan.js render` writes ignored local
+  `workplan/BOARD.md` and `workplan/board.json` compatibility files.
 - Reference status — `npm run refs:render` / checked by `npm run refs:check`.
 - Paper PDF — `cd docs/research && ./build.sh` (canonical Paper 2.0 is now the
   default; `full` builds the legacy 1.0 and says so). Not part of

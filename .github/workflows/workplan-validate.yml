@@ -46,12 +46,11 @@ jobs:
       - name: Validate workplan source
         run: npm run wp:source-check
 
-      - name: Keep feature PRs source-only
+      - name: Keep derived workplan views untracked
         if: github.event_name == 'pull_request'
         env:
           GITHUB_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          WORKPLAN_ALLOW_GENERATED_CHANGES: ${{ contains(github.event.pull_request.labels.*.name, 'workplan-generated-update') }}
         run: npm run wp:generated-pr-check
 
       - name: Workplan unit tests

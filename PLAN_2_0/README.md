@@ -3,8 +3,8 @@
 This directory is a closed evidence and planning archive for the Plan 2.x
 adaptation line. It is not the live todo board and no file in this directory
 should be read as an active roadmap by itself. Live work belongs in
-`workplan/items/`; `workplan/BOARD.md` and `workplan/board.json` are generated
-from those item files.
+`workplan/items/`; current board views are built directly from those files, and
+`workplan/BOARD.md` / `workplan/board.json` are optional ignored local exports.
 
 Use this file as the entry point before opening individual Plan 2.x notes.
 

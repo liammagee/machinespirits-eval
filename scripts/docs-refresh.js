@@ -8,9 +8,9 @@
  *
  *   1. refs:render          — rewrites docs/ref-status.md (tracked; commit it)
  *   2. atlas:validate       — checks atlas.yaml against the paper (no writes)
- *   3. workplan             — on main: render BOARD.md/board.json; on any other
- *                             branch: source-check only (the generated views
- *                             are CI-owned on main and must not ride a PR)
+ *   3. workplan             — validate item sources and prove the board can be
+ *                             rendered in memory; local export files are
+ *                             ignored and produced only by explicit wp:render
  *   4. --arc (opt-in)       — poetics:arc-html; excluded by default because it
  *                             stamps generated_at and dirties the tree on
  *                             every run even with no content change
@@ -40,22 +40,14 @@ function gitOut(args) {
 run('reference status', 'npm', ['run', 'refs:render']);
 run('atlas manifest', 'npm', ['run', 'atlas:validate']);
 
-const branch = gitOut(['rev-parse', '--abbrev-ref', 'HEAD']);
-if (branch === 'main') {
-  run('workplan views', 'node', ['scripts/workplan.js', 'render']);
-} else {
-  run('workplan source (views are CI-owned on main)', 'node', ['scripts/workplan.js', 'validate', '--source-only']);
-}
+run('workplan source and renderability', 'node', ['scripts/workplan.js', 'check']);
 
 if (wantArc) {
   run('arc regions (timestamp churn expected)', 'npm', ['run', 'poetics:arc-html']);
 }
 
-const watched = ['docs/ref-status.md', 'workplan/BOARD.md', 'workplan/board.json'];
+const watched = ['docs/ref-status.md'];
 const status = gitOut(['status', '--short', '--', ...watched]);
-console.log('\n== changed generated files:');
+console.log('\n== changed tracked generated files:');
 console.log(status || '  (none — everything was already current)');
-if (branch !== 'main' && status) {
-  console.log('  NOTE: on a feature branch, do NOT commit workplan/BOARD.md or board.json.');
-}
 console.log('\nPaper PDF (not run): cd docs/research && ./build.sh   # paper2 by default; needs LaTeX');

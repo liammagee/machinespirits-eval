@@ -168,7 +168,7 @@ content-test-elementary/   Bundled test content (elementary 101)
 notebooks/                 Reproducibility notebook (Jupyter)
 docs/research/             Research paper and build scripts
 PLAN_2_0/                  Closed Plan 2.x designs, preregistrations, and closeout ledgers
-workplan/                  Live project board; edit items, not generated board views
+workplan/                  Live project board; item files are the only tracked source
 tests/                     Test suites
 ```
 

@@ -1,13 +1,13 @@
 ---
 id: codebase-refactoring-program
 title: Execute the evidence-led codebase refactoring programme
-status: active
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-24
-updated: 2026-08-10
+updated: 2026-08-20
 branch: codex/refactor-final-r6-reconciliation
 verification: >-
   Every accepted refactoring slice has a linked child card and parity gate;
@@ -1970,3 +1970,9 @@ Log:
   complete hermetic root/core; fifteen-group risk coverage; and structural
   gates pass. After merge, run the one closeout audit named by the final R6
   reconciliation rather than opening another size-only extraction by default.
+- 2026-08-20 — Closed the parent after the prescribed audit confirmed all 131
+  linked children are done and child 131 is merged. The final R6 reconciliation
+  explicitly says not to keep this programme open for size-only extraction;
+  repository hygiene and artifact boundaries continue under
+  `workflow-repository-optimization` instead. No new extraction or deletion was
+  performed for this status reconciliation.
