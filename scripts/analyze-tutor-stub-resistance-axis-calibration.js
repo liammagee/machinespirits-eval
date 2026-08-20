@@ -171,6 +171,31 @@ export function readTutorStubResistanceAxisTrace(
       learner: metadata.autoLearner?.modelRef || null,
     },
     observationSemantics,
+    runtimeObservationSemantics: metadata.autoLearner?.observationSemantics || null,
+    adherenceEvents: events
+      .filter((event) =>
+        [
+          'auto_learner_profile_adherence_deferred',
+          'auto_learner_profile_repair_admission',
+          'auto_learner_profile_repair_requested',
+          'auto_learner_profile_adherence',
+          'auto_learner_profile_adherence_exhausted',
+        ].includes(event.type),
+      )
+      .map((event) => ({
+        type: event.type,
+        turn: Number(event.turn),
+        profile: event.profile || null,
+        decisionTurn: event.decisionTurn ?? null,
+        repairRequested: event.repairRequested ?? null,
+        typedExhaustionEvaluated: event.typedExhaustionEvaluated ?? null,
+        admitted: event.admitted ?? null,
+        attempt: event.attempt ?? null,
+        required: event.required ?? null,
+        passed: event.passed ?? null,
+        repaired: event.repaired ?? null,
+        repairAttempts: event.repairAttempts ?? null,
+      })),
     turns: turns.map((turn, index) => {
       const observationInput = {
         learnerText: turn.learner,
@@ -185,6 +210,86 @@ export function readTutorStubResistanceAxisTrace(
         publicObservation: observeResistantLearnerTurn({ ...observationInput, semantics: observationSemantics }),
       };
     }),
+  };
+}
+
+function prospectiveV4RuntimeTraceAudit(trace) {
+  const events = trace.adherenceEvents || [];
+  const turnNumbers = trace.turns.map((turn) => turn.turn);
+  const deferred = events.filter((event) => event.type === 'auto_learner_profile_adherence_deferred');
+  const adherence = events.filter((event) => event.type === 'auto_learner_profile_adherence');
+  const repairs = events.filter((event) => event.type === 'auto_learner_profile_repair_requested');
+  const repairAdmissions = events.filter((event) => event.type === 'auto_learner_profile_repair_admission');
+  const exhausted = events.filter((event) => event.type === 'auto_learner_profile_adherence_exhausted');
+  const noTurn1Decision = events.every(
+    (event) =>
+      event.type === 'auto_learner_profile_adherence_deferred' ||
+      ![
+        'auto_learner_profile_repair_admission',
+        'auto_learner_profile_repair_requested',
+        'auto_learner_profile_adherence',
+        'auto_learner_profile_adherence_exhausted',
+      ].includes(event.type) ||
+      event.turn !== 1,
+  );
+  const turn1 = trace.turns.find((turn) => turn.turn === 1);
+  const qualifiedAtTurn1 =
+    trace.profile === 'frame_refuser'
+      ? hasObservation(turn1, 'frame_jurisdiction_refusal')
+      : productiveFrameDefiance(turn1, 'frame_jurisdiction_dispute_with_contract_licensed_participation') &&
+        !hasObservation(turn1, 'frame_jurisdiction_refusal');
+  const noRepairEnvelope =
+    repairAdmissions.length === 0 &&
+    repairs.length === 0 &&
+    adherence[0]?.repaired === false &&
+    adherence[0]?.repairAttempts === 0 &&
+    adherence[0]?.required === !qualifiedAtTurn1;
+  const soleRepairEnvelope =
+    !qualifiedAtTurn1 &&
+    repairAdmissions.length === 1 &&
+    repairAdmissions[0].turn === 2 &&
+    repairAdmissions[0].profile === trace.profile &&
+    repairAdmissions[0].admitted === true &&
+    repairs.length === 1 &&
+    repairs[0].turn === 2 &&
+    repairs[0].profile === trace.profile &&
+    repairs[0].attempt === 1 &&
+    adherence[0]?.required === true &&
+    adherence[0]?.repaired === true &&
+    adherence[0]?.repairAttempts === 1;
+  const repairEnvelopePass = noRepairEnvelope || soleRepairEnvelope;
+  const pass =
+    JSON.stringify(turnNumbers) === JSON.stringify([1, 2]) &&
+    trace.runtimeObservationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4 &&
+    deferred.length === 1 &&
+    deferred[0].turn === 1 &&
+    deferred[0].profile === trace.profile &&
+    deferred[0].decisionTurn === 2 &&
+    deferred[0].repairRequested === false &&
+    deferred[0].typedExhaustionEvaluated === false &&
+    noTurn1Decision &&
+    adherence.length === 1 &&
+    adherence[0].turn === 2 &&
+    adherence[0].profile === trace.profile &&
+    adherence[0].passed === true &&
+    repairEnvelopePass &&
+    exhausted.length === 0;
+  return {
+    caseId: trace.caseId,
+    turnNumbers,
+    runtimeObservationSemantics: trace.runtimeObservationSemantics,
+    deferredEvents: deferred.length,
+    adherenceEvents: adherence.length,
+    repairAdmissions: repairAdmissions.length,
+    repairRequests: repairs.length,
+    exhaustedEvents: exhausted.length,
+    qualifiedAtTurn1,
+    repairEnvelopePass,
+    adherenceRequired: adherence[0]?.required ?? null,
+    adherenceRepaired: adherence[0]?.repaired ?? null,
+    adherenceRepairAttempts: adherence[0]?.repairAttempts ?? null,
+    noTurn1Decision,
+    pass,
   };
 }
 
@@ -260,6 +365,17 @@ export function frameRefuserOpportunityObservationSemantics(registration) {
     registration.measurement?.productiveParticipationPrecedesWithholding === true
   ) {
     return RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV3;
+  }
+  if (
+    version === 4 &&
+    registration.measurement?.observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4 &&
+    controlObservation === 'frame_jurisdiction_dispute_with_contract_licensed_participation' &&
+    registration.measurement?.refusalRule === 'explicit_withholding_without_contract_licensed_participation' &&
+    registration.measurement?.jurisdictionRule ===
+      'compositional_authority_or_standing_or_right_over_a_bounded_inquiry_object' &&
+    registration.measurement?.productiveParticipationPrecedesWithholding === true
+  ) {
+    return RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
   }
   throw new Error(
     `unsupported frame-refuser opportunity semantics: version=${version}, controlObservation=${controlObservation}`,
@@ -366,6 +482,18 @@ export function buildFrameRefuserOpportunityReport(traces, args, registrationBin
     throw new Error(
       `trace observation semantics do not match registration: expected ${observationSemantics}, observed ${traceSemantics.join(',')}`,
     );
+  }
+  if (observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4) {
+    const rows = traces.map(prospectiveV4RuntimeTraceAudit);
+    const runtimePass = rows.length > 0 && rows.every((row) => row.pass);
+    calibration.integrity.assembly.prospectiveV4Runtime = {
+      requiredTurnNumbers: [1, 2],
+      requiredObservationSemantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4,
+      rows,
+      pass: runtimePass,
+    };
+    calibration.integrity.assembly.pass = calibration.integrity.assembly.pass && runtimePass;
+    calibration.integrity.pass = calibration.integrity.pass && runtimePass;
   }
   const targetRows = traces
     .filter((trace) => trace.profile === targetProfile)

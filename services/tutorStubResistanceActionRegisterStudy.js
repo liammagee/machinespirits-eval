@@ -345,6 +345,7 @@ function triggerFromTurnRecord(
   const shadow = observeResistanceAxis({ learnerText, classification });
   const legacySemantics = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.legacyV1;
   const prospectiveV3 = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV3;
+  const prospectiveV4 = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
   const observationProfiles = legacySemantics ? ['frame_refuser'] : ['frame_refuser', 'frame_defiant'];
   const profileObservation = observationProfiles.includes(profile)
     ? observeResistantLearnerTurn({ learnerText, classification, semantics: observationSemantics })
@@ -363,7 +364,7 @@ function triggerFromTurnRecord(
         frameDispute?.features?.contract_licensed_participation === true &&
         !frameRefusal) ||
       (!profileObservation && shadow.resistance_kind === profile);
-  const warrantLicensed = prospectiveV3 ? Boolean(frameDispute) : shadow.warrant.status === 'licensed';
+  const warrantLicensed = prospectiveV3 || prospectiveV4 ? Boolean(frameDispute) : shadow.warrant.status === 'licensed';
   return {
     eligible:
       warrantLicensed &&

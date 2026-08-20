@@ -20,6 +20,8 @@ import {
   buildTutorStubFrameRefuserOpportunityV2SyntheticCorpus,
   buildTutorStubFrameRefuserOpportunityV3PreflightPackets,
   buildTutorStubFrameRefuserOpportunityV3SyntheticCorpus,
+  buildTutorStubFrameRefuserOpportunityV4PreflightPackets,
+  buildTutorStubFrameRefuserOpportunityV4SyntheticCorpus,
   buildTutorStubResistanceAxisPreflightPackets,
   buildTutorStubResistanceAxisSyntheticCorpus,
   runTutorStubFrameRefuserOpportunityEndpointPreflight,
@@ -490,16 +492,269 @@ test('prospective v3 opportunity endpoint executes production observer, prefix, 
   assert.equal(missingTypedAudit.endpoint_status.frame_defiant_adherence_exhaustion_typed_failure, 'incomplete');
 });
 
-test('frozen v1 and v2 opportunity artifacts retain their exact byte digests', () => {
+test('prospective v4 opportunity endpoint executes the original T1-T2 gate with deferred repair admission', () => {
+  const contract = JSON.parse(
+    fs.readFileSync(
+      path.join(ROOT, 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v4.json'),
+      'utf8',
+    ),
+  );
+  const certificate = JSON.parse(
+    fs.readFileSync(
+      path.join(ROOT, 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v4.endpoint-go.json'),
+      'utf8',
+    ),
+  );
+  const preflight = runTutorStubFrameRefuserOpportunityEndpointPreflight(contract);
+  const endpointGo = validatePaidStudyEndpointGoCertificate({ certificate, contract, preflight });
+  assert.equal(preflight.status, 'passed');
+  assert.equal(preflight.model_calls, 0);
+  assert.equal(preflight.production_writes, 0);
+  assert.equal(endpointGo.ok, true, endpointGo.errors.join('; '));
+  assert.deepEqual(preflight.assembly_audit.endpoint_status, {
+    frame_refuser_treatment_opportunity: 'complete',
+    frame_defiant_productive_control: 'complete',
+    distinct_public_prefix_assembly: 'complete',
+    frame_defiant_adherence_exhaustion_typed_failure: 'complete',
+    frame_refuser_adherence_exhaustion_typed_failure: 'complete',
+    prospective_v4_observer_matrix: 'complete',
+    prospective_v4_t1_t2_repair_budget_readiness: 'complete',
+    prospective_v4_t1_t2_deferred_adherence: 'complete',
+  });
+
+  const cases = buildTutorStubFrameRefuserOpportunityV4SyntheticCorpus();
+  const assembled = assembleTutorStubFrameRefuserOpportunityPreflight({
+    packets: buildTutorStubFrameRefuserOpportunityV4PreflightPackets(cases),
+    contract,
+  });
+  assert.equal(assembled.report.pass, true);
+  assert.equal(
+    assembled.report.registration.observationSemantics,
+    RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4,
+  );
+  assert.deepEqual(
+    assembled.report.gate.target.map((row) => row.eligiblePrefix.triggerTurn),
+    [2, 1, 2],
+  );
+  assert.deepEqual(
+    assembled.report.gate.control.map((row) => ({
+      productiveTurn: row.productiveTurn,
+      refusalLeakage: row.refusalLeakage,
+    })),
+    [
+      { productiveTurn: 1, refusalLeakage: false },
+      { productiveTurn: 2, refusalLeakage: false },
+      { productiveTurn: 1, refusalLeakage: false },
+    ],
+  );
+  assert.equal(assembled.report.gate.distinctPrefixes.observed, 3);
+  assert.equal(assembled.report.integrity.assembly.prospectiveV4Runtime.pass, true);
+  assert.equal(
+    assembled.report.integrity.assembly.prospectiveV4Runtime.rows.every(
+      (row) =>
+        JSON.stringify(row.turnNumbers) === JSON.stringify([1, 2]) &&
+        row.runtimeObservationSemantics === 'prospective_v4' &&
+        row.deferredEvents === 1 &&
+        row.adherenceEvents === 1 &&
+        row.exhaustedEvents === 0 &&
+        row.noTurn1Decision === true &&
+        row.repairEnvelopePass === true,
+    ),
+    true,
+  );
+  assert.deepEqual(
+    assembled.report.integrity.assembly.prospectiveV4Runtime.rows.map((row) => ({
+      qualifiedAtTurn1: row.qualifiedAtTurn1,
+      repairAdmissions: row.repairAdmissions,
+      repairRequests: row.repairRequests,
+      adherenceRequired: row.adherenceRequired,
+      adherenceRepaired: row.adherenceRepaired,
+      adherenceRepairAttempts: row.adherenceRepairAttempts,
+    })),
+    [
+      {
+        qualifiedAtTurn1: false,
+        repairAdmissions: 1,
+        repairRequests: 1,
+        adherenceRequired: true,
+        adherenceRepaired: true,
+        adherenceRepairAttempts: 1,
+      },
+      {
+        qualifiedAtTurn1: true,
+        repairAdmissions: 0,
+        repairRequests: 0,
+        adherenceRequired: false,
+        adherenceRepaired: false,
+        adherenceRepairAttempts: 0,
+      },
+      {
+        qualifiedAtTurn1: false,
+        repairAdmissions: 0,
+        repairRequests: 0,
+        adherenceRequired: true,
+        adherenceRepaired: false,
+        adherenceRepairAttempts: 0,
+      },
+      {
+        qualifiedAtTurn1: true,
+        repairAdmissions: 0,
+        repairRequests: 0,
+        adherenceRequired: false,
+        adherenceRepaired: false,
+        adherenceRepairAttempts: 0,
+      },
+      {
+        qualifiedAtTurn1: false,
+        repairAdmissions: 1,
+        repairRequests: 1,
+        adherenceRequired: true,
+        adherenceRepaired: true,
+        adherenceRepairAttempts: 1,
+      },
+      {
+        qualifiedAtTurn1: true,
+        repairAdmissions: 0,
+        repairRequests: 0,
+        adherenceRequired: false,
+        adherenceRepaired: false,
+        adherenceRepairAttempts: 0,
+      },
+    ],
+  );
+  assert.deepEqual(
+    {
+      pass: cases[0].observerMatrixAudit.pass,
+      cases: cases[0].observerMatrixAudit.cases,
+      frozenV3MissedDrafts: cases[0].observerMatrixAudit.frozenV3MissedDrafts,
+      causalV3AdherenceFalseDrafts: cases[0].observerMatrixAudit.causalV3AdherenceFalseDrafts,
+      domainIndependentCases: cases[0].observerMatrixAudit.domainIndependentCases,
+    },
+    {
+      pass: true,
+      cases: 43,
+      frozenV3MissedDrafts: 13,
+      causalV3AdherenceFalseDrafts: 4,
+      domainIndependentCases: 30,
+    },
+  );
+  assert.deepEqual(cases[0].repairBudgetAudit, {
+    turns: 2,
+    modelCallBudget: 39,
+    baseCalls: 7,
+    maxFullRepairsPerT1T2: 1,
+    repairDecisionTurn: 2,
+    repairsAtTurn1: 0,
+    callsPerFullRepair: 2,
+    permittedRepairCalls: 2,
+    requiredTutorGuardReserve: 4,
+    plannedWorstCaseCalls: 13,
+    transportRetryLimitPerPlannedCall: 2,
+    maximumReservationsPerPlannedCall: 3,
+    maximumModelAttemptReservations: 39,
+    technicalRetryHeadroomReservations: 26,
+    reservationHeadroom: 0,
+    ready: true,
+  });
+  assert.equal(
+    assembled.deferred_adherence_audit.every((row) => row.pass),
+    true,
+  );
+  assert.equal(
+    assembled.deferred_adherence_audit.every(
+      (row) =>
+        row.turn1.admitted === false &&
+        row.turn1.usedAfter === 0 &&
+        row.turn2.admitted === true &&
+        row.secondTurn2.admitted === false,
+    ),
+    true,
+  );
+
+  const mutations = [
+    {
+      name: 'missing runtime semantics',
+      apply(rows) {
+        const start = rows[0].traceEvents.find((event) => event.type === 'run_start');
+        delete start.metadata.autoLearner.observationSemantics;
+      },
+    },
+    {
+      name: 'missing T1 deferral',
+      apply(rows) {
+        rows[0].traceEvents = rows[0].traceEvents.filter(
+          (event) => event.type !== 'auto_learner_profile_adherence_deferred',
+        );
+      },
+    },
+    {
+      name: 'repair decision at T1',
+      apply(rows) {
+        rows[0].traceEvents.splice(2, 0, {
+          type: 'auto_learner_profile_repair_requested',
+          turn: 1,
+          profile: rows[0].profile,
+          attempt: 1,
+        });
+      },
+    },
+    {
+      name: 'nonconsecutive turn sequence',
+      apply(rows) {
+        const second = rows[0].traceEvents.find(
+          (event) => event.type === 'turn_complete' && event.turnRecord?.turn === 2,
+        );
+        second.turn = 3;
+        second.turnRecord.turn = 3;
+      },
+    },
+    {
+      name: 'duplicate T2 repair admission',
+      apply(rows) {
+        const admission = rows[0].traceEvents.find((event) => event.type === 'auto_learner_profile_repair_admission');
+        rows[0].traceEvents.splice(rows[0].traceEvents.indexOf(admission) + 1, 0, structuredClone(admission));
+      },
+    },
+    {
+      name: 'denied T2 repair admission',
+      apply(rows) {
+        const admission = rows[0].traceEvents.find((event) => event.type === 'auto_learner_profile_repair_admission');
+        admission.admitted = false;
+      },
+    },
+  ];
+  for (const mutation of mutations) {
+    const mutatedCases = structuredClone(cases);
+    mutation.apply(mutatedCases);
+    const mutated = assembleTutorStubFrameRefuserOpportunityPreflight({
+      packets: buildTutorStubFrameRefuserOpportunityV4PreflightPackets(mutatedCases),
+      contract,
+    });
+    assert.equal(mutated.report.integrity.assembly.prospectiveV4Runtime.pass, false, mutation.name);
+    assert.equal(mutated.report.pass, false, mutation.name);
+  }
+});
+
+test('frozen v1, v2, and v3 opportunity artifacts retain their exact byte digests', () => {
   const expected = {
     'config/tutor-stub-frame-refuser-opportunity-registration.v1.json':
       '0e00b9d4e23c5e6d737646c375375cac8ca295b4a089a7a35b868af7ab796cc4',
     'config/tutor-stub-frame-refuser-opportunity-registration.v2.json':
       'f99cc889b013a28a6adff5fe5e31ec17b0ea44059c5f2eb6736674b2147f3e1b',
+    'config/tutor-stub-frame-refuser-opportunity-registration.v3.json':
+      'd9be4ebddde52badc3e7f13b710f0d27d3e2885427d7625ea842f9e10ff3ee94',
     'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.json':
       '491818181863ccbb011fbaa6639eee0dbcb6197adc08789ad293a9490e907051',
     'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.json':
       '28560adbc08af33ac14307ea796fbe3dcf5777889cc59b0859268c1abf2c8779',
+    'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v3.json':
+      '7978b5755ebb8b520c31a079e6ef10309cf4efa115ddb7909264f2c204c27e3a',
+    'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.endpoint-go.json':
+      '5c3aecd47bff5f11403d50c81e6942c298936827e845d441d84e06b946c609cc',
+    'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.endpoint-go.json':
+      'c9a9899f0f2d56a87f16cc4f2f9f1b0bb7437a8aeeef8bdd4e3e2b6bd9c30de2',
+    'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v3.endpoint-go.json':
+      '5616664b5638e49100bc94e6f85c58416a15b74060e5fd8109208f19b1a9bb8b',
   };
   for (const [relativePath, digest] of Object.entries(expected)) {
     assert.equal(

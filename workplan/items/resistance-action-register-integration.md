@@ -68,6 +68,9 @@ links:
     - config/tutor-stub-frame-refuser-opportunity-registration.v3.json
     - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v3.json
     - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v3.endpoint-go.json
+    - config/tutor-stub-frame-refuser-opportunity-registration.v4.json
+    - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v4.json
+    - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v4.endpoint-go.json
     - config/tutor-stub-frame-refuser-opportunity-study-go-request.v1.json
     - config/tutor-stub-frame-refuser-opportunity-study-go-request.v2.json
     - config/tutor-stub-frame-refuser-opportunity-study-go-request.v3.json
@@ -103,7 +106,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/frame-refuser-opportunity-v3-go-request
+branch: codex/frame-refuser-opportunity-v4-readiness
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -721,3 +724,64 @@ and explicit human approval.
   explicit human approval of the exact request digest and ceiling. The claim
   boundary remains treatment-opportunity only, excluding tutor adaptation,
   action or register efficacy, learning, human validity, and cell transfer.
+- 2026-08-20 — Closed the approved prospective-v3 execution as incomplete
+  with no registered verdict. It reserved `65/288` attempts, completed 64,
+  recorded zero provider failures and one interrupted call, and committed only
+  the three target dialogues through T1-T2. No control dialogue started; the
+  analyzer did not run and no gate report exists. The six committed target
+  turns descriptively contain three distinct prefix hashes triggered at T1,
+  but they license only `target_t1_t2_partial_only_no_registered_verdict`: no
+  guard, control, opportunity-gate, recurrence, or efficacy claim. No v3 trace
+  may be reused or pooled, and the 223 unused reservations are not transferable
+  authority. The private archive is preserved on feature branch
+  `codex/frame-refuser-v3-incomplete-archive` at commit
+  `bf5a602a6cbea55dbbe248ee2b98ab7cfd69dde4`, tree
+  `15fb4af71972bc49405e7a9a5662a41adb835425`, not private `main`: its exact
+  17-file allowlist contains 10 archived run files, six live mirrors, and the
+  run ledger; all copies, mirrors, plans, event chains, seeded replay, and the
+  10-file inventory verify with zero missing files. The trace tar SHA-256 is
+  `b87d1334b74357609b0bf951f45376cd766c4d06fc1cc7811746b7aa1bc8a3ca`,
+  and raw trace SHA-256 values are
+  `40e7fe58d39b97042232a31fd4887cd62cd2112aa104acf64e3229c43a7981be`,
+  `d0209d046fe399dc6c56e2ff21d2d20437a9c50f9a6b491e8a7b9d294ee1c678`,
+  and `07561760aaaed3627d95b3eebe5ee0b3cf083def6608ae5e12a34060e6b49661`.
+  The absence of seals is expected for the interrupted run, and private main's
+  unrelated 29-commit backlog remains untouched.
+- 2026-08-20 — Prepared the prospective-v4 T1-T2 repair and endpoint readiness
+  boundary with zero model calls and zero production writes. V4 restores the
+  original opportunity horizon: every `frame_refuser` target must refuse once
+  by T2, pass the protected/uptake prefix guard, and contribute one of three
+  distinct public-prefix hashes; every `frame_defiant` control must make a
+  productive jurisdiction dispute by T2 with zero refusal leakage. The V4-only
+  observer composes all 13 frozen v3 misses, including the four causal
+  adherence-false drafts, with 30 domain-independent positive, productive,
+  accepted-authority, negation, physical, and merits regressions: 43 cases in
+  total. The runtime
+  publishes a nonqualifying T1 candidate without repair or typed exhaustion,
+  evaluates cumulative qualification at T2, permits at most one admitted full
+  repair, and fails closed before any second repair call. Live-trace analysis
+  now requires the V4-only semantics stamp, exact turn sequence `[1,2]`, the T1
+  deferral event, and an exact zero-repair or one-admitted/one-requested T2
+  repair envelope. The actual retry and reservation seams prove 13 planned
+  role calls per dialogue and 78 total, with up to three charged reservations
+  per planned call under the current two-retry transport policy: hard ceilings
+  are 39 per dialogue and 234 total. Bounded recovery is conditional on unused
+  room within 234 and neither enlarges the ceiling nor guarantees a retry. The
+  dependency-free future-request validator requires a complete 26-file V4
+  executable closure, including retry, transport, metering, trace-runtime, and
+  semantics-stamping seams, while frozen v1-v3 request and artifact digests
+  remain unchanged. Registration file SHA-256 is
+  `3e57478d44d8d83302ed65d216a8c0e2b6e25d215181f820ae7cc2a19c0b8734`;
+  the endpoint contract has file SHA-256
+  `811a2ca8f88b61a932b406a5b625a160ee82a7073466a071f7632bbada695105`
+  and canonical SHA-256
+  `0ed678d0e09b01f6a22de53f1c11f0c493f3cdf6a036e6fa953d87689081b366`;
+  preflight SHA-256 is
+  `78c2cbfab419bd02617e94cd7f1d22f2a860e9afc874001ef72f9524a8fb214f`;
+  and endpoint-certificate file SHA-256 is
+  `1d92008da867b5b322264bffd2d56b38f4dfa7c91787de33f489fded788bfd61`.
+  No V4 GO request, live destination, study output, canary, recurrence claim,
+  tutor/action/register efficacy claim, learning claim, human-validity claim,
+  or cell-transfer claim exists. `goRequestPrepared=false`, both authorization
+  booleans remain false, and the benchmark-hook incident remains excluded from
+  all opportunity evidence.
