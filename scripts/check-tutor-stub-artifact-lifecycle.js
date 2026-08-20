@@ -13,6 +13,7 @@ export const REQUIRED_ARCHIVE_BUILDERS = Object.freeze([
   'scripts/run-guard-findings-feed-forward.js',
   'scripts/run-program2-live-pilot.js',
   'scripts/run-step4-point-of-action-gate.js',
+  'scripts/run-tutor-stub-boredom-action-register-proof-dag.js',
   'scripts/run-tutor-stub-resistance-action-register-crossed.js',
   'scripts/run-tutor-stub-resistance-action-register-confirmation.js',
   'scripts/run-tutor-stub-abm-panel.js',

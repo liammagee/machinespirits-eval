@@ -568,6 +568,7 @@ import {
   loadTutorStubResistanceActionRegisterPrefixBundle,
 } from './tutorStubResistanceActionRegisterExecution.js';
 import { configureTutorStubResistanceActionRegisterConfirmationFromCli } from './tutorStubResistanceActionRegisterConfirmation.js';
+import { configureTutorStubBoredomProofDagFromCli } from './tutorStubBoredomActionRegisterProofDagStudy.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from './tutorStubResistanceActionRegisterStudy.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -2339,8 +2340,16 @@ export async function runTutorStubCliApplicationHost({
       args['resistance-action-register-confirmation-registration'],
       args['resistance-action-register-confirmation-job'],
     ];
-    if (resistanceActionRegisterArgs.some(Boolean) && resistanceActionRegisterConfirmationArgs.some(Boolean)) {
-      throw new Error('baseline replay and fresh confirmation execution modes are mutually exclusive');
+    const boredomProofDagArgs = [args['boredom-proof-dag-registration'], args['boredom-proof-dag-job']];
+    const activeResistanceStudyModes = [
+      resistanceActionRegisterArgs.some(Boolean),
+      resistanceActionRegisterConfirmationArgs.some(Boolean),
+      boredomProofDagArgs.some(Boolean),
+    ].filter(Boolean).length;
+    if (activeResistanceStudyModes > 1) {
+      throw new Error(
+        'baseline replay, frame confirmation, and boredom proof-DAG execution modes are mutually exclusive',
+      );
     }
     if (
       resistanceActionRegisterConfirmationArgs.some(Boolean) &&
@@ -2350,6 +2359,20 @@ export async function runTutorStubCliApplicationHost({
     }
     if (resistanceActionRegisterConfirmationArgs.every(Boolean)) {
       configureTutorStubResistanceActionRegisterConfirmationFromCli({
+        args,
+        state,
+        root: ROOT,
+        autoLearnerEnabled,
+        autoTurns,
+        appendTraceEvent,
+        observationSemantics: process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS,
+      });
+    }
+    if (boredomProofDagArgs.some(Boolean) && !boredomProofDagArgs.every(Boolean)) {
+      throw new Error('boredom proof-DAG execution requires registration and job together');
+    }
+    if (boredomProofDagArgs.every(Boolean)) {
+      configureTutorStubBoredomProofDagFromCli({
         args,
         state,
         root: ROOT,

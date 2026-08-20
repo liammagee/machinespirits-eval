@@ -426,6 +426,7 @@ export function buildTutorStubBoredomProofDagPlan(registration) {
     return {
       id: `bored-confirm-w${worldIndex + 1}-d${row.dialogue_index}`,
       type: 'fresh_bored_register_confirmation_dialogue',
+      assignment_index: ordinal + 1,
       world: row.world,
       seed: registration.design.freshPrefixGeneration.seedBase + ordinal + 1,
       maximum_trigger_turn: 2,
