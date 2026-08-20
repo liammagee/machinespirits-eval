@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -6,11 +7,14 @@ import test from 'node:test';
 
 import {
   buildLocalCiPlan,
+  changedFilesForRange,
+  classifyLocalSurfaceRequirement,
   displayCommand,
   executeLocalCiPlan,
   localCiEnvironment,
   parseLocalCiArgs,
   pathTriggersSurfaceAcceptance,
+  resolveLocalCiProfile,
 } from '../scripts/run-local-ci.js';
 import {
   classifySurfaceAcceptance,
@@ -21,7 +25,41 @@ function displays(plan) {
   return plan.flatMap((lane) => lane.commands.map(displayCommand));
 }
 
+function git(projectRoot, args) {
+  return execFileSync('git', args, { cwd: projectRoot, encoding: 'utf8' }).trim();
+}
+
+function createGitFixture() {
+  const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'local-ci-git-'));
+  git(projectRoot, ['init', '--quiet']);
+  git(projectRoot, ['config', 'user.email', 'ci-test@example.invalid']);
+  git(projectRoot, ['config', 'user.name', 'CI Test']);
+  fs.mkdirSync(path.join(projectRoot, 'docs'), { recursive: true });
+  fs.mkdirSync(path.join(projectRoot, 'workplan/items'), { recursive: true });
+  fs.writeFileSync(path.join(projectRoot, 'docs/base.md'), 'base\n');
+  fs.writeFileSync(path.join(projectRoot, 'workplan/items/unstaged.md'), 'base\n');
+  git(projectRoot, ['add', '.']);
+  git(projectRoot, ['commit', '--quiet', '-m', 'base']);
+  return projectRoot;
+}
+
+function buildAutoPlan(changedFiles, argv = []) {
+  const requested = parseLocalCiArgs(argv);
+  const selection = resolveLocalCiProfile(requested, changedFiles);
+  const options = { ...requested, profile: selection.profile };
+  return {
+    options,
+    selection,
+    plan: buildLocalCiPlan(options, {
+      projectRoot: '/repo',
+      changedFiles,
+      classification: selection.classification,
+    }),
+  };
+}
+
 test('local CI arguments expose bounded profiles and explicit parity switches', () => {
+  assert.equal(parseLocalCiArgs([]).profile, 'auto');
   const options = parseLocalCiArgs([
     '--profile=quick',
     '--lane',
@@ -51,6 +89,207 @@ test('local CI arguments expose bounded profiles and explicit parity switches', 
   assert.throws(() => parseLocalCiArgs(['--node20-container']), /Unknown local CI option/u);
 });
 
+test('automatic local CI selection matches the hosted profiles for PR 699, 700, and 701 shapes', () => {
+  const pr699 = buildAutoPlan([
+    'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.endpoint-go.json',
+    'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.json',
+    'config/tutor-stub-frame-refuser-opportunity-registration.v1.json',
+    'scripts/analyze-tutor-stub-resistance-axis-calibration.js',
+    'services/tutorStubResistanceAxisDiscriminationPreflight.js',
+    'tests/resistantLearnerAxisCalibration.test.js',
+    'tests/tutorStubResistantProfileStudyGoRequest.test.js',
+    'workplan/items/resistance-action-register-integration.md',
+  ]);
+  assert.equal(pr699.selection.profile, 'full');
+  assert.equal(
+    pr699.plan.some((lane) => lane.id === 'node-tests'),
+    true,
+  );
+  assert.equal(
+    pr699.plan.some((lane) => lane.id === 'focused'),
+    false,
+  );
+
+  const pr700Files = [
+    'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
+    'tests/tutorStubResistantProfileStudyGoRequest.test.js',
+    'workplan/items/resistance-action-register-integration.md',
+  ];
+  const pr700 = buildAutoPlan(pr700Files);
+  assert.equal(pr700.selection.profile, 'validator-only');
+  assert.deepEqual(
+    pr700.plan.map((lane) => lane.id),
+    ['install', 'contract', 'validator-only', 'workplan'],
+  );
+  const pr700Commands = displays(pr700.plan);
+  assert.ok(pr700Commands.includes('node --test tests/tutorStubResistantProfileStudyGoRequest.test.js'));
+  assert.ok(
+    pr700Commands.includes(
+      './node_modules/.bin/eslint scripts/check-tutor-stub-resistant-profile-study-go-request.js tests/tutorStubResistantProfileStudyGoRequest.test.js',
+    ),
+  );
+  assert.equal(
+    pr700Commands.some((command) => command === 'npm run lint'),
+    false,
+  );
+
+  const pr701Files = [
+    'config/tutor-stub-frame-refuser-opportunity-study-go-request.v1.json',
+    'workplan/items/resistance-action-register-integration.md',
+  ];
+  const pr701 = buildAutoPlan(pr701Files);
+  assert.equal(pr701.selection.profile, 'focused');
+  assert.equal(pr701.selection.classification.authorizationRequired, true);
+  assert.deepEqual(
+    pr701.plan.map((lane) => lane.id),
+    ['install', 'contract', 'focused', 'workplan'],
+  );
+  assert.ok(displays(pr701.plan).includes('node --test tests/tutorStubResistantProfileStudyGoRequest.test.js'));
+});
+
+test('automatic local CI preserves fail-closed selection and research validation', () => {
+  const mixed = buildAutoPlan(['workplan/items/example.md', 'services/evaluationStore.js']);
+  assert.equal(mixed.selection.profile, 'full');
+  assert.equal(
+    mixed.plan.some((lane) => lane.id === 'node-tests'),
+    true,
+  );
+
+  const unknown = buildAutoPlan(['unexpected.bin']);
+  assert.equal(unknown.selection.profile, 'full');
+
+  const research = buildAutoPlan(['docs/research/paper-full-2.0.md']);
+  assert.equal(research.selection.profile, 'focused');
+  assert.deepEqual(
+    research.plan.map((lane) => lane.id),
+    ['install', 'contract', 'focused', 'validation', 'workplan'],
+  );
+
+  const explicitFull = parseLocalCiArgs(['--profile=full', '--no-install', '--surface=never']);
+  const selection = resolveLocalCiProfile(explicitFull, ['docs/local-ci.md']);
+  assert.equal(selection.profile, 'full');
+  assert.equal(selection.classification.profile, 'focused');
+});
+
+test('local change collection unions committed, staged, unstaged, and untracked paths', async () => {
+  const projectRoot = createGitFixture();
+  try {
+    const base = git(projectRoot, ['rev-parse', 'HEAD']);
+    fs.mkdirSync(path.join(projectRoot, 'services'), { recursive: true });
+    fs.writeFileSync(path.join(projectRoot, 'services/evaluationStore.js'), 'export const runtime = true;\n');
+    git(projectRoot, ['add', 'services/evaluationStore.js']);
+    git(projectRoot, ['commit', '--quiet', '-m', 'runtime']);
+    fs.writeFileSync(path.join(projectRoot, 'docs/staged.md'), 'staged\n');
+    git(projectRoot, ['add', 'docs/staged.md']);
+    fs.writeFileSync(path.join(projectRoot, 'workplan/items/unstaged.md'), 'changed\n');
+    fs.writeFileSync(path.join(projectRoot, 'docs/untracked.md'), 'untracked\n');
+
+    const result = await changedFilesForRange(base, 'HEAD', projectRoot);
+    assert.equal(result.ok, true);
+    assert.deepEqual(result.errors, []);
+    assert.deepEqual(result.changedFiles, [
+      'docs/staged.md',
+      'docs/untracked.md',
+      'services/evaluationStore.js',
+      'workplan/items/unstaged.md',
+    ]);
+  } finally {
+    fs.rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('local change collection preserves a committed leading-whitespace path', async () => {
+  const projectRoot = createGitFixture();
+  try {
+    const base = git(projectRoot, ['rev-parse', 'HEAD']);
+    const file = ' docs/runtime.md';
+    fs.mkdirSync(path.dirname(path.join(projectRoot, file)), { recursive: true });
+    fs.writeFileSync(path.join(projectRoot, file), 'runtime\n');
+    git(projectRoot, ['add', '--', file]);
+    git(projectRoot, ['commit', '--quiet', '-m', 'leading whitespace path']);
+
+    const result = await changedFilesForRange(base, 'HEAD', projectRoot);
+    assert.equal(result.ok, true);
+    assert.deepEqual(result.changedFiles, [file]);
+    const selection = resolveLocalCiProfile(parseLocalCiArgs([]), result.changedFiles, {
+      collectionOk: result.ok,
+      errors: result.errors,
+    });
+    assert.equal(selection.profile, 'full');
+    assert.match(selection.classification.reason, /invalid changed path/u);
+  } finally {
+    fs.rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('local change collection failure is explicit and forces full CI plus surface validation', async () => {
+  const projectRoot = createGitFixture();
+  try {
+    fs.writeFileSync(path.join(projectRoot, 'docs/staged.md'), 'staged\n');
+    git(projectRoot, ['add', 'docs/staged.md']);
+    fs.writeFileSync(path.join(projectRoot, 'workplan/items/unstaged.md'), 'changed\n');
+    fs.writeFileSync(path.join(projectRoot, 'docs/untracked.md'), 'untracked\n');
+
+    const result = await changedFilesForRange('missing-base', 'HEAD', projectRoot);
+    assert.equal(result.ok, false);
+    assert.match(result.errors.join('\n'), /^range:/mu);
+    assert.deepEqual(result.changedFiles, ['docs/staged.md', 'docs/untracked.md', 'workplan/items/unstaged.md']);
+
+    const options = parseLocalCiArgs([]);
+    const selection = resolveLocalCiProfile(options, result.changedFiles, {
+      collectionOk: result.ok,
+      errors: result.errors,
+    });
+    assert.equal(selection.profile, 'full');
+    assert.match(selection.classification.reason, /collection failed/u);
+    const surface = classifyLocalSurfaceRequirement({
+      surfaceMode: 'auto',
+      base: 'missing-base',
+      changedFileResult: result,
+      projectRoot,
+    });
+    assert.deepEqual(surface, {
+      required: true,
+      reason: 'changed-file collection failed; surface impact is unknown',
+    });
+    const resolvedOptions = { ...options, profile: selection.profile };
+    const plan = buildLocalCiPlan(resolvedOptions, {
+      projectRoot,
+      changedFiles: result.changedFiles,
+      surfaceRequired: surface.required,
+      classification: selection.classification,
+    });
+    assert.equal(
+      plan.some((lane) => lane.id === 'node-tests'),
+      true,
+    );
+    assert.equal(
+      plan.some((lane) => lane.id === 'surface'),
+      true,
+    );
+
+    const explicitFull = resolveLocalCiProfile(parseLocalCiArgs(['--profile=full']), result.changedFiles, {
+      collectionOk: result.ok,
+      errors: result.errors,
+    });
+    assert.equal(explicitFull.profile, 'full');
+  } finally {
+    fs.rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('missing package comparison metadata conservatively requires surface validation', () => {
+  const result = classifyLocalSurfaceRequirement({
+    surfaceMode: 'auto',
+    base: 'HEAD',
+    changedFileResult: { ok: true, changedFiles: ['package.json'], errors: [] },
+    readBaseManifest: () => {
+      throw new Error('missing manifest');
+    },
+  });
+  assert.deepEqual(result, { required: true, reason: 'package comparison metadata is unavailable' });
+});
+
 test('local CI keeps npm cache and logs outside the source tree', () => {
   const environment = localCiEnvironment('/repo');
   assert.equal(environment.CI, '1');
@@ -60,7 +299,7 @@ test('local CI keeps npm cache and logs outside the source tree', () => {
 });
 
 test('full local CI plan covers the data-independent GitHub command contract', () => {
-  const options = parseLocalCiArgs(['--no-install', '--offline', '--surface=never']);
+  const options = parseLocalCiArgs(['--profile=full', '--no-install', '--offline', '--surface=never']);
   const plan = buildLocalCiPlan(options, { projectRoot: '/repo', changedFiles: [] });
   const commands = displays(plan);
   for (const expected of [
@@ -92,7 +331,7 @@ test('surface acceptance uses the same path family and can add isolated Node 24 
   assert.equal(pathTriggersSurfaceAcceptance('scripts/tutor-stub-surface-acceptance-scenario.mjs'), true);
   assert.equal(pathTriggersSurfaceAcceptance('docs/local-ci.md'), false);
 
-  const options = parseLocalCiArgs(['--no-install', '--node24-container']);
+  const options = parseLocalCiArgs(['--profile=full', '--no-install', '--node24-container']);
   const plan = buildLocalCiPlan(options, { projectRoot: '/repo', changedFiles: ['package.json'] });
   assert.ok(plan.some((lane) => lane.id === 'surface'));
   const node24 = plan.find((lane) => lane.id === 'node24');
@@ -105,7 +344,7 @@ test('surface acceptance uses the same path family and can add isolated Node 24 
   assert.deepEqual(displays([surface]), ['npm run tutor:stub:acceptance:web']);
 
   const node24Only = buildLocalCiPlan(
-    parseLocalCiArgs(['--lane=node24', '--node24-container', '--no-install', '--offline']),
+    parseLocalCiArgs(['--profile=full', '--lane=node24', '--node24-container', '--no-install', '--offline']),
     { projectRoot: '/repo', changedFiles: ['package.json'] },
   );
   assert.deepEqual(
@@ -113,7 +352,7 @@ test('surface acceptance uses the same path family and can add isolated Node 24 
     ['node24'],
   );
 
-  const docsOnly = buildLocalCiPlan(parseLocalCiArgs(['--no-install']), {
+  const docsOnly = buildLocalCiPlan(parseLocalCiArgs(['--profile=full', '--no-install']), {
     projectRoot: '/repo',
     changedFiles: ['docs/local-ci.md'],
   });
@@ -173,7 +412,7 @@ test('surface acceptance skips unrelated package scripts but fails closed for ru
   assert.equal(classifySurfaceAcceptance({ changedFiles: ['package-lock.json'] }).required, true);
   assert.equal(classifySurfaceAcceptance({ changedFiles: ['package.json'] }).required, true);
 
-  const scriptOnlyPlan = buildLocalCiPlan(parseLocalCiArgs(['--no-install']), {
+  const scriptOnlyPlan = buildLocalCiPlan(parseLocalCiArgs(['--profile=full', '--no-install']), {
     projectRoot: '/repo',
     changedFiles: ['package.json'],
     surfaceRequired: false,
