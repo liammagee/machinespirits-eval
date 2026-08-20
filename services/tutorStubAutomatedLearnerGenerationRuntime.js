@@ -139,7 +139,13 @@ export function buildTutorStubFrameOpportunityV4RepairBudgetDiagnostic({
       maximumModelAttemptReservations === 39,
   };
 }
-export function admitTutorStubFrameOpportunityV4FullRepair({ state, profile, turnNumber, contract } = {}) {
+export function admitTutorStubFrameOpportunityV4FullRepair({
+  state,
+  profile,
+  turnNumber,
+  contract,
+  registeredPostTriggerCandidate = false,
+} = {}) {
   if (!['frame_refuser', 'frame_defiant'].includes(profile)) {
     return { applicable: false, admitted: true, reason: 'profile_not_in_frame_opportunity_v4' };
   }
@@ -149,8 +155,10 @@ export function admitTutorStubFrameOpportunityV4FullRepair({ state, profile, tur
     return { applicable: true, admitted: false, reason: 'registered_t1_t2_repair_budget_not_ready', diagnostic };
   }
   const current = state?.frameOpportunityV4RepairAdmission || { used: 0, history: [] };
-  const deferredToT2 = turnNumber === 2;
-  const admitted = deferredToT2 && current.used < maxFullRepairsPerT1T2;
+  const t1T2DecisionCandidate = turnNumber === 2;
+  const registeredOutcomeCandidate = registeredPostTriggerCandidate === true;
+  const repairDecisionCandidate = t1T2DecisionCandidate || registeredOutcomeCandidate;
+  const admitted = repairDecisionCandidate && current.used < maxFullRepairsPerT1T2;
   const result = {
     applicable: true,
     admitted,
@@ -158,10 +166,13 @@ export function admitTutorStubFrameOpportunityV4FullRepair({ state, profile, tur
     turn: turnNumber,
     usedBefore: current.used,
     usedAfter: admitted ? current.used + 1 : current.used,
-    reason: !deferredToT2
+    ...(registeredOutcomeCandidate ? { candidateKind: 'registered_post_trigger_horizon' } : {}),
+    reason: !repairDecisionCandidate
       ? 'repair_deferred_until_t2_candidate'
       : admitted
-        ? 'within_t1_t2_repair_envelope'
+        ? registeredOutcomeCandidate
+          ? 'within_registered_post_trigger_repair_envelope'
+          : 'within_t1_t2_repair_envelope'
         : 't1_t2_repair_envelope_exhausted',
     diagnostic,
   };
@@ -318,17 +329,14 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       (group.values || []).includes(automatedLearnerMarkerValue(turn, group.field, tutorText)),
     );
   }
-
   function publicTutorPressure(text) {
     return /\b(miraculously|marvelous|wonderful|conveniently|apparently|nice trick|escape route|safe performance|hiding behind|not doing the work|lets you avoid|pressing|do not stall|don['’]t stall|fog and vibes|answer vending machine|mob|jab|jabs)\b/iu.test(
       String(text || ''),
     );
   }
-
   function negativeRegisterPressure(selection) {
     return negativeFloorRegisters.includes(selection?.selected_register);
   }
-
   function automatedLearnerProfileRuntimeState({ state, profile, turnNumber }) {
     const profileId = automatedLearnerProfileId(profile);
     const contract = learnerProfileContract(profileId);
@@ -381,7 +389,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       requiredNow,
     };
   }
-
   function automatedLearnerProfileRuntime({ state, profile, turnNumber }) {
     const runtime = automatedLearnerProfileRuntimeState({ state, profile, turnNumber });
     if (!runtime) return '';
@@ -395,7 +402,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       'This cue is private. Never mention briefs, triggers, profiles, markers, or experimental conditions publicly.',
     ].join('\n');
   }
-
   // Opt-in stress schedule (TUTOR_STUB_STRESS_SCHEDULE=<path>): planted learner
   // states with adjudicated repairs. Loaded once, lazily; each planted turn's
   // directive is injected into the learner prompt verbatim and traced, so the
@@ -409,7 +415,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     }
     return stressScheduleCache;
   }
-
   function stressPlantForLearnerTurn(state, turnNumber, { recordTrace = true } = {}) {
     const schedule = activeStressSchedule();
     if (!schedule) return null;
@@ -427,7 +432,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     }
     return plant;
   }
-
   // Phase Q3 (TUTOR_STUB_CORRUPT="<turn>:<kind>,..."): deterministic
   // post-generation corruption of the learner's reply — the corrupted text
   // becomes her turn everywhere (history, trace, the tutor's view), so she
@@ -442,11 +446,9 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       .map((s) => s.split(':'))
       .map(([t, kind]) => [Number(t), kind]),
   );
-
   function automatedLearnerCorruptionEnabled(turnNumber) {
     return Boolean(CORRUPT_TURNS[turnNumber]);
   }
-
   function applyTutorStubCorruption(state, turnNumber, text) {
     const kind = CORRUPT_TURNS[turnNumber];
     if (!kind) return text;
@@ -475,7 +477,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     }
     return corrupted;
   }
-
   // Guarded (defensive) learner pole. Opt-in with
   // TUTOR_STUB_GUARDED_LEARNER_MOVES=1, so no existing study changes: the
   // menu picks one typed move per turn and the guard rejects a draft that
@@ -484,11 +485,9 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
   const GUARDED_LEARNER_MOVES_ENABLED = /^(?:1|true|on|yes)$/iu.test(
     String(env.TUTOR_STUB_GUARDED_LEARNER_MOVES || ''),
   );
-
   function guardedLearnerActive(profile) {
     return GUARDED_LEARNER_MOVES_ENABLED && automatedLearnerProfileId(profile) === 'overconfident';
   }
-
   function guardedLearnerMoveForTurn({ state, profile, turnNumber }) {
     if (!guardedLearnerActive(profile)) return null;
     const priorMoves = Array.isArray(state.guardedLearnerMoves) ? state.guardedLearnerMoves : [];
@@ -496,7 +495,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     const move = selectGuardedLearnerMove({ turnNumber, groundedChallengeCount, priorMoves });
     return { move, groundedChallengeCount, priorMoves };
   }
-
   function buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback = '' }) {
     const hasTutorMessage = Boolean(latestTutorMessage(state));
     const guarded = guardedLearnerMoveForTurn({ state, profile, turnNumber });
@@ -668,6 +666,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     turnNumber,
     generated,
     precomputeFinalLearnerAnalysis = false,
+    registeredPostTriggerCandidate = false,
     cliEffort = null,
     signal = null,
     isCurrent = null,
@@ -745,6 +744,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
           profile: runtime.profileId,
           turnNumber,
           contract: runtime.contract,
+          registeredPostTriggerCandidate,
         });
         appendTraceEvent(state.trace, {
           type: 'auto_learner_profile_repair_admission',

@@ -4,7 +4,10 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { createTutorStubAutomatedLearnerGenerationRuntime } from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
+import {
+  TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV,
+  createTutorStubAutomatedLearnerGenerationRuntime,
+} from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
 import { createTutorStubTurnOrchestration } from '../services/tutorStubTurnOrchestration.js';
 import {
   learnerProfileContract,
@@ -276,4 +279,171 @@ test('registered action/register production enforcement preserves the third lear
   assert.deepEqual(outcome.tutorLearnerDag.model.metrics, { missingPremiseCount: 2, groundedCount: 7 });
   assert.equal(outcome.tutorReplyGenerated, false);
   assert.equal(events.at(-1).type, 'auto_learner_run_end');
+});
+
+test('registered action/register final candidate receives the one prospective-v4 repair before outcome persistence', async () => {
+  const events = [];
+  let repairCalls = 0;
+  let tutorCalls = 0;
+  const initialCandidate = 'I will answer the bounded question as asked.';
+  const repairedCandidate =
+    'I reject your authority to set this test, and I will not supply evidence or an answer under it.';
+  const analysisFor = (learnerText) => ({
+    classification: {
+      turn:
+        learnerText === repairedCandidate
+          ? {
+              request_type: 'authority_refusal_or_status_challenge',
+              discourse_move: 'challenge',
+              evidence_use: 'none',
+              epistemic_stance: 'resistant',
+              agency: 'steering',
+            }
+          : {
+              request_type: 'bounded_test_response',
+              discourse_move: 'evidence_adoption',
+              evidence_use: 'links_evidence_to_rule',
+              epistemic_stance: 'grounded',
+              agency: 'attempting',
+            },
+    },
+    dagPreflight: { publicOnly: true, contentSha256: `final-${learnerText.length}` },
+  });
+  const generationRuntime = createTutorStubAutomatedLearnerGenerationRuntime({
+    appendTraceEvent(_trace, event) {
+      events.push(event);
+    },
+    callPromptModel: async () => {
+      repairCalls += 1;
+      return { text: repairedCandidate, provider: 'test', model: 'test', latencyMs: 0, usage: null };
+    },
+    classificationFromCombinedAnalysis: (raw) => raw.classification,
+    env: { [TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV]: 'prospective_v4' },
+    extractCombinedLearnerAnalysis: async ({ learnerText, tutorTurn }) => {
+      assert.equal(tutorTurn, 3);
+      return analysisFor(learnerText);
+    },
+    learnerProfileContract,
+    learnerProfileIds,
+    learnerProfilePrompt,
+    negativeFloorRegisters: [],
+  });
+  const orchestration = createTutorStubTurnOrchestration({
+    C: { brightBlue: '', bold: '', reset: '' },
+    analyzeLearnerTurn: async (learnerText, _state, { precomputedRaw }) => {
+      assert.equal(learnerText, repairedCandidate);
+      assert.deepEqual(precomputedRaw, analysisFor(repairedCandidate));
+      return {
+        classification: precomputedRaw.classification,
+        tutorLearnerDag: { model: { metrics: { missingPremiseCount: 6, groundedCount: 4 } } },
+        previousRegisterEfficacy: null,
+      };
+    },
+    appendTraceEvent(_trace, event) {
+      events.push(event);
+    },
+    assertTutorStubTurnAttemptCurrent() {},
+    automatedLearnerProfileId: generationRuntime.automatedLearnerProfileId,
+    callTutor: async () => {
+      tutorCalls += 1;
+      return { text: 'must not be called' };
+    },
+    createTutorStubLearnerResponseProvenance: (value) => value,
+    enforceAutomatedLearnerProfile: generationRuntime.enforceAutomatedLearnerProfile,
+    enforceGuardedLearnerConcessionGuard: generationRuntime.enforceGuardedLearnerConcessionGuard,
+    generateAutomatedLearnerTurn: async () => ({
+      text: initialCandidate,
+      provider: 'test',
+      model: 'test',
+      latencyMs: 0,
+      usage: null,
+    }),
+    jsonClone: (value) => (value == null ? value : JSON.parse(JSON.stringify(value))),
+    learnerProfileSpeakerLabel: () => 'learner',
+    printTurnDebugLine() {},
+    printWithConcurrentTerminal: (state, action) => action(state),
+    startInterimAnimation() {},
+    stopInterimAnimation() {},
+    turnDebugId: (_state, turn) => `t${turn}`,
+  });
+  const state = {
+    trace: null,
+    turns: [
+      {
+        turn: 1,
+        learner: 'I reject your authority to set this question, and I will not supply evidence or an answer under it.',
+        tutor: 'Try the bounded public comparison once.',
+        classification: analysisFor(repairedCandidate).classification,
+      },
+      {
+        turn: 2,
+        learner: 'I can compare the two public accounts on that bounded distinction.',
+        tutor: 'Apply only the local distinction to the public marks.',
+        classification: analysisFor(initialCandidate).classification,
+      },
+    ],
+    history: [{ role: 'assistant', content: 'Test one bounded distinction in the public record.' }],
+    interim: null,
+    classifier: { enabled: true },
+    learnerDag: { enabled: true },
+    register: { policy: 'field' },
+    world: {},
+    resistanceActionRegisterStudy: {
+      enabled: true,
+      final_learner_without_tutor_reply: true,
+      outcome_horizon_learner_turns: 2,
+      job_id: 'job-final-repair',
+      batch_id: 'batch_A',
+      prefix_id: 'prefix-1',
+    },
+  };
+
+  const result = await orchestration.runAutomatedLearnerDialogue({
+    state,
+    openingEnabled: false,
+    autoLearnerResolved: { provider: 'test', model: 'test' },
+    autoLearnerProfile: 'frame_refuser',
+    autoTurns: 3,
+    autoSafetyTurns: 3,
+    autoStopOnGrounded: false,
+  });
+
+  assert.equal(result.reason, 'registered_outcome_horizon_complete');
+  assert.equal(repairCalls, 1);
+  assert.equal(tutorCalls, 0);
+  assert.equal(state.history.at(-1).content, repairedCandidate);
+  assert.deepEqual(
+    events
+      .filter((event) => event.type === 'auto_learner_profile_repair_admission')
+      .map((event) => ({
+        turn: event.turn,
+        admitted: event.admitted,
+        usedBefore: event.usedBefore,
+        usedAfter: event.usedAfter,
+        candidateKind: event.candidateKind,
+      })),
+    [
+      {
+        turn: 3,
+        admitted: true,
+        usedBefore: 0,
+        usedAfter: 1,
+        candidateKind: 'registered_post_trigger_horizon',
+      },
+    ],
+  );
+  assert.equal(events.filter((event) => event.type === 'auto_learner_profile_repair_requested').length, 1);
+  assert.deepEqual(
+    events
+      .filter((event) => event.type === 'auto_learner_profile_adherence')
+      .map((event) => ({ turn: event.turn, passed: event.passed, repairAttempts: event.repairAttempts })),
+    [{ turn: 3, passed: true, repairAttempts: 1 }],
+  );
+  assert.equal(
+    events.some((event) => event.type === 'auto_learner_profile_adherence_exhausted'),
+    false,
+  );
+  const outcome = events.find((event) => event.type === 'resistance_action_register_outcome_learner_turn');
+  assert.equal(outcome.learnerText, repairedCandidate);
+  assert.equal(outcome.tutorReplyGenerated, false);
 });

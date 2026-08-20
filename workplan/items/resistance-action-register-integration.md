@@ -1008,3 +1008,22 @@ and explicit human approval.
   recovery, descriptive warm-versus-plain separation, and same-treatment
   repeat stability; it licenses no matched-versus-mismatched, edged-register,
   interaction, tutor-efficacy, learning, human-validity, or transfer claim.
+- 2026-08-20 — Stopped the consumed revision-3 successor request
+  `568782ec4df4453f4c7e08d6f26afbfe8174bd33a134c6057c65bb9f9b71315d`
+  during fresh batch A after 33 charged reservations, 30 completed attempts,
+  three coordinator-interrupted in-flight attempts, and zero provider errors.
+  Batch B and the combined analyzer did not start. One unit failed closed at
+  the registered learner-only T3 horizon because the prospective-V4 repair
+  admission was keyed only to raw public turn 2: the trace recorded
+  `repair_deferred_until_t2_candidate`, zero admitted repairs, and
+  `technical_failure_no_public_candidate`. The complete and partial A outputs
+  are all excluded from recovery, pooling, selection, or interpretation; the
+  programme ledger is now `109/1200`. The narrow prospective repair admits the
+  same single bounded repair at either the original T1-T2 decision candidate
+  or an explicitly registered post-trigger outcome candidate, while retaining
+  the cumulative one-repair ceiling and fail-closed exhaustion. A composed
+  production-path regression requires exactly one T3 repair, preserved public
+  analysis and DAG preflight, learner-outcome persistence, and zero terminal
+  tutor calls. No successor request or live authority is created by this
+  source repair; after guarded merge, a fresh source-pinned request must bind
+  wholly new A/B/report destinations and the `109→577/1200` ceiling.
