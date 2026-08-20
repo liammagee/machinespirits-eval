@@ -51,8 +51,14 @@ function isV5Registration(registration) {
   );
 }
 
+function isV6Registration(registration) {
+  return (
+    registration?.schema === TUTOR_STUB_RESISTANCE_ACTION_REGISTER_REGISTRATION_SCHEMA && registration?.version === 6
+  );
+}
+
 function isConfirmationSuccessorRegistration(registration) {
-  return isV4Registration(registration) || isV5Registration(registration);
+  return isV4Registration(registration) || isV5Registration(registration) || isV6Registration(registration);
 }
 
 function usesProspectiveV4Observation(registration) {
@@ -198,7 +204,9 @@ function normalizeRegistration(registration) {
     throw new Error('v2 registration must retain frame_defiant as diagnostic-only');
   }
   const requiredObservationSemantics = isConfirmationSuccessorRegistration(registration)
-    ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5
+    ? isV6Registration(registration)
+      ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6
+      : RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5
     : RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
   if (registration.design?.trigger?.observationSemantics !== requiredObservationSemantics) {
     throw new Error(`prospective registration must use ${requiredObservationSemantics} observation semantics`);
@@ -278,6 +286,7 @@ function normalizeRegistration(registration) {
     const blocks = registration.design?.factors?.confirmationBlock?.blocks;
     const calibration = registration.preservation?.calibration;
     const stopped = registration.preservation?.stoppedConfirmationV1;
+    const stoppedV3 = registration.preservation?.stoppedConfirmationV3;
     const sizing = registration.measurement?.confirmatoryTest?.powering;
     const readiness = registration.executionReadiness;
     if (
@@ -308,6 +317,24 @@ function normalizeRegistration(registration) {
       stopped?.completedCalls !== 34 ||
       stopped?.providerFailures !== 0 ||
       stopped?.excludedFromSuccessor !== true ||
+      (isV6Registration(registration) &&
+        (registration.design?.randomization?.masterSeed !== 20260823 ||
+          registration.design?.trigger?.priorIncompleteConfirmationV3ConsumedAsInputs !== false ||
+          stoppedV3?.requestSha256 !== 'e3df720358cc597e686f0007bfc1ce1a5d0b4a11273a725ce87b484d20c3fec9' ||
+          stoppedV3?.sourceCommit !== 'c9f6d57b867376e94384e9efe99ccf8a79ca9195' ||
+          stoppedV3?.privateArchiveCommit !== '6f3e8f84079787abe1b0829be65be742c5983988' ||
+          stoppedV3?.localInventorySha256 !== '83428e7d86df598b5794e3890e62e91e48dddea46514e6a0cd4d4123340c7493' ||
+          stoppedV3?.liveMirrorInventorySha256 !== 'ce29fe1cef61b564b09d413b0b6782e2661a4ccff732b97c815d72deec72dae3' ||
+          stoppedV3?.reservedAttempts !== 36 ||
+          stoppedV3?.completedCalls !== 35 ||
+          stoppedV3?.providerFailures !== 0 ||
+          stoppedV3?.coordinatorInterruptedReservations !== 1 ||
+          stoppedV3?.excludedFromSuccessor !== true ||
+          stoppedV3?.reused !== false ||
+          stoppedV3?.pooled !== false ||
+          stoppedV3?.outcomeSelected !== false ||
+          registration.confirmation?.priorIncompleteConfirmationV3DialoguesReused !== 0 ||
+          registration.confirmation?.priorIncompleteConfirmationV3DialoguesPooled !== 0)) ||
       sizing?.test !== 'fisher_exact_two_sided' ||
       sizing?.alpha !== 0.05 ||
       sizing?.targetPower !== 0.8 ||
@@ -318,23 +345,32 @@ function normalizeRegistration(registration) {
       readiness?.combinedDialogues !== 36 ||
       readiness?.combinedPlannedRoleCalls !== 720 ||
       readiness?.combinedMaximumModelAttemptReservations !== 2160 ||
-      readiness?.programmeLedgerAfterMaximum?.reservedAttempts !== 2379 ||
-      readiness?.programmeLedgerAfterMaximum?.ceiling !== (isV5Registration(registration) ? 5000 : 2379) ||
-      readiness?.programmeLedgerAfterMaximum?.remaining !== (isV5Registration(registration) ? 2621 : 0) ||
-      (isV5Registration(registration) &&
+      readiness?.programmeLedgerAfterMaximum?.reservedAttempts !== (isV6Registration(registration) ? 2415 : 2379) ||
+      readiness?.programmeLedgerAfterMaximum?.ceiling !==
+        (isV5Registration(registration) || isV6Registration(registration) ? 5000 : 2379) ||
+      readiness?.programmeLedgerAfterMaximum?.remaining !==
+        (isV6Registration(registration) ? 2585 : isV5Registration(registration) ? 2621 : 0) ||
+      ((isV5Registration(registration) || isV6Registration(registration)) &&
         (readiness?.attemptAccountingRole !==
           'operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective' ||
           registration.preservation?.supersedesRegistrationPath !==
-            'config/tutor-stub-resistance-action-register-crossed-registration.v4.json' ||
+            (isV6Registration(registration)
+              ? 'config/tutor-stub-resistance-action-register-crossed-registration.v5.json'
+              : 'config/tutor-stub-resistance-action-register-crossed-registration.v4.json') ||
           registration.authorization?.requiredCeilingAmendment?.authorized !== false)) ||
-      registration.authorization?.programmeLedgerBeforeThisConfirmation?.reservedAttempts !== 219 ||
-      registration.authorization?.programmeLedgerBeforeThisConfirmation?.ceiling !== 2345 ||
-      registration.authorization?.programmeLedgerBeforeThisConfirmation?.remaining !== 2126 ||
-      registration.authorization?.requiredCeilingAmendment?.from !== 2345 ||
-      registration.authorization?.requiredCeilingAmendment?.to !== (isV5Registration(registration) ? 5000 : 2379) ||
-      registration.authorization?.requiredCeilingAmendment?.increase !== (isV5Registration(registration) ? 2655 : 34)
+      registration.authorization?.programmeLedgerBeforeThisConfirmation?.reservedAttempts !==
+        (isV6Registration(registration) ? 255 : 219) ||
+      registration.authorization?.programmeLedgerBeforeThisConfirmation?.ceiling !==
+        (isV6Registration(registration) ? 5000 : 2345) ||
+      registration.authorization?.programmeLedgerBeforeThisConfirmation?.remaining !==
+        (isV6Registration(registration) ? 4745 : 2126) ||
+      registration.authorization?.requiredCeilingAmendment?.from !== (isV6Registration(registration) ? 5000 : 2345) ||
+      registration.authorization?.requiredCeilingAmendment?.to !==
+        (isV6Registration(registration) ? 5000 : isV5Registration(registration) ? 5000 : 2379) ||
+      registration.authorization?.requiredCeilingAmendment?.increase !==
+        (isV6Registration(registration) ? 0 : isV5Registration(registration) ? 2655 : 34)
     ) {
-      throw new Error('v4 successor confirmation design, exclusions, power, or hard-attempt arithmetic drifted');
+      throw new Error('successor confirmation design, exclusions, power, or hard-attempt arithmetic drifted');
     }
     const batches = readiness?.batches;
     if (
@@ -713,6 +749,7 @@ function triggerFromTurnRecord(
   const prospectiveV3 = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV3;
   const prospectiveV4 = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
   const prospectiveV5 = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5;
+  const prospectiveV6 = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6;
   const observationProfiles = legacySemantics ? ['frame_refuser'] : ['frame_refuser', 'frame_defiant'];
   const profileObservation = observationProfiles.includes(profile)
     ? observeResistantLearnerTurn({ learnerText, classification, semantics: observationSemantics })
@@ -732,7 +769,9 @@ function triggerFromTurnRecord(
         !frameRefusal) ||
       (!profileObservation && shadow.resistance_kind === profile);
   const warrantLicensed =
-    prospectiveV3 || prospectiveV4 || prospectiveV5 ? Boolean(frameDispute) : shadow.warrant.status === 'licensed';
+    prospectiveV3 || prospectiveV4 || prospectiveV5 || prospectiveV6
+      ? Boolean(frameDispute)
+      : shadow.warrant.status === 'licensed';
   return {
     eligible:
       warrantLicensed &&

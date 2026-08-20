@@ -525,6 +525,164 @@ test('prospective v4 recognizes all frozen v3 misses without changing v3 dispatc
   }
 });
 
+test('prospective v6 recognizes the frozen confirmation-v3 authority-object misses without changing v5', () => {
+  const v5 = RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5;
+  const v6 = RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6;
+  const frozenMisses = [
+    'I do not grant your choice of object authority, so I will neither examine the balance nor supply evidence under that frame.',
+    'I do not grant your proposed assay or its blank record authority, so I will neither examine the balance nor offer evidence under that frame.',
+  ];
+  for (const learnerText of frozenMisses) {
+    const input = {
+      learnerText,
+      classification: classification({
+        requestType: 'authority_refusal_or_status_challenge',
+        discourseMove: 'challenge',
+        evidenceUse: 'none',
+        agency: 'steering',
+      }),
+    };
+    assert.deepEqual(
+      resistantLearnerObservationMarkers({ ...input, semantics: v5 }),
+      {
+        boredWithholding: false,
+        frameJurisdictionDispute: false,
+        frameJurisdictionParticipation: false,
+        frameJurisdictionRefusal: false,
+      },
+      learnerText,
+    );
+    assert.deepEqual(
+      resistantLearnerObservationMarkers({ ...input, semantics: v6 }),
+      {
+        boredWithholding: false,
+        frameJurisdictionDispute: true,
+        frameJurisdictionParticipation: false,
+        frameJurisdictionRefusal: true,
+      },
+      learnerText,
+    );
+  }
+
+  const cases = [
+    {
+      learnerText:
+        'I do not grant your selection of criterion authority, so I will neither answer the comparison nor provide evidence under that frame.',
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+      expected: [true, false, true],
+    },
+    {
+      learnerText:
+        'I do not grant your proposed test authority, but I will examine one public record and compare its mark.',
+      classification: classification({ discourseMove: 'evidence_adoption', evidenceUse: 'cites_public_evidence' }),
+      expected: [true, true, false],
+    },
+    {
+      learnerText: 'I grant your proposed assay authority, and I will examine the balance.',
+      classification: classification({ discourseMove: 'evidence_adoption', evidenceUse: 'cites_public_evidence' }),
+      expected: [false, false, false],
+    },
+    {
+      learnerText: 'I do not grant your laboratory manager authority to hire staff for the workshop.',
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+      expected: [false, false, false],
+    },
+    {
+      learnerText:
+        'I do not grant your proposed record officer authority to inspect personnel files, and I will not provide access.',
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+      expected: [false, false, false],
+    },
+    {
+      learnerText:
+        'I do not grant your chosen evidence custodian authority to enter the archive, and I will not provide access.',
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+      expected: [false, false, false],
+    },
+    {
+      learnerText:
+        'I do not grant your choice of sample authority because the sample is contaminated, and I will not test it.',
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+      expected: [false, false, false],
+    },
+    {
+      learnerText:
+        'I do not grant your proposed assay authority because its denominator is wrong, and I will neither examine nor record its result.',
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+      expected: [false, false, false],
+    },
+    {
+      learnerText:
+        'I do not grant your proposed assay result authority because the sensor is miscalibrated, and I will not test it.',
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+      expected: [false, false, false],
+    },
+    {
+      learnerText:
+        'I do not grant your reading of the record authority because the denominator is wrong, and I will not answer.',
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+      expected: [false, false, false],
+    },
+    {
+      learnerText:
+        'I do not grant your proposed assay result authority since the sensor is miscalibrated, and I will not test it.',
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+      expected: [false, false, false],
+    },
+    {
+      learnerText: 'I do not grant your proposed assay authority: its denominator is wrong, and I will not test it.',
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+      expected: [false, false, false],
+    },
+    {
+      learnerText:
+        'I do not grant your choice of sample authority given that the sample is contaminated, and I will not test it.',
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+      expected: [false, false, false],
+    },
+    {
+      learnerText:
+        'I do not grant your choice of test authority because you may not set the governing frame, and I will not answer under it.',
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+      expected: [true, false, true],
+    },
+    {
+      learnerText:
+        'I do not grant your choice of test authority because this test is the wrong governing frame, and I will not answer under it.',
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+      expected: [true, false, true],
+    },
+    {
+      learnerText:
+        'I do not grant your proposed assay authority because the assay is an invalid governing test, and I will neither examine nor provide evidence under that frame.',
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+      expected: [true, false, true],
+    },
+    {
+      learnerText: 'I do not grant your proposed assay authority, but I neither reject nor withhold evidence from it.',
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+      expected: [true, false, false],
+    },
+    {
+      learnerText: 'I neither examine the balance nor supply evidence under that frame.',
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+      expected: [false, false, false],
+    },
+  ];
+  for (const row of cases) {
+    const markers = resistantLearnerObservationMarkers({
+      learnerText: row.learnerText,
+      classification: row.classification,
+      semantics: v6,
+    });
+    assert.deepEqual(
+      [markers.frameJurisdictionDispute, markers.frameJurisdictionParticipation, markers.frameJurisdictionRefusal],
+      row.expected,
+      row.learnerText,
+    );
+  }
+});
+
 test('public evidence licenses typed moves only in a non-authoritative shadow', () => {
   assert.equal(RESISTANT_PROFILE_MOVE_CONTRACTS.bored.primary_move_type, 'ask_discriminating_question');
   const bored = createResistantProfileMoveShadow({

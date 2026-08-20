@@ -62,6 +62,15 @@ const CERTIFICATE_V3 = path.join(
   ROOT,
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v3.endpoint-go.json',
 );
+const REGISTRATION_V6 = path.join(ROOT, 'config/tutor-stub-resistance-action-register-crossed-registration.v6.json');
+const ENDPOINT_V4 = path.join(
+  ROOT,
+  'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v4.json',
+);
+const CERTIFICATE_V4 = path.join(
+  ROOT,
+  'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v4.endpoint-go.json',
+);
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -695,9 +704,91 @@ test('V5 preserves the powered successor design while separating the 5000 operat
     writeJson(invalidPath, invalid);
     assert.throws(
       () => loadTutorStubResistanceActionRegisterConfirmation({ registrationPath: invalidPath }),
-      /v4 successor confirmation design/u,
+      /successor confirmation design/u,
     );
   }
+});
+
+test('V6 binds the stopped V3 block, prospective-v6 repair, and a wholly fresh powered successor', () => {
+  for (const [relativePath, expected] of Object.entries({
+    'config/tutor-stub-resistance-action-register-crossed-registration.v4.json':
+      '1ac49ff01a34db731b917b9f1618926e642e3bf748d06c5b987ac4ade93b3408',
+    'config/tutor-stub-resistance-action-register-crossed-registration.v5.json':
+      '4a1d7a745dd4ec62b93ce7397147f0d78a1b188ff576908ba4a56326c3636bf9',
+    'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v1.json':
+      '16f93e48f0b19fe23f0b91dabc9ac318f210ecbba6fbe954d76677d43fb78554',
+    'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v2.json':
+      '94973232d87e812b947981f85c12345bb413302dd54bad87b1f478c0a356b34b',
+    'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v3.json':
+      'e3df720358cc597e686f0007bfc1ce1a5d0b4a11273a725ce87b484d20c3fec9',
+  })) {
+    assert.equal(sha256(fs.readFileSync(path.join(ROOT, relativePath))), expected, `${relativePath} changed`);
+  }
+  const v5 = loadTutorStubResistanceActionRegisterConfirmation({ registrationPath: REGISTRATION_V5 });
+  const loaded = loadTutorStubResistanceActionRegisterConfirmation({ registrationPath: REGISTRATION_V6 });
+  assert.equal(loaded.plan.jobs.length, 36);
+  assert.equal(loaded.plan.jobs.filter((job) => job.treatment.realization === 'plain').length, 18);
+  assert.equal(loaded.plan.jobs.filter((job) => job.treatment.realization === 'warm').length, 18);
+  assert.ok(loaded.plan.jobs.every((job) => job.id.startsWith('frame_refuser-confirmation-v3-')));
+  assert.notDeepEqual(loaded.plan.randomization, v5.plan.randomization);
+  assert.equal(loaded.registration.design.trigger.observationSemantics, 'prospective_v6');
+  assert.deepEqual(loaded.registration.authorization.programmeLedgerBeforeThisConfirmation, {
+    reservedAttempts: 255,
+    ceiling: 5000,
+    remaining: 4745,
+  });
+  assert.deepEqual(loaded.registration.executionReadiness.programmeLedgerAfterMaximum, {
+    reservedAttempts: 2415,
+    ceiling: 5000,
+    remaining: 2585,
+  });
+  assert.equal(loaded.registration.preservation.stoppedConfirmationV3.reservedAttempts, 36);
+  assert.equal(loaded.registration.preservation.stoppedConfirmationV3.completedCalls, 35);
+  assert.equal(loaded.registration.preservation.stoppedConfirmationV3.excludedFromSuccessor, true);
+  assert.equal(loaded.registration.preservation.stoppedConfirmationV3.reused, false);
+  assert.equal(loaded.registration.preservation.stoppedConfirmationV3.pooled, false);
+  assert.equal(loaded.registration.confirmation.priorIncompleteConfirmationV3DialoguesReused, 0);
+  assert.equal(loaded.registration.confirmation.priorIncompleteConfirmationV3DialoguesPooled, 0);
+
+  for (const learnerText of [
+    'I do not grant your choice of object authority, so I will neither examine the balance nor supply evidence under that frame.',
+    'I do not grant your proposed assay or its blank record authority, so I will neither examine the balance nor offer evidence under that frame.',
+  ]) {
+    const input = {
+      learnerText,
+      classification: classification(false),
+    };
+    assert.equal(
+      observeResistantLearnerTurn({
+        ...input,
+        semantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5,
+      }).observations.length,
+      0,
+      learnerText,
+    );
+    assert.ok(
+      observeResistantLearnerTurn({
+        ...input,
+        semantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6,
+      }).observations.some((row) => row.type === 'frame_jurisdiction_refusal'),
+      learnerText,
+    );
+  }
+
+  const contract = JSON.parse(fs.readFileSync(ENDPOINT_V4, 'utf8'));
+  const certificate = JSON.parse(fs.readFileSync(CERTIFICATE_V4, 'utf8'));
+  const preflight = runTutorStubResistanceActionRegisterConfirmationPreflight({
+    contract,
+    registration: loaded.registration,
+  });
+  const validation = validatePaidStudyEndpointGoCertificate({ certificate, contract, preflight });
+  assert.equal(preflight.status, 'passed');
+  assert.equal(preflight.model_calls, 0);
+  assert.equal(preflight.production_writes, 0);
+  assert.equal(preflight.confirmation_readiness_audit.programme_ledger_after_confirmation_maximum, 2415);
+  assert.equal(preflight.confirmation_readiness_audit.programme_ceiling_required, 5000);
+  assert.equal(certificate.contract_sha256, hashPaidStudyEndpointValue(contract));
+  assert.equal(validation.ok, true, validation.errors.join('; '));
 });
 
 test('fresh confirmation configuration remains dormant before a public trigger and binds one randomized treatment', () => {
