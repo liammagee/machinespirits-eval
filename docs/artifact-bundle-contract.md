@@ -1,6 +1,6 @@
 # Artifact bundle contract
 
-Status: Wave 4B tracked/private-archive boundary, 2026-08-20.
+Status: Wave 4C tracked/private-archive boundary, 2026-08-20.
 
 PR [#714](https://github.com/liammagee/machinespirits-eval/pull/714)
 established a verifiable and restorable evidence-bundle boundary before any
@@ -227,6 +227,58 @@ root described in `docs/archive-replication.md`, but the publication-time client
 had no configured remote peer; this proves the local archive and restore, not an
 off-machine replica. The frozen legacy private Git repository remains untouched.
 Git history is unchanged.
+
+## Private-archive specimen: Sonnet register-confirmatory reports
+
+Wave 4C externalizes the repository's only three Git LFS working-tree objects:
+the historical `diligent`, `false_memory`, and `proof_skipper` Sonnet
+auto-eval reports. Their exact logical paths, byte counts, and SHA-256 values
+remain in both the original evidence manifest and a public artifact-bundle
+manifest. The compact QA, lineage, row-selection, bootstrap, discrimination,
+and final-analysis artifacts remain tracked. The original evidence manifest is
+kept byte-identical because its digest participates in those frozen derived
+outputs; its three `distilledFiles` paths are now logical restore identities,
+while the new artifact-bundle manifest supplies the storage contract.
+
+These reports are not executable inputs to the final analysis.
+`scripts/analyze-register-confirmatory-step2.js` verifies and reads the separate
+234,149,200-byte source-run archive declared by the family manifest, extracts
+only the frozen summaries and traces, and reproduces the tracked compact
+outputs with zero model calls.
+
+- public manifest:
+  `config/artifact-bundles/register-confirmatory-sonnet5-reports-2026-07-13.manifest.json`;
+- canonical local archive:
+  `~/.machinespirits-data/archives/register-confirmatory-sonnet5-reports-2026-07-13.tar.gz`;
+- sidecars in the same private directory: `.manifest.json` and
+  `.tar.gz.sha256`;
+- archive size: 59,584,797 bytes;
+- archive SHA-256:
+  `d0b18d83a515ebf21ae1fda5e0f806bb94f3e7115431a1ca37f085cab32dae50`;
+- restorable payload: exactly 3 files and 517,482,703 bytes under
+  `exports/register-confirmatory-evidence/sonnet5-n5-block-b`.
+
+Verify and restore the historical reports without network or model calls:
+
+```bash
+MANIFEST=config/artifact-bundles/register-confirmatory-sonnet5-reports-2026-07-13.manifest.json
+ARCHIVE="$HOME/.machinespirits-data/archives/register-confirmatory-sonnet5-reports-2026-07-13.tar.gz"
+RESTORE_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/sonnet-confirmatory-reports-restore.XXXXXX")"
+
+node scripts/artifact-bundle.js verify --manifest "$MANIFEST" --archive "$ARCHIVE"
+node scripts/artifact-bundle.js restore \
+  --manifest "$MANIFEST" \
+  --archive "$ARCHIVE" \
+  --out "$RESTORE_ROOT"
+```
+
+The LFS pointers are removed from the current tree only after the archive,
+checksum sidecar, byte-identical private manifest, and retained clean-room
+restore passed. This removes 517,482,703 bytes of default LFS hydration from
+future worktrees; it does not delete the local or remote historical LFS
+objects, prune caches, or rewrite Git history. As with the feature-tracker
+bundle, placement under the Syncthing-managed root proves local archival, not
+an off-machine replica while no remote peer is configured.
 
 No history rewrite is part of this contract, so it cannot reduce historical Git
 pack size. No archive or restore operation licenses evidence for training or
