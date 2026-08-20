@@ -864,3 +864,44 @@ and explicit human approval.
   combined analyzer, future-request validation, two create-once destinations,
   and a clean-source HOLD request bind both batches. Preparation and preflight
   made zero model calls and zero production writes.
+- 2026-08-20 — Completed the zero-call execution and analysis readiness layer
+  for the prospective crossed-registration V2 baseline while preserving the
+  merged V2 registration and every historical V1-V4 request and result. The
+  new public prefix bundle reproduces the three exact V4 target openings,
+  refusal turns, source-trace hashes, and public-prefix hashes at SHA-256
+  `d538287e4ce1661703518b86b0b1181b6e6edf05ea727bf49029ce453844a2c8`;
+  it binds V4 request
+  `0c14c51ae8625e6f5db301c9328b8f3182a8dbcd0b6b5a9dd610db85064ee0ab`,
+  report
+  `771076330d58ec8818182a1924e3ea8dd2c8e54bdc1c9f32a822e491f405b431`,
+  and private archive commit
+  `e5eb71f22f0c36f6e286272caf5b041e71d8e2ba` as provenance only. The live
+  executor begins from those exact public bytes, applies the fixed
+  `test_bounded_distinction` action with preassigned plain or warm realization,
+  preserves the two-post-trigger-learner-turn endpoint, and runs each prebound
+  A/B six-dialogue batch into a distinct create-once destination. Each dialogue
+  remains capped at 39 charged reservations and each batch at 234; bounded
+  recovery can regenerate only missing or technically failed units, preserves
+  valid units, and uses only the unused room within the unchanged dialogue and
+  batch caps. The combined analyzer refuses partial, interim, unsealed,
+  source-drifted, recovery-contaminated, duplicate, or selected assemblies and
+  requires all 12 exact prefix-by-realization-by-repeat cells before reporting
+  the registered recovery, repeat-stability, proof-DAG, and fidelity endpoints.
+  The V2 endpoint canonical SHA-256 is
+  `dd273b25998fb41da840f06ddc9073e43b096d4e5742d33fc2e902a845b16660`,
+  its zero-call preflight SHA-256 is
+  `16d52836d19af04bca2f6f7a8aab12ad2bd60142d1dac8c51e85163da41dd57f`,
+  its contract file SHA-256 is
+  `8298a5e6b03ba3ae6face88a625d48776664136473f1a88252a8dd48a6c51e43`,
+  and its endpoint-certificate file SHA-256 is
+  `064813cdfd35fc0b3533793fd276d4395f43f46d924151030b4174bb4e1b485a`.
+  Future HOLD requests must bind the full 30-file executable closure, both
+  absent create-once batch roots, the one combined report destination, the
+  exact two live commands and combined-analysis command, and the unchanged
+  registration, prefix bundle, endpoint, certificate, source, models, seed,
+  measurement, and ceilings. No GO request or live output was created and no
+  model/provider call was made. The standing ledger remains `45/1200`; a fully
+  consumed two-batch ceiling would reach at most `513/1200`, leaving 687, but
+  supplies baseline sizing evidence only—not matched-versus-mismatched action,
+  edged-register, interaction, tutor-efficacy, learning, human-validity, or
+  cell-transfer evidence.

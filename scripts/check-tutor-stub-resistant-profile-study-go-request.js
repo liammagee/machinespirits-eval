@@ -47,6 +47,39 @@ const FRAME_REFUSER_OPPORTUNITY_V4_CRITICAL_SOURCE_CLOSURE = Object.freeze([
   'services/tutorStubCliApplicationHost.js',
 ]);
 
+const RESISTANCE_ACTION_REGISTER_BASELINE_V2_CRITICAL_SOURCE_CLOSURE = Object.freeze([
+  'scripts/run-tutor-stub-resistance-action-register-crossed.js',
+  'scripts/analyze-tutor-stub-resistance-action-register-baseline.js',
+  ['scripts', 'tutor-' + 'stub.js'].join('/'),
+  'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
+  'scripts/package-tutor-stub-resistant-profile-study-go-request.js',
+  'services/tutorStubResistanceActionRegisterExecution.js',
+  'services/tutorStubResistanceActionRegisterStudy.js',
+  'services/tutorStubResistanceActionRegisterPreflight.js',
+  'services/paidStudyEndpointPreflight.js',
+  'services/tutorStubTurnOrchestration.js',
+  'services/tutorStubCliApplicationHost.js',
+  'services/tutorStubCliArguments.js',
+  'services/tutorStubNonInteractiveApplication.js',
+  'services/tutorStubApplicationState.js',
+  'services/tutorStubApplicationTraceContext.js',
+  'services/tutorStubReleasePacing.js',
+  'services/tutorStubAutomatedLearnerGenerationRuntime.js',
+  'services/tutorStubLearnerAnalysisRuntime.js',
+  'services/tutorStubPublicLearnerAnalysis.js',
+  'services/resistantLearnerObservation.js',
+  'services/tutorStubActionBeforeRegisterShadow.js',
+  'services/tutorStubCliPolicyRetry.js',
+  'services/tutorStubPromptTransport.js',
+  'services/tutorStubTutorAttemptRuntime.js',
+  'services/tutorStubTraceRuntime.js',
+  'services/tutorStubLabs.js',
+  'config/drama-derivation/world-005-marrick.yaml',
+  'config/providers.yaml',
+  'package.json',
+  'package-lock.json',
+]);
+
 function parseArgs(argv) {
   const args = { request: DEFAULT_REQUEST, json: false };
   for (let index = 0; index < argv.length; index += 1) {
@@ -189,6 +222,8 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   const request = readJson(requestPath);
   const checks = [];
   const isFrameRefuserOpportunity = request.opportunityGate?.type === 'prospective_frame_refuser_treatment_opportunity';
+  const isActionRegisterBaseline =
+    request.actionRegisterBaseline?.type === 'prospective_frame_refuser_action_register_baseline_v2';
 
   assertion(
     checks,
@@ -219,7 +254,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
 
   const sourceAudit = sourceCommitAudit(request.source);
   const sourceClosure = request.source.closure;
-  if (isFrameRefuserOpportunity) {
+  if (isFrameRefuserOpportunity || isActionRegisterBaseline) {
     assertion(
       checks,
       'frame-refuser-opportunity-source-closure',
@@ -228,8 +263,9 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     );
     const closurePaths = sourceClosure.map((entry) => entry?.path);
     const registrationVersion = readJson(bindingPath(request.bindings.registration)).version ?? 1;
-    const requiredCriticalSourceClosure =
-      registrationVersion === 4
+    const requiredCriticalSourceClosure = isActionRegisterBaseline
+      ? RESISTANCE_ACTION_REGISTER_BASELINE_V2_CRITICAL_SOURCE_CLOSURE
+      : registrationVersion === 4
         ? FRAME_REFUSER_OPPORTUNITY_V4_CRITICAL_SOURCE_CLOSURE
         : FRAME_REFUSER_OPPORTUNITY_CRITICAL_SOURCE_CLOSURE;
     assertion(
@@ -237,9 +273,11 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       'frame-refuser-opportunity-critical-source-closure',
       new Set(closurePaths).size === closurePaths.length &&
         requiredCriticalSourceClosure.every((entry) => closurePaths.includes(entry)),
-      registrationVersion === 4
-        ? 'launch, analyzer, observer, runtime provenance, retry transport, metering, prefix, preflight, validator, world, route, and dependency files remain bound'
-        : 'launch, analyzer, observer, runtime, prefix, preflight, validator, world, route, and dependency files remain bound',
+      isActionRegisterBaseline
+        ? 'exact-prefix executor, combined analyzer, runtime intervention, retry metering, validator, route, world, and dependency files remain bound'
+        : registrationVersion === 4
+          ? 'launch, analyzer, observer, runtime provenance, retry transport, metering, prefix, preflight, validator, world, route, and dependency files remain bound'
+          : 'launch, analyzer, observer, runtime, prefix, preflight, validator, world, route, and dependency files remain bound',
     );
   }
   for (const entry of sourceClosure) {
@@ -254,20 +292,21 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   validateFileBinding(checks, 'registration-binding', request.bindings.registration);
   const endpoint = request.bindings.endpoint;
   let hold = null;
-  if (isFrameRefuserOpportunity) {
+  if (isFrameRefuserOpportunity || isActionRegisterBaseline) {
     const contract = readJson(rootPath(endpoint.contractPath));
     const certificate = readJson(rootPath(endpoint.certificatePath));
     const endpointRegistration = readJson(rootPath(request.bindings.registration.path));
+    const expectedEndpointCases = isActionRegisterBaseline ? 12 : 6;
     assertion(
       checks,
       'opportunity-endpoint-contract-binding',
       sha256File(rootPath(endpoint.contractPath)) === endpoint.contractFileSha256 &&
         sha256CanonicalJson(contract) === endpoint.contractCanonicalSha256 &&
         contract.study_id === request.studyId &&
-        contract.registered_scale?.cases === 6 &&
+        contract.registered_scale?.cases === expectedEndpointCases &&
         contract.registration?.registration_path === request.bindings.registration.path &&
         contract.registration?.registration_sha256 === request.bindings.registration.sha256,
-      'the six-case executable endpoint contract remains file- and runtime-bound',
+      `the ${expectedEndpointCases}-case executable endpoint contract remains file- and runtime-bound`,
     );
     assertion(
       checks,
@@ -279,9 +318,35 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         certificate.contract_path === endpoint.contractPath &&
         certificate.contract_sha256 === endpoint.contractCanonicalSha256 &&
         certificate.preflight_sha256 === endpoint.preflightSha256,
-      'the six-case endpoint certificate and previously executed zero-call preflight remain pinned',
+      `the ${expectedEndpointCases}-case endpoint certificate and zero-call preflight remain pinned`,
     );
-    if (endpointRegistration.version === 3) {
+    if (isActionRegisterBaseline) {
+      const prefixBundle = request.bindings.prefixBundle;
+      validateFileBinding(checks, 'action-register-prefix-bundle-binding', prefixBundle);
+      assertion(
+        checks,
+        'action-register-endpoint-readiness-binding',
+        endpointRegistration.version === 2 &&
+          contract.runner?.public_prefix_bundle === prefixBundle.path &&
+          contract.runner?.public_prefix_bundle_sha256 === prefixBundle.sha256 &&
+          contract.runner?.live_batch_executor ===
+            'scripts/run-tutor-stub-resistance-action-register-crossed.js#runTutorStubResistanceActionRegisterBatch' &&
+          contract.runner?.live_batch_recovery_executor ===
+            'scripts/run-tutor-stub-resistance-action-register-crossed.js#recoverTutorStubResistanceActionRegisterBatch' &&
+          contract.runner?.combined_analyzer ===
+            'scripts/analyze-tutor-stub-resistance-action-register-baseline.js#analyzeTutorStubResistanceActionRegisterBaseline' &&
+          contract.runner?.batch_contract?.dialogues_per_batch === 6 &&
+          contract.runner?.batch_contract?.maximum_model_attempt_reservations_per_dialogue === 39 &&
+          contract.runner?.batch_contract?.maximum_model_attempt_reservations_per_batch === 234 &&
+          contract.runner?.batch_contract?.combined_maximum_model_attempt_reservations === 468 &&
+          contract.runner?.batch_contract?.combined_analysis_only === true &&
+          contract.runner?.batch_contract?.valid_unit_reruns === false &&
+          contract.runner?.batch_contract?.outcome_selection === false &&
+          contract.runner?.batch_contract?.bounded_technical_recovery ===
+            'missing_or_failed_units_only_within_unchanged_39_per_dialogue_and_234_per_batch_caps',
+        'the V2 endpoint binds the public prefix bundle, exact executor and bounded recovery, combined analyzer, and fixed ceilings',
+      );
+    } else if (endpointRegistration.version === 3) {
       const endpointIds = contract.endpoints?.map((row) => row.id) || [];
       assertion(
         checks,
@@ -394,7 +459,11 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     checks,
     'command-source',
     (commandSource === 'commands' &&
-      (isReplacement || isFreshMeasurementRecheck || isAxisHeldout || isFrameRefuserOpportunity)) ||
+      (isReplacement ||
+        isFreshMeasurementRecheck ||
+        isAxisHeldout ||
+        isFrameRefuserOpportunity ||
+        isActionRegisterBaseline)) ||
       commandSource === 'bindings.liveReadinessHold.path#proposedCommands',
     `command source is ${commandSource}`,
   );
@@ -522,6 +591,120 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         commandArg(analyzeCommand, '--required-learner-model') === request.design.models.learner &&
         analyzeCommand.includes('--require-pooled'),
       'the analysis combines only the 15 pinned prior traces with the fresh sealed root',
+    );
+  } else if (isActionRegisterBaseline) {
+    const registered = readJson(rootPath(request.bindings.registration.path));
+    const gate = request.actionRegisterBaseline;
+    const liveA = liveCommand?.[0];
+    const liveB = liveCommand?.[1];
+    assertion(
+      checks,
+      'action-register-baseline-design-binding',
+      registered.version === 2 &&
+        request.design.profiles.join(',') === 'frame_refuser' &&
+        request.design.dialogues === 12 &&
+        request.design.prefixes === 3 &&
+        request.design.realizations.join(',') === 'plain,warm' &&
+        request.design.repeats.join(',') === 'A,B' &&
+        request.design.actionFit === 'matched' &&
+        request.design.pedagogicalMove === 'test_bounded_distinction' &&
+        request.design.outcomeHorizonLearnerTurns === 2 &&
+        request.design.models.tutor === 'codex.gpt-5.6-luna' &&
+        request.design.models.analysis === 'codex.gpt-5.6-luna' &&
+        request.design.models.learner === 'codex.gpt-5.6-luna' &&
+        request.design.cliEffort === 'low' &&
+        request.design.runSeed === 20260820,
+      'the 3-prefix by plain/warm by A/B matched-action baseline remains frozen',
+    );
+    assertion(
+      checks,
+      'action-register-baseline-budget-binding',
+      request.budget.dialogues === 12 &&
+        request.budget.dialoguesPerBatch === 6 &&
+        request.budget.maximumAttemptsPerDialogue === 39 &&
+        request.budget.maximumAttemptsPerBatch === 234 &&
+        request.budget.maximumPlannedModelAttempts === 468 &&
+        request.budget.programmeLedgerBefore === 45 &&
+        request.budget.programmeLedgerAfterMaximum === 513 &&
+        request.budget.programmeCeiling === 1200 &&
+        request.budget.retryOrResumeAuthority === 'bounded_technical_recovery',
+      'two 234-cap batches remain below the cumulative 513-of-1200 maximum',
+    );
+    assertion(
+      checks,
+      'action-register-baseline-evidence-boundary',
+      gate.v4RequestSha256 === '0c14c51ae8625e6f5db301c9328b8f3182a8dbcd0b6b5a9dd610db85064ee0ab' &&
+        gate.v4ReportSha256 === '771076330d58ec8818182a1924e3ea8dd2c8e54bdc1c9f32a822e491f405b431' &&
+        gate.v4PrivateArchiveCommit === 'e5eb71f22f0c36f6e286272caf5b041e71d8e2ba' &&
+        gate.v4PrefixesConsumedAsFrozenInputsOnly === true &&
+        gate.v4OutcomesPooled === false &&
+        gate.interimInterpretationPermitted === false &&
+        gate.outcomeSelectionPermitted === false &&
+        gate.validUnitRerunsPermitted === false &&
+        gate.matchedVersusMismatchedEfficacyTested === false &&
+        gate.edgedRegisterEfficacyTested === false,
+      'V4 contributes exact frozen inputs only and the baseline cannot become a broader efficacy claim',
+    );
+    const recovery = gate.recoveryBoundary;
+    assertion(
+      checks,
+      'action-register-baseline-recovery-boundary',
+      recovery.sameLaunchSource === true &&
+        recovery.sameRegistrationPrefixBundleModelsSeedAndMeasurement === true &&
+        recovery.missingOrFailedUnitsOnly === true &&
+        recovery.rerunValidOutputs === false &&
+        recovery.selectAmongOutcomes === false &&
+        recovery.maximumAttemptsPerBatchUnchanged === 234 &&
+        recovery.maximumCombinedAttemptsUnchanged === 468 &&
+        recovery.programmeCeilingUnchanged === 1200,
+      'technical recovery remains conditional on unused room and cannot rerun valid units or enlarge a ceiling',
+    );
+    assertion(
+      checks,
+      'action-register-baseline-measurement-binding',
+      request.measurement.reportSchema === 'machinespirits.tutor-stub.resistance-action-register-baseline-report.v2' &&
+        request.measurement.primaryOutcome ===
+          'profile_specific_resistance_recovery_by_two_post_trigger_learner_turns' &&
+        request.measurement.repeatEndpoint === 'same_treatment_repeat_stability' &&
+        request.measurement.combinedTwelveCellAnalysisRequired === true &&
+        request.measurement.analysisTraceSelection === 'exact_prebound_batch_result_traces_only' &&
+        request.measurement.partialBatchAnalysisPermitted === false &&
+        request.measurement.v4OutcomesExcluded === true,
+      'the request binds recovery, repeat stability, and exact combined analysis without V4 pooling',
+    );
+    const exactLive = (command, repeat, destination) =>
+      Array.isArray(command) &&
+      command[0] === 'node' &&
+      command[1] === 'scripts/run-tutor-stub-resistance-action-register-crossed.js' &&
+      command.includes('--live-batch') &&
+      commandArg(command, '--batch') === repeat &&
+      commandArg(command, '--destination') === destination &&
+      commandArg(command, '--registration') === request.bindings.registration.path &&
+      commandArg(command, '--prefix-bundle') === request.bindings.prefixBundle.path &&
+      commandArg(command, '--parallelism') === '3' &&
+      commandArg(command, '--expected-source-commit') === request.source.launchCommit;
+    assertion(
+      checks,
+      'action-register-baseline-live-commands',
+      exactLive(liveA, 'A', request.destination.batchA.artifactRoot) &&
+        exactLive(liveB, 'B', request.destination.batchB.artifactRoot) &&
+        request.destination.batchA.artifactRoot !== request.destination.batchB.artifactRoot,
+      'the two live commands are prebound to distinct A/B create-once roots and the same launch source',
+    );
+    assertion(
+      checks,
+      'action-register-baseline-analysis-command',
+      Array.isArray(analyzeCommand) &&
+        analyzeCommand[0] === 'node' &&
+        analyzeCommand[1] === 'scripts/analyze-tutor-stub-resistance-action-register-baseline.js' &&
+        commandArg(analyzeCommand, '--batch-a') === request.destination.batchA.artifactRoot &&
+        commandArg(analyzeCommand, '--batch-b') === request.destination.batchB.artifactRoot &&
+        commandArg(analyzeCommand, '--registration') === request.bindings.registration.path &&
+        commandArg(analyzeCommand, '--prefix-bundle') === request.bindings.prefixBundle.path &&
+        commandArg(analyzeCommand, '--expected-source-commit') === request.source.launchCommit &&
+        commandArg(analyzeCommand, '--out') === request.destination.combinedReport &&
+        analyzeCommand.includes('--json'),
+      'one combined analyzer refuses either partial batch and writes the registered report',
     );
   } else if (isFrameRefuserOpportunity) {
     const registered = readJson(rootPath(request.bindings.registration.path));
@@ -1035,14 +1218,31 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       request.payload.trainingReuseStatus === 'not_applicable',
     'only repository-authored automated-study material is in scope',
   );
-  assertion(
-    checks,
-    'fresh-destination',
-    request.destination.createOnce === true &&
-      request.destination.mustNotExistBeforeLaunch === true &&
-      !fs.existsSync(rootPath(request.destination.artifactRoot)),
-    `${request.destination.artifactRoot} does not exist`,
-  );
+  if (isActionRegisterBaseline) {
+    const destinations = [request.destination.batchA, request.destination.batchB];
+    assertion(
+      checks,
+      'fresh-destination',
+      destinations.every(
+        (destination) =>
+          destination?.createOnce === true &&
+          destination?.mustNotExistBeforeLaunch === true &&
+          !fs.existsSync(rootPath(destination.artifactRoot)),
+      ) &&
+        request.destination.combinedReportCreateOnce === true &&
+        !fs.existsSync(rootPath(request.destination.combinedReport)),
+      `${destinations.map((row) => row.artifactRoot).join(' and ')} do not exist`,
+    );
+  } else {
+    assertion(
+      checks,
+      'fresh-destination',
+      request.destination.createOnce === true &&
+        request.destination.mustNotExistBeforeLaunch === true &&
+        !fs.existsSync(rootPath(request.destination.artifactRoot)),
+      `${request.destination.artifactRoot} does not exist`,
+    );
+  }
 
   const requestSha256 = sha256File(requestPath);
   const recoveryAuthorityClause =
@@ -1051,7 +1251,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       : 'no retry or resume authority.';
   const exactApprovalStatement =
     `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one ` +
-    `${request.design.dialogues}-dialogue Luna ${isReplacement ? 'replacement study' : 'study'}, ` +
+    `${request.design.dialogues}-dialogue Luna ${isReplacement ? 'replacement study' : isActionRegisterBaseline ? 'action/register baseline' : 'study'}, ` +
     `with a hard ceiling of ${request.budget.maximumPlannedModelAttempts} model attempts and ${recoveryAuthorityClause}`;
 
   return {

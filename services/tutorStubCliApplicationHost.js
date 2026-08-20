@@ -563,6 +563,11 @@ import { runTutorStubLaunchPresentation } from './tutorStubLaunchPresentation.js
 import { createTutorStubSessionApplicationContext } from './tutorStubSessionApplicationContext.js';
 import { createTutorStubSessionApplicationRuntime } from './tutorStubSessionApplicationRuntime.js';
 import { createTutorStubScenarioController } from './tutorStubScenarioController.js';
+import {
+  configureTutorStubResistanceActionRegisterExecution,
+  loadTutorStubResistanceActionRegisterPrefixBundle,
+} from './tutorStubResistanceActionRegisterExecution.js';
+import { applyTutorStubResistanceActionRegisterStudyIntervention } from './tutorStubResistanceActionRegisterStudy.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
@@ -1827,6 +1832,7 @@ export async function runTutorStubCliApplicationHost({
     applyTutorStubComprehensionResponse,
     applyTutorStubConversationalCompletionSelection,
     applyTutorStubPointOfActionConstraint,
+    applyTutorStubResistanceActionRegisterStudyIntervention,
     assertTutorStubTurnAttemptCurrent,
     auditTutorResponseLeak,
     auditTutorStubFeedbackAdaptation,
@@ -2284,6 +2290,49 @@ export async function runTutorStubCliApplicationHost({
       trace,
       tutorStubCliPresentationSnapshot,
     });
+
+    const resistanceActionRegisterArgs = [
+      args['resistance-action-register-registration'],
+      args['resistance-action-register-prefix-bundle'],
+      args['resistance-action-register-job'],
+    ];
+    if (resistanceActionRegisterArgs.some(Boolean) && !resistanceActionRegisterArgs.every(Boolean)) {
+      throw new Error('resistance action/register execution requires registration, prefix bundle, and job together');
+    }
+    if (resistanceActionRegisterArgs.every(Boolean)) {
+      const resistanceActionRegisterProcessBudget = Number(args['model-call-budget']);
+      if (
+        !autoLearnerEnabled ||
+        Number(autoTurns) !== 3 ||
+        !Number.isInteger(resistanceActionRegisterProcessBudget) ||
+        resistanceActionRegisterProcessBudget < 1 ||
+        resistanceActionRegisterProcessBudget > 39 ||
+        args.model !== 'codex.gpt-5.6-luna' ||
+        args['classifier-model'] !== 'codex.gpt-5.6-luna' ||
+        args['learner-record-model'] !== 'codex.gpt-5.6-luna' ||
+        args['auto-learner-model'] !== 'codex.gpt-5.6-luna' ||
+        args['cli-effort'] !== 'low' ||
+        Number(args['run-seed']) !== 20260820 ||
+        args['acknowledge-research-use'] !== true ||
+        process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS !== 'prospective_v4'
+      ) {
+        throw new Error('resistance action/register execution launch pins or remaining 39-attempt ceiling drifted');
+      }
+      const loaded = loadTutorStubResistanceActionRegisterPrefixBundle({
+        registrationPath: path.resolve(ROOT, args['resistance-action-register-registration']),
+        bundlePath: path.resolve(ROOT, args['resistance-action-register-prefix-bundle']),
+      });
+      const configured = configureTutorStubResistanceActionRegisterExecution({
+        state,
+        loaded,
+        jobId: args['resistance-action-register-job'],
+        appendTraceEvent,
+        acknowledgeTutorStubOpeningRelease,
+      });
+      if (String(sessionApplicationContext.firstMessage || '').trim() !== configured.prefix.trigger_learner_text) {
+        throw new Error('resistance action/register first message must exactly equal the registered frozen trigger');
+      }
+    }
 
     const {
       forgetRememberedInteractiveSettings,

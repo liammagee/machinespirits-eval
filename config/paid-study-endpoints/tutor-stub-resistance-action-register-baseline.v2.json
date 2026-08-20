@@ -23,6 +23,22 @@
   "runner": {
     "packet_builder": "services/tutorStubResistanceActionRegisterPreflight.js#buildTutorStubResistanceActionRegisterPreflightPackets",
     "result_assembler": "services/tutorStubResistanceActionRegisterPreflight.js#assembleTutorStubResistanceActionRegisterPreflight",
+    "public_prefix_bundle": "config/tutor-stub-resistance-action-register-v4-public-prefixes.v1.json",
+    "public_prefix_bundle_sha256": "d538287e4ce1661703518b86b0b1181b6e6edf05ea727bf49029ce453844a2c8",
+    "live_batch_executor": "scripts/run-tutor-stub-resistance-action-register-crossed.js#runTutorStubResistanceActionRegisterBatch",
+    "live_batch_recovery_executor": "scripts/run-tutor-stub-resistance-action-register-crossed.js#recoverTutorStubResistanceActionRegisterBatch",
+    "combined_analyzer": "scripts/analyze-tutor-stub-resistance-action-register-baseline.js#analyzeTutorStubResistanceActionRegisterBaseline",
+    "batch_contract": {
+      "required_batches": ["batch_A", "batch_B"],
+      "dialogues_per_batch": 6,
+      "maximum_model_attempt_reservations_per_dialogue": 39,
+      "maximum_model_attempt_reservations_per_batch": 234,
+      "combined_maximum_model_attempt_reservations": 468,
+      "combined_analysis_only": true,
+      "valid_unit_reruns": false,
+      "outcome_selection": false,
+      "bounded_technical_recovery": "missing_or_failed_units_only_within_unchanged_39_per_dialogue_and_234_per_batch_caps"
+    },
     "packet_cap_bytes": 200000,
     "emitted_event_fields": [
       "action_fit",
@@ -70,6 +86,22 @@
     "frozen_registration": {
       "enabled": true,
       "implementation": "config/tutor-stub-resistance-action-register-crossed-registration.v2.json"
+    },
+    "portable_frozen_prefixes": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceActionRegisterExecution.js#validateTutorStubResistanceActionRegisterPrefixBundle"
+    },
+    "exact_prefix_live_continuation": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceActionRegisterExecution.js#configureTutorStubResistanceActionRegisterExecution"
+    },
+    "combined_fail_closed_analysis": {
+      "enabled": true,
+      "implementation": "scripts/analyze-tutor-stub-resistance-action-register-baseline.js#analyzeTutorStubResistanceActionRegisterBaseline"
+    },
+    "bounded_technical_recovery": {
+      "enabled": true,
+      "implementation": "scripts/run-tutor-stub-resistance-action-register-crossed.js#recoverTutorStubResistanceActionRegisterBatch"
     }
   },
   "endpoints": [
@@ -77,7 +109,14 @@
       "id": "profile_specific_resistance_recovery",
       "role": "primary",
       "enabled": true,
-      "required_channels": ["deterministic_resistance_recovery", "frozen_registration"],
+      "required_channels": [
+        "deterministic_resistance_recovery",
+        "portable_frozen_prefixes",
+        "exact_prefix_live_continuation",
+        "bounded_technical_recovery",
+        "combined_fail_closed_analysis",
+        "frozen_registration"
+      ],
       "required_event_fields": [
         "arm",
         "batch_id",
@@ -98,7 +137,7 @@
       "id": "same_treatment_repeat_stability",
       "role": "primary",
       "enabled": true,
-      "required_channels": ["same_treatment_repeat_stability", "frozen_registration"],
+      "required_channels": ["same_treatment_repeat_stability", "combined_fail_closed_analysis", "frozen_registration"],
       "required_event_fields": ["arm", "case_id", "outcome.recovered", "prefix_id", "realization"],
       "denominator": { "expected_cases": 12 },
       "pairing": {

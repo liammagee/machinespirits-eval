@@ -14,6 +14,7 @@ const REPORT_SCHEMA = 'machinespirits.tutor-stub.resistant-profile-study-go-requ
 const HOLD_STATUS = 'HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL';
 const MARKER_PREFIX = '__GO_REQUEST_PACKAGE__:';
 const SUPPORTED_OPPORTUNITY = 'prospective_frame_refuser_treatment_opportunity';
+const SUPPORTED_ACTION_REGISTER_BASELINE = 'prospective_frame_refuser_action_register_baseline_v2';
 
 export const GO_REQUEST_PACKAGE_MARKERS = Object.freeze({
   sourceCommit: `${MARKER_PREFIX}source.commit`,
@@ -169,8 +170,11 @@ function gitBlobAt(commit, repoPath) {
 
 function requireHoldBoundary(template) {
   if (template.schema !== REQUEST_SCHEMA) throw new Error(`unsupported request schema: ${template.schema}`);
-  if (template.opportunityGate?.type !== SUPPORTED_OPPORTUNITY) {
-    throw new Error('the packager currently supports only frame-refuser opportunity HOLD templates');
+  if (
+    template.opportunityGate?.type !== SUPPORTED_OPPORTUNITY &&
+    template.actionRegisterBaseline?.type !== SUPPORTED_ACTION_REGISTER_BASELINE
+  ) {
+    throw new Error('the packager supports only frame-refuser opportunity or action/register baseline HOLD templates');
   }
   if (
     template.status !== HOLD_STATUS ||
@@ -237,6 +241,7 @@ function assertMaterializedStructure({
   routeResult,
   routeConsumption,
   historicalRequest,
+  prefixBundle,
   liveCommandSha256,
   analyzeCommandSha256,
 }) {
@@ -295,8 +300,14 @@ function assertMaterializedStructure({
   }
 
   const historical = request.opportunityGate?.historicalOpportunityV1;
-  assertComputedValue(historical?.requestPath, historicalRequest.path, 'historical request path');
-  assertComputedValue(historical?.requestSha256, historicalRequest.sha256, 'historical request digest');
+  if (historicalRequest) {
+    assertComputedValue(historical?.requestPath, historicalRequest.path, 'historical request path');
+    assertComputedValue(historical?.requestSha256, historicalRequest.sha256, 'historical request digest');
+  }
+  if (prefixBundle) {
+    assertComputedValue(request.bindings?.prefixBundle?.path, prefixBundle.path, 'prefix bundle path');
+    assertComputedValue(request.bindings?.prefixBundle?.sha256, prefixBundle.sha256, 'prefix bundle digest');
+  }
   assertComputedValue(request.bindings?.commands?.liveArraySha256, liveCommandSha256, 'live command digest');
   assertComputedValue(request.bindings?.commands?.analyzeArraySha256, analyzeCommandSha256, 'analyze command digest');
 }
@@ -388,18 +399,34 @@ function materializeTemplate({ templateText, template, launchCommit }) {
   }
 
   const historicalRequestPath = template.opportunityGate?.historicalOpportunityV1?.requestPath;
-  const historicalRequest = materializeRepoFile({
-    launchCommit,
-    repoPath: historicalRequestPath,
-    label: 'historical opportunity request',
-    files,
-  });
-  requireMarker(
-    templateText,
-    goRequestFileSha256Marker(historicalRequest.path),
-    historicalRequest.sha256,
-    replacements,
-  );
+  const historicalRequest = historicalRequestPath
+    ? materializeRepoFile({
+        launchCommit,
+        repoPath: historicalRequestPath,
+        label: 'historical opportunity request',
+        files,
+      })
+    : null;
+  if (historicalRequest) {
+    requireMarker(
+      templateText,
+      goRequestFileSha256Marker(historicalRequest.path),
+      historicalRequest.sha256,
+      replacements,
+    );
+  }
+  const prefixBundlePath = template.bindings?.prefixBundle?.path;
+  const prefixBundle = prefixBundlePath
+    ? materializeRepoFile({
+        launchCommit,
+        repoPath: prefixBundlePath,
+        label: 'public prefix bundle',
+        files,
+      })
+    : null;
+  if (prefixBundle) {
+    requireMarker(templateText, goRequestFileSha256Marker(prefixBundle.path), prefixBundle.sha256, replacements);
+  }
 
   const liveCommandSha256 = sha256(JSON.stringify(template.commands?.live));
   const analyzeCommandSha256 = sha256(JSON.stringify(template.commands?.analyze));
@@ -419,6 +446,7 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     routeResult,
     routeConsumption,
     historicalRequest,
+    prefixBundle,
     liveCommandSha256,
     analyzeCommandSha256,
   });
@@ -441,6 +469,24 @@ export function resolveTutorStubGoRequestOutput(outputPath) {
 }
 
 function assertDestinationAbsent(request, root = ROOT) {
+  if (request.actionRegisterBaseline?.type === SUPPORTED_ACTION_REGISTER_BASELINE) {
+    const destinations = [request.destination?.batchA?.artifactRoot, request.destination?.batchB?.artifactRoot];
+    if (destinations.some((value) => !value) || destinations[0] === destinations[1]) {
+      throw new Error('action/register request requires two distinct batch destinations');
+    }
+    for (const artifactRoot of destinations) {
+      const absolute = path.resolve(root, canonicalRepoPath(artifactRoot, 'batch destination'));
+      const relative = path.relative(root, absolute);
+      if (!relative || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+        throw new Error('batch destination must remain inside the repository');
+      }
+      if (fs.existsSync(absolute)) throw new Error(`request destination already exists: ${artifactRoot}`);
+    }
+    const report = path.resolve(root, canonicalRepoPath(request.destination?.combinedReport, 'combined report'));
+    if (fs.existsSync(report))
+      throw new Error(`request destination already exists: ${request.destination.combinedReport}`);
+    return destinations;
+  }
   const artifactRoot = String(request.destination?.artifactRoot || '');
   if (!artifactRoot || path.isAbsolute(artifactRoot) || path.posix.normalize(artifactRoot) !== artifactRoot) {
     throw new Error('request destination must be a canonical repository-relative path without traversal');

@@ -1,0 +1,180 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-action-register-public-prefix-bundle.v1",
+  "version": 1,
+  "status": "frozen_public_input",
+  "registration": {
+    "path": "config/tutor-stub-resistance-action-register-crossed-registration.v2.json",
+    "sha256": "4e8fa84320ba54743920fa5bb0d9228656cd6bb80ca4ba9fe68470c2ed7658e2"
+  },
+  "provenance": {
+    "source_study": "tutor-stub-frame-refuser-opportunity-v4",
+    "v4_request_sha256": "0c14c51ae8625e6f5db301c9328b8f3182a8dbcd0b6b5a9dd610db85064ee0ab",
+    "v4_report_sha256": "771076330d58ec8818182a1924e3ea8dd2c8e54bdc1c9f32a822e491f405b431",
+    "private_archive_commit": "e5eb71f22f0c36f6e286272caf5b041e71d8e2ba"
+  },
+  "boundary": {
+    "public_only": true,
+    "hidden_answer_included": false,
+    "future_treatment_outcomes_included": false,
+    "v4_outcomes_pooled": false,
+    "profile_identity_runtime_input": false
+  },
+  "prefixes": [
+    {
+      "schema": "machinespirits.tutor-stub.resistance-action-register-prefix.v1",
+      "id": "frame_refuser-v4-r1-t1",
+      "profile": "frame_refuser",
+      "world": "world_005_marrick",
+      "trigger_turn": 1,
+      "observation_semantics": "prospective_v4",
+      "source_run_id": "field-r1",
+      "source_trace_sha256": "ac1b1da2bde641e6736ae01ba7507c13e265247c3b8de351bca1249fe60f9b4f",
+      "public_prefix_sha256": "c33503cb498648ea2578c3073926a56397dde5816cbac54b6e000732e90a4a07",
+      "opening_text": "The autumn fair at Marrick hath passed in light shillings, and the mint warden now conveneth an assay in the guild-hall, with Verrell already marked by the town’s blame. Whose hand struck the false shillings passed at the Marrick fair? No clue lieth before us yet; choose a public matter to examine, or ask the meaning of any term in the trial-book.",
+      "trigger_learner_text": "I reject the question you have fixed, and I will not supply evidence or an answer within that frame.",
+      "frozen_analysis": {
+        "provider": "codex",
+        "model": "gpt-5.6-luna",
+        "latency_ms": 7521,
+        "usage": {
+          "inputTokens": 9792,
+          "outputTokens": 275,
+          "totalTokens": 10067,
+          "cost": 0
+        },
+        "preflight": {
+          "schema": "machinespirits.tutor-stub.learner-dag-preflight.v1",
+          "turn": 1,
+          "computedBeforeModelCall": true,
+          "publicOnly": true,
+          "priorRecord": {
+            "groundedFacts": [
+              ["passedAt", "falseShilling", "autumnFair"],
+              ["inquiryInto", "theAssay", "falseShilling"],
+              ["clipperOf", "verrell", "marrick"],
+              ["struckNotClipped", "falseShilling"]
+            ],
+            "derivableFacts": [],
+            "voicedDerivedFacts": [],
+            "hypotheses": []
+          },
+          "eligiblePublicPremiseIds": [],
+          "alreadyAdoptedPremiseIds": [],
+          "retractablePremiseIds": [],
+          "possibleNextDerivations": [],
+          "authority": {
+            "semanticMappingRequired": true,
+            "commitsProgress": false,
+            "commitStage": "deterministic_postprocessor_after_model"
+          },
+          "contentSha256": "171ac2f6ddbbfcec31872f23a7b3de848e3c735439b0c7d816b1137536d9b6c8"
+        },
+        "response_text": "{\"classification\":{\"turn\":{\"summary\":\"Rejects the fixed question and evidence frame.\",\"request_type\":\"authority_refusal_or_status_challenge\",\"discourse_move\":\"challenge\",\"evidence_use\":\"none\",\"epistemic_stance\":\"resistant\",\"affect\":\"defiant\",\"agency\":\"steering\",\"scores\":{\"conceptual_engagement\":{\"score\":1,\"reason\":\"declines object-level engagement\"},\"epistemic_readiness\":{\"score\":1,\"reason\":\"declines evidence-based inquiry\"}},\"pedagogical_need\":\"Invite a learner-chosen entry point\"},\"overall\":{\"summary\":\"The learner resists the inquiry frame without offering an alternative claim.\",\"trajectory\":\"frame resistance\",\"recurring_pattern\":\"none\",\"current_state\":\"not engaged in the assay\",\"next_best_tutor_move\":\"Acknowledge the refusal and ask what question or frame the learner would accept.\"}},\"learner_record\":{\"human_discourse\":{\"proof_status\":\"side_arc\"},\"notes\":\"No premises, derivations, or answer were voiced.\"}}"
+      }
+    },
+    {
+      "schema": "machinespirits.tutor-stub.resistance-action-register-prefix.v1",
+      "id": "frame_refuser-v4-r2-t1",
+      "profile": "frame_refuser",
+      "world": "world_005_marrick",
+      "trigger_turn": 1,
+      "observation_semantics": "prospective_v4",
+      "source_run_id": "field-r2",
+      "source_trace_sha256": "349f867fef41c647a7d98818e6b3702d1b13943f354e6ec8a1286723b19ec4fb",
+      "public_prefix_sha256": "8a0bec3075c707b57d45ac93a73b264ec20d749f3313a69ef33e8a374880960d",
+      "opening_text": "The autumn fair at Marrick hath passed in light shillings, and the mint warden now calls assay in the guild-hall, whilst the town already cries Verrell the coiner. Whose hand struck the false shillings passed at the Marrick fair? No clue lies before us yet: choose what public matter thou wouldst examine, or ask the meaning of any term.",
+      "trigger_learner_text": "I reject your demand that I choose the matter to examine; I will not supply evidence or answer under that frame.",
+      "frozen_analysis": {
+        "provider": "codex",
+        "model": "gpt-5.6-luna",
+        "latency_ms": 7014,
+        "usage": {
+          "inputTokens": 9585,
+          "outputTokens": 244,
+          "totalTokens": 9829,
+          "cost": 0
+        },
+        "preflight": {
+          "schema": "machinespirits.tutor-stub.learner-dag-preflight.v1",
+          "turn": 1,
+          "computedBeforeModelCall": true,
+          "publicOnly": true,
+          "priorRecord": {
+            "groundedFacts": [
+              ["passedAt", "falseShilling", "autumnFair"],
+              ["inquiryInto", "theAssay", "falseShilling"],
+              ["clipperOf", "verrell", "marrick"],
+              ["struckNotClipped", "falseShilling"]
+            ],
+            "derivableFacts": [],
+            "voicedDerivedFacts": [],
+            "hypotheses": []
+          },
+          "eligiblePublicPremiseIds": [],
+          "alreadyAdoptedPremiseIds": [],
+          "retractablePremiseIds": [],
+          "possibleNextDerivations": [],
+          "authority": {
+            "semanticMappingRequired": true,
+            "commitsProgress": false,
+            "commitStage": "deterministic_postprocessor_after_model"
+          },
+          "contentSha256": "171ac2f6ddbbfcec31872f23a7b3de848e3c735439b0c7d816b1137536d9b6c8"
+        },
+        "response_text": "{\"classification\":{\"turn\":{\"summary\":\"Rejects the tutor's requested investigative frame.\",\"request_type\":\"authority_refusal_or_status_challenge\",\"discourse_move\":\"challenge\",\"evidence_use\":\"none\",\"epistemic_stance\":\"resistant\",\"affect\":\"defiant\",\"agency\":\"steering\",\"scores\":{\"conceptual_engagement\":{\"score\":1,\"reason\":\"Declines substantive engagement\"},\"epistemic_readiness\":{\"score\":1,\"reason\":\"Offers no evidence monitoring\"}},\"pedagogical_need\":\"Acknowledge agency and renegotiate the task frame.\"},\"overall\":{\"summary\":\"The learner refuses participation under the proposed frame.\",\"trajectory\":\"resistant\",\"recurring_pattern\":\"none\",\"current_state\":\"nonparticipation\",\"next_best_tutor_move\":\"Invite the learner to propose an acceptable way to investigate the question.\"}},\"learner_record\":{\"human_discourse\":{\"proof_status\":\"side_arc\"},\"notes\":\"The learner rejects supplying evidence or answering under the tutor's frame.\"}}"
+      }
+    },
+    {
+      "schema": "machinespirits.tutor-stub.resistance-action-register-prefix.v1",
+      "id": "frame_refuser-v4-r3-t1",
+      "profile": "frame_refuser",
+      "world": "world_005_marrick",
+      "trigger_turn": 1,
+      "observation_semantics": "prospective_v4",
+      "source_run_id": "field-r3",
+      "source_trace_sha256": "a95408ad302b3750750c71585a6bc14466316ea9b9e5f9a559c348cfb2a14cfe",
+      "public_prefix_sha256": "5f8fd63815f82fd0859da844a24231cef26e9f284a891780c038c88cd3065394",
+      "opening_text": "The autumn fair at Marrick hath passed in light shillings, and the mint warden now convenes an assay in the guild-hall, with Verrell already named by the town. Whose hand struck the false shillings passed at the Marrick fair? No coin or other clue lies before us yet; choose what public matter thou wouldst examine, or ask the meaning of any term.",
+      "trigger_learner_text": "I reject your question as the governing test, and I will not name a hand or supply evidence under it.",
+      "frozen_analysis": {
+        "provider": "codex",
+        "model": "gpt-5.6-luna",
+        "latency_ms": 9083,
+        "usage": {
+          "inputTokens": 9793,
+          "outputTokens": 310,
+          "totalTokens": 10103,
+          "cost": 0
+        },
+        "preflight": {
+          "schema": "machinespirits.tutor-stub.learner-dag-preflight.v1",
+          "turn": 1,
+          "computedBeforeModelCall": true,
+          "publicOnly": true,
+          "priorRecord": {
+            "groundedFacts": [
+              ["passedAt", "falseShilling", "autumnFair"],
+              ["inquiryInto", "theAssay", "falseShilling"],
+              ["clipperOf", "verrell", "marrick"],
+              ["struckNotClipped", "falseShilling"]
+            ],
+            "derivableFacts": [],
+            "voicedDerivedFacts": [],
+            "hypotheses": []
+          },
+          "eligiblePublicPremiseIds": [],
+          "alreadyAdoptedPremiseIds": [],
+          "retractablePremiseIds": [],
+          "possibleNextDerivations": [],
+          "authority": {
+            "semanticMappingRequired": true,
+            "commitsProgress": false,
+            "commitStage": "deterministic_postprocessor_after_model"
+          },
+          "contentSha256": "171ac2f6ddbbfcec31872f23a7b3de848e3c735439b0c7d816b1137536d9b6c8"
+        },
+        "response_text": "{\"classification\":{\"turn\":{\"summary\":\"Rejects the governing question and declines to provide a verdict or evidence.\",\"request_type\":\"authority_refusal_or_status_challenge\",\"discourse_move\":\"challenge\",\"evidence_use\":\"none\",\"epistemic_stance\":\"resistant\",\"affect\":\"defiant\",\"agency\":\"steering\",\"scores\":{\"conceptual_engagement\":{\"score\":1,\"reason\":\"rejects the task without engaging its concepts\"},\"epistemic_readiness\":{\"score\":2,\"reason\":\"signals refusal but gives no evidence-based monitoring\"}},\"pedagogical_need\":\"Clarify the objection and restore a workable evidence-based task.\"},\"overall\":{\"summary\":\"The learner challenges the inquiry frame without advancing a claim.\",\"trajectory\":\"task refusal\",\"recurring_pattern\":\"none\",\"current_state\":\"engagement blocked\",\"next_best_tutor_move\":\"Acknowledge the objection and ask what specifically makes the question unacceptable.\"}},\"learner_record\":{\"human_discourse\":{\"proof_status\":\"side_arc\"},\"notes\":\"No public premise or world fact was accepted, rejected, or derived.\"}}"
+      }
+    }
+  ]
+}

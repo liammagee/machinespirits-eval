@@ -1,9 +1,21 @@
+import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import {
   buildTutorStubResistanceActionRegisterPlan,
   scoreTutorStubResistanceRecovery,
   TUTOR_STUB_RESISTANCE_ACTION_REGISTER_PREFIX_SCHEMA,
 } from './tutorStubResistanceActionRegisterStudy.js';
+import { validateTutorStubResistanceActionRegisterPrefixBundle } from './tutorStubResistanceActionRegisterExecution.js';
 import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+function sha256(value) {
+  return crypto.createHash('sha256').update(value).digest('hex');
+}
 
 const LEGACY_PROFILES = ['bored', 'frame_defiant'];
 
@@ -264,12 +276,60 @@ export function assembleTutorStubResistanceActionRegisterPreflight({ packets, co
 }
 
 export function runTutorStubResistanceActionRegisterEndpointPreflight({ contract, registration }) {
-  return runPaidStudyEndpointPreflight({
+  const preflight = runPaidStudyEndpointPreflight({
     contract,
     cases: buildTutorStubResistanceActionRegisterSyntheticCorpus(registration),
     buildPackets: buildTutorStubResistanceActionRegisterPreflightPackets,
     assemble: assembleTutorStubResistanceActionRegisterPreflight,
   });
+  if (registration?.version !== 2) return preflight;
+  const bundlePath = contract.runner?.public_prefix_bundle;
+  const bundleSource = fs.readFileSync(path.resolve(ROOT, bundlePath), 'utf8');
+  const bundle = validateTutorStubResistanceActionRegisterPrefixBundle({
+    bundle: JSON.parse(bundleSource),
+    registration,
+    registrationSha256: contract.registration.registration_sha256,
+  });
+  const batch = contract.runner?.batch_contract;
+  if (
+    contract.runner?.public_prefix_bundle_sha256 !== sha256(bundleSource) ||
+    contract.runner?.live_batch_executor !==
+      'scripts/run-tutor-stub-resistance-action-register-crossed.js#runTutorStubResistanceActionRegisterBatch' ||
+    contract.runner?.live_batch_recovery_executor !==
+      'scripts/run-tutor-stub-resistance-action-register-crossed.js#recoverTutorStubResistanceActionRegisterBatch' ||
+    contract.runner?.combined_analyzer !==
+      'scripts/analyze-tutor-stub-resistance-action-register-baseline.js#analyzeTutorStubResistanceActionRegisterBaseline' ||
+    JSON.stringify(batch?.required_batches) !== JSON.stringify(['batch_A', 'batch_B']) ||
+    batch.dialogues_per_batch !== 6 ||
+    batch.maximum_model_attempt_reservations_per_dialogue !== 39 ||
+    batch.maximum_model_attempt_reservations_per_batch !== 234 ||
+    batch.combined_maximum_model_attempt_reservations !== 468 ||
+    batch.combined_analysis_only !== true ||
+    batch.valid_unit_reruns !== false ||
+    batch.outcome_selection !== false ||
+    batch.bounded_technical_recovery !==
+      'missing_or_failed_units_only_within_unchanged_39_per_dialogue_and_234_per_batch_caps'
+  ) {
+    throw new Error('v2 endpoint live executor, combined analyzer, or fixed batch budget contract drifted');
+  }
+  return {
+    ...preflight,
+    execution_readiness_audit: {
+      status: 'passed_zero_call',
+      public_prefix_bundle: { path: bundlePath, sha256: sha256(bundleSource), prefixes: bundle.prefixes.length },
+      exact_prefix_continuation: true,
+      prebound_batches: ['batch_A', 'batch_B'],
+      dialogues_per_batch: 6,
+      maximum_model_attempt_reservations_per_dialogue: 39,
+      maximum_model_attempt_reservations_per_batch: 234,
+      combined_maximum_model_attempt_reservations: 468,
+      combined_analysis_required: true,
+      bounded_technical_recovery: 'missing_or_failed_units_only_under_unchanged_caps',
+      partial_or_interim_interpretation_permitted: false,
+      model_calls: 0,
+      production_writes: 0,
+    },
+  };
 }
 
 export default {
