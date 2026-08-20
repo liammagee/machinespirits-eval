@@ -1,6 +1,23 @@
 import crypto from 'node:crypto';
 
 export const RESISTANT_LEARNER_OBSERVATION_SCHEMA = 'machinespirits.resistant-learner-observation.v1';
+export const FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE = 'TUTOR_STUB_FRAME_DEFIANT_ADHERENCE_EXHAUSTED';
+
+export function classifyFrameDefiantAdherenceExhaustion({ profile, repairAttempts } = {}) {
+  if (profile !== 'frame_defiant') {
+    throw new Error('frame-defiant adherence exhaustion classification requires profile frame_defiant');
+  }
+  if (!Number.isInteger(repairAttempts) || repairAttempts < 0) {
+    throw new Error('frame-defiant adherence exhaustion classification requires non-negative repairAttempts');
+  }
+  return {
+    code: FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE,
+    profile,
+    repairAttempts,
+    disposition: 'technical_failure_no_public_candidate',
+    publishPublicCandidate: false,
+  };
+}
 
 export const RESISTANT_LEARNER_OBSERVATION_SEMANTICS = Object.freeze({
   legacyV1: 'legacy_v1',

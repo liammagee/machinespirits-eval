@@ -63,6 +63,8 @@ links:
     - config/tutor-stub-frame-refuser-opportunity-registration.v2.json
     - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.json
     - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.endpoint-go.json
+    - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.json
+    - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.endpoint-go.json
     - config/tutor-stub-frame-refuser-opportunity-study-go-request.v1.json
     - services/pedagogicalMove/resistantProfileWarrantShadow.js
     - scripts/tutor-stub-learner-profile-contracts.js
@@ -96,7 +98,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/frame-defiant-control-repair
+branch: codex/frame-refuser-opportunity-v2-readiness
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -583,3 +585,39 @@ and explicit human approval.
   frame-refuser-style control turn. Deterministic tests cover an intermediate
   explicit-refusal repair, successful productive repair, and two-attempt
   exhaustion. No study output or authorization boundary changed.
+- 2026-08-19 — Recorded the pre-push benchmark-hook incident separately from
+  the study record. While PR #704 was being published, the installed hook ran
+  its six-job strong preset at commit
+  `32635697d83176d3c7d2b16af742c515291b04d2` without study or benchmark-call
+  authority: three Codex Terra and three Claude Sonnet 5 Nocturne replay jobs,
+  with four passing and two failing. The preserved report SHA-256 is
+  `f73221bae6dad83a1f6ebc0fbe44789da10552b2fa6661b3b4bc331d57f14887`.
+  These generic benchmark outputs are not Luna opportunity dialogues, enter no
+  v1 or v2 study assembly, and authorize no retry, study call, or claim. All
+  v2-readiness pushes must use the supported reasoned hook bypass, without
+  deleting or changing the preserved benchmark inventory.
+- 2026-08-19 — Certified the prospective v2 endpoint runtime under HOLD. A
+  realistic six-dialogue synthetic corpus exercises the version-2 public
+  observer, production analyzer, and prefix extractor at target/control trigger
+  turns `2,1,1` and `1,2,1`; all three treatment prefixes are distinct, all
+  three controls preserve contract-licensed participation without refusal
+  leakage, and the preflight invokes the production typed-throw wiring for
+  exhausted control adherence and confirms that it exposes no public candidate.
+  The versioned endpoint contract
+  has file SHA-256
+  `28560adbc08af33ac14307ea796fbe3dcf5777889cc59b0859268c1abf2c8779`
+  and canonical SHA-256
+  `32ba20d27edcbaaa87059e027a31453cf782f86d86c6d5091b48364788505a9c`;
+  its zero-call/zero-production-write preflight SHA-256 is
+  `8e9a77d3da4c6c2107debec727d727f7bda36e972be9161dd76cdfdbc7e2ed1b`,
+  and its endpoint certificate file SHA-256 is
+  `c9a9899f0f2d56a87f16cc4f2f9f1b0bb7437a8aeeef8bdd4e3e2b6bd9c30de2`.
+  The dependency-free GO validator accepts a future v2 request only when its
+  nonempty 19-file critical executable closure is complete and its target,
+  version-specific control/refusal, trace-selection, and five-axis measurement
+  semantics match the bound registration; empty, missing, incomplete, or
+  mismatched requests fail closed. Historical v1 semantics and artifact digests
+  remain unchanged. No v2 GO request exists; the registration remains
+  `prospective_zero_call_repair_hold` with `goRequestPrepared=false` and both
+  authorization booleans false. No model call, study output, paper claim, or
+  production write was made by this readiness work.

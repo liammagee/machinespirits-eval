@@ -24,7 +24,26 @@ import {
   guardedLearnerRedraftInstruction,
   selectGuardedLearnerMove,
 } from './tutorStubGuardedLearnerMoves.js';
-import { resistantLearnerObservationMarkers } from './resistantLearnerObservation.js';
+import {
+  FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE,
+  classifyFrameDefiantAdherenceExhaustion,
+  resistantLearnerObservationMarkers,
+} from './resistantLearnerObservation.js';
+
+export { FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE, classifyFrameDefiantAdherenceExhaustion };
+
+export function throwFrameDefiantAdherenceExhaustion({ profile, repairAttempts }) {
+  const exhaustion = classifyFrameDefiantAdherenceExhaustion({ profile, repairAttempts });
+  const error = new Error(
+    `frame_defiant adherence exhausted after ${repairAttempts} repair attempts; refusing to publish an invalid control turn`,
+  );
+  error.code = exhaustion.code;
+  error.profile = exhaustion.profile;
+  error.repairAttempts = exhaustion.repairAttempts;
+  error.disposition = exhaustion.disposition;
+  error.publishPublicCandidate = exhaustion.publishPublicCandidate;
+  throw error;
+}
 
 const AUTO_LEARNER_SYSTEM_PROMPT = [
   'You are an automated learner in an experimental tutoring dialogue.',
@@ -36,8 +55,6 @@ const AUTO_LEARNER_SYSTEM_PROMPT = [
   'Reply as the learner only. No role label, no analysis, no JSON.',
   'Keep the reply concise: usually one sentence, one question, or one warranted evidence claim.',
 ].join('\n');
-
-export const FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE = 'TUTOR_STUB_FRAME_DEFIANT_ADHERENCE_EXHAUSTED';
 
 export function createTutorStubAutomatedLearnerGenerationRuntime({
   appendTraceEvent,
@@ -553,20 +570,18 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       repairAttempts: repairs,
     });
     if (runtime.profileId === 'frame_defiant' && !passed) {
+      const exhaustion = classifyFrameDefiantAdherenceExhaustion({
+        profile: runtime.profileId,
+        repairAttempts: repairs,
+      });
       appendTraceEvent(state.trace, {
         type: 'auto_learner_profile_adherence_exhausted',
         turn: turnNumber,
-        profile: runtime.profileId,
-        repairAttempts: repairs,
-        disposition: 'technical_failure_no_public_candidate',
+        profile: exhaustion.profile,
+        repairAttempts: exhaustion.repairAttempts,
+        disposition: exhaustion.disposition,
       });
-      const error = new Error(
-        `frame_defiant adherence exhausted after ${repairs} repair attempts; refusing to publish an invalid control turn`,
-      );
-      error.code = FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE;
-      error.profile = runtime.profileId;
-      error.repairAttempts = repairs;
-      throw error;
+      throwFrameDefiantAdherenceExhaustion({ profile: runtime.profileId, repairAttempts: repairs });
     }
     return { generated: candidate, precomputedRaw: raw, repaired: repairs > 0, passed };
   }

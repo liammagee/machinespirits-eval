@@ -331,6 +331,8 @@ test('frame-defiant adherence exhaustion fails closed instead of publishing a re
       assert.equal(error.code, FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE);
       assert.equal(error.profile, 'frame_defiant');
       assert.equal(error.repairAttempts, 2);
+      assert.equal(error.disposition, 'technical_failure_no_public_candidate');
+      assert.equal(error.publishPublicCandidate, false);
       assert.match(error.message, /refusing to publish an invalid control turn/iu);
       return true;
     },

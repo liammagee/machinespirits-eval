@@ -16,6 +16,8 @@ import {
   assembleTutorStubResistanceAxisPreflight,
   buildTutorStubFrameRefuserOpportunityPreflightPackets,
   buildTutorStubFrameRefuserOpportunitySyntheticCorpus,
+  buildTutorStubFrameRefuserOpportunityV2PreflightPackets,
+  buildTutorStubFrameRefuserOpportunityV2SyntheticCorpus,
   buildTutorStubResistanceAxisPreflightPackets,
   buildTutorStubResistanceAxisSyntheticCorpus,
   runTutorStubFrameRefuserOpportunityEndpointPreflight,
@@ -306,6 +308,78 @@ test('frame-refuser opportunity endpoint requires three eligible prefixes and ke
   assert.equal(failed.report.pass, false);
   assert.equal(failed.report.gate.target.find((row) => row.caseId === firstTarget.case_id).pass, false);
   assert.equal(failed.endpoint_status.frame_refuser_treatment_opportunity, 'complete');
+});
+
+test('prospective v2 opportunity endpoint executes repaired semantics and typed adherence failure', () => {
+  const contract = JSON.parse(
+    fs.readFileSync(
+      path.join(ROOT, 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.json'),
+      'utf8',
+    ),
+  );
+  const certificate = JSON.parse(
+    fs.readFileSync(
+      path.join(ROOT, 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.endpoint-go.json'),
+      'utf8',
+    ),
+  );
+  const preflight = runTutorStubFrameRefuserOpportunityEndpointPreflight(contract);
+  const endpointGo = validatePaidStudyEndpointGoCertificate({ certificate, contract, preflight });
+  assert.equal(preflight.status, 'passed');
+  assert.equal(preflight.model_calls, 0);
+  assert.equal(preflight.production_writes, 0);
+  assert.equal(endpointGo.ok, true, endpointGo.errors.join('; '));
+  assert.deepEqual(preflight.assembly_audit.endpoint_status, {
+    frame_refuser_treatment_opportunity: 'complete',
+    frame_defiant_productive_control: 'complete',
+    distinct_public_prefix_assembly: 'complete',
+    frame_defiant_adherence_exhaustion_typed_failure: 'complete',
+  });
+
+  const cases = buildTutorStubFrameRefuserOpportunityV2SyntheticCorpus();
+  const assembled = assembleTutorStubFrameRefuserOpportunityPreflight({
+    packets: buildTutorStubFrameRefuserOpportunityV2PreflightPackets(cases),
+    contract,
+  });
+  assert.equal(assembled.report.pass, true);
+  assert.equal(
+    assembled.report.registration.observationSemantics,
+    RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2,
+  );
+  assert.deepEqual(
+    assembled.report.gate.target.map((row) => row.eligiblePrefix.triggerTurn),
+    [2, 1, 1],
+  );
+  assert.deepEqual(
+    assembled.report.gate.control.map((row) => ({
+      productiveTurn: row.productiveTurn,
+      participationKinds: row.participationKinds,
+      refusalLeakage: row.refusalLeakage,
+    })),
+    [
+      { productiveTurn: 1, participationKinds: ['explicit_reframe'], refusalLeakage: false },
+      { productiveTurn: 2, participationKinds: ['bounded_local_test'], refusalLeakage: false },
+      { productiveTurn: 1, participationKinds: ['bounded_local_test'], refusalLeakage: false },
+    ],
+  );
+  assert.equal(assembled.report.gate.distinctPrefixes.observed, 3);
+  assert.equal(
+    assembled.adherence_exhaustion_audit.every(
+      (row) =>
+        row.applicable === true &&
+        row.classification.code === 'TUTOR_STUB_FRAME_DEFIANT_ADHERENCE_EXHAUSTED' &&
+        row.classification.disposition === 'technical_failure_no_public_candidate' &&
+        row.classification.publishPublicCandidate === false,
+    ),
+    true,
+  );
+
+  cases.find((row) => row.profile === 'frame_defiant').adherenceExhaustionAudit.classification.code = 'UNTYPED';
+  const rejectedAudit = assembleTutorStubFrameRefuserOpportunityPreflight({
+    packets: buildTutorStubFrameRefuserOpportunityV2PreflightPackets(cases),
+    contract,
+  });
+  assert.equal(rejectedAudit.endpoint_status.frame_defiant_adherence_exhaustion_typed_failure, 'incomplete');
 });
 
 test('frozen v1 opportunity replay dispatch preserves the six-trace legacy classification', () => {
