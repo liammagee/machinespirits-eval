@@ -331,8 +331,27 @@ test('boredom proof-DAG study configuration holds treatment dormant until one pu
   assert.equal(events[0].assignmentManifestSha256, loaded.plan.assignment_manifest_sha256);
 });
 
-test('boredom proof-DAG recovery selects only missing or classified technical units', () => {
-  const plan = { jobs: [{ id: 'valid' }, { id: 'failed' }, { id: 'missing' }] };
+test('boredom proof-DAG recovery selects only absent or trace-proven technical units', (t) => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-recovery-'));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const job = (id) => ({ id, command: { trace_dir: path.join(temp, id) } });
+  const writeTrace = (id, events) => {
+    const directory = path.join(temp, id);
+    fs.mkdirSync(directory, { recursive: true });
+    fs.writeFileSync(
+      path.join(directory, `${id}.jsonl`),
+      `${events.map((event) => JSON.stringify(event)).join('\n')}\n`,
+    );
+  };
+  const terminal = { type: 'resistance_action_register_outcome_learner_turn' };
+  const transportFailure = {
+    type: 'model_call_error',
+    cliPolicyViolation: { reason: 'call_retry_limit_reached', audit: { prohibited_event_count: 0 } },
+  };
+  writeTrace('valid', [terminal]);
+  writeTrace('failed', [transportFailure]);
+  writeTrace('partial-technical', [transportFailure]);
+  const plan = { jobs: [job('valid'), job('failed'), job('partial-technical'), job('missing')] };
   const initial = {
     results: [
       { job_id: 'valid', status: 'complete' },
@@ -343,7 +362,7 @@ test('boredom proof-DAG recovery selects only missing or classified technical un
   assert.deepEqual([...selected.valid.keys()], ['valid']);
   assert.deepEqual(
     selected.missing.map((row) => row.id),
-    ['failed', 'missing'],
+    ['failed', 'partial-technical', 'missing'],
   );
   const substantive = structuredClone(initial);
   substantive.results[1].failure = classifyTutorStubBoredomProofDagChildFailure({
@@ -352,7 +371,26 @@ test('boredom proof-DAG recovery selects only missing or classified technical un
   assert.equal(substantive.results[1].failure.recoverable, false);
   assert.throws(
     () => selectTutorStubBoredomProofDagRecoveryCandidates({ plan, initial: substantive }),
-    /refuses nontechnical failure/u,
+    /refuses nontechnical or unclassified partial failure/u,
+  );
+
+  writeTrace('terminal-without-row', [terminal]);
+  assert.throws(
+    () =>
+      selectTutorStubBoredomProofDagRecoveryCandidates({
+        plan: { jobs: [job('terminal-without-row')] },
+        initial: { results: [] },
+      }),
+    /refuses completed original output/u,
+  );
+  writeTrace('unclassified-partial', [{ type: 'run_start' }]);
+  assert.throws(
+    () =>
+      selectTutorStubBoredomProofDagRecoveryCandidates({
+        plan: { jobs: [job('unclassified-partial')] },
+        initial: { results: [] },
+      }),
+    /refuses nontechnical or unclassified partial failure/u,
   );
 });
 

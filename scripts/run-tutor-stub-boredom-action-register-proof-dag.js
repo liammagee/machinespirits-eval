@@ -379,10 +379,38 @@ export function selectTutorStubBoredomProofDagRecoveryCandidates({ plan, initial
   const missing = [];
   for (const job of plan.jobs) {
     const row = rows.get(job.id);
-    if (!row) missing.push(job);
-    else if (row.status === 'complete') valid.set(job.id, row);
-    else if (row.failure?.category === 'technical_recoverable' && row.failure?.recoverable === true) missing.push(job);
-    else throw new Error(`boredom proof-DAG recovery refuses nontechnical failure ${job.id}`);
+    const traces = traceFiles(job.command?.trace_dir);
+    if (traces.length > 1) {
+      throw new Error(`boredom proof-DAG recovery refuses multiple original traces for ${job.id}`);
+    }
+    let observed = null;
+    if (traces.length === 1) {
+      try {
+        observed = classifyTutorStubBoredomProofDagChildFailure({
+          events: readJsonLines(traces[0]),
+          signal: row?.signal || null,
+        });
+      } catch {
+        observed = classifyTutorStubBoredomProofDagChildFailure({ traceReadable: false });
+      }
+    }
+    if (row?.status === 'complete') {
+      if (observed?.category !== 'completed_output_nonrecoverable') {
+        throw new Error(`boredom proof-DAG complete row lacks one terminal output for ${job.id}`);
+      }
+      valid.set(job.id, row);
+    } else if (observed?.category === 'completed_output_nonrecoverable') {
+      throw new Error(`boredom proof-DAG recovery refuses completed original output ${job.id}`);
+    } else if (!row && traces.length === 0) {
+      missing.push(job);
+    } else if (
+      observed?.category === 'technical_recoverable' &&
+      (!row || (row.failure?.category === 'technical_recoverable' && row.failure?.recoverable === true))
+    ) {
+      missing.push(job);
+    } else {
+      throw new Error(`boredom proof-DAG recovery refuses nontechnical or unclassified partial failure ${job.id}`);
+    }
   }
   return { valid, missing };
 }
