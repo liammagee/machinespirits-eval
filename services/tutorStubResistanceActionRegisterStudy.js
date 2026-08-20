@@ -565,6 +565,9 @@ export function extractTutorStubResistanceActionRegisterPrefix({
     trigger_learner_text: trigger.learnerText,
     trigger_classification: clone(trigger.classification),
     trigger_observation: clone(trigger.cohortObservation),
+    ...(observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4
+      ? { observation_semantics: observationSemantics }
+      : {}),
     source_trace: path.resolve(tracePath),
     source_trace_sha256: sha256(source),
     prefix_trace_sha256: sha256(prefixSource),
@@ -732,6 +735,20 @@ export function buildTutorStubResistanceActionRegisterPlan({ registration, prefi
       const count = prefixes.filter((prefix) => prefix.profile === profile).length;
       if (count !== expectedPerProfile) {
         throw new Error(`baseline requires ${expectedPerProfile} fresh ${profile} prefixes; found ${count}`);
+      }
+    }
+  }
+  if (isV2Registration(frozen)) {
+    const bindings = frozen.design.trigger.frozenPrefixSource.prefixes;
+    for (const prefix of prefixes) {
+      const binding = bindings.find((candidate) => candidate.publicPrefixSha256 === prefix.public_prefix_sha256);
+      if (
+        !binding ||
+        prefix.source_trace_sha256 !== binding.sourceTraceSha256 ||
+        prefix.trigger_turn !== binding.triggerTurn ||
+        prefix.observation_semantics !== RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4
+      ) {
+        throw new Error(`v2 prefix ${prefix.id} does not match the frozen prospective-v4 source binding`);
       }
     }
   }

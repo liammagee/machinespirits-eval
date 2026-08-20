@@ -732,6 +732,7 @@ test('v2 baseline plan binds three prefixes to two six-dialogue repeat batches w
         epistemic_stance: 'resistant',
       },
     },
+    observation_semantics: 'prospective_v4',
     source_trace_sha256: binding.sourceTraceSha256,
     prefix_trace_sha256: binding.sourceTraceSha256,
     public_prefix_sha256: binding.publicPrefixSha256,
@@ -750,6 +751,12 @@ test('v2 baseline plan binds three prefixes to two six-dialogue repeat batches w
   assert.throws(
     () => buildTutorStubResistanceActionRegisterPlan({ registration, prefixes, stage: 'factorial' }),
     /does not authorize a factorial stage/u,
+  );
+  const driftedPrefix = structuredClone(prefixes);
+  driftedPrefix[0].source_trace_sha256 = 'f'.repeat(64);
+  assert.throws(
+    () => buildTutorStubResistanceActionRegisterPlan({ registration, prefixes: driftedPrefix, stage: 'baseline' }),
+    /does not match the frozen prospective-v4 source binding/u,
   );
 });
 

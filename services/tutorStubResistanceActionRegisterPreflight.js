@@ -18,26 +18,31 @@ function hash(char) {
 
 function syntheticPrefixes(registration) {
   return registrationProfiles(registration).flatMap((profile, profileIndex) =>
-    Array.from({ length: 3 }, (_, index) => ({
-      schema: TUTOR_STUB_RESISTANCE_ACTION_REGISTER_PREFIX_SCHEMA,
-      id: `${profile}:prefix:${index + 1}`,
-      profile,
-      world: 'world_005_marrick',
-      trigger_turn: index + 2,
-      trigger_turn_id: `${profile}:t${index + 2}`,
-      trigger_learner_text:
-        profile === 'bored'
-          ? 'Sure. Whatever.'
-          : profile === 'frame_refuser'
-            ? 'I reject your right to set this question, and I will not answer within it.'
-            : 'I reject the premise of this exercise. You do not get to set the question that way.',
-      trigger_observation: { synthetic: true, profile },
-      source_trace: `synthetic-zero-call/${profile}/prefix-${index + 1}.jsonl`,
-      source_trace_sha256: hash(String(profileIndex + 1)),
-      prefix_trace_sha256: hash(String(index + 3 + profileIndex)),
-      public_prefix_sha256: hash(String(index + 6 + profileIndex * 3)),
-      prior_turn_count: index + 1,
-    })),
+    Array.from({ length: 3 }, (_, index) => {
+      const binding = registration?.design?.trigger?.frozenPrefixSource?.prefixes?.[index] || null;
+      const triggerTurn = binding?.triggerTurn || index + 2;
+      return {
+        schema: TUTOR_STUB_RESISTANCE_ACTION_REGISTER_PREFIX_SCHEMA,
+        id: binding?.id || `${profile}:prefix:${index + 1}`,
+        profile,
+        world: 'world_005_marrick',
+        trigger_turn: triggerTurn,
+        trigger_turn_id: `${profile}:t${triggerTurn}`,
+        trigger_learner_text:
+          profile === 'bored'
+            ? 'Sure. Whatever.'
+            : profile === 'frame_refuser'
+              ? 'I reject your right to set this question, and I will not answer within it.'
+              : 'I reject the premise of this exercise. You do not get to set the question that way.',
+        trigger_observation: { synthetic: true, profile },
+        ...(registration?.version === 2 ? { observation_semantics: 'prospective_v4' } : {}),
+        source_trace: `synthetic-zero-call/${profile}/prefix-${index + 1}.jsonl`,
+        source_trace_sha256: binding?.sourceTraceSha256 || hash(String(profileIndex + 1)),
+        prefix_trace_sha256: hash(String(index + 3 + profileIndex)),
+        public_prefix_sha256: binding?.publicPrefixSha256 || hash(String(index + 6 + profileIndex * 3)),
+        prior_turn_count: Math.max(0, triggerTurn - 1),
+      };
+    }),
   );
 }
 
