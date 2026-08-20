@@ -12,7 +12,10 @@ import {
 } from '../services/tutorStubResistanceActionRegisterExecution.js';
 import { scoreTutorStubResistanceRecovery } from '../services/tutorStubResistanceActionRegisterStudy.js';
 import { observeResistantLearnerTurn } from '../services/resistantLearnerObservation.js';
-import { buildTutorStubResistanceActionRegisterBatchPlan } from './run-tutor-stub-resistance-action-register-crossed.js';
+import {
+  buildTutorStubResistanceActionRegisterBatchPlan,
+  buildTutorStubResistanceActionRegisterRecoveryJob,
+} from './run-tutor-stub-resistance-action-register-crossed.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v2.json';
@@ -119,6 +122,10 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
   const finalRows = new Map(result.results.map((row) => [row.job_id, row]));
   const reservationsByJob = new Map();
   const finalTraceBudgetsByJob = new Map();
+  const recoveryLoaded = loadTutorStubResistanceActionRegisterPrefixBundle({
+    registrationPath: path.resolve(ROOT, plan.source.registration_path),
+    bundlePath: path.resolve(ROOT, plan.source.prefix_bundle_path),
+  });
   for (const job of plan.jobs) {
     const initialTraceFiles = traceFilesInDirectory(job.command?.trace_dir);
     if (initialTraceFiles.length > 1) {
@@ -142,6 +149,19 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
     }
     const recoveryJob = recoveryJobs.get(job.id);
     const recoveryRow = recoveryRows.get(job.id);
+    const registeredJob = resolveTutorStubResistanceActionRegisterExecutionJob({
+      loaded: recoveryLoaded,
+      jobId: job.id,
+    }).job;
+    const expectedRecoveryJob = buildTutorStubResistanceActionRegisterRecoveryJob({
+      loaded: recoveryLoaded,
+      job: registeredJob,
+      destination: recoveryRoot,
+      priorModelAttemptReservations: initialReservations,
+    });
+    if (JSON.stringify(recoveryJob) !== JSON.stringify(expectedRecoveryJob)) {
+      throw new Error(`batch ${plan.repeat} recovery command drifted for ${job.id}`);
+    }
     exactTraceDirectory(recoveryRow, recoveryJob?.command, `recovered unit ${job.id}`);
     const recoveryReservations = reservationCountInDirectory(recoveryJob.command.trace_dir);
     if (
@@ -426,8 +446,22 @@ function analyzeTrace({ batch, resultRow, loaded }) {
     throw new Error(`trace ${job.id} violates exact-prefix, horizon, provenance, or budget constraints`);
   }
   const observedRuntime = assertObservedRuntime({ runStart, events, job, batch, finalTraceBudget });
-  if (observedRuntime.modelAttemptEvents > reservations.length) {
-    throw new Error(`trace ${job.id} contains unreserved observed model calls`);
+  const countByRoleTurn = (rows) =>
+    rows.reduce((counts, event) => {
+      const key = `${String(event.role)}:${Number(event.turn)}`;
+      counts.set(key, (counts.get(key) || 0) + 1);
+      return counts;
+    }, new Map());
+  const reservationEnvelope = countByRoleTurn(reservations);
+  const attemptEnvelope = countByRoleTurn(
+    events.filter((event) => ['model_call', 'model_call_error', 'model_call_aborted'].includes(event.type)),
+  );
+  if (
+    observedRuntime.modelAttemptEvents !== reservations.length ||
+    reservationEnvelope.size !== attemptEnvelope.size ||
+    [...reservationEnvelope].some(([key, count]) => attemptEnvelope.get(key) !== count)
+  ) {
+    throw new Error(`trace ${job.id} model-attempt reservations do not match its observed attempt envelope`);
   }
   const assignment = interventions[0].intervention?.assignment;
   const interventionStatus = interventions[0].intervention?.status;

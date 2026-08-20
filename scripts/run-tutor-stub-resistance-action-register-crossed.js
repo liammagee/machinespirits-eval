@@ -280,6 +280,33 @@ function childCommand({ loaded, job, destination, modelCallBudget = PER_DIALOGUE
   };
 }
 
+export function buildTutorStubResistanceActionRegisterRecoveryJob({
+  loaded,
+  job,
+  destination,
+  priorModelAttemptReservations,
+} = {}) {
+  const priorReservations = Number(priorModelAttemptReservations);
+  const remainingDialogueReservations = PER_DIALOGUE_CAP - priorReservations;
+  if (!Number.isInteger(priorReservations) || priorReservations < 0 || remainingDialogueReservations <= 0) {
+    throw new Error(`recovery unit ${job?.id || '(missing id)'} exhausted or invalidated its 39-reservation cap`);
+  }
+  const { command: _originalCommand, recovery: _originalRecovery, ...registeredJob } = job || {};
+  return {
+    ...registeredJob,
+    command: childCommand({
+      loaded,
+      job: registeredJob,
+      destination,
+      modelCallBudget: remainingDialogueReservations,
+    }),
+    recovery: {
+      prior_model_attempt_reservations: priorReservations,
+      remaining_model_attempt_reservations: remainingDialogueReservations,
+    },
+  };
+}
+
 export function buildTutorStubResistanceActionRegisterBatchPlan({
   registrationPath = REGISTRATION_V2,
   prefixBundlePath = PREFIX_BUNDLE,
@@ -498,10 +525,15 @@ export async function recoverTutorStubResistanceActionRegisterBatch({
   const initial = readJson(initialResultPath);
   const currentSourceCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const currentSourceTree = execFileSync('git', ['rev-parse', 'HEAD^{tree}'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const currentSourceStatus = execFileSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  }).trim();
   if (
     plan.source?.commit !== expectedSourceCommit ||
     currentSourceCommit !== expectedSourceCommit ||
     plan.source?.tree !== currentSourceTree ||
+    currentSourceStatus ||
     initial.status !== 'incomplete' ||
     plan.budget?.maximum_model_attempt_reservations !== PER_BATCH_CAP
   ) {
@@ -550,21 +582,12 @@ export async function recoverTutorStubResistanceActionRegisterBatch({
     const job = registeredById.get(original.id);
     if (!job || job.treatment.repeat !== plan.repeat)
       throw new Error(`recovery unit ${original.id} drifted from registration`);
-    const remainingDialogueReservations = PER_DIALOGUE_CAP - initialReservations[job.id];
-    if (remainingDialogueReservations <= 0) throw new Error(`recovery unit ${job.id} exhausted its 39-reservation cap`);
-    return {
-      ...job,
-      command: childCommand({
-        loaded,
-        job,
-        destination: recoveryRoot,
-        modelCallBudget: remainingDialogueReservations,
-      }),
-      recovery: {
-        prior_model_attempt_reservations: initialReservations[job.id],
-        remaining_model_attempt_reservations: remainingDialogueReservations,
-      },
-    };
+    return buildTutorStubResistanceActionRegisterRecoveryJob({
+      loaded,
+      job,
+      destination: recoveryRoot,
+      priorModelAttemptReservations: initialReservations[job.id],
+    });
   });
   fs.mkdirSync(path.join(recoveryRoot, 'jobs'), { recursive: true });
   const recoveryPlan = {

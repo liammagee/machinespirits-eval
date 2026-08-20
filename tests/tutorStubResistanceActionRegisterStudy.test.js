@@ -43,6 +43,7 @@ import {
 } from '../services/tutorStubResistanceActionRegisterExecution.js';
 import {
   buildTutorStubResistanceActionRegisterBatchPlan,
+  buildTutorStubResistanceActionRegisterRecoveryJob,
   runTutorStubResistanceActionRegisterZeroCall,
 } from '../scripts/run-tutor-stub-resistance-action-register-crossed.js';
 import { analyzeTutorStubResistanceActionRegisterBaseline } from '../scripts/analyze-tutor-stub-resistance-action-register-baseline.js';
@@ -362,8 +363,18 @@ function writeSyntheticRecoveredBatch(root, plan, recoveredJobId) {
   });
   const originalJob = plan.jobs.find((job) => job.id === recoveredJobId);
   const recoveryRoot = path.join(root, 'recoveries', 'recovery-001');
-  const recoveryJobRoot = path.join(recoveryRoot, 'jobs', recoveredJobId);
-  const recoveryTraceDir = path.join(recoveryJobRoot, 'traces');
+  const loaded = loadTutorStubResistanceActionRegisterPrefixBundle({
+    registrationPath: REGISTRATION_V2_PATH,
+    bundlePath: PREFIX_BUNDLE_V2_PATH,
+  });
+  const recoveryJob = buildTutorStubResistanceActionRegisterRecoveryJob({
+    loaded,
+    job: originalJob,
+    destination: recoveryRoot,
+    priorModelAttemptReservations: 1,
+  });
+  const recoveryJobRoot = recoveryJob.command.job_root;
+  const recoveryTraceDir = recoveryJob.command.trace_dir;
   fs.mkdirSync(recoveryTraceDir, { recursive: true });
   recoveredTracePath = path.join(recoveryTraceDir, 'trace.jsonl');
   const recoveredTrace = syntheticLiveTrace({
@@ -373,19 +384,6 @@ function writeSyntheticRecoveredBatch(root, plan, recoveredJobId) {
     modelCallBudget: 38,
   });
   fs.writeFileSync(recoveredTracePath, `${recoveredTrace.map((event) => JSON.stringify(event)).join('\n')}\n`);
-  const recoveryJob = {
-    ...originalJob,
-    command: {
-      ...originalJob.command,
-      job_root: recoveryJobRoot,
-      trace_dir: recoveryTraceDir,
-      transcript: path.join(recoveryJobRoot, 'transcript.json'),
-    },
-    recovery: {
-      prior_model_attempt_reservations: 1,
-      remaining_model_attempt_reservations: 38,
-    },
-  };
   const recoveryPlanPath = path.join(recoveryRoot, 'recovery-plan.json');
   const recoveryResultPath = path.join(recoveryRoot, 'recovery-result.json');
   const recoveredRow = {
@@ -1503,6 +1501,21 @@ test('v2 combined analyzer fails closed on missing fidelity, runtime drift, and 
     /violates its observed Luna route, runtime, horizon, or semantics pins/u,
   );
 
+  const loneReservation = makePair('lone-reservation');
+  mutateSyntheticBatchTrace(loneReservation.batchA, loneReservation.planA.jobs[0].id, (events) => {
+    events.push({ type: 'model_call_budget_reserved', role: 'tutor_stub_tutor', turn: 3 });
+    return events;
+  });
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA: loneReservation.batchA,
+        batchB: loneReservation.batchB,
+        expectedSourceCommit: loneReservation.planA.source.commit,
+      }),
+    /model-attempt reservations do not match its observed attempt envelope/u,
+  );
+
   const planDrift = makePair('plan-drift');
   const planPath = path.join(planDrift.batchA, 'batch-plan.json');
   const sealPath = path.join(planDrift.batchA, 'batch-seal.json');
@@ -1578,9 +1591,23 @@ test('v2 combined analyzer admits only bounded missing-unit recovery under uncha
   assert.equal(report.rows.find((row) => row.case_id === recoveredJobId).execution.model_attempt_reservations, 7);
 
   const recoveryPlan = JSON.parse(fs.readFileSync(recovery.recoveryPlanPath, 'utf8'));
-  recoveryPlan.valid_unit_ids_excluded.pop();
+  recoveryPlan.jobs[0].command.env.TUTOR_STUB_REMEMBER_SETTINGS = '1';
   writeJson(recovery.recoveryPlanPath, recoveryPlan);
   const seal = JSON.parse(fs.readFileSync(recovery.sealPath, 'utf8'));
+  seal.recovery_plan_sha256 = fileSha256(recovery.recoveryPlanPath);
+  writeJson(recovery.sealPath, seal);
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterBaseline({
+        batchA,
+        batchB,
+        expectedSourceCommit: planA.source.commit,
+      }),
+    /recovery command drifted/u,
+  );
+  recoveryPlan.jobs[0].command.env.TUTOR_STUB_REMEMBER_SETTINGS = '0';
+  recoveryPlan.valid_unit_ids_excluded.pop();
+  writeJson(recovery.recoveryPlanPath, recoveryPlan);
   seal.recovery_plan_sha256 = fileSha256(recovery.recoveryPlanPath);
   writeJson(recovery.sealPath, seal);
   assert.throws(
