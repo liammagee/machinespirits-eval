@@ -76,6 +76,41 @@ function traceResult(command) {
   return { trace: path.relative(ROOT, traces[0]), trace_sha256: sha256(source), trace_bytes: source.length };
 }
 
+function classifyFailedChild(trace) {
+  const events = trace ? readJsonLines(path.resolve(ROOT, trace.trace)) : [];
+  const triggerFailure = events.find(
+    (event) => event.type === 'resistance_action_register_confirmation_substantive_failure',
+  );
+  if (triggerFailure) {
+    return {
+      category: 'substantive_registered_failure',
+      code: triggerFailure.code,
+      disposition: triggerFailure.disposition,
+      recoverable: false,
+    };
+  }
+  const adherenceFailure = events.find(
+    (event) =>
+      event.type === 'auto_learner_profile_adherence_exhausted' &&
+      event.profile === 'frame_refuser' &&
+      event.disposition === 'technical_failure_no_public_candidate',
+  );
+  if (adherenceFailure) {
+    return {
+      category: 'substantive_registered_failure',
+      code: 'TUTOR_STUB_FRAME_REFUSER_ADHERENCE_EXHAUSTED',
+      disposition: 'substantive_profile_nonadherence_stop_no_replacement',
+      recoverable: false,
+    };
+  }
+  return {
+    category: 'technical_recoverable',
+    code: 'TUTOR_STUB_CONFIRMATION_CHILD_TECHNICAL_FAILURE',
+    disposition: 'bounded_missing_or_failed_unit_recovery_eligible',
+    recoverable: true,
+  };
+}
+
 function reservationCountInDirectory(directory) {
   if (!fs.existsSync(directory)) return 0;
   return fs
@@ -270,26 +305,60 @@ async function runChild(planJob) {
       stderr.end();
       let trace = null;
       let traceError = null;
-      if (code === 0) {
-        try {
-          trace = traceResult(command);
-        } catch (error) {
-          traceError = error.message;
-        }
+      try {
+        trace = traceResult(command);
+      } catch (error) {
+        traceError = error.message;
       }
+      const complete = code === 0 && trace;
       resolve({
         job_id: planJob.id,
-        status: code === 0 && trace ? 'complete' : 'failed',
+        status: complete ? 'complete' : 'failed',
         exit_code: code,
         signal,
         ...trace,
         trace_error: traceError,
+        failure: complete ? null : classifyFailedChild(trace),
         stdout: path.relative(ROOT, stdoutPath),
         stderr: path.relative(ROOT, stderrPath),
         transcript: path.relative(ROOT, command.transcript),
       });
     });
   });
+}
+
+export function selectTutorStubResistanceActionRegisterConfirmationRecoveryCandidates({ plan, initial } = {}) {
+  if (!Array.isArray(plan?.jobs) || !Array.isArray(initial?.results)) {
+    throw new Error('confirmation recovery candidate audit requires one plan and initial result');
+  }
+  const plannedIds = new Set(plan.jobs.map((job) => job.id));
+  const resultIds = initial.results.map((row) => row.job_id);
+  if (
+    new Set(resultIds).size !== resultIds.length ||
+    resultIds.some((id) => !plannedIds.has(id)) ||
+    initial.results.some((row) => !['complete', 'failed'].includes(row.status))
+  ) {
+    throw new Error('confirmation recovery result rows drifted from the registered plan');
+  }
+  const rows = new Map(initial.results.map((row) => [row.job_id, row]));
+  const valid = new Map();
+  const missing = [];
+  for (const job of plan.jobs) {
+    const row = rows.get(job.id);
+    if (!row) {
+      missing.push(job);
+      continue;
+    }
+    if (row.status === 'complete') {
+      valid.set(job.id, row);
+      continue;
+    }
+    if (row.failure?.category !== 'technical_recoverable' || row.failure?.recoverable !== true) {
+      throw new Error(`confirmation recovery refuses substantive or unclassified failure ${job.id}`);
+    }
+    missing.push(job);
+  }
+  return { valid, missing };
 }
 
 async function runPool(items, parallelism, worker) {
@@ -383,8 +452,10 @@ export async function recoverTutorStubResistanceActionRegisterConfirmationBatch(
   ) {
     throw new Error('confirmation recovery source, status, or ceiling drifted');
   }
-  const valid = new Map(initial.results.filter((row) => row.status === 'complete').map((row) => [row.job_id, row]));
-  const missing = plan.jobs.filter((job) => !valid.has(job.id));
+  const { valid, missing } = selectTutorStubResistanceActionRegisterConfirmationRecoveryCandidates({
+    plan,
+    initial,
+  });
   if (!missing.length) throw new Error('confirmation recovery found no missing or failed units');
   const initialReservations = Object.fromEntries(
     plan.jobs.map((job) => [job.id, reservationCountInDirectory(job.command.trace_dir)]),

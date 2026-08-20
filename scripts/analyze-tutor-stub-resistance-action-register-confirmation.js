@@ -396,17 +396,29 @@ function analyzeTrace(batch, resultRow, loaded) {
   if (sha256(source) !== resultRow.trace_sha256) throw new Error(`confirmation trace digest drift for ${job.id}`);
   const events = readTrace(tracePath);
   const start = events.filter((event) => event.type === 'resistance_action_register_confirmation_execution_start');
+  const runStarts = events.filter((event) => event.type === 'run_start');
   const oldStarts = events.filter((event) => event.type === 'resistance_action_register_execution_start');
   const interventions = events.filter((event) => event.type === 'resistance_action_register_intervention_applied');
   const outcomes = events.filter((event) => event.type === 'resistance_action_register_outcome_learner_turn');
   const completed = events.filter((event) => event.type === 'turn_complete' && event.turnRecord);
-  if (start.length !== 1 || oldStarts.length || interventions.length !== 1 || outcomes.length !== 1) {
+  if (
+    runStarts.length !== 1 ||
+    start.length !== 1 ||
+    oldStarts.length ||
+    interventions.length !== 1 ||
+    outcomes.length !== 1
+  ) {
     throw new Error(`confirmation trace ${job.id} lacks its exact fresh execution, treatment, or outcome event`);
   }
   const triggerTurn = Number(interventions[0].turn);
   const outcomeTurn = Number(outcomes[0].turn);
   if (![1, 2].includes(triggerTurn) || outcomeTurn !== triggerTurn + 2 || outcomes[0].tutorReplyGenerated !== false) {
     throw new Error(`confirmation trace ${job.id} violates the by-T2 trigger or two-turn outcome horizon`);
+  }
+  const completedTurns = completed.map((event) => Number(event.turn));
+  const expectedCompletedTurns = Array.from({ length: outcomeTurn - 1 }, (_, index) => index + 1);
+  if (JSON.stringify(completedTurns) !== JSON.stringify(expectedCompletedTurns)) {
+    throw new Error(`confirmation trace ${job.id} lacks its exact unique public turn sequence`);
   }
   const startEvent = start[0];
   const intervention = interventions[0].intervention;
@@ -437,18 +449,29 @@ function analyzeTrace(batch, resultRow, loaded) {
     classification: trigger?.classification,
     semantics: 'prospective_v4',
   });
+  const earlierEligible = completed
+    .filter((event) => Number(event.turn) < triggerTurn)
+    .some((event) => {
+      const prior = observeResistantLearnerTurn({
+        learnerText: event.turnRecord.learner,
+        classification: event.turnRecord.classification,
+        semantics: 'prospective_v4',
+      });
+      return prior.observations?.some((row) => row.type === 'frame_jurisdiction_refusal');
+    });
   if (
     !trigger ||
     !postOne ||
     !postTwo ||
     observation.ambiguous !== false ||
     !observation.observations?.some((row) => row.type === 'frame_jurisdiction_refusal') ||
+    earlierEligible ||
     interventions[0].triggerTurn !== triggerTurn ||
     interventions[0].triggerLearnerSha256 !== triggerHash ||
     postTwo.triggerTurn !== triggerTurn ||
     postTwo.triggerLearnerSha256 !== triggerHash
   ) {
-    throw new Error(`confirmation trace ${job.id} lacks its fresh public trigger provenance`);
+    throw new Error(`confirmation trace ${job.id} lacks its first eligible fresh public trigger provenance`);
   }
   const responseAudit = trigger.responseConfigurationAudit;
   const safety = intervention.safety_override;

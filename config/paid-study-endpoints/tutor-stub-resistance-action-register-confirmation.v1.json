@@ -3,7 +3,7 @@
   "study_id": "tutor-stub-resistance-action-register-frame-refuser-warm-plain-confirmation-v1",
   "registration": {
     "registration_path": "config/tutor-stub-resistance-action-register-crossed-registration.v3.json",
-    "registration_sha256": "cc803b9f05c38bfc5d77d36a117ee3426b5ef2cbf531f714ba8ada4786c14df4",
+    "registration_sha256": "2a5fc326b4fad3e6746a1a79ea02885a9857d9542b8b91596b7367c4c62ddc10",
     "primary_endpoint_ids": ["profile_specific_resistance_recovery", "fisher_exact_two_sided_confirmation"],
     "required_profiles": ["frame_refuser"],
     "required_action_fits": ["matched"],

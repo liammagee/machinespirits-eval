@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import path from 'node:path';
 
 import { fisherExactPower, fisherExactTwoSidedP } from './edgedRegisterCalibration.js';
@@ -11,10 +12,26 @@ import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
 export const TUTOR_STUB_RESISTANCE_ACTION_REGISTER_CONFIRMATION_PLAN_SCHEMA =
   'machinespirits.tutor-stub.resistance-action-register-confirmation-plan.v1';
 
-const REALIZATION_ORDER = Object.freeze([
-  ['plain', 'warm', 'warm', 'plain'],
-  ['warm', 'plain', 'plain', 'warm'],
+const BALANCED_ASSIGNMENT_TOKENS = Object.freeze([
+  Object.freeze({ token: 'plain_1', realization: 'plain' }),
+  Object.freeze({ token: 'plain_2', realization: 'plain' }),
+  Object.freeze({ token: 'warm_1', realization: 'warm' }),
+  Object.freeze({ token: 'warm_2', realization: 'warm' }),
 ]);
+const RANDOMIZATION_ALGORITHM = 'sha256_ranked_balanced_block_permutation_v1';
+
+function sha256(value) {
+  return crypto.createHash('sha256').update(value).digest('hex');
+}
+
+function randomizedBlockAssignments(masterSeed, blockId) {
+  return BALANCED_ASSIGNMENT_TOKENS.map((entry) => ({
+    ...entry,
+    score_sha256: sha256(`${RANDOMIZATION_ALGORITHM}:${masterSeed}:${blockId}:${entry.token}`),
+  }))
+    .sort((left, right) => left.score_sha256.localeCompare(right.score_sha256))
+    .map((entry, index) => ({ ...entry, permutation_rank: index + 1 }));
+}
 
 function clone(value) {
   return value === undefined ? undefined : structuredClone(value);
@@ -28,20 +45,36 @@ function assertConfirmationRegistration(registration) {
 export function buildTutorStubResistanceActionRegisterConfirmationPlan({ registration } = {}) {
   const frozen = assertConfirmationRegistration(registration);
   const blocks = frozen.design.factors.confirmationBlock.blocks;
+  const masterSeed = Number(frozen.design.randomization.masterSeed);
+  if (
+    !Number.isSafeInteger(masterSeed) ||
+    frozen.design.randomization.allocation !== 'predeclared_balanced_blocks' ||
+    frozen.design.randomization.algorithm !== RANDOMIZATION_ALGORITHM
+  ) {
+    throw new Error('confirmation randomization requires its registered safe master seed and algorithm');
+  }
   const jobs = [];
   let globalIndex = 0;
   for (let blockIndex = 0; blockIndex < blocks.length; blockIndex += 1) {
     const block = blocks[blockIndex];
-    const order = REALIZATION_ORDER[blockIndex % REALIZATION_ORDER.length];
-    for (let slot = 0; slot < order.length; slot += 1) {
+    const assignments = randomizedBlockAssignments(masterSeed, block.id);
+    for (let slot = 0; slot < assignments.length; slot += 1) {
       globalIndex += 1;
-      const realization = order[slot];
+      const assignment = assignments[slot];
+      const realization = assignment.realization;
       jobs.push({
         id: `frame_refuser-confirmation-${block.id}-s${slot + 1}`,
         block_id: block.id,
         slot: slot + 1,
         assignment_index: globalIndex,
-        run_seed: 2026082100 + globalIndex,
+        run_seed: masterSeed * 100 + globalIndex,
+        randomization: {
+          master_seed: masterSeed,
+          algorithm: RANDOMIZATION_ALGORITHM,
+          assignment_token: assignment.token,
+          permutation_rank: assignment.permutation_rank,
+          score_sha256: assignment.score_sha256,
+        },
         treatment: {
           profile: 'frame_refuser',
           action_fit: 'matched',
@@ -69,6 +102,22 @@ export function buildTutorStubResistanceActionRegisterConfirmationPlan({ registr
     model_calls: 0,
     production_writes: 0,
     jobs,
+    randomization: {
+      master_seed: masterSeed,
+      algorithm: RANDOMIZATION_ALGORITHM,
+      assignment_sha256: sha256(
+        JSON.stringify(
+          jobs.map((job) => ({
+            id: job.id,
+            block_id: job.block_id,
+            slot: job.slot,
+            realization: job.treatment.realization,
+            assignment_token: job.randomization.assignment_token,
+            score_sha256: job.randomization.score_sha256,
+          })),
+        ),
+      ),
+    },
     invariants: {
       fresh_independent_dialogues: true,
       calibration_dialogues_reused: 0,

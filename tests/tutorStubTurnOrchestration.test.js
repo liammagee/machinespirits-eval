@@ -278,6 +278,8 @@ test('registered action/register production enforcement preserves the third lear
   assert.equal(outcome.classification.turn.discourse_move, 'evidence_adoption');
   assert.deepEqual(outcome.tutorLearnerDag.model.metrics, { missingPremiseCount: 2, groundedCount: 7 });
   assert.equal(outcome.tutorReplyGenerated, false);
+  assert.equal(Object.hasOwn(outcome, 'triggerTurn'), false);
+  assert.equal(Object.hasOwn(outcome, 'triggerLearnerSha256'), false);
   assert.equal(events.at(-1).type, 'auto_learner_run_end');
 });
 
@@ -539,9 +541,12 @@ test('fresh confirmation ends exactly two learner turns after a dynamic turn-2 t
 });
 
 test('fresh confirmation fails substantively before a third learner call when no trigger exists by turn 2', async () => {
+  const events = [];
   let learnerCalls = 0;
   const orchestration = createTutorStubTurnOrchestration({
-    appendTraceEvent() {},
+    appendTraceEvent(_trace, event) {
+      events.push(event);
+    },
     assertTutorStubTurnAttemptCurrent() {},
     automatedLearnerProfileId: () => 'frame_refuser',
     learnerProfileSpeakerLabel: () => 'learner',
@@ -579,4 +584,16 @@ test('fresh confirmation fails substantively before a third learner call when no
       error.substantiveStudyFailure === true,
   );
   assert.equal(learnerCalls, 0);
+  assert.deepEqual(
+    events.filter((event) => event.type === 'resistance_action_register_confirmation_substantive_failure'),
+    [
+      {
+        type: 'resistance_action_register_confirmation_substantive_failure',
+        turn: 3,
+        code: 'TUTOR_STUB_RESISTANCE_ACTION_REGISTER_CONFIRMATION_TRIGGER_MISSING',
+        disposition: 'substantive_registered_failure_stop_no_replacement',
+        publicTranscriptChanged: false,
+      },
+    ],
+  );
 });

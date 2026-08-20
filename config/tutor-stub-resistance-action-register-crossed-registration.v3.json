@@ -75,6 +75,7 @@
     "randomization": {
       "unit": "fresh_independent_dialogue",
       "allocation": "predeclared_balanced_blocks",
+      "algorithm": "sha256_ranked_balanced_block_permutation_v1",
       "ratio": "1:1",
       "masterSeed": 20260821,
       "concealedFromPreTriggerPrompts": true,

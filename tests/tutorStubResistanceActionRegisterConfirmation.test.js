@@ -23,6 +23,7 @@ import { analyzeTutorStubResistanceActionRegisterConfirmation } from '../scripts
 import {
   buildTutorStubResistanceActionRegisterConfirmationBatchPlan,
   buildTutorStubResistanceActionRegisterConfirmationRecoveryJob,
+  selectTutorStubResistanceActionRegisterConfirmationRecoveryCandidates,
 } from '../scripts/run-tutor-stub-resistance-action-register-confirmation.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -42,6 +43,40 @@ function sha256(value) {
 
 function writeJson(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function readJson(filePath) {
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function mutateSealedBatchTrace(root, jobId, mutate) {
+  const resultPath = path.join(root, 'batch-result.json');
+  const sealPath = path.join(root, 'batch-seal.json');
+  const resultBefore = fs.readFileSync(resultPath);
+  const sealBefore = fs.readFileSync(sealPath);
+  const result = readJson(resultPath);
+  const row = result.results.find((candidate) => candidate.job_id === jobId);
+  const tracePath = path.resolve(ROOT, row.trace);
+  const traceBefore = fs.readFileSync(tracePath);
+  const events = traceBefore
+    .toString('utf8')
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+  const mutated = mutate(events);
+  const source = `${mutated.map((event) => JSON.stringify(event)).join('\n')}\n`;
+  fs.writeFileSync(tracePath, source);
+  row.trace_sha256 = sha256(source);
+  row.trace_bytes = Buffer.byteLength(source);
+  writeJson(resultPath, result);
+  const seal = readJson(sealPath);
+  seal.result_sha256 = sha256(fs.readFileSync(resultPath));
+  writeJson(sealPath, seal);
+  return () => {
+    fs.writeFileSync(tracePath, traceBefore);
+    fs.writeFileSync(resultPath, resultBefore);
+    fs.writeFileSync(sealPath, sealBefore);
+  };
 }
 
 function route() {
@@ -257,7 +292,18 @@ function writeSyntheticBatch(root, plan, recoveryByJob, { recoverJobId = null, s
   const results = [];
   for (const job of plan.jobs) {
     if (job.id === recoverJobId) {
-      results.push({ job_id: job.id, status: 'failed', exit_code: 1, signal: null });
+      results.push({
+        job_id: job.id,
+        status: 'failed',
+        exit_code: 1,
+        signal: null,
+        failure: {
+          category: 'technical_recoverable',
+          code: 'TUTOR_STUB_CONFIRMATION_CHILD_TECHNICAL_FAILURE',
+          disposition: 'bounded_missing_or_failed_unit_recovery_eligible',
+          recoverable: true,
+        },
+      });
       continue;
     }
     results.push(
@@ -378,10 +424,58 @@ test('V3 registration predeclares the minimum powered fresh 18-per-arm confirmat
   assert.equal(plan.jobs.filter((job) => job.treatment.realization === 'plain').length, 18);
   assert.equal(plan.jobs.filter((job) => job.treatment.realization === 'warm').length, 18);
   assert.equal(new Set(plan.jobs.map((job) => job.run_seed)).size, 36);
+  assert.equal(plan.randomization.master_seed, 20260821);
+  assert.equal(plan.randomization.algorithm, 'sha256_ranked_balanced_block_permutation_v1');
+  assert.match(plan.randomization.assignment_sha256, /^[a-f0-9]{64}$/u);
+  assert.deepEqual(buildTutorStubResistanceActionRegisterConfirmationPlan({ registration: loaded.registration }), plan);
+  const alternate = structuredClone(loaded.registration);
+  alternate.design.randomization.masterSeed += 1;
+  const alternatePlan = buildTutorStubResistanceActionRegisterConfirmationPlan({ registration: alternate });
+  assert.notEqual(alternatePlan.randomization.assignment_sha256, plan.randomization.assignment_sha256);
+  assert.notDeepEqual(
+    alternatePlan.jobs.map((job) => job.treatment.realization),
+    plan.jobs.map((job) => job.treatment.realization),
+  );
   assert.ok(fisherExactPower(17, 1 / 6, 4 / 6, 0.05) < 0.8);
   assert.ok(fisherExactPower(18, 1 / 6, 4 / 6, 0.05) >= 0.8);
   assert.equal(loaded.registration.executionReadiness.combinedMaximumModelAttemptReservations, 2160);
   assert.equal(loaded.registration.authorization.requiredCeilingAmendment.to, 2345);
+});
+
+test('confirmation recovery admits only missing or classified technical failures and refuses substantive outcomes', () => {
+  const plan = { jobs: [{ id: 'valid' }, { id: 'failed' }, { id: 'missing' }] };
+  const technical = {
+    results: [
+      { job_id: 'valid', status: 'complete' },
+      {
+        job_id: 'failed',
+        status: 'failed',
+        failure: { category: 'technical_recoverable', recoverable: true },
+      },
+    ],
+  };
+  const selected = selectTutorStubResistanceActionRegisterConfirmationRecoveryCandidates({ plan, initial: technical });
+  assert.deepEqual([...selected.valid.keys()], ['valid']);
+  assert.deepEqual(
+    selected.missing.map((job) => job.id),
+    ['failed', 'missing'],
+  );
+  const substantive = structuredClone(technical);
+  substantive.results[1].failure = {
+    category: 'substantive_registered_failure',
+    code: 'TUTOR_STUB_RESISTANCE_ACTION_REGISTER_CONFIRMATION_TRIGGER_MISSING',
+    recoverable: false,
+  };
+  assert.throws(
+    () => selectTutorStubResistanceActionRegisterConfirmationRecoveryCandidates({ plan, initial: substantive }),
+    /refuses substantive or unclassified failure/u,
+  );
+  const unclassified = structuredClone(technical);
+  delete unclassified.results[1].failure;
+  assert.throws(
+    () => selectTutorStubResistanceActionRegisterConfirmationRecoveryCandidates({ plan, initial: unclassified }),
+    /refuses substantive or unclassified failure/u,
+  );
 });
 
 test('V3 endpoint and certificate pass zero-call readiness with calibration excluded', () => {
@@ -496,6 +590,65 @@ test('combined confirmation analyzer accepts only all nine sealed fresh batches 
     safety_override: true,
     protected_condition: true,
   });
+
+  const mutationRoot = roots[2];
+  const mutationPlan = readJson(path.join(mutationRoot, 'batch-plan.json'));
+  const turnTwoTriggerJob = mutationPlan.jobs.find((job) => job.slot === 2);
+  let restore = mutateSealedBatchTrace(mutationRoot, turnTwoTriggerJob.id, (events) =>
+    events.map((event) =>
+      event.type === 'turn_complete' && event.turn === 1
+        ? {
+            ...event,
+            turnRecord: {
+              ...event.turnRecord,
+              learner:
+                'I reject your authority to set this bounded test, and I will not supply evidence or answer within it.',
+              classification: classification(false),
+            },
+          }
+        : event,
+    ),
+  );
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterConfirmation({
+        batchRoots: roots,
+        registrationPath: path.relative(ROOT, REGISTRATION),
+        expectedSourceCommit: head,
+      }),
+    /first eligible fresh public trigger provenance/u,
+  );
+  restore();
+
+  restore = mutateSealedBatchTrace(mutationRoot, turnTwoTriggerJob.id, (events) => [
+    ...events,
+    structuredClone(events.find((event) => event.type === 'turn_complete' && event.turn === 1)),
+  ]);
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterConfirmation({
+        batchRoots: roots,
+        registrationPath: path.relative(ROOT, REGISTRATION),
+        expectedSourceCommit: head,
+      }),
+    /exact unique public turn sequence/u,
+  );
+  restore();
+
+  restore = mutateSealedBatchTrace(mutationRoot, turnTwoTriggerJob.id, (events) => [
+    ...events,
+    structuredClone(events.find((event) => event.type === 'run_start')),
+  ]);
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceActionRegisterConfirmation({
+        batchRoots: roots,
+        registrationPath: path.relative(ROOT, REGISTRATION),
+        expectedSourceCommit: head,
+      }),
+    /lacks its exact fresh execution/u,
+  );
+  restore();
 
   const firstTraceDir = path.join(roots[1], 'jobs', loaded.plan.jobs[4].id, 'traces');
   fs.writeFileSync(path.join(firstTraceDir, 'alternative.jsonl'), '{}\n');
