@@ -325,3 +325,20 @@ Log:
   artifacts remain tracked. LFS caches and remote objects, Git history, the
   frozen legacy private Git repository, worktrees, databases, model routes, and
   unrelated artifacts remain untouched; no off-machine replica is claimed.
+- 2026-08-20 — Reproduced Wave 4C's checkout effect with retained default
+  checkouts at the immutable base and outcome commits. The hydrated base is
+  696,972 KiB and the ordinary outcome checkout is 191,620 KiB, a reduction of
+  505,352 KiB (493.51 MiB); `git lfs ls-files --size HEAD` now reports zero
+  entries. The current Git tree itself changes by only -2 paths / +4,257 bytes
+  because the removed working-tree payloads were small LFS pointers and the
+  checksummed public manifest and restoration documentation are retained. The
+  full local profile report is
+  `.test-tmp/local-ci/2026-08-20T07-00-49-294Z/summary.md`: contract, lint,
+  concurrency, validation, and workplan lanes pass. Root shard 2 passes 4,098
+  tests with 7 registered skips; shard 1 reproduces the unchanged
+  `buildWritingPadNarrative` local baseline while passing 4,999 tests with 11
+  skips; tutor-core and risk coverage reproduce the paired unchanged
+  `writingPadInternalPathDelivery` baseline while passing 136 tests. The
+  artifact-bundle and register-confirmatory focused suites pass 32/32. Hosted
+  full CI remains the publication gate; no baseline repair was folded into this
+  evidence-only tranche.
