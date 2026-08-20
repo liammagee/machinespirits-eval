@@ -312,16 +312,16 @@ function assertObservedRuntime({ runStart, events, job, batch, finalTraceBudget 
   if (
     recipe?.schema !== 'machinespirits.tutor-stub.session-recipe.v1' ||
     metadata?.provenance?.git?.sha !== batch.plan.source.commit ||
-    config?.world?.id !== 'world_005_marrick' ||
-    config?.experiment?.runSeed !== 20260820 ||
-    config?.experiment?.profile !== 'frame_refuser' ||
-    config?.experiment?.policy !== 'field' ||
-    config?.experiment?.repeat !== (job.treatment.repeat === 'A' ? 1 : 2) ||
-    config?.experiment?.jobId !== job.id ||
-    config?.autoLearner?.observationSemantics !== 'prospective_v4' ||
-    config?.autoLearner?.maxTurns !== 3 ||
-    config?.autoLearner?.profileId !== 'frame_refuser' ||
-    config?.autoLearner?.modelRef !== 'codex.gpt-5.6-luna' ||
+    config?.identity?.world?.id !== 'world_005_marrick' ||
+    metadata?.experiment?.runSeed !== 20260820 ||
+    metadata?.experiment?.profile !== 'frame_refuser' ||
+    metadata?.experiment?.policy !== 'field' ||
+    metadata?.experiment?.repeat !== (job.treatment.repeat === 'A' ? 1 : 2) ||
+    metadata?.experiment?.jobId !== job.id ||
+    metadata?.autoLearner?.observationSemantics !== 'prospective_v4' ||
+    metadata?.autoLearner?.maxTurns !== 3 ||
+    metadata?.autoLearner?.profileId !== 'frame_refuser' ||
+    metadata?.autoLearner?.modelRef !== 'codex.gpt-5.6-luna' ||
     metadata?.lab?.admission?.modelCallBudget !== finalTraceBudget ||
     options?.['cli-effort'] !== 'low' ||
     options?.['run-seed'] !== '20260820' ||

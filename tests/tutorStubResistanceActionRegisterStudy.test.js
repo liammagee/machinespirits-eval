@@ -127,6 +127,19 @@ function syntheticLiveTrace({ job, plan, bundleSha256, fidelity = {}, modelCallB
       metadata: {
         provenance: { git: { sha: plan.source.commit, dirty: false } },
         lab: { admission: { modelCallBudget } },
+        experiment: {
+          runSeed: 20260820,
+          profile: 'frame_refuser',
+          policy: 'field',
+          repeat: job.treatment.repeat === 'A' ? 1 : 2,
+          jobId: job.id,
+        },
+        autoLearner: {
+          observationSemantics: 'prospective_v4',
+          maxTurns: 3,
+          profileId: 'frame_refuser',
+          modelRef: 'codex.gpt-5.6-luna',
+        },
         sessionRecipe: {
           schema: 'machinespirits.tutor-stub.session-recipe.v1',
           config: {
@@ -137,6 +150,7 @@ function syntheticLiveTrace({ job, plan, bundleSha256, fidelity = {}, modelCallB
                 reasoning: route,
                 tutor: route,
               },
+              world: { id: 'world_005_marrick' },
             },
             options: {
               'cli-effort': 'low',
@@ -155,20 +169,6 @@ function syntheticLiveTrace({ job, plan, bundleSha256, fidelity = {}, modelCallB
                 'config/tutor-stub-resistance-action-register-v4-public-prefixes.v1.json',
               'no-opening': true,
               'no-auto-stop-on-grounded': true,
-            },
-            world: { id: 'world_005_marrick' },
-            experiment: {
-              runSeed: 20260820,
-              profile: 'frame_refuser',
-              policy: 'field',
-              repeat: job.treatment.repeat === 'A' ? 1 : 2,
-              jobId: job.id,
-            },
-            autoLearner: {
-              observationSemantics: 'prospective_v4',
-              maxTurns: 3,
-              profileId: 'frame_refuser',
-              modelRef: 'codex.gpt-5.6-luna',
             },
           },
         },
