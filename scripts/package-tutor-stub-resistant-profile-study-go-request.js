@@ -222,6 +222,85 @@ function readLaunchJson(files, launchCommit, repoPath, label) {
   return { proof, value: JSON.parse(files.get(proof.path).bytes.toString('utf8')) };
 }
 
+function assertComputedValue(actual, expected, label) {
+  if (!Object.is(actual, expected)) throw new Error(`materialized ${label} does not match the computed value`);
+}
+
+function assertMaterializedStructure({
+  request,
+  launchCommit,
+  launchTree,
+  sourceClosure,
+  registration,
+  contract,
+  certificate,
+  routeResult,
+  routeConsumption,
+  historicalRequest,
+  liveCommandSha256,
+  analyzeCommandSha256,
+}) {
+  assertComputedValue(request.source?.launchCommit, launchCommit, 'source launch commit');
+  assertComputedValue(request.source?.launchTree, launchTree, 'source launch tree');
+
+  if (!Array.isArray(request.source?.closure) || request.source.closure.length !== sourceClosure.length) {
+    throw new Error('materialized source closure does not match the computed closure');
+  }
+  for (const proof of sourceClosure) {
+    const matches = request.source.closure.filter((entry) => entry?.path === proof.path);
+    if (matches.length !== 1) {
+      throw new Error(`materialized source closure must contain exactly one computed path: ${proof.path}`);
+    }
+    assertComputedValue(matches[0].sha256, proof.sha256, `source closure digest for ${proof.path}`);
+  }
+
+  assertComputedValue(request.bindings?.registration?.path, registration.path, 'registration path');
+  assertComputedValue(request.bindings?.registration?.sha256, registration.sha256, 'registration digest');
+
+  const endpoint = request.bindings?.endpoint;
+  assertComputedValue(endpoint?.contractPath, contract.proof.path, 'endpoint contract path');
+  assertComputedValue(endpoint?.contractFileSha256, contract.proof.sha256, 'endpoint contract file digest');
+  assertComputedValue(
+    endpoint?.contractCanonicalSha256,
+    sha256CanonicalJson(contract.value),
+    'endpoint contract canonical digest',
+  );
+  assertComputedValue(endpoint?.certificatePath, certificate.proof.path, 'endpoint certificate path');
+  assertComputedValue(endpoint?.certificateFileSha256, certificate.proof.sha256, 'endpoint certificate file digest');
+  assertComputedValue(endpoint?.preflightSha256, certificate.value.preflight_sha256, 'endpoint preflight digest');
+
+  const route = request.bindings?.routeCanary;
+  assertComputedValue(route?.resultPath, routeResult.proof.path, 'route result path');
+  assertComputedValue(route?.resultSha256, routeResult.proof.sha256, 'route result digest');
+  assertComputedValue(
+    route?.authorizationConsumptionPath,
+    routeConsumption.path,
+    'route authorization consumption path',
+  );
+  assertComputedValue(
+    route?.authorizationConsumptionSha256,
+    routeConsumption.sha256,
+    'route authorization consumption digest',
+  );
+  for (const [field, expected] of [
+    ['sourceArtifactSha256', routeResult.value.sourceArtifactSha256],
+    ['executionHead', routeResult.value.executionHead],
+    ['observedProvider', routeResult.value.observed?.provider],
+    ['observedModel', routeResult.value.observed?.model],
+    ['observedEffort', routeResult.value.observed?.effort],
+    ['attestationBasis', routeResult.value.observed?.modelAttestationBasis],
+    ['modelIndependentlyAttested', routeResult.value.observed?.modelIndependentlyAttested],
+  ]) {
+    assertComputedValue(route?.[field], expected, `route ${field}`);
+  }
+
+  const historical = request.opportunityGate?.historicalOpportunityV1;
+  assertComputedValue(historical?.requestPath, historicalRequest.path, 'historical request path');
+  assertComputedValue(historical?.requestSha256, historicalRequest.sha256, 'historical request digest');
+  assertComputedValue(request.bindings?.commands?.liveArraySha256, liveCommandSha256, 'live command digest');
+  assertComputedValue(request.bindings?.commands?.analyzeArraySha256, analyzeCommandSha256, 'analyze command digest');
+}
+
 function materializeTemplate({ templateText, template, launchCommit }) {
   requireHoldBoundary(template);
   const files = new Map();
@@ -329,6 +408,20 @@ function materializeTemplate({ templateText, template, launchCommit }) {
 
   const requestText = replaceMarkers(templateText, replacements);
   const request = JSON.parse(requestText);
+  assertMaterializedStructure({
+    request,
+    launchCommit,
+    launchTree,
+    sourceClosure,
+    registration,
+    contract,
+    certificate,
+    routeResult,
+    routeConsumption,
+    historicalRequest,
+    liveCommandSha256,
+    analyzeCommandSha256,
+  });
   return {
     files,
     request,

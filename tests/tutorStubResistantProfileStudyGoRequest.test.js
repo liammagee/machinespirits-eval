@@ -539,6 +539,13 @@ function replaceJsonFieldWithMarker(source, key, value, marker) {
   return source.replace(expected, `${JSON.stringify(key)}: ${JSON.stringify(marker)}`);
 }
 
+function moveMarkerToIgnoredField(source, marker, retainedValue, ignoredKey) {
+  const token = JSON.stringify(marker);
+  assert.equal(source.split(token).length - 1, 1, `expected one ${marker} marker before moving it`);
+  const retained = source.replace(token, JSON.stringify(retainedValue));
+  return retained.replace('"status":', `${JSON.stringify(ignoredKey)}: ${token},\n  "status":`);
+}
+
 function frameRefuserV2TemplateText() {
   const request = JSON.parse(fs.readFileSync(FRAME_REFUSER_V2_REQUEST_PATH, 'utf8'));
   let source = fs.readFileSync(FRAME_REFUSER_V2_REQUEST_PATH, 'utf8');
@@ -717,6 +724,8 @@ test('GO request packaging fails closed on incomplete authority, source, marker,
   const templatePath = path.join(temporary, 'authored-hold-template.json');
   const unauthorizedTemplatePath = path.join(temporary, 'unauthorized-template.json');
   const unresolvedTemplatePath = path.join(temporary, 'unresolved-template.json');
+  const misplacedSourceTemplatePath = path.join(temporary, 'misplaced-source-template.json');
+  const misplacedBindingTemplatePath = path.join(temporary, 'misplaced-binding-template.json');
   const output = path.join(ROOT, 'config', `.test-packaged-go-request-${process.pid}-fail.json`);
   t.after(() => {
     fs.rmSync(temporary, { recursive: true, force: true });
@@ -758,6 +767,45 @@ test('GO request packaging fails closed on incomplete authority, source, marker,
   ]);
   assert.equal(unauthorizedRun.status, 2);
   assert.match(unauthorizedRun.stderr, /literal HOLD/u);
+  assert.equal(fs.existsSync(output), false);
+
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  let misplacedSource = moveMarkerToIgnoredField(
+    templateText,
+    GO_REQUEST_PACKAGE_MARKERS.sourceCommit,
+    request.source.launchCommit,
+    'ignoredSourceCommitMarker',
+  );
+  misplacedSource = moveMarkerToIgnoredField(
+    misplacedSource,
+    GO_REQUEST_PACKAGE_MARKERS.sourceTree,
+    request.source.launchTree,
+    'ignoredSourceTreeMarker',
+  );
+  fs.writeFileSync(misplacedSourceTemplatePath, misplacedSource);
+  const misplacedSourceRun = run(['--template', misplacedSourceTemplatePath, '--launch-commit', head, '--out', output]);
+  assert.equal(misplacedSourceRun.status, 2);
+  assert.match(misplacedSourceRun.stderr, /materialized source launch commit does not match/u);
+  assert.equal(fs.existsSync(output), false);
+
+  const registrationMarker = goRequestFileSha256Marker(request.bindings.registration.path);
+  const misplacedBinding = moveMarkerToIgnoredField(
+    templateText,
+    registrationMarker,
+    '0'.repeat(64),
+    'ignoredRegistrationDigestMarker',
+  );
+  fs.writeFileSync(misplacedBindingTemplatePath, misplacedBinding);
+  const misplacedBindingRun = run([
+    '--template',
+    misplacedBindingTemplatePath,
+    '--launch-commit',
+    request.source.launchCommit,
+    '--out',
+    output,
+  ]);
+  assert.equal(misplacedBindingRun.status, 2);
+  assert.match(misplacedBindingRun.stderr, /materialized registration digest does not match/u);
   assert.equal(fs.existsSync(output), false);
 
   fs.writeFileSync(
