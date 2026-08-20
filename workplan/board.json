@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-20T01:17:04.533Z",
+  "generated": "2026-08-20T01:30:21.531Z",
   "counts": {
     "total": 520,
     "byStatus": {
@@ -252,7 +252,7 @@
       "owner": "codex",
       "source": "manual",
       "created": "2026-08-18",
-      "updated": "2026-08-19",
+      "updated": "2026-08-20",
       "verification": "Bored and frame-refuser learner contracts pass treatment-opportunity, discrimination, and observability gates while productive frame defiance remains a no-intervention diagnostic; the shared runtime selects a warranted pedagogical action before a compatible tonal register; irony and sarcasm remain opt-in and guard-bounded; and a registered proof-DAG crossed study reports action-fit, register, same-treatment, and downstream outcome results before any claim is transferred back to the cell harness.",
       "claim_status": "planned",
       "links": {
@@ -306,6 +306,7 @@
           "config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.json",
           "config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.endpoint-go.json",
           "config/tutor-stub-frame-refuser-opportunity-study-go-request.v1.json",
+          "config/tutor-stub-frame-refuser-opportunity-study-go-request.v2.json",
           "services/pedagogicalMove/resistantProfileWarrantShadow.js",
           "scripts/tutor-stub-learner-profile-contracts.js",
           "scripts/prepare-tutor-stub-resistant-profile-discrimination.js",
@@ -341,7 +342,7 @@
         "learner-profiles",
         "registers"
       ],
-      "branch": "codex/frame-refuser-opportunity-v2-readiness"
+      "branch": "codex/frame-refuser-opportunity-v2-go-request"
     },
     {
       "id": "workflow-repository-optimization",
