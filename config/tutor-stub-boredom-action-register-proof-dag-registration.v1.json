@@ -1,0 +1,319 @@
+{
+  "schema": "machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v1",
+  "version": 1,
+  "status": "prospective_zero_call_readiness_hold",
+  "workplanItem": "resistance-action-register-integration",
+  "frozenAt": "2026-08-20",
+  "registeredQuestion": "After a publicly observed bored effort-withholding prefix has selected the fixed boredom-appropriate discriminating-question action, does warm rather than plain realization improve the existing two-turn resistance-recovery endpoint, and does any improvement reach objective public proof-DAG progress?",
+  "claimBoundary": "This blocked-randomized simulated-learner study can establish only a warm-versus-plain register effect after the boredom-appropriate action has already been selected, at the registered two-post-trigger-learner-turn horizon and in the six predeclared proof-DAG worlds. It cannot re-estimate boredom detection, matched-versus-mismatched action efficacy, edged or sarcastic realization, an action-by-register interaction, general tutor efficacy, durable learning, human validity, or transfer to the cell harness.",
+  "authorization": {
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "goRequestPrepared": false,
+    "programmeLedgerBeforeStudy": {
+      "reservedAttempts": 185,
+      "ceiling": 1200,
+      "remaining": 1015
+    },
+    "thisReadinessConsumesProgrammeHeadroom": false,
+    "requiredBeforeAnyModelCall": [
+      "merge the reviewed zero-call registration, deterministic proof-DAG scorer, live source-prefix and paired-branch executor, analyzer, and request validator",
+      "freeze a clean post-merge source and complete executable source closure",
+      "adopt an explicit programme ceiling of at least 2345 attempts for this boredom study alone, or at least 4505 attempts if the separately proposed 2160-attempt frame-refusal confirmation is also reserved",
+      "prepare a fresh digest-bound HOLD request with nine absent create-once batch destinations and one absent combined-report destination",
+      "obtain explicit human authorization of the exact request digest, 2160-attempt study ceiling, and amended cumulative programme ceiling"
+    ]
+  },
+  "evidence": {
+    "prospectiveHeldOutBoredomDetection": {
+      "publicResultMergeCommit": "3fc0e644e175d3741490297e8edaa783d91d515f",
+      "publicResultSourceCommit": "322ea9730afeabecfb39c20a0c25c56225391c21",
+      "registrationCommit": "23ccba13b5a09dec56132cce129f7fd3958b5075",
+      "registrationSha256": "63ae6b1f1bd90667a4ce1a0ea310e21e7d1fcadd8e3cf61c4c43552d43ff666d",
+      "preRepinRequest": {
+        "sha256": "99a12f902ee4589a922524589e32c890bc458a96fa355c408c14ca4c7d1a22e0",
+        "launchCommit": "23ccba13b5a09dec56132cce129f7fd3958b5075",
+        "launchTree": "1167d4fd305c0de9eb704972be2682068bf495e7"
+      },
+      "repinnedRequest": {
+        "sha256": "b52aa74bb5980229f85d6d6c8e857c59de72ba22f9e4d7be377eb17fe278b4ee",
+        "launchCommit": "c302d917da59c3608d6e0d654fc313b13eadb12f",
+        "launchTree": "b664bbe810402ede5c88fc8d37ec4b5745559aa3"
+      },
+      "observedTraceSource": {
+        "commit": "23ccba13b5a09dec56132cce129f7fd3958b5075",
+        "tree": "1167d4fd305c0de9eb704972be2682068bf495e7",
+        "clean": true,
+        "detached": true
+      },
+      "reportSha256": "714f69f489297c571ff4157ce0269e6d3f68ccac485453b53d05cc09d5908c75",
+      "dialogues": "18/18",
+      "learnerTurns": "144/144",
+      "reservations": "458/458",
+      "providerFailures": 0,
+      "modelRoute": {
+        "tutor": "codex.gpt-5.6-luna",
+        "analysis": "codex.gpt-5.6-luna",
+        "learner": "codex.gpt-5.6-luna",
+        "effort": "low"
+      },
+      "boredEffortWithholding": "18/24",
+      "observedRate": 0.75,
+      "registeredMinimum": 0.45,
+      "deadline": "by_turn_2_in_3_of_3_bored_dialogues",
+      "maximumNonTargetRate": 0,
+      "registeredNonTargetCeiling": 0.2,
+      "privateBoredDecompressedTraceSha256": [
+        "a8e6d69f2289eaa076ae2c14f491990e7bc09479507e98244f84400f69820e0d",
+        "31f36c6ee8b73af32b103ce2ba5d1ad6afdd768a8043349f5a493f2c49ccb834",
+        "86f497621e5b8ebf51513fb0cd28c957b4dc10d0f1d74dbf025a3c436f127c9d"
+      ],
+      "privateBoredGzipSha256": [
+        "d9d7b11575a78e6025f2f678e42827ae7cd7f34e47d1867ba54c99bba2ab666d",
+        "9460c634c9abedaeb1d304a0d791dd04f3396a789d439bfba2e94bdc34665c6d",
+        "6929b209c73b78c18dd038abdaea5187e1362db4ae7da97772165b94bd0de65a"
+      ],
+      "provenanceLimitation": "The public freeze narrative associates the pre-repin 99a12f request with c302d917, but those are not one request object: 99a12f pins 23ccba13 while the repinned c302 request hashes b52aa74b. All 18 preserved traces report clean detached 23ccba13. The relevant registration, observer, and analyzer bytes are identical across those two sources, so the endpoint reproduces but the public governance provenance must be read with this discrepancy.",
+      "canonicalReportBytesPresent": false,
+      "permittedUse": "instrument readiness and source-prefix eligibility only",
+      "outcomesPooledIntoThisStudy": false
+    },
+    "historicalMatchedAction": {
+      "design": "world_033_alder_row_redoubt turn_11 bored plant; quiet:flat discriminating question versus settled_claim record reopening; five dialogues per arm",
+      "result": "matched_5_of_5_mismatched_0_of_5",
+      "delivery": "10/10",
+      "leaks": 0,
+      "rawTraceArchiveSha256": "5c27a5c6c1f19450935baa8489ad2f74e4c16a2647515f4c83bf068659cbd63f",
+      "privateArchiveCommit": "167f2004409b1b1da1ab09bcfe8b349d7331985c",
+      "runSourceCommit": "8e2addab9875b38799d58b9243c6c3a6d201827b",
+      "runSourceDirty": true,
+      "modelRoute": {
+        "tutor": "claude-code.claude-sonnet-5",
+        "learner": "codex.gpt-5.6-terra",
+        "classifierAndReasoning": "codex.gpt-5.6-sol"
+      },
+      "modelCalls": "822/822",
+      "providerFailures": 0,
+      "worlds": ["world_033_alder_row_redoubt"],
+      "traceSha256": [
+        "0c8d66116dbfac3c45b56f987b5002d4f20d33b372d7381ca2da638f0eaa40b7",
+        "123c493ba26bc603a28364cdfea66f80779597472cb034053872e8d4db3eb443",
+        "90501c4478ea11a8aba686736e08c4a0eaf9c2bb66dff7c9cf2966dd9a0e7177",
+        "863359e579912065495264ca494724cd6ea641e74a2fa7dbc66c80277d8b87b0",
+        "edde91c8b0e9955d22a6e510103724ed9ca1fce815ff9e48f4d8009dc0047635",
+        "7a6384e8702ca5d3fef5e67e91ed53408ac6af9a3ffe792e16fdd3ae50aa616a",
+        "af60c6fd9a770afd8de383247be313f1e99efc455f7c6936f23f8da5155aa402",
+        "3455b77bf0d2412be5fb6c8cf07c3097f67c84a18a2fa0219a4fe32150a44b32",
+        "29deb9c5aab10d3589b795d786450cd94f76fd664a4b95af8f37e41c31b2cf66",
+        "a82d807b3d73a25bdd42120b14658f935c988e4a2e445b8c60f897dffbc1a24f"
+      ],
+      "qdV2ImplementationCommit": "a98d9c562248e009b0c03841d52ccd1264335ba6",
+      "qdV2SourceSha256": "de4980e4961030e31ae87ce29a7580069740418280f23b435f552710ab9b0a43",
+      "offlineFreshShadowDetection": "10/10",
+      "localIgnoredRowAudit": {
+        "path": "exports/crossed-effects/flatpromo-tags.json",
+        "sha256": "0d8d8e891abfff0ada192e5de067c0795c676c4d903795f51b173aafc732355d",
+        "tracked": false,
+        "privateArchived": false,
+        "narrowAutomaticHit": "3/5_matched_0/5_mismatched",
+        "broadSingleAdjudicatorRuledConduct": "5/5_matched_0/5_mismatched"
+      },
+      "limitations": [
+        "one proof-DAG world only",
+        "dirty launch source",
+        "small historical sample",
+        "single-adjudicator ruled-conduct outcome rather than the objective proof-DAG endpoint registered here",
+        "the qd-v2 detector was committed after the crossed run, so 10/10 is a held-out shadow replay rather than a preregistered detector trial",
+        "the flatpromo-tags row audit survives only as an ignored uncommitted local artifact and is not durably archived",
+        "the narrow automatic hit tag is 3/5 matched versus 0/5 mismatched; 5/5 depends on the broader predeclared single-adjudicator conduct ruling"
+      ],
+      "permittedUse": "fix ask_discriminating_question as the boredom-appropriate action and motivate register isolation only",
+      "outcomesPooledIntoThisStudy": false
+    }
+  },
+  "design": {
+    "stage": "boredom_matched_action_plain_warm_proof_dag_confirmation",
+    "form": "fresh_prefix_blocked_randomized_independent_dialogues",
+    "profile": "bored",
+    "observationSemantics": "prospective_bored_effort_withholding",
+    "dagMode": "strict_dag",
+    "worlds": [
+      "world_005_marrick",
+      "world_026_skyway_bakery",
+      "world_029_riverside_clinic",
+      "world_030_rowan_flat",
+      "world_031_tideway_makerspace",
+      "world_033_alder_row_redoubt"
+    ],
+    "freshPrefixGeneration": {
+      "prefixesPerWorld": 6,
+      "requiredDistinctPrefixes": 36,
+      "maximumTriggerTurn": 2,
+      "seedBase": 2026082000,
+      "uniqueSeedPerSource": true,
+      "requireDistinctPublicPrefixHashes": true,
+      "profileIdentityMayTrigger": false,
+      "protectedExclusions": ["content_bearing_uptake_already_visible", "comprehension_repair", "protected_affect"],
+      "substantiveMissingOrDuplicateTriggerDisposition": "stop_incomplete_no_replacement_no_analysis"
+    },
+    "randomization": {
+      "independentUnit": "fresh_distinct_bored_public_prefix_dialogue",
+      "dialogues": 36,
+      "assignment": "predeclared_blocked_by_world_before_generation_hidden_until_action_selection",
+      "plainDialogues": 18,
+      "warmDialogues": 18,
+      "plainPerWorld": 3,
+      "warmPerWorld": 3,
+      "continuationsPerPrefix": 1,
+      "validOutputsMayNotBeSelectedDiscardedOrRerolled": true
+    },
+    "treatment": {
+      "fixedPedagogicalMove": "ask_discriminating_question",
+      "actionFit": "matched",
+      "realizations": ["plain", "warm"],
+      "reference": "plain",
+      "treatment": "warm",
+      "edgedOrSarcasticAbsent": true,
+      "applicationOrder": [
+        "public_boredom_observation",
+        "boredom_appropriate_action_selection",
+        "predeclared_register_assignment",
+        "public_realization"
+      ],
+      "assignedRegisterTutorTurns": 1,
+      "postTriggerLearnerTurns": 2,
+      "terminalTutorCall": false,
+      "safetyOverride": "record_as_nonadherent_in_intention_to_treat_never_reroll"
+    },
+    "noReuseOrPooling": {
+      "priorHeldOutDialoguesReused": false,
+      "priorMatchedActionDialoguesReused": false,
+      "priorTwelveCalibrationDialoguesReused": false,
+      "priorOutcomesPooled": false,
+      "freshSourcePrefixesRequired": true,
+      "interimAnalysis": false,
+      "singleCombinedAnalysisAfterAllNineBatchSeals": true
+    }
+  },
+  "measurement": {
+    "primaryEndpoint": {
+      "id": "profile_specific_resistance_recovery",
+      "existingImplementation": "services/tutorStubResistanceActionRegisterStudy.js#scoreTutorStubResistanceRecovery",
+      "definition": "Within two post-trigger learner turns, the bored learner engages the fixed discriminating question on its merits with content-bearing evidence use.",
+      "unit": "fresh_independent_dialogue",
+      "estimand": "warm_minus_plain_recovery_probability_blocked_equally_over_six_worlds",
+      "analysis": "two_sided_fisher_exact",
+      "alpha": 0.05,
+      "intentionToTreat": true,
+      "modelJudge": false
+    },
+    "keySecondaryEndpoint": {
+      "id": "objective_proof_progress_by_two_turns",
+      "definition": "By the second post-trigger learner turn, the deterministic public proof-DAG scorer records at least one new supported public premise, positive best-path coverage delta, negative proof-debt delta, and zero unsupported public claims.",
+      "analysis": "two_sided_fisher_exact_only_after_primary_rejects_under_fixed_sequence_gatekeeping",
+      "alpha": 0.05,
+      "familywiseErrorControl": "fixed_sequence_primary_then_key_secondary",
+      "modelJudge": false,
+      "powerClaim": "not_independently_powered_without_prior_proof_progress_calibration"
+    },
+    "secondaryEndpoints": [
+      "new_supported_public_premises",
+      "best_path_coverage_delta",
+      "proof_debt_delta",
+      "unsupported_public_claims",
+      "action_visibility",
+      "register_visibility",
+      "protected_condition_and_safety_override_rate"
+    ],
+    "treatmentFidelity": {
+      "minimumActionVisibility": 0.9,
+      "minimumRegisterVisibility": 0.9,
+      "failedFidelityDisposition": "fail_interpretability_gate_not_rerun"
+    },
+    "claimSeparation": {
+      "calibrationUse": "sample_size_and_fixed_action_motivation_only",
+      "confirmationUse": "fresh_18_pair_primary_and_key_secondary_results_only",
+      "calibrationAndConfirmationMayNotBePooled": true,
+      "proofProgressSuperiorityClaimRequiresBothFixedSequenceTests": true,
+      "recoveryOnlyClaimIfPrimaryPassesAndKeySecondaryDoesNot": "register_affects_recovery_but_objective_proof_progress_superiority_not_established"
+    }
+  },
+  "power": {
+    "test": "two_sided_fisher_exact",
+    "alpha": 0.05,
+    "targetPower": 0.8,
+    "alternative": {
+      "plainRecoveryRate": 0.16666666666666666,
+      "warmRecoveryRate": 0.6666666666666666,
+      "riskDifference": 0.5,
+      "source": "excluded_12_dialogue_calibration_1_of_6_plain_versus_4_of_6_warm_used_for_sizing_only"
+    },
+    "minimumPerArm": 18,
+    "powerAt17PerArm": 0.796776592585303,
+    "powerAt18PerArm": 0.8388687257645503,
+    "scope": "primary_recovery_endpoint_only",
+    "designChoiceAudit": {
+      "observedCalibrationPairedTable": {
+        "warmOnly": "4/6",
+        "plainOnly": "1/6"
+      },
+      "pairedExactMcNemarMinimumPairs": 28,
+      "pairedPowerAt27": 0.7983670167301511,
+      "pairedPowerAt28": 0.8166088496475903,
+      "pairedHardAttemptCeiling": 2856,
+      "selectedIndependentFisherHardAttemptCeiling": 2160,
+      "reason": "At the observed discordance pattern, exact-prefix pairing needs 28 sources and 56 continuations; blocked independent randomization needs 36 sources and one continuation each, so it is the smaller defensible powered design."
+    }
+  },
+  "executionReadiness": {
+    "modelRoute": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna",
+      "effort": "low"
+    },
+    "maximumReservationsPerPlannedCall": 3,
+    "dialogue": {
+      "preTriggerBasePlannedCalls": 6,
+      "preTriggerTutorGuardRecoveryReserveCalls": 2,
+      "postTriggerBasePlannedCalls": 6,
+      "postTriggerTutorGuardRecoveryReserveCalls": 4,
+      "oneCumulativeFullLearnerRepairCalls": 2,
+      "plannedCallsPerDialogue": 20,
+      "maximumReservationsPerDialogue": 60,
+      "dialogues": 36,
+      "maximumReservations": 2160
+    },
+    "batches": {
+      "executionBatches": 9,
+      "dialoguesPerBatch": 4,
+      "plainPerBatch": 2,
+      "warmPerBatch": 2,
+      "maximumReservationsPerBatch": 240,
+      "totalBatches": 9,
+      "noInterimAnalysis": true
+    },
+    "hardStudyAttemptCeiling": 2160,
+    "programmeCeilingForThisStudyAlone": {
+      "ledgerBefore": 185,
+      "studyMaximum": 2160,
+      "requiredCeiling": 2345,
+      "amendmentAboveCurrent1200": 1145
+    },
+    "programmeCeilingIfFrameRefusalConfirmationAlsoReserved": {
+      "ledgerBefore": 185,
+      "frameRefusalMaximum": 2160,
+      "boredomMaximum": 2160,
+      "requiredCeiling": 4505,
+      "amendmentAboveCurrent1200": 3305,
+      "incrementAboveProposed2345FrameRefusalCeiling": 2160
+    },
+    "boundedTechnicalRecovery": "missing_or_failed_units_only_within_unchanged_per_unit_batch_study_and_programme_caps",
+    "validUnitReruns": false,
+    "outcomeSelection": false,
+    "liveExecutorAvailable": false,
+    "combinedAnalyzerAvailable": false,
+    "requestValidatorAvailable": false,
+    "remainingGap": "production fresh-prefix and paired-branch executor, deterministic proof-DAG combined analyzer, request validator and packager, merged source closure, ceiling amendment, digest-bound HOLD request, and explicit human authorization"
+  }
+}

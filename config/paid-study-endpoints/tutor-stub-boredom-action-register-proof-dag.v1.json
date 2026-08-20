@@ -1,0 +1,148 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-contract.v1",
+  "study_id": "tutor-stub-boredom-action-register-proof-dag-v1",
+  "registration": {
+    "registration_path": "config/tutor-stub-boredom-action-register-proof-dag-registration.v1.json",
+    "registration_sha256": "be6fcdcb1fbc97bd459b87fcb95888c7782c2b3bdd564a45757b4e78a653a9ce",
+    "primary_endpoint_ids": ["profile_specific_resistance_recovery"],
+    "key_secondary_endpoint_id": "objective_proof_progress_by_two_turns",
+    "required_profile": "bored",
+    "required_worlds": 6,
+    "required_distinct_prefixes": 36,
+    "required_realizations": ["plain", "warm"],
+    "required_action": "ask_discriminating_question"
+  },
+  "registered_scale": {
+    "cases": 36,
+    "unit": "fresh_independent_blocked_randomized_dialogue",
+    "plain_dialogues": 18,
+    "warm_dialogues": 18,
+    "fresh_source_prefixes": 36,
+    "execution_batches": 9,
+    "combined_analysis_required": true
+  },
+  "runner": {
+    "packet_builder": "services/tutorStubBoredomActionRegisterProofDagPreflight.js#buildTutorStubBoredomProofDagPackets",
+    "result_assembler": "services/tutorStubBoredomActionRegisterProofDagPreflight.js#assembleTutorStubBoredomProofDagPreflight",
+    "production_preflight": "services/tutorStubBoredomActionRegisterProofDagPreflight.js#runTutorStubBoredomProofDagEndpointPreflight",
+    "packet_cap_bytes": 100000,
+    "emitted_event_fields": [
+      "arm",
+      "case_id",
+      "fidelity.action_visible",
+      "fidelity.protected_condition",
+      "fidelity.register_visible",
+      "fidelity.safety_override",
+      "outcome.best_path_coverage_delta",
+      "outcome.new_supported_public_premises",
+      "outcome.proof_debt_delta",
+      "outcome.proof_progress_by_two_turns",
+      "outcome.recovered",
+      "outcome.unsupported_public_claims",
+      "pedagogical_move",
+      "prefix_id",
+      "realization",
+      "trigger.observed_by_turn",
+      "trigger.profile",
+      "trigger.profile_identity_used",
+      "world"
+    ]
+  },
+  "channels": {
+    "registered_recovery": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceActionRegisterStudy.js#scoreTutorStubResistanceRecovery"
+    },
+    "objective_public_proof_dag": {
+      "enabled": true,
+      "implementation": "services/tutorStubBoredomActionRegisterProofDagPreflight.js#assembleTutorStubBoredomProofDagPreflight"
+    },
+    "exact_analysis": {
+      "enabled": true,
+      "implementation": "services/fisherExact.js#fisherExactTwoSided"
+    },
+    "fresh_prefix_assembly": {
+      "enabled": true,
+      "implementation": "services/tutorStubBoredomActionRegisterProofDagPreflight.js#buildTutorStubBoredomProofDagPlan"
+    },
+    "treatment_fidelity": {
+      "enabled": true,
+      "implementation": "services/tutorStubBoredomActionRegisterProofDagPreflight.js#assembleTutorStubBoredomProofDagPreflight"
+    },
+    "frozen_registration": {
+      "enabled": true,
+      "implementation": "config/tutor-stub-boredom-action-register-proof-dag-registration.v1.json"
+    }
+  },
+  "endpoints": [
+    {
+      "id": "profile_specific_resistance_recovery",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": ["registered_recovery", "exact_analysis", "fresh_prefix_assembly", "frozen_registration"],
+      "required_event_fields": [
+        "arm",
+        "case_id",
+        "outcome.recovered",
+        "pedagogical_move",
+        "prefix_id",
+        "realization",
+        "world"
+      ],
+      "denominator": { "expected_cases": 36 }
+    },
+    {
+      "id": "objective_proof_progress_by_two_turns",
+      "role": "key_secondary_fixed_sequence",
+      "enabled": true,
+      "required_channels": [
+        "objective_public_proof_dag",
+        "exact_analysis",
+        "fresh_prefix_assembly",
+        "frozen_registration"
+      ],
+      "required_event_fields": [
+        "arm",
+        "case_id",
+        "outcome.best_path_coverage_delta",
+        "outcome.new_supported_public_premises",
+        "outcome.proof_debt_delta",
+        "outcome.proof_progress_by_two_turns",
+        "outcome.unsupported_public_claims",
+        "prefix_id"
+      ],
+      "denominator": { "expected_cases": 36 }
+    },
+    {
+      "id": "randomized_register_assembly",
+      "role": "interpretability_gate",
+      "enabled": true,
+      "required_channels": ["fresh_prefix_assembly", "frozen_registration"],
+      "required_event_fields": [
+        "arm",
+        "case_id",
+        "prefix_id",
+        "realization",
+        "trigger.observed_by_turn",
+        "trigger.profile",
+        "trigger.profile_identity_used",
+        "world"
+      ],
+      "denominator": { "expected_cases": 36 }
+    },
+    {
+      "id": "action_register_fidelity_and_safety",
+      "role": "interpretability_gate",
+      "enabled": true,
+      "required_channels": ["treatment_fidelity", "frozen_registration"],
+      "required_event_fields": [
+        "case_id",
+        "fidelity.action_visible",
+        "fidelity.protected_condition",
+        "fidelity.register_visible",
+        "fidelity.safety_override"
+      ],
+      "denominator": { "expected_cases": 36 }
+    }
+  ]
+}
