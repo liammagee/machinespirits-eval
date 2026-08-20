@@ -15,10 +15,17 @@ import {
   selectTutorStubBoredomProofDagRecoveryCandidates,
 } from '../scripts/run-tutor-stub-boredom-action-register-proof-dag.js';
 import {
+  configureTutorStubBoredomProofDagFromCli,
   configureTutorStubBoredomProofDagExecution,
   loadTutorStubBoredomProofDagStudy,
 } from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
+import { createTutorStubAutomatedLearnerGenerationRuntime } from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from '../services/tutorStubResistanceActionRegisterStudy.js';
+import {
+  learnerProfileContract,
+  learnerProfileIds,
+  learnerProfilePrompt,
+} from '../scripts/tutor-stub-learner-profile-contracts.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v1.json';
@@ -29,6 +36,23 @@ function sha256(value) {
 
 function writeJson(filePath, value) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function commandArgs(command) {
+  const values = {};
+  for (let index = 1; index < command.args.length; index += 1) {
+    const token = command.args[index];
+    if (!token.startsWith('--')) continue;
+    const key = token.slice(2);
+    const next = command.args[index + 1];
+    if (next && !next.startsWith('--')) {
+      values[key] = next;
+      index += 1;
+    } else {
+      values[key] = true;
+    }
+  }
+  return values;
 }
 
 function route() {
@@ -330,6 +354,66 @@ test('boredom proof-DAG study configuration holds treatment dormant until one pu
   assert.equal(applied.selected_register, job.realization);
   assert.equal(state.resistanceActionRegisterStudy.trigger_turn, 2);
   assert.equal(events[0].assignmentManifestSha256, loaded.plan.assignment_manifest_sha256);
+});
+
+test('boredom proof-DAG launch verifies the resolved production learner profile by stable id', () => {
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION) });
+  const plan = buildTutorStubBoredomProofDagBatchPlan({
+    registrationPath: REGISTRATION,
+    batchId: 'execution_batch_1',
+    destination: path.join(os.tmpdir(), 'boredom-proof-dag-production-profile-id'),
+    expectedSourceCommit: head,
+  });
+  const args = commandArgs(plan.jobs[0].command);
+  const runtime = createTutorStubAutomatedLearnerGenerationRuntime({
+    appendTraceEvent() {},
+    callPromptModel() {
+      throw new Error('profile-id launch validation must not call a model');
+    },
+    classificationFromCombinedAnalysis() {},
+    env: { TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS: 'prospective_v4' },
+    extractCombinedLearnerAnalysis() {},
+    learnerProfileContract,
+    learnerProfileIds,
+    learnerProfilePrompt,
+    negativeFloorRegisters: [],
+  });
+  args['auto-learner-profile'] = runtime.resolveAutomatedLearnerProfile(args['auto-learner-profile']);
+  assert.notEqual(args['auto-learner-profile'], 'bored');
+  const resolvedProfileId = runtime.automatedLearnerProfileId(args['auto-learner-profile']);
+  assert.equal(resolvedProfileId, 'bored');
+  const events = [];
+  const state = { trace: null, turns: [], history: [], register: { palette: ['plain', 'warm'], history: [] } };
+  const configured = configureTutorStubBoredomProofDagFromCli({
+    args,
+    state,
+    root: ROOT,
+    autoLearnerEnabled: true,
+    autoLearnerProfileId: resolvedProfileId,
+    autoTurns: Number(args['auto-turns']),
+    appendTraceEvent(_trace, event) {
+      events.push(event);
+    },
+    observationSemantics: 'prospective_v4',
+  });
+  assert.equal(configured.loaded.sha256, loaded.sha256);
+  assert.equal(configured.job.id, plan.jobs[0].id);
+  assert.equal(events[0].type, 'resistance_action_register_boredom_proof_dag_execution_start');
+  assert.throws(
+    () =>
+      configureTutorStubBoredomProofDagFromCli({
+        args,
+        state,
+        root: ROOT,
+        autoLearnerEnabled: true,
+        autoLearnerProfileId: 'diligent',
+        autoTurns: Number(args['auto-turns']),
+        appendTraceEvent() {},
+        observationSemantics: 'prospective_v4',
+      }),
+    /launch pins or remaining 60-attempt ceiling drifted/u,
+  );
 });
 
 test('boredom proof-DAG recovery selects only absent or trace-proven technical units', (t) => {
