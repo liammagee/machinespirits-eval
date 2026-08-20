@@ -1,0 +1,149 @@
+{
+  "schema": "machinespirits.artifact-bundle-manifest.v1",
+  "createdAt": "2026-08-20T06:31:57Z",
+  "note": "Historical feature/user-story tracker outputs externalized after their one-shot builders were retired; private archive is the source of record.",
+  "archive": {
+    "path": "archives/feature-user-story-tracker-2026-06-23.tar.gz",
+    "format": "tar.gz",
+    "root": "outputs/feature-user-story-tracker",
+    "bytes": 11402705,
+    "sha256": "e7454fe3d6fabb57a90d31d2808684137391b2a1950e1603c82283f39861b24d"
+  },
+  "files": [
+    {
+      "file": "coverage-summary-preview.png",
+      "bytes": 74947,
+      "sha256": "212918bbbef3a538d228aeb5dafc5c822b007e8eb7a008bd523ae440188ef434"
+    },
+    {
+      "file": "feature-stories-preview.png",
+      "bytes": 545886,
+      "sha256": "762192f82f7223c732d4ee93bec20adbf94def101d3c892ec4bc447ff23be21a"
+    },
+    {
+      "file": "feature-user-story-tracker.xlsx.inspect.ndjson",
+      "bytes": 589791,
+      "sha256": "bece306879380e64ae7f3546b6bb39e536d2293e799c1f968726cd8e5877dff5"
+    },
+    {
+      "file": "smoke-adjudication.png",
+      "bytes": 38887,
+      "sha256": "498fd046943dcb8078b213298f49f0917327c12f210677778827c07990d6e893"
+    },
+    {
+      "file": "smoke-chat.png",
+      "bytes": 1498780,
+      "sha256": "f47ffc5bdb96d9982dc8d1cd8a68b8fe7fe75ed321b5da4c7cd0d845909a6ab8"
+    },
+    {
+      "file": "smoke-geist-explained-lightbox.png",
+      "bytes": 170702,
+      "sha256": "35609a00a8d925ad1f819e7059d83d2ceb827c7099abdefb1961aa835e64bb8b"
+    },
+    {
+      "file": "smoke-geist-explained.png",
+      "bytes": 210175,
+      "sha256": "acf9dd27704ca5cdac9ddd4d1c2de86384cf5ebb84d3e801e5d844636ea864da"
+    },
+    {
+      "file": "smoke-geist-in-the-machine-interactions.png",
+      "bytes": 120740,
+      "sha256": "61d65ae8d9bd6d0db20d2392f4bd3f76a8c6adc7aef80ebabdebcbcb080ff79d"
+    },
+    {
+      "file": "smoke-geist-in-the-machine.png",
+      "bytes": 202952,
+      "sha256": "a0b4b107047f3d7744ecef83a239bb718bd8991fb335810dbe46fecc8cc4e7b5"
+    },
+    {
+      "file": "smoke-pilot-admin.png",
+      "bytes": 16871,
+      "sha256": "f35f15fe3c90cc3d8a9b23fb0c6f8a1c34edd5ec77840c99cf6f1eeb1b21ab08"
+    },
+    {
+      "file": "smoke-pilot.png",
+      "bytes": 67483,
+      "sha256": "ed42943913aff7636b320354e6436957a10067ee08b67a0dd307f68cadaa3142"
+    },
+    {
+      "file": "smoke-poetics-board.png",
+      "bytes": 203567,
+      "sha256": "60af78784f253f529460c8b4a0a545950b8d484689ae9d9e8aa35b00e6784225"
+    },
+    {
+      "file": "smoke-poetics-browse.png",
+      "bytes": 89177,
+      "sha256": "d3bfd0875708b781775b4e055f3562611dea90556afd66de29088b63a6f79504"
+    },
+    {
+      "file": "smoke-poetics-compose.png",
+      "bytes": 352905,
+      "sha256": "438b1f5f82786a556ed84a3f1ebf9e3f9aeb92a00a3f430109593bfb69d00106"
+    },
+    {
+      "file": "smoke-poetics-curriculum.png",
+      "bytes": 1072774,
+      "sha256": "53dcee0b199055539747ed7a2ee98ae39284440caf9bd97d390606690eab7d79"
+    },
+    {
+      "file": "smoke-poetics-derivation-live.png",
+      "bytes": 864196,
+      "sha256": "aaa9e7389126bf5517bf3d63c157c688417ff4d43f99a0b19cdadf288fdbc510"
+    },
+    {
+      "file": "smoke-poetics-derivation.png",
+      "bytes": 1007305,
+      "sha256": "241d243b4b4b996c5d73382f36c0cbc8cccb53b6d6efa42df96bbbffb2665399"
+    },
+    {
+      "file": "smoke-poetics-live-compose.png",
+      "bytes": 948883,
+      "sha256": "5764c2a32874619832fbd9305865c70e84d00ca748cb5445a0d068c257ab03e9"
+    },
+    {
+      "file": "smoke-poetics-ontology.png",
+      "bytes": 690095,
+      "sha256": "0e86a2a9491a08cb48e6c9ea698766915dcad21a453f514b5ed4b87ecad76a93"
+    },
+    {
+      "file": "smoke-poetics-replays.png",
+      "bytes": 1129737,
+      "sha256": "11a000c7d5bec43ac1ff476f22651cdb05f3f63261625e1fb664a06683509115"
+    },
+    {
+      "file": "smoke-poetics-runs.png",
+      "bytes": 1080881,
+      "sha256": "aeac6f4eb7fa6b0d05b47db3c76fc92fd6ed6f7a3d03ac25e3b7f81e3c5eac14"
+    },
+    {
+      "file": "smoke-poetics-story.png",
+      "bytes": 205306,
+      "sha256": "11f7121f82768bdf76a9984d9f5ba176ec36e0867927d4c051e3d607fb1174fc"
+    },
+    {
+      "file": "smoke-poetics-summary.png",
+      "bytes": 253138,
+      "sha256": "31ccb8741f58c24bc66d3d22d322220236d479fbba94340b297bbecdf7ea951f"
+    },
+    {
+      "file": "smoke-root.png",
+      "bytes": 103285,
+      "sha256": "6a269cb43b4a4e3e72cf899a25fdccb36fec53f13513d652efab6e3e134ede5c"
+    },
+    {
+      "file": "status-definitions-preview.png",
+      "bytes": 150486,
+      "sha256": "368ecaf7fb2445a2e44d02359d75b7bea0957ec78dd9612733923f4c7fd3ce3e"
+    },
+    {
+      "file": "test-results-2026-06-22.json",
+      "bytes": 32142,
+      "sha256": "7a434e6533dd048f57be8862a09e07bf40daa493218381ff2c1b06d0ff4d5f7a"
+    },
+    {
+      "file": "testing-log-preview.png",
+      "bytes": 439969,
+      "sha256": "6a2d540c59e8cd05b7f87ccad5cd6ed5472d9cb83f7e116350e4a341e15fa0c2"
+    }
+  ]
+}

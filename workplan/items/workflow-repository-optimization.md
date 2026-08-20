@@ -8,7 +8,7 @@ owner: codex
 source: manual
 created: 2026-08-19
 updated: 2026-08-20
-branch: codex/stale-code-disposition
+branch: codex/feature-tracker-archive
 verification: >-
   Reproducible before/after measurements show that local and hosted CI select
   the same fail-closed profiles, avoid measured orchestration and test delays,
@@ -33,6 +33,7 @@ links:
     - https://github.com/liammagee/machinespirits-eval/pull/712
     - https://github.com/liammagee/machinespirits-eval/pull/714
     - https://github.com/liammagee/machinespirits-eval/pull/717
+    - https://github.com/liammagee/machinespirits-eval/pull/719
   notes:
     - docs/next-steps/2026-08-19-coordinator-workflow-efficiency-audit.md
     - docs/next-steps/2026-08-20-stale-code-disposition.md
@@ -293,3 +294,17 @@ Log:
   tests. Neither surface differs from `main`; hosted full CI remains the
   publication gate. Reports are retained under `.test-tmp/wave4-*` and
   `.test-tmp/local-ci/2026-08-20T06-01-46-574Z/`.
+- 2026-08-20 — PR #719 merged Wave 4A as
+  `e35cca1672179ce644837206ce0359aab800e936`. With explicit approval for the
+  next artifact move, Wave 4B packed the 27-file / 12,161,060-byte historical
+  feature-tracker output into the canonical Syncthing-backed private archive.
+  The 11,402,705-byte USTAR bundle verifies at SHA-256
+  `e7454fe3d6fabb57a90d31d2808684137391b2a1950e1603c82283f39861b24d`;
+  its public/private manifests are byte-identical, its checksum sidecar passes,
+  and a retained clean-room restore at
+  `/private/tmp/ms-feature-tracker-restore.0p2l1Q` reproduced all 27 members
+  before their repository copies were untracked. The archive is inside the
+  Syncthing-managed data root, but the publication-time client had no configured
+  remote peer, so no off-machine replica is claimed. The frozen legacy private
+  Git repository, Git history, worktrees, databases, model routes, and
+  unrelated artifacts remain untouched.

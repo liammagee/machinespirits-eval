@@ -27,9 +27,11 @@ removed by this tranche.
 
 ## Retained surfaces
 
-- `outputs/feature-user-story-tracker/` remains historical evidence. It is a
-  later artifact-separation candidate, not dead source code; moving or deleting
-  it requires an explicit retention and restore decision.
+- `outputs/feature-user-story-tracker/` was retained by Wave 4A as historical
+  evidence rather than dead source code. Wave 4B later moved its exact 27-file
+  payload to the checksummed Syncthing-backed private archive under explicit
+  approval, retained a public restore manifest, and untracked the repository
+  copies only after a clean-room restore passed.
 - `scripts/archive/oneoff/` remains a deliberate frozen provenance archive.
   Several entries are bound by `config/evaluation-store-boundary-inventory.json`
   or `config/model-cli-launch-manifest.json`; they are not live tools, but
