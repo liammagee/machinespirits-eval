@@ -38,7 +38,9 @@ function clone(value) {
 }
 
 function assertConfirmationRegistration(registration) {
-  if (registration?.version !== 3) throw new Error('confirmation requires the V3 action/register registration');
+  if (![3, 4].includes(registration?.version)) {
+    throw new Error('confirmation requires a registered V3 or V4 action/register confirmation design');
+  }
   return registration;
 }
 
@@ -62,8 +64,9 @@ export function buildTutorStubResistanceActionRegisterConfirmationPlan({ registr
       globalIndex += 1;
       const assignment = assignments[slot];
       const realization = assignment.realization;
+      const confirmationRevision = frozen.version === 4 ? 'v2-' : '';
       jobs.push({
-        id: `frame_refuser-confirmation-${block.id}-s${slot + 1}`,
+        id: `frame_refuser-confirmation-${confirmationRevision}${block.id}-s${slot + 1}`,
         block_id: block.id,
         slot: slot + 1,
         assignment_index: globalIndex,
@@ -208,6 +211,7 @@ export function configureTutorStubResistanceActionRegisterConfirmationFromCli({
     registrationPath: path.resolve(root, registrationPath),
   });
   const job = resolveTutorStubResistanceActionRegisterConfirmationJob({ loaded, jobId });
+  const requiredObservationSemantics = loaded.registration.design.trigger.observationSemantics;
   if (
     !autoLearnerEnabled ||
     Number(autoTurns) !== 4 ||
@@ -224,7 +228,7 @@ export function configureTutorStubResistanceActionRegisterConfirmationFromCli({
     args['eval-job-id'] !== job.id ||
     args['no-opening'] === true ||
     args['acknowledge-research-use'] !== true ||
-    observationSemantics !== 'prospective_v4'
+    observationSemantics !== requiredObservationSemantics
   ) {
     throw new Error('fresh action/register confirmation launch pins or remaining 60-attempt ceiling drifted');
   }
@@ -361,7 +365,7 @@ export function runTutorStubResistanceActionRegisterConfirmationPreflight({ cont
       maximum_model_attempt_reservations_per_dialogue: 60,
       maximum_model_attempt_reservations_per_batch: 240,
       combined_maximum_model_attempt_reservations: 2160,
-      programme_ceiling_required: 2345,
+      programme_ceiling_required: readiness.programmeLedgerAfterMaximum.ceiling,
       calibration_dialogues_reused_or_pooled: 0,
       partial_or_interim_interpretation_permitted: false,
       model_calls: 0,

@@ -1323,3 +1323,49 @@ and explicit human approval.
   calls and zero production writes. Launch requires the request's exact
   digest-bound sentence amending the programme ceiling; until that sentence is
   supplied, no live batch or analyzer may run.
+- 2026-08-20 — Closed the first powered confirmation as incomplete with no
+  verdict after its first four-dialogue block reached a registered substantive
+  trigger failure. Request
+  `16f93e48f0b19fe23f0b91dabc9ac318f210ecbba6fbe954d76677d43fb78554`
+  consumed 34 reservations and completed 34 model calls with zero provider
+  failures: three dialogues completed and one stopped because no eligible
+  trigger was recorded by T2. No later block, recovery, analyzer, combined
+  report, arm comparison, or outcome interpretation ran. Programme accounting
+  is therefore `219/2345`. The entire partial block is excluded from every
+  successor: none of its dialogues, prefixes, outcomes, or treatment
+  assignments may be reused, pooled, selected, or credited. Its exact evidence
+  is archived on private feature branch
+  `codex/resistance-action-register-confirmation-v1-incomplete-archive` at
+  commit `4604cc31920913e10b3e04565bf3d70def7c112e`; the local and live-mirror
+  inventory digests are `4b7345dd…` and `8f530416…` respectively.
+
+  Zero-call diagnosis found an instrument defect rather than a transport or
+  provider failure. The failed dialogue's T1 was an unambiguous
+  nonparticipatory jurisdiction refusal with no supported public move, but the
+  generic timing heuristic treated the classifier word “steering” as uptake;
+  its T2 denial of authority to a proposed reading of the trial-book was also
+  outside prospective-v4's lexical coverage. The registered substantive stop
+  was mechanically correct, so same-source recovery is forbidden. The
+  prospective V4 successor registration instead adds opt-in
+  `prospective_v5` observation semantics and an observer-first confirmation
+  eligibility rule: an unambiguous refusal with zero supported moves and no
+  real content-bearing uptake may trigger even when the generic timing proxy
+  says uptake. Genuine uptake, ambiguity, comprehension repair, protected
+  affect, content-bearing contribution, and previously consumed intervention
+  still fail closed. V1–V3 registrations and prospective-v1 through v4
+  semantics remain unchanged.
+
+  The successor preserves the original powered design and hard study envelope:
+  36 wholly fresh independent dialogues, 18 warm and 18 plain, nine balanced
+  four-dialogue blocks, one final two-sided Fisher exact test, no interim
+  analysis, and `2160` maximum attempts. Because the prior stop moved the
+  ledger from 185 to 219, the smallest ceiling that preserves the entire fresh
+  envelope is now `219 + 2160 = 2379`, exactly `+34` above the authorized
+  `2345`. Registration V4 and endpoint contract V2 remain HOLD-only with null
+  approval, false live/model authorization, zero calls, and complete binding of
+  the stopped request, archive, accounting, and exclusion. After the repair is
+  merged, a new digest-bound successor request with nine fresh create-once
+  destinations must be prepared and independently reviewed. Launch then
+  requires an explicit `2345`-to-`2379` ceiling amendment and approval of that
+  new request digest; the already consumed V1 approval cannot authorize the
+  changed source, observation semantics, destination set, or programme cap.

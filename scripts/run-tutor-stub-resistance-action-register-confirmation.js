@@ -234,7 +234,7 @@ function childCommand({ loaded, job, destination, modelCallBudget = PER_DIALOGUE
     ],
     cwd: ROOT,
     env: {
-      TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS: 'prospective_v4',
+      TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS: loaded.registration.design.trigger.observationSemantics,
       TUTOR_STUB_REMEMBER_SETTINGS: '0',
     },
     job_root: jobRoot,
