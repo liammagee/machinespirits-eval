@@ -70,6 +70,7 @@ links:
     - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v3.endpoint-go.json
     - config/tutor-stub-frame-refuser-opportunity-study-go-request.v1.json
     - config/tutor-stub-frame-refuser-opportunity-study-go-request.v2.json
+    - config/tutor-stub-frame-refuser-opportunity-study-go-request.v3.json
     - services/pedagogicalMove/resistantProfileWarrantShadow.js
     - scripts/tutor-stub-learner-profile-contracts.js
     - scripts/prepare-tutor-stub-resistant-profile-discrimination.js
@@ -102,7 +103,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/frame-refuser-opportunity-v3-readiness
+branch: codex/frame-refuser-opportunity-v3-go-request
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -698,3 +699,25 @@ and explicit human approval.
   existence of three distinct early treatment prefixes with productive nearest-
   neighbour controls, not tutor adaptation, action or register efficacy,
   learning outcomes, human validity, or cell-harness transfer.
+- 2026-08-20 — Prepared the final non-executable prospective-v3 GO request
+  under HOLD at SHA-256
+  `2cbe95ba7ec713888e5ed6c405b4856bdfb021be962d771a7578b9d62dc998f2`.
+  It pins PR #710 merge commit
+  `1d27d87953e125bedd8ec3b3c1336714d1e2601f` and tree
+  `62b93320bd3c86dce102b5294410b96fb3dee135`, the complete 19-file
+  executable closure, the prospective-v3 registration and endpoint
+  certificate, the explicit `prospective_v3` runtime selector, both typed
+  no-public-candidate exhaustion diagnostics, and the registered one-repair
+  `43/48` fail-before-call envelope. The request starts a wholly fresh `3+3`
+  Luna cohort at the absent create-once destination
+  `.tutor-stub-auto-eval/frame-refuser-opportunity-v3-live-2026-08-20`, with
+  48 attempts per dialogue, a 288-attempt total ceiling, and bounded technical
+  recovery for missing or failed units only. It records v1's immutable failed
+  report and v2's incomplete 180-attempt execution, private archive commit,
+  plan, seal, and inventory digests as excluded historical evidence: no prior
+  dialogue is reused, resumed, or pooled. Both authorization booleans remain
+  false and approval is null. Packaging and dependency-free validation made
+  zero model calls and zero production writes; execution requires separate
+  explicit human approval of the exact request digest and ceiling. The claim
+  boundary remains treatment-opportunity only, excluding tutor adaptation,
+  action or register efficacy, learning, human validity, and cell transfer.
