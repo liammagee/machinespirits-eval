@@ -1147,3 +1147,38 @@ and explicit human approval.
   calls and zero production writes. Any resulting interpretation remains the
   original calibration-only recovery/repeat-stability estimand and licenses no
   tutor, register, learning, human-validity, or transfer efficacy claim.
+- 2026-08-20 — The analysis-only request
+  `965aca0ad1f61d2f43891c162861180016d79a8afa5c090ace0e3e88a436e0dd`
+  merged through PR #734 at
+  `515bddb3ed125fdeb4008fb77a1693a91401f30f`. Its sole registered analyzer
+  invocation completed successfully and wrote the 12-dialogue baseline report
+  at SHA-256
+  `42021a390338cd556386efc96d8f00b35655a411627908a10248dba1e473a3a5`.
+  Assembly, all six registered endpoint statuses, and treatment fidelity passed:
+  both sealed batches contributed exactly their prebound traces, accounting
+  remained `76/76/0/0` with no technical recovery, action and register
+  visibility were each `1.000`, and no safety override or protected condition
+  occurred. Warm recovered `4/6` versus plain `1/6`, a descriptive difference
+  of `+0.500`; five of six same-treatment prefix pairs were stable across A/B,
+  with warm drift `0.000` and plain drift `0.333`. The exact two-sided Fisher
+  contrast is `p = 0.2424`, so this remains sizing evidence rather than an
+  efficacy result. The report is durably archived byte-identically on private
+  feature branch `codex/resistance-action-register-v2-analysis-report-archive`
+  at commit `0857363dabb4445052159b8218acaed13d921949`; its private ledger records
+  the unchanged programme total `185/1200`, and the sealed A/B archives remain
+  unchanged.
+
+  The registered next-phase sizing boundary does not fit the standing ceiling.
+  At the observed plain `1/6` and warm `4/6` rates, the repository's exact
+  two-sided Fisher calculation requires 18 dialogues per arm to reach at least
+  80% power at alpha `0.05`, even before adding the mismatched-action and edged
+  realization cells. The remaining 1,015 reservations support at most 26 fresh
+  dialogues under the unchanged 39-reservation per-dialogue cap; the simple
+  36-dialogue two-arm confirmation would require up to 1,404 reservations, and
+  a six-cell design with 18 dialogues per cell would require 108 dialogues and
+  up to 4,212 reservations. No underpowered factorial or efficacy GO request
+  will therefore be prepared under the current `1200` ceiling. Continuing to a
+  confirmatory action-fit/register study requires an explicit prospective
+  programme amendment that changes the ceiling or narrows the scientific scope
+  and claim; until then, the defensible disposition is calibration complete,
+  efficacy unresolved, and zero further model calls.
