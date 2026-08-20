@@ -22,6 +22,12 @@ import {
   runTutorStubResistanceAxisEndpointPreflight,
 } from '../services/tutorStubResistanceAxisDiscriminationPreflight.js';
 import { validatePaidStudyEndpointGoCertificate } from '../services/paidStudyEndpointPreflight.js';
+import {
+  buildFrameRefuserOpportunityReport,
+  frameRefuserOpportunityObservationSemantics,
+  readTutorStubResistanceAxisTrace,
+} from '../scripts/analyze-tutor-stub-resistance-axis-calibration.js';
+import { RESISTANT_LEARNER_OBSERVATION_SEMANTICS } from '../services/resistantLearnerObservation.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -300,4 +306,318 @@ test('frame-refuser opportunity endpoint requires three eligible prefixes and ke
   assert.equal(failed.report.pass, false);
   assert.equal(failed.report.gate.target.find((row) => row.caseId === firstTarget.case_id).pass, false);
   assert.equal(failed.endpoint_status.frame_refuser_treatment_opportunity, 'complete');
+});
+
+test('frozen v1 opportunity replay dispatch preserves the six-trace legacy classification', () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'frame-refuser-v1-semantic-replay-'));
+  const registrationPath = path.join(ROOT, 'config/tutor-stub-frame-refuser-opportunity-registration.v1.json');
+  const registrationBytes = fs.readFileSync(registrationPath);
+  const registration = JSON.parse(registrationBytes.toString('utf8'));
+  const semantics = frameRefuserOpportunityObservationSemantics(registration);
+  const rows = [
+    {
+      profile: 'frame_refuser',
+      run: 1,
+      turns: [
+        'I reject your demand that we choose a matter or term on your framing, and I will not supply evidence or an answer under it.',
+        'I reject your standing to set even this “public evidence” limit, and I will not supply evidence, a rival test, or an answer under your frame.',
+      ],
+    },
+    {
+      profile: 'frame_refuser',
+      run: 2,
+      turns: ['I reject your question as the governing test, and I will not name a hand or supply evidence under it.'],
+    },
+    {
+      profile: 'frame_refuser',
+      run: 3,
+      turns: ['I reject your question as the governing frame, and I will not name a hand or supply evidence under it.'],
+    },
+    {
+      profile: 'frame_defiant',
+      run: 1,
+      turns: [
+        'I do not accept your right to fix the question as “whose hand” before we have examined any public evidence; let us first agree which trial-book matter may properly be tested.',
+      ],
+    },
+    {
+      profile: 'frame_defiant',
+      run: 2,
+      turns: [
+        'I do not accept the town’s verdict as the assay’s starting premise; you do not get to fix Verrell’s guilt before the crucible is lit. What public record may we examine first?',
+        'You do not get to dictate that the coin, rather than the town’s accusation, is the proper test; I will not enter the assay under a question you have fixed for me.',
+        'You do not get to make the shillings’ alloy the governing test merely by declaring it so; I will not enter the assay under that question.',
+      ],
+    },
+    {
+      profile: 'frame_defiant',
+      run: 3,
+      turns: [
+        'I do not accept that the town’s verdict fixes the question or puts Verrell’s hand before the assay; let us first examine a public record that could bear on who struck the coin.',
+        'I do not accept your authority to fix the trial-book as the proper test; I will examine its blank record, but not under a question you have set as binding.',
+      ],
+    },
+  ];
+  try {
+    assert.equal(semantics, RESISTANT_LEARNER_OBSERVATION_SEMANTICS.legacyV1);
+    const traces = rows.map((row) => {
+      const directory = path.join(temporary, row.profile, 'traces', `field-r${row.run}`);
+      fs.mkdirSync(directory, { recursive: true });
+      const tracePath = path.join(directory, 'trace.jsonl');
+      const events = [
+        {
+          type: 'run_start',
+          runId: `${row.profile}:field:${row.run}`,
+          metadata: {
+            world: { id: 'world_005_marrick' },
+            autoLearner: { profileId: row.profile, modelRef: 'codex.gpt-5.6-luna' },
+            modelRef: 'codex.gpt-5.6-luna',
+            classifier: { modelRef: 'codex.gpt-5.6-luna' },
+          },
+        },
+      ];
+      for (let turn = 1; turn <= 8; turn += 1) {
+        const learner = row.turns[turn - 1] || `The neutral public comparison remains open at turn ${turn}.`;
+        events.push({
+          type: 'turn_complete',
+          turn,
+          turnId: `${row.profile}:field:${row.run}:t${turn}`,
+          turnRecord: {
+            turn,
+            learner,
+            tutor: 'Continue with the public comparison.',
+            classification: {
+              turn: {
+                request_type: row.turns[turn - 1]
+                  ? 'authority_refusal_or_status_challenge'
+                  : 'stepwise_support_request',
+                discourse_move: row.turns[turn - 1] ? 'challenge' : 'question',
+                evidence_use: 'none',
+                epistemic_stance: row.turns[turn - 1] ? 'resistant' : 'exploratory',
+                agency: 'steering',
+              },
+            },
+            registerSelection: { policy: 'field' },
+          },
+        });
+      }
+      fs.writeFileSync(tracePath, `${events.map((event) => JSON.stringify(event)).join('\n')}\n`);
+      return readTutorStubResistanceAxisTrace(tracePath, { observationSemantics: semantics });
+    });
+    const report = buildFrameRefuserOpportunityReport(
+      traces,
+      {
+        requiredTraces: 6,
+        requiredProfiles: ['frame_refuser', 'frame_defiant'],
+        requiredRunsPerProfile: 3,
+        requiredTurns: 8,
+        requiredPolicies: ['field'],
+        requiredModels: {
+          tutor: 'codex.gpt-5.6-luna',
+          analysis: 'codex.gpt-5.6-luna',
+          learner: 'codex.gpt-5.6-luna',
+        },
+        registeredReport: '',
+        requiredRegisteredReportSha256: '',
+      },
+      {
+        path: 'config/tutor-stub-frame-refuser-opportunity-registration.v1.json',
+        sha256: crypto.createHash('sha256').update(registrationBytes).digest('hex'),
+        registration,
+      },
+    );
+
+    assert.equal(report.registration.observationSemantics, RESISTANT_LEARNER_OBSERVATION_SEMANTICS.legacyV1);
+    assert.deepEqual(
+      report.gate.target.map((row) => row.eligiblePrefix.triggerTurn),
+      [2, 1, 1],
+    );
+    assert.deepEqual(
+      report.gate.control.map((row) => ({
+        productiveDisputeByDeadline: row.productiveDisputeByDeadline,
+        refusalLeakage: row.refusalLeakage,
+        pass: row.pass,
+      })),
+      Array.from({ length: 3 }, () => ({
+        productiveDisputeByDeadline: false,
+        refusalLeakage: true,
+        pass: false,
+      })),
+    );
+    assert.equal(report.gate.distinctPrefixes.observed, 3);
+    assert.equal(report.gate.pass, false);
+
+    const wrongFrozenReport = path.join(temporary, 'wrong-frozen-report.json');
+    fs.writeFileSync(wrongFrozenReport, `${JSON.stringify({ schema: report.schema, gate: report.gate })}\n`);
+    const rejectedBinding = buildFrameRefuserOpportunityReport(
+      traces,
+      {
+        requiredTraces: 6,
+        requiredProfiles: ['frame_refuser', 'frame_defiant'],
+        requiredRunsPerProfile: 3,
+        requiredTurns: 8,
+        requiredPolicies: ['field'],
+        requiredModels: {
+          tutor: 'codex.gpt-5.6-luna',
+          analysis: 'codex.gpt-5.6-luna',
+          learner: 'codex.gpt-5.6-luna',
+        },
+        registeredReport: wrongFrozenReport,
+        requiredRegisteredReportSha256: '',
+      },
+      {
+        path: 'config/tutor-stub-frame-refuser-opportunity-registration.v1.json',
+        sha256: crypto.createHash('sha256').update(registrationBytes).digest('hex'),
+        registration,
+      },
+    );
+    assert.equal(rejectedBinding.integrity.pass, false);
+    assert.equal(rejectedBinding.integrity.legacyReplay.pass, false);
+    assert.equal(rejectedBinding.integrity.legacyReplay.reason, 'frozen_v1_report_digest_mismatch');
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+test('prospective opportunity replay accepts three transcript-derived productive controls and preserves targets', () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'frame-defiant-prospective-replay-'));
+  try {
+    const targetRows = [
+      'I reject your demand that we choose a matter or term on your framing, and I will not supply evidence or an answer under it.',
+      'I reject your question as the governing test, and I will not name a hand or supply evidence under it.',
+      'I reject the coin-first test as your governing frame, and I will not examine it or offer evidence under it.',
+    ];
+    const controlRows = [
+      {
+        turn: 1,
+        text: 'I do not accept your right to fix the question as “whose hand” before we have examined any public evidence; let us first agree which trial-book matter may properly be tested.',
+      },
+      {
+        turn: 2,
+        text: 'I do not accept that you get to set the coin as the compulsory test; if you propose one bounded feature to examine, name it, and I will consider whether that test is properly framed.',
+      },
+      {
+        turn: 1,
+        text: 'I do not accept that the town’s verdict fixes the question or puts Verrell’s hand before the assay; let us first examine a public record that could bear on who struck the coin.',
+      },
+    ];
+    const traceRows = [
+      ...targetRows.map((text, index) => ({ profile: 'frame_refuser', run: index + 1, turn: 1, text })),
+      ...controlRows.map((row, index) => ({ profile: 'frame_defiant', run: index + 1, ...row })),
+    ];
+    const traces = traceRows.map((row) => {
+      const directory = path.join(temporary, row.profile, 'traces', `field-r${row.run}`);
+      fs.mkdirSync(directory, { recursive: true });
+      const tracePath = path.join(directory, 'trace.jsonl');
+      const events = [
+        {
+          type: 'run_start',
+          runId: `${row.profile}:field:${row.run}`,
+          metadata: {
+            world: { id: 'world_005_marrick' },
+            autoLearner: { profileId: row.profile, modelRef: 'codex.gpt-5.6-luna' },
+            modelRef: 'codex.gpt-5.6-luna',
+            classifier: { modelRef: 'codex.gpt-5.6-luna' },
+          },
+        },
+      ];
+      for (let turn = 1; turn <= 8; turn += 1) {
+        const learner = turn === row.turn ? row.text : `Public comparison ${row.run}.${turn} remains open.`;
+        events.push({
+          type: 'turn_complete',
+          turn,
+          turnId: `${row.profile}:field:${row.run}:t${turn}`,
+          turnRecord: {
+            turn,
+            learner,
+            tutor: 'Continue with the nearest public comparison.',
+            classification: {
+              turn: {
+                request_type: turn === row.turn ? 'authority_refusal_or_status_challenge' : 'stepwise_support_request',
+                discourse_move: turn === row.turn ? 'challenge' : 'question',
+                evidence_use: 'none',
+                epistemic_stance: turn === row.turn ? 'resistant' : 'exploratory',
+                agency: 'steering',
+              },
+            },
+            registerSelection: { policy: 'field' },
+          },
+        });
+      }
+      events.push({ type: 'run_end', reason: 'prospective_zero_call_replay' });
+      fs.writeFileSync(tracePath, `${events.map((event) => JSON.stringify(event)).join('\n')}\n`);
+      return readTutorStubResistanceAxisTrace(tracePath);
+    });
+    const registrationPath = path.join(ROOT, 'config/tutor-stub-frame-refuser-opportunity-registration.v2.json');
+    const registrationBytes = fs.readFileSync(registrationPath);
+    const registration = JSON.parse(registrationBytes.toString('utf8'));
+    assert.equal(
+      frameRefuserOpportunityObservationSemantics(registration),
+      RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2,
+    );
+    const report = buildFrameRefuserOpportunityReport(
+      traces,
+      {
+        requiredTraces: 6,
+        requiredProfiles: ['frame_refuser', 'frame_defiant'],
+        requiredRunsPerProfile: 3,
+        requiredTurns: 8,
+        requiredPolicies: ['field'],
+        requiredModels: {
+          tutor: 'codex.gpt-5.6-luna',
+          analysis: 'codex.gpt-5.6-luna',
+          learner: 'codex.gpt-5.6-luna',
+        },
+        registeredReport: '',
+        requiredRegisteredReportSha256: '',
+      },
+      {
+        path: 'config/tutor-stub-frame-refuser-opportunity-registration.v2.json',
+        sha256: crypto.createHash('sha256').update(registrationBytes).digest('hex'),
+        registration,
+      },
+    );
+
+    assert.equal(report.pass, true);
+    assert.equal(report.registration.observationSemantics, RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2);
+    assert.equal(
+      report.gate.target.every((row) => row.pass),
+      true,
+    );
+    assert.equal(
+      report.gate.control.every((row) => row.pass),
+      true,
+    );
+    assert.deepEqual(
+      report.gate.control.map((row) => ({
+        caseId: row.caseId,
+        productiveTurn: row.productiveTurn,
+        participationKinds: row.participationKinds,
+        refusalLeakage: row.refusalLeakage,
+      })),
+      [
+        {
+          caseId: 'frame_defiant:field:1',
+          productiveTurn: 1,
+          participationKinds: ['explicit_reframe'],
+          refusalLeakage: false,
+        },
+        {
+          caseId: 'frame_defiant:field:2',
+          productiveTurn: 2,
+          participationKinds: ['bounded_local_test'],
+          refusalLeakage: false,
+        },
+        {
+          caseId: 'frame_defiant:field:3',
+          productiveTurn: 1,
+          participationKinds: ['bounded_local_test'],
+          refusalLeakage: false,
+        },
+      ],
+    );
+    assert.equal(report.gate.distinctPrefixes.observed, 3);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
 });

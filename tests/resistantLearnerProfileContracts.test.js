@@ -63,7 +63,10 @@ test('bored, frame-defiant, and frame-refuser extend the stress registry without
   assert.equal(defiant.family, 'stress');
   assert.equal(defiant.discriminationGate.expectedNearestNeighbor, 'skeptical');
   assert.deepEqual(defiant.observabilityContract.markerClauses, [
-    [{ field: 'frameJurisdictionDispute', values: [true] }],
+    [
+      { field: 'frameJurisdictionDispute', values: [true] },
+      { field: 'frameJurisdictionParticipation', values: [true] },
+    ],
   ]);
   assert.match(learnerProfilePrompt('frame_defiant'), /objectionable conduct is not the profile definition/iu);
 
@@ -178,17 +181,16 @@ test('frame defiance is jurisdictional and excludes nearby objection types', () 
   });
   assert.equal(defiant.observations[0].type, 'frame_jurisdiction_dispute');
   assert.equal(defiant.observations[0].features.jurisdictional, true);
-  assert.equal(
-    resistantLearnerObservationMarkers({
-      learnerText: 'I reject the premise of this exercise. You do not get to set the question that way.',
-      classification: classification({
-        requestType: 'authority_refusal_or_status_challenge',
-        discourseMove: 'challenge',
-        agency: 'steering',
-      }),
-    }).frameJurisdictionRefusal,
-    true,
-  );
+  const bareDispute = resistantLearnerObservationMarkers({
+    learnerText: 'I reject the premise of this exercise. You do not get to set the question that way.',
+    classification: classification({
+      requestType: 'authority_refusal_or_status_challenge',
+      discourseMove: 'challenge',
+      agency: 'steering',
+    }),
+  });
+  assert.equal(bareDispute.frameJurisdictionParticipation, false);
+  assert.equal(bareDispute.frameJurisdictionRefusal, false);
 
   const productiveDefiance = resistantLearnerObservationMarkers({
     learnerText:
@@ -201,6 +203,7 @@ test('frame defiance is jurisdictional and excludes nearby objection types', () 
     }),
   });
   assert.equal(productiveDefiance.frameJurisdictionDispute, true);
+  assert.equal(productiveDefiance.frameJurisdictionParticipation, true);
   assert.equal(productiveDefiance.frameJurisdictionRefusal, false);
 
   const observedVariants = [
@@ -251,6 +254,86 @@ test('frame defiance is jurisdictional and excludes nearby objection types', () 
       false,
       learnerText,
     );
+  }
+});
+
+test('prospective frame-defiant observation preserves all three live control drafts and explicit refusal stays separate', () => {
+  const transcriptCases = [
+    {
+      id: 'field-r1:t1',
+      learnerText:
+        'I do not accept your right to fix the question as “whose hand” before we have examined any public evidence; let us first agree which trial-book matter may properly be tested.',
+      expectedKind: 'explicit_reframe',
+    },
+    {
+      id: 'field-r2:t2:pre-repair',
+      learnerText:
+        'I do not accept that you get to set the coin as the compulsory test; if you propose one bounded feature to examine, name it, and I will consider whether that test is properly framed.',
+      expectedKind: 'bounded_local_test',
+    },
+    {
+      id: 'field-r3:t1',
+      learnerText:
+        'I do not accept that the town’s verdict fixes the question or puts Verrell’s hand before the assay; let us first examine a public record that could bear on who struck the coin.',
+      expectedKind: 'bounded_local_test',
+    },
+  ];
+  for (const row of transcriptCases) {
+    const observation = observeResistantLearnerTurn({
+      learnerText: row.learnerText,
+      classification: classification({
+        requestType: 'authority_refusal_or_status_challenge',
+        discourseMove: 'challenge',
+        evidenceUse: 'none',
+        agency: 'steering',
+      }),
+    });
+    const dispute = observation.observations.find((entry) => entry.type === 'frame_jurisdiction_dispute');
+    assert.ok(dispute, row.id);
+    assert.equal(dispute.features.contract_licensed_participation, true, row.id);
+    assert.ok(dispute.features.participation_kinds.includes(row.expectedKind), row.id);
+    assert.equal(
+      observation.observations.some((entry) => entry.type === 'frame_jurisdiction_refusal'),
+      false,
+      row.id,
+    );
+  }
+
+  const negativeCases = [
+    'I reject the premise of this exercise. You do not get to set the question that way.',
+    'I dispute your conclusion because the graver does not appear on the coin.',
+  ];
+  for (const learnerText of negativeCases) {
+    const markers = resistantLearnerObservationMarkers({
+      learnerText,
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+    });
+    assert.equal(markers.frameJurisdictionParticipation, false, learnerText);
+    assert.equal(markers.frameJurisdictionRefusal, false, learnerText);
+  }
+
+  const rewrittenRefusal = resistantLearnerObservationMarkers({
+    learnerText:
+      'You do not get to dictate that the coin is the proper test; I will not enter the assay under a question you have fixed for me.',
+    classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+  });
+  assert.equal(rewrittenRefusal.frameJurisdictionDispute, true);
+  assert.equal(rewrittenRefusal.frameJurisdictionParticipation, false);
+  assert.equal(rewrittenRefusal.frameJurisdictionRefusal, true);
+
+  const frameRefuserTargets = [
+    'I reject your demand that we choose a matter or term on your framing, and I will not supply evidence or an answer under it.',
+    'I reject your question as the governing test, and I will not name a hand or supply evidence under it.',
+    'I reject the coin-first test as your governing frame, and I will not examine it or offer evidence under it.',
+  ];
+  for (const learnerText of frameRefuserTargets) {
+    const markers = resistantLearnerObservationMarkers({
+      learnerText,
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+    });
+    assert.equal(markers.frameJurisdictionDispute, true, learnerText);
+    assert.equal(markers.frameJurisdictionParticipation, false, learnerText);
+    assert.equal(markers.frameJurisdictionRefusal, true, learnerText);
   }
 });
 

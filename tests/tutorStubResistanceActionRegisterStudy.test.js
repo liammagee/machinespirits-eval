@@ -343,7 +343,7 @@ test('prefix extractor stops before the first eligible trigger and baseline plan
       const learner =
         profile === 'bored'
           ? 'Sure. Whatever.'
-          : 'I reject the premise of this exercise. You do not get to set the question that way.';
+          : `I reject the premise of this exercise, but let us test whether public mark ${repeat} bears on the question.`;
       const classification =
         profile === 'bored'
           ? {
@@ -474,6 +474,29 @@ test('prospective frame-refuser prefix gate requires jurisdictional refusal befo
     () =>
       extractTutorStubResistanceActionRegisterPrefix({
         tracePath: productiveTrace,
+        profile: 'frame_refuser',
+        requireFrozenBundle: false,
+      }),
+    /no eligible frame_refuser resistance trigger/u,
+  );
+
+  const boundedControlTrace = writeCandidate('bounded-control', {
+    learner:
+      'I do not accept that you get to set the coin as the compulsory test; if you propose one bounded feature to examine, name it, and I will consider whether that test is properly framed.',
+    classification: {
+      turn: {
+        request_type: 'authority_refusal_or_status_challenge',
+        discourse_move: 'challenge',
+        evidence_use: 'none',
+        epistemic_stance: 'resistant',
+        agency: 'steering',
+      },
+    },
+  });
+  assert.throws(
+    () =>
+      extractTutorStubResistanceActionRegisterPrefix({
+        tracePath: boundedControlTrace,
         profile: 'frame_refuser',
         requireFrozenBundle: false,
       }),

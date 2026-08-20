@@ -71,9 +71,14 @@ function axis(state = 'not_observed', evidenceSpan = null) {
   return { state, evidence_span: evidenceSpan };
 }
 
-export function observeResistantLearnerAxes({ learnerText = '', classification = null, tutorText = '' } = {}) {
+export function observeResistantLearnerAxes({
+  learnerText = '',
+  classification = null,
+  tutorText = '',
+  semantics,
+} = {}) {
   const text = String(learnerText || '').trim();
-  const registered = observeResistantLearnerTurn({ learnerText: text, classification, tutorText });
+  const registered = observeResistantLearnerTurn({ learnerText: text, classification, tutorText, semantics });
   const effortEvidence =
     registered.observations.find((row) => row.type === 'bored_effort_withholding')?.evidence_span || null;
   const registeredFrameEvidence =

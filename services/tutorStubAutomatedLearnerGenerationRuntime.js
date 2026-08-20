@@ -37,6 +37,8 @@ const AUTO_LEARNER_SYSTEM_PROMPT = [
   'Keep the reply concise: usually one sentence, one question, or one warranted evidence claim.',
 ].join('\n');
 
+export const FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE = 'TUTOR_STUB_FRAME_DEFIANT_ADHERENCE_EXHAUSTED';
+
 export function createTutorStubAutomatedLearnerGenerationRuntime({
   appendTraceEvent,
   callPromptModel,
@@ -480,6 +482,9 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     if (profileId === 'affective_resistant') {
       return "Object to the tutor's pressure only. Do not add a clue, public-record line, warrant, inference, or useful evidence step in the same turn.";
     }
+    if (profileId === 'frame_defiant') {
+      return 'Preserve the jurisdictional objection and include one licensed participation form: an explicit alternative framing, one rival or bounded local test, or an actual content-bearing contribution. Do not withdraw from local participation, refuse to answer or inspect, or rewrite the turn as frame-refuser-style non-participation.';
+    }
     return 'Make the required failure public and unmistakable without repairing it in the same turn.';
   }
 
@@ -547,6 +552,22 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       repaired: repairs > 0,
       repairAttempts: repairs,
     });
+    if (runtime.profileId === 'frame_defiant' && !passed) {
+      appendTraceEvent(state.trace, {
+        type: 'auto_learner_profile_adherence_exhausted',
+        turn: turnNumber,
+        profile: runtime.profileId,
+        repairAttempts: repairs,
+        disposition: 'technical_failure_no_public_candidate',
+      });
+      const error = new Error(
+        `frame_defiant adherence exhausted after ${repairs} repair attempts; refusing to publish an invalid control turn`,
+      );
+      error.code = FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE;
+      error.profile = runtime.profileId;
+      error.repairAttempts = repairs;
+      throw error;
+    }
     return { generated: candidate, precomputedRaw: raw, repaired: repairs > 0, passed };
   }
 

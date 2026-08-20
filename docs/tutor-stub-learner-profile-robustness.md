@@ -587,14 +587,33 @@ Prospectively, `frame_defiant` is retained as a productive-disagreement,
 no-intervention diagnostic. The separate `frame_refuser` stress profile names
 the missing treatment opportunity: a learner publicly disputes the tutor's
 standing to set the premise, question, or test while withholding any case
-evidence, rival test, or bounded on-merits answer. The existing public observer
-continues to emit `frameJurisdictionDispute` for both behaviors and adds the
-narrower `frameJurisdictionRefusal` marker only when the same classified turn
-contains no content-bearing uptake. This nested marker preserves all earlier
-frame-defiant results while making the prospective treatment gate explicit.
+evidence, rival test, or bounded on-merits answer.
 
-`frame_refuser` is not yet a validated paid-study instrument. Before replacing
-the frame-defiant cohort in the crossed study, a prospective held-out gate must
-show three distinct public prefixes with the refusal marker, no protected
-uptake at the trigger, and no non-target leakage. Until then, the prior frozen
-crossed registration remains on HOLD and makes no tutor-efficacy claim.
+The registered v1 opportunity study completed but failed its combined gate. Its
+immutable report at SHA-256
+`a95e5d650a0c5e74ab532c13019f7d9dcd8edf8163475bd8056801e86845d1d9`
+found the intended `frame_refuser` behavior in `3/3` dialogues with three
+distinct early prefixes. The `frame_defiant` controls failed `0/3`, however,
+because the v1 observer treated absence of its narrow content-bearing
+classifier label as refusal and the adherence repair rewrote one productive
+bounded-test draft into non-participation. This is a measurement and repair-
+runtime defect, not evidence that productive disagreement was absent.
+
+The prospective correction therefore requires a frame-jurisdiction dispute
+plus contract-licensed participation for a productive `frame_defiant` control:
+an explicit reframe, a rival or bounded local test, or an actual content-bearing
+contribution. A refusal requires explicit withholding of all three
+participation forms; absence of a generic classifier label alone cannot create
+refusal. The frame-defiant adherence repair must preserve the reframe or local
+test and cannot rewrite it as frame-refuser-style withdrawal. If two repair
+attempts still fail that contract, the runtime now raises a technical
+adherence-exhaustion error instead of publishing the invalid control turn.
+Zero-call replay classifies all three originally submitted control drafts as
+productive while leaving the frozen v1 report and failed verdict unchanged.
+The analyzer dispatches the frozen v1 registration through its original
+observer and prefix semantics and fails closed if a digest-bound replay differs
+from that report; only the version-2 registration selects the prospective
+participation rule. The prospective v2 registration retains the same `3+3`
+design, five-axis topology, turn-2 deadline, thresholds, and claim boundary. It
+does not authorize a new live gate, prepare a GO request, or establish tutor
+efficacy; those remain later prospective steps.
