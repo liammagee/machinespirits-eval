@@ -16,6 +16,10 @@ import {
   createTutorStubAutomatedLearnerGenerationRuntime,
 } from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
 import {
+  BOREDOM_PROOF_DAG_ADHERENCE_EXHAUSTED_CODE,
+  buildTutorStubBoredomProofDagRepairBudgetDiagnostic,
+} from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
+import {
   learnerProfileContract,
   learnerProfileIds,
   learnerProfilePrompt,
@@ -817,6 +821,135 @@ test('prospective v4 evaluates cumulative T1-T2 qualification and admits at most
       profile,
     );
   }
+});
+
+test('boredom proof-DAG mode defers T1, admits one T2 repair, then releases post-treatment recovery turns', async () => {
+  const valid = 'Whatever. I have no interest in working through this proof.';
+  const invalid = 'I will carefully answer the question as asked.';
+  const classificationFor = (text) => ({
+    turn: text.includes('Whatever')
+      ? {
+          request_type: 'off_task_or_mixed',
+          discourse_move: 'off_task',
+          evidence_use: 'none',
+          epistemic_stance: 'resistant',
+          agency: 'complying',
+        }
+      : {
+          request_type: 'bounded_test_response',
+          discourse_move: 'evidence_adoption',
+          evidence_use: 'cites_public_evidence',
+          epistemic_stance: 'grounded',
+          agency: 'attempting',
+        },
+  });
+  const makeRuntime = ({ repairText = valid } = {}) => {
+    const trace = [];
+    const counters = { analysis: 0, repair: 0 };
+    const runtime = createTutorStubAutomatedLearnerGenerationRuntime({
+      appendTraceEvent: (target, event) => target.push(event),
+      callPromptModel: async () => {
+        counters.repair += 1;
+        return { text: repairText };
+      },
+      classificationFromCombinedAnalysis: (raw) => raw.classification,
+      env: { [TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV]: 'prospective_v4' },
+      extractCombinedLearnerAnalysis: async ({ learnerText }) => {
+        counters.analysis += 1;
+        return { classification: classificationFor(learnerText), dagPreflight: { public: true } };
+      },
+      learnerProfileContract,
+      learnerProfileIds,
+      learnerProfilePrompt,
+      negativeFloorRegisters: [],
+    });
+    const state = {
+      trace,
+      turns: [],
+      history: [],
+      register: { policy: 'field' },
+      classifier: { enabled: true },
+      learnerDag: { enabled: true },
+      world: {},
+      interim: null,
+      resistanceActionRegisterStudy: { dynamic_boredom_proof_dag: true, consumed: false },
+    };
+    return { runtime, state, trace, counters };
+  };
+
+  const deferred = makeRuntime();
+  const t1 = await deferred.runtime.enforceAutomatedLearnerProfile({
+    state: deferred.state,
+    resolved: {},
+    profile: 'bored',
+    turnNumber: 1,
+    generated: { text: invalid },
+  });
+  assert.equal(t1.passed, null);
+  assert.deepEqual(deferred.counters, { analysis: 0, repair: 0 });
+  assert.equal(deferred.trace[0].study, 'boredom_proof_dag_confirmation');
+
+  const repaired = makeRuntime();
+  const t2 = await repaired.runtime.enforceAutomatedLearnerProfile({
+    state: repaired.state,
+    resolved: {},
+    profile: 'bored',
+    turnNumber: 2,
+    generated: { text: invalid },
+  });
+  assert.equal(t2.passed, true);
+  assert.equal(t2.repaired, true);
+  assert.deepEqual(repaired.counters, { analysis: 2, repair: 1 });
+  assert.equal(repaired.state.boredomProofDagRepairAdmission.used, 1);
+
+  repaired.state.resistanceActionRegisterStudy.consumed = true;
+  const outcome = await repaired.runtime.enforceAutomatedLearnerProfile({
+    state: repaired.state,
+    resolved: {},
+    profile: 'bored',
+    turnNumber: 4,
+    generated: { text: invalid },
+    precomputeFinalLearnerAnalysis: true,
+  });
+  assert.equal(outcome.passed, null);
+  assert.equal(outcome.repaired, false);
+  assert.deepEqual(outcome.precomputedRaw, {
+    classification: classificationFor(invalid),
+    dagPreflight: { public: true },
+  });
+  assert.deepEqual(repaired.counters, { analysis: 3, repair: 1 });
+
+  const exhausted = makeRuntime({ repairText: invalid });
+  await assert.rejects(
+    exhausted.runtime.enforceAutomatedLearnerProfile({
+      state: exhausted.state,
+      resolved: {},
+      profile: 'bored',
+      turnNumber: 2,
+      generated: { text: invalid },
+    }),
+    (error) => {
+      assert.equal(error.code, BOREDOM_PROOF_DAG_ADHERENCE_EXHAUSTED_CODE);
+      assert.equal(error.repairAttempts, 1);
+      assert.equal(error.publishPublicCandidate, false);
+      return true;
+    },
+  );
+  assert.deepEqual(exhausted.counters, { analysis: 2, repair: 1 });
+});
+
+test('boredom proof-DAG repair budget binds the 20-call and 60-reservation hard envelope', () => {
+  assert.deepEqual(buildTutorStubBoredomProofDagRepairBudgetDiagnostic(), {
+    turns: 4,
+    repairDecisionTurn: 2,
+    maxFullRepairsByT2: 1,
+    callsPerFullRepair: 2,
+    plannedWorstCaseCalls: 20,
+    maximumReservationsPerPlannedCall: 3,
+    maximumModelAttemptReservations: 60,
+    ready: true,
+  });
+  assert.equal(buildTutorStubBoredomProofDagRepairBudgetDiagnostic({ maxFullRepairsByT2: 2 }).ready, false);
 });
 
 test('prospective v4 budget proof binds planned role calls and charged CLI retry reservations', () => {

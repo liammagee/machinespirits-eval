@@ -156,10 +156,12 @@ test('attempt arithmetic and ceiling amendments fail closed', () => {
   assert.equal(registration.executionReadiness.dialogue.oneCumulativeFullLearnerRepairCalls, 2);
   assert.equal(registration.executionReadiness.dialogue.maximumReservations, 36 * 20 * 3);
   assert.equal(registration.executionReadiness.hardStudyAttemptCeiling, 2160);
-  assert.equal(185 + 2160, 2345);
-  assert.equal(2345 - 1200, 1145);
-  assert.equal(185 + 2160 + 2160, 4505);
-  assert.equal(4505 - 1200, 3305);
+  assert.equal(219 + 2160, 2379);
+  assert.equal(219 + 2160 + 2160, 4539);
+  assert.equal(
+    registration.executionReadiness.attemptAccountingRole,
+    'operational_execution_safeguard_only_not_scientific_endpoint_design_objective_or_sample_size_constraint',
+  );
   const drifted = structuredClone(registration);
   drifted.executionReadiness.hardStudyAttemptCeiling = 2159;
   assert.equal(validateTutorStubBoredomProofDagRegistration(drifted).ok, false);
@@ -177,7 +179,9 @@ test('endpoint preflight completes randomized recovery, objective proof progress
   assert.equal(preflight.production_writes, 0);
   assert.equal(preflight.readiness.model_calls, 0);
   assert.equal(preflight.readiness.production_writes, 0);
-  assert.equal(preflight.readiness.live_executor_available, false);
+  assert.equal(preflight.readiness.live_executor_available, true);
+  assert.equal(preflight.readiness.combined_analyzer_available, true);
+  assert.equal(preflight.readiness.request_validator_available, true);
   assert.equal(preflight.readiness.hard_study_attempt_ceiling, 2160);
   const assembled = assembleTutorStubBoredomProofDagPreflight({
     cases: buildTutorStubBoredomProofDagSyntheticCases(registration),
@@ -251,7 +255,7 @@ test('objective composite, recovery Boolean, and exact randomized plan fail clos
   assert.ok(Math.abs(exactBlockedScorePValue(nullBlocks) - 0.060811125) < 1e-12);
 });
 
-test('readiness is not a live executor or authorization surface', () => {
+test('production readiness remains a HOLD and is not an authorization surface', () => {
   const registration = loadTutorStubBoredomProofDagRegistration({ root: ROOT });
   assert.equal(registration.authorization.modelCallsAuthorized, false);
   assert.equal(registration.authorization.liveRunAuthorized, false);
@@ -262,9 +266,9 @@ test('readiness is not a live executor or authorization surface', () => {
   assert.equal(registration.design.noReuseOrPooling.interimAnalysis, false);
   assert.equal(registration.executionReadiness.validUnitReruns, false);
   assert.equal(registration.executionReadiness.outcomeSelection, false);
-  assert.equal(registration.executionReadiness.liveExecutorAvailable, false);
-  assert.equal(registration.executionReadiness.combinedAnalyzerAvailable, false);
-  assert.equal(registration.executionReadiness.requestValidatorAvailable, false);
+  assert.equal(registration.executionReadiness.liveExecutorAvailable, true);
+  assert.equal(registration.executionReadiness.combinedAnalyzerAvailable, true);
+  assert.equal(registration.executionReadiness.requestValidatorAvailable, true);
   assert.equal(
     fs.existsSync(path.join(ROOT, 'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v1.json')),
     false,

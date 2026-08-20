@@ -1,6 +1,10 @@
 import path from 'node:path';
-import { cleanTutorStubStageSpeech } from './tutorStubStageSpeech.js';
-import { mixedLearnerSuggestionMove, parseMixedLearnerArtifacts } from './mixedLearnerArtifacts.js';
+import { cleanTutorStubAutomatedLearnerReply as cleanAutomatedLearnerReply } from './tutorStubStageSpeech.js';
+import {
+  deterministicAutomatedLearnerFallback,
+  mixedLearnerSuggestionMove,
+  parseMixedLearnerArtifacts,
+} from './mixedLearnerArtifacts.js';
 import {
   latestTutorStubMessage as latestTutorMessage,
   tutorStubPublicMessagesForSpeaker,
@@ -17,6 +21,7 @@ import {
 } from './tutorStubStressSchedule.js';
 import { assertTutorStubTurnAttemptCurrent } from './tutorStubTurnAttempt.js';
 import { TUTOR_STUB_CLI_POLICY_RETRY_DELAYS_MS } from './tutorStubCliPolicyRetry.js';
+import { createTutorStubBoredomProofDagLearnerRuntime } from './tutorStubBoredomActionRegisterProofDagStudy.js';
 import {
   GUARDED_LEARNER_MOVE_SCHEMA,
   auditGuardedLearnerDraft,
@@ -33,7 +38,6 @@ import {
   classifyFrameRefuserAdherenceExhaustion,
   resistantLearnerObservationMarkers,
 } from './resistantLearnerObservation.js';
-
 export {
   FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE,
   FRAME_REFUSER_ADHERENCE_EXHAUSTED_CODE,
@@ -243,22 +247,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4 ||
     observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5;
   const automatedLearnerTraceMetadata = Object.freeze(boundedFrameOpportunitySemantics ? { observationSemantics } : {});
-  function cleanAutomatedLearnerReply(text) {
-    const cleaned = String(text || '')
-      .replace(/^```(?:text|markdown)?/iu, '')
-      .replace(/```$/u, '')
-      .replace(/^\s*(learner|student)\s*:\s*/iu, '')
-      .trim();
-    return cleanTutorStubStageSpeech(cleaned, { voice: 'learner' });
-  }
-  function deterministicAutomatedLearnerFallback({ state }) {
-    const latestTutor =
-      [...(state.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
-    if (/trial-book|evidence|write|say|state|claim/iu.test(latestTutor)) {
-      return 'I will make one public evidence claim and keep the verdict open until the marks license a name.';
-    }
-    return 'What public evidence should I test first?';
-  }
   function automatedLearnerSystemPrompt(profile) {
     return [
       AUTO_LEARNER_SYSTEM_PROMPT,
@@ -569,7 +557,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       },
     };
   }
-
   function buildMixedLearnerArtifactsPrompt({ state, profile, turnNumber }) {
     return [
       buildAutomatedLearnerPrompt({ state, profile, turnNumber }),
@@ -587,7 +574,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       'Keep the clue under 18 words and the answer concise. Return JSON only.',
     ].join('\n');
   }
-
   async function generateMixedLearnerArtifacts({
     state,
     resolved,
@@ -630,7 +616,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       },
     };
   }
-
   function automatedLearnerDraftMatchesRuntime({ text, raw, state, runtime }) {
     if (!runtime?.requiredNow) return true;
     const classification = classificationFromCombinedAnalysis(raw, state);
@@ -658,7 +643,12 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     }
     return 'Make the required failure public and unmistakable without repairing it in the same turn.';
   }
-
+  const enforceBoredomProofDagLearnerProfile = createTutorStubBoredomProofDagLearnerRuntime({
+    appendTraceEvent,
+    automatedLearnerDraftMatchesRuntime,
+    extractCombinedLearnerAnalysis,
+    generateAutomatedLearnerTurn,
+  });
   async function enforceAutomatedLearnerProfile({
     state,
     resolved,
@@ -673,6 +663,19 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
   }) {
     assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
     const runtime = automatedLearnerProfileRuntimeState({ state, profile, turnNumber });
+    const boredomProofDagResult = await enforceBoredomProofDagLearnerProfile({
+      state,
+      resolved,
+      profile,
+      runtime,
+      turnNumber,
+      generated,
+      precomputeFinalLearnerAnalysis,
+      cliEffort,
+      signal,
+      isCurrent,
+    });
+    if (boredomProofDagResult) return boredomProofDagResult;
     const canPreclassify = Boolean(state.classifier.enabled && state.learnerDag.enabled && state.world);
     const frameOpportunityV4Profile =
       boundedFrameOpportunitySemantics && ['frame_refuser', 'frame_defiant'].includes(runtime?.profileId);
@@ -714,7 +717,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       }
       return { generated, precomputedRaw, repaired: false, passed: null };
     }
-
     const prospectiveV3 = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV3;
     const frameOpportunityV3Profile = prospectiveV3 && ['frame_refuser', 'frame_defiant'].includes(runtime.profileId);
     const boundedFrameOpportunityProfile = frameOpportunityV3Profile || frameOpportunityV4Profile;
@@ -813,7 +815,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     }
     return { generated: candidate, precomputedRaw: raw, repaired: repairs > 0, passed };
   }
-
   /**
    * Deterministic persona guard for the guarded pole. Re-derives the same move
    * the prompt carried, reads the draft as text, and redrafts at most once. No
@@ -835,7 +836,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
     const selection = guardedLearnerMoveForTurn({ state, profile, turnNumber });
     if (!selection || !generated.text) return { generated, repaired: false, move: null, passed: null };
-
     const { move, groundedChallengeCount } = selection;
     let candidate = generated;
     let audit = auditGuardedLearnerDraft({ text: candidate.text, move, groundedChallengeCount });
@@ -880,7 +880,6 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     state.guardedLearnerMoves.push(move);
     return { generated: candidate, repaired, move, passed: audit.status === 'passed' };
   }
-
   return {
     automatedLearnerCorruptionEnabled,
     automatedLearnerProfileId,

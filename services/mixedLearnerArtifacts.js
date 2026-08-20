@@ -12,6 +12,15 @@ function oneLine(value) {
     .trim();
 }
 
+export function deterministicAutomatedLearnerFallback({ state } = {}) {
+  const latestTutor =
+    [...(state?.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
+  if (/trial-book|evidence|write|say|state|claim/iu.test(latestTutor)) {
+    return 'I will make one public evidence claim and keep the verdict open until the marks license a name.';
+  }
+  return 'What public evidence should I test first?';
+}
+
 export function mixedLearnerGhostText({
   enabled = false,
   suggestion = null,

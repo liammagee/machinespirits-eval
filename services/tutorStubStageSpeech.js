@@ -30,6 +30,15 @@ export function cleanTutorStubStageSpeech(text, { voice = 'learner' } = {}) {
     .replace(/^my\b/u, 'My');
 }
 
+export function cleanTutorStubAutomatedLearnerReply(text) {
+  const cleaned = String(text || '')
+    .replace(/^```(?:text|markdown)?/iu, '')
+    .replace(/```$/u, '')
+    .replace(/^\s*(learner|student)\s*:\s*/iu, '')
+    .trim();
+  return cleanTutorStubStageSpeech(cleaned, { voice: 'learner' });
+}
+
 export function latestQuestionFromText(text) {
   const value = String(text || '').trim();
   const questionMark = value.lastIndexOf('?');

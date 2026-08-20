@@ -1323,6 +1323,37 @@ and explicit human approval.
   calls and zero production writes. Launch requires the request's exact
   digest-bound sentence amending the programme ceiling; until that sentence is
   supplied, no live batch or analyzer may run.
+- 2026-08-20 — Implemented the zero-call production layer for the prospective
+  boredom matched-action warm-versus-plain proof-DAG confirmation. The new
+  study-only runtime generates a fresh bored public trigger by T2, defers all
+  T1 adherence decisions, permits one full T2 repair, and then releases the
+  two post-trigger learner turns so the registered recovery endpoint is not
+  contaminated by recurrent boredom enforcement. The nine-batch executor
+  requires durable private trace archival and caps each dialogue at `60`, each
+  four-dialogue batch at `240`, and the full 36-dialogue study at `2160` model
+  attempt reservations. Bounded recovery is create-once and missing/failed-only;
+  substantive trigger failures stop, valid units cannot rerun, and outcomes
+  cannot be selected.
+
+  The combined analyzer accepts only all nine exact sealed batches and 36
+  distinct fresh public-prefix hashes. It re-derives source, route, seed,
+  world, assignment, attempt, trigger, action/register fidelity, one-turn bored
+  recovery, and two-turn objective proof-DAG progress from the selected traces,
+  then performs the predeclared two-sided exact conditional blocked score test
+  once, with fixed-sequence testing of proof progress only if the primary
+  rejects. Prior held-out detection, historical action-fit, and the 12-dialogue
+  calibration remain excluded evidence inputs only.
+
+  The user prospectively authorized the exact future request path and digest,
+  the `2160` boredom-study cap, a cumulative ceiling amendment from `1200` to
+  `4505` while both powered confirmations remain reserved, and bounded
+  technical recovery within unchanged protected inputs and caps. The actual
+  ledger remains `185`; a full boredom allocation reaches `2345`, and the
+  separately reserved frame-refusal allocation reaches the exact combined
+  maximum `4505`. Registration, endpoint, certificate, request validation,
+  deterministic packaging, focused tests, and blocking review remain zero-call
+  gates; a literal HOLD request must still be prepared from the reviewed merged
+  source and match that standing authorization exactly before launch.
 - 2026-08-20 — Closed the first powered confirmation as incomplete with no
   verdict after its first four-dialogue block reached a registered substantive
   trigger failure. Request
@@ -1369,6 +1400,24 @@ and explicit human approval.
   requires an explicit `2345`-to-`2379` ceiling amendment and approval of that
   new request digest; the already consumed V1 approval cannot authorize the
   changed source, observation semantics, destination set, or programme cap.
+- 2026-08-20 — Reconciled the boredom confirmation with the parallel
+  frame-refusal closeout before publication. The earlier `4505` calculation
+  was correct at a `185`-attempt ledger, but the stopped frame-refusal block
+  subsequently consumed `34` attempts and moved the ledger to `219` while its
+  scientifically required wholly fresh `2160`-attempt successor remained
+  reserved. Preserving both powered 18-per-arm designs therefore requires the
+  operational safeguard `219 + 2160 + 2160 = 4539`; the boredom study alone
+  reaches at most `2379`.
+
+  Attempt counts are execution safeguards only. They are not endpoints,
+  estimands, power targets, design objectives, or reasons to reduce the 36
+  fresh dialogues, six-world blocked allocation, fixed-sequence analysis, or
+  independent replication requirement. The registration, endpoint, runner,
+  future-request validator, and tests now bind `60` per dialogue, `240` per
+  batch, `2160` for the boredom study, and `4539` cumulatively while both
+  powered confirmations remain reserved. The request remains unprepared and
+  literal HOLD; zero model calls or programme attempts were consumed by this
+  reconciliation.
 - 2026-08-20 — The zero-call confirmation repair merged through PR #739 at
   `55becdc57340413469d937b5701c48d9911e52f9` (tree
   `a53e9da7cb280b45e8bf0b52eaa5b57bcd773f89`). Blocking runtime and symmetry

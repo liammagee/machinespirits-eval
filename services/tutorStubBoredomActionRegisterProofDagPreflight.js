@@ -357,10 +357,13 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
     errors.push('predeclared batch partition drifted');
   }
   if (
-    execution.programmeCeilingForThisStudyAlone?.requiredCeiling !== 2345 ||
-    execution.programmeCeilingForThisStudyAlone?.amendmentAboveCurrent1200 !== 1145 ||
-    execution.programmeCeilingIfFrameRefusalConfirmationAlsoReserved?.requiredCeiling !== 4505 ||
-    execution.programmeCeilingIfFrameRefusalConfirmationAlsoReserved?.amendmentAboveCurrent1200 !== 3305
+    execution.programmeCeilingForThisStudyAlone?.requiredCeiling !== 2379 ||
+    execution.programmeCeilingForThisStudyAlone?.incrementAboveCurrentLedger !== 2160 ||
+    execution.programmeCeilingIfFrameRefusalConfirmationAlsoReserved?.requiredCeiling !== 4539 ||
+    execution.programmeCeilingIfFrameRefusalConfirmationAlsoReserved?.incrementAboveFrameRefusalSuccessorCeiling !==
+      2160 ||
+    execution.attemptAccountingRole !==
+      'operational_execution_safeguard_only_not_scientific_endpoint_design_objective_or_sample_size_constraint'
   ) {
     errors.push('programme ceiling amendment arithmetic drifted');
   }
@@ -378,9 +381,9 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
     registration?.design?.noReuseOrPooling?.interimAnalysis !== false ||
     execution.validUnitReruns !== false ||
     execution.outcomeSelection !== false ||
-    execution.liveExecutorAvailable !== false ||
-    execution.combinedAnalyzerAvailable !== false ||
-    execution.requestValidatorAvailable !== false
+    execution.liveExecutorAvailable !== true ||
+    execution.combinedAnalyzerAvailable !== true ||
+    execution.requestValidatorAvailable !== true
   ) {
     errors.push('no-reuse, no-selection, or zero-call readiness boundary drifted');
   }
@@ -426,6 +429,7 @@ export function buildTutorStubBoredomProofDagPlan(registration) {
     return {
       id: `bored-confirm-w${worldIndex + 1}-d${row.dialogue_index}`,
       type: 'fresh_bored_register_confirmation_dialogue',
+      assignment_index: ordinal + 1,
       world: row.world,
       seed: registration.design.freshPrefixGeneration.seedBase + ordinal + 1,
       maximum_trigger_turn: 2,
@@ -627,11 +631,11 @@ export function runTutorStubBoredomProofDagEndpointPreflight({ contract, registr
       independent_dialogues: 36,
       execution_batches: 9,
       hard_study_attempt_ceiling: 2160,
-      required_programme_ceiling_study_alone: 2345,
-      required_programme_ceiling_with_frame_refusal_reservation: 4505,
-      live_executor_available: false,
-      combined_analyzer_available: false,
-      request_validator_available: false,
+      required_programme_ceiling_study_alone: 2379,
+      required_programme_ceiling_with_frame_refusal_reservation: 4539,
+      live_executor_available: true,
+      combined_analyzer_available: true,
+      request_validator_available: true,
       model_calls: 0,
       production_writes: 0,
     },

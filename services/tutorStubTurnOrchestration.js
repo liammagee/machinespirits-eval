@@ -1466,17 +1466,25 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         state.resistanceActionRegisterStudy?.consumed !== true &&
         turnNumber > Number(state.resistanceActionRegisterStudy?.maximum_trigger_turn)
       ) {
+        const boredomProofDag = state.resistanceActionRegisterStudy?.dynamic_boredom_proof_dag === true;
+        const code = boredomProofDag
+          ? 'TUTOR_STUB_BOREDOM_PROOF_DAG_TRIGGER_MISSING'
+          : 'TUTOR_STUB_RESISTANCE_ACTION_REGISTER_CONFIRMATION_TRIGGER_MISSING';
         appendTraceEvent(state.trace, {
-          type: 'resistance_action_register_confirmation_substantive_failure',
+          type: boredomProofDag
+            ? 'resistance_action_register_boredom_proof_dag_substantive_failure'
+            : 'resistance_action_register_confirmation_substantive_failure',
           turn: turnNumber,
-          code: 'TUTOR_STUB_RESISTANCE_ACTION_REGISTER_CONFIRMATION_TRIGGER_MISSING',
+          code,
           disposition: 'substantive_registered_failure_stop_no_replacement',
           publicTranscriptChanged: false,
         });
         const error = new Error(
-          'fresh frame_refuser confirmation did not produce its registered jurisdictional trigger by turn 2',
+          boredomProofDag
+            ? 'fresh boredom proof-DAG confirmation did not produce its registered effort-withholding trigger by turn 2'
+            : 'fresh frame_refuser confirmation did not produce its registered jurisdictional trigger by turn 2',
         );
-        error.code = 'TUTOR_STUB_RESISTANCE_ACTION_REGISTER_CONFIRMATION_TRIGGER_MISSING';
+        error.code = code;
         error.substantiveStudyFailure = true;
         throw error;
       }

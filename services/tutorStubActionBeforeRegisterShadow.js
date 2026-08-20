@@ -9,6 +9,10 @@ import { selectTutorStubActionFamily } from './tutorStubResponseConfiguration.js
 export const TUTOR_STUB_ACTION_BEFORE_REGISTER_SHADOW_SCHEMA =
   'machinespirits.tutor-stub.action-before-register-shadow.v1';
 
+export function createTutorStubResistanceAxisShadow(input) {
+  return createResistantAxisMoveShadow(input);
+}
+
 const EDGED_REGISTERS = new Set(['ironic', 'sarcastic']);
 const COMPREHENSION_SAFE_REGISTERS = new Set(['plain', 'warm', 'precise']);
 const PROTECTED_AFFECT_SAFE_REGISTERS = new Set(['witnessing', 'warm', 'plain']);
@@ -143,7 +147,7 @@ export function beginTutorStubActionBeforeRegisterShadow({
   const legacyProjectedMove = projectTutorStubActionFamilyToPedagogicalMove({
     actionFamily: legacyActionPreview.actionFamily,
   });
-  const resistanceAxisShadow = createResistantAxisMoveShadow({ learnerText, classification });
+  const resistanceAxisShadow = createTutorStubResistanceAxisShadow({ learnerText, classification });
   const resistanceMove = resistanceAxisShadow.projected_move;
 
   return {

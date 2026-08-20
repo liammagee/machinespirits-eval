@@ -11,17 +11,15 @@
     "liveRunAuthorized": false,
     "goRequestPrepared": false,
     "programmeLedgerBeforeStudy": {
-      "reservedAttempts": 185,
-      "ceiling": 1200,
-      "remaining": 1015
+      "reservedAttempts": 219,
+      "ceiling": 2379,
+      "remaining": 2160
     },
     "thisReadinessConsumesProgrammeHeadroom": false,
     "requiredBeforeAnyModelCall": [
-      "merge the reviewed zero-call registration, deterministic proof-DAG scorer, live source-prefix and paired-branch executor, analyzer, and request validator",
-      "freeze a clean post-merge source and complete executable source closure",
-      "adopt an explicit programme ceiling of at least 2345 attempts for this boredom study alone, or at least 4505 attempts if the separately proposed 2160-attempt frame-refusal confirmation is also reserved",
+      "merge the reviewed zero-call production executor, combined analyzer, request validator, and complete executable source closure",
       "prepare a fresh digest-bound HOLD request with nine absent create-once batch destinations and one absent combined-report destination",
-      "obtain explicit human authorization of the exact request digest, 2160-attempt study ceiling, and amended cumulative programme ceiling"
+      "complete blocking review of the exact request digest and explicitly bind the 2160-attempt study safeguard, 4539-attempt cumulative operational safeguard while both powered confirmations remain reserved, and bounded technical recovery boundary"
     ]
   },
   "evidence": {
@@ -303,25 +301,25 @@
     },
     "hardStudyAttemptCeiling": 2160,
     "programmeCeilingForThisStudyAlone": {
-      "ledgerBefore": 185,
+      "ledgerBefore": 219,
       "studyMaximum": 2160,
-      "requiredCeiling": 2345,
-      "amendmentAboveCurrent1200": 1145
+      "requiredCeiling": 2379,
+      "incrementAboveCurrentLedger": 2160
     },
     "programmeCeilingIfFrameRefusalConfirmationAlsoReserved": {
-      "ledgerBefore": 185,
+      "ledgerBefore": 219,
       "frameRefusalMaximum": 2160,
       "boredomMaximum": 2160,
-      "requiredCeiling": 4505,
-      "amendmentAboveCurrent1200": 3305,
-      "incrementAboveProposed2345FrameRefusalCeiling": 2160
+      "requiredCeiling": 4539,
+      "incrementAboveFrameRefusalSuccessorCeiling": 2160
     },
+    "attemptAccountingRole": "operational_execution_safeguard_only_not_scientific_endpoint_design_objective_or_sample_size_constraint",
     "boundedTechnicalRecovery": "missing_or_failed_units_only_within_unchanged_per_unit_batch_study_and_programme_caps",
     "validUnitReruns": false,
     "outcomeSelection": false,
-    "liveExecutorAvailable": false,
-    "combinedAnalyzerAvailable": false,
-    "requestValidatorAvailable": false,
-    "remainingGap": "production fresh-prefix and paired-branch executor, deterministic proof-DAG combined analyzer, request validator and packager, merged source closure, ceiling amendment, digest-bound HOLD request, and explicit human authorization"
+    "liveExecutorAvailable": true,
+    "combinedAnalyzerAvailable": true,
+    "requestValidatorAvailable": true,
+    "remainingGap": "reviewed merged source closure, fresh digest-bound HOLD request, exact request blocking review, and prelaunch verification against the standing authorization"
   }
 }
