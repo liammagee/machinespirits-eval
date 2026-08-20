@@ -1578,3 +1578,31 @@ and explicit human approval.
   under the already effective `5000` operational safeguard. All artifacts
   remain zero-call HOLD readiness; no successor request or live authority is
   created by this repair.
+- 2026-08-20 — The user supplied the exact approval for boredom proof-DAG
+  request `0972e76083a7a89592a25d55820527e2b061afad0fdf72036f08790dd61dfe61`.
+  All zero-call launch gates passed at source
+  `1771eb3eaa8ab80a42c716e0e0079f62e63b608f`, then the exact Batch 1 command
+  was invoked once. All four children stopped before any model reservation or
+  model call with the identical deterministic error `boredom proof-DAG launch
+  pins or remaining 60-attempt ceiling drifted`. Each preserved trace contains
+  only `run_start` and `capability_snapshot_resolved`; Batches 2–9 and the
+  analyzer did not run, no combined report or seal exists, and the programme
+  ledger remains `219/4539`.
+
+  The failed destination is permanently consumed and excluded from every
+  successor. Its batch-plan SHA-256 is `7407e34f…`, batch-result SHA-256 is
+  `41298a4b…`, local 14-file inventory is `9f6efec5…`, and required private
+  8-file archive inventory is `0158271a…`; all four gzip mirrors decompress
+  byte-identically to their two-event local traces. The four trace SHA-256s are
+  `a9b27181…`, `5b74dfe6…`, `42b2111e…`, and `75a3b5c4…`.
+
+  Zero-call diagnosis found a source-order defect: launch normalization had
+  already expanded the public profile id `bored` into its private behavior
+  prompt, but the study guard compared that resolved prompt with the literal
+  id. Same-source recovery cannot repair this and was not attempted. The
+  narrow source repair passes the existing runtime's stable resolved learner
+  profile id into the study guard, preserves fail-closed rejection for every
+  non-bored id, and adds a production-composed regression covering the exact
+  id-to-prompt-to-id path. After review and merge, a new HOLD request must bind
+  the repaired source and wholly fresh create-once batch/report destinations;
+  the consumed request and its zero-call artifacts remain immutable.

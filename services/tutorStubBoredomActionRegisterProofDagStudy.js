@@ -344,6 +344,7 @@ export function configureTutorStubBoredomProofDagFromCli({
   state,
   root,
   autoLearnerEnabled,
+  autoLearnerProfileId,
   autoTurns,
   appendTraceEvent,
   observationSemantics,
@@ -367,7 +368,7 @@ export function configureTutorStubBoredomProofDagFromCli({
     args['auto-learner-model'] !== 'codex.gpt-5.6-luna' ||
     args['cli-effort'] !== 'low' ||
     args.world !== job.world ||
-    args['auto-learner-profile'] !== 'bored' ||
+    autoLearnerProfileId !== 'bored' ||
     Number(args['run-seed']) !== job.seed ||
     Number(args['eval-repeat']) !== job.assignment_index ||
     args['eval-job-id'] !== job.id ||
