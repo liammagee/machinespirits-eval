@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-20T02:58:25.324Z",
+  "generated": "2026-08-20T03:23:59.402Z",
   "counts": {
     "total": 520,
     "byStatus": {
@@ -305,6 +305,9 @@
           "config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.endpoint-go.json",
           "config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.json",
           "config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.endpoint-go.json",
+          "config/tutor-stub-frame-refuser-opportunity-registration.v3.json",
+          "config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v3.json",
+          "config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v3.endpoint-go.json",
           "config/tutor-stub-frame-refuser-opportunity-study-go-request.v1.json",
           "config/tutor-stub-frame-refuser-opportunity-study-go-request.v2.json",
           "services/pedagogicalMove/resistantProfileWarrantShadow.js",
@@ -342,7 +345,7 @@
         "learner-profiles",
         "registers"
       ],
-      "branch": "codex/frame-refuser-opportunity-v2-go-request"
+      "branch": "codex/frame-refuser-opportunity-v3-readiness"
     },
     {
       "id": "workflow-repository-optimization",
