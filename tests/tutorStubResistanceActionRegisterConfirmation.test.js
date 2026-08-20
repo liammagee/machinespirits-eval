@@ -807,6 +807,7 @@ test('V7 composes object-attributed and anaphoric authority refusals without wid
     'That is your question, not mine; I reject its authority and will not answer it or supply evidence under that frame.',
     'I do not grant the ledger’s entries standing to govern this inquiry, so I will not permit an inspection or answer under it.',
     'This is the panel’s scoring question, not mine; I deny its right and will not answer or provide evidence within that frame.',
+    'That is your question, not mine; I reject its authority and will not answer it or inspect any public record under that frame.',
   ];
   for (const learnerText of positives) {
     const input = { learnerText, classification: classification(false) };
@@ -841,6 +842,7 @@ test('V7 composes object-attributed and anaphoric authority refusals without wid
     'That is your question, not mine; I accept its authority and will answer it from the public record.',
     'That is your deadline, not mine; I reject its authority and will not file the administrative form.',
     'I reject your question, but I will examine one bounded test and answer from the public evidence.',
+    'That is your question, not mine; I reject its authority and will not answer it, but I will inspect the public record under a narrower question.',
     'The panel’s criterion is wrong because its denominator is invalid, so I reject the calculation on its merits.',
   ];
   for (const learnerText of negatives) {

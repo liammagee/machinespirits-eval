@@ -296,6 +296,11 @@ const FRAME_BOUNDED_LOCAL_TEST_PATTERNS_V3 = Object.freeze([
   /\b(?:one|a) (?:bounded|local|narrow|specific) (?:claim|question|test|criterion|standard|comparison|issue|matter|feature|distinction)\b.{0,120}\b(?:can|could|may|will) (?:still )?(?:be )?(?:answered|judged|weighed|assessed|decided|determined|evaluated|examined|tested|compared|considered)\b/iu,
 ]);
 
+const FRAME_BOUNDED_LOCAL_TEST_PATTERNS_V7 = Object.freeze([
+  ...FRAME_BOUNDED_LOCAL_TEST_PATTERNS_V3,
+  /\b(?:i will|i'll|i can|let me|we can|let us) (?:first |still |only )?inspect\b.{0,160}\b(?:bounded|local|narrow|narrower|specific|public|available|stated|limited|single|one|question|test|criterion|standard|comparison|issue|matter|evidence|record|feature|distinction)\b/iu,
+]);
+
 const FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V3 = Object.freeze([
   ...FRAME_EXPLICIT_WITHHOLDING_PATTERNS,
   /\bi (?:will not|won't|do not|don't|refuse to|decline to) (?:judge|weigh|assess|decide|determine|license|evaluate)\b/iu,
@@ -384,7 +389,11 @@ export function classifyFrameJurisdictionParticipation({
   );
   const boundedLocalTestCandidate = firstEvidence(
     text,
-    expandedProspective ? FRAME_BOUNDED_LOCAL_TEST_PATTERNS_V3 : FRAME_BOUNDED_LOCAL_TEST_PATTERNS,
+    prospectiveV7
+      ? FRAME_BOUNDED_LOCAL_TEST_PATTERNS_V7
+      : expandedProspective
+        ? FRAME_BOUNDED_LOCAL_TEST_PATTERNS_V3
+        : FRAME_BOUNDED_LOCAL_TEST_PATTERNS,
   );
   const boundedLocalTest =
     (prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7) &&
