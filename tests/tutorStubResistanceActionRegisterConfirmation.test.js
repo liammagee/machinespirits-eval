@@ -655,6 +655,10 @@ test('V5 preserves the powered successor design while separating the 5000 operat
   );
 
   const contract = JSON.parse(fs.readFileSync(ENDPOINT_V3, 'utf8'));
+  assert.equal(
+    contract.channels.frozen_registration.implementation,
+    'config/tutor-stub-resistance-action-register-crossed-registration.v5.json',
+  );
   const certificate = JSON.parse(fs.readFileSync(CERTIFICATE_V3, 'utf8'));
   const preflight = runTutorStubResistanceActionRegisterConfirmationPreflight({
     contract,

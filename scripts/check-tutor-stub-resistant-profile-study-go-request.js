@@ -733,6 +733,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
           contract.runner?.batch_contract?.maximum_model_attempt_reservations_per_batch === 240 &&
           contract.runner?.batch_contract?.combined_maximum_model_attempt_reservations === 2160 &&
           contract.runner?.batch_contract?.combined_analysis_only === true &&
+          contract.channels?.frozen_registration?.implementation === request.bindings.registration.path &&
           contract.runner?.batch_contract?.valid_unit_reruns === false &&
           contract.runner?.batch_contract?.outcome_selection === false &&
           contract.runner?.batch_contract?.bounded_technical_recovery ===

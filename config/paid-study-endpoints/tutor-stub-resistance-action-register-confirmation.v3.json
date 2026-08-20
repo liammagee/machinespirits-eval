@@ -95,7 +95,7 @@
     },
     "frozen_registration": {
       "enabled": true,
-      "implementation": "config/tutor-stub-resistance-action-register-crossed-registration.v4.json"
+      "implementation": "config/tutor-stub-resistance-action-register-crossed-registration.v5.json"
     },
     "confirmation_observer_first_eligibility": {
       "enabled": true,
