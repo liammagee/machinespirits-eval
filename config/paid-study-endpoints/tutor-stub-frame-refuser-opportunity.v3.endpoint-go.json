@@ -1,0 +1,10 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-go.v1",
+  "status": "endpoint_runtime_go",
+  "study_id": "tutor-stub-frame-refuser-opportunity-v3",
+  "contract_path": "config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v3.json",
+  "contract_sha256": "ce33ac59cb9608824644ca411b0cd9543e3eab7d809a00192ab136449c45dbd0",
+  "preflight_sha256": "dbccae122515506842f5e2fd22733ad7d48738a462b15db0cd70d2540755d6b5",
+  "authorization_scope": "Endpoint-runtime compatibility only; this certificate does not authorize a model call or live study.",
+  "launch_gate": "A clean post-merge main source, create-once destination, committed digest-bound prospective-v3 GO request, and explicit human approval of its exact digest and 288-attempt ceiling remain required."
+}

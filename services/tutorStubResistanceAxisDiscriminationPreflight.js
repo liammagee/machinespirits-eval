@@ -11,9 +11,13 @@ import {
   readTutorStubResistanceAxisTrace,
 } from '../scripts/analyze-tutor-stub-resistance-axis-calibration.js';
 import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
+import { RESISTANT_LEARNER_OBSERVATION_SEMANTICS, observeResistantLearnerTurn } from './resistantLearnerObservation.js';
 import {
   FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE,
+  FRAME_REFUSER_ADHERENCE_EXHAUSTED_CODE,
+  buildTutorStubFrameOpportunityV3RepairBudgetDiagnostic,
   throwFrameDefiantAdherenceExhaustion,
+  throwFrameRefuserAdherenceExhaustion,
 } from './tutorStubAutomatedLearnerGenerationRuntime.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -174,6 +178,179 @@ const PROSPECTIVE_FRAME_OPPORTUNITY_ROWS = Object.freeze({
   ]),
 });
 
+const PROSPECTIVE_V3_FRAME_OPPORTUNITY_ROWS = Object.freeze({
+  frame_refuser: Object.freeze([
+    Object.freeze({
+      triggerTurn: 2,
+      learner: 'I deny your standing to fix this question, and I am not going to answer or weigh it under that frame.',
+    }),
+    Object.freeze({
+      triggerTurn: 1,
+      learner: 'I reject your right to define this test, and I will not judge or assess the claim inside it.',
+    }),
+    Object.freeze({
+      triggerTurn: 1,
+      learner: 'I reject your claim that this comparison should govern the verdict, and I will not evaluate it.',
+    }),
+  ]),
+  frame_defiant: Object.freeze([
+    Object.freeze({
+      triggerTurn: 1,
+      learner:
+        'I reject your authority to set the inquiry, but I will assess one bounded claim without accepting the wider frame.',
+    }),
+    Object.freeze({
+      triggerTurn: 2,
+      learner:
+        'I deny your standing to dictate the test; instead, let us ask which single public comparison could bear on it.',
+    }),
+    Object.freeze({
+      triggerTurn: 1,
+      learner:
+        'You have no right to control the question, but one narrow distinction can still be evaluated without conceding it.',
+    }),
+  ]),
+});
+
+export const FRAME_REFUSER_V2_FALSE_NEGATIVE_REPAIR_DRAFTS = Object.freeze([
+  'I do not grant your question or assay-test authority, so I will not test the coin or supply an answer beneath that frame.',
+  'I reject your question and its proposed test; I will not judge the coin or supply evidence under a frame you have imposed.',
+  'I reject your authority to set this premise or test, and I will not weigh the evidence or answer beneath your frame.',
+  'I reject your authority to set even this premise or test, and I will not enter the trial-book, supply evidence, or answer beneath your frame.',
+  'I reject your authority to set this premise or test, and I will not weigh the evidence or answer within your frame.',
+  'I reject your authority to set this premise or test, and I will not weigh the cupel’s evidence or license any hand within your frame.',
+  'I reject your authority to set this premise or test, and I will not supply evidence or answer within your frame.',
+  'I reject your authority to set this premise or test, and I will not supply evidence or answer within your frame.',
+  'I reject your authority to set this comparison as the test, and I will not weigh the two parts or answer within your frame.',
+  'I reject your authority to set this question or test, and I will not weigh the casting and engraving evidence or answer within your frame.',
+  'I reject your authority to set this premise or test, and I will not weigh the graver against the casting or answer within your frame.',
+  'I reject your authority to set this premise or test, and I will not weigh the graver against the casting or answer within your frame.',
+  'I reject your authority to set that challenge, and I will not supply evidence or answer on its merits within your frame.',
+  'I reject your claim that the graver should govern the verdict, and I will not supply evidence or name the striking hand under it.',
+  'I reject your claim that the graver should govern the verdict, and I will not supply evidence or name the striking hand under that premise.',
+]);
+
+const PROSPECTIVE_V3_OBSERVER_CASES = Object.freeze([
+  ...FRAME_REFUSER_V2_FALSE_NEGATIVE_REPAIR_DRAFTS.map((learnerText, index) =>
+    Object.freeze({
+      id: `v2_false_negative_${index + 1}`,
+      learnerText,
+      dispute: true,
+      participation: false,
+      refusal: true,
+    }),
+  ),
+  Object.freeze({
+    id: 'authority_set_premise_answer_withheld',
+    learnerText: 'I reject your authority to set the premise, and I will not answer under it.',
+    dispute: true,
+    participation: false,
+    refusal: true,
+  }),
+  Object.freeze({
+    id: 'standing_fix_question_judgment_withheld',
+    learnerText: 'I deny your standing to fix the question, and I will not judge the submissions inside it.',
+    dispute: true,
+    participation: false,
+    refusal: true,
+  }),
+  Object.freeze({
+    id: 'right_define_test_aspectual_withholding',
+    learnerText: 'I reject your right to define the test, and I will not be weighing its options.',
+    dispute: true,
+    participation: false,
+    refusal: true,
+  }),
+  Object.freeze({
+    id: 'authority_choose_criterion_assessment_withheld',
+    learnerText:
+      'I reject your authority to choose the criterion, and I am not going to assess the candidates under it.',
+    dispute: true,
+    participation: false,
+    refusal: true,
+  }),
+  Object.freeze({
+    id: 'standing_dictate_inquiry_decision_withheld',
+    learnerText: 'I deny your standing to dictate the inquiry, and I will not decide which proposal wins.',
+    dispute: true,
+    participation: false,
+    refusal: true,
+  }),
+  Object.freeze({
+    id: 'right_govern_standard_determination_withheld',
+    learnerText: 'I reject your right to govern the standard, and I will not determine the result under it.',
+    dispute: true,
+    participation: false,
+    refusal: true,
+  }),
+  Object.freeze({
+    id: 'authority_control_agenda_license_withheld',
+    learnerText: 'I reject your authority to control the agenda, and I will not license a conclusion within it.',
+    dispute: true,
+    participation: false,
+    refusal: true,
+  }),
+  Object.freeze({
+    id: 'claim_governs_verdict_evaluation_withheld',
+    learnerText:
+      'I reject your claim that this metric should govern the verdict, and I have no intention of evaluating it.',
+    dispute: true,
+    participation: false,
+    refusal: true,
+  }),
+  Object.freeze({
+    id: 'productive_participation_precedes_partial_withholding',
+    learnerText:
+      'I reject your authority to set the whole task, and I will not answer it as written, but I will assess one bounded claim.',
+    dispute: true,
+    participation: true,
+    refusal: false,
+  }),
+  Object.freeze({
+    id: 'productive_reframe_precedes_withholding',
+    learnerText:
+      'I deny your standing to dictate the inquiry and will not accept that scope; instead, let us ask which local test matters.',
+    dispute: true,
+    participation: true,
+    refusal: false,
+  }),
+  Object.freeze({
+    id: 'negated_refusal_is_not_withholding',
+    learnerText: 'I reject your right to define the question, but I will not refuse to answer one bounded issue.',
+    dispute: true,
+    participation: false,
+    refusal: false,
+  }),
+  Object.freeze({
+    id: 'explicit_not_withholding_then_productive',
+    learnerText: 'I reject the frame, but I am not withholding an answer; I will weigh one bounded issue.',
+    dispute: true,
+    participation: true,
+    refusal: false,
+  }),
+  Object.freeze({
+    id: 'merits_objection_without_jurisdiction',
+    learnerText: 'This evidence does not justify the verdict, so I will not decide until another source appears.',
+    dispute: false,
+    participation: false,
+    refusal: false,
+  }),
+  Object.freeze({
+    id: 'authority_accepted_negative_contrast',
+    learnerText: 'I do not dispute your right to set the question, and I will answer it.',
+    dispute: false,
+    participation: false,
+    refusal: false,
+  }),
+  Object.freeze({
+    id: 'physical_setting_not_inquiry_setting',
+    learnerText: 'You do not get to set the sample on that shelf.',
+    dispute: false,
+    participation: false,
+    refusal: false,
+  }),
+]);
+
 function frameOpportunityClassification(contentBearing) {
   return {
     request_type: 'authority_refusal_or_status_challenge',
@@ -229,8 +406,8 @@ function frameOpportunityEvents(profile, run) {
   return events;
 }
 
-function prospectiveFrameOpportunityEvents(profile, run) {
-  const row = PROSPECTIVE_FRAME_OPPORTUNITY_ROWS[profile][run - 1];
+function prospectiveFrameOpportunityEvents(profile, run, rows = PROSPECTIVE_FRAME_OPPORTUNITY_ROWS) {
+  const row = rows[profile][run - 1];
   const events = [
     {
       type: 'run_start',
@@ -289,6 +466,37 @@ function prospectiveFrameOpportunityEvents(profile, run) {
   return events;
 }
 
+function prospectiveV3ObserverMatrixAudit() {
+  const rows = PROSPECTIVE_V3_OBSERVER_CASES.map((row) => {
+    const observation = observeResistantLearnerTurn({
+      learnerText: row.learnerText,
+      classification: { discourse_move: 'challenge', evidence_use: 'none' },
+      semantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV3,
+    });
+    const dispute = observation.observations.find((entry) => entry.type === 'frame_jurisdiction_dispute');
+    const observed = {
+      dispute: Boolean(dispute),
+      participation: dispute?.features?.contract_licensed_participation === true,
+      refusal: observation.observations.some((entry) => entry.type === 'frame_jurisdiction_refusal'),
+    };
+    return {
+      id: row.id,
+      expected: { dispute: row.dispute, participation: row.participation, refusal: row.refusal },
+      observed,
+      pass:
+        observed.dispute === row.dispute &&
+        observed.participation === row.participation &&
+        observed.refusal === row.refusal,
+    };
+  });
+  return {
+    cases: rows.length,
+    observedV2FalseNegativeDrafts: FRAME_REFUSER_V2_FALSE_NEGATIVE_REPAIR_DRAFTS.length,
+    pass: rows.every((row) => row.pass),
+    rows,
+  };
+}
+
 function frameDefiantAdherenceExhaustionAudit(profile) {
   if (profile !== 'frame_defiant') return { applicable: false, classification: null };
   try {
@@ -306,6 +514,26 @@ function frameDefiantAdherenceExhaustionAudit(profile) {
     };
   }
   throw new Error('frame_defiant adherence exhaustion diagnostic did not throw');
+}
+
+function frameOpportunityV3AdherenceExhaustionAudit(profile) {
+  const throwExhaustion =
+    profile === 'frame_refuser' ? throwFrameRefuserAdherenceExhaustion : throwFrameDefiantAdherenceExhaustion;
+  try {
+    throwExhaustion({ profile, repairAttempts: 1 });
+  } catch (error) {
+    return {
+      applicable: true,
+      classification: {
+        code: error.code,
+        profile: error.profile,
+        repairAttempts: error.repairAttempts,
+        disposition: error.disposition,
+        publishPublicCandidate: error.publishPublicCandidate,
+      },
+    };
+  }
+  throw new Error(`${profile} adherence exhaustion diagnostic did not throw`);
 }
 
 export function buildTutorStubFrameRefuserOpportunitySyntheticCorpus() {
@@ -343,6 +571,28 @@ export function buildTutorStubFrameRefuserOpportunityV2SyntheticCorpus() {
   );
 }
 
+export function buildTutorStubFrameRefuserOpportunityV3SyntheticCorpus() {
+  const observerMatrixAudit = prospectiveV3ObserverMatrixAudit();
+  const repairBudgetAudit = buildTutorStubFrameOpportunityV3RepairBudgetDiagnostic();
+  return FRAME_OPPORTUNITY_PROFILES.flatMap((profile) =>
+    Array.from({ length: 3 }, (_, index) => {
+      const run = index + 1;
+      return {
+        case_id: `${profile}:field:${run}`,
+        arm: profile,
+        profile,
+        policy: 'field',
+        models: { tutor: MODEL, analysis: MODEL, learner: MODEL },
+        turns: 8,
+        traceEvents: prospectiveFrameOpportunityEvents(profile, run, PROSPECTIVE_V3_FRAME_OPPORTUNITY_ROWS),
+        adherenceExhaustionAudit: frameOpportunityV3AdherenceExhaustionAudit(profile),
+        observerMatrixAudit,
+        repairBudgetAudit,
+      };
+    }),
+  );
+}
+
 export function buildTutorStubFrameRefuserOpportunityPreflightPackets(cases) {
   return FRAME_OPPORTUNITY_PROFILES.map((profile) => {
     const rows = cases.filter((row) => row.profile === profile);
@@ -367,11 +617,24 @@ export function buildTutorStubFrameRefuserOpportunityV2PreflightPackets(cases) {
   });
 }
 
+export function buildTutorStubFrameRefuserOpportunityV3PreflightPackets(cases) {
+  return FRAME_OPPORTUNITY_PROFILES.map((profile) => {
+    const rows = cases.filter((row) => row.profile === profile);
+    return {
+      schema: 'machinespirits.tutor-stub.frame-refuser-opportunity-preflight-packet.v3',
+      packet_id: profile,
+      case_ids: rows.map((row) => row.case_id),
+      cases: rows,
+    };
+  });
+}
+
 export function assembleTutorStubFrameRefuserOpportunityPreflight({ packets, contract }) {
   const cases = packets.flatMap((packet) => packet.cases);
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'frame-refuser-opportunity-preflight-'));
   try {
     const binding = registrationBinding(contract);
+    const registrationVersion = binding.registration.version ?? 1;
     const observationSemantics = frameRefuserOpportunityObservationSemantics(binding.registration);
     const traces = cases.map((row, index) => {
       const run = (index % 3) + 1;
@@ -396,20 +659,74 @@ export function assembleTutorStubFrameRefuserOpportunityPreflight({ packets, con
       (endpoint) => endpoint.id === 'frame_defiant_adherence_exhaustion_typed_failure',
     );
     const adherenceAudits = cases
-      .filter((row) => row.profile === 'frame_defiant')
+      .filter((row) => registrationVersion === 3 || row.profile === 'frame_defiant')
       .map((row) => ({ caseId: row.case_id, ...row.adherenceExhaustionAudit }));
     if (adherenceEndpoint) {
-      endpointStatus[adherenceEndpoint.id] = adherenceAudits.every(
-        (row) =>
-          row.applicable === true &&
-          row.classification?.code === FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE &&
-          row.classification?.profile === 'frame_defiant' &&
-          row.classification?.repairAttempts === 2 &&
-          row.classification?.disposition === 'technical_failure_no_public_candidate' &&
-          row.classification?.publishPublicCandidate === false,
-      )
-        ? 'complete'
-        : 'incomplete';
+      const defiantAudits = adherenceAudits.filter((row) => row.classification?.profile === 'frame_defiant');
+      endpointStatus[adherenceEndpoint.id] =
+        defiantAudits.length === adherenceEndpoint.denominator.expected_cases &&
+        defiantAudits.every(
+          (row) =>
+            row.applicable === true &&
+            row.classification?.code === FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE &&
+            row.classification?.profile === 'frame_defiant' &&
+            row.classification?.repairAttempts === (registrationVersion === 3 ? 1 : 2) &&
+            row.classification?.disposition === 'technical_failure_no_public_candidate' &&
+            row.classification?.publishPublicCandidate === false,
+        )
+          ? 'complete'
+          : 'incomplete';
+    }
+    if (registrationVersion === 3) {
+      const refuserEndpoint = contract.endpoints.find(
+        (endpoint) => endpoint.id === 'frame_refuser_adherence_exhaustion_typed_failure',
+      );
+      if (refuserEndpoint) {
+        const refuserAudits = adherenceAudits.filter((row) => row.classification?.profile === 'frame_refuser');
+        endpointStatus[refuserEndpoint.id] =
+          refuserAudits.length === refuserEndpoint.denominator.expected_cases &&
+          refuserAudits.every(
+            (row) =>
+              row.applicable === true &&
+              row.classification?.code === FRAME_REFUSER_ADHERENCE_EXHAUSTED_CODE &&
+              row.classification?.profile === 'frame_refuser' &&
+              row.classification?.repairAttempts === 1 &&
+              row.classification?.disposition === 'technical_failure_no_public_candidate' &&
+              row.classification?.publishPublicCandidate === false,
+          )
+            ? 'complete'
+            : 'incomplete';
+      }
+      const observerEndpoint = contract.endpoints.find((endpoint) => endpoint.id === 'prospective_v3_observer_matrix');
+      if (observerEndpoint) {
+        endpointStatus[observerEndpoint.id] = cases.every(
+          (row) =>
+            row.observerMatrixAudit?.pass === true &&
+            row.observerMatrixAudit?.cases === 30 &&
+            row.observerMatrixAudit?.observedV2FalseNegativeDrafts === 15,
+        )
+          ? 'complete'
+          : 'incomplete';
+      }
+      const budgetEndpoint = contract.endpoints.find(
+        (endpoint) => endpoint.id === 'prospective_v3_repair_budget_readiness',
+      );
+      if (budgetEndpoint) {
+        endpointStatus[budgetEndpoint.id] = cases.every(
+          (row) =>
+            row.repairBudgetAudit?.ready === true &&
+            row.repairBudgetAudit?.modelCallBudget === 48 &&
+            row.repairBudgetAudit?.baseCalls === 25 &&
+            row.repairBudgetAudit?.maxFullRepairsPer8Turns === 1 &&
+            row.repairBudgetAudit?.callsPerFullRepair === 2 &&
+            row.repairBudgetAudit?.permittedRepairCalls === 2 &&
+            row.repairBudgetAudit?.requiredTutorGuardReserve === 16 &&
+            row.repairBudgetAudit?.worstCaseRequiredCalls === 43 &&
+            row.repairBudgetAudit?.headroom === 5,
+        )
+          ? 'complete'
+          : 'incomplete';
+      }
     }
     return {
       case_ids: cases.map((row) => row.case_id),
@@ -423,15 +740,22 @@ export function assembleTutorStubFrameRefuserOpportunityPreflight({ packets, con
 }
 
 export function runTutorStubFrameRefuserOpportunityEndpointPreflight(contract) {
-  const prospectiveV2 = contract.registration?.registration_path?.endsWith('.v2.json');
+  const binding = registrationBinding(contract);
+  const observationSemantics = frameRefuserOpportunityObservationSemantics(binding.registration);
+  const prospectiveV2 = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2;
+  const prospectiveV3 = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV3;
   return runPaidStudyEndpointPreflight({
     contract,
-    cases: prospectiveV2
-      ? buildTutorStubFrameRefuserOpportunityV2SyntheticCorpus()
-      : buildTutorStubFrameRefuserOpportunitySyntheticCorpus(),
-    buildPackets: prospectiveV2
-      ? buildTutorStubFrameRefuserOpportunityV2PreflightPackets
-      : buildTutorStubFrameRefuserOpportunityPreflightPackets,
+    cases: prospectiveV3
+      ? buildTutorStubFrameRefuserOpportunityV3SyntheticCorpus()
+      : prospectiveV2
+        ? buildTutorStubFrameRefuserOpportunityV2SyntheticCorpus()
+        : buildTutorStubFrameRefuserOpportunitySyntheticCorpus(),
+    buildPackets: prospectiveV3
+      ? buildTutorStubFrameRefuserOpportunityV3PreflightPackets
+      : prospectiveV2
+        ? buildTutorStubFrameRefuserOpportunityV2PreflightPackets
+        : buildTutorStubFrameRefuserOpportunityPreflightPackets,
     assemble: assembleTutorStubFrameRefuserOpportunityPreflight,
   });
 }
@@ -443,6 +767,8 @@ export default {
   buildTutorStubFrameRefuserOpportunitySyntheticCorpus,
   buildTutorStubFrameRefuserOpportunityV2PreflightPackets,
   buildTutorStubFrameRefuserOpportunityV2SyntheticCorpus,
+  buildTutorStubFrameRefuserOpportunityV3PreflightPackets,
+  buildTutorStubFrameRefuserOpportunityV3SyntheticCorpus,
   buildTutorStubResistanceAxisPreflightPackets,
   buildTutorStubResistanceAxisSyntheticCorpus,
   runTutorStubFrameRefuserOpportunityEndpointPreflight,

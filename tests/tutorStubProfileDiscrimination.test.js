@@ -9,6 +9,9 @@ import { fileURLToPath } from 'node:url';
 
 import {
   FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE,
+  FRAME_REFUSER_ADHERENCE_EXHAUSTED_CODE,
+  TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV,
+  buildTutorStubFrameOpportunityV3RepairBudgetDiagnostic,
   createTutorStubAutomatedLearnerGenerationRuntime,
 } from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
 import {
@@ -354,6 +357,233 @@ test('frame-defiant adherence exhaustion fails closed instead of publishing a re
     repairAttempts: 2,
     disposition: 'technical_failure_no_public_candidate',
   });
+});
+
+test('prospective v3 fails both resistant profiles closed after one admitted full repair', async () => {
+  const cases = [
+    {
+      profile: 'frame_refuser',
+      code: FRAME_REFUSER_ADHERENCE_EXHAUSTED_CODE,
+      message: /invalid target turn/iu,
+    },
+    {
+      profile: 'frame_defiant',
+      code: FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE,
+      message: /invalid control turn/iu,
+    },
+  ];
+  for (const row of cases) {
+    const trace = [];
+    let repairCalls = 0;
+    const runtime = createTutorStubAutomatedLearnerGenerationRuntime({
+      appendTraceEvent: (target, event) => target.push(event),
+      callPromptModel: async () => {
+        repairCalls += 1;
+        return { text: 'I will simply answer the question as asked.' };
+      },
+      classificationFromCombinedAnalysis: (raw) => raw.classification,
+      env: { [TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV]: 'prospective_v3' },
+      extractCombinedLearnerAnalysis: async () => ({
+        classification: {
+          turn: {
+            request_type: 'authority_refusal_or_status_challenge',
+            discourse_move: 'challenge',
+            evidence_use: 'none',
+            epistemic_stance: 'resistant',
+            agency: 'steering',
+          },
+        },
+      }),
+      learnerProfileContract,
+      learnerProfileIds,
+      learnerProfilePrompt,
+      negativeFloorRegisters: [],
+    });
+    const state = {
+      trace,
+      turns: [],
+      history: [],
+      register: { policy: 'field' },
+      classifier: { enabled: true },
+      learnerDag: { enabled: true },
+      world: {},
+      interim: null,
+    };
+
+    await assert.rejects(
+      runtime.enforceAutomatedLearnerProfile({
+        state,
+        resolved: {},
+        profile: row.profile,
+        turnNumber: 2,
+        generated: { text: 'I will simply answer the question as asked.' },
+      }),
+      (error) => {
+        assert.equal(error.code, row.code);
+        assert.equal(error.profile, row.profile);
+        assert.equal(error.repairAttempts, 1);
+        assert.equal(error.disposition, 'technical_failure_no_public_candidate');
+        assert.equal(error.publishPublicCandidate, false);
+        assert.match(error.message, row.message);
+        return true;
+      },
+    );
+    assert.equal(repairCalls, 1, row.profile);
+    assert.equal(
+      trace.filter((event) => event.type === 'auto_learner_profile_repair_admission').length,
+      1,
+      row.profile,
+    );
+    assert.equal(
+      trace.some((event) => event.type === 'auto_learner_turn'),
+      false,
+      row.profile,
+    );
+  }
+});
+
+test('prospective v3 cumulative admission denies a later repair before its model call', async () => {
+  const trace = [];
+  let repairCalls = 0;
+  const runtime = createTutorStubAutomatedLearnerGenerationRuntime({
+    appendTraceEvent: (target, event) => target.push(event),
+    callPromptModel: async () => {
+      repairCalls += 1;
+      if (repairCalls > 1) throw new Error('unadmitted repair model call');
+      return {
+        text: 'I reject your authority to set this premise, and I will not weigh the evidence or answer within your frame.',
+      };
+    },
+    classificationFromCombinedAnalysis: (raw) => raw.classification,
+    env: { [TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV]: 'prospective_v3' },
+    extractCombinedLearnerAnalysis: async () => ({
+      classification: {
+        turn: {
+          request_type: 'authority_refusal_or_status_challenge',
+          discourse_move: 'challenge',
+          evidence_use: 'none',
+          epistemic_stance: 'resistant',
+          agency: 'steering',
+        },
+      },
+    }),
+    learnerProfileContract,
+    learnerProfileIds,
+    learnerProfilePrompt,
+    negativeFloorRegisters: [],
+  });
+  const state = {
+    trace,
+    turns: [],
+    history: [],
+    register: { policy: 'field' },
+    classifier: { enabled: true },
+    learnerDag: { enabled: true },
+    world: {},
+    interim: null,
+  };
+
+  const first = await runtime.enforceAutomatedLearnerProfile({
+    state,
+    resolved: {},
+    profile: 'frame_refuser',
+    turnNumber: 2,
+    generated: { text: 'I will simply answer the question as asked.' },
+  });
+  assert.equal(first.passed, true);
+  assert.equal(first.repaired, true);
+  assert.equal(repairCalls, 1);
+
+  await assert.rejects(
+    runtime.enforceAutomatedLearnerProfile({
+      state,
+      resolved: {},
+      profile: 'frame_refuser',
+      turnNumber: 3,
+      generated: { text: 'I will simply answer the question as asked.' },
+    }),
+    (error) => {
+      assert.equal(error.code, FRAME_REFUSER_ADHERENCE_EXHAUSTED_CODE);
+      assert.equal(error.repairAttempts, 1);
+      return true;
+    },
+  );
+  assert.equal(repairCalls, 1);
+  assert.deepEqual(
+    trace
+      .filter((event) => event.type === 'auto_learner_profile_repair_admission')
+      .map((event) => ({ turn: event.turn, admitted: event.admitted, usedBefore: event.usedBefore })),
+    [
+      { turn: 2, admitted: true, usedBefore: 0 },
+      { turn: 3, admitted: false, usedBefore: 1 },
+    ],
+  );
+  assert.deepEqual(
+    trace.filter((event) => event.type === 'auto_learner_profile_repair_requested').map((event) => event.turn),
+    [2],
+  );
+});
+
+test('prospective v3 repair readiness proves the 48-call worst case while v2 refuser behavior stays unchanged', async () => {
+  assert.deepEqual(buildTutorStubFrameOpportunityV3RepairBudgetDiagnostic(), {
+    turns: 8,
+    modelCallBudget: 48,
+    baseCalls: 25,
+    maxFullRepairsPer8Turns: 1,
+    callsPerFullRepair: 2,
+    permittedRepairCalls: 2,
+    requiredTutorGuardReserve: 16,
+    worstCaseRequiredCalls: 43,
+    headroom: 5,
+    ready: true,
+  });
+  assert.equal(buildTutorStubFrameOpportunityV3RepairBudgetDiagnostic({ maxFullRepairsPer8Turns: 2 }).ready, false);
+  assert.equal(buildTutorStubFrameOpportunityV3RepairBudgetDiagnostic({ modelCallBudget: 42 }).ready, false);
+
+  let repairCalls = 0;
+  const runtime = createTutorStubAutomatedLearnerGenerationRuntime({
+    appendTraceEvent() {},
+    callPromptModel: async () => {
+      repairCalls += 1;
+      return { text: 'I will simply answer the question as asked.' };
+    },
+    classificationFromCombinedAnalysis: (raw) => raw.classification,
+    env: {},
+    extractCombinedLearnerAnalysis: async () => ({
+      classification: {
+        turn: {
+          request_type: 'authority_refusal_or_status_challenge',
+          discourse_move: 'challenge',
+          evidence_use: 'none',
+          epistemic_stance: 'resistant',
+          agency: 'steering',
+        },
+      },
+    }),
+    learnerProfileContract,
+    learnerProfileIds,
+    learnerProfilePrompt,
+    negativeFloorRegisters: [],
+  });
+  const result = await runtime.enforceAutomatedLearnerProfile({
+    state: {
+      trace: [],
+      turns: [],
+      history: [],
+      register: { policy: 'field' },
+      classifier: { enabled: true },
+      learnerDag: { enabled: true },
+      world: {},
+      interim: null,
+    },
+    resolved: {},
+    profile: 'frame_refuser',
+    turnNumber: 2,
+    generated: { text: 'I will simply answer the question as asked.' },
+  });
+  assert.equal(result.passed, false);
+  assert.equal(result.repaired, true);
+  assert.equal(repairCalls, 2);
 });
 
 function turnEvent(

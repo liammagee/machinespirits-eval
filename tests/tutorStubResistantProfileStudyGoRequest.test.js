@@ -239,7 +239,25 @@ test('consumed axis heldout request remains frozen and fails closed after curren
   assert.match(result.stderr, /source-closure-scripts\/analyze-tutor-stub-resistance-axis-calibration\.js/u);
 });
 
-test('frame-refuser opportunity requests validate historical v1 and prospective v2 without a new model call', (t) => {
+test('consumed frame-refuser v1 and v2 requests retain their exact approval digests', () => {
+  const expected = {
+    'config/tutor-stub-frame-refuser-opportunity-study-go-request.v1.json':
+      'ca832a863764748dde496166ee2f9e7793cb97a582d22564c085bacece005b84',
+    'config/tutor-stub-frame-refuser-opportunity-study-go-request.v2.json':
+      '2c77c131c2803e4af37eea3c8cbfb38e2ba423d645ab98739d661c5778c22c04',
+  };
+  for (const [relativePath, digest] of Object.entries(expected)) {
+    assert.equal(
+      crypto
+        .createHash('sha256')
+        .update(fs.readFileSync(path.join(ROOT, relativePath)))
+        .digest('hex'),
+      digest,
+    );
+  }
+});
+
+test('frame-refuser opportunity requests validate historical v1 and prospective v2/v3 without a new model call', (t) => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'frame-refuser-opportunity-go-'));
   t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
   const digest = (filePath) => crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
@@ -264,6 +282,13 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
       endpointPath: 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.json',
       certificatePath: 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.endpoint-go.json',
     },
+    {
+      version: 'v3',
+      studyId: 'tutor-stub-frame-refuser-opportunity-v3',
+      registrationPath: 'config/tutor-stub-frame-refuser-opportunity-registration.v3.json',
+      endpointPath: 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v3.json',
+      certificatePath: 'config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v3.endpoint-go.json',
+    },
   ];
   for (const fixture of fixtures) {
     const registrationPath = fixture.registrationPath;
@@ -273,6 +298,7 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
     const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, certificatePath), 'utf8'));
     const artifactRoot = `.test-tmp/frame-refuser-opportunity-request-test-${fixture.version}-${process.pid}`;
     const live = [
+      ...(fixture.version === 'v3' ? ['env', 'TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS=prospective_v3'] : []),
       'node',
       'scripts/run-tutor-stub-qa-matrix.js',
       '--policies',
@@ -368,10 +394,18 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
         requiredDistinctTargetPrefixes: 3,
         targetObservation: registration.measurement.targetObservation,
         controlObservation: registration.measurement.controlObservation,
-        ...(fixture.version === 'v2'
+        ...(fixture.version === 'v2' || fixture.version === 'v3'
           ? {
               controlParticipationForms: registration.measurement.controlParticipationForms,
               refusalRule: registration.measurement.refusalRule,
+            }
+          : {}),
+        ...(fixture.version === 'v3'
+          ? {
+              observationSemantics: registration.measurement.observationSemantics,
+              jurisdictionRule: registration.measurement.jurisdictionRule,
+              productiveParticipationPrecedesWithholding:
+                registration.measurement.productiveParticipationPrecedesWithholding,
             }
           : {}),
         analysisTraceSelection: 'exact_profile_trace_files_only',
@@ -409,6 +443,7 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
         },
       },
       commands: { live, analyze },
+      ...(fixture.version === 'v3' ? { repairAdmission: registration.repairAdmission } : {}),
       design: {
         profiles: ['frame_refuser', 'frame_defiant'],
         dialogues: 6,
@@ -487,7 +522,7 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
         pattern: /frame-refuser-opportunity-measurement-binding/u,
       },
     ];
-    if (fixture.version === 'v2') {
+    if (fixture.version === 'v2' || fixture.version === 'v3') {
       invalidRequests.push(
         {
           name: 'mismatched-refusal-rule',
@@ -502,6 +537,53 @@ test('frame-refuser opportunity requests validate historical v1 and prospective 
             value.measurement.controlParticipationForms = ['content_bearing_contribution'];
           },
           pattern: /frame-refuser-opportunity-measurement-binding/u,
+        },
+      );
+    }
+    if (fixture.version === 'v3') {
+      invalidRequests.push(
+        {
+          name: 'mismatched-observation-semantics',
+          mutate(value) {
+            value.measurement.observationSemantics = 'prospective_v2';
+          },
+          pattern: /frame-refuser-opportunity-measurement-binding/u,
+        },
+        {
+          name: 'mismatched-jurisdiction-rule',
+          mutate(value) {
+            value.measurement.jurisdictionRule = 'unregistered_rule';
+          },
+          pattern: /frame-refuser-opportunity-measurement-binding/u,
+        },
+        {
+          name: 'disabled-productive-precedence',
+          mutate(value) {
+            value.measurement.productiveParticipationPrecedesWithholding = false;
+          },
+          pattern: /frame-refuser-opportunity-measurement-binding/u,
+        },
+        {
+          name: 'expanded-repair-cap',
+          mutate(value) {
+            value.repairAdmission.maxFullRepairsPer8Turns = 2;
+          },
+          pattern: /frame-refuser-opportunity-v3-repair-admission-binding/u,
+        },
+        {
+          name: 'invalid-candidate-publication',
+          mutate(value) {
+            value.repairAdmission.invalidCandidateMayBePublished = true;
+          },
+          pattern: /frame-refuser-opportunity-v3-repair-admission-binding/u,
+        },
+        {
+          name: 'missing-runtime-semantics-binding',
+          mutate(value) {
+            value.commands.live = value.commands.live.slice(2);
+            value.bindings.commands.liveArraySha256 = commandDigest(value.commands.live);
+          },
+          pattern: /frame-refuser-opportunity-live-command-shape/u,
         },
       );
     }

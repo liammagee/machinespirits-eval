@@ -65,6 +65,9 @@ links:
     - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.endpoint-go.json
     - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.json
     - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v2.endpoint-go.json
+    - config/tutor-stub-frame-refuser-opportunity-registration.v3.json
+    - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v3.json
+    - config/paid-study-endpoints/tutor-stub-frame-refuser-opportunity.v3.endpoint-go.json
     - config/tutor-stub-frame-refuser-opportunity-study-go-request.v1.json
     - config/tutor-stub-frame-refuser-opportunity-study-go-request.v2.json
     - services/pedagogicalMove/resistantProfileWarrantShadow.js
@@ -99,7 +102,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/frame-refuser-opportunity-v2-go-request
+branch: codex/frame-refuser-opportunity-v3-readiness
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -642,3 +645,56 @@ and explicit human approval.
   v2 authorization. Both authorization booleans remain false; execution now
   requires explicit human approval of the exact v2 request digest and ceiling.
   No model call, live run, study output, canary, or production write was made.
+- 2026-08-20 — Closed the approved v2 opportunity run as incomplete rather
+  than converting partial execution into a verdict. The exact approved request
+  was
+  `2c77c131c2803e4af37eea3c8cbfb38e2ba423d645ab98739d661c5778c22c04`
+  at launch source `a12e20337def73dbb06a27f2a1d12028b064b31c`. Execution
+  consumed 180 of the 288 maximum model attempts with zero provider failures.
+  Target run 1 stopped at `7/8` turns after its 48-call dialogue ceiling and 12
+  adherence repairs; the other two target dialogues are valid. Under the
+  already-approved bounded technical-recovery authority, the three untouched
+  control dialogues were completed separately in 76 calls. The target cohort
+  is therefore incomplete while the control cohort is complete. No analyzer,
+  gate report, or verdict was produced. The 108 unused attempts are not a
+  reusable authorization balance, and no partial trace may be pooled into a
+  successor. All v2 traces remain diagnostic and excluded from inference; any
+  successor must start as a fresh `3+3` cohort. The private archive is durable
+  on branch `codex/frame-refuser-v2-incomplete-archive` at commit
+  `1fefbb64800586360f2f31f8b5a6a94c8e02860a`: 41 files, zero missing,
+  target inventory SHA-256
+  `6b2a3afa9ff45b9dd9cfc2daa3dcbcfa4329f40df4cb371f30594da2ef4c10e4`,
+  and control inventory SHA-256
+  `8de1cec60f96e20e91255ec0b88141c1aa381a0fffb1e1dc7b52d3ff72eb5e39`.
+  It is intentionally not on private `main`, whose unrelated 29-commit local
+  backlog remains a separate reconciliation task.
+- 2026-08-20 — Prepared a zero-call prospective-v3 repair and readiness
+  boundary without creating a GO request or study output. Registration version
+  3 explicitly selects `prospective_v3`; the production observer now recognizes
+  all 15 frozen v2 false-negative repair drafts plus domain-independent
+  authority, standing, right, inquiry-noun, withholding, aspectual, productive-
+  precedence, and negative-control forms, while legacy-v1 and prospective-v2
+  dispatch and artifact digests remain unchanged. Both resistant profiles now
+  fail closed through typed no-public-candidate exhaustion, and a v3-only
+  cumulative admission guard permits at most one full repair across eight turns
+  before any further repair model call. The deterministic 48-call readiness
+  proof reserves 25 base calls, two repair calls, and 16 tutor-guard calls:
+  43 worst-case calls with five calls of headroom. The six-dialogue production
+  preflight passes the observer, analyzer, prefix extractor, both typed throws,
+  30-case semantic matrix, and budget diagnostic with zero model calls and zero
+  production writes. Registration file SHA-256 is
+  `d9be4ebddde52badc3e7f13b710f0d27d3e2885427d7625ea842f9e10ff3ee94`;
+  the endpoint contract has file SHA-256
+  `7978b5755ebb8b520c31a079e6ef10309cf4efa115ddb7909264f2c204c27e3a`
+  and canonical SHA-256
+  `ce33ac59cb9608824644ca411b0cd9543e3eab7d809a00192ab136449c45dbd0`;
+  preflight SHA-256 is
+  `dbccae122515506842f5e2fd22733ad7d48738a462b15db0cd70d2540755d6b5`;
+  and the endpoint certificate file SHA-256 is
+  `5616664b5638e49100bc94e6f85c58416a15b74060e5fd8109208f19b1a9bb8b`.
+  A future v3 request must bind these semantics, the one-repair arithmetic, and
+  the live runtime selector; no request exists, both authorization booleans
+  remain false, and no model call is authorized. This gate can test only the
+  existence of three distinct early treatment prefixes with productive nearest-
+  neighbour controls, not tutor adaptation, action or register efficacy,
+  learning outcomes, human validity, or cell-harness transfer.

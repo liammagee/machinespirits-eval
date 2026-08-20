@@ -250,6 +250,17 @@ export function frameRefuserOpportunityObservationSemantics(registration) {
   if (version === 2 && controlObservation === 'frame_jurisdiction_dispute_with_contract_licensed_participation') {
     return RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2;
   }
+  if (
+    version === 3 &&
+    registration.measurement?.observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV3 &&
+    controlObservation === 'frame_jurisdiction_dispute_with_contract_licensed_participation' &&
+    registration.measurement?.refusalRule === 'explicit_withholding_without_contract_licensed_participation' &&
+    registration.measurement?.jurisdictionRule ===
+      'authority_or_standing_or_right_to_set_fix_define_choose_dictate_govern_or_control_a_bounded_inquiry_noun' &&
+    registration.measurement?.productiveParticipationPrecedesWithholding === true
+  ) {
+    return RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV3;
+  }
   throw new Error(
     `unsupported frame-refuser opportunity semantics: version=${version}, controlObservation=${controlObservation}`,
   );

@@ -11,9 +11,11 @@ import {
   createResistantProfileMoveShadow,
 } from '../services/pedagogicalMove/resistantProfileWarrantShadow.js';
 import {
+  RESISTANT_LEARNER_OBSERVATION_SEMANTICS,
   observeResistantLearnerTurn,
   resistantLearnerObservationMarkers,
 } from '../services/resistantLearnerObservation.js';
+import { FRAME_REFUSER_V2_FALSE_NEGATIVE_REPAIR_DRAFTS } from '../services/tutorStubResistanceAxisDiscriminationPreflight.js';
 import {
   learnerProfileContract,
   learnerProfileContractSummary,
@@ -334,6 +336,58 @@ test('prospective frame-defiant observation preserves all three live control dra
     assert.equal(markers.frameJurisdictionDispute, true, learnerText);
     assert.equal(markers.frameJurisdictionParticipation, false, learnerText);
     assert.equal(markers.frameJurisdictionRefusal, true, learnerText);
+  }
+});
+
+test('prospective v3 recognizes the frozen refuser misses while preserving productive and negative precedence', () => {
+  const v3 = RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV3;
+  for (const learnerText of FRAME_REFUSER_V2_FALSE_NEGATIVE_REPAIR_DRAFTS) {
+    const markers = resistantLearnerObservationMarkers({
+      learnerText,
+      classification: classification({
+        requestType: 'authority_refusal_or_status_challenge',
+        discourseMove: 'challenge',
+        evidenceUse: 'none',
+        agency: 'steering',
+      }),
+      semantics: v3,
+    });
+    assert.equal(markers.frameJurisdictionDispute, true, learnerText);
+    assert.equal(markers.frameJurisdictionParticipation, false, learnerText);
+    assert.equal(markers.frameJurisdictionRefusal, true, learnerText);
+  }
+
+  const legacyV2Miss = resistantLearnerObservationMarkers({
+    learnerText: FRAME_REFUSER_V2_FALSE_NEGATIVE_REPAIR_DRAFTS[0],
+    classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+    semantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2,
+  });
+  assert.equal(legacyV2Miss.frameJurisdictionDispute, false);
+  assert.equal(legacyV2Miss.frameJurisdictionRefusal, false);
+
+  const productive = resistantLearnerObservationMarkers({
+    learnerText:
+      'I reject your authority to set the whole task, and I will not answer it as written, but I will assess one bounded claim.',
+    classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+    semantics: v3,
+  });
+  assert.equal(productive.frameJurisdictionDispute, true);
+  assert.equal(productive.frameJurisdictionParticipation, true);
+  assert.equal(productive.frameJurisdictionRefusal, false);
+
+  for (const learnerText of [
+    'I do not dispute your right to set the question, and I will answer it.',
+    'You do not get to set the sample on that shelf.',
+    'I do not grant your authority to set the sample on that shelf; the question remains open.',
+    'This evidence does not justify the verdict, so I will not decide until another source appears.',
+  ]) {
+    const markers = resistantLearnerObservationMarkers({
+      learnerText,
+      classification: classification({ discourseMove: 'challenge', evidenceUse: 'none' }),
+      semantics: v3,
+    });
+    assert.equal(markers.frameJurisdictionDispute, false, learnerText);
+    assert.equal(markers.frameJurisdictionRefusal, false, learnerText);
   }
 });
 
