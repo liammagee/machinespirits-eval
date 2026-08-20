@@ -1,0 +1,375 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-action-register-crossed-registration.v1",
+  "version": 5,
+  "status": "prospective_zero_call_readiness_hold",
+  "workplanItem": "resistance-action-register-integration",
+  "frozenAt": "2026-08-20",
+  "registeredQuestion": "Among wholly fresh independent frame-refuser dialogues that present a prospective-v5 jurisdictional refusal by public turn 2 under the observer-first confirmation eligibility rule, does one matched test_bounded_distinction tutor move realized warm change two-post-trigger-turn resistance recovery relative to the same move realized plain?",
+  "claimBoundary": "This prospective successor confirmation can test only the frame-refuser warm-versus-plain difference for the existing profile_specific_resistance_recovery endpoint under the registered matched test_bounded_distinction move in world_005_marrick. It cannot pool or reinterpret the 12 calibration dialogues or the incomplete V1 confirmation block; establish matched-versus-mismatched action efficacy, edged-register efficacy, an action-by-register interaction, general tutor efficacy, durable learning, human validity, or transfer to the cell harness; or turn a treatment-fidelity failure into an outcome rerun.",
+  "authorization": {
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "baselinePilotAuthorized": false,
+    "goRequestPrepared": false,
+    "standingAuthorizationAttachmentSha256": "4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b",
+    "programmeLedgerBeforeThisConfirmation": {
+      "reservedAttempts": 219,
+      "ceiling": 2345,
+      "remaining": 2126
+    },
+    "requiredCeilingAmendment": {
+      "from": 2345,
+      "to": 5000,
+      "increase": 2655,
+      "basis": "human-selected operational execution safeguard; the scientifically fixed 36-dialogue design and 2160-reservation study envelope remain unchanged",
+      "authorized": false
+    },
+    "requiredBeforeAnyModelCall": [
+      "merged zero-call confirmation runtime, runner, analyzer, endpoint contract, and endpoint certificate",
+      "a clean pinned source and complete executable source closure",
+      "nine absent create-once balanced batch destinations and one absent combined report",
+      "one committed HOLD request binding all 36 fresh jobs, exact commands, Fisher rule, sealed-only combined analysis, and the 2160 confirmation ceiling",
+      "an explicit digest-bound human amendment raising the operational programme ceiling from 2345 to exactly 5000"
+    ]
+  },
+  "preservation": {
+    "supersedesRegistrationPath": "config/tutor-stub-resistance-action-register-crossed-registration.v4.json",
+    "priorRegistrationsRemainImmutable": true,
+    "calibration": {
+      "requestSha256": "965aca0ad1f61d2f43891c162861180016d79a8afa5c090ace0e3e88a436e0dd",
+      "reportSha256": "42021a390338cd556386efc96d8f00b35655a411627908a10248dba1e473a3a5",
+      "privateArchiveCommit": "0857363dabb4445052159b8218acaed13d921949",
+      "dialogues": 12,
+      "plainRecovered": 1,
+      "plainTotal": 6,
+      "warmRecovered": 4,
+      "warmTotal": 6,
+      "twoSidedFisherP": 0.24242424242424243,
+      "permittedUse": "prospective sample-size and hard-attempt calculation only",
+      "pooledIntoConfirmation": false,
+      "reusedAsConfirmationDialogues": false,
+      "reusedAsConfirmationPrefixes": false,
+      "outcomesSelected": false
+    },
+    "stoppedConfirmationV1": {
+      "requestSha256": "16f93e48f0b19fe23f0b91dabc9ac318f210ecbba6fbe954d76677d43fb78554",
+      "sourceCommit": "1f3e15f88c305a3ca3589471bffd687f28278acc",
+      "privateArchiveBranch": "codex/resistance-action-register-confirmation-v1-incomplete-archive",
+      "privateArchiveCommit": "4604cc31920913e10b3e04565bf3d70def7c112e",
+      "localInventorySha256": "4b7345dd69e6d700b7216f1af7a4b315fdcb7aae5161248610000e592c1f7a1f",
+      "liveMirrorInventorySha256": "8f530416c8b24ff809486c6638ed329b6ab03593931f85768befe6ef1972a361",
+      "dialoguesPlanned": 4,
+      "dialoguesComplete": 3,
+      "dialoguesFailed": 1,
+      "reservedAttempts": 34,
+      "completedCalls": 34,
+      "providerFailures": 0,
+      "analyzerRun": false,
+      "reportWritten": false,
+      "excludedFromSuccessor": true,
+      "reused": false,
+      "pooled": false,
+      "outcomeSelected": false,
+      "permittedUse": "instrument-failure diagnosis and successor exclusion only"
+    }
+  },
+  "design": {
+    "stage": "frame_refuser_matched_action_plain_warm_confirmation_successor",
+    "form": "fresh_independent_online_triggered_dialogues",
+    "world": "world_005_marrick",
+    "dagMode": "strict_dag",
+    "profiles": ["frame_refuser"],
+    "treatmentProfile": "frame_refuser",
+    "diagnosticProfile": "frame_defiant",
+    "diagnosticDisposition": "absent_from_confirmation",
+    "trigger": {
+      "observationSemantics": "prospective_v5",
+      "timing": "first_eligible_frame_jurisdiction_refusal_by_public_turn_2",
+      "eligibleByTurn": 2,
+      "requiredObservation": "frame_jurisdiction_refusal",
+      "profileIdentityMayTrigger": false,
+      "freshDialogueRequired": true,
+      "freshOpeningAndLearnerTrajectoryRequired": true,
+      "calibrationPrefixesConsumedAsInputs": false,
+      "missingTriggerDisposition": "substantive_registered_failure_stop_no_replacement",
+      "observerFirstEligibility": true,
+      "priorIncompleteConfirmationConsumedAsInputs": false
+    },
+    "randomization": {
+      "unit": "fresh_independent_dialogue",
+      "allocation": "predeclared_balanced_blocks",
+      "algorithm": "sha256_ranked_balanced_block_permutation_v1",
+      "ratio": "1:1",
+      "masterSeed": 20260822,
+      "concealedFromPreTriggerPrompts": true,
+      "validOutputsMayNotBeSelectedOrRerolled": true
+    },
+    "factors": {
+      "actionFit": {
+        "levels": ["matched"],
+        "assignments": {
+          "frame_refuser": {
+            "matched": "test_bounded_distinction"
+          }
+        },
+        "fixedForConfirmation": true
+      },
+      "realization": {
+        "levels": ["plain", "warm"],
+        "plain": "plain",
+        "warm": "warm",
+        "referenceLevel": "plain",
+        "treatmentLevel": "warm",
+        "oneTutorTurnOnly": true,
+        "revertAfterUptake": true
+      },
+      "replicationBlock": {
+        "levels": [
+          "block_01",
+          "block_02",
+          "block_03",
+          "block_04",
+          "block_05",
+          "block_06",
+          "block_07",
+          "block_08",
+          "block_09"
+        ]
+      },
+      "confirmationBlock": {
+        "blocks": [
+          {
+            "id": "block_01",
+            "dialogues": 4,
+            "plain": 2,
+            "warm": 2
+          },
+          {
+            "id": "block_02",
+            "dialogues": 4,
+            "plain": 2,
+            "warm": 2
+          },
+          {
+            "id": "block_03",
+            "dialogues": 4,
+            "plain": 2,
+            "warm": 2
+          },
+          {
+            "id": "block_04",
+            "dialogues": 4,
+            "plain": 2,
+            "warm": 2
+          },
+          {
+            "id": "block_05",
+            "dialogues": 4,
+            "plain": 2,
+            "warm": 2
+          },
+          {
+            "id": "block_06",
+            "dialogues": 4,
+            "plain": 2,
+            "warm": 2
+          },
+          {
+            "id": "block_07",
+            "dialogues": 4,
+            "plain": 2,
+            "warm": 2
+          },
+          {
+            "id": "block_08",
+            "dialogues": 4,
+            "plain": 2,
+            "warm": 2
+          },
+          {
+            "id": "block_09",
+            "dialogues": 4,
+            "plain": 2,
+            "warm": 2
+          }
+        ],
+        "technicalTransportOnly": true,
+        "interimAnalysis": false,
+        "blockSelection": false
+      }
+    },
+    "intervention": {
+      "durationTutorTurns": 1,
+      "studyOnlyOptIn": true,
+      "applicationOrder": [
+        "public_observation",
+        "warrant",
+        "assigned_typed_pedagogical_move",
+        "assigned_compatible_register",
+        "public_realization"
+      ],
+      "legacyDefaultOutsideStudy": true,
+      "safetyOverride": "record_protected_condition_as_nonadherent_never_reroll"
+    },
+    "outcomeHorizon": {
+      "commonPostTriggerLearnerTurns": 2,
+      "maximumPublicLearnerTurn": 4,
+      "terminalTutorReply": false
+    }
+  },
+  "measurement": {
+    "primaryEndpoints": [
+      {
+        "id": "profile_specific_resistance_recovery",
+        "type": "binary_per_randomized_dialogue",
+        "definition": "Within two post-trigger learner turns, the learner either engages the bounded test on its merits or states a more precise jurisdictional condition grounded in the public issue.",
+        "modelJudge": false
+      }
+    ],
+    "confirmatoryTest": {
+      "estimand": "warm_minus_plain_two_post_trigger_turn_recovery_rate_over_36_fresh_independent_dialogues",
+      "null": "warm and plain recovery probabilities are equal",
+      "alternative": "warm and plain recovery probabilities differ",
+      "test": "fisher_exact_two_sided",
+      "alpha": 0.05,
+      "decisionRule": "confirm warm-versus-plain separation only when the two-sided Fisher exact p-value is at most 0.05; report arm rates, risk difference, odds ratio, and exact p-value regardless",
+      "interimAnalysis": false,
+      "calibrationDataPooled": false,
+      "powering": {
+        "source": "calibration_only_1_of_6_plain_vs_4_of_6_warm",
+        "test": "fisher_exact_two_sided",
+        "alpha": 0.05,
+        "targetPower": 0.8,
+        "plainCalibrationRate": 0.16666666666666666,
+        "warmCalibrationRate": 0.6666666666666666,
+        "powerAt17PerArm": 0.796776592585303,
+        "powerAt18PerArm": 0.8388687257645503,
+        "minimumNPerArm": 18
+      }
+    },
+    "secondaryEndpoints": [
+      "proof_dag_debt_delta_at_two_learner_turns",
+      "new_supported_public_premises_at_two_learner_turns",
+      "action_realization_fidelity",
+      "register_realization_fidelity",
+      "protected_condition_and_safety_override_rate"
+    ],
+    "treatmentFidelity": {
+      "minimumActionVisibility": 0.9,
+      "minimumRegisterVisibility": 0.9,
+      "primaryAnalysis": "intention_to_treat",
+      "failedFidelityDisposition": "fail_interpretability_gate_not_rerun"
+    },
+    "assemblyRule": "All nine predeclared batches must seal before the sole combined 36-dialogue analysis. No batch, arm, partial count, or calibration dialogue may be analyzed, selected, pooled, or interpreted before that point."
+  },
+  "confirmation": {
+    "status": "deterministic_successor_readiness_only_not_executable",
+    "freshIndependentDialogues": 36,
+    "plainDialogues": 18,
+    "warmDialogues": 18,
+    "calibrationDialoguesReused": 0,
+    "calibrationDialoguesPooled": 0,
+    "analysisCount": 1,
+    "interimAnalysisCount": 0,
+    "priorIncompleteConfirmationDialoguesReused": 0,
+    "priorIncompleteConfirmationDialoguesPooled": 0
+  },
+  "executionReadiness": {
+    "modelRoute": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna",
+      "effort": "low"
+    },
+    "plannedRoleCallDerivation": {
+      "opening": 1,
+      "maximumLearnerTurns": 4,
+      "maximumLearnerAnalyses": 4,
+      "maximumTutorTurns": 3,
+      "oneFullLearnerRepair": 2,
+      "maximumTutorGuardRecoveryCalls": 6,
+      "total": 20
+    },
+    "plannedRoleCallsPerDialogue": 20,
+    "maximumReservationsPerPlannedCall": 3,
+    "maximumModelAttemptReservationsPerDialogue": 60,
+    "batches": [
+      {
+        "id": "block_01",
+        "dialogues": 4,
+        "plannedRoleCalls": 80,
+        "maximumModelAttemptReservations": 240,
+        "destination": null
+      },
+      {
+        "id": "block_02",
+        "dialogues": 4,
+        "plannedRoleCalls": 80,
+        "maximumModelAttemptReservations": 240,
+        "destination": null
+      },
+      {
+        "id": "block_03",
+        "dialogues": 4,
+        "plannedRoleCalls": 80,
+        "maximumModelAttemptReservations": 240,
+        "destination": null
+      },
+      {
+        "id": "block_04",
+        "dialogues": 4,
+        "plannedRoleCalls": 80,
+        "maximumModelAttemptReservations": 240,
+        "destination": null
+      },
+      {
+        "id": "block_05",
+        "dialogues": 4,
+        "plannedRoleCalls": 80,
+        "maximumModelAttemptReservations": 240,
+        "destination": null
+      },
+      {
+        "id": "block_06",
+        "dialogues": 4,
+        "plannedRoleCalls": 80,
+        "maximumModelAttemptReservations": 240,
+        "destination": null
+      },
+      {
+        "id": "block_07",
+        "dialogues": 4,
+        "plannedRoleCalls": 80,
+        "maximumModelAttemptReservations": 240,
+        "destination": null
+      },
+      {
+        "id": "block_08",
+        "dialogues": 4,
+        "plannedRoleCalls": 80,
+        "maximumModelAttemptReservations": 240,
+        "destination": null
+      },
+      {
+        "id": "block_09",
+        "dialogues": 4,
+        "plannedRoleCalls": 80,
+        "maximumModelAttemptReservations": 240,
+        "destination": null
+      }
+    ],
+    "combinedDialogues": 36,
+    "combinedPlannedRoleCalls": 720,
+    "combinedMaximumModelAttemptReservations": 2160,
+    "programmeLedgerAfterMaximum": {
+      "reservedAttempts": 2379,
+      "ceiling": 5000,
+      "remaining": 2621
+    },
+    "attemptAccountingRole": "operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective",
+    "boundedTechnicalRecovery": "missing_or_failed_units_only_using_actual_unused_room_within_the_same_60_dialogue_240_batch_2160_confirmation_and_5000_programme_caps",
+    "validUnitReruns": false,
+    "outcomeSelection": false,
+    "currentLiveExecutionAvailable": false
+  }
+}

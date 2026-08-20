@@ -1454,6 +1454,31 @@ and explicit human approval.
   pass at zero calls/writes. Launch requires the request's exact digest-bound
   `2345`-to-`2379` amendment sentence; until supplied, no batch, recovery, or
   analyzer may run.
+- 2026-08-20 — Recorded the user's prospective amendment of the
+  resistance-action-register programme safeguard from `2345` to `5000` model
+  attempts. Attempt accounting remains an operational execution safeguard
+  only: it is not a scientific endpoint, estimand, design objective, power
+  target, or reason to narrow the registered confirmation. The scientific
+  design therefore remains exactly 36 wholly fresh independent dialogues, 18
+  warm and 18 plain, nine balanced four-dialogue blocks, the existing
+  two-turn recovery endpoint, and one predeclared two-sided Fisher exact test
+  with no interim analysis. The 12 calibration dialogues and the incomplete
+  V1 confirmation block remain excluded from reuse, pooling, selection, and
+  confirmation credit.
+
+  The already-merged V2 request at `94973232…` cannot consume the broader
+  amendment because its frozen registration and endpoint require the exact
+  `2379` programme ceiling. No model call or production write was made under
+  the mismatched approval; the programme ledger remains `219`. Registration
+  V5 and endpoint contract/certificate V3 add only the zero-call operational
+  compatibility layer: the confirmation still permits at most `2160`
+  attempts and can move the ledger only from `219` to `2379`, while the
+  programme safeguard is `5000` with `2621` attempts remaining. Historical
+  registrations, endpoint artifacts, and V1/V2 request bytes remain
+  immutable. After this compatibility source is reviewed and merged, a new
+  literal-HOLD V3 request must bind a fresh destination set, preserve the V2
+  request as unexecuted superseded metadata, pass deterministic validation,
+  and receive its own exact digest-bound approval before any launch.
 - 2026-08-20 — Prepared the powered boredom proof-DAG confirmation as a
   deterministic zero-call HOLD request at
   `config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v1.json`,

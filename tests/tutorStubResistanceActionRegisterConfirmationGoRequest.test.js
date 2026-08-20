@@ -17,15 +17,22 @@ import {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v3.json';
 const SUCCESSOR_REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v4.json';
+const OPERATIONAL_CEILING_REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v5.json';
 const ENDPOINT = 'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v1.json';
 const SUCCESSOR_ENDPOINT = 'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v2.json';
+const OPERATIONAL_CEILING_ENDPOINT =
+  'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v3.json';
 const CERTIFICATE =
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v1.endpoint-go.json';
 const SUCCESSOR_CERTIFICATE =
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v2.endpoint-go.json';
+const OPERATIONAL_CEILING_CERTIFICATE =
+  'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v3.endpoint-go.json';
 const CALIBRATION_REQUEST = 'config/tutor-stub-resistance-action-register-baseline-analysis-go-request.v1.json';
 const INCOMPLETE_CONFIRMATION_REQUEST =
   'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v1.json';
+const SUPERSEDED_CEILING_BOUND_REQUEST =
+  'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v2.json';
 const CLOSURE = [
   'scripts/run-tutor-stub-resistance-action-register-confirmation.js',
   'scripts/analyze-tutor-stub-resistance-action-register-confirmation.js',
@@ -88,12 +95,21 @@ function commandSha256(value) {
   return sha256(JSON.stringify(value));
 }
 
-function buildRequest({ destinationSuffix, successor = false }) {
+function buildRequest({ destinationSuffix, successor = false, operationalCeiling = false }) {
   const launchCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const launchTree = execFileSync('git', ['rev-parse', 'HEAD^{tree}'], { cwd: ROOT, encoding: 'utf8' }).trim();
-  const registrationPath = successor ? SUCCESSOR_REGISTRATION : REGISTRATION;
-  const endpointPath = successor ? SUCCESSOR_ENDPOINT : ENDPOINT;
-  const certificatePath = successor ? SUCCESSOR_CERTIFICATE : CERTIFICATE;
+  const isSuccessor = successor || operationalCeiling;
+  const registrationPath = operationalCeiling
+    ? OPERATIONAL_CEILING_REGISTRATION
+    : successor
+      ? SUCCESSOR_REGISTRATION
+      : REGISTRATION;
+  const endpointPath = operationalCeiling ? OPERATIONAL_CEILING_ENDPOINT : successor ? SUCCESSOR_ENDPOINT : ENDPOINT;
+  const certificatePath = operationalCeiling
+    ? OPERATIONAL_CEILING_CERTIFICATE
+    : successor
+      ? SUCCESSOR_CERTIFICATE
+      : CERTIFICATE;
   const registration = JSON.parse(fs.readFileSync(path.join(ROOT, registrationPath), 'utf8'));
   const contract = JSON.parse(fs.readFileSync(path.join(ROOT, endpointPath), 'utf8'));
   const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, certificatePath), 'utf8'));
@@ -166,7 +182,9 @@ function buildRequest({ destinationSuffix, successor = false }) {
     actionRegisterConfirmation: {
       type: successor
         ? 'prospective_frame_refuser_warm_plain_confirmation_v2'
-        : 'prospective_frame_refuser_warm_plain_confirmation_v1',
+        : operationalCeiling
+          ? 'prospective_frame_refuser_warm_plain_confirmation_v3'
+          : 'prospective_frame_refuser_warm_plain_confirmation_v1',
       calibrationSizingEvidence: {
         analysisRequest: { path: CALIBRATION_REQUEST, sha256: fileSha256(CALIBRATION_REQUEST) },
         reportSha256: '42021a390338cd556386efc96d8f00b35655a411627908a10248dba1e473a3a5',
@@ -180,7 +198,7 @@ function buildRequest({ destinationSuffix, successor = false }) {
       },
       calibrationDialoguesReused: false,
       calibrationDialoguesPooled: false,
-      ...(successor
+      ...(isSuccessor
         ? {
             priorIncompleteConfirmation: {
               request: {
@@ -204,6 +222,21 @@ function buildRequest({ destinationSuffix, successor = false }) {
             },
           }
         : {}),
+      ...(operationalCeiling
+        ? {
+            supersededCeilingBoundRequest: {
+              request: {
+                path: SUPERSEDED_CEILING_BOUND_REQUEST,
+                sha256: fileSha256(SUPERSEDED_CEILING_BOUND_REQUEST),
+              },
+              supersededWithoutExecution: true,
+              modelCalls: 0,
+              productionWrites: 0,
+              destinationsUsed: false,
+              outcomesAvailable: false,
+            },
+          }
+        : {}),
       interimAnalysisPermitted: false,
       validUnitRerunsPermitted: false,
       outcomeSelectionPermitted: false,
@@ -217,7 +250,7 @@ function buildRequest({ destinationSuffix, successor = false }) {
         maximumAttemptsPerDialogueUnchanged: 60,
         maximumAttemptsPerBatchUnchanged: 240,
         maximumTotalStudyAttemptsUnchanged: 2160,
-        programmeCeilingUnchanged: successor ? 2379 : 2345,
+        programmeCeilingUnchanged: operationalCeiling ? 5000 : successor ? 2379 : 2345,
       },
     },
     design: {
@@ -252,11 +285,16 @@ function buildRequest({ destinationSuffix, successor = false }) {
       dialoguesPerBatch: 4,
       maximumAttemptsPerBatch: 240,
       maximumPlannedModelAttempts: 2160,
-      programmeLedgerBefore: successor ? 219 : 185,
-      programmeCeilingBefore: successor ? 2345 : 1200,
-      programmeCeilingAmendment: successor ? 34 : 1145,
-      programmeCeilingAfter: successor ? 2379 : 2345,
-      programmeLedgerAfterMaximum: successor ? 2379 : 2345,
+      programmeLedgerBefore: isSuccessor ? 219 : 185,
+      programmeCeilingBefore: isSuccessor ? 2345 : 1200,
+      programmeCeilingAmendment: operationalCeiling ? 2655 : successor ? 34 : 1145,
+      programmeCeilingAfter: operationalCeiling ? 5000 : successor ? 2379 : 2345,
+      programmeLedgerAfterMaximum: isSuccessor ? 2379 : 2345,
+      ...(operationalCeiling
+        ? {
+            attemptAccountingRole: 'operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective',
+          }
+        : {}),
       retryOrResumeAuthority: 'bounded_technical_recovery',
     },
     measurement: {
@@ -324,6 +362,10 @@ function templateText(request) {
     goRequestFileSha256Marker(CALIBRATION_REQUEST);
   if (template.actionRegisterConfirmation.priorIncompleteConfirmation) {
     const prior = template.actionRegisterConfirmation.priorIncompleteConfirmation.request;
+    prior.sha256 = goRequestFileSha256Marker(prior.path);
+  }
+  if (template.actionRegisterConfirmation.supersededCeilingBoundRequest) {
+    const prior = template.actionRegisterConfirmation.supersededCeilingBoundRequest.request;
     prior.sha256 = goRequestFileSha256Marker(prior.path);
   }
   template.bindings.commands.liveArraySha256 = GO_REQUEST_PACKAGE_MARKERS.liveCommandSha256;
@@ -460,5 +502,92 @@ test('successor confirmation GO validator binds the incomplete V1 exclusion and 
     const invalidPath = path.join(temporary, `invalid-${crypto.randomUUID()}.json`);
     fs.writeFileSync(invalidPath, `${JSON.stringify(invalid, null, 2)}\n`);
     assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
+  }
+});
+
+test('operational-ceiling confirmation GO validator preserves the powered design under the exact 5000 safeguard', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'confirmation-operational-ceiling-go-request-'));
+  const output = `.tutor-stub-auto-eval/.test-confirmation-operational-ceiling-go-request-${process.pid}.json`;
+  t.after(() => {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(path.join(ROOT, output), { force: true });
+  });
+  const request = buildRequest({
+    destinationSuffix: `operational-ceiling-${process.pid}`,
+    operationalCeiling: true,
+  });
+  const requestPath = path.join(temporary, 'request.json');
+  fs.writeFileSync(requestPath, `${JSON.stringify(request, null, 2)}\n`);
+  const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath });
+  assert.equal(report.packetValid, true);
+  assert.equal(report.modelCalls, 0);
+  assert.equal(report.productionWrites, 0);
+  assert.equal(report.budget.maximumPlannedModelAttempts, 2160);
+  assert.equal(report.budget.programmeLedgerAfterMaximum, 2379);
+  assert.equal(report.budget.programmeCeilingAfter, 5000);
+  assert.match(report.exactApprovalStatement, /ceiling from 2,345 to 5,000 model attempts/u);
+  assert.match(report.exactApprovalStatement, /18 warm and 18 plain/u);
+
+  const templatePath = path.join(temporary, 'template.json');
+  fs.writeFileSync(templatePath, templateText(request));
+  fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
+  const packageReport = packageTutorStubResistantProfileStudyGoRequest({
+    templatePath,
+    launchCommit: request.source.launchCommit,
+    outputPath: output,
+  });
+  assert.equal(packageReport.sourceClosureFiles, CLOSURE.length);
+  assert.equal(packageReport.repositoryBindingFiles, 8);
+  assert.equal(packageReport.isolatedReplay.packetValid, true);
+  assert.equal(packageReport.effects.modelCalls, 0);
+  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), fs.readFileSync(requestPath));
+
+  for (const mutation of [
+    (value) => {
+      value.budget.programmeCeilingAfter = 4999;
+    },
+    (value) => {
+      value.budget.programmeLedgerAfterMaximum = 5000;
+    },
+    (value) => {
+      value.budget.attemptAccountingRole = 'scientific_design_objective';
+    },
+    (value) => {
+      value.actionRegisterConfirmation.supersededCeilingBoundRequest.supersededWithoutExecution = false;
+    },
+    (value) => {
+      value.actionRegisterConfirmation.supersededCeilingBoundRequest.request.sha256 = '0'.repeat(64);
+    },
+  ]) {
+    const invalid = structuredClone(request);
+    mutation(invalid);
+    const invalidPath = path.join(temporary, `invalid-${crypto.randomUUID()}.json`);
+    fs.writeFileSync(invalidPath, `${JSON.stringify(invalid, null, 2)}\n`);
+    assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
+  }
+
+  for (const mutation of [
+    (value) => {
+      value.authorization.standingAuthorizationAttachmentSha256 = '0'.repeat(64);
+    },
+    (value) => {
+      value.authorization.programmeCeilingAmendmentAuthorized = true;
+    },
+  ]) {
+    const invalid = structuredClone(request);
+    mutation(invalid);
+    const invalidTemplatePath = path.join(temporary, `invalid-template-${crypto.randomUUID()}.json`);
+    fs.writeFileSync(invalidTemplatePath, templateText(invalid));
+    const invalidOutput = `.tutor-stub-auto-eval/.test-confirmation-operational-invalid-${crypto.randomUUID()}.json`;
+    assert.throws(
+      () =>
+        packageTutorStubResistantProfileStudyGoRequest({
+          templatePath: invalidTemplatePath,
+          launchCommit: request.source.launchCommit,
+          outputPath: invalidOutput,
+        }),
+      /standing authority|ceiling amendment/u,
+    );
+    assert.equal(fs.existsSync(path.join(ROOT, invalidOutput)), false);
   }
 });

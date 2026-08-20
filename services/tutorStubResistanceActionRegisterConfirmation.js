@@ -38,8 +38,8 @@ function clone(value) {
 }
 
 function assertConfirmationRegistration(registration) {
-  if (![3, 4].includes(registration?.version)) {
-    throw new Error('confirmation requires a registered V3 or V4 action/register confirmation design');
+  if (![3, 4, 5].includes(registration?.version)) {
+    throw new Error('confirmation requires a registered V3, V4, or V5 action/register confirmation design');
   }
   return registration;
 }
@@ -64,7 +64,7 @@ export function buildTutorStubResistanceActionRegisterConfirmationPlan({ registr
       globalIndex += 1;
       const assignment = assignments[slot];
       const realization = assignment.realization;
-      const confirmationRevision = frozen.version === 4 ? 'v2-' : '';
+      const confirmationRevision = frozen.version >= 4 ? 'v2-' : '';
       jobs.push({
         id: `frame_refuser-confirmation-${confirmationRevision}${block.id}-s${slot + 1}`,
         block_id: block.id,
@@ -366,6 +366,12 @@ export function runTutorStubResistanceActionRegisterConfirmationPreflight({ cont
       maximum_model_attempt_reservations_per_batch: 240,
       combined_maximum_model_attempt_reservations: 2160,
       programme_ceiling_required: readiness.programmeLedgerAfterMaximum.ceiling,
+      ...(registration.version === 5
+        ? {
+            programme_ledger_after_confirmation_maximum: readiness.programmeLedgerAfterMaximum.reservedAttempts,
+            attempt_accounting_role: readiness.attemptAccountingRole,
+          }
+        : {}),
       calibration_dialogues_reused_or_pooled: 0,
       partial_or_interim_interpretation_permitted: false,
       model_calls: 0,

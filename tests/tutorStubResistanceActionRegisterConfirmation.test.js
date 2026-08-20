@@ -53,6 +53,15 @@ const CERTIFICATE_V2 = path.join(
   ROOT,
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v2.endpoint-go.json',
 );
+const REGISTRATION_V5 = path.join(ROOT, 'config/tutor-stub-resistance-action-register-crossed-registration.v5.json');
+const ENDPOINT_V3 = path.join(
+  ROOT,
+  'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v3.json',
+);
+const CERTIFICATE_V3 = path.join(
+  ROOT,
+  'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v3.endpoint-go.json',
+);
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -626,6 +635,69 @@ test('V4 successor endpoint and certificate pass zero-call readiness with the in
   assert.equal(loaded.registration.preservation.stoppedConfirmationV1.reused, false);
   assert.equal(loaded.registration.preservation.stoppedConfirmationV1.pooled, false);
   assert.equal(validation.ok, true, validation.errors.join('; '));
+});
+
+test('V5 preserves the powered successor design while separating the 5000 operational safeguard', (t) => {
+  const v4 = loadTutorStubResistanceActionRegisterConfirmation({ registrationPath: REGISTRATION_V4 });
+  const loaded = loadTutorStubResistanceActionRegisterConfirmation({ registrationPath: REGISTRATION_V5 });
+  assert.deepEqual(loaded.plan.jobs, v4.plan.jobs);
+  assert.deepEqual(loaded.plan.randomization, v4.plan.randomization);
+  assert.equal(loaded.registration.authorization.requiredCeilingAmendment.to, 5000);
+  assert.equal(loaded.registration.authorization.requiredCeilingAmendment.increase, 2655);
+  assert.deepEqual(loaded.registration.executionReadiness.programmeLedgerAfterMaximum, {
+    reservedAttempts: 2379,
+    ceiling: 5000,
+    remaining: 2621,
+  });
+  assert.equal(
+    loaded.registration.executionReadiness.attemptAccountingRole,
+    'operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective',
+  );
+
+  const contract = JSON.parse(fs.readFileSync(ENDPOINT_V3, 'utf8'));
+  assert.equal(
+    contract.channels.frozen_registration.implementation,
+    'config/tutor-stub-resistance-action-register-crossed-registration.v5.json',
+  );
+  const certificate = JSON.parse(fs.readFileSync(CERTIFICATE_V3, 'utf8'));
+  const preflight = runTutorStubResistanceActionRegisterConfirmationPreflight({
+    contract,
+    registration: loaded.registration,
+  });
+  const validation = validatePaidStudyEndpointGoCertificate({ certificate, contract, preflight });
+  assert.equal(preflight.status, 'passed');
+  assert.equal(preflight.model_calls, 0);
+  assert.equal(preflight.production_writes, 0);
+  assert.equal(preflight.confirmation_readiness_audit.combined_maximum_model_attempt_reservations, 2160);
+  assert.equal(preflight.confirmation_readiness_audit.programme_ledger_after_confirmation_maximum, 2379);
+  assert.equal(preflight.confirmation_readiness_audit.programme_ceiling_required, 5000);
+  assert.equal(
+    preflight.confirmation_readiness_audit.attempt_accounting_role,
+    'operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective',
+  );
+  assert.equal(certificate.contract_sha256, hashPaidStudyEndpointValue(contract));
+  assert.equal(validation.ok, true, validation.errors.join('; '));
+
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'confirmation-v5-registration-'));
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  for (const mutation of [
+    (value) => {
+      value.authorization.requiredCeilingAmendment.authorized = true;
+    },
+    (value) => {
+      value.preservation.supersedesRegistrationPath =
+        'config/tutor-stub-resistance-action-register-crossed-registration.v3.json';
+    },
+  ]) {
+    const invalid = structuredClone(loaded.registration);
+    mutation(invalid);
+    const invalidPath = path.join(temporary, `${crypto.randomUUID()}.json`);
+    writeJson(invalidPath, invalid);
+    assert.throws(
+      () => loadTutorStubResistanceActionRegisterConfirmation({ registrationPath: invalidPath }),
+      /v4 successor confirmation design/u,
+    );
+  }
 });
 
 test('fresh confirmation configuration remains dormant before a public trigger and binds one randomized treatment', () => {
