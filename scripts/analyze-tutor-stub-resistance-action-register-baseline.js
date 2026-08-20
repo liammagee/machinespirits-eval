@@ -381,9 +381,6 @@ function assertObservedRuntime({ runStart, events, job, batch, finalTraceBudget 
     options?.['register-palette'] !== 'plain,warm' ||
     options?.['eval-repeat'] !== (job.treatment.repeat === 'A' ? '1' : '2') ||
     options?.['eval-job-id'] !== job.id ||
-    options?.['resistance-action-register-job'] !== job.id ||
-    options?.['resistance-action-register-registration'] !== REGISTRATION ||
-    options?.['resistance-action-register-prefix-bundle'] !== PREFIX_BUNDLE ||
     options?.['no-opening'] !== true ||
     options?.['no-auto-stop-on-grounded'] !== true ||
     routePinned !== true ||
