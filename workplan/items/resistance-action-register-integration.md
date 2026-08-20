@@ -1119,3 +1119,31 @@ and explicit human approval.
   This compatibility step creates no analysis request, report, model call, or
   interpretation; the next artifact must pin its own merged source and pass an
   isolated dependency-free zero-call replay before the sealed analyzer can run.
+- 2026-08-20 — The dual-source sealed-analysis compatibility layer merged
+  through PR #733 at `9732c15c8475a2c8e4ecaaf41dd270d00db0d50b`
+  (tree `a0b7a24d8be0fa276a923666a01b0551bf718f79`). Prepared the
+  analysis-only HOLD request
+  `config/tutor-stub-resistance-action-register-baseline-analysis-go-request.v1.json`
+  at SHA-256
+  `965aca0ad1f61d2f43891c162861180016d79a8afa5c090ace0e3e88a436e0dd`.
+  It pins the corrected 31-file analysis closure separately from the immutable
+  trace source `58aa961600368fa98387942572c187a1896aae3f` / tree
+  `de5e05836b867bac5fa9071d845aefbb6d21abd0`, consumed request
+  `a2bf1d15de24f358518569ac5af7a3ddcfa78150aa4d89a7c038490f912f8806`,
+  both exact batch plans/results/seals, all 12 trace hashes, both local and
+  required private-archive inventories, `76/76/0/0` attempt accounting, zero
+  technical recovery runs, and the unchanged `185/1200` programme ledger. The
+  sole command may invoke the corrected analyzer once against a read-only,
+  same-relative-path symlink view and write only the fresh create-once combined
+  report
+  `.tutor-stub-auto-eval/resistance-action-register-baseline-v2-second-successor-analysis-only-2026-08-20-combined.json`.
+  It grants zero model attempts and no live, recovery, rerun, input-mutation,
+  pooling, or outcome-selection authority. The standing authorization
+  attachment remains
+  `4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b`;
+  the request itself remains literal `HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL`
+  with null approval and both authorization booleans false. Deterministic
+  packaging and direct dependency-free validation each pass with zero model
+  calls and zero production writes. Any resulting interpretation remains the
+  original calibration-only recovery/repeat-stability estimand and licenses no
+  tutor, register, learning, human-validity, or transfer efficacy claim.
