@@ -1046,3 +1046,32 @@ and explicit human approval.
   unchanged; only revision 4 may carry this second stopped record and the
   `109→577/1200` ledger. This compatibility step creates no GO request and no
   live authority.
+- 2026-08-20 — The revision-4 compatibility layer merged through PR #730 at
+  `58aa961600368fa98387942572c187a1896aae3f` (tree
+  `de5e05836b867bac5fa9071d845aefbb6d21abd0`). Prepared the source-pinned HOLD
+  request
+  `config/tutor-stub-resistance-action-register-baseline-study-go-request.v4.json`
+  at SHA-256
+  `a2bf1d15de24f358518569ac5af7a3ddcfa78150aa4d89a7c038490f912f8806`.
+  It binds the exact 31-file source closure, seven repository artifacts, the
+  unchanged V2 registration/prefix bundle/endpoint/certificate/route, Luna-low
+  roles, seed `20260820`, durable archive requirement, two prebound six-unit
+  A/B batches, and one combined analyzer. Fresh create-once roots are
+  `.tutor-stub-auto-eval/resistance-action-register-baseline-v2-second-successor-live-2026-08-20-a`,
+  `.tutor-stub-auto-eval/resistance-action-register-baseline-v2-second-successor-live-2026-08-20-b`,
+  and
+  `.tutor-stub-auto-eval/resistance-action-register-baseline-v2-second-successor-live-2026-08-20-combined.json`.
+  The request binds consumed predecessor `568782ec…`, its second partial-A root
+  and private-archive inventories, all six trace hashes, `33/30/3/0` attempt
+  accounting, and absence of batch B, analyzer, result, and seal. Every stopped
+  output remains excluded from recovery, reuse, pooling, selection, and
+  interpretation. The fresh ceilings remain 39 reservations per dialogue, 234
+  per batch, and 468 combined, moving the programme ledger from `109/1200` to
+  at most `577/1200`; bounded recovery may use only actual unused room without
+  changing any pin or rerunning a valid unit. Standing authorization attachment
+  `4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b`
+  is recorded, while the request stays literal
+  `HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL` with null approval and both
+  authorization booleans false. The result remains calibration-only: no
+  matched-versus-mismatched, edged-register, interaction, tutor-efficacy,
+  learning, human-validity, or transfer claim is licensed.
