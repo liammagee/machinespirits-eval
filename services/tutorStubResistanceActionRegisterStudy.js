@@ -322,8 +322,11 @@ function normalizeRegistration(registration) {
       readiness?.programmeLedgerAfterMaximum?.ceiling !== (isV5Registration(registration) ? 5000 : 2379) ||
       readiness?.programmeLedgerAfterMaximum?.remaining !== (isV5Registration(registration) ? 2621 : 0) ||
       (isV5Registration(registration) &&
-        readiness?.attemptAccountingRole !==
-          'operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective') ||
+        (readiness?.attemptAccountingRole !==
+          'operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective' ||
+          registration.preservation?.supersedesRegistrationPath !==
+            'config/tutor-stub-resistance-action-register-crossed-registration.v4.json' ||
+          registration.authorization?.requiredCeilingAmendment?.authorized !== false)) ||
       registration.authorization?.programmeLedgerBeforeThisConfirmation?.reservedAttempts !== 219 ||
       registration.authorization?.programmeLedgerBeforeThisConfirmation?.ceiling !== 2345 ||
       registration.authorization?.programmeLedgerBeforeThisConfirmation?.remaining !== 2126 ||

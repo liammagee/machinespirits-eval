@@ -637,7 +637,7 @@ test('V4 successor endpoint and certificate pass zero-call readiness with the in
   assert.equal(validation.ok, true, validation.errors.join('; '));
 });
 
-test('V5 preserves the powered successor design while separating the 5000 operational safeguard', () => {
+test('V5 preserves the powered successor design while separating the 5000 operational safeguard', (t) => {
   const v4 = loadTutorStubResistanceActionRegisterConfirmation({ registrationPath: REGISTRATION_V4 });
   const loaded = loadTutorStubResistanceActionRegisterConfirmation({ registrationPath: REGISTRATION_V5 });
   assert.deepEqual(loaded.plan.jobs, v4.plan.jobs);
@@ -673,6 +673,27 @@ test('V5 preserves the powered successor design while separating the 5000 operat
   );
   assert.equal(certificate.contract_sha256, hashPaidStudyEndpointValue(contract));
   assert.equal(validation.ok, true, validation.errors.join('; '));
+
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'confirmation-v5-registration-'));
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  for (const mutation of [
+    (value) => {
+      value.authorization.requiredCeilingAmendment.authorized = true;
+    },
+    (value) => {
+      value.preservation.supersedesRegistrationPath =
+        'config/tutor-stub-resistance-action-register-crossed-registration.v3.json';
+    },
+  ]) {
+    const invalid = structuredClone(loaded.registration);
+    mutation(invalid);
+    const invalidPath = path.join(temporary, `${crypto.randomUUID()}.json`);
+    writeJson(invalidPath, invalid);
+    assert.throws(
+      () => loadTutorStubResistanceActionRegisterConfirmation({ registrationPath: invalidPath }),
+      /v4 successor confirmation design/u,
+    );
+  }
 });
 
 test('fresh confirmation configuration remains dormant before a public trigger and binds one randomized treatment', () => {
