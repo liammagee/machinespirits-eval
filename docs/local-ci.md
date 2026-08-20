@@ -11,7 +11,14 @@ replacing GitHub's parallel Node matrix.
 npm run ci:local
 ```
 
-The default `full` profile:
+The default `auto` profile classifies the comparison range plus staged,
+unstaged, and untracked files with the same policy as hosted CI. Authored
+metadata selects the focused allowlist/JSON checks, a registered validator
+change selects its exact test and lint/format paths, and research prose also
+selects the validation framework. Runtime, dependency, workflow, mixed,
+unknown, and unclassifiable changes fail closed to `full`.
+
+When `auto` selects `full` (or `--profile full` is explicit), the runner:
 
 1. installs the locked root dependencies with `npm ci`;
 2. checks the hermetic test inventory and skill permissions;
@@ -67,6 +74,10 @@ coverage is identical.
 
 `quick` omits the root/core suites, PTY/lifecycle lanes, risk coverage, and
 surface acceptance. It is a development check, not merge evidence.
+
+Use `--profile full` when policy or outage recovery requires the complete gate
+regardless of the changed paths. `--profile quick` and `--profile node-tests`
+remain explicit operator overrides; they are never selected by `auto`.
 
 `--offline` suppresses only the managed archive/tag fetch. `refs:check` still
 runs against the refs already present locally. `--no-install` reuses the
@@ -168,5 +179,5 @@ image requires network access the first time.
   separate because GitHub deliberately lacks the private evaluation database.
 - Paid or model-consuming commands are never part of local CI.
 - During an Actions outage, do not merge merely because no check appeared.
-  Run the full local profile, retain its ignored report path in the PR body,
-  and trigger GitHub CI again after service recovery.
+  Run `npm run ci:local -- --profile full`, retain its ignored report path in
+  the PR body, and trigger GitHub CI again after service recovery.

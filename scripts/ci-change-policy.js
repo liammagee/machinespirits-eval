@@ -175,12 +175,23 @@ export function validateFocusedChanges({ changedFiles, projectRoot = PROJECT_ROO
 }
 
 function parseArgs(argv) {
-  const args = { base: null, head: null, githubOutput: null, forceFull: false, validateFocused: false };
+  const args = {
+    base: null,
+    head: null,
+    githubOutput: null,
+    forceFull: false,
+    validateFocused: false,
+    changedFiles: [],
+  };
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index];
     if (token === '--base') args.base = argv[++index] || null;
     else if (token === '--head') args.head = argv[++index] || null;
-    else if (token === '--github-output') args.githubOutput = argv[++index] || null;
+    else if (token === '--changed-file') {
+      const file = argv[++index];
+      if (!file || file.startsWith('--')) throw new Error('--changed-file requires a path');
+      args.changedFiles.push(file);
+    } else if (token === '--github-output') args.githubOutput = argv[++index] || null;
     else if (token === '--force-full') args.forceFull = true;
     else if (token === '--validate-focused') args.validateFocused = true;
     else throw new Error(`unknown argument: ${token}`);
@@ -193,9 +204,15 @@ function parseArgs(argv) {
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
-  const result = classifyCiRange(args);
+  const changedFiles = args.forceFull
+    ? []
+    : args.changedFiles.length
+      ? args.changedFiles
+      : changedFilesBetween(args.base, args.head);
+  const result = args.forceFull
+    ? classifyCiChanges({ changedFiles: [], forceFull: true })
+    : classifyCiChanges({ changedFiles });
   if (args.validateFocused) {
-    const changedFiles = changedFilesBetween(args.base, args.head);
     validateFocusedChanges({ changedFiles, base: args.base, head: args.head });
   }
   if (args.githubOutput) {

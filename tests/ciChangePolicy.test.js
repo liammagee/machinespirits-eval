@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -133,6 +134,29 @@ test('focused validation parses changed JSON and rejects malformed or widened ch
   } finally {
     fs.rmSync(projectRoot, { recursive: true, force: true });
   }
+});
+
+test('focused validation CLI accepts the local runner changed-file union', () => {
+  const output = execFileSync(
+    process.execPath,
+    [
+      'scripts/ci-change-policy.js',
+      '--base',
+      'HEAD',
+      '--head',
+      'HEAD',
+      '--changed-file',
+      'docs/local-ci.md',
+      '--validate-focused',
+    ],
+    { encoding: 'utf8' },
+  );
+  assert.equal(JSON.parse(output).profile, 'focused');
+  assert.equal(
+    JSON.parse(execFileSync(process.execPath, ['scripts/ci-change-policy.js', '--force-full'], { encoding: 'utf8' }))
+      .profile,
+    'full',
+  );
 });
 
 test('workflows expose the classifier and focused gate without retired runtime flags', () => {

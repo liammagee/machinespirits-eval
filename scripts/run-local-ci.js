@@ -7,6 +7,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
+import { classifyCiChanges } from './ci-change-policy.js';
 import {
   classifySurfaceAcceptance,
   packageManifestAtRef,
@@ -16,13 +17,14 @@ import {
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_BASE = 'origin/main';
 const DEFAULT_HEAD = 'HEAD';
-const VALID_PROFILES = new Set(['full', 'quick', 'node-tests']);
+const VALID_PROFILES = new Set(['auto', 'full', 'quick', 'node-tests']);
 const VALID_SURFACE_MODES = new Set(['auto', 'always', 'never']);
 
 const HELP = `Usage: npm run ci:local -- [options]
 
 Profiles:
-  --profile full        All local CI lanes (default)
+  --profile auto        Match hosted focused, validator-only, or full CI (default)
+  --profile full        All local CI lanes
   --profile quick       Contract, lint, validation, and workplan lanes
   --profile node-tests  Root shards and tutor-core under the current Node
 
@@ -60,7 +62,7 @@ function valueAfter(argv, index, option) {
 
 export function parseLocalCiArgs(argv = []) {
   const options = {
-    profile: 'full',
+    profile: 'auto',
     lanes: [],
     skip: [],
     install: true,
@@ -131,6 +133,15 @@ function lane(id, label, commands, profiles = ['full']) {
 
 export { pathTriggersSurfaceAcceptance };
 
+export function resolveLocalCiProfile(options, changedFiles) {
+  const classification = classifyCiChanges({ changedFiles });
+  return {
+    requestedProfile: options.profile,
+    profile: options.profile === 'auto' ? classification.profile : options.profile,
+    classification,
+  };
+}
+
 function node24ContainerCommand(projectRoot) {
   const copyAndRun = [
     'set -eu',
@@ -156,7 +167,11 @@ function node24ContainerCommand(projectRoot) {
   };
 }
 
-export function localCiLaneCatalog(options, projectRoot = PROJECT_ROOT) {
+export function localCiLaneCatalog(
+  options,
+  projectRoot = PROJECT_ROOT,
+  { changedFiles = [], classification = null } = {},
+) {
   const workplanCommands = [
     npm('wp:source-check'),
     npm('wp:test'),
@@ -190,14 +205,54 @@ export function localCiLaneCatalog(options, projectRoot = PROJECT_ROOT) {
   }
   lintCommands.push(npm('refs:check'), npm('lint'), npm('lint:cycles'), npm('format:check'));
 
+  const focusedValidationArgs = [
+    'scripts/ci-change-policy.js',
+    '--base',
+    options.base,
+    '--head',
+    options.head,
+    ...changedFiles.flatMap((file) => ['--changed-file', file]),
+    '--validate-focused',
+  ];
+  const focusedCommands = [{ program: 'node', args: focusedValidationArgs }];
+  if (classification?.authorizationRequired) {
+    focusedCommands.push({
+      program: 'node',
+      args: ['--test', 'tests/tutorStubResistantProfileStudyGoRequest.test.js'],
+    });
+  }
+
+  const validatorCommands = [{ program: 'node', args: focusedValidationArgs }];
+  if (classification?.validatorTests.length) {
+    validatorCommands.push({ program: 'node', args: ['--test', ...classification.validatorTests] });
+  }
+  if (classification?.validatorPaths.length) {
+    validatorCommands.push(
+      { program: './node_modules/.bin/eslint', args: classification.validatorPaths },
+      { program: './node_modules/.bin/prettier', args: ['--check', ...classification.validatorPaths] },
+    );
+  }
+
+  const validationProfiles = ['full', 'quick'];
+  if (classification?.validationRequired && ['focused', 'validator-only'].includes(options.profile)) {
+    validationProfiles.push(options.profile);
+  }
+
   return [
-    lane('install', 'Fresh dependency install', [{ program: 'npm', args: ['ci'] }]),
+    lane(
+      'install',
+      'Fresh dependency install',
+      [{ program: 'npm', args: ['ci'] }],
+      ['full', 'focused', 'validator-only'],
+    ),
     lane(
       'contract',
       'Hermetic test contract',
       [npm('test:manifest'), npm('skills:permissions:check')],
-      ['full', 'quick'],
+      ['full', 'quick', 'focused', 'validator-only'],
     ),
+    lane('focused', 'Focused authored-metadata checks', focusedCommands, ['focused']),
+    lane('validator-only', 'Focused validator checks', validatorCommands, ['validator-only']),
     lane('lint', 'Ref, lint, cycle, and format checks', lintCommands, ['full', 'quick']),
     lane(
       'node-tests',
@@ -215,9 +270,14 @@ export function localCiLaneCatalog(options, projectRoot = PROJECT_ROOT) {
       'validation',
       'Content and paper-claim validation',
       [npm('content:validate'), npm('paper:provable-discourse:smoke')],
-      ['full', 'quick'],
+      validationProfiles,
     ),
-    lane('workplan', 'Workplan source, diff, and link checks', workplanCommands, ['full', 'quick']),
+    lane('workplan', 'Workplan source, diff, and link checks', workplanCommands, [
+      'full',
+      'quick',
+      'focused',
+      'validator-only',
+    ]),
     lane('surface', 'Browser tutor-surface acceptance', [npm('tutor:stub:acceptance:web')]),
     lane('node24', 'Isolated Node 24 root/core parity', [node24ContainerCommand(projectRoot)], []),
   ];
@@ -261,9 +321,15 @@ export async function changedFilesForRange(base, head, projectRoot = PROJECT_ROO
 
 export function buildLocalCiPlan(
   options,
-  { projectRoot = PROJECT_ROOT, changedFiles = [], surfaceRequired = null } = {},
+  { projectRoot = PROJECT_ROOT, changedFiles = [], surfaceRequired = null, classification = null } = {},
 ) {
-  const catalog = localCiLaneCatalog(options, projectRoot);
+  if (options.profile === 'auto') {
+    throw new Error('Local CI auto profile must be resolved before building the plan');
+  }
+  if (['focused', 'validator-only'].includes(options.profile) && classification?.profile !== options.profile) {
+    throw new Error(`Local CI ${options.profile} plan requires a matching hosted classification`);
+  }
+  const catalog = localCiLaneCatalog(options, projectRoot, { changedFiles, classification });
   const known = new Set(catalog.map((entry) => entry.id));
   for (const id of [...options.lanes, ...options.skip]) {
     if (!known.has(id)) throw new Error(`Unknown local CI lane: ${id}`);
@@ -459,6 +525,8 @@ async function main() {
   }
 
   const changedFiles = await changedFilesForRange(options.base, options.head);
+  const selection = resolveLocalCiProfile(options, changedFiles);
+  const resolvedOptions = { ...options, profile: selection.profile };
   let surfaceRequired = false;
   if (options.surface === 'auto') {
     const packageChanged = changedFiles.includes('package.json');
@@ -480,14 +548,20 @@ async function main() {
     surfaceRequired = classification.required;
     console.log(`local-ci: surface=${classification.required ? 'required' : 'skipped'} (${classification.reason})`);
   }
-  const plan = buildLocalCiPlan(options, { changedFiles, surfaceRequired });
+  const plan = buildLocalCiPlan(resolvedOptions, {
+    changedFiles,
+    surfaceRequired,
+    classification: selection.classification,
+  });
   if (plan.length === 0) throw new Error('Local CI plan selected no lanes');
 
-  if (options.profile === 'full' && Number(process.versions.node.split('.')[0]) !== 22) {
+  if (resolvedOptions.profile === 'full' && Number(process.versions.node.split('.')[0]) !== 22) {
     throw new Error(`The full local CI profile must run under Node 22; current runtime is ${process.version}`);
   }
 
-  console.log(`local-ci: profile=${options.profile} base=${options.base} head=${options.head}`);
+  console.log(
+    `local-ci: profile=${selection.requestedProfile}->${selection.profile} (${selection.classification.reason}) base=${options.base} head=${options.head}`,
+  );
   console.log(`local-ci: changed files=${changedFiles.length}; lanes=${plan.map((entry) => entry.id).join(',')}`);
   if (options.dryRun) {
     for (const selectedLane of plan) {
@@ -498,7 +572,7 @@ async function main() {
   }
 
   const sourceSha = await gitOutput(['rev-parse', options.head], PROJECT_ROOT);
-  const { report } = await executeLocalCiPlan(plan, options, { sourceSha });
+  const { report } = await executeLocalCiPlan(plan, resolvedOptions, { sourceSha });
   if (report.status !== 'passed') process.exitCode = 1;
 }
 
