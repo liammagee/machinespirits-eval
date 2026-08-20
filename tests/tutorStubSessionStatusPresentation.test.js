@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
@@ -10,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { projectTutorStubSessionStatusLines } from '../services/tutorStubSessionStatusPresentation.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const STUDY_STATUS = 'scripts/report-tutor-stub-study-status.js';
 const COLORS = Object.freeze({
   bold: '<bold>',
   brightCyan: '<bright-cyan>',
@@ -23,6 +25,33 @@ function terminalBytes(lines) {
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
+}
+
+function fixtureTreeSnapshot(root) {
+  const rows = [];
+  const stack = [root];
+  while (stack.length) {
+    const directory = stack.pop();
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) stack.push(entryPath);
+      else if (entry.isFile()) {
+        const bytes = fs.readFileSync(entryPath);
+        rows.push({ path: path.relative(root, entryPath), bytes: bytes.length, sha256: sha256(bytes) });
+      }
+    }
+  }
+  return rows.sort((left, right) => left.path.localeCompare(right.path));
+}
+
+function writeProviderTrap(binDir, providerLog) {
+  const executable = path.join(binDir, 'codex');
+  fs.writeFileSync(
+    executable,
+    `#!/bin/sh\nprintf provider-invoked >> ${JSON.stringify(providerLog)}\nexit 99\n`,
+    'utf8',
+  );
+  fs.chmodSync(executable, 0o755);
 }
 
 function normalStatusFixture() {
@@ -62,6 +91,78 @@ function normalStatusFixture() {
     explanatoryDebug: { enabled: false, format: 'plain' },
   };
 }
+
+test('zero-call study status explains a six-unit technical stop without mutating its fixture', () => {
+  const fixture = path.join(ROOT, 'tests', 'fixtures', 'tutor-stub-study-status', 'technical-stop');
+  const source = fs.readFileSync(path.join(ROOT, STUDY_STATUS), 'utf8');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-study-status-provider-trap-'));
+  const binDir = path.join(tmp, 'bin');
+  const providerLog = path.join(tmp, 'provider-calls.txt');
+  fs.mkdirSync(binDir, { recursive: true });
+  writeProviderTrap(binDir, providerLog);
+  const before = fixtureTreeSnapshot(fixture);
+  const run = (extra = []) =>
+    spawnSync(process.execPath, [STUDY_STATUS, fixture, ...extra], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      timeout: 10_000,
+      env: {
+        ...process.env,
+        PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
+        OPENAI_API_KEY: 'must-not-be-used',
+        OPENROUTER_API_KEY: 'must-not-be-used',
+      },
+    });
+
+  try {
+    const human = run();
+    assert.equal(human.status, 0, human.stderr);
+    assert.match(human.stdout, /^State: BLOCKED$/mu);
+    assert.match(human.stdout, /^Model activity: not verifiable /mu);
+    assert.match(human.stdout, /^Units: 2 complete \/ 0 active \/ 1 failed \/ 3 missing$/mu);
+    assert.match(human.stdout, /^Turns: 23 completed \/ 48 planned$/mu);
+    assert.match(
+      human.stdout,
+      /^Calls: 104 reserved \/ 104 completed \/ 0 failed \/ 288 hard ceiling \(184 remaining\)$/mu,
+    );
+    assert.match(human.stdout, /^ {2}unit-3: failed; turns 7\/8; calls 48 reserved, 48 completed/mu);
+    assert.match(human.stdout, /1 profile-repair requests in unit-3/u);
+    assert.match(human.stdout, /0 provider-call failures; 1 local budget\/runtime stops in unit-3/u);
+    assert.match(human.stdout, /^Registered verdict: none found in artifact root\.$/mu);
+    assert.match(human.stdout, /recovery or continuation remains unresolved/u);
+    assert.match(human.stdout, /^Human decision required: yes$/mu);
+    assert.match(human.stdout, /ignored an incomplete trailing JSONL fragment/u);
+
+    const machine = run(['--json']);
+    assert.equal(machine.status, 0, machine.stderr);
+    const status = JSON.parse(machine.stdout);
+    assert.deepEqual(status.unitCounts, { complete: 2, active: 0, failed: 1, missing: 3 });
+    assert.deepEqual(status.turns, { completed: 23, planned: 48 });
+    assert.deepEqual(status.calls, {
+      reserved: 104,
+      completed: 104,
+      failed: 0,
+      hardCeiling: 288,
+      remaining: 184,
+    });
+    assert.equal(status.units.find((unit) => unit.id === 'unit-3').turnsCompleted, 7);
+    assert.equal(status.repairsOrRecovery.profileRepairRequests, 1);
+    assert.equal(status.repairsOrRecovery.adherenceExhaustions, 1);
+    assert.equal(status.failures.providerCallFailures, 0);
+    assert.equal(status.failures.localBudgetOrRuntimeStops, 1);
+    assert.equal(status.seal.state, 'unsealed');
+    assert.equal(status.registeredVerdict.found, false);
+    assert.equal(status.modelActivity.state, 'not verifiable');
+    assert.equal(status.humanDecisionRequired, true);
+
+    assert.deepEqual(fixtureTreeSnapshot(fixture), before, 'status reads must preserve every fixture byte');
+    assert.equal(fs.existsSync(providerLog), false, 'status must not invoke the provider trap');
+    assert.doesNotMatch(source, /\b(?:callAI|streamAI|fetch|spawn|execFile)\s*\(/u);
+    assert.doesNotMatch(source, /fs\.(?:write|append|mkdir|rm|rename|link|open)/u);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
 
 test('passthrough status projection pins all six lines, exact bytes, and input immutability', () => {
   const status = {

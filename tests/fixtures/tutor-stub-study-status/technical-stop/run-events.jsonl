@@ -1,0 +1,9 @@
+{"type":"run_planned","recordedAt":"2026-08-20T12:00:00.000Z","jobs":6}
+{"type":"run_started","recordedAt":"2026-08-20T12:00:01.000Z"}
+{"type":"job_started","recordedAt":"2026-08-20T12:00:02.000Z","jobId":"unit-1"}
+{"type":"job_completed","recordedAt":"2026-08-20T12:02:00.000Z","jobId":"unit-1","status":"ok","exitCode":0}
+{"type":"job_started","recordedAt":"2026-08-20T12:02:01.000Z","jobId":"unit-2"}
+{"type":"job_completed","recordedAt":"2026-08-20T12:04:00.000Z","jobId":"unit-2","status":"ok","exitCode":0}
+{"type":"job_started","recordedAt":"2026-08-20T12:04:01.000Z","jobId":"unit-3"}
+{"type":"job_completed","recordedAt":"2026-08-20T12:07:02.000Z","jobId":"unit-3","status":"failed","exitCode":1,"errorCode":"model_call_budget_exhausted"}
+{"type":"partially_written"
