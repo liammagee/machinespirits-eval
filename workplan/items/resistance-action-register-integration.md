@@ -1619,3 +1619,20 @@ and explicit human approval.
   authorizes no calls; a separately packaged HOLD successor must use wholly
   fresh nine-batch and combined-report destinations and pass a new digest-bound
   blocking review before launch.
+- 2026-08-20 — After the prospective-V6 frame-refuser observer repair merged
+  in PR #747, the existing confirmation request validator and deterministic
+  packager still stopped at request revision V3. They could not truthfully bind
+  registration V6, endpoint/certificate V4, the consumed V3 Block-1 evidence,
+  or the current `255 -> 2415 / 5000` operational ledger. A narrow revision-4
+  compatibility extension now preserves all V1-V3 request bytes and accepts a
+  successor only when it binds the V3 request `e3df7203…`, launch source/tree
+  `c9f6d57b…` / `48c5fb51…`, plan `d04038dd…`, local and private inventories
+  `83428e7d…` / `ce29fe1c…`, all four exact trace digests, `36` reservations,
+  `35` completions, zero provider failures, one coordinator-interrupted
+  reservation, and false recovery/reuse/pooling/outcome-selection flags. The
+  fresh design remains scientifically fixed at 36 dialogues, 18 per arm, one
+  final two-sided Fisher test, and no interim analysis; attempts remain only
+  operational safeguards. This compatibility change prepares no request and
+  authorizes no model call. A separate literal-HOLD request must bind the
+  merged source, wholly fresh nine-batch/report destinations, and a new exact
+  digest-bound approval before any successor launch.

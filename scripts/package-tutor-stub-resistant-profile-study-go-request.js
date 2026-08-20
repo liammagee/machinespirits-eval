@@ -22,12 +22,14 @@ const SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG =
 const SUPPORTED_ACTION_REGISTER_CONFIRMATION_SUCCESSOR = 'prospective_frame_refuser_warm_plain_confirmation_v2';
 const SUPPORTED_ACTION_REGISTER_CONFIRMATION_OPERATIONAL_CEILING =
   'prospective_frame_refuser_warm_plain_confirmation_v3';
+const SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR = 'prospective_frame_refuser_warm_plain_confirmation_v4';
 
 function isSupportedActionRegisterConfirmation(value) {
   return [
     SUPPORTED_ACTION_REGISTER_CONFIRMATION,
     SUPPORTED_ACTION_REGISTER_CONFIRMATION_SUCCESSOR,
     SUPPORTED_ACTION_REGISTER_CONFIRMATION_OPERATIONAL_CEILING,
+    SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR,
   ].includes(value);
 }
 
@@ -209,6 +211,7 @@ function requireHoldBoundary(template) {
     [
       SUPPORTED_ACTION_REGISTER_CONFIRMATION_SUCCESSOR,
       SUPPORTED_ACTION_REGISTER_CONFIRMATION_OPERATIONAL_CEILING,
+      SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR,
     ].includes(template.actionRegisterConfirmation?.type) &&
     (template.authorization?.standingAuthorizationAttachmentSha256 !==
       '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b' ||
@@ -276,6 +279,7 @@ function assertMaterializedStructure({
   routeConsumption,
   historicalRequest,
   priorConfirmationRequest,
+  priorConfirmationV3Request,
   priorCeilingBoundRequest,
   priorBoredomRequest,
   prefixBundle,
@@ -359,6 +363,11 @@ function assertMaterializedStructure({
     const prior = request.actionRegisterConfirmation?.priorIncompleteConfirmation?.request;
     assertComputedValue(prior?.path, priorConfirmationRequest.path, 'prior incomplete confirmation request path');
     assertComputedValue(prior?.sha256, priorConfirmationRequest.sha256, 'prior incomplete confirmation request digest');
+  }
+  if (priorConfirmationV3Request) {
+    const prior = request.actionRegisterConfirmation?.priorIncompleteConfirmationV3?.request;
+    assertComputedValue(prior?.path, priorConfirmationV3Request.path, 'prior incomplete V3 request path');
+    assertComputedValue(prior?.sha256, priorConfirmationV3Request.sha256, 'prior incomplete V3 request digest');
   }
   if (priorCeilingBoundRequest) {
     const prior = request.actionRegisterConfirmation?.supersededCeilingBoundRequest?.request;
@@ -519,6 +528,24 @@ function materializeTemplate({ templateText, template, launchCommit }) {
       replacements,
     );
   }
+  const priorConfirmationV3RequestPath =
+    template.actionRegisterConfirmation?.priorIncompleteConfirmationV3?.request?.path;
+  const priorConfirmationV3Request = priorConfirmationV3RequestPath
+    ? materializeRepoFile({
+        launchCommit,
+        repoPath: priorConfirmationV3RequestPath,
+        label: 'prior incomplete V3 confirmation request',
+        files,
+      })
+    : null;
+  if (priorConfirmationV3Request) {
+    requireMarker(
+      templateText,
+      goRequestFileSha256Marker(priorConfirmationV3Request.path),
+      priorConfirmationV3Request.sha256,
+      replacements,
+    );
+  }
   const priorCeilingBoundRequestPath =
     template.actionRegisterConfirmation?.supersededCeilingBoundRequest?.request?.path;
   const priorCeilingBoundRequest = priorCeilingBoundRequestPath
@@ -598,6 +625,7 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     routeConsumption,
     historicalRequest,
     priorConfirmationRequest,
+    priorConfirmationV3Request,
     priorCeilingBoundRequest,
     priorBoredomRequest,
     prefixBundle,
