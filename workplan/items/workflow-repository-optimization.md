@@ -8,7 +8,7 @@ owner: codex
 source: manual
 created: 2026-08-19
 updated: 2026-08-20
-branch: codex/greenroom-bundle-migration
+branch: codex/stale-code-disposition
 verification: >-
   Reproducible before/after measurements show that local and hosted CI select
   the same fail-closed profiles, avoid measured orchestration and test delays,
@@ -32,8 +32,10 @@ links:
     - https://github.com/liammagee/machinespirits-eval/pull/709
     - https://github.com/liammagee/machinespirits-eval/pull/712
     - https://github.com/liammagee/machinespirits-eval/pull/714
+    - https://github.com/liammagee/machinespirits-eval/pull/717
   notes:
     - docs/next-steps/2026-08-19-coordinator-workflow-efficiency-audit.md
+    - docs/next-steps/2026-08-20-stale-code-disposition.md
 tags:
   - ci
   - latency
@@ -269,3 +271,25 @@ Log:
   (2.4%) tradeoff for removing 58.508 MiB from each current checkout. History,
   LFS objects, the archive, manifest, reports, books, transcripts, existing
   caches, retained drills, and all worktrees remain retained.
+- 2026-08-20 — Started Wave 4A from PR #717's merge
+  `41a683f0e33d4239d20be991e15ffa69e787e98d` after repeating the stale-code
+  audit against current `main`. Five unregistered executable surfaces totaling
+  193,804 bytes / 4,325 lines had no package, workflow, test, or production
+  caller and were removed: the two temporary feature-tracker builders,
+  `analyze-validation-failures.js`, `audit-claims.js`, and the branch-specific
+  status generator. Historical tracker outputs, Plan 2.x evidence, archived
+  one-offs, and the exported/tested recognition orchestrator remain in place;
+  no artifact, cache, worktree, external store, model call, or Git history was
+  removed, written, invoked, or rewritten.
+- 2026-08-20 — Re-synchronized Wave 4A after PR #718 advanced `main`, retaining
+  its V4 request and resistance-card update. Against current `main`
+  `c6e4211d`, the exact outcome is four fewer tracked paths and 189,762 fewer
+  tracked bytes; executable source falls by five files / 4,325 lines. Contract,
+  lint, shard 2 (4,091 pass / 7 registered skips), concurrency, validation,
+  workplan, manifest, formatting, and diff checks pass. Shard 1 reproduces the
+  already-recorded `writingPadNarrativeBuilder` local baseline failure while
+  passing 4,999 tests with 11 registered skips; tutor-core reproduces its paired
+  `writingPadInternalPathDelivery` local baseline failure while passing 136
+  tests. Neither surface differs from `main`; hosted full CI remains the
+  publication gate. Reports are retained under `.test-tmp/wave4-*` and
+  `.test-tmp/local-ci/2026-08-20T06-01-46-574Z/`.
