@@ -81,6 +81,65 @@ const RESISTANCE_ACTION_REGISTER_BASELINE_V2_CRITICAL_SOURCE_CLOSURE = Object.fr
   'package-lock.json',
 ]);
 
+const RESISTANCE_ACTION_REGISTER_STOPPED_V2_REQUEST = Object.freeze({
+  requestRevision: 3,
+  request: Object.freeze({
+    path: 'config/tutor-stub-resistance-action-register-baseline-study-go-request.v2.json',
+    sha256: 'b28f62240e82301fed77f4690b59eaf6df2fac3c7e4812f053071efb89135c1c',
+  }),
+  disposition: 'consumed_stopped_wholly_excluded',
+  partialBatch: Object.freeze({
+    batch: 'A',
+    artifactRoot: '.tutor-stub-auto-eval/resistance-action-register-baseline-v2-live-2026-08-20-a',
+    artifactRootManifestSha256: '6eec7d2edc8664833d56cf8a66aa6bf6a272ec04981d18fb3550b02ad6a6ea10',
+    privateArchiveManifestSha256: 'd3c15b61a5bfffbc6fa9faa344e03776ea110c068f72157d4466c53930f5248b',
+    reservations: 31,
+    completed: 28,
+    interrupted: 3,
+    providerErrors: 0,
+    traces: Object.freeze([
+      Object.freeze({
+        jobId: 'frame_refuser-v4-r1-t1__matched_plain_A',
+        path: 'jobs/frame_refuser-v4-r1-t1__matched_plain_A/traces/2026-08-20T08-54-55-423Z.jsonl',
+        sha256: 'd3bda6c8439ba8a918ce1c8ae473892186469ebd43c29aa5d7811e736875b81d',
+      }),
+      Object.freeze({
+        jobId: 'frame_refuser-v4-r1-t1__matched_warm_A',
+        path: 'jobs/frame_refuser-v4-r1-t1__matched_warm_A/traces/2026-08-20T08-54-55-418Z.jsonl',
+        sha256: '72725d86b767b9e330356f20481ef3a9b6971d697835591d7c40275bc1bba258',
+      }),
+      Object.freeze({
+        jobId: 'frame_refuser-v4-r2-t1__matched_plain_A',
+        path: 'jobs/frame_refuser-v4-r2-t1__matched_plain_A/traces/2026-08-20T08-54-55-418Z.jsonl',
+        sha256: '0eb633edef1d67d29dd2c18e2f54db993151982e03b140fff3e263854d866822',
+      }),
+      Object.freeze({
+        jobId: 'frame_refuser-v4-r2-t1__matched_warm_A',
+        path: 'jobs/frame_refuser-v4-r2-t1__matched_warm_A/traces/2026-08-20T08-55-34-985Z.jsonl',
+        sha256: 'e92c93e5cf6410bb54561bee9ed8a9e58cf5dded3cb0d6b00b82371337b3aa3c',
+      }),
+      Object.freeze({
+        jobId: 'frame_refuser-v4-r3-t1__matched_plain_A',
+        path: 'jobs/frame_refuser-v4-r3-t1__matched_plain_A/traces/2026-08-20T08-55-37-146Z.jsonl',
+        sha256: '1a2fab9e2a1a32bbba2a0a481a5c4df9c6804824a10b404c30803bfb22590b4d',
+      }),
+      Object.freeze({
+        jobId: 'frame_refuser-v4-r3-t1__matched_warm_A',
+        path: 'jobs/frame_refuser-v4-r3-t1__matched_warm_A/traces/2026-08-20T08-55-46-896Z.jsonl',
+        sha256: '769756881993f7f3115c794531c68187dc72d1a559a3dd12e4fa7df1aad44aea',
+      }),
+    ]),
+  }),
+  batchBStarted: false,
+  combinedAnalyzerRan: false,
+  combinedResultProduced: false,
+  sealProduced: false,
+  recoveryPermitted: false,
+  reusePermitted: false,
+  poolingPermitted: false,
+  outcomeSelectionPermitted: false,
+});
+
 function parseArgs(argv) {
   const args = { request: DEFAULT_REQUEST, json: false };
   for (let index = 0; index < argv.length; index += 1) {
@@ -456,6 +515,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   const commandSource = request.bindings.commands.source;
   const liveCommand = commandSource === 'commands' ? request.commands?.live : hold.proposedCommands.live;
   const analyzeCommand = commandSource === 'commands' ? request.commands?.analyze : hold.proposedCommands.analyze;
+  const recoveryCommand = commandSource === 'commands' ? request.commands?.recovery : null;
   assertion(
     checks,
     'command-source',
@@ -480,6 +540,14 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     Array.isArray(analyzeCommand) && sha256Json(analyzeCommand) === request.bindings.commands.analyzeArraySha256,
     `analysis command array remains ${request.bindings.commands.analyzeArraySha256}`,
   );
+  if (isActionRegisterBaseline) {
+    assertion(
+      checks,
+      'recovery-command-binding',
+      Array.isArray(recoveryCommand) && sha256Json(recoveryCommand) === request.bindings.commands.recoveryArraySha256,
+      `recovery command array remains ${request.bindings.commands.recoveryArraySha256}`,
+    );
+  }
 
   let priorArtifactsAvailable = true;
   if (isReplacement) {
@@ -596,6 +664,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   } else if (isActionRegisterBaseline) {
     const registered = readJson(rootPath(request.bindings.registration.path));
     const gate = request.actionRegisterBaseline;
+    const isSuccessor = gate.requestRevision === RESISTANCE_ACTION_REGISTER_STOPPED_V2_REQUEST.requestRevision;
     const liveA = liveCommand?.[0];
     const liveB = liveCommand?.[1];
     assertion(
@@ -625,12 +694,37 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         request.budget.maximumAttemptsPerDialogue === 39 &&
         request.budget.maximumAttemptsPerBatch === 234 &&
         request.budget.maximumPlannedModelAttempts === 468 &&
-        request.budget.programmeLedgerBefore === 45 &&
-        request.budget.programmeLedgerAfterMaximum === 513 &&
+        request.budget.programmeLedgerBefore === (isSuccessor ? 76 : 45) &&
+        request.budget.programmeLedgerAfterMaximum === (isSuccessor ? 544 : 513) &&
         request.budget.programmeCeiling === 1200 &&
         request.budget.retryOrResumeAuthority === 'bounded_technical_recovery',
-      'two 234-cap batches remain below the cumulative 513-of-1200 maximum',
+      `two 234-cap batches remain below the cumulative ${isSuccessor ? 544 : 513}-of-1200 maximum`,
     );
+    assertion(
+      checks,
+      'action-register-baseline-request-revision',
+      (gate.requestRevision === undefined && gate.priorStoppedExecution === undefined) ||
+        (isSuccessor && gate.priorStoppedExecution !== undefined),
+      'the original request remains revision-compatible and only revision 3 may bind the stopped predecessor',
+    );
+    if (isSuccessor) {
+      assertion(
+        checks,
+        'action-register-successor-stopped-exclusion-binding',
+        JSON.stringify(
+          canonicalJson({
+            requestRevision: gate.requestRevision,
+            ...gate.priorStoppedExecution,
+          }),
+        ) === JSON.stringify(canonicalJson(RESISTANCE_ACTION_REGISTER_STOPPED_V2_REQUEST)),
+        'the consumed request, stopped partial A, private archive, six traces, attempt accounting, and total exclusion remain exact',
+      );
+      validateFileBinding(
+        checks,
+        'action-register-successor-consumed-request-binding',
+        gate.priorStoppedExecution.request,
+      );
+    }
     assertion(
       checks,
       'action-register-baseline-evidence-boundary',
@@ -691,6 +785,25 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         exactLive(liveB, 'B', request.destination.batchB.artifactRoot) &&
         request.destination.batchA.artifactRoot !== request.destination.batchB.artifactRoot,
       'the two live commands are prebound to distinct A/B create-once roots and the same launch source',
+    );
+    const expectedRecovery = [request.destination.batchA.artifactRoot, request.destination.batchB.artifactRoot].map(
+      (destination) => [
+        'node',
+        'scripts/run-tutor-stub-resistance-action-register-crossed.js',
+        '--recover-batch',
+        '--destination',
+        destination,
+        '--expected-source-commit',
+        request.source.launchCommit,
+        '--parallelism',
+        '3',
+      ],
+    );
+    assertion(
+      checks,
+      'action-register-baseline-recovery-commands',
+      JSON.stringify(recoveryCommand) === JSON.stringify(expectedRecovery),
+      'bounded recovery is prebound to the same A/B roots, source, and parallelism without widening either batch',
     );
     assertion(
       checks,
