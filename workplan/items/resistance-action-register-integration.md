@@ -936,3 +936,17 @@ and explicit human approval.
   descriptive warm-versus-plain separation, and same-treatment repeat drift;
   it cannot license matched-versus-mismatched, edged-register, interaction,
   tutor-efficacy, learning, human-validity, or cell-transfer claims.
+- 2026-08-20 — Stopped the consumed prospective V2 baseline request
+  `b28f62240e82301fed77f4690b59eaf6df2fac3c7e4812f053071efb89135c1c`
+  after batch A charged 31 model-attempt reservations and recorded 28
+  completed attempts. Batch B did not start and the combined analyzer did not
+  run. The failure is a systematic source defect: after `frame_refuser` had
+  already satisfied its recurrence requirement, production profile enforcement
+  returned no final-turn precomputed public learner analysis, so the registered
+  learner-only T3 outcome failed closed before it could be persisted. The
+  partial A batch is wholly excluded and may never be recovered, reused,
+  pooled, or interpreted. Its 31 charged reservations remain in the programme
+  ledger, now `76/1200`; no baseline, register, action, efficacy, learning,
+  human-validity, or cell-transfer claim is licensed. A successor request must
+  use a new merged source and fresh create-once destinations after the narrow
+  runtime repair is validated; none is prepared or authorized here.
