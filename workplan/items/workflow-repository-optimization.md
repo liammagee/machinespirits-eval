@@ -8,7 +8,7 @@ owner: codex
 source: manual
 created: 2026-08-19
 updated: 2026-08-20
-branch: codex/greenroom-bundle-migration
+branch: codex/stale-code-disposition
 verification: >-
   Reproducible before/after measurements show that local and hosted CI select
   the same fail-closed profiles, avoid measured orchestration and test delays,
@@ -32,8 +32,10 @@ links:
     - https://github.com/liammagee/machinespirits-eval/pull/709
     - https://github.com/liammagee/machinespirits-eval/pull/712
     - https://github.com/liammagee/machinespirits-eval/pull/714
+    - https://github.com/liammagee/machinespirits-eval/pull/717
   notes:
     - docs/next-steps/2026-08-19-coordinator-workflow-efficiency-audit.md
+    - docs/next-steps/2026-08-20-stale-code-disposition.md
 tags:
   - ci
   - latency
@@ -269,3 +271,13 @@ Log:
   (2.4%) tradeoff for removing 58.508 MiB from each current checkout. History,
   LFS objects, the archive, manifest, reports, books, transcripts, existing
   caches, retained drills, and all worktrees remain retained.
+- 2026-08-20 — Started Wave 4A from PR #717's merge
+  `41a683f0e33d4239d20be991e15ffa69e787e98d` after repeating the stale-code
+  audit against current `main`. Five unregistered executable surfaces totaling
+  193,804 bytes / 4,325 lines had no package, workflow, test, or production
+  caller and were removed: the two temporary feature-tracker builders,
+  `analyze-validation-failures.js`, `audit-claims.js`, and the branch-specific
+  status generator. Historical tracker outputs, Plan 2.x evidence, archived
+  one-offs, and the exported/tested recognition orchestrator remain in place;
+  no artifact, cache, worktree, external store, model call, or Git history was
+  removed, written, invoked, or rewritten.
