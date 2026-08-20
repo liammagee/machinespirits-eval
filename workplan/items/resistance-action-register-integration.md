@@ -785,3 +785,32 @@ and explicit human approval.
   or cell-transfer claim exists. `goRequestPrepared=false`, both authorization
   booleans remain false, and the benchmark-hook incident remains excluded from
   all opportunity evidence.
+- 2026-08-20 — Packaged the prospective-v4 T1-T2 GO request through the
+  existing deterministic zero-call packager under validator-compatible HOLD
+  at SHA-256
+  `0c14c51ae8625e6f5db301c9328b8f3182a8dbcd0b6b5a9dd610db85064ee0ab`.
+  It pins PR #715 merge commit
+  `76f51c7ee3a16bde42fc3bb06e0452f294f115a0` and tree
+  `9e38418a1115d2acbbcc9f5b36d5130e0e2aee57`, the complete 26-file V4
+  executable closure, prospective-v4 registration and endpoint digests, the
+  consumed Luna low route result, exact live and analysis commands, and the
+  absent create-once destination
+  `.tutor-stub-auto-eval/frame-refuser-opportunity-v4-live-2026-08-20`.
+  The batch remains a wholly fresh three-target/three-control T1-T2 gate with
+  13 planned role calls per dialogue, 78 planned role calls total, hard
+  reservation ceilings of 39 per dialogue and 234 total, and conditional
+  bounded recovery for missing or technically failed units only when unused
+  room remains under both ceilings. Valid units may not be rerun, V1-V3
+  evidence may not be pooled, and outcomes may not be selected among. The
+  claim boundary remains treatment-opportunity only: no eight-turn recurrence,
+  tutor adaptation, pedagogical-action efficacy, register efficacy, learning,
+  human-validity, or cell-transfer claim is licensed. Standing launch authority
+  is supplied by the coordinator message whose attachment SHA-256 is
+  `4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b`;
+  its cumulative programme ledger starts at `0/1200` model-attempt
+  reservations after that message, with this batch separately capped at
+  `0/234` before launch. The request preserves literal HOLD, null approval, and
+  both false authorization booleans because those are frozen validator bytes;
+  they do not replace or restate the external standing authorization. Packaging
+  and isolated dependency-free replay made zero model calls and zero production
+  writes.
