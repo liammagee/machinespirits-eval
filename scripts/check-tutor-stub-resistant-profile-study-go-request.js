@@ -1416,7 +1416,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
                 : 3) &&
         registered.design?.trigger?.observationSemantics ===
           (isActionRegisterConfirmationV5
-            ? 'prospective_v8'
+            ? 'prospective_v7'
             : isActionRegisterConfirmationV4
               ? 'prospective_v6'
               : isActionRegisterConfirmationSuccessor
