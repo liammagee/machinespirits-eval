@@ -1,0 +1,23 @@
+{
+  "schema": "machinespirits.tutor-stub.boredom-semantic-validation-authorization.v4",
+  "status": "APPROVED_FOR_BOUNDED_SEMANTIC_VALIDATION_CALLS",
+  "studyId": "tutor-stub-boredom-semantic-validation-v4",
+  "request": {
+    "path": "config/tutor-stub-boredom-semantic-validation-request.v4.json",
+    "sha256": "8681306e08f77a21449d394173311359a4b243f2823cf9065a9b1fafca5f00b3"
+  },
+  "scope": {
+    "maximumModelCalls": 165,
+    "modelRef": "codex.gpt-5.6-sol",
+    "effort": "low",
+    "artifactRoot": ".tutor-stub-auto-eval/boredom-semantic-validation-v4-2026-08-21",
+    "liveStudyAuthorized": false,
+    "confirmationLaunchAuthorized": false
+  },
+  "approval": {
+    "explicitBoundedValidationCalls": true,
+    "approvedBy": "human",
+    "approvedAt": "2026-08-21T15:24:56.000Z",
+    "evidence": "The v3 validation run (2026-08-21, authorization da548a54, archive 83450f09) failed two of five predeclared gates: determinate specificity 29/39 = 0.744 and reference agreement 44/54 = 0.815, both against 0.90 (sensitivity 9/9 and both indeterminate gates passed at 1.00). All ten misses were one-directional over-readings the v2 prompt licensed: pace wishes read as effort withdrawal and compliance reports read as productive uptake. The written diagnosis and the v4 proposal — revise the instrument by narrowing effort withdrawal to a public stop of work and productive uptake to a forward-looking inquiry move, and pair it with a fresh corpus — were put to the user, who approved with the message 'I approve' (2026-08-21). Agreed terms: derivation rules, output schema, and all five gates are unchanged; the revised instrument is a new frozen module (services/tutorStubBoredomSemanticAdjudicationV3.js) leaving V2 and v1 untouched; the corpus is 55 fresh cases in fresh worlds, spent v1/v2/v3 corpora permanently excluded, every reference label confirmed field-by-field by a blind claude-sonnet-5 second reader with the one disagreement (wharf_mixed_02) dropped, never relabeled. That build merged to main as PR #774 (merge commit 00150403) after independent Codex review returned APPROVE with no defects. A gate failure is categorical (no retry, no rescore) but does not close the arc; any v5 needs a fresh corpus, a written diagnosis, and separate explicit human approval. The 36-dialogue confirmation stays on HOLD; this authorization grants only the bounded validation calls."
+  }
+}
