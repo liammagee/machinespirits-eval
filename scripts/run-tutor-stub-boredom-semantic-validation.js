@@ -6,6 +6,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
 import {
   boredomSemanticValidationFileSha256,
   executeTutorStubBoredomSemanticValidation,
@@ -147,7 +148,9 @@ export async function runTutorStubBoredomSemanticValidationCommand(
     const result = await executeTutorStubBoredomSemanticValidation({
       request,
       root,
-      callModel,
+      // The real bridge is injected only here, after every execution gate above
+      // has passed; the service itself refuses to run without an explicit caller.
+      callModel: callModel ?? callAIWithCliBridge,
       now,
       onCaseSealed: (sealed) => {
         fs.writeFileSync(

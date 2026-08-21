@@ -154,6 +154,14 @@ test('authorization binding fails closed on digest, scope, and approval drift', 
   }
 });
 
+test('execution without an explicitly injected model caller refuses before any call', async () => {
+  const request = readJson(REQUEST_PATH);
+  await assert.rejects(
+    () => executeTutorStubBoredomSemanticValidation({ request, root: ROOT }),
+    /explicitly injected model caller/,
+  );
+});
+
 test('mock execution with reference outputs passes every predeclared gate at exactly 22 calls', async () => {
   const request = readJson(REQUEST_PATH);
   const corpus = readJson(HELDOUT_PATH);

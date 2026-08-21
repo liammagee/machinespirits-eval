@@ -84,11 +84,11 @@
   "sourceClosure": [
     {
       "path": "services/tutorStubBoredomSemanticValidation.js",
-      "sha256": "d1469e0bf1651ce0faf79a712632fa6bf61f621ff2d98ab677d6d14612d6ff24"
+      "sha256": "8faa6d57cc2f6772fddc43a2d0d6a4120f279baad0f0f4285daa5ac58d49e3eb"
     },
     {
       "path": "scripts/run-tutor-stub-boredom-semantic-validation.js",
-      "sha256": "73434ac00703f7ff3ea4c72c5c562f59ffe006d7383d31ba397919b00b6ce99e"
+      "sha256": "41ccff6410e9114750013c902a872c032846c5b47008132b411d7887c20236f1"
     },
     {
       "path": "services/tutorStubBoredomSemanticAdjudication.js",

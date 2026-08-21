@@ -2,7 +2,6 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { callAIWithCliBridge } from './cliProviderBridge.js';
 import { resolveModel } from './evalConfigLoader.js';
 import {
   TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATOR_MODEL,
@@ -313,10 +312,14 @@ export function computeTutorStubBoredomSemanticValidationMetrics({ corpus, rows 
 export async function executeTutorStubBoredomSemanticValidation({
   request,
   root = path.resolve('.'),
-  callModel = callAIWithCliBridge,
+  callModel,
   now = () => new Date().toISOString(),
   onCaseSealed = null,
 } = {}) {
+  assert(
+    typeof callModel === 'function',
+    'boredom semantic validation requires an explicitly injected model caller; the service never dials the bridge by default',
+  );
   const validation = validateTutorStubBoredomSemanticValidationRequest(request, { root });
   const resolved = { provider: validation.provider, model: validation.model };
   let totalCalls = 0;
