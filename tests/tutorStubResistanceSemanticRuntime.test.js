@@ -13,6 +13,7 @@ import {
 import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_AGGREGATE_EVENT,
   TUTOR_STUB_RESISTANCE_SEMANTIC_JUDGE_EVENT,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2,
   createLazyTutorStubResistanceSemanticAdjudicator,
   createTutorStubResistanceSemanticRuntime,
@@ -48,9 +49,14 @@ const canonicalSha256 = (value) =>
 
 test('legacy host composition can hold the semantic adjudicator without loading its registration', async () => {
   let constructions = 0;
+  const requestedRegistrationPaths = [];
   const adjudicate = createLazyTutorStubResistanceSemanticAdjudicator(
     { unused: true },
     {
+      loadRegistration: (registrationPath) => {
+        requestedRegistrationPaths.push(registrationPath);
+        return binding;
+      },
       createRuntime: () => {
         constructions += 1;
         return { adjudicateCandidate: async () => ({ ok: true }) };
@@ -58,8 +64,10 @@ test('legacy host composition can hold the semantic adjudicator without loading 
     },
   );
   assert.equal(constructions, 0);
+  assert.deepEqual(requestedRegistrationPaths, []);
   assert.deepEqual(await adjudicate({}), { ok: true });
   assert.equal(constructions, 1);
+  assert.deepEqual(requestedRegistrationPaths, [TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION]);
   assert.deepEqual(await adjudicate({}), { ok: true });
   assert.equal(constructions, 1);
 });
@@ -216,6 +224,20 @@ test('production semantic runtime selects the frozen quote-only v2 instrument wi
     }).measurementIndeterminate,
     false,
   );
+});
+
+test('lazy semantic composition fails closed on a registration that drifts from requested v2 semantics', async () => {
+  const adjudicate = createLazyTutorStubResistanceSemanticAdjudicator(
+    {},
+    {
+      observationSemantics: TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2,
+      loadRegistration: () => loadTutorStubResistanceSemanticRegistration(),
+      createRuntime: () => {
+        throw new Error('drifted registration must not construct the runtime');
+      },
+    },
+  );
+  await assert.rejects(adjudicate({}), /registration observation semantics drifted/u);
 });
 
 test('model-visible semantic case identity is opaque to repair status while trace metadata retains it', async () => {

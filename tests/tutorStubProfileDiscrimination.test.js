@@ -20,14 +20,28 @@ import {
   buildTutorStubBoredomProofDagRepairBudgetDiagnostic,
   buildTutorStubBoredomProofDagSemanticBudgetDiagnostic,
 } from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
-import { TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE_CODE } from '../services/tutorStubResistanceSemanticRuntime.js';
 import {
   learnerProfileContract,
   learnerProfileIds,
   learnerProfilePrompt,
 } from '../scripts/tutor-stub-learner-profile-contracts.js';
+import {
+  TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2,
+  buildTutorStubResistanceSemanticZeroCallFixtureResponseV2,
+} from '../services/tutorStubResistanceSemanticAdjudicationV2.js';
+import {
+  TUTOR_STUB_RESISTANCE_SEMANTIC_JUDGE_EVENT,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE_CODE,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2,
+  createLazyTutorStubResistanceSemanticAdjudicator,
+  loadTutorStubResistanceSemanticRegistration,
+} from '../services/tutorStubResistanceSemanticRuntime.js';
+import { tutorStubResistanceActionRegisterTreatmentEligibility } from '../services/tutorStubResistanceActionRegisterStudy.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const resistanceSemanticDevelopmentCorpus = JSON.parse(
+  fs.readFileSync(path.join(ROOT, 'config/tutor-stub-resistance-semantic-adjudication-development-corpus.v1.json')),
+);
 
 test('automated-learner generation runtime owns profile resolution and corruption configuration', () => {
   const runtime = createTutorStubAutomatedLearnerGenerationRuntime({
@@ -105,6 +119,126 @@ test('prospective v4 through v9 carry their analyzer-required semantics stamp th
   );
   assert.ok((hostSource.match(/automatedLearnerTraceMetadata/gu) || []).length >= 2);
   assert.match(traceContextSource, /\.\.\.automatedLearnerTraceMetadata/u);
+});
+
+test('CLI-host lazy composition selects semantic v2 for automated-learner records and treatment eligibility', async () => {
+  const hostSource = readTutorStubApplicationSource();
+  assert.match(
+    hostSource,
+    /createLazyTutorStubResistanceSemanticAdjudicator\([\s\S]+observationSemantics:\s*process\.env\.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS/u,
+  );
+
+  const bindingV2 = loadTutorStubResistanceSemanticRegistration(TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2);
+  const corpusCase = resistanceSemanticDevelopmentCorpus.cases.find((row) => row.case_id === 'historic-v7-live-raw');
+  const semanticEvents = [];
+  const semanticCalls = [];
+  const adjudicateResistanceSemanticCandidate = createLazyTutorStubResistanceSemanticAdjudicator(
+    {
+      appendTraceEvent: (_trace, event) => semanticEvents.push(event),
+      resolveModel: (modelRef) => {
+        const judge = bindingV2.registration.measurement.judges.find((row) => row.modelRef === modelRef);
+        return { provider: judge.provider, model: judge.model };
+      },
+      callPromptModel: async ({ prompt, resolved, role, outputSchema }) => {
+        const packet = JSON.parse(prompt);
+        const judge = bindingV2.registration.measurement.judges.find((row) => row.id === packet.judge.id);
+        const fixture = buildTutorStubResistanceSemanticZeroCallFixtureResponseV2({ corpusCase, judge });
+        semanticCalls.push({ packet, resolved, role, outputSchema });
+        return {
+          text: JSON.stringify({ ...fixture.modelOutput, case_id: packet.case_id }),
+          provider: resolved.provider,
+          model: resolved.model,
+          effort: 'low',
+          structuredOutput: true,
+          prohibitedToolEventCount: 0,
+          prohibitedToolEventCountObserved: true,
+          modelAttestationBasis: 'explicit_cli_model_argument_accepted_bridge_echo',
+          modelIndependentlyAttested: false,
+        };
+      },
+    },
+    { observationSemantics: TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2 },
+  );
+  const runtime = createTutorStubAutomatedLearnerGenerationRuntime({
+    appendTraceEvent: (target, event) => target.push(event),
+    adjudicateResistanceSemanticCandidate,
+    callPromptModel: async () => {
+      throw new Error('learner repair was not expected');
+    },
+    classificationFromCombinedAnalysis: (raw) => raw.classification,
+    env: {
+      [TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV]: TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2,
+    },
+    extractCombinedLearnerAnalysis: async () => ({
+      classification: {
+        turn: {
+          request_type: 'authority_refusal_or_status_challenge',
+          discourse_move: 'challenge',
+          evidence_use: 'none',
+          epistemic_stance: 'resistant',
+          agency: 'refusing',
+        },
+      },
+    }),
+    learnerProfileContract,
+    learnerProfileIds,
+    learnerProfilePrompt,
+    negativeFloorRegisters: [],
+  });
+  const publicContext = [{ role: 'assistant', text: corpusCase.public_context[0].text }];
+  const state = {
+    trace: [],
+    turns: [],
+    history: [{ role: 'assistant', content: publicContext[0].text }],
+    register: { policy: 'field' },
+    classifier: { enabled: true },
+    learnerDag: { enabled: true },
+    world: {},
+    interim: null,
+    resistanceActionRegisterStudy: { enabled: true, consumed: false },
+  };
+  const enforced = await runtime.enforceAutomatedLearnerProfile({
+    state,
+    resolved: {},
+    profile: 'frame_refuser',
+    turnNumber: 1,
+    generated: { text: corpusCase.source },
+  });
+  assert.equal(enforced.passed, true);
+  assert.equal(enforced.semanticAdjudication.observationSemantics, TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2);
+  assert.equal(enforced.semanticAdjudication.registrationPath, TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2);
+  assert.equal(semanticCalls.length, 2);
+  assert.ok(semanticCalls.every((call) => call.outputSchema.properties.judgment.properties.evidence_quotes));
+  assert.ok(
+    semanticEvents
+      .filter((event) => event.type === TUTOR_STUB_RESISTANCE_SEMANTIC_JUDGE_EVENT)
+      .every((event) => event.registrationPath === TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2),
+  );
+
+  const eligibility = tutorStubResistanceActionRegisterTreatmentEligibility({
+    runtime: {
+      consumed: false,
+      profile: 'frame_refuser',
+      registration: {
+        design: { trigger: { observationSemantics: TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2 } },
+      },
+    },
+    learnerText: corpusCase.source,
+    classification: {
+      turn: {
+        request_type: 'authority_refusal_or_status_challenge',
+        discourse_move: 'challenge',
+        evidence_use: 'none',
+        epistemic_stance: 'resistant',
+        agency: 'refusing',
+      },
+    },
+    turnNumber: 1,
+    expectedPublicContext: publicContext,
+    semanticAdjudication: enforced.semanticAdjudication,
+  });
+  assert.equal(eligibility.eligible, true, eligibility.reasons.join('; '));
+  assert.equal(eligibility.shadow.observation.authority, 'independent_dual_judge_consensus');
 });
 
 test('prospective v6 accepts both frozen V3 failure drafts before any repair call', async () => {

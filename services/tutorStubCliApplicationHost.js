@@ -1160,11 +1160,10 @@ export async function runTutorStubCliApplicationHost({
     publicWorldSummary,
     tutorStubComprehensionPrompt,
   });
-  const adjudicateResistanceSemanticCandidate = createLazyTutorStubResistanceSemanticAdjudicator({
-    appendTraceEvent,
-    callPromptModel,
-    resolveModel,
-  });
+  const adjudicateResistanceSemanticCandidate = createLazyTutorStubResistanceSemanticAdjudicator(
+    { appendTraceEvent, callPromptModel, resolveModel },
+    { observationSemantics: process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS },
+  );
   const {
     automatedLearnerCorruptionEnabled,
     automatedLearnerProfileId,

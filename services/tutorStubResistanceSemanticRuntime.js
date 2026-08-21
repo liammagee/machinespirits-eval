@@ -204,6 +204,17 @@ export function loadTutorStubResistanceSemanticRegistration(
   return { registration, path: registrationPath, sha256: tutorStubResistanceSemanticSha256(fs.readFileSync(absolute)) };
 }
 
+export function tutorStubResistanceSemanticRegistrationPathForObservation(observationSemantics = '') {
+  const normalized = String(observationSemantics || '').trim();
+  if (!normalized || normalized === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION) {
+    return TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION;
+  }
+  if (normalized === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2) {
+    return TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2;
+  }
+  throw new Error(`unsupported resistance semantic observation semantics: ${normalized}`);
+}
+
 export function validateTutorStubResistanceSemanticRuntimeResult({
   result,
   learnerText,
@@ -453,10 +464,25 @@ export function createTutorStubResistanceSemanticRuntime({
   return { adjudicateCandidate, registrationBinding };
 }
 
-export function createLazyTutorStubResistanceSemanticAdjudicator(dependencies, { createRuntime } = {}) {
+export function createLazyTutorStubResistanceSemanticAdjudicator(
+  dependencies,
+  { createRuntime, loadRegistration = loadTutorStubResistanceSemanticRegistration, observationSemantics = '' } = {},
+) {
   let runtime = null;
   return async (values) => {
-    runtime ||= (createRuntime || createTutorStubResistanceSemanticRuntime)(dependencies);
+    if (!runtime) {
+      const registrationPath = tutorStubResistanceSemanticRegistrationPathForObservation(observationSemantics);
+      const registrationBinding = loadRegistration(registrationPath);
+      const expectedObservationSemantics =
+        String(observationSemantics || '').trim() || TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION;
+      if (registrationBinding?.registration?.observationSemantics !== expectedObservationSemantics) {
+        throw new Error('semantic registration observation semantics drifted from the requested runtime');
+      }
+      runtime = (createRuntime || createTutorStubResistanceSemanticRuntime)({
+        ...dependencies,
+        registrationBinding,
+      });
+    }
     return runtime.adjudicateCandidate(values);
   };
 }
