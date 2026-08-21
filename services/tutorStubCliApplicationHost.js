@@ -1141,7 +1141,6 @@ export async function runTutorStubCliApplicationHost({
     worldFlavourPhrase,
     worldLedgerTerm,
   });
-
   const {
     generateTutorClarification,
     generateTutorStubCurriculumTranslation,
@@ -1161,13 +1160,11 @@ export async function runTutorStubCliApplicationHost({
     publicWorldSummary,
     tutorStubComprehensionPrompt,
   });
-
   const adjudicateResistanceSemanticCandidate = createLazyTutorStubResistanceSemanticAdjudicator({
     appendTraceEvent,
     callPromptModel,
     resolveModel,
   });
-
   const {
     automatedLearnerCorruptionEnabled,
     automatedLearnerProfileId,
@@ -1191,7 +1188,6 @@ export async function runTutorStubCliApplicationHost({
     learnerProfilePrompt,
     negativeFloorRegisters: NEGATIVE_FLOOR_REGISTERS,
   });
-
   const {
     evaluatePendingRegisterEfficacy,
     explicitPerformanceActorialPartSelection,
@@ -1256,7 +1252,6 @@ export async function runTutorStubCliApplicationHost({
     tutorStubRegisterPolicyStackId,
     tutorStubReleasePacingSnapshot,
   });
-
   const {
     analyzeLearnerTurn,
     applyConversationalCompletionForLearnerTurn,
@@ -1333,7 +1328,6 @@ export async function runTutorStubCliApplicationHost({
     tutorStubTurnFeedbackRegisterPrompt,
     updateReleasePacingForLearnerTurn,
   });
-
   const {
     printCurrentTurnAnalysis,
     printDialogueCloseout,
@@ -1360,7 +1354,6 @@ export async function runTutorStubCliApplicationHost({
     traceDisplayPath,
     writeLine: (...values) => console.log(...values),
   });
-
   const { printTutorStubLaunchSummary } = createTutorStubLaunchSummaryPresentation({
     C,
     ROOT,
@@ -1369,7 +1362,6 @@ export async function runTutorStubCliApplicationHost({
     traceDisplayPath,
     writeLine: (...values) => console.log(...values),
   });
-
   const { closePriorTypedAction, planTypedAction, tutorDialogueClosureFrameForTurn } =
     createTutorStubTypedActionPlanningRuntime({
       C,
