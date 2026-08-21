@@ -2199,6 +2199,71 @@ and explicit human approval.
   Any next step must revise the instrument or corpus under a fresh
   digest-bound request; the failed run is never rescored or resampled.
 
+- 2026-08-20 — Packaged the manipulation semantic-instrument validation HOLD
+  request
+  `config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v1.json`
+  at SHA-256
+  `b6d9a41cc9fbdb2a3fc15f536e2a0b6e97a406986c9f88027e0765ab4bddb826`.
+  The deterministic packager pins the merged readiness source/tree
+  `7734b74552b3d84be90e0aee9dbeab9eb812c067` /
+  `b89bc398312a7f26dd2bd0b6118d5e761f86ed4f`, 24 unique critical
+  source-closure paths, validation registration
+  `d06952b563065a100ce4af92c18c7089a41b416c0ed3845d1d5e6d2c694856e8`,
+  instrument registration
+  `d479a556df2f61458546e9e1463dc11fa1261b74df91fe4b765d159c330f415d`,
+  response schema
+  `39a9d12655ec26b1255ab72cfd1f5818dc9e0084daf4c9fafc39c0dbb8ea044f`,
+  development corpus
+  `159fdafe39d67c200868f67a27ea5392366c614e4b2b73f186c3051cb734a5e9`,
+  and independently authored 80-case heldout
+  `9378416d1fdf8dc41f35ad84a4edf69fba6ad8889ce5020617f3d19747c9a2c7`.
+  The endpoint file/canonical, certificate, and zero-call preflight digests are
+  respectively
+  `9b038c54fdb63fc4dbc5941aef1cecddcead1a86f8d3ca0d176e59d048a1858e`,
+  `4a3da0db010c48fcb8253953c2f8eb9c28cd49f722683f31bd36e4deff2a73fe`,
+  `61ea36054f3ff8340bf7a6e4ef81bac95a95156c034d576af037c703b8943594`,
+  and
+  `40c71cf318e74109a829cbf0668bfa2386a6463b53c14eaed5b17d0f4af9189e`.
+
+  The frozen validation is exactly 80 blinded cases with independent
+  `codex.gpt-5.6-sol` low and `claude-code.sonnet-5` low judgments: 160
+  planned calls, at most three charged reservations per planned call, a hard
+  480-reservation ceiling, and programme ledger `331 -> 811 / 5000`. Its live,
+  bounded-resume, and sole analyzer command-array SHA-256 values are
+  `be929765b5b1b64464f6db9c2dead7c7df1270cac55bd8036a5479fa53753f10`,
+  `ff0fc952e0b4a62e5820bed6fcd9e03de6ebe98bc481d8d81a383e35f6efce92`,
+  and
+  `ad9a1b8fd021715c6c0fa0b42ef2dc04be4bc57f0aa9b9e7bdb8adb99a2f08d9`.
+  The create-once destination
+  `.tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v1-2026-08-20`
+  is fresh, and execution requires the stable private artifact archive with
+  byte-verified checkpoint, seal, and report transitions.
+
+  Gold and original case identities remain absent from judge packets and are
+  joined only after all 80 cases seal. The frozen gates require 100% valid
+  schema/span/provenance, per-judge sensitivity, specificity, exact-label, and
+  exact-core-vector accuracy of at least 0.90; consensus sensitivity,
+  specificity, exact-label, and exact-core-vector accuracy of at least 0.95;
+  productive-dispute recall of at least 0.90; raw label and full-vector
+  agreement of at least 0.90; Cohen kappa of at least 0.80; determinate
+  coverage of at least 0.95 overall and 0.90 per class; and zero prohibited
+  tool events. Invalid or indeterminate cases count as validation errors.
+  There is no interim gate read, prompt/schema/model/consensus/threshold
+  tuning, third judge, recall of a returned or ambiguously dispatched judge,
+  semantic-response repair, valid-case rerun, replacement, or outcome
+  selection. Only a never-prepared peer or the same prepared-but-undispatched
+  invocation may complete under the frozen checkpoint contract.
+
+  The request binds the exact architectural-correction SHA-256
+  `dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4`
+  and prior standing-authority SHA-256
+  `538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce`,
+  while preserving literal HOLD, null approval, and false model/live
+  authorization fields. It authorizes no confirmation: manipulation-validation
+  outputs remain excluded from confirmation outcomes, and no warm/plain,
+  efficacy, null, learning, transfer, human, or cell claim is available. The
+  packager's isolated no-`node_modules` replay and the direct validator each
+  passed 51 checks with zero model calls and zero production writes.
 - 2026-08-21 — Built instrument v2 under a fresh digest-bound HOLD request
   (branch `claude/boredom-semantic-validation-v2`), per the approved
   diagnosis of the v1 failure. Three revisions: (1) evidence spans are
