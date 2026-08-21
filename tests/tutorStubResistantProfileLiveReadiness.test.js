@@ -98,29 +98,15 @@ test('historical resistant-profile readiness HOLD fails closed after the public 
   assert.match(result.stderr, /endpoint GO preflight digest does not match the executable preflight/u);
 });
 
-test('axis held-out readiness reuses the consumed route with low trust diagnostic-only', () => {
-  const report = JSON.parse(
-    execFileSync(
-      process.execPath,
-      ['scripts/check-tutor-stub-resistant-profile-live-readiness.js', '--hold', AXIS_HOLD_PATH, '--json'],
-      { cwd: ROOT, encoding: 'utf8' },
-    ),
+test('axis held-out readiness fails closed after its consumed route source evolves', () => {
+  const result = spawnSync(
+    process.execPath,
+    ['scripts/check-tutor-stub-resistant-profile-live-readiness.js', '--hold', AXIS_HOLD_PATH, '--json'],
+    { cwd: ROOT, encoding: 'utf8' },
   );
 
-  assert.equal(report.status, 'HOLD');
-  assert.equal(report.packetValid, true);
-  assert.equal(report.readyForStudyGoPreparation, true);
-  assert.equal(report.liveRunAuthorized, false);
-  assert.equal(report.modelCalls, 0);
-  assert.equal(report.recordedRouteCanaryModelCalls, 1);
-  assert.equal(report.productionWrites, 0);
-  assert.deepEqual(report.endpointPreflight.assembly_audit.endpoint_status, {
-    bored_effort_investment_gate: 'complete',
-    frame_legitimacy_gate: 'complete',
-    low_trust_epistemic_trust_diagnostic: 'complete',
-  });
-  assert.match(report.proposedCommands.analyze[2], /resistance-axis-discrimination\.json/u);
-  assert.doesNotMatch(report.proposedCommands.analyze[2], /profile-discrimination\.json/u);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /source-closure SHA mismatch: services\/cliProviderBridge\.js/u);
 });
 
 test('live-readiness checker refuses a drifted HOLD packet before authorization', () => {
