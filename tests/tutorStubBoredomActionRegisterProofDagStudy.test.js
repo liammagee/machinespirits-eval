@@ -8,10 +8,13 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { analyzeTutorStubBoredomProofDag } from '../scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js';
+import { validateTutorStubResistantProfileStudyGoRequest } from '../scripts/check-tutor-stub-resistant-profile-study-go-request.js';
 import {
+  assertTutorStubBoredomProofDagLaunchAuthorization,
   assertTutorStubBoredomProofDagRecoveryBudget,
   buildTutorStubBoredomProofDagBatchPlan,
   classifyTutorStubBoredomProofDagChildFailure,
+  runTutorStubBoredomProofDagBatch,
   selectTutorStubBoredomProofDagRecoveryCandidates,
 } from '../scripts/run-tutor-stub-boredom-action-register-proof-dag.js';
 import {
@@ -31,6 +34,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v2.json';
 const REGISTRATION_V3 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v3.json';
 const REGISTRATION_V4 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json';
+const FROZEN_REQUEST_V4 = 'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v4.json';
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -631,6 +635,7 @@ test('prospective-v9 analyzer requires the independent semantic sequence and rej
       destination: root,
       expectedSourceCommit: head,
     });
+    assert.equal(plan.budget.programme_ceiling, 5000);
     fs.mkdirSync(root, { recursive: true });
     writeSyntheticBatch(root, plan, outcomes, { observationSemantics: 'prospective_v9' });
     roots.push(root);
@@ -681,6 +686,7 @@ test('validated-instrument v4 lineage runs the same analyzer and still rejects i
       destination: root,
       expectedSourceCommit: head,
     });
+    assert.equal(plan.budget.programme_ceiling, 5000);
     fs.mkdirSync(root, { recursive: true });
     writeSyntheticBatch(root, plan, outcomes, { observationSemantics: 'prospective_v9' });
     roots.push(root);
@@ -713,4 +719,72 @@ test('validated-instrument v4 lineage runs the same analyzer and still rejects i
       }),
     /lacks its exact fresh execution, treatment, or outcome event/u,
   );
+});
+
+test('v4 live and recovery execution demand a committed launch authorization bound to the frozen request', async (t) => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-gate-'));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION_V4) });
+
+  const loadedV3 = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION_V3) });
+  assert.equal(assertTutorStubBoredomProofDagLaunchAuthorization({ loaded: loadedV3 }), null);
+
+  assert.throws(
+    () =>
+      assertTutorStubBoredomProofDagLaunchAuthorization({
+        loaded,
+        authorizationPath: path.join(temp, 'missing-authorization.json'),
+      }),
+    /requires a committed launch authorization/u,
+  );
+
+  const destination = path.join(temp, 'live-batch');
+  await assert.rejects(
+    runTutorStubBoredomProofDagBatch({
+      registrationPath: REGISTRATION_V4,
+      batchId: 'execution_batch_1',
+      destination,
+      expectedSourceCommit: head,
+    }),
+    /requires a committed launch authorization/u,
+  );
+  assert.equal(fs.existsSync(destination), false);
+
+  const requestPath = path.join(ROOT, FROZEN_REQUEST_V4);
+  const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath });
+  assert.equal(report.readyForExplicitHumanApproval, true);
+  const authorization = {
+    schema: 'machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v1',
+    approvedBy: 'test-fixture-human',
+    modelCallsAuthorized: true,
+    liveRunAuthorized: true,
+    registrationSha256: loaded.sha256,
+    requestPath: FROZEN_REQUEST_V4,
+    requestSha256: report.requestSha256,
+    exactApprovalStatement: report.exactApprovalStatement,
+  };
+  const authorizationPath = path.join(temp, 'launch-authorization.v4.json');
+  fs.writeFileSync(authorizationPath, `${JSON.stringify(authorization, null, 2)}\n`);
+  const summary = assertTutorStubBoredomProofDagLaunchAuthorization({ loaded, authorizationPath });
+  assert.equal(summary.approved_by, 'test-fixture-human');
+  assert.equal(summary.request_sha256, report.requestSha256);
+
+  const mutations = [
+    { schema: 'machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v99' },
+    { approvedBy: '  ' },
+    { modelCallsAuthorized: false },
+    { liveRunAuthorized: false },
+    { registrationSha256: 'f'.repeat(64) },
+    { requestSha256: 'f'.repeat(64) },
+    { exactApprovalStatement: 'yes' },
+  ];
+  for (const mutation of mutations) {
+    const mutatedPath = path.join(temp, `mutated-${Object.keys(mutation)[0]}.json`);
+    fs.writeFileSync(mutatedPath, `${JSON.stringify({ ...authorization, ...mutation }, null, 2)}\n`);
+    assert.throws(
+      () => assertTutorStubBoredomProofDagLaunchAuthorization({ loaded, authorizationPath: mutatedPath }),
+      /must bind this registration, the frozen request digest, and the exact approval statement/u,
+    );
+  }
 });
