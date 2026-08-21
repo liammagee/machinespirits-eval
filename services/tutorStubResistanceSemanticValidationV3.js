@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+  TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3,
   buildTutorStubResistanceSemanticAdjudicationPromptV3,
   buildTutorStubResistanceSemanticZeroCallFixtureResponseV3,
   scoreTutorStubResistanceSemanticCorpusV3,
@@ -60,6 +61,74 @@ function corpusTexts(corpus) {
       Array.isArray(row.public_context) ? row.public_context.map((message) => normalizedText(message.text)) : [],
     ),
   };
+}
+
+function schemaKeywordCount(value, keyword) {
+  if (Array.isArray(value)) return value.reduce((sum, row) => sum + schemaKeywordCount(row, keyword), 0);
+  if (!value || typeof value !== 'object') return 0;
+  return (
+    (Object.hasOwn(value, keyword) ? 1 : 0) +
+    Object.values(value).reduce((sum, row) => sum + schemaKeywordCount(row, keyword), 0)
+  );
+}
+
+// Dependency-free endpoint audit mirror. The bridge implementation is covered
+// by its direct and composed transport tests; keeping this tiny reconstruction
+// local lets the endpoint/certificate replay without loading provider runtime
+// dependencies or making a model call.
+function normalizedV3CodexProviderSchemaForAudit(value) {
+  if (Array.isArray(value)) return value.map(normalizedV3CodexProviderSchemaForAudit);
+  if (!value || typeof value !== 'object') return value;
+  if (Object.hasOwn(value, 'oneOf')) {
+    const keys = Object.keys(value);
+    if (keys.length !== 1 || keys[0] !== 'oneOf' || !Array.isArray(value.oneOf) || value.oneOf.length !== 2) {
+      throw new Error('semantic validation v3 provider-schema audit found an unsupported oneOf');
+    }
+    const nullBranches = value.oneOf.filter(
+      (row) =>
+        row && typeof row === 'object' && !Array.isArray(row) && Object.keys(row).length === 1 && row.type === 'null',
+    );
+    const objectBranches = value.oneOf.filter(
+      (row) => row && typeof row === 'object' && !Array.isArray(row) && row.type === 'object',
+    );
+    if (nullBranches.length !== 1 || objectBranches.length !== 1) {
+      throw new Error('semantic validation v3 provider-schema audit found an unsupported oneOf');
+    }
+    return { anyOf: value.oneOf.map(normalizedV3CodexProviderSchemaForAudit) };
+  }
+  return Object.fromEntries(
+    Object.entries(value).map(([key, row]) => [key, normalizedV3CodexProviderSchemaForAudit(row)]),
+  );
+}
+
+export function auditTutorStubResistanceSemanticV3CodexProviderSchema() {
+  const frozenBytes = JSON.stringify(TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3);
+  const normalized = normalizedV3CodexProviderSchemaForAudit(TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3);
+  const normalizedBytes = JSON.stringify(normalized);
+  const audit = {
+    status: 'passed_zero_call_nullable_object_union_wiring',
+    provider: 'codex',
+    rewrite: 'disjoint_nullable_object_oneOf_to_anyOf_only',
+    frozen_schema_sha256: tutorStubResistanceSemanticSha256(frozenBytes),
+    provider_schema_sha256: tutorStubResistanceSemanticSha256(normalizedBytes),
+    frozen_one_of_count: schemaKeywordCount(TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3, 'oneOf'),
+    provider_one_of_count: schemaKeywordCount(normalized, 'oneOf'),
+    provider_any_of_count: schemaKeywordCount(normalized, 'anyOf'),
+    byte_length_preserved: Buffer.byteLength(frozenBytes) === Buffer.byteLength(normalizedBytes),
+    model_visible_prompt_changed: false,
+    claude_schema_changed: false,
+    local_frozen_schema_changed: JSON.stringify(TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3) !== frozenBytes,
+  };
+  if (
+    audit.frozen_one_of_count !== 8 ||
+    audit.provider_one_of_count !== 0 ||
+    audit.provider_any_of_count !== 8 ||
+    !audit.byte_length_preserved ||
+    audit.local_frozen_schema_changed
+  ) {
+    throw new Error('semantic validation v3 Codex provider-schema compatibility audit failed');
+  }
+  return audit;
 }
 
 export function validateTutorStubResistanceSemanticValidationRegistrationV3({
@@ -544,6 +613,7 @@ export function assembleTutorStubResistanceSemanticValidationPreflightV3({ cases
     responsePairs,
     registration: loaded.instrument.registration,
   });
+  const providerSchemaAudit = auditTutorStubResistanceSemanticV3CodexProviderSchema();
   return {
     schema: 'machinespirits.tutor-stub.resistance-semantic-validation-preflight-assembly.v3',
     case_ids: cases.map((row) => row.case_id),
@@ -556,7 +626,10 @@ export function assembleTutorStubResistanceSemanticValidationPreflightV3({ cases
           ? 'complete'
           : 'failed',
       synthetic_coverage_metric_wiring: score.metrics.determined_coverage_overall >= 0.95 ? 'complete' : 'failed',
+      synthetic_codex_provider_schema_compatibility_wiring:
+        providerSchemaAudit.status === 'passed_zero_call_nullable_object_union_wiring' ? 'complete' : 'failed',
     },
+    codex_provider_schema_compatibility: providerSchemaAudit,
     synthetic_fixture_score: score,
   };
 }
@@ -572,6 +645,18 @@ export function runTutorStubResistanceSemanticValidationPreflightV3({ contract }
     contract?.registration?.heldout_corpus_sha256 !== loaded.corpusSha256
   ) {
     throw new Error('semantic validation v3 endpoint registration, instrument, or heldout binding drifted');
+  }
+  const providerSchemaAudit = auditTutorStubResistanceSemanticV3CodexProviderSchema();
+  const contractAdapter = contract?.runner?.codex_structured_output_schema_adapter;
+  if (
+    contractAdapter?.implementation !== 'services/cliProviderBridge.js#normalizeCodexProviderOutputSchema' ||
+    contractAdapter?.rewrite !== providerSchemaAudit.rewrite ||
+    contractAdapter?.frozen_schema_sha256 !== providerSchemaAudit.frozen_schema_sha256 ||
+    contractAdapter?.provider_schema_sha256 !== providerSchemaAudit.provider_schema_sha256 ||
+    contractAdapter?.claude_schema_changed !== false ||
+    contractAdapter?.local_validation_uses_frozen_schema !== true
+  ) {
+    throw new Error('semantic validation v3 Codex provider-schema endpoint binding drifted');
   }
   const blindedCases = buildTutorStubResistanceSemanticBlindedValidationCasesV3(loaded.corpus.cases);
   const preflight = runPaidStudyEndpointPreflight({
@@ -599,6 +684,7 @@ export function runTutorStubResistanceSemanticValidationPreflightV3({ contract }
       staged_maximum_only_after_both_validations_pass: 5307,
       ceiling_amendment_required_before_confirmation: true,
       live_heldout_accuracy_agreement_and_coverage_gates: 'pending_live_validation',
+      codex_provider_schema_compatibility: providerSchemaAudit,
       model_calls: 0,
       production_writes: 0,
     },

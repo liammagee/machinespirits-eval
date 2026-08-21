@@ -3,10 +3,10 @@
   "status": "endpoint_runtime_go",
   "study_id": "tutor-stub-resistance-semantic-adjudication-heldout-validation-v3",
   "contract_path": "config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v3.json",
-  "contract_sha256": "fb363a7fb819155175f730e95efa63e5af8aac634d673aeba836acfa891cf6f0",
-  "preflight_sha256": "0eb73e638def94eebd86102ca28d6132a66f941788f327bc04828d68b14859f6",
+  "contract_sha256": "ed62463f39e6b40c90bdfaeb9383b5c98e46ec5f43891f626ffde8a04f1a4ce7",
+  "preflight_sha256": "55de7de84c0bdb51c8cf8c893aa62c97a1f97ad02b87834dacaada54724ac9c1",
   "preflight_status": "passed_zero_call_wiring_only_not_accuracy_evidence",
   "model_calls": 0,
   "production_writes": 0,
-  "claim_boundary": "This certificate proves only deterministic v3 endpoint, fixed evidence-slot quote normalization, packet, metric, checkpoint, and budget wiring. It does not establish heldout accuracy, authorize the 160 judge calls, amend the 5000-attempt ceiling, or authorize outcome validation or confirmation."
+  "claim_boundary": "This certificate proves only deterministic v3 endpoint, fixed evidence-slot quote normalization, Codex provider-schema compatibility, packet, metric, checkpoint, and budget wiring. It does not establish heldout accuracy, authorize the 160 judge calls, amend the 5000-attempt ceiling, or authorize outcome validation or confirmation."
 }

@@ -13,11 +13,13 @@ verification: >-
   user has reopened the scientific question through an additive independent
   semantic-measurement architecture. Manipulation semantic validations v1 and
   v2 are sealed failed results and are never rescored or reused. The additive
-  manipulation v3 instrument is frozen before independent heldout authoring;
-  its fixed evidence slots and multiaxial jurisdiction ontology repair only the
-  disclosed v2 measurement defects. All historical outputs stay excluded, and
-  no v3 validation, outcome validation, or confirmation model call is
-  authorized.
+  manipulation v3 instrument stayed frozen through independent heldout
+  authoring, but its first request stopped after a systematic provider failure
+  at ten reservations. That consumed root is excluded and cannot resume. A
+  generic Codex provider-boundary compatibility repair preserves the frozen
+  V3 instrument and heldout; a fresh digest-bound request and destination are
+  required before any further validation. Outcome validation and confirmation
+  remain unauthorized.
 claim_status: methods
 links:
   items:
@@ -2670,3 +2672,51 @@ and explicit human approval.
   amendment is encoded. The request stays literal `HOLD` / `null` / `false`
   and the packager's isolated no-`node_modules` replay passed 66 checks with
   zero model calls and zero production writes.
+
+- 2026-08-21 — The exact V3 validation request above was merged and launched
+  once from its pinned clean source, but stopped as a systematic provider
+  failure before any gold join or registered analysis. Its immutable local
+  root is
+  `.tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v3-2026-08-21-a`.
+  The process stopped at exactly 10 charged reservations: seven Codex Sol
+  attempts ended `CLI_PROVIDER_TURN_FAILED`, one Claude Sonnet-5 attempt ended
+  `CLI_PROVIDER_EXIT_FAILED`, one Sonnet-5 response returned and was preserved,
+  and one Sol attempt was dispatched when the process was interrupted. Two
+  cases were sealed as `measurement_indeterminate`; the third remained
+  `judge_in_flight`. There were no retries outside the registered per-call
+  attempt envelope, no recovery, no result, no seal, no analyzer report, no
+  gold-label join, and no outcome or confirmation call. Programme accounting
+  therefore moved from `651` to `661 / 5000`.
+
+  The durable transition archive is preserved under request/plan identity
+  `940cd6582909ff2e...-a4994193e2cb7125...`; its final private archive ref was
+  still pending at this engineering checkpoint. The consumed local root is
+  permanently excluded: the returned Sonnet judgment, two terminal
+  indeterminate cases, and ambiguous dispatched Sol attempt make same-source
+  resume or whole-case recovery scientifically invalid. Any future validation
+  requires a fresh source commit, digest-bound HOLD request, create-once
+  destination, and prelaunch proof.
+
+- 2026-08-21 — Zero-call diagnosis found one narrow generic provider-boundary
+  incompatibility without reopening the frozen V3 semantic instrument. The V3
+  local output schema contains eight disjoint nullable-object unions expressed
+  as `oneOf`; V1 and V2 did not use `oneOf`. Codex Structured Outputs accepts
+  the equivalent `anyOf` form, while the repository's earlier Codex schema
+  path explicitly left unsupported `oneOf` constructs to the local validator.
+  The bridge now deep-clones a Codex-bound schema and rewrites only an exact
+  two-branch object-or-null `oneOf` to the same ordered branches under `anyOf`.
+  It fails closed on every other `oneOf` shape. Claude receives the original
+  schema byte-for-byte, the model-visible prompt is unchanged, and all returned
+  data is still parsed and validated against the original frozen V3 schema.
+  The zero-call endpoint audit binds frozen schema SHA-256
+  `415562a8a8162f2a8726c70eb1c6c78a5b48b175f5fa5cb331e62a352c82933b`
+  and Codex provider-schema SHA-256
+  `5118193809d8f83c3e8060b247fd18a488f69aebbb24e8b444651210a153044e`.
+
+  No provider stdout or stderr was preserved by the stopped command, so the
+  failure cannot be narrowed further to quota, authentication, or server-side
+  rejection. The repair is justified by the deterministic unsupported-schema
+  boundary rather than an invented provider diagnosis. The independent V3
+  heldout remains reusable only because no gold was joined, no analyzer or
+  result exists, no prompt/schema/instrument/gate/corpus bytes changed, and all
+  prior responses remain excluded; this does not authorize a continuation.
