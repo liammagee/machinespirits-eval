@@ -12,6 +12,10 @@ import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V2,
   loadTutorStubResistanceSemanticValidationV2,
 } from '../services/tutorStubResistanceSemanticValidationV2.js';
+import {
+  TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V3,
+  loadTutorStubResistanceSemanticValidationV3,
+} from '../services/tutorStubResistanceSemanticValidationV3.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -58,10 +62,21 @@ function main() {
   }
   const request = repoPath(args['go-request']);
   const validationRegistration = String(args['validation-registration'] || '').trim();
-  if (validationRegistration && validationRegistration !== TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V2) {
+  if (
+    validationRegistration &&
+    ![
+      TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V2,
+      TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V3,
+    ].includes(validationRegistration)
+  ) {
     throw new Error('--validation-registration is not a supported additive semantic validation registration');
   }
-  const loaded = validationRegistration ? loadTutorStubResistanceSemanticValidationV2() : undefined;
+  const loaded =
+    validationRegistration === TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V3
+      ? loadTutorStubResistanceSemanticValidationV3()
+      : validationRegistration
+        ? loadTutorStubResistanceSemanticValidationV2()
+        : undefined;
   const snapshot = sourceSnapshot();
   if (snapshot.commit !== args['source-commit'] || snapshot.tree !== args['source-tree']) {
     throw new Error('semantic validation analysis source commit/tree does not match the command pin');

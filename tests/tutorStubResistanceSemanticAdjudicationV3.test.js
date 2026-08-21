@@ -37,7 +37,7 @@ const refuserSource =
 const productiveSource =
   'You do not have standing to impose that question, and I will not answer it; I will compare the two public records under whether their dates agree.';
 
-function evidence({ dispute, standing, frame, test, participate, withhold, productive, source }) {
+function evidence({ dispute, standing, frame, test, participate, withhold, productive }) {
   return {
     jurisdiction_dispute: dispute ? { source_id: 'utterance', text: dispute } : null,
     interlocutor_standing_or_right: standing ? { source_id: 'utterance', text: standing } : null,

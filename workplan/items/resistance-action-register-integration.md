@@ -11,12 +11,13 @@ updated: 2026-08-21
 verification: >-
   The lexical-observer programme remains closed exactly as recorded, but the
   user has reopened the scientific question through an additive independent
-  semantic-measurement architecture. Manipulation semantic validation v1 is a
-  sealed failed result and is never rescored; the additive manipulation v2
-  instrument and independently authored heldout are frozen and zero-call
-  request-ready, while the separate outcome instrument and heldout remain
-  frozen. All historical outputs stay excluded, and no v2 validation, outcome
-  validation, or confirmation model call is authorized.
+  semantic-measurement architecture. Manipulation semantic validations v1 and
+  v2 are sealed failed results and are never rescored or reused. The additive
+  manipulation v3 instrument is frozen before independent heldout authoring;
+  its fixed evidence slots and multiaxial jurisdiction ontology repair only the
+  disclosed v2 measurement defects. All historical outputs stay excluded, and
+  no v3 validation, outcome validation, or confirmation model call is
+  authorized.
 claim_status: methods
 links:
   items:
@@ -2536,3 +2537,80 @@ and explicit human approval.
   which makes it an instrument revision, not a corpus iteration — it
   needs a fresh corpus, this diagnosis, and separate explicit human
   approval before any build starts.
+
+- 2026-08-21 — The 80-case manipulation semantic-validation V2 run completed
+  its sealed registered analyzer and failed. The preserved request is
+  `b91b6c92ec6b82b15b40821938929c3e2c31c86424822846a26443977cb479d6`;
+  the exact report is
+  `11e868d18135e6df29230eab6f7912427917c0e0b55ea350f6cec4a2168fca11`.
+  All 80 cases sealed with exactly 160/160 first-attempt returned judge calls,
+  zero retry, recall, recovery, replacement, selection, provider failure, or
+  prohibited-tool event. The programme ledger is therefore `651 / 5000`.
+  Judge A passed the label boundary but reached only `.8375` exact-core-vector
+  accuracy; Judge B produced 52 invalid records, all under the exact validator
+  issue `jurisdiction dispute requires exact-span target evidence`. Consensus
+  was indeterminate in 57/80 cases. The failed run is preserved on private
+  branch `codex/resistance-semantic-validation-v2-failed-archive` at commit
+  `a98b58732ae2f0b68180e3bbb8d0357cf2e4adfa` / tree
+  `5ebd6016e86e0764126f9b5849d58107461e12b2`. It is terminal under V2:
+  no rescoring, normalization, rejudge, rerun, pooling, or reinterpretation is
+  permitted, and outcome validation and confirmation remain unauthorized.
+
+  Zero-call diagnosis found clean Sol-low and Sonnet-5-low transport,
+  structured output, route/effort attestation, and unique exact-quote-to-UTF-16
+  derivation on every returned record. The dominant B failure was instead a
+  frozen schema/prompt-contract defect: the model schema exposed an
+  unconstrained evidence array while the later deterministic validator
+  required target evidence for every dispute. A's 13 exact-core misses were
+  confined to the overlapping single-choice target/type ontology, especially
+  interlocutor standing versus the governed question/test. This is repairable
+  only as an additive instrument, not by changing the V2 score.
+
+  Manipulation semantic instrument V3 was consequently frozen first at commit
+  `a0e0b56d371e8313eeb98d99f22a1a5f880a0d67` / tree
+  `2cd3a032a139f19a96a9c8ee4c8a634d9065508a`, before any new heldout text was
+  authored. Its service, response schema, registration, and disclosed
+  development-evidence manifest hashes are respectively
+  `a66a16c4ea80a831065234507be8308d8e3ac3cf9d6de4a0e49395c8164fa7ff`,
+  `4840ef6ebc5135d98aeb3d70d5a22416601a62fe1dc6bb3c225c05e606673033`,
+  `34fe9cf885293f14d037ac036c2c56f9d86f914707663afcc89f4acc938707e5`,
+  and
+  `4aa10fcb76779ae119a883670b8283d89123369a9079572a8a8d4a903c0610fe`.
+  V3 replaces the evidence array with eight fixed field slots: a yes or
+  indeterminate value requires one unique exact public quote/source, while a no
+  value requires explicit null; deterministic code alone stamps and validates
+  UTF-16 offsets. It replaces target/type with independent jurisdiction axes
+  for interlocutor standing/right, inquiry/question-frame governance,
+  test/criterion governance, and a nonoverlapping other axis. The prompt stays
+  example-free, V1/V2 heldouts and results are disclosed development evidence
+  only, gates remain unchanged, and a fresh independently authored 80-case
+  heldout is required. A later V3 validation remains 160 planned calls, hard
+  480 reservations, and programme maximum `651 -> 1131 / 5000`; no request or
+  model call is included in this readiness work.
+
+- 2026-08-21 — The genuinely unseen V3 heldout was authored after the exact
+  instrument freeze by an independent agent with one-file ownership and no
+  access to the V1 or V2 heldout texts. The remotely preserved author commit is
+  `d76dd2691a496abacc39c3ba0034f74b6f5c7bde`, whose parent is the exact freeze
+  `a0e0b56d371e8313eeb98d99f22a1a5f880a0d67`; the corpus SHA-256 is
+  `687f931f2bc0beb80283859dec48a9393e2ccf0d08ee34c6d8e68e5758dcd8c2`.
+  The corpus contains exactly 80 unique sources and 80 unique context messages:
+  40 frame-refuser, 16 productive-dispute, and 24 neither cases. Its frozen
+  multiaxial coverage includes 28 interlocutor-standing positives, 28
+  inquiry-frame positives, 28 test/criterion positives, 16 multi-axis cases,
+  and four nonoverlapping other-jurisdiction cases. The cherry-picked corpus is
+  byte-identical to the independent branch and the frozen V3 instrument files
+  were not tuned afterward.
+
+  The additive V3 validation registration binds both failed runs, the new
+  heldout, opaque shuffled execution identities, the unchanged Sol-low and
+  Sonnet-5-low routes, fixed evidence-slot validation, the exact no-recall and
+  create-once archive lifecycle, and the validation-only claim boundary. Its
+  endpoint certificate proves only synthetic zero-call wiring; all live
+  accuracy, agreement, core-vector, and coverage gates remain pending. V8 is
+  still a readiness-only HOLD with null validation reports and false authority
+  booleans. It now names V3 as the prospective manipulation instrument and
+  records the conservative staged arithmetic `651 + 480 + 720 + 3456 = 5307`,
+  so a separate human ceiling amendment of at least 307 remains necessary
+  before any later confirmation. No V3 GO request, validation call, outcome
+  call, confirmation call, or efficacy claim is included in this change.

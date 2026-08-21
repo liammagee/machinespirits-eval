@@ -20,6 +20,13 @@ import {
   runTutorStubResistanceSemanticValidationPreflightV2,
   validateTutorStubResistanceSemanticValidationRegistrationV2,
 } from '../services/tutorStubResistanceSemanticValidationV2.js';
+import {
+  buildTutorStubResistanceSemanticBlindedValidationCasesV3,
+  buildTutorStubResistanceSemanticValidationPacketsV3,
+  loadTutorStubResistanceSemanticValidationV3,
+  runTutorStubResistanceSemanticValidationPreflightV3,
+  validateTutorStubResistanceSemanticValidationRegistrationV3,
+} from '../services/tutorStubResistanceSemanticValidationV3.js';
 import { validatePaidStudyEndpointGoCertificate } from '../services/paidStudyEndpointPreflight.js';
 import { buildTutorStubResistanceActionRegisterConfirmationPlan } from '../services/tutorStubResistanceActionRegisterConfirmation.js';
 import { loadTutorStubResistanceActionRegisterRegistration } from '../services/tutorStubResistanceActionRegisterStudy.js';
@@ -31,6 +38,9 @@ const CERTIFICATE =
 const ENDPOINT_V2 = 'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v2.json';
 const CERTIFICATE_V2 =
   'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v2.endpoint-go.json';
+const ENDPOINT_V3 = 'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v3.json';
+const CERTIFICATE_V3 =
+  'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v3.endpoint-go.json';
 const sha256 = (repoPath) =>
   crypto
     .createHash('sha256')
@@ -207,6 +217,76 @@ test('v2 validation endpoint certifies zero-call quote-normalization wiring with
   );
 });
 
+test('v3 independent heldout binds multiaxial fixed-slot evidence without exposing gold or prior corpora', () => {
+  const loaded = loadTutorStubResistanceSemanticValidationV3();
+  assert.equal(loaded.corpusSha256, '687f931f2bc0beb80283859dec48a9393e2ccf0d08ee34c6d8e68e5758dcd8c2');
+  assert.equal(loaded.registration.heldout.authorCommit, 'd76dd2691a496abacc39c3ba0034f74b6f5c7bde');
+  assert.equal(loaded.registration.heldout.instrumentFreezeParent, 'a0e0b56d371e8313eeb98d99f22a1a5f880a0d67');
+  assert.equal(loaded.registration.heldout.multiAxisJurisdiction, 16);
+  assert.equal(loaded.registration.heldout.otherJurisdictionalGovernance, 4);
+  assert.equal(loaded.registration.executionReadiness.programmeLedgerBefore, 651);
+  assert.equal(loaded.registration.executionReadiness.programmeLedgerAfterMaximum, 1131);
+  assert.equal(loaded.registration.executionReadiness.futureStagedMaximumOnlyAfterBothValidationsPass, 5307);
+  const cases = buildTutorStubResistanceSemanticBlindedValidationCasesV3(loaded.corpus.cases);
+  const packets = buildTutorStubResistanceSemanticValidationPacketsV3(cases);
+  assert.equal(cases.length, 80);
+  assert.ok(cases.every((row) => /^sv3-[0-9a-f]{32}$/u.test(row.case_id)));
+  assert.deepEqual(buildTutorStubResistanceSemanticBlindedValidationCasesV3(loaded.corpus.cases), cases);
+  const executionJson = JSON.stringify({ cases, packets });
+  for (const corpusCase of loaded.corpus.cases) assert.equal(executionJson.includes(corpusCase.case_id), false);
+  for (const forbidden of ['"expected"', 'v3-hb-', 'hb1-', 'hb2-', 'evidence_spans']) {
+    assert.equal(executionJson.includes(forbidden), false, `v3 blinded execution leaked ${forbidden}`);
+  }
+  assert.equal(executionJson.includes('fixed evidence_quotes slot'), true);
+
+  const disclosedDevelopmentCorpora = [
+    'config/tutor-stub-resistance-semantic-adjudication-development-corpus.v1.json',
+    'config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json',
+    'config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v2.json',
+  ].map((repoPath) => JSON.parse(fs.readFileSync(path.join(ROOT, repoPath), 'utf8')));
+  const validate = (registration = loaded.registration, corpus = loaded.corpus) =>
+    validateTutorStubResistanceSemanticValidationRegistrationV3({
+      registration,
+      instrument: loaded.instrument,
+      corpus,
+      corpusSha256: loaded.corpusSha256,
+      disclosedDevelopmentCorpora,
+    });
+  assert.equal(validate().valid, true);
+  for (const mutate of [
+    (value) => (value.supersession.v2ObservedAccounting.invalidJudgments = 51),
+    (value) => (value.supersession.v2FailedArchiveCommit = '0'.repeat(40)),
+    (value) => (value.heldout.multiAxisJurisdiction = 15),
+    (value) => (value.executionReadiness.programmeLedgerBefore = 491),
+    (value) => (value.executionPolicy.v1V2ValidationInputsOrOutputsReusable = true),
+    (value) => (value.authorization.confirmationAuthorized = true),
+  ]) {
+    const changed = structuredClone(loaded.registration);
+    mutate(changed);
+    assert.equal(validate(changed).valid, false);
+  }
+  const collision = structuredClone(loaded.corpus);
+  collision.cases[0].source = disclosedDevelopmentCorpora[2].cases[0].source;
+  assert.match(validate(loaded.registration, collision).issues.join('; '), /collides with disclosed v1\/v2/u);
+});
+
+test('v3 validation endpoint certifies only zero-call fixed-slot wiring with live gates pending', () => {
+  const contract = JSON.parse(fs.readFileSync(path.join(ROOT, ENDPOINT_V3), 'utf8'));
+  const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, CERTIFICATE_V3), 'utf8'));
+  const preflight = runTutorStubResistanceSemanticValidationPreflightV3({ contract });
+  const validation = validatePaidStudyEndpointGoCertificate({ certificate, contract, preflight });
+  assert.equal(validation.ok, true, validation.errors.join('; '));
+  assert.equal(preflight.model_calls, 0);
+  assert.equal(preflight.production_writes, 0);
+  assert.equal(preflight.semantic_validation_readiness_audit.programme_ledger_before, 651);
+  assert.equal(preflight.semantic_validation_readiness_audit.programme_ledger_after_maximum, 1131);
+  assert.equal(preflight.semantic_validation_readiness_audit.staged_maximum_only_after_both_validations_pass, 5307);
+  assert.equal(
+    preflight.semantic_validation_readiness_audit.live_heldout_accuracy_agreement_and_coverage_gates,
+    'pending_live_validation',
+  );
+});
+
 test('V8 confirmation readiness is loadable but cannot become an executable confirmation before sealed validation', () => {
   const loaded = loadTutorStubResistanceActionRegisterRegistration(
     path.join(ROOT, 'config/tutor-stub-resistance-action-register-crossed-registration.v8.json'),
@@ -220,9 +300,10 @@ test('V8 confirmation readiness is loadable but cannot become an executable conf
     '16899134545d574203192ae2b1b6ff6671500fa24957f6d82015be5064c784c5',
   );
   assert.equal(loaded.registration.executionReadiness.combinedMaximumModelAttemptReservations, 3456);
-  assert.equal(loaded.registration.executionReadiness.programmeLedgerAfterMaximum.reservedAttempts, 5147);
-  assert.equal(loaded.registration.authorization.requiredCeilingAmendment.increase, 147);
+  assert.equal(loaded.registration.executionReadiness.programmeLedgerAfterMaximum.reservedAttempts, 5307);
+  assert.equal(loaded.registration.authorization.requiredCeilingAmendment.increase, 307);
   assert.equal(loaded.registration.semanticAdjudication.failedV1Validation.reused, false);
+  assert.equal(loaded.registration.semanticAdjudication.failedV2Validation.reused, false);
   assert.throws(
     () => buildTutorStubResistanceActionRegisterConfirmationPlan({ registration: loaded.registration }),
     /requires a registered V3, V4, V5, V6, or V7/u,
@@ -243,6 +324,7 @@ test('V8 confirmation readiness is loadable but cannot become an executable conf
       (value) => (value.preservation.stoppedConfirmationV7.traceSha256.s2 = '0'.repeat(64)),
       (value) => (value.semanticAdjudication.validationReportPath = 'results/forged.json'),
       (value) => (value.semanticAdjudication.failedV1Validation.rescored = true),
+      (value) => (value.semanticAdjudication.failedV2Validation.rescored = true),
       (value) => (value.outcomeSemanticAdjudication.instrumentRegistrationSha256 = '0'.repeat(64)),
       (value) => (value.outcomeSemanticAdjudication.validationReportPath = 'results/forged-outcome.json'),
       (value) => (value.authorization.requiredBeforeValidationModelCalls[0] = 'circular or drifted'),

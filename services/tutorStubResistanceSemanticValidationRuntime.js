@@ -18,6 +18,13 @@ import {
   scoreTutorStubResistanceSemanticCorpusV2,
   wrapTutorStubResistanceSemanticModelOutputV2,
 } from './tutorStubResistanceSemanticAdjudicationV2.js';
+import {
+  TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3,
+  adjudicateTutorStubResistanceSemanticJudgesV3,
+  buildTutorStubResistanceSemanticAdjudicationPromptV3,
+  scoreTutorStubResistanceSemanticCorpusV3,
+  wrapTutorStubResistanceSemanticModelOutputV3,
+} from './tutorStubResistanceSemanticAdjudicationV3.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_SYSTEM_PROMPT } from './tutorStubResistanceSemanticRuntime.js';
 import {
   buildTutorStubResistanceSemanticBlindedValidationCases,
@@ -41,6 +48,17 @@ function semanticInstrument(loaded) {
   const buildBlindedCases = loaded?.buildBlindedCases || buildTutorStubResistanceSemanticBlindedValidationCases;
   const corpusCaseForExecutionId =
     loaded?.corpusCaseForExecutionId || tutorStubResistanceSemanticCorpusCaseForExecutionId;
+  if (loaded?.instrument?.registration?.version === 3) {
+    return {
+      outputSchema: TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3,
+      buildPrompt: buildTutorStubResistanceSemanticAdjudicationPromptV3,
+      wrapModelOutput: wrapTutorStubResistanceSemanticModelOutputV3,
+      adjudicate: adjudicateTutorStubResistanceSemanticJudgesV3,
+      scoreCorpus: scoreTutorStubResistanceSemanticCorpusV3,
+      buildBlindedCases,
+      corpusCaseForExecutionId,
+    };
+  }
   if (loaded?.instrument?.registration?.version === 2) {
     return {
       outputSchema: TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V2,

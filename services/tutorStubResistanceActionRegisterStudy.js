@@ -9,9 +9,11 @@ import { tutorStubFirstDraftContractPrompt } from './tutorStubFirstDraftContract
 import { extractTutorStubFrozenTurn, refreshTutorStubFrozenFirstDraftRequest } from './tutorStubFrozenReplay.js';
 import { normalizeTutorStubResponseConfiguration } from './tutorStubRegisterPragmatics.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2 } from './tutorStubResistanceSemanticAdjudicationV2.js';
+import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3 } from './tutorStubResistanceSemanticAdjudicationV3.js';
 import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3,
   isTutorStubResistanceSemanticObservation,
   loadTutorStubResistanceSemanticRegistration,
   tutorStubResistanceSemanticPublicContext,
@@ -20,9 +22,11 @@ import {
 
 function resistanceSemanticRegistrationBinding(observationSemantics) {
   const registrationPath =
-    observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2
-      ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2
-      : TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION;
+    observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3
+      ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3
+      : observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2
+        ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2
+        : TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION;
   return loadTutorStubResistanceSemanticRegistration(registrationPath);
 }
 
@@ -261,7 +265,7 @@ function normalizeRegistration(registration) {
   }
   const requiredObservationSemantics = isConfirmationSuccessorRegistration(registration)
     ? isV8Registration(registration)
-      ? TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2
+      ? TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3
       : isV7Registration(registration)
         ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7
         : isV6Registration(registration)
@@ -357,9 +361,9 @@ function normalizeRegistration(registration) {
     ];
     const expectedConfirmationPrerequisites = [
       'merged zero-call dual-independent semantic confirmation runtime/analyzer, endpoint contract, and endpoint certificate',
-      'a sealed passing independently authored 80-case blinded manipulation-v2 semantic validation report under its separate 480-reservation ceiling, with failed v1 validation evidence excluded',
+      'a sealed passing independently authored 80-case blinded manipulation-v3 semantic validation report under its separate 480-reservation ceiling, with failed v1 and v2 validation evidence excluded',
       'a sealed passing independently authored corrected-v2 120-case blinded complete-public-horizon recovery-and-fidelity semantic validation report under its separate 720-reservation ceiling',
-      'a human amendment raising the programme attempt safeguard from 5000 to at least 5147 without narrowing either validation or confirmation design',
+      'a human amendment raising the programme attempt safeguard from 5000 to at least 5307 without narrowing either validation or confirmation design',
       'a post-validation executable registration binding both sealed reports and actual observed validation accounting',
       'a clean pinned source and complete executable source closure',
       'nine absent create-once balanced batch destinations and one absent combined report',
@@ -396,14 +400,14 @@ function normalizeRegistration(registration) {
           block.warm !== 2,
       ) ||
       semantic?.instrumentRegistrationPath !==
-        'config/tutor-stub-resistance-semantic-adjudication-registration.v2.json' ||
-      semantic?.instrumentRegistrationSha256 !== '4cf2b38f3424960d983e2dd5e1a9938e0397e5038fa5f4c8d96bb5d8a78306be' ||
-      semantic?.instrumentFreezeCommit !== '30d184211e09371c6aff86abcbed4623b8e457f0' ||
+        'config/tutor-stub-resistance-semantic-adjudication-registration.v3.json' ||
+      semantic?.instrumentRegistrationSha256 !== '34fe9cf885293f14d037ac036c2c56f9d86f914707663afcc89f4acc938707e5' ||
+      semantic?.instrumentFreezeCommit !== 'a0e0b56d371e8313eeb98d99f22a1a5f880a0d67' ||
       semantic?.validationRegistrationPath !==
-        'config/tutor-stub-resistance-semantic-adjudication-validation-registration.v2.json' ||
-      semantic?.validationRegistrationSha256 !== '502d8abe4400532f73bff466acbb5a239f316fcc98d153d4eb66d56cba5036b2' ||
-      semantic?.heldoutCorpusPath !== 'config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v2.json' ||
-      semantic?.heldoutCorpusSha256 !== 'a52d10f60ceeeb9e1e92415c6add6d0dee4dbf69608053652ff9c23f08216535' ||
+        'config/tutor-stub-resistance-semantic-adjudication-validation-registration.v3.json' ||
+      semantic?.validationRegistrationSha256 !== '52db8e549d9f735f257f47f3e9d95060a3bcc5c86983abba9457d5b64311df90' ||
+      semantic?.heldoutCorpusPath !== 'config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v3.json' ||
+      semantic?.heldoutCorpusSha256 !== '687f931f2bc0beb80283859dec48a9393e2ccf0d08ee34c6d8e68e5758dcd8c2' ||
       JSON.stringify(semantic?.failedV1Validation) !==
         JSON.stringify({
           requestSha256: 'b6d9a41cc9fbdb2a3fc15f536e2a0b6e97a406986c9f88027e0765ab4bddb826',
@@ -413,6 +417,22 @@ function normalizeRegistration(registration) {
           invalidJudgments: 91,
           measurementIndeterminateCases: 78,
           programmeLedgerAfter: 491,
+          rescored: false,
+          normalized: false,
+          reused: false,
+          pooled: false,
+          outcomeSelected: false,
+        }) ||
+      JSON.stringify(semantic?.failedV2Validation) !==
+        JSON.stringify({
+          requestSha256: 'b91b6c92ec6b82b15b40821938929c3e2c31c86424822846a26443977cb479d6',
+          reportSha256: '11e868d18135e6df29230eab6f7912427917c0e0b55ea350f6cec4a2168fca11',
+          privateArchiveCommit: 'a98b58732ae2f0b68180e3bbb8d0357cf2e4adfa',
+          chargedReservations: 160,
+          returnedFirstAttempts: 160,
+          invalidJudgments: 52,
+          measurementIndeterminateCases: 57,
+          programmeLedgerAfter: 651,
           rescored: false,
           normalized: false,
           reused: false,
@@ -478,22 +498,22 @@ function normalizeRegistration(registration) {
       readiness?.combinedDialogues !== 36 ||
       readiness?.combinedPlannedRoleCalls !== 1152 ||
       readiness?.combinedMaximumModelAttemptReservations !== 3456 ||
-      readiness?.programmeLedgerAfterMaximum?.reservedAttempts !== 5147 ||
+      readiness?.programmeLedgerAfterMaximum?.reservedAttempts !== 5307 ||
       readiness?.programmeLedgerAfterMaximum?.ceiling !== 5000 ||
-      readiness?.programmeLedgerAfterMaximum?.remaining !== -147 ||
-      readiness?.stagedValidationBudget?.observedProgrammeLedgerBeforeValidation !== 491 ||
+      readiness?.programmeLedgerAfterMaximum?.remaining !== -307 ||
+      readiness?.stagedValidationBudget?.observedProgrammeLedgerBeforeValidation !== 651 ||
       readiness?.stagedValidationBudget?.manipulationValidationHardReservations !== 480 ||
-      readiness?.stagedValidationBudget?.maximumAfterManipulationValidation !== 971 ||
+      readiness?.stagedValidationBudget?.maximumAfterManipulationValidation !== 1131 ||
       readiness?.stagedValidationBudget?.outcomeValidationHardReservations !== 720 ||
-      readiness?.stagedValidationBudget?.maximumAfterBothValidations !== 1691 ||
+      readiness?.stagedValidationBudget?.maximumAfterBothValidations !== 1851 ||
       readiness?.stagedValidationBudget?.programmeCeiling !== 5000 ||
       readiness?.stagedValidationBudget?.operationalSafeguardNotDesignObjective !== true ||
-      registration.authorization?.programmeLedgerBeforeThisConfirmation?.reservedAttempts !== 1691 ||
+      registration.authorization?.programmeLedgerBeforeThisConfirmation?.reservedAttempts !== 1851 ||
       registration.authorization?.programmeLedgerBeforeThisConfirmation?.ceiling !== 5000 ||
-      registration.authorization?.programmeLedgerBeforeThisConfirmation?.remaining !== 3309 ||
+      registration.authorization?.programmeLedgerBeforeThisConfirmation?.remaining !== 3149 ||
       registration.authorization?.requiredCeilingAmendment?.from !== 5000 ||
-      registration.authorization?.requiredCeilingAmendment?.to !== 5147 ||
-      registration.authorization?.requiredCeilingAmendment?.increase !== 147 ||
+      registration.authorization?.requiredCeilingAmendment?.to !== 5307 ||
+      registration.authorization?.requiredCeilingAmendment?.increase !== 307 ||
       registration.authorization?.requiredCeilingAmendment?.authorized !== false ||
       registration.authorization?.programmeLedgerBeforeThisConfirmation?.role !==
         'prospective_maximum_after_both_validations_not_observed_consumption' ||

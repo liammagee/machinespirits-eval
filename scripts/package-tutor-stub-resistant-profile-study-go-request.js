@@ -28,6 +28,8 @@ const SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR_V7 =
 const SUPPORTED_RESISTANCE_SEMANTIC_VALIDATION = 'prospective_resistance_semantic_adjudication_heldout_validation_v1';
 const SUPPORTED_RESISTANCE_SEMANTIC_VALIDATION_V2 =
   'prospective_resistance_semantic_adjudication_heldout_validation_v2';
+const SUPPORTED_RESISTANCE_SEMANTIC_VALIDATION_V3 =
+  'prospective_resistance_semantic_adjudication_heldout_validation_v3';
 const SUPPORTED_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION =
   'prospective_resistance_recovery_semantic_adjudication_heldout_validation_v1';
 const SUPPORTED_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_V2 =
@@ -37,6 +39,7 @@ function isSupportedResistanceSemanticValidation(value) {
   return [
     SUPPORTED_RESISTANCE_SEMANTIC_VALIDATION,
     SUPPORTED_RESISTANCE_SEMANTIC_VALIDATION_V2,
+    SUPPORTED_RESISTANCE_SEMANTIC_VALIDATION_V3,
     SUPPORTED_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION,
     SUPPORTED_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_V2,
   ].includes(value);
