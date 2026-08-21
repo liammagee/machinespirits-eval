@@ -1,0 +1,555 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import test from 'node:test';
+
+import { buildTutorStubResistanceSemanticZeroCallFixtureResponse } from '../services/tutorStubResistanceSemanticAdjudication.js';
+import {
+  loadTutorStubResistanceSemanticValidation,
+  tutorStubResistanceSemanticOpaqueCaseId,
+} from '../services/tutorStubResistanceSemanticValidation.js';
+import {
+  analyzeTutorStubResistanceSemanticValidation,
+  runTutorStubResistanceSemanticValidation,
+  writeTutorStubResistanceSemanticValidationReport,
+} from '../services/tutorStubResistanceSemanticValidationRuntime.js';
+
+const SOURCE_COMMIT = '1'.repeat(40);
+const SOURCE_TREE = '2'.repeat(40);
+const GO_REQUEST_PATH = 'config/future-semantic-validation-go-request.json';
+const GO_REQUEST_SHA256 = 'a'.repeat(64);
+
+function fixtureCaller(calls) {
+  const loaded = loadTutorStubResistanceSemanticValidation();
+  return async (agentConfig, systemPrompt, userPrompt, role, options) => {
+    const prompt = JSON.parse(userPrompt);
+    const corpusCase = loaded.corpus.cases.find(
+      (row) => tutorStubResistanceSemanticOpaqueCaseId(row) === prompt.case_id,
+    );
+    const judge = loaded.instrument.registration.measurement.judges.find(
+      (row) => role === `tutor_stub_resistance_semantic_${row.id}`,
+    );
+    assert.ok(corpusCase);
+    assert.ok(judge);
+    assert.equal(agentConfig.provider, judge.provider);
+    assert.equal(agentConfig.model, judge.model);
+    assert.equal(options.effort, 'low');
+    assert.ok(!userPrompt.includes(corpusCase.case_id));
+    const fixture = buildTutorStubResistanceSemanticZeroCallFixtureResponse({
+      corpusCase: { ...corpusCase, case_id: prompt.case_id },
+      judge,
+    });
+    calls.push({ caseId: prompt.case_id, judgeId: judge.id });
+    return {
+      text: JSON.stringify(fixture.modelOutput),
+      provider: judge.provider,
+      model: judge.model,
+      effort: judge.effort,
+      structuredOutput: true,
+      prohibitedToolEventCount: 0,
+      modelAttestationBasis: judge.modelAttestationBasis,
+      modelIndependentlyAttested: false,
+    };
+  };
+}
+
+function analyze(destination) {
+  const archiveDir = path.join(path.dirname(destination), 'private-archive');
+  return analyzeTutorStubResistanceSemanticValidation({
+    destination,
+    expectedSourceCommit: SOURCE_COMMIT,
+    expectedSourceTree: SOURCE_TREE,
+    expectedGoRequestPath: GO_REQUEST_PATH,
+    expectedGoRequestSha256: GO_REQUEST_SHA256,
+    sourceDirty: false,
+    archiveDir,
+  });
+}
+
+function findArchiveManifest(root) {
+  const matches = [];
+  const visit = (directory) => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const target = path.join(directory, entry.name);
+      if (entry.isDirectory()) visit(target);
+      else if (entry.name === 'archive-manifest.json') matches.push(target);
+    }
+  };
+  visit(root);
+  assert.equal(matches.length, 1);
+  return matches[0];
+}
+
+function run(destination, options = {}) {
+  const loaded = loadTutorStubResistanceSemanticValidation();
+  const archiveDir = path.join(path.dirname(destination), 'private-archive');
+  fs.mkdirSync(archiveDir, { recursive: true });
+  return runTutorStubResistanceSemanticValidation({
+    destination,
+    sourceCommit: SOURCE_COMMIT,
+    sourceTree: SOURCE_TREE,
+    goRequestPath: GO_REQUEST_PATH,
+    goRequestSha256: GO_REQUEST_SHA256,
+    sourceDirty: false,
+    archiveDir,
+    waitForRetry: async () => {},
+    resolveModelRef: (modelRef) => {
+      const judge = loaded.instrument.registration.measurement.judges.find((row) => row.modelRef === modelRef);
+      return { provider: judge.provider, model: judge.model };
+    },
+    ...options,
+  });
+}
+
+test('checkpointed validation executes 80 opaque cases, seals 160 responses, and joins gold only in analysis', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const calls = [];
+  const { seal } = await run(destination, { callModel: fixtureCaller(calls) });
+  assert.equal(calls.length, 160);
+  assert.equal(seal.cases, 80);
+  assert.equal(seal.judge_results, 160);
+  assert.equal(seal.reservations, 160);
+  const executionBytes = [
+    fs.readFileSync(path.join(destination, 'plan.json'), 'utf8'),
+    ...fs
+      .readdirSync(path.join(destination, 'cases'))
+      .map((caseId) => fs.readFileSync(path.join(destination, 'cases', caseId, 'checkpoint.json'), 'utf8')),
+  ].join('\n');
+  const loaded = loadTutorStubResistanceSemanticValidation();
+  assert.ok(!executionBytes.includes('"expected"'));
+  for (const corpusCase of loaded.corpus.cases) assert.ok(!executionBytes.includes(corpusCase.case_id));
+  const report = writeTutorStubResistanceSemanticValidationReport({
+    destination,
+    expectedSourceCommit: SOURCE_COMMIT,
+    expectedSourceTree: SOURCE_TREE,
+    expectedGoRequestPath: GO_REQUEST_PATH,
+    expectedGoRequestSha256: GO_REQUEST_SHA256,
+    sourceDirty: false,
+    archiveDir: path.join(path.dirname(destination), 'private-archive'),
+  });
+  assert.equal(report.status, 'passed');
+  assert.equal(report.cases.length, 80);
+  assert.ok(report.cases.every((row) => row.case_id && row.execution_case_id.startsWith('sv-')));
+  assert.throws(() => analyze(destination), /file set is not exact|analysis already exists/u);
+  const resumedCalls = [];
+  const resumed = await run(destination, { resume: true, callModel: fixtureCaller(resumedCalls) });
+  assert.equal(resumedCalls.length, 0);
+  assert.deepEqual(resumed.seal, seal);
+  const reconciledReport = writeTutorStubResistanceSemanticValidationReport({
+    destination,
+    expectedSourceCommit: SOURCE_COMMIT,
+    expectedSourceTree: SOURCE_TREE,
+    expectedGoRequestPath: GO_REQUEST_PATH,
+    expectedGoRequestSha256: GO_REQUEST_SHA256,
+    sourceDirty: false,
+    archiveDir: path.join(path.dirname(destination), 'private-archive'),
+  });
+  assert.deepEqual(reconciledReport, report);
+});
+
+test('resume after one preserved response calls only the never-started second judge', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-partial-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const firstCalls = [];
+  await assert.rejects(
+    run(destination, {
+      callModel: fixtureCaller(firstCalls),
+      afterJudgeCheckpoint: async () => {
+        throw new Error('simulated coordinator crash after preserved response');
+      },
+    }),
+    /simulated coordinator crash/u,
+  );
+  assert.equal(firstCalls.length, 1);
+  const preservedCaseId = firstCalls[0].caseId;
+  const resumedCalls = [];
+  const { seal } = await run(destination, {
+    resume: true,
+    callModel: fixtureCaller(resumedCalls),
+  });
+  assert.equal(resumedCalls.filter((row) => row.caseId === preservedCaseId).length, 1);
+  assert.notEqual(resumedCalls.find((row) => row.caseId === preservedCaseId).judgeId, firstCalls[0].judgeId);
+  assert.equal(resumedCalls.length, 159);
+  assert.equal(seal.judge_results, 160);
+  assert.equal(seal.reservations, 160);
+  const report = analyze(destination);
+  assert.equal(report.status, 'passed');
+  const partial = report.cases.find((row) => row.execution_case_id === preservedCaseId);
+  assert.equal(partial.status, 'determinate');
+  assert.equal(partial.judge_results, 2);
+});
+
+test('resume authenticates the complete durable archive before any additional judge call', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-resume-archive-auth-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const firstCalls = [];
+  await assert.rejects(
+    run(destination, {
+      callModel: fixtureCaller(firstCalls),
+      afterJudgeCheckpoint: () => {
+        throw new Error('synthetic interruption after first durable response');
+      },
+    }),
+    /synthetic interruption/u,
+  );
+  assert.equal(firstCalls.length, 1);
+  const manifestFile = findArchiveManifest(path.join(temporary, 'private-archive'));
+  const original = fs.readFileSync(manifestFile, 'utf8');
+  const driftedBinding = JSON.parse(original);
+  driftedBinding.source.commit = 'f'.repeat(40);
+  fs.writeFileSync(manifestFile, `${JSON.stringify(driftedBinding, null, 2)}\n`);
+  const resumedCalls = [];
+  await assert.rejects(
+    run(destination, { resume: true, callModel: fixtureCaller(resumedCalls) }),
+    /archive.*binding drifted/u,
+  );
+  assert.equal(resumedCalls.length, 0);
+
+  const missingPrior = JSON.parse(original);
+  const priorIndex = missingPrior.entries.findIndex((entry) => entry.stage === 'checkpoint_initialized');
+  assert.ok(priorIndex >= 0);
+  missingPrior.entries.splice(priorIndex, 1);
+  missingPrior.entries.forEach((entry, index) => {
+    entry.sequence = index + 1;
+  });
+  fs.writeFileSync(manifestFile, `${JSON.stringify(missingPrior, null, 2)}\n`);
+  await assert.rejects(
+    run(destination, { resume: true, callModel: fixtureCaller(resumedCalls) }),
+    /noncurrent orphan transition|entry inventory drifted/u,
+  );
+  assert.equal(resumedCalls.length, 0);
+});
+
+test('resume after a prepared but undispatched attempt may fill the case without selecting outcomes', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-zero-response-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const firstCalls = [];
+  await assert.rejects(
+    run(destination, {
+      callModel: fixtureCaller(firstCalls),
+      afterPreparedCheckpoint: async () => {
+        throw new Error('simulated crash before dispatch');
+      },
+    }),
+    /simulated crash before dispatch/u,
+  );
+  assert.equal(firstCalls.length, 0);
+  const resumedCalls = [];
+  const { seal } = await run(destination, { resume: true, callModel: fixtureCaller(resumedCalls) });
+  assert.equal(resumedCalls.length, 160);
+  assert.equal(seal.judge_results, 160);
+  assert.equal(seal.reservations, 160);
+  assert.equal(analyze(destination).status, 'passed');
+});
+
+test('resume dispatches an already prepared third attempt without creating a fourth reservation', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-third-prepared-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const successfulCalls = [];
+  const fixture = fixtureCaller(successfulCalls);
+  let dispatches = 0;
+  let prepared = 0;
+  const flaky = async (...args) => {
+    dispatches += 1;
+    if (dispatches <= 2) {
+      const error = new Error('synthetic transient transport failure');
+      error.code = 'CLI_PROVIDER_TURN_FAILED';
+      error.provider = 'codex';
+      throw error;
+    }
+    return fixture(...args);
+  };
+  await assert.rejects(
+    run(destination, {
+      callModel: flaky,
+      afterPreparedCheckpoint: () => {
+        prepared += 1;
+        if (prepared === 3) throw new Error('synthetic crash after third preparation');
+      },
+    }),
+    /synthetic crash after third preparation/u,
+  );
+  assert.equal(dispatches, 2);
+  const { seal } = await run(destination, { resume: true, callModel: flaky });
+  assert.equal(dispatches, 162);
+  assert.equal(seal.reservations, 162);
+  assert.equal(seal.judge_results, 160);
+  assert.equal(analyze(destination).status, 'passed');
+});
+
+test('resume reconciles a byte-identical durable-archive orphan without recalling a judge', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-archive-orphan-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  let interrupted = false;
+  await assert.rejects(
+    run(destination, {
+      callModel: fixtureCaller([]),
+      afterArchiveEntryWrite: ({ stage }) => {
+        if (stage === 'checkpoint_prepared' && !interrupted) {
+          interrupted = true;
+          throw new Error('simulated archive entry to manifest crash');
+        }
+      },
+    }),
+    /simulated archive entry to manifest crash/u,
+  );
+  const resumedCalls = [];
+  const { seal } = await run(destination, { resume: true, callModel: fixtureCaller(resumedCalls) });
+  assert.equal(resumedCalls.length, 160);
+  assert.equal(seal.reservations, 160);
+  assert.equal(analyze(destination).status, 'passed');
+});
+
+test('resume reconciles a local prepared checkpoint before dispatching it once', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-local-prepared-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  let interrupted = false;
+  await assert.rejects(
+    run(destination, {
+      callModel: fixtureCaller([]),
+      afterLocalCheckpointWrite: ({ stage }) => {
+        if (stage === 'checkpoint_prepared' && !interrupted) {
+          interrupted = true;
+          throw new Error('simulated local prepared to archive crash');
+        }
+      },
+    }),
+    /simulated local prepared to archive crash/u,
+  );
+  const resumedCalls = [];
+  const { seal } = await run(destination, { resume: true, callModel: fixtureCaller(resumedCalls) });
+  assert.equal(resumedCalls.length, 160);
+  assert.equal(seal.reservations, 160);
+  assert.equal(analyze(destination).status, 'passed');
+});
+
+test('resume reconciles a local dispatched checkpoint without recalling the ambiguous judge', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-local-dispatched-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  let interrupted = false;
+  await assert.rejects(
+    run(destination, {
+      callModel: fixtureCaller([]),
+      afterLocalCheckpointWrite: ({ stage }) => {
+        if (stage === 'checkpoint_dispatched' && !interrupted) {
+          interrupted = true;
+          throw new Error('simulated local dispatched to archive crash');
+        }
+      },
+    }),
+    /simulated local dispatched to archive crash/u,
+  );
+  const resumedCalls = [];
+  const { seal } = await run(destination, { resume: true, callModel: fixtureCaller(resumedCalls) });
+  assert.equal(resumedCalls.length, 158);
+  assert.equal(seal.judge_results, 159);
+  assert.equal(analyze(destination).status, 'failed');
+});
+
+test('resume after a dispatched attempt with no checkpointed response never recalls the ambiguous judge', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-dispatched-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const firstCalls = [];
+  await assert.rejects(
+    run(destination, {
+      callModel: fixtureCaller(firstCalls),
+      afterDispatchCheckpoint: async () => {
+        throw new Error('simulated ambiguous crash after dispatch');
+      },
+    }),
+    /simulated ambiguous crash/u,
+  );
+  assert.equal(firstCalls.length, 0);
+  const resumedCalls = [];
+  const { seal } = await run(destination, { resume: true, callModel: fixtureCaller(resumedCalls) });
+  assert.equal(resumedCalls.length, 158);
+  assert.equal(seal.judge_results, 159);
+  assert.equal(seal.reservations, 159);
+  const report = analyze(destination);
+  assert.equal(report.status, 'failed');
+  const ambiguous = report.cases.find((row) => row.reservations === 1 && row.judge_results === 1);
+  assert.equal(ambiguous.status, 'measurement_indeterminate');
+});
+
+test('resume after Judge A and an ambiguous Judge B dispatch never recalls either judge', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-second-dispatched-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const loaded = loadTutorStubResistanceSemanticValidation();
+  const secondJudgeId = loaded.instrument.registration.measurement.judges[1].id;
+  const firstCalls = [];
+  await assert.rejects(
+    run(destination, {
+      callModel: fixtureCaller(firstCalls),
+      afterDispatchCheckpoint: ({ judgeId }) => {
+        if (judgeId === secondJudgeId) throw new Error('simulated ambiguous second-judge dispatch');
+      },
+    }),
+    /simulated ambiguous second-judge dispatch/u,
+  );
+  assert.equal(firstCalls.length, 1);
+  const preservedCaseId = firstCalls[0].caseId;
+  const resumedCalls = [];
+  const { seal } = await run(destination, { resume: true, callModel: fixtureCaller(resumedCalls) });
+  assert.equal(resumedCalls.filter((row) => row.caseId === preservedCaseId).length, 0);
+  assert.equal(resumedCalls.length, 158);
+  assert.equal(seal.judge_results, 160);
+  assert.equal(seal.reservations, 160);
+  const report = analyze(destination);
+  assert.equal(report.status, 'failed');
+  const ambiguous = report.cases.find((row) => row.execution_case_id === preservedCaseId);
+  assert.equal(ambiguous.status, 'measurement_indeterminate');
+  assert.equal(ambiguous.judge_results, 2);
+});
+
+test('seal publication reconciles local-only and entry-only crash boundaries without model recall', async (t) => {
+  for (const crashStage of ['local', 'archive']) {
+    const temporary = fs.mkdtempSync(path.join(os.tmpdir(), `semantic-validation-seal-${crashStage}-`));
+    const destination = path.join(temporary, 'run');
+    t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+    const calls = [];
+    let interrupted = false;
+    await assert.rejects(
+      run(destination, {
+        callModel: fixtureCaller(calls),
+        afterSealLocalWrite:
+          crashStage === 'local'
+            ? () => {
+                throw new Error('simulated seal local to archive crash');
+              }
+            : null,
+        afterArchiveEntryWrite:
+          crashStage === 'archive'
+            ? ({ stage }) => {
+                if (stage === 'seal' && !interrupted) {
+                  interrupted = true;
+                  throw new Error('simulated seal entry to manifest crash');
+                }
+              }
+            : null,
+      }),
+      /simulated seal/u,
+    );
+    assert.equal(calls.length, 160);
+    const resumedCalls = [];
+    const { seal } = await run(destination, { resume: true, callModel: fixtureCaller(resumedCalls) });
+    assert.equal(resumedCalls.length, 0);
+    assert.equal(seal.judge_results, 160);
+    assert.equal(analyze(destination).status, 'passed');
+  }
+});
+
+test('report publication reconciles local-only and entry-only crash boundaries without recomputation drift', async (t) => {
+  for (const crashStage of ['local', 'archive']) {
+    const temporary = fs.mkdtempSync(path.join(os.tmpdir(), `semantic-validation-report-${crashStage}-`));
+    const destination = path.join(temporary, 'run');
+    t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+    await run(destination, { callModel: fixtureCaller([]) });
+    let interrupted = false;
+    const reportOptions = {
+      destination,
+      expectedSourceCommit: SOURCE_COMMIT,
+      expectedSourceTree: SOURCE_TREE,
+      expectedGoRequestPath: GO_REQUEST_PATH,
+      expectedGoRequestSha256: GO_REQUEST_SHA256,
+      sourceDirty: false,
+      archiveDir: path.join(path.dirname(destination), 'private-archive'),
+    };
+    assert.throws(
+      () =>
+        writeTutorStubResistanceSemanticValidationReport({
+          ...reportOptions,
+          afterReportLocalWrite:
+            crashStage === 'local'
+              ? () => {
+                  throw new Error('simulated report local to archive crash');
+                }
+              : null,
+          afterArchiveEntryWrite:
+            crashStage === 'archive'
+              ? ({ stage }) => {
+                  if (stage === 'report' && !interrupted) {
+                    interrupted = true;
+                    throw new Error('simulated report entry to manifest crash');
+                  }
+                }
+              : null,
+        }),
+      /simulated report/u,
+    );
+    const before = fs.readFileSync(path.join(destination, 'report.json'));
+    const report = writeTutorStubResistanceSemanticValidationReport(reportOptions);
+    assert.equal(report.status, 'passed');
+    assert.ok(fs.readFileSync(path.join(destination, 'report.json')).equals(before));
+  }
+});
+
+test('analysis requires the external source binding and rejects alternate case artifacts', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-tamper-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  await run(destination, { callModel: fixtureCaller([]) });
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceSemanticValidation({
+        destination,
+        expectedSourceCommit: '3'.repeat(40),
+        expectedSourceTree: SOURCE_TREE,
+        expectedGoRequestPath: GO_REQUEST_PATH,
+        expectedGoRequestSha256: GO_REQUEST_SHA256,
+        sourceDirty: false,
+      }),
+    /plan does not match/u,
+  );
+  assert.throws(
+    () =>
+      analyzeTutorStubResistanceSemanticValidation({
+        destination,
+        expectedSourceCommit: SOURCE_COMMIT,
+        expectedSourceTree: SOURCE_TREE,
+        expectedGoRequestPath: GO_REQUEST_PATH,
+        expectedGoRequestSha256: GO_REQUEST_SHA256,
+        sourceDirty: true,
+        archiveDir: path.join(path.dirname(destination), 'private-archive'),
+      }),
+    /clean source tree/u,
+  );
+  const caseId = fs.readdirSync(path.join(destination, 'cases'))[0];
+  fs.writeFileSync(path.join(destination, 'cases', caseId, 'alternate.json'), '{}\n');
+  assert.throws(() => analyze(destination), /file set is not exact/u);
+});
+
+test('archive verification rejects manifest topology drift and local/archive final-artifact splits', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-archive-integrity-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  await run(destination, { callModel: fixtureCaller([]) });
+  const manifestFile = findArchiveManifest(path.join(temporary, 'private-archive'));
+  const original = fs.readFileSync(manifestFile, 'utf8');
+  const manifest = JSON.parse(original);
+  manifest.entries[0].logical_path = 'changed-plan.json';
+  fs.writeFileSync(manifestFile, `${JSON.stringify(manifest, null, 2)}\n`);
+  assert.throws(() => analyze(destination), /archive.*topology|durable archive invalid/u);
+
+  fs.writeFileSync(manifestFile, original);
+  const withoutFinal = JSON.parse(original);
+  const finalIndex = withoutFinal.entries.findIndex((entry) => entry.stage === 'checkpoint_sealed');
+  assert.ok(finalIndex >= 0);
+  withoutFinal.entries.splice(finalIndex, 1);
+  withoutFinal.entries.forEach((entry, index) => {
+    entry.sequence = index + 1;
+  });
+  fs.writeFileSync(manifestFile, `${JSON.stringify(withoutFinal, null, 2)}\n`);
+  assert.throws(() => analyze(destination), /local final artifact|transition inventory/u);
+});

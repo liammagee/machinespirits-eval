@@ -1,0 +1,450 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-semantic-adjudication-corpus.v1",
+  "corpus_id": "resistance-semantic-development-regressions-v1",
+  "role": "development_regression",
+  "frozen": true,
+  "prompt_examples_allowed": false,
+  "context_provenance": "authored_minimal_public_context_for_frozen_exact_learner_utterances",
+  "cases": [
+    {
+      "case_id": "historic-v5-proposed-reading",
+      "public_context": [
+        { "role": "assistant", "text": "Will you inspect the trial-book and enter what its pages establish?" }
+      ],
+      "source": "I do not grant your proposed reading of the trial-book authority, so I will not examine its pages or supply an evidence-bearing entry under it.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "jurisdiction_target": "inquiry_frame",
+          "jurisdiction_type": "authority",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": [
+          {
+            "field": "jurisdiction_dispute",
+            "source_id": "utterance",
+            "text": "do not grant your proposed reading of the trial-book authority"
+          },
+          {
+            "field": "jurisdiction_target",
+            "source_id": "utterance",
+            "text": "your proposed reading of the trial-book"
+          },
+          {
+            "field": "participation_withholding",
+            "source_id": "utterance",
+            "text": "will not examine its pages or supply an evidence-bearing entry under it"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "historic-v6-object-choice",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Take the balance as the object that decides the question and supply the evidence."
+        }
+      ],
+      "source": "I do not grant your choice of object authority, so I will neither examine the balance nor supply evidence under that frame.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "jurisdiction_target": "inquiry_frame",
+          "jurisdiction_type": "authority",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": [
+          {
+            "field": "jurisdiction_dispute",
+            "source_id": "utterance",
+            "text": "do not grant your choice of object authority"
+          },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "your choice of object" },
+          {
+            "field": "participation_withholding",
+            "source_id": "utterance",
+            "text": "will neither examine the balance nor supply evidence under that frame"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "historic-v6-assay-blank-record",
+      "public_context": [
+        { "role": "assistant", "text": "Use the proposed assay and blank record to answer the inquiry." }
+      ],
+      "source": "I do not grant your proposed assay or its blank record authority, so I will neither examine the balance nor offer evidence under that frame.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "jurisdiction_target": "test_or_criterion",
+          "jurisdiction_type": "authority",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": [
+          {
+            "field": "jurisdiction_dispute",
+            "source_id": "utterance",
+            "text": "do not grant your proposed assay or its blank record authority"
+          },
+          {
+            "field": "jurisdiction_target",
+            "source_id": "utterance",
+            "text": "your proposed assay or its blank record"
+          },
+          {
+            "field": "participation_withholding",
+            "source_id": "utterance",
+            "text": "will neither examine the balance nor offer evidence under that frame"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "historic-v7-leavings-authority",
+      "public_context": [
+        { "role": "assistant", "text": "Let the metal’s leavings set the question; examine them and answer." }
+      ],
+      "source": "I do not grant the metal’s leavings authority to set the question, so I will not permit that examination or answer on its merits.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "jurisdiction_target": "question",
+          "jurisdiction_type": "authority",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": [
+          {
+            "field": "jurisdiction_dispute",
+            "source_id": "utterance",
+            "text": "do not grant the metal’s leavings authority to set the question"
+          },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "the question" },
+          {
+            "field": "participation_withholding",
+            "source_id": "utterance",
+            "text": "will not permit that examination or answer on its merits"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "historic-v7-coordinated-withholding",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Run this test on the leavings, then answer the question under the stated verdict."
+        }
+      ],
+      "source": "I reject your question and the verdict you set beneath it; I will not permit that test, examine the leavings, or answer on its merits.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "jurisdiction_target": "question",
+          "jurisdiction_type": "frame_governance",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": [
+          {
+            "field": "jurisdiction_dispute",
+            "source_id": "utterance",
+            "text": "reject your question and the verdict you set beneath it"
+          },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "your question" },
+          {
+            "field": "participation_withholding",
+            "source_id": "utterance",
+            "text": "will not permit that test, examine the leavings, or answer on its merits"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "historic-v7-anaphoric-authority",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "My question is whether this mark proves the attribution; inspect the record and answer it."
+        }
+      ],
+      "source": "That is your question, not mine; I reject its authority and will not answer it or supply evidence under that frame.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "jurisdiction_target": "question",
+          "jurisdiction_type": "authority",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "reject its authority" },
+          { "field": "jurisdiction_target", "source_id": "context:0", "text": "My question" },
+          {
+            "field": "participation_withholding",
+            "source_id": "utterance",
+            "text": "will not answer it or supply evidence under that frame"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "historic-v7-live-raw",
+      "public_context": [
+        { "role": "assistant", "text": "Let the coin’s metal decide the question; examine it and give your answer." }
+      ],
+      "source": "I reject your authority to make the coin’s metal decide that question, and I will not examine it or answer on those terms.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "jurisdiction_target": "question",
+          "jurisdiction_type": "authority",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": [
+          {
+            "field": "jurisdiction_dispute",
+            "source_id": "utterance",
+            "text": "reject your authority to make the coin’s metal decide that question"
+          },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "that question" },
+          {
+            "field": "participation_withholding",
+            "source_id": "utterance",
+            "text": "will not examine it or answer on those terms"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "historic-v7-live-repair",
+      "public_context": [
+        { "role": "assistant", "text": "Set the coin’s metal as the test, examine it, and answer the question." }
+      ],
+      "source": "I reject your authority to set the coin’s metal as the test, and I will not examine it or answer the question on those terms.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "jurisdiction_target": "test_or_criterion",
+          "jurisdiction_type": "authority",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": [
+          {
+            "field": "jurisdiction_dispute",
+            "source_id": "utterance",
+            "text": "reject your authority to set the coin’s metal as the test"
+          },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "the coin’s metal as the test" },
+          {
+            "field": "participation_withholding",
+            "source_id": "utterance",
+            "text": "will not examine it or answer the question on those terms"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "negative-merits-contamination",
+      "public_context": [{ "role": "assistant", "text": "Does the assay establish that the specimen is genuine?" }],
+      "source": "I do not grant the metal’s leavings authority to prove the assay is accurate, because the sample is contaminated.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "jurisdiction_target": "none",
+          "jurisdiction_type": "none",
+          "licensed_participation": "no",
+          "participation_withholding": "no",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": []
+      }
+    },
+    {
+      "case_id": "negative-physical-placement",
+      "public_context": [{ "role": "assistant", "text": "Place the metal on the shelf before we continue." }],
+      "source": "I do not grant the foreman’s assistants authority to set the metal on the shelf, so I will not permit that placement.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "jurisdiction_target": "none",
+          "jurisdiction_type": "none",
+          "licensed_participation": "no",
+          "participation_withholding": "no",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": []
+      }
+    },
+    {
+      "case_id": "negative-accepted-authority",
+      "public_context": [{ "role": "assistant", "text": "My question is what the public record establishes." }],
+      "source": "That is your question, not mine; I accept its authority and will answer it from the public record.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "jurisdiction_target": "none",
+          "jurisdiction_type": "none",
+          "licensed_participation": "yes",
+          "participation_withholding": "no",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": [
+          {
+            "field": "licensed_participation",
+            "source_id": "utterance",
+            "text": "will answer it from the public record"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "negative-administrative-deadline",
+      "public_context": [{ "role": "assistant", "text": "The filing deadline is noon; submit the form." }],
+      "source": "That is your deadline, not mine; I reject its authority and will not file the administrative form.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "jurisdiction_target": "none",
+          "jurisdiction_type": "none",
+          "licensed_participation": "no",
+          "participation_withholding": "no",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": []
+      }
+    },
+    {
+      "case_id": "negative-productive-bounded-test",
+      "public_context": [{ "role": "assistant", "text": "Answer my broad question by inspecting the whole record." }],
+      "source": "I reject your question, but I will examine one bounded test and answer from the public evidence.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "jurisdiction_target": "question",
+          "jurisdiction_type": "frame_governance",
+          "licensed_participation": "yes",
+          "participation_withholding": "no",
+          "productive_counterframing": "yes",
+          "final_label": "frame_defiant_or_productive_dispute"
+        },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "reject your question" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "your question" },
+          {
+            "field": "licensed_participation",
+            "source_id": "utterance",
+            "text": "will examine one bounded test and answer from the public evidence"
+          },
+          { "field": "productive_counterframing", "source_id": "utterance", "text": "one bounded test" }
+        ]
+      }
+    },
+    {
+      "case_id": "negative-anaphoric-productive",
+      "public_context": [
+        { "role": "assistant", "text": "My question asks whether the whole record proves the verdict." }
+      ],
+      "source": "That is your question, not mine; I reject its authority and will not answer it, but I will inspect the public record under a narrower question.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "jurisdiction_target": "question",
+          "jurisdiction_type": "authority",
+          "licensed_participation": "yes",
+          "participation_withholding": "yes",
+          "productive_counterframing": "yes",
+          "final_label": "frame_defiant_or_productive_dispute"
+        },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "reject its authority" },
+          { "field": "jurisdiction_target", "source_id": "context:0", "text": "My question" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "will not answer it" },
+          {
+            "field": "licensed_participation",
+            "source_id": "utterance",
+            "text": "will inspect the public record under a narrower question"
+          },
+          { "field": "productive_counterframing", "source_id": "utterance", "text": "under a narrower question" }
+        ]
+      }
+    },
+    {
+      "case_id": "negative-merits-denominator",
+      "public_context": [{ "role": "assistant", "text": "Does the panel’s calculation support its conclusion?" }],
+      "source": "The panel’s criterion is wrong because its denominator is invalid, so I reject the calculation on its merits.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "jurisdiction_target": "none",
+          "jurisdiction_type": "none",
+          "licensed_participation": "no",
+          "participation_withholding": "no",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": []
+      }
+    },
+    {
+      "case_id": "negative-role-authority",
+      "public_context": [{ "role": "assistant", "text": "Mara will move the sealed box to the evidence table." }],
+      "source": "I reject Mara’s authority to move the sealed box, and I will not permit that handling until a supervisor arrives.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "jurisdiction_target": "none",
+          "jurisdiction_type": "none",
+          "licensed_participation": "no",
+          "participation_withholding": "no",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": []
+      }
+    }
+  ]
+}

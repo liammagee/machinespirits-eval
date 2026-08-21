@@ -90,11 +90,35 @@ export function classifyTutorStubResistanceActionRegisterConfirmationChildFailur
     };
   }
   if (!Array.isArray(events)) throw new Error('confirmation child failure classification requires trace events');
+  const semanticRun = events.some(
+    (event) =>
+      event.type === 'run_start' &&
+      event.metadata?.autoLearner?.observationSemantics === 'prospective_frame_resistance_semantic_v1',
+  );
+  const semanticJudgeRows = events.filter((event) => event.type === 'resistance_semantic_judge_result');
+  const semanticAggregateRows = events.filter((event) => event.type === 'resistance_semantic_adjudication');
+  const semanticCandidateGenerated = events.some(
+    (event) => event.type === 'model_call' && event.role === 'tutor_stub_auto_learner',
+  );
   if (events.some((event) => event.type === 'resistance_action_register_outcome_learner_turn')) {
     return {
       category: 'completed_output_nonrecoverable',
       code: 'TUTOR_STUB_CONFIRMATION_TERMINAL_OUTCOME_ALREADY_RECORDED',
       disposition: 'manual_validity_review_required_no_rerun',
+      recoverable: false,
+    };
+  }
+  if (
+    semanticRun &&
+    (events.some((event) => event.type === 'auto_learner_profile_measurement_indeterminate') ||
+      semanticAggregateRows.some((event) => event.aggregate?.status === 'measurement_indeterminate') ||
+      semanticJudgeRows.length > semanticAggregateRows.length * 2 ||
+      semanticCandidateGenerated)
+  ) {
+    return {
+      category: 'measurement_indeterminate_nonrecoverable',
+      code: 'TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE',
+      disposition: 'stop_no_judge_or_unit_rerun_replacement_or_selection',
       recoverable: false,
     };
   }

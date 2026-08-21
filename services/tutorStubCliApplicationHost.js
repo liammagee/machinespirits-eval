@@ -295,6 +295,7 @@ import { createTutorStubPublicPresentationRuntime } from './tutorStubPublicPrese
 import { createTutorStubDebugReportRuntime } from './tutorStubDebugReportRuntime.js';
 import { createTutorStubLaunchSummaryPresentation } from './tutorStubLaunchSummaryPresentation.js';
 import { createTutorStubAutomatedLearnerGenerationRuntime } from './tutorStubAutomatedLearnerGenerationRuntime.js';
+import { createLazyTutorStubResistanceSemanticAdjudicator } from './tutorStubResistanceSemanticRuntime.js';
 import { createTutorStubTypedActionPlanningRuntime } from './tutorStubTypedActionPlanningRuntime.js';
 import { createTutorStubClarificationTranslationRuntime } from './tutorStubClarificationTranslationRuntime.js';
 import { createTutorStubOpeningRuntime } from './tutorStubOpeningRuntime.js';
@@ -1140,7 +1141,6 @@ export async function runTutorStubCliApplicationHost({
     worldFlavourPhrase,
     worldLedgerTerm,
   });
-
   const {
     generateTutorClarification,
     generateTutorStubCurriculumTranslation,
@@ -1160,7 +1160,11 @@ export async function runTutorStubCliApplicationHost({
     publicWorldSummary,
     tutorStubComprehensionPrompt,
   });
-
+  const adjudicateResistanceSemanticCandidate = createLazyTutorStubResistanceSemanticAdjudicator({
+    appendTraceEvent,
+    callPromptModel,
+    resolveModel,
+  });
   const {
     automatedLearnerCorruptionEnabled,
     automatedLearnerProfileId,
@@ -1175,6 +1179,7 @@ export async function runTutorStubCliApplicationHost({
     resolveAutomatedLearnerProfile,
   } = createTutorStubAutomatedLearnerGenerationRuntime({
     appendTraceEvent,
+    adjudicateResistanceSemanticCandidate,
     callPromptModel,
     classificationFromCombinedAnalysis: (...values) => classificationFromCombinedAnalysis(...values),
     extractCombinedLearnerAnalysis: (...values) => extractCombinedLearnerAnalysis(...values),
@@ -1183,7 +1188,6 @@ export async function runTutorStubCliApplicationHost({
     learnerProfilePrompt,
     negativeFloorRegisters: NEGATIVE_FLOOR_REGISTERS,
   });
-
   const {
     evaluatePendingRegisterEfficacy,
     explicitPerformanceActorialPartSelection,
@@ -1248,7 +1252,6 @@ export async function runTutorStubCliApplicationHost({
     tutorStubRegisterPolicyStackId,
     tutorStubReleasePacingSnapshot,
   });
-
   const {
     analyzeLearnerTurn,
     applyConversationalCompletionForLearnerTurn,
@@ -1325,7 +1328,6 @@ export async function runTutorStubCliApplicationHost({
     tutorStubTurnFeedbackRegisterPrompt,
     updateReleasePacingForLearnerTurn,
   });
-
   const {
     printCurrentTurnAnalysis,
     printDialogueCloseout,
@@ -1352,7 +1354,6 @@ export async function runTutorStubCliApplicationHost({
     traceDisplayPath,
     writeLine: (...values) => console.log(...values),
   });
-
   const { printTutorStubLaunchSummary } = createTutorStubLaunchSummaryPresentation({
     C,
     ROOT,
@@ -1361,7 +1362,6 @@ export async function runTutorStubCliApplicationHost({
     traceDisplayPath,
     writeLine: (...values) => console.log(...values),
   });
-
   const { closePriorTypedAction, planTypedAction, tutorDialogueClosureFrameForTurn } =
     createTutorStubTypedActionPlanningRuntime({
       C,

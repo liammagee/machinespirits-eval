@@ -1,7 +1,7 @@
 ---
 id: resistance-action-register-integration
 title: Integrate resistance diagnosis, pedagogical action, and tonal register across tutor harnesses
-status: done
+status: active
 type: research
 priority: P1
 owner: codex
@@ -9,12 +9,13 @@ source: manual
 created: 2026-08-18
 updated: 2026-08-20
 verification: >-
-  The prospective-V7 confirmation stopped after Block 1 under the standing
-  success-or-systemic-failure criterion; exact execution and archive evidence
-  is bound below, every partial outcome is excluded, no warm/plain, null,
-  efficacy, or profile-failure claim is made, and further model calls require a
-  new human programme and measurement decision.
-claim_status: killed
+  The lexical-observer programme remains closed exactly as recorded, but the
+  user has reopened the scientific question through an additive independent
+  semantic-measurement architecture. Zero-call manipulation and outcome
+  instruments and both independent heldout corpora are frozen; their blinded
+  validation runners are zero-call ready, all historical outputs stay excluded,
+  and no model call or confirmation request is authorized.
+claim_status: methods
 links:
   items:
     - tutor-stub-cell-reconciliation
@@ -101,6 +102,25 @@ links:
     - config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.json
     - config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.v2.json
     - config/paid-study-endpoints/tutor-stub-resistance-action-register-baseline.v2.endpoint-go.json
+    - services/tutorStubResistanceSemanticAdjudication.js
+    - services/tutorStubResistanceSemanticRuntime.js
+    - services/tutorStubResistanceSemanticValidation.js
+    - services/tutorStubResistanceSemanticValidationRuntime.js
+    - config/tutor-stub-resistance-semantic-adjudication-registration.v1.json
+    - config/tutor-stub-resistance-semantic-adjudication-validation-registration.v1.json
+    - config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json
+    - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v1.json
+    - services/tutorStubResistanceRecoverySemanticAdjudication.js
+    - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v1.json
+    - config/tutor-stub-resistance-recovery-semantic-validation-registration.v1.json
+    - services/tutorStubResistanceRecoverySemanticValidation.js
+    - services/tutorStubResistanceRecoverySemanticValidationRuntime.js
+    - services/tutorStubResistanceRecoverySemanticAdjudicationV2.js
+    - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v2.json
+    - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v2.json
+    - config/tutor-stub-resistance-recovery-semantic-validation-registration.v2.json
+    - config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v2.json
+    - config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v2.endpoint-go.json
 tags:
   - tutor-stub
   - cells
@@ -108,7 +128,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistance-action-register-efficacy-readiness
+branch: codex/resistance-action-register-semantic-adjudication-readiness
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -1913,6 +1933,123 @@ and explicit human approval.
   continuation is authorized inside this programme. Any future restart
   requires a new human programme and measurement decision with an
   independently validated measurement strategy.
+- 2026-08-20 — **Architectural correction and zero-call semantic restart.**
+  The prior V7 terminal closeout remains an exact and immutable conclusion
+  about the lexical-observer approach; it is not rewritten as a scientific
+  outcome. The user subsequently supplied this exact 136-byte UTF-8 correction
+  with no trailing newline:
+  `okay, lets resume the main thread with this correction. We haven't closed out; we made the wrong architectural decision for the problem.`
+  Its SHA-256 is
+  `dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4`.
+  The earlier 181-byte standing programme authority remains separately bound
+  at SHA-256
+  `538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce`;
+  neither message is represented as a repository-authored artifact.
+
+  The corrected architectural rule is prospective and additive: for stance,
+  pragmatic force, framing, jurisdiction, refusal, uptake, irony, anaphora, and
+  other compositional meaning, no regex or keyword check may replace, narrow,
+  override, or veto a capable independent LLM semantic positive. Lexical and
+  Luna signals are advisory only. Deterministic code may validate only frozen
+  schema, exact UTF-16 spans, packet/source/provenance, route/effort/tool
+  telemetry, safety, and exact consensus derivation. The two judges are fixed
+  cross-provider models `codex.gpt-5.6-sol` low and
+  `claude-code.sonnet-5` low; neither sees the other's response or any arm,
+  profile, gold label, repair status, hidden DAG, old observer, or Luna vote.
+  Only two valid high-confidence full-vector agreements are determinate. Any
+  invalid schema/span/provenance, low confidence, missing judgment, or judge
+  disagreement is typed `measurement_indeterminate`, with no semantic rerun,
+  learner repair, unit replacement, outcome selection, or Fisher inference.
+
+  The manipulation instrument is frozen in
+  `config/tutor-stub-resistance-semantic-adjudication-registration.v1.json`.
+  Its independently authored, genuinely unseen heldout corpus is frozen at
+  SHA-256
+  `9378416d1fdf8dc41f35ad84a4edf69fba6ad8889ce5020617f3d19747c9a2c7`
+  with 80 unique cases: 40 frame-refuser positives, 16 productive-dispute
+  negatives, and 24 other negatives. A transparent pre-execution scoring-only
+  correction added exact seven-field core-vector accuracy and raw full-vector
+  agreement gates without changing the frozen prompt, response schema, or
+  corpus texts and before any heldout response existed. The current instrument
+  registration SHA-256 is
+  `d479a556df2f61458546e9e1463dc11fa1261b74df91fe4b765d159c330f415d`;
+  its validation registration SHA-256 is
+  `d06952b563065a100ce4af92c18c7089a41b416c0ed3845d1d5e6d2c694856e8`.
+
+  The validation runtime uses opaque shuffled case identities, never emits
+  original label-bearing case IDs or gold to execution, checkpoints every
+  prepared/dispatched/returned transition, and mirrors plan, checkpoints,
+  seal, and report to the stable private archive. A preserved valid Judge A is
+  never recalled; only a never-prepared Judge B may complete. A prepared but
+  undispatched invocation may dispatch once, whereas a dispatched response
+  ambiguity seals indeterminate without recall. Local-to-archive,
+  entry-to-manifest, seal, and report crash boundaries reconcile only
+  byte-identical deterministic transitions and cannot select alternate output.
+  The planned manipulation validation is 80 cases x 2 judges = 160 calls, with
+  at most three charged reservations per call and a hard ceiling of 480,
+  moving the operational ledger from the observed `331` to at most
+  `811/5000`. Its zero-call endpoint remains wiring evidence only; every live
+  accuracy, agreement, validity, and coverage gate remains pending.
+
+  Independent pre-execution review then found that the v1 outcome packet
+  omitted the public tutor turn between the two post-trigger learner turns.
+  Because that omission prevents reliable interpretation of anaphora and
+  compositional uptake, the v1 outcome instrument and its heldout remain
+  byte-frozen but are explicitly superseded and ineligible for validation or
+  launch. The wholly additive corrected-v2 instrument is frozen at
+  `config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v2.json`
+  (SHA-256
+  `88b779b65c1502dc860ccf063ed35c3a865e354436a6e7f69be8ee94c674e02e`).
+  Its one blind A+B pair judges only after the second and final fixed
+  post-trigger learner turn and receives the complete bounded public horizon:
+  trigger learner, intervention tutor, first post-trigger learner,
+  intervening tutor, and final learner. Its full vector remains bounded-test
+  merits engagement, grounded precise jurisdictional condition, delivered
+  `clarify_distinction`, delivered warm/plain/neither register, and final
+  recovery.
+
+  The independently authored corrected-v2 120-case heldout is frozen at
+  SHA-256
+  `16899134545d574203192ae2b1b6ff6671500fa24957f6d82015be5064c784c5`
+  from author commit `44e6b21097ed6c55402fbabcd8ca45d7b52a8884`; its strata are 32 merits-only,
+  32 grounded-only, 16 both, and 40 no-recovery cases, crossed across 40 warm,
+  40 plain, 40 neither, 80 action-present, and 40 action-absent interventions.
+  Twenty-four cases specifically depend on the intervening tutor turn (12
+  positive and 12 negative). All 600 packet texts and 256 evidence texts are
+  unique. Its opaque checkpointed dual-judge validator is zero-call ready and
+  preserves the same no-recall, byte-identical durable-archive reconciliation,
+  post-seal gold join, and no-selection rules as the manipulation validator.
+  A pre-dispatch third attempt remains dispatchable once after a crash; a
+  dispatched ambiguity never is. The validator fails before creating a local
+  destination if the durable archive is unavailable. Its maximum remains 240
+  calls / 720 charged reservations. The v2 endpoint and certificate establish
+  synthetic wiring only; every live accuracy, agreement, validity, and
+  coverage gate remains pending.
+
+  Registration V8 is readiness-only and cannot dispatch confirmation. A later
+  executable registration must bind sealed passing reports from both heldout
+  validations and their observed accounting. The unchanged 36-dialogue,
+  18-warm/18-plain, nine-block Fisher design would then add at most one
+  manipulation A+B pair for each learner candidate and one outcome A+B pair
+  after the fixed final horizon: 32 planned calls / 96 hard reservations per
+  dialogue, 384 per block, and 3456 for confirmation. The conservative staged
+  maximum is therefore `331 + 480 + 720 + 3456 = 4987/5000`, an operational
+  safeguard rather than a design objective. All calibration and incomplete
+  V1/V3/V4/V7 dialogues remain wholly excluded from reuse, pooling,
+  replacement, selection, or inferential credit. This change creates no live
+  validation or confirmation GO request, no destination, no model/provider
+  call, and no warm/plain, null, efficacy, learning, transfer, human, or cell
+  claim.
+
+  Validation and confirmation authorization are deliberately noncircular.
+  Each heldout validation requires its own future digest-bound HOLD request,
+  clean source closure, fresh create-once destination, required private
+  archive, stage ceiling, and human authority before any validation call.
+  Confirmation separately requires both sealed passing validation reports,
+  actual observed validation accounting, a post-validation executable
+  registration, and its own digest-bound HOLD request. No such request is
+  created here, and the staged worst-case safeguard remains exactly
+  `331 + 480 + 720 + 3456 = 4987/5000`.
 - 2026-08-20 — Reframed the boredom observation/timing repair around
   **prospective-v9 independent semantic authority**, superseding the idea that
   a larger lexical matcher could be the construct-valid mood judge. The

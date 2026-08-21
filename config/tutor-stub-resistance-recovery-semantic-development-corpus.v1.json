@@ -1,0 +1,411 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-recovery-semantic-adjudication-corpus.v1",
+  "version": 1,
+  "role": "development_regression",
+  "frozen": true,
+  "prompt_examples_allowed": false,
+  "context_provenance": "authored_public_two_turn_recovery_endpoint_boundaries_before_independent_holdout",
+  "cases": [
+    {
+      "case_id": "dev-merits-01",
+      "trigger": "I reject your authority to set this test and will not answer within it.",
+      "intervention": "Let us separate the claim about authority from one bounded observation: compare whether the two filings leave the same edge pattern.",
+      "prior_post_trigger": "I will inspect the two edge patterns without accepting your broader frame.",
+      "current_learner": "The left filing leaves a continuous ridge while the right one breaks twice, so the bounded comparison favors different tools.",
+      "expected": {
+        "judgment": {
+          "bounded_test_merits_engagement": "yes",
+          "grounded_precise_jurisdictional_condition": "no",
+          "delivered_clarify_distinction": "yes",
+          "delivered_register": "plain",
+          "final_recovery": "yes"
+        },
+        "evidence": [
+          {
+            "field": "bounded_test_merits_engagement",
+            "source_id": "current_learner",
+            "text": "The left filing leaves a continuous ridge while the right one breaks twice"
+          },
+          {
+            "field": "delivered_clarify_distinction",
+            "source_id": "intervention",
+            "text": "separate the claim about authority from one bounded observation"
+          },
+          {
+            "field": "delivered_register",
+            "source_id": "intervention",
+            "text": "compare whether the two filings leave the same edge pattern"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "dev-merits-02",
+      "trigger": "That is your question, not mine; I will not supply evidence under it.",
+      "intervention": "I hear the objection. We can leave the larger question aside and test only whether the mark repeats at equal spacing.",
+      "prior_post_trigger": "I can examine that limited feature.",
+      "current_learner": "The marks repeat at four-millimeter intervals in both samples, which supports a common guide rather than two unrelated cuts.",
+      "expected": {
+        "judgment": {
+          "bounded_test_merits_engagement": "yes",
+          "grounded_precise_jurisdictional_condition": "no",
+          "delivered_clarify_distinction": "yes",
+          "delivered_register": "warm",
+          "final_recovery": "yes"
+        },
+        "evidence": [
+          {
+            "field": "bounded_test_merits_engagement",
+            "source_id": "current_learner",
+            "text": "The marks repeat at four-millimeter intervals in both samples"
+          },
+          {
+            "field": "delivered_clarify_distinction",
+            "source_id": "intervention",
+            "text": "leave the larger question aside and test only whether the mark repeats at equal spacing"
+          },
+          { "field": "delivered_register", "source_id": "intervention", "text": "I hear the objection" }
+        ]
+      }
+    },
+    {
+      "case_id": "dev-merits-03",
+      "trigger": "I deny the committee's standing to define the scoring question.",
+      "intervention": "Without asking you to concede standing, could we jointly check the single public ledger entry against the dated receipt?",
+      "prior_post_trigger": "I will check those two records.",
+      "current_learner": "The ledger says 14 May and the receipt says 16 May; that mismatch weakens the claimed sequence.",
+      "expected": {
+        "judgment": {
+          "bounded_test_merits_engagement": "yes",
+          "grounded_precise_jurisdictional_condition": "no",
+          "delivered_clarify_distinction": "yes",
+          "delivered_register": "warm",
+          "final_recovery": "yes"
+        },
+        "evidence": [
+          {
+            "field": "bounded_test_merits_engagement",
+            "source_id": "current_learner",
+            "text": "The ledger says 14 May and the receipt says 16 May"
+          },
+          {
+            "field": "delivered_clarify_distinction",
+            "source_id": "intervention",
+            "text": "check the single public ledger entry against the dated receipt"
+          },
+          { "field": "delivered_register", "source_id": "intervention", "text": "could we jointly check" }
+        ]
+      }
+    },
+    {
+      "case_id": "dev-merits-04",
+      "trigger": "I will not permit that examination or answer on its merits.",
+      "intervention": "Distinguish only the observed residue color from the disputed explanation, then compare the color cards.",
+      "prior_post_trigger": "The residue looks closer to card C than card A.",
+      "current_learner": "Card C is the closer match under the same lamp, although I still reject the explanation you attached to it.",
+      "expected": {
+        "judgment": {
+          "bounded_test_merits_engagement": "yes",
+          "grounded_precise_jurisdictional_condition": "no",
+          "delivered_clarify_distinction": "yes",
+          "delivered_register": "plain",
+          "final_recovery": "yes"
+        },
+        "evidence": [
+          {
+            "field": "bounded_test_merits_engagement",
+            "source_id": "prior_post_trigger",
+            "text": "The residue looks closer to card C than card A"
+          },
+          {
+            "field": "delivered_clarify_distinction",
+            "source_id": "intervention",
+            "text": "Distinguish only the observed residue color from the disputed explanation"
+          },
+          { "field": "delivered_register", "source_id": "intervention", "text": "then compare the color cards" }
+        ]
+      }
+    },
+    {
+      "case_id": "dev-grounded-01",
+      "trigger": "I reject this frame and will not answer it.",
+      "intervention": "We can distinguish the imposed conclusion from a local test of the public measurements.",
+      "prior_post_trigger": "A local test might be admissible.",
+      "current_learner": "I will answer only if the test is limited to the two published measurements and does not treat the disputed premise as settled.",
+      "expected": {
+        "judgment": {
+          "bounded_test_merits_engagement": "no",
+          "grounded_precise_jurisdictional_condition": "yes",
+          "delivered_clarify_distinction": "yes",
+          "delivered_register": "plain",
+          "final_recovery": "yes"
+        },
+        "evidence": [
+          {
+            "field": "grounded_precise_jurisdictional_condition",
+            "source_id": "current_learner",
+            "text": "only if the test is limited to the two published measurements and does not treat the disputed premise as settled"
+          },
+          {
+            "field": "delivered_clarify_distinction",
+            "source_id": "intervention",
+            "text": "distinguish the imposed conclusion from a local test of the public measurements"
+          },
+          { "field": "delivered_register", "source_id": "intervention", "text": "We can distinguish" }
+        ]
+      }
+    },
+    {
+      "case_id": "dev-grounded-02",
+      "trigger": "Your authority does not govern this question, so I withhold participation.",
+      "intervention": "That boundary matters. Would it be acceptable to examine only the signed inventory line, leaving jurisdiction unresolved?",
+      "prior_post_trigger": "That is closer, but specify who supplied the inventory.",
+      "current_learner": "I will examine the line if its named source and date are disclosed first; that condition does not concede jurisdiction.",
+      "expected": {
+        "judgment": {
+          "bounded_test_merits_engagement": "no",
+          "grounded_precise_jurisdictional_condition": "yes",
+          "delivered_clarify_distinction": "yes",
+          "delivered_register": "warm",
+          "final_recovery": "yes"
+        },
+        "evidence": [
+          {
+            "field": "grounded_precise_jurisdictional_condition",
+            "source_id": "current_learner",
+            "text": "if its named source and date are disclosed first"
+          },
+          {
+            "field": "delivered_clarify_distinction",
+            "source_id": "intervention",
+            "text": "examine only the signed inventory line, leaving jurisdiction unresolved"
+          },
+          { "field": "delivered_register", "source_id": "intervention", "text": "That boundary matters" }
+        ]
+      }
+    },
+    {
+      "case_id": "dev-grounded-03",
+      "trigger": "I will not answer beneath the verdict you set.",
+      "intervention": "Set the verdict aside. Test only whether the public photograph contains the second fastener.",
+      "prior_post_trigger": "I still object to your frame.",
+      "current_learner": "I will answer the fastener question if the unedited photograph is the sole evidence and no verdict is inferred from it.",
+      "expected": {
+        "judgment": {
+          "bounded_test_merits_engagement": "no",
+          "grounded_precise_jurisdictional_condition": "yes",
+          "delivered_clarify_distinction": "yes",
+          "delivered_register": "plain",
+          "final_recovery": "yes"
+        },
+        "evidence": [
+          {
+            "field": "grounded_precise_jurisdictional_condition",
+            "source_id": "current_learner",
+            "text": "if the unedited photograph is the sole evidence and no verdict is inferred from it"
+          },
+          {
+            "field": "delivered_clarify_distinction",
+            "source_id": "intervention",
+            "text": "Set the verdict aside. Test only whether the public photograph contains the second fastener"
+          },
+          { "field": "delivered_register", "source_id": "intervention", "text": "Set the verdict aside" }
+        ]
+      }
+    },
+    {
+      "case_id": "dev-grounded-04",
+      "trigger": "I reject the question and refuse its examination.",
+      "intervention": "I can see why the scope feels imposed. Let us separate that issue from one check of the timestamp.",
+      "prior_post_trigger": "The timestamp alone may be relevant.",
+      "current_learner": "I will check it provided we use the original file metadata and limit the conclusion to sequence, not motive.",
+      "expected": {
+        "judgment": {
+          "bounded_test_merits_engagement": "no",
+          "grounded_precise_jurisdictional_condition": "yes",
+          "delivered_clarify_distinction": "yes",
+          "delivered_register": "warm",
+          "final_recovery": "yes"
+        },
+        "evidence": [
+          {
+            "field": "grounded_precise_jurisdictional_condition",
+            "source_id": "current_learner",
+            "text": "provided we use the original file metadata and limit the conclusion to sequence, not motive"
+          },
+          {
+            "field": "delivered_clarify_distinction",
+            "source_id": "intervention",
+            "text": "separate that issue from one check of the timestamp"
+          },
+          {
+            "field": "delivered_register",
+            "source_id": "intervention",
+            "text": "I can see why the scope feels imposed"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "dev-both-01",
+      "trigger": "I reject the jurisdiction of this test and will not answer under it.",
+      "intervention": "I understand the jurisdictional objection. Separate it from one narrow check: compare the two public timestamps without treating either narrative as settled.",
+      "prior_post_trigger": "The first timestamp precedes the second by three minutes.",
+      "current_learner": "That three-minute gap supports the stated order, and I will answer this bounded point provided no broader jurisdiction is inferred.",
+      "expected": {
+        "judgment": {
+          "bounded_test_merits_engagement": "yes",
+          "grounded_precise_jurisdictional_condition": "yes",
+          "delivered_clarify_distinction": "yes",
+          "delivered_register": "warm",
+          "final_recovery": "yes"
+        },
+        "evidence": [
+          {
+            "field": "bounded_test_merits_engagement",
+            "source_id": "current_learner",
+            "text": "That three-minute gap supports the stated order"
+          },
+          {
+            "field": "grounded_precise_jurisdictional_condition",
+            "source_id": "current_learner",
+            "text": "provided no broader jurisdiction is inferred"
+          },
+          {
+            "field": "delivered_clarify_distinction",
+            "source_id": "intervention",
+            "text": "Separate it from one narrow check"
+          },
+          {
+            "field": "delivered_register",
+            "source_id": "intervention",
+            "text": "I understand the jurisdictional objection"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "dev-negative-generic-engagement",
+      "trigger": "I reject your standing and will not answer.",
+      "intervention": "Would you be willing to discuss the evidence generally?",
+      "prior_post_trigger": "Perhaps we can discuss it later.",
+      "current_learner": "I appreciate the invitation, but I still will not examine the test or answer the question.",
+      "expected": {
+        "judgment": {
+          "bounded_test_merits_engagement": "no",
+          "grounded_precise_jurisdictional_condition": "no",
+          "delivered_clarify_distinction": "no",
+          "delivered_register": "warm",
+          "final_recovery": "no"
+        },
+        "evidence": [{ "field": "delivered_register", "source_id": "intervention", "text": "Would you be willing" }]
+      }
+    },
+    {
+      "case_id": "dev-negative-ungrounded-counterframe",
+      "trigger": "This is your frame, not mine.",
+      "intervention": "Compare one visible feature and leave the larger frame open.",
+      "prior_post_trigger": "I demand a different frame instead.",
+      "current_learner": "I will participate only under terms I choose later, and I will not inspect this evidence.",
+      "expected": {
+        "judgment": {
+          "bounded_test_merits_engagement": "no",
+          "grounded_precise_jurisdictional_condition": "no",
+          "delivered_clarify_distinction": "yes",
+          "delivered_register": "plain",
+          "final_recovery": "no"
+        },
+        "evidence": [
+          {
+            "field": "delivered_clarify_distinction",
+            "source_id": "intervention",
+            "text": "Compare one visible feature and leave the larger frame open"
+          },
+          { "field": "delivered_register", "source_id": "intervention", "text": "Compare one visible feature" }
+        ]
+      }
+    },
+    {
+      "case_id": "dev-negative-warm-lexeme",
+      "trigger": "I deny your authority over this inquiry.",
+      "intervention": "Compare the warm sample with the cold sample and report the measured difference.",
+      "prior_post_trigger": "The labels say warm and cold.",
+      "current_learner": "I will not perform that comparison or answer under this inquiry.",
+      "expected": {
+        "judgment": {
+          "bounded_test_merits_engagement": "no",
+          "grounded_precise_jurisdictional_condition": "no",
+          "delivered_clarify_distinction": "yes",
+          "delivered_register": "plain",
+          "final_recovery": "no"
+        },
+        "evidence": [
+          {
+            "field": "delivered_clarify_distinction",
+            "source_id": "intervention",
+            "text": "Compare the warm sample with the cold sample"
+          },
+          { "field": "delivered_register", "source_id": "intervention", "text": "report the measured difference" }
+        ]
+      }
+    },
+    {
+      "case_id": "dev-negative-distinction-lexeme",
+      "trigger": "I refuse your test and its verdict.",
+      "intervention": "The word distinction appears in our notes. Please continue.",
+      "prior_post_trigger": "That does not specify a bounded test.",
+      "current_learner": "I still refuse the examination and will not answer it.",
+      "expected": {
+        "judgment": {
+          "bounded_test_merits_engagement": "no",
+          "grounded_precise_jurisdictional_condition": "no",
+          "delivered_clarify_distinction": "no",
+          "delivered_register": "neither",
+          "final_recovery": "no"
+        },
+        "evidence": []
+      }
+    },
+    {
+      "case_id": "dev-negative-precise-not-warm",
+      "trigger": "I will not answer within your frame.",
+      "intervention": "Measure exactly 3.00 millimeters at points A and B; subtract B from A.",
+      "prior_post_trigger": "The procedure is precise.",
+      "current_learner": "Precision does not cure the jurisdictional defect, so I will not perform it.",
+      "expected": {
+        "judgment": {
+          "bounded_test_merits_engagement": "no",
+          "grounded_precise_jurisdictional_condition": "no",
+          "delivered_clarify_distinction": "yes",
+          "delivered_register": "plain",
+          "final_recovery": "no"
+        },
+        "evidence": [
+          {
+            "field": "delivered_clarify_distinction",
+            "source_id": "intervention",
+            "text": "Measure exactly 3.00 millimeters at points A and B; subtract B from A"
+          },
+          { "field": "delivered_register", "source_id": "intervention", "text": "subtract B from A" }
+        ]
+      }
+    },
+    {
+      "case_id": "dev-negative-polite-not-warm-stance",
+      "trigger": "I reject your right to decide the question.",
+      "intervention": "Thank you. State yes or no to the test exactly as given.",
+      "prior_post_trigger": "Your thanks do not change the demand.",
+      "current_learner": "No; I will not answer the imposed test.",
+      "expected": {
+        "judgment": {
+          "bounded_test_merits_engagement": "no",
+          "grounded_precise_jurisdictional_condition": "no",
+          "delivered_clarify_distinction": "no",
+          "delivered_register": "neither",
+          "final_recovery": "no"
+        },
+        "evidence": []
+      }
+    }
+  ]
+}

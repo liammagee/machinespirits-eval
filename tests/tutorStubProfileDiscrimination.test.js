@@ -20,6 +20,7 @@ import {
   buildTutorStubBoredomProofDagRepairBudgetDiagnostic,
   buildTutorStubBoredomProofDagSemanticBudgetDiagnostic,
 } from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
+import { TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE_CODE } from '../services/tutorStubResistanceSemanticRuntime.js';
 import {
   learnerProfileContract,
   learnerProfileIds,
@@ -951,6 +952,127 @@ test('prospective v4 evaluates cumulative T1-T2 qualification and admits at most
       profile,
     );
   }
+});
+
+test('semantic frame resistance judges every study candidate, repairs only determinate T2 nonadherence, and stops on indeterminacy', async () => {
+  const valid = 'I reject your authority to set this question and will not answer under it.';
+  const invalid = 'I will answer the question as asked.';
+  const makeRuntime = ({ indeterminate = false } = {}) => {
+    const trace = [];
+    const calls = { adjudication: [], repair: 0 };
+    const runtime = createTutorStubAutomatedLearnerGenerationRuntime({
+      appendTraceEvent: (target, event) => target.push(event),
+      adjudicateResistanceSemanticCandidate: async ({ learnerText, turnNumber, candidateKind }) => {
+        calls.adjudication.push({ learnerText, turnNumber, candidateKind });
+        return {
+          schema: 'machinespirits.tutor-stub.resistance-semantic-runtime-result.v1',
+          aggregate: indeterminate
+            ? { status: 'measurement_indeterminate', final_label: 'indeterminate' }
+            : {
+                status: 'determinate',
+                final_label: learnerText === valid ? 'frame_refuser' : 'neither',
+              },
+        };
+      },
+      callPromptModel: async () => {
+        calls.repair += 1;
+        return { text: valid };
+      },
+      classificationFromCombinedAnalysis: (raw) => raw.classification,
+      env: {
+        [TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV]: 'prospective_frame_resistance_semantic_v1',
+      },
+      extractCombinedLearnerAnalysis: async () => ({
+        classification: {
+          turn: {
+            request_type: 'bounded_test_response',
+            discourse_move: 'answer',
+            evidence_use: 'none',
+            epistemic_stance: 'engaged',
+            agency: 'attempting',
+          },
+        },
+      }),
+      learnerProfileContract,
+      learnerProfileIds,
+      learnerProfilePrompt,
+      negativeFloorRegisters: [],
+    });
+    const state = {
+      trace,
+      turns: [],
+      history: [{ role: 'assistant', content: 'Answer this bounded public question.' }],
+      register: { policy: 'field' },
+      classifier: { enabled: true },
+      learnerDag: { enabled: true },
+      world: {},
+      interim: null,
+      resistanceActionRegisterStudy: { enabled: true, consumed: false },
+    };
+    return { calls, runtime, state, trace };
+  };
+
+  const t1 = makeRuntime();
+  const t1Result = await t1.runtime.enforceAutomatedLearnerProfile({
+    state: t1.state,
+    resolved: {},
+    profile: 'frame_refuser',
+    turnNumber: 1,
+    generated: { text: invalid },
+  });
+  assert.equal(t1Result.passed, false);
+  assert.equal(t1.calls.repair, 0);
+  assert.equal(t1.calls.adjudication.length, 1);
+
+  const t2 = makeRuntime();
+  t2.state.turns.push({
+    turn: 1,
+    learner: invalid,
+    resistanceSemanticAdjudication: { aggregate: { status: 'determinate', final_label: 'neither' } },
+  });
+  const t2Result = await t2.runtime.enforceAutomatedLearnerProfile({
+    state: t2.state,
+    resolved: {},
+    profile: 'frame_refuser',
+    turnNumber: 2,
+    generated: { text: invalid },
+  });
+  assert.equal(t2Result.passed, true);
+  assert.equal(t2Result.repaired, true);
+  assert.equal(t2.calls.repair, 1);
+  assert.deepEqual(
+    t2.calls.adjudication.map((row) => row.candidateKind),
+    ['initial', 'learner-repair-1'],
+  );
+
+  const outcome = makeRuntime();
+  outcome.state.resistanceActionRegisterStudy.consumed = true;
+  const outcomeResult = await outcome.runtime.enforceAutomatedLearnerProfile({
+    state: outcome.state,
+    resolved: {},
+    profile: 'frame_refuser',
+    turnNumber: 3,
+    generated: { text: invalid },
+  });
+  assert.equal(outcomeResult.passed, false);
+  assert.equal(outcome.calls.adjudication.length, 1);
+  assert.equal(outcome.calls.repair, 0);
+
+  const indeterminate = makeRuntime({ indeterminate: true });
+  await assert.rejects(
+    indeterminate.runtime.enforceAutomatedLearnerProfile({
+      state: indeterminate.state,
+      resolved: {},
+      profile: 'frame_refuser',
+      turnNumber: 1,
+      generated: { text: invalid },
+    }),
+    (error) =>
+      error.code === TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE_CODE && error.recoverable === false,
+  );
+  assert.equal(indeterminate.calls.adjudication.length, 1);
+  assert.equal(indeterminate.calls.repair, 0);
+  assert.equal(indeterminate.trace.at(-1).type, 'auto_learner_profile_measurement_indeterminate');
 });
 
 test('boredom proof-DAG mode defers T1, admits one T2 repair, then releases post-treatment recovery turns', async () => {

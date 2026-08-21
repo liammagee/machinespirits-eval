@@ -617,6 +617,60 @@ test('confirmation recovery admits only missing or classified technical failures
     () => selectTutorStubResistanceActionRegisterConfirmationRecoveryCandidates({ plan, initial: signaledComplete }),
     /refuses nontechnical or unclassified failure/u,
   );
+  const semanticStart = {
+    type: 'run_start',
+    metadata: { autoLearner: { observationSemantics: 'prospective_frame_resistance_semantic_v1' } },
+  };
+  for (const events of [
+    [semanticStart, { type: 'resistance_semantic_judge_result', judgeId: 'semantic_judge_a' }],
+    [semanticStart, { type: 'model_call', role: 'tutor_stub_auto_learner', turn: 1 }],
+  ]) {
+    assert.deepEqual(classifyTutorStubResistanceActionRegisterConfirmationChildFailure({ events, signal: 'SIGTERM' }), {
+      category: 'measurement_indeterminate_nonrecoverable',
+      code: 'TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE',
+      disposition: 'stop_no_judge_or_unit_rerun_replacement_or_selection',
+      recoverable: false,
+    });
+  }
+  assert.deepEqual(
+    classifyTutorStubResistanceActionRegisterConfirmationChildFailure({
+      events: [
+        semanticStart,
+        { type: 'model_call', role: 'tutor_stub_auto_learner', turn: 1 },
+        {
+          type: 'model_call_error',
+          role: 'tutor_stub_tutor',
+          cliPolicyViolation: {
+            reason: 'call_retry_limit_reached',
+            audit: { prohibited_event_count: 0 },
+          },
+        },
+      ],
+      signal: null,
+    }),
+    {
+      category: 'measurement_indeterminate_nonrecoverable',
+      code: 'TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE',
+      disposition: 'stop_no_judge_or_unit_rerun_replacement_or_selection',
+      recoverable: false,
+    },
+  );
+  assert.deepEqual(
+    classifyTutorStubResistanceActionRegisterConfirmationChildFailure({
+      events: [
+        semanticStart,
+        { type: 'model_call', role: 'tutor_stub_auto_learner', turn: 3 },
+        { type: 'resistance_action_register_outcome_learner_turn', turn: 3 },
+      ],
+      signal: 'SIGTERM',
+    }),
+    {
+      category: 'completed_output_nonrecoverable',
+      code: 'TUTOR_STUB_CONFIRMATION_TERMINAL_OUTCOME_ALREADY_RECORDED',
+      disposition: 'manual_validity_review_required_no_rerun',
+      recoverable: false,
+    },
+  );
 });
 
 test('V3 endpoint and certificate pass zero-call readiness with calibration excluded', () => {

@@ -1,0 +1,182 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-recovery-semantic-adjudication-registration.v1",
+  "version": 1,
+  "status": "development_instrument_frozen_pending_independent_heldout_validation",
+  "preHeldoutCorrection": {
+    "basis": "independent_design_audit_before_heldout_authoring",
+    "scope": "both_positive_coverage_and_gold_evidence_source_ownership",
+    "promptChanged": false,
+    "responseSchemaChanged": false,
+    "heldoutCasesAuthored": 0,
+    "correctionFreezeCommit": "59bfcc4c5223f21c1405a70feedc1e1bb639b441"
+  },
+  "studyId": "tutor-stub-resistance-recovery-semantic-adjudication-validation-v1",
+  "instrument": {
+    "implementationPath": "services/tutorStubResistanceRecoverySemanticAdjudication.js",
+    "implementationSha256": "44fac209248fe67646fcd57d70b830d09e755da4d1eed03f1158b61ea99d6e10",
+    "responseSchemaPath": "config/tutor-stub-resistance-recovery-semantic-response.schema.v1.json",
+    "responseSchemaSha256": "cc58d0c14b8697ac1390896e202a26e5f6cf1f88d943d638eb650ac704f9f73f",
+    "developmentCorpusPath": "config/tutor-stub-resistance-recovery-semantic-development-corpus.v1.json",
+    "developmentCorpusSha256": "0354296c4cc6380858bcd05f2ff28c0ab2bb43ad17254a33858f0cdc3792713a",
+    "developmentCases": 15,
+    "instrumentFreezeCommit": "0fdd854032d8a6fc6c395310d19e131ff062bf34",
+    "offsetUnit": "utf16_code_unit",
+    "promptExamples": "none"
+  },
+  "measurement": {
+    "judges": [
+      {
+        "id": "recovery_semantic_judge_a",
+        "modelRef": "codex.gpt-5.6-sol",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "modelFamily": "openai_gpt_5_6",
+        "effort": "low",
+        "modelAttestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+        "independent": true
+      },
+      {
+        "id": "recovery_semantic_judge_b",
+        "modelRef": "claude-code.sonnet-5",
+        "provider": "claude-code",
+        "model": "claude-sonnet-5",
+        "modelFamily": "anthropic_claude_5",
+        "effort": "low",
+        "modelAttestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+        "independent": true
+      }
+    ],
+    "learnerAndCombinedAnalysisRouteExcludedFromVoting": "codex.gpt-5.6-luna",
+    "deterministicAuthority": "schema_span_provenance_safety_only",
+    "lexicalAndLunaRole": "advisory_only_never_vote_tiebreak_veto_or_override",
+    "semanticAuthorityRule": "no_regex_or_keyword_check_may_replace_narrow_override_or_veto_a_capable_independent_llm_semantic_positive_for_action_register_uptake_pragmatic_force_anaphora_or_compositional_meaning",
+    "endpoint": {
+      "horizon": "one_blind_packet_after_second_and_final_post_trigger_learner_turn",
+      "boundedTestMeritsEngagement": "learner_engages_the_registered_bounded_public_test_on_its_merits",
+      "groundedPreciseJurisdictionalCondition": "learner_replaces_blanket_refusal_with_a_precise_publicly_grounded_condition_on_jurisdiction_or_participation",
+      "recovered": "yes_iff_either_registered_recovery_construct_is_yes",
+      "deliveredAction": "clarify_distinction_yes_no_indeterminate_from_public_intervention",
+      "deliveredRegister": "warm_plain_neither_indeterminate_from_public_intervention",
+      "interimOutcomeMeasurement": false
+    },
+    "consensus": {
+      "requiredValidJudges": 2,
+      "confidenceRequired": "high",
+      "fullVectorAgreementRequired": true,
+      "spanAgreementRequired": false,
+      "thirdJudgeOrTiebreaker": false,
+      "invalidLowConfidenceDisagreementOrIndeterminateDisposition": "measurement_indeterminate_whole_fisher_analysis_withheld"
+    },
+    "validationGates": {
+      "schemaSpanProvenanceValidity": 1,
+      "minimumPerJudgeExactVectorAccuracy": 0.9,
+      "minimumConsensusExactVectorAccuracy": 0.95,
+      "minimumConsensusMeritsEngagementSensitivity": 0.95,
+      "minimumConsensusMeritsEngagementSpecificity": 0.95,
+      "minimumConsensusGroundedPrecisionSensitivity": 0.95,
+      "minimumConsensusGroundedPrecisionSpecificity": 0.95,
+      "minimumConsensusNoRecoverySpecificity": 0.95,
+      "minimumConsensusActionClassificationAccuracy": 0.95,
+      "minimumConsensusRegisterClassificationAccuracy": 0.95,
+      "minimumRawFullVectorInterjudgeAgreement": 0.9,
+      "minimumRecoveryCategoryCohenKappa": 0.8,
+      "minimumOverallDeterminedCoverage": 0.95,
+      "minimumPerStratumDeterminedCoverage": 0.9,
+      "maximumProhibitedToolEvents": 0,
+      "indeterminateAndInvalidCountAsErrors": true
+    }
+  },
+  "blinding": {
+    "packetIncludes": [
+      "public_trigger_learner_turn",
+      "public_intervention_tutor_turn",
+      "first_post_trigger_public_learner_turn",
+      "second_final_post_trigger_public_learner_turn"
+    ],
+    "packetExcludes": [
+      "profile",
+      "arm",
+      "assigned_register",
+      "randomized_assignment",
+      "gold",
+      "observer",
+      "classifier",
+      "regex",
+      "hidden_dag",
+      "outcome_status"
+    ],
+    "goldVisibleToJudges": false,
+    "otherJudgeVisible": false
+  },
+  "heldoutFreezeProtocol": {
+    "requiredRole": "heldout_blinded",
+    "requiredSchema": "machinespirits.tutor-stub.resistance-recovery-semantic-adjudication-corpus.v1",
+    "minimumCases": 120,
+    "exactMeritsOnlyCases": 32,
+    "exactGroundedOnlyCases": 32,
+    "exactBothRecoveryConstructCases": 16,
+    "exactNoRecoveryCases": 40,
+    "minimumWarmInterventions": 40,
+    "minimumPlainInterventions": 40,
+    "minimumNeitherInterventions": 20,
+    "minimumActionPresentCases": 80,
+    "minimumActionAbsentCases": 20,
+    "authoredByIndependentAgentAfterInstrumentFreezeCommit": true,
+    "heldoutTextOrGoldVisibleBeforeFreeze": false,
+    "postHeldoutPromptModelThresholdOrConsensusTuning": false,
+    "validationCallsAuthorized": false
+  },
+  "prospectiveConfirmationIntegration": {
+    "registrationVersion": 8,
+    "readinessOnlyUntilBothValidationReportsPass": true,
+    "oneJudgePairPerDialogueAfterFinalLearnerOnlyTurn": true,
+    "interimOutcomeAnalysis": false,
+    "persistedAggregateSoleOutcomeAndFidelityAuthority": true,
+    "existingRegexAndLunaAudits": "advisory_process_evidence_only",
+    "assignmentComparedToDeliveredActionAndRegisterOnlyAfterConsensus": true,
+    "measurementIndeterminate": {
+      "typed": true,
+      "terminal": true,
+      "nonrecoverable": true,
+      "judgeRerun": false,
+      "unitRerun": false,
+      "replacement": false,
+      "outcomeSelection": false,
+      "fisherAnalysisWithheld": true
+    }
+  },
+  "budget": {
+    "manipulationValidationHardReservations": 480,
+    "outcomeValidationCases": 120,
+    "outcomeValidationPlannedJudgeCalls": 240,
+    "maximumReservationsPerPlannedCall": 3,
+    "outcomeValidationHardReservations": 720,
+    "confirmationBaseAndManipulationCallsPerDialogue": 30,
+    "outcomeJudgeCallsPerDialogue": 2,
+    "confirmationPlannedCallsPerDialogue": 32,
+    "confirmationHardReservationsPerDialogue": 96,
+    "dialoguesPerBlock": 4,
+    "confirmationHardReservationsPerBlock": 384,
+    "confirmationDialogues": 36,
+    "confirmationHardReservations": 3456,
+    "programmeLedgerObservedBeforeValidation": 331,
+    "programmeMaximumAfterBothValidationsAndConfirmation": 4987,
+    "programmeCeiling": 5000,
+    "remainingAtMaximum": 13,
+    "attemptCountsAreOperationalSafeguardsNotDesignObjectives": true
+  },
+  "authorization": {
+    "validationGoRequestPrepared": false,
+    "validationModelCallsAuthorized": false,
+    "confirmationGoRequestPrepared": false,
+    "confirmationModelCallsAuthorized": false,
+    "liveRunAuthorized": false
+  },
+  "claimBoundary": {
+    "readinessOnly": true,
+    "zeroCallSyntheticFixturesEstablishAccuracy": false,
+    "bothSealedPassingValidationReportsRequiredBeforeExecutableConfirmationRegistration": true,
+    "allCalibrationAndIncompleteV1V3V4V7OutputsExcluded": true,
+    "noWarmPlainEfficacyNullLearningTransferHumanOrCellClaim": true
+  }
+}
