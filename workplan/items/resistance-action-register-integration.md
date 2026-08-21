@@ -14,12 +14,13 @@ verification: >-
   semantic-measurement architecture. Manipulation semantic validations v1 and
   v2 are sealed failed results and are never rescored or reused. The additive
   manipulation v3 instrument stayed frozen through independent heldout
-  authoring, but its first request stopped after a systematic provider failure
-  at ten reservations. That consumed root is excluded and cannot resume. A
-  generic Codex provider-boundary compatibility repair preserves the frozen
-  V3 instrument and heldout; a fresh digest-bound request and destination are
-  required before any further validation. Outcome validation and confirmation
-  remain unauthorized.
+  authoring. Its first request stopped after ten reservations and its fresh
+  successor stopped after 35 reservations; both consumed roots are excluded
+  and cannot resume. The frozen V3 instrument and heldout remain unchanged.
+  A source repair adds only a revisioned-V3 pre-response Claude exit retry,
+  safe numeric failure telemetry, and request-derived plan accounting. Another
+  fresh digest-bound request and destination are required before any further
+  validation. Outcome validation and confirmation remain unauthorized.
 claim_status: methods
 links:
   items:
@@ -2802,3 +2803,49 @@ and explicit human approval.
   and the packager's isolated no-`node_modules` replay both passed all 70
   checks, and endpoint/certificate preflight passed with zero model calls and
   zero production writes. No validation was launched.
+
+- 2026-08-21 — The revision-2 successor request above was merged, passed its
+  exact-source prelaunch checks, and was launched once, but it too stopped
+  before any gold join or analysis after the same Claude route failure repeated
+  on two distinct cases. The consumed create-once root contained exactly 35
+  charged reservations: 32 returned responses, two terminal Sonnet-5 judge-B
+  `CLI_PROVIDER_EXIT_FAILED` attempts with exit code 1, and one Sol dispatch
+  whose result was ambiguous when the process was interrupted. Seventeen cases
+  were sealed and one remained `judge_in_flight`. There was no recovery, gold
+  join, analyzer, result, report, global seal, outcome validation, or
+  confirmation call. Programme accounting moved from `661` to `696 / 5000`.
+
+  The immutable local closeout is 19 files / 420,968 bytes with inventory
+  `f0c0cc3a58f720128d634cc48c4674e5179adee4bc6ad1a84faa1646132d5bd9`.
+  The private transition archive is preserved on branch
+  `codex/resistance-semantic-validation-v3-successor-incomplete-archive`,
+  commit `17365bcdb1c1a3c0baad585200ccacdcc0d5c1ff`, tree
+  `2b556a59e05da040ba621bee3d94e925e0d080c5`; its 141-file / 1,370,698-byte
+  inventory is
+  `ea84d3801bc10238dbfb80a1a3739f2a24814548f6687ff0bfcb941c864a1f84`,
+  and its exact 140-transition manifest is
+  `81e8ce26d43ae6d218313e1b02d4ade684ed66001e44dd901eb450ae4185f507`.
+  The root is permanently excluded from recovery, reuse, pooling, or selection.
+
+- 2026-08-21 — Zero-call source review found that the generic retry policy
+  already licensed two delayed redispatches at 5 and 15 seconds within the
+  three-reservation call envelope for Codex transport failures, but treated
+  every Claude `CLI_PROVIDER_EXIT_FAILED` as terminal after its first attempt.
+  The V3 successor therefore never exercised the recovery envelope already
+  budgeted for a pre-response Claude exit. The repair is deliberately narrow:
+  only a revisioned V3 manipulation-validation request may retry exact Claude
+  exit code 1 before any response, using the same case, prompt, schema, route,
+  role, and independent invocation id. Invalid or returned responses and
+  ambiguous dispatches remain terminal; V1, V2, and the original unrevisioned
+  V3 path retain their prior behavior. Persisted failure evidence is limited to
+  error code, numeric exit code, and stdout/stderr byte counts, never content.
+
+  The plan builder now derives its programme ledger from the digest-bound GO
+  request and validates it against the frozen registration envelope. This
+  prevents the consumed revision-2 request's exact `661 -> 1141` ledger from
+  silently reverting to the registration's older `651 -> 1131` planning bound.
+  No frozen prompt, response schema, semantic service, registration, heldout,
+  request, or historical result byte changes. Any future attempt requires a new
+  source commit, revisioned digest-bound HOLD request, wholly fresh destination,
+  and exact programme maximum `696 -> 1176 / 5000`; this repair itself creates
+  no request and authorizes no model, outcome-validation, or confirmation call.

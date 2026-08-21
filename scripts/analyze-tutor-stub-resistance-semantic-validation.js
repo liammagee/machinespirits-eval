@@ -61,6 +61,7 @@ function main() {
     throw new Error('--destination must be a bounded absolute path');
   }
   const request = repoPath(args['go-request']);
+  const goRequest = JSON.parse(fs.readFileSync(request.absolute, 'utf8'));
   const validationRegistration = String(args['validation-registration'] || '').trim();
   if (
     validationRegistration &&
@@ -89,6 +90,7 @@ function main() {
     expectedSourceTree: snapshot.tree,
     expectedGoRequestPath: request.relative,
     expectedGoRequestSha256: sha256(request.absolute),
+    expectedGoRequest: goRequest,
     sourceDirty: snapshot.dirty,
     archiveDir,
     ...(loaded ? { loaded } : {}),

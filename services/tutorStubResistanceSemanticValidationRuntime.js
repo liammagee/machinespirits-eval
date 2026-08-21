@@ -32,7 +32,11 @@ import {
   tutorStubResistanceSemanticCorpusCaseForExecutionId,
   tutorStubResistanceSemanticValidationPlanFingerprint,
 } from './tutorStubResistanceSemanticValidation.js';
-import { tutorStubCliPolicyRetryDecision, waitTutorStubCliPolicyRetryDelay } from './tutorStubCliPolicyRetry.js';
+import {
+  isTutorStubRetryableClaudeExitFailure,
+  tutorStubCliPolicyRetryDecision,
+  waitTutorStubCliPolicyRetryDelay,
+} from './tutorStubCliPolicyRetry.js';
 import { resolveTutorStubArtifactArchiveDirectory } from './tutorStubArtifactArchive.js';
 
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_PLAN_SCHEMA =
@@ -43,6 +47,7 @@ export const TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_SEAL_SCHEMA =
   'machinespirits.tutor-stub.resistance-semantic-validation-seal.v1';
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REPORT_SCHEMA =
   'machinespirits.tutor-stub.resistance-semantic-validation-report.v1';
+const CLAUDE_EXIT_BEFORE_RESPONSE_REASON = 'claude CLI exited before an accepted semantic response';
 
 function semanticInstrument(loaded) {
   const buildBlindedCases = loaded?.buildBlindedCases || buildTutorStubResistanceSemanticBlindedValidationCases;
@@ -472,12 +477,69 @@ function blindCaseBinding(blindedCase, judges, instrument) {
   };
 }
 
+function validationRequestBinding(goRequest, loaded) {
+  const request = goRequest && typeof goRequest === 'object' && !Array.isArray(goRequest) ? goRequest : null;
+  const semantic = request?.semanticAdjudicationValidation;
+  const budget = request?.budget;
+  const readiness = loaded.registration.executionReadiness;
+  const version = Number(loaded.registration.version);
+  const revision = semantic?.requestRevision ?? null;
+  const expectedType = `prospective_resistance_semantic_adjudication_heldout_validation_v${version}`;
+  const budgetKeys = [
+    'plannedCases',
+    'plannedModelCalls',
+    'maximumReservationsPerPlannedCall',
+    'maximumPlannedModelAttempts',
+    'programmeLedgerBefore',
+    'programmeLedgerAfterMaximum',
+    'programmeCeiling',
+    'retryOrResumeAuthority',
+  ];
+  if (
+    !request ||
+    semantic?.type !== expectedType ||
+    !budget ||
+    !exactJson(Object.keys(budget).sort(), budgetKeys.sort()) ||
+    budget.plannedCases !== readiness.plannedCases ||
+    budget.plannedModelCalls !== readiness.plannedModelCalls ||
+    budget.maximumReservationsPerPlannedCall !== readiness.maximumReservationsPerPlannedCall ||
+    budget.maximumPlannedModelAttempts !== readiness.hardValidationReservations ||
+    budget.programmeCeiling !== readiness.programmeCeiling ||
+    budget.retryOrResumeAuthority !== 'bounded_technical_recovery' ||
+    !Number.isInteger(budget.programmeLedgerBefore) ||
+    budget.programmeLedgerBefore < readiness.programmeLedgerBefore ||
+    budget.programmeLedgerAfterMaximum !== budget.programmeLedgerBefore + readiness.hardValidationReservations ||
+    budget.programmeLedgerAfterMaximum > budget.programmeCeiling ||
+    (revision === null &&
+      (budget.programmeLedgerBefore !== readiness.programmeLedgerBefore ||
+        budget.programmeLedgerAfterMaximum !== readiness.programmeLedgerAfterMaximum)) ||
+    (version === 3 &&
+      revision === 2 &&
+      (budget.programmeLedgerBefore !== 661 || budget.programmeLedgerAfterMaximum !== 1141)) ||
+    (revision !== null && (!Number.isInteger(revision) || revision < 2))
+  ) {
+    throw new Error('semantic validation GO request budget does not match the registered execution envelope');
+  }
+  return {
+    revision,
+    budget: {
+      planned_calls: budget.plannedModelCalls,
+      maximum_reservations_per_call: budget.maximumReservationsPerPlannedCall,
+      hard_reservation_ceiling: budget.maximumPlannedModelAttempts,
+      programme_ledger_before: budget.programmeLedgerBefore,
+      programme_ledger_after_maximum: budget.programmeLedgerAfterMaximum,
+      programme_ceiling: budget.programmeCeiling,
+    },
+  };
+}
+
 export function buildTutorStubResistanceSemanticValidationPlan({
   sourceCommit,
   sourceTree,
   destination,
   goRequestPath,
   goRequestSha256,
+  goRequest,
   loaded = loadTutorStubResistanceSemanticValidation(),
 }) {
   if (!/^[0-9a-f]{40}$/u.test(String(sourceCommit || ''))) throw new Error('source commit must be a full SHA-1');
@@ -489,6 +551,7 @@ export function buildTutorStubResistanceSemanticValidationPlan({
   const judges = loaded.instrument.registration.measurement.judges;
   const instrument = semanticInstrument(loaded);
   const readiness = loaded.registration.executionReadiness;
+  const requestBinding = validationRequestBinding(goRequest, loaded);
   const blindedCases = instrument.buildBlindedCases(loaded.corpus.cases);
   const plan = {
     schema: TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_PLAN_SCHEMA,
@@ -525,14 +588,7 @@ export function buildTutorStubResistanceSemanticValidationPlan({
       effort: judge.effort,
       maximum_reservations: 3,
     })),
-    budget: {
-      planned_calls: readiness.plannedModelCalls,
-      maximum_reservations_per_call: readiness.maximumReservationsPerPlannedCall,
-      hard_reservation_ceiling: readiness.hardValidationReservations,
-      programme_ledger_before: readiness.programmeLedgerBefore,
-      programme_ledger_after_maximum: readiness.programmeLedgerAfterMaximum,
-      programme_ceiling: readiness.programmeCeiling,
-    },
+    budget: requestBinding.budget,
     lifecycle: {
       checkpoint_after_each_judge_response: true,
       technical_recovery_zero_response_cases_only: true,
@@ -557,6 +613,36 @@ export function validateTutorStubResistanceSemanticValidationPlan({ plan, expect
     issues.push('validation plan must bind exactly 80 unique cases');
   }
   return { valid: issues.length === 0, issues };
+}
+
+export function auditTutorStubResistanceSemanticValidationAttempts({ attempts, safeClaudeExitTelemetryAllowed }) {
+  const issues = [];
+  for (const [index, attempt] of (Array.isArray(attempts) ? attempts : []).entries()) {
+    const keys = Object.keys(attempt).sort();
+    const hasSafeExitTelemetry = Object.hasOwn(attempt, 'exit_code');
+    const allowed =
+      attempt.status === 'transport_failed'
+        ? hasSafeExitTelemetry
+          ? ['attempt', 'error_code', 'exit_code', 'status', 'stderr_bytes', 'stdout_bytes']
+          : ['attempt', 'error_code', 'status']
+        : ['attempt', 'status'];
+    if (
+      !exactJson(keys, allowed.sort()) ||
+      attempt.attempt !== index + 1 ||
+      !['returned', 'transport_failed', 'dispatched'].includes(attempt.status) ||
+      (index < attempts.length - 1 && attempt.status !== 'transport_failed') ||
+      (hasSafeExitTelemetry &&
+        (!safeClaudeExitTelemetryAllowed ||
+          attempt.error_code !== 'CLI_PROVIDER_EXIT_FAILED' ||
+          attempt.exit_code !== 1 ||
+          attempt.stdout_bytes !== 0 ||
+          !Number.isInteger(attempt.stderr_bytes) ||
+          attempt.stderr_bytes < 0))
+    ) {
+      issues.push('judge attempt status sequence is invalid');
+    }
+  }
+  return issues;
 }
 
 function newCheckpoint({ plan, corpusCase, executionCaseId }) {
@@ -647,6 +733,7 @@ async function executeJudge({
   afterLocalCheckpointWrite,
   archive,
   instrument,
+  allowClaudeExitFailureCodeOne,
 }) {
   const resolved = resolveModelRef(judge.modelRef);
   if (resolved.provider !== judge.provider || resolved.model !== judge.model) {
@@ -728,10 +815,21 @@ async function executeJudge({
       if (error?.name === 'AbortError') throw error;
       result.attempts.at(-1).status = 'transport_failed';
       result.attempts.at(-1).error_code = error?.code || null;
-      const retry = tutorStubCliPolicyRetryDecision(error, { retryCount: result.attempts.length - 1 });
+      const safeClaudeExitFailure = allowClaudeExitFailureCodeOne && isTutorStubRetryableClaudeExitFailure(error);
+      if (safeClaudeExitFailure) {
+        result.attempts.at(-1).exit_code = Number.isInteger(error?.exitCode) ? error.exitCode : null;
+        result.attempts.at(-1).stdout_bytes = Number.isInteger(error?.stdoutBytes) ? error.stdoutBytes : null;
+        result.attempts.at(-1).stderr_bytes = Number.isInteger(error?.stderrBytes) ? error.stderrBytes : null;
+      }
+      const retry = tutorStubCliPolicyRetryDecision(error, {
+        retryCount: result.attempts.length - 1,
+        allowClaudeExitFailureCodeOne,
+      });
       if (!retry.retry) {
         result.outcome = 'transport_failed';
-        result.invalid_reason = error?.message || 'semantic validation judge transport failed';
+        result.invalid_reason = safeClaudeExitFailure
+          ? CLAUDE_EXIT_BEFORE_RESPONSE_REASON
+          : error?.message || 'semantic validation judge transport failed';
         break;
       }
       await waitForRetry(retry.delay_ms);
@@ -793,6 +891,7 @@ export async function runTutorStubResistanceSemanticValidation({
   sourceTree,
   goRequestPath,
   goRequestSha256,
+  goRequest,
   resume = false,
   callModel,
   resolveModelRef,
@@ -818,8 +917,12 @@ export async function runTutorStubResistanceSemanticValidation({
     destination,
     goRequestPath,
     goRequestSha256,
+    goRequest,
     loaded,
   });
+  const requestBinding = validationRequestBinding(goRequest, loaded);
+  const allowClaudeExitFailureCodeOne =
+    loaded.registration.version === 3 && requestBinding.revision !== null && requestBinding.revision >= 2;
   const blindedCases = instrument.buildBlindedCases(loaded.corpus.cases);
   const planPath = path.join(destination, 'plan.json');
   const sealPath = path.join(destination, 'seal.json');
@@ -949,6 +1052,7 @@ export async function runTutorStubResistanceSemanticValidation({
         afterLocalCheckpointWrite,
         archive,
         instrument,
+        allowClaudeExitFailureCodeOne: allowClaudeExitFailureCodeOne && judge.provider === 'claude-code',
       });
       await afterJudgeCheckpoint?.({ caseId: blindedCase.case_id, judgeId: judge.id });
     }
@@ -1019,6 +1123,7 @@ export function analyzeTutorStubResistanceSemanticValidation({
   expectedSourceTree,
   expectedGoRequestPath,
   expectedGoRequestSha256,
+  expectedGoRequest,
   sourceDirty,
   archiveDir,
   allowExistingReport = false,
@@ -1032,10 +1137,12 @@ export function analyzeTutorStubResistanceSemanticValidation({
     destination,
     goRequestPath: expectedGoRequestPath,
     goRequestSha256: expectedGoRequestSha256,
+    goRequest: expectedGoRequest,
     loaded,
   });
   const planValidation = validateTutorStubResistanceSemanticValidationPlan({ plan, expected: expectedPlan });
   if (!planValidation.valid) throw new Error(planValidation.issues.join('; '));
+  const requestBinding = validationRequestBinding(expectedGoRequest, loaded);
   if (sourceDirty !== false) throw new Error('semantic validation analysis requires an explicitly clean source tree');
   const seal = readJson(path.join(destination, 'seal.json'));
   const sealKeys = [
@@ -1149,25 +1256,24 @@ export function analyzeTutorStubResistanceSemanticValidation({
       issues.push('case attempt ledger has an unregistered judge');
     }
     for (const row of checkpoint.judge_results) {
+      const rowJudge = judges.find((judge) => judge.id === row.judge_id);
+      const safeClaudeExitTelemetryAllowed =
+        loaded.registration.version === 3 &&
+        requestBinding.revision !== null &&
+        requestBinding.revision >= 2 &&
+        rowJudge?.provider === 'claude-code';
       independentRunIds.push(row.independent_run_id);
       if (checkpoint.invocation_id_by_judge?.[row.judge_id] !== row.independent_run_id) {
         issues.push('judge invocation id does not match the checkpoint ledger');
       }
       const attempts = checkpoint.attempts_by_judge?.[row.judge_id];
       if (!exactJson(attempts, row.attempts)) issues.push('judge result attempt ledger does not match checkpoint');
-      for (const [index, attempt] of (Array.isArray(attempts) ? attempts : []).entries()) {
-        const keys = Object.keys(attempt).sort();
-        const allowed =
-          attempt.status === 'transport_failed' ? ['attempt', 'error_code', 'status'] : ['attempt', 'status'];
-        if (
-          !exactJson(keys, allowed.sort()) ||
-          attempt.attempt !== index + 1 ||
-          !['returned', 'transport_failed', 'dispatched'].includes(attempt.status) ||
-          (index < attempts.length - 1 && attempt.status !== 'transport_failed')
-        ) {
-          issues.push('judge attempt status sequence is invalid');
-        }
-      }
+      issues.push(
+        ...auditTutorStubResistanceSemanticValidationAttempts({
+          attempts,
+          safeClaudeExitTelemetryAllowed,
+        }),
+      );
       const finalStatus = attempts?.at(-1)?.status;
       if (
         (['recorded_response', 'invalid_return'].includes(row.outcome) && finalStatus !== 'returned') ||
@@ -1175,6 +1281,13 @@ export function analyzeTutorStubResistanceSemanticValidation({
         (row.outcome === 'dispatch_ambiguous_no_recall' && finalStatus !== 'dispatched')
       ) {
         issues.push('judge result outcome does not match final attempt status');
+      }
+      if (
+        row.outcome === 'transport_failed' &&
+        row.attempts.some((attempt) => Object.hasOwn(attempt, 'exit_code')) &&
+        row.invalid_reason !== CLAUDE_EXIT_BEFORE_RESPONSE_REASON
+      ) {
+        issues.push('Claude exit failure reason is not the registered content-free disposition');
       }
     }
     const prompts = {};
