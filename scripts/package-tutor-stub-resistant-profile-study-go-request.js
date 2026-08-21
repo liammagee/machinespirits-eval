@@ -324,6 +324,7 @@ function assertMaterializedStructure({
   priorBoredomRequest,
   priorBoredomPredecessorRequest,
   priorSemanticValidationRequest,
+  priorSemanticValidationSuccessorRequest,
   prefixBundle,
   liveCommandSha256,
   recoveryCommandSha256,
@@ -451,6 +452,19 @@ function assertMaterializedStructure({
       prior?.sha256,
       priorSemanticValidationRequest.sha256,
       'prior semantic-validation request digest',
+    );
+  }
+  if (priorSemanticValidationSuccessorRequest) {
+    const prior = request.semanticAdjudicationValidation?.stoppedV3SuccessorValidation?.request;
+    assertComputedValue(
+      prior?.path,
+      priorSemanticValidationSuccessorRequest.path,
+      'prior semantic-validation successor path',
+    );
+    assertComputedValue(
+      prior?.sha256,
+      priorSemanticValidationSuccessorRequest.sha256,
+      'prior semantic-validation successor digest',
     );
   }
   if (prefixBundle) {
@@ -734,6 +748,24 @@ function materializeTemplate({ templateText, template, launchCommit }) {
       replacements,
     );
   }
+  const priorSemanticValidationSuccessorRequestPath =
+    template.semanticAdjudicationValidation?.stoppedV3SuccessorValidation?.request?.path;
+  const priorSemanticValidationSuccessorRequest = priorSemanticValidationSuccessorRequestPath
+    ? materializeRepoFile({
+        launchCommit,
+        repoPath: priorSemanticValidationSuccessorRequestPath,
+        label: 'prior stopped semantic-validation successor request',
+        files,
+      })
+    : null;
+  if (priorSemanticValidationSuccessorRequest) {
+    requireMarker(
+      templateText,
+      goRequestFileSha256Marker(priorSemanticValidationSuccessorRequest.path),
+      priorSemanticValidationSuccessorRequest.sha256,
+      replacements,
+    );
+  }
   const prefixBundlePath = template.bindings?.prefixBundle?.path;
   const prefixBundle = prefixBundlePath
     ? materializeRepoFile({
@@ -786,6 +818,7 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     priorBoredomRequest,
     priorBoredomPredecessorRequest,
     priorSemanticValidationRequest,
+    priorSemanticValidationSuccessorRequest,
     prefixBundle,
     liveCommandSha256,
     recoveryCommandSha256,

@@ -136,6 +136,9 @@ const CLOSURE_V3 = [
 ];
 const V3_REQUEST = 'config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3.json';
 const CLOSURE_V3_SUCCESSOR = [...CLOSURE_V3, V3_REQUEST];
+const V3_SUCCESSOR_REQUEST =
+  'config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3-successor.json';
+const CLOSURE_V3_SECOND_SUCCESSOR = [...CLOSURE_V3_SUCCESSOR, V3_SUCCESSOR_REQUEST];
 const STOPPED_V3_VALIDATION = {
   request: { path: V3_REQUEST, sha256: '940cd6582909ff2e193830f219b0dc1a7d36f279d3d8c2709ca108177aba5539' },
   disposition: 'consumed_stopped_wholly_excluded',
@@ -192,6 +195,165 @@ const STOPPED_V3_VALIDATION = {
     sealedCases: 2,
     judgeInFlightCases: 1,
     programmeLedgerAfter: 661,
+  },
+  goldJoined: false,
+  recoveryRan: false,
+  analyzerRan: false,
+  resultProduced: false,
+  reportProduced: false,
+  sealProduced: false,
+  sameSourceResumePermitted: false,
+  recoveryPermitted: false,
+  reusePermitted: false,
+  poolingPermitted: false,
+  outcomeSelectionPermitted: false,
+  confirmationCreditPermitted: false,
+};
+const STOPPED_V3_SUCCESSOR_VALIDATION = {
+  request: {
+    path: V3_SUCCESSOR_REQUEST,
+    sha256: 'bb3571a2971e1d3fc3d7dad9fa0e41715b3e2282d495aef6f5880fd04fd4b5da',
+  },
+  disposition: 'consumed_stopped_wholly_excluded',
+  source: {
+    commit: 'b39e82d872a9b1320a20bd9e58ae23e33e000a13',
+    tree: '584d89016a0010ecb83783c005bb0e5f919b0914',
+  },
+  destination: '.tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v3-2026-08-21-b',
+  planSha256: '2f9ef9d889469da5ec6b4cbf3609d7a03b7855c9b4ff3b23be52cf7cd396b817',
+  localEvidence: {
+    files: 19,
+    bytes: 420968,
+    inventorySha256: 'f0c0cc3a58f720128d634cc48c4674e5179adee4bc6ad1a84faa1646132d5bd9',
+    artifacts: [
+      ['plan.json', 'plan', 'a8aeec3d7cdaae9c6cf3c06598f4aa831f639c7c49622f9132eaaaeb9769e74b'],
+      [
+        'cases/sv3-0846454abc11ce08d275b2f892bae842/checkpoint.json',
+        'sealed',
+        'd07339398b62722fbeeb5d06ea818dff673fbb7b7f4b651fc6fd9320323f1168',
+      ],
+      [
+        'cases/sv3-1856062e7c569f5436091bf773524990/checkpoint.json',
+        'sealed',
+        '0e82d1d8cc01f0dbfab4975cb2ecec9de1101a9c7fe5c647db96a326191e3292',
+      ],
+      [
+        'cases/sv3-33784137804c32208977669a6288f338/checkpoint.json',
+        'sealed',
+        '877e78f59065d700aa0098dfa9553fbd569517315b585d88ea31773ee8c1938f',
+      ],
+      [
+        'cases/sv3-342e7a6727b7549c908f19502a43ca30/checkpoint.json',
+        'sealed',
+        'ca19516de8c61e02a07ded8845f333e4ae184822c31e12e3396098a75daee1d4',
+      ],
+      [
+        'cases/sv3-3e8cd42b67a4d67bd1bb0004cc0338f2/checkpoint.json',
+        'sealed',
+        '2b435a8b3aaba8e01955a9578fbd76bb10690b527b08818e2e22422296d6aa3c',
+      ],
+      [
+        'cases/sv3-446ea7ff1b853d91609b942cd7361064/checkpoint.json',
+        'sealed',
+        '6bd545a94f616bef55b1f51ee085a7a1e80b4e2544ff6910ab808106aecb42e9',
+      ],
+      [
+        'cases/sv3-4873505e21825ee51b69481a071ed0d7/checkpoint.json',
+        'sealed',
+        'ce09ecf47aaf77545ec6c1bf976f54fbe9251b9949592db2026479f64742955e',
+      ],
+      [
+        'cases/sv3-4c2db32139b2fcb0a22ef3a967eeddc9/checkpoint.json',
+        'sealed',
+        '36b832e0f3a85976b72b57254d4652635a6c53a22dd6e23d6549ced143d47791',
+      ],
+      [
+        'cases/sv3-630037d2c2ac71afa73d1a7fe13ea1b1/checkpoint.json',
+        'judge_in_flight',
+        'b9722815d73bba30127142150eb75b4a8d380fb4bfd961c02bf56a4c73b7cb7a',
+      ],
+      [
+        'cases/sv3-86fb1748771f7743d76d07ffdd9f6533/checkpoint.json',
+        'sealed',
+        '31c39c760ece2f41d75b4a09152cc65520a4131fc6a2e66f7fef073029ec4d4c',
+      ],
+      [
+        'cases/sv3-9fad8e3a4f635f2c6c14f23216174712/checkpoint.json',
+        'sealed',
+        'cbd56b0f6c959deaae300ffa2c3b01abc2027ad807f66d8dd7bd80bcd823a7eb',
+      ],
+      [
+        'cases/sv3-a059314a64d8f58efc25097b50de5a23/checkpoint.json',
+        'sealed',
+        'ec5a662ef454a88fd610f61cc2f21611bdd45926407f586eb3cdbc0dac803bbd',
+      ],
+      [
+        'cases/sv3-b154dc89b6d7bb62d8e316a5b5dcc6a4/checkpoint.json',
+        'sealed',
+        '66c25787fd4b177e09b43e884835b453ff3a574c1e458fa0f9ee904437785255',
+      ],
+      [
+        'cases/sv3-b3ebe28ac0a34f02aec2a9d8819e78d6/checkpoint.json',
+        'sealed',
+        'c9ac9234dbb1bb8e83a8dec25ce2e57eff2e0c6d3644f2955ed8e4b94e3e1ce7',
+      ],
+      [
+        'cases/sv3-becd77dbbacd806515c0f612b74bd756/checkpoint.json',
+        'sealed',
+        '9f4ddea7358a1d63c50a376283cc81f8bf66fb67d823ef39aad1862419530402',
+      ],
+      [
+        'cases/sv3-c25051c69f0c4c7b8c66e2c45685ee0a/checkpoint.json',
+        'sealed',
+        '24b80a8b6b6f0b95e17686cf9fdb976940c851b1e798f200587ba9b8876f9a2a',
+      ],
+      [
+        'cases/sv3-d34fc430c5374c7e30833d6b5df8d3eb/checkpoint.json',
+        'sealed',
+        '4d0b421b0bd6769c585d0d6afbacc3d334d6bcec01236189cd8dbd0bef50dd88',
+      ],
+      [
+        'cases/sv3-ddf1d5cf7c4c04a94be25c73930d7f5e/checkpoint.json',
+        'sealed',
+        '3df49cc20bd129f2803cebd410abbb741105ab5d8f0088b2903f234e3f953c32',
+      ],
+    ].map(([path, status, sha256]) => ({ path, status, sha256 })),
+  },
+  privateArchive: {
+    branch: 'codex/resistance-semantic-validation-v3-successor-incomplete-archive',
+    commit: '17365bcdb1c1a3c0baad585200ccacdcc0d5c1ff',
+    tree: '2b556a59e05da040ba621bee3d94e925e0d080c5',
+    baseCommit: '83450f09a69a8cf559fb4f17b2c4da6e769c430d',
+    artifactPath: 'artifacts/tutor-stub-live/resistance-semantic-validation/bb3571a2971e1d3f-2f9ef9d889469da5',
+    files: 141,
+    bytes: 1370698,
+    inventorySha256: 'ea84d3801bc10238dbfb80a1a3739f2a24814548f6687ff0bfcb941c864a1f84',
+    manifestSha256: '81e8ce26d43ae6d218313e1b02d4ade684ed66001e44dd901eb450ae4185f507',
+    manifestedTransitions: 140,
+    status: 'running_stopped_before_seal',
+  },
+  accounting: {
+    chargedReservations: 35,
+    returnedResponses: 32,
+    terminalTransportFailures: 2,
+    dispatchedAmbiguous: 1,
+    sealedCases: 17,
+    judgeInFlightCases: 1,
+    programmeLedgerAfter: 696,
+  },
+  failureEvidence: {
+    judgeId: 'semantic_judge_b',
+    provider: 'claude-code',
+    model: 'sonnet-5',
+    errorCode: 'CLI_PROVIDER_EXIT_FAILED',
+    exitCode: 1,
+    cases: ['sv3-a059314a64d8f58efc25097b50de5a23', 'sv3-d34fc430c5374c7e30833d6b5df8d3eb'],
+  },
+  ambiguousCase: {
+    caseId: 'sv3-630037d2c2ac71afa73d1a7fe13ea1b1',
+    judgeId: 'semantic_judge_a',
+    attempt: 1,
+    status: 'dispatched',
   },
   goldJoined: false,
   recoveryRan: false,
@@ -568,6 +730,23 @@ function buildRequestV3Successor(requestRepoPath, suffix) {
   return request;
 }
 
+function buildRequestV3SecondSuccessor(requestRepoPath, suffix) {
+  const request = buildRequestV3Successor(requestRepoPath, suffix);
+  request.source.closure = CLOSURE_V3_SECOND_SUCCESSOR.map((repoPath) => ({
+    path: repoPath,
+    sha256: fileSha256(repoPath),
+  }));
+  request.semanticAdjudicationValidation.requestRevision = 3;
+  request.semanticAdjudicationValidation.stoppedV3SuccessorValidation = structuredClone(
+    STOPPED_V3_SUCCESSOR_VALIDATION,
+  );
+  request.semanticAdjudicationValidation.claimBoundary =
+    'heldout_semantic_instrument_v3_validation_only_failed_v1_v2_and_two_stopped_v3_runs_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim';
+  request.budget.programmeLedgerBefore = 696;
+  request.budget.programmeLedgerAfterMaximum = 1176;
+  return request;
+}
+
 function templateText(request) {
   const template = structuredClone(request);
   template.source.launchCommit = GO_REQUEST_PACKAGE_MARKERS.sourceCommit;
@@ -883,6 +1062,66 @@ test('future v3 successor packaging binds the stopped partial and the 661-to-114
     const changed = structuredClone(request);
     mutate(changed);
     const invalidPath = path.join(temporary, `invalid-v3-successor-${crypto.randomUUID()}.json`);
+    fs.writeFileSync(invalidPath, `${JSON.stringify(changed, null, 2)}\n`);
+    assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
+  }
+});
+
+test('future v3 revision-3 packaging binds both stopped partials and the 696-to-1176 ledger', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-v3-second-successor-go-request-'));
+  const output = `.tutor-stub-auto-eval/.test-semantic-validation-v3-second-successor-go-${process.pid}.json`;
+  t.after(() => {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(path.join(ROOT, output), { force: true });
+  });
+  const request = buildRequestV3SecondSuccessor(output, `${process.pid}-second-successor`);
+  fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
+  fs.writeFileSync(path.join(ROOT, output), `${JSON.stringify(request, null, 2)}\n`);
+  const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath: path.join(ROOT, output) });
+  assert.equal(report.packetValid, true);
+  assert.equal(report.modelCalls, 0);
+  assert.equal(report.productionWrites, 0);
+  assert.equal(report.budget.programmeLedgerBefore, 696);
+  assert.equal(report.budget.programmeLedgerAfterMaximum, 1176);
+  fs.rmSync(path.join(ROOT, output));
+
+  const templatePath = path.join(temporary, 'template.json');
+  fs.writeFileSync(templatePath, templateText(request));
+  const packaged = packageTutorStubResistantProfileStudyGoRequest({
+    templatePath,
+    launchCommit: request.source.launchCommit,
+    outputPath: output,
+  });
+  assert.equal(packaged.sourceClosureFiles, CLOSURE_V3_SECOND_SUCCESSOR.length);
+  assert.equal(packaged.isolatedReplay.nodeModulesPresent, false);
+  assert.equal(packaged.isolatedReplay.packetValid, true);
+  assert.equal(packaged.effects.modelCalls, 0);
+  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), Buffer.from(`${JSON.stringify(request, null, 2)}\n`));
+
+  for (const mutate of [
+    (value) => (value.semanticAdjudicationValidation.requestRevision = 4),
+    (value) => (value.semanticAdjudicationValidation.stoppedV3Validation.request.sha256 = '0'.repeat(64)),
+    (value) => (value.semanticAdjudicationValidation.stoppedV3SuccessorValidation.request.sha256 = '0'.repeat(64)),
+    (value) =>
+      (value.semanticAdjudicationValidation.stoppedV3SuccessorValidation.privateArchive.commit = '0'.repeat(40)),
+    (value) => (value.semanticAdjudicationValidation.stoppedV3SuccessorValidation.privateArchive.tree = '0'.repeat(40)),
+    (value) =>
+      (value.semanticAdjudicationValidation.stoppedV3SuccessorValidation.privateArchive.manifestSha256 = '0'.repeat(
+        64,
+      )),
+    (value) =>
+      (value.semanticAdjudicationValidation.stoppedV3SuccessorValidation.localEvidence.artifacts[18].sha256 =
+        '0'.repeat(64)),
+    (value) => (value.semanticAdjudicationValidation.stoppedV3SuccessorValidation.accounting.returnedResponses = 33),
+    (value) => (value.semanticAdjudicationValidation.stoppedV3SuccessorValidation.goldJoined = true),
+    (value) => (value.semanticAdjudicationValidation.stoppedV3SuccessorValidation.analyzerRan = true),
+    (value) => (value.semanticAdjudicationValidation.stoppedV3SuccessorValidation.sameSourceResumePermitted = true),
+    (value) => (value.budget.programmeLedgerBefore = 661),
+    (value) => (value.source.closure = value.source.closure.filter((row) => row.path !== V3_SUCCESSOR_REQUEST)),
+  ]) {
+    const changed = structuredClone(request);
+    mutate(changed);
+    const invalidPath = path.join(temporary, `invalid-v3-second-successor-${crypto.randomUUID()}.json`);
     fs.writeFileSync(invalidPath, `${JSON.stringify(changed, null, 2)}\n`);
     assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
   }
