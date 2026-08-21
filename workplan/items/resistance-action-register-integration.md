@@ -1,7 +1,7 @@
 ---
 id: resistance-action-register-integration
 title: Integrate resistance diagnosis, pedagogical action, and tonal register across tutor harnesses
-status: active
+status: done
 type: research
 priority: P1
 owner: codex
@@ -9,19 +9,18 @@ source: manual
 created: 2026-08-18
 updated: 2026-08-21
 verification: >-
-  The lexical-observer programme remains closed exactly as recorded, but the
-  user has reopened the scientific question through an additive independent
-  semantic-measurement architecture. Manipulation semantic validations v1 and
-  v2 are sealed failed results and are never rescored or reused. The additive
-  manipulation v3 instrument stayed frozen through independent heldout
-  authoring. Its first request stopped after ten reservations and its fresh
-  successor stopped after 35 reservations; both consumed roots are excluded
-  and cannot resume. The frozen V3 instrument and heldout remain unchanged.
-  A source repair adds only a revisioned-V3 pre-response Claude exit retry,
-  safe numeric failure telemetry, and request-derived plan accounting. Another
-  fresh digest-bound request and destination are required before any further
-  validation. Outcome validation and confirmation remain unauthorized.
-claim_status: methods
+  The frozen independent semantic-measurement programme is closed without a
+  scientific result under its standing success-or-systemic-failure boundary.
+  Manipulation validations V1 and V2 failed their registered gates; all three
+  V3 attempts stopped before gold join or analysis. The final V3 successor
+  repeated the same two Claude route failures after the exact pre-response
+  retry repair, but each failed attempt carried stdout and therefore could not
+  be recalled without risking duplicate semantic responses. Every partial root
+  is durably preserved and wholly excluded. No manipulation-validity,
+  warm/plain, null, efficacy, learning, transfer, human, cell, or learner-
+  profile claim is licensed. No further model call is authorized within this
+  programme; any restart requires a fresh human method and route decision.
+claim_status: killed
 links:
   items:
     - tutor-stub-cell-reconciliation
@@ -2914,3 +2913,74 @@ and explicit human approval.
   validation and confirmation remain unauthorized. Authority fields remain
   literal `HOLD` / `null` / `false`; packaging and isolated validation made
   zero model calls and zero production writes.
+
+- 2026-08-21 — **Terminal systemic transport/reproducibility closeout; no
+  scientific result.** The revision-3 successor request above was launched
+  once from its exact pinned source and stopped without recovery when the same
+  Claude judge-B route failure repeated on two distinct cases. The consumed
+  request remains SHA-256
+  `234d68afc8576acca01620dd110a285aadd0adf2f5eb408b1d9e95956ed2da5d`,
+  at source/tree `85010118c71c6b62dac6b7c741a2c4905ad19c06` /
+  `37d8f63d299769552fc2563668306c5c1dc2b0ac`. Exact charged accounting
+  is 32 reservations: 29 returned, two terminal
+  `CLI_PROVIDER_EXIT_FAILED` Sonnet judge-B attempts, and one ambiguously
+  dispatched Sonnet judge-B reservation interrupted at stop. Fifteen cases sealed and
+  one remained `judge_in_flight`, moving the programme ledger from `696` to
+  `728 / 5000`.
+
+  The two failed cases are exactly
+  `sv3-d34fc430c5374c7e30833d6b5df8d3eb` and
+  `sv3-a059314a64d8f58efc25097b50de5a23`, the same cases that failed in the
+  prior successor. Both recorded `claude CLI exited with code 1`, no raw
+  response, and one terminal attempt. The launch-source bridge always attaches
+  exit code plus stdout/stderr byte counts to this failure class. The repaired
+  runtime persists and retries only the exact provably pre-response predicate
+  `exitCode === 1 && stdoutBytes === 0`; it deliberately omits that telemetry
+  and refuses retry otherwise. The missing safe telemetry therefore means
+  both repeated failures carried nonzero stdout, not that the bridge lost the
+  counts. Recalling either call could duplicate an unseen semantic response,
+  violating the registered no-recall, no-rerun, no-replacement, and
+  no-selection boundary.
+
+  This is the failure mechanism the concrete source repair was meant to bound:
+  exact code-1/zero-stdout failures became eligible for the already registered
+  5-second/15-second retry envelope, while stdout-positive and ambiguous calls
+  remained terminal. The fresh successor exercised that repaired source and
+  reproduced the actual stdout-positive route failure twice. Classifying
+  provider stdout content as a new known-nonresponse envelope, changing the
+  route, or changing the method would require new prospective rules and could
+  not safely continue this consumed root. Under the exact standing-authority
+  criterion — `systemic failure` measured by `an inability to repair previous
+  failures`, attachment SHA-256
+  `538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce`
+  — this is terminal systemic transport/reproducibility failure within the
+  programme.
+
+  The local root is preserved as exactly 17 files / 383,860 bytes at inventory
+  SHA-256
+  `cf3e40c7e795607691470b574b1d2530a3b8bb6a453f0e7415f3c694f26f6d7e`;
+  its `plan.json` file SHA-256 is
+  `cf1eebf5921aeaed092947861c6dc78c9cf4895173544df38bff1fa44c15cc1a`
+  and internal plan SHA-256 is
+  `8175b1aa619dd5413525b9eb0dfb28f4a14427cee485dddddc01742db9e6e44d`.
+  The durable transition archive is preserved on private branch
+  `codex/resistance-semantic-validation-v3-successor-2-incomplete-archive`,
+  commit `0e2403626bbf54e596d4f8f8244cc24067cdea1f`, tree
+  `405046957577b83a624e090a39945ff1f89398c4`. Its exact 128-file /
+  1,248,078-byte inventory is
+  `2f1b0db82031b73760a1f62a880bbaa443925fe616215607011e83559a5efcb9`,
+  and manifest SHA-256 is
+  `e0971b83fa406a25239bd4223d51bd5d9bdb4d000cc17a61beae9ae916e720d5`.
+  All 127 transitions verify: one plan, 16 initialized, 32 prepared, 32
+  dispatched, 29 returned, two transport-failed, and 15 sealed; all 17 current
+  local files are byte-identically bound.
+
+  No gold was joined, and no recovery, analyzer, report, result, global seal,
+  outcome validation, or confirmation occurred. The three V3 partial roots
+  and all V1/V2 failed validation artifacts remain permanently excluded from
+  reuse, pooling, normalization, rescoring, replacement, selection, or
+  scientific credit. This is not a manipulation-validity result, a warm/plain
+  effect, or a null result. No further model call, successor request, repair,
+  or continuation is authorized under the standing programme authority. Any
+  future restart requires an explicit fresh human programme, measurement, and
+  provider-route decision.
