@@ -2005,3 +2005,30 @@ and explicit human approval.
   without changing the request, prompt, wrapper, or protected inputs before
   any confirmation launch. Isolated no-`node_modules` replay passed 83 checks
   with zero model calls and zero production writes.
+
+- 2026-08-20 — Prepared the digest-bound, validation-only Sol request
+  `config/tutor-stub-boredom-semantic-validation-request.v1.json`
+  (`machinespirits.tutor-stub.boredom-semantic-validation-request.v1`,
+  status HOLD, null authorization). Neither the confirmation HOLD request
+  nor the endpoint-go certificate authorizes a semantic-model validation
+  call, so the 22 empirical Sol adjudications require this separate
+  request. It predeclares and binds: the frozen 22-case held-out corpus at
+  `ad61f7b104c8202889c9f9eb00090a900aafea5d5bf55d7e3b89cf41db300f93`; the
+  pinned `codex.gpt-5.6-sol` route at low effort; prompts and schema by
+  digest of the frozen adjudication module (prompt authority is the module
+  alone); 22 planned calls with 3 reservations per case and a 66-call hard
+  ceiling (`293 -> 315` planned, `<= 359 / 5000` worst case); create-once
+  artifact root
+  `.tutor-stub-auto-eval/boredom-semantic-validation-v1-2026-08-20`; and
+  stopping rules that make every completed model output final (malformed,
+  low-confidence, and indeterminate outputs included), restrict recovery
+  to thrown transport errors, compute the five predeclared gates once
+  after all cases, and treat any gate failure as a categorical instrument
+  result. Runner `scripts/run-tutor-stub-boredom-semantic-validation.js`
+  is dry-run-by-default and refuses execution without a separately
+  committed, request-digest-bound human authorization. Nine zero-call
+  tests (`tests/tutorStubBoredomSemanticValidation.test.js`) cover
+  request/authorization drift fail-closed, gate arithmetic, output
+  finality, bounded technical recovery, and ceiling-exhaustion categorical
+  failure. This request never authorizes the 36-dialogue confirmation,
+  which stays on HOLD.

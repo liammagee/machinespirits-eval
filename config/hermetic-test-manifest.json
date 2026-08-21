@@ -520,6 +520,7 @@
         "tests/tutorStubBoredomObserverTimingV2Readiness.test.js",
         "tests/tutorStubBoredomSemanticAdjudicationV9.test.js",
         "tests/tutorStubBoredomSemanticV9Readiness.test.js",
+        "tests/tutorStubBoredomSemanticValidation.test.js",
         "tests/tutorStubCanonicalActorialRealization.test.js",
         "tests/tutorStubCapabilities.test.js",
         "tests/tutorStubCardForce.test.js",
