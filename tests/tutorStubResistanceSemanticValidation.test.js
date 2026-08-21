@@ -134,7 +134,10 @@ test('V8 confirmation readiness is loadable but cannot become an executable conf
   assert.equal(loaded.registration.semanticAdjudication.validationReportPath, null);
   assert.equal(loaded.registration.semanticAdjudication.validationReportSha256, null);
   assert.equal(loaded.registration.outcomeSemanticAdjudication.validationReportPath, null);
-  assert.equal(loaded.registration.outcomeSemanticAdjudication.heldoutCorpusPath, null);
+  assert.equal(
+    loaded.registration.outcomeSemanticAdjudication.heldoutCorpusSha256,
+    '3c394eae7c7902fce4d6634231cc070d7b32419bd4be44d752627cbd6e35784b',
+  );
   assert.equal(loaded.registration.executionReadiness.combinedMaximumModelAttemptReservations, 3456);
   assert.equal(loaded.registration.executionReadiness.programmeLedgerAfterMaximum.reservedAttempts, 4987);
   assert.throws(

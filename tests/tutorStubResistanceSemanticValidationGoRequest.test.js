@@ -21,6 +21,12 @@ const HELDOUT = 'config/tutor-stub-resistance-semantic-adjudication-heldout-corp
 const ENDPOINT = 'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v1.json';
 const CERTIFICATE =
   'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v1.endpoint-go.json';
+const RECOVERY_REGISTRATION = 'config/tutor-stub-resistance-recovery-semantic-validation-registration.v1.json';
+const RECOVERY_INSTRUMENT = 'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v1.json';
+const RECOVERY_HELDOUT = 'config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v1.json';
+const RECOVERY_ENDPOINT = 'config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v1.json';
+const RECOVERY_CERTIFICATE =
+  'config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v1.endpoint-go.json';
 const CLOSURE = [
   'scripts/run-tutor-stub-resistance-semantic-validation.js',
   'scripts/analyze-tutor-stub-resistance-semantic-validation.js',
@@ -43,6 +49,31 @@ const CLOSURE = [
   HELDOUT,
   ENDPOINT,
   CERTIFICATE,
+  'config/providers.yaml',
+  'package.json',
+  'package-lock.json',
+];
+const RECOVERY_CLOSURE = [
+  'scripts/run-tutor-stub-resistance-recovery-semantic-validation.js',
+  'scripts/analyze-tutor-stub-resistance-recovery-semantic-validation.js',
+  'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
+  'scripts/package-tutor-stub-resistant-profile-study-go-request.js',
+  'services/tutorStubResistanceRecoverySemanticValidationRuntime.js',
+  'services/tutorStubResistanceRecoverySemanticValidation.js',
+  'services/tutorStubResistanceRecoverySemanticAdjudication.js',
+  'services/tutorStubPromptTransport.js',
+  'services/tutorStubCliPolicyRetry.js',
+  'services/tutorStubArtifactArchive.js',
+  'services/paidStudyEndpointPreflight.js',
+  'services/cliProviderBridge.js',
+  'services/evalConfigLoader.js',
+  RECOVERY_REGISTRATION,
+  RECOVERY_INSTRUMENT,
+  'config/tutor-stub-resistance-recovery-semantic-response.schema.v1.json',
+  'config/tutor-stub-resistance-recovery-semantic-development-corpus.v1.json',
+  RECOVERY_HELDOUT,
+  RECOVERY_ENDPOINT,
+  RECOVERY_CERTIFICATE,
   'config/providers.yaml',
   'package.json',
   'package-lock.json',
@@ -214,6 +245,97 @@ function templateText(request) {
   return `${JSON.stringify(template, null, 2)}\n`;
 }
 
+function buildRecoveryRequest(requestRepoPath, suffix) {
+  const request = buildRequest(requestRepoPath, suffix);
+  const launchCommit = request.source.launchCommit;
+  const launchTree = request.source.launchTree;
+  const contract = JSON.parse(fs.readFileSync(path.join(ROOT, RECOVERY_ENDPOINT), 'utf8'));
+  const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, RECOVERY_CERTIFICATE), 'utf8'));
+  const root = `.tutor-stub-auto-eval/recovery-semantic-validation-${suffix}`;
+  const live = [
+    'node',
+    'scripts/run-tutor-stub-resistance-recovery-semantic-validation.js',
+    '--live',
+    '--destination',
+    root,
+    '--source-commit',
+    launchCommit,
+    '--source-tree',
+    launchTree,
+    '--go-request',
+    requestRepoPath,
+    '--maximum-reservations',
+    '720',
+  ];
+  const recovery = [...live, '--resume'];
+  const analyze = [
+    'node',
+    'scripts/analyze-tutor-stub-resistance-recovery-semantic-validation.js',
+    '--destination',
+    root,
+    '--source-commit',
+    launchCommit,
+    '--source-tree',
+    launchTree,
+    '--go-request',
+    requestRepoPath,
+  ];
+  request.studyId = contract.study_id;
+  request.source.closure = RECOVERY_CLOSURE.map((repoPath) => ({ path: repoPath, sha256: fileSha256(repoPath) }));
+  request.semanticAdjudicationValidation = {
+    type: 'prospective_resistance_recovery_semantic_adjudication_heldout_validation_v1',
+    instrumentRegistration: { path: RECOVERY_INSTRUMENT, sha256: fileSha256(RECOVERY_INSTRUMENT) },
+    heldoutCorpus: { path: RECOVERY_HELDOUT, sha256: fileSha256(RECOVERY_HELDOUT), cases: 120 },
+    lifecycle: {
+      preservedValidJudgeRecalled: false,
+      neverPreparedPeerMayComplete: true,
+      dispatchedWithoutResponseRecalled: false,
+      validCaseRerun: false,
+      replacement: false,
+      outcomeSelection: false,
+      goldJoinedOnlyAfterSeal: true,
+      durablePrivateArchiveRequired: true,
+    },
+  };
+  request.design = {
+    cases: 120,
+    judgesPerCase: 2,
+    judges: ['codex.gpt-5.6-sol', 'claude-code.sonnet-5'],
+    effort: 'low',
+    goldVisibleToJudgePackets: false,
+    originalCaseIdsVisibleToExecution: false,
+    goldJoinedOnlyAfterAllCasesSealed: true,
+  };
+  request.budget = {
+    plannedCases: 120,
+    plannedModelCalls: 240,
+    maximumReservationsPerPlannedCall: 3,
+    maximumPlannedModelAttempts: 720,
+    programmeLedgerBeforeMaximum: 811,
+    programmeLedgerAfterMaximum: 1531,
+    programmeCeiling: 5000,
+    retryOrResumeAuthority: 'bounded_technical_recovery',
+  };
+  request.bindings.registration = { path: RECOVERY_REGISTRATION, sha256: fileSha256(RECOVERY_REGISTRATION) };
+  request.bindings.endpoint = {
+    contractPath: RECOVERY_ENDPOINT,
+    contractFileSha256: fileSha256(RECOVERY_ENDPOINT),
+    contractCanonicalSha256: sha256(JSON.stringify(canonicalJson(contract))),
+    certificatePath: RECOVERY_CERTIFICATE,
+    certificateFileSha256: fileSha256(RECOVERY_CERTIFICATE),
+    preflightSha256: certificate.preflight_sha256,
+  };
+  request.commands = { live, recovery, analyze };
+  request.bindings.commands = {
+    source: 'commands',
+    liveArraySha256: sha256(JSON.stringify(live)),
+    recoveryArraySha256: sha256(JSON.stringify(recovery)),
+    analyzeArraySha256: sha256(JSON.stringify(analyze)),
+  };
+  request.destination = { artifactRoot: root, createOnce: true, mustNotExistBeforeLaunch: true };
+  return request;
+}
+
 test('semantic validation GO validator and packager bind frozen dual judging without calls', (t) => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-go-request-'));
   const output = `.tutor-stub-auto-eval/.test-semantic-validation-go-${process.pid}.json`;
@@ -261,4 +383,31 @@ test('semantic validation GO validator and packager bind frozen dual judging wit
     fs.writeFileSync(invalidPath, `${JSON.stringify(changed, null, 2)}\n`);
     assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
   }
+});
+
+test('outcome semantic validation GO validator and packager bind the 120-case full-vector gate', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'recovery-semantic-validation-go-'));
+  const output = `.tutor-stub-auto-eval/.test-recovery-semantic-validation-go-${process.pid}.json`;
+  t.after(() => {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(path.join(ROOT, output), { force: true });
+  });
+  const request = buildRecoveryRequest(output, process.pid);
+  fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
+  fs.writeFileSync(path.join(ROOT, output), `${JSON.stringify(request, null, 2)}\n`);
+  const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath: path.join(ROOT, output) });
+  assert.equal(report.packetValid, true);
+  assert.equal(report.modelCalls, 0);
+  assert.equal(report.budget.maximumPlannedModelAttempts, 720);
+  fs.rmSync(path.join(ROOT, output));
+  const templatePath = path.join(temporary, 'template.json');
+  fs.writeFileSync(templatePath, templateText(request));
+  const packaged = packageTutorStubResistantProfileStudyGoRequest({
+    templatePath,
+    launchCommit: request.source.launchCommit,
+    outputPath: output,
+  });
+  assert.equal(packaged.sourceClosureFiles, RECOVERY_CLOSURE.length);
+  assert.equal(packaged.isolatedReplay.packetValid, true);
+  assert.equal(packaged.effects.modelCalls, 0);
 });

@@ -12,9 +12,9 @@ verification: >-
   The lexical-observer programme remains closed exactly as recorded, but the
   user has reopened the scientific question through an additive independent
   semantic-measurement architecture. Zero-call manipulation and outcome
-  instruments are frozen; the manipulation heldout runner is request-ready,
-  the independent outcome heldout remains pending, all historical outputs stay
-  excluded, and no model call or confirmation request is authorized.
+  instruments and both independent heldout corpora are frozen; their blinded
+  validation runners are zero-call ready, all historical outputs stay excluded,
+  and no model call or confirmation request is authorized.
 claim_status: methods
 links:
   items:
@@ -111,6 +111,10 @@ links:
     - config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json
     - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v1.json
     - services/tutorStubResistanceRecoverySemanticAdjudication.js
+    - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v1.json
+    - config/tutor-stub-resistance-recovery-semantic-validation-registration.v1.json
+    - services/tutorStubResistanceRecoverySemanticValidation.js
+    - services/tutorStubResistanceRecoverySemanticValidationRuntime.js
 tags:
   - tutor-stub
   - cells
@@ -1990,10 +1994,17 @@ and explicit human approval.
   outcome turns. Its full vector covers bounded-test merits engagement,
   grounded precise jurisdictional condition, delivered
   `clarify_distinction`, delivered warm/plain/neither register, and final
-  recovery. The independent 120-case outcome heldout is not yet bound or run;
-  its predeclared strata are 32 merits-only, 32 grounded-only, 16 both, and 40
-  no-recovery cases with crossed action/register boundaries. Its maximum is
-  240 calls / 720 charged reservations.
+  recovery. The independently authored 120-case outcome heldout is frozen at
+  SHA-256
+  `3c394eae7c7902fce4d6634231cc070d7b32419bd4be44d752627cbd6e35784b`
+  from author commit `7fa1d649654f27763ab8a2a698f10a7d5b593a44`; its strata are 32 merits-only,
+  32 grounded-only, 16 both, and 40 no-recovery cases, crossed across 40 warm,
+  40 plain, 40 neither, 80 action-present, and 40 action-absent interventions.
+  Its opaque checkpointed dual-judge validator preserves the same no-recall,
+  byte-identical durable-archive reconciliation, post-seal gold join, and
+  no-selection rules as the manipulation validator. Its maximum is 240 calls /
+  720 charged reservations. Every live accuracy, agreement, validity, and
+  coverage gate remains pending.
 
   Registration V8 is readiness-only and cannot dispatch confirmation. A later
   executable registration must bind sealed passing reports from both heldout

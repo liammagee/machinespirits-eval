@@ -26,6 +26,12 @@ const SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR = 'prospective_fram
 const SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR_V7 =
   'prospective_frame_refuser_warm_plain_confirmation_v5';
 const SUPPORTED_RESISTANCE_SEMANTIC_VALIDATION = 'prospective_resistance_semantic_adjudication_heldout_validation_v1';
+const SUPPORTED_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION =
+  'prospective_resistance_recovery_semantic_adjudication_heldout_validation_v1';
+
+function isSupportedResistanceSemanticValidation(value) {
+  return [SUPPORTED_RESISTANCE_SEMANTIC_VALIDATION, SUPPORTED_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION].includes(value);
+}
 
 function isSupportedActionRegisterConfirmation(value) {
   return [
@@ -198,7 +204,7 @@ function requireHoldBoundary(template) {
     template.actionRegisterBaselineAnalysis?.type !== SUPPORTED_ACTION_REGISTER_ANALYSIS_ONLY &&
     !isSupportedActionRegisterConfirmation(template.actionRegisterConfirmation?.type) &&
     template.boredomActionRegisterProofDag?.type !== SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG &&
-    template.semanticAdjudicationValidation?.type !== SUPPORTED_RESISTANCE_SEMANTIC_VALIDATION
+    !isSupportedResistanceSemanticValidation(template.semanticAdjudicationValidation?.type)
   ) {
     throw new Error(
       'the packager supports only frame-refuser opportunity, action/register baseline, sealed analysis-only, frame-refuser confirmation, boredom proof-DAG confirmation, or resistance semantic-validation HOLD templates',
@@ -213,7 +219,7 @@ function requireHoldBoundary(template) {
     throw new Error('template must remain a literal HOLD with no encoded human approval or execution authority');
   }
   if (
-    template.semanticAdjudicationValidation?.type === SUPPORTED_RESISTANCE_SEMANTIC_VALIDATION &&
+    isSupportedResistanceSemanticValidation(template.semanticAdjudicationValidation?.type) &&
     (template.authorization?.standingArchitecturalCorrectionSha256 !==
       'dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4' ||
       template.authorization?.priorStandingAuthoritySha256 !==
@@ -439,7 +445,7 @@ function assertMaterializedStructure({
     request.actionRegisterBaseline?.type === SUPPORTED_ACTION_REGISTER_BASELINE ||
     isSupportedActionRegisterConfirmation(request.actionRegisterConfirmation?.type) ||
     request.boredomActionRegisterProofDag?.type === SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG ||
-    request.semanticAdjudicationValidation?.type === SUPPORTED_RESISTANCE_SEMANTIC_VALIDATION
+    isSupportedResistanceSemanticValidation(request.semanticAdjudicationValidation?.type)
   ) {
     assertComputedValue(
       request.bindings?.commands?.recoveryArraySha256,
@@ -506,8 +512,7 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     replacements,
   );
 
-  const isSemanticValidation =
-    template.semanticAdjudicationValidation?.type === SUPPORTED_RESISTANCE_SEMANTIC_VALIDATION;
+  const isSemanticValidation = isSupportedResistanceSemanticValidation(template.semanticAdjudicationValidation?.type);
   let routeResult = null;
   let routeConsumption = null;
   let judgeRouteConfig = null;

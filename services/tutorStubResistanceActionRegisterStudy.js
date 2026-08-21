@@ -382,10 +382,12 @@ function normalizeRegistration(registration) {
         'b77aca2b6c8562f3ea32a9e54f17386969e4912efdcc0ec09a5beb61a7dd127a' ||
       outcomeSemantic?.instrumentFreezeCommit !== '59bfcc4c5223f21c1405a70feedc1e1bb639b441' ||
       outcomeSemantic?.instrumentBindingCommit !== 'fc3ed584bec780e92605df82f8d0aa9513416695' ||
-      outcomeSemantic?.heldoutCorpusPath !== null ||
-      outcomeSemantic?.heldoutCorpusSha256 !== null ||
-      outcomeSemantic?.validationRegistrationPath !== null ||
-      outcomeSemantic?.validationRegistrationSha256 !== null ||
+      outcomeSemantic?.heldoutCorpusPath !== 'config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v1.json' ||
+      outcomeSemantic?.heldoutCorpusSha256 !== '3c394eae7c7902fce4d6634231cc070d7b32419bd4be44d752627cbd6e35784b' ||
+      outcomeSemantic?.validationRegistrationPath !==
+        'config/tutor-stub-resistance-recovery-semantic-validation-registration.v1.json' ||
+      outcomeSemantic?.validationRegistrationSha256 !==
+        '7f2fceb3b2fcd16b0019b2c2df148ce75da35e3bdaee29095b6778665344dc16' ||
       outcomeSemantic?.validationReportPath !== null ||
       outcomeSemantic?.validationReportSha256 !== null ||
       outcomeSemantic?.validationRequiredBeforeConfirmationRequest !== true ||
