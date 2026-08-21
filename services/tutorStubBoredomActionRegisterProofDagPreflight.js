@@ -552,7 +552,7 @@ export function buildTutorStubBoredomProofDagPlan(registration) {
 
 export function buildTutorStubBoredomProofDagSyntheticCases(registration) {
   const plan = buildTutorStubBoredomProofDagPlan(registration);
-  const semanticMeasurement = registration.version === 3;
+  const semanticMeasurement = registration.version === 3 || registration.version === 4;
   let plainSeen = 0;
   let warmSeen = 0;
   return plan.jobs.map((job) => {

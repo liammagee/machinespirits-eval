@@ -1,0 +1,10 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-go.v1",
+  "status": "endpoint_runtime_go",
+  "study_id": "tutor-stub-boredom-action-register-proof-dag-v4",
+  "contract_path": "config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v4.json",
+  "contract_sha256": "12be4e391dba34459a2f1fc96be77ed9721c32ac8d7ccb2cd7acf015b51847c3",
+  "preflight_sha256": "845ed7cc6cf3403ea574796e6d65bbf5f732eb2dfa396efa50c5a68cb2981403",
+  "authorization_scope": "Deterministic prospective-v9 validated V3 independent semantic adjudication wrapper, exact-span and route validation, auxiliary observer, action-before-register timing, production executor, endpoint, analyzer, power, and request-validator readiness only; this certificate authorizes no confirmation-model call, live study, or programme-headroom consumption.",
+  "launch_gate": "The independently pinned Sol V3 semantic instrument passed all five predeclared gates at 1.00 on the sealed 55-case held-out v4 corpus (55 of 165 reservations, zero retries, report SHA-256 7ff7810e28f7e037af12fbd852445efab9538bc1c946c529356a0c009a51763c). Launch still requires the wholly fresh digest-bound HOLD request with absent create-once destinations, exact digest verification against the standing authorization, prelaunch verification of the 2160-study and 5000-programme operational safeguards, and a separately committed explicit human approval. The stopped v2 cohort and the spent v1-v4 validation corpora remain permanently excluded."
+}
