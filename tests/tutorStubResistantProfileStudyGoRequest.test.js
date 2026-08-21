@@ -67,6 +67,7 @@ const RESISTANCE_ACTION_REGISTER_BASELINE_V2_CRITICAL_SOURCE_CLOSURE = [
   'services/tutorStubLearnerAnalysisRuntime.js',
   'services/tutorStubPublicLearnerAnalysis.js',
   'services/resistantLearnerObservation.js',
+  'services/resistantLearnerAxisObservation.js',
   'services/tutorStubActionBeforeRegisterShadow.js',
   'services/tutorStubCliPolicyRetry.js',
   'services/tutorStubPromptTransport.js',
@@ -1083,7 +1084,7 @@ test('future V2 action/register HOLD requests bind both live batches and one com
   );
   assert.equal(packaged.status, 0, packaged.stderr);
   const packageReport = JSON.parse(packaged.stdout);
-  assert.equal(packageReport.sourceClosureFiles, 31);
+  assert.equal(packageReport.sourceClosureFiles, 32);
   assert.equal(packageReport.repositoryBindingFiles, 6);
   assert.equal(packageReport.isolatedReplay.nodeModulesPresent, false);
   assert.equal(packageReport.isolatedReplay.packetValid, true);
@@ -1514,7 +1515,7 @@ test('sealed action/register analysis-only request binds completed batches and a
   );
   assert.equal(packaged.status, 0, packaged.stderr);
   const packageReport = JSON.parse(packaged.stdout);
-  assert.equal(packageReport.sourceClosureFiles, 31);
+  assert.equal(packageReport.sourceClosureFiles, 32);
   assert.equal(packageReport.repositoryBindingFiles, 7);
   assert.equal(packageReport.isolatedReplay.packetValid, true);
   assert.equal(packageReport.effects.modelCalls, 0);

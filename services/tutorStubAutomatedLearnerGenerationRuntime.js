@@ -395,8 +395,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     ].join('\n');
   }
   // Opt-in stress schedule (TUTOR_STUB_STRESS_SCHEDULE=<path>): planted learner states with adjudicated repairs. Loaded once, lazily; each planted turn's
-  // directive is injected into the learner prompt verbatim and traced, so the
-  // bench knows exactly which turns carry authored stress.
+  // directive is injected verbatim and traced, so the bench knows exactly which turns carry authored stress.
   const STRESS_SCHEDULE_PATH = env.TUTOR_STUB_STRESS_SCHEDULE || null;
   let stressScheduleCache;
   function activeStressSchedule() {
