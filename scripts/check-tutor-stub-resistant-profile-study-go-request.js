@@ -2157,7 +2157,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
           'resistance-semantic-validation-v3-stopped-successor-exclusion',
           JSON.stringify(
             canonicalJson({
-              requestRevision: gate.requestRevision,
+              requestRevision: RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SUCCESSOR_REQUEST.requestRevision,
               ...gate.stoppedV3SuccessorValidation,
             }),
           ) === JSON.stringify(canonicalJson(RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SUCCESSOR_REQUEST)),
