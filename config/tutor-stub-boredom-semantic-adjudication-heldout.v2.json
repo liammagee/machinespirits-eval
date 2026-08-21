@@ -1,0 +1,352 @@
+{
+  "schema": "machinespirits.tutor-stub.boredom-semantic-heldout-corpus.v2",
+  "version": 2,
+  "status": "frozen_before_empirical_semantic_model_validation",
+  "revisionNote": "Fresh corpus for instrument v2. The spent v1 corpus is excluded: its outcomes motivated the v2 revisions, so reusing any v1 case would score the instrument on its own training material. All worlds are new. Boredom-cue labels always rest on an expressed loss of interest or tedium, never on bare polite acknowledgments. Verdicts follow the v2 derivation: productive uptake requires a boredom cue; bare uptake is no_boredom.",
+  "boundary": {
+    "notEmbeddedInPrompt": true,
+    "notUsedForLexicalRuleConstruction": true,
+    "treatmentAndOutcomeBlind": true,
+    "zeroCallReferenceLabelsOnly": true,
+    "modelPredictionsAbsent": true
+  },
+  "predeclaredGates": {
+    "determinateSensitivityMinimum": 0.9,
+    "determinateSpecificityMinimum": 0.9,
+    "referenceAgreementMinimum": 0.9,
+    "ambiguousIndeterminateRateMinimum": 1,
+    "lowConfidenceIndeterminateRateMinimum": 1,
+    "empiricalModelValidationRequiredBeforeConfirmationLaunch": true
+  },
+  "cases": [
+    {
+      "id": "lighthouse_productive_01",
+      "text": "This drill is dull. Even so, the lamp log shows two entries for the same night, and I want to check which keeper signed the second one.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "This drill is dull.",
+        "productive_uptake": "the lamp log shows two entries for the same night, and I want to check which keeper signed the second one"
+      }
+    },
+    {
+      "id": "printworks_productive_02",
+      "text": "I am getting bored with these proofs. Still, the smudged plate must have been inked after the correction, so the batch order is wrong somewhere, and I want to trace it.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "I am getting bored with these proofs.",
+        "productive_uptake": "the smudged plate must have been inked after the correction, so the batch order is wrong somewhere, and I want to trace it"
+      }
+    },
+    {
+      "id": "observatory_productive_03",
+      "text": "Another chart? This is starting to feel tedious. But the comet position in the third sketch contradicts the log time, and I can test that against the almanac.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "This is starting to feel tedious.",
+        "productive_uptake": "the comet position in the third sketch contradicts the log time, and I can test that against the almanac"
+      }
+    },
+    {
+      "id": "telegraph_productive_04",
+      "text": "We keep repeating the same taps and it is wearing my interest thin. Yet the gap in the message ledger lines up with the storm, so I will compare the relay clock with the station diary.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "We keep repeating the same taps and it is wearing my interest thin.",
+        "productive_uptake": "the gap in the message ledger lines up with the storm, so I will compare the relay clock with the station diary"
+      }
+    },
+    {
+      "id": "vineyard_productive_05",
+      "text": "I have lost interest in counting rows. What does hold me is that the north ledger lists a harvest date before the frost note, and I can check the cellar receipts to see which is right.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "I have lost interest in counting rows.",
+        "productive_uptake": "the north ledger lists a harvest date before the frost note, and I can check the cellar receipts to see which is right"
+      }
+    },
+    {
+      "id": "glassworks_productive_06",
+      "text": "This part of the lesson drags for me. All the same, the bubble pattern only appears in the second batch, which points to the new sand, so I want to test a bead from each sack.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "This part of the lesson drags for me.",
+        "productive_uptake": "the bubble pattern only appears in the second batch, which points to the new sand, so I want to test a bead from each sack"
+      }
+    },
+    {
+      "id": "stables_productive_07",
+      "text": "Working through these entries is monotonous. But the farrier bill is dated a day after the mare went lame, so someone wrote it late, and I will check the stable diary to confirm.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Working through these entries is monotonous.",
+        "productive_uptake": "the farrier bill is dated a day after the mare went lame, so someone wrote it late, and I will check the stable diary to confirm"
+      }
+    },
+    {
+      "id": "cannery_productive_08",
+      "text": "Can we move faster through this part? The label counts are numbing my attention. That said, the seam failures cluster on the night shift, so I would compare the crimping gauge logs first.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "The label counts are numbing my attention.",
+        "productive_uptake": "the seam failures cluster on the night shift, so I would compare the crimping gauge logs first",
+        "process_impatience": "Can we move faster through this part?"
+      }
+    },
+    {
+      "id": "quay_actionable_01",
+      "text": "I am bored stiff with this sorting. Let us stop here, because I will not go through another crate today.",
+      "verdict": "actionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "I am bored stiff with this sorting.",
+        "effort_withdrawal": "I will not go through another crate today",
+        "process_impatience": "Let us stop here"
+      }
+    },
+    {
+      "id": "granary_actionable_02",
+      "text": "This inventory drones on and on. Skip the rest of it, because I am not counting another sack this afternoon.",
+      "verdict": "actionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "This inventory drones on and on.",
+        "effort_withdrawal": "I am not counting another sack this afternoon",
+        "process_impatience": "Skip the rest of it"
+      }
+    },
+    {
+      "id": "tannery_actionable_03",
+      "text": "Nothing about these hide grades holds my attention anymore. Move me to something else, because I am putting this ledger down for good.",
+      "verdict": "actionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "Nothing about these hide grades holds my attention anymore.",
+        "effort_withdrawal": "I am putting this ledger down for good",
+        "process_impatience": "Move me to something else"
+      }
+    },
+    {
+      "id": "brickyard_actionable_04",
+      "text": "The tally sheet bores me senseless. End the exercise now, because I refuse to measure another course of bricks.",
+      "verdict": "actionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "The tally sheet bores me senseless.",
+        "effort_withdrawal": "I refuse to measure another course of bricks",
+        "process_impatience": "End the exercise now"
+      }
+    },
+    {
+      "id": "shipyard_actionable_05",
+      "text": "Reading rivet counts has gone completely stale for me. Wrap this session up without me, because I am walking away from the checklist.",
+      "verdict": "actionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "Reading rivet counts has gone completely stale for me.",
+        "effort_withdrawal": "I am walking away from the checklist",
+        "process_impatience": "Wrap this session up without me"
+      }
+    },
+    {
+      "id": "almshouse_nonactionable_01",
+      "text": "This register reads gray and dull to me, page after page. Even so, I will keep copying the entries exactly as you asked.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "This register reads gray and dull to me, page after page."
+      }
+    },
+    {
+      "id": "ferry_nonactionable_02",
+      "text": "How many more crossings are on this list? I keep losing the thread from boredom, though I am still working down the column as we go.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "I keep losing the thread from boredom",
+        "process_impatience": "How many more crossings are on this list?"
+      }
+    },
+    {
+      "id": "coalstore_nonactionable_03",
+      "text": "We have been at this weighing drill a long while and my mind keeps wandering off it. I am still here, though, and still filling in the weights.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "my mind keeps wandering off it"
+      }
+    },
+    {
+      "id": "clocktower_nonactionable_04",
+      "text": "Is this the last page of the winding schedule? I would like to reach the bell test soon, but I will finish these rows first as agreed.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": {
+        "process_impatience": "Is this the last page of the winding schedule?"
+      }
+    },
+    {
+      "id": "lockhouse_negative_01",
+      "text": "The sluice reading contradicts the rain gauge from the same hour, so I will measure the pond level myself before we go on.",
+      "verdict": "no_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "productive_uptake": "The sluice reading contradicts the rain gauge from the same hour, so I will measure the pond level myself before we go on."
+      }
+    },
+    {
+      "id": "bathhouse_negative_02",
+      "text": "I am not sure whether the boiler note uses the old scale or the new one. Nothing in the margin says which, and that is as far as I can see.",
+      "verdict": "no_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {}
+    },
+    {
+      "id": "signalbox_negative_03",
+      "text": "I am not bored by this at all. The timetable puzzle is the best part of my week, and I want the next page when you are ready.",
+      "verdict": "no_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {}
+    },
+    {
+      "id": "weavery_mixed_01",
+      "text": "This pattern work has gone stale for me. The warp counts in the two books disagree, and checking the loom cards would settle it, but I am stopping for today either way.",
+      "verdict": "indeterminate",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "This pattern work has gone stale for me.",
+        "effort_withdrawal": "I am stopping for today either way",
+        "productive_uptake": "The warp counts in the two books disagree, and checking the loom cards would settle it"
+      }
+    },
+    {
+      "id": "papermill_mixed_02",
+      "text": "Enough of this pulp log; can we call it a day? The blotting marks do suggest the vat ran hot, and I could test the next ream, but I am putting my pencil down now.",
+      "verdict": "indeterminate",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": true,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "Enough of this pulp log",
+        "effort_withdrawal": "I am putting my pencil down now",
+        "productive_uptake": "The blotting marks do suggest the vat ran hot, and I could test the next ream",
+        "process_impatience": "can we call it a day?"
+      }
+    }
+  ]
+}
