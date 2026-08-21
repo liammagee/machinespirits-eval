@@ -2540,6 +2540,35 @@ and explicit human approval.
   needs a fresh corpus, this diagnosis, and separate explicit human
   approval before any build starts.
 
+- 2026-08-21 — Boredom semantic validation v4 BUILT after the user approved
+  the instrument-revision proposal ("I approve"). Two changes against v3,
+  both matching the written diagnosis. First, a revised instrument module
+  `services/tutorStubBoredomSemanticAdjudicationV3.js` (v2 stays frozen)
+  narrows the two over-read cue definitions to the registered senses:
+  effort withdrawal now needs a public stop of work — a pace or skip wish
+  is process impatience, and an explicit continue commitment defeats
+  withdrawal — and productive uptake now needs a forward-looking inquiry
+  move — a compliance report, an instruction restatement, or a bare answer
+  is not uptake. Derivation rules, output schema shape, evidence audit,
+  route pin, and all five gates are unchanged. Second, a fresh frozen
+  corpus `config/tutor-stub-boredom-semantic-adjudication-heldout.v4.json`:
+  56 drafted cases on 56 fresh worlds (spent v1/v2/v3 worlds excluded),
+  with the nonactionable class deliberately stocked with the v3 failure
+  shapes (pace wish plus continue commitment; compliance report beside a
+  dull cue; cue alone). Blind claude-sonnet-5 second read agreed on all
+  four fields in 55 of 56 cases; the one disagreement (wharf_mixed_02,
+  effort_withdrawal) was dropped, never relabeled. Frozen corpus: 55
+  cases — 9 actionable, 40 determinate negatives (specificity
+  denominator), 6 expected-indeterminate; blind-read provenance in
+  `config/tutor-stub-boredom-semantic-heldout.v4-blind-read.json`.
+  Digest-bound request `config/tutor-stub-boredom-semantic-validation-request.v4.json`
+  (55 planned calls, ceiling 165, ledger 391 -> 446 planned / 556 maximum,
+  worst case with confirmation reservations 4876 of 5000, authorization
+  null). Harness and runner bumped to v4; tests remapped (13/13 pass);
+  zero-call preflight clean. Same governance as v1-v3: separate committed
+  human authorization required before any call; the 36-dialogue
+  confirmation stays on HOLD; a gate failure is categorical.
+
 - 2026-08-21 — The 80-case manipulation semantic-validation V2 run completed
   its sealed registered analyzer and failed. The preserved request is
   `b91b6c92ec6b82b15b40821938929c3e2c31c86424822846a26443977cb479d6`;

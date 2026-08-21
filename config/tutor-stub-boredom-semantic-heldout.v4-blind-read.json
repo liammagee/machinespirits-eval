@@ -1,0 +1,353 @@
+{
+  "schema": "machinespirits.tutor-stub.boredom-semantic-heldout.v4-blind-read",
+  "reader": "claude-code.claude-sonnet-5",
+  "readAt": "2026-08-21T10:40:52.285Z",
+  "protocol": "The blind reader (claude-sonnet-5 via the claude-code CLI bridge, never Sol, never Luna) saw only each case text and the four field definitions: no reference labels, no verdicts, no other cases. Only cases where the reader agreed with the author on all four fields were frozen; disagreements were dropped, never relabeled.",
+  "drafted": 56,
+  "kept": 55,
+  "dropped": [
+    {
+      "id": "wharf_mixed_02",
+      "reason": "field_disagreement",
+      "fields": ["effort_withdrawal"]
+    }
+  ],
+  "readings": {
+    "airfield_productive_01": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "apothecary_productive_02": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "armory_productive_03": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "boilerhouse_productive_04": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "buttery_productive_05": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "cablehouse_productive_06": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "carpentry_productive_07": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "chalkpit_productive_08": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "claypit_productive_09": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "dairy_productive_10": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "dockyard_productive_11": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "drydock_productive_12": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "enginehouse_productive_13": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "farrier_productive_14": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "feltmill_productive_15": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "flaxmill_productive_16": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": true
+    },
+    "fort_nonactionable_01": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "fullery_nonactionable_02": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": true
+    },
+    "gatehouse_nonactionable_03": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "gravelpit_nonactionable_04": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": true
+    },
+    "gristmill_nonactionable_05": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": true
+    },
+    "hatchery_nonactionable_06": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "haybarn_nonactionable_07": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "ironworks_nonactionable_08": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": true
+    },
+    "jetty_nonactionable_09": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": true
+    },
+    "joinery_nonactionable_10": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "kennels_nonactionable_11": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "lumberyard_nonactionable_12": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": true
+    },
+    "masonry_nonactionable_13": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "meadery_negative_01": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "millpond_negative_02": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "minehead_negative_03": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "moorings_negative_04": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "oilhouse_negative_05": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "paddock_negative_06": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "pierhead_negative_07": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "reservoir_negative_08": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "saltmarsh_negative_09": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "sandpit_negative_10": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "sheepfold_negative_11": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "slipway_actionable_01": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "sluice_actionable_02": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "springhouse_actionable_03": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "stampmill_actionable_04": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "tackroom_actionable_05": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "turbinehall_actionable_06": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "turnery_actionable_07": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "washhouse_actionable_08": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "waxworks_actionable_09": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "wellhouse_mixed_01": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "wharf_mixed_02": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "woolshed_mixed_03": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "zincworks_mixed_04": {
+      "boredom_cue": false,
+      "effort_withdrawal": true,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "beacon_mixed_05": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "causeway_mixed_06": {
+      "boredom_cue": false,
+      "effort_withdrawal": true,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "quillworks_mixed_07": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": true,
+      "process_impatience": false
+    }
+  }
+}
