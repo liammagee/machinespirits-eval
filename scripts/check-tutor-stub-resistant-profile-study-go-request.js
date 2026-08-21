@@ -170,6 +170,7 @@ const RESISTANCE_SEMANTIC_VALIDATION_V2_CRITICAL_SOURCE_CLOSURE = Object.freeze(
   'config/tutor-stub-resistance-semantic-adjudication-development-corpus.v1.json',
   'config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json',
   'config/tutor-stub-resistance-semantic-adjudication-validation-registration.v1.json',
+  'config/tutor-stub-resistance-semantic-adjudication-registration.v1.json',
   'config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v2.json',
   'config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v1.json',
   'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v2.json',
