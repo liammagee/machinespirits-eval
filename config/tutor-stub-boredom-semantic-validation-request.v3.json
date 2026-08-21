@@ -1,0 +1,139 @@
+{
+  "schema": "machinespirits.tutor-stub.boredom-semantic-validation-request.v3",
+  "status": "HOLD_PENDING_EXPLICIT_APPROVAL",
+  "studyId": "tutor-stub-boredom-semantic-validation-v3",
+  "preparedAt": "2026-08-21",
+  "purpose": "Empirical validation of the unchanged v2 semantic instrument of the independently pinned Sol boredom adjudicator against a fresh frozen 54-case held-out corpus. v3 is a sample-size and label-quality iteration after the v2 run failed the determinate-specificity gate 13/15 against 0.90 with both misses being reference-label versus judge cue readings: derivation rules, output schema, prompts, and gates are unchanged; the corpus grows so the specificity denominator is 39 (the 0.90 gate then tolerates three misses), and every reference label was confirmed by a blind second reader (claude-sonnet-5, field-level agreement on 54 of 55 drafts; the disagreement was dropped, never relabeled). The spent v1 and v2 corpora are permanently excluded. This request authorizes nothing by itself; it never authorizes the 36-dialogue confirmation, any live study, or any learner repair, rerun, replacement, or outcome selection.",
+  "route": {
+    "modelRef": "codex.gpt-5.6-sol",
+    "provider": "codex",
+    "model": "gpt-5.6-sol",
+    "role": "tutor_stub_boredom_performance_adjudication",
+    "effort": "low",
+    "timeoutMs": 120000,
+    "maxStdoutBytes": 1048576,
+    "maxStderrBytes": 262144
+  },
+  "corpus": {
+    "path": "config/tutor-stub-boredom-semantic-adjudication-heldout.v3.json",
+    "sha256": "5c5eb30699c5c53d1d264a2cdcd0c9265c3fed523cda3076ecda24e34bed2632",
+    "cases": 54,
+    "order": "frozen_corpus_order_no_selection"
+  },
+  "measurement": {
+    "adjudicationModule": {
+      "path": "services/tutorStubBoredomSemanticAdjudicationV2.js",
+      "sha256": "93904fd4ca73a876f086aa945521fe4d45138bc6a9d1733993463fc256b1527f"
+    },
+    "promptAuthority": "frozen_adjudication_module_functions_only",
+    "outputSchemaSha256": "9cf99d420f70914e9b2cb6520776bc1be5fecb02bf09f4577c6f54e9985a495e",
+    "minimumConfidence": 0.8,
+    "deterministicAuthority": "schema_quote_anchored_exact_substring_spans_route_provenance_and_safety_only",
+    "auxiliaryRole": "auxiliary_high_precision_signal_and_disagreement_only_never_final_semantic_authority"
+  },
+  "scope": {
+    "plannedModelCalls": 54,
+    "maximumReservationsPerCase": 3,
+    "maximumModelCalls": 162,
+    "retryOrResumeAuthority": "bounded_technical_recovery_thrown_transport_errors_only",
+    "completedCallOutputsFinal": true,
+    "auxiliaryObservationPolicy": "null_neutral_semantic_seat_only",
+    "liveStudyAuthorized": false,
+    "confirmationLaunchAuthorized": false,
+    "outcomeConditionedReplacementPermitted": false,
+    "promptAdjustmentAfterOutcomesPermitted": false,
+    "interimGateEvaluationPermitted": false
+  },
+  "gates": {
+    "determinateSensitivityMinimum": 0.9,
+    "determinateSpecificityMinimum": 0.9,
+    "referenceAgreementMinimum": 0.9,
+    "ambiguousIndeterminateRateMinimum": 1,
+    "lowConfidenceIndeterminateRateMinimum": 1
+  },
+  "stoppingRules": {
+    "caseProcessing": "frozen corpus order; each case ends with one final completed adjudication or bounded-technical-ceiling exhaustion",
+    "completedOutputsFinal": "any resolved model call is a final measurement outcome, including malformed, low-confidence, and indeterminate outputs",
+    "technicalRecovery": "only a thrown transport error consumes an extra reservation, never output content",
+    "ceilingExhaustion": "a case exhausting its reservations without a completed call ends the validation as a categorical technical failure; no gate can pass",
+    "gateEvaluation": "all five gates are computed once, after every case is final; no interim analysis and no mid-run change to request, prompt, wrapper, corpus, or schema",
+    "failureDisposition": "any gate failure is a categorical instrument result; the confirmation stays on HOLD, nothing is retried or re-scored, and any further iteration needs a fresh corpus, a written diagnosis, and separate explicit human approval"
+  },
+  "ledger": {
+    "programmeCeiling": 5000,
+    "programmeLedgerBefore": 337,
+    "plannedAttempts": 54,
+    "maximumAttempts": 162,
+    "programmeLedgerAfterPlanned": 391,
+    "programmeLedgerAfterMaximum": 499,
+    "reservedConfirmations": 4320,
+    "worstCaseWithReservations": 4819
+  },
+  "artifactRoot": ".tutor-stub-auto-eval/boredom-semantic-validation-v3-2026-08-21",
+  "confirmationRequest": {
+    "path": "config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v3.json",
+    "sha256": "abda11e242d3d2cd67c0fe9f3e3c16a11cd59020e86e62ca2f9445e97508c08c",
+    "status": "remains HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL; this validation neither launches nor advances it"
+  },
+  "payload": {
+    "scope": "Frozen public held-out corpus utterances only.",
+    "humanSubjectData": false,
+    "privateArchiveData": false,
+    "trainingReuseStatus": "not_applicable"
+  },
+  "sourceClosure": [
+    {
+      "path": "services/tutorStubBoredomSemanticValidation.js",
+      "sha256": "bf34d79481f4d183c883da9749c0fa6908ee624067d696476b97582379c8db85"
+    },
+    {
+      "path": "scripts/run-tutor-stub-boredom-semantic-validation.js",
+      "sha256": "95b0e940fd35d9b925345dbbcb2e39e6d929c46f94898518f45df808091e583a"
+    },
+    {
+      "path": "services/tutorStubBoredomSemanticAdjudicationV2.js",
+      "sha256": "93904fd4ca73a876f086aa945521fe4d45138bc6a9d1733993463fc256b1527f"
+    },
+    {
+      "path": "services/tutorStubBoredomSemanticAdjudication.js",
+      "sha256": "09ff66e44aa4219cdda56fae62a543e985f50b9ef32c487d5af3e85bc45168ea"
+    },
+    {
+      "path": "services/resistantLearnerObservation.js",
+      "sha256": "7c1ca5782e80e37a3b6f830227a5d65990e24527b1837c89e16dc539e4a25bde"
+    },
+    {
+      "path": "services/cliProviderBridge.js",
+      "sha256": "b79813ab95476b6591578817c03de1ccad874263d20b8f2e258ab58d858b063b"
+    },
+    {
+      "path": "services/evalConfigLoader.js",
+      "sha256": "f71a1b4c7155937f31bae57750f0a396348d2dcf751d425ddab89faf03ad28a1"
+    },
+    {
+      "path": "config/providers.yaml",
+      "sha256": "fe0c86fa91f4443fc4d55f6f3d5b39cf7df9fff5c3284096429cb3908335b326"
+    },
+    {
+      "path": "config/tutor-stub-boredom-semantic-adjudication-heldout.v3.json",
+      "sha256": "5c5eb30699c5c53d1d264a2cdcd0c9265c3fed523cda3076ecda24e34bed2632"
+    },
+    {
+      "path": "config/tutor-stub-boredom-semantic-heldout.v3-blind-read.json",
+      "sha256": "2d576cc312f0129045cc218524a51e5126c4d64d4d75fef0f64b85bb31060be0"
+    },
+    {
+      "path": "config/tutor-stub-boredom-action-register-proof-dag-registration.v3.json",
+      "sha256": "a003aa69f94e257e1f966ba51734ccd7f9b83842a4c8f617ddead763e3499819"
+    },
+    {
+      "path": "config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v3.json",
+      "sha256": "abda11e242d3d2cd67c0fe9f3e3c16a11cd59020e86e62ca2f9445e97508c08c"
+    },
+    {
+      "path": "config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v3.endpoint-go.json",
+      "sha256": "6eb6c6529af429cd01ef5755357d6289b5eef32b1b7b4158e0920d663fc62880"
+    }
+  ],
+  "authorization": null
+}
