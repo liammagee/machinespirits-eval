@@ -37,6 +37,10 @@ function safeAudit(audit = null) {
   };
 }
 
+export function isTutorStubRetryableClaudeExitFailure(error) {
+  return error?.code === 'CLI_PROVIDER_EXIT_FAILED' && error?.exitCode === 1 && error?.stdoutBytes === 0;
+}
+
 /**
  * Permit two delayed re-dispatches only for Codex transport/schema failures.
  * Known tool events remain terminal. The caller must reserve metered/provider
@@ -50,11 +54,7 @@ export function tutorStubCliPolicyRetryDecision(error, { retryCount = 0, allowCl
   );
   const policyViolation = error?.code === 'CLI_PROVIDER_POLICY_VIOLATION' && error?.provider === 'codex';
   const failedTurn = error?.code === 'CLI_PROVIDER_TURN_FAILED' && error?.provider === 'codex';
-  const claudeExitFailure =
-    allowClaudeExitFailureCodeOne === true &&
-    error?.code === 'CLI_PROVIDER_EXIT_FAILED' &&
-    error?.exitCode === 1 &&
-    error?.stdoutBytes === 0;
+  const claudeExitFailure = allowClaudeExitFailureCodeOne === true && isTutorStubRetryableClaudeExitFailure(error);
   const retryableFailure = policyViolation || failedTurn || claudeExitFailure;
   const retry = Boolean(retryableFailure && used < TUTOR_STUB_CLI_POLICY_RETRY_DELAYS_MS.length && !knownToolEvent);
   return {

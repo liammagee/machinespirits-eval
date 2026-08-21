@@ -32,7 +32,11 @@ import {
   tutorStubResistanceSemanticCorpusCaseForExecutionId,
   tutorStubResistanceSemanticValidationPlanFingerprint,
 } from './tutorStubResistanceSemanticValidation.js';
-import { tutorStubCliPolicyRetryDecision, waitTutorStubCliPolicyRetryDelay } from './tutorStubCliPolicyRetry.js';
+import {
+  isTutorStubRetryableClaudeExitFailure,
+  tutorStubCliPolicyRetryDecision,
+  waitTutorStubCliPolicyRetryDelay,
+} from './tutorStubCliPolicyRetry.js';
 import { resolveTutorStubArtifactArchiveDirectory } from './tutorStubArtifactArchive.js';
 
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_PLAN_SCHEMA =
@@ -611,6 +615,36 @@ export function validateTutorStubResistanceSemanticValidationPlan({ plan, expect
   return { valid: issues.length === 0, issues };
 }
 
+export function auditTutorStubResistanceSemanticValidationAttempts({ attempts, safeClaudeExitTelemetryAllowed }) {
+  const issues = [];
+  for (const [index, attempt] of (Array.isArray(attempts) ? attempts : []).entries()) {
+    const keys = Object.keys(attempt).sort();
+    const hasSafeExitTelemetry = Object.hasOwn(attempt, 'exit_code');
+    const allowed =
+      attempt.status === 'transport_failed'
+        ? hasSafeExitTelemetry
+          ? ['attempt', 'error_code', 'exit_code', 'status', 'stderr_bytes', 'stdout_bytes']
+          : ['attempt', 'error_code', 'status']
+        : ['attempt', 'status'];
+    if (
+      !exactJson(keys, allowed.sort()) ||
+      attempt.attempt !== index + 1 ||
+      !['returned', 'transport_failed', 'dispatched'].includes(attempt.status) ||
+      (index < attempts.length - 1 && attempt.status !== 'transport_failed') ||
+      (hasSafeExitTelemetry &&
+        (!safeClaudeExitTelemetryAllowed ||
+          attempt.error_code !== 'CLI_PROVIDER_EXIT_FAILED' ||
+          attempt.exit_code !== 1 ||
+          attempt.stdout_bytes !== 0 ||
+          !Number.isInteger(attempt.stderr_bytes) ||
+          attempt.stderr_bytes < 0))
+    ) {
+      issues.push('judge attempt status sequence is invalid');
+    }
+  }
+  return issues;
+}
+
 function newCheckpoint({ plan, corpusCase, executionCaseId }) {
   return {
     schema: TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_CHECKPOINT_SCHEMA,
@@ -781,7 +815,8 @@ async function executeJudge({
       if (error?.name === 'AbortError') throw error;
       result.attempts.at(-1).status = 'transport_failed';
       result.attempts.at(-1).error_code = error?.code || null;
-      if (allowClaudeExitFailureCodeOne && error?.code === 'CLI_PROVIDER_EXIT_FAILED') {
+      const safeClaudeExitFailure = allowClaudeExitFailureCodeOne && isTutorStubRetryableClaudeExitFailure(error);
+      if (safeClaudeExitFailure) {
         result.attempts.at(-1).exit_code = Number.isInteger(error?.exitCode) ? error.exitCode : null;
         result.attempts.at(-1).stdout_bytes = Number.isInteger(error?.stdoutBytes) ? error.stdoutBytes : null;
         result.attempts.at(-1).stderr_bytes = Number.isInteger(error?.stderrBytes) ? error.stderrBytes : null;
@@ -792,10 +827,9 @@ async function executeJudge({
       });
       if (!retry.retry) {
         result.outcome = 'transport_failed';
-        result.invalid_reason =
-          allowClaudeExitFailureCodeOne && error?.code === 'CLI_PROVIDER_EXIT_FAILED'
-            ? CLAUDE_EXIT_BEFORE_RESPONSE_REASON
-            : error?.message || 'semantic validation judge transport failed';
+        result.invalid_reason = safeClaudeExitFailure
+          ? CLAUDE_EXIT_BEFORE_RESPONSE_REASON
+          : error?.message || 'semantic validation judge transport failed';
         break;
       }
       await waitForRetry(retry.delay_ms);
@@ -1234,32 +1268,12 @@ export function analyzeTutorStubResistanceSemanticValidation({
       }
       const attempts = checkpoint.attempts_by_judge?.[row.judge_id];
       if (!exactJson(attempts, row.attempts)) issues.push('judge result attempt ledger does not match checkpoint');
-      for (const [index, attempt] of (Array.isArray(attempts) ? attempts : []).entries()) {
-        const keys = Object.keys(attempt).sort();
-        const hasSafeExitTelemetry = Object.hasOwn(attempt, 'exit_code');
-        const allowed =
-          attempt.status === 'transport_failed'
-            ? hasSafeExitTelemetry
-              ? ['attempt', 'error_code', 'exit_code', 'status', 'stderr_bytes', 'stdout_bytes']
-              : ['attempt', 'error_code', 'status']
-            : ['attempt', 'status'];
-        if (
-          !exactJson(keys, allowed.sort()) ||
-          attempt.attempt !== index + 1 ||
-          !['returned', 'transport_failed', 'dispatched'].includes(attempt.status) ||
-          (index < attempts.length - 1 && attempt.status !== 'transport_failed') ||
-          (hasSafeExitTelemetry &&
-            (!safeClaudeExitTelemetryAllowed ||
-              attempt.error_code !== 'CLI_PROVIDER_EXIT_FAILED' ||
-              !Number.isInteger(attempt.exit_code) ||
-              !Number.isInteger(attempt.stdout_bytes) ||
-              attempt.stdout_bytes < 0 ||
-              !Number.isInteger(attempt.stderr_bytes) ||
-              attempt.stderr_bytes < 0))
-        ) {
-          issues.push('judge attempt status sequence is invalid');
-        }
-      }
+      issues.push(
+        ...auditTutorStubResistanceSemanticValidationAttempts({
+          attempts,
+          safeClaudeExitTelemetryAllowed,
+        }),
+      );
       const finalStatus = attempts?.at(-1)?.status;
       if (
         (['recorded_response', 'invalid_return'].includes(row.outcome) && finalStatus !== 'returned') ||

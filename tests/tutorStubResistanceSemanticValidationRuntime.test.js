@@ -27,6 +27,7 @@ import {
 } from '../services/tutorStubResistanceSemanticValidationV3.js';
 import {
   analyzeTutorStubResistanceSemanticValidation,
+  auditTutorStubResistanceSemanticValidationAttempts,
   buildTutorStubResistanceSemanticValidationPlan,
   runTutorStubResistanceSemanticValidation,
   writeTutorStubResistanceSemanticValidationReport,
@@ -466,6 +467,87 @@ test('V2 keeps Claude exit-code-one terminal without the successor-V3 retry opt-
   assert.deepEqual(claudeResult.attempts, [
     { attempt: 1, status: 'transport_failed', error_code: 'CLI_PROVIDER_EXIT_FAILED' },
   ]);
+});
+
+test('successor V3 does not retry or admit no-response telemetry for exit two or nonzero stdout', async (t) => {
+  for (const failure of [
+    { exitCode: 2, stdoutBytes: 0, stderrBytes: 31 },
+    { exitCode: 1, stdoutBytes: 1, stderrBytes: 32 },
+  ]) {
+    const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-v3-nonretryable-'));
+    const destination = path.join(temporary, 'run');
+    t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+    const loaded = loadTutorStubResistanceSemanticValidationV3();
+    const successfulCalls = [];
+    const fixture = fixtureCallerV3(successfulCalls, loaded);
+    let failed = false;
+    const callModel = async (...args) => {
+      if (!failed && args[0].provider === 'claude-code') {
+        failed = true;
+        const error = new Error(`claude CLI exited with code ${failure.exitCode}`);
+        error.code = 'CLI_PROVIDER_EXIT_FAILED';
+        Object.assign(error, failure);
+        throw error;
+      }
+      return fixture(...args);
+    };
+    const goRequest = goRequestFor(loaded, { revision: 2, programmeLedgerBefore: 661 });
+    const { seal } = await run(destination, { loaded, goRequest, callModel });
+    assert.equal(seal.reservations, 160);
+    const checkpoint = JSON.parse(
+      fs.readFileSync(
+        path.join(destination, 'cases', Object.keys(seal.case_checkpoint_sha256)[0], 'checkpoint.json'),
+        'utf8',
+      ),
+    );
+    const claudeResult = checkpoint.judge_results.find((row) => row.role.endsWith('judge_b'));
+    assert.deepEqual(claudeResult.attempts, [
+      { attempt: 1, status: 'transport_failed', error_code: 'CLI_PROVIDER_EXIT_FAILED' },
+    ]);
+    assert.notEqual(claudeResult.invalid_reason, 'claude CLI exited before an accepted semantic response');
+    assert.equal(
+      writeTutorStubResistanceSemanticValidationReport({
+        destination,
+        expectedSourceCommit: SOURCE_COMMIT,
+        expectedSourceTree: SOURCE_TREE,
+        expectedGoRequestPath: GO_REQUEST_PATH,
+        expectedGoRequestSha256: GO_REQUEST_SHA256,
+        expectedGoRequest: goRequest,
+        sourceDirty: false,
+        archiveDir: path.join(temporary, 'private-archive'),
+        loaded,
+      }).status,
+      'failed',
+    );
+  }
+
+  const safeAttempt = {
+    attempt: 1,
+    status: 'transport_failed',
+    error_code: 'CLI_PROVIDER_EXIT_FAILED',
+    exit_code: 1,
+    stdout_bytes: 0,
+    stderr_bytes: 4,
+  };
+  assert.deepEqual(
+    auditTutorStubResistanceSemanticValidationAttempts({
+      attempts: [safeAttempt],
+      safeClaudeExitTelemetryAllowed: true,
+    }),
+    [],
+  );
+  for (const mutation of [
+    { ...safeAttempt, exit_code: 2 },
+    { ...safeAttempt, stdout_bytes: 1 },
+  ]) {
+    assert.deepEqual(
+      auditTutorStubResistanceSemanticValidationAttempts({
+        attempts: [mutation],
+        safeClaudeExitTelemetryAllowed: true,
+      }),
+      ['judge attempt status sequence is invalid'],
+    );
+  }
 });
 
 test('additive v2 validation uses quote-only responses under the same checkpointed no-recall runtime', async (t) => {
