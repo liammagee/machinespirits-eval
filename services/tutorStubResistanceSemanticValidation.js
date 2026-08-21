@@ -400,7 +400,10 @@ export function assembleTutorStubResistanceSemanticValidationPreflight({ cases }
       synthetic_fixture_metric_pipeline_wiring: score.status === 'passed' ? 'complete' : 'failed',
       synthetic_schema_span_provenance_wiring:
         score.metrics.schema_span_provenance_validity === 1 ? 'complete' : 'failed',
-      synthetic_interjudge_metric_wiring: score.metrics.raw_interjudge_agreement >= 0.9 ? 'complete' : 'failed',
+      synthetic_interjudge_metric_wiring:
+        score.metrics.raw_interjudge_label_agreement >= 0.9 && score.metrics.raw_interjudge_full_vector_agreement >= 0.9
+          ? 'complete'
+          : 'failed',
       synthetic_coverage_metric_wiring: score.metrics.determined_coverage_overall >= 0.95 ? 'complete' : 'failed',
     },
     synthetic_fixture_score: score,

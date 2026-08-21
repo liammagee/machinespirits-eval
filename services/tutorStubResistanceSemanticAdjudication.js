@@ -226,11 +226,14 @@ export function validateTutorStubResistanceSemanticRegistration(registration) {
     minimumPerJudgeSensitivity: 0.9,
     minimumPerJudgeSpecificity: 0.9,
     minimumPerJudgeExactLabelAccuracy: 0.9,
+    minimumPerJudgeExactCoreVectorAccuracy: 0.9,
     minimumConsensusSensitivity: 0.95,
     minimumConsensusSpecificity: 0.95,
     minimumConsensusExactLabelAccuracy: 0.95,
+    minimumConsensusExactCoreVectorAccuracy: 0.95,
     minimumConsensusProductiveDisputeRecall: 0.9,
     minimumRawInterjudgeAgreement: 0.9,
+    minimumRawFullVectorInterjudgeAgreement: 0.9,
     minimumCohenKappa: 0.8,
     minimumOverallDeterminedCoverage: 0.95,
     minimumPerClassDeterminedCoverage: 0.9,
@@ -630,6 +633,13 @@ export function scoreTutorStubResistanceSemanticCorpus({ corpus, responsePairs, 
           ? response.judgment.final_label
           : 'indeterminate';
       });
+      const vectors = rows.map((row) => {
+        const validation = row.result.validation.find((entry) => entry.judge_id === judge.id);
+        const response = row.pair[judge.id]?.response;
+        return validation?.valid && response?.judgment?.confidence === 'high'
+          ? coreSignature(response.judgment)
+          : 'indeterminate';
+      });
       return [
         judge.id,
         {
@@ -647,7 +657,12 @@ export function scoreTutorStubResistanceSemanticCorpus({ corpus, responsePairs, 
             rows.filter((row, index) => labels[index] === row.corpusCase.expected.label).length,
             rows.length,
           ),
+          exact_core_vector_accuracy: ratio(
+            rows.filter((row, index) => vectors[index] === coreSignature(row.corpusCase.expected.judgment)).length,
+            rows.length,
+          ),
           labels,
+          vectors,
         },
       ];
     }),
@@ -663,6 +678,7 @@ export function scoreTutorStubResistanceSemanticCorpus({ corpus, responsePairs, 
           sensitivity: judgeMetrics[judge.id].sensitivity,
           specificity: judgeMetrics[judge.id].specificity,
           exact_label_accuracy: judgeMetrics[judge.id].exact_label_accuracy,
+          exact_core_vector_accuracy: judgeMetrics[judge.id].exact_core_vector_accuracy,
         },
       ]),
     ),
@@ -679,6 +695,14 @@ export function scoreTutorStubResistanceSemanticCorpus({ corpus, responsePairs, 
       rows.filter((row) => row.result.final_label === row.corpusCase.expected.label).length,
       rows.length,
     ),
+    consensus_exact_core_vector_accuracy: ratio(
+      rows.filter(
+        (row) =>
+          row.result.status === 'determinate' &&
+          coreSignature(row.result.judgment) === coreSignature(row.corpusCase.expected.judgment),
+      ).length,
+      rows.length,
+    ),
     consensus_productive_dispute_recall: ratio(
       rows.filter(
         (row) =>
@@ -687,12 +711,17 @@ export function scoreTutorStubResistanceSemanticCorpus({ corpus, responsePairs, 
       ).length,
       rows.filter((row) => row.corpusCase.expected.label === 'frame_defiant_or_productive_dispute').length,
     ),
-    raw_interjudge_agreement: ratio(
+    raw_interjudge_label_agreement: ratio(
       judgeMetrics[judges[0].id].labels.filter((value, index) => value === judgeMetrics[judges[1].id].labels[index])
         .length,
       rows.length,
     ),
-    cohen_kappa: cohenKappa(judgeMetrics[judges[0].id].labels, judgeMetrics[judges[1].id].labels),
+    raw_interjudge_full_vector_agreement: ratio(
+      judgeMetrics[judges[0].id].vectors.filter((value, index) => value === judgeMetrics[judges[1].id].vectors[index])
+        .length,
+      rows.length,
+    ),
+    label_cohen_kappa: cohenKappa(judgeMetrics[judges[0].id].labels, judgeMetrics[judges[1].id].labels),
     determined_coverage_overall: ratio(determined.length, rows.length),
     determined_coverage_positive: ratio(
       positive.filter((row) => row.result.status === 'determinate').length,
@@ -721,14 +750,17 @@ export function scoreTutorStubResistanceSemanticCorpus({ corpus, responsePairs, 
       (row) =>
         row.sensitivity >= gates.minimumPerJudgeSensitivity &&
         row.specificity >= gates.minimumPerJudgeSpecificity &&
-        row.exact_label_accuracy >= gates.minimumPerJudgeExactLabelAccuracy,
+        row.exact_label_accuracy >= gates.minimumPerJudgeExactLabelAccuracy &&
+        row.exact_core_vector_accuracy >= gates.minimumPerJudgeExactCoreVectorAccuracy,
     ) &&
     metrics.consensus_sensitivity >= gates.minimumConsensusSensitivity &&
     metrics.consensus_specificity >= gates.minimumConsensusSpecificity &&
     metrics.consensus_exact_label_accuracy >= gates.minimumConsensusExactLabelAccuracy &&
+    metrics.consensus_exact_core_vector_accuracy >= gates.minimumConsensusExactCoreVectorAccuracy &&
     metrics.consensus_productive_dispute_recall >= gates.minimumConsensusProductiveDisputeRecall &&
-    metrics.raw_interjudge_agreement >= gates.minimumRawInterjudgeAgreement &&
-    metrics.cohen_kappa >= gates.minimumCohenKappa &&
+    metrics.raw_interjudge_label_agreement >= gates.minimumRawInterjudgeAgreement &&
+    metrics.raw_interjudge_full_vector_agreement >= gates.minimumRawFullVectorInterjudgeAgreement &&
+    metrics.label_cohen_kappa >= gates.minimumCohenKappa &&
     metrics.determined_coverage_overall >= gates.minimumOverallDeterminedCoverage &&
     metrics.determined_coverage_positive >= gates.minimumPerClassDeterminedCoverage &&
     metrics.determined_coverage_negative >= gates.minimumPerClassDeterminedCoverage &&

@@ -189,19 +189,23 @@ test('zero-call development regression score passes all individual, consensus, r
   assert.equal(score.metrics.consensus_sensitivity, 1);
   assert.equal(score.metrics.consensus_specificity, 1);
   assert.equal(score.metrics.consensus_exact_label_accuracy, 1);
+  assert.equal(score.metrics.consensus_exact_core_vector_accuracy, 1);
   assert.equal(score.metrics.consensus_productive_dispute_recall, 1);
-  assert.equal(score.metrics.raw_interjudge_agreement, 1);
-  assert.equal(score.metrics.cohen_kappa, 1);
+  assert.equal(score.metrics.raw_interjudge_label_agreement, 1);
+  assert.equal(score.metrics.raw_interjudge_full_vector_agreement, 1);
+  assert.equal(score.metrics.label_cohen_kappa, 1);
   assert.equal(score.metrics.determined_coverage_overall, 1);
   assert.deepEqual(score.metrics.per_judge.semantic_judge_a, {
     sensitivity: 1,
     specificity: 1,
     exact_label_accuracy: 1,
+    exact_core_vector_accuracy: 1,
   });
   assert.deepEqual(score.metrics.per_judge.semantic_judge_b, {
     sensitivity: 1,
     specificity: 1,
     exact_label_accuracy: 1,
+    exact_core_vector_accuracy: 1,
   });
 });
 
@@ -354,6 +358,20 @@ test('binary specificity cannot hide collapsed productive-dispute labels', () =>
   assert.equal(score.metrics.consensus_specificity, 1);
   assert.equal(score.metrics.consensus_productive_dispute_recall, 0);
   assert.ok(score.metrics.consensus_exact_label_accuracy < 1);
+  assert.equal(score.status, 'failed');
+});
+
+test('label accuracy cannot hide a systematically wrong semantic core vector', () => {
+  const pairs = responsePairs();
+  const corpusCase = corpus.cases.find((row) => row.expected.label === 'frame_refuser');
+  for (const judge of registration.measurement.judges) {
+    pairs[corpusCase.case_id][judge.id].response.judgment.jurisdiction_target =
+      corpusCase.expected.judgment.jurisdiction_target === 'question' ? 'inquiry_frame' : 'question';
+  }
+  const score = scoreTutorStubResistanceSemanticCorpus({ corpus, responsePairs: pairs, registration });
+  assert.equal(score.metrics.consensus_exact_label_accuracy, 1);
+  assert.ok(score.metrics.consensus_exact_core_vector_accuracy < 0.95);
+  assert.equal(score.metrics.raw_interjudge_full_vector_agreement, 1);
   assert.equal(score.status, 'failed');
 });
 
