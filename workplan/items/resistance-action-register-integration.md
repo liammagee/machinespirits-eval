@@ -2614,3 +2614,59 @@ and explicit human approval.
   so a separate human ceiling amendment of at least 307 remains necessary
   before any later confirmation. No V3 GO request, validation call, outcome
   call, confirmation call, or efficacy claim is included in this change.
+
+- 2026-08-21 — A fresh digest-bound V3 manipulation semantic-validation HOLD
+  request was packaged from the reviewed merge
+  `04bd7d5ebbd227b62e3f8cbede2ff15ec4a0e0c4` / tree
+  `7da60b5a1c88373073d03a267654e402571bcd73` using the existing deterministic
+  packager. The request is
+  `config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3.json`
+  at SHA-256
+  `940cd6582909ff2e193830f219b0dc1a7d36f279d3d8c2709ca108177aba5539`.
+  It binds 35 unique exact-source files, including V3 instrument registration
+  `34fe9cf885293f14d037ac036c2c56f9d86f914707663afcc89f4acc938707e5`,
+  service `a66a16c4ea80a831065234507be8308d8e3ac3cf9d6de4a0e49395c8164fa7ff`,
+  schema `4840ef6ebc5135d98aeb3d70d5a22416601a62fe1dc6bb3c225c05e606673033`,
+  development evidence
+  `4aa10fcb76779ae119a883670b8283d89123369a9079572a8a8d4a903c0610fe`,
+  validation registration
+  `52db8e549d9f735f257f47f3e9d95060a3bcc5c86983abba9457d5b64311df90`,
+  and the independently authored heldout
+  `687f931f2bc0beb80283859dec48a9393e2ccf0d08ee34c6d8e68e5758dcd8c2`.
+  Heldout provenance remains the remotely preserved one-file author branch
+  `codex/resistance-semantic-v3-heldout` at commit
+  `d76dd2691a496abacc39c3ba0034f74b6f5c7bde`, whose parent is the exact
+  instrument freeze `a0e0b56d371e8313eeb98d99f22a1a5f880a0d67`.
+
+  The endpoint file/canonical/preflight/certificate bindings are respectively
+  `b812956e49355efda5faed4aa88b676ea911250ff65913f89c3c029b035c2906`,
+  `fb363a7fb819155175f730e95efa63e5af8aac634d673aeba836acfa891cf6f0`,
+  `0eb73e638def94eebd86102ca28d6132a66f941788f327bc04828d68b14859f6`,
+  and `b37f7040e6ad6f4dbeebfdc68ff9054254fcc1d9eae34e9f74d97af90700d3e8`.
+  The exact live/recovery/analyze command-array hashes are
+  `d66de332da9dd94774b45d9e2414ee47a9b81c01f0b3943227ad6d548eb96dab`,
+  `151c8fb269e26ab93b61789577bfe17d7c748c16bab134ce66680badb190f2e0`,
+  and `8d3e3c1d937c28620a971650e5fce47be3eeab87c5f3a84954e6891a74754e2b`.
+  They pin Sol-low and Claude Sonnet-5-low as independent judges, the fresh
+  create-once destination
+  `.tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v3-2026-08-21-a`,
+  and required durable private archiving.
+
+  Failed V1 and V2 remain digest-bound and wholly excluded: requests
+  `b6d9a41cc9fbdb2a3fc15f536e2a0b6e97a406986c9f88027e0765ab4bddb826`
+  and `b91b6c92ec6b82b15b40821938929c3e2c31c86424822846a26443977cb479d6`,
+  reports `008230526809a6aa2917b240c6a30af644f30184b89042825773b1b8040c5c74`
+  and `11e868d18135e6df29230eab6f7912427917c0e0b55ea350f6cec4a2168fca11`,
+  and private archive commits `cf92081bd566948f4ea26d0ac5e67f8132ebeef8`
+  and `a98b58732ae2f0b68180e3bbb8d0357cf2e4adfa`. Neither is rescored,
+  normalized, reused, pooled, or selected.
+
+  The request is exactly 80 cases x two judges = 160 planned calls, three
+  charged reservations per call, hard ceiling 480, and programme bound
+  `651 -> 1131 / 5000`. It permits no gold or original case ids in execution,
+  interim analysis, third judge, completed or ambiguous-call recall, semantic
+  repair, valid-case rerun, replacement, selection, or post-heldout tuning.
+  Outcome validation and confirmation remain unauthorized; no ceiling
+  amendment is encoded. The request stays literal `HOLD` / `null` / `false`
+  and the packager's isolated no-`node_modules` replay passed 66 checks with
+  zero model calls and zero production writes.
