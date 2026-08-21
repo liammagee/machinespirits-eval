@@ -3038,16 +3038,20 @@ and explicit human approval.
   digest-bound v4 HOLD request,
   `config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v4.json`,
   request SHA-256
-  `d196de4777500d7bef752ec6b0f9f56cf8112a933394823477282bec76858618`,
-  packaged at launch commit `12a6253676a07188469c56c803a771c19a97ea04`
+  `95e2df0689c186382a8090c6477e068503a011c3444bda614aac750559a49eef`,
+  packaged at launch commit `0542c2904e3c3a47632aae379549da31968dcf5a`
   (a first freeze at `b4d6ca23` was replaced before push after a
   parser-selector fix for the v1 held-out corpus schema string; a second
   freeze at `a4586874`, digest `cdc095c9`, was replaced after PR #776
   review when the runner — a closure file — gained the launch
   authorization gate and the v4 programme-ceiling fix; a third freeze
   at `244c5c7b`, digest `a9addfef`, was replaced when the gate also
-  gained the committed-bytes-at-HEAD binding; no earlier request was
-  ever consumed or approved).
+  gained the committed-bytes-at-HEAD binding; a fourth freeze at
+  `12a62536`, digest `d196de47`, was replaced when CI lint and the
+  host line-cap ratchet forced two closure edits — the adjudicator
+  selector moved from the CLI application host into the study service
+  and the packager template took the repo prettier shape; no earlier
+  request was ever consumed or approved).
   Live and recovery execution for registration version 4 and later now
   fail closed unless a separately committed launch-authorization file
   binds the registration digest, the frozen request digest through the
