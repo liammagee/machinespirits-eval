@@ -1,0 +1,241 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-semantic-adjudication-registration.v2",
+  "version": 2,
+  "status": "development_instrument_frozen_pending_independent_v2_heldout_validation",
+  "studyId": "tutor-stub-resistance-semantic-adjudication-validation-v2",
+  "observationSemantics": "prospective_frame_resistance_semantic_v2",
+  "supersession": {
+    "v1InstrumentPath": "config/tutor-stub-resistance-semantic-adjudication-registration.v1.json",
+    "v1InstrumentSha256": "d479a556df2f61458546e9e1463dc11fa1261b74df91fe4b765d159c330f415d",
+    "v1ResponseSchemaPath": "config/tutor-stub-resistance-semantic-adjudication-response.schema.v1.json",
+    "v1ResponseSchemaSha256": "39a9d12655ec26b1255ab72cfd1f5818dc9e0084daf4c9fafc39c0dbb8ea044f",
+    "v1ImplementationPath": "services/tutorStubResistanceSemanticAdjudication.js",
+    "v1ImplementationSha256": "4c1123b7272e33bdfc63205c85058d9b02753b7c89d3c05af2137b0f72783456",
+    "v1HeldoutPath": "config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json",
+    "v1HeldoutSha256": "9378416d1fdf8dc41f35ad84a4edf69fba6ad8889ce5020617f3d19747c9a2c7",
+    "v1ConsumedRequestPath": "config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v1.json",
+    "v1ConsumedRequestSha256": "b6d9a41cc9fbdb2a3fc15f536e2a0b6e97a406986c9f88027e0765ab4bddb826",
+    "v1FailedValidationReportSha256": "008230526809a6aa2917b240c6a30af644f30184b89042825773b1b8040c5c74",
+    "v1ObservedAccounting": {
+      "cases": 80,
+      "plannedJudgeCalls": 160,
+      "chargedReservations": 160,
+      "returnedFirstAttempts": 160,
+      "retries": 0,
+      "recoveries": 0,
+      "reruns": 0,
+      "invalidJudgments": 91,
+      "measurementIndeterminateCases": 78,
+      "status": "failed"
+    },
+    "v1FailureDisposition": "sealed_failed_validation_evidence_no_rescoring_normalization_or_reinterpretation",
+    "v1InstrumentEligibleForFutureValidationOrLaunch": false,
+    "v1HeldoutEligibleForV2Heldout": false
+  },
+  "historicalBoundary": {
+    "preserveObservationSemantics": [
+      "legacy_v1",
+      "prospective_v2",
+      "prospective_v3",
+      "prospective_v4",
+      "prospective_v5",
+      "prospective_v6",
+      "prospective_v7",
+      "prospective_v8",
+      "prospective_frame_resistance_semantic_v1"
+    ],
+    "historicalRuntimeAndArtifactBytesMutable": false,
+    "historicalRequestsOrOutcomesReinterpreted": false,
+    "incompleteV1V3V4V7InputsExcluded": true,
+    "failedSemanticV1InputsExcludedFromV2HeldoutAndConfirmation": true,
+    "calibrationOutcomesExcludedFromConfirmation": true
+  },
+  "instrument": {
+    "implementationPath": "services/tutorStubResistanceSemanticAdjudicationV2.js",
+    "implementationSha256": "2b9faa679fedf1e98c25e6e5f3569da6c2ef83f3654642c08dc3c00e6fc15bfd",
+    "responseSchemaPath": "config/tutor-stub-resistance-semantic-adjudication-response.schema.v2.json",
+    "responseSchemaSha256": "eaeebc729a56ce7802bf9030a60cdf4cc60734f3aabe0760c7ddd6a64d011205",
+    "modelEvidenceShape": "field_source_id_exact_quote_no_numeric_offsets",
+    "wrapperOffsetDerivation": "unique_exact_quote_utf16_code_unit",
+    "ambiguousOrAbsentQuoteDisposition": "invalid_measurement_indeterminate",
+    "promptPacketIncludes": ["current_public_learner_utterance", "bounded_preceding_public_context_for_anaphora"],
+    "promptPacketExcludes": [
+      "profile",
+      "arm",
+      "register",
+      "assignment",
+      "gold_label",
+      "legacy_observer_output",
+      "combined_classifier_output",
+      "repair_status",
+      "block",
+      "slot",
+      "outcome",
+      "hidden_dag",
+      "private_prompt"
+    ],
+    "promptExamples": "none",
+    "codebookBoundaries": {
+      "actualParticipation": "presently_performed_or_committed_specific_evidence_facing_inquiry_step",
+      "hypotheticalParticipation": "does_not_count_as_licensed_participation",
+      "jurisdictionalDispute": "authority_standing_right_or_frame_governance_over_the_inquiry",
+      "meritsProceduralOrAdministrativeDisagreement": "does_not_count_without_a_jurisdictional_challenge",
+      "productiveCounterframing": "requires_a_concrete_alternative_inquiry_question_test_criterion_or_evidence_step",
+      "genericWillingness": "does_not_count_as_productive_counterframing"
+    },
+    "developmentEvidencePath": "config/tutor-stub-resistance-semantic-adjudication-development-evidence.v2.json",
+    "developmentEvidenceSha256": "e823af82954c86737f74d53ef033195da388ddb88defd0577276cbf551a749d8",
+    "developmentCases": 96,
+    "developmentEvidenceIncludesObservedV1Heldout": true,
+    "developmentEvidenceVisibleToJudgePrompt": false
+  },
+  "measurement": {
+    "judges": [
+      {
+        "id": "semantic_judge_a",
+        "modelRef": "codex.gpt-5.6-sol",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "modelFamily": "openai_gpt_5_6",
+        "effort": "low",
+        "modelAttestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+        "independent": true
+      },
+      {
+        "id": "semantic_judge_b",
+        "modelRef": "claude-code.sonnet-5",
+        "provider": "claude-code",
+        "model": "claude-sonnet-5",
+        "modelFamily": "anthropic_claude_5",
+        "effort": "low",
+        "modelAttestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+        "independent": true
+      }
+    ],
+    "learnerAndCombinedAnalysisRouteExcludedFromVoting": "codex.gpt-5.6-luna",
+    "judgesSeeOtherOutput": false,
+    "thirdJudge": false,
+    "deterministicAuthority": "schema_span_provenance_safety_only",
+    "lexicalObserverRole": "advisory_only_never_veto_or_override",
+    "semanticAuthorityRule": "no_regex_or_keyword_check_may_replace_narrow_override_or_veto_a_capable_independent_llm_semantic_positive_for_mood_stance_intent_pragmatic_force_framing_jurisdiction_refusal_uptake_irony_anaphora_or_compositional_meaning",
+    "consensus": {
+      "requiredValidJudges": 2,
+      "confidenceRequired": "high",
+      "fullVectorAndFinalLabelAgreement": true,
+      "spanAgreementRequired": false,
+      "classifierOrRegexTiebreaker": false,
+      "disagreementDisposition": "measurement_indeterminate",
+      "lowConfidenceDisposition": "measurement_indeterminate",
+      "invalidSchemaSpanOrProvenanceDisposition": "measurement_indeterminate"
+    },
+    "validationGates": {
+      "schemaSpanProvenanceValidity": 1,
+      "minimumPerJudgeSensitivity": 0.9,
+      "minimumPerJudgeSpecificity": 0.9,
+      "minimumPerJudgeExactLabelAccuracy": 0.9,
+      "minimumPerJudgeExactCoreVectorAccuracy": 0.9,
+      "minimumConsensusSensitivity": 0.95,
+      "minimumConsensusSpecificity": 0.95,
+      "minimumConsensusExactLabelAccuracy": 0.95,
+      "minimumConsensusExactCoreVectorAccuracy": 0.95,
+      "minimumConsensusProductiveDisputeRecall": 0.9,
+      "minimumRawInterjudgeAgreement": 0.9,
+      "minimumRawFullVectorInterjudgeAgreement": 0.9,
+      "minimumCohenKappa": 0.8,
+      "minimumOverallDeterminedCoverage": 0.95,
+      "minimumPerClassDeterminedCoverage": 0.9,
+      "maximumProhibitedToolEvents": 0,
+      "indeterminateCountsAsSensitivityOrSpecificityFailure": true,
+      "invalidCountsAsSensitivityOrSpecificityFailure": true
+    }
+  },
+  "heldoutFreezeProtocol": {
+    "requiredRole": "heldout_blinded",
+    "requiredSchema": "machinespirits.tutor-stub.resistance-semantic-adjudication-corpus.v2",
+    "exactCases": 80,
+    "minimumCases": 80,
+    "exactPositiveCases": 40,
+    "minimumPositiveCases": 40,
+    "exactNeitherCases": 24,
+    "minimumNegativeCases": 40,
+    "exactProductiveDisputeCases": 16,
+    "minimumProductiveDisputeCases": 16,
+    "minimumActualParticipationCases": 20,
+    "minimumHypotheticalOrConditionalParticipationCases": 12,
+    "minimumMeritsProceduralOrAdministrativeNonjurisdictionCases": 16,
+    "minimumConcreteProductiveCounterframes": 16,
+    "uniqueSourceUtterances": 80,
+    "duplicateHeldoutContextMessagesAllowed": false,
+    "developmentCaseIdSourceOrContextCollisionAllowed": false,
+    "v1ObservedCaseIdSourceOrContextCollisionAllowed": false,
+    "authoredByIndependentAgentAfterInstrumentFreezeCommit": true,
+    "heldoutTextOrGoldVisibleToPromptBuilderBeforeFreeze": false,
+    "postHeldoutPromptModelThresholdOrConsensusTuning": false,
+    "futureValidationRequestRequired": true,
+    "validationCallsAuthorized": false
+  },
+  "prospectiveRuntimeContract": {
+    "semanticAggregateAuthoritativeFor": [
+      "learner_adherence",
+      "trigger_eligibility",
+      "prior_turn_counting",
+      "intervention",
+      "final_learner_only_outcome",
+      "zero_call_analyzer_replay"
+    ],
+    "legacyObserverAndLunaClassifier": "advisory_only",
+    "candidateAdjudication": "exactly_once_per_candidate_then_persist_and_reuse",
+    "indeterminate": {
+      "typed": true,
+      "terminal": true,
+      "nonrecoverable": true,
+      "learnerRepair": false,
+      "judgeRerunAfterResponse": false,
+      "unitRerun": false,
+      "replacement": false,
+      "outcomeSelection": false,
+      "fisherAnalysisWithheld": true,
+      "countedAsProfileFailure": false,
+      "countedAsTreatmentFailure": false
+    },
+    "determinateNonadherence": {
+      "maximumFullLearnerRepairs": 1,
+      "repairedCandidateRequiresFreshIndependentJudgePair": true
+    },
+    "transportRecovery": "within_original_judge_call_before_any_semantic_response_only"
+  },
+  "prospectiveValidationBudget": {
+    "programmeLedgerBeforeV2Validation": 491,
+    "heldoutCases": 80,
+    "independentJudgesPerCase": 2,
+    "plannedCalls": 160,
+    "maximumChargedReservationsPerPlannedCall": 3,
+    "hardValidationReservations": 480,
+    "programmeMaximumAfterV2Validation": 971,
+    "programmeCeiling": 5000,
+    "v2ValidationCallsAuthorized": false
+  },
+  "laterProgrammeBoundary": {
+    "outcomeValidationHardReservations": 720,
+    "confirmationHardReservations": 3456,
+    "prospectiveMaximumIfBothLaterStagesProceed": 5147,
+    "currentProgrammeCeiling": 5000,
+    "ceilingAmendmentRequiredBeforeLaterStages": true,
+    "laterValidationOrConfirmationCallsAuthorized": false,
+    "scientificDesignMayBeNarrowedToFitCeiling": false
+  },
+  "authorization": {
+    "goRequestPrepared": false,
+    "validationModelCallsAuthorized": false,
+    "confirmationModelCallsAuthorized": false,
+    "liveRunAuthorized": false
+  },
+  "claimBoundary": {
+    "readinessOnly": true,
+    "zeroCallSyntheticPreflightCanEstablishAccuracy": false,
+    "failedV1ValidationEstablishesSubstantiveSemanticPerformance": false,
+    "validationPacketRequiredBeforeAnyV2ModelCall": true,
+    "passingManipulationAndOutcomeValidationReportsRequiredBeforeConfirmationRequest": true,
+    "noEfficacyWarmPlainNullLearningTransferHumanOrCellClaim": true
+  }
+}

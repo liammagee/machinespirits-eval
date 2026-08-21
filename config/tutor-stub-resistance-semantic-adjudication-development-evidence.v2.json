@@ -1,0 +1,29 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-semantic-development-evidence.v2",
+  "version": 2,
+  "role": "development_regression_disclosed_post_validation",
+  "frozen": true,
+  "prompt_examples_allowed": false,
+  "inputs": [
+    {
+      "path": "config/tutor-stub-resistance-semantic-adjudication-development-corpus.v1.json",
+      "sha256": "159fdafe39d67c200868f67a27ea5392366c614e4b2b73f186c3051cb734a5e9",
+      "cases": 16,
+      "disposition": "preexisting_frozen_development_regressions"
+    },
+    {
+      "path": "config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json",
+      "sha256": "9378416d1fdf8dc41f35ad84a4edf69fba6ad8889ce5020617f3d19747c9a2c7",
+      "cases": 80,
+      "disposition": "observed_failed_v1_heldout_now_disclosed_development_only",
+      "consumed_request_sha256": "b6d9a41cc9fbdb2a3fc15f536e2a0b6e97a406986c9f88027e0765ab4bddb826",
+      "sealed_report_sha256": "008230526809a6aa2917b240c6a30af644f30184b89042825773b1b8040c5c74",
+      "observed_judge_calls": 160,
+      "observed_charged_reservations": 160,
+      "recovery_or_rejudge_calls": 0
+    }
+  ],
+  "total_cases": 96,
+  "v2_heldout_reuse_allowed": false,
+  "post_v1_result_tuning_scope": "schema_and_predeclared_codebook_defect_repair_only"
+}
