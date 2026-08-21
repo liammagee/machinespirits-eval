@@ -3103,5 +3103,10 @@ and explicit human approval.
   bytes that match the frozen digest but not the pinned commit, an
   absent file, and a file absent at the pinned commit. Because the
   package changes, its digest changes: the approval quoted above is
-  spent and cannot launch anything. A fresh approval statement over the
-  new digest is required, and no model call has been made.
+  spent and cannot launch anything. The fifth freeze is at launch commit
+  `a20d016a8b7469806f09d822d35e7d038c5c8a01`, request SHA-256
+  `d2e611c3fad203bd2beafb5e9c4d8b1a0a8f3ab2a86ac06e0a0e74a975caabda`,
+  same 54-file closure, same destinations, same budget, checker replay
+  valid with zero model calls and zero production writes, status
+  HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL. A fresh approval statement over
+  the new digest is required, and no model call has been made.
