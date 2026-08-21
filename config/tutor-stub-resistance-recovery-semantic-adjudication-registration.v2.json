@@ -1,7 +1,7 @@
 {
   "schema": "machinespirits.tutor-stub.resistance-recovery-semantic-adjudication-registration.v2",
   "version": 2,
-  "status": "development_instrument_freeze_candidate_pending_independent_v2_heldout",
+  "status": "development_instrument_frozen_pending_independent_v2_heldout_validation",
   "supersession": {
     "basis": "independent_pre_execution_construct_audit_found_the_v1_packet_omitted_the_public_tutor_turn_between_the_two_post_trigger_learner_turns",
     "supersedesRegistrationPath": "config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v1.json",
@@ -12,7 +12,7 @@
     "promptChanged": true,
     "responseSchemaChanged": true,
     "heldoutCasesAuthored": 0,
-    "correctionFreezeCommit": null
+    "correctionFreezeCommit": "ecb0c5b289848308adffa2a415ced06924e5afe6"
   },
   "studyId": "tutor-stub-resistance-recovery-semantic-adjudication-validation-v2",
   "instrument": {
@@ -23,7 +23,7 @@
     "developmentCorpusPath": "config/tutor-stub-resistance-recovery-semantic-development-corpus.v2.json",
     "developmentCorpusSha256": "eed881fb1fd87a0124a7819d76e9f80fc5392b6c2d6c62285bf288d83a5ae906",
     "developmentCases": 15,
-    "instrumentFreezeCommit": null,
+    "instrumentFreezeCommit": "ecb0c5b289848308adffa2a415ced06924e5afe6",
     "publicPacketSources": ["trigger", "intervention", "prior_post_trigger", "intervening_tutor", "current_learner"],
     "offsetUnit": "utf16_code_unit",
     "promptExamples": "none"
