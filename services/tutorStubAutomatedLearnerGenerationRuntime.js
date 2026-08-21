@@ -212,9 +212,11 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
             return publicTutorPressure(stimulusTutor) || negativeRegisterPressure(stimulusSelection);
           })
       : [];
-    const legacyObserved = priorTurns.filter(({ turn, stimulusTutor }) =>
-      clauses.some((clause) => clause.length && automatedLearnerMarkerMatches(turn, clause, stimulusTutor)),
-    ).length;
+    const legacyObserved = semanticAdherence.enabled
+      ? 0
+      : priorTurns.filter(({ turn, stimulusTutor }) =>
+          clauses.some((clause) => clause.length && automatedLearnerMarkerMatches(turn, clause, stimulusTutor)),
+        ).length;
     const observed = semanticAdherence.countObserved(
       priorTurns.map(({ turn }) => turn),
       profileId,
@@ -598,7 +600,9 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
         signal,
       });
       assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
-      const lexicalAdherence = automatedLearnerDraftMatchesRuntime({ text: candidate.text, raw, state, runtime });
+      const lexicalAdherence = semanticAdherence.enabled
+        ? null
+        : automatedLearnerDraftMatchesRuntime({ text: candidate.text, raw, state, runtime });
       const semantic = await semanticAdherence.evaluate({
         state,
         learnerText: candidate.text,
