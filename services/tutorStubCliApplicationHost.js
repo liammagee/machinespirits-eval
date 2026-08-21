@@ -295,6 +295,7 @@ import { createTutorStubPublicPresentationRuntime } from './tutorStubPublicPrese
 import { createTutorStubDebugReportRuntime } from './tutorStubDebugReportRuntime.js';
 import { createTutorStubLaunchSummaryPresentation } from './tutorStubLaunchSummaryPresentation.js';
 import { createTutorStubAutomatedLearnerGenerationRuntime } from './tutorStubAutomatedLearnerGenerationRuntime.js';
+import { createLazyTutorStubResistanceSemanticAdjudicator } from './tutorStubResistanceSemanticRuntime.js';
 import { createTutorStubTypedActionPlanningRuntime } from './tutorStubTypedActionPlanningRuntime.js';
 import { createTutorStubClarificationTranslationRuntime } from './tutorStubClarificationTranslationRuntime.js';
 import { createTutorStubOpeningRuntime } from './tutorStubOpeningRuntime.js';
@@ -1162,6 +1163,12 @@ export async function runTutorStubCliApplicationHost({
     tutorStubComprehensionPrompt,
   });
 
+  const adjudicateResistanceSemanticCandidate = createLazyTutorStubResistanceSemanticAdjudicator({
+    appendTraceEvent,
+    callPromptModel,
+    resolveModel,
+  });
+
   const {
     automatedLearnerCorruptionEnabled,
     automatedLearnerProfileId,
@@ -1176,6 +1183,7 @@ export async function runTutorStubCliApplicationHost({
     resolveAutomatedLearnerProfile,
   } = createTutorStubAutomatedLearnerGenerationRuntime({
     appendTraceEvent,
+    adjudicateResistanceSemanticCandidate,
     callPromptModel,
     classificationFromCombinedAnalysis: (...values) => classificationFromCombinedAnalysis(...values),
     extractCombinedLearnerAnalysis: (...values) => extractCombinedLearnerAnalysis(...values),

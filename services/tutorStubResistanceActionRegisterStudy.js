@@ -8,6 +8,11 @@ import { beginTutorStubActionBeforeRegisterShadow } from './tutorStubActionBefor
 import { tutorStubFirstDraftContractPrompt } from './tutorStubFirstDraftContract.js';
 import { extractTutorStubFrozenTurn, refreshTutorStubFrozenFirstDraftRequest } from './tutorStubFrozenReplay.js';
 import { normalizeTutorStubResponseConfiguration } from './tutorStubRegisterPragmatics.js';
+import {
+  loadTutorStubResistanceSemanticRegistration,
+  tutorStubResistanceSemanticPublicContext,
+  validateTutorStubResistanceSemanticRuntimeResult,
+} from './tutorStubResistanceSemanticRuntime.js';
 
 export const TUTOR_STUB_RESISTANCE_ACTION_REGISTER_STUDY_SCHEMA =
   'machinespirits.tutor-stub.resistance-action-register-study-runtime.v1';
@@ -632,8 +637,72 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
   learnerText,
   classification,
   tutorLearnerDag,
+  turnNumber = null,
+  expectedPublicContext = null,
 }) {
   const semantics = runtime.registration?.design?.trigger?.observationSemantics;
+  if (semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveFrameResistanceSemanticV1) {
+    const semanticAdjudication = runtime.current_semantic_adjudication || null;
+    const semanticBinding = loadTutorStubResistanceSemanticRegistration();
+    const semanticValidation = validateTutorStubResistanceSemanticRuntimeResult({
+      result: semanticAdjudication,
+      learnerText,
+      turnNumber,
+      registrationBinding: semanticBinding,
+      expectedPublicContext,
+    });
+    const aggregate = semanticAdjudication?.aggregate || null;
+    const observedProfile =
+      aggregate?.status === 'determinate'
+        ? aggregate.final_label === 'frame_refuser'
+          ? 'frame_refuser'
+          : aggregate.final_label === 'frame_defiant_or_productive_dispute'
+            ? 'frame_defiant'
+            : null
+        : null;
+    const matchesRegisteredCohort = observedProfile === runtime.profile;
+    const timingObservation = detectTutorStubEdgeTimingSignal({ learnerText, classification, tutorLearnerDag });
+    const reasons = [];
+    if (runtime.consumed) reasons.push('study_intervention_already_consumed');
+    if (!semanticValidation.valid) reasons.push('semantic_measurement_indeterminate_missing_or_stale');
+    if (semanticValidation.valid && !matchesRegisteredCohort) {
+      reasons.push('semantic_label_does_not_match_registered_cohort');
+    }
+    if (timingObservation.comprehensionRepair) reasons.push('comprehension_repair');
+    if (timingObservation.protectedAffect) reasons.push('protected_affect');
+    return {
+      eligible: reasons.length === 0,
+      reasons,
+      shadow: {
+        resistance_kind: observedProfile,
+        observation: {
+          schema: 'machinespirits.tutor-stub.resistance-semantic-trigger-observation.v1',
+          authority: 'independent_dual_judge_consensus',
+          semanticAdjudication: clone(semanticAdjudication),
+          validation: semanticValidation,
+        },
+        warrant: {
+          status: semanticValidation.valid && matchesRegisteredCohort ? 'licensed' : 'not_licensed',
+          required_observation_type: 'independent_semantic_consensus',
+          basis: clone(aggregate),
+          ambiguity_blocks_license: !semanticValidation.valid,
+          primary_move_type: semanticValidation.valid && matchesRegisteredCohort ? 'test_bounded_distinction' : null,
+        },
+      },
+      timing: {
+        authority: 'advisory_only_under_semantic_observation',
+        observation: timingObservation,
+        canVetoSemanticClassification: false,
+        canBlockUnsafeIntervention: true,
+      },
+      semantic_authority: {
+        regex_or_keyword_veto_allowed: false,
+        luna_classifier_vote_or_tiebreak_allowed: false,
+        safety_signal_can_recode_semantic_positive: false,
+        semantic_label: observedProfile,
+      },
+    };
+  }
   const compositionalBoredom = usesCompositionalBoredomObservation(runtime);
   const v4Observation = usesProspectiveV4Observation(runtime.registration)
     ? observeResistantLearnerTurn({ learnerText, classification, semantics })
@@ -732,11 +801,16 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
 } = {}) {
   const runtime = state?.resistanceActionRegisterStudy;
   if (!selection || !runtime?.enabled) return selection;
+  const semanticObservation =
+    runtime.registration?.design?.trigger?.observationSemantics ===
+    RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveFrameResistanceSemanticV1;
   const eligibility = tutorStubResistanceActionRegisterTreatmentEligibility({
     runtime,
     learnerText,
     classification,
     tutorLearnerDag,
+    turnNumber: decisionTurn(state, tutorLearnerDag),
+    expectedPublicContext: semanticObservation ? tutorStubResistanceSemanticPublicContext(state) : null,
   });
   if (!eligibility.eligible) {
     runtime.history.push({
@@ -874,9 +948,44 @@ function triggerFromTurnRecord(
   record,
   profile,
   observationSemantics = RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2,
+  expectedPublicContext = null,
 ) {
   const learnerText = record?.learner || '';
   const classification = record?.classification || null;
+  if (observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveFrameResistanceSemanticV1) {
+    const semanticAdjudication = record?.resistanceSemanticAdjudication || null;
+    const semanticValidation = validateTutorStubResistanceSemanticRuntimeResult({
+      result: semanticAdjudication,
+      learnerText,
+      turnNumber: Number(record?.turn),
+      registrationBinding: loadTutorStubResistanceSemanticRegistration(),
+      expectedPublicContext,
+    });
+    const aggregate = semanticAdjudication?.aggregate || null;
+    const observedProfile =
+      aggregate?.status === 'determinate'
+        ? aggregate.final_label === 'frame_refuser'
+          ? 'frame_refuser'
+          : aggregate.final_label === 'frame_defiant_or_productive_dispute'
+            ? 'frame_defiant'
+            : null
+        : null;
+    return {
+      eligible: semanticValidation.valid && observedProfile === profile,
+      learnerText,
+      classification,
+      shadow: {
+        resistance_kind: observedProfile,
+        observation: { semanticAdjudication, validation: semanticValidation },
+        warrant: {
+          status: semanticValidation.valid && observedProfile === profile ? 'licensed' : 'not_licensed',
+          basis: aggregate,
+        },
+      },
+      cohortObservation: semanticAdjudication,
+      timing: { authority: 'advisory_only_under_semantic_observation', canVetoSemanticPositive: false },
+    };
+  }
   const shadow = observeResistanceAxis({ learnerText, classification });
   const legacySemantics = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.legacyV1;
   const prospectiveV3 = observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV3;
@@ -931,13 +1040,24 @@ export function extractTutorStubResistanceActionRegisterPrefix({
   const source = fs.readFileSync(tracePath, 'utf8');
   const events = parseTrace(source);
   const completed = events.filter((event) => event.type === 'turn_complete' && event.turnRecord);
+  const opening = events.find((event) => event.type === 'tutor_opening')?.text;
+  const publicHistory = opening ? [{ role: 'assistant', text: opening }] : [];
   let trigger = null;
   for (const event of completed) {
-    const candidate = triggerFromTurnRecord(event.turnRecord, normalizedProfile, observationSemantics);
+    const candidate = triggerFromTurnRecord(
+      event.turnRecord,
+      normalizedProfile,
+      observationSemantics,
+      publicHistory.slice(-4),
+    );
     if (candidate.eligible) {
       trigger = { ...candidate, turn: Number(event.turn), turnId: event.turnId || event.turnRecord?.turnId || null };
       break;
     }
+    publicHistory.push(
+      { role: 'learner', text: String(event.turnRecord.learner || '') },
+      { role: 'assistant', text: String(event.turnRecord.tutor || '') },
+    );
   }
   if (!trigger) throw new Error(`trace has no eligible ${normalizedProfile} resistance trigger: ${tracePath}`);
   const firstTriggerEvent = events.findIndex((event) => Number(event.turn) === trigger.turn);

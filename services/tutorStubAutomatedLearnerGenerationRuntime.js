@@ -20,8 +20,20 @@ import {
   TUTOR_STUB_STRESS_SCHEDULE_SCHEMA,
 } from './tutorStubStressSchedule.js';
 import { assertTutorStubTurnAttemptCurrent } from './tutorStubTurnAttempt.js';
-import { TUTOR_STUB_CLI_POLICY_RETRY_DELAYS_MS } from './tutorStubCliPolicyRetry.js';
 import { createTutorStubBoredomProofDagLearnerRuntime } from './tutorStubBoredomActionRegisterProofDagStudy.js';
+import { createTutorStubResistanceSemanticAdherenceBridge } from './tutorStubResistanceSemanticRuntime.js';
+import {
+  admitTutorStubFrameOpportunityV3FullRepair,
+  admitTutorStubFrameOpportunityV4FullRepair,
+  throwFrameDefiantAdherenceExhaustion,
+  throwFrameRefuserAdherenceExhaustion,
+} from './tutorStubFrameOpportunityAdherence.js';
+export {
+  admitTutorStubFrameOpportunityV3FullRepair,
+  admitTutorStubFrameOpportunityV4FullRepair,
+  buildTutorStubFrameOpportunityV3RepairBudgetDiagnostic,
+  buildTutorStubFrameOpportunityV4RepairBudgetDiagnostic,
+} from './tutorStubFrameOpportunityAdherence.js';
 import {
   GUARDED_LEARNER_MOVE_SCHEMA,
   auditGuardedLearnerDraft,
@@ -46,172 +58,6 @@ export {
 };
 export const TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV =
   'TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS';
-const FRAME_OPPORTUNITY_V3_TURNS = 8;
-const FRAME_OPPORTUNITY_V3_MODEL_CALL_BUDGET = 48;
-const FRAME_OPPORTUNITY_V3_BASE_CALLS = 1 + FRAME_OPPORTUNITY_V3_TURNS * 3;
-const FRAME_OPPORTUNITY_V3_CALLS_PER_FULL_REPAIR = 2;
-const FRAME_OPPORTUNITY_V3_TUTOR_GUARD_RESERVE = FRAME_OPPORTUNITY_V3_TURNS * 2;
-const FRAME_OPPORTUNITY_V4_TURNS = 2;
-const FRAME_OPPORTUNITY_V4_BASE_CALLS = 1 + FRAME_OPPORTUNITY_V4_TURNS * 3;
-const FRAME_OPPORTUNITY_V4_CALLS_PER_FULL_REPAIR = 2;
-const FRAME_OPPORTUNITY_V4_TUTOR_GUARD_RESERVE = FRAME_OPPORTUNITY_V4_TURNS * 2;
-const FRAME_OPPORTUNITY_V4_MAX_RESERVATIONS_PER_PLANNED_CALL = 1 + TUTOR_STUB_CLI_POLICY_RETRY_DELAYS_MS.length;
-const FRAME_OPPORTUNITY_V4_PLANNED_WORST_CASE_CALLS =
-  FRAME_OPPORTUNITY_V4_BASE_CALLS +
-  FRAME_OPPORTUNITY_V4_CALLS_PER_FULL_REPAIR +
-  FRAME_OPPORTUNITY_V4_TUTOR_GUARD_RESERVE;
-const FRAME_OPPORTUNITY_V4_MODEL_CALL_BUDGET =
-  FRAME_OPPORTUNITY_V4_PLANNED_WORST_CASE_CALLS * FRAME_OPPORTUNITY_V4_MAX_RESERVATIONS_PER_PLANNED_CALL;
-export function buildTutorStubFrameOpportunityV3RepairBudgetDiagnostic({
-  maxFullRepairsPer8Turns = 1,
-  modelCallBudget = FRAME_OPPORTUNITY_V3_MODEL_CALL_BUDGET,
-} = {}) {
-  const permittedRepairCalls = maxFullRepairsPer8Turns * FRAME_OPPORTUNITY_V3_CALLS_PER_FULL_REPAIR;
-  const worstCaseRequiredCalls =
-    FRAME_OPPORTUNITY_V3_BASE_CALLS + permittedRepairCalls + FRAME_OPPORTUNITY_V3_TUTOR_GUARD_RESERVE;
-  return {
-    turns: FRAME_OPPORTUNITY_V3_TURNS,
-    modelCallBudget,
-    baseCalls: FRAME_OPPORTUNITY_V3_BASE_CALLS,
-    maxFullRepairsPer8Turns,
-    callsPerFullRepair: FRAME_OPPORTUNITY_V3_CALLS_PER_FULL_REPAIR,
-    permittedRepairCalls,
-    requiredTutorGuardReserve: FRAME_OPPORTUNITY_V3_TUTOR_GUARD_RESERVE,
-    worstCaseRequiredCalls,
-    headroom: modelCallBudget - worstCaseRequiredCalls,
-    ready: maxFullRepairsPer8Turns === 1 && worstCaseRequiredCalls <= modelCallBudget,
-  };
-}
-export function admitTutorStubFrameOpportunityV3FullRepair({ state, profile, turnNumber, contract } = {}) {
-  if (!['frame_refuser', 'frame_defiant'].includes(profile)) {
-    return { applicable: false, admitted: true, reason: 'profile_not_in_frame_opportunity_v3' };
-  }
-  const maxFullRepairsPer8Turns = Number(contract?.repairModel?.maxFullRepairsPer8Turns);
-  const diagnostic = buildTutorStubFrameOpportunityV3RepairBudgetDiagnostic({ maxFullRepairsPer8Turns });
-  if (!diagnostic.ready) {
-    return { applicable: true, admitted: false, reason: 'registered_repair_budget_not_ready', diagnostic };
-  }
-  const current = state?.frameOpportunityV3RepairAdmission || { used: 0, history: [] };
-  const admitted = current.used < maxFullRepairsPer8Turns;
-  const result = {
-    applicable: true,
-    admitted,
-    profile,
-    turn: turnNumber,
-    usedBefore: current.used,
-    usedAfter: admitted ? current.used + 1 : current.used,
-    reason: admitted ? 'within_cumulative_repair_envelope' : 'cumulative_repair_envelope_exhausted',
-    diagnostic,
-  };
-  if (state) {
-    state.frameOpportunityV3RepairAdmission = {
-      used: result.usedAfter,
-      history: [...current.history, result],
-    };
-  }
-  return result;
-}
-export function buildTutorStubFrameOpportunityV4RepairBudgetDiagnostic({
-  maxFullRepairsPerT1T2 = 1,
-  modelCallBudget = FRAME_OPPORTUNITY_V4_MODEL_CALL_BUDGET,
-} = {}) {
-  const permittedRepairCalls = maxFullRepairsPerT1T2 * FRAME_OPPORTUNITY_V4_CALLS_PER_FULL_REPAIR;
-  const plannedWorstCaseCalls =
-    FRAME_OPPORTUNITY_V4_BASE_CALLS + permittedRepairCalls + FRAME_OPPORTUNITY_V4_TUTOR_GUARD_RESERVE;
-  const maximumModelAttemptReservations =
-    plannedWorstCaseCalls * FRAME_OPPORTUNITY_V4_MAX_RESERVATIONS_PER_PLANNED_CALL;
-  return {
-    turns: FRAME_OPPORTUNITY_V4_TURNS,
-    modelCallBudget,
-    baseCalls: FRAME_OPPORTUNITY_V4_BASE_CALLS,
-    maxFullRepairsPerT1T2,
-    repairDecisionTurn: 2,
-    repairsAtTurn1: 0,
-    callsPerFullRepair: FRAME_OPPORTUNITY_V4_CALLS_PER_FULL_REPAIR,
-    permittedRepairCalls,
-    requiredTutorGuardReserve: FRAME_OPPORTUNITY_V4_TUTOR_GUARD_RESERVE,
-    plannedWorstCaseCalls,
-    transportRetryLimitPerPlannedCall: TUTOR_STUB_CLI_POLICY_RETRY_DELAYS_MS.length,
-    maximumReservationsPerPlannedCall: FRAME_OPPORTUNITY_V4_MAX_RESERVATIONS_PER_PLANNED_CALL,
-    maximumModelAttemptReservations,
-    technicalRetryHeadroomReservations: modelCallBudget - plannedWorstCaseCalls,
-    reservationHeadroom: modelCallBudget - maximumModelAttemptReservations,
-    ready:
-      maxFullRepairsPerT1T2 === 1 &&
-      plannedWorstCaseCalls === 13 &&
-      modelCallBudget === maximumModelAttemptReservations &&
-      maximumModelAttemptReservations === 39,
-  };
-}
-export function admitTutorStubFrameOpportunityV4FullRepair({
-  state,
-  profile,
-  turnNumber,
-  contract,
-  registeredPostTriggerCandidate = false,
-} = {}) {
-  if (!['frame_refuser', 'frame_defiant'].includes(profile)) {
-    return { applicable: false, admitted: true, reason: 'profile_not_in_frame_opportunity_v4' };
-  }
-  const maxFullRepairsPerT1T2 = Number(contract?.repairModel?.maxFullRepairsPer8Turns);
-  const diagnostic = buildTutorStubFrameOpportunityV4RepairBudgetDiagnostic({ maxFullRepairsPerT1T2 });
-  if (!diagnostic.ready) {
-    return { applicable: true, admitted: false, reason: 'registered_t1_t2_repair_budget_not_ready', diagnostic };
-  }
-  const current = state?.frameOpportunityV4RepairAdmission || { used: 0, history: [] };
-  const t1T2DecisionCandidate = turnNumber === 2;
-  const registeredOutcomeCandidate = registeredPostTriggerCandidate === true;
-  const repairDecisionCandidate = t1T2DecisionCandidate || registeredOutcomeCandidate;
-  const admitted = repairDecisionCandidate && current.used < maxFullRepairsPerT1T2;
-  const result = {
-    applicable: true,
-    admitted,
-    profile,
-    turn: turnNumber,
-    usedBefore: current.used,
-    usedAfter: admitted ? current.used + 1 : current.used,
-    ...(registeredOutcomeCandidate ? { candidateKind: 'registered_post_trigger_horizon' } : {}),
-    reason: !repairDecisionCandidate
-      ? 'repair_deferred_until_t2_candidate'
-      : admitted
-        ? registeredOutcomeCandidate
-          ? 'within_registered_post_trigger_repair_envelope'
-          : 'within_t1_t2_repair_envelope'
-        : 't1_t2_repair_envelope_exhausted',
-    diagnostic,
-  };
-  if (state) {
-    state.frameOpportunityV4RepairAdmission = {
-      used: result.usedAfter,
-      history: [...current.history, result],
-    };
-  }
-  return result;
-}
-export function throwFrameDefiantAdherenceExhaustion({ profile, repairAttempts }) {
-  const exhaustion = classifyFrameDefiantAdherenceExhaustion({ profile, repairAttempts });
-  const error = new Error(
-    `frame_defiant adherence exhausted after ${repairAttempts} repair attempts; refusing to publish an invalid control turn`,
-  );
-  error.code = exhaustion.code;
-  error.profile = exhaustion.profile;
-  error.repairAttempts = exhaustion.repairAttempts;
-  error.disposition = exhaustion.disposition;
-  error.publishPublicCandidate = exhaustion.publishPublicCandidate;
-  throw error;
-}
-export function throwFrameRefuserAdherenceExhaustion({ profile, repairAttempts }) {
-  const exhaustion = classifyFrameRefuserAdherenceExhaustion({ profile, repairAttempts });
-  const error = new Error(
-    `frame_refuser adherence exhausted after ${repairAttempts} repair attempts; refusing to publish an invalid target turn`,
-  );
-  error.code = exhaustion.code;
-  error.profile = exhaustion.profile;
-  error.repairAttempts = exhaustion.repairAttempts;
-  error.disposition = exhaustion.disposition;
-  error.publishPublicCandidate = exhaustion.publishPublicCandidate;
-  throw error;
-}
 const AUTO_LEARNER_SYSTEM_PROMPT = [
   'You are an automated learner in an experimental tutoring dialogue.',
   'You see only the public transcript and the latest tutor message.',
@@ -224,6 +70,7 @@ const AUTO_LEARNER_SYSTEM_PROMPT = [
 ].join('\n');
 export function createTutorStubAutomatedLearnerGenerationRuntime({
   appendTraceEvent,
+  adjudicateResistanceSemanticCandidate = null,
   callPromptModel,
   classificationFromCombinedAnalysis,
   env = process.env,
@@ -243,12 +90,18 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     throw new Error(`unsupported automated-learner observation semantics: ${requestedObservationSemantics}`);
   }
   const observationSemantics = requestedObservationSemantics || RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2;
+  const semanticAdherence = createTutorStubResistanceSemanticAdherenceBridge({
+    observationSemantics,
+    adjudicateCandidate: adjudicateResistanceSemanticCandidate,
+    appendTraceEvent,
+  });
   const boundedFrameOpportunitySemantics =
     observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4 ||
     observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5 ||
     observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6 ||
     observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7 ||
-    observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8;
+    observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8 ||
+    semanticAdherence.enabled;
   const automatedLearnerTraceMetadata = Object.freeze(boundedFrameOpportunitySemantics ? { observationSemantics } : {});
   function automatedLearnerSystemPrompt(profile) {
     return [
@@ -359,9 +212,14 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
             return publicTutorPressure(stimulusTutor) || negativeRegisterPressure(stimulusSelection);
           })
       : [];
-    const observed = priorTurns.filter(({ turn, stimulusTutor }) =>
+    const legacyObserved = priorTurns.filter(({ turn, stimulusTutor }) =>
       clauses.some((clause) => clause.length && automatedLearnerMarkerMatches(turn, clause, stimulusTutor)),
     ).length;
+    const observed = semanticAdherence.countObserved(
+      priorTurns.map(({ turn }) => turn),
+      profileId,
+      legacyObserved,
+    );
     const mustShowByTurn = Number(observability.mustShowByTurn || 0);
     const targetRate = Number(observability.minEligibleRate || 0);
     const eligibleOpportunities = priorTurns.length + (eligible ? 1 : 0);
@@ -680,7 +538,11 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     const canPreclassify = Boolean(state.classifier.enabled && state.learnerDag.enabled && state.world);
     const frameOpportunityV4Profile =
       boundedFrameOpportunitySemantics && ['frame_refuser', 'frame_defiant'].includes(runtime?.profileId);
-    if (frameOpportunityV4Profile && turnNumber < 2) {
+    const semanticStudyCandidate = semanticAdherence.studyCandidate(
+      state.resistanceActionRegisterStudy,
+      runtime?.profileId,
+    );
+    if (frameOpportunityV4Profile && !semanticAdherence.enabled && turnNumber < 2) {
       appendTraceEvent(state.trace, {
         type: 'auto_learner_profile_adherence_deferred',
         turn: turnNumber,
@@ -691,7 +553,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       });
       return { generated, precomputedRaw: null, repaired: false, passed: null };
     }
-    if (!runtime?.requiredNow || !canPreclassify || !generated.text) {
+    if ((!runtime?.requiredNow && !semanticStudyCandidate) || !canPreclassify || !generated.text) {
       const precomputedRaw =
         precomputeFinalLearnerAnalysis && canPreclassify && generated.text
           ? await extractCombinedLearnerAnalysis({
@@ -726,6 +588,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     let raw = null;
     let passed = false;
     let repairs = 0;
+    let semanticAdjudication = null;
     while (repairs <= maxRepairs) {
       raw = await extractCombinedLearnerAnalysis({
         learnerText: candidate.text,
@@ -735,8 +598,26 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
         signal,
       });
       assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
-      passed = automatedLearnerDraftMatchesRuntime({ text: candidate.text, raw, state, runtime });
-      if (passed || repairs === maxRepairs) break;
+      const lexicalAdherence = automatedLearnerDraftMatchesRuntime({ text: candidate.text, raw, state, runtime });
+      const semantic = await semanticAdherence.evaluate({
+        state,
+        learnerText: candidate.text,
+        turnNumber,
+        runtime,
+        repairs,
+        lexicalAdherence,
+        signal,
+      });
+      semanticAdjudication = semantic.semanticAdjudication;
+      passed = semantic.passed;
+      if (
+        passed ||
+        repairs === maxRepairs ||
+        (semanticStudyCandidate && state.resistanceActionRegisterStudy.consumed)
+      ) {
+        break;
+      }
+      if (semanticAdherence.stopBeforeRepair({ state: state.resistanceActionRegisterStudy, turnNumber })) break;
       if (boundedFrameOpportunityProfile) {
         const admission = (
           frameOpportunityV4Profile
@@ -783,15 +664,20 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       type: 'auto_learner_profile_adherence',
       turn: turnNumber,
       profile: runtime.profileId,
-      required: true,
+      required: semanticAdherence.adherenceRequired(state.resistanceActionRegisterStudy),
       passed,
       repaired: repairs > 0,
       repairAttempts: repairs,
+      ...(semanticAdjudication ? { semanticAdjudication } : {}),
     });
     const typedExhaustionRequired =
       runtime.profileId === 'frame_defiant' ||
       ((prospectiveV3 || boundedFrameOpportunitySemantics) && runtime.profileId === 'frame_refuser');
-    if (typedExhaustionRequired && !passed) {
+    if (
+      typedExhaustionRequired &&
+      !passed &&
+      !semanticAdherence.suppressExhaustion({ state: state.resistanceActionRegisterStudy, turnNumber })
+    ) {
       const admittedRepairs = frameOpportunityV4Profile
         ? Number(state?.frameOpportunityV4RepairAdmission?.used || 0)
         : Number(state?.frameOpportunityV3RepairAdmission?.used || 0);
@@ -814,7 +700,14 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
         throwFrameRefuserAdherenceExhaustion({ profile: runtime.profileId, repairAttempts });
       }
     }
-    return { generated: candidate, precomputedRaw: raw, repaired: repairs > 0, passed };
+    return {
+      generated: candidate,
+      precomputedRaw: raw,
+      repaired: repairs > 0,
+      passed,
+      ...(semanticAdjudication ? { semanticAdjudication } : {}),
+      measurementIndeterminate: false,
+    };
   }
   /**
    * Deterministic persona guard for the guarded pole. Re-derives the same move

@@ -47,6 +47,7 @@ export function createTutorStubPromptTransport(dependencies) {
     historyTurns = null,
     cliPolicyRetryCount = 0,
   }) {
+    const semanticResistanceJudge = String(role || '').startsWith('tutor_stub_resistance_semantic_');
     let prompt = promptInput;
     let systemPrompt = systemPromptInput;
     const startedAt = new Date().toISOString();
@@ -230,6 +231,13 @@ export function createTutorStubPromptTransport(dependencies) {
           streamItemTypeCounts: result.streamItemTypeCounts || {},
           structuredEventAudit: result.structuredEventAudit || null,
           prohibitedToolEventCount: Number(result.prohibitedToolEventCount || 0),
+          ...(String(role || '').startsWith('tutor_stub_resistance_semantic_')
+            ? {
+                prohibitedToolEventCountObserved:
+                  Object.hasOwn(result, 'prohibitedToolEventCount') &&
+                  Number.isInteger(result.prohibitedToolEventCount),
+              }
+            : {}),
           modelAttestationBasis: result.modelAttestationBasis || null,
           modelIndependentlyAttested: result.modelIndependentlyAttested === true,
         };
@@ -301,6 +309,7 @@ export function createTutorStubPromptTransport(dependencies) {
           maxTokens,
           cliEffort,
           promptAudit,
+          ...(semanticResistanceJudge ? { outputSchema } : {}),
         },
         response: {
           text: response.text,
@@ -311,6 +320,17 @@ export function createTutorStubPromptTransport(dependencies) {
           streamedEvents: response.streamedEvents || 0,
           invalidStreamLines: response.invalidStreamLines || 0,
           outputSource: response.outputSource || null,
+          ...(semanticResistanceJudge
+            ? {
+                structuredOutput: response.structuredOutput === true,
+                prohibitedToolEventCount: Number.isInteger(response.prohibitedToolEventCount)
+                  ? response.prohibitedToolEventCount
+                  : null,
+                prohibitedToolEventCountObserved: response.prohibitedToolEventCountObserved === true,
+                modelAttestationBasis: response.modelAttestationBasis || null,
+                modelIndependentlyAttested: response.modelIndependentlyAttested === true,
+              }
+            : {}),
         },
       });
       response.promptAudit = promptAudit;
@@ -332,6 +352,7 @@ export function createTutorStubPromptTransport(dependencies) {
           maxTokens,
           cliEffort,
           promptAudit,
+          ...(semanticResistanceJudge ? { outputSchema } : {}),
         },
         error: err.message,
         ...(err?.code === 'CLI_PROVIDER_POLICY_VIOLATION' || err?.code === 'CLI_PROVIDER_TURN_FAILED'

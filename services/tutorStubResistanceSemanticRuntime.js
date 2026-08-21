@@ -1,0 +1,417 @@
+import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import {
+  TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA,
+  adjudicateTutorStubResistanceSemanticJudges,
+  buildTutorStubResistanceSemanticAdjudicationPrompt,
+  tutorStubResistanceSemanticPromptSha256,
+  tutorStubResistanceSemanticSha256,
+  validateTutorStubResistanceSemanticRegistration,
+  wrapTutorStubResistanceSemanticModelOutput,
+} from './tutorStubResistanceSemanticAdjudication.js';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+export const TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION =
+  'config/tutor-stub-resistance-semantic-adjudication-registration.v1.json';
+export const TUTOR_STUB_RESISTANCE_SEMANTIC_JUDGE_EVENT = 'resistance_semantic_judge_result';
+export const TUTOR_STUB_RESISTANCE_SEMANTIC_AGGREGATE_EVENT = 'resistance_semantic_adjudication';
+export const TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE_CODE =
+  'TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE';
+export const TUTOR_STUB_RESISTANCE_SEMANTIC_SYSTEM_PROMPT =
+  'You are one independent semantic adjudicator. Use only the supplied public packet. Return the registered JSON object, use no tools, and do not infer hidden experimental state.';
+
+export function tutorStubResistanceSemanticExpectedLabel(profileId) {
+  if (profileId === 'frame_refuser') return 'frame_refuser';
+  if (profileId === 'frame_defiant') return 'frame_defiant_or_productive_dispute';
+  return null;
+}
+
+export function countTutorStubResistanceSemanticProfileObservations(turns, profileId) {
+  const expected = tutorStubResistanceSemanticExpectedLabel(profileId);
+  if (!expected) return 0;
+  return (turns || []).filter(
+    (turn) =>
+      turn?.resistanceSemanticAdjudication?.aggregate?.status === 'determinate' &&
+      turn.resistanceSemanticAdjudication.aggregate.final_label === expected,
+  ).length;
+}
+
+export async function enforceTutorStubResistanceSemanticCandidate({
+  adjudicateCandidate,
+  appendTraceEvent,
+  state,
+  learnerText,
+  turnNumber,
+  profileId,
+  candidateKind,
+  lexicalAdherence,
+  signal = null,
+}) {
+  const semanticAdjudication = await adjudicateCandidate({
+    state,
+    learnerText,
+    turnNumber,
+    candidateKind,
+    advisorySignals: [{ source: 'legacy_observer_and_luna_classifier', adherence: lexicalAdherence }],
+    signal,
+  });
+  if (semanticAdjudication.aggregate.status === 'measurement_indeterminate') {
+    appendTraceEvent(state.trace, {
+      type: 'auto_learner_profile_measurement_indeterminate',
+      turn: turnNumber,
+      profile: profileId,
+      semanticAdjudication,
+      repairRequested: false,
+      disposition: 'terminal_nonrecoverable_no_rerun_replacement_or_selection',
+      learnerText,
+    });
+    const error = new Error('independent semantic adjudication was indeterminate');
+    error.code = TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE_CODE;
+    error.measurementIndeterminate = true;
+    error.recoverable = false;
+    error.semanticAdjudication = semanticAdjudication;
+    throw error;
+  }
+  return {
+    semanticAdjudication,
+    passed: semanticAdjudication.aggregate.final_label === tutorStubResistanceSemanticExpectedLabel(profileId),
+  };
+}
+
+export function createTutorStubResistanceSemanticAdherenceBridge({
+  observationSemantics,
+  adjudicateCandidate,
+  appendTraceEvent,
+}) {
+  const enabled = observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION;
+  if (enabled && typeof adjudicateCandidate !== 'function') {
+    throw new Error('semantic frame-resistance observation requires the independent semantic adjudicator');
+  }
+  const isFrameProfile = (profileId) => ['frame_refuser', 'frame_defiant'].includes(profileId);
+  const studyCandidate = (state, profileId) => enabled && isFrameProfile(profileId) && state?.enabled === true;
+  return {
+    enabled,
+    countObserved(turns, profileId, legacyCount) {
+      return enabled ? countTutorStubResistanceSemanticProfileObservations(turns, profileId) : legacyCount;
+    },
+    studyCandidate,
+    shouldEvaluate(state, runtime) {
+      return (
+        enabled &&
+        isFrameProfile(runtime?.profileId) &&
+        (runtime.requiredNow || studyCandidate(state, runtime.profileId))
+      );
+    },
+    async evaluate({ state, learnerText, turnNumber, runtime, repairs, lexicalAdherence, signal }) {
+      if (!enabled || !isFrameProfile(runtime?.profileId)) {
+        return { passed: lexicalAdherence, semanticAdjudication: null };
+      }
+      return enforceTutorStubResistanceSemanticCandidate({
+        adjudicateCandidate,
+        appendTraceEvent,
+        state,
+        learnerText,
+        turnNumber,
+        profileId: runtime.profileId,
+        candidateKind: repairs === 0 ? 'initial' : `learner-repair-${repairs}`,
+        lexicalAdherence,
+        signal,
+      });
+    },
+    stopBeforeRepair({ state, turnNumber }) {
+      return enabled && (turnNumber === 1 || state?.consumed === true);
+    },
+    adherenceRequired(state) {
+      return !(enabled && state?.consumed === true);
+    },
+    suppressExhaustion({ state, turnNumber }) {
+      return enabled && (turnNumber === 1 || state?.consumed === true);
+    },
+  };
+}
+
+function canonicalJson(value) {
+  if (Array.isArray(value)) return value.map(canonicalJson);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map((key) => [key, canonicalJson(value[key])]),
+    );
+  }
+  return value;
+}
+
+function canonicalSha256(value) {
+  return crypto
+    .createHash('sha256')
+    .update(JSON.stringify(canonicalJson(value)))
+    .digest('hex');
+}
+
+export function loadTutorStubResistanceSemanticRegistration(
+  registrationPath = TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION,
+) {
+  const absolute = path.resolve(ROOT, registrationPath);
+  const registration = JSON.parse(fs.readFileSync(absolute, 'utf8'));
+  const validation = validateTutorStubResistanceSemanticRegistration(registration);
+  if (!validation.valid) throw new Error(`semantic registration invalid: ${validation.issues.join('; ')}`);
+  return { registration, path: registrationPath, sha256: tutorStubResistanceSemanticSha256(fs.readFileSync(absolute)) };
+}
+
+export function validateTutorStubResistanceSemanticRuntimeResult({
+  result,
+  learnerText,
+  turnNumber,
+  registrationBinding,
+  expectedPublicContext,
+  requireDeterminate = true,
+}) {
+  const issues = [];
+  const source = String(learnerText || '');
+  const publicContext = Array.isArray(result?.publicContext) ? result.publicContext : [];
+  const expectedContext = Array.isArray(expectedPublicContext) ? expectedPublicContext : null;
+  const expectedPacketSha256 = canonicalSha256({
+    case_id: result?.caseId,
+    public_context: publicContext,
+    utterance: source,
+  });
+  if (result?.schema !== 'machinespirits.tutor-stub.resistance-semantic-runtime-result.v1') {
+    issues.push('runtime result schema mismatch');
+  }
+  if (result?.observationSemantics !== TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION) {
+    issues.push('observation semantics mismatch');
+  }
+  if (result?.turn !== turnNumber) issues.push('semantic result turn mismatch');
+  if (result?.sourceSha256 !== tutorStubResistanceSemanticSha256(source)) issues.push('semantic source mismatch');
+  if (result?.registrationPath !== registrationBinding?.path) issues.push('semantic registration path mismatch');
+  if (result?.registrationSha256 !== registrationBinding?.sha256) issues.push('semantic registration digest mismatch');
+  if (result?.publicContextSha256 !== canonicalSha256(publicContext)) issues.push('public context digest mismatch');
+  if (!expectedContext || JSON.stringify(publicContext) !== JSON.stringify(expectedContext)) {
+    issues.push('public context does not match the current public history');
+  }
+  if (result?.packetSha256 !== expectedPacketSha256) issues.push('semantic packet digest mismatch');
+  if (result?.packetKey !== canonicalSha256({ caseId: result?.caseId, publicContext, source })) {
+    issues.push('semantic cache key mismatch');
+  }
+  if (result?.aggregate?.case_id !== result?.caseId) issues.push('semantic aggregate case mismatch');
+  if (result?.aggregateSha256 !== canonicalSha256(result?.aggregate)) issues.push('semantic aggregate digest mismatch');
+  if (requireDeterminate && result?.aggregate?.status !== 'determinate')
+    issues.push('semantic aggregate is not determinate');
+  if (requireDeterminate) {
+    const aggregate = result?.aggregate || {};
+    if (
+      aggregate.repair_allowed !== false ||
+      aggregate.judge_rerun_allowed !== false ||
+      aggregate.unit_rerun_allowed !== false ||
+      aggregate.replacement_allowed !== false ||
+      aggregate.outcome_selection_allowed !== false ||
+      !Array.isArray(aggregate.reasons) ||
+      aggregate.reasons.length !== 0 ||
+      !['frame_refuser', 'frame_defiant_or_productive_dispute', 'neither'].includes(aggregate.final_label) ||
+      aggregate.judgment?.final_label !== aggregate.final_label ||
+      !Array.isArray(aggregate.validation) ||
+      aggregate.validation.length !== 2 ||
+      aggregate.validation.some((row) => row.valid !== true) ||
+      !Array.isArray(aggregate.judge_evidence) ||
+      aggregate.judge_evidence.length !== 2 ||
+      aggregate.judge_evidence.some((row) => row.confidence !== 'high') ||
+      result?.judgeRecordCount !== 2
+    ) {
+      issues.push('determinate semantic aggregate envelope is invalid');
+    }
+  }
+  return { valid: issues.length === 0, issues };
+}
+
+export function tutorStubResistanceSemanticPublicContext(state, maximumRows = 4) {
+  const rows = (state?.history || [])
+    .filter((row) => ['assistant', 'user'].includes(row?.role) && String(row?.content || '').trim())
+    .slice(-maximumRows)
+    .map((row) => ({ role: row.role === 'assistant' ? 'assistant' : 'learner', text: String(row.content) }));
+  if (!rows.length) throw new Error('semantic adjudication requires preceding public context');
+  return rows;
+}
+
+function parseModelOutput(text) {
+  const value = JSON.parse(String(text || '').trim());
+  if (!value || typeof value !== 'object' || Array.isArray(value))
+    throw new Error('semantic response is not an object');
+  return value;
+}
+
+function cacheForState(state) {
+  if (!state.resistanceSemanticAdjudicationCache) state.resistanceSemanticAdjudicationCache = {};
+  return state.resistanceSemanticAdjudicationCache;
+}
+
+export function createTutorStubResistanceSemanticRuntime({
+  appendTraceEvent,
+  callPromptModel,
+  resolveModel,
+  registrationBinding = loadTutorStubResistanceSemanticRegistration(),
+}) {
+  if (typeof appendTraceEvent !== 'function') throw new Error('semantic runtime requires appendTraceEvent');
+  if (typeof callPromptModel !== 'function') throw new Error('semantic runtime requires callPromptModel');
+  if (typeof resolveModel !== 'function') throw new Error('semantic runtime requires resolveModel');
+  const { registration } = registrationBinding;
+
+  async function adjudicateCandidate({
+    state,
+    learnerText,
+    turnNumber,
+    candidateKind = 'initial',
+    advisorySignals = [],
+    signal = null,
+  }) {
+    const source = String(learnerText || '');
+    if (!source.trim()) throw new Error('semantic adjudication requires learner text');
+    const publicContext = tutorStubResistanceSemanticPublicContext(state);
+    const caseId = `turn-${turnNumber}-${candidateKind}-${tutorStubResistanceSemanticSha256(source)}`;
+    const packetKey = canonicalSha256({ caseId, publicContext, source });
+    const cache = cacheForState(state);
+    if (cache[packetKey]) return cache[packetKey];
+
+    const prompts = {};
+    const records = [];
+    for (const judge of registration.measurement.judges) {
+      const prompt = buildTutorStubResistanceSemanticAdjudicationPrompt({
+        caseId,
+        source,
+        publicContext,
+        judge,
+      });
+      prompts[judge.id] = prompt;
+      const resolved = resolveModel(judge.modelRef);
+      if (resolved.provider !== judge.provider || resolved.model !== judge.model) {
+        throw new Error(`semantic judge route drift for ${judge.id}`);
+      }
+      const independentRunId = crypto.randomUUID();
+      const role = `tutor_stub_resistance_semantic_${judge.id}`;
+      const userPrompt = JSON.stringify(prompt);
+      let raw = null;
+      let record = null;
+      let invalidReason = null;
+      try {
+        raw = await callPromptModel({
+          prompt: userPrompt,
+          messageHistory: [],
+          resolved,
+          systemPrompt: TUTOR_STUB_RESISTANCE_SEMANTIC_SYSTEM_PROMPT,
+          role,
+          maxTokens: 1400,
+          trace: state.trace,
+          stream: { enabled: false, interim: state.interim },
+          cliEffort: judge.effort,
+          effort: judge.effort,
+          outputSchema: TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA,
+          turn: turnNumber,
+          signal,
+        });
+        const modelOutput = parseModelOutput(raw.text);
+        if (modelOutput.case_id !== caseId) throw new Error('semantic response case id mismatch');
+        record = wrapTutorStubResistanceSemanticModelOutput({
+          modelOutput,
+          prompt,
+          judge,
+          observedProvider: raw.provider,
+          observedModel: raw.model,
+          observedEffort: raw.effort || raw.reasoningEffort,
+          independentRunId,
+          structuredOutput: raw.structuredOutput,
+          prohibitedToolEvents: raw.prohibitedToolEventCountObserved === true ? raw.prohibitedToolEventCount : null,
+          modelAttestationBasis: raw.modelAttestationBasis,
+          modelIndependentlyAttested: raw.modelIndependentlyAttested,
+        });
+        records.push(record);
+      } catch (error) {
+        if (signal?.aborted || error?.name === 'AbortError') throw error;
+        invalidReason = error.message;
+      }
+      appendTraceEvent(state.trace, {
+        type: TUTOR_STUB_RESISTANCE_SEMANTIC_JUDGE_EVENT,
+        turn: turnNumber,
+        candidateKind,
+        caseId,
+        judgeId: judge.id,
+        registrationPath: registrationBinding.path,
+        registrationSha256: registrationBinding.sha256,
+        packetSha256: prompt.packet_sha256,
+        promptSha256: tutorStubResistanceSemanticPromptSha256(prompt),
+        sourceSha256: tutorStubResistanceSemanticSha256(source),
+        independentRunId,
+        role,
+        expectedProvider: resolved.provider,
+        expectedModel: resolved.model,
+        expectedEffort: judge.effort,
+        observedProvider: raw?.provider || null,
+        observedModel: raw?.model || null,
+        observedEffort: raw?.effort || raw?.reasoningEffort || null,
+        systemPrompt: TUTOR_STUB_RESISTANCE_SEMANTIC_SYSTEM_PROMPT,
+        systemPromptSha256: tutorStubResistanceSemanticSha256(TUTOR_STUB_RESISTANCE_SEMANTIC_SYSTEM_PROMPT),
+        userPrompt,
+        userPromptSha256: tutorStubResistanceSemanticSha256(userPrompt),
+        outputSchema: TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA,
+        structuredOutput: raw?.structuredOutput === true,
+        prohibitedToolEventCount: Number.isInteger(raw?.prohibitedToolEventCount) ? raw.prohibitedToolEventCount : null,
+        prohibitedToolEventCountObserved: raw?.prohibitedToolEventCountObserved === true,
+        modelAttestationBasis: raw?.modelAttestationBasis || null,
+        modelIndependentlyAttested: raw?.modelIndependentlyAttested === true,
+        transportCompleted: raw !== null,
+        validModelEnvelope: record !== null,
+        invalidReason,
+        record,
+        publicTranscriptChanged: false,
+      });
+    }
+    const aggregate = adjudicateTutorStubResistanceSemanticJudges({
+      source,
+      publicContext,
+      caseId,
+      responses: records,
+      registration,
+      prompts,
+      advisorySignals,
+    });
+    const result = {
+      schema: 'machinespirits.tutor-stub.resistance-semantic-runtime-result.v1',
+      observationSemantics: TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION,
+      turn: turnNumber,
+      candidateKind,
+      caseId,
+      packetKey,
+      registrationPath: registrationBinding.path,
+      registrationSha256: registrationBinding.sha256,
+      sourceSha256: tutorStubResistanceSemanticSha256(source),
+      publicContext,
+      publicContextSha256: canonicalSha256(publicContext),
+      packetSha256: prompts[registration.measurement.judges[0].id].packet_sha256,
+      judgeRecordCount: records.length,
+      aggregate,
+    };
+    result.aggregateSha256 = canonicalSha256(result.aggregate);
+    appendTraceEvent(state.trace, {
+      type: TUTOR_STUB_RESISTANCE_SEMANTIC_AGGREGATE_EVENT,
+      ...result,
+      publicTranscriptChanged: false,
+    });
+    cache[packetKey] = result;
+    return result;
+  }
+
+  return { adjudicateCandidate, registrationBinding };
+}
+
+export function createLazyTutorStubResistanceSemanticAdjudicator(dependencies, { createRuntime } = {}) {
+  let runtime = null;
+  return async (values) => {
+    runtime ||= (createRuntime || createTutorStubResistanceSemanticRuntime)(dependencies);
+    return runtime.adjudicateCandidate(values);
+  };
+}
+
+export default { createTutorStubResistanceSemanticRuntime, loadTutorStubResistanceSemanticRegistration };

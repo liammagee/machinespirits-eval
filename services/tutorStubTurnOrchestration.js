@@ -274,6 +274,13 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       tutorRef: response.tutorRef,
       learner: learnerText,
       learnerResponseProvenance,
+      ...(learnerResponseProvenance?.automation?.resistanceSemanticAdjudication
+        ? {
+            resistanceSemanticAdjudication: jsonClone(
+              learnerResponseProvenance.automation.resistanceSemanticAdjudication,
+            ),
+          }
+        : {}),
       ...(learnerInput
         ? {
             learnerInput,
@@ -1588,8 +1595,14 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
             profileRepaired: enforced.repaired,
             profileAdherencePassed: enforced.passed,
             deterministicFallback,
+            ...(enforced.semanticAdjudication
+              ? { resistanceSemanticAdjudication: jsonClone(enforced.semanticAdjudication) }
+              : {}),
           },
         });
+        if (state.resistanceActionRegisterStudy?.enabled) {
+          state.resistanceActionRegisterStudy.current_semantic_adjudication = enforced.semanticAdjudication || null;
+        }
         appendTraceEvent(state.trace, {
           type: 'auto_learner_turn',
           turn: turnNumber,
@@ -1600,6 +1613,9 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
           usage: generated.usage,
           profileRepaired: enforced.repaired,
           profileAdherencePassed: enforced.passed,
+          ...(enforced.semanticAdjudication
+            ? { resistanceSemanticAdjudication: jsonClone(enforced.semanticAdjudication) }
+            : {}),
           learnerResponseProvenance,
         });
         printWithConcurrentTerminal(state, () => {
@@ -1664,6 +1680,13 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
           tutorLearnerDag: jsonClone(finalAnalysis.tutorLearnerDag),
           previousRegisterEfficacy: jsonClone(finalAnalysis.previousRegisterEfficacy),
           learnerResponseProvenance: jsonClone(learnerResponseProvenance),
+          ...(learnerResponseProvenance?.automation?.resistanceSemanticAdjudication
+            ? {
+                resistanceSemanticAdjudication: jsonClone(
+                  learnerResponseProvenance.automation.resistanceSemanticAdjudication,
+                ),
+              }
+            : {}),
           tutorReplyGenerated: false,
         });
         reason = 'registered_outcome_horizon_complete';
