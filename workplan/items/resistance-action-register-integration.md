@@ -2505,3 +2505,34 @@ and explicit human approval.
   correction and prior authority hashes, and encodes no ceiling amendment.
   The packager's isolated no-`node_modules` replay passed 59 checks with zero
   model calls and zero production writes.
+- 2026-08-21 — v3 validation RAN and FAILED two of five gates, worse
+  than v2. Merged as PR #762 (merge 734982ba), authorization committed
+  separately (da548a54, request sha256 3924533c). 54 of 54 calls
+  completed on the first reservation, zero technical-failure attempts.
+  Results: determinate sensitivity 9/9 = 1.00 (PASS), determinate
+  specificity 29/39 = 0.744 (FAIL, gate 0.90; v2 was 0.867), reference
+  agreement 44/54 = 0.815 (FAIL, gate 0.90; v2 was 0.909), ambiguous
+  and low-confidence indeterminate rates 1.00 (PASS). With the larger
+  sample the v2 result is now legible as signal, not noise. Diagnosis:
+  all 10 misses run in one direction — Sol reads more cues than the
+  reference labels and the blind second reader. Nine of thirteen
+  nonactionable cases missed. Two concrete conflations, both at the
+  nonactionable boundary: (1) a pace wish is read as effort withdrawal
+  even when the learner says they will finish the task as written
+  (pumphouse_nonactionable_07: "I wish we could skip to the part that
+  matters. I will follow it through as written" scored
+  effort_withdrawal true); (2) reported task compliance or any
+  concrete task content is read as productive uptake
+  (waterworks_nonactionable_05: "I wrote the levels down just as the
+  rota says" scored productive_uptake true). Sensitivity is perfect
+  because over-reading cues never misses a true actionable case; it
+  floods the nonactionable category instead. Categorical result under
+  the predeclared stopping rules: no rescore, no resample. Artifacts
+  sealed at
+  `.tutor-stub-auto-eval/boredom-semantic-validation-v3-2026-08-21`
+  and archived to the private repo (83450f09). The 36-dialogue
+  confirmation stays on HOLD. Any v4 must change the instrument's cue
+  definitions (narrow withdrawal and uptake to the registered senses),
+  which makes it an instrument revision, not a corpus iteration — it
+  needs a fresh corpus, this diagnosis, and separate explicit human
+  approval before any build starts.
