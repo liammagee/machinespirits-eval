@@ -10,8 +10,8 @@
     "priorStandingAuthoritySha256": "538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce"
   },
   "source": {
-    "launchCommit": "6a42ab733b9be18a2554a9f5cfe82b68c791abf7",
-    "launchTree": "1af85bd325ddd69388f51773ce475f182ee49a1d",
+    "launchCommit": "7734b74552b3d84be90e0aee9dbeab9eb812c067",
+    "launchTree": "b89bc398312a7f26dd2bd0b6118d5e761f86ed4f",
     "requirements": {
       "headMustEqualLaunchCommit": true,
       "checkoutMustBeClean": true,
@@ -195,9 +195,9 @@
     },
     "commands": {
       "source": "commands",
-      "liveArraySha256": "9d48eb0b90196d5b5f6001df763321e0439e154549f555b7b35086d69a63119b",
-      "recoveryArraySha256": "f0ad8e87a7d18c24da27c7e07cd895a10561886218c3e454458fa1d30a0d22a1",
-      "analyzeArraySha256": "c7f2cea2e7d2d93392ad46984b97c77f11d47a09bf4e421a9903b123362c2a79"
+      "liveArraySha256": "be929765b5b1b64464f6db9c2dead7c7df1270cac55bd8036a5479fa53753f10",
+      "recoveryArraySha256": "ff0fc952e0b4a62e5820bed6fcd9e03de6ebe98bc481d8d81a383e35f6efce92",
+      "analyzeArraySha256": "ad9a1b8fd021715c6c0fa0b42ef2dc04be4bc57f0aa9b9e7bdb8adb99a2f08d9"
     }
   },
   "commands": {
@@ -208,9 +208,9 @@
       "--destination",
       ".tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v1-2026-08-20",
       "--source-commit",
-      "6a42ab733b9be18a2554a9f5cfe82b68c791abf7",
+      "7734b74552b3d84be90e0aee9dbeab9eb812c067",
       "--source-tree",
-      "1af85bd325ddd69388f51773ce475f182ee49a1d",
+      "b89bc398312a7f26dd2bd0b6118d5e761f86ed4f",
       "--go-request",
       "config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v1.json",
       "--maximum-reservations",
@@ -223,9 +223,9 @@
       "--destination",
       ".tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v1-2026-08-20",
       "--source-commit",
-      "6a42ab733b9be18a2554a9f5cfe82b68c791abf7",
+      "7734b74552b3d84be90e0aee9dbeab9eb812c067",
       "--source-tree",
-      "1af85bd325ddd69388f51773ce475f182ee49a1d",
+      "b89bc398312a7f26dd2bd0b6118d5e761f86ed4f",
       "--go-request",
       "config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v1.json",
       "--maximum-reservations",
@@ -238,9 +238,9 @@
       "--destination",
       ".tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v1-2026-08-20",
       "--source-commit",
-      "6a42ab733b9be18a2554a9f5cfe82b68c791abf7",
+      "7734b74552b3d84be90e0aee9dbeab9eb812c067",
       "--source-tree",
-      "1af85bd325ddd69388f51773ce475f182ee49a1d",
+      "b89bc398312a7f26dd2bd0b6118d5e761f86ed4f",
       "--go-request",
       "config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v1.json"
     ]

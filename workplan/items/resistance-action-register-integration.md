@@ -2203,10 +2203,10 @@ and explicit human approval.
   request
   `config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v1.json`
   at SHA-256
-  `3b23a4031ab8af8d544973db93a2daf9e14793ccd711b70496408d23cae739cc`.
+  `b6d9a41cc9fbdb2a3fc15f536e2a0b6e97a406986c9f88027e0765ab4bddb826`.
   The deterministic packager pins the merged readiness source/tree
-  `6a42ab733b9be18a2554a9f5cfe82b68c791abf7` /
-  `1af85bd325ddd69388f51773ce475f182ee49a1d`, 24 unique critical
+  `7734b74552b3d84be90e0aee9dbeab9eb812c067` /
+  `b89bc398312a7f26dd2bd0b6118d5e761f86ed4f`, 24 unique critical
   source-closure paths, validation registration
   `d06952b563065a100ce4af92c18c7089a41b416c0ed3845d1d5e6d2c694856e8`,
   instrument registration
@@ -2230,10 +2230,10 @@ and explicit human approval.
   planned calls, at most three charged reservations per planned call, a hard
   480-reservation ceiling, and programme ledger `331 -> 811 / 5000`. Its live,
   bounded-resume, and sole analyzer command-array SHA-256 values are
-  `9d48eb0b90196d5b5f6001df763321e0439e154549f555b7b35086d69a63119b`,
-  `f0ad8e87a7d18c24da27c7e07cd895a10561886218c3e454458fa1d30a0d22a1`,
+  `be929765b5b1b64464f6db9c2dead7c7df1270cac55bd8036a5479fa53753f10`,
+  `ff0fc952e0b4a62e5820bed6fcd9e03de6ebe98bc481d8d81a383e35f6efce92`,
   and
-  `c7f2cea2e7d2d93392ad46984b97c77f11d47a09bf4e421a9903b123362c2a79`.
+  `ad9a1b8fd021715c6c0fa0b42ef2dc04be4bc57f0aa9b9e7bdb8adb99a2f08d9`.
   The create-once destination
   `.tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v1-2026-08-20`
   is fresh, and execution requires the stable private artifact archive with
