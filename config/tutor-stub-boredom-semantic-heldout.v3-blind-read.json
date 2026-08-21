@@ -1,0 +1,340 @@
+{
+  "schema": "machinespirits.tutor-stub.boredom-semantic-heldout-blind-read.v3",
+  "reader": "claude-code.claude-sonnet-5",
+  "readAt": "2026-08-21T05:48:15.804Z",
+  "draftCases": 55,
+  "agreed": 54,
+  "dropped": ["fernery_negative_10"],
+  "cases": {
+    "windmill_productive_01": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "smithy_productive_02": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "chandlery_productive_03": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "cooperage_productive_04": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "distillery_productive_05": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "icehouse_productive_06": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "saltworks_productive_07": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "ropewalk_productive_08": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "sawmill_productive_09": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "tollgate_productive_10": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "aviary_productive_11": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "apiary_productive_12": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": true
+    },
+    "greenhouse_productive_13": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "laundry_productive_14": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "bindery_productive_15": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "brewery_productive_16": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": true
+    },
+    "creamery_nonactionable_01": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "malthouse_nonactionable_02": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "boatshed_nonactionable_03": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "tramshed_nonactionable_04": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "waterworks_nonactionable_05": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "gasworks_nonactionable_06": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": true
+    },
+    "pumphouse_nonactionable_07": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": true
+    },
+    "pottery_nonactionable_08": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": true
+    },
+    "tilery_nonactionable_09": {
+      "boredom_cue": true,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": true
+    },
+    "wheelwright_nonactionable_10": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": true
+    },
+    "saddlery_nonactionable_11": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": true
+    },
+    "lampworks_nonactionable_12": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": true
+    },
+    "soapworks_nonactionable_13": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": true
+    },
+    "dyeworks_negative_01": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "inkworks_negative_02": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "hopfield_negative_03": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "oasthouse_negative_04": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "dovecote_negative_05": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "fishery_negative_06": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "smokehouse_negative_07": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "cidery_negative_08": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "orangery_negative_09": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "fernery_negative_10": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "rookery_negative_11": {
+      "boredom_cue": false,
+      "effort_withdrawal": false,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "watchhouse_actionable_01": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "maproom_actionable_02": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "seedstore_actionable_03": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": false,
+      "process_impatience": true
+    },
+    "netshed_actionable_04": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "sailloft_actionable_05": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": false,
+      "process_impatience": true
+    },
+    "cartshed_actionable_06": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "limeworks_actionable_07": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "pilothouse_actionable_08": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": false,
+      "process_impatience": true
+    },
+    "semaphore_actionable_09": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": false,
+      "process_impatience": false
+    },
+    "anchorage_mixed_01": {
+      "boredom_cue": false,
+      "effort_withdrawal": true,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "lightship_mixed_02": {
+      "boredom_cue": false,
+      "effort_withdrawal": true,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "buoyyard_mixed_03": {
+      "boredom_cue": false,
+      "effort_withdrawal": true,
+      "productive_uptake": true,
+      "process_impatience": false
+    },
+    "tarworks_mixed_04": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": true,
+      "process_impatience": true
+    },
+    "pitchyard_mixed_05": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": true,
+      "process_impatience": true
+    },
+    "tidemill_mixed_06": {
+      "boredom_cue": true,
+      "effort_withdrawal": true,
+      "productive_uptake": true,
+      "process_impatience": true
+    }
+  }
+}
