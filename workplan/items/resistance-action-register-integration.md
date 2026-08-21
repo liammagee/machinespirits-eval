@@ -3038,8 +3038,11 @@ and explicit human approval.
   digest-bound v4 HOLD request,
   `config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v4.json`,
   request SHA-256
-  `660497b50ba9d0064c557cab73053f557e2c199364847b0b9c1e20d5e2e7fd80`,
-  packaged at launch commit `b4d6ca2367f996bdb7b6e8538e96dc140b127b51`.
+  `cdc095c9e7c787ec0a5e425dbb191b7b1f7a7a2bcb4942b9b4ee2481a81b4b88`,
+  packaged at launch commit `a458687482af54eaf02e38ec37f7b3f0f143524f`
+  (a first freeze at `b4d6ca23` was replaced before push after a
+  parser-selector fix for the v1 held-out corpus schema string; that
+  request was never consumed or approved).
   It binds the v4 registration, endpoint contract, and certificate to the
   validated Sol V3 semantic instrument (module and sealed 55-case held-out
   v4 corpus digests, all five predeclared gates passed at 1.00, validation
