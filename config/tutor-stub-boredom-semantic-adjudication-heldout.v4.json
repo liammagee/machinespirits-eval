@@ -1,0 +1,817 @@
+{
+  "schema": "machinespirits.tutor-stub.boredom-semantic-adjudication.heldout.v4",
+  "version": 4,
+  "status": "FROZEN_HELD_OUT_REFERENCE_CORPUS",
+  "revisionNote": "v4 corpus after the v3 validation failed the determinate-specificity gate 29/39 = 0.744 and the reference-agreement gate 44/54 = 0.815 (run 2026-08-21, archive 83450f09, authorization da548a54). All ten v3 misses were one-directional over-readings the v2 prompt licensed: pace wishes read as effort withdrawal and compliance reports read as productive uptake. v4 pairs a fresh corpus (spent v1, v2, and v3 worlds permanently excluded) with the revised v3 instrument, which narrows effort withdrawal to a public stop of work and productive uptake to a forward-looking inquiry move. Every reference label was confirmed field-by-field by a blind claude-sonnet-5 second reader that saw only the case text and the field definitions; cases with any field-level disagreement were dropped, never relabeled.",
+  "boundary": {
+    "notEmbeddedInPrompt": true,
+    "notUsedForLexicalRuleConstruction": true,
+    "treatmentAndOutcomeBlind": true,
+    "zeroCallReferenceLabelsOnly": true,
+    "modelPredictionsAbsent": true
+  },
+  "predeclaredGates": {
+    "determinateSensitivityMinimum": 0.9,
+    "determinateSpecificityMinimum": 0.9,
+    "referenceAgreementMinimum": 0.9,
+    "ambiguousIndeterminateRateMinimum": 1,
+    "lowConfidenceIndeterminateRateMinimum": 1,
+    "empiricalModelValidationRequiredBeforeConfirmationLaunch": true
+  },
+  "cases": [
+    {
+      "id": "airfield_productive_01",
+      "text": "Logging wind speeds every quarter hour is tedious. But the windsock and the anemometer disagree this morning, and I want to test which one drifts.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Logging wind speeds every quarter hour is tedious.",
+        "productive_uptake": "I want to test which one drifts"
+      }
+    },
+    {
+      "id": "apothecary_productive_02",
+      "text": "Grinding the same root powder is dull work. Still, the tincture turned cloudy in the second jar only, and I would like to check whether the water differs.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Grinding the same root powder is dull work.",
+        "productive_uptake": "I would like to check whether the water differs"
+      }
+    },
+    {
+      "id": "armory_productive_03",
+      "text": "Polishing bracers all afternoon bores me. Yet one buckle keeps slipping under load, and I want to compare it with the older pattern to find out why.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Polishing bracers all afternoon bores me.",
+        "productive_uptake": "I want to compare it with the older pattern to find out why"
+      }
+    },
+    {
+      "id": "boilerhouse_productive_04",
+      "text": "Reading the pressure dial on the hour has gone monotonous. The needle jumps each time the east valve opens, though, and I want to find out whether the pipe or the gauge causes it.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Reading the pressure dial on the hour has gone monotonous.",
+        "productive_uptake": "I want to find out whether the pipe or the gauge causes it"
+      }
+    },
+    {
+      "id": "buttery_productive_05",
+      "text": "Turning the cheeses is dreary today. Still, the north shelf ripens faster than the ledger predicts, and I would like to investigate the draft along that wall.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Turning the cheeses is dreary today.",
+        "productive_uptake": "I would like to investigate the draft along that wall"
+      }
+    },
+    {
+      "id": "cablehouse_productive_06",
+      "text": "Splicing practice loops feels tedious by now. But the tarred strand holds knots better than the plain one, and I want to test both under the same weight.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Splicing practice loops feels tedious by now.",
+        "productive_uptake": "I want to test both under the same weight"
+      }
+    },
+    {
+      "id": "carpentry_productive_07",
+      "text": "Sanding the same panel is dull. The grain tears near the knot no matter the stroke, and I want to find out whether a lower angle stops it.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Sanding the same panel is dull.",
+        "productive_uptake": "I want to find out whether a lower angle stops it"
+      }
+    },
+    {
+      "id": "chalkpit_productive_08",
+      "text": "Sieving chalk dust all morning bores me. The lower seam runs grey instead of white, and I would like to check what stains it.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Sieving chalk dust all morning bores me.",
+        "productive_uptake": "I would like to check what stains it"
+      }
+    },
+    {
+      "id": "claypit_productive_09",
+      "text": "Wedging clay again and again is monotonous. One batch cracks in the drying shed while the rest hold, and I want to compare the two pits they came from.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Wedging clay again and again is monotonous.",
+        "productive_uptake": "I want to compare the two pits they came from"
+      }
+    },
+    {
+      "id": "dairy_productive_10",
+      "text": "Skimming the pans is dreary work. Yet the evening milk sets faster than the morning milk, and I want to find out whether the temperature or the feed explains it.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Skimming the pans is dreary work.",
+        "productive_uptake": "I want to find out whether the temperature or the feed explains it"
+      }
+    },
+    {
+      "id": "dockyard_productive_11",
+      "text": "Counting rivets along the hull is tedious. Three plates show rust streaks the survey missed, though, and I would like to investigate where the water gets in.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Counting rivets along the hull is tedious.",
+        "productive_uptake": "I would like to investigate where the water gets in"
+      }
+    },
+    {
+      "id": "drydock_productive_12",
+      "text": "Scraping weed off the keel has gone dull. The growth sits thicker on the port side, and I want to check whether the mooring faced the current.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Scraping weed off the keel has gone dull.",
+        "productive_uptake": "I want to check whether the mooring faced the current"
+      }
+    },
+    {
+      "id": "enginehouse_productive_13",
+      "text": "Oiling the same bearings every shift is monotonous. The flywheel hums at a new pitch since Tuesday, and I want to find out which bearing changed.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Oiling the same bearings every shift is monotonous.",
+        "productive_uptake": "I want to find out which bearing changed"
+      }
+    },
+    {
+      "id": "farrier_productive_14",
+      "text": "Filing hooves in a row is dreary. The grey mare wears her left shoe thin twice as fast, and I would like to compare her gait with the others to see why.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Filing hooves in a row is dreary.",
+        "productive_uptake": "I would like to compare her gait with the others to see why"
+      }
+    },
+    {
+      "id": "feltmill_productive_15",
+      "text": "Rolling felt sheets is dull by the tenth one. The batch with the new soap mats tighter, and I want to test the two soaps side by side.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Rolling felt sheets is dull by the tenth one.",
+        "productive_uptake": "I want to test the two soaps side by side"
+      }
+    },
+    {
+      "id": "flaxmill_productive_16",
+      "text": "Can we move along? Combing flax this slowly is tedious. Still, the retted bundles from the pond break less often than the dew-retted ones, and I want to find out why.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "Combing flax this slowly is tedious.",
+        "productive_uptake": "I want to find out why",
+        "process_impatience": "Can we move along?"
+      }
+    },
+    {
+      "id": "fort_nonactionable_01",
+      "text": "Walking the same rampart circuit is dull. I marked every station on the round exactly as the standing orders say.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Walking the same rampart circuit is dull."
+      }
+    },
+    {
+      "id": "fullery_nonactionable_02",
+      "text": "Treading cloth in the trough bores me, and I wish we could skip to the tenting frames. I will keep treading until the bell all the same.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "Treading cloth in the trough bores me",
+        "process_impatience": "I wish we could skip to the tenting frames"
+      }
+    },
+    {
+      "id": "gatehouse_nonactionable_03",
+      "text": "Checking passes at the wicket is tedious work. I entered each name in the day book the way the warden showed me.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Checking passes at the wicket is tedious work."
+      }
+    },
+    {
+      "id": "gravelpit_nonactionable_04",
+      "text": "Could we pick up the pace with these screening trays? The sorting takes longer than it needs to.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": {
+        "process_impatience": "Could we pick up the pace with these screening trays?"
+      }
+    },
+    {
+      "id": "gristmill_nonactionable_05",
+      "text": "Bagging flour sack after sack is monotonous, and I would rather we moved on to dressing the stones. Say the word and I will carry on bagging till then.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "Bagging flour sack after sack is monotonous",
+        "process_impatience": "I would rather we moved on to dressing the stones"
+      }
+    },
+    {
+      "id": "hatchery_nonactionable_06",
+      "text": "Candling eggs tray by tray is dreary. The lamp, the log, and the tally all sit exactly where the checklist wants them.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Candling eggs tray by tray is dreary."
+      }
+    },
+    {
+      "id": "haybarn_nonactionable_07",
+      "text": "Turning hay in this heat is dull beyond words. The rows are turned and raked just as the steward asked.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Turning hay in this heat is dull beyond words."
+      }
+    },
+    {
+      "id": "ironworks_nonactionable_08",
+      "text": "Feeding the furnace on this schedule bores me; can we not skip ahead to the pour? I will stay on the bellows as long as you need.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "Feeding the furnace on this schedule bores me",
+        "process_impatience": "can we not skip ahead to the pour?"
+      }
+    },
+    {
+      "id": "jetty_nonactionable_09",
+      "text": "Can we move on to the next berth soon? Measuring the same tide pole is taking too long today.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": {
+        "process_impatience": "Can we move on to the next berth soon?"
+      }
+    },
+    {
+      "id": "joinery_nonactionable_10",
+      "text": "Cutting tenons to the same depth is tedious. Every joint so far matches the gauge block I was given.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Cutting tenons to the same depth is tedious."
+      }
+    },
+    {
+      "id": "kennels_nonactionable_11",
+      "text": "Washing feed bowls twice a day is dreary work. The bowls are scrubbed, dried, and stacked the way the keeper likes.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Washing feed bowls twice a day is dreary work."
+      }
+    },
+    {
+      "id": "lumberyard_nonactionable_12",
+      "text": "Stacking planks by width is monotonous, and I wish we were already at the grading bench. Until then I will keep stacking as instructed.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "Stacking planks by width is monotonous",
+        "process_impatience": "I wish we were already at the grading bench"
+      }
+    },
+    {
+      "id": "masonry_nonactionable_13",
+      "text": "Pointing the same wall is dull. I raked and refilled every joint on the row you chalked.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Pointing the same wall is dull."
+      }
+    },
+    {
+      "id": "meadery_negative_01",
+      "text": "The must smells sweeter than last week's batch. I racked both carboys and labeled them with today's date.",
+      "verdict": "no_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {}
+    },
+    {
+      "id": "millpond_negative_02",
+      "text": "I thought clearing the leat would be dull, but it was not. The water runs clear now.",
+      "verdict": "no_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {}
+    },
+    {
+      "id": "minehead_negative_03",
+      "text": "Sure, I can take the lamp count on my way down. The cage list is already signed.",
+      "verdict": "no_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {}
+    },
+    {
+      "id": "moorings_negative_04",
+      "text": "The stern line chafes on the second bollard, and I want to find out whether a longer lead stops it.",
+      "verdict": "no_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "productive_uptake": "I want to find out whether a longer lead stops it"
+      }
+    },
+    {
+      "id": "oilhouse_negative_05",
+      "text": "Both drums are sealed and the spill tray is clean. The new funnel pours much better than the old one.",
+      "verdict": "no_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {}
+    },
+    {
+      "id": "paddock_negative_06",
+      "text": "The colt took the halter calmly today. I walked him the full circuit twice without trouble.",
+      "verdict": "no_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {}
+    },
+    {
+      "id": "pierhead_negative_07",
+      "text": "The swell breaks differently past the third pile, and I would like to check the chart against what we saw.",
+      "verdict": "no_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "productive_uptake": "I would like to check the chart against what we saw"
+      }
+    },
+    {
+      "id": "reservoir_negative_08",
+      "text": "People call gauge duty tedious, but I do not find it so. The morning readings are done and posted.",
+      "verdict": "no_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {}
+    },
+    {
+      "id": "saltmarsh_negative_09",
+      "text": "The samphire beds look denser along the creek edge. I flagged the transect pegs where the map shows them.",
+      "verdict": "no_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {}
+    },
+    {
+      "id": "sandpit_negative_10",
+      "text": "The screened sand from the east face packs harder, and I want to test it in the next mold.",
+      "verdict": "no_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "productive_uptake": "I want to test it in the next mold"
+      }
+    },
+    {
+      "id": "sheepfold_negative_11",
+      "text": "Fine, I will bring the count board to the far pen. The gates are tied the way you showed me.",
+      "verdict": "no_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {}
+    },
+    {
+      "id": "slipway_actionable_01",
+      "text": "Greasing the rollers again is dull, and I have stopped doing it. The tin is back on the shelf.",
+      "verdict": "actionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Greasing the rollers again is dull",
+        "effort_withdrawal": "I have stopped doing it"
+      }
+    },
+    {
+      "id": "sluice_actionable_02",
+      "text": "Winding this gate up and down for practice bores me. I gave up after the fourth lift and let the winch stand.",
+      "verdict": "actionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Winding this gate up and down for practice bores me.",
+        "effort_withdrawal": "I gave up after the fourth lift and let the winch stand"
+      }
+    },
+    {
+      "id": "springhouse_actionable_03",
+      "text": "Logging the water temperature is tedious, so I quit for the day. The book is closed on the ledge.",
+      "verdict": "actionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Logging the water temperature is tedious",
+        "effort_withdrawal": "I quit for the day"
+      }
+    },
+    {
+      "id": "stampmill_actionable_04",
+      "text": "Feeding ore under the stamps is monotonous, and I skipped the last two charges. You can run them without me.",
+      "verdict": "actionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Feeding ore under the stamps is monotonous",
+        "effort_withdrawal": "I skipped the last two charges"
+      }
+    },
+    {
+      "id": "tackroom_actionable_05",
+      "text": "Soaping the same saddles is dreary. I put the sponge down and I am done for this afternoon.",
+      "verdict": "actionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Soaping the same saddles is dreary.",
+        "effort_withdrawal": "I put the sponge down and I am done for this afternoon"
+      }
+    },
+    {
+      "id": "turbinehall_actionable_06",
+      "text": "Wiping the sight glasses every round is dull, so I stopped at the fifth one. Someone else can finish the row.",
+      "verdict": "actionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Wiping the sight glasses every round is dull",
+        "effort_withdrawal": "I stopped at the fifth one"
+      }
+    },
+    {
+      "id": "turnery_actionable_07",
+      "text": "Turning chair legs to the same template bores me. I shut off my lathe and I am not cutting the rest.",
+      "verdict": "actionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Turning chair legs to the same template bores me.",
+        "effort_withdrawal": "I shut off my lathe and I am not cutting the rest"
+      }
+    },
+    {
+      "id": "washhouse_actionable_08",
+      "text": "Wringing sheets is tedious past bearing, and I have given up on this basket. Do the rest without me.",
+      "verdict": "actionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Wringing sheets is tedious past bearing",
+        "effort_withdrawal": "I have given up on this basket"
+      }
+    },
+    {
+      "id": "waxworks_actionable_09",
+      "text": "Dipping tapers over and over is monotonous. I left the rack half full and walked away from the vat.",
+      "verdict": "actionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Dipping tapers over and over is monotonous.",
+        "effort_withdrawal": "I left the rack half full and walked away from the vat"
+      }
+    },
+    {
+      "id": "wellhouse_mixed_01",
+      "text": "Hauling test buckets is dull, and I have stopped hauling them. Still, I want to find out why the count fell overnight.",
+      "verdict": "indeterminate",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Hauling test buckets is dull",
+        "effort_withdrawal": "I have stopped hauling them",
+        "productive_uptake": "I want to find out why the count fell overnight"
+      }
+    },
+    {
+      "id": "woolshed_mixed_03",
+      "text": "Skirting fleeces bores me, so I have quit the table. I do want to test whether the coarse belly wool skews our weights, though.",
+      "verdict": "indeterminate",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Skirting fleeces bores me",
+        "effort_withdrawal": "I have quit the table",
+        "productive_uptake": "I do want to test whether the coarse belly wool skews our weights"
+      }
+    },
+    {
+      "id": "zincworks_mixed_04",
+      "text": "I gave up scraping the retorts for today. Even so, I want to compare the white crust on number two with the others.",
+      "verdict": "indeterminate",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": true,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "effort_withdrawal": "I gave up scraping the retorts for today.",
+        "productive_uptake": "I want to compare the white crust on number two with the others"
+      }
+    },
+    {
+      "id": "beacon_mixed_05",
+      "text": "Trimming the lamp wicks is tedious, and I am not doing the last two. I would still like to find out why the seaward wick chars faster.",
+      "verdict": "indeterminate",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Trimming the lamp wicks is tedious",
+        "effort_withdrawal": "I am not doing the last two",
+        "productive_uptake": "I would still like to find out why the seaward wick chars faster"
+      }
+    },
+    {
+      "id": "causeway_mixed_06",
+      "text": "I stopped counting carts at midday; the tally sheet is with the toll box. I want to check whether market day doubles the load, all the same.",
+      "verdict": "indeterminate",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": true,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "effort_withdrawal": "I stopped counting carts at midday",
+        "productive_uptake": "I want to check whether market day doubles the load"
+      }
+    },
+    {
+      "id": "quillworks_mixed_07",
+      "text": "Sorting quills by weight is dreary, and I have set the scale aside. Yet I want to investigate why the winter feathers weigh light.",
+      "verdict": "indeterminate",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Sorting quills by weight is dreary",
+        "effort_withdrawal": "I have set the scale aside",
+        "productive_uptake": "I want to investigate why the winter feathers weigh light"
+      }
+    }
+  ]
+}
