@@ -1,0 +1,23 @@
+{
+  "schema": "machinespirits.tutor-stub.boredom-semantic-validation-authorization.v3",
+  "status": "APPROVED_FOR_BOUNDED_SEMANTIC_VALIDATION_CALLS",
+  "studyId": "tutor-stub-boredom-semantic-validation-v3",
+  "request": {
+    "path": "config/tutor-stub-boredom-semantic-validation-request.v3.json",
+    "sha256": "3924533c7f4a15b56e362adf9cb031497c435d944903b2140066413289514769"
+  },
+  "scope": {
+    "maximumModelCalls": 162,
+    "modelRef": "codex.gpt-5.6-sol",
+    "effort": "low",
+    "artifactRoot": ".tutor-stub-auto-eval/boredom-semantic-validation-v3-2026-08-21",
+    "liveStudyAuthorized": false,
+    "confirmationLaunchAuthorized": false
+  },
+  "approval": {
+    "explicitBoundedValidationCalls": true,
+    "approvedBy": "human",
+    "approvedAt": "2026-08-21T06:30:50.000Z",
+    "evidence": "The v2 validation run (2026-08-21, authorization 7734b745, request sha256 29c55d0b) failed one of five predeclared gates: determinate specificity 13/15 = 0.867 against 0.90, with both misses being reference-label versus judge cue readings. The user rejected closing the arc and approved a v3 iteration with the message 'I'm not sure I'm ready to write off this whole arc on a single fail, 13/15 vs 14/15. So I want to run v3, just not quite so pessimistically' (2026-08-21). Agreed terms: the instrument, prompts, output schema, derivation rules, and all five gates are unchanged; v3 changes only the corpus (54 fresh cases, fresh worlds, spent v1/v2 corpora permanently excluded, every reference label confirmed by a blind claude-sonnet-5 second reader with the one disagreement dropped) and the sample size (specificity denominator 39). That build merged to main as PR #762 (merge commit 734982ba) after independent Codex review returned APPROVE with no defects. A gate failure is categorical (no retry, no rescore) but does not close the arc; any v4 needs a fresh corpus, a written diagnosis, and separate explicit human approval. The 36-dialogue confirmation stays on HOLD; this authorization grants only the bounded validation calls."
+  }
+}
