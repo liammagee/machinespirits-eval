@@ -15,7 +15,7 @@ import {
 } from '../services/tutorStubBoredomSemanticValidation.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const DEFAULT_REQUEST = 'config/tutor-stub-boredom-semantic-validation-request.v1.json';
+const DEFAULT_REQUEST = 'config/tutor-stub-boredom-semantic-validation-request.v2.json';
 
 function refuse(message) {
   throw new Error(`boredom semantic validation refuses: ${message}`);

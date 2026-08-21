@@ -10,17 +10,17 @@ import {
   TUTOR_STUB_BOREDOM_SEMANTIC_OUTPUT_SCHEMA,
   adjudicateTutorStubBoredomObservation,
   parseTutorStubBoredomSemanticAdjudication,
-} from './tutorStubBoredomSemanticAdjudication.js';
+} from './tutorStubBoredomSemanticAdjudicationV2.js';
 
 export const BOREDOM_SEMANTIC_VALIDATION_REQUEST_SCHEMA =
-  'machinespirits.tutor-stub.boredom-semantic-validation-request.v1';
+  'machinespirits.tutor-stub.boredom-semantic-validation-request.v2';
 export const BOREDOM_SEMANTIC_VALIDATION_AUTHORIZATION_SCHEMA =
-  'machinespirits.tutor-stub.boredom-semantic-validation-authorization.v1';
+  'machinespirits.tutor-stub.boredom-semantic-validation-authorization.v2';
 export const BOREDOM_SEMANTIC_VALIDATION_RESULT_SCHEMA =
-  'machinespirits.tutor-stub.boredom-semantic-validation-result.v1';
-export const BOREDOM_SEMANTIC_VALIDATION_STUDY_ID = 'tutor-stub-boredom-semantic-validation-v1';
+  'machinespirits.tutor-stub.boredom-semantic-validation-result.v2';
+export const BOREDOM_SEMANTIC_VALIDATION_STUDY_ID = 'tutor-stub-boredom-semantic-validation-v2';
 
-const EXPECTED_CORPUS_SHA256 = 'ad61f7b104c8202889c9f9eb00090a900aafea5d5bf55d7e3b89cf41db300f93';
+const EXPECTED_CORPUS_SHA256 = 'b001ad73c9b07a40b70bcefd564848f30abec5bdd2cc7d5fbc844e8c341fe2cc';
 const EXPECTED_RETRY_AUTHORITY = 'bounded_technical_recovery_thrown_transport_errors_only';
 const EXPECTED_AUXILIARY_POLICY = 'null_neutral_semantic_seat_only';
 const EXPECTED_PROMPT_AUTHORITY = 'frozen_adjudication_module_functions_only';
@@ -88,7 +88,7 @@ export function validateTutorStubBoredomSemanticValidationRequest(
   assert(resolved?.model === request.route.model, 'resolved model differs from request');
   assert(resolved?.isConfigured === true, 'requested CLI model route is not configured');
 
-  assert(request.corpus?.path === 'config/tutor-stub-boredom-semantic-adjudication-heldout.v1.json', 'corpus path');
+  assert(request.corpus?.path === 'config/tutor-stub-boredom-semantic-adjudication-heldout.v2.json', 'corpus path');
   assert(request.corpus?.sha256 === EXPECTED_CORPUS_SHA256, 'corpus digest must remain the frozen held-out digest');
   const { corpus, sha256: observedCorpusSha256 } = loadBoredomSemanticHeldoutCorpus({
     root,
@@ -107,7 +107,7 @@ export function validateTutorStubBoredomSemanticValidationRequest(
   assert(request.scope?.confirmationLaunchAuthorized === false, 'the validation must not authorize the confirmation');
 
   assert(
-    request.measurement?.adjudicationModule?.path === 'services/tutorStubBoredomSemanticAdjudication.js',
+    request.measurement?.adjudicationModule?.path === 'services/tutorStubBoredomSemanticAdjudicationV2.js',
     'adjudication module path mismatch',
   );
   assertSha256(request.measurement?.adjudicationModule?.sha256, 'adjudication module');
@@ -133,7 +133,7 @@ export function validateTutorStubBoredomSemanticValidationRequest(
 
   assert(
     typeof request.artifactRoot === 'string' &&
-      request.artifactRoot.startsWith('.tutor-stub-auto-eval/boredom-semantic-validation-v1-'),
+      request.artifactRoot.startsWith('.tutor-stub-auto-eval/boredom-semantic-validation-v2-'),
     'artifact root is outside the ignored validation namespace',
   );
   assert(
@@ -145,7 +145,7 @@ export function validateTutorStubBoredomSemanticValidationRequest(
   assert(request.ledger?.plannedAttempts === 22, 'planned attempt accounting mismatch');
   assert(request.ledger?.maximumAttempts === 66, 'maximum attempt accounting mismatch');
 
-  assert(Array.isArray(request.sourceClosure) && request.sourceClosure.length >= 10, 'source closure is incomplete');
+  assert(Array.isArray(request.sourceClosure) && request.sourceClosure.length >= 11, 'source closure is incomplete');
   const seen = new Set();
   const sourceClosure = request.sourceClosure.map((entry) => {
     assert(entry && typeof entry === 'object', 'source-closure entry must be an object');
@@ -162,12 +162,13 @@ export function validateTutorStubBoredomSemanticValidationRequest(
   for (const requiredPath of [
     'services/tutorStubBoredomSemanticValidation.js',
     'scripts/run-tutor-stub-boredom-semantic-validation.js',
+    'services/tutorStubBoredomSemanticAdjudicationV2.js',
     'services/tutorStubBoredomSemanticAdjudication.js',
     'services/resistantLearnerObservation.js',
     'services/cliProviderBridge.js',
     'services/evalConfigLoader.js',
     'config/providers.yaml',
-    'config/tutor-stub-boredom-semantic-adjudication-heldout.v1.json',
+    'config/tutor-stub-boredom-semantic-adjudication-heldout.v2.json',
     'config/tutor-stub-boredom-action-register-proof-dag-registration.v3.json',
     'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v3.json',
   ]) {
@@ -323,6 +324,7 @@ export async function executeTutorStubBoredomSemanticValidation({
   const validation = validateTutorStubBoredomSemanticValidationRequest(request, { root });
   const resolved = { provider: validation.provider, model: validation.model };
   let totalCalls = 0;
+  let pendingContractViolations = [];
   const promptCaller = async ({ prompt, systemPrompt, role, outputSchema, maxTokens, signal }) => {
     totalCalls += 1;
     assert(totalCalls <= request.scope.maximumModelCalls, 'model-call ceiling exceeded');
@@ -335,8 +337,16 @@ export async function executeTutorStubBoredomSemanticValidation({
       maxTokens,
       signal,
     });
-    assert(response?.structuredOutput === true, 'structured-output transport was not active');
-    assert(response?.effort === request.route.effort, 'observed effort differs from requested effort');
+    // A resolved response is a final measurement outcome. Transport-contract
+    // defects on a returned output are recorded, not thrown: a throw here
+    // would re-enter the bounded retry loop and replace a completed call's
+    // output, which only thrown transport errors may do.
+    if (response?.structuredOutput !== true) {
+      pendingContractViolations.push('transport_contract:structured_output_inactive');
+    }
+    if (response?.effort !== request.route.effort) {
+      pendingContractViolations.push('transport_contract:effort_mismatch');
+    }
     return response;
   };
 
@@ -347,12 +357,21 @@ export async function executeTutorStubBoredomSemanticValidation({
     let adjudication = null;
     for (let attempt = 1; attempt <= request.scope.maximumReservationsPerCase; attempt += 1) {
       try {
+        pendingContractViolations = [];
         adjudication = await adjudicateTutorStubBoredomObservation({
           candidate: row.text,
           auxiliaryObservation: null,
           callModel: promptCaller,
           resolved,
         });
+        if (pendingContractViolations.length > 0) {
+          adjudication = {
+            ...adjudication,
+            parse_ok: false,
+            measurement_disposition: 'measurement_indeterminate',
+            issues: [...adjudication.issues, ...pendingContractViolations],
+          };
+        }
         attempts.push({ attempt, status: 'completed_final', completedAt: now() });
         break;
       } catch (error) {

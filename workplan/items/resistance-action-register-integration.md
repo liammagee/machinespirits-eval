@@ -2198,3 +2198,35 @@ and explicit human approval.
   `artifacts/tutor-stub-live/.tutor-stub-auto-eval/boredom-semantic-validation-v1-2026-08-20/`.
   Any next step must revise the instrument or corpus under a fresh
   digest-bound request; the failed run is never rescored or resampled.
+
+- 2026-08-21 — Built instrument v2 under a fresh digest-bound HOLD request
+  (branch `claude/boredom-semantic-validation-v2`), per the approved
+  diagnosis of the v1 failure. Three revisions: (1) evidence spans are
+  quote-anchored — the judge's exact quote is authoritative and the
+  harness recomputes offsets, so only a non-substring quote fails closed
+  (fixes the two off-by-one indeterminates); (2) `productive_uptake` now
+  requires a boredom cue that the uptake defeats — bare uptake derives
+  `no_boredom` (fixes the engaged-not-bored boundary); (3) a fresh frozen
+  22-case held-out corpus in new worlds with defensible labels and
+  genuine boredom cues (never bare "Sure."/"Fine"; the spent v1 corpus is
+  permanently excluded as training material). The v1 module stays frozen
+  and untouched; v2 lives in
+  `services/tutorStubBoredomSemanticAdjudicationV2.js` and imports the
+  identical output schema, so the structured-output digest is unchanged.
+  New request `config/tutor-stub-boredom-semantic-validation-request.v2.json`
+  (HOLD, null authorization, 22 planned / 66 max calls, ledger
+  315 -> 337 planned / 381 max, worst case with reserved confirmations
+  4701 of 5000). Zero-call checks: corpus audit clean (substrings +
+  derivation), service self-validation OK, runner preflight OK, 12/12 v2
+  tests, 10/10 frozen v1-chain tests. The 36-dialogue confirmation stays
+  on HOLD.
+
+- 2026-08-21 — Independent Codex review of the v2 branch returned one HIGH
+  finding: the harness checked two transport facts (structured output
+  active, effort as requested) by throwing after the model had already
+  returned an output, and the bounded retry loop caught that throw, so a
+  resolved output could be discarded and re-sampled. Fixed: those defects
+  are now recorded, the case seals as a final measurement_indeterminate
+  on the first reservation, and a thirteenth test pins the behavior
+  (22 calls, one attempt, no retry). Request regenerated with the new
+  service digest; re-review pending.
