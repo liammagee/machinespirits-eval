@@ -430,7 +430,10 @@ export function validateTutorStubResistanceRecoverySemanticRegistration(registra
   if (
     registration?.schema !== 'machinespirits.tutor-stub.resistance-recovery-semantic-adjudication-registration.v2' ||
     registration?.version !== 2 ||
-    registration?.status !== 'development_instrument_freeze_candidate_pending_independent_v2_heldout'
+    ![
+      'development_instrument_freeze_candidate_pending_independent_v2_heldout',
+      'development_instrument_frozen_pending_independent_v2_heldout_validation',
+    ].includes(registration?.status)
   ) {
     issues.push('corrected v2 registration identity drifted');
   }

@@ -17,7 +17,7 @@
   "studyId": "tutor-stub-resistance-recovery-semantic-adjudication-validation-v2",
   "instrument": {
     "implementationPath": "services/tutorStubResistanceRecoverySemanticAdjudicationV2.js",
-    "implementationSha256": "5b78079ad705ee58676796131d4235f2a2ddc17558b513642cdd640f303a103b",
+    "implementationSha256": "7cbf8e021c8558a14e209ee45e21ebf04e65ecda7018324251657db59d1538e7",
     "responseSchemaPath": "config/tutor-stub-resistance-recovery-semantic-response.schema.v2.json",
     "responseSchemaSha256": "427f2177a6996862a99e31d1b8588a86f0a5483d1d5942dacee6e132944fedcd",
     "developmentCorpusPath": "config/tutor-stub-resistance-recovery-semantic-development-corpus.v2.json",
