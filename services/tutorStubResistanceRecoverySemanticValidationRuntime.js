@@ -252,9 +252,7 @@ function archiveFor({ archiveDir, plan, resume, afterEntry }) {
     if (localRoot) {
       const localFiles = ['plan.json', 'seal.json', 'report.json'].flatMap((logicalPath) => {
         const file = path.join(localRoot, logicalPath);
-        return fs.existsSync(file)
-          ? [{ logicalPath, file, terminalStages: new Set([logicalPath.split('.')[0]]) }]
-          : [];
+        return fs.existsSync(file) ? [{ logicalPath, file, terminalStages: new Set([logicalPath.split('.')[0]]) }] : [];
       });
       const casesRoot = path.join(localRoot, 'cases');
       if (fs.existsSync(casesRoot)) {

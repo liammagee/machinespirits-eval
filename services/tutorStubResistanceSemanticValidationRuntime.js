@@ -224,10 +224,7 @@ function openValidationArchive({
       } else if (!fs.existsSync(target)) issues.push(`${entry.sequence}: archive entry missing`);
       else {
         const archivedBytes = fs.readFileSync(target);
-        if (
-          archivedBytes.length !== entry.bytes ||
-          tutorStubResistanceSemanticSha256(archivedBytes) !== entry.sha256
-        ) {
+        if (archivedBytes.length !== entry.bytes || tutorStubResistanceSemanticSha256(archivedBytes) !== entry.sha256) {
           issues.push(`${entry.sequence}: archive entry byte metadata mismatch`);
         }
       }
@@ -235,9 +232,7 @@ function openValidationArchive({
     if (localRoot) {
       const localFiles = ['plan.json', 'seal.json', 'report.json'].flatMap((logicalPath) => {
         const file = path.join(localRoot, logicalPath);
-        return fs.existsSync(file)
-          ? [{ logicalPath, file, terminalStages: new Set([logicalPath.split('.')[0]]) }]
-          : [];
+        return fs.existsSync(file) ? [{ logicalPath, file, terminalStages: new Set([logicalPath.split('.')[0]]) }] : [];
       });
       const casesRoot = path.join(localRoot, 'cases');
       if (fs.existsSync(casesRoot)) {

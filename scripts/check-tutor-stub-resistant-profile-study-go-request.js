@@ -767,11 +767,10 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   const isResistanceSemanticValidation =
     request.semanticAdjudicationValidation?.type ===
     'prospective_resistance_semantic_adjudication_heldout_validation_v1';
-  const isResistanceRecoverySemanticValidation =
-    [
-      'prospective_resistance_recovery_semantic_adjudication_heldout_validation_v1',
-      'prospective_resistance_recovery_semantic_adjudication_heldout_validation_v2',
-    ].includes(request.semanticAdjudicationValidation?.type);
+  const isResistanceRecoverySemanticValidation = [
+    'prospective_resistance_recovery_semantic_adjudication_heldout_validation_v1',
+    'prospective_resistance_recovery_semantic_adjudication_heldout_validation_v2',
+  ].includes(request.semanticAdjudicationValidation?.type);
   const isResistanceRecoverySemanticValidationV2 =
     request.semanticAdjudicationValidation?.type ===
     'prospective_resistance_recovery_semantic_adjudication_heldout_validation_v2';
