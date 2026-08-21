@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: manual
 created: 2026-08-18
-updated: 2026-08-20
+updated: 2026-08-21
 verification: >-
   The lexical-observer programme remains closed exactly as recorded, but the
   user has reopened the scientific question through an additive independent
@@ -2432,3 +2432,19 @@ and explicit human approval.
   needs a fresh corpus, a written diagnosis, and separate explicit
   approval. The 36-dialogue confirmation stays on HOLD until a
   validation passes.
+
+- 2026-08-21 — A blocking zero-call audit of the first locally packaged V2
+  manipulation-validation request found that its 29-file critical source
+  closure omitted
+  `config/tutor-stub-resistance-semantic-adjudication-registration.v1.json`.
+  The additive V2 validation loader directly reads and hashes that frozen V1
+  instrument registration when it proves the failed-V1 supersession boundary,
+  so the omitted dependency could drift while the old checker still reported
+  a valid packet. The unpushed request at local commit `c93bf5b6` is therefore
+  rejected and will not be published or launched. This narrow compatibility
+  change adds the direct V1 dependency to the V2-only critical closure and to
+  the deterministic packager fixture, with a missing-entry mutation proving
+  fail-closed rejection. Historical request and instrument bytes remain
+  untouched. No actual V2 request is included here; after this dependency PR
+  merges, a wholly fresh request must pin that merge, its 30-file closure, and
+  a new create-once destination. Zero model/provider calls remain in force.
