@@ -42,6 +42,19 @@ test('frozen recovery semantic development instrument validates and zero-call fi
   assert.equal(score.metrics.raw_full_vector_interjudge_agreement, 1);
   assert.equal(score.metrics.consensus_action_classification_accuracy, 1);
   assert.equal(score.metrics.consensus_register_classification_accuracy, 1);
+  assert.equal(score.metrics.determined_coverage_by_stratum.both, 1);
+});
+
+test('development gold evidence follows the same source-ownership contract as live responses', () => {
+  const changed = structuredClone(corpus);
+  const target = changed.cases.find((row) => row.expected.judgment.delivered_clarify_distinction === 'yes');
+  const evidence = target.expected.evidence.find((row) => row.field === 'delivered_clarify_distinction');
+  evidence.source_id = 'current_learner';
+  evidence.text = target.current_learner;
+  assert.match(
+    validateTutorStubResistanceRecoverySemanticCorpus(changed).issues.join('; '),
+    /must cite the intervention/u,
+  );
 });
 
 test('outcome prompt is one post-horizon blind packet with no arm, gold, profile, regex, or Luna vote', () => {

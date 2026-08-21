@@ -247,6 +247,44 @@
       }
     },
     {
+      "case_id": "dev-both-01",
+      "trigger": "I reject the jurisdiction of this test and will not answer under it.",
+      "intervention": "I understand the jurisdictional objection. Separate it from one narrow check: compare the two public timestamps without treating either narrative as settled.",
+      "prior_post_trigger": "The first timestamp precedes the second by three minutes.",
+      "current_learner": "That three-minute gap supports the stated order, and I will answer this bounded point provided no broader jurisdiction is inferred.",
+      "expected": {
+        "judgment": {
+          "bounded_test_merits_engagement": "yes",
+          "grounded_precise_jurisdictional_condition": "yes",
+          "delivered_clarify_distinction": "yes",
+          "delivered_register": "warm",
+          "final_recovery": "yes"
+        },
+        "evidence": [
+          {
+            "field": "bounded_test_merits_engagement",
+            "source_id": "current_learner",
+            "text": "That three-minute gap supports the stated order"
+          },
+          {
+            "field": "grounded_precise_jurisdictional_condition",
+            "source_id": "current_learner",
+            "text": "provided no broader jurisdiction is inferred"
+          },
+          {
+            "field": "delivered_clarify_distinction",
+            "source_id": "intervention",
+            "text": "Separate it from one narrow check"
+          },
+          {
+            "field": "delivered_register",
+            "source_id": "intervention",
+            "text": "I understand the jurisdictional objection"
+          }
+        ]
+      }
+    },
+    {
       "case_id": "dev-negative-generic-engagement",
       "trigger": "I reject your standing and will not answer.",
       "intervention": "Would you be willing to discuss the evidence generally?",

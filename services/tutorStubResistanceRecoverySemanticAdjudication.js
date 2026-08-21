@@ -565,6 +565,18 @@ export function validateTutorStubResistanceRecoverySemanticCorpus(corpus) {
       if (!SEMANTIC_FIELDS.includes(evidence.field) || !SOURCE_IDS.includes(evidence.source_id)) {
         issues.push(`case ${index} evidence field or source is invalid`);
       }
+      if (
+        ['delivered_clarify_distinction', 'delivered_register'].includes(evidence.field) &&
+        evidence.source_id !== 'intervention'
+      ) {
+        issues.push(`case ${index} intervention classification evidence must cite the intervention`);
+      }
+      if (
+        RECOVERY_FIELDS.includes(evidence.field) &&
+        !['prior_post_trigger', 'current_learner'].includes(evidence.source_id)
+      ) {
+        issues.push(`case ${index} recovery evidence must cite a post-trigger learner turn`);
+      }
       const identity = `${evidence.field}:${evidence.source_id}:${evidence.text}`;
       if (seen.has(identity)) issues.push(`case ${index} evidence is duplicated`);
       seen.add(identity);
@@ -718,7 +730,7 @@ export function scoreTutorStubResistanceRecoverySemanticCorpus({ corpus, respons
   };
   const negativeRows = rows.filter((row) => row.corpusCase.expected.judgment.final_recovery === 'no');
   const coverageByStratum = Object.fromEntries(
-    ['merits', 'grounded', 'no_recovery'].map((stratum) => {
+    ['merits', 'grounded', 'both', 'no_recovery'].map((stratum) => {
       const selected = rows.filter((row) => category(row.corpusCase.expected.judgment) === stratum);
       return [stratum, ratio(selected.filter((row) => row.aggregate.status === 'determinate').length, selected.length)];
     }),
