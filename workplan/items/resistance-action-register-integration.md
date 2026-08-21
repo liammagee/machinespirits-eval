@@ -2569,6 +2569,27 @@ and explicit human approval.
   human authorization required before any call; the 36-dialogue
   confirmation stays on HOLD; a gate failure is categorical.
 
+- 2026-08-21 — Boredom semantic validation v4 RAN and PASSED all five
+  gates at 1.00. Build merged as PR #774 (merge 00150403) after Codex
+  review returned APPROVE and CI went green (one prettier fix, commit
+  947fb0c7, with the request digest re-pinned). Human authorization
+  committed on main as 078f75e1, binding request sha256 8681306e.
+  Executed from a clean worktree at that commit on codex.gpt-5.6-sol,
+  effort low: 55 of 55 planned calls, zero technical-failure retries,
+  55 reservations of the 165 ceiling used. Every case landed on its
+  reference verdict — 9/9 actionable (sensitivity 1.00), 40/40
+  determinate negatives (specificity 1.00), 6/6 expected-indeterminate
+  (both indeterminate gates 1.00), reference agreement 55/55 = 1.00.
+  The v4 narrowings held against the corpus's deliberate v3 failure
+  shapes: no pace wish was read as effort withdrawal and no compliance
+  report was read as productive uptake. Artifacts archived to the
+  private repo (commit 2cafcf50) under
+  `artifacts/tutor-stub-live/.tutor-stub-auto-eval/boredom-semantic-validation-v4-2026-08-21/`.
+  The semantic instrument is now empirically validated on a held-out
+  corpus. The 36-dialogue confirmation stays on HOLD: the report seals
+  `confirmationLaunchAuthorized: false`, and launching it needs its own
+  separate explicit human authorization.
+
 - 2026-08-21 — The 80-case manipulation semantic-validation V2 run completed
   its sealed registered analyzer and failed. The preserved request is
   `b91b6c92ec6b82b15b40821938929c3e2c31c86424822846a26443977cb479d6`;
