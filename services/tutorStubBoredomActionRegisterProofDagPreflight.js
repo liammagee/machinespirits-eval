@@ -613,7 +613,7 @@ function semanticReferenceRaw(row, { confidence = 0.95 } = {}) {
 }
 
 function semanticReferenceParserForCorpus(corpus) {
-  if (corpus?.schema === 'machinespirits.tutor-stub.boredom-semantic-adjudication.heldout.v1') {
+  if (corpus?.schema === 'machinespirits.tutor-stub.boredom-semantic-heldout-corpus.v1') {
     return parseTutorStubBoredomSemanticAdjudication;
   }
   if (corpus?.schema === 'machinespirits.tutor-stub.boredom-semantic-adjudication.heldout.v4') {
