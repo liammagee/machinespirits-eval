@@ -1,7 +1,7 @@
 ---
 id: resistance-action-register-integration
 title: Integrate resistance diagnosis, pedagogical action, and tonal register across tutor harnesses
-status: active
+status: done
 type: research
 priority: P1
 owner: codex
@@ -9,14 +9,12 @@ source: manual
 created: 2026-08-18
 updated: 2026-08-20
 verification: >-
-  Bored and frame-refuser learner contracts pass treatment-opportunity,
-  discrimination, and observability gates while productive frame defiance
-  remains a no-intervention diagnostic; the shared runtime selects a warranted
-  pedagogical action before a compatible tonal register; irony and sarcasm
-  remain opt-in and guard-bounded; and a registered proof-DAG crossed study
-  reports action-fit, register, same-treatment, and downstream outcome results
-  before any claim is transferred back to the cell harness.
-claim_status: planned
+  The prospective-V7 confirmation stopped after Block 1 under the standing
+  success-or-systemic-failure criterion; exact execution and archive evidence
+  is bound below, every partial outcome is excluded, no warm/plain, null,
+  efficacy, or profile-failure claim is made, and further model calls require a
+  new human programme and measurement decision.
+claim_status: killed
 links:
   items:
     - tutor-stub-cell-reconciliation
@@ -1819,3 +1817,56 @@ and explicit human approval.
   programme authority is instead bound to the exact 181-byte standing message
   at SHA-256
   `538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce`.
+- 2026-08-20 — **Terminal systemic-measurement-failure closeout.** The exact
+  prospective-V7 request
+  `d209cd7d647f1a35c48d1920444e5648ba72aca5d8f46cb211a2c81ec9f197fb`
+  ran only at source/tree
+  `02560d4fbef7a0e75da89e3c4e9a6b02fbcc0238` /
+  `e5e570772b29b368eacc571e17bb702cc8bf3631`. Block 1 recorded exactly `38`
+  model-attempt reservations, `38` completed calls, zero provider errors, and
+  zero aborts or interruptions, moving the programme ledger from `293` to
+  `331/5000`. S1, S3, and S4 completed and sealed. S2 stopped unsealed after
+  one permitted full learner repair with typed substantive
+  `TUTOR_STUB_FRAME_REFUSER_ADHERENCE_EXHAUSTED`; it is nonrecoverable and has
+  no replacement. Blocks 2–9, recovery, the combined analyzer, report, result,
+  and study seal are absent.
+
+  S2's raw T3 learner draft was
+  `I reject your authority to make the coin’s metal decide that question, and I will not examine it or answer on those terms.`
+  at SHA-256
+  `b9fe4a10714b6b6f66c39aef90c4e5475f24fac62595a76262219f6589f293e0`.
+  Its sole repaired draft was
+  `I reject your authority to set the coin’s metal as the test, and I will not examine it or answer the question on those terms.`
+  at SHA-256
+  `810a19ac43898ad85ddc33fd6acc92bb2d8ec648f00cf530fde1e8459cd1bdff`.
+  The live combined classifier independently labelled both drafts
+  `authority_refusal_or_status_challenge`, `challenge`, `evidence_use: none`,
+  and `epistemic_stance: resistant`, with repeated authority refusal and
+  non-engagement. Exact dependency-free `prospective_v7` replay nevertheless
+  emitted no observation, no defeated candidate, `ambiguous: false`, and false
+  jurisdiction-dispute, participation, and refusal markers for both. The
+  registered substantive stop is therefore an observer false negative, not
+  genuine learner-profile nonadherence.
+
+  This repeats the same compositional measurement defect that the V6-to-V7
+  repair was intended to resolve: V7 recognizes the frozen prior strings but
+  fails on the immediately subsequent semantically equivalent
+  `make … decide …` and `set … as the test` paraphrases. Adding another lexical
+  rule after observing this live failure would condition the instrument on
+  another outcome-bearing draw without bounding the remaining paraphrase
+  frontier. Under the exact 181-byte standing-authority criterion at SHA-256
+  `538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce`,
+  this is terminal systemic measurement failure: the programme has not
+  repaired the prior failure mechanism at the construct level.
+
+  The incomplete cohort is durably preserved on private feature branch
+  `codex/resistance-action-register-confirmation-v7-incomplete-archive` at
+  commit `a00c4870a7dab506bbe7522f6868c7278aaa81de`. Every Block-1 dialogue,
+  assignment, trace, and outcome is excluded from reuse, recovery, pooling,
+  replacement, selection, inferential credit, and empirical claims. This
+  closeout establishes neither a warm-versus-plain effect nor a null and makes
+  no efficacy, learning, transfer, human, cell-harness, or genuine
+  learner-profile-failure claim. No further model call, successor request, or
+  continuation is authorized inside this programme. Any future restart
+  requires a new human programme and measurement decision with an
+  independently validated measurement strategy.
