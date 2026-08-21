@@ -16,8 +16,8 @@ import {
 } from '../services/tutorStubBoredomSemanticAdjudicationV2.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const REQUEST_PATH = 'config/tutor-stub-boredom-semantic-validation-request.v2.json';
-const HELDOUT_PATH = 'config/tutor-stub-boredom-semantic-adjudication-heldout.v2.json';
+const REQUEST_PATH = 'config/tutor-stub-boredom-semantic-validation-request.v3.json';
+const HELDOUT_PATH = 'config/tutor-stub-boredom-semantic-adjudication-heldout.v3.json';
 const SOL_ROUTE = { provider: 'codex', model: 'gpt-5.6-sol' };
 
 function readJson(relativePath) {
@@ -75,7 +75,7 @@ test('the validation request validates against the frozen corpus, route, and clo
   const validation = validateTutorStubBoredomSemanticValidationRequest(request, { root: ROOT });
   assert.equal(validation.provider, 'codex');
   assert.equal(validation.model, 'gpt-5.6-sol');
-  assert.equal(validation.corpus.cases.length, 22);
+  assert.equal(validation.corpus.cases.length, 54);
 });
 
 test('request drift fails closed', () => {
@@ -107,7 +107,7 @@ test('authorization binding fails closed on digest, scope, and approval drift', 
   const request = readJson(REQUEST_PATH);
   const requestSha256 = 'a'.repeat(64);
   const authorization = {
-    schema: 'machinespirits.tutor-stub.boredom-semantic-validation-authorization.v2',
+    schema: 'machinespirits.tutor-stub.boredom-semantic-validation-authorization.v3',
     status: 'APPROVED_FOR_BOUNDED_SEMANTIC_VALIDATION_CALLS',
     studyId: request.studyId,
     request: { path: REQUEST_PATH, sha256: requestSha256 },
@@ -167,15 +167,15 @@ test('execution without an explicitly injected model caller refuses before any c
   );
 });
 
-test('mock execution with reference outputs passes every predeclared gate at exactly 22 calls', async () => {
+test('mock execution with reference outputs passes every predeclared gate at exactly 54 calls', async () => {
   const request = readJson(REQUEST_PATH);
   const corpus = readJson(HELDOUT_PATH);
   const { callModel, calls } = referenceMockCallModel(corpus);
   const result = await executeTutorStubBoredomSemanticValidation({ request, root: ROOT, callModel });
   assert.equal(result.status, 'completed');
-  assert.equal(result.accounting.modelCallsCompleted, 22);
-  assert.equal(result.accounting.totalReservationsUsed, 22);
-  assert.equal(calls.length, 22);
+  assert.equal(result.accounting.modelCallsCompleted, 54);
+  assert.equal(result.accounting.totalReservationsUsed, 54);
+  assert.equal(calls.length, 54);
   assert.ok(calls.every((row) => row.effort === 'low'));
   assert.equal(result.metrics.determinate_sensitivity, 1);
   assert.equal(result.metrics.determinate_specificity, 1);
@@ -190,7 +190,7 @@ test('a flipped actionable case fails the sensitivity gate without any retry', a
   const corpus = readJson(HELDOUT_PATH);
   const { callModel, calls } = referenceMockCallModel(corpus, {
     mutate: (row, raw) => {
-      if (row.id !== 'granary_actionable_02') return raw;
+      if (row.id !== 'maproom_actionable_02') return raw;
       return {
         ...raw,
         verdict: 'nonactionable_boredom',
@@ -201,8 +201,8 @@ test('a flipped actionable case fails the sensitivity gate without any retry', a
   });
   const result = await executeTutorStubBoredomSemanticValidation({ request, root: ROOT, callModel });
   assert.equal(result.status, 'completed');
-  assert.equal(calls.length, 22);
-  assert.equal(result.metrics.determinate_sensitivity, 0.8);
+  assert.equal(calls.length, 54);
+  assert.equal(result.metrics.determinate_sensitivity, 8 / 9);
   assert.equal(result.gateResults.determinate_sensitivity, false);
   assert.equal(result.pass, false);
 });
@@ -211,16 +211,16 @@ test('a malformed completed output is final measurement_indeterminate, never ret
   const request = readJson(REQUEST_PATH);
   const corpus = readJson(HELDOUT_PATH);
   const { callModel, calls } = referenceMockCallModel(corpus, {
-    mutate: (row, raw) => (row.id === 'signalbox_negative_03' ? { garbage: true } : raw),
+    mutate: (row, raw) => (row.id === 'oasthouse_negative_04' ? { garbage: true } : raw),
   });
   const result = await executeTutorStubBoredomSemanticValidation({ request, root: ROOT, callModel });
   assert.equal(result.status, 'completed');
-  assert.equal(calls.length, 22);
-  const target = result.rows.find((row) => row.id === 'signalbox_negative_03');
+  assert.equal(calls.length, 54);
+  const target = result.rows.find((row) => row.id === 'oasthouse_negative_04');
   assert.equal(target.observed, 'measurement_indeterminate');
   assert.equal(target.parse_ok, false);
-  assert.equal(result.metrics.determinate_specificity, 14 / 15);
-  assert.equal(result.metrics.reference_agreement, 21 / 22);
+  assert.equal(result.metrics.determinate_specificity, 38 / 39);
+  assert.equal(result.metrics.reference_agreement, 53 / 54);
 });
 
 test('a resolved output with a transport-contract defect is final indeterminate, never retried', async () => {
@@ -231,36 +231,36 @@ test('a resolved output with a transport-contract defect is final indeterminate,
     const response = await base.callModel(agentConfig, systemPrompt, userPrompt, role, opts);
     const candidate = userPrompt.split('\n').slice(1, -1).join('\n');
     const row = corpus.cases.find((entry) => entry.text === candidate);
-    if (row.id === 'ferry_nonactionable_02') return { ...response, structuredOutput: false };
+    if (row.id === 'creamery_nonactionable_01') return { ...response, structuredOutput: false };
     return response;
   };
   const result = await executeTutorStubBoredomSemanticValidation({ request, root: ROOT, callModel });
   assert.equal(result.status, 'completed');
-  assert.equal(base.calls.length, 22);
-  assert.equal(result.accounting.totalReservationsUsed, 22);
-  const sealed = result.cases.find((row) => row.id === 'ferry_nonactionable_02');
+  assert.equal(base.calls.length, 54);
+  assert.equal(result.accounting.totalReservationsUsed, 54);
+  const sealed = result.cases.find((row) => row.id === 'creamery_nonactionable_01');
   assert.equal(sealed.attempts.length, 1);
   assert.equal(sealed.attempts[0].status, 'completed_final');
   assert.equal(sealed.observed, 'measurement_indeterminate');
   assert.ok(sealed.adjudication.issues.includes('transport_contract:structured_output_inactive'));
   assert.equal(sealed.adjudication.parse_ok, false);
-  assert.equal(result.metrics.determinate_specificity, 14 / 15);
+  assert.equal(result.metrics.determinate_specificity, 38 / 39);
 });
 
 test('a thrown transport error consumes a bounded extra reservation and the final output is kept', async () => {
   const request = readJson(REQUEST_PATH);
   const corpus = readJson(HELDOUT_PATH);
   const { callModel, calls } = referenceMockCallModel(corpus, {
-    failures: [['lighthouse_productive_01', 1]],
+    failures: [['windmill_productive_01', 1]],
   });
   const result = await executeTutorStubBoredomSemanticValidation({ request, root: ROOT, callModel });
   assert.equal(result.status, 'completed');
-  assert.equal(calls.length, 23);
-  assert.equal(result.accounting.modelCallsCompleted, 22);
+  assert.equal(calls.length, 55);
+  assert.equal(result.accounting.modelCallsCompleted, 54);
   assert.equal(result.accounting.technicalFailureAttempts, 1);
-  assert.equal(result.accounting.totalReservationsUsed, 23);
+  assert.equal(result.accounting.totalReservationsUsed, 55);
   assert.equal(result.pass, true);
-  const sealed = result.cases.find((row) => row.id === 'lighthouse_productive_01');
+  const sealed = result.cases.find((row) => row.id === 'windmill_productive_01');
   assert.equal(sealed.attempts.length, 2);
   assert.equal(sealed.attempts[0].status, 'technical_failure');
   assert.equal(sealed.attempts[1].status, 'completed_final');
@@ -270,18 +270,18 @@ test('reservation-ceiling exhaustion produces a categorical failure with no gate
   const request = readJson(REQUEST_PATH);
   const corpus = readJson(HELDOUT_PATH);
   const { callModel } = referenceMockCallModel(corpus, {
-    failures: [['lighthouse_productive_01', 3]],
+    failures: [['windmill_productive_01', 3]],
   });
   const result = await executeTutorStubBoredomSemanticValidation({ request, root: ROOT, callModel });
   assert.equal(result.status, 'failed_technical_ceiling');
-  assert.equal(result.failedCaseId, 'lighthouse_productive_01');
+  assert.equal(result.failedCaseId, 'windmill_productive_01');
   assert.equal(result.metrics, undefined);
   assert.equal(result.pass, undefined);
 });
 
 test('v2 evidence is quote-anchored: exact quotes with wrong offsets stay valid, non-substrings fail closed', () => {
   const corpus = readJson(HELDOUT_PATH);
-  const row = corpus.cases.find((entry) => entry.id === 'lighthouse_productive_01');
+  const row = corpus.cases.find((entry) => entry.id === 'windmill_productive_01');
   const raw = referenceRawFor(row);
   // Exact quotes, deliberately wrong offsets (the v1 kiln failure mode).
   const shifted = {
@@ -325,7 +325,7 @@ test('v2 taxonomy: bare uptake without a boredom cue is no_boredom, not producti
   assert.equal(expectedVerdictV2({ ...fields, boredom_cue: true }), 'productive_uptake');
   assert.equal(expectedVerdictV2({ ...fields, effort_withdrawal: true }), 'indeterminate');
   const corpus = readJson(HELDOUT_PATH);
-  const row = corpus.cases.find((entry) => entry.id === 'lockhouse_negative_01');
+  const row = corpus.cases.find((entry) => entry.id === 'smokehouse_negative_07');
   assert.equal(row.verdict, 'no_boredom');
   const parsed = parseTutorStubBoredomSemanticAdjudication({
     raw: referenceRawFor(row),
@@ -363,7 +363,7 @@ test('low-confidence live outputs must land indeterminate or the gate fails', ()
   assert.equal(clean.pass, true);
 
   const leaky = structuredClone(rows);
-  const target = leaky.find((row) => row.id === 'quay_actionable_01');
+  const target = leaky.find((row) => row.id === 'watchhouse_actionable_01');
   target.low_confidence = true;
   target.confidence = 0.7;
   const leakyAssessment = computeTutorStubBoredomSemanticValidationMetrics({ corpus, rows: leaky });

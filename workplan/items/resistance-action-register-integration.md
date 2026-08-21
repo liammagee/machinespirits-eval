@@ -2317,3 +2317,25 @@ and explicit human approval.
   `.tutor-stub-auto-eval/boredom-semantic-validation-v2-2026-08-21`
   and archived to the private repo (2347818a). The 36-dialogue
   confirmation stays on HOLD.
+
+- 2026-08-21 — validation v3 BUILT on user direction ("I want to run
+  v3, just not quite so pessimistically"). The instrument is unchanged:
+  same v2 adjudication module, prompts, output schema, derivation
+  rules, and the same five gates. v3 changes only the corpus and the
+  sample size. New frozen corpus of 54 fresh cases (sha256 5c5eb306…),
+  all-new worlds, spent v1/v2 corpora permanently excluded. The
+  specificity denominator is now 39, so the 0.90 gate tolerates three
+  misses instead of one — at n=15 a truly-0.95 instrument fails the
+  gate about 17% of the time; at n=39 about 6%. Every reference label
+  was confirmed by a blind second reader (claude-sonnet-5 via the CLI
+  bridge, no reference labels shown): 54 of 55 drafts agreed on all
+  four boolean fields; the one disagreement (fernery_negative_10) was
+  dropped, never relabeled. Provenance file committed beside the
+  corpus. Request v3 self-validates (13 closure files, 54 planned /
+  162 maximum calls, ledger 337 -> 391 planned); 13/13 harness tests
+  pass after count remaps; zero-call preflight prints HOLD. Stopping
+  rule softened per user: a gate failure is still categorical (no
+  rescore, no resample) but the arc is not closed for good — any v4
+  needs a fresh corpus, a written diagnosis, and separate explicit
+  approval. The 36-dialogue confirmation stays on HOLD until a
+  validation passes.
