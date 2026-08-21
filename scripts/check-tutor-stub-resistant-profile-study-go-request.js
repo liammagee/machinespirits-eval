@@ -458,6 +458,160 @@ const RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SUCCESSOR_REQUEST = Object.freez
   confirmationCreditPermitted: false,
 });
 
+const RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SECOND_SUCCESSOR_REQUEST = Object.freeze({
+  requestRevision: 4,
+  request: Object.freeze({
+    path: 'config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3-successor-2.json',
+    sha256: '234d68afc8576acca01620dd110a285aadd0adf2f5eb408b1d9e95956ed2da5d',
+  }),
+  disposition: 'consumed_stopped_wholly_excluded',
+  source: Object.freeze({
+    commit: '85010118c71c6b62dac6b7c741a2c4905ad19c06',
+    tree: '37d8f63d299769552fc2563668306c5c1dc2b0ac',
+  }),
+  destination: '.tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v3-2026-08-21-c',
+  planSha256: '8175b1aa619dd5413525b9eb0dfb28f4a14427cee485dddddc01742db9e6e44d',
+  localEvidence: Object.freeze({
+    files: 17,
+    bytes: 383860,
+    inventorySha256: 'cf3e40c7e795607691470b574b1d2530a3b8bb6a453f0e7415f3c694f26f6d7e',
+    artifacts: Object.freeze([
+      Object.freeze({
+        path: 'plan.json',
+        status: 'plan',
+        sha256: 'cf1eebf5921aeaed092947861c6dc78c9cf4895173544df38bff1fa44c15cc1a',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-0846454abc11ce08d275b2f892bae842/checkpoint.json',
+        status: 'sealed',
+        sha256: 'd2c70c680ae0a7e61293785bbdc987db5af3a50a36d0f2a44c0c76b644c01a74',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-1856062e7c569f5436091bf773524990/checkpoint.json',
+        status: 'sealed',
+        sha256: '92fec0db73608d5f7a1021524ab03264ac8227b43ff786639b12e8d53ca45f73',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-33784137804c32208977669a6288f338/checkpoint.json',
+        status: 'sealed',
+        sha256: '7009b3311d411ca722fc07dee6ce0e4022a86403fe374ffa1204b14372db234b',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-342e7a6727b7549c908f19502a43ca30/checkpoint.json',
+        status: 'sealed',
+        sha256: 'd4e47a8a2c8e7f0bdaf76db083dc14146657b7595f83bf2c115412492c027c85',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-3e8cd42b67a4d67bd1bb0004cc0338f2/checkpoint.json',
+        status: 'sealed',
+        sha256: 'b2e823fcc3600394a8d950c58146aaf5167857f9aa926b125a6c7c2763285025',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-446ea7ff1b853d91609b942cd7361064/checkpoint.json',
+        status: 'sealed',
+        sha256: '7fb6f6e3f30ca9217e14b26c227761c58623432f7a8ead4953ba264ca0d650a1',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-4873505e21825ee51b69481a071ed0d7/checkpoint.json',
+        status: 'sealed',
+        sha256: '79dbcb1f84c9c0ac69d48521744693d6cdc9946f1f9dd81acbecf0cfa31aab81',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-4c2db32139b2fcb0a22ef3a967eeddc9/checkpoint.json',
+        status: 'sealed',
+        sha256: '12c6300f0f5b8a4fe0f0856e1b9342421d3cadd0ad285f735db108bc3f0c477a',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-86fb1748771f7743d76d07ffdd9f6533/checkpoint.json',
+        status: 'sealed',
+        sha256: 'b861d6a4218aea1a524209bca7a5801901d62dbfc1d9740874b8ac7f7170ab01',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-a059314a64d8f58efc25097b50de5a23/checkpoint.json',
+        status: 'sealed',
+        sha256: 'b412231763e3cafb3389be18856b2cc6768bf052c8c2366b5a355b36204c7b54',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-b154dc89b6d7bb62d8e316a5b5dcc6a4/checkpoint.json',
+        status: 'sealed',
+        sha256: '32852a7ba2e0266e10ea6e53cefc62c339a1cdfca0d504efc83de86f5e5f3d7e',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-b3ebe28ac0a34f02aec2a9d8819e78d6/checkpoint.json',
+        status: 'sealed',
+        sha256: '5e2f1e19f9863e3e7077e648fc1e0fd3ca1145166efeacdce009fa38c6217014',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-becd77dbbacd806515c0f612b74bd756/checkpoint.json',
+        status: 'sealed',
+        sha256: '1a86a6ac3567812a42e4f6a5ae268660e6ca6c0b570983ade7f2b5cb557fd19e',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-c25051c69f0c4c7b8c66e2c45685ee0a/checkpoint.json',
+        status: 'judge_in_flight',
+        sha256: '7a345d24878d3456e42e6edfa86f108fed1dc4eb369b108a5f2c3c9ae35ee188',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-d34fc430c5374c7e30833d6b5df8d3eb/checkpoint.json',
+        status: 'sealed',
+        sha256: '901a3b051bd393a8d1a56075445c3c58966b98e58f5f7bb4a3831bd276e74712',
+      }),
+      Object.freeze({
+        path: 'cases/sv3-ddf1d5cf7c4c04a94be25c73930d7f5e/checkpoint.json',
+        status: 'sealed',
+        sha256: '70560f14524703485861496ed3033019a19faf650d7f00cce47cb77da35f5c8c',
+      }),
+    ]),
+  }),
+  privateArchive: Object.freeze({
+    branch: 'codex/resistance-semantic-validation-v3-successor-2-incomplete-archive',
+    commit: '0e2403626bbf54e596d4f8f8244cc24067cdea1f',
+    tree: '405046957577b83a624e090a39945ff1f89398c4',
+    artifactPath: 'artifacts/tutor-stub-live/resistance-semantic-validation/234d68afc8576acc-8175b1aa619dd541',
+    files: 128,
+    bytes: 1248078,
+    inventorySha256: '2f1b0db82031b73760a1f62a880bbaa443925fe616215607011e83559a5efcb9',
+    manifestSha256: 'e0971b83fa406a25239bd4223d51bd5d9bdb4d000cc17a61beae9ae916e720d5',
+    manifestedTransitions: 127,
+    status: 'running_stopped_before_seal',
+  }),
+  accounting: Object.freeze({
+    chargedReservations: 32,
+    returnedResponses: 29,
+    terminalTransportFailures: 2,
+    dispatchedAmbiguous: 1,
+    sealedCases: 15,
+    judgeInFlightCases: 1,
+    programmeLedgerAfter: 728,
+  }),
+  failureEvidence: Object.freeze({
+    judgeId: 'semantic_judge_b',
+    provider: 'claude-code',
+    model: 'claude-sonnet-5',
+    errorCode: 'CLI_PROVIDER_EXIT_FAILED',
+    exitCode: 1,
+    cases: Object.freeze(['sv3-a059314a64d8f58efc25097b50de5a23', 'sv3-d34fc430c5374c7e30833d6b5df8d3eb']),
+  }),
+  ambiguousCase: Object.freeze({
+    caseId: 'sv3-c25051c69f0c4c7b8c66e2c45685ee0a',
+    judgeId: 'semantic_judge_b',
+    attempt: 1,
+    status: 'dispatched',
+  }),
+  goldJoined: false,
+  recoveryRan: false,
+  analyzerRan: false,
+  resultProduced: false,
+  reportProduced: false,
+  sealProduced: false,
+  sameSourceResumePermitted: false,
+  recoveryPermitted: false,
+  reusePermitted: false,
+  poolingPermitted: false,
+  outcomeSelectionPermitted: false,
+  confirmationCreditPermitted: false,
+});
+
 const RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_V1_CRITICAL_SOURCE_CLOSURE = Object.freeze([
   'scripts/run-tutor-stub-resistance-recovery-semantic-validation.js',
   'scripts/analyze-tutor-stub-resistance-recovery-semantic-validation.js',
@@ -1118,29 +1272,38 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     [
       RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_REQUEST.requestRevision,
       RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SUCCESSOR_REQUEST.requestRevision,
+      RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SECOND_SUCCESSOR_REQUEST.requestRevision,
     ].includes(request.semanticAdjudicationValidation?.requestRevision);
   const isResistanceSemanticValidationV3SecondSuccessor =
     isResistanceSemanticValidationV3 &&
     request.semanticAdjudicationValidation?.requestRevision ===
       RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SUCCESSOR_REQUEST.requestRevision;
-  const resistanceSemanticValidationProgrammeLedgerBefore = isResistanceSemanticValidationV3SecondSuccessor
-    ? 696
-    : isResistanceSemanticValidationV3Successor
-      ? 661
-      : isResistanceSemanticValidationV3
-        ? 651
-        : isResistanceSemanticValidationV2
-          ? 491
-          : 331;
-  const resistanceSemanticValidationProgrammeLedgerAfterMaximum = isResistanceSemanticValidationV3SecondSuccessor
-    ? 1176
-    : isResistanceSemanticValidationV3Successor
-      ? 1141
-      : isResistanceSemanticValidationV3
-        ? 1131
-        : isResistanceSemanticValidationV2
-          ? 971
-          : 811;
+  const isResistanceSemanticValidationV3ThirdSuccessor =
+    isResistanceSemanticValidationV3 &&
+    request.semanticAdjudicationValidation?.requestRevision ===
+      RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SECOND_SUCCESSOR_REQUEST.requestRevision;
+  const resistanceSemanticValidationProgrammeLedgerBefore = isResistanceSemanticValidationV3ThirdSuccessor
+    ? 728
+    : isResistanceSemanticValidationV3SecondSuccessor
+      ? 696
+      : isResistanceSemanticValidationV3Successor
+        ? 661
+        : isResistanceSemanticValidationV3
+          ? 651
+          : isResistanceSemanticValidationV2
+            ? 491
+            : 331;
+  const resistanceSemanticValidationProgrammeLedgerAfterMaximum = isResistanceSemanticValidationV3ThirdSuccessor
+    ? 1208
+    : isResistanceSemanticValidationV3SecondSuccessor
+      ? 1176
+      : isResistanceSemanticValidationV3Successor
+        ? 1141
+        : isResistanceSemanticValidationV3
+          ? 1131
+          : isResistanceSemanticValidationV2
+            ? 971
+            : 811;
   const resistanceSemanticValidationVersion = isResistanceSemanticValidationV3
     ? 3
     : isResistanceSemanticValidationV2
@@ -1200,7 +1363,10 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       request.authorization.standingArchitecturalCorrectionSha256 ===
         'dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4' &&
         request.authorization.priorStandingAuthoritySha256 ===
-          '538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce',
+          '538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce' &&
+        (!isResistanceSemanticValidationV3ThirdSuccessor ||
+          request.authorization.freshTransportDecisionSha256 ===
+            '638eb391a0dd44043388c13e2088feec614557e7f4edf5a3b59c0d6f2a2ae88d'),
       'the validation request binds both the architectural correction and prior standing programme authority',
     );
   }
@@ -1254,15 +1420,22 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
               : registrationVersion === 4
                 ? FRAME_REFUSER_OPPORTUNITY_V4_CRITICAL_SOURCE_CLOSURE
                 : FRAME_REFUSER_OPPORTUNITY_CRITICAL_SOURCE_CLOSURE;
-    const requiredCriticalSourceClosure = isResistanceSemanticValidationV3SecondSuccessor
+    const requiredCriticalSourceClosure = isResistanceSemanticValidationV3ThirdSuccessor
       ? [
           ...baseRequiredCriticalSourceClosure,
           RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_REQUEST.request.path,
           RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SUCCESSOR_REQUEST.request.path,
+          RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SECOND_SUCCESSOR_REQUEST.request.path,
         ]
-      : isResistanceSemanticValidationV3Successor
-        ? [...baseRequiredCriticalSourceClosure, RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_REQUEST.request.path]
-        : baseRequiredCriticalSourceClosure;
+      : isResistanceSemanticValidationV3SecondSuccessor
+        ? [
+            ...baseRequiredCriticalSourceClosure,
+            RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_REQUEST.request.path,
+            RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SUCCESSOR_REQUEST.request.path,
+          ]
+        : isResistanceSemanticValidationV3Successor
+          ? [...baseRequiredCriticalSourceClosure, RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_REQUEST.request.path]
+          : baseRequiredCriticalSourceClosure;
     assertion(
       checks,
       'frame-refuser-opportunity-critical-source-closure',
@@ -1948,14 +2121,21 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         'resistance-semantic-validation-v3-request-revision',
         (gate.requestRevision === undefined &&
           gate.stoppedV3Validation === undefined &&
-          gate.stoppedV3SuccessorValidation === undefined) ||
+          gate.stoppedV3SuccessorValidation === undefined &&
+          gate.stoppedV3SecondSuccessorValidation === undefined) ||
           (gate.requestRevision === RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_REQUEST.requestRevision &&
             gate.stoppedV3Validation !== undefined &&
-            gate.stoppedV3SuccessorValidation === undefined) ||
+            gate.stoppedV3SuccessorValidation === undefined &&
+            gate.stoppedV3SecondSuccessorValidation === undefined) ||
           (isResistanceSemanticValidationV3SecondSuccessor &&
             gate.stoppedV3Validation !== undefined &&
-            gate.stoppedV3SuccessorValidation !== undefined),
-        'the historical V3 request remains valid while revisions 2 and 3 bind every consumed stopped V3 run exactly',
+            gate.stoppedV3SuccessorValidation !== undefined &&
+            gate.stoppedV3SecondSuccessorValidation === undefined) ||
+          (isResistanceSemanticValidationV3ThirdSuccessor &&
+            gate.stoppedV3Validation !== undefined &&
+            gate.stoppedV3SuccessorValidation !== undefined &&
+            gate.stoppedV3SecondSuccessorValidation !== undefined),
+        'the historical V3 request remains valid while revisions 2 through 4 bind every consumed stopped V3 run exactly',
       );
       if (isResistanceSemanticValidationV3Successor) {
         assertion(
@@ -1971,13 +2151,13 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         );
         validateFileBinding(checks, 'semantic-validation-stopped-v3-request-binding', gate.stoppedV3Validation.request);
       }
-      if (isResistanceSemanticValidationV3SecondSuccessor) {
+      if (isResistanceSemanticValidationV3SecondSuccessor || isResistanceSemanticValidationV3ThirdSuccessor) {
         assertion(
           checks,
           'resistance-semantic-validation-v3-stopped-successor-exclusion',
           JSON.stringify(
             canonicalJson({
-              requestRevision: gate.requestRevision,
+              requestRevision: RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SUCCESSOR_REQUEST.requestRevision,
               ...gate.stoppedV3SuccessorValidation,
             }),
           ) === JSON.stringify(canonicalJson(RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SUCCESSOR_REQUEST)),
@@ -1987,6 +2167,44 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
           checks,
           'semantic-validation-stopped-v3-successor-request-binding',
           gate.stoppedV3SuccessorValidation.request,
+        );
+      }
+      if (isResistanceSemanticValidationV3ThirdSuccessor) {
+        assertion(
+          checks,
+          'resistance-semantic-validation-v3-stopped-second-successor-exclusion',
+          JSON.stringify(
+            canonicalJson({
+              requestRevision: gate.requestRevision,
+              ...gate.stoppedV3SecondSuccessorValidation,
+            }),
+          ) === JSON.stringify(canonicalJson(RESISTANCE_SEMANTIC_VALIDATION_STOPPED_V3_SECOND_SUCCESSOR_REQUEST)),
+          'the consumed V3 second-successor request, source, 17 local artifacts, durable archive, accounting, failures, absences, and total exclusion remain exact',
+        );
+        validateFileBinding(
+          checks,
+          'semantic-validation-stopped-v3-second-successor-request-binding',
+          gate.stoppedV3SecondSuccessorValidation.request,
+        );
+        assertion(
+          checks,
+          'resistance-semantic-validation-v3-claude-json-transport-repair',
+          gate.prospectiveClaudeJsonTransport?.outputFormat === 'json' &&
+            gate.prospectiveClaudeJsonTransport?.resultSelector === 'unique_type_result_event' &&
+            gate.prospectiveClaudeJsonTransport?.successPredicate ===
+              'is_error_false_and_structured_output_present_then_local_schema_validation' &&
+            gate.prospectiveClaudeJsonTransport?.responseFreeRetryPredicate ===
+              'is_error_true_and_structured_output_absent' &&
+            gate.prospectiveClaudeJsonTransport?.subtypeAuthoritative === false &&
+            gate.prospectiveClaudeJsonTransport?.ambiguousOutputRetryable === false &&
+            gate.prospectiveClaudeJsonTransport?.rawOutputPersisted === false &&
+            gate.prospectiveClaudeJsonTransport?.capturedErrorEnvelopeSha256 ===
+              '1af9718eb99d5f3876c759ae82527272131c7979e95aff905abb2382c1ec9d6a' &&
+            gate.prospectiveClaudeJsonTransport?.capturedSuccessEnvelopeSha256 ===
+              'f2cf37b47218d1d67bea884b6aba897dfc5e272ead37c4d6f0a88322e916385c' &&
+            gate.prospectiveClaudeJsonTransport?.freshHumanDecisionSha256 ===
+              '638eb391a0dd44043388c13e2088feec614557e7f4edf5a3b59c0d6f2a2ae88d',
+          'revision 4 binds the tested Claude JSON result-envelope method and fresh human route decision without changing the semantic instrument',
         );
       }
       for (const [version, expected] of [
@@ -2068,11 +2286,13 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       'resistance-semantic-validation-claim-boundary',
       gate.claimBoundary ===
         (isResistanceSemanticValidationV3
-          ? isResistanceSemanticValidationV3SecondSuccessor
-            ? 'heldout_semantic_instrument_v3_validation_only_failed_v1_v2_and_two_stopped_v3_runs_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim'
-            : isResistanceSemanticValidationV3Successor
-              ? 'heldout_semantic_instrument_v3_validation_only_failed_v1_v2_and_stopped_v3_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim'
-              : 'heldout_semantic_instrument_v3_validation_only_failed_v1_v2_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim'
+          ? isResistanceSemanticValidationV3ThirdSuccessor
+            ? 'heldout_semantic_instrument_v3_validation_only_failed_v1_v2_and_three_stopped_v3_runs_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim'
+            : isResistanceSemanticValidationV3SecondSuccessor
+              ? 'heldout_semantic_instrument_v3_validation_only_failed_v1_v2_and_two_stopped_v3_runs_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim'
+              : isResistanceSemanticValidationV3Successor
+                ? 'heldout_semantic_instrument_v3_validation_only_failed_v1_v2_and_stopped_v3_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim'
+                : 'heldout_semantic_instrument_v3_validation_only_failed_v1_v2_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim'
           : isResistanceSemanticValidationV2
             ? 'heldout_semantic_instrument_v2_validation_only_failed_v1_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim'
             : 'heldout_semantic_instrument_validation_only_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim') &&

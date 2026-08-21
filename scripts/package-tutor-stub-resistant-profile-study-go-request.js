@@ -325,6 +325,7 @@ function assertMaterializedStructure({
   priorBoredomPredecessorRequest,
   priorSemanticValidationRequest,
   priorSemanticValidationSuccessorRequest,
+  priorSemanticValidationSecondSuccessorRequest,
   prefixBundle,
   liveCommandSha256,
   recoveryCommandSha256,
@@ -465,6 +466,19 @@ function assertMaterializedStructure({
       prior?.sha256,
       priorSemanticValidationSuccessorRequest.sha256,
       'prior semantic-validation successor digest',
+    );
+  }
+  if (priorSemanticValidationSecondSuccessorRequest) {
+    const prior = request.semanticAdjudicationValidation?.stoppedV3SecondSuccessorValidation?.request;
+    assertComputedValue(
+      prior?.path,
+      priorSemanticValidationSecondSuccessorRequest.path,
+      'prior semantic-validation second-successor path',
+    );
+    assertComputedValue(
+      prior?.sha256,
+      priorSemanticValidationSecondSuccessorRequest.sha256,
+      'prior semantic-validation second-successor digest',
     );
   }
   if (prefixBundle) {
@@ -784,6 +798,24 @@ function materializeTemplate({ templateText, template, launchCommit }) {
       replacements,
     );
   }
+  const priorSemanticValidationSecondSuccessorRequestPath =
+    template.semanticAdjudicationValidation?.stoppedV3SecondSuccessorValidation?.request?.path;
+  const priorSemanticValidationSecondSuccessorRequest = priorSemanticValidationSecondSuccessorRequestPath
+    ? materializeRepoFile({
+        launchCommit,
+        repoPath: priorSemanticValidationSecondSuccessorRequestPath,
+        label: 'prior stopped semantic-validation second successor request',
+        files,
+      })
+    : null;
+  if (priorSemanticValidationSecondSuccessorRequest) {
+    requireMarker(
+      templateText,
+      goRequestFileSha256Marker(priorSemanticValidationSecondSuccessorRequest.path),
+      priorSemanticValidationSecondSuccessorRequest.sha256,
+      replacements,
+    );
+  }
   const prefixBundlePath = template.bindings?.prefixBundle?.path;
   const prefixBundle = prefixBundlePath
     ? materializeRepoFile({
@@ -837,6 +869,7 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     priorBoredomPredecessorRequest,
     priorSemanticValidationRequest,
     priorSemanticValidationSuccessorRequest,
+    priorSemanticValidationSecondSuccessorRequest,
     prefixBundle,
     liveCommandSha256,
     recoveryCommandSha256,

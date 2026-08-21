@@ -1,7 +1,7 @@
 ---
 id: resistance-action-register-integration
 title: Integrate resistance diagnosis, pedagogical action, and tonal register across tutor harnesses
-status: done
+status: active
 type: research
 priority: P1
 owner: codex
@@ -9,18 +9,14 @@ source: manual
 created: 2026-08-18
 updated: 2026-08-21
 verification: >-
-  The frozen independent semantic-measurement programme is closed without a
-  scientific result under its standing success-or-systemic-failure boundary.
-  Manipulation validations V1 and V2 failed their registered gates; all three
-  V3 attempts stopped before gold join or analysis. The final V3 successor
-  repeated the same two Claude route failures after the exact pre-response
-  retry repair, but each failed attempt carried stdout and therefore could not
-  be recalled without risking duplicate semantic responses. Every partial root
-  is durably preserved and wholly excluded. No manipulation-validity,
-  warm/plain, null, efficacy, learning, transfer, human, cell, or learner-
-  profile claim is licensed. No further model call is authorized within this
-  programme; any restart requires a fresh human method and route decision.
-claim_status: killed
+  The reopened measurement-redesign track must validate the prospective Claude
+  JSON result-envelope transport, bind all three stopped V3 roots as immutable
+  excluded evidence, and complete a wholly fresh 80-case dual-judge validation
+  with its registered analyzer before outcome validation or confirmation.
+  Regex remains nonauthoritative for semantic constructs, and no manipulation,
+  efficacy, null, learning, transfer, human, cell, or profile claim is licensed
+  before the relevant predeclared gate passes.
+claim_status: methods
 links:
   items:
     - tutor-stub-cell-reconciliation
@@ -142,7 +138,7 @@ tags:
   - resistance
   - learner-profiles
   - registers
-branch: codex/resistance-action-register-semantic-adjudication-readiness
+branch: codex/resistance-semantic-claude-json-transport
 ---
 
 Restart the staged integration of the tutor-stub and cell-based adaptation
@@ -3076,3 +3072,48 @@ and explicit human approval.
   This request authorizes nothing. The confirmation launch still requires
   the exact approval statement supplied and committed separately by a
   human; no model call occurs before that.
+
+- 2026-08-21 — Reopened the frame-refusal measurement track after the user
+  supplied a fresh method and provider-route decision: test Claude's captured
+  JSON result-envelope method and, if it succeeds, repeat the validation from a
+  wholly fresh destination. The former terminal interpretation is superseded
+  prospectively, while every V1/V2 failure and all three incomplete V3 roots
+  remain immutable, excluded, and scientifically creditless.
+
+  Zero-call reproduction against Claude CLI 2.1.239's captured envelopes
+  confirmed that both error and success events report `subtype: success`, but
+  differ exactly on `is_error` and `structured_output`. Schema calls now use
+  `--output-format json`, select exactly one `type: result` event, accept only
+  `is_error: false` with structured output subject to the unchanged local V3
+  validator, and classify `is_error: true` without structured output as an
+  explicit response-free transport error. Invalid JSON, missing or duplicate
+  result events, contradictions, and exit-zero prose without structured output
+  are terminal indeterminate transport failures. Raw stdout/stderr is never
+  persisted; only byte counts and SHA-256 digests cross the error boundary.
+  Plain-text Claude calls are unchanged.
+
+  The response-free class is retryable only under prospective semantic-
+  validation request revision 4, in the pre-existing three-reservation envelope
+  at 5 and 15 seconds. The frozen V3 prompt, schema, semantic instrument,
+  heldout, judges, gates, and 80-case/two-judge design remain unchanged. The
+  runtime fixture proved two response-free failures followed by a valid third
+  response, a sealed 80-case run, safe telemetry, and analyzer acceptance.
+  Programme accounting remains `728 / 5000`; a fresh validation is 160 planned
+  calls, hard 480 reservations, for `728 -> 1208 / 5000`. No model call has
+  occurred in this repair or registration work.
+
+- 2026-08-21 — Packaged the wholly fresh revision-4 semantic-validation HOLD
+  request from repair source `16caa37c236cb76c6ac524679e83ef279cefc788`
+  / tree `cd40ddc207fadc020c396abcc3938f72bc7a8869`. The request is
+  `config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3-successor-3.json`
+  at SHA-256
+  `4df4d009f93f0c84924731c1d647eb14ac56f18132aa0739abbcd4b0a9118e97`.
+  Its 38-file closure includes all three consumed V3 requests, and the checker
+  verifies every final artifact of the third partial root plus the tested JSON
+  envelope predicates and fresh human route-decision digest. The create-once
+  destination is
+  `.tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v3-2026-08-21-d`.
+  Isolated replay passed 77 checks with zero model calls and zero production
+  writes. The packet remains a literal HOLD artifact; live execution is covered
+  by the user's standing programme authority and current explicit instruction
+  to redo the run upon successful testing, not by fields inside the request.
