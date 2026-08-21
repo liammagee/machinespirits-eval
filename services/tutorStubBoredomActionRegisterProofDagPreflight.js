@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
 import { RESISTANT_LEARNER_OBSERVATION_SEMANTICS, observeResistantLearnerTurn } from './resistantLearnerObservation.js';
 import { parseTutorStubBoredomSemanticAdjudication } from './tutorStubBoredomSemanticAdjudication.js';
+import { parseTutorStubBoredomSemanticAdjudication as parseTutorStubBoredomSemanticAdjudicationV3 } from './tutorStubBoredomSemanticAdjudicationV3.js';
 import { tutorStubResistanceActionRegisterTreatmentEligibility } from './tutorStubResistanceActionRegisterStudy.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -269,12 +270,15 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   const batches = execution.batches || {};
   const prospectiveV2 = registration?.version === 2;
   const prospectiveV3 = registration?.version === 3;
+  const prospectiveV4 = registration?.version === 4;
+  const semanticInstrumented = prospectiveV3 || prospectiveV4;
   const currentProgrammeLedger = prospectiveV2 || prospectiveV3;
   if (
     ![
       'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v1',
       'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v2',
       'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v3',
+      'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v4',
     ].includes(registration?.schema)
   ) {
     errors.push('unsupported boredom proof-DAG registration schema');
@@ -351,9 +355,9 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   }
   if (
     execution.maximumReservationsPerPlannedCall !== 3 ||
-    dialogue.oneCumulativeFullLearnerRepairCalls !== (prospectiveV3 ? 0 : 2) ||
-    (prospectiveV3 && dialogue.maximumIndependentSemanticAdjudicationCalls !== 2) ||
-    (prospectiveV3 && dialogue.measurementIndeterminateRepairCalls !== 0) ||
+    dialogue.oneCumulativeFullLearnerRepairCalls !== (semanticInstrumented ? 0 : 2) ||
+    (semanticInstrumented && dialogue.maximumIndependentSemanticAdjudicationCalls !== 2) ||
+    (semanticInstrumented && dialogue.measurementIndeterminateRepairCalls !== 0) ||
     dialogue.plannedCallsPerDialogue !== 20 ||
     dialogue.maximumReservationsPerDialogue !== 60 ||
     dialogue.dialogues !== 36 ||
@@ -373,9 +377,9 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   ) {
     errors.push('predeclared batch partition drifted');
   }
-  const expectedLedger = currentProgrammeLedger ? 293 : 219;
-  const expectedStudyCeiling = currentProgrammeLedger ? 2453 : 2379;
-  const expectedCombinedCeiling = currentProgrammeLedger ? 4613 : 4539;
+  const expectedLedger = prospectiveV4 ? 446 : currentProgrammeLedger ? 293 : 219;
+  const expectedStudyCeiling = prospectiveV4 ? 2606 : currentProgrammeLedger ? 2453 : 2379;
+  const expectedCombinedCeiling = prospectiveV4 ? 4766 : currentProgrammeLedger ? 4613 : 4539;
   if (
     execution.programmeCeilingForThisStudyAlone?.ledgerBefore !== expectedLedger ||
     execution.programmeCeilingForThisStudyAlone?.requiredCeiling !== expectedStudyCeiling ||
@@ -387,9 +391,9 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
     errors.push('programme ceiling amendment arithmetic drifted');
   }
   if (
-    (prospectiveV3 && registration.design?.observationSemantics !== 'prospective_v9') ||
-    (!prospectiveV3 && registration.design?.observationSemantics === 'prospective_v9') ||
-    (prospectiveV3 &&
+    (semanticInstrumented && registration.design?.observationSemantics !== 'prospective_v9') ||
+    (!semanticInstrumented && registration.design?.observationSemantics === 'prospective_v9') ||
+    (semanticInstrumented &&
       (registration.measurement?.semanticAdjudicator?.modelRef !== 'codex.gpt-5.6-sol' ||
         registration.measurement?.semanticAdjudicator?.role !== 'tutor_stub_boredom_performance_adjudication' ||
         registration.measurement?.semanticAdjudicator?.independentFromGeneratingModel !== true ||
@@ -398,21 +402,51 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
         registration.measurement?.semanticAdjudicator?.regexRole !==
           'auxiliary_high_precision_signal_and_disagreement_only_never_final_semantic_authority' ||
         registration.measurement?.semanticAdjudicator?.lexicalSilenceMayVetoSemanticPositive !== false ||
+        registration.executionReadiness?.modelRoute?.semanticAdjudicator !== 'codex.gpt-5.6-sol')) ||
+    (prospectiveV3 &&
+      (registration.measurement?.semanticAdjudicator?.schema !==
+        'machinespirits.tutor-stub.boredom-semantic-adjudication.v1' ||
         registration.measurement?.semanticAdjudicator?.empiricalValidationStatus !==
           'pending_no_model_calls_authorized_by_this_registration' ||
-        registration.measurement?.semanticAdjudicator?.confirmationLaunchReady !== false ||
-        registration.executionReadiness?.modelRoute?.semanticAdjudicator !== 'codex.gpt-5.6-sol'))
+        registration.measurement?.semanticAdjudicator?.confirmationLaunchReady !== false))
   ) {
     errors.push('prospective-v9 independent semantic adjudicator boundary drifted');
   }
-  if (prospectiveV3) {
+  if (prospectiveV4) {
+    const adjudicator = registration.measurement?.semanticAdjudicator || {};
+    const modulePath = path.join(ROOT, String(adjudicator.modulePath || ''));
+    const moduleSource = fs.existsSync(modulePath) ? fs.readFileSync(modulePath) : null;
+    const moduleSha = moduleSource ? crypto.createHash('sha256').update(moduleSource).digest('hex') : null;
+    const validation = adjudicator.empiricalValidation || {};
+    if (
+      adjudicator.schema !== 'machinespirits.tutor-stub.boredom-semantic-adjudication.v3' ||
+      adjudicator.modulePath !== 'services/tutorStubBoredomSemanticAdjudicationV3.js' ||
+      moduleSha !== adjudicator.moduleSha256 ||
+      adjudicator.empiricalValidationStatus !== 'passed_all_predeclared_gates_on_sealed_heldout_v4_corpus' ||
+      adjudicator.confirmationLaunchReady !== true ||
+      validation.determinateSensitivity !== 1 ||
+      validation.determinateSpecificity !== 1 ||
+      validation.referenceAgreement !== 1 ||
+      validation.ambiguousIndeterminateRate !== 1 ||
+      validation.lowConfidenceIndeterminateRate !== 1 ||
+      typeof validation.reportSha256 !== 'string' ||
+      validation.reportSha256.length !== 64
+    ) {
+      errors.push('validated v3 semantic instrument binding drifted');
+    }
+  }
+  if (semanticInstrumented) {
     const heldout = registration.measurement?.semanticAdjudicator?.heldoutCorpus;
     const heldoutPath = path.join(ROOT, String(heldout?.path || ''));
     const heldoutSource = fs.existsSync(heldoutPath) ? fs.readFileSync(heldoutPath) : null;
     const heldoutSha = heldoutSource ? crypto.createHash('sha256').update(heldoutSource).digest('hex') : null;
+    const expectedHeldoutPath = prospectiveV4
+      ? 'config/tutor-stub-boredom-semantic-adjudication-heldout.v4.json'
+      : 'config/tutor-stub-boredom-semantic-adjudication-heldout.v1.json';
+    const expectedHeldoutCases = prospectiveV4 ? 55 : 22;
     if (
-      heldout?.path !== 'config/tutor-stub-boredom-semantic-adjudication-heldout.v1.json' ||
-      heldout?.cases !== 22 ||
+      heldout?.path !== expectedHeldoutPath ||
+      heldout?.cases !== expectedHeldoutCases ||
       heldout?.embeddedInPrompt !== false ||
       heldout?.modelPredictionsPresent !== false ||
       heldoutSha !== heldout?.sha256
@@ -578,12 +612,23 @@ function semanticReferenceRaw(row, { confidence = 0.95 } = {}) {
   };
 }
 
+function semanticReferenceParserForCorpus(corpus) {
+  if (corpus?.schema === 'machinespirits.tutor-stub.boredom-semantic-adjudication.heldout.v1') {
+    return parseTutorStubBoredomSemanticAdjudication;
+  }
+  if (corpus?.schema === 'machinespirits.tutor-stub.boredom-semantic-adjudication.heldout.v4') {
+    return parseTutorStubBoredomSemanticAdjudicationV3;
+  }
+  throw new Error(`unsupported boredom semantic held-out corpus schema: ${corpus?.schema}`);
+}
+
 export function assessTutorStubBoredomSemanticSyntheticCases({
   corpusPath = 'config/tutor-stub-boredom-semantic-adjudication-heldout.v1.json',
 } = {}) {
   const corpus = JSON.parse(fs.readFileSync(path.join(ROOT, corpusPath), 'utf8'));
+  const parseReferenceAdjudication = semanticReferenceParserForCorpus(corpus);
   const results = corpus.cases.map((row) => {
-    const parsed = parseTutorStubBoredomSemanticAdjudication({
+    const parsed = parseReferenceAdjudication({
       raw: semanticReferenceRaw(row),
       candidate: row.text,
       observedRoute: { provider: 'codex', model: 'gpt-5.6-sol' },
@@ -612,7 +657,7 @@ export function assessTutorStubBoredomSemanticSyntheticCases({
   const agreement = results.filter((row) => row.observed === row.expected).length / results.length;
   const ambiguousIndeterminateRate =
     ambiguous.filter((row) => row.observed === 'measurement_indeterminate').length / ambiguous.length;
-  const lowConfidenceProbe = parseTutorStubBoredomSemanticAdjudication({
+  const lowConfidenceProbe = parseReferenceAdjudication({
     raw: semanticReferenceRaw(
       corpus.cases.find((row) => row.verdict === 'actionable_boredom'),
       {
@@ -825,9 +870,14 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
       row.fidelity.protected_condition === false,
   );
   const composition = assessTutorStubBoredomCompositionSyntheticCases();
-  const semantic = registration.version === 3 ? assessTutorStubBoredomSemanticSyntheticCases() : null;
+  const semanticInstrumented = registration.version === 3 || registration.version === 4;
+  const semantic = semanticInstrumented
+    ? assessTutorStubBoredomSemanticSyntheticCases({
+        corpusPath: registration.measurement.semanticAdjudicator.heldoutCorpus.path,
+      })
+    : null;
   const semanticCaseFidelity =
-    registration.version !== 3 ||
+    !semanticInstrumented ||
     cases.every(
       (row) =>
         row.semantic_measurement?.disposition === 'actionable_boredom' &&
@@ -901,9 +951,11 @@ export function runTutorStubBoredomProofDagEndpointPreflight({ contract, registr
     ...preflight,
     readiness: {
       status:
-        registration.version === 3
-          ? 'passed_zero_call_hold_empirical_semantic_validation_pending'
-          : 'passed_zero_call_hold',
+        registration.version === 4
+          ? 'passed_zero_call_hold_empirical_semantic_validation_passed_launch_authorization_pending'
+          : registration.version === 3
+            ? 'passed_zero_call_hold_empirical_semantic_validation_pending'
+            : 'passed_zero_call_hold',
       source_prefixes: 36,
       independent_dialogues: 36,
       execution_batches: 9,
@@ -915,9 +967,15 @@ export function runTutorStubBoredomProofDagEndpointPreflight({ contract, registr
       live_executor_available: true,
       combined_analyzer_available: true,
       request_validator_available: true,
-      independent_semantic_adjudicator: registration.version === 3 ? 'codex.gpt-5.6-sol' : null,
-      empirical_semantic_validation_status: registration.version === 3 ? 'pending_no_model_calls_authorized' : null,
-      confirmation_launch_ready: registration.version === 3 ? false : null,
+      independent_semantic_adjudicator:
+        registration.version === 3 || registration.version === 4 ? 'codex.gpt-5.6-sol' : null,
+      empirical_semantic_validation_status:
+        registration.version === 4
+          ? 'passed_all_predeclared_gates_on_sealed_heldout_v4_corpus'
+          : registration.version === 3
+            ? 'pending_no_model_calls_authorized'
+            : null,
+      confirmation_launch_ready: registration.version === 4 ? true : registration.version === 3 ? false : null,
       model_calls: 0,
       production_writes: 0,
     },
