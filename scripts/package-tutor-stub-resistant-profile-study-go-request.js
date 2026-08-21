@@ -323,6 +323,7 @@ function assertMaterializedStructure({
   priorCeilingBoundRequest,
   priorBoredomRequest,
   priorBoredomPredecessorRequest,
+  priorSemanticValidationRequest,
   prefixBundle,
   liveCommandSha256,
   recoveryCommandSha256,
@@ -442,6 +443,15 @@ function assertMaterializedStructure({
     const prior = request.boredomActionRegisterProofDag?.priorStoppedExecution?.predecessorRequest;
     assertComputedValue(prior?.path, priorBoredomPredecessorRequest.path, 'prior boredom predecessor request path');
     assertComputedValue(prior?.sha256, priorBoredomPredecessorRequest.sha256, 'prior boredom predecessor digest');
+  }
+  if (priorSemanticValidationRequest) {
+    const prior = request.semanticAdjudicationValidation?.stoppedV3Validation?.request;
+    assertComputedValue(prior?.path, priorSemanticValidationRequest.path, 'prior semantic-validation request path');
+    assertComputedValue(
+      prior?.sha256,
+      priorSemanticValidationRequest.sha256,
+      'prior semantic-validation request digest',
+    );
   }
   if (prefixBundle) {
     assertComputedValue(request.bindings?.prefixBundle?.path, prefixBundle.path, 'prefix bundle path');
@@ -706,6 +716,24 @@ function materializeTemplate({ templateText, template, launchCommit }) {
       replacements,
     );
   }
+  const priorSemanticValidationRequestPath =
+    template.semanticAdjudicationValidation?.stoppedV3Validation?.request?.path;
+  const priorSemanticValidationRequest = priorSemanticValidationRequestPath
+    ? materializeRepoFile({
+        launchCommit,
+        repoPath: priorSemanticValidationRequestPath,
+        label: 'prior stopped semantic-validation request',
+        files,
+      })
+    : null;
+  if (priorSemanticValidationRequest) {
+    requireMarker(
+      templateText,
+      goRequestFileSha256Marker(priorSemanticValidationRequest.path),
+      priorSemanticValidationRequest.sha256,
+      replacements,
+    );
+  }
   const prefixBundlePath = template.bindings?.prefixBundle?.path;
   const prefixBundle = prefixBundlePath
     ? materializeRepoFile({
@@ -757,6 +785,7 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     priorCeilingBoundRequest,
     priorBoredomRequest,
     priorBoredomPredecessorRequest,
+    priorSemanticValidationRequest,
     prefixBundle,
     liveCommandSha256,
     recoveryCommandSha256,
