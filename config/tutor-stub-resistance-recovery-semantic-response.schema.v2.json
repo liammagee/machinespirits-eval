@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "machinespirits.tutor-stub.resistance-recovery-semantic-judge-response.v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "case_id", "judgment"],
+  "properties": {
+    "schema": { "const": "machinespirits.tutor-stub.resistance-recovery-semantic-judge-response.v2" },
+    "case_id": { "type": "string", "minLength": 1 },
+    "judgment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bounded_test_merits_engagement",
+        "grounded_precise_jurisdictional_condition",
+        "delivered_clarify_distinction",
+        "delivered_register",
+        "final_recovery",
+        "evidence_spans",
+        "confidence",
+        "indeterminacy_reason"
+      ],
+      "properties": {
+        "bounded_test_merits_engagement": { "enum": ["yes", "no", "indeterminate"] },
+        "grounded_precise_jurisdictional_condition": { "enum": ["yes", "no", "indeterminate"] },
+        "delivered_clarify_distinction": { "enum": ["yes", "no", "indeterminate"] },
+        "delivered_register": { "enum": ["warm", "plain", "neither", "indeterminate"] },
+        "final_recovery": { "enum": ["yes", "no", "indeterminate"] },
+        "evidence_spans": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["field", "source_id", "start_utf16", "end_utf16", "text"],
+            "properties": {
+              "field": {
+                "enum": [
+                  "bounded_test_merits_engagement",
+                  "grounded_precise_jurisdictional_condition",
+                  "delivered_clarify_distinction",
+                  "delivered_register"
+                ]
+              },
+              "source_id": {
+                "enum": ["trigger", "intervention", "prior_post_trigger", "intervening_tutor", "current_learner"]
+              },
+              "start_utf16": { "type": "integer", "minimum": 0 },
+              "end_utf16": { "type": "integer", "minimum": 1 },
+              "text": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "confidence": { "enum": ["high", "medium", "low"] },
+        "indeterminacy_reason": {
+          "enum": ["none", "semantic_ambiguity", "insufficient_public_context", "mixed_pragmatic_force", "other"]
+        }
+      }
+    }
+  }
+}
