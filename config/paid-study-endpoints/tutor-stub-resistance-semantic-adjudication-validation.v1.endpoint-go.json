@@ -1,0 +1,12 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-go.v1",
+  "status": "endpoint_runtime_go",
+  "study_id": "tutor-stub-resistance-semantic-adjudication-heldout-validation-v1",
+  "contract_path": "config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v1.json",
+  "contract_sha256": "bb1875a59b4314c4295001216690d1ea80bed1e99b2bf0ce4ffa5c96bd37b496",
+  "preflight_sha256": "568b251899d0f2827275d455218257da932856e6bd87d369b64497dc6afc72f0",
+  "preflight_status": "passed_zero_call_wiring_only_not_accuracy_evidence",
+  "model_calls": 0,
+  "production_writes": 0,
+  "claim_boundary": "This certificate proves only deterministic endpoint, packet, schema, metric, checkpoint, and budget wiring. It does not establish heldout accuracy, authorize the 160 judge calls, or authorize a confirmation study."
+}

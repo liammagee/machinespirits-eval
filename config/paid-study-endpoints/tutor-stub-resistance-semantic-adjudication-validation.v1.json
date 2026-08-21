@@ -1,0 +1,108 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-contract.v1",
+  "study_id": "tutor-stub-resistance-semantic-adjudication-heldout-validation-v1",
+  "registration": {
+    "registration_path": "config/tutor-stub-resistance-semantic-adjudication-validation-registration.v1.json",
+    "registration_sha256": "51aaa4cc047104440b5506d586733d2f4157c417fd5443b1c79cacd0330a0351",
+    "instrument_registration_path": "config/tutor-stub-resistance-semantic-adjudication-registration.v1.json",
+    "instrument_registration_sha256": "3ca5c34fefe5aa2eca1f2e49cd6ca59d64261cadd505de26f508fbfe650b926a",
+    "heldout_corpus_path": "config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json",
+    "heldout_corpus_sha256": "9378416d1fdf8dc41f35ad84a4edf69fba6ad8889ce5020617f3d19747c9a2c7",
+    "primary_endpoint_ids": ["synthetic_fixture_metric_pipeline_wiring", "synthetic_schema_span_provenance_wiring"],
+    "required_observation_semantics": "prospective_frame_resistance_semantic_v1"
+  },
+  "registered_scale": {
+    "cases": 80,
+    "unit": "frozen_blinded_heldout_semantic_case",
+    "frame_refuser_cases": 40,
+    "productive_dispute_cases": 16,
+    "neither_cases": 24,
+    "judges_per_case": 2,
+    "combined_analysis_required": true
+  },
+  "runner": {
+    "packet_builder": "services/tutorStubResistanceSemanticValidation.js#buildTutorStubResistanceSemanticValidationPackets",
+    "result_assembler": "services/tutorStubResistanceSemanticValidation.js#assembleTutorStubResistanceSemanticValidationPreflight",
+    "live_executor": "scripts/run-tutor-stub-resistance-semantic-validation.js",
+    "combined_analyzer": "scripts/analyze-tutor-stub-resistance-semantic-validation.js",
+    "packet_cap_bytes": 100000,
+    "emitted_event_fields": ["case_id", "public_context", "source"],
+    "attempt_contract": {
+      "planned_model_calls": 160,
+      "maximum_reservations_per_planned_call": 3,
+      "hard_validation_reservations": 480,
+      "programme_ledger_before": 331,
+      "programme_ledger_after_maximum": 811,
+      "programme_ceiling": 5000,
+      "case_checkpointing": "after_each_judge_response",
+      "partial_case_rerun": false,
+      "technical_recovery": "case_with_zero_judge_responses_only",
+      "outcome_selection": false
+    }
+  },
+  "channels": {
+    "dual_independent_semantic_judges": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceSemanticRuntime.js#createTutorStubResistanceSemanticRuntime"
+    },
+    "frozen_blinded_holdout": {
+      "enabled": true,
+      "implementation": "config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json"
+    },
+    "schema_span_provenance_validation": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceSemanticAdjudication.js#validateTutorStubResistanceSemanticResponse"
+    },
+    "registered_consensus_and_metrics": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceSemanticAdjudication.js#scoreTutorStubResistanceSemanticCorpus"
+    },
+    "checkpointed_no_selection_execution": {
+      "enabled": true,
+      "implementation": "scripts/run-tutor-stub-resistance-semantic-validation.js"
+    }
+  },
+  "endpoints": [
+    {
+      "id": "synthetic_fixture_metric_pipeline_wiring",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": [
+        "dual_independent_semantic_judges",
+        "frozen_blinded_holdout",
+        "registered_consensus_and_metrics",
+        "checkpointed_no_selection_execution"
+      ],
+      "required_event_fields": ["case_id", "public_context", "source"],
+      "denominator": { "expected_cases": 80 }
+    },
+    {
+      "id": "synthetic_schema_span_provenance_wiring",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": [
+        "dual_independent_semantic_judges",
+        "schema_span_provenance_validation",
+        "checkpointed_no_selection_execution"
+      ],
+      "required_event_fields": ["case_id", "public_context", "source"],
+      "denominator": { "expected_cases": 80 }
+    },
+    {
+      "id": "synthetic_interjudge_metric_wiring",
+      "role": "interpretability_gate",
+      "enabled": true,
+      "required_channels": ["dual_independent_semantic_judges", "registered_consensus_and_metrics"],
+      "required_event_fields": ["case_id"],
+      "denominator": { "expected_cases": 80 }
+    },
+    {
+      "id": "synthetic_coverage_metric_wiring",
+      "role": "interpretability_gate",
+      "enabled": true,
+      "required_channels": ["registered_consensus_and_metrics", "checkpointed_no_selection_execution"],
+      "required_event_fields": ["case_id"],
+      "denominator": { "expected_cases": 80 }
+    }
+  ]
+}

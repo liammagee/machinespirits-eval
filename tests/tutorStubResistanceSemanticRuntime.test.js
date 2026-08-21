@@ -270,8 +270,13 @@ test('zero-call trace audit binds both judge calls to one packet and reproduces 
   );
 });
 
-test('trace audit preserves typed invalid-return and exhausted-judge indeterminacy without treating it as corruption', async () => {
-  for (const options of [{ invalidJudge: 'semantic_judge_b' }, { failedJudge: 'semantic_judge_b' }]) {
+test('trace audit preserves typed invalid-return, provenance, and transport indeterminacy without treating them as corruption', async () => {
+  for (const options of [
+    { invalidJudge: 'semantic_judge_b' },
+    { failedJudge: 'semantic_judge_b' },
+    { highEffortJudge: 'semantic_judge_b' },
+    { missingTelemetryJudge: 'semantic_judge_a' },
+  ]) {
     const value = fixtureRuntime(options);
     await value.runtime.adjudicateCandidate({
       state: value.state,
@@ -283,15 +288,17 @@ test('trace audit preserves typed invalid-return and exhausted-judge indetermina
     assert.equal(audited.measurementIndeterminate, true);
     assert.equal(audited.fisherAnalysisWithheld, true);
 
-    const tampered = structuredClone(trace);
-    const failed = tampered.find(
-      (event) => event.type === TUTOR_STUB_RESISTANCE_SEMANTIC_JUDGE_EVENT && event.validModelEnvelope === false,
-    );
-    failed.invalidReason = '';
-    assert.throws(
-      () => auditTutorStubResistanceSemanticTrace({ events: tampered, expectedCandidateCount: 1 }),
-      /prompt, route, schema, tool, or independence envelope/u,
-    );
+    if (options.invalidJudge || options.failedJudge) {
+      const tampered = structuredClone(trace);
+      const failed = tampered.find(
+        (event) => event.type === TUTOR_STUB_RESISTANCE_SEMANTIC_JUDGE_EVENT && event.validModelEnvelope === false,
+      );
+      failed.invalidReason = '';
+      assert.throws(
+        () => auditTutorStubResistanceSemanticTrace({ events: tampered, expectedCandidateCount: 1 }),
+        /prompt, route, schema, tool, or independence envelope/u,
+      );
+    }
   }
 });
 

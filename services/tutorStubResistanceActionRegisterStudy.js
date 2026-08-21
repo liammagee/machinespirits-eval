@@ -68,12 +68,19 @@ function isV7Registration(registration) {
   );
 }
 
+function isV8Registration(registration) {
+  return (
+    registration?.schema === TUTOR_STUB_RESISTANCE_ACTION_REGISTER_REGISTRATION_SCHEMA && registration?.version === 8
+  );
+}
+
 function isConfirmationSuccessorRegistration(registration) {
   return (
     isV4Registration(registration) ||
     isV5Registration(registration) ||
     isV6Registration(registration) ||
-    isV7Registration(registration)
+    isV7Registration(registration) ||
+    isV8Registration(registration)
   );
 }
 
@@ -213,9 +220,10 @@ function normalizeRegistration(registration) {
     if (registration.design?.factorialCells !== 24) throw new Error('registration must retain 24 factorial cells');
     return registration;
   }
-  const requiredStandingAuthorizationAttachmentSha256 = isV7Registration(registration)
-    ? '538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce'
-    : '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b';
+  const requiredStandingAuthorizationAttachmentSha256 =
+    isV7Registration(registration) || isV8Registration(registration)
+      ? '538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce'
+      : '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b';
   if (
     registration.authorization?.baselinePilotAuthorized !== false ||
     registration.authorization?.goRequestPrepared !== false ||
@@ -230,11 +238,13 @@ function normalizeRegistration(registration) {
     throw new Error('v2 registration must retain frame_defiant as diagnostic-only');
   }
   const requiredObservationSemantics = isConfirmationSuccessorRegistration(registration)
-    ? isV7Registration(registration)
-      ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7
-      : isV6Registration(registration)
-        ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6
-        : RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5
+    ? isV8Registration(registration)
+      ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveFrameResistanceSemanticV1
+      : isV7Registration(registration)
+        ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7
+        : isV6Registration(registration)
+          ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6
+          : RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5
     : RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
   if (registration.design?.trigger?.observationSemantics !== requiredObservationSemantics) {
     throw new Error(`prospective registration must use ${requiredObservationSemantics} observation semantics`);
@@ -307,6 +317,107 @@ function normalizeRegistration(registration) {
       )
     ) {
       throw new Error('v3 confirmation must retain nine balanced four-dialogue batches capped at 240 each');
+    }
+    return registration;
+  }
+  if (isV8Registration(registration)) {
+    const blocks = registration.design?.factors?.confirmationBlock?.blocks;
+    const readiness = registration.executionReadiness;
+    const semantic = registration.semanticAdjudication;
+    const stoppedV7 = registration.preservation?.stoppedConfirmationV7;
+    const historicalExclusionSha256 = sha256(
+      JSON.stringify({
+        calibration: registration.preservation?.calibration,
+        stoppedConfirmationV1: registration.preservation?.stoppedConfirmationV1,
+        stoppedConfirmationV3: registration.preservation?.stoppedConfirmationV3,
+        stoppedConfirmationV4: registration.preservation?.stoppedConfirmationV4,
+      }),
+    );
+    if (
+      registration.design?.stage !== 'frame_refuser_matched_action_plain_warm_confirmation_successor' ||
+      registration.design?.form !== 'fresh_independent_online_triggered_dialogues' ||
+      registration.design?.trigger?.eligibleByTurn !== 2 ||
+      registration.design?.trigger?.freshDialogueRequired !== true ||
+      registration.design?.trigger?.observerFirstEligibility !== true ||
+      registration.design?.trigger?.priorIncompleteConfirmationV7ConsumedAsInputs !== false ||
+      registration.design?.randomization?.masterSeed !== 20260825 ||
+      registration.design?.factors?.actionFit?.assignments?.frame_refuser?.matched !== 'test_bounded_distinction' ||
+      JSON.stringify(registration.design?.factors?.actionFit?.levels) !== JSON.stringify(['matched']) ||
+      JSON.stringify(registration.design?.factors?.realization?.levels) !== JSON.stringify(['plain', 'warm']) ||
+      !Array.isArray(blocks) ||
+      blocks.length !== 9 ||
+      blocks.some(
+        (block, index) =>
+          block.id !== `block_${String(index + 1).padStart(2, '0')}` ||
+          block.dialogues !== 4 ||
+          block.plain !== 2 ||
+          block.warm !== 2,
+      ) ||
+      semantic?.instrumentRegistrationPath !==
+        'config/tutor-stub-resistance-semantic-adjudication-registration.v1.json' ||
+      semantic?.instrumentRegistrationSha256 !== '3ca5c34fefe5aa2eca1f2e49cd6ca59d64261cadd505de26f508fbfe650b926a' ||
+      semantic?.validationRegistrationPath !==
+        'config/tutor-stub-resistance-semantic-adjudication-validation-registration.v1.json' ||
+      semantic?.validationRegistrationSha256 !== 'ee411d29ea9d6086f3f24f81995f4224bfc783ea78ac5f04009c210985d87b0f' ||
+      semantic?.heldoutCorpusSha256 !== '9378416d1fdf8dc41f35ad84a4edf69fba6ad8889ce5020617f3d19747c9a2c7' ||
+      semantic?.validationReportPath !== null ||
+      semantic?.validationReportSha256 !== null ||
+      semantic?.validationRequiredBeforeConfirmationRequest !== true ||
+      semantic?.judgeA !== 'codex.gpt-5.6-sol' ||
+      semantic?.judgeB !== 'claude-code.sonnet-5' ||
+      semantic?.effort !== 'low' ||
+      semantic?.allLearnerCandidatesAdjudicated !== true ||
+      semantic?.maximumCandidatesPerDialogue !== 5 ||
+      semantic?.judgeCallsPerCandidate !== 2 ||
+      semantic?.fullVectorHighConfidenceAgreementRequired !== true ||
+      semantic?.lexicalAndLunaSignals !== 'advisory_only_never_vote_tiebreak_veto_or_override' ||
+      semantic?.measurementIndeterminateDisposition !==
+        'terminal_nonrecoverable_no_repair_rerun_replacement_selection_or_fisher_analysis' ||
+      historicalExclusionSha256 !== '1bf985f241dc1477a1d0dacf3796fd3646b90b1514b7efd3d841f7286bd4e8e6' ||
+      stoppedV7?.requestSha256 !== 'd209cd7d647f1a35c48d1920444e5648ba72aca5d8f46cb211a2c81ec9f197fb' ||
+      stoppedV7?.sourceCommit !== '02560d4fbef7a0e75da89e3c4e9a6b02fbcc0238' ||
+      stoppedV7?.privateArchiveCommit !== 'a00c4870a7dab506bbe7522f6868c7278aaa81de' ||
+      stoppedV7?.reservedAttempts !== 38 ||
+      stoppedV7?.completedCalls !== 38 ||
+      stoppedV7?.excludedFromSuccessor !== true ||
+      stoppedV7?.reused !== false ||
+      stoppedV7?.pooled !== false ||
+      stoppedV7?.outcomeSelected !== false ||
+      registration.confirmation?.priorIncompleteConfirmationV7DialoguesReused !== 0 ||
+      registration.confirmation?.priorIncompleteConfirmationV7DialoguesPooled !== 0 ||
+      readiness?.plannedRoleCallDerivation?.maximumSemanticJudgeCalls !== 10 ||
+      readiness?.plannedRoleCallsPerDialogue !== 30 ||
+      readiness?.maximumReservationsPerPlannedCall !== 3 ||
+      readiness?.maximumModelAttemptReservationsPerDialogue !== 90 ||
+      readiness?.combinedDialogues !== 36 ||
+      readiness?.combinedPlannedRoleCalls !== 1080 ||
+      readiness?.combinedMaximumModelAttemptReservations !== 3240 ||
+      readiness?.programmeLedgerAfterMaximum?.reservedAttempts !== 4051 ||
+      readiness?.programmeLedgerAfterMaximum?.ceiling !== 5000 ||
+      readiness?.programmeLedgerAfterMaximum?.remaining !== 949 ||
+      registration.authorization?.programmeLedgerBeforeThisConfirmation?.reservedAttempts !== 811 ||
+      registration.authorization?.programmeLedgerBeforeThisConfirmation?.ceiling !== 5000 ||
+      registration.authorization?.programmeLedgerBeforeThisConfirmation?.remaining !== 4189 ||
+      registration.authorization?.programmeLedgerBeforeThisConfirmation?.role !==
+        'prospective_maximum_after_validation_not_observed_consumption' ||
+      readiness?.programmeLedgerAfterMaximum?.role !==
+        'prospective_maximum_after_validation_and_confirmation_not_observed_consumption' ||
+      registration.authorization?.standingArchitecturalCorrectionSha256 !==
+        'dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4'
+    ) {
+      throw new Error('v8 semantic confirmation design, exclusions, validation gate, or budget arithmetic drifted');
+    }
+    if (
+      readiness.batches.some(
+        (batch, index) =>
+          batch.id !== blocks[index].id ||
+          batch.dialogues !== 4 ||
+          batch.plannedRoleCalls !== 120 ||
+          batch.maximumModelAttemptReservations !== 360 ||
+          batch.destination !== null,
+      )
+    ) {
+      throw new Error('v8 semantic confirmation must retain nine fresh balanced batches capped at 360 each');
     }
     return registration;
   }

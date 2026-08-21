@@ -1,0 +1,68 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-semantic-adjudication-validation-registration.v1",
+  "version": 1,
+  "status": "prospective_zero_call_readiness_hold",
+  "studyId": "tutor-stub-resistance-semantic-adjudication-heldout-validation-v1",
+  "instrument": {
+    "registrationPath": "config/tutor-stub-resistance-semantic-adjudication-registration.v1.json",
+    "registrationSha256": "3ca5c34fefe5aa2eca1f2e49cd6ca59d64261cadd505de26f508fbfe650b926a",
+    "instrumentFreezeCommit": "4cf49a15b500f058401bd8bd586166ba90c8842c",
+    "postHeldoutPromptModelThresholdOrConsensusTuning": false
+  },
+  "heldout": {
+    "corpusPath": "config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json",
+    "corpusSha256": "9378416d1fdf8dc41f35ad84a4edf69fba6ad8889ce5020617f3d19747c9a2c7",
+    "authorCommit": "149d237c43ad366f36f80d61e69db8d1514bf6fd",
+    "cases": 80,
+    "frameRefuser": 40,
+    "productiveDispute": 16,
+    "neither": 24,
+    "uniqueSources": 80,
+    "uniqueContextMessages": 88,
+    "goldVisibleToModelPackets": false
+  },
+  "executionBlinding": {
+    "opaqueCaseIdHmacKeyHex": "14ff268ef54f1ec016a4c11180205d8ebd9430439a5fe82c46ce635e70ead0fd",
+    "deterministicShuffleSeedHex": "f98d130510e1bf557232d1b119d8609880e8e3bc8be9fdd60e78ba8f878e6b92",
+    "originalCaseIdsVisibleToExecution": false,
+    "goldMappingJoinedOnlyAfterAllResponsesSealed": true
+  },
+  "executionReadiness": {
+    "plannedCases": 80,
+    "judgesPerCase": 2,
+    "plannedModelCalls": 160,
+    "maximumReservationsPerPlannedCall": 3,
+    "hardValidationReservations": 480,
+    "programmeLedgerBefore": 331,
+    "programmeLedgerAfterMaximum": 811,
+    "programmeCeiling": 5000,
+    "futureConfirmationHardReservations": 3240,
+    "futureConfirmationMaximumOnlyAfterValidationPass": 4051
+  },
+  "executionPolicy": {
+    "caseCheckpointing": "after_each_judge_response",
+    "partialCaseDisposition": "terminal_measurement_indeterminate_no_rejudge",
+    "technicalRecovery": "case_with_zero_judge_responses_only",
+    "completedOrPartialCaseRestart": false,
+    "validCaseRerun": false,
+    "replacement": false,
+    "outcomeSelection": false,
+    "goldVisibleToJudges": false,
+    "developmentExamplesVisibleToJudges": false
+  },
+  "authorization": {
+    "goRequestPrepared": false,
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "standingArchitecturalCorrectionSha256": "dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4",
+    "priorStandingAuthoritySha256": "538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce"
+  },
+  "claimBoundary": {
+    "validationOnly": true,
+    "syntheticZeroCallPreflightEstablishesAccuracy": false,
+    "heldoutPassRequiredBeforeConfirmationRequest": true,
+    "validationOutcomesExcludedFromConfirmation": true,
+    "historicalPartialOutcomesExcluded": true,
+    "noWarmPlainEfficacyNullLearningTransferHumanOrCellClaim": true
+  }
+}

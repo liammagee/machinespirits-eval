@@ -1,0 +1,540 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-action-register-crossed-registration.v1",
+  "version": 8,
+  "status": "prospective_zero_call_readiness_hold",
+  "workplanItem": "resistance-action-register-integration",
+  "frozenAt": "2026-08-20",
+  "registeredQuestion": "Among wholly fresh independent frame-refuser dialogues whose first eligible public-turn-1-or-2 jurisdictional refusal is established by frozen dual independent high-confidence semantic consensus after a passing blinded heldout validation, does one matched test_bounded_distinction tutor move realized warm change two-post-trigger-turn resistance recovery relative to the same move realized plain?",
+  "claimBoundary": "This prospective successor confirmation can test only the frame-refuser warm-versus-plain difference for the existing profile_specific_resistance_recovery endpoint under the registered matched test_bounded_distinction move in world_005_marrick, and only after the independently frozen heldout semantic validation passes. It cannot pool or reinterpret the 12 calibration dialogues or the incomplete V1, V3, V4, or V7 confirmation blocks; establish matched-versus-mismatched action efficacy, edged-register efficacy, an action-by-register interaction, general tutor efficacy, durable learning, human validity, or transfer to the cell harness; or turn measurement indeterminacy or a treatment-fidelity failure into an outcome rerun.",
+  "authorization": {
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "baselinePilotAuthorized": false,
+    "goRequestPrepared": false,
+    "standingAuthorizationAttachmentSha256": "538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce",
+    "standingArchitecturalCorrectionSha256": "dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4",
+    "programmeLedgerBeforeThisConfirmation": {
+      "role": "prospective_maximum_after_validation_not_observed_consumption",
+      "reservedAttempts": 811,
+      "ceiling": 5000,
+      "remaining": 4189
+    },
+    "requiredCeilingAmendment": {
+      "from": 5000,
+      "to": 5000,
+      "increase": 0,
+      "basis": "after at most 480 heldout-validation reservations from ledger 331, the unchanged 36-dialogue design adds at most 3240 reservations for dual semantic adjudication and remains within the human-amended 5000-attempt operational safeguard",
+      "authorized": false
+    },
+    "requiredBeforeAnyModelCall": [
+      "merged zero-call dual-independent semantic instrument, runtime, validation runner/analyzer, confirmation runtime/analyzer, endpoint contracts, and endpoint certificates",
+      "a sealed passing 80-case blinded heldout semantic validation report under its separate 480-reservation ceiling",
+      "a clean pinned source and complete executable source closure",
+      "nine absent create-once balanced batch destinations and one absent combined report",
+      "one committed HOLD request binding all 36 fresh jobs, exact commands, Fisher rule, sealed-only combined analysis, the 3240 confirmation ceiling, and exact stopped-V7 exclusion provenance",
+      "the externally preserved standing human authority attachment at SHA-256 538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce"
+    ]
+  },
+  "preservation": {
+    "supersedesRegistrationPath": "config/tutor-stub-resistance-action-register-crossed-registration.v7.json",
+    "priorRegistrationsRemainImmutable": true,
+    "calibration": {
+      "requestSha256": "965aca0ad1f61d2f43891c162861180016d79a8afa5c090ace0e3e88a436e0dd",
+      "reportSha256": "42021a390338cd556386efc96d8f00b35655a411627908a10248dba1e473a3a5",
+      "privateArchiveCommit": "0857363dabb4445052159b8218acaed13d921949",
+      "dialogues": 12,
+      "plainRecovered": 1,
+      "plainTotal": 6,
+      "warmRecovered": 4,
+      "warmTotal": 6,
+      "twoSidedFisherP": 0.24242424242424243,
+      "permittedUse": "prospective sample-size and hard-attempt calculation only",
+      "pooledIntoConfirmation": false,
+      "reusedAsConfirmationDialogues": false,
+      "reusedAsConfirmationPrefixes": false,
+      "outcomesSelected": false
+    },
+    "stoppedConfirmationV1": {
+      "requestSha256": "16f93e48f0b19fe23f0b91dabc9ac318f210ecbba6fbe954d76677d43fb78554",
+      "sourceCommit": "1f3e15f88c305a3ca3589471bffd687f28278acc",
+      "privateArchiveBranch": "codex/resistance-action-register-confirmation-v1-incomplete-archive",
+      "privateArchiveCommit": "4604cc31920913e10b3e04565bf3d70def7c112e",
+      "localInventorySha256": "4b7345dd69e6d700b7216f1af7a4b315fdcb7aae5161248610000e592c1f7a1f",
+      "liveMirrorInventorySha256": "8f530416c8b24ff809486c6638ed329b6ab03593931f85768befe6ef1972a361",
+      "dialoguesPlanned": 4,
+      "dialoguesComplete": 3,
+      "dialoguesFailed": 1,
+      "reservedAttempts": 34,
+      "completedCalls": 34,
+      "providerFailures": 0,
+      "analyzerRun": false,
+      "reportWritten": false,
+      "excludedFromSuccessor": true,
+      "reused": false,
+      "pooled": false,
+      "outcomeSelected": false,
+      "permittedUse": "instrument-failure diagnosis and successor exclusion only"
+    },
+    "stoppedConfirmationV3": {
+      "requestSha256": "e3df720358cc597e686f0007bfc1ce1a5d0b4a11273a725ce87b484d20c3fec9",
+      "sourceCommit": "c9f6d57b867376e94384e9efe99ccf8a79ca9195",
+      "sourceTree": "48c5fb51714948ea3911baed159aa731aacc9c05",
+      "batchPlanSha256": "d04038ddb0c9e2c676ede89c198ee666195c91e45808d91dba8e3a5060e13e35",
+      "privateArchiveBranch": "codex/resistance-action-register-confirmation-v3-incomplete-archive",
+      "privateArchiveCommit": "6f3e8f84079787abe1b0829be65be742c5983988",
+      "localInventorySha256": "83428e7d86df598b5794e3890e62e91e48dddea46514e6a0cd4d4123340c7493",
+      "liveMirrorInventorySha256": "ce29fe1cef61b564b09d413b0b6782e2661a4ccff732b97c815d72deec72dae3",
+      "dialoguesPlanned": 4,
+      "dialoguesComplete": 2,
+      "dialoguesFailed": 1,
+      "dialoguesInterrupted": 1,
+      "reservedAttempts": 36,
+      "completedCalls": 35,
+      "providerFailures": 0,
+      "coordinatorInterruptedReservations": 1,
+      "traceSha256": {
+        "s1": "39b9ec3e4a4be5552aef03ca9b06b1302e4c561b15401863ab53d8a7b7cc228b",
+        "s2": "e2ddd2e5c15d757878ede5cc01b62e5deadde74626ebea0491726c870b61b0fe",
+        "s3": "e414034894d3ef1050b970695547ac13a13c26a3b3b36d72d7aed8593d6b1763",
+        "s4": "4d7d6076c514de118ca90636aa4a17a890d2025535083e131b6e787e6f9cf727"
+      },
+      "analyzerRun": false,
+      "reportWritten": false,
+      "excludedFromSuccessor": true,
+      "reused": false,
+      "pooled": false,
+      "outcomeSelected": false,
+      "permittedUse": "observer-failure diagnosis and successor exclusion only"
+    },
+    "stoppedConfirmationV4": {
+      "requestSha256": "8c25d6afcae9b9c5689f3130664048c63d303a440412af7f4ba138a6a9337aab",
+      "sourceCommit": "8d18480e8e531ae7b4ac4e5c63e8de82628aea9f",
+      "sourceTree": "adadcbff0502d0df15e777d8cebe1d7d5daa5011",
+      "batchPlanSha256": "388ee1df888d69f8cf2a63f6330e799092c3cc827a0e23c0913886ef9bb57591",
+      "batchResultSha256": "1d957f5bf8707f5ce2150a8e3576ad4ab2440f7e1e8a1f43a064e863de001636",
+      "privateArchiveBranch": "codex/resistance-action-register-confirmation-v4-incomplete-archive",
+      "privateArchiveCommit": "05eb01179a437c4a7723a831639b1d7126a338e2",
+      "privateArchiveTree": "e978a6761c6d8978084fd5d574758d75e3fb6d4d",
+      "privateArchiveBase": "b36f25a295f23250f95d0ca6539123f12cc6a6af",
+      "localInventoryFiles": 18,
+      "localInventoryBytes": 7845834,
+      "localInventorySha256": "d4585b41981d6ac4d4d6e44a6fccc253f792221f5e2c3f87fd7ec5d42c16eafe",
+      "liveMirrorInventoryFiles": 8,
+      "liveMirrorInventoryBytes": 922685,
+      "liveMirrorInventorySha256": "7545452e100a2cfc1b59c17e6da8c1a5196eb7fc5d272cd60556c7462cb524fa",
+      "privateArchiveInventoryFiles": 16,
+      "privateArchiveInventoryBytes": 3216802,
+      "privateArchiveInventorySha256": "5f913668777b7bd5111d575eec49daca71a05b7f03f4a7e4281bc285a943845b",
+      "ledgerSha256": "2b3bf3f416edafdd21777219f7031afef7cfef75e8adebc843c4cc16576ba1b7",
+      "dialoguesPlanned": 36,
+      "dialoguesStarted": 4,
+      "dialoguesComplete": 2,
+      "dialoguesSubstantiveFailure": 2,
+      "reservedAttempts": 38,
+      "completedCalls": 38,
+      "providerFailures": 0,
+      "abortedCalls": 0,
+      "interruptedCalls": 0,
+      "traceSha256": {
+        "s1": "5d17d885bdad4e4b1ffe3b2a63a2e81f70c334eb9aafe1a5add649ebe1b8ac6c",
+        "s2": "7a9bd37991410c35f868f26fb63dc002d7aabdb64849a42220a1df8e50928942",
+        "s3": "14235461410868bba4e2a2bed2a7e24022dd4eadbe655b05835f0170da8ca3c3",
+        "s4": "a211ea656bc458aaa3e31f6552d65e65b67a9f428ed6388d6006af057d8164ee"
+      },
+      "compressedTraceSha256": {
+        "s1": "a438528c8e5526038667e6f24cb0d080884b994acd3a6d4eebb293f3778dde75",
+        "s2": "3ef7bc055efe5410b77495e8e98d5d319e9cb4c76bab220e918748798e695dc5",
+        "s3": "549ab0a561951676a322e0ed8c4d8987ab79ac17190a0ef17e26b7423f319a45",
+        "s4": "e5e4a872cbfd68dd7f5b633be6d018da1b97392b07c3433b51e6bccfd4f29dd3"
+      },
+      "block2Through9Started": false,
+      "recoveryRun": false,
+      "analyzerRun": false,
+      "reportWritten": false,
+      "resultProduced": false,
+      "sealProduced": false,
+      "excludedFromSuccessor": true,
+      "reused": false,
+      "pooled": false,
+      "outcomeSelected": false,
+      "permittedUse": "observer-failure diagnosis and successor exclusion only"
+    },
+    "stoppedConfirmationV7": {
+      "requestSha256": "d209cd7d647f1a35c48d1920444e5648ba72aca5d8f46cb211a2c81ec9f197fb",
+      "sourceCommit": "02560d4fbef7a0e75da89e3c4e9a6b02fbcc0238",
+      "sourceTree": "e5e570772b29b368eacc571e17bb702cc8bf3631",
+      "batchPlanSha256": "18ec637a52f5ef6432ccc03084bdcecf8f432d0577bba6bb2f8e584994517fd4",
+      "batchResultSha256": "566f9c0b0617095bd5acac9803c388d2ab6207c812d9f7e2b3da3ad1b9cb869b",
+      "privateArchiveBranch": "codex/resistance-action-register-confirmation-v7-incomplete-archive",
+      "privateArchiveCommit": "a00c4870a7dab506bbe7522f6868c7278aaa81de",
+      "privateArchiveTree": "51c3c2015dec77eccb8966b5110aa8dace42d09d",
+      "localInventoryFiles": 20,
+      "localInventoryBytes": 9197030,
+      "localInventorySha256": "ac3c74ffb86193ab7ba3deb88268102dcb636f71cea1affd8769dd1a0a4966b7",
+      "liveMirrorInventoryFiles": 8,
+      "liveMirrorInventoryBytes": 947784,
+      "liveMirrorInventorySha256": "1a21846b88ec71d11cfca106339960e24a39b0d3d3e9abfac6c1b5edfb810933",
+      "dialoguesPlanned": 36,
+      "dialoguesStarted": 4,
+      "dialoguesComplete": 3,
+      "dialoguesSubstantiveFailure": 1,
+      "reservedAttempts": 38,
+      "completedCalls": 38,
+      "providerFailures": 0,
+      "abortedCalls": 0,
+      "traceSha256": {
+        "s1": "a4ca3897e16dc1cb20028a4269b53265132e4724adfca9b0b3b928447159b52a",
+        "s2": "8f968f9f9bf159bb6717b8d5747da87fad85f4c75f6411e808edc298cbd9b74c",
+        "s3": "7140a9b11d39afd885107dc00adb598028d66138b15eefa7fd6fc84b232321f1",
+        "s4": "82fe867c8fe592987463198a594d940d637a329a83550cf5080e6d01531bf70a"
+      },
+      "block2Through9Started": false,
+      "recoveryRun": false,
+      "analyzerRun": false,
+      "reportWritten": false,
+      "resultProduced": false,
+      "sealProduced": false,
+      "excludedFromSuccessor": true,
+      "reused": false,
+      "pooled": false,
+      "outcomeSelected": false,
+      "permittedUse": "semantic measurement-failure diagnosis and successor exclusion only"
+    }
+  },
+  "semanticAdjudication": {
+    "instrumentRegistrationPath": "config/tutor-stub-resistance-semantic-adjudication-registration.v1.json",
+    "instrumentRegistrationSha256": "3ca5c34fefe5aa2eca1f2e49cd6ca59d64261cadd505de26f508fbfe650b926a",
+    "instrumentFreezeCommit": "4cf49a15b500f058401bd8bd586166ba90c8842c",
+    "validationRegistrationPath": "config/tutor-stub-resistance-semantic-adjudication-validation-registration.v1.json",
+    "validationRegistrationSha256": "ee411d29ea9d6086f3f24f81995f4224bfc783ea78ac5f04009c210985d87b0f",
+    "heldoutCorpusPath": "config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json",
+    "heldoutCorpusSha256": "9378416d1fdf8dc41f35ad84a4edf69fba6ad8889ce5020617f3d19747c9a2c7",
+    "validationReportPath": null,
+    "validationReportSha256": null,
+    "validationRequiredBeforeConfirmationRequest": true,
+    "judgeA": "codex.gpt-5.6-sol",
+    "judgeB": "claude-code.sonnet-5",
+    "effort": "low",
+    "allLearnerCandidatesAdjudicated": true,
+    "maximumCandidatesPerDialogue": 5,
+    "judgeCallsPerCandidate": 2,
+    "fullVectorHighConfidenceAgreementRequired": true,
+    "lexicalAndLunaSignals": "advisory_only_never_vote_tiebreak_veto_or_override",
+    "measurementIndeterminateDisposition": "terminal_nonrecoverable_no_repair_rerun_replacement_selection_or_fisher_analysis",
+    "determinateTurn1NonadherenceDisposition": "proceed_to_turn_2_without_repair",
+    "determinateTurn2NonadherenceRepair": "one_full_learner_repair_with_fresh_independent_judge_pair",
+    "safetySignals": "may_block_or_override_treatment_but_never_recode_semantic_classification"
+  },
+  "design": {
+    "stage": "frame_refuser_matched_action_plain_warm_confirmation_successor",
+    "form": "fresh_independent_online_triggered_dialogues",
+    "world": "world_005_marrick",
+    "dagMode": "strict_dag",
+    "profiles": ["frame_refuser"],
+    "treatmentProfile": "frame_refuser",
+    "diagnosticProfile": "frame_defiant",
+    "diagnosticDisposition": "absent_from_confirmation",
+    "trigger": {
+      "observationSemantics": "prospective_frame_resistance_semantic_v1",
+      "timing": "first_eligible_frame_jurisdiction_refusal_by_public_turn_2",
+      "eligibleByTurn": 2,
+      "requiredObservation": "dual_independent_high_confidence_frame_refuser_consensus",
+      "profileIdentityMayTrigger": false,
+      "freshDialogueRequired": true,
+      "freshOpeningAndLearnerTrajectoryRequired": true,
+      "calibrationPrefixesConsumedAsInputs": false,
+      "missingTriggerDisposition": "substantive_registered_failure_stop_no_replacement",
+      "observerFirstEligibility": true,
+      "priorIncompleteConfirmationConsumedAsInputs": false,
+      "priorIncompleteConfirmationV3ConsumedAsInputs": false,
+      "priorIncompleteConfirmationV4ConsumedAsInputs": false,
+      "priorIncompleteConfirmationV7ConsumedAsInputs": false
+    },
+    "randomization": {
+      "unit": "fresh_independent_dialogue",
+      "allocation": "predeclared_balanced_blocks",
+      "algorithm": "sha256_ranked_balanced_block_permutation_v1",
+      "ratio": "1:1",
+      "masterSeed": 20260825,
+      "concealedFromPreTriggerPrompts": true,
+      "validOutputsMayNotBeSelectedOrRerolled": true
+    },
+    "factors": {
+      "actionFit": {
+        "levels": ["matched"],
+        "assignments": {
+          "frame_refuser": {
+            "matched": "test_bounded_distinction"
+          }
+        },
+        "fixedForConfirmation": true
+      },
+      "realization": {
+        "levels": ["plain", "warm"],
+        "plain": "plain",
+        "warm": "warm",
+        "referenceLevel": "plain",
+        "treatmentLevel": "warm",
+        "oneTutorTurnOnly": true,
+        "revertAfterUptake": true
+      },
+      "replicationBlock": {
+        "levels": [
+          "block_01",
+          "block_02",
+          "block_03",
+          "block_04",
+          "block_05",
+          "block_06",
+          "block_07",
+          "block_08",
+          "block_09"
+        ]
+      },
+      "confirmationBlock": {
+        "blocks": [
+          {
+            "id": "block_01",
+            "dialogues": 4,
+            "plain": 2,
+            "warm": 2
+          },
+          {
+            "id": "block_02",
+            "dialogues": 4,
+            "plain": 2,
+            "warm": 2
+          },
+          {
+            "id": "block_03",
+            "dialogues": 4,
+            "plain": 2,
+            "warm": 2
+          },
+          {
+            "id": "block_04",
+            "dialogues": 4,
+            "plain": 2,
+            "warm": 2
+          },
+          {
+            "id": "block_05",
+            "dialogues": 4,
+            "plain": 2,
+            "warm": 2
+          },
+          {
+            "id": "block_06",
+            "dialogues": 4,
+            "plain": 2,
+            "warm": 2
+          },
+          {
+            "id": "block_07",
+            "dialogues": 4,
+            "plain": 2,
+            "warm": 2
+          },
+          {
+            "id": "block_08",
+            "dialogues": 4,
+            "plain": 2,
+            "warm": 2
+          },
+          {
+            "id": "block_09",
+            "dialogues": 4,
+            "plain": 2,
+            "warm": 2
+          }
+        ],
+        "technicalTransportOnly": true,
+        "interimAnalysis": false,
+        "blockSelection": false
+      }
+    },
+    "intervention": {
+      "durationTutorTurns": 1,
+      "studyOnlyOptIn": true,
+      "applicationOrder": [
+        "public_observation",
+        "warrant",
+        "assigned_typed_pedagogical_move",
+        "assigned_compatible_register",
+        "public_realization"
+      ],
+      "legacyDefaultOutsideStudy": true,
+      "safetyOverride": "record_protected_condition_as_nonadherent_never_reroll"
+    },
+    "outcomeHorizon": {
+      "commonPostTriggerLearnerTurns": 2,
+      "maximumPublicLearnerTurn": 4,
+      "terminalTutorReply": false
+    }
+  },
+  "measurement": {
+    "primaryEndpoints": [
+      {
+        "id": "profile_specific_resistance_recovery",
+        "type": "binary_per_randomized_dialogue",
+        "definition": "Within two post-trigger learner turns, the learner either engages the bounded test on its merits or states a more precise jurisdictional condition grounded in the public issue.",
+        "modelJudge": false
+      }
+    ],
+    "confirmatoryTest": {
+      "estimand": "warm_minus_plain_two_post_trigger_turn_recovery_rate_over_36_fresh_independent_dialogues",
+      "null": "warm and plain recovery probabilities are equal",
+      "alternative": "warm and plain recovery probabilities differ",
+      "test": "fisher_exact_two_sided",
+      "alpha": 0.05,
+      "decisionRule": "confirm warm-versus-plain separation only when the two-sided Fisher exact p-value is at most 0.05; report arm rates, risk difference, odds ratio, and exact p-value regardless",
+      "interimAnalysis": false,
+      "calibrationDataPooled": false,
+      "powering": {
+        "source": "calibration_only_1_of_6_plain_vs_4_of_6_warm",
+        "test": "fisher_exact_two_sided",
+        "alpha": 0.05,
+        "targetPower": 0.8,
+        "plainCalibrationRate": 0.16666666666666666,
+        "warmCalibrationRate": 0.6666666666666666,
+        "powerAt17PerArm": 0.796776592585303,
+        "powerAt18PerArm": 0.8388687257645503,
+        "minimumNPerArm": 18
+      }
+    },
+    "secondaryEndpoints": [
+      "proof_dag_debt_delta_at_two_learner_turns",
+      "new_supported_public_premises_at_two_learner_turns",
+      "action_realization_fidelity",
+      "register_realization_fidelity",
+      "protected_condition_and_safety_override_rate"
+    ],
+    "treatmentFidelity": {
+      "minimumActionVisibility": 0.9,
+      "minimumRegisterVisibility": 0.9,
+      "primaryAnalysis": "intention_to_treat",
+      "failedFidelityDisposition": "fail_interpretability_gate_not_rerun"
+    },
+    "assemblyRule": "All nine predeclared batches must seal before the sole combined 36-dialogue analysis. No batch, arm, partial count, or calibration dialogue may be analyzed, selected, pooled, or interpreted before that point."
+  },
+  "confirmation": {
+    "status": "deterministic_successor_readiness_only_not_executable",
+    "freshIndependentDialogues": 36,
+    "plainDialogues": 18,
+    "warmDialogues": 18,
+    "calibrationDialoguesReused": 0,
+    "calibrationDialoguesPooled": 0,
+    "analysisCount": 1,
+    "interimAnalysisCount": 0,
+    "priorIncompleteConfirmationDialoguesReused": 0,
+    "priorIncompleteConfirmationDialoguesPooled": 0,
+    "priorIncompleteConfirmationV3DialoguesReused": 0,
+    "priorIncompleteConfirmationV3DialoguesPooled": 0,
+    "priorIncompleteConfirmationV4DialoguesReused": 0,
+    "priorIncompleteConfirmationV4DialoguesPooled": 0,
+    "priorIncompleteConfirmationV7DialoguesReused": 0,
+    "priorIncompleteConfirmationV7DialoguesPooled": 0
+  },
+  "executionReadiness": {
+    "modelRoute": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna",
+      "semanticJudgeA": "codex.gpt-5.6-sol",
+      "semanticJudgeB": "claude-code.sonnet-5",
+      "effort": "low"
+    },
+    "plannedRoleCallDerivation": {
+      "opening": 1,
+      "maximumLearnerTurns": 4,
+      "maximumLearnerAnalyses": 4,
+      "maximumTutorTurns": 3,
+      "oneFullLearnerRepair": 2,
+      "maximumTutorGuardRecoveryCalls": 6,
+      "maximumSemanticJudgeCalls": 10,
+      "total": 30
+    },
+    "plannedRoleCallsPerDialogue": 30,
+    "maximumReservationsPerPlannedCall": 3,
+    "maximumModelAttemptReservationsPerDialogue": 90,
+    "batches": [
+      {
+        "id": "block_01",
+        "dialogues": 4,
+        "plannedRoleCalls": 120,
+        "maximumModelAttemptReservations": 360,
+        "destination": null
+      },
+      {
+        "id": "block_02",
+        "dialogues": 4,
+        "plannedRoleCalls": 120,
+        "maximumModelAttemptReservations": 360,
+        "destination": null
+      },
+      {
+        "id": "block_03",
+        "dialogues": 4,
+        "plannedRoleCalls": 120,
+        "maximumModelAttemptReservations": 360,
+        "destination": null
+      },
+      {
+        "id": "block_04",
+        "dialogues": 4,
+        "plannedRoleCalls": 120,
+        "maximumModelAttemptReservations": 360,
+        "destination": null
+      },
+      {
+        "id": "block_05",
+        "dialogues": 4,
+        "plannedRoleCalls": 120,
+        "maximumModelAttemptReservations": 360,
+        "destination": null
+      },
+      {
+        "id": "block_06",
+        "dialogues": 4,
+        "plannedRoleCalls": 120,
+        "maximumModelAttemptReservations": 360,
+        "destination": null
+      },
+      {
+        "id": "block_07",
+        "dialogues": 4,
+        "plannedRoleCalls": 120,
+        "maximumModelAttemptReservations": 360,
+        "destination": null
+      },
+      {
+        "id": "block_08",
+        "dialogues": 4,
+        "plannedRoleCalls": 120,
+        "maximumModelAttemptReservations": 360,
+        "destination": null
+      },
+      {
+        "id": "block_09",
+        "dialogues": 4,
+        "plannedRoleCalls": 120,
+        "maximumModelAttemptReservations": 360,
+        "destination": null
+      }
+    ],
+    "combinedDialogues": 36,
+    "combinedPlannedRoleCalls": 1080,
+    "combinedMaximumModelAttemptReservations": 3240,
+    "programmeLedgerAfterMaximum": {
+      "role": "prospective_maximum_after_validation_and_confirmation_not_observed_consumption",
+      "reservedAttempts": 4051,
+      "ceiling": 5000,
+      "remaining": 949
+    },
+    "attemptAccountingRole": "operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective",
+    "boundedTechnicalRecovery": "missing_or_failed_units_only_before_any_candidate_generation_or_semantic_response_using_actual_unused_room_within_the_same_90_dialogue_360_batch_3240_confirmation_and_5000_programme_caps",
+    "validUnitReruns": false,
+    "outcomeSelection": false,
+    "currentLiveExecutionAvailable": false
+  }
+}

@@ -177,7 +177,7 @@ export function auditTutorStubResistanceSemanticTrace({ events, expectedCandidat
         event.packetSha256 !== prompt.packet_sha256 ||
         !exactJson(event.outputSchema, TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA) ||
         !(
-          (returnedRecordEnvelope && validSuccessfulCallEnvelope && event.modelIndependentlyAttested === false) ||
+          (returnedRecordEnvelope && validSuccessfulCallEnvelope) ||
           (invalidReturnedEnvelope && validSuccessfulCallEnvelope) ||
           (exhaustedTransportEnvelope && validFailedTransportEnvelope)
         ) ||
