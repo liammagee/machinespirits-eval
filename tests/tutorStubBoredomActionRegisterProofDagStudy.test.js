@@ -30,6 +30,7 @@ import {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v2.json';
 const REGISTRATION_V3 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v3.json';
+const REGISTRATION_V4 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json';
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -658,6 +659,56 @@ test('prospective-v9 analyzer requires the independent semantic sequence and rej
       analyzeTutorStubBoredomProofDag({
         batchRoots: roots,
         registrationPath: REGISTRATION_V3,
+        expectedSourceCommit: head,
+      }),
+    /lacks its exact fresh execution, treatment, or outcome event/u,
+  );
+});
+
+test('validated-instrument v4 lineage runs the same analyzer and still rejects indeterminacy', (t) => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-v4-'));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION_V4) });
+  assert.equal(loaded.registration.version, 4);
+  const outcomes = new Map(loaded.plan.jobs.map((job) => [job.id, { recovered: true, progressed: true }]));
+  const roots = [];
+  for (let index = 1; index <= 9; index += 1) {
+    const root = path.join(temp, `batch-${index}`);
+    const plan = buildTutorStubBoredomProofDagBatchPlan({
+      registrationPath: REGISTRATION_V4,
+      batchId: `execution_batch_${index}`,
+      destination: root,
+      expectedSourceCommit: head,
+    });
+    fs.mkdirSync(root, { recursive: true });
+    writeSyntheticBatch(root, plan, outcomes, { observationSemantics: 'prospective_v9' });
+    roots.push(root);
+  }
+  const report = analyzeTutorStubBoredomProofDag({
+    batchRoots: roots,
+    registrationPath: REGISTRATION_V4,
+    expectedSourceCommit: head,
+  });
+  assert.equal(report.rows.length, 36);
+  assert.ok(report.rows.every((row) => row.semantic_measurement.authority === 'independent_llm_semantic_adjudicator'));
+  assert.ok(report.rows.every((row) => row.semantic_measurement.model_ref === 'codex.gpt-5.6-sol'));
+  assert.ok(report.rows.every((row) => row.semantic_measurement.measurement_indeterminate === false));
+
+  const mutationPlan = JSON.parse(fs.readFileSync(path.join(roots[0], 'batch-plan.json'), 'utf8'));
+  mutateTrace(roots[0], mutationPlan.jobs[0].id, (events) => [
+    ...events,
+    {
+      type: 'boredom_semantic_measurement_indeterminate',
+      turn: 1,
+      code: 'TUTOR_STUB_BOREDOM_MEASUREMENT_INDETERMINATE',
+    },
+  ]);
+  assert.throws(
+    () =>
+      analyzeTutorStubBoredomProofDag({
+        batchRoots: roots,
+        registrationPath: REGISTRATION_V4,
         expectedSourceCommit: head,
       }),
     /lacks its exact fresh execution, treatment, or outcome event/u,
