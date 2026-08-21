@@ -582,7 +582,7 @@ const HUMAN_DISCOURSE_FRAME_SCHEMA = 'machinespirits.tutor-stub.human-discourse-
 const TUTOR_GUARD_ACCOUNTING_SCHEMA = 'machinespirits.tutor-stub.guard-accounting.v1';
 const TUTOR_TYPED_ACTION_CONFIG_SCHEMA = 'machinespirits.tutor-stub.typed-action-runtime-config.v1';
 const DEFAULT_INTERACTIVE_COMMITTEE_FALLBACK_POLICY = 'v2';
-function selectTutorStubBoredomSemanticAdjudicatorFactory({ args, root }) {
+export function selectTutorStubBoredomSemanticAdjudicatorFactory({ args, root }) {
   const registrationPath = args?.['boredom-proof-dag-registration'];
   if (!registrationPath) return createTutorStubBoredomSemanticAdjudicator;
   const registration = JSON.parse(fs.readFileSync(path.resolve(root, registrationPath), 'utf8'));
