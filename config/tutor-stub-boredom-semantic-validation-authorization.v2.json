@@ -1,0 +1,23 @@
+{
+  "schema": "machinespirits.tutor-stub.boredom-semantic-validation-authorization.v2",
+  "status": "APPROVED_FOR_BOUNDED_SEMANTIC_VALIDATION_CALLS",
+  "studyId": "tutor-stub-boredom-semantic-validation-v2",
+  "request": {
+    "path": "config/tutor-stub-boredom-semantic-validation-request.v2.json",
+    "sha256": "29c55d0b4ffaaaed2cbbc814cb3ed57455c4a345c678a45f1220440f112ad5e3"
+  },
+  "scope": {
+    "maximumModelCalls": 66,
+    "modelRef": "codex.gpt-5.6-sol",
+    "effort": "low",
+    "artifactRoot": ".tutor-stub-auto-eval/boredom-semantic-validation-v2-2026-08-21",
+    "liveStudyAuthorized": false,
+    "confirmationLaunchAuthorized": false
+  },
+  "approval": {
+    "explicitBoundedValidationCalls": true,
+    "approvedBy": "human",
+    "approvedAt": "2026-08-21T04:40:57.000Z",
+    "evidence": "The v1 validation run (2026-08-21, PR #758 chain) failed two predeclared gates: determinate specificity 10/15 and reference agreement 17/22. After the diagnosis, the user approved instrument v2 with the message 'Let's do it' (2026-08-21): revise the span check to quote-anchored evidence, revise the uptake derivation so bare uptake is no_boredom, write a fresh held-out corpus, then a fresh digest-bound validation request and about 22 new calls. That plan merged to main as PR #760 (merge commit 7e46d441) after independent Codex review (first pass REQUEST_CHANGES on retry-loop output finality, fix commit 2735b99b, second pass APPROVE). The spent v1 corpus and the stopped prospective-v2 cohort stay excluded. The 36-dialogue confirmation stays on HOLD; this authorization grants only the bounded validation calls."
+  }
+}
