@@ -27,6 +27,7 @@ import {
 } from '../services/tutorStubResistanceSemanticValidationV3.js';
 import {
   analyzeTutorStubResistanceSemanticValidation,
+  buildTutorStubResistanceSemanticValidationPlan,
   runTutorStubResistanceSemanticValidation,
   writeTutorStubResistanceSemanticValidationReport,
 } from '../services/tutorStubResistanceSemanticValidationRuntime.js';
@@ -35,6 +36,56 @@ const SOURCE_COMMIT = '1'.repeat(40);
 const SOURCE_TREE = '2'.repeat(40);
 const GO_REQUEST_PATH = 'config/future-semantic-validation-go-request.json';
 const GO_REQUEST_SHA256 = 'a'.repeat(64);
+
+function goRequestFor(loaded, { revision = null, programmeLedgerBefore = null } = {}) {
+  const readiness = loaded.registration.executionReadiness;
+  const before = programmeLedgerBefore ?? readiness.programmeLedgerBefore;
+  return {
+    semanticAdjudicationValidation: {
+      type: `prospective_resistance_semantic_adjudication_heldout_validation_v${loaded.registration.version}`,
+      ...(revision === null ? {} : { requestRevision: revision }),
+    },
+    budget: {
+      plannedCases: readiness.plannedCases,
+      plannedModelCalls: readiness.plannedModelCalls,
+      maximumReservationsPerPlannedCall: readiness.maximumReservationsPerPlannedCall,
+      maximumPlannedModelAttempts: readiness.hardValidationReservations,
+      programmeLedgerBefore: before,
+      programmeLedgerAfterMaximum: before + readiness.hardValidationReservations,
+      programmeCeiling: readiness.programmeCeiling,
+      retryOrResumeAuthority: 'bounded_technical_recovery',
+    },
+  };
+}
+
+function fixtureCallerV3(calls, loaded) {
+  return async (agentConfig, systemPrompt, userPrompt, role, options) => {
+    const prompt = JSON.parse(userPrompt);
+    const corpusCase = loaded.corpus.cases.find(
+      (row) => tutorStubResistanceSemanticOpaqueCaseIdV3(row) === prompt.case_id,
+    );
+    const judge = loaded.instrument.registration.measurement.judges.find(
+      (row) => role === `tutor_stub_resistance_semantic_${row.id}`,
+    );
+    assert.ok(corpusCase);
+    assert.ok(judge);
+    const fixture = buildTutorStubResistanceSemanticZeroCallFixtureResponseV3({
+      corpusCase: { ...corpusCase, case_id: prompt.case_id },
+      judge,
+    });
+    calls.push({ agentConfig, systemPrompt, userPrompt, role, options });
+    return {
+      text: JSON.stringify(fixture.modelOutput),
+      provider: judge.provider,
+      model: judge.model,
+      effort: judge.effort,
+      structuredOutput: true,
+      prohibitedToolEventCount: 0,
+      modelAttestationBasis: judge.modelAttestationBasis,
+      modelIndependentlyAttested: false,
+    };
+  };
+}
 
 function fixtureCaller(calls) {
   const loaded = loadTutorStubResistanceSemanticValidation();
@@ -72,12 +123,14 @@ function fixtureCaller(calls) {
 
 function analyze(destination) {
   const archiveDir = path.join(path.dirname(destination), 'private-archive');
+  const loaded = loadTutorStubResistanceSemanticValidation();
   return analyzeTutorStubResistanceSemanticValidation({
     destination,
     expectedSourceCommit: SOURCE_COMMIT,
     expectedSourceTree: SOURCE_TREE,
     expectedGoRequestPath: GO_REQUEST_PATH,
     expectedGoRequestSha256: GO_REQUEST_SHA256,
+    expectedGoRequest: goRequestFor(loaded),
     sourceDirty: false,
     archiveDir,
   });
@@ -98,7 +151,7 @@ function findArchiveManifest(root) {
 }
 
 function run(destination, options = {}) {
-  const loaded = loadTutorStubResistanceSemanticValidation();
+  const loaded = options.loaded || loadTutorStubResistanceSemanticValidation();
   const archiveDir = path.join(path.dirname(destination), 'private-archive');
   fs.mkdirSync(archiveDir, { recursive: true });
   return runTutorStubResistanceSemanticValidation({
@@ -107,6 +160,7 @@ function run(destination, options = {}) {
     sourceTree: SOURCE_TREE,
     goRequestPath: GO_REQUEST_PATH,
     goRequestSha256: GO_REQUEST_SHA256,
+    goRequest: goRequestFor(loaded),
     sourceDirty: false,
     archiveDir,
     waitForRetry: async () => {},
@@ -222,6 +276,7 @@ test('V3 runtime composes frozen local validation with Codex-only provider schem
     sourceTree: SOURCE_TREE,
     goRequestPath: GO_REQUEST_PATH,
     goRequestSha256: GO_REQUEST_SHA256,
+    goRequest: goRequestFor(loaded),
     sourceDirty: false,
     archiveDir,
     loaded,
@@ -258,11 +313,159 @@ test('V3 runtime composes frozen local validation with Codex-only provider schem
     expectedSourceTree: SOURCE_TREE,
     expectedGoRequestPath: GO_REQUEST_PATH,
     expectedGoRequestSha256: GO_REQUEST_SHA256,
+    expectedGoRequest: goRequestFor(loaded),
     sourceDirty: false,
     archiveDir,
     loaded,
   });
   assert.equal(report.status, 'passed');
+});
+
+test('successor V3 retries exact pre-response Claude exit-code-one failures with safe telemetry and request-derived ledger', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-v3-claude-retry-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const loaded = loadTutorStubResistanceSemanticValidationV3();
+  const goRequest = goRequestFor(loaded, { revision: 2, programmeLedgerBefore: 661 });
+  const successfulCalls = [];
+  const fixture = fixtureCallerV3(successfulCalls, loaded);
+  const observedCalls = [];
+  const retryDelays = [];
+  let claudeFailures = 0;
+  const callModel = async (...args) => {
+    observedCalls.push(args);
+    if (args[0].provider === 'claude-code' && claudeFailures < 2) {
+      claudeFailures += 1;
+      const error = new Error('claude CLI exited with code 1');
+      error.code = 'CLI_PROVIDER_EXIT_FAILED';
+      error.exitCode = 1;
+      error.stdoutBytes = 0;
+      error.stderrBytes = 77 + claudeFailures;
+      throw error;
+    }
+    return fixture(...args);
+  };
+  const { plan, seal } = await run(destination, {
+    loaded,
+    goRequest,
+    callModel,
+    waitForRetry: async (delayMs) => retryDelays.push(delayMs),
+  });
+  assert.equal(plan.budget.programme_ledger_before, 661);
+  assert.equal(plan.budget.programme_ledger_after_maximum, 1141);
+  assert.equal(seal.reservations, 162);
+  assert.deepEqual(retryDelays, [5000, 15000]);
+  const repeated = observedCalls.filter((args) => args[0].provider === 'claude-code').slice(0, 3);
+  assert.equal(repeated.length, 3);
+  for (const args of repeated.slice(1)) {
+    assert.deepEqual(args[0], repeated[0][0]);
+    assert.equal(args[1], repeated[0][1]);
+    assert.equal(args[2], repeated[0][2]);
+    assert.equal(args[3], repeated[0][3]);
+    assert.deepEqual(args[4], repeated[0][4]);
+  }
+  const checkpoint = JSON.parse(
+    fs.readFileSync(
+      path.join(destination, 'cases', Object.keys(seal.case_checkpoint_sha256)[0], 'checkpoint.json'),
+      'utf8',
+    ),
+  );
+  const claudeResult = checkpoint.judge_results.find((row) => row.role.endsWith('judge_b'));
+  assert.deepEqual(claudeResult.attempts, [
+    {
+      attempt: 1,
+      status: 'transport_failed',
+      error_code: 'CLI_PROVIDER_EXIT_FAILED',
+      exit_code: 1,
+      stdout_bytes: 0,
+      stderr_bytes: 78,
+    },
+    {
+      attempt: 2,
+      status: 'transport_failed',
+      error_code: 'CLI_PROVIDER_EXIT_FAILED',
+      exit_code: 1,
+      stdout_bytes: 0,
+      stderr_bytes: 79,
+    },
+    { attempt: 3, status: 'returned' },
+  ]);
+  assert.equal(JSON.stringify(checkpoint).includes('stderr content'), false);
+  assert.equal(
+    writeTutorStubResistanceSemanticValidationReport({
+      destination,
+      expectedSourceCommit: SOURCE_COMMIT,
+      expectedSourceTree: SOURCE_TREE,
+      expectedGoRequestPath: GO_REQUEST_PATH,
+      expectedGoRequestSha256: GO_REQUEST_SHA256,
+      expectedGoRequest: goRequest,
+      sourceDirty: false,
+      archiveDir: path.join(temporary, 'private-archive'),
+      loaded,
+    }).status,
+    'passed',
+  );
+
+  const stale = goRequestFor(loaded, { revision: 2, programmeLedgerBefore: 651 });
+  assert.throws(
+    () =>
+      buildTutorStubResistanceSemanticValidationPlan({
+        sourceCommit: SOURCE_COMMIT,
+        sourceTree: SOURCE_TREE,
+        destination: path.join(temporary, 'stale'),
+        goRequestPath: GO_REQUEST_PATH,
+        goRequestSha256: GO_REQUEST_SHA256,
+        goRequest: stale,
+        loaded,
+      }),
+    /GO request budget does not match/u,
+  );
+  const future = goRequestFor(loaded, { revision: 3, programmeLedgerBefore: 696 });
+  const futurePlan = buildTutorStubResistanceSemanticValidationPlan({
+    sourceCommit: SOURCE_COMMIT,
+    sourceTree: SOURCE_TREE,
+    destination: path.join(temporary, 'future'),
+    goRequestPath: GO_REQUEST_PATH,
+    goRequestSha256: GO_REQUEST_SHA256,
+    goRequest: future,
+    loaded,
+  });
+  assert.equal(futurePlan.budget.programme_ledger_before, 696);
+  assert.equal(futurePlan.budget.programme_ledger_after_maximum, 1176);
+});
+
+test('V2 keeps Claude exit-code-one terminal without the successor-V3 retry opt-in', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-v2-no-claude-retry-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const loaded = loadTutorStubResistanceSemanticValidationV2();
+  const successfulCalls = [];
+  const fixture = fixtureCallerV2(successfulCalls, loaded);
+  let failed = false;
+  const callModel = async (...args) => {
+    if (!failed && args[0].provider === 'claude-code') {
+      failed = true;
+      const error = new Error('claude CLI exited with code 1');
+      error.code = 'CLI_PROVIDER_EXIT_FAILED';
+      error.exitCode = 1;
+      error.stdoutBytes = 0;
+      error.stderrBytes = 42;
+      throw error;
+    }
+    return fixture(...args);
+  };
+  const { seal } = await run(destination, { loaded, callModel });
+  assert.equal(seal.reservations, 160);
+  const firstCheckpoint = JSON.parse(
+    fs.readFileSync(
+      path.join(destination, 'cases', Object.keys(seal.case_checkpoint_sha256)[0], 'checkpoint.json'),
+      'utf8',
+    ),
+  );
+  const claudeResult = firstCheckpoint.judge_results.find((row) => row.role.endsWith('judge_b'));
+  assert.deepEqual(claudeResult.attempts, [
+    { attempt: 1, status: 'transport_failed', error_code: 'CLI_PROVIDER_EXIT_FAILED' },
+  ]);
 });
 
 test('additive v2 validation uses quote-only responses under the same checkpointed no-recall runtime', async (t) => {
@@ -279,6 +482,7 @@ test('additive v2 validation uses quote-only responses under the same checkpoint
     sourceTree: SOURCE_TREE,
     goRequestPath: GO_REQUEST_PATH,
     goRequestSha256: GO_REQUEST_SHA256,
+    goRequest: goRequestFor(loaded),
     sourceDirty: false,
     archiveDir,
     loaded,
@@ -308,6 +512,7 @@ test('additive v2 validation uses quote-only responses under the same checkpoint
     expectedSourceTree: SOURCE_TREE,
     expectedGoRequestPath: GO_REQUEST_PATH,
     expectedGoRequestSha256: GO_REQUEST_SHA256,
+    expectedGoRequest: goRequestFor(loaded),
     sourceDirty: false,
     archiveDir,
     loaded,
@@ -341,6 +546,7 @@ test('checkpointed validation executes 80 opaque cases, seals 160 responses, and
     expectedSourceTree: SOURCE_TREE,
     expectedGoRequestPath: GO_REQUEST_PATH,
     expectedGoRequestSha256: GO_REQUEST_SHA256,
+    expectedGoRequest: goRequestFor(loaded),
     sourceDirty: false,
     archiveDir: path.join(path.dirname(destination), 'private-archive'),
   });
@@ -358,6 +564,7 @@ test('checkpointed validation executes 80 opaque cases, seals 160 responses, and
     expectedSourceTree: SOURCE_TREE,
     expectedGoRequestPath: GO_REQUEST_PATH,
     expectedGoRequestSha256: GO_REQUEST_SHA256,
+    expectedGoRequest: goRequestFor(loaded),
     sourceDirty: false,
     archiveDir: path.join(path.dirname(destination), 'private-archive'),
   });
@@ -677,6 +884,7 @@ test('report publication reconciles local-only and entry-only crash boundaries w
       expectedSourceTree: SOURCE_TREE,
       expectedGoRequestPath: GO_REQUEST_PATH,
       expectedGoRequestSha256: GO_REQUEST_SHA256,
+      expectedGoRequest: goRequestFor(loadTutorStubResistanceSemanticValidation()),
       sourceDirty: false,
       archiveDir: path.join(path.dirname(destination), 'private-archive'),
     };
@@ -722,6 +930,7 @@ test('analysis requires the external source binding and rejects alternate case a
         expectedSourceTree: SOURCE_TREE,
         expectedGoRequestPath: GO_REQUEST_PATH,
         expectedGoRequestSha256: GO_REQUEST_SHA256,
+        expectedGoRequest: goRequestFor(loadTutorStubResistanceSemanticValidation()),
         sourceDirty: false,
       }),
     /plan does not match/u,
@@ -734,6 +943,7 @@ test('analysis requires the external source binding and rejects alternate case a
         expectedSourceTree: SOURCE_TREE,
         expectedGoRequestPath: GO_REQUEST_PATH,
         expectedGoRequestSha256: GO_REQUEST_SHA256,
+        expectedGoRequest: goRequestFor(loadTutorStubResistanceSemanticValidation()),
         sourceDirty: true,
         archiveDir: path.join(path.dirname(destination), 'private-archive'),
       }),

@@ -42,7 +42,7 @@ function safeAudit(audit = null) {
  * Known tool events remain terminal. The caller must reserve metered/provider
  * budget again for the retry and keep the normal strict audit on that call.
  */
-export function tutorStubCliPolicyRetryDecision(error, { retryCount = 0 } = {}) {
+export function tutorStubCliPolicyRetryDecision(error, { retryCount = 0, allowClaudeExitFailureCodeOne = false } = {}) {
   const audit = safeAudit(error?.audit);
   const used = Number.isInteger(retryCount) && retryCount > 0 ? retryCount : 0;
   const knownToolEvent = audit.prohibited_events.some(
@@ -50,7 +50,12 @@ export function tutorStubCliPolicyRetryDecision(error, { retryCount = 0 } = {}) 
   );
   const policyViolation = error?.code === 'CLI_PROVIDER_POLICY_VIOLATION' && error?.provider === 'codex';
   const failedTurn = error?.code === 'CLI_PROVIDER_TURN_FAILED' && error?.provider === 'codex';
-  const retryableFailure = policyViolation || failedTurn;
+  const claudeExitFailure =
+    allowClaudeExitFailureCodeOne === true &&
+    error?.code === 'CLI_PROVIDER_EXIT_FAILED' &&
+    error?.exitCode === 1 &&
+    error?.stdoutBytes === 0;
+  const retryableFailure = policyViolation || failedTurn || claudeExitFailure;
   const retry = Boolean(retryableFailure && used < TUTOR_STUB_CLI_POLICY_RETRY_DELAYS_MS.length && !knownToolEvent);
   return {
     schema: TUTOR_STUB_CLI_POLICY_RETRY_SCHEMA,

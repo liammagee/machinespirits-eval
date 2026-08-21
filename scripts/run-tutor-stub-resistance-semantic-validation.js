@@ -87,6 +87,7 @@ async function main() {
         ? loadTutorStubResistanceSemanticValidationV2()
         : undefined;
   const requestSha256 = sha256(request.absolute);
+  const goRequest = JSON.parse(fs.readFileSync(request.absolute, 'utf8'));
   const snapshot = sourceSnapshot();
   if (snapshot.dirty) throw new Error('semantic validation requires a clean source checkout');
   if (snapshot.commit !== args['source-commit'] || snapshot.tree !== args['source-tree']) {
@@ -100,6 +101,7 @@ async function main() {
     destination,
     goRequestPath: request.relative,
     goRequestSha256: requestSha256,
+    goRequest,
     ...(loaded ? { loaded } : {}),
   });
   if (args.preflight) {
@@ -119,6 +121,7 @@ async function main() {
     sourceTree: snapshot.tree,
     goRequestPath: request.relative,
     goRequestSha256: requestSha256,
+    goRequest,
     sourceDirty: false,
     archiveDir,
     resume: args.resume === true,

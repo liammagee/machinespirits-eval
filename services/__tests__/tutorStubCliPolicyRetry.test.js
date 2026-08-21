@@ -67,6 +67,37 @@ describe('tutor-stub Codex policy retry', () => {
     assert.equal(decision.reason, 'known_tool_event_refused');
   });
 
+  it('retries exact Claude exit-code-one failures only under the explicit successor-V3 opt-in', () => {
+    const error = {
+      code: 'CLI_PROVIDER_EXIT_FAILED',
+      exitCode: 1,
+      stdoutBytes: 0,
+      stderrBytes: 128,
+    };
+    assert.equal(tutorStubCliPolicyRetryDecision(error).retry, false);
+    const first = tutorStubCliPolicyRetryDecision(error, { allowClaudeExitFailureCodeOne: true });
+    const second = tutorStubCliPolicyRetryDecision(error, {
+      allowClaudeExitFailureCodeOne: true,
+      retryCount: 1,
+    });
+    const third = tutorStubCliPolicyRetryDecision(error, {
+      allowClaudeExitFailureCodeOne: true,
+      retryCount: 2,
+    });
+    assert.deepEqual(
+      [first.retry, first.delay_ms, second.retry, second.delay_ms, third.retry, third.delay_ms],
+      [true, 5000, true, 15000, false, 0],
+    );
+    assert.equal(
+      tutorStubCliPolicyRetryDecision({ ...error, exitCode: 2 }, { allowClaudeExitFailureCodeOne: true }).retry,
+      false,
+    );
+    assert.equal(
+      tutorStubCliPolicyRetryDecision({ ...error, stdoutBytes: 1 }, { allowClaudeExitFailureCodeOne: true }).retry,
+      false,
+    );
+  });
+
   it('retains only the bridge audit labels and counts', () => {
     const error = policyError([
       { index: 1, event_type: 'unknown', item_type: 'unknown', raw_payload: 'SECRET-CANARY' },
