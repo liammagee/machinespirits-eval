@@ -38,7 +38,10 @@ const PROVENANCE_KEYS = [
   'source_sha256',
   'packet_sha256',
   'prompt_sha256',
+  'structured_output',
   'prohibited_tool_events',
+  'model_attestation_basis',
+  'model_independently_attested',
 ];
 const JUDGMENT_KEYS = [
   'jurisdiction_dispute',
@@ -61,6 +64,10 @@ const CORE_FIELDS = [
   'participation_withholding',
   'productive_counterframing',
   'final_label',
+];
+const CONTEXT_PROVENANCE_VALUES = [
+  'authored_minimal_public_context_for_frozen_exact_learner_utterances',
+  'independently_authored_bounded_public_context_blinded_after_instrument_freeze',
 ];
 
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA = Object.freeze({
@@ -204,11 +211,45 @@ export function validateTutorStubResistanceSemanticRegistration(registration) {
     issues.push('the Luna learner/classifier route cannot be a semantic judge');
   }
   if (judges.some((judge) => judge.effort !== 'low')) issues.push('semantic judges must use frozen low effort');
+  if (judges.some((judge) => judge.modelAttestationBasis !== 'explicit_cli_model_argument_accepted_bridge_echo')) {
+    issues.push('semantic judges must require the explicit CLI model attestation basis');
+  }
   if (registration?.measurement?.deterministicAuthority !== 'schema_span_provenance_safety_only') {
     issues.push('deterministic authority must be schema/span/provenance/safety only');
   }
   if (registration?.measurement?.lexicalObserverRole !== 'advisory_only_never_veto_or_override') {
     issues.push('lexical observer must be advisory only');
+  }
+  const gates = registration?.measurement?.validationGates || {};
+  const exactGates = {
+    schemaSpanProvenanceValidity: 1,
+    minimumPerJudgeSensitivity: 0.9,
+    minimumPerJudgeSpecificity: 0.9,
+    minimumPerJudgeExactLabelAccuracy: 0.9,
+    minimumConsensusSensitivity: 0.95,
+    minimumConsensusSpecificity: 0.95,
+    minimumConsensusExactLabelAccuracy: 0.95,
+    minimumConsensusProductiveDisputeRecall: 0.9,
+    minimumRawInterjudgeAgreement: 0.9,
+    minimumCohenKappa: 0.8,
+    minimumOverallDeterminedCoverage: 0.95,
+    minimumPerClassDeterminedCoverage: 0.9,
+    maximumProhibitedToolEvents: 0,
+    indeterminateCountsAsSensitivityOrSpecificityFailure: true,
+    invalidCountsAsSensitivityOrSpecificityFailure: true,
+  };
+  for (const [key, value] of Object.entries(exactGates)) {
+    if (gates[key] !== value) issues.push(`validation gate ${key} drifted`);
+  }
+  const holdout = registration?.heldoutFreezeProtocol || {};
+  for (const [key, value] of Object.entries({
+    minimumCases: 80,
+    minimumPositiveCases: 40,
+    minimumNegativeCases: 40,
+    minimumProductiveDisputeCases: 16,
+    postHeldoutPromptModelThresholdOrConsensusTuning: false,
+  })) {
+    if (holdout[key] !== value) issues.push(`heldout freeze field ${key} drifted`);
   }
   return { valid: issues.length === 0, issues };
 }
@@ -218,6 +259,16 @@ function expectedModelByJudge(registration) {
 }
 
 function expectedLabel(judgment) {
+  if (
+    [
+      judgment.jurisdiction_dispute,
+      judgment.licensed_participation,
+      judgment.participation_withholding,
+      judgment.productive_counterframing,
+    ].includes('indeterminate')
+  ) {
+    return 'indeterminate';
+  }
   if (
     judgment.jurisdiction_dispute === 'yes' &&
     judgment.licensed_participation === 'no' &&
@@ -232,16 +283,6 @@ function expectedLabel(judgment) {
     judgment.productive_counterframing === 'yes'
   ) {
     return 'frame_defiant_or_productive_dispute';
-  }
-  if (
-    [
-      judgment.jurisdiction_dispute,
-      judgment.licensed_participation,
-      judgment.participation_withholding,
-      judgment.productive_counterframing,
-    ].includes('indeterminate')
-  ) {
-    return 'indeterminate';
   }
   return 'neither';
 }
@@ -270,6 +311,13 @@ export function validateTutorStubResistanceSemanticResponse({
   if (judge && response.provenance.effort !== judge.effort) issues.push('judge effort mismatch');
   if (!String(response?.provenance?.independent_run_id || '').trim()) issues.push('independent run id is missing');
   if (response?.provenance?.prohibited_tool_events !== 0) issues.push('prohibited tool event count must be zero');
+  if (response?.provenance?.structured_output !== true) issues.push('structured output must be explicitly observed');
+  if (judge && response?.provenance?.model_attestation_basis !== judge.modelAttestationBasis) {
+    issues.push('model attestation basis mismatch');
+  }
+  if (response?.provenance?.model_independently_attested !== false) {
+    issues.push('unexpected independent model attestation');
+  }
   if (response?.provenance?.source_sha256 !== tutorStubResistanceSemanticSha256(source)) {
     issues.push('source digest mismatch');
   }
@@ -362,8 +410,12 @@ export function wrapTutorStubResistanceSemanticModelOutput({
   judge,
   observedProvider,
   observedModel,
+  observedEffort,
   independentRunId,
-  prohibitedToolEvents = 0,
+  structuredOutput,
+  prohibitedToolEvents,
+  modelAttestationBasis,
+  modelIndependentlyAttested,
 }) {
   if (!exactKeys(modelOutput, ['schema', 'case_id', 'judgment'])) {
     throw new Error('semantic judge model output keys are not exact');
@@ -379,12 +431,15 @@ export function wrapTutorStubResistanceSemanticModelOutput({
       model_ref: judge.modelRef,
       provider: observedProvider,
       model: observedModel,
-      effort: judge.effort,
+      effort: observedEffort,
       independent_run_id: independentRunId,
       source_sha256: tutorStubResistanceSemanticSha256(prompt.utterance.text),
       packet_sha256: prompt.packet_sha256,
       prompt_sha256: tutorStubResistanceSemanticPromptSha256(prompt),
+      structured_output: structuredOutput,
       prohibited_tool_events: prohibitedToolEvents,
+      model_attestation_basis: modelAttestationBasis,
+      model_independently_attested: modelIndependentlyAttested,
     },
     judgment: modelOutput.judgment,
   };
@@ -523,8 +578,12 @@ export function buildTutorStubResistanceSemanticZeroCallFixtureResponse({ corpus
       judge,
       observedProvider: judge.provider,
       observedModel: judge.model,
+      observedEffort: judge.effort,
       independentRunId: `zero-call-${judge.id}-${corpusCase.case_id}`,
+      structuredOutput: true,
       prohibitedToolEvents: 0,
+      modelAttestationBasis: judge.modelAttestationBasis,
+      modelIndependentlyAttested: false,
     }),
   };
 }
@@ -564,19 +623,29 @@ export function scoreTutorStubResistanceSemanticCorpus({ corpus, responsePairs, 
   const ratio = (numerator, denominator) => (denominator ? numerator / denominator : 0);
   const judgeMetrics = Object.fromEntries(
     judges.map((judge) => {
-      const labels = rows.map((row) => row.pair[judge.id]?.response?.judgment?.final_label || 'indeterminate');
+      const labels = rows.map((row) => {
+        const validation = row.result.validation.find((entry) => entry.judge_id === judge.id);
+        const response = row.pair[judge.id]?.response;
+        return validation?.valid && response?.judgment?.confidence === 'high'
+          ? response.judgment.final_label
+          : 'indeterminate';
+      });
       return [
         judge.id,
         {
           sensitivity: ratio(
-            positive.filter((row) => row.pair[judge.id]?.response?.judgment?.final_label === 'frame_refuser').length,
+            positive.filter((row) => labels[rows.indexOf(row)] === 'frame_refuser').length,
             positive.length,
           ),
           specificity: ratio(
             negative.filter(
-              (row) => row.pair[judge.id]?.response?.judgment?.final_label === row.corpusCase.expected.label,
+              (row) => labels[rows.indexOf(row)] !== 'indeterminate' && labels[rows.indexOf(row)] !== 'frame_refuser',
             ).length,
             negative.length,
+          ),
+          exact_label_accuracy: ratio(
+            rows.filter((row, index) => labels[index] === row.corpusCase.expected.label).length,
+            rows.length,
           ),
           labels,
         },
@@ -590,7 +659,11 @@ export function scoreTutorStubResistanceSemanticCorpus({ corpus, responsePairs, 
     per_judge: Object.fromEntries(
       judges.map((judge) => [
         judge.id,
-        { sensitivity: judgeMetrics[judge.id].sensitivity, specificity: judgeMetrics[judge.id].specificity },
+        {
+          sensitivity: judgeMetrics[judge.id].sensitivity,
+          specificity: judgeMetrics[judge.id].specificity,
+          exact_label_accuracy: judgeMetrics[judge.id].exact_label_accuracy,
+        },
       ]),
     ),
     consensus_sensitivity: ratio(
@@ -598,8 +671,21 @@ export function scoreTutorStubResistanceSemanticCorpus({ corpus, responsePairs, 
       positive.length,
     ),
     consensus_specificity: ratio(
-      negative.filter((row) => row.result.final_label === row.corpusCase.expected.label).length,
+      negative.filter((row) => row.result.status === 'determinate' && row.result.final_label !== 'frame_refuser')
+        .length,
       negative.length,
+    ),
+    consensus_exact_label_accuracy: ratio(
+      rows.filter((row) => row.result.final_label === row.corpusCase.expected.label).length,
+      rows.length,
+    ),
+    consensus_productive_dispute_recall: ratio(
+      rows.filter(
+        (row) =>
+          row.corpusCase.expected.label === 'frame_defiant_or_productive_dispute' &&
+          row.result.final_label === row.corpusCase.expected.label,
+      ).length,
+      rows.filter((row) => row.corpusCase.expected.label === 'frame_defiant_or_productive_dispute').length,
     ),
     raw_interjudge_agreement: ratio(
       judgeMetrics[judges[0].id].labels.filter((value, index) => value === judgeMetrics[judges[1].id].labels[index])
@@ -633,10 +719,14 @@ export function scoreTutorStubResistanceSemanticCorpus({ corpus, responsePairs, 
     metrics.schema_span_provenance_validity === gates.schemaSpanProvenanceValidity &&
     Object.values(metrics.per_judge).every(
       (row) =>
-        row.sensitivity >= gates.minimumPerJudgeSensitivity && row.specificity >= gates.minimumPerJudgeSpecificity,
+        row.sensitivity >= gates.minimumPerJudgeSensitivity &&
+        row.specificity >= gates.minimumPerJudgeSpecificity &&
+        row.exact_label_accuracy >= gates.minimumPerJudgeExactLabelAccuracy,
     ) &&
     metrics.consensus_sensitivity >= gates.minimumConsensusSensitivity &&
     metrics.consensus_specificity >= gates.minimumConsensusSpecificity &&
+    metrics.consensus_exact_label_accuracy >= gates.minimumConsensusExactLabelAccuracy &&
+    metrics.consensus_productive_dispute_recall >= gates.minimumConsensusProductiveDisputeRecall &&
     metrics.raw_interjudge_agreement >= gates.minimumRawInterjudgeAgreement &&
     metrics.cohen_kappa >= gates.minimumCohenKappa &&
     metrics.determined_coverage_overall >= gates.minimumOverallDeterminedCoverage &&
@@ -660,8 +750,23 @@ export function scoreTutorStubResistanceSemanticCorpus({ corpus, responsePairs, 
 
 export function validateTutorStubResistanceSemanticCorpus(corpus) {
   const issues = [];
+  if (
+    !exactKeys(corpus, [
+      'schema',
+      'corpus_id',
+      'role',
+      'frozen',
+      'prompt_examples_allowed',
+      'context_provenance',
+      'cases',
+    ])
+  ) {
+    issues.push('corpus keys are not exact');
+  }
   if (corpus?.schema !== TUTOR_STUB_RESISTANCE_SEMANTIC_CORPUS_SCHEMA) issues.push('unsupported corpus schema');
   if (!['development_regression', 'heldout_blinded'].includes(corpus?.role)) issues.push('invalid corpus role');
+  if (corpus?.frozen !== true) issues.push('corpus must be frozen');
+  if (!CONTEXT_PROVENANCE_VALUES.includes(corpus?.context_provenance)) issues.push('context provenance is invalid');
   if (corpus?.prompt_examples_allowed !== false) issues.push('corpus examples must be prohibited from prompts');
   const cases = Array.isArray(corpus?.cases) ? corpus.cases : [];
   if (!cases.length) issues.push('corpus must contain cases');
@@ -670,25 +775,89 @@ export function validateTutorStubResistanceSemanticCorpus(corpus) {
     issues.push('corpus case ids must be non-empty and unique');
   }
   for (const corpusCase of cases) {
+    if (!exactKeys(corpusCase, ['case_id', 'public_context', 'source', 'expected'])) {
+      issues.push(`${corpusCase?.case_id}: case keys are not exact`);
+    }
     if (!String(corpusCase?.source || '').trim()) issues.push(`${corpusCase?.case_id}: source is empty`);
-    if (!Array.isArray(corpusCase?.public_context) || !corpusCase.public_context.length) {
+    const publicContext = Array.isArray(corpusCase?.public_context) ? corpusCase.public_context : [];
+    if (!publicContext.length) {
       issues.push(`${corpusCase?.case_id}: bounded public context is required`);
+    }
+    for (const [index, context] of publicContext.entries()) {
+      if (!exactKeys(context, ['role', 'text']))
+        issues.push(`${corpusCase?.case_id}: context ${index} keys are not exact`);
+      if (!['assistant', 'learner'].includes(context?.role))
+        issues.push(`${corpusCase?.case_id}: context ${index} role is invalid`);
+      if (!String(context?.text || '').trim()) issues.push(`${corpusCase?.case_id}: context ${index} text is empty`);
+    }
+    if (!exactKeys(corpusCase?.expected, ['label', 'judgment', 'evidence'])) {
+      issues.push(`${corpusCase?.case_id}: expected keys are not exact`);
     }
     if (!FINAL_LABELS.filter((label) => label !== 'indeterminate').includes(corpusCase?.expected?.label)) {
       issues.push(`${corpusCase?.case_id}: expected label is invalid`);
     }
     const judgment = corpusCase?.expected?.judgment;
     if (!exactKeys(judgment, CORE_FIELDS)) issues.push(`${corpusCase?.case_id}: expected judgment keys are not exact`);
+    for (const field of [
+      'jurisdiction_dispute',
+      'licensed_participation',
+      'participation_withholding',
+      'productive_counterframing',
+    ]) {
+      if (!TRISTATE.includes(judgment?.[field])) issues.push(`${corpusCase?.case_id}: ${field} is invalid`);
+    }
+    if (!TARGETS.includes(judgment?.jurisdiction_target))
+      issues.push(`${corpusCase?.case_id}: jurisdiction_target is invalid`);
+    if (!JURISDICTION_TYPES.includes(judgment?.jurisdiction_type))
+      issues.push(`${corpusCase?.case_id}: jurisdiction_type is invalid`);
+    if (!FINAL_LABELS.includes(judgment?.final_label)) issues.push(`${corpusCase?.case_id}: final_label is invalid`);
     if (judgment && judgment.final_label !== expectedLabel(judgment)) {
       issues.push(`${corpusCase?.case_id}: expected judgment contradicts label vector`);
     }
-    for (const evidence of corpusCase?.expected?.evidence || []) {
+    if (judgment && corpusCase?.expected?.label !== judgment.final_label) {
+      issues.push(`${corpusCase?.case_id}: expected label does not match judgment final label`);
+    }
+    if (judgment?.jurisdiction_dispute === 'no') {
+      if (judgment.jurisdiction_target !== 'none')
+        issues.push(`${corpusCase?.case_id}: non-dispute target must be none`);
+      if (judgment.jurisdiction_type !== 'none') issues.push(`${corpusCase?.case_id}: non-dispute type must be none`);
+    }
+    if (
+      judgment?.jurisdiction_dispute === 'yes' &&
+      (judgment.jurisdiction_target === 'none' || judgment.jurisdiction_type === 'none')
+    ) {
+      issues.push(`${corpusCase?.case_id}: dispute requires target and type`);
+    }
+    const evidenceRows = Array.isArray(corpusCase?.expected?.evidence) ? corpusCase.expected.evidence : [];
+    if (!Array.isArray(corpusCase?.expected?.evidence))
+      issues.push(`${corpusCase?.case_id}: evidence must be an array`);
+    const evidenceKeys = new Set();
+    for (const evidence of evidenceRows) {
+      if (!exactKeys(evidence, ['field', 'source_id', 'text']))
+        issues.push(`${corpusCase.case_id}: evidence keys are not exact`);
       if (!EVIDENCE_FIELDS.includes(evidence?.field)) issues.push(`${corpusCase.case_id}: evidence field is invalid`);
+      const evidenceKey = `${evidence?.field}:${evidence?.source_id}:${evidence?.text}`;
+      if (evidenceKeys.has(evidenceKey)) issues.push(`${corpusCase.case_id}: evidence row is duplicated`);
+      evidenceKeys.add(evidenceKey);
       try {
         exactSpan(corpusCase, evidence);
       } catch (error) {
         issues.push(`${corpusCase.case_id}: ${error.message}`);
       }
+    }
+    const evidenceFields = new Set(evidenceRows.map((entry) => entry.field));
+    for (const field of [
+      'jurisdiction_dispute',
+      'licensed_participation',
+      'participation_withholding',
+      'productive_counterframing',
+    ]) {
+      if (judgment?.[field] === 'yes' && !evidenceFields.has(field)) {
+        issues.push(`${corpusCase?.case_id}: ${field} requires evidence`);
+      }
+    }
+    if (judgment?.jurisdiction_dispute === 'yes' && !evidenceFields.has('jurisdiction_target')) {
+      issues.push(`${corpusCase?.case_id}: jurisdiction_target requires evidence`);
     }
   }
   return { valid: issues.length === 0, issues };

@@ -31,7 +31,7 @@
   },
   "instrument": {
     "implementationPath": "services/tutorStubResistanceSemanticAdjudication.js",
-    "implementationSha256": "86b92b03d381b6c053d0379a26666ca2fec644b8aefdc90cd4f1f593379bd143",
+    "implementationSha256": "229ece77317b62ed16fe04f970de2e3212dfed7116be628215af02fa22db362f",
     "responseSchemaPath": "config/tutor-stub-resistance-semantic-adjudication-response.schema.v1.json",
     "responseSchemaSha256": "39a9d12655ec26b1255ab72cfd1f5818dc9e0084daf4c9fafc39c0dbb8ea044f",
     "offsetUnit": "utf16_code_unit",
@@ -66,6 +66,7 @@
         "model": "gpt-5.6-sol",
         "modelFamily": "openai_gpt_5_6",
         "effort": "low",
+        "modelAttestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
         "independent": true
       },
       {
@@ -75,6 +76,7 @@
         "model": "claude-sonnet-5",
         "modelFamily": "anthropic_claude_5",
         "effort": "low",
+        "modelAttestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
         "independent": true
       }
     ],
@@ -98,8 +100,11 @@
       "schemaSpanProvenanceValidity": 1,
       "minimumPerJudgeSensitivity": 0.9,
       "minimumPerJudgeSpecificity": 0.9,
+      "minimumPerJudgeExactLabelAccuracy": 0.9,
       "minimumConsensusSensitivity": 0.95,
       "minimumConsensusSpecificity": 0.95,
+      "minimumConsensusExactLabelAccuracy": 0.95,
+      "minimumConsensusProductiveDisputeRecall": 0.9,
       "minimumRawInterjudgeAgreement": 0.9,
       "minimumCohenKappa": 0.8,
       "minimumOverallDeterminedCoverage": 0.95,
@@ -115,6 +120,7 @@
     "minimumCases": 80,
     "minimumPositiveCases": 40,
     "minimumNegativeCases": 40,
+    "minimumProductiveDisputeCases": 16,
     "authoredByIndependentAgentAfterInstrumentFreezeCommit": true,
     "heldoutTextOrGoldVisibleToPromptBuilderBeforeFreeze": false,
     "postHeldoutPromptModelThresholdOrConsensusTuning": false,

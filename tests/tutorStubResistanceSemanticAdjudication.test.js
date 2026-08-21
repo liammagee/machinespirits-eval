@@ -83,6 +83,18 @@ test('registration freezes cross-provider judges, gates, lifecycle, and conserva
   assert.equal(registration.instrument.implementationSha256, sha256(registration.instrument.implementationPath));
   assert.equal(registration.instrument.responseSchemaSha256, sha256(SCHEMA_PATH));
   assert.equal(registration.instrument.developmentCorpusSha256, sha256(CORPUS_PATH));
+  for (const mutate of [
+    (value) => (value.measurement.validationGates.minimumConsensusSensitivity = 0.9),
+    (value) => (value.measurement.validationGates.minimumCohenKappa = 0.7),
+    (value) => (value.measurement.validationGates.invalidCountsAsSensitivityOrSpecificityFailure = false),
+    (value) => (value.heldoutFreezeProtocol.minimumCases = 79),
+    (value) => (value.heldoutFreezeProtocol.minimumProductiveDisputeCases = 15),
+    (value) => (value.heldoutFreezeProtocol.postHeldoutPromptModelThresholdOrConsensusTuning = true),
+  ]) {
+    const changed = structuredClone(registration);
+    mutate(changed);
+    assert.equal(validateTutorStubResistanceSemanticRegistration(changed).valid, false);
+  }
 });
 
 test('blind prompts include only bounded public context and utterance, never labels or hidden assignment state', () => {
@@ -124,6 +136,10 @@ test('model response schema excludes self-attested provenance and deterministic 
   assert.equal(fixture.modelOutput.provenance, undefined);
   assert.equal(fixture.response.provenance.provider, judge.provider);
   assert.equal(fixture.response.provenance.model, judge.model);
+  assert.equal(fixture.response.provenance.effort, 'low');
+  assert.equal(fixture.response.provenance.structured_output, true);
+  assert.equal(fixture.response.provenance.prohibited_tool_events, 0);
+  assert.equal(fixture.response.provenance.model_attestation_basis, judge.modelAttestationBasis);
   assert.equal(fixture.response.provenance.packet_sha256, fixture.prompt.packet_sha256);
   assert.deepEqual(
     validateTutorStubResistanceSemanticResponse({
@@ -145,6 +161,25 @@ test('model response schema excludes self-attested provenance and deterministic 
       }),
     /keys are not exact/u,
   );
+  for (const mutate of [
+    (response) => delete response.provenance.prohibited_tool_events,
+    (response) => delete response.provenance.structured_output,
+    (response) => (response.provenance.effort = 'high'),
+  ]) {
+    const response = structuredClone(fixture.response);
+    mutate(response);
+    assert.equal(
+      validateTutorStubResistanceSemanticResponse({
+        source: corpusCase.source,
+        publicContext: corpusCase.public_context,
+        caseId: corpusCase.case_id,
+        response,
+        registration,
+        prompt: fixture.prompt,
+      }).valid,
+      false,
+    );
+  }
 });
 
 test('zero-call development regression score passes all individual, consensus, reliability, and coverage gates', () => {
@@ -153,11 +188,21 @@ test('zero-call development regression score passes all individual, consensus, r
   assert.equal(score.metrics.schema_span_provenance_validity, 1);
   assert.equal(score.metrics.consensus_sensitivity, 1);
   assert.equal(score.metrics.consensus_specificity, 1);
+  assert.equal(score.metrics.consensus_exact_label_accuracy, 1);
+  assert.equal(score.metrics.consensus_productive_dispute_recall, 1);
   assert.equal(score.metrics.raw_interjudge_agreement, 1);
   assert.equal(score.metrics.cohen_kappa, 1);
   assert.equal(score.metrics.determined_coverage_overall, 1);
-  assert.deepEqual(score.metrics.per_judge.semantic_judge_a, { sensitivity: 1, specificity: 1 });
-  assert.deepEqual(score.metrics.per_judge.semantic_judge_b, { sensitivity: 1, specificity: 1 });
+  assert.deepEqual(score.metrics.per_judge.semantic_judge_a, {
+    sensitivity: 1,
+    specificity: 1,
+    exact_label_accuracy: 1,
+  });
+  assert.deepEqual(score.metrics.per_judge.semantic_judge_b, {
+    sensitivity: 1,
+    specificity: 1,
+    exact_label_accuracy: 1,
+  });
 });
 
 test('lexical advice cannot veto or upgrade an agreeing capable semantic judgment', () => {
@@ -191,6 +236,31 @@ test('productive counterframing remains productive while explicitly withholding 
   assert.equal(result.judgment.participation_withholding, 'yes');
   assert.equal(result.judgment.licensed_participation, 'yes');
   assert.equal(result.final_label, 'frame_defiant_or_productive_dispute');
+});
+
+test('an indeterminate core field takes precedence over either determinate profile vector', () => {
+  for (const label of ['frame_refuser', 'frame_defiant_or_productive_dispute']) {
+    const corpusCase = corpus.cases.find((row) => row.expected.label === label);
+    const pair = responsePairs()[corpusCase.case_id];
+    for (const judge of registration.measurement.judges) {
+      pair[judge.id].response.judgment.participation_withholding = 'indeterminate';
+      pair[judge.id].response.judgment.final_label = 'indeterminate';
+      pair[judge.id].response.judgment.confidence = 'medium';
+      pair[judge.id].response.judgment.indeterminacy_reason = 'mixed_pragmatic_force';
+    }
+    const result = adjudicateTutorStubResistanceSemanticJudges({
+      source: corpusCase.source,
+      publicContext: corpusCase.public_context,
+      caseId: corpusCase.case_id,
+      responses: registration.measurement.judges.map((judge) => pair[judge.id].response),
+      prompts: Object.fromEntries(registration.measurement.judges.map((judge) => [judge.id, pair[judge.id].prompt])),
+      registration,
+    });
+    assert.equal(result.status, 'measurement_indeterminate');
+    assert.equal(result.final_label, 'indeterminate');
+    assert.ok(result.reasons.includes('judge_indeterminate'));
+    assert.ok(result.validation.every((entry) => entry.valid));
+  }
 });
 
 test('disagreement, low confidence, invalid spans, duplicate judges, and non-independent runs fail indeterminate', () => {
@@ -259,4 +329,68 @@ test('indeterminate cases count as sensitivity failures while bounded coverage g
   assert.ok(score.metrics.consensus_sensitivity < 1);
   assert.ok(score.metrics.determined_coverage_positive < 1);
   assert.equal(score.metrics.indeterminate_cases, 1);
+  assert.ok(score.metrics.per_judge.semantic_judge_b.sensitivity < 1);
+});
+
+test('binary specificity cannot hide collapsed productive-dispute labels', () => {
+  const pairs = responsePairs();
+  for (const corpusCase of corpus.cases.filter((row) => row.expected.label === 'frame_defiant_or_productive_dispute')) {
+    for (const judge of registration.measurement.judges) {
+      pairs[corpusCase.case_id][judge.id].response.judgment = {
+        jurisdiction_dispute: 'no',
+        jurisdiction_target: 'none',
+        jurisdiction_type: 'none',
+        licensed_participation: 'no',
+        participation_withholding: 'no',
+        productive_counterframing: 'no',
+        final_label: 'neither',
+        evidence_spans: [],
+        confidence: 'high',
+        indeterminacy_reason: 'none',
+      };
+    }
+  }
+  const score = scoreTutorStubResistanceSemanticCorpus({ corpus, responsePairs: pairs, registration });
+  assert.equal(score.metrics.consensus_specificity, 1);
+  assert.equal(score.metrics.consensus_productive_dispute_recall, 0);
+  assert.ok(score.metrics.consensus_exact_label_accuracy < 1);
+  assert.equal(score.status, 'failed');
+});
+
+test('corpus validation rejects loose context, vector, evidence, and extra-key shapes', () => {
+  const mutate = (change) => {
+    const value = structuredClone(corpus);
+    change(value.cases[0]);
+    return validateTutorStubResistanceSemanticCorpus(value);
+  };
+  assert.equal(mutate((row) => (row.public_context[0].role = 'system')).valid, false);
+  assert.equal(mutate((row) => (row.public_context = {})).valid, false);
+  assert.equal(mutate((row) => (row.extra = true)).valid, false);
+  assert.equal(mutate((row) => (row.expected.judgment.jurisdiction_dispute = 'maybe')).valid, false);
+  assert.equal(mutate((row) => (row.expected.judgment.jurisdiction_target = 'whatever')).valid, false);
+  assert.equal(mutate((row) => (row.expected.judgment.jurisdiction_type = 'whatever')).valid, false);
+  assert.equal(mutate((row) => (row.expected.label = 'neither')).valid, false);
+  assert.equal(
+    mutate((row) => {
+      row.expected.judgment.jurisdiction_dispute = 'no';
+      row.expected.judgment.final_label = 'neither';
+      row.expected.label = 'neither';
+    }).valid,
+    false,
+  );
+  assert.equal(mutate((row) => (row.expected.evidence = {})).valid, false);
+  assert.equal(
+    mutate((row) => {
+      row.expected.evidence = row.expected.evidence.filter((entry) => entry.field !== 'participation_withholding');
+    }).valid,
+    false,
+  );
+  assert.equal(mutate((row) => row.expected.evidence.push(structuredClone(row.expected.evidence[0]))).valid, false);
+  assert.equal(mutate((row) => (row.expected.evidence[0].text = 'I')).valid, false);
+  const top = structuredClone(corpus);
+  top.frozen = false;
+  assert.equal(validateTutorStubResistanceSemanticCorpus(top).valid, false);
+  top.frozen = true;
+  top.context_provenance = 'unknown';
+  assert.equal(validateTutorStubResistanceSemanticCorpus(top).valid, false);
 });
