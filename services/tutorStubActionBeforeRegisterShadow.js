@@ -131,6 +131,7 @@ export function beginTutorStubActionBeforeRegisterShadow({
   classification = null,
   tutorLearnerDag = null,
   learnerText = '',
+  observationSemantics,
 } = {}) {
   const turn = turnNumber(state, tutorLearnerDag);
   const comprehension = tutorStubComprehensionFeatures(state?.comprehension, { turn });
@@ -147,7 +148,12 @@ export function beginTutorStubActionBeforeRegisterShadow({
   const legacyProjectedMove = projectTutorStubActionFamilyToPedagogicalMove({
     actionFamily: legacyActionPreview.actionFamily,
   });
-  const resistanceAxisShadow = createTutorStubResistanceAxisShadow({ learnerText, classification });
+  const resistanceAxisShadow = createTutorStubResistanceAxisShadow({
+    learnerText,
+    classification,
+    tutorLearnerDag,
+    semantics: observationSemantics,
+  });
   const resistanceMove = resistanceAxisShadow.projected_move;
 
   return {

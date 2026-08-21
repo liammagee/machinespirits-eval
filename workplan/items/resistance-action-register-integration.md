@@ -1714,6 +1714,49 @@ and explicit human approval.
   by this closeout. Any future restart would be a new programme boundary after
   an independently validated compositional boredom observer and trigger-timing
   contract, not a continuation of this confirmation.
+- 2026-08-20 — Implemented the zero-call prospective-v8 boredom observer and
+  action-before-register timing redesign after the categorical instrument
+  failure. The root cause was contradictory composition: the historical
+  observer let a leading flat cue license the entire utterance, while a
+  separate generic timing proxy could independently veto that license from
+  classifier uptake language. This produced both frozen defects: `Sure. We
+  could examine the delivery ledger.` was a lexical false positive, and
+  `Fine. Is this trial nearly done?` was a genuine non-content withdrawal that
+  the timing proxy falsely suppressed.
+
+  Prospective-v8 applies one explicit precedence rule before action selection:
+  genuine productive uptake defeats a flat/bored cue; actionable withdrawal
+  without productive uptake licenses the boredom-appropriate action; a mixed
+  utterance containing both fails closed as ambiguous; boredom language alone
+  without actionable effort withdrawal remains negative. The timing decision
+  consumes this compositional result and cannot reclassify it through the
+  generic uptake heuristic. The new behavior is opt-in only. Legacy-v1 and
+  prospective-v2 through v7 retain their historical dispatch and exact
+  output decisions.
+
+  Registration V2 freezes all eight stopped traces, both live/private batch
+  inventories, `71/71/0/0` accounting, private archive commit
+  `5833e54cac9b2e2e88847630c0c61c700c765bb4`, and permanent no-retry,
+  no-resume, no-reuse, no-replacement, no-pooling, no-analysis, and no-credit
+  exclusions. The stopped run remains incomplete with no scientific verdict.
+  The scientific confirmation design remains unchanged: 36 wholly fresh
+  independent dialogues, 18 per arm across six predeclared worlds, nine
+  balanced batches, the existing one-turn recovery primary, two-turn
+  proof-progress fixed-sequence secondary, and one final exact conditional
+  blocked analysis with no interim analysis. Attempts remain operational
+  safeguards only: the current ledger is `293`, a fresh study may reserve at
+  most `2160`, both powered confirmations together reach at most `4613`, and
+  the standing programme safeguard remains `5000`.
+
+  The zero-call readiness surface adds registration V2, endpoint/certificate
+  V2, a prospective-v8 production observer/timing matrix, production
+  orchestration and analyzer provenance checks, deterministic synthetic
+  endpoint preflight, historical digest ratchets, and a versioned complete
+  executable closure. Registration remains HOLD with false live/model
+  authorization and no GO request. A wholly fresh digest-bound request may be
+  prepared only after the reviewed readiness source merges; it must use new
+  create-once destinations and cannot consume any stopped dialogue, prefix,
+  assignment, or outcome.
 - 2026-08-20 — Closed prospective-V6 confirmation request
   `8c25d6afcae9b9c5689f3130664048c63d303a440412af7f4ba138a6a9337aab`
   as **incomplete with no scientific verdict** after Block 1. The exact launch

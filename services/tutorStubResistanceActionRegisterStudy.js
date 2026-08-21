@@ -162,6 +162,14 @@ function observeResistanceAxis({ learnerText = '', classification = null } = {})
   return beginTutorStubActionBeforeRegisterShadow({ learnerText, classification }).resistance_axis_shadow;
 }
 
+function usesCompositionalBoredomObservation(runtime) {
+  return (
+    runtime?.dynamic_boredom_proof_dag === true &&
+    runtime?.proof_dag_registration?.design?.observationSemantics ===
+      RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8
+  );
+}
+
 function contentBearing(classification) {
   const turn = classificationTurn(classification);
   return CONTENT_BEARING_MOVES.has(turn.discourse_move) || CONTENT_BEARING_EVIDENCE.has(turn.evidence_use);
@@ -626,25 +634,36 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
   tutorLearnerDag,
 }) {
   const semantics = runtime.registration?.design?.trigger?.observationSemantics;
+  const compositionalBoredom = usesCompositionalBoredomObservation(runtime);
   const v4Observation = usesProspectiveV4Observation(runtime.registration)
     ? observeResistantLearnerTurn({ learnerText, classification, semantics })
     : null;
   const v4Refusal = v4Observation?.observations?.find(
     (observation) => observation.type === 'frame_jurisdiction_refusal',
   );
-  const shadow = v4Observation
-    ? {
-        resistance_kind: v4Refusal ? 'frame_refuser' : null,
-        observation: v4Observation,
-        warrant: {
-          status: v4Refusal && v4Observation.ambiguous === false ? 'licensed' : 'not_licensed',
-          required_observation_type: 'frame_jurisdiction_refusal',
-          basis: clone(v4Refusal || null),
-          ambiguity_blocks_license: v4Observation.ambiguous === true,
-          primary_move_type: v4Refusal ? 'test_bounded_distinction' : null,
-        },
-      }
-    : observeResistanceAxis({ learnerText, classification });
+  const compositionalBoredomShadow = compositionalBoredom
+    ? beginTutorStubActionBeforeRegisterShadow({
+        learnerText,
+        classification,
+        tutorLearnerDag,
+        observationSemantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8,
+      }).resistance_axis_shadow
+    : null;
+  const shadow =
+    compositionalBoredomShadow ||
+    (v4Observation
+      ? {
+          resistance_kind: v4Refusal ? 'frame_refuser' : null,
+          observation: v4Observation,
+          warrant: {
+            status: v4Refusal && v4Observation.ambiguous === false ? 'licensed' : 'not_licensed',
+            required_observation_type: 'frame_jurisdiction_refusal',
+            basis: clone(v4Refusal || null),
+            ambiguity_blocks_license: v4Observation.ambiguous === true,
+            primary_move_type: v4Refusal ? 'test_bounded_distinction' : null,
+          },
+        }
+      : observeResistanceAxis({ learnerText, classification }));
   const timing = detectTutorStubEdgeTimingSignal({ learnerText, classification, tutorLearnerDag });
   const confirmationObserverFirstRefusal =
     isConfirmationSuccessorRegistration(runtime.registration) &&
@@ -666,14 +685,34 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
   }
   if (timing.comprehensionRepair) reasons.push('comprehension_repair');
   if (timing.protectedAffect) reasons.push('protected_affect');
-  if (timing.phase === 'uptake' && !confirmationObserverFirstRefusal) {
+  if (timing.phase === 'uptake' && !confirmationObserverFirstRefusal && !compositionalBoredom) {
     reasons.push('content_bearing_uptake_already_visible');
   }
+  const boredomComposition = compositionalBoredom
+    ? shadow.observation?.registered_observation?.boredom_composition ||
+      shadow.observation?.registered_observation?.defeated?.find(
+        (candidate) => candidate.type === 'bored_effort_withholding',
+      )?.composition ||
+      shadow.observation?.registered_observation?.observations?.find(
+        (candidate) => candidate.type === 'bored_effort_withholding',
+      )?.features?.composition ||
+      null
+    : null;
   return {
     eligible: reasons.length === 0,
     reasons,
     shadow,
     timing,
+    ...(compositionalBoredom
+      ? {
+          boredom_compositional_precedence: {
+            consumed_by_timing_decision: true,
+            generic_uptake_override_allowed: false,
+            disposition: boredomComposition?.disposition || 'negative_no_boredom_cue',
+            ambiguous: boredomComposition?.ambiguous === true,
+          },
+        }
+      : {}),
     ...(isConfirmationSuccessorRegistration(runtime.registration)
       ? { confirmation_observer_first_refusal: confirmationObserverFirstRefusal }
       : {}),

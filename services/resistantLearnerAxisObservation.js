@@ -1,4 +1,4 @@
-import { observeResistantLearnerTurn } from './resistantLearnerObservation.js';
+import { RESISTANT_LEARNER_OBSERVATION_SEMANTICS, observeResistantLearnerTurn } from './resistantLearnerObservation.js';
 
 export const RESISTANT_LEARNER_AXIS_OBSERVATION_SCHEMA = 'machinespirits.resistant-learner-axis-observation.v1';
 
@@ -75,10 +75,17 @@ export function observeResistantLearnerAxes({
   learnerText = '',
   classification = null,
   tutorText = '',
+  tutorLearnerDag = null,
   semantics,
 } = {}) {
   const text = String(learnerText || '').trim();
-  const registered = observeResistantLearnerTurn({ learnerText: text, classification, tutorText, semantics });
+  const registered = observeResistantLearnerTurn({
+    learnerText: text,
+    classification,
+    tutorText,
+    tutorLearnerDag,
+    semantics,
+  });
   const effortEvidence =
     registered.observations.find((row) => row.type === 'bored_effort_withholding')?.evidence_span || null;
   const registeredFrameEvidence =
@@ -101,6 +108,10 @@ export function observeResistantLearnerAxes({
     authority: 'calibration_only',
     changes_registered_observation: false,
     axes,
+    ...(semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7 ||
+    semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8
+      ? { registered_observation: registered }
+      : {}),
   };
 }
 

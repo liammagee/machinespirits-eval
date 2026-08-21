@@ -1,0 +1,265 @@
+{
+  "schema": "machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v2",
+  "version": 2,
+  "status": "prospective_zero_call_readiness_hold",
+  "workplanItem": "resistance-action-register-integration",
+  "frozenAt": "2026-08-20",
+  "registeredQuestion": "After a compositional prospective-v8 boredom observation has selected the fixed boredom-appropriate discriminating-question action, does warm rather than plain realization improve the existing one-turn bored resistance-recovery endpoint, and does any improvement reach objective public proof-DAG progress by two turns?",
+  "claimBoundary": "This fresh blocked-randomized simulated-learner confirmation can establish only a warm-versus-plain register effect after the boredom-appropriate action has already been selected by prospective-v8. It cannot reinterpret or pool the stopped v2 run, re-estimate historical boredom detection, estimate action fit, establish an interaction, general tutor efficacy, durable learning, human validity, or transfer.",
+  "authorization": {
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "goRequestPrepared": false,
+    "programmeLedgerBeforeStudy": {
+      "reservedAttempts": 293,
+      "ceiling": 5000,
+      "remaining": 4707
+    },
+    "thisReadinessConsumesProgrammeHeadroom": false,
+    "requiredBeforeAnyModelCall": [
+      "merge the independently reviewed prospective-v8 observer, timing, executor, analyzer, preflight, validator, and complete source closure",
+      "prepare and validate a wholly fresh digest-bound HOLD request with nine absent create-once batch destinations and one absent combined-report destination",
+      "verify the exact request digest against the standing authorization and unchanged operational safeguards"
+    ]
+  },
+  "preservation": {
+    "historicalRegistrationV1Sha256": "72f293cee1e364818bd6baa30a36df2d908af8d3c9f6df664731039d09d8e0a8",
+    "historicalEndpointV1Sha256": "da33ca69e4092a66db3169ee19d645152a99b1c3ffaac231c8fbed09846f3d59",
+    "historicalCertificateV1Sha256": "702e3fd849c3664d3edcc95dd63b4fbc3138cfa21121b96090b586095acb6899",
+    "historicalRequestV1Sha256": "0972e76083a7a89592a25d55820527e2b061afad0fdf72036f08790dd61dfe61",
+    "consumedRequestV2Sha256": "476db5ea5d2bdb9a3bc9a1d3df5b0c5e0d3a641cbd1883129e4fe0f583037310",
+    "historicalObserverSemanticsUnchanged": [
+      "legacy_v1",
+      "prospective_v2",
+      "prospective_v3",
+      "prospective_v4",
+      "prospective_v5",
+      "prospective_v6",
+      "prospective_v7"
+    ]
+  },
+  "stoppedConfirmation": {
+    "disposition": "categorical_instrument_failure_incomplete_no_scientific_verdict",
+    "requestSha256": "476db5ea5d2bdb9a3bc9a1d3df5b0c5e0d3a641cbd1883129e4fe0f583037310",
+    "launchCommit": "c2bc7b1bcc79b32c48e9b47290d9354c92a44647",
+    "launchTree": "cdf9ffdd22863f0f22f49c9711bee052186ba76b",
+    "privateArchiveBranch": "codex/boredom-proof-dag-confirmation-v2-incomplete-archive",
+    "privateArchiveCommit": "5833e54cac9b2e2e88847630c0c61c700c765bb4",
+    "accounting": {
+      "reservations": 71,
+      "completed": 71,
+      "providerFailures": 0,
+      "aborted": 0
+    },
+    "inventories": {
+      "batch1Live": "b3eeb3bb9361d9912c8d2d106d5beb5561d9561bf9cde213853c6eb6e5713d7a",
+      "batch1Private": "d9958cf8ba562b6bcc3ae14a5dce22540027409f24595b1c18add83dc111a675",
+      "batch2Live": "35aca4d938b865d9f635884b40157f5f5ea04e8ee879870f08ea1ed44ec6e1e2",
+      "batch2Private": "2b9457e7a6a8f34a2c74b3d06b102242c578d496e19521bf4f92c4ac5ca4e6b9"
+    },
+    "traceSha256": [
+      "615b6b58e329638285024a34b5c66eac4883bd76d98d58715fc6a9b5e5c01c02",
+      "a4c666878724d537f3b960be1b5d153a02ef2eaf873475781e9100427f6f8a40",
+      "d87db7fdb9656b9840abe7e35c5fb6045f579e8bb09cd3a5f64d3e9b8a2503fc",
+      "354c0149d2e94e92d2d4d21a0de9ae853f3d1bee14d0a3b09b2e33e5fc8e17bd",
+      "100eb9e43df72eee19aa973ef81e1eecdc8029be81021bd19ba88a2ca1c32f09",
+      "0a9de6bdf7e36b1f031372c981c37bb6216778acef6a1c8f1e2c3b15f7974c3f",
+      "00da8fe46cf830c2284883be43fef23f47b7c89d1ddb0140dac3ffaab5fb5d3d",
+      "f3594107f431fe87b46c8fadaf2b6c4ad0ec4705ce3f42f6fbad1a4dcddc8dea"
+    ],
+    "reuse": false,
+    "resume": false,
+    "retry": false,
+    "pool": false,
+    "replace": false,
+    "analyze": false,
+    "confirmationCredit": false
+  },
+  "design": {
+    "stage": "boredom_matched_action_plain_warm_proof_dag_confirmation",
+    "form": "fresh_prefix_blocked_randomized_independent_dialogues",
+    "profile": "bored",
+    "observationSemantics": "prospective_v8",
+    "observationPrecedence": "productive_uptake_defeats_cue; actionable_withdrawal_without_productive_uptake_licenses; mixed_withdrawal_and_uptake_fails_closed",
+    "dagMode": "strict_dag",
+    "worlds": [
+      "world_005_marrick",
+      "world_026_skyway_bakery",
+      "world_029_riverside_clinic",
+      "world_030_rowan_flat",
+      "world_031_tideway_makerspace",
+      "world_033_alder_row_redoubt"
+    ],
+    "freshPrefixGeneration": {
+      "prefixesPerWorld": 6,
+      "requiredDistinctPrefixes": 36,
+      "maximumTriggerTurn": 2,
+      "seedBase": 2026082400,
+      "uniqueSeedPerSource": true,
+      "requireDistinctPublicPrefixHashes": true,
+      "profileIdentityMayTrigger": false,
+      "protectedExclusions": [
+        "productive_uptake_precedes_cue",
+        "ambiguous_withdrawal_and_productive_uptake",
+        "comprehension_repair",
+        "protected_affect"
+      ],
+      "substantiveMissingOrDuplicateTriggerDisposition": "stop_incomplete_no_replacement_no_analysis"
+    },
+    "randomization": {
+      "independentUnit": "fresh_distinct_bored_public_prefix_dialogue",
+      "dialogues": 36,
+      "assignment": "predeclared_seeded_sha256_rank_blocked_by_world_before_generation_hidden_until_action_selection",
+      "algorithm": "sha256_rank_within_world",
+      "assignmentSeed": 20260820,
+      "assignmentManifestSha256": "4e256dfa65054747a5d6d1ac82d1aecb42f7c98f158cb76e686f24c37d71ef94",
+      "tieBreak": "dialogue_index_ascending",
+      "assignmentHiddenUntilAfterActionSelection": true,
+      "plainDialogues": 18,
+      "warmDialogues": 18,
+      "plainPerWorld": 3,
+      "warmPerWorld": 3,
+      "continuationsPerPrefix": 1,
+      "validOutputsMayNotBeSelectedDiscardedOrRerolled": true
+    },
+    "treatment": {
+      "fixedPedagogicalMove": "ask_discriminating_question",
+      "actionFit": "matched",
+      "realizations": ["plain", "warm"],
+      "reference": "plain",
+      "treatment": "warm",
+      "edgedOrSarcasticAbsent": true,
+      "applicationOrder": [
+        "compositional_public_boredom_observation",
+        "boredom_appropriate_action_selection",
+        "predeclared_register_assignment",
+        "public_realization"
+      ],
+      "assignedRegisterTutorTurns": 1,
+      "postTriggerLearnerTurns": 2,
+      "terminalTutorCall": false,
+      "safetyOverride": "record_as_nonadherent_in_intention_to_treat_never_reroll"
+    },
+    "noReuseOrPooling": {
+      "priorHeldOutDialoguesReused": false,
+      "priorMatchedActionDialoguesReused": false,
+      "priorTwelveCalibrationDialoguesReused": false,
+      "stoppedConfirmationDialoguesReused": false,
+      "stoppedConfirmationOutcomesPooled": false,
+      "priorOutcomesPooled": false,
+      "freshSourcePrefixesRequired": true,
+      "interimAnalysis": false,
+      "singleCombinedAnalysisAfterAllNineBatchSeals": true
+    }
+  },
+  "measurement": {
+    "primaryEndpoint": {
+      "id": "profile_specific_resistance_recovery",
+      "existingImplementation": "services/tutorStubResistanceActionRegisterStudy.js#scoreTutorStubResistanceRecovery",
+      "definition": "On the first post-trigger learner turn, the bored learner engages the fixed discriminating question on its merits with content-bearing evidence use.",
+      "deadlinePostTriggerLearnerTurns": 1,
+      "unit": "fresh_independent_dialogue",
+      "estimand": "warm_minus_plain_recovery_probability_blocked_equally_over_six_worlds",
+      "analysis": "two_sided_exact_conditional_blocked_score_test",
+      "conditioning": "condition_on_each_world_success_total_and_the_predeclared_three_plain_three_warm_allocation",
+      "alpha": 0.05,
+      "intentionToTreat": true,
+      "modelJudge": false
+    },
+    "keySecondaryEndpoint": {
+      "id": "objective_proof_progress_by_two_turns",
+      "definition": "By the second post-trigger learner turn, the deterministic public proof-DAG scorer records at least one new supported public premise, positive best-path coverage delta, negative proof-debt delta, and zero unsupported public claims.",
+      "analysis": "two_sided_exact_conditional_blocked_score_test_only_after_primary_rejects_under_fixed_sequence_gatekeeping",
+      "alpha": 0.05,
+      "familywiseErrorControl": "fixed_sequence_primary_then_key_secondary",
+      "modelJudge": false,
+      "powerClaim": "not_independently_powered_without_prior_proof_progress_calibration"
+    },
+    "treatmentFidelity": {
+      "minimumActionVisibility": 0.9,
+      "minimumRegisterVisibility": 0.9,
+      "failedFidelityDisposition": "fail_interpretability_gate_not_rerun"
+    },
+    "claimSeparation": {
+      "calibrationUse": "sample_size_and_fixed_action_motivation_only",
+      "confirmationUse": "fresh_18_per_arm_primary_and_key_secondary_results_only",
+      "calibrationAndConfirmationMayNotBePooled": true,
+      "stoppedConfirmationUse": "instrument_diagnosis_only_no_outcome_or_confirmation_credit",
+      "proofProgressSuperiorityClaimRequiresBothFixedSequenceTests": true
+    }
+  },
+  "power": {
+    "test": "two_sided_exact_conditional_blocked_score_test",
+    "alpha": 0.05,
+    "targetPower": 0.8,
+    "alternative": {
+      "plainRecoveryRate": 0.16666666666666666,
+      "warmRecoveryRate": 0.6666666666666666,
+      "riskDifference": 0.5,
+      "source": "excluded_12_dialogue_calibration_1_of_6_plain_versus_4_of_6_warm_used_for_sizing_only"
+    },
+    "minimumPerArm": 18,
+    "powerAt17PerArm": 0.7947641958186097,
+    "powerAt18PerArm": 0.8164905471625752,
+    "scope": "primary_recovery_endpoint_only",
+    "designChoiceAudit": {
+      "pairedExactMcNemarMinimumPairs": 28,
+      "pairedPowerAt27": 0.7983670167301511,
+      "pairedPowerAt28": 0.8166088496475903,
+      "pairedHardAttemptCeiling": 2856,
+      "selectedIndependentBlockedHardAttemptCeiling": 2160
+    }
+  },
+  "executionReadiness": {
+    "modelRoute": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna",
+      "effort": "low"
+    },
+    "maximumReservationsPerPlannedCall": 3,
+    "dialogue": {
+      "preTriggerBasePlannedCalls": 6,
+      "preTriggerTutorGuardRecoveryReserveCalls": 2,
+      "postTriggerBasePlannedCalls": 6,
+      "postTriggerTutorGuardRecoveryReserveCalls": 4,
+      "oneCumulativeFullLearnerRepairCalls": 2,
+      "plannedCallsPerDialogue": 20,
+      "maximumReservationsPerDialogue": 60,
+      "dialogues": 36,
+      "maximumReservations": 2160
+    },
+    "batches": {
+      "executionBatches": 9,
+      "dialoguesPerBatch": 4,
+      "plainPerBatch": 2,
+      "warmPerBatch": 2,
+      "maximumReservationsPerBatch": 240,
+      "totalBatches": 9,
+      "noInterimAnalysis": true
+    },
+    "hardStudyAttemptCeiling": 2160,
+    "programmeCeilingForThisStudyAlone": {
+      "ledgerBefore": 293,
+      "studyMaximum": 2160,
+      "requiredCeiling": 2453,
+      "incrementAboveCurrentLedger": 2160
+    },
+    "programmeCeilingIfFrameRefusalConfirmationAlsoReserved": {
+      "ledgerBefore": 293,
+      "frameRefusalMaximum": 2160,
+      "boredomMaximum": 2160,
+      "requiredCeiling": 4613,
+      "programmeSafeguard": 5000,
+      "remainingAtBothMaximum": 387
+    },
+    "attemptAccountingRole": "operational_execution_safeguard_only_not_scientific_endpoint_design_objective_or_sample_size_constraint",
+    "boundedTechnicalRecovery": "missing_or_failed_units_only_within_unchanged_per_unit_batch_study_and_programme_caps",
+    "validUnitReruns": false,
+    "outcomeSelection": false,
+    "liveExecutorAvailable": true,
+    "combinedAnalyzerAvailable": true,
+    "requestValidatorAvailable": true,
+    "remainingGap": "reviewed merged source closure and a fresh digest-bound HOLD request"
+  }
+}

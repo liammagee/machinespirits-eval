@@ -516,6 +516,8 @@
         "tests/tutorStubBoredomActionRegisterProofDagGoRequest.test.js",
         "tests/tutorStubBoredomActionRegisterProofDagReadiness.test.js",
         "tests/tutorStubBoredomActionRegisterProofDagStudy.test.js",
+        "tests/tutorStubBoredomObserverTimingV2.test.js",
+        "tests/tutorStubBoredomObserverTimingV2Readiness.test.js",
         "tests/tutorStubCanonicalActorialRealization.test.js",
         "tests/tutorStubCapabilities.test.js",
         "tests/tutorStubCardForce.test.js",

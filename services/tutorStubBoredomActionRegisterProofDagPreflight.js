@@ -4,6 +4,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
+import { RESISTANT_LEARNER_OBSERVATION_SEMANTICS, observeResistantLearnerTurn } from './resistantLearnerObservation.js';
+import { tutorStubResistanceActionRegisterTreatmentEligibility } from './tutorStubResistanceActionRegisterStudy.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const BOREDOM_PROOF_DAG_REGISTRATION_PATH =
@@ -250,8 +252,11 @@ export function exactMcNemarPower({ pairs, warmOnlyProbability, plainOnlyProbabi
   return power;
 }
 
-export function loadTutorStubBoredomProofDagRegistration({ root = ROOT } = {}) {
-  return JSON.parse(fs.readFileSync(path.join(root, BOREDOM_PROOF_DAG_REGISTRATION_PATH), 'utf8'));
+export function loadTutorStubBoredomProofDagRegistration({
+  root = ROOT,
+  registrationPath = BOREDOM_PROOF_DAG_REGISTRATION_PATH,
+} = {}) {
+  return JSON.parse(fs.readFileSync(path.join(root, registrationPath), 'utf8'));
 }
 
 export function validateTutorStubBoredomProofDagRegistration(registration) {
@@ -261,7 +266,13 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   const execution = registration?.executionReadiness || {};
   const dialogue = execution.dialogue || {};
   const batches = execution.batches || {};
-  if (registration?.schema !== 'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v1') {
+  const prospectiveV2 = registration?.version === 2;
+  if (
+    ![
+      'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v1',
+      'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v2',
+    ].includes(registration?.schema)
+  ) {
     errors.push('unsupported boredom proof-DAG registration schema');
   }
   if (registration?.status !== 'prospective_zero_call_readiness_hold') errors.push('registration must remain HOLD');
@@ -356,12 +367,14 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   ) {
     errors.push('predeclared batch partition drifted');
   }
+  const expectedLedger = prospectiveV2 ? 293 : 219;
+  const expectedStudyCeiling = prospectiveV2 ? 2453 : 2379;
+  const expectedCombinedCeiling = prospectiveV2 ? 4613 : 4539;
   if (
-    execution.programmeCeilingForThisStudyAlone?.requiredCeiling !== 2379 ||
+    execution.programmeCeilingForThisStudyAlone?.ledgerBefore !== expectedLedger ||
+    execution.programmeCeilingForThisStudyAlone?.requiredCeiling !== expectedStudyCeiling ||
     execution.programmeCeilingForThisStudyAlone?.incrementAboveCurrentLedger !== 2160 ||
-    execution.programmeCeilingIfFrameRefusalConfirmationAlsoReserved?.requiredCeiling !== 4539 ||
-    execution.programmeCeilingIfFrameRefusalConfirmationAlsoReserved?.incrementAboveFrameRefusalSuccessorCeiling !==
-      2160 ||
+    execution.programmeCeilingIfFrameRefusalConfirmationAlsoReserved?.requiredCeiling !== expectedCombinedCeiling ||
     execution.attemptAccountingRole !==
       'operational_execution_safeguard_only_not_scientific_endpoint_design_objective_or_sample_size_constraint'
   ) {
@@ -498,6 +511,104 @@ export function buildTutorStubBoredomProofDagSyntheticCases(registration) {
   });
 }
 
+export function buildTutorStubBoredomCompositionSyntheticCases() {
+  return [
+    {
+      id: 'frozen_productive_false_positive',
+      text: 'Sure. We could examine the delivery ledger.',
+      classification: {
+        turn: {
+          request_type: 'stepwise_support_request',
+          discourse_move: 'metacognitive_reflection',
+          evidence_use: 'none',
+          epistemic_stance: 'exploratory',
+          agency: 'steering',
+          summary: 'The learner chooses the delivery ledger as the next evidence source.',
+        },
+      },
+      expected: 'negative_productive_uptake_precedes_cue',
+    },
+    {
+      id: 'frozen_impatience_false_suppression',
+      text: 'Fine. Is this trial nearly done?',
+      classification: {
+        turn: {
+          request_type: 'off_task_or_mixed',
+          discourse_move: 'question',
+          evidence_use: 'none',
+          epistemic_stance: 'receptive',
+          agency: 'steering',
+          summary: 'The learner asks whether the trial is nearly finished.',
+        },
+      },
+      expected: 'positive_actionable_withdrawal_without_uptake',
+    },
+    {
+      id: 'mixed_fails_closed',
+      text: 'Fine. I could inspect the gauge, but can we finish this task?',
+      classification: { turn: { discourse_move: 'question', evidence_use: 'none' } },
+      expected: 'ambiguous_withdrawal_and_productive_uptake',
+    },
+    {
+      id: 'boredom_without_withdrawal',
+      text: 'I am bored.',
+      classification: { turn: { discourse_move: 'affect_statement', evidence_use: 'none' } },
+      expected: 'negative_boredom_without_actionable_withdrawal',
+    },
+    {
+      id: 'bounded_evidence_use',
+      text: 'Okay. The dated ledger cites the public invoice.',
+      classification: { turn: { discourse_move: 'evidence_adoption', evidence_use: 'cites_public_evidence' } },
+      expected: 'negative_productive_uptake_precedes_cue',
+    },
+    {
+      id: 'lexical_near_miss',
+      text: 'The finish on the coin is fine-grained.',
+      classification: { turn: { discourse_move: 'observation', evidence_use: 'none' } },
+      expected: 'negative_no_boredom_cue',
+    },
+  ];
+}
+
+export function assessTutorStubBoredomCompositionSyntheticCases(
+  rows = buildTutorStubBoredomCompositionSyntheticCases(),
+) {
+  const runtime = {
+    consumed: false,
+    profile: 'bored',
+    dynamic_boredom_proof_dag: true,
+    registration: { design: { trigger: { observationSemantics: 'prospective_v8' } } },
+    proof_dag_registration: { design: { observationSemantics: 'prospective_v8' } },
+  };
+  const results = rows.map((row) => {
+    const observation = observeResistantLearnerTurn({
+      learnerText: row.text,
+      classification: row.classification,
+      tutorLearnerDag: { advance: { supportedMoveCount: 0 } },
+      semantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8,
+    });
+    const eligibility = tutorStubResistanceActionRegisterTreatmentEligibility({
+      runtime: structuredClone(runtime),
+      learnerText: row.text,
+      classification: row.classification,
+      tutorLearnerDag: { advance: { supportedMoveCount: 0 } },
+    });
+    const disposition = observation.boredom_composition?.disposition || null;
+    const shouldLicense = row.expected === 'positive_actionable_withdrawal_without_uptake';
+    return {
+      id: row.id,
+      expected: row.expected,
+      observed: disposition,
+      eligible: eligibility.eligible,
+      pass:
+        disposition === row.expected &&
+        eligibility.eligible === shouldLicense &&
+        eligibility.boredom_compositional_precedence?.generic_uptake_override_allowed === false,
+    };
+  });
+  return { pass: results.every((row) => row.pass), results };
+}
+
 export function objectiveProofProgressByTwoTurns(outcome) {
   return Boolean(
     Number.isInteger(outcome?.new_supported_public_premises) &&
@@ -524,7 +635,9 @@ export function buildTutorStubBoredomProofDagPackets(cases) {
 }
 
 export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
-  const registration = loadTutorStubBoredomProofDagRegistration();
+  const registration = loadTutorStubBoredomProofDagRegistration({
+    registrationPath: contract.registration?.registration_path || BOREDOM_PROOF_DAG_REGISTRATION_PATH,
+  });
   const plan = buildTutorStubBoredomProofDagPlan(registration);
   const expectedById = new Map(plan.jobs.map((row) => [row.id, row]));
   const plain = cases.filter((row) => row.arm === 'plain');
@@ -572,6 +685,7 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
       row.fidelity.safety_override === false &&
       row.fidelity.protected_condition === false,
   );
+  const composition = assessTutorStubBoredomCompositionSyntheticCases();
   const blocks = registration.design.worlds.map((world) => {
     const rows = cases.filter((row) => row.world === world);
     const worldPlain = rows.filter((row) => row.arm === 'plain');
@@ -585,6 +699,9 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
     };
   });
   const endpointStatus = {
+    ...(contract.endpoints.some((endpoint) => endpoint.id === 'compositional_boredom_observer_timing')
+      ? { compositional_boredom_observer_timing: composition.pass ? 'complete' : 'incomplete' }
+      : {}),
     profile_specific_resistance_recovery:
       exactPlanFidelity && recovery && plain.length === 18 && warm.length === 18 ? 'complete' : 'incomplete',
     objective_proof_progress_by_two_turns: exactPlanFidelity && objective ? 'complete' : 'incomplete',
@@ -607,6 +724,7 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
       exact_two_sided_conditional_blocked_score_p: exactBlockedScorePValue(blocks),
       blocks,
       exact_plan_fidelity: exactPlanFidelity,
+      compositional_observer_timing: composition,
       deadline_turns: 1,
       rows: cases,
       contract_study_id: contract.study_id,
@@ -631,8 +749,10 @@ export function runTutorStubBoredomProofDagEndpointPreflight({ contract, registr
       independent_dialogues: 36,
       execution_batches: 9,
       hard_study_attempt_ceiling: 2160,
-      required_programme_ceiling_study_alone: 2379,
-      required_programme_ceiling_with_frame_refusal_reservation: 4539,
+      required_programme_ceiling_study_alone:
+        registration.executionReadiness.programmeCeilingForThisStudyAlone.requiredCeiling,
+      required_programme_ceiling_with_frame_refusal_reservation:
+        registration.executionReadiness.programmeCeilingIfFrameRefusalConfirmationAlsoReserved.requiredCeiling,
       live_executor_available: true,
       combined_analyzer_available: true,
       request_validator_available: true,
