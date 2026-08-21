@@ -1,0 +1,112 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-semantic-adjudication-validation-registration.v2",
+  "version": 2,
+  "status": "prospective_zero_call_readiness_hold",
+  "studyId": "tutor-stub-resistance-semantic-adjudication-heldout-validation-v2",
+  "supersession": {
+    "v1ValidationRegistrationPath": "config/tutor-stub-resistance-semantic-adjudication-validation-registration.v1.json",
+    "v1ValidationRegistrationSha256": "d06952b563065a100ce4af92c18c7089a41b416c0ed3845d1d5e6d2c694856e8",
+    "v1InstrumentRegistrationSha256": "d479a556df2f61458546e9e1463dc11fa1261b74df91fe4b765d159c330f415d",
+    "v1HeldoutCorpusSha256": "9378416d1fdf8dc41f35ad84a4edf69fba6ad8889ce5020617f3d19747c9a2c7",
+    "v1ConsumedRequestPath": "config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v1.json",
+    "v1ConsumedRequestSha256": "b6d9a41cc9fbdb2a3fc15f536e2a0b6e97a406986c9f88027e0765ab4bddb826",
+    "v1FailedReportSha256": "008230526809a6aa2917b240c6a30af644f30184b89042825773b1b8040c5c74",
+    "v1FailedArchiveBranch": "codex/resistance-semantic-validation-v1-failed-archive",
+    "v1FailedArchiveCommit": "cf92081bd566948f4ea26d0ac5e67f8132ebeef8",
+    "v1ObservedAccounting": {
+      "cases": 80,
+      "chargedReservations": 160,
+      "returnedFirstAttempts": 160,
+      "retries": 0,
+      "recoveries": 0,
+      "invalidJudgments": 91,
+      "measurementIndeterminateCases": 78,
+      "programmeLedgerAfter": 491
+    },
+    "v1FailureDisposition": "sealed_failed_validation_evidence_no_rescoring_normalization_reuse_or_reinterpretation",
+    "v1InstrumentHeldoutAndOutcomesEligibleForV2HeldoutOrConfirmation": false
+  },
+  "instrument": {
+    "registrationPath": "config/tutor-stub-resistance-semantic-adjudication-registration.v2.json",
+    "registrationSha256": "4cf2b38f3424960d983e2dd5e1a9938e0397e5038fa5f4c8d96bb5d8a78306be",
+    "instrumentFreezeCommit": "30d184211e09371c6aff86abcbed4623b8e457f0",
+    "implementationPath": "services/tutorStubResistanceSemanticAdjudicationV2.js",
+    "implementationSha256": "2b9faa679fedf1e98c25e6e5f3569da6c2ef83f3654642c08dc3c00e6fc15bfd",
+    "responseSchemaPath": "config/tutor-stub-resistance-semantic-adjudication-response.schema.v2.json",
+    "responseSchemaSha256": "eaeebc729a56ce7802bf9030a60cdf4cc60734f3aabe0760c7ddd6a64d011205",
+    "developmentEvidencePath": "config/tutor-stub-resistance-semantic-adjudication-development-evidence.v2.json",
+    "developmentEvidenceSha256": "e823af82954c86737f74d53ef033195da388ddb88defd0577276cbf551a749d8",
+    "postHeldoutPromptModelThresholdOrConsensusTuning": false
+  },
+  "heldout": {
+    "corpusPath": "config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v2.json",
+    "corpusSha256": "a52d10f60ceeeb9e1e92415c6add6d0dee4dbf69608053652ff9c23f08216535",
+    "authorCommit": "efc1dae8dbfa745c8d3d9b2fab9414ec3abe72f8",
+    "instrumentFreezeParent": "30d184211e09371c6aff86abcbed4623b8e457f0",
+    "cases": 80,
+    "frameRefuser": 40,
+    "productiveDispute": 16,
+    "neither": 24,
+    "actualParticipation": 28,
+    "hypotheticalOrConditionalOnly": 12,
+    "meritsProceduralOrAdministrativeNonjurisdiction": 16,
+    "concreteProductiveCounterframes": 16,
+    "uniqueSources": 80,
+    "uniqueContextMessages": 80,
+    "v1DevelopmentOrObservedCaseCollision": false,
+    "goldVisibleToModelPackets": false
+  },
+  "executionBlinding": {
+    "opaqueCaseIdHmacKeyHex": "63e13119eb3254f35979a4044279fcc1eecad5a9a5a17b0738c6f831def47e09",
+    "deterministicShuffleSeedHex": "797ce8677a7afba10637d593ad667b92a357ef48d7ea53c09cad1830574079cd",
+    "originalCaseIdsVisibleToExecution": false,
+    "goldMappingJoinedOnlyAfterAllResponsesSealed": true
+  },
+  "executionReadiness": {
+    "plannedCases": 80,
+    "judgesPerCase": 2,
+    "plannedModelCalls": 160,
+    "maximumReservationsPerPlannedCall": 3,
+    "hardValidationReservations": 480,
+    "programmeLedgerBefore": 491,
+    "programmeLedgerAfterMaximum": 971,
+    "programmeCeiling": 5000,
+    "futureOutcomeValidationHardReservations": 720,
+    "futureConfirmationHardReservations": 3456,
+    "futureStagedMaximumOnlyAfterBothValidationsPass": 5147,
+    "ceilingAmendmentRequiredBeforeConfirmation": true
+  },
+  "executionPolicy": {
+    "caseCheckpointing": "after_each_judge_response",
+    "preservedValidJudgeDisposition": "call_only_the_never_prepared_peer_without_recalling_the_preserved_judge",
+    "preparedNotDispatchedDisposition": "same_prepared_invocation_may_dispatch_once",
+    "dispatchedWithoutResponseDisposition": "terminal_measurement_indeterminate_no_recall",
+    "invalidOrTransportTerminalDisposition": "terminal_measurement_indeterminate_no_peer_call_required",
+    "technicalRecovery": "predeclared_never_dispatched_missing_judge_only",
+    "completedOrPartialCaseRestart": false,
+    "validCaseRerun": false,
+    "replacement": false,
+    "outcomeSelection": false,
+    "goldVisibleToJudges": false,
+    "developmentExamplesVisibleToJudges": false,
+    "v1ValidationInputsOrOutputsReusable": false
+  },
+  "authorization": {
+    "goRequestPrepared": false,
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "standingArchitecturalCorrectionSha256": "dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4",
+    "priorStandingAuthoritySha256": "538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce",
+    "laterProgrammeCeilingAmendmentAuthorized": false,
+    "confirmationAuthorized": false
+  },
+  "claimBoundary": {
+    "validationOnly": true,
+    "syntheticZeroCallPreflightEstablishesAccuracy": false,
+    "v1FailedValidationRescoredOrReinterpreted": false,
+    "heldoutPassRequiredBeforeConfirmationRequest": true,
+    "validationOutcomesExcludedFromConfirmation": true,
+    "historicalPartialOutcomesExcluded": true,
+    "noWarmPlainEfficacyNullLearningTransferHumanOrCellClaim": true
+  }
+}

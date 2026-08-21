@@ -3,7 +3,7 @@
   "study_id": "tutor-stub-resistance-recovery-semantic-heldout-validation-v2",
   "registration": {
     "registration_path": "config/tutor-stub-resistance-recovery-semantic-validation-registration.v2.json",
-    "registration_sha256": "f3ce64099f06feba394f9f38faea81914603f6d2d2b1bd55e860ea7f4858822b",
+    "registration_sha256": "7db12d6fbbc53ea28071854405b86ea05affb7c2c370971f7e1fe5c424510f99",
     "instrument_registration_path": "config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v2.json",
     "instrument_registration_sha256": "88b779b65c1502dc860ccf063ed35c3a865e354436a6e7f69be8ee94c674e02e",
     "heldout_corpus_path": "config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v2.json",
@@ -43,7 +43,7 @@
       "planned_model_calls": 240,
       "maximum_reservations_per_planned_call": 3,
       "hard_validation_reservations": 720,
-      "programme_maximum_after_both_validations": 1531,
+      "programme_maximum_after_both_validations": 1691,
       "programme_ceiling": 5000,
       "case_checkpointing": "after_each_judge_response",
       "preserved_valid_judge_recalled": false,

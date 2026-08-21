@@ -1,16 +1,13 @@
 import {
-  TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA,
-  TUTOR_STUB_RESISTANCE_SEMANTIC_RESPONSE_SCHEMA,
-  adjudicateTutorStubResistanceSemanticJudges,
   tutorStubResistanceSemanticPromptSha256,
   tutorStubResistanceSemanticSha256,
-  wrapTutorStubResistanceSemanticModelOutput,
 } from './tutorStubResistanceSemanticAdjudication.js';
 import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_AGGREGATE_EVENT,
   TUTOR_STUB_RESISTANCE_SEMANTIC_JUDGE_EVENT,
   TUTOR_STUB_RESISTANCE_SEMANTIC_SYSTEM_PROMPT,
   loadTutorStubResistanceSemanticRegistration,
+  tutorStubResistanceSemanticRuntimeInstrument,
   validateTutorStubResistanceSemanticRuntimeResult,
 } from './tutorStubResistanceSemanticRuntime.js';
 
@@ -39,8 +36,6 @@ function publicContextByTurn(events, maximumRows = 4) {
 }
 
 export function auditTutorStubResistanceSemanticTrace({ events, expectedCandidateCount = null } = {}) {
-  const binding = loadTutorStubResistanceSemanticRegistration();
-  const judges = new Map(binding.registration.measurement.judges.map((judge) => [judge.id, judge]));
   const judgeEvents = events.filter((event) => event.type === TUTOR_STUB_RESISTANCE_SEMANTIC_JUDGE_EVENT);
   const modelCalls = events.filter(
     (event) => event.type === 'model_call' && String(event.role || '').startsWith('tutor_stub_resistance_semantic_'),
@@ -60,6 +55,13 @@ export function auditTutorStubResistanceSemanticTrace({ events, expectedCandidat
   );
   const attempts = [...modelCalls, ...modelErrors, ...modelAborts];
   const aggregates = events.filter((event) => event.type === TUTOR_STUB_RESISTANCE_SEMANTIC_AGGREGATE_EVENT);
+  const registrationPaths = new Set(
+    [...judgeEvents, ...aggregates].map((event) => event.registrationPath).filter(Boolean),
+  );
+  if (registrationPaths.size > 1) throw new Error('semantic trace mixes frozen registrations');
+  const binding = loadTutorStubResistanceSemanticRegistration([...registrationPaths][0]);
+  const instrument = tutorStubResistanceSemanticRuntimeInstrument(binding);
+  const judges = new Map(binding.registration.measurement.judges.map((judge) => [judge.id, judge]));
   if (expectedCandidateCount !== null && aggregates.length !== expectedCandidateCount) {
     throw new Error(`semantic trace requires exactly ${expectedCandidateCount} candidate aggregates`);
   }
@@ -113,10 +115,10 @@ export function auditTutorStubResistanceSemanticTrace({ events, expectedCandidat
       if (matchingModelCalls.length === 1) {
         try {
           const modelOutput = JSON.parse(String(matchingModelCalls[0].response?.text || ''));
-          if (modelOutput?.schema !== TUTOR_STUB_RESISTANCE_SEMANTIC_RESPONSE_SCHEMA) {
+          if (modelOutput?.schema !== instrument.responseSchema) {
             throw new Error('semantic judge model output schema mismatch');
           }
-          rebuiltRecord = wrapTutorStubResistanceSemanticModelOutput({
+          rebuiltRecord = instrument.wrapModelOutput({
             modelOutput,
             prompt,
             judge,
@@ -157,7 +159,7 @@ export function auditTutorStubResistanceSemanticTrace({ events, expectedCandidat
         matchingModelCalls.length === 1 &&
         matchedCall.provider === event.observedProvider &&
         matchedCall.model === event.observedModel &&
-        exactJson(matchedCall.request?.outputSchema, TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA) &&
+        exactJson(matchedCall.request?.outputSchema, instrument.outputSchema) &&
         matchedCall.request?.cliEffort === judge?.effort &&
         matchedCall.response?.effort === event.observedEffort &&
         matchedCall.response?.structuredOutput === event.structuredOutput &&
@@ -171,7 +173,7 @@ export function auditTutorStubResistanceSemanticTrace({ events, expectedCandidat
         matchingModelErrors.some((error) => error.error === event.invalidReason) &&
         matchingModelErrors.every(
           (error) =>
-            exactJson(error.request?.outputSchema, TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA) &&
+            exactJson(error.request?.outputSchema, instrument.outputSchema) &&
             error.request?.cliEffort === judge?.effort,
         ) &&
         event.observedProvider === null &&
@@ -198,7 +200,7 @@ export function auditTutorStubResistanceSemanticTrace({ events, expectedCandidat
         event.userPromptSha256 !== tutorStubResistanceSemanticSha256(event.userPrompt) ||
         event.promptSha256 !== tutorStubResistanceSemanticPromptSha256(prompt) ||
         event.packetSha256 !== prompt.packet_sha256 ||
-        !exactJson(event.outputSchema, TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA) ||
+        !exactJson(event.outputSchema, instrument.outputSchema) ||
         !(
           (returnedRecordEnvelope && validSuccessfulCallEnvelope) ||
           (invalidReturnedEnvelope && validSuccessfulCallEnvelope) ||
@@ -247,7 +249,7 @@ export function auditTutorStubResistanceSemanticTrace({ events, expectedCandidat
     ) {
       throw new Error('semantic aggregate does not bind the exact preceding public context');
     }
-    const recomputed = adjudicateTutorStubResistanceSemanticJudges({
+    const recomputed = instrument.adjudicate({
       source,
       publicContext: expectedContext,
       caseId: aggregate.caseId,

@@ -86,6 +86,10 @@ test('outcome heldout is frozen, blinded, stratified, and zero-call endpoint wir
     loaded.registration.executionReadiness.liveExecutorStatus,
     'zero_call_ready_pending_digest_bound_go_request_and_model_authority',
   );
+  assert.equal(loaded.registration.executionReadiness.programmeObservedLedgerBeforeAnyValidation, 491);
+  assert.equal(loaded.registration.executionReadiness.programmeMaximumAfterManipulationValidation, 971);
+  assert.equal(loaded.registration.executionReadiness.programmeMaximumAfterBothValidations, 1691);
+  assert.equal(loaded.registration.executionReadiness.futureStagedMaximumOnlyAfterBothValidationsPass, 5147);
   assert.equal(loaded.corpus.cases.length, 120);
   const blinded = buildTutorStubResistanceRecoverySemanticBlindedValidationCases(loaded.corpus.cases);
   assert.equal(blinded.length, 120);
@@ -96,6 +100,7 @@ test('outcome heldout is frozen, blinded, stratified, and zero-call endpoint wir
   assert.ok(blinded.every((row) => typeof row.intervening_tutor === 'string' && row.intervening_tutor.length > 0));
   for (const mutate of [
     (value) => (value.executionReadiness.liveExecutorStatus = 'pending_shared_checkpoint_runtime_adapter'),
+    (value) => (value.executionReadiness.programmeMaximumAfterBothValidations = 1531),
     (value) => (value.heldout.interveningTutorDependentCases = 23),
     (value) => (value.authorization.extra = true),
   ]) {

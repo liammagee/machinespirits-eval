@@ -7,8 +7,14 @@ import { fileURLToPath } from 'node:url';
 
 import { buildTutorStubResistanceSemanticZeroCallFixtureResponse } from '../services/tutorStubResistanceSemanticAdjudication.js';
 import {
+  TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2,
+  buildTutorStubResistanceSemanticZeroCallFixtureResponseV2,
+} from '../services/tutorStubResistanceSemanticAdjudicationV2.js';
+import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_AGGREGATE_EVENT,
   TUTOR_STUB_RESISTANCE_SEMANTIC_JUDGE_EVENT,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2,
   createLazyTutorStubResistanceSemanticAdjudicator,
   createTutorStubResistanceSemanticRuntime,
   loadTutorStubResistanceSemanticRegistration,
@@ -43,9 +49,14 @@ const canonicalSha256 = (value) =>
 
 test('legacy host composition can hold the semantic adjudicator without loading its registration', async () => {
   let constructions = 0;
+  const requestedRegistrationPaths = [];
   const adjudicate = createLazyTutorStubResistanceSemanticAdjudicator(
     { unused: true },
     {
+      loadRegistration: (registrationPath) => {
+        requestedRegistrationPaths.push(registrationPath);
+        return binding;
+      },
       createRuntime: () => {
         constructions += 1;
         return { adjudicateCandidate: async () => ({ ok: true }) };
@@ -53,8 +64,10 @@ test('legacy host composition can hold the semantic adjudicator without loading 
     },
   );
   assert.equal(constructions, 0);
+  assert.deepEqual(requestedRegistrationPaths, []);
   assert.deepEqual(await adjudicate({}), { ok: true });
   assert.equal(constructions, 1);
+  assert.deepEqual(requestedRegistrationPaths, [TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION]);
   assert.deepEqual(await adjudicate({}), { ok: true });
   assert.equal(constructions, 1);
 });
@@ -154,6 +167,77 @@ test('production semantic runtime calls exactly two independent non-Luna judges 
   assert.ok(value.calls.every((call) => !call.packet.case_id.includes('initial')));
   assert.ok(value.calls.every((call) => !call.packet.case_id.includes('repair')));
   assert.ok(value.events.every((event) => event.candidateKind === undefined || event.candidateKind === 'initial'));
+});
+
+test('production semantic runtime selects the frozen quote-only v2 instrument without changing the v1 default', async () => {
+  const bindingV2 = loadTutorStubResistanceSemanticRegistration(TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2);
+  const corpusCase = corpus.cases.find((row) => row.case_id === 'historic-v7-live-raw');
+  const calls = [];
+  const events = [];
+  const rawResponses = new Map();
+  const runtime = createTutorStubResistanceSemanticRuntime({
+    appendTraceEvent: (_trace, event) => events.push(event),
+    resolveModel: (modelRef) => {
+      const judge = bindingV2.registration.measurement.judges.find((row) => row.modelRef === modelRef);
+      return { provider: judge.provider, model: judge.model };
+    },
+    callPromptModel: async ({ prompt, resolved, outputSchema }) => {
+      const packet = JSON.parse(prompt);
+      const judge = bindingV2.registration.measurement.judges.find((row) => row.id === packet.judge.id);
+      const fixture = buildTutorStubResistanceSemanticZeroCallFixtureResponseV2({ corpusCase, judge });
+      calls.push({ packet, outputSchema });
+      const response = {
+        text: JSON.stringify({ ...fixture.modelOutput, case_id: packet.case_id }),
+        provider: resolved.provider,
+        model: resolved.model,
+        effort: 'low',
+        structuredOutput: true,
+        prohibitedToolEventCount: 0,
+        prohibitedToolEventCountObserved: true,
+        modelAttestationBasis: 'explicit_cli_model_argument_accepted_bridge_echo',
+        modelIndependentlyAttested: false,
+      };
+      rawResponses.set(judge.id, response);
+      return response;
+    },
+    registrationBinding: bindingV2,
+  });
+  const result = await runtime.adjudicateCandidate({
+    state: {
+      history: [{ role: 'assistant', content: corpusCase.public_context[0].text }],
+      trace: { filePath: '/tmp/zero-call-v2.jsonl' },
+      interim: null,
+    },
+    learnerText: corpusCase.source,
+    turnNumber: 3,
+  });
+  assert.equal(result.observationSemantics, TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2);
+  assert.equal(result.aggregate.final_label, 'frame_refuser');
+  assert.equal(result.judgeRecordCount, 2);
+  assert.equal(calls.length, 2);
+  assert.ok(calls.every((call) => call.outputSchema.properties.judgment.properties.evidence_quotes));
+  assert.ok(calls.every((call) => !call.outputSchema.properties.judgment.properties.evidence_spans));
+  assert.equal(
+    auditTutorStubResistanceSemanticTrace({
+      events: semanticTrace({ corpusCase, events, rawResponses }),
+      expectedCandidateCount: 1,
+    }).measurementIndeterminate,
+    false,
+  );
+});
+
+test('lazy semantic composition fails closed on a registration that drifts from requested v2 semantics', async () => {
+  const adjudicate = createLazyTutorStubResistanceSemanticAdjudicator(
+    {},
+    {
+      observationSemantics: TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2,
+      loadRegistration: () => loadTutorStubResistanceSemanticRegistration(),
+      createRuntime: () => {
+        throw new Error('drifted registration must not construct the runtime');
+      },
+    },
+  );
+  await assert.rejects(adjudicate({}), /registration observation semantics drifted/u);
 });
 
 test('model-visible semantic case identity is opaque to repair status while trace metadata retains it', async () => {
