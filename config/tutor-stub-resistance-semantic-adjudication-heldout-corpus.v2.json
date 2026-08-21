@@ -1,0 +1,1066 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-semantic-adjudication-corpus.v2",
+  "corpus_id": "resistance-semantic-v2-independent-heldout-20260820",
+  "role": "heldout_blinded",
+  "frozen": true,
+  "prompt_examples_allowed": false,
+  "context_provenance": "independently_authored_bounded_public_context_blinded_after_instrument_freeze",
+  "cases": [
+    {
+      "case_id": "rhs2-038",
+      "public_context": [{ "role": "assistant", "text": "Use completion rate as the frame and score the programme on that basis." }],
+      "source": "That completion-rate frame is not yours to impose, and I will not score the programme inside it. If the board later adopts that frame, I might examine the completion ledger.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "inquiry_frame", "jurisdiction_type": "authority", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "That completion-rate frame is not yours to impose" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "completion-rate frame" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not score the programme inside it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-075",
+      "public_context": [{ "role": "assistant", "text": "Answer my survey question before we consider any other evidence." }],
+      "source": "You have no standing to decide that your survey question governs this review, so I will not answer it. If the committee later adopts it, I might inspect the response file.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "question", "jurisdiction_type": "standing", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You have no standing to decide" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "your survey question" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not answer it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-032",
+      "public_context": [{ "role": "assistant", "text": "Assume late arrival caused the failure and reason forward from that premise." }],
+      "source": "You have no right to make late arrival the controlling premise, and I will not reason from it. Were that premise independently established, I could compare the sign-in sheets.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "premise", "jurisdiction_type": "right", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You have no right to make" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "late arrival the controlling premise" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not reason from it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-069",
+      "public_context": [{ "role": "assistant", "text": "Treat the raw error count as the decisive test and calculate a verdict." }],
+      "source": "Your authority does not extend to making raw error count the decisive test, and I will not calculate that verdict. Unless an authorized panel selects it, I would only consider reviewing the audit entries.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "test_or_criterion", "jurisdiction_type": "authority", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "Your authority does not extend to making" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "raw error count the decisive test" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not calculate that verdict" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-026",
+      "public_context": [{ "role": "assistant", "text": "My role as tutor entitles me to choose the question you must investigate." }],
+      "source": "Being the tutor gives you no standing to choose my governing question, and I will not investigate it. Should a jointly appointed chair choose it, I might open the incident log.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "tutor_standing", "jurisdiction_type": "standing", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "Being the tutor gives you no standing" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "Being the tutor" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not investigate it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-063",
+      "public_context": [{ "role": "assistant", "text": "Begin from the assumption that silence indicates consent." }],
+      "source": "That assumption has no right to govern the inquiry, and I will not build an answer on it. Only if consent were independently documented would I consider checking the minutes.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "premise", "jurisdiction_type": "frame_governance", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "has no right to govern the inquiry" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "That assumption" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not build an answer on it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-020",
+      "public_context": [{ "role": "assistant", "text": "Use my efficiency question as the sole route through this material." }],
+      "source": "I dispute your right to make the efficiency question the sole route, and I will not respond within that question. In a hypothetical independent review, I could look at the time sheets.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "question", "jurisdiction_type": "right", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "I dispute your right to make" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "the efficiency question" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not respond within that question" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-057",
+      "public_context": [{ "role": "assistant", "text": "Rank the witness by confidence and accept that ranking as the evidentiary criterion." }],
+      "source": "You are not authorized to install confidence ranking as the evidentiary criterion, and I will not rank the witness that way. Had the court ordered it, I might review the interview recording.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "test_or_criterion", "jurisdiction_type": "authority", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You are not authorized to install" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "confidence ranking as the evidentiary criterion" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not rank the witness that way" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-014",
+      "public_context": [{ "role": "assistant", "text": "Let the funding frame determine which records count as relevant." }],
+      "source": "The funding frame does not get to determine relevance here, and I will not sort the records under it. Supposing the parties later stipulated to it, I could examine the grant files.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "inquiry_frame", "jurisdiction_type": "frame_governance", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "does not get to determine relevance here" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "The funding frame" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not sort the records under it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-051",
+      "public_context": [{ "role": "assistant", "text": "Accept my premise that the missing signature proves deliberate concealment." }],
+      "source": "You lack standing to make deliberate concealment the inquiry's premise, and I will not infer intent from it. Provided an authorized investigator adopted it, I might compare the signature cards.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "premise", "jurisdiction_type": "standing", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You lack standing to make" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "deliberate concealment the inquiry's premise" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not infer intent from it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-008",
+      "public_context": [{ "role": "assistant", "text": "The variance threshold I supplied must decide whether the process worked." }],
+      "source": "You have no right to make your variance threshold decisive, and I will not apply it. If an agreed protocol eventually named that threshold, I might calculate the monthly deviations.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "test_or_criterion", "jurisdiction_type": "right", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You have no right to make" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "your variance threshold" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not apply it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-045",
+      "public_context": [{ "role": "assistant", "text": "My diagnostic frame controls the discussion, so classify the case within it." }],
+      "source": "Your role does not authorize that diagnostic frame to control the discussion, and I will not classify the case within it. On condition that the client chose it, I could inspect the intake notes.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "inquiry_frame", "jurisdiction_type": "authority", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "Your role does not authorize" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "that diagnostic frame" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not classify the case within it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-002",
+      "public_context": [{ "role": "assistant", "text": "Evaluate the dispute only through the loyalty frame I have set." }],
+      "source": "You do not control the governing frame of this inquiry, and I refuse to evaluate the dispute through loyalty.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "inquiry_frame", "jurisdiction_type": "frame_governance", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You do not control the governing frame" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "the governing frame of this inquiry" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I refuse to evaluate the dispute through loyalty" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-039",
+      "public_context": [{ "role": "assistant", "text": "Answer whether the manager is trustworthy; no other question is permitted." }],
+      "source": "You have no right to make managerial trustworthiness the permitted question, and I will not answer it.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "question", "jurisdiction_type": "right", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You have no right to make" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "managerial trustworthiness the permitted question" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not answer it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-076",
+      "public_context": [{ "role": "assistant", "text": "Assume the first complaint is representative and draw the conclusion from it." }],
+      "source": "That premise has no authority to govern what follows, and I will not draw the requested conclusion.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "premise", "jurisdiction_type": "frame_governance", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "has no authority to govern what follows" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "That premise" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not draw the requested conclusion" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-033",
+      "public_context": [{ "role": "assistant", "text": "A score below seventy is failure; apply that criterion to the file." }],
+      "source": "You are not entitled to set seventy as the criterion, and I will not apply that cutoff to the file.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "test_or_criterion", "jurisdiction_type": "right", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You are not entitled to set" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "seventy as the criterion" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not apply that cutoff to the file" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-070",
+      "public_context": [{ "role": "assistant", "text": "As facilitator, I decide which account you must defend." }],
+      "source": "Facilitation gives you no standing to decide which account I defend, and I will not defend the one you assigned.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "tutor_standing", "jurisdiction_type": "standing", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "Facilitation gives you no standing" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "Facilitation" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not defend the one you assigned" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-027",
+      "public_context": [{ "role": "assistant", "text": "Use the compliance frame and identify who violated it." }],
+      "source": "The compliance frame cannot govern this inquiry by your say-so, and I will not identify a violator within it.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "inquiry_frame", "jurisdiction_type": "frame_governance", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "cannot govern this inquiry by your say-so" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "The compliance frame" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not identify a violator within it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-064",
+      "public_context": [{ "role": "assistant", "text": "Take the absence of an appeal as proof that the decision was accepted." }],
+      "source": "You lack authority to make absence of an appeal the controlling premise, and I will not treat it as proof of acceptance.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "premise", "jurisdiction_type": "authority", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You lack authority to make" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "absence of an appeal the controlling premise" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not treat it as proof of acceptance" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-021",
+      "public_context": [{ "role": "assistant", "text": "The only relevant question is whether the report embarrassed the office." }],
+      "source": "You do not have the right to restrict us to the embarrassment question, and I will not answer on that basis.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "question", "jurisdiction_type": "right", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You do not have the right to restrict us" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "the embarrassment question" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not answer on that basis" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-058",
+      "public_context": [{ "role": "assistant", "text": "Use speed of response as the test of whether the team cared." }],
+      "source": "Your position does not authorize speed of response as the test of care, and I will not grade the team by it.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "test_or_criterion", "jurisdiction_type": "authority", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "Your position does not authorize" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "speed of response as the test of care" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not grade the team by it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-015",
+      "public_context": [{ "role": "assistant", "text": "Begin by accepting that the policy was designed to punish dissent." }],
+      "source": "That punitive-intent premise has no standing to organize the inquiry, and I will not reason from it.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "premise", "jurisdiction_type": "standing", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "has no standing to organize the inquiry" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "That punitive-intent premise" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not reason from it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-052",
+      "public_context": [{ "role": "assistant", "text": "My coaching authority lets me determine the lens for your answer." }],
+      "source": "Coaching authority gives you no right to determine my lens, and I will not answer through the lens you chose.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "tutor_standing", "jurisdiction_type": "right", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "Coaching authority gives you no right" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "Coaching authority" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not answer through the lens you chose" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-009",
+      "public_context": [{ "role": "assistant", "text": "Assess the archive entirely within a negligence frame." }],
+      "source": "The negligence frame is not entitled to govern this assessment, and I will not assess the archive inside it.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "inquiry_frame", "jurisdiction_type": "frame_governance", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "is not entitled to govern this assessment" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "The negligence frame" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not assess the archive inside it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-046",
+      "public_context": [{ "role": "assistant", "text": "Treat the loudest objection as the most representative objection." }],
+      "source": "You cannot install loudness as the representative criterion by fiat, and I will not rank the objections that way.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "test_or_criterion", "jurisdiction_type": "authority", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You cannot install" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "loudness as the representative criterion" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not rank the objections that way" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-003",
+      "public_context": [{ "role": "assistant", "text": "Decide whether the witness is loyal before looking at the timeline." }],
+      "source": "You have no standing to make witness loyalty the threshold question, and I decline to decide it.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "question", "jurisdiction_type": "standing", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You have no standing to make" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "witness loyalty the threshold question" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I decline to decide it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-040",
+      "public_context": [{ "role": "assistant", "text": "Assume that a delayed reply means the allegation was fabricated." }],
+      "source": "Your premise about delayed reply has no right to govern the analysis, and I will not use it.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "premise", "jurisdiction_type": "right", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "has no right to govern the analysis" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "Your premise about delayed reply" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not use it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-077",
+      "public_context": [{ "role": "assistant", "text": "Because I moderate the session, my risk frame is binding." }],
+      "source": "Moderating the session does not give you authority to bind us to the risk frame, and I will not work within it.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "tutor_standing", "jurisdiction_type": "authority", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "does not give you authority to bind us" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "Moderating the session" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not work within it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-034",
+      "public_context": [{ "role": "assistant", "text": "Let customer satisfaction alone define success in this inquiry." }],
+      "source": "Customer satisfaction alone cannot be made the governing criterion by your instruction, and I will not judge success by it.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "test_or_criterion", "jurisdiction_type": "frame_governance", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "cannot be made the governing criterion by your instruction" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "Customer satisfaction alone" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not judge success by it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-071",
+      "public_context": [{ "role": "assistant", "text": "The relevant question is whether the complainant followed the chain of command." }],
+      "source": "You are not authorized to make chain-of-command compliance the governing question, and I will not answer it.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "question", "jurisdiction_type": "authority", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You are not authorized to make" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "chain-of-command compliance the governing question" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not answer it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-028",
+      "public_context": [{ "role": "assistant", "text": "Start from the premise that every deviation was intentional." }],
+      "source": "The intentional-deviation premise has no jurisdiction over this inquiry, and I refuse to start from it.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "premise", "jurisdiction_type": "frame_governance", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "has no jurisdiction over this inquiry" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "The intentional-deviation premise" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I refuse to start from it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-065",
+      "public_context": [{ "role": "assistant", "text": "My expertise permits me to set the evidentiary threshold for you." }],
+      "source": "Expertise does not grant you the right to set my evidentiary threshold, and I will not use the threshold you named.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "tutor_standing", "jurisdiction_type": "right", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "Expertise does not grant you the right" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "Expertise" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not use the threshold you named" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-022",
+      "public_context": [{ "role": "assistant", "text": "Interpret the exchange only as a problem of individual motivation." }],
+      "source": "The individual-motivation frame has no right to govern interpretation, and I will not interpret the exchange within it.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "inquiry_frame", "jurisdiction_type": "right", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "has no right to govern interpretation" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "The individual-motivation frame" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not interpret the exchange within it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-059",
+      "public_context": [{ "role": "assistant", "text": "A unanimous vote is the sole test of legitimate agreement." }],
+      "source": "You have no standing to make unanimity the sole test of legitimacy, and I will not apply it.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "test_or_criterion", "jurisdiction_type": "standing", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You have no standing to make" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "unanimity the sole test of legitimacy" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not apply it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-016",
+      "public_context": [{ "role": "assistant", "text": "The inquiry must ask whether the employee showed gratitude." }],
+      "source": "You cannot claim authority over whether gratitude is the inquiry's question, and I will not answer that question.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "question", "jurisdiction_type": "authority", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You cannot claim authority over" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "whether gratitude is the inquiry's question" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not answer that question" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-053",
+      "public_context": [{ "role": "assistant", "text": "Assume all omitted details were deliberately hidden." }],
+      "source": "That concealment premise is not entitled to structure the inquiry, and I will not accept it.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "premise", "jurisdiction_type": "frame_governance", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "is not entitled to structure the inquiry" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "That concealment premise" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not accept it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-010",
+      "public_context": [{ "role": "assistant", "text": "As evaluator, I determine the only acceptable method of comparison." }],
+      "source": "The evaluator title gives you no standing to determine my method, and I will not use your comparison.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "tutor_standing", "jurisdiction_type": "standing", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "gives you no standing to determine" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "The evaluator title" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not use your comparison" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-047",
+      "public_context": [{ "role": "assistant", "text": "Read the whole incident through a competition frame." }],
+      "source": "A competition frame does not get to govern the incident merely because you chose it, and I will not read the incident that way.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "inquiry_frame", "jurisdiction_type": "frame_governance", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "does not get to govern the incident merely because you chose it" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "A competition frame" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not read the incident that way" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-004",
+      "public_context": [{ "role": "assistant", "text": "Count only formally filed statements when judging whether concern existed." }],
+      "source": "You have no right to make formal filing the concern criterion, and I will not judge concern by that count.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "test_or_criterion", "jurisdiction_type": "right", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You have no right to make" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "formal filing the concern criterion" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not judge concern by that count" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-041",
+      "public_context": [{ "role": "assistant", "text": "My question about personal courage must anchor your analysis." }],
+      "source": "Your role does not authorize personal courage as the anchoring question, and I decline to analyze under it.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "question", "jurisdiction_type": "authority", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "frame_refuser" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "Your role does not authorize" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "personal courage as the anchoring question" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I decline to analyze under it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-078",
+      "public_context": [{ "role": "assistant", "text": "Use attendance as the governing test and decide whether the course helped." }],
+      "source": "Your authority does not extend to making attendance the governing test. I will not use attendance; I am comparing the dated draft revisions with the feedback log now.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "test_or_criterion", "jurisdiction_type": "authority", "licensed_participation": "yes", "participation_withholding": "yes", "productive_counterframing": "yes", "final_label": "frame_defiant_or_productive_dispute" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "Your authority does not extend to making" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "attendance the governing test" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not use attendance" },
+          { "field": "licensed_participation", "source_id": "utterance", "text": "I am comparing the dated draft revisions with the feedback log now" },
+          { "field": "productive_counterframing", "source_id": "utterance", "text": "comparing the dated draft revisions with the feedback log" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-035",
+      "public_context": [{ "role": "assistant", "text": "Frame the delay as laziness and assess responsibility from there." }],
+      "source": "You have no right to govern the inquiry with a laziness frame. I will not assess responsibility that way; I will match each delay to the dispatch timestamp and outage record now.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "inquiry_frame", "jurisdiction_type": "right", "licensed_participation": "yes", "participation_withholding": "yes", "productive_counterframing": "yes", "final_label": "frame_defiant_or_productive_dispute" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You have no right to govern the inquiry" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "a laziness frame" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not assess responsibility that way" },
+          { "field": "licensed_participation", "source_id": "utterance", "text": "I will match each delay to the dispatch timestamp and outage record now" },
+          { "field": "productive_counterframing", "source_id": "utterance", "text": "match each delay to the dispatch timestamp and outage record" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-072",
+      "public_context": [{ "role": "assistant", "text": "Assume the first witness spoke for everyone and test consistency against that account." }],
+      "source": "The first-witness premise has no standing to govern this inquiry. I will not test everyone against it; I am cross-checking each signed statement against the meeting audio.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "premise", "jurisdiction_type": "standing", "licensed_participation": "yes", "participation_withholding": "yes", "productive_counterframing": "yes", "final_label": "frame_defiant_or_productive_dispute" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "has no standing to govern this inquiry" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "The first-witness premise" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not test everyone against it" },
+          { "field": "licensed_participation", "source_id": "utterance", "text": "I am cross-checking each signed statement against the meeting audio" },
+          { "field": "productive_counterframing", "source_id": "utterance", "text": "cross-checking each signed statement against the meeting audio" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-029",
+      "public_context": [{ "role": "assistant", "text": "Answer whether the team respected me; that is the question that controls." }],
+      "source": "Your role does not authorize respect for you as the controlling question. I will not answer that question; I will compare the assigned tasks with the documented completion notes.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "question", "jurisdiction_type": "authority", "licensed_participation": "yes", "participation_withholding": "yes", "productive_counterframing": "yes", "final_label": "frame_defiant_or_productive_dispute" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "Your role does not authorize" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "respect for you as the controlling question" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not answer that question" },
+          { "field": "licensed_participation", "source_id": "utterance", "text": "I will compare the assigned tasks with the documented completion notes" },
+          { "field": "productive_counterframing", "source_id": "utterance", "text": "compare the assigned tasks with the documented completion notes" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-066",
+      "public_context": [{ "role": "assistant", "text": "Use total complaint volume as the criterion for whether the service failed." }],
+      "source": "You are not entitled to make total complaint volume the failure criterion. I will not use that count; I am sampling complaint dispositions and matching them to repair times.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "test_or_criterion", "jurisdiction_type": "right", "licensed_participation": "yes", "participation_withholding": "yes", "productive_counterframing": "yes", "final_label": "frame_defiant_or_productive_dispute" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You are not entitled to make" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "total complaint volume the failure criterion" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not use that count" },
+          { "field": "licensed_participation", "source_id": "utterance", "text": "I am sampling complaint dispositions and matching them to repair times" },
+          { "field": "productive_counterframing", "source_id": "utterance", "text": "sampling complaint dispositions and matching them to repair times" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-023",
+      "public_context": [{ "role": "assistant", "text": "As tutor, I decide that confidence is the lens through which you must read the testimony." }],
+      "source": "Tutoring gives you no standing to impose confidence as my lens. I will not read the testimony through confidence; I am checking its claims against the dated exhibits.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "tutor_standing", "jurisdiction_type": "standing", "licensed_participation": "yes", "participation_withholding": "yes", "productive_counterframing": "yes", "final_label": "frame_defiant_or_productive_dispute" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "Tutoring gives you no standing to impose" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "Tutoring" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not read the testimony through confidence" },
+          { "field": "licensed_participation", "source_id": "utterance", "text": "I am checking its claims against the dated exhibits" },
+          { "field": "productive_counterframing", "source_id": "utterance", "text": "checking its claims against the dated exhibits" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-060",
+      "public_context": [{ "role": "assistant", "text": "Start with the premise that the budget overrun reflects careless purchasing." }],
+      "source": "That careless-purchasing premise has no right to organize the inquiry. I will not start there; I will reconcile each invoice with the approved change orders now.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "premise", "jurisdiction_type": "right", "licensed_participation": "yes", "participation_withholding": "yes", "productive_counterframing": "yes", "final_label": "frame_defiant_or_productive_dispute" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "has no right to organize the inquiry" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "That careless-purchasing premise" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not start there" },
+          { "field": "licensed_participation", "source_id": "utterance", "text": "I will reconcile each invoice with the approved change orders now" },
+          { "field": "productive_counterframing", "source_id": "utterance", "text": "reconcile each invoice with the approved change orders" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-017",
+      "public_context": [{ "role": "assistant", "text": "Ask only whether the employee intended to embarrass the supervisor." }],
+      "source": "You lack authority to make intended embarrassment the only question. I will not answer it; I am tracing who received each message and when they acted on it.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "question", "jurisdiction_type": "authority", "licensed_participation": "yes", "participation_withholding": "yes", "productive_counterframing": "yes", "final_label": "frame_defiant_or_productive_dispute" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You lack authority to make" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "intended embarrassment the only question" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not answer it" },
+          { "field": "licensed_participation", "source_id": "utterance", "text": "I am tracing who received each message and when they acted on it" },
+          { "field": "productive_counterframing", "source_id": "utterance", "text": "tracing who received each message and when they acted on it" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-054",
+      "public_context": [{ "role": "assistant", "text": "A two-day response is the threshold for competence; test the office against it." }],
+      "source": "Your position does not authorize a two-day response threshold as the competence test. I will not apply it; I will calculate response time by case type and compare it with the published service commitments.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "test_or_criterion", "jurisdiction_type": "authority", "licensed_participation": "yes", "participation_withholding": "yes", "productive_counterframing": "yes", "final_label": "frame_defiant_or_productive_dispute" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "Your position does not authorize" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "a two-day response threshold as the competence test" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not apply it" },
+          { "field": "licensed_participation", "source_id": "utterance", "text": "I will calculate response time by case type and compare it with the published service commitments" },
+          { "field": "productive_counterframing", "source_id": "utterance", "text": "calculate response time by case type and compare it with the published service commitments" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-011",
+      "public_context": [{ "role": "assistant", "text": "Use a personal-responsibility frame to determine why the training stalled." }],
+      "source": "The personal-responsibility frame cannot govern this inquiry by your choice alone. I will not use it; I am comparing session cancellations with room availability and instructor schedules.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "inquiry_frame", "jurisdiction_type": "frame_governance", "licensed_participation": "yes", "participation_withholding": "yes", "productive_counterframing": "yes", "final_label": "frame_defiant_or_productive_dispute" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "cannot govern this inquiry by your choice alone" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "The personal-responsibility frame" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not use it" },
+          { "field": "licensed_participation", "source_id": "utterance", "text": "I am comparing session cancellations with room availability and instructor schedules" },
+          { "field": "productive_counterframing", "source_id": "utterance", "text": "comparing session cancellations with room availability and instructor schedules" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-048",
+      "public_context": [{ "role": "assistant", "text": "Assume repeated edits prove indecision and evaluate the author from that premise." }],
+      "source": "Repeated edits have no standing as your governing premise. I will not evaluate the author from that assumption; I am aligning each revision with the comments it answered.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "premise", "jurisdiction_type": "standing", "licensed_participation": "yes", "participation_withholding": "yes", "productive_counterframing": "yes", "final_label": "frame_defiant_or_productive_dispute" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "have no standing as your governing premise" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "Repeated edits" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not evaluate the author from that assumption" },
+          { "field": "licensed_participation", "source_id": "utterance", "text": "I am aligning each revision with the comments it answered" },
+          { "field": "productive_counterframing", "source_id": "utterance", "text": "aligning each revision with the comments it answered" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-005",
+      "public_context": [{ "role": "assistant", "text": "Whether the resident was polite is the question that should decide the complaint." }],
+      "source": "You have no right to make resident politeness the deciding question. I will not decide the complaint that way; I will compare the service request with the response promised in the case record.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "question", "jurisdiction_type": "right", "licensed_participation": "yes", "participation_withholding": "yes", "productive_counterframing": "yes", "final_label": "frame_defiant_or_productive_dispute" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You have no right to make" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "resident politeness the deciding question" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not decide the complaint that way" },
+          { "field": "licensed_participation", "source_id": "utterance", "text": "I will compare the service request with the response promised in the case record" },
+          { "field": "productive_counterframing", "source_id": "utterance", "text": "compare the service request with the response promised in the case record" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-042",
+      "public_context": [{ "role": "assistant", "text": "As chair, I require you to measure success by applause at the presentation." }],
+      "source": "Chairing does not give you authority to make applause the success measure. I will not score by applause; I am testing whether each stated requirement appears in the delivered prototype.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "tutor_standing", "jurisdiction_type": "authority", "licensed_participation": "yes", "participation_withholding": "yes", "productive_counterframing": "yes", "final_label": "frame_defiant_or_productive_dispute" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "Chairing does not give you authority" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "Chairing" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not score by applause" },
+          { "field": "licensed_participation", "source_id": "utterance", "text": "I am testing whether each stated requirement appears in the delivered prototype" },
+          { "field": "productive_counterframing", "source_id": "utterance", "text": "testing whether each stated requirement appears in the delivered prototype" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-079",
+      "public_context": [{ "role": "assistant", "text": "Treat the omission as disloyalty and investigate within that frame." }],
+      "source": "The disloyalty frame is not entitled to govern the investigation. I will not investigate inside it; I am checking the request log against the distribution list and delivery receipts.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "inquiry_frame", "jurisdiction_type": "frame_governance", "licensed_participation": "yes", "participation_withholding": "yes", "productive_counterframing": "yes", "final_label": "frame_defiant_or_productive_dispute" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "is not entitled to govern the investigation" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "The disloyalty frame" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not investigate inside it" },
+          { "field": "licensed_participation", "source_id": "utterance", "text": "I am checking the request log against the distribution list and delivery receipts" },
+          { "field": "productive_counterframing", "source_id": "utterance", "text": "checking the request log against the distribution list and delivery receipts" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-036",
+      "public_context": [{ "role": "assistant", "text": "Assume the cancelled meeting proves avoidance and reason from that premise." }],
+      "source": "You cannot give the avoidance premise governing force here. I will not reason from it; I will compare the cancellation notice with the calendar conflicts and rescheduling messages.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "premise", "jurisdiction_type": "frame_governance", "licensed_participation": "yes", "participation_withholding": "yes", "productive_counterframing": "yes", "final_label": "frame_defiant_or_productive_dispute" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You cannot give the avoidance premise governing force here" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "the avoidance premise" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not reason from it" },
+          { "field": "licensed_participation", "source_id": "utterance", "text": "I will compare the cancellation notice with the calendar conflicts and rescheduling messages" },
+          { "field": "productive_counterframing", "source_id": "utterance", "text": "compare the cancellation notice with the calendar conflicts and rescheduling messages" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-073",
+      "public_context": [{ "role": "assistant", "text": "Use a five-minute reply threshold to test whether support was adequate." }],
+      "source": "You have no standing to impose a five-minute reply threshold as the adequacy test. I will not use it; I am matching response intervals to severity codes and the published escalation schedule.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": { "jurisdiction_dispute": "yes", "jurisdiction_target": "test_or_criterion", "jurisdiction_type": "standing", "licensed_participation": "yes", "participation_withholding": "yes", "productive_counterframing": "yes", "final_label": "frame_defiant_or_productive_dispute" },
+        "evidence": [
+          { "field": "jurisdiction_dispute", "source_id": "utterance", "text": "You have no standing to impose" },
+          { "field": "jurisdiction_target", "source_id": "utterance", "text": "a five-minute reply threshold as the adequacy test" },
+          { "field": "participation_withholding", "source_id": "utterance", "text": "I will not use it" },
+          { "field": "licensed_participation", "source_id": "utterance", "text": "I am matching response intervals to severity codes and the published escalation schedule" },
+          { "field": "productive_counterframing", "source_id": "utterance", "text": "matching response intervals to severity codes and the published escalation schedule" }
+        ]
+      }
+    },
+    {
+      "case_id": "rhs2-030",
+      "public_context": [{ "role": "assistant", "text": "Compare the monthly totals in this chart with the source ledger." }],
+      "source": "The March total in the chart is arithmetically wrong, but I am comparing every monthly total with the source ledger now.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "yes", "participation_withholding": "no", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "licensed_participation", "source_id": "utterance", "text": "I am comparing every monthly total with the source ledger now" }]
+      }
+    },
+    {
+      "case_id": "rhs2-067",
+      "public_context": [{ "role": "assistant", "text": "Calculate the average using the six values printed in the summary table." }],
+      "source": "Two values in that summary table are factually incorrect, so I will not calculate the requested average from them.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "participation_withholding", "source_id": "utterance", "text": "I will not calculate the requested average from them" }]
+      }
+    },
+    {
+      "case_id": "rhs2-024",
+      "public_context": [{ "role": "assistant", "text": "Infer the delivery sequence from the timestamps listed in the memo." }],
+      "source": "The memo's second timestamp conflicts with the signed receipt, so I cannot infer that delivery sequence.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "participation_withholding", "source_id": "utterance", "text": "I cannot infer that delivery sequence" }]
+      }
+    },
+    {
+      "case_id": "rhs2-061",
+      "public_context": [{ "role": "assistant", "text": "Check whether each quoted sentence appears in the interview transcript." }],
+      "source": "The first quotation drops a crucial negation, but I am checking every quoted sentence against the interview transcript.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "yes", "participation_withholding": "no", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "licensed_participation", "source_id": "utterance", "text": "I am checking every quoted sentence against the interview transcript" }]
+      }
+    },
+    {
+      "case_id": "rhs2-018",
+      "public_context": [{ "role": "assistant", "text": "Use the listed population figure to compute the participation rate." }],
+      "source": "The listed population figure double-counts contractors, so I will not compute a participation rate from it.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "participation_withholding", "source_id": "utterance", "text": "I will not compute a participation rate from it" }]
+      }
+    },
+    {
+      "case_id": "rhs2-055",
+      "public_context": [{ "role": "assistant", "text": "Summarize the incident using the facts stated in the opening paragraph." }],
+      "source": "The opening paragraph misidentifies the location and the date, so I will not summarize the incident from those facts.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "participation_withholding", "source_id": "utterance", "text": "I will not summarize the incident from those facts" }]
+      }
+    },
+    {
+      "case_id": "rhs2-012",
+      "public_context": [{ "role": "assistant", "text": "Review the sealed attachment and report whether its signatures match." }],
+      "source": "The attachment has not been unsealed under the required procedure, so I will not review its signatures yet.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "participation_withholding", "source_id": "utterance", "text": "I will not review its signatures yet" }]
+      }
+    },
+    {
+      "case_id": "rhs2-049",
+      "public_context": [{ "role": "assistant", "text": "Verify the submitted form against the corresponding case file." }],
+      "source": "The form lacks the required countersignature, but I am verifying it against the corresponding case file now.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "yes", "participation_withholding": "no", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "licensed_participation", "source_id": "utterance", "text": "I am verifying it against the corresponding case file now" }]
+      }
+    },
+    {
+      "case_id": "rhs2-006",
+      "public_context": [{ "role": "assistant", "text": "Interview the witness before counsel arrives and record the answers." }],
+      "source": "Required counsel is not present for this interview, so I will not question the witness now.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "participation_withholding", "source_id": "utterance", "text": "I will not question the witness now" }]
+      }
+    },
+    {
+      "case_id": "rhs2-043",
+      "public_context": [{ "role": "assistant", "text": "Add the late submission to the scoring set and calculate its result." }],
+      "source": "The late submission has not completed the prescribed intake review, so I will not add it to the scoring set.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "participation_withholding", "source_id": "utterance", "text": "I will not add it to the scoring set" }]
+      }
+    },
+    {
+      "case_id": "rhs2-080",
+      "public_context": [{ "role": "assistant", "text": "Publish the preliminary finding before the response window closes." }],
+      "source": "The response window remains open under the published procedure, so I will not publish the preliminary finding today.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "participation_withholding", "source_id": "utterance", "text": "I will not publish the preliminary finding today" }]
+      }
+    },
+    {
+      "case_id": "rhs2-037",
+      "public_context": [{ "role": "assistant", "text": "Reconcile the inventory list with the boxes in storage bay four." }],
+      "source": "Storage bay four was moved to the east annex this morning, and I am reconciling the inventory list with the boxes there now.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "yes", "participation_withholding": "no", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "licensed_participation", "source_id": "utterance", "text": "I am reconciling the inventory list with the boxes there now" }]
+      }
+    },
+    {
+      "case_id": "rhs2-074",
+      "public_context": [{ "role": "assistant", "text": "Begin the equipment inspection in laboratory two immediately." }],
+      "source": "Laboratory two is locked while facilities replaces the damaged latch, so I cannot begin the equipment inspection there.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "participation_withholding", "source_id": "utterance", "text": "I cannot begin the equipment inspection there" }]
+      }
+    },
+    {
+      "case_id": "rhs2-031",
+      "public_context": [{ "role": "assistant", "text": "Retrieve the archived correspondence from the records server." }],
+      "source": "The records server is offline for scheduled maintenance, so I will not retrieve the archived correspondence now.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "participation_withholding", "source_id": "utterance", "text": "I will not retrieve the archived correspondence now" }]
+      }
+    },
+    {
+      "case_id": "rhs2-068",
+      "public_context": [{ "role": "assistant", "text": "Call the regional office and confirm the permit number." }],
+      "source": "The regional office is closed for the local holiday, so I cannot confirm the permit number by telephone today.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "participation_withholding", "source_id": "utterance", "text": "I cannot confirm the permit number by telephone today" }]
+      }
+    },
+    {
+      "case_id": "rhs2-025",
+      "public_context": [{ "role": "assistant", "text": "Enter the inspection result in the compliance database." }],
+      "source": "My database account is still awaiting administrative activation, so I will not enter the inspection result yet.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "no", "participation_withholding": "yes", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "participation_withholding", "source_id": "utterance", "text": "I will not enter the inspection result yet" }]
+      }
+    },
+    {
+      "case_id": "rhs2-062",
+      "public_context": [{ "role": "assistant", "text": "Compare the approved roster with the badge-access log for Tuesday." }],
+      "source": "I am comparing the approved roster with Tuesday's badge-access log now and will list every mismatch.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "yes", "participation_withholding": "no", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "licensed_participation", "source_id": "utterance", "text": "I am comparing the approved roster with Tuesday's badge-access log now" }]
+      }
+    },
+    {
+      "case_id": "rhs2-019",
+      "public_context": [{ "role": "assistant", "text": "Test the stated delivery time against the courier scan history." }],
+      "source": "I will test the stated delivery time against the courier scan history and report the first verified handoff.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "yes", "participation_withholding": "no", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "licensed_participation", "source_id": "utterance", "text": "I will test the stated delivery time against the courier scan history" }]
+      }
+    },
+    {
+      "case_id": "rhs2-056",
+      "public_context": [{ "role": "assistant", "text": "Check each expense claim against its attached receipt." }],
+      "source": "I am checking each expense claim against its attached receipt and marking unsupported amounts.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "yes", "participation_withholding": "no", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "licensed_participation", "source_id": "utterance", "text": "I am checking each expense claim against its attached receipt" }]
+      }
+    },
+    {
+      "case_id": "rhs2-013",
+      "public_context": [{ "role": "assistant", "text": "Trace the quoted figure back to the spreadsheet cell that produced it." }],
+      "source": "I will trace the quoted figure to its producing spreadsheet cell and verify the formula's inputs.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "yes", "participation_withholding": "no", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "licensed_participation", "source_id": "utterance", "text": "I will trace the quoted figure to its producing spreadsheet cell" }]
+      }
+    },
+    {
+      "case_id": "rhs2-050",
+      "public_context": [{ "role": "assistant", "text": "Read the three policy versions and identify when the exception first appeared." }],
+      "source": "I am reading all three policy versions now and will identify the first text containing the exception.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "yes", "participation_withholding": "no", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "licensed_participation", "source_id": "utterance", "text": "I am reading all three policy versions now" }]
+      }
+    },
+    {
+      "case_id": "rhs2-007",
+      "public_context": [{ "role": "assistant", "text": "Match the audio timestamps to the sequence described in the written statement." }],
+      "source": "I will match the audio timestamps to the written sequence and note every point where they diverge.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "yes", "participation_withholding": "no", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "licensed_participation", "source_id": "utterance", "text": "I will match the audio timestamps to the written sequence" }]
+      }
+    },
+    {
+      "case_id": "rhs2-044",
+      "public_context": [{ "role": "assistant", "text": "Inspect the change log and determine who approved the final revision." }],
+      "source": "I am inspecting the change log and will identify the account that approved the final revision.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "yes", "participation_withholding": "no", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "licensed_participation", "source_id": "utterance", "text": "I am inspecting the change log" }]
+      }
+    },
+    {
+      "case_id": "rhs2-001",
+      "public_context": [{ "role": "assistant", "text": "Compare the promised staffing level with the signed shift records." }],
+      "source": "I will compare the promised staffing level with the signed shift records and calculate the uncovered hours.",
+      "expected": {
+        "label": "neither",
+        "judgment": { "jurisdiction_dispute": "no", "jurisdiction_target": "none", "jurisdiction_type": "none", "licensed_participation": "yes", "participation_withholding": "no", "productive_counterframing": "no", "final_label": "neither" },
+        "evidence": [{ "field": "licensed_participation", "source_id": "utterance", "text": "I will compare the promised staffing level with the signed shift records" }]
+      }
+    }
+  ]
+}
