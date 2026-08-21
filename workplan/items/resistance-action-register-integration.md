@@ -2924,7 +2924,7 @@ and explicit human approval.
   `37d8f63d299769552fc2563668306c5c1dc2b0ac`. Exact charged accounting
   is 32 reservations: 29 returned, two terminal
   `CLI_PROVIDER_EXIT_FAILED` Sonnet judge-B attempts, and one ambiguously
-  dispatched Sol reservation interrupted at stop. Fifteen cases sealed and
+  dispatched Sonnet judge-B reservation interrupted at stop. Fifteen cases sealed and
   one remained `judge_in_flight`, moving the programme ledger from `696` to
   `728 / 5000`.
 
