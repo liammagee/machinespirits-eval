@@ -2749,3 +2749,56 @@ and explicit human approval.
   instrument, schema, prompt, gates, and heldout remain unchanged. This is
   zero-call request compatibility only: no successor request, destination,
   approval, validation run, outcome run, or confirmation run is created here.
+
+- 2026-08-21 — After the compatibility change merged, the existing
+  deterministic packager created a fresh revision-2 V3 manipulation
+  semantic-validation HOLD request from exact source
+  `b39e82d872a9b1320a20bd9e58ae23e33e000a13` / tree
+  `584d89016a0010ecb83783c005bb0e5f919b0914`. The request is
+  `config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3-successor.json`
+  at SHA-256
+  `bb3571a2971e1d3fc3d7dad9fa0e41715b3e2282d495aef6f5880fd04fd4b5da`.
+  Its 36 unique source files bind the current Codex provider-schema adapter,
+  unchanged V3 instrument/response schema/development evidence/independent
+  heldout bytes, and the consumed original V3 request itself. The latter
+  remains SHA-256
+  `940cd6582909ff2e193830f219b0dc1a7d36f279d3d8c2709ca108177aba5539`.
+
+  The stopped run is bound and wholly excluded at exact private archive branch
+  `codex/resistance-semantic-validation-v3-incomplete-archive`, commit
+  `e18190e61e4630968bfb5c5d5c7c226b9ce3f98e`, tree
+  `07db6db788b19e3ab03c17c700cd6814337402c2`, local inventory
+  `c73158e8c4e4dc8c4ddab4e82e93fa6d8dbe7af721c3399f4efa135e0954745e`,
+  durable inventory
+  `eed7dc7f295df934d48cabc8a78ae8ed4989be075c53561216ba65f499f18145`,
+  and manifest
+  `32cefbf50b69c066d79d1e9664331a3df55dfd9796437a41fb5ea6cc3356d7be`.
+  The request preserves the exact 10-reservation accounting: one returned,
+  eight terminal transport failures, one ambiguously dispatched, two sealed
+  indeterminate cases, one in-flight case, and no gold join, recovery,
+  analyzer, result, report, seal, reuse, pooling, selection, or confirmation
+  credit. Same-source resume remains forbidden.
+
+  The current endpoint contract/certificate file hashes are respectively
+  `c1d215407e782eee8bd619336b9ee43c32b6d0c0655e83509b145a0371f3584f`
+  and `9b5b2c6c8fd01488d77b2944c29744a83722d05ce708623af7dac512daf20260`;
+  their canonical/preflight bindings are
+  `ed62463f39e6b40c90bdfaeb9383b5c98e46ec5f43891f626ffde8a04f1a4ce7`
+  and `55de7de84c0bdb51c8cf8c893aa62c97a1f97ad02b87834dacaada54724ac9c1`.
+  The exact live/recovery/analyze command-array hashes are
+  `3be5722e0e95dc5b4b8c47852a6b78f4c08c5286750be4663b08c2d5f1cc6729`,
+  `aaf3645e4c689aa745d304763361b6223768a77f78ee190e0a4f7be6e9db5cd7`,
+  and `2cc281ec5e76f996ed36e7f223b044a118274be88c658bc1dac9d3870c81dc99`.
+  They retain the frozen Sol-low plus Sonnet-5-low routes, required durable
+  private archive, and wholly fresh create-once destination
+  `.tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v3-2026-08-21-b`.
+
+  The request stays at 80 cases, 160 planned calls, three charged reservations
+  per call, hard 480, and programme maximum `661 -> 1141 / 5000`. It encodes
+  no gold or original case ids in execution, interim analysis, third judge,
+  recall, rerun, repair, replacement, selection, post-heldout tuning, outcome
+  validation, or confirmation. The authority fields remain literal
+  `HOLD` / `null` / `false`; no ceiling amendment is encoded. Direct validation
+  and the packager's isolated no-`node_modules` replay both passed all 70
+  checks, and endpoint/certificate preflight passed with zero model calls and
+  zero production writes. No validation was launched.
