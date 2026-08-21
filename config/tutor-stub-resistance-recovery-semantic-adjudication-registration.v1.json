@@ -8,7 +8,7 @@
     "promptChanged": false,
     "responseSchemaChanged": false,
     "heldoutCasesAuthored": 0,
-    "correctionFreezeCommit": null
+    "correctionFreezeCommit": "59bfcc4c5223f21c1405a70feedc1e1bb639b441"
   },
   "studyId": "tutor-stub-resistance-recovery-semantic-adjudication-validation-v1",
   "instrument": {
