@@ -12,9 +12,13 @@ import {
   wrapTutorStubResistanceSemanticModelOutput,
 } from './tutorStubResistanceSemanticAdjudication.js';
 import {
-  TUTOR_STUB_RESISTANCE_SEMANTIC_SYSTEM_PROMPT,
-  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION,
-} from './tutorStubResistanceSemanticRuntime.js';
+  TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V2,
+  adjudicateTutorStubResistanceSemanticJudgesV2,
+  buildTutorStubResistanceSemanticAdjudicationPromptV2,
+  scoreTutorStubResistanceSemanticCorpusV2,
+  wrapTutorStubResistanceSemanticModelOutputV2,
+} from './tutorStubResistanceSemanticAdjudicationV2.js';
+import { TUTOR_STUB_RESISTANCE_SEMANTIC_SYSTEM_PROMPT } from './tutorStubResistanceSemanticRuntime.js';
 import {
   buildTutorStubResistanceSemanticBlindedValidationCases,
   loadTutorStubResistanceSemanticValidation,
@@ -32,6 +36,32 @@ export const TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_SEAL_SCHEMA =
   'machinespirits.tutor-stub.resistance-semantic-validation-seal.v1';
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REPORT_SCHEMA =
   'machinespirits.tutor-stub.resistance-semantic-validation-report.v1';
+
+function semanticInstrument(loaded) {
+  const buildBlindedCases = loaded?.buildBlindedCases || buildTutorStubResistanceSemanticBlindedValidationCases;
+  const corpusCaseForExecutionId =
+    loaded?.corpusCaseForExecutionId || tutorStubResistanceSemanticCorpusCaseForExecutionId;
+  if (loaded?.instrument?.registration?.version === 2) {
+    return {
+      outputSchema: TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V2,
+      buildPrompt: buildTutorStubResistanceSemanticAdjudicationPromptV2,
+      wrapModelOutput: wrapTutorStubResistanceSemanticModelOutputV2,
+      adjudicate: adjudicateTutorStubResistanceSemanticJudgesV2,
+      scoreCorpus: scoreTutorStubResistanceSemanticCorpusV2,
+      buildBlindedCases,
+      corpusCaseForExecutionId,
+    };
+  }
+  return {
+    outputSchema: TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA,
+    buildPrompt: buildTutorStubResistanceSemanticAdjudicationPrompt,
+    wrapModelOutput: wrapTutorStubResistanceSemanticModelOutput,
+    adjudicate: adjudicateTutorStubResistanceSemanticJudges,
+    scoreCorpus: scoreTutorStubResistanceSemanticCorpus,
+    buildBlindedCases,
+    corpusCaseForExecutionId,
+  };
+}
 
 function canonicalJson(value) {
   if (Array.isArray(value)) return value.map(canonicalJson);
@@ -401,11 +431,11 @@ function loadExistingCheckpoints(destination, caseIds) {
   });
 }
 
-function blindCaseBinding(blindedCase, judges) {
+function blindCaseBinding(blindedCase, judges, instrument) {
   const prompts = Object.fromEntries(
     judges.map((judge) => [
       judge.id,
-      buildTutorStubResistanceSemanticAdjudicationPrompt({
+      instrument.buildPrompt({
         caseId: blindedCase.case_id,
         source: blindedCase.source,
         publicContext: blindedCase.public_context,
@@ -439,7 +469,9 @@ export function buildTutorStubResistanceSemanticValidationPlan({
     throw new Error('validation plan requires a digest-bound GO request');
   }
   const judges = loaded.instrument.registration.measurement.judges;
-  const blindedCases = buildTutorStubResistanceSemanticBlindedValidationCases(loaded.corpus.cases);
+  const instrument = semanticInstrument(loaded);
+  const readiness = loaded.registration.executionReadiness;
+  const blindedCases = instrument.buildBlindedCases(loaded.corpus.cases);
   const plan = {
     schema: TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_PLAN_SCHEMA,
     status: 'prospective_unlaunched',
@@ -457,14 +489,14 @@ export function buildTutorStubResistanceSemanticValidationPlan({
       sha256: loaded.registrationSha256,
     },
     instrument: {
-      path: TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION,
+      path: loaded.instrument.path,
       sha256: loaded.instrument.sha256,
       freeze_commit: loaded.registration.instrument.instrumentFreezeCommit,
     },
     heldout: {
       path: loaded.registration.heldout.corpusPath,
       sha256: loaded.corpusSha256,
-      cases: 80,
+      cases: readiness.plannedCases,
       gold_in_execution_artifacts: false,
     },
     judges: judges.map((judge) => ({
@@ -476,12 +508,12 @@ export function buildTutorStubResistanceSemanticValidationPlan({
       maximum_reservations: 3,
     })),
     budget: {
-      planned_calls: 160,
-      maximum_reservations_per_call: 3,
-      hard_reservation_ceiling: 480,
-      programme_ledger_before: 331,
-      programme_ledger_after_maximum: 811,
-      programme_ceiling: 5000,
+      planned_calls: readiness.plannedModelCalls,
+      maximum_reservations_per_call: readiness.maximumReservationsPerPlannedCall,
+      hard_reservation_ceiling: readiness.hardValidationReservations,
+      programme_ledger_before: readiness.programmeLedgerBefore,
+      programme_ledger_after_maximum: readiness.programmeLedgerAfterMaximum,
+      programme_ceiling: readiness.programmeCeiling,
     },
     lifecycle: {
       checkpoint_after_each_judge_response: true,
@@ -493,7 +525,7 @@ export function buildTutorStubResistanceSemanticValidationPlan({
       analyzer_requires_all_cases_sealed: true,
       gold_joined_only_after_seal: true,
     },
-    cases: blindedCases.map((blindedCase) => blindCaseBinding(blindedCase, judges)),
+    cases: blindedCases.map((blindedCase) => blindCaseBinding(blindedCase, judges, instrument)),
   };
   plan.plan_sha256 = tutorStubResistanceSemanticValidationPlanFingerprint(plan);
   return plan;
@@ -544,10 +576,10 @@ function observedRaw(result) {
   };
 }
 
-function wrapRawResponse({ raw, prompt, judge, independentRunId }) {
+function wrapRawResponse({ raw, prompt, judge, independentRunId, instrument }) {
   const modelOutput = JSON.parse(String(raw.text || '').trim());
   if (modelOutput.case_id !== prompt.case_id) throw new Error('semantic response case id mismatch');
-  return wrapTutorStubResistanceSemanticModelOutput({
+  return instrument.wrapModelOutput({
     modelOutput,
     prompt,
     judge,
@@ -564,7 +596,7 @@ function wrapRawResponse({ raw, prompt, judge, independentRunId }) {
 
 function finalizeCheckpoint({ checkpoint, corpusCase, loaded, prompts, resumedPartial = false }) {
   const responses = checkpoint.judge_results.map((row) => row.record).filter(Boolean);
-  const aggregate = adjudicateTutorStubResistanceSemanticJudges({
+  const aggregate = semanticInstrument(loaded).adjudicate({
     source: corpusCase.source,
     publicContext: corpusCase.public_context,
     caseId: corpusCase.case_id,
@@ -596,6 +628,7 @@ async function executeJudge({
   afterDispatchCheckpoint,
   afterLocalCheckpointWrite,
   archive,
+  instrument,
 }) {
   const resolved = resolveModelRef(judge.modelRef);
   if (resolved.provider !== judge.provider || resolved.model !== judge.model) {
@@ -655,7 +688,7 @@ async function executeJudge({
         TUTOR_STUB_RESISTANCE_SEMANTIC_SYSTEM_PROMPT,
         JSON.stringify(prompt),
         result.role,
-        { effort: judge.effort, outputSchema: TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA },
+        { effort: judge.effort, outputSchema: instrument.outputSchema },
       );
       result.attempts.at(-1).status = 'returned';
       result.raw_response = observedRaw(bridgeResult);
@@ -665,6 +698,7 @@ async function executeJudge({
           prompt,
           judge,
           independentRunId: result.independent_run_id,
+          instrument,
         });
         result.outcome = 'recorded_response';
       } catch (error) {
@@ -753,12 +787,13 @@ export async function runTutorStubResistanceSemanticValidation({
   afterSealLocalWrite = null,
   sourceDirty,
   archiveDir,
+  loaded = loadTutorStubResistanceSemanticValidation(),
 }) {
   if (sourceDirty !== false) throw new Error('semantic validation execution requires an explicitly clean source tree');
   if (typeof callModel !== 'function' || typeof resolveModelRef !== 'function') {
     throw new Error('semantic validation execution requires explicit model-call and route-resolution dependencies');
   }
-  const loaded = loadTutorStubResistanceSemanticValidation();
+  const instrument = semanticInstrument(loaded);
   const plan = buildTutorStubResistanceSemanticValidationPlan({
     sourceCommit,
     sourceTree,
@@ -767,7 +802,7 @@ export async function runTutorStubResistanceSemanticValidation({
     goRequestSha256,
     loaded,
   });
-  const blindedCases = buildTutorStubResistanceSemanticBlindedValidationCases(loaded.corpus.cases);
+  const blindedCases = instrument.buildBlindedCases(loaded.corpus.cases);
   const planPath = path.join(destination, 'plan.json');
   const sealPath = path.join(destination, 'seal.json');
   const reportPath = path.join(destination, 'report.json');
@@ -799,7 +834,7 @@ export async function runTutorStubResistanceSemanticValidation({
     }
   }
   for (const blindedCase of blindedCases) {
-    const corpusCase = tutorStubResistanceSemanticCorpusCaseForExecutionId(loaded.corpus.cases, blindedCase.case_id);
+    const corpusCase = instrument.corpusCaseForExecutionId(loaded.corpus.cases, blindedCase.case_id);
     if (!corpusCase) throw new Error(`unknown opaque validation case ${blindedCase.case_id}`);
     const file = checkpointFile(destination, blindedCase.case_id);
     let checkpoint = fs.existsSync(file)
@@ -820,7 +855,7 @@ export async function runTutorStubResistanceSemanticValidation({
     const prompts = Object.fromEntries(
       loaded.instrument.registration.measurement.judges.map((judge) => [
         judge.id,
-        buildTutorStubResistanceSemanticAdjudicationPrompt({
+        instrument.buildPrompt({
           caseId: blindedCase.case_id,
           source: corpusCase.source,
           publicContext: corpusCase.public_context,
@@ -895,6 +930,7 @@ export async function runTutorStubResistanceSemanticValidation({
         afterDispatchCheckpoint,
         afterLocalCheckpointWrite,
         archive,
+        instrument,
       });
       await afterJudgeCheckpoint?.({ caseId: blindedCase.case_id, judgeId: judge.id });
     }
@@ -921,7 +957,7 @@ export async function runTutorStubResistanceSemanticValidation({
   return { plan, seal };
 }
 
-function reconstructJudgeResult({ row, corpusCase, judge, expectedPrompt }) {
+function reconstructJudgeResult({ row, corpusCase, judge, expectedPrompt, instrument }) {
   const issues = [];
   if (row.judge_id !== judge.id || row.role !== `tutor_stub_resistance_semantic_${judge.id}`) {
     issues.push('judge identity or role mismatch');
@@ -941,6 +977,7 @@ function reconstructJudgeResult({ row, corpusCase, judge, expectedPrompt }) {
         prompt: expectedPrompt,
         judge,
         independentRunId: row.independent_run_id,
+        instrument,
       });
     } catch {
       if (row.outcome !== 'invalid_return' || row.record !== null) {
@@ -967,8 +1004,9 @@ export function analyzeTutorStubResistanceSemanticValidation({
   sourceDirty,
   archiveDir,
   allowExistingReport = false,
+  loaded = loadTutorStubResistanceSemanticValidation(),
 }) {
-  const loaded = loadTutorStubResistanceSemanticValidation();
+  const instrument = semanticInstrument(loaded);
   const plan = readJson(path.join(destination, 'plan.json'));
   const expectedPlan = buildTutorStubResistanceSemanticValidationPlan({
     sourceCommit: expectedSourceCommit,
@@ -1034,10 +1072,10 @@ export function analyzeTutorStubResistanceSemanticValidation({
   const allIssues = [];
   const independentRunIds = [];
   const checkpoints = [];
-  const blindedCases = buildTutorStubResistanceSemanticBlindedValidationCases(loaded.corpus.cases);
+  const blindedCases = instrument.buildBlindedCases(loaded.corpus.cases);
   const blindedCorpusCases = [];
   for (const blindedCase of blindedCases) {
-    const corpusCase = tutorStubResistanceSemanticCorpusCaseForExecutionId(loaded.corpus.cases, blindedCase.case_id);
+    const corpusCase = instrument.corpusCaseForExecutionId(loaded.corpus.cases, blindedCase.case_id);
     if (!corpusCase) throw new Error(`unknown opaque validation case ${blindedCase.case_id}`);
     const scoredCase = { ...corpusCase, case_id: blindedCase.case_id };
     blindedCorpusCases.push(scoredCase);
@@ -1125,7 +1163,7 @@ export function analyzeTutorStubResistanceSemanticValidation({
     const responses = [];
     responsePairs[blindedCase.case_id] = {};
     for (const judge of judges) {
-      const expectedPrompt = buildTutorStubResistanceSemanticAdjudicationPrompt({
+      const expectedPrompt = instrument.buildPrompt({
         caseId: blindedCase.case_id,
         source: corpusCase.source,
         publicContext: corpusCase.public_context,
@@ -1134,7 +1172,7 @@ export function analyzeTutorStubResistanceSemanticValidation({
       prompts[judge.id] = expectedPrompt;
       const stored = checkpoint.judge_results.find((row) => row.judge_id === judge.id);
       if (!stored) continue;
-      const rebuilt = reconstructJudgeResult({ row: stored, corpusCase, judge, expectedPrompt });
+      const rebuilt = reconstructJudgeResult({ row: stored, corpusCase, judge, expectedPrompt, instrument });
       issues.push(...rebuilt.issues);
       if (rebuilt.response) responses.push(rebuilt.response);
       responsePairs[blindedCase.case_id][judge.id] = {
@@ -1142,7 +1180,7 @@ export function analyzeTutorStubResistanceSemanticValidation({
         response: rebuilt.response,
       };
     }
-    const aggregate = adjudicateTutorStubResistanceSemanticJudges({
+    const aggregate = instrument.adjudicate({
       source: corpusCase.source,
       publicContext: corpusCase.public_context,
       caseId: blindedCase.case_id,
@@ -1207,7 +1245,7 @@ export function analyzeTutorStubResistanceSemanticValidation({
   ) {
     throw new Error('semantic validation durable archive transition inventory drifted');
   }
-  const score = scoreTutorStubResistanceSemanticCorpus({
+  const score = instrument.scoreCorpus({
     corpus: { ...loaded.corpus, cases: blindedCorpusCases },
     responsePairs,
     registration: loaded.instrument.registration,

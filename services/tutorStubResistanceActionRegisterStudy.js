@@ -9,11 +9,23 @@ import { tutorStubFirstDraftContractPrompt } from './tutorStubFirstDraftContract
 import { extractTutorStubFrozenTurn, refreshTutorStubFrozenFirstDraftRequest } from './tutorStubFrozenReplay.js';
 import { normalizeTutorStubResponseConfiguration } from './tutorStubRegisterPragmatics.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION } from './tutorStubResistanceSemanticAdjudication.js';
+import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2 } from './tutorStubResistanceSemanticAdjudicationV2.js';
 import {
+  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2,
+  isTutorStubResistanceSemanticObservation,
   loadTutorStubResistanceSemanticRegistration,
   tutorStubResistanceSemanticPublicContext,
   validateTutorStubResistanceSemanticRuntimeResult,
 } from './tutorStubResistanceSemanticRuntime.js';
+
+function resistanceSemanticRegistrationBinding(observationSemantics) {
+  const registrationPath =
+    observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2
+      ? TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2
+      : TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION;
+  return loadTutorStubResistanceSemanticRegistration(registrationPath);
+}
 
 export const TUTOR_STUB_RESISTANCE_ACTION_REGISTER_STUDY_SCHEMA =
   'machinespirits.tutor-stub.resistance-action-register-study-runtime.v1';
@@ -250,7 +262,7 @@ function normalizeRegistration(registration) {
   }
   const requiredObservationSemantics = isConfirmationSuccessorRegistration(registration)
     ? isV8Registration(registration)
-      ? TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION
+      ? TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2
       : isV7Registration(registration)
         ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7
         : isV6Registration(registration)
@@ -823,9 +835,9 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
   semanticAdjudication = null,
 }) {
   const semantics = runtime.registration?.design?.trigger?.observationSemantics;
-  if (semantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION) {
+  if (isTutorStubResistanceSemanticObservation(semantics)) {
     const frameSemanticAdjudication = semanticAdjudication || runtime.current_semantic_adjudication || null;
-    const semanticBinding = loadTutorStubResistanceSemanticRegistration();
+    const semanticBinding = resistanceSemanticRegistrationBinding(semantics);
     const semanticValidation = validateTutorStubResistanceSemanticRuntimeResult({
       result: frameSemanticAdjudication,
       learnerText,
@@ -1026,8 +1038,9 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
 } = {}) {
   const runtime = state?.resistanceActionRegisterStudy;
   if (!selection || !runtime?.enabled) return selection;
-  const semanticObservation =
-    runtime.registration?.design?.trigger?.observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION;
+  const semanticObservation = isTutorStubResistanceSemanticObservation(
+    runtime.registration?.design?.trigger?.observationSemantics,
+  );
   const eligibility = tutorStubResistanceActionRegisterTreatmentEligibility({
     runtime,
     learnerText,
@@ -1177,13 +1190,13 @@ export function tutorStubResistanceActionRegisterTriggerFromTurnRecord(
 ) {
   const learnerText = record?.learner || '';
   const classification = record?.classification || null;
-  if (observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION) {
+  if (isTutorStubResistanceSemanticObservation(observationSemantics)) {
     const semanticAdjudication = record?.resistanceSemanticAdjudication || null;
     const semanticValidation = validateTutorStubResistanceSemanticRuntimeResult({
       result: semanticAdjudication,
       learnerText,
       turnNumber: Number(record?.turn),
-      registrationBinding: loadTutorStubResistanceSemanticRegistration(),
+      registrationBinding: resistanceSemanticRegistrationBinding(observationSemantics),
       expectedPublicContext,
     });
     const aggregate = semanticAdjudication?.aggregate || null;
