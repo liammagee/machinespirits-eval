@@ -24,6 +24,12 @@ const CERTIFICATE_V2 = 'config/paid-study-endpoints/tutor-stub-boredom-action-re
 const REGISTRATION_V3 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v3.json';
 const ENDPOINT_V3 = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v3.json';
 const CERTIFICATE_V3 = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v3.endpoint-go.json';
+const REGISTRATION_V4 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json';
+const ENDPOINT_V4 = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v4.json';
+const CERTIFICATE_V4 = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v4.endpoint-go.json';
+const SUPERSEDED_HOLD_REQUEST_V3 = 'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v3.json';
+const SEMANTIC_INSTRUMENT_V3 = 'services/tutorStubBoredomSemanticAdjudicationV3.js';
+const HELDOUT_CORPUS_V4 = 'config/tutor-stub-boredom-semantic-adjudication-heldout.v4.json';
 const CONSUMED_REQUEST_V2 = 'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v2.json';
 const CALIBRATION_REQUEST = 'config/tutor-stub-resistance-action-register-baseline-analysis-go-request.v1.json';
 const CONSUMED_REQUEST = 'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v1.json';
@@ -195,6 +201,7 @@ const CLOSURE_V3 = [
   'tutor-core/services/unifiedAIProviderService.js',
   'config/tutor-stub-boredom-semantic-adjudication-heldout.v1.json',
 ];
+const CLOSURE_V4 = [...CLOSURE_V3, SEMANTIC_INSTRUMENT_V3, HELDOUT_CORPUS_V4];
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -494,6 +501,60 @@ function buildRequestV3({ destinationSuffix }) {
   return request;
 }
 
+function buildRequestV4({ destinationSuffix }) {
+  const request = buildRequestV3({ destinationSuffix: `v4-${destinationSuffix}` });
+  const registration = JSON.parse(fs.readFileSync(path.join(ROOT, REGISTRATION_V4), 'utf8'));
+  const contract = JSON.parse(fs.readFileSync(path.join(ROOT, ENDPOINT_V4), 'utf8'));
+  const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, CERTIFICATE_V4), 'utf8'));
+  request.studyId = contract.study_id;
+  request.source.closure = CLOSURE_V4.map((repoPath) => ({ path: repoPath, sha256: fileSha256(repoPath) }));
+  request.boredomActionRegisterProofDag.requestRevision = 5;
+  request.boredomActionRegisterProofDag.semanticValidation = {
+    modelRef: 'codex.gpt-5.6-sol',
+    role: 'tutor_stub_boredom_performance_adjudication',
+    generatorSelfJudgmentAllowed: false,
+    regexFinalAuthority: false,
+    lexicalSilenceMayVetoSemanticPositive: false,
+    instrumentModule: { path: SEMANTIC_INSTRUMENT_V3, sha256: fileSha256(SEMANTIC_INSTRUMENT_V3) },
+    heldoutCorpus: { path: HELDOUT_CORPUS_V4, sha256: fileSha256(HELDOUT_CORPUS_V4), cases: 55 },
+    gates: registration.measurement.semanticAdjudicator.predeclaredEmpiricalGates,
+    empiricalValidationStatus: 'passed_all_predeclared_gates_on_sealed_heldout_v4_corpus',
+    empiricalValidationReportSha256: '7ff7810e28f7e037af12fbd852445efab9538bc1c946c529356a0c009a51763c',
+    confirmationLaunchReady: true,
+    lowConfidenceOrDisagreementDisposition: 'measurement_indeterminate_no_repair_no_rerun_no_replacement',
+    supersededHoldRequest: {
+      path: SUPERSEDED_HOLD_REQUEST_V3,
+      sha256: fileSha256(SUPERSEDED_HOLD_REQUEST_V3),
+      consumedByExecution: false,
+    },
+  };
+  request.design.worlds = registration.design.worlds;
+  request.design.assignmentManifestSha256 = registration.design.randomization.assignmentManifestSha256;
+  request.design.runSeedBase = registration.design.freshPrefixGeneration.seedBase;
+  request.budget.programmeLedgerBefore = 446;
+  request.budget.programmeLedgerAfterBoredomMaximum = 2606;
+  request.budget.programmeReservedAfterBothMaximum = 4766;
+  request.bindings.registration = { path: REGISTRATION_V4, sha256: fileSha256(REGISTRATION_V4) };
+  request.bindings.endpoint = {
+    contractPath: ENDPOINT_V4,
+    contractFileSha256: fileSha256(ENDPOINT_V4),
+    contractCanonicalSha256: sha256(JSON.stringify(canonicalJson(contract))),
+    certificatePath: CERTIFICATE_V4,
+    certificateFileSha256: fileSha256(CERTIFICATE_V4),
+    preflightSha256: certificate.preflight_sha256,
+  };
+  request.commands.live = request.commands.live.map((command) =>
+    command.map((value) => (value === REGISTRATION_V3 ? REGISTRATION_V4 : value)),
+  );
+  request.commands.analyze = request.commands.analyze.map((value) =>
+    value === REGISTRATION_V3 ? REGISTRATION_V4 : value,
+  );
+  request.bindings.commands.liveArraySha256 = commandSha256(request.commands.live);
+  request.bindings.commands.recoveryArraySha256 = commandSha256(request.commands.recovery);
+  request.bindings.commands.analyzeArraySha256 = commandSha256(request.commands.analyze);
+  return request;
+}
+
 function templateText(request) {
   const template = structuredClone(request);
   template.source.launchCommit = GO_REQUEST_PACKAGE_MARKERS.sourceCommit;
@@ -535,6 +596,13 @@ function templateTextV2(request) {
 
 function templateTextV3(request) {
   return templateTextV2(request);
+}
+
+function templateTextV4(request) {
+  const template = JSON.parse(templateTextV2(request));
+  template.boredomActionRegisterProofDag.semanticValidation.supersededHoldRequest.sha256 =
+    goRequestFileSha256Marker(SUPERSEDED_HOLD_REQUEST_V3);
+  return `${JSON.stringify(template, null, 2)}\n`;
 }
 
 test('boredom proof-DAG GO validator and packager bind scientific design separately from operational safeguards', (t) => {
@@ -714,6 +782,76 @@ test('prospective-v9 HOLD packaging binds independent semantic authority and rem
     const invalid = structuredClone(request);
     mutate(invalid);
     const invalidPath = path.join(temporary, `invalid-v3-${crypto.randomUUID()}.json`);
+    fs.writeFileSync(invalidPath, `${JSON.stringify(invalid, null, 2)}\n`);
+    assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
+  }
+});
+
+test('validated-instrument v4 packaging pins the passed Sol V3 gates and awaits explicit human approval', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-v4-go-'));
+  const output = `.tutor-stub-auto-eval/.test-boredom-proof-dag-v4-go-${process.pid}.json`;
+  t.after(() => {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(path.join(ROOT, output), { force: true });
+  });
+  assert.equal(fileSha256(CONSUMED_REQUEST_V2), STOPPED_EXECUTION_V2.request.sha256);
+  assert.equal(
+    fileSha256(SUPERSEDED_HOLD_REQUEST_V3),
+    'abda11e242d3d2cd67c0fe9f3e3c16a11cd59020e86e62ca2f9445e97508c08c',
+  );
+  const request = buildRequestV4({ destinationSuffix: process.pid });
+  const requestPath = path.join(temporary, 'request.json');
+  fs.writeFileSync(requestPath, `${JSON.stringify(request, null, 2)}\n`);
+  const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath });
+  assert.equal(report.packetValid, true);
+  assert.equal(report.modelCalls, 0);
+  assert.equal(report.productionWrites, 0);
+  assert.equal(report.readyForExplicitHumanApproval, true);
+  assert.equal(report.budget.programmeLedgerBefore, 446);
+  assert.equal(report.budget.programmeLedgerAfterBoredomMaximum, 2606);
+  assert.equal(report.budget.programmeReservedAfterBothMaximum, 4766);
+  assert.match(report.exactApprovalStatement, /sealed 55-case held-out v4 corpus/u);
+  assert.match(report.exactApprovalStatement, /5,000-attempt cumulative programme safeguard/u);
+  assert.match(report.exactApprovalStatement, /stopped 71-reservation v2 cohort/u);
+
+  const templatePath = path.join(temporary, 'template.json');
+  fs.writeFileSync(templatePath, templateTextV4(request));
+  fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
+  const packageReport = packageTutorStubResistantProfileStudyGoRequest({
+    templatePath,
+    launchCommit: request.source.launchCommit,
+    outputPath: output,
+  });
+  assert.equal(packageReport.sourceClosureFiles, CLOSURE_V4.length);
+  assert.equal(packageReport.isolatedReplay.packetValid, true);
+  assert.equal(packageReport.isolatedReplay.readyForExplicitHumanApproval, true);
+  assert.equal(packageReport.status, 'PACKAGED_HOLD_REQUIRES_EXPLICIT_HUMAN_APPROVAL');
+  assert.equal(packageReport.effects.modelCalls, 0);
+  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), fs.readFileSync(requestPath));
+
+  for (const mutate of [
+    (value) => {
+      value.boredomActionRegisterProofDag.semanticValidation.confirmationLaunchReady = false;
+    },
+    (value) => {
+      value.boredomActionRegisterProofDag.semanticValidation.instrumentModule.sha256 = '0'.repeat(64);
+    },
+    (value) => {
+      value.boredomActionRegisterProofDag.semanticValidation.empiricalValidationReportSha256 = '0'.repeat(64);
+    },
+    (value) => {
+      value.boredomActionRegisterProofDag.semanticValidation.supersededHoldRequest.consumedByExecution = true;
+    },
+    (value) => {
+      value.budget.programmeLedgerBefore = 293;
+    },
+    (value) => {
+      value.source.closure = value.source.closure.filter((entry) => entry.path !== SEMANTIC_INSTRUMENT_V3);
+    },
+  ]) {
+    const invalid = structuredClone(request);
+    mutate(invalid);
+    const invalidPath = path.join(temporary, `invalid-v4-${crypto.randomUUID()}.json`);
     fs.writeFileSync(invalidPath, `${JSON.stringify(invalid, null, 2)}\n`);
     assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
   }

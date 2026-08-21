@@ -730,6 +730,24 @@ function materializeTemplate({ templateText, template, launchCommit }) {
       replacements,
     );
   }
+  const supersededBoredomHoldRequestPath =
+    template.boredomActionRegisterProofDag?.semanticValidation?.supersededHoldRequest?.path;
+  const supersededBoredomHoldRequest = supersededBoredomHoldRequestPath
+    ? materializeRepoFile({
+        launchCommit,
+        repoPath: supersededBoredomHoldRequestPath,
+        label: 'superseded boredom HOLD request',
+        files,
+      })
+    : null;
+  if (supersededBoredomHoldRequest) {
+    requireMarker(
+      templateText,
+      goRequestFileSha256Marker(supersededBoredomHoldRequest.path),
+      supersededBoredomHoldRequest.sha256,
+      replacements,
+    );
+  }
   const priorSemanticValidationRequestPath =
     template.semanticAdjudicationValidation?.stoppedV3Validation?.request?.path;
   const priorSemanticValidationRequest = priorSemanticValidationRequestPath

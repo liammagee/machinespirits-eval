@@ -570,7 +570,7 @@ import {
 } from './tutorStubResistanceActionRegisterExecution.js';
 import { configureTutorStubResistanceActionRegisterConfirmationFromCli } from './tutorStubResistanceActionRegisterConfirmation.js';
 import { configureTutorStubBoredomProofDagFromCli } from './tutorStubBoredomActionRegisterProofDagStudy.js';
-import { createTutorStubBoredomSemanticAdjudicator } from './tutorStubBoredomSemanticAdjudication.js';
+import { selectTutorStubBoredomSemanticAdjudicatorFactory } from './tutorStubBoredomActionRegisterProofDagStudy.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from './tutorStubResistanceActionRegisterStudy.js';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
@@ -1817,6 +1817,7 @@ export async function runTutorStubCliApplicationHost({
     fs.writeFileSync(filePath, `${JSON.stringify(transcript, null, 2)}\n`);
   }
 
+  const boredomAdjudicatorFactory = selectTutorStubBoredomSemanticAdjudicatorFactory({ args, root: ROOT });
   const { runAutomatedLearnerDialogue, runOneTurn } = createTutorStubTurnOrchestration({
     C,
     ROOT,
@@ -1825,7 +1826,7 @@ export async function runTutorStubCliApplicationHost({
     TUTOR_STUB_QUARANTINE_CONTINUATION,
     acknowledgeTutorStubOpeningRelease,
     advanceTutorStubDialogueClosure,
-    adjudicateTutorStubBoredomObservation: createTutorStubBoredomSemanticAdjudicator(callPromptModel, resolveModel),
+    adjudicateTutorStubBoredomObservation: boredomAdjudicatorFactory(callPromptModel, resolveModel),
     analyzeLearnerTurn,
     appendTraceEvent,
     appendTutorStubTurnFailureTraceRecords,

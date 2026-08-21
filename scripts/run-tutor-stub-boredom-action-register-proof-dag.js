@@ -11,6 +11,7 @@ import {
   runTutorStubBoredomProofDagEndpointPreflight,
 } from '../services/tutorStubBoredomActionRegisterProofDagPreflight.js';
 import { loadTutorStubBoredomProofDagStudy } from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
+import { validateTutorStubResistantProfileStudyGoRequest } from './check-tutor-stub-resistant-profile-study-go-request.js';
 import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -233,6 +234,59 @@ function registeredPlan(registrationPath) {
   return { loaded, plan: buildTutorStubBoredomProofDagPlan(loaded.registration) };
 }
 
+const LAUNCH_AUTHORIZATION_SCHEMA = 'machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v1';
+
+export function assertTutorStubBoredomProofDagLaunchAuthorization({ loaded, authorizationPath } = {}) {
+  const version = loaded?.registration?.version ?? 0;
+  if (version < 4) return null;
+  const relativePath =
+    authorizationPath || `config/tutor-stub-boredom-action-register-proof-dag-launch-authorization.v${version}.json`;
+  const absolutePath = path.isAbsolute(relativePath) ? relativePath : path.join(ROOT, relativePath);
+  if (!fs.existsSync(absolutePath)) {
+    throw new Error(`boredom proof-DAG live execution requires a committed launch authorization: ${relativePath}`);
+  }
+  const rebased = path.relative(ROOT, absolutePath);
+  if (!rebased.startsWith('..') && !path.isAbsolute(rebased)) {
+    let committedBytes;
+    try {
+      committedBytes = execFileSync('git', ['show', `HEAD:${rebased.split(path.sep).join('/')}`], { cwd: ROOT });
+    } catch {
+      throw new Error(`boredom proof-DAG launch authorization must be committed at HEAD: ${rebased}`);
+    }
+    if (!committedBytes.equals(fs.readFileSync(absolutePath))) {
+      throw new Error(`boredom proof-DAG launch authorization must match its committed bytes at HEAD: ${rebased}`);
+    }
+  }
+  const authorization = readJson(absolutePath);
+  const requestAbsolutePath = path.isAbsolute(authorization.requestPath || '')
+    ? authorization.requestPath
+    : path.join(ROOT, authorization.requestPath || '');
+  const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath: requestAbsolutePath });
+  const request = readJson(requestAbsolutePath);
+  if (
+    authorization.schema !== LAUNCH_AUTHORIZATION_SCHEMA ||
+    typeof authorization.approvedBy !== 'string' ||
+    !authorization.approvedBy.trim() ||
+    authorization.modelCallsAuthorized !== true ||
+    authorization.liveRunAuthorized !== true ||
+    authorization.registrationSha256 !== loaded.sha256 ||
+    request.bindings?.registration?.sha256 !== loaded.sha256 ||
+    authorization.requestSha256 !== report.requestSha256 ||
+    authorization.exactApprovalStatement !== report.exactApprovalStatement ||
+    report.readyForExplicitHumanApproval !== true
+  ) {
+    throw new Error(
+      'boredom proof-DAG launch authorization must bind this registration, the frozen request digest, and the exact approval statement',
+    );
+  }
+  return {
+    path: relativePath,
+    sha256: sha256(fs.readFileSync(absolutePath)),
+    approved_by: authorization.approvedBy,
+    request_sha256: report.requestSha256,
+  };
+}
+
 export function buildTutorStubBoredomProofDagRecoveryJob({
   loaded,
   job,
@@ -294,7 +348,7 @@ export function buildTutorStubBoredomProofDagBatchPlan({
       maximum_model_attempt_reservations_per_dialogue: PER_DIALOGUE_CAP,
       maximum_model_attempt_reservations: PER_BATCH_CAP,
       study_maximum_model_attempt_reservations: 2160,
-      programme_ceiling: loaded.registration.version === 3 ? 5000 : 4539,
+      programme_ceiling: loaded.registration.version >= 3 ? 5000 : 4539,
       enlarges_ceiling: false,
     },
     destination: path.relative(ROOT, absoluteDestination),
@@ -452,6 +506,7 @@ export async function runTutorStubBoredomProofDagBatch({
   destination,
   parallelism = 4,
   expectedSourceCommit,
+  launchAuthorizationPath,
 } = {}) {
   const absoluteDestination = path.resolve(destination);
   if (fs.existsSync(absoluteDestination)) throw new Error('boredom proof-DAG batch destination must be fresh');
@@ -460,6 +515,10 @@ export async function runTutorStubBoredomProofDagBatch({
     batchId,
     destination: absoluteDestination,
     expectedSourceCommit,
+  });
+  assertTutorStubBoredomProofDagLaunchAuthorization({
+    loaded: loadTutorStubBoredomProofDagStudy({ registrationPath: repoPath(registrationPath, 'registration') }),
+    authorizationPath: launchAuthorizationPath,
   });
   fs.mkdirSync(path.dirname(absoluteDestination), { recursive: true });
   fs.mkdirSync(absoluteDestination, { recursive: false });
@@ -519,6 +578,7 @@ export async function recoverTutorStubBoredomProofDagBatch({
   assertTutorStubBoredomProofDagRecoveryBudget({ missing, initialReservations, usedBefore });
   const { loaded, plan: registered } = registeredPlan(plan.source.registration_path);
   if (loaded.sha256 !== plan.source.registration_sha256) throw new Error('boredom proof-DAG registration drifted');
+  assertTutorStubBoredomProofDagLaunchAuthorization({ loaded });
   const registeredById = new Map(registered.jobs.map((job) => [job.id, job]));
   const recoveryRoot = path.join(absoluteDestination, 'recoveries', 'recovery-001');
   if (fs.existsSync(recoveryRoot)) throw new Error('boredom proof-DAG recovery-001 must be absent');

@@ -3034,3 +3034,45 @@ and explicit human approval.
   or continuation is authorized under the standing programme authority. Any
   future restart requires an explicit fresh human programme, measurement, and
   provider-route decision.
+- 2026-08-21 — The boredom proof-DAG confirmation now has a frozen
+  digest-bound v4 HOLD request,
+  `config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v4.json`,
+  request SHA-256
+  `95e2df0689c186382a8090c6477e068503a011c3444bda614aac750559a49eef`,
+  packaged at launch commit `0542c2904e3c3a47632aae379549da31968dcf5a`
+  (a first freeze at `b4d6ca23` was replaced before push after a
+  parser-selector fix for the v1 held-out corpus schema string; a second
+  freeze at `a4586874`, digest `cdc095c9`, was replaced after PR #776
+  review when the runner — a closure file — gained the launch
+  authorization gate and the v4 programme-ceiling fix; a third freeze
+  at `244c5c7b`, digest `a9addfef`, was replaced when the gate also
+  gained the committed-bytes-at-HEAD binding; a fourth freeze at
+  `12a62536`, digest `d196de47`, was replaced when CI lint and the
+  host line-cap ratchet forced two closure edits — the adjudicator
+  selector moved from the CLI application host into the study service
+  and the packager template took the repo prettier shape; no earlier
+  request was ever consumed or approved).
+  Live and recovery execution for registration version 4 and later now
+  fail closed unless a separately committed launch-authorization file
+  binds the registration digest, the frozen request digest through the
+  full checker, and the exact approval statement, and byte-matches its
+  own blob at HEAD; v4 batch plans emit the 5,000-attempt programme
+  ceiling, and tests pin all three behaviors.
+  It binds the v4 registration, endpoint contract, and certificate to the
+  validated Sol V3 semantic instrument (module and sealed 55-case held-out
+  v4 corpus digests, all five predeclared gates passed at 1.00, validation
+  report SHA-256
+  `7ff7810e28f7e037af12fbd852445efab9538bc1c946c529356a0c009a51763c`),
+  carries a 54-file source closure, fresh create-once destinations, and
+  marks the never-consumed v3 HOLD request as superseded. Budget: 446
+  reservations spent; worst case 2,606 study-alone and 4,766 with the
+  reserved frame-refusal confirmation, under the 5,000-attempt programme
+  safeguard. Checker replay passed 87 checks with zero model calls and
+  zero production writes; status HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL.
+  Supporting zero-cost coverage on the same branch: checker and packager
+  v4 extensions with six fail-closed mutation rejections, a dedicated v4
+  instrument-readiness suite (registration, endpoint, certificate, host
+  adjudicator seam, byte-exactness), and the v4 analyzer-lineage test.
+  This request authorizes nothing. The confirmation launch still requires
+  the exact approval statement supplied and committed separately by a
+  human; no model call occurs before that.
