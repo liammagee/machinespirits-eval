@@ -438,6 +438,52 @@ function normalizedOutputSchema(outputSchema) {
   }
 }
 
+function exactKeys(value, expected) {
+  return (
+    value &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    JSON.stringify(Object.keys(value).sort()) === JSON.stringify([...expected].sort())
+  );
+}
+
+/**
+ * Codex Structured Outputs accepts `anyOf` but not JSON Schema `oneOf`.
+ * A nullable object union is the one safe mechanical rewrite: object and null
+ * are disjoint, so replacing oneOf with anyOf cannot widen or narrow the
+ * accepted values. Reject every other oneOf shape rather than guessing at its
+ * semantics. The frozen/local schema remains authoritative after the call.
+ */
+export function normalizeCodexProviderOutputSchema(outputSchema) {
+  const schema = normalizedOutputSchema(outputSchema);
+  if (!schema) return schema;
+
+  const visit = (value, pointer = '$') => {
+    if (Array.isArray(value)) return value.map((row, index) => visit(row, `${pointer}[${index}]`));
+    if (!value || typeof value !== 'object') return value;
+
+    if (Object.hasOwn(value, 'oneOf')) {
+      if (!exactKeys(value, ['oneOf']) || !Array.isArray(value.oneOf) || value.oneOf.length !== 2) {
+        throw new Error(`Codex output schema has unsupported oneOf at ${pointer}`);
+      }
+      const nullBranches = value.oneOf.filter((row) => exactKeys(row, ['type']) && row.type === 'null');
+      const objectBranches = value.oneOf.filter(
+        (row) => row && typeof row === 'object' && !Array.isArray(row) && row.type === 'object',
+      );
+      if (nullBranches.length !== 1 || objectBranches.length !== 1) {
+        throw new Error(`Codex output schema oneOf must be exactly object|null at ${pointer}`);
+      }
+      return {
+        anyOf: value.oneOf.map((row, index) => visit(row, `${pointer}.anyOf[${index}]`)),
+      };
+    }
+
+    return Object.fromEntries(Object.entries(value).map(([key, row]) => [key, visit(row, `${pointer}.${key}`)]));
+  };
+
+  return visit(schema);
+}
+
 function cliModelAttestationBasis(model) {
   return model ? 'explicit_cli_model_argument_accepted_bridge_echo' : 'cli_default_not_independently_attested';
 }
@@ -881,7 +927,7 @@ async function callCodexCli({
   const effectiveEffort = resolveCliEffort('codex', effort);
   const stdoutLimit = positiveLimit(maxStdoutBytes, DEFAULT_CLI_MAX_STDOUT_BYTES);
   const stderrLimit = positiveLimit(maxStderrBytes, DEFAULT_CLI_MAX_STDERR_BYTES);
-  const schema = normalizedOutputSchema(outputSchema);
+  const schema = normalizeCodexProviderOutputSchema(outputSchema);
   const schemaFile = schema ? path.join(tmpDir, 'output-schema.json') : null;
   if (schemaFile) fs.writeFileSync(schemaFile, `${JSON.stringify(schema, null, 2)}\n`, { mode: 0o600 });
   const replacementInstructionsFile = replacementInstructionsBytes ? path.join(tmpDir, 'model-instructions.md') : null;

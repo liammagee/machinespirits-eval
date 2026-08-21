@@ -21,19 +21,23 @@ import {
   createCodexJsonlEventParser,
   isCliProvider,
   isProviderConfigured,
+  normalizeCodexProviderOutputSchema,
   normalizeCliEffort,
   resolveCliEffort,
 } from '../cliProviderBridge.js';
+import { TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3 } from '../tutorStubResistanceSemanticAdjudicationV3.js';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
-function fakeChild({ stdoutText = '', stderrText = '', onEnd = null, exitCode = 0 } = {}) {
+function fakeChild({ stdoutText = '', stderrText = '', onWrite = null, onEnd = null, exitCode = 0 } = {}) {
   const child = new EventEmitter();
   child.stdout = new PassThrough();
   child.stderr = new PassThrough();
   child.kill = () => {};
   child.stdin = {
-    write() {},
+    write(value) {
+      onWrite?.(value);
+    },
     end() {
       onEnd?.();
       queueMicrotask(() => {
@@ -377,6 +381,79 @@ describe('cliProviderBridge', () => {
     assert.equal(result.outputTokens, null);
     assert.equal(result.reasoningOutputTokens, null);
     assert.equal(result.totalTokens, null);
+  });
+
+  it('normalizes only disjoint nullable-object oneOf schemas for Codex structured output', () => {
+    const frozen = JSON.stringify(TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3);
+    const normalized = normalizeCodexProviderOutputSchema(TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3);
+    const evidence = normalized.properties.judgment.properties.evidence_quotes.properties;
+
+    assert.equal(JSON.stringify(TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3), frozen);
+    assert.equal(JSON.stringify(normalized).includes('"oneOf"'), false);
+    assert.equal(Object.values(evidence).filter((row) => Array.isArray(row.anyOf)).length, 8);
+    for (const row of Object.values(evidence)) {
+      assert.deepEqual(
+        row.anyOf.map((branch) => branch.type),
+        ['object', 'null'],
+      );
+    }
+
+    for (const unsupported of [
+      { oneOf: [{ type: 'string' }, { type: 'null' }] },
+      { oneOf: [{ type: 'object' }, { type: 'object' }] },
+      { oneOf: [{ type: 'object' }, { type: 'null' }, { type: 'string' }] },
+      { oneOf: [{ type: 'object' }, { type: 'null', title: 'not exact' }] },
+      { oneOf: [{ type: 'object' }, { type: 'null' }], title: 'sibling changes semantics' },
+    ]) {
+      assert.throws(() => normalizeCodexProviderOutputSchema(unsupported), /Codex output schema/u);
+    }
+  });
+
+  it('changes only the Codex provider schema while preserving the exact model-visible prompt payload', async () => {
+    let codexSchema = null;
+    let codexStdin = '';
+    const codexResult = await callAIWithCliBridge(
+      { provider: 'codex', model: 'gpt-test' },
+      'system',
+      'user',
+      'semantic-judge',
+      {
+        outputSchema: TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3,
+        effort: 'low',
+        timeoutMs: 1000,
+        spawnImpl: (_command, args) => {
+          const schemaPath = args[args.indexOf('--output-schema') + 1];
+          const outputPath = args[args.indexOf('-o') + 1];
+          codexSchema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
+          return fakeChild({
+            stdoutText: '{"type":"turn.completed"}\n',
+            onWrite: (value) => {
+              codexStdin += value;
+            },
+            onEnd: () => fs.writeFileSync(outputPath, '{}\n'),
+          });
+        },
+      },
+    );
+    assert.equal(codexResult.text, '{}');
+    assert.equal(JSON.stringify(codexSchema).includes('"oneOf"'), false);
+    assert.equal(JSON.stringify(codexSchema).includes('"anyOf"'), true);
+    assert.equal(
+      codexStdin,
+      buildCodexCliPromptText({ systemPrompt: 'system', userPrompt: 'user', structuredOutput: true }),
+    );
+
+    let claudeSchema = null;
+    await callAIWithCliBridge({ provider: 'claude-code', model: 'claude-test' }, 'system', 'user', 'semantic-judge', {
+      outputSchema: TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3,
+      effort: 'low',
+      timeoutMs: 1000,
+      spawnImpl: (_command, args) => {
+        claudeSchema = JSON.parse(args[args.indexOf('--json-schema') + 1]);
+        return fakeChild({ stdoutText: '{}\n' });
+      },
+    });
+    assert.deepEqual(claudeSchema, TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3);
   });
 
   it('kills CLI children whose stdout or stderr exceeds the configured safety bound', async () => {

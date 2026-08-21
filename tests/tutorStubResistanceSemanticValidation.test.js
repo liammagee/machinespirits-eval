@@ -281,10 +281,36 @@ test('v3 validation endpoint certifies only zero-call fixed-slot wiring with liv
   assert.equal(preflight.semantic_validation_readiness_audit.programme_ledger_before, 651);
   assert.equal(preflight.semantic_validation_readiness_audit.programme_ledger_after_maximum, 1131);
   assert.equal(preflight.semantic_validation_readiness_audit.staged_maximum_only_after_both_validations_pass, 5307);
+  assert.deepEqual(preflight.semantic_validation_readiness_audit.codex_provider_schema_compatibility, {
+    status: 'passed_zero_call_nullable_object_union_wiring',
+    provider: 'codex',
+    rewrite: 'disjoint_nullable_object_oneOf_to_anyOf_only',
+    frozen_schema_sha256: '415562a8a8162f2a8726c70eb1c6c78a5b48b175f5fa5cb331e62a352c82933b',
+    provider_schema_sha256: '5118193809d8f83c3e8060b247fd18a488f69aebbb24e8b444651210a153044e',
+    frozen_one_of_count: 8,
+    provider_one_of_count: 0,
+    provider_any_of_count: 8,
+    byte_length_preserved: true,
+    model_visible_prompt_changed: false,
+    claude_schema_changed: false,
+    local_frozen_schema_changed: false,
+  });
   assert.equal(
     preflight.semantic_validation_readiness_audit.live_heldout_accuracy_agreement_and_coverage_gates,
     'pending_live_validation',
   );
+  for (const mutate of [
+    (value) => (value.runner.codex_structured_output_schema_adapter.provider_schema_sha256 = '0'.repeat(64)),
+    (value) => (value.runner.codex_structured_output_schema_adapter.implementation = 'forged.js#rewrite'),
+    (value) => (value.runner.codex_structured_output_schema_adapter.claude_schema_changed = true),
+  ]) {
+    const changed = structuredClone(contract);
+    mutate(changed);
+    assert.throws(
+      () => runTutorStubResistanceSemanticValidationPreflightV3({ contract: changed }),
+      /Codex provider-schema endpoint binding drifted/u,
+    );
+  }
 });
 
 test('V8 confirmation readiness is loadable but cannot become an executable confirmation before sealed validation', () => {

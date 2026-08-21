@@ -1,11 +1,18 @@
 import assert from 'node:assert/strict';
+import { EventEmitter } from 'node:events';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { PassThrough } from 'node:stream';
 import test from 'node:test';
 
 import { buildTutorStubResistanceSemanticZeroCallFixtureResponse } from '../services/tutorStubResistanceSemanticAdjudication.js';
 import { buildTutorStubResistanceSemanticZeroCallFixtureResponseV2 } from '../services/tutorStubResistanceSemanticAdjudicationV2.js';
+import {
+  TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3,
+  buildTutorStubResistanceSemanticZeroCallFixtureResponseV3,
+} from '../services/tutorStubResistanceSemanticAdjudicationV3.js';
+import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
 import {
   loadTutorStubResistanceSemanticValidation,
   tutorStubResistanceSemanticOpaqueCaseId,
@@ -14,6 +21,10 @@ import {
   loadTutorStubResistanceSemanticValidationV2,
   tutorStubResistanceSemanticOpaqueCaseIdV2,
 } from '../services/tutorStubResistanceSemanticValidationV2.js';
+import {
+  loadTutorStubResistanceSemanticValidationV3,
+  tutorStubResistanceSemanticOpaqueCaseIdV3,
+} from '../services/tutorStubResistanceSemanticValidationV3.js';
 import {
   analyzeTutorStubResistanceSemanticValidation,
   runTutorStubResistanceSemanticValidation,
@@ -139,6 +150,120 @@ function fixtureCallerV2(calls, loaded) {
     };
   };
 }
+
+function providerChild({ stdoutText, onEnd }) {
+  const child = new EventEmitter();
+  child.stdout = new PassThrough();
+  child.stderr = new PassThrough();
+  child.kill = () => {};
+  child.stdin = {
+    write() {},
+    end() {
+      onEnd?.();
+      queueMicrotask(() => {
+        child.stdout.end(stdoutText);
+        child.stderr.end();
+        child.emit('close', 0);
+      });
+    },
+  };
+  return child;
+}
+
+function bridgeFixtureCallerV3(calls, providerSchemas, loaded) {
+  return async (agentConfig, systemPrompt, userPrompt, role, options) => {
+    const prompt = JSON.parse(userPrompt);
+    const corpusCase = loaded.corpus.cases.find(
+      (row) => tutorStubResistanceSemanticOpaqueCaseIdV3(row) === prompt.case_id,
+    );
+    const judge = loaded.instrument.registration.measurement.judges.find(
+      (row) => role === `tutor_stub_resistance_semantic_${row.id}`,
+    );
+    assert.ok(corpusCase);
+    assert.ok(judge);
+    const fixture = buildTutorStubResistanceSemanticZeroCallFixtureResponseV3({
+      corpusCase: { ...corpusCase, case_id: prompt.case_id },
+      judge,
+    });
+    calls.push({ caseId: prompt.case_id, judgeId: judge.id, provider: agentConfig.provider });
+    return callAIWithCliBridge(agentConfig, systemPrompt, userPrompt, role, {
+      ...options,
+      timeoutMs: 1000,
+      spawnImpl: (_command, args) => {
+        if (agentConfig.provider === 'codex') {
+          const schemaPath = args[args.indexOf('--output-schema') + 1];
+          const outputPath = args[args.indexOf('-o') + 1];
+          providerSchemas.push({ provider: 'codex', schema: JSON.parse(fs.readFileSync(schemaPath, 'utf8')) });
+          return providerChild({
+            stdoutText: '{"type":"turn.completed"}\n',
+            onEnd: () => fs.writeFileSync(outputPath, `${JSON.stringify(fixture.modelOutput)}\n`),
+          });
+        }
+        const schema = JSON.parse(args[args.indexOf('--json-schema') + 1]);
+        providerSchemas.push({ provider: 'claude-code', schema });
+        return providerChild({ stdoutText: `${JSON.stringify(fixture.modelOutput)}\n` });
+      },
+    });
+  };
+}
+
+test('V3 runtime composes frozen local validation with Codex-only provider schema normalization', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-v3-provider-schema-'));
+  const destination = path.join(temporary, 'run');
+  const archiveDir = path.join(temporary, 'private-archive');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  fs.mkdirSync(archiveDir, { recursive: true });
+  const loaded = loadTutorStubResistanceSemanticValidationV3();
+  const calls = [];
+  const providerSchemas = [];
+  const { seal } = await runTutorStubResistanceSemanticValidation({
+    destination,
+    sourceCommit: SOURCE_COMMIT,
+    sourceTree: SOURCE_TREE,
+    goRequestPath: GO_REQUEST_PATH,
+    goRequestSha256: GO_REQUEST_SHA256,
+    sourceDirty: false,
+    archiveDir,
+    loaded,
+    waitForRetry: async () => {},
+    resolveModelRef: (modelRef) => {
+      const judge = loaded.instrument.registration.measurement.judges.find((row) => row.modelRef === modelRef);
+      return { provider: judge.provider, model: judge.model };
+    },
+    callModel: bridgeFixtureCallerV3(calls, providerSchemas, loaded),
+  });
+  assert.equal(calls.length, 160);
+  assert.equal(seal.reservations, 160);
+  const codexSchemas = providerSchemas.filter((row) => row.provider === 'codex').map((row) => row.schema);
+  const claudeSchemas = providerSchemas.filter((row) => row.provider === 'claude-code').map((row) => row.schema);
+  assert.equal(codexSchemas.length, 80);
+  assert.equal(claudeSchemas.length, 80);
+  assert.ok(codexSchemas.every((schema) => !JSON.stringify(schema).includes('"oneOf"')));
+  assert.ok(codexSchemas.every((schema) => JSON.stringify(schema).includes('"anyOf"')));
+  for (const schema of claudeSchemas) assert.deepEqual(schema, TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3);
+  const checkpoint = JSON.parse(
+    fs.readFileSync(
+      path.join(destination, 'cases', Object.keys(seal.case_checkpoint_sha256)[0], 'checkpoint.json'),
+      'utf8',
+    ),
+  );
+  assert.ok(
+    checkpoint.judge_results.every(
+      (row) => row.record.schema === 'machinespirits.tutor-stub.resistance-semantic-adjudication-record.v3',
+    ),
+  );
+  const report = writeTutorStubResistanceSemanticValidationReport({
+    destination,
+    expectedSourceCommit: SOURCE_COMMIT,
+    expectedSourceTree: SOURCE_TREE,
+    expectedGoRequestPath: GO_REQUEST_PATH,
+    expectedGoRequestSha256: GO_REQUEST_SHA256,
+    sourceDirty: false,
+    archiveDir,
+    loaded,
+  });
+  assert.equal(report.status, 'passed');
+});
 
 test('additive v2 validation uses quote-only responses under the same checkpointed no-recall runtime', async (t) => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-v2-'));

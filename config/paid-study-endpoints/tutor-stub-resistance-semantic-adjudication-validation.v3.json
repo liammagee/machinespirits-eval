@@ -10,7 +10,8 @@
     "heldout_corpus_sha256": "687f931f2bc0beb80283859dec48a9393e2ccf0d08ee34c6d8e68e5758dcd8c2",
     "primary_endpoint_ids": [
       "synthetic_fixture_metric_pipeline_wiring",
-      "synthetic_quote_normalization_provenance_wiring"
+      "synthetic_quote_normalization_provenance_wiring",
+      "synthetic_codex_provider_schema_compatibility_wiring"
     ],
     "required_observation_semantics": "prospective_frame_resistance_semantic_v3"
   },
@@ -28,6 +29,14 @@
     "result_assembler": "services/tutorStubResistanceSemanticValidationV3.js#assembleTutorStubResistanceSemanticValidationPreflightV3",
     "live_executor": "scripts/run-tutor-stub-resistance-semantic-validation.js",
     "combined_analyzer": "scripts/analyze-tutor-stub-resistance-semantic-validation.js",
+    "codex_structured_output_schema_adapter": {
+      "implementation": "services/cliProviderBridge.js#normalizeCodexProviderOutputSchema",
+      "rewrite": "disjoint_nullable_object_oneOf_to_anyOf_only",
+      "frozen_schema_sha256": "415562a8a8162f2a8726c70eb1c6c78a5b48b175f5fa5cb331e62a352c82933b",
+      "provider_schema_sha256": "5118193809d8f83c3e8060b247fd18a488f69aebbb24e8b444651210a153044e",
+      "claude_schema_changed": false,
+      "local_validation_uses_frozen_schema": true
+    },
     "packet_cap_bytes": 100000,
     "emitted_event_fields": ["case_id", "public_context", "source"],
     "attempt_contract": {
@@ -69,6 +78,10 @@
     "checkpointed_no_selection_execution": {
       "enabled": true,
       "implementation": "scripts/run-tutor-stub-resistance-semantic-validation.js"
+    },
+    "codex_provider_schema_compatibility": {
+      "enabled": true,
+      "implementation": "services/cliProviderBridge.js#normalizeCodexProviderOutputSchema"
     }
   },
   "endpoints": [
@@ -103,6 +116,18 @@
       "enabled": true,
       "required_channels": ["dual_independent_semantic_judges", "registered_consensus_and_metrics"],
       "required_event_fields": ["case_id"],
+      "denominator": { "expected_cases": 80 }
+    },
+    {
+      "id": "synthetic_codex_provider_schema_compatibility_wiring",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": [
+        "dual_independent_semantic_judges",
+        "schema_quote_provenance_validation",
+        "codex_provider_schema_compatibility"
+      ],
+      "required_event_fields": ["case_id", "public_context", "source"],
       "denominator": { "expected_cases": 80 }
     },
     {
