@@ -33,6 +33,21 @@ export function buildTutorStubBoredomProofDagRepairBudgetDiagnostic({ maxFullRep
   };
 }
 
+export function buildTutorStubBoredomProofDagSemanticBudgetDiagnostic() {
+  return {
+    turns: 4,
+    maximumPreTriggerSemanticAdjudications: 2,
+    learnerAdherenceRepairCalls: 0,
+    displacedLegacyRepairCalls: 2,
+    plannedWorstCaseCalls: BOREDOM_PROOF_DAG_PLANNED_WORST_CASE_CALLS,
+    maximumReservationsPerPlannedCall: MAX_RESERVATIONS_PER_PLANNED_CALL,
+    maximumModelAttemptReservations: BOREDOM_PROOF_DAG_MODEL_CALL_BUDGET,
+    ready:
+      BOREDOM_PROOF_DAG_PLANNED_WORST_CASE_CALLS * MAX_RESERVATIONS_PER_PLANNED_CALL ===
+      BOREDOM_PROOF_DAG_MODEL_CALL_BUDGET,
+  };
+}
+
 export function admitTutorStubBoredomProofDagFullRepair({ state, profile, turnNumber, contract } = {}) {
   if (profile !== 'bored') return { applicable: false, admitted: true, reason: 'profile_not_bored' };
   const maxFullRepairsByT2 = Number(contract?.repairModel?.maxFullRepairsPer8Turns);
@@ -111,6 +126,21 @@ export function createTutorStubBoredomProofDagLearnerRuntime({
           : null;
       if (precomputedRaw) assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
       return { generated, precomputedRaw, repaired: false, passed: null };
+    }
+    if (
+      state.resistanceActionRegisterStudy?.proof_dag_registration?.design?.observationSemantics === 'prospective_v9'
+    ) {
+      appendTraceEvent(state.trace, {
+        type: 'auto_learner_profile_measurement_delegated',
+        turn: turnNumber,
+        profile: runtime.profileId,
+        authority: 'independent_llm_semantic_adjudicator',
+        learnerGeneratorMayJudgeItself: false,
+        repairRequested: false,
+        measurementIndeterminateMeansNonadherence: false,
+        study: 'boredom_proof_dag_confirmation',
+      });
+      return { generated, precomputedRaw: null, repaired: false, passed: null };
     }
     if (turnNumber < 2) {
       appendTraceEvent(state.trace, {
@@ -299,6 +329,15 @@ export function configureTutorStubBoredomProofDagExecution({ state, loaded, jobI
     registration_sha256: loaded.sha256,
     registration: runtimeRegistrationAdapter(loaded.registration, job.world),
     proof_dag_registration: clone(loaded.registration),
+    semantic_adjudicator:
+      loaded.registration.design.observationSemantics === 'prospective_v9'
+        ? {
+            required: true,
+            model_ref: loaded.registration.measurement?.semanticAdjudicator?.modelRef || null,
+            role: loaded.registration.measurement?.semanticAdjudicator?.role || null,
+            generator_self_judgment_allowed: false,
+          }
+        : null,
     consumed: false,
     history: [],
     dynamic_confirmation: true,

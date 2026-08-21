@@ -1,0 +1,331 @@
+{
+  "schema": "machinespirits.tutor-stub.boredom-semantic-heldout-corpus.v1",
+  "version": 1,
+  "status": "frozen_before_empirical_semantic_model_validation",
+  "boundary": {
+    "notEmbeddedInPrompt": true,
+    "notUsedForLexicalRuleConstruction": true,
+    "treatmentAndOutcomeBlind": true,
+    "zeroCallReferenceLabelsOnly": true,
+    "modelPredictionsAbsent": true
+  },
+  "predeclaredGates": {
+    "determinateSensitivityMinimum": 0.9,
+    "determinateSpecificityMinimum": 0.9,
+    "referenceAgreementMinimum": 0.9,
+    "ambiguousIndeterminateRateMinimum": 1,
+    "lowConfidenceIndeterminateRateMinimum": 1,
+    "empiricalModelValidationRequiredBeforeConfirmationLaunch": true
+  },
+  "cases": [
+    {
+      "id": "harbor_productive_01",
+      "text": "Sure. The harbor log puts the skiff downstream after midnight, so we should compare its ink with the customs copy.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Sure.",
+        "productive_uptake": "The harbor log puts the skiff downstream after midnight, so we should compare its ink with the customs copy."
+      }
+    },
+    {
+      "id": "clinic_productive_02",
+      "text": "Fine, but the dosage card contradicts the morning entry; I can check which timestamp was signed first.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Fine",
+        "productive_uptake": "the dosage card contradicts the morning entry; I can check which timestamp was signed first"
+      }
+    },
+    {
+      "id": "kiln_productive_03",
+      "text": "This is tedious. Still, the glaze fracture is new evidence, and I will test it against the firing sheet.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "This is tedious.",
+        "productive_uptake": "the glaze fracture is new evidence, and I will test it against the firing sheet"
+      }
+    },
+    {
+      "id": "orchard_productive_04",
+      "text": "Okay. Which crate number appears beside the bruised pears in the public tally?",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "Okay.",
+        "productive_uptake": "Which crate number appears beside the bruised pears in the public tally?"
+      }
+    },
+    {
+      "id": "depot_productive_05",
+      "text": "Yes. The seal is triangular, not round.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": { "productive_uptake": "The seal is triangular, not round." }
+    },
+    {
+      "id": "river_productive_06",
+      "text": "I am not bored; I need to weigh the second gauge reading before I answer.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": { "productive_uptake": "I need to weigh the second gauge reading before I answer" }
+    },
+    {
+      "id": "archive_productive_07",
+      "text": "I accept the question. Let us test the byline against the correction slip.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": { "productive_uptake": "I accept the question. Let us test the byline against the correction slip." }
+    },
+    {
+      "id": "foundry_productive_08",
+      "text": "This is taking a while, yet the carbon mark still distinguishes the two castings.",
+      "verdict": "productive_uptake",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": true,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "This is taking a while",
+        "productive_uptake": "the carbon mark still distinguishes the two castings",
+        "process_impatience": "This is taking a while"
+      }
+    },
+    {
+      "id": "canal_actionable_01",
+      "text": "Fine. Can we stop this survey now? I am not doing another comparison.",
+      "verdict": "actionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "Fine.",
+        "effort_withdrawal": "I am not doing another comparison.",
+        "process_impatience": "Can we stop this survey now?"
+      }
+    },
+    {
+      "id": "museum_actionable_02",
+      "text": "Whatever. How many more labels are left? I will not inspect another one.",
+      "verdict": "actionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "Whatever.",
+        "effort_withdrawal": "I will not inspect another one.",
+        "process_impatience": "How many more labels are left?"
+      }
+    },
+    {
+      "id": "bakery_actionable_03",
+      "text": "This has gone dead for me; skip the rest of the ledger exercise.",
+      "verdict": "actionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "This has gone dead for me",
+        "effort_withdrawal": "skip the rest of the ledger exercise",
+        "process_impatience": "skip the rest of the ledger exercise"
+      }
+    },
+    {
+      "id": "rail_actionable_04",
+      "text": "Sure. Is this inspection nearly over?",
+      "verdict": "actionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "Sure.",
+        "effort_withdrawal": "Is this inspection nearly over?",
+        "process_impatience": "Is this inspection nearly over?"
+      }
+    },
+    {
+      "id": "workshop_actionable_05",
+      "text": "I cannot be bothered to calculate another tolerance. End the task.",
+      "verdict": "actionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "I cannot be bothered",
+        "effort_withdrawal": "I cannot be bothered to calculate another tolerance.",
+        "process_impatience": "End the task."
+      }
+    },
+    {
+      "id": "courthouse_nonactionable_01",
+      "text": "I am bored.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": { "boredom_cue": "I am bored." }
+    },
+    {
+      "id": "warehouse_nonactionable_02",
+      "text": "Fine.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": { "boredom_cue": "Fine." }
+    },
+    {
+      "id": "quarry_nonactionable_03",
+      "text": "This is slow, but I have not decided whether to continue.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": { "boredom_cue": "This is slow", "process_impatience": "This is slow" }
+    },
+    {
+      "id": "school_nonactionable_04",
+      "text": "Are we almost finished? I am still thinking.",
+      "verdict": "nonactionable_boredom",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": true
+      },
+      "evidence": { "boredom_cue": "Are we almost finished?", "process_impatience": "Are we almost finished?" }
+    },
+    {
+      "id": "clinic_negative_01",
+      "text": "I am uncertain which date controls the comparison.",
+      "verdict": "no_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {}
+    },
+    {
+      "id": "bakery_negative_02",
+      "text": "Thank you.",
+      "verdict": "no_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {}
+    },
+    {
+      "id": "mint_negative_03",
+      "text": "The coin has a fine edge.",
+      "verdict": "no_boredom",
+      "fields": {
+        "boredom_cue": false,
+        "effort_withdrawal": false,
+        "productive_uptake": false,
+        "process_impatience": false
+      },
+      "evidence": {}
+    },
+    {
+      "id": "harbor_mixed_01",
+      "text": "Fine. I can compare the tide marks, but I want to quit this exercise now.",
+      "verdict": "indeterminate",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": true,
+        "process_impatience": true
+      },
+      "evidence": {
+        "boredom_cue": "Fine.",
+        "effort_withdrawal": "I want to quit this exercise now",
+        "productive_uptake": "I can compare the tide marks",
+        "process_impatience": "I want to quit this exercise now"
+      }
+    },
+    {
+      "id": "archive_mixed_02",
+      "text": "This is dull, yet the correction slip matters; I will test it, although I refuse to keep working after that.",
+      "verdict": "indeterminate",
+      "fields": {
+        "boredom_cue": true,
+        "effort_withdrawal": true,
+        "productive_uptake": true,
+        "process_impatience": false
+      },
+      "evidence": {
+        "boredom_cue": "This is dull",
+        "effort_withdrawal": "I refuse to keep working after that",
+        "productive_uptake": "the correction slip matters; I will test it"
+      }
+    }
+  ]
+}

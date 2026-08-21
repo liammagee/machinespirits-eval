@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import { runPaidStudyEndpointPreflight } from './paidStudyEndpointPreflight.js';
 import { RESISTANT_LEARNER_OBSERVATION_SEMANTICS, observeResistantLearnerTurn } from './resistantLearnerObservation.js';
+import { parseTutorStubBoredomSemanticAdjudication } from './tutorStubBoredomSemanticAdjudication.js';
 import { tutorStubResistanceActionRegisterTreatmentEligibility } from './tutorStubResistanceActionRegisterStudy.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -267,10 +268,13 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   const dialogue = execution.dialogue || {};
   const batches = execution.batches || {};
   const prospectiveV2 = registration?.version === 2;
+  const prospectiveV3 = registration?.version === 3;
+  const currentProgrammeLedger = prospectiveV2 || prospectiveV3;
   if (
     ![
       'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v1',
       'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v2',
+      'machinespirits.tutor-stub.boredom-action-register-proof-dag-registration.v3',
     ].includes(registration?.schema)
   ) {
     errors.push('unsupported boredom proof-DAG registration schema');
@@ -347,7 +351,9 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   }
   if (
     execution.maximumReservationsPerPlannedCall !== 3 ||
-    dialogue.oneCumulativeFullLearnerRepairCalls !== 2 ||
+    dialogue.oneCumulativeFullLearnerRepairCalls !== (prospectiveV3 ? 0 : 2) ||
+    (prospectiveV3 && dialogue.maximumIndependentSemanticAdjudicationCalls !== 2) ||
+    (prospectiveV3 && dialogue.measurementIndeterminateRepairCalls !== 0) ||
     dialogue.plannedCallsPerDialogue !== 20 ||
     dialogue.maximumReservationsPerDialogue !== 60 ||
     dialogue.dialogues !== 36 ||
@@ -367,9 +373,9 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   ) {
     errors.push('predeclared batch partition drifted');
   }
-  const expectedLedger = prospectiveV2 ? 293 : 219;
-  const expectedStudyCeiling = prospectiveV2 ? 2453 : 2379;
-  const expectedCombinedCeiling = prospectiveV2 ? 4613 : 4539;
+  const expectedLedger = currentProgrammeLedger ? 293 : 219;
+  const expectedStudyCeiling = currentProgrammeLedger ? 2453 : 2379;
+  const expectedCombinedCeiling = currentProgrammeLedger ? 4613 : 4539;
   if (
     execution.programmeCeilingForThisStudyAlone?.ledgerBefore !== expectedLedger ||
     execution.programmeCeilingForThisStudyAlone?.requiredCeiling !== expectedStudyCeiling ||
@@ -379,6 +385,40 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
       'operational_execution_safeguard_only_not_scientific_endpoint_design_objective_or_sample_size_constraint'
   ) {
     errors.push('programme ceiling amendment arithmetic drifted');
+  }
+  if (
+    (prospectiveV3 && registration.design?.observationSemantics !== 'prospective_v9') ||
+    (!prospectiveV3 && registration.design?.observationSemantics === 'prospective_v9') ||
+    (prospectiveV3 &&
+      (registration.measurement?.semanticAdjudicator?.modelRef !== 'codex.gpt-5.6-sol' ||
+        registration.measurement?.semanticAdjudicator?.role !== 'tutor_stub_boredom_performance_adjudication' ||
+        registration.measurement?.semanticAdjudicator?.independentFromGeneratingModel !== true ||
+        registration.measurement?.semanticAdjudicator?.generatorSelfJudgmentAllowed !== false ||
+        registration.measurement?.semanticAdjudicator?.minimumConfidence !== 0.8 ||
+        registration.measurement?.semanticAdjudicator?.regexRole !==
+          'auxiliary_high_precision_signal_and_disagreement_only_never_final_semantic_authority' ||
+        registration.measurement?.semanticAdjudicator?.lexicalSilenceMayVetoSemanticPositive !== false ||
+        registration.measurement?.semanticAdjudicator?.empiricalValidationStatus !==
+          'pending_no_model_calls_authorized_by_this_registration' ||
+        registration.measurement?.semanticAdjudicator?.confirmationLaunchReady !== false ||
+        registration.executionReadiness?.modelRoute?.semanticAdjudicator !== 'codex.gpt-5.6-sol'))
+  ) {
+    errors.push('prospective-v9 independent semantic adjudicator boundary drifted');
+  }
+  if (prospectiveV3) {
+    const heldout = registration.measurement?.semanticAdjudicator?.heldoutCorpus;
+    const heldoutPath = path.join(ROOT, String(heldout?.path || ''));
+    const heldoutSource = fs.existsSync(heldoutPath) ? fs.readFileSync(heldoutPath) : null;
+    const heldoutSha = heldoutSource ? crypto.createHash('sha256').update(heldoutSource).digest('hex') : null;
+    if (
+      heldout?.path !== 'config/tutor-stub-boredom-semantic-adjudication-heldout.v1.json' ||
+      heldout?.cases !== 22 ||
+      heldout?.embeddedInPrompt !== false ||
+      heldout?.modelPredictionsPresent !== false ||
+      heldoutSha !== heldout?.sha256
+    ) {
+      errors.push('prospective-v9 held-out semantic corpus binding drifted');
+    }
   }
   if (
     registration?.design?.randomization?.algorithm !== 'sha256_rank_within_world' ||
@@ -478,6 +518,7 @@ export function buildTutorStubBoredomProofDagPlan(registration) {
 
 export function buildTutorStubBoredomProofDagSyntheticCases(registration) {
   const plan = buildTutorStubBoredomProofDagPlan(registration);
+  const semanticMeasurement = registration.version === 3;
   let plainSeen = 0;
   let warmSeen = 0;
   return plan.jobs.map((job) => {
@@ -496,6 +537,17 @@ export function buildTutorStubBoredomProofDagSyntheticCases(registration) {
       assignment_rank_sha256: job.assignment_rank_sha256,
       assignment_manifest_sha256: job.assignment_manifest_sha256,
       trigger: { profile: 'bored', observed_by_turn: 2, profile_identity_used: false },
+      ...(semanticMeasurement
+        ? {
+            semantic_measurement: {
+              disposition: 'actionable_boredom',
+              confidence: 0.95,
+              independent_route_matches: true,
+              evidence_spans_valid: true,
+              indeterminate: false,
+            },
+          }
+        : {}),
       outcome: {
         recovered,
         deadline_turns: 1,
@@ -509,6 +561,93 @@ export function buildTutorStubBoredomProofDagSyntheticCases(registration) {
       fidelity: { action_visible: true, register_visible: true, safety_override: false, protected_condition: false },
     };
   });
+}
+
+function semanticReferenceRaw(row, { confidence = 0.95 } = {}) {
+  const evidence = Object.entries(row.evidence || {}).map(([kind, text]) => {
+    const start = row.text.indexOf(text);
+    if (start < 0) throw new Error(`${row.id}: semantic reference evidence is not an exact candidate span`);
+    return { kind, start, end: start + text.length, text };
+  });
+  return {
+    verdict: row.verdict,
+    ...row.fields,
+    confidence,
+    evidence,
+    reason: 'Frozen zero-call reference label for deterministic wrapper validation.',
+  };
+}
+
+export function assessTutorStubBoredomSemanticSyntheticCases({
+  corpusPath = 'config/tutor-stub-boredom-semantic-adjudication-heldout.v1.json',
+} = {}) {
+  const corpus = JSON.parse(fs.readFileSync(path.join(ROOT, corpusPath), 'utf8'));
+  const results = corpus.cases.map((row) => {
+    const parsed = parseTutorStubBoredomSemanticAdjudication({
+      raw: semanticReferenceRaw(row),
+      candidate: row.text,
+      observedRoute: { provider: 'codex', model: 'gpt-5.6-sol' },
+    });
+    const expectedDisposition = row.verdict === 'indeterminate' ? 'measurement_indeterminate' : row.verdict;
+    return {
+      id: row.id,
+      expected: expectedDisposition,
+      observed: parsed.measurement_disposition,
+      parse_ok: parsed.parse_ok,
+      route_matches: parsed.independent_route.matches,
+      evidence_spans_valid: parsed.evidence_audit.pass,
+      pass:
+        parsed.measurement_disposition === expectedDisposition &&
+        parsed.parse_ok &&
+        parsed.independent_route.matches === true &&
+        parsed.evidence_audit.pass,
+    };
+  });
+  const determinate = results.filter((row) => row.expected !== 'measurement_indeterminate');
+  const positive = determinate.filter((row) => row.expected === 'actionable_boredom');
+  const negative = determinate.filter((row) => row.expected !== 'actionable_boredom');
+  const ambiguous = results.filter((row) => row.expected === 'measurement_indeterminate');
+  const sensitivity = positive.filter((row) => row.observed === row.expected).length / positive.length;
+  const specificity = negative.filter((row) => row.observed === row.expected).length / negative.length;
+  const agreement = results.filter((row) => row.observed === row.expected).length / results.length;
+  const ambiguousIndeterminateRate =
+    ambiguous.filter((row) => row.observed === 'measurement_indeterminate').length / ambiguous.length;
+  const lowConfidenceProbe = parseTutorStubBoredomSemanticAdjudication({
+    raw: semanticReferenceRaw(
+      corpus.cases.find((row) => row.verdict === 'actionable_boredom'),
+      {
+        confidence: 0.79,
+      },
+    ),
+    candidate: corpus.cases.find((row) => row.verdict === 'actionable_boredom').text,
+    observedRoute: { provider: 'codex', model: 'gpt-5.6-sol' },
+  });
+  const gates = corpus.predeclaredGates;
+  const metrics = {
+    determinate_sensitivity: sensitivity,
+    determinate_specificity: specificity,
+    reference_agreement: agreement,
+    ambiguous_indeterminate_rate: ambiguousIndeterminateRate,
+    low_confidence_indeterminate_rate:
+      lowConfidenceProbe.measurement_disposition === 'measurement_indeterminate' ? 1 : 0,
+  };
+  return {
+    schema: corpus.schema,
+    cases: results.length,
+    metrics,
+    gates,
+    empirical_model_predictions_present: corpus.boundary?.modelPredictionsAbsent === false,
+    empirical_model_validation_required_before_confirmation_launch:
+      gates.empiricalModelValidationRequiredBeforeConfirmationLaunch === true,
+    pass:
+      results.every((row) => row.pass) &&
+      sensitivity >= gates.determinateSensitivityMinimum &&
+      specificity >= gates.determinateSpecificityMinimum &&
+      agreement >= gates.referenceAgreementMinimum &&
+      ambiguousIndeterminateRate >= gates.ambiguousIndeterminateRateMinimum &&
+      metrics.low_confidence_indeterminate_rate >= gates.lowConfidenceIndeterminateRateMinimum,
+    results,
+  };
 }
 
 export function buildTutorStubBoredomCompositionSyntheticCases() {
@@ -686,6 +825,17 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
       row.fidelity.protected_condition === false,
   );
   const composition = assessTutorStubBoredomCompositionSyntheticCases();
+  const semantic = registration.version === 3 ? assessTutorStubBoredomSemanticSyntheticCases() : null;
+  const semanticCaseFidelity =
+    registration.version !== 3 ||
+    cases.every(
+      (row) =>
+        row.semantic_measurement?.disposition === 'actionable_boredom' &&
+        row.semantic_measurement?.confidence >= 0.8 &&
+        row.semantic_measurement?.independent_route_matches === true &&
+        row.semantic_measurement?.evidence_spans_valid === true &&
+        row.semantic_measurement?.indeterminate === false,
+    );
   const blocks = registration.design.worlds.map((world) => {
     const rows = cases.filter((row) => row.world === world);
     const worldPlain = rows.filter((row) => row.arm === 'plain');
@@ -701,6 +851,11 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
   const endpointStatus = {
     ...(contract.endpoints.some((endpoint) => endpoint.id === 'compositional_boredom_observer_timing')
       ? { compositional_boredom_observer_timing: composition.pass ? 'complete' : 'incomplete' }
+      : {}),
+    ...(contract.endpoints.some((endpoint) => endpoint.id === 'independent_boredom_semantic_measurement')
+      ? {
+          independent_boredom_semantic_measurement: semantic?.pass && semanticCaseFidelity ? 'complete' : 'incomplete',
+        }
       : {}),
     profile_specific_resistance_recovery:
       exactPlanFidelity && recovery && plain.length === 18 && warm.length === 18 ? 'complete' : 'incomplete',
@@ -725,6 +880,7 @@ export function assembleTutorStubBoredomProofDagPreflight({ cases, contract }) {
       blocks,
       exact_plan_fidelity: exactPlanFidelity,
       compositional_observer_timing: composition,
+      independent_semantic_measurement: semantic,
       deadline_turns: 1,
       rows: cases,
       contract_study_id: contract.study_id,
@@ -744,7 +900,10 @@ export function runTutorStubBoredomProofDagEndpointPreflight({ contract, registr
   return {
     ...preflight,
     readiness: {
-      status: 'passed_zero_call_hold',
+      status:
+        registration.version === 3
+          ? 'passed_zero_call_hold_empirical_semantic_validation_pending'
+          : 'passed_zero_call_hold',
       source_prefixes: 36,
       independent_dialogues: 36,
       execution_batches: 9,
@@ -756,6 +915,9 @@ export function runTutorStubBoredomProofDagEndpointPreflight({ contract, registr
       live_executor_available: true,
       combined_analyzer_available: true,
       request_validator_available: true,
+      independent_semantic_adjudicator: registration.version === 3 ? 'codex.gpt-5.6-sol' : null,
+      empirical_semantic_validation_status: registration.version === 3 ? 'pending_no_model_calls_authorized' : null,
+      confirmation_launch_ready: registration.version === 3 ? false : null,
       model_calls: 0,
       production_writes: 0,
     },
@@ -763,6 +925,7 @@ export function runTutorStubBoredomProofDagEndpointPreflight({ contract, registr
 }
 
 export default {
+  assessTutorStubBoredomSemanticSyntheticCases,
   assembleTutorStubBoredomProofDagPreflight,
   buildTutorStubBoredomProofDagAssignments,
   buildTutorStubBoredomProofDagPackets,

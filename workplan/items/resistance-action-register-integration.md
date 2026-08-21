@@ -1913,3 +1913,61 @@ and explicit human approval.
   continuation is authorized inside this programme. Any future restart
   requires a new human programme and measurement decision with an
   independently validated measurement strategy.
+- 2026-08-20 — Reframed the boredom observation/timing repair around
+  **prospective-v9 independent semantic authority**, superseding the idea that
+  a larger lexical matcher could be the construct-valid mood judge. The
+  stopped proof-DAG confirmation remains permanently incomplete with no
+  scientific verdict. Its eight started dialogues, assignments, traces, and
+  outcomes remain preserved and excluded from retry, resume, replacement,
+  pooling, selection, analysis, or inferential credit. Prospective-v8 is
+  retained only as a versioned high-precision auxiliary/disagreement signal;
+  its never-published local successor request is obsolete and grants no live
+  authority.
+
+  The exact root cause had two parts. First, historical flat-cue matching let
+  `Sure` license the whole utterance even when the remainder supplied genuine
+  content-bearing uptake. Second, a separate generic uptake heuristic could
+  suppress the boredom-appropriate action for the genuinely non-content
+  utterance `Fine. Is this trial nearly done?`. Prospective-v9 makes one
+  treatment- and outcome-blind, independently pinned Sol adjudicator the final
+  authority over the whole utterance. It emits structured boredom cue,
+  effort-withdrawal, productive-uptake, process-impatience, confidence,
+  indeterminacy, and exact quoted-span evidence. The Luna learner does not
+  judge itself. Deterministic code validates route, schema, spans, provenance,
+  and safety; lexical silence cannot veto a semantic positive. Low confidence,
+  mixed meaning, malformed evidence, or strong semantic/auxiliary disagreement
+  yields `measurement_indeterminate` before tutor output, with no learner
+  repair, rerun, replacement, or selection.
+
+  The zero-call reference suite freezes both failed utterances plus 22 sealed,
+  domain-independent productive, actionable-withdrawal, nonactionable boredom,
+  negative, and ambiguous contrasts at corpus SHA-256
+  `ad61f7b104c8202889c9f9eb00090a900aafea5d5bf55d7e3b89cf41db300f93`.
+  It proves wrapper/schema/span/routing/precedence behavior and predeclares
+  sensitivity, specificity, and reference-agreement minima of `0.90`, plus
+  `1.00` indeterminate handling for ambiguous or low-confidence cases. It does
+  **not** claim empirical Sol accuracy: genuinely unseen adjudicator predictions
+  must pass those gates before any confirmation launch.
+
+  Registration V3 SHA-256 is
+  `a003aa69f94e257e1f966ba51734ccd7f9b83842a4c8f617ddead763e3499819`.
+  Endpoint V3 file/canonical digests are respectively
+  `fb6d03720dff5a2f7badf13a606e7fcbf8d79d2b31ac01339fa6d32f2acb2fd3`
+  and
+  `1a8b5a29cc212a39c357ff53d025a712dab5f1246d3861d6cf9663c79e9e2772`;
+  the zero-call preflight digest is
+  `722bcf0696b307ec4bc845c8f30479377d895550a62deaf4a757082add08a74c`,
+  and certificate file SHA-256 is
+  `6eb6c6529af429cd01ef5755357d6289b5eef32b1b7b4158e0920d663fc62880`.
+  Historical V1 registration/endpoint/certificate/request bytes remain exact,
+  and prospective-v2 through v8 dispatch remains opt-in and unchanged.
+
+  The prospective-v9 registration remains HOLD: no semantic-validation call,
+  confirmation call, GO request, destination, or live authorization exists.
+  The powered scientific design remains 36 wholly fresh dialogues, 18 per arm,
+  with the registered blocked exact analysis and no interim analysis. The
+  operational envelope remains 20 planned calls and 60 charged reservations
+  per dialogue, with up to two independent Sol adjudications replacing the two
+  prior learner-repair calls; the ledger and programme safeguard remain
+  `293 -> 2453 / 5000` for one fresh confirmation and at most `4613/5000` while
+  both powered confirmations remain reserved.
