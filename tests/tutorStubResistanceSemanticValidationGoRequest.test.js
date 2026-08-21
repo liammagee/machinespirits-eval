@@ -81,6 +81,7 @@ const CLOSURE_V2 = [
   'config/tutor-stub-resistance-semantic-adjudication-development-evidence.v2.json',
   'config/tutor-stub-resistance-semantic-adjudication-development-corpus.v1.json',
   'config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json',
+  'config/tutor-stub-resistance-semantic-adjudication-validation-registration.v1.json',
   HELDOUT_V2,
   'config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v1.json',
   ENDPOINT_V2,
@@ -568,6 +569,10 @@ test('future v2 GO packaging binds failed-v1 exclusion and the 491-to-971 valida
     (value) =>
       (value.source.closure = value.source.closure.filter(
         (row) => !row.path.endsWith('semantic-adjudication-heldout-corpus.v1.json'),
+      )),
+    (value) =>
+      (value.source.closure = value.source.closure.filter(
+        (row) => !row.path.endsWith('semantic-adjudication-validation-registration.v1.json'),
       )),
   ]) {
     const changed = structuredClone(request);
