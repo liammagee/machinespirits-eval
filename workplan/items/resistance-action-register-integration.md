@@ -2448,3 +2448,60 @@ and explicit human approval.
   untouched. No actual V2 request is included here; after this dependency PR
   merges, a wholly fresh request must pin that merge, its 30-file closure, and
   a new create-once destination. Zero model/provider calls remain in force.
+
+- 2026-08-21 — After the source-closure compatibility repair merged as PR
+  #764, the manipulation semantic-validation V2 request was regenerated from
+  the exact merge `d005b9de7e62fbf50b12ad47eed90436e2d5da97` / tree
+  `954567105fa50e8ba03a40aa4f044a44786d555f` through the existing
+  deterministic packager. The new literal-HOLD request is
+  `config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v2.json`
+  at SHA-256
+  `b91b6c92ec6b82b15b40821938929c3e2c31c86424822846a26443977cb479d6`.
+  Its critical closure contains 30 unique exact-source files, now including
+  both the historical V1 validation registration and the directly read V1
+  instrument registration. The V2 instrument, service, schema,
+  validation-registration, and independent heldout remain fixed at
+  `4cf2b38f3424960d983e2dd5e1a9938e0397e5038fa5f4c8d96bb5d8a78306be`,
+  `2b9faa679fedf1e98c25e6e5f3569da6c2ef83f3654642c08dc3c00e6fc15bfd`,
+  `eaeebc729a56ce7802bf9030a60cdf4cc60734f3aabe0760c7ddd6a64d011205`,
+  `502d8abe4400532f73bff466acbb5a239f316fcc98d153d4eb66d56cba5036b2`,
+  and
+  `a52d10f60ceeeb9e1e92415c6add6d0dee4dbf69608053652ff9c23f08216535`;
+  heldout provenance remains the remotely preserved one-file author commit
+  `efc1dae8dbfa745c8d3d9b2fab9414ec3abe72f8`.
+
+  The request binds the unchanged endpoint file/canonical/preflight/certificate
+  digests
+  `19e2660c7e39379b624808e3b8f0a70ca2e6c71d3d4d8228d273c276d473c739`,
+  `a686282c0f7c90bcb9553dcf336b4db84c00692b8bd33661d2783b1b0c47acfb`,
+  `e452bcf21fc19b3450ce0041a3487700485643bda10fb37ad7375be5b4c1df94`,
+  and
+  `1222cdaa255311793d26f63197e612169b388c4f3962fab3d803615ad807a19e`;
+  Sol-low and Claude Sonnet-low independent routes; and exact
+  live/recovery/analyze command-array hashes
+  `31c28d30afbf42dc6979d0827f298823b73d1c9ed4935e066150f10c63391461`,
+  `692dd12ab96df41164090c1392c22105565cc20ceb80f8d2e4ee9a648ac63cdd`,
+  and
+  `24f913128929f5a8cf3b3971c61f1d0d8c90db113d565e6b16cf67e7ca9361ea`.
+  The fresh create-once destination is
+  `.tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v2-2026-08-21-b`;
+  the runner must resolve the registered writable stable private archive
+  before any destination write and preserve every transition byte-identically.
+
+  The failed V1 request/report/private archive remain bound and excluded at
+  `b6d9a41cc9fbdb2a3fc15f536e2a0b6e97a406986c9f88027e0765ab4bddb826`,
+  `008230526809a6aa2917b240c6a30af644f30184b89042825773b1b8040c5c74`,
+  and
+  `codex/resistance-semantic-validation-v1-failed-archive` commit
+  `cf92081bd566948f4ea26d0ac5e67f8132ebeef8`, with no rescoring,
+  normalization, reuse, pooling, or selection. The new batch remains exactly
+  80 cases x two judges = 160 planned calls, three charged reservations per
+  planned call, hard ceiling 480, and programme bound `491 -> 971 / 5000`.
+  There is no gold or original label-bearing case id in execution packets, no
+  interim analysis, third judge, recall of a completed or ambiguously
+  dispatched judge, semantic-response repair, valid-case rerun, replacement,
+  selection, post-heldout tuning, outcome validation, or confirmation
+  authority. The request preserves HOLD/null/false, binds the standing
+  correction and prior authority hashes, and encodes no ceiling amendment.
+  The packager's isolated no-`node_modules` replay passed 59 checks with zero
+  model calls and zero production writes.
