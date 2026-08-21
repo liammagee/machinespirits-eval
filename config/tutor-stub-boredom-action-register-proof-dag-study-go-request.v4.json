@@ -11,8 +11,8 @@
     "programmeCeilingOperationalSafeguard": 5000
   },
   "source": {
-    "launchCommit": "a458687482af54eaf02e38ec37f7b3f0f143524f",
-    "launchTree": "29f09fe6e5d03bdeba7df8bdd92f0f16e7bee777",
+    "launchCommit": "244c5c7b357df659d5ebdde030ffd55266d0b77f",
+    "launchTree": "bdecf0aaa4510b39f3c9c779a965e97a2f314cca",
     "requirements": {
       "headMustEqualLaunchCommit": true,
       "checkoutMustBeClean": true,
@@ -21,7 +21,7 @@
     "closure": [
       {
         "path": "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
-        "sha256": "801419917bdf8772eb8d79e69a8d5cbe03b6c4ac25d9f464ba00b238ade6a32b"
+        "sha256": "c8988b55425bd553638e3e2ef944799eeeacdce9465974b5816e357688444e1d"
       },
       {
         "path": "scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js",
@@ -466,9 +466,9 @@
     },
     "commands": {
       "source": "commands",
-      "liveArraySha256": "0425cc435ee5c7e46e53f9425a2c2d0978f9542cb48a604380dffa6489e7197d",
-      "recoveryArraySha256": "072a8e71fdd96a89f10c6fc67d1533b458d965dc19699c44c125ce5646b8be04",
-      "analyzeArraySha256": "5c8874eefe6c418a60e9b9ecb0e189e5beb3cd4129e87636fdb049492fa7c292"
+      "liveArraySha256": "f64280bb6667d0fbb1947060b8b022a95ba3805211f8ea58b7f837375e94f00e",
+      "recoveryArraySha256": "e01479879bec99a3e3f6bea75267f160c24563d9f213d0d6d8d959df875b9355",
+      "analyzeArraySha256": "8b67c3fb1e806cc008ed5970045fe79876bfbffd43f7847dadbb627cb81ad728"
     }
   },
   "commands": {
@@ -486,7 +486,7 @@
         "--parallelism",
         "4",
         "--expected-source-commit",
-        "a458687482af54eaf02e38ec37f7b3f0f143524f"
+        "244c5c7b357df659d5ebdde030ffd55266d0b77f"
       ],
       [
         "node",
@@ -501,7 +501,7 @@
         "--parallelism",
         "4",
         "--expected-source-commit",
-        "a458687482af54eaf02e38ec37f7b3f0f143524f"
+        "244c5c7b357df659d5ebdde030ffd55266d0b77f"
       ],
       [
         "node",
@@ -516,7 +516,7 @@
         "--parallelism",
         "4",
         "--expected-source-commit",
-        "a458687482af54eaf02e38ec37f7b3f0f143524f"
+        "244c5c7b357df659d5ebdde030ffd55266d0b77f"
       ],
       [
         "node",
@@ -531,7 +531,7 @@
         "--parallelism",
         "4",
         "--expected-source-commit",
-        "a458687482af54eaf02e38ec37f7b3f0f143524f"
+        "244c5c7b357df659d5ebdde030ffd55266d0b77f"
       ],
       [
         "node",
@@ -546,7 +546,7 @@
         "--parallelism",
         "4",
         "--expected-source-commit",
-        "a458687482af54eaf02e38ec37f7b3f0f143524f"
+        "244c5c7b357df659d5ebdde030ffd55266d0b77f"
       ],
       [
         "node",
@@ -561,7 +561,7 @@
         "--parallelism",
         "4",
         "--expected-source-commit",
-        "a458687482af54eaf02e38ec37f7b3f0f143524f"
+        "244c5c7b357df659d5ebdde030ffd55266d0b77f"
       ],
       [
         "node",
@@ -576,7 +576,7 @@
         "--parallelism",
         "4",
         "--expected-source-commit",
-        "a458687482af54eaf02e38ec37f7b3f0f143524f"
+        "244c5c7b357df659d5ebdde030ffd55266d0b77f"
       ],
       [
         "node",
@@ -591,7 +591,7 @@
         "--parallelism",
         "4",
         "--expected-source-commit",
-        "a458687482af54eaf02e38ec37f7b3f0f143524f"
+        "244c5c7b357df659d5ebdde030ffd55266d0b77f"
       ],
       [
         "node",
@@ -606,7 +606,7 @@
         "--parallelism",
         "4",
         "--expected-source-commit",
-        "a458687482af54eaf02e38ec37f7b3f0f143524f"
+        "244c5c7b357df659d5ebdde030ffd55266d0b77f"
       ]
     ],
     "recovery": [
@@ -617,7 +617,7 @@
         "--destination",
         ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_1",
         "--expected-source-commit",
-        "a458687482af54eaf02e38ec37f7b3f0f143524f",
+        "244c5c7b357df659d5ebdde030ffd55266d0b77f",
         "--parallelism",
         "4"
       ],
@@ -628,7 +628,7 @@
         "--destination",
         ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_2",
         "--expected-source-commit",
-        "a458687482af54eaf02e38ec37f7b3f0f143524f",
+        "244c5c7b357df659d5ebdde030ffd55266d0b77f",
         "--parallelism",
         "4"
       ],
@@ -639,7 +639,7 @@
         "--destination",
         ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_3",
         "--expected-source-commit",
-        "a458687482af54eaf02e38ec37f7b3f0f143524f",
+        "244c5c7b357df659d5ebdde030ffd55266d0b77f",
         "--parallelism",
         "4"
       ],
@@ -650,7 +650,7 @@
         "--destination",
         ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_4",
         "--expected-source-commit",
-        "a458687482af54eaf02e38ec37f7b3f0f143524f",
+        "244c5c7b357df659d5ebdde030ffd55266d0b77f",
         "--parallelism",
         "4"
       ],
@@ -661,7 +661,7 @@
         "--destination",
         ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_5",
         "--expected-source-commit",
-        "a458687482af54eaf02e38ec37f7b3f0f143524f",
+        "244c5c7b357df659d5ebdde030ffd55266d0b77f",
         "--parallelism",
         "4"
       ],
@@ -672,7 +672,7 @@
         "--destination",
         ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_6",
         "--expected-source-commit",
-        "a458687482af54eaf02e38ec37f7b3f0f143524f",
+        "244c5c7b357df659d5ebdde030ffd55266d0b77f",
         "--parallelism",
         "4"
       ],
@@ -683,7 +683,7 @@
         "--destination",
         ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_7",
         "--expected-source-commit",
-        "a458687482af54eaf02e38ec37f7b3f0f143524f",
+        "244c5c7b357df659d5ebdde030ffd55266d0b77f",
         "--parallelism",
         "4"
       ],
@@ -694,7 +694,7 @@
         "--destination",
         ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_8",
         "--expected-source-commit",
-        "a458687482af54eaf02e38ec37f7b3f0f143524f",
+        "244c5c7b357df659d5ebdde030ffd55266d0b77f",
         "--parallelism",
         "4"
       ],
@@ -705,7 +705,7 @@
         "--destination",
         ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_9",
         "--expected-source-commit",
-        "a458687482af54eaf02e38ec37f7b3f0f143524f",
+        "244c5c7b357df659d5ebdde030ffd55266d0b77f",
         "--parallelism",
         "4"
       ]
@@ -734,7 +734,7 @@
       "--registration",
       "config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json",
       "--expected-source-commit",
-      "a458687482af54eaf02e38ec37f7b3f0f143524f",
+      "244c5c7b357df659d5ebdde030ffd55266d0b77f",
       "--out",
       ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-combined.json",
       "--json"
