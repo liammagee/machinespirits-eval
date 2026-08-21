@@ -271,7 +271,12 @@ export function createTutorStubResistanceSemanticRuntime({
     const source = String(learnerText || '');
     if (!source.trim()) throw new Error('semantic adjudication requires learner text');
     const publicContext = tutorStubResistanceSemanticPublicContext(state);
-    const caseId = `turn-${turnNumber}-${candidateKind}-${tutorStubResistanceSemanticSha256(source)}`;
+    const caseId = `semantic-case-${canonicalSha256({
+      turnNumber,
+      sourceSha256: tutorStubResistanceSemanticSha256(source),
+      publicContextSha256: canonicalSha256(publicContext),
+      registrationSha256: registrationBinding.sha256,
+    })}`;
     const packetKey = canonicalSha256({ caseId, publicContext, source });
     const cache = cacheForState(state);
     if (cache[packetKey]) return cache[packetKey];

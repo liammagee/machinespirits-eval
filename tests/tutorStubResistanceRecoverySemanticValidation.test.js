@@ -60,6 +60,20 @@ function routeResolver(loaded) {
   };
 }
 
+function findArchiveManifest(root) {
+  const matches = [];
+  const visit = (directory) => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const target = path.join(directory, entry.name);
+      if (entry.isDirectory()) visit(target);
+      else if (entry.name === 'archive-manifest.json') matches.push(target);
+    }
+  };
+  visit(root);
+  assert.equal(matches.length, 1);
+  return matches[0];
+}
+
 test('outcome heldout is frozen, blinded, stratified, and zero-call endpoint wiring passes', () => {
   const loaded = loadTutorStubResistanceRecoverySemanticValidation();
   assert.equal(loaded.corpus.cases.length, 120);
@@ -135,6 +149,31 @@ test('outcome validation runtime seals exactly 120 opaque cases and analyzer joi
   }
 });
 
+test('outcome validation rejects an unavailable durable archive before creating the destination', async () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'outcome-semantic-missing-archive-'));
+  const destination = path.join(temporary, 'run');
+  const loaded = loadTutorStubResistanceRecoverySemanticValidation();
+  try {
+    await assert.rejects(
+      runTutorStubResistanceRecoverySemanticValidation({
+        destination,
+        sourceCommit: '1'.repeat(40),
+        sourceTree: '2'.repeat(40),
+        goRequestPath: 'config/future-outcome-validation-request.json',
+        goRequestSha256: '3'.repeat(64),
+        sourceDirty: false,
+        archiveDir: path.join(temporary, 'absent-private-archive'),
+        resolveModelRef: routeResolver(loaded),
+        callModel: fixtureModelCall(loaded, []),
+      }),
+      /requires a durable private archive/u,
+    );
+    assert.equal(fs.existsSync(destination), false);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
 test('outcome validation resume preserves Judge A and calls only the never-prepared Judge B', async () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'outcome-semantic-resume-'));
   const destination = path.join(temporary, 'run');
@@ -181,6 +220,69 @@ test('outcome validation resume preserves Judge A and calls only the never-prepa
       1,
     );
     assert.equal(calls.length, 240);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+test('outcome validation dispatches an already prepared third attempt without a fourth reservation', async () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'outcome-semantic-third-prepared-'));
+  const destination = path.join(temporary, 'run');
+  const archiveDir = path.join(temporary, 'archive');
+  fs.mkdirSync(archiveDir);
+  const loaded = loadTutorStubResistanceRecoverySemanticValidation();
+  const successfulCalls = [];
+  const fixture = fixtureModelCall(loaded, successfulCalls);
+  let dispatches = 0;
+  let prepared = 0;
+  const flaky = async (...args) => {
+    dispatches += 1;
+    if (dispatches <= 2) {
+      const error = new Error('synthetic transient transport failure');
+      error.code = 'CLI_PROVIDER_TURN_FAILED';
+      error.provider = 'codex';
+      throw error;
+    }
+    return fixture(...args);
+  };
+  const options = {
+    destination,
+    sourceCommit: 'd'.repeat(40),
+    sourceTree: 'e'.repeat(40),
+    goRequestPath: 'config/future-outcome-validation-request.json',
+    goRequestSha256: 'f'.repeat(64),
+    sourceDirty: false,
+    archiveDir,
+    resolveModelRef: routeResolver(loaded),
+    callModel: flaky,
+    waitForRetry: async () => {},
+  };
+  try {
+    await assert.rejects(
+      runTutorStubResistanceRecoverySemanticValidation({
+        ...options,
+        afterPreparedCheckpoint: () => {
+          prepared += 1;
+          if (prepared === 3) throw new Error('synthetic crash after third outcome preparation');
+        },
+      }),
+      /synthetic crash after third outcome preparation/u,
+    );
+    assert.equal(dispatches, 2);
+    const { seal } = await runTutorStubResistanceRecoverySemanticValidation({ ...options, resume: true });
+    assert.equal(dispatches, 242);
+    assert.equal(seal.reservations, 242);
+    assert.equal(seal.judge_results, 240);
+    const report = analyzeTutorStubResistanceRecoverySemanticValidation({
+      destination,
+      expectedSourceCommit: options.sourceCommit,
+      expectedSourceTree: options.sourceTree,
+      expectedGoRequestPath: options.goRequestPath,
+      expectedGoRequestSha256: options.goRequestSha256,
+      sourceDirty: false,
+      archiveDir,
+    });
+    assert.equal(report.status, 'passed');
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
   }
@@ -300,6 +402,62 @@ test('outcome validation reconciles local seal and report writes without model r
     const report = writeTutorStubResistanceRecoverySemanticValidationReport(reportOptions);
     assert.equal(report.status, 'passed');
     assert.equal(calls.length, 240);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+test('outcome archive rejects manifest topology drift and local/archive final-artifact splits', async () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'outcome-semantic-archive-integrity-'));
+  const destination = path.join(temporary, 'run');
+  const archiveDir = path.join(temporary, 'archive');
+  fs.mkdirSync(archiveDir);
+  const loaded = loadTutorStubResistanceRecoverySemanticValidation();
+  const options = {
+    destination,
+    sourceCommit: '1'.repeat(40),
+    sourceTree: '2'.repeat(40),
+    goRequestPath: 'config/future-outcome-validation-request.json',
+    goRequestSha256: '3'.repeat(64),
+    sourceDirty: false,
+    archiveDir,
+    resolveModelRef: routeResolver(loaded),
+    callModel: fixtureModelCall(loaded, []),
+  };
+  try {
+    await runTutorStubResistanceRecoverySemanticValidation(options);
+    const analyzeOptions = {
+      destination,
+      expectedSourceCommit: options.sourceCommit,
+      expectedSourceTree: options.sourceTree,
+      expectedGoRequestPath: options.goRequestPath,
+      expectedGoRequestSha256: options.goRequestSha256,
+      sourceDirty: false,
+      archiveDir,
+    };
+    const manifestFile = findArchiveManifest(archiveDir);
+    const original = fs.readFileSync(manifestFile, 'utf8');
+    const manifest = JSON.parse(original);
+    manifest.entries[0].logical_path = 'changed-plan.json';
+    fs.writeFileSync(manifestFile, `${JSON.stringify(manifest, null, 2)}\n`);
+    assert.throws(
+      () => analyzeTutorStubResistanceRecoverySemanticValidation(analyzeOptions),
+      /archive entry.*topology|archive.*binding/u,
+    );
+
+    fs.writeFileSync(manifestFile, original);
+    const withoutFinal = JSON.parse(original);
+    const finalIndex = withoutFinal.entries.findIndex((entry) => entry.stage === 'checkpoint_sealed');
+    assert.ok(finalIndex >= 0);
+    withoutFinal.entries.splice(finalIndex, 1);
+    withoutFinal.entries.forEach((entry, index) => {
+      entry.sequence = index + 1;
+    });
+    fs.writeFileSync(manifestFile, `${JSON.stringify(withoutFinal, null, 2)}\n`);
+    assert.throws(
+      () => analyzeTutorStubResistanceRecoverySemanticValidation(analyzeOptions),
+      /local final artifact|transition inventory/u,
+    );
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
   }

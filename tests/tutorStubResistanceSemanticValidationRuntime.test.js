@@ -67,6 +67,20 @@ function analyze(destination) {
   });
 }
 
+function findArchiveManifest(root) {
+  const matches = [];
+  const visit = (directory) => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const target = path.join(directory, entry.name);
+      if (entry.isDirectory()) visit(target);
+      else if (entry.name === 'archive-manifest.json') matches.push(target);
+    }
+  };
+  visit(root);
+  assert.equal(matches.length, 1);
+  return matches[0];
+}
+
 function run(destination, options = {}) {
   const loaded = loadTutorStubResistanceSemanticValidation();
   const archiveDir = path.join(path.dirname(destination), 'private-archive');
@@ -189,6 +203,42 @@ test('resume after a prepared but undispatched attempt may fill the case without
   assert.equal(resumedCalls.length, 160);
   assert.equal(seal.judge_results, 160);
   assert.equal(seal.reservations, 160);
+  assert.equal(analyze(destination).status, 'passed');
+});
+
+test('resume dispatches an already prepared third attempt without creating a fourth reservation', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-third-prepared-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const successfulCalls = [];
+  const fixture = fixtureCaller(successfulCalls);
+  let dispatches = 0;
+  let prepared = 0;
+  const flaky = async (...args) => {
+    dispatches += 1;
+    if (dispatches <= 2) {
+      const error = new Error('synthetic transient transport failure');
+      error.code = 'CLI_PROVIDER_TURN_FAILED';
+      error.provider = 'codex';
+      throw error;
+    }
+    return fixture(...args);
+  };
+  await assert.rejects(
+    run(destination, {
+      callModel: flaky,
+      afterPreparedCheckpoint: () => {
+        prepared += 1;
+        if (prepared === 3) throw new Error('synthetic crash after third preparation');
+      },
+    }),
+    /synthetic crash after third preparation/u,
+  );
+  assert.equal(dispatches, 2);
+  const { seal } = await run(destination, { resume: true, callModel: flaky });
+  assert.equal(dispatches, 162);
+  assert.equal(seal.reservations, 162);
+  assert.equal(seal.judge_results, 160);
   assert.equal(analyze(destination).status, 'passed');
 });
 
@@ -436,4 +486,28 @@ test('analysis requires the external source binding and rejects alternate case a
   const caseId = fs.readdirSync(path.join(destination, 'cases'))[0];
   fs.writeFileSync(path.join(destination, 'cases', caseId, 'alternate.json'), '{}\n');
   assert.throws(() => analyze(destination), /file set is not exact/u);
+});
+
+test('archive verification rejects manifest topology drift and local/archive final-artifact splits', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-archive-integrity-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  await run(destination, { callModel: fixtureCaller([]) });
+  const manifestFile = findArchiveManifest(path.join(temporary, 'private-archive'));
+  const original = fs.readFileSync(manifestFile, 'utf8');
+  const manifest = JSON.parse(original);
+  manifest.entries[0].logical_path = 'changed-plan.json';
+  fs.writeFileSync(manifestFile, `${JSON.stringify(manifest, null, 2)}\n`);
+  assert.throws(() => analyze(destination), /archive.*topology|durable archive invalid/u);
+
+  fs.writeFileSync(manifestFile, original);
+  const withoutFinal = JSON.parse(original);
+  const finalIndex = withoutFinal.entries.findIndex((entry) => entry.stage === 'checkpoint_sealed');
+  assert.ok(finalIndex >= 0);
+  withoutFinal.entries.splice(finalIndex, 1);
+  withoutFinal.entries.forEach((entry, index) => {
+    entry.sequence = index + 1;
+  });
+  fs.writeFileSync(manifestFile, `${JSON.stringify(withoutFinal, null, 2)}\n`);
+  assert.throws(() => analyze(destination), /local final artifact|transition inventory/u);
 });

@@ -49,6 +49,16 @@ export function auditTutorStubResistanceSemanticTrace({ events, expectedCandidat
     (event) =>
       event.type === 'model_call_error' && String(event.role || '').startsWith('tutor_stub_resistance_semantic_'),
   );
+  const modelAborts = events.filter(
+    (event) =>
+      event.type === 'model_call_aborted' && String(event.role || '').startsWith('tutor_stub_resistance_semantic_'),
+  );
+  const reservations = events.filter(
+    (event) =>
+      event.type === 'model_call_budget_reserved' &&
+      String(event.role || '').startsWith('tutor_stub_resistance_semantic_'),
+  );
+  const attempts = [...modelCalls, ...modelErrors, ...modelAborts];
   const aggregates = events.filter((event) => event.type === TUTOR_STUB_RESISTANCE_SEMANTIC_AGGREGATE_EVENT);
   if (expectedCandidateCount !== null && aggregates.length !== expectedCandidateCount) {
     throw new Error(`semantic trace requires exactly ${expectedCandidateCount} candidate aggregates`);
@@ -88,6 +98,16 @@ export function auditTutorStubResistanceSemanticTrace({ events, expectedCandidat
           error.request?.systemPrompt === event.systemPrompt &&
           error.request?.prompt === event.userPrompt,
       );
+      const matchingModelAborts = modelAborts.filter(
+        (aborted) =>
+          aborted.role === event.role &&
+          Number(aborted.turn) === Number(event.turn) &&
+          aborted.provider === event.expectedProvider &&
+          aborted.model === event.expectedModel &&
+          aborted.request?.systemPrompt === event.systemPrompt &&
+          aborted.request?.prompt === event.userPrompt,
+      );
+      const matchingAttempts = matchingModelCalls.length + matchingModelErrors.length + matchingModelAborts.length;
       let rebuiltRecord = null;
       let rawResponseRebuildFailed = false;
       if (matchingModelCalls.length === 1) {
@@ -164,6 +184,9 @@ export function auditTutorStubResistanceSemanticTrace({ events, expectedCandidat
         event.modelIndependentlyAttested === false;
       if (
         !judge ||
+        matchingAttempts < 1 ||
+        matchingAttempts > 3 ||
+        matchingModelAborts.length !== 0 ||
         event.turn !== aggregate.turn ||
         event.candidateKind !== aggregate.candidateKind ||
         event.role !== `tutor_stub_resistance_semantic_${judge.id}` ||
@@ -239,19 +262,32 @@ export function auditTutorStubResistanceSemanticTrace({ events, expectedCandidat
     const lastJudgeIndex = Math.max(...candidates.map((event) => events.indexOf(event)));
     if (events.indexOf(aggregate) <= lastJudgeIndex) throw new Error('semantic aggregate precedes a judge result');
   }
+  const attemptBinding = (attempt) =>
+    judgeEvents.filter(
+      (event) =>
+        event.role === attempt.role &&
+        Number(event.turn) === Number(attempt.turn) &&
+        event.expectedProvider === attempt.provider &&
+        event.expectedModel === attempt.model &&
+        event.systemPrompt === attempt.request?.systemPrompt &&
+        event.userPrompt === attempt.request?.prompt,
+    ).length;
+  const countByRoleTurn = (rows) =>
+    rows.reduce((counts, row) => {
+      const key = `${String(row.role)}:${Number(row.turn)}`;
+      counts.set(key, (counts.get(key) || 0) + 1);
+      return counts;
+    }, new Map());
+  const reserved = countByRoleTurn(reservations);
+  const attempted = countByRoleTurn(attempts);
+  const exactReservations =
+    reserved.size === attempted.size && [...reserved].every(([key, count]) => attempted.get(key) === count);
   if (
-    modelCalls.some(
-      (call) =>
-        judgeEvents.filter(
-          (event) =>
-            event.role === call.role &&
-            Number(event.turn) === Number(call.turn) &&
-            event.systemPrompt === call.request?.systemPrompt &&
-            event.userPrompt === call.request?.prompt,
-        ).length !== 1,
-    )
+    attempts.some((attempt) => attemptBinding(attempt) !== 1) ||
+    reservations.length !== attempts.length ||
+    !exactReservations
   ) {
-    throw new Error('semantic trace contains an extra, missing, or unpaired semantic judge model call');
+    throw new Error('semantic trace contains an extra, missing, or unpaired semantic judge attempt or reservation');
   }
   const indeterminate = aggregates.filter((event) => event.aggregate?.status === 'measurement_indeterminate');
   return {

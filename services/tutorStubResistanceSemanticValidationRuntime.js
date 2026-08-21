@@ -155,13 +155,112 @@ function openValidationArchive({
     atomicWriteJson(manifestPath, manifest);
     return { sequence, transition_id: transitionId, sha256: digest };
   }
-  function verify() {
+  function verify({ localRoot = null } = {}) {
     const issues = [];
-    for (const entry of manifest.entries) {
+    manifest = readJson(manifestPath);
+    const manifestKeys = ['schema', 'status', 'plan_sha256', 'go_request_sha256', 'source', 'entries'];
+    if (
+      !exactJson(Object.keys(manifest).sort(), manifestKeys.sort()) ||
+      manifest.schema !== 'machinespirits.tutor-stub.resistance-semantic-validation-durable-archive.v1' ||
+      manifest.status !== 'running' ||
+      manifest.plan_sha256 !== plan.plan_sha256 ||
+      manifest.go_request_sha256 !== plan.authorization.go_request_sha256 ||
+      !exactJson(manifest.source, plan.source) ||
+      !Array.isArray(manifest.entries)
+    ) {
+      issues.push('archive manifest binding or keys drifted');
+      return { valid: false, issues, root, manifest };
+    }
+    const entryKeys = ['sequence', 'transition_id', 'stage', 'logical_path', 'path', 'bytes', 'sha256'];
+    const checkpointStages = new Set([
+      'checkpoint_initialized',
+      'checkpoint_prepared',
+      'checkpoint_dispatched',
+      'checkpoint_returned',
+      'checkpoint_invalid',
+      'checkpoint_transport_failed',
+      'checkpoint_sealed',
+      'checkpoint_partial_sealed',
+      'checkpoint_dispatch_ambiguous_sealed',
+    ]);
+    const terminalCheckpointStages = new Set([
+      'checkpoint_sealed',
+      'checkpoint_partial_sealed',
+      'checkpoint_dispatch_ambiguous_sealed',
+    ]);
+    const seenTransitions = new Set();
+    const seenSequences = new Set();
+    for (const [index, entry] of manifest.entries.entries()) {
+      const expectedTransition = tutorStubResistanceSemanticSha256(
+        `${entry.stage}\0${entry.logical_path}\0${entry.sha256}`,
+      );
+      const expectedPath = path.join('entries', `${expectedTransition}.json`);
+      const checkpointLogical = /^cases\/[a-z0-9][a-z0-9-]*\/checkpoint\.json$/u.test(entry.logical_path);
+      const stageLogicalValid =
+        (entry.stage === 'plan' && entry.logical_path === 'plan.json') ||
+        (entry.stage === 'seal' && entry.logical_path === 'seal.json') ||
+        (entry.stage === 'report' && entry.logical_path === 'report.json') ||
+        (checkpointStages.has(entry.stage) && checkpointLogical);
+      if (
+        !exactJson(Object.keys(entry).sort(), entryKeys.sort()) ||
+        entry.sequence !== index + 1 ||
+        seenSequences.has(entry.sequence) ||
+        seenTransitions.has(entry.transition_id) ||
+        entry.transition_id !== expectedTransition ||
+        entry.path !== expectedPath ||
+        !stageLogicalValid ||
+        !Number.isInteger(entry.bytes) ||
+        entry.bytes < 1 ||
+        !/^[0-9a-f]{64}$/u.test(entry.sha256)
+      ) {
+        issues.push(`${index + 1}: archive entry topology drifted`);
+      }
+      seenSequences.add(entry.sequence);
+      seenTransitions.add(entry.transition_id);
       const target = path.join(root, entry.path);
-      if (!fs.existsSync(target)) issues.push(`${entry.sequence}: archive entry missing`);
-      else if (tutorStubResistanceSemanticSha256(fs.readFileSync(target)) !== entry.sha256) {
-        issues.push(`${entry.sequence}: archive entry digest mismatch`);
+      const relative = path.relative(root, target);
+      if (!relative || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+        issues.push(`${entry.sequence}: archive entry path escapes root`);
+      } else if (!fs.existsSync(target)) issues.push(`${entry.sequence}: archive entry missing`);
+      else {
+        const archivedBytes = fs.readFileSync(target);
+        if (
+          archivedBytes.length !== entry.bytes ||
+          tutorStubResistanceSemanticSha256(archivedBytes) !== entry.sha256
+        ) {
+          issues.push(`${entry.sequence}: archive entry byte metadata mismatch`);
+        }
+      }
+    }
+    if (localRoot) {
+      const localFiles = ['plan.json', 'seal.json', 'report.json'].flatMap((logicalPath) => {
+        const file = path.join(localRoot, logicalPath);
+        return fs.existsSync(file)
+          ? [{ logicalPath, file, terminalStages: new Set([logicalPath.split('.')[0]]) }]
+          : [];
+      });
+      const casesRoot = path.join(localRoot, 'cases');
+      if (fs.existsSync(casesRoot)) {
+        for (const caseId of fs.readdirSync(casesRoot)) {
+          const logicalPath = `cases/${caseId}/checkpoint.json`;
+          const file = path.join(localRoot, logicalPath);
+          if (fs.existsSync(file)) localFiles.push({ logicalPath, file, terminalStages: terminalCheckpointStages });
+        }
+      }
+      for (const local of localFiles) {
+        const localBytes = fs.readFileSync(local.file);
+        const localSha256 = tutorStubResistanceSemanticSha256(localBytes);
+        if (
+          !manifest.entries.some(
+            (entry) =>
+              entry.logical_path === local.logicalPath &&
+              local.terminalStages.has(entry.stage) &&
+              entry.sha256 === localSha256 &&
+              entry.bytes === localBytes.length,
+          )
+        ) {
+          issues.push(`${local.logicalPath}: local final artifact has no byte-identical archive transition`);
+        }
       }
     }
     return { valid: issues.length === 0, issues, root, manifest };
@@ -445,19 +544,19 @@ async function executeJudge({
   checkpoint.invocation_id_by_judge[judge.id] = result.independent_run_id;
   checkpoint.attempts_by_judge[judge.id] = result.attempts;
   for (;;) {
-    const checkpoints = loadExistingCheckpoints(
-      destination,
-      plan.cases.map((row) => row.case_id),
-    );
-    if (attemptCount(checkpoints) >= plan.budget.hard_reservation_ceiling) {
-      throw new Error('semantic validation hard reservation ceiling exhausted');
-    }
-    if (result.attempts.length >= judge.maximumReservations) {
-      result.outcome = 'transport_failed';
-      break;
-    }
     const prepared = result.attempts.at(-1)?.status === 'prepared_not_dispatched';
     if (!prepared) {
+      const checkpoints = loadExistingCheckpoints(
+        destination,
+        plan.cases.map((row) => row.case_id),
+      );
+      if (attemptCount(checkpoints) >= plan.budget.hard_reservation_ceiling) {
+        throw new Error('semantic validation hard reservation ceiling exhausted');
+      }
+      if (result.attempts.length >= judge.maximumReservations) {
+        result.outcome = 'transport_failed';
+        break;
+      }
       result.attempts.push({ attempt: result.attempts.length + 1, status: 'prepared_not_dispatched' });
       checkpoint.status = 'judge_in_flight';
       persistCheckpoint({
@@ -618,7 +717,7 @@ export async function runTutorStubResistanceSemanticValidation({
       const seal = buildValidationSeal({ destination, plan });
       createOrVerifyExactJson(sealPath, seal, 'semantic validation seal');
       archive.append('seal', 'seal.json', seal);
-      const archiveVerification = archive.verify();
+      const archiveVerification = archive.verify({ localRoot: destination });
       if (!archiveVerification.valid) throw new Error(archiveVerification.issues.join('; '));
       return { plan, seal };
     }
@@ -744,7 +843,7 @@ export async function runTutorStubResistanceSemanticValidation({
   createOrVerifyExactJson(sealPath, seal, 'semantic validation seal');
   afterSealLocalWrite?.({ sealPath, seal });
   archive.append('seal', 'seal.json', seal);
-  const archiveVerification = archive.verify();
+  const archiveVerification = archive.verify({ localRoot: destination });
   if (!archiveVerification.valid) throw new Error(archiveVerification.issues.join('; '));
   return { plan, seal };
 }
@@ -836,7 +935,7 @@ export function analyzeTutorStubResistanceSemanticValidation({
     throw new Error('semantic validation root file set is not exact or analysis already exists');
   }
   const archive = openValidationArchive({ archiveDir, plan, resume: true });
-  const archiveVerification = archive.verify();
+  const archiveVerification = archive.verify({ localRoot: allowExistingReport ? null : destination });
   if (!archiveVerification.valid) {
     throw new Error(`semantic validation durable archive invalid: ${archiveVerification.issues.join('; ')}`);
   }
@@ -1062,7 +1161,7 @@ export function writeTutorStubResistanceSemanticValidationReport(options) {
     afterArchiveEntryWrite: options.afterArchiveEntryWrite,
   });
   archive.append('report', 'report.json', report);
-  const archiveVerification = archive.verify();
+  const archiveVerification = archive.verify({ localRoot: options.destination });
   if (!archiveVerification.valid) throw new Error(archiveVerification.issues.join('; '));
   return report;
 }

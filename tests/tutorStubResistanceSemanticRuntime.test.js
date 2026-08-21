@@ -148,6 +148,29 @@ test('production semantic runtime calls exactly two independent non-Luna judges 
   assert.ok(judgeEvents.every((event) => event.structuredOutput === true));
   assert.ok(judgeEvents.every((event) => event.prohibitedToolEventCount === 0));
   assert.ok(judgeEvents.every((event) => event.systemPrompt && event.userPrompt));
+  assert.ok(value.calls.every((call) => !call.packet.case_id.includes('initial')));
+  assert.ok(value.calls.every((call) => !call.packet.case_id.includes('repair')));
+  assert.ok(value.events.every((event) => event.candidateKind === undefined || event.candidateKind === 'initial'));
+});
+
+test('model-visible semantic case identity is opaque to repair status while trace metadata retains it', async () => {
+  const value = fixtureRuntime();
+  await value.runtime.adjudicateCandidate({
+    state: value.state,
+    learnerText: `${value.corpusCase.source} I remain explicit.`,
+    turnNumber: 3,
+    candidateKind: 'learner-repair-1',
+  });
+  assert.equal(value.calls.length, 2);
+  for (const call of value.calls) {
+    assert.match(call.packet.case_id, /^semantic-case-[0-9a-f]{64}$/u);
+    assert.equal(JSON.stringify(call.packet).includes('learner-repair-1'), false);
+  }
+  assert.ok(
+    value.events
+      .filter((event) => event.type === TUTOR_STUB_RESISTANCE_SEMANTIC_JUDGE_EVENT)
+      .every((event) => event.candidateKind === 'learner-repair-1'),
+  );
 });
 
 function semanticTrace(value) {
@@ -190,7 +213,11 @@ function semanticTrace(value) {
           },
           error: event.invalidReason,
         };
-    rows.push(attempt, event);
+    rows.push(
+      { type: 'model_call_budget_reserved', role: event.role, turn: event.turn, admission: { reserved: true } },
+      attempt,
+      event,
+    );
   }
   rows.push(
     value.events.find((row) => row.type === TUTOR_STUB_RESISTANCE_SEMANTIC_AGGREGATE_EVENT),
@@ -243,10 +270,54 @@ test('zero-call trace audit binds both judge calls to one packet and reproduces 
   );
 
   const extraCall = structuredClone(trace);
-  extraCall.splice(1, 0, structuredClone(extraCall.find((event) => event.type === 'model_call')));
+  const extraModelCall = structuredClone(extraCall.find((event) => event.type === 'model_call'));
+  extraCall.splice(1, 0, {
+    type: 'model_call_budget_reserved',
+    role: extraModelCall.role,
+    turn: extraModelCall.turn,
+    admission: { reserved: true },
+  });
+  extraCall.splice(2, 0, extraModelCall);
   assert.throws(
     () => auditTutorStubResistanceSemanticTrace({ events: extraCall, expectedCandidateCount: 1 }),
-    /extra, missing, or unpaired|prompt, route, schema/u,
+    /extra, missing, or unpaired|prompt, route, schema|independence envelope/u,
+  );
+
+  const alternateError = structuredClone(trace);
+  const firstCall = alternateError.find((event) => event.type === 'model_call');
+  const extraReservation = {
+    type: 'model_call_budget_reserved',
+    role: firstCall.role,
+    turn: firstCall.turn,
+    admission: { reserved: true },
+  };
+  const extraError = {
+    ...structuredClone(firstCall),
+    type: 'model_call_error',
+    request: { ...structuredClone(firstCall.request), prompt: `${firstCall.request.prompt} changed` },
+    error: 'synthetic alternate prompt error',
+  };
+  delete extraError.response;
+  alternateError.splice(1, 0, extraReservation, extraError);
+  assert.throws(
+    () => auditTutorStubResistanceSemanticTrace({ events: alternateError, expectedCandidateCount: 1 }),
+    /extra, missing, or unpaired/u,
+  );
+
+  const aborted = structuredClone(trace);
+  const abortCall = aborted.find((event) => event.type === 'model_call');
+  const abortReservation = {
+    type: 'model_call_budget_reserved',
+    role: abortCall.role,
+    turn: abortCall.turn,
+    admission: { reserved: true },
+  };
+  const abortEvent = { ...structuredClone(abortCall), type: 'model_call_aborted', error: 'cancelled' };
+  delete abortEvent.response;
+  aborted.splice(1, 0, abortReservation, abortEvent);
+  assert.throws(
+    () => auditTutorStubResistanceSemanticTrace({ events: aborted, expectedCandidateCount: 1 }),
+    /independence envelope|extra, missing, or unpaired/u,
   );
 
   const substitutedRecord = structuredClone(trace);

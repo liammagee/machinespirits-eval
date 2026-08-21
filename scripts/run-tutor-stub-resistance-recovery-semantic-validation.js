@@ -55,6 +55,7 @@ async function main() {
   }
   const goRequestSha256 = crypto.createHash('sha256').update(fs.readFileSync(request.absolute)).digest('hex');
   const archiveDir = resolveTutorStubArtifactArchiveDirectory(args['archive-dir'], { cwd: ROOT, repoRoot: ROOT });
+  if (!archiveDir) throw new Error('outcome validation requires an available durable private archive');
   const plan = buildTutorStubResistanceRecoverySemanticValidationPlan({
     sourceCommit: source.commit,
     sourceTree: source.tree,
