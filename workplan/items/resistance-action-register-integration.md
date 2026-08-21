@@ -2870,3 +2870,47 @@ and explicit human approval.
   Historical request revisions remain byte- and behavior-compatible. This is
   zero-call compatibility only: no fresh request, destination, approval,
   validation, outcome validation, or confirmation is created or authorized.
+
+- 2026-08-21 — After revision-3 compatibility merged, the deterministic
+  packager created the wholly fresh manipulation semantic-validation V3 HOLD
+  request
+  `config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3-successor-2.json`
+  at SHA-256
+  `234d68afc8576acca01620dd110a285aadd0adf2f5eb408b1d9e95956ed2da5d`.
+  It pins exact source `85010118c71c6b62dac6b7c741a2c4905ad19c06`
+  / tree `37d8f63d299769552fc2563668306c5c1dc2b0ac` and 37 unique
+  closure paths, including both consumed V3 request blobs and the repaired
+  provider transport/checker/packager source. The frozen V3 instrument,
+  response schema, development evidence, independent heldout corpus, Sol-low
+  plus Sonnet-5-low routes, endpoint, certificate, and 80-case design remain
+  unchanged.
+
+  The request independently binds the second consumed request SHA
+  `bb3571a2971e1d3fc3d7dad9fa0e41715b3e2282d495aef6f5880fd04fd4b5da`,
+  its 19-file / 420,968-byte local inventory
+  `f0c0cc3a58f720128d634cc48c4674e5179adee4bc6ad1a84faa1646132d5bd9`,
+  private archive commit
+  `17365bcdb1c1a3c0baad585200ccacdcc0d5c1ff`, tree
+  `2b556a59e05da040ba621bee3d94e925e0d080c5`, 141-file inventory
+  `ea84d3801bc10238dbfb80a1a3739f2a24814548f6687ff0bfcb941c864a1f84`,
+  and manifest
+  `81e8ce26d43ae6d218313e1b02d4ade684ed66001e44dd901eb450ae4185f507`
+  with 140 transitions. Its exact 35-reservation accounting remains 32
+  returned, two terminal failures, one ambiguous dispatch, 17 sealed cases,
+  and one in-flight case. No gold, recovery, analyzer, result, report, global
+  seal, reuse, pooling, selection, outcome validation, or confirmation is
+  credited from either stopped V3 root.
+
+  The new create-once destination is
+  `.tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v3-2026-08-21-c`.
+  Exact live/recovery/analyze command-array hashes are respectively
+  `993edb1a1d47ed0e251df82f2d68c56c92c8e4b8ce5af598685f339d918dcb20`,
+  `37d6d41d2b49a76dee22c3f3c1a152e80346027a3ca4236a52b571c168028704`,
+  and `0e372dbc20683773a92387c7278e53ac2f3bb06bef4def007a8d65634fd770dc`.
+  The request remains 80 cases / 160 planned calls / hard 480 reservations,
+  with programme maximum `696 -> 1176 / 5000`. It permits no interim analysis,
+  gold leak, third judge, completed-or-ambiguous recall, rerun, repair,
+  replacement, pooling, selection, or post-heldout tuning. Downstream outcome
+  validation and confirmation remain unauthorized. Authority fields remain
+  literal `HOLD` / `null` / `false`; packaging and isolated validation made
+  zero model calls and zero production writes.
