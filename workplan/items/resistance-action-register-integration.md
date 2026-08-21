@@ -2294,4 +2294,26 @@ and explicit human approval.
   are now recorded, the case seals as a final measurement_indeterminate
   on the first reservation, and a thirteenth test pins the behavior
   (22 calls, one attempt, no retry). Request regenerated with the new
-  service digest; re-review pending.
+  service digest; re-review returned APPROVE. Merged as PR #760
+  (merge commit 7e46d441).
+
+- 2026-08-21 — v2 semantic-instrument validation RAN and FAILED one of
+  five predeclared gates. Authorization committed separately
+  (7734b745, request sha256 29c55d0b), 22 of 22 calls completed on the
+  first reservation, zero technical-failure attempts. Results:
+  determinate sensitivity 7/7 = 1.00 (PASS), determinate specificity
+  13/15 = 0.867 (FAIL, gate 0.90), reference agreement 20/22 = 0.909
+  (PASS), ambiguous indeterminate rate 1.00 (PASS), low-confidence
+  indeterminate rate 1.00 (PASS). The two misses are judge-versus-
+  reference reading disagreements, not harness defects: on
+  cannery_productive_08 Sol also read an effort-withdrawal cue, which
+  correctly derives indeterminate under the registered rules; on
+  clocktower_nonactionable_04 Sol read no impatience cue and returned
+  no_boredom. Categorical instrument result under the predeclared
+  stopping rules: no rescore, no resample. Against v1: specificity rose
+  0.667 -> 0.867 but stays under the gate, and agreement rose
+  0.773 -> 0.909 and now passes. The residual failure mode is
+  reference-label disagreement on cue reading. Artifacts sealed at
+  `.tutor-stub-auto-eval/boredom-semantic-validation-v2-2026-08-21`
+  and archived to the private repo (2347818a). The 36-dialogue
+  confirmation stays on HOLD.
