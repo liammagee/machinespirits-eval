@@ -324,6 +324,7 @@ export async function executeTutorStubBoredomSemanticValidation({
   const validation = validateTutorStubBoredomSemanticValidationRequest(request, { root });
   const resolved = { provider: validation.provider, model: validation.model };
   let totalCalls = 0;
+  let pendingContractViolations = [];
   const promptCaller = async ({ prompt, systemPrompt, role, outputSchema, maxTokens, signal }) => {
     totalCalls += 1;
     assert(totalCalls <= request.scope.maximumModelCalls, 'model-call ceiling exceeded');
@@ -336,8 +337,16 @@ export async function executeTutorStubBoredomSemanticValidation({
       maxTokens,
       signal,
     });
-    assert(response?.structuredOutput === true, 'structured-output transport was not active');
-    assert(response?.effort === request.route.effort, 'observed effort differs from requested effort');
+    // A resolved response is a final measurement outcome. Transport-contract
+    // defects on a returned output are recorded, not thrown: a throw here
+    // would re-enter the bounded retry loop and replace a completed call's
+    // output, which only thrown transport errors may do.
+    if (response?.structuredOutput !== true) {
+      pendingContractViolations.push('transport_contract:structured_output_inactive');
+    }
+    if (response?.effort !== request.route.effort) {
+      pendingContractViolations.push('transport_contract:effort_mismatch');
+    }
     return response;
   };
 
@@ -348,12 +357,21 @@ export async function executeTutorStubBoredomSemanticValidation({
     let adjudication = null;
     for (let attempt = 1; attempt <= request.scope.maximumReservationsPerCase; attempt += 1) {
       try {
+        pendingContractViolations = [];
         adjudication = await adjudicateTutorStubBoredomObservation({
           candidate: row.text,
           auxiliaryObservation: null,
           callModel: promptCaller,
           resolved,
         });
+        if (pendingContractViolations.length > 0) {
+          adjudication = {
+            ...adjudication,
+            parse_ok: false,
+            measurement_disposition: 'measurement_indeterminate',
+            issues: [...adjudication.issues, ...pendingContractViolations],
+          };
+        }
         attempts.push({ attempt, status: 'completed_final', completedAt: now() });
         break;
       } catch (error) {

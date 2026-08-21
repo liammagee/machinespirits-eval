@@ -223,6 +223,30 @@ test('a malformed completed output is final measurement_indeterminate, never ret
   assert.equal(result.metrics.reference_agreement, 21 / 22);
 });
 
+test('a resolved output with a transport-contract defect is final indeterminate, never retried', async () => {
+  const request = readJson(REQUEST_PATH);
+  const corpus = readJson(HELDOUT_PATH);
+  const base = referenceMockCallModel(corpus);
+  const callModel = async (agentConfig, systemPrompt, userPrompt, role, opts) => {
+    const response = await base.callModel(agentConfig, systemPrompt, userPrompt, role, opts);
+    const candidate = userPrompt.split('\n').slice(1, -1).join('\n');
+    const row = corpus.cases.find((entry) => entry.text === candidate);
+    if (row.id === 'ferry_nonactionable_02') return { ...response, structuredOutput: false };
+    return response;
+  };
+  const result = await executeTutorStubBoredomSemanticValidation({ request, root: ROOT, callModel });
+  assert.equal(result.status, 'completed');
+  assert.equal(base.calls.length, 22);
+  assert.equal(result.accounting.totalReservationsUsed, 22);
+  const sealed = result.cases.find((row) => row.id === 'ferry_nonactionable_02');
+  assert.equal(sealed.attempts.length, 1);
+  assert.equal(sealed.attempts[0].status, 'completed_final');
+  assert.equal(sealed.observed, 'measurement_indeterminate');
+  assert.ok(sealed.adjudication.issues.includes('transport_contract:structured_output_inactive'));
+  assert.equal(sealed.adjudication.parse_ok, false);
+  assert.equal(result.metrics.determinate_specificity, 14 / 15);
+});
+
 test('a thrown transport error consumes a bounded extra reservation and the final output is kept', async () => {
   const request = readJson(REQUEST_PATH);
   const corpus = readJson(HELDOUT_PATH);

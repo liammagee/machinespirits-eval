@@ -84,7 +84,7 @@
   "sourceClosure": [
     {
       "path": "services/tutorStubBoredomSemanticValidation.js",
-      "sha256": "0636ec65ab61525cae6c92a4b82ea592a925dead7327625cc746a9bf16a3b544"
+      "sha256": "2bdb4d1e20d0fe73ae093fd2312525b62430700f3e95637d6b8722ea998351af"
     },
     {
       "path": "scripts/run-tutor-stub-boredom-semantic-validation.js",

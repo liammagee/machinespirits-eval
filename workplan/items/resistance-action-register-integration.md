@@ -2083,3 +2083,13 @@ and explicit human approval.
   derivation), service self-validation OK, runner preflight OK, 12/12 v2
   tests, 10/10 frozen v1-chain tests. The 36-dialogue confirmation stays
   on HOLD.
+
+- 2026-08-21 — Independent Codex review of the v2 branch returned one HIGH
+  finding: the harness checked two transport facts (structured output
+  active, effort as requested) by throwing after the model had already
+  returned an output, and the bounded retry loop caught that throw, so a
+  resolved output could be discarded and re-sampled. Fixed: those defects
+  are now recorded, the case seals as a final measurement_indeterminate
+  on the first reservation, and a thirteenth test pins the behavior
+  (22 calls, one attempt, no retry). Request regenerated with the new
+  service digest; re-review pending.
