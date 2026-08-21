@@ -2032,3 +2032,32 @@ and explicit human approval.
   finality, bounded technical recovery, and ceiling-exhaustion categorical
   failure. This request never authorizes the 36-dialogue confirmation,
   which stays on HOLD.
+
+- 2026-08-21 — Ran the 22 bounded Sol validation calls and the instrument
+  FAILED two of the five predeclared gates: categorical instrument result;
+  the 36-dialogue confirmation stays on HOLD and no launch-ready request
+  was prepared. Chain: independent review of the request branch returned
+  one HIGH finding (the execute function defaulted to the real CLI bridge,
+  so a direct library caller could bypass every governance gate); fixed in
+  `8d9d30d1` (explicit caller injection only, service no longer imports
+  the bridge, refusal pinned by a tenth test); re-review APPROVE; merged
+  as PR #758 (`6ec47a31`); bounded-call authorization committed at
+  `d6b40ed3` binding request `059e25c5...`. Execution at head `d6b40ed3`:
+  22/22 calls completed, 0 technical failures, 22/66 reservations, no
+  retry or replacement. Gates: determinate sensitivity 5/5 PASS;
+  determinate specificity 10/15 = 0.667 FAIL (needs >= 0.90); reference
+  agreement 17/22 = 0.773 FAIL (needs >= 0.90); ambiguous indeterminate
+  2/2 PASS; low-confidence indeterminate PASS (probe; zero empirical
+  low-confidence rows). Five disagreements, all final: two
+  productive-uptake cases (`kiln_productive_03`, `archive_productive_07`)
+  landed measurement_indeterminate because the judge's quoted evidence
+  spans were not exact source substrings (span validation, confidence
+  0.99); three are high-confidence semantic misclassifications
+  (`warehouse_nonactionable_02` read as no boredom;
+  `school_nonactionable_04` read as actionable;
+  `clinic_negative_01` read as productive uptake). Sealed evidence
+  (report sha256 `8c96a521...` + 22 per-case files) archived in the
+  private repo under
+  `artifacts/tutor-stub-live/.tutor-stub-auto-eval/boredom-semantic-validation-v1-2026-08-20/`.
+  Any next step must revise the instrument or corpus under a fresh
+  digest-bound request; the failed run is never rescored or resampled.
