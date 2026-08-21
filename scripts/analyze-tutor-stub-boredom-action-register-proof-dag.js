@@ -293,7 +293,7 @@ function metric(model, field) {
   return Number.isFinite(Number(value)) ? Number(value) : null;
 }
 
-function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan) {
+function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan, observationSemantics) {
   const runStart = events.find((event) => event.type === 'run_start');
   const metadata = runStart?.metadata;
   const recipe = metadata?.sessionRecipe;
@@ -322,6 +322,9 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan)
   const allowed = attempts.every((event) => {
     const turn = Number(event.turn);
     if (event.role === 'tutor_stub_opening') return turn === 0;
+    if (event.role === 'tutor_stub_boredom_performance_adjudication') {
+      return observationSemantics === 'prospective_v9' && turn >= 1 && turn <= 2;
+    }
     if (event.role === 'tutor_stub_auto_learner' || event.role === 'tutor_stub_learner_analysis') {
       return turn >= 1 && turn <= outcomeTurn;
     }
@@ -333,6 +336,13 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan)
     ...Array.from({ length: outcomeTurn }, (_, index) => ['tutor_stub_learner_analysis', index + 1]),
     ...Array.from({ length: outcomeTurn - 1 }, (_, index) => ['tutor_stub_tutor', index + 1]),
   ].every(([role, turn]) => calls.some((event) => event.role === role && Number(event.turn) === turn));
+  const semanticRequired =
+    observationSemantics !== 'prospective_v9' ||
+    Array.from({ length: Math.min(2, outcomeTurn - 2) }, (_, index) => index + 1).every((turn) =>
+      calls.some(
+        (event) => event.role === 'tutor_stub_boredom_performance_adjudication' && Number(event.turn) === turn,
+      ),
+    );
   const countByRoleTurn = (rows) =>
     rows.reduce((counts, event) => {
       const key = `${String(event.role)}:${Number(event.turn)}`;
@@ -353,7 +363,7 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan)
     metadata?.experiment?.policy !== 'field' ||
     metadata?.experiment?.repeat !== job.assignment_index ||
     metadata?.experiment?.jobId !== job.id ||
-    metadata?.autoLearner?.observationSemantics !== 'prospective_v8' ||
+    metadata?.autoLearner?.observationSemantics !== observationSemantics ||
     metadata?.autoLearner?.maxTurns !== 4 ||
     metadata?.autoLearner?.profileId !== 'bored' ||
     metadata?.autoLearner?.modelRef !== 'codex.gpt-5.6-luna' ||
@@ -370,9 +380,14 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan)
     options?.['no-opening'] === true ||
     routePinned !== true ||
     required !== true ||
+    semanticRequired !== true ||
     allowed !== true ||
     exactReservations !== true ||
-    attempts.some((event) => event.provider !== 'codex' || event.model !== 'gpt-5.6-luna') ||
+    attempts.some(
+      (event) =>
+        event.provider !== 'codex' ||
+        event.model !== (event.role === 'tutor_stub_boredom_performance_adjudication' ? 'gpt-5.6-sol' : 'gpt-5.6-luna'),
+    ) ||
     calls.some((event) => event.response?.effort !== 'low') ||
     attempts
       .filter((event) => event.type !== 'model_call')
@@ -401,13 +416,18 @@ function analyzeTrace(batch, resultRow, loaded) {
       (event.type === 'auto_learner_profile_adherence_exhausted' && event.profile === 'bored'),
   );
   const completed = events.filter((event) => event.type === 'turn_complete' && event.turnRecord);
+  const semanticEvents = events.filter((event) => event.type === 'boredom_semantic_adjudication');
+  const semanticIndeterminate = events.filter((event) => event.type === 'boredom_semantic_measurement_indeterminate');
+  const learnerRepairs = events.filter((event) => event.type === 'auto_learner_profile_repair_requested');
+  const semanticMode = loaded.registration.design.observationSemantics === 'prospective_v9';
   if (
     runStarts.length !== 1 ||
     starts.length !== 1 ||
     oldStarts.length ||
     interventions.length !== 1 ||
     outcomes.length !== 1 ||
-    exhausted.length
+    exhausted.length ||
+    (semanticMode && (semanticIndeterminate.length || learnerRepairs.length))
   ) {
     throw new Error(`${job.id} lacks its exact fresh execution, treatment, or outcome event`);
   }
@@ -454,17 +474,44 @@ function analyzeTrace(batch, resultRow, loaded) {
     tutorLearnerDag: trigger?.tutorLearnerDagModel,
     semantics: loaded.registration.design.observationSemantics,
   });
-  const earlierEligible = completed
-    .filter((event) => Number(event.turn) < triggerTurn)
-    .some(
-      (event) =>
-        createTutorStubResistanceAxisShadow({
-          learnerText: event.turnRecord.learner,
-          classification: event.turnRecord.classification,
-          tutorLearnerDag: event.turnRecord.tutorLearnerDagModel,
-          semantics: loaded.registration.design.observationSemantics,
-        }).resistance_kind === 'bored',
-    );
+  const semanticByTurn = new Map(semanticEvents.map((event) => [Number(event.turn), event.adjudication]));
+  const triggerSemanticAdjudication = semanticByTurn.get(triggerTurn) || null;
+  const exactSemanticSequence =
+    !semanticMode ||
+    (semanticEvents.length === triggerTurn &&
+      semanticEvents.every((event, index) => {
+        const turn = index + 1;
+        const completedTurn = completed.find((candidate) => Number(candidate.turn) === turn)?.turnRecord;
+        const adjudication = event.adjudication;
+        return (
+          Number(event.turn) === turn &&
+          adjudication?.candidate_sha256 === sha256(String(completedTurn?.learner || '')) &&
+          adjudication?.independent_route?.required_model_ref === 'codex.gpt-5.6-sol' &&
+          adjudication?.independent_route?.matches === true &&
+          adjudication?.low_confidence === false &&
+          adjudication?.parse_ok === true &&
+          adjudication?.measurement_disposition !== 'measurement_indeterminate' &&
+          (turn === triggerTurn
+            ? adjudication?.measurement_disposition === 'actionable_boredom'
+            : adjudication?.measurement_disposition !== 'actionable_boredom')
+        );
+      }));
+  const earlierEligible = semanticMode
+    ? semanticEvents.some(
+        (event) =>
+          Number(event.turn) < triggerTurn && event.adjudication?.measurement_disposition === 'actionable_boredom',
+      )
+    : completed
+        .filter((event) => Number(event.turn) < triggerTurn)
+        .some(
+          (event) =>
+            createTutorStubResistanceAxisShadow({
+              learnerText: event.turnRecord.learner,
+              classification: event.turnRecord.classification,
+              tutorLearnerDag: event.turnRecord.tutorLearnerDagModel,
+              semantics: loaded.registration.design.observationSemantics,
+            }).resistance_kind === 'bored',
+        );
   const triggerEligibility = trigger
     ? tutorStubResistanceActionRegisterTreatmentEligibility({
         runtime: {
@@ -479,17 +526,21 @@ function analyzeTrace(batch, resultRow, loaded) {
         learnerText: trigger.learner,
         classification: trigger.classification,
         tutorLearnerDag: trigger.tutorLearnerDagModel,
+        semanticAdjudication: triggerSemanticAdjudication,
       })
     : null;
   if (
     !trigger ||
     !postOne ||
     !postTwo ||
-    triggerShadow.resistance_kind !== 'bored' ||
-    triggerShadow.warrant?.status !== 'licensed' ||
+    (!semanticMode && triggerShadow.resistance_kind !== 'bored') ||
+    (!semanticMode && triggerShadow.warrant?.status !== 'licensed') ||
     triggerShadow.profile_identity_used !== false ||
     triggerEligibility?.eligible !== true ||
-    triggerEligibility?.boredom_compositional_precedence?.generic_uptake_override_allowed !== false ||
+    (semanticMode
+      ? triggerEligibility?.boredom_semantic_precedence?.final_authority !== 'independent_llm_semantic_adjudicator'
+      : triggerEligibility?.boredom_compositional_precedence?.generic_uptake_override_allowed !== false) ||
+    !exactSemanticSequence ||
     earlierEligible ||
     interventions[0].triggerTurn !== triggerTurn ||
     interventions[0].triggerLearnerSha256 !== triggerHash ||
@@ -534,7 +585,14 @@ function analyzeTrace(batch, resultRow, loaded) {
   ) {
     throw new Error(`${job.id} lacks adherent typed action/register visibility evidence`);
   }
-  const observed = assertAttemptEnvelope(events, job, outcomeTurn, batch.finalTraceBudgetByJob.get(job.id), batch.plan);
+  const observed = assertAttemptEnvelope(
+    events,
+    job,
+    outcomeTurn,
+    batch.finalTraceBudgetByJob.get(job.id),
+    batch.plan,
+    loaded.registration.design.observationSemantics,
+  );
   const recovery = scoreTutorStubResistanceRecovery({
     profile: 'bored',
     triggerLearnerText: trigger.learner,
@@ -579,6 +637,18 @@ function analyzeTrace(batch, resultRow, loaded) {
     prefix_id: `${job.id}:${prefixSha256}`,
     public_prefix_sha256: prefixSha256,
     trigger: { observed_by_turn: triggerTurn, profile: 'bored', profile_identity_used: false },
+    ...(semanticMode
+      ? {
+          semantic_measurement: {
+            authority: 'independent_llm_semantic_adjudicator',
+            model_ref: 'codex.gpt-5.6-sol',
+            adjudications: semanticEvents.length,
+            trigger_disposition: triggerSemanticAdjudication.measurement_disposition,
+            regex_role: 'auxiliary_only',
+            measurement_indeterminate: false,
+          },
+        }
+      : {}),
     outcome: { ...recovery, ...objectiveOutcome },
     fidelity: {
       action_visible: responseAudit.axes.action_family.visible,

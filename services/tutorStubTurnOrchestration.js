@@ -14,6 +14,7 @@ import {
   completeTutorStubActionBeforeRegisterShadow,
   finalizeTutorStubActionBeforeRegisterShadow,
 } from './tutorStubActionBeforeRegisterShadow.js';
+import { throwTutorStubBoredomMeasurementIndeterminate } from './tutorStubBoredomSemanticAdjudication.js';
 
 export function reconcileTutorStubTypedActionWithWarrant({
   state,
@@ -97,6 +98,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
     TUTOR_STUB_QUARANTINE_CONTINUATION,
     acknowledgeTutorStubOpeningRelease,
     advanceTutorStubDialogueClosure,
+    adjudicateTutorStubBoredomObservation,
     analyzeLearnerTurn,
     appendTraceEvent,
     appendTutorStubTurnFailureTraceRecords,
@@ -388,6 +390,47 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
     assertTutorStubTurnAttemptCurrent(runtimeOptions);
     const tutorTurn = state.turns.length + 1;
     const turnId = turnDebugId(state, tutorTurn);
+    let boredomSemanticAdjudication = null;
+    if (
+      state.resistanceActionRegisterStudy?.dynamic_boredom_proof_dag === true &&
+      state.resistanceActionRegisterStudy?.consumed !== true &&
+      state.resistanceActionRegisterStudy?.proof_dag_registration?.design?.observationSemantics === 'prospective_v9'
+    ) {
+      if (typeof adjudicateTutorStubBoredomObservation !== 'function') {
+        throw new Error('prospective_v9 boredom timing requires the independent semantic adjudicator');
+      }
+      boredomSemanticAdjudication = await adjudicateTutorStubBoredomObservation({
+        learnerText,
+        classification,
+        tutorLearnerDag,
+        state,
+        turn: tutorTurn,
+        signal: runtimeOptions.signal || null,
+      });
+      assertTutorStubTurnAttemptCurrent(runtimeOptions);
+      appendTraceEvent(state.trace, {
+        type: 'boredom_semantic_adjudication',
+        turn: tutorTurn,
+        turnId,
+        jobId: state.resistanceActionRegisterStudy.job_id,
+        adjudication: jsonClone(boredomSemanticAdjudication),
+        publicTranscriptChanged: false,
+      });
+      if (boredomSemanticAdjudication?.measurement_disposition === 'measurement_indeterminate') {
+        appendTraceEvent(state.trace, {
+          type: 'boredom_semantic_measurement_indeterminate',
+          turn: tutorTurn,
+          turnId,
+          code: 'TUTOR_STUB_BOREDOM_MEASUREMENT_INDETERMINATE',
+          disposition: 'measurement_indeterminate_stop_no_repair_no_replacement',
+          publicTranscriptChanged: false,
+        });
+        throwTutorStubBoredomMeasurementIndeterminate({
+          adjudication: boredomSemanticAdjudication,
+          turn: tutorTurn,
+        });
+      }
+    }
     const frozenPreOptionalWarrantSelection =
       registerSelection?.warrant_gate?.mode === 'active' && registerSelection?.warrant_gate?.revision_warranted === true
         ? jsonClone(registerSelection)
@@ -616,6 +659,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         learnerText,
         classification,
         tutorLearnerDag,
+        semanticAdjudication: boredomSemanticAdjudication,
       });
       if (registerSelection !== beforeStudySelection) {
         const intervention = registerSelection?.resistance_action_register_intervention || null;

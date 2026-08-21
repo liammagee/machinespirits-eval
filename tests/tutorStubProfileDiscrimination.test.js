@@ -18,6 +18,7 @@ import {
 import {
   BOREDOM_PROOF_DAG_ADHERENCE_EXHAUSTED_CODE,
   buildTutorStubBoredomProofDagRepairBudgetDiagnostic,
+  buildTutorStubBoredomProofDagSemanticBudgetDiagnostic,
 } from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE_CODE } from '../services/tutorStubResistanceSemanticRuntime.js';
 import {
@@ -55,7 +56,7 @@ test('automated-learner generation runtime owns profile resolution and corruptio
   assert.equal(runtime.automatedLearnerCorruptionEnabled(1), false);
 });
 
-test('prospective v4 through v8 carry their analyzer-required semantics stamp through the production trace seam', () => {
+test('prospective v4 through v9 carry their analyzer-required semantics stamp through the production trace seam', () => {
   const createRuntime = (semantics) =>
     createTutorStubAutomatedLearnerGenerationRuntime({
       appendTraceEvent() {},
@@ -92,6 +93,9 @@ test('prospective v4 through v8 carry their analyzer-required semantics stamp th
   });
   assert.deepEqual(createRuntime('prospective_v8').automatedLearnerTraceMetadata, {
     observationSemantics: 'prospective_v8',
+  });
+  assert.deepEqual(createRuntime('prospective_v9').automatedLearnerTraceMetadata, {
+    observationSemantics: 'prospective_v9',
   });
 
   const hostSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCliApplicationHost.js'), 'utf8');
@@ -1186,6 +1190,55 @@ test('boredom proof-DAG mode defers T1, admits one T2 repair, then releases post
   assert.deepEqual(exhausted.counters, { analysis: 2, repair: 1 });
 });
 
+test('prospective-v9 delegates boredom adherence to the independent semantic seat without learner repair', async () => {
+  const trace = [];
+  const counters = { analysis: 0, repair: 0 };
+  const runtime = createTutorStubAutomatedLearnerGenerationRuntime({
+    appendTraceEvent: (target, event) => target.push(event),
+    callPromptModel: async () => {
+      counters.repair += 1;
+      return { text: 'unexpected repair' };
+    },
+    classificationFromCombinedAnalysis: (raw) => raw.classification,
+    env: { [TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV]: 'prospective_v9' },
+    extractCombinedLearnerAnalysis: async () => {
+      counters.analysis += 1;
+      return { classification: { turn: {} } };
+    },
+    learnerProfileContract,
+    learnerProfileIds,
+    learnerProfilePrompt,
+    negativeFloorRegisters: [],
+  });
+  const state = {
+    trace,
+    turns: [],
+    history: [],
+    register: { policy: 'field' },
+    classifier: { enabled: true },
+    learnerDag: { enabled: true },
+    world: {},
+    resistanceActionRegisterStudy: {
+      dynamic_boredom_proof_dag: true,
+      consumed: false,
+      proof_dag_registration: { design: { observationSemantics: 'prospective_v9' } },
+    },
+  };
+  const result = await runtime.enforceAutomatedLearnerProfile({
+    state,
+    resolved: {},
+    profile: 'bored',
+    turnNumber: 2,
+    generated: { text: 'Fine. Is this trial nearly done?' },
+  });
+  assert.equal(result.passed, null);
+  assert.equal(result.repaired, false);
+  assert.deepEqual(counters, { analysis: 0, repair: 0 });
+  assert.equal(trace[0].type, 'auto_learner_profile_measurement_delegated');
+  assert.equal(trace[0].authority, 'independent_llm_semantic_adjudicator');
+  assert.equal(trace[0].measurementIndeterminateMeansNonadherence, false);
+});
+
 test('boredom proof-DAG repair budget binds the 20-call and 60-reservation hard envelope', () => {
   assert.deepEqual(buildTutorStubBoredomProofDagRepairBudgetDiagnostic(), {
     turns: 4,
@@ -1198,6 +1251,19 @@ test('boredom proof-DAG repair budget binds the 20-call and 60-reservation hard 
     ready: true,
   });
   assert.equal(buildTutorStubBoredomProofDagRepairBudgetDiagnostic({ maxFullRepairsByT2: 2 }).ready, false);
+});
+
+test('prospective-v9 replaces two learner-repair calls with at most two independent semantic calls', () => {
+  assert.deepEqual(buildTutorStubBoredomProofDagSemanticBudgetDiagnostic(), {
+    turns: 4,
+    maximumPreTriggerSemanticAdjudications: 2,
+    learnerAdherenceRepairCalls: 0,
+    displacedLegacyRepairCalls: 2,
+    plannedWorstCaseCalls: 20,
+    maximumReservationsPerPlannedCall: 3,
+    maximumModelAttemptReservations: 60,
+    ready: true,
+  });
 });
 
 test('prospective v4 budget proof binds planned role calls and charged CLI retry reservations', () => {

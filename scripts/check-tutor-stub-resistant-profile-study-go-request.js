@@ -251,6 +251,17 @@ const BOREDOM_ACTION_REGISTER_PROOF_DAG_V2_CRITICAL_SOURCE_CLOSURE = Object.free
   'services/resistantLearnerAxisObservation.js',
 ]);
 
+const BOREDOM_ACTION_REGISTER_PROOF_DAG_V3_CRITICAL_SOURCE_CLOSURE = Object.freeze([
+  ...BOREDOM_ACTION_REGISTER_PROOF_DAG_V2_CRITICAL_SOURCE_CLOSURE,
+  'services/tutorStubBoredomSemanticAdjudication.js',
+  'services/evalConfigLoader.js',
+  'services/cliProviderBridge.js',
+  'services/tutorStubPromptAudit.js',
+  'services/tutorStubCliRequest.js',
+  'tutor-core/services/unifiedAIProviderService.js',
+  'config/tutor-stub-boredom-semantic-adjudication-heldout.v1.json',
+]);
+
 const RESISTANCE_ACTION_REGISTER_STOPPED_V2_REQUEST = Object.freeze({
   requestRevision: 3,
   request: Object.freeze({
@@ -592,6 +603,11 @@ const BOREDOM_PROOF_DAG_STOPPED_V2_REQUEST = Object.freeze({
   confirmationCreditPermitted: false,
 });
 
+const BOREDOM_PROOF_DAG_STOPPED_V3_REQUEST = Object.freeze({
+  ...BOREDOM_PROOF_DAG_STOPPED_V2_REQUEST,
+  requestRevision: 4,
+});
+
 function parseArgs(argv) {
   const args = { request: DEFAULT_REQUEST, json: false };
   for (let index = 0; index < argv.length; index += 1) {
@@ -775,6 +791,9 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     request.semanticAdjudicationValidation?.type ===
     'prospective_resistance_recovery_semantic_adjudication_heldout_validation_v2';
   const isAnyResistanceSemanticValidation = isResistanceSemanticValidation || isResistanceRecoverySemanticValidation;
+  const isBoredomActionRegisterProofDagV3 =
+    isBoredomActionRegisterProofDag && request.boredomActionRegisterProofDag?.requestRevision === 4;
+  const isBoredomActionRegisterProofDagCurrent = isBoredomActionRegisterProofDagV2 || isBoredomActionRegisterProofDagV3;
 
   assertion(
     checks,
@@ -851,9 +870,11 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       : isResistanceSemanticValidation
         ? RESISTANCE_SEMANTIC_VALIDATION_V1_CRITICAL_SOURCE_CLOSURE
         : isBoredomActionRegisterProofDag
-          ? isBoredomActionRegisterProofDagV2
-            ? BOREDOM_ACTION_REGISTER_PROOF_DAG_V2_CRITICAL_SOURCE_CLOSURE
-            : BOREDOM_ACTION_REGISTER_PROOF_DAG_V1_CRITICAL_SOURCE_CLOSURE
+          ? isBoredomActionRegisterProofDagV3
+            ? BOREDOM_ACTION_REGISTER_PROOF_DAG_V3_CRITICAL_SOURCE_CLOSURE
+            : isBoredomActionRegisterProofDagV2
+              ? BOREDOM_ACTION_REGISTER_PROOF_DAG_V2_CRITICAL_SOURCE_CLOSURE
+              : BOREDOM_ACTION_REGISTER_PROOF_DAG_V1_CRITICAL_SOURCE_CLOSURE
           : isActionRegisterConfirmation
             ? RESISTANCE_ACTION_REGISTER_CONFIRMATION_V1_CRITICAL_SOURCE_CLOSURE
             : isActionRegisterBaseline || isActionRegisterAnalysisOnly
@@ -997,7 +1018,8 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       assertion(
         checks,
         'boredom-action-register-proof-dag-endpoint-readiness-binding',
-        endpointRegistration.version === (isBoredomActionRegisterProofDagV2 ? 2 : 1) &&
+        endpointRegistration.version ===
+          (isBoredomActionRegisterProofDagV3 ? 3 : isBoredomActionRegisterProofDagV2 ? 2 : 1) &&
           contract.runner?.live_batch_executor ===
             'scripts/run-tutor-stub-boredom-action-register-proof-dag.js#runTutorStubBoredomProofDagBatch' &&
           contract.runner?.live_batch_recovery_executor ===
@@ -1012,7 +1034,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
           contract.runner?.batch_contract?.maximum_model_attempt_reservations_per_batch === 240 &&
           contract.runner?.batch_contract?.combined_maximum_model_attempt_reservations === 2160 &&
           contract.runner?.batch_contract?.programme_ceiling_if_frame_refusal_confirmation_also_reserved ===
-            (isBoredomActionRegisterProofDagV2 ? 5000 : 4539) &&
+            (isBoredomActionRegisterProofDagCurrent ? 5000 : 4539) &&
           contract.runner?.batch_contract?.combined_analysis_only === true &&
           contract.runner?.batch_contract?.interim_analysis === false &&
           contract.runner?.batch_contract?.valid_unit_reruns === false &&
@@ -1023,6 +1045,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
             'randomized_register_assembly',
             'action_register_fidelity_and_safety',
             ...(isBoredomActionRegisterProofDagV2 ? ['compositional_boredom_observer_timing'] : []),
+            ...(isBoredomActionRegisterProofDagV3 ? ['independent_boredom_semantic_measurement'] : []),
           ].every((id) => endpointIds.includes(id)),
         'the boredom 36-case endpoint binds fresh triggers, exact blocked analysis, recovery, proof progress, and all hard caps',
       );
@@ -1565,18 +1588,24 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   } else if (isBoredomActionRegisterProofDag) {
     const registered = readJson(rootPath(request.bindings.registration.path));
     const gate = request.boredomActionRegisterProofDag;
-    const stoppedBinding = isBoredomActionRegisterProofDagV2
-      ? BOREDOM_PROOF_DAG_STOPPED_V2_REQUEST
-      : BOREDOM_PROOF_DAG_STOPPED_V1_REQUEST;
+    const stoppedBinding = isBoredomActionRegisterProofDagV3
+      ? BOREDOM_PROOF_DAG_STOPPED_V3_REQUEST
+      : isBoredomActionRegisterProofDagV2
+        ? BOREDOM_PROOF_DAG_STOPPED_V2_REQUEST
+        : BOREDOM_PROOF_DAG_STOPPED_V1_REQUEST;
     const isSuccessor = gate.requestRevision === stoppedBinding.requestRevision;
     const batchDestinations = request.destination.batches;
     const registeredWorlds = registered.design?.worlds || [];
     assertion(
       checks,
       'boredom-proof-dag-design-binding',
-      registered.version === (isBoredomActionRegisterProofDagV2 ? 2 : 1) &&
+      registered.version === (isBoredomActionRegisterProofDagV3 ? 3 : isBoredomActionRegisterProofDagV2 ? 2 : 1) &&
         registered.design?.observationSemantics ===
-          (isBoredomActionRegisterProofDagV2 ? 'prospective_v8' : 'prospective_bored_effort_withholding') &&
+          (isBoredomActionRegisterProofDagV3
+            ? 'prospective_v9'
+            : isBoredomActionRegisterProofDagV2
+              ? 'prospective_v8'
+              : 'prospective_bored_effort_withholding') &&
         request.design.profiles.join(',') === 'bored' &&
         request.design.dialogues === 36 &&
         request.design.dialoguesPerArm === 18 &&
@@ -1593,6 +1622,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         request.design.models.tutor === 'codex.gpt-5.6-luna' &&
         request.design.models.analysis === 'codex.gpt-5.6-luna' &&
         request.design.models.learner === 'codex.gpt-5.6-luna' &&
+        (!isBoredomActionRegisterProofDagV3 || request.design.models.semanticAdjudicator === 'codex.gpt-5.6-sol') &&
         request.design.cliEffort === 'low',
       'the boredom confirmation is 36 fresh blocked-randomized strict-DAG dialogues, 18 per arm, over six exact worlds',
     );
@@ -1601,7 +1631,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       'boredom-proof-dag-request-revision',
       (gate.requestRevision === undefined && gate.priorStoppedExecution === undefined) ||
         (isSuccessor && gate.priorStoppedExecution !== undefined),
-      'the original request remains compatible; revisions 2 and 3 bind their exact stopped predecessors',
+      'the original request remains compatible; revisions 2 through 4 bind their exact stopped predecessors',
     );
     if (isSuccessor) {
       assertion(
@@ -1616,7 +1646,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         'the consumed request, preserved stopped batches, traces, accounting, and total exclusion remain exact',
       );
       validateFileBinding(checks, 'boredom-proof-dag-consumed-request-binding', gate.priorStoppedExecution.request);
-      if (isBoredomActionRegisterProofDagV2) {
+      if (isBoredomActionRegisterProofDagCurrent) {
         validateFileBinding(
           checks,
           'boredom-proof-dag-predecessor-request-binding',
@@ -1643,7 +1673,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         gate.validUnitRerunsPermitted === false &&
         gate.outcomeSelectionPermitted === false &&
         (!isSuccessor ||
-          (isBoredomActionRegisterProofDagV2
+          (isBoredomActionRegisterProofDagCurrent
             ? gate.priorStoppedExecution.retryPermitted === false &&
               gate.priorStoppedExecution.resumePermitted === false &&
               gate.priorStoppedExecution.reusePermitted === false &&
@@ -1658,6 +1688,40 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
               gate.priorStoppedExecution.outcomeSelectionPermitted === false)),
       'held-out detection, historical action-fit, and the 12-dialogue calibration remain excluded from confirmation outcomes',
     );
+    if (isBoredomActionRegisterProofDagV3) {
+      assertion(
+        checks,
+        'boredom-proof-dag-independent-semantic-measurement-boundary',
+        gate.semanticValidation?.modelRef === 'codex.gpt-5.6-sol' &&
+          gate.semanticValidation?.role === 'tutor_stub_boredom_performance_adjudication' &&
+          gate.semanticValidation?.generatorSelfJudgmentAllowed === false &&
+          gate.semanticValidation?.regexFinalAuthority === false &&
+          gate.semanticValidation?.lexicalSilenceMayVetoSemanticPositive === false &&
+          gate.semanticValidation?.heldoutCorpus?.path ===
+            'config/tutor-stub-boredom-semantic-adjudication-heldout.v1.json' &&
+          gate.semanticValidation?.heldoutCorpus?.sha256 ===
+            'ad61f7b104c8202889c9f9eb00090a900aafea5d5bf55d7e3b89cf41db300f93' &&
+          gate.semanticValidation?.heldoutCorpus?.cases === 22 &&
+          JSON.stringify(gate.semanticValidation?.gates) ===
+            JSON.stringify({
+              determinateSensitivityMinimum: 0.9,
+              determinateSpecificityMinimum: 0.9,
+              referenceAgreementMinimum: 0.9,
+              ambiguousIndeterminateRateMinimum: 1,
+              lowConfidenceIndeterminateRateMinimum: 1,
+            }) &&
+          gate.semanticValidation?.empiricalValidationStatus === 'pending' &&
+          gate.semanticValidation?.confirmationLaunchReady === false &&
+          gate.semanticValidation?.lowConfidenceOrDisagreementDisposition ===
+            'measurement_indeterminate_no_repair_no_rerun_no_replacement',
+        'the independent Sol semantic seat, sealed held-out corpus, auxiliary-only regex, and prelaunch empirical gate remain exact',
+      );
+      validateFileBinding(
+        checks,
+        'boredom-proof-dag-semantic-heldout-corpus-binding',
+        gate.semanticValidation.heldoutCorpus,
+      );
+    }
     validateFileBinding(
       checks,
       'boredom-proof-dag-calibration-request-binding',
@@ -1680,13 +1744,13 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         request.budget.dialoguesPerBatch === 4 &&
         request.budget.maximumAttemptsPerBatch === 240 &&
         request.budget.maximumPlannedModelAttempts === 2160 &&
-        request.budget.programmeLedgerBefore === (isBoredomActionRegisterProofDagV2 ? 293 : 219) &&
-        request.budget.programmeCeilingBefore === (isBoredomActionRegisterProofDagV2 ? 5000 : 2379) &&
+        request.budget.programmeLedgerBefore === (isBoredomActionRegisterProofDagCurrent ? 293 : 219) &&
+        request.budget.programmeCeilingBefore === (isBoredomActionRegisterProofDagCurrent ? 5000 : 2379) &&
         request.budget.frameRefusalConfirmationReservedAttempts === 2160 &&
         request.budget.programmeOperationalSafeguardIncrement === 2160 &&
-        request.budget.programmeCeilingAfter === (isBoredomActionRegisterProofDagV2 ? 5000 : 4539) &&
-        request.budget.programmeLedgerAfterBoredomMaximum === (isBoredomActionRegisterProofDagV2 ? 2453 : 2379) &&
-        request.budget.programmeReservedAfterBothMaximum === (isBoredomActionRegisterProofDagV2 ? 4613 : 4539) &&
+        request.budget.programmeCeilingAfter === (isBoredomActionRegisterProofDagCurrent ? 5000 : 4539) &&
+        request.budget.programmeLedgerAfterBoredomMaximum === (isBoredomActionRegisterProofDagCurrent ? 2453 : 2379) &&
+        request.budget.programmeReservedAfterBothMaximum === (isBoredomActionRegisterProofDagCurrent ? 4613 : 4539) &&
         request.budget.attemptAccountingRole === 'operational_execution_safeguard_only' &&
         request.budget.retryOrResumeAuthority === 'bounded_technical_recovery',
       'the exact blocked test needs 18 per arm; attempt counts separately bind 60 per dialogue, 2160 for boredom, and 4539 as the cumulative operational safeguard',
@@ -1704,7 +1768,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         recovery.maximumAttemptsPerDialogueUnchanged === 60 &&
         recovery.maximumAttemptsPerBatchUnchanged === 240 &&
         recovery.maximumTotalStudyAttemptsUnchanged === 2160 &&
-        recovery.programmeCeilingUnchanged === (isBoredomActionRegisterProofDagV2 ? 5000 : 4539),
+        recovery.programmeCeilingUnchanged === (isBoredomActionRegisterProofDagCurrent ? 5000 : 4539),
       'bounded recovery may fill only missing or failed units under every unchanged protected input and cap',
     );
     assertion(
@@ -2941,7 +3005,9 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       ? 'bounded technical recovery authority for missing or failed units only.'
       : 'no retry or resume authority.';
   const exactApprovalStatement = isBoredomActionRegisterProofDag
-    ? `I approve ${requestRepoPath} at SHA-256 ${requestSha256} for one 36-dialogue Luna boredom matched-action warm-versus-plain proof-DAG confirmation with 18 dialogues per arm, one predeclared two-sided exact conditional blocked analysis with fixed-sequence proof-progress testing, no interim analysis, no reuse or pooling of prior dialogues or outcomes, a 2,160-attempt study safeguard and ${isBoredomActionRegisterProofDagV2 ? '5,000' : '4,539'}-attempt cumulative programme safeguard while both powered confirmations remain reserved, and bounded technical recovery authority for missing or failed units only within unchanged protected inputs and safeguards.`
+    ? isBoredomActionRegisterProofDagV3
+      ? `No confirmation launch approval is available for ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256}: the independently pinned Sol semantic adjudicator must first pass its predeclared frozen-failure, strong-negative, held-out sensitivity, specificity, agreement, and indeterminacy gates without changing the request, prompt, wrapper, or protected inputs.`
+      : `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one 36-dialogue Luna boredom matched-action warm-versus-plain proof-DAG confirmation with 18 dialogues per arm, one predeclared two-sided exact conditional blocked analysis with fixed-sequence proof-progress testing, no interim analysis, no reuse or pooling of prior dialogues or outcomes, a 2,160-attempt study safeguard and ${isBoredomActionRegisterProofDagV2 ? '5,000' : '4,539'}-attempt cumulative programme safeguard while both powered confirmations remain reserved, and bounded technical recovery authority for missing or failed units only within unchanged protected inputs and safeguards.`
     : isActionRegisterConfirmation
       ? isActionRegisterConfirmationV5
         ? `Standing programme authority attachment SHA-256 538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce applies to ${requestRepoPath} at SHA-256 ${requestSha256}: one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1, V3, or V4 confirmation blocks, and bounded technical recovery for missing or failed units only within the unchanged 5,000-attempt programme ceiling.`
@@ -2969,7 +3035,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     launchTree: request.source.launchTree,
     sourceCommitObjectAvailable: sourceAudit.available,
     packetValid: true,
-    readyForExplicitHumanApproval: !isReplacement || priorArtifactsAvailable,
+    readyForExplicitHumanApproval: !isBoredomActionRegisterProofDagV3 && (!isReplacement || priorArtifactsAvailable),
     priorArtifactsAvailable,
     explicitHumanApproval: false,
     modelCallsAuthorized: false,

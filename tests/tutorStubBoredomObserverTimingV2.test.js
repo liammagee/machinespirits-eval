@@ -126,6 +126,19 @@ test('prospective_v8 boredom composition passes the immutable failed drafts and 
   }
 });
 
+test('prospective_v9 preserves the same composition only as a non-authoritative auxiliary signal', () => {
+  for (const row of CONTRAST_MATRIX) {
+    const result = observeResistantLearnerTurn({
+      learnerText: row.text,
+      classification: row.classification || classification(),
+      tutorLearnerDag: { advance: { supportedMoveCount: 0 } },
+      semantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV9,
+    });
+    assert.equal(disposition(result), row.expected, row.text);
+    assert.equal(result.semantic_authority, 'independent_llm_required_regex_auxiliary_only', row.text);
+  }
+});
+
 function proofDagRuntime() {
   return {
     consumed: false,
@@ -162,7 +175,9 @@ test('action-before-register timing consumes the compositional observation inste
 
 test('legacy observer semantics retain their historical decisions for both failed utterances', () => {
   for (const semantics of Object.values(RESISTANT_LEARNER_OBSERVATION_SEMANTICS).filter(
-    (value) => value !== RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8,
+    (value) =>
+      value !== RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8 &&
+      value !== RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV9,
   )) {
     const productive = observeResistantLearnerTurn({
       learnerText: EXACT_FAILED_CASES[0].text,

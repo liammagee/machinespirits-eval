@@ -29,6 +29,7 @@ import {
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v2.json';
+const REGISTRATION_V3 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v3.json';
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -55,14 +56,15 @@ function commandArgs(command) {
   return values;
 }
 
-function route() {
-  return { ref: 'codex.gpt-5.6-luna', provider: 'codex', model: 'gpt-5.6-luna', cli: true };
+function route(model = 'gpt-5.6-luna') {
+  return { ref: `codex.${model}`, provider: 'codex', model, cli: true };
 }
 
 function calls(role, turn) {
+  const model = role === 'tutor_stub_boredom_performance_adjudication' ? 'gpt-5.6-sol' : 'gpt-5.6-luna';
   return [
-    { type: 'model_call_budget_reserved', role, turn, provider: 'codex', model: 'gpt-5.6-luna' },
-    { type: 'model_call', role, turn, provider: 'codex', model: 'gpt-5.6-luna', response: { effort: 'low' } },
+    { type: 'model_call_budget_reserved', role, turn, provider: 'codex', model },
+    { type: 'model_call', role, turn, provider: 'codex', model, response: { effort: 'low' } },
   ];
 }
 
@@ -103,7 +105,7 @@ function dagModel({ progressed }) {
   };
 }
 
-function syntheticTrace({ job, plan, recovered, progressed }) {
+function syntheticTrace({ job, plan, recovered, progressed, observationSemantics = 'prospective_v8' }) {
   const triggerTurn = job.assignment_index % 2 === 0 ? 2 : 1;
   const outcomeTurn = triggerTurn + 2;
   const triggerText = `Whatever. I will not work through this proof ${job.id}.`;
@@ -115,6 +117,11 @@ function syntheticTrace({ job, plan, recovered, progressed }) {
     ...Array.from({ length: outcomeTurn }, (_, index) => calls('tutor_stub_auto_learner', index + 1)).flat(),
     ...Array.from({ length: outcomeTurn }, (_, index) => calls('tutor_stub_learner_analysis', index + 1)).flat(),
     ...Array.from({ length: outcomeTurn - 1 }, (_, index) => calls('tutor_stub_tutor', index + 1)).flat(),
+    ...(observationSemantics === 'prospective_v9'
+      ? Array.from({ length: triggerTurn }, (_, index) =>
+          calls('tutor_stub_boredom_performance_adjudication', index + 1),
+        ).flat()
+      : []),
   ];
   const completed = Array.from({ length: outcomeTurn - 1 }, (_, index) => {
     const turn = index + 1;
@@ -165,7 +172,7 @@ function syntheticTrace({ job, plan, recovered, progressed }) {
           jobId: job.id,
         },
         autoLearner: {
-          observationSemantics: 'prospective_v8',
+          observationSemantics,
           maxTurns: 4,
           profileId: 'bored',
           modelRef: 'codex.gpt-5.6-luna',
@@ -206,6 +213,23 @@ function syntheticTrace({ job, plan, recovered, progressed }) {
       priorDialogueReused: false,
       priorOutcomePooled: false,
     },
+    ...(observationSemantics === 'prospective_v9'
+      ? Array.from({ length: triggerTurn }, (_, index) => {
+          const turn = index + 1;
+          const candidate = turn === triggerTurn ? triggerText : 'I am inspecting the public record.';
+          return {
+            type: 'boredom_semantic_adjudication',
+            turn,
+            adjudication: {
+              candidate_sha256: sha256(candidate),
+              measurement_disposition: turn === triggerTurn ? 'actionable_boredom' : 'productive_uptake',
+              independent_route: { required_model_ref: 'codex.gpt-5.6-sol', matches: true },
+              low_confidence: false,
+              parse_ok: true,
+            },
+          };
+        })
+      : []),
     {
       type: 'resistance_action_register_intervention_applied',
       turn: triggerTurn,
@@ -244,13 +268,18 @@ function syntheticTrace({ job, plan, recovered, progressed }) {
   ];
 }
 
-function writeSyntheticBatch(root, plan, outcomes) {
+function writeSyntheticBatch(root, plan, outcomes, { observationSemantics = 'prospective_v8' } = {}) {
   fs.mkdirSync(path.join(root, 'jobs'), { recursive: true });
   writeJson(path.join(root, 'batch-plan.json'), plan);
   const results = plan.jobs.map((job) => {
     fs.mkdirSync(job.command.trace_dir, { recursive: true });
     const tracePath = path.join(job.command.trace_dir, `${job.id}.jsonl`);
-    const source = `${syntheticTrace({ job, plan, ...outcomes.get(job.id) })
+    const source = `${syntheticTrace({
+      job,
+      plan,
+      ...outcomes.get(job.id),
+      observationSemantics,
+    })
       .map((event) => JSON.stringify(event))
       .join('\n')}\n`;
     fs.writeFileSync(tracePath, source);
@@ -459,6 +488,33 @@ test('boredom proof-DAG recovery selects only absent or trace-proven technical u
     /refuses nontechnical or unclassified partial failure/u,
   );
 
+  const semanticIndeterminateEvent = {
+    type: 'boredom_semantic_measurement_indeterminate',
+    code: 'TUTOR_STUB_BOREDOM_MEASUREMENT_INDETERMINATE',
+    disposition: 'measurement_indeterminate_stop_no_repair_no_replacement',
+  };
+  const semanticIndeterminate = classifyTutorStubBoredomProofDagChildFailure({
+    events: [semanticIndeterminateEvent],
+    signal: 'SIGTERM',
+  });
+  assert.deepEqual(semanticIndeterminate, {
+    category: 'substantive_registered_failure',
+    code: 'TUTOR_STUB_BOREDOM_MEASUREMENT_INDETERMINATE',
+    disposition: 'measurement_indeterminate_stop_no_repair_no_replacement',
+    recoverable: false,
+  });
+  writeTrace('semantic-indeterminate', [semanticIndeterminateEvent]);
+  assert.throws(
+    () =>
+      selectTutorStubBoredomProofDagRecoveryCandidates({
+        plan: { jobs: [job('semantic-indeterminate')] },
+        initial: {
+          results: [{ job_id: 'semantic-indeterminate', status: 'failed', failure: semanticIndeterminate }],
+        },
+      }),
+    /refuses nontechnical or unclassified partial failure/u,
+  );
+
   writeTrace('terminal-without-row', [terminal]);
   assert.throws(
     () =>
@@ -556,5 +612,54 @@ test('combined boredom proof-DAG analyzer accepts nine sealed batches and fails 
         expectedSourceCommit: head,
       }),
     /blocked randomized assignment/u,
+  );
+});
+
+test('prospective-v9 analyzer requires the independent semantic sequence and rejects indeterminacy', (t) => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-v9-'));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION_V3) });
+  const outcomes = new Map(loaded.plan.jobs.map((job) => [job.id, { recovered: true, progressed: true }]));
+  const roots = [];
+  for (let index = 1; index <= 9; index += 1) {
+    const root = path.join(temp, `batch-${index}`);
+    const plan = buildTutorStubBoredomProofDagBatchPlan({
+      registrationPath: REGISTRATION_V3,
+      batchId: `execution_batch_${index}`,
+      destination: root,
+      expectedSourceCommit: head,
+    });
+    fs.mkdirSync(root, { recursive: true });
+    writeSyntheticBatch(root, plan, outcomes, { observationSemantics: 'prospective_v9' });
+    roots.push(root);
+  }
+  const report = analyzeTutorStubBoredomProofDag({
+    batchRoots: roots,
+    registrationPath: REGISTRATION_V3,
+    expectedSourceCommit: head,
+  });
+  assert.equal(report.rows.length, 36);
+  assert.ok(report.rows.every((row) => row.semantic_measurement.authority === 'independent_llm_semantic_adjudicator'));
+  assert.ok(report.rows.every((row) => row.semantic_measurement.model_ref === 'codex.gpt-5.6-sol'));
+  assert.ok(report.rows.every((row) => row.semantic_measurement.measurement_indeterminate === false));
+
+  const mutationPlan = JSON.parse(fs.readFileSync(path.join(roots[0], 'batch-plan.json'), 'utf8'));
+  mutateTrace(roots[0], mutationPlan.jobs[0].id, (events) => [
+    ...events,
+    {
+      type: 'boredom_semantic_measurement_indeterminate',
+      turn: 1,
+      code: 'TUTOR_STUB_BOREDOM_MEASUREMENT_INDETERMINATE',
+    },
+  ]);
+  assert.throws(
+    () =>
+      analyzeTutorStubBoredomProofDag({
+        batchRoots: roots,
+        registrationPath: REGISTRATION_V3,
+        expectedSourceCommit: head,
+      }),
+    /lacks its exact fresh execution, treatment, or outcome event/u,
   );
 });

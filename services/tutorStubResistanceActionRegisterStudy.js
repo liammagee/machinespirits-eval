@@ -177,8 +177,18 @@ function observeResistanceAxis({ learnerText = '', classification = null } = {})
 function usesCompositionalBoredomObservation(runtime) {
   return (
     runtime?.dynamic_boredom_proof_dag === true &&
+    [
+      RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8,
+      RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV9,
+    ].includes(runtime?.proof_dag_registration?.design?.observationSemantics)
+  );
+}
+
+function usesSemanticBoredomAdjudication(runtime) {
+  return (
+    runtime?.dynamic_boredom_proof_dag === true &&
     runtime?.proof_dag_registration?.design?.observationSemantics ===
-      RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8
+      RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV9
   );
 }
 
@@ -809,19 +819,20 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
   tutorLearnerDag,
   turnNumber = null,
   expectedPublicContext = null,
+  semanticAdjudication = null,
 }) {
   const semantics = runtime.registration?.design?.trigger?.observationSemantics;
   if (semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveFrameResistanceSemanticV1) {
-    const semanticAdjudication = runtime.current_semantic_adjudication || null;
+    const frameSemanticAdjudication = semanticAdjudication || runtime.current_semantic_adjudication || null;
     const semanticBinding = loadTutorStubResistanceSemanticRegistration();
     const semanticValidation = validateTutorStubResistanceSemanticRuntimeResult({
-      result: semanticAdjudication,
+      result: frameSemanticAdjudication,
       learnerText,
       turnNumber,
       registrationBinding: semanticBinding,
       expectedPublicContext,
     });
-    const aggregate = semanticAdjudication?.aggregate || null;
+    const aggregate = frameSemanticAdjudication?.aggregate || null;
     const observedProfile =
       aggregate?.status === 'determinate'
         ? aggregate.final_label === 'frame_refuser'
@@ -848,7 +859,7 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
         observation: {
           schema: 'machinespirits.tutor-stub.resistance-semantic-trigger-observation.v1',
           authority: 'independent_dual_judge_consensus',
-          semanticAdjudication: clone(semanticAdjudication),
+          semanticAdjudication: clone(frameSemanticAdjudication),
           validation: semanticValidation,
         },
         warrant: {
@@ -874,6 +885,7 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
     };
   }
   const compositionalBoredom = usesCompositionalBoredomObservation(runtime);
+  const semanticBoredom = usesSemanticBoredomAdjudication(runtime);
   const v4Observation = usesProspectiveV4Observation(runtime.registration)
     ? observeResistantLearnerTurn({ learnerText, classification, semantics })
     : null;
@@ -885,10 +897,31 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
         learnerText,
         classification,
         tutorLearnerDag,
-        observationSemantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8,
+        observationSemantics: semanticBoredom
+          ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV9
+          : RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8,
       }).resistance_axis_shadow
     : null;
+  const semanticDisposition = semanticAdjudication?.measurement_disposition || null;
+  const semanticShadow = semanticBoredom
+    ? {
+        resistance_kind: semanticDisposition === 'actionable_boredom' ? 'bored' : null,
+        observation: {
+          schema: 'machinespirits.tutor-stub.boredom-semantic-trigger-observation.v1',
+          semantic_adjudication: clone(semanticAdjudication),
+          auxiliary_observation: clone(compositionalBoredomShadow?.observation || null),
+        },
+        warrant: {
+          status: semanticDisposition === 'actionable_boredom' ? 'licensed' : 'not_licensed',
+          required_observation_type: 'independent_semantic_actionable_boredom',
+          basis: clone(semanticAdjudication),
+          ambiguity_blocks_license: semanticDisposition === 'measurement_indeterminate',
+          primary_move_type: semanticDisposition === 'actionable_boredom' ? 'ask_discriminating_question' : null,
+        },
+      }
+    : null;
   const shadow =
+    semanticShadow ||
     compositionalBoredomShadow ||
     (v4Observation
       ? {
@@ -918,13 +951,22 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
     );
   const reasons = [];
   if (runtime.consumed) reasons.push('study_intervention_already_consumed');
+  if (semanticBoredom && !semanticAdjudication) reasons.push('semantic_adjudication_missing');
+  if (semanticDisposition === 'measurement_indeterminate') reasons.push('measurement_indeterminate');
+  if (
+    semanticBoredom &&
+    semanticDisposition &&
+    !['actionable_boredom', 'measurement_indeterminate'].includes(semanticDisposition)
+  ) {
+    reasons.push(`semantic_no_actionable_boredom:${semanticDisposition}`);
+  }
   if (shadow.warrant.status !== 'licensed') reasons.push('no_single_axis_public_warrant');
   if (shadow.resistance_kind && shadow.resistance_kind !== runtime.profile) {
     reasons.push('observed_axis_does_not_match_registered_cohort');
   }
   if (timing.comprehensionRepair) reasons.push('comprehension_repair');
   if (timing.protectedAffect) reasons.push('protected_affect');
-  if (timing.phase === 'uptake' && !confirmationObserverFirstRefusal && !compositionalBoredom) {
+  if (timing.phase === 'uptake' && !confirmationObserverFirstRefusal && !compositionalBoredom && !semanticBoredom) {
     reasons.push('content_bearing_uptake_already_visible');
   }
   const boredomComposition = compositionalBoredom
@@ -952,6 +994,17 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
           },
         }
       : {}),
+    ...(semanticBoredom
+      ? {
+          boredom_semantic_precedence: {
+            final_authority: 'independent_llm_semantic_adjudicator',
+            regex_role: 'auxiliary_high_precision_signal_only',
+            generic_uptake_override_allowed: false,
+            disposition: semanticDisposition || 'measurement_indeterminate',
+            indeterminate: semanticDisposition === 'measurement_indeterminate',
+          },
+        }
+      : {}),
     ...(isConfirmationSuccessorRegistration(runtime.registration)
       ? { confirmation_observer_first_refusal: confirmationObserverFirstRefusal }
       : {}),
@@ -968,6 +1021,7 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
   learnerText = '',
   classification = null,
   tutorLearnerDag = null,
+  semanticAdjudication = null,
 } = {}) {
   const runtime = state?.resistanceActionRegisterStudy;
   if (!selection || !runtime?.enabled) return selection;
@@ -979,6 +1033,7 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
     learnerText,
     classification,
     tutorLearnerDag,
+    semanticAdjudication,
     turnNumber: decisionTurn(state, tutorLearnerDag),
     expectedPublicContext: semanticObservation ? tutorStubResistanceSemanticPublicContext(state) : null,
   });

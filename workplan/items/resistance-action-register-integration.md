@@ -2050,3 +2050,151 @@ and explicit human approval.
   registration, and its own digest-bound HOLD request. No such request is
   created here, and the staged worst-case safeguard remains exactly
   `331 + 480 + 720 + 3456 = 4987/5000`.
+- 2026-08-20 — Reframed the boredom observation/timing repair around
+  **prospective-v9 independent semantic authority**, superseding the idea that
+  a larger lexical matcher could be the construct-valid mood judge. The
+  stopped proof-DAG confirmation remains permanently incomplete with no
+  scientific verdict. Its eight started dialogues, assignments, traces, and
+  outcomes remain preserved and excluded from retry, resume, replacement,
+  pooling, selection, analysis, or inferential credit. Prospective-v8 is
+  retained only as a versioned high-precision auxiliary/disagreement signal;
+  its never-published local successor request is obsolete and grants no live
+  authority.
+
+  The exact root cause had two parts. First, historical flat-cue matching let
+  `Sure` license the whole utterance even when the remainder supplied genuine
+  content-bearing uptake. Second, a separate generic uptake heuristic could
+  suppress the boredom-appropriate action for the genuinely non-content
+  utterance `Fine. Is this trial nearly done?`. Prospective-v9 makes one
+  treatment- and outcome-blind, independently pinned Sol adjudicator the final
+  authority over the whole utterance. It emits structured boredom cue,
+  effort-withdrawal, productive-uptake, process-impatience, confidence,
+  indeterminacy, and exact quoted-span evidence. The Luna learner does not
+  judge itself. Deterministic code validates route, schema, spans, provenance,
+  and safety; lexical silence cannot veto a semantic positive. Low confidence,
+  mixed meaning, malformed evidence, or strong semantic/auxiliary disagreement
+  yields `measurement_indeterminate` before tutor output, with no learner
+  repair, rerun, replacement, or selection.
+
+  The zero-call reference suite freezes both failed utterances plus 22 sealed,
+  domain-independent productive, actionable-withdrawal, nonactionable boredom,
+  negative, and ambiguous contrasts at corpus SHA-256
+  `ad61f7b104c8202889c9f9eb00090a900aafea5d5bf55d7e3b89cf41db300f93`.
+  It proves wrapper/schema/span/routing/precedence behavior and predeclares
+  sensitivity, specificity, and reference-agreement minima of `0.90`, plus
+  `1.00` indeterminate handling for ambiguous or low-confidence cases. It does
+  **not** claim empirical Sol accuracy: genuinely unseen adjudicator predictions
+  must pass those gates before any confirmation launch.
+
+  Registration V3 SHA-256 is
+  `a003aa69f94e257e1f966ba51734ccd7f9b83842a4c8f617ddead763e3499819`.
+  Endpoint V3 file/canonical digests are respectively
+  `fb6d03720dff5a2f7badf13a606e7fcbf8d79d2b31ac01339fa6d32f2acb2fd3`
+  and
+  `1a8b5a29cc212a39c357ff53d025a712dab5f1246d3861d6cf9663c79e9e2772`;
+  the zero-call preflight digest is
+  `722bcf0696b307ec4bc845c8f30479377d895550a62deaf4a757082add08a74c`,
+  and certificate file SHA-256 is
+  `6eb6c6529af429cd01ef5755357d6289b5eef32b1b7b4158e0920d663fc62880`.
+  Historical V1 registration/endpoint/certificate/request bytes remain exact,
+  and prospective-v2 through v8 dispatch remains opt-in and unchanged.
+
+  The prospective-v9 registration remains HOLD: no semantic-validation call,
+  confirmation call, GO request, destination, or live authorization exists.
+  The powered scientific design remains 36 wholly fresh dialogues, 18 per arm,
+  with the registered blocked exact analysis and no interim analysis. The
+  operational envelope remains 20 planned calls and 60 charged reservations
+  per dialogue, with up to two independent Sol adjudications replacing the two
+  prior learner-repair calls; the ledger and programme safeguard remain
+  `293 -> 2453 / 5000` for one fresh confirmation and at most `4613/5000` while
+  both powered confirmations remain reserved.
+- 2026-08-20 — Prepared the wholly fresh prospective-v9 semantic-instrument
+  confirmation HOLD request
+  `config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v3.json`
+  at SHA-256
+  `abda11e242d3d2cd67c0fe9f3e3c16a11cd59020e86e62ca2f9445e97508c08c`.
+  Deterministic packaging pins the merged readiness source/tree
+  `fc6444b4700d61f58ab53b0c2c4bdd2fb5ad5562` /
+  `e09feffae199993236d2e1bdb2d97940501ffff1`, 52 critical
+  source-closure files, eight repository bindings, registration/endpoint/
+  certificate V3, the 22-case sealed semantic corpus, the exact excluded
+  prospective-v2 stopped execution, and all live/recovery/analyzer command
+  hashes. Its nine batch roots and combined report use the wholly fresh,
+  create-once prefix
+  `.tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v3-live-2026-08-20`.
+
+  The powered design is unchanged: 36 fresh independent dialogues, 18 warm
+  and 18 plain, six blocked worlds, the predeclared exact conditional analysis,
+  and no interim analysis, reuse, pooling, replacement, or selection. The
+  operational safeguards remain 60 reservations per dialogue, 240 per batch,
+  2160 for the study, `293 -> 2453 / 5000` for one fresh confirmation, and at
+  most `4613/5000` while both confirmations remain reserved. Bounded technical
+  recovery remains limited to missing or failed units under unchanged pins and
+  ceilings.
+
+  This package is deliberately not launch-ready. It retains literal HOLD,
+  null approval, and false model/live authorization fields; its independent
+  `codex.gpt-5.6-sol` semantic adjudicator still has
+  `empiricalValidationStatus: pending` and
+  `confirmationLaunchReady: false`. The predeclared sensitivity, specificity,
+  reference-agreement, ambiguous-indeterminacy, and low-confidence-
+  indeterminacy gates must pass on frozen and genuinely held-out material
+  without changing the request, prompt, wrapper, or protected inputs before
+  any confirmation launch. Isolated no-`node_modules` replay passed 83 checks
+  with zero model calls and zero production writes.
+
+- 2026-08-20 — Prepared the digest-bound, validation-only Sol request
+  `config/tutor-stub-boredom-semantic-validation-request.v1.json`
+  (`machinespirits.tutor-stub.boredom-semantic-validation-request.v1`,
+  status HOLD, null authorization). Neither the confirmation HOLD request
+  nor the endpoint-go certificate authorizes a semantic-model validation
+  call, so the 22 empirical Sol adjudications require this separate
+  request. It predeclares and binds: the frozen 22-case held-out corpus at
+  `ad61f7b104c8202889c9f9eb00090a900aafea5d5bf55d7e3b89cf41db300f93`; the
+  pinned `codex.gpt-5.6-sol` route at low effort; prompts and schema by
+  digest of the frozen adjudication module (prompt authority is the module
+  alone); 22 planned calls with 3 reservations per case and a 66-call hard
+  ceiling (`293 -> 315` planned, `<= 359 / 5000` worst case); create-once
+  artifact root
+  `.tutor-stub-auto-eval/boredom-semantic-validation-v1-2026-08-20`; and
+  stopping rules that make every completed model output final (malformed,
+  low-confidence, and indeterminate outputs included), restrict recovery
+  to thrown transport errors, compute the five predeclared gates once
+  after all cases, and treat any gate failure as a categorical instrument
+  result. Runner `scripts/run-tutor-stub-boredom-semantic-validation.js`
+  is dry-run-by-default and refuses execution without a separately
+  committed, request-digest-bound human authorization. Nine zero-call
+  tests (`tests/tutorStubBoredomSemanticValidation.test.js`) cover
+  request/authorization drift fail-closed, gate arithmetic, output
+  finality, bounded technical recovery, and ceiling-exhaustion categorical
+  failure. This request never authorizes the 36-dialogue confirmation,
+  which stays on HOLD.
+
+- 2026-08-21 — Ran the 22 bounded Sol validation calls and the instrument
+  FAILED two of the five predeclared gates: categorical instrument result;
+  the 36-dialogue confirmation stays on HOLD and no launch-ready request
+  was prepared. Chain: independent review of the request branch returned
+  one HIGH finding (the execute function defaulted to the real CLI bridge,
+  so a direct library caller could bypass every governance gate); fixed in
+  `8d9d30d1` (explicit caller injection only, service no longer imports
+  the bridge, refusal pinned by a tenth test); re-review APPROVE; merged
+  as PR #758 (`6ec47a31`); bounded-call authorization committed at
+  `d6b40ed3` binding request `059e25c5...`. Execution at head `d6b40ed3`:
+  22/22 calls completed, 0 technical failures, 22/66 reservations, no
+  retry or replacement. Gates: determinate sensitivity 5/5 PASS;
+  determinate specificity 10/15 = 0.667 FAIL (needs >= 0.90); reference
+  agreement 17/22 = 0.773 FAIL (needs >= 0.90); ambiguous indeterminate
+  2/2 PASS; low-confidence indeterminate PASS (probe; zero empirical
+  low-confidence rows). Five disagreements, all final: two
+  productive-uptake cases (`kiln_productive_03`, `archive_productive_07`)
+  landed measurement_indeterminate because the judge's quoted evidence
+  spans were not exact source substrings (span validation, confidence
+  0.99); three are high-confidence semantic misclassifications
+  (`warehouse_nonactionable_02` read as no boredom;
+  `school_nonactionable_04` read as actionable;
+  `clinic_negative_01` read as productive uptake). Sealed evidence
+  (report sha256 `8c96a521...` + 22 per-case files) archived in the
+  private repo under
+  `artifacts/tutor-stub-live/.tutor-stub-auto-eval/boredom-semantic-validation-v1-2026-08-20/`.
+  Any next step must revise the instrument or corpus under a fresh
+  digest-bound request; the failed run is never rescored or resampled.

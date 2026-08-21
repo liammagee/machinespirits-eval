@@ -570,6 +570,7 @@ import {
 } from './tutorStubResistanceActionRegisterExecution.js';
 import { configureTutorStubResistanceActionRegisterConfirmationFromCli } from './tutorStubResistanceActionRegisterConfirmation.js';
 import { configureTutorStubBoredomProofDagFromCli } from './tutorStubBoredomActionRegisterProofDagStudy.js';
+import { createTutorStubBoredomSemanticAdjudicator } from './tutorStubBoredomSemanticAdjudication.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from './tutorStubResistanceActionRegisterStudy.js';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
@@ -580,7 +581,6 @@ const HUMAN_DISCOURSE_FRAME_SCHEMA = 'machinespirits.tutor-stub.human-discourse-
 const TUTOR_GUARD_ACCOUNTING_SCHEMA = 'machinespirits.tutor-stub.guard-accounting.v1';
 const TUTOR_TYPED_ACTION_CONFIG_SCHEMA = 'machinespirits.tutor-stub.typed-action-runtime-config.v1';
 const DEFAULT_INTERACTIVE_COMMITTEE_FALLBACK_POLICY = 'v2';
-
 export async function runTutorStubCliApplicationHost({
   stub,
   args,
@@ -1085,7 +1085,6 @@ export async function runTutorStubCliApplicationHost({
     waitTutorStubCliPolicyRetryDelay,
     write: (text) => process.stdout.write(text),
   });
-
   const {
     attachTutorGuardAccounting,
     buildTutorGuardAccounting,
@@ -1835,6 +1834,7 @@ export async function runTutorStubCliApplicationHost({
     TUTOR_STUB_QUARANTINE_CONTINUATION,
     acknowledgeTutorStubOpeningRelease,
     advanceTutorStubDialogueClosure,
+    adjudicateTutorStubBoredomObservation: createTutorStubBoredomSemanticAdjudicator(callPromptModel, resolveModel),
     analyzeLearnerTurn,
     appendTraceEvent,
     appendTutorStubTurnFailureTraceRecords,

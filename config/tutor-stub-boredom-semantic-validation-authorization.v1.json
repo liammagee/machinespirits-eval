@@ -1,0 +1,23 @@
+{
+  "schema": "machinespirits.tutor-stub.boredom-semantic-validation-authorization.v1",
+  "status": "APPROVED_FOR_BOUNDED_SEMANTIC_VALIDATION_CALLS",
+  "studyId": "tutor-stub-boredom-semantic-validation-v1",
+  "request": {
+    "path": "config/tutor-stub-boredom-semantic-validation-request.v1.json",
+    "sha256": "059e25c5470a1463e9c81bb7876377fcbfd51484a1b22664f29d54b14c3f9a8e"
+  },
+  "scope": {
+    "maximumModelCalls": 66,
+    "modelRef": "codex.gpt-5.6-sol",
+    "effort": "low",
+    "artifactRoot": ".tutor-stub-auto-eval/boredom-semantic-validation-v1-2026-08-20",
+    "liveStudyAuthorized": false,
+    "confirmationLaunchAuthorized": false
+  },
+  "approval": {
+    "explicitBoundedValidationCalls": true,
+    "approvedBy": "human",
+    "approvedAt": "2026-08-21T02:50:41.000Z",
+    "evidence": "User task message (2026-08-20): step 5 directs running only the empirical semantic-instrument validation with every prediction and call preserved; step 4 directs preparing, validating, independently reviewing, merging, and consuming a separate digest-bound validation-only request before calling a model. That request merged to main as PR #758 (merge commit 6ec47a31) after independent Codex review (first pass REQUEST_CHANGES, fix commit 8d9d30d1, second pass APPROVE). The same message keeps the 36-dialogue confirmation on HOLD; this authorization grants only the bounded validation calls."
+  }
+}
