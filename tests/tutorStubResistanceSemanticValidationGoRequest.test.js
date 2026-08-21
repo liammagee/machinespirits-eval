@@ -134,6 +134,78 @@ const CLOSURE_V3 = [
   'package.json',
   'package-lock.json',
 ];
+const V3_REQUEST = 'config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3.json';
+const CLOSURE_V3_SUCCESSOR = [...CLOSURE_V3, V3_REQUEST];
+const STOPPED_V3_VALIDATION = {
+  request: { path: V3_REQUEST, sha256: '940cd6582909ff2e193830f219b0dc1a7d36f279d3d8c2709ca108177aba5539' },
+  disposition: 'consumed_stopped_wholly_excluded',
+  source: {
+    commit: '04bd7d5ebbd227b62e3f8cbede2ff15ec4a0e0c4',
+    tree: '7da60b5a1c88373073d03a267654e402571bcd73',
+  },
+  destination: '.tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v3-2026-08-21-a',
+  planSha256: 'a4994193e2cb712551302a84a3015b42473ac66645ad432d7221694ac37eddde',
+  localEvidence: {
+    files: 4,
+    bytes: 83931,
+    inventorySha256: 'c73158e8c4e4dc8c4ddab4e82e93fa6d8dbe7af721c3399f4efa135e0954745e',
+    artifacts: [
+      {
+        path: 'plan.json',
+        status: 'plan',
+        sha256: '0bbbbe137cba32253f5c2a6d2f0b585c37dcba491cad01f67e58b7dfb7c4e5e9',
+      },
+      {
+        path: 'cases/sv3-3e8cd42b67a4d67bd1bb0004cc0338f2/checkpoint.json',
+        status: 'sealed',
+        sha256: 'a9b77ab99335b951f04758d8e54ad717c810987940f071b6c09ccc5f4fa7acff',
+      },
+      {
+        path: 'cases/sv3-d34fc430c5374c7e30833d6b5df8d3eb/checkpoint.json',
+        status: 'sealed',
+        sha256: '3d2d8deb253cce0cf535bf299eb11b1a8cf606c3db30fb1ef71fe501dc5db39f',
+      },
+      {
+        path: 'cases/sv3-ddf1d5cf7c4c04a94be25c73930d7f5e/checkpoint.json',
+        status: 'judge_in_flight',
+        sha256: 'ad550d590ad8deaf8957ca72d7e8223a441c72b204dde1f5f4eb5a5bebc915a8',
+      },
+    ],
+  },
+  privateArchive: {
+    branch: 'codex/resistance-semantic-validation-v3-incomplete-archive',
+    commit: 'e18190e61e4630968bfb5c5d5c7c226b9ce3f98e',
+    tree: '07db6db788b19e3ab03c17c700cd6814337402c2',
+    artifactPath: 'artifacts/tutor-stub-live/resistance-semantic-validation/940cd6582909ff2e-a4994193e2cb7125',
+    files: 31,
+    bytes: 183101,
+    inventorySha256: 'eed7dc7f295df934d48cabc8a78ae8ed4989be075c53561216ba65f499f18145',
+    manifestSha256: '32cefbf50b69c066d79d1e9664331a3df55dfd9796437a41fb5ea6cc3356d7be',
+    manifestedTransitions: 30,
+    status: 'running_stopped_before_seal',
+  },
+  accounting: {
+    chargedReservations: 10,
+    returnedResponses: 1,
+    terminalTransportFailures: 8,
+    dispatchedAmbiguous: 1,
+    sealedCases: 2,
+    judgeInFlightCases: 1,
+    programmeLedgerAfter: 661,
+  },
+  goldJoined: false,
+  recoveryRan: false,
+  analyzerRan: false,
+  resultProduced: false,
+  reportProduced: false,
+  sealProduced: false,
+  sameSourceResumePermitted: false,
+  recoveryPermitted: false,
+  reusePermitted: false,
+  poolingPermitted: false,
+  outcomeSelectionPermitted: false,
+  confirmationCreditPermitted: false,
+};
 const RECOVERY_CLOSURE = [
   'scripts/run-tutor-stub-resistance-recovery-semantic-validation.js',
   'scripts/analyze-tutor-stub-resistance-recovery-semantic-validation.js',
@@ -481,6 +553,21 @@ function buildRequestV3(requestRepoPath, suffix) {
   return request;
 }
 
+function buildRequestV3Successor(requestRepoPath, suffix) {
+  const request = buildRequestV3(requestRepoPath, suffix);
+  request.source.closure = CLOSURE_V3_SUCCESSOR.map((repoPath) => ({
+    path: repoPath,
+    sha256: fileSha256(repoPath),
+  }));
+  request.semanticAdjudicationValidation.requestRevision = 2;
+  request.semanticAdjudicationValidation.stoppedV3Validation = structuredClone(STOPPED_V3_VALIDATION);
+  request.semanticAdjudicationValidation.claimBoundary =
+    'heldout_semantic_instrument_v3_validation_only_failed_v1_v2_and_stopped_v3_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim';
+  request.budget.programmeLedgerBefore = 661;
+  request.budget.programmeLedgerAfterMaximum = 1141;
+  return request;
+}
+
 function templateText(request) {
   const template = structuredClone(request);
   template.source.launchCommit = GO_REQUEST_PACKAGE_MARKERS.sourceCommit;
@@ -741,6 +828,61 @@ test('future v3 GO packaging binds both failed validations and the 651-to-1131 v
     const changed = structuredClone(request);
     mutate(changed);
     const invalidPath = path.join(temporary, `invalid-v3-${crypto.randomUUID()}.json`);
+    fs.writeFileSync(invalidPath, `${JSON.stringify(changed, null, 2)}\n`);
+    assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
+  }
+});
+
+test('future v3 successor packaging binds the stopped partial and the 661-to-1141 ledger', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-v3-successor-go-request-'));
+  const output = `.tutor-stub-auto-eval/.test-semantic-validation-v3-successor-go-${process.pid}.json`;
+  t.after(() => {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(path.join(ROOT, output), { force: true });
+  });
+  const request = buildRequestV3Successor(output, `${process.pid}-successor`);
+  fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
+  fs.writeFileSync(path.join(ROOT, output), `${JSON.stringify(request, null, 2)}\n`);
+  const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath: path.join(ROOT, output) });
+  assert.equal(report.packetValid, true);
+  assert.equal(report.modelCalls, 0);
+  assert.equal(report.productionWrites, 0);
+  assert.equal(report.budget.programmeLedgerBefore, 661);
+  assert.equal(report.budget.programmeLedgerAfterMaximum, 1141);
+  fs.rmSync(path.join(ROOT, output));
+
+  const templatePath = path.join(temporary, 'template.json');
+  fs.writeFileSync(templatePath, templateText(request));
+  const packaged = packageTutorStubResistantProfileStudyGoRequest({
+    templatePath,
+    launchCommit: request.source.launchCommit,
+    outputPath: output,
+  });
+  assert.equal(packaged.sourceClosureFiles, CLOSURE_V3_SUCCESSOR.length);
+  assert.equal(packaged.isolatedReplay.nodeModulesPresent, false);
+  assert.equal(packaged.isolatedReplay.packetValid, true);
+  assert.equal(packaged.effects.modelCalls, 0);
+  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), Buffer.from(`${JSON.stringify(request, null, 2)}\n`));
+
+  for (const mutate of [
+    (value) => (value.semanticAdjudicationValidation.requestRevision = 3),
+    (value) => (value.semanticAdjudicationValidation.stoppedV3Validation.request.sha256 = '0'.repeat(64)),
+    (value) => (value.semanticAdjudicationValidation.stoppedV3Validation.privateArchive.commit = '0'.repeat(40)),
+    (value) => (value.semanticAdjudicationValidation.stoppedV3Validation.privateArchive.tree = '0'.repeat(40)),
+    (value) =>
+      (value.semanticAdjudicationValidation.stoppedV3Validation.privateArchive.inventorySha256 = '0'.repeat(64)),
+    (value) =>
+      (value.semanticAdjudicationValidation.stoppedV3Validation.localEvidence.artifacts[3].sha256 = '0'.repeat(64)),
+    (value) => (value.semanticAdjudicationValidation.stoppedV3Validation.accounting.returnedResponses = 2),
+    (value) => (value.semanticAdjudicationValidation.stoppedV3Validation.goldJoined = true),
+    (value) => (value.semanticAdjudicationValidation.stoppedV3Validation.analyzerRan = true),
+    (value) => (value.semanticAdjudicationValidation.stoppedV3Validation.sameSourceResumePermitted = true),
+    (value) => (value.budget.programmeLedgerBefore = 651),
+    (value) => (value.source.closure = value.source.closure.filter((row) => row.path !== V3_REQUEST)),
+  ]) {
+    const changed = structuredClone(request);
+    mutate(changed);
+    const invalidPath = path.join(temporary, `invalid-v3-successor-${crypto.randomUUID()}.json`);
     fs.writeFileSync(invalidPath, `${JSON.stringify(changed, null, 2)}\n`);
     assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
   }

@@ -2720,3 +2720,32 @@ and explicit human approval.
   heldout remains reusable only because no gold was joined, no analyzer or
   result exists, no prompt/schema/instrument/gate/corpus bytes changed, and all
   prior responses remain excluded; this does not authorize a continuation.
+
+- 2026-08-21 — The stopped V3 validation is now durably closed out on private
+  branch `codex/resistance-semantic-validation-v3-incomplete-archive`, commit
+  `e18190e61e4630968bfb5c5d5c7c226b9ce3f98e`, tree
+  `07db6db788b19e3ab03c17c700cd6814337402c2`. Its four-file local inventory is
+  `c73158e8c4e4dc8c4ddab4e82e93fa6d8dbe7af721c3399f4efa135e0954745e`;
+  the 31-file durable transition inventory is
+  `eed7dc7f295df934d48cabc8a78ae8ed4989be075c53561216ba65f499f18145`,
+  and its 30-transition manifest is
+  `32cefbf50b69c066d79d1e9664331a3df55dfd9796437a41fb5ea6cc3356d7be`.
+  These preserved bytes confirm 10 charged reservations, one returned
+  response, eight terminal transport failures, one ambiguously dispatched
+  reservation, two sealed indeterminate cases, and one in-flight case, with
+  no gold join, recovery, analyzer, result, report, seal, or downstream run.
+
+  A read-only successor audit found that the existing V3 checker and packager
+  recognized only the original failed-V1/V2 request and the `651 -> 1131`
+  ledger. They could not truthfully package a fresh successor at `661 -> 1141`
+  or bind the stopped V3 request and archive. The compatibility revision adds
+  an exact revision-2 predecessor object covering the consumed request SHA
+  `940cd6582909ff2e193830f219b0dc1a7d36f279d3d8c2709ca108177aba5539`,
+  launch source, plan, every final local artifact hash, private archive,
+  accounting, absences, and no-resume/reuse/pooling/selection/confirmation
+  disposition. It also requires the consumed V3 request in the successor's
+  source closure and has the packager materialize that historical blob from
+  the launch commit. Historical V1-V3 request bytes and the frozen V3
+  instrument, schema, prompt, gates, and heldout remain unchanged. This is
+  zero-call request compatibility only: no successor request, destination,
+  approval, validation run, outcome run, or confirmation run is created here.
