@@ -2301,7 +2301,7 @@ and explicit human approval.
   five predeclared gates. Authorization committed separately
   (7734b745, request sha256 29c55d0b), 22 of 22 calls completed on the
   first reservation, zero technical-failure attempts. Results:
-  determinate sensitivity 7/7 = 1.00 (PASS), determinate specificity
+  determinate sensitivity 5/5 = 1.00 (PASS), determinate specificity
   13/15 = 0.867 (FAIL, gate 0.90), reference agreement 20/22 = 0.909
   (PASS), ambiguous indeterminate rate 1.00 (PASS), low-confidence
   indeterminate rate 1.00 (PASS). The two misses are judge-versus-
