@@ -12,8 +12,10 @@ import { validateTutorStubResistantProfileStudyGoRequest } from '../scripts/chec
 import {
   assertTutorStubBoredomProofDagLaunchAuthorization,
   assertTutorStubBoredomProofDagRecoveryBudget,
+  assertTutorStubBoredomProofDagSourceClosure,
   buildTutorStubBoredomProofDagBatchPlan,
   classifyTutorStubBoredomProofDagChildFailure,
+  frozenTutorStubBoredomProofDagSourceClosure,
   runTutorStubBoredomProofDagBatch,
   selectTutorStubBoredomProofDagRecoveryCandidates,
 } from '../scripts/run-tutor-stub-boredom-action-register-proof-dag.js';
@@ -788,6 +790,13 @@ test('v4 live and recovery execution demand a committed launch authorization bou
   );
   fs.rmSync(untrackedInRepoPath, { force: true });
 
+  const reboundPath = path.join(temp, 'rebound-request.json');
+  writeJson(reboundPath, { ...authorization, requestPath: 'config/some-other-request.json' });
+  assert.throws(
+    () => assertTutorStubBoredomProofDagLaunchAuthorization({ loaded, authorizationPath: reboundPath }),
+    /must bind the frozen request at config\/tutor-stub-boredom-action-register-proof-dag-study-go-request\.v4\.json/u,
+  );
+
   const mutations = [
     { schema: 'machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v99' },
     { approvedBy: '  ' },
@@ -805,4 +814,105 @@ test('v4 live and recovery execution demand a committed launch authorization bou
       /must bind this registration, the frozen request digest, and the exact approval statement/u,
     );
   }
+});
+
+test('v4 source pin binds the frozen closure bytes rather than the checkout head', (t) => {
+  const loadedV3 = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION_V3) });
+  assert.equal(frozenTutorStubBoredomProofDagSourceClosure({ loaded: loadedV3 }), null);
+  const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION_V4) });
+  const registeredClosure = frozenTutorStubBoredomProofDagSourceClosure({ loaded });
+  assert.equal(registeredClosure.length, 54);
+  assert.ok(registeredClosure.some((entry) => entry.path === 'scripts/tutor-stub.js'));
+
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-closure-'));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const git = (...args) => execFileSync('git', args, { cwd: temp, encoding: 'utf8' }).trim();
+  git('init', '-q');
+  git('config', 'user.email', 'closure@example.test');
+  git('config', 'user.name', 'closure fixture');
+  fs.mkdirSync(path.join(temp, 'services'));
+  fs.writeFileSync(path.join(temp, 'services', 'pinned-one.js'), 'export const one = 1;\n');
+  fs.writeFileSync(path.join(temp, 'services', 'pinned-two.js'), 'export const two = 2;\n');
+  git('add', '-A');
+  git('commit', '-qm', 'closure');
+  const pinnedCommit = git('rev-parse', 'HEAD');
+
+  // The launch authorization can only ever land in a commit after the one the request pins.
+  fs.writeFileSync(path.join(temp, 'launch-authorization.json'), '{}\n');
+  git('add', '-A');
+  git('commit', '-qm', 'launch authorization');
+  const head = git('rev-parse', 'HEAD');
+  assert.notEqual(head, pinnedCommit);
+
+  const closure = ['services/pinned-one.js', 'services/pinned-two.js'].map((relative) => ({
+    path: relative,
+    sha256: sha256(fs.readFileSync(path.join(temp, relative))),
+  }));
+  assert.equal(
+    assertTutorStubBoredomProofDagSourceClosure({ expectedSourceCommit: pinnedCommit, closure, root: temp }),
+    2,
+  );
+
+  assert.throws(
+    () => assertTutorStubBoredomProofDagSourceClosure({ expectedSourceCommit: 'HEAD~1', closure, root: temp }),
+    /requires one pinned forty-character commit/u,
+  );
+  assert.throws(
+    () => assertTutorStubBoredomProofDagSourceClosure({ expectedSourceCommit: pinnedCommit, closure: [], root: temp }),
+    /requires the frozen closure file list/u,
+  );
+  assert.throws(
+    () =>
+      assertTutorStubBoredomProofDagSourceClosure({
+        expectedSourceCommit: pinnedCommit,
+        closure: [...closure, { path: 'services/absent.js', sha256: sha256('') }],
+        root: temp,
+      }),
+    /closure file is absent: services\/absent\.js/u,
+  );
+  assert.throws(
+    () =>
+      assertTutorStubBoredomProofDagSourceClosure({
+        expectedSourceCommit: pinnedCommit,
+        closure: [{ ...closure[0], sha256: 'f'.repeat(64) }],
+        root: temp,
+      }),
+    /closure drift against the frozen request: services\/pinned-one\.js/u,
+  );
+
+  // Bytes that match a rewritten closure entry but not the pinned commit still fail closed.
+  fs.writeFileSync(path.join(temp, 'services', 'pinned-one.js'), 'export const one = 99;\n');
+  assert.throws(
+    () =>
+      assertTutorStubBoredomProofDagSourceClosure({
+        expectedSourceCommit: pinnedCommit,
+        closure: [
+          { path: 'services/pinned-one.js', sha256: sha256(fs.readFileSync(path.join(temp, closure[0].path))) },
+        ],
+        root: temp,
+      }),
+    /closure drift against [0-9a-f]{40}: services\/pinned-one\.js/u,
+  );
+
+  const laterOnlyCommit = (() => {
+    fs.writeFileSync(path.join(temp, 'services', 'pinned-three.js'), 'export const three = 3;\n');
+    git('add', '-A');
+    git('commit', '-qm', 'later file');
+    return git('rev-parse', 'HEAD');
+  })();
+  assert.throws(
+    () =>
+      assertTutorStubBoredomProofDagSourceClosure({
+        expectedSourceCommit: pinnedCommit,
+        closure: [
+          {
+            path: 'services/pinned-three.js',
+            sha256: sha256(fs.readFileSync(path.join(temp, 'services', 'pinned-three.js'))),
+          },
+        ],
+        root: temp,
+      }),
+    /closure file is absent at [0-9a-f]{40}: services\/pinned-three\.js/u,
+  );
+  assert.equal(/^[0-9a-f]{40}$/u.test(laterOnlyCommit), true);
 });

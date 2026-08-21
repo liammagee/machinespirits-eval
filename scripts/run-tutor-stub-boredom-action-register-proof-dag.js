@@ -50,7 +50,54 @@ function repoPath(value, label) {
   return absolute;
 }
 
-function sourceSnapshot(expectedSourceCommit) {
+export function frozenTutorStubBoredomProofDagSourceClosure({ loaded, root = ROOT } = {}) {
+  const version = loaded?.registration?.version ?? 0;
+  if (version < 4) return null;
+  const relativePath = `config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v${version}.json`;
+  const absolutePath = path.join(root, relativePath);
+  if (!fs.existsSync(absolutePath)) {
+    throw new Error(`boredom proof-DAG source pin requires the frozen request: ${relativePath}`);
+  }
+  const closure = readJson(absolutePath)?.source?.closure;
+  if (!Array.isArray(closure) || !closure.length) {
+    throw new Error(`boredom proof-DAG frozen request carries no source closure: ${relativePath}`);
+  }
+  return closure;
+}
+
+export function assertTutorStubBoredomProofDagSourceClosure({ expectedSourceCommit, closure, root = ROOT } = {}) {
+  if (!/^[0-9a-f]{40}$/u.test(String(expectedSourceCommit || ''))) {
+    throw new Error('boredom proof-DAG source closure requires one pinned forty-character commit');
+  }
+  if (!Array.isArray(closure) || !closure.length) {
+    throw new Error('boredom proof-DAG source closure requires the frozen closure file list');
+  }
+  for (const entry of closure) {
+    const relative = String(entry?.path || '').trim();
+    if (!relative || path.isAbsolute(relative)) throw new Error('boredom proof-DAG closure path must be relative');
+    const absolute = path.join(root, relative);
+    if (!fs.existsSync(absolute)) throw new Error(`boredom proof-DAG closure file is absent: ${relative}`);
+    const bytes = fs.readFileSync(absolute);
+    if (sha256(bytes) !== entry.sha256) {
+      throw new Error(`boredom proof-DAG closure drift against the frozen request: ${relative}`);
+    }
+    let committed;
+    try {
+      committed = execFileSync('git', ['show', `${expectedSourceCommit}:${relative}`], {
+        cwd: root,
+        maxBuffer: 256 * 1024 * 1024,
+      });
+    } catch {
+      throw new Error(`boredom proof-DAG closure file is absent at ${expectedSourceCommit}: ${relative}`);
+    }
+    if (!committed.equals(bytes)) {
+      throw new Error(`boredom proof-DAG closure drift against ${expectedSourceCommit}: ${relative}`);
+    }
+  }
+  return closure.length;
+}
+
+function sourceSnapshot(expectedSourceCommit, closure = null) {
   const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const tree = execFileSync('git', ['rev-parse', 'HEAD^{tree}'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const status = execFileSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
@@ -58,10 +105,15 @@ function sourceSnapshot(expectedSourceCommit) {
     encoding: 'utf8',
   }).trim();
   if (status) throw new Error('boredom proof-DAG live batch requires a clean source checkout');
-  if (expectedSourceCommit && expectedSourceCommit !== commit) {
-    throw new Error(`boredom proof-DAG source drift: expected ${expectedSourceCommit}, found ${commit}`);
+  if (!expectedSourceCommit) return { commit, tree, closure_commit: null, closure_files_verified: 0 };
+  if (!closure) {
+    if (expectedSourceCommit !== commit) {
+      throw new Error(`boredom proof-DAG source drift: expected ${expectedSourceCommit}, found ${commit}`);
+    }
+    return { commit, tree, closure_commit: commit, closure_files_verified: 0 };
   }
-  return { commit, tree };
+  const verified = assertTutorStubBoredomProofDagSourceClosure({ expectedSourceCommit, closure });
+  return { commit, tree, closure_commit: expectedSourceCommit, closure_files_verified: verified };
 }
 
 function traceFiles(directory) {
@@ -258,9 +310,11 @@ export function assertTutorStubBoredomProofDagLaunchAuthorization({ loaded, auth
     }
   }
   const authorization = readJson(absolutePath);
-  const requestAbsolutePath = path.isAbsolute(authorization.requestPath || '')
-    ? authorization.requestPath
-    : path.join(ROOT, authorization.requestPath || '');
+  const expectedRequestPath = `config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v${version}.json`;
+  if (authorization.requestPath !== expectedRequestPath) {
+    throw new Error(`boredom proof-DAG launch authorization must bind the frozen request at ${expectedRequestPath}`);
+  }
+  const requestAbsolutePath = path.join(ROOT, expectedRequestPath);
   const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath: requestAbsolutePath });
   const request = readJson(requestAbsolutePath);
   if (
@@ -323,7 +377,7 @@ export function buildTutorStubBoredomProofDagBatchPlan({
   ) {
     throw new Error(`${batchId} must contain exactly two plain and two warm jobs`);
   }
-  const source = sourceSnapshot(expectedSourceCommit);
+  const source = sourceSnapshot(expectedSourceCommit, frozenTutorStubBoredomProofDagSourceClosure({ loaded }));
   const absoluteDestination = path.resolve(destination);
   return {
     schema: 'machinespirits.tutor-stub.boredom-action-register-proof-dag-live-batch-plan.v1',
@@ -560,9 +614,11 @@ export async function recoverTutorStubBoredomProofDagBatch({
   }
   const plan = readJson(planPath);
   const initial = readJson(resultPath);
-  const currentSource = sourceSnapshot(expectedSourceCommit);
+  const { loaded, plan: registered } = registeredPlan(plan.source?.registration_path);
+  const currentSource = sourceSnapshot(expectedSourceCommit, frozenTutorStubBoredomProofDagSourceClosure({ loaded }));
   if (
-    plan.source?.commit !== expectedSourceCommit ||
+    (plan.source?.closure_commit ?? plan.source?.commit) !== expectedSourceCommit ||
+    plan.source?.commit !== currentSource.commit ||
     plan.source?.tree !== currentSource.tree ||
     initial.status !== 'incomplete' ||
     plan.budget?.maximum_model_attempt_reservations !== PER_BATCH_CAP
@@ -576,7 +632,6 @@ export async function recoverTutorStubBoredomProofDagBatch({
   );
   const usedBefore = Object.values(initialReservations).reduce((sum, value) => sum + value, 0);
   assertTutorStubBoredomProofDagRecoveryBudget({ missing, initialReservations, usedBefore });
-  const { loaded, plan: registered } = registeredPlan(plan.source.registration_path);
   if (loaded.sha256 !== plan.source.registration_sha256) throw new Error('boredom proof-DAG registration drifted');
   assertTutorStubBoredomProofDagLaunchAuthorization({ loaded });
   const registeredById = new Map(registered.jobs.map((job) => [job.id, job]));

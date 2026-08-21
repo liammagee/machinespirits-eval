@@ -20,8 +20,10 @@ import {
   tutorStubResistanceActionRegisterTreatmentEligibility,
 } from '../services/tutorStubResistanceActionRegisterStudy.js';
 import {
+  assertTutorStubBoredomProofDagSourceClosure,
   buildTutorStubBoredomProofDagBatchPlan,
   buildTutorStubBoredomProofDagRecoveryJob,
+  frozenTutorStubBoredomProofDagSourceClosure,
 } from './run-tutor-stub-boredom-action-register-proof-dag.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -212,7 +214,7 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
     initial.schema !== 'machinespirits.tutor-stub.boredom-action-register-proof-dag-live-batch-result.v1' ||
     result.schema !== 'machinespirits.tutor-stub.boredom-action-register-proof-dag-live-batch-result.v1' ||
     seal.schema !== 'machinespirits.tutor-stub.boredom-action-register-proof-dag-live-batch-seal.v1' ||
-    plan.source?.commit !== expectedSourceCommit ||
+    (plan.source?.closure_commit ?? plan.source?.commit) !== expectedSourceCommit ||
     plan.source?.tree !== expectedSourceTree ||
     plan.source?.registration_path !== registrationPath ||
     result.status !== 'complete' ||
@@ -722,10 +724,16 @@ export function analyzeTutorStubBoredomProofDag({
     cwd: ROOT,
     encoding: 'utf8',
   }).trim();
-  if (!expectedSourceCommit || current !== expectedSourceCommit || status) {
+  if (!expectedSourceCommit || status) {
     throw new Error('boredom proof-DAG analysis requires its exact clean GO-request source');
   }
   const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.resolve(ROOT, registrationPath) });
+  const closure = frozenTutorStubBoredomProofDagSourceClosure({ loaded });
+  if (closure) {
+    assertTutorStubBoredomProofDagSourceClosure({ expectedSourceCommit, closure });
+  } else if (current !== expectedSourceCommit) {
+    throw new Error('boredom proof-DAG analysis requires its exact clean GO-request source');
+  }
   const batches = batchRoots.map((root) => exactBatch(root, expectedSourceCommit, currentTree, registrationPath));
   if (JSON.stringify(batches.map((batch) => batch.plan.batch_id).sort()) !== JSON.stringify([...BATCH_IDS])) {
     throw new Error('boredom proof-DAG analysis requires all nine registered batches exactly once');

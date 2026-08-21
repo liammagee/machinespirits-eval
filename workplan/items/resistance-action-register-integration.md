@@ -3076,3 +3076,32 @@ and explicit human approval.
   This request authorizes nothing. The confirmation launch still requires
   the exact approval statement supplied and committed separately by a
   human; no model call occurs before that.
+- 2026-08-21 — The approved v4 package was found to be UNLAUNCHABLE, at
+  zero cost, before any model call. Three of its own rules formed a loop
+  with no solution: the frozen request pins launch commit
+  `0542c290` and every live, recovery and analyze command must carry
+  `--expected-source-commit 0542c290`; the runner demanded
+  `HEAD === 0542c290` on a clean checkout; and the gate demanded the
+  launch-authorization file be committed in HEAD's tree. A file cannot be
+  added to a commit that already exists, and a freeze records the commit
+  it was built from, so the authorization can only ever land in a commit
+  *after* the pinned one. Re-freezing at a commit that already holds the
+  authorization is equally impossible, because the authorization must
+  carry the digest of the request that pins that commit. The user chose
+  the closure-identity repair: the source pin is now the 54 frozen
+  closure files, which must match both their frozen digests on disk and
+  their bytes at the pinned commit, so HEAD may be a later commit that
+  adds only the authorization. The flag name `--expected-source-commit`
+  is unchanged, so every command literal in the package still reads the
+  same and all checker assertions still hold. `checkoutMustBeClean` and
+  `detachedLaunchWorktree` are unchanged; `headMustEqualLaunchCommit`
+  becomes false and is replaced by `closureMustMatchLaunchCommit` and
+  `launchAuthorizationMustBeCommittedAtHead`, and the packager refuses
+  any template that relaxes the HEAD pin without asserting both. Tests
+  build a throwaway two-commit repository and prove the pinned commit
+  need not be HEAD, with fail-closed cases for a changed byte on disk,
+  bytes that match the frozen digest but not the pinned commit, an
+  absent file, and a file absent at the pinned commit. Because the
+  package changes, its digest changes: the approval quoted above is
+  spent and cannot launch anything. A fresh approval statement over the
+  new digest is required, and no model call has been made.

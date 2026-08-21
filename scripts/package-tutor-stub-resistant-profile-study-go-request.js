@@ -259,12 +259,20 @@ function requireHoldBoundary(template) {
       'successor confirmation template must bind the standing authority and keep its ceiling amendment unauthorized',
     );
   }
+  const requirements = template.source?.requirements ?? {};
+  const exactHeadPin = requirements.headMustEqualLaunchCommit === true;
+  const closurePin =
+    requirements.headMustEqualLaunchCommit === false &&
+    requirements.closureMustMatchLaunchCommit === true &&
+    requirements.launchAuthorizationMustBeCommittedAtHead === true;
   if (
-    template.source?.requirements?.headMustEqualLaunchCommit !== true ||
-    template.source?.requirements?.checkoutMustBeClean !== true ||
-    template.source?.requirements?.detachedLaunchWorktree !== true
+    (!exactHeadPin && !closurePin) ||
+    requirements.checkoutMustBeClean !== true ||
+    requirements.detachedLaunchWorktree !== true
   ) {
-    throw new Error('template must retain exact-HEAD, clean-checkout, and detached-launch execution requirements');
+    throw new Error(
+      'template must retain one source pin (exact HEAD, or launch-commit closure with a committed launch authorization) plus clean-checkout and detached-launch execution requirements',
+    );
   }
 }
 

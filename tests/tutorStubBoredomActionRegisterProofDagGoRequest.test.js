@@ -856,3 +856,58 @@ test('validated-instrument v4 packaging pins the passed Sol V3 gates and awaits 
     assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
   }
 });
+
+test('packaging accepts a launch-commit closure pin only when the committed launch authorization is required too', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-closure-pin-'));
+  const output = `.tutor-stub-auto-eval/.test-boredom-proof-dag-closure-pin-${process.pid}.json`;
+  t.after(() => {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(path.join(ROOT, output), { force: true });
+  });
+  const closurePin = {
+    headMustEqualLaunchCommit: false,
+    closureMustMatchLaunchCommit: true,
+    launchAuthorizationMustBeCommittedAtHead: true,
+    checkoutMustBeClean: true,
+    detachedLaunchWorktree: true,
+  };
+  const request = buildRequestV4({ destinationSuffix: `closure-pin-${process.pid}` });
+  request.source.requirements = { ...closurePin };
+  const requestPath = path.join(temporary, 'request.json');
+  fs.writeFileSync(requestPath, `${JSON.stringify(request, null, 2)}\n`);
+  assert.equal(validateTutorStubResistantProfileStudyGoRequest({ requestPath }).packetValid, true);
+
+  const templatePath = path.join(temporary, 'template.json');
+  fs.writeFileSync(templatePath, templateTextV4(request));
+  fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
+  const packageReport = packageTutorStubResistantProfileStudyGoRequest({
+    templatePath,
+    launchCommit: request.source.launchCommit,
+    outputPath: output,
+  });
+  assert.equal(packageReport.sourceClosureFiles, CLOSURE_V4.length);
+  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), fs.readFileSync(requestPath));
+
+  // A relaxed HEAD pin without both replacement guarantees must not package.
+  for (const requirements of [
+    { ...closurePin, closureMustMatchLaunchCommit: false },
+    { ...closurePin, launchAuthorizationMustBeCommittedAtHead: false },
+    { headMustEqualLaunchCommit: false, checkoutMustBeClean: true, detachedLaunchWorktree: true },
+    { ...closurePin, checkoutMustBeClean: false },
+    { ...closurePin, detachedLaunchWorktree: false },
+  ]) {
+    const invalid = structuredClone(request);
+    invalid.source.requirements = requirements;
+    const invalidTemplatePath = path.join(temporary, `template-${crypto.randomUUID()}.json`);
+    fs.writeFileSync(invalidTemplatePath, templateTextV4(invalid));
+    assert.throws(
+      () =>
+        packageTutorStubResistantProfileStudyGoRequest({
+          templatePath: invalidTemplatePath,
+          launchCommit: invalid.source.launchCommit,
+          outputPath: `${output}.rejected`,
+        }),
+      /template must retain one source pin/u,
+    );
+  }
+});
