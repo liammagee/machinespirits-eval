@@ -438,6 +438,110 @@ function normalizedOutputSchema(outputSchema) {
   }
 }
 
+const CLAUDE_JSON_RESULT_ENVELOPE_SCHEMA = 'machinespirits.cli-provider.claude-json-result-envelope.v1';
+
+/**
+ * Classify Claude CLI `--output-format json` without consulting `subtype`.
+ * Claude 2.1.239 emits `subtype: "success"` for both successful structured
+ * output and response-free API/runtime failures, so `is_error` plus the
+ * presence of `structured_output` is the usable transport distinction.
+ *
+ * The returned object intentionally contains only finite labels and counts;
+ * provider events may include ambient metadata or model text and must not be
+ * copied into persisted error telemetry.
+ */
+export function parseClaudeJsonResultEnvelope(stdoutText) {
+  let events;
+  try {
+    events = JSON.parse(String(stdoutText || ''));
+  } catch (_) {
+    return {
+      schema: CLAUDE_JSON_RESULT_ENVELOPE_SCHEMA,
+      classification: 'indeterminate',
+      reason: 'invalid_json',
+      event_count: 0,
+      result_event_count: 0,
+    };
+  }
+  if (!Array.isArray(events)) {
+    return {
+      schema: CLAUDE_JSON_RESULT_ENVELOPE_SCHEMA,
+      classification: 'indeterminate',
+      reason: 'root_not_event_array',
+      event_count: 0,
+      result_event_count: 0,
+    };
+  }
+  const resultEvents = events.filter((event) => event && typeof event === 'object' && event.type === 'result');
+  if (resultEvents.length !== 1) {
+    return {
+      schema: CLAUDE_JSON_RESULT_ENVELOPE_SCHEMA,
+      classification: 'indeterminate',
+      reason: resultEvents.length === 0 ? 'missing_result_event' : 'multiple_result_events',
+      event_count: events.length,
+      result_event_count: resultEvents.length,
+    };
+  }
+  const result = resultEvents[0];
+  if (typeof result.is_error !== 'boolean') {
+    return {
+      schema: CLAUDE_JSON_RESULT_ENVELOPE_SCHEMA,
+      classification: 'indeterminate',
+      reason: 'result_is_error_not_boolean',
+      event_count: events.length,
+      result_event_count: 1,
+    };
+  }
+  const hasStructuredOutput = Object.hasOwn(result, 'structured_output') && result.structured_output !== undefined;
+  if (result.is_error === false && hasStructuredOutput) {
+    return {
+      schema: CLAUDE_JSON_RESULT_ENVELOPE_SCHEMA,
+      classification: 'structured_success',
+      reason: 'result_not_error_with_structured_output',
+      event_count: events.length,
+      result_event_count: 1,
+      structured_output: result.structured_output,
+    };
+  }
+  if (result.is_error === true && !hasStructuredOutput) {
+    return {
+      schema: CLAUDE_JSON_RESULT_ENVELOPE_SCHEMA,
+      classification: 'response_free_error',
+      reason: 'result_error_without_structured_output',
+      event_count: events.length,
+      result_event_count: 1,
+    };
+  }
+  return {
+    schema: CLAUDE_JSON_RESULT_ENVELOPE_SCHEMA,
+    classification: 'indeterminate',
+    reason: result.is_error ? 'error_with_structured_output' : 'success_without_structured_output',
+    event_count: events.length,
+    result_event_count: 1,
+  };
+}
+
+function sha256Text(value) {
+  return createHash('sha256')
+    .update(String(value || ''))
+    .digest('hex');
+}
+
+function claudeJsonEnvelopeError({ classification, reason, code, exitCode, stdout, stderr }) {
+  const error = new Error(`claude CLI structured response classified as ${classification} (${reason})`);
+  error.code = code;
+  error.provider = 'claude-code';
+  error.classification = classification;
+  error.reason = reason;
+  error.exitCode = Number.isInteger(exitCode) ? exitCode : null;
+  error.stdoutBytes = Buffer.byteLength(stdout);
+  error.stderrBytes = Buffer.byteLength(stderr);
+  error.stdoutSha256 = sha256Text(stdout);
+  error.stderrSha256 = sha256Text(stderr);
+  error.responseFree = classification === 'response_free_error';
+  return error;
+}
+
 function exactKeys(value, expected) {
   return (
     value &&
@@ -597,7 +701,7 @@ async function callClaudeCli({
   const isolation = claudeCliIsolation();
   try {
     return await new Promise((resolve, reject) => {
-      const args = ['-p', '-', '--output-format', 'text'];
+      const args = ['-p', '-', '--output-format', schema ? 'json' : 'text'];
       if (!preserveDefaultSystemPrompt) args.push('--system-prompt', systemPrompt);
       args.push(...isolation.args);
       if (model) args.push('--model', model);
@@ -662,6 +766,49 @@ async function callClaudeCli({
         clearTimeout(cliTimeout);
         signal?.removeEventListener('abort', onAbort);
         if (outputExceeded) return;
+        if (schema) {
+          const envelope = parseClaudeJsonResultEnvelope(out);
+          if (envelope.classification === 'structured_success') {
+            resolve({
+              text: JSON.stringify(envelope.structured_output),
+              model: model || 'claude-cli',
+              provider: 'claude-code',
+              effort: effectiveEffort || null,
+              latencyMs: Date.now() - start,
+              ...normalizeTokenUsage(null),
+              cost: 0,
+              structuredOutput: true,
+              contextIsolation: CLAUDE_CLI_CONTEXT_ISOLATION,
+              structuredEventAudit: {
+                event_type_counts: { result: 1 },
+                item_type_counts: {},
+                prohibited_event_count: 0,
+                prohibited_events: [],
+                enforcement: 'claude_json_result_envelope_tools_disabled',
+                classification: envelope.classification,
+                event_count: envelope.event_count,
+              },
+              prohibitedToolEventCount: 0,
+              modelAttestationBasis: cliModelAttestationBasis(model),
+              modelIndependentlyAttested: false,
+            });
+            return;
+          }
+          reject(
+            claudeJsonEnvelopeError({
+              classification: envelope.classification,
+              reason: envelope.reason,
+              code:
+                envelope.classification === 'response_free_error'
+                  ? 'CLI_PROVIDER_RESPONSE_FREE_ERROR'
+                  : 'CLI_PROVIDER_AMBIGUOUS_OUTPUT',
+              exitCode: code,
+              stdout: out,
+              stderr: err,
+            }),
+          );
+          return;
+        }
         if (code !== 0) {
           const exitError = new Error(`claude CLI exited with code ${code}`);
           exitError.code = 'CLI_PROVIDER_EXIT_FAILED';

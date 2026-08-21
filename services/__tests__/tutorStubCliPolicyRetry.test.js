@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { tutorStubCliPolicyRetryDecision, waitTutorStubCliPolicyRetryDelay } from '../tutorStubCliPolicyRetry.js';
+import {
+  isTutorStubRetryableClaudeResponseFreeError,
+  tutorStubCliPolicyRetryDecision,
+  waitTutorStubCliPolicyRetryDelay,
+} from '../tutorStubCliPolicyRetry.js';
 
 function policyError(prohibitedEvents, extraAudit = {}) {
   return {
@@ -96,6 +100,47 @@ describe('tutor-stub Codex policy retry', () => {
       tutorStubCliPolicyRetryDecision({ ...error, stdoutBytes: 1 }, { allowClaudeExitFailureCodeOne: true }).retry,
       false,
     );
+  });
+
+  it('retries exact Claude JSON response-free errors only under the prospective opt-in', () => {
+    const error = {
+      code: 'CLI_PROVIDER_RESPONSE_FREE_ERROR',
+      provider: 'claude-code',
+      classification: 'response_free_error',
+      responseFree: true,
+      exitCode: 1,
+      stdoutBytes: 165,
+      stderrBytes: 0,
+      stdoutSha256: 'a'.repeat(64),
+      stderrSha256: 'b'.repeat(64),
+    };
+    assert.equal(isTutorStubRetryableClaudeResponseFreeError(error), true);
+    assert.equal(tutorStubCliPolicyRetryDecision(error).retry, false);
+    const first = tutorStubCliPolicyRetryDecision(error, { allowClaudeResponseFreeError: true });
+    const second = tutorStubCliPolicyRetryDecision(error, {
+      allowClaudeResponseFreeError: true,
+      retryCount: 1,
+    });
+    const third = tutorStubCliPolicyRetryDecision(error, {
+      allowClaudeResponseFreeError: true,
+      retryCount: 2,
+    });
+    assert.deepEqual(
+      [first.retry, first.delay_ms, second.retry, second.delay_ms, third.retry, third.delay_ms],
+      [true, 5000, true, 15000, false, 0],
+    );
+    for (const mutation of [
+      { responseFree: false },
+      { classification: 'indeterminate' },
+      { stdoutBytes: 0 },
+      { stdoutSha256: null },
+      { stderrSha256: 'not-a-digest' },
+    ]) {
+      assert.equal(
+        tutorStubCliPolicyRetryDecision({ ...error, ...mutation }, { allowClaudeResponseFreeError: true }).retry,
+        false,
+      );
+    }
   });
 
   it('retains only the bridge audit labels and counts', () => {
