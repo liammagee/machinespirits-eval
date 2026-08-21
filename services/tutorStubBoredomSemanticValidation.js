@@ -10,17 +10,17 @@ import {
   TUTOR_STUB_BOREDOM_SEMANTIC_OUTPUT_SCHEMA,
   adjudicateTutorStubBoredomObservation,
   parseTutorStubBoredomSemanticAdjudication,
-} from './tutorStubBoredomSemanticAdjudicationV2.js';
+} from './tutorStubBoredomSemanticAdjudicationV3.js';
 
 export const BOREDOM_SEMANTIC_VALIDATION_REQUEST_SCHEMA =
-  'machinespirits.tutor-stub.boredom-semantic-validation-request.v3';
+  'machinespirits.tutor-stub.boredom-semantic-validation-request.v4';
 export const BOREDOM_SEMANTIC_VALIDATION_AUTHORIZATION_SCHEMA =
-  'machinespirits.tutor-stub.boredom-semantic-validation-authorization.v3';
+  'machinespirits.tutor-stub.boredom-semantic-validation-authorization.v4';
 export const BOREDOM_SEMANTIC_VALIDATION_RESULT_SCHEMA =
-  'machinespirits.tutor-stub.boredom-semantic-validation-result.v3';
-export const BOREDOM_SEMANTIC_VALIDATION_STUDY_ID = 'tutor-stub-boredom-semantic-validation-v3';
+  'machinespirits.tutor-stub.boredom-semantic-validation-result.v4';
+export const BOREDOM_SEMANTIC_VALIDATION_STUDY_ID = 'tutor-stub-boredom-semantic-validation-v4';
 
-const EXPECTED_CORPUS_SHA256 = '5c5eb30699c5c53d1d264a2cdcd0c9265c3fed523cda3076ecda24e34bed2632';
+const EXPECTED_CORPUS_SHA256 = '5f65dd5dc3e193c9dc0368b4155a550bc9b5acd56de78e62704e35f750f50aa0';
 const EXPECTED_RETRY_AUTHORITY = 'bounded_technical_recovery_thrown_transport_errors_only';
 const EXPECTED_AUXILIARY_POLICY = 'null_neutral_semantic_seat_only';
 const EXPECTED_PROMPT_AUTHORITY = 'frozen_adjudication_module_functions_only';
@@ -88,18 +88,18 @@ export function validateTutorStubBoredomSemanticValidationRequest(
   assert(resolved?.model === request.route.model, 'resolved model differs from request');
   assert(resolved?.isConfigured === true, 'requested CLI model route is not configured');
 
-  assert(request.corpus?.path === 'config/tutor-stub-boredom-semantic-adjudication-heldout.v3.json', 'corpus path');
+  assert(request.corpus?.path === 'config/tutor-stub-boredom-semantic-adjudication-heldout.v4.json', 'corpus path');
   assert(request.corpus?.sha256 === EXPECTED_CORPUS_SHA256, 'corpus digest must remain the frozen held-out digest');
   const { corpus, sha256: observedCorpusSha256 } = loadBoredomSemanticHeldoutCorpus({
     root,
     corpusPath: request.corpus.path,
   });
   assert(observedCorpusSha256 === request.corpus.sha256, 'held-out corpus bytes differ from the frozen digest');
-  assert(Array.isArray(corpus.cases) && corpus.cases.length === 54, 'held-out corpus must contain exactly 54 cases');
+  assert(Array.isArray(corpus.cases) && corpus.cases.length === 55, 'held-out corpus must contain exactly 55 cases');
 
-  assert(request.scope?.plannedModelCalls === 54, 'planned model calls must be exactly 54 (one per case)');
+  assert(request.scope?.plannedModelCalls === 55, 'planned model calls must be exactly 55 (one per case)');
   assert(request.scope?.maximumReservationsPerCase === 3, 'maximum reservations per case must be 3');
-  assert(request.scope?.maximumModelCalls === 162, 'maximum model calls must be 162');
+  assert(request.scope?.maximumModelCalls === 165, 'maximum model calls must be 165');
   assert(request.scope?.retryOrResumeAuthority === EXPECTED_RETRY_AUTHORITY, 'retry authority mismatch');
   assert(request.scope?.completedCallOutputsFinal === true, 'completed call outputs must be final');
   assert(request.scope?.auxiliaryObservationPolicy === EXPECTED_AUXILIARY_POLICY, 'auxiliary policy mismatch');
@@ -107,7 +107,7 @@ export function validateTutorStubBoredomSemanticValidationRequest(
   assert(request.scope?.confirmationLaunchAuthorized === false, 'the validation must not authorize the confirmation');
 
   assert(
-    request.measurement?.adjudicationModule?.path === 'services/tutorStubBoredomSemanticAdjudicationV2.js',
+    request.measurement?.adjudicationModule?.path === 'services/tutorStubBoredomSemanticAdjudicationV3.js',
     'adjudication module path mismatch',
   );
   assertSha256(request.measurement?.adjudicationModule?.sha256, 'adjudication module');
@@ -133,7 +133,7 @@ export function validateTutorStubBoredomSemanticValidationRequest(
 
   assert(
     typeof request.artifactRoot === 'string' &&
-      request.artifactRoot.startsWith('.tutor-stub-auto-eval/boredom-semantic-validation-v3-'),
+      request.artifactRoot.startsWith('.tutor-stub-auto-eval/boredom-semantic-validation-v4-'),
     'artifact root is outside the ignored validation namespace',
   );
   assert(
@@ -142,10 +142,10 @@ export function validateTutorStubBoredomSemanticValidationRequest(
   );
 
   assert(request.ledger?.programmeCeiling === 5000, 'programme ceiling mismatch');
-  assert(request.ledger?.plannedAttempts === 54, 'planned attempt accounting mismatch');
-  assert(request.ledger?.maximumAttempts === 162, 'maximum attempt accounting mismatch');
+  assert(request.ledger?.plannedAttempts === 55, 'planned attempt accounting mismatch');
+  assert(request.ledger?.maximumAttempts === 165, 'maximum attempt accounting mismatch');
 
-  assert(Array.isArray(request.sourceClosure) && request.sourceClosure.length >= 11, 'source closure is incomplete');
+  assert(Array.isArray(request.sourceClosure) && request.sourceClosure.length >= 12, 'source closure is incomplete');
   const seen = new Set();
   const sourceClosure = request.sourceClosure.map((entry) => {
     assert(entry && typeof entry === 'object', 'source-closure entry must be an object');
@@ -162,13 +162,14 @@ export function validateTutorStubBoredomSemanticValidationRequest(
   for (const requiredPath of [
     'services/tutorStubBoredomSemanticValidation.js',
     'scripts/run-tutor-stub-boredom-semantic-validation.js',
+    'services/tutorStubBoredomSemanticAdjudicationV3.js',
     'services/tutorStubBoredomSemanticAdjudicationV2.js',
     'services/tutorStubBoredomSemanticAdjudication.js',
     'services/resistantLearnerObservation.js',
     'services/cliProviderBridge.js',
     'services/evalConfigLoader.js',
     'config/providers.yaml',
-    'config/tutor-stub-boredom-semantic-adjudication-heldout.v3.json',
+    'config/tutor-stub-boredom-semantic-adjudication-heldout.v4.json',
     'config/tutor-stub-boredom-action-register-proof-dag-registration.v3.json',
     'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v3.json',
   ]) {
