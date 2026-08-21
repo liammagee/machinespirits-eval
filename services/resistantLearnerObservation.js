@@ -45,6 +45,7 @@ export const RESISTANT_LEARNER_OBSERVATION_SEMANTICS = Object.freeze({
   prospectiveV6: 'prospective_v6',
   prospectiveV7: 'prospective_v7',
   prospectiveV8: 'prospective_v8',
+  prospectiveV9: 'prospective_v9',
 });
 
 export const RESISTANT_LEARNER_OBSERVATION_TYPES = Object.freeze([
@@ -448,22 +449,24 @@ export function classifyFrameJurisdictionParticipation({
   const prospectiveV6 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6;
   const prospectiveV7 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7;
   const prospectiveV8 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8;
+  const prospectiveV9 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV9;
+  const compositionalBoredomSemantics = prospectiveV8 || prospectiveV9;
   const expandedProspective =
-    prospectiveV3 || prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7 || prospectiveV8;
+    prospectiveV3 || prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7 || compositionalBoredomSemantics;
   const explicitReframe = firstEvidence(
     text,
     expandedProspective ? FRAME_EXPLICIT_REFRAME_PATTERNS_V3 : FRAME_EXPLICIT_REFRAME_PATTERNS,
   );
   const boundedLocalTestCandidate = firstEvidence(
     text,
-    prospectiveV7 || prospectiveV8
+    prospectiveV7 || compositionalBoredomSemantics
       ? FRAME_BOUNDED_LOCAL_TEST_PATTERNS_V7
       : expandedProspective
         ? FRAME_BOUNDED_LOCAL_TEST_PATTERNS_V3
         : FRAME_BOUNDED_LOCAL_TEST_PATTERNS,
   );
   const boundedLocalTest =
-    (prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7 || prospectiveV8) &&
+    (prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7 || compositionalBoredomSemantics) &&
     conditionalBoundedParticipationNegated(text, boundedLocalTestCandidate)
       ? null
       : boundedLocalTestCandidate;
@@ -473,7 +476,7 @@ export function classifyFrameJurisdictionParticipation({
   if (carriesContent) participation.push({ kind: 'content_bearing_contribution', evidence_span: null });
   const explicitWithholding = firstEvidence(
     text,
-    prospectiveV7 || prospectiveV8
+    prospectiveV7 || compositionalBoredomSemantics
       ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V7
       : prospectiveV6
         ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V6
@@ -541,14 +544,16 @@ export function observeResistantLearnerTurn({
   }
 
   const prospectiveV8 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8;
-  const boredomComposition = prospectiveV8
+  const prospectiveV9 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV9;
+  const compositionalBoredomSemantics = prospectiveV8 || prospectiveV9;
+  const boredomComposition = compositionalBoredomSemantics
     ? classifyBoredomEffortWithholdingComposition({ learnerText: text, classification, tutorLearnerDag })
     : null;
   const permissionEvidence = firstEvidence(text, PERMISSION_SEEKING_PATTERNS);
   const explicitBoredEvidence = firstEvidence(text, BORED_EXPLICIT_PATTERNS);
   const flatBoredEvidence = firstEvidence(text, BORED_FLAT_PATTERNS);
   const boredEvidence = boredomComposition?.cue_evidence || explicitBoredEvidence || flatBoredEvidence;
-  if (prospectiveV8 && boredomComposition) {
+  if (compositionalBoredomSemantics && boredomComposition) {
     if (boredomComposition.licensed) {
       const turn = classifierTurn(classification);
       observations.push(
@@ -605,16 +610,16 @@ export function observeResistantLearnerTurn({
   const prospectiveV6 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6;
   const prospectiveV7 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7;
   const acceptedAuthority =
-    prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7 || prospectiveV8
+    prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7 || compositionalBoredomSemantics
       ? firstEvidence(text, FRAME_ACCEPTED_AUTHORITY_PATTERNS_V4)
       : null;
   const meritsOnly =
-    prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7 || prospectiveV8
+    prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7 || compositionalBoredomSemantics
       ? firstEvidence(text, FRAME_MERITS_ONLY_PATTERNS_V4)
       : null;
   const framePatterns = legacySemantics
     ? FRAME_JURISDICTION_PATTERNS_V1
-    : prospectiveV7 || prospectiveV8
+    : prospectiveV7 || compositionalBoredomSemantics
       ? FRAME_JURISDICTION_PATTERNS_V7
       : prospectiveV6
         ? FRAME_JURISDICTION_PATTERNS_V6
@@ -627,11 +632,11 @@ export function observeResistantLearnerTurn({
               : FRAME_JURISDICTION_PATTERNS_V2;
   const candidateFrameEvidence = firstEvidence(text, framePatterns);
   const v6AuthorityObjectMeritsOnly =
-    prospectiveV6 || prospectiveV7 || prospectiveV8
+    prospectiveV6 || prospectiveV7 || compositionalBoredomSemantics
       ? firstEvidence(text, FRAME_AUTHORITY_OBJECT_MERITS_ONLY_PATTERNS_V6)
       : null;
   const v6AuthorityObjectExplicitFrameRationale =
-    prospectiveV6 || prospectiveV7 || prospectiveV8
+    prospectiveV6 || prospectiveV7 || compositionalBoredomSemantics
       ? firstEvidence(text, FRAME_AUTHORITY_OBJECT_EXPLICIT_FRAME_RATIONALE_PATTERNS_V6)
       : null;
   const explicitJurisdictionCandidate = Boolean(
@@ -647,7 +652,7 @@ export function observeResistantLearnerTurn({
     acceptedIndex >= 0 && candidateIndex >= acceptedIndex && candidateIndex < acceptedIndex + acceptedAuthority.length;
   const frameEvidence =
     (meritsOnly && !explicitJurisdictionCandidate) ||
-    ((prospectiveV6 || prospectiveV7 || prospectiveV8) &&
+    ((prospectiveV6 || prospectiveV7 || compositionalBoredomSemantics) &&
       candidateFrameEvidence &&
       v6AuthorityObjectMeritsOnly &&
       !v6AuthorityObjectExplicitFrameRationale) ||
@@ -723,9 +728,14 @@ export function observeResistantLearnerTurn({
     observations,
     defeated,
     ambiguous: Boolean(
-      (hasBoredObservation && hasFrameObservation) || (prospectiveV8 && boredomComposition?.ambiguous),
+      (hasBoredObservation && hasFrameObservation) || (compositionalBoredomSemantics && boredomComposition?.ambiguous),
     ),
-    ...(prospectiveV8 ? { boredom_composition: boredomComposition } : {}),
+    ...(compositionalBoredomSemantics
+      ? {
+          boredom_composition: boredomComposition,
+          ...(prospectiveV9 ? { semantic_authority: 'independent_llm_required_regex_auxiliary_only' } : {}),
+        }
+      : {}),
   };
 }
 

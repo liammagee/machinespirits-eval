@@ -824,18 +824,22 @@ function isolatedReplay({ requestText, requestRepoPath, request, files }) {
     } catch (error) {
       throw new Error(`isolated focused validation produced invalid JSON: ${error.message}`);
     }
+    const empiricalSemanticValidationPending =
+      request.boredomActionRegisterProofDag?.requestRevision === 4 &&
+      request.boredomActionRegisterProofDag?.semanticValidation?.empiricalValidationStatus === 'pending';
+    const expectedApprovalReadiness = !empiricalSemanticValidationPending;
     if (
       report.packetValid !== true ||
-      report.readyForExplicitHumanApproval !== true ||
+      report.readyForExplicitHumanApproval !== expectedApprovalReadiness ||
       report.modelCalls !== 0 ||
       report.productionWrites !== 0
     ) {
-      throw new Error('isolated replay did not prove a ready zero-call, zero-production-write HOLD request');
+      throw new Error('isolated replay did not prove the expected zero-call, zero-production-write HOLD boundary');
     }
     return {
       nodeModulesPresent: false,
       packetValid: true,
-      readyForExplicitHumanApproval: true,
+      readyForExplicitHumanApproval: report.readyForExplicitHumanApproval,
       checksPassed: report.checks.length,
       modelCalls: 0,
       productionWrites: 0,
@@ -872,7 +876,9 @@ export function packageTutorStubResistantProfileStudyGoRequest({ templatePath, l
   }
   return {
     schema: REPORT_SCHEMA,
-    status: 'PACKAGED_HOLD_REQUIRES_EXPLICIT_HUMAN_APPROVAL',
+    status: replay.readyForExplicitHumanApproval
+      ? 'PACKAGED_HOLD_REQUIRES_EXPLICIT_HUMAN_APPROVAL'
+      : 'PACKAGED_HOLD_EMPIRICAL_VALIDATION_PENDING',
     requestPath: output.repoPath,
     requestSha256: sha256(materialized.requestText),
     launchCommit: exactLaunchCommit,
@@ -887,7 +893,9 @@ export function packageTutorStubResistantProfileStudyGoRequest({ templatePath, l
       modelCallsAuthorized: false,
       liveRunAuthorized: false,
       exactApprovalStatement: replay.exactApprovalStatement,
-      disposition: 'This package is not authorization; a human must supply the exact approval statement separately.',
+      disposition: replay.readyForExplicitHumanApproval
+        ? 'This package is not authorization; a human must supply the exact approval statement separately.'
+        : 'This package is not authorization and is not approval-ready; its registered empirical validation gate remains pending.',
     },
     effects: {
       requestFilesWritten: 1,

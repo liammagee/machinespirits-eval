@@ -248,7 +248,8 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5 ||
     observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6 ||
     observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7 ||
-    observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8;
+    observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8 ||
+    observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV9;
   const automatedLearnerTraceMetadata = Object.freeze(boundedFrameOpportunitySemantics ? { observationSemantics } : {});
   function automatedLearnerSystemPrompt(profile) {
     return [

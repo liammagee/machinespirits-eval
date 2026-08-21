@@ -110,6 +110,7 @@ export function classifyTutorStubBoredomProofDagChildFailure({
   const substantive = events.find(
     (event) =>
       event.type === 'resistance_action_register_boredom_proof_dag_substantive_failure' ||
+      event.type === 'boredom_semantic_measurement_indeterminate' ||
       (event.type === 'auto_learner_profile_adherence_exhausted' && event.profile === 'bored'),
   );
   if (substantive) {
@@ -218,7 +219,7 @@ function childCommand({ loaded, job, destination, modelCallBudget = PER_DIALOGUE
     ],
     cwd: ROOT,
     env: {
-      TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS: 'prospective_v8',
+      TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS: loaded.registration.design.observationSemantics,
       TUTOR_STUB_REMEMBER_SETTINGS: '0',
     },
     job_root: jobRoot,
@@ -293,7 +294,7 @@ export function buildTutorStubBoredomProofDagBatchPlan({
       maximum_model_attempt_reservations_per_dialogue: PER_DIALOGUE_CAP,
       maximum_model_attempt_reservations: PER_BATCH_CAP,
       study_maximum_model_attempt_reservations: 2160,
-      programme_ceiling: 4539,
+      programme_ceiling: loaded.registration.version === 3 ? 5000 : 4539,
       enlarges_ceiling: false,
     },
     destination: path.relative(ROOT, absoluteDestination),

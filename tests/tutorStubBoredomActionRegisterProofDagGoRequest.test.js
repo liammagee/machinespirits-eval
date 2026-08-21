@@ -21,6 +21,9 @@ const CERTIFICATE = 'config/paid-study-endpoints/tutor-stub-boredom-action-regis
 const REGISTRATION_V2 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v2.json';
 const ENDPOINT_V2 = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v2.json';
 const CERTIFICATE_V2 = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v2.endpoint-go.json';
+const REGISTRATION_V3 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v3.json';
+const ENDPOINT_V3 = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v3.json';
+const CERTIFICATE_V3 = 'config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v3.endpoint-go.json';
 const CONSUMED_REQUEST_V2 = 'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v2.json';
 const CALIBRATION_REQUEST = 'config/tutor-stub-resistance-action-register-baseline-analysis-go-request.v1.json';
 const CONSUMED_REQUEST = 'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v1.json';
@@ -182,6 +185,16 @@ const CLOSURE = [
   'package-lock.json',
 ];
 const CLOSURE_V2 = [...CLOSURE, 'services/resistantLearnerAxisObservation.js'];
+const CLOSURE_V3 = [
+  ...CLOSURE_V2,
+  'services/tutorStubBoredomSemanticAdjudication.js',
+  'services/evalConfigLoader.js',
+  'services/cliProviderBridge.js',
+  'services/tutorStubPromptAudit.js',
+  'services/tutorStubCliRequest.js',
+  'tutor-core/services/unifiedAIProviderService.js',
+  'config/tutor-stub-boredom-semantic-adjudication-heldout.v1.json',
+];
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -435,6 +448,52 @@ function buildRequestV2({ destinationSuffix }) {
   return request;
 }
 
+function buildRequestV3({ destinationSuffix }) {
+  const request = buildRequestV2({ destinationSuffix: `v3-${destinationSuffix}` });
+  const registration = JSON.parse(fs.readFileSync(path.join(ROOT, REGISTRATION_V3), 'utf8'));
+  const contract = JSON.parse(fs.readFileSync(path.join(ROOT, ENDPOINT_V3), 'utf8'));
+  const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, CERTIFICATE_V3), 'utf8'));
+  request.studyId = contract.study_id;
+  request.source.closure = CLOSURE_V3.map((repoPath) => ({ path: repoPath, sha256: fileSha256(repoPath) }));
+  request.boredomActionRegisterProofDag.requestRevision = 4;
+  request.boredomActionRegisterProofDag.semanticValidation = {
+    modelRef: 'codex.gpt-5.6-sol',
+    role: 'tutor_stub_boredom_performance_adjudication',
+    generatorSelfJudgmentAllowed: false,
+    regexFinalAuthority: false,
+    lexicalSilenceMayVetoSemanticPositive: false,
+    heldoutCorpus: {
+      path: 'config/tutor-stub-boredom-semantic-adjudication-heldout.v1.json',
+      sha256: fileSha256('config/tutor-stub-boredom-semantic-adjudication-heldout.v1.json'),
+      cases: 22,
+    },
+    gates: registration.measurement.semanticAdjudicator.predeclaredEmpiricalGates,
+    empiricalValidationStatus: 'pending',
+    confirmationLaunchReady: false,
+    lowConfidenceOrDisagreementDisposition: 'measurement_indeterminate_no_repair_no_rerun_no_replacement',
+  };
+  request.design.models.semanticAdjudicator = 'codex.gpt-5.6-sol';
+  request.bindings.registration = { path: REGISTRATION_V3, sha256: fileSha256(REGISTRATION_V3) };
+  request.bindings.endpoint = {
+    contractPath: ENDPOINT_V3,
+    contractFileSha256: fileSha256(ENDPOINT_V3),
+    contractCanonicalSha256: sha256(JSON.stringify(canonicalJson(contract))),
+    certificatePath: CERTIFICATE_V3,
+    certificateFileSha256: fileSha256(CERTIFICATE_V3),
+    preflightSha256: certificate.preflight_sha256,
+  };
+  request.commands.live = request.commands.live.map((command) =>
+    command.map((value) => (value === REGISTRATION_V2 ? REGISTRATION_V3 : value)),
+  );
+  request.commands.analyze = request.commands.analyze.map((value) =>
+    value === REGISTRATION_V2 ? REGISTRATION_V3 : value,
+  );
+  request.bindings.commands.liveArraySha256 = commandSha256(request.commands.live);
+  request.bindings.commands.recoveryArraySha256 = commandSha256(request.commands.recovery);
+  request.bindings.commands.analyzeArraySha256 = commandSha256(request.commands.analyze);
+  return request;
+}
+
 function templateText(request) {
   const template = structuredClone(request);
   template.source.launchCommit = GO_REQUEST_PACKAGE_MARKERS.sourceCommit;
@@ -472,6 +531,10 @@ function templateTextV2(request) {
   template.boredomActionRegisterProofDag.priorStoppedExecution.predecessorRequest.sha256 =
     goRequestFileSha256Marker(CONSUMED_REQUEST);
   return `${JSON.stringify(template, null, 2)}\n`;
+}
+
+function templateTextV3(request) {
+  return templateTextV2(request);
 }
 
 test('boredom proof-DAG GO validator and packager bind scientific design separately from operational safeguards', (t) => {
@@ -587,6 +650,70 @@ test('prospective-v8 successor packaging binds the categorical failure and compl
     const invalid = structuredClone(request);
     mutate(invalid);
     const invalidPath = path.join(temporary, `invalid-v2-${crypto.randomUUID()}.json`);
+    fs.writeFileSync(invalidPath, `${JSON.stringify(invalid, null, 2)}\n`);
+    assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
+  }
+});
+
+test('prospective-v9 HOLD packaging binds independent semantic authority and remains unlaunchable pending empirical gates', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-v3-go-'));
+  const output = `.tutor-stub-auto-eval/.test-boredom-proof-dag-v3-go-${process.pid}.json`;
+  t.after(() => {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(path.join(ROOT, output), { force: true });
+  });
+  assert.equal(fileSha256(CONSUMED_REQUEST_V2), STOPPED_EXECUTION_V2.request.sha256);
+  const request = buildRequestV3({ destinationSuffix: process.pid });
+  const requestPath = path.join(temporary, 'request.json');
+  fs.writeFileSync(requestPath, `${JSON.stringify(request, null, 2)}\n`);
+  const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath });
+  assert.equal(report.packetValid, true);
+  assert.equal(report.modelCalls, 0);
+  assert.equal(report.productionWrites, 0);
+  assert.equal(report.readyForExplicitHumanApproval, false);
+  assert.equal(report.budget.programmeLedgerBefore, 293);
+  assert.equal(report.budget.programmeLedgerAfterBoredomMaximum, 2453);
+  assert.equal(report.budget.programmeReservedAfterBothMaximum, 4613);
+  assert.match(report.exactApprovalStatement, /No confirmation launch approval is available/u);
+  assert.match(report.exactApprovalStatement, /independently pinned Sol semantic adjudicator/u);
+
+  const templatePath = path.join(temporary, 'template.json');
+  fs.writeFileSync(templatePath, templateTextV3(request));
+  fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
+  const packageReport = packageTutorStubResistantProfileStudyGoRequest({
+    templatePath,
+    launchCommit: request.source.launchCommit,
+    outputPath: output,
+  });
+  assert.equal(packageReport.sourceClosureFiles, CLOSURE_V3.length);
+  assert.equal(packageReport.isolatedReplay.packetValid, true);
+  assert.equal(packageReport.isolatedReplay.readyForExplicitHumanApproval, false);
+  assert.equal(packageReport.status, 'PACKAGED_HOLD_EMPIRICAL_VALIDATION_PENDING');
+  assert.equal(packageReport.effects.modelCalls, 0);
+  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), fs.readFileSync(requestPath));
+
+  for (const mutate of [
+    (value) => {
+      value.boredomActionRegisterProofDag.semanticValidation.modelRef = 'codex.gpt-5.6-luna';
+    },
+    (value) => {
+      value.boredomActionRegisterProofDag.semanticValidation.regexFinalAuthority = true;
+    },
+    (value) => {
+      value.boredomActionRegisterProofDag.semanticValidation.confirmationLaunchReady = true;
+    },
+    (value) => {
+      value.boredomActionRegisterProofDag.semanticValidation.heldoutCorpus.sha256 = '0'.repeat(64);
+    },
+    (value) => {
+      value.source.closure = value.source.closure.filter(
+        (entry) => entry.path !== 'services/tutorStubBoredomSemanticAdjudication.js',
+      );
+    },
+  ]) {
+    const invalid = structuredClone(request);
+    mutate(invalid);
+    const invalidPath = path.join(temporary, `invalid-v3-${crypto.randomUUID()}.json`);
     fs.writeFileSync(invalidPath, `${JSON.stringify(invalid, null, 2)}\n`);
     assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
   }

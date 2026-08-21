@@ -53,6 +53,61 @@ test('turn orchestration rejects an empty learner turn before tutor dispatch', a
   assert.deepEqual(events, [{ type: 'empty_learner_turn_rejected', turn: 1 }]);
 });
 
+test('prospective-v9 orchestration stops measurement-indeterminate boredom before tutor output or repair', async () => {
+  const events = [];
+  let adjudications = 0;
+  let tutorCalls = 0;
+  const orchestration = createTutorStubTurnOrchestration({
+    adjudicateTutorStubBoredomObservation: async () => {
+      adjudications += 1;
+      return {
+        schema: 'machinespirits.tutor-stub.boredom-semantic-adjudication.v1',
+        measurement_disposition: 'measurement_indeterminate',
+        confidence: 0.62,
+      };
+    },
+    appendTraceEvent(_trace, event) {
+      events.push(event);
+    },
+    assertTutorStubTurnAttemptCurrent() {},
+    callTutor: async () => {
+      tutorCalls += 1;
+      return { text: 'must not be called' };
+    },
+    createTutorStubLearnerResponseProvenance: () => ({ source: 'test' }),
+    jsonClone: (value) => (value == null ? value : JSON.parse(JSON.stringify(value))),
+    turnDebugId: (_state, turn) => `t${turn}`,
+  });
+  const state = {
+    trace: null,
+    turns: [],
+    history: [],
+    resistanceActionRegisterStudy: {
+      enabled: true,
+      dynamic_boredom_proof_dag: true,
+      consumed: false,
+      job_id: 'semantic-indeterminate-job',
+      proof_dag_registration: { design: { observationSemantics: 'prospective_v9' } },
+    },
+  };
+  await assert.rejects(
+    orchestration.runOneTurn(
+      'Fine. I could inspect the gauge, but I want to stop this task.',
+      state,
+      { turn: { discourse_move: 'question', evidence_use: 'none' } },
+      { advance: { supportedMoveCount: 0 } },
+      {},
+    ),
+    (error) =>
+      error.code === 'TUTOR_STUB_BOREDOM_MEASUREMENT_INDETERMINATE' &&
+      error.disposition === 'measurement_indeterminate_stop_no_repair_no_replacement',
+  );
+  assert.equal(adjudications, 1);
+  assert.equal(tutorCalls, 0);
+  assert.equal(events.filter((event) => event.type === 'boredom_semantic_adjudication').length, 1);
+  assert.equal(events.filter((event) => event.type === 'boredom_semantic_measurement_indeterminate').length, 1);
+});
+
 test('a completed turn stamps what the reply did, just before the turn closes', async () => {
   const events = [];
   const orchestration = passthroughOrchestration(
