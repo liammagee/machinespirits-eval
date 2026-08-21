@@ -3038,19 +3038,22 @@ and explicit human approval.
   digest-bound v4 HOLD request,
   `config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v4.json`,
   request SHA-256
-  `a9addfef5cbfcf833ff9a1c69c5cad82dd69dc6875e013dff3e7918f08aae46d`,
-  packaged at launch commit `244c5c7b357df659d5ebdde030ffd55266d0b77f`
+  `d196de4777500d7bef752ec6b0f9f56cf8112a933394823477282bec76858618`,
+  packaged at launch commit `12a6253676a07188469c56c803a771c19a97ea04`
   (a first freeze at `b4d6ca23` was replaced before push after a
   parser-selector fix for the v1 held-out corpus schema string; a second
   freeze at `a4586874`, digest `cdc095c9`, was replaced after PR #776
   review when the runner — a closure file — gained the launch
-  authorization gate and the v4 programme-ceiling fix; neither earlier
-  request was ever consumed or approved).
+  authorization gate and the v4 programme-ceiling fix; a third freeze
+  at `244c5c7b`, digest `a9addfef`, was replaced when the gate also
+  gained the committed-bytes-at-HEAD binding; no earlier request was
+  ever consumed or approved).
   Live and recovery execution for registration version 4 and later now
   fail closed unless a separately committed launch-authorization file
   binds the registration digest, the frozen request digest through the
-  full checker, and the exact approval statement; v4 batch plans emit
-  the 5,000-attempt programme ceiling, and tests pin both behaviors.
+  full checker, and the exact approval statement, and byte-matches its
+  own blob at HEAD; v4 batch plans emit the 5,000-attempt programme
+  ceiling, and tests pin all three behaviors.
   It binds the v4 registration, endpoint contract, and certificate to the
   validated Sol V3 semantic instrument (module and sealed 55-case held-out
   v4 corpus digests, all five predeclared gates passed at 1.00, validation
