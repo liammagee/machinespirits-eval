@@ -1971,3 +1971,37 @@ and explicit human approval.
   prior learner-repair calls; the ledger and programme safeguard remain
   `293 -> 2453 / 5000` for one fresh confirmation and at most `4613/5000` while
   both powered confirmations remain reserved.
+- 2026-08-20 — Prepared the wholly fresh prospective-v9 semantic-instrument
+  confirmation HOLD request
+  `config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v3.json`
+  at SHA-256
+  `abda11e242d3d2cd67c0fe9f3e3c16a11cd59020e86e62ca2f9445e97508c08c`.
+  Deterministic packaging pins the merged readiness source/tree
+  `fc6444b4700d61f58ab53b0c2c4bdd2fb5ad5562` /
+  `e09feffae199993236d2e1bdb2d97940501ffff1`, 52 critical
+  source-closure files, eight repository bindings, registration/endpoint/
+  certificate V3, the 22-case sealed semantic corpus, the exact excluded
+  prospective-v2 stopped execution, and all live/recovery/analyzer command
+  hashes. Its nine batch roots and combined report use the wholly fresh,
+  create-once prefix
+  `.tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v3-live-2026-08-20`.
+
+  The powered design is unchanged: 36 fresh independent dialogues, 18 warm
+  and 18 plain, six blocked worlds, the predeclared exact conditional analysis,
+  and no interim analysis, reuse, pooling, replacement, or selection. The
+  operational safeguards remain 60 reservations per dialogue, 240 per batch,
+  2160 for the study, `293 -> 2453 / 5000` for one fresh confirmation, and at
+  most `4613/5000` while both confirmations remain reserved. Bounded technical
+  recovery remains limited to missing or failed units under unchanged pins and
+  ceilings.
+
+  This package is deliberately not launch-ready. It retains literal HOLD,
+  null approval, and false model/live authorization fields; its independent
+  `codex.gpt-5.6-sol` semantic adjudicator still has
+  `empiricalValidationStatus: pending` and
+  `confirmationLaunchReady: false`. The predeclared sensitivity, specificity,
+  reference-agreement, ambiguous-indeterminacy, and low-confidence-
+  indeterminacy gates must pass on frozen and genuinely held-out material
+  without changing the request, prompt, wrapper, or protected inputs before
+  any confirmation launch. Isolated no-`node_modules` replay passed 83 checks
+  with zero model calls and zero production writes.
