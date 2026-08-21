@@ -6,6 +6,8 @@ import {
   buildTutorStubBoredomProofDagPlan,
   validateTutorStubBoredomProofDagRegistration,
 } from './tutorStubBoredomActionRegisterProofDagPreflight.js';
+import { createTutorStubBoredomSemanticAdjudicator } from './tutorStubBoredomSemanticAdjudication.js';
+import { createTutorStubBoredomSemanticAdjudicator as createTutorStubBoredomSemanticAdjudicatorV3 } from './tutorStubBoredomSemanticAdjudicationV3.js';
 import { TUTOR_STUB_CLI_POLICY_RETRY_DELAYS_MS } from './tutorStubCliPolicyRetry.js';
 import { assertTutorStubTurnAttemptCurrent } from './tutorStubTurnAttempt.js';
 
@@ -16,6 +18,20 @@ export const BOREDOM_PROOF_DAG_ADHERENCE_EXHAUSTED_CODE = 'TUTOR_STUB_BOREDOM_PR
 const BOREDOM_PROOF_DAG_PLANNED_WORST_CASE_CALLS = 20;
 const BOREDOM_PROOF_DAG_MODEL_CALL_BUDGET = 60;
 const MAX_RESERVATIONS_PER_PLANNED_CALL = 1 + TUTOR_STUB_CLI_POLICY_RETRY_DELAYS_MS.length;
+
+export function selectTutorStubBoredomSemanticAdjudicatorFactory({ args, root }) {
+  const registrationPath = args?.['boredom-proof-dag-registration'];
+  if (!registrationPath) return createTutorStubBoredomSemanticAdjudicator;
+  const registration = JSON.parse(fs.readFileSync(path.resolve(root, registrationPath), 'utf8'));
+  const schema = registration?.measurement?.semanticAdjudicator?.schema;
+  if (schema === undefined || schema === 'machinespirits.tutor-stub.boredom-semantic-adjudication.v1') {
+    return createTutorStubBoredomSemanticAdjudicator;
+  }
+  if (schema === 'machinespirits.tutor-stub.boredom-semantic-adjudication.v3') {
+    return createTutorStubBoredomSemanticAdjudicatorV3;
+  }
+  throw new Error(`unsupported boredom semantic adjudication schema in registration: ${schema}`);
+}
 
 export function buildTutorStubBoredomProofDagRepairBudgetDiagnostic({ maxFullRepairsByT2 = 1 } = {}) {
   return {

@@ -17,7 +17,7 @@ import {
   hashPaidStudyEndpointValue,
   validatePaidStudyEndpointGoCertificate,
 } from '../services/paidStudyEndpointPreflight.js';
-import { selectTutorStubBoredomSemanticAdjudicatorFactory } from '../services/tutorStubCliApplicationHost.js';
+import { selectTutorStubBoredomSemanticAdjudicatorFactory } from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
 import { createTutorStubBoredomSemanticAdjudicator as createV1Adjudicator } from '../services/tutorStubBoredomSemanticAdjudication.js';
 import { createTutorStubBoredomSemanticAdjudicator as createV3Adjudicator } from '../services/tutorStubBoredomSemanticAdjudicationV3.js';
 
