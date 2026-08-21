@@ -3038,11 +3038,19 @@ and explicit human approval.
   digest-bound v4 HOLD request,
   `config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v4.json`,
   request SHA-256
-  `cdc095c9e7c787ec0a5e425dbb191b7b1f7a7a2bcb4942b9b4ee2481a81b4b88`,
-  packaged at launch commit `a458687482af54eaf02e38ec37f7b3f0f143524f`
+  `a9addfef5cbfcf833ff9a1c69c5cad82dd69dc6875e013dff3e7918f08aae46d`,
+  packaged at launch commit `244c5c7b357df659d5ebdde030ffd55266d0b77f`
   (a first freeze at `b4d6ca23` was replaced before push after a
-  parser-selector fix for the v1 held-out corpus schema string; that
-  request was never consumed or approved).
+  parser-selector fix for the v1 held-out corpus schema string; a second
+  freeze at `a4586874`, digest `cdc095c9`, was replaced after PR #776
+  review when the runner — a closure file — gained the launch
+  authorization gate and the v4 programme-ceiling fix; neither earlier
+  request was ever consumed or approved).
+  Live and recovery execution for registration version 4 and later now
+  fail closed unless a separately committed launch-authorization file
+  binds the registration digest, the frozen request digest through the
+  full checker, and the exact approval statement; v4 batch plans emit
+  the 5,000-attempt programme ceiling, and tests pin both behaviors.
   It binds the v4 registration, endpoint contract, and certificate to the
   validated Sol V3 semantic instrument (module and sealed 55-case held-out
   v4 corpus digests, all five predeclared gates passed at 1.00, validation
