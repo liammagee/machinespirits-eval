@@ -1,0 +1,809 @@
+{
+  "schema": "machinespirits.tutor-stub.resistant-profile-discrimination-study-go-request.v1",
+  "status": "HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL",
+  "studyId": "tutor-stub-boredom-action-register-proof-dag-v4",
+  "authorization": {
+    "explicitHumanApproval": null,
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "standingAuthorizationAttachmentSha256": "4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b",
+    "standingAuthorizationIncludesFutureRequestDigest": true,
+    "programmeCeilingOperationalSafeguard": 5000
+  },
+  "source": {
+    "launchCommit": "b4d6ca2367f996bdb7b6e8538e96dc140b127b51",
+    "launchTree": "1d2dd91a40cbc37a5338e2098c76ae71a454b60c",
+    "requirements": {
+      "headMustEqualLaunchCommit": true,
+      "checkoutMustBeClean": true,
+      "detachedLaunchWorktree": true
+    },
+    "closure": [
+      {
+        "path": "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+        "sha256": "801419917bdf8772eb8d79e69a8d5cbe03b6c4ac25d9f464ba00b238ade6a32b"
+      },
+      {
+        "path": "scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js",
+        "sha256": "78248bad7c1fb9cd27b59bd4a9af6afe471c5d547f1bb5979c2bd7b88f06a949"
+      },
+      {
+        "path": "scripts/tutor-stub.js",
+        "sha256": "5a7136af62db78962b253955b2fdf99ddcc87ba1c6bbbecffdb78902d0df8344"
+      },
+      {
+        "path": "scripts/tutor-stub-learner-profile-contracts.js",
+        "sha256": "6198a0e909bc45de9c343216228bf2f5eec2c5bb876e43a9ed1bce8c27684372"
+      },
+      {
+        "path": "scripts/check-tutor-stub-resistant-profile-study-go-request.js",
+        "sha256": "9acd437fd1d6b2d4258e8948e5de543c2cf854f908ce624c4bad9d601c698897"
+      },
+      {
+        "path": "scripts/package-tutor-stub-resistant-profile-study-go-request.js",
+        "sha256": "61d2d4dc6c13b701d36f744f0e0b0fca60847f01a8ce993d90de14c817d75c70"
+      },
+      {
+        "path": "services/tutorStubBoredomActionRegisterProofDagStudy.js",
+        "sha256": "57159772100f1d004c481cb45c60b177931989e4dc3fa742a73aca938bd5084a"
+      },
+      {
+        "path": "services/tutorStubBoredomActionRegisterProofDagPreflight.js",
+        "sha256": "4c622e66f42207b18d972bacf28cdc6335e7e1dd42360a8972650554d4a457d4"
+      },
+      {
+        "path": "services/tutorStubResistanceActionRegisterStudy.js",
+        "sha256": "2839d68a6f6405e4f341fa9cc0cc1695c2be352e8100f29b691dd1bdee07d770"
+      },
+      {
+        "path": "services/paidStudyEndpointPreflight.js",
+        "sha256": "6a099d3d43269288f3b0ab4565c10b4d286a6aa433796742f087681a1d7ad79a"
+      },
+      {
+        "path": "services/tutorStubTurnOrchestration.js",
+        "sha256": "03b85f735e5497a8229bea5c33adc787373c70967e08183134060b382bffa6a0"
+      },
+      {
+        "path": "services/tutorStubCliApplicationHost.js",
+        "sha256": "87f8121fc0f10b7c0ff1e61c4b890d37e753bddbc6b50534a5279ad9df5bcb18"
+      },
+      {
+        "path": "services/tutorStubCliArguments.js",
+        "sha256": "1ce135ff75b37d0ac4708f9e02f475f78f06b68054b9b02994bd4260abbb38be"
+      },
+      {
+        "path": "services/tutorStubNonInteractiveApplication.js",
+        "sha256": "ce50a1006d8181118084febd5f289f66d2158efd8b54d0e90c191574bf61d8eb"
+      },
+      {
+        "path": "services/tutorStubApplicationState.js",
+        "sha256": "e7628a67e95d30f09896b3e33710bab31994f348beb6d08f4dde3dd30e410b47"
+      },
+      {
+        "path": "services/tutorStubApplicationTraceContext.js",
+        "sha256": "77dbd695886f43d8b98b8c391a82cf783f842804b3bb010c99a1f9b1e6cdbfc3"
+      },
+      {
+        "path": "services/tutorStubSessionRecipe.js",
+        "sha256": "4e1ce36f118c9e5e271caa1d4eed645e879a4bdd7de9a388722afa44903fbc55"
+      },
+      {
+        "path": "services/tutorStubReleasePacing.js",
+        "sha256": "0940332bb908ba4d84257d15f7374ed871ef6575e5871e8f02dc167bfb2af186"
+      },
+      {
+        "path": "services/tutorStubAutomatedLearnerGenerationRuntime.js",
+        "sha256": "86af11e2fd419c4a43dabc963cc69fa2b16498d5481ebe6712a5365c20a105d7"
+      },
+      {
+        "path": "services/mixedLearnerArtifacts.js",
+        "sha256": "842b353d9c60fcfbcd32cf17548181a349a581ea7eb3ea6601451f16d336abb5"
+      },
+      {
+        "path": "services/tutorStubStageSpeech.js",
+        "sha256": "0a0981c932bd35d58a19e31b37088cf1c090227d6209f77b2693ef09fef08074"
+      },
+      {
+        "path": "services/tutorStubLearnerAnalysisRuntime.js",
+        "sha256": "14ea65c776a3041acbf9bb58600270d666ef5e851d93c89e441651fb67e415a8"
+      },
+      {
+        "path": "services/tutorStubPublicLearnerAnalysis.js",
+        "sha256": "5ea240613cc42f3e46e54ad15b8f3f267cf10821a65fb4954cf5b3c6054f2073"
+      },
+      {
+        "path": "services/resistantLearnerObservation.js",
+        "sha256": "7c1ca5782e80e37a3b6f830227a5d65990e24527b1837c89e16dc539e4a25bde"
+      },
+      {
+        "path": "services/tutorStubActionBeforeRegisterShadow.js",
+        "sha256": "a31a5a82ed4cb65a4dae23da0a0e8be471d811441dc4957a4dad7eecab845829"
+      },
+      {
+        "path": "services/pedagogicalMove/resistantProfileWarrantShadow.js",
+        "sha256": "60553df929185c0750ca4bc66eab5a5be2b0bbff35cabfae0970581bef502343"
+      },
+      {
+        "path": "services/tutorStubRegisterPragmatics.js",
+        "sha256": "d2a5d4d47c13ebda8e7ecce52e39aaced51bea2162569d7b9aee86ff1281c4cf"
+      },
+      {
+        "path": "services/tutorStubResponsePolicy.js",
+        "sha256": "a0b29dbcbdcd93c30f4858597b03f99135fa71ba76f57d70fefcbd6d8214e9f4"
+      },
+      {
+        "path": "services/tutorStubEdgeTimingPolicy.js",
+        "sha256": "2bbe0482a5503fa15b4a79639451bfb3cddff026c784b8a776756d2f239e680c"
+      },
+      {
+        "path": "services/tutorStubCliPolicyRetry.js",
+        "sha256": "9bd2239d916808ece53dce816b702d656de02628922871c6e68d24707a908278"
+      },
+      {
+        "path": "services/tutorStubPromptTransport.js",
+        "sha256": "4b1c94376904024a8a955f05525a6ec071644f03ce103be0e8ed01a5c02430eb"
+      },
+      {
+        "path": "services/tutorStubTutorAttemptRuntime.js",
+        "sha256": "a4e2f1a3655908e5bd68fb172b010b03d6139cd66462f43799a71ea356fb1dc7"
+      },
+      {
+        "path": "services/tutorStubTraceRuntime.js",
+        "sha256": "db025e4f5b30f76d8d14a6048662cef50afcc9bfd053ccd5fb00c9eb5254b1e2"
+      },
+      {
+        "path": "services/tutorStubLabs.js",
+        "sha256": "45668a759729574d1019aeaedaab5c61e023b42862634a816a8bdabf68d087eb"
+      },
+      {
+        "path": "services/tutorStubArtifactArchive.js",
+        "sha256": "e17500f90ef9deb72deaa030b1a3cf034d6ce4502f40016163d8c623188c4281"
+      },
+      {
+        "path": "config/drama-derivation/world-005-marrick.yaml",
+        "sha256": "38f1e5106dbca611a993bf2987f1a812330609927c84b0e17c281c292a201d03"
+      },
+      {
+        "path": "config/drama-derivation/world-026-skyway-bakery.yaml",
+        "sha256": "f699c057d2a973cf548f9b4e131a6a061e2e48803e46df28dd05e6b263c22108"
+      },
+      {
+        "path": "config/drama-derivation/world-029-riverside-clinic.yaml",
+        "sha256": "0a34fa3dd259c955ff8579eb0b95861f70374e147f190d5f26fe4631ae6fcbcc"
+      },
+      {
+        "path": "config/drama-derivation/world-030-rowan-flat.yaml",
+        "sha256": "dc2752ee9757feeda71595bed2850c61f41cb6b0f6eef5fd08c768577ba8b8c1"
+      },
+      {
+        "path": "config/drama-derivation/world-031-tideway-makerspace.yaml",
+        "sha256": "a395d0df503f68764a1263289bde9fab856646804afc16aae24b8044dfd4f8e1"
+      },
+      {
+        "path": "config/drama-derivation/world-033-alder-row-redoubt.yaml",
+        "sha256": "0ec97e6455dcd68ec22cadff1499d9ec0fa6f9be18a6dc1aa0244b10bbb3e67a"
+      },
+      {
+        "path": "config/providers.yaml",
+        "sha256": "fe0c86fa91f4443fc4d55f6f3d5b39cf7df9fff5c3284096429cb3908335b326"
+      },
+      {
+        "path": "package.json",
+        "sha256": "cc63281906982683d8628a6d6bc2273b0aeed49baf5d789a132efac7f98c0e15"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "74306cc482c33b3c8f0f4e0f67daf612287e386f5686d5ff9fa4c97683229117"
+      },
+      {
+        "path": "services/resistantLearnerAxisObservation.js",
+        "sha256": "c4798101a43af1150ecb0c469350376eebf1f5ff44756c1e3f25ce2fc4a838b4"
+      },
+      {
+        "path": "services/tutorStubBoredomSemanticAdjudication.js",
+        "sha256": "09ff66e44aa4219cdda56fae62a543e985f50b9ef32c487d5af3e85bc45168ea"
+      },
+      {
+        "path": "services/evalConfigLoader.js",
+        "sha256": "f71a1b4c7155937f31bae57750f0a396348d2dcf751d425ddab89faf03ad28a1"
+      },
+      {
+        "path": "services/cliProviderBridge.js",
+        "sha256": "0e9dc6e240383c66cf5aa39394855a2bbe5e04c67a090ee1cde8c9a0306ee85b"
+      },
+      {
+        "path": "services/tutorStubPromptAudit.js",
+        "sha256": "d462619bf276265fc16a426f3ffbb5e25001fbb767354f36b7103df3d56946a8"
+      },
+      {
+        "path": "services/tutorStubCliRequest.js",
+        "sha256": "68e5db08acc6b4ab8f31ee0d4b2721162434cd9f80b86029d96b50ed3c45098a"
+      },
+      {
+        "path": "tutor-core/services/unifiedAIProviderService.js",
+        "sha256": "6428dc03c26cd107105e3e42636347f7b148ca9be0df696754602838c9dc1547"
+      },
+      {
+        "path": "config/tutor-stub-boredom-semantic-adjudication-heldout.v1.json",
+        "sha256": "ad61f7b104c8202889c9f9eb00090a900aafea5d5bf55d7e3b89cf41db300f93"
+      },
+      {
+        "path": "services/tutorStubBoredomSemanticAdjudicationV3.js",
+        "sha256": "ba4a692fd1310591072a52c600b91cdd796edfdc89f979e7843b41d7fa9ff191"
+      },
+      {
+        "path": "config/tutor-stub-boredom-semantic-adjudication-heldout.v4.json",
+        "sha256": "5f65dd5dc3e193c9dc0368b4155a550bc9b5acd56de78e62704e35f750f50aa0"
+      }
+    ]
+  },
+  "boredomActionRegisterProofDag": {
+    "type": "prospective_boredom_matched_action_warm_plain_proof_dag_confirmation_v1",
+    "requestRevision": 5,
+    "priorStoppedExecution": {
+      "request": {
+        "path": "config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v2.json",
+        "sha256": "476db5ea5d2bdb9a3bc9a1d3df5b0c5e0d3a641cbd1883129e4fe0f583037310"
+      },
+      "predecessorRequest": {
+        "path": "config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v1.json",
+        "sha256": "0972e76083a7a89592a25d55820527e2b061afad0fdf72036f08790dd61dfe61"
+      },
+      "launchSource": {
+        "commit": "c2bc7b1bcc79b32c48e9b47290d9354c92a44647",
+        "tree": "cdf9ffdd22863f0f22f49c9711bee052186ba76b"
+      },
+      "privateArchiveBranch": "codex/boredom-proof-dag-confirmation-v2-incomplete-archive",
+      "privateArchiveCommit": "5833e54cac9b2e2e88847630c0c61c700c765bb4",
+      "accounting": {
+        "reservations": 71,
+        "completed": 71,
+        "providerErrors": 0,
+        "aborted": 0
+      },
+      "batch1": {
+        "status": "sealed_complete",
+        "dialoguesComplete": 4,
+        "planSha256": "a90c3bf1dc4b2f85fc0ba455a03696840040b9e3f7cab43723586eb6675e6257",
+        "resultSha256": "e0abf503f21e063a48aa7167e06f5eb64b8e680fc5a3200747874c520e233eea",
+        "sealSha256": "318e9bbe7f91bbdbcbed546bb5d8039cd3a0e692e4f1af0a93e1da4bab33bc48",
+        "liveInventorySha256": "b3eeb3bb9361d9912c8d2d106d5beb5561d9561bf9cde213853c6eb6e5713d7a",
+        "privateInventorySha256": "d9958cf8ba562b6bcc3ae14a5dce22540027409f24595b1c18add83dc111a675"
+      },
+      "batch2": {
+        "status": "stopped_incomplete",
+        "dialoguesComplete": 2,
+        "substantiveFailures": 2,
+        "planSha256": "9bb84d2d142e93f37dceb21c773c3a5d367d57db483547f8216abd7a463a94ed",
+        "resultSha256": "37658d100fe3c4899fda44b729d8d0c36903164cf8634a6c699303489fe6a41c",
+        "sealProduced": false,
+        "liveInventorySha256": "35aca4d938b865d9f635884b40157f5f5ea04e8ee879870f08ea1ed44ec6e1e2",
+        "privateInventorySha256": "2b9457e7a6a8f34a2c74b3d06b102242c578d496e19521bf4f92c4ac5ca4e6b9"
+      },
+      "traceSha256": [
+        "615b6b58e329638285024a34b5c66eac4883bd76d98d58715fc6a9b5e5c01c02",
+        "a4c666878724d537f3b960be1b5d153a02ef2eaf873475781e9100427f6f8a40",
+        "d87db7fdb9656b9840abe7e35c5fb6045f579e8bb09cd3a5f64d3e9b8a2503fc",
+        "354c0149d2e94e92d2d4d21a0de9ae853f3d1bee14d0a3b09b2e33e5fc8e17bd",
+        "100eb9e43df72eee19aa973ef81e1eecdc8029be81021bd19ba88a2ca1c32f09",
+        "0a9de6bdf7e36b1f031372c981c37bb6216778acef6a1c8f1e2c3b15f7974c3f",
+        "00da8fe46cf830c2284883be43fef23f47b7c89d1ddb0140dac3ffaab5fb5d3d",
+        "f3594107f431fe87b46c8fadaf2b6c4ad0ec4705ce3f42f6fbad1a4dcddc8dea"
+      ],
+      "batches3Through9Started": false,
+      "recoveryRan": false,
+      "combinedAnalyzerRan": false,
+      "reportProduced": false,
+      "scientificVerdict": "none_categorical_instrument_failure",
+      "reusePermitted": false,
+      "resumePermitted": false,
+      "retryPermitted": false,
+      "replacementPermitted": false,
+      "poolingPermitted": false,
+      "analysisPermitted": false,
+      "outcomeSelectionPermitted": false,
+      "confirmationCreditPermitted": false
+    },
+    "calibrationSizingEvidence": {
+      "analysisRequest": {
+        "path": "config/tutor-stub-resistance-action-register-baseline-analysis-go-request.v1.json",
+        "sha256": "965aca0ad1f61d2f43891c162861180016d79a8afa5c090ace0e3e88a436e0dd"
+      },
+      "reportSha256": "42021a390338cd556386efc96d8f00b35655a411627908a10248dba1e473a3a5",
+      "privateArchiveCommit": "0857363dabb4445052159b8218acaed13d921949"
+    },
+    "heldOutDetectionEvidenceUsedForInstrumentOnly": true,
+    "historicalMatchedActionEvidenceUsedForFixedActionOnly": true,
+    "twelveDialogueCalibrationUsedForSizingOnly": true,
+    "priorDialoguesReused": false,
+    "priorOutcomesPooled": false,
+    "interimAnalysisPermitted": false,
+    "validUnitRerunsPermitted": false,
+    "outcomeSelectionPermitted": false,
+    "recoveryBoundary": {
+      "sameLaunchSource": true,
+      "sameRegistrationModelsSeedsWorldsMeasurementAndAssignment": true,
+      "missingOrFailedUnitsOnly": true,
+      "freshNonOverwritingRecoveryCheckpoint": true,
+      "rerunValidOutputs": false,
+      "selectAmongOutcomes": false,
+      "maximumAttemptsPerDialogueUnchanged": 60,
+      "maximumAttemptsPerBatchUnchanged": 240,
+      "maximumTotalStudyAttemptsUnchanged": 2160,
+      "programmeCeilingUnchanged": 5000
+    },
+    "semanticValidation": {
+      "modelRef": "codex.gpt-5.6-sol",
+      "role": "tutor_stub_boredom_performance_adjudication",
+      "generatorSelfJudgmentAllowed": false,
+      "regexFinalAuthority": false,
+      "lexicalSilenceMayVetoSemanticPositive": false,
+      "instrumentModule": {
+        "path": "services/tutorStubBoredomSemanticAdjudicationV3.js",
+        "sha256": "ba4a692fd1310591072a52c600b91cdd796edfdc89f979e7843b41d7fa9ff191"
+      },
+      "heldoutCorpus": {
+        "path": "config/tutor-stub-boredom-semantic-adjudication-heldout.v4.json",
+        "sha256": "5f65dd5dc3e193c9dc0368b4155a550bc9b5acd56de78e62704e35f750f50aa0",
+        "cases": 55
+      },
+      "gates": {
+        "determinateSensitivityMinimum": 0.9,
+        "determinateSpecificityMinimum": 0.9,
+        "referenceAgreementMinimum": 0.9,
+        "ambiguousIndeterminateRateMinimum": 1,
+        "lowConfidenceIndeterminateRateMinimum": 1
+      },
+      "empiricalValidationStatus": "passed_all_predeclared_gates_on_sealed_heldout_v4_corpus",
+      "empiricalValidationReportSha256": "7ff7810e28f7e037af12fbd852445efab9538bc1c946c529356a0c009a51763c",
+      "confirmationLaunchReady": true,
+      "lowConfidenceOrDisagreementDisposition": "measurement_indeterminate_no_repair_no_rerun_no_replacement",
+      "supersededHoldRequest": {
+        "path": "config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v3.json",
+        "sha256": "abda11e242d3d2cd67c0fe9f3e3c16a11cd59020e86e62ca2f9445e97508c08c",
+        "consumedByExecution": false
+      }
+    }
+  },
+  "design": {
+    "profiles": [
+      "bored"
+    ],
+    "dialogues": 36,
+    "dialoguesPerArm": 18,
+    "realizations": [
+      "plain",
+      "warm"
+    ],
+    "worlds": [
+      "world_005_marrick",
+      "world_026_skyway_bakery",
+      "world_029_riverside_clinic",
+      "world_030_rowan_flat",
+      "world_031_tideway_makerspace",
+      "world_033_alder_row_redoubt"
+    ],
+    "freshIndependentDialogues": true,
+    "triggerMustShowByTurn": 2,
+    "primaryRecoveryDeadlinePostTriggerLearnerTurns": 1,
+    "proofProgressHorizonPostTriggerLearnerTurns": 2,
+    "fixedPedagogicalMove": "ask_discriminating_question",
+    "dagMode": "strict_dag",
+    "assignmentManifestSha256": "4e256dfa65054747a5d6d1ac82d1aecb42f7c98f158cb76e686f24c37d71ef94",
+    "runSeedBase": 2026082400,
+    "parallelism": 4,
+    "models": {
+      "tutor": "codex.gpt-5.6-luna",
+      "analysis": "codex.gpt-5.6-luna",
+      "learner": "codex.gpt-5.6-luna",
+      "semanticAdjudicator": "codex.gpt-5.6-sol"
+    },
+    "cliEffort": "low"
+  },
+  "power": {
+    "test": "two_sided_exact_conditional_blocked_score_test",
+    "alpha": 0.05,
+    "calibrationPlainRate": 0.16666666666666666,
+    "calibrationWarmRate": 0.6666666666666666,
+    "powerAt17PerArm": 0.7947641958186097,
+    "powerAt18PerArm": 0.8164905471625752,
+    "minimumNPerArmAtOrAbove80Percent": 18
+  },
+  "budget": {
+    "dialogues": 36,
+    "plannedRoleCallsPerDialogue": 20,
+    "maximumReservationsPerPlannedCall": 3,
+    "maximumAttemptsPerDialogue": 60,
+    "dialoguesPerBatch": 4,
+    "maximumAttemptsPerBatch": 240,
+    "maximumPlannedModelAttempts": 2160,
+    "programmeLedgerBefore": 446,
+    "programmeCeilingBefore": 5000,
+    "frameRefusalConfirmationReservedAttempts": 2160,
+    "programmeOperationalSafeguardIncrement": 2160,
+    "programmeCeilingAfter": 5000,
+    "programmeLedgerAfterBoredomMaximum": 2606,
+    "programmeReservedAfterBothMaximum": 4766,
+    "attemptAccountingRole": "operational_execution_safeguard_only",
+    "retryOrResumeAuthority": "bounded_technical_recovery"
+  },
+  "measurement": {
+    "reportSchema": "machinespirits.tutor-stub.boredom-action-register-proof-dag-confirmation-report.v1",
+    "primaryOutcome": "profile_specific_resistance_recovery_first_post_trigger_turn",
+    "keySecondaryOutcome": "objective_proof_progress_by_two_turns",
+    "primaryTest": "two_sided_exact_conditional_blocked_score_test",
+    "fixedSequencePrimaryThenKeySecondary": true,
+    "oneCombinedThirtySixDialogueAnalysisRequired": true,
+    "interimAnalysisPermitted": false,
+    "priorDialoguesReusedOrPooled": 0,
+    "claimBoundary": "boredom_matched_action_warm_versus_plain_recovery_and_fixed_sequence_proof_progress_only"
+  },
+  "bindings": {
+    "registration": {
+      "path": "config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json",
+      "sha256": "02b612a7b902dd0aa8eb644d733f6f3f350865e8bad2b068af695e7d0078a6b7"
+    },
+    "endpoint": {
+      "contractPath": "config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v4.json",
+      "contractFileSha256": "dcf4eddf7eab0f8e2cacbf2f1f85f49b3958565b8ed93c450f3395f70dd291a4",
+      "contractCanonicalSha256": "12be4e391dba34459a2f1fc96be77ed9721c32ac8d7ccb2cd7acf015b51847c3",
+      "certificatePath": "config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v4.endpoint-go.json",
+      "certificateFileSha256": "68769dec56cee01c4aee5d0f396f9a25faa4b5cb6f175ac503df8b060a91a489",
+      "preflightSha256": "845ed7cc6cf3403ea574796e6d65bbf5f732eb2dfa396efa50c5a68cb2981403"
+    },
+    "routeCanary": {
+      "resultPath": "config/tutor-stub-resistant-profile-route-canary-result.v1.json",
+      "resultSha256": "c68ee936441504fdb514f97537aaf87915c734b43da82f7d81136c40c6918623",
+      "authorizationConsumptionPath": "config/tutor-stub-resistant-profile-route-canary-authorization.consumed.v1.json",
+      "authorizationConsumptionSha256": "1ec23bf81df7678050e5383fbda9ab913979b9b93b24fb1944b59002c6eeefb2",
+      "sourceArtifactSha256": "a2989dfb48438b7153928244a20ef42f698122b6edb3062fdfecca41ca1ac55f",
+      "executionHead": "04edc89f943e380bf5fc88bf2d84b93c8c1a805c",
+      "observedProvider": "codex",
+      "observedModel": "gpt-5.6-luna",
+      "observedEffort": "low",
+      "attestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+      "modelIndependentlyAttested": false
+    },
+    "commands": {
+      "source": "commands",
+      "liveArraySha256": "04d840d8c36b76242fb9a7bbbdea41736cc2f4d5d54667a31d8b53f31010412b",
+      "recoveryArraySha256": "07f8c2da57e795b8b92cf9e553498f0125381e38e03eeae85819abdfe2deeb6d",
+      "analyzeArraySha256": "6b3b115cee273babb2e618d9629a02e5311de541e00f083525ff3ae45806f2ec"
+    }
+  },
+  "commands": {
+    "live": [
+      [
+        "node",
+        "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+        "--live-batch",
+        "--registration",
+        "config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json",
+        "--batch",
+        "execution_batch_1",
+        "--destination",
+        ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_1",
+        "--parallelism",
+        "4",
+        "--expected-source-commit",
+        "b4d6ca2367f996bdb7b6e8538e96dc140b127b51"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+        "--live-batch",
+        "--registration",
+        "config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json",
+        "--batch",
+        "execution_batch_2",
+        "--destination",
+        ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_2",
+        "--parallelism",
+        "4",
+        "--expected-source-commit",
+        "b4d6ca2367f996bdb7b6e8538e96dc140b127b51"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+        "--live-batch",
+        "--registration",
+        "config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json",
+        "--batch",
+        "execution_batch_3",
+        "--destination",
+        ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_3",
+        "--parallelism",
+        "4",
+        "--expected-source-commit",
+        "b4d6ca2367f996bdb7b6e8538e96dc140b127b51"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+        "--live-batch",
+        "--registration",
+        "config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json",
+        "--batch",
+        "execution_batch_4",
+        "--destination",
+        ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_4",
+        "--parallelism",
+        "4",
+        "--expected-source-commit",
+        "b4d6ca2367f996bdb7b6e8538e96dc140b127b51"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+        "--live-batch",
+        "--registration",
+        "config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json",
+        "--batch",
+        "execution_batch_5",
+        "--destination",
+        ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_5",
+        "--parallelism",
+        "4",
+        "--expected-source-commit",
+        "b4d6ca2367f996bdb7b6e8538e96dc140b127b51"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+        "--live-batch",
+        "--registration",
+        "config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json",
+        "--batch",
+        "execution_batch_6",
+        "--destination",
+        ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_6",
+        "--parallelism",
+        "4",
+        "--expected-source-commit",
+        "b4d6ca2367f996bdb7b6e8538e96dc140b127b51"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+        "--live-batch",
+        "--registration",
+        "config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json",
+        "--batch",
+        "execution_batch_7",
+        "--destination",
+        ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_7",
+        "--parallelism",
+        "4",
+        "--expected-source-commit",
+        "b4d6ca2367f996bdb7b6e8538e96dc140b127b51"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+        "--live-batch",
+        "--registration",
+        "config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json",
+        "--batch",
+        "execution_batch_8",
+        "--destination",
+        ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_8",
+        "--parallelism",
+        "4",
+        "--expected-source-commit",
+        "b4d6ca2367f996bdb7b6e8538e96dc140b127b51"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+        "--live-batch",
+        "--registration",
+        "config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json",
+        "--batch",
+        "execution_batch_9",
+        "--destination",
+        ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_9",
+        "--parallelism",
+        "4",
+        "--expected-source-commit",
+        "b4d6ca2367f996bdb7b6e8538e96dc140b127b51"
+      ]
+    ],
+    "recovery": [
+      [
+        "node",
+        "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_1",
+        "--expected-source-commit",
+        "b4d6ca2367f996bdb7b6e8538e96dc140b127b51",
+        "--parallelism",
+        "4"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_2",
+        "--expected-source-commit",
+        "b4d6ca2367f996bdb7b6e8538e96dc140b127b51",
+        "--parallelism",
+        "4"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_3",
+        "--expected-source-commit",
+        "b4d6ca2367f996bdb7b6e8538e96dc140b127b51",
+        "--parallelism",
+        "4"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_4",
+        "--expected-source-commit",
+        "b4d6ca2367f996bdb7b6e8538e96dc140b127b51",
+        "--parallelism",
+        "4"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_5",
+        "--expected-source-commit",
+        "b4d6ca2367f996bdb7b6e8538e96dc140b127b51",
+        "--parallelism",
+        "4"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_6",
+        "--expected-source-commit",
+        "b4d6ca2367f996bdb7b6e8538e96dc140b127b51",
+        "--parallelism",
+        "4"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_7",
+        "--expected-source-commit",
+        "b4d6ca2367f996bdb7b6e8538e96dc140b127b51",
+        "--parallelism",
+        "4"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_8",
+        "--expected-source-commit",
+        "b4d6ca2367f996bdb7b6e8538e96dc140b127b51",
+        "--parallelism",
+        "4"
+      ],
+      [
+        "node",
+        "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+        "--recover-batch",
+        "--destination",
+        ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_9",
+        "--expected-source-commit",
+        "b4d6ca2367f996bdb7b6e8538e96dc140b127b51",
+        "--parallelism",
+        "4"
+      ]
+    ],
+    "analyze": [
+      "node",
+      "scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js",
+      "--batch",
+      ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_1",
+      "--batch",
+      ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_2",
+      "--batch",
+      ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_3",
+      "--batch",
+      ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_4",
+      "--batch",
+      ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_5",
+      "--batch",
+      ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_6",
+      "--batch",
+      ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_7",
+      "--batch",
+      ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_8",
+      "--batch",
+      ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_9",
+      "--registration",
+      "config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json",
+      "--expected-source-commit",
+      "b4d6ca2367f996bdb7b6e8538e96dc140b127b51",
+      "--out",
+      ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-combined.json",
+      "--json"
+    ]
+  },
+  "payload": {
+    "humanSubjectData": false,
+    "privateArchiveData": false,
+    "trainingReuseStatus": "not_applicable"
+  },
+  "destination": {
+    "batches": [
+      {
+        "batch": "execution_batch_1",
+        "artifactRoot": ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_1",
+        "createOnce": true,
+        "mustNotExistBeforeLaunch": true
+      },
+      {
+        "batch": "execution_batch_2",
+        "artifactRoot": ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_2",
+        "createOnce": true,
+        "mustNotExistBeforeLaunch": true
+      },
+      {
+        "batch": "execution_batch_3",
+        "artifactRoot": ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_3",
+        "createOnce": true,
+        "mustNotExistBeforeLaunch": true
+      },
+      {
+        "batch": "execution_batch_4",
+        "artifactRoot": ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_4",
+        "createOnce": true,
+        "mustNotExistBeforeLaunch": true
+      },
+      {
+        "batch": "execution_batch_5",
+        "artifactRoot": ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_5",
+        "createOnce": true,
+        "mustNotExistBeforeLaunch": true
+      },
+      {
+        "batch": "execution_batch_6",
+        "artifactRoot": ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_6",
+        "createOnce": true,
+        "mustNotExistBeforeLaunch": true
+      },
+      {
+        "batch": "execution_batch_7",
+        "artifactRoot": ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_7",
+        "createOnce": true,
+        "mustNotExistBeforeLaunch": true
+      },
+      {
+        "batch": "execution_batch_8",
+        "artifactRoot": ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_8",
+        "createOnce": true,
+        "mustNotExistBeforeLaunch": true
+      },
+      {
+        "batch": "execution_batch_9",
+        "artifactRoot": ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-execution_batch_9",
+        "createOnce": true,
+        "mustNotExistBeforeLaunch": true
+      }
+    ],
+    "combinedReport": ".tutor-stub-auto-eval/boredom-action-register-proof-dag-confirmation-v4-live-2026-08-21-combined.json",
+    "combinedReportCreateOnce": true,
+    "mustNotExistBeforeAnalysis": true
+  }
+}
