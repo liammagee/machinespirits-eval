@@ -8,6 +8,7 @@ import { beginTutorStubActionBeforeRegisterShadow } from './tutorStubActionBefor
 import { tutorStubFirstDraftContractPrompt } from './tutorStubFirstDraftContract.js';
 import { extractTutorStubFrozenTurn, refreshTutorStubFrozenFirstDraftRequest } from './tutorStubFrozenReplay.js';
 import { normalizeTutorStubResponseConfiguration } from './tutorStubRegisterPragmatics.js';
+import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION } from './tutorStubResistanceSemanticAdjudication.js';
 import {
   loadTutorStubResistanceSemanticRegistration,
   tutorStubResistanceSemanticPublicContext,
@@ -249,7 +250,7 @@ function normalizeRegistration(registration) {
   }
   const requiredObservationSemantics = isConfirmationSuccessorRegistration(registration)
     ? isV8Registration(registration)
-      ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveFrameResistanceSemanticV1
+      ? TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION
       : isV7Registration(registration)
         ? RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7
         : isV6Registration(registration)
@@ -822,7 +823,7 @@ export function tutorStubResistanceActionRegisterTreatmentEligibility({
   semanticAdjudication = null,
 }) {
   const semantics = runtime.registration?.design?.trigger?.observationSemantics;
-  if (semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveFrameResistanceSemanticV1) {
+  if (semantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION) {
     const frameSemanticAdjudication = semanticAdjudication || runtime.current_semantic_adjudication || null;
     const semanticBinding = loadTutorStubResistanceSemanticRegistration();
     const semanticValidation = validateTutorStubResistanceSemanticRuntimeResult({
@@ -1026,8 +1027,7 @@ export function applyTutorStubResistanceActionRegisterStudyIntervention({
   const runtime = state?.resistanceActionRegisterStudy;
   if (!selection || !runtime?.enabled) return selection;
   const semanticObservation =
-    runtime.registration?.design?.trigger?.observationSemantics ===
-    RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveFrameResistanceSemanticV1;
+    runtime.registration?.design?.trigger?.observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION;
   const eligibility = tutorStubResistanceActionRegisterTreatmentEligibility({
     runtime,
     learnerText,
@@ -1177,7 +1177,7 @@ export function tutorStubResistanceActionRegisterTriggerFromTurnRecord(
 ) {
   const learnerText = record?.learner || '';
   const classification = record?.classification || null;
-  if (observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveFrameResistanceSemanticV1) {
+  if (observationSemantics === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION) {
     const semanticAdjudication = record?.resistanceSemanticAdjudication || null;
     const semanticValidation = validateTutorStubResistanceSemanticRuntimeResult({
       result: semanticAdjudication,

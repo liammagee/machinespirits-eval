@@ -45,7 +45,6 @@ export const RESISTANT_LEARNER_OBSERVATION_SEMANTICS = Object.freeze({
   prospectiveV6: 'prospective_v6',
   prospectiveV7: 'prospective_v7',
   prospectiveV8: 'prospective_v8',
-  prospectiveFrameResistanceSemanticV1: 'prospective_frame_resistance_semantic_v1',
   prospectiveV9: 'prospective_v9',
 });
 export const BOUNDED_FRAME_OPPORTUNITY_OBSERVATION_SEMANTICS = Object.freeze([
