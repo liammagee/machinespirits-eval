@@ -11,10 +11,15 @@ import {
   buildTutorStubResistanceSemanticZeroCallFixtureResponseV2,
 } from '../services/tutorStubResistanceSemanticAdjudicationV2.js';
 import {
+  TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3,
+  buildTutorStubResistanceSemanticZeroCallFixtureResponseV3,
+} from '../services/tutorStubResistanceSemanticAdjudicationV3.js';
+import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_AGGREGATE_EVENT,
   TUTOR_STUB_RESISTANCE_SEMANTIC_JUDGE_EVENT,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION,
   TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3,
   createLazyTutorStubResistanceSemanticAdjudicator,
   createTutorStubResistanceSemanticRuntime,
   loadTutorStubResistanceSemanticRegistration,
@@ -30,6 +35,35 @@ const corpus = JSON.parse(
   fs.readFileSync(path.join(ROOT, 'config/tutor-stub-resistance-semantic-adjudication-development-corpus.v1.json')),
 );
 const binding = loadTutorStubResistanceSemanticRegistration();
+const v3Case = {
+  case_id: 'v3-runtime-refuser',
+  public_context: [{ role: 'assistant', text: 'Will you test this question against the public record?' }],
+  source: 'Your role gives you no right to impose that question or test, so I will not answer it.',
+  expected: {
+    label: 'frame_refuser',
+    judgment: {
+      jurisdiction_dispute: 'yes',
+      interlocutor_standing_or_right: 'yes',
+      inquiry_or_question_frame_governance: 'yes',
+      test_or_criterion_governance: 'yes',
+      other_jurisdictional_governance: 'no',
+      licensed_participation: 'no',
+      participation_withholding: 'yes',
+      productive_counterframing: 'no',
+      final_label: 'frame_refuser',
+    },
+    evidence: {
+      jurisdiction_dispute: { source_id: 'utterance', text: 'no right to impose that question or test' },
+      interlocutor_standing_or_right: { source_id: 'utterance', text: 'Your role gives you no right' },
+      inquiry_or_question_frame_governance: { source_id: 'utterance', text: 'impose that question' },
+      test_or_criterion_governance: { source_id: 'utterance', text: 'question or test' },
+      other_jurisdictional_governance: null,
+      licensed_participation: null,
+      participation_withholding: { source_id: 'utterance', text: 'I will not answer it' },
+      productive_counterframing: null,
+    },
+  },
+};
 const canonical = (value) => {
   if (Array.isArray(value)) return value.map(canonical);
   if (value && typeof value === 'object') {
@@ -220,6 +254,62 @@ test('production semantic runtime selects the frozen quote-only v2 instrument wi
   assert.equal(
     auditTutorStubResistanceSemanticTrace({
       events: semanticTrace({ corpusCase, events, rawResponses }),
+      expectedCandidateCount: 1,
+    }).measurementIndeterminate,
+    false,
+  );
+});
+
+test('production semantic runtime selects frozen fixed-slot multiaxial v3 and trace audit replays it', async () => {
+  const bindingV3 = loadTutorStubResistanceSemanticRegistration(TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3);
+  const calls = [];
+  const events = [];
+  const rawResponses = new Map();
+  const runtime = createTutorStubResistanceSemanticRuntime({
+    appendTraceEvent: (_trace, event) => events.push(event),
+    resolveModel: (modelRef) => {
+      const judge = bindingV3.registration.measurement.judges.find((row) => row.modelRef === modelRef);
+      return { provider: judge.provider, model: judge.model };
+    },
+    callPromptModel: async ({ prompt, resolved, outputSchema }) => {
+      const packet = JSON.parse(prompt);
+      const judge = bindingV3.registration.measurement.judges.find((row) => row.id === packet.judge.id);
+      const fixture = buildTutorStubResistanceSemanticZeroCallFixtureResponseV3({ corpusCase: v3Case, judge });
+      calls.push({ packet, outputSchema });
+      const response = {
+        text: JSON.stringify({ ...fixture.modelOutput, case_id: packet.case_id }),
+        provider: resolved.provider,
+        model: resolved.model,
+        effort: 'low',
+        structuredOutput: true,
+        prohibitedToolEventCount: 0,
+        prohibitedToolEventCountObserved: true,
+        modelAttestationBasis: 'explicit_cli_model_argument_accepted_bridge_echo',
+        modelIndependentlyAttested: false,
+      };
+      rawResponses.set(judge.id, response);
+      return response;
+    },
+    registrationBinding: bindingV3,
+  });
+  const result = await runtime.adjudicateCandidate({
+    state: {
+      history: [{ role: 'assistant', content: v3Case.public_context[0].text }],
+      trace: { filePath: '/tmp/zero-call-v3.jsonl' },
+      interim: null,
+    },
+    learnerText: v3Case.source,
+    turnNumber: 3,
+  });
+  assert.equal(result.observationSemantics, TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3);
+  assert.equal(result.aggregate.final_label, 'frame_refuser');
+  assert.equal(result.judgeRecordCount, 2);
+  assert.equal(calls.length, 2);
+  assert.ok(calls.every((call) => call.outputSchema.properties.judgment.properties.evidence_quotes.type === 'object'));
+  assert.ok(calls.every((call) => call.outputSchema.properties.judgment.properties.interlocutor_standing_or_right));
+  assert.equal(
+    auditTutorStubResistanceSemanticTrace({
+      events: semanticTrace({ corpusCase: v3Case, events, rawResponses }),
       expectedCandidateCount: 1,
     }).measurementIndeterminate,
     false,

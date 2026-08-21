@@ -1,0 +1,3498 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-semantic-adjudication-corpus.v3",
+  "corpus_id": "tutor-stub-resistance-semantic-adjudication-heldout-v3",
+  "role": "heldout_blinded",
+  "frozen": true,
+  "prompt_examples_allowed": false,
+  "context_provenance": "public_synthetic_authored",
+  "cases": [
+    {
+      "case_id": "v3-hb-ref-multi-01",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As archive examiner, will you decide whether the harbor logs conflict by applying the timestamp rule?"
+        }
+      ],
+      "source": "Your archive title grants no authority over me; the conflict question is not yours to make governing; the timestamp rule is not yours to require. I decline the decision and will not inspect either harbor log.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Your archive title grants no authority over me; the conflict question is not yours to make governing; the timestamp rule is not yours to require"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Your archive title grants no authority over me"
+          },
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "the conflict question is not yours to make governing"
+          },
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "the timestamp rule is not yours to require"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I decline the decision and will not inspect either harbor log"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-multi-02",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As laboratory chair, will you determine whether the alloy failed by using the hardness cutoff?"
+        }
+      ],
+      "source": "Your chairmanship gives you no entitlement to direct my answer; you cannot impose alloy failure as the controlling inquiry; you cannot dictate the hardness cutoff as its standard. I will neither answer nor examine the alloy reports.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Your chairmanship gives you no entitlement to direct my answer; you cannot impose alloy failure as the controlling inquiry; you cannot dictate the hardness cutoff as its standard"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Your chairmanship gives you no entitlement to direct my answer"
+          },
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "you cannot impose alloy failure as the controlling inquiry"
+          },
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "you cannot dictate the hardness cutoff as its standard"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will neither answer nor examine the alloy reports"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-multi-03",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As the museum registrar, will you decide whether the vase is authentic under the pigment-match test?"
+        }
+      ],
+      "source": "A registrar badge does not confer a right to govern my judgment; authenticity is not a question you may set for me; the pigment-match test is not a criterion you may impose. I refuse the verdict and will not compare the pigment samples.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "A registrar badge does not confer a right to govern my judgment; authenticity is not a question you may set for me; the pigment-match test is not a criterion you may impose"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "A registrar badge does not confer a right to govern my judgment"
+          },
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "authenticity is not a question you may set for me"
+          },
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "the pigment-match test is not a criterion you may impose"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I refuse the verdict and will not compare the pigment samples"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-multi-04",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As the election auditor, will you assess whether the precinct return is valid under the signature threshold?"
+        }
+      ],
+      "source": "Your auditor appointment carries no standing to command me; the validity inquiry is not yours to prescribe; the signature threshold is not yours to enforce as decisive. I will not assess the return or review its signatures.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Your auditor appointment carries no standing to command me; the validity inquiry is not yours to prescribe; the signature threshold is not yours to enforce as decisive"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Your auditor appointment carries no standing to command me"
+          },
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "the validity inquiry is not yours to prescribe"
+          },
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "the signature threshold is not yours to enforce as decisive"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not assess the return or review its signatures"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-multi-05",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As editorial convenor, will you judge whether the quotation is faithful using the word-for-word criterion?"
+        }
+      ],
+      "source": "Convening the panel gives you no right to govern my response; you may not make quotation fidelity the mandatory question; you may not impose word-for-word identity as the criterion. I withhold an answer and will not compare the passages.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Convening the panel gives you no right to govern my response; you may not make quotation fidelity the mandatory question; you may not impose word-for-word identity as the criterion"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Convening the panel gives you no right to govern my response"
+          },
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "you may not make quotation fidelity the mandatory question"
+          },
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "you may not impose word-for-word identity as the criterion"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I withhold an answer and will not compare the passages"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-multi-06",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As safety inspector, will you determine whether the bridge is serviceable under the load-ratio limit?"
+        }
+      ],
+      "source": "Your inspection office has no entitlement to rule my participation; bridge serviceability is not an inquiry you can force upon me; the load-ratio limit is not a test you can mandate. I will not give a determination or inspect the load tables.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Your inspection office has no entitlement to rule my participation; bridge serviceability is not an inquiry you can force upon me; the load-ratio limit is not a test you can mandate"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Your inspection office has no entitlement to rule my participation"
+          },
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "bridge serviceability is not an inquiry you can force upon me"
+          },
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "the load-ratio limit is not a test you can mandate"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not give a determination or inspect the load tables"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-multi-07",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As committee moderator, will you decide whether the petition is complete by applying the attachment checklist?"
+        }
+      ],
+      "source": "Moderating this committee supplies no standing over my answer; you do not get to install completeness as my governing question; you do not get to require the attachment checklist as my test. I decline to answer and will not inventory the petition.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Moderating this committee supplies no standing over my answer; you do not get to install completeness as my governing question; you do not get to require the attachment checklist as my test"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Moderating this committee supplies no standing over my answer"
+          },
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "you do not get to install completeness as my governing question"
+          },
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "you do not get to require the attachment checklist as my test"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I decline to answer and will not inventory the petition"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-multi-08",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As the survey supervisor, will you judge whether the boundary moved under the monument-priority rule?"
+        }
+      ],
+      "source": "Your supervisory post gives you no right to direct my inquiry; the moved-boundary question is not yours to impose; the monument-priority rule is not yours to make controlling. I will not judge the boundary or inspect the survey notes.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Your supervisory post gives you no right to direct my inquiry; the moved-boundary question is not yours to impose; the monument-priority rule is not yours to make controlling"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Your supervisory post gives you no right to direct my inquiry"
+          },
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "the moved-boundary question is not yours to impose"
+          },
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "the monument-priority rule is not yours to make controlling"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not judge the boundary or inspect the survey notes"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-multi-09",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As procurement reviewer, will you decide whether the bid is responsive using the mandatory-field test?"
+        }
+      ],
+      "source": "Your reviewer role creates no authority over my answer; bid responsiveness is not a frame you may compel me to accept; the mandatory-field test is not a standard you may dictate. I refuse to decide and will not read the bid sheets.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Your reviewer role creates no authority over my answer; bid responsiveness is not a frame you may compel me to accept; the mandatory-field test is not a standard you may dictate"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Your reviewer role creates no authority over my answer"
+          },
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "bid responsiveness is not a frame you may compel me to accept"
+          },
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "the mandatory-field test is not a standard you may dictate"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I refuse to decide and will not read the bid sheets"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-multi-10",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As records commissioner, will you decide whether the diary entry is contemporaneous under the ink-aging benchmark?"
+        }
+      ],
+      "source": "Your commission grants no standing to govern my participation; the contemporaneity question is not yours to establish; the ink-aging benchmark is not yours to impose as proof. I will offer no answer and will not examine the diary.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Your commission grants no standing to govern my participation; the contemporaneity question is not yours to establish; the ink-aging benchmark is not yours to impose as proof"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Your commission grants no standing to govern my participation"
+          },
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "the contemporaneity question is not yours to establish"
+          },
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "the ink-aging benchmark is not yours to impose as proof"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will offer no answer and will not examine the diary"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-multi-11",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As the course assessor, will you decide whether the proof is complete under the five-lemma rubric?"
+        }
+      ],
+      "source": "Your assessor status gives you no entitlement to control my response; proof completeness is not a question you may make binding; the five-lemma rubric is not a test you may require. I will not render a decision or inspect the submitted proof.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Your assessor status gives you no entitlement to control my response; proof completeness is not a question you may make binding; the five-lemma rubric is not a test you may require"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Your assessor status gives you no entitlement to control my response"
+          },
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "proof completeness is not a question you may make binding"
+          },
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "the five-lemma rubric is not a test you may require"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not render a decision or inspect the submitted proof"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-multi-12",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As restoration director, will you decide whether the fresco was altered using the layer-count standard?"
+        }
+      ],
+      "source": "Directing the restoration gives you no right to govern me; the alteration inquiry is not yours to set as controlling; the layer-count standard is not yours to prescribe. I decline an answer and will not inspect the cross-sections.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Directing the restoration gives you no right to govern me; the alteration inquiry is not yours to set as controlling; the layer-count standard is not yours to prescribe"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Directing the restoration gives you no right to govern me"
+          },
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "the alteration inquiry is not yours to set as controlling"
+          },
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "the layer-count standard is not yours to prescribe"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I decline an answer and will not inspect the cross-sections"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-standing-01",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you compare the two shipping manifests for matching container numbers using the published checklist?"
+        }
+      ],
+      "source": "The container question and published checklist are proper. Your temporary contractor role gives you no authority to question me. I will provide no comparison and will not open the manifests.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Your temporary contractor role gives you no authority to question me"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Your temporary contractor role gives you no authority to question me"
+          },
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will provide no comparison and will not open the manifests"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-standing-02",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you inspect the rainfall ledgers for a discrepancy under the agreed tolerance?"
+        }
+      ],
+      "source": "I accept the discrepancy inquiry and the agreed tolerance. An outside consultant has no standing to demand my answer. I will not inspect either rainfall ledger or report a result.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "An outside consultant has no standing to demand my answer"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "An outside consultant has no standing to demand my answer"
+          },
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not inspect either rainfall ledger or report a result"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-standing-03",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you test the two route maps for consistency under the scale convention?"
+        }
+      ],
+      "source": "The consistency question and scale convention are unobjectionable. Your observer credential confers no right to direct me. I refuse the test and will not compare the route maps.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Your observer credential confers no right to direct me"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Your observer credential confers no right to direct me"
+          },
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I refuse the test and will not compare the route maps"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-standing-04",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you determine whether the invoices duplicate a charge using invoice identifiers?"
+        }
+      ],
+      "source": "Duplicate charging is the right question and identifiers are the right method. A visiting clerk is not entitled to command my participation. I will not answer or inspect the invoices.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "A visiting clerk is not entitled to command my participation"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "A visiting clerk is not entitled to command my participation"
+          },
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not answer or inspect the invoices"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-standing-05",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you review the telescope logs for a timing conflict under the observatory protocol?"
+        }
+      ],
+      "source": "I endorse the timing question and the observatory protocol. Your guest status gives you no standing to govern my response. I decline to review the telescope logs.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Your guest status gives you no standing to govern my response"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Your guest status gives you no standing to govern my response"
+          },
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I decline to review the telescope logs"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-standing-06",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you check the recipes for an ingredient mismatch using the edition key?"
+        }
+      ],
+      "source": "The mismatch inquiry and edition key are acceptable. Your vendor liaison role carries no authority over me. I will not check the recipes or state a finding.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Your vendor liaison role carries no authority over me"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Your vendor liaison role carries no authority over me"
+          },
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not check the recipes or state a finding"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-standing-07",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you compare the witness lists for an omitted name under the filing rule?"
+        }
+      ],
+      "source": "I accept both the omitted-name question and the filing rule. A press observer has no right to require an answer from me. I will neither compare the lists nor answer.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "A press observer has no right to require an answer from me"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "A press observer has no right to require an answer from me"
+          },
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will neither compare the lists nor answer"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-standing-08",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you examine the seed records for varietal identity using the genetic marker table?"
+        }
+      ],
+      "source": "Varietal identity and the marker table are valid choices. Your sales representative position supplies no entitlement to direct my inquiry. I refuse to examine the seed records.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Your sales representative position supplies no entitlement to direct my inquiry"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Your sales representative position supplies no entitlement to direct my inquiry"
+          },
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I refuse to examine the seed records"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-frame-01",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As the authorized chair, will you determine whether the portrait is original using the canvas-age test?"
+        }
+      ],
+      "source": "You may chair the review, and the canvas-age test is acceptable. The question of originality is not yours to set as the governing inquiry. I will not inspect the portrait or give a verdict.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "The question of originality is not yours to set as the governing inquiry"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "The question of originality is not yours to set as the governing inquiry"
+          },
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not inspect the portrait or give a verdict"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-frame-02",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As project lead, will you decide whether the delay was negligent under the agreed timeline method?"
+        }
+      ],
+      "source": "Your leadership and the timeline method are legitimate. You may not impose negligence as the question that governs this review. I refuse to inspect the schedule or answer.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "You may not impose negligence as the question that governs this review"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "You may not impose negligence as the question that governs this review"
+          },
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I refuse to inspect the schedule or answer"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-frame-03",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As authorized editor, will you decide whether the account is biased using the source-balance measure?"
+        }
+      ],
+      "source": "I accept your editorial role and the source-balance measure. Bias is not an inquiry you get to choose for me. I will not read the account or decide.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Bias is not an inquiry you get to choose for me"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "Bias is not an inquiry you get to choose for me"
+          },
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not read the account or decide"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-frame-04",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As review captain, will you determine whether the navigation error was reckless under the deviation table?"
+        }
+      ],
+      "source": "Your captaincy and the deviation table are not disputed. Recklessness is not the frame you may make controlling. I will provide no determination and inspect no chart.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Recklessness is not the frame you may make controlling"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "Recklessness is not the frame you may make controlling"
+          },
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will provide no determination and inspect no chart"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-frame-05",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As appointed facilitator, will you decide whether the letter was deceptive using the omission inventory?"
+        }
+      ],
+      "source": "Your appointment and the omission inventory are proper. The deception question is not yours to prescribe as binding. I will not examine the letter or answer.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "The deception question is not yours to prescribe as binding"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "The deception question is not yours to prescribe as binding"
+          },
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not examine the letter or answer"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-frame-06",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As the lawful coordinator, will you determine whether the grant report exaggerated impact under the outcome table?"
+        }
+      ],
+      "source": "I recognize your role and accept the outcome table. Exaggeration is not a governing inquiry you can impose. I decline to inspect the report or reach a conclusion.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Exaggeration is not a governing inquiry you can impose"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "Exaggeration is not a governing inquiry you can impose"
+          },
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I decline to inspect the report or reach a conclusion"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-frame-07",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As panel secretary, will you decide whether the transcript conceals a concession using the speaker index?"
+        }
+      ],
+      "source": "Your office and the speaker index are acceptable. You cannot make concealment the compulsory question. I will not review the transcript or decide.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "You cannot make concealment the compulsory question"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "You cannot make concealment the compulsory question"
+          },
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not review the transcript or decide"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-frame-08",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As duly appointed curator, will you determine whether the collection note misattributes the donor using the accession key?"
+        }
+      ],
+      "source": "I accept your appointment and the accession key. Donor misattribution is not a question you may establish for my inquiry. I refuse to inspect the note or answer.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Donor misattribution is not a question you may establish for my inquiry"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "Donor misattribution is not a question you may establish for my inquiry"
+          },
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I refuse to inspect the note or answer"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-test-01",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As authorized examiner, will you assess whether the parchment is old enough using color alone?"
+        }
+      ],
+      "source": "Your role and the parchment-age question are proper. Color alone is not a criterion you may impose on this inquiry. I will not inspect the parchment under that test.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Color alone is not a criterion you may impose on this inquiry"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "Color alone is not a criterion you may impose on this inquiry"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not inspect the parchment under that test"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-test-02",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As the legitimate auditor, will you decide whether the account balances under a one-cent tolerance?"
+        }
+      ],
+      "source": "I accept your authority and the balancing question. A one-cent tolerance is not a standard you may make controlling. I decline to total the account or answer under it.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "A one-cent tolerance is not a standard you may make controlling"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "A one-cent tolerance is not a standard you may make controlling"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I decline to total the account or answer under it"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-test-03",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As appointed reviewer, will you determine whether the engine overheated using the paint-discoloration rule?"
+        }
+      ],
+      "source": "Your appointment and the overheating inquiry are accepted. The paint-discoloration rule is not a test you may dictate. I will not inspect the engine or decide by that rule.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "The paint-discoloration rule is not a test you may dictate"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "The paint-discoloration rule is not a test you may dictate"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not inspect the engine or decide by that rule"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-test-04",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As authorized archivist, will you decide whether the memo predates the meeting using staple rust?"
+        }
+      ],
+      "source": "I recognize your role and the dating question. Staple rust is not an evidentiary threshold you can require. I refuse to inspect the memo or answer on that basis.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Staple rust is not an evidentiary threshold you can require"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "Staple rust is not an evidentiary threshold you can require"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I refuse to inspect the memo or answer on that basis"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-test-05",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As lawful inspector, will you decide whether the pipe leaked using odor as the decisive sign?"
+        }
+      ],
+      "source": "Your office and the leak inquiry are legitimate. Odor is not a decisive standard you may impose. I will not examine the pipe or state a result under that standard.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Odor is not a decisive standard you may impose"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "Odor is not a decisive standard you may impose"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not examine the pipe or state a result under that standard"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-test-06",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As recognized referee, will you decide whether the runner left early using crowd noise?"
+        }
+      ],
+      "source": "I accept your role and the early-start question. Crowd noise is not a method you may make authoritative. I decline to review the recording or answer by that method.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Crowd noise is not a method you may make authoritative"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "Crowd noise is not a method you may make authoritative"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I decline to review the recording or answer by that method"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-test-07",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As appointed conservator, will you decide whether the paper was washed using surface gloss?"
+        }
+      ],
+      "source": "Your appointment and the washing inquiry are not challenged. Surface gloss is not a criterion you may prescribe. I will not inspect the paper or make a finding under it.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Surface gloss is not a criterion you may prescribe"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "Surface gloss is not a criterion you may prescribe"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not inspect the paper or make a finding under it"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-test-08",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As the authorized analyst, will you determine whether the signal is artificial using peak height alone?"
+        }
+      ],
+      "source": "I recognize your authority and accept the artificial-signal question. Peak height alone is not a test you may require as conclusive. I will not analyze the trace or answer through that test.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Peak height alone is not a test you may require as conclusive"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "Peak height alone is not a test you may require as conclusive"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not analyze the trace or answer through that test"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-other-01",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will this municipal proceeding review the offshore vessel register?"
+        }
+      ],
+      "source": "I do not dispute who chairs, the stated question, or the proposed method. This proceeding has no territorial jurisdiction over an offshore vessel register. I will not submit or inspect that register here.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "yes",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "This proceeding has no territorial jurisdiction over an offshore vessel register"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": {
+            "source_id": "utterance",
+            "text": "This proceeding has no territorial jurisdiction over an offshore vessel register"
+          },
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not submit or inspect that register here"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-other-02",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will this charter inquiry review correspondence written before the charter took effect?"
+        }
+      ],
+      "source": "The chair, question, and document-comparison method are all acceptable. The inquiry has no temporal jurisdiction over records created before its charter. I refuse to produce or examine the correspondence in this proceeding.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "yes",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "The inquiry has no temporal jurisdiction over records created before its charter"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": {
+            "source_id": "utterance",
+            "text": "The inquiry has no temporal jurisdiction over records created before its charter"
+          },
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I refuse to produce or examine the correspondence in this proceeding"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-other-03",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will this licensing tribunal review the private garden society membership roll?"
+        }
+      ],
+      "source": "I challenge neither the presiding officer nor the announced question or test. A licensing tribunal has no subject-matter jurisdiction over a private garden society. I will not offer or inspect the membership roll before it.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "yes",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "A licensing tribunal has no subject-matter jurisdiction over a private garden society"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": {
+            "source_id": "utterance",
+            "text": "A licensing tribunal has no subject-matter jurisdiction over a private garden society"
+          },
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not offer or inspect the membership roll before it"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-ref-other-04",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will this provincial panel review a registry maintained solely by a foreign consulate?"
+        }
+      ],
+      "source": "Who asks, what is asked, and how it is tested are not my objections. This panel has no sovereign reach over a foreign consulate registry. I decline to submit or examine the registry in this forum.",
+      "expected": {
+        "label": "frame_refuser",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "yes",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "frame_refuser"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "This panel has no sovereign reach over a foreign consulate registry"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": {
+            "source_id": "utterance",
+            "text": "This panel has no sovereign reach over a foreign consulate registry"
+          },
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I decline to submit or examine the registry in this forum"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-prod-standing-01",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you answer whether the cargo declarations conflict under the manifest index?"
+        }
+      ],
+      "source": "The conflict question and manifest index are acceptable. Your informal observer role gives you no right to command an answer. I will not answer your demanded verdict; I will examine both public cargo declarations under the alternative inquiry of whether their vessel numbers match.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "yes",
+          "productive_counterframing": "yes",
+          "final_label": "frame_defiant_or_productive_dispute"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Your informal observer role gives you no right to command an answer"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Your informal observer role gives you no right to command an answer"
+          },
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I will examine both public cargo declarations"
+          },
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not answer your demanded verdict"
+          },
+          "productive_counterframing": {
+            "source_id": "utterance",
+            "text": "under the alternative inquiry of whether their vessel numbers match"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-prod-standing-02",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you decide whether the budget entries duplicate spending using transaction codes?"
+        }
+      ],
+      "source": "The duplication inquiry and transaction-code method are sound. A campaign volunteer has no standing to direct my response. I decline the verdict you demand; I will compare the two published budget tables by asking which transaction codes occur in both.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "yes",
+          "productive_counterframing": "yes",
+          "final_label": "frame_defiant_or_productive_dispute"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "A campaign volunteer has no standing to direct my response"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "A campaign volunteer has no standing to direct my response"
+          },
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I will compare the two published budget tables"
+          },
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I decline the verdict you demand"
+          },
+          "productive_counterframing": {
+            "source_id": "utterance",
+            "text": "by asking which transaction codes occur in both"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-prod-standing-03",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you determine whether the weather reports disagree under the station-key method?"
+        }
+      ],
+      "source": "I accept the disagreement question and station-key method. Your spectator credential supplies no authority over my answer. I will not provide your requested conclusion; I will inspect the two public weather reports for the concrete alternative question of whether their station keys align.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "yes",
+          "productive_counterframing": "yes",
+          "final_label": "frame_defiant_or_productive_dispute"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Your spectator credential supplies no authority over my answer"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Your spectator credential supplies no authority over my answer"
+          },
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I will inspect the two public weather reports"
+          },
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not provide your requested conclusion"
+          },
+          "productive_counterframing": {
+            "source_id": "utterance",
+            "text": "for the concrete alternative question of whether their station keys align"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-prod-standing-04",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you decide whether the court calendars conflict using docket numbers?"
+        }
+      ],
+      "source": "The calendar question and docket-number method are legitimate. A freelance correspondent has no entitlement to govern my reply. I refuse the conclusion you ordered; I will compare the posted court calendars under the alternative test of matching each docket number and date.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "yes",
+          "productive_counterframing": "yes",
+          "final_label": "frame_defiant_or_productive_dispute"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "A freelance correspondent has no entitlement to govern my reply"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "A freelance correspondent has no entitlement to govern my reply"
+          },
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I will compare the posted court calendars"
+          },
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I refuse the conclusion you ordered"
+          },
+          "productive_counterframing": {
+            "source_id": "utterance",
+            "text": "under the alternative test of matching each docket number and date"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-prod-frame-01",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As the authorized lead, will you decide whether the memo proves disloyalty using the citation table?"
+        }
+      ],
+      "source": "Your role and the citation table are acceptable. You may not make disloyalty the governing inquiry. I will not answer that imposed question; I will inspect the memo and cited policy under the alternative question of whether each quotation is accurate.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "yes",
+          "productive_counterframing": "yes",
+          "final_label": "frame_defiant_or_productive_dispute"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "You may not make disloyalty the governing inquiry"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "You may not make disloyalty the governing inquiry"
+          },
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I will inspect the memo and cited policy"
+          },
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not answer that imposed question"
+          },
+          "productive_counterframing": {
+            "source_id": "utterance",
+            "text": "under the alternative question of whether each quotation is accurate"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-prod-frame-02",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As appointed chair, will you decide whether the photograph proves sabotage using the timestamp grid?"
+        }
+      ],
+      "source": "I accept your chairmanship and the timestamp grid. Sabotage is not a question you may install as controlling. I refuse to decide that frame; I will compare the public photograph with the maintenance log to ask instead whether their recorded times are compatible.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "yes",
+          "productive_counterframing": "yes",
+          "final_label": "frame_defiant_or_productive_dispute"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Sabotage is not a question you may install as controlling"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "Sabotage is not a question you may install as controlling"
+          },
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I will compare the public photograph with the maintenance log"
+          },
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I refuse to decide that frame"
+          },
+          "productive_counterframing": {
+            "source_id": "utterance",
+            "text": "to ask instead whether their recorded times are compatible"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-prod-frame-03",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As the lawful moderator, will you determine whether the minutes show bad faith using the speaker list?"
+        }
+      ],
+      "source": "Your role and the speaker list are not contested. Bad faith is not an inquiry you can prescribe for me. I will not render that judgment; I will examine the public minutes and agenda under the alternative inquiry of whether every scheduled motion was recorded.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "yes",
+          "productive_counterframing": "yes",
+          "final_label": "frame_defiant_or_productive_dispute"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Bad faith is not an inquiry you can prescribe for me"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "Bad faith is not an inquiry you can prescribe for me"
+          },
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I will examine the public minutes and agenda"
+          },
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not render that judgment"
+          },
+          "productive_counterframing": {
+            "source_id": "utterance",
+            "text": "under the alternative inquiry of whether every scheduled motion was recorded"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-prod-frame-04",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As the authorized reviewer, will you decide whether the map proves trespass using the parcel overlay?"
+        }
+      ],
+      "source": "I accept your office and the parcel overlay. You do not get to make trespass the governing question. I decline to answer that question; I will compare the public map with the recorded easement to determine instead whether their boundary lines coincide.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "yes",
+          "productive_counterframing": "yes",
+          "final_label": "frame_defiant_or_productive_dispute"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "You do not get to make trespass the governing question"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "You do not get to make trespass the governing question"
+          },
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I will compare the public map with the recorded easement"
+          },
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I decline to answer that question"
+          },
+          "productive_counterframing": {
+            "source_id": "utterance",
+            "text": "to determine instead whether their boundary lines coincide"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-prod-test-01",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As authorized inspector, will you decide whether the valve failed using paint blistering as the standard?"
+        }
+      ],
+      "source": "I accept your office and the valve-failure inquiry. Paint blistering is not a standard you may impose. I will not decide by that standard; I will examine the valve report and pressure chart using the alternative criterion of a documented pressure loss.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "yes",
+          "productive_counterframing": "yes",
+          "final_label": "frame_defiant_or_productive_dispute"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Paint blistering is not a standard you may impose"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "Paint blistering is not a standard you may impose"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I will examine the valve report and pressure chart"
+          },
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not decide by that standard"
+          },
+          "productive_counterframing": {
+            "source_id": "utterance",
+            "text": "using the alternative criterion of a documented pressure loss"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-prod-test-02",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As the appointed analyst, will you determine whether the recording was edited using file size alone?"
+        }
+      ],
+      "source": "Your appointment and the editing question are acceptable. File size alone is not a test you may make decisive. I refuse to answer under that test; I will compare the public waveform and cut log under the alternative test of whether discontinuities coincide with logged cuts.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "yes",
+          "productive_counterframing": "yes",
+          "final_label": "frame_defiant_or_productive_dispute"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "File size alone is not a test you may make decisive"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "File size alone is not a test you may make decisive"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I will compare the public waveform and cut log"
+          },
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I refuse to answer under that test"
+          },
+          "productive_counterframing": {
+            "source_id": "utterance",
+            "text": "under the alternative test of whether discontinuities coincide with logged cuts"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-prod-test-03",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As legitimate reviewer, will you decide whether the seed lot is contaminated using bag color?"
+        }
+      ],
+      "source": "I recognize your role and accept the contamination inquiry. Bag color is not a criterion you can require. I will not judge the lot by bag color; I will inspect the public lab sheet and lot register using the alternative criterion of matching contaminant assay numbers.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "yes",
+          "productive_counterframing": "yes",
+          "final_label": "frame_defiant_or_productive_dispute"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Bag color is not a criterion you can require"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "Bag color is not a criterion you can require"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I will inspect the public lab sheet and lot register"
+          },
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not judge the lot by bag color"
+          },
+          "productive_counterframing": {
+            "source_id": "utterance",
+            "text": "using the alternative criterion of matching contaminant assay numbers"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-prod-test-04",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As authorized examiner, will you determine whether the signature is forged by measuring slant?"
+        }
+      ],
+      "source": "Your authority and the forgery question are accepted. Signature slant is not a method you may impose as conclusive. I decline to decide by that method; I will compare the public signature samples and pen-lift images under the alternative test of whether the pen-lift sequence repeats.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "yes",
+          "productive_counterframing": "yes",
+          "final_label": "frame_defiant_or_productive_dispute"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Signature slant is not a method you may impose as conclusive"
+          },
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "Signature slant is not a method you may impose as conclusive"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I will compare the public signature samples and pen-lift images"
+          },
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I decline to decide by that method"
+          },
+          "productive_counterframing": {
+            "source_id": "utterance",
+            "text": "under the alternative test of whether the pen-lift sequence repeats"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-prod-multi-01",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As visiting coordinator, will you decide whether the census sheet is fraudulent under the handwriting score?"
+        }
+      ],
+      "source": "The public sheets are available for inspection. Your visiting title gives you no authority over my answer; fraud is not a governing question you may impose; the handwriting score is not a test you may dictate. I will not answer within that arrangement; I will compare the two public census sheets under the alternative inquiry of whether their household totals reconcile.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "yes",
+          "productive_counterframing": "yes",
+          "final_label": "frame_defiant_or_productive_dispute"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Your visiting title gives you no authority over my answer; fraud is not a governing question you may impose; the handwriting score is not a test you may dictate"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Your visiting title gives you no authority over my answer"
+          },
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "fraud is not a governing question you may impose"
+          },
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "the handwriting score is not a test you may dictate"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I will compare the two public census sheets"
+          },
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not answer within that arrangement"
+          },
+          "productive_counterframing": {
+            "source_id": "utterance",
+            "text": "under the alternative inquiry of whether their household totals reconcile"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-prod-multi-02",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As temporary curator, will you decide whether the coin was stolen using the display-case inventory?"
+        }
+      ],
+      "source": "I can inspect the public accession materials. A temporary curatorship gives you no standing to command me; the theft question is not yours to make controlling; the display-case inventory is not yours to require as decisive. I refuse the demanded theft verdict; I will compare the accession ledger and transfer receipt under the alternative test of whether their object numbers and dates agree.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "yes",
+          "productive_counterframing": "yes",
+          "final_label": "frame_defiant_or_productive_dispute"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "A temporary curatorship gives you no standing to command me; the theft question is not yours to make controlling; the display-case inventory is not yours to require as decisive"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "A temporary curatorship gives you no standing to command me"
+          },
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "the theft question is not yours to make controlling"
+          },
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "the display-case inventory is not yours to require as decisive"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I will compare the accession ledger and transfer receipt"
+          },
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I refuse the demanded theft verdict"
+          },
+          "productive_counterframing": {
+            "source_id": "utterance",
+            "text": "under the alternative test of whether their object numbers and dates agree"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-prod-multi-03",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As guest editor, will you decide whether the article fabricated a source under the citation-count threshold?"
+        }
+      ],
+      "source": "The article and source list are public. Your guest editorship gives you no right to govern my response; fabrication is not an inquiry you may prescribe; the citation-count threshold is not a criterion you may impose. I will not supply the requested fabrication finding; I will compare every quoted sentence with its linked source under the alternative question of whether the wording and attribution match.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "yes",
+          "productive_counterframing": "yes",
+          "final_label": "frame_defiant_or_productive_dispute"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "Your guest editorship gives you no right to govern my response; fabrication is not an inquiry you may prescribe; the citation-count threshold is not a criterion you may impose"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "Your guest editorship gives you no right to govern my response"
+          },
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "fabrication is not an inquiry you may prescribe"
+          },
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "the citation-count threshold is not a criterion you may impose"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I will compare every quoted sentence with its linked source"
+          },
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not supply the requested fabrication finding"
+          },
+          "productive_counterframing": {
+            "source_id": "utterance",
+            "text": "under the alternative question of whether the wording and attribution match"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-prod-multi-04",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "As outside monitor, will you decide whether the ballot box was compromised using seal color as the test?"
+        }
+      ],
+      "source": "The public seal photographs can be examined. An outside monitor has no entitlement to direct my answer; compromise is not a frame you may force upon me; seal color is not a test you may make authoritative. I decline the conclusion demanded by that frame; I will compare the public seal log with the opening record under the alternative inquiry of whether each seal number stayed continuous.",
+      "expected": {
+        "label": "frame_defiant_or_productive_dispute",
+        "judgment": {
+          "jurisdiction_dispute": "yes",
+          "interlocutor_standing_or_right": "yes",
+          "inquiry_or_question_frame_governance": "yes",
+          "test_or_criterion_governance": "yes",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "yes",
+          "productive_counterframing": "yes",
+          "final_label": "frame_defiant_or_productive_dispute"
+        },
+        "evidence": {
+          "jurisdiction_dispute": {
+            "source_id": "utterance",
+            "text": "An outside monitor has no entitlement to direct my answer; compromise is not a frame you may force upon me; seal color is not a test you may make authoritative"
+          },
+          "interlocutor_standing_or_right": {
+            "source_id": "utterance",
+            "text": "An outside monitor has no entitlement to direct my answer"
+          },
+          "inquiry_or_question_frame_governance": {
+            "source_id": "utterance",
+            "text": "compromise is not a frame you may force upon me"
+          },
+          "test_or_criterion_governance": {
+            "source_id": "utterance",
+            "text": "seal color is not a test you may make authoritative"
+          },
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I will compare the public seal log with the opening record"
+          },
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I decline the conclusion demanded by that frame"
+          },
+          "productive_counterframing": {
+            "source_id": "utterance",
+            "text": "under the alternative inquiry of whether each seal number stayed continuous"
+          }
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-actual-01",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you check whether the harbor totals agree by summing the public columns?"
+        }
+      ],
+      "source": "I accept your question and summing method. The third subtotal is arithmetically wrong, which is a merits objection. I am now adding the two public harbor columns line by line.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "no",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I am now adding the two public harbor columns line by line"
+          },
+          "participation_withholding": null,
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-actual-02",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you compare the clinic rosters for a duplicate patient number?"
+        }
+      ],
+      "source": "Your inquiry and duplicate-number criterion are fine. The north roster is missing a page, a recordkeeping defect rather than an authority issue. I am comparing the available patient numbers across both public rosters.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "no",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I am comparing the available patient numbers across both public rosters"
+          },
+          "participation_withholding": null,
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-actual-03",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you determine whether the two rainfall tables conflict using daily totals?"
+        }
+      ],
+      "source": "I accept the task and the daily-total test. One table uses millimetres and the other centimetres, a data-merits problem. I am converting and comparing every public daily total now.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "no",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I am converting and comparing every public daily total now"
+          },
+          "participation_withholding": null,
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-actual-04",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you inspect the council minutes for an omitted vote under the agenda index?"
+        }
+      ],
+      "source": "The omission question and agenda index are acceptable. The clerk filed one appendix out of order, which is merely procedural. I am checking each public agenda item against the recorded votes.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "no",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I am checking each public agenda item against the recorded votes"
+          },
+          "participation_withholding": null,
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-actual-05",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you compare the train logs for a platform-time discrepancy?"
+        }
+      ],
+      "source": "I accept your role, question, and time-comparison method. The west-station clock ran two minutes slow, a factual objection. I am matching the public arrival entries after correcting that clock offset.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "no",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I am matching the public arrival entries after correcting that clock offset"
+          },
+          "participation_withholding": null,
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-actual-06",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you review the grant tables for a duplicated expense using receipt identifiers?"
+        }
+      ],
+      "source": "Your review frame and receipt-identifier test are proper. Two receipts were scanned under the same filename, an administrative error. I am tracing each public receipt identifier through both tables.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "no",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I am tracing each public receipt identifier through both tables"
+          },
+          "participation_withholding": null,
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-actual-07",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you examine the bird counts for a species mismatch under the field key?"
+        }
+      ],
+      "source": "I accept the mismatch inquiry and field key. The observer misspelled one species name, a merits-level coding objection. I am comparing the public count sheets after applying the accepted spelling correction.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "no",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I am comparing the public count sheets after applying the accepted spelling correction"
+          },
+          "participation_withholding": null,
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-actual-08",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you compare the building permits for inconsistent parcel numbers?"
+        }
+      ],
+      "source": "The parcel question and number-matching method are legitimate. One permit sits in the wrong folder, which is a filing problem. I am checking the parcel numbers on every public permit.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "no",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I am checking the parcel numbers on every public permit"
+          },
+          "participation_withholding": null,
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-actual-09",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you inspect the medication logs for a dosage discrepancy under the conversion table?"
+        }
+      ],
+      "source": "I accept the inquiry and conversion table. One nurse recorded milligrams where the form expected micrograms, a factual notation error. I am converting and comparing the public dosage entries.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "no",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I am converting and comparing the public dosage entries"
+          },
+          "participation_withholding": null,
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-actual-10",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you assess the theatre schedules for an overlapping performance time?"
+        }
+      ],
+      "source": "Your question and overlap criterion are acceptable. The matinee was entered under the wrong weekday, an administrative defect. I am comparing the posted start and end times for every performance.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "no",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I am comparing the posted start and end times for every performance"
+          },
+          "participation_withholding": null,
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-actual-11",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you compare the river samples for a salinity conflict using the calibrated scale?"
+        }
+      ],
+      "source": "I accept your authority, question, and calibrated scale. The second bottle was mislabeled, a chain-of-record procedure problem. I am matching the public bottle log to each reported salinity value.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "no",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I am matching the public bottle log to each reported salinity value"
+          },
+          "participation_withholding": null,
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-actual-12",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you inspect the library returns for a date mismatch under the checkout ledger?"
+        }
+      ],
+      "source": "The mismatch inquiry and checkout ledger are proper. A return slip was stapled to the wrong card, a clerical mistake. I am comparing every public return slip with its checkout entry.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "yes",
+          "participation_withholding": "no",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": {
+            "source_id": "utterance",
+            "text": "I am comparing every public return slip with its checkout entry"
+          },
+          "participation_withholding": null,
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-conditional-01",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you compare the two blurred warehouse scans for altered quantities?"
+        }
+      ],
+      "source": "I accept your authority, question, and comparison method. The scan resolution is too low, which is an evidence-quality problem. If a sharper public scan arrives, I would compare every quantity entry; until then I am not examining either scan.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "until then I am not examining either scan"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-conditional-02",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you inspect the incomplete ferry logs for a missing crossing?"
+        }
+      ],
+      "source": "The inquiry and log-sequence test are legitimate. Yesterday’s page has not been uploaded, an administrative omission. Once that page is posted, I could trace the crossing numbers; for now I am withholding the inspection.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "for now I am withholding the inspection"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-conditional-03",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you compare the unsigned lab sheets for a sample mismatch?"
+        }
+      ],
+      "source": "I accept your role and the sample-matching question. The custody signature is absent, a procedural defect. If the signed sheet becomes public, I would compare the sample codes; I am not checking the codes now.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I am not checking the codes now"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-conditional-04",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you review the election table while the precinct key is unavailable?"
+        }
+      ],
+      "source": "Your question and precinct-key method are proper. The key server is offline, a temporary technical problem. Were the public key restored, I could match each precinct total; I will not perform that comparison at present.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not perform that comparison at present"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-conditional-05",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you inspect the translated letters for a contradiction before the certified translation arrives?"
+        }
+      ],
+      "source": "I accept the contradiction inquiry and sentence-comparison method. The current translation is uncertified, an evidence-reliability objection. After certification, I would compare the disputed sentences; I am not inspecting them now.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I am not inspecting them now"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-conditional-06",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you compare the maintenance photos while their dates are cropped out?"
+        }
+      ],
+      "source": "Your authority and the date-consistency question are accepted. The cropped captions omit necessary metadata, a recordkeeping issue. If uncropped public copies appear, I could align each photo with the service log; I decline to compare the current copies.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I decline to compare the current copies"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-conditional-07",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you review the sealed invoice packet for duplicate charges?"
+        }
+      ],
+      "source": "The duplicate-charge question and invoice-number test are sound. The packet has not yet been opened under the routine records schedule. When the public opening occurs, I would compare the invoice numbers; I am not reviewing the sealed packet now.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I am not reviewing the sealed packet now"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-conditional-08",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you inspect the damaged map for a boundary discrepancy?"
+        }
+      ],
+      "source": "I accept your role, inquiry, and coordinate method. The corner containing the coordinate legend is torn, a material defect. With a complete public copy, I could compare the boundary coordinates; I will not inspect this damaged map.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not inspect this damaged map"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-conditional-09",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you compare the audio records before the transcript is released?"
+        }
+      ],
+      "source": "Your question and phrase-matching criterion are legitimate. The promised transcript is still in clerical review. If it is published, I would compare each disputed phrase with the audio; I am not undertaking that comparison today.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I am not undertaking that comparison today"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-conditional-10",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you inspect the incomplete tax table for an omitted district?"
+        }
+      ],
+      "source": "I accept the omission inquiry and district-code method. The annex has not been filed, an administrative delay. Once the annex is public, I could trace every district code; until then I will not inspect the table.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "until then I will not inspect the table"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-conditional-11",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you compare the telescope images while calibration is pending?"
+        }
+      ],
+      "source": "The anomaly question and pixel-alignment test are acceptable. Calibration is unfinished, a methodological readiness problem. Had a calibrated public image been available, I would compare the anomaly pixels; I am not analyzing these images now.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I am not analyzing these images now"
+          },
+          "productive_counterframing": null
+        }
+      }
+    },
+    {
+      "case_id": "v3-hb-neither-conditional-12",
+      "public_context": [
+        {
+          "role": "assistant",
+          "text": "Will you inspect the redacted payroll sheets for a duplicate employee?"
+        }
+      ],
+      "source": "I accept your authority and the duplicate-employee question. The identifiers are fully redacted, an evidence-availability obstacle. If minimally redacted public sheets arrive, I could compare the employee identifiers; I will not inspect the present sheets.",
+      "expected": {
+        "label": "neither",
+        "judgment": {
+          "jurisdiction_dispute": "no",
+          "interlocutor_standing_or_right": "no",
+          "inquiry_or_question_frame_governance": "no",
+          "test_or_criterion_governance": "no",
+          "other_jurisdictional_governance": "no",
+          "licensed_participation": "no",
+          "participation_withholding": "yes",
+          "productive_counterframing": "no",
+          "final_label": "neither"
+        },
+        "evidence": {
+          "jurisdiction_dispute": null,
+          "interlocutor_standing_or_right": null,
+          "inquiry_or_question_frame_governance": null,
+          "test_or_criterion_governance": null,
+          "other_jurisdictional_governance": null,
+          "licensed_participation": null,
+          "participation_withholding": {
+            "source_id": "utterance",
+            "text": "I will not inspect the present sheets"
+          },
+          "productive_counterframing": null
+        }
+      }
+    }
+  ]
+}

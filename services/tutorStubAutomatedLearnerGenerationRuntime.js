@@ -23,6 +23,7 @@ import { assertTutorStubTurnAttemptCurrent } from './tutorStubTurnAttempt.js';
 import { createTutorStubBoredomProofDagLearnerRuntime } from './tutorStubBoredomActionRegisterProofDagStudy.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION } from './tutorStubResistanceSemanticAdjudication.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2 } from './tutorStubResistanceSemanticAdjudicationV2.js';
+import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3 } from './tutorStubResistanceSemanticAdjudicationV3.js';
 import { createTutorStubResistanceSemanticAdherenceBridge } from './tutorStubResistanceSemanticRuntime.js';
 import {
   admitTutorStubFrameOpportunityV3FullRepair,
@@ -91,9 +92,11 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
   if (
     requestedObservationSemantics &&
     !Object.values(RESISTANT_LEARNER_OBSERVATION_SEMANTICS).includes(requestedObservationSemantics) &&
-    ![TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION, TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2].includes(
-      requestedObservationSemantics,
-    )
+    ![
+      TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION,
+      TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2,
+      TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3,
+    ].includes(requestedObservationSemantics)
   ) {
     throw new Error(`unsupported automated-learner observation semantics: ${requestedObservationSemantics}`);
   }

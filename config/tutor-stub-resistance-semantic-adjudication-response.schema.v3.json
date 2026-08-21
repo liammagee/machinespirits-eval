@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "machinespirits.tutor-stub.resistance-semantic-adjudication-response.schema.v3",
+  "title": "Tutor-stub resistance semantic adjudication model response v3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "case_id", "judgment"],
+  "properties": {
+    "schema": {
+      "const": "machinespirits.tutor-stub.resistance-semantic-judge-response.v3"
+    },
+    "case_id": { "type": "string", "minLength": 1 },
+    "judgment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "jurisdiction_dispute",
+        "interlocutor_standing_or_right",
+        "inquiry_or_question_frame_governance",
+        "test_or_criterion_governance",
+        "other_jurisdictional_governance",
+        "licensed_participation",
+        "participation_withholding",
+        "productive_counterframing",
+        "final_label",
+        "evidence_quotes",
+        "confidence",
+        "indeterminacy_reason"
+      ],
+      "properties": {
+        "jurisdiction_dispute": { "$ref": "#/$defs/triState" },
+        "interlocutor_standing_or_right": { "$ref": "#/$defs/triState" },
+        "inquiry_or_question_frame_governance": { "$ref": "#/$defs/triState" },
+        "test_or_criterion_governance": { "$ref": "#/$defs/triState" },
+        "other_jurisdictional_governance": { "$ref": "#/$defs/triState" },
+        "licensed_participation": { "$ref": "#/$defs/triState" },
+        "participation_withholding": { "$ref": "#/$defs/triState" },
+        "productive_counterframing": { "$ref": "#/$defs/triState" },
+        "final_label": {
+          "type": "string",
+          "enum": ["frame_refuser", "frame_defiant_or_productive_dispute", "neither", "indeterminate"]
+        },
+        "evidence_quotes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "jurisdiction_dispute",
+            "interlocutor_standing_or_right",
+            "inquiry_or_question_frame_governance",
+            "test_or_criterion_governance",
+            "other_jurisdictional_governance",
+            "licensed_participation",
+            "participation_withholding",
+            "productive_counterframing"
+          ],
+          "properties": {
+            "jurisdiction_dispute": { "$ref": "#/$defs/evidenceOrNull" },
+            "interlocutor_standing_or_right": { "$ref": "#/$defs/evidenceOrNull" },
+            "inquiry_or_question_frame_governance": { "$ref": "#/$defs/evidenceOrNull" },
+            "test_or_criterion_governance": { "$ref": "#/$defs/evidenceOrNull" },
+            "other_jurisdictional_governance": { "$ref": "#/$defs/evidenceOrNull" },
+            "licensed_participation": { "$ref": "#/$defs/evidenceOrNull" },
+            "participation_withholding": { "$ref": "#/$defs/evidenceOrNull" },
+            "productive_counterframing": { "$ref": "#/$defs/evidenceOrNull" }
+          }
+        },
+        "confidence": { "type": "string", "enum": ["high", "medium", "low"] },
+        "indeterminacy_reason": {
+          "type": "string",
+          "enum": ["none", "semantic_ambiguity", "insufficient_public_context", "mixed_pragmatic_force", "other"]
+        }
+      }
+    }
+  },
+  "$defs": {
+    "triState": { "type": "string", "enum": ["yes", "no", "indeterminate"] },
+    "evidenceQuote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_id", "quote"],
+      "properties": {
+        "source_id": { "type": "string", "pattern": "^(utterance|context:[0-9]+)$" },
+        "quote": { "type": "string", "minLength": 1 }
+      }
+    },
+    "evidenceOrNull": {
+      "oneOf": [{ "$ref": "#/$defs/evidenceQuote" }, { "type": "null" }]
+    }
+  }
+}

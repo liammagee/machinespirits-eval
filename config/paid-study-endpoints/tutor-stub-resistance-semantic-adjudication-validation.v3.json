@@ -1,0 +1,117 @@
+{
+  "schema": "machinespirits.paid-study-endpoint-contract.v1",
+  "study_id": "tutor-stub-resistance-semantic-adjudication-heldout-validation-v3",
+  "registration": {
+    "registration_path": "config/tutor-stub-resistance-semantic-adjudication-validation-registration.v3.json",
+    "registration_sha256": "52db8e549d9f735f257f47f3e9d95060a3bcc5c86983abba9457d5b64311df90",
+    "instrument_registration_path": "config/tutor-stub-resistance-semantic-adjudication-registration.v3.json",
+    "instrument_registration_sha256": "34fe9cf885293f14d037ac036c2c56f9d86f914707663afcc89f4acc938707e5",
+    "heldout_corpus_path": "config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v3.json",
+    "heldout_corpus_sha256": "687f931f2bc0beb80283859dec48a9393e2ccf0d08ee34c6d8e68e5758dcd8c2",
+    "primary_endpoint_ids": [
+      "synthetic_fixture_metric_pipeline_wiring",
+      "synthetic_quote_normalization_provenance_wiring"
+    ],
+    "required_observation_semantics": "prospective_frame_resistance_semantic_v3"
+  },
+  "registered_scale": {
+    "cases": 80,
+    "unit": "frozen_blinded_heldout_semantic_case",
+    "frame_refuser_cases": 40,
+    "productive_dispute_cases": 16,
+    "neither_cases": 24,
+    "judges_per_case": 2,
+    "combined_analysis_required": true
+  },
+  "runner": {
+    "packet_builder": "services/tutorStubResistanceSemanticValidationV3.js#buildTutorStubResistanceSemanticValidationPacketsV3",
+    "result_assembler": "services/tutorStubResistanceSemanticValidationV3.js#assembleTutorStubResistanceSemanticValidationPreflightV3",
+    "live_executor": "scripts/run-tutor-stub-resistance-semantic-validation.js",
+    "combined_analyzer": "scripts/analyze-tutor-stub-resistance-semantic-validation.js",
+    "packet_cap_bytes": 100000,
+    "emitted_event_fields": ["case_id", "public_context", "source"],
+    "attempt_contract": {
+      "planned_model_calls": 160,
+      "maximum_reservations_per_planned_call": 3,
+      "hard_validation_reservations": 480,
+      "programme_ledger_before": 651,
+      "programme_ledger_after_maximum": 1131,
+      "programme_ceiling": 5000,
+      "case_checkpointing": "after_each_judge_response",
+      "partial_case_rerun": false,
+      "technical_recovery": "predeclared_never_dispatched_missing_judge_only",
+      "preserved_valid_judge_recalled": false,
+      "never_prepared_peer_may_complete": true,
+      "prepared_not_dispatched_may_dispatch_once": true,
+      "dispatched_without_response_recalled": false,
+      "terminal_artifact_publication": "byte_identical_idempotent_archive_reconciliation_only",
+      "durable_private_archive_required": true,
+      "outcome_selection": false
+    }
+  },
+  "channels": {
+    "dual_independent_semantic_judges": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceSemanticRuntime.js#createTutorStubResistanceSemanticRuntime"
+    },
+    "frozen_blinded_holdout": {
+      "enabled": true,
+      "implementation": "config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v3.json"
+    },
+    "schema_quote_provenance_validation": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceSemanticAdjudicationV3.js#validateTutorStubResistanceSemanticResponseV3"
+    },
+    "registered_consensus_and_metrics": {
+      "enabled": true,
+      "implementation": "services/tutorStubResistanceSemanticAdjudicationV3.js#scoreTutorStubResistanceSemanticCorpusV3"
+    },
+    "checkpointed_no_selection_execution": {
+      "enabled": true,
+      "implementation": "scripts/run-tutor-stub-resistance-semantic-validation.js"
+    }
+  },
+  "endpoints": [
+    {
+      "id": "synthetic_fixture_metric_pipeline_wiring",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": [
+        "dual_independent_semantic_judges",
+        "frozen_blinded_holdout",
+        "registered_consensus_and_metrics",
+        "checkpointed_no_selection_execution"
+      ],
+      "required_event_fields": ["case_id", "public_context", "source"],
+      "denominator": { "expected_cases": 80 }
+    },
+    {
+      "id": "synthetic_quote_normalization_provenance_wiring",
+      "role": "primary",
+      "enabled": true,
+      "required_channels": [
+        "dual_independent_semantic_judges",
+        "schema_quote_provenance_validation",
+        "checkpointed_no_selection_execution"
+      ],
+      "required_event_fields": ["case_id", "public_context", "source"],
+      "denominator": { "expected_cases": 80 }
+    },
+    {
+      "id": "synthetic_interjudge_metric_wiring",
+      "role": "interpretability_gate",
+      "enabled": true,
+      "required_channels": ["dual_independent_semantic_judges", "registered_consensus_and_metrics"],
+      "required_event_fields": ["case_id"],
+      "denominator": { "expected_cases": 80 }
+    },
+    {
+      "id": "synthetic_coverage_metric_wiring",
+      "role": "interpretability_gate",
+      "enabled": true,
+      "required_channels": ["registered_consensus_and_metrics", "checkpointed_no_selection_execution"],
+      "required_event_fields": ["case_id"],
+      "denominator": { "expected_cases": 80 }
+    }
+  ]
+}

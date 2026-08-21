@@ -5,7 +5,7 @@
   "workplanItem": "resistance-action-register-integration",
   "frozenAt": "2026-08-20",
   "registeredQuestion": "Among wholly fresh independent frame-refuser dialogues whose first eligible public-turn-1-or-2 jurisdictional refusal is established by frozen dual independent high-confidence semantic consensus, does one matched test_bounded_distinction tutor move realized warm change two-post-trigger-turn resistance recovery relative to the same move realized plain, when both recovery and delivered action/register fidelity are established by a separate frozen dual-independent final-horizon semantic consensus?",
-  "claimBoundary": "This readiness-only prospective successor can become executable only after separately sealed passing manipulation-v2 and outcome-instrument heldout validations, a human amendment of the current 5000-attempt programme ceiling, and a post-validation executable registration. The sealed failed manipulation-v1 validation is never rescored, normalized, reused, pooled, or interpreted as semantic performance. Only then can a later request test the frame-refuser warm-versus-plain difference for the existing profile_specific_resistance_recovery endpoint under the registered matched test_bounded_distinction move in world_005_marrick. It cannot pool or reinterpret the 12 calibration dialogues or the incomplete V1, V3, V4, or V7 confirmation blocks; establish matched-versus-mismatched action efficacy, edged-register efficacy, an action-by-register interaction, general tutor efficacy, durable learning, human validity, or transfer to the cell harness; or turn measurement indeterminacy or a treatment-fidelity failure into an outcome rerun.",
+  "claimBoundary": "This readiness-only prospective successor can become executable only after separately sealed passing manipulation-v3 and outcome-instrument heldout validations, a human amendment of the current 5000-attempt programme ceiling, and a post-validation executable registration. The sealed failed manipulation-v1 and manipulation-v2 validations are never rescored, normalized, reused, pooled, or interpreted as semantic performance. Only then can a later request test the frame-refuser warm-versus-plain difference for the existing profile_specific_resistance_recovery endpoint under the registered matched test_bounded_distinction move in world_005_marrick. It cannot pool or reinterpret the 12 calibration dialogues or the incomplete V1, V3, V4, or V7 confirmation blocks; establish matched-versus-mismatched action efficacy, edged-register efficacy, an action-by-register interaction, general tutor efficacy, durable learning, human validity, or transfer to the cell harness; or turn measurement indeterminacy or a treatment-fidelity failure into an outcome rerun.",
   "authorization": {
     "modelCallsAuthorized": false,
     "liveRunAuthorized": false,
@@ -15,15 +15,15 @@
     "standingArchitecturalCorrectionSha256": "dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4",
     "programmeLedgerBeforeThisConfirmation": {
       "role": "prospective_maximum_after_both_validations_not_observed_consumption",
-      "reservedAttempts": 1691,
+      "reservedAttempts": 1851,
       "ceiling": 5000,
-      "remaining": 3309
+      "remaining": 3149
     },
     "requiredCeilingAmendment": {
       "from": 5000,
-      "to": 5147,
-      "increase": 147,
-      "basis": "after the failed v1 manipulation validation leaves the observed programme ledger at 491, at most 480 replacement manipulation-v2 and 720 outcome-validation reservations plus the unchanged 3456-reservation confirmation design reach a conservative staged maximum of 5147; the scientific validation and confirmation designs are not narrowed to fit the current 5000-attempt safeguard",
+      "to": 5307,
+      "increase": 307,
+      "basis": "after the sealed failed v1 and v2 manipulation validations leave the observed programme ledger at 651, at most 480 manipulation-v3 and 720 outcome-validation reservations plus the unchanged 3456-reservation confirmation design reach a conservative staged maximum of 5307; the scientific validation and confirmation designs are not narrowed to fit the current 5000-attempt safeguard",
       "authorized": false
     },
     "requiredBeforeValidationModelCalls": [
@@ -35,9 +35,9 @@
     ],
     "requiredBeforeConfirmationModelCalls": [
       "merged zero-call dual-independent semantic confirmation runtime/analyzer, endpoint contract, and endpoint certificate",
-      "a sealed passing independently authored 80-case blinded manipulation-v2 semantic validation report under its separate 480-reservation ceiling, with failed v1 validation evidence excluded",
+      "a sealed passing independently authored 80-case blinded manipulation-v3 semantic validation report under its separate 480-reservation ceiling, with failed v1 and v2 validation evidence excluded",
       "a sealed passing independently authored corrected-v2 120-case blinded complete-public-horizon recovery-and-fidelity semantic validation report under its separate 720-reservation ceiling",
-      "a human amendment raising the programme attempt safeguard from 5000 to at least 5147 without narrowing either validation or confirmation design",
+      "a human amendment raising the programme attempt safeguard from 5000 to at least 5307 without narrowing either validation or confirmation design",
       "a post-validation executable registration binding both sealed reports and actual observed validation accounting",
       "a clean pinned source and complete executable source closure",
       "nine absent create-once balanced batch destinations and one absent combined report",
@@ -212,13 +212,13 @@
     }
   },
   "semanticAdjudication": {
-    "instrumentRegistrationPath": "config/tutor-stub-resistance-semantic-adjudication-registration.v2.json",
-    "instrumentRegistrationSha256": "4cf2b38f3424960d983e2dd5e1a9938e0397e5038fa5f4c8d96bb5d8a78306be",
-    "instrumentFreezeCommit": "30d184211e09371c6aff86abcbed4623b8e457f0",
-    "validationRegistrationPath": "config/tutor-stub-resistance-semantic-adjudication-validation-registration.v2.json",
-    "validationRegistrationSha256": "502d8abe4400532f73bff466acbb5a239f316fcc98d153d4eb66d56cba5036b2",
-    "heldoutCorpusPath": "config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v2.json",
-    "heldoutCorpusSha256": "a52d10f60ceeeb9e1e92415c6add6d0dee4dbf69608053652ff9c23f08216535",
+    "instrumentRegistrationPath": "config/tutor-stub-resistance-semantic-adjudication-registration.v3.json",
+    "instrumentRegistrationSha256": "34fe9cf885293f14d037ac036c2c56f9d86f914707663afcc89f4acc938707e5",
+    "instrumentFreezeCommit": "a0e0b56d371e8313eeb98d99f22a1a5f880a0d67",
+    "validationRegistrationPath": "config/tutor-stub-resistance-semantic-adjudication-validation-registration.v3.json",
+    "validationRegistrationSha256": "52db8e549d9f735f257f47f3e9d95060a3bcc5c86983abba9457d5b64311df90",
+    "heldoutCorpusPath": "config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v3.json",
+    "heldoutCorpusSha256": "687f931f2bc0beb80283859dec48a9393e2ccf0d08ee34c6d8e68e5758dcd8c2",
     "failedV1Validation": {
       "requestSha256": "b6d9a41cc9fbdb2a3fc15f536e2a0b6e97a406986c9f88027e0765ab4bddb826",
       "reportSha256": "008230526809a6aa2917b240c6a30af644f30184b89042825773b1b8040c5c74",
@@ -227,6 +227,21 @@
       "invalidJudgments": 91,
       "measurementIndeterminateCases": 78,
       "programmeLedgerAfter": 491,
+      "rescored": false,
+      "normalized": false,
+      "reused": false,
+      "pooled": false,
+      "outcomeSelected": false
+    },
+    "failedV2Validation": {
+      "requestSha256": "b91b6c92ec6b82b15b40821938929c3e2c31c86424822846a26443977cb479d6",
+      "reportSha256": "11e868d18135e6df29230eab6f7912427917c0e0b55ea350f6cec4a2168fca11",
+      "privateArchiveCommit": "a98b58732ae2f0b68180e3bbb8d0357cf2e4adfa",
+      "chargedReservations": 160,
+      "returnedFirstAttempts": 160,
+      "invalidJudgments": 52,
+      "measurementIndeterminateCases": 57,
+      "programmeLedgerAfter": 651,
       "rescored": false,
       "normalized": false,
       "reused": false,
@@ -280,7 +295,7 @@
     "diagnosticProfile": "frame_defiant",
     "diagnosticDisposition": "absent_from_confirmation",
     "trigger": {
-      "observationSemantics": "prospective_frame_resistance_semantic_v2",
+      "observationSemantics": "prospective_frame_resistance_semantic_v3",
       "timing": "first_eligible_frame_jurisdiction_refusal_by_public_turn_2",
       "eligibleByTurn": 2,
       "requiredObservation": "dual_independent_high_confidence_frame_refuser_consensus",
@@ -484,11 +499,11 @@
   },
   "executionReadiness": {
     "stagedValidationBudget": {
-      "observedProgrammeLedgerBeforeValidation": 491,
+      "observedProgrammeLedgerBeforeValidation": 651,
       "manipulationValidationHardReservations": 480,
-      "maximumAfterManipulationValidation": 971,
+      "maximumAfterManipulationValidation": 1131,
       "outcomeValidationHardReservations": 720,
-      "maximumAfterBothValidations": 1691,
+      "maximumAfterBothValidations": 1851,
       "programmeCeiling": 5000,
       "operationalSafeguardNotDesignObjective": true
     },
@@ -586,9 +601,9 @@
     "combinedMaximumModelAttemptReservations": 3456,
     "programmeLedgerAfterMaximum": {
       "role": "prospective_maximum_after_both_validations_and_confirmation_not_observed_consumption",
-      "reservedAttempts": 5147,
+      "reservedAttempts": 5307,
       "ceiling": 5000,
-      "remaining": -147
+      "remaining": -307
     },
     "attemptAccountingRole": "operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective",
     "boundedTechnicalRecovery": "missing_or_failed_units_only_before_any_candidate_generation_or_semantic_response_using_actual_unused_room_within_the_same_96_dialogue_384_batch_3456_confirmation_and_5000_programme_caps",

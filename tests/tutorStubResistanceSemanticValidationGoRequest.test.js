@@ -27,6 +27,12 @@ const HELDOUT_V2 = 'config/tutor-stub-resistance-semantic-adjudication-heldout-c
 const ENDPOINT_V2 = 'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v2.json';
 const CERTIFICATE_V2 =
   'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v2.endpoint-go.json';
+const REGISTRATION_V3 = 'config/tutor-stub-resistance-semantic-adjudication-validation-registration.v3.json';
+const INSTRUMENT_V3 = 'config/tutor-stub-resistance-semantic-adjudication-registration.v3.json';
+const HELDOUT_V3 = 'config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v3.json';
+const ENDPOINT_V3 = 'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v3.json';
+const CERTIFICATE_V3 =
+  'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v3.endpoint-go.json';
 const RECOVERY_REGISTRATION = 'config/tutor-stub-resistance-recovery-semantic-validation-registration.v2.json';
 const RECOVERY_INSTRUMENT = 'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v2.json';
 const RECOVERY_HELDOUT = 'config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v2.json';
@@ -87,6 +93,43 @@ const CLOSURE_V2 = [
   'config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v1.json',
   ENDPOINT_V2,
   CERTIFICATE_V2,
+  'config/providers.yaml',
+  'package.json',
+  'package-lock.json',
+];
+const CLOSURE_V3 = [
+  'scripts/run-tutor-stub-resistance-semantic-validation.js',
+  'scripts/analyze-tutor-stub-resistance-semantic-validation.js',
+  'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
+  'scripts/package-tutor-stub-resistant-profile-study-go-request.js',
+  'services/tutorStubResistanceSemanticValidationRuntime.js',
+  'services/tutorStubResistanceSemanticValidationV3.js',
+  'services/tutorStubResistanceSemanticRuntime.js',
+  'services/tutorStubResistanceSemanticAdjudicationV3.js',
+  'services/tutorStubResistanceSemanticAdjudicationV2.js',
+  'services/tutorStubResistanceSemanticAdjudication.js',
+  'services/tutorStubPromptTransport.js',
+  'services/tutorStubCliPolicyRetry.js',
+  'services/tutorStubArtifactArchive.js',
+  'services/paidStudyEndpointPreflight.js',
+  'services/cliProviderBridge.js',
+  'services/evalConfigLoader.js',
+  REGISTRATION_V3,
+  INSTRUMENT_V3,
+  'config/tutor-stub-resistance-semantic-adjudication-response.schema.v3.json',
+  'config/tutor-stub-resistance-semantic-adjudication-development-evidence.v3.json',
+  HELDOUT_V3,
+  REGISTRATION_V2,
+  INSTRUMENT_V2,
+  HELDOUT_V2,
+  'config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v2.json',
+  REGISTRATION,
+  INSTRUMENT,
+  'config/tutor-stub-resistance-semantic-adjudication-development-corpus.v1.json',
+  HELDOUT,
+  'config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v1.json',
+  ENDPOINT_V3,
+  CERTIFICATE_V3,
   'config/providers.yaml',
   'package.json',
   'package-lock.json',
@@ -375,6 +418,69 @@ function buildRequestV2(requestRepoPath, suffix) {
   return request;
 }
 
+function buildRequestV3(requestRepoPath, suffix) {
+  const request = buildRequestV2(requestRepoPath, suffix);
+  const contract = JSON.parse(fs.readFileSync(path.join(ROOT, ENDPOINT_V3), 'utf8'));
+  const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, CERTIFICATE_V3), 'utf8'));
+  const artifactRoot = `.tutor-stub-auto-eval/semantic-validation-v3-${suffix}`;
+  const replaceRegistration = (command) =>
+    command
+      .map((value) => (value === REGISTRATION_V2 ? REGISTRATION_V3 : value))
+      .map((value, index, values) => (values[index - 1] === '--destination' ? artifactRoot : value));
+  const live = replaceRegistration(request.commands.live);
+  const recovery = replaceRegistration(request.commands.recovery);
+  const analyze = replaceRegistration(request.commands.analyze);
+  request.studyId = contract.study_id;
+  request.source.closure = CLOSURE_V3.map((repoPath) => ({ path: repoPath, sha256: fileSha256(repoPath) }));
+  request.semanticAdjudicationValidation = {
+    ...request.semanticAdjudicationValidation,
+    type: 'prospective_resistance_semantic_adjudication_heldout_validation_v3',
+    instrumentRegistration: { path: INSTRUMENT_V3, sha256: fileSha256(INSTRUMENT_V3) },
+    heldoutCorpus: { path: HELDOUT_V3, sha256: fileSha256(HELDOUT_V3), cases: 80 },
+    failedV2Validation: {
+      request: {
+        path: 'config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v2.json',
+        sha256: fileSha256('config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v2.json'),
+      },
+      reportSha256: '11e868d18135e6df29230eab6f7912427917c0e0b55ea350f6cec4a2168fca11',
+      privateArchive: {
+        branch: 'codex/resistance-semantic-validation-v2-failed-archive',
+        commit: 'a98b58732ae2f0b68180e3bbb8d0357cf2e4adfa',
+      },
+      chargedReservations: 160,
+      returnedFirstAttempts: 160,
+      programmeLedgerAfter: 651,
+      rescored: false,
+      normalized: false,
+      reused: false,
+      pooled: false,
+      outcomeSelected: false,
+    },
+    claimBoundary:
+      'heldout_semantic_instrument_v3_validation_only_failed_v1_v2_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim',
+  };
+  request.budget.programmeLedgerBefore = 651;
+  request.budget.programmeLedgerAfterMaximum = 1131;
+  request.bindings.registration = { path: REGISTRATION_V3, sha256: fileSha256(REGISTRATION_V3) };
+  request.bindings.endpoint = {
+    contractPath: ENDPOINT_V3,
+    contractFileSha256: fileSha256(ENDPOINT_V3),
+    contractCanonicalSha256: sha256(JSON.stringify(canonicalJson(contract))),
+    certificatePath: CERTIFICATE_V3,
+    certificateFileSha256: fileSha256(CERTIFICATE_V3),
+    preflightSha256: certificate.preflight_sha256,
+  };
+  request.commands = { live, recovery, analyze };
+  request.bindings.commands = {
+    source: 'commands',
+    liveArraySha256: sha256(JSON.stringify(live)),
+    recoveryArraySha256: sha256(JSON.stringify(recovery)),
+    analyzeArraySha256: sha256(JSON.stringify(analyze)),
+  };
+  request.destination = { artifactRoot, createOnce: true, mustNotExistBeforeLaunch: true };
+  return request;
+}
+
 function templateText(request) {
   const template = structuredClone(request);
   template.source.launchCommit = GO_REQUEST_PACKAGE_MARKERS.sourceCommit;
@@ -583,6 +689,58 @@ test('future v2 GO packaging binds failed-v1 exclusion and the 491-to-971 valida
     const changed = structuredClone(request);
     mutate(changed);
     const invalidPath = path.join(temporary, `invalid-v2-${crypto.randomUUID()}.json`);
+    fs.writeFileSync(invalidPath, `${JSON.stringify(changed, null, 2)}\n`);
+    assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
+  }
+});
+
+test('future v3 GO packaging binds both failed validations and the 651-to-1131 validation-only ledger', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-v3-go-request-'));
+  const output = `.tutor-stub-auto-eval/.test-semantic-validation-v3-go-${process.pid}.json`;
+  t.after(() => {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(path.join(ROOT, output), { force: true });
+  });
+  const request = buildRequestV3(output, process.pid);
+  fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
+  fs.writeFileSync(path.join(ROOT, output), `${JSON.stringify(request, null, 2)}\n`);
+  const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath: path.join(ROOT, output) });
+  assert.equal(report.packetValid, true);
+  assert.equal(report.modelCalls, 0);
+  assert.equal(report.productionWrites, 0);
+  assert.equal(report.budget.programmeLedgerBefore, 651);
+  assert.equal(report.budget.programmeLedgerAfterMaximum, 1131);
+  fs.rmSync(path.join(ROOT, output));
+
+  const templatePath = path.join(temporary, 'template.json');
+  fs.writeFileSync(templatePath, templateText(request));
+  const packaged = packageTutorStubResistantProfileStudyGoRequest({
+    templatePath,
+    launchCommit: request.source.launchCommit,
+    outputPath: output,
+  });
+  assert.equal(packaged.sourceClosureFiles, CLOSURE_V3.length);
+  assert.equal(packaged.isolatedReplay.nodeModulesPresent, false);
+  assert.equal(packaged.isolatedReplay.packetValid, true);
+  assert.equal(packaged.effects.modelCalls, 0);
+
+  for (const mutate of [
+    (value) => (value.semanticAdjudicationValidation.failedV1Validation.reused = true),
+    (value) => (value.semanticAdjudicationValidation.failedV2Validation.normalized = true),
+    (value) => (value.semanticAdjudicationValidation.failedV2Validation.privateArchive.commit = '0'.repeat(40)),
+    (value) => (value.budget.programmeLedgerBefore = 491),
+    (value) =>
+      (value.source.closure = value.source.closure.filter(
+        (row) => !row.path.endsWith('semantic-adjudication-heldout-corpus.v2.json'),
+      )),
+    (value) =>
+      (value.source.closure = value.source.closure.filter(
+        (row) => !row.path.endsWith('semantic-adjudication-development-evidence.v3.json'),
+      )),
+  ]) {
+    const changed = structuredClone(request);
+    mutate(changed);
+    const invalidPath = path.join(temporary, `invalid-v3-${crypto.randomUUID()}.json`);
     fs.writeFileSync(invalidPath, `${JSON.stringify(changed, null, 2)}\n`);
     assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
   }

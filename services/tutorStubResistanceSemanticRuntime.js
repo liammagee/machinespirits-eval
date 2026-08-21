@@ -22,12 +22,23 @@ import {
   validateTutorStubResistanceSemanticRegistrationV2,
   wrapTutorStubResistanceSemanticModelOutputV2,
 } from './tutorStubResistanceSemanticAdjudicationV2.js';
+import {
+  TUTOR_STUB_RESISTANCE_SEMANTIC_MODEL_SCHEMA_V3,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3,
+  adjudicateTutorStubResistanceSemanticJudgesV3,
+  buildTutorStubResistanceSemanticAdjudicationPromptV3,
+  validateTutorStubResistanceSemanticRegistrationV3,
+  wrapTutorStubResistanceSemanticModelOutputV3,
+} from './tutorStubResistanceSemanticAdjudicationV3.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION =
   'config/tutor-stub-resistance-semantic-adjudication-registration.v1.json';
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2 =
   'config/tutor-stub-resistance-semantic-adjudication-registration.v2.json';
+export const TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3 =
+  'config/tutor-stub-resistance-semantic-adjudication-registration.v3.json';
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_JUDGE_EVENT = 'resistance_semantic_judge_result';
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_AGGREGATE_EVENT = 'resistance_semantic_adjudication';
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE_CODE =
@@ -36,6 +47,16 @@ export const TUTOR_STUB_RESISTANCE_SEMANTIC_SYSTEM_PROMPT =
   'You are one independent semantic adjudicator. Use only the supplied public packet. Return the registered JSON object, use no tools, and do not infer hidden experimental state.';
 
 export function tutorStubResistanceSemanticRuntimeInstrument(registrationBinding) {
+  if (registrationBinding?.registration?.version === 3) {
+    return {
+      observationSemantics: TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3,
+      responseSchema: TUTOR_STUB_RESISTANCE_SEMANTIC_MODEL_SCHEMA_V3,
+      outputSchema: TUTOR_STUB_RESISTANCE_SEMANTIC_OUTPUT_SCHEMA_V3,
+      buildPrompt: buildTutorStubResistanceSemanticAdjudicationPromptV3,
+      wrapModelOutput: wrapTutorStubResistanceSemanticModelOutputV3,
+      adjudicate: adjudicateTutorStubResistanceSemanticJudgesV3,
+    };
+  }
   if (registrationBinding?.registration?.version === 2) {
     return {
       observationSemantics: TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2,
@@ -57,9 +78,11 @@ export function tutorStubResistanceSemanticRuntimeInstrument(registrationBinding
 }
 
 export function isTutorStubResistanceSemanticObservation(observationSemantics) {
-  return [TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION, TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2].includes(
-    observationSemantics,
-  );
+  return [
+    TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION,
+    TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2,
+    TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3,
+  ].includes(observationSemantics);
 }
 
 export function tutorStubResistanceSemanticExpectedLabel(profileId) {
@@ -197,9 +220,11 @@ export function loadTutorStubResistanceSemanticRegistration(
   const absolute = path.resolve(ROOT, registrationPath);
   const registration = JSON.parse(fs.readFileSync(absolute, 'utf8'));
   const validation =
-    registration.version === 2
-      ? validateTutorStubResistanceSemanticRegistrationV2(registration)
-      : validateTutorStubResistanceSemanticRegistration(registration);
+    registration.version === 3
+      ? validateTutorStubResistanceSemanticRegistrationV3(registration)
+      : registration.version === 2
+        ? validateTutorStubResistanceSemanticRegistrationV2(registration)
+        : validateTutorStubResistanceSemanticRegistration(registration);
   if (!validation.valid) throw new Error(`semantic registration invalid: ${validation.issues.join('; ')}`);
   return { registration, path: registrationPath, sha256: tutorStubResistanceSemanticSha256(fs.readFileSync(absolute)) };
 }
@@ -211,6 +236,9 @@ export function tutorStubResistanceSemanticRegistrationPathForObservation(observ
   }
   if (normalized === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2) {
     return TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2;
+  }
+  if (normalized === TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3) {
+    return TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V3;
   }
   throw new Error(`unsupported resistance semantic observation semantics: ${normalized}`);
 }

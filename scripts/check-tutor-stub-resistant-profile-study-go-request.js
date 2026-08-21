@@ -180,6 +180,44 @@ const RESISTANCE_SEMANTIC_VALIDATION_V2_CRITICAL_SOURCE_CLOSURE = Object.freeze(
   'package-lock.json',
 ]);
 
+const RESISTANCE_SEMANTIC_VALIDATION_V3_CRITICAL_SOURCE_CLOSURE = Object.freeze([
+  'scripts/run-tutor-stub-resistance-semantic-validation.js',
+  'scripts/analyze-tutor-stub-resistance-semantic-validation.js',
+  'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
+  'scripts/package-tutor-stub-resistant-profile-study-go-request.js',
+  'services/tutorStubResistanceSemanticValidationRuntime.js',
+  'services/tutorStubResistanceSemanticValidationV3.js',
+  'services/tutorStubResistanceSemanticRuntime.js',
+  'services/tutorStubResistanceSemanticAdjudicationV3.js',
+  'services/tutorStubResistanceSemanticAdjudicationV2.js',
+  'services/tutorStubResistanceSemanticAdjudication.js',
+  'services/tutorStubPromptTransport.js',
+  'services/tutorStubCliPolicyRetry.js',
+  'services/tutorStubArtifactArchive.js',
+  'services/paidStudyEndpointPreflight.js',
+  'services/cliProviderBridge.js',
+  'services/evalConfigLoader.js',
+  'config/tutor-stub-resistance-semantic-adjudication-validation-registration.v3.json',
+  'config/tutor-stub-resistance-semantic-adjudication-registration.v3.json',
+  'config/tutor-stub-resistance-semantic-adjudication-response.schema.v3.json',
+  'config/tutor-stub-resistance-semantic-adjudication-development-evidence.v3.json',
+  'config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v3.json',
+  'config/tutor-stub-resistance-semantic-adjudication-validation-registration.v2.json',
+  'config/tutor-stub-resistance-semantic-adjudication-registration.v2.json',
+  'config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v2.json',
+  'config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v2.json',
+  'config/tutor-stub-resistance-semantic-adjudication-validation-registration.v1.json',
+  'config/tutor-stub-resistance-semantic-adjudication-registration.v1.json',
+  'config/tutor-stub-resistance-semantic-adjudication-development-corpus.v1.json',
+  'config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json',
+  'config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v1.json',
+  'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v3.json',
+  'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v3.endpoint-go.json',
+  'config/providers.yaml',
+  'package.json',
+  'package-lock.json',
+]);
+
 const RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_V1_CRITICAL_SOURCE_CLOSURE = Object.freeze([
   'scripts/run-tutor-stub-resistance-recovery-semantic-validation.js',
   'scripts/analyze-tutor-stub-resistance-recovery-semantic-validation.js',
@@ -816,10 +854,19 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   const isResistanceSemanticValidation = [
     'prospective_resistance_semantic_adjudication_heldout_validation_v1',
     'prospective_resistance_semantic_adjudication_heldout_validation_v2',
+    'prospective_resistance_semantic_adjudication_heldout_validation_v3',
   ].includes(request.semanticAdjudicationValidation?.type);
   const isResistanceSemanticValidationV2 =
     request.semanticAdjudicationValidation?.type ===
     'prospective_resistance_semantic_adjudication_heldout_validation_v2';
+  const isResistanceSemanticValidationV3 =
+    request.semanticAdjudicationValidation?.type ===
+    'prospective_resistance_semantic_adjudication_heldout_validation_v3';
+  const resistanceSemanticValidationVersion = isResistanceSemanticValidationV3
+    ? 3
+    : isResistanceSemanticValidationV2
+      ? 2
+      : 1;
   const isResistanceRecoverySemanticValidation = [
     'prospective_resistance_recovery_semantic_adjudication_heldout_validation_v1',
     'prospective_resistance_recovery_semantic_adjudication_heldout_validation_v2',
@@ -905,9 +952,11 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         ? RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_V2_CRITICAL_SOURCE_CLOSURE
         : RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_V1_CRITICAL_SOURCE_CLOSURE
       : isResistanceSemanticValidation
-        ? isResistanceSemanticValidationV2
-          ? RESISTANCE_SEMANTIC_VALIDATION_V2_CRITICAL_SOURCE_CLOSURE
-          : RESISTANCE_SEMANTIC_VALIDATION_V1_CRITICAL_SOURCE_CLOSURE
+        ? isResistanceSemanticValidationV3
+          ? RESISTANCE_SEMANTIC_VALIDATION_V3_CRITICAL_SOURCE_CLOSURE
+          : isResistanceSemanticValidationV2
+            ? RESISTANCE_SEMANTIC_VALIDATION_V2_CRITICAL_SOURCE_CLOSURE
+            : RESISTANCE_SEMANTIC_VALIDATION_V1_CRITICAL_SOURCE_CLOSURE
         : isBoredomActionRegisterProofDag
           ? isBoredomActionRegisterProofDagV3
             ? BOREDOM_ACTION_REGISTER_PROOF_DAG_V3_CRITICAL_SOURCE_CLOSURE
@@ -1026,16 +1075,16 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       assertion(
         checks,
         'resistance-semantic-validation-endpoint-readiness-binding',
-        endpointRegistration.version === (isResistanceSemanticValidationV2 ? 2 : 1) &&
+        endpointRegistration.version === resistanceSemanticValidationVersion &&
           contract.runner?.live_executor === 'scripts/run-tutor-stub-resistance-semantic-validation.js' &&
           contract.runner?.combined_analyzer === 'scripts/analyze-tutor-stub-resistance-semantic-validation.js' &&
           contract.runner?.attempt_contract?.planned_model_calls === 160 &&
           contract.runner?.attempt_contract?.maximum_reservations_per_planned_call === 3 &&
           contract.runner?.attempt_contract?.hard_validation_reservations === 480 &&
           contract.runner?.attempt_contract?.programme_ledger_before ===
-            (isResistanceSemanticValidationV2 ? 491 : 331) &&
+            (isResistanceSemanticValidationV3 ? 651 : isResistanceSemanticValidationV2 ? 491 : 331) &&
           contract.runner?.attempt_contract?.programme_ledger_after_maximum ===
-            (isResistanceSemanticValidationV2 ? 971 : 811) &&
+            (isResistanceSemanticValidationV3 ? 1131 : isResistanceSemanticValidationV2 ? 971 : 811) &&
           contract.runner?.attempt_contract?.programme_ceiling === 5000 &&
           contract.runner?.attempt_contract?.partial_case_rerun === false &&
           contract.runner?.attempt_contract?.technical_recovery === 'predeclared_never_dispatched_missing_judge_only' &&
@@ -1049,7 +1098,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
           contract.runner?.attempt_contract?.outcome_selection === false &&
           [
             'synthetic_fixture_metric_pipeline_wiring',
-            isResistanceSemanticValidationV2
+            isResistanceSemanticValidationV2 || isResistanceSemanticValidationV3
               ? 'synthetic_quote_normalization_provenance_wiring'
               : 'synthetic_schema_span_provenance_wiring',
             'synthetic_interjudge_metric_wiring',
@@ -1549,13 +1598,13 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     assertion(
       checks,
       'resistance-semantic-validation-design-binding',
-      registered.version === (isResistanceSemanticValidationV2 ? 2 : 1) &&
+      registered.version === resistanceSemanticValidationVersion &&
         registered.status === 'prospective_zero_call_readiness_hold' &&
         gate.instrumentRegistration.path ===
-          `config/tutor-stub-resistance-semantic-adjudication-registration.v${isResistanceSemanticValidationV2 ? 2 : 1}.json` &&
+          `config/tutor-stub-resistance-semantic-adjudication-registration.v${resistanceSemanticValidationVersion}.json` &&
         gate.instrumentRegistration.sha256 === registered.instrument.registrationSha256 &&
         gate.heldoutCorpus.path ===
-          `config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v${isResistanceSemanticValidationV2 ? 2 : 1}.json` &&
+          `config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v${resistanceSemanticValidationVersion}.json` &&
         gate.heldoutCorpus.sha256 === registered.heldout.corpusSha256 &&
         gate.heldoutCorpus.cases === 80 &&
         request.design.cases === 80 &&
@@ -1589,6 +1638,57 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       );
       validateFileBinding(checks, 'semantic-validation-failed-v1-request-binding', gate.failedV1Validation.request);
     }
+    if (isResistanceSemanticValidationV3) {
+      for (const [version, expected] of [
+        [
+          'V1',
+          {
+            path: 'config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v1.json',
+            requestSha: registered.supersession.v1ConsumedRequestSha256,
+            reportSha: registered.supersession.v1FailedReportSha256,
+            archiveBranch: registered.supersession.v1FailedArchiveBranch,
+            archiveCommit: registered.supersession.v1FailedArchiveCommit,
+            ledger: 491,
+          },
+        ],
+        [
+          'V2',
+          {
+            path: 'config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v2.json',
+            requestSha: registered.supersession.v2ConsumedRequestSha256,
+            reportSha: registered.supersession.v2FailedReportSha256,
+            archiveBranch: registered.supersession.v2FailedArchiveBranch,
+            archiveCommit: registered.supersession.v2FailedArchiveCommit,
+            ledger: 651,
+          },
+        ],
+      ]) {
+        const failed = gate[`failed${version}Validation`];
+        assertion(
+          checks,
+          `resistance-semantic-validation-v3-failed-${version.toLowerCase()}-exclusion`,
+          failed?.request?.path === expected.path &&
+            failed?.request?.sha256 === expected.requestSha &&
+            failed?.reportSha256 === expected.reportSha &&
+            failed?.privateArchive?.branch === expected.archiveBranch &&
+            failed?.privateArchive?.commit === expected.archiveCommit &&
+            failed?.chargedReservations === 160 &&
+            failed?.returnedFirstAttempts === 160 &&
+            failed?.programmeLedgerAfter === expected.ledger &&
+            failed?.rescored === false &&
+            failed?.normalized === false &&
+            failed?.reused === false &&
+            failed?.pooled === false &&
+            failed?.outcomeSelected === false,
+          `the sealed failed ${version} validation remains digest-bound and excluded`,
+        );
+        validateFileBinding(
+          checks,
+          `semantic-validation-failed-${version.toLowerCase()}-request-binding`,
+          failed.request,
+        );
+      }
+    }
     validateFileBinding(checks, 'semantic-validation-instrument-binding', gate.instrumentRegistration);
     validateFileBinding(checks, 'semantic-validation-heldout-binding', gate.heldoutCorpus);
     assertion(
@@ -1598,8 +1698,10 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         request.budget.plannedModelCalls === 160 &&
         request.budget.maximumReservationsPerPlannedCall === 3 &&
         request.budget.maximumPlannedModelAttempts === 480 &&
-        request.budget.programmeLedgerBefore === (isResistanceSemanticValidationV2 ? 491 : 331) &&
-        request.budget.programmeLedgerAfterMaximum === (isResistanceSemanticValidationV2 ? 971 : 811) &&
+        request.budget.programmeLedgerBefore ===
+          (isResistanceSemanticValidationV3 ? 651 : isResistanceSemanticValidationV2 ? 491 : 331) &&
+        request.budget.programmeLedgerAfterMaximum ===
+          (isResistanceSemanticValidationV3 ? 1131 : isResistanceSemanticValidationV2 ? 971 : 811) &&
         request.budget.programmeCeiling === 5000 &&
         request.budget.retryOrResumeAuthority === 'bounded_technical_recovery' &&
         gate.lifecycle.preservedValidJudgeRecalled === false &&
@@ -1617,9 +1719,11 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       checks,
       'resistance-semantic-validation-claim-boundary',
       gate.claimBoundary ===
-        (isResistanceSemanticValidationV2
-          ? 'heldout_semantic_instrument_v2_validation_only_failed_v1_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim'
-          : 'heldout_semantic_instrument_validation_only_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim') &&
+        (isResistanceSemanticValidationV3
+          ? 'heldout_semantic_instrument_v3_validation_only_failed_v1_v2_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim'
+          : isResistanceSemanticValidationV2
+            ? 'heldout_semantic_instrument_v2_validation_only_failed_v1_excluded_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim'
+            : 'heldout_semantic_instrument_validation_only_no_confirmation_outcome_or_warm_plain_efficacy_null_learning_transfer_human_or_cell_claim') &&
         gate.syntheticPreflightEstablishesAccuracy === false &&
         gate.validationOutcomesExcludedFromConfirmation === true &&
         gate.postHeldoutPromptSchemaConsensusThresholdTuning === false,
@@ -1636,9 +1740,9 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       commandArg(command, '--source-tree') === request.source.launchTree &&
       commandArg(command, '--go-request') === requestRepoPath &&
       commandArg(command, '--maximum-reservations') === '480' &&
-      (isResistanceSemanticValidationV2
+      (isResistanceSemanticValidationV2 || isResistanceSemanticValidationV3
         ? commandArg(command, '--validation-registration') ===
-          'config/tutor-stub-resistance-semantic-adjudication-validation-registration.v2.json'
+          `config/tutor-stub-resistance-semantic-adjudication-validation-registration.v${resistanceSemanticValidationVersion}.json`
         : commandArg(command, '--validation-registration') === null);
     assertion(
       checks,
@@ -1656,9 +1760,9 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         commandArg(analyzeCommand, '--source-commit') === request.source.launchCommit &&
         commandArg(analyzeCommand, '--source-tree') === request.source.launchTree &&
         commandArg(analyzeCommand, '--go-request') === requestRepoPath &&
-        (isResistanceSemanticValidationV2
+        (isResistanceSemanticValidationV2 || isResistanceSemanticValidationV3
           ? commandArg(analyzeCommand, '--validation-registration') ===
-            'config/tutor-stub-resistance-semantic-adjudication-validation-registration.v2.json'
+            `config/tutor-stub-resistance-semantic-adjudication-validation-registration.v${resistanceSemanticValidationVersion}.json`
           : commandArg(analyzeCommand, '--validation-registration') === null),
       'the sole analyzer binds the sealed destination, source, and digest-bound request',
     );
