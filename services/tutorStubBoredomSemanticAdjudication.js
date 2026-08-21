@@ -1,5 +1,7 @@
 import crypto from 'node:crypto';
 
+import { RESISTANT_LEARNER_OBSERVATION_SEMANTICS, observeResistantLearnerTurn } from './resistantLearnerObservation.js';
+
 export const TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATION_SCHEMA =
   'machinespirits.tutor-stub.boredom-semantic-adjudication.v1';
 export const TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATOR_MODEL_REF = 'codex.gpt-5.6-sol';
@@ -293,6 +295,28 @@ export async function adjudicateTutorStubBoredomObservation({
       latency_ms: response?.latencyMs ?? null,
       usage: response?.usage || null,
     },
+  };
+}
+
+export function createTutorStubBoredomSemanticAdjudicator(callModel, resolveModel) {
+  if (typeof resolveModel !== 'function') throw new Error('boredom semantic adjudication requires model resolution');
+  const resolved = resolveModel(TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATOR_MODEL_REF);
+  return ({ learnerText, classification, tutorLearnerDag, state, turn, signal }) => {
+    const auxiliary = observeResistantLearnerTurn({
+      learnerText,
+      classification,
+      tutorLearnerDag,
+      semantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV9,
+    });
+    return adjudicateTutorStubBoredomObservation({
+      candidate: learnerText,
+      auxiliaryObservation: auxiliary.boredom_composition || null,
+      callModel,
+      resolved,
+      trace: state?.trace || null,
+      turn,
+      signal,
+    });
   };
 }
 

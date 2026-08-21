@@ -31,6 +31,7 @@ import {
   selectGuardedLearnerMove,
 } from './tutorStubGuardedLearnerMoves.js';
 import {
+  BOUNDED_FRAME_OPPORTUNITY_OBSERVATION_SEMANTICS,
   FRAME_DEFIANT_ADHERENCE_EXHAUSTED_CODE,
   FRAME_REFUSER_ADHERENCE_EXHAUSTED_CODE,
   RESISTANT_LEARNER_OBSERVATION_SEMANTICS,
@@ -244,12 +245,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
   }
   const observationSemantics = requestedObservationSemantics || RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2;
   const boundedFrameOpportunitySemantics =
-    observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4 ||
-    observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5 ||
-    observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6 ||
-    observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7 ||
-    observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8 ||
-    observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV9;
+    BOUNDED_FRAME_OPPORTUNITY_OBSERVATION_SEMANTICS.includes(observationSemantics);
   const automatedLearnerTraceMetadata = Object.freeze(boundedFrameOpportunitySemantics ? { observationSemantics } : {});
   function automatedLearnerSystemPrompt(profile) {
     return [

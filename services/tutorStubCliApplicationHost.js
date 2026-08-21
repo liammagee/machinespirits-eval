@@ -569,11 +569,7 @@ import {
 } from './tutorStubResistanceActionRegisterExecution.js';
 import { configureTutorStubResistanceActionRegisterConfirmationFromCli } from './tutorStubResistanceActionRegisterConfirmation.js';
 import { configureTutorStubBoredomProofDagFromCli } from './tutorStubBoredomActionRegisterProofDagStudy.js';
-import {
-  TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATOR_MODEL_REF,
-  adjudicateTutorStubBoredomObservation,
-} from './tutorStubBoredomSemanticAdjudication.js';
-import { RESISTANT_LEARNER_OBSERVATION_SEMANTICS, observeResistantLearnerTurn } from './resistantLearnerObservation.js';
+import { createTutorStubBoredomSemanticAdjudicator } from './tutorStubBoredomSemanticAdjudication.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from './tutorStubResistanceActionRegisterStudy.js';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
@@ -584,7 +580,6 @@ const HUMAN_DISCOURSE_FRAME_SCHEMA = 'machinespirits.tutor-stub.human-discourse-
 const TUTOR_GUARD_ACCOUNTING_SCHEMA = 'machinespirits.tutor-stub.guard-accounting.v1';
 const TUTOR_TYPED_ACTION_CONFIG_SCHEMA = 'machinespirits.tutor-stub.typed-action-runtime-config.v1';
 const DEFAULT_INTERACTIVE_COMMITTEE_FALLBACK_POLICY = 'v2';
-
 export async function runTutorStubCliApplicationHost({
   stub,
   args,
@@ -1089,32 +1084,6 @@ export async function runTutorStubCliApplicationHost({
     waitTutorStubCliPolicyRetryDelay,
     write: (text) => process.stdout.write(text),
   });
-  const boredomSemanticAdjudicatorResolved = resolveModel(TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATOR_MODEL_REF);
-  const adjudicateIndependentTutorStubBoredomObservation = ({
-    learnerText,
-    classification,
-    tutorLearnerDag,
-    state,
-    turn,
-    signal,
-  }) => {
-    const auxiliary = observeResistantLearnerTurn({
-      learnerText,
-      classification,
-      tutorLearnerDag,
-      semantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV9,
-    });
-    return adjudicateTutorStubBoredomObservation({
-      candidate: learnerText,
-      auxiliaryObservation: auxiliary.boredom_composition || null,
-      callModel: callPromptModel,
-      resolved: boredomSemanticAdjudicatorResolved,
-      trace: state?.trace || null,
-      turn,
-      signal,
-    });
-  };
-
   const {
     attachTutorGuardAccounting,
     buildTutorGuardAccounting,
@@ -1857,7 +1826,7 @@ export async function runTutorStubCliApplicationHost({
     TUTOR_STUB_QUARANTINE_CONTINUATION,
     acknowledgeTutorStubOpeningRelease,
     advanceTutorStubDialogueClosure,
-    adjudicateTutorStubBoredomObservation: adjudicateIndependentTutorStubBoredomObservation,
+    adjudicateTutorStubBoredomObservation: createTutorStubBoredomSemanticAdjudicator(callPromptModel, resolveModel),
     analyzeLearnerTurn,
     appendTraceEvent,
     appendTutorStubTurnFailureTraceRecords,
