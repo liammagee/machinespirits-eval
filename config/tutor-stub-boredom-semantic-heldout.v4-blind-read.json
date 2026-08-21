@@ -9,9 +9,7 @@
     {
       "id": "wharf_mixed_02",
       "reason": "field_disagreement",
-      "fields": [
-        "effort_withdrawal"
-      ]
+      "fields": ["effort_withdrawal"]
     }
   ],
   "readings": {
