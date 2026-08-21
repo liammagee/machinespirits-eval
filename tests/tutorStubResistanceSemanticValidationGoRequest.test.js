@@ -21,12 +21,12 @@ const HELDOUT = 'config/tutor-stub-resistance-semantic-adjudication-heldout-corp
 const ENDPOINT = 'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v1.json';
 const CERTIFICATE =
   'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v1.endpoint-go.json';
-const RECOVERY_REGISTRATION = 'config/tutor-stub-resistance-recovery-semantic-validation-registration.v1.json';
-const RECOVERY_INSTRUMENT = 'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v1.json';
-const RECOVERY_HELDOUT = 'config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v1.json';
-const RECOVERY_ENDPOINT = 'config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v1.json';
+const RECOVERY_REGISTRATION = 'config/tutor-stub-resistance-recovery-semantic-validation-registration.v2.json';
+const RECOVERY_INSTRUMENT = 'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v2.json';
+const RECOVERY_HELDOUT = 'config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v2.json';
+const RECOVERY_ENDPOINT = 'config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v2.json';
 const RECOVERY_CERTIFICATE =
-  'config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v1.endpoint-go.json';
+  'config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v2.endpoint-go.json';
 const CLOSURE = [
   'scripts/run-tutor-stub-resistance-semantic-validation.js',
   'scripts/analyze-tutor-stub-resistance-semantic-validation.js',
@@ -60,7 +60,7 @@ const RECOVERY_CLOSURE = [
   'scripts/package-tutor-stub-resistant-profile-study-go-request.js',
   'services/tutorStubResistanceRecoverySemanticValidationRuntime.js',
   'services/tutorStubResistanceRecoverySemanticValidation.js',
-  'services/tutorStubResistanceRecoverySemanticAdjudication.js',
+  'services/tutorStubResistanceRecoverySemanticAdjudicationV2.js',
   'services/tutorStubPromptTransport.js',
   'services/tutorStubCliPolicyRetry.js',
   'services/tutorStubArtifactArchive.js',
@@ -69,8 +69,8 @@ const RECOVERY_CLOSURE = [
   'services/evalConfigLoader.js',
   RECOVERY_REGISTRATION,
   RECOVERY_INSTRUMENT,
-  'config/tutor-stub-resistance-recovery-semantic-response.schema.v1.json',
-  'config/tutor-stub-resistance-recovery-semantic-development-corpus.v1.json',
+  'config/tutor-stub-resistance-recovery-semantic-response.schema.v2.json',
+  'config/tutor-stub-resistance-recovery-semantic-development-corpus.v2.json',
   RECOVERY_HELDOUT,
   RECOVERY_ENDPOINT,
   RECOVERY_CERTIFICATE,
@@ -282,7 +282,7 @@ function buildRecoveryRequest(requestRepoPath, suffix) {
   request.studyId = contract.study_id;
   request.source.closure = RECOVERY_CLOSURE.map((repoPath) => ({ path: repoPath, sha256: fileSha256(repoPath) }));
   request.semanticAdjudicationValidation = {
-    type: 'prospective_resistance_recovery_semantic_adjudication_heldout_validation_v1',
+    type: 'prospective_resistance_recovery_semantic_adjudication_heldout_validation_v2',
     instrumentRegistration: { path: RECOVERY_INSTRUMENT, sha256: fileSha256(RECOVERY_INSTRUMENT) },
     heldoutCorpus: { path: RECOVERY_HELDOUT, sha256: fileSha256(RECOVERY_HELDOUT), cases: 120 },
     lifecycle: {

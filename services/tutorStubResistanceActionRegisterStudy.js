@@ -326,6 +326,23 @@ function normalizeRegistration(registration) {
     const semantic = registration.semanticAdjudication;
     const outcomeSemantic = registration.outcomeSemanticAdjudication;
     const stoppedV7 = registration.preservation?.stoppedConfirmationV7;
+    const expectedValidationPrerequisites = [
+      'merged zero-call dual-independent semantic instrument, validation runner/analyzer, endpoint contract, and endpoint certificate for the selected validation stage',
+      'a clean pinned source and complete validation source closure',
+      'a fresh absent create-once validation destination and writable required durable private archive',
+      'one committed digest-bound HOLD request binding the selected frozen corpus, both judge routes, exact commands, stage ceiling, no-recall lifecycle, and validation-only claim boundary',
+      'the externally preserved standing human authority attachment at SHA-256 538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce',
+    ];
+    const expectedConfirmationPrerequisites = [
+      'merged zero-call dual-independent semantic confirmation runtime/analyzer, endpoint contract, and endpoint certificate',
+      'a sealed passing 80-case blinded manipulation semantic validation report under its separate 480-reservation ceiling',
+      'a sealed passing independently authored corrected-v2 120-case blinded complete-public-horizon recovery-and-fidelity semantic validation report under its separate 720-reservation ceiling',
+      'a post-validation executable registration binding both sealed reports and actual observed validation accounting',
+      'a clean pinned source and complete executable source closure',
+      'nine absent create-once balanced batch destinations and one absent combined report',
+      'one committed HOLD request binding all 36 fresh jobs, exact commands, Fisher rule, sealed-only combined analysis, both validation reports, the 3456 confirmation ceiling, and exact stopped-V7 exclusion provenance',
+      'the externally preserved standing human authority attachment at SHA-256 538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce',
+    ];
     const historicalExclusionSha256 = sha256(
       JSON.stringify({
         calibration: registration.preservation?.calibration,
@@ -377,17 +394,17 @@ function normalizeRegistration(registration) {
       semantic?.measurementIndeterminateDisposition !==
         'terminal_nonrecoverable_no_repair_rerun_replacement_selection_or_fisher_analysis' ||
       outcomeSemantic?.instrumentRegistrationPath !==
-        'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v1.json' ||
+        'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v2.json' ||
       outcomeSemantic?.instrumentRegistrationSha256 !==
-        'b77aca2b6c8562f3ea32a9e54f17386969e4912efdcc0ec09a5beb61a7dd127a' ||
-      outcomeSemantic?.instrumentFreezeCommit !== '59bfcc4c5223f21c1405a70feedc1e1bb639b441' ||
-      outcomeSemantic?.instrumentBindingCommit !== 'fc3ed584bec780e92605df82f8d0aa9513416695' ||
-      outcomeSemantic?.heldoutCorpusPath !== 'config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v1.json' ||
-      outcomeSemantic?.heldoutCorpusSha256 !== '3c394eae7c7902fce4d6634231cc070d7b32419bd4be44d752627cbd6e35784b' ||
+        '88b779b65c1502dc860ccf063ed35c3a865e354436a6e7f69be8ee94c674e02e' ||
+      outcomeSemantic?.instrumentFreezeCommit !== 'ecb0c5b289848308adffa2a415ced06924e5afe6' ||
+      outcomeSemantic?.instrumentBindingCommit !== 'd37c5ef66b54f199a505560eb3d244106502b36a' ||
+      outcomeSemantic?.heldoutCorpusPath !== 'config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v2.json' ||
+      outcomeSemantic?.heldoutCorpusSha256 !== '16899134545d574203192ae2b1b6ff6671500fa24957f6d82015be5064c784c5' ||
       outcomeSemantic?.validationRegistrationPath !==
-        'config/tutor-stub-resistance-recovery-semantic-validation-registration.v1.json' ||
+        'config/tutor-stub-resistance-recovery-semantic-validation-registration.v2.json' ||
       outcomeSemantic?.validationRegistrationSha256 !==
-        '7f2fceb3b2fcd16b0019b2c2df148ce75da35e3bdaee29095b6778665344dc16' ||
+        'f3ce64099f06feba394f9f38faea81914603f6d2d2b1bd55e860ea7f4858822b' ||
       outcomeSemantic?.validationReportPath !== null ||
       outcomeSemantic?.validationReportSha256 !== null ||
       outcomeSemantic?.validationRequiredBeforeConfirmationRequest !== true ||
@@ -440,7 +457,12 @@ function normalizeRegistration(registration) {
       readiness?.programmeLedgerAfterMaximum?.role !==
         'prospective_maximum_after_both_validations_and_confirmation_not_observed_consumption' ||
       registration.authorization?.standingArchitecturalCorrectionSha256 !==
-        'dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4'
+        'dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4' ||
+      JSON.stringify(registration.authorization?.requiredBeforeValidationModelCalls) !==
+        JSON.stringify(expectedValidationPrerequisites) ||
+      JSON.stringify(registration.authorization?.requiredBeforeConfirmationModelCalls) !==
+        JSON.stringify(expectedConfirmationPrerequisites) ||
+      Object.hasOwn(registration.authorization || {}, 'requiredBeforeAnyModelCall')
     ) {
       throw new Error('v8 semantic confirmation design, exclusions, validation gate, or budget arithmetic drifted');
     }
@@ -1092,7 +1114,7 @@ function parseTrace(source) {
     .map((line) => JSON.parse(line));
 }
 
-function triggerFromTurnRecord(
+export function tutorStubResistanceActionRegisterTriggerFromTurnRecord(
   record,
   profile,
   observationSemantics = RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2,
@@ -1118,8 +1140,17 @@ function triggerFromTurnRecord(
             ? 'frame_defiant'
             : null
         : null;
+    const timing = detectTutorStubEdgeTimingSignal({
+      learnerText,
+      classification,
+      tutorLearnerDag: record?.tutorLearnerDagModel ? { model: record.tutorLearnerDagModel } : null,
+    });
+    const safetyReasons = [];
+    if (timing.comprehensionRepair) safetyReasons.push('comprehension_repair');
+    if (timing.protectedAffect) safetyReasons.push('protected_affect');
     return {
-      eligible: semanticValidation.valid && observedProfile === profile,
+      eligible: semanticValidation.valid && observedProfile === profile && safetyReasons.length === 0,
+      reasons: safetyReasons,
       learnerText,
       classification,
       shadow: {
@@ -1131,7 +1162,12 @@ function triggerFromTurnRecord(
         },
       },
       cohortObservation: semanticAdjudication,
-      timing: { authority: 'advisory_only_under_semantic_observation', canVetoSemanticPositive: false },
+      timing: {
+        authority: 'advisory_only_under_semantic_observation',
+        observation: timing,
+        canVetoSemanticClassification: false,
+        canBlockUnsafeIntervention: true,
+      },
     };
   }
   const shadow = observeResistanceAxis({ learnerText, classification });
@@ -1192,7 +1228,7 @@ export function extractTutorStubResistanceActionRegisterPrefix({
   const publicHistory = opening ? [{ role: 'assistant', text: opening }] : [];
   let trigger = null;
   for (const event of completed) {
-    const candidate = triggerFromTurnRecord(
+    const candidate = tutorStubResistanceActionRegisterTriggerFromTurnRecord(
       event.turnRecord,
       normalizedProfile,
       observationSemantics,

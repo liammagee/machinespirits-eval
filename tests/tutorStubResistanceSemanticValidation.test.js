@@ -136,7 +136,7 @@ test('V8 confirmation readiness is loadable but cannot become an executable conf
   assert.equal(loaded.registration.outcomeSemanticAdjudication.validationReportPath, null);
   assert.equal(
     loaded.registration.outcomeSemanticAdjudication.heldoutCorpusSha256,
-    '3c394eae7c7902fce4d6634231cc070d7b32419bd4be44d752627cbd6e35784b',
+    '16899134545d574203192ae2b1b6ff6671500fa24957f6d82015be5064c784c5',
   );
   assert.equal(loaded.registration.executionReadiness.combinedMaximumModelAttemptReservations, 3456);
   assert.equal(loaded.registration.executionReadiness.programmeLedgerAfterMaximum.reservedAttempts, 4987);
@@ -161,6 +161,8 @@ test('V8 confirmation readiness is loadable but cannot become an executable conf
       (value) => (value.semanticAdjudication.validationReportPath = 'results/forged.json'),
       (value) => (value.outcomeSemanticAdjudication.instrumentRegistrationSha256 = '0'.repeat(64)),
       (value) => (value.outcomeSemanticAdjudication.validationReportPath = 'results/forged-outcome.json'),
+      (value) => (value.authorization.requiredBeforeValidationModelCalls[0] = 'circular or drifted'),
+      (value) => (value.authorization.requiredBeforeConfirmationModelCalls = []),
       (value) => (value.executionReadiness.stagedValidationBudget.outcomeValidationHardReservations = 719),
       (value) => (value.executionReadiness.programmeLedgerAfterMaximum.role = 'observed'),
     ]) {

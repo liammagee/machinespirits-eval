@@ -4,12 +4,13 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import { buildTutorStubResistanceRecoverySemanticZeroCallFixture } from '../services/tutorStubResistanceRecoverySemanticAdjudication.js';
+import { buildTutorStubResistanceRecoverySemanticZeroCallFixture } from '../services/tutorStubResistanceRecoverySemanticAdjudicationV2.js';
 import {
   buildTutorStubResistanceRecoverySemanticBlindedValidationCases,
   loadTutorStubResistanceRecoverySemanticValidation,
   runTutorStubResistanceRecoverySemanticValidationPreflight,
   tutorStubResistanceRecoverySemanticOpaqueCaseId,
+  validateTutorStubResistanceRecoverySemanticValidationRegistration,
 } from '../services/tutorStubResistanceRecoverySemanticValidation.js';
 import {
   analyzeTutorStubResistanceRecoverySemanticValidation,
@@ -20,9 +21,9 @@ import {
 import { validatePaidStudyEndpointGoCertificate } from '../services/paidStudyEndpointPreflight.js';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
-const CONTRACT = 'config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v1.json';
+const CONTRACT = 'config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v2.json';
 const CERTIFICATE =
-  'config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v1.endpoint-go.json';
+  'config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v2.endpoint-go.json';
 
 function json(repoPath) {
   return JSON.parse(fs.readFileSync(path.join(ROOT, repoPath), 'utf8'));
@@ -76,6 +77,15 @@ function findArchiveManifest(root) {
 
 test('outcome heldout is frozen, blinded, stratified, and zero-call endpoint wiring passes', () => {
   const loaded = loadTutorStubResistanceRecoverySemanticValidation();
+  assert.equal(loaded.registration.version, 2);
+  assert.equal(
+    loaded.registration.instrument.registrationPath,
+    'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v2.json',
+  );
+  assert.equal(
+    loaded.registration.executionReadiness.liveExecutorStatus,
+    'zero_call_ready_pending_digest_bound_go_request_and_model_authority',
+  );
   assert.equal(loaded.corpus.cases.length, 120);
   const blinded = buildTutorStubResistanceRecoverySemanticBlindedValidationCases(loaded.corpus.cases);
   assert.equal(blinded.length, 120);
@@ -83,6 +93,26 @@ test('outcome heldout is frozen, blinded, stratified, and zero-call endpoint wir
   const exposed = JSON.stringify(blinded);
   for (const row of loaded.corpus.cases) assert.equal(exposed.includes(row.case_id), false);
   assert.equal(exposed.includes('"expected"'), false);
+  assert.ok(blinded.every((row) => typeof row.intervening_tutor === 'string' && row.intervening_tutor.length > 0));
+  for (const mutate of [
+    (value) => (value.executionReadiness.liveExecutorStatus = 'pending_shared_checkpoint_runtime_adapter'),
+    (value) => (value.heldout.interveningTutorDependentCases = 23),
+    (value) => (value.authorization.extra = true),
+  ]) {
+    const registration = structuredClone(loaded.registration);
+    mutate(registration);
+    const validation = validateTutorStubResistanceRecoverySemanticValidationRegistration({
+      registration,
+      instrument: {
+        registration: loaded.instrument,
+        sha256: loaded.instrumentSha256,
+      },
+      corpus: loaded.corpus,
+      corpusSha256: loaded.corpusSha256,
+      developmentCorpus: json(loaded.instrument.instrument.developmentCorpusPath),
+    });
+    assert.equal(validation.valid, false);
+  }
   const contract = json(CONTRACT);
   const preflight = runTutorStubResistanceRecoverySemanticValidationPreflight({ contract });
   assert.equal(preflight.status, 'passed');

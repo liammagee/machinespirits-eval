@@ -12,7 +12,7 @@ import {
   tutorStubResistanceRecoverySemanticPromptSha256,
   tutorStubResistanceRecoverySemanticSha256,
   wrapTutorStubResistanceRecoverySemanticModelOutput,
-} from './tutorStubResistanceRecoverySemanticAdjudication.js';
+} from './tutorStubResistanceRecoverySemanticAdjudicationV2.js';
 import {
   buildTutorStubResistanceRecoverySemanticBlindedValidationCases,
   loadTutorStubResistanceRecoverySemanticValidation,
@@ -22,15 +22,15 @@ import {
 export const TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_SYSTEM_PROMPT =
   'Independently judge only the supplied public dialogue packet under the frozen response schema. Do not use tools, hidden state, lexical heuristics, profile labels, assignments, gold labels, or another judge response. Return only schema-valid JSON.';
 export const TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_PLAN_SCHEMA =
-  'machinespirits.tutor-stub.resistance-recovery-semantic-validation-plan.v1';
+  'machinespirits.tutor-stub.resistance-recovery-semantic-validation-plan.v2';
 export const TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_CHECKPOINT_SCHEMA =
-  'machinespirits.tutor-stub.resistance-recovery-semantic-validation-case-checkpoint.v1';
+  'machinespirits.tutor-stub.resistance-recovery-semantic-validation-case-checkpoint.v2';
 export const TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_SEAL_SCHEMA =
-  'machinespirits.tutor-stub.resistance-recovery-semantic-validation-seal.v1';
+  'machinespirits.tutor-stub.resistance-recovery-semantic-validation-seal.v2';
 export const TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_REPORT_SCHEMA =
-  'machinespirits.tutor-stub.resistance-recovery-semantic-validation-report.v1';
+  'machinespirits.tutor-stub.resistance-recovery-semantic-validation-report.v2';
 
-const PACKET_FIELDS = ['trigger', 'intervention', 'prior_post_trigger', 'current_learner'];
+const PACKET_FIELDS = ['trigger', 'intervention', 'prior_post_trigger', 'intervening_tutor', 'current_learner'];
 
 function canonical(value) {
   if (Array.isArray(value)) return value.map(canonical);

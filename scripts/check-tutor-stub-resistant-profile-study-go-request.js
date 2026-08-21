@@ -173,6 +173,32 @@ const RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_V1_CRITICAL_SOURCE_CLOSURE = Objec
   'package-lock.json',
 ]);
 
+const RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_V2_CRITICAL_SOURCE_CLOSURE = Object.freeze([
+  'scripts/run-tutor-stub-resistance-recovery-semantic-validation.js',
+  'scripts/analyze-tutor-stub-resistance-recovery-semantic-validation.js',
+  'scripts/check-tutor-stub-resistant-profile-study-go-request.js',
+  'scripts/package-tutor-stub-resistant-profile-study-go-request.js',
+  'services/tutorStubResistanceRecoverySemanticValidationRuntime.js',
+  'services/tutorStubResistanceRecoverySemanticValidation.js',
+  'services/tutorStubResistanceRecoverySemanticAdjudicationV2.js',
+  'services/tutorStubPromptTransport.js',
+  'services/tutorStubCliPolicyRetry.js',
+  'services/tutorStubArtifactArchive.js',
+  'services/paidStudyEndpointPreflight.js',
+  'services/cliProviderBridge.js',
+  'services/evalConfigLoader.js',
+  'config/tutor-stub-resistance-recovery-semantic-validation-registration.v2.json',
+  'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v2.json',
+  'config/tutor-stub-resistance-recovery-semantic-response.schema.v2.json',
+  'config/tutor-stub-resistance-recovery-semantic-development-corpus.v2.json',
+  'config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v2.json',
+  'config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v2.json',
+  'config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v2.endpoint-go.json',
+  'config/providers.yaml',
+  'package.json',
+  'package-lock.json',
+]);
+
 const BOREDOM_ACTION_REGISTER_PROOF_DAG_V1_CRITICAL_SOURCE_CLOSURE = Object.freeze([
   'scripts/run-tutor-stub-boredom-action-register-proof-dag.js',
   'scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js',
@@ -742,8 +768,13 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     request.semanticAdjudicationValidation?.type ===
     'prospective_resistance_semantic_adjudication_heldout_validation_v1';
   const isResistanceRecoverySemanticValidation =
+    [
+      'prospective_resistance_recovery_semantic_adjudication_heldout_validation_v1',
+      'prospective_resistance_recovery_semantic_adjudication_heldout_validation_v2',
+    ].includes(request.semanticAdjudicationValidation?.type);
+  const isResistanceRecoverySemanticValidationV2 =
     request.semanticAdjudicationValidation?.type ===
-    'prospective_resistance_recovery_semantic_adjudication_heldout_validation_v1';
+    'prospective_resistance_recovery_semantic_adjudication_heldout_validation_v2';
   const isAnyResistanceSemanticValidation = isResistanceSemanticValidation || isResistanceRecoverySemanticValidation;
 
   assertion(
@@ -815,7 +846,9 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     const closurePaths = sourceClosure.map((entry) => entry?.path);
     const registrationVersion = readJson(bindingPath(request.bindings.registration)).version ?? 1;
     const requiredCriticalSourceClosure = isResistanceRecoverySemanticValidation
-      ? RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_V1_CRITICAL_SOURCE_CLOSURE
+      ? isResistanceRecoverySemanticValidationV2
+        ? RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_V2_CRITICAL_SOURCE_CLOSURE
+        : RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_V1_CRITICAL_SOURCE_CLOSURE
       : isResistanceSemanticValidation
         ? RESISTANCE_SEMANTIC_VALIDATION_V1_CRITICAL_SOURCE_CLOSURE
         : isBoredomActionRegisterProofDag
@@ -907,7 +940,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       assertion(
         checks,
         'resistance-recovery-semantic-validation-endpoint-readiness-binding',
-        endpointRegistration.version === 1 &&
+        endpointRegistration.version === (isResistanceRecoverySemanticValidationV2 ? 2 : 1) &&
           contract.runner?.live_executor === 'scripts/run-tutor-stub-resistance-recovery-semantic-validation.js' &&
           contract.runner?.combined_analyzer ===
             'scripts/analyze-tutor-stub-resistance-recovery-semantic-validation.js' &&
@@ -1375,12 +1408,13 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     assertion(
       checks,
       'resistance-recovery-semantic-validation-design-binding',
-      registered.version === 1 &&
+      registered.version === (isResistanceRecoverySemanticValidationV2 ? 2 : 1) &&
         registered.status === 'prospective_zero_call_readiness_hold' &&
         gate.instrumentRegistration.path ===
-          'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v1.json' &&
+          `config/tutor-stub-resistance-recovery-semantic-adjudication-registration.${isResistanceRecoverySemanticValidationV2 ? 'v2' : 'v1'}.json` &&
         gate.instrumentRegistration.sha256 === registered.instrument.registrationSha256 &&
-        gate.heldoutCorpus.path === 'config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v1.json' &&
+        gate.heldoutCorpus.path ===
+          `config/tutor-stub-resistance-recovery-semantic-heldout-corpus.${isResistanceRecoverySemanticValidationV2 ? 'v2' : 'v1'}.json` &&
         gate.heldoutCorpus.sha256 === registered.heldout.corpusSha256 &&
         gate.heldoutCorpus.cases === 120 &&
         request.design.cases === 120 &&
@@ -2920,7 +2954,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
               ? `I amend the resistance-action-register programme ceiling from 2,345 to 2,379 model attempts and approve ${requestRepoPath} at SHA-256 ${requestSha256} for one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1 confirmation block, and bounded technical recovery authority for missing or failed units only within the unchanged 2,379-attempt programme ceiling.`
               : `I amend the resistance-action-register programme ceiling from 1,200 to 2,345 model attempts and approve ${requestRepoPath} at SHA-256 ${requestSha256} for one 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues, and bounded technical recovery authority for missing or failed units only within the unchanged 2,345-attempt programme ceiling.`
       : isResistanceRecoverySemanticValidation
-        ? `Standing architectural correction SHA-256 dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4 applies to ${requestRepoPath} at SHA-256 ${requestSha256}: one frozen blinded 120-case recovery-and-treatment-fidelity semantic-instrument validation with exactly two independent judges per case, a hard ceiling of 720 model-attempt reservations, no gold in execution packets, no recall of a completed or ambiguously dispatched judge, no replacement or selection, and no confirmation or efficacy claim.`
+        ? `Standing architectural correction SHA-256 dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4 applies to ${requestRepoPath} at SHA-256 ${requestSha256}: one frozen blinded 120-case ${isResistanceRecoverySemanticValidationV2 ? 'corrected-v2 complete-public-horizon ' : ''}recovery-and-treatment-fidelity semantic-instrument validation with exactly two independent judges per case, a hard ceiling of 720 model-attempt reservations, no gold in execution packets, no recall of a completed or ambiguously dispatched judge, no replacement or selection, and no confirmation or efficacy claim.`
         : isResistanceSemanticValidation
           ? `Standing architectural correction SHA-256 dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4 applies to ${requestRepoPath} at SHA-256 ${requestSha256}: one frozen blinded 80-case resistance semantic-instrument validation with exactly two independent judges per case, a hard ceiling of 480 model-attempt reservations, no gold in execution packets, no recall of a completed or ambiguously dispatched judge, no replacement or selection, and no confirmation or efficacy claim.`
           : `I approve ${requestRepoPath} at SHA-256 ${requestSha256} for one ` +

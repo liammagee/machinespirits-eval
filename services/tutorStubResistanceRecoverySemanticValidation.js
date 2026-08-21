@@ -11,16 +11,16 @@ import {
   tutorStubResistanceRecoverySemanticSha256,
   validateTutorStubResistanceRecoverySemanticCorpus,
   validateTutorStubResistanceRecoverySemanticRegistration,
-} from './tutorStubResistanceRecoverySemanticAdjudication.js';
+} from './tutorStubResistanceRecoverySemanticAdjudicationV2.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_REGISTRATION =
-  'config/tutor-stub-resistance-recovery-semantic-validation-registration.v1.json';
+  'config/tutor-stub-resistance-recovery-semantic-validation-registration.v2.json';
 export const TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_HELDOUT_CORPUS =
-  'config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v1.json';
+  'config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v2.json';
 const OPAQUE_CASE_ID_KEY = 'e46291804189812550946440944969acc081ff0234567a35398fd645c0404dcb';
 const SHUFFLE_SEED = '71b18bd3a1708b095a446730e6a04261f23512f76852dca08d75c5d707ae97d9';
-const PACKET_FIELDS = ['trigger', 'intervention', 'prior_post_trigger', 'current_learner'];
+const PACKET_FIELDS = ['trigger', 'intervention', 'prior_post_trigger', 'intervening_tutor', 'current_learner'];
 
 function readJson(repoPath) {
   return JSON.parse(fs.readFileSync(path.resolve(ROOT, repoPath), 'utf8'));
@@ -73,28 +73,56 @@ export function validateTutorStubResistanceRecoverySemanticValidationRegistratio
   ];
   if (!exactKeys(registration, expectedTop)) issues.push('registration keys are not exact');
   if (
-    registration?.schema !== 'machinespirits.tutor-stub.resistance-recovery-semantic-validation-registration.v1' ||
-    registration?.version !== 1 ||
+    registration?.schema !== 'machinespirits.tutor-stub.resistance-recovery-semantic-validation-registration.v2' ||
+    registration?.version !== 2 ||
     registration?.status !== 'prospective_zero_call_readiness_hold' ||
-    registration?.studyId !== 'tutor-stub-resistance-recovery-semantic-heldout-validation-v1'
+    registration?.studyId !== 'tutor-stub-resistance-recovery-semantic-heldout-validation-v2'
   ) {
     issues.push('outcome validation registration identity drifted');
   }
   if (
+    !exactKeys(registration?.instrument, [
+      'registrationPath',
+      'registrationSha256',
+      'instrumentFreezeCommit',
+      'instrumentBindingCommit',
+      'postHeldoutPromptModelThresholdOrConsensusTuning',
+    ]) ||
     registration?.instrument?.registrationPath !==
-      'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v1.json' ||
+      'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v2.json' ||
     registration?.instrument?.registrationSha256 !== instrument.sha256 ||
-    registration?.instrument?.instrumentFreezeCommit !== '59bfcc4c5223f21c1405a70feedc1e1bb639b441' ||
-    registration?.instrument?.instrumentBindingCommit !== 'fc3ed584bec780e92605df82f8d0aa9513416695' ||
+    registration?.instrument?.instrumentFreezeCommit !== 'ecb0c5b289848308adffa2a415ced06924e5afe6' ||
+    registration?.instrument?.instrumentBindingCommit !== 'd37c5ef66b54f199a505560eb3d244106502b36a' ||
     registration?.instrument?.postHeldoutPromptModelThresholdOrConsensusTuning !== false
   ) {
     issues.push('outcome instrument freeze or no-post-heldout-tuning binding drifted');
   }
   const heldout = registration?.heldout || {};
   if (
+    !exactKeys(heldout, [
+      'corpusPath',
+      'corpusSha256',
+      'authorCommit',
+      'cases',
+      'meritsOnly',
+      'groundedOnly',
+      'both',
+      'noRecovery',
+      'warm',
+      'plain',
+      'neither',
+      'actionPresent',
+      'actionAbsent',
+      'interveningTutorDependentCases',
+      'interveningTutorDependentPositiveCases',
+      'interveningTutorDependentNegativeCases',
+      'uniquePacketTexts',
+      'uniqueEvidenceTexts',
+      'goldVisibleToModelPackets',
+    ]) ||
     heldout.corpusPath !== TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_HELDOUT_CORPUS ||
     heldout.corpusSha256 !== corpusSha256 ||
-    heldout.authorCommit !== '7fa1d649654f27763ab8a2a698f10a7d5b593a44' ||
+    heldout.authorCommit !== '44e6b21097ed6c55402fbabcd8ca45d7b52a8884' ||
     heldout.cases !== 120 ||
     heldout.meritsOnly !== 32 ||
     heldout.groundedOnly !== 32 ||
@@ -105,35 +133,49 @@ export function validateTutorStubResistanceRecoverySemanticValidationRegistratio
     heldout.neither !== 40 ||
     heldout.actionPresent !== 80 ||
     heldout.actionAbsent !== 40 ||
-    heldout.uniquePacketTexts !== 480 ||
+    heldout.interveningTutorDependentCases !== 24 ||
+    heldout.interveningTutorDependentPositiveCases !== 12 ||
+    heldout.interveningTutorDependentNegativeCases !== 12 ||
+    heldout.uniquePacketTexts !== 600 ||
     heldout.uniqueEvidenceTexts !== 256 ||
     heldout.goldVisibleToModelPackets !== false ||
     corpus?.role !== 'heldout_blinded' ||
     corpus?.frozen !== true ||
     corpus?.prompt_examples_allowed !== false ||
     corpus?.context_provenance !==
-      'independently_authored_blinded_after_corrected_instrument_freeze_fc3ed584bec780e92605df82f8d0aa9513416695'
+      'independently_authored_complete_public_horizon_after_v2_binding_freeze_d37c5ef66b54f199a505560eb3d244106502b36a'
   ) {
     issues.push('outcome heldout provenance, counts, or blinding drifted');
   }
   const counts = { meritsOnly: 0, groundedOnly: 0, both: 0, noRecovery: 0 };
   const registers = { warm: 0, plain: 0, neither: 0 };
   let actionPresent = 0;
+  let interveningTutorDependentCases = 0;
+  let interveningTutorDependentPositiveCases = 0;
+  let interveningTutorDependentNegativeCases = 0;
   for (const row of corpus?.cases || []) {
     counts[recoveryStratum(row.expected.judgment)] += 1;
     registers[row.expected.judgment.delivered_register] += 1;
     if (row.expected.judgment.delivered_clarify_distinction === 'yes') actionPresent += 1;
+    if (row.case_id.includes('-itdep-')) {
+      interveningTutorDependentCases += 1;
+      if (row.expected.judgment.final_recovery === 'yes') interveningTutorDependentPositiveCases += 1;
+      else interveningTutorDependentNegativeCases += 1;
+    }
   }
   if (
     JSON.stringify(counts) !== JSON.stringify({ meritsOnly: 32, groundedOnly: 32, both: 16, noRecovery: 40 }) ||
     JSON.stringify(registers) !== JSON.stringify({ warm: 40, plain: 40, neither: 40 }) ||
-    actionPresent !== 80
+    actionPresent !== 80 ||
+    interveningTutorDependentCases !== 24 ||
+    interveningTutorDependentPositiveCases !== 12 ||
+    interveningTutorDependentNegativeCases !== 12
   ) {
     issues.push('outcome heldout strata, register, or action counts drifted');
   }
   const packetTexts = (corpus?.cases || []).flatMap((row) => PACKET_FIELDS.map((field) => row[field]));
   const evidenceTexts = (corpus?.cases || []).flatMap((row) => row.expected.evidence.map((entry) => entry.text));
-  if (new Set(packetTexts).size !== 480 || new Set(evidenceTexts).size !== 256) {
+  if (new Set(packetTexts).size !== 600 || new Set(evidenceTexts).size !== 256) {
     issues.push('outcome heldout does not retain unique packet and evidence texts');
   }
   const developmentTexts = new Set(
@@ -146,6 +188,12 @@ export function validateTutorStubResistanceRecoverySemanticValidationRegistratio
     issues.push('outcome heldout text collides with development evidence');
   }
   if (
+    !exactKeys(registration?.executionBlinding, [
+      'opaqueCaseIdHmacKeyHex',
+      'deterministicShuffleSeedHex',
+      'originalCaseIdsVisibleToExecution',
+      'goldMappingJoinedOnlyAfterAllResponsesSealed',
+    ]) ||
     registration?.executionBlinding?.opaqueCaseIdHmacKeyHex !== OPAQUE_CASE_ID_KEY ||
     registration?.executionBlinding?.deterministicShuffleSeedHex !== SHUFFLE_SEED ||
     registration?.executionBlinding?.originalCaseIdsVisibleToExecution !== false ||
@@ -155,6 +203,20 @@ export function validateTutorStubResistanceRecoverySemanticValidationRegistratio
   }
   const readiness = registration?.executionReadiness || {};
   if (
+    !exactKeys(readiness, [
+      'plannedCases',
+      'judgesPerCase',
+      'plannedModelCalls',
+      'maximumReservationsPerPlannedCall',
+      'hardValidationReservations',
+      'programmeObservedLedgerBeforeAnyValidation',
+      'programmeMaximumAfterManipulationValidation',
+      'programmeMaximumAfterBothValidations',
+      'futureConfirmationHardReservations',
+      'futureStagedMaximumOnlyAfterBothValidationsPass',
+      'programmeCeiling',
+      'liveExecutorStatus',
+    ]) ||
     readiness.plannedCases !== 120 ||
     readiness.judgesPerCase !== 2 ||
     readiness.plannedModelCalls !== 240 ||
@@ -166,12 +228,27 @@ export function validateTutorStubResistanceRecoverySemanticValidationRegistratio
     readiness.futureConfirmationHardReservations !== 3456 ||
     readiness.futureStagedMaximumOnlyAfterBothValidationsPass !== 4987 ||
     readiness.programmeCeiling !== 5000 ||
-    readiness.liveExecutorStatus !== 'pending_shared_checkpoint_runtime_adapter'
+    readiness.liveExecutorStatus !== 'zero_call_ready_pending_digest_bound_go_request_and_model_authority'
   ) {
     issues.push('outcome validation or staged programme budget drifted');
   }
   const policy = registration?.executionPolicy || {};
   if (
+    !exactKeys(policy, [
+      'caseCheckpointing',
+      'preservedValidJudgeDisposition',
+      'preparedNotDispatchedDisposition',
+      'dispatchedWithoutResponseDisposition',
+      'invalidOrTransportTerminalDisposition',
+      'technicalRecovery',
+      'completedOrPartialCaseRestart',
+      'validCaseRerun',
+      'replacement',
+      'outcomeSelection',
+      'goldVisibleToJudges',
+      'developmentExamplesVisibleToJudges',
+      'durablePrivateArchiveRequired',
+    ]) ||
     policy.preservedValidJudgeDisposition !==
       'call_only_the_never_prepared_peer_without_recalling_the_preserved_judge' ||
     policy.preparedNotDispatchedDisposition !== 'same_prepared_invocation_may_dispatch_once' ||
@@ -189,6 +266,13 @@ export function validateTutorStubResistanceRecoverySemanticValidationRegistratio
     issues.push('outcome validation no-recall, no-selection, or archive policy drifted');
   }
   if (
+    !exactKeys(registration?.authorization, [
+      'goRequestPrepared',
+      'modelCallsAuthorized',
+      'liveRunAuthorized',
+      'standingArchitecturalCorrectionSha256',
+      'priorStandingAuthoritySha256',
+    ]) ||
     registration?.authorization?.goRequestPrepared !== false ||
     registration?.authorization?.modelCallsAuthorized !== false ||
     registration?.authorization?.liveRunAuthorized !== false ||
@@ -201,6 +285,14 @@ export function validateTutorStubResistanceRecoverySemanticValidationRegistratio
   }
   const claim = registration?.claimBoundary || {};
   if (
+    !exactKeys(claim, [
+      'validationOnly',
+      'syntheticZeroCallPreflightEstablishesAccuracy',
+      'sealedPassRequiredBeforeExecutableConfirmationRegistration',
+      'validationOutcomesExcludedFromConfirmation',
+      'historicalPartialOutcomesExcluded',
+      'noWarmPlainEfficacyNullLearningTransferHumanOrCellClaim',
+    ]) ||
     claim.validationOnly !== true ||
     claim.syntheticZeroCallPreflightEstablishesAccuracy !== false ||
     claim.sealedPassRequiredBeforeExecutableConfirmationRegistration !== true ||
@@ -271,7 +363,7 @@ function originalCase(loaded, executionId) {
 export function buildTutorStubResistanceRecoverySemanticValidationPackets(cases) {
   const loaded = loadTutorStubResistanceRecoverySemanticValidation();
   return cases.map((row) => ({
-    schema: 'machinespirits.tutor-stub.resistance-recovery-semantic-validation-packet.v1',
+    schema: 'machinespirits.tutor-stub.resistance-recovery-semantic-validation-packet.v2',
     packet_id: row.case_id,
     case_ids: [row.case_id],
     prompts: Object.fromEntries(
@@ -314,7 +406,7 @@ export function assembleTutorStubResistanceRecoverySemanticValidationPreflight({
     registration: loaded.instrument,
   });
   return {
-    schema: 'machinespirits.tutor-stub.resistance-recovery-semantic-validation-preflight-assembly.v1',
+    schema: 'machinespirits.tutor-stub.resistance-recovery-semantic-validation-preflight-assembly.v2',
     case_ids: cases.map((row) => row.case_id),
     endpoint_status: {
       synthetic_fixture_full_vector_metric_wiring: score.status === 'passed' ? 'complete' : 'failed',
@@ -354,11 +446,11 @@ export function runTutorStubResistanceRecoverySemanticValidationPreflight({ cont
   return {
     ...preflight,
     outcome_semantic_validation_readiness_audit: {
-      status: 'passed_zero_call_wiring_only_not_accuracy_or_live_executor_evidence',
+      status: 'passed_zero_call_wiring_only_not_accuracy_or_launch_authority_evidence',
       cases: 120,
       planned_model_calls: 240,
       hard_validation_reservations: 720,
-      live_executor: 'pending_shared_checkpoint_runtime_adapter',
+      live_executor: 'zero_call_ready_pending_digest_bound_go_request_and_model_authority',
       live_accuracy_agreement_validity_and_coverage_gates: 'pending_live_validation',
       model_calls: 0,
       production_writes: 0,

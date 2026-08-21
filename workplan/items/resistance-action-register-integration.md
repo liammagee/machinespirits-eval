@@ -115,6 +115,12 @@ links:
     - config/tutor-stub-resistance-recovery-semantic-validation-registration.v1.json
     - services/tutorStubResistanceRecoverySemanticValidation.js
     - services/tutorStubResistanceRecoverySemanticValidationRuntime.js
+    - services/tutorStubResistanceRecoverySemanticAdjudicationV2.js
+    - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v2.json
+    - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v2.json
+    - config/tutor-stub-resistance-recovery-semantic-validation-registration.v2.json
+    - config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v2.json
+    - config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v2.endpoint-go.json
 tags:
   - tutor-stub
   - cells
@@ -1985,25 +1991,39 @@ and explicit human approval.
   `811/5000`. Its zero-call endpoint remains wiring evidence only; every live
   accuracy, agreement, validity, and coverage gate remains pending.
 
-  A separate recovery-and-treatment-fidelity instrument is frozen at
-  `config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v1.json`
+  Independent pre-execution review then found that the v1 outcome packet
+  omitted the public tutor turn between the two post-trigger learner turns.
+  Because that omission prevents reliable interpretation of anaphora and
+  compositional uptake, the v1 outcome instrument and its heldout remain
+  byte-frozen but are explicitly superseded and ineligible for validation or
+  launch. The wholly additive corrected-v2 instrument is frozen at
+  `config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v2.json`
   (SHA-256
-  `b77aca2b6c8562f3ea32a9e54f17386969e4912efdcc0ec09a5beb61a7dd127a`).
-  One blind A+B pair will judge only after the second and final fixed
-  post-trigger learner turn, using the public trigger, intervention, and both
-  outcome turns. Its full vector covers bounded-test merits engagement,
-  grounded precise jurisdictional condition, delivered
+  `88b779b65c1502dc860ccf063ed35c3a865e354436a6e7f69be8ee94c674e02e`).
+  Its one blind A+B pair judges only after the second and final fixed
+  post-trigger learner turn and receives the complete bounded public horizon:
+  trigger learner, intervention tutor, first post-trigger learner,
+  intervening tutor, and final learner. Its full vector remains bounded-test
+  merits engagement, grounded precise jurisdictional condition, delivered
   `clarify_distinction`, delivered warm/plain/neither register, and final
-  recovery. The independently authored 120-case outcome heldout is frozen at
+  recovery.
+
+  The independently authored corrected-v2 120-case heldout is frozen at
   SHA-256
-  `3c394eae7c7902fce4d6634231cc070d7b32419bd4be44d752627cbd6e35784b`
-  from author commit `7fa1d649654f27763ab8a2a698f10a7d5b593a44`; its strata are 32 merits-only,
+  `16899134545d574203192ae2b1b6ff6671500fa24957f6d82015be5064c784c5`
+  from author commit `44e6b21097ed6c55402fbabcd8ca45d7b52a8884`; its strata are 32 merits-only,
   32 grounded-only, 16 both, and 40 no-recovery cases, crossed across 40 warm,
   40 plain, 40 neither, 80 action-present, and 40 action-absent interventions.
-  Its opaque checkpointed dual-judge validator preserves the same no-recall,
-  byte-identical durable-archive reconciliation, post-seal gold join, and
-  no-selection rules as the manipulation validator. Its maximum is 240 calls /
-  720 charged reservations. Every live accuracy, agreement, validity, and
+  Twenty-four cases specifically depend on the intervening tutor turn (12
+  positive and 12 negative). All 600 packet texts and 256 evidence texts are
+  unique. Its opaque checkpointed dual-judge validator is zero-call ready and
+  preserves the same no-recall, byte-identical durable-archive reconciliation,
+  post-seal gold join, and no-selection rules as the manipulation validator.
+  A pre-dispatch third attempt remains dispatchable once after a crash; a
+  dispatched ambiguity never is. The validator fails before creating a local
+  destination if the durable archive is unavailable. Its maximum remains 240
+  calls / 720 charged reservations. The v2 endpoint and certificate establish
+  synthetic wiring only; every live accuracy, agreement, validity, and
   coverage gate remains pending.
 
   Registration V8 is readiness-only and cannot dispatch confirmation. A later
@@ -2020,3 +2040,13 @@ and explicit human approval.
   validation or confirmation GO request, no destination, no model/provider
   call, and no warm/plain, null, efficacy, learning, transfer, human, or cell
   claim.
+
+  Validation and confirmation authorization are deliberately noncircular.
+  Each heldout validation requires its own future digest-bound HOLD request,
+  clean source closure, fresh create-once destination, required private
+  archive, stage ceiling, and human authority before any validation call.
+  Confirmation separately requires both sealed passing validation reports,
+  actual observed validation accounting, a post-validation executable
+  registration, and its own digest-bound HOLD request. No such request is
+  created here, and the staged worst-case safeguard remains exactly
+  `331 + 480 + 720 + 3456 = 4987/5000`.

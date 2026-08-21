@@ -14,7 +14,10 @@ import {
   loadTutorStubResistanceSemanticRegistration,
 } from '../services/tutorStubResistanceSemanticRuntime.js';
 import { auditTutorStubResistanceSemanticTrace } from '../services/tutorStubResistanceSemanticTraceAudit.js';
-import { tutorStubResistanceActionRegisterTreatmentEligibility } from '../services/tutorStubResistanceActionRegisterStudy.js';
+import {
+  tutorStubResistanceActionRegisterTreatmentEligibility,
+  tutorStubResistanceActionRegisterTriggerFromTurnRecord,
+} from '../services/tutorStubResistanceActionRegisterStudy.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const corpus = JSON.parse(
@@ -494,4 +497,25 @@ test('semantic treatment eligibility rejects stale bindings while keeping safety
   assert.ok(protectedResult.reasons.includes('protected_affect'));
   assert.equal(protectedResult.semantic_authority.semantic_label, 'frame_refuser');
   assert.equal(protectedResult.semantic_authority.safety_signal_can_recode_semantic_positive, false);
+
+  for (const classification of [
+    { turn: { affect: 'shame' } },
+    { turn: { pedagogical_need: 'plain_language_request' } },
+  ]) {
+    const replayed = tutorStubResistanceActionRegisterTriggerFromTurnRecord(
+      {
+        turn: 3,
+        learner: value.corpusCase.source,
+        classification,
+        resistanceSemanticAdjudication: result,
+        tutorLearnerDagModel: null,
+      },
+      'frame_refuser',
+      'prospective_frame_resistance_semantic_v1',
+      result.publicContext,
+    );
+    assert.equal(replayed.eligible, false);
+    assert.equal(replayed.shadow.resistance_kind, 'frame_refuser');
+    assert.equal(replayed.timing.canVetoSemanticClassification, false);
+  }
 });
