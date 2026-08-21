@@ -3101,3 +3101,19 @@ and explicit human approval.
   Programme accounting remains `728 / 5000`; a fresh validation is 160 planned
   calls, hard 480 reservations, for `728 -> 1208 / 5000`. No model call has
   occurred in this repair or registration work.
+
+- 2026-08-21 — Packaged the wholly fresh revision-4 semantic-validation HOLD
+  request from repair source `16caa37c236cb76c6ac524679e83ef279cefc788`
+  / tree `cd40ddc207fadc020c396abcc3938f72bc7a8869`. The request is
+  `config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3-successor-3.json`
+  at SHA-256
+  `4df4d009f93f0c84924731c1d647eb14ac56f18132aa0739abbcd4b0a9118e97`.
+  Its 38-file closure includes all three consumed V3 requests, and the checker
+  verifies every final artifact of the third partial root plus the tested JSON
+  envelope predicates and fresh human route-decision digest. The create-once
+  destination is
+  `.tutor-stub-auto-eval/resistance-semantic-adjudication-validation-v3-2026-08-21-d`.
+  Isolated replay passed 77 checks with zero model calls and zero production
+  writes. The packet remains a literal HOLD artifact; live execution is covered
+  by the user's standing programme authority and current explicit instruction
+  to redo the run upon successful testing, not by fields inside the request.
