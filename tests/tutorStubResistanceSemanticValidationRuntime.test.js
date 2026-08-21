@@ -183,6 +183,48 @@ test('resume after one preserved response calls only the never-started second ju
   assert.equal(partial.judge_results, 2);
 });
 
+test('resume authenticates the complete durable archive before any additional judge call', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-resume-archive-auth-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const firstCalls = [];
+  await assert.rejects(
+    run(destination, {
+      callModel: fixtureCaller(firstCalls),
+      afterJudgeCheckpoint: () => {
+        throw new Error('synthetic interruption after first durable response');
+      },
+    }),
+    /synthetic interruption/u,
+  );
+  assert.equal(firstCalls.length, 1);
+  const manifestFile = findArchiveManifest(path.join(temporary, 'private-archive'));
+  const original = fs.readFileSync(manifestFile, 'utf8');
+  const driftedBinding = JSON.parse(original);
+  driftedBinding.source.commit = 'f'.repeat(40);
+  fs.writeFileSync(manifestFile, `${JSON.stringify(driftedBinding, null, 2)}\n`);
+  const resumedCalls = [];
+  await assert.rejects(
+    run(destination, { resume: true, callModel: fixtureCaller(resumedCalls) }),
+    /archive.*binding drifted/u,
+  );
+  assert.equal(resumedCalls.length, 0);
+
+  const missingPrior = JSON.parse(original);
+  const priorIndex = missingPrior.entries.findIndex((entry) => entry.stage === 'checkpoint_initialized');
+  assert.ok(priorIndex >= 0);
+  missingPrior.entries.splice(priorIndex, 1);
+  missingPrior.entries.forEach((entry, index) => {
+    entry.sequence = index + 1;
+  });
+  fs.writeFileSync(manifestFile, `${JSON.stringify(missingPrior, null, 2)}\n`);
+  await assert.rejects(
+    run(destination, { resume: true, callModel: fixtureCaller(resumedCalls) }),
+    /noncurrent orphan transition|entry inventory drifted/u,
+  );
+  assert.equal(resumedCalls.length, 0);
+});
+
 test('resume after a prepared but undispatched attempt may fill the case without selecting outcomes', async (t) => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-zero-response-'));
   const destination = path.join(temporary, 'run');

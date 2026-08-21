@@ -255,6 +255,64 @@ test('outcome validation resume preserves Judge A and calls only the never-prepa
   }
 });
 
+test('outcome resume authenticates the complete durable archive before any additional judge call', async () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'outcome-semantic-resume-archive-auth-'));
+  const destination = path.join(temporary, 'run');
+  const archiveDir = path.join(temporary, 'archive');
+  fs.mkdirSync(archiveDir);
+  const loaded = loadTutorStubResistanceRecoverySemanticValidation();
+  const calls = [];
+  const options = {
+    destination,
+    sourceCommit: '4'.repeat(40),
+    sourceTree: '5'.repeat(40),
+    goRequestPath: 'config/future-outcome-validation-request.json',
+    goRequestSha256: '6'.repeat(64),
+    sourceDirty: false,
+    archiveDir,
+    resolveModelRef: routeResolver(loaded),
+    callModel: fixtureModelCall(loaded, calls),
+  };
+  try {
+    await assert.rejects(
+      runTutorStubResistanceRecoverySemanticValidation({
+        ...options,
+        afterJudgeCheckpoint: () => {
+          throw new Error('synthetic interruption after first durable outcome response');
+        },
+      }),
+      /synthetic interruption/u,
+    );
+    assert.equal(calls.length, 1);
+    const manifestFile = findArchiveManifest(archiveDir);
+    const original = fs.readFileSync(manifestFile, 'utf8');
+    const driftedBinding = JSON.parse(original);
+    driftedBinding.source.commit = 'f'.repeat(40);
+    fs.writeFileSync(manifestFile, `${JSON.stringify(driftedBinding, null, 2)}\n`);
+    await assert.rejects(
+      runTutorStubResistanceRecoverySemanticValidation({ ...options, resume: true }),
+      /archive manifest binding/u,
+    );
+    assert.equal(calls.length, 1);
+
+    const missingPrior = JSON.parse(original);
+    const priorIndex = missingPrior.entries.findIndex((entry) => entry.stage === 'checkpoint_initialized');
+    assert.ok(priorIndex >= 0);
+    missingPrior.entries.splice(priorIndex, 1);
+    missingPrior.entries.forEach((entry, index) => {
+      entry.sequence = index + 1;
+    });
+    fs.writeFileSync(manifestFile, `${JSON.stringify(missingPrior, null, 2)}\n`);
+    await assert.rejects(
+      runTutorStubResistanceRecoverySemanticValidation({ ...options, resume: true }),
+      /noncurrent orphan transition|entry inventory drifted/u,
+    );
+    assert.equal(calls.length, 1);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
 test('outcome validation dispatches an already prepared third attempt without a fourth reservation', async () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'outcome-semantic-third-prepared-'));
   const destination = path.join(temporary, 'run');

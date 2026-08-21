@@ -33,6 +33,8 @@ export {
   admitTutorStubFrameOpportunityV4FullRepair,
   buildTutorStubFrameOpportunityV3RepairBudgetDiagnostic,
   buildTutorStubFrameOpportunityV4RepairBudgetDiagnostic,
+  throwFrameDefiantAdherenceExhaustion,
+  throwFrameRefuserAdherenceExhaustion,
 } from './tutorStubFrameOpportunityAdherence.js';
 import {
   GUARDED_LEARNER_MOVE_SCHEMA,

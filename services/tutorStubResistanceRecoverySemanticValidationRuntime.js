@@ -180,7 +180,31 @@ function archiveFor({ archiveDir, plan, resume, afterEntry }) {
     });
     atomicWrite(manifestFile, manifest);
   }
-  function verify({ localRoot = null } = {}) {
+  function localArchiveCandidates(localRoot) {
+    const candidates = [];
+    for (const logicalPath of ['plan.json', 'seal.json', 'report.json']) {
+      const file = path.join(localRoot, logicalPath);
+      if (!fs.existsSync(file)) continue;
+      candidates.push({ logicalPath, file, stage: logicalPath.split('.')[0], value: read(file) });
+    }
+    const casesRoot = path.join(localRoot, 'cases');
+    if (fs.existsSync(casesRoot)) {
+      for (const caseId of fs.readdirSync(casesRoot)) {
+        const logicalPath = `cases/${caseId}/checkpoint.json`;
+        const file = path.join(localRoot, logicalPath);
+        if (!fs.existsSync(file)) continue;
+        const value = read(file);
+        candidates.push({ logicalPath, file, stage: checkpointArchiveStage(value), value });
+      }
+    }
+    return candidates;
+  }
+  function verify({
+    localRoot = null,
+    requireCurrentLocalTransitions = false,
+    allowUnmanifestedEntryFiles = false,
+    allowedUnmanifestedTransitions = null,
+  } = {}) {
     const manifest = read(manifestFile);
     const issues = [];
     const manifestKeys = ['schema', 'plan_sha256', 'source', 'entries'];
@@ -246,30 +270,53 @@ function archiveFor({ archiveDir, plan, resume, afterEntry }) {
         const archivedBytes = fs.readFileSync(file);
         if (archivedBytes.length !== entry.bytes || digest(archivedBytes) !== entry.sha256) {
           issues.push(`archive entry ${entry.sequence} byte metadata drifted`);
+        } else if (entry.stage === 'plan') {
+          if (!exact(read(file), plan)) issues.push(`archive entry ${entry.sequence} plan bytes drifted`);
+        } else if (checkpointStages.has(entry.stage)) {
+          const archivedCheckpoint = read(file);
+          const caseId = entry.logical_path.split('/')[1];
+          if (
+            archivedCheckpoint.schema !== TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_CHECKPOINT_SCHEMA ||
+            archivedCheckpoint.plan_sha256 !== plan.plan_sha256 ||
+            archivedCheckpoint.case_id !== caseId ||
+            checkpointArchiveStage(archivedCheckpoint) !== entry.stage
+          ) {
+            issues.push(`archive entry ${entry.sequence} checkpoint binding or stage drifted`);
+          }
         }
       }
     }
+    const entriesDirectory = path.join(root, 'entries');
+    const archivedEntryFiles = fs.existsSync(entriesDirectory)
+      ? fs
+          .readdirSync(entriesDirectory, { withFileTypes: true })
+          .filter((entry) => entry.isFile())
+          .map((entry) => `entries/${entry.name}`)
+          .sort()
+      : [];
+    const manifestedEntryFiles = manifest.entries.map((entry) => entry.path).sort();
+    const referencedFilesArePresent = manifestedEntryFiles.every((file) => archivedEntryFiles.includes(file));
+    const unmanifestedTransitions = archivedEntryFiles
+      .filter((file) => !manifestedEntryFiles.includes(file))
+      .map((file) => path.basename(file, '.json'));
+    const allowedUnmanifested =
+      allowUnmanifestedEntryFiles ||
+      (allowedUnmanifestedTransitions instanceof Set &&
+        unmanifestedTransitions.every((transition) => allowedUnmanifestedTransitions.has(transition)));
+    if (!referencedFilesArePresent || (!allowedUnmanifested && !exact(archivedEntryFiles, manifestedEntryFiles))) {
+      issues.push('outcome archive entry inventory drifted');
+    }
     if (localRoot) {
-      const localFiles = ['plan.json', 'seal.json', 'report.json'].flatMap((logicalPath) => {
-        const file = path.join(localRoot, logicalPath);
-        return fs.existsSync(file) ? [{ logicalPath, file, terminalStages: new Set([logicalPath.split('.')[0]]) }] : [];
-      });
-      const casesRoot = path.join(localRoot, 'cases');
-      if (fs.existsSync(casesRoot)) {
-        for (const caseId of fs.readdirSync(casesRoot)) {
-          const logicalPath = `cases/${caseId}/checkpoint.json`;
-          const file = path.join(localRoot, logicalPath);
-          if (fs.existsSync(file)) localFiles.push({ logicalPath, file, terminalStages: terminalCheckpointStages });
-        }
-      }
-      for (const local of localFiles) {
+      for (const local of localArchiveCandidates(localRoot)) {
         const localBytes = fs.readFileSync(local.file);
         const localSha256 = digest(localBytes);
         if (
           !manifest.entries.some(
             (entry) =>
               entry.logical_path === local.logicalPath &&
-              local.terminalStages.has(entry.stage) &&
+              (requireCurrentLocalTransitions || !local.logicalPath.includes('/checkpoint.json')
+                ? entry.stage === local.stage
+                : terminalCheckpointStages.has(entry.stage)) &&
               entry.sha256 === localSha256 &&
               entry.bytes === localBytes.length,
           )
@@ -280,7 +327,37 @@ function archiveFor({ archiveDir, plan, resume, afterEntry }) {
     }
     return { valid: issues.length === 0, issues, manifest };
   }
-  return { append, verify };
+  function reconcileResume(localRoot) {
+    const initial = verify({ allowUnmanifestedEntryFiles: true });
+    if (!initial.valid) throw new Error(initial.issues.join('; '));
+    const candidates = localArchiveCandidates(localRoot);
+    const expectedMissingTransitions = new Set(
+      candidates.map((candidate) => {
+        const sha256 = digest(fs.readFileSync(candidate.file));
+        return digest(`${candidate.stage}\0${candidate.logicalPath}\0${sha256}`);
+      }),
+    );
+    const entriesDirectory = path.join(root, 'entries');
+    const manifestedTransitions = new Set(initial.manifest.entries.map((entry) => entry.transition));
+    const orphanTransitions = fs.existsSync(entriesDirectory)
+      ? fs
+          .readdirSync(entriesDirectory, { withFileTypes: true })
+          .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
+          .map((entry) => entry.name.slice(0, -'.json'.length))
+          .filter((transition) => !manifestedTransitions.has(transition))
+      : [];
+    if (orphanTransitions.some((transition) => !expectedMissingTransitions.has(transition))) {
+      throw new Error('outcome archive contains a noncurrent orphan transition');
+    }
+    for (const candidate of candidates) append(candidate.stage, candidate.logicalPath, candidate.value);
+    const reconciled = verify({ localRoot, requireCurrentLocalTransitions: true });
+    if (!reconciled.valid) throw new Error(reconciled.issues.join('; '));
+  }
+  if (resume) {
+    const initial = verify({ allowUnmanifestedEntryFiles: true });
+    if (!initial.valid) throw new Error(initial.issues.join('; '));
+  }
+  return { append, verify, reconcileResume };
 }
 
 function caseFile(destination, caseId) {
@@ -573,7 +650,11 @@ export async function runTutorStubResistanceRecoverySemanticValidation({
   } else if (!fs.existsSync(planFile) || !exact(read(planFile), plan)) {
     throw new Error('outcome validation resume plan drifted');
   }
-  archive.append('plan', 'plan.json', plan);
+  if (resume && fs.existsSync(reportFile) && !fs.existsSync(sealFile)) {
+    throw new Error('outcome validation report exists without its required seal');
+  }
+  if (resume) archive.reconcileResume(destination);
+  else archive.append('plan', 'plan.json', plan);
   if (resume && fs.existsSync(sealFile)) {
     const checkpoints = loadExistingCheckpoints(
       destination,
@@ -593,9 +674,6 @@ export async function runTutorStubResistanceRecoverySemanticValidation({
     const verified = archive.verify({ localRoot: destination });
     if (!verified.valid) throw new Error(verified.issues.join('; '));
     return { plan, seal };
-  }
-  if (resume && fs.existsSync(reportFile)) {
-    throw new Error('outcome validation report exists without its required seal');
   }
   const cases = buildTutorStubResistanceRecoverySemanticBlindedValidationCases(loaded.corpus.cases);
   for (const blinded of cases) {
@@ -718,7 +796,16 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
     throw new Error('outcome validation seal drifted');
   }
   const archive = archiveFor({ archiveDir, plan: expectedPlan, resume: true });
-  const archiveVerification = archive.verify({ localRoot: allowExistingReport ? null : destination });
+  const allowedUnmanifestedTransitions = new Set();
+  if (allowExistingReport) {
+    const reportBytes = fs.readFileSync(path.join(destination, 'report.json'));
+    const reportSha256 = digest(reportBytes);
+    allowedUnmanifestedTransitions.add(digest(`report\0report.json\0${reportSha256}`));
+  }
+  const archiveVerification = archive.verify({
+    localRoot: allowExistingReport ? null : destination,
+    allowedUnmanifestedTransitions,
+  });
   if (!archiveVerification.valid) throw new Error(archiveVerification.issues.join('; '));
   const caseRoot = path.join(destination, 'cases');
   const directoryCaseIds = fs
