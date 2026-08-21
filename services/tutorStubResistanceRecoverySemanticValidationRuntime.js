@@ -78,6 +78,45 @@ function packet(row) {
   return Object.fromEntries(PACKET_FIELDS.map((field) => [field, row[field]]));
 }
 
+function checkpointArchiveStage(checkpoint) {
+  if (checkpoint.status === 'pending') return 'checkpoint_initialized';
+  if (checkpoint.status === 'judge_in_flight') {
+    const latest = Object.values(checkpoint.attempts_by_judge || {})
+      .flat()
+      .at(-1);
+    if (latest?.status === 'prepared_not_dispatched') return 'checkpoint_prepared';
+    if (latest?.status === 'dispatched') return 'checkpoint_dispatched';
+  }
+  if (checkpoint.status === 'judge_checkpointed') {
+    const outcome = checkpoint.judge_results.at(-1)?.outcome;
+    if (outcome === 'recorded_response') return 'checkpoint_returned';
+    if (outcome === 'invalid_return') return 'checkpoint_invalid';
+    if (outcome === 'transport_failed') return 'checkpoint_transport_failed';
+  }
+  if (checkpoint.status === 'sealed') {
+    if (checkpoint.judge_results.at(-1)?.outcome === 'dispatch_ambiguous_no_recall') {
+      return 'checkpoint_dispatch_ambiguous_sealed';
+    }
+    if (checkpoint.resumed_partial_without_rejudge) return 'checkpoint_partial_sealed';
+    return 'checkpoint_sealed';
+  }
+  throw new Error(`cannot reconcile outcome validation checkpoint stage ${checkpoint.status}`);
+}
+
+function attemptCount(checkpoints) {
+  return checkpoints.reduce(
+    (sum, checkpoint) => sum + Object.values(checkpoint.attempts_by_judge || {}).flat().length,
+    0,
+  );
+}
+
+function loadExistingCheckpoints(destination, caseIds) {
+  return caseIds.flatMap((caseId) => {
+    const file = caseFile(destination, caseId);
+    return fs.existsSync(file) ? [read(file)] : [];
+  });
+}
+
 function originalCase(loaded, executionId) {
   return loaded.corpus.cases.find((row) => tutorStubResistanceRecoverySemanticOpaqueCaseId(row) === executionId);
 }
@@ -228,6 +267,7 @@ function newCheckpoint(plan, row) {
     schema: TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_CHECKPOINT_SCHEMA,
     case_id: row.case_id,
     plan_sha256: plan.plan_sha256,
+    public_packet_sha256: digest(packet(row)),
     packet_sha256: plan.cases.find((entry) => entry.case_id === row.case_id).packet_sha256,
     status: 'pending',
     attempts_by_judge: {},
@@ -235,6 +275,7 @@ function newCheckpoint(plan, row) {
     judge_results: [],
     aggregate: null,
     aggregate_sha256: null,
+    resumed_partial_without_rejudge: false,
   };
 }
 
@@ -266,6 +307,8 @@ function observed(result) {
     prohibited_tool_event_count: Number.isInteger(result.prohibitedToolEventCount)
       ? result.prohibitedToolEventCount
       : null,
+    prohibited_tool_event_count_observed:
+      Object.hasOwn(result, 'prohibitedToolEventCount') && Number.isInteger(result.prohibitedToolEventCount),
     model_attestation_basis: result.modelAttestationBasis || null,
     model_independently_attested: result.modelIndependentlyAttested === true,
   };
@@ -281,17 +324,31 @@ function wrapRaw({ raw, prompt, judge, independentRunId }) {
     observedEffort: raw.effort,
     independentRunId,
     structuredOutput: raw.structured_output,
-    prohibitedToolEvents: raw.prohibited_tool_event_count,
+    prohibitedToolEvents: raw.prohibited_tool_event_count_observed ? raw.prohibited_tool_event_count : null,
     modelAttestationBasis: raw.model_attestation_basis,
     modelIndependentlyAttested: raw.model_independently_attested,
   });
 }
 
-async function executeJudge({ checkpoint, row, judge, prompt, callModel, resolveModelRef, waitForRetry, persistNow }) {
+async function executeJudge({
+  destination,
+  plan,
+  checkpoint,
+  row,
+  judge,
+  prompt,
+  callModel,
+  resolveModelRef,
+  waitForRetry,
+  persistNow,
+  afterPreparedCheckpoint,
+  afterDispatchCheckpoint,
+}) {
   const route = resolveModelRef(judge.modelRef);
   if (route.provider !== judge.provider || route.model !== judge.model) throw new Error('outcome judge route drifted');
   const result = {
     judge_id: judge.id,
+    role: `tutor_stub_resistance_recovery_semantic_${judge.id}`,
     independent_run_id: checkpoint.invocation_id_by_judge[judge.id] || crypto.randomUUID(),
     prompt,
     prompt_sha256: tutorStubResistanceRecoverySemanticPromptSha256(prompt),
@@ -304,13 +361,22 @@ async function executeJudge({ checkpoint, row, judge, prompt, callModel, resolve
   checkpoint.invocation_id_by_judge[judge.id] = result.independent_run_id;
   checkpoint.attempts_by_judge[judge.id] = result.attempts;
   while (result.attempts.length < 3) {
+    const checkpoints = loadExistingCheckpoints(
+      destination,
+      plan.cases.map((entry) => entry.case_id),
+    );
+    if (attemptCount(checkpoints) >= plan.budget.hard_reservation_ceiling) {
+      throw new Error('outcome semantic validation hard reservation ceiling exhausted');
+    }
     if (result.attempts.at(-1)?.status !== 'prepared_not_dispatched') {
       result.attempts.push({ attempt: result.attempts.length + 1, status: 'prepared_not_dispatched' });
       checkpoint.status = 'judge_in_flight';
       persistNow('checkpoint_prepared');
+      await afterPreparedCheckpoint?.({ caseId: row.case_id, judgeId: judge.id });
     }
     result.attempts.at(-1).status = 'dispatched';
     persistNow('checkpoint_dispatched');
+    await afterDispatchCheckpoint?.({ caseId: row.case_id, judgeId: judge.id });
     try {
       const response = await callModel(
         { provider: route.provider, model: route.model },
@@ -337,6 +403,7 @@ async function executeJudge({ checkpoint, row, judge, prompt, callModel, resolve
     } catch (error) {
       if (error?.name === 'AbortError') throw error;
       result.attempts.at(-1).status = 'transport_failed';
+      result.attempts.at(-1).error_code = error?.code || null;
       const retry = tutorStubCliPolicyRetryDecision(error, { retryCount: result.attempts.length - 1 });
       if (!retry.retry) {
         result.outcome = 'transport_failed';
@@ -364,10 +431,17 @@ export async function runTutorStubResistanceRecoverySemanticValidation({
   callModel,
   resolveModelRef,
   waitForRetry = waitTutorStubCliPolicyRetryDelay,
+  afterPreparedCheckpoint,
+  afterDispatchCheckpoint,
+  afterJudgeCheckpoint,
   afterArchiveEntryWrite,
   afterLocalCheckpointWrite,
+  afterSealLocalWrite,
 }) {
   if (sourceDirty !== false) throw new Error('outcome validation requires a clean source tree');
+  if (typeof callModel !== 'function' || typeof resolveModelRef !== 'function') {
+    throw new Error('outcome validation requires explicit model-call and route-resolution dependencies');
+  }
   const loaded = loadTutorStubResistanceRecoverySemanticValidation();
   const plan = buildTutorStubResistanceRecoverySemanticValidationPlan({
     sourceCommit,
@@ -378,6 +452,8 @@ export async function runTutorStubResistanceRecoverySemanticValidation({
     loaded,
   });
   const planFile = path.join(destination, 'plan.json');
+  const sealFile = path.join(destination, 'seal.json');
+  const reportFile = path.join(destination, 'report.json');
   if (!resume) {
     fs.mkdirSync(destination, { recursive: false });
     createOrVerify(planFile, plan, 'outcome validation plan');
@@ -386,6 +462,29 @@ export async function runTutorStubResistanceRecoverySemanticValidation({
   }
   const archive = archiveFor({ archiveDir, plan, resume, afterEntry: afterArchiveEntryWrite });
   archive.append('plan', 'plan.json', plan);
+  if (resume && fs.existsSync(sealFile)) {
+    const checkpoints = loadExistingCheckpoints(
+      destination,
+      plan.cases.map((row) => row.case_id),
+    );
+    const seal = {
+      schema: TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_SEAL_SCHEMA,
+      plan_sha256: plan.plan_sha256,
+      cases: 120,
+      judge_results: checkpoints.reduce((sum, row) => sum + row.judge_results.length, 0),
+      reservations: attemptCount(checkpoints),
+      case_checkpoint_sha256: Object.fromEntries(checkpoints.map((row) => [row.case_id, digest(row)])),
+      gold_joined: false,
+    };
+    createOrVerify(sealFile, seal, 'outcome validation seal');
+    archive.append('seal', 'seal.json', seal);
+    const verified = archive.verify();
+    if (!verified.valid) throw new Error(verified.issues.join('; '));
+    return { plan, seal };
+  }
+  if (resume && fs.existsSync(reportFile)) {
+    throw new Error('outcome validation report exists without its required seal');
+  }
   const cases = buildTutorStubResistanceRecoverySemanticBlindedValidationCases(loaded.corpus.cases);
   for (const blinded of cases) {
     const source = originalCase(loaded, blinded.case_id);
@@ -394,6 +493,7 @@ export async function runTutorStubResistanceRecoverySemanticValidation({
     let checkpoint = fs.existsSync(file) ? read(file) : newCheckpoint(plan, row);
     const persistNow = (stage) => persist(destination, checkpoint, archive, stage, afterLocalCheckpointWrite);
     if (!fs.existsSync(file)) persistNow('checkpoint_initialized');
+    else archive.append(checkpointArchiveStage(checkpoint), `cases/${checkpoint.case_id}/checkpoint.json`, checkpoint);
     if (checkpoint.status === 'sealed') continue;
     const prompts = promptsFor(loaded, row);
     const ambiguous = loaded.instrument.measurement.judges.find(
@@ -404,6 +504,7 @@ export async function runTutorStubResistanceRecoverySemanticValidation({
     if (ambiguous) {
       checkpoint.judge_results.push({
         judge_id: ambiguous.id,
+        role: `tutor_stub_resistance_recovery_semantic_${ambiguous.id}`,
         independent_run_id: checkpoint.invocation_id_by_judge[ambiguous.id],
         prompt: prompts[ambiguous.id],
         prompt_sha256: tutorStubResistanceRecoverySemanticPromptSha256(prompts[ambiguous.id]),
@@ -414,10 +515,14 @@ export async function runTutorStubResistanceRecoverySemanticValidation({
         invalid_reason: 'dispatched response was not durably recorded; recall is forbidden',
       });
     }
-    if (!ambiguous && checkpoint.judge_results.every((result) => result.outcome === 'recorded_response')) {
+    if (ambiguous || checkpoint.judge_results.some((result) => result.outcome !== 'recorded_response')) {
+      checkpoint.resumed_partial_without_rejudge = true;
+    } else {
       for (const judge of loaded.instrument.measurement.judges) {
         if (checkpoint.judge_results.some((result) => result.judge_id === judge.id)) continue;
         await executeJudge({
+          destination,
+          plan,
           checkpoint,
           row,
           judge,
@@ -426,12 +531,15 @@ export async function runTutorStubResistanceRecoverySemanticValidation({
           resolveModelRef,
           waitForRetry,
           persistNow,
+          afterPreparedCheckpoint,
+          afterDispatchCheckpoint,
         });
+        await afterJudgeCheckpoint?.({ caseId: row.case_id, judgeId: judge.id });
         if (checkpoint.judge_results.at(-1).outcome !== 'recorded_response') break;
       }
     }
     checkpoint = aggregateCheckpoint(checkpoint, row, loaded, prompts);
-    persist(destination, checkpoint, archive, 'checkpoint_sealed', afterLocalCheckpointWrite);
+    persist(destination, checkpoint, archive, checkpointArchiveStage(checkpoint), afterLocalCheckpointWrite);
   }
   const checkpoints = cases.map((row) => read(caseFile(destination, row.case_id)));
   const seal = {
@@ -443,7 +551,8 @@ export async function runTutorStubResistanceRecoverySemanticValidation({
     case_checkpoint_sha256: Object.fromEntries(checkpoints.map((row) => [row.case_id, digest(row)])),
     gold_joined: false,
   };
-  createOrVerify(path.join(destination, 'seal.json'), seal, 'outcome validation seal');
+  createOrVerify(sealFile, seal, 'outcome validation seal');
+  afterSealLocalWrite?.({ sealFile, seal });
   archive.append('seal', 'seal.json', seal);
   const verified = archive.verify();
   if (!verified.valid) throw new Error(verified.issues.join('; '));
@@ -477,7 +586,17 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
     : ['cases', 'plan.json', 'seal.json'];
   if (!exact(rootEntries, expectedRoot)) throw new Error('outcome validation root artifact set drifted');
   const seal = read(path.join(destination, 'seal.json'));
+  const sealKeys = [
+    'schema',
+    'plan_sha256',
+    'cases',
+    'judge_results',
+    'reservations',
+    'case_checkpoint_sha256',
+    'gold_joined',
+  ];
   if (
+    !exact(Object.keys(seal).sort(), sealKeys.sort()) ||
     seal.schema !== TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_SEAL_SCHEMA ||
     seal.plan_sha256 !== expectedPlan.plan_sha256 ||
     seal.cases !== 120 ||
@@ -489,6 +608,14 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
   const archive = archiveFor({ archiveDir, plan: expectedPlan, resume: true });
   const archiveVerification = archive.verify();
   if (!archiveVerification.valid) throw new Error(archiveVerification.issues.join('; '));
+  const caseRoot = path.join(destination, 'cases');
+  const directoryCaseIds = fs
+    .readdirSync(caseRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+  const plannedCaseIds = expectedPlan.cases.map((row) => row.case_id).sort();
+  if (!exact(directoryCaseIds, plannedCaseIds)) throw new Error('outcome validation case directory set drifted');
   const responsePairs = {};
   const scoredCases = [];
   const runIds = [];
@@ -497,10 +624,29 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
     const row = { ...original, case_id: blinded.case_id };
     scoredCases.push(row);
     const checkpoint = read(caseFile(destination, blinded.case_id));
+    const checkpointKeys = [
+      'schema',
+      'case_id',
+      'plan_sha256',
+      'public_packet_sha256',
+      'packet_sha256',
+      'status',
+      'attempts_by_judge',
+      'invocation_id_by_judge',
+      'judge_results',
+      'aggregate',
+      'aggregate_sha256',
+      'resumed_partial_without_rejudge',
+    ];
     if (
+      !exact(Object.keys(checkpoint).sort(), checkpointKeys.sort()) ||
       checkpoint.schema !== TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_CHECKPOINT_SCHEMA ||
+      checkpoint.case_id !== blinded.case_id ||
       checkpoint.status !== 'sealed' ||
       checkpoint.plan_sha256 !== expectedPlan.plan_sha256 ||
+      checkpoint.public_packet_sha256 !== digest(packet(row)) ||
+      checkpoint.packet_sha256 !==
+        expectedPlan.cases.find((entry) => entry.case_id === blinded.case_id).packet_sha256 ||
       seal.case_checkpoint_sha256[blinded.case_id] !== digest(checkpoint) ||
       !exact(fs.readdirSync(path.dirname(caseFile(destination, blinded.case_id))).sort(), ['checkpoint.json'])
     ) {
@@ -509,9 +655,66 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
     const prompts = promptsFor(loaded, row);
     const responses = [];
     responsePairs[row.case_id] = {};
+    const judges = loaded.instrument.measurement.judges;
+    const judgeIds = checkpoint.judge_results.map((result) => result.judge_id);
+    if (
+      judgeIds.length < 1 ||
+      judgeIds.length > judges.length ||
+      new Set(judgeIds).size !== judgeIds.length ||
+      judgeIds.some((id) => !judges.some((judge) => judge.id === id)) ||
+      Object.keys(checkpoint.attempts_by_judge || {}).some((id) => !judges.some((judge) => judge.id === id))
+    ) {
+      throw new Error('outcome validation has duplicate, extra, or unregistered judge evidence');
+    }
     for (const judge of loaded.instrument.measurement.judges) {
       const stored = checkpoint.judge_results.find((result) => result.judge_id === judge.id);
       if (!stored) continue;
+      const storedKeys = [
+        'judge_id',
+        'role',
+        'independent_run_id',
+        'prompt',
+        'prompt_sha256',
+        'attempts',
+        'outcome',
+        'raw_response',
+        'record',
+        'invalid_reason',
+      ];
+      if (
+        !exact(Object.keys(stored).sort(), storedKeys.sort()) ||
+        stored.role !== `tutor_stub_resistance_recovery_semantic_${judge.id}` ||
+        !exact(stored.prompt, prompts[judge.id]) ||
+        stored.prompt_sha256 !== tutorStubResistanceRecoverySemanticPromptSha256(prompts[judge.id]) ||
+        checkpoint.invocation_id_by_judge?.[judge.id] !== stored.independent_run_id ||
+        !exact(checkpoint.attempts_by_judge?.[judge.id], stored.attempts) ||
+        !String(stored.independent_run_id || '').trim()
+      ) {
+        throw new Error('outcome validation judge binding drifted');
+      }
+      if (!Array.isArray(stored.attempts) || stored.attempts.length < 1 || stored.attempts.length > 3) {
+        throw new Error('outcome validation judge attempt envelope is invalid');
+      }
+      stored.attempts.forEach((attempt, index) => {
+        const expectedKeys =
+          attempt.status === 'transport_failed' ? ['attempt', 'error_code', 'status'] : ['attempt', 'status'];
+        if (
+          !exact(Object.keys(attempt).sort(), expectedKeys.sort()) ||
+          attempt.attempt !== index + 1 ||
+          !['returned', 'transport_failed', 'dispatched'].includes(attempt.status) ||
+          (index < stored.attempts.length - 1 && attempt.status !== 'transport_failed')
+        ) {
+          throw new Error('outcome validation judge attempt sequence drifted');
+        }
+      });
+      const finalStatus = stored.attempts.at(-1).status;
+      if (
+        (['recorded_response', 'invalid_return'].includes(stored.outcome) && finalStatus !== 'returned') ||
+        (stored.outcome === 'transport_failed' && finalStatus !== 'transport_failed') ||
+        (stored.outcome === 'dispatch_ambiguous_no_recall' && finalStatus !== 'dispatched')
+      ) {
+        throw new Error('outcome validation judge disposition does not match its attempt ledger');
+      }
       runIds.push(stored.independent_run_id);
       let rebuilt = null;
       if (stored.raw_response) {
@@ -528,6 +731,12 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
       }
       if (rebuilt && (!exact(rebuilt, stored.record) || stored.outcome !== 'recorded_response')) {
         throw new Error('outcome stored record does not derive from raw model response');
+      }
+      if (!rebuilt && stored.raw_response && (stored.outcome !== 'invalid_return' || stored.record !== null)) {
+        throw new Error('outcome invalid response disposition is not reproducible');
+      }
+      if (!stored.raw_response && !['transport_failed', 'dispatch_ambiguous_no_recall'].includes(stored.outcome)) {
+        throw new Error('outcome missing response has no registered terminal disposition');
       }
       if (rebuilt) responses.push(rebuilt);
       responsePairs[row.case_id][judge.id] = { prompt: prompts[judge.id], response: rebuilt };
@@ -552,6 +761,35 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
   if (seal.reservations !== reservations || seal.judge_results !== judgeResults || reservations > 720) {
     throw new Error('outcome validation seal accounting drifted');
   }
+  if (!exact(Object.keys(seal.case_checkpoint_sha256).sort(), plannedCaseIds)) {
+    throw new Error('outcome validation seal checkpoint map drifted');
+  }
+  const stageCounts = Object.fromEntries(
+    [...new Set(archiveVerification.manifest.entries.map((entry) => entry.stage))].map((stage) => [
+      stage,
+      archiveVerification.manifest.entries.filter((entry) => entry.stage === stage).length,
+    ]),
+  );
+  const archivedJudgeOutcomes =
+    Number(stageCounts.checkpoint_returned || 0) +
+    Number(stageCounts.checkpoint_invalid || 0) +
+    Number(stageCounts.checkpoint_transport_failed || 0) +
+    Number(stageCounts.checkpoint_dispatch_ambiguous_sealed || 0);
+  const archivedCaseSeals =
+    Number(stageCounts.checkpoint_sealed || 0) +
+    Number(stageCounts.checkpoint_partial_sealed || 0) +
+    Number(stageCounts.checkpoint_dispatch_ambiguous_sealed || 0);
+  if (
+    stageCounts.plan !== 1 ||
+    stageCounts.seal !== 1 ||
+    stageCounts.checkpoint_initialized !== 120 ||
+    stageCounts.checkpoint_prepared !== reservations ||
+    stageCounts.checkpoint_dispatched !== reservations ||
+    archivedJudgeOutcomes !== judgeResults ||
+    archivedCaseSeals !== 120
+  ) {
+    throw new Error('outcome validation durable archive transition inventory drifted');
+  }
   const score = scoreTutorStubResistanceRecoverySemanticCorpus({
     corpus: { ...loaded.corpus, cases: scoredCases },
     responsePairs,
@@ -560,6 +798,9 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
   return {
     schema: TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_REPORT_SCHEMA,
     status: score.status,
+    source: expectedPlan.source,
+    plan_sha256: expectedPlan.plan_sha256,
+    seal_sha256: digest(seal),
     instrument_registration_sha256: loaded.instrumentSha256,
     heldout_corpus_sha256: loaded.corpusSha256,
     score,

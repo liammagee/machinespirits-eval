@@ -15,6 +15,7 @@ import {
   analyzeTutorStubResistanceRecoverySemanticValidation,
   buildTutorStubResistanceRecoverySemanticValidationPlan,
   runTutorStubResistanceRecoverySemanticValidation,
+  writeTutorStubResistanceRecoverySemanticValidationReport,
 } from '../services/tutorStubResistanceRecoverySemanticValidationRuntime.js';
 import { validatePaidStudyEndpointGoCertificate } from '../services/paidStudyEndpointPreflight.js';
 
@@ -25,6 +26,38 @@ const CERTIFICATE =
 
 function json(repoPath) {
   return JSON.parse(fs.readFileSync(path.join(ROOT, repoPath), 'utf8'));
+}
+
+function fixtureModelCall(loaded, calls) {
+  return async ({ provider, model }, _system, user, role, options) => {
+    const prompt = JSON.parse(user);
+    const source = loaded.corpus.cases.find(
+      (row) => tutorStubResistanceRecoverySemanticOpaqueCaseId(row) === prompt.case_id,
+    );
+    const judge = loaded.instrument.measurement.judges.find((row) => row.id === prompt.judge.id);
+    const fixture = buildTutorStubResistanceRecoverySemanticZeroCallFixture({
+      corpusCase: { ...source, case_id: prompt.case_id },
+      judge,
+    });
+    calls.push({ role, caseId: prompt.case_id, judgeId: judge.id });
+    return {
+      text: JSON.stringify(fixture.modelOutput),
+      provider,
+      model,
+      effort: options.effort,
+      structuredOutput: true,
+      prohibitedToolEventCount: 0,
+      modelAttestationBasis: judge.modelAttestationBasis,
+      modelIndependentlyAttested: false,
+    };
+  };
+}
+
+function routeResolver(loaded) {
+  return (modelRef) => {
+    const judge = loaded.instrument.measurement.judges.find((row) => row.modelRef === modelRef);
+    return { provider: judge.provider, model: judge.model };
+  };
 }
 
 test('outcome heldout is frozen, blinded, stratified, and zero-call endpoint wiring passes', () => {
@@ -82,32 +115,8 @@ test('outcome validation runtime seals exactly 120 opaque cases and analyzer joi
       goRequestSha256,
       sourceDirty: false,
       archiveDir,
-      resolveModelRef: (modelRef) => {
-        const judge = loaded.instrument.measurement.judges.find((row) => row.modelRef === modelRef);
-        return { provider: judge.provider, model: judge.model };
-      },
-      callModel: async ({ provider, model }, _system, user, role, options) => {
-        const prompt = JSON.parse(user);
-        const source = loaded.corpus.cases.find(
-          (row) => tutorStubResistanceRecoverySemanticOpaqueCaseId(row) === prompt.case_id,
-        );
-        const judge = loaded.instrument.measurement.judges.find((row) => row.id === prompt.judge.id);
-        const fixture = buildTutorStubResistanceRecoverySemanticZeroCallFixture({
-          corpusCase: { ...source, case_id: prompt.case_id },
-          judge,
-        });
-        calls.push({ role, caseId: prompt.case_id });
-        return {
-          text: JSON.stringify(fixture.modelOutput),
-          provider,
-          model,
-          effort: options.effort,
-          structuredOutput: true,
-          prohibitedToolEventCount: 0,
-          modelAttestationBasis: judge.modelAttestationBasis,
-          modelIndependentlyAttested: false,
-        };
-      },
+      resolveModelRef: routeResolver(loaded),
+      callModel: fixtureModelCall(loaded, calls),
     });
     assert.equal(calls.length, 240);
     const report = analyzeTutorStubResistanceRecoverySemanticValidation({
@@ -121,6 +130,176 @@ test('outcome validation runtime seals exactly 120 opaque cases and analyzer joi
     });
     assert.equal(report.status, 'passed');
     assert.equal(report.score.metrics.raw_full_vector_interjudge_agreement, 1);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+test('outcome validation resume preserves Judge A and calls only the never-prepared Judge B', async () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'outcome-semantic-resume-'));
+  const destination = path.join(temporary, 'run');
+  const archiveDir = path.join(temporary, 'archive');
+  fs.mkdirSync(archiveDir);
+  const loaded = loadTutorStubResistanceRecoverySemanticValidation();
+  const calls = [];
+  const options = {
+    destination,
+    sourceCommit: '4'.repeat(40),
+    sourceTree: '5'.repeat(40),
+    goRequestPath: 'config/future-outcome-validation-request.json',
+    goRequestSha256: '6'.repeat(64),
+    sourceDirty: false,
+    archiveDir,
+    resolveModelRef: routeResolver(loaded),
+    callModel: fixtureModelCall(loaded, calls),
+  };
+  let interrupted = false;
+  try {
+    await assert.rejects(
+      runTutorStubResistanceRecoverySemanticValidation({
+        ...options,
+        afterJudgeCheckpoint: ({ judgeId }) => {
+          if (!interrupted && judgeId === loaded.instrument.measurement.judges[0].id) {
+            interrupted = true;
+            throw new Error('synthetic coordinator interruption after Judge A');
+          }
+        },
+      }),
+      /synthetic coordinator interruption/u,
+    );
+    const firstCase = calls[0].caseId;
+    assert.equal(calls.filter((row) => row.caseId === firstCase).length, 1);
+    await runTutorStubResistanceRecoverySemanticValidation({ ...options, resume: true });
+    assert.equal(
+      calls.filter((row) => row.caseId === firstCase && row.judgeId === loaded.instrument.measurement.judges[0].id)
+        .length,
+      1,
+    );
+    assert.equal(
+      calls.filter((row) => row.caseId === firstCase && row.judgeId === loaded.instrument.measurement.judges[1].id)
+        .length,
+      1,
+    );
+    assert.equal(calls.length, 240);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+test('outcome validation never recalls a dispatched Judge B with an ambiguous response', async () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'outcome-semantic-ambiguous-'));
+  const destination = path.join(temporary, 'run');
+  const archiveDir = path.join(temporary, 'archive');
+  fs.mkdirSync(archiveDir);
+  const loaded = loadTutorStubResistanceRecoverySemanticValidation();
+  const calls = [];
+  const options = {
+    destination,
+    sourceCommit: '7'.repeat(40),
+    sourceTree: '8'.repeat(40),
+    goRequestPath: 'config/future-outcome-validation-request.json',
+    goRequestSha256: '9'.repeat(64),
+    sourceDirty: false,
+    archiveDir,
+    resolveModelRef: routeResolver(loaded),
+    callModel: fixtureModelCall(loaded, calls),
+  };
+  let interruptedCase = null;
+  try {
+    await assert.rejects(
+      runTutorStubResistanceRecoverySemanticValidation({
+        ...options,
+        afterDispatchCheckpoint: ({ caseId, judgeId }) => {
+          if (!interruptedCase && judgeId === loaded.instrument.measurement.judges[1].id) {
+            interruptedCase = caseId;
+            throw new Error('synthetic crash after Judge B dispatch');
+          }
+        },
+      }),
+      /synthetic crash after Judge B dispatch/u,
+    );
+    await runTutorStubResistanceRecoverySemanticValidation({ ...options, resume: true });
+    assert.equal(
+      calls.filter(
+        (row) => row.caseId === interruptedCase && row.judgeId === loaded.instrument.measurement.judges[0].id,
+      ).length,
+      1,
+    );
+    assert.equal(
+      calls.filter(
+        (row) => row.caseId === interruptedCase && row.judgeId === loaded.instrument.measurement.judges[1].id,
+      ).length,
+      0,
+    );
+    assert.equal(calls.length, 239);
+    const report = analyzeTutorStubResistanceRecoverySemanticValidation({
+      destination,
+      expectedSourceCommit: options.sourceCommit,
+      expectedSourceTree: options.sourceTree,
+      expectedGoRequestPath: options.goRequestPath,
+      expectedGoRequestSha256: options.goRequestSha256,
+      sourceDirty: false,
+      archiveDir,
+    });
+    assert.equal(report.status, 'failed');
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+test('outcome validation reconciles local seal and report writes without model recall or alternate content', async () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'outcome-semantic-terminal-reconcile-'));
+  const destination = path.join(temporary, 'run');
+  const archiveDir = path.join(temporary, 'archive');
+  fs.mkdirSync(archiveDir);
+  const loaded = loadTutorStubResistanceRecoverySemanticValidation();
+  const calls = [];
+  const options = {
+    destination,
+    sourceCommit: 'a'.repeat(40),
+    sourceTree: 'b'.repeat(40),
+    goRequestPath: 'config/future-outcome-validation-request.json',
+    goRequestSha256: 'c'.repeat(64),
+    sourceDirty: false,
+    archiveDir,
+    resolveModelRef: routeResolver(loaded),
+    callModel: fixtureModelCall(loaded, calls),
+  };
+  try {
+    await assert.rejects(
+      runTutorStubResistanceRecoverySemanticValidation({
+        ...options,
+        afterSealLocalWrite: () => {
+          throw new Error('synthetic crash after local seal');
+        },
+      }),
+      /synthetic crash after local seal/u,
+    );
+    assert.equal(calls.length, 240);
+    await runTutorStubResistanceRecoverySemanticValidation({ ...options, resume: true });
+    assert.equal(calls.length, 240);
+    const reportOptions = {
+      destination,
+      expectedSourceCommit: options.sourceCommit,
+      expectedSourceTree: options.sourceTree,
+      expectedGoRequestPath: options.goRequestPath,
+      expectedGoRequestSha256: options.goRequestSha256,
+      sourceDirty: false,
+      archiveDir,
+    };
+    await assert.rejects(
+      async () =>
+        writeTutorStubResistanceRecoverySemanticValidationReport({
+          ...reportOptions,
+          afterReportLocalWrite: () => {
+            throw new Error('synthetic crash after local report');
+          },
+        }),
+      /synthetic crash after local report/u,
+    );
+    const report = writeTutorStubResistanceRecoverySemanticValidationReport(reportOptions);
+    assert.equal(report.status, 'passed');
+    assert.equal(calls.length, 240);
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
   }
