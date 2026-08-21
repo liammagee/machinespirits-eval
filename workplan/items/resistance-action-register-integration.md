@@ -2849,3 +2849,24 @@ and explicit human approval.
   source commit, revisioned digest-bound HOLD request, wholly fresh destination,
   and exact programme maximum `696 -> 1176 / 5000`; this repair itself creates
   no request and authorizes no model, outcome-validation, or confirmation call.
+
+- 2026-08-21 — A post-repair source audit found one remaining metadata
+  dependency before that fresh request could be packaged: the checker and
+  packager recognized only revision 2 and therefore could not bind the second
+  consumed V3 request and stopped root. The additive revision-3 compatibility
+  path now requires both immutable predecessor requests, including revision-2
+  request SHA
+  `bb3571a2971e1d3fc3d7dad9fa0e41715b3e2282d495aef6f5880fd04fd4b5da`,
+  exact launch source `b39e82d872a9b1320a20bd9e58ae23e33e000a13` / tree
+  `584d89016a0010ecb83783c005bb0e5f919b0914`, internal plan SHA
+  `2f9ef9d889469da5ec6b4cbf3609d7a03b7855c9b4ff3b23be52cf7cd396b817`,
+  all 19 final local artifact hashes, and the private archive commit/tree,
+  inventory, manifest, and 140 transitions recorded above. It also binds the
+  exact 35-reservation accounting (32 returned, two terminal failures, one
+  ambiguous dispatch), 17 sealed plus one in-flight case, the two distinct
+  Sonnet judge-B exit-code-1 failures, and every no-gold/no-analysis/no-reuse
+  disposition. The packager materializes both consumed request blobs from the
+  pinned source, and revision 3 alone uses the `696 -> 1176 / 5000` ledger.
+  Historical request revisions remain byte- and behavior-compatible. This is
+  zero-call compatibility only: no fresh request, destination, approval,
+  validation, outcome validation, or confirmation is created or authorized.
