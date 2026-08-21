@@ -707,11 +707,9 @@ export function scoreTutorStubResistanceRecoverySemanticCorpus({ corpus, respons
     );
     return { corpusCase, pair, labels, aggregate };
   });
-  const expectedCategories = rows.map((row) => category(row.corpusCase.expected.judgment));
   const judgeCategories = Object.fromEntries(
     judges.map((judge) => [judge.id, rows.map((row) => category(row.labels[judge.id]))]),
   );
-  const consensusCategories = rows.map((row) => category(row.aggregate.judgment));
   const expectedVectors = rows.map((row) => exactVector(row.corpusCase.expected.judgment));
   const judgeVectors = Object.fromEntries(
     judges.map((judge) => [judge.id, rows.map((row) => exactVector(row.labels[judge.id]))]),
