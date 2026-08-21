@@ -344,7 +344,7 @@ const STOPPED_V3_SUCCESSOR_VALIDATION = {
   failureEvidence: {
     judgeId: 'semantic_judge_b',
     provider: 'claude-code',
-    model: 'sonnet-5',
+    model: 'claude-sonnet-5',
     errorCode: 'CLI_PROVIDER_EXIT_FAILED',
     exitCode: 1,
     cases: ['sv3-a059314a64d8f58efc25097b50de5a23', 'sv3-d34fc430c5374c7e30833d6b5df8d3eb'],
@@ -1113,6 +1113,7 @@ test('future v3 revision-3 packaging binds both stopped partials and the 696-to-
       (value.semanticAdjudicationValidation.stoppedV3SuccessorValidation.localEvidence.artifacts[18].sha256 =
         '0'.repeat(64)),
     (value) => (value.semanticAdjudicationValidation.stoppedV3SuccessorValidation.accounting.returnedResponses = 33),
+    (value) => (value.semanticAdjudicationValidation.stoppedV3SuccessorValidation.failureEvidence.model = 'sonnet-5'),
     (value) => (value.semanticAdjudicationValidation.stoppedV3SuccessorValidation.goldJoined = true),
     (value) => (value.semanticAdjudicationValidation.stoppedV3SuccessorValidation.analyzerRan = true),
     (value) => (value.semanticAdjudicationValidation.stoppedV3SuccessorValidation.sameSourceResumePermitted = true),
