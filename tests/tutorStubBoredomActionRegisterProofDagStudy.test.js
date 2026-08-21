@@ -770,6 +770,24 @@ test('v4 live and recovery execution demand a committed launch authorization bou
   assert.equal(summary.approved_by, 'test-fixture-human');
   assert.equal(summary.request_sha256, report.requestSha256);
 
+  const untrackedInRepoPath = path.join(
+    ROOT,
+    'config',
+    'test-untracked-boredom-proof-dag-launch-authorization.v4.json',
+  );
+  assert.equal(fs.existsSync(untrackedInRepoPath), false);
+  t.after(() => fs.rmSync(untrackedInRepoPath, { force: true }));
+  fs.writeFileSync(untrackedInRepoPath, `${JSON.stringify(authorization, null, 2)}\n`);
+  assert.throws(
+    () =>
+      assertTutorStubBoredomProofDagLaunchAuthorization({
+        loaded,
+        authorizationPath: path.relative(ROOT, untrackedInRepoPath),
+      }),
+    /must be committed at HEAD/u,
+  );
+  fs.rmSync(untrackedInRepoPath, { force: true });
+
   const mutations = [
     { schema: 'machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v99' },
     { approvedBy: '  ' },

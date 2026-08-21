@@ -245,6 +245,18 @@ export function assertTutorStubBoredomProofDagLaunchAuthorization({ loaded, auth
   if (!fs.existsSync(absolutePath)) {
     throw new Error(`boredom proof-DAG live execution requires a committed launch authorization: ${relativePath}`);
   }
+  const rebased = path.relative(ROOT, absolutePath);
+  if (!rebased.startsWith('..') && !path.isAbsolute(rebased)) {
+    let committedBytes;
+    try {
+      committedBytes = execFileSync('git', ['show', `HEAD:${rebased.split(path.sep).join('/')}`], { cwd: ROOT });
+    } catch {
+      throw new Error(`boredom proof-DAG launch authorization must be committed at HEAD: ${rebased}`);
+    }
+    if (!committedBytes.equals(fs.readFileSync(absolutePath))) {
+      throw new Error(`boredom proof-DAG launch authorization must match its committed bytes at HEAD: ${rebased}`);
+    }
+  }
   const authorization = readJson(absolutePath);
   const requestAbsolutePath = path.isAbsolute(authorization.requestPath || '')
     ? authorization.requestPath
