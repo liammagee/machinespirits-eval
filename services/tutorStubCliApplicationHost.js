@@ -571,6 +571,7 @@ import {
 import { configureTutorStubResistanceActionRegisterConfirmationFromCli } from './tutorStubResistanceActionRegisterConfirmation.js';
 import { configureTutorStubBoredomProofDagFromCli } from './tutorStubBoredomActionRegisterProofDagStudy.js';
 import { createTutorStubBoredomSemanticAdjudicator } from './tutorStubBoredomSemanticAdjudication.js';
+import { createTutorStubBoredomSemanticAdjudicator as createTutorStubBoredomSemanticAdjudicatorV3 } from './tutorStubBoredomSemanticAdjudicationV3.js';
 import { applyTutorStubResistanceActionRegisterStudyIntervention } from './tutorStubResistanceActionRegisterStudy.js';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
@@ -581,6 +582,19 @@ const HUMAN_DISCOURSE_FRAME_SCHEMA = 'machinespirits.tutor-stub.human-discourse-
 const TUTOR_GUARD_ACCOUNTING_SCHEMA = 'machinespirits.tutor-stub.guard-accounting.v1';
 const TUTOR_TYPED_ACTION_CONFIG_SCHEMA = 'machinespirits.tutor-stub.typed-action-runtime-config.v1';
 const DEFAULT_INTERACTIVE_COMMITTEE_FALLBACK_POLICY = 'v2';
+function selectTutorStubBoredomSemanticAdjudicatorFactory({ args, root }) {
+  const registrationPath = args?.['boredom-proof-dag-registration'];
+  if (!registrationPath) return createTutorStubBoredomSemanticAdjudicator;
+  const registration = JSON.parse(fs.readFileSync(path.resolve(root, registrationPath), 'utf8'));
+  const schema = registration?.measurement?.semanticAdjudicator?.schema;
+  if (schema === undefined || schema === 'machinespirits.tutor-stub.boredom-semantic-adjudication.v1') {
+    return createTutorStubBoredomSemanticAdjudicator;
+  }
+  if (schema === 'machinespirits.tutor-stub.boredom-semantic-adjudication.v3') {
+    return createTutorStubBoredomSemanticAdjudicatorV3;
+  }
+  throw new Error(`unsupported boredom semantic adjudication schema in registration: ${schema}`);
+}
 export async function runTutorStubCliApplicationHost({
   stub,
   args,
@@ -1825,7 +1839,10 @@ export async function runTutorStubCliApplicationHost({
     TUTOR_STUB_QUARANTINE_CONTINUATION,
     acknowledgeTutorStubOpeningRelease,
     advanceTutorStubDialogueClosure,
-    adjudicateTutorStubBoredomObservation: createTutorStubBoredomSemanticAdjudicator(callPromptModel, resolveModel),
+    adjudicateTutorStubBoredomObservation: selectTutorStubBoredomSemanticAdjudicatorFactory({ args, root: ROOT })(
+      callPromptModel,
+      resolveModel,
+    ),
     analyzeLearnerTurn,
     appendTraceEvent,
     appendTutorStubTurnFailureTraceRecords,
