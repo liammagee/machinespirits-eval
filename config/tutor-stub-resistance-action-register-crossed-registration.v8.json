@@ -4,8 +4,8 @@
   "status": "prospective_zero_call_readiness_hold",
   "workplanItem": "resistance-action-register-integration",
   "frozenAt": "2026-08-20",
-  "registeredQuestion": "Among wholly fresh independent frame-refuser dialogues whose first eligible public-turn-1-or-2 jurisdictional refusal is established by frozen dual independent high-confidence semantic consensus after a passing blinded heldout validation, does one matched test_bounded_distinction tutor move realized warm change two-post-trigger-turn resistance recovery relative to the same move realized plain?",
-  "claimBoundary": "This prospective successor confirmation can test only the frame-refuser warm-versus-plain difference for the existing profile_specific_resistance_recovery endpoint under the registered matched test_bounded_distinction move in world_005_marrick, and only after the independently frozen heldout semantic validation passes. It cannot pool or reinterpret the 12 calibration dialogues or the incomplete V1, V3, V4, or V7 confirmation blocks; establish matched-versus-mismatched action efficacy, edged-register efficacy, an action-by-register interaction, general tutor efficacy, durable learning, human validity, or transfer to the cell harness; or turn measurement indeterminacy or a treatment-fidelity failure into an outcome rerun.",
+  "registeredQuestion": "Among wholly fresh independent frame-refuser dialogues whose first eligible public-turn-1-or-2 jurisdictional refusal is established by frozen dual independent high-confidence semantic consensus, does one matched test_bounded_distinction tutor move realized warm change two-post-trigger-turn resistance recovery relative to the same move realized plain, when both recovery and delivered action/register fidelity are established by a separate frozen dual-independent final-horizon semantic consensus?",
+  "claimBoundary": "This readiness-only prospective successor can become executable only after separately sealed passing manipulation and outcome-instrument heldout validations. It can then test only the frame-refuser warm-versus-plain difference for the existing profile_specific_resistance_recovery endpoint under the registered matched test_bounded_distinction move in world_005_marrick. It cannot pool or reinterpret the 12 calibration dialogues or the incomplete V1, V3, V4, or V7 confirmation blocks; establish matched-versus-mismatched action efficacy, edged-register efficacy, an action-by-register interaction, general tutor efficacy, durable learning, human validity, or transfer to the cell harness; or turn measurement indeterminacy or a treatment-fidelity failure into an outcome rerun.",
   "authorization": {
     "modelCallsAuthorized": false,
     "liveRunAuthorized": false,
@@ -14,24 +14,26 @@
     "standingAuthorizationAttachmentSha256": "538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce",
     "standingArchitecturalCorrectionSha256": "dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4",
     "programmeLedgerBeforeThisConfirmation": {
-      "role": "prospective_maximum_after_validation_not_observed_consumption",
-      "reservedAttempts": 811,
+      "role": "prospective_maximum_after_both_validations_not_observed_consumption",
+      "reservedAttempts": 1531,
       "ceiling": 5000,
-      "remaining": 4189
+      "remaining": 3469
     },
     "requiredCeilingAmendment": {
       "from": 5000,
       "to": 5000,
       "increase": 0,
-      "basis": "after at most 480 heldout-validation reservations from ledger 331, the unchanged 36-dialogue design adds at most 3240 reservations for dual semantic adjudication and remains within the human-amended 5000-attempt operational safeguard",
+      "basis": "after at most 480 manipulation-validation and 720 outcome-validation reservations from ledger 331, the unchanged 36-dialogue design adds at most 3456 reservations and reaches a conservative staged maximum of 4987 within the human-amended 5000-attempt operational safeguard",
       "authorized": false
     },
     "requiredBeforeAnyModelCall": [
       "merged zero-call dual-independent semantic instrument, runtime, validation runner/analyzer, confirmation runtime/analyzer, endpoint contracts, and endpoint certificates",
-      "a sealed passing 80-case blinded heldout semantic validation report under its separate 480-reservation ceiling",
+      "a sealed passing 80-case blinded manipulation semantic validation report under its separate 480-reservation ceiling",
+      "a sealed passing independently authored 120-case blinded recovery-and-fidelity semantic validation report under its separate 720-reservation ceiling",
+      "a post-validation executable registration binding both sealed reports and actual observed validation accounting",
       "a clean pinned source and complete executable source closure",
       "nine absent create-once balanced batch destinations and one absent combined report",
-      "one committed HOLD request binding all 36 fresh jobs, exact commands, Fisher rule, sealed-only combined analysis, the 3240 confirmation ceiling, and exact stopped-V7 exclusion provenance",
+      "one committed HOLD request binding all 36 fresh jobs, exact commands, Fisher rule, sealed-only combined analysis, both validation reports, the 3456 confirmation ceiling, and exact stopped-V7 exclusion provenance",
       "the externally preserved standing human authority attachment at SHA-256 538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce"
     ]
   },
@@ -203,10 +205,11 @@
   },
   "semanticAdjudication": {
     "instrumentRegistrationPath": "config/tutor-stub-resistance-semantic-adjudication-registration.v1.json",
-    "instrumentRegistrationSha256": "3ca5c34fefe5aa2eca1f2e49cd6ca59d64261cadd505de26f508fbfe650b926a",
+    "instrumentRegistrationSha256": "d479a556df2f61458546e9e1463dc11fa1261b74df91fe4b765d159c330f415d",
     "instrumentFreezeCommit": "4cf49a15b500f058401bd8bd586166ba90c8842c",
+    "instrumentScoringCorrectionCommit": "c9f11e44e7938875c5f391b60b569b7b4ba5dabe",
     "validationRegistrationPath": "config/tutor-stub-resistance-semantic-adjudication-validation-registration.v1.json",
-    "validationRegistrationSha256": "ee411d29ea9d6086f3f24f81995f4224bfc783ea78ac5f04009c210985d87b0f",
+    "validationRegistrationSha256": "d06952b563065a100ce4af92c18c7089a41b416c0ed3845d1d5e6d2c694856e8",
     "heldoutCorpusPath": "config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json",
     "heldoutCorpusSha256": "9378416d1fdf8dc41f35ad84a4edf69fba6ad8889ce5020617f3d19747c9a2c7",
     "validationReportPath": null,
@@ -224,6 +227,27 @@
     "determinateTurn1NonadherenceDisposition": "proceed_to_turn_2_without_repair",
     "determinateTurn2NonadherenceRepair": "one_full_learner_repair_with_fresh_independent_judge_pair",
     "safetySignals": "may_block_or_override_treatment_but_never_recode_semantic_classification"
+  },
+  "outcomeSemanticAdjudication": {
+    "instrumentRegistrationPath": "config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v1.json",
+    "instrumentRegistrationSha256": "b77aca2b6c8562f3ea32a9e54f17386969e4912efdcc0ec09a5beb61a7dd127a",
+    "instrumentFreezeCommit": "59bfcc4c5223f21c1405a70feedc1e1bb639b441",
+    "instrumentBindingCommit": "fc3ed584bec780e92605df82f8d0aa9513416695",
+    "heldoutCorpusPath": null,
+    "heldoutCorpusSha256": null,
+    "validationRegistrationPath": null,
+    "validationRegistrationSha256": null,
+    "validationReportPath": null,
+    "validationReportSha256": null,
+    "validationRequiredBeforeConfirmationRequest": true,
+    "judgeA": "codex.gpt-5.6-sol",
+    "judgeB": "claude-code.sonnet-5",
+    "effort": "low",
+    "adjudicationTiming": "one_blind_pair_only_after_second_and_final_post_trigger_learner_turn",
+    "fullVectorHighConfidenceAgreementRequired": true,
+    "recoveryAndTreatmentFidelityAuthority": "dual_independent_semantic_consensus_only",
+    "responseConfigurationAuditAndLunaSignals": "advisory_only_never_vote_tiebreak_veto_or_override",
+    "measurementIndeterminateDisposition": "terminal_nonrecoverable_whole_fisher_analysis_withheld_no_rerun_replacement_or_selection"
   },
   "design": {
     "stage": "frame_refuser_matched_action_plain_warm_confirmation_successor",
@@ -378,7 +402,7 @@
         "id": "profile_specific_resistance_recovery",
         "type": "binary_per_randomized_dialogue",
         "definition": "Within two post-trigger learner turns, the learner either engages the bounded test on its merits or states a more precise jurisdictional condition grounded in the public issue.",
-        "modelJudge": false
+        "modelJudge": "dual_independent_semantic_consensus_after_final_fixed_horizon"
       }
     ],
     "confirmatoryTest": {
@@ -413,6 +437,8 @@
       "minimumActionVisibility": 0.9,
       "minimumRegisterVisibility": 0.9,
       "primaryAnalysis": "intention_to_treat",
+      "authority": "dual_independent_final_horizon_semantic_consensus_blind_to_assignment",
+      "responseConfigurationAuditRole": "advisory_process_evidence_only",
       "failedFidelityDisposition": "fail_interpretability_gate_not_rerun"
     },
     "assemblyRule": "All nine predeclared batches must seal before the sole combined 36-dialogue analysis. No batch, arm, partial count, or calibration dialogue may be analyzed, selected, pooled, or interpreted before that point."
@@ -436,12 +462,23 @@
     "priorIncompleteConfirmationV7DialoguesPooled": 0
   },
   "executionReadiness": {
+    "stagedValidationBudget": {
+      "observedProgrammeLedgerBeforeValidation": 331,
+      "manipulationValidationHardReservations": 480,
+      "maximumAfterManipulationValidation": 811,
+      "outcomeValidationHardReservations": 720,
+      "maximumAfterBothValidations": 1531,
+      "programmeCeiling": 5000,
+      "operationalSafeguardNotDesignObjective": true
+    },
     "modelRoute": {
       "tutor": "codex.gpt-5.6-luna",
       "analysis": "codex.gpt-5.6-luna",
       "learner": "codex.gpt-5.6-luna",
       "semanticJudgeA": "codex.gpt-5.6-sol",
       "semanticJudgeB": "claude-code.sonnet-5",
+      "outcomeSemanticJudgeA": "codex.gpt-5.6-sol",
+      "outcomeSemanticJudgeB": "claude-code.sonnet-5",
       "effort": "low"
     },
     "plannedRoleCallDerivation": {
@@ -452,87 +489,88 @@
       "oneFullLearnerRepair": 2,
       "maximumTutorGuardRecoveryCalls": 6,
       "maximumSemanticJudgeCalls": 10,
-      "total": 30
+      "outcomeSemanticJudgeCallsAfterFinalHorizon": 2,
+      "total": 32
     },
-    "plannedRoleCallsPerDialogue": 30,
+    "plannedRoleCallsPerDialogue": 32,
     "maximumReservationsPerPlannedCall": 3,
-    "maximumModelAttemptReservationsPerDialogue": 90,
+    "maximumModelAttemptReservationsPerDialogue": 96,
     "batches": [
       {
         "id": "block_01",
         "dialogues": 4,
-        "plannedRoleCalls": 120,
-        "maximumModelAttemptReservations": 360,
+        "plannedRoleCalls": 128,
+        "maximumModelAttemptReservations": 384,
         "destination": null
       },
       {
         "id": "block_02",
         "dialogues": 4,
-        "plannedRoleCalls": 120,
-        "maximumModelAttemptReservations": 360,
+        "plannedRoleCalls": 128,
+        "maximumModelAttemptReservations": 384,
         "destination": null
       },
       {
         "id": "block_03",
         "dialogues": 4,
-        "plannedRoleCalls": 120,
-        "maximumModelAttemptReservations": 360,
+        "plannedRoleCalls": 128,
+        "maximumModelAttemptReservations": 384,
         "destination": null
       },
       {
         "id": "block_04",
         "dialogues": 4,
-        "plannedRoleCalls": 120,
-        "maximumModelAttemptReservations": 360,
+        "plannedRoleCalls": 128,
+        "maximumModelAttemptReservations": 384,
         "destination": null
       },
       {
         "id": "block_05",
         "dialogues": 4,
-        "plannedRoleCalls": 120,
-        "maximumModelAttemptReservations": 360,
+        "plannedRoleCalls": 128,
+        "maximumModelAttemptReservations": 384,
         "destination": null
       },
       {
         "id": "block_06",
         "dialogues": 4,
-        "plannedRoleCalls": 120,
-        "maximumModelAttemptReservations": 360,
+        "plannedRoleCalls": 128,
+        "maximumModelAttemptReservations": 384,
         "destination": null
       },
       {
         "id": "block_07",
         "dialogues": 4,
-        "plannedRoleCalls": 120,
-        "maximumModelAttemptReservations": 360,
+        "plannedRoleCalls": 128,
+        "maximumModelAttemptReservations": 384,
         "destination": null
       },
       {
         "id": "block_08",
         "dialogues": 4,
-        "plannedRoleCalls": 120,
-        "maximumModelAttemptReservations": 360,
+        "plannedRoleCalls": 128,
+        "maximumModelAttemptReservations": 384,
         "destination": null
       },
       {
         "id": "block_09",
         "dialogues": 4,
-        "plannedRoleCalls": 120,
-        "maximumModelAttemptReservations": 360,
+        "plannedRoleCalls": 128,
+        "maximumModelAttemptReservations": 384,
         "destination": null
       }
     ],
     "combinedDialogues": 36,
-    "combinedPlannedRoleCalls": 1080,
-    "combinedMaximumModelAttemptReservations": 3240,
+    "combinedPlannedRoleCalls": 1152,
+    "combinedMaximumModelAttemptReservations": 3456,
     "programmeLedgerAfterMaximum": {
-      "role": "prospective_maximum_after_validation_and_confirmation_not_observed_consumption",
-      "reservedAttempts": 4051,
+      "role": "prospective_maximum_after_both_validations_and_confirmation_not_observed_consumption",
+      "reservedAttempts": 4987,
       "ceiling": 5000,
-      "remaining": 949
+      "remaining": 13
     },
     "attemptAccountingRole": "operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective",
-    "boundedTechnicalRecovery": "missing_or_failed_units_only_before_any_candidate_generation_or_semantic_response_using_actual_unused_room_within_the_same_90_dialogue_360_batch_3240_confirmation_and_5000_programme_caps",
+    "boundedTechnicalRecovery": "missing_or_failed_units_only_before_any_candidate_generation_or_semantic_response_using_actual_unused_room_within_the_same_96_dialogue_384_batch_3456_confirmation_and_5000_programme_caps",
     "validUnitReruns": false,
     "outcomeSelection": false,
     "currentLiveExecutionAvailable": false

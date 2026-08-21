@@ -11,7 +11,7 @@
     "heldoutCorpusTextChanged": false,
     "heldoutResponsesObserved": 0,
     "postHeldoutResultTuning": false,
-    "correctionFreezeCommit": null
+    "correctionFreezeCommit": "c9f11e44e7938875c5f391b60b569b7b4ba5dabe"
   },
   "studyId": "tutor-stub-resistance-semantic-adjudication-validation-v1",
   "observationSemantics": "prospective_frame_resistance_semantic_v1",

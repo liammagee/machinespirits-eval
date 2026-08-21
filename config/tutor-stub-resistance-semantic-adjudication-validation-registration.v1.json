@@ -5,8 +5,9 @@
   "studyId": "tutor-stub-resistance-semantic-adjudication-heldout-validation-v1",
   "instrument": {
     "registrationPath": "config/tutor-stub-resistance-semantic-adjudication-registration.v1.json",
-    "registrationSha256": "3ca5c34fefe5aa2eca1f2e49cd6ca59d64261cadd505de26f508fbfe650b926a",
+    "registrationSha256": "d479a556df2f61458546e9e1463dc11fa1261b74df91fe4b765d159c330f415d",
     "instrumentFreezeCommit": "4cf49a15b500f058401bd8bd586166ba90c8842c",
+    "scoringCorrectionCommit": "c9f11e44e7938875c5f391b60b569b7b4ba5dabe",
     "postHeldoutPromptModelThresholdOrConsensusTuning": false
   },
   "heldout": {
@@ -36,13 +37,17 @@
     "programmeLedgerBefore": 331,
     "programmeLedgerAfterMaximum": 811,
     "programmeCeiling": 5000,
-    "futureConfirmationHardReservations": 3240,
-    "futureConfirmationMaximumOnlyAfterValidationPass": 4051
+    "futureOutcomeValidationHardReservations": 720,
+    "futureConfirmationHardReservations": 3456,
+    "futureStagedMaximumOnlyAfterBothValidationsPass": 4987
   },
   "executionPolicy": {
     "caseCheckpointing": "after_each_judge_response",
-    "partialCaseDisposition": "terminal_measurement_indeterminate_no_rejudge",
-    "technicalRecovery": "case_with_zero_judge_responses_only",
+    "preservedValidJudgeDisposition": "call_only_the_never_prepared_peer_without_recalling_the_preserved_judge",
+    "preparedNotDispatchedDisposition": "same_prepared_invocation_may_dispatch_once",
+    "dispatchedWithoutResponseDisposition": "terminal_measurement_indeterminate_no_recall",
+    "invalidOrTransportTerminalDisposition": "terminal_measurement_indeterminate_no_peer_call_required",
+    "technicalRecovery": "predeclared_never_dispatched_missing_judge_only",
     "completedOrPartialCaseRestart": false,
     "validCaseRerun": false,
     "replacement": false,

@@ -70,6 +70,7 @@ export function validateTutorStubResistanceSemanticValidationRegistration({
         'registrationPath',
         'registrationSha256',
         'instrumentFreezeCommit',
+        'scoringCorrectionCommit',
         'postHeldoutPromptModelThresholdOrConsensusTuning',
       ],
       'instrument',
@@ -111,8 +112,9 @@ export function validateTutorStubResistanceSemanticValidationRegistration({
         'programmeLedgerBefore',
         'programmeLedgerAfterMaximum',
         'programmeCeiling',
+        'futureOutcomeValidationHardReservations',
         'futureConfirmationHardReservations',
-        'futureConfirmationMaximumOnlyAfterValidationPass',
+        'futureStagedMaximumOnlyAfterBothValidationsPass',
       ],
       'executionReadiness',
     ],
@@ -120,7 +122,10 @@ export function validateTutorStubResistanceSemanticValidationRegistration({
       registration?.executionPolicy,
       [
         'caseCheckpointing',
-        'partialCaseDisposition',
+        'preservedValidJudgeDisposition',
+        'preparedNotDispatchedDisposition',
+        'dispatchedWithoutResponseDisposition',
+        'invalidOrTransportTerminalDisposition',
         'technicalRecovery',
         'completedOrPartialCaseRestart',
         'validCaseRerun',
@@ -170,6 +175,7 @@ export function validateTutorStubResistanceSemanticValidationRegistration({
     registration?.instrument?.registrationPath !== instrument?.path ||
     registration?.instrument?.registrationSha256 !== instrument?.sha256 ||
     registration?.instrument?.instrumentFreezeCommit !== '4cf49a15b500f058401bd8bd586166ba90c8842c' ||
+    registration?.instrument?.scoringCorrectionCommit !== 'c9f11e44e7938875c5f391b60b569b7b4ba5dabe' ||
     registration?.instrument?.postHeldoutPromptModelThresholdOrConsensusTuning !== false
   ) {
     issues.push('frozen instrument binding or no-post-heldout-tuning rule drifted');
@@ -244,16 +250,21 @@ export function validateTutorStubResistanceSemanticValidationRegistration({
     budget.programmeLedgerBefore !== 331 ||
     budget.programmeLedgerAfterMaximum !== 811 ||
     budget.programmeCeiling !== 5000 ||
-    budget.futureConfirmationHardReservations !== 3240 ||
-    budget.futureConfirmationMaximumOnlyAfterValidationPass !== 4051
+    budget.futureOutcomeValidationHardReservations !== 720 ||
+    budget.futureConfirmationHardReservations !== 3456 ||
+    budget.futureStagedMaximumOnlyAfterBothValidationsPass !== 4987
   ) {
     issues.push('validation or staged confirmation attempt ledger drifted');
   }
   const policy = registration?.executionPolicy || {};
   if (
     policy.caseCheckpointing !== 'after_each_judge_response' ||
-    policy.partialCaseDisposition !== 'terminal_measurement_indeterminate_no_rejudge' ||
-    policy.technicalRecovery !== 'case_with_zero_judge_responses_only' ||
+    policy.preservedValidJudgeDisposition !==
+      'call_only_the_never_prepared_peer_without_recalling_the_preserved_judge' ||
+    policy.preparedNotDispatchedDisposition !== 'same_prepared_invocation_may_dispatch_once' ||
+    policy.dispatchedWithoutResponseDisposition !== 'terminal_measurement_indeterminate_no_recall' ||
+    policy.invalidOrTransportTerminalDisposition !== 'terminal_measurement_indeterminate_no_peer_call_required' ||
+    policy.technicalRecovery !== 'predeclared_never_dispatched_missing_judge_only' ||
     policy.completedOrPartialCaseRestart !== false ||
     policy.validCaseRerun !== false ||
     policy.replacement !== false ||
@@ -412,6 +423,16 @@ export function assembleTutorStubResistanceSemanticValidationPreflight({ cases }
 
 export function runTutorStubResistanceSemanticValidationPreflight({ contract }) {
   const loaded = loadTutorStubResistanceSemanticValidation();
+  if (
+    contract?.registration?.registration_path !== loaded.registrationPath ||
+    contract?.registration?.registration_sha256 !== loaded.registrationSha256 ||
+    contract?.registration?.instrument_registration_path !== loaded.instrument.path ||
+    contract?.registration?.instrument_registration_sha256 !== loaded.instrument.sha256 ||
+    contract?.registration?.heldout_corpus_path !== loaded.registration.heldout.corpusPath ||
+    contract?.registration?.heldout_corpus_sha256 !== loaded.corpusSha256
+  ) {
+    throw new Error('semantic validation endpoint registration, instrument, or heldout binding drifted');
+  }
   const blindedCases = buildTutorStubResistanceSemanticBlindedValidationCases(loaded.corpus.cases);
   const preflight = runPaidStudyEndpointPreflight({
     contract,
@@ -433,7 +454,9 @@ export function runTutorStubResistanceSemanticValidationPreflight({ contract }) 
       hard_validation_reservations: 480,
       programme_ledger_before: 331,
       programme_ledger_after_maximum: 811,
-      confirmation_maximum_only_after_validation_pass: 4051,
+      outcome_validation_hard_reservations: 720,
+      confirmation_hard_reservations: 3456,
+      staged_maximum_only_after_both_validations_pass: 4987,
       live_heldout_accuracy_agreement_and_coverage_gates: 'pending_live_validation',
       model_calls: 0,
       production_writes: 0,

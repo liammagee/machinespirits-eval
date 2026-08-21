@@ -73,7 +73,7 @@ test('validation registration fails closed on governance, budget, no-selection, 
   assert.equal(validate().valid, true);
   for (const mutate of [
     (value) => (value.heldout.authorCommit = '0'.repeat(40)),
-    (value) => (value.executionReadiness.futureConfirmationMaximumOnlyAfterValidationPass = 4050),
+    (value) => (value.executionReadiness.futureStagedMaximumOnlyAfterBothValidationsPass = 4986),
     (value) => (value.executionPolicy.validCaseRerun = true),
     (value) => (value.authorization.standingArchitecturalCorrectionSha256 = '0'.repeat(64)),
     (value) => (value.claimBoundary.validationOutcomesExcludedFromConfirmation = false),
@@ -116,7 +116,13 @@ test('validation endpoint preflight proves only zero-call wiring and retains pen
   assert.equal(certificateValidation.ok, true, certificateValidation.errors.join('; '));
   assert.equal(
     sha256('config/tutor-stub-resistance-semantic-adjudication-registration.v1.json'),
-    '3ca5c34fefe5aa2eca1f2e49cd6ca59d64261cadd505de26f508fbfe650b926a',
+    'd479a556df2f61458546e9e1463dc11fa1261b74df91fe4b765d159c330f415d',
+  );
+  const drifted = structuredClone(contract);
+  drifted.registration.registration_sha256 = '0'.repeat(64);
+  assert.throws(
+    () => runTutorStubResistanceSemanticValidationPreflight({ contract: drifted }),
+    /endpoint registration, instrument, or heldout binding drifted/u,
   );
 });
 
@@ -127,6 +133,10 @@ test('V8 confirmation readiness is loadable but cannot become an executable conf
   assert.equal(loaded.registration.version, 8);
   assert.equal(loaded.registration.semanticAdjudication.validationReportPath, null);
   assert.equal(loaded.registration.semanticAdjudication.validationReportSha256, null);
+  assert.equal(loaded.registration.outcomeSemanticAdjudication.validationReportPath, null);
+  assert.equal(loaded.registration.outcomeSemanticAdjudication.heldoutCorpusPath, null);
+  assert.equal(loaded.registration.executionReadiness.combinedMaximumModelAttemptReservations, 3456);
+  assert.equal(loaded.registration.executionReadiness.programmeLedgerAfterMaximum.reservedAttempts, 4987);
   assert.throws(
     () => buildTutorStubResistanceActionRegisterConfirmationPlan({ registration: loaded.registration }),
     /requires a registered V3, V4, V5, V6, or V7/u,
@@ -144,7 +154,11 @@ test('V8 confirmation readiness is loadable but cannot become an executable conf
       (value) => (value.preservation.stoppedConfirmationV1.reused = true),
       (value) => (value.preservation.stoppedConfirmationV3.traceSha256.s1 = '0'.repeat(64)),
       (value) => (value.preservation.stoppedConfirmationV4.pooled = true),
+      (value) => (value.preservation.stoppedConfirmationV7.traceSha256.s2 = '0'.repeat(64)),
       (value) => (value.semanticAdjudication.validationReportPath = 'results/forged.json'),
+      (value) => (value.outcomeSemanticAdjudication.instrumentRegistrationSha256 = '0'.repeat(64)),
+      (value) => (value.outcomeSemanticAdjudication.validationReportPath = 'results/forged-outcome.json'),
+      (value) => (value.executionReadiness.stagedValidationBudget.outcomeValidationHardReservations = 719),
       (value) => (value.executionReadiness.programmeLedgerAfterMaximum.role = 'observed'),
     ]) {
       const changed = structuredClone(registration);

@@ -120,26 +120,23 @@ test('checkpointed validation executes 80 opaque cases, seals 160 responses, and
   assert.equal(report.cases.length, 80);
   assert.ok(report.cases.every((row) => row.case_id && row.execution_case_id.startsWith('sv-')));
   assert.throws(() => analyze(destination), /file set is not exact|analysis already exists/u);
-  await assert.rejects(
-    run(destination, { resume: true, callModel: fixtureCaller([]) }),
-    /sealed or analyzed semantic validation cannot be resumed/u,
-  );
-  assert.throws(
-    () =>
-      writeTutorStubResistanceSemanticValidationReport({
-        destination,
-        expectedSourceCommit: SOURCE_COMMIT,
-        expectedSourceTree: SOURCE_TREE,
-        expectedGoRequestPath: GO_REQUEST_PATH,
-        expectedGoRequestSha256: GO_REQUEST_SHA256,
-        sourceDirty: false,
-        archiveDir: path.join(path.dirname(destination), 'private-archive'),
-      }),
-    /create-once/u,
-  );
+  const resumedCalls = [];
+  const resumed = await run(destination, { resume: true, callModel: fixtureCaller(resumedCalls) });
+  assert.equal(resumedCalls.length, 0);
+  assert.deepEqual(resumed.seal, seal);
+  const reconciledReport = writeTutorStubResistanceSemanticValidationReport({
+    destination,
+    expectedSourceCommit: SOURCE_COMMIT,
+    expectedSourceTree: SOURCE_TREE,
+    expectedGoRequestPath: GO_REQUEST_PATH,
+    expectedGoRequestSha256: GO_REQUEST_SHA256,
+    sourceDirty: false,
+    archiveDir: path.join(path.dirname(destination), 'private-archive'),
+  });
+  assert.deepEqual(reconciledReport, report);
 });
 
-test('resume after one preserved response never recalls that case and seals it indeterminate', async (t) => {
+test('resume after one preserved response calls only the never-started second judge', async (t) => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-partial-'));
   const destination = path.join(temporary, 'run');
   t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
@@ -160,15 +157,16 @@ test('resume after one preserved response never recalls that case and seals it i
     resume: true,
     callModel: fixtureCaller(resumedCalls),
   });
-  assert.equal(resumedCalls.filter((row) => row.caseId === preservedCaseId).length, 0);
-  assert.equal(resumedCalls.length, 158);
-  assert.equal(seal.judge_results, 159);
-  assert.equal(seal.reservations, 159);
+  assert.equal(resumedCalls.filter((row) => row.caseId === preservedCaseId).length, 1);
+  assert.notEqual(resumedCalls.find((row) => row.caseId === preservedCaseId).judgeId, firstCalls[0].judgeId);
+  assert.equal(resumedCalls.length, 159);
+  assert.equal(seal.judge_results, 160);
+  assert.equal(seal.reservations, 160);
   const report = analyze(destination);
-  assert.equal(report.status, 'failed');
+  assert.equal(report.status, 'passed');
   const partial = report.cases.find((row) => row.execution_case_id === preservedCaseId);
-  assert.equal(partial.status, 'measurement_indeterminate');
-  assert.equal(partial.judge_results, 1);
+  assert.equal(partial.status, 'determinate');
+  assert.equal(partial.judge_results, 2);
 });
 
 test('resume after a prepared but undispatched attempt may fill the case without selecting outcomes', async (t) => {
@@ -218,6 +216,54 @@ test('resume reconciles a byte-identical durable-archive orphan without recallin
   assert.equal(analyze(destination).status, 'passed');
 });
 
+test('resume reconciles a local prepared checkpoint before dispatching it once', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-local-prepared-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  let interrupted = false;
+  await assert.rejects(
+    run(destination, {
+      callModel: fixtureCaller([]),
+      afterLocalCheckpointWrite: ({ stage }) => {
+        if (stage === 'checkpoint_prepared' && !interrupted) {
+          interrupted = true;
+          throw new Error('simulated local prepared to archive crash');
+        }
+      },
+    }),
+    /simulated local prepared to archive crash/u,
+  );
+  const resumedCalls = [];
+  const { seal } = await run(destination, { resume: true, callModel: fixtureCaller(resumedCalls) });
+  assert.equal(resumedCalls.length, 160);
+  assert.equal(seal.reservations, 160);
+  assert.equal(analyze(destination).status, 'passed');
+});
+
+test('resume reconciles a local dispatched checkpoint without recalling the ambiguous judge', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-local-dispatched-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  let interrupted = false;
+  await assert.rejects(
+    run(destination, {
+      callModel: fixtureCaller([]),
+      afterLocalCheckpointWrite: ({ stage }) => {
+        if (stage === 'checkpoint_dispatched' && !interrupted) {
+          interrupted = true;
+          throw new Error('simulated local dispatched to archive crash');
+        }
+      },
+    }),
+    /simulated local dispatched to archive crash/u,
+  );
+  const resumedCalls = [];
+  const { seal } = await run(destination, { resume: true, callModel: fixtureCaller(resumedCalls) });
+  assert.equal(resumedCalls.length, 158);
+  assert.equal(seal.judge_results, 159);
+  assert.equal(analyze(destination).status, 'failed');
+});
+
 test('resume after a dispatched attempt with no checkpointed response never recalls the ambiguous judge', async (t) => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-dispatched-'));
   const destination = path.join(temporary, 'run');
@@ -242,6 +288,119 @@ test('resume after a dispatched attempt with no checkpointed response never reca
   assert.equal(report.status, 'failed');
   const ambiguous = report.cases.find((row) => row.reservations === 1 && row.judge_results === 1);
   assert.equal(ambiguous.status, 'measurement_indeterminate');
+});
+
+test('resume after Judge A and an ambiguous Judge B dispatch never recalls either judge', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-second-dispatched-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const loaded = loadTutorStubResistanceSemanticValidation();
+  const secondJudgeId = loaded.instrument.registration.measurement.judges[1].id;
+  const firstCalls = [];
+  await assert.rejects(
+    run(destination, {
+      callModel: fixtureCaller(firstCalls),
+      afterDispatchCheckpoint: ({ judgeId }) => {
+        if (judgeId === secondJudgeId) throw new Error('simulated ambiguous second-judge dispatch');
+      },
+    }),
+    /simulated ambiguous second-judge dispatch/u,
+  );
+  assert.equal(firstCalls.length, 1);
+  const preservedCaseId = firstCalls[0].caseId;
+  const resumedCalls = [];
+  const { seal } = await run(destination, { resume: true, callModel: fixtureCaller(resumedCalls) });
+  assert.equal(resumedCalls.filter((row) => row.caseId === preservedCaseId).length, 0);
+  assert.equal(resumedCalls.length, 158);
+  assert.equal(seal.judge_results, 160);
+  assert.equal(seal.reservations, 160);
+  const report = analyze(destination);
+  assert.equal(report.status, 'failed');
+  const ambiguous = report.cases.find((row) => row.execution_case_id === preservedCaseId);
+  assert.equal(ambiguous.status, 'measurement_indeterminate');
+  assert.equal(ambiguous.judge_results, 2);
+});
+
+test('seal publication reconciles local-only and entry-only crash boundaries without model recall', async (t) => {
+  for (const crashStage of ['local', 'archive']) {
+    const temporary = fs.mkdtempSync(path.join(os.tmpdir(), `semantic-validation-seal-${crashStage}-`));
+    const destination = path.join(temporary, 'run');
+    t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+    const calls = [];
+    let interrupted = false;
+    await assert.rejects(
+      run(destination, {
+        callModel: fixtureCaller(calls),
+        afterSealLocalWrite:
+          crashStage === 'local'
+            ? () => {
+                throw new Error('simulated seal local to archive crash');
+              }
+            : null,
+        afterArchiveEntryWrite:
+          crashStage === 'archive'
+            ? ({ stage }) => {
+                if (stage === 'seal' && !interrupted) {
+                  interrupted = true;
+                  throw new Error('simulated seal entry to manifest crash');
+                }
+              }
+            : null,
+      }),
+      /simulated seal/u,
+    );
+    assert.equal(calls.length, 160);
+    const resumedCalls = [];
+    const { seal } = await run(destination, { resume: true, callModel: fixtureCaller(resumedCalls) });
+    assert.equal(resumedCalls.length, 0);
+    assert.equal(seal.judge_results, 160);
+    assert.equal(analyze(destination).status, 'passed');
+  }
+});
+
+test('report publication reconciles local-only and entry-only crash boundaries without recomputation drift', async (t) => {
+  for (const crashStage of ['local', 'archive']) {
+    const temporary = fs.mkdtempSync(path.join(os.tmpdir(), `semantic-validation-report-${crashStage}-`));
+    const destination = path.join(temporary, 'run');
+    t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+    await run(destination, { callModel: fixtureCaller([]) });
+    let interrupted = false;
+    const reportOptions = {
+      destination,
+      expectedSourceCommit: SOURCE_COMMIT,
+      expectedSourceTree: SOURCE_TREE,
+      expectedGoRequestPath: GO_REQUEST_PATH,
+      expectedGoRequestSha256: GO_REQUEST_SHA256,
+      sourceDirty: false,
+      archiveDir: path.join(path.dirname(destination), 'private-archive'),
+    };
+    assert.throws(
+      () =>
+        writeTutorStubResistanceSemanticValidationReport({
+          ...reportOptions,
+          afterReportLocalWrite:
+            crashStage === 'local'
+              ? () => {
+                  throw new Error('simulated report local to archive crash');
+                }
+              : null,
+          afterArchiveEntryWrite:
+            crashStage === 'archive'
+              ? ({ stage }) => {
+                  if (stage === 'report' && !interrupted) {
+                    interrupted = true;
+                    throw new Error('simulated report entry to manifest crash');
+                  }
+                }
+              : null,
+        }),
+      /simulated report/u,
+    );
+    const before = fs.readFileSync(path.join(destination, 'report.json'));
+    const report = writeTutorStubResistanceSemanticValidationReport(reportOptions);
+    assert.equal(report.status, 'passed');
+    assert.ok(fs.readFileSync(path.join(destination, 'report.json')).equals(before));
+  }
 });
 
 test('analysis requires the external source binding and rejects alternate case artifacts', async (t) => {

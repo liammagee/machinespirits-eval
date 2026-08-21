@@ -182,9 +182,10 @@ function checkpointFile(destination, caseId) {
   return path.join(caseDirectory(destination, caseId), 'checkpoint.json');
 }
 
-function persistCheckpoint({ destination, checkpoint, archive, stage }) {
+function persistCheckpoint({ destination, checkpoint, archive, stage, afterLocalCheckpointWrite = null }) {
   const logicalPath = `cases/${checkpoint.case_id}/checkpoint.json`;
   atomicWriteJson(checkpointFile(destination, checkpoint.case_id), checkpoint);
+  afterLocalCheckpointWrite?.({ stage, logicalPath, checkpoint });
   archive.append(stage, logicalPath, checkpoint);
 }
 
@@ -422,6 +423,7 @@ async function executeJudge({
   waitForRetry,
   afterPreparedCheckpoint,
   afterDispatchCheckpoint,
+  afterLocalCheckpointWrite,
   archive,
 }) {
   const resolved = resolveModelRef(judge.modelRef);
@@ -458,11 +460,23 @@ async function executeJudge({
     if (!prepared) {
       result.attempts.push({ attempt: result.attempts.length + 1, status: 'prepared_not_dispatched' });
       checkpoint.status = 'judge_in_flight';
-      persistCheckpoint({ destination, checkpoint, archive, stage: 'checkpoint_prepared' });
+      persistCheckpoint({
+        destination,
+        checkpoint,
+        archive,
+        stage: 'checkpoint_prepared',
+        afterLocalCheckpointWrite,
+      });
       await afterPreparedCheckpoint?.({ caseId: corpusCase.case_id, judgeId: judge.id });
     }
     result.attempts.at(-1).status = 'dispatched';
-    persistCheckpoint({ destination, checkpoint, archive, stage: 'checkpoint_dispatched' });
+    persistCheckpoint({
+      destination,
+      checkpoint,
+      archive,
+      stage: 'checkpoint_dispatched',
+      afterLocalCheckpointWrite,
+    });
     await afterDispatchCheckpoint?.({ caseId: corpusCase.case_id, judgeId: judge.id });
     try {
       const bridgeResult = await callModel(
@@ -512,7 +526,42 @@ async function executeJudge({
         : result.outcome === 'invalid_return'
           ? 'checkpoint_invalid'
           : 'checkpoint_transport_failed',
+    afterLocalCheckpointWrite,
   });
+}
+
+function buildValidationSeal({ destination, plan }) {
+  const checkpoints = loadExistingCheckpoints(
+    destination,
+    plan.cases.map((row) => row.case_id),
+  );
+  if (checkpoints.length !== 80 || checkpoints.some((checkpoint) => checkpoint.status !== 'sealed')) {
+    throw new Error('semantic validation cannot seal before all 80 cases are sealed');
+  }
+  return {
+    schema: TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_SEAL_SCHEMA,
+    plan_sha256: plan.plan_sha256,
+    cases: 80,
+    judge_results: checkpoints.reduce((sum, checkpoint) => sum + checkpoint.judge_results.length, 0),
+    reservations: attemptCount(checkpoints),
+    case_checkpoint_sha256: Object.fromEntries(
+      checkpoints.map((checkpoint) => [checkpoint.case_id, canonicalSha256(checkpoint)]),
+    ),
+    gold_joined: false,
+  };
+}
+
+function createOrVerifyExactJson(file, value, label) {
+  const expected = jsonBytes(value);
+  if (!fs.existsSync(file)) {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, expected, { flag: 'wx' });
+    return 'created';
+  }
+  if (!fs.readFileSync(file).equals(expected)) {
+    throw new Error(`${label} exists with noncanonical bytes`);
+  }
+  return 'verified';
 }
 
 export async function runTutorStubResistanceSemanticValidation({
@@ -529,6 +578,8 @@ export async function runTutorStubResistanceSemanticValidation({
   afterDispatchCheckpoint = null,
   afterJudgeCheckpoint = null,
   afterArchiveEntryWrite = null,
+  afterLocalCheckpointWrite = null,
+  afterSealLocalWrite = null,
   sourceDirty,
   archiveDir,
 }) {
@@ -556,9 +607,6 @@ export async function runTutorStubResistanceSemanticValidation({
     archive = openValidationArchive({ archiveDir, plan, afterArchiveEntryWrite });
     archive.append('plan', 'plan.json', plan);
   } else {
-    if (fs.existsSync(sealPath) || fs.existsSync(reportPath)) {
-      throw new Error('sealed or analyzed semantic validation cannot be resumed');
-    }
     if (!fs.existsSync(planPath)) throw new Error('semantic validation resume requires the original plan');
     const planValidation = validateTutorStubResistanceSemanticValidationPlan({
       plan: readJson(planPath),
@@ -566,6 +614,17 @@ export async function runTutorStubResistanceSemanticValidation({
     });
     if (!planValidation.valid) throw new Error(planValidation.issues.join('; '));
     archive = openValidationArchive({ archiveDir, plan, resume: true, afterArchiveEntryWrite });
+    if (fs.existsSync(sealPath)) {
+      const seal = buildValidationSeal({ destination, plan });
+      createOrVerifyExactJson(sealPath, seal, 'semantic validation seal');
+      archive.append('seal', 'seal.json', seal);
+      const archiveVerification = archive.verify();
+      if (!archiveVerification.valid) throw new Error(archiveVerification.issues.join('; '));
+      return { plan, seal };
+    }
+    if (fs.existsSync(reportPath)) {
+      throw new Error('semantic validation report exists without its required seal');
+    }
   }
   for (const blindedCase of blindedCases) {
     const corpusCase = tutorStubResistanceSemanticCorpusCaseForExecutionId(loaded.corpus.cases, blindedCase.case_id);
@@ -575,7 +634,13 @@ export async function runTutorStubResistanceSemanticValidation({
       ? readJson(file)
       : newCheckpoint({ plan, corpusCase, executionCaseId: blindedCase.case_id });
     if (!fs.existsSync(file)) {
-      persistCheckpoint({ destination, checkpoint, archive, stage: 'checkpoint_initialized' });
+      persistCheckpoint({
+        destination,
+        checkpoint,
+        archive,
+        stage: 'checkpoint_initialized',
+        afterLocalCheckpointWrite,
+      });
     } else {
       archive.append(checkpointArchiveStage(checkpoint), `cases/${checkpoint.case_id}/checkpoint.json`, checkpoint);
     }
@@ -621,10 +686,11 @@ export async function runTutorStubResistanceSemanticValidation({
         checkpoint,
         archive,
         stage: 'checkpoint_dispatch_ambiguous_sealed',
+        afterLocalCheckpointWrite,
       });
       continue;
     }
-    if (checkpoint.judge_results.length > 0) {
+    if (checkpoint.judge_results.some((row) => row.outcome !== 'recorded_response')) {
       checkpoint = finalizeCheckpoint({
         checkpoint,
         corpusCase: { ...corpusCase, case_id: blindedCase.case_id },
@@ -632,10 +698,17 @@ export async function runTutorStubResistanceSemanticValidation({
         prompts,
         resumedPartial: true,
       });
-      persistCheckpoint({ destination, checkpoint, archive, stage: 'checkpoint_partial_sealed' });
+      persistCheckpoint({
+        destination,
+        checkpoint,
+        archive,
+        stage: 'checkpoint_partial_sealed',
+        afterLocalCheckpointWrite,
+      });
       continue;
     }
     for (const judge of loaded.instrument.registration.measurement.judges) {
+      if (checkpoint.judge_results.some((row) => row.judge_id === judge.id)) continue;
       await executeJudge({
         destination,
         plan,
@@ -648,6 +721,7 @@ export async function runTutorStubResistanceSemanticValidation({
         waitForRetry,
         afterPreparedCheckpoint,
         afterDispatchCheckpoint,
+        afterLocalCheckpointWrite,
         archive,
       });
       await afterJudgeCheckpoint?.({ caseId: blindedCase.case_id, judgeId: judge.id });
@@ -658,27 +732,17 @@ export async function runTutorStubResistanceSemanticValidation({
       loaded,
       prompts,
     });
-    persistCheckpoint({ destination, checkpoint, archive, stage: 'checkpoint_sealed' });
+    persistCheckpoint({
+      destination,
+      checkpoint,
+      archive,
+      stage: 'checkpoint_sealed',
+      afterLocalCheckpointWrite,
+    });
   }
-  const checkpoints = loadExistingCheckpoints(
-    destination,
-    plan.cases.map((row) => row.case_id),
-  );
-  if (checkpoints.length !== 80 || checkpoints.some((checkpoint) => checkpoint.status !== 'sealed')) {
-    throw new Error('semantic validation cannot seal before all 80 cases are sealed');
-  }
-  const seal = {
-    schema: TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_SEAL_SCHEMA,
-    plan_sha256: plan.plan_sha256,
-    cases: 80,
-    judge_results: checkpoints.reduce((sum, checkpoint) => sum + checkpoint.judge_results.length, 0),
-    reservations: attemptCount(checkpoints),
-    case_checkpoint_sha256: Object.fromEntries(
-      checkpoints.map((checkpoint) => [checkpoint.case_id, canonicalSha256(checkpoint)]),
-    ),
-    gold_joined: false,
-  };
-  createJson(sealPath, seal);
+  const seal = buildValidationSeal({ destination, plan });
+  createOrVerifyExactJson(sealPath, seal, 'semantic validation seal');
+  afterSealLocalWrite?.({ sealPath, seal });
   archive.append('seal', 'seal.json', seal);
   const archiveVerification = archive.verify();
   if (!archiveVerification.valid) throw new Error(archiveVerification.issues.join('; '));
@@ -730,6 +794,7 @@ export function analyzeTutorStubResistanceSemanticValidation({
   expectedGoRequestSha256,
   sourceDirty,
   archiveDir,
+  allowExistingReport = false,
 }) {
   const loaded = loadTutorStubResistanceSemanticValidation();
   const plan = readJson(path.join(destination, 'plan.json'));
@@ -764,7 +829,10 @@ export function analyzeTutorStubResistanceSemanticValidation({
     throw new Error('semantic validation seal does not bind the registered plan');
   }
   const rootEntries = fs.readdirSync(destination).sort();
-  if (!exactJson(rootEntries, ['cases', 'plan.json', 'seal.json'])) {
+  const expectedRootEntries = allowExistingReport
+    ? ['cases', 'plan.json', 'report.json', 'seal.json']
+    : ['cases', 'plan.json', 'seal.json'];
+  if (!exactJson(rootEntries, expectedRootEntries)) {
     throw new Error('semantic validation root file set is not exact or analysis already exists');
   }
   const archive = openValidationArchive({ archiveDir, plan, resume: true });
@@ -980,11 +1048,19 @@ export function analyzeTutorStubResistanceSemanticValidation({
 
 export function writeTutorStubResistanceSemanticValidationReport(options) {
   const reportPath = path.join(options.destination, 'report.json');
-  if (fs.existsSync(reportPath)) throw new Error('semantic validation report is create-once');
-  const report = analyzeTutorStubResistanceSemanticValidation(options);
-  createJson(reportPath, report);
+  const report = analyzeTutorStubResistanceSemanticValidation({
+    ...options,
+    allowExistingReport: fs.existsSync(reportPath),
+  });
+  createOrVerifyExactJson(reportPath, report, 'semantic validation report');
+  options.afterReportLocalWrite?.({ reportPath, report });
   const plan = readJson(path.join(options.destination, 'plan.json'));
-  const archive = openValidationArchive({ archiveDir: options.archiveDir, plan, resume: true });
+  const archive = openValidationArchive({
+    archiveDir: options.archiveDir,
+    plan,
+    resume: true,
+    afterArchiveEntryWrite: options.afterArchiveEntryWrite,
+  });
   archive.append('report', 'report.json', report);
   const archiveVerification = archive.verify();
   if (!archiveVerification.valid) throw new Error(archiveVerification.issues.join('; '));

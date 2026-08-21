@@ -25,6 +25,7 @@ const SUPPORTED_ACTION_REGISTER_CONFIRMATION_OPERATIONAL_CEILING =
 const SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR = 'prospective_frame_refuser_warm_plain_confirmation_v4';
 const SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR_V7 =
   'prospective_frame_refuser_warm_plain_confirmation_v5';
+const SUPPORTED_RESISTANCE_SEMANTIC_VALIDATION = 'prospective_resistance_semantic_adjudication_heldout_validation_v1';
 
 function isSupportedActionRegisterConfirmation(value) {
   return [
@@ -196,10 +197,11 @@ function requireHoldBoundary(template) {
     template.actionRegisterBaseline?.type !== SUPPORTED_ACTION_REGISTER_BASELINE &&
     template.actionRegisterBaselineAnalysis?.type !== SUPPORTED_ACTION_REGISTER_ANALYSIS_ONLY &&
     !isSupportedActionRegisterConfirmation(template.actionRegisterConfirmation?.type) &&
-    template.boredomActionRegisterProofDag?.type !== SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG
+    template.boredomActionRegisterProofDag?.type !== SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG &&
+    template.semanticAdjudicationValidation?.type !== SUPPORTED_RESISTANCE_SEMANTIC_VALIDATION
   ) {
     throw new Error(
-      'the packager supports only frame-refuser opportunity, action/register baseline, sealed analysis-only, frame-refuser confirmation, or boredom proof-DAG confirmation HOLD templates',
+      'the packager supports only frame-refuser opportunity, action/register baseline, sealed analysis-only, frame-refuser confirmation, boredom proof-DAG confirmation, or resistance semantic-validation HOLD templates',
     );
   }
   if (
@@ -209,6 +211,18 @@ function requireHoldBoundary(template) {
     template.authorization?.liveRunAuthorized !== false
   ) {
     throw new Error('template must remain a literal HOLD with no encoded human approval or execution authority');
+  }
+  if (
+    template.semanticAdjudicationValidation?.type === SUPPORTED_RESISTANCE_SEMANTIC_VALIDATION &&
+    (template.authorization?.standingArchitecturalCorrectionSha256 !==
+      'dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4' ||
+      template.authorization?.priorStandingAuthoritySha256 !==
+        '538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce' ||
+      template.authorization?.programmeCeilingAmendmentAuthorized !== undefined)
+  ) {
+    throw new Error(
+      'semantic-validation template must bind the architectural correction and prior authority without encoding a ceiling amendment',
+    );
   }
   if (
     [
@@ -283,6 +297,7 @@ function assertMaterializedStructure({
   certificate,
   routeResult,
   routeConsumption,
+  judgeRouteConfig,
   historicalRequest,
   priorConfirmationRequest,
   priorConfirmationV3Request,
@@ -324,29 +339,42 @@ function assertMaterializedStructure({
   assertComputedValue(endpoint?.certificateFileSha256, certificate.proof.sha256, 'endpoint certificate file digest');
   assertComputedValue(endpoint?.preflightSha256, certificate.value.preflight_sha256, 'endpoint preflight digest');
 
-  const route = request.bindings?.routeCanary;
-  assertComputedValue(route?.resultPath, routeResult.proof.path, 'route result path');
-  assertComputedValue(route?.resultSha256, routeResult.proof.sha256, 'route result digest');
-  assertComputedValue(
-    route?.authorizationConsumptionPath,
-    routeConsumption.path,
-    'route authorization consumption path',
-  );
-  assertComputedValue(
-    route?.authorizationConsumptionSha256,
-    routeConsumption.sha256,
-    'route authorization consumption digest',
-  );
-  for (const [field, expected] of [
-    ['sourceArtifactSha256', routeResult.value.sourceArtifactSha256],
-    ['executionHead', routeResult.value.executionHead],
-    ['observedProvider', routeResult.value.observed?.provider],
-    ['observedModel', routeResult.value.observed?.model],
-    ['observedEffort', routeResult.value.observed?.effort],
-    ['attestationBasis', routeResult.value.observed?.modelAttestationBasis],
-    ['modelIndependentlyAttested', routeResult.value.observed?.modelIndependentlyAttested],
-  ]) {
-    assertComputedValue(route?.[field], expected, `route ${field}`);
+  if (judgeRouteConfig) {
+    assertComputedValue(
+      request.bindings?.judgeRoutes?.providerConfigPath,
+      judgeRouteConfig.path,
+      'judge route provider config path',
+    );
+    assertComputedValue(
+      request.bindings?.judgeRoutes?.providerConfigSha256,
+      judgeRouteConfig.sha256,
+      'judge route provider config digest',
+    );
+  } else {
+    const route = request.bindings?.routeCanary;
+    assertComputedValue(route?.resultPath, routeResult.proof.path, 'route result path');
+    assertComputedValue(route?.resultSha256, routeResult.proof.sha256, 'route result digest');
+    assertComputedValue(
+      route?.authorizationConsumptionPath,
+      routeConsumption.path,
+      'route authorization consumption path',
+    );
+    assertComputedValue(
+      route?.authorizationConsumptionSha256,
+      routeConsumption.sha256,
+      'route authorization consumption digest',
+    );
+    for (const [field, expected] of [
+      ['sourceArtifactSha256', routeResult.value.sourceArtifactSha256],
+      ['executionHead', routeResult.value.executionHead],
+      ['observedProvider', routeResult.value.observed?.provider],
+      ['observedModel', routeResult.value.observed?.model],
+      ['observedEffort', routeResult.value.observed?.effort],
+      ['attestationBasis', routeResult.value.observed?.modelAttestationBasis],
+      ['modelIndependentlyAttested', routeResult.value.observed?.modelIndependentlyAttested],
+    ]) {
+      assertComputedValue(route?.[field], expected, `route ${field}`);
+    }
   }
 
   const historical = request.opportunityGate?.historicalOpportunityV1;
@@ -410,7 +438,8 @@ function assertMaterializedStructure({
   if (
     request.actionRegisterBaseline?.type === SUPPORTED_ACTION_REGISTER_BASELINE ||
     isSupportedActionRegisterConfirmation(request.actionRegisterConfirmation?.type) ||
-    request.boredomActionRegisterProofDag?.type === SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG
+    request.boredomActionRegisterProofDag?.type === SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG ||
+    request.semanticAdjudicationValidation?.type === SUPPORTED_RESISTANCE_SEMANTIC_VALIDATION
   ) {
     assertComputedValue(
       request.bindings?.commands?.recoveryArraySha256,
@@ -477,34 +506,59 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     replacements,
   );
 
-  const route = template.bindings?.routeCanary;
-  const routeResult = readLaunchJson(files, launchCommit, route?.resultPath, 'route result');
-  const routeConsumption = materializeRepoFile({
-    launchCommit,
-    repoPath: route?.authorizationConsumptionPath,
-    label: 'route authorization consumption',
-    files,
-  });
-  requireMarker(
-    templateText,
-    goRequestFileSha256Marker(routeResult.proof.path),
-    routeResult.proof.sha256,
-    replacements,
-  );
-  requireMarker(templateText, goRequestFileSha256Marker(routeConsumption.path), routeConsumption.sha256, replacements);
-  for (const [marker, value] of [
-    [GO_REQUEST_PACKAGE_MARKERS.routeSourceArtifactSha256, routeResult.value.sourceArtifactSha256],
-    [GO_REQUEST_PACKAGE_MARKERS.routeExecutionHead, routeResult.value.executionHead],
-    [GO_REQUEST_PACKAGE_MARKERS.routeProvider, routeResult.value.observed?.provider],
-    [GO_REQUEST_PACKAGE_MARKERS.routeModel, routeResult.value.observed?.model],
-    [GO_REQUEST_PACKAGE_MARKERS.routeEffort, routeResult.value.observed?.effort],
-    [GO_REQUEST_PACKAGE_MARKERS.routeAttestationBasis, routeResult.value.observed?.modelAttestationBasis],
-    [
-      GO_REQUEST_PACKAGE_MARKERS.routeModelIndependentlyAttested,
-      routeResult.value.observed?.modelIndependentlyAttested,
-    ],
-  ]) {
-    requireMarker(templateText, marker, value, replacements);
+  const isSemanticValidation =
+    template.semanticAdjudicationValidation?.type === SUPPORTED_RESISTANCE_SEMANTIC_VALIDATION;
+  let routeResult = null;
+  let routeConsumption = null;
+  let judgeRouteConfig = null;
+  if (isSemanticValidation) {
+    judgeRouteConfig = materializeRepoFile({
+      launchCommit,
+      repoPath: template.bindings?.judgeRoutes?.providerConfigPath,
+      label: 'semantic judge route provider config',
+      files,
+    });
+    requireMarker(
+      templateText,
+      goRequestFileSha256Marker(judgeRouteConfig.path),
+      judgeRouteConfig.sha256,
+      replacements,
+    );
+  } else {
+    const route = template.bindings?.routeCanary;
+    routeResult = readLaunchJson(files, launchCommit, route?.resultPath, 'route result');
+    routeConsumption = materializeRepoFile({
+      launchCommit,
+      repoPath: route?.authorizationConsumptionPath,
+      label: 'route authorization consumption',
+      files,
+    });
+    requireMarker(
+      templateText,
+      goRequestFileSha256Marker(routeResult.proof.path),
+      routeResult.proof.sha256,
+      replacements,
+    );
+    requireMarker(
+      templateText,
+      goRequestFileSha256Marker(routeConsumption.path),
+      routeConsumption.sha256,
+      replacements,
+    );
+    for (const [marker, value] of [
+      [GO_REQUEST_PACKAGE_MARKERS.routeSourceArtifactSha256, routeResult.value.sourceArtifactSha256],
+      [GO_REQUEST_PACKAGE_MARKERS.routeExecutionHead, routeResult.value.executionHead],
+      [GO_REQUEST_PACKAGE_MARKERS.routeProvider, routeResult.value.observed?.provider],
+      [GO_REQUEST_PACKAGE_MARKERS.routeModel, routeResult.value.observed?.model],
+      [GO_REQUEST_PACKAGE_MARKERS.routeEffort, routeResult.value.observed?.effort],
+      [GO_REQUEST_PACKAGE_MARKERS.routeAttestationBasis, routeResult.value.observed?.modelAttestationBasis],
+      [
+        GO_REQUEST_PACKAGE_MARKERS.routeModelIndependentlyAttested,
+        routeResult.value.observed?.modelIndependentlyAttested,
+      ],
+    ]) {
+      requireMarker(templateText, marker, value, replacements);
+    }
   }
 
   const historicalRequestPath =
@@ -653,7 +707,8 @@ function materializeTemplate({ templateText, template, launchCommit }) {
   const recoveryCommandSha256 =
     template.actionRegisterBaseline?.type === SUPPORTED_ACTION_REGISTER_BASELINE ||
     isSupportedActionRegisterConfirmation(template.actionRegisterConfirmation?.type) ||
-    template.boredomActionRegisterProofDag?.type === SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG
+    template.boredomActionRegisterProofDag?.type === SUPPORTED_BOREDOM_ACTION_REGISTER_PROOF_DAG ||
+    isSemanticValidation
       ? sha256(JSON.stringify(template.commands?.recovery))
       : null;
   const analyzeCommandSha256 = sha256(JSON.stringify(template.commands?.analyze));
@@ -677,6 +732,7 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     certificate,
     routeResult,
     routeConsumption,
+    judgeRouteConfig,
     historicalRequest,
     priorConfirmationRequest,
     priorConfirmationV3Request,
