@@ -13,6 +13,13 @@ import {
   runTutorStubResistanceSemanticValidationPreflight,
   validateTutorStubResistanceSemanticValidationRegistration,
 } from '../services/tutorStubResistanceSemanticValidation.js';
+import {
+  buildTutorStubResistanceSemanticBlindedValidationCasesV2,
+  buildTutorStubResistanceSemanticValidationPacketsV2,
+  loadTutorStubResistanceSemanticValidationV2,
+  runTutorStubResistanceSemanticValidationPreflightV2,
+  validateTutorStubResistanceSemanticValidationRegistrationV2,
+} from '../services/tutorStubResistanceSemanticValidationV2.js';
 import { validatePaidStudyEndpointGoCertificate } from '../services/paidStudyEndpointPreflight.js';
 import { buildTutorStubResistanceActionRegisterConfirmationPlan } from '../services/tutorStubResistanceActionRegisterConfirmation.js';
 import { loadTutorStubResistanceActionRegisterRegistration } from '../services/tutorStubResistanceActionRegisterStudy.js';
@@ -21,6 +28,9 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ENDPOINT = 'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v1.json';
 const CERTIFICATE =
   'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v1.endpoint-go.json';
+const ENDPOINT_V2 = 'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v2.json';
+const CERTIFICATE_V2 =
+  'config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v2.endpoint-go.json';
 const sha256 = (repoPath) =>
   crypto
     .createHash('sha256')
@@ -126,6 +136,77 @@ test('validation endpoint preflight proves only zero-call wiring and retains pen
   );
 });
 
+test('v2 independent heldout remains blind, collision-free, quote-only, and separately budgeted after failed v1', () => {
+  const loaded = loadTutorStubResistanceSemanticValidationV2();
+  assert.equal(loaded.corpusSha256, 'a52d10f60ceeeb9e1e92415c6add6d0dee4dbf69608053652ff9c23f08216535');
+  assert.equal(
+    loaded.registration.supersession.v1FailedReportSha256,
+    '008230526809a6aa2917b240c6a30af644f30184b89042825773b1b8040c5c74',
+  );
+  assert.equal(loaded.registration.supersession.v1FailedArchiveCommit, 'cf92081bd566948f4ea26d0ac5e67f8132ebeef8');
+  assert.equal(loaded.registration.executionReadiness.programmeLedgerBefore, 491);
+  assert.equal(loaded.registration.executionReadiness.programmeLedgerAfterMaximum, 971);
+  assert.equal(loaded.registration.executionReadiness.futureStagedMaximumOnlyAfterBothValidationsPass, 5147);
+  assert.equal(loaded.registration.executionReadiness.ceilingAmendmentRequiredBeforeConfirmation, true);
+  const cases = buildTutorStubResistanceSemanticBlindedValidationCasesV2(loaded.corpus.cases);
+  const packets = buildTutorStubResistanceSemanticValidationPacketsV2(cases);
+  assert.equal(cases.length, 80);
+  assert.ok(cases.every((row) => /^sv2-[0-9a-f]{32}$/u.test(row.case_id)));
+  assert.deepEqual(buildTutorStubResistanceSemanticBlindedValidationCasesV2(loaded.corpus.cases), cases);
+  const executionJson = JSON.stringify({ cases, packets });
+  for (const corpusCase of loaded.corpus.cases) assert.equal(executionJson.includes(corpusCase.case_id), false);
+  assert.equal(executionJson.includes('"expected"'), false);
+  assert.equal(executionJson.includes('evidence_spans'), false);
+  assert.equal(executionJson.includes('Do not calculate or return numeric offsets'), true);
+
+  const disclosedDevelopmentCorpora = [
+    'config/tutor-stub-resistance-semantic-adjudication-development-corpus.v1.json',
+    'config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json',
+  ].map((repoPath) => JSON.parse(fs.readFileSync(path.join(ROOT, repoPath), 'utf8')));
+  const validate = (registration = loaded.registration, corpus = loaded.corpus) =>
+    validateTutorStubResistanceSemanticValidationRegistrationV2({
+      registration,
+      instrument: loaded.instrument,
+      corpus,
+      corpusSha256: loaded.corpusSha256,
+      disclosedDevelopmentCorpora,
+    });
+  assert.equal(validate().valid, true);
+  for (const mutate of [
+    (value) => (value.supersession.v1ObservedAccounting.invalidJudgments = 90),
+    (value) => (value.supersession.v1FailedArchiveCommit = '0'.repeat(40)),
+    (value) => (value.heldout.authorCommit = '0'.repeat(40)),
+    (value) => (value.executionReadiness.programmeLedgerBefore = 331),
+    (value) => (value.executionReadiness.ceilingAmendmentRequiredBeforeConfirmation = false),
+    (value) => (value.executionPolicy.v1ValidationInputsOrOutputsReusable = true),
+    (value) => (value.authorization.confirmationAuthorized = true),
+  ]) {
+    const changed = structuredClone(loaded.registration);
+    mutate(changed);
+    assert.equal(validate(changed).valid, false);
+  }
+  const collision = structuredClone(loaded.corpus);
+  collision.cases[0].source = disclosedDevelopmentCorpora[1].cases[0].source;
+  assert.match(validate(loaded.registration, collision).issues.join('; '), /collides with disclosed v1/u);
+});
+
+test('v2 validation endpoint certifies zero-call quote-normalization wiring with live gates pending', () => {
+  const contract = JSON.parse(fs.readFileSync(path.join(ROOT, ENDPOINT_V2), 'utf8'));
+  const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, CERTIFICATE_V2), 'utf8'));
+  const preflight = runTutorStubResistanceSemanticValidationPreflightV2({ contract });
+  const validation = validatePaidStudyEndpointGoCertificate({ certificate, contract, preflight });
+  assert.equal(validation.ok, true, validation.errors.join('; '));
+  assert.equal(preflight.model_calls, 0);
+  assert.equal(preflight.production_writes, 0);
+  assert.equal(preflight.semantic_validation_readiness_audit.programme_ledger_before, 491);
+  assert.equal(preflight.semantic_validation_readiness_audit.programme_ledger_after_maximum, 971);
+  assert.equal(preflight.semantic_validation_readiness_audit.ceiling_amendment_required_before_confirmation, true);
+  assert.equal(
+    preflight.semantic_validation_readiness_audit.live_heldout_accuracy_agreement_and_coverage_gates,
+    'pending_live_validation',
+  );
+});
+
 test('V8 confirmation readiness is loadable but cannot become an executable confirmation before sealed validation', () => {
   const loaded = loadTutorStubResistanceActionRegisterRegistration(
     path.join(ROOT, 'config/tutor-stub-resistance-action-register-crossed-registration.v8.json'),
@@ -139,7 +220,9 @@ test('V8 confirmation readiness is loadable but cannot become an executable conf
     '16899134545d574203192ae2b1b6ff6671500fa24957f6d82015be5064c784c5',
   );
   assert.equal(loaded.registration.executionReadiness.combinedMaximumModelAttemptReservations, 3456);
-  assert.equal(loaded.registration.executionReadiness.programmeLedgerAfterMaximum.reservedAttempts, 4987);
+  assert.equal(loaded.registration.executionReadiness.programmeLedgerAfterMaximum.reservedAttempts, 5147);
+  assert.equal(loaded.registration.authorization.requiredCeilingAmendment.increase, 147);
+  assert.equal(loaded.registration.semanticAdjudication.failedV1Validation.reused, false);
   assert.throws(
     () => buildTutorStubResistanceActionRegisterConfirmationPlan({ registration: loaded.registration }),
     /requires a registered V3, V4, V5, V6, or V7/u,
@@ -159,11 +242,13 @@ test('V8 confirmation readiness is loadable but cannot become an executable conf
       (value) => (value.preservation.stoppedConfirmationV4.pooled = true),
       (value) => (value.preservation.stoppedConfirmationV7.traceSha256.s2 = '0'.repeat(64)),
       (value) => (value.semanticAdjudication.validationReportPath = 'results/forged.json'),
+      (value) => (value.semanticAdjudication.failedV1Validation.rescored = true),
       (value) => (value.outcomeSemanticAdjudication.instrumentRegistrationSha256 = '0'.repeat(64)),
       (value) => (value.outcomeSemanticAdjudication.validationReportPath = 'results/forged-outcome.json'),
       (value) => (value.authorization.requiredBeforeValidationModelCalls[0] = 'circular or drifted'),
       (value) => (value.authorization.requiredBeforeConfirmationModelCalls = []),
       (value) => (value.executionReadiness.stagedValidationBudget.outcomeValidationHardReservations = 719),
+      (value) => (value.authorization.requiredCeilingAmendment.authorized = true),
       (value) => (value.executionReadiness.programmeLedgerAfterMaximum.role = 'observed'),
     ]) {
       const changed = structuredClone(registration);

@@ -222,11 +222,11 @@ export function validateTutorStubResistanceRecoverySemanticValidationRegistratio
     readiness.plannedModelCalls !== 240 ||
     readiness.maximumReservationsPerPlannedCall !== 3 ||
     readiness.hardValidationReservations !== 720 ||
-    readiness.programmeObservedLedgerBeforeAnyValidation !== 331 ||
-    readiness.programmeMaximumAfterManipulationValidation !== 811 ||
-    readiness.programmeMaximumAfterBothValidations !== 1531 ||
+    readiness.programmeObservedLedgerBeforeAnyValidation !== 491 ||
+    readiness.programmeMaximumAfterManipulationValidation !== 971 ||
+    readiness.programmeMaximumAfterBothValidations !== 1691 ||
     readiness.futureConfirmationHardReservations !== 3456 ||
-    readiness.futureStagedMaximumOnlyAfterBothValidationsPass !== 4987 ||
+    readiness.futureStagedMaximumOnlyAfterBothValidationsPass !== 5147 ||
     readiness.programmeCeiling !== 5000 ||
     readiness.liveExecutorStatus !== 'zero_call_ready_pending_digest_bound_go_request_and_model_authority'
   ) {

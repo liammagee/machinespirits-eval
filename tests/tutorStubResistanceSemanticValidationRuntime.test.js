@@ -5,10 +5,15 @@ import path from 'node:path';
 import test from 'node:test';
 
 import { buildTutorStubResistanceSemanticZeroCallFixtureResponse } from '../services/tutorStubResistanceSemanticAdjudication.js';
+import { buildTutorStubResistanceSemanticZeroCallFixtureResponseV2 } from '../services/tutorStubResistanceSemanticAdjudicationV2.js';
 import {
   loadTutorStubResistanceSemanticValidation,
   tutorStubResistanceSemanticOpaqueCaseId,
 } from '../services/tutorStubResistanceSemanticValidation.js';
+import {
+  loadTutorStubResistanceSemanticValidationV2,
+  tutorStubResistanceSemanticOpaqueCaseIdV2,
+} from '../services/tutorStubResistanceSemanticValidationV2.js';
 import {
   analyzeTutorStubResistanceSemanticValidation,
   runTutorStubResistanceSemanticValidation,
@@ -101,6 +106,90 @@ function run(destination, options = {}) {
     ...options,
   });
 }
+
+function fixtureCallerV2(calls, loaded) {
+  return async (agentConfig, systemPrompt, userPrompt, role, options) => {
+    const prompt = JSON.parse(userPrompt);
+    const corpusCase = loaded.corpus.cases.find(
+      (row) => tutorStubResistanceSemanticOpaqueCaseIdV2(row) === prompt.case_id,
+    );
+    const judge = loaded.instrument.registration.measurement.judges.find(
+      (row) => role === `tutor_stub_resistance_semantic_${row.id}`,
+    );
+    assert.ok(corpusCase);
+    assert.ok(judge);
+    assert.equal(agentConfig.provider, judge.provider);
+    assert.equal(agentConfig.model, judge.model);
+    assert.equal(options.effort, 'low');
+    assert.equal(userPrompt.includes(corpusCase.case_id), false);
+    const fixture = buildTutorStubResistanceSemanticZeroCallFixtureResponseV2({
+      corpusCase: { ...corpusCase, case_id: prompt.case_id },
+      judge,
+    });
+    calls.push({ caseId: prompt.case_id, judgeId: judge.id });
+    return {
+      text: JSON.stringify(fixture.modelOutput),
+      provider: judge.provider,
+      model: judge.model,
+      effort: judge.effort,
+      structuredOutput: true,
+      prohibitedToolEventCount: 0,
+      modelAttestationBasis: judge.modelAttestationBasis,
+      modelIndependentlyAttested: false,
+    };
+  };
+}
+
+test('additive v2 validation uses quote-only responses under the same checkpointed no-recall runtime', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-v2-'));
+  const destination = path.join(temporary, 'run');
+  const archiveDir = path.join(temporary, 'private-archive');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  fs.mkdirSync(archiveDir, { recursive: true });
+  const loaded = loadTutorStubResistanceSemanticValidationV2();
+  const calls = [];
+  const { seal } = await runTutorStubResistanceSemanticValidation({
+    destination,
+    sourceCommit: SOURCE_COMMIT,
+    sourceTree: SOURCE_TREE,
+    goRequestPath: GO_REQUEST_PATH,
+    goRequestSha256: GO_REQUEST_SHA256,
+    sourceDirty: false,
+    archiveDir,
+    loaded,
+    waitForRetry: async () => {},
+    resolveModelRef: (modelRef) => {
+      const judge = loaded.instrument.registration.measurement.judges.find((row) => row.modelRef === modelRef);
+      return { provider: judge.provider, model: judge.model };
+    },
+    callModel: fixtureCallerV2(calls, loaded),
+  });
+  assert.equal(calls.length, 160);
+  assert.equal(seal.reservations, 160);
+  const checkpoint = JSON.parse(
+    fs.readFileSync(
+      path.join(destination, 'cases', Object.keys(seal.case_checkpoint_sha256)[0], 'checkpoint.json'),
+      'utf8',
+    ),
+  );
+  assert.ok(
+    checkpoint.judge_results.every(
+      (row) => row.record.schema === 'machinespirits.tutor-stub.resistance-semantic-adjudication-record.v2',
+    ),
+  );
+  const report = writeTutorStubResistanceSemanticValidationReport({
+    destination,
+    expectedSourceCommit: SOURCE_COMMIT,
+    expectedSourceTree: SOURCE_TREE,
+    expectedGoRequestPath: GO_REQUEST_PATH,
+    expectedGoRequestSha256: GO_REQUEST_SHA256,
+    sourceDirty: false,
+    archiveDir,
+    loaded,
+  });
+  assert.equal(report.status, 'passed');
+  assert.ok(report.cases.every((row) => row.execution_case_id.startsWith('sv2-')));
+});
 
 test('checkpointed validation executes 80 opaque cases, seals 160 responses, and joins gold only in analysis', async (t) => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-'));

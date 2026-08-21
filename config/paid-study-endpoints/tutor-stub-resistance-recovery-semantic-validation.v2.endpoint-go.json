@@ -3,10 +3,10 @@
   "status": "endpoint_runtime_go",
   "study_id": "tutor-stub-resistance-recovery-semantic-heldout-validation-v2",
   "contract_path": "config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v2.json",
-  "contract_sha256": "8f9efd74ed4115cfeee975d91231a75cdb9973f63e622ecea21b64e5280be90c",
-  "preflight_sha256": "cc96cf650ccfbfe227aa80a47f2d808f830875e0a88d6b493a140c3d4594f5bd",
+  "contract_sha256": "129113e20bb2bb5cddfb4d68b24d8b231775770363e8c6cf7a156c47e2b1f00c",
+  "preflight_sha256": "9173ff52153be505e6aded0b3dc330946ea7872d91bbf3dd867522017a77ec68",
   "preflight_status": "passed_zero_call_wiring_only_not_accuracy_evidence",
   "model_calls": 0,
   "production_writes": 0,
-  "claim_boundary": "This certificate proves only deterministic corrected-v2 outcome-instrument endpoint, blind complete-public-horizon packet, full-vector metric, checkpoint/archive, and budget wiring. It does not establish heldout accuracy, authorize 240 judge calls, authorize confirmation, or establish any warm/plain or efficacy result."
+  "claim_boundary": "This certificate proves only deterministic corrected-v2 outcome-instrument endpoint, blind complete-public-horizon packet, full-vector metric, checkpoint/archive, and staged-budget wiring. It does not establish heldout accuracy, authorize 240 judge calls, authorize the required programme-ceiling amendment, authorize confirmation, or establish any warm/plain or efficacy result."
 }

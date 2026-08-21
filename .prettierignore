@@ -39,5 +39,6 @@ services/tutorStubTutorTerminalRuntime.js
 # Independently authored semantic-validation heldouts. Registrations and GO
 # validators bind these exact bytes, so formatting would invalidate the freeze.
 config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json
+config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v2.json
 config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v1.json
 config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v2.json

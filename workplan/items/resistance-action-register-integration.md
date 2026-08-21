@@ -11,10 +11,12 @@ updated: 2026-08-20
 verification: >-
   The lexical-observer programme remains closed exactly as recorded, but the
   user has reopened the scientific question through an additive independent
-  semantic-measurement architecture. Zero-call manipulation and outcome
-  instruments and both independent heldout corpora are frozen; their blinded
-  validation runners are zero-call ready, all historical outputs stay excluded,
-  and no model call or confirmation request is authorized.
+  semantic-measurement architecture. Manipulation semantic validation v1 is a
+  sealed failed result and is never rescored; the additive manipulation v2
+  instrument and independently authored heldout are frozen and zero-call
+  request-ready, while the separate outcome instrument and heldout remain
+  frozen. All historical outputs stay excluded, and no v2 validation, outcome
+  validation, or confirmation model call is authorized.
 claim_status: methods
 links:
   items:
@@ -109,6 +111,15 @@ links:
     - config/tutor-stub-resistance-semantic-adjudication-registration.v1.json
     - config/tutor-stub-resistance-semantic-adjudication-validation-registration.v1.json
     - config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json
+    - services/tutorStubResistanceSemanticAdjudicationV2.js
+    - services/tutorStubResistanceSemanticValidationV2.js
+    - config/tutor-stub-resistance-semantic-adjudication-registration.v2.json
+    - config/tutor-stub-resistance-semantic-adjudication-response.schema.v2.json
+    - config/tutor-stub-resistance-semantic-adjudication-development-evidence.v2.json
+    - config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v2.json
+    - config/tutor-stub-resistance-semantic-adjudication-validation-registration.v2.json
+    - config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v2.json
+    - config/paid-study-endpoints/tutor-stub-resistance-semantic-adjudication-validation.v2.endpoint-go.json
     - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v1.json
     - services/tutorStubResistanceRecoverySemanticAdjudication.js
     - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v1.json
@@ -2317,3 +2328,86 @@ and explicit human approval.
   `.tutor-stub-auto-eval/boredom-semantic-validation-v2-2026-08-21`
   and archived to the private repo (2347818a). The 36-dialogue
   confirmation stays on HOLD.
+
+- 2026-08-20 — The first manipulation semantic-instrument validation is a
+  sealed categorical failure, not reusable calibration or confirmation
+  evidence. Consumed request SHA-256
+  `b6d9a41cc9fbdb2a3fc15f536e2a0b6e97a406986c9f88027e0765ab4bddb826`
+  produced exactly 160 charged reservations and 160 first-attempt returned
+  responses across 80 cases, with zero retry, recovery, replacement, or
+  rerun. The sealed report SHA-256 is
+  `008230526809a6aa2917b240c6a30af644f30184b89042825773b1b8040c5c74`:
+  91 judge records were invalid and 78 of 80 consensus cases were
+  `measurement_indeterminate`. The programme ledger is therefore
+  `491 / 5000`. The failure is not normalized or rescored: the numeric-offset
+  response contract created a concrete wrapper/integration failure (most
+  visibly for Judge B), while Judge A also showed substantive semantic-boundary
+  misses. The complete immutable evidence is preserved privately on branch
+  `codex/resistance-semantic-validation-v1-failed-archive` at commit
+  `cf92081bd566948f4ea26d0ac5e67f8132ebeef8`; it is development/regression
+  evidence only and is excluded from every later heldout and confirmation
+  outcome.
+
+- 2026-08-20 — Froze the additive manipulation semantic instrument v2 before
+  any replacement heldout was authored. Freeze commit
+  `30d184211e09371c6aff86abcbed4623b8e457f0` (tree
+  `80f10341fc3938d4d91186b519eb9f5738d83a70`) binds service/schema/registration/
+  disclosed-development hashes
+  `2b9faa679fedf1e98c25e6e5f3569da6c2ef83f3654642c08dc3c00e6fc15bfd`,
+  `eaeebc729a56ce7802bf9030a60cdf4cc60734f3aabe0760c7ddd6a64d011205`,
+  `4cf2b38f3424960d983e2dd5e1a9938e0397e5038fa5f4c8d96bb5d8a78306be`,
+  and
+  `e823af82954c86737f74d53ef033195da388ddb88defd0577276cbf551a749d8`.
+  The model returns only field, declared public source, and an exact copied
+  quote; deterministic code uniquely locates that quote and stamps JavaScript
+  UTF-16 offsets, while absent or ambiguous quotes become invalid/
+  `measurement_indeterminate`. The example-free codebook distinguishes actual
+  participation from hypothetical willingness, jurisdictional/frame disputes
+  from merits, procedure, or administration, and a concrete alternative
+  inquiry from generic willingness. All 96 v1 development plus observed
+  heldout cases are disclosed v2 development evidence and cannot appear in the
+  new heldout. The independently authored replacement contract is fixed at 80
+  unique cases (40 frame-refuser, 24 neither, 16 concrete productive dispute)
+  with the registered participation and nonjurisdiction boundary strata.
+
+  Runtime adapter checkpoint
+  `27823c180a12d05d5944f748381b1286d668d1ed` keeps v1 as the default while
+  selecting v2 only through the frozen v2 registration/observation semantics;
+  learner adherence, trigger eligibility, persisted-trace reconstruction, and
+  the checkpointed validation runtime all use the same selected instrument.
+  Prospective v2 validation remains HOLD: 80 cases x two independent judges =
+  160 planned calls, at most 480 charged reservations, and programme bound
+  `491 -> 971 / 5000`. No later outcome-validation or confirmation call is
+  authorized. If both later stages were ever separately validated and
+  authorized without narrowing the registered science, the current
+  conservative staged bound would be `5147 / 5000`, so a human ceiling
+  amendment would be required first.
+
+- 2026-08-20 — Integrated the replacement manipulation heldout byte-for-byte
+  from its independently authored, post-freeze commit
+  `efc1dae8dbfa745c8d3d9b2fab9414ec3abe72f8` (tree
+  `0d85a5f7b101fc64ad5425849971bae8096ff7be`, exact one-file scope). The
+  corpus SHA-256 is
+  `a52d10f60ceeeb9e1e92415c6add6d0dee4dbf69608053652ff9c23f08216535`;
+  it contains 80 unique cases: 40 frame-refuser, 24 neither, and 16 concrete
+  productive disputes, including 28 actual-participation, 12 hypothetical-only,
+  and 16 merits/procedural/administrative nonjurisdiction boundaries. It was
+  authored without inspecting the v1 heldout beyond collision checking, and no
+  prompt, schema, codebook, consensus, threshold, or gate byte changed after
+  handoff.
+
+  The additive v2 validation registration binds the consumed v1 request,
+  instrument, heldout, sealed report, 160/160 first-attempt accounting, private
+  archive commit `cf92081bd566948f4ea26d0ac5e67f8132ebeef8`, and its categorical
+  no-rescore/no-reuse disposition. The v2 live runner and analyzer select the
+  quote-normalizing instrument only through an explicit validation-registration
+  argument; v1 remains the historical default. The endpoint's synthetic
+  preflight proves only 80-case blinded packet, quote-normalization, metric,
+  checkpoint, archive, and budget wiring at zero calls/writes. A later request
+  must remain literal HOLD and bind a fresh create-once destination, required
+  durable private archive, 160 planned judge calls, hard 480-reservation cap,
+  and ledger `491 -> 971 / 5000`. The separately frozen outcome validation is
+  now truthfully staged at most `971 -> 1691`; the unchanged 3456-reservation
+  confirmation would reach `5147`, so neither later stage is launchable without
+  a new human programme-ceiling decision. No GO request or model call was
+  created by this readiness change.

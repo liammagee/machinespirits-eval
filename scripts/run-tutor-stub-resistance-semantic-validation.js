@@ -11,6 +11,10 @@ import {
   buildTutorStubResistanceSemanticValidationPlan,
   runTutorStubResistanceSemanticValidation,
 } from '../services/tutorStubResistanceSemanticValidationRuntime.js';
+import {
+  TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V2,
+  loadTutorStubResistanceSemanticValidationV2,
+} from '../services/tutorStubResistanceSemanticValidationV2.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -62,6 +66,11 @@ async function main() {
     throw new Error('--maximum-reservations must equal the registered hard ceiling 480');
   }
   const request = repoPath(args['go-request'], '--go-request');
+  const validationRegistration = String(args['validation-registration'] || '').trim();
+  if (validationRegistration && validationRegistration !== TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V2) {
+    throw new Error('--validation-registration is not a supported additive semantic validation registration');
+  }
+  const loaded = validationRegistration ? loadTutorStubResistanceSemanticValidationV2() : undefined;
   const requestSha256 = sha256(request.absolute);
   const snapshot = sourceSnapshot();
   if (snapshot.dirty) throw new Error('semantic validation requires a clean source checkout');
@@ -76,6 +85,7 @@ async function main() {
     destination,
     goRequestPath: request.relative,
     goRequestSha256: requestSha256,
+    ...(loaded ? { loaded } : {}),
   });
   if (args.preflight) {
     if (fs.existsSync(destination)) throw new Error('semantic validation destination must be fresh');
@@ -99,6 +109,7 @@ async function main() {
     resume: args.resume === true,
     callModel: callAIWithCliBridge,
     resolveModelRef: resolveModel,
+    ...(loaded ? { loaded } : {}),
   });
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 }

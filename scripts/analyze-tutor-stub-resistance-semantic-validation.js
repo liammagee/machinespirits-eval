@@ -8,6 +8,10 @@ import { fileURLToPath } from 'node:url';
 
 import { resolveTutorStubArtifactArchiveDirectory } from '../services/tutorStubArtifactArchive.js';
 import { writeTutorStubResistanceSemanticValidationReport } from '../services/tutorStubResistanceSemanticValidationRuntime.js';
+import {
+  TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V2,
+  loadTutorStubResistanceSemanticValidationV2,
+} from '../services/tutorStubResistanceSemanticValidationV2.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -53,6 +57,11 @@ function main() {
     throw new Error('--destination must be a bounded absolute path');
   }
   const request = repoPath(args['go-request']);
+  const validationRegistration = String(args['validation-registration'] || '').trim();
+  if (validationRegistration && validationRegistration !== TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V2) {
+    throw new Error('--validation-registration is not a supported additive semantic validation registration');
+  }
+  const loaded = validationRegistration ? loadTutorStubResistanceSemanticValidationV2() : undefined;
   const snapshot = sourceSnapshot();
   if (snapshot.commit !== args['source-commit'] || snapshot.tree !== args['source-tree']) {
     throw new Error('semantic validation analysis source commit/tree does not match the command pin');
@@ -67,6 +76,7 @@ function main() {
     expectedGoRequestSha256: sha256(request.absolute),
     sourceDirty: snapshot.dirty,
     archiveDir,
+    ...(loaded ? { loaded } : {}),
   });
   process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 }
