@@ -1,7 +1,7 @@
 {
   "schema": "machinespirits.tutor-stub.resistance-recovery-semantic-adjudication-registration.v1",
   "version": 1,
-  "status": "development_instrument_freeze_candidate_pending_independent_heldout",
+  "status": "development_instrument_frozen_pending_independent_heldout_validation",
   "studyId": "tutor-stub-resistance-recovery-semantic-adjudication-validation-v1",
   "instrument": {
     "implementationPath": "services/tutorStubResistanceRecoverySemanticAdjudication.js",
@@ -11,7 +11,7 @@
     "developmentCorpusPath": "config/tutor-stub-resistance-recovery-semantic-development-corpus.v1.json",
     "developmentCorpusSha256": "4a6f052fda975857bbd68207ed667aa0c179c2aa78a22961c08ecaf3c690807d",
     "developmentCases": 14,
-    "instrumentFreezeCommit": null,
+    "instrumentFreezeCommit": "0fdd854032d8a6fc6c395310d19e131ff062bf34",
     "offsetUnit": "utf16_code_unit",
     "promptExamples": "none"
   },
