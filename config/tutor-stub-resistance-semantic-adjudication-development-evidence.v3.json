@@ -1,0 +1,45 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-semantic-development-evidence.v3",
+  "version": 3,
+  "role": "development_regression_disclosed_post_v1_v2_validation",
+  "frozen": true,
+  "prompt_examples_allowed": false,
+  "inputs": [
+    {
+      "path": "config/tutor-stub-resistance-semantic-adjudication-development-corpus.v1.json",
+      "sha256": "159fdafe39d67c200868f67a27ea5392366c614e4b2b73f186c3051cb734a5e9",
+      "cases": 16,
+      "disposition": "preexisting_frozen_development_regressions"
+    },
+    {
+      "path": "config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v1.json",
+      "sha256": "9378416d1fdf8dc41f35ad84a4edf69fba6ad8889ce5020617f3d19747c9a2c7",
+      "cases": 80,
+      "disposition": "observed_failed_v1_heldout_now_disclosed_development_only",
+      "consumed_request_sha256": "b6d9a41cc9fbdb2a3fc15f536e2a0b6e97a406986c9f88027e0765ab4bddb826",
+      "sealed_report_sha256": "008230526809a6aa2917b240c6a30af644f30184b89042825773b1b8040c5c74",
+      "observed_judge_calls": 160,
+      "observed_charged_reservations": 160,
+      "recovery_or_rejudge_calls": 0
+    },
+    {
+      "path": "config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.v2.json",
+      "sha256": "a52d10f60ceeeb9e1e92415c6add6d0dee4dbf69608053652ff9c23f08216535",
+      "cases": 80,
+      "disposition": "observed_failed_v2_heldout_now_disclosed_development_only",
+      "consumed_request_sha256": "b91b6c92ec6b82b15b40821938929c3e2c31c86424822846a26443977cb479d6",
+      "sealed_report_sha256": "11e868d18135e6df29230eab6f7912427917c0e0b55ea350f6cec4a2168fca11",
+      "private_archive_branch": "codex/resistance-semantic-validation-v2-failed-archive",
+      "private_archive_commit": "a98b58732ae2f0b68180e3bbb8d0357cf2e4adfa",
+      "observed_judge_calls": 160,
+      "observed_charged_reservations": 160,
+      "recovery_or_rejudge_calls": 0,
+      "invalid_judgments": 52,
+      "measurement_indeterminate_cases": 57,
+      "failure_diagnosis": "fixed_evidence_slot_contract_and_overlapping_single_choice_jurisdiction_ontology"
+    }
+  ],
+  "total_cases": 176,
+  "v3_heldout_reuse_allowed": false,
+  "repair_scope": "fixed_evidence_slots_and_nonoverlapping_multiaxial_jurisdiction_ontology_only"
+}
