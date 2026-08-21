@@ -107,14 +107,14 @@ function disposition(result) {
   );
 }
 
-test('prospective_v7 boredom composition passes the immutable failed drafts and domain-independent contrasts', () => {
+test('prospective_v8 boredom composition passes the immutable failed drafts and domain-independent contrasts', () => {
   assert.equal(CONTRAST_MATRIX.length, 29);
   for (const row of CONTRAST_MATRIX) {
     const result = observeResistantLearnerTurn({
       learnerText: row.text,
       classification: row.classification || classification(),
       tutorLearnerDag: { advance: { supportedMoveCount: 0 } },
-      semantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7,
+      semantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8,
     });
     assert.equal(disposition(result), row.expected, row.text);
     assert.equal(
@@ -131,8 +131,8 @@ function proofDagRuntime() {
     consumed: false,
     profile: 'bored',
     dynamic_boredom_proof_dag: true,
-    registration: { design: { trigger: { observationSemantics: 'prospective_v7' } } },
-    proof_dag_registration: { design: { observationSemantics: 'prospective_v7' } },
+    registration: { design: { trigger: { observationSemantics: 'prospective_v8' } } },
+    proof_dag_registration: { design: { observationSemantics: 'prospective_v8' } },
   };
 }
 
@@ -162,7 +162,7 @@ test('action-before-register timing consumes the compositional observation inste
 
 test('legacy observer semantics retain their historical decisions for both failed utterances', () => {
   for (const semantics of Object.values(RESISTANT_LEARNER_OBSERVATION_SEMANTICS).filter(
-    (value) => value !== RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7,
+    (value) => value !== RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8,
   )) {
     const productive = observeResistantLearnerTurn({
       learnerText: EXACT_FAILED_CASES[0].text,

@@ -44,6 +44,7 @@ export const RESISTANT_LEARNER_OBSERVATION_SEMANTICS = Object.freeze({
   prospectiveV5: 'prospective_v5',
   prospectiveV6: 'prospective_v6',
   prospectiveV7: 'prospective_v7',
+  prospectiveV8: 'prospective_v8',
 });
 
 export const RESISTANT_LEARNER_OBSERVATION_TYPES = Object.freeze([
@@ -63,16 +64,16 @@ const BORED_FLAT_PATTERNS = Object.freeze([
   /\b(?:are we done|can we (?:skip|finish|move on)|what(?:'s| is) left)\b/iu,
 ]);
 
-// V7 is opt-in and boredom-specific. It composes cue, withdrawal, and uptake
+// V8 is opt-in and boredom-specific. It composes cue, withdrawal, and uptake
 // evidence before licensing the public observation, so a generic timing
 // heuristic cannot later reverse an already-made semantic decision.
-const BORED_ACTIONABLE_WITHDRAWAL_PATTERNS_V7 = Object.freeze([
+const BORED_ACTIONABLE_WITHDRAWAL_PATTERNS_V8 = Object.freeze([
   /\b(?:are we done|is (?:this|the) (?:trial|exercise|task|lesson) nearly done|how much longer|can we (?:skip|finish|move on)|what(?:'s| is) left)\b/iu,
   /\b(?:i (?:will not|won't|do not|don't|cannot|can't|refuse to|decline to)|i am not going to)\b[^.!?;]{0,100}\b(?:answer|calculate|check|compare|continue|examine|inspect|reason|record|test|work|work through)\b/iu,
   /\b(?:stop|skip|end|finish) (?:this|the) (?:trial|exercise|task|lesson|question)\b/iu,
 ]);
 
-const BORED_PRODUCTIVE_UPTAKE_PATTERNS_V7 = Object.freeze([
+const BORED_PRODUCTIVE_UPTAKE_PATTERNS_V8 = Object.freeze([
   /\b(?:i|we) (?:can|could|will|would|should|might) (?!not\b)(?:answer|calculate|check|compare|examine|inspect|record|test|trace|use|weigh)\b[^.!?;]{0,140}/iu,
   /\b(?:i accept|i acknowledge|agreed|that makes sense)\b[^.!?;]{0,140}\b(?:action|answer|authority|evidence|question|record|test|step)\b/iu,
   /\b(?:because|therefore|thus|hence)\b/iu,
@@ -238,6 +239,24 @@ const FRAME_JURISDICTION_PATTERNS_V6 = Object.freeze([
   ),
 ]);
 
+// V7 is additive and confirmation-specific. It covers three frozen V4 live
+// misses compositionally: authority attributed to a domain object may be
+// denied the right to set a bounded inquiry, and an inquiry antecedent may be
+// followed by a clause-scoped rejection of "its" authority. Requiring the
+// authority-to-setting construction or the explicit inquiry antecedent keeps
+// personnel, physical-placement, and administrative uses out of scope.
+const FRAME_JURISDICTION_PATTERNS_V7 = Object.freeze([
+  ...FRAME_JURISDICTION_PATTERNS_V6,
+  new RegExp(
+    String.raw`\bi (?:do not|don't) grant (?:the )?(?:[\p{L}\p{N}_-]+['’]s )(?:[\p{L}\p{N}_-]+\s+){0,3}${FRAME_AUTHORITY_NOUN} to ${FRAME_SETTING_VERB}(?:\s+${FRAME_INQUIRY_MODIFIER}){0,4}\s+${FRAME_INQUIRY_NOUN_V4}\b`,
+    'iu',
+  ),
+  new RegExp(
+    String.raw`\b(?:that|this|it) is (?:the )?(?:your|this|that|(?:[\p{L}\p{N}_-]+['’]s)) (?:[\p{L}\p{N}_-]+\s+){0,2}${FRAME_INQUIRY_NOUN_V4},? not mine\b[^.!?]{0,120}\bi (?:reject|deny|do not accept|don't accept) its ${FRAME_AUTHORITY_NOUN}\b`,
+    'iu',
+  ),
+]);
+
 const FRAME_AUTHORITY_OBJECT_MERITS_ONLY_PATTERNS_V6 = Object.freeze([
   new RegExp(
     String.raw`\bi (?:do not|don't) grant (?:your|the tutor['’]s|their) ${FRAME_AUTHORITY_OBJECT_TARGET_V6}\s+${FRAME_AUTHORITY_NOUN}\b[^.!?;]{0,40}${FRAME_AUTHORITY_OBJECT_CAUSAL_CONNECTOR_V6}(?=[^.!?;]{0,180}\b(?:assay|balance|calculation|clamp|denominator|evidence|fixture|formula|instrument|measurement|method|object|procedure|reading|record|result|sample|screw|sensor|test)\b)(?=[^.!?;]{0,180}\b(?:bad|biased|broke|broken|contaminated|failed|fails|false|incomplete|incorrect|invalid|loose|miscalibrated|missing|slipped|slips|unstable|unfit|unreliable|wrong)\b)[^.!?;]{0,180}`,
@@ -294,6 +313,11 @@ const FRAME_BOUNDED_LOCAL_TEST_PATTERNS_V3 = Object.freeze([
   /\b(?:one|a) (?:bounded|local|narrow|specific) (?:claim|question|test|criterion|standard|comparison|issue|matter|feature|distinction)\b.{0,120}\b(?:can|could|may|will) (?:still )?(?:be )?(?:answered|judged|weighed|assessed|decided|determined|evaluated|examined|tested|compared|considered)\b/iu,
 ]);
 
+const FRAME_BOUNDED_LOCAL_TEST_PATTERNS_V7 = Object.freeze([
+  ...FRAME_BOUNDED_LOCAL_TEST_PATTERNS_V3,
+  /\b(?:i will|i'll|i can|let me|we can|let us) (?:first |still |only )?inspect\b.{0,160}\b(?:bounded|local|narrow|narrower|specific|public|available|stated|limited|single|one|question|test|criterion|standard|comparison|issue|matter|evidence|record|feature|distinction)\b/iu,
+]);
+
 const FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V3 = Object.freeze([
   ...FRAME_EXPLICIT_WITHHOLDING_PATTERNS,
   /\bi (?:will not|won't|do not|don't|refuse to|decline to) (?:judge|weigh|assess|decide|determine|license|evaluate)\b/iu,
@@ -312,6 +336,11 @@ const FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V4 = Object.freeze([
 const FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V6 = Object.freeze([
   ...FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V4,
   /\bi (?:will )?neither\b[^.!?;]{0,120}\b(?:answer|challenge|compare|contribute|engage|enter|examine|inspect|judge|offer|participate|proceed|provide|record|supply|test|weigh)\b[^.!?;]{0,120}\bnor\b[^.!?;]{0,80}\b(?:answer|challenge|compare|contribute|engage|enter|examine|inspect|judge|offer|participate|proceed|provide|record|supply|test|weigh|evidence)\b/iu,
+]);
+
+const FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V7 = Object.freeze([
+  ...FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V6,
+  /\bi (?:will not|won't|do not|don't|refuse to|decline to) permit\b[^.!?;]{0,180}\b(?:answer|examination|examine|inspection|inspect|test|testing)\b/iu,
 ]);
 
 const CONTENT_BEARING_MOVES = Object.freeze(
@@ -357,9 +386,9 @@ export function classifyBoredomEffortWithholdingComposition({
   const permissionEvidence = firstEvidence(text, PERMISSION_SEEKING_PATTERNS);
   const explicitBoredEvidence = firstEvidence(text, BORED_EXPLICIT_PATTERNS);
   const flatBoredEvidence = firstEvidence(text, BORED_FLAT_PATTERNS);
-  const withdrawalEvidence = firstEvidence(text, BORED_ACTIONABLE_WITHDRAWAL_PATTERNS_V7);
+  const withdrawalEvidence = firstEvidence(text, BORED_ACTIONABLE_WITHDRAWAL_PATTERNS_V8);
   const cueEvidence = explicitBoredEvidence || flatBoredEvidence || withdrawalEvidence;
-  const lexicalProductive = firstEvidence(text, BORED_PRODUCTIVE_UPTAKE_PATTERNS_V7);
+  const lexicalProductive = firstEvidence(text, BORED_PRODUCTIVE_UPTAKE_PATTERNS_V8);
   const classifierProductive = contentBearing(classification);
   const dagProductive = learnerAdvanceCount(tutorLearnerDag) > 0;
   const productiveUptake = Boolean(lexicalProductive || classifierProductive || dagProductive);
@@ -418,17 +447,23 @@ export function classifyFrameJurisdictionParticipation({
   const prospectiveV5 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5;
   const prospectiveV6 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6;
   const prospectiveV7 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7;
-  const expandedProspective = prospectiveV3 || prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7;
+  const prospectiveV8 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8;
+  const expandedProspective =
+    prospectiveV3 || prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7 || prospectiveV8;
   const explicitReframe = firstEvidence(
     text,
     expandedProspective ? FRAME_EXPLICIT_REFRAME_PATTERNS_V3 : FRAME_EXPLICIT_REFRAME_PATTERNS,
   );
   const boundedLocalTestCandidate = firstEvidence(
     text,
-    expandedProspective ? FRAME_BOUNDED_LOCAL_TEST_PATTERNS_V3 : FRAME_BOUNDED_LOCAL_TEST_PATTERNS,
+    prospectiveV7 || prospectiveV8
+      ? FRAME_BOUNDED_LOCAL_TEST_PATTERNS_V7
+      : expandedProspective
+        ? FRAME_BOUNDED_LOCAL_TEST_PATTERNS_V3
+        : FRAME_BOUNDED_LOCAL_TEST_PATTERNS,
   );
   const boundedLocalTest =
-    (prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7) &&
+    (prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7 || prospectiveV8) &&
     conditionalBoundedParticipationNegated(text, boundedLocalTestCandidate)
       ? null
       : boundedLocalTestCandidate;
@@ -438,13 +473,15 @@ export function classifyFrameJurisdictionParticipation({
   if (carriesContent) participation.push({ kind: 'content_bearing_contribution', evidence_span: null });
   const explicitWithholding = firstEvidence(
     text,
-    prospectiveV6 || prospectiveV7
-      ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V6
-      : prospectiveV4 || prospectiveV5
-        ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V4
-        : prospectiveV3
-          ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V3
-          : FRAME_EXPLICIT_WITHHOLDING_PATTERNS,
+    prospectiveV7 || prospectiveV8
+      ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V7
+      : prospectiveV6
+        ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V6
+        : prospectiveV4 || prospectiveV5
+          ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V4
+          : prospectiveV3
+            ? FRAME_EXPLICIT_WITHHOLDING_PATTERNS_V3
+            : FRAME_EXPLICIT_WITHHOLDING_PATTERNS,
   );
   return {
     contract_licensed_participation: participation.length > 0,
@@ -503,15 +540,15 @@ export function observeResistantLearnerTurn({
     };
   }
 
-  const prospectiveV7 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7;
-  const boredomComposition = prospectiveV7
+  const prospectiveV8 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8;
+  const boredomComposition = prospectiveV8
     ? classifyBoredomEffortWithholdingComposition({ learnerText: text, classification, tutorLearnerDag })
     : null;
   const permissionEvidence = firstEvidence(text, PERMISSION_SEEKING_PATTERNS);
   const explicitBoredEvidence = firstEvidence(text, BORED_EXPLICIT_PATTERNS);
   const flatBoredEvidence = firstEvidence(text, BORED_FLAT_PATTERNS);
   const boredEvidence = boredomComposition?.cue_evidence || explicitBoredEvidence || flatBoredEvidence;
-  if (prospectiveV7 && boredomComposition) {
+  if (prospectiveV8 && boredomComposition) {
     if (boredomComposition.licensed) {
       const turn = classifierTurn(classification);
       observations.push(
@@ -566,29 +603,37 @@ export function observeResistantLearnerTurn({
   const prospectiveV4 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4;
   const prospectiveV5 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5;
   const prospectiveV6 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6;
-  const expandedV6 = prospectiveV6 || prospectiveV7;
+  const prospectiveV7 = semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7;
   const acceptedAuthority =
-    prospectiveV4 || prospectiveV5 || expandedV6 ? firstEvidence(text, FRAME_ACCEPTED_AUTHORITY_PATTERNS_V4) : null;
+    prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7 || prospectiveV8
+      ? firstEvidence(text, FRAME_ACCEPTED_AUTHORITY_PATTERNS_V4)
+      : null;
   const meritsOnly =
-    prospectiveV4 || prospectiveV5 || expandedV6 ? firstEvidence(text, FRAME_MERITS_ONLY_PATTERNS_V4) : null;
+    prospectiveV4 || prospectiveV5 || prospectiveV6 || prospectiveV7 || prospectiveV8
+      ? firstEvidence(text, FRAME_MERITS_ONLY_PATTERNS_V4)
+      : null;
   const framePatterns = legacySemantics
     ? FRAME_JURISDICTION_PATTERNS_V1
-    : expandedV6
-      ? FRAME_JURISDICTION_PATTERNS_V6
-      : prospectiveV5
-        ? FRAME_JURISDICTION_PATTERNS_V5
-        : prospectiveV4
-          ? FRAME_JURISDICTION_PATTERNS_V4
-          : prospectiveV3
-            ? FRAME_JURISDICTION_PATTERNS_V3
-            : FRAME_JURISDICTION_PATTERNS_V2;
+    : prospectiveV7 || prospectiveV8
+      ? FRAME_JURISDICTION_PATTERNS_V7
+      : prospectiveV6
+        ? FRAME_JURISDICTION_PATTERNS_V6
+        : prospectiveV5
+          ? FRAME_JURISDICTION_PATTERNS_V5
+          : prospectiveV4
+            ? FRAME_JURISDICTION_PATTERNS_V4
+            : prospectiveV3
+              ? FRAME_JURISDICTION_PATTERNS_V3
+              : FRAME_JURISDICTION_PATTERNS_V2;
   const candidateFrameEvidence = firstEvidence(text, framePatterns);
-  const v6AuthorityObjectMeritsOnly = expandedV6
-    ? firstEvidence(text, FRAME_AUTHORITY_OBJECT_MERITS_ONLY_PATTERNS_V6)
-    : null;
-  const v6AuthorityObjectExplicitFrameRationale = expandedV6
-    ? firstEvidence(text, FRAME_AUTHORITY_OBJECT_EXPLICIT_FRAME_RATIONALE_PATTERNS_V6)
-    : null;
+  const v6AuthorityObjectMeritsOnly =
+    prospectiveV6 || prospectiveV7 || prospectiveV8
+      ? firstEvidence(text, FRAME_AUTHORITY_OBJECT_MERITS_ONLY_PATTERNS_V6)
+      : null;
+  const v6AuthorityObjectExplicitFrameRationale =
+    prospectiveV6 || prospectiveV7 || prospectiveV8
+      ? firstEvidence(text, FRAME_AUTHORITY_OBJECT_EXPLICIT_FRAME_RATIONALE_PATTERNS_V6)
+      : null;
   const explicitJurisdictionCandidate = Boolean(
     candidateFrameEvidence &&
     (/\b(?:authority|standing|right|governing|controlling|decisive)\b/iu.test(candidateFrameEvidence) ||
@@ -602,7 +647,10 @@ export function observeResistantLearnerTurn({
     acceptedIndex >= 0 && candidateIndex >= acceptedIndex && candidateIndex < acceptedIndex + acceptedAuthority.length;
   const frameEvidence =
     (meritsOnly && !explicitJurisdictionCandidate) ||
-    (expandedV6 && candidateFrameEvidence && v6AuthorityObjectMeritsOnly && !v6AuthorityObjectExplicitFrameRationale) ||
+    ((prospectiveV6 || prospectiveV7 || prospectiveV8) &&
+      candidateFrameEvidence &&
+      v6AuthorityObjectMeritsOnly &&
+      !v6AuthorityObjectExplicitFrameRationale) ||
     acceptedAuthorityContainsCandidate
       ? null
       : candidateFrameEvidence;
@@ -675,9 +723,9 @@ export function observeResistantLearnerTurn({
     observations,
     defeated,
     ambiguous: Boolean(
-      (hasBoredObservation && hasFrameObservation) || (prospectiveV7 && boredomComposition?.ambiguous),
+      (hasBoredObservation && hasFrameObservation) || (prospectiveV8 && boredomComposition?.ambiguous),
     ),
-    ...(prospectiveV7 ? { boredom_composition: boredomComposition } : {}),
+    ...(prospectiveV8 ? { boredom_composition: boredomComposition } : {}),
   };
 }
 

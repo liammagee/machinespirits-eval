@@ -165,7 +165,7 @@ function syntheticTrace({ job, plan, recovered, progressed }) {
           jobId: job.id,
         },
         autoLearner: {
-          observationSemantics: 'prospective_v7',
+          observationSemantics: 'prospective_v8',
           maxTurns: 4,
           profileId: 'bored',
           modelRef: 'codex.gpt-5.6-luna',
@@ -372,7 +372,7 @@ test('boredom proof-DAG launch verifies the resolved production learner profile 
       throw new Error('profile-id launch validation must not call a model');
     },
     classificationFromCombinedAnalysis() {},
-    env: { TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS: 'prospective_v7' },
+    env: { TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS: 'prospective_v8' },
     extractCombinedLearnerAnalysis() {},
     learnerProfileContract,
     learnerProfileIds,
@@ -395,7 +395,7 @@ test('boredom proof-DAG launch verifies the resolved production learner profile 
     appendTraceEvent(_trace, event) {
       events.push(event);
     },
-    observationSemantics: 'prospective_v7',
+    observationSemantics: 'prospective_v8',
   });
   assert.equal(configured.loaded.sha256, loaded.sha256);
   assert.equal(configured.job.id, plan.jobs[0].id);
@@ -410,7 +410,7 @@ test('boredom proof-DAG launch verifies the resolved production learner profile 
         autoLearnerProfileId: 'diligent',
         autoTurns: Number(args['auto-turns']),
         appendTraceEvent() {},
-        observationSemantics: 'prospective_v7',
+        observationSemantics: 'prospective_v8',
       }),
     /launch pins or remaining 60-attempt ceiling drifted/u,
   );

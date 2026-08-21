@@ -4,20 +4,20 @@
   "status": "prospective_zero_call_readiness_hold",
   "workplanItem": "resistance-action-register-integration",
   "frozenAt": "2026-08-20",
-  "registeredQuestion": "After a compositional prospective-v7 boredom observation has selected the fixed boredom-appropriate discriminating-question action, does warm rather than plain realization improve the existing one-turn bored resistance-recovery endpoint, and does any improvement reach objective public proof-DAG progress by two turns?",
-  "claimBoundary": "This fresh blocked-randomized simulated-learner confirmation can establish only a warm-versus-plain register effect after the boredom-appropriate action has already been selected by prospective-v7. It cannot reinterpret or pool the stopped v2 run, re-estimate historical boredom detection, estimate action fit, establish an interaction, general tutor efficacy, durable learning, human validity, or transfer.",
+  "registeredQuestion": "After a compositional prospective-v8 boredom observation has selected the fixed boredom-appropriate discriminating-question action, does warm rather than plain realization improve the existing one-turn bored resistance-recovery endpoint, and does any improvement reach objective public proof-DAG progress by two turns?",
+  "claimBoundary": "This fresh blocked-randomized simulated-learner confirmation can establish only a warm-versus-plain register effect after the boredom-appropriate action has already been selected by prospective-v8. It cannot reinterpret or pool the stopped v2 run, re-estimate historical boredom detection, estimate action fit, establish an interaction, general tutor efficacy, durable learning, human validity, or transfer.",
   "authorization": {
     "modelCallsAuthorized": false,
     "liveRunAuthorized": false,
     "goRequestPrepared": false,
     "programmeLedgerBeforeStudy": {
-      "reservedAttempts": 290,
+      "reservedAttempts": 293,
       "ceiling": 5000,
-      "remaining": 4710
+      "remaining": 4707
     },
     "thisReadinessConsumesProgrammeHeadroom": false,
     "requiredBeforeAnyModelCall": [
-      "merge the independently reviewed prospective-v7 observer, timing, executor, analyzer, preflight, validator, and complete source closure",
+      "merge the independently reviewed prospective-v8 observer, timing, executor, analyzer, preflight, validator, and complete source closure",
       "prepare and validate a wholly fresh digest-bound HOLD request with nine absent create-once batch destinations and one absent combined-report destination",
       "verify the exact request digest against the standing authorization and unchanged operational safeguards"
     ]
@@ -34,7 +34,8 @@
       "prospective_v3",
       "prospective_v4",
       "prospective_v5",
-      "prospective_v6"
+      "prospective_v6",
+      "prospective_v7"
     ]
   },
   "stoppedConfirmation": {
@@ -78,7 +79,7 @@
     "stage": "boredom_matched_action_plain_warm_proof_dag_confirmation",
     "form": "fresh_prefix_blocked_randomized_independent_dialogues",
     "profile": "bored",
-    "observationSemantics": "prospective_v7",
+    "observationSemantics": "prospective_v8",
     "observationPrecedence": "productive_uptake_defeats_cue; actionable_withdrawal_without_productive_uptake_licenses; mixed_withdrawal_and_uptake_fails_closed",
     "dagMode": "strict_dag",
     "worlds": [
@@ -239,18 +240,18 @@
     },
     "hardStudyAttemptCeiling": 2160,
     "programmeCeilingForThisStudyAlone": {
-      "ledgerBefore": 290,
+      "ledgerBefore": 293,
       "studyMaximum": 2160,
-      "requiredCeiling": 2450,
+      "requiredCeiling": 2453,
       "incrementAboveCurrentLedger": 2160
     },
     "programmeCeilingIfFrameRefusalConfirmationAlsoReserved": {
-      "ledgerBefore": 290,
+      "ledgerBefore": 293,
       "frameRefusalMaximum": 2160,
       "boredomMaximum": 2160,
-      "requiredCeiling": 4610,
+      "requiredCeiling": 4613,
       "programmeSafeguard": 5000,
-      "remainingAtBothMaximum": 390
+      "remainingAtBothMaximum": 387
     },
     "attemptAccountingRole": "operational_execution_safeguard_only_not_scientific_endpoint_design_objective_or_sample_size_constraint",
     "boundedTechnicalRecovery": "missing_or_failed_units_only_within_unchanged_per_unit_batch_study_and_programme_caps",

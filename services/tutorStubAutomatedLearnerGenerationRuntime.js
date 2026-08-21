@@ -247,7 +247,8 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV4 ||
     observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV5 ||
     observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6 ||
-    observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7;
+    observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7 ||
+    observationSemantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8;
   const automatedLearnerTraceMetadata = Object.freeze(boundedFrameOpportunitySemantics ? { observationSemantics } : {});
   function automatedLearnerSystemPrompt(profile) {
     return [
@@ -393,8 +394,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
       'This cue is private. Never mention briefs, triggers, profiles, markers, or experimental conditions publicly.',
     ].join('\n');
   }
-  // Opt-in stress schedule (TUTOR_STUB_STRESS_SCHEDULE=<path>): planted learner
-  // states with adjudicated repairs. Loaded once, lazily; each planted turn's
+  // Opt-in stress schedule (TUTOR_STUB_STRESS_SCHEDULE=<path>): planted learner states with adjudicated repairs. Loaded once, lazily; each planted turn's
   // directive is injected into the learner prompt verbatim and traced, so the
   // bench knows exactly which turns carry authored stress.
   const STRESS_SCHEDULE_PATH = env.TUTOR_STUB_STRESS_SCHEDULE || null;

@@ -367,9 +367,9 @@ export function validateTutorStubBoredomProofDagRegistration(registration) {
   ) {
     errors.push('predeclared batch partition drifted');
   }
-  const expectedLedger = prospectiveV2 ? 290 : 219;
-  const expectedStudyCeiling = prospectiveV2 ? 2450 : 2379;
-  const expectedCombinedCeiling = prospectiveV2 ? 4610 : 4539;
+  const expectedLedger = prospectiveV2 ? 293 : 219;
+  const expectedStudyCeiling = prospectiveV2 ? 2453 : 2379;
+  const expectedCombinedCeiling = prospectiveV2 ? 4613 : 4539;
   if (
     execution.programmeCeilingForThisStudyAlone?.ledgerBefore !== expectedLedger ||
     execution.programmeCeilingForThisStudyAlone?.requiredCeiling !== expectedStudyCeiling ||
@@ -577,15 +577,15 @@ export function assessTutorStubBoredomCompositionSyntheticCases(
     consumed: false,
     profile: 'bored',
     dynamic_boredom_proof_dag: true,
-    registration: { design: { trigger: { observationSemantics: 'prospective_v7' } } },
-    proof_dag_registration: { design: { observationSemantics: 'prospective_v7' } },
+    registration: { design: { trigger: { observationSemantics: 'prospective_v8' } } },
+    proof_dag_registration: { design: { observationSemantics: 'prospective_v8' } },
   };
   const results = rows.map((row) => {
     const observation = observeResistantLearnerTurn({
       learnerText: row.text,
       classification: row.classification,
       tutorLearnerDag: { advance: { supportedMoveCount: 0 } },
-      semantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7,
+      semantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8,
     });
     const eligibility = tutorStubResistanceActionRegisterTreatmentEligibility({
       runtime: structuredClone(runtime),

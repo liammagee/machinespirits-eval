@@ -54,7 +54,7 @@ test('automated-learner generation runtime owns profile resolution and corruptio
   assert.equal(runtime.automatedLearnerCorruptionEnabled(1), false);
 });
 
-test('prospective v4 through v6 carry their analyzer-required semantics stamp through the production trace seam', () => {
+test('prospective v4 through v8 carry their analyzer-required semantics stamp through the production trace seam', () => {
   const createRuntime = (semantics) =>
     createTutorStubAutomatedLearnerGenerationRuntime({
       appendTraceEvent() {},
@@ -89,6 +89,9 @@ test('prospective v4 through v6 carry their analyzer-required semantics stamp th
   assert.deepEqual(createRuntime('prospective_v7').automatedLearnerTraceMetadata, {
     observationSemantics: 'prospective_v7',
   });
+  assert.deepEqual(createRuntime('prospective_v8').automatedLearnerTraceMetadata, {
+    observationSemantics: 'prospective_v8',
+  });
 
   const hostSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCliApplicationHost.js'), 'utf8');
   const traceContextSource = fs.readFileSync(
@@ -114,6 +117,65 @@ test('prospective v6 accepts both frozen V3 failure drafts before any repair cal
       },
       classificationFromCombinedAnalysis: (raw) => raw.classification,
       env: { [TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV]: 'prospective_v6' },
+      extractCombinedLearnerAnalysis: async () => ({
+        classification: {
+          turn: {
+            request_type: 'authority_refusal_or_status_challenge',
+            discourse_move: 'challenge',
+            evidence_use: 'none',
+            epistemic_stance: 'resistant',
+            agency: 'steering',
+          },
+        },
+      }),
+      learnerProfileContract,
+      learnerProfileIds,
+      learnerProfilePrompt,
+      negativeFloorRegisters: [],
+    });
+    const result = await runtime.enforceAutomatedLearnerProfile({
+      state: {
+        trace,
+        turns: [],
+        history: [],
+        register: { policy: 'field' },
+        classifier: { enabled: true },
+        learnerDag: { enabled: true },
+        world: {},
+        interim: null,
+      },
+      resolved: {},
+      profile: 'frame_refuser',
+      turnNumber: 2,
+      generated: { text },
+    });
+    assert.equal(result.passed, true, text);
+    assert.equal(result.repaired, false, text);
+    assert.equal(repairCalls, 0, text);
+    assert.equal(
+      trace.some((event) => event.type === 'auto_learner_profile_adherence_exhausted'),
+      false,
+      text,
+    );
+  }
+});
+
+test('prospective v7 accepts all frozen V4 observer misses before any repair call', async () => {
+  for (const text of [
+    'I do not grant the metal’s leavings authority to set the question, so I will not permit that examination or answer on its merits.',
+    'I reject your question and the verdict you set beneath it; I will not permit that test, examine the leavings, or answer on its merits.',
+    'That is your question, not mine; I reject its authority and will not answer it or supply evidence under that frame.',
+  ]) {
+    const trace = [];
+    let repairCalls = 0;
+    const runtime = createTutorStubAutomatedLearnerGenerationRuntime({
+      appendTraceEvent: (target, event) => target.push(event),
+      callPromptModel: async () => {
+        repairCalls += 1;
+        return { text: 'unexpected repair' };
+      },
+      classificationFromCombinedAnalysis: (raw) => raw.classification,
+      env: { [TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV]: 'prospective_v7' },
       extractCombinedLearnerAnalysis: async () => ({
         classification: {
           turn: {

@@ -3,8 +3,8 @@
   "status": "endpoint_runtime_go",
   "study_id": "tutor-stub-boredom-action-register-proof-dag-v2",
   "contract_path": "config/paid-study-endpoints/tutor-stub-boredom-action-register-proof-dag.v2.json",
-  "contract_sha256": "f8a7e08da52ea89461dba181c34e4d656e20301c187347ef2726870ce9c08de7",
-  "preflight_sha256": "91636e01ab2e536e18e63b870a1bcbd1ab4b56efe16e02fc4c7e41e2c9da5f0c",
-  "authorization_scope": "Deterministic prospective-v7 compositional observer, action-before-register timing, production executor, endpoint, analyzer, power, and request-validator readiness only; this certificate authorizes no model call, live study, request preparation, or programme-headroom consumption.",
+  "contract_sha256": "fdc132de0e132abde62f03f9a1a18f9c999559b6c67a876b315de7a710b1912f",
+  "preflight_sha256": "872ba38fb8f463571f428cb55e1f5194de6ee784cb521d291cc35a3eb488af12",
+  "authorization_scope": "Deterministic prospective-v8 compositional observer, action-before-register timing, production executor, endpoint, analyzer, power, and request-validator readiness only; this certificate authorizes no model call, live study, request preparation, or programme-headroom consumption.",
   "launch_gate": "A reviewed merged source closure, wholly fresh digest-bound HOLD request, absent create-once destinations, and prelaunch verification of the 2160-study and 5000-programme operational safeguards remain required. The stopped v2 cohort remains permanently incomplete and excluded."
 }

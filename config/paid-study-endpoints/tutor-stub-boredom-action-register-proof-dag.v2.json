@@ -3,11 +3,11 @@
   "study_id": "tutor-stub-boredom-action-register-proof-dag-v2",
   "registration": {
     "registration_path": "config/tutor-stub-boredom-action-register-proof-dag-registration.v2.json",
-    "registration_sha256": "ff41d44ab0407970776a90e35a4a9fd2155305b2a77e45829efc1ab59c1acad5",
+    "registration_sha256": "35577d0ca7bf66d3ba7b4fa059e837155e9c811ea97b8befe1a01faf48db8d4c",
     "primary_endpoint_ids": ["profile_specific_resistance_recovery"],
     "key_secondary_endpoint_id": "objective_proof_progress_by_two_turns",
     "required_profile": "bored",
-    "required_observation_semantics": "prospective_v7",
+    "required_observation_semantics": "prospective_v8",
     "required_worlds": 6,
     "required_distinct_prefixes": 36,
     "required_realizations": ["plain", "warm"],
@@ -47,9 +47,9 @@
       "maximum_model_attempt_reservations_per_dialogue": 60,
       "maximum_model_attempt_reservations_per_batch": 240,
       "combined_maximum_model_attempt_reservations": 2160,
-      "programme_ledger_before": 290,
+      "programme_ledger_before": 293,
       "programme_ceiling_if_frame_refusal_confirmation_also_reserved": 5000,
-      "combined_maximum_with_both_confirmations": 4610,
+      "combined_maximum_with_both_confirmations": 4613,
       "combined_analysis_only": true,
       "interim_analysis": false,
       "valid_unit_reruns": false,
@@ -87,7 +87,7 @@
   "channels": {
     "compositional_boredom_observer_timing": {
       "enabled": true,
-      "implementation": "services/resistantLearnerObservation.js#classifyBoredomEffortWithholdingComposition+services/tutorStubResistanceActionRegisterStudy.js#tutorStubResistanceActionRegisterTreatmentEligibility(prospective_v7)"
+      "implementation": "services/resistantLearnerObservation.js#classifyBoredomEffortWithholdingComposition+services/tutorStubResistanceActionRegisterStudy.js#tutorStubResistanceActionRegisterTreatmentEligibility(prospective_v8)"
     },
     "registered_recovery": {
       "enabled": true,

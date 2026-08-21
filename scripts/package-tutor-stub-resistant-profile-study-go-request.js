@@ -23,6 +23,8 @@ const SUPPORTED_ACTION_REGISTER_CONFIRMATION_SUCCESSOR = 'prospective_frame_refu
 const SUPPORTED_ACTION_REGISTER_CONFIRMATION_OPERATIONAL_CEILING =
   'prospective_frame_refuser_warm_plain_confirmation_v3';
 const SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR = 'prospective_frame_refuser_warm_plain_confirmation_v4';
+const SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR_V7 =
+  'prospective_frame_refuser_warm_plain_confirmation_v5';
 
 function isSupportedActionRegisterConfirmation(value) {
   return [
@@ -30,6 +32,7 @@ function isSupportedActionRegisterConfirmation(value) {
     SUPPORTED_ACTION_REGISTER_CONFIRMATION_SUCCESSOR,
     SUPPORTED_ACTION_REGISTER_CONFIRMATION_OPERATIONAL_CEILING,
     SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR,
+    SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR_V7,
   ].includes(value);
 }
 
@@ -212,9 +215,12 @@ function requireHoldBoundary(template) {
       SUPPORTED_ACTION_REGISTER_CONFIRMATION_SUCCESSOR,
       SUPPORTED_ACTION_REGISTER_CONFIRMATION_OPERATIONAL_CEILING,
       SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR,
+      SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR_V7,
     ].includes(template.actionRegisterConfirmation?.type) &&
     (template.authorization?.standingAuthorizationAttachmentSha256 !==
-      '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b' ||
+      (template.actionRegisterConfirmation?.type === SUPPORTED_ACTION_REGISTER_CONFIRMATION_OBSERVER_REPAIR_V7
+        ? '538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce'
+        : '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b') ||
       template.authorization?.programmeCeilingAmendmentAuthorized !== false)
   ) {
     throw new Error(
@@ -280,6 +286,7 @@ function assertMaterializedStructure({
   historicalRequest,
   priorConfirmationRequest,
   priorConfirmationV3Request,
+  priorConfirmationV4Request,
   priorCeilingBoundRequest,
   priorBoredomRequest,
   priorBoredomPredecessorRequest,
@@ -369,6 +376,11 @@ function assertMaterializedStructure({
     const prior = request.actionRegisterConfirmation?.priorIncompleteConfirmationV3?.request;
     assertComputedValue(prior?.path, priorConfirmationV3Request.path, 'prior incomplete V3 request path');
     assertComputedValue(prior?.sha256, priorConfirmationV3Request.sha256, 'prior incomplete V3 request digest');
+  }
+  if (priorConfirmationV4Request) {
+    const prior = request.actionRegisterConfirmation?.priorIncompleteConfirmationV4?.request;
+    assertComputedValue(prior?.path, priorConfirmationV4Request.path, 'prior incomplete V4 request path');
+    assertComputedValue(prior?.sha256, priorConfirmationV4Request.sha256, 'prior incomplete V4 request digest');
   }
   if (priorCeilingBoundRequest) {
     const prior = request.actionRegisterConfirmation?.supersededCeilingBoundRequest?.request;
@@ -552,6 +564,24 @@ function materializeTemplate({ templateText, template, launchCommit }) {
       replacements,
     );
   }
+  const priorConfirmationV4RequestPath =
+    template.actionRegisterConfirmation?.priorIncompleteConfirmationV4?.request?.path;
+  const priorConfirmationV4Request = priorConfirmationV4RequestPath
+    ? materializeRepoFile({
+        launchCommit,
+        repoPath: priorConfirmationV4RequestPath,
+        label: 'prior incomplete V4 confirmation request',
+        files,
+      })
+    : null;
+  if (priorConfirmationV4Request) {
+    requireMarker(
+      templateText,
+      goRequestFileSha256Marker(priorConfirmationV4Request.path),
+      priorConfirmationV4Request.sha256,
+      replacements,
+    );
+  }
   const priorCeilingBoundRequestPath =
     template.actionRegisterConfirmation?.supersededCeilingBoundRequest?.request?.path;
   const priorCeilingBoundRequest = priorCeilingBoundRequestPath
@@ -650,6 +680,7 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     historicalRequest,
     priorConfirmationRequest,
     priorConfirmationV3Request,
+    priorConfirmationV4Request,
     priorCeilingBoundRequest,
     priorBoredomRequest,
     priorBoredomPredecessorRequest,

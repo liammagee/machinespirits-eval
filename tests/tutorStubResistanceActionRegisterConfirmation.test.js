@@ -71,6 +71,15 @@ const CERTIFICATE_V4 = path.join(
   ROOT,
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v4.endpoint-go.json',
 );
+const REGISTRATION_V7 = path.join(ROOT, 'config/tutor-stub-resistance-action-register-crossed-registration.v7.json');
+const ENDPOINT_V5 = path.join(
+  ROOT,
+  'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v5.json',
+);
+const CERTIFICATE_V5 = path.join(
+  ROOT,
+  'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v5.endpoint-go.json',
+);
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -786,6 +795,142 @@ test('V6 binds the stopped V3 block, prospective-v6 repair, and a wholly fresh p
   assert.equal(preflight.model_calls, 0);
   assert.equal(preflight.production_writes, 0);
   assert.equal(preflight.confirmation_readiness_audit.programme_ledger_after_confirmation_maximum, 2415);
+  assert.equal(preflight.confirmation_readiness_audit.programme_ceiling_required, 5000);
+  assert.equal(certificate.contract_sha256, hashPaidStudyEndpointValue(contract));
+  assert.equal(validation.ok, true, validation.errors.join('; '));
+});
+
+test('V7 composes object-attributed and anaphoric authority refusals without widening V1-V6', () => {
+  const positives = [
+    'I do not grant the metal’s leavings authority to set the question, so I will not permit that examination or answer on its merits.',
+    'I reject your question and the verdict you set beneath it; I will not permit that test, examine the leavings, or answer on its merits.',
+    'That is your question, not mine; I reject its authority and will not answer it or supply evidence under that frame.',
+    'I do not grant the ledger’s entries standing to govern this inquiry, so I will not permit an inspection or answer under it.',
+    'This is the panel’s scoring question, not mine; I deny its right and will not answer or provide evidence within that frame.',
+    'That is your question, not mine; I reject its authority and will not answer it or inspect any public record under that frame.',
+  ];
+  for (const learnerText of positives) {
+    const input = { learnerText, classification: classification(false) };
+    const prior = observeResistantLearnerTurn({
+      ...input,
+      semantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV6,
+    });
+    const repaired = observeResistantLearnerTurn({
+      ...input,
+      semantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7,
+    });
+    assert.equal(
+      prior.observations.some((row) => row.type === 'frame_jurisdiction_refusal'),
+      false,
+      learnerText,
+    );
+    assert.equal(
+      repaired.observations.some((row) => row.type === 'frame_jurisdiction_dispute'),
+      true,
+      learnerText,
+    );
+    assert.equal(
+      repaired.observations.some((row) => row.type === 'frame_jurisdiction_refusal'),
+      true,
+      learnerText,
+    );
+  }
+
+  const negatives = [
+    'I do not grant the metal’s leavings authority to prove the assay is accurate, because the sample is contaminated.',
+    'I do not grant the foreman’s assistants authority to set the metal on the shelf, so I will not permit that placement.',
+    'That is your question, not mine; I accept its authority and will answer it from the public record.',
+    'That is your deadline, not mine; I reject its authority and will not file the administrative form.',
+    'I reject your question, but I will examine one bounded test and answer from the public evidence.',
+    'That is your question, not mine; I reject its authority and will not answer it, but I will inspect the public record under a narrower question.',
+    'The panel’s criterion is wrong because its denominator is invalid, so I reject the calculation on its merits.',
+  ];
+  for (const learnerText of negatives) {
+    const observed = observeResistantLearnerTurn({
+      learnerText,
+      classification: classification(false),
+      semantics: RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7,
+    });
+    assert.equal(
+      observed.observations.some((row) => row.type === 'frame_jurisdiction_refusal'),
+      false,
+      learnerText,
+    );
+  }
+});
+
+test('V7 binds the stopped V4 block, new standing authority, and zero-call endpoint readiness', () => {
+  for (const [relativePath, expected] of Object.entries({
+    'config/tutor-stub-resistance-action-register-crossed-registration.v1.json':
+      '8e2e2a6c5fde795b668d2a9ecc81a527e29a0d970aaf419badde5fb037fa87e7',
+    'config/tutor-stub-resistance-action-register-crossed-registration.v2.json':
+      '4e8fa84320ba54743920fa5bb0d9228656cd6bb80ca4ba9fe68470c2ed7658e2',
+    'config/tutor-stub-resistance-action-register-crossed-registration.v3.json':
+      '2a5fc326b4fad3e6746a1a79ea02885a9857d9542b8b91596b7367c4c62ddc10',
+    'config/tutor-stub-resistance-action-register-crossed-registration.v4.json':
+      '1ac49ff01a34db731b917b9f1618926e642e3bf748d06c5b987ac4ade93b3408',
+    'config/tutor-stub-resistance-action-register-crossed-registration.v5.json':
+      '4a1d7a745dd4ec62b93ce7397147f0d78a1b188ff576908ba4a56326c3636bf9',
+    'config/tutor-stub-resistance-action-register-crossed-registration.v6.json':
+      '80c193e614e50839fd4ea30f163a17a627cc18a7a52cfc163de2ef1db537a895',
+    'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v1.json':
+      'c57edc411c0238ca4a5efcb835834f41cec3a79e3f404bb98bfcc9ff8f981b4b',
+    'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v2.json':
+      '19e6170f857a8ef97fddd1fa6bcd8cd67d41a4d9f518bed8b9608bd416fc123d',
+    'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v3.json':
+      '14c284998fc8a54cdb38b33c4e9aadde22e673cfb59db5b0b812da3cea88445a',
+    'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v4.json':
+      'c3efc0a228cc364c67a2c9a0f9dc8d0333f7e06167b06cdcc7f5bc78dc2ec277',
+    'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v1.endpoint-go.json':
+      '02efd289ced8401f0e44d5766a16841bff96ea6b0baccc34b4da702b1960b6f1',
+    'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v2.endpoint-go.json':
+      'cab993230efdc25941c05a43f37d7f536a8942906014678dd7f5083327ef0115',
+    'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v3.endpoint-go.json':
+      'e55bdcf5c5fbbf33a5130243eadbcb41fde0217af2c0f7e2d90e7d4f6d1e0d29',
+    'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v4.endpoint-go.json':
+      '5aa5daef5c80b4b9606e712e16646ab19137d6cab90161460e1be74670ec3138',
+    'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v4.json':
+      '8c25d6afcae9b9c5689f3130664048c63d303a440412af7f4ba138a6a9337aab',
+  })) {
+    assert.equal(sha256(fs.readFileSync(path.join(ROOT, relativePath))), expected, `${relativePath} changed`);
+  }
+
+  const loaded = loadTutorStubResistanceActionRegisterConfirmation({ registrationPath: REGISTRATION_V7 });
+  assert.equal(loaded.plan.jobs.length, 36);
+  assert.ok(loaded.plan.jobs.every((job) => job.id.startsWith('frame_refuser-confirmation-v4-')));
+  assert.equal(loaded.registration.design.trigger.observationSemantics, 'prospective_v7');
+  assert.equal(
+    loaded.registration.authorization.standingAuthorizationAttachmentSha256,
+    '538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce',
+  );
+  assert.deepEqual(loaded.registration.authorization.programmeLedgerBeforeThisConfirmation, {
+    reservedAttempts: 293,
+    ceiling: 5000,
+    remaining: 4707,
+  });
+  assert.deepEqual(loaded.registration.executionReadiness.programmeLedgerAfterMaximum, {
+    reservedAttempts: 2453,
+    ceiling: 5000,
+    remaining: 2547,
+  });
+  assert.equal(loaded.registration.preservation.stoppedConfirmationV4.reservedAttempts, 38);
+  assert.equal(loaded.registration.preservation.stoppedConfirmationV4.completedCalls, 38);
+  assert.equal(loaded.registration.preservation.stoppedConfirmationV4.dialoguesSubstantiveFailure, 2);
+  assert.equal(loaded.registration.preservation.stoppedConfirmationV4.excludedFromSuccessor, true);
+  assert.equal(loaded.registration.preservation.stoppedConfirmationV4.reused, false);
+  assert.equal(loaded.registration.preservation.stoppedConfirmationV4.pooled, false);
+
+  const contract = JSON.parse(fs.readFileSync(ENDPOINT_V5, 'utf8'));
+  const certificate = JSON.parse(fs.readFileSync(CERTIFICATE_V5, 'utf8'));
+  const preflight = runTutorStubResistanceActionRegisterConfirmationPreflight({
+    contract,
+    registration: loaded.registration,
+  });
+  const validation = validatePaidStudyEndpointGoCertificate({ certificate, contract, preflight });
+  assert.equal(preflight.status, 'passed');
+  assert.equal(preflight.model_calls, 0);
+  assert.equal(preflight.production_writes, 0);
+  assert.equal(preflight.confirmation_readiness_audit.programme_ledger_after_confirmation_maximum, 2453);
   assert.equal(preflight.confirmation_readiness_audit.programme_ceiling_required, 5000);
   assert.equal(certificate.contract_sha256, hashPaidStudyEndpointValue(contract));
   assert.equal(validation.ok, true, validation.errors.join('; '));

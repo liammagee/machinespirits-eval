@@ -33,10 +33,10 @@ function sha(relativePath) {
     .digest('hex');
 }
 
-test('prospective-v7 registration freezes the failed run and preserves the powered scientific design', () => {
+test('prospective-v8 registration freezes the failed run and preserves the powered scientific design', () => {
   const registration = loadTutorStubBoredomProofDagRegistration({ root: ROOT, registrationPath: REGISTRATION });
   assert.equal(validateTutorStubBoredomProofDagRegistration(registration).ok, true);
-  assert.equal(registration.design.observationSemantics, 'prospective_v7');
+  assert.equal(registration.design.observationSemantics, 'prospective_v8');
   assert.equal(
     registration.stoppedConfirmation.disposition,
     'categorical_instrument_failure_incomplete_no_scientific_verdict',
@@ -55,7 +55,7 @@ test('prospective-v7 registration freezes the failed run and preserves the power
   assert.equal(registration.executionReadiness.hardStudyAttemptCeiling, 2160);
   assert.equal(
     registration.executionReadiness.programmeCeilingIfFrameRefusalConfirmationAlsoReserved.requiredCeiling,
-    4610,
+    4613,
   );
   assert.equal(registration.authorization.modelCallsAuthorized, false);
   assert.equal(registration.authorization.liveRunAuthorized, false);
@@ -86,8 +86,8 @@ test('zero-call endpoint preflight exercises positive, negative, and ambiguous c
   assert.equal(preflight.model_calls, 0);
   assert.equal(preflight.production_writes, 0);
   assert.equal(preflight.assembly_audit.endpoint_status.compositional_boredom_observer_timing, 'complete');
-  assert.equal(preflight.readiness.required_programme_ceiling_study_alone, 2450);
-  assert.equal(preflight.readiness.required_programme_ceiling_with_frame_refusal_reservation, 4610);
+  assert.equal(preflight.readiness.required_programme_ceiling_study_alone, 2453);
+  assert.equal(preflight.readiness.required_programme_ceiling_with_frame_refusal_reservation, 4613);
   assert.equal(hashPaidStudyEndpointValue(contract), certificate.contract_sha256);
   assert.equal(validatePaidStudyEndpointGoCertificate({ contract, preflight, certificate }).ok, true);
   const matrix = assessTutorStubBoredomCompositionSyntheticCases();

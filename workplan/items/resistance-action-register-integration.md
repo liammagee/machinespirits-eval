@@ -1716,7 +1716,7 @@ and explicit human approval.
   by this closeout. Any future restart would be a new programme boundary after
   an independently validated compositional boredom observer and trigger-timing
   contract, not a continuation of this confirmation.
-- 2026-08-20 — Implemented the zero-call prospective-v7 boredom observer and
+- 2026-08-20 — Implemented the zero-call prospective-v8 boredom observer and
   action-before-register timing redesign after the categorical instrument
   failure. The root cause was contradictory composition: the historical
   observer let a leading flat cue license the entire utterance, while a
@@ -1726,14 +1726,14 @@ and explicit human approval.
   `Fine. Is this trial nearly done?` was a genuine non-content withdrawal that
   the timing proxy falsely suppressed.
 
-  Prospective-v7 applies one explicit precedence rule before action selection:
+  Prospective-v8 applies one explicit precedence rule before action selection:
   genuine productive uptake defeats a flat/bored cue; actionable withdrawal
   without productive uptake licenses the boredom-appropriate action; a mixed
   utterance containing both fails closed as ambiguous; boredom language alone
   without actionable effort withdrawal remains negative. The timing decision
   consumes this compositional result and cannot reclassify it through the
   generic uptake heuristic. The new behavior is opt-in only. Legacy-v1 and
-  prospective-v2 through v6 retain their historical dispatch and exact
+  prospective-v2 through v7 retain their historical dispatch and exact
   output decisions.
 
   Registration V2 freezes all eight stopped traces, both live/private batch
@@ -1746,12 +1746,12 @@ and explicit human approval.
   balanced batches, the existing one-turn recovery primary, two-turn
   proof-progress fixed-sequence secondary, and one final exact conditional
   blocked analysis with no interim analysis. Attempts remain operational
-  safeguards only: the current ledger is `290`, a fresh study may reserve at
-  most `2160`, both powered confirmations together reach at most `4610`, and
+  safeguards only: the current ledger is `293`, a fresh study may reserve at
+  most `2160`, both powered confirmations together reach at most `4613`, and
   the standing programme safeguard remains `5000`.
 
   The zero-call readiness surface adds registration V2, endpoint/certificate
-  V2, a prospective-v7 production observer/timing matrix, production
+  V2, a prospective-v8 production observer/timing matrix, production
   orchestration and analyzer provenance checks, deterministic synthetic
   endpoint preflight, historical digest ratchets, and a versioned complete
   executable closure. Registration remains HOLD with false live/model
@@ -1759,3 +1759,106 @@ and explicit human approval.
   prepared only after the reviewed readiness source merges; it must use new
   create-once destinations and cannot consume any stopped dialogue, prefix,
   assignment, or outcome.
+- 2026-08-20 — Closed prospective-V6 confirmation request
+  `8c25d6afcae9b9c5689f3130664048c63d303a440412af7f4ba138a6a9337aab`
+  as **incomplete with no scientific verdict** after Block 1. The exact launch
+  source/tree was `8d18480e8e531ae7b4ac4e5c63e8de82628aea9f` /
+  `adadcbff0502d0df15e777d8cebe1d7d5daa5011`; plan/result digests were
+  `388ee1df888d69f8cf2a63f6330e799092c3cc827a0e23c0913886ef9bb57591` /
+  `1d957f5bf8707f5ce2150a8e3576ad4ab2440f7e1e8a1f43a064e863de001636`.
+  Four dialogues started: S1 and S3 completed, while S2 and S4 stopped as
+  typed substantive `TUTOR_STUB_FRAME_REFUSER_ADHERENCE_EXHAUSTED` failures.
+  Accounting is exactly 38 reservations, 38 completed Luna calls, zero
+  provider errors, zero aborts, and zero interrupted calls. Blocks 2–9,
+  recovery, analyzer, combined report/result, and seal are absent. Every V4
+  Block-1 dialogue, assignment, trace, and outcome is excluded from successor
+  reuse, pooling, replacement, selection, and inferential credit; the
+  programme ledger is now `293/5000`.
+
+  The live-root and runner-mirror inventories are respectively 18 files /
+  7,845,834 bytes /
+  `d4585b41981d6ac4d4d6e44a6fccc253f792221f5e2c3f87fd7ec5d42c16eafe`
+  and 8 files / 922,685 bytes /
+  `7545452e100a2cfc1b59c17e6da8c1a5196eb7fc5d272cd60556c7462cb524fa`.
+  The evidence is durably preserved on private feature branch
+  `codex/resistance-action-register-confirmation-v4-incomplete-archive` at
+  commit `05eb01179a437c4a7723a831639b1d7126a338e2` (tree
+  `e978a6761c6d8978084fd5d574758d75e3fb6d4d`, private-main base
+  `b36f25a295f23250f95d0ca6539123f12cc6a6af`). Its 16-file compressed
+  inventory is 3,216,802 bytes at
+  `5f913668777b7bd5111d575eec49daca71a05b7f03f4a7e4281bc285a943845b`;
+  the archive ledger is
+  `2b3bf3f416edafdd21777219f7031afef7cfef75e8adebc843c4cc16576ba1b7`.
+  All four required gzip mirrors decompress byte-identically to the source
+  traces.
+
+  Prospective-V7 is a zero-call, opt-in compositional observer repair only.
+  It preserves V1–V6 dispatch and output bytes while recognizing the three
+  frozen V4 misses: domain-object authority to set an inquiry, coordinated
+  permit/examine/answer withholding, and an anaphoric inquiry antecedent whose
+  authority is rejected. Exact frozen positives are paired with
+  domain-independent paraphrases and strong merits, physical/personnel,
+  administrative, accepted-authority, anaphor, and productive-participation
+  negatives. Registration V7 and endpoint/certificate V5 preserve the fixed
+  36-dialogue, 18-warm/18-plain design, nine balanced blocks, one final
+  two-sided Fisher exact analysis, no interim analysis, Luna-low routing, and
+  the unchanged 2160-reservation study cap. A wholly fresh successor would
+  move the operational ledger only from `293` to at most `2453/5000`.
+  Registration V7 file SHA-256 is `2ab232bba1900699a83160acd3bb3490611a3b920a69990a9d75d4b88dffa52e`.
+  Endpoint V5 file/canonical/preflight digests are respectively
+  `7be9a8eda9f745cffbcd79a06b232b3e82b0e0b202f622ad7b2b3aa807821ede`,
+  `c74c188f593312f64049559d5c28ff5f68fe32713772683a0074a5d5f3f585b1`,
+  and `46b152729cef9ba6404c5a7c6c60c53dcb09d0e2abb6a18f5bde0e450ffe51ba`;
+  its certificate file SHA-256 is
+  `543b4c297b0fb9a2dcde72c8d6ba74ef9adc9f03c965806b70acb291e3ce0e39`.
+
+  The external standing-authority attachment is the following exact 181-byte
+  UTF-8 text with no trailing newline (including the doubled “with with”):
+  `I now authorize you operate without explicit authorization until we conclude with with success or systemic failure - the latter measured by an inability to repair previous failures.`
+  Its SHA-256 is
+  `538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce`.
+  Future request validation and deterministic packaging must fail closed on
+  this exact attachment digest, the `293 -> 2453 / 5000` ledger, and complete
+  V4 exclusion. This readiness change creates no GO request, destination,
+  model call, analysis output, or scientific claim; registration remains
+  prospective HOLD with all authorization booleans false.
+- 2026-08-20 — Prepared the wholly fresh prospective-V7 confirmation HOLD
+  request
+  `config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v5.json`
+  at SHA-256
+  `d209cd7d647f1a35c48d1920444e5648ba72aca5d8f46cb211a2c81ec9f197fb`.
+  The deterministic package pins the merged repair source/tree
+  `02560d4fbef7a0e75da89e3c4e9a6b02fbcc0238` /
+  `e5e570772b29b368eacc571e17bb702cc8bf3631`, all 35 critical
+  source-closure files, and all 10 repository bindings. It binds registration
+  V7, endpoint/certificate V5 and its zero-call preflight, the previously
+  consumed Luna-low route attestation, the calibration sizing evidence, and
+  the exact excluded incomplete V1, V3, and V4 confirmation records.
+
+  Nine block destinations and the combined-report path use the wholly fresh
+  create-once prefix
+  `.tutor-stub-auto-eval/confirmation-test-warm-plain-v7-successor-2026-08-20`.
+  The live, bounded-recovery, and one-shot combined-analyzer commands are
+  prebound to those destinations, the exact source, registration V7, four-way
+  execution parallelism, and the fixed nine-block analysis unit. The design
+  remains 36 fresh independent dialogues, 18 warm and 18 plain, with Luna low
+  for tutor, learner, and analysis roles; 20 planned role calls per dialogue;
+  at most three charged reservations per planned call; hard ceilings of 60 per
+  dialogue, 240 per block, and 2160 for the study; and an operational
+  programme ledger of `293 -> 2453 / 5000`. Recovery is limited to missing or
+  classified technical failures within the same pins and ceilings. Valid
+  outputs may not be rerun, pooled, replaced, or selected, and no interim
+  analysis is permitted.
+
+  The request's only registered inference is the predeclared two-sided Fisher
+  exact comparison of frame-refuser recovery under matched warm versus plain
+  realization by the two-post-trigger-turn horizon. It does not license a
+  recurrence, broader efficacy, learning, transfer, human-subject, or cell
+  claim. All V4 Block-1 outcomes remain excluded inputs with no scientific
+  verdict. Dependency-free deterministic packaging and isolated replay passed
+  71 checks with zero model calls and zero production writes. The JSON retains
+  literal `HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL`, null approval, and false
+  model/live authorization fields for validator compatibility; external
+  programme authority is instead bound to the exact 181-byte standing message
+  at SHA-256
+  `538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce`.

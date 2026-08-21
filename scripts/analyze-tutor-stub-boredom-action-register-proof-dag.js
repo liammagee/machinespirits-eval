@@ -353,7 +353,7 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan)
     metadata?.experiment?.policy !== 'field' ||
     metadata?.experiment?.repeat !== job.assignment_index ||
     metadata?.experiment?.jobId !== job.id ||
-    metadata?.autoLearner?.observationSemantics !== 'prospective_v7' ||
+    metadata?.autoLearner?.observationSemantics !== 'prospective_v8' ||
     metadata?.autoLearner?.maxTurns !== 4 ||
     metadata?.autoLearner?.profileId !== 'bored' ||
     metadata?.autoLearner?.modelRef !== 'codex.gpt-5.6-luna' ||

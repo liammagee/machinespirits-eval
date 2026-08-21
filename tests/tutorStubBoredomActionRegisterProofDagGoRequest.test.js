@@ -409,11 +409,11 @@ function buildRequestV2({ destinationSuffix }) {
   request.design.worlds = registration.design.worlds;
   request.design.assignmentManifestSha256 = registration.design.randomization.assignmentManifestSha256;
   request.design.runSeedBase = registration.design.freshPrefixGeneration.seedBase;
-  request.budget.programmeLedgerBefore = 290;
+  request.budget.programmeLedgerBefore = 293;
   request.budget.programmeCeilingBefore = 5000;
   request.budget.programmeCeilingAfter = 5000;
-  request.budget.programmeLedgerAfterBoredomMaximum = 2450;
-  request.budget.programmeReservedAfterBothMaximum = 4610;
+  request.budget.programmeLedgerAfterBoredomMaximum = 2453;
+  request.budget.programmeReservedAfterBothMaximum = 4613;
   request.bindings.registration = { path: REGISTRATION_V2, sha256: fileSha256(REGISTRATION_V2) };
   request.bindings.endpoint = {
     contractPath: ENDPOINT_V2,
@@ -538,7 +538,7 @@ test('boredom proof-DAG GO validator and packager bind scientific design separat
   }
 });
 
-test('prospective-v7 successor packaging binds the categorical failure and complete executable closure', (t) => {
+test('prospective-v8 successor packaging binds the categorical failure and complete executable closure', (t) => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-v2-go-'));
   const output = `.tutor-stub-auto-eval/.test-boredom-proof-dag-v2-go-${process.pid}.json`;
   t.after(() => {
@@ -553,9 +553,9 @@ test('prospective-v7 successor packaging binds the categorical failure and compl
   assert.equal(report.packetValid, true);
   assert.equal(report.modelCalls, 0);
   assert.equal(report.productionWrites, 0);
-  assert.equal(report.budget.programmeLedgerBefore, 290);
-  assert.equal(report.budget.programmeLedgerAfterBoredomMaximum, 2450);
-  assert.equal(report.budget.programmeReservedAfterBothMaximum, 4610);
+  assert.equal(report.budget.programmeLedgerBefore, 293);
+  assert.equal(report.budget.programmeLedgerAfterBoredomMaximum, 2453);
+  assert.equal(report.budget.programmeReservedAfterBothMaximum, 4613);
   assert.match(report.exactApprovalStatement, /5,000-attempt cumulative programme safeguard/u);
 
   const templatePath = path.join(temporary, 'template.json');

@@ -664,6 +664,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     'prospective_frame_refuser_warm_plain_confirmation_v2',
     'prospective_frame_refuser_warm_plain_confirmation_v3',
     'prospective_frame_refuser_warm_plain_confirmation_v4',
+    'prospective_frame_refuser_warm_plain_confirmation_v5',
   ].includes(request.actionRegisterConfirmation?.type);
   const isActionRegisterConfirmationV2 =
     request.actionRegisterConfirmation?.type === 'prospective_frame_refuser_warm_plain_confirmation_v2';
@@ -671,8 +672,13 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
     request.actionRegisterConfirmation?.type === 'prospective_frame_refuser_warm_plain_confirmation_v3';
   const isActionRegisterConfirmationV4 =
     request.actionRegisterConfirmation?.type === 'prospective_frame_refuser_warm_plain_confirmation_v4';
+  const isActionRegisterConfirmationV5 =
+    request.actionRegisterConfirmation?.type === 'prospective_frame_refuser_warm_plain_confirmation_v5';
   const isActionRegisterConfirmationSuccessor =
-    isActionRegisterConfirmationV2 || isActionRegisterConfirmationV3 || isActionRegisterConfirmationV4;
+    isActionRegisterConfirmationV2 ||
+    isActionRegisterConfirmationV3 ||
+    isActionRegisterConfirmationV4 ||
+    isActionRegisterConfirmationV5;
   const isBoredomActionRegisterProofDag =
     request.boredomActionRegisterProofDag?.type ===
     'prospective_boredom_matched_action_warm_plain_proof_dag_confirmation_v1';
@@ -704,7 +710,9 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       checks,
       'action-register-confirmation-successor-standing-authority-boundary',
       request.authorization.standingAuthorizationAttachmentSha256 ===
-        '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b' &&
+        (isActionRegisterConfirmationV5
+          ? '538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce'
+          : '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b') &&
         request.authorization.programmeCeilingAmendmentAuthorized === false,
       'the successor must bind the recorded standing authority and must not pre-authorize its ceiling amendment',
     );
@@ -851,13 +859,15 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         checks,
         'action-register-confirmation-endpoint-readiness-binding',
         endpointRegistration.version ===
-          (isActionRegisterConfirmationV4
-            ? 6
-            : isActionRegisterConfirmationV3
-              ? 5
-              : isActionRegisterConfirmationV2
-                ? 4
-                : 3) &&
+          (isActionRegisterConfirmationV5
+            ? 7
+            : isActionRegisterConfirmationV4
+              ? 6
+              : isActionRegisterConfirmationV3
+                ? 5
+                : isActionRegisterConfirmationV2
+                  ? 4
+                  : 3) &&
           contract.runner?.live_batch_executor ===
             'scripts/run-tutor-stub-resistance-action-register-confirmation.js#runTutorStubResistanceActionRegisterConfirmationBatch' &&
           contract.runner?.live_batch_recovery_executor ===
@@ -874,10 +884,10 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
           contract.runner?.batch_contract?.valid_unit_reruns === false &&
           contract.runner?.batch_contract?.outcome_selection === false &&
           contract.runner?.batch_contract?.bounded_technical_recovery ===
-            `missing_or_failed_units_only_within_unchanged_60_per_dialogue_240_per_batch_2160_confirmation_and_${isActionRegisterConfirmationV3 || isActionRegisterConfirmationV4 ? 5000 : isActionRegisterConfirmationV2 ? 2379 : 2345}_programme_caps` &&
-          (!(isActionRegisterConfirmationV3 || isActionRegisterConfirmationV4) ||
+            `missing_or_failed_units_only_within_unchanged_60_per_dialogue_240_per_batch_2160_confirmation_and_${isActionRegisterConfirmationV3 || isActionRegisterConfirmationV4 || isActionRegisterConfirmationV5 ? 5000 : isActionRegisterConfirmationV2 ? 2379 : 2345}_programme_caps` &&
+          (!(isActionRegisterConfirmationV3 || isActionRegisterConfirmationV4 || isActionRegisterConfirmationV5) ||
             (contract.runner?.batch_contract?.programme_ledger_after_confirmation_maximum ===
-              (isActionRegisterConfirmationV4 ? 2415 : 2379) &&
+              (isActionRegisterConfirmationV5 ? 2453 : isActionRegisterConfirmationV4 ? 2415 : 2379) &&
               contract.runner?.batch_contract?.programme_operational_ceiling === 5000 &&
               contract.runner?.batch_contract?.attempt_accounting_role ===
                 'operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective')) &&
@@ -1203,7 +1213,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       'boredom-proof-dag-design-binding',
       registered.version === (isBoredomActionRegisterProofDagV2 ? 2 : 1) &&
         registered.design?.observationSemantics ===
-          (isBoredomActionRegisterProofDagV2 ? 'prospective_v7' : 'prospective_bored_effort_withholding') &&
+          (isBoredomActionRegisterProofDagV2 ? 'prospective_v8' : 'prospective_bored_effort_withholding') &&
         request.design.profiles.join(',') === 'bored' &&
         request.design.dialogues === 36 &&
         request.design.dialoguesPerArm === 18 &&
@@ -1307,13 +1317,13 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         request.budget.dialoguesPerBatch === 4 &&
         request.budget.maximumAttemptsPerBatch === 240 &&
         request.budget.maximumPlannedModelAttempts === 2160 &&
-        request.budget.programmeLedgerBefore === (isBoredomActionRegisterProofDagV2 ? 290 : 219) &&
+        request.budget.programmeLedgerBefore === (isBoredomActionRegisterProofDagV2 ? 293 : 219) &&
         request.budget.programmeCeilingBefore === (isBoredomActionRegisterProofDagV2 ? 5000 : 2379) &&
         request.budget.frameRefusalConfirmationReservedAttempts === 2160 &&
         request.budget.programmeOperationalSafeguardIncrement === 2160 &&
         request.budget.programmeCeilingAfter === (isBoredomActionRegisterProofDagV2 ? 5000 : 4539) &&
-        request.budget.programmeLedgerAfterBoredomMaximum === (isBoredomActionRegisterProofDagV2 ? 2450 : 2379) &&
-        request.budget.programmeReservedAfterBothMaximum === (isBoredomActionRegisterProofDagV2 ? 4610 : 4539) &&
+        request.budget.programmeLedgerAfterBoredomMaximum === (isBoredomActionRegisterProofDagV2 ? 2453 : 2379) &&
+        request.budget.programmeReservedAfterBothMaximum === (isBoredomActionRegisterProofDagV2 ? 4613 : 4539) &&
         request.budget.attemptAccountingRole === 'operational_execution_safeguard_only' &&
         request.budget.retryOrResumeAuthority === 'bounded_technical_recovery',
       'the exact blocked test needs 18 per arm; attempt counts separately bind 60 per dialogue, 2160 for boredom, and 4539 as the cumulative operational safeguard',
@@ -1395,19 +1405,23 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       checks,
       'action-register-confirmation-design-binding',
       registered.version ===
-        (isActionRegisterConfirmationV4
-          ? 6
-          : isActionRegisterConfirmationV3
-            ? 5
-            : isActionRegisterConfirmationV2
-              ? 4
-              : 3) &&
+        (isActionRegisterConfirmationV5
+          ? 7
+          : isActionRegisterConfirmationV4
+            ? 6
+            : isActionRegisterConfirmationV3
+              ? 5
+              : isActionRegisterConfirmationV2
+                ? 4
+                : 3) &&
         registered.design?.trigger?.observationSemantics ===
-          (isActionRegisterConfirmationV4
-            ? 'prospective_v6'
-            : isActionRegisterConfirmationSuccessor
-              ? 'prospective_v5'
-              : 'prospective_v4') &&
+          (isActionRegisterConfirmationV5
+            ? 'prospective_v8'
+            : isActionRegisterConfirmationV4
+              ? 'prospective_v6'
+              : isActionRegisterConfirmationSuccessor
+                ? 'prospective_v5'
+                : 'prospective_v4') &&
         (!isActionRegisterConfirmationSuccessor || registered.design?.trigger?.observerFirstEligibility === true) &&
         request.design.profiles.join(',') === 'frame_refuser' &&
         request.design.dialogues === 36 &&
@@ -1480,7 +1494,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       );
       validateFileBinding(checks, 'action-register-confirmation-prior-request-binding', stopped.request);
     }
-    if (isActionRegisterConfirmationV4) {
+    if (isActionRegisterConfirmationV4 || isActionRegisterConfirmationV5) {
       const stopped = gate.priorIncompleteConfirmationV3;
       assertion(
         checks,
@@ -1515,7 +1529,65 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       );
       validateFileBinding(checks, 'action-register-confirmation-prior-v3-request-binding', stopped.request);
     }
-    if (isActionRegisterConfirmationV3 || isActionRegisterConfirmationV4) {
+    if (isActionRegisterConfirmationV5) {
+      const stopped = gate.priorIncompleteConfirmationV4;
+      assertion(
+        checks,
+        'action-register-confirmation-prior-v4-incomplete-exclusion',
+        stopped?.request?.path ===
+          'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v4.json' &&
+          stopped?.request?.sha256 === '8c25d6afcae9b9c5689f3130664048c63d303a440412af7f4ba138a6a9337aab' &&
+          stopped?.sourceCommit === '8d18480e8e531ae7b4ac4e5c63e8de82628aea9f' &&
+          stopped?.sourceTree === 'adadcbff0502d0df15e777d8cebe1d7d5daa5011' &&
+          stopped?.batchPlanSha256 === '388ee1df888d69f8cf2a63f6330e799092c3cc827a0e23c0913886ef9bb57591' &&
+          stopped?.batchResultSha256 === '1d957f5bf8707f5ce2150a8e3576ad4ab2440f7e1e8a1f43a064e863de001636' &&
+          stopped?.privateArchiveBranch === 'codex/resistance-action-register-confirmation-v4-incomplete-archive' &&
+          stopped?.privateArchiveCommit === '05eb01179a437c4a7723a831639b1d7126a338e2' &&
+          stopped?.privateArchiveTree === 'e978a6761c6d8978084fd5d574758d75e3fb6d4d' &&
+          stopped?.privateArchiveBase === 'b36f25a295f23250f95d0ca6539123f12cc6a6af' &&
+          stopped?.localInventoryFiles === 18 &&
+          stopped?.localInventoryBytes === 7_845_834 &&
+          stopped?.localInventorySha256 === 'd4585b41981d6ac4d4d6e44a6fccc253f792221f5e2c3f87fd7ec5d42c16eafe' &&
+          stopped?.liveMirrorInventoryFiles === 8 &&
+          stopped?.liveMirrorInventoryBytes === 922_685 &&
+          stopped?.liveMirrorInventorySha256 === '7545452e100a2cfc1b59c17e6da8c1a5196eb7fc5d272cd60556c7462cb524fa' &&
+          stopped?.privateArchiveInventoryFiles === 16 &&
+          stopped?.privateArchiveInventoryBytes === 3_216_802 &&
+          stopped?.privateArchiveInventorySha256 ===
+            '5f913668777b7bd5111d575eec49daca71a05b7f03f4a7e4281bc285a943845b' &&
+          stopped?.ledgerSha256 === '2b3bf3f416edafdd21777219f7031afef7cfef75e8adebc843c4cc16576ba1b7' &&
+          stopped?.dialoguesPlanned === 36 &&
+          stopped?.dialoguesStarted === 4 &&
+          stopped?.dialoguesComplete === 2 &&
+          stopped?.dialoguesSubstantiveFailure === 2 &&
+          stopped?.reservations === 38 &&
+          stopped?.completedCalls === 38 &&
+          stopped?.providerFailures === 0 &&
+          stopped?.abortedCalls === 0 &&
+          stopped?.interruptedCalls === 0 &&
+          stopped?.traceSha256?.s1 === '5d17d885bdad4e4b1ffe3b2a63a2e81f70c334eb9aafe1a5add649ebe1b8ac6c' &&
+          stopped?.traceSha256?.s2 === '7a9bd37991410c35f868f26fb63dc002d7aabdb64849a42220a1df8e50928942' &&
+          stopped?.traceSha256?.s3 === '14235461410868bba4e2a2bed2a7e24022dd4eadbe655b05835f0170da8ca3c3' &&
+          stopped?.traceSha256?.s4 === 'a211ea656bc458aaa3e31f6552d65e65b67a9f428ed6388d6006af057d8164ee' &&
+          stopped?.compressedTraceSha256?.s1 === 'a438528c8e5526038667e6f24cb0d080884b994acd3a6d4eebb293f3778dde75' &&
+          stopped?.compressedTraceSha256?.s2 === '3ef7bc055efe5410b77495e8e98d5d319e9cb4c76bab220e918748798e695dc5' &&
+          stopped?.compressedTraceSha256?.s3 === '549ab0a561951676a322e0ed8c4d8987ab79ac17190a0ef17e26b7423f319a45' &&
+          stopped?.compressedTraceSha256?.s4 === 'e5e4a872cbfd68dd7f5b633be6d018da1b97392b07c3433b51e6bccfd4f29dd3' &&
+          stopped?.blocksAfterFirstLaunched === false &&
+          stopped?.recoveryRun === false &&
+          stopped?.analyzerRun === false &&
+          stopped?.reportWritten === false &&
+          stopped?.resultProduced === false &&
+          stopped?.sealProduced === false &&
+          stopped?.reused === false &&
+          stopped?.pooled === false &&
+          stopped?.outcomeSelected === false &&
+          stopped?.excludedFromSuccessor === true,
+        'the incomplete V4 block and every substantive failure are hash-bound diagnostic evidence only and wholly excluded',
+      );
+      validateFileBinding(checks, 'action-register-confirmation-prior-v4-request-binding', stopped.request);
+    }
+    if (isActionRegisterConfirmationV3 || isActionRegisterConfirmationV4 || isActionRegisterConfirmationV5) {
       const superseded = gate.supersededCeilingBoundRequest;
       assertion(
         checks,
@@ -1532,37 +1604,45 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
       );
       validateFileBinding(checks, 'action-register-confirmation-superseded-request-binding', superseded.request);
     }
-    const expectedProgrammeBudget = isActionRegisterConfirmationV4
+    const expectedProgrammeBudget = isActionRegisterConfirmationV5
       ? {
-          ledgerBefore: 255,
+          ledgerBefore: 293,
           ceilingBefore: 5000,
           amendment: 0,
           ceilingAfter: 5000,
-          ledgerAfterMaximum: 2415,
+          ledgerAfterMaximum: 2453,
         }
-      : isActionRegisterConfirmationV3
+      : isActionRegisterConfirmationV4
         ? {
-            ledgerBefore: 219,
-            ceilingBefore: 2345,
-            amendment: 2655,
+            ledgerBefore: 255,
+            ceilingBefore: 5000,
+            amendment: 0,
             ceilingAfter: 5000,
-            ledgerAfterMaximum: 2379,
+            ledgerAfterMaximum: 2415,
           }
-        : isActionRegisterConfirmationV2
+        : isActionRegisterConfirmationV3
           ? {
               ledgerBefore: 219,
               ceilingBefore: 2345,
-              amendment: 34,
-              ceilingAfter: 2379,
+              amendment: 2655,
+              ceilingAfter: 5000,
               ledgerAfterMaximum: 2379,
             }
-          : {
-              ledgerBefore: 185,
-              ceilingBefore: 1200,
-              amendment: 1145,
-              ceilingAfter: 2345,
-              ledgerAfterMaximum: 2345,
-            };
+          : isActionRegisterConfirmationV2
+            ? {
+                ledgerBefore: 219,
+                ceilingBefore: 2345,
+                amendment: 34,
+                ceilingAfter: 2379,
+                ledgerAfterMaximum: 2379,
+              }
+            : {
+                ledgerBefore: 185,
+                ceilingBefore: 1200,
+                amendment: 1145,
+                ceilingAfter: 2345,
+                ledgerAfterMaximum: 2345,
+              };
     assertion(
       checks,
       'action-register-confirmation-power-and-budget',
@@ -1585,7 +1665,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
         request.budget.programmeCeilingAmendment === expectedProgrammeBudget.amendment &&
         request.budget.programmeCeilingAfter === expectedProgrammeBudget.ceilingAfter &&
         request.budget.programmeLedgerAfterMaximum === expectedProgrammeBudget.ledgerAfterMaximum &&
-        (!(isActionRegisterConfirmationV3 || isActionRegisterConfirmationV4) ||
+        (!(isActionRegisterConfirmationV3 || isActionRegisterConfirmationV4 || isActionRegisterConfirmationV5) ||
           request.budget.attemptAccountingRole ===
             'operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective') &&
         request.budget.retryOrResumeAuthority === 'bounded_technical_recovery',
@@ -2500,13 +2580,15 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
   const exactApprovalStatement = isBoredomActionRegisterProofDag
     ? `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one 36-dialogue Luna boredom matched-action warm-versus-plain proof-DAG confirmation with 18 dialogues per arm, one predeclared two-sided exact conditional blocked analysis with fixed-sequence proof-progress testing, no interim analysis, no reuse or pooling of prior dialogues or outcomes, a 2,160-attempt study safeguard and ${isBoredomActionRegisterProofDagV2 ? '5,000' : '4,539'}-attempt cumulative programme safeguard while both powered confirmations remain reserved, and bounded technical recovery authority for missing or failed units only within unchanged protected inputs and safeguards.`
     : isActionRegisterConfirmation
-      ? isActionRegisterConfirmationV4
-        ? `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1 and V3 confirmation blocks, and bounded technical recovery authority for missing or failed units only within the unchanged 5,000-attempt programme ceiling.`
-        : isActionRegisterConfirmationV3
-          ? `I amend the resistance-action-register programme ceiling from 2,345 to 5,000 model attempts and approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1 confirmation block, and bounded technical recovery authority for missing or failed units only within the unchanged 5,000-attempt programme ceiling.`
-          : isActionRegisterConfirmationSuccessor
-            ? `I amend the resistance-action-register programme ceiling from 2,345 to 2,379 model attempts and approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1 confirmation block, and bounded technical recovery authority for missing or failed units only within the unchanged 2,379-attempt programme ceiling.`
-            : `I amend the resistance-action-register programme ceiling from 1,200 to 2,345 model attempts and approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues, and bounded technical recovery authority for missing or failed units only within the unchanged 2,345-attempt programme ceiling.`
+      ? isActionRegisterConfirmationV5
+        ? `Standing programme authority attachment SHA-256 538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce applies to ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256}: one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1, V3, or V4 confirmation blocks, and bounded technical recovery for missing or failed units only within the unchanged 5,000-attempt programme ceiling.`
+        : isActionRegisterConfirmationV4
+          ? `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1 and V3 confirmation blocks, and bounded technical recovery authority for missing or failed units only within the unchanged 5,000-attempt programme ceiling.`
+          : isActionRegisterConfirmationV3
+            ? `I amend the resistance-action-register programme ceiling from 2,345 to 5,000 model attempts and approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1 confirmation block, and bounded technical recovery authority for missing or failed units only within the unchanged 5,000-attempt programme ceiling.`
+            : isActionRegisterConfirmationSuccessor
+              ? `I amend the resistance-action-register programme ceiling from 2,345 to 2,379 model attempts and approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one wholly fresh 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues or the incomplete V1 confirmation block, and bounded technical recovery authority for missing or failed units only within the unchanged 2,379-attempt programme ceiling.`
+              : `I amend the resistance-action-register programme ceiling from 1,200 to 2,345 model attempts and approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one 36-dialogue Luna confirmation with 18 warm and 18 plain dialogues, a hard ceiling of 2,160 model attempts, one predeclared two-sided Fisher exact analysis, no interim analysis, no reuse or pooling of the 12 calibration dialogues, and bounded technical recovery authority for missing or failed units only within the unchanged 2,345-attempt programme ceiling.`
       : `I approve ${path.relative(ROOT, requestPath)} at SHA-256 ${requestSha256} for one ` +
         `${request.design.dialogues}-dialogue Luna ${isReplacement ? 'replacement study' : isActionRegisterAnalysisOnly ? 'sealed action/register baseline analysis' : isActionRegisterBaseline ? 'action/register baseline' : 'study'}, ` +
         `with a hard ceiling of ${request.budget.maximumPlannedModelAttempts} model attempts and ${recoveryAuthorityClause}`;

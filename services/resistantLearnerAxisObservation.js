@@ -108,7 +108,8 @@ export function observeResistantLearnerAxes({
     authority: 'calibration_only',
     changes_registered_observation: false,
     axes,
-    ...(semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7
+    ...(semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV7 ||
+    semantics === RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV8
       ? { registered_observation: registered }
       : {}),
   };
