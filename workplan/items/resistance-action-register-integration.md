@@ -3034,3 +3034,27 @@ and explicit human approval.
   or continuation is authorized under the standing programme authority. Any
   future restart requires an explicit fresh human programme, measurement, and
   provider-route decision.
+- 2026-08-21 — The boredom proof-DAG confirmation now has a frozen
+  digest-bound v4 HOLD request,
+  `config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v4.json`,
+  request SHA-256
+  `660497b50ba9d0064c557cab73053f557e2c199364847b0b9c1e20d5e2e7fd80`,
+  packaged at launch commit `b4d6ca2367f996bdb7b6e8538e96dc140b127b51`.
+  It binds the v4 registration, endpoint contract, and certificate to the
+  validated Sol V3 semantic instrument (module and sealed 55-case held-out
+  v4 corpus digests, all five predeclared gates passed at 1.00, validation
+  report SHA-256
+  `7ff7810e28f7e037af12fbd852445efab9538bc1c946c529356a0c009a51763c`),
+  carries a 54-file source closure, fresh create-once destinations, and
+  marks the never-consumed v3 HOLD request as superseded. Budget: 446
+  reservations spent; worst case 2,606 study-alone and 4,766 with the
+  reserved frame-refusal confirmation, under the 5,000-attempt programme
+  safeguard. Checker replay passed 87 checks with zero model calls and
+  zero production writes; status HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL.
+  Supporting zero-cost coverage on the same branch: checker and packager
+  v4 extensions with six fail-closed mutation rejections, a dedicated v4
+  instrument-readiness suite (registration, endpoint, certificate, host
+  adjudicator seam, byte-exactness), and the v4 analyzer-lineage test.
+  This request authorizes nothing. The confirmation launch still requires
+  the exact approval statement supplied and committed separately by a
+  human; no model call occurs before that.
