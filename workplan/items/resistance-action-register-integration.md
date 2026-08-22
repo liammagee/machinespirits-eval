@@ -11,9 +11,10 @@ updated: 2026-08-22
 verification: >-
   The reopened measurement-redesign track has passed the prospective Claude
   JSON result-envelope transport, the wholly fresh 80-case manipulation
-  validation, and the zero-call split-V5 outcome/fidelity engineering gates
+  validation, and the zero-call field-local split-V6 outcome/fidelity
+  engineering gates
   while preserving all earlier roots as immutable excluded evidence. Before
-  confirmation, both V5 stages must pass their fresh independent 120-case
+  confirmation, both V6 stages must pass their fresh independent 120-case
   heldout validation. Regex remains nonauthoritative for semantic constructs,
   and no efficacy, null, learning, transfer, human, cell, or profile claim is
   licensed before the relevant predeclared gate passes.
@@ -131,6 +132,9 @@ links:
     - services/tutorStubResistanceRecoverySemanticAdjudicationV5.js
     - services/tutorStubResistanceRecoverySemanticValidationV5.js
     - services/tutorStubResistanceMeasurementValidationV5Runtime.js
+    - services/tutorStubResistanceRecoverySemanticAdjudicationV6.js
+    - services/tutorStubResistanceRecoverySemanticValidationV6.js
+    - services/tutorStubResistanceMeasurementValidationV6Runtime.js
     - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v2.json
     - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v2.json
     - config/tutor-stub-resistance-recovery-semantic-validation-registration.v2.json
@@ -138,6 +142,8 @@ links:
     - config/paid-study-endpoints/tutor-stub-resistance-recovery-semantic-validation.v2.endpoint-go.json
     - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v5.json
     - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v5.json
+    - config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v6.json
+    - config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v6.json
 tags:
   - tutor-stub
   - cells
@@ -3397,3 +3403,31 @@ and explicit human approval.
   judge, post-seal combined analysis, and byte-identical durable archiving;
   all selected V1-V3 runtime regressions remain green. No V5 model call has
   launched, and no validation or confirmation claim is yet licensed.
+
+- 2026-08-22 — Blocking review of the unlaunched V5 design found one further
+  structural echo of the original defect: a bad action quote could make a
+  valid register judgment abstain, and an unsupported positive recovery
+  component could suppress a separately supported positive endpoint. No V5
+  case had been exposed. The V5 instrument and corpus remain immutable
+  zero-call engineering evidence and are superseded prospectively.
+
+  V6 gives each recovery, action, and register field its own semantic value,
+  evidence, confidence, indeterminacy reason, and eligibility. The model no
+  longer returns a redundant final-recovery label: the wrapper derives a
+  judge's primary vote as yes when any independently eligible component is
+  yes, no only when both are eligible no, and otherwise abstention. A field's
+  invalid evidence, low confidence, or semantic indeterminacy cannot veto its
+  peer. Dedicated regressions cover both failure shapes.
+
+  The V6 instrument froze at commit
+  `779941725c6c57b880aef49e0c5524c19c117903`, and its 16-item
+  failure-to-safeguard registration froze before heldout authoring. A new
+  120-case corpus then froze at commit
+  `1a2fae16701ab322eff98f552a4a7adc5be924a5`; it retains the predeclared
+  `32/32/16/40` recovery and `40/40/40` register strata, 80 action-present
+  cases, and 24 intervening-turn-dependent cases, while using new settings and
+  paraphrase families with zero exact field or evidence-text reuse from V2,
+  V3, or V5. The field-local instrument, registrations, corpus, two-stage
+  runtime, response-free Sonnet continuation, combined post-seal analysis,
+  and durable archive pass zero-call synthetic validation. No V6 call has yet
+  launched; confirmation remains blocked on live validation passage.

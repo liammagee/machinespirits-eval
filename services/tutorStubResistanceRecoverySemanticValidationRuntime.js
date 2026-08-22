@@ -29,6 +29,17 @@ import {
   wrapTutorStubResistanceMeasurementModelOutputV5,
 } from './tutorStubResistanceRecoverySemanticAdjudicationV5.js';
 import {
+  TUTOR_STUB_RESISTANCE_FIDELITY_OUTPUT_SCHEMA_V6,
+  TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_OUTPUT_SCHEMA_V6,
+  adjudicateTutorStubResistanceFidelityPanelV6,
+  adjudicateTutorStubResistanceRecoveryPrimaryPanelV6,
+  buildTutorStubResistanceFidelityPromptV6,
+  buildTutorStubResistanceRecoveryPrimaryPromptV6,
+  scoreTutorStubResistanceMeasurementCorpusV6,
+  tutorStubResistanceMeasurementSha256 as tutorStubResistanceMeasurementSha256V6,
+  wrapTutorStubResistanceMeasurementModelOutputV6,
+} from './tutorStubResistanceRecoverySemanticAdjudicationV6.js';
+import {
   buildTutorStubResistanceRecoverySemanticBlindedValidationCases,
   loadTutorStubResistanceRecoverySemanticValidation,
   tutorStubResistanceRecoverySemanticOpaqueCaseId,
@@ -42,6 +53,11 @@ import {
   TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_VALIDATION_REGISTRATION_V5,
   loadTutorStubResistanceMeasurementValidationV5,
 } from './tutorStubResistanceRecoverySemanticValidationV5.js';
+import {
+  TUTOR_STUB_RESISTANCE_FIDELITY_VALIDATION_REGISTRATION_V6,
+  TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_VALIDATION_REGISTRATION_V6,
+  loadTutorStubResistanceMeasurementValidationV6,
+} from './tutorStubResistanceRecoverySemanticValidationV6.js';
 
 export const TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_SYSTEM_PROMPT =
   'Independently judge only the supplied public dialogue packet under the frozen response schema. Do not use tools, hidden state, lexical heuristics, profile labels, assignments, gold labels, or another judge response. Return only schema-valid JSON.';
@@ -68,6 +84,14 @@ export function loadTutorStubResistanceRecoverySemanticValidationForRegistration
   ) {
     return loadTutorStubResistanceMeasurementValidationV5(validationRegistration);
   }
+  if (
+    [
+      TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_VALIDATION_REGISTRATION_V6,
+      TUTOR_STUB_RESISTANCE_FIDELITY_VALIDATION_REGISTRATION_V6,
+    ].includes(validationRegistration)
+  ) {
+    return loadTutorStubResistanceMeasurementValidationV6(validationRegistration);
+  }
   return loadTutorStubResistanceRecoverySemanticValidation();
 }
 
@@ -79,11 +103,24 @@ function splitV5(loaded) {
   return loaded?.instrument?.version === 5 && ['primary_recovery', 'intervention_fidelity'].includes(loaded?.stage);
 }
 
+function splitV6(loaded) {
+  return loaded?.instrument?.version === 6 && ['primary_recovery', 'intervention_fidelity'].includes(loaded?.stage);
+}
+
+function splitMeasurement(loaded) {
+  return splitV5(loaded) || splitV6(loaded);
+}
+
 function panelMayContinueAfterTerminalSeat(loaded) {
-  return hierarchicalV3(loaded) || splitV5(loaded);
+  return hierarchicalV3(loaded) || splitMeasurement(loaded);
 }
 
 function adjudicateLoaded(loaded, options) {
+  if (splitV6(loaded)) {
+    return loaded.stage === 'primary_recovery'
+      ? adjudicateTutorStubResistanceRecoveryPrimaryPanelV6(options)
+      : adjudicateTutorStubResistanceFidelityPanelV6(options);
+  }
   if (splitV5(loaded)) {
     return loaded.stage === 'primary_recovery'
       ? adjudicateTutorStubResistanceRecoveryPrimaryPanelV5(options)
@@ -95,6 +132,7 @@ function adjudicateLoaded(loaded, options) {
 }
 
 function scoreLoaded(loaded, options) {
+  if (splitV6(loaded)) return scoreTutorStubResistanceMeasurementCorpusV6(options);
   if (splitV5(loaded)) return scoreTutorStubResistanceMeasurementCorpusV5(options);
   return hierarchicalV3(loaded)
     ? scoreTutorStubResistanceRecoverySemanticCorpusV3(options)
@@ -149,12 +187,13 @@ function validateHierarchicalV3GoRequest({ loaded, goRequest, sourceCommit, sour
   }
 }
 
-function validateSplitV5GoRequest({ loaded, goRequest, sourceCommit, sourceTree, destination }) {
-  if (!splitV5(loaded)) return;
+function validateSplitMeasurementGoRequest({ loaded, goRequest, sourceCommit, sourceTree, destination }) {
+  if (!splitMeasurement(loaded)) return;
+  const version = loaded.instrument.version;
   const stage = goRequest?.measurementValidation?.stages?.[loaded.stage];
   const expectedJudges = loaded.instrument.measurement.judges.map((judge) => judge.modelRef);
   if (
-    goRequest?.schema !== 'machinespirits.tutor-stub.resistance-measurement-validation-study-go-request.v5' ||
+    goRequest?.schema !== `machinespirits.tutor-stub.resistance-measurement-validation-study-go-request.v${version}` ||
     goRequest?.status !== 'go_under_standing_user_authority' ||
     goRequest?.source?.launchCommit !== sourceCommit ||
     goRequest?.source?.launchTree !== sourceTree ||
@@ -171,6 +210,8 @@ function validateSplitV5GoRequest({ loaded, goRequest, sourceCommit, sourceTree,
     goRequest?.measurementValidation?.fidelityLearnerOutcomeVisible !== false ||
     goRequest?.measurementValidation?.regexKeywordOrGeneratorAuthority !== 'none' ||
     goRequest?.measurementValidation?.mediumOrHighDeterminateVotesEligible !== true ||
+    (version === 6 && goRequest?.measurementValidation?.fieldLocalEligibility !== true) ||
+    (version === 6 && goRequest?.measurementValidation?.modelReturnsFinalRecovery !== false) ||
     goRequest?.measurementValidation?.indeterminateRepairRerunReplacementOrSelection !== false ||
     goRequest?.measurementValidation?.analysisOnlyAfterBothStagesSeal !== true ||
     stage?.registration?.path !== loaded.registrationPath ||
@@ -193,7 +234,7 @@ function validateSplitV5GoRequest({ loaded, goRequest, sourceCommit, sourceTree,
     goRequest?.claimBoundary?.validationOutcomesExcludedFromConfirmation !== true ||
     goRequest?.claimBoundary?.noEfficacyNullLearningTransferHumanOrCellClaim !== true
   ) {
-    throw new Error('v5 split resistance measurement validation GO request binding drifted');
+    throw new Error(`v${version} split resistance measurement validation GO request binding drifted`);
   }
 }
 
@@ -244,7 +285,9 @@ function packet(row) {
 }
 
 function measurementPacket(loaded, row) {
-  return splitV5(loaded) && loaded.stage === 'intervention_fidelity' ? { intervention: row.intervention } : packet(row);
+  return splitMeasurement(loaded) && loaded.stage === 'intervention_fidelity'
+    ? { intervention: row.intervention }
+    : packet(row);
 }
 
 function checkpointArchiveStage(checkpoint) {
@@ -538,14 +581,16 @@ function promptsFor(loaded, row) {
   return Object.fromEntries(
     loaded.instrument.measurement.judges.map((judge) => [
       judge.id,
-      splitV5(loaded)
+      splitMeasurement(loaded)
         ? loaded.stage === 'primary_recovery'
-          ? buildTutorStubResistanceRecoveryPrimaryPromptV5({
+          ? (splitV6(loaded)
+              ? buildTutorStubResistanceRecoveryPrimaryPromptV6
+              : buildTutorStubResistanceRecoveryPrimaryPromptV5)({
               caseId: row.case_id,
               publicPacket: packet(row),
               judge,
             })
-          : buildTutorStubResistanceFidelityPromptV5({
+          : (splitV6(loaded) ? buildTutorStubResistanceFidelityPromptV6 : buildTutorStubResistanceFidelityPromptV5)({
               caseId: row.case_id,
               intervention: row.intervention,
               judge,
@@ -556,20 +601,25 @@ function promptsFor(loaded, row) {
 }
 
 function promptSha256(loaded, prompt) {
-  return splitV5(loaded)
-    ? tutorStubResistanceMeasurementSha256(prompt)
-    : tutorStubResistanceRecoverySemanticPromptSha256(prompt);
+  if (splitV6(loaded)) return tutorStubResistanceMeasurementSha256V6(prompt);
+  if (splitV5(loaded)) return tutorStubResistanceMeasurementSha256(prompt);
+  return tutorStubResistanceRecoverySemanticPromptSha256(prompt);
 }
 
 function outputSchemaFor(loaded) {
-  if (!splitV5(loaded)) return TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_OUTPUT_SCHEMA;
+  if (!splitMeasurement(loaded)) return TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_OUTPUT_SCHEMA;
+  if (splitV6(loaded)) {
+    return loaded.stage === 'primary_recovery'
+      ? TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_OUTPUT_SCHEMA_V6
+      : TUTOR_STUB_RESISTANCE_FIDELITY_OUTPUT_SCHEMA_V6;
+  }
   return loaded.stage === 'primary_recovery'
     ? TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_OUTPUT_SCHEMA_V5
     : TUTOR_STUB_RESISTANCE_FIDELITY_OUTPUT_SCHEMA_V5;
 }
 
 function roleFor(loaded, judge) {
-  return `tutor_stub_resistance_${splitV5(loaded) ? loaded.stage : 'recovery_semantic'}_${judge.id}`;
+  return `tutor_stub_resistance_${splitMeasurement(loaded) ? loaded.stage : 'recovery_semantic'}_${judge.id}`;
 }
 
 export function buildTutorStubResistanceRecoverySemanticValidationPlan({
@@ -588,7 +638,7 @@ export function buildTutorStubResistanceRecoverySemanticValidationPlan({
     throw new Error('outcome validation requires absolute destination and digest-bound request');
   }
   validateHierarchicalV3GoRequest({ loaded, goRequest, sourceCommit, sourceTree, destination });
-  validateSplitV5GoRequest({ loaded, goRequest, sourceCommit, sourceTree, destination });
+  validateSplitMeasurementGoRequest({ loaded, goRequest, sourceCommit, sourceTree, destination });
   const cases = buildTutorStubResistanceRecoverySemanticBlindedValidationCases(loaded.corpus.cases);
   const plan = {
     schema: TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_PLAN_SCHEMA,
@@ -600,7 +650,7 @@ export function buildTutorStubResistanceRecoverySemanticValidationPlan({
     registration: { path: loaded.registrationPath, sha256: loaded.registrationSha256 },
     instrument: { path: loaded.instrumentPath, sha256: loaded.instrumentSha256 },
     heldout: { path: loaded.registration.heldout.corpusPath, sha256: loaded.corpusSha256, cases: 120 },
-    ...(splitV5(loaded) ? { measurement_stage: loaded.stage } : {}),
+    ...(splitMeasurement(loaded) ? { measurement_stage: loaded.stage } : {}),
     judges: loaded.instrument.measurement.judges.map((judge) => ({
       id: judge.id,
       model_ref: judge.modelRef,
@@ -609,7 +659,7 @@ export function buildTutorStubResistanceRecoverySemanticValidationPlan({
       effort: judge.effort,
       maximum_reservations: 3,
     })),
-    budget: splitV5(loaded)
+    budget: splitMeasurement(loaded)
       ? {
           planned_calls: loaded.registration.executionReadiness.plannedModelCalls,
           hard_reservation_ceiling: loaded.registration.executionReadiness.hardStageReservations,
@@ -691,7 +741,7 @@ function aggregateCheckpoint(checkpoint, row, loaded, prompts) {
   };
   const aggregate = adjudicateLoaded(
     loaded,
-    splitV5(loaded) && loaded.stage === 'intervention_fidelity'
+    splitMeasurement(loaded) && loaded.stage === 'intervention_fidelity'
       ? { ...common, intervention: row.intervention }
       : { ...common, publicPacket: packet(row) },
   );
@@ -716,8 +766,11 @@ function observed(result) {
 }
 
 function wrapRaw({ raw, prompt, judge, independentRunId, loaded }) {
-  if (splitV5(loaded)) {
-    return wrapTutorStubResistanceMeasurementModelOutputV5({
+  if (splitMeasurement(loaded)) {
+    const wrap = splitV6(loaded)
+      ? wrapTutorStubResistanceMeasurementModelOutputV6
+      : wrapTutorStubResistanceMeasurementModelOutputV5;
+    return wrap({
       instrument: loaded.stage,
       modelOutput: JSON.parse(String(raw.text || '').trim()),
       prompt,
@@ -1113,10 +1166,10 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
     }
     const prompts = promptsFor(loaded, row);
     const responses = [];
-    responsePairs[row.case_id] = splitV5(loaded)
+    responsePairs[row.case_id] = splitMeasurement(loaded)
       ? { [loaded.stage === 'primary_recovery' ? 'primary' : 'fidelity']: {} }
       : {};
-    const stagePairs = splitV5(loaded)
+    const stagePairs = splitMeasurement(loaded)
       ? responsePairs[row.case_id][loaded.stage === 'primary_recovery' ? 'primary' : 'fidelity']
       : responsePairs[row.case_id];
     const judges = loaded.instrument.measurement.judges;
@@ -1209,7 +1262,7 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
     const common = { caseId: row.case_id, responses, registration: loaded.instrument, prompts };
     const aggregate = adjudicateLoaded(
       loaded,
-      splitV5(loaded) && loaded.stage === 'intervention_fidelity'
+      splitMeasurement(loaded) && loaded.stage === 'intervention_fidelity'
         ? { ...common, intervention: row.intervention }
         : { ...common, publicPacket: packet(row) },
     );
@@ -1264,9 +1317,9 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
     responsePairs,
     registration: loaded.instrument,
   });
-  const score = splitV5(loaded)
+  const score = splitMeasurement(loaded)
     ? {
-        schema: 'machinespirits.tutor-stub.resistance-measurement-validation-stage-score.v5',
+        schema: `machinespirits.tutor-stub.resistance-measurement-validation-stage-score.v${loaded.instrument.version}`,
         stage: loaded.stage,
         status: loaded.stage === 'primary_recovery' ? combinedScore.primary.status : combinedScore.fidelity.status,
         metrics: loaded.stage === 'primary_recovery' ? combinedScore.primary.metrics : combinedScore.fidelity.metrics,
@@ -1284,8 +1337,8 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
     instrument_registration_sha256: loaded.instrumentSha256,
     heldout_corpus_sha256: loaded.corpusSha256,
     score,
-    claim_boundary: splitV5(loaded)
-      ? 'Single sealed V5 measurement stage only; no stage verdict may be interpreted before the separately blinded peer stage is sealed and the one combined validation analysis runs.'
+    claim_boundary: splitMeasurement(loaded)
+      ? `Single sealed V${loaded.instrument.version} measurement stage only; no stage verdict may be interpreted before the separately blinded peer stage is sealed and the one combined validation analysis runs.`
       : 'Outcome-and-treatment-fidelity instrument validation only; excluded from confirmation outcomes and all efficacy claims.',
   };
 }
