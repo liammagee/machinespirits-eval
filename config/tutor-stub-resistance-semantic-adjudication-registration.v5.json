@@ -32,6 +32,7 @@
         "model": "gpt-5.6-sol",
         "modelFamily": "openai_gpt_5_6",
         "effort": "low",
+        "modelAttestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
         "independent": true
       },
       {
@@ -41,6 +42,7 @@
         "model": "claude-sonnet-5",
         "modelFamily": "anthropic_claude_5",
         "effort": "low",
+        "modelAttestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
         "independent": true
       },
       {
@@ -50,6 +52,7 @@
         "model": "gpt-5.5",
         "modelFamily": "openai_gpt_5_5",
         "effort": "low",
+        "modelAttestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
         "independent": true
       }
     ],
