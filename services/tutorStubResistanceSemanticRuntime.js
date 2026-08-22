@@ -36,6 +36,7 @@ import {
   adjudicateTutorStubResistanceSemanticJudgesV4,
   validateTutorStubResistanceSemanticRegistrationV4,
 } from './tutorStubResistanceSemanticAdjudicationV4.js';
+import { createTutorStubResistanceConfirmationSemanticRuntime } from './tutorStubResistanceConfirmationSemanticRuntime.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION =
@@ -550,6 +551,21 @@ export function createLazyTutorStubResistanceSemanticAdjudicator(
     }
     return runtime.adjudicateCandidate(values);
   };
+}
+
+export function createTutorStubResistanceSemanticAdjudicationComposition({
+  appendTraceEvent,
+  callPromptModel,
+  resolveModel,
+  observationSemantics = '',
+} = {}) {
+  const adjudicateResistanceSemanticCandidate = createLazyTutorStubResistanceSemanticAdjudicator(
+    { appendTraceEvent, callPromptModel, resolveModel },
+    { observationSemantics },
+  );
+  const { adjudicateFinalHorizon: adjudicateTutorStubResistanceConfirmationOutcome } =
+    createTutorStubResistanceConfirmationSemanticRuntime({ appendTraceEvent, callPromptModel, resolveModel });
+  return { adjudicateResistanceSemanticCandidate, adjudicateTutorStubResistanceConfirmationOutcome };
 }
 
 export default { createTutorStubResistanceSemanticRuntime, loadTutorStubResistanceSemanticRegistration };

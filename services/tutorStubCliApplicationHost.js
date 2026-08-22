@@ -295,8 +295,7 @@ import { createTutorStubPublicPresentationRuntime } from './tutorStubPublicPrese
 import { createTutorStubDebugReportRuntime } from './tutorStubDebugReportRuntime.js';
 import { createTutorStubLaunchSummaryPresentation } from './tutorStubLaunchSummaryPresentation.js';
 import { createTutorStubAutomatedLearnerGenerationRuntime } from './tutorStubAutomatedLearnerGenerationRuntime.js';
-import { createLazyTutorStubResistanceSemanticAdjudicator } from './tutorStubResistanceSemanticRuntime.js';
-import { createTutorStubResistanceConfirmationSemanticRuntime } from './tutorStubResistanceConfirmationSemanticRuntime.js';
+import { createTutorStubResistanceSemanticAdjudicationComposition } from './tutorStubResistanceSemanticRuntime.js';
 import { createTutorStubTypedActionPlanningRuntime } from './tutorStubTypedActionPlanningRuntime.js';
 import { createTutorStubClarificationTranslationRuntime } from './tutorStubClarificationTranslationRuntime.js';
 import { createTutorStubOpeningRuntime } from './tutorStubOpeningRuntime.js';
@@ -1161,12 +1160,9 @@ export async function runTutorStubCliApplicationHost({
     publicWorldSummary,
     tutorStubComprehensionPrompt,
   });
-  const adjudicateResistanceSemanticCandidate = createLazyTutorStubResistanceSemanticAdjudicator(
-    { appendTraceEvent, callPromptModel, resolveModel },
-    { observationSemantics: process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS },
-  );
-  const { adjudicateFinalHorizon: adjudicateTutorStubResistanceConfirmationOutcome } =
-    createTutorStubResistanceConfirmationSemanticRuntime({ appendTraceEvent, callPromptModel, resolveModel });
+  const { adjudicateResistanceSemanticCandidate, adjudicateTutorStubResistanceConfirmationOutcome } =
+    createTutorStubResistanceSemanticAdjudicationComposition({ appendTraceEvent, callPromptModel, resolveModel,
+      observationSemantics: process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS });
   const {
     automatedLearnerCorruptionEnabled,
     automatedLearnerProfileId,
