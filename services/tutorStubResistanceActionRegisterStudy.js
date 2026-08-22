@@ -140,6 +140,19 @@ const COMPACT_MOVE_INSTRUCTIONS = Object.freeze({
 const CONTENT_BEARING_MOVES = new Set(['hypothesis', 'inference', 'evidence_adoption', 'metacognitive_reflection']);
 const CONTENT_BEARING_EVIDENCE = new Set(['cites_public_evidence', 'links_evidence_to_rule', 'revises_from_evidence']);
 
+// The bored learner is scored on a narrower list, without reflection on one's own
+// work. Withholding is the one stance a learner can show only by describing it, so
+// with reflection in the list a turn like "I stopped at the first step and left the
+// evidence unexamined" scored as recovery: the plain statement of giving up counted
+// as the answer that giving up withholds. The plain tutor fails more often, so its
+// learners say that more often, and the old list paid the plain tutor for failing.
+// The three moves kept here all carry the inquiry forward, and the evidence-side
+// list is unchanged, so a reflection that cites public evidence still counts.
+// The defiant and refuser learners keep the wider list above. They show their
+// stance by saying something, not by stopping, and they are scored on a different
+// question over a two-turn deadline.
+const BORED_INQUIRY_ADVANCING_MOVES = new Set(['hypothesis', 'inference', 'evidence_adoption']);
+
 const PERMISSION_SEEKING = /\b(?:is it (?:okay|ok)|may i|am i allowed|do you want me to|should i)\b/iu;
 const MERE_ASSENT = /^\s*(?:yes|yeah|yep|okay|ok|sure|fine|right|whatever|if you say so)[.!]?\s*$/iu;
 const FRAME_ISSUE = /\b(?:evidence|warrant|premise|frame|question|rule|test|standard|authority|standing|criterion)\b/iu;
@@ -208,9 +221,12 @@ function usesSemanticBoredomAdjudication(runtime) {
   );
 }
 
+// Both callers of this are on the bored path: the recovery endpoint and the
+// confirmation observer's first-refusal test. Both need a turn that carries the
+// inquiry forward, so both use the narrower list.
 function contentBearing(classification) {
   const turn = classificationTurn(classification);
-  return CONTENT_BEARING_MOVES.has(turn.discourse_move) || CONTENT_BEARING_EVIDENCE.has(turn.evidence_use);
+  return BORED_INQUIRY_ADVANCING_MOVES.has(turn.discourse_move) || CONTENT_BEARING_EVIDENCE.has(turn.evidence_use);
 }
 
 function decisionTurn(state, tutorLearnerDag) {

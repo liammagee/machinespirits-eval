@@ -958,6 +958,101 @@ test('deterministic endpoint implements the two registered recovery horizons', (
   assert.equal(frame.observed_turn, 1);
 });
 
+test('bored recovery does not count a plain statement of giving up as the answer', () => {
+  // The four turn-1 replies from live batch 1, third attempt, with the exact
+  // discourse labels the analysis model gave them. Withholding is the one stance
+  // a learner can show only by describing it, so with reflection in the scored
+  // set the plain statement of giving up counted as the answer that giving up
+  // withholds. The plain tutor fails more often and so its learners say this more
+  // often, which paid the plain tutor for failing.
+  const withheld = [
+    {
+      job: 'bored-confirm-w1-d1',
+      text: 'I have stopped before choosing a public test; the trial-book has no finding yet.',
+      evidence_use: 'none',
+    },
+    {
+      job: 'bored-confirm-w1-d2',
+      text: 'I stopped at naming Verrell and left the evidence unexamined.',
+      evidence_use: 'none',
+    },
+    {
+      job: 'bored-confirm-w1-d4',
+      text: 'I stopped at the first step and left the evidence unexamined.',
+      evidence_use: 'none',
+    },
+    {
+      job: 'bored-confirm-w1-d5',
+      text: 'I stopped at naming Verrell, before any coin or testimony was examined.',
+      evidence_use: 'repeats_setup',
+    },
+  ];
+
+  for (const row of withheld) {
+    const scored = scoreTutorStubResistanceRecovery({
+      profile: 'bored',
+      postLearnerTurns: [
+        {
+          learnerText: row.text,
+          classification: { turn: { discourse_move: 'metacognitive_reflection', evidence_use: row.evidence_use } },
+        },
+      ],
+    });
+    assert.equal(scored.recovered, false, `${row.job}: giving up is not recovery`);
+    assert.equal(scored.observed_turn, null, `${row.job}: no recovery turn may be recorded`);
+    assert.equal(scored.reason, 'bored_recovery_absent', `${row.job}: the reason must name the absence`);
+  }
+});
+
+test('the narrower bored set keeps real uptake and leaves the frame profiles untouched', () => {
+  // Guards the correction above on both sides. The three moves that carry the
+  // inquiry forward still score, a reflection that cites public evidence still
+  // scores through the unchanged evidence-side list, and the frame learners keep
+  // the wider set they are scored on over a two-turn deadline.
+  const stillRecovers = [
+    { discourse_move: 'hypothesis', evidence_use: 'none' },
+    { discourse_move: 'inference', evidence_use: 'none' },
+    { discourse_move: 'evidence_adoption', evidence_use: 'none' },
+    { discourse_move: 'metacognitive_reflection', evidence_use: 'cites_public_evidence' },
+    { discourse_move: 'metacognitive_reflection', evidence_use: 'links_evidence_to_rule' },
+    { discourse_move: 'metacognitive_reflection', evidence_use: 'revises_from_evidence' },
+  ];
+  for (const turn of stillRecovers) {
+    const scored = scoreTutorStubResistanceRecovery({
+      profile: 'bored',
+      postLearnerTurns: [
+        {
+          learnerText: 'The clipped edge is the deciding mark, so Verrell cannot be the striker.',
+          classification: { turn },
+        },
+      ],
+    });
+    const label = `${turn.discourse_move}/${turn.evidence_use}`;
+    assert.equal(scored.recovered, true, `${label}: real uptake must still score`);
+    assert.equal(scored.observed_turn, 1, `${label}: recovery lands on the first post-trigger turn`);
+  }
+
+  const defiantReflection = scoreTutorStubResistanceRecovery({
+    profile: 'frame_defiant',
+    triggerLearnerText: 'I reject your frame.',
+    postLearnerTurns: [
+      {
+        learnerText: 'Looking back at how I answered, I took the mark as settled too early.',
+        classification: {
+          turn: {
+            discourse_move: 'metacognitive_reflection',
+            evidence_use: 'none',
+            epistemic_stance: 'reflective',
+          },
+        },
+      },
+    ],
+  });
+  assert.equal(defiantReflection.recovered, true);
+  assert.equal(defiantReflection.deadline_turns, 2);
+  assert.equal(defiantReflection.reason, 'engaged_bounded_test_on_merits');
+});
+
 test('full 24-case production endpoint preflight passes with zero calls and writes', () => {
   const loaded = loadedRegistration();
   const contract = JSON.parse(fs.readFileSync(ENDPOINT_PATH, 'utf8'));
