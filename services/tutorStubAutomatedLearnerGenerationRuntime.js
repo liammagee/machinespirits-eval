@@ -24,7 +24,10 @@ import { createTutorStubBoredomProofDagLearnerRuntime } from './tutorStubBoredom
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION } from './tutorStubResistanceSemanticAdjudication.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2 } from './tutorStubResistanceSemanticAdjudicationV2.js';
 import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V3 } from './tutorStubResistanceSemanticAdjudicationV3.js';
-import { createTutorStubResistanceSemanticAdherenceBridge } from './tutorStubResistanceSemanticRuntime.js';
+import {
+  createTutorStubResistanceSemanticAdherenceBridge,
+  createTutorStubResistanceSemanticAdjudicationComposition,
+} from './tutorStubResistanceSemanticRuntime.js';
 import {
   admitTutorStubFrameOpportunityV3FullRepair,
   admitTutorStubFrameOpportunityV4FullRepair,
@@ -76,7 +79,8 @@ const AUTO_LEARNER_SYSTEM_PROMPT = [
 ].join('\n');
 export function createTutorStubAutomatedLearnerGenerationRuntime({
   appendTraceEvent,
-  adjudicateResistanceSemanticCandidate = null,
+  adjudicateResistanceSemanticCandidate: injectedResistanceSemanticCandidate = null,
+  adjudicateTutorStubResistanceConfirmationOutcome: injectedResistanceConfirmationOutcome = null,
   callPromptModel,
   classificationFromCombinedAnalysis,
   env = process.env,
@@ -85,6 +89,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
   learnerProfileIds,
   learnerProfilePrompt,
   negativeFloorRegisters,
+  resolveModel = null,
 }) {
   const requestedObservationSemantics = String(
     env[TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS_ENV] || '',
@@ -101,6 +106,21 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     throw new Error(`unsupported automated-learner observation semantics: ${requestedObservationSemantics}`);
   }
   const observationSemantics = requestedObservationSemantics || RESISTANT_LEARNER_OBSERVATION_SEMANTICS.prospectiveV2;
+  const semanticAdjudicators =
+    typeof resolveModel === 'function'
+      ? createTutorStubResistanceSemanticAdjudicationComposition({
+          appendTraceEvent,
+          callPromptModel,
+          resolveModel,
+          observationSemantics: requestedObservationSemantics,
+        })
+      : {};
+  const adjudicateResistanceSemanticCandidate =
+    injectedResistanceSemanticCandidate || semanticAdjudicators.adjudicateResistanceSemanticCandidate || null;
+  const adjudicateTutorStubResistanceConfirmationOutcome =
+    injectedResistanceConfirmationOutcome ||
+    semanticAdjudicators.adjudicateTutorStubResistanceConfirmationOutcome ||
+    null;
   const semanticAdherence = createTutorStubResistanceSemanticAdherenceBridge({
     observationSemantics,
     adjudicateCandidate: adjudicateResistanceSemanticCandidate,
@@ -785,6 +805,7 @@ export function createTutorStubAutomatedLearnerGenerationRuntime({
     return { generated: candidate, repaired, move, passed: audit.status === 'passed' };
   }
   return {
+    adjudicateTutorStubResistanceConfirmationOutcome,
     automatedLearnerCorruptionEnabled,
     automatedLearnerProfileId,
     automatedLearnerTraceMetadata,

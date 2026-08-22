@@ -642,6 +642,7 @@
         "tests/tutorStubRequestedEntryCausality.test.js",
         "tests/tutorStubResistanceActionRegisterConfirmation.test.js",
         "tests/tutorStubResistanceActionRegisterConfirmationGoRequest.test.js",
+        "tests/tutorStubResistanceActionRegisterConfirmationV9.test.js",
         "tests/tutorStubResistanceActionRegisterStudy.test.js",
         "tests/tutorStubResistanceRecoveryOffsetCleaning.test.js",
         "tests/tutorStubResistanceRecoverySemanticAdjudication.test.js",

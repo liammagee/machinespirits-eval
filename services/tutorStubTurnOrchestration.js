@@ -99,6 +99,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
     acknowledgeTutorStubOpeningRelease,
     advanceTutorStubDialogueClosure,
     adjudicateTutorStubBoredomObservation,
+    adjudicateTutorStubResistanceConfirmationOutcome,
     analyzeLearnerTurn,
     appendTraceEvent,
     appendTutorStubTurnFailureTraceRecords,
@@ -1706,6 +1707,25 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         });
         assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
         state.history.push({ role: 'user', content: nextLearnerText });
+        const v9Study = state.resistanceActionRegisterStudy;
+        const finalOutcomeSemanticsRequired =
+          registeredFinalLearnerOnly === true &&
+          v9Study?.registration?.version === 9 &&
+          v9Study?.dynamic_confirmation === true &&
+          v9Study?.final_learner_without_tutor_reply === true &&
+          Number(turnNumber) === Number(v9Study.trigger_turn) + Number(v9Study.outcome_horizon_learner_turns);
+        if (v9Study?.registration?.version === 9 && !finalOutcomeSemanticsRequired) {
+          throw new Error('V9 confirmation semantic panels are restricted to the exact registered final horizon');
+        }
+        const resistanceConfirmationSemanticOutcome = finalOutcomeSemanticsRequired
+          ? await adjudicateTutorStubResistanceConfirmationOutcome({
+              state,
+              turnNumber,
+              learnerText: nextLearnerText,
+              signal,
+            })
+          : null;
+        assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
         appendTraceEvent(state.trace, {
           type: 'resistance_action_register_outcome_learner_turn',
           turn: turnNumber,
@@ -1730,6 +1750,9 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
                   learnerResponseProvenance.automation.resistanceSemanticAdjudication,
                 ),
               }
+            : {}),
+          ...(resistanceConfirmationSemanticOutcome
+            ? { resistanceConfirmationSemanticOutcome: jsonClone(resistanceConfirmationSemanticOutcome) }
             : {}),
           tutorReplyGenerated: false,
         });

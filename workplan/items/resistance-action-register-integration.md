@@ -11,13 +11,14 @@ updated: 2026-08-22
 verification: >-
   The reopened measurement-redesign track has passed the prospective Claude
   JSON result-envelope transport, the wholly fresh 80-case manipulation
-  validation, and the zero-call transport-observable split-V8
-  outcome/fidelity engineering gates
-  while preserving all earlier roots as immutable excluded evidence. Before
-  confirmation, both sequential V8 stages must pass their fresh independent 120-case
-  heldout validation. Regex remains nonauthoritative for semantic constructs,
-  and no efficacy, null, learning, transfer, human, cell, or profile claim is
-  licensed before the relevant predeclared gate passes.
+  validation, both wholly fresh 120-case split-V8 outcome/fidelity validation
+  stages, and the V9 zero-call confirmation integration gates while preserving
+  all earlier roots as immutable excluded evidence. Confirmation remains
+  blocked until the V9 runtime/analyzer, endpoint contract, blocking review,
+  merge, and a fresh digest-bound GO request are complete. Regex remains
+  nonauthoritative for semantic constructs, and no efficacy, null, learning,
+  transfer, human, cell, or profile claim is licensed before the relevant
+  predeclared gate passes.
 claim_status: methods
 links:
   items:
@@ -3532,3 +3533,47 @@ and explicit human approval.
   enforcement, exact checkpoint/archive reconstruction of the capped provider
   reason, and full synthetic primary/fidelity seals. No V8 model call has
   launched; the programme ledger remains `3027 / 10000`.
+
+- 2026-08-22 — The V8 validation then completed without interim outcome
+  inspection. The primary stage sealed 120 cases and 360 judge records from
+  366 reservations; its report SHA-256 is
+  `db21e34f8d0662ab3f75f97cb5be4375d75c8d461f2ef5d719df74f8ada3d6d6`
+  and seal SHA-256 is
+  `40ddef33779ef0d68209f9fd01fad7ae8fb9d981d7377d24efd312651462e5d2`.
+  Primary panel sensitivity, specificity, exact accuracy, and determined
+  coverage were all `1.0`; Sonnet coverage was `0.9417`, above its frozen
+  gate. The outcome-blind fidelity stage sealed 120 cases and 360 judge
+  records from 361 reservations; its report SHA-256 is
+  `874afce7baf5b3d580e4e522fb8ca039a8294a0a367222118ad287a9b8e1d860`
+  and seal SHA-256 is
+  `9a3a2ba77bab1d36283510d80fbcb5635cc7d2bf5162494259c6b7fcddf351ee`.
+  Action accuracy and coverage were `1.0`; register accuracy and coverage were
+  `0.9917`. The combined report passed at SHA-256
+  `7e0ad9aad8aeb584e3f7512118d729e417f1de56bc7e7d1223dcca1b73e00f13`.
+  V8 consumed 727 reservations, moving the observed programme ledger to
+  `3754 / 10000`. These are measurement-validation results only; all 240
+  validation cases remain excluded from confirmation.
+
+- 2026-08-22 — V9 integrates the passed V4 trigger and V8 endpoint/fidelity
+  instruments into the unchanged powered 36-dialogue design: 18 warm and 18
+  plain dialogues in nine balanced four-dialogue blocks. Exactly one
+  two-sided Fisher exact analysis may run, and only after all nine blocks have
+  sealed. Calibration, incomplete-confirmation, and validation cases are not
+  reused or pooled. Three independently pinned non-Luna judges remain
+  authoritative at the trigger; separate three-judge primary-recovery and
+  outcome-blind fidelity calls run only at the exact final horizon. Regex,
+  keywords, the Luna learner classifier, generator analysis, and the typed
+  response audit are advisory only and cannot veto a semantic positive.
+  Missing, invalid, low-confidence, or disagreeing semantic measurements
+  become `measurement_indeterminate`; the whole Fisher analysis is then
+  withheld without repair, rerun, replacement, or selection.
+
+  Zero-call tests cover the corrected three-judge V4 wrapper, separate V8
+  panels and blinding, exact final-horizon trace replay, nonauthoritative typed
+  audit, measurement-indeterminate Fisher withholding, Claude response-free
+  `15000/45000` retry delays with persisted diagnostics, balanced randomization,
+  and the endpoint contract. The operational envelope is 123 reservations per
+  dialogue, 492 per block, and 4428 for confirmation; the conservative maximum
+  is `8182 / 10000`. These ceilings remain execution safeguards, not design
+  objectives. No V9 model call has launched; merge, blocking review, and a
+  fresh digest-bound GO request remain required.

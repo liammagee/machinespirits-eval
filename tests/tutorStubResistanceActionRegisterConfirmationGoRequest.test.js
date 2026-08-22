@@ -20,6 +20,7 @@ const SUCCESSOR_REGISTRATION = 'config/tutor-stub-resistance-action-register-cro
 const OPERATIONAL_CEILING_REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v5.json';
 const OBSERVER_REPAIR_REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v6.json';
 const OBSERVER_REPAIR_V7_REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v7.json';
+const SEMANTIC_V9_REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v9.json';
 const ENDPOINT = 'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v1.json';
 const SUCCESSOR_ENDPOINT = 'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v2.json';
 const OPERATIONAL_CEILING_ENDPOINT =
@@ -28,6 +29,7 @@ const OBSERVER_REPAIR_ENDPOINT =
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v4.json';
 const OBSERVER_REPAIR_V7_ENDPOINT =
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v5.json';
+const SEMANTIC_V9_ENDPOINT = 'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v9.json';
 const CERTIFICATE =
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v1.endpoint-go.json';
 const SUCCESSOR_CERTIFICATE =
@@ -38,6 +40,8 @@ const OBSERVER_REPAIR_CERTIFICATE =
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v4.endpoint-go.json';
 const OBSERVER_REPAIR_V7_CERTIFICATE =
   'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v5.endpoint-go.json';
+const SEMANTIC_V9_CERTIFICATE =
+  'config/paid-study-endpoints/tutor-stub-resistance-action-register-confirmation.v9.endpoint-go.json';
 const CALIBRATION_REQUEST = 'config/tutor-stub-resistance-action-register-baseline-analysis-go-request.v1.json';
 const INCOMPLETE_CONFIRMATION_REQUEST =
   'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v1.json';
@@ -47,6 +51,8 @@ const INCOMPLETE_CONFIRMATION_V3_REQUEST =
   'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v3.json';
 const INCOMPLETE_CONFIRMATION_V4_REQUEST =
   'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v4.json';
+const INCOMPLETE_CONFIRMATION_V7_REQUEST =
+  'config/tutor-stub-resistance-action-register-warm-plain-confirmation-study-go-request.v5.json';
 const CLOSURE = [
   'scripts/run-tutor-stub-resistance-action-register-confirmation.js',
   'scripts/analyze-tutor-stub-resistance-action-register-confirmation.js',
@@ -84,6 +90,23 @@ const CLOSURE = [
   'package.json',
   'package-lock.json',
 ];
+const SEMANTIC_V9_CLOSURE = [
+  ...CLOSURE,
+  'services/tutorStubResistanceSemanticRuntime.js',
+  'services/tutorStubResistanceSemanticAdjudication.js',
+  'services/tutorStubResistanceSemanticAdjudicationV2.js',
+  'services/tutorStubResistanceSemanticAdjudicationV3.js',
+  'services/tutorStubResistanceSemanticAdjudicationV4.js',
+  'services/tutorStubResistanceConfirmationSemanticRuntime.js',
+  'services/tutorStubResistanceRecoverySemanticAdjudicationV8.js',
+  'services/cliProviderBridge.js',
+  'services/modelCliProcessPolicy.js',
+  'config/tutor-stub-resistance-semantic-adjudication-registration.v4.json',
+  'config/tutor-stub-resistance-semantic-adjudication-response.schema.v3.json',
+  'config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v8.json',
+  'config/tutor-stub-resistance-recovery-primary-response.schema.v8.json',
+  'config/tutor-stub-resistance-intervention-fidelity-response.schema.v8.json',
+];
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -115,37 +138,44 @@ function buildRequest({
   operationalCeiling = false,
   observerRepair = false,
   observerRepairV7 = false,
+  semanticV9 = false,
 }) {
   const launchCommit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const launchTree = execFileSync('git', ['rev-parse', 'HEAD^{tree}'], { cwd: ROOT, encoding: 'utf8' }).trim();
-  const isSuccessor = successor || operationalCeiling || observerRepair || observerRepairV7;
-  const registrationPath = observerRepairV7
-    ? OBSERVER_REPAIR_V7_REGISTRATION
-    : observerRepair
-      ? OBSERVER_REPAIR_REGISTRATION
-      : operationalCeiling
-        ? OPERATIONAL_CEILING_REGISTRATION
-        : successor
-          ? SUCCESSOR_REGISTRATION
-          : REGISTRATION;
-  const endpointPath = observerRepairV7
-    ? OBSERVER_REPAIR_V7_ENDPOINT
-    : observerRepair
-      ? OBSERVER_REPAIR_ENDPOINT
-      : operationalCeiling
-        ? OPERATIONAL_CEILING_ENDPOINT
-        : successor
-          ? SUCCESSOR_ENDPOINT
-          : ENDPOINT;
-  const certificatePath = observerRepairV7
-    ? OBSERVER_REPAIR_V7_CERTIFICATE
-    : observerRepair
-      ? OBSERVER_REPAIR_CERTIFICATE
-      : operationalCeiling
-        ? OPERATIONAL_CEILING_CERTIFICATE
-        : successor
-          ? SUCCESSOR_CERTIFICATE
-          : CERTIFICATE;
+  const isSuccessor = successor || operationalCeiling || observerRepair || observerRepairV7 || semanticV9;
+  const registrationPath = semanticV9
+    ? SEMANTIC_V9_REGISTRATION
+    : observerRepairV7
+      ? OBSERVER_REPAIR_V7_REGISTRATION
+      : observerRepair
+        ? OBSERVER_REPAIR_REGISTRATION
+        : operationalCeiling
+          ? OPERATIONAL_CEILING_REGISTRATION
+          : successor
+            ? SUCCESSOR_REGISTRATION
+            : REGISTRATION;
+  const endpointPath = semanticV9
+    ? SEMANTIC_V9_ENDPOINT
+    : observerRepairV7
+      ? OBSERVER_REPAIR_V7_ENDPOINT
+      : observerRepair
+        ? OBSERVER_REPAIR_ENDPOINT
+        : operationalCeiling
+          ? OPERATIONAL_CEILING_ENDPOINT
+          : successor
+            ? SUCCESSOR_ENDPOINT
+            : ENDPOINT;
+  const certificatePath = semanticV9
+    ? SEMANTIC_V9_CERTIFICATE
+    : observerRepairV7
+      ? OBSERVER_REPAIR_V7_CERTIFICATE
+      : observerRepair
+        ? OBSERVER_REPAIR_CERTIFICATE
+        : operationalCeiling
+          ? OPERATIONAL_CEILING_CERTIFICATE
+          : successor
+            ? SUCCESSOR_CERTIFICATE
+            : CERTIFICATE;
   const registration = JSON.parse(fs.readFileSync(path.join(ROOT, registrationPath), 'utf8'));
   const contract = JSON.parse(fs.readFileSync(path.join(ROOT, endpointPath), 'utf8'));
   const certificate = JSON.parse(fs.readFileSync(path.join(ROOT, certificatePath), 'utf8'));
@@ -206,27 +236,38 @@ function buildRequest({
       explicitHumanApproval: null,
       modelCallsAuthorized: false,
       liveRunAuthorized: false,
-      standingAuthorizationAttachmentSha256: observerRepairV7
-        ? '538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce'
-        : '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b',
+      standingAuthorizationAttachmentSha256:
+        observerRepairV7 || semanticV9
+          ? '538aa73239072ea618e2c8308edf562f1dd7495b78574e35a3db2f549302c1ce'
+          : '4ef020fa2c59d6f7e215029374d7d5adaabc5f620fe1cbd5369020a34e88e08b',
+      ...(semanticV9
+        ? {
+            standingArchitecturalCorrectionSha256: 'dae9091d4f2584d416d7765e66d47acba03a33264886a6fa0a1eba45857c05f4',
+          }
+        : {}),
       programmeCeilingAmendmentAuthorized: false,
     },
     source: {
       launchCommit,
       launchTree,
       requirements: { headMustEqualLaunchCommit: true, checkoutMustBeClean: true, detachedLaunchWorktree: true },
-      closure: CLOSURE.map((repoPath) => ({ path: repoPath, sha256: fileSha256(repoPath) })),
+      closure: (semanticV9 ? SEMANTIC_V9_CLOSURE : CLOSURE).map((repoPath) => ({
+        path: repoPath,
+        sha256: fileSha256(repoPath),
+      })),
     },
     actionRegisterConfirmation: {
       type: successor
         ? 'prospective_frame_refuser_warm_plain_confirmation_v2'
-        : observerRepairV7
-          ? 'prospective_frame_refuser_warm_plain_confirmation_v5'
-          : observerRepair
-            ? 'prospective_frame_refuser_warm_plain_confirmation_v4'
-            : operationalCeiling
-              ? 'prospective_frame_refuser_warm_plain_confirmation_v3'
-              : 'prospective_frame_refuser_warm_plain_confirmation_v1',
+        : semanticV9
+          ? 'prospective_frame_refuser_warm_plain_confirmation_v6'
+          : observerRepairV7
+            ? 'prospective_frame_refuser_warm_plain_confirmation_v5'
+            : observerRepair
+              ? 'prospective_frame_refuser_warm_plain_confirmation_v4'
+              : operationalCeiling
+                ? 'prospective_frame_refuser_warm_plain_confirmation_v3'
+                : 'prospective_frame_refuser_warm_plain_confirmation_v1',
       calibrationSizingEvidence: {
         analysisRequest: { path: CALIBRATION_REQUEST, sha256: fileSha256(CALIBRATION_REQUEST) },
         reportSha256: '42021a390338cd556386efc96d8f00b35655a411627908a10248dba1e473a3a5',
@@ -264,7 +305,7 @@ function buildRequest({
             },
           }
         : {}),
-      ...(operationalCeiling || observerRepair || observerRepairV7
+      ...(operationalCeiling || observerRepair || observerRepairV7 || semanticV9
         ? {
             supersededCeilingBoundRequest: {
               request: {
@@ -279,7 +320,7 @@ function buildRequest({
             },
           }
         : {}),
-      ...(observerRepair || observerRepairV7
+      ...(observerRepair || observerRepairV7 || semanticV9
         ? {
             priorIncompleteConfirmationV3: {
               request: {
@@ -314,7 +355,7 @@ function buildRequest({
             },
           }
         : {}),
-      ...(observerRepairV7
+      ...(observerRepairV7 || semanticV9
         ? {
             priorIncompleteConfirmationV4: {
               request: {
@@ -373,6 +414,53 @@ function buildRequest({
             },
           }
         : {}),
+      ...(semanticV9
+        ? {
+            priorIncompleteConfirmationV7: {
+              request: {
+                path: INCOMPLETE_CONFIRMATION_V7_REQUEST,
+                sha256: fileSha256(INCOMPLETE_CONFIRMATION_V7_REQUEST),
+              },
+              sourceCommit: '02560d4fbef7a0e75da89e3c4e9a6b02fbcc0238',
+              sourceTree: 'e5e570772b29b368eacc571e17bb702cc8bf3631',
+              batchPlanSha256: '18ec637a52f5ef6432ccc03084bdcecf8f432d0577bba6bb2f8e584994517fd4',
+              batchResultSha256: '566f9c0b0617095bd5acac9803c388d2ab6207c812d9f7e2b3da3ad1b9cb869b',
+              privateArchiveBranch: 'codex/resistance-action-register-confirmation-v7-incomplete-archive',
+              privateArchiveCommit: 'a00c4870a7dab506bbe7522f6868c7278aaa81de',
+              privateArchiveTree: '51c3c2015dec77eccb8966b5110aa8dace42d09d',
+              localInventoryFiles: 20,
+              localInventoryBytes: 9_197_030,
+              localInventorySha256: 'ac3c74ffb86193ab7ba3deb88268102dcb636f71cea1affd8769dd1a0a4966b7',
+              liveMirrorInventoryFiles: 8,
+              liveMirrorInventoryBytes: 947_784,
+              liveMirrorInventorySha256: '1a21846b88ec71d11cfca106339960e24a39b0d3d3e9abfac6c1b5edfb810933',
+              dialoguesPlanned: 36,
+              dialoguesStarted: 4,
+              dialoguesComplete: 3,
+              dialoguesSubstantiveFailure: 1,
+              reservations: 38,
+              completedCalls: 38,
+              providerFailures: 0,
+              abortedCalls: 0,
+              traceSha256: {
+                s1: 'a4ca3897e16dc1cb20028a4269b53265132e4724adfca9b0b3b928447159b52a',
+                s2: '8f968f9f9bf159bb6717b8d5747da87fad85f4c75f6411e808edc298cbd9b74c',
+                s3: '7140a9b11d39afd885107dc00adb598028d66138b15eefa7fd6fc84b232321f1',
+                s4: '82fe867c8fe592987463198a594d940d637a329a83550cf5080e6d01531bf70a',
+              },
+              blocksAfterFirstLaunched: false,
+              recoveryRun: false,
+              analyzerRun: false,
+              reportWritten: false,
+              resultProduced: false,
+              sealProduced: false,
+              reused: false,
+              pooled: false,
+              outcomeSelected: false,
+              excludedFromSuccessor: true,
+            },
+          }
+        : {}),
       interimAnalysisPermitted: false,
       validUnitRerunsPermitted: false,
       outcomeSelectionPermitted: false,
@@ -383,11 +471,16 @@ function buildRequest({
         freshNonOverwritingRecoveryCheckpoint: true,
         rerunValidOutputs: false,
         selectAmongOutcomes: false,
-        maximumAttemptsPerDialogueUnchanged: 60,
-        maximumAttemptsPerBatchUnchanged: 240,
-        maximumTotalStudyAttemptsUnchanged: 2160,
-        programmeCeilingUnchanged:
-          operationalCeiling || observerRepair || observerRepairV7 ? 5000 : successor ? 2379 : 2345,
+        maximumAttemptsPerDialogueUnchanged: semanticV9 ? 123 : 60,
+        maximumAttemptsPerBatchUnchanged: semanticV9 ? 492 : 240,
+        maximumTotalStudyAttemptsUnchanged: semanticV9 ? 4428 : 2160,
+        programmeCeilingUnchanged: semanticV9
+          ? 10000
+          : operationalCeiling || observerRepair || observerRepairV7
+            ? 5000
+            : successor
+              ? 2379
+              : 2345,
       },
     },
     design: {
@@ -416,19 +509,47 @@ function buildRequest({
     },
     budget: {
       dialogues: 36,
-      plannedRoleCallsPerDialogue: 20,
+      plannedRoleCallsPerDialogue: semanticV9 ? 41 : 20,
       maximumReservationsPerPlannedCall: 3,
-      maximumAttemptsPerDialogue: 60,
+      maximumAttemptsPerDialogue: semanticV9 ? 123 : 60,
       dialoguesPerBatch: 4,
-      maximumAttemptsPerBatch: 240,
-      maximumPlannedModelAttempts: 2160,
-      programmeLedgerBefore: observerRepairV7 ? 293 : observerRepair ? 255 : isSuccessor ? 219 : 185,
-      programmeCeilingBefore: observerRepair || observerRepairV7 ? 5000 : isSuccessor ? 2345 : 1200,
+      maximumAttemptsPerBatch: semanticV9 ? 492 : 240,
+      maximumPlannedModelAttempts: semanticV9 ? 4428 : 2160,
+      programmeLedgerBefore: semanticV9
+        ? 3754
+        : observerRepairV7
+          ? 293
+          : observerRepair
+            ? 255
+            : isSuccessor
+              ? 219
+              : 185,
+      programmeCeilingBefore: semanticV9
+        ? 10000
+        : observerRepair || observerRepairV7
+          ? 5000
+          : isSuccessor
+            ? 2345
+            : 1200,
       programmeCeilingAmendment:
-        observerRepair || observerRepairV7 ? 0 : operationalCeiling ? 2655 : successor ? 34 : 1145,
-      programmeCeilingAfter: operationalCeiling || observerRepair || observerRepairV7 ? 5000 : successor ? 2379 : 2345,
-      programmeLedgerAfterMaximum: observerRepairV7 ? 2453 : observerRepair ? 2415 : isSuccessor ? 2379 : 2345,
-      ...(operationalCeiling || observerRepair || observerRepairV7
+        semanticV9 || observerRepair || observerRepairV7 ? 0 : operationalCeiling ? 2655 : successor ? 34 : 1145,
+      programmeCeilingAfter: semanticV9
+        ? 10000
+        : operationalCeiling || observerRepair || observerRepairV7
+          ? 5000
+          : successor
+            ? 2379
+            : 2345,
+      programmeLedgerAfterMaximum: semanticV9
+        ? 8182
+        : observerRepairV7
+          ? 2453
+          : observerRepair
+            ? 2415
+            : isSuccessor
+              ? 2379
+              : 2345,
+      ...(operationalCeiling || observerRepair || observerRepairV7 || semanticV9
         ? {
             attemptAccountingRole: 'operational_execution_safeguard_only_not_scientific_endpoint_or_design_objective',
           }
@@ -508,6 +629,10 @@ function templateText(request) {
   }
   if (template.actionRegisterConfirmation.priorIncompleteConfirmationV4) {
     const prior = template.actionRegisterConfirmation.priorIncompleteConfirmationV4.request;
+    prior.sha256 = goRequestFileSha256Marker(prior.path);
+  }
+  if (template.actionRegisterConfirmation.priorIncompleteConfirmationV7) {
+    const prior = template.actionRegisterConfirmation.priorIncompleteConfirmationV7.request;
     prior.sha256 = goRequestFileSha256Marker(prior.path);
   }
   if (template.actionRegisterConfirmation.supersededCeilingBoundRequest) {
@@ -878,6 +1003,68 @@ test('prospective-v7 future request binds the stopped V4 block and 293-to-2453 p
     },
     (value) => {
       value.budget.programmeLedgerAfterMaximum = 2452;
+    },
+  ]) {
+    const invalid = structuredClone(request);
+    mutation(invalid);
+    const invalidPath = path.join(temporary, `invalid-${crypto.randomUUID()}.json`);
+    fs.writeFileSync(invalidPath, `${JSON.stringify(invalid, null, 2)}\n`);
+    assert.throws(() => validateTutorStubResistantProfileStudyGoRequest({ requestPath: invalidPath }));
+  }
+});
+
+test('semantic V9 request packages the validated panels, stopped V7 exclusion, and 10,000 safeguard', (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'confirmation-semantic-v9-go-request-'));
+  const output = `.tutor-stub-auto-eval/.test-confirmation-semantic-v9-go-request-${process.pid}.json`;
+  t.after(() => {
+    fs.rmSync(temporary, { recursive: true, force: true });
+    fs.rmSync(path.join(ROOT, output), { force: true });
+  });
+
+  const request = buildRequest({
+    destinationSuffix: `semantic-v9-${process.pid}`,
+    semanticV9: true,
+  });
+  const requestPath = path.join(temporary, 'request.json');
+  fs.writeFileSync(requestPath, `${JSON.stringify(request, null, 2)}\n`);
+  const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath });
+  assert.equal(report.packetValid, true);
+  assert.equal(report.modelCalls, 0);
+  assert.equal(report.productionWrites, 0);
+  assert.equal(report.budget.plannedRoleCallsPerDialogue, 41);
+  assert.equal(report.budget.maximumPlannedModelAttempts, 4428);
+  assert.equal(report.budget.programmeLedgerBefore, 3754);
+  assert.equal(report.budget.programmeLedgerAfterMaximum, 8182);
+  assert.equal(report.budget.programmeCeilingAfter, 10000);
+  assert.match(report.exactApprovalStatement, /independently pinned three-judge trigger, recovery/u);
+  assert.match(report.exactApprovalStatement, /incomplete V1, V3, V4, or V7/u);
+
+  const templatePath = path.join(temporary, 'template.json');
+  fs.writeFileSync(templatePath, templateText(request));
+  fs.mkdirSync(path.dirname(path.join(ROOT, output)), { recursive: true });
+  const packageReport = packageTutorStubResistantProfileStudyGoRequest({
+    templatePath,
+    launchCommit: request.source.launchCommit,
+    outputPath: output,
+  });
+  assert.equal(packageReport.sourceClosureFiles, SEMANTIC_V9_CLOSURE.length);
+  assert.equal(packageReport.repositoryBindingFiles, 11);
+  assert.equal(packageReport.isolatedReplay.packetValid, true);
+  assert.equal(packageReport.effects.modelCalls, 0);
+  assert.deepEqual(fs.readFileSync(path.join(ROOT, output)), fs.readFileSync(requestPath));
+
+  for (const mutation of [
+    (value) => {
+      value.authorization.standingArchitecturalCorrectionSha256 = '0'.repeat(64);
+    },
+    (value) => {
+      value.actionRegisterConfirmation.priorIncompleteConfirmationV7.completedCalls = 37;
+    },
+    (value) => {
+      value.budget.maximumPlannedModelAttempts = 4427;
+    },
+    (value) => {
+      value.budget.programmeCeilingAfter = 9999;
     },
   ]) {
     const invalid = structuredClone(request);

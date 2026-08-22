@@ -121,11 +121,16 @@ test('prospective v4 through v9 carry their analyzer-required semantics stamp th
   assert.match(traceContextSource, /\.\.\.automatedLearnerTraceMetadata/u);
 });
 
-test('CLI-host lazy composition selects semantic v2 for automated-learner records and treatment eligibility', async () => {
+test('learner-facade lazy composition selects semantic v2 for automated-learner records and treatment eligibility', async () => {
   const hostSource = readTutorStubApplicationSource();
+  const learnerRuntimeSource = fs.readFileSync(
+    path.join(ROOT, 'services', 'tutorStubAutomatedLearnerGenerationRuntime.js'),
+    'utf8',
+  );
+  assert.match(hostSource, /createTutorStubAutomatedLearnerGenerationRuntime\([\s\S]+resolveModel/u);
   assert.match(
-    hostSource,
-    /createLazyTutorStubResistanceSemanticAdjudicator\([\s\S]+observationSemantics:\s*process\.env\.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS/u,
+    learnerRuntimeSource,
+    /createTutorStubResistanceSemanticAdjudicationComposition\([\s\S]+observationSemantics:\s*requestedObservationSemantics/u,
   );
 
   const bindingV2 = loadTutorStubResistanceSemanticRegistration(TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V2);

@@ -198,4 +198,58 @@ describe('tutor-stub prompt transport', () => {
       [true, true, false],
     );
   });
+
+  it('uses the registered semantic delays for exact Claude response-free errors and preserves diagnostics', async () => {
+    const counters = { calls: 0, provider: 0, metered: 0, delays: [] };
+    const trace = [];
+    const stdoutText = '[{"type":"result","is_error":true,"result":"overloaded"}]';
+    const transport = transportWith(
+      async () => {
+        counters.calls += 1;
+        if (counters.calls < 3) {
+          throw Object.assign(new Error('response free'), {
+            code: 'CLI_PROVIDER_RESPONSE_FREE_ERROR',
+            provider: 'claude-code',
+            classification: 'response_free_error',
+            responseFree: true,
+            exitCode: 1,
+            stdoutBytes: Buffer.byteLength(stdoutText),
+            stderrBytes: 0,
+            stdoutSha256: 'a'.repeat(64),
+            stderrSha256: 'b'.repeat(64),
+            stdoutText,
+            stderrText: '',
+            stdoutTextTruncated: false,
+            stderrTextTruncated: false,
+          });
+        }
+        return {
+          text: '{}',
+          provider: 'claude-code',
+          model: 'claude-sonnet-5',
+          effort: 'low',
+          structuredOutput: true,
+          prohibitedToolEventCount: 0,
+          prohibitedToolEventCountObserved: true,
+        };
+      },
+      counters,
+      trace,
+    );
+    await transport.callPromptModel({
+      prompt: 'public prompt',
+      resolved: { provider: 'claude-code', model: 'claude-sonnet-5' },
+      systemPrompt: 'public system',
+      role: 'tutor_stub_resistance_semantic_semantic_judge_b',
+      outputSchema: { type: 'object' },
+      semanticRetryDelaysMs: [15000, 45000],
+      trace,
+      turn: 1,
+    });
+    assert.deepEqual(counters, { calls: 3, provider: 3, metered: 3, delays: [15000, 45000] });
+    const errors = trace.filter((event) => event.type === 'model_call_error');
+    assert.equal(errors.length, 2);
+    assert.ok(errors.every((event) => event.transportDiagnostics.stdoutText === stdoutText));
+    assert.ok(errors.every((event) => event.transportDiagnostics.responseFree === true));
+  });
 });
