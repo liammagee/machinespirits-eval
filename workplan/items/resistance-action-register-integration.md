@@ -7,15 +7,16 @@ priority: P1
 owner: codex
 source: manual
 created: 2026-08-18
-updated: 2026-08-21
+updated: 2026-08-22
 verification: >-
-  The reopened measurement-redesign track must validate the prospective Claude
-  JSON result-envelope transport, bind all three stopped V3 roots as immutable
-  excluded evidence, and complete a wholly fresh 80-case dual-judge validation
-  with its registered analyzer before outcome validation or confirmation.
-  Regex remains nonauthoritative for semantic constructs, and no manipulation,
-  efficacy, null, learning, transfer, human, cell, or profile claim is licensed
-  before the relevant predeclared gate passes.
+  The reopened measurement-redesign track has passed the prospective Claude
+  JSON result-envelope transport and wholly fresh 80-case hierarchical-panel
+  manipulation validation while preserving all earlier roots as immutable
+  excluded evidence. Before confirmation, the outcome semantic instrument must
+  pass its own fresh independent heldout validation. Regex remains
+  nonauthoritative for semantic constructs, and no efficacy, null, learning,
+  transfer, human, cell, or profile claim is licensed before the relevant
+  predeclared gate passes.
 claim_status: methods
 links:
   items:
@@ -3197,3 +3198,37 @@ and explicit human approval.
   `894 -> 1,614 / 5,000`, no interim analysis, and no confirmation authority.
   Its focused zero-call request validator and deterministic blinded-plan build
   pass.
+
+- 2026-08-22 — The wholly fresh V4 manipulation semantic validation passed all
+  frozen gates. Execution used exact request SHA-256
+  `72a04ac91dd2c9f152f9e3efd3f1c3e8e80b5c433c00c8950db4f36210a4ec92`
+  from detached source `2b734c5042603ec7cc18a6d11d9735253d9f3631` /
+  tree `654038103babecc55059bbf72e9fb12c3c4e9c8e`. All 80 cases sealed with
+  240 judge records. The exact operational accounting is 242 reservations:
+  239 returned attempts plus three preserved Sonnet response-free transport
+  failures, with the exhausted seat recorded as an abstention and no recall,
+  rerun, repair, replacement, or outcome selection. The programme ledger is
+  therefore `894 -> 1136 / 5000`.
+
+  Primary sensitivity was `1.000`, specificity `0.950`, exact-label accuracy
+  `0.975`, productive-dispute recall `1.000`, determined coverage `0.9875`,
+  mean pairwise label agreement `0.9292`, and multi-rater kappa `0.8889`.
+  Aggregate component accuracy was `0.9219` at `0.9969` determined coverage;
+  every judge exceeded its `0.85` exact-label gate, judgment validity was
+  `0.9708`, every panel retained two eligible voters, and prohibited tool
+  events were zero. One strong negative was conservatively
+  `measurement_indeterminate` and one was a determinate false positive; both
+  remain in the frozen result and are included in the passing metrics.
+
+  The sealed report SHA-256 is
+  `ab9799d1d82f06e60398b505f1cccb6c0c593a781c8e8c0a59da4c2338023570`;
+  seal SHA-256 is
+  `29781dbe6784e05cf85cfb117611a2c0642cfb7b279a9798e64b83ec8fa86573`;
+  plan SHA-256 is
+  `22a653fe7052008eb6f00d42b8b19b923baa3bdbcdf08e093ddb528a0a78e0b1`.
+  The byte-digest mirror is preserved under the private archive namespace
+  `artifacts/tutor-stub-live/resistance-semantic-validation/72a04ac91dd2c9f1-22a653fe7052008e/`.
+  This licenses only the prospective manipulation semantic instrument. The
+  validation corpus remains excluded from confirmation outcomes, and outcome
+  validation plus a new executable confirmation registration/request remain
+  required before any warm-versus-plain inference.
