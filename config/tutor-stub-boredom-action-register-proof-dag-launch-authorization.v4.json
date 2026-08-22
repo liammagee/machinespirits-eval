@@ -14,8 +14,16 @@
     "spentOn": "live batch 1, four dialogues, twenty-one model attempts, stopped on the auxiliary contradiction defect"
   },
   "note": "The approval covers the registered study: the question, the claim boundary, the design, the measurement rules, the power calculation and the spend safeguards. Correcting a defect in the code does not void it; changing the study does.",
-  "restartSeedBase": 2026082600,
+  "restartSeedBase": 2026082700,
   "seedBaseMoves": [
+    {
+      "on": "2026-08-21",
+      "from": 2026082600,
+      "to": 2026082700,
+      "why": "third live batch 1 produced no outcome; all four dialogues stopped as measurement_indeterminate on the reflection defect, which is now corrected in both the auxiliary cross-check and the outcome scorer, and the failed prefixes are excluded, so the restart draws fresh ones",
+      "authority": "Liam Magee, 2026-08-21: enabled to repair and re-run without prior approval until we get through this dialogue batch",
+      "designChanged": false
+    },
     {
       "on": "2026-08-21",
       "from": 2026082500,
