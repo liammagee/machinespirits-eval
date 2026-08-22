@@ -517,6 +517,7 @@
         "tests/tutorStubBoredomActionRegisterProofDagStudy.test.js",
         "tests/tutorStubBoredomObserverTimingV2.test.js",
         "tests/tutorStubBoredomObserverTimingV2Readiness.test.js",
+        "tests/tutorStubBoredomProofDagRegisteredStopSeal.test.js",
         "tests/tutorStubBoredomSemanticAdjudicationV9.test.js",
         "tests/tutorStubBoredomSemanticV4InstrumentReadiness.test.js",
         "tests/tutorStubBoredomSemanticV9Readiness.test.js",

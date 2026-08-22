@@ -707,17 +707,128 @@ function sealBatch(destination, plan, result, recovery = {}) {
 // nothing else: same two digests, a status that says what happened, and the
 // realised counts. It pins bytes that already exist. It does not approve a run,
 // admit an excluded unit, or reopen a stopped one.
-const REGISTERED_INDETERMINATE_STOP = Object.freeze({
-  category: 'substantive_registered_failure',
-  code: 'TUTOR_STUB_BOREDOM_MEASUREMENT_INDETERMINATE',
-  disposition: 'measurement_indeterminate_stop_no_repair_no_replacement',
-  recoverable: false,
+// The registration names two ways a boredom unit stops for good, and both end
+// it the same way: no repair, no rerun, no replacement, out of the analysis.
+//   noEligibleTurnByMaximumDisposition — no turn up to the trigger maximum
+//     could be read, so the unit stops as measurement indeterminate.
+//   substantiveMissingOrDuplicateTriggerDisposition — the learner never gave
+//     the registered trigger by that turn, so there is nothing to measure.
+// Only the first was named here, keyed on one hard-written failure code. The
+// second could then be neither sealed nor analysed: the analyzer lets a batch
+// fall short only through a registered stop, and a missing trigger was not one
+// by this test, so a paid batch that stopped the way the registration says it
+// may stop had no state it could be left in. The key is the disposition, which
+// is the word the registration itself uses, and a test compares this map
+// against the registration so the two cannot drift.
+const REGISTERED_STOP_DISPOSITIONS = Object.freeze({
+  noEligibleTurnByMaximumDisposition: 'measurement_indeterminate_stop_no_repair_no_replacement',
+  substantiveMissingOrDuplicateTriggerDisposition: 'substantive_registered_failure_stop_no_replacement',
 });
 
-export function isRegisteredIndeterminateStop(failure) {
+export const REGISTERED_STOP_FAILURE_DISPOSITIONS = Object.freeze(Object.values(REGISTERED_STOP_DISPOSITIONS));
+
+export function isRegisteredStop(failure) {
   return (
-    Boolean(failure) && Object.entries(REGISTERED_INDETERMINATE_STOP).every(([key, value]) => failure[key] === value)
+    Boolean(failure) &&
+    failure.category === 'substantive_registered_failure' &&
+    failure.recoverable === false &&
+    REGISTERED_STOP_FAILURE_DISPOSITIONS.includes(failure.disposition)
   );
+}
+
+// One assembly step for both endings of a recovery. A recovery whose re-run
+// units all completed assembles here and seals complete. A recovery that ended
+// in a registered stop assembles here too, from the same files, and seals with
+// the stop. Writing the second by hand would have put the same row shape,
+// counts and digests in two places with nothing comparing them, which is the
+// defect this arc keeps turning up.
+function assembleTutorStubBoredomProofDagFinalResult({ plan, valid, recovered, recoveryJobs, initialReservations }) {
+  const caps = planCaps(plan);
+  const finalRows = plan.jobs.map((job) =>
+    valid.has(job.id)
+      ? { ...valid.get(job.id), origin: 'initial_valid_unit' }
+      : {
+          ...recovered.find((row) => row.job_id === job.id),
+          origin: 'bounded_technical_recovery_missing_or_failed_unit',
+        },
+  );
+  const totals = Object.fromEntries(
+    plan.jobs.map((job) => {
+      const recovery = recoveryJobs.find((row) => row.id === job.id);
+      return [
+        job.id,
+        initialReservations[job.id] + (recovery ? reservationCountInDirectory(recovery.command.trace_dir) : 0),
+      ];
+    }),
+  );
+  const totalReservations = Object.values(totals).reduce((sum, value) => sum + value, 0);
+  if (totalReservations > caps.perBatch || Object.values(totals).some((value) => value > caps.perDialogue)) {
+    throw new Error('boredom proof-DAG recovery exceeded an unchanged cap');
+  }
+  const stopped = finalRows.filter((row) => row.status !== 'complete');
+  if (!stopped.every((row) => isRegisteredStop(row.failure))) {
+    throw new Error('boredom proof-DAG recovery left a unit that is neither complete nor a registered stop');
+  }
+  return {
+    totals,
+    totalReservations,
+    stopped,
+    finalResult: {
+      schema: 'machinespirits.tutor-stub.boredom-action-register-proof-dag-live-batch-result.v1',
+      batch_id: plan.batch_id,
+      status: stopped.length ? 'incomplete' : 'complete',
+      completed_dialogues: caps.batchSize - stopped.length,
+      failed_or_missing_dialogues: stopped.length,
+      maximum_model_attempt_reservations: caps.perBatch,
+      observed_model_attempt_reservations: totalReservations,
+      observed_model_attempt_reservations_by_job: totals,
+      technical_recovery_used: true,
+      recovery_unit_ids: recovered.map((row) => row.job_id),
+      results: finalRows,
+    },
+  };
+}
+
+// A recovery that ended in a registered stop writes no final result, because
+// the run only assembles four of four. Recovery is create-once per batch, so
+// the batch cannot simply be recovered again. This finishes it from the files
+// already on disk: no model is called, no unit is re-run, no unit is replaced,
+// and the stopped unit stays stopped and out of the analysis.
+function assembleFinalResultFromSpentRecovery({ absolute, plan, initial }) {
+  const recoveryRoot = path.join(absolute, 'recoveries', 'recovery-001');
+  const recoveryPlanPath = path.join(recoveryRoot, 'recovery-plan.json');
+  const recoveryResultPath = path.join(recoveryRoot, 'recovery-result.json');
+  if (!fs.existsSync(recoveryPlanPath) || !fs.existsSync(recoveryResultPath)) return null;
+  const recoveryPlan = readJson(recoveryPlanPath);
+  const recoveryResult = readJson(recoveryResultPath);
+  if (
+    recoveryPlan.batch_id !== plan.batch_id ||
+    recoveryResult.batch_id !== plan.batch_id ||
+    recoveryPlan.original_plan_sha256 !== sha256(fs.readFileSync(path.join(absolute, 'batch-plan.json'))) ||
+    recoveryPlan.original_result_sha256 !== sha256(fs.readFileSync(path.join(absolute, 'batch-result.json')))
+  ) {
+    throw new Error('boredom proof-DAG seal found a recovery that does not belong to this batch');
+  }
+  const { valid } = selectTutorStubBoredomProofDagRecoveryCandidates({ plan, initial });
+  const assembled = assembleTutorStubBoredomProofDagFinalResult({
+    plan,
+    valid,
+    recovered: recoveryResult.results,
+    recoveryJobs: recoveryPlan.jobs,
+    initialReservations: Object.fromEntries(
+      plan.jobs.map((job) => [job.id, reservationCountInDirectory(job.command.trace_dir)]),
+    ),
+  });
+  if (assembled.finalResult.status === 'complete') {
+    throw new Error('boredom proof-DAG registered-stop seal refuses a recovery that completed');
+  }
+  writeJson(path.join(absolute, 'batch-final-result.json'), assembled.finalResult);
+  return {
+    recovery_plan_sha256: sha256(fs.readFileSync(recoveryPlanPath)),
+    recovery_result_sha256: sha256(fs.readFileSync(recoveryResultPath)),
+    observed_model_attempt_reservations: assembled.totalReservations,
+    observed_model_attempt_reservations_by_job: assembled.totals,
+  };
 }
 
 export function sealTutorStubBoredomProofDagBatchWithRegisteredStops({ destination } = {}) {
@@ -730,12 +841,16 @@ export function sealTutorStubBoredomProofDagBatchWithRegisteredStops({ destinati
   if (!fs.existsSync(planPath) || !fs.existsSync(initialResultPath)) {
     throw new Error('boredom proof-DAG seal requires a batch plan and a batch result');
   }
-  const resultFile = fs.existsSync(finalResultPath) ? 'batch-final-result.json' : 'batch-result.json';
   const plan = readJson(planPath);
+  const initial = readJson(initialResultPath);
+  const recoveryHashes = fs.existsSync(finalResultPath)
+    ? null
+    : assembleFinalResultFromSpentRecovery({ absolute, plan, initial });
+  const resultFile = fs.existsSync(finalResultPath) ? 'batch-final-result.json' : 'batch-result.json';
   const result = readJson(path.join(absolute, resultFile));
   const stopped = result.results.filter((row) => row.status !== 'complete');
   if (stopped.length === 0) throw new Error('boredom proof-DAG registered-stop seal refuses a complete batch');
-  if (!stopped.every((row) => isRegisteredIndeterminateStop(row.failure))) {
+  if (!stopped.every((row) => isRegisteredStop(row.failure))) {
     throw new Error('boredom proof-DAG registered-stop seal refuses a batch with a non-registered failure');
   }
   const caps = planCaps(plan);
@@ -754,6 +869,7 @@ export function sealTutorStubBoredomProofDagBatchWithRegisteredStops({ destinati
     hard_ceiling: caps.perBatch,
     valid_unit_reruns: false,
     outcome_selection: false,
+    ...(recoveryHashes || {}),
   };
   writeJson(sealPath, seal);
   return seal;
@@ -882,41 +998,15 @@ export async function recoverTutorStubBoredomProofDagBatch({
     results: recovered,
   });
   if (recovered.some((row) => row.status !== 'complete')) return { status: 'incomplete', recovered, sealed: false };
-  const finalRows = plan.jobs.map((job) =>
-    valid.has(job.id)
-      ? { ...valid.get(job.id), origin: 'initial_valid_unit' }
-      : {
-          ...recovered.find((row) => row.job_id === job.id),
-          origin: 'bounded_technical_recovery_missing_or_failed_unit',
-        },
-  );
-  const totals = Object.fromEntries(
-    plan.jobs.map((job) => {
-      const recovery = recoveryJobs.find((row) => row.id === job.id);
-      return [
-        job.id,
-        initialReservations[job.id] + (recovery ? reservationCountInDirectory(recovery.command.trace_dir) : 0),
-      ];
-    }),
-  );
-  const totalReservations = Object.values(totals).reduce((sum, value) => sum + value, 0);
-  if (totalReservations > caps.perBatch || Object.values(totals).some((value) => value > caps.perDialogue)) {
-    throw new Error('boredom proof-DAG recovery exceeded an unchanged cap');
-  }
-  const finalResultPath = path.join(absoluteDestination, 'batch-final-result.json');
-  writeJson(finalResultPath, {
-    schema: 'machinespirits.tutor-stub.boredom-action-register-proof-dag-live-batch-result.v1',
-    batch_id: plan.batch_id,
-    status: 'complete',
-    completed_dialogues: caps.batchSize,
-    failed_or_missing_dialogues: 0,
-    maximum_model_attempt_reservations: caps.perBatch,
-    observed_model_attempt_reservations: totalReservations,
-    observed_model_attempt_reservations_by_job: totals,
-    technical_recovery_used: true,
-    recovery_unit_ids: recovered.map((row) => row.job_id),
-    results: finalRows,
+  const { finalResult, totals, totalReservations } = assembleTutorStubBoredomProofDagFinalResult({
+    plan,
+    valid,
+    recovered,
+    recoveryJobs,
+    initialReservations,
   });
+  const finalResultPath = path.join(absoluteDestination, 'batch-final-result.json');
+  writeJson(finalResultPath, finalResult);
   sealBatch(absoluteDestination, plan, readJson(finalResultPath), {
     resultFile: 'batch-final-result.json',
     hashes: {
