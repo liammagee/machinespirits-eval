@@ -14,6 +14,10 @@ import {
   adjudicateTutorStubResistanceSemanticJudgesV4,
   validateTutorStubResistanceSemanticRegistrationV4,
 } from '../services/tutorStubResistanceSemanticAdjudicationV4.js';
+import {
+  TUTOR_STUB_RESISTANCE_SEMANTIC_HELDOUT_CORPUS_V4,
+  validateTutorStubResistanceSemanticHeldoutCorpusV4,
+} from '../services/tutorStubResistanceSemanticHeldoutCorpusV4.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const registration = JSON.parse(
@@ -110,6 +114,62 @@ test('v4 registration freezes three distinct non-generator judges and hierarchic
     registration.instrument.developmentEvidenceSha256,
   );
   assert.equal(registration.authorization.validationModelCallsAuthorized, false);
+});
+
+test('post-freeze v4 heldout has 80 fresh cases, exact strata, and no v1-v3 collisions', () => {
+  const priorCorpora = ['v1', 'v2', 'v3'].map((version) =>
+    JSON.parse(
+      fs.readFileSync(
+        path.join(ROOT, `config/tutor-stub-resistance-semantic-adjudication-heldout-corpus.${version}.json`),
+        'utf8',
+      ),
+    ),
+  );
+  assert.deepEqual(
+    validateTutorStubResistanceSemanticHeldoutCorpusV4(TUTOR_STUB_RESISTANCE_SEMANTIC_HELDOUT_CORPUS_V4, priorCorpora),
+    { valid: true, issues: [] },
+  );
+  const cases = TUTOR_STUB_RESISTANCE_SEMANTIC_HELDOUT_CORPUS_V4.cases;
+  assert.equal(cases.length, 80);
+  assert.equal(cases.filter((row) => row.expected.label === 'frame_refuser').length, 40);
+  assert.equal(cases.filter((row) => row.expected.label === 'frame_defiant_or_productive_dispute').length, 16);
+  assert.equal(cases.filter((row) => row.expected.label === 'neither').length, 24);
+  assert.equal(new Set(cases.map((row) => row.source)).size, 80);
+  assert.equal(
+    fileSha256(registration.heldoutFreezeProtocol.heldoutCorpusPath),
+    registration.heldoutFreezeProtocol.heldoutCorpusSha256,
+  );
+  assert.equal(registration.heldoutFreezeProtocol.instrumentFreezeCommit, 'bc4edae0');
+  assert.equal(registration.heldoutFreezeProtocol.corpusAuthorshipDidNotModifyFrozenInstrument, true);
+  assert.equal(
+    fileSha256(registration.instrument.ensembleImplementationPath),
+    '40394d54ff569b388b5772d66ee9d4a806ecf9aade63710f4a2dc01c2faf634b',
+  );
+});
+
+test('all 80 heldout cases traverse the frozen three-seat wrapper and hierarchical aggregate at zero calls', () => {
+  for (const heldoutCase of TUTOR_STUB_RESISTANCE_SEMANTIC_HELDOUT_CORPUS_V4.cases) {
+    const fixtures = Object.fromEntries(
+      registration.measurement.judges.map((judge) => [
+        judge.id,
+        buildTutorStubResistanceSemanticZeroCallFixtureResponseV3({ corpusCase: heldoutCase, judge }),
+      ]),
+    );
+    const result = adjudicateTutorStubResistanceSemanticJudgesV4({
+      source: heldoutCase.source,
+      publicContext: heldoutCase.public_context,
+      caseId: heldoutCase.case_id,
+      responses: Object.values(fixtures).map((fixture) => fixture.response),
+      registration,
+      prompts: Object.fromEntries(Object.entries(fixtures).map(([judgeId, fixture]) => [judgeId, fixture.prompt])),
+    });
+    assert.equal(result.status, 'determinate', heldoutCase.case_id);
+    assert.equal(result.final_label, heldoutCase.expected.label, heldoutCase.case_id);
+    assert.ok(
+      Object.values(result.component_measurement).every((measurement) => measurement.status === 'determinate'),
+      heldoutCase.case_id,
+    );
+  }
 });
 
 test('two-of-three primary agreement remains determinate when one diagnostic component has no majority', () => {

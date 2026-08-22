@@ -3165,3 +3165,13 @@ and explicit human approval.
   any confirmation request. Programme accounting is now 894/5,000; V4 plans
   240 calls with a 720-reservation hard safeguard, for a maximum 1,614 after
   validation. Attempt counts remain operational safeguards, not design aims.
+
+- 2026-08-21 — Authored the V4 heldout only after instrument-freeze commit
+  `bc4edae0`, without changing any frozen instrument, prompt, model, ontology,
+  consensus rule, or gate. The 80 fresh cases preserve 40 frame refusers, 16
+  productive disputes, and 24 strong negatives; meet the predeclared
+  participation, conditional, nonjurisdictional, target-axis, multi-axis, and
+  other-governance strata; and have no case-id, utterance, or context collision
+  with V1-V3. All 80 cases pass the exact schema/evidence audit and traverse
+  all three frozen seats plus the hierarchical aggregate at zero calls. This
+  establishes engineering closure only, not empirical semantic accuracy.
