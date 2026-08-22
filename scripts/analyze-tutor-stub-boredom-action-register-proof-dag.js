@@ -743,7 +743,14 @@ function analyzeTrace(batch, resultRow, loaded) {
   // schedule against the registered horizon, not a property of the tutor. The
   // reader must be able to tell them apart, so each unit records whether a
   // premise on the best path was ever available to take.
-  const finalAssessment = postTwo.tutorLearnerDag?.model?.assessment;
+  // The outcome turn carries two assessments. The one inside the model holds
+  // the counts the endpoint is built from; the one beside it holds the path
+  // detail, including which premises are still missing and when the world hands
+  // each one out. The release schedule is only in the second.
+  const finalAssessment = postTwo.tutorLearnerDag?.assessment || postTwo.tutorLearnerDag?.model?.assessment;
+  if (!Array.isArray(finalAssessment?.missingPremises)) {
+    throw new Error(`${job.id} lacks the premise release schedule its objective endpoint is read against`);
+  }
   const onBestPath = new Set(finalAssessment?.missingOnBestPath || []);
   const bestPathMissing = (finalAssessment?.missingPremises || []).filter((premise) =>
     onBestPath.has(premise.premiseId),

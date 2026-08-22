@@ -99,7 +99,7 @@ function engagedClassification() {
   };
 }
 
-function dagModel({ progressed, premiseWasAvailable = false, finalTurn = 3 }) {
+function dagModel({ progressed }) {
   return {
     metrics: {
       groundedCount: progressed ? 5 : 4,
@@ -108,18 +108,28 @@ function dagModel({ progressed, premiseWasAvailable = false, finalTurn = 3 }) {
     assessment: {
       bestPathCoverage: progressed ? 0.6 : 0.4,
       unsupportedAssertionCount: 0,
-      finalTurn,
-      missingOnBestPath: ['p_two', 'p_three'],
-      // A premise the world had already handed out and the learner did not take
-      // is a turn the objective endpoint could have moved on. A premise the
-      // world does not hand out until a later turn is one it could not.
-      missingPremises: [
-        premiseWasAvailable
-          ? { premiseId: 'p_two', bucket: 'released_but_not_held', releaseTurn: 2 }
-          : { premiseId: 'p_two', bucket: 'unreleased', releaseTurn: 9 },
-        { premiseId: 'p_three', bucket: 'unreleased', releaseTurn: 14 },
-      ],
     },
+  };
+}
+
+// A live outcome turn carries two assessments: the counts inside the model, and
+// the path detail beside it. Only the second says when the world hands out each
+// premise that is still missing, so the fixture must keep them apart the way a
+// real trace does.
+function dagPathAssessment({ premiseWasAvailable = false, finalTurn = 3 } = {}) {
+  return {
+    finalTurn,
+    bestPathCoverage: 0,
+    missingOnBestPath: ['p_two', 'p_three'],
+    // A premise the world had already handed out and the learner did not take is
+    // one the objective endpoint could have moved on. A premise the world does
+    // not hand out until a later turn is one it could not.
+    missingPremises: [
+      premiseWasAvailable
+        ? { premiseId: 'p_two', bucket: 'released_but_not_held', releaseTurn: 2 }
+        : { premiseId: 'p_two', bucket: 'unreleased', releaseTurn: 9 },
+      { premiseId: 'p_three', bucket: 'unreleased', releaseTurn: 14 },
+    ],
   };
 }
 
@@ -298,7 +308,10 @@ function syntheticTrace({
       triggerLearnerSha256: triggerSha,
       learnerText: recovered ? recoveryText : nonRecoveryText,
       classification: recovered ? engagedClassification() : boredClassification(),
-      tutorLearnerDag: { model: dagModel({ progressed, premiseWasAvailable, finalTurn: outcomeTurn }) },
+      tutorLearnerDag: {
+        model: dagModel({ progressed }),
+        assessment: dagPathAssessment({ premiseWasAvailable, finalTurn: outcomeTurn }),
+      },
       tutorReplyGenerated: false,
     },
   ];
