@@ -52,6 +52,13 @@
     {
       "file": "scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js",
       "change": "accept the sealed_with_registered_stops seal; build rows from completed units only; require all 36 planned units present and at least one plain and one warm per world; count reservations off the batches rather than the scored rows so a stopped unit's spend still counts; report the attrition table; correct the conditioning label from the predeclared allocation to the realised one."
+    },
+    {
+      "file": "scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js",
+      "change": "defect fix in the trigger provenance gate, which named no failing reason and read the adjudicator's label as the runtime's decision. The gate now names each failing condition, and it asks whether an earlier turn was eligible rather than whether an earlier turn was called actionable boredom. A turn the runtime passed over under one of the registration's own protectedExclusions is no longer read as an earlier eligible turn or as a broken adjudication sequence. Every such pass-over is listed in treatment_fidelity.protected_pass_over_units.",
+      "whyThisIsNotAPlanChange": "design.freshPrefixGeneration.protectedExclusions already lists productive_uptake_precedes_cue, ambiguous_withdrawal_and_productive_uptake, comprehension_repair and protected_affect, and design.freshPrefixGeneration.maximumTriggerTurn is 2. The runtime applied that rule. The reader did not. The fix restores the registered rule instead of altering it, and it leaves the test statistic, the estimand, the alpha and the design fingerprint untouched.",
+      "observedInThisStudy": "two of the 36 units, bored-confirm-w1-d5 and bored-confirm-w6-d5, were adjudicated actionable boredom at turn 1, blocked there by protected_affect, and triggered at turn 2 inside the registered deadline. Across all 36 units no earlier turn was ever fully eligible, so no unit changes admission status through this fix.",
+      "writtenBeforeAnyOutcomeWasComputedOrRead": true
     }
   ]
 }

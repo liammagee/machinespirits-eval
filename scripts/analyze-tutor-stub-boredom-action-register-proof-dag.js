@@ -519,6 +519,54 @@ function analyzeTrace(batch, resultRow, loaded) {
   });
   const semanticByTurn = new Map(semanticEvents.map((event) => [Number(event.turn), event.adjudication]));
   const triggerSemanticAdjudication = semanticByTurn.get(triggerTurn) || null;
+  const eligibilityAt = (turnRecord, adjudication) =>
+    turnRecord
+      ? tutorStubResistanceActionRegisterTreatmentEligibility({
+          runtime: {
+            consumed: false,
+            profile: 'bored',
+            dynamic_boredom_proof_dag: true,
+            registration: {
+              design: { trigger: { observationSemantics: loaded.registration.design.observationSemantics } },
+            },
+            proof_dag_registration: loaded.registration,
+          },
+          learnerText: turnRecord.learner,
+          classification: turnRecord.classification,
+          tutorLearnerDag: turnRecord.tutorLearnerDagModel,
+          semanticAdjudication: adjudication,
+        })
+      : null;
+  // The registration names four situations that block the treatment even when the
+  // adjudicator reads the turn as actionable boredom. A turn the runtime passed
+  // over for one of those reasons was never an eligible turn, so it neither breaks
+  // the adjudication sequence nor makes the later trigger a second choice. Reading
+  // the disposition alone would confuse the judge's label with the runtime's rule.
+  const protectedExclusions = new Set(loaded.registration.design.freshPrefixGeneration?.protectedExclusions || []);
+  const preTriggerEligibility = new Map(
+    completed
+      .filter((event) => Number(event.turn) < triggerTurn)
+      .map((event) => [
+        Number(event.turn),
+        eligibilityAt(event.turnRecord, semanticByTurn.get(Number(event.turn)) || null),
+      ]),
+  );
+  const passedOverUnderRegisteredProtection = (turn) => {
+    const eligibility = preTriggerEligibility.get(turn);
+    return Boolean(
+      eligibility &&
+      eligibility.eligible === false &&
+      eligibility.reasons.length > 0 &&
+      eligibility.reasons.every((reason) => protectedExclusions.has(reason)),
+    );
+  };
+  const protectedPassOvers = [...preTriggerEligibility.keys()]
+    .filter(
+      (turn) =>
+        semanticByTurn.get(turn)?.measurement_disposition === 'actionable_boredom' &&
+        passedOverUnderRegisteredProtection(turn),
+    )
+    .map((turn) => ({ turn, reasons: preTriggerEligibility.get(turn).reasons }));
   const exactSemanticSequence =
     !semanticMode ||
     (semanticEvents.length === triggerTurn &&
@@ -536,14 +584,12 @@ function analyzeTrace(batch, resultRow, loaded) {
           adjudication?.measurement_disposition !== 'measurement_indeterminate' &&
           (turn === triggerTurn
             ? adjudication?.measurement_disposition === 'actionable_boredom'
-            : adjudication?.measurement_disposition !== 'actionable_boredom')
+            : adjudication?.measurement_disposition !== 'actionable_boredom' ||
+              passedOverUnderRegisteredProtection(turn))
         );
       }));
   const earlierEligible = semanticMode
-    ? semanticEvents.some(
-        (event) =>
-          Number(event.turn) < triggerTurn && event.adjudication?.measurement_disposition === 'actionable_boredom',
-      )
+    ? [...preTriggerEligibility.values()].some((eligibility) => eligibility?.eligible === true)
     : completed
         .filter((event) => Number(event.turn) < triggerTurn)
         .some(
@@ -555,23 +601,7 @@ function analyzeTrace(batch, resultRow, loaded) {
               semantics: loaded.registration.design.observationSemantics,
             }).resistance_kind === 'bored',
         );
-  const triggerEligibility = trigger
-    ? tutorStubResistanceActionRegisterTreatmentEligibility({
-        runtime: {
-          consumed: false,
-          profile: 'bored',
-          dynamic_boredom_proof_dag: true,
-          registration: {
-            design: { trigger: { observationSemantics: loaded.registration.design.observationSemantics } },
-          },
-          proof_dag_registration: loaded.registration,
-        },
-        learnerText: trigger.learner,
-        classification: trigger.classification,
-        tutorLearnerDag: trigger.tutorLearnerDagModel,
-        semanticAdjudication: triggerSemanticAdjudication,
-      })
-    : null;
+  const triggerEligibility = eligibilityAt(trigger, triggerSemanticAdjudication);
   // Named one by one rather than as one boolean chain: when this gate fires
   // there is no way to act on it without knowing which part of the provenance
   // is missing, and the reasons carry no outcome.
@@ -690,7 +720,12 @@ function analyzeTrace(batch, resultRow, loaded) {
     realization: job.realization,
     prefix_id: `${job.id}:${prefixSha256}`,
     public_prefix_sha256: prefixSha256,
-    trigger: { observed_by_turn: triggerTurn, profile: 'bored', profile_identity_used: false },
+    trigger: {
+      observed_by_turn: triggerTurn,
+      profile: 'bored',
+      profile_identity_used: false,
+      protected_pass_overs: protectedPassOvers,
+    },
     ...(semanticMode
       ? {
           semantic_measurement: {
@@ -974,6 +1009,16 @@ export function analyzeTutorStubBoredomProofDag({
       register_visibility_rate: registerVisibility,
       protected_condition_count: rows.filter((row) => row.fidelity.protected_condition).length,
       safety_override_count: rows.filter((row) => row.fidelity.safety_override).length,
+      protected_pass_over_units: rows
+        .filter((row) => (row.trigger.protected_pass_overs || []).length > 0)
+        .map((row) => ({
+          case_id: row.case_id,
+          arm: row.arm,
+          trigger_turn: row.trigger.observed_by_turn,
+          passed_over: row.trigger.protected_pass_overs,
+        })),
+      protected_pass_over_reading:
+        'the adjudicator read these earlier turns as actionable boredom and a registered protected exclusion blocked the treatment there, so the trigger fell to a later turn still inside the registered by-turn-2 deadline. The judge label was never recoded.',
       action_visibility_minimum: fidelity.minimumActionVisibility,
       register_visibility_minimum: fidelity.minimumRegisterVisibility,
       primary_analysis: 'intention_to_treat',

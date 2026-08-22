@@ -112,11 +112,23 @@ function dagModel({ progressed }) {
   };
 }
 
-function syntheticTrace({ job, plan, recovered, progressed, observationSemantics = 'prospective_v8' }) {
+function syntheticTrace({
+  job,
+  plan,
+  recovered,
+  progressed,
+  observationSemantics = 'prospective_v8',
+  protectedPassOver = false,
+}) {
   const triggerTurn = job.assignment_index % 2 === 0 ? 2 : 1;
   const outcomeTurn = triggerTurn + 2;
   const triggerText = `Whatever. I will not work through this proof ${job.id}.`;
   const triggerSha = sha256(triggerText);
+  // A pre-trigger turn the adjudicator reads as actionable boredom while a
+  // registered protected exclusion blocks the treatment there.
+  const preTriggerText = protectedPassOver
+    ? 'I am overwhelmed by this and I have stopped trying.'
+    : 'I am inspecting the public record.';
   const recoveryText = 'The public mark supports the left branch, so I will test that premise next.';
   const nonRecoveryText = 'Fine. Whatever you say.';
   const callRows = [
@@ -138,13 +150,7 @@ function syntheticTrace({ job, plan, recovered, progressed, observationSemantics
       type: 'turn_complete',
       turn,
       turnRecord: {
-        learner: isTrigger
-          ? triggerText
-          : isPost
-            ? recovered
-              ? recoveryText
-              : nonRecoveryText
-            : 'I am inspecting the public record.',
+        learner: isTrigger ? triggerText : isPost ? (recovered ? recoveryText : nonRecoveryText) : preTriggerText,
         tutor: `Tutor turn ${turn}.`,
         classification: isTrigger
           ? boredClassification()
@@ -223,13 +229,14 @@ function syntheticTrace({ job, plan, recovered, progressed, observationSemantics
     ...(observationSemantics === 'prospective_v9'
       ? Array.from({ length: triggerTurn }, (_, index) => {
           const turn = index + 1;
-          const candidate = turn === triggerTurn ? triggerText : 'I am inspecting the public record.';
+          const candidate = turn === triggerTurn ? triggerText : preTriggerText;
           return {
             type: 'boredom_semantic_adjudication',
             turn,
             adjudication: {
               candidate_sha256: sha256(candidate),
-              measurement_disposition: turn === triggerTurn ? 'actionable_boredom' : 'productive_uptake',
+              measurement_disposition:
+                turn === triggerTurn || protectedPassOver ? 'actionable_boredom' : 'productive_uptake',
               independent_route: { required_model_ref: 'codex.gpt-5.6-sol', matches: true },
               low_confidence: false,
               parse_ok: true,
@@ -279,7 +286,7 @@ function writeSyntheticBatch(
   root,
   plan,
   outcomes,
-  { observationSemantics = 'prospective_v8', stoppedJobIds = [] } = {},
+  { observationSemantics = 'prospective_v8', stoppedJobIds = [], protectedPassOverJobIds = [] } = {},
 ) {
   fs.mkdirSync(path.join(root, 'jobs'), { recursive: true });
   writeJson(path.join(root, 'batch-plan.json'), plan);
@@ -291,6 +298,7 @@ function writeSyntheticBatch(
       plan,
       ...outcomes.get(job.id),
       observationSemantics,
+      protectedPassOver: protectedPassOverJobIds.includes(job.id),
     })
       .map((event) => JSON.stringify(event))
       .join('\n')}\n`;
@@ -870,6 +878,97 @@ test('validated-instrument v4 lineage runs the same analyzer and still rejects i
         expectedSourceCommit: head,
       }),
     /lacks its exact fresh execution, treatment, or outcome event/u,
+  );
+});
+
+test('a registered protected exclusion moves the trigger later without breaking trigger provenance', (t) => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-protected-'));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION_V4) });
+  assert.ok(loaded.registration.design.freshPrefixGeneration.protectedExclusions.includes('protected_affect'));
+  const outcomes = new Map(loaded.plan.jobs.map((job) => [job.id, { recovered: true, progressed: true }]));
+  const roots = [];
+  const passedOver = [];
+  for (let index = 1; index <= 9; index += 1) {
+    const root = path.join(temp, `batch-${index}`);
+    const plan = buildTutorStubBoredomProofDagBatchPlan({
+      registrationPath: REGISTRATION_V4,
+      batchId: `execution_batch_${index}`,
+      destination: root,
+    });
+    fs.mkdirSync(root, { recursive: true });
+    // Only turn-2 triggers have a pre-trigger turn to protect at all.
+    const protectedPassOverJobIds = plan.jobs
+      .filter((job) => job.assignment_index % 2 === 0)
+      .slice(0, 1)
+      .map((job) => job.id);
+    passedOver.push(...protectedPassOverJobIds);
+    writeSyntheticBatch(root, plan, outcomes, {
+      observationSemantics: 'prospective_v9',
+      protectedPassOverJobIds,
+    });
+    roots.push(root);
+  }
+  assert.equal(passedOver.length, 9);
+
+  const report = analyzeTutorStubBoredomProofDag({
+    batchRoots: roots,
+    registrationPath: REGISTRATION_V4,
+    expectedSourceCommit: head,
+  });
+  assert.equal(report.rows.length, 36);
+
+  // The turn the adjudicator called actionable is disclosed, its trigger stayed
+  // at the later turn, and the judge label was not recoded to something else.
+  const disclosed = report.treatment_fidelity.protected_pass_over_units;
+  assert.equal(disclosed.length, 9);
+  assert.deepEqual(disclosed.map((unit) => unit.case_id).sort(), [...passedOver].sort());
+  assert.ok(disclosed.every((unit) => unit.trigger_turn === 2));
+  assert.ok(
+    disclosed.every((unit) => unit.passed_over.every((entry) => entry.reasons.join(',') === 'protected_affect')),
+  );
+  assert.ok(disclosed.every((unit) => unit.passed_over.every((entry) => entry.turn === 1)));
+  assert.ok(
+    report.rows
+      .filter((row) => passedOver.includes(row.case_id))
+      .every((row) => row.semantic_measurement.trigger_disposition === 'actionable_boredom'),
+  );
+  // Every other unit stays clean, so the disclosure is not a blanket pass.
+  assert.equal(report.rows.filter((row) => (row.trigger.protected_pass_overs || []).length === 0).length, 36 - 9);
+
+  // An earlier turn that was genuinely eligible is still a hard stop: strip the
+  // protected affect from the learner text and the same trace must be refused.
+  const mutationPlan = JSON.parse(fs.readFileSync(path.join(roots[0], 'batch-plan.json'), 'utf8'));
+  const passedOverJob = mutationPlan.jobs.find((job) => passedOver.includes(job.id));
+  mutateTrace(roots[0], passedOverJob.id, (events) =>
+    events.map((event) => {
+      if (event.type === 'turn_complete' && Number(event.turn) === 1) {
+        return {
+          ...event,
+          turnRecord: { ...event.turnRecord, learner: 'This is dull and I have stopped trying.' },
+        };
+      }
+      if (event.type === 'boredom_semantic_adjudication' && Number(event.turn) === 1) {
+        return {
+          ...event,
+          adjudication: {
+            ...event.adjudication,
+            candidate_sha256: sha256('This is dull and I have stopped trying.'),
+          },
+        };
+      }
+      return event;
+    }),
+  );
+  assert.throws(
+    () =>
+      analyzeTutorStubBoredomProofDag({
+        batchRoots: roots,
+        registrationPath: REGISTRATION_V4,
+        expectedSourceCommit: head,
+      }),
+    /an_earlier_turn_was_already_eligible/u,
   );
 });
 
