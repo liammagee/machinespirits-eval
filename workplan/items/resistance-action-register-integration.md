@@ -3264,3 +3264,15 @@ and explicit human approval.
   programme ledger from `1136` to at most `2216 / 5000`. This synthetic result
   is wiring evidence only; live outcome accuracy remains unobserved and
   confirmation remains unauthorized.
+
+- 2026-08-22 — The V3 outcome validation is bound for launch from source commit
+  `d6461e340122a5f0c2b5da0bfd6d027cc12f60cc` and tree
+  `a4a0f718edfff82110b0743f953d7ad195bc0549` by GO request
+  `config/tutor-stub-resistance-recovery-semantic-adjudication-validation-study-go-request.v3.json`
+  at SHA-256
+  `19876132b2593ff75b85fb4c5722a6af9bf6ecf3936cd6a421cddf7aa5762ee9`.
+  The request authorizes only the fresh 120-case, three-judge outcome-instrument
+  validation under the standing 5,000-attempt programme ceiling and the
+  1,080-reservation validation safeguard. It does not authorize confirmation;
+  the validation corpus cannot enter confirmation outcomes, and the registered
+  one-time analysis remains blocked until all judge records are sealed.
