@@ -331,6 +331,7 @@ function assertMaterializedStructure({
   priorCeilingBoundRequest,
   priorBoredomRequest,
   priorBoredomPredecessorRequest,
+  priorCompletedBoredomFiles,
   priorSemanticValidationRequest,
   priorSemanticValidationSuccessorRequest,
   prefixBundle,
@@ -452,6 +453,11 @@ function assertMaterializedStructure({
     const prior = request.boredomActionRegisterProofDag?.priorStoppedExecution?.predecessorRequest;
     assertComputedValue(prior?.path, priorBoredomPredecessorRequest.path, 'prior boredom predecessor request path');
     assertComputedValue(prior?.sha256, priorBoredomPredecessorRequest.sha256, 'prior boredom predecessor digest');
+  }
+  for (const [key, proof] of priorCompletedBoredomFiles || []) {
+    const prior = request.boredomActionRegisterProofDag?.priorCompletedExecution?.[key];
+    assertComputedValue(prior?.path, proof.path, `completed boredom predecessor ${key} path`);
+    assertComputedValue(prior?.sha256, proof.sha256, `completed boredom predecessor ${key} digest`);
   }
   if (priorSemanticValidationRequest) {
     const prior = request.semanticAdjudicationValidation?.stoppedV3Validation?.request;
@@ -738,6 +744,25 @@ function materializeTemplate({ templateText, template, launchCommit }) {
       replacements,
     );
   }
+  // v5 follows a study that finished rather than one that stopped. The three
+  // files that carry the finished result travel the same road as a stopped
+  // predecessor: materialised from the launch commit and digest-pinned, so the
+  // checker can read them inside the replay tree, where nothing else reaches.
+  const priorCompletedBoredomFiles = ['request', 'registration', 'amendment']
+    .map((key) => {
+      const repoPath = template.boredomActionRegisterProofDag?.priorCompletedExecution?.[key]?.path;
+      if (!repoPath) return null;
+      const proof = materializeRepoFile({
+        launchCommit,
+        repoPath,
+        label: `completed boredom predecessor ${key}`,
+        files,
+      });
+      requireMarker(templateText, goRequestFileSha256Marker(proof.path), proof.sha256, replacements);
+      return [key, proof];
+    })
+    .filter(Boolean);
+
   const supersededBoredomHoldRequestPath =
     template.boredomActionRegisterProofDag?.semanticValidation?.supersededHoldRequest?.path;
   const supersededBoredomHoldRequest = supersededBoredomHoldRequestPath
@@ -843,6 +868,7 @@ function materializeTemplate({ templateText, template, launchCommit }) {
     priorCeilingBoundRequest,
     priorBoredomRequest,
     priorBoredomPredecessorRequest,
+    priorCompletedBoredomFiles,
     priorSemanticValidationRequest,
     priorSemanticValidationSuccessorRequest,
     prefixBundle,
