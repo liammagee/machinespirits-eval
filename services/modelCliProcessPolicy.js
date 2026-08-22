@@ -178,6 +178,7 @@ export async function callExternalModelCliText({
   const { child } = launch;
   return await new Promise((resolve, reject) => {
     let out = '';
+    let err = '';
     let outBytes = 0;
     let errBytes = 0;
     let settled = false;
@@ -209,7 +210,9 @@ export async function callExternalModelCliText({
       if (errBytes > stderrLimit) {
         child.kill('SIGKILL');
         finish(reject, new Error(`${normalizeModelCliProvider(provider)} CLI stderr exceeded safety limit`));
+        return;
       }
+      err += chunk;
     });
     child.on('error', (error) => {
       const launchError = new Error(`${normalizeModelCliProvider(provider)} CLI failed to start`);
@@ -223,6 +226,10 @@ export async function callExternalModelCliText({
         exitError.exitCode = code;
         exitError.stdoutBytes = outBytes;
         exitError.stderrBytes = errBytes;
+        exitError.stdoutText = Buffer.from(out).subarray(0, 4096).toString('utf8');
+        exitError.stderrText = Buffer.from(err).subarray(0, 4096).toString('utf8');
+        exitError.stdoutTextTruncated = outBytes > 4096;
+        exitError.stderrTextTruncated = errBytes > 4096;
         finish(reject, exitError);
         return;
       }

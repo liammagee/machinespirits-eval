@@ -527,6 +527,14 @@ function sha256Text(value) {
     .digest('hex');
 }
 
+const CLAUDE_ERROR_DIAGNOSTIC_LIMIT_BYTES = 4096;
+
+function cappedClaudeDiagnosticText(value) {
+  const bytes = Buffer.from(String(value || ''));
+  if (bytes.length <= CLAUDE_ERROR_DIAGNOSTIC_LIMIT_BYTES) return bytes.toString('utf8');
+  return bytes.subarray(0, CLAUDE_ERROR_DIAGNOSTIC_LIMIT_BYTES).toString('utf8');
+}
+
 function claudeJsonEnvelopeError({ classification, reason, code, exitCode, stdout, stderr }) {
   const error = new Error(`claude CLI structured response classified as ${classification} (${reason})`);
   error.code = code;
@@ -538,6 +546,10 @@ function claudeJsonEnvelopeError({ classification, reason, code, exitCode, stdou
   error.stderrBytes = Buffer.byteLength(stderr);
   error.stdoutSha256 = sha256Text(stdout);
   error.stderrSha256 = sha256Text(stderr);
+  error.stdoutText = cappedClaudeDiagnosticText(stdout);
+  error.stderrText = cappedClaudeDiagnosticText(stderr);
+  error.stdoutTextTruncated = Buffer.byteLength(stdout) > CLAUDE_ERROR_DIAGNOSTIC_LIMIT_BYTES;
+  error.stderrTextTruncated = Buffer.byteLength(stderr) > CLAUDE_ERROR_DIAGNOSTIC_LIMIT_BYTES;
   error.responseFree = classification === 'response_free_error';
   return error;
 }

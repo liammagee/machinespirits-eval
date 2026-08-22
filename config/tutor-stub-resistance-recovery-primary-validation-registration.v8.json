@@ -1,0 +1,53 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-measurement-validation-registration.v8",
+  "version": 8,
+  "stage": "primary_recovery",
+  "status": "fresh_heldout_frozen_pending_digest_bound_go",
+  "studyId": "tutor-stub-resistance-recovery-primary-heldout-validation-v8",
+  "instrument": {
+    "path": "config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v8.json",
+    "sha256": "20da1d03c3a6d9f6b5ffae5fe290879e70c9c83a36cd90049bd5e2556f2dd8bf"
+  },
+  "heldout": {
+    "corpusPath": "config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v8.json",
+    "corpusSha256": "5e2dd09c861ccc22c110ea1ad75bfebc61d5eaa1962bd422e36d753115228201",
+    "corpusFreezeCommit": "e1c8f133d00be5730a65e1a769c13fc5174693c6",
+    "cases": 120,
+    "goldVisibleDuringExecution": false,
+    "consumedCasesReusedOrPooled": false
+  },
+  "executionReadiness": {
+    "plannedCases": 120,
+    "judgesPerCase": 3,
+    "plannedModelCalls": 360,
+    "maximumReservationsPerPlannedCall": 3,
+    "hardStageReservations": 1080,
+    "programmeLedgerBeforeProspectiveMaximum": 3027,
+    "programmeMaximumAfterStage": 4107,
+    "combinedValidationMaximumAfterBothStages": 5187,
+    "programmeCeiling": 10000,
+    "attemptCountsAreOperationalSafeguardsNotDesignObjectives": true
+  },
+  "lifecycle": {
+    "retryOnlyProvenResponseFreeError": true,
+    "responseFreeRetryDelaysMs": [15000, 45000],
+    "failureDiagnosticsPersistedToAttemptRecord": true,
+    "stageOrder": "primary_then_fidelity",
+    "noRecallAfterSemanticOrAmbiguousReturn": true,
+    "noRepairRerunReplacementOrSelection": true,
+    "allAttemptsPreserved": true,
+    "freshCreateOnceDestination": true,
+    "durablePrivateArchiveRequired": true
+  },
+  "analysis": {
+    "combinedOnlyAfterBothStagesSealed": true,
+    "interimStageOutcomeAnalysis": false,
+    "primaryAndFidelityVerdictsSeparate": true,
+    "fidelityMayVetoOrRecodePrimary": false
+  },
+  "authorization": {
+    "modelCallsAuthorized": false,
+    "liveRunAuthorized": false,
+    "freshDigestBoundGoRequestRequired": true
+  }
+}

@@ -3,7 +3,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { resolveTutorStubArtifactArchiveDirectory } from './tutorStubArtifactArchive.js';
-import { tutorStubCliPolicyRetryDecision, waitTutorStubCliPolicyRetryDelay } from './tutorStubCliPolicyRetry.js';
+import {
+  isTutorStubRetryableClaudeResponseFreeError,
+  tutorStubCliPolicyRetryDecision,
+  waitTutorStubCliPolicyRetryDelay,
+} from './tutorStubCliPolicyRetry.js';
 import {
   TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_OUTPUT_SCHEMA,
   adjudicateTutorStubResistanceRecoverySemanticJudges,
@@ -51,6 +55,17 @@ import {
   wrapTutorStubResistanceMeasurementModelOutputV7,
 } from './tutorStubResistanceRecoverySemanticAdjudicationV7.js';
 import {
+  TUTOR_STUB_RESISTANCE_FIDELITY_OUTPUT_SCHEMA_V8,
+  TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_OUTPUT_SCHEMA_V8,
+  adjudicateTutorStubResistanceFidelityPanelV8,
+  adjudicateTutorStubResistanceRecoveryPrimaryPanelV8,
+  buildTutorStubResistanceFidelityPromptV8,
+  buildTutorStubResistanceRecoveryPrimaryPromptV8,
+  scoreTutorStubResistanceMeasurementCorpusV8,
+  tutorStubResistanceMeasurementSha256 as tutorStubResistanceMeasurementSha256V8,
+  wrapTutorStubResistanceMeasurementModelOutputV8,
+} from './tutorStubResistanceRecoverySemanticAdjudicationV8.js';
+import {
   buildTutorStubResistanceRecoverySemanticBlindedValidationCases,
   loadTutorStubResistanceRecoverySemanticValidation,
   tutorStubResistanceRecoverySemanticOpaqueCaseId,
@@ -74,6 +89,11 @@ import {
   TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_VALIDATION_REGISTRATION_V7,
   loadTutorStubResistanceMeasurementValidationV7,
 } from './tutorStubResistanceRecoverySemanticValidationV7.js';
+import {
+  TUTOR_STUB_RESISTANCE_FIDELITY_VALIDATION_REGISTRATION_V8,
+  TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_VALIDATION_REGISTRATION_V8,
+  loadTutorStubResistanceMeasurementValidationV8,
+} from './tutorStubResistanceRecoverySemanticValidationV8.js';
 
 export const TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_SYSTEM_PROMPT =
   'Independently judge only the supplied public dialogue packet under the frozen response schema. Do not use tools, hidden state, lexical heuristics, profile labels, assignments, gold labels, or another judge response. Return only schema-valid JSON.';
@@ -116,6 +136,14 @@ export function loadTutorStubResistanceRecoverySemanticValidationForRegistration
   ) {
     return loadTutorStubResistanceMeasurementValidationV7(validationRegistration);
   }
+  if (
+    [
+      TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_VALIDATION_REGISTRATION_V8,
+      TUTOR_STUB_RESISTANCE_FIDELITY_VALIDATION_REGISTRATION_V8,
+    ].includes(validationRegistration)
+  ) {
+    return loadTutorStubResistanceMeasurementValidationV8(validationRegistration);
+  }
   return loadTutorStubResistanceRecoverySemanticValidation();
 }
 
@@ -135,8 +163,12 @@ function splitV7(loaded) {
   return loaded?.instrument?.version === 7 && ['primary_recovery', 'intervention_fidelity'].includes(loaded?.stage);
 }
 
+function splitV8(loaded) {
+  return loaded?.instrument?.version === 8 && ['primary_recovery', 'intervention_fidelity'].includes(loaded?.stage);
+}
+
 function splitMeasurement(loaded) {
-  return splitV5(loaded) || splitV6(loaded) || splitV7(loaded);
+  return splitV5(loaded) || splitV6(loaded) || splitV7(loaded) || splitV8(loaded);
 }
 
 function panelMayContinueAfterTerminalSeat(loaded) {
@@ -144,6 +176,11 @@ function panelMayContinueAfterTerminalSeat(loaded) {
 }
 
 function adjudicateLoaded(loaded, options) {
+  if (splitV8(loaded)) {
+    return loaded.stage === 'primary_recovery'
+      ? adjudicateTutorStubResistanceRecoveryPrimaryPanelV8(options)
+      : adjudicateTutorStubResistanceFidelityPanelV8(options);
+  }
   if (splitV7(loaded)) {
     return loaded.stage === 'primary_recovery'
       ? adjudicateTutorStubResistanceRecoveryPrimaryPanelV7(options)
@@ -165,6 +202,7 @@ function adjudicateLoaded(loaded, options) {
 }
 
 function scoreLoaded(loaded, options) {
+  if (splitV8(loaded)) return scoreTutorStubResistanceMeasurementCorpusV8(options);
   if (splitV7(loaded)) return scoreTutorStubResistanceMeasurementCorpusV7(options);
   if (splitV6(loaded)) return scoreTutorStubResistanceMeasurementCorpusV6(options);
   if (splitV5(loaded)) return scoreTutorStubResistanceMeasurementCorpusV5(options);
@@ -246,6 +284,10 @@ function validateSplitMeasurementGoRequest({ loaded, goRequest, sourceCommit, so
     goRequest?.measurementValidation?.mediumOrHighDeterminateVotesEligible !== true ||
     (version >= 6 && goRequest?.measurementValidation?.fieldLocalEligibility !== true) ||
     (version >= 6 && goRequest?.measurementValidation?.modelReturnsFinalRecovery !== false) ||
+    (version >= 8 && goRequest?.measurementValidation?.stagesRunSequentially !== true) ||
+    (version >= 8 &&
+      JSON.stringify(goRequest?.measurementValidation?.responseFreeRetryDelaysMs) !== JSON.stringify([15000, 45000])) ||
+    (version >= 8 && goRequest?.measurementValidation?.failureDiagnosticsPersistedToAttemptRecord !== true) ||
     goRequest?.measurementValidation?.indeterminateRepairRerunReplacementOrSelection !== false ||
     goRequest?.measurementValidation?.analysisOnlyAfterBothStagesSeal !== true ||
     stage?.registration?.path !== loaded.registrationPath ||
@@ -270,6 +312,42 @@ function validateSplitMeasurementGoRequest({ loaded, goRequest, sourceCommit, so
     goRequest?.claimBoundary?.noEfficacyNullLearningTransferHumanOrCellClaim !== true
   ) {
     throw new Error(`v${version} split resistance measurement validation GO request binding drifted`);
+  }
+}
+
+function validateV8LiveStageOrder({ loaded, goRequest, resume, plan }) {
+  if (!splitV8(loaded)) return;
+  const stages = goRequest.measurementValidation.stages;
+  const primaryDestination = path.resolve(String(stages.primary_recovery.destination));
+  const fidelityDestination = path.resolve(String(stages.intervention_fidelity.destination));
+  if (primaryDestination === fidelityDestination) throw new Error('V8 stage destinations must be distinct');
+  if (loaded.stage === 'primary_recovery') {
+    if (!resume && fs.existsSync(fidelityDestination)) {
+      throw new Error('V8 fidelity destination must not exist before the primary stage seals');
+    }
+    return;
+  }
+  const primaryPlanFile = path.join(primaryDestination, 'plan.json');
+  const primarySealFile = path.join(primaryDestination, 'seal.json');
+  if (!fs.existsSync(primaryPlanFile) || !fs.existsSync(primarySealFile)) {
+    throw new Error('V8 fidelity stage cannot launch before the primary stage seals');
+  }
+  const primaryPlan = read(primaryPlanFile);
+  const primarySeal = read(primarySealFile);
+  if (
+    primaryPlan.schema !== TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_PLAN_SCHEMA ||
+    primaryPlan.measurement_stage !== 'primary_recovery' ||
+    primaryPlan.destination !== primaryDestination ||
+    !exact(primaryPlan.source, plan.source) ||
+    !exact(primaryPlan.authorization, plan.authorization) ||
+    !exact(primaryPlan.instrument, plan.instrument) ||
+    !exact(primaryPlan.heldout, plan.heldout) ||
+    primarySeal.schema !== TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_SEAL_SCHEMA ||
+    primarySeal.plan_sha256 !== primaryPlan.plan_sha256 ||
+    primarySeal.cases !== 120 ||
+    primarySeal.gold_joined !== false
+  ) {
+    throw new Error('V8 primary stage seal is invalid');
   }
 }
 
@@ -618,20 +696,24 @@ function promptsFor(loaded, row) {
       judge.id,
       splitMeasurement(loaded)
         ? loaded.stage === 'primary_recovery'
-          ? (splitV7(loaded)
-              ? buildTutorStubResistanceRecoveryPrimaryPromptV7
-              : splitV6(loaded)
-                ? buildTutorStubResistanceRecoveryPrimaryPromptV6
-                : buildTutorStubResistanceRecoveryPrimaryPromptV5)({
+          ? (splitV8(loaded)
+              ? buildTutorStubResistanceRecoveryPrimaryPromptV8
+              : splitV7(loaded)
+                ? buildTutorStubResistanceRecoveryPrimaryPromptV7
+                : splitV6(loaded)
+                  ? buildTutorStubResistanceRecoveryPrimaryPromptV6
+                  : buildTutorStubResistanceRecoveryPrimaryPromptV5)({
               caseId: row.case_id,
               publicPacket: packet(row),
               judge,
             })
-          : (splitV7(loaded)
-              ? buildTutorStubResistanceFidelityPromptV7
-              : splitV6(loaded)
-                ? buildTutorStubResistanceFidelityPromptV6
-                : buildTutorStubResistanceFidelityPromptV5)({
+          : (splitV8(loaded)
+              ? buildTutorStubResistanceFidelityPromptV8
+              : splitV7(loaded)
+                ? buildTutorStubResistanceFidelityPromptV7
+                : splitV6(loaded)
+                  ? buildTutorStubResistanceFidelityPromptV6
+                  : buildTutorStubResistanceFidelityPromptV5)({
               caseId: row.case_id,
               intervention: row.intervention,
               judge,
@@ -642,6 +724,7 @@ function promptsFor(loaded, row) {
 }
 
 function promptSha256(loaded, prompt) {
+  if (splitV8(loaded)) return tutorStubResistanceMeasurementSha256V8(prompt);
   if (splitV7(loaded)) return tutorStubResistanceMeasurementSha256V7(prompt);
   if (splitV6(loaded)) return tutorStubResistanceMeasurementSha256V6(prompt);
   if (splitV5(loaded)) return tutorStubResistanceMeasurementSha256(prompt);
@@ -650,6 +733,11 @@ function promptSha256(loaded, prompt) {
 
 function outputSchemaFor(loaded) {
   if (!splitMeasurement(loaded)) return TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_OUTPUT_SCHEMA;
+  if (splitV8(loaded)) {
+    return loaded.stage === 'primary_recovery'
+      ? TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_OUTPUT_SCHEMA_V8
+      : TUTOR_STUB_RESISTANCE_FIDELITY_OUTPUT_SCHEMA_V8;
+  }
   if (splitV7(loaded)) {
     return loaded.stage === 'primary_recovery'
       ? TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_OUTPUT_SCHEMA_V7
@@ -812,13 +900,42 @@ function observed(result) {
   };
 }
 
+function cappedDiagnosticText(value) {
+  const source = Buffer.from(String(value || ''));
+  if (source.length <= 4096) return source.toString('utf8');
+  let capped = source.subarray(0, 4096).toString('utf8');
+  while (Buffer.byteLength(capped) > 4096) capped = capped.slice(0, -1);
+  return capped;
+}
+
+function v8ResponseFreeAttemptDiagnostics(error) {
+  if (!isTutorStubRetryableClaudeResponseFreeError(error)) return null;
+  return {
+    provider: 'claude-code',
+    classification: 'response_free_error',
+    reason: String(error.reason || 'unspecified'),
+    response_free: true,
+    exit_code: Number.isInteger(error.exitCode) ? error.exitCode : null,
+    stdout_bytes: error.stdoutBytes,
+    stderr_bytes: error.stderrBytes,
+    stdout_sha256: error.stdoutSha256,
+    stderr_sha256: error.stderrSha256,
+    stdout_text: cappedDiagnosticText(error.stdoutText),
+    stderr_text: cappedDiagnosticText(error.stderrText),
+    stdout_text_truncated: error.stdoutTextTruncated === true,
+    stderr_text_truncated: error.stderrTextTruncated === true,
+  };
+}
+
 function wrapRaw({ raw, prompt, judge, independentRunId, loaded }) {
   if (splitMeasurement(loaded)) {
-    const wrap = splitV7(loaded)
-      ? wrapTutorStubResistanceMeasurementModelOutputV7
-      : splitV6(loaded)
-        ? wrapTutorStubResistanceMeasurementModelOutputV6
-        : wrapTutorStubResistanceMeasurementModelOutputV5;
+    const wrap = splitV8(loaded)
+      ? wrapTutorStubResistanceMeasurementModelOutputV8
+      : splitV7(loaded)
+        ? wrapTutorStubResistanceMeasurementModelOutputV7
+        : splitV6(loaded)
+          ? wrapTutorStubResistanceMeasurementModelOutputV6
+          : wrapTutorStubResistanceMeasurementModelOutputV5;
     return wrap({
       instrument: loaded.stage,
       modelOutput: JSON.parse(String(raw.text || '').trim()),
@@ -931,6 +1048,10 @@ async function executeJudge({
       if (error?.name === 'AbortError') throw error;
       result.attempts.at(-1).status = 'transport_failed';
       result.attempts.at(-1).error_code = error?.code || null;
+      if (splitV8(loaded)) {
+        const diagnostics = v8ResponseFreeAttemptDiagnostics(error);
+        if (diagnostics) Object.assign(result.attempts.at(-1), diagnostics);
+      }
       const retry = tutorStubCliPolicyRetryDecision(error, {
         retryCount: result.attempts.length - 1,
         allowClaudeResponseFreeError,
@@ -940,7 +1061,11 @@ async function executeJudge({
         result.invalid_reason = error.message;
         break;
       }
-      await waitForRetry(retry.delay_ms);
+      const retryDelayMs =
+        splitV8(loaded) && isTutorStubRetryableClaudeResponseFreeError(error)
+          ? loaded.instrument.transport.responseFreeRetryDelaysMs[result.attempts.length - 1]
+          : retry.delay_ms;
+      await waitForRetry(retryDelayMs);
     }
   }
   if (!result.outcome) result.outcome = 'transport_failed';
@@ -990,6 +1115,7 @@ export async function runTutorStubResistanceRecoverySemanticValidation({
     goRequest,
     loaded,
   });
+  validateV8LiveStageOrder({ loaded, goRequest, resume, plan });
   const planFile = path.join(destination, 'plan.json');
   const sealFile = path.join(destination, 'seal.json');
   const reportFile = path.join(destination, 'report.json');
@@ -1262,13 +1388,62 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
         throw new Error('outcome validation judge attempt envelope is invalid');
       }
       stored.attempts.forEach((attempt, index) => {
+        const v8ResponseFree =
+          splitV8(loaded) && attempt.status === 'transport_failed' && attempt.response_free === true;
         const expectedKeys =
-          attempt.status === 'transport_failed' ? ['attempt', 'error_code', 'status'] : ['attempt', 'status'];
+          attempt.status !== 'transport_failed'
+            ? ['attempt', 'status']
+            : v8ResponseFree
+              ? [
+                  'attempt',
+                  'status',
+                  'error_code',
+                  'provider',
+                  'classification',
+                  'reason',
+                  'response_free',
+                  'exit_code',
+                  'stdout_bytes',
+                  'stderr_bytes',
+                  'stdout_sha256',
+                  'stderr_sha256',
+                  'stdout_text',
+                  'stderr_text',
+                  'stdout_text_truncated',
+                  'stderr_text_truncated',
+                ]
+              : ['attempt', 'error_code', 'status'];
         if (
           !exact(Object.keys(attempt).sort(), expectedKeys.sort()) ||
           attempt.attempt !== index + 1 ||
           !['returned', 'transport_failed', 'dispatched'].includes(attempt.status) ||
-          (index < stored.attempts.length - 1 && attempt.status !== 'transport_failed')
+          (index < stored.attempts.length - 1 && attempt.status !== 'transport_failed') ||
+          (v8ResponseFree &&
+            (attempt.error_code !== 'CLI_PROVIDER_RESPONSE_FREE_ERROR' ||
+              attempt.provider !== 'claude-code' ||
+              attempt.classification !== 'response_free_error' ||
+              !Number.isInteger(attempt.stdout_bytes) ||
+              attempt.stdout_bytes < 1 ||
+              !Number.isInteger(attempt.stderr_bytes) ||
+              attempt.stderr_bytes < 0 ||
+              !/^[a-f0-9]{64}$/u.test(attempt.stdout_sha256) ||
+              !/^[a-f0-9]{64}$/u.test(attempt.stderr_sha256) ||
+              typeof attempt.reason !== 'string' ||
+              (attempt.exit_code !== null && !Number.isInteger(attempt.exit_code)) ||
+              typeof attempt.stdout_text !== 'string' ||
+              typeof attempt.stderr_text !== 'string' ||
+              Buffer.byteLength(attempt.stdout_text) > 4096 ||
+              Buffer.byteLength(attempt.stderr_text) > 4096 ||
+              typeof attempt.stdout_text_truncated !== 'boolean' ||
+              typeof attempt.stderr_text_truncated !== 'boolean' ||
+              (!attempt.stdout_text_truncated &&
+                (Buffer.byteLength(attempt.stdout_text) !== attempt.stdout_bytes ||
+                  digest(Buffer.from(attempt.stdout_text)) !== attempt.stdout_sha256)) ||
+              (!attempt.stderr_text_truncated &&
+                (Buffer.byteLength(attempt.stderr_text) !== attempt.stderr_bytes ||
+                  digest(Buffer.from(attempt.stderr_text)) !== attempt.stderr_sha256)) ||
+              (attempt.stdout_text_truncated && Buffer.byteLength(attempt.stdout_text) >= attempt.stdout_bytes) ||
+              (attempt.stderr_text_truncated && Buffer.byteLength(attempt.stderr_text) >= attempt.stderr_bytes)))
         ) {
           throw new Error('outcome validation judge attempt sequence drifted');
         }
