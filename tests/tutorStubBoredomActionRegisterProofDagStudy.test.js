@@ -13,6 +13,7 @@ import {
   assertTutorStubBoredomProofDagRecoveryBudget,
   assertTutorStubBoredomProofDagSourceClosure,
   buildTutorStubBoredomProofDagBatchPlan,
+  sealTutorStubBoredomProofDagBatchWithRegisteredStops,
   classifyTutorStubBoredomProofDagChildFailure,
   frozenTutorStubBoredomProofDagSourceClosure,
   runTutorStubBoredomProofDagBatch,
@@ -274,7 +275,12 @@ function syntheticTrace({ job, plan, recovered, progressed, observationSemantics
   ];
 }
 
-function writeSyntheticBatch(root, plan, outcomes, { observationSemantics = 'prospective_v8' } = {}) {
+function writeSyntheticBatch(
+  root,
+  plan,
+  outcomes,
+  { observationSemantics = 'prospective_v8', stoppedJobIds = [] } = {},
+) {
   fs.mkdirSync(path.join(root, 'jobs'), { recursive: true });
   writeJson(path.join(root, 'batch-plan.json'), plan);
   const results = plan.jobs.map((job) => {
@@ -289,6 +295,26 @@ function writeSyntheticBatch(root, plan, outcomes, { observationSemantics = 'pro
       .map((event) => JSON.stringify(event))
       .join('\n')}\n`;
     fs.writeFileSync(tracePath, source);
+    if (stoppedJobIds.includes(job.id)) {
+      return {
+        job_id: job.id,
+        status: 'failed',
+        exit_code: 1,
+        signal: null,
+        trace: path.relative(ROOT, tracePath),
+        trace_sha256: sha256(source),
+        trace_bytes: Buffer.byteLength(source),
+        failure: {
+          category: 'substantive_registered_failure',
+          code: 'TUTOR_STUB_BOREDOM_MEASUREMENT_INDETERMINATE',
+          disposition: 'measurement_indeterminate_stop_no_repair_no_replacement',
+          recoverable: false,
+        },
+        stdout: path.relative(ROOT, path.join(job.command.job_root, 'stdout.log')),
+        stderr: path.relative(ROOT, path.join(job.command.job_root, 'stderr.log')),
+        transcript: path.relative(ROOT, job.command.transcript),
+      };
+    }
     return {
       job_id: job.id,
       status: 'complete',
@@ -306,12 +332,18 @@ function writeSyntheticBatch(root, plan, outcomes, { observationSemantics = 'pro
   writeJson(resultPath, {
     schema: 'machinespirits.tutor-stub.boredom-action-register-proof-dag-live-batch-result.v1',
     batch_id: plan.batch_id,
-    status: 'complete',
-    completed_dialogues: 4,
-    failed_or_missing_dialogues: 0,
+    status: stoppedJobIds.length ? 'incomplete' : 'complete',
+    completed_dialogues: 4 - stoppedJobIds.length,
+    failed_or_missing_dialogues: stoppedJobIds.length,
     maximum_model_attempt_reservations: 240,
     results,
   });
+  if (stoppedJobIds.length) {
+    // Seal through the runner's own code, so the test covers the real seal
+    // rather than a copy of it.
+    sealTutorStubBoredomProofDagBatchWithRegisteredStops({ destination: root });
+    return;
+  }
   writeJson(path.join(root, 'batch-seal.json'), {
     schema: 'machinespirits.tutor-stub.boredom-action-register-proof-dag-live-batch-seal.v1',
     status: 'sealed_complete',
@@ -591,8 +623,19 @@ test('combined boredom proof-DAG analyzer accepts nine sealed batches and fails 
     registrationPath: REGISTRATION,
     expectedSourceCommit: head,
   });
-  assert.equal(report.assembly.dialogues, 36);
+  assert.equal(report.assembly.dialogues_planned, 36);
+  assert.equal(report.assembly.dialogues_scored, 36);
   assert.equal(report.assembly.distinct_fresh_public_prefixes, 36);
+  assert.equal(report.assembly.batches_sealed_complete, 9);
+  assert.equal(report.assembly.batches_sealed_with_registered_stops, 0);
+  assert.equal(report.attrition.stopped, 0);
+  assert.equal(report.attrition.balanced_across_arms, true);
+  assert.equal(report.amendment, null);
+  assert.equal(report.primary_analysis.allocation_realised_as_predeclared, true);
+  assert.equal(
+    report.primary_analysis.conditioning,
+    'world_success_totals_and_realised_per_world_plain_warm_allocation',
+  );
   assert.deepEqual(report.primary_analysis.plain, { successes: 4, total: 18, rate: 4 / 18 });
   assert.deepEqual(report.primary_analysis.warm, { successes: 13, total: 18, rate: 13 / 18 });
   assert.equal(report.primary_analysis.test, 'two_sided_exact_conditional_blocked_score_test');
@@ -618,6 +661,112 @@ test('combined boredom proof-DAG analyzer accepts nine sealed batches and fails 
         expectedSourceCommit: head,
       }),
     /blocked randomized assignment/u,
+  );
+});
+
+test('amendment A1 lets the analyzer read a study short by registered indeterminate stops, and only under a citing amendment', (t) => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-short-'));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION) });
+  const outcomes = new Map(loaded.plan.jobs.map((job) => [job.id, { recovered: true, progressed: true }]));
+  // Stop one warm unit in each of three different worlds, which is the shape
+  // the live run produced: three worlds at three plain against two warm.
+  const stoppedByWorld = new Map();
+  for (const job of loaded.plan.jobs) {
+    if (job.realization === 'warm' && !stoppedByWorld.has(job.world) && stoppedByWorld.size < 3) {
+      stoppedByWorld.set(job.world, job.id);
+    }
+  }
+  const stopped = [...stoppedByWorld.values()];
+  assert.equal(stopped.length, 3);
+  const roots = [];
+  for (let index = 1; index <= 9; index += 1) {
+    const root = path.join(temp, `batch-${index}`);
+    const plan = buildTutorStubBoredomProofDagBatchPlan({
+      registrationPath: REGISTRATION,
+      batchId: `execution_batch_${index}`,
+      destination: root,
+      expectedSourceCommit: head,
+    });
+    fs.mkdirSync(root, { recursive: true });
+    writeSyntheticBatch(root, plan, outcomes, {
+      stoppedJobIds: plan.jobs.filter((job) => stopped.includes(job.id)).map((job) => job.id),
+    });
+    roots.push(root);
+  }
+
+  // Without an amendment the short study is refused outright.
+  assert.throws(
+    () =>
+      analyzeTutorStubBoredomProofDag({
+        batchRoots: roots,
+        registrationPath: REGISTRATION,
+        expectedSourceCommit: head,
+      }),
+    /requires a written amendment/u,
+  );
+
+  // An amendment citing the wrong registration is refused too.
+  const wrongAmendment = path.join(temp, 'wrong-amendment.json');
+  writeJson(wrongAmendment, { id: 'A1_wrong', amends: { registrationSha256: '0'.repeat(64) } });
+  assert.throws(
+    () =>
+      analyzeTutorStubBoredomProofDag({
+        batchRoots: roots,
+        registrationPath: REGISTRATION,
+        amendmentPath: path.relative(ROOT, wrongAmendment),
+        expectedSourceCommit: head,
+      }),
+    /does not cite the registration/u,
+  );
+
+  const amendmentPath = path.join(temp, 'amendment.json');
+  writeJson(amendmentPath, { id: 'A1_realised_block_allocation', amends: { registrationSha256: loaded.sha256 } });
+  const report = analyzeTutorStubBoredomProofDag({
+    batchRoots: roots,
+    registrationPath: REGISTRATION,
+    amendmentPath: path.relative(ROOT, amendmentPath),
+    expectedSourceCommit: head,
+  });
+  assert.equal(report.assembly.dialogues_planned, 36);
+  assert.equal(report.assembly.dialogues_scored, 33);
+  assert.equal(report.assembly.plain_scored, 18);
+  assert.equal(report.assembly.warm_scored, 15);
+  assert.equal(report.assembly.batches_sealed_with_registered_stops, 3);
+  assert.equal(report.amendment.id, 'A1_realised_block_allocation');
+  assert.equal(report.attrition.stopped, 3);
+  assert.deepEqual(report.attrition.stopped_by_arm, { plain: 0, warm: 3 });
+  assert.equal(report.attrition.balanced_across_arms, false);
+  assert.equal(report.primary_analysis.allocation_realised_as_predeclared, false);
+  // The three touched worlds carry three plain against two warm, and the test
+  // conditions on exactly those counts.
+  assert.equal(report.primary_analysis.blocks.filter((block) => block.plainN === 3 && block.warmN === 2).length, 3);
+  assert.equal(report.primary_analysis.blocks.filter((block) => block.plainN === 3 && block.warmN === 3).length, 3);
+  assert.ok(report.interpretation_status.includes('unbalanced_attrition_caveat'));
+  assert.match(report.claim_boundary, /Attrition was unbalanced/u);
+  // Every unit still spent its model calls, stopped or not, so the reservation
+  // total is unchanged by the shortfall.
+  assert.equal(report.assembly.total_model_attempt_reservations > 0, true);
+
+  // A technical failure is still refused: only the registered indeterminate
+  // stop is admitted as a reason for a missing outcome.
+  const technicalRoot = roots[0];
+  const technicalResultPath = path.join(technicalRoot, 'batch-result.json');
+  const technicalResult = JSON.parse(fs.readFileSync(technicalResultPath, 'utf8'));
+  const stoppedRow = technicalResult.results.find((row) => row.status !== 'complete');
+  assert.ok(stoppedRow);
+  stoppedRow.failure = { category: 'technical_recoverable', code: 'CHILD_KILLED', recoverable: true };
+  writeJson(technicalResultPath, technicalResult);
+  assert.throws(
+    () =>
+      analyzeTutorStubBoredomProofDag({
+        batchRoots: roots,
+        registrationPath: REGISTRATION,
+        amendmentPath: path.relative(ROOT, amendmentPath),
+        expectedSourceCommit: head,
+      }),
+    /source, result, or seal contract/u,
   );
 });
 

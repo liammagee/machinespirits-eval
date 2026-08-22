@@ -639,6 +639,63 @@ function sealBatch(destination, plan, result, recovery = {}) {
   return seal;
 }
 
+// Amendment A1. A batch that lost a unit to a registered indeterminate stop is
+// never sealed by the run itself, because the run only seals four of four. That
+// left three batches with no byte pin at all. This seals exactly that case and
+// nothing else: same two digests, a status that says what happened, and the
+// realised counts. It pins bytes that already exist. It does not approve a run,
+// admit an excluded unit, or reopen a stopped one.
+const REGISTERED_INDETERMINATE_STOP = Object.freeze({
+  category: 'substantive_registered_failure',
+  code: 'TUTOR_STUB_BOREDOM_MEASUREMENT_INDETERMINATE',
+  disposition: 'measurement_indeterminate_stop_no_repair_no_replacement',
+  recoverable: false,
+});
+
+export function isRegisteredIndeterminateStop(failure) {
+  return (
+    Boolean(failure) && Object.entries(REGISTERED_INDETERMINATE_STOP).every(([key, value]) => failure[key] === value)
+  );
+}
+
+export function sealTutorStubBoredomProofDagBatchWithRegisteredStops({ destination } = {}) {
+  const absolute = path.resolve(ROOT, destination || '');
+  const planPath = path.join(absolute, 'batch-plan.json');
+  const sealPath = path.join(absolute, 'batch-seal.json');
+  const finalResultPath = path.join(absolute, 'batch-final-result.json');
+  const initialResultPath = path.join(absolute, 'batch-result.json');
+  if (fs.existsSync(sealPath)) throw new Error('boredom proof-DAG batch is already sealed');
+  if (!fs.existsSync(planPath) || !fs.existsSync(initialResultPath)) {
+    throw new Error('boredom proof-DAG seal requires a batch plan and a batch result');
+  }
+  const resultFile = fs.existsSync(finalResultPath) ? 'batch-final-result.json' : 'batch-result.json';
+  const plan = readJson(planPath);
+  const result = readJson(path.join(absolute, resultFile));
+  const stopped = result.results.filter((row) => row.status !== 'complete');
+  if (stopped.length === 0) throw new Error('boredom proof-DAG registered-stop seal refuses a complete batch');
+  if (!stopped.every((row) => isRegisteredIndeterminateStop(row.failure))) {
+    throw new Error('boredom proof-DAG registered-stop seal refuses a batch with a non-registered failure');
+  }
+  if (result.results.length !== BATCH_SIZE) {
+    throw new Error('boredom proof-DAG registered-stop seal requires the full planned unit list');
+  }
+  const seal = {
+    schema: 'machinespirits.tutor-stub.boredom-action-register-proof-dag-live-batch-seal.v1',
+    status: 'sealed_with_registered_stops',
+    batch_id: plan.batch_id,
+    plan_sha256: sha256(fs.readFileSync(planPath)),
+    result_sha256: sha256(fs.readFileSync(path.join(absolute, resultFile))),
+    dialogues: BATCH_SIZE,
+    completed_dialogues: result.results.length - stopped.length,
+    registered_indeterminate_stops: stopped.map((row) => row.job_id).sort(),
+    hard_ceiling: PER_BATCH_CAP,
+    valid_unit_reruns: false,
+    outcome_selection: false,
+  };
+  writeJson(sealPath, seal);
+  return seal;
+}
+
 export async function runTutorStubBoredomProofDagBatch({
   registrationPath = REGISTRATION,
   batchId,
@@ -811,7 +868,17 @@ function parseArgs(argv) {
   const options = { parallelism: '4' };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
-    if (['--preflight', '--execution-preflight', '--live-batch', '--recover-batch', '--json', '--help'].includes(arg)) {
+    if (
+      [
+        '--preflight',
+        '--execution-preflight',
+        '--live-batch',
+        '--recover-batch',
+        '--seal-registered-stops',
+        '--json',
+        '--help',
+      ].includes(arg)
+    ) {
       options[arg.slice(2)] = true;
       continue;
     }
@@ -843,6 +910,7 @@ function usage() {
   node scripts/run-tutor-stub-boredom-action-register-proof-dag.js --execution-preflight --batch <execution_batch_1..9> --destination <fresh-path>
   node scripts/run-tutor-stub-boredom-action-register-proof-dag.js --live-batch --batch <execution_batch_1..9> --destination <fresh-path> [--parallelism 4]
   node scripts/run-tutor-stub-boredom-action-register-proof-dag.js --recover-batch --destination <incomplete-path> [--parallelism 4]
+  node scripts/run-tutor-stub-boredom-action-register-proof-dag.js --seal-registered-stops --destination <unsealed-path>
 
 Optional on any of the three: --registration <path>, --launch-authorization <path>, --expected-source-commit <sha>.
 
@@ -870,6 +938,10 @@ async function main() {
   }
   if (!args.destination) throw new Error(usage());
   const destination = path.resolve(ROOT, args.destination);
+  if (args['seal-registered-stops']) {
+    console.log(JSON.stringify(sealTutorStubBoredomProofDagBatchWithRegisteredStops({ destination }), null, 2));
+    return;
+  }
   if (args['recover-batch']) {
     const result = await recoverTutorStubBoredomProofDagBatch({
       destination,

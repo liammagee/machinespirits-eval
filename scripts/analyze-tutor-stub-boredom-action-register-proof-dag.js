@@ -21,11 +21,26 @@ import {
 import {
   buildTutorStubBoredomProofDagBatchPlan,
   buildTutorStubBoredomProofDagRecoveryJob,
+  isRegisteredIndeterminateStop,
 } from './run-tutor-stub-boredom-action-register-proof-dag.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v2.json';
 const BATCH_IDS = Object.freeze(Array.from({ length: 9 }, (_, index) => `execution_batch_${index + 1}`));
+// Amendment A1. A batch is sealed complete when all four units finished, and
+// sealed with registered stops when the only shortfall is an indeterminate
+// measurement that may not be repaired, rerun or replaced. Both seals are the
+// same two byte digests over the plan and result files.
+const SEAL_STATUSES = Object.freeze(['sealed_complete', 'sealed_with_registered_stops']);
+
+function auditStoppedUnits(result) {
+  const stopped = result.results.filter((row) => row.status !== 'complete');
+  return {
+    completed: result.results.length - stopped.length,
+    stopped: stopped.map((row) => row.job_id).sort(),
+    allRegistered: stopped.every((row) => isRegisteredIndeterminateStop(row.failure)),
+  };
+}
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -206,6 +221,7 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
   const result = fs.existsSync(finalResultPath) ? readJson(finalResultPath) : initial;
   const resultPath = fs.existsSync(finalResultPath) ? finalResultPath : initialResultPath;
   const seal = readJson(sealPath);
+  const stoppedAudit = auditStoppedUnits(result);
   if (
     plan.schema !== 'machinespirits.tutor-stub.boredom-action-register-proof-dag-live-batch-plan.v1' ||
     initial.schema !== 'machinespirits.tutor-stub.boredom-action-register-proof-dag-live-batch-result.v1' ||
@@ -214,10 +230,20 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
     (plan.source?.closure_commit ?? plan.source?.commit) !== expectedSourceCommit ||
     plan.source?.tree !== expectedSourceTree ||
     plan.source?.registration_path !== registrationPath ||
-    result.status !== 'complete' ||
-    result.completed_dialogues !== 4 ||
-    result.failed_or_missing_dialogues !== 0 ||
-    seal.status !== 'sealed_complete' ||
+    // Amendment A1: a batch may fall short of four ONLY through registered
+    // indeterminate stops, and the shortfall must be the same in the result,
+    // in the seal, and in the rows themselves. Every other way of being short
+    // still fails here.
+    !['complete', 'incomplete'].includes(result.status) ||
+    !SEAL_STATUSES.includes(seal.status) ||
+    (result.status === 'complete') !== (seal.status === 'sealed_complete') ||
+    result.completed_dialogues + result.failed_or_missing_dialogues !== 4 ||
+    result.completed_dialogues !== stoppedAudit.completed ||
+    result.failed_or_missing_dialogues !== stoppedAudit.stopped.length ||
+    !stoppedAudit.allRegistered ||
+    (seal.status === 'sealed_with_registered_stops' &&
+      (seal.completed_dialogues !== stoppedAudit.completed ||
+        JSON.stringify(seal.registered_indeterminate_stops) !== JSON.stringify(stoppedAudit.stopped))) ||
     seal.batch_id !== plan.batch_id ||
     seal.plan_sha256 !== sha256(fs.readFileSync(planPath)) ||
     seal.result_sha256 !== sha256(fs.readFileSync(resultPath)) ||
@@ -251,9 +277,13 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
     !Array.isArray(result.results) ||
     result.results.length !== 4 ||
     new Set(result.results.map((row) => row.job_id)).size !== 4 ||
-    result.results.some((row) => row.status !== 'complete' || !planJobs.has(row.job_id))
+    // Amendment A1: all four planned units must still be here. A unit may be
+    // stopped, but it may not be missing, renamed or swapped.
+    result.results.some(
+      (row) => !planJobs.has(row.job_id) || (row.status !== 'complete' && !isRegisteredIndeterminateStop(row.failure)),
+    )
   ) {
-    throw new Error(`${plan.batch_id} does not contain its four exact complete jobs`);
+    throw new Error(`${plan.batch_id} does not contain its four exact planned jobs`);
   }
   if (fs.existsSync(finalResultPath)) {
     return {
@@ -261,11 +291,13 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
       plan,
       result,
       planJobs,
+      stoppedAudit,
       ...auditRecovery({ absolute, plan, initial, result, seal, planPath, initialResultPath, resultPath }),
     };
   }
   if (
-    initial.status !== 'complete' ||
+    // `result` is `initial` on this branch, and the status was already checked
+    // against the seal above. What is left to prove is that no recovery ran.
     result.technical_recovery_used === true ||
     (result.recovery_unit_ids || []).length ||
     fs.existsSync(path.join(absolute, 'recoveries')) ||
@@ -287,7 +319,16 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
   if ([...reservationsByJob.values()].reduce((sum, value) => sum + value, 0) > 240) {
     throw new Error(`${plan.batch_id} exceeds its 240-reservation cap`);
   }
-  return { absolute, plan, result, planJobs, recoveredIds: new Set(), reservationsByJob, finalTraceBudgetByJob };
+  return {
+    absolute,
+    plan,
+    result,
+    planJobs,
+    stoppedAudit,
+    recoveredIds: new Set(),
+    reservationsByJob,
+    finalTraceBudgetByJob,
+  };
 }
 
 function metric(model, field) {
@@ -695,7 +736,13 @@ function blockedAnalysis(rows, outcomeField) {
   const warmSuccesses = warm.filter((row) => row.outcome[outcomeField] === true).length;
   return {
     test: 'two_sided_exact_conditional_blocked_score_test',
-    conditioning: 'world_success_totals_and_three_plain_three_warm_allocation',
+    // Amendment A1. The predeclared allocation was three plain and three warm
+    // in every world. Three units stopped as indeterminate, so three worlds
+    // hold three plain against two warm. The test conditions on the allocation
+    // that was realised, which is what these block counts already are.
+    conditioning: 'world_success_totals_and_realised_per_world_plain_warm_allocation',
+    predeclared_allocation: 'three_plain_three_warm_per_world',
+    allocation_realised_as_predeclared: blocks.every((block) => block.plainN === 3 && block.warmN === 3),
     two_sided_rule: 'sum_conditional_score_probabilities_no_greater_than_observed_score_probability',
     alpha: 0.05,
     plain: { successes: plainSuccesses, total: plain.length, rate: plainSuccesses / plain.length },
@@ -710,6 +757,7 @@ export function analyzeTutorStubBoredomProofDag({
   batchRoots,
   registrationPath = REGISTRATION,
   expectedSourceCommit,
+  amendmentPath,
 } = {}) {
   if (
     !Array.isArray(batchRoots) ||
@@ -744,34 +792,77 @@ export function analyzeTutorStubBoredomProofDag({
   if (batches.some((batch) => batch.plan.source.registration_sha256 !== loaded.sha256)) {
     throw new Error('boredom proof-DAG registration digest drifted across batches');
   }
-  const rows = batches.flatMap((batch) => batch.result.results.map((row) => analyzeTrace(batch, row, loaded)));
-  const plain = rows.filter((row) => row.arm === 'plain');
-  const warm = rows.filter((row) => row.arm === 'warm');
+  // Amendment A1. The 36 planned units still have to all be there. What may
+  // now differ is how many of them carry an outcome: a unit that stopped as a
+  // registered indeterminate measurement is excluded, never repaired, rerun or
+  // replaced. Rows are built from completed units only.
+  const plannedUnits = batches.flatMap((batch) =>
+    batch.plan.jobs.map((job) => ({
+      case_id: job.id,
+      world: job.world,
+      arm: job.realization,
+      completed: batch.result.results.find((row) => row.job_id === job.id)?.status === 'complete',
+    })),
+  );
+  if (plannedUnits.length !== 36 || new Set(plannedUnits.map((unit) => unit.case_id)).size !== 36) {
+    throw new Error('boredom proof-DAG analysis requires all 36 planned units to be present exactly once');
+  }
+  const stoppedUnits = plannedUnits.filter((unit) => !unit.completed);
+  // A short study may only be analysed under a written amendment that says how
+  // an uneven block is handled, and that amendment must cite these exact
+  // registration bytes. With 36 of 36 in hand, none is needed or read.
+  let amendment = null;
+  if (stoppedUnits.length > 0) {
+    if (!amendmentPath) {
+      throw new Error(
+        `boredom proof-DAG analysis of a short study requires a written amendment: ${stoppedUnits.length} of 36 units stopped`,
+      );
+    }
+    const amendmentAbsolute = path.resolve(ROOT, amendmentPath);
+    const amendmentBytes = fs.readFileSync(amendmentAbsolute);
+    const amendmentDocument = JSON.parse(amendmentBytes.toString('utf8'));
+    if (amendmentDocument.amends?.registrationSha256 !== loaded.sha256) {
+      throw new Error('boredom proof-DAG amendment does not cite the registration these batches were run under');
+    }
+    amendment = { path: amendmentPath, id: amendmentDocument.id, sha256: sha256(amendmentBytes) };
+  }
+  const rows = batches.flatMap((batch) =>
+    batch.result.results.filter((row) => row.status === 'complete').map((row) => analyzeTrace(batch, row, loaded)),
+  );
   if (
-    rows.length !== 36 ||
-    plain.length !== 18 ||
-    warm.length !== 18 ||
-    new Set(rows.map((row) => row.case_id)).size !== 36 ||
-    new Set(rows.map((row) => row.seed)).size !== 36 ||
-    new Set(rows.map((row) => row.public_prefix_sha256)).size !== 36 ||
-    new Set(rows.map((row) => row.execution.trace_sha256)).size !== 36
+    rows.length !== 36 - stoppedUnits.length ||
+    new Set(rows.map((row) => row.case_id)).size !== rows.length ||
+    new Set(rows.map((row) => row.seed)).size !== rows.length ||
+    new Set(rows.map((row) => row.public_prefix_sha256)).size !== rows.length ||
+    new Set(rows.map((row) => row.execution.trace_sha256)).size !== rows.length
   ) {
-    throw new Error('boredom proof-DAG analysis requires 36 distinct fresh independent dialogues, 18 per arm');
+    throw new Error('boredom proof-DAG analysis requires every scored dialogue to be fresh, distinct and independent');
   }
   for (const world of loaded.registration.design.worlds) {
+    const worldPlanned = plannedUnits.filter((unit) => unit.world === world);
     const worldRows = rows.filter((row) => row.world === world);
     if (
-      worldRows.length !== 6 ||
-      worldRows.filter((row) => row.arm === 'plain').length !== 3 ||
-      worldRows.filter((row) => row.arm === 'warm').length !== 3
+      worldPlanned.length !== 6 ||
+      worldPlanned.filter((unit) => unit.arm === 'plain').length !== 3 ||
+      worldPlanned.filter((unit) => unit.arm === 'warm').length !== 3
     ) {
-      throw new Error(`boredom proof-DAG world block ${world} is not exactly three plain and three warm`);
+      throw new Error(`boredom proof-DAG world block ${world} was not planned as three plain and three warm`);
+    }
+    // The exact conditional test conditions on a block. A block with nothing on
+    // one side is not a block, so it cannot be conditioned on at all.
+    if (
+      worldRows.filter((row) => row.arm === 'plain').length < 1 ||
+      worldRows.filter((row) => row.arm === 'warm').length < 1
+    ) {
+      throw new Error(`boredom proof-DAG world block ${world} lost a whole arm and cannot be conditioned on`);
     }
   }
+  // Counted off the batches, not off the scored rows. A unit that stopped as
+  // indeterminate still spent model calls, and the caps are on what was spent.
   const reservationsByBatch = Object.fromEntries(
-    BATCH_IDS.map((id) => [
-      id,
-      rows.filter((row) => row.batch_id === id).reduce((sum, row) => sum + row.execution.model_attempt_reservations, 0),
+    batches.map((batch) => [
+      batch.plan.batch_id,
+      [...batch.reservationsByJob.values()].reduce((sum, value) => sum + value, 0),
     ]),
   );
   if (Object.values(reservationsByBatch).some((value) => value > 240)) {
@@ -783,8 +874,39 @@ export function analyzeTutorStubBoredomProofDag({
   const keySecondary = blockedAnalysis(rows, 'proof_progress_by_two_turns');
   const primaryRejects = primary.p_value <= 0.05;
   const keySecondaryRejects = primaryRejects && keySecondary.p_value <= 0.05;
-  const actionVisibility = rows.filter((row) => row.fidelity.action_visible).length / 36;
-  const registerVisibility = rows.filter((row) => row.fidelity.register_visible).length / 36;
+  // Over the dialogues that produced an outcome, not over the 36 planned. A
+  // stopped unit has no fidelity reading to average in either direction.
+  const actionVisibility = rows.filter((row) => row.fidelity.action_visible).length / rows.length;
+  const registerVisibility = rows.filter((row) => row.fidelity.register_visible).length / rows.length;
+  // Amendment A1 makes this table travel with the result. It is the part a
+  // reader needs in order to see what the test could not fix: which units were
+  // lost, from which side, and why.
+  const stoppedByArm = { plain: 0, warm: 0 };
+  for (const unit of stoppedUnits) stoppedByArm[unit.arm] += 1;
+  const attrition = {
+    planned: 36,
+    scored: rows.length,
+    stopped: stoppedUnits.length,
+    stopped_by_arm: stoppedByArm,
+    balanced_across_arms: stoppedByArm.plain === stoppedByArm.warm,
+    stop_reason: 'measurement_indeterminate_stop_no_repair_no_replacement',
+    stopped_units: stoppedUnits.map((unit) => ({ case_id: unit.case_id, world: unit.world, arm: unit.arm })),
+    per_world: loaded.registration.design.worlds.map((world) => {
+      const planned = plannedUnits.filter((unit) => unit.world === world);
+      const scored = planned.filter((unit) => unit.completed);
+      return {
+        world,
+        plain_planned: planned.filter((unit) => unit.arm === 'plain').length,
+        warm_planned: planned.filter((unit) => unit.arm === 'warm').length,
+        plain_scored: scored.filter((unit) => unit.arm === 'plain').length,
+        warm_scored: scored.filter((unit) => unit.arm === 'warm').length,
+      };
+    }),
+    reading:
+      stoppedByArm.plain === stoppedByArm.warm
+        ? 'Units were lost evenly across the two versions of the tutor.'
+        : 'Units were lost unevenly across the two versions of the tutor. The kept sample on the side that lost units is conditional on not stopping as indeterminate, while the other side is not. The exact conditional test is valid for the units that exist, and it does not repair this. Report it beside any result.',
+  };
   const fidelity = loaded.registration.measurement.treatmentFidelity;
   const fidelityPassed =
     actionVisibility >= fidelity.minimumActionVisibility && registerVisibility >= fidelity.minimumRegisterVisibility;
@@ -793,13 +915,19 @@ export function analyzeTutorStubBoredomProofDag({
     status: fidelityPassed ? 'complete_registered_confirmation' : 'failed_interpretability_gate_not_rerun',
     source: { commit: pinnedCommit, tree: pinnedTree },
     registration: { path: registrationPath, sha256: loaded.sha256 },
+    amendment,
     assembly: {
-      batches_complete: 9,
-      dialogues: 36,
-      plain: 18,
-      warm: 18,
+      batches_run: 9,
+      batches_sealed_complete: batches.filter((batch) => batch.stoppedAudit.stopped.length === 0).length,
+      batches_sealed_with_registered_stops: batches.filter((batch) => batch.stoppedAudit.stopped.length > 0).length,
+      dialogues_planned: 36,
+      dialogues_scored: rows.length,
+      plain_planned: 18,
+      warm_planned: 18,
+      plain_scored: rows.filter((row) => row.arm === 'plain').length,
+      warm_scored: rows.filter((row) => row.arm === 'warm').length,
       worlds: 6,
-      distinct_fresh_public_prefixes: 36,
+      distinct_fresh_public_prefixes: rows.length,
       prior_dialogues_reused: 0,
       prior_outcomes_pooled: 0,
       partial_or_interim_interpretation_permitted: false,
@@ -808,6 +936,7 @@ export function analyzeTutorStubBoredomProofDag({
       reservations_by_batch: reservationsByBatch,
       total_model_attempt_reservations: totalReservations,
     },
+    attrition,
     rows,
     primary_analysis: {
       endpoint: 'profile_specific_resistance_recovery',
@@ -839,11 +968,16 @@ export function analyzeTutorStubBoredomProofDag({
       primary_analysis: 'intention_to_treat',
       valid_unit_rerun_authorized: false,
     },
-    interpretation_status: fidelityPassed
-      ? 'registered_confirmation_interpretable_within_claim_boundary'
-      : 'interpretability_gate_failed_no_rerun_or_confirmation_claim',
-    claim_boundary:
-      'This report tests only the prospectively registered bored matched-action warm-versus-plain recovery primary and fixed-sequence objective proof-progress secondary in 36 fresh independent strict-DAG dialogues. Prior held-out detection, historical action-fit, and 12-dialogue calibration outcomes are neither reused nor pooled. No action-fit, interaction, edged-register, general tutor-efficacy, durable-learning, human-validity, or cell-harness claim is licensed.',
+    interpretation_status: !fidelityPassed
+      ? 'interpretability_gate_failed_no_rerun_or_confirmation_claim'
+      : attrition.balanced_across_arms
+        ? 'registered_confirmation_interpretable_within_claim_boundary'
+        : 'registered_confirmation_interpretable_within_claim_boundary_and_unbalanced_attrition_caveat',
+    claim_boundary: `This report tests only the prospectively registered bored matched-action warm-versus-plain recovery primary and fixed-sequence objective proof-progress secondary in fresh independent strict-DAG dialogues. 36 dialogues were planned and ${rows.length} produced an outcome; ${attrition.stopped} stopped as an indeterminate measurement and were not repaired, rerun or replaced. Prior held-out detection, historical action-fit, and 12-dialogue calibration outcomes are neither reused nor pooled. No action-fit, interaction, edged-register, general tutor-efficacy, durable-learning, human-validity, or cell-harness claim is licensed.${
+      attrition.balanced_across_arms
+        ? ''
+        : ` Attrition was unbalanced across the two versions of the tutor (plain ${stoppedByArm.plain}, warm ${stoppedByArm.warm}), so the two kept samples are conditioned differently. Amendment A1 conditions the test on the realised per-world allocation; it does not repair this, and the attrition table must be reported beside any result.`
+    }`,
   };
 }
 
@@ -855,7 +989,7 @@ function parseArgs(argv) {
       options[arg.slice(2)] = true;
       continue;
     }
-    if (['--batch', '--registration', '--expected-source-commit', '--out'].includes(arg)) {
+    if (['--batch', '--registration', '--amendment', '--expected-source-commit', '--out'].includes(arg)) {
       const value = argv[index + 1];
       if (!value || value.startsWith('--')) throw new Error(`${arg} requires a value`);
       if (arg === '--batch') options.batches.push(value);
@@ -869,7 +1003,9 @@ function parseArgs(argv) {
 }
 
 function usage() {
-  return 'Usage: node scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js --batch <root> (repeat exactly 9 times) --expected-source-commit <sha> [--out <fresh.json>] [--json]';
+  return `Usage: node scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js --batch <root> (repeat exactly 9 times) --expected-source-commit <sha> [--registration <path>] [--amendment <path>] [--out <fresh.json>] [--json]
+
+--amendment is required only when a unit stopped as a registered indeterminate measurement, and the amendment must cite the digest of the registration the batches were run under.`;
 }
 
 function main() {
@@ -879,6 +1015,7 @@ function main() {
   const report = analyzeTutorStubBoredomProofDag({
     batchRoots: args.batches,
     registrationPath: args.registration,
+    amendmentPath: args.amendment,
     expectedSourceCommit: args['expected-source-commit'],
   });
   if (args.out) fs.writeFileSync(path.resolve(ROOT, args.out), `${JSON.stringify(report, null, 2)}\n`, { flag: 'wx' });

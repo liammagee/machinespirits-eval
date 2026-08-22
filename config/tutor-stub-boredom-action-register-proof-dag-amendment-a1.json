@@ -1,0 +1,57 @@
+{
+  "schema": "machinespirits.tutor-stub.boredom-action-register-proof-dag-amendment.v1",
+  "id": "A1_realised_block_allocation",
+  "on": "2026-08-22",
+  "amends": {
+    "registrationPath": "config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json",
+    "registrationSha256": "1db9fe34461f29f63d26fa456152b34c8d9e5fab957a49c8612ba462f97eddb3",
+    "registrationBytesUnchanged": true,
+    "whySeparateFile": "the nine sealed batch plans each recorded the digest of the frozen registration, and the analyser stops if that digest moves. Writing the amendment into the registration would have changed those bytes and stranded the collected data. The frozen document stays frozen; this one cites it."
+  },
+  "authority": "Liam Magee, 2026-08-22: amend the plan to say how uneven blocks are handled and then run",
+  "writtenBeforeAnyOutcomeWasComputedOrRead": true,
+  "trigger": "collection ended with 33 of 36 dialogues. Three units stopped as measurement_indeterminate and may not be repaired, rerun or replaced, so worlds 026, 030 and 033 hold three plain against two warm.",
+  "gapItCloses": "the frozen plan conditions the primary test on the predeclared three-plain-three-warm allocation, and that allocation does not exist in three of the six worlds. The frozen plan says nothing about an uneven block, and the analyser refuses to read a batch that lost a unit.",
+  "rule": "condition on each world's success total and on that world's realised plain and warm counts, not on the predeclared three and three",
+  "whyThisRuleAndNotAnother": "the exact conditional score test is built for any block that holds at least one unit on each side, and it already takes the per-block counts it is given. The realised counts keep the test exact and change nothing in the test itself. Dropping a plain unit to force three and three would need a rule for picking which unit to drop and would throw away collected data. Filling in the missing outcomes would invent data.",
+  "changesTheTestStatistic": false,
+  "changesTheEstimand": false,
+  "changesTheAlpha": false,
+  "changesTheDesignFingerprint": false,
+  "acceptanceRules": {
+    "unitsAdmitted": "only a unit whose job status is complete",
+    "unitsExcluded": "only a unit whose recorded failure is exactly category substantive_registered_failure, code TUTOR_STUB_BOREDOM_MEASUREMENT_INDETERMINATE, disposition measurement_indeterminate_stop_no_repair_no_replacement, recoverable false. Any other failure, including a technical one, still stops the analysis.",
+    "plannedUnitsUnchanged": "all 36 planned units must still be present across the nine batch plans, and each plan must still recompute byte-identical from the frozen registration",
+    "perBlockMinimum": "each of the six worlds must keep at least one plain and at least one warm unit, else there is no block to condition on",
+    "sealing": "a batch that fell short only through registered indeterminate stops may be sealed as sealed_with_registered_stops. That seal carries the same two byte digests over the plan and result files that a complete seal carries, plus the realised counts. It pins bytes that already exist. It does not approve a run, admit a unit, or reopen one.",
+    "stillForbidden": [
+      "rerunning, repairing or replacing a stopped unit",
+      "rescoring or resampling any unit",
+      "choosing among outcomes",
+      "raising the per-batch cap of 240 or the study cap of 2160",
+      "pooling any prior dialogue or outcome"
+    ]
+  },
+  "attritionIsNotBalanced": {
+    "observed": "all three lost units are warm. Plain lost none. 18 plain and 15 warm remain.",
+    "meaning": "the kept plain sample is every plain dialogue drawn. The kept warm sample is warm dialogues that did not stop as indeterminate. The two sides are conditioned differently.",
+    "whyItCouldWorkAgainstWarm": "two of the three losses voided on the same mix: a boredom cue, a statement of having stopped, and a named next step. That mix is the profile of a learner on the edge of engaging, which is what the recovery endpoint scores. Losing those units removes the warm dialogues most likely to score as recovery.",
+    "whatThisAmendmentDoesNotDo": "it makes the test valid for the units that exist. It does NOT repair the unbalanced attrition, and no analysis of these 33 dialogues can.",
+    "mandatoryDisclosure": "every report of this study must carry the per-world plain and warm counts, the three stop reasons, and the plain statement that all three losses fell on warm"
+  },
+  "rerunConsidered": {
+    "answer": "no",
+    "registeredReason": "an indeterminate stop is a substantive registered failure with no repair, no rerun and no replacement. Only a technical failure, such as an interrupted child process or an exhausted transport retry, is eligible for recovery. Nine batches also use the full registered attempt ceiling of 2160.",
+    "statisticalReason": "three fresh warm draws would restore the count to 18 a side but would not remove the imbalance, because a refilled warm sample is still warm dialogues that did not stop as indeterminate. That is the same conditioning that already separates the two sides. Refilling buys back power and hides the uneven attrition instead of fixing it."
+  },
+  "instrumentByteMoves": [
+    {
+      "file": "scripts/run-tutor-stub-boredom-action-register-proof-dag.js",
+      "change": "added isRegisteredIndeterminateStop and sealTutorStubBoredomProofDagBatchWithRegisteredStops, plus the --seal-registered-stops action. The four-of-four seal path is unchanged."
+    },
+    {
+      "file": "scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js",
+      "change": "accept the sealed_with_registered_stops seal; build rows from completed units only; require all 36 planned units present and at least one plain and one warm per world; count reservations off the batches rather than the scored rows so a stopped unit's spend still counts; report the attrition table; correct the conditioning label from the predeclared allocation to the realised one."
+    }
+  ]
+}
