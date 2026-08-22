@@ -2276,7 +2276,7 @@ export function validateTutorStubResistantProfileStudyGoRequest({ requestPath = 
           gate.semanticValidation?.lexicalSilenceMayVetoSemanticPositive === false &&
           gate.semanticValidation?.instrumentModule?.path === 'services/tutorStubBoredomSemanticAdjudicationV3.js' &&
           gate.semanticValidation?.instrumentModule?.sha256 ===
-            'ba4a692fd1310591072a52c600b91cdd796edfdc89f979e7843b41d7fa9ff191' &&
+            'c6519c690857360d15dd86a0757bfc382a7963e1fdf617abc270652d7289b18c' &&
           gate.semanticValidation?.heldoutCorpus?.path ===
             'config/tutor-stub-boredom-semantic-adjudication-heldout.v4.json' &&
           gate.semanticValidation?.heldoutCorpus?.sha256 ===

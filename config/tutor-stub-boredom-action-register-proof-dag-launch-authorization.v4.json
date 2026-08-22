@@ -1,12 +1,18 @@
 {
-  "schema": "machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v1",
+  "schema": "machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v2",
   "approvedBy": "Liam Magee",
   "approvedOn": "2026-08-21",
   "registrationPath": "config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json",
-  "registrationSha256": "02b612a7b902dd0aa8eb644d733f6f3f350865e8bad2b068af695e7d0078a6b7",
-  "requestPath": "config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v4.json",
-  "requestSha256": "d2e611c3fad203bd2beafb5e9c4d8b1a0a8f3ab2a86ac06e0a0e74a975caabda",
+  "designFingerprint": "c16c53e40335f510eedb5cc166b70cb75f01854b62bc67186e7fbf7860c8d94c",
   "modelCallsAuthorized": true,
   "liveRunAuthorized": true,
-  "exactApprovalStatement": "I approve config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v4.json at SHA-256 d2e611c3fad203bd2beafb5e9c4d8b1a0a8f3ab2a86ac06e0a0e74a975caabda for one 36-dialogue Luna boredom matched-action warm-versus-plain proof-DAG confirmation with 18 dialogues per arm, scored by the independently pinned Sol V3 semantic instrument that passed all five predeclared gates on the sealed 55-case held-out v4 corpus, one predeclared two-sided exact conditional blocked analysis with fixed-sequence proof-progress testing, no interim analysis, no reuse or pooling of prior dialogues or outcomes including the stopped 71-reservation v2 cohort, a 2,160-attempt study safeguard and 5,000-attempt cumulative programme safeguard while both powered confirmations remain reserved, and bounded technical recovery authority for missing or failed units only within unchanged protected inputs and safeguards."
+  "approvalStatement": "Correct it, re-run with my approval, then start again - but this time stop locking approvals to commits.",
+  "binds": "study_design_not_source_bytes",
+  "supersedes": {
+    "schema": "machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v1",
+    "requestSha256": "d2e611c3fad203bd2beafb5e9c4d8b1a0a8f3ab2a86ac06e0a0e74a975caabda",
+    "spentOn": "live batch 1, four dialogues, twenty-one model attempts, stopped on the auxiliary contradiction defect"
+  },
+  "note": "The approval covers the registered study: the question, the claim boundary, the design, the measurement rules, the power calculation and the spend safeguards. Correcting a defect in the code does not void it; changing the study does.",
+  "restartSeedBase": 2026082500
 }

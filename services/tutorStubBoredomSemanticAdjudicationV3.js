@@ -170,6 +170,27 @@ function auxiliaryPolarity(auxiliaryObservation) {
   return 'neutral';
 }
 
+// What each non-neutral auxiliary polarity positively asserts about the same
+// fields the judge reports. The polarity names and the verdict names are two
+// different vocabularies over one field space, so comparing them as strings
+// mistakes agreement for disagreement: `productive_uptake` with no boredom cue
+// collapses to the verdict `no_boredom`, which is exactly what the auxiliary
+// meant. Compare the fields instead. See `resistantLearnerObservation.js` for
+// the precedence that makes these assertions exclusive.
+const AUXILIARY_FIELD_ASSERTIONS = {
+  // uptake seen, and reached only when actionable withdrawal was absent
+  productive_uptake: { productive_uptake: true, effort_withdrawal: false },
+  // cue plus withdrawal, reached only when uptake was absent
+  actionable_boredom: { boredom_cue: true, effort_withdrawal: true, productive_uptake: false },
+};
+
+export function auxiliaryContradictsFields(polarity, fields) {
+  if (polarity === 'indeterminate') return true;
+  const asserted = AUXILIARY_FIELD_ASSERTIONS[polarity];
+  if (!asserted) return false;
+  return Object.entries(asserted).some(([field, value]) => Boolean(fields?.[field]) !== value);
+}
+
 export function parseTutorStubBoredomSemanticAdjudication({
   raw = '',
   candidate = '',
@@ -197,8 +218,7 @@ export function parseTutorStubBoredomSemanticAdjudication({
     observedRoute?.model === TUTOR_STUB_BOREDOM_SEMANTIC_ADJUDICATOR_MODEL;
   if (observedRoute && !routeMatches) issues.push('independent_route_mismatch');
   const auxiliary = auxiliaryPolarity(auxiliaryObservation);
-  const auxiliaryContradiction =
-    auxiliary === 'indeterminate' || (auxiliary !== 'neutral' && auxiliary !== semanticVerdict);
+  const auxiliaryContradiction = auxiliaryContradictsFields(auxiliary, fields);
   const lowConfidence = !Number.isFinite(confidence) || confidence < minimumConfidence;
   const parseOk = Boolean(parsed) && declaredVerdict !== 'invalid' && evidenceAudit.pass && issues.length === 0;
   const measurementDisposition =

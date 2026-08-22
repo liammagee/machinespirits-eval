@@ -112,7 +112,7 @@
       "prefixesPerWorld": 6,
       "requiredDistinctPrefixes": 36,
       "maximumTriggerTurn": 2,
-      "seedBase": 2026082400,
+      "seedBase": 2026082500,
       "uniqueSeedPerSource": true,
       "requireDistinctPublicPrefixHashes": true,
       "profileIdentityMayTrigger": false,
@@ -122,7 +122,8 @@
         "comprehension_repair",
         "protected_affect"
       ],
-      "substantiveMissingOrDuplicateTriggerDisposition": "stop_incomplete_no_replacement_no_analysis"
+      "substantiveMissingOrDuplicateTriggerDisposition": "stop_incomplete_no_replacement_no_analysis",
+      "restartNote": "Seed base moved from 2026082400 to 2026082500 on 2026-08-21. Live batch 1 under the previous seed base spent four dialogues and produced no outcome: three were voided by the auxiliary contradiction defect and one hit the registered missing-trigger stop. Those four are excluded and are not reused, pooled or rescored. Re-running them on the same seed would have resampled failed units, so the restart draws fresh prefixes."
     },
     "randomization": {
       "independentUnit": "fresh_distinct_bored_public_prefix_dialogue",
@@ -143,7 +144,10 @@
     "treatment": {
       "fixedPedagogicalMove": "ask_discriminating_question",
       "actionFit": "matched",
-      "realizations": ["plain", "warm"],
+      "realizations": [
+        "plain",
+        "warm"
+      ],
       "reference": "plain",
       "treatment": "warm",
       "edgedOrSarcasticAbsent": true,
@@ -175,7 +179,7 @@
     "semanticAdjudicator": {
       "schema": "machinespirits.tutor-stub.boredom-semantic-adjudication.v3",
       "modulePath": "services/tutorStubBoredomSemanticAdjudicationV3.js",
-      "moduleSha256": "ba4a692fd1310591072a52c600b91cdd796edfdc89f979e7843b41d7fa9ff191",
+      "moduleSha256": "c6519c690857360d15dd86a0757bfc382a7963e1fdf617abc270652d7289b18c",
       "modelRef": "codex.gpt-5.6-sol",
       "role": "tutor_stub_boredom_performance_adjudication",
       "effort": "low",
@@ -219,7 +223,17 @@
         "reservationsAuthorized": 165,
         "retries": 0
       },
-      "confirmationLaunchReady": true
+      "confirmationLaunchReady": true,
+      "instrumentCorrections": [
+        {
+          "date": "2026-08-21",
+          "defect": "the auxiliary-versus-judge disagreement rule compared an auxiliary polarity name against a verdict name drawn from a coarser vocabulary, so an auxiliary reporting productive uptake was read as contradicting the verdict no_boredom even though both agreed the learner took up the work",
+          "effect": "three of four dialogues in live batch 1 stopped as measurement_indeterminate while the judge was healthy at confidence 0.99",
+          "correction": "disagreement is decided on the judge fields the auxiliary actually asserts, not on the collapsed verdict name",
+          "gateVisibility": "none of the five predeclared gates could reach the rule: the sealed 55-case corpus carries no auxiliary column and the gate harness passes a null auxiliary, which maps to neutral",
+          "designUnchanged": true
+        }
+      ]
     },
     "primaryEndpoint": {
       "id": "profile_specific_resistance_recovery",

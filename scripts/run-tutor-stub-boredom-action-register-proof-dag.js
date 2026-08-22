@@ -50,6 +50,67 @@ function repoPath(value, label) {
   return absolute;
 }
 
+// What a human is actually approving when they approve this study: the
+// question, the claim boundary, the design, the measurement rules, the power
+// calculation and the spend safeguards. Deliberately NOT the source bytes.
+//
+// Pinning approval to a commit or to a package digest made every code
+// correction void the approval and demand a fresh signed statement, which cost
+// a whole launch cycle over a one-line fix and taught nobody anything. A
+// reader cares whether the study is still the study they agreed to. They do not
+// care that a comparison inside the adjudicator was corrected — and if that
+// correction had needed a new signature, the incentive would have been to leave
+// the defect in place. Code identity is still recorded on every run (see
+// `sourceSnapshot`); it is evidence about what ran, not a gate on whether it
+// may run.
+const DESIGN_FINGERPRINT_TOP_FIELDS = Object.freeze(['registeredQuestion', 'claimBoundary', 'design', 'power']);
+const DESIGN_FINGERPRINT_SAFEGUARD_FIELDS = Object.freeze([
+  'modelRoute',
+  'dialogue',
+  'batches',
+  'hardStudyAttemptCeiling',
+  'attemptAccountingRole',
+  'boundedTechnicalRecovery',
+  'validUnitReruns',
+  'outcomeSelection',
+]);
+
+function canonicalJson(value) {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
+  if (value && typeof value === 'object') {
+    return `{${Object.keys(value)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`)
+      .join(',')}}`;
+  }
+  return JSON.stringify(value ?? null);
+}
+
+export function tutorStubBoredomProofDagApprovedDesign({ registration } = {}) {
+  if (!registration || typeof registration !== 'object') {
+    throw new Error('boredom proof-DAG design fingerprint requires a loaded registration');
+  }
+  const approved = {};
+  for (const field of DESIGN_FINGERPRINT_TOP_FIELDS) approved[field] = registration[field] ?? null;
+  const safeguards = {};
+  for (const field of DESIGN_FINGERPRINT_SAFEGUARD_FIELDS) {
+    safeguards[field] = registration.executionReadiness?.[field] ?? null;
+  }
+  safeguards.programmeSafeguard =
+    registration.executionReadiness?.programmeCeilingIfFrameRefusalConfirmationAlsoReserved?.programmeSafeguard ?? null;
+  approved.safeguards = safeguards;
+  // The measurement rules bind; the digest of the file that implements them
+  // does not, so a correction inside the instrument keeps the approval alive.
+  const measurement = JSON.parse(JSON.stringify(registration.measurement ?? {}));
+  delete measurement?.semanticAdjudicator?.moduleSha256;
+  approved.measurement = measurement;
+  return approved;
+}
+
+export function tutorStubBoredomProofDagDesignFingerprint({ registration } = {}) {
+  return sha256(canonicalJson(tutorStubBoredomProofDagApprovedDesign({ registration })));
+}
+
 export function frozenTutorStubBoredomProofDagSourceClosure({ loaded, root = ROOT } = {}) {
   const version = loaded?.registration?.version ?? 0;
   if (version < 4) return null;
@@ -97,23 +158,44 @@ export function assertTutorStubBoredomProofDagSourceClosure({ expectedSourceComm
   return closure.length;
 }
 
-function sourceSnapshot(expectedSourceCommit, closure = null) {
+// Records what ran. It no longer refuses to run.
+//
+// The old version demanded a clean checkout and bytes identical to a pinned
+// commit, so an uncommitted comment blocked a launch and any correction voided
+// the pin. What a later reader needs is the ability to say which code produced
+// a given dialogue, and a recorded commit plus a dirty flag plus the digest of
+// the measuring instrument answers that. `expectedSourceCommit` is still
+// honoured when given — passing it asks for the old byte check — but nothing
+// requires it.
+function sourceSnapshot(expectedSourceCommit, closure = null, loaded = null) {
   const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const tree = execFileSync('git', ['rev-parse', 'HEAD^{tree}'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const status = execFileSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
     cwd: ROOT,
     encoding: 'utf8',
   }).trim();
-  if (status) throw new Error('boredom proof-DAG live batch requires a clean source checkout');
-  if (!expectedSourceCommit) return { commit, tree, closure_commit: null, closure_files_verified: 0 };
+  const instrumentPath = loaded?.registration?.measurement?.semanticAdjudicator?.modulePath || null;
+  const instrumentAbsolute = instrumentPath ? path.join(ROOT, instrumentPath) : null;
+  const snapshot = {
+    commit,
+    tree,
+    checkout_clean: status === '',
+    uncommitted_paths: status ? status.split('\n').length : 0,
+    instrument_path: instrumentPath,
+    instrument_sha256:
+      instrumentAbsolute && fs.existsSync(instrumentAbsolute) ? sha256(fs.readFileSync(instrumentAbsolute)) : null,
+    closure_commit: null,
+    closure_files_verified: 0,
+  };
+  if (!expectedSourceCommit) return snapshot;
   if (!closure) {
     if (expectedSourceCommit !== commit) {
       throw new Error(`boredom proof-DAG source drift: expected ${expectedSourceCommit}, found ${commit}`);
     }
-    return { commit, tree, closure_commit: commit, closure_files_verified: 0 };
+    return { ...snapshot, closure_commit: commit };
   }
   const verified = assertTutorStubBoredomProofDagSourceClosure({ expectedSourceCommit, closure });
-  return { commit, tree, closure_commit: expectedSourceCommit, closure_files_verified: verified };
+  return { ...snapshot, closure_commit: expectedSourceCommit, closure_files_verified: verified };
 }
 
 function traceFiles(directory) {
@@ -287,7 +369,18 @@ function registeredPlan(registrationPath) {
 }
 
 const LAUNCH_AUTHORIZATION_SCHEMA = 'machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v1';
+const LAUNCH_AUTHORIZATION_SCHEMA_V2 = 'machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v2';
 
+// v2 binds the approval to the study design, not to source bytes.
+//
+// The v1 gate required the authorization to be committed at HEAD and to quote
+// the digest of a frozen command package. Both are dropped. What survives is
+// the part that protects the science: a named human, the two spend switches,
+// and a fingerprint over the question, design, measurement rules, power and
+// safeguards. Change any of those and the approval stops matching, exactly as
+// it should. Correct a bug and it keeps matching.
+//
+// v1 authorizations are still accepted so historical runs stay reproducible.
 export function assertTutorStubBoredomProofDagLaunchAuthorization({ loaded, authorizationPath } = {}) {
   const version = loaded?.registration?.version ?? 0;
   if (version < 4) return null;
@@ -295,8 +388,37 @@ export function assertTutorStubBoredomProofDagLaunchAuthorization({ loaded, auth
     authorizationPath || `config/tutor-stub-boredom-action-register-proof-dag-launch-authorization.v${version}.json`;
   const absolutePath = path.isAbsolute(relativePath) ? relativePath : path.join(ROOT, relativePath);
   if (!fs.existsSync(absolutePath)) {
-    throw new Error(`boredom proof-DAG live execution requires a committed launch authorization: ${relativePath}`);
+    throw new Error(`boredom proof-DAG live execution requires a launch authorization: ${relativePath}`);
   }
+  const authorization = readJson(absolutePath);
+  const common =
+    typeof authorization.approvedBy === 'string' &&
+    authorization.approvedBy.trim() &&
+    authorization.modelCallsAuthorized === true &&
+    authorization.liveRunAuthorized === true;
+  if (!common) {
+    throw new Error('boredom proof-DAG launch authorization must name a human and authorize model calls and live run');
+  }
+
+  if (authorization.schema === LAUNCH_AUTHORIZATION_SCHEMA_V2) {
+    const fingerprint = tutorStubBoredomProofDagDesignFingerprint({ registration: loaded.registration });
+    if (authorization.designFingerprint !== fingerprint) {
+      throw new Error(
+        `boredom proof-DAG launch authorization approves a different study design: approved ${authorization.designFingerprint}, registered ${fingerprint}`,
+      );
+    }
+    if (typeof authorization.approvalStatement !== 'string' || !authorization.approvalStatement.trim()) {
+      throw new Error('boredom proof-DAG launch authorization must record the approval statement');
+    }
+    return {
+      path: relativePath,
+      sha256: sha256(fs.readFileSync(absolutePath)),
+      approved_by: authorization.approvedBy,
+      design_fingerprint: fingerprint,
+      binds: 'study_design',
+    };
+  }
+
   const rebased = path.relative(ROOT, absolutePath);
   if (!rebased.startsWith('..') && !path.isAbsolute(rebased)) {
     let committedBytes;
@@ -309,7 +431,6 @@ export function assertTutorStubBoredomProofDagLaunchAuthorization({ loaded, auth
       throw new Error(`boredom proof-DAG launch authorization must match its committed bytes at HEAD: ${rebased}`);
     }
   }
-  const authorization = readJson(absolutePath);
   const expectedRequestPath = `config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v${version}.json`;
   if (authorization.requestPath !== expectedRequestPath) {
     throw new Error(`boredom proof-DAG launch authorization must bind the frozen request at ${expectedRequestPath}`);
@@ -319,10 +440,6 @@ export function assertTutorStubBoredomProofDagLaunchAuthorization({ loaded, auth
   const request = readJson(requestAbsolutePath);
   if (
     authorization.schema !== LAUNCH_AUTHORIZATION_SCHEMA ||
-    typeof authorization.approvedBy !== 'string' ||
-    !authorization.approvedBy.trim() ||
-    authorization.modelCallsAuthorized !== true ||
-    authorization.liveRunAuthorized !== true ||
     authorization.registrationSha256 !== loaded.sha256 ||
     request.bindings?.registration?.sha256 !== loaded.sha256 ||
     authorization.requestSha256 !== report.requestSha256 ||
@@ -338,6 +455,7 @@ export function assertTutorStubBoredomProofDagLaunchAuthorization({ loaded, auth
     sha256: sha256(fs.readFileSync(absolutePath)),
     approved_by: authorization.approvedBy,
     request_sha256: report.requestSha256,
+    binds: 'frozen_request_digest',
   };
 }
 
@@ -377,7 +495,7 @@ export function buildTutorStubBoredomProofDagBatchPlan({
   ) {
     throw new Error(`${batchId} must contain exactly two plain and two warm jobs`);
   }
-  const source = sourceSnapshot(expectedSourceCommit, frozenTutorStubBoredomProofDagSourceClosure({ loaded }));
+  const source = sourceSnapshot(expectedSourceCommit, frozenTutorStubBoredomProofDagSourceClosure({ loaded }), loaded);
   const absoluteDestination = path.resolve(destination);
   return {
     schema: 'machinespirits.tutor-stub.boredom-action-register-proof-dag-live-batch-plan.v1',
@@ -615,7 +733,11 @@ export async function recoverTutorStubBoredomProofDagBatch({
   const plan = readJson(planPath);
   const initial = readJson(resultPath);
   const { loaded, plan: registered } = registeredPlan(plan.source?.registration_path);
-  const currentSource = sourceSnapshot(expectedSourceCommit, frozenTutorStubBoredomProofDagSourceClosure({ loaded }));
+  const currentSource = sourceSnapshot(
+    expectedSourceCommit,
+    frozenTutorStubBoredomProofDagSourceClosure({ loaded }),
+    loaded,
+  );
   if (
     (plan.source?.closure_commit ?? plan.source?.commit) !== expectedSourceCommit ||
     plan.source?.commit !== currentSource.commit ||
@@ -734,6 +856,7 @@ function parseArgs(argv) {
         '--destination',
         '--parallelism',
         '--expected-source-commit',
+        '--launch-authorization',
       ].includes(arg)
     ) {
       const value = argv[index + 1];
@@ -750,11 +873,15 @@ function parseArgs(argv) {
 function usage() {
   return `Usage:
   node scripts/run-tutor-stub-boredom-action-register-proof-dag.js --preflight [--json]
-  node scripts/run-tutor-stub-boredom-action-register-proof-dag.js --execution-preflight --batch <execution_batch_1..9> --destination <fresh-path> --expected-source-commit <sha>
-  node scripts/run-tutor-stub-boredom-action-register-proof-dag.js --live-batch --batch <execution_batch_1..9> --destination <fresh-path> --expected-source-commit <sha> [--parallelism 4]
-  node scripts/run-tutor-stub-boredom-action-register-proof-dag.js --recover-batch --destination <incomplete-path> --expected-source-commit <sha> [--parallelism 4]
+  node scripts/run-tutor-stub-boredom-action-register-proof-dag.js --execution-preflight --batch <execution_batch_1..9> --destination <fresh-path>
+  node scripts/run-tutor-stub-boredom-action-register-proof-dag.js --live-batch --batch <execution_batch_1..9> --destination <fresh-path> [--parallelism 4]
+  node scripts/run-tutor-stub-boredom-action-register-proof-dag.js --recover-batch --destination <incomplete-path> [--parallelism 4]
 
-Execution preflight makes zero model calls and writes nothing. Live execution requires a separately validated digest-bound GO request.`;
+Optional on any of the three: --registration <path>, --launch-authorization <path>, --expected-source-commit <sha>.
+
+Execution preflight makes zero model calls and writes nothing. Live execution requires a launch authorization whose
+design fingerprint matches the registration. --expected-source-commit is optional; give it to re-check the frozen
+closure bytes against a commit, omit it and the run records its source provenance instead.`;
 }
 
 async function main() {
@@ -774,7 +901,7 @@ async function main() {
     );
     return;
   }
-  if (!args.destination || !args['expected-source-commit']) throw new Error(usage());
+  if (!args.destination) throw new Error(usage());
   const destination = path.resolve(ROOT, args.destination);
   if (args['recover-batch']) {
     const result = await recoverTutorStubBoredomProofDagBatch({
@@ -805,6 +932,7 @@ async function main() {
     destination,
     parallelism: Number(args.parallelism),
     expectedSourceCommit: args['expected-source-commit'],
+    launchAuthorizationPath: args['launch-authorization'],
   });
   console.log(JSON.stringify(result, null, 2));
   if (result.status !== 'complete') process.exitCode = 1;

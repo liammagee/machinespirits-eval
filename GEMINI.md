@@ -3,6 +3,39 @@
 > **CRITICAL AI INSTRUCTION:** Do NOT automatically run `eval-cli.js` or `consolidate-runs.js` commands in the terminal using the `run_command` tool. Provide the exact commands to the user instead, so the user can run them manually themselves.
 
 Documentation entry point: `DOCS.md` (layers, authorities, web surfaces, regeneration, deploy).
+## NEVER build officious authorization (hard rule, 2026-08-21)
+
+Do **not** build, extend, or re-enter approval machinery around paid runs.
+Banned outright:
+
+- binding an approval to a commit SHA, a file digest, or a request-text hash;
+- "freezing" a request, "voiding" it after a fix, then asking for a new signature;
+- byte-pinning **source files** so that correcting a bug reads as a design change;
+- authorization schema versions, go-request packagers, re-approval ceremonies.
+
+What replaces it:
+
+- The user says go. That approval covers the **study** — question, design,
+  measurement rules, spend ceiling. It stays valid until the *study* changes.
+  Fixing a defect in the code does not void it.
+- Byte pins are for **sealed data inputs only** (held-out corpus, validation
+  certificate). Never for code, never for the registration.
+- Provenance is **recorded, not enforced**: write down the commit, the tree, and
+  whether the checkout was dirty. Never refuse to run over it.
+- A pin that recomputes its own expectation (`sha(x) === sha(x)`) is worse than
+  no pin. Delete it.
+
+Keep the rails that cost nothing at runtime: spend ceilings, attended runs, no
+resampling after a failure, no self-judging, indeterminate-means-stop.
+
+**Why this is a hard rule.** The boredom action-before-register arc lost many
+hours to it. Five predeclared gates plus a digest-bound approval did not catch a
+real one-line instrument defect — the sealed corpus had no auxiliary column, so
+the faulty predicate first executed in *paid live* running. The ceremony cost
+hours and caught nothing. When you feel the urge to add a gate, ask whether it
+would have caught a real defect. The answer is almost always a regression test,
+not a signature.
+
 ## Core Architecture
 
 ### Bilateral Ego-Superego Architecture
