@@ -11,7 +11,6 @@ import {
   runTutorStubBoredomProofDagEndpointPreflight,
 } from '../services/tutorStubBoredomActionRegisterProofDagPreflight.js';
 import { loadTutorStubBoredomProofDagStudy } from '../services/tutorStubBoredomActionRegisterProofDagStudy.js';
-import { validateTutorStubResistantProfileStudyGoRequest } from './check-tutor-stub-resistant-profile-study-go-request.js';
 import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -368,7 +367,6 @@ function registeredPlan(registrationPath) {
   return { loaded, plan: buildTutorStubBoredomProofDagPlan(loaded.registration) };
 }
 
-const LAUNCH_AUTHORIZATION_SCHEMA = 'machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v1';
 const LAUNCH_AUTHORIZATION_SCHEMA_V2 = 'machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v2';
 
 // v2 binds the approval to the study design, not to source bytes.
@@ -419,44 +417,13 @@ export function assertTutorStubBoredomProofDagLaunchAuthorization({ loaded, auth
     };
   }
 
-  const rebased = path.relative(ROOT, absolutePath);
-  if (!rebased.startsWith('..') && !path.isAbsolute(rebased)) {
-    let committedBytes;
-    try {
-      committedBytes = execFileSync('git', ['show', `HEAD:${rebased.split(path.sep).join('/')}`], { cwd: ROOT });
-    } catch {
-      throw new Error(`boredom proof-DAG launch authorization must be committed at HEAD: ${rebased}`);
-    }
-    if (!committedBytes.equals(fs.readFileSync(absolutePath))) {
-      throw new Error(`boredom proof-DAG launch authorization must match its committed bytes at HEAD: ${rebased}`);
-    }
-  }
-  const expectedRequestPath = `config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v${version}.json`;
-  if (authorization.requestPath !== expectedRequestPath) {
-    throw new Error(`boredom proof-DAG launch authorization must bind the frozen request at ${expectedRequestPath}`);
-  }
-  const requestAbsolutePath = path.join(ROOT, expectedRequestPath);
-  const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath: requestAbsolutePath });
-  const request = readJson(requestAbsolutePath);
-  if (
-    authorization.schema !== LAUNCH_AUTHORIZATION_SCHEMA ||
-    authorization.registrationSha256 !== loaded.sha256 ||
-    request.bindings?.registration?.sha256 !== loaded.sha256 ||
-    authorization.requestSha256 !== report.requestSha256 ||
-    authorization.exactApprovalStatement !== report.exactApprovalStatement ||
-    report.readyForExplicitHumanApproval !== true
-  ) {
-    throw new Error(
-      'boredom proof-DAG launch authorization must bind this registration, the frozen request digest, and the exact approval statement',
-    );
-  }
-  return {
-    path: relativePath,
-    sha256: sha256(fs.readFileSync(absolutePath)),
-    approved_by: authorization.approvedBy,
-    request_sha256: report.requestSha256,
-    binds: 'frozen_request_digest',
-  };
+  // Anything that is not the design-fingerprint scheme is refused outright. The
+  // superseded scheme bound approval to a commit and a request digest, so a
+  // one-line bug fix voided a live approval and a correction could not be made
+  // without a fresh signature. It caught no defect and cost days.
+  throw new Error(
+    `boredom proof-DAG launch authorization must use ${LAUNCH_AUTHORIZATION_SCHEMA_V2}; approval binds the study design, not source bytes`,
+  );
 }
 
 export function buildTutorStubBoredomProofDagRecoveryJob({

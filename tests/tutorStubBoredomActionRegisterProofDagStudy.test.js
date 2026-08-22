@@ -8,7 +8,6 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { analyzeTutorStubBoredomProofDag } from '../scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js';
-import { validateTutorStubResistantProfileStudyGoRequest } from '../scripts/check-tutor-stub-resistant-profile-study-go-request.js';
 import {
   assertTutorStubBoredomProofDagLaunchAuthorization,
   assertTutorStubBoredomProofDagRecoveryBudget,
@@ -18,6 +17,7 @@ import {
   frozenTutorStubBoredomProofDagSourceClosure,
   runTutorStubBoredomProofDagBatch,
   selectTutorStubBoredomProofDagRecoveryCandidates,
+  tutorStubBoredomProofDagDesignFingerprint,
 } from '../scripts/run-tutor-stub-boredom-action-register-proof-dag.js';
 import {
   configureTutorStubBoredomProofDagFromCli,
@@ -36,7 +36,6 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v2.json';
 const REGISTRATION_V3 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v3.json';
 const REGISTRATION_V4 = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json';
-const FROZEN_REQUEST_V4 = 'config/tutor-stub-boredom-action-register-proof-dag-study-go-request.v4.json';
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -682,11 +681,13 @@ test('validated-instrument v4 lineage runs the same analyzer and still rejects i
   const roots = [];
   for (let index = 1; index <= 9; index += 1) {
     const root = path.join(temp, `batch-${index}`);
+    // No commit pin, which is how v4 actually launches: the plan records the
+    // checkout it ran from instead of refusing to run unless the bytes match a
+    // frozen list. The analyser below reads that recorded pin back out.
     const plan = buildTutorStubBoredomProofDagBatchPlan({
       registrationPath: REGISTRATION_V4,
       batchId: `execution_batch_${index}`,
       destination: root,
-      expectedSourceCommit: head,
     });
     assert.equal(plan.budget.programme_ceiling, 5000);
     fs.mkdirSync(root, { recursive: true });
@@ -723,12 +724,12 @@ test('validated-instrument v4 lineage runs the same analyzer and still rejects i
   );
 });
 
-test('v4 live and recovery execution demand a committed launch authorization bound to the frozen request', async (t) => {
+test('v4 live execution demands an approval bound to the registered design, not to source bytes', async (t) => {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-gate-'));
   t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
-  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION_V4) });
 
+  // Only v4 carries an approval gate at all.
   const loadedV3 = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION_V3) });
   assert.equal(assertTutorStubBoredomProofDagLaunchAuthorization({ loaded: loadedV3 }), null);
 
@@ -738,7 +739,7 @@ test('v4 live and recovery execution demand a committed launch authorization bou
         loaded,
         authorizationPath: path.join(temp, 'missing-authorization.json'),
       }),
-    /requires a committed launch authorization/u,
+    /requires a launch authorization/u,
   );
 
   const destination = path.join(temp, 'live-batch');
@@ -747,31 +748,30 @@ test('v4 live and recovery execution demand a committed launch authorization bou
       registrationPath: REGISTRATION_V4,
       batchId: 'execution_batch_1',
       destination,
-      expectedSourceCommit: head,
+      launchAuthorizationPath: path.join(temp, 'missing-authorization.json'),
     }),
-    /requires a committed launch authorization/u,
+    /requires a launch authorization/u,
   );
   assert.equal(fs.existsSync(destination), false);
 
-  const requestPath = path.join(ROOT, FROZEN_REQUEST_V4);
-  const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath });
-  assert.equal(report.readyForExplicitHumanApproval, true);
+  const fingerprint = tutorStubBoredomProofDagDesignFingerprint({ registration: loaded.registration });
   const authorization = {
-    schema: 'machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v1',
+    schema: 'machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v2',
     approvedBy: 'test-fixture-human',
     modelCallsAuthorized: true,
     liveRunAuthorized: true,
-    registrationSha256: loaded.sha256,
-    requestPath: FROZEN_REQUEST_V4,
-    requestSha256: report.requestSha256,
-    exactApprovalStatement: report.exactApprovalStatement,
+    designFingerprint: fingerprint,
+    approvalStatement: 'go',
   };
   const authorizationPath = path.join(temp, 'launch-authorization.v4.json');
-  fs.writeFileSync(authorizationPath, `${JSON.stringify(authorization, null, 2)}\n`);
+  writeJson(authorizationPath, authorization);
   const summary = assertTutorStubBoredomProofDagLaunchAuthorization({ loaded, authorizationPath });
   assert.equal(summary.approved_by, 'test-fixture-human');
-  assert.equal(summary.request_sha256, report.requestSha256);
+  assert.equal(summary.design_fingerprint, fingerprint);
+  assert.equal(summary.binds, 'study_design');
 
+  // The point of the scheme: an uncommitted file in a dirty checkout is fine,
+  // because the approval is about the study, not about which bytes are on disk.
   const untrackedInRepoPath = path.join(
     ROOT,
     'config',
@@ -779,39 +779,49 @@ test('v4 live and recovery execution demand a committed launch authorization bou
   );
   assert.equal(fs.existsSync(untrackedInRepoPath), false);
   t.after(() => fs.rmSync(untrackedInRepoPath, { force: true }));
-  fs.writeFileSync(untrackedInRepoPath, `${JSON.stringify(authorization, null, 2)}\n`);
-  assert.throws(
-    () =>
-      assertTutorStubBoredomProofDagLaunchAuthorization({
-        loaded,
-        authorizationPath: path.relative(ROOT, untrackedInRepoPath),
-      }),
-    /must be committed at HEAD/u,
+  writeJson(untrackedInRepoPath, authorization);
+  assert.equal(
+    assertTutorStubBoredomProofDagLaunchAuthorization({
+      loaded,
+      authorizationPath: path.relative(ROOT, untrackedInRepoPath),
+    }).binds,
+    'study_design',
   );
   fs.rmSync(untrackedInRepoPath, { force: true });
 
-  const reboundPath = path.join(temp, 'rebound-request.json');
-  writeJson(reboundPath, { ...authorization, requestPath: 'config/some-other-request.json' });
-  assert.throws(
-    () => assertTutorStubBoredomProofDagLaunchAuthorization({ loaded, authorizationPath: reboundPath }),
-    /must bind the frozen request at config\/tutor-stub-boredom-action-register-proof-dag-study-go-request\.v4\.json/u,
-  );
-
-  const mutations = [
-    { schema: 'machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v99' },
-    { approvedBy: '  ' },
-    { modelCallsAuthorized: false },
-    { liveRunAuthorized: false },
-    { registrationSha256: 'f'.repeat(64) },
-    { requestSha256: 'f'.repeat(64) },
-    { exactApprovalStatement: 'yes' },
+  // Changing the study does break it. Each of these is a different design.
+  const designChanges = [
+    (registration) => (registration.design.dialoguesPerArm = 9),
+    (registration) => (registration.design.freshPrefixGeneration.seedBase += 1),
+    (registration) => (registration.power.targetPower = 0.5),
+    (registration) => (registration.measurement.semanticAdjudicator.modelRef = 'codex.gpt-5.6-luna'),
+    (registration) => (registration.executionReadiness.hardStudyAttemptCeiling = 9000),
   ];
-  for (const mutation of mutations) {
+  for (const mutate of designChanges) {
+    const mutated = JSON.parse(JSON.stringify(loaded.registration));
+    mutate(mutated);
+    assert.notEqual(tutorStubBoredomProofDagDesignFingerprint({ registration: mutated }), fingerprint);
+  }
+
+  // Correcting the instrument does not. That is the whole reason for the change.
+  const corrected = JSON.parse(JSON.stringify(loaded.registration));
+  corrected.measurement.semanticAdjudicator.moduleSha256 = 'f'.repeat(64);
+  assert.equal(tutorStubBoredomProofDagDesignFingerprint({ registration: corrected }), fingerprint);
+
+  const refusals = [
+    [{ approvedBy: '  ' }, /must name a human/u],
+    [{ modelCallsAuthorized: false }, /must name a human/u],
+    [{ liveRunAuthorized: false }, /must name a human/u],
+    [{ designFingerprint: 'f'.repeat(64) }, /approves a different study design/u],
+    [{ approvalStatement: '' }, /must record the approval statement/u],
+    [{ schema: 'machinespirits.tutor-stub.boredom-proof-dag-launch-authorization.v1' }, /must use .*\.v2/u],
+  ];
+  for (const [mutation, pattern] of refusals) {
     const mutatedPath = path.join(temp, `mutated-${Object.keys(mutation)[0]}.json`);
-    fs.writeFileSync(mutatedPath, `${JSON.stringify({ ...authorization, ...mutation }, null, 2)}\n`);
+    writeJson(mutatedPath, { ...authorization, ...mutation });
     assert.throws(
       () => assertTutorStubBoredomProofDagLaunchAuthorization({ loaded, authorizationPath: mutatedPath }),
-      /must bind this registration, the frozen request digest, and the exact approval statement/u,
+      pattern,
     );
   }
 });

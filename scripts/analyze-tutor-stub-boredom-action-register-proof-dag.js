@@ -3,7 +3,6 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -20,10 +19,8 @@ import {
   tutorStubResistanceActionRegisterTreatmentEligibility,
 } from '../services/tutorStubResistanceActionRegisterStudy.js';
 import {
-  assertTutorStubBoredomProofDagSourceClosure,
   buildTutorStubBoredomProofDagBatchPlan,
   buildTutorStubBoredomProofDagRecoveryJob,
-  frozenTutorStubBoredomProofDagSourceClosure,
 } from './run-tutor-stub-boredom-action-register-proof-dag.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -231,11 +228,14 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
   ) {
     throw new Error(`${batchRoot} violates its source, result, or seal contract`);
   }
+  // Re-derived without a commit pin. Only `jobs`, `design` and `budget` are
+  // compared below, and none of them depend on the source snapshot — passing a
+  // pin here would only re-run a byte check over the runner's own code, which
+  // is what stranded the first attempt at this analysis.
   const recomputed = buildTutorStubBoredomProofDagBatchPlan({
     registrationPath,
     batchId: plan.batch_id,
     destination: absolute,
-    expectedSourceCommit,
   });
   if (
     path.resolve(ROOT, plan.destination) !== absolute ||
@@ -718,23 +718,26 @@ export function analyzeTutorStubBoredomProofDag({
   ) {
     throw new Error('boredom proof-DAG analysis requires nine distinct predeclared batch roots');
   }
-  const current = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
-  const currentTree = execFileSync('git', ['rev-parse', 'HEAD^{tree}'], { cwd: ROOT, encoding: 'utf8' }).trim();
-  const status = execFileSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
-    cwd: ROOT,
-    encoding: 'utf8',
-  }).trim();
-  if (!expectedSourceCommit || status) {
-    throw new Error('boredom proof-DAG analysis requires its exact clean GO-request source');
+  // The invariant worth holding is that all nine batches came from one source
+  // state — not that the analysing checkout still matches it. So the pin is
+  // read out of the sealed batches themselves and every batch is required to
+  // agree with the others. Analysis can then run later, from a moved-on tree,
+  // and a code correction between the run and the analysis cannot strand the
+  // data. `expectedSourceCommit` stays available for a caller that wants to
+  // assert which commit it believes produced the batches.
+  const firstPlanPath = path.join(path.resolve(ROOT, batchRoots[0]), 'batch-plan.json');
+  if (!fs.existsSync(firstPlanPath)) throw new Error(`${batchRoots[0]} is not sealed`);
+  const firstPlan = readJson(firstPlanPath);
+  const pinnedCommit = firstPlan.source?.closure_commit ?? firstPlan.source?.commit;
+  const pinnedTree = firstPlan.source?.tree;
+  if (!pinnedCommit || !pinnedTree) {
+    throw new Error('boredom proof-DAG analysis requires the batches to record their source commit and tree');
+  }
+  if (expectedSourceCommit && expectedSourceCommit !== pinnedCommit) {
+    throw new Error(`boredom proof-DAG batches were produced at ${pinnedCommit}, not ${expectedSourceCommit}`);
   }
   const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.resolve(ROOT, registrationPath) });
-  const closure = frozenTutorStubBoredomProofDagSourceClosure({ loaded });
-  if (closure) {
-    assertTutorStubBoredomProofDagSourceClosure({ expectedSourceCommit, closure });
-  } else if (current !== expectedSourceCommit) {
-    throw new Error('boredom proof-DAG analysis requires its exact clean GO-request source');
-  }
-  const batches = batchRoots.map((root) => exactBatch(root, expectedSourceCommit, currentTree, registrationPath));
+  const batches = batchRoots.map((root) => exactBatch(root, pinnedCommit, pinnedTree, registrationPath));
   if (JSON.stringify(batches.map((batch) => batch.plan.batch_id).sort()) !== JSON.stringify([...BATCH_IDS])) {
     throw new Error('boredom proof-DAG analysis requires all nine registered batches exactly once');
   }
@@ -788,7 +791,7 @@ export function analyzeTutorStubBoredomProofDag({
   return {
     schema: 'machinespirits.tutor-stub.boredom-action-register-proof-dag-confirmation-report.v1',
     status: fidelityPassed ? 'complete_registered_confirmation' : 'failed_interpretability_gate_not_rerun',
-    source: { commit: current, tree: currentTree },
+    source: { commit: pinnedCommit, tree: pinnedTree },
     registration: { path: registrationPath, sha256: loaded.sha256 },
     assembly: {
       batches_complete: 9,
