@@ -1505,3 +1505,189 @@ test('v5 reads a widened window and passes over a turn the instrument could not 
     /unreadable_pass_overs_do_not_match_the_marks_the_run_left/u,
   );
 });
+
+test('a marked unread learner reading keeps its unit, and an unmarked one does not', (t) => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-unread-'));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION_V5) });
+  const maximumTriggerTurn = loaded.registration.design.freshPrefixGeneration.maximumTriggerTurn;
+  const postTriggerLearnerTurns = loaded.registration.design.treatment.postTriggerLearnerTurns;
+  const outcomes = new Map(loaded.plan.jobs.map((job) => [job.id, { recovered: true, progressed: true }]));
+  const roots = [];
+  for (let index = 1; index <= 9; index += 1) {
+    const root = path.join(temp, `batch-${index}`);
+    const plan = buildTutorStubBoredomProofDagBatchPlan({
+      registrationPath: REGISTRATION_V5,
+      batchId: `execution_batch_${index}`,
+      destination: root,
+    });
+    fs.mkdirSync(root, { recursive: true });
+    writeSyntheticBatch(root, plan, outcomes, {
+      observationSemantics: 'prospective_v9',
+      maximumTriggerTurn,
+      postTriggerLearnerTurns,
+    });
+    roots.push(root);
+  }
+  const firstPlan = JSON.parse(fs.readFileSync(path.join(roots[0], 'batch-plan.json'), 'utf8'));
+  const jobId = firstPlan.jobs[0].id;
+  // The reading of the learner beside the dialogue failed to the retry limit on
+  // turn 2. The run wrote its mark, put a no-signal record on the turn and went
+  // on, and the measurement on its own route was made as usual. Three paid v5
+  // dialogues ended exactly this way and the route pin refused all three.
+  // The reservation stays and the attempt stays; only the accepted response is
+  // gone. That is what a refused call leaves behind, and it keeps the
+  // reservation-for-attempt count exact, as the real traces do.
+  const failAnalysisCall = (events, turn) =>
+    events.map((event) =>
+      event.type === 'model_call' && event.role === 'tutor_stub_learner_analysis' && Number(event.turn) === turn
+        ? {
+            ...event,
+            type: 'model_call_error',
+            request: { cliEffort: 'low' },
+            error: 'codex CLI turn failed before producing an accepted response',
+          }
+        : event,
+    );
+  const mark = (turn) => ({
+    type: 'learner_analysis_unanalyzed',
+    turn,
+    analysisStatus: 'unanalyzed',
+    signal: { state: 'none' },
+    failure: { code: 'analysis_model_call_failed' },
+  });
+
+  mutateTrace(roots[0], jobId, (events) => [...failAnalysisCall(events, 2), mark(2)]);
+  const report = analyzeTutorStubBoredomProofDag({
+    batchRoots: roots,
+    registrationPath: REGISTRATION_V5,
+    expectedSourceCommit: head,
+  });
+  assert.equal(report.rows.length, 36);
+  const kept = report.rows.find((row) => row.case_id === jobId);
+  assert.deepEqual(kept.execution.unanalyzed_learner_turns, [2]);
+  assert.equal(kept.execution.post_trigger_learner_turns, postTriggerLearnerTurns);
+  const disclosed = report.treatment_fidelity.unanalyzed_learner_turn_units;
+  assert.equal(disclosed.length, 1);
+  assert.equal(disclosed[0].case_id, jobId);
+  assert.deepEqual(disclosed[0].unread_turns, [2]);
+  // Turn 2 is the first post-trigger turn when the trigger lands on turn 1, so
+  // the disclosure has to say the primary endpoint is read from an unread turn.
+  assert.deepEqual(disclosed[0].unread_turns_that_an_endpoint_is_read_from, [2]);
+  assert.ok(report.rows.every((row) => Array.isArray(row.execution.unanalyzed_learner_turns)));
+
+  // Without the mark the same gap is still a route violation. The run has to
+  // have said at the time that the turn went unread.
+  mutateTrace(roots[0], jobId, (events) => events.filter((event) => event.type !== 'learner_analysis_unanalyzed'));
+  assert.throws(
+    () =>
+      analyzeTutorStubBoredomProofDag({
+        batchRoots: roots,
+        registrationPath: REGISTRATION_V5,
+        expectedSourceCommit: head,
+      }),
+    /a_required_role_and_turn_call_is_missing/u,
+  );
+
+  // A mark on a turn whose reading did land would let a unit claim a gap it
+  // never had, so the marks are checked both ways.
+  mutateTrace(roots[0], jobId, (events) => [...events, mark(3)]);
+  assert.throws(
+    () =>
+      analyzeTutorStubBoredomProofDag({
+        batchRoots: roots,
+        registrationPath: REGISTRATION_V5,
+        expectedSourceCommit: head,
+      }),
+    /an_unread_learner_analysis_mark_does_not_match_a_missing_call/u,
+  );
+});
+
+test('a warm unit that came out plain is recorded nonadherent, not refused', (t) => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'boredom-proof-dag-adherence-'));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const loaded = loadTutorStubBoredomProofDagStudy({ registrationPath: path.join(ROOT, REGISTRATION_V5) });
+  // The two registered lines this test stands on.
+  assert.equal(loaded.registration.measurement.primaryEndpoint.intentionToTreat, true);
+  assert.equal(
+    loaded.registration.design.treatment.safetyOverride,
+    'record_as_nonadherent_in_intention_to_treat_never_reroll',
+  );
+  const maximumTriggerTurn = loaded.registration.design.freshPrefixGeneration.maximumTriggerTurn;
+  const postTriggerLearnerTurns = loaded.registration.design.treatment.postTriggerLearnerTurns;
+  const outcomes = new Map(loaded.plan.jobs.map((job) => [job.id, { recovered: true, progressed: true }]));
+  const roots = [];
+  for (let index = 1; index <= 9; index += 1) {
+    const root = path.join(temp, `batch-${index}`);
+    const plan = buildTutorStubBoredomProofDagBatchPlan({
+      registrationPath: REGISTRATION_V5,
+      batchId: `execution_batch_${index}`,
+      destination: root,
+    });
+    fs.mkdirSync(root, { recursive: true });
+    writeSyntheticBatch(root, plan, outcomes, {
+      observationSemantics: 'prospective_v9',
+      maximumTriggerTurn,
+      postTriggerLearnerTurns,
+    });
+    roots.push(root);
+  }
+  const firstPlan = JSON.parse(fs.readFileSync(path.join(roots[0], 'batch-plan.json'), 'utf8'));
+  const warmJob = firstPlan.jobs.find((job) => job.realization === 'warm');
+  const setDeliveredRegister = (events, register) =>
+    events.map((event) =>
+      event.type === 'turn_complete' && event.turnRecord?.responseConfigurationAudit
+        ? {
+            ...event,
+            turnRecord: {
+              ...event.turnRecord,
+              responseConfigurationAudit: {
+                ...event.turnRecord.responseConfigurationAudit,
+                axes: {
+                  ...event.turnRecord.responseConfigurationAudit.axes,
+                  engagement_stance: {
+                    ...event.turnRecord.responseConfigurationAudit.axes.engagement_stance,
+                    selected: register,
+                  },
+                },
+              },
+            },
+          }
+        : event,
+    );
+
+  mutateTrace(roots[0], warmJob.id, (events) => setDeliveredRegister(events, 'plain'));
+  const report = analyzeTutorStubBoredomProofDag({
+    batchRoots: roots,
+    registrationPath: REGISTRATION_V5,
+    expectedSourceCommit: head,
+  });
+  assert.equal(report.rows.length, 36);
+  const kept = report.rows.find((row) => row.case_id === warmJob.id);
+  // It stays in the warm group. That is what intention to treat means.
+  assert.equal(kept.arm, 'warm');
+  assert.equal(kept.fidelity.assigned_register, 'warm');
+  assert.equal(kept.fidelity.delivered_register, 'plain');
+  assert.equal(kept.fidelity.register_delivered_as_assigned, false);
+  // And the miss lands on the registered visibility floor rather than nowhere.
+  assert.equal(kept.fidelity.register_visible, false);
+  const disclosed = report.treatment_fidelity.register_nonadherent_units;
+  assert.equal(disclosed.length, 1);
+  assert.equal(disclosed[0].case_id, warmJob.id);
+  assert.equal(disclosed[0].delivered_register, 'plain');
+  assert.equal(report.treatment_fidelity.register_visibility_rate, 35 / 36);
+
+  // A register outside the registered palette is missing evidence, not a result.
+  mutateTrace(roots[0], warmJob.id, (events) => setDeliveredRegister(events, 'edged'));
+  assert.throws(
+    () =>
+      analyzeTutorStubBoredomProofDag({
+        batchRoots: roots,
+        registrationPath: REGISTRATION_V5,
+        expectedSourceCommit: head,
+      }),
+    /lacks adherent typed action\/register visibility evidence/u,
+  );
+});

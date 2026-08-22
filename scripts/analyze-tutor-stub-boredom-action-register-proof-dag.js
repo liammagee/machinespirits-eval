@@ -23,12 +23,22 @@ import {
 import {
   buildTutorStubBoredomProofDagBatchPlan,
   buildTutorStubBoredomProofDagRecoveryJob,
-  isRegisteredIndeterminateStop,
+  isRegisteredStop,
 } from './run-tutor-stub-boredom-action-register-proof-dag.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const REGISTRATION = 'config/tutor-stub-boredom-action-register-proof-dag-registration.v2.json';
+// There is deliberately no default registration path. A default is a study
+// version written by hand in one place and never compared with the batches
+// being read, so a v5 run analysed with the flag left off would have been
+// scored silently against v2's window. Every caller passes the path, so
+// requiring it costs nothing and removes the silent-wrong-study case.
 const BATCH_IDS = Object.freeze(Array.from({ length: 9 }, (_, index) => `execution_batch_${index + 1}`));
+// The conditioning a registration must already carry for an uneven block to
+// need no written amendment. A registration that instead conditions on the
+// predeclared three-plain-three-warm allocation has no rule for a block that
+// lost a unit, so a short study under it still needs one in writing.
+const REALISED_COUNT_CONDITIONING =
+  'condition_on_each_world_success_total_and_that_world_realised_plain_and_warm_counts';
 // Amendment A1. A batch is sealed complete when all four units finished, and
 // sealed with registered stops when the only shortfall is an indeterminate
 // measurement that may not be repaired, rerun or replaced. Both seals are the
@@ -40,7 +50,7 @@ function auditStoppedUnits(result) {
   return {
     completed: result.results.length - stopped.length,
     stopped: stopped.map((row) => row.job_id).sort(),
-    allRegistered: stopped.every((row) => isRegisteredIndeterminateStop(row.failure)),
+    allRegistered: stopped.every((row) => isRegisteredStop(row.failure)),
   };
 }
 
@@ -149,7 +159,11 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
     !sameIds(recoveryPlan.valid_unit_ids_excluded || [], initialValidIds) ||
     !sameIds(recoveryIds, missingOrFailedIds) ||
     !sameIds(recoveryResultIds, missingOrFailedIds) ||
-    recoveryResult.results.some((row) => row.status !== 'complete') ||
+    // A re-run unit may end in a registered stop. The registration says so, and
+    // a stop is not drift: it is one of the two ways a unit is allowed to end.
+    // The counts that follow (Amendment A1) prove the result, the seal and the
+    // rows all report the same stopped unit, so a stop cannot hide here.
+    recoveryResult.results.some((row) => row.status !== 'complete' && !isRegisteredStop(row.failure)) ||
     seal.recovery_plan_sha256 !== sha256(fs.readFileSync(recoveryPlanPath)) ||
     seal.recovery_result_sha256 !== sha256(fs.readFileSync(recoveryResultPath)) ||
     result.technical_recovery_used !== true ||
@@ -299,7 +313,7 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
     // Amendment A1: all four planned units must still be here. A unit may be
     // stopped, but it may not be missing, renamed or swapped.
     result.results.some(
-      (row) => !planJobs.has(row.job_id) || (row.status !== 'complete' && !isRegisteredIndeterminateStop(row.failure)),
+      (row) => !planJobs.has(row.job_id) || (row.status !== 'complete' && !isRegisteredStop(row.failure)),
     )
   ) {
     throw new Error(`${plan.batch_id} does not contain its four exact planned jobs`);
@@ -416,12 +430,40 @@ function assertAttemptEnvelope(
   const openingRealization = events.find((event) => event.type === 'tutor_opening_realization')?.realization || null;
   const openingSpoken = events.some((event) => event.type === 'tutor_opening');
   const openingFromWorldFile = openingRealization?.source === 'authored_world_opening';
+  // The reading of the learner beside the dialogue can fail and leave the
+  // dialogue standing. When the provider refuses a turn to the retry limit the
+  // run writes learner_analysis_unanalyzed, puts a no-signal record on the turn
+  // and goes on; the measurement itself is a separate call on a separate route
+  // and is untouched. This pin demanded the call at every turn regardless, so a
+  // dialogue that ran end to end and was measured at every read turn was refused
+  // for a gap the run had already named. The gap is now read off the mark the run
+  // left, on the same rule the pass-overs use: a turn went unread only if the run
+  // said so at the time, and the run said so about no other turn. A missing call
+  // with no mark is still a route violation.
+  const unanalyzedTurns = [
+    ...new Set(
+      events.filter((event) => event.type === 'learner_analysis_unanalyzed').map((event) => Number(event.turn)),
+    ),
+  ].sort((left, right) => left - right);
+  const unanalyzedMarks = new Set(unanalyzedTurns);
   const required = [
     ...(openingFromWorldFile ? [] : [['tutor_stub_opening', 0]]),
     ...Array.from({ length: outcomeTurn }, (_, index) => ['tutor_stub_auto_learner', index + 1]),
     ...Array.from({ length: outcomeTurn }, (_, index) => ['tutor_stub_learner_analysis', index + 1]),
     ...Array.from({ length: outcomeTurn - 1 }, (_, index) => ['tutor_stub_tutor', index + 1]),
-  ].every(([role, turn]) => calls.some((event) => event.role === role && Number(event.turn) === turn));
+  ].every(
+    ([role, turn]) =>
+      calls.some((event) => event.role === role && Number(event.turn) === turn) ||
+      (role === 'tutor_stub_learner_analysis' && unanalyzedMarks.has(turn)),
+  );
+  // A mark on a turn whose call did land would let a unit claim a gap it never
+  // had, so the marks are checked both ways, exactly as the pass-over marks are.
+  const unanalyzedMarksAgree = unanalyzedTurns.every(
+    (turn) =>
+      turn >= 1 &&
+      turn <= outcomeTurn &&
+      !calls.some((event) => event.role === 'tutor_stub_learner_analysis' && Number(event.turn) === turn),
+  );
   // One adjudication call per turn the run read, the trigger turn included.
   // This was written as `Math.min(2, outcomeTurn - 2)`, which is the trigger
   // turn only while the outcome window is two turns wide; at five it demands
@@ -478,6 +520,7 @@ function assertAttemptEnvelope(
     [!openingRealization, 'no_opening_realization_record'],
     [routePinned !== true, 'model_route_not_pinned'],
     [required !== true, 'a_required_role_and_turn_call_is_missing'],
+    [unanalyzedMarksAgree !== true, 'an_unread_learner_analysis_mark_does_not_match_a_missing_call'],
     [semanticRequired !== true, 'a_required_semantic_adjudication_call_is_missing'],
     [allowed !== true, 'a_call_fell_outside_its_allowed_role_and_turn_window'],
     [exactReservations !== true, 'reservations_do_not_match_attempts_one_for_one'],
@@ -510,6 +553,7 @@ function assertAttemptEnvelope(
     attempts: attempts.length,
     reservations: reservations.length,
     opening_source: openingRealization.source,
+    unanalyzed_learner_turns: unanalyzedTurns,
   };
 }
 
@@ -816,15 +860,27 @@ function analyzeTrace(batch, resultRow, loaded) {
     safety?.assigned_register === assignment?.register &&
     safety?.delivered_register === 'plain';
   const deliveredRegisterVisible = responseAudit?.axes?.engagement_stance?.visible;
-  const registerVisible = safetyOverrideNonadherent ? false : deliveredRegisterVisible;
   const expectedDeliveredRegister = safety?.applied === true ? safety.delivered_register : assignment?.register;
+  const deliveredRegister = responseAudit?.axes?.engagement_stance?.selected;
+  // A warm dialogue whose tutor turn came out plain, with no safety override to
+  // account for it. The registration answers this in one line: the treatment is
+  // recorded as nonadherent in intention to treat and never rerolled, and the
+  // primary endpoint is an intention-to-treat estimand. A unit is therefore read
+  // under the register it was assigned, whatever came out, and the miss is
+  // counted against the registered register-visibility floor. This was written
+  // as a hard refusal, so one unit of a paid 36 stopped the whole analysis for
+  // the one outcome the registration says to record and carry.
+  const registerDeliveredAsAssigned = deliveredRegister === expectedDeliveredRegister;
+  const registerVisible = safetyOverrideNonadherent ? false : deliveredRegisterVisible && registerDeliveredAsAssigned;
   if (
     (!appliedAdherent && !safetyOverrideNonadherent) ||
     typeof responseAudit?.axes?.action_family?.visible !== 'boolean' ||
     typeof deliveredRegisterVisible !== 'boolean' ||
     typeof safety?.applied !== 'boolean' ||
     responseAudit?.axes?.action_family?.selected !== 'stage_next_step' ||
-    responseAudit?.axes?.engagement_stance?.selected !== expectedDeliveredRegister ||
+    // The audit must still name a register the design knows. Which one came out
+    // is a measured result; a register outside the palette is missing evidence.
+    !loaded.registration.design.treatment.realizations.includes(deliveredRegister) ||
     protectedCondition !== safetyOverrideNonadherent
   ) {
     throw new Error(`${job.id} lacks adherent typed action/register visibility evidence`);
@@ -958,6 +1014,12 @@ function analyzeTrace(batch, resultRow, loaded) {
       register_visible: registerVisible,
       safety_override: safety.applied === true,
       protected_condition: protectedCondition,
+      // Under intention to treat the unit keeps its assigned register whatever
+      // came out, so both are reported and the miss is named rather than hidden
+      // inside the visibility count.
+      assigned_register: expectedDeliveredRegister,
+      delivered_register: deliveredRegister,
+      register_delivered_as_assigned: registerDeliveredAsAssigned,
     },
     execution: {
       trace: resultRow.trace,
@@ -966,10 +1028,16 @@ function analyzeTrace(batch, resultRow, loaded) {
       observed_model_calls: observed.calls,
       observed_model_attempts: observed.attempts,
       opening_source: observed.opening_source,
+      // Turns where the reading of the learner beside the dialogue never came
+      // back. The dialogue ran on and the measurement was made; the turn carries
+      // a no-signal record instead of a read. Reported per unit so a reader can
+      // see where the side channel went quiet without reading the traces.
+      unanalyzed_learner_turns: observed.unanalyzed_learner_turns,
       technical_recovery_used: batch.recoveredIds.has(job.id),
       tutor_turns: outcomeTurn - 1,
       learner_turns: outcomeTurn,
-      post_trigger_learner_turns: 2,
+      // Written out as 2, this reported v4's window on every v5 unit.
+      post_trigger_learner_turns: postTriggerLearnerTurns,
     },
   };
 }
@@ -1016,7 +1084,7 @@ function blockedAnalysis(rows, outcomeField) {
 
 export function analyzeTutorStubBoredomProofDag({
   batchRoots,
-  registrationPath = REGISTRATION,
+  registrationPath,
   expectedSourceCommit,
   amendmentPath,
 } = {}) {
@@ -1026,6 +1094,9 @@ export function analyzeTutorStubBoredomProofDag({
     new Set(batchRoots.map((root) => path.resolve(ROOT, root))).size !== 9
   ) {
     throw new Error('boredom proof-DAG analysis requires nine distinct predeclared batch roots');
+  }
+  if (typeof registrationPath !== 'string' || registrationPath.length === 0) {
+    throw new Error('boredom proof-DAG analysis requires the path of the registration these batches were run under');
   }
   // The invariant worth holding is that all nine batches came from one source
   // state — not that the analysing checkout still matches it. So the pin is
@@ -1069,16 +1140,23 @@ export function analyzeTutorStubBoredomProofDag({
     throw new Error('boredom proof-DAG analysis requires all 36 planned units to be present exactly once');
   }
   const stoppedUnits = plannedUnits.filter((unit) => !unit.completed);
-  // A short study may only be analysed under a written amendment that says how
-  // an uneven block is handled, and that amendment must cite these exact
-  // registration bytes. With 36 of 36 in hand, none is needed or read.
+  // A short study needs a written rule for how an uneven block is conditioned
+  // on. v4 had none, so amendment A1 had to supply it after collection ended.
+  // v5 registers the realised-count conditioning from the start and says so in
+  // its own words: "an uneven block needs no amendment". This gate was written
+  // for v4 and never asked the registration, so on v5 it demanded a paper the
+  // governing document says is not needed. The question now goes to the
+  // registration. A registration that still conditions on the predeclared
+  // allocation demands an amendment exactly as before.
+  const conditioning = loaded.registration.measurement?.primaryEndpoint?.conditioning;
+  const amendmentRequired = stoppedUnits.length > 0 && conditioning !== REALISED_COUNT_CONDITIONING;
+  if (amendmentRequired && !amendmentPath) {
+    throw new Error(
+      `boredom proof-DAG analysis of a short study requires a written amendment: ${stoppedUnits.length} of 36 units stopped`,
+    );
+  }
   let amendment = null;
-  if (stoppedUnits.length > 0) {
-    if (!amendmentPath) {
-      throw new Error(
-        `boredom proof-DAG analysis of a short study requires a written amendment: ${stoppedUnits.length} of 36 units stopped`,
-      );
-    }
+  if (amendmentPath) {
     const amendmentAbsolute = path.resolve(ROOT, amendmentPath);
     const amendmentBytes = fs.readFileSync(amendmentAbsolute);
     const amendmentDocument = JSON.parse(amendmentBytes.toString('utf8'));
@@ -1086,7 +1164,24 @@ export function analyzeTutorStubBoredomProofDag({
       throw new Error('boredom proof-DAG amendment does not cite the registration these batches were run under');
     }
     amendment = { path: amendmentPath, id: amendmentDocument.id, sha256: sha256(amendmentBytes) };
+  } else if (stoppedUnits.length > 0) {
+    amendment = {
+      path: null,
+      id: null,
+      sha256: null,
+      not_required_because: 'the registration conditions on realised per-world plain and warm counts',
+      registered_conditioning: conditioning,
+    };
   }
+  // The attrition caveat used to name "Amendment A1" in prose, because on v4 an
+  // amendment was the only thing that could supply the realised-count rule. v5
+  // registers that rule from the start and the amendment block above says so,
+  // so the prose was telling a reader to go and find a paper that does not
+  // exist. The sentence now names whichever document actually did the
+  // conditioning, on the same test the gate above uses.
+  const conditioningAuthority = amendment?.path
+    ? `A written amendment (${amendment.id}) conditions`
+    : 'The registration conditions';
   const rows = batches.flatMap((batch) =>
     batch.result.results.filter((row) => row.status === 'complete').map((row) => analyzeTrace(batch, row, loaded)),
   );
@@ -1250,6 +1345,51 @@ export function analyzeTutorStubBoredomProofDag({
           trigger_turn: row.trigger.observed_by_turn,
           passed_over: row.trigger.unreadable_pass_overs,
         })),
+      // A unit whose tutor turn did not come out in the register it was assigned,
+      // with no safety override to account for it. The registration records this
+      // as nonadherent in intention to treat and never rerolls it, so the unit is
+      // read under its assigned register and counted against the visibility floor.
+      register_nonadherent_units: rows
+        .filter((row) => row.fidelity.register_delivered_as_assigned === false)
+        .map((row) => ({
+          case_id: row.case_id,
+          world: row.world,
+          arm: row.arm,
+          assigned_register: row.fidelity.assigned_register,
+          delivered_register: row.fidelity.delivered_register,
+          safety_override: row.fidelity.safety_override,
+        })),
+      register_nonadherent_reading:
+        'the register the tutor was assigned did not come out in the turn, and no safety override accounts for it. The registration records nonadherence in intention to treat and never rerolls it, so the unit stays in its assigned group and the miss is counted against the registered register-visibility floor. Keeping it there is the conservative direction: a warm unit that spoke plain can only pull the warm side toward the plain side.',
+      // A turn where the reading of the learner beside the dialogue never came
+      // back. The provider refused it to the retry limit, the run marked it, put
+      // a no-signal record on the turn and went on. The measurement is a separate
+      // call on the pinned adjudicator route and was made at every read turn, so
+      // no unit is stopped for this. It is a small unplanned difference in what
+      // the tutor had in front of it on those turns, so it is disclosed by unit,
+      // by turn and by version of the tutor, and read against the endpoint turns.
+      unanalyzed_learner_turn_units: rows
+        .filter((row) => (row.execution.unanalyzed_learner_turns || []).length > 0)
+        .map((row) => {
+          const triggerTurn = row.trigger.observed_by_turn;
+          const endpointTurns = new Set([
+            triggerTurn,
+            triggerTurn + Number(loaded.registration.measurement.primaryEndpoint.deadlinePostTriggerLearnerTurns),
+            triggerTurn + Number(loaded.registration.design.treatment.postTriggerLearnerTurns),
+          ]);
+          return {
+            case_id: row.case_id,
+            arm: row.arm,
+            world: row.world,
+            trigger_turn: triggerTurn,
+            unread_turns: row.execution.unanalyzed_learner_turns,
+            unread_turns_that_an_endpoint_is_read_from: row.execution.unanalyzed_learner_turns.filter((turn) =>
+              endpointTurns.has(turn),
+            ),
+          };
+        }),
+      unanalyzed_learner_turn_reading:
+        'the reading of the learner that runs beside the dialogue failed to the retry limit on these turns. The run named each one, wrote a no-signal record and carried the dialogue on, and the registration names no stop for it: its two stops are a missing trigger and an unreadable measurement, and this is neither. The measurement itself was made on every read turn by the pinned adjudicator on its own route. On a turn an endpoint is read from, the carried-forward proof record cannot show a premise the learner grounded only in that turn, which pushes a reading down, not up, on the objective endpoint, and can only lose a success on the primary. The units are kept and the turns are listed here so a reader can weigh that.',
       opening_source_by_world: [...new Set(rows.map((row) => row.world))].sort().map((world) => {
         const inWorld = rows.filter((row) => row.world === world);
         return {
@@ -1297,13 +1437,13 @@ export function analyzeTutorStubBoredomProofDag({
     claim_boundary: `This report tests only the prospectively registered bored matched-action warm-versus-plain recovery primary and fixed-sequence objective proof-progress secondary in fresh independent strict-DAG dialogues. 36 dialogues were planned and ${rows.length} produced an outcome; ${attrition.stopped} stopped as an indeterminate measurement and were not repaired, rerun or replaced. Prior held-out detection, historical action-fit, and 12-dialogue calibration outcomes are neither reused nor pooled. No action-fit, interaction, edged-register, general tutor-efficacy, durable-learning, human-validity, or cell-harness claim is licensed.${
       attrition.balanced_across_arms
         ? ''
-        : ` Attrition was unbalanced across the two versions of the tutor (plain ${stoppedByArm.plain}, warm ${stoppedByArm.warm}), so the two kept samples are conditioned differently. Amendment A1 conditions the test on the realised per-world allocation; it does not repair this, and the attrition table must be reported beside any result.`
+        : ` Attrition was unbalanced across the two versions of the tutor (plain ${stoppedByArm.plain}, warm ${stoppedByArm.warm}), so the two kept samples are conditioned differently. ${conditioningAuthority} the test on the realised per-world allocation; that does not repair this, and the attrition table must be reported beside any result.`
     }`,
   };
 }
 
 function parseArgs(argv) {
-  const options = { batches: [], registration: REGISTRATION, json: false };
+  const options = { batches: [], registration: null, json: false };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (['--json', '--help'].includes(arg)) {
@@ -1324,7 +1464,9 @@ function parseArgs(argv) {
 }
 
 function usage() {
-  return `Usage: node scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js --batch <root> (repeat exactly 9 times) --expected-source-commit <sha> [--registration <path>] [--amendment <path>] [--out <fresh.json>] [--json]
+  return `Usage: node scripts/analyze-tutor-stub-boredom-action-register-proof-dag.js --batch <root> (repeat exactly 9 times) --expected-source-commit <sha> --registration <path> [--amendment <path>] [--out <fresh.json>] [--json]
+
+--registration has no default: the registration names the study version these batches were run under, and a default would silently score a run against another version's rules.
 
 --amendment is required only when a unit stopped as a registered indeterminate measurement, and the amendment must cite the digest of the registration the batches were run under.`;
 }
@@ -1332,7 +1474,7 @@ function usage() {
 function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) return void console.log(usage());
-  if (args.batches.length !== 9 || !args['expected-source-commit']) throw new Error(usage());
+  if (args.batches.length !== 9 || !args['expected-source-commit'] || !args.registration) throw new Error(usage());
   const report = analyzeTutorStubBoredomProofDag({
     batchRoots: args.batches,
     registrationPath: args.registration,
