@@ -295,7 +295,6 @@ import { createTutorStubPublicPresentationRuntime } from './tutorStubPublicPrese
 import { createTutorStubDebugReportRuntime } from './tutorStubDebugReportRuntime.js';
 import { createTutorStubLaunchSummaryPresentation } from './tutorStubLaunchSummaryPresentation.js';
 import { createTutorStubAutomatedLearnerGenerationRuntime } from './tutorStubAutomatedLearnerGenerationRuntime.js';
-import { createTutorStubResistanceSemanticAdjudicationComposition } from './tutorStubResistanceSemanticRuntime.js';
 import { createTutorStubTypedActionPlanningRuntime } from './tutorStubTypedActionPlanningRuntime.js';
 import { createTutorStubClarificationTranslationRuntime } from './tutorStubClarificationTranslationRuntime.js';
 import { createTutorStubOpeningRuntime } from './tutorStubOpeningRuntime.js';
@@ -1160,10 +1159,8 @@ export async function runTutorStubCliApplicationHost({
     publicWorldSummary,
     tutorStubComprehensionPrompt,
   });
-  const { adjudicateResistanceSemanticCandidate, adjudicateTutorStubResistanceConfirmationOutcome } =
-    createTutorStubResistanceSemanticAdjudicationComposition({ appendTraceEvent, callPromptModel, resolveModel,
-      observationSemantics: process.env.TUTOR_STUB_RESISTANT_LEARNER_OBSERVATION_SEMANTICS });
   const {
+    adjudicateTutorStubResistanceConfirmationOutcome,
     automatedLearnerCorruptionEnabled,
     automatedLearnerProfileId,
     automatedLearnerTraceMetadata,
@@ -1177,7 +1174,6 @@ export async function runTutorStubCliApplicationHost({
     resolveAutomatedLearnerProfile,
   } = createTutorStubAutomatedLearnerGenerationRuntime({
     appendTraceEvent,
-    adjudicateResistanceSemanticCandidate,
     callPromptModel,
     classificationFromCombinedAnalysis: (...values) => classificationFromCombinedAnalysis(...values),
     extractCombinedLearnerAnalysis: (...values) => extractCombinedLearnerAnalysis(...values),
@@ -1185,6 +1181,7 @@ export async function runTutorStubCliApplicationHost({
     learnerProfileIds,
     learnerProfilePrompt,
     negativeFloorRegisters: NEGATIVE_FLOOR_REGISTERS,
+    resolveModel,
   });
   const {
     evaluatePendingRegisterEfficacy,
