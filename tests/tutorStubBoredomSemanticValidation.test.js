@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
@@ -17,6 +18,13 @@ import {
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REQUEST_PATH = 'config/tutor-stub-boredom-semantic-validation-request.v4.json';
+// The request records a digest for each file in its source closure. Comparing
+// those digests with the files on disk answers a launch-time question: is the
+// tree in front of me the tree that was measured? It is not a fact about the
+// instrument, and any later commit to a listed file would otherwise turn every
+// test in this file red. The digest guard has its own test below, and the
+// launch script keeps the check on by default.
+const INSTRUMENT_ONLY = { root: ROOT, verifySourceClosure: false };
 const HELDOUT_PATH = 'config/tutor-stub-boredom-semantic-adjudication-heldout.v4.json';
 const SOL_ROUTE = { provider: 'codex', model: 'gpt-5.6-sol' };
 
@@ -72,7 +80,7 @@ function referenceMockCallModel(corpus, { mutate = null, failures = null } = {})
 
 test('the committed request validates against the frozen corpus and route', () => {
   const request = readJson(REQUEST_PATH);
-  const validation = validateTutorStubBoredomSemanticValidationRequest(request, { root: ROOT });
+  const validation = validateTutorStubBoredomSemanticValidationRequest(request, INSTRUMENT_ONLY);
   assert.equal(validation.provider, 'codex');
   assert.equal(validation.model, 'gpt-5.6-sol');
   assert.equal(validation.corpus.cases.length, 55);
@@ -99,8 +107,47 @@ test('request drift fails closed', () => {
   ]) {
     const mutated = structuredClone(request);
     mutate(mutated);
-    assert.throws(() => validateTutorStubBoredomSemanticValidationRequest(mutated, { root: ROOT }));
+    assert.throws(() => validateTutorStubBoredomSemanticValidationRequest(mutated, INSTRUMENT_ONLY));
   }
+});
+
+test('the source-digest guard passes a matching tree and catches a file whose bytes moved', () => {
+  // The committed v4 request records the tree as it stood when the 55-case
+  // corpus was spent. Some of those files have moved on since, which is what
+  // "spent" means, so this test does not read the committed digests. It builds
+  // a request whose digests match the tree right now, and checks the guard on
+  // that: a matching tree passes, one wrong digest refuses.
+  const request = readJson(REQUEST_PATH);
+  const matching = structuredClone(request);
+  for (const row of matching.sourceClosure) {
+    row.sha256 = crypto
+      .createHash('sha256')
+      .update(fs.readFileSync(path.join(ROOT, row.path)))
+      .digest('hex');
+  }
+  const modulePath = matching.measurement.adjudicationModule.path;
+  matching.measurement.adjudicationModule.sha256 = matching.sourceClosure.find((row) => row.path === modulePath).sha256;
+  matching.confirmationRequest.sha256 = matching.sourceClosure.find(
+    (row) => row.path === matching.confirmationRequest.path,
+  ).sha256;
+  validateTutorStubBoredomSemanticValidationRequest(matching, { root: ROOT });
+
+  // Point one entry at bytes the file does not have. The check must refuse,
+  // and must name the file it refused on.
+  const drifted = structuredClone(matching);
+  const entry = drifted.sourceClosure.find((row) => row.path === modulePath);
+  entry.sha256 = '0'.repeat(64);
+  // The measurement binding carries the same digest, so move it too. Otherwise
+  // the request fails the earlier binding check and never reaches the guard.
+  drifted.measurement.adjudicationModule.sha256 = entry.sha256;
+  assert.throws(
+    () => validateTutorStubBoredomSemanticValidationRequest(drifted, { root: ROOT }),
+    /source-closure SHA mismatch: services\/tutorStubBoredomSemanticAdjudicationV3\.js/u,
+  );
+
+  // Turning the check off is what instrument-behaviour tests do, and it must
+  // let the same request through.
+  validateTutorStubBoredomSemanticValidationRequest(drifted, INSTRUMENT_ONLY);
 });
 
 test('authorization binding fails closed on digest, scope, and approval drift', () => {
@@ -162,7 +209,7 @@ test('authorization binding fails closed on digest, scope, and approval drift', 
 test('execution without an explicitly injected model caller refuses before any call', async () => {
   const request = readJson(REQUEST_PATH);
   await assert.rejects(
-    () => executeTutorStubBoredomSemanticValidation({ request, root: ROOT }),
+    () => executeTutorStubBoredomSemanticValidation({ request, ...INSTRUMENT_ONLY }),
     /explicitly injected model caller/,
   );
 });
@@ -171,7 +218,7 @@ test('mock execution with reference outputs passes every predeclared gate at exa
   const request = readJson(REQUEST_PATH);
   const corpus = readJson(HELDOUT_PATH);
   const { callModel, calls } = referenceMockCallModel(corpus);
-  const result = await executeTutorStubBoredomSemanticValidation({ request, root: ROOT, callModel });
+  const result = await executeTutorStubBoredomSemanticValidation({ request, callModel, ...INSTRUMENT_ONLY });
   assert.equal(result.status, 'completed');
   assert.equal(result.accounting.modelCallsCompleted, 55);
   assert.equal(result.accounting.totalReservationsUsed, 55);
@@ -199,7 +246,7 @@ test('a flipped actionable case fails the sensitivity gate without any retry', a
       };
     },
   });
-  const result = await executeTutorStubBoredomSemanticValidation({ request, root: ROOT, callModel });
+  const result = await executeTutorStubBoredomSemanticValidation({ request, callModel, ...INSTRUMENT_ONLY });
   assert.equal(result.status, 'completed');
   assert.equal(calls.length, 55);
   assert.equal(result.metrics.determinate_sensitivity, 8 / 9);
@@ -213,7 +260,7 @@ test('a malformed completed output is final measurement_indeterminate, never ret
   const { callModel, calls } = referenceMockCallModel(corpus, {
     mutate: (row, raw) => (row.id === 'moorings_negative_04' ? { garbage: true } : raw),
   });
-  const result = await executeTutorStubBoredomSemanticValidation({ request, root: ROOT, callModel });
+  const result = await executeTutorStubBoredomSemanticValidation({ request, callModel, ...INSTRUMENT_ONLY });
   assert.equal(result.status, 'completed');
   assert.equal(calls.length, 55);
   const target = result.rows.find((row) => row.id === 'moorings_negative_04');
@@ -234,7 +281,7 @@ test('a resolved output with a transport-contract defect is final indeterminate,
     if (row.id === 'fort_nonactionable_01') return { ...response, structuredOutput: false };
     return response;
   };
-  const result = await executeTutorStubBoredomSemanticValidation({ request, root: ROOT, callModel });
+  const result = await executeTutorStubBoredomSemanticValidation({ request, callModel, ...INSTRUMENT_ONLY });
   assert.equal(result.status, 'completed');
   assert.equal(base.calls.length, 55);
   assert.equal(result.accounting.totalReservationsUsed, 55);
@@ -253,7 +300,7 @@ test('a thrown transport error consumes a bounded extra reservation and the fina
   const { callModel, calls } = referenceMockCallModel(corpus, {
     failures: [['airfield_productive_01', 1]],
   });
-  const result = await executeTutorStubBoredomSemanticValidation({ request, root: ROOT, callModel });
+  const result = await executeTutorStubBoredomSemanticValidation({ request, callModel, ...INSTRUMENT_ONLY });
   assert.equal(result.status, 'completed');
   assert.equal(calls.length, 56);
   assert.equal(result.accounting.modelCallsCompleted, 55);
@@ -272,7 +319,7 @@ test('reservation-ceiling exhaustion produces a categorical failure with no gate
   const { callModel } = referenceMockCallModel(corpus, {
     failures: [['airfield_productive_01', 3]],
   });
-  const result = await executeTutorStubBoredomSemanticValidation({ request, root: ROOT, callModel });
+  const result = await executeTutorStubBoredomSemanticValidation({ request, callModel, ...INSTRUMENT_ONLY });
   assert.equal(result.status, 'failed_technical_ceiling');
   assert.equal(result.failedCaseId, 'airfield_productive_01');
   assert.equal(result.metrics, undefined);

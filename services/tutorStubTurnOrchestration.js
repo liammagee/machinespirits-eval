@@ -15,6 +15,7 @@ import {
   finalizeTutorStubActionBeforeRegisterShadow,
 } from './tutorStubActionBeforeRegisterShadow.js';
 import { throwTutorStubBoredomMeasurementIndeterminate } from './tutorStubBoredomSemanticAdjudication.js';
+import { tutorStubBoredomUnreadableTurnIsPassedOver } from './tutorStubBoredomActionRegisterProofDagStudy.js';
 
 export function reconcileTutorStubTypedActionWithWarrant({
   state,
@@ -417,18 +418,40 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         publicTranscriptChanged: false,
       });
       if (boredomSemanticAdjudication?.measurement_disposition === 'measurement_indeterminate') {
-        appendTraceEvent(state.trace, {
-          type: 'boredom_semantic_measurement_indeterminate',
-          turn: tutorTurn,
-          turnId,
-          code: 'TUTOR_STUB_BOREDOM_MEASUREMENT_INDETERMINATE',
-          disposition: 'measurement_indeterminate_stop_no_repair_no_replacement',
-          publicTranscriptChanged: false,
-        });
-        throwTutorStubBoredomMeasurementIndeterminate({
-          adjudication: boredomSemanticAdjudication,
-          turn: tutorTurn,
-        });
+        // A pre-treatment turn the adjudicator cannot read is not a broken run.
+        // Registrations that declare the pass-over disposition mark the turn
+        // ineligible to trigger and read the next one, exactly as the four
+        // protected conditions already behave, and exactly as the resistance
+        // study behaves via its `semantic_measurement_indeterminate_missing_or_stale`
+        // reason. `tutorStubResistanceActionRegisterTreatmentEligibility` already
+        // pushes `measurement_indeterminate` as a pass-over reason, so nothing
+        // downstream needs to change; only this earlier throw pre-empted it.
+        // The unit still stops if no turn up to `maximum_trigger_turn` is
+        // eligible, which the trigger-missing check below enforces.
+        if (tutorStubBoredomUnreadableTurnIsPassedOver(state.resistanceActionRegisterStudy)) {
+          appendTraceEvent(state.trace, {
+            type: 'boredom_semantic_measurement_indeterminate_passed_over',
+            turn: tutorTurn,
+            turnId,
+            code: 'TUTOR_STUB_BOREDOM_MEASUREMENT_INDETERMINATE_TURN_INELIGIBLE',
+            disposition: 'measurement_indeterminate_turn_ineligible_read_next_turn',
+            maximumTriggerTurn: Number(state.resistanceActionRegisterStudy?.maximum_trigger_turn) || null,
+            publicTranscriptChanged: false,
+          });
+        } else {
+          appendTraceEvent(state.trace, {
+            type: 'boredom_semantic_measurement_indeterminate',
+            turn: tutorTurn,
+            turnId,
+            code: 'TUTOR_STUB_BOREDOM_MEASUREMENT_INDETERMINATE',
+            disposition: 'measurement_indeterminate_stop_no_repair_no_replacement',
+            publicTranscriptChanged: false,
+          });
+          throwTutorStubBoredomMeasurementIndeterminate({
+            adjudication: boredomSemanticAdjudication,
+            turn: tutorTurn,
+          });
+        }
       }
     }
     const frozenPreOptionalWarrantSelection =
@@ -1530,10 +1553,11 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
           disposition: 'substantive_registered_failure_stop_no_replacement',
           publicTranscriptChanged: false,
         });
+        const maximumTriggerTurn = Number(state.resistanceActionRegisterStudy?.maximum_trigger_turn);
         const error = new Error(
           boredomProofDag
-            ? 'fresh boredom proof-DAG confirmation did not produce its registered effort-withholding trigger by turn 2'
-            : 'fresh frame_refuser confirmation did not produce its registered jurisdictional trigger by turn 2',
+            ? `fresh boredom proof-DAG confirmation did not produce its registered effort-withholding trigger by turn ${maximumTriggerTurn}`
+            : `fresh frame_refuser confirmation did not produce its registered jurisdictional trigger by turn ${maximumTriggerTurn}`,
         );
         error.code = code;
         error.substantiveStudyFailure = true;

@@ -106,6 +106,30 @@ export function throwTutorStubBoredomProofDagAdherenceExhaustion({ repairAttempt
   throw error;
 }
 
+export const TUTOR_STUB_BOREDOM_UNREADABLE_TURN_PASS_OVER_DISPOSITION = 'pass_over_this_turn_and_read_the_next_one';
+
+/**
+ * Does the frozen registration say that a pre-treatment turn the adjudicator
+ * cannot read is passed over rather than fatal to the whole dialogue?
+ *
+ * v4 and earlier registrations do not carry the field and keep the original
+ * stop-the-dialogue behaviour, so replaying a v4 plan today reproduces v4.
+ * v5 declares the pass-over disposition, which makes the boredom path match
+ * the resistance path: the turn becomes ineligible to trigger and the next
+ * turn is read. The unit still stops when no turn up to the registered
+ * `maximumTriggerTurn` is eligible.
+ *
+ * This lives beside the loader that writes `proof_dag_registration` rather
+ * than in the adjudication facade, whose bytes the spent v4 validation
+ * request pins.
+ */
+export function tutorStubBoredomUnreadableTurnIsPassedOver(runtime) {
+  // `proof_dag_registration` is the frozen boredom registration, and is the
+  // same field the prospective-v9 adjudication gate above reads.
+  const disposition = runtime?.proof_dag_registration?.design?.freshPrefixGeneration?.unreadableTurnDisposition;
+  return disposition === TUTOR_STUB_BOREDOM_UNREADABLE_TURN_PASS_OVER_DISPOSITION;
+}
+
 export function createTutorStubBoredomProofDagLearnerRuntime({
   appendTraceEvent,
   automatedLearnerDraftMatchesRuntime,
