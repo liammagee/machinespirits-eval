@@ -3,7 +3,7 @@
   "approvedBy": "Liam Magee",
   "approvedOn": "2026-08-21",
   "registrationPath": "config/tutor-stub-boredom-action-register-proof-dag-registration.v4.json",
-  "designFingerprint": "93ca369aab498f7be4686e87841277b853f7974d3b3f6b16381837ad89fadf1c",
+  "designFingerprint": "8a4d0c80d121ae771dd357fba4311a28395b034cabaa1aacac0f957197cfd099",
   "modelCallsAuthorized": true,
   "liveRunAuthorized": true,
   "approvalStatement": "Correct it, re-run with my approval, then start again - but this time stop locking approvals to commits.",
@@ -14,8 +14,20 @@
     "spentOn": "live batch 1, four dialogues, twenty-one model attempts, stopped on the auxiliary contradiction defect"
   },
   "note": "The approval covers the registered study: the question, the claim boundary, the design, the measurement rules, the power calculation and the spend safeguards. Correcting a defect in the code does not void it; changing the study does.",
-  "restartSeedBase": 2026082700,
+  "restartSeedBase": 2026082800,
   "seedBaseMoves": [
+    {
+      "on": "2026-08-21",
+      "from": 2026082700,
+      "to": 2026082800,
+      "why": "fourth live batch 1 produced no outcome; every turn hit the registered missing-trigger stop because the bored learner showed stopped work with no sign of lost interest, and the trigger needs both in one turn; the brief is repaired to carry both and the failed prefixes are excluded, so the restart draws fresh ones",
+      "authority": "Liam Magee, 2026-08-21: enabled to repair and re-run without prior approval until we get through this dialogue batch",
+      "designChanged": false,
+      "designFingerprintFrom": "93ca369aab498f7be4686e87841277b853f7974d3b3f6b16381837ad89fadf1c",
+      "designFingerprintTo": "8a4d0c80d121ae771dd357fba4311a28395b034cabaa1aacac0f957197cfd099",
+      "fingerprintNote": "the seed base sits inside design, so moving it moves the fingerprint; the registered question, claim boundary, measurement rules, power and safeguards are byte-identical",
+      "briefRepairScope": "the brief sets up the condition and says nothing about what the learner does after the tutor move; it is the same brief for the warm and the plain tutor, so it cannot move the contrast"
+    },
     {
       "on": "2026-08-21",
       "from": 2026082600,

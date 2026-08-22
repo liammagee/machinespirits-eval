@@ -69,8 +69,12 @@ const LEARNER_PROFILE_PUBLIC_VOICES = Object.freeze({
   },
   bored: {
     signature:
-      'Sound flat and minimally compliant: answer only the letter of the prompt, drop open threads, and when pressed to keep working say plainly that you have stopped, naming the step you left unfinished, without asking to be excused.',
-    sampleMoves: ['Sure. Whatever.', 'I put it down partway and left the rest.', 'I stopped at the second step.'],
+      'Sound flat and minimally compliant: answer only the letter of the prompt, drop open threads, and when pressed to keep working say in the same breath that the task has lost your interest and that you have stopped, naming the step you left unfinished, without asking to be excused.',
+    sampleMoves: [
+      'This has stopped holding me. I put it down partway and left the rest.',
+      'It all runs together now. I stopped at the second step.',
+      'I have gone dull on this. I left the rest of it alone.',
+    ],
   },
   frame_defiant: {
     signature:
@@ -472,7 +476,7 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       mustShowByTurn: 2,
       mustRecurMinRate: 0.45,
       description:
-        'Give short letter-of-the-question replies, leave open threads untouched, make no unprompted contribution, and say outright that you have stopped once the tutor presses for more work.',
+        'Give short letter-of-the-question replies, leave open threads untouched, make no unprompted contribution, and once the tutor presses for more work say in one turn both that the task has lost your interest and that you have stopped.',
     },
     triggers: [
       {
@@ -482,7 +486,7 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       {
         when: 'the tutor asks you to keep working, retry, or carry the same thread further',
         responseBias:
-          'say plainly that you have stopped and name the step you left unfinished; do not ask permission and do not resume',
+          'say in the same turn that the task has gone flat or lost your interest and that you have stopped, naming the step you left unfinished; do not ask permission and do not resume',
       },
       {
         when: 'the tutor offers one adjacent concrete question with a checkable answer',
@@ -494,12 +498,12 @@ export const AUTO_LEARNER_PROFILE_CONTRACTS = Object.freeze({
       'Do not ask permission; that belongs to low_agency.',
       'Do not make a substantive objection, counterexample, or evidence challenge merely to look resistant.',
       'Do not become eager after a generic explanation or recap.',
-      'Do not make boredom a hidden feeling; the public reply must show effort withholding.',
+      'Do not make boredom a hidden feeling; the public reply must show both the lost interest and the stopped work.',
     ],
     publicRules: [
       'Prefer short flat replies, dropped threads, and minimal literal answers.',
       'Do not ask a question back unless it is only clock-watching, such as asking whether the exchange is done.',
-      'Withholding must be visible as an action, not only a tone: state early that you have stopped and what you left undone.',
+      'Show the flat feeling and the stopped work together in one turn: say the task has lost your interest and say what you left undone. A bare "Sure" or "Fine" does not carry the feeling, and a bare "I stopped at step two" does not carry it either.',
       'A concrete adjacent hook may earn one concrete answer only after withholding is already visible; it never licenses a sudden enthusiastic proof chain and never comes before the first withholding turn.',
     ],
     signature: {
