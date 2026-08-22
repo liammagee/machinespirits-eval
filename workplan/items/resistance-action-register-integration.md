@@ -7,10 +7,22 @@ priority: P1
 owner: codex
 source: manual
 created: 2026-08-18
-updated: 2026-08-21
+updated: 2026-08-22
 verification: >-
-  The frozen independent semantic-measurement programme is closed without a
-  scientific result under its standing success-or-systemic-failure boundary.
+  The boredom action-before-register proof-DAG confirmation is collected and
+  analysed: a clean registered null. Plain 0/18, warm 0/15, risk difference 0,
+  exact conditional p = 1, decision warm_plain_recovery_not_confirmed; the
+  secondary objective endpoint was not tested because the fixed-sequence gate
+  stayed closed. Treatment fidelity was complete (action and register
+  visibility both 1.0). Three of 36 units stopped as measurement_indeterminate
+  and all three fell on warm, so attrition is unbalanced and every report of
+  this result must say so. Only 11 of the 33 zeros on the objective endpoint
+  were reachable at all; in the other 22 no premise on the best path had been
+  released before the dialogue ended. No warm/plain efficacy claim is
+  licensed, and none is refuted beyond this design's claim boundary.
+  The earlier frozen independent semantic-measurement programme remains closed
+  without a scientific result under its standing success-or-systemic-failure
+  boundary.
   Manipulation validations V1 and V2 failed their registered gates; all three
   V3 attempts stopped before gold join or analysis. The final V3 successor
   repeated the same two Claude route failures after the exact pre-response
@@ -3164,3 +3176,91 @@ and explicit human approval.
   are preserved at
   `machinespirits-eval-private/artifacts/boredom-proof-dag-v4-live/2026-08-21-execution_batch_1`
   (copied, not committed).
+- 2026-08-22 — **The boredom action-before-register confirmation is
+  collected, analysed and closed. It is a clean registered null.** Nine
+  batches ran on Luna against the frozen v4 registration
+  (`1db9fe34461f29f63d26fa456152b34c8d9e5fab957a49c8612ba462f97eddb3`),
+  amendment A1
+  (`4d3c24c1ef86e7e07313dd4e084b6cfbbb57652fe534801d5eb9f331b4d000d3`)
+  and source-commit pin `1e0a6a0e25dffe0df204123922f1c3c489a521c2`.
+  Adjudicator `codex.gpt-5.6-sol` throughout; the learner never judged
+  itself; word matching stayed auxiliary and could only veto.
+  **Primary endpoint** `profile_specific_resistance_recovery`: plain
+  0/18, warm 0/15, risk difference 0, exact conditional p = 1,
+  `significant_two_sided: false`, decision
+  `warm_plain_recovery_not_confirmed`. **Secondary**
+  `objective_proof_progress_by_two_turns`: 0 and 0,
+  `fixed_sequence_gate_open: false`, decision
+  `not_tested_inferentially_primary_gate_closed`. **Fidelity gate
+  `complete`** — action visibility 1.0 and register visibility 1.0
+  against a 0.9 minimum, 0 protected conditions, 0 safety overrides,
+  18 of 18 plain turns delivered the plain register and 15 of 15 warm
+  turns the warm register, all on the same action `stage_next_step`.
+  `interpretation_status`:
+  `registered_confirmation_interpretable_within_claim_boundary_and_unbalanced_attrition_caveat`.
+  **Mandatory disclosure, per A1**: 3 of 36 units stopped as
+  `measurement_indeterminate` and all three fell on warm —
+  `bored-confirm-w2-d1` (world 026), `bored-confirm-w4-d6` (030),
+  `bored-confirm-w6-d4` (033). Plain lost none. Worlds 026, 030 and 033
+  each hold three plain against two warm. No report of this result may
+  omit that.
+- 2026-08-22 — **Why the null is a null and not a broken instrument.**
+  Seven candidate defects were each checked against the collected data
+  and each came back clean: the reader misreading the adjudicator's
+  label (fixed earlier; exactly 2 protected pass-overs, both expected);
+  the recovery scorer receiving empty learner text (no — `postOne.learner`
+  and `postTwo.learnerText` are each read under their own correct field
+  name); word matching acting as the scoring authority (no —
+  `contentBearing` in `services/tutorStubResistanceActionRegisterStudy.js:227`
+  reads the classifier's `discourse_move`/`evidence_use`); the scorer
+  being unable to fire at all (no — `tests/tutorStubResistanceActionRegisterStudy.test.js:955`
+  and `:1031` assert `recovered === true`); the two tutor versions being
+  identical (no — see the fidelity counts above); the analysis being
+  non-deterministic (no — two runs, identical digest); the endpoint
+  reading the wrong coverage number (no — the two agree in all 33 units).
+  The zero is behavioural. All 33 post-trigger learner replies are the
+  same two-part sentence, e.g. *"I have gone dull on this. I stopped
+  before checking either record."* Classifier tally: `affective_signal`
+  17, `metacognitive_reflection` 16; `evidence_use` `none` 25,
+  `repeats_setup` 8. None qualifies under `BORED_INQUIRY_ADVANCING_MOVES`,
+  and that list excludes reflection on one's own work for a recorded
+  reason — with reflection in the list, a plain statement of giving up
+  scored as recovery and paid the plain tutor for failing.
+- 2026-08-22 — **One real defect was found and fixed, in the reader, not
+  in the run.** An outcome turn carries two assessments with nearly the
+  same address: `tutorLearnerDag.model.assessment` holds counts only, and
+  the sibling `tutorLearnerDag.assessment` holds the path detail,
+  including the per-dialogue premise release schedule. The analyser read
+  the counts object, so the new reachability diagnostic returned empty
+  columns on live traces while its own test passed — **because the test
+  fixture put everything under `model` and so agreed with the defect.**
+  Fixed in `909890ba`: the analyser reads the sibling first, falls back,
+  and throws `lacks the premise release schedule its objective endpoint
+  is read against` when `missingPremises` is absent; the fixture was
+  split into `dagModel` + `dagPathAssessment` so it mirrors a real trace.
+  **What the diagnostic then showed: only 11 of the 33 zeros on the
+  objective endpoint are about the tutor.** The other 22 sat in
+  dialogues where no premise on the best path had been released before
+  the dialogue ended, so the endpoint could not have moved whatever the
+  tutor did. Per world — units / reachable / final turns / earliest
+  release turns: 005 marrick 6/0/3,4/4,5,6 · 026 skyway bakery
+  5/2/3,4/3,4,5 · 029 riverside clinic 6/4/3,4/3,4 · 030 rowan flat
+  5/1/3/3,4 · 031 tideway makerspace 6/4/3/3,4 · 033 alder row redoubt
+  5/0/3,4/9,12,15. Two of six blocks contribute nothing. **Read the
+  objective null only over the units counted as reachable.** Every
+  registered quantity is byte-identical before and after the diagnostic,
+  verified by stripping the added fields and comparing; the earlier
+  report is kept beside the corrected one as
+  `combined-confirmation-report.pre-reachability.json`.
+- 2026-08-22 — Artifacts committed to the private archive as `70867ea3`
+  (274 files): the nine sealed batches with traces and transcripts under
+  `artifacts/tutor-stub-live/.tutor-stub-auto-eval/boredom-proof-dag-v4-restart4/`,
+  the corrected `combined-confirmation-report.json`
+  (`8e307fcfb57297b73d8c2e5a6cc638f4ac4b66b851dc0b7178d70942affe5d4f`),
+  the pre-reachability report, the `2026-08-21-execution_batch_1` record
+  above, and the spent v1, v2, v4-batch-1 and restart-1/2/3 corpora. The
+  spent corpora stay permanently excluded from analysis. A stale
+  mid-run duplicate at `tutor-stub-traces/boredom-proof-dag-v4-restart4`
+  was removed after `diff -rq` proved every shared file byte-identical
+  and the artifacts copy a strict superset. The archive commit is not
+  yet pushed.
