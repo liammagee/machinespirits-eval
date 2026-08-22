@@ -9,10 +9,29 @@ import { fileURLToPath } from 'node:url';
 import { fisherExactTwoSidedP } from '../services/edgedRegisterCalibration.js';
 import { observeResistantLearnerTurn } from '../services/resistantLearnerObservation.js';
 import {
+  tutorStubResistanceSemanticPromptSha256,
+  tutorStubResistanceSemanticSha256,
+} from '../services/tutorStubResistanceSemanticAdjudication.js';
+import {
+  adjudicateTutorStubResistanceFidelityPanelV8,
+  adjudicateTutorStubResistanceRecoveryPrimaryPanelV8,
+  buildTutorStubResistanceFidelityPromptV8,
+  buildTutorStubResistanceRecoveryPrimaryPromptV8,
+  tutorStubResistanceMeasurementSha256,
+} from '../services/tutorStubResistanceRecoverySemanticAdjudicationV8.js';
+import { loadTutorStubResistanceConfirmationSemanticInstrument } from '../services/tutorStubResistanceConfirmationSemanticRuntime.js';
+import {
   loadTutorStubResistanceActionRegisterConfirmation,
   scoreTutorStubResistanceRecovery,
 } from '../services/tutorStubResistanceActionRegisterConfirmation.js';
 import { tutorStubResistanceActionRegisterTreatmentEligibility } from '../services/tutorStubResistanceActionRegisterStudy.js';
+import {
+  TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4,
+  TUTOR_STUB_RESISTANCE_SEMANTIC_SYSTEM_PROMPT,
+  loadTutorStubResistanceSemanticRegistration,
+  tutorStubResistanceSemanticRuntimeInstrument,
+  validateTutorStubResistanceSemanticRuntimeResult,
+} from '../services/tutorStubResistanceSemanticRuntime.js';
 import {
   buildTutorStubResistanceActionRegisterConfirmationBatchPlan,
   buildTutorStubResistanceActionRegisterConfirmationRecoveryJob,
@@ -21,6 +40,23 @@ import {
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REGISTRATION = 'config/tutor-stub-resistance-action-register-crossed-registration.v3.json';
 const BATCH_IDS = Object.freeze(Array.from({ length: 9 }, (_, index) => `block_${String(index + 1).padStart(2, '0')}`));
+
+function confirmationCaps(loaded) {
+  return loaded?.registration?.version >= 9
+    ? { perDialogue: 123, perBatch: 492, combined: 4428 }
+    : { perDialogue: 60, perBatch: 240, combined: 2160 };
+}
+
+export function tutorStubResistanceActionRegisterConfirmationFisherGate(rows = []) {
+  const indeterminateCaseIds = rows
+    .filter((row) => row.measurement_disposition === 'measurement_indeterminate')
+    .map((row) => row.case_id);
+  return {
+    execute: indeterminateCaseIds.length === 0,
+    indeterminate_case_ids: indeterminateCaseIds,
+    rerun_repair_replacement_or_selection_allowed: false,
+  };
+}
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -76,6 +112,10 @@ function exactTraceDirectory(resultRow, command, label) {
 }
 
 function auditRecovery({ absolute, plan, initial, result, seal, planPath, initialResultPath, resultPath }) {
+  const loaded = loadTutorStubResistanceActionRegisterConfirmation({
+    registrationPath: path.resolve(ROOT, plan.source.registration_path),
+  });
+  const caps = confirmationCaps(loaded);
   const initialRows = Array.isArray(initial.results) ? initial.results : [];
   const initialById = new Map(initialRows.map((row) => [row.job_id, row]));
   const planIds = plan.jobs.map((job) => job.id);
@@ -114,7 +154,7 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
     recoveryPlan.original_plan_sha256 !== sha256(fs.readFileSync(planPath)) ||
     recoveryPlan.original_result_sha256 !== sha256(fs.readFileSync(initialResultPath)) ||
     JSON.stringify(recoveryPlan.source) !== JSON.stringify(plan.source) ||
-    recoveryPlan.hard_ceiling !== 240 ||
+    recoveryPlan.hard_ceiling !== caps.perBatch ||
     !sameIds(recoveryPlan.valid_unit_ids_excluded || [], initialValidIds) ||
     !sameIds(recoveryIds, missingOrFailedIds) ||
     !sameIds(recoveryResultIds, missingOrFailedIds) ||
@@ -132,9 +172,6 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
   const reservationsByJob = new Map();
   const finalTraceBudgetByJob = new Map();
   let usedReservationsBeforeRecovery = 0;
-  const loaded = loadTutorStubResistanceActionRegisterConfirmation({
-    registrationPath: path.resolve(ROOT, plan.source.registration_path),
-  });
   for (const job of plan.jobs) {
     const initialFiles = traceFiles(job.command?.trace_dir);
     if (initialFiles.length > 1) {
@@ -154,7 +191,7 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
         throw new Error(`confirmation batch ${plan.batch_id} rewrote initially valid unit ${job.id}`);
       }
       reservationsByJob.set(job.id, initialReservations);
-      finalTraceBudgetByJob.set(job.id, 60);
+      finalTraceBudgetByJob.set(job.id, caps.perDialogue);
       continue;
     }
     const recoveryJob = recoveryJobs.get(job.id);
@@ -182,8 +219,8 @@ function auditRecovery({ absolute, plan, initial, result, seal, planPath, initia
   }
   const total = [...reservationsByJob.values()].reduce((sum, value) => sum + value, 0);
   if (
-    [...reservationsByJob.values()].some((value) => value > 60) ||
-    total > 240 ||
+    [...reservationsByJob.values()].some((value) => value > caps.perDialogue) ||
+    total > caps.perBatch ||
     recoveryPlan.used_reservations_before_recovery !== usedReservationsBeforeRecovery ||
     result.observed_model_attempt_reservations !== total ||
     seal.observed_model_attempt_reservations !== total ||
@@ -212,6 +249,10 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
   const result = fs.existsSync(finalResultPath) ? readJson(finalResultPath) : initial;
   const resultPath = fs.existsSync(finalResultPath) ? finalResultPath : initialResultPath;
   const seal = readJson(sealPath);
+  const loaded = loadTutorStubResistanceActionRegisterConfirmation({
+    registrationPath: path.resolve(ROOT, registrationPath),
+  });
+  const caps = confirmationCaps(loaded);
   if (
     plan.schema !== 'machinespirits.tutor-stub.resistance-action-register-confirmation-live-batch-plan.v1' ||
     initial.schema !== 'machinespirits.tutor-stub.resistance-action-register-confirmation-live-batch-result.v1' ||
@@ -228,7 +269,7 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
     seal.plan_sha256 !== sha256(fs.readFileSync(planPath)) ||
     seal.result_sha256 !== sha256(fs.readFileSync(resultPath)) ||
     seal.dialogues !== 4 ||
-    seal.hard_ceiling !== 240 ||
+    seal.hard_ceiling !== caps.perBatch ||
     seal.valid_unit_reruns !== false ||
     seal.outcome_selection !== false
   ) {
@@ -288,12 +329,14 @@ function exactBatch(batchRoot, expectedSourceCommit, expectedSourceTree, registr
     const row = result.results.find((candidate) => candidate.job_id === job.id);
     exactTraceDirectory(row, job.command, `confirmation unit ${job.id}`);
     const count = reservationCount(job.command.trace_dir);
-    if (count > 60) throw new Error(`confirmation job ${job.id} exceeds its 60-reservation cap`);
+    if (count > caps.perDialogue) {
+      throw new Error(`confirmation job ${job.id} exceeds its ${caps.perDialogue}-reservation cap`);
+    }
     reservationsByJob.set(job.id, count);
-    finalTraceBudgetByJob.set(job.id, 60);
+    finalTraceBudgetByJob.set(job.id, caps.perDialogue);
   }
-  if ([...reservationsByJob.values()].reduce((sum, value) => sum + value, 0) > 240) {
-    throw new Error(`confirmation batch ${plan.batch_id} exceeds its 240-reservation cap`);
+  if ([...reservationsByJob.values()].reduce((sum, value) => sum + value, 0) > caps.perBatch) {
+    throw new Error(`confirmation batch ${plan.batch_id} exceeds its ${caps.perBatch}-reservation cap`);
   }
   return {
     absolute,
@@ -320,6 +363,27 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan,
   const routePinned = ['classifier', 'learner', 'reasoning', 'tutor'].every(
     (role) => models?.[role]?.provider === 'codex' && models?.[role]?.model === 'gpt-5.6-luna',
   );
+  const triggerJudges =
+    loaded.registration.version >= 9
+      ? loadTutorStubResistanceSemanticRegistration(TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4).registration
+          .measurement.judges
+      : [];
+  const outcomeJudges =
+    loaded.registration.version >= 9
+      ? loadTutorStubResistanceConfirmationSemanticInstrument(loaded.registration).registration.measurement.judges
+      : [];
+  const expectedAttemptRoute = (event) => {
+    const role = String(event.role || '');
+    const triggerJudge = triggerJudges.find((judge) => role === `tutor_stub_resistance_semantic_${judge.id}`);
+    if (triggerJudge) return event.provider === triggerJudge.provider && event.model === triggerJudge.model;
+    const outcomeJudge = outcomeJudges.find(
+      (judge) =>
+        role === `tutor_stub_resistance_semantic_confirmation_primary_recovery_${judge.id}` ||
+        role === `tutor_stub_resistance_semantic_confirmation_intervention_fidelity_${judge.id}`,
+    );
+    if (outcomeJudge) return event.provider === outcomeJudge.provider && event.model === outcomeJudge.model;
+    return event.provider === 'codex' && event.model === 'gpt-5.6-luna';
+  };
   const allowedTutorRoles = new Set([
     'tutor_stub_tutor',
     'tutor_stub_tutor_actorial_part_repair',
@@ -337,6 +401,12 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan,
     if (event.role === 'tutor_stub_opening') return turn === 0;
     if (event.role === 'tutor_stub_auto_learner' || event.role === 'tutor_stub_learner_analysis') {
       return turn >= 1 && turn <= outcomeTurn;
+    }
+    if (String(event.role || '').startsWith('tutor_stub_resistance_semantic_confirmation_')) {
+      return loaded.registration.version >= 9 && turn === outcomeTurn;
+    }
+    if (String(event.role || '').startsWith('tutor_stub_resistance_semantic_')) {
+      return loaded.registration.version >= 9 && turn >= 1 && turn <= outcomeTurn;
     }
     return allowedTutorRoles.has(event.role) && turn >= 1 && turn < outcomeTurn;
   });
@@ -385,7 +455,7 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan,
     required !== true ||
     allowed !== true ||
     exactReservations !== true ||
-    attempts.some((event) => event.provider !== 'codex' || event.model !== 'gpt-5.6-luna') ||
+    attempts.some((event) => !expectedAttemptRoute(event)) ||
     calls.some((event) => event.response?.effort !== 'low') ||
     attempts
       .filter((event) => event.type !== 'model_call')
@@ -396,7 +466,207 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan,
   return { calls: calls.length, attempts: attempts.length, reservations: reservations.length };
 }
 
-function analyzeTrace(batch, resultRow, loaded) {
+function v9SemanticTriggerEligibility({ events, record, loaded }) {
+  const semanticAdjudication = record?.resistanceSemanticAdjudication || null;
+  const binding = loadTutorStubResistanceSemanticRegistration(TUTOR_STUB_RESISTANCE_SEMANTIC_REGISTRATION_V4);
+  if (
+    loaded.registration.design?.trigger?.observationSemantics !== binding.registration.observationSemantics ||
+    loaded.registration.semanticAdjudication?.instrumentRegistrationSha256 !== binding.sha256
+  ) {
+    throw new Error('V9 trigger semantic instrument binding drifted');
+  }
+  const validation = validateTutorStubResistanceSemanticRuntimeResult({
+    result: semanticAdjudication,
+    learnerText: record?.learner,
+    turnNumber: Number(record?.turn),
+    registrationBinding: binding,
+    expectedPublicContext: semanticAdjudication?.publicContext,
+  });
+  const aggregateEvents = events.filter(
+    (event) =>
+      event.type === 'resistance_semantic_adjudication' &&
+      event.caseId === semanticAdjudication?.caseId &&
+      Number(event.turn) === Number(record?.turn),
+  );
+  const judgeEvents = events.filter(
+    (event) =>
+      event.type === 'resistance_semantic_judge_result' &&
+      event.caseId === semanticAdjudication?.caseId &&
+      Number(event.turn) === Number(record?.turn),
+  );
+  const instrument = tutorStubResistanceSemanticRuntimeInstrument(binding);
+  const prompts = {};
+  for (const judge of binding.registration.measurement.judges) {
+    const event = judgeEvents.find((candidate) => candidate.judgeId === judge.id);
+    let prompt = null;
+    try {
+      prompt = JSON.parse(String(event?.userPrompt || ''));
+    } catch {
+      throw new Error(`V9 trace has an invalid trigger prompt for ${judge.id}`);
+    }
+    prompts[judge.id] = prompt;
+    if (
+      event?.role !== `tutor_stub_resistance_semantic_${judge.id}` ||
+      event.expectedProvider !== judge.provider ||
+      event.expectedModel !== judge.model ||
+      event.expectedEffort !== judge.effort ||
+      event.systemPrompt !== TUTOR_STUB_RESISTANCE_SEMANTIC_SYSTEM_PROMPT ||
+      event.systemPromptSha256 !== tutorStubResistanceSemanticSha256(TUTOR_STUB_RESISTANCE_SEMANTIC_SYSTEM_PROMPT) ||
+      event.userPromptSha256 !== tutorStubResistanceSemanticSha256(event.userPrompt) ||
+      event.promptSha256 !== tutorStubResistanceSemanticPromptSha256(prompt) ||
+      event.packetSha256 !== prompt.packet_sha256 ||
+      prompt.case_id !== semanticAdjudication?.caseId ||
+      prompt.utterance?.text !== record?.learner ||
+      JSON.stringify(prompt.public_context) !== JSON.stringify(semanticAdjudication?.publicContext) ||
+      JSON.stringify(event.outputSchema) !== JSON.stringify(instrument.outputSchema)
+    ) {
+      throw new Error(`V9 trace trigger judge envelope drifted for ${judge.id}`);
+    }
+  }
+  const recomputedAggregate = instrument.adjudicate({
+    source: record?.learner,
+    publicContext: semanticAdjudication?.publicContext,
+    caseId: semanticAdjudication?.caseId,
+    responses: judgeEvents.map((event) => event.record).filter(Boolean),
+    registration: binding.registration,
+    prompts,
+    advisorySignals: semanticAdjudication?.aggregate?.advisory_signals || [],
+  });
+  if (
+    !validation.valid ||
+    aggregateEvents.length !== 1 ||
+    aggregateEvents[0].aggregateSha256 !== semanticAdjudication.aggregateSha256 ||
+    JSON.stringify(aggregateEvents[0].aggregate) !== JSON.stringify(semanticAdjudication.aggregate) ||
+    JSON.stringify(recomputedAggregate) !== JSON.stringify(semanticAdjudication.aggregate) ||
+    judgeEvents.length !== 3 ||
+    new Set(judgeEvents.map((event) => event.judgeId)).size !== 3 ||
+    judgeEvents.some(
+      (event) =>
+        event.registrationSha256 !== binding.sha256 ||
+        event.registrationPath !== binding.path ||
+        event.publicTranscriptChanged !== false,
+    )
+  ) {
+    throw new Error(`V9 trace has invalid independent semantic trigger evidence at turn ${record?.turn}`);
+  }
+  const runtime = {
+    registration: loaded.registration,
+    profile: 'frame_refuser',
+    consumed: false,
+    dynamic_confirmation: true,
+  };
+  return tutorStubResistanceActionRegisterTreatmentEligibility({
+    runtime,
+    learnerText: record.learner,
+    classification: record.classification,
+    tutorLearnerDag: record.tutorLearnerDagModel,
+    semanticAdjudication,
+    turnNumber: Number(record.turn),
+    expectedPublicContext: semanticAdjudication.publicContext,
+  });
+}
+
+function v9SemanticOutcome({ events, job, loaded, trigger, postOne, postTwo, outcomeTurn }) {
+  const stored = postTwo.resistanceConfirmationSemanticOutcome;
+  const adjudicationEvents = events.filter(
+    (event) =>
+      event.type === 'resistance_confirmation_semantic_adjudication' &&
+      event.case_id === job.id &&
+      Number(event.turn) === outcomeTurn,
+  );
+  const judgeEvents = events.filter(
+    (event) =>
+      event.type === 'resistance_confirmation_semantic_judge_result' &&
+      event.caseId === job.id &&
+      Number(event.turn) === outcomeTurn,
+  );
+  if (
+    !stored ||
+    stored.schema !== 'machinespirits.tutor-stub.resistance-confirmation-semantic-outcome.v9' ||
+    adjudicationEvents.length !== 1 ||
+    judgeEvents.length !== 6 ||
+    new Set(judgeEvents.map((event) => `${event.instrument}:${event.judgeId}`)).size !== 6 ||
+    JSON.stringify(adjudicationEvents[0].primary) !== JSON.stringify(stored.primary) ||
+    JSON.stringify(adjudicationEvents[0].fidelity) !== JSON.stringify(stored.fidelity)
+  ) {
+    throw new Error(`confirmation trace ${job.id} lacks its exact V9 semantic outcome panels`);
+  }
+  const loadedInstrument = loadTutorStubResistanceConfirmationSemanticInstrument(loaded.registration);
+  const publicPacket = {
+    trigger: String(trigger.learner || ''),
+    intervention: String(trigger.tutor || ''),
+    prior_post_trigger: String(postOne.learner || ''),
+    intervening_tutor: String(postOne.tutor || ''),
+    current_learner: String(postTwo.learnerText || ''),
+  };
+  const primaryPrompts = Object.fromEntries(
+    loadedInstrument.registration.measurement.judges.map((judge) => [
+      judge.id,
+      buildTutorStubResistanceRecoveryPrimaryPromptV8({ caseId: job.id, publicPacket, judge }),
+    ]),
+  );
+  const fidelityPrompts = Object.fromEntries(
+    loadedInstrument.registration.measurement.judges.map((judge) => [
+      judge.id,
+      buildTutorStubResistanceFidelityPromptV8({ caseId: job.id, intervention: publicPacket.intervention, judge }),
+    ]),
+  );
+  for (const [instrument, prompts] of [
+    ['primary_recovery', primaryPrompts],
+    ['intervention_fidelity', fidelityPrompts],
+  ]) {
+    for (const judge of loadedInstrument.registration.measurement.judges) {
+      const event = judgeEvents.find((row) => row.instrument === instrument && row.judgeId === judge.id);
+      const prompt = prompts[judge.id];
+      if (
+        !event ||
+        event.role !== `tutor_stub_resistance_semantic_confirmation_${instrument}_${judge.id}` ||
+        event.promptSha256 !== tutorStubResistanceMeasurementSha256(prompt) ||
+        event.packetSha256 !== prompt.packet_sha256 ||
+        event.expectedProvider !== judge.provider ||
+        event.expectedModel !== judge.model ||
+        event.expectedEffort !== judge.effort ||
+        event.publicTranscriptChanged !== false
+      ) {
+        throw new Error(`confirmation trace ${job.id} semantic ${instrument} seat ${judge.id} drifted`);
+      }
+    }
+  }
+  const responses = (instrument) =>
+    judgeEvents.filter((event) => event.instrument === instrument && event.record).map((event) => event.record);
+  const primary = adjudicateTutorStubResistanceRecoveryPrimaryPanelV8({
+    caseId: job.id,
+    publicPacket,
+    responses: responses('primary_recovery'),
+    registration: loadedInstrument.registration,
+    prompts: primaryPrompts,
+  });
+  const fidelity = adjudicateTutorStubResistanceFidelityPanelV8({
+    caseId: job.id,
+    intervention: publicPacket.intervention,
+    responses: responses('intervention_fidelity'),
+    registration: loadedInstrument.registration,
+    prompts: fidelityPrompts,
+  });
+  const disposition =
+    primary.status === 'determinate' && fidelity.status === 'determinate' ? 'determinate' : 'measurement_indeterminate';
+  if (
+    JSON.stringify(primary) !== JSON.stringify(stored.primary) ||
+    JSON.stringify(fidelity) !== JSON.stringify(stored.fidelity) ||
+    stored.instrument?.path !== loadedInstrument.path ||
+    stored.instrument?.sha256 !== loadedInstrument.sha256 ||
+    stored.public_packet_sha256 !== tutorStubResistanceMeasurementSha256(publicPacket) ||
+    stored.measurement_disposition !== disposition ||
+    stored.regex_keyword_learner_classifier_or_generator_authority !== 'none' ||
+    stored.primary_and_fidelity_claims_separate !== true ||
+    stored.repair_rerun_replacement_or_selection_allowed !== false
+  ) {
+    throw new Error(`confirmation trace ${job.id} semantic outcome cannot be reproduced exactly`);
+  }
+  return stored;
+}
+
+export function analyzeTutorStubResistanceActionRegisterConfirmationTrace(batch, resultRow, loaded) {
   const job = batch.planJobs.get(resultRow.job_id);
   if (!job) throw new Error(`confirmation result ${resultRow.job_id} is not planned`);
   const tracePath = path.resolve(ROOT, resultRow.trace);
@@ -452,40 +722,46 @@ function analyzeTrace(batch, resultRow, loaded) {
   const postOne = completed.find((event) => Number(event.turn) === triggerTurn + 1)?.turnRecord;
   const postTwo = outcomes[0];
   const triggerHash = sha256(String(trigger?.learner || ''));
-  const observation = observeResistantLearnerTurn({
-    learnerText: trigger?.learner,
-    classification: trigger?.classification,
-    semantics: loaded.registration.design.trigger.observationSemantics,
-  });
+  const v9 = loaded.registration.version >= 9;
+  const observation = v9
+    ? null
+    : observeResistantLearnerTurn({
+        learnerText: trigger?.learner,
+        classification: trigger?.classification,
+        semantics: loaded.registration.design.trigger.observationSemantics,
+      });
   const eligibilityRuntime = {
     registration: loaded.registration,
     profile: 'frame_refuser',
     consumed: false,
     dynamic_confirmation: true,
   };
-  const triggerEligibility = tutorStubResistanceActionRegisterTreatmentEligibility({
-    runtime: eligibilityRuntime,
-    learnerText: trigger?.learner,
-    classification: trigger?.classification,
-    tutorLearnerDag: trigger?.tutorLearnerDagModel,
-  });
+  const triggerEligibility = v9
+    ? v9SemanticTriggerEligibility({ events, record: trigger, loaded })
+    : tutorStubResistanceActionRegisterTreatmentEligibility({
+        runtime: eligibilityRuntime,
+        learnerText: trigger?.learner,
+        classification: trigger?.classification,
+        tutorLearnerDag: trigger?.tutorLearnerDagModel,
+      });
   const earlierEligible = completed
     .filter((event) => Number(event.turn) < triggerTurn)
-    .some(
-      (event) =>
-        tutorStubResistanceActionRegisterTreatmentEligibility({
-          runtime: eligibilityRuntime,
-          learnerText: event.turnRecord.learner,
-          classification: event.turnRecord.classification,
-          tutorLearnerDag: event.turnRecord.tutorLearnerDagModel,
-        }).eligible,
+    .some((event) =>
+      v9
+        ? v9SemanticTriggerEligibility({ events, record: event.turnRecord, loaded }).eligible
+        : tutorStubResistanceActionRegisterTreatmentEligibility({
+            runtime: eligibilityRuntime,
+            learnerText: event.turnRecord.learner,
+            classification: event.turnRecord.classification,
+            tutorLearnerDag: event.turnRecord.tutorLearnerDagModel,
+          }).eligible,
     );
   if (
     !trigger ||
     !postOne ||
     !postTwo ||
-    observation.ambiguous !== false ||
-    !observation.observations?.some((row) => row.type === 'frame_jurisdiction_refusal') ||
+    (!v9 && observation.ambiguous !== false) ||
+    (!v9 && !observation.observations?.some((row) => row.type === 'frame_jurisdiction_refusal')) ||
     triggerEligibility.eligible !== true ||
     earlierEligible ||
     interventions[0].triggerTurn !== triggerTurn ||
@@ -514,12 +790,13 @@ function analyzeTrace(batch, resultRow, loaded) {
   const expectedDeliveredRegister = safety?.applied === true ? safety.delivered_register : assignment?.register;
   if (
     (!appliedAdherent && !safetyOverrideNonadherent) ||
-    typeof responseAudit?.axes?.action_family?.visible !== 'boolean' ||
-    typeof deliveredRegisterVisible !== 'boolean' ||
     typeof safety?.applied !== 'boolean' ||
-    responseAudit?.axes?.action_family?.selected !== 'clarify_distinction' ||
-    responseAudit?.axes?.engagement_stance?.selected !== expectedDeliveredRegister ||
-    protectedCondition !== safetyOverrideNonadherent
+    protectedCondition !== safetyOverrideNonadherent ||
+    (!v9 &&
+      (typeof responseAudit?.axes?.action_family?.visible !== 'boolean' ||
+        typeof deliveredRegisterVisible !== 'boolean' ||
+        responseAudit?.axes?.action_family?.selected !== 'clarify_distinction' ||
+        responseAudit?.axes?.engagement_stance?.selected !== expectedDeliveredRegister))
   ) {
     throw new Error(`confirmation trace ${job.id} lacks adherent typed action/register visibility evidence`);
   }
@@ -531,14 +808,25 @@ function analyzeTrace(batch, resultRow, loaded) {
     batch.plan,
     loaded,
   );
-  const recovery = scoreTutorStubResistanceRecovery({
-    profile: 'frame_refuser',
-    triggerLearnerText: trigger.learner,
-    postLearnerTurns: [
-      { learnerText: postOne.learner, classification: postOne.classification },
-      { learnerText: postTwo.learnerText, classification: postTwo.classification },
-    ],
-  });
+  const semanticOutcome = v9
+    ? v9SemanticOutcome({ events, job, loaded, trigger, postOne, postTwo, outcomeTurn })
+    : null;
+  const recovery = v9
+    ? {
+        recovered:
+          semanticOutcome.primary.status === 'determinate' ? semanticOutcome.primary.final_recovery === 'yes' : null,
+        status: semanticOutcome.primary.status,
+        authority: 'v8_three_judge_primary_recovery_panel',
+        panel: semanticOutcome.primary,
+      }
+    : scoreTutorStubResistanceRecovery({
+        profile: 'frame_refuser',
+        triggerLearnerText: trigger.learner,
+        postLearnerTurns: [
+          { learnerText: postOne.learner, classification: postOne.classification },
+          { learnerText: postTwo.learnerText, classification: postTwo.classification },
+        ],
+      });
   const initialMissing = metric(trigger.tutorLearnerDagModel, 'missingPremiseCount');
   const finalMissing = metric(postTwo.tutorLearnerDag?.model, 'missingPremiseCount');
   const initialGrounded = metric(trigger.tutorLearnerDagModel, 'groundedCount');
@@ -561,11 +849,23 @@ function analyzeTrace(batch, resultRow, loaded) {
       new_supported_public_premises: Math.max(0, finalGrounded - initialGrounded),
     },
     fidelity: {
-      action_visible: responseAudit.axes.action_family.visible,
-      register_visible: registerVisible,
+      action_visible: v9
+        ? semanticOutcome.fidelity.action_measurement.value === 'yes'
+        : responseAudit.axes.action_family.visible,
+      register_visible: v9
+        ? semanticOutcome.fidelity.register_measurement.value === assignment.realization
+        : registerVisible,
+      ...(v9
+        ? {
+            status: semanticOutcome.fidelity.status,
+            authority: 'v8_three_judge_intervention_fidelity_panel',
+            panel: semanticOutcome.fidelity,
+          }
+        : {}),
       safety_override: safety?.applied === true,
       protected_condition: protectedCondition,
     },
+    ...(v9 ? { measurement_disposition: semanticOutcome.measurement_disposition } : {}),
     execution: {
       trace: resultRow.trace,
       trace_sha256: resultRow.trace_sha256,
@@ -604,6 +904,7 @@ export function analyzeTutorStubResistanceActionRegisterConfirmation({
   const loaded = loadTutorStubResistanceActionRegisterConfirmation({
     registrationPath: path.resolve(ROOT, registrationPath),
   });
+  const caps = confirmationCaps(loaded);
   const batches = batchRoots.map((root) => exactBatch(root, expectedSourceCommit, currentTree, registrationPath));
   if (JSON.stringify(batches.map((batch) => batch.plan.batch_id).sort()) !== JSON.stringify([...BATCH_IDS])) {
     throw new Error('confirmation analysis requires all nine registered blocks exactly once');
@@ -611,7 +912,9 @@ export function analyzeTutorStubResistanceActionRegisterConfirmation({
   if (batches.some((batch) => batch.plan.source.registration_sha256 !== loaded.sha256)) {
     throw new Error('confirmation analysis registration digest drifted across batches');
   }
-  const rows = batches.flatMap((batch) => batch.result.results.map((row) => analyzeTrace(batch, row, loaded)));
+  const rows = batches.flatMap((batch) =>
+    batch.result.results.map((row) => analyzeTutorStubResistanceActionRegisterConfirmationTrace(batch, row, loaded)),
+  );
   const plain = rows.filter((row) => row.realization === 'plain');
   const warm = rows.filter((row) => row.realization === 'warm');
   if (
@@ -630,14 +933,18 @@ export function analyzeTutorStubResistanceActionRegisterConfirmation({
       rows.filter((row) => row.block_id === id).reduce((sum, row) => sum + row.execution.model_attempt_reservations, 0),
     ]),
   );
-  if (Object.values(reservationsByBatch).some((value) => value > 240)) {
-    throw new Error('confirmation analysis refuses a batch above 240 reservations');
+  if (Object.values(reservationsByBatch).some((value) => value > caps.perBatch)) {
+    throw new Error(`confirmation analysis refuses a batch above ${caps.perBatch} reservations`);
   }
   const totalReservations = Object.values(reservationsByBatch).reduce((sum, value) => sum + value, 0);
-  if (totalReservations > 2160) throw new Error('confirmation analysis refuses a run above 2160 reservations');
+  if (totalReservations > caps.combined) {
+    throw new Error(`confirmation analysis refuses a run above ${caps.combined} reservations`);
+  }
+  const fisherGate = tutorStubResistanceActionRegisterConfirmationFisherGate(rows);
+  const indeterminateRows = rows.filter((row) => fisherGate.indeterminate_case_ids.includes(row.case_id));
   const plainRecovered = plain.filter((row) => row.outcome.recovered).length;
   const warmRecovered = warm.filter((row) => row.outcome.recovered).length;
-  const pValue = fisherExactTwoSidedP(warmRecovered, 18, plainRecovered, 18);
+  const pValue = fisherGate.execute ? fisherExactTwoSidedP(warmRecovered, 18, plainRecovered, 18) : null;
   const plainRate = plainRecovered / 18;
   const warmRate = warmRecovered / 18;
   const actionVisibility = rows.filter((row) => row.fidelity.action_visible).length / 36;
@@ -647,10 +954,19 @@ export function analyzeTutorStubResistanceActionRegisterConfirmation({
   const fidelity = loaded.registration.measurement.treatmentFidelity;
   const fidelityPassed =
     actionVisibility >= fidelity.minimumActionVisibility && registerVisibility >= fidelity.minimumRegisterVisibility;
-  const significant = pValue <= 0.05;
+  const significant = pValue === null ? null : pValue <= 0.05;
+  const measurementDeterminate = fisherGate.execute;
+  const reportStatus = !measurementDeterminate
+    ? 'measurement_indeterminate_no_fisher_no_rerun'
+    : fidelityPassed
+      ? 'complete_registered_confirmation'
+      : 'failed_interpretability_gate_not_rerun';
   return {
-    schema: 'machinespirits.tutor-stub.resistance-action-register-confirmation-report.v1',
-    status: fidelityPassed ? 'complete_registered_confirmation' : 'failed_interpretability_gate_not_rerun',
+    schema:
+      loaded.registration.version >= 9
+        ? 'machinespirits.tutor-stub.resistance-action-register-confirmation-report.v2'
+        : 'machinespirits.tutor-stub.resistance-action-register-confirmation-report.v1',
+    status: reportStatus,
     source: { commit: current, tree: currentTree },
     registration: { path: registrationPath, sha256: loaded.sha256 },
     assembly: {
@@ -666,26 +982,44 @@ export function analyzeTutorStubResistanceActionRegisterConfirmation({
       outcome_selection: false,
       reservations_by_batch: reservationsByBatch,
       total_model_attempt_reservations: totalReservations,
+      operational_attempt_ceiling: caps.combined,
     },
     rows,
-    primary_analysis: {
-      endpoint: 'profile_specific_resistance_recovery',
-      test: 'fisher_exact_two_sided',
-      alpha: 0.05,
-      plain: { recovered: plainRecovered, total: 18, rate: plainRate },
-      warm: { recovered: warmRecovered, total: 18, rate: warmRate },
-      warm_minus_plain_risk_difference: warmRate - plainRate,
-      odds_ratio:
-        warmRecovered * (18 - plainRecovered) === 0 || plainRecovered * (18 - warmRecovered) === 0
-          ? null
-          : (warmRecovered * (18 - plainRecovered)) / (plainRecovered * (18 - warmRecovered)),
-      p_value: pValue,
-      significant_two_sided: significant,
-      direction: warmRate > plainRate ? 'warm_higher' : warmRate < plainRate ? 'plain_higher' : 'equal',
-      registered_decision: significant ? 'warm_plain_separation_confirmed' : 'warm_plain_separation_not_confirmed',
-    },
+    primary_analysis: measurementDeterminate
+      ? {
+          ...(loaded.registration.version >= 9
+            ? { status: 'complete', authority: 'independent_v8_three_judge_semantic_panel' }
+            : {}),
+          endpoint: 'profile_specific_resistance_recovery',
+          test: 'fisher_exact_two_sided',
+          alpha: 0.05,
+          plain: { recovered: plainRecovered, total: 18, rate: plainRate },
+          warm: { recovered: warmRecovered, total: 18, rate: warmRate },
+          warm_minus_plain_risk_difference: warmRate - plainRate,
+          odds_ratio:
+            warmRecovered * (18 - plainRecovered) === 0 || plainRecovered * (18 - warmRecovered) === 0
+              ? null
+              : (warmRecovered * (18 - plainRecovered)) / (plainRecovered * (18 - warmRecovered)),
+          p_value: pValue,
+          significant_two_sided: significant,
+          direction: warmRate > plainRate ? 'warm_higher' : warmRate < plainRate ? 'plain_higher' : 'equal',
+          registered_decision: significant ? 'warm_plain_separation_confirmed' : 'warm_plain_separation_not_confirmed',
+        }
+      : {
+          status: 'withheld_measurement_indeterminate',
+          endpoint: 'profile_specific_resistance_recovery',
+          test: 'fisher_exact_two_sided',
+          executed: false,
+          reason: 'one_or_more_dialogues_lack_a_determinate_registered_semantic_measurement',
+          indeterminate_case_ids: indeterminateRows.map((row) => row.case_id),
+          rerun_repair_replacement_or_selection_allowed: false,
+        },
     treatment_fidelity: {
-      status: fidelityPassed ? 'complete' : 'failed_interpretability_gate_not_rerun',
+      status: !measurementDeterminate
+        ? 'measurement_indeterminate_no_rerun'
+        : fidelityPassed
+          ? 'complete'
+          : 'failed_interpretability_gate_not_rerun',
       action_visibility_rate: actionVisibility,
       register_visibility_rate: registerVisibility,
       protected_condition_count: protectedConditionCount,
@@ -697,9 +1031,11 @@ export function analyzeTutorStubResistanceActionRegisterConfirmation({
       primary_analysis: 'intention_to_treat',
       valid_unit_rerun_authorized: false,
     },
-    interpretation_status: fidelityPassed
-      ? 'registered_confirmation_interpretable_within_claim_boundary'
-      : 'interpretability_gate_failed_no_rerun_or_confirmation_claim',
+    interpretation_status: !measurementDeterminate
+      ? 'measurement_indeterminate_no_fisher_no_rerun_or_confirmation_claim'
+      : fidelityPassed
+        ? 'registered_confirmation_interpretable_within_claim_boundary'
+        : 'interpretability_gate_failed_no_rerun_or_confirmation_claim',
     claim_boundary:
       'This report tests only the prospectively registered frame-refuser matched-action warm-versus-plain recovery contrast in 36 fresh independent dialogues. The 12 calibration dialogues are sizing evidence only and are not reused or pooled. No matched-versus-mismatched, edged-register, interaction, general tutor-efficacy, learning, human-validity, or cell-harness claim is licensed.',
   };
