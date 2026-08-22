@@ -3107,7 +3107,7 @@ and explicit human approval.
   / tree `cd40ddc207fadc020c396abcc3938f72bc7a8869`. The request is
   `config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v3-successor-3.json`
   at SHA-256
-  `4df4d009f93f0c84924731c1d647eb14ac56f18132aa0739abbcd4b0a9118e97`.
+  `b20d55cc23483a1143b36a5d1dd620a53e453c6e0b13199a76daa1f3ea47d460`.
   Its 38-file closure includes all three consumed V3 requests, and the checker
   verifies every final artifact of the third partial root plus the tested JSON
   envelope predicates and fresh human route-decision digest. The create-once
@@ -3117,3 +3117,10 @@ and explicit human approval.
   writes. The packet remains a literal HOLD artifact; live execution is covered
   by the user's standing programme authority and current explicit instruction
   to redo the run upon successful testing, not by fields inside the request.
+
+- 2026-08-21 — Post-merge CI correctly exposed source-closure drift in two
+  older boredom fixtures after the Claude bridge and shared GO-request checker
+  changed. The consumed semantic-validation request and frozen proof-DAG HOLD
+  remain byte-immutable and now have explicit fail-closed regression assertions.
+  Their behavioral tests use current-source, zero-call in-memory/temporary
+  fixtures instead of pretending the historical closures still describe HEAD.
