@@ -3110,3 +3110,57 @@ and explicit human approval.
   valid with zero model calls and zero production writes, status
   HOLD_PENDING_EXPLICIT_HUMAN_APPROVAL. A fresh approval statement over
   the new digest is required, and no model call has been made.
+
+- 2026-08-21 — **Live batch 1 launched and stopped at 4 of 36 dialogues; the
+  run is halted on an instrument defect, not on a result.** The fresh
+  approval over request SHA-256
+  `d2e611c3fad203bd2beafb5e9c4d8b1a0a8f3ab2a86ac06e0a0e74a975caabda` was
+  verified byte for byte, the launch authorization was committed at
+  `7353d57d86e25588e2347569fcd8cdd954ebc6bf`, the launch gate passed, and
+  both zero-cost preflights passed (54 of 54 closure files verified at the
+  pinned commit `a20d016a`, zero model calls, zero production writes).
+  Batch 1 ran 4 dialogues at parallelism 4 and returned
+  `status: incomplete`, 0 completed, 4 failed, 21 model calls spent
+  (programme ledger 446 to 467).
+  One dialogue (`w1-d1`) failed as designed:
+  `TUTOR_STUB_BOREDOM_PROOF_DAG_TRIGGER_MISSING` — the learner gave a
+  non-actionable boredom cue at turn 1 and no boredom at turn 2, so the
+  registered effort-withholding trigger never fired. Both of its
+  adjudications were clean, and the auxiliary was neutral.
+  The other three (`w1-d2`, `w1-d4`, `w1-d5`) all failed at turn 1 with
+  `TUTOR_STUB_BOREDOM_MEASUREMENT_INDETERMINATE`, and this is a defect.
+  In each, the Sol adjudicator was fully healthy: `parse_ok` true,
+  confidence 0.99 against a 0.8 floor, `low_confidence` false, no issues,
+  evidence audit passed, route confirmed as `codex.gpt-5.6-sol`, and the
+  declared and semantic verdicts agreed on `no_boredom`. The auxiliary
+  also agreed — it reported `negative_productive_uptake_precedes_cue`,
+  which maps to polarity `productive_uptake`, and the judge likewise set
+  `productive_uptake: true`. The measurement was voided anyway, because
+  the contradiction predicate in
+  `services/tutorStubBoredomSemanticAdjudicationV3.js` compares the
+  auxiliary polarity against the verdict string:
+  `auxiliary !== 'neutral' && auxiliary !== semanticVerdict`. Those two
+  come from different vocabularies. By `expectedVerdictV3`, a true
+  `productive_uptake` field yields the verdict `productive_uptake` only
+  when a boredom cue is present too, and yields `no_boredom` when it is
+  not. So polarity `productive_uptake` is consistent with both verdicts,
+  but the predicate calls the second pairing a contradiction and forces
+  `measurement_indeterminate`. Agreement is being read as disagreement.
+  **The five predeclared gates could not have caught this.** The sealed
+  55-case held-out v4 corpus carries only `id`, `text`, `verdict`,
+  `fields` and `evidence` — it has no auxiliary column — and the gate
+  harness calls the adjudicator with `auxiliaryObservation: null`
+  (`services/tutorStubBoredomSemanticValidation.js:364`). A null
+  auxiliary maps to polarity `neutral`, which short-circuits the
+  predicate, so `auxiliaryContradiction` was false in all 55 cases. The
+  predicate ran for the first time in paid live execution.
+  Under the standing rules these three dialogues are spent and closed:
+  indeterminate outputs cannot trigger repair, rerun, replacement or
+  outcome selection, and failed runs are never rescored or resampled. The
+  defective file is inside the frozen 54-file closure, so correcting it
+  voids the current approval and needs a sixth freeze and a fresh
+  approval statement over the new digest. Batches 2 through 9 were not
+  started. No interim analysis was done and none is licensed. Artifacts
+  are preserved at
+  `machinespirits-eval-private/artifacts/boredom-proof-dag-v4-live/2026-08-21-execution_batch_1`
+  (copied, not committed).
