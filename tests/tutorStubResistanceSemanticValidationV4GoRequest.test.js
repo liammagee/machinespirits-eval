@@ -16,16 +16,26 @@ function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
 }
 
-test('v4 request binds the exact source closure, current instruction, fresh heldout, and operational safeguard', () => {
+test('v4 request remains frozen and fails closed after the prospective bridge repair', () => {
   assert.equal(request.status, 'go_under_standing_user_authority');
   assert.equal(sha256(request.authorization.text), request.authorization.textSha256);
   assert.equal(request.authorization.confirmationAuthorized, false);
   assert.equal(request.source.launchCommit, '2b734c5042603ec7cc18a6d11d9735253d9f3631');
   assert.equal(request.source.launchTree, '654038103babecc55059bbf72e9fb12c3c4e9c8e');
   assert.equal(request.source.closure.length, 19);
-  for (const artifact of request.source.closure) {
-    assert.equal(sha256(fs.readFileSync(path.join(ROOT, artifact.path))), artifact.sha256, artifact.path);
-  }
+  const closureStatus = request.source.closure.map((artifact) => ({
+    path: artifact.path,
+    frozenSha256: artifact.sha256,
+    currentSha256: sha256(fs.readFileSync(path.join(ROOT, artifact.path))),
+  }));
+  const drifted = closureStatus.filter((artifact) => artifact.currentSha256 !== artifact.frozenSha256);
+  assert.deepEqual(drifted, [
+    {
+      path: 'services/cliProviderBridge.js',
+      frozenSha256: '5f1274e28204a357e204eecfc4b76e95a733ba281c8e2f4de7e658efc76cd137',
+      currentSha256: 'f15cee894143b40b97d50e8584a12888b6ceae33354b59a4963c9e16b794b868',
+    },
+  ]);
   assert.deepEqual(request.semanticAdjudicationValidation.judges, [
     'codex.gpt-5.6-sol',
     'claude-code.sonnet-5',
