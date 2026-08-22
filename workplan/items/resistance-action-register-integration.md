@@ -3136,3 +3136,32 @@ and explicit human approval.
   regression, and permits a clean repaired analyzer checkout to verify the
   frozen execution commit/tree separately. No artifact, response, gold label,
   judge record, or model-call history is changed.
+
+- 2026-08-21 — The repaired Claude JSON transport completed the wholly fresh
+  80-case V3 manipulation validation, but the predeclared semantic instrument
+  failed rather than the route. Sol produced 80/80 valid exact primary labels;
+  Sonnet produced 74/80 exact primary labels under registered scoring; raw
+  label agreement was 0.925 and Cohen's kappa 0.884. V3 nevertheless collapsed
+  21 cases to whole-case `measurement_indeterminate` because it required
+  agreement on the complete eight-field diagnostic vector. The dominant
+  component disagreements were interlocutor standing versus other governance
+  (7) and participation withholding (5). Six Sonnet seats were unavailable or
+  invalid, including two exhausted response-free units. The sealed V3 report
+  remains failed, immutable, excluded from reuse or pooling, and supports no
+  warm/plain claim.
+
+  The prospective V4 redesign freezes the unchanged quote-anchored V3 seat
+  prompt/schema behind a three-model hierarchical panel: Sol, Sonnet 5, and
+  GPT-5.5, all independent from the Luna generator. Two valid high-confidence
+  primary-label votes determine the primary label. Each diagnostic field is
+  aggregated separately by the same two-of-three rule; field disagreement is
+  indeterminate only for that field and cannot veto a primary-label majority.
+  Missing, response-free, invalid, low-confidence, or individually
+  indeterminate seats abstain; fewer than two eligible votes or no primary
+  majority yields `measurement_indeterminate`, with no repair, rerun,
+  replacement, lexical tiebreak, or outcome selection. The V3 evidence is
+  development-only. A wholly fresh 80-case V4 heldout corpus must be authored
+  after the instrument-freeze commit and pass the predeclared V4 gates before
+  any confirmation request. Programme accounting is now 894/5,000; V4 plans
+  240 calls with a 720-reservation hard safeguard, for a maximum 1,614 after
+  validation. Attempt counts remain operational safeguards, not design aims.
