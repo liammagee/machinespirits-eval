@@ -521,6 +521,58 @@ test('revision-4 V3 retries exact Claude response-free envelopes with digest-onl
   );
 });
 
+test('revision-4 V3 analysis accepts an exhausted response-free judge unit as indeterminate evidence', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-v3-response-free-exhausted-'));
+  const destination = path.join(temporary, 'run');
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const loaded = loadTutorStubResistanceSemanticValidationV3();
+  const fixture = fixtureCallerV3([], loaded);
+  let targetCaseId = null;
+  let failures = 0;
+  const callModel = async (...args) => {
+    const prompt = JSON.parse(args[2]);
+    if (args[0].provider === 'claude-code') targetCaseId ||= prompt.case_id;
+    if (args[0].provider === 'claude-code' && prompt.case_id === targetCaseId && failures < 3) {
+      failures += 1;
+      const error = new Error('redacted response-free error');
+      error.code = 'CLI_PROVIDER_RESPONSE_FREE_ERROR';
+      error.provider = 'claude-code';
+      error.classification = 'response_free_error';
+      error.responseFree = true;
+      error.exitCode = 1;
+      error.stdoutBytes = 165;
+      error.stderrBytes = 0;
+      error.stdoutSha256 = 'a'.repeat(64);
+      error.stderrSha256 = 'b'.repeat(64);
+      throw error;
+    }
+    return fixture(...args);
+  };
+  const goRequest = goRequestFor(loaded, { revision: 4, programmeLedgerBefore: 728 });
+  const { seal } = await run(destination, { loaded, goRequest, callModel });
+  assert.equal(seal.reservations, 162);
+  const checkpoint = JSON.parse(
+    fs.readFileSync(path.join(destination, 'cases', targetCaseId, 'checkpoint.json'), 'utf8'),
+  );
+  const claudeResult = checkpoint.judge_results.find((row) => row.role.endsWith('judge_b'));
+  assert.equal(claudeResult.outcome, 'transport_failed');
+  assert.equal(claudeResult.invalid_reason, 'claude CLI returned an explicit response-free error envelope');
+  assert.equal(
+    writeTutorStubResistanceSemanticValidationReport({
+      destination,
+      expectedSourceCommit: SOURCE_COMMIT,
+      expectedSourceTree: SOURCE_TREE,
+      expectedGoRequestPath: GO_REQUEST_PATH,
+      expectedGoRequestSha256: GO_REQUEST_SHA256,
+      expectedGoRequest: goRequest,
+      sourceDirty: false,
+      archiveDir: path.join(temporary, 'private-archive'),
+      loaded,
+    }).status,
+    'failed',
+  );
+});
+
 test('V2 keeps Claude exit-code-one terminal without the successor-V3 retry opt-in', async (t) => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'semantic-validation-v2-no-claude-retry-'));
   const destination = path.join(temporary, 'run');

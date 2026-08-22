@@ -3124,3 +3124,15 @@ and explicit human approval.
   remain byte-immutable and now have explicit fail-closed regression assertions.
   Their behavioral tests use current-source, zero-call in-memory/temporary
   fixtures instead of pretending the historical closures still describe HEAD.
+
+- 2026-08-21 — The fresh revision-4 validation sealed all 80 cases and 160
+  judge records at execution source `16caa37c` using 166 reservations (158
+  returned responses and eight explicit response-free Claude failures). The
+  predeclared analyzer then stopped before metrics because its provenance audit
+  still compared two exhausted revision-4 units with the predecessor exit-one
+  reason string. The preserved attempts already satisfy the new response-free
+  telemetry audit exactly. An analysis-only compatibility repair selects the
+  registered reason by attempt classification, adds an exhausted-unit
+  regression, and permits a clean repaired analyzer checkout to verify the
+  frozen execution commit/tree separately. No artifact, response, gold label,
+  judge record, or model-call history is changed.
