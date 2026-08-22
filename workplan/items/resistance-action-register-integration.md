@@ -3117,3 +3117,10 @@ and explicit human approval.
   writes. The packet remains a literal HOLD artifact; live execution is covered
   by the user's standing programme authority and current explicit instruction
   to redo the run upon successful testing, not by fields inside the request.
+
+- 2026-08-21 — Post-merge CI correctly exposed source-closure drift in two
+  older boredom fixtures after the Claude bridge and shared GO-request checker
+  changed. The consumed semantic-validation request and frozen proof-DAG HOLD
+  remain byte-immutable and now have explicit fail-closed regression assertions.
+  Their behavioral tests use current-source, zero-call in-memory/temporary
+  fixtures instead of pretending the historical closures still describe HEAD.

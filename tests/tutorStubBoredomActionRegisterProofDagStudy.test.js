@@ -61,6 +61,32 @@ function commandArgs(command) {
   return values;
 }
 
+function replaceCommandArgument(command, name, value) {
+  const index = command.indexOf(name);
+  assert.ok(index >= 0 && index + 1 < command.length, `command must include ${name}`);
+  command[index + 1] = value;
+}
+
+function currentSourceLaunchRequest(head) {
+  const request = JSON.parse(fs.readFileSync(path.join(ROOT, FROZEN_REQUEST_V4), 'utf8'));
+  request.source.launchCommit = head;
+  request.source.launchTree = execFileSync('git', ['rev-parse', 'HEAD^{tree}'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  }).trim();
+  for (const entry of request.source.closure) {
+    entry.sha256 = sha256(fs.readFileSync(path.join(ROOT, entry.path)));
+  }
+  for (const command of [...request.commands.live, ...request.commands.recovery]) {
+    replaceCommandArgument(command, '--expected-source-commit', head);
+  }
+  replaceCommandArgument(request.commands.analyze, '--expected-source-commit', head);
+  request.bindings.commands.liveArraySha256 = sha256(JSON.stringify(request.commands.live));
+  request.bindings.commands.recoveryArraySha256 = sha256(JSON.stringify(request.commands.recovery));
+  request.bindings.commands.analyzeArraySha256 = sha256(JSON.stringify(request.commands.analyze));
+  return request;
+}
+
 function route(model = 'gpt-5.6-luna') {
   return { ref: `codex.${model}`, provider: 'codex', model, cli: true };
 }
@@ -751,7 +777,12 @@ test('v4 live and recovery execution demand a committed launch authorization bou
   );
   assert.equal(fs.existsSync(destination), false);
 
-  const requestPath = path.join(ROOT, FROZEN_REQUEST_V4);
+  assert.throws(
+    () => validateTutorStubResistantProfileStudyGoRequest({ requestPath: path.join(ROOT, FROZEN_REQUEST_V4) }),
+    /source-closure-.+ remains [a-f0-9]{64}/u,
+  );
+  const requestPath = path.join(temp, 'current-source-launch-request.v4.json');
+  writeJson(requestPath, currentSourceLaunchRequest(head));
   const report = validateTutorStubResistantProfileStudyGoRequest({ requestPath });
   assert.equal(report.readyForExplicitHumanApproval, true);
   const authorization = {
@@ -760,7 +791,7 @@ test('v4 live and recovery execution demand a committed launch authorization bou
     modelCallsAuthorized: true,
     liveRunAuthorized: true,
     registrationSha256: loaded.sha256,
-    requestPath: FROZEN_REQUEST_V4,
+    requestPath,
     requestSha256: report.requestSha256,
     exactApprovalStatement: report.exactApprovalStatement,
   };

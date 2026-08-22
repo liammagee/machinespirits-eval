@@ -5,6 +5,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import {
+  boredomSemanticValidationFileSha256,
   computeTutorStubBoredomSemanticValidationMetrics,
   executeTutorStubBoredomSemanticValidation,
   validateTutorStubBoredomSemanticValidationAuthorization,
@@ -22,6 +23,14 @@ const SOL_ROUTE = { provider: 'codex', model: 'gpt-5.6-sol' };
 
 function readJson(relativePath) {
   return JSON.parse(fs.readFileSync(path.join(ROOT, relativePath), 'utf8'));
+}
+
+function readCurrentSourceFixtureRequest() {
+  const request = readJson(REQUEST_PATH);
+  const bridge = request.sourceClosure.find((entry) => entry.path === 'services/cliProviderBridge.js');
+  assert.ok(bridge, 'historical request must bind the Claude CLI bridge');
+  bridge.sha256 = boredomSemanticValidationFileSha256(path.join(ROOT, bridge.path));
+  return request;
 }
 
 function referenceRawFor(row, { confidence = 0.95 } = {}) {
@@ -70,16 +79,21 @@ function referenceMockCallModel(corpus, { mutate = null, failures = null } = {})
   return { callModel, calls };
 }
 
-test('the committed request validates against the frozen corpus and route', () => {
+test('the historical request fails closed after bridge drift while a current-source fixture validates', () => {
   const request = readJson(REQUEST_PATH);
-  const validation = validateTutorStubBoredomSemanticValidationRequest(request, { root: ROOT });
+  assert.throws(
+    () => validateTutorStubBoredomSemanticValidationRequest(request, { root: ROOT }),
+    /source-closure SHA mismatch: services\/cliProviderBridge\.js/u,
+  );
+  const currentRequest = readCurrentSourceFixtureRequest();
+  const validation = validateTutorStubBoredomSemanticValidationRequest(currentRequest, { root: ROOT });
   assert.equal(validation.provider, 'codex');
   assert.equal(validation.model, 'gpt-5.6-sol');
   assert.equal(validation.corpus.cases.length, 55);
 });
 
 test('request drift fails closed', () => {
-  const request = readJson(REQUEST_PATH);
+  const request = readCurrentSourceFixtureRequest();
   for (const mutate of [
     (row) => (row.status = 'APPROVED'),
     (row) => (row.route.modelRef = 'codex.gpt-5.6-luna'),
@@ -104,7 +118,7 @@ test('request drift fails closed', () => {
 });
 
 test('authorization binding fails closed on digest, scope, and approval drift', () => {
-  const request = readJson(REQUEST_PATH);
+  const request = readCurrentSourceFixtureRequest();
   const requestSha256 = 'a'.repeat(64);
   const authorization = {
     schema: 'machinespirits.tutor-stub.boredom-semantic-validation-authorization.v4',
@@ -160,7 +174,7 @@ test('authorization binding fails closed on digest, scope, and approval drift', 
 });
 
 test('execution without an explicitly injected model caller refuses before any call', async () => {
-  const request = readJson(REQUEST_PATH);
+  const request = readCurrentSourceFixtureRequest();
   await assert.rejects(
     () => executeTutorStubBoredomSemanticValidation({ request, root: ROOT }),
     /explicitly injected model caller/,
@@ -168,7 +182,7 @@ test('execution without an explicitly injected model caller refuses before any c
 });
 
 test('mock execution with reference outputs passes every predeclared gate at exactly 55 calls', async () => {
-  const request = readJson(REQUEST_PATH);
+  const request = readCurrentSourceFixtureRequest();
   const corpus = readJson(HELDOUT_PATH);
   const { callModel, calls } = referenceMockCallModel(corpus);
   const result = await executeTutorStubBoredomSemanticValidation({ request, root: ROOT, callModel });
@@ -186,7 +200,7 @@ test('mock execution with reference outputs passes every predeclared gate at exa
 });
 
 test('a flipped actionable case fails the sensitivity gate without any retry', async () => {
-  const request = readJson(REQUEST_PATH);
+  const request = readCurrentSourceFixtureRequest();
   const corpus = readJson(HELDOUT_PATH);
   const { callModel, calls } = referenceMockCallModel(corpus, {
     mutate: (row, raw) => {
@@ -208,7 +222,7 @@ test('a flipped actionable case fails the sensitivity gate without any retry', a
 });
 
 test('a malformed completed output is final measurement_indeterminate, never retried', async () => {
-  const request = readJson(REQUEST_PATH);
+  const request = readCurrentSourceFixtureRequest();
   const corpus = readJson(HELDOUT_PATH);
   const { callModel, calls } = referenceMockCallModel(corpus, {
     mutate: (row, raw) => (row.id === 'moorings_negative_04' ? { garbage: true } : raw),
@@ -224,7 +238,7 @@ test('a malformed completed output is final measurement_indeterminate, never ret
 });
 
 test('a resolved output with a transport-contract defect is final indeterminate, never retried', async () => {
-  const request = readJson(REQUEST_PATH);
+  const request = readCurrentSourceFixtureRequest();
   const corpus = readJson(HELDOUT_PATH);
   const base = referenceMockCallModel(corpus);
   const callModel = async (agentConfig, systemPrompt, userPrompt, role, opts) => {
@@ -248,7 +262,7 @@ test('a resolved output with a transport-contract defect is final indeterminate,
 });
 
 test('a thrown transport error consumes a bounded extra reservation and the final output is kept', async () => {
-  const request = readJson(REQUEST_PATH);
+  const request = readCurrentSourceFixtureRequest();
   const corpus = readJson(HELDOUT_PATH);
   const { callModel, calls } = referenceMockCallModel(corpus, {
     failures: [['airfield_productive_01', 1]],
@@ -267,7 +281,7 @@ test('a thrown transport error consumes a bounded extra reservation and the fina
 });
 
 test('reservation-ceiling exhaustion produces a categorical failure with no gate evaluation', async () => {
-  const request = readJson(REQUEST_PATH);
+  const request = readCurrentSourceFixtureRequest();
   const corpus = readJson(HELDOUT_PATH);
   const { callModel } = referenceMockCallModel(corpus, {
     failures: [['airfield_productive_01', 3]],
