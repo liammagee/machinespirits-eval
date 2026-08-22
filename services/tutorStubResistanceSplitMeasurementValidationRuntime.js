@@ -18,6 +18,28 @@ import {
   scoreTutorStubResistanceRecoverySemanticCorpusV3,
 } from './tutorStubResistanceRecoverySemanticAdjudicationV3.js';
 import {
+  TUTOR_STUB_RESISTANCE_FIDELITY_OUTPUT_SCHEMA_V5,
+  TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_OUTPUT_SCHEMA_V5,
+  adjudicateTutorStubResistanceFidelityPanelV5,
+  adjudicateTutorStubResistanceRecoveryPrimaryPanelV5,
+  buildTutorStubResistanceFidelityPromptV5,
+  buildTutorStubResistanceRecoveryPrimaryPromptV5,
+  scoreTutorStubResistanceMeasurementCorpusV5,
+  tutorStubResistanceMeasurementSha256,
+  wrapTutorStubResistanceMeasurementModelOutputV5,
+} from './tutorStubResistanceRecoverySemanticAdjudicationV5.js';
+import {
+  TUTOR_STUB_RESISTANCE_FIDELITY_OUTPUT_SCHEMA_V6,
+  TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_OUTPUT_SCHEMA_V6,
+  adjudicateTutorStubResistanceFidelityPanelV6,
+  adjudicateTutorStubResistanceRecoveryPrimaryPanelV6,
+  buildTutorStubResistanceFidelityPromptV6,
+  buildTutorStubResistanceRecoveryPrimaryPromptV6,
+  scoreTutorStubResistanceMeasurementCorpusV6,
+  tutorStubResistanceMeasurementSha256 as tutorStubResistanceMeasurementSha256V6,
+  wrapTutorStubResistanceMeasurementModelOutputV6,
+} from './tutorStubResistanceRecoverySemanticAdjudicationV6.js';
+import {
   buildTutorStubResistanceRecoverySemanticBlindedValidationCases,
   loadTutorStubResistanceRecoverySemanticValidation,
   tutorStubResistanceRecoverySemanticOpaqueCaseId,
@@ -26,6 +48,16 @@ import {
   TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_REGISTRATION_V3,
   loadTutorStubResistanceRecoverySemanticValidationV3,
 } from './tutorStubResistanceRecoverySemanticValidationV3.js';
+import {
+  TUTOR_STUB_RESISTANCE_FIDELITY_VALIDATION_REGISTRATION_V5,
+  TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_VALIDATION_REGISTRATION_V5,
+  loadTutorStubResistanceMeasurementValidationV5,
+} from './tutorStubResistanceRecoverySemanticValidationV5.js';
+import {
+  TUTOR_STUB_RESISTANCE_FIDELITY_VALIDATION_REGISTRATION_V6,
+  TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_VALIDATION_REGISTRATION_V6,
+  loadTutorStubResistanceMeasurementValidationV6,
+} from './tutorStubResistanceRecoverySemanticValidationV6.js';
 
 export const TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_SYSTEM_PROMPT =
   'Independently judge only the supplied public dialogue packet under the frozen response schema. Do not use tools, hidden state, lexical heuristics, profile labels, assignments, gold labels, or another judge response. Return only schema-valid JSON.';
@@ -41,22 +73,67 @@ export const TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_REPORT_SCHEMA =
 const PACKET_FIELDS = ['trigger', 'intervention', 'prior_post_trigger', 'intervening_tutor', 'current_learner'];
 
 export function loadTutorStubResistanceRecoverySemanticValidationForRegistration(validationRegistration) {
-  return validationRegistration === TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_REGISTRATION_V3
-    ? loadTutorStubResistanceRecoverySemanticValidationV3()
-    : loadTutorStubResistanceRecoverySemanticValidation();
+  if (validationRegistration === TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_REGISTRATION_V3) {
+    return loadTutorStubResistanceRecoverySemanticValidationV3();
+  }
+  if (
+    [
+      TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_VALIDATION_REGISTRATION_V5,
+      TUTOR_STUB_RESISTANCE_FIDELITY_VALIDATION_REGISTRATION_V5,
+    ].includes(validationRegistration)
+  ) {
+    return loadTutorStubResistanceMeasurementValidationV5(validationRegistration);
+  }
+  if (
+    [
+      TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_VALIDATION_REGISTRATION_V6,
+      TUTOR_STUB_RESISTANCE_FIDELITY_VALIDATION_REGISTRATION_V6,
+    ].includes(validationRegistration)
+  ) {
+    return loadTutorStubResistanceMeasurementValidationV6(validationRegistration);
+  }
+  return loadTutorStubResistanceRecoverySemanticValidation();
 }
 
 function hierarchicalV3(loaded) {
   return loaded?.instrument?.version === 3;
 }
 
+function splitV5(loaded) {
+  return loaded?.instrument?.version === 5 && ['primary_recovery', 'intervention_fidelity'].includes(loaded?.stage);
+}
+
+function splitV6(loaded) {
+  return loaded?.instrument?.version === 6 && ['primary_recovery', 'intervention_fidelity'].includes(loaded?.stage);
+}
+
+function splitMeasurement(loaded) {
+  return splitV5(loaded) || splitV6(loaded);
+}
+
+function panelMayContinueAfterTerminalSeat(loaded) {
+  return hierarchicalV3(loaded) || splitMeasurement(loaded);
+}
+
 function adjudicateLoaded(loaded, options) {
+  if (splitV6(loaded)) {
+    return loaded.stage === 'primary_recovery'
+      ? adjudicateTutorStubResistanceRecoveryPrimaryPanelV6(options)
+      : adjudicateTutorStubResistanceFidelityPanelV6(options);
+  }
+  if (splitV5(loaded)) {
+    return loaded.stage === 'primary_recovery'
+      ? adjudicateTutorStubResistanceRecoveryPrimaryPanelV5(options)
+      : adjudicateTutorStubResistanceFidelityPanelV5(options);
+  }
   return hierarchicalV3(loaded)
     ? adjudicateTutorStubResistanceRecoverySemanticJudgesV3(options)
     : adjudicateTutorStubResistanceRecoverySemanticJudges(options);
 }
 
 function scoreLoaded(loaded, options) {
+  if (splitV6(loaded)) return scoreTutorStubResistanceMeasurementCorpusV6(options);
+  if (splitV5(loaded)) return scoreTutorStubResistanceMeasurementCorpusV5(options);
   return hierarchicalV3(loaded)
     ? scoreTutorStubResistanceRecoverySemanticCorpusV3(options)
     : scoreTutorStubResistanceRecoverySemanticCorpus(options);
@@ -110,6 +187,57 @@ function validateHierarchicalV3GoRequest({ loaded, goRequest, sourceCommit, sour
   }
 }
 
+function validateSplitMeasurementGoRequest({ loaded, goRequest, sourceCommit, sourceTree, destination }) {
+  if (!splitMeasurement(loaded)) return;
+  const version = loaded.instrument.version;
+  const stage = goRequest?.measurementValidation?.stages?.[loaded.stage];
+  const expectedJudges = loaded.instrument.measurement.judges.map((judge) => judge.modelRef);
+  if (
+    goRequest?.schema !== `machinespirits.tutor-stub.resistance-measurement-validation-study-go-request.v${version}` ||
+    goRequest?.status !== 'go_under_standing_user_authority' ||
+    goRequest?.source?.launchCommit !== sourceCommit ||
+    goRequest?.source?.launchTree !== sourceTree ||
+    goRequest?.source?.headMustEqualLaunchCommit !== true ||
+    goRequest?.source?.checkoutMustBeClean !== true ||
+    goRequest?.source?.detachedLaunchWorktree !== true ||
+    goRequest?.measurementValidation?.instrumentRegistration?.path !== loaded.instrumentPath ||
+    goRequest?.measurementValidation?.instrumentRegistration?.sha256 !== loaded.instrumentSha256 ||
+    goRequest?.measurementValidation?.heldoutCorpus?.path !== loaded.corpusPath ||
+    goRequest?.measurementValidation?.heldoutCorpus?.sha256 !== loaded.corpusSha256 ||
+    goRequest?.measurementValidation?.heldoutCorpus?.cases !== 120 ||
+    JSON.stringify(goRequest?.measurementValidation?.judges) !== JSON.stringify(expectedJudges) ||
+    goRequest?.measurementValidation?.primaryAndFidelityCallsSeparate !== true ||
+    goRequest?.measurementValidation?.fidelityLearnerOutcomeVisible !== false ||
+    goRequest?.measurementValidation?.regexKeywordOrGeneratorAuthority !== 'none' ||
+    goRequest?.measurementValidation?.mediumOrHighDeterminateVotesEligible !== true ||
+    (version === 6 && goRequest?.measurementValidation?.fieldLocalEligibility !== true) ||
+    (version === 6 && goRequest?.measurementValidation?.modelReturnsFinalRecovery !== false) ||
+    goRequest?.measurementValidation?.indeterminateRepairRerunReplacementOrSelection !== false ||
+    goRequest?.measurementValidation?.analysisOnlyAfterBothStagesSeal !== true ||
+    stage?.registration?.path !== loaded.registrationPath ||
+    stage?.registration?.sha256 !== loaded.registrationSha256 ||
+    path.resolve(String(stage?.destination || '')) !== destination ||
+    stage?.plannedCalls !== 360 ||
+    stage?.hardReservations !== 1080 ||
+    stage?.createOnce !== true ||
+    goRequest?.budget?.plannedCalls !== 720 ||
+    goRequest?.budget?.hardValidationReservations !== 2160 ||
+    goRequest?.budget?.programmeLedgerBefore !== 1510 ||
+    goRequest?.budget?.programmeMaximumAfterValidation !== 3670 ||
+    goRequest?.budget?.programmeCeiling !== 10000 ||
+    goRequest?.budget?.attemptCountsRole !== 'operational_safeguard_only_not_design_objective' ||
+    goRequest?.authorization?.validationModelCallsAuthorized !== true ||
+    goRequest?.authorization?.confirmationModelCallsAuthorized !== false ||
+    goRequest?.authorization?.boundedTechnicalRecovery !==
+      'response_free_missing_or_failed_units_only_no_semantic_recall' ||
+    goRequest?.claimBoundary?.validationOnly !== true ||
+    goRequest?.claimBoundary?.validationOutcomesExcludedFromConfirmation !== true ||
+    goRequest?.claimBoundary?.noEfficacyNullLearningTransferHumanOrCellClaim !== true
+  ) {
+    throw new Error(`v${version} split resistance measurement validation GO request binding drifted`);
+  }
+}
+
 function canonical(value) {
   if (Array.isArray(value)) return value.map(canonical);
   if (value && typeof value === 'object') {
@@ -154,6 +282,12 @@ function read(file) {
 
 function packet(row) {
   return Object.fromEntries(PACKET_FIELDS.map((field) => [field, row[field]]));
+}
+
+function measurementPacket(loaded, row) {
+  return splitMeasurement(loaded) && loaded.stage === 'intervention_fidelity'
+    ? { intervention: row.intervention }
+    : packet(row);
 }
 
 function checkpointArchiveStage(checkpoint) {
@@ -447,9 +581,45 @@ function promptsFor(loaded, row) {
   return Object.fromEntries(
     loaded.instrument.measurement.judges.map((judge) => [
       judge.id,
-      buildTutorStubResistanceRecoverySemanticPrompt({ caseId: row.case_id, publicPacket: packet(row), judge }),
+      splitMeasurement(loaded)
+        ? loaded.stage === 'primary_recovery'
+          ? (splitV6(loaded)
+              ? buildTutorStubResistanceRecoveryPrimaryPromptV6
+              : buildTutorStubResistanceRecoveryPrimaryPromptV5)({
+              caseId: row.case_id,
+              publicPacket: packet(row),
+              judge,
+            })
+          : (splitV6(loaded) ? buildTutorStubResistanceFidelityPromptV6 : buildTutorStubResistanceFidelityPromptV5)({
+              caseId: row.case_id,
+              intervention: row.intervention,
+              judge,
+            })
+        : buildTutorStubResistanceRecoverySemanticPrompt({ caseId: row.case_id, publicPacket: packet(row), judge }),
     ]),
   );
+}
+
+function promptSha256(loaded, prompt) {
+  if (splitV6(loaded)) return tutorStubResistanceMeasurementSha256V6(prompt);
+  if (splitV5(loaded)) return tutorStubResistanceMeasurementSha256(prompt);
+  return tutorStubResistanceRecoverySemanticPromptSha256(prompt);
+}
+
+function outputSchemaFor(loaded) {
+  if (!splitMeasurement(loaded)) return TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_OUTPUT_SCHEMA;
+  if (splitV6(loaded)) {
+    return loaded.stage === 'primary_recovery'
+      ? TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_OUTPUT_SCHEMA_V6
+      : TUTOR_STUB_RESISTANCE_FIDELITY_OUTPUT_SCHEMA_V6;
+  }
+  return loaded.stage === 'primary_recovery'
+    ? TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_OUTPUT_SCHEMA_V5
+    : TUTOR_STUB_RESISTANCE_FIDELITY_OUTPUT_SCHEMA_V5;
+}
+
+function roleFor(loaded, judge) {
+  return `tutor_stub_resistance_${splitMeasurement(loaded) ? loaded.stage : 'recovery_semantic'}_${judge.id}`;
 }
 
 export function buildTutorStubResistanceRecoverySemanticValidationPlan({
@@ -468,6 +638,7 @@ export function buildTutorStubResistanceRecoverySemanticValidationPlan({
     throw new Error('outcome validation requires absolute destination and digest-bound request');
   }
   validateHierarchicalV3GoRequest({ loaded, goRequest, sourceCommit, sourceTree, destination });
+  validateSplitMeasurementGoRequest({ loaded, goRequest, sourceCommit, sourceTree, destination });
   const cases = buildTutorStubResistanceRecoverySemanticBlindedValidationCases(loaded.corpus.cases);
   const plan = {
     schema: TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_PLAN_SCHEMA,
@@ -479,6 +650,7 @@ export function buildTutorStubResistanceRecoverySemanticValidationPlan({
     registration: { path: loaded.registrationPath, sha256: loaded.registrationSha256 },
     instrument: { path: loaded.instrumentPath, sha256: loaded.instrumentSha256 },
     heldout: { path: loaded.registration.heldout.corpusPath, sha256: loaded.corpusSha256, cases: 120 },
+    ...(splitMeasurement(loaded) ? { measurement_stage: loaded.stage } : {}),
     judges: loaded.instrument.measurement.judges.map((judge) => ({
       id: judge.id,
       model_ref: judge.modelRef,
@@ -487,20 +659,31 @@ export function buildTutorStubResistanceRecoverySemanticValidationPlan({
       effort: judge.effort,
       maximum_reservations: 3,
     })),
-    budget: hierarchicalV3(loaded)
+    budget: splitMeasurement(loaded)
       ? {
           planned_calls: loaded.registration.executionReadiness.plannedModelCalls,
-          hard_reservation_ceiling: loaded.registration.executionReadiness.hardValidationReservations,
-          programme_ledger_before: loaded.registration.executionReadiness.programmeLedgerBefore,
-          programme_maximum_after_validation: loaded.registration.executionReadiness.programmeMaximumAfterValidation,
+          hard_reservation_ceiling: loaded.registration.executionReadiness.hardStageReservations,
+          programme_ledger_before_prospective_maximum:
+            loaded.registration.executionReadiness.programmeLedgerBeforeProspectiveMaximum,
+          programme_maximum_after_stage: loaded.registration.executionReadiness.programmeMaximumAfterStage,
+          combined_validation_maximum_after_both_stages:
+            loaded.registration.executionReadiness.combinedValidationMaximumAfterBothStages,
           programme_ceiling: loaded.registration.executionReadiness.programmeCeiling,
         }
-      : {
-          planned_calls: 240,
-          hard_reservation_ceiling: 720,
-          programme_maximum_after_both_validations: 1531,
-          programme_ceiling: 5000,
-        },
+      : hierarchicalV3(loaded)
+        ? {
+            planned_calls: loaded.registration.executionReadiness.plannedModelCalls,
+            hard_reservation_ceiling: loaded.registration.executionReadiness.hardValidationReservations,
+            programme_ledger_before: loaded.registration.executionReadiness.programmeLedgerBefore,
+            programme_maximum_after_validation: loaded.registration.executionReadiness.programmeMaximumAfterValidation,
+            programme_ceiling: loaded.registration.executionReadiness.programmeCeiling,
+          }
+        : {
+            planned_calls: 240,
+            hard_reservation_ceiling: 720,
+            programme_maximum_after_both_validations: 1531,
+            programme_ceiling: 5000,
+          },
     lifecycle: {
       preserved_judge_recalled: false,
       never_prepared_peer_may_complete: true,
@@ -516,10 +699,7 @@ export function buildTutorStubResistanceRecoverySemanticValidationPlan({
         case_id: row.case_id,
         packet_sha256: prompts[loaded.instrument.measurement.judges[0].id].packet_sha256,
         prompt_sha256_by_judge: Object.fromEntries(
-          loaded.instrument.measurement.judges.map((judge) => [
-            judge.id,
-            tutorStubResistanceRecoverySemanticPromptSha256(prompts[judge.id]),
-          ]),
+          loaded.instrument.measurement.judges.map((judge) => [judge.id, promptSha256(loaded, prompts[judge.id])]),
         ),
       };
     }),
@@ -528,12 +708,12 @@ export function buildTutorStubResistanceRecoverySemanticValidationPlan({
   return plan;
 }
 
-function newCheckpoint(plan, row) {
+function newCheckpoint(plan, row, loaded) {
   return {
     schema: TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_CHECKPOINT_SCHEMA,
     case_id: row.case_id,
     plan_sha256: plan.plan_sha256,
-    public_packet_sha256: digest(packet(row)),
+    public_packet_sha256: digest(measurementPacket(loaded, row)),
     packet_sha256: plan.cases.find((entry) => entry.case_id === row.case_id).packet_sha256,
     status: 'pending',
     attempts_by_judge: {},
@@ -553,13 +733,18 @@ function persist(destination, checkpoint, archive, stage, hook) {
 }
 
 function aggregateCheckpoint(checkpoint, row, loaded, prompts) {
-  const aggregate = adjudicateLoaded(loaded, {
+  const common = {
     caseId: row.case_id,
-    publicPacket: packet(row),
     responses: checkpoint.judge_results.map((result) => result.record).filter(Boolean),
     registration: loaded.instrument,
     prompts,
-  });
+  };
+  const aggregate = adjudicateLoaded(
+    loaded,
+    splitMeasurement(loaded) && loaded.stage === 'intervention_fidelity'
+      ? { ...common, intervention: row.intervention }
+      : { ...common, publicPacket: packet(row) },
+  );
   return { ...checkpoint, status: 'sealed', aggregate, aggregate_sha256: digest(aggregate) };
 }
 
@@ -580,7 +765,26 @@ function observed(result) {
   };
 }
 
-function wrapRaw({ raw, prompt, judge, independentRunId }) {
+function wrapRaw({ raw, prompt, judge, independentRunId, loaded }) {
+  if (splitMeasurement(loaded)) {
+    const wrap = splitV6(loaded)
+      ? wrapTutorStubResistanceMeasurementModelOutputV6
+      : wrapTutorStubResistanceMeasurementModelOutputV5;
+    return wrap({
+      instrument: loaded.stage,
+      modelOutput: JSON.parse(String(raw.text || '').trim()),
+      prompt,
+      judge,
+      observedProvider: raw.provider,
+      observedModel: raw.model,
+      observedEffort: raw.effort,
+      independentRunId,
+      structuredOutput: raw.structured_output,
+      prohibitedToolEvents: raw.prohibited_tool_event_count_observed ? raw.prohibited_tool_event_count : null,
+      modelAttestationBasis: raw.model_attestation_basis,
+      modelIndependentlyAttested: raw.model_independently_attested,
+    });
+  }
   return wrapTutorStubResistanceRecoverySemanticModelOutput({
     modelOutput: JSON.parse(String(raw.text || '').trim()),
     prompt,
@@ -610,15 +814,16 @@ async function executeJudge({
   afterPreparedCheckpoint,
   afterDispatchCheckpoint,
   allowClaudeResponseFreeError,
+  loaded,
 }) {
   const route = resolveModelRef(judge.modelRef);
   if (route.provider !== judge.provider || route.model !== judge.model) throw new Error('outcome judge route drifted');
   const result = {
     judge_id: judge.id,
-    role: `tutor_stub_resistance_recovery_semantic_${judge.id}`,
+    role: roleFor(loaded, judge),
     independent_run_id: checkpoint.invocation_id_by_judge[judge.id] || crypto.randomUUID(),
     prompt,
-    prompt_sha256: tutorStubResistanceRecoverySemanticPromptSha256(prompt),
+    prompt_sha256: promptSha256(loaded, prompt),
     attempts: checkpoint.attempts_by_judge[judge.id] || [],
     outcome: null,
     raw_response: null,
@@ -654,8 +859,8 @@ async function executeJudge({
         { provider: route.provider, model: route.model },
         TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_SYSTEM_PROMPT,
         JSON.stringify(prompt),
-        `tutor_stub_resistance_recovery_semantic_${judge.id}`,
-        { effort: judge.effort, outputSchema: TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_OUTPUT_SCHEMA },
+        roleFor(loaded, judge),
+        { effort: judge.effort, outputSchema: outputSchemaFor(loaded) },
       );
       result.attempts.at(-1).status = 'returned';
       result.raw_response = observed(response);
@@ -665,6 +870,7 @@ async function executeJudge({
           prompt,
           judge,
           independentRunId: result.independent_run_id,
+          loaded,
         });
         result.outcome = 'recorded_response';
       } catch (error) {
@@ -775,7 +981,7 @@ export async function runTutorStubResistanceRecoverySemanticValidation({
     const source = originalCase(loaded, blinded.case_id);
     const row = { ...source, case_id: blinded.case_id };
     const file = caseFile(destination, row.case_id);
-    let checkpoint = fs.existsSync(file) ? read(file) : newCheckpoint(plan, row);
+    let checkpoint = fs.existsSync(file) ? read(file) : newCheckpoint(plan, row, loaded);
     const persistNow = (stage) => persist(destination, checkpoint, archive, stage, afterLocalCheckpointWrite);
     if (!fs.existsSync(file)) persistNow('checkpoint_initialized');
     else archive.append(checkpointArchiveStage(checkpoint), `cases/${checkpoint.case_id}/checkpoint.json`, checkpoint);
@@ -789,10 +995,10 @@ export async function runTutorStubResistanceRecoverySemanticValidation({
     if (ambiguous) {
       checkpoint.judge_results.push({
         judge_id: ambiguous.id,
-        role: `tutor_stub_resistance_recovery_semantic_${ambiguous.id}`,
+        role: roleFor(loaded, ambiguous),
         independent_run_id: checkpoint.invocation_id_by_judge[ambiguous.id],
         prompt: prompts[ambiguous.id],
-        prompt_sha256: tutorStubResistanceRecoverySemanticPromptSha256(prompts[ambiguous.id]),
+        prompt_sha256: promptSha256(loaded, prompts[ambiguous.id]),
         attempts: checkpoint.attempts_by_judge[ambiguous.id],
         outcome: 'dispatch_ambiguous_no_recall',
         raw_response: null,
@@ -801,7 +1007,7 @@ export async function runTutorStubResistanceRecoverySemanticValidation({
       });
     }
     const hasTerminalSeat = checkpoint.judge_results.some((result) => result.outcome !== 'recorded_response');
-    if (!hierarchicalV3(loaded) && (ambiguous || hasTerminalSeat)) {
+    if (!panelMayContinueAfterTerminalSeat(loaded) && (ambiguous || hasTerminalSeat)) {
       checkpoint.resumed_partial_without_rejudge = true;
     } else {
       if (ambiguous || hasTerminalSeat) checkpoint.resumed_partial_without_rejudge = true;
@@ -820,10 +1026,16 @@ export async function runTutorStubResistanceRecoverySemanticValidation({
           persistNow,
           afterPreparedCheckpoint,
           afterDispatchCheckpoint,
-          allowClaudeResponseFreeError: hierarchicalV3(loaded),
+          allowClaudeResponseFreeError: panelMayContinueAfterTerminalSeat(loaded),
+          loaded,
         });
         await afterJudgeCheckpoint?.({ caseId: row.case_id, judgeId: judge.id });
-        if (!hierarchicalV3(loaded) && checkpoint.judge_results.at(-1).outcome !== 'recorded_response') break;
+        if (
+          !panelMayContinueAfterTerminalSeat(loaded) &&
+          checkpoint.judge_results.at(-1).outcome !== 'recorded_response'
+        ) {
+          break;
+        }
       }
     }
     checkpoint = aggregateCheckpoint(checkpoint, row, loaded, prompts);
@@ -944,7 +1156,7 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
       checkpoint.case_id !== blinded.case_id ||
       checkpoint.status !== 'sealed' ||
       checkpoint.plan_sha256 !== expectedPlan.plan_sha256 ||
-      checkpoint.public_packet_sha256 !== digest(packet(row)) ||
+      checkpoint.public_packet_sha256 !== digest(measurementPacket(loaded, row)) ||
       checkpoint.packet_sha256 !==
         expectedPlan.cases.find((entry) => entry.case_id === blinded.case_id).packet_sha256 ||
       seal.case_checkpoint_sha256[blinded.case_id] !== digest(checkpoint) ||
@@ -954,7 +1166,12 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
     }
     const prompts = promptsFor(loaded, row);
     const responses = [];
-    responsePairs[row.case_id] = {};
+    responsePairs[row.case_id] = splitMeasurement(loaded)
+      ? { [loaded.stage === 'primary_recovery' ? 'primary' : 'fidelity']: {} }
+      : {};
+    const stagePairs = splitMeasurement(loaded)
+      ? responsePairs[row.case_id][loaded.stage === 'primary_recovery' ? 'primary' : 'fidelity']
+      : responsePairs[row.case_id];
     const judges = loaded.instrument.measurement.judges;
     const judgeIds = checkpoint.judge_results.map((result) => result.judge_id);
     if (
@@ -983,9 +1200,9 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
       ];
       if (
         !exact(Object.keys(stored).sort(), storedKeys.sort()) ||
-        stored.role !== `tutor_stub_resistance_recovery_semantic_${judge.id}` ||
+        stored.role !== roleFor(loaded, judge) ||
         !exact(stored.prompt, prompts[judge.id]) ||
-        stored.prompt_sha256 !== tutorStubResistanceRecoverySemanticPromptSha256(prompts[judge.id]) ||
+        stored.prompt_sha256 !== promptSha256(loaded, prompts[judge.id]) ||
         checkpoint.invocation_id_by_judge?.[judge.id] !== stored.independent_run_id ||
         !exact(checkpoint.attempts_by_judge?.[judge.id], stored.attempts) ||
         !String(stored.independent_run_id || '').trim()
@@ -1024,6 +1241,7 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
             prompt: prompts[judge.id],
             judge,
             independentRunId: stored.independent_run_id,
+            loaded,
           });
         } catch {
           if (stored.outcome !== 'invalid_return') throw new Error('outcome invalid return disposition drifted');
@@ -1039,15 +1257,15 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
         throw new Error('outcome missing response has no registered terminal disposition');
       }
       if (rebuilt) responses.push(rebuilt);
-      responsePairs[row.case_id][judge.id] = { prompt: prompts[judge.id], response: rebuilt };
+      stagePairs[judge.id] = { prompt: prompts[judge.id], response: rebuilt };
     }
-    const aggregate = adjudicateLoaded(loaded, {
-      caseId: row.case_id,
-      publicPacket: packet(row),
-      responses,
-      registration: loaded.instrument,
-      prompts,
-    });
+    const common = { caseId: row.case_id, responses, registration: loaded.instrument, prompts };
+    const aggregate = adjudicateLoaded(
+      loaded,
+      splitMeasurement(loaded) && loaded.stage === 'intervention_fidelity'
+        ? { ...common, intervention: row.intervention }
+        : { ...common, publicPacket: packet(row) },
+    );
     if (!exact(aggregate, checkpoint.aggregate) || digest(aggregate) !== checkpoint.aggregate_sha256) {
       throw new Error('outcome aggregate does not reproduce from persisted judge records');
     }
@@ -1094,11 +1312,22 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
   ) {
     throw new Error('outcome validation durable archive transition inventory drifted');
   }
-  const score = scoreLoaded(loaded, {
+  const combinedScore = scoreLoaded(loaded, {
     corpus: { ...loaded.corpus, cases: scoredCases },
     responsePairs,
     registration: loaded.instrument,
   });
+  const score = splitMeasurement(loaded)
+    ? {
+        schema: `machinespirits.tutor-stub.resistance-measurement-validation-stage-score.v${loaded.instrument.version}`,
+        stage: loaded.stage,
+        status: loaded.stage === 'primary_recovery' ? combinedScore.primary.status : combinedScore.fidelity.status,
+        metrics: loaded.stage === 'primary_recovery' ? combinedScore.primary.metrics : combinedScore.fidelity.metrics,
+        prohibited_tool_events: combinedScore.prohibited_tool_events,
+        stage_outcome_interpretation_allowed: false,
+        combined_analysis_requires_both_sealed_stages: true,
+      }
+    : combinedScore;
   return {
     schema: TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_REPORT_SCHEMA,
     status: score.status,
@@ -1108,8 +1337,9 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
     instrument_registration_sha256: loaded.instrumentSha256,
     heldout_corpus_sha256: loaded.corpusSha256,
     score,
-    claim_boundary:
-      'Outcome-and-treatment-fidelity instrument validation only; excluded from confirmation outcomes and all efficacy claims.',
+    claim_boundary: splitMeasurement(loaded)
+      ? `Single sealed V${loaded.instrument.version} measurement stage only; no stage verdict may be interpreted before the separately blinded peer stage is sealed and the one combined validation analysis runs.`
+      : 'Outcome-and-treatment-fidelity instrument validation only; excluded from confirmation outcomes and all efficacy claims.',
   };
 }
 

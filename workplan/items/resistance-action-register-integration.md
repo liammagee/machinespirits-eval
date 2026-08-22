@@ -3431,3 +3431,11 @@ and explicit human approval.
   runtime, response-free Sonnet continuation, combined post-seal analysis,
   and durable archive pass zero-call synthetic validation. No V6 call has yet
   launched; confirmation remains blocked on live validation passage.
+
+  CI blocking review additionally caught that the first V6 wiring revision
+  had modified the launcher and runtime sealed into the consumed V3 request.
+  Before any call, the shared V3 files were restored byte-for-byte and the
+  prospective split V5/V6 lifecycle was moved to dedicated launcher/runtime
+  paths. The frozen V3 request digest test and the full V5/V6 synthetic
+  lifecycle regressions pass together; no historical request or artifact was
+  amended.

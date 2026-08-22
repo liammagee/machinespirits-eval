@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { resolveTutorStubArtifactArchiveDirectory } from './tutorStubArtifactArchive.js';
-import { writeTutorStubResistanceRecoverySemanticValidationReport } from './tutorStubResistanceRecoverySemanticValidationRuntime.js';
+import { writeTutorStubResistanceRecoverySemanticValidationReport } from './tutorStubResistanceSplitMeasurementValidationRuntime.js';
 import {
   TUTOR_STUB_RESISTANCE_FIDELITY_VALIDATION_REGISTRATION_V6,
   TUTOR_STUB_RESISTANCE_RECOVERY_PRIMARY_VALIDATION_REGISTRATION_V6,

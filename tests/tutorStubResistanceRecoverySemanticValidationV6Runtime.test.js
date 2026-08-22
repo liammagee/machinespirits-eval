@@ -14,7 +14,7 @@ import {
   analyzeTutorStubResistanceRecoverySemanticValidation,
   buildTutorStubResistanceRecoverySemanticValidationPlan,
   runTutorStubResistanceRecoverySemanticValidation,
-} from '../services/tutorStubResistanceRecoverySemanticValidationRuntime.js';
+} from '../services/tutorStubResistanceSplitMeasurementValidationRuntime.js';
 import { writeTutorStubResistanceMeasurementCombinedValidationReportV6 } from '../services/tutorStubResistanceMeasurementValidationV6Runtime.js';
 import {
   TUTOR_STUB_RESISTANCE_FIDELITY_VALIDATION_REGISTRATION_V6,
