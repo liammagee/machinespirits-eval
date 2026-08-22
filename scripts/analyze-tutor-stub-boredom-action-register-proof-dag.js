@@ -396,47 +396,62 @@ function assertAttemptEnvelope(events, job, outcomeTurn, finalTraceBudget, plan,
   const attempted = countByRoleTurn(attempts);
   const exactReservations =
     reserved.size === attempted.size && [...reserved].every(([key, count]) => attempted.get(key) === count);
-  if (
-    recipe?.schema !== 'machinespirits.tutor-stub.session-recipe.v1' ||
-    metadata?.provenance?.git?.sha !== plan.source.commit ||
-    metadata?.provenance?.git?.dirty !== false ||
-    recipe?.config?.identity?.world?.id !== job.world ||
-    metadata?.experiment?.runSeed !== job.seed ||
-    metadata?.experiment?.profile !== 'bored' ||
-    metadata?.experiment?.policy !== 'field' ||
-    metadata?.experiment?.repeat !== job.assignment_index ||
-    metadata?.experiment?.jobId !== job.id ||
-    metadata?.autoLearner?.observationSemantics !== observationSemantics ||
-    metadata?.autoLearner?.maxTurns !== 4 ||
-    metadata?.autoLearner?.profileId !== 'bored' ||
-    metadata?.autoLearner?.modelRef !== 'codex.gpt-5.6-luna' ||
-    metadata?.lab?.admission?.modelCallBudget !== finalTraceBudget ||
-    options?.['cli-effort'] !== 'low' ||
-    options?.['run-seed'] !== String(job.seed) ||
-    options?.['auto-turns'] !== '4' ||
-    options?.['model-call-budget'] !== String(finalTraceBudget) ||
-    options?.['dag-mode'] !== 'strict_dag' ||
-    options?.['register-policy'] !== 'field' ||
-    options?.['register-palette'] !== 'plain,warm' ||
-    options?.['eval-repeat'] !== String(job.assignment_index) ||
-    options?.['eval-job-id'] !== job.id ||
-    options?.['no-opening'] === true ||
-    routePinned !== true ||
-    required !== true ||
-    semanticRequired !== true ||
-    allowed !== true ||
-    exactReservations !== true ||
-    attempts.some(
-      (event) =>
-        event.provider !== 'codex' ||
-        event.model !== (event.role === 'tutor_stub_boredom_performance_adjudication' ? 'gpt-5.6-sol' : 'gpt-5.6-luna'),
-    ) ||
-    calls.some((event) => event.response?.effort !== 'low') ||
-    attempts
-      .filter((event) => event.type !== 'model_call')
-      .some((event) => event.request?.cliEffort !== 'low' && event.request?.config?.cliEffort !== 'low')
-  ) {
-    throw new Error(`${job.id} violates its observed route, source, world, horizon, or attempt pins`);
+  // Named one by one rather than as one boolean chain, for the same reason the
+  // trigger gate names its reasons: a pin that fails with no name cannot be
+  // acted on, and the names carry no outcome.
+  const envelopeFailures = [
+    [recipe?.schema !== 'machinespirits.tutor-stub.session-recipe.v1', 'session_recipe_schema'],
+    [metadata?.provenance?.git?.sha !== plan.source.commit, 'source_commit'],
+    [metadata?.provenance?.git?.dirty !== false, 'dirty_checkout'],
+    [recipe?.config?.identity?.world?.id !== job.world, 'world'],
+    [metadata?.experiment?.runSeed !== job.seed, 'run_seed'],
+    [metadata?.experiment?.profile !== 'bored', 'profile'],
+    [metadata?.experiment?.policy !== 'field', 'register_policy'],
+    [metadata?.experiment?.repeat !== job.assignment_index, 'assignment_index'],
+    [metadata?.experiment?.jobId !== job.id, 'job_id'],
+    [metadata?.autoLearner?.observationSemantics !== observationSemantics, 'observation_semantics'],
+    [metadata?.autoLearner?.maxTurns !== 4, 'max_turns'],
+    [metadata?.autoLearner?.profileId !== 'bored', 'learner_profile_id'],
+    [metadata?.autoLearner?.modelRef !== 'codex.gpt-5.6-luna', 'learner_model_ref'],
+    [metadata?.lab?.admission?.modelCallBudget !== finalTraceBudget, 'model_call_budget_metadata'],
+    [options?.['cli-effort'] !== 'low', 'cli_effort_option'],
+    [options?.['run-seed'] !== String(job.seed), 'run_seed_option'],
+    [options?.['auto-turns'] !== '4', 'auto_turns_option'],
+    [options?.['model-call-budget'] !== String(finalTraceBudget), 'model_call_budget_option'],
+    [options?.['dag-mode'] !== 'strict_dag', 'dag_mode_option'],
+    [options?.['register-policy'] !== 'field', 'register_policy_option'],
+    [options?.['register-palette'] !== 'plain,warm', 'register_palette_option'],
+    [options?.['eval-repeat'] !== String(job.assignment_index), 'eval_repeat_option'],
+    [options?.['eval-job-id'] !== job.id, 'eval_job_id_option'],
+    [options?.['no-opening'] === true, 'opening_suppressed'],
+    [routePinned !== true, 'model_route_not_pinned'],
+    [required !== true, 'a_required_role_and_turn_call_is_missing'],
+    [semanticRequired !== true, 'a_required_semantic_adjudication_call_is_missing'],
+    [allowed !== true, 'a_call_fell_outside_its_allowed_role_and_turn_window'],
+    [exactReservations !== true, 'reservations_do_not_match_attempts_one_for_one'],
+    [
+      attempts.some(
+        (event) =>
+          event.provider !== 'codex' ||
+          event.model !==
+            (event.role === 'tutor_stub_boredom_performance_adjudication' ? 'gpt-5.6-sol' : 'gpt-5.6-luna'),
+      ),
+      'an_attempt_used_the_wrong_provider_or_model',
+    ],
+    [calls.some((event) => event.response?.effort !== 'low'), 'a_call_reported_effort_other_than_low'],
+    [
+      attempts
+        .filter((event) => event.type !== 'model_call')
+        .some((event) => event.request?.cliEffort !== 'low' && event.request?.config?.cliEffort !== 'low'),
+      'a_failed_or_aborted_attempt_requested_effort_other_than_low',
+    ],
+  ]
+    .filter(([failed]) => failed)
+    .map(([, reason]) => reason);
+  if (envelopeFailures.length) {
+    throw new Error(
+      `${job.id} violates its observed route, source, world, horizon, or attempt pins: ${envelopeFailures.join(', ')}`,
+    );
   }
   return { calls: calls.length, attempts: attempts.length, reservations: reservations.length };
 }
