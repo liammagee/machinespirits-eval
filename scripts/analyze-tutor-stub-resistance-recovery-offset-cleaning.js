@@ -143,9 +143,7 @@ function verifySealedSource(root, loaded) {
     seal,
     report,
     checkpointFiles,
-    hashes: Object.fromEntries(
-      ['plan', 'seal', 'report'].map((name) => [name, sha256(fs.readFileSync(files[name]))]),
-    ),
+    hashes: Object.fromEntries(['plan', 'seal', 'report'].map((name) => [name, sha256(fs.readFileSync(files[name]))])),
   };
 }
 
@@ -426,7 +424,9 @@ function main() {
     },
   });
   if (!values.source || !values.destination) {
-    throw new Error('usage: node scripts/analyze-tutor-stub-resistance-recovery-offset-cleaning.js --source <sealed-v3-root> --destination <new-derivative-root> [--json]');
+    throw new Error(
+      'usage: node scripts/analyze-tutor-stub-resistance-recovery-offset-cleaning.js --source <sealed-v3-root> --destination <new-derivative-root> [--json]',
+    );
   }
   const written = writeTutorStubResistanceRecoveryOffsetCleanedV3Derivative({
     sourceRoot: path.resolve(values.source),
