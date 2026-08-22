@@ -349,3 +349,121 @@ test('a null auxiliary stays neutral, which is why the sealed gates never exerci
   assert.equal(adjudication.auxiliary.polarity, 'neutral');
   assert.equal(adjudication.auxiliary.contradiction, false);
 });
+
+// The added diagnostics must not move a single verdict. This walks the whole
+// decision space — every judge field pattern, every auxiliary polarity, and
+// confidence above and below the minimum — and checks the answers against the
+// rules as they read before the diagnostics went in, spelled out again here so
+// the check is independent rather than a restatement of the code under test.
+function verdictBeforeDiagnostics(f) {
+  if (f.productive_uptake && f.effort_withdrawal) return 'indeterminate';
+  if (f.productive_uptake && f.boredom_cue) return 'productive_uptake';
+  if (f.productive_uptake) return 'no_boredom';
+  if (f.boredom_cue && f.effort_withdrawal) return 'actionable_boredom';
+  if (f.boredom_cue || f.process_impatience) return 'nonactionable_boredom';
+  return 'no_boredom';
+}
+
+function contradictionBeforeDiagnostics(polarity, f) {
+  if (polarity === 'indeterminate') return true;
+  const asserted = {
+    productive_uptake: { productive_uptake: true, effort_withdrawal: false },
+    actionable_boredom: { boredom_cue: true, effort_withdrawal: true, productive_uptake: false },
+  }[polarity];
+  if (!asserted) return false;
+  return Object.entries(asserted).some(([field, value]) => Boolean(f[field]) !== value);
+}
+
+const CANDIDATE_FOR_EVERY_FIELD = 'Whatever. I stopped. We can examine the coins. Are we done yet?';
+const EVIDENCE_SPANS = {
+  boredom_cue: 'Whatever',
+  effort_withdrawal: 'I stopped',
+  productive_uptake: 'We can examine the coins',
+  process_impatience: 'Are we done yet?',
+};
+
+test('the diagnostics change no verdict anywhere in the decision space', () => {
+  const names = ['boredom_cue', 'effort_withdrawal', 'productive_uptake', 'process_impatience'];
+  const dispositions = [
+    'negative_no_boredom_cue',
+    'positive_actionable_withdrawal_without_uptake',
+    'negative_productive_uptake_precedes_cue',
+    'ambiguous_withdrawal_and_productive_uptake',
+  ];
+  let checked = 0;
+  for (let mask = 0; mask < 16; mask += 1) {
+    const fields = Object.fromEntries(names.map((name, bit) => [name, Boolean(mask & (1 << bit))]));
+    const evidence = names
+      .filter((name) => fields[name])
+      .map((name) => ({
+        kind: name,
+        start: CANDIDATE_FOR_EVERY_FIELD.indexOf(EVIDENCE_SPANS[name]),
+        end: CANDIDATE_FOR_EVERY_FIELD.indexOf(EVIDENCE_SPANS[name]) + EVIDENCE_SPANS[name].length,
+        text: EVIDENCE_SPANS[name],
+      }));
+    const expectedVerdict = verdictBeforeDiagnostics(fields);
+    for (const disposition of dispositions) {
+      for (const confidence of [0.99, 0.5]) {
+        const adjudication = parseTutorStubBoredomSemanticAdjudication({
+          raw: judgeOutput({ verdict: expectedVerdict, fields, evidence, confidence }),
+          candidate: CANDIDATE_FOR_EVERY_FIELD,
+          auxiliaryObservation: auxiliaryFor(disposition),
+        });
+        assert.equal(adjudication.semantic_verdict, expectedVerdict, `verdict moved for ${JSON.stringify(fields)}`);
+        const polarity = adjudication.auxiliary.polarity;
+        assert.equal(adjudication.auxiliary.contradiction, contradictionBeforeDiagnostics(polarity, fields));
+        const stoppedBefore =
+          !adjudication.parse_ok ||
+          confidence < 0.8 ||
+          contradictionBeforeDiagnostics(polarity, fields) ||
+          expectedVerdict === 'indeterminate';
+        assert.equal(
+          adjudication.measurement_disposition,
+          stoppedBefore ? 'measurement_indeterminate' : expectedVerdict,
+          `disposition moved for ${JSON.stringify(fields)} with ${disposition} at ${confidence}`,
+        );
+        // Every stop names at least one cause, and no cause is named without a stop.
+        assert.equal(adjudication.stop_reasons.length > 0, stoppedBefore);
+        checked += 1;
+      }
+    }
+  }
+  assert.equal(checked, 128);
+});
+
+test('a stopped measurement says which rule stopped it and what the auxiliary saw', () => {
+  // Replays job bored-confirm-w1-d4 turn 1 from live batch 1, third attempt.
+  // The judge read plain effort withdrawal at 0.99; the auxiliary called the
+  // same turn productive uptake; the run stopped and the record said only
+  // `contradiction: true`, which could not be diagnosed after the fact.
+  const candidate = 'I stopped at the first step and left the evidence unexamined.';
+  const adjudication = parseTutorStubBoredomSemanticAdjudication({
+    raw: judgeOutput({
+      verdict: 'no_boredom',
+      fields: { effort_withdrawal: true },
+      evidence: [{ kind: 'effort_withdrawal', start: 0, end: 9, text: 'I stopped' }],
+    }),
+    candidate,
+    auxiliaryObservation: {
+      schema: 'machinespirits.resistant-learner.boredom-effort-composition.v1',
+      disposition: 'negative_productive_uptake_precedes_cue',
+      productive_uptake_evidence: null,
+      classifier_content_bearing: true,
+      supported_move_count: 0,
+      actionable_withdrawal_evidence: null,
+      cue_evidence: null,
+      permission_seeking: false,
+    },
+  });
+  assert.equal(adjudication.measurement_disposition, 'measurement_indeterminate');
+  assert.deepEqual(adjudication.stop_reasons, ['auxiliary_disagrees_with_judge_fields']);
+  assert.deepEqual(adjudication.auxiliary.disagreements, [
+    { field: 'productive_uptake', auxiliary_asserts: true, judge_reports: false },
+    { field: 'effort_withdrawal', auxiliary_asserts: false, judge_reports: true },
+  ]);
+  // The point of the diagnostics: the regex was silent, so the block came from
+  // the classifier calling the turn content-bearing, not from a mood pattern.
+  assert.equal(adjudication.auxiliary.triggered_signals.uptake_from_regex, null);
+  assert.equal(adjudication.auxiliary.triggered_signals.uptake_from_classifier_content, true);
+  assert.equal(adjudication.auxiliary.triggered_signals.uptake_from_supported_moves, 0);
+});

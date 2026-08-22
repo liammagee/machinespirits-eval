@@ -24,5 +24,23 @@
       "authority": "Liam Magee, 2026-08-21: enabled to repair and re-run without prior approval until we get through this dialogue batch",
       "designChanged": false
     }
+  ],
+  "instrumentByteMoves": [
+    {
+      "on": "2026-08-21",
+      "modulePath": "services/tutorStubBoredomSemanticAdjudicationV3.js",
+      "from": "c6519c690857360d15dd86a0757bfc382a7963e1fdf617abc270652d7289b18c",
+      "to": "001eba55ebda1e08238b79ea220490fb7c7af3cbda30808964b9a2b4778fbf5e",
+      "why": "the record now names which rule stopped a measurement (stop_reasons) and what the auxiliary saw (auxiliary.disagreements, auxiliary.triggered_signals); three live batch-1 dialogues stopped as measurement_indeterminate with no way to tell which of the four causes fired",
+      "authority": "Liam Magee, 2026-08-21: moving forward let's add diagnostics about which rule is fired to the logs",
+      "designChanged": false,
+      "verdictsChanged": false,
+      "verdictNeutralityProof": {
+        "test": "tests/tutorStubBoredomSemanticV4InstrumentReadiness.test.js",
+        "case": "the diagnostics change no verdict anywhere in the decision space",
+        "method": "enumerates all 128 points of the decision space (16 judge-field masks x 4 auxiliary dispositions x confidence above and below the 0.8 minimum) and compares every disposition against an independent restatement of the pre-change rules",
+        "gateTransfer": "the five predeclared gates measure verdicts on the sealed 55-case corpus; identical verdicts on every input carry the 1.00 gate results across the byte change without spending the corpus again"
+      }
+    }
   ]
 }

@@ -179,7 +179,7 @@
     "semanticAdjudicator": {
       "schema": "machinespirits.tutor-stub.boredom-semantic-adjudication.v3",
       "modulePath": "services/tutorStubBoredomSemanticAdjudicationV3.js",
-      "moduleSha256": "c6519c690857360d15dd86a0757bfc382a7963e1fdf617abc270652d7289b18c",
+      "moduleSha256": "001eba55ebda1e08238b79ea220490fb7c7af3cbda30808964b9a2b4778fbf5e",
       "modelRef": "codex.gpt-5.6-sol",
       "role": "tutor_stub_boredom_performance_adjudication",
       "effort": "low",
