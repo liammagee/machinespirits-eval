@@ -3276,3 +3276,44 @@ and explicit human approval.
   1,080-reservation validation safeguard. It does not authorize confirmation;
   the validation corpus cannot enter confirmation outcomes, and the registered
   one-time analysis remains blocked until all judge records are sealed.
+
+- 2026-08-22 — The V3 outcome validation completed and failed; it did not
+  authorize confirmation. All 120 cases and 360 judge records sealed from 374
+  reservations (353 returned responses, 21 response-free transport failures,
+  and 7 preserved terminal seat abstentions), moving the observed programme
+  ledger to `1510 / 5000`. The immutable report is SHA-256
+  `77082904a625aceed35127ee2bbd49584d2c0ddb1eb6cad47f4b4a6221b946c4`;
+  its raw seal file is SHA-256
+  `fac58906ef96eac9a1b536592426b610fbac0b15278266b25c2e3bb8d0cbb4a3`,
+  and the durable private archive namespace is
+  `resistance-recovery-semantic-validation/19876132b2593ff7-c48296d485acc9bf`.
+
+  The registered metrics were judgment validity `0.4611`, panels with two
+  eligible voters `0.475`, primary sensitivity `0.55`, specificity `0.325`,
+  exact accuracy and determined coverage `0.475`, mean pairwise agreement
+  `0.3944`, and Fleiss kappa `-0.0343`. These are instrument-failure results,
+  not learner or treatment results; validation cases remain excluded from all
+  confirmation and efficacy claims.
+
+  The sealed-record diagnosis found a deterministic measurement defect. All
+  1,138 returned evidence quotes occur uniquely and exactly in their cited
+  public source, but model-supplied numeric UTF-16 offsets were frequently
+  wrong. The wrapper treated any offset or diagnostic evidence-placement defect
+  as invalidating the complete semantic response, and it excluded 31 correct
+  determinate Sonnet judgments solely because Sonnet reported `medium` rather
+  than `high` confidence. After quote re-anchoring, every otherwise valid Sol
+  judgment was correct (`117/117`), every otherwise valid Sonnet judgment was
+  correct (`86/86`), and every otherwise valid GPT-5.5 judgment was correct
+  (`117/117`).
+
+  The prospective V4 repair therefore derives numeric offsets from unique exact
+  quote text, validates primary recovery and every diagnostic field locally,
+  prevents diagnostic invalidity from vetoing recovery, accepts determinate
+  `medium` or `high` primary votes, and continues to treat `low` confidence as
+  measurement-indeterminate. A strict post-hoc application to the consumed V3
+  records is engineering evidence only: it produced primary seat validity
+  `0.9722`, full panel coverage, primary sensitivity/specificity/exact accuracy
+  `1.0`, mean agreement `0.9444`, and kappa `0.8825`, but register accuracy
+  `0.9417` remained below the prospective `0.95` gate. The consumed corpus will
+  not be reused to validate or tune V4; a genuinely fresh heldout corpus is
+  required after the V4 instrument freeze.
