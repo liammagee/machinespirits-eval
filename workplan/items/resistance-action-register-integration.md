@@ -32,6 +32,7 @@ links:
   notes:
     - notes/2026-08-16-harness-reconciliation-survey.md
     - docs/harness-claim-transfer-rule.md
+    - docs/paid-study-authorization-policy.md
     - docs/adaptation-refinement/normative-adaptive-dialogue-architecture.md
     - notes/2026-08-16-edged-register-calibration-draft.md
     - docs/resistance-action-register-conservation-protocol.md
@@ -3577,3 +3578,21 @@ and explicit human approval.
   is `8182 / 10000`. These ceilings remain execution safeguards, not design
   objectives. No V9 model call has launched; merge, blocking review, and a
   fresh digest-bound GO request remain required.
+
+- 2026-08-22 — Standing directive (operator): retire the digest-bound
+  authorization machinery for every study registered after this date. A new
+  paid study needs three things only: a design file merged to `main`, a
+  clean detached launch commit that contains it, and a signed GO note naming
+  the design file, the launch commit, and the spend cap. Ceilings,
+  create-once destinations, no-resume, the run ledger, and archiving move
+  into the shared runner as CI-tested code. Request JSONs with digest
+  closures, endpoint certificates, consumed-authorization records, HOLD
+  packets, and digest-bound validators are retired for new work; consumed
+  historical artifacts stay immutable. Tamper evidence is git: a run whose
+  launch commit does not contain the signed design file is void. The
+  scientific discipline — prospective registration, fail-closed
+  dispositions, no post-hoc threshold changes, prospective-only amendments —
+  is unchanged and lives in the design file. Full policy:
+  `docs/paid-study-authorization-policy.md`. The pending V9 confirmation may
+  launch under either regime at the operator's choice; it does not restart
+  merely to change transport.
