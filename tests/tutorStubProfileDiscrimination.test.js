@@ -29,6 +29,7 @@ import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V2,
   buildTutorStubResistanceSemanticZeroCallFixtureResponseV2,
 } from '../services/tutorStubResistanceSemanticAdjudicationV2.js';
+import { TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4 } from '../services/tutorStubResistanceSemanticAdjudicationV4.js';
 import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_JUDGE_EVENT,
   TUTOR_STUB_RESISTANCE_SEMANTIC_MEASUREMENT_INDETERMINATE_CODE,
@@ -110,6 +111,9 @@ test('prospective v4 through v9 carry their analyzer-required semantics stamp th
   });
   assert.deepEqual(createRuntime('prospective_v9').automatedLearnerTraceMetadata, {
     observationSemantics: 'prospective_v9',
+  });
+  assert.deepEqual(createRuntime(TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4).automatedLearnerTraceMetadata, {
+    observationSemantics: TUTOR_STUB_RESISTANCE_SEMANTIC_OBSERVATION_V4,
   });
 
   const hostSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCliApplicationHost.js'), 'utf8');
