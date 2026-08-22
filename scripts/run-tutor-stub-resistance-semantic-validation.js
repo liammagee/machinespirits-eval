@@ -19,6 +19,10 @@ import {
   TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V3,
   loadTutorStubResistanceSemanticValidationV3,
 } from '../services/tutorStubResistanceSemanticValidationV3.js';
+import {
+  TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V4,
+  loadTutorStubResistanceSemanticValidationV4,
+} from '../services/tutorStubResistanceSemanticValidationV4.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -66,9 +70,6 @@ async function main() {
   if (!path.isAbsolute(destination) || destination === path.parse(destination).root) {
     throw new Error('--destination must be a bounded absolute path');
   }
-  if (Number(args['maximum-reservations']) !== 480) {
-    throw new Error('--maximum-reservations must equal the registered hard ceiling 480');
-  }
   const request = repoPath(args['go-request'], '--go-request');
   const validationRegistration = String(args['validation-registration'] || '').trim();
   if (
@@ -76,16 +77,23 @@ async function main() {
     ![
       TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V2,
       TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V3,
+      TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V4,
     ].includes(validationRegistration)
   ) {
     throw new Error('--validation-registration is not a supported additive semantic validation registration');
   }
   const loaded =
-    validationRegistration === TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V3
-      ? loadTutorStubResistanceSemanticValidationV3()
-      : validationRegistration
-        ? loadTutorStubResistanceSemanticValidationV2()
-        : undefined;
+    validationRegistration === TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V4
+      ? loadTutorStubResistanceSemanticValidationV4()
+      : validationRegistration === TUTOR_STUB_RESISTANCE_SEMANTIC_VALIDATION_REGISTRATION_V3
+        ? loadTutorStubResistanceSemanticValidationV3()
+        : validationRegistration
+          ? loadTutorStubResistanceSemanticValidationV2()
+          : undefined;
+  const registeredMaximum = loaded?.registration?.executionReadiness?.hardValidationReservations || 480;
+  if (Number(args['maximum-reservations']) !== registeredMaximum) {
+    throw new Error(`--maximum-reservations must equal the registered hard ceiling ${registeredMaximum}`);
+  }
   const requestSha256 = sha256(request.absolute);
   const goRequest = JSON.parse(fs.readFileSync(request.absolute, 'utf8'));
   const snapshot = sourceSnapshot();

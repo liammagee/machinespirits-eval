@@ -1,0 +1,171 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-semantic-adjudication-registration.v4",
+  "version": 4,
+  "status": "hierarchical_ensemble_frozen_pending_independent_v4_heldout",
+  "frozenAt": "2026-08-21T00:00:00.000Z",
+  "observationSemantics": "prospective_frame_resistance_semantic_v4",
+  "supersession": {
+    "v1V2V3ArtifactsMutable": false,
+    "v1V2V3EligibleForFutureValidationOrLaunch": false,
+    "v3ReportSha256": "90954951239d7c3b3d368c63718855aab4e9f42ee0aa2cc7965ccbfc9fdabb44",
+    "v3ScientificStatus": "failed",
+    "v3FailurePreservedAsDevelopmentEvidenceOnly": true,
+    "v3InputsEligibleForReuseRescoringOrPooling": false
+  },
+  "instrument": {
+    "ensembleImplementationPath": "services/tutorStubResistanceSemanticAdjudicationV4.js",
+    "ensembleImplementationSha256": "40394d54ff569b388b5772d66ee9d4a806ecf9aade63710f4a2dc01c2faf634b",
+    "seatImplementationPath": "services/tutorStubResistanceSemanticAdjudicationV3.js",
+    "seatImplementationSha256": "a66a16c4ea80a831065234507be8308d8e3ac3cf9d6de4a0e49395c8164fa7ff",
+    "seatResponseSchemaPath": "config/tutor-stub-resistance-semantic-adjudication-response.schema.v3.json",
+    "seatResponseSchemaSha256": "4840ef6ebc5135d98aeb3d70d5a22416601a62fe1dc6bb3c225c05e606673033",
+    "developmentEvidencePath": "config/tutor-stub-resistance-semantic-adjudication-development-evidence.v4.json",
+    "developmentEvidenceSha256": "326911439429c4529f933593794b397247185555b9d59ccc0798fe14d488441e",
+    "seatPromptSchemaAndSpanWrapperChangedFromV3": false,
+    "changeScope": "hierarchical_three_judge_aggregation_only",
+    "primaryConstruct": "final_frame_resistance_label",
+    "diagnosticConstructs": [
+      "jurisdiction_dispute",
+      "interlocutor_standing_or_right",
+      "inquiry_or_question_frame_governance",
+      "test_or_criterion_governance",
+      "other_jurisdictional_governance",
+      "licensed_participation",
+      "participation_withholding",
+      "productive_counterframing"
+    ],
+    "deterministicAuthority": "schema_exact_quote_span_provenance_safety_and_predeclared_vote_counting_only",
+    "semanticAuthorityRule": "no_regex_keyword_or_diagnostic_component_disagreement_may_override_or_veto_a_valid_llm_semantic_primary_label_vote"
+  },
+  "measurement": {
+    "judges": [
+      {
+        "id": "semantic_judge_a",
+        "modelRef": "codex.gpt-5.6-sol",
+        "provider": "codex",
+        "model": "gpt-5.6-sol",
+        "modelFamily": "openai_gpt_5_6",
+        "effort": "low",
+        "modelAttestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+        "independent": true
+      },
+      {
+        "id": "semantic_judge_b",
+        "modelRef": "claude-code.sonnet-5",
+        "provider": "claude-code",
+        "model": "claude-sonnet-5",
+        "modelFamily": "anthropic_claude_5",
+        "effort": "low",
+        "modelAttestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+        "independent": true
+      },
+      {
+        "id": "semantic_judge_c",
+        "modelRef": "codex.gpt-5.5",
+        "provider": "codex",
+        "model": "gpt-5.5",
+        "modelFamily": "openai_gpt_5_5",
+        "effort": "low",
+        "modelAttestationBasis": "explicit_cli_model_argument_accepted_bridge_echo",
+        "independent": true
+      }
+    ],
+    "judgeSelectionRationale": "three_distinct_pinned_models_two_model_families_no_luna_generator_self_judgment_and_no_duplicate_model_votes",
+    "learnerAndCombinedAnalysisRouteExcludedFromVoting": "codex.gpt-5.6-luna",
+    "judgesSeeOtherOutput": false,
+    "hierarchicalConsensus": {
+      "primaryLabelRule": "two_of_three_valid_high_confidence_judge_labels",
+      "componentRule": "two_of_three_valid_high_confidence_field_values_independently",
+      "componentDisagreementMayVetoPrimaryLabel": false,
+      "componentVectorConsistencyRequiredForPrimaryLabel": false,
+      "evidenceSpanAgreementRequired": false,
+      "invalidLowConfidenceOrMissingDisposition": "judge_abstention",
+      "minimumEligibleVotesForDeterminatePrimary": 2,
+      "noPrimaryMajorityDisposition": "measurement_indeterminate",
+      "classifierOrRegexTiebreaker": false,
+      "judgeRerunAfterSemanticResponse": false,
+      "learnerRepairForMeasurementIndeterminate": false,
+      "unitReplacementOrOutcomeSelection": false
+    },
+    "validationGates": {
+      "minimumJudgmentValidityRate": 0.95,
+      "minimumPanelsWithTwoEligibleVoters": 0.95,
+      "minimumPerJudgeExactLabelAccuracy": 0.85,
+      "minimumPrimarySensitivity": 0.95,
+      "minimumPrimarySpecificity": 0.95,
+      "minimumPrimaryExactLabelAccuracy": 0.95,
+      "minimumPrimaryProductiveDisputeRecall": 0.9,
+      "minimumPrimaryDeterminedCoverageOverall": 0.95,
+      "minimumPrimaryDeterminedCoveragePerClass": 0.9,
+      "minimumAggregateComponentAccuracy": 0.85,
+      "minimumAggregateComponentDeterminedCoverage": 0.85,
+      "minimumMeanPairwiseLabelAgreement": 0.85,
+      "minimumMultiRaterKappa": 0.75,
+      "maximumProhibitedToolEvents": 0,
+      "indeterminateCountsAsPrimarySensitivityOrSpecificityFailure": true
+    }
+  },
+  "heldoutFreezeProtocol": {
+    "requiredRole": "heldout_blinded",
+    "requiredSchema": "machinespirits.tutor-stub.resistance-semantic-adjudication-corpus.v4",
+    "heldoutCorpusPath": "services/tutorStubResistanceSemanticHeldoutCorpusV4.js",
+    "heldoutCorpusSha256": "4f2f38ee407c8751c42c11643c9ae68d3c2335c7259b91ea34df397b2ae37ca7",
+    "exactCases": 80,
+    "exactFrameRefuserCases": 40,
+    "exactProductiveDisputeCases": 16,
+    "exactNeitherCases": 24,
+    "minimumActualParticipationCases": 24,
+    "minimumHypotheticalOrConditionalParticipationCases": 12,
+    "minimumMeritsProceduralOrAdministrativeNonjurisdictionCases": 16,
+    "minimumConcreteProductiveCounterframes": 16,
+    "minimumInterlocutorStandingOrRightPositiveCases": 16,
+    "minimumInquiryOrQuestionFrameGovernancePositiveCases": 16,
+    "minimumTestOrCriterionGovernancePositiveCases": 16,
+    "minimumMultiAxisJurisdictionCases": 12,
+    "minimumOtherJurisdictionalGovernanceCases": 4,
+    "uniqueSourceUtterances": 80,
+    "authoredAfterInstrumentFreezeCommit": true,
+    "instrumentFreezeCommit": "bc4edae0",
+    "corpusAuthorshipDidNotModifyFrozenInstrument": true,
+    "v1V2V3TextOrGoldEligibleForV4": false,
+    "developmentEvidenceVisibleToJudgePrompt": false,
+    "goldOrAssignmentVisibleToJudges": false,
+    "postHeldoutInstrumentOrGateTuning": false,
+    "futureDigestBoundRequestRequired": true,
+    "validationCallsAuthorized": false
+  },
+  "prospectiveValidationBudget": {
+    "programmeLedgerBeforeV4Validation": 894,
+    "heldoutCases": 80,
+    "independentJudgesPerCase": 3,
+    "plannedCalls": 240,
+    "maximumChargedReservationsPerPlannedCall": 3,
+    "hardValidationReservations": 720,
+    "programmeMaximumAfterV4Validation": 1614,
+    "programmeCeiling": 5000,
+    "attemptCountsAreOperationalSafeguardsNotDesignObjectives": true
+  },
+  "laterProgrammeBoundary": {
+    "outcomeValidationHardReservations": 720,
+    "confirmationHardReservations": 3456,
+    "prospectiveMaximumIfAllLaterStagesProceed": 5790,
+    "currentProgrammeCeiling": 5000,
+    "minimumCeilingAmendmentBeforeConfirmation": 790,
+    "scientificDesignMayBeNarrowedToFitCeiling": false,
+    "laterCallsAuthorized": false
+  },
+  "authorization": {
+    "validationModelCallsAuthorized": false,
+    "outcomeValidationModelCallsAuthorized": false,
+    "confirmationModelCallsAuthorized": false,
+    "liveRunAuthorized": false
+  },
+  "claimBoundary": {
+    "developmentOnly": true,
+    "v3EvidenceValidatesV4": false,
+    "freshV4HeldoutPassRequired": true,
+    "outcomeInstrumentPassRequiredBeforeConfirmation": true,
+    "warmPlainConfirmationClaimSupported": false,
+    "noInterimAnalysis": true
+  }
+}

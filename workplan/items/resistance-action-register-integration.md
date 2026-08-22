@@ -3136,3 +3136,64 @@ and explicit human approval.
   regression, and permits a clean repaired analyzer checkout to verify the
   frozen execution commit/tree separately. No artifact, response, gold label,
   judge record, or model-call history is changed.
+
+- 2026-08-21 — The repaired Claude JSON transport completed the wholly fresh
+  80-case V3 manipulation validation, but the predeclared semantic instrument
+  failed rather than the route. Sol produced 80/80 valid exact primary labels;
+  Sonnet produced 74/80 exact primary labels under registered scoring; raw
+  label agreement was 0.925 and Cohen's kappa 0.884. V3 nevertheless collapsed
+  21 cases to whole-case `measurement_indeterminate` because it required
+  agreement on the complete eight-field diagnostic vector. The dominant
+  component disagreements were interlocutor standing versus other governance
+  (7) and participation withholding (5). Six Sonnet seats were unavailable or
+  invalid, including two exhausted response-free units. The sealed V3 report
+  remains failed, immutable, excluded from reuse or pooling, and supports no
+  warm/plain claim.
+
+  The prospective V4 redesign freezes the unchanged quote-anchored V3 seat
+  prompt/schema behind a three-model hierarchical panel: Sol, Sonnet 5, and
+  GPT-5.5, all independent from the Luna generator. Two valid high-confidence
+  primary-label votes determine the primary label. Each diagnostic field is
+  aggregated separately by the same two-of-three rule; field disagreement is
+  indeterminate only for that field and cannot veto a primary-label majority.
+  Missing, response-free, invalid, low-confidence, or individually
+  indeterminate seats abstain; fewer than two eligible votes or no primary
+  majority yields `measurement_indeterminate`, with no repair, rerun,
+  replacement, lexical tiebreak, or outcome selection. The V3 evidence is
+  development-only. A wholly fresh 80-case V4 heldout corpus must be authored
+  after the instrument-freeze commit and pass the predeclared V4 gates before
+  any confirmation request. Programme accounting is now 894/5,000; V4 plans
+  240 calls with a 720-reservation hard safeguard, for a maximum 1,614 after
+  validation. Attempt counts remain operational safeguards, not design aims.
+
+- 2026-08-21 — Authored the V4 heldout only after instrument-freeze commit
+  `bc4edae0`, without changing any frozen instrument, prompt, model, ontology,
+  consensus rule, or gate. The 80 fresh cases preserve 40 frame refusers, 16
+  productive disputes, and 24 strong negatives; meet the predeclared
+  participation, conditional, nonjurisdictional, target-axis, multi-axis, and
+  other-governance strata; and have no case-id, utterance, or context collision
+  with V1-V3. All 80 cases pass the exact schema/evidence audit and traverse
+  all three frozen seats plus the hierarchical aggregate at zero calls. This
+  establishes engineering closure only, not empirical semantic accuracy.
+
+- 2026-08-21 — Wired V4 into the existing create-once, per-judge checkpointed
+  validation runtime and one-shot analyzer. The deterministic scorer directly
+  implements the already-frozen primary, coverage, component, agreement, and
+  multi-rater-kappa gates. A full 80-case/240-seat zero-call runtime regression
+  passed, including one deliberately exhausted Sonnet response-free seat: the
+  missing seat abstained, GPT-5.5 still ran, the two preserved valid judges
+  formed the primary majority, and no judge, learner, case, or outcome was
+  repaired, rerun, replaced, or selected. The synthetic pass is wiring
+  evidence only; live heldout accuracy remains unobserved.
+
+- 2026-08-21 — Prepared the fresh V4 digest-bound validation request
+  `config/tutor-stub-resistance-semantic-adjudication-validation-study-go-request.v4.json`
+  at SHA-256
+  `72a04ac91dd2c9f152f9e3efd3f1c3e8e80b5c433c00c8950db4f36210a4ec92`.
+  It pins launch source `2b734c5042603ec7cc18a6d11d9735253d9f3631`
+  / tree `654038103babecc55059bbf72e9fb12c3c4e9c8e`, a 19-file
+  closure, three distinct non-Luna judges, 80 wholly fresh cases, 240 planned
+  calls, the 720-reservation validation safeguard, programme ledger
+  `894 -> 1,614 / 5,000`, no interim analysis, and no confirmation authority.
+  Its focused zero-call request validator and deterministic blinded-plan build
+  pass.
