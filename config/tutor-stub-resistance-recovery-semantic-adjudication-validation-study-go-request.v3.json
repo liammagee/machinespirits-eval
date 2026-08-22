@@ -1,0 +1,210 @@
+{
+  "schema": "machinespirits.tutor-stub.resistance-recovery-semantic-adjudication-validation-study-go-request.v3",
+  "version": 3,
+  "status": "go_under_standing_user_authority",
+  "studyId": "tutor-stub-resistance-recovery-semantic-heldout-validation-v3",
+  "authorization": {
+    "basis": "explicit_current_user_instruction_after_successful_claude_transport_test",
+    "text": "Here's Claude's feedback. Please test this works, and upon success, lets re-do the run and move forward",
+    "textSha256": "36a8ec508129b1525ebd4f216da8fe425bbcf9e1ee30cffd574e720b3d79d8fe",
+    "standingProgrammeCeiling": 5000,
+    "boundedTechnicalRecovery": true,
+    "confirmationAuthorized": false
+  },
+  "source": {
+    "launchCommit": "d6461e340122a5f0c2b5da0bfd6d027cc12f60cc",
+    "launchTree": "a4a0f718edfff82110b0743f953d7ad195bc0549",
+    "headMustEqualLaunchCommit": true,
+    "checkoutMustBeClean": true,
+    "detachedLaunchWorktree": true,
+    "closure": [
+      {
+        "path": "scripts/run-tutor-stub-resistance-recovery-semantic-validation.js",
+        "sha256": "9e698fc510539a21787f16653b146603a98cf7ec8b1df711057f4300ebb95738"
+      },
+      {
+        "path": "scripts/analyze-tutor-stub-resistance-recovery-semantic-validation.js",
+        "sha256": "bcfa3f93583bf89c316e5b34bfbd86fbd38175e18dd5f5e59121a09eb08cc556"
+      },
+      {
+        "path": "services/tutorStubResistanceRecoverySemanticValidationRuntime.js",
+        "sha256": "2505697cfbaa2c8ffdc3eb39eaf1b806f6993393bc2ae388e5a06e76d030290b"
+      },
+      {
+        "path": "services/tutorStubResistanceRecoverySemanticValidationV3.js",
+        "sha256": "253a2ae444bb61d53d6a7fb6057e03b2b2fcfc0933c123e3a322b1183f87f4e1"
+      },
+      {
+        "path": "services/tutorStubResistanceRecoverySemanticValidation.js",
+        "sha256": "9e51bfb2e43374e10990f5f5037c87cf0330475711a5e18ffac4afd19d0a60b5"
+      },
+      {
+        "path": "services/tutorStubResistanceRecoverySemanticAdjudicationV3.js",
+        "sha256": "c2de323838668450aaeea36e7b981f792ecdef724e98dd34257250829df0f15a"
+      },
+      {
+        "path": "services/tutorStubResistanceRecoverySemanticAdjudicationV2.js",
+        "sha256": "7cbf8e021c8558a14e209ee45e21ebf04e65ecda7018324251657db59d1538e7"
+      },
+      {
+        "path": "services/tutorStubCliPolicyRetry.js",
+        "sha256": "f651331cc7f0392d1f735525a69f61adf4fff9fc31d98889c289f1cdc8dbba11"
+      },
+      {
+        "path": "services/tutorStubArtifactArchive.js",
+        "sha256": "e17500f90ef9deb72deaa030b1a3cf034d6ce4502f40016163d8c623188c4281"
+      },
+      {
+        "path": "services/cliProviderBridge.js",
+        "sha256": "5f1274e28204a357e204eecfc4b76e95a733ba281c8e2f4de7e658efc76cd137"
+      },
+      {
+        "path": "services/evalConfigLoader.js",
+        "sha256": "f71a1b4c7155937f31bae57750f0a396348d2dcf751d425ddab89faf03ad28a1"
+      },
+      {
+        "path": "config/tutor-stub-resistance-recovery-semantic-validation-registration.v3.json",
+        "sha256": "7c4d18ab420f32ddf1b841a79a3d4383c9de1701f215cbd137eae7d1792998c9"
+      },
+      {
+        "path": "config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v3.json",
+        "sha256": "05c9f43398726b4d735823fd6d33d3a9a059c8a55184268fc837a58ad80e846f"
+      },
+      {
+        "path": "config/tutor-stub-resistance-recovery-semantic-response.schema.v2.json",
+        "sha256": "427f2177a6996862a99e31d1b8588a86f0a5483d1d5942dacee6e132944fedcd"
+      },
+      {
+        "path": "config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v2.json",
+        "sha256": "16899134545d574203192ae2b1b6ff6671500fa24957f6d82015be5064c784c5"
+      },
+      {
+        "path": "config/providers.yaml",
+        "sha256": "fe0c86fa91f4443fc4d55f6f3d5b39cf7df9fff5c3284096429cb3908335b326"
+      },
+      {
+        "path": "package.json",
+        "sha256": "cc63281906982683d8628a6d6bc2273b0aeed49baf5d789a132efac7f98c0e15"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "74306cc482c33b3c8f0f4e0f67daf612287e386f5686d5ff9fa4c97683229117"
+      }
+    ]
+  },
+  "outcomeSemanticAdjudicationValidation": {
+    "type": "prospective_resistance_recovery_semantic_heldout_validation_v3",
+    "validationRegistration": {
+      "path": "config/tutor-stub-resistance-recovery-semantic-validation-registration.v3.json",
+      "sha256": "7c4d18ab420f32ddf1b841a79a3d4383c9de1701f215cbd137eae7d1792998c9"
+    },
+    "instrumentRegistration": {
+      "path": "config/tutor-stub-resistance-recovery-semantic-adjudication-registration.v3.json",
+      "sha256": "05c9f43398726b4d735823fd6d33d3a9a059c8a55184268fc837a58ad80e846f"
+    },
+    "heldoutCorpus": {
+      "path": "config/tutor-stub-resistance-recovery-semantic-heldout-corpus.v2.json",
+      "sha256": "16899134545d574203192ae2b1b6ff6671500fa24957f6d82015be5064c784c5",
+      "cases": 120
+    },
+    "judges": ["codex.gpt-5.6-sol", "claude-code.sonnet-5", "codex.gpt-5.5"],
+    "primaryRule": "two_of_three_valid_high_confidence_final_recovery_votes",
+    "componentRule": "two_of_three_valid_high_confidence_field_values_independently",
+    "componentDisagreementMayVetoPrimary": false,
+    "invalidLowConfidenceMissingOrResponseFreeDisposition": "judge_abstention",
+    "regexOrKeywordAuthority": "none",
+    "noInterimAnalysis": true,
+    "historicalV1V2PartialReusePoolingOrRescoring": false
+  },
+  "budget": {
+    "plannedCases": 120,
+    "plannedModelCalls": 360,
+    "maximumReservationsPerPlannedCall": 3,
+    "maximumPlannedModelAttempts": 1080,
+    "programmeLedgerBefore": 1136,
+    "programmeLedgerAfterMaximum": 2216,
+    "programmeCeiling": 5000,
+    "retryOrResumeAuthority": "bounded_technical_recovery"
+  },
+  "commands": {
+    "preflight": [
+      "node",
+      "scripts/run-tutor-stub-resistance-recovery-semantic-validation.js",
+      "--preflight",
+      "--destination",
+      ".tutor-stub-auto-eval/resistance-recovery-semantic-adjudication-validation-v3-2026-08-22-a",
+      "--source-commit",
+      "d6461e340122a5f0c2b5da0bfd6d027cc12f60cc",
+      "--source-tree",
+      "a4a0f718edfff82110b0743f953d7ad195bc0549",
+      "--go-request",
+      "config/tutor-stub-resistance-recovery-semantic-adjudication-validation-study-go-request.v3.json",
+      "--maximum-reservations",
+      "1080",
+      "--validation-registration",
+      "config/tutor-stub-resistance-recovery-semantic-validation-registration.v3.json"
+    ],
+    "live": [
+      "node",
+      "scripts/run-tutor-stub-resistance-recovery-semantic-validation.js",
+      "--live",
+      "--destination",
+      ".tutor-stub-auto-eval/resistance-recovery-semantic-adjudication-validation-v3-2026-08-22-a",
+      "--source-commit",
+      "d6461e340122a5f0c2b5da0bfd6d027cc12f60cc",
+      "--source-tree",
+      "a4a0f718edfff82110b0743f953d7ad195bc0549",
+      "--go-request",
+      "config/tutor-stub-resistance-recovery-semantic-adjudication-validation-study-go-request.v3.json",
+      "--maximum-reservations",
+      "1080",
+      "--validation-registration",
+      "config/tutor-stub-resistance-recovery-semantic-validation-registration.v3.json"
+    ],
+    "recovery": [
+      "node",
+      "scripts/run-tutor-stub-resistance-recovery-semantic-validation.js",
+      "--live",
+      "--destination",
+      ".tutor-stub-auto-eval/resistance-recovery-semantic-adjudication-validation-v3-2026-08-22-a",
+      "--source-commit",
+      "d6461e340122a5f0c2b5da0bfd6d027cc12f60cc",
+      "--source-tree",
+      "a4a0f718edfff82110b0743f953d7ad195bc0549",
+      "--go-request",
+      "config/tutor-stub-resistance-recovery-semantic-adjudication-validation-study-go-request.v3.json",
+      "--maximum-reservations",
+      "1080",
+      "--validation-registration",
+      "config/tutor-stub-resistance-recovery-semantic-validation-registration.v3.json",
+      "--resume"
+    ],
+    "analyze": [
+      "node",
+      "scripts/analyze-tutor-stub-resistance-recovery-semantic-validation.js",
+      "--destination",
+      ".tutor-stub-auto-eval/resistance-recovery-semantic-adjudication-validation-v3-2026-08-22-a",
+      "--source-commit",
+      "d6461e340122a5f0c2b5da0bfd6d027cc12f60cc",
+      "--source-tree",
+      "a4a0f718edfff82110b0743f953d7ad195bc0549",
+      "--go-request",
+      "config/tutor-stub-resistance-recovery-semantic-adjudication-validation-study-go-request.v3.json",
+      "--validation-registration",
+      "config/tutor-stub-resistance-recovery-semantic-validation-registration.v3.json"
+    ]
+  },
+  "destination": {
+    "artifactRoot": ".tutor-stub-auto-eval/resistance-recovery-semantic-adjudication-validation-v3-2026-08-22-a",
+    "createOnce": true,
+    "mustNotExistBeforeLaunch": true,
+    "durablePrivateArchiveRequired": true
+  },
+  "claimBoundary": {
+    "validationOnly": true,
+    "syntheticPreflightEstablishesAccuracy": false,
+    "validationOutcomesExcludedFromConfirmation": true,
+    "confirmationBlockedUnlessAllV3GatesPass": true,
+    "confirmationCallsAuthorized": false
+  }
+}

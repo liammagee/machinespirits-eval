@@ -14,10 +14,18 @@ import {
   wrapTutorStubResistanceRecoverySemanticModelOutput,
 } from './tutorStubResistanceRecoverySemanticAdjudicationV2.js';
 import {
+  adjudicateTutorStubResistanceRecoverySemanticJudgesV3,
+  scoreTutorStubResistanceRecoverySemanticCorpusV3,
+} from './tutorStubResistanceRecoverySemanticAdjudicationV3.js';
+import {
   buildTutorStubResistanceRecoverySemanticBlindedValidationCases,
   loadTutorStubResistanceRecoverySemanticValidation,
   tutorStubResistanceRecoverySemanticOpaqueCaseId,
 } from './tutorStubResistanceRecoverySemanticValidation.js';
+import {
+  TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_REGISTRATION_V3,
+  loadTutorStubResistanceRecoverySemanticValidationV3,
+} from './tutorStubResistanceRecoverySemanticValidationV3.js';
 
 export const TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_SYSTEM_PROMPT =
   'Independently judge only the supplied public dialogue packet under the frozen response schema. Do not use tools, hidden state, lexical heuristics, profile labels, assignments, gold labels, or another judge response. Return only schema-valid JSON.';
@@ -31,6 +39,76 @@ export const TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_REPORT_SCHEMA =
   'machinespirits.tutor-stub.resistance-recovery-semantic-validation-report.v2';
 
 const PACKET_FIELDS = ['trigger', 'intervention', 'prior_post_trigger', 'intervening_tutor', 'current_learner'];
+
+export function loadTutorStubResistanceRecoverySemanticValidationForRegistration(validationRegistration) {
+  return validationRegistration === TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_REGISTRATION_V3
+    ? loadTutorStubResistanceRecoverySemanticValidationV3()
+    : loadTutorStubResistanceRecoverySemanticValidation();
+}
+
+function hierarchicalV3(loaded) {
+  return loaded?.instrument?.version === 3;
+}
+
+function adjudicateLoaded(loaded, options) {
+  return hierarchicalV3(loaded)
+    ? adjudicateTutorStubResistanceRecoverySemanticJudgesV3(options)
+    : adjudicateTutorStubResistanceRecoverySemanticJudges(options);
+}
+
+function scoreLoaded(loaded, options) {
+  return hierarchicalV3(loaded)
+    ? scoreTutorStubResistanceRecoverySemanticCorpusV3(options)
+    : scoreTutorStubResistanceRecoverySemanticCorpus(options);
+}
+
+function validateHierarchicalV3GoRequest({ loaded, goRequest, sourceCommit, sourceTree, destination }) {
+  if (!hierarchicalV3(loaded)) return;
+  const readiness = loaded.registration.executionReadiness;
+  const gate = goRequest?.outcomeSemanticAdjudicationValidation || {};
+  const expectedJudges = loaded.instrument.measurement.judges.map((judge) => judge.modelRef);
+  if (
+    goRequest?.schema !==
+      'machinespirits.tutor-stub.resistance-recovery-semantic-adjudication-validation-study-go-request.v3' ||
+    goRequest?.status !== 'go_under_standing_user_authority' ||
+    goRequest?.source?.launchCommit !== sourceCommit ||
+    goRequest?.source?.launchTree !== sourceTree ||
+    goRequest?.source?.headMustEqualLaunchCommit !== true ||
+    goRequest?.source?.checkoutMustBeClean !== true ||
+    goRequest?.source?.detachedLaunchWorktree !== true ||
+    gate.validationRegistration?.path !== loaded.registrationPath ||
+    gate.validationRegistration?.sha256 !== loaded.registrationSha256 ||
+    gate.instrumentRegistration?.path !== loaded.instrumentPath ||
+    gate.instrumentRegistration?.sha256 !== loaded.instrumentSha256 ||
+    gate.heldoutCorpus?.path !== loaded.registration.heldout.corpusPath ||
+    gate.heldoutCorpus?.sha256 !== loaded.corpusSha256 ||
+    gate.heldoutCorpus?.cases !== 120 ||
+    JSON.stringify(gate.judges) !== JSON.stringify(expectedJudges) ||
+    gate.primaryRule !== 'two_of_three_valid_high_confidence_final_recovery_votes' ||
+    gate.componentRule !== 'two_of_three_valid_high_confidence_field_values_independently' ||
+    gate.componentDisagreementMayVetoPrimary !== false ||
+    gate.invalidLowConfidenceMissingOrResponseFreeDisposition !== 'judge_abstention' ||
+    gate.regexOrKeywordAuthority !== 'none' ||
+    gate.noInterimAnalysis !== true ||
+    goRequest?.budget?.plannedCases !== readiness.plannedCases ||
+    goRequest?.budget?.plannedModelCalls !== readiness.plannedModelCalls ||
+    goRequest?.budget?.maximumReservationsPerPlannedCall !== readiness.maximumReservationsPerPlannedCall ||
+    goRequest?.budget?.maximumPlannedModelAttempts !== readiness.hardValidationReservations ||
+    goRequest?.budget?.programmeLedgerBefore !== readiness.programmeLedgerBefore ||
+    goRequest?.budget?.programmeLedgerAfterMaximum !== readiness.programmeMaximumAfterValidation ||
+    goRequest?.budget?.programmeCeiling !== readiness.programmeCeiling ||
+    goRequest?.budget?.retryOrResumeAuthority !== 'bounded_technical_recovery' ||
+    path.resolve(String(goRequest?.destination?.artifactRoot || '')) !== destination ||
+    goRequest?.destination?.createOnce !== true ||
+    goRequest?.destination?.mustNotExistBeforeLaunch !== true ||
+    goRequest?.authorization?.confirmationAuthorized !== false ||
+    goRequest?.claimBoundary?.validationOnly !== true ||
+    goRequest?.claimBoundary?.validationOutcomesExcludedFromConfirmation !== true ||
+    goRequest?.claimBoundary?.confirmationCallsAuthorized !== false
+  ) {
+    throw new Error('v3 outcome semantic validation GO request binding drifted');
+  }
+}
 
 function canonical(value) {
   if (Array.isArray(value)) return value.map(canonical);
@@ -380,6 +458,7 @@ export function buildTutorStubResistanceRecoverySemanticValidationPlan({
   destination,
   goRequestPath,
   goRequestSha256,
+  goRequest,
   loaded = loadTutorStubResistanceRecoverySemanticValidation(),
 }) {
   if (!/^[0-9a-f]{40}$/u.test(sourceCommit) || !/^[0-9a-f]{40}$/u.test(sourceTree)) {
@@ -388,6 +467,7 @@ export function buildTutorStubResistanceRecoverySemanticValidationPlan({
   if (!path.isAbsolute(destination) || !goRequestPath || !/^[0-9a-f]{64}$/u.test(goRequestSha256)) {
     throw new Error('outcome validation requires absolute destination and digest-bound request');
   }
+  validateHierarchicalV3GoRequest({ loaded, goRequest, sourceCommit, sourceTree, destination });
   const cases = buildTutorStubResistanceRecoverySemanticBlindedValidationCases(loaded.corpus.cases);
   const plan = {
     schema: TUTOR_STUB_RESISTANCE_RECOVERY_SEMANTIC_VALIDATION_PLAN_SCHEMA,
@@ -407,12 +487,20 @@ export function buildTutorStubResistanceRecoverySemanticValidationPlan({
       effort: judge.effort,
       maximum_reservations: 3,
     })),
-    budget: {
-      planned_calls: 240,
-      hard_reservation_ceiling: 720,
-      programme_maximum_after_both_validations: 1531,
-      programme_ceiling: 5000,
-    },
+    budget: hierarchicalV3(loaded)
+      ? {
+          planned_calls: loaded.registration.executionReadiness.plannedModelCalls,
+          hard_reservation_ceiling: loaded.registration.executionReadiness.hardValidationReservations,
+          programme_ledger_before: loaded.registration.executionReadiness.programmeLedgerBefore,
+          programme_maximum_after_validation: loaded.registration.executionReadiness.programmeMaximumAfterValidation,
+          programme_ceiling: loaded.registration.executionReadiness.programmeCeiling,
+        }
+      : {
+          planned_calls: 240,
+          hard_reservation_ceiling: 720,
+          programme_maximum_after_both_validations: 1531,
+          programme_ceiling: 5000,
+        },
     lifecycle: {
       preserved_judge_recalled: false,
       never_prepared_peer_may_complete: true,
@@ -465,7 +553,7 @@ function persist(destination, checkpoint, archive, stage, hook) {
 }
 
 function aggregateCheckpoint(checkpoint, row, loaded, prompts) {
-  const aggregate = adjudicateTutorStubResistanceRecoverySemanticJudges({
+  const aggregate = adjudicateLoaded(loaded, {
     caseId: row.case_id,
     publicPacket: packet(row),
     responses: checkpoint.judge_results.map((result) => result.record).filter(Boolean),
@@ -521,6 +609,7 @@ async function executeJudge({
   persistNow,
   afterPreparedCheckpoint,
   afterDispatchCheckpoint,
+  allowClaudeResponseFreeError,
 }) {
   const route = resolveModelRef(judge.modelRef);
   if (route.provider !== judge.provider || route.model !== judge.model) throw new Error('outcome judge route drifted');
@@ -587,7 +676,10 @@ async function executeJudge({
       if (error?.name === 'AbortError') throw error;
       result.attempts.at(-1).status = 'transport_failed';
       result.attempts.at(-1).error_code = error?.code || null;
-      const retry = tutorStubCliPolicyRetryDecision(error, { retryCount: result.attempts.length - 1 });
+      const retry = tutorStubCliPolicyRetryDecision(error, {
+        retryCount: result.attempts.length - 1,
+        allowClaudeResponseFreeError,
+      });
       if (!retry.retry) {
         result.outcome = 'transport_failed';
         result.invalid_reason = error.message;
@@ -614,6 +706,7 @@ export async function runTutorStubResistanceRecoverySemanticValidation({
   sourceTree,
   goRequestPath,
   goRequestSha256,
+  goRequest,
   sourceDirty,
   archiveDir,
   resume = false,
@@ -626,18 +719,20 @@ export async function runTutorStubResistanceRecoverySemanticValidation({
   afterArchiveEntryWrite,
   afterLocalCheckpointWrite,
   afterSealLocalWrite,
+  validationRegistration,
 }) {
   if (sourceDirty !== false) throw new Error('outcome validation requires a clean source tree');
   if (typeof callModel !== 'function' || typeof resolveModelRef !== 'function') {
     throw new Error('outcome validation requires explicit model-call and route-resolution dependencies');
   }
-  const loaded = loadTutorStubResistanceRecoverySemanticValidation();
+  const loaded = loadTutorStubResistanceRecoverySemanticValidationForRegistration(validationRegistration);
   const plan = buildTutorStubResistanceRecoverySemanticValidationPlan({
     sourceCommit,
     sourceTree,
     destination,
     goRequestPath,
     goRequestSha256,
+    goRequest,
     loaded,
   });
   const planFile = path.join(destination, 'plan.json');
@@ -705,9 +800,11 @@ export async function runTutorStubResistanceRecoverySemanticValidation({
         invalid_reason: 'dispatched response was not durably recorded; recall is forbidden',
       });
     }
-    if (ambiguous || checkpoint.judge_results.some((result) => result.outcome !== 'recorded_response')) {
+    const hasTerminalSeat = checkpoint.judge_results.some((result) => result.outcome !== 'recorded_response');
+    if (!hierarchicalV3(loaded) && (ambiguous || hasTerminalSeat)) {
       checkpoint.resumed_partial_without_rejudge = true;
     } else {
+      if (ambiguous || hasTerminalSeat) checkpoint.resumed_partial_without_rejudge = true;
       for (const judge of loaded.instrument.measurement.judges) {
         if (checkpoint.judge_results.some((result) => result.judge_id === judge.id)) continue;
         await executeJudge({
@@ -723,9 +820,10 @@ export async function runTutorStubResistanceRecoverySemanticValidation({
           persistNow,
           afterPreparedCheckpoint,
           afterDispatchCheckpoint,
+          allowClaudeResponseFreeError: hierarchicalV3(loaded),
         });
         await afterJudgeCheckpoint?.({ caseId: row.case_id, judgeId: judge.id });
-        if (checkpoint.judge_results.at(-1).outcome !== 'recorded_response') break;
+        if (!hierarchicalV3(loaded) && checkpoint.judge_results.at(-1).outcome !== 'recorded_response') break;
       }
     }
     checkpoint = aggregateCheckpoint(checkpoint, row, loaded, prompts);
@@ -755,18 +853,21 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
   expectedSourceTree,
   expectedGoRequestPath,
   expectedGoRequestSha256,
+  expectedGoRequest,
   sourceDirty,
   archiveDir,
   allowExistingReport = false,
+  validationRegistration,
 }) {
   if (sourceDirty !== false) throw new Error('outcome validation analysis requires a clean source tree');
-  const loaded = loadTutorStubResistanceRecoverySemanticValidation();
+  const loaded = loadTutorStubResistanceRecoverySemanticValidationForRegistration(validationRegistration);
   const expectedPlan = buildTutorStubResistanceRecoverySemanticValidationPlan({
     sourceCommit: expectedSourceCommit,
     sourceTree: expectedSourceTree,
     destination,
     goRequestPath: expectedGoRequestPath,
     goRequestSha256: expectedGoRequestSha256,
+    goRequest: expectedGoRequest,
     loaded,
   });
   if (!exact(read(path.join(destination, 'plan.json')), expectedPlan)) throw new Error('outcome plan drifted');
@@ -940,7 +1041,7 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
       if (rebuilt) responses.push(rebuilt);
       responsePairs[row.case_id][judge.id] = { prompt: prompts[judge.id], response: rebuilt };
     }
-    const aggregate = adjudicateTutorStubResistanceRecoverySemanticJudges({
+    const aggregate = adjudicateLoaded(loaded, {
       caseId: row.case_id,
       publicPacket: packet(row),
       responses,
@@ -957,7 +1058,11 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
   );
   const reservations = checkpoints.reduce((sum, row) => sum + Object.values(row.attempts_by_judge).flat().length, 0);
   const judgeResults = checkpoints.reduce((sum, row) => sum + row.judge_results.length, 0);
-  if (seal.reservations !== reservations || seal.judge_results !== judgeResults || reservations > 720) {
+  if (
+    seal.reservations !== reservations ||
+    seal.judge_results !== judgeResults ||
+    reservations > expectedPlan.budget.hard_reservation_ceiling
+  ) {
     throw new Error('outcome validation seal accounting drifted');
   }
   if (!exact(Object.keys(seal.case_checkpoint_sha256).sort(), plannedCaseIds)) {
@@ -989,7 +1094,7 @@ export function analyzeTutorStubResistanceRecoverySemanticValidation({
   ) {
     throw new Error('outcome validation durable archive transition inventory drifted');
   }
-  const score = scoreTutorStubResistanceRecoverySemanticCorpus({
+  const score = scoreLoaded(loaded, {
     corpus: { ...loaded.corpus, cases: scoredCases },
     responsePairs,
     registration: loaded.instrument,
